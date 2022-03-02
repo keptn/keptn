@@ -21,6 +21,9 @@ import (
 // 			RunFunc: func(ctx context.Context)  {
 // 				panic("mock out the Run method")
 // 			},
+// 			StopFunc: func()  {
+// 				panic("mock out the Stop method")
+// 			},
 // 		}
 //
 // 		// use mockedIEventDispatcher in code that requires handler.IEventDispatcher
@@ -33,6 +36,9 @@ type IEventDispatcherMock struct {
 
 	// RunFunc mocks the Run method.
 	RunFunc func(ctx context.Context)
+
+	// StopFunc mocks the Stop method.
+	StopFunc func()
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -48,9 +54,13 @@ type IEventDispatcherMock struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
 		}
+		// Stop holds details about calls to the Stop method.
+		Stop []struct {
+		}
 	}
-	lockAdd sync.RWMutex
-	lockRun sync.RWMutex
+	lockAdd  sync.RWMutex
+	lockRun  sync.RWMutex
+	lockStop sync.RWMutex
 }
 
 // Add calls AddFunc.
@@ -116,5 +126,31 @@ func (mock *IEventDispatcherMock) RunCalls() []struct {
 	mock.lockRun.RLock()
 	calls = mock.calls.Run
 	mock.lockRun.RUnlock()
+	return calls
+}
+
+// Stop calls StopFunc.
+func (mock *IEventDispatcherMock) Stop() {
+	if mock.StopFunc == nil {
+		panic("IEventDispatcherMock.StopFunc: method is nil but IEventDispatcher.Stop was just called")
+	}
+	callInfo := struct {
+	}{}
+	mock.lockStop.Lock()
+	mock.calls.Stop = append(mock.calls.Stop, callInfo)
+	mock.lockStop.Unlock()
+	mock.StopFunc()
+}
+
+// StopCalls gets all the calls that were made to Stop.
+// Check the length with:
+//     len(mockedIEventDispatcher.StopCalls())
+func (mock *IEventDispatcherMock) StopCalls() []struct {
+} {
+	var calls []struct {
+	}
+	mock.lockStop.RLock()
+	calls = mock.calls.Stop
+	mock.lockStop.RUnlock()
 	return calls
 }

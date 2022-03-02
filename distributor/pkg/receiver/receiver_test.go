@@ -1,4 +1,4 @@
-package events
+package receiver
 
 import (
 	"context"
@@ -7,6 +7,9 @@ import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	keptnfake "github.com/keptn/go-utils/pkg/lib/v0_2_0/fake"
 	"github.com/keptn/keptn/distributor/pkg/config"
+	"github.com/keptn/keptn/distributor/pkg/utils"
+	"github.com/nats-io/nats-server/v2/server"
+	natsserver "github.com/nats-io/nats-server/v2/test"
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -18,9 +21,9 @@ const task1TriggerEvent = `{"data": {"project" : "my-project","stage" : "stage1"
 const task2TriggerEvent = `{"data": {"project" : "sockshop","stage" : "dev","service" : "service"},"id": "6de83495-4f83-481c-8dbe-fcceb2e0243b","source": "shipyard-controller","specversion": "1.0","type": "sh.keptn.event.task2.triggered","shkeptncontext": "3c9ffbbb-6e1d-4789-9fee-6e63b4bcc1fc"}`
 
 func Test_ReceiveFromNATSAndForwardEvent(t *testing.T) {
-	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
-	_, shutdownNats := RunServerOnPort(TEST_PORT)
+	svr, shutdownNats := runNATSServer()
 	defer shutdownNats()
+	natsURL := svr.Addr().String()
 	natsPublisher, _ := nats.Connect(natsURL)
 
 	eventSender := &keptnfake.EventSender{}
@@ -30,14 +33,14 @@ func Test_ReceiveFromNATSAndForwardEvent(t *testing.T) {
 		PubSubURL:       natsURL,
 		PubSubGroup:     "my-receiver",
 	}
-	receiver := NewNATSEventReceiver(envConfig, eventSender, true)
+	receiver := New(envConfig, eventSender, true)
 	ctx, cancelReceiver := context.WithCancel(context.Background())
-	executionContext := NewExecutionContext(ctx, 1)
+	executionContext := utils.NewExecutionContext(ctx, 1)
 	go receiver.Start(executionContext)
 
 	// make sure the message handler of the receiver is set before continuing with the test
 	require.Eventually(t, func() bool {
-		return receiver.natsConnectionHandler.messageHandler != nil
+		return receiver.natsConnectionHandler.MessageHandler != nil
 	}, 5*time.Second, time.Second)
 	receiver.UpdateSubscriptions([]models.EventSubscription{
 		{
@@ -80,9 +83,10 @@ func Test_ReceiveFromNATSAndForwardEvent(t *testing.T) {
 }
 
 func Test_ReceiveFromNATSAndForwardEventForOverlappingSubscriptions(t *testing.T) {
-	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
-	_, shutdownNats := RunServerOnPort(TEST_PORT)
+
+	svr, shutdownNats := runNATSServer()
 	defer shutdownNats()
+	natsURL := svr.Addr().String()
 	natsPublisher, _ := nats.Connect(natsURL)
 
 	eventSender := &keptnfake.EventSender{}
@@ -92,14 +96,14 @@ func Test_ReceiveFromNATSAndForwardEventForOverlappingSubscriptions(t *testing.T
 		PubSubURL:       natsURL,
 		PubSubGroup:     "my-receiver",
 	}
-	receiver := NewNATSEventReceiver(envConfig, eventSender, true)
+	receiver := New(envConfig, eventSender, true)
 	ctx, cancelReceiver := context.WithCancel(context.Background())
-	executionContext := NewExecutionContext(ctx, 1)
+	executionContext := utils.NewExecutionContext(ctx, 1)
 	go receiver.Start(executionContext)
 
 	// make sure the message handler of the receiver is set before continuing with the test
 	require.Eventually(t, func() bool {
-		return receiver.natsConnectionHandler.messageHandler != nil
+		return receiver.natsConnectionHandler.MessageHandler != nil
 	}, 5*time.Second, time.Second)
 	receiver.UpdateSubscriptions([]models.EventSubscription{
 		{
@@ -148,8 +152,9 @@ func Test_ReceiveFromNATSAndForwardEventForOverlappingSubscriptions(t *testing.T
 }
 
 func Test_ReceiveFromNATS_AfterReconnecting(t *testing.T) {
-	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
-	_, shutdownNats := RunServerOnPort(TEST_PORT)
+	const natsTestPort = 8369
+	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", natsTestPort)
+	_, shutdownNats := runNATSServerOnPort(natsTestPort)
 	defer shutdownNats()
 	natsPublisher, _ := nats.Connect(natsURL)
 
@@ -160,14 +165,14 @@ func Test_ReceiveFromNATS_AfterReconnecting(t *testing.T) {
 		PubSubURL:       natsURL,
 		PubSubGroup:     "my-receiver",
 	}
-	receiver := NewNATSEventReceiver(envConfig, eventSender, true)
+	receiver := New(envConfig, eventSender, true)
 	ctx, cancelReceiver := context.WithCancel(context.Background())
-	executionContext := NewExecutionContext(ctx, 1)
+	executionContext := utils.NewExecutionContext(ctx, 1)
 	go receiver.Start(executionContext)
 
 	// make sure the message handler of the receiver is set before continuing with the test
 	require.Eventually(t, func() bool {
-		return receiver.natsConnectionHandler.messageHandler != nil
+		return receiver.natsConnectionHandler.MessageHandler != nil
 	}, 5*time.Second, time.Second)
 
 	receiver.UpdateSubscriptions([]models.EventSubscription{
@@ -182,7 +187,7 @@ func Test_ReceiveFromNATS_AfterReconnecting(t *testing.T) {
 	})
 
 	shutdownNats()
-	_, shutdownNats = RunServerOnPort(TEST_PORT)
+	_, shutdownNats = runNATSServerOnPort(natsTestPort)
 	defer shutdownNats()
 	require.Eventually(t, func() bool {
 		return natsPublisher.IsConnected()
@@ -201,9 +206,10 @@ func Test_ReceiveFromNATS_AfterReconnecting(t *testing.T) {
 }
 
 func Test_ReceiveFromNATSAndForwardEventApplySubscriptionFilter(t *testing.T) {
-	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
-	_, shutdownNats := RunServerOnPort(TEST_PORT)
+
+	svr, shutdownNats := runNATSServer()
 	defer shutdownNats()
+	natsURL := svr.Addr().String()
 	natsPublisher, _ := nats.Connect(natsURL)
 
 	eventSender := &keptnfake.EventSender{}
@@ -213,14 +219,14 @@ func Test_ReceiveFromNATSAndForwardEventApplySubscriptionFilter(t *testing.T) {
 		PubSubURL:       natsURL,
 		PubSubGroup:     "my-receiver",
 	}
-	receiver := NewNATSEventReceiver(envConfig, eventSender, true)
+	receiver := New(envConfig, eventSender, true)
 	ctx, cancelReceiver := context.WithCancel(context.Background())
-	executionContext := NewExecutionContext(ctx, 1)
+	executionContext := utils.NewExecutionContext(ctx, 1)
 	go receiver.Start(executionContext)
 
 	// make sure the message handler of the receiver is set before continuing with the test
 	require.Eventually(t, func() bool {
-		return receiver.natsConnectionHandler.messageHandler != nil
+		return receiver.natsConnectionHandler.MessageHandler != nil
 	}, 5*time.Second, time.Second)
 	receiver.UpdateSubscriptions([]models.EventSubscription{
 		{
@@ -263,9 +269,10 @@ func Test_ReceiveFromNATSAndForwardEventApplySubscriptionFilter(t *testing.T) {
 }
 
 func Test_ReceiveFromNATSAndForwardEventApplySubscriptionFilterNoMatch(t *testing.T) {
-	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
-	_, shutdownNats := RunServerOnPort(TEST_PORT)
+
+	svr, shutdownNats := runNATSServer()
 	defer shutdownNats()
+	natsURL := svr.Addr().String()
 	natsPublisher, _ := nats.Connect(natsURL)
 
 	eventSender := &keptnfake.EventSender{}
@@ -274,14 +281,14 @@ func Test_ReceiveFromNATSAndForwardEventApplySubscriptionFilterNoMatch(t *testin
 		PubSubTopic:     "sh.keptn.event.task.triggered",
 		PubSubURL:       natsURL,
 	}
-	receiver := NewNATSEventReceiver(envConfig, eventSender, true)
+	receiver := New(envConfig, eventSender, true)
 	ctx, cancelReceiver := context.WithCancel(context.Background())
-	executionContext := NewExecutionContext(ctx, 1)
+	executionContext := utils.NewExecutionContext(ctx, 1)
 	go receiver.Start(executionContext)
 
 	// make sure the message handler of the receiver is set before continuing with the test
 	require.Eventually(t, func() bool {
-		return receiver.natsConnectionHandler.messageHandler != nil
+		return receiver.natsConnectionHandler.MessageHandler != nil
 	}, 5*time.Second, time.Second)
 	receiver.UpdateSubscriptions([]models.EventSubscription{
 		{
@@ -307,9 +314,10 @@ func Test_ReceiveFromNATSAndForwardEventApplySubscriptionFilterNoMatch(t *testin
 }
 
 func Test_ReceiveFromNATSAndForwardEventNoSubscriptionPulling(t *testing.T) {
-	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
-	_, shutdownNats := RunServerOnPort(TEST_PORT)
+
+	svr, shutdownNats := runNATSServer()
 	defer shutdownNats()
+	natsURL := svr.Addr().String()
 	natsPublisher, _ := nats.Connect(natsURL)
 
 	eventSender := &keptnfake.EventSender{}
@@ -318,14 +326,14 @@ func Test_ReceiveFromNATSAndForwardEventNoSubscriptionPulling(t *testing.T) {
 		PubSubTopic:     "sh.keptn.event.task.triggered",
 		PubSubURL:       natsURL,
 	}
-	receiver := NewNATSEventReceiver(envConfig, eventSender, false)
+	receiver := New(envConfig, eventSender, false)
 	ctx, cancelReceiver := context.WithCancel(context.Background())
-	executionContext := NewExecutionContext(ctx, 1)
+	executionContext := utils.NewExecutionContext(ctx, 1)
 	go receiver.Start(executionContext)
 
 	// make sure the message handler of the receiver is set before continuing with the test
 	require.Eventually(t, func() bool {
-		return receiver.natsConnectionHandler.messageHandler != nil
+		return receiver.natsConnectionHandler.MessageHandler != nil
 	}, 5*time.Second, time.Second)
 
 	time.Sleep(time.Second)
@@ -341,4 +349,20 @@ func Test_ReceiveFromNATSAndForwardEventNoSubscriptionPulling(t *testing.T) {
 
 	cancelReceiver()
 	executionContext.Wg.Wait()
+}
+
+func runNATSServer() (*server.Server, func()) {
+	svr := natsserver.RunRandClientPortServer()
+	return svr, func() { svr.Shutdown() }
+}
+
+func runNATSServerOnPort(port int) (*server.Server, func()) {
+	opts := natsserver.DefaultTestOptions
+	opts.Port = port
+	svr := runNatsWithOptions(&opts)
+	return svr, func() { svr.Shutdown() }
+}
+
+func runNatsWithOptions(opts *server.Options) *server.Server {
+	return natsserver.RunServer(opts)
 }

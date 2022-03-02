@@ -4,6 +4,7 @@
 package fake
 
 import (
+	"context"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"sync"
@@ -15,7 +16,7 @@ import (
 //
 // 		// make and configure a mocked handler.IShipyardController
 // 		mockedIShipyardController := &IShipyardControllerMock{
-// 			ControlSequenceFunc: func(controlSequence common.SequenceControl) error {
+// 			ControlSequenceFunc: func(controlSequence models.SequenceControl) error {
 // 				panic("mock out the ControlSequence method")
 // 			},
 // 			GetAllTriggeredEventsFunc: func(filter common.EventFilter) ([]models.Event, error) {
@@ -27,8 +28,14 @@ import (
 // 			HandleIncomingEventFunc: func(event models.Event, waitForCompletion bool) error {
 // 				panic("mock out the HandleIncomingEvent method")
 // 			},
+// 			StartDispatchersFunc: func(ctx context.Context)  {
+// 				panic("mock out the StartDispatchers method")
+// 			},
 // 			StartTaskSequenceFunc: func(event models.Event) error {
 // 				panic("mock out the StartTaskSequence method")
+// 			},
+// 			StopDispatchersFunc: func()  {
+// 				panic("mock out the StopDispatchers method")
 // 			},
 // 		}
 //
@@ -49,8 +56,14 @@ type IShipyardControllerMock struct {
 	// HandleIncomingEventFunc mocks the HandleIncomingEvent method.
 	HandleIncomingEventFunc func(event models.Event, waitForCompletion bool) error
 
+	// StartDispatchersFunc mocks the StartDispatchers method.
+	StartDispatchersFunc func(ctx context.Context, mode common.SDMode)
+
 	// StartTaskSequenceFunc mocks the StartTaskSequence method.
 	StartTaskSequenceFunc func(event models.Event) error
+
+	// StopDispatchersFunc mocks the StopDispatchers method.
+	StopDispatchersFunc func()
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -78,17 +91,27 @@ type IShipyardControllerMock struct {
 			// WaitForCompletion is the waitForCompletion argument value.
 			WaitForCompletion bool
 		}
+		// StartDispatchers holds details about calls to the StartDispatchers method.
+		StartDispatchers []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+		}
 		// StartTaskSequence holds details about calls to the StartTaskSequence method.
 		StartTaskSequence []struct {
 			// Event is the event argument value.
 			Event models.Event
+		}
+		// StopDispatchers holds details about calls to the StopDispatchers method.
+		StopDispatchers []struct {
 		}
 	}
 	lockControlSequence             sync.RWMutex
 	lockGetAllTriggeredEvents       sync.RWMutex
 	lockGetTriggeredEventsOfProject sync.RWMutex
 	lockHandleIncomingEvent         sync.RWMutex
+	lockStartDispatchers            sync.RWMutex
 	lockStartTaskSequence           sync.RWMutex
+	lockStopDispatchers             sync.RWMutex
 }
 
 // ControlSequence calls ControlSequenceFunc.
@@ -223,6 +246,37 @@ func (mock *IShipyardControllerMock) HandleIncomingEventCalls() []struct {
 	return calls
 }
 
+// StartDispatchers calls StartDispatchersFunc.
+func (mock *IShipyardControllerMock) StartDispatchers(ctx context.Context, mode common.SDMode) {
+	if mock.StartDispatchersFunc == nil {
+		panic("IShipyardControllerMock.StartDispatchersFunc: method is nil but IShipyardController.StartDispatchers was just called")
+	}
+	callInfo := struct {
+		Ctx context.Context
+	}{
+		Ctx: ctx,
+	}
+	mock.lockStartDispatchers.Lock()
+	mock.calls.StartDispatchers = append(mock.calls.StartDispatchers, callInfo)
+	mock.lockStartDispatchers.Unlock()
+	mock.StartDispatchersFunc(ctx, mode)
+}
+
+// StartDispatchersCalls gets all the calls that were made to StartDispatchers.
+// Check the length with:
+//     len(mockedIShipyardController.StartDispatchersCalls())
+func (mock *IShipyardControllerMock) StartDispatchersCalls() []struct {
+	Ctx context.Context
+} {
+	var calls []struct {
+		Ctx context.Context
+	}
+	mock.lockStartDispatchers.RLock()
+	calls = mock.calls.StartDispatchers
+	mock.lockStartDispatchers.RUnlock()
+	return calls
+}
+
 // StartTaskSequence calls StartTaskSequenceFunc.
 func (mock *IShipyardControllerMock) StartTaskSequence(event models.Event) error {
 	if mock.StartTaskSequenceFunc == nil {
@@ -251,5 +305,31 @@ func (mock *IShipyardControllerMock) StartTaskSequenceCalls() []struct {
 	mock.lockStartTaskSequence.RLock()
 	calls = mock.calls.StartTaskSequence
 	mock.lockStartTaskSequence.RUnlock()
+	return calls
+}
+
+// StopDispatchers calls StopDispatchersFunc.
+func (mock *IShipyardControllerMock) StopDispatchers() {
+	if mock.StopDispatchersFunc == nil {
+		panic("IShipyardControllerMock.StopDispatchersFunc: method is nil but IShipyardController.StopDispatchers was just called")
+	}
+	callInfo := struct {
+	}{}
+	mock.lockStopDispatchers.Lock()
+	mock.calls.StopDispatchers = append(mock.calls.StopDispatchers, callInfo)
+	mock.lockStopDispatchers.Unlock()
+	mock.StopDispatchersFunc()
+}
+
+// StopDispatchersCalls gets all the calls that were made to StopDispatchers.
+// Check the length with:
+//     len(mockedIShipyardController.StopDispatchersCalls())
+func (mock *IShipyardControllerMock) StopDispatchersCalls() []struct {
+} {
+	var calls []struct {
+	}
+	mock.lockStopDispatchers.RLock()
+	calls = mock.calls.StopDispatchers
+	mock.lockStopDispatchers.RUnlock()
 	return calls
 }

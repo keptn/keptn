@@ -7,13 +7,13 @@ require (
 	github.com/cloudevents/sdk-go/protocol/nats/v2 v2.8.0
 	github.com/cloudevents/sdk-go/v2 v2.8.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.13.1-0.20220223120143-efe19c525eab
+	github.com/keptn/go-utils v0.13.1-0.20220228110412-d80b7a4ab103
 	github.com/nats-io/nats-server/v2 v2.7.2
 	github.com/nats-io/nats.go v1.13.1-0.20220121202836-972a071d373d
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.27.0
-	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
+	golang.org/x/oauth2 v0.0.0-20220223155221-ee480838109b
 )
 
 replace (

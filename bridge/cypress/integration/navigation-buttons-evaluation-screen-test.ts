@@ -3,7 +3,7 @@
 import BasePage from '../support/pageobjects/BasePage';
 
 describe('Test Navigation Buttons In Evaluation Screen', () => {
-  it('The test clicks on Navigation buttons and make sure the pages are aopen respectivily ', () => {
+  it('The test clicks on Navigation buttons and make sure the pages are open respectively ', () => {
     const basePage = new BasePage();
 
     cy.fixture('get.project.json').as('initProjectJSON');

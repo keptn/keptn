@@ -1,4 +1,4 @@
-package controlplane
+package log
 
 import (
 	"context"
@@ -20,7 +20,7 @@ type EventUniformLog struct {
 	logHandler    keptn.ILogHandler
 }
 
-func NewEventUniformLog(integrationID string, logHandler keptn.LogsV1Interface) *EventUniformLog {
+func New(integrationID string, logHandler keptn.LogsV1Interface) *EventUniformLog {
 	return &EventUniformLog{
 		IntegrationID: integrationID,
 		logHandler:    logHandler,
@@ -35,7 +35,7 @@ func (l *EventUniformLog) Start(ctx context.Context, eventChannel chan cloudeven
 			select {
 			case event := <-eventChannel:
 				logger.Debugf("Received event: %s", event.Context.GetType())
-				if err := l.OnEvent(event); err != nil {
+				if err := l.onEvent(event); err != nil {
 					logger.Errorf("Could not handle event: %v", err)
 				}
 			case <-ctx.Done():
@@ -46,7 +46,7 @@ func (l *EventUniformLog) Start(ctx context.Context, eventChannel chan cloudeven
 	}()
 }
 
-func (l *EventUniformLog) OnEvent(event cloudevents.Event) error {
+func (l *EventUniformLog) onEvent(event cloudevents.Event) error {
 	keptnEvent, err := keptnv2.ToKeptnEvent(event)
 	if err != nil {
 		return fmt.Errorf("could not decode CloudEvent to Keptn event: %w", err)

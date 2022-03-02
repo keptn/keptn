@@ -18,8 +18,9 @@ import (
 // ISequenceDispatcher is responsible for dispatching events to be sent to the event broker
 type ISequenceDispatcher interface {
 	Add(queueItem models.QueueItem) error
-	Run(ctx context.Context, startSequenceFunc func(event models.Event) error)
+	Run(ctx context.Context, mode common.SDMode, startSequenceFunc func(event models.Event) error)
 	Remove(eventScope models.EventScope) error
+	Stop()
 }
 
 type SequenceDispatcher struct {
@@ -31,6 +32,7 @@ type SequenceDispatcher struct {
 	startSequenceFunc     func(event models.Event) error
 	shipyardController    shipyardController
 	ticker                *clock.Ticker
+	mode              common.SDMode
 }
 
 // NewSequenceDispatcher creates a new SequenceDispatcher
@@ -40,7 +42,7 @@ func NewSequenceDispatcher(
 	sequenceExecutionRepo db.SequenceExecutionRepo,
 	syncInterval time.Duration,
 	theClock clock.Clock,
-
+	mode common.SDMode,
 ) ISequenceDispatcher {
 	return &SequenceDispatcher{
 		eventRepo:             eventRepo,
@@ -48,28 +50,39 @@ func NewSequenceDispatcher(
 		sequenceExecutionRepo: sequenceExecutionRepo,
 		theClock:              theClock,
 		syncInterval:          syncInterval,
+		mode: mode
 	}
 }
 
 func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
-	// try to dispatch the sequence immediately
-	if err := sd.dispatchSequence(queueItem); err != nil {
-		if err == ErrSequenceBlocked {
-			// if the sequence is currently blocked, insert it into the queue
-			if err2 := sd.sequenceQueue.QueueSequence(queueItem); err2 != nil {
-				return err2
+
+	if sd.mode == common.SDModeRW {
+		//if there is only one shipyard we can both read and write,
+		//so we try to dispatch the sequence immediately
+		if err := sd.dispatchSequence(queueItem); err != nil {
+			if err == ErrSequenceBlocked {
+				//if the sequence is currently blocked, insert it into the queue
+				return sd.add(queueItem)
+			} else if err == ErrSequenceBlockedWaiting {
+				//if the sequence is currently blocked and should wait, insert it into the queue
+				if err2 := sd.add(queueItem); err2 != nil {
+					return err2
+				}
+				return ErrSequenceBlockedWaiting
+			} else {
+				return err
 			}
-		} else if err == ErrSequenceBlockedWaiting {
-			// if the sequence is currently blocked and should wait, insert it into the queue
-			if err2 := sd.sequenceQueue.QueueSequence(queueItem); err2 != nil {
-				return err2
-			}
-			return ErrSequenceBlockedWaiting
-		} else {
-			return err
 		}
+		return nil
+	} else {
+		//if there are multiple shipyard we should only write
+		return sd.add(queueItem)
 	}
-	return nil
+
+}
+
+func (sd *SequenceDispatcher) add(queueItem models.QueueItem) error {
+	return sd.sequenceQueue.QueueSequence(queueItem)
 }
 
 func (sd *SequenceDispatcher) Remove(eventScope models.EventScope) error {
@@ -82,7 +95,9 @@ func (sd *SequenceDispatcher) SetStartSequenceCallback(startSequenceFunc func(ev
 	sd.startSequenceFunc = startSequenceFunc
 }
 
-func (sd *SequenceDispatcher) Run(ctx context.Context, startSequenceFunc func(event models.Event) error) {
+func (sd *SequenceDispatcher) Run(ctx context.Context, mode common.SDMode, startSequenceFunc func(event models.Event) error) {
+	// at each run the dispatcher needs to know if it is a leader or not
+	sd.mode = mode
 	sd.ticker = sd.theClock.Ticker(sd.syncInterval)
 	sd.startSequenceFunc = startSequenceFunc
 	go func() {
@@ -100,6 +115,8 @@ func (sd *SequenceDispatcher) Run(ctx context.Context, startSequenceFunc func(ev
 }
 
 func (sd *SequenceDispatcher) Stop() {
+	// as soon as a new leader is elected dispatcher should only write
+	sd.mode = common.SDModeW
 	if sd.ticker == nil {
 		return
 	}

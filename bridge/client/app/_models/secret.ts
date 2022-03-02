@@ -3,12 +3,12 @@ import { SecretScope } from '../../../shared/interfaces/secret-scope';
 
 export class Secret implements scrt {
   name!: string;
-  scope!: SecretScope;
+  scope: SecretScope | string;
   keys?: string[];
   data?: SecretKeyValuePair[];
 
   constructor() {
-    this.scope = SecretScope.DEFAULT;
+    this.scope = '';
     this.data = [];
   }
 
@@ -20,7 +20,7 @@ export class Secret implements scrt {
     this.name = name;
   }
 
-  setScope(scope: SecretScope): void {
+  setScope(scope: string): void {
     this.scope = scope;
   }
 

@@ -1,10 +1,10 @@
-package events
+package watch
 
 import (
 	"context"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/retry"
-	"github.com/keptn/keptn/distributor/pkg/lib/controlplane"
+	"github.com/keptn/keptn/distributor/pkg/uniform/controlplane"
 	logger "github.com/sirupsen/logrus"
 	"time"
 )
@@ -19,7 +19,7 @@ type UniformWatch struct {
 	pingInterval time.Duration
 }
 
-func NewUniformWatch(controlPlane controlplane.IControlPlane) *UniformWatch {
+func New(controlPlane controlplane.IControlPlane) *UniformWatch {
 	return &UniformWatch{
 		controlPlane: controlPlane,
 		pingInterval: 10 * time.Second,
@@ -69,11 +69,6 @@ func (sw *UniformWatch) RegisterListener(listener SubscriptionListener) {
 
 type SubscriptionListener interface {
 	UpdateSubscriptions([]models.EventSubscription)
-}
-
-func NewTestUniformWatch(subscriptions []models.EventSubscription) *TestUniformWatch {
-	t := &TestUniformWatch{subscriptions}
-	return t
 }
 
 type TestUniformWatch struct {

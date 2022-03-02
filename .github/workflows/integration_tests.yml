@@ -82,7 +82,7 @@ jobs:
       AIRGAPPED_REGISTRY_URL: "k3d-container-registry.localhost:12345"
       REMOTE_EXECUTION_PLANE: ${{ matrix.REMOTE_EXECUTION_PLANE }}
       COLLECT_RESOURCE_LIMITS: ${{ matrix.COLLECT_RESOURCE_LIMITS }}
-      GO_VERSION: ^1.16
+      GO_VERSION: ^1.17
       TEST_REPORT_FOLDER: test-reports-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}
       FINAL_TEST_REPORT_FOLDER: test-reports
       FINAL_TEST_REPORT_PATH: test-reports/test-report-final-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}.log
@@ -96,7 +96,7 @@ jobs:
       # SETUP
       #######################################################################
       - name: Set up Go 1.x
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
           go-version: ${{ env.GO_VERSION }}
 
@@ -697,7 +697,7 @@ jobs:
         uses: actions/checkout@v2.4.0
 
       - name: Set up Node
-        uses: actions/setup-node@v2.5.1
+        uses: actions/setup-node@v3.0.0
         with:
           node-version: 16
       - run: npm install ndjson-parse@1.0.4

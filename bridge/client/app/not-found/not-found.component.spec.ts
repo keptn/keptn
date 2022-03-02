@@ -11,7 +11,7 @@ describe('NotFoundComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AppModule, HttpClientTestingModule],
-      providers: [{ provide: POLLING_INTERVAL_MILLIS, value: 0 }],
+      providers: [{ provide: POLLING_INTERVAL_MILLIS, useValue: 0 }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(NotFoundComponent);

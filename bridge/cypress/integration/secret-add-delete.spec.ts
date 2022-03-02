@@ -1,77 +1,70 @@
 import BasePage from '../support/pageobjects/BasePage';
 import SecretsPage from '../support/pageobjects/SecretsPage';
+import { interceptSecrets } from '../support/intercept';
 
 describe('Keptn Secrets adding deleting test', () => {
-  it('The test goes over the pages and does validation', () => {
-    const basePage = new BasePage();
-    const secretsPage = new SecretsPage();
-    const SECRET_NAME = 'dynatrace-prod';
-    const SECRET_KEY = 'DT_API_TOKEN';
-    const SECRET_VALUE = 'secretvalue!@#$%^&*(!@#$%^&*()';
-    const SECRET_SCOPE = 'dynatrace-service';
-    const DYNATRACE_PROJECT = 'dynatrace';
+  const basePage = new BasePage();
+  const secretsPage = new SecretsPage();
+  const DYNATRACE_PROJECT = 'dynatrace';
 
-    cy.fixture('get.project.json').as('initProjectJSON');
-    cy.fixture('metadata.json').as('initmetadata');
+  beforeEach(() => {
+    interceptSecrets();
+  });
 
-    cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfo.mock' });
-    cy.intercept('GET', 'api/v1/metadata', { fixture: 'metadata.json' }).as('metadataCmpl');
-    cy.intercept('GET', 'api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', {
-      fixture: 'get.project.json',
-    }).as('initProjects');
-    cy.intercept('GET', 'api/controlPlane/v1/sequence/dynatrace?pageSize=5', { fixture: 'project.sequences.json' });
-
-    cy.intercept('POST', 'api/secrets/v1/secret', {
-      statusCode: 200,
-    }).as('postSecrets');
-
-    cy.intercept('GET', 'api/secrets/v1/secret', {
-      statusCode: 200,
-      body: {
-        Secrets: [
-          { name: 'dynatrace', scope: 'dynatrace-service', keys: ['DT_API_TOKEN', 'DT_TENANT'] },
-          { name: 'dynatrace-prod', scope: 'dynatrace-service', keys: [SECRET_KEY] },
-          { name: 'api', scope: 'keptn-default', keys: ['API_TOKEN'] },
-          { name: 'webhook', scope: 'keptn-webhook-service', keys: ['webhook_url', 'webhook_secret', 'webhook_proxy'] },
-        ],
-      },
-    }).as('getSecrets');
-
-    cy.intercept('GET', 'api/project/dynatrace?approval=true&remediation=true', {
-      statusCode: 200,
-    }).as('getApproval');
-
-    cy.intercept('GET', 'api/project/dynatrace', {
-      statusCode: 200,
-      fixture: 'get.approval.json',
-    });
-
-    cy.intercept('POST', 'api/hasUnreadUniformRegistrationLogs', {
-      statusCode: 200,
-    }).as('hasUnreadUniformRegistrationLogs');
-
-    cy.intercept('POST', 'api/uniform/registration', {
-      statusCode: 200,
-      body: '[]',
-    }).as('uniformRegPost');
-
-    cy.intercept('DELETE', 'api/secrets/v1/secret?name=dynatrace-prod&scope=dynatrace-service', {
-      statusCode: 200,
-    }).as('deleteSecret');
-
+  it('should navigate to add secret page', () => {
     cy.visit('/');
     cy.wait('@metadataCmpl');
     basePage.selectProject(DYNATRACE_PROJECT);
-
     basePage.goToUniformPage().goToSecretsPage();
+    secretsPage.clickAddSecret();
+    cy.location('pathname').should('eq', `/project/${DYNATRACE_PROJECT}/settings/uniform/secrets/add`);
+  });
 
-    secretsPage.addSecret(SECRET_NAME, SECRET_SCOPE, SECRET_KEY, SECRET_VALUE);
+  it('should add a secret', () => {
+    secretsPage
+      .visitCreate(DYNATRACE_PROJECT)
+      .setSecret('dynatrace-prod', 'dynatrace-service', 'DT_API_TOKEN', 'secretvalue!@#$%^&*(!@#$%^&*()')
+      .assertScopesEnabled(true)
+      .createSecret();
+  });
 
-    cy.get('dt-row').eq(1).find('dt-cell').eq(0).find('p').should('have.text', SECRET_NAME);
-    cy.get('dt-row').eq(1).find('dt-cell').eq(1).find('p').should('have.text', SECRET_SCOPE);
-    cy.get('dt-row').eq(1).find('dt-cell').eq(2).find('p').should('contain.text', SECRET_KEY);
+  it('should delete a secret', () => {
+    const SECRET_NAME = 'dynatrace-prod';
 
-    secretsPage.deleteSecret(SECRET_NAME);
-    cy.get('dt-row').eq(1).find('dt-cell').eq(0).find('p').should('not.have.text', SECRET_NAME);
+    secretsPage.visit(DYNATRACE_PROJECT).deleteSecret(SECRET_NAME).secretExistsInList(SECRET_NAME, 1);
+  });
+
+  it('should have a specific secret in the list', () => {
+    secretsPage.visit(DYNATRACE_PROJECT).assertSecretInList(1, 'dynatrace-prod', 'dynatrace-service', 'DT_API_TOKEN');
+  });
+
+  it('should have disabled "remove key-value pair" icon-button if there is only one key-value pair', () => {
+    secretsPage.visitCreate(DYNATRACE_PROJECT).assertKeyValuePairLength(1).assertKeyValuePairEnabled(0, false);
+  });
+
+  it('should have enabled "remove key-value pair" icon-button if there is more than one key-value pair', () => {
+    secretsPage
+      .visitCreate(DYNATRACE_PROJECT)
+      .addKeyValuePair()
+      .assertKeyValuePairLength(2)
+      .assertKeyValuePairEnabled(0, true)
+      .assertKeyValuePairEnabled(1, true);
+  });
+
+  it('should have disabled scope dropdown and disabled create button if scopes are loading', () => {
+    cy.intercept('GET', 'api/secrets/v1/scope', {
+      statusCode: 200,
+      body: {
+        scopes: [],
+      },
+      delay: 10_000,
+    });
+    secretsPage
+      .visitCreate(DYNATRACE_PROJECT)
+      .appendSecretName('my-secret')
+      .appendSecretKey(0, 'my-key')
+      .appendSecretValue(0, 'my-value')
+      .assertScopesEnabled(false)
+      .assertCreateButtonEnabled(false);
   });
 });

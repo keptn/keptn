@@ -1,28 +1,36 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbCreateSecretFormComponent } from './ktb-create-secret-form.component';
 import { AppModule } from '../../app.module';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { DataService } from '../../_services/data.service';
 import { Secret } from '../../_models/secret';
 import { of, throwError } from 'rxjs';
 import { Router } from '@angular/router';
+import { SecretScopeDefault } from '../../../../shared/interfaces/secret-scope';
+import { POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 
-describe('KtbCreateSecretFormComponent', () => {
+describe('KtbCreateSecretFormComponent with valid scopes', () => {
   let component: KtbCreateSecretFormComponent;
   let fixture: ComponentFixture<KtbCreateSecretFormComponent>;
   let dataService: DataService;
   let router: Router;
+  let httpMock: HttpTestingController;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [],
       imports: [AppModule, HttpClientTestingModule],
+      providers: [{ provide: POLLING_INTERVAL_MILLIS, useValue: 0 }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbCreateSecretFormComponent);
     component = fixture.componentInstance;
     dataService = fixture.debugElement.injector.get(DataService);
     router = TestBed.inject(Router);
+    httpMock = TestBed.inject(HttpTestingController);
+    httpMock.expectOne('./api/secrets/v1/scope').flush({
+      scopes: [SecretScopeDefault.WEBHOOK, SecretScopeDefault.DEFAULT, SecretScopeDefault.DYNATRACE],
+    });
   });
 
   it('should create', () => {
@@ -31,53 +39,41 @@ describe('KtbCreateSecretFormComponent', () => {
 
   it('should create secret with keptn-default scope', () => {
     // given
-    const createButton = fixture.nativeElement.querySelector('[uitestid=keptn-secret-create-button]');
     const spy = jest.spyOn(dataService, 'addSecret');
-    const secret: Secret = new Secret();
-    secret.name = 'test';
-    secret.scope = component.scopes[0];
-    secret.data?.push({ key: 'testKey', value: 'testValue' });
-
-    // when
-    component.getFormControl('name')?.setValue(secret.name);
-    if (secret.data) {
-      component.data?.controls[0].get('key')?.setValue(secret.data[0].key);
-      component.data?.controls[0].get('value')?.setValue(secret.data[0].value);
-    }
+    const secret = insertDefaultSecret(component);
     component.createSecretForm.updateValueAndValidity();
     fixture.detectChanges();
 
     expect(component.createSecretForm.errors).toBeNull();
-    expect(createButton.disabled).toBe(false);
-    createButton.click();
+    expect(component.isFormValid()).toBe(true);
+    component.createSecret();
 
     // then
     expect(spy).toHaveBeenCalledWith(secret);
   });
 
-  it('should create secret with selected scope', async () => {
+  it('should create secret with selected scope', () => {
     // given
-    const createButton = fixture.nativeElement.querySelector('[uitestid=keptn-secret-create-button]');
     const spy = jest.spyOn(dataService, 'addSecret').mockReturnValue(of({}));
     const routerSpy = jest.spyOn(router, 'navigate');
     const secret: Secret = new Secret();
     secret.name = 'test';
-    secret.scope = component.scopes[1];
+    secret.scope = component.scopes?.[1] ?? '';
     secret.data?.push({ key: 'testKey', value: 'testValue' });
 
     // when
-    component.getFormControl('name')?.setValue(secret.name);
-    component.getFormControl('scope')?.setValue(secret.scope);
+    component.nameControl.setValue(secret.name);
+    component.scopeControl.setValue(secret.scope);
     if (secret.data) {
-      component.data?.controls[0].get('key')?.setValue(secret.data[0].key);
-      component.data?.controls[0].get('value')?.setValue(secret.data[0].value);
+      component.dataControl.controls[0].get('key')?.setValue(secret.data[0].key);
+      component.dataControl.controls[0].get('value')?.setValue(secret.data[0].value);
     }
     component.createSecretForm.updateValueAndValidity();
     fixture.detectChanges();
 
     expect(component.createSecretForm.errors).toBeNull();
-    expect(createButton.disabled).toBe(false);
-    await createButton.click();
+    expect(component.isFormValid()).toBe(true);
+    component.createSecret();
 
     // then
     expect(spy).toHaveBeenCalledWith(secret);
@@ -85,29 +81,28 @@ describe('KtbCreateSecretFormComponent', () => {
     expect(component.isLoading).toBe(false);
   });
 
-  it('should handle failed creating secret', async () => {
+  it('should handle failed creating secret', () => {
     // given
-    const createButton = fixture.nativeElement.querySelector('[uitestid=keptn-secret-create-button]');
     const spy = jest.spyOn(dataService, 'addSecret').mockReturnValue(throwError({}));
     const routerSpy = jest.spyOn(router, 'navigate');
     const secret: Secret = new Secret();
     secret.name = 'test';
-    secret.scope = component.scopes[1];
+    secret.scope = component.scopes?.[1] ?? '';
     secret.data?.push({ key: 'testKey', value: 'testValue' });
 
     // when
-    component.getFormControl('name')?.setValue(secret.name);
-    component.getFormControl('scope')?.setValue(secret.scope);
+    component.nameControl.setValue(secret.name);
+    component.scopeControl.setValue(secret.scope);
     if (secret.data) {
-      component.data?.controls[0].get('key')?.setValue(secret.data[0].key);
-      component.data?.controls[0].get('value')?.setValue(secret.data[0].value);
+      component.dataControl.controls[0].get('key')?.setValue(secret.data[0].key);
+      component.dataControl.controls[0].get('value')?.setValue(secret.data[0].value);
     }
     component.createSecretForm.updateValueAndValidity();
     fixture.detectChanges();
 
     expect(component.createSecretForm.errors).toBeNull();
-    expect(createButton.disabled).toBe(false);
-    await createButton.click();
+    expect(component.isFormValid()).toBe(true);
+    component.createSecret();
 
     // then
     expect(spy).toHaveBeenCalledWith(secret);
@@ -115,39 +110,71 @@ describe('KtbCreateSecretFormComponent', () => {
     expect(component.isLoading).toBe(false);
   });
 
-  it('remove key/value pair should be disabled', () => {
-    // given
-    fixture.detectChanges();
-    const removePairButton = fixture.nativeElement.querySelector('[uitestid=keptn-secret-remove-pair-button]');
-
-    // then
-    expect(removePairButton.disabled).toBe(true);
-  });
-
   it('should add key/value pair', () => {
-    // given
-    const addPairButton = fixture.nativeElement.querySelector('[uitestid=keptn-secret-add-pair-button]');
-
     // when
-    addPairButton.click();
+    component.addPair();
 
     // then
-    expect(component.dataControls.length).toBe(2);
+    expect(component.dataControl.controls.length).toBe(2);
   });
 
   it('should remove key/value pair', () => {
-    // given
-    const addPairButton = fixture.nativeElement.querySelector('[uitestid=keptn-secret-add-pair-button]');
-
     // when
-    addPairButton.click();
-    fixture.detectChanges();
-    const removePairButtons: HTMLElement[] = Array.from(
-      fixture.nativeElement.querySelectorAll('[uitestid=keptn-secret-remove-pair-button]')
-    );
-    removePairButtons[0].click();
+    component.addPair();
+    component.removePair(0);
 
     // then
-    expect(component.dataControls.length).toBe(1);
+    expect(component.dataControl.controls.length).toBe(1);
   });
 });
+describe('KtbCreateSecretFormComponent scopes', () => {
+  let component: KtbCreateSecretFormComponent;
+  let fixture: ComponentFixture<KtbCreateSecretFormComponent>;
+  let httpMock: HttpTestingController;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      declarations: [],
+      imports: [AppModule, HttpClientTestingModule],
+    }).compileComponents();
+    fixture = TestBed.createComponent(KtbCreateSecretFormComponent);
+    component = fixture.componentInstance;
+    httpMock = TestBed.inject(HttpTestingController);
+  });
+
+  it('should have scopes set to undefined', () => {
+    expect(component.isLoading).toBe(true);
+    httpMock.expectOne('./api/secrets/v1/scope').error(new ErrorEvent('error'));
+    expect(component.isLoading).toBe(false);
+    expect(component.scopes).toBe(undefined);
+  });
+
+  it('should have invalid form, if scopes are loading', () => {
+    expect(component.isLoading).toBe(true);
+    insertDefaultSecret(component);
+    expect(component.isFormValid()).toBe(false);
+  });
+
+  it('should have scopes set to array', () => {
+    const scopes = [SecretScopeDefault.WEBHOOK];
+    httpMock.expectOne('./api/secrets/v1/scope').flush({ scopes }, { status: 200, statusText: 'OK' });
+    fixture.detectChanges();
+    expect(component.scopes).toEqual(scopes);
+  });
+});
+
+function insertDefaultSecret(component: KtbCreateSecretFormComponent): Secret {
+  const secret: Secret = new Secret();
+  secret.name = 'test';
+  secret.scope = SecretScopeDefault.DEFAULT;
+  secret.data?.push({ key: 'testKey', value: 'testValue' });
+
+  // when
+  component.nameControl.setValue(secret.name);
+  component.scopeControl.setValue(secret.scope);
+  if (secret.data) {
+    component.dataControl.controls[0].get('key')?.setValue(secret.data[0].key);
+    component.dataControl.controls[0].get('value')?.setValue(secret.data[0].value);
+  }
+  return secret;
+}

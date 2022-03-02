@@ -122,10 +122,13 @@ func setupLocalMongoDB() func() {
 
 //Scenario 1: Complete task sequence execution + triggering of next task sequence. Events are received in order
 func Test_shipyardController_Scenario1(t *testing.T) {
+
 	defer setupLocalMongoDB()()
 
 	t.Logf("Executing Shipyard Controller Scenario 1 with shipyard file %s", testShipyardFile)
-	sc := getTestShipyardController("")
+	sc, cancel := getTestShipyardController("")
+	defer sc.StopDispatchers()
+	defer cancel()
 
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
 
@@ -142,6 +145,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	}
 
 	// check event dispatcher -> should contain deployment.triggered event with properties: [deployment]
+	time.Sleep(3 * time.Second) //wait for dispatching
 	require.Equal(t, 1, len(mockDispatcher.AddCalls()))
 	verifyEvent := mockDispatcher.AddCalls()[0].Event
 	require.Equal(t, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), verifyEvent.Event.Type())
@@ -328,9 +332,10 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 func Test_shipyardController_Scenario2(t *testing.T) {
 	defer setupLocalMongoDB()()
 
-	t.Logf("Executing Shipyard Controller Scenario 1 with shipyard file %s", testShipyardFile)
-	sc := getTestShipyardController("")
+	t.Logf("Executing Shipyard Controller Scenario 2 with shipyard file %s", testShipyardFile)
+	sc, cancel := getTestShipyardController("")
 
+	defer cancel()
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
 
 	done := false
@@ -395,8 +400,9 @@ func Test_shipyardController_Scenario3(t *testing.T) {
 	defer setupLocalMongoDB()()
 
 	t.Logf("Executing Shipyard Controller Scenario 1 with shipyard file %s", testShipyardFile)
-	sc := getTestShipyardController("")
+	sc, cancel := getTestShipyardController("")
 
+	defer cancel()
 	done := false
 
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
@@ -471,8 +477,9 @@ func Test_shipyardController_Scenario4(t *testing.T) {
 	defer setupLocalMongoDB()()
 
 	t.Logf("Executing Shipyard Controller Scenario 1 with shipyard file %s", testShipyardFile)
-	sc := getTestShipyardController("")
+	sc, cancel := getTestShipyardController("")
 
+	defer cancel()
 	done := false
 
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
@@ -582,8 +589,9 @@ func Test_shipyardController_Scenario4a(t *testing.T) {
 	defer setupLocalMongoDB()()
 
 	t.Logf("Executing Shipyard Controller Scenario 1 with shipyard file %s", testShipyardFile)
-	sc := getTestShipyardController("")
+	sc, cancel := getTestShipyardController("")
 
+	defer cancel()
 	done := false
 
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
@@ -653,8 +661,9 @@ func Test_shipyardController_TriggerOnFail(t *testing.T) {
 	defer setupLocalMongoDB()()
 
 	t.Logf("Executing Shipyard Controller with shipyard file %s", testShipyardFile)
-	sc := getTestShipyardController("")
+	sc, cancel := getTestShipyardController("")
 
+	defer cancel()
 	done := false
 
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
@@ -732,7 +741,9 @@ func Test_shipyardController_Scenario5(t *testing.T) {
 	defer setupLocalMongoDB()()
 
 	t.Logf("Executing Shipyard Controller Scenario 5 with shipyard file %s", testShipyardFileWithInvalidVersion)
-	sc := getTestShipyardController(testShipyardFileWithInvalidVersion)
+	sc, cancel := getTestShipyardController(testShipyardFileWithInvalidVersion)
+
+	defer cancel()
 
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
 
@@ -754,8 +765,8 @@ func Test_shipyardController_DuplicateTask(t *testing.T) {
 	defer setupLocalMongoDB()()
 
 	t.Logf("Executing Shipyard Controller Scenario 6 (duplicate tasks) with shipyard file %s", testShipyardFileWithDuplicateTasks)
-	sc := getTestShipyardController(testShipyardFileWithDuplicateTasks)
-
+	sc, cancel := getTestShipyardController(testShipyardFileWithDuplicateTasks)
+	defer cancel()
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
 
 	// STEP 1
@@ -808,8 +819,8 @@ func Test_shipyardController_DuplicateTask(t *testing.T) {
 func Test_shipyardController_TimeoutSequence(t *testing.T) {
 	defer setupLocalMongoDB()()
 
-	sc := getTestShipyardController("")
-
+	sc, cancel := getTestShipyardController("")
+	defer cancel()
 	fakeTimeoutHook := &fakehooks.ISequenceTimeoutHookMock{OnSequenceTimeoutFunc: func(event models.Event) {}}
 	sc.AddSequenceTimeoutHook(fakeTimeoutHook)
 
@@ -881,8 +892,8 @@ func Test_shipyardController_TimeoutSequence(t *testing.T) {
 
 func Test_shipyardController_CancelSequence(t *testing.T) {
 	defer setupLocalMongoDB()()
-	sc := getTestShipyardController("")
-
+	sc, cancel := getTestShipyardController("")
+	defer cancel()
 	fakeSequenceFinishedHook := &fakehooks.ISequenceFinishedHookMock{OnSequenceFinishedFunc: func(event models.Event) {}}
 	sc.AddSequenceFinishedHook(fakeSequenceFinishedHook)
 
@@ -951,7 +962,8 @@ func Test_shipyardController_CancelSequence(t *testing.T) {
 func Test_shipyardController_CancelQueuedSequence(t *testing.T) {
 	defer setupLocalMongoDB()()
 
-	sc := getTestShipyardController("")
+	sc, cancel := getTestShipyardController("")
+	defer cancel()
 	sequenceDispatcherMock := &fake.ISequenceDispatcherMock{}
 	sequenceDispatcherMock.RemoveFunc = func(eventScope models.EventScope) error {
 		return nil
@@ -1012,7 +1024,8 @@ func Test_shipyardController_CancelQueuedSequence(t *testing.T) {
 func Test_shipyardController_CancelQueuedSequence_RemoveFromQueueFails(t *testing.T) {
 	defer setupLocalMongoDB()()
 
-	sc := getTestShipyardController("")
+	sc, cancel := getTestShipyardController("")
+	defer cancel()
 	sequenceDispatcherMock := &fake.ISequenceDispatcherMock{}
 	sequenceDispatcherMock.RemoveFunc = func(eventScope models.EventScope) error {
 		return errors.New("oops")
@@ -1071,7 +1084,8 @@ func Test_shipyardController_CancelQueuedSequence_RemoveFromQueueFails(t *testin
 func Test_shipyardController_CancelQueuedSequence_NoTriggeredEventAvailable(t *testing.T) {
 	defer setupLocalMongoDB()()
 
-	sc := getTestShipyardController("")
+	sc, cancel := getTestShipyardController("")
+	defer cancel()
 	sequenceDispatcherMock := &fake.ISequenceDispatcherMock{}
 	sequenceDispatcherMock.RemoveFunc = func(eventScope models.EventScope) error {
 		return nil
@@ -1101,7 +1115,8 @@ func Test_SequenceForUnavailableStage(t *testing.T) {
 	defer setupLocalMongoDB()()
 
 	t.Logf("Executing Shipyard Controller with shipyard file %s", testShipyardFile)
-	sc := getTestShipyardController("")
+	sc, cancel := getTestShipyardController("")
+	defer cancel()
 	sc.sequenceDispatcher = &fake.ISequenceDispatcherMock{
 		AddFunc: func(queueItem models.QueueItem) error {
 			return nil
@@ -1126,7 +1141,8 @@ func Test_UpdateEventOfServiceFailsFails(t *testing.T) {
 	defer setupLocalMongoDB()()
 
 	t.Logf("Executing Shipyard Controller with shipyard file %s", testShipyardFileWithInvalidVersion)
-	sc := getTestShipyardController(testShipyardFileWithInvalidVersion)
+	sc, cancel := getTestShipyardController(testShipyardFileWithInvalidVersion)
+	defer cancel()
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
 
 	// STEP 1
@@ -1150,8 +1166,9 @@ func Test_UpdateServiceShouldNotBeCalledForEmptyService(t *testing.T) {
 	defer setupLocalMongoDB()()
 
 	t.Logf("Executing Shipyard Controller with shipyard file %s", testShipyardFileWithInvalidVersion)
-	sc := getTestShipyardController("")
+	sc, cancel := getTestShipyardController("")
 
+	defer cancel()
 	event := getArtifactDeliveryTriggeredEvent("dev", "")
 
 	event.Data = keptnv2.EventData{
@@ -1166,10 +1183,12 @@ func Test_UpdateServiceShouldNotBeCalledForEmptyService(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-func getTestShipyardController(shipyardContent string) *shipyardController {
+func getTestShipyardController(shipyardContent string) (*shipyardController, context.CancelFunc) {
 	if shipyardContent == "" {
 		shipyardContent = testShipyardFile
 	}
+	os.Setenv("DISABLE_LEADER_ELECTION", "true")
+
 	eventRepo := db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance())
 	sequenceQueueRepo := db.NewMongoDBSequenceQueueRepo(db.GetMongoDBConnectionInstance())
 	sequenceExecutionRepo := db.NewMongoDBSequenceExecutionRepo(db.GetMongoDBConnectionInstance())
@@ -1179,6 +1198,7 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 		sequenceExecutionRepo,
 		time.Second,
 		clock.New(),
+		common.SDModeRW
 	)
 	sc := &shipyardController{
 		projectMvRepo: db.NewProjectMVRepo(db.NewMongoDBKeyEncodingProjectsRepo(db.GetMongoDBConnectionInstance()), db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance())),
@@ -1187,7 +1207,10 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 			AddFunc: func(event models.DispatcherEvent, skipQueue bool) error {
 				return nil
 			},
-			RunFunc: func(ctx context.Context) {},
+			RunFunc: func(ctx context.Context) {
+
+			},
+			StopFunc: func() {},
 		},
 		sequenceDispatcher: sequenceDispatcher,
 		shipyardRetriever: &fake.IShipyardRetrieverMock{
@@ -1212,8 +1235,11 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 		_ = sc.HandleIncomingEvent(*ev, true)
 		return nil
 	}
-	sc.run(context.Background())
-	return sc
+
+	ctx, cancel := context.WithCancel(context.Background())
+	sc.run(ctx)
+	sc.StartDispatchers(ctx, common.SDModeRW)
+	return sc, cancel
 }
 
 func filterEvents(eventsCollection []models.Event, filter common.EventFilter) ([]models.Event, error) {

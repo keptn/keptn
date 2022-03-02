@@ -1,3 +1,41 @@
+export function interceptEnvironmentScreen(): void {
+  const project = 'sockshop';
+  const stage = 'dev';
+  let service = 'carts';
+  interceptProjectBoard();
+  cy.intercept(
+    'GET',
+    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project}%20AND%20data.service:${service}%20AND%20data.stage:${stage}%20AND%20source:lighthouse-service&excludeInvalidated=true&limit=6`,
+    {
+      body: {
+        events: [],
+      },
+    }
+  );
+  service = 'carts-db';
+  cy.intercept(
+    'GET',
+    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project}%20AND%20data.service:${service}%20AND%20data.stage:${stage}%20AND%20source:lighthouse-service&excludeInvalidated=true&limit=5`,
+    {
+      body: {
+        events: [],
+      },
+    }
+  );
+}
+
+export function interceptMain(): void {
+  cy.intercept('/api/v1/metadata', { fixture: 'metadata.mock' });
+  cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfo.mock' });
+}
+
+export function interceptProjectBoard(): void {
+  interceptMain();
+  cy.intercept('/api/project/sockshop?approval=true&remediation=true', { fixture: 'project.mock' });
+  cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: false });
+  cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
+}
+
 export function interceptIntegrations(): void {
   cy.intercept('/api/v1/metadata', { fixture: 'metadata.mock' });
   cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfo.mock' });
@@ -73,4 +111,61 @@ export function interceptIntegrations(): void {
     '/api/uniform/registration/355311a7bec3f35bf3abc2484ab09bcba8e2b297/subscription/0e021b71-1533-4cfe-875a-b756aa6107ba',
     { body: {} }
   );
+}
+
+export function interceptSecrets(): void {
+  cy.fixture('get.project.json').as('initProjectJSON');
+  cy.fixture('metadata.json').as('initmetadata');
+
+  cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfo.mock' });
+  cy.intercept('GET', 'api/v1/metadata', { fixture: 'metadata.json' }).as('metadataCmpl');
+  cy.intercept('GET', 'api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', {
+    fixture: 'get.project.json',
+  }).as('initProjects');
+  cy.intercept('GET', 'api/controlPlane/v1/sequence/dynatrace?pageSize=5', { fixture: 'project.sequences.json' });
+
+  cy.intercept('POST', 'api/secrets/v1/secret', {
+    statusCode: 200,
+  }).as('postSecrets');
+
+  cy.intercept('GET', 'api/secrets/v1/secret', {
+    statusCode: 200,
+    body: {
+      Secrets: [
+        { name: 'dynatrace', scope: 'dynatrace-service', keys: ['DT_API_TOKEN', 'DT_TENANT'] },
+        { name: 'dynatrace-prod', scope: 'dynatrace-service', keys: ['DT_API_TOKEN'] },
+        { name: 'api', scope: 'keptn-default', keys: ['API_TOKEN'] },
+        { name: 'webhook', scope: 'keptn-webhook-service', keys: ['webhook_url', 'webhook_secret', 'webhook_proxy'] },
+      ],
+    },
+  }).as('getSecrets');
+
+  cy.intercept('GET', 'api/project/dynatrace?approval=true&remediation=true', {
+    statusCode: 200,
+  }).as('getApproval');
+
+  cy.intercept('GET', 'api/project/dynatrace', {
+    statusCode: 200,
+    fixture: 'get.approval.json',
+  });
+
+  cy.intercept('POST', 'api/hasUnreadUniformRegistrationLogs', {
+    statusCode: 200,
+  }).as('hasUnreadUniformRegistrationLogs');
+
+  cy.intercept('POST', 'api/uniform/registration', {
+    statusCode: 200,
+    body: '[]',
+  }).as('uniformRegPost');
+
+  cy.intercept('DELETE', 'api/secrets/v1/secret?name=dynatrace-prod&scope=dynatrace-service', {
+    statusCode: 200,
+  }).as('deleteSecret');
+
+  cy.intercept('GET', 'api/secrets/v1/scope', {
+    statusCode: 200,
+    body: {
+      scopes: ['dynatrace-service'],
+    },
+  });
 }

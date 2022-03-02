@@ -1,4 +1,4 @@
-package events
+package forwarder
 
 import (
 	"bytes"
@@ -9,6 +9,9 @@ import (
 	"github.com/kelseyhightower/envconfig"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/distributor/pkg/config"
+	"github.com/keptn/keptn/distributor/pkg/utils"
+	"github.com/nats-io/nats-server/v2/server"
+	natsserver "github.com/nats-io/nats-server/v2/test"
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -38,15 +41,14 @@ const taskFinishedEvent = `{
 func Test_ForwardEventsToNATS(t *testing.T) {
 	expectedReceivedMessageCount := 0
 
-	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
-	_, shutdownNats := RunServerOnPort(TEST_PORT)
+	svr, shutdownNats := runNATSServer()
 	defer shutdownNats()
 
 	cfg := config.EnvConfig{}
 	envconfig.Process("", &cfg)
-	cfg.PubSubURL = natsURL
+	cfg.PubSubURL = svr.Addr().String()
 
-	natsClient, err := nats.Connect(natsURL)
+	natsClient, err := nats.Connect(svr.Addr().String())
 	if err != nil {
 		t.Errorf("could not initialize nats client: %s", err.Error())
 	}
@@ -65,7 +67,7 @@ func Test_ForwardEventsToNATS(t *testing.T) {
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
-	executionContext := NewExecutionContext(ctx, 1)
+	executionContext := utils.NewExecutionContext(ctx, 1)
 	go f.Start(executionContext)
 
 	time.Sleep(2 * time.Second)
@@ -101,7 +103,7 @@ func Test_ForwardEventsToKeptnAPI(t *testing.T) {
 		env:               cfg,
 	}
 	ctx, cancel := context.WithCancel(context.Background())
-	executionContext := NewExecutionContext(ctx, 1)
+	executionContext := utils.NewExecutionContext(ctx, 1)
 	go f.Start(executionContext)
 
 	//TODO: remove waiting
@@ -138,7 +140,7 @@ func Test_APIProxy(t *testing.T) {
 		env:               cfg,
 	}
 	ctx, cancel := context.WithCancel(context.Background())
-	executionContext := NewExecutionContext(ctx, 1)
+	executionContext := utils.NewExecutionContext(ctx, 1)
 	go f.Start(executionContext)
 
 	//TODO: remove wait
@@ -161,4 +163,9 @@ func apiCallFromService() {
 func eventFromService(event string) {
 	payload := bytes.NewBuffer([]byte(event))
 	http.Post(fmt.Sprintf("http://127.0.0.1:%d/event", 8081), "application/cloudevents+json", payload)
+}
+
+func runNATSServer() (*server.Server, func()) {
+	svr := natsserver.RunRandClientPortServer()
+	return svr, func() { svr.Shutdown() }
 }

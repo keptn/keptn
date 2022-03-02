@@ -42,7 +42,7 @@ func Test_Auth_DependenciesFail(t *testing.T) {
 					openFn: func(string) error { return errors.New("browser open failed") },
 				},
 				tokenStore: &TokenStoreMock{
-					getTokenDiscoveryFn: func() (*OauthDiscoveryResult, error) {
+					GetTokenDiscoveryFn: func() (*OauthDiscoveryResult, error) {
 						return &OauthDiscoveryResult{}, nil
 					},
 				},
@@ -59,7 +59,7 @@ func Test_Auth_DependenciesFail(t *testing.T) {
 					openFn: func(string) error { return nil },
 				},
 				tokenStore: &TokenStoreMock{
-					getTokenDiscoveryFn: func() (*OauthDiscoveryResult, error) {
+					GetTokenDiscoveryFn: func() (*OauthDiscoveryResult, error) {
 						return &OauthDiscoveryResult{}, nil
 					},
 				},
@@ -81,7 +81,7 @@ func Test_Auth_DependenciesFail(t *testing.T) {
 					openFn: func(string) error { return nil },
 				},
 				tokenStore: &TokenStoreMock{
-					getTokenDiscoveryFn: func() (*OauthDiscoveryResult, error) {
+					GetTokenDiscoveryFn: func() (*OauthDiscoveryResult, error) {
 						return &OauthDiscoveryResult{}, nil
 					},
 				},
@@ -191,7 +191,7 @@ func Test_GetOauthClient(t *testing.T) {
 		wantClient assert.ValueAssertionFunc
 		wantErr    assert.ErrorAssertionFunc
 	}{
-		{"GetOauthClient - no persisted oauth info",
+		{"OauthClient - no persisted oauth info",
 			fields{
 				discovery: &OauthDiscoveryMock{
 					discoverFn: func(ctx context.Context, discoveryURL string) (*OauthDiscoveryResult, error) {
@@ -199,7 +199,7 @@ func Test_GetOauthClient(t *testing.T) {
 					},
 				},
 				tokenStore: &TokenStoreMock{
-					getOauthInfoFn: func() (*OauthInfo, error) {
+					GetOauthInfoFn: func() (*OauthInfo, error) {
 						return nil, fmt.Errorf("not found")
 					},
 				},
@@ -209,7 +209,7 @@ func Test_GetOauthClient(t *testing.T) {
 			},
 			assert.Nil,
 			assert.Error},
-		{"GetOauthClient - success",
+		{"OauthClient - success",
 			fields{
 				discovery: &OauthDiscoveryMock{
 					discoverFn: func(ctx context.Context, discoveryURL string) (*OauthDiscoveryResult, error) {
@@ -217,7 +217,7 @@ func Test_GetOauthClient(t *testing.T) {
 					},
 				},
 				tokenStore: &TokenStoreMock{
-					getOauthInfoFn: func() (*OauthInfo, error) {
+					GetOauthInfoFn: func() (*OauthInfo, error) {
 						return &OauthInfo{
 							DiscoveryInfo: &OauthDiscoveryResult{},
 							ClientValues:  &OauthClientValues{},
@@ -239,11 +239,11 @@ func Test_GetOauthClient(t *testing.T) {
 				tokenStore: tt.fields.tokenStore,
 				browser:    tt.fields.browser,
 			}
-			got, err := a.GetOauthClient(tt.args.ctx)
-			if !tt.wantErr(t, err, fmt.Sprintf("GetOauthClient(%v)", tt.args.ctx)) {
+			got, err := a.OauthClient(tt.args.ctx)
+			if !tt.wantErr(t, err, fmt.Sprintf("OauthClient(%v)", tt.args.ctx)) {
 				return
 			}
-			if !tt.wantClient(t, got, fmt.Sprintf("GetOauthClient(%v)", tt.args.ctx)) {
+			if !tt.wantClient(t, got, fmt.Sprintf("OauthClient(%v)", tt.args.ctx)) {
 				return
 			}
 		})
