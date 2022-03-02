@@ -1,3 +1,41 @@
+export function interceptEnvironmentScreen(): void {
+  const project = 'sockshop';
+  const stage = 'dev';
+  let service = 'carts';
+  interceptProjectBoard();
+  cy.intercept(
+    'GET',
+    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project}%20AND%20data.service:${service}%20AND%20data.stage:${stage}%20AND%20source:lighthouse-service&excludeInvalidated=true&limit=6`,
+    {
+      body: {
+        events: [],
+      },
+    }
+  );
+  service = 'carts-db';
+  cy.intercept(
+    'GET',
+    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project}%20AND%20data.service:${service}%20AND%20data.stage:${stage}%20AND%20source:lighthouse-service&excludeInvalidated=true&limit=5`,
+    {
+      body: {
+        events: [],
+      },
+    }
+  );
+}
+
+export function interceptMain(): void {
+  cy.intercept('/api/v1/metadata', { fixture: 'metadata.mock' });
+  cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfo.mock' });
+}
+
+export function interceptProjectBoard(): void {
+  interceptMain();
+  cy.intercept('/api/project/sockshop?approval=true&remediation=true', { fixture: 'project.mock' });
+  cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: false });
+  cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
+}
+
 export function interceptIntegrations(): void {
   cy.intercept('/api/v1/metadata', { fixture: 'metadata.mock' });
   cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfo.mock' });
