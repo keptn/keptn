@@ -1198,7 +1198,7 @@ func getTestShipyardController(shipyardContent string) (*shipyardController, con
 		sequenceExecutionRepo,
 		time.Second,
 		clock.New(),
-		common.SDModeRW
+		common.SDModeRW,
 	)
 	sc := &shipyardController{
 		projectMvRepo: db.NewProjectMVRepo(db.NewMongoDBKeyEncodingProjectsRepo(db.GetMongoDBConnectionInstance()), db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance())),

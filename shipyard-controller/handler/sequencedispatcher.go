@@ -32,7 +32,7 @@ type SequenceDispatcher struct {
 	startSequenceFunc     func(event models.Event) error
 	shipyardController    shipyardController
 	ticker                *clock.Ticker
-	mode              common.SDMode
+	mode                  common.SDMode
 }
 
 // NewSequenceDispatcher creates a new SequenceDispatcher
@@ -50,7 +50,7 @@ func NewSequenceDispatcher(
 		sequenceExecutionRepo: sequenceExecutionRepo,
 		theClock:              theClock,
 		syncInterval:          syncInterval,
-		mode: mode
+		mode:                  mode,
 	}
 }
 

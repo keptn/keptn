@@ -223,10 +223,10 @@ func TestSequenceDispatcher_Remove(t *testing.T) {
 }
 
 func TestSequenceDispatcher_AddError(t *testing.T) {
-	sequencePaused := false
 	theClock := clock.NewMock()
+	sequencePaused := false
 	currentSequenceExecutions := []models.SequenceExecution{{
-,		ID: "my-id",
+		ID: "my-id",
 		Sequence: keptnv2.Sequence{
 			Name: "delivery",
 		},
@@ -262,7 +262,6 @@ func TestSequenceDispatcher_AddError(t *testing.T) {
 			return triggeredEvents, nil
 		},
 	}
-	mockEventQueueRepo := getEventQueueRepo(&sequencePaused)
 
 	mockSequenceQueueRepo := &dbmock.SequenceQueueRepoMock{
 		QueueSequenceFunc: func(item models.QueueItem) error {
@@ -294,12 +293,11 @@ func TestSequenceDispatcher_AddError(t *testing.T) {
 			}, nil
 		},
 		IsContextPausedFunc: func(eventScope models.EventScope) bool {
-			return false
+			return sequencePaused
 		},
 	}
 
-
-	sequenceDispatcher := handler.NewSequenceDispatcher(mockEventRepo, mockEventQueueRepo, mockSequenceQueueRepo, mockSequenceExecutionRepo, 10*time.Second, theClock, common.SDModeRW)
+	sequenceDispatcher := handler.NewSequenceDispatcher(mockEventRepo, mockSequenceQueueRepo, mockSequenceExecutionRepo, 10*time.Second, theClock, common.SDModeRW)
 
 	sequenceDispatcher.Run(context.Background(), common.SDModeRW, func(event models.Event) error {
 		startSequenceCalls = append(startSequenceCalls, event)
@@ -326,7 +324,7 @@ func TestSequenceDispatcher_AddError(t *testing.T) {
 	theClock.Add(11 * time.Second)
 	// queue repo should have been queried
 	require.Len(t, mockSequenceQueueRepo.GetQueuedSequencesCalls(), 2)
-	require.Len(t, mockSequenceExecutionRepo.GetCalls(), 2)
+	require.Len(t, mockSequenceExecutionRepo.GetCalls(), 1)
 	require.Empty(t, mockSequenceQueueRepo.DeleteQueuedSequencesCalls())
 
 }
@@ -343,21 +341,5 @@ func getQueueItem(id string) models.QueueItem {
 			EventType:    keptnv2.GetTriggeredEventType("dev.delivery"),
 		},
 		EventID: id,
-	}
-}
-
-func getEventQueueRepo(reply *bool) *db_mock.EventQueueRepoMock {
-	return &db_mock.EventQueueRepoMock{
-		IsSequenceOfEventPausedFunc: func(eventScope models.EventScope) bool {
-			return *reply
-		},
-	}
-}
-
-func getTaskSequenceRepo(currentTaskSequences []models.TaskExecution) *db_mock.TaskSequenceRepoMock {
-	return &db_mock.TaskSequenceRepoMock{
-		GetTaskExecutionsFunc: func(project string, filter models.TaskExecution) ([]models.TaskExecution, error) {
-			return currentTaskSequences, nil
-		},
 	}
 }
