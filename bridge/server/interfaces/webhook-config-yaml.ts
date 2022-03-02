@@ -218,7 +218,6 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
 
   public toYAML(): string {
     Yaml.scalarOptions.str.fold.lineWidth = 0;
-    //TODO: Unit test
     return Yaml.stringify(this, {
       sortMapEntries: (a, b) => order[a.key] - order[b.key],
     });
