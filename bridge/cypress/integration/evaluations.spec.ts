@@ -26,7 +26,7 @@ describe('evaluations', () => {
     cy.byTestId('keptn-evaluation-details-chartHeatmap').should('exist');
   });
 
-  it('should round score to 2 decimals', () => {
+  it('should truncate score to 2 decimals', () => {
     cy.intercept('GET', '/api/project/sockshop/serviceStates', {
       statusCode: 200,
       fixture: 'get.sockshop.service.states.mock.json',
@@ -42,6 +42,6 @@ describe('evaluations', () => {
 
     cy.visit('/project/sockshop/service/carts/context/da740469-9920-4e0c-b304-0fd4b18d17c2/stage/staging');
 
-    cy.byTestId('keptn-evaluation-details-scoreInfo').should('have.text', '33.33');
+    cy.byTestId('keptn-evaluation-details-scoreInfo').should('have.text', '33.99');
   });
 });

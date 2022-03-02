@@ -29,6 +29,7 @@ import { ServiceState } from '../_models/service-state';
 import { ServiceRemediationInformation } from '../_models/service-remediation-information';
 import { EndSessionData } from '../../../shared/interfaces/end-session-data';
 import { ISequencesMetadata } from '../../../shared/interfaces/sequencesMetadata';
+import { EventData } from '../_components/ktb-evaluation-info/ktb-evaluation-info.component';
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
 
 @Injectable({
@@ -550,28 +551,46 @@ export class DataService {
   public getEvent(type?: string, project?: string, stage?: string, service?: string): Observable<Trace | undefined> {
     return this.apiService.getEvent(type, project, stage, service).pipe(map((result) => result.events[0]));
   }
-
-  public loadEvaluationResults(event: Trace): void {
+  public getEvaluationResults(event: Trace | EventData, limit?: number, useFromTime = true): Observable<Trace[]> {
     let fromTime: Date | undefined;
-    const time = event.data.evaluationHistory?.[event.data.evaluationHistory.length - 1]?.time;
-    if (time) {
-      fromTime = new Date(time);
+    let eventData: EventData | undefined;
+    if (event instanceof Trace) {
+      const time = event.data.evaluationHistory?.[event.data.evaluationHistory.length - 1]?.time;
+      if (time && useFromTime) {
+        fromTime = new Date(time);
+      }
+      if (event.data.project && event.data.service && event.data.stage) {
+        eventData = {
+          project: event.data.project,
+          service: event.data.service,
+          stage: event.data.stage,
+        };
+      }
+    } else {
+      eventData = event;
     }
-    if (event.data.project && event.data.service && event.data.stage) {
-      this.apiService
-        .getEvaluationResults(event.data.project, event.data.service, event.data.stage, fromTime?.toISOString())
+    if (eventData) {
+      return this.apiService
+        .getEvaluationResults(eventData.project, eventData.service, eventData.stage, fromTime?.toISOString(), limit)
         .pipe(
           map((result) => result.events || []),
           map((traces) => traces.map((trace) => Trace.fromJSON(trace)))
-        )
-        .subscribe((traces: Trace[]) => {
-          this._evaluationResults.next({
-            type: 'evaluationHistory',
-            triggerEvent: event,
-            traces,
-          });
-        });
+        );
+    } else {
+      return of([]);
     }
+  }
+
+  public loadEvaluationResults(event: Trace): void {
+    this.getEvaluationResults(event).subscribe((traces: Trace[]) => {
+      if (traces.length) {
+        this._evaluationResults.next({
+          type: 'evaluationHistory',
+          triggerEvent: event,
+          traces,
+        });
+      }
+    });
   }
 
   public sendApprovalEvent(approval: Trace, approve: boolean): Observable<unknown> {
