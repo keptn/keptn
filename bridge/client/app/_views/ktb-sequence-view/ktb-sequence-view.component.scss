@@ -19,6 +19,14 @@
 
     .dt-quick-filter-content {
       padding: 0 !important;
+
+      .trigger-sequence-button {
+        position: absolute;
+      }
+
+      > .container {
+        margin-top: calc(1.2em + 30px);
+      }
     }
   }
 }
