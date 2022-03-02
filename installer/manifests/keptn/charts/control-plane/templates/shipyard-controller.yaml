@@ -93,18 +93,6 @@ spec:
               memory: "128Mi"
               cpu: "100m"
           {{- include "control-plane.common.container-security-context" . | nindent 10 }}
-        - name: distributor
-          {{- include "control-plane.dist.prestop" . | nindent 10 }}
-          image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
-          {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
-          {{- include "control-plane.dist.readinessProbe" . | nindent 10 }}
-          imagePullPolicy: IfNotPresent
-          ports:
-            - containerPort: 8080
-          {{- include "keptn.distributor.resources" . | nindent 10 }}
-          env:
-          {{- include "control-plane.dist.common.env.vars" . | nindent 12 }}
-        {{- include "control-plane.common.container-security-context" . | nindent 10 }}
       terminationGracePeriodSeconds: {{ .Values.gracePeriod | default 30 }}
 ---
 apiVersion: v1
