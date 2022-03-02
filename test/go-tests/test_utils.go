@@ -230,7 +230,7 @@ func CreateProjectWithSSH(projectName string, shipyardFilePath string) (string, 
 
 	err := retry.Retry(func() error {
 		if err := RecreateProjectUpstream(newProjectName); err != nil {
-			return nil
+			return err
 		}
 
 		user := GetGiteaUser()
