@@ -113,7 +113,6 @@ func main() {
 		common.NewGitConfigurationStore(csEndpoint.String()),
 		createSecretStore(kubeAPI),
 		projectMVRepo,
-		createTaskSequenceRepo(),
 		sequenceExecutionRepo,
 		createEventsRepo(),
 		createSequenceQueueRepo(),
@@ -317,10 +316,6 @@ func createSequenceQueueRepo() *db.MongoDBSequenceQueueRepo {
 
 func createEventQueueRepo() *db.MongoDBEventQueueRepo {
 	return db.NewMongoDBEventQueueRepo(db.GetMongoDBConnectionInstance())
-}
-
-func createTaskSequenceRepo() *db.TaskSequenceMongoDBRepo {
-	return db.NewTaskSequenceMongoDBRepo(db.GetMongoDBConnectionInstance())
 }
 
 func createSecretStore(kubeAPI *kubernetes.Clientset) *common.K8sSecretStore {

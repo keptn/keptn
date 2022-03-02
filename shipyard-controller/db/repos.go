@@ -44,14 +44,6 @@ type UniformRepo interface {
 	UpdateLastSeen(integrationID string) (*models.Integration, error)
 }
 
-//go:generate moq --skip-ensure -pkg db_mock -out ./mock/tasksequencerepo_mock.go . TaskSequenceRepo
-type TaskSequenceRepo interface {
-	GetTaskExecutions(project string, filter models.TaskExecution) ([]models.TaskExecution, error)
-	CreateTaskExecution(project string, taskExecution models.TaskExecution) error
-	DeleteTaskExecution(keptnContext, project, stage, taskSequenceName string) error
-	DeleteRepo(project string) error
-}
-
 type LogRepo interface {
 	CreateLogEntries(entries []models.LogEntry) error
 	GetLogEntries(filter models.GetLogParams) (*models.GetLogsResponse, error)
