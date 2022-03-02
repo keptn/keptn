@@ -4,7 +4,7 @@ const (
 	SequenceTriggeredState          = "triggered"
 	SequenceStartedState            = "started"
 	SequenceWaitingState            = "waiting"
-	SequenceWaitingForApprovalState = "waiting"
+	SequenceWaitingForApprovalState = "waitingForApproval"
 	SequenceFinished                = "finished"
 	TimedOut                        = "timedOut"
 	SequencePaused                  = "paused"
