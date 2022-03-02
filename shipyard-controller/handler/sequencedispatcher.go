@@ -25,17 +25,16 @@ type ISequenceDispatcher interface {
 }
 
 type SequenceDispatcher struct {
-	eventRepo          db.EventRepo
-	eventQueueRepo     db.EventQueueRepo
-	sequenceQueue      db.SequenceQueueRepo
-	sequenceRepo       db.TaskSequenceRepo
-	theClock           clock.Clock
-	syncInterval       time.Duration
-	startSequenceFunc  func(event models.Event) error
-	shipyardController shipyardController
-	mutex              sync.Mutex
-	ticker             *clock.Ticker
-	mode               common.SDMode
+	eventRepo         db.EventRepo
+	eventQueueRepo    db.EventQueueRepo
+	sequenceQueue     db.SequenceQueueRepo
+	sequenceRepo      db.TaskSequenceRepo
+	theClock          clock.Clock
+	syncInterval      time.Duration
+	startSequenceFunc func(event models.Event) error
+	mutex             sync.Mutex
+	ticker            *clock.Ticker
+	mode              common.SDMode
 }
 
 // NewSequenceDispatcher creates a new SequenceDispatcher
