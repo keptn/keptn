@@ -2,6 +2,7 @@ package natsconnection
 
 import (
 	"fmt"
+	"github.com/keptn/keptn/distributor/pkg/utils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -246,7 +247,7 @@ func TestIsEqual(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := IsEqual(tt.args.a1, tt.args.a2); got != tt.want {
+			if got := utils.IsEqual(tt.args.a1, tt.args.a2); got != tt.want {
 				t.Errorf("IsEqual() = %v, want %v", got, tt.want)
 			}
 		})

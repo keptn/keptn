@@ -8,6 +8,8 @@ import (
 	"github.com/keptn/go-utils/pkg/common/sliceutils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/distributor/pkg/config"
+	"reflect"
+	"sort"
 	"strings"
 	"sync"
 )
@@ -222,4 +224,10 @@ func ToIds(events []*keptnmodels.KeptnContextExtendedCE) []string {
 		ids = append(ids, e.ID)
 	}
 	return ids
+}
+
+func IsEqual(a1 []string, a2 []string) bool {
+	sort.Strings(a2)
+	sort.Strings(a1)
+	return reflect.DeepEqual(a1, a2)
 }
