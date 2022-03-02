@@ -210,7 +210,7 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 
 	decodedPrivateKey, _ := base64.StdEncoding.DecodeString(params.GitPrivateKey)
 
-	if params.GitUser != "" && params.GitToken != "" && params.GitRemoteURL != "" {
+	if params.GitUser != "" && params.GitRemoteURL != "" {
 		// try to update git repository secret
 		err = pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
 			User:              params.GitUser,
