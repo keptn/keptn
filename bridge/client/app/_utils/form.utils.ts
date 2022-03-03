@@ -8,9 +8,15 @@ export class FormUtils {
     };
   }
 
-  public static isUrlValidator(control: AbstractControl): { url: { value: boolean } } | null {
-    if (control.value && (control.value.search(/^http(s?):\/\//) === -1 || control.value.includes(' '))) {
-      return { url: { value: true } };
+  public static isUrlValidator(
+    control: AbstractControl
+  ): { url: { value: boolean } } | { space: { value: boolean } } | null {
+    if (control.value) {
+      if (control.value.search(/^http(s?):\/\//) === -1) {
+        return { url: { value: true } };
+      } else if (control.value.includes(' ')) {
+        return { space: { value: true } };
+      }
     }
     return null;
   }
