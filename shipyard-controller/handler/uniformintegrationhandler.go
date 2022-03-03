@@ -122,7 +122,7 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 	if err != nil {
 		// if the integration already exists, update only needed fields
 		if errors.Is(err, db.ErrUniformRegistrationAlreadyExists) {
-			err2 := updateExistingIntegration(rh, integration, hash)
+			err2 := rh.updateExistingIntegration(integration, integration.ID)
 			if err2 != nil {
 				SetInternalServerErrorResponse(err2, c)
 				return
@@ -141,7 +141,7 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 	})
 }
 
-func updateExistingIntegration(rh *UniformIntegrationHandler, integration *models.Integration, hash string) error {
+func (rh *UniformIntegrationHandler) updateExistingIntegration(integration *models.Integration, hash string) error {
 	var err error
 	result, err := rh.uniformRepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{ID: hash})
 
