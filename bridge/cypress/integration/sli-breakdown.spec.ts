@@ -1,4 +1,9 @@
-describe('evaluations', () => {
+import ServicesPage from '../support/pageobjects/ServicesPage';
+import { SliResult } from '../../client/app/_models/sli-result';
+
+describe('sli-breakdown', () => {
+  const servicesPage = new ServicesPage();
+
   beforeEach(() => {
     cy.intercept('/api/v1/metadata', { fixture: 'metadata.mock' });
     cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfo.mock' });
@@ -21,20 +26,66 @@ describe('evaluations', () => {
       fixture: 'get.sockshop.service.carts.evaluations.mock.json',
     });
 
-    cy.visit('/project/sockshop/service/carts/context/da740469-9920-4e0c-b304-0fd4b18d17c2/stage/staging');
-    cy.byTestId('keptn-service-view-service-carts').should('exist');
-    cy.byTestId('keptn-sli-breakdown').should('exist');
-    cy.byTestId('keptn-sli-breakdown-row-go_routines').find('dt-cell').eq(1).should('have.text', 'go_routines');
-    cy.byTestId('keptn-sli-breakdown-row-go_routines').find('dt-cell').eq(2).should('have.text', '88 (+1000%) ');
-    cy.byTestId('keptn-sli-breakdown-row-go_routines').find('dt-cell').eq(3).should('have.text', '1');
-    cy.byTestId('keptn-sli-breakdown-row-go_routines').find('dt-cell').eq(7).should('have.text', '33.33');
+    servicesPage.visitServicePage('sockshop');
+    servicesPage.selectService('carts', 'v0.1.2');
+    servicesPage.verifySliBreakdown(
+      {
+        name: 'go_routines',
+        value: 88,
+        result: 'pass',
+        score: 33.33,
+        passTargets: [
+          {
+            criteria: '<=100',
+            targetValue: 100,
+            violated: false,
+          },
+        ],
+        warningTargets: null,
+        keySli: false,
+        success: true,
+        expanded: false,
+        weight: 1,
+        comparedValue: 8,
+        calculatedChanges: {
+          absolute: 80,
+          relative: 1000,
+        },
+      } as SliResult,
+      false
+    );
 
-    cy.byTestId('keptn-sli-breakdown-row-request_throughput')
-      .find('dt-cell')
-      .eq(2)
-      .find('.error')
-      .should('have.length', 1);
-    cy.byTestId('keptn-sli-breakdown-row-go_routines').find('dt-cell').eq(2).find('.error').should('have.length', 0);
+    servicesPage.verifySliBreakdown(
+      {
+        name: 'request_throughput',
+        value: 18.42,
+        result: 'fail',
+        score: 0,
+        passTargets: [
+          {
+            criteria: '<=+100%',
+            targetValue: 0,
+            violated: true,
+          },
+          {
+            criteria: '>=-80%',
+            targetValue: 0,
+            violated: false,
+          },
+        ],
+        warningTargets: null,
+        keySli: false,
+        success: true,
+        expanded: false,
+        weight: 1,
+        comparedValue: 0,
+        calculatedChanges: {
+          absolute: 18.42,
+          relative: 1742,
+        },
+      } as SliResult,
+      false
+    );
   });
 
   it('should show more details when expanding sli breakdown in service screen', () => {
@@ -51,28 +102,36 @@ describe('evaluations', () => {
       fixture: 'get.sockshop.service.carts.evaluations.mock.json',
     });
 
-    cy.visit('/project/sockshop/service/carts/context/da740469-9920-4e0c-b304-0fd4b18d17c2/stage/staging');
+    servicesPage.visitServicePage('sockshop');
+    servicesPage.selectService('carts', 'v0.1.2');
+    servicesPage.expandSliBreakdown('go_routines');
 
-    cy.byTestId('keptn-sli-breakdown-row-go_routines').find('dt-cell').eq(2).should('have.text', '88 (+1000%) ');
-    cy.byTestId('keptn-sli-breakdown-row-go_routines')
-      .find('dt-cell')
-      .eq(1)
-      .should('not.contain.text', 'Absolute change:');
-    cy.byTestId('keptn-sli-breakdown-row-go_routines')
-      .find('dt-cell')
-      .eq(1)
-      .should('not.contain.text', 'Relative change:');
-    cy.byTestId('keptn-sli-breakdown-row-go_routines')
-      .find('dt-cell')
-      .eq(1)
-      .should('not.contain.text', 'Compared with:');
-
-    cy.byTestId('keptn-sli-breakdown-row-go_routines').find('dt-cell').eq(0).find('button').click();
-
-    cy.byTestId('keptn-sli-breakdown-row-go_routines').find('dt-cell').eq(2).should('have.text', '88+80+1000% 8');
-    cy.byTestId('keptn-sli-breakdown-row-go_routines').find('dt-cell').eq(1).should('contain.text', 'Absolute change:');
-    cy.byTestId('keptn-sli-breakdown-row-go_routines').find('dt-cell').eq(1).should('contain.text', 'Relative change:');
-    cy.byTestId('keptn-sli-breakdown-row-go_routines').find('dt-cell').eq(1).should('contain.text', 'Compared with:');
+    servicesPage.verifySliBreakdown(
+      {
+        name: 'go_routines',
+        value: 88,
+        result: 'pass',
+        score: 33.33,
+        passTargets: [
+          {
+            criteria: '<=100',
+            targetValue: 100,
+            violated: false,
+          },
+        ],
+        warningTargets: null,
+        keySli: false,
+        success: true,
+        expanded: false,
+        weight: 1,
+        comparedValue: 8,
+        calculatedChanges: {
+          absolute: 80,
+          relative: 1000,
+        },
+      } as SliResult,
+      true
+    );
   });
 
   it('should sort elements correctly', () => {
@@ -89,47 +148,25 @@ describe('evaluations', () => {
       fixture: 'get.sockshop.service.carts.evaluations.mock.json',
     });
 
+    servicesPage.visitServicePage('sockshop');
+    servicesPage.selectService('carts', 'v0.1.2');
+
     cy.visit('/project/sockshop/service/carts/context/da740469-9920-4e0c-b304-0fd4b18d17c2/stage/staging');
 
     // sort name asc
-    let nameColumnHeader = cy
-      .byTestId('keptn-sli-breakdown')
-      .find('dt-header-row')
-      .first()
-      .find('dt-header-cell')
-      .eq(1);
-    nameColumnHeader.click();
-    nameColumnHeader.should('have.class', 'dt-header-cell');
-
-    nameColumnHeader.find('.dt-sort-header-container').first().should('have.class', 'dt-sort-header-sorted');
-    nameColumnHeader.find('dt-icon').first().invoke('attr', 'ng-reflect-name').should('equal', 'sorter2-up');
-
-    cy.byTestId('keptn-sli-breakdown').find('dt-row').eq(0).find('dt-cell').eq(1).should('have.text', 'go_routines');
-    cy.byTestId('keptn-sli-breakdown')
-      .find('dt-row')
-      .eq(1)
-      .find('dt-cell')
-      .eq(1)
-      .should('have.text', 'http_response_time_seconds_main_page_sum');
+    servicesPage.clickSliBreakdownHeader('Name');
+    servicesPage.verifySliBreakdownSorting(1, 'up', 'go_routines', 'http_response_time_seconds_main_page_sum');
 
     // sort name desc
-    nameColumnHeader = cy.byTestId('keptn-sli-breakdown').find('dt-header-row').first().find('dt-header-cell').eq(1);
-    nameColumnHeader.click();
+    servicesPage.clickSliBreakdownHeader('Name');
+    servicesPage.verifySliBreakdownSorting(1, 'down', 'request_throughput', 'http_response_time_seconds_main_page_sum');
 
-    nameColumnHeader.find('.dt-sort-header-container').first().should('have.class', 'dt-sort-header-sorted');
-    nameColumnHeader.find('dt-icon').first().invoke('attr', 'ng-reflect-name').should('equal', 'sorter2-down');
+    // sort score asc
+    servicesPage.clickSliBreakdownHeader('Score');
+    servicesPage.verifySliBreakdownSorting(7, 'up', '0', '0');
 
-    cy.byTestId('keptn-sli-breakdown')
-      .find('dt-row')
-      .eq(0)
-      .find('dt-cell')
-      .eq(1)
-      .should('have.text', 'request_throughput');
-    cy.byTestId('keptn-sli-breakdown')
-      .find('dt-row')
-      .eq(1)
-      .find('dt-cell')
-      .eq(1)
-      .should('have.text', 'http_response_time_seconds_main_page_sum');
+    // sort score desc
+    servicesPage.clickSliBreakdownHeader('Score');
+    servicesPage.verifySliBreakdownSorting(7, 'down', '33.33', '0');
   });
 });
