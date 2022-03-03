@@ -122,7 +122,11 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 	if err != nil {
 		// if the integration already exists, update only needed fields
 		if errors.Is(err, db.ErrUniformRegistrationAlreadyExists) {
-			updateExistingIntegration(rh, integration, hash)
+			err2 := updateExistingIntegration(rh, integration, hash)
+			if err2 != nil {
+				SetInternalServerErrorResponse(err2, c)
+				return
+			}
 			c.JSON(http.StatusOK, &models.RegisterResponse{
 				ID: integration.ID,
 			})
@@ -137,17 +141,19 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 	})
 }
 
-func updateExistingIntegration(rh *UniformIntegrationHandler, integration *models.Integration, hash string) {
+func updateExistingIntegration(rh *UniformIntegrationHandler, integration *models.Integration, hash string) error {
 
 	result, _ := rh.uniformRepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{ID: hash})
 
+	var err error
 	// update uniform only if there is a version upgrade or downgrade
-
 	if result[0].MetaData.IntegrationVersion != integration.MetaData.IntegrationVersion || result[0].MetaData.DistributorVersion != integration.MetaData.DistributorVersion {
-		rh.uniformRepo.CreateOrUpdateUniformIntegration(*integration)
+		integration.Subscriptions = result[0].Subscriptions
+		_, err = rh.uniformRepo.UpdateVersionInfo(integration.ID, integration.MetaData.IntegrationVersion, integration.MetaData.DistributorVersion)
 	} else {
-		_, _ = rh.uniformRepo.UpdateLastSeen(integration.ID)
+		_, err = rh.uniformRepo.UpdateLastSeen(integration.ID)
 	}
+	return err
 }
 
 // Unregister deletes a uniform integration

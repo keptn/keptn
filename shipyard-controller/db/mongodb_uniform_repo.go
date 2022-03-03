@@ -242,6 +242,39 @@ func (mdbrepo *MongoDBUniformRepo) UpdateLastSeen(integrationID string) (*models
 
 }
 
+func (mdbrepo *MongoDBUniformRepo) UpdateVersionInfo(integrationID, integrationVersion, distributorVersion string) (*models.Integration, error) {
+	now := time.Now().UTC()
+	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext()
+	if err != nil {
+		return nil, fmt.Errorf("could not get collection: %s", err.Error())
+	}
+	defer cancel()
+
+	filter := bson.D{{"_id", integrationID}}
+	update := bson.D{{"$set", bson.D{
+		{"metadata.integrationversion", integrationVersion},
+		{"metadata.distributorversion", distributorVersion},
+		{"metadata.lastseen", now},
+	}}}
+
+	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
+	result := collection.FindOneAndUpdate(ctx, filter, update, opts)
+	if result.Err() != nil {
+		if errors.Is(result.Err(), mongo.ErrNoDocuments) {
+			return nil, ErrUniformRegistrationNotFound
+		}
+		return nil, result.Err()
+	}
+
+	updatedIntegration := &models.Integration{}
+	err = result.Decode(updatedIntegration)
+	if err != nil {
+		return nil, err
+	}
+	return updatedIntegration, nil
+
+}
+
 func (mdbrepo *MongoDBUniformRepo) SetupTTLIndex(duration time.Duration) error {
 	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext()
 	if err != nil {
