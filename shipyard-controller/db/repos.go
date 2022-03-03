@@ -26,6 +26,7 @@ type UniformRepo interface {
 	GetSubscription(integrationID, subscriptionID string) (*models.Subscription, error)
 	GetSubscriptions(integrationID string) ([]models.Subscription, error)
 	UpdateLastSeen(integrationID string) (*models.Integration, error)
+	UpdateVersionInfo(integrationID, integrationVersion, distributorVersion string) (*models.Integration, error)
 }
 
 //go:generate moq --skip-ensure -pkg db_mock -out ./mock/tasksequencerepo_mock.go . TaskSequenceRepo
