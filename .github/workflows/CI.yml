@@ -386,7 +386,7 @@ jobs:
 
     - name: Download Helm Chart artifacts
       id: download_helm_chart
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: keptn-installer
         path: dist/keptn-installer

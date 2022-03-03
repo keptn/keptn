@@ -303,7 +303,7 @@ jobs:
           git config --global user.email "$KEPTN_BOT_EMAIL"
 
       - name: Download Release Artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           path: ./dist
 
