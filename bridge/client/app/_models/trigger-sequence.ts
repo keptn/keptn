@@ -17,10 +17,10 @@ export type DeliverySequenceFormData = {
   project?: string;
   service?: string;
   stage?: string;
-  image: string | undefined;
-  tag: string | undefined;
-  labels: string | undefined;
-  values: string | undefined;
+  image?: string;
+  tag?: string;
+  labels?: string;
+  values?: string;
 };
 
 export type EvaluationSequenceFormData = {
@@ -28,19 +28,19 @@ export type EvaluationSequenceFormData = {
   service?: string;
   stage?: string;
   evaluationType: TRIGGER_EVALUATION_TIME;
-  timeframe: Timeframe | undefined;
-  timeframeStart: string | undefined; // ISO 8601
-  startDatetime: string | undefined; // ISO 8601
-  endDatetime: string | undefined; // ISO 8601
-  labels: string | undefined;
+  timeframe?: Timeframe;
+  timeframeStart?: string; // ISO 8601
+  startDatetime?: string; // ISO 8601
+  endDatetime?: string; // ISO 8601
+  labels?: string;
 };
 
 export type CustomSequenceFormData = {
   project?: string;
   service?: string;
   stage?: string;
-  sequence: string | undefined;
-  labels: string | undefined;
+  sequence?: string;
+  labels?: string;
 };
 
 export type TriggerSequenceData = {

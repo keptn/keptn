@@ -57,26 +57,13 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
   private _services: string[] = [];
   private unsubscribe$: Subject<void> = new Subject<void>();
 
-  public deliveryFormData: DeliverySequenceFormData = {
-    image: undefined,
-    tag: undefined,
-    labels: undefined,
-    values: undefined,
-  };
+  public deliveryFormData: DeliverySequenceFormData = {};
 
   public evaluationFormData: EvaluationSequenceFormData = {
     evaluationType: TRIGGER_EVALUATION_TIME.TIMEFRAME,
-    timeframe: undefined,
-    timeframeStart: undefined,
-    startDatetime: undefined,
-    endDatetime: undefined,
-    labels: undefined,
   };
 
-  public customFormData: CustomSequenceFormData = {
-    sequence: undefined,
-    labels: undefined,
-  };
+  public customFormData: CustomSequenceFormData = {};
 
   @Input() public projectName!: string;
   @Input() public stage: string | undefined;
