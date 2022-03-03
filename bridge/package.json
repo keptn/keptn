@@ -15,8 +15,8 @@
     "lint:fix": "eslint --fix ./",
     "prettier:check": "prettier --check ./**/*.{js,ts,json,html}",
     "prettier:fix": "prettier --write ./**/*.{js,ts,json,html}",
-    "cypress:open": "cypress open",
-    "cypress:run": "cypress run --browser=chrome",
+    "cypress:open": "TZ=Europe/Berlin cypress open",
+    "cypress:run": "TZ=Europe/Berlin cypress run --browser=chrome",
     "test:ui": "start-server-and-test 'yarn start:ci' http://localhost:3000 'yarn cypress:run'"
   },
   "license": "Apache-2.0",
