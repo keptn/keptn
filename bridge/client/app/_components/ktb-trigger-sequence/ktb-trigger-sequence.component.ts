@@ -54,6 +54,7 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
   public jsonErrorStateMatcher = new JsonErrorStateMatcher();
   public isLoading = false;
   public isQualityGatesOnly = false;
+  private _services: string[] = [];
   private unsubscribe$: Subject<void> = new Subject<void>();
 
   public deliveryFormData: DeliverySequenceFormData = {
@@ -80,7 +81,19 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
   @Input() public projectName!: string;
   @Input() public stage: string | undefined;
   @Input() public stages: string[] = [];
-  @Input() public services: string[] = [];
+  @Input()
+  get services(): string[] {
+    return this._services;
+  }
+  set services(services: string[]) {
+    if (services) {
+      this._services = services;
+
+      if (this.selectedService && !this._services.find((service) => service === this.selectedService)) {
+        this.selectedService = undefined;
+      }
+    }
+  }
 
   @Output() public formClosed: EventEmitter<void> = new EventEmitter<void>();
 
