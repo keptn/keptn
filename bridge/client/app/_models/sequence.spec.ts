@@ -513,7 +513,7 @@ describe('Sequence', () => {
     expect(sequence.getStageTime('staging')).toBe('2022-03-02T12:55:50.991Z');
   });
 
-  it('should return the undefined for time if traces are not loaded', () => {
+  it('should return undefined for time if traces are not loaded', () => {
     const sequence = getDefaultSequence();
     expect(sequence.getStageTime('dev')).toBeUndefined();
   });
