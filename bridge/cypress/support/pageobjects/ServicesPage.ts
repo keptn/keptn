@@ -2,6 +2,8 @@
 
 import { SliResult } from '../../../client/app/_models/sli-result';
 
+type SliColumn = 'name' | 'value' | 'weight' | 'score' | 'result' | 'criteria' | 'pass-criteria' | 'warning-criteria';
+
 class ServicesPage {
   SERVICE_PANEL_TEXT_LOC = 'dt-info-group-title.dt-info-group-title > div > h2';
 
@@ -98,7 +100,7 @@ class ServicesPage {
     return this;
   }
 
-  assertSliColumnText(sliName: string, columnName: string, value: string): this {
+  assertSliColumnText(sliName: string, columnName: SliColumn, value: string): this {
     cy.byTestId(`keptn-sli-breakdown-row-${sliName}`)
       .find(`[uitestid="keptn-sli-breakdown-${columnName}-cell"]`)
       .should('have.text', value);
