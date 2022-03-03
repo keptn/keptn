@@ -101,7 +101,7 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
 
       - name: Check out code.
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v3
 
       - name: Create downloads folder
         run: mkdir ~/downloads
@@ -694,7 +694,7 @@ jobs:
       FINAL_TEST_REPORT_FILEPATH_MARKDOWN: "./final-test-reports/final-test-report.md"
     steps:
       - name: Check out code
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v3
 
       - name: Set up Node
         uses: actions/setup-node@v3.0.0
@@ -906,7 +906,7 @@ jobs:
       BRANCH: ${{ needs.integration-test.outputs.BRANCH }}
     steps:
       - name: Check out code
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0 # need to checkout "all commits" for certain features to work (e.g., get all changed files)
           submodules: 'true'
