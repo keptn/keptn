@@ -414,19 +414,19 @@ export class DataService {
 
   protected addNewSequences(
     project: Project,
-    newSequences: Sequence[],
+    sequences: Sequence[],
     areOldSequences: boolean,
     oldSequence?: Sequence
   ): void {
+    let newSequences: Sequence[] = [];
     if (areOldSequences) {
-      project.sequences = [
-        ...(project.sequences || []),
-        ...(newSequences || []),
-        ...(oldSequence ? [oldSequence] : []),
-      ];
+      newSequences = [...(project.sequences || []), ...(sequences || []), ...(oldSequence ? [oldSequence] : [])];
     } else {
-      project.sequences = [...(newSequences || []), ...(project.sequences || [])];
+      newSequences = [...(sequences || []), ...(project.sequences || [])];
     }
+    project.sequences = newSequences.filter(
+      (seq, index) => newSequences.findIndex((s) => s.shkeptncontext === seq.shkeptncontext) === index
+    );
   }
 
   private updateSequencesUpdated(response: HttpResponse<SequenceResult>, projectName: string): void {
