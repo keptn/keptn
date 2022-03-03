@@ -170,7 +170,7 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 			wantFuncs:       []string{"GetUniformIntegrationsCalls", "UpdateLastSeenCalls"},
 		},
 		{
-			name: "create existing registration with different version",
+			name: "create existing registration with different version - should call UpdateVersionInfo func",
 			fields: fields{
 				integrationManager: &db_mock.UniformRepoMock{
 					CreateUniformIntegrationFunc: func(integration models.Integration) error { return db.ErrUniformRegistrationAlreadyExists },
