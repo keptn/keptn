@@ -394,3 +394,56 @@ func TestMongoDBUniformRepo_RemoveByServiceName(t *testing.T) {
 	}
 
 }
+
+func TestMongoDBUniformRepo_UpdateVersionInfo(t *testing.T) {
+	testIntegration := models.Integration{
+		ID:   "i1",
+		Name: "integration1",
+		MetaData: keptnmodels.MetaData{
+			IntegrationVersion: "1",
+			DistributorVersion: "1",
+		},
+		Subscriptions: []keptnmodels.EventSubscription{
+			{
+				Event: "sh.keptn.event.test.triggered",
+				Filter: keptnmodels.EventSubscriptionFilter{
+					Projects: []string{"pr1"},
+					Services: []string{"sv1", "sv2"},
+					Stages:   []string{"st1", "st2"},
+				},
+			},
+			{
+				Event: "sh.keptn.event.test",
+				Filter: keptnmodels.EventSubscriptionFilter{
+					Projects: []string{"pr2"},
+					Services: []string{"sv1"},
+					Stages:   []string{"st1", "st2"},
+				},
+			},
+			{
+				Event: "sh.keptn.event",
+				Filter: keptnmodels.EventSubscriptionFilter{
+					Projects: []string{"pr4"},
+					Services: []string{"sv1", "sv2"},
+					Stages:   []string{"st1", "st2"},
+				},
+			},
+		},
+	}
+
+	mdbrepo := NewMongoDBUniformRepo(GetMongoDBConnectionInstance())
+
+	// insert our integration entities
+	err := mdbrepo.CreateOrUpdateUniformIntegration(testIntegration)
+
+	require.Nil(t, err)
+
+	updated, err := mdbrepo.UpdateVersionInfo(testIntegration.ID, "int-2", "distr-2")
+
+	require.Nil(t, err)
+	require.Equal(t, "distr-2", updated.MetaData.DistributorVersion)
+	require.Equal(t, "int-2", updated.MetaData.IntegrationVersion)
+
+	// make sure the subscriptions are not touched by the version update
+	require.Len(t, updated.Subscriptions, 3)
+}
