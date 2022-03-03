@@ -22,13 +22,13 @@ export class AppUtils {
     const abs = Math.abs(value);
     let n = value;
     if (abs < 1) {
-      n = Math.floor(n * 1000) / 1000;
+      n = Math.trunc(n * 1000) / 1000;
     } else if (abs < 100) {
-      n = Math.floor(n * 100) / 100;
+      n = Math.trunc(n * 100) / 100;
     } else if (abs < 1000) {
-      n = Math.floor(n * 10) / 10;
+      n = Math.trunc(n * 10) / 10;
     } else {
-      n = Math.floor(n);
+      n = Math.trunc(n);
     }
 
     return n;
