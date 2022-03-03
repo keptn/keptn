@@ -6,14 +6,7 @@ const environmentPage = new EnvironmentPage();
 describe('Trigger a sequence', () => {
   beforeEach(() => {
     interceptEnvironmentScreen();
-    // cy.intercept('/api/v1/metadata', { fixture: 'metadata.mock' });
     cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfoCD.mock' });
-    // cy.intercept('/api/project/sockshop?approval=true&remediation=true', { fixture: 'project.mock' });
-    // cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
-    // cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: false });
-    // cy.intercept('/api/project/sockshop/customSequences', { body: ['delivery-direct', 'rollback', 'remediation'] });
-    // cy.intercept('/api/project/sockshop/serviceStates', { body: [] });
-    //
 
     // Sequence screen
     cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=25', { fixture: 'sequences.sockshop' });
