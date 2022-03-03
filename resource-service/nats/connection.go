@@ -11,9 +11,8 @@ import (
 	"sort"
 )
 
-const queue = ""
-const streamName = "shipyard-controller"
-const consumerName = "resource-service:all-events"
+const streamName = "resource-service"
+const consumerName = "resource-service"
 
 //go:generate moq --skip-ensure -pkg nats_mock -out ./mock/keptn_nats_handler_mock.go . IKeptnNatsMessageHandler
 type IKeptnNatsMessageHandler interface {
@@ -41,13 +40,12 @@ type NatsConnectionHandler struct {
 	subscriptions  []*PullSubscription
 	topics         []string
 	natsURL        string
-	messageHandler IKeptnNatsMessageHandler
 	ctx            context.Context
 	jetStream      nats.JetStreamContext
 }
 
-func NewNatsConnectionHandler(ctx context.Context, natsURL string, messageHandler IKeptnNatsMessageHandler) *NatsConnectionHandler {
-	return &NatsConnectionHandler{natsURL: natsURL, messageHandler: messageHandler, ctx: ctx}
+func NewNatsConnectionHandler(ctx context.Context, natsURL string) *NatsConnectionHandler {
+	return &NatsConnectionHandler{natsURL: natsURL, ctx: ctx}
 }
 
 func (nch *NatsConnectionHandler) RemoveAllSubscriptions() {
@@ -59,13 +57,19 @@ func (nch *NatsConnectionHandler) RemoveAllSubscriptions() {
 }
 
 // SubscribeToTopics expresses interest in the given subject(s) on the NATS message broker.
-func (nch *NatsConnectionHandler) SubscribeToTopics(topics []string) error {
+func (nch *NatsConnectionHandler) SubscribeToTopics(topics []string, messageHandler IKeptnNatsMessageHandler) error {
 	if nch.natsURL == "" {
 		return errors.New("no PubSub URL defined")
 	}
 
 	if nch.natsConnection == nil || !nch.natsConnection.IsConnected() {
-		if err := nch.renewNatsConnection(topics); err != nil {
+		if err := nch.renewNatsConnection(); err != nil {
+			return err
+		}
+	}
+
+	if nch.jetStream == nil {
+		if err := nch.setupJetStreamContext(topics); err != nil {
 			return err
 		}
 	}
@@ -75,7 +79,7 @@ func (nch *NatsConnectionHandler) SubscribeToTopics(topics []string) error {
 		nch.topics = topics
 
 		for _, topic := range nch.topics {
-			subscription := NewPullSubscription(nch.ctx, queue, topic, nch.jetStream, nch.messageHandler.Process, "test")
+			subscription := NewPullSubscription(nch.ctx, "", topic, nch.jetStream, messageHandler.Process)
 			if err := subscription.Activate(); err != nil {
 				return fmt.Errorf("could not start subscription: %s", err.Error())
 			}
@@ -85,7 +89,16 @@ func (nch *NatsConnectionHandler) SubscribeToTopics(topics []string) error {
 	return nil
 }
 
-func (nch *NatsConnectionHandler) renewNatsConnection(topics []string) error {
+func (nch *NatsConnectionHandler) GetPublisher() (*Publisher, error) {
+	if nch.natsConnection == nil || !nch.natsConnection.IsConnected() {
+		if err := nch.renewNatsConnection(); err != nil {
+			return nil, err
+		}
+	}
+	return NewPublisher(nch.natsConnection), nil
+}
+
+func (nch *NatsConnectionHandler) renewNatsConnection() error {
 	var err error
 	nch.RemoveAllSubscriptions()
 
@@ -95,11 +108,6 @@ func (nch *NatsConnectionHandler) renewNatsConnection(topics []string) error {
 
 	if err != nil {
 		return errors.New("failed to create NATS connection: " + err.Error())
-	}
-
-	err = nch.setupJetStreamContext(topics)
-	if err != nil {
-		return err
 	}
 	return nil
 }
@@ -116,13 +124,12 @@ func (nch *NatsConnectionHandler) setupJetStreamContext(topics []string) error {
 	}
 	if stream == nil {
 		logger.Infof("creating stream %q", streamName)
-		_, err = js.AddStream(nch.getStreamConfig(topics))
+		_, err = js.AddStream(getShipyardStreamConfig(topics))
 		if err != nil {
-
 			return fmt.Errorf("failed to add stream: %s", err.Error())
 		}
 	} else {
-		_, err = js.UpdateStream(nch.getStreamConfig(topics))
+		_, err = js.UpdateStream(getShipyardStreamConfig(topics))
 		if err != nil {
 			return fmt.Errorf("failed to update stream: %s", err.Error())
 		}
@@ -131,7 +138,7 @@ func (nch *NatsConnectionHandler) setupJetStreamContext(topics []string) error {
 	return nil
 }
 
-func (nch *NatsConnectionHandler) getStreamConfig(topics []string) *nats.StreamConfig {
+func getShipyardStreamConfig(topics []string) *nats.StreamConfig {
 	return &nats.StreamConfig{
 		Name:     streamName,
 		Subjects: topics,

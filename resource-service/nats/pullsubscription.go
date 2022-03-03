@@ -18,17 +18,15 @@ type PullSubscription struct {
 	jetStream      nats.JetStreamContext
 	messageHandler func(event models.Event, sync bool) error
 	isActive       bool
-	consumerName   string
 }
 
-func NewPullSubscription(ctx context.Context, queueGroup, topic string, js nats.JetStreamContext, messageHandler func(event models.Event, sync bool) error, name string) *PullSubscription {
+func NewPullSubscription(ctx context.Context, queueGroup, topic string, js nats.JetStreamContext, messageHandler func(event models.Event, sync bool) error) *PullSubscription {
 	return &PullSubscription{
 		queueGroup:     queueGroup,
 		topic:          topic,
 		jetStream:      js,
 		ctx:            ctx,
 		messageHandler: messageHandler,
-		consumerName:   name,
 	}
 }
 
@@ -37,7 +35,6 @@ func (ps *PullSubscription) Activate() error {
 	consumerInfo, _ := ps.jetStream.ConsumerInfo(streamName, consumerName)
 	if consumerInfo == nil {
 		_, err := ps.jetStream.AddConsumer(streamName, &nats.ConsumerConfig{
-			Durable:       consumerName,
 			AckPolicy:     nats.AckExplicitPolicy,
 			FilterSubject: ps.topic,
 		})
@@ -46,7 +43,7 @@ func (ps *PullSubscription) Activate() error {
 		}
 	}
 
-	sub, err := ps.jetStream.PullSubscribe(ps.topic, ps.consumerName, nats.ManualAck())
+	sub, err := ps.jetStream.PullSubscribe(ps.topic, consumerName, nats.ManualAck())
 
 	if err != nil {
 		return fmt.Errorf("failed to subscribe to topic: %s", err.Error())

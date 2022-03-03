@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/keptn/keptn/resource-service/common"
+	nats2 "github.com/keptn/keptn/resource-service/handler/nats"
 	"github.com/keptn/keptn/resource-service/nats"
 	"io/ioutil"
 	"k8s.io/client-go/kubernetes"
@@ -105,8 +106,6 @@ func main() {
 	serviceController := controller.NewServiceController(serviceHandler)
 	serviceController.Inject(apiV1)
 
-	self := os.Getenv(envKubernetesPodName)
-
 	projectResourceManager := handler.NewResourceManager(git, credentialReader, fileSystem, configurationContext)
 	projectResourceHandler := handler.NewProjectResourceHandler(projectResourceManager)
 	projectResourceController := controller.NewProjectResourceController(projectResourceHandler)
@@ -126,22 +125,16 @@ func main() {
 	healthController := controller.NewHealthController(healthHandler)
 	healthController.Inject(apiHealth)
 
-	eventHandler := handler.NewEventHandler(projectManager, self)
-	eventController := controller.NewEventController(eventHandler)
-	eventController.Inject(apiV1)
-
 	engine.Static("/swagger-ui", "./swagger-ui")
 	srv := &http.Server{
 		Addr:    ":8080",
 		Handler: engine,
 	}
 
-	connectionHandler := nats.NewNatsConnectionHandler(
-		ctx,
-		getNatsURLFromEnvVar(),
-		nats.NewKeptnNatsMessageHandler(eventHandler.Process),
-	)
-	if err := connectionHandler.SubscribeToTopics([]string{eventProjectDeleteFinished}); err != nil {
+	eventMsgProcessor := nats2.EventHandler(projectManager, os.Getenv(envKubernetesPodName))
+	eventMsgHandler := nats.NewKeptnNatsMessageHandler(eventMsgProcessor.Process)
+	connectionHandler := nats.NewNatsConnectionHandler(ctx, getNatsURLFromEnvVar())
+	if err := connectionHandler.SubscribeToTopics([]string{eventProjectDeleteFinished}, eventMsgHandler); err != nil {
 		log.Fatalf("Could not subscribe to nats: %v", err)
 	}
 

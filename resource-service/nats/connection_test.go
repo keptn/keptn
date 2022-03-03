@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/resource-service/models"
 	natsmock "github.com/keptn/keptn/resource-service/nats/mock"
@@ -39,25 +40,32 @@ func TestNatsConnectionHandler(t *testing.T) {
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 
-	nh := NewNatsConnectionHandler(ctx, natsURL(), NewKeptnNatsMessageHandler(mockNatsEventHandler.Process))
+	nh := NewNatsConnectionHandler(ctx, natsURL())
 
-	err := nh.SubscribeToTopics([]string{"sh.keptn.>"})
+	err := nh.SubscribeToTopics([]string{"sh.keptn.>"}, NewKeptnNatsMessageHandler(mockNatsEventHandler.Process))
 
 	require.Nil(t, err)
 
-	publisherConn, err := nats.Connect(natsURL())
+	publisher, err := nh.GetPublisher()
 
-	event := models.Event{
-		Data: map[string]interface{}{
-			"project": "my-project",
-		},
-	}
+	require.Nil(t, err)
 
-	marshal, _ := json.Marshal(event)
-	_ = publisherConn.Publish(keptnv2.GetTriggeredEventType("test"), marshal)
+	event := cloudevents.NewEvent()
+	event.SetType(keptnv2.GetTriggeredEventType("test"))
+	_ = event.SetData(cloudevents.ApplicationJSON, map[string]interface{}{
+		"project": "my-project",
+	})
+
+	// send with Send method
+	err = publisher.Send(context.TODO(), event)
+	require.Nil(t, err)
+
+	// send with SendEvent method
+	err = publisher.SendEvent(event)
+	require.Nil(t, err)
 
 	require.Eventually(t, func() bool {
-		return len(mockNatsEventHandler.ProcessCalls()) > 0
+		return len(mockNatsEventHandler.ProcessCalls()) == 2
 	}, 15*time.Second, 5*time.Second)
 
 	// call cancel() and wait for the consumer to shut down
@@ -78,9 +86,9 @@ func TestNatsConnectionHandler_EmptyURL(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	nh := NewNatsConnectionHandler(ctx, "", NewKeptnNatsMessageHandler(mockNatsEventHandler.Process))
+	nh := NewNatsConnectionHandler(ctx, "")
 
-	err := nh.SubscribeToTopics([]string{"sh.keptn.>"})
+	err := nh.SubscribeToTopics([]string{"sh.keptn.>"}, mockNatsEventHandler)
 
 	require.Error(t, err)
 }
@@ -104,9 +112,9 @@ func TestNatsConnectionHandler_SendBeforeSubscribing(t *testing.T) {
 		},
 	}
 	ctx, cancel := context.WithCancel(context.TODO())
-	nh := NewNatsConnectionHandler(ctx, natsURL(), mockNatsEventHandler)
+	nh := NewNatsConnectionHandler(ctx, natsURL())
 
-	err = nh.SubscribeToTopics([]string{"sh.keptn.>"})
+	err = nh.SubscribeToTopics([]string{"sh.keptn.>"}, mockNatsEventHandler)
 
 	require.Nil(t, err)
 
@@ -149,9 +157,9 @@ func TestNatsConnectionHandler_MisconfiguredStreamIsUpdated(t *testing.T) {
 	}
 	ctx, cancel := context.WithCancel(context.TODO())
 
-	nh := NewNatsConnectionHandler(ctx, natsURL(), mockNatsEventHandler)
+	nh := NewNatsConnectionHandler(ctx, natsURL())
 
-	err = nh.SubscribeToTopics([]string{"sh.keptn.>"})
+	err = nh.SubscribeToTopics([]string{"sh.keptn.>"}, mockNatsEventHandler)
 
 	require.Nil(t, err)
 
@@ -185,13 +193,13 @@ func TestNatsConnectionHandler_MultipleSubscribers(t *testing.T) {
 	}
 	ctx, cancel := context.WithCancel(context.TODO())
 
-	nh1 := NewNatsConnectionHandler(ctx, natsURL(), mockNatsEventHandler)
-	nh2 := NewNatsConnectionHandler(ctx, natsURL(), mockNatsEventHandler)
+	nh1 := NewNatsConnectionHandler(ctx, natsURL())
+	nh2 := NewNatsConnectionHandler(ctx, natsURL())
 
-	err := nh1.SubscribeToTopics([]string{"sh.keptn.>"})
+	err := nh1.SubscribeToTopics([]string{"sh.keptn.>"}, mockNatsEventHandler)
 	require.Nil(t, err)
 
-	err = nh2.SubscribeToTopics([]string{"sh.keptn.>"})
+	err = nh2.SubscribeToTopics([]string{"sh.keptn.>"}, mockNatsEventHandler)
 	require.Nil(t, err)
 
 	publisherConn, err := nats.Connect(natsURL())
@@ -227,9 +235,9 @@ func TestNatsConnectionHandler_NatsServerDown(t *testing.T) {
 		},
 	}
 
-	nh := NewNatsConnectionHandler(context.TODO(), "nats://wrong-url", mockNatsEventHandler)
+	nh := NewNatsConnectionHandler(context.TODO(), "nats://wrong-url")
 
-	err := nh.SubscribeToTopics([]string{"sh.keptn.>"})
+	err := nh.SubscribeToTopics([]string{"sh.keptn.>"}, mockNatsEventHandler)
 
 	require.Error(t, err)
 }
