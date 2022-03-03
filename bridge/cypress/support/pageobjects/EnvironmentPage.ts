@@ -166,8 +166,7 @@ class EnvironmentPage {
   public assertTriggerEvaluationDateErrorExists(exists: boolean): this {
     cy.byTestId('keptn-trigger-evaluation-date-error').should(exists ? 'exist' : 'not.exist');
     return this;
-
-  public STAGE_HEADER_LOC = 'div > h2';
+  }
 
   public visit(project: string): this {
     cy.visit(`/project/${project}`);
