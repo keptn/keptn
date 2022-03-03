@@ -185,7 +185,7 @@ func Test_SelfHealing(t *testing.T) {
 	require.Nil(t, err)
 
 	t.Log("Installing unleash-service")
-	distributorImage, err := GetImageOfDeploymentContainer("shipyard-controller", "distributor")
+	distributorImage, err := GetImageOfDeploymentContainer("lighthouse-service", "distributor")
 	require.Nil(t, err)
 	unleashServiceManifestContent := strings.ReplaceAll(unleashServiceK8sManifest, "${distributor-image}", distributorImage)
 

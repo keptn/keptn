@@ -329,7 +329,7 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 // registered/unregistered to/from the Keptn control plane
 func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 	// make sure the echo-service uses the same distributor as Keptn core
-	distributorImage, err := GetImageOfDeploymentContainer("shipyard-controller", "distributor")
+	distributorImage, err := GetImageOfDeploymentContainer("lighthouse-service", "distributor")
 	require.Nil(t, err)
 
 	echoServiceManifestContent := strings.ReplaceAll(echoServiceK8sManifest, "${distributor-image}", distributorImage)
@@ -361,7 +361,7 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 // registered/unregistered to/from the Keptn control plane
 func Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods(t *testing.T) {
 	// make sure the echo-service uses the same distributor as Keptn core
-	distributorImage, err := GetImageOfDeploymentContainer("shipyard-controller", "distributor")
+	distributorImage, err := GetImageOfDeploymentContainer("lighthouse-service", "distributor")
 	require.Nil(t, err)
 
 	echoServiceManifestContent := strings.ReplaceAll(echoServiceK8sManifest, "${distributor-image}", distributorImage)
@@ -395,7 +395,7 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods(t *test
 func Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane(t *testing.T) {
 	// install echo integration
 	// make sure the echo-service uses the same distributor as Keptn core
-	distributorImage, err := GetImageOfDeploymentContainer("shipyard-controller", "distributor")
+	distributorImage, err := GetImageOfDeploymentContainer("lighthouse-service", "distributor")
 	require.Nil(t, err)
 
 	apiToken, apiEndpoint, err := GetApiCredentials()
