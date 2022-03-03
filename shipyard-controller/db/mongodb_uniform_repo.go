@@ -16,6 +16,12 @@ import (
 
 const uniformCollectionName = "keptnUniform"
 
+const lastSeenProperty = "metadata.lastseen"
+const integrationVersionProperty = "metadata.integrationversion"
+const distributorVersionProperty = "metadata.distributorversion"
+
+const couldNotGetCollectionErrMsg = "could not get collection: %s"
+
 var ErrUniformRegistrationAlreadyExists = errors.New("uniform integration already exists")
 var ErrUniformRegistrationNotFound = errors.New("uniform integration not found")
 
@@ -217,12 +223,12 @@ func (mdbrepo *MongoDBUniformRepo) UpdateLastSeen(integrationID string) (*models
 	now := time.Now().UTC()
 	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext()
 	if err != nil {
-		return nil, fmt.Errorf("could not get collection: %s", err.Error())
+		return nil, fmt.Errorf(couldNotGetCollectionErrMsg, err.Error())
 	}
 	defer cancel()
 
 	filter := bson.D{{"_id", integrationID}}
-	update := bson.D{{"$set", bson.D{{"metadata.lastseen", now}}}}
+	update := bson.D{{"$set", bson.D{{lastSeenProperty, now}}}}
 
 	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
 	result := collection.FindOneAndUpdate(ctx, filter, update, opts)
@@ -246,15 +252,15 @@ func (mdbrepo *MongoDBUniformRepo) UpdateVersionInfo(integrationID, integrationV
 	now := time.Now().UTC()
 	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext()
 	if err != nil {
-		return nil, fmt.Errorf("could not get collection: %s", err.Error())
+		return nil, fmt.Errorf(couldNotGetCollectionErrMsg, err.Error())
 	}
 	defer cancel()
 
 	filter := bson.D{{"_id", integrationID}}
 	update := bson.D{{"$set", bson.D{
-		{"metadata.integrationversion", integrationVersion},
-		{"metadata.distributorversion", distributorVersion},
-		{"metadata.lastseen", now},
+		{integrationVersionProperty, integrationVersion},
+		{distributorVersionProperty, distributorVersion},
+		{lastSeenProperty, now},
 	}}}
 
 	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
@@ -278,11 +284,11 @@ func (mdbrepo *MongoDBUniformRepo) UpdateVersionInfo(integrationID, integrationV
 func (mdbrepo *MongoDBUniformRepo) SetupTTLIndex(duration time.Duration) error {
 	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext()
 	if err != nil {
-		return fmt.Errorf("could not get collection: %s", err.Error())
+		return fmt.Errorf(couldNotGetCollectionErrMsg, err.Error())
 	}
 	defer cancel()
 
-	return SetupTTLIndex(ctx, "metadata.lastseen", duration, collection)
+	return SetupTTLIndex(ctx, lastSeenProperty, duration, collection)
 }
 
 func (mdbrepo *MongoDBUniformRepo) getSearchOptions(params models.GetUniformIntegrationsParams) bson.M {
