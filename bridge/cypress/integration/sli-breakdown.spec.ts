@@ -26,66 +26,66 @@ describe('sli-breakdown', () => {
       fixture: 'get.sockshop.service.carts.evaluations.mock.json',
     });
 
-    servicesPage.visitServicePage('sockshop');
-    servicesPage.selectService('carts', 'v0.1.2');
-    servicesPage.verifySliBreakdown(
-      {
-        name: 'go_routines',
-        value: 88,
-        result: 'pass',
-        score: 33.33,
-        passTargets: [
-          {
-            criteria: '<=100',
-            targetValue: 100,
-            violated: false,
+    servicesPage
+      .visitServicePage('sockshop')
+      .selectService('carts', 'v0.1.2')
+      .verifySliBreakdown(
+        {
+          name: 'go_routines',
+          value: 88,
+          result: 'pass',
+          score: 33.33,
+          passTargets: [
+            {
+              criteria: '<=100',
+              targetValue: 100,
+              violated: false,
+            },
+          ],
+          warningTargets: null,
+          keySli: false,
+          success: true,
+          expanded: false,
+          weight: 1,
+          comparedValue: 8,
+          calculatedChanges: {
+            absolute: 80,
+            relative: 1000,
           },
-        ],
-        warningTargets: null,
-        keySli: false,
-        success: true,
-        expanded: false,
-        weight: 1,
-        comparedValue: 8,
-        calculatedChanges: {
-          absolute: 80,
-          relative: 1000,
-        },
-      } as SliResult,
-      false
-    );
-
-    servicesPage.verifySliBreakdown(
-      {
-        name: 'request_throughput',
-        value: 18.42,
-        result: 'fail',
-        score: 0,
-        passTargets: [
-          {
-            criteria: '<=+100%',
-            targetValue: 0,
-            violated: true,
+        } as SliResult,
+        false
+      )
+      .verifySliBreakdown(
+        {
+          name: 'request_throughput',
+          value: 18.42,
+          result: 'fail',
+          score: 0,
+          passTargets: [
+            {
+              criteria: '<=+100%',
+              targetValue: 0,
+              violated: true,
+            },
+            {
+              criteria: '>=-80%',
+              targetValue: 0,
+              violated: false,
+            },
+          ],
+          warningTargets: null,
+          keySli: false,
+          success: true,
+          expanded: false,
+          weight: 1,
+          comparedValue: 0,
+          calculatedChanges: {
+            absolute: 18.42,
+            relative: 1742,
           },
-          {
-            criteria: '>=-80%',
-            targetValue: 0,
-            violated: false,
-          },
-        ],
-        warningTargets: null,
-        keySli: false,
-        success: true,
-        expanded: false,
-        weight: 1,
-        comparedValue: 0,
-        calculatedChanges: {
-          absolute: 18.42,
-          relative: 1742,
-        },
-      } as SliResult,
-      false
-    );
+        } as SliResult,
+        false
+      );
   });
 
   it('should show more details when expanding sli breakdown in service screen', () => {
@@ -102,36 +102,36 @@ describe('sli-breakdown', () => {
       fixture: 'get.sockshop.service.carts.evaluations.mock.json',
     });
 
-    servicesPage.visitServicePage('sockshop');
-    servicesPage.selectService('carts', 'v0.1.2');
-    servicesPage.expandSliBreakdown('go_routines');
-
-    servicesPage.verifySliBreakdown(
-      {
-        name: 'go_routines',
-        value: 88,
-        result: 'pass',
-        score: 33.33,
-        passTargets: [
-          {
-            criteria: '<=100',
-            targetValue: 100,
-            violated: false,
+    servicesPage
+      .visitServicePage('sockshop')
+      .selectService('carts', 'v0.1.2')
+      .expandSliBreakdown('go_routines')
+      .verifySliBreakdown(
+        {
+          name: 'go_routines',
+          value: 88,
+          result: 'pass',
+          score: 33.33,
+          passTargets: [
+            {
+              criteria: '<=100',
+              targetValue: 100,
+              violated: false,
+            },
+          ],
+          warningTargets: null,
+          keySli: false,
+          success: true,
+          expanded: false,
+          weight: 1,
+          comparedValue: 8,
+          calculatedChanges: {
+            absolute: 80,
+            relative: 1000,
           },
-        ],
-        warningTargets: null,
-        keySli: false,
-        success: true,
-        expanded: false,
-        weight: 1,
-        comparedValue: 8,
-        calculatedChanges: {
-          absolute: 80,
-          relative: 1000,
-        },
-      } as SliResult,
-      true
-    );
+        } as SliResult,
+        true
+      );
   });
 
   it('should sort elements correctly', () => {
@@ -148,25 +148,22 @@ describe('sli-breakdown', () => {
       fixture: 'get.sockshop.service.carts.evaluations.mock.json',
     });
 
-    servicesPage.visitServicePage('sockshop');
-    servicesPage.selectService('carts', 'v0.1.2');
-
-    cy.visit('/project/sockshop/service/carts/context/da740469-9920-4e0c-b304-0fd4b18d17c2/stage/staging');
+    servicesPage.visitServicePage('sockshop').selectService('carts', 'v0.1.2');
 
     // sort name asc
-    servicesPage.clickSliBreakdownHeader('Name');
-    servicesPage.verifySliBreakdownSorting(1, 'up', 'go_routines', 'http_response_time_seconds_main_page_sum');
+    servicesPage
+      .clickSliBreakdownHeader('Name')
+      .verifySliBreakdownSorting(1, 'up', 'go_routines', 'http_response_time_seconds_main_page_sum');
 
     // sort name desc
-    servicesPage.clickSliBreakdownHeader('Name');
-    servicesPage.verifySliBreakdownSorting(1, 'down', 'request_throughput', 'http_response_time_seconds_main_page_sum');
+    servicesPage
+      .clickSliBreakdownHeader('Name')
+      .verifySliBreakdownSorting(1, 'down', 'request_throughput', 'http_response_time_seconds_main_page_sum');
 
     // sort score asc
-    servicesPage.clickSliBreakdownHeader('Score');
-    servicesPage.verifySliBreakdownSorting(7, 'up', '0', '0');
+    servicesPage.clickSliBreakdownHeader('Score').verifySliBreakdownSorting(7, 'up', '0', '0');
 
     // sort score desc
-    servicesPage.clickSliBreakdownHeader('Score');
-    servicesPage.verifySliBreakdownSorting(7, 'down', '33.33', '0');
+    servicesPage.clickSliBreakdownHeader('Score').verifySliBreakdownSorting(7, 'down', '33.33', '0');
   });
 });

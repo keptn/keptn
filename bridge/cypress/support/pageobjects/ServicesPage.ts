@@ -64,37 +64,28 @@ class ServicesPage {
   verifySliBreakdown(result: SliResult, isExpanded: boolean): this {
     cy.byTestId('keptn-sli-breakdown').should('exist');
     if (isExpanded) {
-      this.assertSliColumn(result.name, 1, 'contain.text', result.name)
-        .assertSliColumn(result.name, 1, 'contain.text', 'Absolute change:')
-        .assertSliColumn(result.name, 1, 'contain.text', 'Relative change:')
-        .assertSliColumn(result.name, 1, 'contain.text', 'Compared with:')
-        .assertSliColumn(
-          result.name,
-          2,
-          'have.text',
-          `${result.value}${result.calculatedChanges?.absolute > 0 ? '+' : '-'}${result.calculatedChanges?.absolute}${
-            result.calculatedChanges?.relative > 0 ? '+' : '-'
-          }${result.calculatedChanges?.relative}% ${result.comparedValue}`
-        );
+      this.assertSliColumnText(
+        result.name,
+        'name',
+        `${result.name}Absolute change:Relative change:Compared with:`
+      ).assertSliColumnText(
+        result.name,
+        'value',
+        `${result.value}${result.calculatedChanges?.absolute > 0 ? '+' : '-'}${result.calculatedChanges?.absolute}${
+          result.calculatedChanges?.relative > 0 ? '+' : '-'
+        }${result.calculatedChanges?.relative}% ${result.comparedValue}`
+      );
     } else {
-      this.assertSliColumn(result.name, 1, 'have.text', result.name)
-        .assertSliColumn(result.name, 1, 'not.contain.text', 'Absolute change:')
-        .assertSliColumn(result.name, 1, 'not.contain.text', 'Relative change:')
-        .assertSliColumn(result.name, 1, 'not.contain.text', 'Compared with:')
-        .assertSliColumn(
-          result.name,
-          2,
-          'have.text',
-          `${result.value} (${result.calculatedChanges?.relative > 0 ? '+' : '-'}${
-            result.calculatedChanges?.relative
-          }%) `
-        );
+      this.assertSliColumnText(result.name, 'name', result.name).assertSliColumnText(
+        result.name,
+        'value',
+        `${result.value} (${result.calculatedChanges?.relative > 0 ? '+' : '-'}${result.calculatedChanges?.relative}%) `
+      );
     }
 
-    this.assertSliColumn(result.name, 3, 'have.text', result.weight.toString()).assertSliColumn(
+    this.assertSliColumnText(result.name, 'weight', result.weight.toString()).assertSliColumnText(
       result.name,
-      7,
-      'have.text',
+      'score',
       result.score.toString()
     );
 
@@ -107,8 +98,10 @@ class ServicesPage {
     return this;
   }
 
-  assertSliColumn(name: string, index: number, assertion: string, value: string): this {
-    cy.byTestId(`keptn-sli-breakdown-row-${name}`).find('dt-cell').eq(index).should(assertion, value);
+  assertSliColumnText(sliName: string, columnName: string, value: string): this {
+    cy.byTestId(`keptn-sli-breakdown-row-${sliName}`)
+      .find(`[uitestid="keptn-sli-breakdown-${columnName}-cell"]`)
+      .should('have.text', value);
     return this;
   }
 
