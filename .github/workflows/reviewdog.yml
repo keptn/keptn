@@ -11,7 +11,7 @@ jobs:
           go-version: 1.16
         id: go
       - name: Check out code.
-        uses: actions/checkout@v3.0.0
+        uses: actions/checkout@v3
       - name: Install golangci-lint
         run: |
           # binary will be $(go env GOPATH)/bin/golangci-lint
