@@ -151,7 +151,7 @@ func updateExistingIntegration(rh *UniformIntegrationHandler, integration *model
 
 	// update uniform only if there is a version upgrade or downgrade
 	if result[0].MetaData.IntegrationVersion != integration.MetaData.IntegrationVersion || result[0].MetaData.DistributorVersion != integration.MetaData.DistributorVersion {
-		integration.Subscriptions = result[0].Subscriptions
+		// only update the version information instead of overwriting the complete integration
 		_, err = rh.uniformRepo.UpdateVersionInfo(integration.ID, integration.MetaData.IntegrationVersion, integration.MetaData.DistributorVersion)
 	} else {
 		_, err = rh.uniformRepo.UpdateLastSeen(integration.ID)
