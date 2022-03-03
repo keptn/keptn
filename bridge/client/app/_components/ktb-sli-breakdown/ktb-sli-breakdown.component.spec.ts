@@ -58,8 +58,8 @@ describe('KtbSliBreakdownComponent', () => {
       weight: 1,
       comparedValue: 356.9,
       calculatedChanges: {
-        absolute: -41.04,
-        relative: -11.5,
+        absolute: -41.03,
+        relative: -11.49,
       },
     });
   });
