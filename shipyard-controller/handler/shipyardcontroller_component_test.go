@@ -761,6 +761,46 @@ func Test_shipyardController_Scenario5(t *testing.T) {
 
 }
 
+//Scenario 6: Received .finished event for a task where no sequence is available
+func Test_shipyardController_Scenario6(t *testing.T) {
+	defer setupLocalMongoDB()()
+
+	t.Logf("Executing Shipyard Controller Scenario 5 with shipyard file %s", testShipyardFileWithInvalidVersion)
+	sc, cancel := getTestShipyardController(testShipyardFileWithInvalidVersion)
+
+	defer cancel()
+
+	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
+
+	// STEP 1
+	// send dev.artifact-delivery.triggered event
+	err := sc.HandleIncomingEvent(getTestTaskFinishedEvent("dev", "unknown-triggered-id"), true)
+	require.NotNil(t, err)
+	require.ErrorIs(t, err, ErrSequenceNotFound)
+
+	require.Empty(t, mockDispatcher.AddCalls())
+}
+
+//Scenario 7: Received .finished event with missing stage
+func Test_shipyardController_Scenario7(t *testing.T) {
+	defer setupLocalMongoDB()()
+
+	t.Logf("Executing Shipyard Controller Scenario 5 with shipyard file %s", testShipyardFileWithInvalidVersion)
+	sc, cancel := getTestShipyardController(testShipyardFileWithInvalidVersion)
+
+	defer cancel()
+
+	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
+
+	// STEP 1
+	// send dev.artifact-delivery.triggered event
+	err := sc.HandleIncomingEvent(getTestTaskFinishedEvent("", "unknown-triggered-id"), true)
+	require.NotNil(t, err)
+	require.ErrorIs(t, err, models.ErrInvalidEventScope)
+
+	require.Empty(t, mockDispatcher.AddCalls())
+}
+
 func Test_shipyardController_DuplicateTask(t *testing.T) {
 	defer setupLocalMongoDB()()
 
