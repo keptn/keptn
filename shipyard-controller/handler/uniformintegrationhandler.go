@@ -142,10 +142,13 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 }
 
 func updateExistingIntegration(rh *UniformIntegrationHandler, integration *models.Integration, hash string) error {
-
-	result, _ := rh.uniformRepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{ID: hash})
-
 	var err error
+	result, err := rh.uniformRepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{ID: hash})
+
+	if err != nil {
+		return err
+	}
+
 	// update uniform only if there is a version upgrade or downgrade
 	if result[0].MetaData.IntegrationVersion != integration.MetaData.IntegrationVersion || result[0].MetaData.DistributorVersion != integration.MetaData.DistributorVersion {
 		integration.Subscriptions = result[0].Subscriptions
