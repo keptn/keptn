@@ -42,12 +42,12 @@ jobs:
       - name: Build Helm Charts
         id: build_helm_charts
         run: |
-          if [[ "$BRANCH" == "master" ]] && [[ "$RELEASE_BUILD" == 'false' ]] && [[ $DATETIME != "" ]]; then
+          if [[ "$RELEASE_BUILD" == "false" ]] && [[ $DATETIME != "" ]]; then
             # use VERSION.DATETIME for the image tag (e.g., nightly build)
-            ./gh-actions-scripts/build_helm_charts.sh "${VERSION}" "${VERSION}.${DATETIME}" "${KEPTN_SPEC_VERSION}"
+            ./gh-actions-scripts/build-helm-charts.sh "${VERSION}" "${VERSION}.${DATETIME}" "${KEPTN_SPEC_VERSION}" "keptndev"
           else
             # just use VERSION for the image tag
-            ./gh-actions-scripts/build_helm_charts.sh "${VERSION}" "${VERSION}" "${KEPTN_SPEC_VERSION}"
+            ./gh-actions-scripts/build-helm-charts.sh "${VERSION}" "${VERSION}" "${KEPTN_SPEC_VERSION}" "keptn"
           fi
 
       - name: Upload Helm Chart as an artifact

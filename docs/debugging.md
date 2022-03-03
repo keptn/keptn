@@ -52,7 +52,7 @@ Most of our services should already have a working setup. But just in case the s
     kind: Config
     build:
       artifacts:
-        - image: keptn/some-go-service
+        - image: keptndev/some-go-service
           docker:    # 	beta describes an artifact built from a Dockerfile.
             dockerfile: Dockerfile
             buildArgs:

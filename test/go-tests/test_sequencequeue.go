@@ -90,7 +90,7 @@ func Test_SequenceQueue(t *testing.T) {
 	source := "golang-test"
 
 	t.Logf("creating project %s", projectName)
-	err = CreateProject(projectName, sequenceStateShipyardFilePath, true)
+	projectName, err = CreateProject(projectName, sequenceStateShipyardFilePath, true)
 	require.Nil(t, err)
 
 	t.Logf("creating service %s", serviceName)
@@ -276,7 +276,7 @@ func Test_SequenceQueue_TriggerMultiple(t *testing.T) {
 	defer os.Remove(shipyardFilePath)
 
 	t.Logf("creating project %s", projectName)
-	err = CreateProject(projectName, shipyardFilePath, true)
+	projectName, err = CreateProject(projectName, shipyardFilePath, true)
 	require.Nil(t, err)
 
 	t.Logf("creating service %s", serviceName)
@@ -350,7 +350,7 @@ func Test_SequenceQueue_TriggerAndDeleteProject(t *testing.T) {
 	defer os.Remove(shipyardFilePath)
 
 	t.Logf("creating project %s", projectName)
-	err = CreateProject(projectName, shipyardFilePath, true)
+	projectName, err = CreateProject(projectName, shipyardFilePath, true)
 	require.Nil(t, err)
 
 	for i := 0; i < numServices; i++ {
@@ -384,7 +384,7 @@ func Test_SequenceQueue_TriggerAndDeleteProject(t *testing.T) {
 
 	// recreate the project again
 	t.Logf("recreating project %s", projectName)
-	err = CreateProject(projectName, shipyardFilePath, true)
+	projectName, err = CreateProject(projectName, shipyardFilePath, true)
 	require.Nil(t, err)
 
 	// check if there are any open .triggered events for the project

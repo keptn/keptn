@@ -5,10 +5,9 @@
 **DO NOT PERFORM THIS ON A PRODUCTION ENVIRONMENT**
 
 1. Create a new cluster (e.g., using k3s)
-1. Download latest CLI based on your platform: [Linux](https://storage.cloud.google.com/keptn-cli/latest/keptn-linux.zip) [Mac OS](https://storage.cloud.google.com/keptn-cli/latest/keptn-macOS.zip) [Windows](https://storage.cloud.google.com/keptn-cli/latest/keptn-windows.zip)
-1. Unpack the binary and move it to a directory of your choice (e.g., `/usr/local/bin/` on Linux and MacOS); Alternatively, use `./keptn` or `./keptn.exe` where appropriate.
+1. Download latest CLI: `curl -sL https://get.keptn.sh | bash`
 1. Verify that the installation has worked and that the version is correct by running `keptn version` 
-1. Install keptn using `keptn install --chart-repo=https://storage.googleapis.com/keptn-installer/latest/keptn-0.1.0.tgz [--use-case=continuous-delivery]`
+1. Install keptn using `keptn install [--use-case=continuous-delivery]`
 1. Authenticate to the Keptn Installation
 1. Verify the Keptn version you installed by using `keptn version`
 

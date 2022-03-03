@@ -36,6 +36,78 @@ const (
 	DefaultKeptnNamespace = "keptn"
 )
 
+type APICaller struct {
+	baseURL string
+	token   string
+}
+
+func NewAPICallerWithBaseURL(baseURL string) (*APICaller, error) {
+	token, _, err := GetApiCredentials()
+	if err != nil {
+		return nil, err
+	}
+	return &APICaller{
+		baseURL: baseURL,
+		token:   token,
+	}, nil
+}
+
+func NewAPICaller() (*APICaller, error) {
+	token, baseURL, err := GetApiCredentials()
+	if err != nil {
+		return nil, err
+	}
+	return &APICaller{
+		baseURL: baseURL,
+		token:   token,
+	}, nil
+}
+
+func (a *APICaller) Get(path string, retries int) (*req.Resp, error) {
+	return a.doHTTPRequestWithRetry(func() (*req.Resp, error) {
+		return req.Get(a.baseURL+path, a.getAuthHeader())
+	}, retries)
+}
+
+func (a *APICaller) Delete(path string, retries int) (*req.Resp, error) {
+	return a.doHTTPRequestWithRetry(func() (*req.Resp, error) {
+		return req.Delete(a.baseURL+path, a.getAuthHeader())
+	}, retries)
+}
+
+func (a *APICaller) Put(path string, payload interface{}, retries int) (*req.Resp, error) {
+	return a.doHTTPRequestWithRetry(func() (*req.Resp, error) {
+		return req.Put(a.baseURL+path, a.getAuthHeader(), req.BodyJSON(payload))
+	}, retries)
+}
+
+func (a *APICaller) Post(path string, payload interface{}, retries int) (*req.Resp, error) {
+	return a.doHTTPRequestWithRetry(func() (*req.Resp, error) {
+		return req.Post(a.baseURL+path, a.getAuthHeader(), req.BodyJSON(payload))
+	}, retries)
+}
+
+func (a *APICaller) getAuthHeader() req.Header {
+	authHeader := req.Header{
+		"Accept":  "application/json",
+		"x-token": a.token,
+	}
+	return authHeader
+}
+
+func (a *APICaller) doHTTPRequestWithRetry(httpFunc func() (*req.Resp, error), retries int) (*req.Resp, error) {
+	var reqErr error
+	var r *req.Resp
+	for i := 0; i <= retries; i++ {
+		r, reqErr = httpFunc()
+		if reqErr == nil {
+			return r, nil
+		}
+		<-time.After(5 * time.Second)
+	}
+	return r, reqErr
+}
+
 type APIEventSender struct {
 }
 
@@ -52,16 +124,52 @@ func (sender *APIEventSender) SendEvent(event v2.Event) error {
 	return err
 }
 
-func CreateProject(projectName, shipyardFilePath string, recreateIfAlreadyThere bool) error {
+func ApiDELETERequest(path string, retries int) (*req.Resp, error) {
+	caller, err := NewAPICaller()
+	if err != nil {
+		return nil, err
+	}
+	return caller.Delete(path, retries)
+}
+
+func ApiPOSTRequest(path string, payload interface{}, retries int) (*req.Resp, error) {
+	caller, err := NewAPICaller()
+	if err != nil {
+		return nil, err
+	}
+	return caller.Post(path, payload, retries)
+}
+
+func ApiPUTRequest(path string, payload interface{}, retries int) (*req.Resp, error) {
+	caller, err := NewAPICaller()
+	if err != nil {
+		return nil, err
+	}
+	return caller.Put(path, payload, retries)
+}
+
+func ApiGETRequest(path string, retries int) (*req.Resp, error) {
+	caller, err := NewAPICaller()
+	if err != nil {
+		return nil, err
+	}
+	return caller.Get(path, retries)
+}
+
+func CreateProject(projectName string, shipyardFilePath string, recreateIfAlreadyThere bool) (string, error) {
 
 	retries := 5
 	var err error
 	var resp *req.Resp
+
+	// The project name is prefixed with the keptn test namespace to avoid name collisions during parallel integration test runs on CI
+	newProjectName := osutils.GetOSEnvOrDefault(KeptnNamespaceEnvVar, DefaultKeptnNamespace) + "-" + projectName
+
 	for i := 0; i < retries; i++ {
 		if err != nil {
 			<-time.After(10 * time.Second)
 		}
-		resp, err = ApiGETRequest("/controlPlane/v1/project/"+projectName, 3)
+		resp, err = ApiGETRequest("/controlPlane/v1/project/"+newProjectName, 3)
 		if err != nil {
 			continue
 		}
@@ -69,16 +177,16 @@ func CreateProject(projectName, shipyardFilePath string, recreateIfAlreadyThere 
 		if resp.Response().StatusCode == http.StatusOK {
 			if recreateIfAlreadyThere {
 				// delete project if it exists
-				_, err = ExecuteCommand(fmt.Sprintf("keptn delete project %s", projectName))
+				_, err = ExecuteCommand(fmt.Sprintf("keptn delete project %s", newProjectName))
 				if err != nil {
 					continue
 				}
 			} else {
-				return errors.New("project already exists")
+				return "", errors.New("project already exists")
 			}
 		}
 
-		err = RecreateGitUpstreamRepository(projectName)
+		err = RecreateGitUpstreamRepository(newProjectName)
 		if err != nil {
 			// retry if repo creation failed (gitea might not be available)
 			continue
@@ -87,18 +195,18 @@ func CreateProject(projectName, shipyardFilePath string, recreateIfAlreadyThere 
 		user := GetGiteaUser()
 		token, err := GetGiteaToken()
 		if err != nil {
-			return err
+			return "", err
 		}
 
 		// apply the k8s job for creating the git upstream
-		_, err = ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=%s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s", projectName, shipyardFilePath, user, projectName, user, token))
+		_, err = ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=%s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s", newProjectName, shipyardFilePath, user, newProjectName, user, token))
 
 		if err == nil {
-			return nil
+			return newProjectName, nil
 		}
 	}
 
-	return err
+	return "", err
 }
 
 func TriggerSequence(projectName, serviceName, stageName, sequenceName string, eventData keptncommon.EventProperties) (string, error) {
@@ -176,79 +284,6 @@ func CreateSubscription(t *testing.T, serviceName string, subscription models.Ev
 	require.NotEmpty(t, subscriptionResponse.ID)
 
 	return subscriptionResponse.ID, nil
-}
-
-func ApiDELETERequest(path string, retries int) (*req.Resp, error) {
-	apiToken, keptnAPIURL, err := GetApiCredentials()
-	if err != nil {
-		return nil, err
-	}
-
-	authHeader := getAuthHeader(apiToken)
-
-	return doHTTPRequestWithRetry(func() (*req.Resp, error) {
-		return req.Delete(keptnAPIURL+path, authHeader)
-	}, retries)
-}
-
-func getAuthHeader(apiToken string) req.Header {
-	authHeader := req.Header{
-		"Accept":  "application/json",
-		"x-token": apiToken,
-	}
-	return authHeader
-}
-
-func ApiGETRequest(path string, retries int) (*req.Resp, error) {
-	apiToken, keptnAPIURL, err := GetApiCredentials()
-	if err != nil {
-		return nil, err
-	}
-
-	authHeader := getAuthHeader(apiToken)
-
-	return doHTTPRequestWithRetry(func() (*req.Resp, error) {
-		return req.Get(keptnAPIURL+path, authHeader)
-	}, retries)
-}
-
-func doHTTPRequestWithRetry(httpFunc func() (*req.Resp, error), retries int) (*req.Resp, error) {
-	var reqErr error
-	var r *req.Resp
-	for i := 0; i <= retries; i++ {
-		r, reqErr = httpFunc()
-		if reqErr == nil {
-			return r, nil
-		}
-		<-time.After(5 * time.Second)
-	}
-	return r, reqErr
-}
-
-func ApiPOSTRequest(path string, payload interface{}, retries int) (*req.Resp, error) {
-	apiToken, keptnAPIURL, err := GetApiCredentials()
-	if err != nil {
-		return nil, err
-	}
-
-	authHeader := getAuthHeader(apiToken)
-
-	return doHTTPRequestWithRetry(func() (*req.Resp, error) {
-		return req.Post(keptnAPIURL+path, authHeader, req.BodyJSON(payload))
-	}, retries)
-}
-
-func ApiPUTRequest(path string, payload interface{}, retries int) (*req.Resp, error) {
-	apiToken, keptnAPIURL, err := GetApiCredentials()
-	if err != nil {
-		return nil, err
-	}
-
-	authHeader := getAuthHeader(apiToken)
-
-	return doHTTPRequestWithRetry(func() (*req.Resp, error) {
-		return req.Put(keptnAPIURL+path, authHeader, req.BodyJSON(payload))
-	}, retries)
 }
 
 func GetApiCredentials() (string, string, error) {

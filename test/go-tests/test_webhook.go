@@ -156,6 +156,24 @@ spec:
         - "curl --header 'x-token: {{.env.secretKey}}' http://shipyard-controller:8080/v1/project/{{.data.project}}"
         - "curl http://shipyard-controller:8080/v1/project/{{.data.project}}/stage/{{.data.stage}}"`
 
+const webhookWithDisabledStartedEventsYaml = `apiVersion: webhookconfig.keptn.sh/v1alpha1
+kind: WebhookConfig
+metadata:
+  name: webhook-configuration
+spec:
+  webhooks:
+    - type: "sh.keptn.event.mytask.triggered"
+      subscriptionID: ${mytask-sub-id}
+      sendStarted: false
+      sendFinished: false
+      envFrom: 
+        - name: "secretKey"
+          secretRef:
+            name: "my-webhook-k8s-secret"
+            key: "my-key"
+      requests:
+        - "curl --header 'x-token: {{.env.secretKey}}' http://shipyard-controller:8080/v1/project/{{.data.project}}"`
+
 const webhookWithOverlappingSubscriptionsYaml = `apiVersion: webhookconfig.keptn.sh/v1alpha1
 kind: WebhookConfig
 metadata:
@@ -195,7 +213,7 @@ func Test_Webhook(t *testing.T) {
 	}()
 
 	t.Logf("creating project %s", projectName)
-	err = CreateProject(projectName, shipyardFilePath, true)
+	projectName, err = CreateProject(projectName, shipyardFilePath, true)
 	require.Nil(t, err)
 
 	t.Logf("creating service %s", serviceName)
@@ -218,22 +236,7 @@ func Test_Webhook(t *testing.T) {
 	taskTypes := []string{"mytask", "mytask-finished", "othertask", "unallowedtask", "unknowntask", "failedtask", "loopback", "loopback2", "loopback3"}
 
 	webhookYamlWithSubscriptionIDs := webhookYaml
-	for _, taskType := range taskTypes {
-		eventType := keptnv2.GetTriggeredEventType(taskType)
-		if strings.HasSuffix(taskType, "-finished") {
-			eventType = keptnv2.GetFinishedEventType(strings.TrimSuffix(taskType, "-finished"))
-		}
-		subscriptionID, err := CreateSubscription(t, "webhook-service", models.EventSubscription{
-			Event: eventType,
-			Filter: models.EventSubscriptionFilter{
-				Projects: []string{projectName},
-			},
-		})
-		require.Nil(t, err)
-
-		subscriptionPlaceholder := fmt.Sprintf("${%s-sub-id}", taskType)
-		webhookYamlWithSubscriptionIDs = strings.Replace(webhookYamlWithSubscriptionIDs, subscriptionPlaceholder, subscriptionID, -1)
-	}
+	webhookYamlWithSubscriptionIDs = getWebhookYamlWithSubscriptionIDs(t, taskTypes, projectName, webhookYamlWithSubscriptionIDs)
 
 	require.Nil(t, err)
 
@@ -368,7 +371,7 @@ func Test_Webhook_OverlappingSubscriptions(t *testing.T) {
 	}()
 
 	t.Logf("creating project %s", projectName)
-	err = CreateProject(projectName, shipyardFilePath, true)
+	projectName, err = CreateProject(projectName, shipyardFilePath, true)
 	require.Nil(t, err)
 
 	t.Logf("creating service %s", serviceName)
@@ -460,7 +463,7 @@ func Test_WebhookWithDisabledFinishedEvents(t *testing.T) {
 	}()
 
 	t.Logf("creating project %s", projectName)
-	err = CreateProject(projectName, shipyardFilePath, true)
+	projectName, err = CreateProject(projectName, shipyardFilePath, true)
 	require.Nil(t, err)
 
 	t.Logf("creating service %s", serviceName)
@@ -483,18 +486,7 @@ func Test_WebhookWithDisabledFinishedEvents(t *testing.T) {
 	taskTypes := []string{"mytask", "othertask", "unallowedtask", "unknowntask"}
 
 	webhookYamlWithSubscriptionIDs := webhookWithDisabledFinishedEventsYaml
-	for _, taskType := range taskTypes {
-		subscriptionID, err := CreateSubscription(t, "webhook-service", models.EventSubscription{
-			Event: keptnv2.GetTriggeredEventType(taskType),
-			Filter: models.EventSubscriptionFilter{
-				Projects: []string{projectName},
-			},
-		})
-		require.Nil(t, err)
-
-		subscriptionPlaceholder := fmt.Sprintf("${%s-sub-id}", taskType)
-		webhookYamlWithSubscriptionIDs = strings.Replace(webhookYamlWithSubscriptionIDs, subscriptionPlaceholder, subscriptionID, -1)
-	}
+	webhookYamlWithSubscriptionIDs = getWebhookYamlWithSubscriptionIDs(t, taskTypes, projectName, webhookYamlWithSubscriptionIDs)
 
 	require.Nil(t, err)
 
@@ -617,4 +609,107 @@ func Test_WebhookWithDisabledFinishedEvents(t *testing.T) {
 		require.Equal(t, string(keptnv2.ResultFailed), decodedEvent["result"])
 		require.NotEmpty(t, string(keptnv2.ResultFailed), decodedEvent["message"])
 	}
+}
+
+func Test_WebhookWithDisabledStartedEvents(t *testing.T) {
+	projectName := "webhooks-no-started"
+	serviceName := "myservice"
+	stageName := "dev"
+	sequencename := "mysequence"
+
+	shipyardFilePath, err := CreateTmpShipyardFile(webhookShipyard)
+	require.Nil(t, err)
+	defer func() {
+		err := os.Remove(shipyardFilePath)
+		if err != nil {
+			t.Logf("Could not delete tmp file: %s", err.Error())
+		}
+	}()
+
+	t.Logf("creating project %s", projectName)
+	projectName, err = CreateProject(projectName, shipyardFilePath, true)
+	require.Nil(t, err)
+
+	t.Logf("creating service %s", serviceName)
+	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
+
+	require.Nil(t, err)
+	require.Contains(t, output, "created successfully")
+
+	// create a secret that should be referenced in the webhook
+	_, err = ApiPOSTRequest("/secrets/v1/secret", map[string]interface{}{
+		"name":  "my-webhook-k8s-secret",
+		"scope": "keptn-webhook-service",
+		"data": map[string]string{
+			"my-key": "my-value",
+		},
+	}, 3)
+	require.Nil(t, err)
+
+	// create subscriptions for the webhook-service
+	taskTypes := []string{"mytask"}
+
+	webhookYamlWithSubscriptionIDs := webhookWithDisabledStartedEventsYaml
+	webhookYamlWithSubscriptionIDs = getWebhookYamlWithSubscriptionIDs(t, taskTypes, projectName, webhookYamlWithSubscriptionIDs)
+
+	require.Nil(t, err)
+
+	// wait some time to make sure the webhook service has pulled the updated subscription
+	<-time.After(20 * time.Second) // sorry :(
+
+	// now, let's add an webhook.yaml file to our service
+	webhookFilePath, err := CreateTmpFile("webhook.yaml", webhookYamlWithSubscriptionIDs)
+	require.Nil(t, err)
+	defer func() {
+		err := os.Remove(webhookFilePath)
+		if err != nil {
+			t.Logf("Could not delete tmp file: %s", err.Error())
+		}
+	}()
+
+	t.Log("Adding webhook.yaml to our service")
+	_, err = ExecuteCommand(fmt.Sprintf("keptn add-resource --project=%s --service=%s --resource=%s --resourceUri=webhook/webhook.yaml --all-stages", projectName, serviceName, webhookFilePath))
+
+	require.Nil(t, err)
+
+	keptnContextID, _ := TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
+
+	<-time.After(5 * time.Second)
+	// verify that no .started events have been sent for 'mytask'
+	taskStartedEvent, err := GetLatestEventOfType(keptnContextID, projectName, stageName, keptnv2.GetStartedEventType("mytask"))
+
+	require.Nil(t, taskStartedEvent)
+
+	// verify that no .finished event has been sent for 'mytask'
+	taskFinishedEvent, err := GetLatestEventOfType(keptnContextID, projectName, stageName, keptnv2.GetFinishedEventType("mytask"))
+
+	require.Nil(t, taskFinishedEvent)
+
+	t.Log("verified desired state, aborting sequence")
+	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), scmodels.SequenceControlCommand{
+		State: scmodels.AbortSequence,
+		Stage: "",
+	}, 3)
+	require.Nil(t, err)
+	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
+}
+
+func getWebhookYamlWithSubscriptionIDs(t *testing.T, taskTypes []string, projectName string, webhookYamlWithSubscriptionIDs string) string {
+	for _, taskType := range taskTypes {
+		eventType := keptnv2.GetTriggeredEventType(taskType)
+		if strings.HasSuffix(taskType, "-finished") {
+			eventType = keptnv2.GetFinishedEventType(strings.TrimSuffix(taskType, "-finished"))
+		}
+		subscriptionID, err := CreateSubscription(t, "webhook-service", models.EventSubscription{
+			Event: eventType,
+			Filter: models.EventSubscriptionFilter{
+				Projects: []string{projectName},
+			},
+		})
+		require.Nil(t, err)
+
+		subscriptionPlaceholder := fmt.Sprintf("${%s-sub-id}", taskType)
+		webhookYamlWithSubscriptionIDs = strings.Replace(webhookYamlWithSubscriptionIDs, subscriptionPlaceholder, subscriptionID, -1)
+	}
+	return webhookYamlWithSubscriptionIDs
 }
