@@ -137,7 +137,7 @@
           *ngIf="result.success"
           [class.error]="result.result === ResultTypes.FAILED"
           [class.warning]="result.result === ResultTypes.WARNING"
-          [textContent]="result.score"
+          [textContent]="result.score | truncateNumber: 2"
         ></span>
       </div>
     </dt-cell>

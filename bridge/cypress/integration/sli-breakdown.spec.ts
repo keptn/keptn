@@ -34,7 +34,7 @@ describe('sli-breakdown', () => {
           name: 'go_routines',
           value: 88,
           result: 'pass',
-          score: 33.33,
+          score: 33.99,
           passTargets: [
             {
               criteria: '<=100',
@@ -111,7 +111,7 @@ describe('sli-breakdown', () => {
           name: 'go_routines',
           value: 88,
           result: 'pass',
-          score: 33.33,
+          score: 33.99,
           passTargets: [
             {
               criteria: '<=100',
@@ -164,6 +164,6 @@ describe('sli-breakdown', () => {
     servicesPage.clickSliBreakdownHeader('Score').verifySliBreakdownSorting(7, 'up', '0', '0');
 
     // sort score desc
-    servicesPage.clickSliBreakdownHeader('Score').verifySliBreakdownSorting(7, 'down', '33.33', '0');
+    servicesPage.clickSliBreakdownHeader('Score').verifySliBreakdownSorting(7, 'down', '33.99', '0');
   });
 });
