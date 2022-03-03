@@ -245,6 +245,8 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 	err = resp.ToJSON(&integrations)
 
 	require.Equal(t, "0.8.4", integrations[0].MetaData.DistributorVersion)
+	// make sure no subscriptions has been deleted due to the version update
+	require.Len(t, integrations[0].Subscriptions, 1)
 
 	// delete the integration
 	resp, err = ApiDELETERequest("/controlPlane/v1/uniform/registration/"+registrationResponse.ID, 3)
