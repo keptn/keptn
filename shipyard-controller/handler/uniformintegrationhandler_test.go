@@ -170,11 +170,13 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 			wantFuncs:       []string{"GetUniformIntegrationsCalls", "UpdateLastSeenCalls"},
 		},
 		{
-			name: "create existing registration with different version",
+			name: "create existing registration with different version - should call UpdateVersionInfo func",
 			fields: fields{
 				integrationManager: &db_mock.UniformRepoMock{
-					CreateUniformIntegrationFunc:         func(integration models.Integration) error { return db.ErrUniformRegistrationAlreadyExists },
-					CreateOrUpdateUniformIntegrationFunc: func(integration models.Integration) error { return nil },
+					CreateUniformIntegrationFunc: func(integration models.Integration) error { return db.ErrUniformRegistrationAlreadyExists },
+					UpdateVersionInfoFunc: func(integrationID string, integrationVersion string, distributorVersion string) (*models.Integration, error) {
+						return nil, nil
+					},
 					GetUniformIntegrationsFunc: func(filter models.GetUniformIntegrationsParams) ([]models.Integration, error) {
 						return []models.Integration{*myValidIntegration}, nil
 					},
@@ -182,6 +184,24 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 			},
 			request:         httptest.NewRequest("POST", "/uniform/registration", bytes.NewBuffer(validPayloadUpdated)),
 			wantStatus:      http.StatusOK,
+			wantIntegration: myValidIntegrationUpdated,
+			wantFuncs:       []string{"GetUniformIntegrationsCalls", "CreateOrUpdateUniformIntegrationCalls"},
+		},
+		{
+			name: "create existing registration with different version - update fails",
+			fields: fields{
+				integrationManager: &db_mock.UniformRepoMock{
+					CreateUniformIntegrationFunc: func(integration models.Integration) error { return db.ErrUniformRegistrationAlreadyExists },
+					UpdateVersionInfoFunc: func(integrationID string, integrationVersion string, distributorVersion string) (*models.Integration, error) {
+						return nil, errors.New("update failed")
+					},
+					GetUniformIntegrationsFunc: func(filter models.GetUniformIntegrationsParams) ([]models.Integration, error) {
+						return []models.Integration{*myValidIntegration}, nil
+					},
+				},
+			},
+			request:         httptest.NewRequest("POST", "/uniform/registration", bytes.NewBuffer(validPayloadUpdated)),
+			wantStatus:      http.StatusInternalServerError,
 			wantIntegration: myValidIntegrationUpdated,
 			wantFuncs:       []string{"GetUniformIntegrationsCalls", "CreateOrUpdateUniformIntegrationCalls"},
 		},

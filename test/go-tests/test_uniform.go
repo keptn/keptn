@@ -238,6 +238,7 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 	// update version of distributor
 	updatedUniformIntegration := uniformIntegration
 	updatedUniformIntegration.MetaData.DistributorVersion = "0.8.4"
+	updatedUniformIntegration.Subscriptions = []keptnmodels.EventSubscription{}
 
 	resp, err = ApiPOSTRequest("/controlPlane/v1/uniform/registration", updatedUniformIntegration, 3)
 	require.Nil(t, err)
@@ -250,6 +251,8 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 	err = resp.ToJSON(&integrations)
 
 	require.Equal(t, "0.8.4", integrations[0].MetaData.DistributorVersion)
+	// make sure no subscription has been deleted due to the version update
+	require.Len(t, integrations[0].Subscriptions, 1)
 
 	// delete the integration
 	resp, err = ApiDELETERequest("/controlPlane/v1/uniform/registration/"+registrationResponse.ID, 3)
