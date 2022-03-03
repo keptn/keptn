@@ -703,7 +703,7 @@ jobs:
       - run: npm install ndjson-parse@1.0.4
 
       - name: Download test reports
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: test-report-json
           path: ${{ env.TEST_REPORTS_PATH }}
