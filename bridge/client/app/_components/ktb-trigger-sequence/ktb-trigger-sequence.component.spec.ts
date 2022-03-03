@@ -65,40 +65,6 @@ describe('KtbTriggerSequenceComponent', () => {
     expect(component.isValidString('test')).toEqual(true);
   });
 
-  it('should test if a timeframe is valid', () => {
-    // given
-    const timeframe: Timeframe = {
-      hours: undefined,
-      minutes: undefined,
-      seconds: undefined,
-      millis: undefined,
-      micros: undefined,
-    };
-
-    expect(component.isValidTimeframe(undefined)).toEqual(false);
-    expect(component.isValidTimeframe(timeframe)).toEqual(false);
-    timeframe.hours = 1;
-    expect(component.isValidTimeframe(timeframe)).toEqual(true);
-    timeframe.hours = undefined;
-    timeframe.minutes = 1;
-    expect(component.isValidTimeframe(timeframe)).toEqual(true);
-    timeframe.minutes = undefined;
-    timeframe.seconds = 1;
-    expect(component.isValidTimeframe(timeframe)).toEqual(true);
-    timeframe.seconds = undefined;
-    timeframe.millis = 1;
-    expect(component.isValidTimeframe(timeframe)).toEqual(true);
-    timeframe.millis = undefined;
-    timeframe.micros = 1;
-    expect(component.isValidTimeframe(timeframe)).toEqual(true);
-    timeframe.hours = 1;
-    timeframe.minutes = 1;
-    timeframe.seconds = 1;
-    timeframe.millis = 1;
-    timeframe.micros = 1;
-    expect(component.isValidTimeframe(timeframe)).toEqual(true);
-  });
-
   it('should test if start and end date are valid (start has to be before end)', () => {
     // given
     const start = moment().date(2).month(1).year(2021);

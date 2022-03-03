@@ -8,8 +8,9 @@ import { FormControl } from '@angular/forms';
   styleUrls: ['./ktb-time-input.component.scss'],
 })
 export class KtbTimeInputComponent implements OnInit {
-  @Input() required: boolean | undefined;
+  @Input() required?: boolean = false;
   @Input() label = '';
+  @Input() hint = '';
   @Input() secondsEnabled = true;
   @Input() millisEnabled = true;
   @Input() microsEnabled = true;

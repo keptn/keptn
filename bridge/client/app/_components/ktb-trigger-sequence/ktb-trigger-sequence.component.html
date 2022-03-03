@@ -151,13 +151,13 @@
     </dt-radio-group>
     <div
       fxLayout="row"
-      class="mb-2"
+      class="mb-3"
       fxLayoutGap="15px"
       *ngIf="evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.TIMEFRAME"
     >
       <ktb-time-input
-        [required]="true"
         [label]="'Timeframe'"
+        [hint]="'Defaults to 5m if not filled in'"
         [timeframe]="evaluationFormData.timeframe"
         (timeChanged)="evaluationFormData.timeframe = $event"
       ></ktb-time-input>
@@ -278,8 +278,7 @@
       [ngTemplateOutlet]="triggerActions"
       [ngTemplateOutletContext]="{
         isValid:
-          (evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.TIMEFRAME &&
-            isValidTimeframe(evaluationFormData.timeframe)) ||
+          evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.TIMEFRAME ||
           (evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.START_END &&
             isValidStartEndTime(evaluationFormData.startDatetime, evaluationFormData.endDatetime))
       }"

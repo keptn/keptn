@@ -125,17 +125,6 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
     return input !== undefined && input.trim() !== '';
   }
 
-  public isValidTimeframe(timeframe: Timeframe | undefined): boolean {
-    return (
-      timeframe !== undefined &&
-      (timeframe.hours !== undefined ||
-        timeframe.minutes !== undefined ||
-        timeframe.seconds !== undefined ||
-        timeframe.micros !== undefined ||
-        timeframe.millis !== undefined)
-    );
-  }
-
   public isValidStartEndTime(start: string | undefined, end: string | undefined): boolean {
     return start !== undefined && end !== undefined && this.checkStartEndValidity(start, end);
   }
