@@ -10,5 +10,8 @@
   "screenshotOnRunFailure": true,
   "viewportHeight": 1080,
   "viewportWidth": 1920,
-  "chromeWebSecurity": false
+  "chromeWebSecurity": false,
+  "env": {
+    "TZ": "Europe/Berlin"
+  }
 }
