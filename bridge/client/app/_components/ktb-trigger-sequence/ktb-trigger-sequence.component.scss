@@ -1,11 +1,23 @@
+@import '../../../variables';
+@import '~@dynatrace/barista-components/style/main';
+
 .ktb-trigger-sequence {
-  > div > div > dt-form-field,
-  > div > div > ktb-time-input {
+  background-color: $gray-100;
+  border-radius: $border-radius;
+
+  > div > div > div > dt-form-field,
+  > div > div > div > ktb-time-input {
     width: 50%;
   }
 
-  > div > div.full-width > dt-form-field {
+  > div > div > div.full-width > dt-form-field {
     width: 100%;
+  }
+}
+
+:host::ng-deep {
+  .dt-form-field-body {
+    background: transparent;
   }
 }
 
