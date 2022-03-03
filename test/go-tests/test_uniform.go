@@ -233,6 +233,7 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 	// update version of distributor
 	updatedUniformIntegration := uniformIntegration
 	updatedUniformIntegration.MetaData.DistributorVersion = "0.8.4"
+	updatedUniformIntegration.Subscriptions = nil
 
 	resp, err = ApiPOSTRequest("/controlPlane/v1/uniform/registration", updatedUniformIntegration, 3)
 	require.Nil(t, err)
