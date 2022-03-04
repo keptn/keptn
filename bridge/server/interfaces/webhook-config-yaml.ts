@@ -3,7 +3,7 @@ import { WebhookConfigMethod } from '../../shared/interfaces/webhook-config';
 import { WebhookConfig, WebhookSecret } from '../../shared/models/webhook-config';
 import { Webhook, WebhookConfigYamlResult } from './webhook-config-yaml-result';
 
-const order: { [key: string]: number } = {
+const order: { [key in keyof WebhookConfigYamlResult]: number } = {
   apiVersion: 0,
   kind: 1,
   metadata: 2,
@@ -218,7 +218,8 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
 
   public toYAML(): string {
     const yamlDoc = new Document(this, {
-      sortMapEntries: (a, b): number => order[a.key as string] - order[b.key as string],
+      sortMapEntries: (a, b): number =>
+        order[a.key as keyof WebhookConfigYamlResult] - order[b.key as keyof WebhookConfigYamlResult],
       toStringDefaults: {
         lineWidth: 0,
       },
