@@ -21,7 +21,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/go-utils/pkg/common/osutils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
-	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/controller"
 	"github.com/keptn/keptn/shipyard-controller/db"
@@ -103,17 +102,24 @@ func main() {
 		log.Fatalf("could not create kubernetes client: %s", err.Error())
 	}
 
-	eventSender, err := v0_2_0.NewHTTPEventSender("")
+	connectionHandler := nats.NewNatsConnectionHandler(
+		ctx,
+		getNatsURLFromEnvVar(),
+	)
+
+	eventSender, err := connectionHandler.GetPublisher()
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	sequenceExecutionRepo := createSequenceExecutionRepo()
 
 	projectMVRepo := createProjectMVRepo()
 	projectManager := handler.NewProjectManager(
 		common.NewGitConfigurationStore(csEndpoint.String()),
 		createSecretStore(kubeAPI),
 		projectMVRepo,
-		createTaskSequenceRepo(),
+		sequenceExecutionRepo,
 		createEventsRepo(),
 		createSequenceQueueRepo(),
 		createEventQueueRepo())
@@ -131,13 +137,12 @@ func main() {
 	)
 
 	stageManager := handler.NewStageManager(projectMVRepo)
-	eventDispatcher := handler.NewEventDispatcher(createEventsRepo(), createEventQueueRepo(), createTaskSequenceRepo(), eventSender, time.Duration(eventDispatcherSyncInterval)*time.Second)
-	// setup dispatcher with default Read and Write mode
+
+	eventDispatcher := handler.NewEventDispatcher(createEventsRepo(), createEventQueueRepo(), sequenceExecutionRepo, eventSender, time.Duration(eventDispatcherSyncInterval)*time.Second)
 	sequenceDispatcher := handler.NewSequenceDispatcher(
 		createEventsRepo(),
-		createEventQueueRepo(),
 		createSequenceQueueRepo(),
-		createTaskSequenceRepo(),
+		sequenceExecutionRepo,
 		getDurationFromEnvVar(envVarSequenceDispatchIntervalSec, envVarSequenceDispatchIntervalSecDefault),
 		clock.New(),
 		common.SDModeRW,
@@ -209,9 +214,7 @@ func main() {
 	shipyardController.AddSequenceAbortedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceTimeoutHook(eventDispatcher)
 	shipyardController.AddSequencePausedHook(sequenceStateMaterializedView)
-	shipyardController.AddSequencePausedHook(eventDispatcher)
 	shipyardController.AddSequenceResumedHook(sequenceStateMaterializedView)
-	shipyardController.AddSequenceResumedHook(eventDispatcher)
 
 	taskStartedWaitDuration := getDurationFromEnvVar(envVarTaskStartedWaitDuration, envVarTaskStartedWaitDurationDefault)
 
@@ -258,13 +261,7 @@ func main() {
 		Handler: engine,
 	}
 
-	connectionHandler := nats.NewNatsConnectionHandler(
-		ctx,
-		getNatsURLFromEnvVar(),
-		nats.NewKeptnNatsMessageHandler(shipyardController.HandleIncomingEvent),
-	)
-
-	if err := connectionHandler.SubscribeToTopics([]string{"sh.keptn.>"}); err != nil {
+	if err := connectionHandler.SubscribeToTopics([]string{"sh.keptn.>"}, nats.NewKeptnNatsMessageHandler(shipyardController.HandleIncomingEvent)); err != nil {
 		log.Fatalf("Could not subscribe to nats: %v", err)
 	}
 
@@ -378,16 +375,16 @@ func createEventsRepo() *db.MongoDBEventsRepo {
 	return db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance())
 }
 
+func createSequenceExecutionRepo() *db.MongoDBSequenceExecutionRepo {
+	return db.NewMongoDBSequenceExecutionRepo(db.GetMongoDBConnectionInstance())
+}
+
 func createSequenceQueueRepo() *db.MongoDBSequenceQueueRepo {
 	return db.NewMongoDBSequenceQueueRepo(db.GetMongoDBConnectionInstance())
 }
 
 func createEventQueueRepo() *db.MongoDBEventQueueRepo {
 	return db.NewMongoDBEventQueueRepo(db.GetMongoDBConnectionInstance())
-}
-
-func createTaskSequenceRepo() *db.TaskSequenceMongoDBRepo {
-	return db.NewTaskSequenceMongoDBRepo(db.GetMongoDBConnectionInstance())
 }
 
 func createSecretStore(kubeAPI *kubernetes.Clientset) *common.K8sSecretStore {

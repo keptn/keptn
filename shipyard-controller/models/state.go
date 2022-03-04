@@ -1,13 +1,14 @@
 package models
 
 const (
-	SequenceTriggeredState = "triggered"
-	SequenceStartedState   = "started"
-	SequenceWaitingState   = "waiting"
-	SequenceFinished       = "finished"
-	TimedOut               = "timedOut"
-	SequencePaused         = "paused"
-	SequenceAborted        = "aborted"
+	SequenceTriggeredState          = "triggered"
+	SequenceStartedState            = "started"
+	SequenceWaitingState            = "waiting"
+	SequenceWaitingForApprovalState = "waitingForApproval"
+	SequenceFinished                = "finished"
+	TimedOut                        = "timedOut"
+	SequencePaused                  = "paused"
+	SequenceAborted                 = "aborted"
 )
 
 type GetSequenceStateParams struct {

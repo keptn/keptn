@@ -1,6 +1,7 @@
 package go_tests
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -249,6 +250,30 @@ func Test_SequenceState(t *testing.T) {
 	_, err = keptn.SendTaskStartedEvent(nil, source)
 	require.Nil(t, err)
 
+	// verify state
+	require.Eventually(t, func() bool {
+		states, resp, err = GetState(projectName)
+		if err != nil {
+			return false
+		}
+
+		marshal, _ := json.MarshalIndent(states, "", "  ")
+		t.Logf("%s", marshal)
+		state := states.States[0]
+
+		if !IsEqual(t, 1, len(state.Stages), "len(state.Stages)") {
+			return false
+		}
+
+		devStage := state.Stages[0]
+
+		if !IsEqual(t, keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName), devStage.LatestEvent.Type, "devStage.LatestEvent.Type") {
+			return false
+		}
+
+		return true
+	}, 1*time.Minute, 5*time.Second)
+
 	// send finished event with score
 	_, err = keptn.SendTaskFinishedEvent(&keptnv2.EvaluationFinishedEventData{
 		EventData: keptnv2.EventData{
@@ -267,6 +292,9 @@ func Test_SequenceState(t *testing.T) {
 		if err != nil {
 			return false
 		}
+
+		marshal, _ := json.MarshalIndent(states, "", "  ")
+		t.Logf("%s", marshal)
 		state := states.States[0]
 
 		if !IsEqual(t, scmodels.SequenceStartedState, state.State, "state.State") {
@@ -280,6 +308,7 @@ func Test_SequenceState(t *testing.T) {
 		devStage := state.Stages[0]
 
 		if devStage.LatestEvaluation == nil {
+			t.Logf("LatestEvaluation property is not set (yet). Checking again in a few seconds")
 			return false
 		}
 
@@ -298,7 +327,7 @@ func Test_SequenceState(t *testing.T) {
 		}
 
 		return true
-	}, 10*time.Second, 2*time.Second)
+	}, 1*time.Minute, 5*time.Second)
 
 	deploymentTriggeredEvent, err = GetLatestEventOfType(*context.KeptnContext, projectName, "staging", keptnv2.GetTriggeredEventType("delivery"))
 

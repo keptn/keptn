@@ -173,10 +173,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 
 	// STEP 2
 	// send deployment.started event
-	done = sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "test-source")
-	if done {
-		return
-	}
+	sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "test-source")
 
 	// STEP 3
 	// send deployment.finished event
@@ -209,10 +206,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 
 	// STEP 4
 	// send test.started event
-	done = sendAndVerifyStartedEvent(t, sc, keptnv2.TestTaskName, triggeredID, "dev", "test-source")
-	if done {
-		return
-	}
+	sendAndVerifyStartedEvent(t, sc, keptnv2.TestTaskName, triggeredID, "dev", "test-source")
 
 	// STEP 5
 	// send test.finished event
@@ -240,10 +234,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 
 	// STEP 6
 	// send evaluation.started event
-	done = sendAndVerifyStartedEvent(t, sc, keptnv2.EvaluationTaskName, triggeredID, "dev", "test-source")
-	if done {
-		return
-	}
+	sendAndVerifyStartedEvent(t, sc, keptnv2.EvaluationTaskName, triggeredID, "dev", "test-source")
 
 	// STEP 7
 	// send evaluation.finished event -> result = warning should not abort the task sequence
@@ -257,10 +248,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 
 	// STEP 8
 	// send release.started event
-	done = sendAndVerifyStartedEvent(t, sc, keptnv2.ReleaseTaskName, triggeredID, "dev", "test-source")
-	if done {
-		return
-	}
+	sendAndVerifyStartedEvent(t, sc, keptnv2.ReleaseTaskName, triggeredID, "dev", "test-source")
 
 	// STEP 9
 	// send release.finished event
@@ -315,17 +303,11 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 
 	// STEP 9.1
 	// send deployment.started event 1 with ID 1
-	done = sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "hardening", "test-source-1")
-	if done {
-		return
-	}
+	sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "hardening", "test-source-1")
 
 	// STEP 9.2
 	// send deployment.started event 2 with ID 2
-	done = sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "hardening", "test-source-2")
-	if done {
-		return
-	}
+	sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "hardening", "test-source-2")
 
 	// STEP 10.1
 	// send deployment.finished event 1 with ID 1
@@ -387,23 +369,20 @@ func Test_shipyardController_Scenario2(t *testing.T) {
 	// STEP 2
 	// send deployment.started event
 	go func() {
-		time.After(2 * time.Second)
-		_ = sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "test-source")
+		<-time.After(2 * time.Second)
+		sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "test-source")
 	}()
 
 	// STEP 3
 	// send deployment.finished event
-	triggeredID, done = sendAndVerifyFinishedEvent(
-		t,
-		sc,
-		getDeploymentFinishedEvent("dev", triggeredID, "test-source", keptnv2.ResultPass),
-		keptnv2.DeploymentTaskName,
-		keptnv2.TestTaskName,
-		"",
-	)
-	if done {
-		return
-	}
+
+	err = sc.HandleIncomingEvent(getDeploymentFinishedEvent("dev", triggeredID, "test-source", keptnv2.ResultPass), true)
+	require.Nil(t, err)
+
+	require.Eventually(t, func() bool {
+		return len(mockDispatcher.AddCalls()) == 2
+	}, 10*time.Second, 1*time.Second)
+
 	require.Equal(t, 2, len(mockDispatcher.AddCalls()))
 	verifyEvent = mockDispatcher.AddCalls()[1].Event
 	require.Equal(t, keptnv2.GetTriggeredEventType(keptnv2.TestTaskName), verifyEvent.Event.Type())
@@ -457,25 +436,28 @@ func Test_shipyardController_Scenario3(t *testing.T) {
 	// STEP 2
 	// send deployment.started event
 	go func() {
-		time.After(2 * time.Second)
-		_ = sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "test-source")
+		<-time.After(2 * time.Second)
+		sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "test-source")
 	}()
 
 	// STEP 3
 	// send deployment.finished event
-	done = sendFinishedEventAndVerifyTaskSequenceCompletion(
-		t,
-		sc,
-		getErroredDeploymentFinishedEvent("dev", triggeredID, "test-source"),
-		keptnv2.DeploymentTaskName,
-		"",
-	)
-	if done {
-		return
-	}
+	err = sc.HandleIncomingEvent(getErroredDeploymentFinishedEvent("dev", triggeredID, "test-source"), true)
+	require.Nil(t, err)
 
 	// check for dev.artifact-delivery.finished event
-	require.Equal(t, 4, len(mockDispatcher.AddCalls()))
+	require.Eventually(t, func() bool {
+		return 4 == len(mockDispatcher.AddCalls())
+	}, 10*time.Second, 1*time.Second)
+
+	triggeredEvents, err = sc.eventRepo.GetEvents("test-project", common.EventFilter{
+		Type:    keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName),
+		Stage:   common.Stringp("dev"),
+		Service: common.Stringp("carts"),
+		Source:  common.Stringp("shipyard-controller"),
+	}, common.TriggeredEvent)
+
+	require.Empty(t, triggeredEvents)
 	taskSequenceCompletionEvent := mockDispatcher.AddCalls()[1].Event
 	require.Equal(t, keptnv2.GetFinishedEventType("dev.artifact-delivery"), taskSequenceCompletionEvent.Event.Type())
 
@@ -530,10 +512,7 @@ func Test_shipyardController_Scenario4(t *testing.T) {
 
 	// STEP 2
 	// send deployment.started event
-	done = sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "test-source")
-	if done {
-		return
-	}
+	sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "test-source")
 
 	// STEP 3
 	// send deployment.finished event
@@ -554,10 +533,7 @@ func Test_shipyardController_Scenario4(t *testing.T) {
 
 	// STEP 4
 	// send test.started event
-	done = sendAndVerifyStartedEvent(t, sc, keptnv2.TestTaskName, triggeredID, "dev", "test-source")
-	if done {
-		return
-	}
+	sendAndVerifyStartedEvent(t, sc, keptnv2.TestTaskName, triggeredID, "dev", "test-source")
 
 	// STEP 5
 	// send test.finished event
@@ -577,10 +553,7 @@ func Test_shipyardController_Scenario4(t *testing.T) {
 	require.Equal(t, keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName), verifyEvent.Event.Type())
 	// STEP 6
 	// send evaluation.started event
-	done = sendAndVerifyStartedEvent(t, sc, keptnv2.EvaluationTaskName, triggeredID, "dev", "test-source")
-	if done {
-		return
-	}
+	sendAndVerifyStartedEvent(t, sc, keptnv2.EvaluationTaskName, triggeredID, "dev", "test-source")
 
 	// STEP 7
 	// send evaluation.finished event with result=fail
@@ -651,15 +624,9 @@ func Test_shipyardController_Scenario4a(t *testing.T) {
 
 	// STEP 2
 	// send deployment.started events
-	done = sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "test-source")
-	if done {
-		return
-	}
+	sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "test-source")
 
-	done = sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "another-test-source")
-	if done {
-		return
-	}
+	sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "another-test-source")
 
 	// STEP 3
 	// send deployment.finished event
@@ -729,10 +696,7 @@ func Test_shipyardController_TriggerOnFail(t *testing.T) {
 
 	// STEP 2
 	// send deployment.started event
-	done = sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "test-source")
-	if done {
-		return
-	}
+	sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "test-source")
 
 	// STEP 3
 	// send deployment.finished event
@@ -797,6 +761,46 @@ func Test_shipyardController_Scenario5(t *testing.T) {
 
 }
 
+//Scenario 6: Received .finished event for a task where no sequence is available
+func Test_shipyardController_Scenario6(t *testing.T) {
+	defer setupLocalMongoDB()()
+
+	t.Logf("Executing Shipyard Controller Scenario 5 with shipyard file %s", testShipyardFileWithInvalidVersion)
+	sc, cancel := getTestShipyardController(testShipyardFileWithInvalidVersion)
+
+	defer cancel()
+
+	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
+
+	// STEP 1
+	// send dev.artifact-delivery.triggered event
+	err := sc.HandleIncomingEvent(getTestTaskFinishedEvent("dev", "unknown-triggered-id"), true)
+	require.NotNil(t, err)
+	require.ErrorIs(t, err, ErrSequenceNotFound)
+
+	require.Empty(t, mockDispatcher.AddCalls())
+}
+
+//Scenario 7: Received .finished event with missing stage
+func Test_shipyardController_Scenario7(t *testing.T) {
+	defer setupLocalMongoDB()()
+
+	t.Logf("Executing Shipyard Controller Scenario 5 with shipyard file %s", testShipyardFileWithInvalidVersion)
+	sc, cancel := getTestShipyardController(testShipyardFileWithInvalidVersion)
+
+	defer cancel()
+
+	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
+
+	// STEP 1
+	// send dev.artifact-delivery.triggered event
+	err := sc.HandleIncomingEvent(getTestTaskFinishedEvent("", "unknown-triggered-id"), true)
+	require.NotNil(t, err)
+	require.ErrorIs(t, err, models.ErrInvalidEventScope)
+
+	require.Empty(t, mockDispatcher.AddCalls())
+}
+
 func Test_shipyardController_DuplicateTask(t *testing.T) {
 	defer setupLocalMongoDB()()
 
@@ -820,10 +824,7 @@ func Test_shipyardController_DuplicateTask(t *testing.T) {
 
 	// STEP 2
 	// send deployment.started event
-	done := sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredKeptnEvent.ID, "dev", "test-source")
-	if done {
-		return
-	}
+	sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredKeptnEvent.ID, "dev", "test-source")
 
 	// STEP 3
 	// send deployment.finished event
@@ -841,10 +842,7 @@ func Test_shipyardController_DuplicateTask(t *testing.T) {
 
 	// STEP 4
 	// send deployment.started event (for the second deployment task)
-	done = sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "test-source")
-	if done {
-		return
-	}
+	sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "test-source")
 
 	// STEP 5
 	// send deployment.finished event for the second deployment task -> now we want an evaluation.triggered event as the next task
@@ -889,16 +887,32 @@ func Test_shipyardController_TimeoutSequence(t *testing.T) {
 		Type:           common.Stringp(keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName)),
 	}, common.TriggeredEvent)
 
-	sc.taskSequenceRepo.CreateTaskExecution("my-project", models.TaskExecution{
-		TaskSequenceName: "delivery",
-		TriggeredEventID: "my-task-triggered-id",
-		Task:             models.Task{},
-		Stage:            "my-stage",
-		KeptnContext:     "my-keptn-context-id",
-	})
+	err := sc.sequenceExecutionRepo.Upsert(models.SequenceExecution{
+		ID: "sequence-execution-id",
+		Sequence: keptnv2.Sequence{
+			Name: "delivery",
+		},
+		Status: models.SequenceExecutionStatus{
+			State: models.SequenceStartedState,
+			CurrentTask: models.TaskExecutionState{
+				Name:        "deployment",
+				TriggeredID: "my-deployment-triggered-id",
+			},
+		},
+		Scope: models.EventScope{
+			KeptnContext: "my-keptn-context-id",
+			EventData: keptnv2.EventData{
+				Project: "my-project",
+				Stage:   "my-stage",
+				Service: "my-service",
+			},
+		},
+	}, nil)
+
+	require.Nil(t, err)
 
 	// invoke the CancelSequence function
-	err := sc.timeoutSequence(models.SequenceTimeout{
+	err = sc.timeoutSequence(models.SequenceTimeout{
 		KeptnContext: "my-keptn-context-id",
 		LastEvent: models.Event{
 			Data: keptnv2.EventData{
@@ -907,7 +921,7 @@ func Test_shipyardController_TimeoutSequence(t *testing.T) {
 				Service: "my-service",
 			},
 			Type:           common.Stringp(keptnv2.GetTriggeredEventType("my-task")),
-			ID:             "my-task-triggered-id",
+			ID:             "my-deployment-triggered-id",
 			Shkeptncontext: "my-keptn-context-id",
 		},
 	})
@@ -949,17 +963,32 @@ func Test_shipyardController_CancelSequence(t *testing.T) {
 		Type:           common.Stringp(keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName)),
 	}, common.TriggeredEvent)
 
-	taskSequenceMapping := models.TaskExecution{
-		TaskSequenceName: "delivery",
-		TriggeredEventID: "my-deployment-triggered-id",
-		Task:             models.Task{},
-		Stage:            "my-stage",
-		KeptnContext:     "my-keptn-context-id",
-	}
-	sc.taskSequenceRepo.CreateTaskExecution("my-project", taskSequenceMapping)
+	err := sc.sequenceExecutionRepo.Upsert(models.SequenceExecution{
+		ID: "sequence-execution-id",
+		Sequence: keptnv2.Sequence{
+			Name: "delivery",
+		},
+		Status: models.SequenceExecutionStatus{
+			State: models.SequenceStartedState,
+			CurrentTask: models.TaskExecutionState{
+				Name:        "deployment",
+				TriggeredID: "my-deployment-triggered-id",
+			},
+		},
+		Scope: models.EventScope{
+			KeptnContext: "my-keptn-context-id",
+			EventData: keptnv2.EventData{
+				Project: "my-project",
+				Stage:   "my-stage",
+				Service: "my-service",
+			},
+		},
+	}, nil)
+
+	require.Nil(t, err)
 
 	// invoke the CancelSequence function
-	err := sc.cancelSequence(models.SequenceControl{
+	err = sc.cancelSequence(models.SequenceControl{
 		KeptnContext: "my-keptn-context-id",
 		Project:      "my-project",
 		Stage:        "my-stage",
@@ -1000,8 +1029,28 @@ func Test_shipyardController_CancelQueuedSequence(t *testing.T) {
 		Type:           common.Stringp(keptnv2.GetTriggeredEventType("my-stage.delivery")),
 	}, common.TriggeredEvent)
 
+	err := sc.sequenceExecutionRepo.Upsert(models.SequenceExecution{
+		ID: "sequence-execution-id",
+		Sequence: keptnv2.Sequence{
+			Name: "delivery",
+		},
+		Status: models.SequenceExecutionStatus{
+			State: models.SequenceTriggeredState,
+		},
+		Scope: models.EventScope{
+			KeptnContext: "my-keptn-context-id",
+			EventData: keptnv2.EventData{
+				Project: "my-project",
+				Stage:   "my-stage",
+				Service: "my-service",
+			},
+		},
+	}, nil)
+
+	require.Nil(t, err)
+
 	// invoke the CancelSequence function
-	err := sc.cancelSequence(models.SequenceControl{
+	err = sc.cancelSequence(models.SequenceControl{
 		KeptnContext: "my-keptn-context-id",
 		Project:      "my-project",
 		Stage:        "my-stage",
@@ -1042,8 +1091,26 @@ func Test_shipyardController_CancelQueuedSequence_RemoveFromQueueFails(t *testin
 		Type:           common.Stringp(keptnv2.GetTriggeredEventType("my-stage.delivery")),
 	}, common.TriggeredEvent)
 
+	err := sc.sequenceExecutionRepo.Upsert(models.SequenceExecution{
+		ID: "sequence-execution-id",
+		Sequence: keptnv2.Sequence{
+			Name: "delivery",
+		},
+		Status: models.SequenceExecutionStatus{
+			State: models.SequenceTriggeredState,
+		},
+		Scope: models.EventScope{
+			KeptnContext: "my-keptn-context-id",
+			EventData: keptnv2.EventData{
+				Project: "my-project",
+				Stage:   "my-stage",
+				Service: "my-service",
+			},
+		},
+	}, nil)
+
 	// invoke the CancelSequence function
-	err := sc.cancelSequence(models.SequenceControl{
+	err = sc.cancelSequence(models.SequenceControl{
 		KeptnContext: "my-keptn-context-id",
 		Project:      "my-project",
 		Stage:        "my-stage",
@@ -1163,14 +1230,19 @@ func getTestShipyardController(shipyardContent string) (*shipyardController, con
 	os.Setenv("DISABLE_LEADER_ELECTION", "true")
 
 	eventRepo := db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance())
-	eventQueueRepo := db.NewMongoDBEventQueueRepo(db.GetMongoDBConnectionInstance())
 	sequenceQueueRepo := db.NewMongoDBSequenceQueueRepo(db.GetMongoDBConnectionInstance())
-	sequenceRepo := db.NewTaskSequenceMongoDBRepo(db.GetMongoDBConnectionInstance())
-	sequenceDispatcher := NewSequenceDispatcher(eventRepo, eventQueueRepo, sequenceQueueRepo, sequenceRepo, 1*time.Second, clock.New(), common.SDModeRW)
+	sequenceExecutionRepo := db.NewMongoDBSequenceExecutionRepo(db.GetMongoDBConnectionInstance())
+	sequenceDispatcher := NewSequenceDispatcher(
+		eventRepo,
+		sequenceQueueRepo,
+		sequenceExecutionRepo,
+		time.Second,
+		clock.New(),
+		common.SDModeRW,
+	)
 	sc := &shipyardController{
-		projectMvRepo:    db.NewProjectMVRepo(db.NewMongoDBKeyEncodingProjectsRepo(db.GetMongoDBConnectionInstance()), db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance())),
-		eventRepo:        eventRepo,
-		taskSequenceRepo: db.NewTaskSequenceMongoDBRepo(db.GetMongoDBConnectionInstance()),
+		projectMvRepo: db.NewProjectMVRepo(db.NewMongoDBKeyEncodingProjectsRepo(db.GetMongoDBConnectionInstance()), db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance())),
+		eventRepo:     eventRepo,
 		eventDispatcher: &fake.IEventDispatcherMock{
 			AddFunc: func(event models.DispatcherEvent, skipQueue bool) error {
 				return nil
@@ -1192,6 +1264,7 @@ func getTestShipyardController(shipyardContent string) (*shipyardController, con
 				return "latest-commit-id", nil
 			},
 		},
+		sequenceExecutionRepo: sequenceExecutionRepo,
 	}
 	sc.eventDispatcher.(*fake.IEventDispatcherMock).AddFunc = func(event models.DispatcherEvent, skipQueue bool) error {
 		ev := &models.Event{}
@@ -1406,6 +1479,8 @@ func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEv
 		Source:  common.Stringp("shipyard-controller"),
 	}, common.TriggeredEvent)
 
+	require.NotEmpty(t, triggeredEvents)
+
 	triggeredID := triggeredEvents[0].ID
 	done := fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(nextEventType), nextStage, nil)
 	if done {
@@ -1496,35 +1571,12 @@ func sendAndVerifyPartialFinishedEvent(t *testing.T, sc *shipyardController, fin
 		return true
 	}
 
-	// check startedEvent collection -> should still contain one <eventType>.started event
-	startedEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
-		Type:        keptnv2.GetStartedEventType(eventType),
-		Stage:       &scope.Stage,
-		Service:     common.Stringp("carts"),
-		TriggeredID: common.Stringp(finishedEvent.Triggeredid),
-	}, common.StartedEvent)
-	if len(startedEvents) != 1 {
-		t.Errorf("List of started events does not hold proper number of events. Expected 1 but got %d", len(startedEvents))
-		return true
-	}
-	done = fake.ShouldContainEvent(t, startedEvents, keptnv2.GetStartedEventType(eventType), scope.Stage, nil)
-	return done
+	return false
 }
 
-func sendAndVerifyStartedEvent(t *testing.T, sc *shipyardController, taskName string, triggeredID string, stage string, fromSource string) bool {
+func sendAndVerifyStartedEvent(t *testing.T, sc *shipyardController, taskName string, triggeredID string, stage string, fromSource string) {
 	err := sc.HandleIncomingEvent(getStartedEvent(stage, triggeredID, taskName, fromSource), true)
-	if err != nil {
-		t.Errorf("STEP failed: HandleIncomingEvent(%s.started) returned %v", taskName, err)
-		return true
-	}
-	// check startedEvent collection -> should contain <taskName>.started event
-	startedEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
-		Type:        keptnv2.GetStartedEventType(taskName),
-		Stage:       common.Stringp(stage),
-		Service:     common.Stringp("carts"),
-		TriggeredID: common.Stringp(triggeredID),
-	}, common.StartedEvent)
-	return fake.ShouldContainEvent(t, startedEvents, keptnv2.GetStartedEventType(taskName), stage, nil)
+	require.Nil(t, err)
 }
 
 func getArtifactDeliveryTriggeredEvent(stage string, commitID string) models.Event {
