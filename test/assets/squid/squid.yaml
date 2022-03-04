@@ -4,13 +4,11 @@ metadata:
   name: squid
   namespace: keptn
   labels:
-    app.kubernetes.io/name: squid
-    app.kubernetes.io/instance: keptn
+    name: squid
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: squid
-      app.kubernetes.io/instance: keptn
+      name: squid
   replicas: 1
   strategy:
     type: Recreate
@@ -18,8 +16,7 @@ spec:
     metadata:
       name: squid
       labels:
-        app.kubernetes.io/name: squid
-        app.kubernetes.io/instance: keptn
+        name: squid
     spec:
       containers:
         - name: squid
@@ -53,8 +50,7 @@ metadata:
   name: squid
   namespace: keptn
   labels:
-    app.kubernetes.io/name: squid
-    app.kubernetes.io/instance: keptn
+    name: squid
 spec:
   type: LoadBalancer
   ports:
