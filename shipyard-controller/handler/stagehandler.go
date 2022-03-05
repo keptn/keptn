@@ -1,11 +1,12 @@
 package handler
 
 import (
+	"net/http"
+	"sort"
+
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"net/http"
-	"sort"
 )
 
 type IStageHandler interface {
@@ -84,7 +85,7 @@ func (sh *StageHandler) GetAllStages(c *gin.Context) {
 // GetStage godoc
 // @Summary Get a stage
 // @Description Get a stage of a project
-// @Tags Projects
+// @Tags Stage
 // @Security ApiKeyAuth
 // @Accept	json
 // @Produce  json
