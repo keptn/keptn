@@ -110,7 +110,7 @@ jobs:
           tar -zcvf dist/${OUTPUT_ARCHIVE_NAME}.tar.gz ${OUTPUT_EXECUTABLE_NAME}
 
       - name: Upload Keptn CLI as an artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: keptn-cli
           path: cli/dist/

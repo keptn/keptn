@@ -669,14 +669,14 @@ jobs:
 
       - name: Upload JSON test report as artifact
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: test-report-json
           path: test/go-tests/${{ env.FINAL_TEST_REPORT_PATH }}
 
       - name: Upload support archive as an artifact
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: support-archive
           path: support-archive/*.zip
@@ -790,14 +790,14 @@ jobs:
 
       - name: Upload final JSON test report as an artifact
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: final-test-report-json
           path: ${{ env.FINAL_TEST_REPORT_FILEPATH_JSON }}
 
       - name: Upload final Markdown test report as an artifact
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: final-test-report-markdown
           path: ${{ env.FINAL_TEST_REPORT_FILEPATH_MARKDOWN }}

@@ -52,7 +52,7 @@ jobs:
 
       - name: Upload Helm Chart as an artifact
         id: upload_helm_chart
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: keptn-installer
           path: keptn-charts/*.tgz
