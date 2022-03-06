@@ -27,7 +27,7 @@ type updateProjectCmdParams struct {
 	GitProxyScheme    *string
 	GitProxyUser      *string
 	GitProxyPassword  *string
-	GitProxySecure    *bool
+	GitProxyInsecure  *bool
 }
 
 var updateProjectParams *updateProjectCmdParams
@@ -117,7 +117,7 @@ keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE
 			project.GitProxyScheme = *updateProjectParams.GitProxyScheme
 			project.GitProxyUser = *updateProjectParams.GitProxyUser
 			project.GitProxyPassword = *updateProjectParams.GitProxyPassword
-			project.GitProxySecure = *updateProjectParams.GitProxySecure
+			project.GitProxyInsecure = *updateProjectParams.GitProxyInsecure
 
 			if strings.HasPrefix(*updateProjectParams.RemoteURL, "ssh://") {
 				content, err := ioutil.ReadFile(*updateProjectParams.GitPrivateKey)
@@ -170,5 +170,5 @@ func init() {
 	updateProjectParams.GitProxyScheme = upProjectCmd.Flags().StringP("git-proxy-scheme", "j", "", "The git proxy scheme")
 	updateProjectParams.GitProxyUser = upProjectCmd.Flags().StringP("git-proxy-user", "w", "", "The git proxy user")
 	updateProjectParams.GitProxyPassword = upProjectCmd.Flags().StringP("git-proxy-password", "e", "", "The git proxy password")
-	updateProjectParams.GitProxySecure = upProjectCmd.Flags().BoolP("git-proxy-insecure", "x", false, "The git proxy secure TLS connection")
+	updateProjectParams.GitProxyInsecure = upProjectCmd.Flags().BoolP("git-proxy-insecure", "x", false, "The git proxy secure TLS connection")
 }

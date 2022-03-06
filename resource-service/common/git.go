@@ -91,7 +91,7 @@ func getAuthMethod(gitContext common_models.GitContext) (transport.AuthMethod, e
 		if gitContext.Credentials.GitProxyURL != "" {
 			customClient := &nethttp.Client{
 				Transport: &nethttp.Transport{
-					TLSClientConfig: &tls.Config{InsecureSkipVerify: gitContext.Credentials.GitProxySecure},
+					TLSClientConfig: &tls.Config{InsecureSkipVerify: gitContext.Credentials.GitProxyInsecure},
 					Proxy: nethttp.ProxyURL(&url.URL{
 						Scheme: gitContext.Credentials.GitProxyScheme,
 						User:   url.UserPassword(gitContext.Credentials.GitProxyUser, gitContext.Credentials.GitProxyPassword),

@@ -106,7 +106,7 @@ func (pm *ProjectManager) Create(params *models.CreateProjectParams) (error, com
 		GitProxyScheme:    params.GitProxyScheme,
 		GitProxyUser:      params.GitProxyUser,
 		GitProxyPassword:  params.GitProxyPassword,
-		GitProxySecure:    params.GitProxySecure,
+		GitProxyInsecure:  params.GitProxyInsecure,
 	})
 	if err != nil {
 		return err, nilRollback
@@ -196,7 +196,7 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 		GitProxyScheme:    oldSecret.GitProxyScheme,
 		GitProxyUser:      oldSecret.GitProxyUser,
 		GitProxyPassword:  oldSecret.GitProxyPassword,
-		GitProxySecure:    oldSecret.GitProxySecure,
+		GitProxyInsecure:  oldSecret.GitProxyInsecure,
 	}
 
 	// old project for rollback
@@ -222,7 +222,7 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 			GitProxyScheme:    params.GitProxyScheme,
 			GitProxyUser:      params.GitProxyUser,
 			GitProxyPassword:  params.GitProxyPassword,
-			GitProxySecure:    params.GitProxySecure,
+			GitProxyInsecure:  params.GitProxyInsecure,
 		})
 
 		// no roll back needed since updating the git repository secret was the first operation
@@ -577,5 +577,5 @@ type gitCredentials struct {
 	GitProxyScheme    string `json:"gitProxyScheme,omitempty"`
 	GitProxyUser      string `json:"gitProxyUser,omitempty"`
 	GitProxyPassword  string `json:"gitProxyPassword,omitempty"`
-	GitProxySecure    bool   `json:"gitProxySecure,omitempty"`
+	GitProxyInsecure  bool   `json:"gitProxyInsecure,omitempty"`
 }
