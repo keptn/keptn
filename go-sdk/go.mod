@@ -6,6 +6,6 @@ require (
 	github.com/cloudevents/sdk-go/v2 v2.8.0
 	github.com/google/uuid v1.3.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.13.1-0.20220307070004-98cdba5b4f31
+	github.com/keptn/go-utils v0.13.1-0.20220307072510-d2a335775a5d
 	github.com/stretchr/testify v1.7.0
 )
