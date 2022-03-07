@@ -12,10 +12,10 @@ require (
 	github.com/go-openapi/validate v0.20.3
 	github.com/jeremywohl/flatten v1.0.1
 	github.com/jessevdk/go-flags v1.5.0
-	github.com/keptn/go-utils v0.13.1-0.20220223120143-efe19c525eab
+	github.com/keptn/go-utils v0.13.1-0.20220307070004-98cdba5b4f31
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
 	github.com/tryvium-travels/memongo v0.4.0
-	go.mongodb.org/mongo-driver v1.8.3
-	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd
+	go.mongodb.org/mongo-driver v1.8.4
+	golang.org/x/net v0.0.0-20220225172249-27dd8689420f
 )

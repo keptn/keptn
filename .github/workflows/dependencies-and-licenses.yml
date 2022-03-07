@@ -9,23 +9,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Core Repo
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v3
         with:
           path: 'keptn/keptn'
       - name: Checkout go-utils Repo
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v3
         with:
           token: ${{ secrets.KEPTN_BOT_TOKEN }}
           path: 'keptn/go-utils'
           repository: 'keptn/go-utils'
       - name: Checkout kubernetes-utils Repo
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v3
         with:
           token: ${{ secrets.KEPTN_BOT_TOKEN }}
           path: 'keptn/kubernetes-utils'
           repository: 'keptn/kubernetes-utils'
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
           go-version: 1.16
       - name: Install go-licence-detector
@@ -69,7 +69,7 @@ jobs:
 
           cat dependencies-and-licenses-node.txt
       - name: Upload dependencies and licenses artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: dependencies-and-licenses
           path: dependencies-and-licenses-*.txt

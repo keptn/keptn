@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
 )
@@ -49,48 +48,6 @@ func GetStageFromShipyard(stageName string, shipyard *keptnv2.Shipyard) *keptnv2
 	return nil
 }
 
-func GetNextTaskOfSequence(taskSequence *keptnv2.Sequence, previousTask *models.TaskExecution, eventScope *models.EventScope, eventHistory []interface{}) *models.Task {
-	if previousTask != nil {
-		for _, e := range eventHistory {
-			eventData := keptnv2.EventData{}
-			_ = keptnv2.Decode(e, &eventData)
-
-			// if one of the tasks has failed previously, no further task should be executed
-			if eventData.Status == keptnv2.StatusErrored || eventData.Result == keptnv2.ResultFailed {
-				eventScope.Status = eventData.Status
-				eventScope.Result = eventData.Result
-				return nil
-			}
-		}
-	}
-
-	if len(taskSequence.Tasks) == 0 {
-		log.Infof("Task sequence %s does not contain any tasks", taskSequence.Name)
-		return nil
-	}
-	if previousTask == nil {
-		log.Infof("Returning first task of task sequence %s", taskSequence.Name)
-		return &models.Task{
-			Task:      taskSequence.Tasks[0],
-			TaskIndex: 0,
-		}
-	}
-
-	log.Infof("Getting task that should be executed after task %s", previousTask.Task.Name)
-
-	nextIndex := previousTask.Task.TaskIndex + 1
-	if len(taskSequence.Tasks) > nextIndex && taskSequence.Tasks[nextIndex-1].Name == previousTask.Task.Name {
-		log.Infof("found next task: %s", taskSequence.Tasks[nextIndex].Name)
-		return &models.Task{
-			Task:      taskSequence.Tasks[nextIndex],
-			TaskIndex: nextIndex,
-		}
-	}
-
-	log.Info("No further tasks detected")
-	return nil
-}
-
 func GetTaskSequencesByTrigger(eventScope models.EventScope, completedTaskSequence string, shipyard *keptnv2.Shipyard, previousTask string) []NextTaskSequence {
 	var result []NextTaskSequence
 
@@ -123,31 +80,6 @@ func GetTaskSequencesByTrigger(eventScope models.EventScope, completedTaskSequen
 		}
 	}
 	return result
-}
-
-func GetMergedPayloadForSequenceTriggeredEvent(inputEvent *models.Event, eventPayload map[string]interface{}, eventHistory []interface{}) (interface{}, error) {
-	var mergedPayload interface{}
-	if inputEvent != nil {
-		marshal, err := json.Marshal(inputEvent.Data)
-		if err != nil {
-			return nil, fmt.Errorf("could not marshal input event: %s ", err.Error())
-		}
-		tmp := map[string]interface{}{}
-		if err := json.Unmarshal(marshal, &tmp); err != nil {
-			return nil, fmt.Errorf("could not convert input event: %s ", err.Error())
-		}
-		mergedPayload = common.Merge(eventPayload, tmp)
-	}
-	if eventHistory != nil {
-		for index := range eventHistory {
-			if mergedPayload == nil {
-				mergedPayload = common.Merge(eventPayload, eventHistory[index])
-			} else {
-				mergedPayload = common.Merge(mergedPayload, eventHistory[index])
-			}
-		}
-	}
-	return mergedPayload, nil
 }
 
 func ObjToJSON(obj interface{}) string {

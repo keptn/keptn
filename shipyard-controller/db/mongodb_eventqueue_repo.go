@@ -15,9 +15,6 @@ import (
 
 const eventQueueCollectionName = "shipyard-controller-event-queue"
 
-// eventQueueSequenceStateCollectionName contains information on whether a task sequence is currently paused and thus outgoing events should be blocked
-const eventQueueSequenceStateCollectionName = "shipyard-controller-event-queue-sequence-state"
-
 const keptnContextScope = "scope.keptnContext"
 const stageScope = "scope.stage"
 

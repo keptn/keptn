@@ -15,7 +15,11 @@ spec:
     matchLabels:
       app.kubernetes.io/name: shipyard-controller
       app.kubernetes.io/instance: {{ .Release.Name }}
-  replicas: 1
+  {{- if or (lt .Capabilities.KubeVersion.Minor "14") (.Values.shipyardController.config.disableLeaderElection) }}
+  replicas : 1
+  {{ else }}
+  replicas: {{ .Values.shipyardController.config.replicas | default 3 }}
+  {{- end }}
   # recreate the deployment if anything changes (we can not do a rolling upgrade of this deployment as we use a volume)
   strategy:
     type: Recreate
@@ -83,6 +87,12 @@ spec:
               value: {{ .Values.shipyardController.config.uniformIntegrationTTL | default "2m" }}
             - name: LOG_LEVEL
               value: {{ .Values.logLevel | default "info" }}
+            - name: DISABLE_LEADER_ELECTION
+              {{- if  lt .Capabilities.KubeVersion.Minor "14"}}
+              value: {{ true | quote }}
+              {{else }}
+              value: {{ .Values.shipyardController.config.disableLeaderElection | default false | quote }}
+              {{- end}}
           ports:
             - containerPort: 8080
           resources:
@@ -93,18 +103,6 @@ spec:
               memory: "128Mi"
               cpu: "100m"
           {{- include "control-plane.common.container-security-context" . | nindent 10 }}
-        - name: distributor
-          {{- include "control-plane.dist.prestop" . | nindent 10 }}
-          image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
-          {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
-          {{- include "control-plane.dist.readinessProbe" . | nindent 10 }}
-          imagePullPolicy: IfNotPresent
-          ports:
-            - containerPort: 8080
-          {{- include "keptn.distributor.resources" . | nindent 10 }}
-          env:
-          {{- include "control-plane.dist.common.env.vars" . | nindent 12 }}
-        {{- include "control-plane.common.container-security-context" . | nindent 10 }}
       terminationGracePeriodSeconds: {{ .Values.gracePeriod | default 30 }}
 ---
 apiVersion: v1

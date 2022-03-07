@@ -10,8 +10,9 @@ import (
 	"github.com/benbjohnson/clock"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0/fake"
+
 	"github.com/keptn/keptn/shipyard-controller/common"
-	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
+	dbmock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
 )
@@ -21,46 +22,43 @@ func Test_WhenTimeOfEventIsOlder_EventIsSentImmediately(t *testing.T) {
 	timeBefore := time.Date(2021, 4, 21, 15, 00, 00, 0, time.UTC)
 	timeAfter := time.Date(2021, 4, 21, 15, 00, 00, 1, time.UTC)
 
-	eventRepo := &db_mock.EventRepoMock{}
-	eventQueueRepo := &db_mock.EventQueueRepoMock{
+	eventRepo := &dbmock.EventRepoMock{}
+	eventQueueRepo := &dbmock.EventQueueRepoMock{
 		GetEventQueueSequenceStatesFunc: func(filter models.EventQueueSequenceState) ([]models.EventQueueSequenceState, error) {
 			return nil, nil
 		},
-		IsSequenceOfEventPausedFunc: func(eventScope models.EventScope) bool {
+	}
+
+	sequenceExecutionRepo := &dbmock.SequenceExecutionRepoMock{
+		GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
+			if filter.CurrentTriggeredID != "" {
+				return []models.SequenceExecution{
+					{
+						ID: "my-id",
+						Status: models.SequenceExecutionStatus{
+							State: models.SequenceTriggeredState,
+						},
+					},
+				}, nil
+			}
+			return nil, nil
+		},
+		IsContextPausedFunc: func(eventScope models.EventScope) bool {
 			return false
 		},
 	}
-	sequenceRepo := &db_mock.TaskSequenceRepoMock{
-		GetTaskExecutionsFunc: func(project string, filter models.TaskExecution) ([]models.TaskExecution, error) {
-			return []models.TaskExecution{
-				{
-					TaskSequenceName: "delivery",
-					TriggeredEventID: "my-triggered-id",
-					Task: models.Task{
-						Task: keptnv2.Task{
-							Name: "deployment",
-						},
-						TaskIndex: 0,
-					},
-					Stage:        "my-stage",
-					Service:      "my-service",
-					KeptnContext: "my-context-id",
-				},
-			}, nil
-		},
-	}
 	eventSender := &fake.EventSender{}
-	clock := clock.NewMock()
+	mockClock := clock.NewMock()
 
-	clock.Set(timeAfter)
+	mockClock.Set(timeAfter)
 
 	dispatcher := EventDispatcher{
-		eventRepo:      eventRepo,
-		eventQueueRepo: eventQueueRepo,
-		sequenceRepo:   sequenceRepo,
-		eventSender:    eventSender,
-		theClock:       clock,
-		syncInterval:   10 * time.Second,
+		eventRepo:             eventRepo,
+		eventQueueRepo:        eventQueueRepo,
+		eventSender:           eventSender,
+		theClock:              mockClock,
+		syncInterval:          10 * time.Second,
+		sequenceExecutionRepo: sequenceExecutionRepo,
 	}
 	data := keptnv2.EventData{
 		Project: "my-project",
@@ -69,9 +67,10 @@ func Test_WhenTimeOfEventIsOlder_EventIsSentImmediately(t *testing.T) {
 	}
 	event, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task"), "source", data).Build()
 	event.Shkeptncontext = "my-context-id"
-	dispatcherEvent := models.DispatcherEvent{keptnv2.ToCloudEvent(event), timeBefore}
+	dispatcherEvent := models.DispatcherEvent{Event: keptnv2.ToCloudEvent(event), TimeStamp: timeBefore}
 
-	dispatcher.Add(dispatcherEvent, false)
+	err := dispatcher.Add(dispatcherEvent, false)
+	require.Nil(t, err)
 	require.Equal(t, 1, len(eventSender.SentEvents))
 }
 
@@ -80,8 +79,8 @@ func Test_WhenTimeOfEventIsOlder_EventIsSentImmediatelyButSequenceIsPaused(t *te
 	timeBefore := time.Date(2021, 4, 21, 15, 00, 00, 0, time.UTC)
 	timeAfter := time.Date(2021, 4, 21, 15, 00, 00, 1, time.UTC)
 
-	eventRepo := &db_mock.EventRepoMock{}
-	eventQueueRepo := &db_mock.EventQueueRepoMock{
+	eventRepo := &dbmock.EventRepoMock{}
+	eventQueueRepo := &dbmock.EventQueueRepoMock{
 		IsSequenceOfEventPausedFunc: func(eventScope models.EventScope) bool {
 			return true
 		},
@@ -89,37 +88,38 @@ func Test_WhenTimeOfEventIsOlder_EventIsSentImmediatelyButSequenceIsPaused(t *te
 			return nil
 		},
 	}
-	sequenceRepo := &db_mock.TaskSequenceRepoMock{
-		GetTaskExecutionsFunc: func(project string, filter models.TaskExecution) ([]models.TaskExecution, error) {
-			return []models.TaskExecution{
-				{
-					TaskSequenceName: "delivery",
-					TriggeredEventID: "my-triggered-id",
-					Task: models.Task{
-						Task: keptnv2.Task{
-							Name: "deployment",
+
+	sequenceExecutionRepo := &dbmock.SequenceExecutionRepoMock{
+		GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
+			if filter.CurrentTriggeredID != "" {
+				return []models.SequenceExecution{
+					{
+						ID: "my-id",
+						Status: models.SequenceExecutionStatus{
+							State: models.SequencePaused,
 						},
-						TaskIndex: 0,
 					},
-					Stage:        "my-stage",
-					Service:      "my-service",
-					KeptnContext: "my-context-id",
-				},
-			}, nil
+				}, nil
+			}
+			return nil, nil
+		},
+		IsContextPausedFunc: func(eventScope models.EventScope) bool {
+			return true
 		},
 	}
-	eventSender := &fake.EventSender{}
-	clock := clock.NewMock()
 
-	clock.Set(timeAfter)
+	eventSender := &fake.EventSender{}
+	mockClock := clock.NewMock()
+
+	mockClock.Set(timeAfter)
 
 	dispatcher := EventDispatcher{
-		eventRepo:      eventRepo,
-		eventQueueRepo: eventQueueRepo,
-		sequenceRepo:   sequenceRepo,
-		eventSender:    eventSender,
-		theClock:       clock,
-		syncInterval:   10 * time.Second,
+		eventRepo:             eventRepo,
+		eventQueueRepo:        eventQueueRepo,
+		eventSender:           eventSender,
+		theClock:              mockClock,
+		syncInterval:          10 * time.Second,
+		sequenceExecutionRepo: sequenceExecutionRepo,
 	}
 	data := keptnv2.EventData{
 		Project: "my-project",
@@ -128,9 +128,11 @@ func Test_WhenTimeOfEventIsOlder_EventIsSentImmediatelyButSequenceIsPaused(t *te
 	}
 	event, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task"), "source", data).Build()
 	event.Shkeptncontext = "my-context-id"
-	dispatcherEvent := models.DispatcherEvent{keptnv2.ToCloudEvent(event), timeBefore}
+	dispatcherEvent := models.DispatcherEvent{Event: keptnv2.ToCloudEvent(event), TimeStamp: timeBefore}
 
-	dispatcher.Add(dispatcherEvent, false)
+	err := dispatcher.Add(dispatcherEvent, false)
+
+	require.Nil(t, err)
 	require.Empty(t, eventSender.SentEvents)
 
 	require.Len(t, eventQueueRepo.QueueEventCalls(), 1)
@@ -141,8 +143,8 @@ func Test_EventIsSentImmediatelyButOtherSequenceIsRunning(t *testing.T) {
 	timeBefore := time.Date(2021, 4, 21, 15, 00, 00, 0, time.UTC)
 	timeAfter := time.Date(2021, 4, 21, 15, 00, 00, 1, time.UTC)
 
-	eventRepo := &db_mock.EventRepoMock{}
-	eventQueueRepo := &db_mock.EventQueueRepoMock{
+	eventRepo := &dbmock.EventRepoMock{}
+	eventQueueRepo := &dbmock.EventQueueRepoMock{
 		QueueEventFunc: func(item models.QueueItem) error {
 			return nil
 		},
@@ -152,41 +154,47 @@ func Test_EventIsSentImmediatelyButOtherSequenceIsRunning(t *testing.T) {
 		GetEventQueueSequenceStatesFunc: func(filter models.EventQueueSequenceState) ([]models.EventQueueSequenceState, error) {
 			return nil, nil
 		},
-		IsSequenceOfEventPausedFunc: func(eventScope models.EventScope) bool {
-			return false
-		},
 	}
-	sequenceRepo := &db_mock.TaskSequenceRepoMock{
-		GetTaskExecutionsFunc: func(project string, filter models.TaskExecution) ([]models.TaskExecution, error) {
-			return []models.TaskExecution{
+
+	sequenceExecutionRepo := &dbmock.SequenceExecutionRepoMock{
+		GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
+			return []models.SequenceExecution{
 				{
-					TaskSequenceName: "delivery",
-					TriggeredEventID: "my-triggered-id",
-					Task: models.Task{
-						Task: keptnv2.Task{
-							Name: "deployment",
-						},
-						TaskIndex: 0,
+					ID:       "my-task-sequence-execution-id",
+					Sequence: keptnv2.Sequence{},
+					Status: models.SequenceExecutionStatus{
+						State:         models.SequenceStartedState,
+						PreviousTasks: nil,
+						CurrentTask:   models.TaskExecutionState{},
 					},
-					Stage:        "my-stage",
-					Service:      "my-service",
-					KeptnContext: "my-other-context-id",
+					Scope: models.EventScope{
+						EventData: keptnv2.EventData{
+							Project: "my-project",
+							Stage:   "my-stage",
+							Service: "my-service",
+						},
+						KeptnContext: "my-other-context-id",
+					},
 				},
 			}, nil
 		},
+		IsContextPausedFunc: func(eventScope models.EventScope) bool {
+			return false
+		},
 	}
-	eventSender := &fake.EventSender{}
-	clock := clock.NewMock()
 
-	clock.Set(timeAfter)
+	eventSender := &fake.EventSender{}
+	mockClock := clock.NewMock()
+
+	mockClock.Set(timeAfter)
 
 	dispatcher := EventDispatcher{
-		eventRepo:      eventRepo,
-		eventQueueRepo: eventQueueRepo,
-		sequenceRepo:   sequenceRepo,
-		eventSender:    eventSender,
-		theClock:       clock,
-		syncInterval:   10 * time.Second,
+		eventRepo:             eventRepo,
+		eventQueueRepo:        eventQueueRepo,
+		eventSender:           eventSender,
+		theClock:              mockClock,
+		syncInterval:          10 * time.Second,
+		sequenceExecutionRepo: sequenceExecutionRepo,
 	}
 	data := keptnv2.EventData{
 		Project: "my-project",
@@ -195,9 +203,11 @@ func Test_EventIsSentImmediatelyButOtherSequenceIsRunning(t *testing.T) {
 	}
 	event, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task"), "source", data).Build()
 	event.Shkeptncontext = "my-context-id"
-	dispatcherEvent := models.DispatcherEvent{keptnv2.ToCloudEvent(event), timeBefore}
+	dispatcherEvent := models.DispatcherEvent{Event: keptnv2.ToCloudEvent(event), TimeStamp: timeBefore}
 
-	dispatcher.Add(dispatcherEvent, false)
+	err := dispatcher.Add(dispatcherEvent, false)
+
+	require.Nil(t, err)
 	require.Equal(t, 0, len(eventSender.SentEvents))
 	require.Len(t, eventQueueRepo.QueueEventCalls(), 1)
 }
@@ -207,8 +217,8 @@ func Test_EventIsSentImmediatelyAndOtherSequenceIsRunningButIsPaused(t *testing.
 	timeBefore := time.Date(2021, 4, 21, 15, 00, 00, 0, time.UTC)
 	timeAfter := time.Date(2021, 4, 21, 15, 00, 00, 1, time.UTC)
 
-	eventRepo := &db_mock.EventRepoMock{}
-	eventQueueRepo := &db_mock.EventQueueRepoMock{
+	eventRepo := &dbmock.EventRepoMock{}
+	eventQueueRepo := &dbmock.EventQueueRepoMock{
 		QueueEventFunc: func(item models.QueueItem) error {
 			return nil
 		},
@@ -235,44 +245,45 @@ func Test_EventIsSentImmediatelyAndOtherSequenceIsRunningButIsPaused(t *testing.
 			}
 			return nil, nil
 		},
-		IsSequenceOfEventPausedFunc: func(eventScope models.EventScope) bool {
+	}
+
+	sequenceExecutionRepo := &dbmock.SequenceExecutionRepoMock{
+		GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
+			if filter.Scope.KeptnContext == "my-context-id" {
+				return []models.SequenceExecution{
+					{
+						ID:       "",
+						Sequence: keptnv2.Sequence{},
+						Status: models.SequenceExecutionStatus{
+							State: models.SequenceStartedState,
+						},
+						Scope:           models.EventScope{},
+						InputProperties: nil,
+					},
+				}, nil
+			}
+			return nil, nil
+		},
+		IsContextPausedFunc: func(eventScope models.EventScope) bool {
 			if eventScope.KeptnContext == "my-other-context-id" {
 				return true
 			}
 			return false
 		},
 	}
-	sequenceRepo := &db_mock.TaskSequenceRepoMock{
-		GetTaskExecutionsFunc: func(project string, filter models.TaskExecution) ([]models.TaskExecution, error) {
-			return []models.TaskExecution{
-				{
-					TaskSequenceName: "delivery",
-					TriggeredEventID: "my-triggered-id",
-					Task: models.Task{
-						Task: keptnv2.Task{
-							Name: "deployment",
-						},
-						TaskIndex: 0,
-					},
-					Stage:        "my-stage",
-					Service:      "my-service",
-					KeptnContext: "my-other-context-id",
-				},
-			}, nil
-		},
-	}
-	eventSender := &fake.EventSender{}
-	clock := clock.NewMock()
 
-	clock.Set(timeAfter)
+	eventSender := &fake.EventSender{}
+	mockClock := clock.NewMock()
+
+	mockClock.Set(timeAfter)
 
 	dispatcher := EventDispatcher{
-		eventRepo:      eventRepo,
-		eventQueueRepo: eventQueueRepo,
-		sequenceRepo:   sequenceRepo,
-		eventSender:    eventSender,
-		theClock:       clock,
-		syncInterval:   10 * time.Second,
+		eventRepo:             eventRepo,
+		eventQueueRepo:        eventQueueRepo,
+		eventSender:           eventSender,
+		theClock:              mockClock,
+		syncInterval:          10 * time.Second,
+		sequenceExecutionRepo: sequenceExecutionRepo,
 	}
 	data := keptnv2.EventData{
 		Project: "my-project",
@@ -281,9 +292,11 @@ func Test_EventIsSentImmediatelyAndOtherSequenceIsRunningButIsPaused(t *testing.
 	}
 	event, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task"), "source", data).Build()
 	event.Shkeptncontext = "my-context-id"
-	dispatcherEvent := models.DispatcherEvent{keptnv2.ToCloudEvent(event), timeBefore}
+	dispatcherEvent := models.DispatcherEvent{Event: keptnv2.ToCloudEvent(event), TimeStamp: timeBefore}
 
-	dispatcher.Add(dispatcherEvent, false)
+	err := dispatcher.Add(dispatcherEvent, false)
+
+	require.Nil(t, err)
 	require.Len(t, eventSender.SentEvents, 1)
 	require.Len(t, eventQueueRepo.QueueEventCalls(), 0)
 }
@@ -293,21 +306,21 @@ func Test_WhenTimeOfEventIsYounger_EventIsQueued(t *testing.T) {
 	timeBefore := time.Date(2021, 4, 21, 15, 00, 00, 0, time.UTC)
 	timeAfter := time.Date(2021, 4, 21, 15, 00, 00, 1, time.UTC)
 
-	eventRepo := &db_mock.EventRepoMock{}
-	eventQueueRepo := &db_mock.EventQueueRepoMock{}
+	eventRepo := &dbmock.EventRepoMock{}
+	eventQueueRepo := &dbmock.EventQueueRepoMock{}
 	eventSender := &fake.EventSender{}
-	clock := clock.NewMock()
+	mockClock := clock.NewMock()
 
 	eventQueueRepo.QueueEventFunc = func(item models.QueueItem) error {
 		return nil
 	}
-	clock.Set(timeBefore)
+	mockClock.Set(timeBefore)
 
 	dispatcher := EventDispatcher{
 		eventRepo:      eventRepo,
 		eventQueueRepo: eventQueueRepo,
 		eventSender:    eventSender,
-		theClock:       clock,
+		theClock:       mockClock,
 		syncInterval:   10 * time.Second,
 	}
 
@@ -318,9 +331,11 @@ func Test_WhenTimeOfEventIsYounger_EventIsQueued(t *testing.T) {
 	}
 
 	event, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task"), "source", data).Build()
-	dispatcherEvent := models.DispatcherEvent{keptnv2.ToCloudEvent(event), timeAfter}
+	dispatcherEvent := models.DispatcherEvent{Event: keptnv2.ToCloudEvent(event), TimeStamp: timeAfter}
 
-	dispatcher.Add(dispatcherEvent, false)
+	err := dispatcher.Add(dispatcherEvent, false)
+
+	require.Nil(t, err)
 	require.Equal(t, 0, len(eventSender.SentEvents))
 	require.Equal(t, 1, len(eventQueueRepo.QueueEventCalls()))
 }
@@ -338,30 +353,23 @@ func Test_WhenSyncTimeElapses_EventsAreDispatched(t *testing.T) {
 		Service: "my-service",
 	}
 
-	event1, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task"), "source", data).Build()
-	dispatcherEvent1 := models.DispatcherEvent{keptnv2.ToCloudEvent(event1), timeAfter1}
-	event2, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task2"), "source", data).Build()
-	dispatcherEvent2 := models.DispatcherEvent{keptnv2.ToCloudEvent(event2), timeAfter2}
-	event3, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task3"), "source", data).Build()
-	dispatcherEvent3 := models.DispatcherEvent{keptnv2.ToCloudEvent(event3), timeAfter3}
+	event1, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task"), "source", data).WithKeptnContext("my-context").Build()
+	dispatcherEvent1 := models.DispatcherEvent{Event: keptnv2.ToCloudEvent(event1), TimeStamp: timeAfter1}
+	event2, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task2"), "source", data).WithKeptnContext("my-context").Build()
+	dispatcherEvent2 := models.DispatcherEvent{Event: keptnv2.ToCloudEvent(event2), TimeStamp: timeAfter2}
+	event3, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task3"), "source", data).WithKeptnContext("my-context").Build()
+	dispatcherEvent3 := models.DispatcherEvent{Event: keptnv2.ToCloudEvent(event3), TimeStamp: timeAfter3}
 
-	eventRepo := &db_mock.EventRepoMock{}
-	eventQueueRepo := &db_mock.EventQueueRepoMock{
+	eventRepo := &dbmock.EventRepoMock{}
+	eventQueueRepo := &dbmock.EventQueueRepoMock{
 		GetEventQueueSequenceStatesFunc: func(filter models.EventQueueSequenceState) ([]models.EventQueueSequenceState, error) {
 			return nil, nil
 		},
-		IsSequenceOfEventPausedFunc: func(eventScope models.EventScope) bool {
-			return false
-		},
 	}
 	eventSender := &fake.EventSender{}
-	sequenceRepo := &db_mock.TaskSequenceRepoMock{
-		GetTaskExecutionsFunc: func(project string, filter models.TaskExecution) ([]models.TaskExecution, error) {
-			return []models.TaskExecution{}, nil
-		},
-	}
-	clock := clock.NewMock()
-	clock.Set(timeNow)
+
+	mockClock := clock.NewMock()
+	mockClock.Set(timeNow)
 
 	eventQueueRepo.QueueEventFunc = func(item models.QueueItem) error {
 		return nil
@@ -382,37 +390,55 @@ func Test_WhenSyncTimeElapses_EventsAreDispatched(t *testing.T) {
 	}
 
 	eventRepo.GetEventsFunc = func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
-		return []models.Event{{ID: *filter.ID, Specversion: "1.0", Source: stringp("source"), Type: stringp("my-type"), Data: keptnv2.EventData{
+		return []models.Event{{Shkeptncontext: "my-context", ID: *filter.ID, Specversion: "1.0", Source: stringp("source"), Type: stringp("my-type"), Data: keptnv2.EventData{
 			Project: "my-project",
 			Stage:   "my-stage",
 			Service: "my-service",
 		}}}, nil
 	}
 
-	dispatcher := EventDispatcher{
-		eventRepo:      eventRepo,
-		eventQueueRepo: eventQueueRepo,
-		eventSender:    eventSender,
-		sequenceRepo:   sequenceRepo,
-		theClock:       clock,
-		syncInterval:   10 * time.Second,
+	sequenceExecutionRepo := &dbmock.SequenceExecutionRepoMock{
+		GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
+			if filter.Scope.KeptnContext == "my-context" {
+				return []models.SequenceExecution{
+					{
+						Status: models.SequenceExecutionStatus{
+							State: models.SequenceStartedState,
+						},
+					},
+				}, nil
+			}
+			return nil, nil
+		},
+		IsContextPausedFunc: func(eventScope models.EventScope) bool {
+			return false
+		},
 	}
 
-	dispatcher.Add(dispatcherEvent1, false)
-	dispatcher.Add(dispatcherEvent2, false)
-	dispatcher.Add(dispatcherEvent3, false)
+	dispatcher := EventDispatcher{
+		eventRepo:             eventRepo,
+		eventQueueRepo:        eventQueueRepo,
+		eventSender:           eventSender,
+		theClock:              mockClock,
+		syncInterval:          10 * time.Second,
+		sequenceExecutionRepo: sequenceExecutionRepo,
+	}
+
+	_ = dispatcher.Add(dispatcherEvent1, false)
+	_ = dispatcher.Add(dispatcherEvent2, false)
+	_ = dispatcher.Add(dispatcherEvent3, false)
 
 	require.Equal(t, 0, len(eventSender.SentEvents))
 	require.Equal(t, 3, len(eventQueueRepo.QueueEventCalls()))
 	dispatcher.Run(context.Background())
-	clock.Add(9 * time.Second)
+	mockClock.Add(9 * time.Second)
 	require.Equal(t, 0, len(eventSender.SentEvents))
-	clock.Add(2 * time.Second)
+	mockClock.Add(2 * time.Second)
 	require.Eventually(t, func() bool {
 		return len(eventSender.SentEvents) == 3
 	}, 5*time.Second, 1*time.Second)
 	// check if the time stamp of the event has been set to the time at which it has been sent
-	require.WithinDuration(t, clock.Now().UTC(), eventSender.SentEvents[0].Time(), time.Second)
+	require.WithinDuration(t, mockClock.Now().UTC(), eventSender.SentEvents[0].Time(), time.Second)
 	require.Equal(t, 3, len(eventQueueRepo.DeleteQueuedEventCalls()))
 }
 
@@ -430,29 +456,22 @@ func Test_WhenAnEventCouldNotBeFetched_NextEventIsProcessed(t *testing.T) {
 	}
 
 	event1, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task"), "source", data).Build()
-	dispatcherEvent1 := models.DispatcherEvent{keptnv2.ToCloudEvent(event1), timeAfter1}
+	dispatcherEvent1 := models.DispatcherEvent{Event: keptnv2.ToCloudEvent(event1), TimeStamp: timeAfter1}
 	event2, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task2"), "source", data).Build()
-	dispatcherEvent2 := models.DispatcherEvent{keptnv2.ToCloudEvent(event2), timeAfter2}
+	dispatcherEvent2 := models.DispatcherEvent{Event: keptnv2.ToCloudEvent(event2), TimeStamp: timeAfter2}
 	event3, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task3"), "source", data).Build()
-	dispatcherEvent3 := models.DispatcherEvent{keptnv2.ToCloudEvent(event3), timeAfter3}
+	dispatcherEvent3 := models.DispatcherEvent{Event: keptnv2.ToCloudEvent(event3), TimeStamp: timeAfter3}
 
-	eventRepo := &db_mock.EventRepoMock{}
-	eventQueueRepo := &db_mock.EventQueueRepoMock{
+	eventRepo := &dbmock.EventRepoMock{}
+	eventQueueRepo := &dbmock.EventQueueRepoMock{
 		GetEventQueueSequenceStatesFunc: func(filter models.EventQueueSequenceState) ([]models.EventQueueSequenceState, error) {
 			return nil, nil
 		},
-		IsSequenceOfEventPausedFunc: func(eventScope models.EventScope) bool {
-			return false
-		},
 	}
 	eventSender := &fake.EventSender{}
-	sequenceRepo := &db_mock.TaskSequenceRepoMock{
-		GetTaskExecutionsFunc: func(project string, filter models.TaskExecution) ([]models.TaskExecution, error) {
-			return []models.TaskExecution{}, nil
-		},
-	}
-	clock := clock.NewMock()
-	clock.Set(timeNow)
+
+	mockClock := clock.NewMock()
+	mockClock.Set(timeNow)
 
 	eventQueueRepo.QueueEventFunc = func(item models.QueueItem) error {
 		return nil
@@ -488,21 +507,39 @@ func Test_WhenAnEventCouldNotBeFetched_NextEventIsProcessed(t *testing.T) {
 		}}}, nil
 	}
 
-	dispatcher := EventDispatcher{
-		eventRepo:      eventRepo,
-		eventQueueRepo: eventQueueRepo,
-		sequenceRepo:   sequenceRepo,
-		eventSender:    eventSender,
-		theClock:       clock,
-		syncInterval:   10 * time.Second,
+	sequenceExecutionRepo := &dbmock.SequenceExecutionRepoMock{
+		GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
+			if filter.CurrentTriggeredID == "" {
+				return nil, nil
+			}
+			return []models.SequenceExecution{
+				{
+					Status: models.SequenceExecutionStatus{
+						State: models.SequenceStartedState,
+					},
+				},
+			}, nil
+		},
+		IsContextPausedFunc: func(eventScope models.EventScope) bool {
+			return false
+		},
 	}
 
-	dispatcher.Add(dispatcherEvent1, false)
-	dispatcher.Add(dispatcherEvent2, false)
-	dispatcher.Add(dispatcherEvent3, false)
+	dispatcher := EventDispatcher{
+		eventRepo:             eventRepo,
+		eventQueueRepo:        eventQueueRepo,
+		eventSender:           eventSender,
+		theClock:              mockClock,
+		syncInterval:          10 * time.Second,
+		sequenceExecutionRepo: sequenceExecutionRepo,
+	}
+
+	_ = dispatcher.Add(dispatcherEvent1, false)
+	_ = dispatcher.Add(dispatcherEvent2, false)
+	_ = dispatcher.Add(dispatcherEvent3, false)
 	dispatcher.Run(context.Background())
 
-	clock.Add(10 * time.Second)
+	mockClock.Add(10 * time.Second)
 	require.Eventually(t, func() bool {
 		return len(eventSender.SentEvents) == 1
 	}, 5*time.Second, 1*time.Second)
@@ -510,65 +547,8 @@ func Test_WhenAnEventCouldNotBeFetched_NextEventIsProcessed(t *testing.T) {
 	require.Equal(t, event3.ID, eventQueueRepo.DeleteQueuedEventCalls()[0].EventID)
 }
 
-func TestEventDispatcher_OnSequencePaused(t *testing.T) {
-	eventQueueRepo := &db_mock.EventQueueRepoMock{
-		CreateOrUpdateEventQueueStateFunc: func(state models.EventQueueSequenceState) error {
-			return nil
-		},
-	}
-
-	dispatcher := EventDispatcher{
-		eventQueueRepo: eventQueueRepo,
-	}
-
-	dispatcher.OnSequencePaused(models.EventScope{KeptnContext: "my-context"})
-
-	require.Len(t, eventQueueRepo.CreateOrUpdateEventQueueStateCalls(), 1)
-
-	require.Equal(t, "my-context", eventQueueRepo.CreateOrUpdateEventQueueStateCalls()[0].State.Scope.KeptnContext)
-	require.Equal(t, models.SequencePaused, eventQueueRepo.CreateOrUpdateEventQueueStateCalls()[0].State.State)
-}
-
-func TestEventDispatcher_OnSequenceWaiting(t *testing.T) {
-	eventQueueRepo := &db_mock.EventQueueRepoMock{
-		CreateOrUpdateEventQueueStateFunc: func(state models.EventQueueSequenceState) error {
-			return nil
-		},
-	}
-
-	dispatcher := EventDispatcher{
-		eventQueueRepo: eventQueueRepo,
-	}
-
-	dispatcher.OnSequenceWaiting(models.EventScope{KeptnContext: "my-context"})
-
-	require.Len(t, eventQueueRepo.CreateOrUpdateEventQueueStateCalls(), 1)
-
-	require.Equal(t, "my-context", eventQueueRepo.CreateOrUpdateEventQueueStateCalls()[0].State.Scope.KeptnContext)
-	require.Equal(t, models.SequenceWaitingState, eventQueueRepo.CreateOrUpdateEventQueueStateCalls()[0].State.State)
-}
-
-func TestEventDispatcher_OnSequenceResumed(t *testing.T) {
-	eventQueueRepo := &db_mock.EventQueueRepoMock{
-		CreateOrUpdateEventQueueStateFunc: func(state models.EventQueueSequenceState) error {
-			return nil
-		},
-	}
-
-	dispatcher := EventDispatcher{
-		eventQueueRepo: eventQueueRepo,
-	}
-
-	dispatcher.OnSequenceResumed(models.EventScope{KeptnContext: "my-context"})
-
-	require.Len(t, eventQueueRepo.CreateOrUpdateEventQueueStateCalls(), 1)
-
-	require.Equal(t, "my-context", eventQueueRepo.CreateOrUpdateEventQueueStateCalls()[0].State.Scope.KeptnContext)
-	require.Equal(t, models.SequenceStartedState, eventQueueRepo.CreateOrUpdateEventQueueStateCalls()[0].State.State)
-}
-
 func TestEventDispatcher_OnSequenceFinished(t *testing.T) {
-	eventQueueRepo := &db_mock.EventQueueRepoMock{
+	eventQueueRepo := &dbmock.EventQueueRepoMock{
 		DeleteEventQueueStatesFunc: func(state models.EventQueueSequenceState) error {
 			return nil
 		},
@@ -591,7 +571,7 @@ func TestEventDispatcher_OnSequenceFinished(t *testing.T) {
 }
 
 func TestEventDispatcher_OnSequenceTimeout(t *testing.T) {
-	eventQueueRepo := &db_mock.EventQueueRepoMock{
+	eventQueueRepo := &dbmock.EventQueueRepoMock{
 		DeleteEventQueueStatesFunc: func(state models.EventQueueSequenceState) error {
 			return nil
 		},
@@ -614,7 +594,7 @@ func TestEventDispatcher_OnSequenceTimeout(t *testing.T) {
 }
 
 func TestEventDispatcher_OnSequenceFinished_DeletingStateFailsButDeletingQueueShouldBeCalled(t *testing.T) {
-	eventQueueRepo := &db_mock.EventQueueRepoMock{
+	eventQueueRepo := &dbmock.EventQueueRepoMock{
 		DeleteEventQueueStatesFunc: func(state models.EventQueueSequenceState) error {
 			return errors.New("oops")
 		},
