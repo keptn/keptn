@@ -39,7 +39,7 @@ jobs:
         run: |
           yarn global add license-report
       - name: GO dependencies and licenses
-        run: ./gh-actions-scripts/dependencies-and-licenses.sh
+        run: .keptn/keptn/gh-actions-scripts/dependencies-and-licenses.sh
 
       - name: Node dependencies and licenses
         run: |
