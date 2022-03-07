@@ -52,6 +52,7 @@ jobs:
         run: |
           echo "🔍 Analyzing dependencies in module bridge"
           cd ./keptn/bridge || return
+          pwd
           npx synp --source-file ./yarn.lock
           license-report --only-prod --output=csv > ../../dependencies-and-licenses-node.txt
 
