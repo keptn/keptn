@@ -2,9 +2,11 @@ package go_tests
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/require"
 	"path"
 	"testing"
+
+	"github.com/keptn/go-utils/pkg/common/osutils"
+	"github.com/stretchr/testify/require"
 )
 
 const testingProxyShipyard = `apiVersion: "spec.keptn.sh/0.2.3"
@@ -104,7 +106,9 @@ func Test_ProxyAuth(t *testing.T) {
 	token, err := GetGiteaToken()
 	require.Nil(t, err)
 
-	squidIP, err := GetSquidExternalIP("keptn")
+	namespace := osutils.GetOSEnvOrDefault(KeptnNamespaceEnvVar, DefaultKeptnNamespace)
+
+	squidIP, err := GetSquidExternalIP(namespace)
 	require.Nil(t, err)
 
 	// apply the k8s job for creating the git upstream
