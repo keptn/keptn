@@ -11,21 +11,21 @@ jobs:
       - name: Checkout Core Repo
         uses: actions/checkout@v3
         with:
-          path: 'keptn/keptn'
+          path: 'keptn'
 
       - name: Checkout go-utils Repo
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.KEPTN_BOT_TOKEN }}
           path: 'keptn/go-utils'
-          repository: 'keptn/go-utils'
+          repository: 'go-utils'
 
       - name: Checkout kubernetes-utils Repo
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.KEPTN_BOT_TOKEN }}
           path: 'keptn/kubernetes-utils'
-          repository: 'keptn/kubernetes-utils'
+          repository: 'kubernetes-utils'
 
       - name: Set up Go
         uses: actions/setup-go@v3
@@ -46,8 +46,7 @@ jobs:
           yarn global add license-report
 
       - name: GO dependencies and licenses
-        working-directory: keptn/keptn
-        run: ./gh-actions-scripts/dependencies-and-licenses.sh
+        run: ./keptn/gh-actions-scripts/dependencies-and-licenses.sh
 
       - name: Node dependencies and licenses
         run: |

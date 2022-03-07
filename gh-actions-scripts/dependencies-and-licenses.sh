@@ -20,6 +20,8 @@ MODULES=(
   resource-service
 )
 
+cd ./keptn || return
+
 for MODULE in "${MODULES[@]}"; do
   echo "🔍 Analyzing dependencies in module $MODULE"
   cd ./"$MODULE" || return
@@ -36,11 +38,10 @@ for MODULE in "${MODULES[@]}"; do
   cd ..
 done
 
-echo "current location:"
-pwd
+cd ..
 
 echo "🔍 Analyzing dependencies in go-utils"
-cd ../go-utils || return
+cd ./go-utils || return
 
 echo "go mod tidy..."
 go mod tidy > /dev/null 2>&1
@@ -53,7 +54,7 @@ go list -m -json all | \
 cd ..
 
 echo "🔍 Analyzing dependencies in kubernetes-utils"
-cd ../kubernetes-utils || return
+cd ./kubernetes-utils || return
 
 echo "go mod tidy..."
 go mod tidy > /dev/null 2>&1
