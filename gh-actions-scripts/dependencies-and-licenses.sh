@@ -36,6 +36,9 @@ for MODULE in "${MODULES[@]}"; do
   cd ..
 done
 
+echo "current location:"
+pwd
+
 echo "🔍 Analyzing dependencies in go-utils"
 cd ../go-utils || return
 
