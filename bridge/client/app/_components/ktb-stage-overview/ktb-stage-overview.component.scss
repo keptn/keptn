@@ -6,21 +6,6 @@
   > div {
     overflow: auto;
   }
-
-  &::after {
-    content: '';
-    position: absolute;
-    width: 30px;
-    height: 100%;
-    min-height: 100%;
-    right: 0;
-    top: 0;
-
-    box-shadow: -7px 0 10px #f4f4f4 inset;
-    border-right: 1px solid #f4f4f4;
-
-    pointer-events: none;
-  }
 }
 
 .stage-list {
@@ -34,20 +19,21 @@
   }
 
   .stage-group {
-    min-width: 33%;
+    min-width: 32.6%;
 
     // prevent jumping horizontal scrollbar
     @media screen and (max-width: 2073px) {
-      min-width: 32.6%;
+      min-width: 32%;
     }
 
     @media screen and (max-width: 1560px) {
-      min-width: 335px;
+      min-width: 330px;
     }
   }
 
   .stage-group:last-child {
-    padding-right: 16px;
+    margin-right: 0;
+    padding-right: 0;
   }
 }
 
