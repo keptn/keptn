@@ -232,8 +232,10 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
     if (this.evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.TIMEFRAME) {
       if (this.evaluationFormData.timeframe) {
         data.evaluation.timeframe = this.parseTimeframe(this.evaluationFormData.timeframe);
-        data.evaluation.start = moment(this.evaluationFormData.timeframeStart || undefined).toISOString();
+      } else {
+        data.evaluation.timeframe = '5m';
       }
+      data.evaluation.start = moment(this.evaluationFormData.timeframeStart || undefined).toISOString();
     } else if (this.evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.START_END) {
       data.evaluation.start = moment(this.evaluationFormData.startDatetime || undefined).toISOString();
       data.evaluation.end = moment(this.evaluationFormData.endDatetime || undefined).toISOString();

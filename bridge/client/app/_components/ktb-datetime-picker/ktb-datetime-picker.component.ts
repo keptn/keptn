@@ -102,8 +102,11 @@ export class KtbDatetimePickerComponent {
 
   public changeTime(time: Timeframe): void {
     this.selectedTime = time;
-    this.disabled =
-      time.hours === undefined || time.minutes === undefined || (this.secondsEnabled && time.seconds === undefined);
+
+    this.disabled = !(
+      (time.hours !== undefined && time.minutes !== undefined && this.secondsEnabled && time.seconds !== undefined) ||
+      (time.hours === undefined && time.minutes === undefined && time.seconds === undefined)
+    );
   }
 
   public setDateTime(): void {

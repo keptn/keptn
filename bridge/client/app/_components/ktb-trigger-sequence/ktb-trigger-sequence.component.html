@@ -170,7 +170,7 @@
         <dt-form-field class="overlay-origin">
           <dt-label>Start at</dt-label>
           <div class="input-overlay" (click)="timeFrameStartButton?._elementRef?.nativeElement.click()"></div>
-          <input dtInput [(ngModel)]="evaluationFormData.timeframeStart" />
+          <input readonly dtInput [(ngModel)]="evaluationFormData.timeframeStart" />
           <dt-hint>Defaults to now if not filled in</dt-hint>
           <button
             dt-icon-button
@@ -205,7 +205,12 @@
         <dt-form-field class="overlay-origin">
           <dt-label class="required">Start at</dt-label>
           <div class="input-overlay" (click)="startDateButton?._elementRef?.nativeElement.click()"></div>
-          <input dtInput [(ngModel)]="evaluationFormData.startDatetime" [errorStateMatcher]="showErrorStateMatcher" />
+          <input
+            readonly
+            dtInput
+            [(ngModel)]="evaluationFormData.startDatetime"
+            [errorStateMatcher]="showErrorStateMatcher"
+          />
           <button
             dt-icon-button
             dtSuffix
@@ -232,7 +237,12 @@
         <dt-form-field class="overlay-origin">
           <dt-label class="required">End at</dt-label>
           <div class="input-overlay" (click)="endDateButton?._elementRef?.nativeElement.click()"></div>
-          <input dtInput [(ngModel)]="evaluationFormData.endDatetime" [errorStateMatcher]="showErrorStateMatcher" />
+          <input
+            readonly
+            dtInput
+            [(ngModel)]="evaluationFormData.endDatetime"
+            [errorStateMatcher]="showErrorStateMatcher"
+          />
           <button
             dt-icon-button
             dtSuffix
