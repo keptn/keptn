@@ -103,10 +103,17 @@ export class KtbDatetimePickerComponent {
   public changeTime(time: Timeframe): void {
     this.selectedTime = time;
 
-    this.disabled = !(
-      (time.hours !== undefined && time.minutes !== undefined && this.secondsEnabled && time.seconds !== undefined) ||
-      (time.hours === undefined && time.minutes === undefined && time.seconds === undefined)
-    );
+    if (this.secondsEnabled) {
+      this.disabled = !(
+        (time.hours !== undefined && time.minutes !== undefined && time.seconds !== undefined) ||
+        (time.hours === undefined && time.minutes === undefined && time.seconds === undefined)
+      );
+    } else {
+      this.disabled = !(
+        (time.hours !== undefined && time.minutes !== undefined) ||
+        (time.hours === undefined && time.minutes === undefined)
+      );
+    }
   }
 
   public setDateTime(): void {

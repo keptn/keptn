@@ -135,7 +135,7 @@ describe('KtbDatetimePickerComponent', () => {
     expect(component.disabled).toEqual(true);
   });
 
-  it('should be disabled = true if hours and minutes are not set and seconds are disabled', () => {
+  it('should be disabled = false if hours and minutes are not set and seconds are disabled', () => {
     // given
     component.secondsEnabled = false;
     const timeframe: Timeframe = {
@@ -150,7 +150,7 @@ describe('KtbDatetimePickerComponent', () => {
     component.changeTime(timeframe);
 
     // then
-    expect(component.disabled).toEqual(true);
+    expect(component.disabled).toEqual(false);
   });
 
   it('should be disabled = false if hours, minutes and seconds are set ', () => {
@@ -207,7 +207,7 @@ describe('KtbDatetimePickerComponent', () => {
     expect(component.disabled).toEqual(true);
   });
 
-  it('should be disabled = true if hours, minutes and seconds are not set', () => {
+  it('should be disabled = false if hours, minutes and seconds are not set', () => {
     // given
     component.secondsEnabled = true;
     const timeframe: Timeframe = {
@@ -222,25 +222,10 @@ describe('KtbDatetimePickerComponent', () => {
     component.changeTime(timeframe);
 
     // then
-    expect(component.disabled).toEqual(true);
+    expect(component.disabled).toEqual(false);
   });
 
   it('should emit 00:00:00.000 as time when time is not set', () => {
-    // given
-    const spy = jest.spyOn(component.selectedDateTime, 'emit');
-    component.secondsEnabled = true;
-    const date = moment();
-    const expectedDate = date.hours(0).minutes(0).seconds(0).milliseconds(0);
-
-    // when
-    component.changeDate(date.toDate());
-    component.setDateTime();
-
-    // then
-    expect(spy).toHaveBeenCalledWith(expectedDate.toISOString());
-  });
-
-  it('should emit 00:00:00.000 as time when timeframes are not set', () => {
     // given
     const spy = jest.spyOn(component.selectedDateTime, 'emit');
     component.secondsEnabled = true;

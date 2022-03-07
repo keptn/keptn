@@ -37,13 +37,13 @@ export class KtbStageOverviewComponent implements OnDestroy, OnInit {
     const project$ = this.route.params.pipe(
       map((params) => params.projectName),
       filter((projectName) => !!projectName),
-      tap(() => (this.isTriggerSequenceOpen = false)),
+      tap(() => {
+        this.isTriggerSequenceOpen = this.dataService.isTriggerSequenceOpen;
+        this.dataService.isTriggerSequenceOpen = false;
+      }),
       switchMap((projectName) => this.dataService.getProject(projectName)),
       takeUntil(this.unsubscribe$)
     );
-
-    this.isTriggerSequenceOpen = this.dataService.isTriggerSequenceOpen;
-    this.dataService.isTriggerSequenceOpen = false;
 
     project$.subscribe((project) => {
       const differentProject = project?.projectName !== this.project?.projectName;
