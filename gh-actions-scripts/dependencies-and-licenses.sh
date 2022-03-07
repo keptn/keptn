@@ -2,7 +2,6 @@
 
 TMP_DIR=$(mktemp -d 2>/dev/null || mktemp -d -t 'keptndeps')
 MODULES=(
-  shipyard-controller
   api
   approval-service
   cli
@@ -15,6 +14,7 @@ MODULES=(
   mongodb-datastore
   remediation-service
   secret-service
+  shipyard-controller
   statistics-service
   webhook-service
   resource-service
