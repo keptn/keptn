@@ -72,9 +72,7 @@ jobs:
           for MODULE in "${MODULES[@]}"; do
             echo "🔍 Analyzing dependencies in module $MODULE"
             cd ./"$MODULE" || return
-            echo "go mod tidy"
-            go mod tidy
-            echo "listing deps"
+            go mod tidy > /dev/null 2>&1
             go list -m -json all | \
               go-licence-detector \
                 -depsTemplate=../.dependencies/templates/dependencies.csv.tmpl \
@@ -109,7 +107,7 @@ jobs:
           echo "👍 done. written results to ./dependencies-and-licenses-go.txt"
           
           cat dependencies-and-licenses-go.txt
-          
+
       - name: Node dependencies and licenses
         run: |
           echo "🔍 Analyzing dependencies in module bridge"
