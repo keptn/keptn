@@ -25,7 +25,7 @@ for MODULE in "${MODULES[@]}"; do
   cd ./"$MODULE" || return
 
   echo "go mod tidy..."
-  go mod tidy > /dev/null 2>&1
+  go mod tidy
 
   echo "Getting list of dependencies..."
   go list -m -json all | \
@@ -33,31 +33,34 @@ for MODULE in "${MODULES[@]}"; do
       -depsTemplate=../.dependencies/templates/dependencies.csv.tmpl \
       -depsOut="${TMP_DIR}"/"${MODULE}"-dependencies.txt \
       -overrides=../.dependencies/overrides/overrides.json
+  cd ..
 done
 
 echo "🔍 Analyzing dependencies in go-utils"
 cd ../go-utils || return
 
 echo "go mod tidy..."
-go mod tidy > /dev/null 2>&1
+go mod tidy
 
 echo "Getting list of dependencies..."
 go list -m -json all | \
   go-licence-detector \
     -depsTemplate=../keptn/.dependencies/templates/dependencies.csv.tmpl \
     -depsOut="${TMP_DIR}"/go-utils-dependencies.txt
+cd ..
 
 echo "🔍 Analyzing dependencies in kubernetes-utils"
 cd ../kubernetes-utils || return
 
 echo "go mod tidy..."
-go mod tidy > /dev/null 2>&1
+go mod tidy
 
 echo "Getting list of dependencies..."
 go list -m -json all | \
   go-licence-detector \
     -depsTemplate=../keptn/.dependencies/templates/dependencies.csv.tmpl \
     -depsOut="${TMP_DIR}"/kubernetes-utils-dependencies.txt
+cd ..
 
 cat "$TMP_DIR"/*.txt | sort | uniq > dependencies-and-licenses-go.txt
 

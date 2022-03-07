@@ -12,34 +12,42 @@ jobs:
         uses: actions/checkout@v3
         with:
           path: 'keptn/keptn'
+
       - name: Checkout go-utils Repo
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.KEPTN_BOT_TOKEN }}
           path: 'keptn/go-utils'
           repository: 'keptn/go-utils'
+
       - name: Checkout kubernetes-utils Repo
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.KEPTN_BOT_TOKEN }}
           path: 'keptn/kubernetes-utils'
           repository: 'keptn/kubernetes-utils'
+
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
           go-version: 1.17
+
       - name: Install go-licence-detector
         run: |
           go get go.elastic.co/go-licence-detector
+
       - name: Set up Node
         uses: actions/setup-node@v3.0.0
         with:
           node-version: 16
+
       - name: Install npm libs
         run: |
           yarn global add license-report
+
       - name: GO dependencies and licenses
-        run: ./keptn/keptn/gh-actions-scripts/dependencies-and-licenses.sh
+        working-directory: keptn/keptn
+        run: ./gh-actions-scripts/dependencies-and-licenses.sh
 
       - name: Node dependencies and licenses
         run: |
@@ -50,6 +58,7 @@ jobs:
           echo "👍 done. written results to ./dependencies-and-licenses-node.txt"
 
           cat dependencies-and-licenses-node.txt
+
       - name: Upload dependencies and licenses artifact
         uses: actions/upload-artifact@v3
         with:
