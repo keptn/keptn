@@ -25,7 +25,7 @@ for MODULE in "${MODULES[@]}"; do
   cd ./"$MODULE" || return
 
   echo "go mod tidy..."
-  go mod tidy
+  go mod tidy > /dev/null 2>&1
 
   echo "Getting list of dependencies..."
   go list -m -json all | \
@@ -40,7 +40,7 @@ echo "🔍 Analyzing dependencies in go-utils"
 cd ../go-utils || return
 
 echo "go mod tidy..."
-go mod tidy
+go mod tidy > /dev/null 2>&1
 
 echo "Getting list of dependencies..."
 go list -m -json all | \
@@ -53,7 +53,7 @@ echo "🔍 Analyzing dependencies in kubernetes-utils"
 cd ../kubernetes-utils || return
 
 echo "go mod tidy..."
-go mod tidy
+go mod tidy > /dev/null 2>&1
 
 echo "Getting list of dependencies..."
 go list -m -json all | \
