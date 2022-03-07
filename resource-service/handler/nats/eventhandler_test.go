@@ -13,7 +13,7 @@ import (
 func TestEventMsgHandler_Process(t *testing.T) {
 	t.Run("does not delete project when event has status other than succeeded", func(t *testing.T) {
 		pm := &handler_mock.IProjectManagerMock{}
-		eh := EventHandler(pm, "me")
+		eh := EventHandler(pm)
 		event := models.Event{
 			Data: keptnv2.EventData{
 				Status: keptnv2.StatusUnknown,
@@ -41,12 +41,12 @@ func TestEventMsgHandler_Process(t *testing.T) {
 		require.Nil(t, err)
 		require.Equal(t, 0, len(pm.DeleteProjectCalls()))
 	})
-	t.Run("does not delete project when event was sent by myself", func(t *testing.T) {
+	t.Run("does not delete project when event was sent by a component other than the shipyard controller", func(t *testing.T) {
 		pm := &handler_mock.IProjectManagerMock{}
-		eh := EventHandler(pm, "me")
+		eh := EventHandler(pm)
 
 		event := models.Event{
-			Source: strutils.Stringp("me"),
+			Source: strutils.Stringp("not-the-shippy"),
 			Data: keptnv2.EventData{
 				Status: keptnv2.StatusSucceeded,
 			},
@@ -60,10 +60,10 @@ func TestEventMsgHandler_Process(t *testing.T) {
 		pm := &handler_mock.IProjectManagerMock{
 			DeleteProjectFunc: func(n string) error { return fmt.Errorf("oops") },
 		}
-		eh := EventHandler(pm, "me")
+		eh := EventHandler(pm)
 
 		event := models.Event{
-			Source: strutils.Stringp("not-me"),
+			Source: strutils.Stringp(shipyardController),
 			Data: keptnv2.EventData{
 				Status:  keptnv2.StatusSucceeded,
 				Project: "a-project",
@@ -80,7 +80,7 @@ func TestEventMsgHandler_Process(t *testing.T) {
 		pm := &handler_mock.IProjectManagerMock{
 			DeleteProjectFunc: func(n string) error { return fmt.Errorf("oops") },
 		}
-		eh := EventHandler(pm, "me")
+		eh := EventHandler(pm)
 		event := models.Event{Data: "something-strange!!!11!"}
 		err := eh.Process(event, false)
 

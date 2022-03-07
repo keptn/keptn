@@ -42,7 +42,6 @@ import (
 const envVarNatsURL = "NATS_URL"
 const envVarLogLevel = "LOG_LEVEL"
 const envVarNatsURLDefault = "nats://keptn-nats"
-const envKubernetesPodName = "K8S_POD_NAME"
 const eventProjectDeleteFinished = "sh.keptn.event.project.delete.finished"
 
 func main() {
@@ -53,7 +52,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	log.SetLevel(log.DebugLevel)
+	log.SetLevel(log.InfoLevel)
 
 	if os.Getenv(envVarLogLevel) != "" {
 		logLevel, err := log.ParseLevel(os.Getenv(envVarLogLevel))
@@ -131,7 +130,7 @@ func main() {
 		Handler: engine,
 	}
 
-	eventMsgProcessor := nats2.EventHandler(projectManager, os.Getenv(envKubernetesPodName))
+	eventMsgProcessor := nats2.EventHandler(projectManager)
 	eventMsgHandler := nats.NewKeptnNatsMessageHandler(eventMsgProcessor.Process)
 	connectionHandler := nats.NewNatsConnectionHandler(ctx, natsURLFromEnvVar())
 	if err := connectionHandler.SubscribeToTopics([]string{eventProjectDeleteFinished}, eventMsgHandler); err != nil {
@@ -186,14 +185,14 @@ func gracefulShutdown(ctx context.Context, wg *sync.WaitGroup, srv *http.Server)
 }
 
 func createKubeAPI() (*kubernetes.Clientset, error) {
-	var configs *rest.Config
-	configs, err := rest.InClusterConfig()
+	var cfg *rest.Config
+	cfg, err := rest.InClusterConfig()
 
 	if err != nil {
 		return nil, err
 	}
 
-	kubeAPI, err := kubernetes.NewForConfig(configs)
+	kubeAPI, err := kubernetes.NewForConfig(cfg)
 	if err != nil {
 		return nil, err
 	}

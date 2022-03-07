@@ -7,15 +7,15 @@ import (
 	logger "github.com/sirupsen/logrus"
 )
 
+const shipyardController = "shipyard-controller"
+
 type EventMsgHandler struct {
-	pm   handler.IProjectManager
-	Self string
+	pm handler.IProjectManager
 }
 
-func EventHandler(projectManager handler.IProjectManager, name string) *EventMsgHandler {
+func EventHandler(projectManager handler.IProjectManager) *EventMsgHandler {
 	return &EventMsgHandler{
-		pm:   projectManager,
-		Self: name,
+		pm: projectManager,
 	}
 }
 func (eh *EventMsgHandler) Process(event models.Event, sync bool) error {
@@ -24,10 +24,10 @@ func (eh *EventMsgHandler) Process(event models.Event, sync bool) error {
 		return err
 	}
 
-	// if shipyard-controller or any other replica managed to remove a project
-	if e.Status == keptnv2.StatusSucceeded && *event.Source != eh.Self {
-		logger.Debug("Deleting project", e.Project)
+	if e.Status == keptnv2.StatusSucceeded && *event.Source == shipyardController {
+		logger.Infof("Deleting project %s", e.Project)
 		err := eh.pm.DeleteProject(e.Project)
+
 		if err != nil {
 			return err
 		}
