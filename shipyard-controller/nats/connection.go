@@ -11,7 +11,7 @@ import (
 	"sort"
 )
 
-const streamName = "shipyard-controller"
+const streamName = "keptn"
 const queueGroup = "shipyard-controller"
 const consumerName = "shipyard-controller:all-events"
 

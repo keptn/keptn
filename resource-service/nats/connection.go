@@ -11,7 +11,7 @@ import (
 	"sort"
 )
 
-const streamName = "resource-service"
+const streamName = "keptn"
 const consumerName = "resource-service"
 
 //go:generate moq --skip-ensure -pkg nats_mock -out ./mock/keptn_nats_handler_mock.go . IKeptnNatsMessageHandler
