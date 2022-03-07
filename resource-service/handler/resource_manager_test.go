@@ -829,6 +829,41 @@ func TestResourceManager_DeleteResource_ProjectResource_DeleteFails(t *testing.T
 	require.Equal(t, testConfigDir+"/file1", fields.fileSystem.DeleteFileCalls()[0].Path)
 }
 
+func TestResourceManager_DeleteResource_Git_ThrowsNonFastForward_Or_ThrowsForceNeeded(t *testing.T) {
+	fields := getTestResourceManagerFields()
+	fields.git.StageAndCommitAllFunc = func(gitContext common_models.GitContext, message string) (string, error) {
+		stageAndCommitCalls := fields.git.StageAndCommitAllCalls()
+		if len(stageAndCommitCalls) == 1 {
+			return "", errors2.ErrNonFastForwardUpdate
+		}
+		if len(stageAndCommitCalls) == 2 {
+			return "", errors2.ErrForceNeeded
+		}
+
+		return "my-revision", nil
+	}
+
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
+
+	revision, err := rm.DeleteResource(models.DeleteResourceParams{
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
+		},
+		ResourceURI: "file1",
+	})
+
+	require.Nil(t, err)
+
+	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision"}, revision)
+
+	require.Len(t, fields.git.StageAndCommitAllCalls(), 3)
+	require.Len(t, fields.fileSystem.DeleteFileCalls(), 3)
+	require.Len(t, fields.git.PullCalls(), 2)
+	require.Equal(t, testConfigDir+"/file1", fields.fileSystem.DeleteFileCalls()[0].Path)
+	require.Equal(t, testConfigDir+"/file1", fields.fileSystem.DeleteFileCalls()[1].Path)
+	require.Equal(t, testConfigDir+"/file1", fields.fileSystem.DeleteFileCalls()[2].Path)
+}
+
 func TestResourceManager_DeleteResource_ProjectResource_CommitFails(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
