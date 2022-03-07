@@ -26,8 +26,6 @@ for MODULE in "${MODULES[@]}"; do
   echo "🔍 Analyzing dependencies in module $MODULE"
   cd ./"$MODULE" || return
   go mod tidy > /dev/null 2>&1
-
-  echo "Getting list of dependencies..."
   go list -m -json all | \
     go-licence-detector \
       -depsTemplate=../.dependencies/templates/dependencies.csv.tmpl \
@@ -41,8 +39,6 @@ cd ..
 echo "🔍 Analyzing dependencies in go-utils"
 cd ./go-utils || return
 go mod tidy > /dev/null 2>&1
-
-echo "Getting list of dependencies..."
 go list -m -json all | \
   go-licence-detector \
     -depsTemplate=../keptn/.dependencies/templates/dependencies.csv.tmpl \
@@ -52,8 +48,6 @@ cd ..
 echo "🔍 Analyzing dependencies in kubernetes-utils"
 cd ./kubernetes-utils || return
 go mod tidy > /dev/null 2>&1
-
-echo "Getting list of dependencies..."
 go list -m -json all | \
   go-licence-detector \
     -depsTemplate=../keptn/.dependencies/templates/dependencies.csv.tmpl \
