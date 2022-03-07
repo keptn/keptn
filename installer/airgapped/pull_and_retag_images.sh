@@ -34,6 +34,7 @@ IMAGES_CONTROL_PLANE=(
   "${DOCKER_ORG}/lighthouse-service:${KEPTN_TAG}"
   "${DOCKER_ORG}/approval-service:${KEPTN_TAG}"
   "${DOCKER_ORG}/webhook-service:${KEPTN_TAG}"
+  "${DOCKER_ORG}/resource-service:${KEPTN_TAG}"
 )
 IMAGES_CONTINUOUS_DELIVERY=(
   "${DOCKER_ORG}/helm-service:${KEPTN_TAG}"
