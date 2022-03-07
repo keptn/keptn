@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
 	"net/http"
@@ -14,13 +13,11 @@ type IProjectResourceHandler interface {
 	UpdateProjectResources(context *gin.Context)
 	GetProjectResource(context *gin.Context)
 	UpdateProjectResource(context *gin.Context)
-	//DeleteProjectResource(context *gin.Context)
+	DeleteProjectResource(context *gin.Context)
 }
 
 type ProjectResourceHandler struct {
 	ProjectResourceManager IResourceManager
-	eventSender            *keptnv2.HTTPEventSender
-	Self                   string
 }
 
 func NewProjectResourceHandler(projectResourceManager IResourceManager) *ProjectResourceHandler {
@@ -242,71 +239,37 @@ func (ph *ProjectResourceHandler) UpdateProjectResource(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
-//// DeleteProjectResource godoc
-//// @Summary Deletes a project resource
-//// @Description Deletes a project resource
-//// @Tags Project Resource
-//// @Security ApiKeyAuth
-//// @Accept  json
-//// @Produce  json
-//// @Param	projectName					path	string	true	"The name of the project"
-//// @Param	resourceURI				path	string	true	"The path of the resource file"
-//// @Success 200 {string} models.WriteResourceResponse
-//// @Failure 400 {object} models.Error "Invalid payload"
-//// @Failure 500 {object} models.Error "Internal error"
-//// @Router /project/{projectName}/resource/{resourceURI} [delete]
-//func (ph *ProjectResourceHandler) DeleteProjectResource(c *gin.Context) {
-//	params := &models.DeleteResourceParams{
-//		ResourceContext: models.ResourceContext{
-//			Project: models.Project{ProjectName: c.Param(pathParamProjectName)},
-//		},
-//		ResourceURI: c.Param(pathParamResourceURI),
-//	}
-//
-//	if err := params.Validate(); err != nil {
-//		SetBadRequestErrorResponse(c, err.Error())
-//		return
-//	}
-//
-//	result, err := ph.ProjectResourceManager.DeleteResource(*params)
-//	if err != nil {
-//		OnAPIError(c, err)
-//		return
-//	}
-//
-//	err = ph.SendDeleteFinishedEvent(params.ProjectName)
-//
-//	if err != nil {
-//		OnAPIError(c, err)
-//		return
-//	}
-//
-//	c.JSON(http.StatusOK, result)
-//}
-//
-//func (ph *ProjectResourceHandler) SendDeleteFinishedEvent(projectName string) error {
-//	eventPayload := keptnv2.ProjectDeleteFinishedEventData{
-//		EventData: keptnv2.EventData{
-//			Project: projectName,
-//			Status:  keptnv2.StatusSucceeded,
-//			Result:  keptnv2.ResultPass,
-//		},
-//	}
-//
-//	ce := ph.CreateEventWithPayload(keptnv2.GetFinishedEventType(keptnv2.ProjectDeleteTaskName), eventPayload)
-//	return ph.eventSender.SendEvent(ce)
-//}
-//
-//func (ph *ProjectResourceHandler) CreateEventWithPayload(eventType string, payload interface{}) cloudevents.Event {
-//
-//	source, _ := url.Parse(ph.Self)
-//	event := cloudevents.NewEvent()
-//	event.SetType(eventType)
-//	event.SetSource(source.String())
-//	event.SetDataContentType(cloudevents.ApplicationJSON)
-//	event.SetID(uuid.NewString())
-//	event.SetExtension("shkeptncontext", uuid.New().String())
-//	event.SetTime(time.Now().UTC())
-//	_ = event.SetData(cloudevents.ApplicationJSON, payload)
-//	return event
-//}
+// DeleteProjectResource godoc
+// @Summary Deletes a project resource
+// @Description Deletes a project resource
+// @Tags Project Resource
+// @Security ApiKeyAuth
+// @Accept  json
+// @Produce  json
+// @Param	projectName					path	string	true	"The name of the project"
+// @Param	resourceURI				path	string	true	"The path of the resource file"
+// @Success 200 {string} models.WriteResourceResponse
+// @Failure 400 {object} models.Error "Invalid payload"
+// @Failure 500 {object} models.Error "Internal error"
+// @Router /project/{projectName}/resource/{resourceURI} [delete]
+func (ph *ProjectResourceHandler) DeleteProjectResource(c *gin.Context) {
+	params := &models.DeleteResourceParams{
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: c.Param(pathParamProjectName)},
+		},
+		ResourceURI: c.Param(pathParamResourceURI),
+	}
+
+	if err := params.Validate(); err != nil {
+		SetBadRequestErrorResponse(c, err.Error())
+		return
+	}
+
+	result, err := ph.ProjectResourceManager.DeleteResource(*params)
+	if err != nil {
+		OnAPIError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
+}

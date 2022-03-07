@@ -19,4 +19,5 @@ func (controller ProjectResourceController) Inject(apiGroup *gin.RouterGroup) {
 	apiGroup.PUT("/project/:projectName/resource", controller.ProjectResourceHandler.UpdateProjectResources)
 	apiGroup.GET("/project/:projectName/resource/:resourceURI", controller.ProjectResourceHandler.GetProjectResource)
 	apiGroup.PUT("/project/:projectName/resource/:resourceURI", controller.ProjectResourceHandler.UpdateProjectResource)
+	apiGroup.DELETE("/project/:projectName/resource/:resourceURI", controller.ProjectResourceHandler.DeleteProjectResource)
 }

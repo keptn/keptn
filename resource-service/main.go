@@ -89,14 +89,14 @@ func main() {
 	fileSystem := common.NewFileSystem(common.GetConfigDir())
 
 	git := common.NewGit(&common.GogitReal{})
-	configurationContext := getConfigurationContext(git, fileSystem)
+	configurationContext := createConfigurationContext(git, fileSystem)
 
 	projectManager := handler.NewProjectManager(git, credentialReader, fileSystem)
 	projectHandler := handler.NewProjectHandler(projectManager)
 	projectController := controller.NewProjectController(projectHandler)
 	projectController.Inject(apiV1)
 
-	stageManager := getStageManager(configurationContext, git, fileSystem, credentialReader)
+	stageManager := createStageManager(configurationContext, git, fileSystem, credentialReader)
 	stageHandler := handler.NewStageHandler(stageManager)
 	stageController := controller.NewStageController(stageHandler)
 	stageController.Inject(apiV1)
@@ -133,7 +133,7 @@ func main() {
 
 	eventMsgProcessor := nats2.EventHandler(projectManager, os.Getenv(envKubernetesPodName))
 	eventMsgHandler := nats.NewKeptnNatsMessageHandler(eventMsgProcessor.Process)
-	connectionHandler := nats.NewNatsConnectionHandler(ctx, getNatsURLFromEnvVar())
+	connectionHandler := nats.NewNatsConnectionHandler(ctx, natsURLFromEnvVar())
 	if err := connectionHandler.SubscribeToTopics([]string{eventProjectDeleteFinished}, eventMsgHandler); err != nil {
 		log.Fatalf("Could not subscribe to nats: %v", err)
 	}
@@ -146,11 +146,11 @@ func main() {
 		}
 	}()
 
-	GracefulShutdown(ctx, wg, srv)
+	gracefulShutdown(ctx, wg, srv)
 
 }
 
-func getConfigurationContext(git *common.Git, fileSystem *common.FileSystem) handler.IConfigurationContext {
+func createConfigurationContext(git *common.Git, fileSystem *common.FileSystem) handler.IConfigurationContext {
 	var configContext handler.IConfigurationContext
 	if config.Global.DirectoryStageStructure {
 		configContext = handler.NewDirectoryConfigurationContext(git, fileSystem)
@@ -160,7 +160,7 @@ func getConfigurationContext(git *common.Git, fileSystem *common.FileSystem) han
 	return configContext
 }
 
-func getStageManager(configurationContext handler.IConfigurationContext, git common.IGit, fileSystem common.IFileSystem, credentialReader common.CredentialReader) handler.IStageManager {
+func createStageManager(configurationContext handler.IConfigurationContext, git common.IGit, fileSystem common.IFileSystem, credentialReader common.CredentialReader) handler.IStageManager {
 	var stageManager handler.IStageManager
 	if config.Global.DirectoryStageStructure {
 		stageManager = handler.NewDirectoryStageManager(configurationContext, fileSystem, credentialReader, git)
@@ -170,8 +170,7 @@ func getStageManager(configurationContext handler.IConfigurationContext, git com
 	return stageManager
 }
 
-func GracefulShutdown(ctx context.Context, wg *sync.WaitGroup, srv *http.Server) {
-	// Wait for interrut signal to gracefully shutdown the server
+func gracefulShutdown(ctx context.Context, wg *sync.WaitGroup, srv *http.Server) {
 	quit := make(chan os.Signal, 1)
 
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
@@ -201,7 +200,7 @@ func createKubeAPI() (*kubernetes.Clientset, error) {
 	return kubeAPI, nil
 }
 
-func getNatsURLFromEnvVar() string {
+func natsURLFromEnvVar() string {
 	if natsURL, ok := os.LookupEnv(envVarNatsURL); ok && natsURL != "" {
 		return natsURL
 	}

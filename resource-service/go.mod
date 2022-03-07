@@ -3,6 +3,7 @@ module github.com/keptn/keptn/resource-service
 go 1.16
 
 require (
+	github.com/cloudevents/sdk-go/v2 v2.5.0
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-git/go-billy/v5 v5.3.1
 	github.com/go-git/go-git-fixtures/v4 v4.3.1
@@ -10,6 +11,8 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.13.1-0.20220307070004-98cdba5b4f31
 	github.com/mholt/archiver/v3 v3.5.1
+	github.com/nats-io/nats-server/v2 v2.7.3
+	github.com/nats-io/nats.go v1.13.1-0.20220121202836-972a071d373d
 	github.com/otiai10/copy v1.7.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0

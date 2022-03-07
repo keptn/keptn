@@ -19,15 +19,15 @@ func EventHandler(projectManager handler.IProjectManager, name string) *EventMsg
 	}
 }
 func (eh *EventMsgHandler) Process(event models.Event, sync bool) error {
-	keptnEvent := &keptnv2.ProjectDeleteFinishedEventData{}
-	if err := keptnv2.Decode(event.Data, keptnEvent); err != nil {
+	e := &keptnv2.ProjectDeleteFinishedEventData{}
+	if err := keptnv2.Decode(event.Data, e); err != nil {
 		return err
 	}
 
 	// if shipyard-controller or any other replica managed to remove a project
-	if keptnEvent.Status == keptnv2.StatusSucceeded && *event.Source != eh.Self {
-		logger.Debug("Deleting project", keptnEvent.Project)
-		err := eh.pm.DeleteProject(keptnEvent.Project)
+	if e.Status == keptnv2.StatusSucceeded && *event.Source != eh.Self {
+		logger.Debug("Deleting project", e.Project)
+		err := eh.pm.DeleteProject(e.Project)
 		if err != nil {
 			return err
 		}
