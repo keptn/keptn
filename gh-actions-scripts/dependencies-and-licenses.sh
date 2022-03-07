@@ -25,8 +25,6 @@ cd ./keptn || return
 for MODULE in "${MODULES[@]}"; do
   echo "🔍 Analyzing dependencies in module $MODULE"
   cd ./"$MODULE" || return
-
-  echo "go mod tidy..."
   go mod tidy > /dev/null 2>&1
 
   echo "Getting list of dependencies..."
@@ -42,8 +40,6 @@ cd ..
 
 echo "🔍 Analyzing dependencies in go-utils"
 cd ./go-utils || return
-
-echo "go mod tidy..."
 go mod tidy > /dev/null 2>&1
 
 echo "Getting list of dependencies..."
@@ -55,8 +51,6 @@ cd ..
 
 echo "🔍 Analyzing dependencies in kubernetes-utils"
 cd ./kubernetes-utils || return
-
-echo "go mod tidy..."
 go mod tidy > /dev/null 2>&1
 
 echo "Getting list of dependencies..."
