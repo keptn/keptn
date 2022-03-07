@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.13.2](https://github.com/keptn/keptn/compare/0.13.1...0.13.2) (2022-03-07)
+
+
+### Bug Fixes
+
+* **shipyard-controller:** Do not reset subscriptions when updating distributor/integration version ([#7046](https://github.com/keptn/keptn/issues/7046)) ([#7058](https://github.com/keptn/keptn/issues/7058)) ([c225000](https://github.com/keptn/keptn/commit/c2250001f28b9da2276d6b028e7a2e182760966a)), closes [#6598](https://github.com/keptn/keptn/issues/6598) [#6613](https://github.com/keptn/keptn/issues/6613) [#6618](https://github.com/keptn/keptn/issues/6618) [#6619](https://github.com/keptn/keptn/issues/6619) [#6634](https://github.com/keptn/keptn/issues/6634) [#6559](https://github.com/keptn/keptn/issues/6559) [#6642](https://github.com/keptn/keptn/issues/6642) [#6643](https://github.com/keptn/keptn/issues/6643) [#6659](https://github.com/keptn/keptn/issues/6659) [#6670](https://github.com/keptn/keptn/issues/6670) [#6632](https://github.com/keptn/keptn/issues/6632) [#6718](https://github.com/keptn/keptn/issues/6718) [#6816](https://github.com/keptn/keptn/issues/6816) [#6819](https://github.com/keptn/keptn/issues/6819) [#6820](https://github.com/keptn/keptn/issues/6820) [#6875](https://github.com/keptn/keptn/issues/6875) [#6763](https://github.com/keptn/keptn/issues/6763) [#6857](https://github.com/keptn/keptn/issues/6857) [#6804](https://github.com/keptn/keptn/issues/6804) [#6931](https://github.com/keptn/keptn/issues/6931) [#6944](https://github.com/keptn/keptn/issues/6944) [#6966](https://github.com/keptn/keptn/issues/6966) [#6971](https://github.com/keptn/keptn/issues/6971)
+
 ### [0.13.1](https://github.com/keptn/keptn/compare/0.13.0...0.13.1) (2022-02-25)
 
 
