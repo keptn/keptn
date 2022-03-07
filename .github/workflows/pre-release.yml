@@ -238,7 +238,7 @@ jobs:
 
       - name: Upload Digest file as artifact
         if: matrix.config.should-push-image
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         env:
           IMAGE_DIGEST_FILENAME: "./digest-${{ matrix.config.artifact }}.txt"
         with:

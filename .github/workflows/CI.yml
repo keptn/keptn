@@ -232,7 +232,7 @@ jobs:
 
       - name: Upload build config as artifact
         id: upload_build_config
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: build-config
           path: build-config.env
@@ -289,7 +289,7 @@ jobs:
 
       - name: Upload Test Screenshots
         if: always() && matrix.config.artifact == 'bridge2' && matrix.config.docker-test-target == 'builder-test-ui'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: bridge-e2e-screenshots
           path: ./shared/screenshots
