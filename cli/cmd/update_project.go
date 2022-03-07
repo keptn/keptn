@@ -170,5 +170,5 @@ func init() {
 	updateProjectParams.GitProxyScheme = upProjectCmd.Flags().StringP("git-proxy-scheme", "j", "", "The git proxy scheme")
 	updateProjectParams.GitProxyUser = upProjectCmd.Flags().StringP("git-proxy-user", "w", "", "The git proxy user")
 	updateProjectParams.GitProxyPassword = upProjectCmd.Flags().StringP("git-proxy-password", "e", "", "The git proxy password")
-	updateProjectParams.GitProxyInsecure = upProjectCmd.Flags().BoolP("git-proxy-insecure", "x", false, "The git proxy secure TLS connection")
+	updateProjectParams.GitProxyInsecure = upProjectCmd.Flags().BoolP("git-proxy-insecure", "x", false, "The git proxy insecure TLS connection")
 }

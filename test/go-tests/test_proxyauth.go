@@ -2,11 +2,9 @@ package go_tests
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/require"
 	"path"
 	"testing"
-	"time"
-
-	"github.com/stretchr/testify/require"
 )
 
 const testingProxyShipyard = `apiVersion: "spec.keptn.sh/0.2.3"
@@ -96,10 +94,6 @@ func Test_ProxyAuth(t *testing.T) {
 	t.Log("Adding load test resources for jmeter in prod")
 	_, err = ExecuteCommandf("keptn add-resource --project=%s --service=%s --stage=%s --resource=%s --resourceUri=%s", projectName, serviceName, "prod", serviceJmeterDir+"/load.jmx", "jmeter/load.jmx")
 	require.Nil(t, err)
-
-	t.Logf("Sleeping for 30s...")
-	time.Sleep(30 * time.Second)
-	t.Logf("Continue to work...")
 
 	t.Logf("Trigger delivery of helloservice:v0.1.0")
 	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", projectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery")
