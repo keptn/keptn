@@ -1,12 +1,14 @@
 package handler
 
 import (
+	"fmt"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"net/http"
 )
 
 type IEventHandler interface {
@@ -45,7 +47,7 @@ func (eh *EventHandler) GetTriggeredEvents(c *gin.Context) {
 	if err := c.ShouldBindQuery(params); err != nil {
 		c.JSON(http.StatusBadRequest, models.Error{
 			Code:    400,
-			Message: common.Stringp(invalidRequestFormatMsg),
+			Message: common.Stringp("Invalid request format"),
 		})
 	}
 
@@ -76,10 +78,10 @@ func (eh *EventHandler) GetTriggeredEvents(c *gin.Context) {
 
 	if err != nil {
 		if err == ErrProjectNotFound {
-			SetNotFoundErrorResponse(err, c)
+			SetNotFoundErrorResponse(c, err.Error())
 			return
 		}
-		SetInternalServerErrorResponse(err, c)
+		SetInternalServerErrorResponse(c, err.Error())
 		return
 	}
 
@@ -100,22 +102,22 @@ func (eh *EventHandler) GetTriggeredEvents(c *gin.Context) {
 func (eh *EventHandler) HandleEvent(c *gin.Context) {
 	event := &models.Event{}
 	if err := c.ShouldBindJSON(event); err != nil {
-		SetBadRequestErrorResponse(err, c, invalidRequestFormatMsg)
+		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 	keptnEvent := &keptnmodels.KeptnContextExtendedCE{}
 	if err := keptnv2.Decode(event, keptnEvent); err != nil {
-		SetBadRequestErrorResponse(err, c, invalidRequestFormatMsg)
+		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 	if err := keptnEvent.Validate(); err != nil {
-		SetBadRequestErrorResponse(err, c, invalidRequestFormatMsg)
+		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
 	err := eh.ShipyardController.HandleIncomingEvent(*event, false)
 	if err != nil {
-		SetInternalServerErrorResponse(err, c)
+		SetInternalServerErrorResponse(c, err.Error())
 		return
 	}
 	c.Status(http.StatusOK)

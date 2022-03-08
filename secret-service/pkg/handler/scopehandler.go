@@ -1,10 +1,12 @@
 package handler
 
 import (
+	"fmt"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/keptn/secret-service/pkg/backend"
 	"github.com/keptn/keptn/secret-service/pkg/model"
-	"net/http"
 )
 
 type IScopeHandler interface {
@@ -21,7 +23,6 @@ func NewScopeHandler(backend backend.ScopeManager) *ScopeHandler {
 	}
 }
 
-
 // GetScopes godoc
 // @Summary Get scopes
 // @Description Get scopes
@@ -33,7 +34,7 @@ func NewScopeHandler(backend backend.ScopeManager) *ScopeHandler {
 func (s ScopeHandler) GetScopes(c *gin.Context) {
 	scopes, err := s.ScopeBackend.GetScopes()
 	if err != nil {
-		SetInternalServerErrorResponse(err, c, "Unable to get scopes")
+		SetInternalServerErrorResponse(c, fmt.Sprintf(ErrGetScopes, err.Error()))
 		return
 	}
 

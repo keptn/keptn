@@ -1,10 +1,12 @@
 package handler
 
 import (
+	"fmt"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"net/http"
 )
 
 type IStateHandler interface {
@@ -47,7 +49,7 @@ func (sh *StateHandler) GetSequenceState(c *gin.Context) {
 	projectName := c.Param("project")
 	params := &models.GetSequenceStateParams{}
 	if err := c.ShouldBindQuery(params); err != nil {
-		SetBadRequestErrorResponse(err, c, "Invalid request format")
+		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 	params.Project = projectName
@@ -56,7 +58,7 @@ func (sh *StateHandler) GetSequenceState(c *gin.Context) {
 		GetSequenceStateParams: *params,
 	})
 	if err != nil {
-		SetInternalServerErrorResponse(err, c, "Unable to query sequence state repository")
+		SetInternalServerErrorResponse(c, fmt.Sprintf(UnableQueryStateMsg, err.Error()))
 		return
 	}
 
@@ -83,7 +85,7 @@ func (sh *StateHandler) ControlSequenceState(c *gin.Context) {
 
 	params := &models.SequenceControlCommand{}
 	if err := c.ShouldBindJSON(params); err != nil {
-		SetBadRequestErrorResponse(err, c, "Invalid request format")
+		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
@@ -95,9 +97,9 @@ func (sh *StateHandler) ControlSequenceState(c *gin.Context) {
 	})
 	if err != nil {
 		if err == ErrSequenceNotFound {
-			SetNotFoundErrorResponse(err, c, "Could not control sequence")
+			SetNotFoundErrorResponse(c, fmt.Sprintf(UnableFindSequenceMsg, err.Error()))
 		}
-		SetInternalServerErrorResponse(err, c, "Unable to control sequence")
+		SetInternalServerErrorResponse(c, fmt.Sprintf(UnableControleSequenceMsg, err.Error()))
 		return
 	}
 
