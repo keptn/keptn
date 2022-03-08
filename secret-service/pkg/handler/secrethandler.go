@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -51,11 +52,11 @@ func (s SecretHandler) CreateSecret(c *gin.Context) {
 
 	err := s.SecretManager.CreateSecret(secret)
 	if err != nil {
-		if err == backend.ErrSecretAlreadyExists {
+		if errors.Is(err, backend.ErrSecretAlreadyExists) {
 			SetConflictErrorResponse(c, fmt.Sprintf(ErrCreateSecretMsg, err.Error()))
 			return
 		}
-		if err == backend.ErrTooBigKeySize {
+		if errors.Is(err, backend.ErrTooBigKeySize) {
 			SetBadRequestErrorResponse(c, fmt.Sprintf(ErrCreateSecretMsg, err.Error()))
 			return
 		}
@@ -87,7 +88,7 @@ func (s SecretHandler) UpdateSecret(c *gin.Context) {
 
 	err := s.SecretManager.UpdateSecret(secret)
 	if err != nil {
-		if err == backend.ErrSecretNotFound {
+		if errors.Is(err, backend.ErrSecretNotFound) {
 			SetNotFoundErrorResponse(c, fmt.Sprintf(ErrUpdateSecretMsg, err.Error()))
 			return
 		}
@@ -125,7 +126,7 @@ func (s SecretHandler) DeleteSecret(c *gin.Context) {
 	}
 	err := s.SecretManager.DeleteSecret(secret)
 	if err != nil {
-		if err == backend.ErrSecretNotFound {
+		if errors.Is(err, backend.ErrSecretNotFound) {
 			SetNotFoundErrorResponse(c, fmt.Sprintf(ErrDeleteSecretMsg, err.Error()))
 			return
 		}
