@@ -1,7 +1,7 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
 # https://hub.docker.com/_/golang
-FROM golang:1.16.15-alpine as builder-base
+FROM golang:1.17.5-alpine as builder-base
 
 WORKDIR /go/src/github.com/keptn/keptn/jmeter-service
 
