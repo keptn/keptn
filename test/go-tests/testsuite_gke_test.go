@@ -30,7 +30,7 @@ func Test_GKE(t *testing.T) {
 	t.Run("Test_SequenceControl_AbortQueuedSequence", Test_SequenceControl_AbortQueuedSequence)
 	t.Run("Test_SequenceControl_PauseAndResume", Test_SequenceControl_PauseAndResume)
 	t.Run("Test_SequenceControl_PauseAndResume_2", Test_SequenceControl_PauseAndResume_2)
-	if res, err := CompareServiceWithDeployment("configuration-service", "resource-service"); err == nil && res {
+	if res, err := CompareServiceNameWithDeploymentName("configuration-service", "resource-service"); err == nil && res {
 		t.Run("Test_ResourceServiceGETCommitID", Test_ResourceServiceGETCommitID)
 		t.Run("Test_EvaluationGitCommitID", Test_EvaluationGitCommitID)
 	}
@@ -41,7 +41,11 @@ func Test_GKE(t *testing.T) {
 	t.Run("Test_ResourceService", Test_ResourceServiceBasic)
 	t.Run("Test_QualityGates", Test_QualityGates)
 	t.Run("Test_DeliveryAssistant", Test_DeliveryAssistant)
-	t.Run("Test_BackupRestore", Test_BackupRestore)
+	if res, err := CompareServiceNameWithDeploymentName("configuration-service", "configuration-service"); err == nil && res {
+		t.Run("Test_BackupRestoreConfigService", Test_BackupRestoreConfigService)
+	} else {
+		t.Run("Test_BackupRestoreResourceService", Test_BackupRestoreResourceService)
+	}
 	t.Run("Test_CustomUserManagedEndpointsTest", Test_CustomUserManagedEndpointsTest)
 	t.Run("Test_ContinuousDelivery", Test_ContinuousDelivery)
 	t.Run("Test_GracefulShutdown", Test_GracefulShutdown)

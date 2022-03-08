@@ -202,18 +202,18 @@ func GetOOMEvents() (K8SEventArray, error) {
 	return oomEvents, err
 }
 
-func CompareServiceWithDeployment(service string, deployment string) (bool, error) {
+func CompareServiceNameWithDeploymentName(serviceName string, deploymentName string) (bool, error) {
 	api, err := keptnkubeutils.GetKubeAPI(false)
 	if err != nil {
 		return false, err
 	}
 
-	configService, err := api.Services(GetKeptnNameSpaceFromEnv()).Get(context.TODO(), service, metav1.GetOptions{})
+	service, err := api.Services(GetKeptnNameSpaceFromEnv()).Get(context.TODO(), serviceName, metav1.GetOptions{})
 	if err != nil {
 		return false, err
 	}
 
-	if configService.Spec.Selector["app.kubernetes.io/name"] == deployment {
+	if service.Spec.Selector["app.kubernetes.io/name"] == deploymentName {
 		return true, nil
 	}
 
