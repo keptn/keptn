@@ -70,7 +70,7 @@ spec:
           - name: TASK_STARTED_WAIT_DURATION
             value: "10m"
           - name: DISABLE_LEADER_ELECTION
-            value: "false"
+            value: "true"
         ports:
         - containerPort: 8080
         resources:
@@ -82,38 +82,6 @@ spec:
             # you can monitor memory usage using "kubectl -n keptn top pods"
             memory: "256Mi"
             cpu: "100m"
-      - name: distributor
-        image: docker.io/keptn/distributor:0.13.0-dev
-        ports:
-          - containerPort: 8080
-        lifecycle:
-          preStop:
-            exec:
-              command: ["/bin/sleep", "30" ]
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 5
-          periodSeconds: 5
-        resources:
-          requests:
-            memory: "16Mi"
-            cpu: "25m"
-          limits:
-            memory: "32Mi"
-            cpu: "100m"
-        env:
-          - name: PUBSUB_URL
-            value: 'nats://keptn-nats'
-          - name: PUBSUB_TOPIC
-            value: 'sh.keptn.>'
-          - name: PUBSUB_RECIPIENT
-            value: '127.0.0.1'
-          - name: PUBSUB_RECIPIENT_PATH
-            value: '/v1/event'
-          - name: DISABLE_REGISTRATION
-            value: "true"
       terminationGracePeriodSeconds: 60
 ---
 apiVersion: v1

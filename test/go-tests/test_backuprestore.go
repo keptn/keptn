@@ -69,7 +69,17 @@ spec:
             - name: "release"
 `
 
-func Test_BackupRestore(t *testing.T) {
+func Test_BackupRestoreConfigService(t *testing.T) {
+	serviceName := "configuration-service"
+	BackupRestoreTestGeneric(t, serviceName)
+}
+
+func Test_BackupRestoreResourceService(t *testing.T) {
+	serviceName := "resource-service"
+	BackupRestoreTestGeneric(t, serviceName)
+}
+
+func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	repoLocalDir := "../assets/podtato-head"
 	projectName := "backup-restore"
 	serviceName := "helloservice"
@@ -133,25 +143,25 @@ func Test_BackupRestore(t *testing.T) {
 	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
 	require.Nil(t, err)
 
-	//backup Configuration Service data
+	//backup Configuration/Resource Service data
 
-	t.Logf("Creating backup directories for configuration-service")
+	t.Logf("Creating backup directories for %s", serviceUnderTestName)
 	err = os.Chdir(repoLocalDir)
 	require.Nil(t, err)
 	err = os.MkdirAll("keptn-backup", os.ModePerm)
 	require.Nil(t, err)
 	err = os.Chdir("keptn-backup")
 	require.Nil(t, err)
-	err = os.MkdirAll("config-svc-backup", os.ModePerm)
+	err = os.MkdirAll("svc-backup", os.ModePerm)
 	require.Nil(t, err)
 
 	defer resetTestPath(t, "../../../go-tests")
 
-	t.Logf("Executing backup of configuration-service")
-	configServicePod, err := ExecuteCommandf("kubectl get pods -n %s -lapp.kubernetes.io/name=configuration-service -ojsonpath='{.items[0].metadata.name}'", keptnNamespace)
+	t.Logf("Executing backup of %s", serviceUnderTestName)
+	serviceUnderTestPod, err := ExecuteCommandf("kubectl get pods -n %s -lapp.kubernetes.io/name=%s -ojsonpath='{.items[0].metadata.name}'", keptnNamespace, serviceUnderTestName)
 	require.Nil(t, err)
-	configServicePod = removeQuotes(configServicePod)
-	_, err = ExecuteCommandf("kubectl cp %s/%s:/data ./config-svc-backup/ -c configuration-service", keptnNamespace, configServicePod)
+	serviceUnderTestPod = removeQuotes(serviceUnderTestPod)
+	_, err = ExecuteCommandf("kubectl cp %s/%s:/data ./svc-backup/ -c %s", keptnNamespace, serviceUnderTestPod, serviceUnderTestName)
 	require.Nil(t, err)
 
 	//backup MongoDB Data
@@ -165,12 +175,12 @@ func Test_BackupRestore(t *testing.T) {
 	t.Logf("Execute MongoDb database dump")
 	mongoDbRootUser, err := ExecuteCommandf("kubectl get secret mongodb-credentials -n %s -ojsonpath={.data.mongodb-root-user}", keptnNamespace)
 	require.Nil(t, err)
-	mongoDbRootUser, err = decodeBase64((removeQuotes(mongoDbRootUser)))
+	mongoDbRootUser, err = decodeBase64(removeQuotes(mongoDbRootUser))
 	require.Nil(t, err)
 
 	mongoDbRootPassword, err := ExecuteCommandf("kubectl get secret mongodb-credentials -n %s -ojsonpath={.data.mongodb-root-password}", keptnNamespace)
 	require.Nil(t, err)
-	mongoDbRootPassword, err = decodeBase64((removeQuotes(mongoDbRootPassword)))
+	mongoDbRootPassword, err = decodeBase64(removeQuotes(mongoDbRootPassword))
 	require.Nil(t, err)
 
 	_, err = ExecuteCommandf("kubectl exec svc/keptn-mongo -n %s -- mongodump --authenticationDatabase admin --username %s --password %s -d keptn -h localhost --out=/tmp/dump", keptnNamespace, mongoDbRootUser, mongoDbRootPassword)
@@ -193,10 +203,10 @@ func Test_BackupRestore(t *testing.T) {
 	time.Sleep(15 * time.Second)
 	t.Logf("Continue to work...")
 
-	//restore Configuration Service data
+	//restore Configuration/Resource Service data
 
-	t.Logf("Restoring configuration-service data")
-	_, err = ExecuteCommandf("kubectl cp ./config-svc-backup/config/ %s/%s:/data -c configuration-service", keptnNamespace, configServicePod)
+	t.Logf("Restoring %s data", serviceUnderTestName)
+	_, err = ExecuteCommandf("kubectl cp ./svc-backup/config/ %s/%s:/data -c %s", keptnNamespace, serviceUnderTestPod, serviceUnderTestName)
 	require.Nil(t, err)
 
 	//restore MongoDB data
@@ -240,5 +250,4 @@ func Test_BackupRestore(t *testing.T) {
 	require.Nil(t, err)
 	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
 	require.Nil(t, err)
-
 }
