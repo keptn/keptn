@@ -100,7 +100,7 @@ func (ph *ProjectHandler) GetProjectByName(c *gin.Context) {
 
 	project, err := ph.ProjectManager.GetByName(projectName)
 	if err != nil {
-		if project == nil && err == ErrProjectNotFound {
+		if project == nil && errors.Is(err, ErrProjectNotFound) {
 			SetNotFoundErrorResponse(c, fmt.Sprintf(ProjectNotFoundMsg, projectName))
 			return
 		}

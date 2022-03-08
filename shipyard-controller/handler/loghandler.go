@@ -73,7 +73,7 @@ func (lh *LogHandler) GetLogEntries(context *gin.Context) {
 
 	logs, err := lh.logManager.GetLogEntries(*params)
 	if err != nil {
-		SetInternalServerErrorResponse(context, fmt.Sprintf(UnableRetrieveLogsMsg, err.Error()))
+		SetNotFoundErrorResponse(context, fmt.Sprintf(UnableRetrieveLogsMsg, err.Error()))
 		return
 	}
 	context.JSON(http.StatusOK, logs)

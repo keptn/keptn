@@ -34,7 +34,7 @@ func NewScopeHandler(backend backend.ScopeManager) *ScopeHandler {
 func (s ScopeHandler) GetScopes(c *gin.Context) {
 	scopes, err := s.ScopeBackend.GetScopes()
 	if err != nil {
-		SetInternalServerErrorResponse(c, fmt.Sprintf(ErrGetScopes, err.Error()))
+		SetInternalServerErrorResponse(c, fmt.Sprintf(ErrGetScopesMsg, err.Error()))
 		return
 	}
 

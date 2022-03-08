@@ -41,7 +41,7 @@ type SecretHandler struct {
 func (s SecretHandler) CreateSecret(c *gin.Context) {
 	secret := model.Secret{}
 	if err := c.ShouldBindJSON(&secret); err != nil {
-		SetBadRequestErrorResponse(c, fmt.Sprintf(ErrInvalidRequestFormat, err.Error()))
+		SetBadRequestErrorResponse(c, fmt.Sprintf(ErrInvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
@@ -52,14 +52,14 @@ func (s SecretHandler) CreateSecret(c *gin.Context) {
 	err := s.SecretManager.CreateSecret(secret)
 	if err != nil {
 		if err == backend.ErrSecretAlreadyExists {
-			SetConflictErrorResponse(c, fmt.Sprintf(ErrCreateSecret, err.Error()))
+			SetConflictErrorResponse(c, fmt.Sprintf(ErrCreateSecretMsg, err.Error()))
 			return
 		}
 		if err == backend.ErrTooBigKeySize {
-			SetBadRequestErrorResponse(c, fmt.Sprintf(ErrCreateSecret, err.Error()))
+			SetBadRequestErrorResponse(c, fmt.Sprintf(ErrCreateSecretMsg, err.Error()))
 			return
 		}
-		SetInternalServerErrorResponse(c, fmt.Sprintf(ErrCreateSecret, err.Error()))
+		SetInternalServerErrorResponse(c, fmt.Sprintf(ErrCreateSecretMsg, err.Error()))
 		return
 	}
 
@@ -81,17 +81,17 @@ func (s SecretHandler) CreateSecret(c *gin.Context) {
 func (s SecretHandler) UpdateSecret(c *gin.Context) {
 	secret := model.Secret{}
 	if err := c.ShouldBindJSON(&secret); err != nil {
-		SetBadRequestErrorResponse(c, fmt.Sprintf(ErrInvalidRequestFormat, err.Error()))
+		SetBadRequestErrorResponse(c, fmt.Sprintf(ErrInvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
 	err := s.SecretManager.UpdateSecret(secret)
 	if err != nil {
 		if err == backend.ErrSecretNotFound {
-			SetNotFoundErrorResponse(c, fmt.Sprintf(ErrUpdateSecret, err.Error()))
+			SetNotFoundErrorResponse(c, fmt.Sprintf(ErrUpdateSecretMsg, err.Error()))
 			return
 		}
-		SetInternalServerErrorResponse(c, fmt.Sprintf(ErrUpdateSecret, err.Error()))
+		SetInternalServerErrorResponse(c, fmt.Sprintf(ErrUpdateSecretMsg, err.Error()))
 		return
 	}
 	c.JSON(http.StatusOK, secret)
@@ -112,7 +112,7 @@ func (s SecretHandler) UpdateSecret(c *gin.Context) {
 func (s SecretHandler) DeleteSecret(c *gin.Context) {
 	params := &DeleteSecretQueryParams{}
 	if err := c.ShouldBindQuery(params); err != nil {
-		SetBadRequestErrorResponse(c, fmt.Sprintf(ErrInvalidRequestFormat, err.Error()))
+		SetBadRequestErrorResponse(c, fmt.Sprintf(ErrInvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
@@ -126,10 +126,10 @@ func (s SecretHandler) DeleteSecret(c *gin.Context) {
 	err := s.SecretManager.DeleteSecret(secret)
 	if err != nil {
 		if err == backend.ErrSecretNotFound {
-			SetNotFoundErrorResponse(c, fmt.Sprintf(ErrDeleteSecret, err.Error()))
+			SetNotFoundErrorResponse(c, fmt.Sprintf(ErrDeleteSecretMsg, err.Error()))
 			return
 		}
-		SetInternalServerErrorResponse(c, fmt.Sprintf(ErrDeleteSecret, err.Error()))
+		SetInternalServerErrorResponse(c, fmt.Sprintf(ErrDeleteSecretMsg, err.Error()))
 		return
 	}
 
@@ -148,7 +148,7 @@ func (s SecretHandler) DeleteSecret(c *gin.Context) {
 func (s SecretHandler) GetSecrets(c *gin.Context) {
 	secrets, err := s.SecretManager.GetSecrets()
 	if err != nil {
-		SetInternalServerErrorResponse(c, fmt.Sprintf(ErrGetSecret, err.Error()))
+		SetInternalServerErrorResponse(c, fmt.Sprintf(ErrGetSecretMsg, err.Error()))
 		return
 	}
 

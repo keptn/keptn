@@ -7,12 +7,12 @@ import (
 	"github.com/keptn/keptn/secret-service/pkg/model"
 )
 
-var ErrCreateSecret = "Unable to create secret: %s"
-var ErrInvalidRequestFormat = "Invalid request format: %s"
-var ErrUpdateSecret = "Unable to update secret: %s"
-var ErrGetSecret = "Unable to get secret: %s"
-var ErrDeleteSecret = "Unable to delete secret: %s"
-var ErrGetScopes = "Unable to get scopes: %s"
+var ErrCreateSecretMsg = "Unable to create secret: %s"
+var ErrInvalidRequestFormatMsg = "Invalid request format: %s"
+var ErrUpdateSecretMsg = "Unable to update secret: %s"
+var ErrGetSecretMsg = "Unable to get secret: %s"
+var ErrDeleteSecretMsg = "Unable to delete secret: %s"
+var ErrGetScopesMsg = "Unable to get scopes: %s"
 
 func SetBadRequestErrorResponse(c *gin.Context, msg string) {
 	c.JSON(http.StatusBadRequest, model.Error{

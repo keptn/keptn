@@ -44,8 +44,8 @@ var NoServiceNameMsg = "Must provide a service name"
 
 var UnableQueryStateMsg = "Unable to query sequence state repository: %s"
 
-var UnableControleSequenceMsg = "Unable to controle sequence: %s"
+var UnableControleSequenceMsg = "Unable to control sequence: %s"
 
-var UnableFindSequenceMsg = "Unable to controle sequence: %s"
+var UnableFindSequenceMsg = "Unable to control sequence: %s"
 
 var UnableQueryIntegrationsMsg = "Unable to query uniform integrations repository: %s"
