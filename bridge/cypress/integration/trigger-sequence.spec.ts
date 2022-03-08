@@ -20,7 +20,7 @@ describe('Trigger a sequence', () => {
     environmentPage.visit('sockshop');
   });
 
-  xit('should navigate through all forms and close it from everywhere properly', () => {
+  it('should navigate through all forms and close it from everywhere properly', () => {
     // Opening of triggering component
     environmentPage
       .clickTriggerOpen()
@@ -50,7 +50,7 @@ describe('Trigger a sequence', () => {
     testNavigationSecondPart('keptn-trigger-custom-h2');
   });
 
-  xit('should trigger a delivery sequence', () => {
+  it('should trigger a delivery sequence', () => {
     environmentPage
       .clickTriggerOpen()
       .assertTriggerNextPageEnabled(false)
@@ -73,7 +73,7 @@ describe('Trigger a sequence', () => {
     cy.url().should('include', '/project/sockshop/sequence/6c98fbb0-4c40-4bff-ba9f-b20556a57c8a/stage/dev');
   });
 
-  xit('should trigger an evaluation sequence with a timeframe', () => {
+  it('should trigger an evaluation sequence with a timeframe', () => {
     environmentPage
       .clickTriggerOpen()
       .assertTriggerNextPageEnabled(false)
@@ -101,7 +101,7 @@ describe('Trigger a sequence', () => {
     cy.url().should('include', '/project/sockshop/sequence/6c98fbb0-4c40-4bff-ba9f-b20556a57c8a/stage/dev');
   });
 
-  xit('should trigger an evaluation sequence with a start end date', () => {
+  it('should trigger an evaluation sequence with a start end date', () => {
     environmentPage
       .clickTriggerOpen()
       .assertTriggerNextPageEnabled(false)
@@ -135,7 +135,7 @@ describe('Trigger a sequence', () => {
     cy.url().should('include', '/project/sockshop/sequence/6c98fbb0-4c40-4bff-ba9f-b20556a57c8a/stage/dev');
   });
 
-  xit('should trigger a custom sequence', () => {
+  it('should trigger a custom sequence', () => {
     environmentPage
       .clickTriggerOpen()
       .assertTriggerNextPageEnabled(false)
@@ -151,7 +151,7 @@ describe('Trigger a sequence', () => {
     cy.url().should('include', '/project/sockshop/sequence/6c98fbb0-4c40-4bff-ba9f-b20556a57c8a/stage/dev');
   });
 
-  xit('should open the trigger form from the sequence screen', () => {
+  it('should open the trigger form from the sequence screen', () => {
     cy.intercept('/api/mongodb-datastore/event?keptnContext=6c98fbb0-4c40-4bff-ba9f-b20556a57c8a&project=sockshop');
     cy.visit('/project/sockshop/sequence');
     environmentPage.assertOpenTriggerSequenceExists(true).clickTriggerOpen();
