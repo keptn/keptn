@@ -45,10 +45,7 @@ func (eh *EventHandler) GetTriggeredEvents(c *gin.Context) {
 	eventType := c.Param("eventType")
 	params := &models.GetTriggeredEventsParams{}
 	if err := c.ShouldBindQuery(params); err != nil {
-		c.JSON(http.StatusBadRequest, models.Error{
-			Code:    400,
-			Message: common.Stringp("Invalid request format"),
-		})
+		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 	}
 
 	params.EventType = eventType
