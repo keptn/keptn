@@ -96,6 +96,8 @@ func (pm *ProjectManager) Create(params *models.CreateProjectParams) (error, com
 
 	decodedPrivateKey, _ := base64.StdEncoding.DecodeString(params.GitPrivateKey)
 
+	decodedPemCertificate, _ := base64.StdEncoding.DecodeString(params.GitPemCertificate)
+
 	err = pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
 		User:              params.GitUser,
 		Token:             params.GitToken,
@@ -106,6 +108,7 @@ func (pm *ProjectManager) Create(params *models.CreateProjectParams) (error, com
 		GitProxyScheme:    params.GitProxyScheme,
 		GitProxyUser:      params.GitProxyUser,
 		GitProxyPassword:  params.GitProxyPassword,
+		GitPemCertificate: string(decodedPemCertificate),
 		GitProxyInsecure:  params.GitProxyInsecure,
 	})
 	if err != nil {
@@ -196,6 +199,7 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 		GitProxyScheme:    oldSecret.GitProxyScheme,
 		GitProxyUser:      oldSecret.GitProxyUser,
 		GitProxyPassword:  oldSecret.GitProxyPassword,
+		GitPemCertificate: oldSecret.GitPemCertificate,
 		GitProxyInsecure:  oldSecret.GitProxyInsecure,
 	}
 
@@ -210,6 +214,8 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 
 	decodedPrivateKey, _ := base64.StdEncoding.DecodeString(params.GitPrivateKey)
 
+	decodedPemCertificate, _ := base64.StdEncoding.DecodeString(params.GitPemCertificate)
+
 	if params.GitUser != "" && params.GitRemoteURL != "" {
 		// try to update git repository secret
 		err = pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
@@ -222,6 +228,7 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 			GitProxyScheme:    params.GitProxyScheme,
 			GitProxyUser:      params.GitProxyUser,
 			GitProxyPassword:  params.GitProxyPassword,
+			GitPemCertificate: string(decodedPemCertificate),
 			GitProxyInsecure:  params.GitProxyInsecure,
 		})
 
@@ -577,5 +584,6 @@ type gitCredentials struct {
 	GitProxyScheme    string `json:"gitProxyScheme,omitempty"`
 	GitProxyUser      string `json:"gitProxyUser,omitempty"`
 	GitProxyPassword  string `json:"gitProxyPassword,omitempty"`
+	GitPemCertificate string `json:"gitPemCertificate,omitempty"`
 	GitProxyInsecure  bool   `json:"gitProxyInsecure,omitempty"`
 }

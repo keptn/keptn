@@ -30,6 +30,7 @@ type createProjectCmdParams struct {
 	GitProxyScheme    *string
 	GitProxyUser      *string
 	GitProxyPassword  *string
+	GitPemCertificate *string
 	GitProxyInsecure  *bool
 }
 
@@ -149,6 +150,15 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-r
 				project.GitPrivateKey = string(base64.StdEncoding.EncodeToString(content))
 				project.GitPrivateKeyPass = *createProjectParams.GitPrivateKeyPass
 			}
+
+			if *createProjectParams.GitPemCertificate != "" {
+				content, err := ioutil.ReadFile(*createProjectParams.GitPemCertificate)
+				if err != nil {
+					return fmt.Errorf("unable to read PEM Certificate file: %s\n", err.Error())
+				}
+
+				project.GitPemCertificate = string(base64.StdEncoding.EncodeToString(content))
+			}
 		}
 
 		api, err := internal.APIProvider(endPoint.String(), apiToken)
@@ -224,4 +234,7 @@ func init() {
 	createProjectParams.GitProxyUser = crProjectCmd.Flags().StringP("git-proxy-user", "w", "", "The git proxy user")
 	createProjectParams.GitProxyPassword = crProjectCmd.Flags().StringP("git-proxy-password", "e", "", "The git proxy password")
 	createProjectParams.GitProxyInsecure = crProjectCmd.Flags().BoolP("git-proxy-insecure", "x", false, "The git proxy insecure TLS connection")
+
+	createProjectParams.GitPemCertificate = crProjectCmd.Flags().StringP("git-pem-certificate", "g", "", "The git PEM Certificate file")
+
 }

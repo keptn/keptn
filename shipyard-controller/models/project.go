@@ -43,6 +43,9 @@ type UpdateProjectParams struct {
 	// git proxy password
 	GitProxyPassword string `json:"gitProxyPassword,omitempty"`
 
+	//git PEM Certificate
+	GitPemCertificate string `json:"gitPemCertificate,omitempty"`
+
 	// name
 	Name *string `json:"name"`
 
@@ -81,6 +84,9 @@ type CreateProjectParams struct {
 
 	// git proxy password
 	GitProxyPassword string `json:"gitProxyPassword,omitempty"`
+
+	//git PEM Certificate
+	GitPemCertificate string `json:"gitPemCertificate,omitempty"`
 
 	// name
 	Name *string `json:"name"`
@@ -166,6 +172,17 @@ func (createProjectParams *CreateProjectParams) Validate() error {
 		}
 	}
 
+	if createProjectParams.GitPrivateKey != "" && createProjectParams.GitPemCertificate != "" {
+		return fmt.Errorf("SSH authorization and PEM Certificate be used together")
+	}
+
+	if createProjectParams.GitPemCertificate != "" {
+		decodeString, err = base64.StdEncoding.DecodeString(createProjectParams.GitPemCertificate)
+		if err != nil {
+			return errors.New("could not decode PEM Certificate content")
+		}
+	}
+
 	return nil
 }
 
@@ -215,6 +232,17 @@ func (updateProjectParams *UpdateProjectParams) Validate() error {
 		_, err := base64.StdEncoding.DecodeString(updateProjectParams.GitPrivateKey)
 		if err != nil {
 			return errors.New("could not decode privateKey content")
+		}
+	}
+
+	if updateProjectParams.GitPrivateKey != "" && updateProjectParams.GitPemCertificate != "" {
+		return fmt.Errorf("SSH authorization and PEM Certificate be used together")
+	}
+
+	if updateProjectParams.GitPemCertificate != "" {
+		_, err := base64.StdEncoding.DecodeString(updateProjectParams.GitPemCertificate)
+		if err != nil {
+			return errors.New("could not decode PEM Certificate content")
 		}
 	}
 
