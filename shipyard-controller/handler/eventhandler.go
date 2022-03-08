@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -74,7 +75,7 @@ func (eh *EventHandler) GetTriggeredEvents(c *gin.Context) {
 	}
 
 	if err != nil {
-		if err == ErrProjectNotFound {
+		if errors.Is(err, ErrProjectNotFound) {
 			SetNotFoundErrorResponse(c, err.Error())
 			return
 		}

@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/jeremywohl/flatten"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -14,7 +16,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"time"
 )
 
 const maxRepoReadRetries = 5
@@ -51,7 +52,7 @@ func (mdbrepo *MongoDBEventsRepo) GetEvents(project string, filter common.EventF
 	sortOptions := options.Find().SetSort(bson.D{{Key: "time", Value: -1}})
 
 	cur, err := collection.Find(ctx, searchOptions, sortOptions)
-	if err != nil && err == mongo.ErrNoDocuments {
+	if err != nil && errors.Is(err, mongo.ErrNoDocuments) {
 		return nil, ErrNoEventFound
 	} else if err != nil {
 		return nil, err
@@ -240,7 +241,7 @@ func (e *MongoDBEventsRepo) GetStartedEventsForTriggeredID(eventScope models.Eve
 func (e *MongoDBEventsRepo) GetEventsWithRetry(project string, filter common.EventFilter, status common.EventStatus, nrRetries int) ([]models.Event, error) {
 	for i := 0; i <= nrRetries; i++ {
 		events, err := e.GetEvents(project, filter, status)
-		if err != nil && err == ErrNoEventFound {
+		if err != nil && errors.Is(err, ErrNoEventFound) {
 			<-time.After(2 * time.Second)
 		} else {
 			return events, err

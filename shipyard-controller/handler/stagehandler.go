@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"sort"
@@ -53,7 +54,7 @@ func (sh *StageHandler) GetAllStages(c *gin.Context) {
 
 	allStages, err := sh.StageManager.GetAllStages(params.ProjectName)
 	if err != nil {
-		if err == ErrProjectNotFound {
+		if errors.Is(err, ErrProjectNotFound) {
 			SetNotFoundErrorResponse(c, err.Error())
 			return
 		}
@@ -102,11 +103,11 @@ func (sh *StageHandler) GetStage(c *gin.Context) {
 
 	stage, err := sh.StageManager.GetStage(projectName, stageName)
 	if err != nil {
-		if err == ErrProjectNotFound {
+		if errors.Is(err, ErrProjectNotFound) {
 			SetNotFoundErrorResponse(c, err.Error())
 			return
 		}
-		if err == ErrStageNotFound {
+		if errors.Is(err, ErrStageNotFound) {
 			SetNotFoundErrorResponse(c, err.Error())
 		}
 

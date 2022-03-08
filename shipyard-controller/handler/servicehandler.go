@@ -69,7 +69,7 @@ func (sh *ServiceHandler) CreateService(c *gin.Context) {
 			log.Errorf("could not send service.create.finished event: %s", err2.Error())
 		}
 
-		if err == ErrServiceAlreadyExists {
+		if errors.Is(err, ErrServiceAlreadyExists) {
 			SetConflictErrorResponse(c, err.Error())
 			return
 		}
@@ -153,7 +153,7 @@ func (sh *ServiceHandler) GetService(c *gin.Context) {
 
 	service, err := sh.serviceManager.GetService(projectName, stageName, serviceName)
 	if err != nil {
-		if err == ErrProjectNotFound || err == ErrStageNotFound || err == ErrServiceNotFound {
+		if errors.Is(err, ErrProjectNotFound) || errors.Is(err, ErrStageNotFound) || errors.Is(err, ErrServiceNotFound) {
 			SetNotFoundErrorResponse(c, err.Error())
 			return
 		}
@@ -191,7 +191,7 @@ func (sh *ServiceHandler) GetServices(c *gin.Context) {
 
 	services, err := sh.serviceManager.GetAllServices(projectName, stageName)
 	if err != nil {
-		if err == ErrProjectNotFound || err == ErrStageNotFound {
+		if errors.Is(err, ErrProjectNotFound) || errors.Is(err, ErrStageNotFound) {
 			SetNotFoundErrorResponse(c, err.Error())
 			return
 		}

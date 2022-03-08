@@ -151,7 +151,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 			log.Errorf("could not send project.create.finished event: %s", err.Error())
 		}
 		rollback()
-		if err == ErrProjectAlreadyExists {
+		if errors.Is(err, ErrProjectAlreadyExists) {
 			SetConflictErrorResponse(c, err.Error())
 			return
 		}

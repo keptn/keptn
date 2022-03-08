@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -96,7 +97,7 @@ func (sh *StateHandler) ControlSequenceState(c *gin.Context) {
 		Project:      project,
 	})
 	if err != nil {
-		if err == ErrSequenceNotFound {
+		if errors.Is(err, ErrSequenceNotFound) {
 			SetNotFoundErrorResponse(c, fmt.Sprintf(UnableFindSequenceMsg, err.Error()))
 		}
 		SetInternalServerErrorResponse(c, fmt.Sprintf(UnableControleSequenceMsg, err.Error()))
