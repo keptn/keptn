@@ -9,8 +9,9 @@ import { FormControl } from '@angular/forms';
 })
 export class KtbTimeInputComponent implements OnInit {
   @Input() required?: boolean = false;
-  @Input() label = '';
-  @Input() hint = '';
+  @Input() label? = '';
+  @Input() hint? = '';
+  @Input() error? = '';
   @Input() secondsEnabled = true;
   @Input() millisEnabled = true;
   @Input() microsEnabled = true;

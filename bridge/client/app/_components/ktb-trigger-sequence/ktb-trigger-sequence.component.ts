@@ -54,6 +54,7 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
   public jsonErrorStateMatcher = new JsonErrorStateMatcher();
   public isLoading = false;
   public isQualityGatesOnly = false;
+  public isValidTimeframe = true;
   private _services: string[] = [];
   private unsubscribe$: Subject<void> = new Subject<void>();
 
@@ -140,6 +141,22 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
     const startMoment = moment(start);
     const endMoment = moment(end);
     return startMoment.isBefore(endMoment);
+  }
+
+  public setTimeframe(timeframe: Timeframe): void {
+    if (!this.isTimeframeEmpty(timeframe)) {
+      this.isValidTimeframe =
+        (timeframe.hours ?? 0) * 60 +
+          (timeframe.minutes ?? 0) +
+          (timeframe.seconds ?? 0) / 60 +
+          (timeframe.millis ?? 0) / 60_000 +
+          (timeframe.micros ?? 0) / 60_000_000_000 >=
+        1;
+    } else {
+      this.isValidTimeframe = true;
+    }
+
+    this.evaluationFormData.timeframe = timeframe;
   }
 
   public triggerSequence(): void {
@@ -298,7 +315,13 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
   }
 
   private isTimeframeEmpty(timeframe: Timeframe): boolean {
-    return !timeframe.hours && !timeframe.minutes && !timeframe.seconds && !timeframe.millis && !timeframe.micros;
+    return (
+      timeframe.hours === undefined &&
+      timeframe.minutes === undefined &&
+      timeframe.seconds === undefined &&
+      timeframe.millis === undefined &&
+      timeframe.micros === undefined
+    );
   }
 
   private navigateToSequences(keptnContext: string | undefined): void {

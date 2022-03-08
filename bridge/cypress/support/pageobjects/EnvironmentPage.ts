@@ -108,6 +108,11 @@ class EnvironmentPage {
     return this;
   }
 
+  public clearTriggerEvaluationTimeInput(inputName: string): this {
+    cy.byTestId(`keptn-time-input-${inputName}`).clear();
+    return this;
+  }
+
   public typeTriggerCustomLabels(value: string): this {
     cy.byTestId('keptn-trigger-custom-labels').type(value);
     return this;
@@ -165,6 +170,11 @@ class EnvironmentPage {
 
   public assertTriggerEvaluationDateErrorExists(exists: boolean): this {
     cy.byTestId('keptn-trigger-evaluation-date-error').should(exists ? 'exist' : 'not.exist');
+    return this;
+  }
+
+  public assertTriggerEvaluationTimeframeErrorExists(exists: boolean): this {
+    cy.byTestId('keptn-trigger-evaluation-timeframe-error').should(exists ? 'exist' : 'not.exist');
     return this;
   }
 

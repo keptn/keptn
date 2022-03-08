@@ -58,4 +58,5 @@
     /></ng-container>
   </form>
 </div>
-<dt-hint *ngIf="hint">{{ hint }}</dt-hint>
+<dt-hint *ngIf="hint && !error">{{ hint }}</dt-hint>
+<dt-error uitestid="keptn-trigger-evaluation-timeframe-error" *ngIf="error">{{ error }}</dt-error>

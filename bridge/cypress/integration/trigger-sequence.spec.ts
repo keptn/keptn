@@ -86,17 +86,34 @@ describe('Trigger a sequence', () => {
       .assertTriggerSequenceEnabled(true)
       .clickTriggerStartTime()
       .selectTriggerDateTime(0, '1', '15', '0')
-      .assertTriggerSequenceEnabled(true)
+      .assertTriggerSequenceEnabled(true);
+
+    environmentPage
       .typeTriggerEvaluationTimeInput('hours', '0')
+      .assertTriggerSequenceEnabled(false)
+      .assertTriggerEvaluationTimeframeErrorExists(true)
+      .clearTriggerEvaluationTimeInput('hours')
+      .typeTriggerEvaluationTimeInput('minutes', '0')
+      .assertTriggerSequenceEnabled(false)
+      .assertTriggerEvaluationTimeframeErrorExists(true)
+      .clearTriggerEvaluationTimeInput('minutes')
+      .typeTriggerEvaluationTimeInput('seconds', '59')
+      .assertTriggerSequenceEnabled(false)
+      .assertTriggerEvaluationTimeframeErrorExists(true)
+      .clearTriggerEvaluationTimeInput('seconds')
+      .typeTriggerEvaluationTimeInput('millis', '59999')
+      .assertTriggerSequenceEnabled(false)
+      .assertTriggerEvaluationTimeframeErrorExists(true)
+      .clearTriggerEvaluationTimeInput('millis')
+      .typeTriggerEvaluationTimeInput('micros', '59999999999')
+      .assertTriggerSequenceEnabled(false)
+      .assertTriggerEvaluationTimeframeErrorExists(true)
+      .clearTriggerEvaluationTimeInput('micros');
+
+    environmentPage
+      .typeTriggerEvaluationTimeInput('minutes', '5')
       .assertTriggerSequenceEnabled(true)
-      .typeTriggerEvaluationTimeInput('minutes', '1')
-      .assertTriggerSequenceEnabled(true)
-      .typeTriggerEvaluationTimeInput('seconds', '15')
-      .assertTriggerSequenceEnabled(true)
-      .typeTriggerEvaluationTimeInput('millis', '0')
-      .assertTriggerSequenceEnabled(true)
-      .typeTriggerEvaluationTimeInput('micros', '0')
-      .assertTriggerSequenceEnabled(true)
+      .assertTriggerEvaluationTimeframeErrorExists(false)
       .clickTriggerSequence();
     cy.url().should('include', '/project/sockshop/sequence/6c98fbb0-4c40-4bff-ba9f-b20556a57c8a/stage/dev');
   });

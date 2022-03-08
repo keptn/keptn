@@ -163,10 +163,12 @@
       >
         <ktb-time-input
           [label]="'Timeframe'"
-          [hint]="'Defaults to 5m if not filled in'"
+          [hint]="'Min. 1m, defaults to 5m if not filled in'"
+          [error]="isValidTimeframe ? '' : 'Timeframe has to be minimum 1 minute'"
           [timeframe]="evaluationFormData.timeframe"
-          (timeChanged)="evaluationFormData.timeframe = $event"
+          (timeChanged)="setTimeframe($event)"
         ></ktb-time-input>
+
         <dt-form-field class="overlay-origin">
           <dt-label>Start at</dt-label>
           <div class="input-overlay" (click)="timeFrameStartButton?._elementRef?.nativeElement.click()"></div>
@@ -294,7 +296,7 @@
         [ngTemplateOutlet]="triggerActions"
         [ngTemplateOutletContext]="{
           isValid:
-            evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.TIMEFRAME ||
+            (evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.TIMEFRAME && isValidTimeframe) ||
             (evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.START_END &&
               isValidStartEndTime(evaluationFormData.startDatetime, evaluationFormData.endDatetime))
         }"

@@ -132,6 +132,67 @@ describe('KtbTriggerSequenceComponent', () => {
     /* eslint-enable */
   });
 
+  it('should be a valid timeframe', () => {
+    // given
+    const timeframe: Timeframe = {
+      hours: undefined,
+      minutes: undefined,
+      seconds: undefined,
+      millis: undefined,
+      micros: undefined,
+    };
+
+    assertTimeframeValid(timeframe, true);
+
+    timeframe.hours = 1;
+    assertTimeframeValid(timeframe, true);
+
+    timeframe.hours = undefined;
+    timeframe.minutes = 1;
+    assertTimeframeValid(timeframe, true);
+
+    timeframe.minutes = undefined;
+    timeframe.seconds = 60;
+    assertTimeframeValid(timeframe, true);
+
+    timeframe.seconds = undefined;
+    timeframe.millis = 60_000;
+    assertTimeframeValid(timeframe, true);
+
+    timeframe.millis = undefined;
+    timeframe.micros = 60_000_000_000;
+    assertTimeframeValid(timeframe, true);
+  });
+
+  it('should be an invalid timeframe', () => {
+    // given
+    const timeframe: Timeframe = {
+      hours: 0,
+      minutes: undefined,
+      seconds: undefined,
+      millis: undefined,
+      micros: undefined,
+    };
+
+    assertTimeframeValid(timeframe, false);
+
+    timeframe.hours = undefined;
+    timeframe.minutes = 0;
+    assertTimeframeValid(timeframe, false);
+
+    timeframe.minutes = undefined;
+    timeframe.seconds = 59;
+    assertTimeframeValid(timeframe, false);
+
+    timeframe.seconds = undefined;
+    timeframe.millis = 59_999;
+    assertTimeframeValid(timeframe, false);
+
+    timeframe.millis = undefined;
+    timeframe.micros = 59_999_999_999;
+    assertTimeframeValid(timeframe, false);
+  });
+
   it('should parse labels to an object', () => {
     // given
     let labels = '   key1 = val1, value2   ,key2   = val3           ';
@@ -336,4 +397,9 @@ describe('KtbTriggerSequenceComponent', () => {
       'testsequence'
     );
   });
+
+  function assertTimeframeValid(timeframe: Timeframe, isValid: boolean): void {
+    component.setTimeframe(timeframe);
+    expect(component.isValidTimeframe).toEqual(isValid);
+  }
 });
