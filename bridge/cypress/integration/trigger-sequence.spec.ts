@@ -105,7 +105,7 @@ describe('Trigger a sequence', () => {
       .assertTriggerSequenceEnabled(false)
       .assertTriggerEvaluationTimeframeErrorExists(true)
       .clearTriggerEvaluationTimeInput('millis')
-      .typeTriggerEvaluationTimeInput('micros', '59999999999')
+      .typeTriggerEvaluationTimeInput('micros', '59999999')
       .assertTriggerSequenceEnabled(false)
       .assertTriggerEvaluationTimeframeErrorExists(true)
       .clearTriggerEvaluationTimeInput('micros');

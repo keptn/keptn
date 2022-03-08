@@ -150,7 +150,7 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
           (timeframe.minutes ?? 0) +
           (timeframe.seconds ?? 0) / 60 +
           (timeframe.millis ?? 0) / 60_000 +
-          (timeframe.micros ?? 0) / 60_000_000_000 >=
+          (timeframe.micros ?? 0) / 60_000_000 >=
         1;
     } else {
       this.isValidTimeframe = true;

@@ -160,7 +160,7 @@ describe('KtbTriggerSequenceComponent', () => {
     assertTimeframeValid(timeframe, true);
 
     timeframe.millis = undefined;
-    timeframe.micros = 60_000_000_000;
+    timeframe.micros = 60_000_000;
     assertTimeframeValid(timeframe, true);
   });
 
@@ -189,7 +189,7 @@ describe('KtbTriggerSequenceComponent', () => {
     assertTimeframeValid(timeframe, false);
 
     timeframe.millis = undefined;
-    timeframe.micros = 59_999_999_999;
+    timeframe.micros = 59_999_999;
     assertTimeframeValid(timeframe, false);
   });
 
