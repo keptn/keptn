@@ -2,14 +2,14 @@ package handler
 
 import (
 	"encoding/json"
-	"errors"
-	"github.com/gin-gonic/gin"
-	"github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/gin-gonic/gin"
+	"github.com/keptn/keptn/shipyard-controller/models"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestSetErrorResponses(t *testing.T) {
@@ -17,7 +17,7 @@ func TestSetErrorResponses(t *testing.T) {
 	t.Run("TestSetNotFoundErrorResponse_withoutMessage", func(t *testing.T) {
 		r := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(r)
-		SetNotFoundErrorResponse(errors.New("an-error"), c)
+		SetNotFoundErrorResponse(c, "an-error")
 
 		createdErr := &models.Error{}
 		responseBytes, _ := ioutil.ReadAll(r.Body)
@@ -30,7 +30,7 @@ func TestSetErrorResponses(t *testing.T) {
 	t.Run("TestSetNotFoundErrorResponse_withMessage", func(t *testing.T) {
 		r := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(r)
-		SetNotFoundErrorResponse(errors.New("an-error"), c, "message")
+		SetNotFoundErrorResponse(c, "message: an-error")
 
 		createdErr := &models.Error{}
 		responseBytes, _ := ioutil.ReadAll(r.Body)
@@ -43,7 +43,7 @@ func TestSetErrorResponses(t *testing.T) {
 	t.Run("TestSetNotFoundErrorResponse_withoutError", func(t *testing.T) {
 		r := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(r)
-		SetNotFoundErrorResponse(nil, c, "message")
+		SetNotFoundErrorResponse(c, "message")
 
 		createdErr := &models.Error{}
 		responseBytes, _ := ioutil.ReadAll(r.Body)
@@ -56,7 +56,7 @@ func TestSetErrorResponses(t *testing.T) {
 	t.Run("TestSetInternalServerErrorResponse_withoutMessage", func(t *testing.T) {
 		r := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(r)
-		SetInternalServerErrorResponse(errors.New("an-error"), c)
+		SetInternalServerErrorResponse(c, "an-error")
 
 		createdErr := &models.Error{}
 		responseBytes, _ := ioutil.ReadAll(r.Body)
@@ -69,7 +69,7 @@ func TestSetErrorResponses(t *testing.T) {
 	t.Run("TestSetInternalServerErrorResponse_withMessage", func(t *testing.T) {
 		r := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(r)
-		SetInternalServerErrorResponse(errors.New("an-error"), c, "message")
+		SetInternalServerErrorResponse(c, "message: an-error")
 
 		createdErr := &models.Error{}
 		responseBytes, _ := ioutil.ReadAll(r.Body)
@@ -82,7 +82,7 @@ func TestSetErrorResponses(t *testing.T) {
 	t.Run("TestSetInternalServerErrorResponse_withoutError", func(t *testing.T) {
 		r := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(r)
-		SetInternalServerErrorResponse(nil, c, "message")
+		SetInternalServerErrorResponse(c, "message")
 
 		createdErr := &models.Error{}
 		responseBytes, _ := ioutil.ReadAll(r.Body)
@@ -95,7 +95,7 @@ func TestSetErrorResponses(t *testing.T) {
 	t.Run("SetBadRequestErrorResponse_withoutMessage", func(t *testing.T) {
 		r := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(r)
-		SetBadRequestErrorResponse(errors.New("an-error"), c)
+		SetBadRequestErrorResponse(c, "an-error")
 
 		createdErr := &models.Error{}
 		responseBytes, _ := ioutil.ReadAll(r.Body)
@@ -108,7 +108,7 @@ func TestSetErrorResponses(t *testing.T) {
 	t.Run("SetBadRequestErrorResponse_withMessage", func(t *testing.T) {
 		r := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(r)
-		SetBadRequestErrorResponse(errors.New("an-error"), c, "message")
+		SetBadRequestErrorResponse(c, "message: an-error")
 
 		createdErr := &models.Error{}
 		responseBytes, _ := ioutil.ReadAll(r.Body)
@@ -121,7 +121,7 @@ func TestSetErrorResponses(t *testing.T) {
 	t.Run("SetBadRequestErrorResponse_withoutError", func(t *testing.T) {
 		r := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(r)
-		SetBadRequestErrorResponse(nil, c, "message")
+		SetBadRequestErrorResponse(c, "message")
 
 		createdErr := &models.Error{}
 		responseBytes, _ := ioutil.ReadAll(r.Body)
@@ -134,7 +134,7 @@ func TestSetErrorResponses(t *testing.T) {
 	t.Run("SetConflictErrorResponse_withoutMessage", func(t *testing.T) {
 		r := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(r)
-		SetConflictErrorResponse(errors.New("an-error"), c)
+		SetConflictErrorResponse(c, "an-error")
 
 		createdErr := &models.Error{}
 		responseBytes, _ := ioutil.ReadAll(r.Body)
@@ -147,7 +147,7 @@ func TestSetErrorResponses(t *testing.T) {
 	t.Run("SetConflictErrorResponse_withMessage", func(t *testing.T) {
 		r := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(r)
-		SetConflictErrorResponse(errors.New("an-error"), c, "message")
+		SetConflictErrorResponse(c, "message: an-error")
 
 		createdErr := &models.Error{}
 		responseBytes, _ := ioutil.ReadAll(r.Body)
@@ -160,7 +160,7 @@ func TestSetErrorResponses(t *testing.T) {
 	t.Run("SetConflictErrorResponse_withoutError", func(t *testing.T) {
 		r := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(r)
-		SetConflictErrorResponse(nil, c, "message")
+		SetConflictErrorResponse(c, "message")
 
 		createdErr := &models.Error{}
 		responseBytes, _ := ioutil.ReadAll(r.Body)
@@ -175,7 +175,7 @@ func TestSetInternalServerErrorResponse(t *testing.T) {
 
 	r := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(r)
-	SetInternalServerErrorResponse(errors.New("an-error"), c)
+	SetInternalServerErrorResponse(c, "an-error")
 
 	createdErr := &models.Error{}
 	responseBytes, _ := ioutil.ReadAll(r.Body)
@@ -187,7 +187,7 @@ func TestSetInternalServerErrorResponse(t *testing.T) {
 	// --
 	r = httptest.NewRecorder()
 	c, _ = gin.CreateTestContext(r)
-	SetInternalServerErrorResponse(errors.New("an-error"), c, "message")
+	SetInternalServerErrorResponse(c, "message: an-error")
 
 	createdErr = &models.Error{}
 	responseBytes, _ = ioutil.ReadAll(r.Body)
@@ -200,7 +200,7 @@ func TestSetInternalServerErrorResponse(t *testing.T) {
 
 	r = httptest.NewRecorder()
 	c, _ = gin.CreateTestContext(r)
-	SetInternalServerErrorResponse(nil, c, "message")
+	SetInternalServerErrorResponse(c, "message")
 
 	createdErr = &models.Error{}
 	responseBytes, _ = ioutil.ReadAll(r.Body)

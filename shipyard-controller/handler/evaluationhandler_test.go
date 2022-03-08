@@ -3,15 +3,16 @@ package handler
 import (
 	"bytes"
 	"encoding/json"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/handler/fake"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
-	"net/http"
-	"net/http/httptest"
-	"testing"
 )
 
 func TestEvaluationHandler_CreateEvaluation(t *testing.T) {
@@ -67,7 +68,7 @@ func TestEvaluationHandler_CreateEvaluation(t *testing.T) {
 			expectHttpStatus: http.StatusBadRequest,
 			expectJSONError: &models.Error{
 				Code:    http.StatusBadRequest,
-				Message: common.Stringp("Invalid request format"),
+				Message: common.Stringp("Invalid request format: invalid character 'i' looking for beginning of value"),
 			},
 		},
 		{

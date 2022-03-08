@@ -1,9 +1,11 @@
 package handler
 
 import (
+	"fmt"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"net/http"
 )
 
 type ILogHandler interface {
@@ -35,12 +37,12 @@ func NewLogHandler(logManager ILogManager) *LogHandler {
 func (lh *LogHandler) CreateLogEntries(context *gin.Context) {
 	logs := &models.CreateLogsRequest{}
 	if err := context.ShouldBindJSON(logs); err != nil {
-		SetBadRequestErrorResponse(err, context)
+		SetBadRequestErrorResponse(context, err.Error())
 		return
 	}
 
 	if err := lh.logManager.CreateLogEntries(*logs); err != nil {
-		SetInternalServerErrorResponse(err, context)
+		SetInternalServerErrorResponse(context, err.Error())
 		return
 	}
 	context.JSON(http.StatusOK, models.CreateLogsResponse{})
@@ -65,13 +67,13 @@ func (lh *LogHandler) CreateLogEntries(context *gin.Context) {
 func (lh *LogHandler) GetLogEntries(context *gin.Context) {
 	params := &models.GetLogParams{}
 	if err := context.ShouldBindQuery(params); err != nil {
-		SetBadRequestErrorResponse(err, context, "Invalid request format")
+		SetBadRequestErrorResponse(context, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
 	logs, err := lh.logManager.GetLogEntries(*params)
 	if err != nil {
-		SetInternalServerErrorResponse(err, context, "Unable to retrieve logs")
+		SetNotFoundErrorResponse(context, fmt.Sprintf(UnableRetrieveLogsMsg, err.Error()))
 		return
 	}
 	context.JSON(http.StatusOK, logs)
@@ -95,12 +97,12 @@ func (lh *LogHandler) GetLogEntries(context *gin.Context) {
 func (lh *LogHandler) DeleteLogEntries(context *gin.Context) {
 	params := &models.DeleteLogParams{}
 	if err := context.ShouldBindQuery(params); err != nil {
-		SetBadRequestErrorResponse(err, context, "Invalid request format")
+		SetBadRequestErrorResponse(context, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
 	if err := lh.logManager.DeleteLogEntries(*params); err != nil {
-		SetInternalServerErrorResponse(err, context, "Unable to retrieve logs")
+		SetInternalServerErrorResponse(context, fmt.Sprintf(UnableRetrieveLogsMsg, err.Error()))
 		return
 	}
 	context.JSON(http.StatusOK, models.DeleteLogParams{})

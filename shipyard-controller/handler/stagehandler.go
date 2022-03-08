@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 	"sort"
 
@@ -44,7 +46,7 @@ func (sh *StageHandler) GetAllStages(c *gin.Context) {
 
 	params := &models.GetStagesParams{}
 	if err := c.ShouldBindQuery(params); err != nil {
-		SetBadRequestErrorResponse(err, c, "Invalid request format")
+		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
@@ -52,11 +54,11 @@ func (sh *StageHandler) GetAllStages(c *gin.Context) {
 
 	allStages, err := sh.StageManager.GetAllStages(params.ProjectName)
 	if err != nil {
-		if err == ErrProjectNotFound {
-			SetNotFoundErrorResponse(err, c)
+		if errors.Is(err, ErrProjectNotFound) {
+			SetNotFoundErrorResponse(c, err.Error())
 			return
 		}
-		SetInternalServerErrorResponse(err, c)
+		SetInternalServerErrorResponse(c, err.Error())
 		return
 	}
 
@@ -101,15 +103,15 @@ func (sh *StageHandler) GetStage(c *gin.Context) {
 
 	stage, err := sh.StageManager.GetStage(projectName, stageName)
 	if err != nil {
-		if err == ErrProjectNotFound {
-			SetNotFoundErrorResponse(err, c)
+		if errors.Is(err, ErrProjectNotFound) {
+			SetNotFoundErrorResponse(c, err.Error())
 			return
 		}
-		if err == ErrStageNotFound {
-			SetNotFoundErrorResponse(err, c)
+		if errors.Is(err, ErrStageNotFound) {
+			SetNotFoundErrorResponse(c, err.Error())
 		}
 
-		SetInternalServerErrorResponse(err, c)
+		SetInternalServerErrorResponse(c, err.Error())
 		return
 	}
 	c.JSON(http.StatusOK, stage)

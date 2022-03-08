@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -71,7 +72,7 @@ func (sw *SequenceWatcher) cleanUpOrphanedTasksOfProject(project string) error {
 	// get open triggered events
 	events, err := sw.eventRepo.GetEvents(project, common.EventFilter{}, common.TriggeredEvent)
 	if err != nil {
-		if err == db.ErrNoEventFound {
+		if errors.Is(err, db.ErrNoEventFound) {
 			log.Debugf("no open .triggered events for project %s found", project)
 			return nil
 		}

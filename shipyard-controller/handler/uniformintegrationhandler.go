@@ -54,7 +54,7 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 	integration := &models.Integration{}
 
 	if err := c.ShouldBindJSON(integration); err != nil {
-		SetBadRequestErrorResponse(err, c)
+		SetBadRequestErrorResponse(c, err.Error())
 		return
 	}
 
@@ -66,7 +66,7 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 
 	hash, err := integrationID.Hash()
 	if err != nil {
-		SetBadRequestErrorResponse(err, c)
+		SetBadRequestErrorResponse(c, err.Error())
 		return
 	}
 
@@ -112,7 +112,7 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 		hasher := sha1.New() //nolint:gosec
 		_, err = hasher.Write([]byte(raw))
 		if err != nil {
-			SetInternalServerErrorResponse(err, c)
+			SetInternalServerErrorResponse(c, err.Error())
 		}
 		hash = hex.EncodeToString(hasher.Sum(nil))
 		integration.ID = hash
@@ -124,7 +124,7 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 		if errors.Is(err, db.ErrUniformRegistrationAlreadyExists) {
 			err2 := rh.updateExistingIntegration(integration)
 			if err2 != nil {
-				SetInternalServerErrorResponse(err2, c)
+				SetInternalServerErrorResponse(c, err2.Error())
 				return
 			}
 			c.JSON(http.StatusOK, &models.RegisterResponse{
@@ -132,7 +132,7 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 			})
 			return
 		}
-		SetInternalServerErrorResponse(err, c)
+		SetInternalServerErrorResponse(c, err.Error())
 		return
 	}
 
@@ -175,7 +175,7 @@ func (rh *UniformIntegrationHandler) Unregister(c *gin.Context) {
 	integrationID := c.Param("integrationID")
 
 	if err := rh.uniformRepo.DeleteUniformIntegration(integrationID); err != nil {
-		SetInternalServerErrorResponse(err, c)
+		SetInternalServerErrorResponse(c, err.Error())
 		return
 	}
 	c.JSON(http.StatusOK, &models.UnregisterResponse{})
@@ -200,12 +200,12 @@ func (rh *UniformIntegrationHandler) Unregister(c *gin.Context) {
 func (rh *UniformIntegrationHandler) GetRegistrations(c *gin.Context) {
 	params := &models.GetUniformIntegrationsParams{}
 	if err := c.ShouldBindQuery(params); err != nil {
-		SetBadRequestErrorResponse(err, c, "Invalid request format")
+		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 	uniformIntegrations, err := rh.uniformRepo.GetUniformIntegrations(*params)
 	if err != nil {
-		SetInternalServerErrorResponse(err, c, "Unable to query uniform integrations repository")
+		SetInternalServerErrorResponse(c, fmt.Sprintf(UnableQueryIntegrationsMsg, err.Error()))
 		return
 	}
 
@@ -230,10 +230,10 @@ func (rh *UniformIntegrationHandler) KeepAlive(c *gin.Context) {
 	registration, err := rh.uniformRepo.UpdateLastSeen(integrationID)
 	if err != nil {
 		if errors.Is(err, db.ErrUniformRegistrationNotFound) {
-			SetNotFoundErrorResponse(err, c)
+			SetNotFoundErrorResponse(c, err.Error())
 			return
 		}
-		SetInternalServerErrorResponse(err, c)
+		SetInternalServerErrorResponse(c, err.Error())
 		return
 	}
 
@@ -261,7 +261,7 @@ func (rh *UniformIntegrationHandler) CreateSubscription(c *gin.Context) {
 	subscription := &models.Subscription{}
 
 	if err := c.ShouldBindJSON(subscription); err != nil {
-		SetBadRequestErrorResponse(err, c)
+		SetBadRequestErrorResponse(c, err.Error())
 		return
 	}
 	subscription.ID = uuid.New().String()
@@ -269,10 +269,10 @@ func (rh *UniformIntegrationHandler) CreateSubscription(c *gin.Context) {
 	err := rh.uniformRepo.CreateOrUpdateSubscription(integrationID, *subscription)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			SetNotFoundErrorResponse(err, c)
+			SetNotFoundErrorResponse(c, err.Error())
 			return
 		}
-		SetInternalServerErrorResponse(err, c)
+		SetInternalServerErrorResponse(c, err.Error())
 		return
 	}
 
@@ -304,7 +304,7 @@ func (rh *UniformIntegrationHandler) UpdateSubscription(c *gin.Context) {
 	subscription := &models.Subscription{}
 
 	if err := c.ShouldBindJSON(subscription); err != nil {
-		SetBadRequestErrorResponse(err, c)
+		SetBadRequestErrorResponse(c, err.Error())
 		return
 	}
 	subscription.ID = subscriptionID
@@ -312,7 +312,7 @@ func (rh *UniformIntegrationHandler) UpdateSubscription(c *gin.Context) {
 	err := rh.uniformRepo.CreateOrUpdateSubscription(integrationID, *subscription)
 	if err != nil {
 		//TODO: set appropriate http codes
-		SetInternalServerErrorResponse(err, c)
+		SetInternalServerErrorResponse(c, err.Error())
 		return
 	}
 
@@ -341,7 +341,7 @@ func (rh *UniformIntegrationHandler) DeleteSubscription(c *gin.Context) {
 
 	err := rh.uniformRepo.DeleteSubscription(integrationID, subscriptionID)
 	if err != nil {
-		SetInternalServerErrorResponse(err, c)
+		SetInternalServerErrorResponse(c, err.Error())
 		return
 	}
 
@@ -369,10 +369,10 @@ func (rh *UniformIntegrationHandler) GetSubscription(c *gin.Context) {
 	subscription, err := rh.uniformRepo.GetSubscription(integrationID, subscriptionID)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			SetNotFoundErrorResponse(err, c)
+			SetNotFoundErrorResponse(c, err.Error())
 			return
 		}
-		SetInternalServerErrorResponse(err, c)
+		SetInternalServerErrorResponse(c, err.Error())
 		return
 	}
 
@@ -398,10 +398,10 @@ func (rh *UniformIntegrationHandler) GetSubscriptions(c *gin.Context) {
 	subscriptions, err := rh.uniformRepo.GetSubscriptions(integrationID)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			SetNotFoundErrorResponse(err, c)
+			SetNotFoundErrorResponse(c, err.Error())
 			return
 		}
-		SetInternalServerErrorResponse(err, c)
+		SetInternalServerErrorResponse(c, err.Error())
 		return
 	}
 	c.JSON(http.StatusOK, subscriptions)
