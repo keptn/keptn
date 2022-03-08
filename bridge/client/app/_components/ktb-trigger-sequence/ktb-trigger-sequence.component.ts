@@ -230,7 +230,7 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
     }
 
     if (this.evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.TIMEFRAME) {
-      if (this.evaluationFormData.timeframe) {
+      if (this.evaluationFormData.timeframe && !this.isTimeframeEmpty(this.evaluationFormData.timeframe)) {
         data.evaluation.timeframe = this.parseTimeframe(this.evaluationFormData.timeframe);
       } else {
         data.evaluation.timeframe = '5m';
@@ -295,6 +295,10 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
           }
         );
       });
+  }
+
+  private isTimeframeEmpty(timeframe: Timeframe): boolean {
+    return !timeframe.hours && !timeframe.minutes && !timeframe.seconds && !timeframe.millis && !timeframe.micros;
   }
 
   private navigateToSequences(keptnContext: string | undefined): void {

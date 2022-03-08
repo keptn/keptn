@@ -264,6 +264,47 @@ describe('KtbTriggerSequenceComponent', () => {
     });
   });
 
+  it('should trigger the evaluation sequence with no timeframe set', () => {
+    // given
+    const dataService = TestBed.inject(DataService);
+    const spy = jest.spyOn(dataService, 'triggerEvaluation');
+    const date = moment().milliseconds(0);
+    component.sequenceType = TRIGGER_SEQUENCE.EVALUATION;
+    component.selectedStage = 'hardening';
+    component.selectedService = 'helloservice';
+    component.evaluationFormData = {
+      evaluationType: TRIGGER_EVALUATION_TIME.TIMEFRAME,
+      labels: 'key1=val1',
+      timeframe: {
+        hours: undefined,
+        minutes: undefined,
+        seconds: undefined,
+        millis: undefined,
+        micros: undefined,
+      },
+      timeframeStart: date.toISOString(),
+      startDatetime: undefined,
+      endDatetime: undefined,
+    };
+
+    // when
+    component.triggerSequence();
+
+    // then
+    expect(spy).toHaveBeenCalledWith({
+      project: 'podtato-head',
+      stage: 'hardening',
+      service: 'helloservice',
+      evaluation: {
+        labels: {
+          key1: 'val1',
+        },
+        timeframe: '5m',
+        start: date.toISOString(),
+      },
+    });
+  });
+
   it('should trigger the custom sequence with set data', () => {
     // given
     const dataService = TestBed.inject(DataService);
