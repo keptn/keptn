@@ -179,7 +179,7 @@ class EnvironmentPage {
   }
 
   public visit(project: string): this {
-    cy.visit(`/project/${project}`);
+    cy.visit(`/project/${project}`).wait('@metadata');
     return this;
   }
 

@@ -54,7 +54,7 @@ function getEvaluationUrls(project: string, service: string): string[] {
 }
 
 export function interceptMain(): void {
-  cy.intercept('/api/v1/metadata', { fixture: 'metadata.mock' });
+  cy.intercept('/api/v1/metadata', { fixture: 'metadata.mock' }).as('metadata');
   cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfo.mock' });
 }
 
