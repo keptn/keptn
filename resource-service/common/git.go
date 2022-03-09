@@ -108,6 +108,8 @@ func getAuthMethod(gitContext common_models.GitContext) (transport.AuthMethod, e
 				},
 			}
 
+			// Istalling https protocol as a default one means that all the proxy traffic will be routed via secure connection
+			// To use unsecure conenction, GitProxyInsecure parameter should be set to true and https protocol will be used without TLS verification
 			client.InstallProtocol("https", http.NewClient(customClient))
 		}
 		return &http.BasicAuth{
