@@ -120,7 +120,7 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-r
 
 		if *createProjectParams.GitUser != "" && *createProjectParams.RemoteURL != "" {
 			if *createProjectParams.GitToken == "" && *createProjectParams.GitPrivateKey == "" {
-				return errors.New(gitErrMsg)
+				return errors.New("Access token or private key must be set")
 			}
 
 			project.GitUser = *createProjectParams.GitUser
@@ -128,11 +128,11 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-r
 			project.GitRemoteURL = *createProjectParams.RemoteURL
 
 			if *createProjectParams.GitProxyURL != "" && strings.HasPrefix(*createProjectParams.RemoteURL, "ssh://") {
-				return errors.New(gitErrMsg)
+				return errors.New("Proxy cannot be set with SSH")
 			}
 
 			if *createProjectParams.GitProxyURL != "" && *createProjectParams.GitProxyScheme == "" {
-				return errors.New(gitErrMsg)
+				return errors.New("Proxy cannot be set without scheme")
 			}
 
 			project.GitProxyURL = *createProjectParams.GitProxyURL
@@ -191,14 +191,18 @@ func checkGitCredentials() error {
 	}
 
 	if *createProjectParams.GitToken != "" && *createProjectParams.GitPrivateKey != "" {
-		return errors.New(gitErrMsg)
+		return errors.New("Access token or private key cannot be set together")
 	}
 
 	if *createProjectParams.GitUser != "" && *createProjectParams.RemoteURL != "" {
 		return nil
 	}
 
-	return errors.New(gitErrMsg)
+	if *createProjectParams.GitToken != "" && *createProjectParams.RemoteURL == "" {
+		return errors.New(gitErrMsg)
+	}
+
+	return nil
 }
 
 func retrieveShipyard(location string) ([]byte, error) {
