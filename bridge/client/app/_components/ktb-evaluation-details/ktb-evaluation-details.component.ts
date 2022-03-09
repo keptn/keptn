@@ -593,7 +593,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
                 const totalScore = sliResultsInfo[s.evaluationData?.id ?? '']?.score;
                 const score = !totalScore
                   ? 0
-                  : AppUtils.round(
+                  : AppUtils.truncateNumber(
                       (s.indicatorResult.score / totalScore) * (s.evaluationData?.data.evaluation?.score ?? 1),
                       2
                     );

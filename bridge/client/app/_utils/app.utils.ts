@@ -14,6 +14,10 @@ export class AppUtils {
     return JSON.parse(JSON.stringify(data));
   }
 
+  public static truncateNumber(value: number, decimals: number): number {
+    return Math.trunc(value * Math.pow(10, decimals)) / Math.pow(10, decimals);
+  }
+
   public static round(value: number, places: number): number {
     return +(Math.round(Number(`${value}e+${places}`)) + `e-${places}`);
   }
