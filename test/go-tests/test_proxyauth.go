@@ -122,4 +122,8 @@ func Test_ProxyAuth(t *testing.T) {
 	t.Logf("Trigger delivery of helloservice:v0.1.0")
 	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", projectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery")
 	require.Nil(t, err)
+
+	//Modify the proxy settings to be certain that no other project use the proxy
+	_, err = ExecuteCommand(fmt.Sprintf("keptn update project %s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s --git-proxy-url=%s:3124 --git-proxy-scheme=http --git-proxy-insecure", projectName, user, projectName, user, token, squidIP))
+	require.Nil(t, err)
 }
