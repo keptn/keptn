@@ -71,11 +71,6 @@ func (h *DeploymentHandler) HandleEvent(ce cloudevents.Event) {
 		}
 		userChart, commitID, err = configurationchanger.NewConfigurationChanger(
 			h.getConfigServiceURL()).UpdateLoadedChart(userChart, e.EventData, false, valuesUpdater)
-		if err != nil {
-			err = fmt.Errorf("failed to update loaded chart: %v", err)
-			h.handleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
-			return
-		}
 
 		if err != nil {
 			err = fmt.Errorf("failed to update values: %v", err)
