@@ -65,7 +65,7 @@ func (h *DeploymentHandler) HandleEvent(ce cloudevents.Event) {
 
 		userChart, _, err = h.getUserChart(e.EventData, commitID)
 		if err != nil {
-			err = fmt.Errorf("failed to load chart: %v", err)
+			err = fmt.Errorf("failed to load chart: %w", err)
 			h.handleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
 			return
 		}
@@ -73,7 +73,7 @@ func (h *DeploymentHandler) HandleEvent(ce cloudevents.Event) {
 			h.getConfigServiceURL()).UpdateLoadedChart(userChart, e.EventData, false, valuesUpdater)
 
 		if err != nil {
-			err = fmt.Errorf("failed to update values: %v", err)
+			err = fmt.Errorf("failed to update values: %w", err)
 			h.handleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
 			return
 		}
@@ -81,7 +81,7 @@ func (h *DeploymentHandler) HandleEvent(ce cloudevents.Event) {
 		// Read chart
 		userChart, commitID, err = h.getUserChart(e.EventData, commitID)
 		if err != nil {
-			err = fmt.Errorf("failed to load chart: %v", err)
+			err = fmt.Errorf("failed to load chart: %w", err)
 			h.handleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
 			return
 		}
