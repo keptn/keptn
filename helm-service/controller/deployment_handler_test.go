@@ -346,6 +346,64 @@ func TestHandleEventWithoutDeploymentURLAndUserManagedDeploymentStrategy(t *test
 	assert.Equal(t, keptn.UserManaged, mockedBaseHandler.upgradeChartInvocations[0].strategy)
 }
 
+func TestHandleEventWithoutResources(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockedBaseHandler := NewMockedHandler(createKeptn(), "", func(options *MockedHandlerOptions) {
+		options.GetUserManagedEndpointsBehavior = func(event keptnv2.EventData) (*keptnv2.Endpoints, error) {
+			return nil, nil
+		}
+		options.GetUserChartsErrBehaviour = true
+
+	})
+
+	mockedOnboarder := mocks.NewMockOnboarder(ctrl)
+	mockedChartGenerator := mocks.NewMockChartGenerator(ctrl)
+
+	deploymentHandler := DeploymentHandler{
+		Handler:               mockedBaseHandler,
+		mesh:                  mocks.NewMockMesh(ctrl),
+		generatedChartHandler: mockedChartGenerator,
+		onboarder:             mockedOnboarder,
+	}
+
+	deploymentTriggeredEventData := keptnv2.DeploymentTriggeredEventData{
+		EventData: keptnv2.EventData{
+			Project: "my-project",
+			Stage:   "production",
+			Service: "my-service",
+		},
+		ConfigurationChange: keptnv2.ConfigurationChange{
+			Values: map[string]interface{}{
+				"image": "nexus-registry.apps.ocp4-test.it/krateo-20220308:latest",
+			},
+		},
+		Deployment: keptnv2.DeploymentTriggeredData{
+			DeploymentStrategy: keptn.UserManaged.String(),
+		},
+	}
+
+	ce := cloudevents.NewEvent()
+	_ = ce.SetData(cloudevents.ApplicationJSON, deploymentTriggeredEventData)
+	ce.SetExtension("gitcommitid", "silly-one")
+	deploymentHandler.HandleEvent(ce)
+
+	expectedDeploymentFinishedEvent := keptnv2.DeploymentFinishedEventData{
+		EventData: keptnv2.EventData{
+			Project: "my-project",
+			Stage:   "production",
+			Service: "my-service",
+			Status:  keptnv2.StatusErrored,
+			Result:  keptnv2.ResultFailed,
+			Message: "failed to load chart: some error",
+		},
+	}
+
+	assert.Equal(t, 1, len(mockedBaseHandler.handledErrorEvents))
+	assert.Equal(t, expectedDeploymentFinishedEvent, mockedBaseHandler.handledErrorEvents[0])
+}
+
 func TestHandleUnparsableDeploymentEvent(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
