@@ -327,9 +327,9 @@ func (pm *ProjectManager) Delete(projectName string) (string, error) {
 		}
 	}
 
-	//if err := pm.ConfigurationStore.DeleteProject(projectName); err != nil {
-	//	return resultMessage.String(), pm.logAndReturnError(fmt.Sprintf("could not delete project: %s", err.Error()))
-	//}
+	if err := pm.ConfigurationStore.DeleteProject(projectName); err != nil {
+		return resultMessage.String(), pm.logAndReturnError(fmt.Sprintf("could not delete project: %s", err.Error()))
+	}
 
 	resultMessage.WriteString(pm.getDeleteInfoMessage(projectName))
 
