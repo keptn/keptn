@@ -103,19 +103,8 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/{projectName} [delete]
 func (ph *ProjectHandler) DeleteProject(c *gin.Context) {
-	params := &models.DeleteProjectPathParams{
-		Project: models.Project{ProjectName: c.Param(pathParamProjectName)},
-	}
-
-	if err := params.Validate(); err != nil {
-		SetBadRequestErrorResponse(c, err.Error())
-		return
-	}
-
-	if err := ph.ProjectManager.DeleteProject(params.ProjectName); err != nil {
-		OnAPIError(c, err)
-		return
-	}
-
+	// no-op
+	// this endpoint implementation does nothing, intentionally, since
+	// deleting project(s) is handled on event level
 	c.String(http.StatusNoContent, "")
 }
