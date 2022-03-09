@@ -66,8 +66,7 @@ export function interceptProjectBoard(): void {
 }
 
 export function interceptIntegrations(): void {
-  cy.intercept('/api/v1/metadata', { fixture: 'metadata.mock' });
-  cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfo.mock' });
+  interceptMain();
   cy.intercept('/api/project/sockshop?approval=true&remediation=true', { fixture: 'project.mock' });
   cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: false });
   cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });

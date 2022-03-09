@@ -25,13 +25,20 @@ class UniformPage {
   EDIT_WEBHOOK_METHOD = 'edit-webhook-field-method';
   EDIT_WEBHOOK_PROXY = 'edit-webhook-field-proxy';
 
+  public visit(project: string): this {
+    cy.visit(`/project/${project}/settings/uniform/integrations`).wait('@metadata');
+    return this;
+  }
+
   public visitAdd(integrationID: string): this {
-    cy.visit(`/project/sockshop/settings/uniform/integrations/${integrationID}/subscriptions/add`);
+    cy.visit(`/project/sockshop/settings/uniform/integrations/${integrationID}/subscriptions/add`).wait('@metadata');
     return this;
   }
 
   public visitEdit(integrationID: string, subscriptionId: string): this {
-    cy.visit(`/project/sockshop/settings/uniform/integrations/${integrationID}/subscriptions/${subscriptionId}/edit`);
+    cy.visit(
+      `/project/sockshop/settings/uniform/integrations/${integrationID}/subscriptions/${subscriptionId}/edit`
+    ).wait('@metadata');
     return this;
   }
 
