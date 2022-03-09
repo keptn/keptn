@@ -3,6 +3,8 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"testing"
+
 	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	common_mock "github.com/keptn/keptn/shipyard-controller/common/fake"
@@ -10,7 +12,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestGetProjects(t *testing.T) {
@@ -464,8 +465,14 @@ func TestUpdate_GettingOldProjectFails(t *testing.T) {
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
 	sequenceExecutionRepo := &db_mock.SequenceExecutionRepoMock{}
 
+	oldSecretsData, _ := json.Marshal(gitCredentials{
+		User:      "my-old-user",
+		Token:     "my-old-token",
+		RemoteURI: "http://my-old-remote.uri",
+	})
+
 	secretStore.GetSecretFunc = func(name string) (map[string][]byte, error) {
-		return nil, nil
+		return map[string][]byte{"git-credentials": oldSecretsData}, nil
 	}
 	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		return nil, fmt.Errorf("whoops")
@@ -494,8 +501,14 @@ func TestUpdate_OldProjectNotAvailable(t *testing.T) {
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
 	sequenceExecutionRepo := &db_mock.SequenceExecutionRepoMock{}
 
+	oldSecretsData, _ := json.Marshal(gitCredentials{
+		User:      "my-old-user",
+		Token:     "my-old-token",
+		RemoteURI: "http://my-old-remote.uri",
+	})
+
 	secretStore.GetSecretFunc = func(name string) (map[string][]byte, error) {
-		return nil, nil
+		return map[string][]byte{"git-credentials": oldSecretsData}, nil
 	}
 	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		return nil, nil
@@ -525,8 +538,14 @@ func TestUpdate_UpdateGitRepositorySecretFails(t *testing.T) {
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
 	sequenceExecutionRepo := &db_mock.SequenceExecutionRepoMock{}
 
+	oldSecretsData, _ := json.Marshal(gitCredentials{
+		User:      "my-old-user",
+		Token:     "my-old-token",
+		RemoteURI: "http://my-old-remote.uri",
+	})
+
 	secretStore.GetSecretFunc = func(name string) (map[string][]byte, error) {
-		return nil, nil
+		return map[string][]byte{"git-credentials": oldSecretsData}, nil
 	}
 
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
@@ -609,10 +628,7 @@ func TestUpdate_UpdateProjectInConfigurationStoreFails(t *testing.T) {
 	rollback()
 
 	expectedProjectUpdate := keptnapimodels.Project{
-		GitRemoteURI: params.GitRemoteURL,
-		GitToken:     params.GitToken,
-		GitUser:      params.GitUser,
-		ProjectName:  *params.Name,
+		ProjectName: *params.Name,
 	}
 	assert.Equal(t, expectedProjectUpdate, configStore.UpdateProjectCalls()[0].Project)
 	assert.Equal(t, "git-credentials-my-project", secretStore.UpdateSecretCalls()[0].Name)
@@ -689,10 +705,7 @@ func TestUpdate_UpdateProjectShipyardResourceFails(t *testing.T) {
 	rollback()
 
 	expectedProjectUpdateInConfigSvc := keptnapimodels.Project{
-		GitRemoteURI: params.GitRemoteURL,
-		GitToken:     params.GitToken,
-		GitUser:      params.GitUser,
-		ProjectName:  *params.Name,
+		ProjectName: *params.Name,
 	}
 
 	rollbackProjectData := keptnapimodels.Project{
@@ -783,10 +796,7 @@ func TestUpdate_UpdateProjectInRepositoryFails(t *testing.T) {
 	rollback()
 
 	projectUpdateData := keptnapimodels.Project{
-		GitRemoteURI: params.GitRemoteURL,
-		GitToken:     params.GitToken,
-		GitUser:      params.GitUser,
-		ProjectName:  *params.Name,
+		ProjectName: *params.Name,
 	}
 
 	projectDBUpdateData := &models.ExpandedProject{
@@ -889,10 +899,7 @@ func TestUpdate(t *testing.T) {
 	rollback()
 
 	projectUpdateData := keptnapimodels.Project{
-		GitRemoteURI: params.GitRemoteURL,
-		GitToken:     params.GitToken,
-		GitUser:      params.GitUser,
-		ProjectName:  *params.Name,
+		ProjectName: *params.Name,
 	}
 
 	projectDBUpdateData := &models.ExpandedProject{

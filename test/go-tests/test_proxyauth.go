@@ -2,13 +2,14 @@ package go_tests
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/require"
-	"os"
 	"path"
 	"testing"
+
+	"github.com/keptn/go-utils/pkg/common/osutils"
+	"github.com/stretchr/testify/require"
 )
 
-const testingSSHShipyard = `apiVersion: "spec.keptn.sh/0.2.3"
+const testingProxyShipyard = `apiVersion: "spec.keptn.sh/0.2.3"
 kind: "Shipyard"
 metadata:
   name: "shipyard-podtato-ohead"
@@ -66,18 +67,18 @@ spec:
             - name: "release"
 `
 
-func Test_SSHPublicKeyAuth(t *testing.T) {
+func Test_ProxyAuth(t *testing.T) {
 	repoLocalDir := "../assets/podtato-head"
-	projectName := "public-key-auth"
+	projectName := "proxy-auth"
 	serviceName := "helloservice"
 	secondServiceName := "helloservice2"
 	serviceChartLocalDir := path.Join(repoLocalDir, "helm-charts", "helloservice.tgz")
 	serviceJmeterDir := path.Join(repoLocalDir, "jmeter")
 
 	t.Logf("Creating a new project %s with Gitea Upstream", projectName)
-	shipyardFilePath, err := CreateTmpShipyardFile(testingSSHShipyard)
+	shipyardFilePath, err := CreateTmpShipyardFile(testingProxyShipyard)
 	require.Nil(t, err)
-	projectName, err = CreateProjectWithSSH(projectName, shipyardFilePath)
+	projectName, err = CreateProjectWithProxy(projectName, shipyardFilePath)
 	require.Nil(t, err)
 
 	t.Logf("Creating service %s in project %s", serviceName, projectName)
@@ -102,18 +103,16 @@ func Test_SSHPublicKeyAuth(t *testing.T) {
 
 	t.Logf("Updating project credentials")
 	user := GetGiteaUser()
-	privateKey, passphrase, err := GetPrivateKeyAndPassphrase()
+	token, err := GetGiteaToken()
 	require.Nil(t, err)
 
-	privateKeyPath := "private-key"
-	err = os.WriteFile(privateKeyPath, []byte(privateKey), 0777)
+	namespace := osutils.GetOSEnvOrDefault(KeptnNamespaceEnvVar, DefaultKeptnNamespace)
+
+	squidIP, err := GetSquidExternalIP(namespace)
 	require.Nil(t, err)
 
-	defer func() {
-		os.Remove(privateKeyPath)
-	}()
-
-	_, err = ExecuteCommand(fmt.Sprintf("keptn update project %s --git-remote-url=ssh://gitea-ssh:22/%s/%s.git --git-user=%s --git-private-key=%s --git-private-key-pass=%s", projectName, user, projectName, user, privateKeyPath, passphrase))
+	// apply the k8s job for creating the git upstream
+	_, err = ExecuteCommand(fmt.Sprintf("keptn update project %s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s --git-proxy-url=%s:3128 --git-proxy-scheme=http --git-proxy-insecure", projectName, user, projectName, user, token, squidIP))
 	require.Nil(t, err)
 
 	t.Logf("Creating service %s in project %s", secondServiceName, projectName)
@@ -122,5 +121,9 @@ func Test_SSHPublicKeyAuth(t *testing.T) {
 
 	t.Logf("Trigger delivery of helloservice:v0.1.0")
 	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", projectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery")
+	require.Nil(t, err)
+
+	//Modify the proxy settings to be certain that no other project use the proxy
+	_, err = ExecuteCommand(fmt.Sprintf("keptn update project %s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s --git-proxy-url=%s:3124 --git-proxy-scheme=http --git-proxy-insecure", projectName, user, projectName, user, token, squidIP))
 	require.Nil(t, err)
 }

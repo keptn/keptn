@@ -1,10 +1,13 @@
 package common
 
 import (
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
+	nethttp "net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -14,6 +17,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/plumbing/transport"
+	"github.com/go-git/go-git/v5/plumbing/transport/client"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/keptn/keptn/resource-service/common_models"
@@ -84,6 +88,30 @@ func getAuthMethod(gitContext common_models.GitContext) (transport.AuthMethod, e
 		return publicKey, nil
 
 	} else if gitContext.Credentials.Token != "" && strings.HasPrefix(gitContext.Credentials.RemoteURI, "http") {
+		if gitContext.Credentials.GitProxyURL != "" {
+			customClient := &nethttp.Client{
+				Transport: &nethttp.Transport{
+					TLSClientConfig: &tls.Config{InsecureSkipVerify: gitContext.Credentials.GitProxyInsecure},
+					Proxy: nethttp.ProxyURL(&url.URL{
+						Scheme: gitContext.Credentials.GitProxyScheme,
+						User:   url.UserPassword(gitContext.Credentials.GitProxyUser, gitContext.Credentials.GitProxyPassword),
+						Host:   gitContext.Credentials.GitProxyURL,
+					}),
+				},
+
+				// 15 second timeout
+				Timeout: 15 * time.Second,
+
+				// don't follow redirect
+				CheckRedirect: func(req *nethttp.Request, via []*nethttp.Request) error {
+					return nethttp.ErrUseLastResponse
+				},
+			}
+
+			// Istalling https protocol as a default one means that all the proxy traffic will be routed via secure connection
+			// To use unsecure conenction, GitProxyInsecure parameter should be set to true and https protocol will be used without TLS verification
+			client.InstallProtocol("https", http.NewClient(customClient))
+		}
 		return &http.BasicAuth{
 			Username: gitContext.Credentials.User,
 			Password: gitContext.Credentials.Token,

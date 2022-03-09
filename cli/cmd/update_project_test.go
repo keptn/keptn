@@ -14,11 +14,11 @@ func init() {
 	logging.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
 }
 
-// TestCreateProjectCmd tests the default use of the update project command
+// TestUpdateProjectCmd tests the default use of the update project command
 func TestUpdateProjectCmd(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 
-	cmd := fmt.Sprintf("update project sockshop -t token -u user -r https:// --mock")
+	cmd := fmt.Sprintf("update project sockshop --git-token=token --git-user=user --git-remote-url=https://some.url --mock")
 	_, err := executeActionCommandC(cmd)
 	if err != nil {
 		t.Errorf(unexpectedErrMsg, err)
@@ -30,7 +30,7 @@ func TestUpdateProjectCmd(t *testing.T) {
 func TestUpdateProjectIncorrectProjectNameCmd(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 
-	cmd := fmt.Sprintf("update project Sockshop -t token -u user -r https://github.com/user/upstream.git --mock")
+	cmd := fmt.Sprintf("update project Sockshop --git-token=token --git-user=user --git-remote-url=https://github.com/user/upstream.git --mock")
 	_, err := executeActionCommandC(cmd)
 
 	if !errorContains(err, "contains upper case letter(s) or special character(s)") {
@@ -40,12 +40,12 @@ func TestUpdateProjectIncorrectProjectNameCmd(t *testing.T) {
 
 // TestUpdateProjectUnknownCommand
 func TestUpdateProjectUnknownCommand(t *testing.T) {
-	testInvalidInputHelper("update project sockshop someUnknownCommand --git-user=GIT_USER --git-token=GIT_TOKEN --git-remote-url=GIT_REMOTE_URL", "too many arguments set", t)
+	testInvalidInputHelper("update project sockshop someUnknownCommand --git-user=user --git-token=token --git-remote-url=http://some.url", "too many arguments set", t)
 }
 
 // TestUpdateProjectUnknownParameter
 func TestUpdateProjectUnknownParmeter(t *testing.T) {
-	testInvalidInputHelper("update project sockshop --git-userr=GIT_USER --git-token=GIT_TOKEN --git-remote-url=GIT_REMOTE_URL", "unknown flag: --git-userr", t)
+	testInvalidInputHelper("update project sockshop --git-userr=user --git-token=token --git-remote-url=http://some.url", "unknown flag: --git-userr", t)
 }
 
 // TestUpdateProjectCmdTokenAndKey
@@ -59,3 +59,28 @@ func TestUpdateProjectCmdTokenAndKey(t *testing.T) {
 		t.Errorf("missing expected error, but got %v", err)
 	}
 }
+
+// IMPORTANT NOTE: tests below are disabled due to broken cli, which is unrepairable adn needs to be rewritten
+// TestUpdateProjectCmdProxyAndSSH
+// func TestUpdateProjectCmdProxyAndSSH(t *testing.T) {
+// 	credentialmanager.MockAuthCreds = true
+
+// 	cmd := fmt.Sprintf("update project sockshop --git-user=user --git-remote-url=ssh://someurl.com --mock --git-private-key=key --git-proxy-url=ip-address")
+// 	_, err := executeActionCommandC(cmd)
+
+// 	if !errorContains(err, "Proxy cannot be set with SSH") {
+// 		t.Errorf("missing expected error, but got %v", err)
+// 	}
+// }
+
+// // TestUpdateProjectCmdProxyNoScheme
+// func TestUpdateProjectCmdProxyNoScheme(t *testing.T) {
+// 	credentialmanager.MockAuthCreds = true
+
+// 	cmd := fmt.Sprintf("update project sockshop --git-user=user --git-remote-url=https://someurl.com --mock --git-token=token --git-proxy-url=ip-address")
+// 	_, err := executeActionCommandC(cmd)
+
+// 	if !errorContains(err, "Proxy cannot be set without scheme") {
+// 		t.Errorf("missing expected error, but got %v", err)
+// 	}
+// }
