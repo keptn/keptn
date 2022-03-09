@@ -103,6 +103,7 @@ func Test_NATSDown(t *testing.T) {
 	// restart embedded NATS cluster
 	svr, shutdownNats = runNATSServerOnPort(natsTestPort)
 	defer shutdownNats()
+	time.Sleep(2 * time.Second)
 
 	// reset flags for checking event reception
 	event1Received = false
