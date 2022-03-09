@@ -94,7 +94,7 @@ func Test_SequenceLoopIntegrationTest(t *testing.T) {
 		}
 
 		return true
-	}, 10*time.Second, 2*time.Second)
+	}, 1*time.Minute, 5*time.Second)
 
 	// get mytask.triggered event
 	myTaskTriggeredEvent, err := GetLatestEventOfType(keptnContextID, projectName, stageName, keptnv2.GetTriggeredEventType("mytask"))
@@ -142,7 +142,7 @@ func Test_SequenceLoopIntegrationTest(t *testing.T) {
 		}
 
 		return true
-	}, 10*time.Second, 2*time.Second)
+	}, 1*time.Minute, 5*time.Second)
 
 	// send .finished event with result = fail
 	_, err = keptn.SendTaskFinishedEvent(&keptnv2.EventData{
@@ -193,7 +193,7 @@ func Test_SequenceLoopIntegrationTest(t *testing.T) {
 		}
 
 		return true
-	}, 10*time.Second, 2*time.Second)
+	}, 1*time.Minute, 5*time.Second)
 
 	// get mytask.triggered event of second iteration
 	myTaskTriggeredEvent, err = GetLatestEventOfType(keptnContextID, projectName, stageName, keptnv2.GetTriggeredEventType("mytask"))

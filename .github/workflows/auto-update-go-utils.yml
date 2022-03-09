@@ -19,7 +19,7 @@ jobs:
           check-latest: true
 
       - name: Checkout code
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v3
 
       - name: Auto update go mod
         run: ./gh-actions-scripts/auto-update-utils.sh "${{ env.GO_UTILS_TARGET }}" "go-utils"

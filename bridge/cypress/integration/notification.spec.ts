@@ -117,8 +117,6 @@ describe('Test notifications', () => {
 
   function showSuccess(): void {
     const serviceSettings = new ServicesSettingsPage();
-
-    serviceSettings.inputService('my-new-service');
-    serviceSettings.createService();
+    serviceSettings.createService('my-new-service');
   }
 });

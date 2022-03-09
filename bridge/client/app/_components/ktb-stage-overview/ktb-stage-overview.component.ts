@@ -6,7 +6,7 @@ import { DtFilterFieldChangeEvent, DtFilterFieldDefaultDataSource } from '@dynat
 import { ApiService } from '../../_services/api.service';
 import { Service } from '../../_models/service';
 import { DtAutoComplete, DtFilter, DtFilterArray } from '../../_models/dt-filter';
-import { filter, map, switchMap, takeUntil } from 'rxjs/operators';
+import { filter, map, switchMap, takeUntil, tap } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
 import { DtFilterFieldDefaultDataSourceAutocomplete } from '@dynatrace/barista-components/filter-field/src/filter-field-default-data-source';
@@ -22,6 +22,7 @@ export class KtbStageOverviewComponent implements OnDestroy, OnInit {
   public selectedStage?: Stage;
   public _dataSource = new DtFilterFieldDefaultDataSource();
   public filter: DtFilterArray[] = [];
+  public isTriggerSequenceOpen = false;
   private filteredServices: string[] = [];
   private globalFilter: { [projectName: string]: { services: string[] } } = {};
   private unsubscribe$: Subject<void> = new Subject<void>();
@@ -36,9 +37,14 @@ export class KtbStageOverviewComponent implements OnDestroy, OnInit {
     const project$ = this.route.params.pipe(
       map((params) => params.projectName),
       filter((projectName) => !!projectName),
+      tap(() => {
+        this.isTriggerSequenceOpen = this.dataService.isTriggerSequenceOpen;
+        this.dataService.isTriggerSequenceOpen = false;
+      }),
       switchMap((projectName) => this.dataService.getProject(projectName)),
       takeUntil(this.unsubscribe$)
     );
+
     project$.subscribe((project) => {
       const differentProject = project?.projectName !== this.project?.projectName;
       this.project = project;

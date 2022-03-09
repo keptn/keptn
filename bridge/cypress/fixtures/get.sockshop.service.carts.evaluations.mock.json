@@ -79,12 +79,12 @@
             }
           ],
           "result": "fail",
-          "score": 33.33333333333333,
+          "score": 33.99999999999999,
           "sloFileContent": "LS0tDQpzcGVjX3ZlcnNpb246ICcwLjEuMCcNCmNvbXBhcmlzb246DQogIGNvbXBhcmVfd2l0aDogInNpbmdsZV9yZXN1bHQiDQogIGluY2x1ZGVfcmVzdWx0X3dpdGhfc2NvcmU6ICJwYXNzIg0KICBhZ2dyZWdhdGVfZnVuY3Rpb246IGF2Zw0Kb2JqZWN0aXZlczoNCiAgLSBzbGk6IGh0dHBfcmVzcG9uc2VfdGltZV9zZWNvbmRzX21haW5fcGFnZV9zdW0NCiAgICBwYXNzOg0KICAgICAgLSBjcml0ZXJpYToNCiAgICAgICAgICAtICI8PTEiDQogICAgd2FybmluZzoNCiAgICAgIC0gY3JpdGVyaWE6DQogICAgICAgICAgLSAiPD0wLjUiDQogIC0gc2xpOiByZXF1ZXN0X3Rocm91Z2hwdXQNCiAgICBwYXNzOg0KICAgICAgLSBjcml0ZXJpYToNCiAgICAgICAgICAtICI8PSsxMDAlIg0KICAgICAgICAgIC0gIj49LTgwJSINCiAgLSBzbGk6IGdvX3JvdXRpbmVzDQogICAgcGFzczoNCiAgICAgIC0gY3JpdGVyaWE6DQogICAgICAgICAgLSAiPD0xMDAiDQp0b3RhbF9zY29yZToNCiAgcGFzczogIjkwJSINCiAgd2FybmluZzogIjc1JSI=",
           "timeEnd": "2022-02-09T09:29:47.625Z",
           "timeStart": "2022-02-09T09:28:55.866Z"
         },
-        "message": "Evaluation failed since the calculated score of 33.33333333333333 is below the warning value of 75",
+        "message": "Evaluation failed since the calculated score of 33.99999999999999 is below the warning value of 75",
         "project": "sockshop",
         "result": "fail",
         "service": "carts",
@@ -471,12 +471,12 @@
             }
           ],
           "result": "fail",
-          "score": 33.33333333333333,
+          "score": 33.99999999999999,
           "sloFileContent": "LS0tDQpzcGVjX3ZlcnNpb246ICcwLjEuMCcNCmNvbXBhcmlzb246DQogIGNvbXBhcmVfd2l0aDogInNpbmdsZV9yZXN1bHQiDQogIGluY2x1ZGVfcmVzdWx0X3dpdGhfc2NvcmU6ICJwYXNzIg0KICBhZ2dyZWdhdGVfZnVuY3Rpb246IGF2Zw0Kb2JqZWN0aXZlczoNCiAgLSBzbGk6IGh0dHBfcmVzcG9uc2VfdGltZV9zZWNvbmRzX21haW5fcGFnZV9zdW0NCiAgICBwYXNzOg0KICAgICAgLSBjcml0ZXJpYToNCiAgICAgICAgICAtICI8PTEiDQogICAgd2FybmluZzoNCiAgICAgIC0gY3JpdGVyaWE6DQogICAgICAgICAgLSAiPD0wLjUiDQogIC0gc2xpOiByZXF1ZXN0X3Rocm91Z2hwdXQNCiAgICBwYXNzOg0KICAgICAgLSBjcml0ZXJpYToNCiAgICAgICAgICAtICI8PSsxMDAlIg0KICAgICAgICAgIC0gIj49LTgwJSINCiAgLSBzbGk6IGdvX3JvdXRpbmVzDQogICAgcGFzczoNCiAgICAgIC0gY3JpdGVyaWE6DQogICAgICAgICAgLSAiPD0xMDAiDQp0b3RhbF9zY29yZToNCiAgcGFzczogIjkwJSINCiAgd2FybmluZzogIjc1JSI=",
           "timeEnd": "2022-02-08T12:33:27.282Z",
           "timeStart": "2022-02-08T12:32:39.065Z"
         },
-        "message": "Evaluation failed since the calculated score of 33.33333333333333 is below the warning value of 75",
+        "message": "Evaluation failed since the calculated score of 33.99999999999999 is below the warning value of 75",
         "project": "sockshop",
         "result": "fail",
         "service": "carts",

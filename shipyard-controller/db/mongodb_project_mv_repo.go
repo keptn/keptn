@@ -16,18 +16,6 @@ import (
 	"time"
 )
 
-// ErrProjectNotFound indicates that a project has not been found
-var ErrProjectNotFound = errors.New("project not found")
-
-// ErrStageNotFound indicates that a stage has not been found
-var ErrStageNotFound = errors.New("stage not found")
-
-// ErrServiceNotFound indicates that a service has not been found
-var ErrServiceNotFound = errors.New("service not found")
-
-// ErrOpenRemediationNotFound indicates that no open remediation has been found
-var ErrOpenRemediationNotFound = errors.New("open remediation not found")
-
 var instance *MongoDBProjectMVRepo
 
 // EventsRetriever defines the interface for fetching events from the data store

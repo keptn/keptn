@@ -4,19 +4,17 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"time"
+
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"time"
 )
 
 const eventQueueCollectionName = "shipyard-controller-event-queue"
-
-// eventQueueSequenceStateCollectionName contains information on whether a task sequence is currently paused and thus outgoing events should be blocked
-const eventQueueSequenceStateCollectionName = "shipyard-controller-event-queue-sequence-state"
 
 const keptnContextScope = "scope.keptnContext"
 const stageScope = "scope.stage"
@@ -84,7 +82,7 @@ func (m *MongoDBEventQueueRepo) IsEventInQueue(eventID string) (bool, error) {
 
 	queueItems, err := getQueueItemsFromCollection(collection, ctx, searchOptions)
 	if err != nil {
-		if err == ErrNoEventFound {
+		if errors.Is(err, ErrNoEventFound) {
 			return false, nil
 		}
 		return false, err
@@ -184,7 +182,7 @@ func (m *MongoDBEventQueueRepo) GetEventQueueSequenceStates(filter models.EventQ
 		searchOptions[stageScope] = filter.Scope.Stage
 	}
 	cur, err := collection.Find(ctx, searchOptions)
-	if err != nil && err == mongo.ErrNoDocuments {
+	if err != nil && errors.Is(err, mongo.ErrNoDocuments) {
 		return nil, ErrNoEventFound
 	} else if err != nil {
 		return nil, err
@@ -249,7 +247,7 @@ func insertQueueItemIntoCollection(ctx context.Context, collection *mongo.Collec
 
 func getQueueItemsFromCollection(collection *mongo.Collection, ctx context.Context, searchOptions bson.M, opts ...*options.FindOptions) ([]models.QueueItem, error) {
 	cur, err := collection.Find(ctx, searchOptions, opts...)
-	if err != nil && err == mongo.ErrNoDocuments {
+	if err != nil && errors.Is(err, mongo.ErrNoDocuments) {
 		return nil, ErrNoEventFound
 	} else if err != nil {
 		return nil, err

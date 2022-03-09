@@ -44,6 +44,9 @@ import (
 // 			UpdateLastSeenFunc: func(integrationID string) (*models.Integration, error) {
 // 				panic("mock out the UpdateLastSeen method")
 // 			},
+// 			UpdateVersionInfoFunc: func(integrationID string, integrationVersion string, distributorVersion string) (*models.Integration, error) {
+// 				panic("mock out the UpdateVersionInfo method")
+// 			},
 // 		}
 //
 // 		// use mockedUniformRepo in code that requires db.UniformRepo
@@ -80,6 +83,9 @@ type UniformRepoMock struct {
 
 	// UpdateLastSeenFunc mocks the UpdateLastSeen method.
 	UpdateLastSeenFunc func(integrationID string) (*models.Integration, error)
+
+	// UpdateVersionInfoFunc mocks the UpdateVersionInfo method.
+	UpdateVersionInfoFunc func(integrationID string, integrationVersion string, distributorVersion string) (*models.Integration, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -139,6 +145,15 @@ type UniformRepoMock struct {
 			// IntegrationID is the integrationID argument value.
 			IntegrationID string
 		}
+		// UpdateVersionInfo holds details about calls to the UpdateVersionInfo method.
+		UpdateVersionInfo []struct {
+			// IntegrationID is the integrationID argument value.
+			IntegrationID string
+			// IntegrationVersion is the integrationVersion argument value.
+			IntegrationVersion string
+			// DistributorVersion is the distributorVersion argument value.
+			DistributorVersion string
+		}
 	}
 	lockCreateOrUpdateSubscription       sync.RWMutex
 	lockCreateOrUpdateUniformIntegration sync.RWMutex
@@ -150,6 +165,7 @@ type UniformRepoMock struct {
 	lockGetSubscriptions                 sync.RWMutex
 	lockGetUniformIntegrations           sync.RWMutex
 	lockUpdateLastSeen                   sync.RWMutex
+	lockUpdateVersionInfo                sync.RWMutex
 }
 
 // CreateOrUpdateSubscription calls CreateOrUpdateSubscriptionFunc.
@@ -471,5 +487,44 @@ func (mock *UniformRepoMock) UpdateLastSeenCalls() []struct {
 	mock.lockUpdateLastSeen.RLock()
 	calls = mock.calls.UpdateLastSeen
 	mock.lockUpdateLastSeen.RUnlock()
+	return calls
+}
+
+// UpdateVersionInfo calls UpdateVersionInfoFunc.
+func (mock *UniformRepoMock) UpdateVersionInfo(integrationID string, integrationVersion string, distributorVersion string) (*models.Integration, error) {
+	if mock.UpdateVersionInfoFunc == nil {
+		panic("UniformRepoMock.UpdateVersionInfoFunc: method is nil but UniformRepo.UpdateVersionInfo was just called")
+	}
+	callInfo := struct {
+		IntegrationID      string
+		IntegrationVersion string
+		DistributorVersion string
+	}{
+		IntegrationID:      integrationID,
+		IntegrationVersion: integrationVersion,
+		DistributorVersion: distributorVersion,
+	}
+	mock.lockUpdateVersionInfo.Lock()
+	mock.calls.UpdateVersionInfo = append(mock.calls.UpdateVersionInfo, callInfo)
+	mock.lockUpdateVersionInfo.Unlock()
+	return mock.UpdateVersionInfoFunc(integrationID, integrationVersion, distributorVersion)
+}
+
+// UpdateVersionInfoCalls gets all the calls that were made to UpdateVersionInfo.
+// Check the length with:
+//     len(mockedUniformRepo.UpdateVersionInfoCalls())
+func (mock *UniformRepoMock) UpdateVersionInfoCalls() []struct {
+	IntegrationID      string
+	IntegrationVersion string
+	DistributorVersion string
+} {
+	var calls []struct {
+		IntegrationID      string
+		IntegrationVersion string
+		DistributorVersion string
+	}
+	mock.lockUpdateVersionInfo.RLock()
+	calls = mock.calls.UpdateVersionInfo
+	mock.lockUpdateVersionInfo.RUnlock()
 	return calls
 }

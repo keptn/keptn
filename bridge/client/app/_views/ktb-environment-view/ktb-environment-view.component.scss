@@ -1,6 +1,14 @@
 @import '../../../variables';
 @import '~@dynatrace/barista-components/style/main';
 
+.container {
+  padding: 0;
+
+  > div {
+    flex-wrap: wrap;
+  }
+}
+
 :host ::ng-deep {
   .stage-state-icon {
     width: 25px;

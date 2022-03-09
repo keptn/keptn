@@ -38,5 +38,10 @@ echo "Filtering combined test report file..."
 # the following format: {"test": "<test-name>", :"<test-platform-name>": "<test-result>"}
 
 # shellcheck disable=SC2002
-filtered_report=$(cat "$DESTINATION_TEST_REPORT_FILE" | jq -c "select( (.Action == \"pass\" or .Action == \"fail\") and .Test != null ) | {\"test\": .Test, \"$REWRITE_TEST_TARGET\": .Action}")
+if [[ -f "$DESTINATION_TEST_REPORT_FILE" ]]; then
+  filtered_report=$(cat "$DESTINATION_TEST_REPORT_FILE" | jq -c "select( (.Action == \"pass\" or .Action == \"fail\") and .Test != null ) | {\"test\": .Test, \"$REWRITE_TEST_TARGET\": .Action}")
+else
+  filtered_report="{}"
+fi
+
 echo "$filtered_report" > "$DESTINATION_TEST_REPORT_FILE"

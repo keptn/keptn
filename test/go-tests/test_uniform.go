@@ -238,6 +238,7 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 	// update version of distributor
 	updatedUniformIntegration := uniformIntegration
 	updatedUniformIntegration.MetaData.DistributorVersion = "0.8.4"
+	updatedUniformIntegration.Subscriptions = []keptnmodels.EventSubscription{}
 
 	resp, err = ApiPOSTRequest("/controlPlane/v1/uniform/registration", updatedUniformIntegration, 3)
 	require.Nil(t, err)
@@ -250,6 +251,8 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 	err = resp.ToJSON(&integrations)
 
 	require.Equal(t, "0.8.4", integrations[0].MetaData.DistributorVersion)
+	// make sure no subscription has been deleted due to the version update
+	require.Len(t, integrations[0].Subscriptions, 1)
 
 	// delete the integration
 	resp, err = ApiDELETERequest("/controlPlane/v1/uniform/registration/"+registrationResponse.ID, 3)
@@ -329,7 +332,7 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 // registered/unregistered to/from the Keptn control plane
 func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 	// make sure the echo-service uses the same distributor as Keptn core
-	distributorImage, err := GetImageOfDeploymentContainer("shipyard-controller", "distributor")
+	distributorImage, err := GetImageOfDeploymentContainer("lighthouse-service", "distributor")
 	require.Nil(t, err)
 
 	echoServiceManifestContent := strings.ReplaceAll(echoServiceK8sManifest, "${distributor-image}", distributorImage)
@@ -361,7 +364,7 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 // registered/unregistered to/from the Keptn control plane
 func Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods(t *testing.T) {
 	// make sure the echo-service uses the same distributor as Keptn core
-	distributorImage, err := GetImageOfDeploymentContainer("shipyard-controller", "distributor")
+	distributorImage, err := GetImageOfDeploymentContainer("lighthouse-service", "distributor")
 	require.Nil(t, err)
 
 	echoServiceManifestContent := strings.ReplaceAll(echoServiceK8sManifest, "${distributor-image}", distributorImage)
@@ -395,7 +398,7 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods(t *test
 func Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane(t *testing.T) {
 	// install echo integration
 	// make sure the echo-service uses the same distributor as Keptn core
-	distributorImage, err := GetImageOfDeploymentContainer("shipyard-controller", "distributor")
+	distributorImage, err := GetImageOfDeploymentContainer("lighthouse-service", "distributor")
 	require.Nil(t, err)
 
 	apiToken, apiEndpoint, err := GetApiCredentials()

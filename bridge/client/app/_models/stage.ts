@@ -19,6 +19,8 @@ export class Stage extends st {
     for (const newService of newStage.services) {
       const existingService = this.services.find((service) => service.serviceName === newService.serviceName);
       if (existingService) {
+        // update/keep latest 5 evaluations
+        this.updateEvaluationHistory(existingService, newService);
         // update existing service
         Object.assign(existingService, newService);
       } else {
@@ -34,21 +36,33 @@ export class Stage extends st {
       }
       ++i;
     }
-    this.services.sort(this.compareServices());
+    this.services.sort(this.compareServices);
   }
 
-  private compareServices() {
-    return (a: Service, b: Service): number => {
-      if (!a.latestSequence && !b.latestSequence) {
-        return new Date(b.creationDate).getTime() - new Date(a.creationDate).getTime();
-      } else if (!a.latestSequence) {
-        return 1;
-      } else if (!b.latestSequence) {
-        return -1;
-      } else {
-        return new Date(b.latestSequence.time).getTime() - new Date(a.latestSequence.time).getTime();
+  private updateEvaluationHistory(existingService: Service, newService: Service): void {
+    if (
+      existingService.latestSequence &&
+      existingService.latestSequence.shkeptncontext === newService.latestSequence?.shkeptncontext
+    ) {
+      for (const stage of existingService.latestSequence.stages) {
+        const newEvaluationTrace = newService.latestSequence.getEvaluationTrace(stage.name);
+        if (newEvaluationTrace && newEvaluationTrace.id === stage.latestEvaluationTrace?.id) {
+          newEvaluationTrace.data.evaluationHistory = stage.latestEvaluationTrace.data.evaluationHistory;
+        }
       }
-    };
+    }
+  }
+
+  private compareServices(a: Service, b: Service): number {
+    if (!a.latestSequence && !b.latestSequence) {
+      return new Date(b.creationDate).getTime() - new Date(a.creationDate).getTime();
+    } else if (!a.latestSequence) {
+      return 1;
+    } else if (!b.latestSequence) {
+      return -1;
+    } else {
+      return new Date(b.latestSequence.time).getTime() - new Date(a.latestSequence.time).getTime();
+    }
   }
 
   public getServicesWithOpenApprovals(): Service[] {

@@ -11,9 +11,8 @@ import (
 
 func Test_shipyardController_getTaskSequenceInStage(t *testing.T) {
 	type fields struct {
-		projectRepo      db.ProjectMVRepo
-		eventRepo        db.EventRepo
-		taskSequenceRepo db.TaskSequenceRepo
+		projectRepo db.ProjectMVRepo
+		eventRepo   db.EventRepo
 	}
 	type args struct {
 		stageName        string
@@ -30,9 +29,8 @@ func Test_shipyardController_getTaskSequenceInStage(t *testing.T) {
 		{
 			name: "get built-in evaluation task sequence",
 			fields: fields{
-				projectRepo:      nil,
-				eventRepo:        nil,
-				taskSequenceRepo: nil,
+				projectRepo: nil,
+				eventRepo:   nil,
 			},
 			args: args{
 				stageName:        "dev",
@@ -66,9 +64,8 @@ func Test_shipyardController_getTaskSequenceInStage(t *testing.T) {
 		{
 			name: "get user-defined evaluation task sequence",
 			fields: fields{
-				projectRepo:      nil,
-				eventRepo:        nil,
-				taskSequenceRepo: nil,
+				projectRepo: nil,
+				eventRepo:   nil,
 			},
 			args: args{
 				stageName:        "dev",
@@ -121,9 +118,8 @@ func Test_shipyardController_getTaskSequenceInStage(t *testing.T) {
 		{
 			name: "empty sequence should result in an error",
 			fields: fields{
-				projectRepo:      nil,
-				eventRepo:        nil,
-				taskSequenceRepo: nil,
+				projectRepo: nil,
+				eventRepo:   nil,
 			},
 			args: args{
 				stageName:        "dev",

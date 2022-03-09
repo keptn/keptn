@@ -384,6 +384,11 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     }
   }
 
+  public navigateToTriggerSequence(): void {
+    this.dataService.isTriggerSequenceOpen = true;
+    this.router.navigate(['/project/' + this.project?.projectName]);
+  }
+
   ngOnDestroy(): void {
     this._tracesTimer.unsubscribe();
     this.unsubscribe$.next();

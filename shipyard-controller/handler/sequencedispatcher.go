@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"sync"
 	"time"
 
-	"github.com/benbjohnson/clock"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+
+	"github.com/benbjohnson/clock"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -25,37 +25,33 @@ type ISequenceDispatcher interface {
 }
 
 type SequenceDispatcher struct {
-	eventRepo         db.EventRepo
-	eventQueueRepo    db.EventQueueRepo
-	sequenceQueue     db.SequenceQueueRepo
-	sequenceRepo      db.TaskSequenceRepo
-	theClock          clock.Clock
-	syncInterval      time.Duration
-	startSequenceFunc func(event models.Event) error
-	mutex             sync.Mutex
-	ticker            *clock.Ticker
-	mode              common.SDMode
+	eventRepo             db.EventRepo
+	sequenceQueue         db.SequenceQueueRepo
+	sequenceExecutionRepo db.SequenceExecutionRepo
+	theClock              clock.Clock
+	syncInterval          time.Duration
+	startSequenceFunc     func(event models.Event) error
+	shipyardController    shipyardController
+	ticker                *clock.Ticker
+	mode                  common.SDMode
 }
 
 // NewSequenceDispatcher creates a new SequenceDispatcher
 func NewSequenceDispatcher(
 	eventRepo db.EventRepo,
-	eventQueueRepo db.EventQueueRepo,
 	sequenceQueueRepo db.SequenceQueueRepo,
-	sequenceRepo db.TaskSequenceRepo,
+	sequenceExecutionRepo db.SequenceExecutionRepo,
 	syncInterval time.Duration,
 	theClock clock.Clock,
 	mode common.SDMode,
 ) ISequenceDispatcher {
 	return &SequenceDispatcher{
-		eventRepo:      eventRepo,
-		eventQueueRepo: eventQueueRepo,
-		sequenceQueue:  sequenceQueueRepo,
-		sequenceRepo:   sequenceRepo,
-		theClock:       theClock,
-		syncInterval:   syncInterval,
-		mutex:          sync.Mutex{},
-		mode:           mode,
+		eventRepo:             eventRepo,
+		sequenceQueue:         sequenceQueueRepo,
+		sequenceExecutionRepo: sequenceExecutionRepo,
+		theClock:              theClock,
+		syncInterval:          syncInterval,
+		mode:                  mode,
 	}
 }
 
@@ -65,10 +61,10 @@ func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
 		//if there is only one shipyard we can both read and write,
 		//so we try to dispatch the sequence immediately
 		if err := sd.dispatchSequence(queueItem); err != nil {
-			if err == ErrSequenceBlocked {
+			if errors.Is(err, ErrSequenceBlocked) {
 				//if the sequence is currently blocked, insert it into the queue
 				return sd.add(queueItem)
-			} else if err == ErrSequenceBlockedWaiting {
+			} else if errors.Is(err, ErrSequenceBlockedWaiting) {
 				//if the sequence is currently blocked and should wait, insert it into the queue
 				if err2 := sd.add(queueItem); err2 != nil {
 					return err2
@@ -91,12 +87,13 @@ func (sd *SequenceDispatcher) add(queueItem models.QueueItem) error {
 }
 
 func (sd *SequenceDispatcher) Remove(eventScope models.EventScope) error {
-	sd.mutex.Lock()
-	defer sd.mutex.Unlock()
-
 	return sd.sequenceQueue.DeleteQueuedSequences(models.QueueItem{
 		Scope: eventScope,
 	})
+}
+
+func (sd *SequenceDispatcher) SetStartSequenceCallback(startSequenceFunc func(event models.Event) error) {
+	sd.startSequenceFunc = startSequenceFunc
 }
 
 func (sd *SequenceDispatcher) Run(ctx context.Context, mode common.SDMode, startSequenceFunc func(event models.Event) error) {
@@ -130,7 +127,7 @@ func (sd *SequenceDispatcher) Stop() {
 func (sd *SequenceDispatcher) dispatchSequences() {
 	queuedSequences, err := sd.sequenceQueue.GetQueuedSequences()
 	if err != nil {
-		if err == db.ErrNoEventFound {
+		if errors.Is(err, db.ErrNoEventFound) {
 			// if no sequences are in the queue, we can return here
 			return
 		}
@@ -149,31 +146,44 @@ func (sd *SequenceDispatcher) dispatchSequences() {
 	}
 }
 
-func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) error {
-	sd.mutex.Lock()
-	defer sd.mutex.Unlock()
+func (sd *SequenceDispatcher) dispatchSequence(queueItem models.QueueItem) error {
 	// first, check if the sequence is currently paused
-	if sd.eventQueueRepo.IsSequenceOfEventPaused(queuedSequence.Scope) {
-		log.Infof("Sequence %s is currently paused. Will not start it yet.", queuedSequence.Scope.KeptnContext)
-		return ErrSequenceBlocked
-	}
-	// fetch all sequences that are currently running in the stage of the project where the sequence should run
-	taskExecutions, err := sd.sequenceRepo.GetTaskExecutions(queuedSequence.Scope.Project, models.TaskExecution{
-		Stage:   queuedSequence.Scope.Stage,
-		Service: queuedSequence.Scope.Service,
-	})
+	sequenceExecution, err := sd.sequenceExecutionRepo.GetByTriggeredID(queueItem.Scope.Project, queueItem.EventID)
 	if err != nil {
 		return err
 	}
 
-	// if there is a sequence running in the stage, we cannot trigger this sequence yet
-	if sd.areActiveSequencesBlockingQueuedSequences(taskExecutions) {
-		log.Infof("Sequence %s cannot be started yet because sequences are still running in stage %s", queuedSequence.Scope.KeptnContext, queuedSequence.Scope.Stage)
+	if sequenceExecution == nil {
+		return ErrSequenceNotFound
+	}
+
+	if sequenceExecution.IsPaused() || sd.sequenceExecutionRepo.IsContextPaused(queueItem.Scope) {
+		log.Infof("Sequence %s is currently paused. Will not start it yet.", queueItem.Scope.KeptnContext)
+		return ErrSequenceBlocked
+	}
+
+	// get other sequence executions that might block the current sequence
+	startedSequenceExecutions, err := sd.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
+		Scope: models.EventScope{
+			EventData: keptnv2.EventData{
+				Project: queueItem.Scope.Project,
+				Stage:   queueItem.Scope.Stage,
+			},
+		},
+		Status: []string{models.SequenceStartedState},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if len(startedSequenceExecutions) > 0 {
+		log.Infof("Sequence %s cannot be started yet because sequences are still running in stage %s", queueItem.Scope.KeptnContext, queueItem.Scope.Stage)
 		return ErrSequenceBlockedWaiting
 	}
 
-	events, err := sd.eventRepo.GetEvents(queuedSequence.Scope.Project, common.EventFilter{
-		ID: &queuedSequence.EventID,
+	events, err := sd.eventRepo.GetEvents(queueItem.Scope.Project, common.EventFilter{
+		ID: &queueItem.EventID,
 	}, common.TriggeredEvent)
 
 	if err != nil {
@@ -181,63 +191,14 @@ func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) 
 	}
 
 	if len(events) == 0 {
-		return fmt.Errorf("sequence.triggered event with ID %s cannot be found anymore", queuedSequence.EventID)
+		return fmt.Errorf("sequence.triggered event with ID %s cannot be found anymore", queueItem.EventID)
 	}
 
 	sequenceTriggeredEvent := events[0]
 
 	if err := sd.startSequenceFunc(sequenceTriggeredEvent); err != nil {
-		return fmt.Errorf("could not start task sequence %s: %s", queuedSequence.EventID, err.Error())
+		return fmt.Errorf("could not start task sequence %s: %s", queueItem.EventID, err.Error())
 	}
 
-	return sd.sequenceQueue.DeleteQueuedSequences(queuedSequence)
-}
-
-func (sd *SequenceDispatcher) areActiveSequencesBlockingQueuedSequences(sequenceTasks []models.TaskExecution) bool {
-	if len(sequenceTasks) == 0 {
-		// if there is no sequence currently running, we do not need to block
-		return false
-	}
-
-	tasksGroupedByContext := groupSequenceMappingsByContext(sequenceTasks)
-
-	for _, tasksOfContext := range tasksGroupedByContext {
-		lastTaskOfSequence := getLastTaskOfSequence(tasksOfContext)
-		// first, check if the other sequence is currently paused
-		if sd.eventQueueRepo.IsSequenceOfEventPaused(
-			models.EventScope{
-				KeptnContext: lastTaskOfSequence.KeptnContext,
-				EventData:    keptnv2.EventData{Stage: lastTaskOfSequence.Stage},
-			}) {
-			// if it is indeed paused, no need to consider it
-			continue
-		}
-		if lastTaskOfSequence.Task.Name != keptnv2.ApprovalTaskName {
-			// if there is a sequence running that is not waiting for an approval, we need to block
-			return true
-		}
-	}
-	// do not block if all active sequences are currently handling an approval task
-	return false
-}
-
-func groupSequenceMappingsByContext(sequenceTasks []models.TaskExecution) map[string][]models.TaskExecution {
-	result := map[string][]models.TaskExecution{}
-	for index := range sequenceTasks {
-		result[sequenceTasks[index].KeptnContext] = append(result[sequenceTasks[index].KeptnContext], sequenceTasks[index])
-	}
-	return result
-}
-
-func getLastTaskOfSequence(sequenceTasks []models.TaskExecution) models.TaskExecution {
-	lastTask := models.TaskExecution{
-		Task: models.Task{TaskIndex: -1},
-	}
-	for index := range sequenceTasks {
-		if sequenceTasks[index].Task.TaskIndex > lastTask.Task.TaskIndex {
-			lastTask = sequenceTasks[index]
-		}
-	}
-
-	return lastTask
+	return sd.sequenceQueue.DeleteQueuedSequences(queueItem)
 }
