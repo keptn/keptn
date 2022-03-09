@@ -32,6 +32,15 @@ export class AppUtils {
 
     return n;
   }
+
+  public static isValidJson(value: string): boolean {
+    try {
+      JSON.parse(value);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
 }
 
 export const POLLING_INTERVAL_MILLIS = new InjectionToken<number>('Polling interval in millis');

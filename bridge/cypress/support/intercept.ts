@@ -1,27 +1,40 @@
 export function interceptEnvironmentScreen(): void {
   const project = 'sockshop';
-  const stage = 'dev';
-  let service = 'carts';
   interceptProjectBoard();
-  cy.intercept(
-    'GET',
-    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project}%20AND%20data.service:${service}%20AND%20data.stage:${stage}%20AND%20source:lighthouse-service&excludeInvalidated=true&limit=6`,
-    {
-      body: {
-        events: [],
-      },
-    }
-  );
-  service = 'carts-db';
-  cy.intercept(
-    'GET',
-    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project}%20AND%20data.service:${service}%20AND%20data.stage:${stage}%20AND%20source:lighthouse-service&excludeInvalidated=true&limit=5`,
-    {
-      body: {
-        events: [],
-      },
-    }
-  );
+  cy.intercept('/api/project/sockshop/customSequences', { body: ['delivery-direct', 'rollback', 'remediation'] });
+  cy.intercept('POST', '/api/v1/event', { body: { keptnContext: '6c98fbb0-4c40-4bff-ba9f-b20556a57c8a' } });
+  cy.intercept('POST', '/api/controlPlane/v1/project/sockshop/stage/dev/service/carts/evaluation', {
+    body: { keptnContext: '6c98fbb0-4c40-4bff-ba9f-b20556a57c8a' },
+  });
+
+  cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=1&keptnContext=6c98fbb0-4c40-4bff-ba9f-b20556a57c8a', {
+    fixture: 'eventByContext.mock',
+  });
+
+  for (const url of getEvaluationUrls(project, 'carts')) {
+    cy.intercept('GET', url, { body: { events: [] } });
+  }
+
+  for (const url of getEvaluationUrls(project, 'carts-db')) {
+    cy.intercept('GET', url, { body: { events: [] } });
+  }
+}
+
+function getEvaluationUrls(project: string, service: string): string[] {
+  return [
+    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project}%20AND%20data.service:${service}%20AND%20data.stage:dev%20AND%20source:lighthouse-service&excludeInvalidated=true&limit=5`,
+    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project} AND data.service:${service} AND data.stage:dev AND source:lighthouse-service&excludeInvalidated=true&limit=5`,
+    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project} AND data.service:${service} AND data.stage:dev AND source:lighthouse-service&excludeInvalidated=true&limit=6`,
+    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project}%20AND%20data.service:${service}%20AND%20data.stage:dev%20AND%20source:lighthouse-service&excludeInvalidated=true&limit=6`,
+    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project}%20AND%20data.service:${service}%20AND%20data.stage:staging%20AND%20source:lighthouse-service&excludeInvalidated=true&limit=5`,
+    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project} AND data.service:${service} AND data.stage:staging AND source:lighthouse-service&excludeInvalidated=true&limit=5`,
+    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project}%20AND%20data.service:${service}%20AND%20data.stage:staging%20AND%20source:lighthouse-service&excludeInvalidated=true&limit=6`,
+    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project} AND data.service:${service} AND data.stage:staging AND source:lighthouse-service&excludeInvalidated=true&limit=6`,
+    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project} AND data.service:${service} AND data.stage:production AND source:lighthouse-service&excludeInvalidated=true&limit=5`,
+    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project}%20AND%20data.service:${service}%20AND%20data.stage:production%20AND%20source:lighthouse-service&excludeInvalidated=true&limit=5`,
+    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project} AND data.service:${service} AND data.stage:production AND source:lighthouse-service&excludeInvalidated=true&limit=6`,
+    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project}%20AND%20data.service:${service}%20AND%20data.stage:production%20AND%20source:lighthouse-service&excludeInvalidated=true&limit=6`,
+  ];
 }
 
 export function interceptMain(): void {

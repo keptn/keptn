@@ -1,0 +1,62 @@
+<dt-label *ngIf="label" class="dt-form-field-label" [ngClass]="{ required: required }">Timeframe</dt-label>
+<div
+  class="timeframe-input"
+  [ngClass]="{ focused: isFocused }"
+  (click)="focusClick($event, hourInput)"
+  (focus)="hourInput.focus()"
+>
+  <form uitestid="keptn-time-input">
+    <input
+      #hourInput
+      dtInput
+      placeholder="hh"
+      type="number"
+      (focusin)="isFocused = true"
+      (focusout)="isFocused = false"
+      [formControl]="hoursControl"
+      (input)="validateInput('hours', min?.hours, max?.hours)"
+      uitestid="keptn-time-input-hours"
+    />:<input
+      dtInput
+      placeholder="mm"
+      type="number"
+      (focusin)="isFocused = true"
+      (focusout)="isFocused = false"
+      [formControl]="minutesControl"
+      (input)="validateInput('minutes', min?.minutes, max?.minutes)"
+      uitestid="keptn-time-input-minutes"
+    /><ng-container *ngIf="secondsEnabled"
+      >:<input
+        dtInput
+        placeholder="ss"
+        type="number"
+        (focusin)="isFocused = true"
+        (focusout)="isFocused = false"
+        [formControl]="secondsControl"
+        (input)="validateInput('seconds', min?.seconds, max?.seconds)"
+        uitestid="keptn-time-input-seconds" /></ng-container
+    ><ng-container *ngIf="millisEnabled"
+      >:<input
+        dtInput
+        placeholder="ms"
+        type="number"
+        (focusin)="isFocused = true"
+        (focusout)="isFocused = false"
+        [formControl]="millisControl"
+        (input)="validateInput('millis', min?.millis, max?.millis)"
+        uitestid="keptn-time-input-millis" /></ng-container
+    ><ng-container *ngIf="microsEnabled"
+      >:<input
+        dtInput
+        placeholder="µs"
+        type="number"
+        (focusin)="isFocused = true"
+        (focusout)="isFocused = false"
+        [formControl]="microsControl"
+        (input)="validateInput('micros', min?.micros, max?.micros)"
+        uitestid="keptn-time-input-micros"
+    /></ng-container>
+  </form>
+</div>
+<dt-hint *ngIf="hint && !error">{{ hint }}</dt-hint>
+<dt-error uitestid="keptn-trigger-evaluation-timeframe-error" *ngIf="error">{{ error }}</dt-error>
