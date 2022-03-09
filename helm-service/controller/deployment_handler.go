@@ -3,6 +3,8 @@ package controller
 import (
 	"errors"
 	"fmt"
+	"math"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -11,7 +13,6 @@ import (
 	"github.com/keptn/keptn/helm-service/pkg/mesh"
 	"helm.sh/helm/v3/pkg/chart"
 	corev1 "k8s.io/api/core/v1"
-	"math"
 )
 
 // DeploymentHandler is a handler for doing the deployment and
@@ -63,8 +64,18 @@ func (h *DeploymentHandler) HandleEvent(ce cloudevents.Event) {
 		valuesUpdater := configurationchanger.NewValuesManipulator(e.ConfigurationChange.Values)
 
 		userChart, _, err = h.getUserChart(e.EventData, commitID)
+		if err != nil {
+			err = fmt.Errorf("failed to load chart: %v", err)
+			h.handleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
+			return
+		}
 		userChart, commitID, err = configurationchanger.NewConfigurationChanger(
 			h.getConfigServiceURL()).UpdateLoadedChart(userChart, e.EventData, false, valuesUpdater)
+		if err != nil {
+			err = fmt.Errorf("failed to update loaded chart: %v", err)
+			h.handleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
+			return
+		}
 
 		if err != nil {
 			err = fmt.Errorf("failed to update values: %v", err)
