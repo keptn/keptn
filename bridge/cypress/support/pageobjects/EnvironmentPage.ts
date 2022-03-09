@@ -183,6 +183,15 @@ class EnvironmentPage {
     return this;
   }
 
+  public clickCreateService(stage: string): this {
+    cy.get('ktb-selectable-tile h2')
+      .contains(stage)
+      .parentsUntil('ktb-selectable-tile')
+      .find('ktb-no-service-info a')
+      .click();
+    return this;
+  }
+
   public selectStage(stage: string): this {
     cy.get('ktb-selectable-tile h2').contains(stage).click();
     return this;

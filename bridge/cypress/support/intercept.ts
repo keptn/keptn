@@ -1,3 +1,19 @@
+export function interceptEmptyEnvironmentScreen(): void {
+  interceptProjectBoard();
+  cy.intercept('/api/project/dynatrace?approval=true&remediation=true', { fixture: 'project.empty.mock' });
+  cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', {
+    fixture: 'get.projects.empty.mock',
+  });
+  cy.intercept('GET', '/api/project/dynatrace/services', {
+    statusCode: 200,
+    body: [],
+  });
+  cy.intercept('POST', '/api/controlPlane/v1/project/dynatrace/service', {
+    statusCode: 200,
+    body: {},
+  });
+}
+
 export function interceptEnvironmentScreen(): void {
   const project = 'sockshop';
   interceptProjectBoard();
