@@ -209,17 +209,21 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	t.Logf("Executing backup of git-credentials")
 	secret, err := ExecuteCommandf("kubectl get secret -n %s git-credentials-%s -oyaml", keptnNamespace, projectName)
 	require.Nil(t, err)
-	err = os.WriteFile(secretFileName, []byte(secret), 0777)
+	err = os.WriteFile(secretFileName, []byte(secret), 0644)
 	require.Nil(t, err)
 
-	//deleting testing project
+	if serviceUnderTestName == "resource-service" {
+		t.Logf("Deleting resource-service pod")
+		_, err = ExecuteCommandf("kubectl delete pod %s -n %s",serviceUnderTestPod, keptnNamespace)
+		require.Nil(t, err)
+	} else {
+		t.Logf("Deleting testing project")
+		_, err = ExecuteCommandf("keptn delete project %s", projectName)
+		require.Nil(t, err)
+	}
 
-	t.Logf("Deleting testing project")
-	_, err = ExecuteCommandf("keptn delete project %s", projectName)
-	require.Nil(t, err)
-
-	t.Logf("Sleeping for 15s...")
-	time.Sleep(15 * time.Second)
+	t.Logf("Sleeping for 60s...")
+	time.Sleep(60 * time.Second)
 	t.Logf("Continue to work...")
 
 	//restore git-credentials
@@ -231,6 +235,9 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	//restore Configuration/Resource Service data
 
 	t.Logf("Restoring %s data", serviceUnderTestName)
+	serviceUnderTestPod, err = ExecuteCommandf("kubectl get pods -n %s -lapp.kubernetes.io/name=%s -ojsonpath='{.items[0].metadata.name}'", keptnNamespace, serviceUnderTestName)
+	require.Nil(t, err)
+	serviceUnderTestPod = removeQuotes(serviceUnderTestPod)
 	_, err = ExecuteCommandf("kubectl cp ./%s/config/ %s/%s:/data -c %s", serviceBackupFolder, keptnNamespace, serviceUnderTestPod, serviceUnderTestName)
 	require.Nil(t, err)
 
