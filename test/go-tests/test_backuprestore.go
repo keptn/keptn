@@ -71,15 +71,17 @@ spec:
 
 func Test_BackupRestoreConfigService(t *testing.T) {
 	serviceName := "configuration-service"
-	BackupRestoreTestGeneric(t, serviceName)
+	backupGitCredentials := false
+	BackupRestoreTestGeneric(t, serviceName, backupGitCredentials)
 }
 
 func Test_BackupRestoreResourceService(t *testing.T) {
 	serviceName := "resource-service"
-	BackupRestoreTestGeneric(t, serviceName)
+	backupGitCredentials := true
+	BackupRestoreTestGeneric(t, serviceName, backupGitCredentials)
 }
 
-func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
+func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string, backupGitCredentials bool) {
 	repoLocalDir := "../assets/podtato-head"
 	projectName := "backup-restore"
 	serviceName := "helloservice"
@@ -87,6 +89,10 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	serviceJmeterDir := path.Join(repoLocalDir, "jmeter")
 	keptnNamespace := GetKeptnNameSpaceFromEnv()
 	serviceHealthCheckEndpoint := "/metrics"
+	secretFileName := "git-credentials-secret.txt"
+	serviceBackupFolder := "svc-backup"
+	globalBackupFolder := "keptn-backup"
+	mongoDBBackupFolder := "mongodb-backup"
 
 	t.Logf("Creating a new project %s with a Gitea Upstream", projectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(testingShipyard)
@@ -148,11 +154,11 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	t.Logf("Creating backup directories for %s", serviceUnderTestName)
 	err = os.Chdir(repoLocalDir)
 	require.Nil(t, err)
-	err = os.MkdirAll("keptn-backup", os.ModePerm)
+	err = os.MkdirAll(globalBackupFolder, os.ModePerm)
 	require.Nil(t, err)
-	err = os.Chdir("keptn-backup")
+	err = os.Chdir(globalBackupFolder)
 	require.Nil(t, err)
-	err = os.MkdirAll("svc-backup", os.ModePerm)
+	err = os.MkdirAll(serviceBackupFolder, os.ModePerm)
 	require.Nil(t, err)
 
 	defer resetTestPath(t, "../../../go-tests")
@@ -161,15 +167,15 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	serviceUnderTestPod, err := ExecuteCommandf("kubectl get pods -n %s -lapp.kubernetes.io/name=%s -ojsonpath='{.items[0].metadata.name}'", keptnNamespace, serviceUnderTestName)
 	require.Nil(t, err)
 	serviceUnderTestPod = removeQuotes(serviceUnderTestPod)
-	_, err = ExecuteCommandf("kubectl cp %s/%s:/data ./svc-backup/ -c %s", keptnNamespace, serviceUnderTestPod, serviceUnderTestName)
+	_, err = ExecuteCommandf("kubectl cp %s/%s:/data ./%s/ -c %s", keptnNamespace, serviceUnderTestPod, serviceBackupFolder, serviceUnderTestName)
 	require.Nil(t, err)
 
 	//backup MongoDB Data
 
 	t.Logf("Creating backup directories for MongoDb data")
-	err = os.MkdirAll("mongodb-backup", os.ModePerm)
+	err = os.MkdirAll(mongoDBBackupFolder, os.ModePerm)
 	require.Nil(t, err)
-	_, err = ExecuteCommandf("chmod o+w mongodb-backup")
+	_, err = ExecuteCommandf("chmod o+w %s", mongoDBBackupFolder)
 	require.Nil(t, err)
 
 	t.Logf("Execute MongoDb database dump")
@@ -190,8 +196,16 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	mongoDbPod, err := ExecuteCommandf("kubectl get pods -n %s -lapp.kubernetes.io/name=mongo -ojsonpath='{.items[0].metadata.name}'", keptnNamespace)
 	require.Nil(t, err)
 	mongoDbPod = removeQuotes(mongoDbPod)
-	_, err = ExecuteCommandf("kubectl cp %s/%s:/tmp/dump ./mongodb-backup/ -c mongodb", keptnNamespace, mongoDbPod)
+	_, err = ExecuteCommandf("kubectl cp %s/%s:/tmp/dump ./%s/ -c mongodb", keptnNamespace, mongoDbPod, mongoDBBackupFolder)
 	require.Nil(t, err)
+
+	//backup git-credentials
+
+	if backupGitCredentials {
+		t.Logf("Executing backup of git-credentials")
+		_, err = ExecuteCommandf("kubectl get secret git-credentials-%s -n %s -ojsonpath={.data.git-credentials} | base64 --decode > %s", projectName, keptnNamespace, secretFileName)
+		require.Nil(t, err)
+	}
 
 	//deleting testing project
 
@@ -203,16 +217,24 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	time.Sleep(15 * time.Second)
 	t.Logf("Continue to work...")
 
+	//restore git-credentials
+
+	if backupGitCredentials {
+		t.Logf("Executing restore of git-credentials")
+		_, err = ExecuteCommandf("kubectl create secret generic git-credentials-%s --from-file=git-credentials=./%s -n %s", projectName, secretFileName, keptnNamespace)
+		require.Nil(t, err)
+	}
+
 	//restore Configuration/Resource Service data
 
 	t.Logf("Restoring %s data", serviceUnderTestName)
-	_, err = ExecuteCommandf("kubectl cp ./svc-backup/config/ %s/%s:/data -c %s", keptnNamespace, serviceUnderTestPod, serviceUnderTestName)
+	_, err = ExecuteCommandf("kubectl cp ./%s/config/ %s/%s:/data -c %s", serviceBackupFolder, keptnNamespace, serviceUnderTestPod, serviceUnderTestName)
 	require.Nil(t, err)
 
 	//restore MongoDB data
 
 	t.Logf("Restoring MongoDB data")
-	_, err = ExecuteCommandf("kubectl cp ./mongodb-backup/keptn/ %s/%s:/tmp/dump -c mongodb", keptnNamespace, mongoDbPod)
+	_, err = ExecuteCommandf("kubectl cp ./%s/keptn/ %s/%s:/tmp/dump -c mongodb", mongoDBBackupFolder, keptnNamespace, mongoDbPod)
 	require.Nil(t, err)
 
 	t.Logf("Import MongoDb database dump")
