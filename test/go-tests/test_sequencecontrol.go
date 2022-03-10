@@ -336,8 +336,12 @@ func Test_SequenceControl_AbortPausedSequenceTaskPartiallyFinished(t *testing.T)
 	_, err = keptn.SendTaskFinishedEvent(&keptnv2.EventData{Result: keptnv2.ResultFailed, Status: keptnv2.StatusSucceeded}, source1)
 	require.Nil(t, err)
 
-	// wait a couple of seconds - it's very unlikely that a sequence is manually paused right at the same time as an event is sent back
-	<-time.After(5 * time.Second)
+	// now trigger another sequence and make sure it is started eventually
+	// trigger a second sequence which should be put in the queue
+	secondContextID, _ := TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
+
+	// verify that the second sequence gets the triggered status
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&secondContextID}, 2*time.Minute, []string{scmodels.SequenceTriggeredState})
 
 	// pause the sequence
 	t.Log("pausing sequence")
@@ -349,10 +353,6 @@ func Test_SequenceControl_AbortPausedSequenceTaskPartiallyFinished(t *testing.T)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 
 	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{scmodels.SequencePaused})
-
-	// now trigger another sequence and make sure it is started eventually
-	// trigger a second sequence which should be put in the queue
-	secondContextID, _ := TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
 
 	// now abort the first sequence
 	t.Log("aborting first sequence")
