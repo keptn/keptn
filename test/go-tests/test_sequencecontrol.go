@@ -665,7 +665,12 @@ func Test_SequenceControl_PauseAndResume_2(t *testing.T) {
 
 	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{scmodels.SequenceStartedState})
 
-	task2TriggeredEvent, err := GetLatestEventOfType(keptnContextID, projectName, "prod", keptnv2.GetTriggeredEventType("task2"))
-	require.Nil(t, err)
-	require.NotNil(t, task2TriggeredEvent)
+	require.Eventually(t, func() bool {
+		task2TriggeredEvent, err := GetLatestEventOfType(keptnContextID, projectName, "prod", keptnv2.GetTriggeredEventType("task2"))
+		if err != nil || task2TriggeredEvent == nil {
+			return false
+		}
+		return true
+	}, 30*time.Second, 5*time.Second)
+
 }
