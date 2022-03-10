@@ -60,6 +60,7 @@ func Test_NewEventScope(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := NewEventScope(tt.args.event)
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getEventScope() error = %v, wantErr %v", err, tt.wantErr)
 				return

@@ -6,15 +6,17 @@ import {
   EventEmitter,
   HostListener,
   Input,
+  OnDestroy,
   OnInit,
   Output,
 } from '@angular/core';
 import { DtTreeControl, DtTreeDataSource, DtTreeFlattener } from '@dynatrace/barista-components/core';
 import { FlatTreeControl } from '@angular/cdk/tree';
-import { Overlay, OverlayPositionBuilder, OverlayRef } from '@angular/cdk/overlay';
+import { OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
-import { NavigationStart, Router } from '@angular/router';
-import { filter } from 'rxjs/operators';
+import { Router } from '@angular/router';
+import { OverlayService } from '../../_directives/overlay-service/overlay.service';
+import { Subject } from 'rxjs';
 
 export interface SelectTreeNode {
   name: string;
@@ -39,9 +41,10 @@ export type TreeListSelectOptions = {
 @Directive({
   selector: '[ktbTreeListSelect]',
 })
-export class KtbTreeListSelectDirective implements OnInit {
+export class KtbTreeListSelectDirective implements OnInit, OnDestroy {
   private overlayRef?: OverlayRef;
   private contentRef: ComponentRef<KtbTreeListSelectComponent> | undefined;
+  private unsubscribe$: Subject<void> = new Subject();
 
   @Input() data: SelectTreeNode[] = [];
   @Input() options: TreeListSelectOptions = { headerText: '', emptyText: '', hintText: '' };
@@ -49,12 +52,14 @@ export class KtbTreeListSelectDirective implements OnInit {
 
   @HostListener('click')
   show(): void {
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    const tooltipPortal: ComponentPortal<KtbTreeListSelectComponent> = new ComponentPortal(KtbTreeListSelectComponent);
+    const treeListSelectPortal: ComponentPortal<KtbTreeListSelectComponent> = new ComponentPortal(
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      KtbTreeListSelectComponent
+    );
     // Disable origin to prevent 'Host has already a portal attached' error
     this.elementRef.nativeElement.disabled = true;
 
-    this.contentRef = this.overlayRef?.attach(tooltipPortal);
+    this.contentRef = this.overlayRef?.attach(treeListSelectPortal);
     if (this.contentRef) {
       this.contentRef.instance.data = this.data;
       this.contentRef.instance.options = this.options;
@@ -69,45 +74,21 @@ export class KtbTreeListSelectDirective implements OnInit {
     }
   }
 
-  constructor(
-    private overlay: Overlay,
-    private overlayPositionBuilder: OverlayPositionBuilder,
-    private elementRef: ElementRef,
-    private router: Router
-  ) {
-    // Close when navigation happens - to keep the overlay on the UI
-    this.router.events.pipe(filter((event) => event instanceof NavigationStart)).subscribe(() => {
-      this.close();
-    });
+  constructor(private elementRef: ElementRef, private router: Router, private overlayService: OverlayService) {
+    overlayService.registerNavigationEvent(this.unsubscribe$, this.close.bind(this));
   }
 
   public ngOnInit(): void {
-    const positionStrategy = this.overlayPositionBuilder.flexibleConnectedTo(this.elementRef).withPositions([
-      {
-        originX: 'start',
-        originY: 'bottom',
-        overlayX: 'start',
-        overlayY: 'top',
-        offsetY: 10,
-        offsetX: -20,
-      },
-    ]);
+    this.overlayRef = this.overlayService.initOverlay('400px', '200px', true, this.elementRef, this.close.bind(this));
+  }
 
-    this.overlayRef = this.overlay.create({
-      positionStrategy,
-      width: '400px',
-      height: '200px',
-      hasBackdrop: true,
-      backdropClass: 'cdk-overlay-transparent-backdrop',
-    });
-    this.overlayRef.backdropClick().subscribe(() => {
-      this.close();
-    });
+  public ngOnDestroy(): void {
+    this.unsubscribe$.next();
+    this.unsubscribe$.complete();
   }
 
   public close(): void {
-    this.elementRef.nativeElement.disabled = false;
-    this.overlayRef?.detach();
+    this.overlayService.closeOverlay(this.overlayRef, this.elementRef);
   }
 }
 

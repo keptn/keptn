@@ -29,6 +29,8 @@ import { ServiceState } from '../_models/service-state';
 import { ServiceRemediationInformation } from '../_models/service-remediation-information';
 import { EndSessionData } from '../../../shared/interfaces/end-session-data';
 import { ISequencesMetadata } from '../../../shared/interfaces/sequencesMetadata';
+import { TriggerEvaluationData, TriggerResponse, TriggerSequenceData } from '../_models/trigger-sequence';
+import { EventData } from '../_components/ktb-evaluation-info/ktb-evaluation-info.component';
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
 
 @Injectable({
@@ -52,6 +54,8 @@ export class DataService {
 
   protected _isQualityGatesOnly = new BehaviorSubject<boolean>(false);
   protected _evaluationResults = new Subject<EvaluationHistory>();
+
+  public isTriggerSequenceOpen = false;
 
   constructor(private apiService: ApiService) {}
 
@@ -413,19 +417,19 @@ export class DataService {
 
   protected addNewSequences(
     project: Project,
-    newSequences: Sequence[],
+    sequences: Sequence[],
     areOldSequences: boolean,
     oldSequence?: Sequence
   ): void {
+    let newSequences: Sequence[] = [];
     if (areOldSequences) {
-      project.sequences = [
-        ...(project.sequences || []),
-        ...(newSequences || []),
-        ...(oldSequence ? [oldSequence] : []),
-      ];
+      newSequences = [...(project.sequences || []), ...(sequences || []), ...(oldSequence ? [oldSequence] : [])];
     } else {
-      project.sequences = [...(newSequences || []), ...(project.sequences || [])];
+      newSequences = [...(sequences || []), ...(project.sequences || [])];
     }
+    project.sequences = newSequences.filter(
+      (seq, index) => newSequences.findIndex((s) => s.shkeptncontext === seq.shkeptncontext) === index
+    );
   }
 
   private updateSequencesUpdated(response: HttpResponse<SequenceResult>, projectName: string): void {
@@ -470,31 +474,23 @@ export class DataService {
   }
 
   public getSequenceWithTraces(projectName: string, keptnContext: string): Observable<Sequence | undefined> {
-    return this.apiService.getSequences(projectName, 1, undefined, undefined, undefined, undefined, keptnContext).pipe(
-      map((response) => response.body?.states || []),
-      map((sequences) => sequences.map((sequence) => Sequence.fromJSON(sequence)).shift()),
+    return this.getSequenceByContext(projectName, keptnContext).pipe(
       switchMap((sequence) => (sequence ? this.sequenceMapper([sequence]) : [])),
       map((sequences) => sequences.shift())
     );
   }
 
   public updateSequence(projectName: string, keptnContext: string): void {
-    this.apiService
-      .getSequences(projectName, 1, undefined, undefined, undefined, undefined, keptnContext)
-      .pipe(
-        map((response) => response.body?.states || []),
-        map((sequences) => sequences.map((sequence) => Sequence.fromJSON(sequence)).shift())
-      )
-      .subscribe((sequence) => {
-        const project = this._projects.getValue()?.find((p) => p.projectName === projectName);
-        const sequences = project?.sequences;
-        const oldSequence = sequences?.find((seq) => seq.shkeptncontext === keptnContext);
-        if (oldSequence && sequence) {
-          const { traces, ...copySequence } = sequence; // don't overwrite loaded traces
-          Object.assign(oldSequence, copySequence);
-        }
-        this._sequencesUpdated.next();
-      });
+    this.getSequenceByContext(projectName, keptnContext).subscribe((sequence) => {
+      const project = this._projects.getValue()?.find((p) => p.projectName === projectName);
+      const sequences = project?.sequences;
+      const oldSequence = sequences?.find((seq) => seq.shkeptncontext === keptnContext);
+      if (oldSequence && sequence) {
+        const { traces, ...copySequence } = sequence; // don't overwrite loaded traces
+        Object.assign(oldSequence, copySequence);
+      }
+      this._sequencesUpdated.next();
+    });
   }
 
   public loadUntilRoot(project: Project, shkeptncontext: string): void {
@@ -551,27 +547,55 @@ export class DataService {
     return this.apiService.getEvent(type, project, stage, service).pipe(map((result) => result.events[0]));
   }
 
-  public loadEvaluationResults(event: Trace): void {
+  public getSequenceByContext(projectName: string, shkeptncontext: string): Observable<Sequence | undefined> {
+    return this.apiService
+      .getSequences(projectName, 1, undefined, undefined, undefined, undefined, shkeptncontext)
+      .pipe(
+        map((response) => response.body?.states || []),
+        map((sequences) => sequences.map((sequence) => Sequence.fromJSON(sequence)).shift())
+      );
+  }
+
+  public getEvaluationResults(event: Trace | EventData, limit?: number, useFromTime = true): Observable<Trace[]> {
     let fromTime: Date | undefined;
-    const time = event.data.evaluationHistory?.[event.data.evaluationHistory.length - 1]?.time;
-    if (time) {
-      fromTime = new Date(time);
+    let eventData: EventData | undefined;
+    if (event instanceof Trace) {
+      const time = event.data.evaluationHistory?.[event.data.evaluationHistory.length - 1]?.time;
+      if (time && useFromTime) {
+        fromTime = new Date(time);
+      }
+      if (event.data.project && event.data.service && event.data.stage) {
+        eventData = {
+          project: event.data.project,
+          service: event.data.service,
+          stage: event.data.stage,
+        };
+      }
+    } else {
+      eventData = event;
     }
-    if (event.data.project && event.data.service && event.data.stage) {
-      this.apiService
-        .getEvaluationResults(event.data.project, event.data.service, event.data.stage, fromTime?.toISOString())
+    if (eventData) {
+      return this.apiService
+        .getEvaluationResults(eventData.project, eventData.service, eventData.stage, fromTime?.toISOString(), limit)
         .pipe(
           map((result) => result.events || []),
           map((traces) => traces.map((trace) => Trace.fromJSON(trace)))
-        )
-        .subscribe((traces: Trace[]) => {
-          this._evaluationResults.next({
-            type: 'evaluationHistory',
-            triggerEvent: event,
-            traces,
-          });
-        });
+        );
+    } else {
+      return of([]);
     }
+  }
+
+  public loadEvaluationResults(event: Trace): void {
+    this.getEvaluationResults(event).subscribe((traces: Trace[]) => {
+      if (traces.length) {
+        this._evaluationResults.next({
+          type: 'evaluationHistory',
+          triggerEvent: event,
+          traces,
+        });
+      }
+    });
   }
 
   public sendApprovalEvent(approval: Trace, approve: boolean): Observable<unknown> {
@@ -654,6 +678,10 @@ export class DataService {
     return this.apiService
       .getServiceNames(projectName)
       .pipe(map((serviceNames) => serviceNames.sort((serviceA, serviceB) => serviceA.localeCompare(serviceB))));
+  }
+
+  public getCustomSequenceNames(projectName: string): Observable<string[]> {
+    return this.apiService.getCustomSequenceNames(projectName);
   }
 
   public getWebhookConfig(
@@ -750,6 +778,21 @@ export class DataService {
 
   public logout(): Observable<EndSessionData | null> {
     return this.apiService.logout();
+  }
+
+  public triggerDelivery(data: TriggerSequenceData): Observable<TriggerResponse> {
+    const type = EventTypes.PREFIX + data.stage + EventTypes.DELIVERY_TRIGGERED_SUFFIX;
+
+    return this.apiService.triggerSequence(type, data);
+  }
+
+  public triggerEvaluation(data: TriggerEvaluationData): Observable<TriggerResponse> {
+    return this.apiService.triggerEvaluation(data);
+  }
+
+  public triggerCustomSequence(data: TriggerSequenceData, sequence: string): Observable<TriggerResponse> {
+    const type = EventTypes.PREFIX + data.stage + '.' + sequence + '.triggered';
+    return this.apiService.triggerSequence(type, data);
   }
 
   public getSecretScopes(): Observable<string[]> {

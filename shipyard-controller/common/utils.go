@@ -41,12 +41,10 @@ func Merge(in1, in2 interface{}) interface{} {
 		if !ok {
 			return in1
 		}
-		for k, v2 := range in2 {
-			if v1, ok := in1[k]; ok {
-				in1[k] = Merge(v1, v2)
-			} else {
-				in1[k] = v2
-			}
+		mergeMaps(in1, in2)
+	case string:
+		if in2, ok := in2.(string); ok {
+			return in2
 		}
 	case nil:
 		in2, ok := in2.(map[string]interface{})
@@ -55,4 +53,28 @@ func Merge(in1, in2 interface{}) interface{} {
 		}
 	}
 	return in1
+}
+
+func mergeMaps(in1 map[string]interface{}, in2 map[string]interface{}) {
+	for k, v2 := range in2 {
+		if v1, ok := in1[k]; ok && v1 != nil {
+			in1[k] = Merge(v1, v2)
+		} else {
+			in1[k] = v2
+		}
+	}
+}
+
+func CopyMap(m map[string]interface{}) map[string]interface{} {
+	cp := make(map[string]interface{})
+	for k, v := range m {
+		vm, ok := v.(map[string]interface{})
+		if ok {
+			cp[k] = CopyMap(vm)
+		} else {
+			cp[k] = v
+		}
+	}
+
+	return cp
 }

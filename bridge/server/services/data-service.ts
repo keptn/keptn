@@ -14,7 +14,7 @@ import { Shipyard } from '../interfaces/shipyard';
 import { UniformRegistrationLocations } from '../../shared/interfaces/uniform-registration-locations';
 import { WebhookConfig, WebhookConfigFilter, WebhookSecret } from '../../shared/models/webhook-config';
 import { UniformRegistrationInfo } from '../../shared/interfaces/uniform-registration-info';
-import { WebhookConfigYaml } from '../interfaces/webhook-config-yaml';
+import { WebhookConfigYaml } from '../models/webhook-config-yaml';
 import { UniformSubscription, UniformSubscriptionFilter } from '../../shared/interfaces/uniform-subscription';
 import axios from 'axios';
 import { Resource } from '../../shared/interfaces/resource';
@@ -34,6 +34,7 @@ import { Remediation } from '../models/remediation';
 import { IStage } from '../../shared/interfaces/stage';
 import { ISequencesMetadata, SequenceMetadataDeployment } from '../../shared/interfaces/sequencesMetadata';
 import { SecretScope, SecretScopeDefault } from '../../shared/interfaces/secret-scope';
+import { generateWebhookConfigCurl } from '../utils/curl.utils';
 
 type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
 type FlatSecret = { path: string; name: string; key: string; parsedPath: string };
@@ -618,6 +619,22 @@ export class DataService {
     return this.reduceServiceNames(stages);
   }
 
+  public async getCustomSequenceNames(accessToken: string | undefined, projectName: string): Promise<string[]> {
+    const shipyard = await this.getShipyard(accessToken, projectName);
+    const sequenceSet = new Set<string>();
+
+    for (const stage of shipyard.spec.stages) {
+      if (stage.sequences) {
+        for (const seq of stage.sequences) {
+          if (seq.name !== 'delivery' && seq.name !== 'evaluation') {
+            sequenceSet.add(seq.name);
+          }
+        }
+      }
+    }
+    return Array.from(sequenceSet);
+  }
+
   private reduceServiceNames(stages: IStage[]): string[] {
     const services: { [serviceName: string]: boolean | undefined } = {};
 
@@ -839,7 +856,7 @@ export class DataService {
     }
 
     const secrets = await this.parseAndReplaceWebhookSecret(accessToken, webhookConfig);
-    const curl = this.generateWebhookConfigCurl(webhookConfig);
+    const curl = generateWebhookConfigCurl(webhookConfig);
 
     for (const project of currentFilters.projects) {
       for (const stage of currentFilters.stages) {
@@ -974,27 +991,6 @@ export class DataService {
       stages: webhookConfig.stages?.length ? webhookConfig.stages : [undefined],
       services: webhookConfig.services?.length ? webhookConfig.services : [undefined],
     };
-  }
-
-  private generateWebhookConfigCurl(webhookConfig: WebhookConfig): string {
-    let params = '';
-    for (const header of webhookConfig?.header || []) {
-      params += `--header '${header.name}: ${header.value}' `;
-    }
-    params += `--request ${webhookConfig.method} `;
-    if (webhookConfig.proxy) {
-      params += `--proxy ${webhookConfig.proxy} `;
-    }
-    if (webhookConfig.payload) {
-      let stringify = webhookConfig.payload;
-      try {
-        stringify = JSON.stringify(JSON.parse(webhookConfig.payload));
-      } catch {
-        stringify = stringify.replace(/\r\n|\n|\r/gm, '');
-      }
-      params += `--data '${stringify}' `;
-    }
-    return `curl ${params}${webhookConfig.url}`;
   }
 
   public async deleteSubscription(

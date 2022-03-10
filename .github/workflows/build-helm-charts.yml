@@ -37,7 +37,7 @@ jobs:
       RELEASE_BUILD: ${{ inputs.release }}
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v3
 
       - name: Build Helm Charts
         id: build_helm_charts
@@ -52,7 +52,7 @@ jobs:
 
       - name: Upload Helm Chart as an artifact
         id: upload_helm_chart
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: keptn-installer
           path: keptn-charts/*.tgz

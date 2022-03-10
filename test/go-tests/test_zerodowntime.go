@@ -82,7 +82,7 @@ func Test_ZeroDownTimeTriggerSequence(t *testing.T) {
 			return false
 		}
 		return true
-	}, 1*time.Minute, 5*time.Second)
+	}, 2*time.Minute, 5*time.Second)
 
 	require.Nil(t, err2)
 

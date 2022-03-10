@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"golang.org/x/oauth2"
 	"net/http"
 	"sync"
@@ -50,22 +51,23 @@ type TokenStoreMock struct {
 	storedTokenDiscovery  *OauthDiscoveryResult
 	storedClientValues    *OauthClientValues
 	created               bool
-	storeOauthInfoFn      func(*OauthInfo) error
-	getOauthInfoFn        func() (*OauthInfo, error)
-	getTokenFn            func() (*oauth2.Token, error)
-	storeTokenFn          func(*oauth2.Token) error
-	deleteTokenFn         func() error
-	getTokenDiscoveryFn   func() (*OauthDiscoveryResult, error)
-	storeTokenDiscoveryFn func(*OauthDiscoveryResult) error
-	storeClientValuesFn   func(values *OauthClientValues) error
-	getClientValuesFn     func() (*OauthClientValues, error)
+	CreatedFn             func() bool
+	StoreOauthInfoFn      func(*OauthInfo) error
+	GetOauthInfoFn        func() (*OauthInfo, error)
+	GetTokenFn            func() (*oauth2.Token, error)
+	StoreTokenFn          func(*oauth2.Token) error
+	DeleteTokenFn         func() error
+	GetTokenDiscoveryFn   func() (*OauthDiscoveryResult, error)
+	StoreTokenDiscoveryFn func(*OauthDiscoveryResult) error
+	StoreClientValuesFn   func(values *OauthClientValues) error
+	GetClientValuesFn     func() (*OauthClientValues, error)
 }
 
 func (t *TokenStoreMock) StoreOauthInfo(i *OauthInfo) error {
 	t.Lock()
 	defer t.Unlock()
-	if t.storeOauthInfoFn != nil {
-		return t.storeOauthInfoFn(i)
+	if t.StoreOauthInfoFn != nil {
+		return t.StoreOauthInfoFn(i)
 	}
 	t.storedOauthInfo = i
 	t.storedToken = i.Token
@@ -78,8 +80,8 @@ func (t *TokenStoreMock) StoreOauthInfo(i *OauthInfo) error {
 func (t *TokenStoreMock) GetOauthInfo() (*OauthInfo, error) {
 	t.Lock()
 	defer t.Unlock()
-	if t.getOauthInfoFn != nil {
-		return t.getOauthInfoFn()
+	if t.GetOauthInfoFn != nil {
+		return t.GetOauthInfoFn()
 	}
 	return t.storedOauthInfo, nil
 }
@@ -87,8 +89,8 @@ func (t *TokenStoreMock) GetOauthInfo() (*OauthInfo, error) {
 func (t *TokenStoreMock) GetTokenInfo() (*oauth2.Token, error) {
 	t.Lock()
 	defer t.Unlock()
-	if t.getTokenFn != nil {
-		return t.getTokenFn()
+	if t.GetTokenFn != nil {
+		return t.GetTokenFn()
 	}
 	return t.storedToken, nil
 }
@@ -96,8 +98,8 @@ func (t *TokenStoreMock) GetTokenInfo() (*oauth2.Token, error) {
 func (t *TokenStoreMock) StoreTokenInfo(token *oauth2.Token) error {
 	t.Lock()
 	defer t.Unlock()
-	if t.storeTokenFn != nil {
-		return t.storeTokenFn(token)
+	if t.StoreTokenFn != nil {
+		return t.StoreTokenFn(token)
 	}
 	t.storedToken = token
 	return nil
@@ -106,7 +108,7 @@ func (t *TokenStoreMock) Wipe() error {
 	t.Lock()
 	defer t.Unlock()
 	if t.Wipe() != nil {
-		return t.deleteTokenFn()
+		return t.DeleteTokenFn()
 	}
 	return nil
 }
@@ -114,22 +116,25 @@ func (t *TokenStoreMock) Wipe() error {
 func (t *TokenStoreMock) Created() bool {
 	t.Lock()
 	defer t.Unlock()
+	if t.CreatedFn != nil {
+		return t.CreatedFn()
+	}
 	return t.created
 }
 
 func (t *TokenStoreMock) GetDiscoveryInfo() (*OauthDiscoveryResult, error) {
 	t.Lock()
 	defer t.Unlock()
-	if t.getTokenDiscoveryFn != nil {
-		return t.getTokenDiscoveryFn()
+	if t.GetTokenDiscoveryFn != nil {
+		return t.GetTokenDiscoveryFn()
 	}
 	return t.storedTokenDiscovery, nil
 }
 func (t *TokenStoreMock) StoreDiscoveryInfo(discoveryResult *OauthDiscoveryResult) error {
 	t.Lock()
 	defer t.Unlock()
-	if t.storeTokenDiscoveryFn != nil {
-		return t.storeTokenDiscoveryFn(discoveryResult)
+	if t.StoreTokenDiscoveryFn != nil {
+		return t.StoreTokenDiscoveryFn(discoveryResult)
 	}
 	t.storedTokenDiscovery = discoveryResult
 	return nil
@@ -138,8 +143,8 @@ func (t *TokenStoreMock) StoreDiscoveryInfo(discoveryResult *OauthDiscoveryResul
 func (t *TokenStoreMock) StoreClientInfo(values *OauthClientValues) error {
 	t.Lock()
 	defer t.Unlock()
-	if t.storeClientValuesFn != nil {
-		return t.storeClientValuesFn(values)
+	if t.StoreClientValuesFn != nil {
+		return t.StoreClientValuesFn(values)
 	}
 	t.storedClientValues = values
 	return nil
@@ -148,8 +153,39 @@ func (t *TokenStoreMock) StoreClientInfo(values *OauthClientValues) error {
 func (t *TokenStoreMock) GetClientInfo() (*OauthClientValues, error) {
 	t.Lock()
 	defer t.Unlock()
-	if t.getClientValuesFn != nil {
-		return t.getClientValuesFn()
+	if t.GetClientValuesFn != nil {
+		return t.GetClientValuesFn()
 	}
 	return t.storedClientValues, nil
+}
+
+type OAuthAuthenticatorMock struct {
+	AuthCalled, GetAuthClientCalled, TokenStoreCalled bool
+	AuthFn                                            func(clientValues OauthClientValues) error
+	GetOauthClientFn                                  func(ctx context.Context) (*http.Client, error)
+	TokenStoreFn                                      func() OauthStore
+}
+
+func (a OAuthAuthenticatorMock) Auth(clientValues OauthClientValues) error {
+	a.AuthCalled = true
+	if a.AuthFn != nil {
+		return a.AuthFn(clientValues)
+	}
+	panic("AuthFn called on mock but not set")
+}
+
+func (a OAuthAuthenticatorMock) OauthClient(ctx context.Context) (*http.Client, error) {
+	a.GetAuthClientCalled = true
+	if a.GetOauthClientFn != nil {
+		return a.GetOauthClientFn(ctx)
+	}
+	panic("GetOauthClientFn called on mock but not set")
+}
+
+func (a OAuthAuthenticatorMock) TokenStore() OauthStore {
+	a.TokenStoreCalled = true
+	if a.TokenStoreFn != nil {
+		return a.TokenStoreFn()
+	}
+	panic("TokenStoreFn called on mock but not set")
 }

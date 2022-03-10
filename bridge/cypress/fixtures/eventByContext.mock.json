@@ -1,0 +1,29 @@
+{
+  "states": [
+    {
+      "name": "delivery",
+      "service": "carts",
+      "project": "sockshop",
+      "time": "2022-02-23T14:28:50.504Z",
+      "shkeptncontext": "6c98fbb0-4c40-4bff-ba9f-b20556a57c8a",
+      "state": "finished",
+      "stages": [
+        {
+          "name": "dev",
+          "state": "finished",
+          "latestEvent": {
+            "type": "sh.keptn.event.dev.delivery.finished",
+            "id": "1341268c-c899-4314-b87c-9f4ea6566208",
+            "time": "2022-02-23T14:28:51.596Z"
+          },
+          "latestFailedEvent": {
+            "type": "sh.keptn.event.dev.delivery.finished",
+            "id": "1341268c-c899-4314-b87c-9f4ea6566208",
+            "time": "2022-02-23T14:28:51.596Z"
+          }
+        }
+      ]
+    }
+  ],
+  "totalCount": 1
+}

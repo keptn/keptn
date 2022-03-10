@@ -15,7 +15,7 @@
     "lint:fix": "eslint --fix ./",
     "prettier:check": "prettier --check ./**/*.{js,ts,json,html}",
     "prettier:fix": "prettier --write ./**/*.{js,ts,json,html}",
-    "cypress:open": "cypress open",
+    "cypress:open": "start-server-and-test 'yarn start:ci' http://localhost:3000 'cypress open'",
     "cypress:run": "cypress run --browser=chrome",
     "test:ui": "start-server-and-test 'yarn start:ci' http://localhost:3000 'yarn cypress:run'"
   },
@@ -71,7 +71,7 @@
     "semver": "7.3.5",
     "tslib": "2.3.1",
     "yaml": "1.10.2",
-    "zone.js": "0.11.4"
+    "zone.js": "0.11.5"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "0.1102.18",
@@ -86,7 +86,7 @@
     "@cypress/schematic": "1.6.0",
     "@types/dompurify": "2.3.3",
     "@types/jest": "27.4.1",
-    "@types/lodash": "4.14.178",
+    "@types/lodash": "4.14.179",
     "@types/lodash-es": "4.17.6",
     "@types/marked": "4.0.2",
     "@types/node": "14.18.12",
@@ -99,11 +99,11 @@
     "eslint-config-airbnb-base": "15.0.0",
     "eslint-config-airbnb-typescript": "16.1.0",
     "eslint-config-airbnb-typescript-prettier": "5.0.0",
-    "eslint-config-prettier": "8.3.0",
+    "eslint-config-prettier": "8.5.0",
     "eslint-plugin-deprecation": "1.3.2",
     "eslint-plugin-eslint-comments": "3.2.0",
     "eslint-plugin-import": "2.25.4",
-    "eslint-plugin-jsdoc": "37.7.1",
+    "eslint-plugin-jsdoc": "37.9.7",
     "eslint-plugin-prefer-arrow": "1.2.3",
     "eslint-plugin-prettier": "4.0.0",
     "eslint-plugin-promise": "6.0.0",
@@ -115,7 +115,7 @@
     "prettier": "2.5.1",
     "start-server-and-test": "1.14.0",
     "ts-jest": "27.1.3",
-    "ts-node": "10.4.0",
+    "ts-node": "10.6.0",
     "typescript": "4.1.6"
   },
   "resolutions": {

@@ -3,6 +3,7 @@ package controller
 import (
 	"errors"
 	"fmt"
+
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -31,6 +32,7 @@ type MockedHandlerOption func(*MockedHandlerOptions)
 type MockedHandlerOptions struct {
 	SendEventBehavior               func(eventType string) bool
 	GetUserManagedEndpointsBehavior func(event keptnv2.EventData) (*keptnv2.Endpoints, error)
+	GetUserChartsErrBehaviour       bool
 }
 
 func sendingEventSucceeds(eventType string) bool {
@@ -75,6 +77,9 @@ func (h *MockedHandler) getGeneratedChart(e keptnv2.EventData, commitID string) 
 }
 
 func (h *MockedHandler) getUserChart(e keptnv2.EventData, commitID string) (*chart.Chart, string, error) {
+	if h.options.GetUserChartsErrBehaviour == true {
+		return nil, "", errors.New("some error")
+	}
 	ch := helm.GetTestUserChart()
 	return &ch, commitID, nil
 }

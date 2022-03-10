@@ -19,6 +19,15 @@
 
     .dt-quick-filter-content {
       padding: 0 !important;
+
+      .trigger-sequence-button {
+        position: absolute;
+      }
+
+      > .container.has-sequences {
+        margin-top: calc(2.4em + 30px);
+
+      }
     }
   }
 }
@@ -30,7 +39,20 @@ ktb-event-item.focused {
   animation-delay: 0.5s;
 }
 
+/* Barista fix/feature on fixed height (adjust filter height to height of page) */
 dt-quick-filter dt-drawer {
   overflow-y: auto;
   overflow-x: hidden;
+  min-width: 230px;
+}
+
+.dt-quick-filter-detail {
+  dt-quick-filter-group {
+    height: calc(100% - 35px) !important;
+    padding: 0 !important;
+  }
+
+  dt-quick-filter-group .dt-quick-filter-group-items, cdk-virtual-scroll-viewport {
+    height: 100% !important;
+  }
 }

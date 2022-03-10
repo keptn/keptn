@@ -34,7 +34,7 @@ type ProjectManager struct {
 	ConfigurationStore      common.ConfigurationStore
 	SecretStore             common.SecretStore
 	ProjectMaterializedView db.ProjectMVRepo
-	TaskSequenceRepository  db.TaskSequenceRepo
+	SequenceExecutionRepo   db.SequenceExecutionRepo
 	EventRepository         db.EventRepo
 	SequenceQueueRepo       db.SequenceQueueRepo
 	EventQueueRepo          db.EventQueueRepo
@@ -48,7 +48,7 @@ func NewProjectManager(
 	configurationStore common.ConfigurationStore,
 	secretStore common.SecretStore,
 	projectMVrepo db.ProjectMVRepo,
-	taskSequenceRepo db.TaskSequenceRepo,
+	sequenceExecutionRepo db.SequenceExecutionRepo,
 	eventRepo db.EventRepo,
 	sequenceQueueRepo db.SequenceQueueRepo,
 	eventQueueRepo db.EventQueueRepo) *ProjectManager {
@@ -56,7 +56,7 @@ func NewProjectManager(
 		ConfigurationStore:      configurationStore,
 		SecretStore:             secretStore,
 		ProjectMaterializedView: projectMVrepo,
-		TaskSequenceRepository:  taskSequenceRepo,
+		SequenceExecutionRepo:   sequenceExecutionRepo,
 		EventRepository:         eventRepo,
 		SequenceQueueRepo:       sequenceQueueRepo,
 		EventQueueRepo:          eventQueueRepo,
@@ -94,12 +94,22 @@ func (pm *ProjectManager) Create(params *models.CreateProjectParams) (error, com
 		return ErrProjectAlreadyExists, nilRollback
 	}
 
+	decodedPrivateKey, _ := base64.StdEncoding.DecodeString(params.GitPrivateKey)
+
+	decodedPemCertificate, _ := base64.StdEncoding.DecodeString(params.GitPemCertificate)
+
 	err = pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
 		User:              params.GitUser,
 		Token:             params.GitToken,
 		RemoteURI:         params.GitRemoteURL,
-		GitPrivateKey:     params.GitPrivateKey,
+		GitPrivateKey:     string(decodedPrivateKey),
 		GitPrivateKeyPass: params.GitPrivateKeyPass,
+		GitProxyURL:       params.GitProxyURL,
+		GitProxyScheme:    params.GitProxyScheme,
+		GitProxyUser:      params.GitProxyUser,
+		GitProxyPassword:  params.GitProxyPassword,
+		GitPemCertificate: string(decodedPemCertificate),
+		GitProxyInsecure:  params.GitProxyInsecure,
 	})
 	if err != nil {
 		return err, nilRollback
@@ -179,6 +189,20 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 		return err, nilRollback
 	}
 
+	rollbackSecretCredentials := &gitCredentials{
+		User:              oldSecret.User,
+		Token:             oldSecret.Token,
+		RemoteURI:         oldSecret.RemoteURI,
+		GitPrivateKey:     oldSecret.GitPrivateKey,
+		GitPrivateKeyPass: oldSecret.GitPrivateKeyPass,
+		GitProxyURL:       oldSecret.GitProxyURL,
+		GitProxyScheme:    oldSecret.GitProxyScheme,
+		GitProxyUser:      oldSecret.GitProxyUser,
+		GitProxyPassword:  oldSecret.GitProxyPassword,
+		GitPemCertificate: oldSecret.GitPemCertificate,
+		GitProxyInsecure:  oldSecret.GitProxyInsecure,
+	}
+
 	// old project for rollback
 	oldProject, err := pm.ProjectMaterializedView.GetProject(*params.Name)
 	if err != nil {
@@ -188,12 +212,24 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 		return ErrProjectNotFound, nilRollback
 	}
 
-	if params.GitUser != "" && params.GitToken != "" && params.GitRemoteURL != "" {
+	decodedPrivateKey, _ := base64.StdEncoding.DecodeString(params.GitPrivateKey)
+
+	decodedPemCertificate, _ := base64.StdEncoding.DecodeString(params.GitPemCertificate)
+
+	if params.GitUser != "" && params.GitRemoteURL != "" {
 		// try to update git repository secret
 		err = pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
-			User:      params.GitUser,
-			Token:     params.GitToken,
-			RemoteURI: params.GitRemoteURL,
+			User:              params.GitUser,
+			Token:             params.GitToken,
+			RemoteURI:         params.GitRemoteURL,
+			GitPrivateKey:     string(decodedPrivateKey),
+			GitPrivateKeyPass: params.GitPrivateKeyPass,
+			GitProxyURL:       params.GitProxyURL,
+			GitProxyScheme:    params.GitProxyScheme,
+			GitProxyUser:      params.GitProxyUser,
+			GitProxyPassword:  params.GitProxyPassword,
+			GitPemCertificate: string(decodedPemCertificate),
+			GitProxyInsecure:  params.GitProxyInsecure,
 		})
 
 		// no roll back needed since updating the git repository secret was the first operation
@@ -204,10 +240,7 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 
 	// new project content in configuration service
 	projectToUpdate := apimodels.Project{
-		GitRemoteURI: params.GitRemoteURL,
-		GitToken:     params.GitToken,
-		GitUser:      params.GitUser,
-		ProjectName:  *params.Name,
+		ProjectName: *params.Name,
 	}
 
 	// project content in configuration service to rollback
@@ -226,11 +259,7 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 		log.Errorf("Error occurred while updating the project in configuration store: %s", err.Error())
 		return fmt.Errorf(errUpdateProject, projectToUpdate.ProjectName, err), func() error {
 			// try to rollback already updated git repository secret
-			if err := pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
-				User:      oldSecret.User,
-				Token:     oldSecret.Token,
-				RemoteURI: oldSecret.RemoteURI,
-			}); err != nil {
+			if err := pm.updateGITRepositorySecret(*params.Name, rollbackSecretCredentials); err != nil {
 				return ErrChangesRollback
 			}
 			// try to rollback already updated project in configuration store
@@ -255,10 +284,7 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 			log.Errorf("Error occurred while updating the project shipyard in configuration store: %s", err.Error())
 			return fmt.Errorf(errUpdateProject, projectToUpdate.ProjectName, err), func() error {
 				// try to rollback already updated git repository secret
-				if err = pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
-					User:      oldSecret.User,
-					Token:     oldSecret.Token,
-					RemoteURI: oldSecret.RemoteURI}); err != nil {
+				if err = pm.updateGITRepositorySecret(*params.Name, rollbackSecretCredentials); err != nil {
 					return ErrChangesRollback
 				}
 				// try to rollback already updated project in configuration store
@@ -293,11 +319,7 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 			}
 
 			// try to rollback already updated git repository secret
-			return pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
-				User:      oldSecret.User,
-				Token:     oldSecret.Token,
-				RemoteURI: oldSecret.RemoteURI,
-			})
+			return pm.updateGITRepositorySecret(*params.Name, rollbackSecretCredentials)
 		}
 	}
 
@@ -347,10 +369,6 @@ func (pm *ProjectManager) deleteProjectSequenceCollections(projectName string) {
 		log.Errorf("could not delete task sequence collection: %s", err.Error())
 	}
 
-	if err := pm.TaskSequenceRepository.DeleteRepo(projectName); err != nil {
-		log.Errorf("could not delete task sequence collection: %s", err.Error())
-	}
-
 	if err := pm.SequenceQueueRepo.DeleteQueuedSequences(models.QueueItem{Scope: models.EventScope{
 		EventData: keptnv2.EventData{
 			Project: projectName,
@@ -365,6 +383,10 @@ func (pm *ProjectManager) deleteProjectSequenceCollections(projectName string) {
 		},
 	}); err != nil {
 		log.Errorf("could not delete queued events: %s", err.Error())
+	}
+
+	if err := pm.SequenceExecutionRepo.Clear(projectName); err != nil {
+		log.Errorf("could not delete sequence executions: %s", err.Error())
 	}
 }
 
@@ -558,4 +580,10 @@ type gitCredentials struct {
 	RemoteURI         string `json:"remoteURI,omitempty"`
 	GitPrivateKey     string `json:"privateKey,omitempty"`
 	GitPrivateKeyPass string `json:"privateKeyPass,omitempty"`
+	GitProxyURL       string `json:"gitProxyUrl,omitempty"`
+	GitProxyScheme    string `json:"gitProxyScheme,omitempty"`
+	GitProxyUser      string `json:"gitProxyUser,omitempty"`
+	GitProxyPassword  string `json:"gitProxyPassword,omitempty"`
+	GitPemCertificate string `json:"gitPemCertificate,omitempty"`
+	GitProxyInsecure  bool   `json:"gitProxyInsecure,omitempty"`
 }

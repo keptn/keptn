@@ -2,14 +2,16 @@ package handler
 
 import (
 	"errors"
+	"fmt"
+	"net/http"
+	"sort"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
-	"net/http"
-	"sort"
 )
 
 type IServiceHandler interface {
@@ -41,17 +43,17 @@ func (sh *ServiceHandler) CreateService(c *gin.Context) {
 	keptnContext := uuid.New().String()
 	projectName := c.Param("project")
 	if projectName == "" {
-		SetBadRequestErrorResponse(nil, c, "Must provide a project name")
+		SetBadRequestErrorResponse(c, NoProjectNameMsg)
 		return
 	}
 	// validate the input
 	createServiceParams := &models.CreateServiceParams{}
 	if err := c.ShouldBindJSON(createServiceParams); err != nil {
-		SetBadRequestErrorResponse(err, c, "Invalid request format")
+		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 	if err := createServiceParams.Validate(); err != nil {
-		SetBadRequestErrorResponse(err, c)
+		SetBadRequestErrorResponse(c, err.Error())
 		return
 	}
 
@@ -67,12 +69,12 @@ func (sh *ServiceHandler) CreateService(c *gin.Context) {
 			log.Errorf("could not send service.create.finished event: %s", err2.Error())
 		}
 
-		if err == ErrServiceAlreadyExists {
-			SetConflictErrorResponse(err, c)
+		if errors.Is(err, ErrServiceAlreadyExists) {
+			SetConflictErrorResponse(c, err.Error())
 			return
 		}
 
-		SetInternalServerErrorResponse(err, c)
+		SetInternalServerErrorResponse(c, err.Error())
 		return
 	}
 	if err := sh.sendServiceCreateSuccessFinishedEvent(keptnContext, projectName, createServiceParams); err != nil {
@@ -100,11 +102,11 @@ func (sh *ServiceHandler) DeleteService(c *gin.Context) {
 	projectName := c.Param("project")
 	serviceName := c.Param("service")
 	if projectName == "" {
-		SetBadRequestErrorResponse(nil, c, "Must provide a project name")
+		SetBadRequestErrorResponse(c, NoProjectNameMsg)
 		return
 	}
 	if serviceName == "" {
-		SetBadRequestErrorResponse(nil, c, "Must provide a service name")
+		SetBadRequestErrorResponse(c, NoServiceNameMsg)
 	}
 
 	common.LockProject(projectName)
@@ -119,7 +121,7 @@ func (sh *ServiceHandler) DeleteService(c *gin.Context) {
 			log.Errorf("could not send service.delete.finished event: %s", err.Error())
 		}
 
-		SetInternalServerErrorResponse(err, c)
+		SetInternalServerErrorResponse(c, err.Error())
 		return
 	}
 
@@ -151,11 +153,11 @@ func (sh *ServiceHandler) GetService(c *gin.Context) {
 
 	service, err := sh.serviceManager.GetService(projectName, stageName, serviceName)
 	if err != nil {
-		if err == ErrProjectNotFound || err == ErrStageNotFound || err == ErrServiceNotFound {
-			SetNotFoundErrorResponse(err, c)
+		if errors.Is(err, ErrProjectNotFound) || errors.Is(err, ErrStageNotFound) || errors.Is(err, ErrServiceNotFound) {
+			SetNotFoundErrorResponse(c, err.Error())
 			return
 		}
-		SetInternalServerErrorResponse(err, c)
+		SetInternalServerErrorResponse(c, err.Error())
 		return
 	}
 
@@ -183,17 +185,17 @@ func (sh *ServiceHandler) GetServices(c *gin.Context) {
 
 	params := &models.GetServiceParams{}
 	if err := c.ShouldBindQuery(params); err != nil {
-		SetBadRequestErrorResponse(err, c, "Invalid request format")
+		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
 	services, err := sh.serviceManager.GetAllServices(projectName, stageName)
 	if err != nil {
-		if err == ErrProjectNotFound || err == ErrStageNotFound {
-			SetNotFoundErrorResponse(err, c)
+		if errors.Is(err, ErrProjectNotFound) || errors.Is(err, ErrStageNotFound) {
+			SetNotFoundErrorResponse(c, err.Error())
 			return
 		}
-		SetInternalServerErrorResponse(err, c)
+		SetInternalServerErrorResponse(c, err.Error())
 		return
 	}
 

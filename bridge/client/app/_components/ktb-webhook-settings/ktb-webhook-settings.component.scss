@@ -21,18 +21,22 @@
 }
 
 ::ng-deep {
-  .dt-form-field {
-    .dt-form-field-suffix {
-      align-items: start;
-      position: absolute;
-      right: 0;
-      top: -10px;
+  #webhook-config-form {
+    .dt-form-field {
+      .dt-form-field-suffix {
+        align-items: start;
+        position: absolute;
+        right: 0;
+        top: -10px;
+      }
+    }
+
+    .dt-suffix:last-child:not(.dt-button) {
+      margin-right: 0;
     }
   }
 
-  .dt-suffix:last-child:not(.dt-button) {
-    margin-right: 0;
-  }
+
 }
 
 .settings-section {

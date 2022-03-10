@@ -146,6 +146,14 @@ import { KtbNotificationComponent } from './_components/ktb-notification/ktb-not
 import { KtbProjectCreateMessageComponent } from './_components/_status-messages/ktb-project-create-message/ktb-project-create-message.component';
 import { PendingChangesGuard } from './_guards/pending-changes.guard';
 import { ArrayToStringPipe } from './_pipes/array-to-string';
+import { KtbTriggerSequenceComponent } from './_components/ktb-trigger-sequence/ktb-trigger-sequence.component';
+import { KtbTimeInputComponent } from './_components/ktb-time-input/ktb-time-input.component';
+import {
+  KtbDatetimePickerComponent,
+  KtbDatetimePickerDirective,
+} from './_components/ktb-datetime-picker/ktb-datetime-picker.component';
+import { DtDatepickerModule } from '@dynatrace/barista-components/experimental/datepicker';
+import { TruncateNumberPipe } from './_pipes/truncate-number';
 
 registerLocaleData(localeEn, 'en');
 
@@ -236,6 +244,11 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     ArrayToStringPipe,
     KtbNotificationComponent,
     KtbProjectCreateMessageComponent,
+    KtbTriggerSequenceComponent,
+    KtbTimeInputComponent,
+    KtbDatetimePickerComponent,
+    KtbDatetimePickerDirective,
+    TruncateNumberPipe,
   ],
   imports: [
     BrowserModule,
@@ -289,6 +302,7 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     DtAlertModule,
     DtTreeTableModule,
     OverlayModule,
+    DtDatepickerModule,
   ],
   entryComponents: [KtbDeletionDialogComponent, KtbConfirmationDialogComponent],
   providers: [
