@@ -401,11 +401,15 @@ func Test_SequenceControl_AbortPausedSequenceMultipleStages(t *testing.T) {
 	keptnContextID, _ := TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
 
 	// verify state
-	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{scmodels.SequenceStartedState})
 
-	taskTriggeredEvent, err := GetLatestEventOfType(keptnContextID, projectName, stageName, keptnv2.GetTriggeredEventType("task1"))
-	require.Nil(t, err)
-	require.NotNil(t, taskTriggeredEvent)
+	var taskTriggeredEvent *models.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		taskTriggeredEvent, err = GetLatestEventOfType(keptnContextID, projectName, stageName, keptnv2.GetTriggeredEventType("task1"))
+		if err != nil || taskTriggeredEvent == nil {
+			return false
+		}
+		return true
+	}, 1*time.Minute, 10*time.Second)
 
 	cloudEvent := keptnv2.ToCloudEvent(*taskTriggeredEvent)
 
@@ -440,9 +444,13 @@ func Test_SequenceControl_AbortPausedSequenceMultipleStages(t *testing.T) {
 	// now trigger another sequence and finish its execution in the first stage
 	secondContextID, _ := TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
 
-	taskTriggeredEvent, err = GetLatestEventOfType(secondContextID, projectName, stageName, keptnv2.GetTriggeredEventType("task1"))
-	require.Nil(t, err)
-	require.NotNil(t, taskTriggeredEvent)
+	require.Eventually(t, func() bool {
+		taskTriggeredEvent, err = GetLatestEventOfType(secondContextID, projectName, stageName, keptnv2.GetTriggeredEventType("task1"))
+		if err != nil || taskTriggeredEvent == nil {
+			return false
+		}
+		return true
+	}, 1*time.Minute, 10*time.Second)
 
 	cloudEvent = keptnv2.ToCloudEvent(*taskTriggeredEvent)
 
