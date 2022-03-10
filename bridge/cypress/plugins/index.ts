@@ -9,4 +9,10 @@ export default (on: Cypress.PluginEvents, config: Cypress.PluginConfigOptions): 
       launchOptions.args.push('--force-device-scale-factor=1');
     }
   });
+  on('task', {
+    log(message: unknown) {
+      console.log(message);
+      return null;
+    },
+  });
 };
