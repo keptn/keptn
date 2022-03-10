@@ -104,7 +104,7 @@ func (nch *NatsConnectionHandler) renewNatsConnection() error {
 
 	nch.natsConnection.Close()
 	logger.Infof("Connecting to NATS server at %s ...", nch.natsURL)
-	nch.natsConnection, err = nats.Connect(nch.natsURL)
+	nch.natsConnection, err = nats.Connect(nch.natsURL, nats.MaxReconnects(-1))
 
 	if err != nil {
 		return errors.New("failed to create NATS connection: " + err.Error())
