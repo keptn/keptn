@@ -5,10 +5,10 @@ const uniformPage = new UniformPage();
 const webhookID = '0f2d35875bbaa72b972157260a7bd4af4f2826df';
 const integrationID = '355311a7bec3f35bf3abc2484ab09bcba8e2b297'; // not webhook, is in control plane
 
-describe('Integrations', () => {
+describe('Integrations default requests', () => {
   beforeEach(() => {
     interceptIntegrations();
-    cy.visit('/project/sockshop/settings/uniform/integrations');
+    uniformPage.visit('sockshop');
   });
 
   it('should be on page uniform', () => {
@@ -18,44 +18,6 @@ describe('Integrations', () => {
 
   it('should show 8 registrations', () => {
     cy.byTestId(uniformPage.UNIFORM_INTEGRATION_TABLE_LOC).find('dt-row').should('have.length', 8);
-  });
-
-  it('should show error event indicators', () => {
-    cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: true });
-
-    uniformPage
-      .assertIntegrationErrorCount('webhook-service', 10)
-      .assertIndicatorsShowing(2)
-      .assertIndicatorsTextShowing(1)
-      .selectIntegration('webhook-service')
-      .assertErrorEventsShowing(1);
-  });
-
-  it('should remove error event indicator on selection', () => {
-    cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: true });
-
-    uniformPage
-      .assertHasIntegrationErrorIndicator('webhook-service', true)
-      .selectIntegration('webhook-service')
-      .assertIndicatorsShowing(0)
-      .assertIndicatorsTextShowing(1) // 1 unread error log
-      .assertHasIntegrationErrorIndicator('webhook-service', false)
-      .selectIntegration('jmeter-service')
-      .assertIndicatorsShowing(0)
-      .assertIndicatorsTextShowing(0)
-      .selectIntegration('webhook-service')
-      .assertIndicatorsShowing(0)
-      .assertIndicatorsTextShowing(0); // now error log is read
-  });
-
-  it('should not remove error event indicator if integration without logs is selected', () => {
-    cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: true });
-
-    uniformPage
-      .selectIntegration('jmeter-service')
-      .assertHasIntegrationErrorIndicator('webhook-service', true)
-      .assertIndicatorsShowing(2)
-      .assertIndicatorsTextShowing(1);
   });
 
   it('should show error events list', () => {
@@ -121,18 +83,6 @@ describe('Integrations', () => {
     // then
     cy.get(uniformPage.SUBSCRIPTION_EXP_HEADER_LOC).first().should('have.text', 'Subscriptions');
     cy.get(uniformPage.SUBSCRIPTION_EXP_HEADER_LOC).last().should('have.text', 'Error events');
-  });
-
-  it('should have disabled buttons for a subscription, when subscription id is not given', () => {
-    // given, when
-    cy.intercept('/api/uniform/registration', { fixture: 'registration-old-format.mock' });
-    uniformPage.selectIntegration('jmeter-service');
-    const editButton = cy.get(uniformPage.SUBSCRIPTION_EXPANDABLE_LOC).first().byTestId('subscriptionEditButton');
-    const deleteButton = cy.get(uniformPage.SUBSCRIPTION_EXPANDABLE_LOC).first().byTestId('subscriptionDeleteButton');
-
-    // then
-    editButton.should('be.disabled');
-    deleteButton.should('be.disabled');
   });
 
   it('should add a simple subscription', () => {
@@ -233,6 +183,62 @@ describe('Integrations', () => {
   });
 });
 
+describe('Integrations changed requests', () => {
+  beforeEach(() => {
+    interceptIntegrations();
+  });
+
+  it('should show error event indicators', () => {
+    cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: true });
+    uniformPage
+      .visit('sockshop')
+      .assertIntegrationErrorCount('webhook-service', 10)
+      .assertIndicatorsShowing(2)
+      .assertIndicatorsTextShowing(1)
+      .selectIntegration('webhook-service')
+      .assertErrorEventsShowing(1);
+  });
+
+  it('should remove error event indicator on selection', () => {
+    cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: true });
+    uniformPage
+      .visit('sockshop')
+      .assertHasIntegrationErrorIndicator('webhook-service', true)
+      .selectIntegration('webhook-service')
+      .assertIndicatorsShowing(0)
+      .assertIndicatorsTextShowing(1) // 1 unread error log
+      .assertHasIntegrationErrorIndicator('webhook-service', false)
+      .selectIntegration('jmeter-service')
+      .assertIndicatorsShowing(0)
+      .assertIndicatorsTextShowing(0)
+      .selectIntegration('webhook-service')
+      .assertIndicatorsShowing(0)
+      .assertIndicatorsTextShowing(0); // now error log is read
+  });
+
+  it('should not remove error event indicator if integration without logs is selected', () => {
+    cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: true });
+    uniformPage
+      .visit('sockshop')
+      .selectIntegration('jmeter-service')
+      .assertHasIntegrationErrorIndicator('webhook-service', true)
+      .assertIndicatorsShowing(2)
+      .assertIndicatorsTextShowing(1);
+  });
+
+  it('should have disabled buttons for a subscription, when subscription id is not given', () => {
+    // given, when
+    cy.intercept('/api/uniform/registration', { fixture: 'registration-old-format.mock' });
+    uniformPage.visit('sockshop').selectIntegration('jmeter-service');
+    const editButton = cy.get(uniformPage.SUBSCRIPTION_EXPANDABLE_LOC).first().byTestId('subscriptionEditButton');
+    const deleteButton = cy.get(uniformPage.SUBSCRIPTION_EXPANDABLE_LOC).first().byTestId('subscriptionDeleteButton');
+
+    // then
+    editButton.should('be.disabled');
+    deleteButton.should('be.disabled');
+  });
+});
+
 describe('Add webhook subscriptions', () => {
   beforeEach(() => {
     interceptIntegrations();
@@ -285,20 +291,10 @@ describe('Add webhook subscriptions', () => {
   });
 });
 
-describe('Add control plane subscription', () => {
+describe('Add control plane subscription default requests', () => {
   beforeEach(() => {
     interceptIntegrations();
     uniformPage.visitAdd(integrationID);
-  });
-
-  it('should have disabled button if updating', () => {
-    cy.intercept(`/api/uniform/registration/${integrationID}/subscription`, {
-      body: {
-        id: '0b77c90e-282d-4a7e-a96d-e23027265868',
-      },
-      delay: 5000,
-    });
-    uniformPage.setTaskPrefix('deployment').setTaskSuffix('triggered').update().assertIsUpdateButtonEnabled(false);
   });
 
   it('should have enabled button if task is valid', () => {
@@ -337,6 +333,27 @@ describe('Add control plane subscription', () => {
   it('should not show webhook form', () => {
     cy.get('ktb-webhook-settings').should('not.exist');
   });
+});
+
+describe('Add control plane subscription dynamic request', () => {
+  beforeEach(() => {
+    interceptIntegrations();
+  });
+
+  it('should have disabled button if updating', () => {
+    cy.intercept(`/api/uniform/registration/${integrationID}/subscription`, {
+      body: {
+        id: '0b77c90e-282d-4a7e-a96d-e23027265868',
+      },
+      delay: 5000,
+    });
+    uniformPage
+      .visitAdd(integrationID)
+      .setTaskPrefix('deployment')
+      .setTaskSuffix('triggered')
+      .update()
+      .assertIsUpdateButtonEnabled(false);
+  });
 
   xit('should show an error message if can not parse shipyard.yaml', () => {
     // given
@@ -344,7 +361,7 @@ describe('Add control plane subscription', () => {
       statusCode: 500,
       body: 'Could not parse shipyard.yaml',
     }).as('tasksResult');
-    uniformPage.selectIntegration('jmeter-service').addSubscription();
+    uniformPage.visitAdd(integrationID).selectIntegration('jmeter-service').addSubscription();
 
     cy.wait('@tasksResult');
     cy.wait('@tasksResult');
@@ -361,7 +378,7 @@ describe('Add control plane subscription', () => {
       statusCode: 500,
       body: 'Could not parse shipyard.yaml',
     }).as('tasksResult');
-    uniformPage.selectIntegration('jmeter-service').addSubscription();
+    uniformPage.visitAdd(integrationID).selectIntegration('jmeter-service').addSubscription();
 
     cy.wait('@tasksResult');
     cy.wait('@tasksResult');
@@ -382,7 +399,6 @@ describe('Add execution plane subscription', () => {
 
   beforeEach(() => {
     interceptIntegrations();
-    uniformPage.visitAdd(executionPlaneIntegrationID);
   });
 
   it('should only have triggered suffix', () => {
@@ -392,7 +408,7 @@ describe('Add execution plane subscription', () => {
         isWebhookService: false,
       },
     });
-    uniformPage.shouldHaveTaskSuffixes(['triggered']);
+    uniformPage.visitAdd(executionPlaneIntegrationID).shouldHaveTaskSuffixes(['triggered']);
   });
 });
 
@@ -400,7 +416,6 @@ describe('Edit subscriptions', () => {
   const subscriptionID = 'mySubscriptionID';
   beforeEach(() => {
     interceptIntegrations();
-    uniformPage.visitEdit(integrationID, subscriptionID);
   });
 
   it('should set the right properties and enable the button when a global subscription is set', () => {
@@ -415,8 +430,8 @@ describe('Edit subscriptions', () => {
         },
       },
     });
-
     uniformPage
+      .visitEdit(integrationID, subscriptionID)
       .assertIsGlobalChecked(true)
       .taskPrefixEquals('deployment')
       .taskSuffixEquals('triggered')
@@ -442,6 +457,7 @@ describe('Edit subscriptions', () => {
     });
 
     uniformPage
+      .visitEdit(integrationID, subscriptionID)
       .assertIsGlobalChecked(false)
       .taskPrefixEquals('test')
       .taskSuffixEquals('finished')
