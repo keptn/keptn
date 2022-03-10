@@ -906,7 +906,7 @@ func Test_shipyardController_CancelSequence(t *testing.T) {
 	fakeSequenceFinishedHook := &fakehooks.ISequenceFinishedHookMock{OnSequenceFinishedFunc: func(event models.Event) {}}
 	sc.AddSequenceFinishedHook(fakeSequenceFinishedHook)
 
-	fakeSequenceAbortedHook := &fakehooks.ISequenceAbortedHookMock{OnSequenceAbortedFunc: func(event models.Event) {}}
+	fakeSequenceAbortedHook := &fakehooks.ISequenceAbortedHookMock{OnSequenceAbortedFunc: func(eventScope models.EventScope) {}}
 	sc.AddSequenceAbortedHook(fakeSequenceAbortedHook)
 
 	// insert the test data
@@ -967,7 +967,7 @@ func Test_shipyardController_CancelQueuedSequence(t *testing.T) {
 	fakeSequenceFinishedHook := &fakehooks.ISequenceFinishedHookMock{OnSequenceFinishedFunc: func(event models.Event) {}}
 	sc.AddSequenceFinishedHook(fakeSequenceFinishedHook)
 
-	fakeSequenceAbortedHook := &fakehooks.ISequenceAbortedHookMock{OnSequenceAbortedFunc: func(event models.Event) {}}
+	fakeSequenceAbortedHook := &fakehooks.ISequenceAbortedHookMock{OnSequenceAbortedFunc: func(eventScope models.EventScope) {}}
 	sc.AddSequenceAbortedHook(fakeSequenceAbortedHook)
 
 	// insert the test data
@@ -1008,7 +1008,7 @@ func Test_shipyardController_CancelQueuedSequence_RemoveFromQueueFails(t *testin
 	fakeSequenceFinishedHook := &fakehooks.ISequenceFinishedHookMock{OnSequenceFinishedFunc: func(event models.Event) {}}
 	sc.AddSequenceFinishedHook(fakeSequenceFinishedHook)
 
-	fakeSequenceAbortedHook := &fakehooks.ISequenceAbortedHookMock{OnSequenceAbortedFunc: func(event models.Event) {}}
+	fakeSequenceAbortedHook := &fakehooks.ISequenceAbortedHookMock{OnSequenceAbortedFunc: func(event models.EventScope) {}}
 	sc.AddSequenceAbortedHook(fakeSequenceAbortedHook)
 
 	// insert the test data
@@ -1022,6 +1022,35 @@ func Test_shipyardController_CancelQueuedSequence_RemoveFromQueueFails(t *testin
 		Shkeptncontext: "my-keptn-context-id",
 		Type:           common.Stringp(keptnv2.GetTriggeredEventType("my-stage.delivery")),
 	}, common.TriggeredEvent)
+
+	// invoke the CancelSequence function
+	err := sc.cancelSequence(models.SequenceControl{
+		KeptnContext: "my-keptn-context-id",
+		Project:      "my-project",
+		Stage:        "my-stage",
+	})
+
+	require.Nil(t, err)
+	require.Len(t, fakeSequenceFinishedHook.OnSequenceFinishedCalls(), 0)
+	require.Len(t, fakeSequenceAbortedHook.OnSequenceAbortedCalls(), 1)
+}
+
+func Test_shipyardController_CancelQueuedSequence_NoTriggeredEventAvailable(t *testing.T) {
+	defer setupLocalMongoDB()()
+
+	sc := getTestShipyardController("")
+	sequenceDispatcherMock := &fake.ISequenceDispatcherMock{}
+	sequenceDispatcherMock.RemoveFunc = func(eventScope models.EventScope) error {
+		return nil
+	}
+
+	sc.sequenceDispatcher = sequenceDispatcherMock
+
+	fakeSequenceFinishedHook := &fakehooks.ISequenceFinishedHookMock{OnSequenceFinishedFunc: func(event models.Event) {}}
+	sc.AddSequenceFinishedHook(fakeSequenceFinishedHook)
+
+	fakeSequenceAbortedHook := &fakehooks.ISequenceAbortedHookMock{OnSequenceAbortedFunc: func(eventScope models.EventScope) {}}
+	sc.AddSequenceAbortedHook(fakeSequenceAbortedHook)
 
 	// invoke the CancelSequence function
 	err := sc.cancelSequence(models.SequenceControl{
