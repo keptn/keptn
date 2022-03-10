@@ -336,6 +336,9 @@ func Test_SequenceControl_AbortPausedSequenceTaskPartiallyFinished(t *testing.T)
 	_, err = keptn.SendTaskFinishedEvent(&keptnv2.EventData{Result: keptnv2.ResultFailed, Status: keptnv2.StatusSucceeded}, source1)
 	require.Nil(t, err)
 
+	// wait a couple of seconds - it's very unlikely that a sequence is manually paused right at the same time as an event is sent back
+	<-time.After(5 * time.Second)
+
 	// pause the sequence
 	t.Log("pausing sequence")
 	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), scmodels.SequenceControlCommand{
