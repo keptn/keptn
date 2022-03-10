@@ -31,7 +31,7 @@ afterEach(() => {
   }
   if (warningLogs.length) {
     cy.task('log', warningLogs).then(() => {
-      expect(errorLogs.length).to.eq(0); // this should be inside then, else log will be aborted
+      expect(warningLogs.length).to.eq(0); // this should be inside then, else log will be aborted
       warningLogs = [];
     });
   }
