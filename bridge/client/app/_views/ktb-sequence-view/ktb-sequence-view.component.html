@@ -1,3 +1,13 @@
+<ng-template #triggerSequenceButton>
+  <div>
+    <a (click)="navigateToTriggerSequence()"
+      ><button dt-button class="mb-3" uitestid="keptn-trigger-button-open">
+        <dt-icon name="flash"></dt-icon>Trigger a new sequence
+      </button></a
+    >
+  </div>
+</ng-template>
+
 <div fxFlexFill>
   <div class="container p-0" fxFlex="40" fxLayout="column" fxLayoutGap="15px" *ngIf="project$ | async as project">
     <div fxFlex fxLayout="column" fxLayoutGap="15px" uitestid="keptn-sequence-view-filter">
@@ -10,16 +20,24 @@
         clearAllLabel="Clear all"
         fxFlex
       >
-        <div class="container" fxFlex fxLayout="column" *ngIf="project.sequences; else loadingSequences">
-          <div fxLayout="row" fxLayoutAlign="start" uitestid="keptn-noSequences" *ngIf="project.sequences.length === 0">
-            <dt-icon fxFlex="20px" class="icon" name="information"></dt-icon>
-            <p class="m-0 ml-2">
-              No sequences triggered yet.<br />Follow the instructions to
-              <a [href]="'/reference/cli/commands/keptn_trigger/' | keptnUrl" target="_blank" rel="noopener noreferrer"
-                >trigger a sequence</a
-              >.
-            </p>
+        <div class="p-3 trigger-sequence-button" *ngIf="project.sequences && project.sequences.length !== 0">
+          <ng-container [ngTemplateOutlet]="triggerSequenceButton"></ng-container>
+        </div>
+        <div
+          class="container"
+          [ngClass]="{ 'has-sequences': project.sequences.length !== 0 }"
+          fxFlex
+          fxLayout="column"
+          *ngIf="project.sequences; else loadingSequences"
+        >
+          <div uitestid="keptn-noSequences" *ngIf="project.sequences.length === 0">
+            <div fxLayout="row" fxLayoutAlign="start">
+              <dt-icon fxFlex="20px" class="icon" name="information"></dt-icon>
+              <p class="m-0 ml-2 mb-2">No sequences triggered yet.<br /></p>
+            </div>
+            <ng-container [ngTemplateOutlet]="triggerSequenceButton"></ng-container>
           </div>
+
           <div
             fxLayout="row"
             fxLayoutAlign="start"

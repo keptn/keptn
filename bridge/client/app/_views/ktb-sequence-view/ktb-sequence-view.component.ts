@@ -8,7 +8,7 @@ import {
 } from '@dynatrace/barista-components/quick-filter';
 import { isObject } from '@dynatrace/barista-components/core';
 import { combineLatest, Observable, Subject, Subscription } from 'rxjs';
-import { filter, map, startWith, switchMap, takeUntil, takeWhile } from 'rxjs/operators';
+import { filter, map, switchMap, takeUntil, takeWhile } from 'rxjs/operators';
 import moment from 'moment';
 import { Project } from '../../_models/project';
 import { DataService } from '../../_services/data.service';
@@ -127,7 +127,6 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     AppUtils.createTimer(0, this._sequenceTimerInterval)
       .pipe(
-        startWith(0),
         switchMap(() => this.project$),
         filter((project: Project | undefined): project is Project => !!project && !!project.getServices()),
         takeUntil(this.unsubscribe$)
@@ -172,6 +171,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
           if (sequence) {
             this.selectSequence({ sequence, stage, eventId });
           } else if (params.shkeptncontext && this.project) {
+            // is running twice because project is changed on start before the first call finishes
             this.dataService.loadUntilRoot(this.project, params.shkeptncontext);
           }
         }
@@ -382,6 +382,11 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
       this.selectedStage = stageName;
       this.updateLatestDeployedImage();
     }
+  }
+
+  public navigateToTriggerSequence(): void {
+    this.dataService.isTriggerSequenceOpen = true;
+    this.router.navigate(['/project/' + this.project?.projectName]);
   }
 
   ngOnDestroy(): void {

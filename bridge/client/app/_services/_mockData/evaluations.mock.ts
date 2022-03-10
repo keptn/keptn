@@ -68,7 +68,7 @@ const evaluationData = {
             result: 'pass',
             score: 100,
             sloFileContent:
-              'LS0tCnNwZWNfdmVyc2lvbjogIjEuMCIKY29tcGFyaXNvbjoKICBhZ2dyZWdhdGVfZnVuY3Rpb246ICJhdmciCiAgY29tcGFyZV93aXRoOiAic2luZ2xlX3Jlc3VsdCIKICBpbmNsdWRlX3Jlc3VsdF93aXRoX3Njb3JlOiAicGFzcyIKICBudW1iZXJfb2ZfY29tcGFyaXNvbl9yZXN1bHRzOiAxCmZpbHRlcjoKb2JqZWN0aXZlczoKICAtIHNsaTogInJlc3BvbnNlX3RpbWVfcDk1IgogICAga2V5X3NsaTogZmFsc2UKICAgIHBhc3M6ICAgICAgICAgICAgICMgcGFzcyBpZiAocmVsYXRpdmUgY2hhbmdlIDw9IDEwJSBBTkQgYWJzb2x1dGUgdmFsdWUgaXMgPCA2MDBtcykKICAgICAgLSBjcml0ZXJpYToKICAgICAgICAgIC0gIjw9KzEwJSIgICMgcmVsYXRpdmUgdmFsdWVzIHJlcXVpcmUgYSBwcmVmaXhlZCBzaWduIChwbHVzIG9yIG1pbnVzKQogICAgICAgICAgLSAiPDYwMCIgICAgIyBhYnNvbHV0ZSB2YWx1ZXMgb25seSByZXF1aXJlIGEgbG9naWNhbCBvcGVyYXRvcgogICAgd2FybmluZzogICAgICAgICAgIyBpZiB0aGUgcmVzcG9uc2UgdGltZSBpcyBiZWxvdyA4MDBtcywgdGhlIHJlc3VsdCBzaG91bGQgYmUgYSB3YXJuaW5nCiAgICAgIC0gY3JpdGVyaWE6CiAgICAgICAgICAtICI8PTgwMCIKICAgIHdlaWdodDogMQp0b3RhbF9zY29yZToKICBwYXNzOiAiOTAlIgogIHdhcm5pbmc6ICI3NSUi',
+              'LS0tCnNwZWNfdmVyc2lvbjogIjEuMCIKY29tcGFyaXNvbjoKICBhZ2dyZWdhdGVfZnVuY3Rpb246ICJhdmciCiAgY29tcGFyZV93aXRoOiAic2luZ2xlX3Jlc3VsdCIKICBpbmNsdWRlX3Jlc3VsdF93aXRoX3Njb3JlOiAicGFzcyIKICBudW1iZXJfb2ZfY29tcGFyaXNvbl9yZXN1bHRzOiAxCmZpbHRlcjoKb2JqZWN0aXZlczoKICAtIHNsaTogInJlc3BvbnNlX3RpbWVfcDk1IgogICAga2V5X3NsaTogZmFsc2UKICAgIHBhc3M6ICAgICAgICAgICAgICMgcGFzcyBpZiAocmVsYXRpdmUgY2hhbmdlIDw9IDEwJSBBTkQgYWJzb2x1dGUgdmFsdWUgaXMgPCA2MDBtcykKICAgICAgLSBjcml0ZXJpYToKICAgICAgICAgIC0gIjw9KzEwJSIgICMgcmVsYXRpdmUgdmFsdWVzIHJlcXVpcmUgYSBwcmVmaXhlZCBzaWduIChwbHVzIG9yIG1pbnVzKQogICAgICAgICAgLSAiPDYwMCIgICAgIyBhYnNvbHV0ZSB2YWx1ZXMgb25seSByZXF1aXJlIGEgbG9naWNhbCBvcGVyYXRvcgogICAgd2FybmluZzogICAgICAgICAgIyBpZiB0aGUgcmVzcG9uc2UgdGltZSBpcyBiZWxvdyA4MDBtcywgdGhlIHJlc3VsdCBzaG91bGQgYmUgYSB3YXJuaW5nCiAgICAgIC0gY3JpdGVyaWE6CiAgICAgICAgICAtICI8PTgwMCIKdG90YWxfc2NvcmU6CiAgcGFzczogIjkwJSIKICB3YXJuaW5nOiAiNzUlIg==',
             indicatorResults: [
               {
                 score: 1,
@@ -1253,6 +1253,7 @@ const evaluationData = {
                 score: 1,
                 status: 'pass',
                 value: {
+                  comparedValue: 356.90404128243733,
                   metric: 'response_time_p95',
                   success: true,
                   value: 315.8696785366614,
@@ -1321,6 +1322,7 @@ const evaluationData = {
                   score: 1,
                   status: 'pass',
                   value: {
+                    comparedValue: 356.90404128243733,
                     metric: 'response_time_p95',
                     success: true,
                     value: 315.8696785366614,

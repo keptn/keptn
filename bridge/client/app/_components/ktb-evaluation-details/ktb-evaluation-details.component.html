@@ -66,7 +66,7 @@
             <dt-key-value-list-item>
               <dt-key-value-list-key> Value </dt-key-value-list-key>
               <dt-key-value-list-value>
-                {{ dataPoint.value | number: '1.0-2' }}
+                {{ dataPoint.value | truncateNumber: 2 }}
               </dt-key-value-list-value>
             </dt-key-value-list-item>
 
@@ -177,7 +177,7 @@
                 {{ data.series.name }}
               </dt-key-value-list-key>
               <dt-key-value-list-value>
-                {{ data.point.y | number: '1.0-2' }}
+                {{ data.point.y | truncateNumber: 2 }}
               </dt-key-value-list-value>
             </dt-key-value-list-item>
           </dt-key-value-list>
