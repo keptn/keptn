@@ -932,25 +932,35 @@ func Test_shipyardController_CancelSequence(t *testing.T) {
 		Type:           common.Stringp(keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName)),
 	}, common.TriggeredEvent)
 
-	taskSequenceMapping := models.TaskExecution{
+	taskExecution := models.TaskExecution{
 		TaskSequenceName: "delivery",
 		TriggeredEventID: "my-deployment-triggered-id",
 		Task:             models.Task{},
 		Stage:            "my-stage",
 		KeptnContext:     "my-keptn-context-id",
 	}
-	sc.taskSequenceRepo.CreateTaskExecution("my-project", taskSequenceMapping)
+	err := sc.taskSequenceRepo.CreateTaskExecution("my-project", taskExecution)
+	require.Nil(t, err)
+
+	// also insert another task execution - this should then also be deleted
+	taskExecution.Stage = "my-other-stage"
+	err = sc.taskSequenceRepo.CreateTaskExecution("my-project", taskExecution)
+	require.Nil(t, err)
 
 	// invoke the CancelSequence function
-	err := sc.cancelSequence(models.SequenceControl{
+	err = sc.cancelSequence(models.SequenceControl{
 		KeptnContext: "my-keptn-context-id",
 		Project:      "my-project",
-		Stage:        "my-stage",
 	})
 
 	require.Nil(t, err)
 	require.Len(t, fakeSequenceFinishedHook.OnSequenceFinishedCalls(), 0)
 	require.Len(t, fakeSequenceAbortedHook.OnSequenceAbortedCalls(), 1)
+
+	// verify that no open task executions for this context are left in the collection
+	executions, err := sc.taskSequenceRepo.GetTaskExecutions("my-project", models.TaskExecution{KeptnContext: "my-keptn-context-id"})
+	require.Nil(t, err)
+	require.Empty(t, executions)
 }
 
 func Test_shipyardController_CancelQueuedSequence(t *testing.T) {
@@ -992,6 +1002,11 @@ func Test_shipyardController_CancelQueuedSequence(t *testing.T) {
 	require.Nil(t, err)
 	require.Len(t, fakeSequenceFinishedHook.OnSequenceFinishedCalls(), 0)
 	require.Len(t, fakeSequenceAbortedHook.OnSequenceAbortedCalls(), 1)
+
+	// verify that no open task executions for this context are left in the collection
+	executions, err := sc.taskSequenceRepo.GetTaskExecutions("my-project", models.TaskExecution{KeptnContext: "my-keptn-context-id"})
+	require.Nil(t, err)
+	require.Empty(t, executions)
 }
 
 func Test_shipyardController_CancelQueuedSequence_RemoveFromQueueFails(t *testing.T) {
@@ -1033,6 +1048,11 @@ func Test_shipyardController_CancelQueuedSequence_RemoveFromQueueFails(t *testin
 	require.Nil(t, err)
 	require.Len(t, fakeSequenceFinishedHook.OnSequenceFinishedCalls(), 0)
 	require.Len(t, fakeSequenceAbortedHook.OnSequenceAbortedCalls(), 1)
+
+	// verify that no open task executions for this context are left in the collection
+	executions, err := sc.taskSequenceRepo.GetTaskExecutions("my-project", models.TaskExecution{KeptnContext: "my-keptn-context-id"})
+	require.Nil(t, err)
+	require.Empty(t, executions)
 }
 
 func Test_shipyardController_CancelQueuedSequence_NoTriggeredEventAvailable(t *testing.T) {
@@ -1062,6 +1082,11 @@ func Test_shipyardController_CancelQueuedSequence_NoTriggeredEventAvailable(t *t
 	require.Nil(t, err)
 	require.Len(t, fakeSequenceFinishedHook.OnSequenceFinishedCalls(), 0)
 	require.Len(t, fakeSequenceAbortedHook.OnSequenceAbortedCalls(), 1)
+
+	// verify that no open task executions for this context are left in the collection
+	executions, err := sc.taskSequenceRepo.GetTaskExecutions("my-project", models.TaskExecution{KeptnContext: "my-keptn-context-id"})
+	require.Nil(t, err)
+	require.Empty(t, executions)
 }
 
 func Test_SequenceForUnavailableStage(t *testing.T) {

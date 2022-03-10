@@ -361,7 +361,7 @@ func (sc *shipyardController) cancelSequence(cancel models.SequenceControl) erro
 		return sc.cancelQueuedSequence(cancel)
 	}
 
-	err = sc.taskSequenceRepo.DeleteTaskExecutions(cancel.KeptnContext, cancel.Project)
+	err = sc.taskSequenceRepo.DeleteTaskExecutions(cancel.KeptnContext, cancel.Project, cancel.Stage)
 	if err != nil {
 		// log the error, but continue with the rest
 		log.Errorf("Could not delete open task executions for sequence %s in proect %s: %v", cancel.KeptnContext, cancel.Project, err)
@@ -424,7 +424,7 @@ func (sc *shipyardController) cancelQueuedSequence(cancel models.SequenceControl
 
 	// theoretically, we should not have any open task executions at this point, but call the delete function anyway,
 	// just to be 100% sure no entries of this collection are blocking any new sequences
-	err = sc.taskSequenceRepo.DeleteTaskExecutions(cancel.KeptnContext, cancel.Project)
+	err = sc.taskSequenceRepo.DeleteTaskExecutions(cancel.KeptnContext, cancel.Project, cancel.Stage)
 	if err != nil {
 		// log the error, but continue with the rest
 		log.Errorf("Could not delete open task executions for sequence %s in proect %s: %v", cancel.KeptnContext, cancel.Project, err)

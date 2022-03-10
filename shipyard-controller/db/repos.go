@@ -35,7 +35,7 @@ type TaskSequenceRepo interface {
 	CreateTaskExecution(project string, taskExecution models.TaskExecution) error
 	DeleteTaskExecution(keptnContext, project, stage, taskSequenceName string) error
 	// DeleteTaskExecutions deletes all open task executions of a keptnContext
-	DeleteTaskExecutions(keptnContext, project string) error
+	DeleteTaskExecutions(keptnContext, project, stage string) error
 	DeleteRepo(project string) error
 }
 
