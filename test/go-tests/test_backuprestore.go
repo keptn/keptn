@@ -1,6 +1,7 @@
 package go_tests
 
 import (
+	"io/ioutil"
 	"os"
 	"path"
 	"testing"
@@ -154,10 +155,14 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	t.Logf("Creating backup directories for %s", serviceUnderTestName)
 	err = os.Chdir(repoLocalDir)
 	require.Nil(t, err)
-	err = os.MkdirAll(globalBackupFolder, os.ModePerm)
+
+	globalBackupFolder, err = ioutil.TempDir("./", globalBackupFolder)
 	require.Nil(t, err)
+	defer os.RemoveAll(globalBackupFolder)
+
 	err = os.Chdir(globalBackupFolder)
 	require.Nil(t, err)
+
 	err = os.MkdirAll(serviceBackupFolder, os.ModePerm)
 	require.Nil(t, err)
 
