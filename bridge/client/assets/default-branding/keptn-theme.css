@@ -1,8 +1,8 @@
 :root {
   --dt-theme-main-default-color: #006bb8;
-  --dt-theme-main-hover-color: #0058A8;
-  --dt-theme-main-active-color: #004EA0;
-  --dt-theme-main-background-color: #C2E5FF;
+  --dt-theme-main-hover-color: #0058a8;
+  --dt-theme-main-active-color: #004ea0;
+  --dt-theme-main-background-color: #c2e5ff;
   --dt-warning-default-color: #c9a000;
   --dt-warning-hover-color: #ab8300;
   --dt-warning-active-color: #8e6500;
@@ -23,7 +23,7 @@
   --dt-critical-active-color: #7a0004;
   --dt-critical-background-color: #f9acaf;
 
-  --dt-accent-active-background-color: #C2E5FF;
+  --dt-accent-active-background-color: #c2e5ff;
 }
 
 .dt-button {
@@ -53,7 +53,8 @@
   --dt-highlight-color: var(--dt-theme-main-background-color);
 }
 
-.dt-option:not(.dt-option-disabled).dt-option-active, .dt-option:not(.dt-option-disabled):hover {
+.dt-option:not(.dt-option-disabled).dt-option-active,
+.dt-option:not(.dt-option-disabled):hover {
   background-color: var(--dt-theme-main-background-color) !important;
 }
 
@@ -85,7 +86,8 @@
   stroke: var(--dt-neutral-active-color) !important;
 }
 
-.dt-quick-filter-close, .dt-quick-filter-open {
+.dt-quick-filter-close,
+.dt-quick-filter-open {
   color: var(--dt-theme-main-default-color) !important;
 }
 

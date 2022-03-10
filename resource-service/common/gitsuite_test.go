@@ -3,18 +3,6 @@ package common
 import (
 	"errors"
 	"fmt"
-	"github.com/go-git/go-billy/v5/memfs"
-	fixtures "github.com/go-git/go-git-fixtures/v4"
-	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/config"
-	"github.com/go-git/go-git/v5/plumbing"
-	"github.com/go-git/go-git/v5/plumbing/object"
-	"github.com/go-git/go-git/v5/plumbing/transport/http"
-	"github.com/go-git/go-git/v5/storage/memory"
-	common_mock "github.com/keptn/keptn/resource-service/common/fake"
-	"github.com/keptn/keptn/resource-service/common_models"
-	kerrors "github.com/keptn/keptn/resource-service/errors"
-	. "gopkg.in/check.v1"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -23,6 +11,20 @@ import (
 	"syscall"
 	"testing"
 	"time"
+
+	"github.com/go-git/go-billy/v5/memfs"
+	fixtures "github.com/go-git/go-git-fixtures/v4"
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/config"
+	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/object"
+	"github.com/go-git/go-git/v5/plumbing/transport"
+	"github.com/go-git/go-git/v5/plumbing/transport/http"
+	"github.com/go-git/go-git/v5/storage/memory"
+	common_mock "github.com/keptn/keptn/resource-service/common/fake"
+	"github.com/keptn/keptn/resource-service/common_models"
+	kerrors "github.com/keptn/keptn/resource-service/errors"
+	. "gopkg.in/check.v1"
 )
 
 const TESTPATH = "../test/tmp"
@@ -990,6 +992,110 @@ func (s *BaseSuite) Test_getGitKeptnEmail(c *C) {
 		}
 	}
 
+}
+
+func Test_getAuthMethod(t *testing.T) {
+	tests := []struct {
+		name           string
+		gitContext     common_models.GitContext
+		wantErr        bool
+		expectedOutput transport.AuthMethod
+	}{
+		{
+			name: "valid credentials",
+			gitContext: common_models.GitContext{
+				Credentials: &common_models.GitCredentials{
+					RemoteURI:         "https://some.url",
+					Token:             "some-token",
+					User:              "user",
+					GitPrivateKey:     "",
+					GitPrivateKeyPass: "",
+					GitProxyURL:       "",
+					GitProxyInsecure:  false,
+					GitProxyScheme:    "",
+					GitProxyUser:      "",
+					GitProxyPassword:  "",
+				},
+				Project: "my-proj",
+			},
+			wantErr: false,
+			expectedOutput: &http.BasicAuth{
+				Username: "user",
+				Password: "some-token",
+			},
+		},
+		{
+			name: "invalid credentials",
+			gitContext: common_models.GitContext{
+				Credentials: &common_models.GitCredentials{
+					RemoteURI:         "https://some.url",
+					Token:             "",
+					User:              "user",
+					GitPrivateKey:     "",
+					GitPrivateKeyPass: "",
+					GitProxyURL:       "",
+					GitProxyInsecure:  false,
+					GitProxyScheme:    "",
+					GitProxyUser:      "",
+					GitProxyPassword:  "",
+				},
+				Project: "my-proj",
+			},
+			wantErr:        false,
+			expectedOutput: nil,
+		},
+		{
+			name: "invalid ssh credentials",
+			gitContext: common_models.GitContext{
+				Credentials: &common_models.GitCredentials{
+					RemoteURI:         "ssh://some.url",
+					Token:             "",
+					User:              "user",
+					GitPrivateKey:     "private-key",
+					GitPrivateKeyPass: "password",
+					GitProxyURL:       "",
+					GitProxyInsecure:  false,
+					GitProxyScheme:    "",
+					GitProxyUser:      "",
+					GitProxyPassword:  "",
+				},
+				Project: "my-proj",
+			},
+			wantErr:        true,
+			expectedOutput: nil,
+		},
+		{
+			name: "dumb credentials",
+			gitContext: common_models.GitContext{
+				Credentials: &common_models.GitCredentials{
+					RemoteURI:         "ssh://some.url",
+					Token:             "some",
+					User:              "user",
+					GitPrivateKey:     "",
+					GitPrivateKeyPass: "password",
+					GitProxyURL:       "",
+					GitProxyInsecure:  false,
+					GitProxyScheme:    "",
+					GitProxyUser:      "hate",
+					GitProxyPassword:  "",
+				},
+				Project: "my-proj",
+			},
+			wantErr:        false,
+			expectedOutput: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			auth, err := getAuthMethod(tt.gitContext)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("getAuthMethod() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if err != nil && auth != tt.expectedOutput {
+				t.Errorf("getAuthMethod() auth = %v, expectedOutput %v", err, tt.wantErr)
+			}
+		})
+	}
 }
 
 func (s *BaseSuite) NewGitContext() common_models.GitContext {

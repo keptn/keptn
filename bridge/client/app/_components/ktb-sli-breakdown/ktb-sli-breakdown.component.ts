@@ -95,22 +95,13 @@ export class KtbSliBreakdownComponent implements OnInit {
       this.columnNames = ['details', 'name', 'value', 'weight', 'passTargets', 'warningTargets', 'result', 'score'];
     }
     return indicatorResults.map((indicatorResult) => {
-      let accSum = 0;
-      let accCount = 0;
-      for (const comparedIndicatorResult of this.comparedIndicatorResults) {
-        const result = comparedIndicatorResult.find((res) => res.value.metric === indicatorResult.value.metric);
-        if (result) {
-          accSum += result.value.value;
-          accCount++;
-        }
-      }
-      const comparedValue = accSum / accCount;
+      const comparedValue = indicatorResult.value.comparedValue ?? this.calculateComparedValue(indicatorResult);
       const compared: Partial<SliResult> = {};
-      if (comparedValue) {
+      if (!isNaN(comparedValue)) {
         compared.comparedValue = AppUtils.formatNumber(comparedValue);
         compared.calculatedChanges = {
-          absolute: AppUtils.formatNumber(comparedValue - indicatorResult.value.value),
-          relative: AppUtils.formatNumber((comparedValue / (indicatorResult.value.value || 1)) * 100 - 100),
+          absolute: AppUtils.formatNumber(indicatorResult.value.value - comparedValue),
+          relative: AppUtils.formatNumber((indicatorResult.value.value / (comparedValue || 1)) * 100 - 100),
         };
       }
 
@@ -118,7 +109,7 @@ export class KtbSliBreakdownComponent implements OnInit {
         name: indicatorResult.displayName || indicatorResult.value.metric,
         value: indicatorResult.value.message || AppUtils.formatNumber(indicatorResult.value.value),
         result: indicatorResult.status,
-        score: totalscore === 0 ? 0 : AppUtils.round((indicatorResult.score / totalscore) * this.score, 2),
+        score: totalscore === 0 ? 0 : (indicatorResult.score / totalscore) * this.score,
         passTargets: indicatorResult.passTargets,
         warningTargets: indicatorResult.warningTargets,
         targets: indicatorResult.targets,
@@ -129,6 +120,19 @@ export class KtbSliBreakdownComponent implements OnInit {
         ...compared,
       };
     });
+  }
+
+  public calculateComparedValue(indicatorResult: IndicatorResult): number {
+    let accSum = 0;
+    let accCount = 0;
+    for (const comparedIndicatorResult of this.comparedIndicatorResults) {
+      const result = comparedIndicatorResult.find((res) => res.value.metric === indicatorResult.value.metric);
+      if (result) {
+        accSum += result.value.value;
+        accCount++;
+      }
+    }
+    return accSum / accCount;
   }
 
   private sortIndicatorResult(resultA: IndicatorResult, resultB: IndicatorResult): number {

@@ -5,6 +5,7 @@ export type Target = { criteria: string; targetValue: number; violated: boolean 
 export interface IndicatorResult {
   value: {
     value: number;
+    comparedValue?: number;
     metric: string;
     success: boolean;
     message?: string;

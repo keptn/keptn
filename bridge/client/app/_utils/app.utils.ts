@@ -14,20 +14,25 @@ export class AppUtils {
     return JSON.parse(JSON.stringify(data));
   }
 
+  public static truncateNumber(value: number, decimals: number): number {
+    return Math.trunc(value * Math.pow(10, decimals)) / Math.pow(10, decimals);
+  }
+
   public static round(value: number, places: number): number {
     return +(Math.round(Number(`${value}e+${places}`)) + `e-${places}`);
   }
 
   public static formatNumber(value: number): number {
+    const abs = Math.abs(value);
     let n = value;
-    if (n < 1) {
-      n = Math.floor(n * 1000) / 1000;
-    } else if (n < 100) {
-      n = Math.floor(n * 100) / 100;
-    } else if (n < 1000) {
-      n = Math.floor(n * 10) / 10;
+    if (abs < 1) {
+      n = Math.trunc(n * 1000) / 1000;
+    } else if (abs < 100) {
+      n = Math.trunc(n * 100) / 100;
+    } else if (abs < 1000) {
+      n = Math.trunc(n * 10) / 10;
     } else {
-      n = Math.floor(n);
+      n = Math.trunc(n);
     }
 
     return n;
