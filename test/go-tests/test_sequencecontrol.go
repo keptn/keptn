@@ -181,6 +181,174 @@ func Test_SequenceControl_AbortQueuedSequence(t *testing.T) {
 	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&secondContextID}, 2*time.Minute, []string{scmodels.SequenceAborted})
 }
 
+func Test_SequenceControl_AbortPausedSequence(t *testing.T) {
+	projectName := "sequence-abort3"
+	serviceName := "myservice"
+	stageName := "dev"
+	sequencename := "mysequence"
+	source := "golang-test"
+
+	shipyardFilePath, err := CreateTmpShipyardFile(sequenceAbortShipyard)
+	require.Nil(t, err)
+	defer os.Remove(shipyardFilePath)
+
+	t.Logf("creating project %s", projectName)
+	projectName, err = CreateProject(projectName, shipyardFilePath, true)
+	require.Nil(t, err)
+
+	t.Logf("creating service %s", serviceName)
+	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
+
+	require.Nil(t, err)
+	require.Contains(t, output, "created successfully")
+
+	t.Logf("triggering sequence %s in stage %s", sequencename, stageName)
+	keptnContextID, _ := TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
+
+	// verify state
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{scmodels.SequenceStartedState})
+
+	taskTriggeredEvent, err := GetLatestEventOfType(keptnContextID, projectName, stageName, keptnv2.GetTriggeredEventType("task1"))
+	require.Nil(t, err)
+	require.NotNil(t, taskTriggeredEvent)
+
+	cloudEvent := keptnv2.ToCloudEvent(*taskTriggeredEvent)
+
+	keptn, err := keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: &APIEventSender{}})
+	require.Nil(t, err)
+	require.NotNil(t, keptn)
+
+	t.Log("sending task started event")
+	_, err = keptn.SendTaskStartedEvent(nil, source)
+
+	// pause the sequence
+	t.Log("pausing sequence")
+	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), scmodels.SequenceControlCommand{
+		State: scmodels.PauseSequence,
+		Stage: "",
+	}, 3)
+	require.Nil(t, err)
+	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
+
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{scmodels.SequencePaused})
+
+	// now trigger another sequence and make sure it is started eventually
+	// trigger a second sequence which should be put in the queue
+	secondContextID, _ := TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
+
+	// now abort the first sequence
+	t.Log("aborting first sequence")
+	resp, err = ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), scmodels.SequenceControlCommand{
+		State: scmodels.AbortSequence,
+		Stage: "",
+	}, 3)
+	require.Nil(t, err)
+	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
+
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{scmodels.SequenceAborted})
+
+	// now that the first sequence is aborted, the other sequence should eventually be started
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&secondContextID}, 2*time.Minute, []string{scmodels.SequenceStartedState})
+
+	// also make sure that the triggered event for the first task has been sent
+	require.Eventually(t, func() bool {
+		taskTriggeredEvent, err := GetLatestEventOfType(secondContextID, projectName, stageName, keptnv2.GetTriggeredEventType("task1"))
+		if err != nil || taskTriggeredEvent == nil {
+			return false
+		}
+		return true
+	}, 1*time.Minute, 10*time.Second)
+
+}
+
+func Test_SequenceControl_AbortPausedSequenceTaskPartiallyFinished(t *testing.T) {
+	projectName := "sequence-abort4"
+	serviceName := "myservice"
+	stageName := "dev"
+	sequencename := "mysequence"
+	source1 := "golang-test-1"
+	source2 := "golang-test-2"
+
+	shipyardFilePath, err := CreateTmpShipyardFile(sequenceAbortShipyard)
+	require.Nil(t, err)
+	defer os.Remove(shipyardFilePath)
+
+	t.Logf("creating project %s", projectName)
+	projectName, err = CreateProject(projectName, shipyardFilePath, true)
+	require.Nil(t, err)
+
+	t.Logf("creating service %s", serviceName)
+	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
+
+	require.Nil(t, err)
+	require.Contains(t, output, "created successfully")
+
+	t.Logf("triggering sequence %s in stage %s", sequencename, stageName)
+	keptnContextID, _ := TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
+
+	// verify state
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{scmodels.SequenceStartedState})
+
+	taskTriggeredEvent, err := GetLatestEventOfType(keptnContextID, projectName, stageName, keptnv2.GetTriggeredEventType("task1"))
+	require.Nil(t, err)
+	require.NotNil(t, taskTriggeredEvent)
+
+	cloudEvent := keptnv2.ToCloudEvent(*taskTriggeredEvent)
+
+	keptn, err := keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: &APIEventSender{}})
+	require.Nil(t, err)
+	require.NotNil(t, keptn)
+
+	t.Log("sending two task started events")
+	_, err = keptn.SendTaskStartedEvent(nil, source1)
+	require.Nil(t, err)
+	_, err = keptn.SendTaskStartedEvent(nil, source2)
+	require.Nil(t, err)
+
+	t.Logf("send one finished event with result 'fail'")
+	_, err = keptn.SendTaskFinishedEvent(&keptnv2.EventData{Result: keptnv2.ResultFailed, Status: keptnv2.StatusSucceeded}, source1)
+	require.Nil(t, err)
+
+	// pause the sequence
+	t.Log("pausing sequence")
+	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), scmodels.SequenceControlCommand{
+		State: scmodels.PauseSequence,
+		Stage: "",
+	}, 3)
+	require.Nil(t, err)
+	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
+
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{scmodels.SequencePaused})
+
+	// now trigger another sequence and make sure it is started eventually
+	// trigger a second sequence which should be put in the queue
+	secondContextID, _ := TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
+
+	// now abort the first sequence
+	t.Log("aborting first sequence")
+	resp, err = ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), scmodels.SequenceControlCommand{
+		State: scmodels.AbortSequence,
+		Stage: "",
+	}, 3)
+	require.Nil(t, err)
+	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
+
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{scmodels.SequenceAborted})
+
+	// now that the first sequence is aborted, the other sequence should eventually be started
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&secondContextID}, 2*time.Minute, []string{scmodels.SequenceStartedState})
+
+	// also make sure that the triggered event for the first task has been sent
+	require.Eventually(t, func() bool {
+		taskTriggeredEvent, err := GetLatestEventOfType(secondContextID, projectName, stageName, keptnv2.GetTriggeredEventType("task1"))
+		if err != nil || taskTriggeredEvent == nil {
+			return false
+		}
+		return true
+	}, 1*time.Minute, 10*time.Second)
+
+}
+
 func Test_SequenceControl_PauseAndResume(t *testing.T) {
 	projectName := "sequence-pause-and-resume"
 	serviceName := "myservice"
