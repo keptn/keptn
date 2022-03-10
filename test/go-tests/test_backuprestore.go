@@ -225,7 +225,7 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	//restore git-credentials
 
 	t.Logf("Executing restore of git-credentials")
-	_, err = ExecuteCommandf("kubectl apply -f %s -n keptn -n %s", secretFileName, keptnNamespace)
+	_, err = ExecuteCommandf("kubectl apply -f %s -n %s", secretFileName, keptnNamespace)
 	require.Nil(t, err)
 
 	//restore Configuration/Resource Service data
