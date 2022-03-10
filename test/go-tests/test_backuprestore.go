@@ -207,7 +207,9 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	//backup git-credentials
 
 	t.Logf("Executing backup of git-credentials")
-	_, err = ExecuteCommandf("kubectl get secret -n %s git-credentials-%s -oyaml > %s", keptnNamespace, projectName, secretFileName)
+	secret, err := ExecuteCommandf("kubectl get secret -n %s git-credentials-%s -oyaml", keptnNamespace, projectName)
+	require.Nil(t, err)
+	err = os.WriteFile(secretFileName, []byte(secret), 0777)
 	require.Nil(t, err)
 
 	//deleting testing project
