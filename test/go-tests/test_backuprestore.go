@@ -71,17 +71,15 @@ spec:
 
 func Test_BackupRestoreConfigService(t *testing.T) {
 	serviceName := "configuration-service"
-	backupGitCredentials := false
-	BackupRestoreTestGeneric(t, serviceName, backupGitCredentials)
+	BackupRestoreTestGeneric(t, serviceName)
 }
 
 func Test_BackupRestoreResourceService(t *testing.T) {
 	serviceName := "resource-service"
-	backupGitCredentials := true
-	BackupRestoreTestGeneric(t, serviceName, backupGitCredentials)
+	BackupRestoreTestGeneric(t, serviceName)
 }
 
-func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string, backupGitCredentials bool) {
+func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	repoLocalDir := "../assets/podtato-head"
 	projectName := "backup-restore"
 	serviceName := "helloservice"
@@ -89,7 +87,7 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string, backupG
 	serviceJmeterDir := path.Join(repoLocalDir, "jmeter")
 	keptnNamespace := GetKeptnNameSpaceFromEnv()
 	serviceHealthCheckEndpoint := "/metrics"
-	secretFileName := "git-credentials-secret.txt"
+	secretFileName := "-credentials.yaml"
 	serviceBackupFolder := "svc-backup"
 	globalBackupFolder := "keptn-backup"
 	mongoDBBackupFolder := "mongodb-backup"
@@ -99,6 +97,8 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string, backupG
 	require.Nil(t, err)
 	projectName, err = CreateProject(projectName, shipyardFilePath)
 	require.Nil(t, err)
+
+	secretFileName = projectName + secretFileName
 
 	t.Logf("Creating service %s in project %s", serviceName, projectName)
 	_, err = ExecuteCommandf("keptn create service %s --project %s", serviceName, projectName)
@@ -201,11 +201,9 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string, backupG
 
 	//backup git-credentials
 
-	if backupGitCredentials {
-		t.Logf("Executing backup of git-credentials")
-		_, err = ExecuteCommandf("kubectl get secret git-credentials-%s -n %s -ojsonpath={.data.git-credentials} | base64 --decode > %s", projectName, keptnNamespace, secretFileName)
-		require.Nil(t, err)
-	}
+	t.Logf("Executing backup of git-credentials")
+	_, err = ExecuteCommandf("kubectl get secret -n %s git-credentials-%s -oyaml > %s", keptnNamespace, projectName, secretFileName)
+	require.Nil(t, err)
 
 	//deleting testing project
 
@@ -219,11 +217,9 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string, backupG
 
 	//restore git-credentials
 
-	if backupGitCredentials {
-		t.Logf("Executing restore of git-credentials")
-		_, err = ExecuteCommandf("kubectl create secret generic git-credentials-%s --from-file=git-credentials=./%s -n %s", projectName, secretFileName, keptnNamespace)
-		require.Nil(t, err)
-	}
+	t.Logf("Executing restore of git-credentials")
+	_, err = ExecuteCommandf("kubectl apply -f %s -n keptn -n %s", secretFileName, keptnNamespace)
+	require.Nil(t, err)
 
 	//restore Configuration/Resource Service data
 
