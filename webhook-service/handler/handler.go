@@ -257,7 +257,7 @@ func (th *TaskHandler) getWebHookConfig(keptnHandler sdk.IKeptn, eventAdapter *l
 	}
 
 	// finally, look at project level
-	resourceScope = *keptn.NewResourceScope().Project(eventAdapter.Project()).Service(eventAdapter.Service()).Resource(webhookConfigFileName)
+	resourceScope = *keptn.NewResourceScope().Project(eventAdapter.Project()).Resource(webhookConfigFileName)
 	resource, err = keptnHandler.GetResourceHandler().GetResource(resourceScope, keptn.AppendQuery(commitOption))
 	if err == nil && resource != nil {
 		if matchingWebhook := getMatchingWebhookFromResource(resource, subscriptionID); matchingWebhook != nil {
