@@ -6,6 +6,7 @@
         class="text-center pointer stage-item"
         *ngFor="let stage of currentSequence.getStages(); last as isLast"
         (click)="selectStage(stage)"
+        [attr.uitestid]="'keptn-sequence-timeline-stage-' + stage"
       >
         <div class="stage-info">
           <dt-icon
@@ -46,7 +47,14 @@
           ></span>
         </div>
         <p class="m-0">|</p>
-        <p class="m-0" [textContent]="currentSequence.time | date: 'HH:mm'"></p>
+        <p
+          *ngIf="currentSequence.traces.length !== 0; else showLoadingSpinner"
+          class="m-0"
+          [textContent]="currentSequence.getStageTime(stage) | date: 'HH:mm'"
+        ></p>
+        <ng-template #showLoadingSpinner>
+          <dt-loading-spinner class="gray-loading" aria-label="Fetching events..."></dt-loading-spinner>
+        </ng-template>
       </div>
     </div>
   </div>

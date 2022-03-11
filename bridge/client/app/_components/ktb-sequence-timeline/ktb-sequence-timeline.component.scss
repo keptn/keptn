@@ -56,4 +56,9 @@
       background-color: $aborted-color;
     }
   }
+
+  dt-loading-spinner.gray-loading {
+    height: 20px;
+    width: 20px;
+  }
 }

@@ -507,6 +507,17 @@ describe('Sequence', () => {
     expect(sequence.state).toBe(SequenceState.TIMEDOUT);
   });
 
+  it('should return the start time of a stage', () => {
+    const sequence = getSequenceWithMultipleTracesPerStage();
+    expect(sequence.getStageTime('dev')).toBe('2022-03-02T12:46:50.991Z');
+    expect(sequence.getStageTime('staging')).toBe('2022-03-02T12:55:50.991Z');
+  });
+
+  it('should return undefined for time if traces are not loaded', () => {
+    const sequence = getDefaultSequence();
+    expect(sequence.getStageTime('dev')).toBeUndefined();
+  });
+
   function getDefaultSequence(): Sequence {
     return Sequence.fromJSON(AppUtils.copyObject(SequenceResponseMock[0]));
   }
@@ -528,6 +539,55 @@ describe('Sequence', () => {
     sequence.traces = [
       Trace.fromJSON(AppUtils.copyObject(devTraceObj)),
       Trace.fromJSON(AppUtils.copyObject(stagingTraceObj)),
+    ];
+    return sequence;
+  }
+
+  function getSequenceWithMultipleTracesPerStage(): Sequence {
+    const sequence = Sequence.fromJSON(AppUtils.copyObject(SequenceResponseMock[0]));
+    sequence.traces = [
+      Trace.fromJSON({
+        data: {
+          project: 'sockshop',
+          service: 'carts',
+          stage: 'dev',
+          labels: {
+            label1: 'label1',
+          },
+        },
+        id: 'id1',
+        shkeptncontext: 'keptnContext',
+        time: '2022-03-02T12:46:50.991Z',
+        type: EventTypes.DEPLOYMENT_FINISHED,
+      }),
+      Trace.fromJSON({
+        data: {
+          project: 'sockshop',
+          service: 'carts',
+          stage: 'dev',
+          labels: {
+            label1: 'label1',
+          },
+        },
+        id: 'id2',
+        shkeptncontext: 'keptnContext',
+        time: '2022-03-02T12:50:50.991Z',
+        type: EventTypes.DEPLOYMENT_FINISHED,
+      }),
+      Trace.fromJSON({
+        data: {
+          project: 'sockshop',
+          service: 'carts',
+          stage: 'staging',
+          labels: {
+            label1: 'label1',
+          },
+        },
+        id: 'id3',
+        shkeptncontext: 'keptnContext',
+        time: '2022-03-02T12:55:50.991Z',
+        type: EventTypes.DEPLOYMENT_FINISHED,
+      }),
     ];
     return sequence;
   }

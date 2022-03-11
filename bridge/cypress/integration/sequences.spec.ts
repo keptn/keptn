@@ -1,4 +1,8 @@
+import { SequencesPage } from '../support/pageobjects/SequencesPage';
+
 describe('Sequences', () => {
+  const sequencePage = new SequencesPage();
+
   beforeEach(() => {
     cy.intercept('/api/v1/metadata', { fixture: 'metadata.mock' });
     cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfo.mock' });
@@ -26,13 +30,13 @@ describe('Sequences', () => {
       fixture: 'sequences.sockshop',
     });
 
-    cy.visit('/project/sockshop/sequence');
+    sequencePage.visit('sockshop');
 
     cy.byTestId('keptn-loadingSequences').should('exist');
   });
 
   it('should show an empty state if no sequences are loaded', () => {
-    cy.visit('/project/sockshop/sequence');
+    sequencePage.visit('sockshop');
     cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=25', {
       body: {
         states: [],
@@ -43,13 +47,13 @@ describe('Sequences', () => {
   });
 
   it('should show a list of sequences if everything is loaded', () => {
-    cy.visit('/project/sockshop/sequence');
+    sequencePage.visit('sockshop');
 
     cy.byTestId('keptn-sequence-view-roots').get('ktb-selectable-tile').should('have.length', 4);
   });
 
   it('should show a filtered list if filters are applied', () => {
-    cy.visit('/project/sockshop/sequence');
+    sequencePage.visit('sockshop');
     cy.wait('@SequencesMetadata');
     cy.wait('@Sequences');
     cy.wait(500);
@@ -104,6 +108,43 @@ describe('Sequences', () => {
     testSelectableTiles(1, 'keptn-sequence-info-serviceName', 'carts');
     testSelectableTiles(1, 'keptn-sequence-info-sequenceName', 'delivery');
     testSelectableTiles(1, 'keptn-sequence-info-status', 'succeeded');
+  });
+
+  it('should select sequence and show the right timestamps in the timeline', () => {
+    cy.intercept('/api/mongodb-datastore/event?keptnContext=62cca6f3-dc54-4df6-a04c-6ffc894a4b5e&project=sockshop', {
+      fixture: 'sequence.traces.mock.json',
+    });
+    sequencePage
+      .visit('sockshop')
+      .selectSequence('62cca6f3-dc54-4df6-a04c-6ffc894a4b5e')
+      .assertTimelineTime('dev', '12:41')
+      .assertTimelineTime('staging', '12:42')
+      .assertTimelineTime('production', '12:43');
+  });
+
+  it('should select sequence and show loading indicators if traces are not loaded yet', () => {
+    cy.intercept('/api/mongodb-datastore/event?keptnContext=62cca6f3-dc54-4df6-a04c-6ffc894a4b5e&project=sockshop', {
+      fixture: 'sequence.traces.mock.json',
+      delay: 20_000,
+    });
+    sequencePage
+      .visit('sockshop')
+      .selectSequence('62cca6f3-dc54-4df6-a04c-6ffc894a4b5e')
+      .assertTimelineTimeLoading('dev', true)
+      .assertTimelineTimeLoading('staging', true)
+      .assertTimelineTimeLoading('production', true);
+  });
+
+  it('should select sequence and should not have loading indicators', () => {
+    cy.intercept('/api/mongodb-datastore/event?keptnContext=62cca6f3-dc54-4df6-a04c-6ffc894a4b5e&project=sockshop', {
+      fixture: 'sequence.traces.mock.json',
+    });
+    sequencePage
+      .visit('sockshop')
+      .selectSequence('62cca6f3-dc54-4df6-a04c-6ffc894a4b5e')
+      .assertTimelineTimeLoading('dev', false)
+      .assertTimelineTimeLoading('staging', false)
+      .assertTimelineTimeLoading('production', false);
   });
 
   function clearFilter(): void {
