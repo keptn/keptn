@@ -154,8 +154,8 @@ UI tests in Keptn Bridge must not require any API call. When writing tests, plea
 
 To test your UI tests locally, use following commands:
 
-- `yarn cypress:open` (Linux, macOS), `yarn cypress:open:win32` (Windows) - Development of tests.<br/>This opens a browser where changes where you can run your tests and inspect them. This will be automatically updated on every code change made on the `*.spec.ts` files.
-- or `yarn test:ui` (Linux, macOS), `yarn test:ui:win32` (Windows) - Headless browser mode also used in CI.<br/>This will just run the tests on a headless browser without the possibility to inspect them.
+- `yarn cypress:open` (Linux, macOS), `yarn cypress:open:win32` (Windows) - Used for the local development of tests.<br/>This opens a browser, where you can run your tests and inspect them. The tests will re-run automatically on every code change made on the `*.spec.ts` files.
+- or `yarn test:ui` (Linux, macOS), `yarn test:ui:win32` (Windows) - This starts the headless browser mode that is also used in CI.<br/>This will just run the tests on a headless browser without the possibility to inspect them.
 
 Both commands serve Angular on port 3000 with no live reload - this will also ensure, that no API connection is made.
 
