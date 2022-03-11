@@ -1,11 +1,10 @@
 package handler
 
 import (
-	"github.com/keptn/keptn/resource-service/errors"
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	"github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
+	"net/http"
 )
 
 type IProjectResourceHandler interface {

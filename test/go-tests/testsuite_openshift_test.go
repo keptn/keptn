@@ -38,6 +38,5 @@ func Test_Openshift(t *testing.T) {
 	}
 	t.Run("Test_ZeroDownTimeTriggerSequence", Test_ZeroDownTimeTriggerSequence)
 
-
 	// Platform-specific Tests
 }

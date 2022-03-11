@@ -15,36 +15,36 @@ import (
 )
 
 const createResourcesTestPayload = `{
-  "resources": [
-    {
-      "resourceURI": "resource.yaml",
-      "resourceContent": "c3RyaW5n"
-    }
-  ]
+ "resources": [
+   {
+     "resourceURI": "resource.yaml",
+     "resourceContent": "c3RyaW5n"
+   }
+ ]
 }`
 const createResourcesWithoutBase64EncodingTestPayload = `{
-  "resources": [
-    {
-      "resourceURI": "resource.yaml",
-      "resourceContent": "string"
-    }
-  ]
+ "resources": [
+   {
+     "resourceURI": "resource.yaml",
+     "resourceContent": "string"
+   }
+ ]
 }`
 const createResourcesInvalidResourceURITestPayload = `{
-  "resources": [
-    {
-      "resourceURI": "../resource.yaml",
-      "resourceContent": "c3RyaW5n"
-    }
-  ]
+ "resources": [
+   {
+     "resourceURI": "../resource.yaml",
+     "resourceContent": "c3RyaW5n"
+   }
+ ]
 }`
 
 const updateResourceTestPayload = `{
-  "resourceContent": "c3RyaW5n"
+ "resourceContent": "c3RyaW5n"
 }`
 
 const updateResourceWithoutBase64EncodingTestPayload = `{
-  "resourceContent": "string"
+ "resourceContent": "string"
 }`
 
 var testGetResourceResponse = models.GetResourceResponse{

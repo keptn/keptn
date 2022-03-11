@@ -4,6 +4,8 @@ import (
 	"context"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/keptn/keptn/resource-service/common"
+	nats2 "github.com/keptn/keptn/resource-service/handler/nats"
+	"github.com/keptn/keptn/resource-service/nats"
 	"io/ioutil"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -37,9 +39,14 @@ import (
 
 // @BasePath /v1
 
+const envVarNatsURL = "NATS_URL"
 const envVarLogLevel = "LOG_LEVEL"
+const envVarNatsURLDefault = "nats://keptn-nats"
+const eventProjectDeleteFinished = "sh.keptn.event.project.delete.finished"
 
 func main() {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	if err := envconfig.Process("", &config.Global); err != nil {
 		log.Errorf("Failed to process env var: %v", err)
 		os.Exit(1)
@@ -81,14 +88,14 @@ func main() {
 	fileSystem := common.NewFileSystem(common.GetConfigDir())
 
 	git := common.NewGit(&common.GogitReal{})
-	configurationContext := getConfigurationContext(git, fileSystem)
+	configurationContext := createConfigurationContext(git, fileSystem)
 
 	projectManager := handler.NewProjectManager(git, credentialReader, fileSystem)
 	projectHandler := handler.NewProjectHandler(projectManager)
 	projectController := controller.NewProjectController(projectHandler)
 	projectController.Inject(apiV1)
 
-	stageManager := getStageManager(configurationContext, git, fileSystem, credentialReader)
+	stageManager := createStageManager(configurationContext, git, fileSystem, credentialReader)
 	stageHandler := handler.NewStageHandler(stageManager)
 	stageController := controller.NewStageController(stageHandler)
 	stageController.Inject(apiV1)
@@ -123,6 +130,13 @@ func main() {
 		Handler: engine,
 	}
 
+	eventMsgProcessor := nats2.EventHandler(projectManager)
+	eventMsgHandler := nats.NewKeptnNatsMessageHandler(eventMsgProcessor.Process)
+	connectionHandler := nats.NewNatsConnectionHandler(ctx, natsURLFromEnvVar())
+	if err := connectionHandler.SubscribeToTopics([]string{eventProjectDeleteFinished}, eventMsgHandler); err != nil {
+		log.Fatalf("Could not subscribe to nats: %v", err)
+	}
+
 	// Initializing the server in a goroutine so that
 	// it won't block the graceful shutdown handling below
 	go func() {
@@ -131,11 +145,11 @@ func main() {
 		}
 	}()
 
-	GracefulShutdown(wg, srv)
+	gracefulShutdown(ctx, wg, srv)
 
 }
 
-func getConfigurationContext(git *common.Git, fileSystem *common.FileSystem) handler.IConfigurationContext {
+func createConfigurationContext(git *common.Git, fileSystem *common.FileSystem) handler.IConfigurationContext {
 	var configContext handler.IConfigurationContext
 	if config.Global.DirectoryStageStructure {
 		configContext = handler.NewDirectoryConfigurationContext(git, fileSystem)
@@ -145,7 +159,7 @@ func getConfigurationContext(git *common.Git, fileSystem *common.FileSystem) han
 	return configContext
 }
 
-func getStageManager(configurationContext handler.IConfigurationContext, git common.IGit, fileSystem common.IFileSystem, credentialReader common.CredentialReader) handler.IStageManager {
+func createStageManager(configurationContext handler.IConfigurationContext, git common.IGit, fileSystem common.IFileSystem, credentialReader common.CredentialReader) handler.IStageManager {
 	var stageManager handler.IStageManager
 	if config.Global.DirectoryStageStructure {
 		stageManager = handler.NewDirectoryStageManager(configurationContext, fileSystem, credentialReader, git)
@@ -155,16 +169,13 @@ func getStageManager(configurationContext handler.IConfigurationContext, git com
 	return stageManager
 }
 
-func GracefulShutdown(wg *sync.WaitGroup, srv *http.Server) {
-	// Wait for interrupt signal to gracefully shutdown the server
+func gracefulShutdown(ctx context.Context, wg *sync.WaitGroup, srv *http.Server) {
 	quit := make(chan os.Signal, 1)
 
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	log.Println("Shutting down server...")
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 	wg.Wait()
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Fatal("Server forced to shutdown: ", err)
@@ -174,16 +185,23 @@ func GracefulShutdown(wg *sync.WaitGroup, srv *http.Server) {
 }
 
 func createKubeAPI() (*kubernetes.Clientset, error) {
-	var config *rest.Config
-	config, err := rest.InClusterConfig()
+	var cfg *rest.Config
+	cfg, err := rest.InClusterConfig()
 
 	if err != nil {
 		return nil, err
 	}
 
-	kubeAPI, err := kubernetes.NewForConfig(config)
+	kubeAPI, err := kubernetes.NewForConfig(cfg)
 	if err != nil {
 		return nil, err
 	}
 	return kubeAPI, nil
+}
+
+func natsURLFromEnvVar() string {
+	if natsURL, ok := os.LookupEnv(envVarNatsURL); ok && natsURL != "" {
+		return natsURL
+	}
+	return envVarNatsURLDefault
 }

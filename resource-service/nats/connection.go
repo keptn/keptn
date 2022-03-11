@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/keptn/keptn/shipyard-controller/models"
+	"github.com/keptn/keptn/resource-service/models"
 	"github.com/nats-io/nats.go"
 	logger "github.com/sirupsen/logrus"
 	"reflect"
@@ -12,8 +12,7 @@ import (
 )
 
 const streamName = "keptn"
-const queueGroup = "shipyard-controller"
-const consumerName = "shipyard-controller:all-events"
+const consumerName = "resource-service"
 
 //go:generate moq --skip-ensure -pkg nats_mock -out ./mock/keptn_nats_handler_mock.go . IKeptnNatsMessageHandler
 type IKeptnNatsMessageHandler interface {
@@ -80,7 +79,7 @@ func (nch *NatsConnectionHandler) SubscribeToTopics(topics []string, messageHand
 		nch.topics = topics
 
 		for _, topic := range nch.topics {
-			subscription := NewPullSubscription(nch.ctx, queueGroup, topic, nch.jetStream, messageHandler.Process)
+			subscription := NewPullSubscription(nch.ctx, "", topic, nch.jetStream, messageHandler.Process)
 			if err := subscription.Activate(); err != nil {
 				return fmt.Errorf("could not start subscription: %s", err.Error())
 			}

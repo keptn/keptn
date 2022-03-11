@@ -250,6 +250,8 @@ func (ph *ProjectHandler) DeleteProject(c *gin.Context) {
 
 	if err := ph.sendProjectDeleteSuccessFinishedEvent(keptnContext, projectName); err != nil {
 		log.Errorf("failed to send finished event: %s", err.Error())
+	} else {
+		log.Debug("Deleted project ", projectName)
 	}
 
 	c.JSON(http.StatusOK, models.DeleteProjectResponse{
