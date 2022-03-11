@@ -15,13 +15,12 @@
     "lint:fix": "eslint --fix ./",
     "prettier:check": "prettier --check ./**/*.{js,ts,json,html}",
     "prettier:fix": "prettier --write ./**/*.{js,ts,json,html}",
-    "cypress:open": "run-script-os",
+    "cypress:open": "TZ=Europe/Berlin start-server-and-test 'yarn start:ci' http://localhost:3000 'cypress open'",
     "cypress:open:win32": "set TZ=Europe/Berlin && start-server-and-test 'yarn start:ci' http://localhost:3000 'cypress open'",
-    "cypress:open:default": "TZ=Europe/Berlin start-server-and-test 'yarn start:ci' http://localhost:3000 'cypress open'",
-    "cypress:run": "run-script-os",
+    "cypress:run": "TZ=Europe/Berlin cypress run --browser=chrome",
     "cypress:run:win32": "set TZ=Europe/Berlin && yarn cypress run --browser=chrome",
-    "cypress:run:default": "TZ=Europe/Berlin cypress run --browser=chrome",
-    "test:ui": "start-server-and-test 'yarn start:ci' http://localhost:3000 'yarn cypress:run'"
+    "test:ui": "start-server-and-test 'yarn start:ci' http://localhost:3000 'yarn cypress:run'",
+    "test:ui:win32": "start-server-and-test 'yarn start:ci' http://localhost:3000 'yarn cypress:run:win32'"
   },
   "license": "Apache-2.0",
   "author": "Ermin Muratovic <ermin.muratovic@dynatrace.com>",
@@ -109,7 +108,6 @@
     "minimist": "1.2.5",
     "npm-run-all": "4.1.5",
     "prettier": "2.5.1",
-    "run-script-os": "^1.1.6",
     "start-server-and-test": "1.14.0",
     "ts-node": "10.6.0",
     "typescript": "4.1.6"
