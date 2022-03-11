@@ -23,6 +23,9 @@ import (
 // 			DeleteTaskExecutionFunc: func(keptnContext string, project string, stage string, taskSequenceName string) error {
 // 				panic("mock out the DeleteTaskExecution method")
 // 			},
+// 			DeleteTaskExecutionsFunc: func(keptnContext string, project string, stage string) error {
+// 				panic("mock out the DeleteTaskExecutions method")
+// 			},
 // 			GetTaskExecutionsFunc: func(project string, filter models.TaskExecution) ([]models.TaskExecution, error) {
 // 				panic("mock out the GetTaskExecutions method")
 // 			},
@@ -41,6 +44,9 @@ type TaskSequenceRepoMock struct {
 
 	// DeleteTaskExecutionFunc mocks the DeleteTaskExecution method.
 	DeleteTaskExecutionFunc func(keptnContext string, project string, stage string, taskSequenceName string) error
+
+	// DeleteTaskExecutionsFunc mocks the DeleteTaskExecutions method.
+	DeleteTaskExecutionsFunc func(keptnContext string, project string, stage string) error
 
 	// GetTaskExecutionsFunc mocks the GetTaskExecutions method.
 	GetTaskExecutionsFunc func(project string, filter models.TaskExecution) ([]models.TaskExecution, error)
@@ -70,6 +76,15 @@ type TaskSequenceRepoMock struct {
 			// TaskSequenceName is the taskSequenceName argument value.
 			TaskSequenceName string
 		}
+		// DeleteTaskExecutions holds details about calls to the DeleteTaskExecutions method.
+		DeleteTaskExecutions []struct {
+			// KeptnContext is the keptnContext argument value.
+			KeptnContext string
+			// Project is the project argument value.
+			Project string
+			// Stage is the stage argument value.
+			Stage string
+		}
 		// GetTaskExecutions holds details about calls to the GetTaskExecutions method.
 		GetTaskExecutions []struct {
 			// Project is the project argument value.
@@ -78,10 +93,11 @@ type TaskSequenceRepoMock struct {
 			Filter models.TaskExecution
 		}
 	}
-	lockCreateTaskExecution sync.RWMutex
-	lockDeleteRepo          sync.RWMutex
-	lockDeleteTaskExecution sync.RWMutex
-	lockGetTaskExecutions   sync.RWMutex
+	lockCreateTaskExecution  sync.RWMutex
+	lockDeleteRepo           sync.RWMutex
+	lockDeleteTaskExecution  sync.RWMutex
+	lockDeleteTaskExecutions sync.RWMutex
+	lockGetTaskExecutions    sync.RWMutex
 }
 
 // CreateTaskExecution calls CreateTaskExecutionFunc.
@@ -190,6 +206,45 @@ func (mock *TaskSequenceRepoMock) DeleteTaskExecutionCalls() []struct {
 	mock.lockDeleteTaskExecution.RLock()
 	calls = mock.calls.DeleteTaskExecution
 	mock.lockDeleteTaskExecution.RUnlock()
+	return calls
+}
+
+// DeleteTaskExecutions calls DeleteTaskExecutionsFunc.
+func (mock *TaskSequenceRepoMock) DeleteTaskExecutions(keptnContext string, project string, stage string) error {
+	if mock.DeleteTaskExecutionsFunc == nil {
+		panic("TaskSequenceRepoMock.DeleteTaskExecutionsFunc: method is nil but TaskSequenceRepo.DeleteTaskExecutions was just called")
+	}
+	callInfo := struct {
+		KeptnContext string
+		Project      string
+		Stage        string
+	}{
+		KeptnContext: keptnContext,
+		Project:      project,
+		Stage:        stage,
+	}
+	mock.lockDeleteTaskExecutions.Lock()
+	mock.calls.DeleteTaskExecutions = append(mock.calls.DeleteTaskExecutions, callInfo)
+	mock.lockDeleteTaskExecutions.Unlock()
+	return mock.DeleteTaskExecutionsFunc(keptnContext, project, stage)
+}
+
+// DeleteTaskExecutionsCalls gets all the calls that were made to DeleteTaskExecutions.
+// Check the length with:
+//     len(mockedTaskSequenceRepo.DeleteTaskExecutionsCalls())
+func (mock *TaskSequenceRepoMock) DeleteTaskExecutionsCalls() []struct {
+	KeptnContext string
+	Project      string
+	Stage        string
+} {
+	var calls []struct {
+		KeptnContext string
+		Project      string
+		Stage        string
+	}
+	mock.lockDeleteTaskExecutions.RLock()
+	calls = mock.calls.DeleteTaskExecutions
+	mock.lockDeleteTaskExecutions.RUnlock()
 	return calls
 }
 
