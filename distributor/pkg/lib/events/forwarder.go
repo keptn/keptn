@@ -9,6 +9,7 @@ import (
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/distributor/pkg/config"
+	"github.com/nats-io/nats.go"
 	logger "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
@@ -153,7 +154,7 @@ func (f *Forwarder) createPubSubConnection(topic string) (*cenats.Sender, error)
 	}
 
 	if f.pubSubConnections[topic] == nil {
-		p, err := cenats.NewSender(f.env.PubSubURL, topic, cenats.NatsOptions())
+		p, err := cenats.NewSender(f.env.PubSubURL, topic, cenats.NatsOptions(nats.MaxReconnects(-1)))
 		if err != nil {
 			logger.Errorf("Failed to create nats protocol, %v", err)
 		}
