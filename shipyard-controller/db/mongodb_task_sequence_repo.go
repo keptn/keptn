@@ -88,6 +88,29 @@ func (mdbrepo *TaskSequenceMongoDBRepo) DeleteTaskExecution(keptnContext, projec
 	return nil
 }
 
+func (mdbrepo *TaskSequenceMongoDBRepo) DeleteTaskExecutions(keptnContext, project, stage string) error {
+	err := mdbrepo.DBConnection.EnsureDBConnection()
+	if err != nil {
+		return err
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	collection := mdbrepo.getTaskSequenceCollection(project)
+
+	filter := bson.M{"keptnContext": keptnContext}
+	if stage != "" {
+		filter["stage"] = stage
+	}
+
+	_, err = collection.DeleteMany(ctx, filter)
+	if err != nil {
+		log.Errorf("Could not delete entries with context %s: %s", keptnContext, err.Error())
+		return err
+	}
+	return nil
+}
+
 // DeleteTaskSequenceCollection godoc
 func (mdbrepo *TaskSequenceMongoDBRepo) DeleteRepo(project string) error {
 	err := mdbrepo.DBConnection.EnsureDBConnection()
