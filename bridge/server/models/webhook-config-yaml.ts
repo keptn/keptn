@@ -1,10 +1,10 @@
-import Yaml from 'yaml';
+import { Document, Scalar, YAMLMap, YAMLSeq } from 'yaml';
 import { WebhookConfigMethod } from '../../shared/interfaces/webhook-config';
 import { WebhookConfig, WebhookSecret } from '../../shared/models/webhook-config';
 import { Webhook, WebhookConfigYamlResult } from '../interfaces/webhook-config-yaml-result';
 import { parseCurl } from '../utils/curl.utils';
 
-const order: { [key: string]: number } = {
+const order: { [key in keyof WebhookConfigYamlResult]: number } = {
   apiVersion: 0,
   kind: 1,
   metadata: 2,
@@ -148,8 +148,24 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
   }
 
   public toYAML(): string {
-    return Yaml.stringify(this, {
-      sortMapEntries: (a, b) => order[a.key] - order[b.key],
+    const yamlDoc = new Document(this, {
+      sortMapEntries: (a, b): number =>
+        order[a.key as keyof WebhookConfigYamlResult] - order[b.key as keyof WebhookConfigYamlResult],
+      toStringDefaults: {
+        lineWidth: 0,
+      },
     });
+    this.setCurlToBlockFolded(yamlDoc);
+    return yamlDoc.toString();
+  }
+
+  private setCurlToBlockFolded(yamlDoc: Document): void {
+    const yamlSeq = yamlDoc.getIn(['spec', 'webhooks'], true) as YAMLSeq;
+    for (const webhookYaml of yamlSeq.items) {
+      const requests = (webhookYaml as YAMLMap).get('requests', true) as YAMLSeq;
+      for (const curl of requests.items) {
+        (curl as Scalar).type = 'BLOCK_FOLDED';
+      }
+    }
   }
 }
