@@ -61,7 +61,6 @@ func TestConfigurationStore(t *testing.T) {
 		instance := NewGitConfigurationStore(ts.URL)
 		err := instance.UpdateProject(keptnapimodels.Project{})
 		assert.NotNil(t, err)
-		assert.Contains(t, err.Error(), "404")
 	})
 
 	t.Run("TestDelete_Success", func(t *testing.T) {

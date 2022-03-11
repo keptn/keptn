@@ -60,10 +60,7 @@ func (g GitConfigurationStore) CreateProject(project keptnapimodels.Project) err
 
 func (g GitConfigurationStore) UpdateProject(project keptnapimodels.Project) error {
 	if _, err := g.projectAPI.UpdateConfigurationServiceProject(project); err != nil {
-		if err.Code == http.StatusFailedDependency || err.Code == http.StatusNotFound {
-			return ErrConfigStoreUpstreamNotFound
-		}
-		return errors.New(*err.Message)
+		return g.buildErrResponse(err)
 	}
 
 	return nil
