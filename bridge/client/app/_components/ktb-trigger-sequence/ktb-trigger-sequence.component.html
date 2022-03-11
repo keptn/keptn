@@ -236,7 +236,7 @@
           </button>
           <dt-hint>Has to be before end date</dt-hint>
         </dt-form-field>
-        <dt-form-field class="overlay-origin">
+        <dt-form-field class="overlay-origin full-width-error">
           <dt-label class="required">End at</dt-label>
           <div class="input-overlay" (click)="endDateButton?._elementRef?.nativeElement.click()"></div>
           <input
@@ -268,11 +268,7 @@
           </button>
           <dt-hint>Has to be after start date</dt-hint>
           <dt-error
-            *ngIf="
-              evaluationFormData.startDatetime &&
-              evaluationFormData.endDatetime &&
-              (!isValidStartBeforeEnd || !isValidStartEndDuration)
-            "
+            *ngIf="!isValidStartBeforeEnd || !isValidStartEndDuration"
             uitestid="keptn-trigger-evaluation-date-error"
           >
             <ng-container *ngIf="!isValidStartBeforeEnd">Start date must be before end date</ng-container>

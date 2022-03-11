@@ -22,6 +22,11 @@
   .dt-input {
     border: none;
   }
+
+  .dt-form-field.full-width-error .dt-form-field-error {
+    width: calc(200% + 15px);
+    left: calc(-100% - 15px);
+  }
 }
 
 .overlay-origin {
