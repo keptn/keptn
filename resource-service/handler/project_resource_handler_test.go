@@ -751,3 +751,79 @@ func TestProjectResourceHandler_UpdateProjectResource(t *testing.T) {
 		})
 	}
 }
+
+func TestProjectResourceHandler_DeleteProjectResource(t *testing.T) {
+	type fields struct {
+		ProjectResourceManager *handler_mock.IResourceManagerMock
+	}
+	tests := []struct {
+		name       string
+		fields     fields
+		request    *http.Request
+		wantParams *models.DeleteResourceParams
+		wantStatus int
+	}{
+		{
+			name: "delete resource",
+			fields: fields{
+				ProjectResourceManager: &handler_mock.IResourceManagerMock{DeleteResourceFunc: func(params models.DeleteResourceParams) (*models.WriteResourceResponse, error) {
+					return &models.WriteResourceResponse{CommitID: "my-commit-id"}, nil
+				}},
+			},
+			request: httptest.NewRequest(http.MethodDelete, "/project/my-project/resource/resource.yaml", nil),
+			wantParams: &models.DeleteResourceParams{
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
+				},
+				ResourceURI: "resource.yaml",
+			},
+			wantStatus: http.StatusOK,
+		},
+		{
+			name: "project name empty",
+			fields: fields{
+				ProjectResourceManager: &handler_mock.IResourceManagerMock{DeleteResourceFunc: func(params models.DeleteResourceParams) (*models.WriteResourceResponse, error) {
+					return nil, errors.New("oops")
+				}},
+			},
+			request:    httptest.NewRequest(http.MethodDelete, "/project/%20/resource/resource.yaml", nil),
+			wantParams: nil,
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name: "random error",
+			fields: fields{
+				ProjectResourceManager: &handler_mock.IResourceManagerMock{DeleteResourceFunc: func(params models.DeleteResourceParams) (*models.WriteResourceResponse, error) {
+					return nil, errors.New("oops")
+				}},
+			},
+			request: httptest.NewRequest(http.MethodDelete, "/project/my-project/resource/resource.yaml", nil),
+			wantParams: &models.DeleteResourceParams{
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
+				},
+				ResourceURI: "resource.yaml",
+			},
+			wantStatus: http.StatusInternalServerError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ph := NewProjectResourceHandler(tt.fields.ProjectResourceManager)
+
+			router := gin.Default()
+			router.DELETE("/project/:projectName/resource/:resourceURI", ph.DeleteProjectResource)
+
+			resp := performRequest(router, tt.request)
+
+			if tt.wantParams != nil {
+				require.Len(t, tt.fields.ProjectResourceManager.DeleteResourceCalls(), 1)
+				require.Equal(t, *tt.wantParams, tt.fields.ProjectResourceManager.DeleteResourceCalls()[0].Params)
+			} else {
+				require.Empty(t, tt.fields.ProjectResourceManager.DeleteResourceCalls())
+			}
+
+			require.Equal(t, tt.wantStatus, resp.Code)
+		})
+	}
+}
