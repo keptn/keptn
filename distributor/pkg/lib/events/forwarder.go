@@ -128,7 +128,7 @@ func (f *Forwarder) forwardEventToNATSServer(event cloudevents.Event) error {
 	cloudevents.WithEncodingStructured(context.Background())
 
 	if result := c.Send(context.Background(), event); cloudevents.IsUndelivered(result) {
-		logger.Errorf("Failed to send cloud event: %v", err)
+		logger.Errorf("Failed to send cloud event: %v", result.Error())
 	} else {
 		logger.Infof("Sent: %s, accepted: %t", event.ID(), cloudevents.IsACK(result))
 	}
