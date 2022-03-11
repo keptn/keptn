@@ -15,7 +15,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: resource-service
       app.kubernetes.io/instance: keptn
-  replicas: 3
+  replicas: 1
   strategy:
     type: Recreate
   template:
@@ -73,22 +73,3 @@ spec:
       volumes:
       - name: resource-volume
         emptyDir: {}
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: configuration-service
-  namespace: keptn
-  labels:
-    app.kubernetes.io/name: configuration-service
-    app.kubernetes.io/instance: keptn
-    app.kubernetes.io/part-of: keptn-keptn
-    app.kubernetes.io/component: control-plane
-spec:
-  ports:
-  - port: 8080
-    targetPort: 8080
-    protocol: TCP
-  selector:
-    app.kubernetes.io/name: resource-service
-    app.kubernetes.io/instance: keptn
