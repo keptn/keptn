@@ -5,15 +5,18 @@ import (
 	"errors"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/api/utils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/go-sdk/pkg/sdk"
 	"github.com/keptn/keptn/webhook-service/handler"
+	fake2 "github.com/keptn/keptn/webhook-service/handler/fake"
 	"github.com/keptn/keptn/webhook-service/lib"
 	"github.com/keptn/keptn/webhook-service/lib/fake"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"log"
+	"reflect"
 	"testing"
 )
 
@@ -766,4 +769,204 @@ func TestTaskHandler_CurlExecutorFailsHideSecret(t *testing.T) {
 	assert.Equal(t, keptnv2.StatusErrored, eventData.Status)
 	assert.Equal(t, keptnv2.ResultFailed, eventData.Result)
 	assert.NotContains(t, eventData.Message, "my-secret-value")
+}
+
+func TestTaskHandler_Execute_WebhookConfigInService(t *testing.T) {
+	templateEngineMock := &fake.ITemplateEngineMock{ParseTemplateFunc: func(data interface{}, templateStr string) (string, error) {
+		tplE := &lib.TemplateEngine{}
+		return tplE.ParseTemplate(data, templateStr)
+	}}
+	secretReaderMock := &fake.ISecretReaderMock{}
+	secretReaderMock.ReadSecretFunc = func(name string, key string) (string, error) {
+		return "my-secret-value", nil
+	}
+	curlExecutorMock := &fake.ICurlExecutorMock{}
+	curlExecutorMock.CurlFunc = func(curlCmd string) (string, error) {
+		return "success", nil
+	}
+
+	resourceHandlerMock := &fake2.IResourceHandlerMock{}
+	resourceHandlerMock.GetResourceFunc = func(scope api.ResourceScope, options ...api.URIOption) (*models.Resource, error) {
+		return &models.Resource{
+			Metadata:        &models.Version{Version: "CommitID"},
+			ResourceContent: webHookContent,
+			ResourceURI:     nil,
+		}, nil
+	}
+
+	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
+
+	fakeKeptn := sdk.NewFakeKeptn(
+		"test-webhook-svc")
+
+	fakeKeptn.SetResourceHandler(resourceHandlerMock)
+	fakeKeptn.AddTaskHandler("*", taskHandler)
+	fakeKeptn.SetAutomaticResponse(false)
+
+	fakeKeptn.Start()
+	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
+
+	//verify sent events
+	require.Equal(t, 2, len(fakeKeptn.GetEventSender().SentEvents))
+	assert.Equal(t, "sh.keptn.event.webhook.started", fakeKeptn.GetEventSender().SentEvents[0].Type())
+	assert.Equal(t, "sh.keptn.event.webhook.finished", fakeKeptn.GetEventSender().SentEvents[1].Type())
+
+	finishedEvent, err := keptnv2.ToKeptnEvent(fakeKeptn.GetEventSender().SentEvents[1])
+	eventData := &keptnv2.EventData{}
+	keptnv2.EventDataAs(finishedEvent, eventData)
+	require.Nil(t, err)
+	assert.Equal(t, keptnv2.StatusSucceeded, eventData.Status)
+	assert.Equal(t, keptnv2.ResultPass, eventData.Result)
+
+	require.Len(t, resourceHandlerMock.GetResourceCalls(), 1)
+
+	// need to use reflection package to inspect passed parameters since the properties are unexported
+	scopeVals := reflect.ValueOf(resourceHandlerMock.GetResourceCalls()[0].Scope)
+	require.Equal(t, "myservice", scopeVals.FieldByName("service").String())
+	require.Equal(t, "mystage", scopeVals.FieldByName("stage").String())
+	require.Equal(t, "myproject", scopeVals.FieldByName("project").String())
+}
+
+func TestTaskHandler_Execute_WebhookConfigInStage(t *testing.T) {
+	templateEngineMock := &fake.ITemplateEngineMock{ParseTemplateFunc: func(data interface{}, templateStr string) (string, error) {
+		tplE := &lib.TemplateEngine{}
+		return tplE.ParseTemplate(data, templateStr)
+	}}
+	secretReaderMock := &fake.ISecretReaderMock{}
+	secretReaderMock.ReadSecretFunc = func(name string, key string) (string, error) {
+		return "my-secret-value", nil
+	}
+	curlExecutorMock := &fake.ICurlExecutorMock{}
+	curlExecutorMock.CurlFunc = func(curlCmd string) (string, error) {
+		return "success", nil
+	}
+
+	resourceHandlerMock := &fake2.IResourceHandlerMock{}
+	nrResourceRequests := 0
+	resourceHandlerMock.GetResourceFunc = func(scope api.ResourceScope, options ...api.URIOption) (*models.Resource, error) {
+		// the first request, i.e. when checking  at service level, will return no result
+		if nrResourceRequests == 0 {
+			nrResourceRequests++
+			return nil, nil
+		}
+		// the second request (stage-level) will return something
+		return &models.Resource{
+			Metadata:        &models.Version{Version: "CommitID"},
+			ResourceContent: webHookContent,
+			ResourceURI:     nil,
+		}, nil
+	}
+
+	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
+
+	fakeKeptn := sdk.NewFakeKeptn(
+		"test-webhook-svc")
+
+	fakeKeptn.SetResourceHandler(resourceHandlerMock)
+	fakeKeptn.AddTaskHandler("*", taskHandler)
+	fakeKeptn.SetAutomaticResponse(false)
+
+	fakeKeptn.Start()
+	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
+
+	//verify sent events
+	require.Equal(t, 2, len(fakeKeptn.GetEventSender().SentEvents))
+	assert.Equal(t, "sh.keptn.event.webhook.started", fakeKeptn.GetEventSender().SentEvents[0].Type())
+	assert.Equal(t, "sh.keptn.event.webhook.finished", fakeKeptn.GetEventSender().SentEvents[1].Type())
+
+	finishedEvent, err := keptnv2.ToKeptnEvent(fakeKeptn.GetEventSender().SentEvents[1])
+	eventData := &keptnv2.EventData{}
+	keptnv2.EventDataAs(finishedEvent, eventData)
+	require.Nil(t, err)
+	assert.Equal(t, keptnv2.StatusSucceeded, eventData.Status)
+	assert.Equal(t, keptnv2.ResultPass, eventData.Result)
+
+	require.Len(t, resourceHandlerMock.GetResourceCalls(), 2)
+
+	// need to use reflection package to inspect passed parameters since the properties are unexported
+	scopeVals1 := reflect.ValueOf(resourceHandlerMock.GetResourceCalls()[0].Scope)
+	require.Equal(t, "myservice", scopeVals1.FieldByName("service").String())
+	require.Equal(t, "mystage", scopeVals1.FieldByName("stage").String())
+	require.Equal(t, "myproject", scopeVals1.FieldByName("project").String())
+
+	// for the second request, we should check for the resource at stage level
+	scopeVals2 := reflect.ValueOf(resourceHandlerMock.GetResourceCalls()[1].Scope)
+	require.Equal(t, "", scopeVals2.FieldByName("service").String())
+	require.Equal(t, "mystage", scopeVals2.FieldByName("stage").String())
+	require.Equal(t, "myproject", scopeVals2.FieldByName("project").String())
+}
+
+func TestTaskHandler_Execute_WebhookConfigInProject(t *testing.T) {
+	templateEngineMock := &fake.ITemplateEngineMock{ParseTemplateFunc: func(data interface{}, templateStr string) (string, error) {
+		tplE := &lib.TemplateEngine{}
+		return tplE.ParseTemplate(data, templateStr)
+	}}
+	secretReaderMock := &fake.ISecretReaderMock{}
+	secretReaderMock.ReadSecretFunc = func(name string, key string) (string, error) {
+		return "my-secret-value", nil
+	}
+	curlExecutorMock := &fake.ICurlExecutorMock{}
+	curlExecutorMock.CurlFunc = func(curlCmd string) (string, error) {
+		return "success", nil
+	}
+
+	resourceHandlerMock := &fake2.IResourceHandlerMock{}
+	nrResourceRequests := 0
+	resourceHandlerMock.GetResourceFunc = func(scope api.ResourceScope, options ...api.URIOption) (*models.Resource, error) {
+		// the first request, i.e. when checking  at service level, will return no result
+		if nrResourceRequests <= 1 {
+			nrResourceRequests++
+			return nil, nil
+		}
+		// the third request (stage-level) will return something
+		return &models.Resource{
+			Metadata:        &models.Version{Version: "CommitID"},
+			ResourceContent: webHookContent,
+			ResourceURI:     nil,
+		}, nil
+	}
+
+	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
+
+	fakeKeptn := sdk.NewFakeKeptn(
+		"test-webhook-svc")
+
+	fakeKeptn.SetResourceHandler(resourceHandlerMock)
+	fakeKeptn.AddTaskHandler("*", taskHandler)
+	fakeKeptn.SetAutomaticResponse(false)
+
+	fakeKeptn.Start()
+	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
+
+	//verify sent events
+	require.Equal(t, 2, len(fakeKeptn.GetEventSender().SentEvents))
+	assert.Equal(t, "sh.keptn.event.webhook.started", fakeKeptn.GetEventSender().SentEvents[0].Type())
+	assert.Equal(t, "sh.keptn.event.webhook.finished", fakeKeptn.GetEventSender().SentEvents[1].Type())
+
+	finishedEvent, err := keptnv2.ToKeptnEvent(fakeKeptn.GetEventSender().SentEvents[1])
+	eventData := &keptnv2.EventData{}
+	keptnv2.EventDataAs(finishedEvent, eventData)
+	require.Nil(t, err)
+	assert.Equal(t, keptnv2.StatusSucceeded, eventData.Status)
+	assert.Equal(t, keptnv2.ResultPass, eventData.Result)
+
+	require.Len(t, resourceHandlerMock.GetResourceCalls(), 3)
+
+	// need to use reflection package to inspect passed parameters since the properties are unexported
+	scopeVals1 := reflect.ValueOf(resourceHandlerMock.GetResourceCalls()[0].Scope)
+	require.Equal(t, "myservice", scopeVals1.FieldByName("service").String())
+	require.Equal(t, "mystage", scopeVals1.FieldByName("stage").String())
+	require.Equal(t, "myproject", scopeVals1.FieldByName("project").String())
+
+	// for the second request, we should check for the resource at stage level
+	scopeVals2 := reflect.ValueOf(resourceHandlerMock.GetResourceCalls()[1].Scope)
+	require.Equal(t, "", scopeVals2.FieldByName("service").String())
+	require.Equal(t, "mystage", scopeVals2.FieldByName("stage").String())
+	require.Equal(t, "myproject", scopeVals2.FieldByName("project").String())
+
+	// for the third request, we should check for the resource at project level
+	scopeVals3 := reflect.ValueOf(resourceHandlerMock.GetResourceCalls()[2].Scope)
+	require.Equal(t, "", scopeVals3.FieldByName("service").String())
+	require.Equal(t, "", scopeVals3.FieldByName("stage").String())
+	require.Equal(t, "myproject", scopeVals3.FieldByName("project").String())
 }
