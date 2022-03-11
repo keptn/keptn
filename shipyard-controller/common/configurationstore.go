@@ -2,9 +2,10 @@ package common
 
 import (
 	"errors"
+	"net/http"
+
 	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	"net/http"
 )
 
 type configStoreErrType int
@@ -59,7 +60,10 @@ func (g GitConfigurationStore) CreateProject(project keptnapimodels.Project) err
 
 func (g GitConfigurationStore) UpdateProject(project keptnapimodels.Project) error {
 	if _, err := g.projectAPI.UpdateConfigurationServiceProject(project); err != nil {
-		return g.buildErrResponse(err)
+		if err.Code == http.StatusFailedDependency || err.Code == http.StatusNotFound {
+			return ErrConfigStoreUpstreamNotFound
+		}
+		return errors.New(*err.Message)
 	}
 
 	return nil
