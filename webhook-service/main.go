@@ -37,10 +37,18 @@ func main() {
 		&lib.OSCmdExecutor{},
 		lib.WithUnAllowedURLs(
 			[]string{
+				// Block access to Kubernetes API
+				kubeAPIHostIP,
 				kubeAPIHostIP + ":" + kubeAPIPort,
+				"kubernetes",
 				"kubernetes" + ":" + kubeAPIPort,
+				"kubernetes.default",
 				"kubernetes.default" + ":" + kubeAPIPort,
+				"kubernetes.default.svc",
+				"kubernetes.default.svc" + ":" + kubeAPIPort,
+				"kubernetes.default.svc.cluster.local",
 				"kubernetes.default.svc.cluster.local" + ":" + kubeAPIPort,
+				// Block access to localhost
 				"localhost",
 				"127.0.0.1",
 				"::1",
