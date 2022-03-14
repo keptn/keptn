@@ -26,6 +26,18 @@ type ExpandedProject struct {
 	// Version of the shipyard file
 	ShipyardVersion string `json:"shipyardVersion,omitempty"`
 
+	// git proxy URL
+	GitProxyURL string `json:"gitProxyUrl,omitempty"`
+
+	// git proxy scheme
+	GitProxyScheme string `json:"gitProxyScheme,omitempty"`
+
+	// git proxy user
+	GitProxyUser string `json:"gitProxyUser,omitempty"`
+
+	// git proxy insecure
+	GitProxyInsecure bool `json:"gitProxyInsecure,omitempty"`
+
 	// stages
 	Stages []*ExpandedStage `json:"stages"`
 }
