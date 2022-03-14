@@ -81,7 +81,6 @@ func doTriggerSequence(sequenceInputData sequenceStruct) error {
 		endPointPtr, _ := url.Parse(os.Getenv("MOCK_SERVER"))
 		endPoint = *endPointPtr
 		apiToken = os.Getenv("MOCK_API_TOKEN")
-		// apiToken = ""
 	}
 	if err != nil {
 		return errors.New(authErrorMsg)
@@ -103,7 +102,7 @@ func doTriggerSequence(sequenceInputData sequenceStruct) error {
 		return fmt.Errorf("could not start sequence because service %s has not been found in project %s", *sequenceInputData.Service, *sequenceInputData.Project)
 	}
 
-	deploymentEvent := keptnv2.DeploymentTriggeredEventData{
+	triggeredEvent := keptnv2.DeploymentTriggeredEventData{
 		EventData: keptnv2.EventData{
 			Project: *sequenceInputData.Project,
 			Stage:   *sequenceInputData.Stage,
@@ -116,19 +115,17 @@ func doTriggerSequence(sequenceInputData sequenceStruct) error {
 	sdkEvent.SetType(keptnv2.GetTriggeredEventType(*sequenceInputData.Stage + "." + *sequenceInputData.Sequence))
 	sdkEvent.SetSource("https://github.com/keptn/keptn/cli#configuration-change")
 	sdkEvent.SetDataContentType(cloudevents.ApplicationJSON)
-	sdkEvent.SetData(cloudevents.ApplicationJSON, deploymentEvent)
+	sdkEvent.SetData(cloudevents.ApplicationJSON, triggeredEvent)
 
 	eventByte, err := sdkEvent.MarshalJSON()
 	if err != nil {
-		return fmt.Errorf("Failed to marshal cloud event. %s", err.Error())
+		return fmt.Errorf("failed to marshal cloud event. %s", err.Error())
 	}
-
-	// fmt.Println(string(eventByte))
 
 	apiEvent := apimodels.KeptnContextExtendedCE{}
 	err = json.Unmarshal(eventByte, &apiEvent)
 	if err != nil {
-		return fmt.Errorf("Failed to map cloud event to API event model. %v", err)
+		return fmt.Errorf("failed to map cloud event to API event model. %v", err)
 	}
 
 	apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
@@ -137,7 +134,6 @@ func doTriggerSequence(sequenceInputData sequenceStruct) error {
 
 	_, err2 := apiHandler.SendEvent(apiEvent)
 	if err2 != nil {
-		logging.PrintLog("trigger sequence was unsuccessful", logging.QuietLevel)
 		return fmt.Errorf("trigger sequence was unsuccessful. %s", *err2.Message)
 	}
 
