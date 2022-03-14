@@ -1,6 +1,7 @@
 package sequencehooks
 
 import (
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -58,7 +59,7 @@ func (smv *SequenceStateMaterializedView) OnSequenceTriggered(event models.Event
 	}
 
 	if err := smv.SequenceStateRepo.CreateSequenceState(state); err != nil {
-		if err == db.ErrStateAlreadyExists {
+		if errors.Is(err, db.ErrStateAlreadyExists) {
 			log.Infof("sequence state for keptnContext %s already exists", state.Shkeptncontext)
 		} else {
 			log.Errorf("could not create task sequence state: %s", err.Error())

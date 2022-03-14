@@ -1,10 +1,11 @@
 package go_tests
 
 import (
+	"fmt"
+	"github.com/stretchr/testify/require"
+	"os"
 	"path"
 	"testing"
-
-	"github.com/stretchr/testify/require"
 )
 
 const testingSSHShipyard = `apiVersion: "spec.keptn.sh/0.2.3"
@@ -69,10 +70,11 @@ func Test_SSHPublicKeyAuth(t *testing.T) {
 	repoLocalDir := "../assets/podtato-head"
 	projectName := "public-key-auth"
 	serviceName := "helloservice"
+	secondServiceName := "helloservice2"
 	serviceChartLocalDir := path.Join(repoLocalDir, "helm-charts", "helloservice.tgz")
 	serviceJmeterDir := path.Join(repoLocalDir, "jmeter")
 
-	t.Logf("Creating a new project %s without a GIT Upstream", projectName)
+	t.Logf("Creating a new project %s with Gitea Upstream", projectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(testingSSHShipyard)
 	require.Nil(t, err)
 	projectName, err = CreateProjectWithSSH(projectName, shipyardFilePath)
@@ -92,6 +94,30 @@ func Test_SSHPublicKeyAuth(t *testing.T) {
 
 	t.Log("Adding load test resources for jmeter in prod")
 	_, err = ExecuteCommandf("keptn add-resource --project=%s --service=%s --stage=%s --resource=%s --resourceUri=%s", projectName, serviceName, "prod", serviceJmeterDir+"/load.jmx", "jmeter/load.jmx")
+	require.Nil(t, err)
+
+	t.Logf("Trigger delivery of helloservice:v0.1.0")
+	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", projectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery")
+	require.Nil(t, err)
+
+	t.Logf("Updating project credentials")
+	user := GetGiteaUser()
+	privateKey, passphrase, err := GetPrivateKeyAndPassphrase()
+	require.Nil(t, err)
+
+	privateKeyPath := "private-key"
+	err = os.WriteFile(privateKeyPath, []byte(privateKey), 0777)
+	require.Nil(t, err)
+
+	defer func() {
+		os.Remove(privateKeyPath)
+	}()
+
+	_, err = ExecuteCommand(fmt.Sprintf("keptn update project %s --git-remote-url=ssh://gitea-ssh:22/%s/%s.git --git-user=%s --git-private-key=%s --git-private-key-pass=%s", projectName, user, projectName, user, privateKeyPath, passphrase))
+	require.Nil(t, err)
+
+	t.Logf("Creating service %s in project %s", secondServiceName, projectName)
+	_, err = ExecuteCommandf("keptn create service %s --project %s", secondServiceName, projectName)
 	require.Nil(t, err)
 
 	t.Logf("Trigger delivery of helloservice:v0.1.0")

@@ -339,7 +339,7 @@ func TestProjectHandler_DeleteProject(t *testing.T) {
 		wantStatus int
 	}{
 		{
-			name: "delete project successful",
+			name: "delete project - does nothing",
 			fields: fields{
 				ProjectManager: &handler_mock.IProjectManagerMock{DeleteProjectFunc: func(projectName string) error {
 					return nil
@@ -348,39 +348,6 @@ func TestProjectHandler_DeleteProject(t *testing.T) {
 			request:    httptest.NewRequest(http.MethodDelete, "/project/my-project", nil),
 			wantParams: "my-project",
 			wantStatus: http.StatusNoContent,
-		},
-		{
-			name: "project not found",
-			fields: fields{
-				ProjectManager: &handler_mock.IProjectManagerMock{DeleteProjectFunc: func(projectName string) error {
-					return errors2.ErrProjectNotFound
-				}},
-			},
-			request:    httptest.NewRequest(http.MethodDelete, "/project/my-project", nil),
-			wantParams: "my-project",
-			wantStatus: http.StatusNotFound,
-		},
-		{
-			name: "random error",
-			fields: fields{
-				ProjectManager: &handler_mock.IProjectManagerMock{DeleteProjectFunc: func(projectName string) error {
-					return errors.New("oops")
-				}},
-			},
-			request:    httptest.NewRequest(http.MethodDelete, "/project/my-project", nil),
-			wantParams: "my-project",
-			wantStatus: http.StatusInternalServerError,
-		},
-		{
-			name: "project name empty",
-			fields: fields{
-				ProjectManager: &handler_mock.IProjectManagerMock{DeleteProjectFunc: func(projectName string) error {
-					return errors.New("oops")
-				}},
-			},
-			request:    httptest.NewRequest(http.MethodDelete, "/project/%20", nil),
-			wantParams: "",
-			wantStatus: http.StatusBadRequest,
 		},
 	}
 	for _, tt := range tests {
@@ -395,8 +362,7 @@ func TestProjectHandler_DeleteProject(t *testing.T) {
 			require.Equal(t, tt.wantStatus, resp.Code)
 
 			if tt.wantParams != "" {
-				require.Len(t, tt.fields.ProjectManager.DeleteProjectCalls(), 1)
-				require.Equal(t, tt.wantParams, tt.fields.ProjectManager.DeleteProjectCalls()[0].ProjectName)
+				require.Len(t, tt.fields.ProjectManager.DeleteProjectCalls(), 0)
 			} else {
 				require.Empty(t, tt.fields.ProjectManager.DeleteProjectCalls())
 			}

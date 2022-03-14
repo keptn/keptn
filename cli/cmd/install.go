@@ -20,26 +20,18 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"strings"
-
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
-
-	"github.com/keptn/keptn/cli/pkg/common"
-
-	"helm.sh/helm/v3/pkg/chart"
-
-	"github.com/keptn/keptn/cli/pkg/platform"
-
-	"github.com/keptn/keptn/cli/pkg/helm"
-
-	"github.com/keptn/keptn/cli/pkg/kube"
-
-	"github.com/keptn/keptn/cli/pkg/logging"
-
 	goutils "github.com/keptn/go-utils/pkg/common/httputils"
+	"github.com/keptn/keptn/cli/pkg/common"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
+	"github.com/keptn/keptn/cli/pkg/helm"
+	"github.com/keptn/keptn/cli/pkg/kube"
+	"github.com/keptn/keptn/cli/pkg/logging"
+	"github.com/keptn/keptn/cli/pkg/platform"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/spf13/cobra"
+	"helm.sh/helm/v3/pkg/chart"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"strings"
 )
 
 type installCmdParams struct {

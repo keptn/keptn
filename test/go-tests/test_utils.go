@@ -230,7 +230,7 @@ func CreateProjectWithSSH(projectName string, shipyardFilePath string) (string, 
 
 	err := retry.Retry(func() error {
 		if err := RecreateProjectUpstream(newProjectName); err != nil {
-			return nil
+			return err
 		}
 
 		user := GetGiteaUser()
@@ -265,6 +265,47 @@ func CreateProjectWithSSH(projectName string, shipyardFilePath string) (string, 
 
 	return newProjectName, nil
 
+}
+
+func CreateProjectWithProxy(projectName string, shipyardFilePath string) (string, error) {
+	// The project name is prefixed with the keptn test namespace to avoid name collisions during parallel integration test runs on CI
+	namespace := osutils.GetOSEnvOrDefault(KeptnNamespaceEnvVar, DefaultKeptnNamespace)
+	newProjectName := namespace + "-" + projectName
+
+	err := retry.Retry(func() error {
+		if err := RecreateProjectUpstream(newProjectName); err != nil {
+			return nil
+		}
+
+		user := GetGiteaUser()
+		token, err := GetGiteaToken()
+		if err != nil {
+			return err
+		}
+		squidIP, err := GetSquidExternalIP(namespace)
+		if err != nil {
+			return err
+		}
+
+		// apply the k8s job for creating the git upstream
+		out, err := ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=%s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s --git-proxy-url=%s:3128 --git-proxy-scheme=http --git-proxy-insecure", newProjectName, shipyardFilePath, user, newProjectName, user, token, squidIP))
+
+		if !strings.Contains(out, "created successfully") {
+			return fmt.Errorf("unable to create project: %s", out)
+		}
+		return nil
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	return newProjectName, nil
+
+}
+
+func GetSquidExternalIP(namespace string) (string, error) {
+	return ExecuteCommand(fmt.Sprintf("kubectl get svc squid -n %s -ojsonpath='{.status.loadBalancer.ingress[0].ip}'", namespace))
 }
 
 func GetPrivateKeyAndPassphrase() (string, string, error) {

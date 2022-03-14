@@ -5,8 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/google/uuid"
 
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -268,7 +269,7 @@ func (sc *shipyardController) handleSequenceTriggered(event models.Event) error 
 		EventID:   eventScope.WrappedEvent.ID,
 		Timestamp: common.ParseTimestamp(eventScope.WrappedEvent.Time, nil),
 	})
-	if err == ErrSequenceBlockedWaiting {
+	if errors.Is(err, ErrSequenceBlockedWaiting) {
 		sc.onSequenceWaiting(eventScope.WrappedEvent)
 		return nil
 	}
@@ -694,7 +695,7 @@ func (sc *shipyardController) GetTriggeredEventsOfProject(projectName string, fi
 	events, err := sc.eventRepo.GetEvents(projectName, filter, common.TriggeredEvent)
 	if err != nil && err != db.ErrNoEventFound {
 		return nil, err
-	} else if err != nil && err == db.ErrNoEventFound {
+	} else if err != nil && errors.Is(err, db.ErrNoEventFound) {
 		return []models.Event{}, nil
 	}
 	return events, nil

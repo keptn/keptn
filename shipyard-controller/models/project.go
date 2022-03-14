@@ -28,6 +28,24 @@ type UpdateProjectParams struct {
 	// git private key passphrase
 	GitPrivateKeyPass string `json:"gitPrivateKeyPass,omitempty"`
 
+	// git proxy URL
+	GitProxyURL string `json:"gitProxyUrl,omitempty"`
+
+	// git proxy scheme
+	GitProxyScheme string `json:"gitProxyScheme,omitempty"`
+
+	// git proxy user
+	GitProxyUser string `json:"gitProxyUser,omitempty"`
+
+	// git proxy insecure
+	GitProxyInsecure bool `json:"gitProxyInsecure,omitempty"`
+
+	// git proxy password
+	GitProxyPassword string `json:"gitProxyPassword,omitempty"`
+
+	//git PEM Certificate
+	GitPemCertificate string `json:"gitPemCertificate,omitempty"`
+
 	// name
 	Name *string `json:"name"`
 
@@ -51,6 +69,24 @@ type CreateProjectParams struct {
 
 	// git private key passphrase
 	GitPrivateKeyPass string `json:"gitPrivateKeyPass,omitempty"`
+
+	// git proxy URL
+	GitProxyURL string `json:"gitProxyUrl,omitempty"`
+
+	// git proxy scheme
+	GitProxyScheme string `json:"gitProxyScheme,omitempty"`
+
+	// git proxy user
+	GitProxyUser string `json:"gitProxyUser,omitempty"`
+
+	// git proxy insecure
+	GitProxyInsecure bool `json:"gitProxyInsecure,omitempty"`
+
+	// git proxy password
+	GitProxyPassword string `json:"gitProxyPassword,omitempty"`
+
+	//git PEM Certificate
+	GitPemCertificate string `json:"gitPemCertificate,omitempty"`
 
 	// name
 	Name *string `json:"name"`
@@ -121,6 +157,32 @@ func (createProjectParams *CreateProjectParams) Validate() error {
 		return fmt.Errorf("provided gitRemoteURL is not valid: %s", err.Error())
 	}
 
+	if createProjectParams.GitPrivateKey != "" && createProjectParams.GitToken != "" {
+		return fmt.Errorf("privateKey and token cannot be used together")
+	}
+
+	if createProjectParams.GitPrivateKey != "" && createProjectParams.GitProxyURL != "" {
+		return fmt.Errorf("privateKey and proxy cannot be used together")
+	}
+
+	if createProjectParams.GitPrivateKey != "" {
+		decodeString, err = base64.StdEncoding.DecodeString(createProjectParams.GitPrivateKey)
+		if err != nil {
+			return errors.New("could not decode privateKey content")
+		}
+	}
+
+	if createProjectParams.GitPrivateKey != "" && createProjectParams.GitPemCertificate != "" {
+		return fmt.Errorf("SSH authorization and PEM Certificate be used together")
+	}
+
+	if createProjectParams.GitPemCertificate != "" {
+		decodeString, err = base64.StdEncoding.DecodeString(createProjectParams.GitPemCertificate)
+		if err != nil {
+			return errors.New("could not decode PEM Certificate content")
+		}
+	}
+
 	return nil
 }
 
@@ -156,6 +218,32 @@ func (updateProjectParams *UpdateProjectParams) Validate() error {
 
 	if err := common.ValidateGitRemoteURL(updateProjectParams.GitRemoteURL); err != nil {
 		return fmt.Errorf("provided gitRemoteURL is not valid: %s", err.Error())
+	}
+
+	if updateProjectParams.GitPrivateKey != "" && updateProjectParams.GitToken != "" {
+		return fmt.Errorf("privateKey and token cannot be used together")
+	}
+
+	if updateProjectParams.GitPrivateKey != "" && updateProjectParams.GitProxyURL != "" {
+		return fmt.Errorf("privateKey and proxy cannot be used together")
+	}
+
+	if updateProjectParams.GitPrivateKey != "" {
+		_, err := base64.StdEncoding.DecodeString(updateProjectParams.GitPrivateKey)
+		if err != nil {
+			return errors.New("could not decode privateKey content")
+		}
+	}
+
+	if updateProjectParams.GitPrivateKey != "" && updateProjectParams.GitPemCertificate != "" {
+		return fmt.Errorf("SSH authorization and PEM Certificate be used together")
+	}
+
+	if updateProjectParams.GitPemCertificate != "" {
+		_, err := base64.StdEncoding.DecodeString(updateProjectParams.GitPemCertificate)
+		if err != nil {
+			return errors.New("could not decode PEM Certificate content")
+		}
 	}
 
 	return nil

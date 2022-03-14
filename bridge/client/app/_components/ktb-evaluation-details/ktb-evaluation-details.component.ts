@@ -593,7 +593,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
                 const totalScore = sliResultsInfo[s.evaluationData?.id ?? '']?.score;
                 const score = !totalScore
                   ? 0
-                  : AppUtils.round(
+                  : AppUtils.truncateNumber(
                       (s.indicatorResult.score / totalScore) * (s.evaluationData?.data.evaluation?.score ?? 1),
                       2
                     );
@@ -785,13 +785,10 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
 
   highlightHeatmap(): void {
     if (this._selectedEvaluationData && !this.isInvalidated) {
+      const plotBands: NavigatorXAxisPlotBandsOptions[] = [];
       const highlightIndex = this._heatmapOptions.xAxis[0].categories.indexOf(
         this._selectedEvaluationData.getHeatmapLabel()
       );
-      const secondaryHighlightIndexes = this._selectedEvaluationData?.data.evaluation?.comparedEvents?.map((eventId) =>
-        this._heatmapSeries[0]?.data.findIndex((e) => e.evaluation?.id === eventId)
-      );
-      const plotBands: NavigatorXAxisPlotBandsOptions[] = [];
       if (highlightIndex >= 0) {
         plotBands.push({
           className: 'highlight-primary',
@@ -800,11 +797,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
           zIndex: 100,
         });
       }
-      if (secondaryHighlightIndexes) {
-        this.setSecondaryHighlight(secondaryHighlightIndexes, plotBands);
-      } else {
-        this.comparedIndicatorResults = [];
-      }
+      this.setSecondaryHighlight(this._selectedEvaluationData?.data.evaluation?.comparedEvents, plotBands);
       this._heatmapOptions.xAxis[0].plotBands = plotBands;
       if (
         this._selectedEvaluationData.data.evaluation?.number_of_missing_comparison_results &&
@@ -825,18 +818,22 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   }
 
   private setSecondaryHighlight(
-    secondaryHighlightIndices: number[],
+    comparedEvents: string[] | undefined,
     plotBands: NavigatorXAxisPlotBandsOptions[]
   ): void {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const _this = this;
-    this.comparedIndicatorResults = secondaryHighlightIndices
-      .filter((idx) => idx >= 0)
-      .map((index) => {
-        return this._heatmapSeries[0]?.data[index].evaluation?.data.evaluation?.indicatorResults ?? [];
+    this.comparedIndicatorResults = [];
+    const secondaryHighlightIndices = comparedEvents
+      ?.map((eventId: string) => this._heatmapSeries[0]?.data.findIndex((e) => e.evaluation?.id === eventId))
+      .filter((eventIndex: number) => eventIndex >= 0);
+    if (secondaryHighlightIndices) {
+      secondaryHighlightIndices.forEach((eventIndex: number) => {
+        this.comparedIndicatorResults.push(
+          this._heatmapSeries[0]?.data[eventIndex].evaluation?.data.evaluation?.indicatorResults ?? []
+        );
       });
-    for (const secondaryHighlightIndex of secondaryHighlightIndices) {
-      if (secondaryHighlightIndex >= 0) {
+      for (const secondaryHighlightIndex of secondaryHighlightIndices) {
         plotBands.push({
           className: 'highlight-secondary',
           from: secondaryHighlightIndex - 0.5,

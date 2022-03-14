@@ -11,7 +11,7 @@ on:
         required: true
         default: 'master'
 env:
-  META_KEPTN_VERSION: 0.11.4
+  META_KEPTN_VERSION: 0.13.2
   META_KEPTN_KEPTN_PROJECT: keptn
 defaults:
   run:
@@ -44,6 +44,7 @@ jobs:
             KEPTN_SERVICE_TYPE: "NodePort"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "false"
+            USE_RESOURCE_SERVICE: "true"
           - CLOUD_PROVIDER: "k3d-on-GHA"
             PLATFORM_VERSION: "v4.4.6" # see https://github.com/rancher/k3d/releases
             KUBECONFIG: ""
@@ -70,6 +71,7 @@ jobs:
             RUN_CONTINUOUS_DELIVERY_TEST: "true"
             REMOTE_EXECUTION_PLANE: "false"
             COLLECT_RESOURCE_LIMITS: "true"
+            USE_RESOURCE_SERVICE: "true"
     env:
       CLOUD_PROVIDER: ${{ matrix.CLOUD_PROVIDER }}
       PLATFORM: ${{ matrix.PLATFORM }}
@@ -297,7 +299,7 @@ jobs:
         env:
           KEPTN_TAG: ${{ env.VERSION }}
         run: |
-          # pull images and push it to the local k3d registry
+          # Pull images and push it to the local k3d registry
           installer/airgapped/pull_and_retag_images.sh "$AIRGAPPED_REGISTRY_URL/"
 
       - name: Prevent egress traffic for airgapped system
@@ -329,6 +331,7 @@ jobs:
           HELM_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_SERVICE_HELM_CHART_NAME }}
           JMETER_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.JMETER_SERVICE_HELM_CHART_NAME }}
           RUN_AIRGAPPED_TEST: ${{ env.RUN_AIRGAPPED_TEST }}
+          USE_RESOURCE_SERVICE: ${{ matrix.USE_RESOURCE_SERVICE }}
         run: |
           echo "Installing Keptn on cluster"
           if [[ $PLATFORM == "openshift" ]]; then
@@ -349,22 +352,31 @@ jobs:
           echo "::group::Keptn Installation Log"
           if [[ $RUN_AIRGAPPED_TEST == "true" ]]; then
             # Install Keptn via Helper Script
-            installer/airgapped/install_keptn.sh "$AIRGAPPED_REGISTRY_URL/" "$HELM_CHART_NAME" "$HELM_SERVICE_HELM_CHART_NAME" "$JMETER_SERVICE_HELM_CHART_NAME"
+            if [[ "$VERSION" == *"dev"* ]]; then
+              DOCKER_ORG="keptndev"
+            else
+              DOCKER_ORG="keptn"
+            fi
+            
+            installer/airgapped/install_keptn.sh \
+              "$AIRGAPPED_REGISTRY_URL/" \
+              "$DOCKER_ORG" \
+              "$HELM_CHART_NAME" \
+              "$HELM_SERVICE_HELM_CHART_NAME" \
+              "$JMETER_SERVICE_HELM_CHART_NAME"
+          elif [[ "$USE_RESOURCE_SERVICE" == "true" ]]; then
+            # Use Keptn helm chart to be able to customize the values
+            helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} \
+              --create-namespace \
+              --set control-plane.apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
+              --set control-plane.resourceService.enabled=true \
+              --set continuous-delivery.enabled=${RUN_CONTINUOUS_DELIVERY_TEST}
           else
             # Install Keptn via CLI
             keptn install --platform=${PLATFORM} --namespace=${KEPTN_NAMESPACE} --endpoint-service-type=${KEPTN_SERVICE_TYPE} \
                --chart-repo=${HELM_CHART_NAME} --creds=creds.json $USE_CASE
           fi
           echo "::endgroup::"
-
-      # Gather resource limits directly after installation of Keptn
-      - name: Gather resource limits
-        if: env.COLLECT_RESOURCE_LIMITS == 'true'
-        env:
-          TEST_REPORT_FILENAME: test-resource-limits-${{ github.run_id }}-${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}.txt
-        run: |
-          echo "**Resource Limits for ${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}**" > $TEST_REPORT_FILENAME
-          test/utils/k8s_collect_resources.sh ${KEPTN_NAMESPACE} >> $TEST_REPORT_FILENAME
 
       - name: Install Gitea
         id: install_gitea
@@ -375,6 +387,9 @@ jobs:
           helm install --values test/assets/gitea/values.yaml gitea gitea-charts/gitea -n ${KEPTN_NAMESPACE} --wait --version v5.0.0
           GITEA_ADMIN_USER=$(kubectl get pod -n ${KEPTN_NAMESPACE} gitea-0 -ojsonpath='{@.spec.initContainers[?(@.name=="configure-gitea")].env[?(@.name=="GITEA_ADMIN_USERNAME")].value}')
           GITEA_ADMIN_PASSWORD=$(kubectl get pod -n ${KEPTN_NAMESPACE} gitea-0 -ojsonpath='{@.spec.initContainers[?(@.name=="configure-gitea")].env[?(@.name=="GITEA_ADMIN_PASSWORD")].value}')
+          kubectl create configmap squid.conf --from-file=test/assets/squid/squid.conf -n ${KEPTN_NAMESPACE}
+          kubectl apply -f test/assets/squid/squid.yaml -n ${KEPTN_NAMESPACE}
+          sleep 30 # TODO
           ssh-keygen -t rsa -C "gitea-http" -f "rsa_gitea" -P "myGiteaPassPhrase"
           GITEA_PRIVATE_KEY=$(cat rsa_gitea)
           GITEA_PUBLIC_KEY=$(cat rsa_gitea.pub)
@@ -396,25 +411,6 @@ jobs:
       - name: Expose Deployed Services via Istio (for CD use-case)
         if: env.RUN_CONTINUOUS_DELIVERY_TEST == 'true'
         run: |
-          # install public-gateway.istio-system
-          kubectl apply -f - <<EOF
-          apiVersion: networking.istio.io/v1alpha3
-          kind: Gateway
-          metadata:
-            name: public-gateway
-            namespace: istio-system
-          spec:
-            selector:
-              istio: ingressgateway # use Istio default gateway implementation
-            servers:
-            - port:
-                number: 80
-                name: http
-                protocol: HTTP
-              hosts:
-              - "*"
-          EOF
-
           # set ingress-hostname params
           INGRESS_IP=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
           echo "INGRESS_IP=$INGRESS_IP"
@@ -422,8 +418,8 @@ jobs:
             --from-literal=ingress_hostname_suffix=${INGRESS_IP}.nip.io \
             --from-literal=ingress_port=80 \
             --from-literal=ingress_protocol=http \
-            --from-literal=ingress_gateway=public-gateway.istio-system -oyaml \
-            --dry-run=client | kubectl replace -f -
+            --from-literal=ingress_gateway=public-gateway.istio-system \
+            -oyaml --dry-run=client | kubectl replace -f -
           # restart helm-service
           kubectl delete pod -n ${KEPTN_NAMESPACE} -lapp.kubernetes.io/name=helm-service
           sleep 15
@@ -452,26 +448,48 @@ jobs:
           echo "KEPTN_ENDPOINT=${KEPTN_ENDPOINT}"
           echo "##[set-output name=KEPTN_ENDPOINT;]$(echo ${KEPTN_ENDPOINT})"
 
-      - name: Install Remote Execution Plane
-        id: install_remote_execution_plane
-        if: env.REMOTE_EXECUTION_PLANE == 'true'
+      - name: Install Helm/JMeter Service
+        if: env.CLOUD_PROVIDER == 'GKE'
         timeout-minutes: 5
         env:
           KEPTN_ENDPOINT: ${{ steps.determine_keptn_endpoint.outputs.KEPTN_ENDPOINT }}
           HELM_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_SERVICE_HELM_CHART_NAME }}
           JMETER_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.JMETER_SERVICE_HELM_CHART_NAME }}
         run: |
-          KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n "$KEPTN_NAMESPACE" -o jsonpath='{.data.keptn-api-token}' | base64 --decode)
-          kubectl scale deployment/helm-service -n "${KEPTN_NAMESPACE}" --replicas=0
-          kubectl scale deployment/jmeter-service -n "${KEPTN_NAMESPACE}" --replicas=0
-
-          KEPTN_API_HOSTNAME=$(echo "${KEPTN_ENDPOINT}" | awk -F[/] '{print $3}')
-
-          helm install helm-service "${HELM_SERVICE_HELM_CHART_NAME}" -n ${{ env.KEPTN_NAMESPACE }}-helm-service --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" --create-namespace
-          helm install jmeter-service "${JMETER_SERVICE_HELM_CHART_NAME}" -n ${{ env.KEPTN_NAMESPACE }}-jmeter-service --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" --create-namespace
-
-          helm test jmeter-service -n ${{ env.KEPTN_NAMESPACE }}-jmeter-service
-          helm test helm-service -n ${{ env.KEPTN_NAMESPACE }}-helm-service
+          if [[ "$REMOTE_EXECUTION_PLANE" == 'true' ]]; then
+            # Remote execution plane
+            KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n "$KEPTN_NAMESPACE" -o jsonpath='{.data.keptn-api-token}' | base64 --decode)
+            kubectl scale deployment/helm-service -n "${KEPTN_NAMESPACE}" --replicas=0
+            kubectl scale deployment/jmeter-service -n "${KEPTN_NAMESPACE}" --replicas=0
+  
+            KEPTN_API_HOSTNAME=$(echo "${KEPTN_ENDPOINT}" | awk -F[/] '{print $3}')
+  
+            helm install helm-service "${HELM_SERVICE_HELM_CHART_NAME}" \
+              -n ${{ env.KEPTN_NAMESPACE }}-helm-service \
+              --set remoteControlPlane.enabled=true \
+              --set remoteControlPlane.api.protocol=http \
+              --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" \
+              --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" \
+              --create-namespace
+            helm install jmeter-service "${JMETER_SERVICE_HELM_CHART_NAME}" \
+            -n ${{ env.KEPTN_NAMESPACE }}-jmeter-service \
+              --set remoteControlPlane.enabled=true \
+              --set remoteControlPlane.api.protocol=http \
+              --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" \
+              --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" \
+              --create-namespace
+  
+            helm test jmeter-service -n ${{ env.KEPTN_NAMESPACE }}-jmeter-service
+            helm test helm-service -n ${{ env.KEPTN_NAMESPACE }}-helm-service
+          else
+            # In-cluster execution plane
+            helm install helm-service "${HELM_SERVICE_HELM_CHART_NAME}" -n ${{ env.KEPTN_NAMESPACE }}
+            helm install jmeter-service "${JMETER_SERVICE_HELM_CHART_NAME}" -n ${{ env.KEPTN_NAMESPACE }}
+          
+            helm test jmeter-service -n ${{ env.KEPTN_NAMESPACE }}
+            helm test helm-service -n ${{ env.KEPTN_NAMESPACE }}
+          fi
+            
 
       - name: Prepare test run
         id: prepare_test_run
@@ -559,7 +577,7 @@ jobs:
           readarray -t clusterroles <<< "$(kubectl get clusterroles | awk '{ print $1 }' | grep ${{ env.KEPTN_NAMESPACE }})"
           readarray -t clusterrolebindings <<< "$(kubectl get clusterrolebindings | awk '{ print $1 }' | grep ${{ env.KEPTN_NAMESPACE }})"
 
-          if [[ "${{ github.event_name }}" == 'schedule' && "${{ steps.test_aggregated.outcome }}" == 'failure' ]]; then
+          if [[ "${{ github.event_name }}" == 'schedule' && "${{ steps.test_aggregated.outcome }}" != 'success' ]]; then
               for namespace in "${namespaces[@]}"; do
                 if [[ ! -z "${namespace// }" ]]; then
                   echo "Annotating namespace $namespace with Janitor TTL of 3 days..."
@@ -580,7 +598,7 @@ jobs:
                   kubectl annotate clusterrolebinding "$crb" janitor/ttl=3d
                 fi
               done
-          elif [[ "${{ github.event_name }}" == 'workflow_dispatch' && "${{ steps.test_aggregated.outcome }}" == 'failure' ]]; then
+          elif [[ "${{ github.event_name }}" == 'workflow_dispatch' && "${{ steps.test_aggregated.outcome }}" != 'success' ]]; then
               for namespace in "${namespaces[@]}"; do
                 if [[ ! -z "${namespace// }" ]]; then
                   echo "Annotating namespace $namespace with Janitor TTL of 6 hours..."
@@ -605,21 +623,21 @@ jobs:
               for namespace in "${namespaces[@]}"; do
                 if [[ ! -z "${namespace// }" ]]; then
                   echo "Deleting namespace $namespace ..."
-                  kubectl delete namespace "$namespace"
+                  kubectl delete namespace "$namespace" --wait=false
                 fi
               done
           
               for cr in "${clusterroles[@]}"; do
                 if [[ ! -z "${cr// }" ]]; then
                   echo "Deleting clusterrole $cr ..."
-                  kubectl delete clusterrole "$cr"
+                  kubectl delete clusterrole "$cr" --wait=false
                 fi
               done
           
               for crb in "${clusterrolebindings[@]}"; do
                 if [[ ! -z "${crb// }" ]]; then
                   echo "Deleting clusterrolebinding $crb ..."
-                  kubectl delete clusterrolebindings "$crb"
+                  kubectl delete clusterrolebindings "$crb" --wait=false
                 fi
               done
           fi
@@ -801,14 +819,6 @@ jobs:
         with:
           name: final-test-report-markdown
           path: ${{ env.FINAL_TEST_REPORT_FILEPATH_MARKDOWN }}
-
-      - name: Summarize Resource Usage
-        id: print_resource_usage
-        run: |
-          echo "" > final-resource-limits.txt
-          echo "**Resource Limits**" >> final-resource-limits.txt
-          ls -la test-resource-limits*.txt || true
-          cat test-resource-limits*.txt >> final-resource-limits.txt || echo "No resource reports found" >> final-resource-limits.txt
 
       - name: Download all artifacts from last successful build of specified branch
         uses: dawidd6/action-download-artifact@v2.17.0

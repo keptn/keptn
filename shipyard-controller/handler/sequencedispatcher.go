@@ -4,8 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"time"
+
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
 	"github.com/benbjohnson/clock"
 	"github.com/keptn/keptn/shipyard-controller/common"
@@ -60,10 +61,10 @@ func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
 		//if there is only one shipyard we can both read and write,
 		//so we try to dispatch the sequence immediately
 		if err := sd.dispatchSequence(queueItem); err != nil {
-			if err == ErrSequenceBlocked {
+			if errors.Is(err, ErrSequenceBlocked) {
 				//if the sequence is currently blocked, insert it into the queue
 				return sd.add(queueItem)
-			} else if err == ErrSequenceBlockedWaiting {
+			} else if errors.Is(err, ErrSequenceBlockedWaiting) {
 				//if the sequence is currently blocked and should wait, insert it into the queue
 				if err2 := sd.add(queueItem); err2 != nil {
 					return err2
@@ -126,7 +127,7 @@ func (sd *SequenceDispatcher) Stop() {
 func (sd *SequenceDispatcher) dispatchSequences() {
 	queuedSequences, err := sd.sequenceQueue.GetQueuedSequences()
 	if err != nil {
-		if err == db.ErrNoEventFound {
+		if errors.Is(err, db.ErrNoEventFound) {
 			// if no sequences are in the queue, we can return here
 			return
 		}

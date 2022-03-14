@@ -152,7 +152,7 @@ func Test_ReceiveFromNATSAndForwardEventForOverlappingSubscriptions(t *testing.T
 }
 
 func Test_ReceiveFromNATS_AfterReconnecting(t *testing.T) {
-	const natsTestPort = 8369
+	const natsTestPort = 8370
 	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", natsTestPort)
 	_, shutdownNats := runNATSServerOnPort(natsTestPort)
 	defer shutdownNats()

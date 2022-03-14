@@ -1,9 +1,10 @@
-import Yaml from 'yaml';
+import { Document, Scalar, YAMLMap, YAMLSeq } from 'yaml';
 import { WebhookConfigMethod } from '../../shared/interfaces/webhook-config';
 import { WebhookConfig, WebhookSecret } from '../../shared/models/webhook-config';
-import { Webhook, WebhookConfigYamlResult } from './webhook-config-yaml-result';
+import { Webhook, WebhookConfigYamlResult } from '../interfaces/webhook-config-yaml-result';
+import { parseCurl } from '../utils/curl.utils';
 
-const order: { [key: string]: number } = {
+const order: { [key in keyof WebhookConfigYamlResult]: number } = {
   apiVersion: 0,
   kind: 1,
   metadata: 2,
@@ -103,21 +104,23 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
 
   public parsedRequest(subscriptionId: string): WebhookConfig | undefined {
     const webhook = this.getWebhook(subscriptionId);
-    const curl = webhook?.requests[0];
-    const secrets = webhook?.envFrom;
-
-    const parsedConfig = curl ? this.parseConfig(curl) : undefined;
-    if (parsedConfig) {
-      parsedConfig.secrets = secrets;
-      parsedConfig.sendFinished = webhook?.sendFinished ?? false;
+    if (webhook) {
+      const curl = webhook.requests[0];
+      if (curl) {
+        const parsedConfig = this.parseConfig(curl);
+        parsedConfig.secrets = webhook.envFrom;
+        parsedConfig.sendFinished = webhook.sendFinished ?? false;
+        parsedConfig.type = webhook.type;
+        return parsedConfig;
+      }
     }
-    return parsedConfig;
+    return undefined;
   }
 
   private parseConfig(curl: string): WebhookConfig {
     const config = new WebhookConfig();
-    const result = this.parseCurl(curl);
-    config.url = result._?.[0] ?? '';
+    const result = parseCurl(curl);
+    config.url = result._?.join(' ') ?? '';
     config.payload = this.formatJSON(result.data?.[0] ?? '');
     config.proxy = result.proxy?.[0] ?? '';
     config.method = (result.request?.[0] ?? '') as WebhookConfigMethod;
@@ -137,78 +140,6 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
     return config;
   }
 
-  private parseCurl(curl: string): { [key: string]: string[] } {
-    const startCommand = 'curl ';
-    const result: { [key: string]: string[] } = {};
-    if (curl.startsWith(startCommand)) {
-      let i = startCommand.length;
-      while (i < curl.length) {
-        i = this.skipSpace(curl, i);
-        let command = '_';
-        if (curl[i] === '-') {
-          const commandInfo = this.getNextCommand(curl, i);
-          i = commandInfo.index + 1;
-          command = commandInfo.data;
-        }
-        i = this.skipSpace(curl, i);
-        if (i < curl.length) {
-          const commandData = this.getNextCommandData(curl, i);
-          i = commandData.index;
-          const data = result[command];
-          if (data) {
-            data.push(commandData.data);
-          } else {
-            result[command] = [commandData.data];
-          }
-          ++i;
-        }
-      }
-    }
-    return result;
-  }
-
-  private skipSpace(curl: string, index: number): number {
-    while (curl[index] === ' ') {
-      ++index;
-    }
-    return index;
-  }
-
-  private getNextCommandData(curl: string, i: number): { data: string; index: number } {
-    const startsWith = curl[i];
-    let data = '';
-    const startIndex = i;
-    if (startsWith === "'" || startsWith === '"') {
-      ++i;
-      while (i < curl.length && (curl[i] !== startsWith || (curl[i] === startsWith && curl[i - 1] === '\\'))) {
-        ++i;
-      }
-      data = curl.substring(startIndex + 1, i);
-    } else {
-      i = curl.indexOf(' ', startIndex);
-      if (i === -1) {
-        i = curl.length;
-      }
-      data = curl.substring(startIndex, i);
-    }
-    return {
-      data,
-      index: i,
-    };
-  }
-
-  private getNextCommand(curl: string, i: number): { data: string; index: number } {
-    let startCommandIndex = i + 1;
-    if (curl[i + 1] === '-') {
-      ++startCommandIndex;
-    }
-    i = curl.indexOf(' ', startCommandIndex);
-    return {
-      data: curl.substring(startCommandIndex, i),
-      index: i === -1 ? curl.length : i,
-    };
-  }
-
   private formatJSON(data: string): string {
     try {
       data = JSON.stringify(JSON.parse(data), null, 2);
@@ -217,8 +148,24 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
   }
 
   public toYAML(): string {
-    return Yaml.stringify(this, {
-      sortMapEntries: (a, b) => order[a.key] - order[b.key],
+    const yamlDoc = new Document(this, {
+      sortMapEntries: (a, b): number =>
+        order[a.key as keyof WebhookConfigYamlResult] - order[b.key as keyof WebhookConfigYamlResult],
+      toStringDefaults: {
+        lineWidth: 0,
+      },
     });
+    this.setCurlToBlockFolded(yamlDoc);
+    return yamlDoc.toString();
+  }
+
+  private setCurlToBlockFolded(yamlDoc: Document): void {
+    const yamlSeq = yamlDoc.getIn(['spec', 'webhooks'], true) as YAMLSeq;
+    for (const webhookYaml of yamlSeq.items) {
+      const requests = (webhookYaml as YAMLMap).get('requests', true) as YAMLSeq;
+      for (const curl of requests.items) {
+        (curl as Scalar).type = 'BLOCK_FOLDED';
+      }
+    }
   }
 }

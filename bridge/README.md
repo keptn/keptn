@@ -76,8 +76,10 @@ Per default login attempts are throttled to 10 requests within 60 minutes. This 
 - `CLEAN_BUCKET_INTERVAL` - the interval (in minutes) the saved login attempts should be checked and deleted if the last request of an IP is older than `REQUEST_TIME_LIMIT` minutes. Default is 60 minutes.
 
 ### Setting up login via OpenID
+
 To set up a login via OpenID you have to register an application with the identity provider you want, in order to get an ID (`CLIENT_ID`) and a secret (`CLIENT_SECRET`).
 After this is done, the following environment variables have to be set:
+
 - `OAUTH_ENABLED` - Flag to enable login via OpenID. To enable it set it to `true`.
 - `OAUTH_BASE_URL` - URL of the bridge (e.g. `http://localhost:3000` or `https://myBridgeInstallation.com`).
 - `OAUTH_DISCOVERY` - Discovery URL of the identity provider (e.g. https://api.login.yahoo.com/.well-known/openid-configuration).
@@ -89,9 +91,10 @@ After this is done, the following environment variables have to be set:
 - `OAUTH_ALLOWED_LOGOUT_URLS` (optional) - Allowed URLs for the redirect of the end_session endpoint separated by space. Some browsers require to also add the URL the end_session endpoint is redirecting to.
 
 #### Additional information:
+
 - Make sure you add the redirect URI `https://${yourDomain}/${pathToBridge}/oauth/redirect` to your identity provider.
 - The identity provider has to support the grant types `authorization_code` and `refresh_token` and provide the endpoints `authorization_endpoint`, `token_endpoint` and `jwks_uri`.
-- The refresh of the token is done by the bridge server on demand. 
+- The refresh of the token is done by the bridge server on demand.
 - If the identity provider provides the endpoint `end_session_endpoint`, it will be used for the logout.
 - The bridge server itself is a confidential client.
 
@@ -143,15 +146,23 @@ kubectl delete -f deploy/service.yaml
 5. Access the web through the url shown on the console (e.g., http://localhost:3000/ ).
 
 ### UI testing with Cypress
+
 [Cypress Reference](https://docs.cypress.io/api/table-of-contents)
 
 UI tests in Keptn Bridge must not require any API call. When writing tests, please make sure to mock every outgoing request to `/api` with `cy.intercept`<br/>
 [Cypress Intercept Reference](https://docs.cypress.io/api/commands/intercept)
 
 To test your UI tests locally, use following commands:
-* `yarn start:ci` - this serves Angular on port 3000 with no live reload - this will also ensure, that no API connection is made.
-* `yarn cypress:open` - Development of tests<br/>This opens a browser where changes where you can run your tests and inspect them. This will be automatically updated on every code change made on the `*.spec.ts` files.
-* or `yarn cypress:run` - Headless browser mode also used in CI<br/>This will just run the tests on a headless browser without the possibility to inspect them.
+
+- `yarn cypress:open` (Linux, macOS), `yarn cypress:open:win32` (Windows) - Used for the local development of tests.<br/>This opens a browser, where you can run your tests and inspect them. The tests will re-run automatically on every code change made on the `*.spec.ts` files.
+- or `yarn test:ui` (Linux, macOS), `yarn test:ui:win32` (Windows) - This starts the headless browser mode that is also used in CI.<br/>This will just run the tests on a headless browser without the possibility to inspect them.
+
+Both commands serve Angular on port 3000 with no live reload - this will also ensure that no API connection is made.
+
+#### Known issues
+
+- Currently, our UI tests are flaky because of some bugs in Cypress. You can find more information in [Known Issues](https://github.com/keptn/keptn/issues/7107).  
+- One UI test will fail if you are on Windows and in a different time zone than Europe/Berlin due to a bug in Cypress.
 
 ## IDE Setup
 

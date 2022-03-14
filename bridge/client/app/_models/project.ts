@@ -30,12 +30,20 @@ export class Project extends pj {
   public update(project: Project): void {
     this.gitRemoteURI = project.gitRemoteURI;
     this.gitUser = project.gitUser;
+    const services: { [name: string]: Service } = {};
     for (const newStage of project.stages) {
       const existingStage = this.stages.find((stage) => stage.stageName === newStage.stageName);
       if (existingStage) {
         existingStage.update(newStage);
       }
       // at the moment deleting/adding stages is not supported, so we don't need to consider this case for now
+
+      for (const service of newStage.services) {
+        if (!services[service.serviceName]) {
+          services[service.serviceName] = service;
+        }
+      }
+      this.services = Object.values(services);
     }
   }
 
@@ -55,6 +63,10 @@ export class Project extends pj {
     } else {
       return this.stages.find((s) => s.stageName === stageName)?.services ?? [];
     }
+  }
+
+  getServiceNames(): string[] {
+    return this.services?.map((service) => service.serviceName) ?? [];
   }
 
   getShipyardVersion(): string {
@@ -111,6 +123,10 @@ export class Project extends pj {
       }
     }
     return evaluation?.evaluationTrace;
+  }
+
+  public getStageNames(): string[] {
+    return this.stages.map((stage) => stage.stageName);
   }
 
   public getStages(parent: string[] | null): Stage[] {

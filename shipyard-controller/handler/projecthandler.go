@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"sort"
 
@@ -50,13 +51,13 @@ func (ph *ProjectHandler) GetAllProjects(c *gin.Context) {
 
 	params := &models.GetProjectParams{}
 	if err := c.ShouldBindQuery(params); err != nil {
-		SetBadRequestErrorResponse(err, c, "Invalid request format")
+		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
 	allProjects, err := ph.ProjectManager.Get()
 	if err != nil {
-		SetInternalServerErrorResponse(err, c)
+		SetInternalServerErrorResponse(c, err.Error())
 		return
 	}
 
@@ -99,12 +100,12 @@ func (ph *ProjectHandler) GetProjectByName(c *gin.Context) {
 
 	project, err := ph.ProjectManager.GetByName(projectName)
 	if err != nil {
-		if project == nil && err == ErrProjectNotFound {
-			SetNotFoundErrorResponse(nil, c, "Project not found: "+projectName)
+		if project == nil && errors.Is(err, ErrProjectNotFound) {
+			SetNotFoundErrorResponse(c, fmt.Sprintf(ProjectNotFoundMsg, projectName))
 			return
 		}
 
-		SetInternalServerErrorResponse(err, c)
+		SetInternalServerErrorResponse(c, err.Error())
 		return
 	}
 
@@ -129,11 +130,11 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 
 	createProjectParams := &models.CreateProjectParams{}
 	if err := c.ShouldBindJSON(createProjectParams); err != nil {
-		SetBadRequestErrorResponse(err, c, "Invalid request format")
+		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 	if err := createProjectParams.Validate(); err != nil {
-		SetBadRequestErrorResponse(err, c, "Could not validate payload")
+		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidPayloadMsg, err.Error()))
 		return
 	}
 
@@ -150,11 +151,11 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 			log.Errorf("could not send project.create.finished event: %s", err.Error())
 		}
 		rollback()
-		if err == ErrProjectAlreadyExists {
-			SetConflictErrorResponse(err, c)
+		if errors.Is(err, ErrProjectAlreadyExists) {
+			SetConflictErrorResponse(c, err.Error())
 			return
 		}
-		SetInternalServerErrorResponse(err, c)
+		SetInternalServerErrorResponse(c, err.Error())
 		return
 	}
 	if err := ph.sendProjectCreateSuccessFinishedEvent(keptnContext, createProjectParams); err != nil {
@@ -183,11 +184,11 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 	// validate the input
 	params := &models.UpdateProjectParams{}
 	if err := c.ShouldBindJSON(params); err != nil {
-		SetBadRequestErrorResponse(err, c, "Invalid request format")
+		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 	if err := params.Validate(); err != nil {
-		SetBadRequestErrorResponse(err, c, "Could not validate payload")
+		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidPayloadMsg, err.Error()))
 		return
 	}
 
@@ -198,22 +199,22 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 	if err != nil {
 		rollback()
 		if errors.Is(err, common.ErrConfigStoreInvalidToken) {
-			SetFailedDependencyErrorResponse(err, c, err.Error())
+			SetFailedDependencyErrorResponse(c, err.Error())
 			return
 		}
 		if errors.Is(err, common.ErrConfigStoreUpstreamNotFound) {
-			SetNotFoundErrorResponse(err, c, err.Error())
+			SetNotFoundErrorResponse(c, err.Error())
 			return
 		}
 		if errors.Is(err, ErrProjectNotFound) {
-			SetNotFoundErrorResponse(err, c)
+			SetNotFoundErrorResponse(c, err.Error())
 			return
 		}
 		if errors.Is(err, ErrInvalidStageChange) {
-			SetBadRequestErrorResponse(err, c, err.Error())
+			SetBadRequestErrorResponse(c, err.Error())
 			return
 		}
-		SetInternalServerErrorResponse(ErrInternalError, c)
+		SetInternalServerErrorResponse(c, ErrInternalError.Error())
 		return
 	}
 	c.Status(http.StatusCreated)
@@ -243,12 +244,14 @@ func (ph *ProjectHandler) DeleteProject(c *gin.Context) {
 		if err := ph.sendProjectDeleteFailFinishedEvent(keptnContext, projectName); err != nil {
 			log.Errorf("failed to send finished event: %s", err.Error())
 		}
-		SetInternalServerErrorResponse(err, c)
+		SetInternalServerErrorResponse(c, err.Error())
 		return
 	}
 
 	if err := ph.sendProjectDeleteSuccessFinishedEvent(keptnContext, projectName); err != nil {
 		log.Errorf("failed to send finished event: %s", err.Error())
+	} else {
+		log.Debug("Deleted project ", projectName)
 	}
 
 	c.JSON(http.StatusOK, models.DeleteProjectResponse{

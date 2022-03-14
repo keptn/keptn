@@ -1,0 +1,1093 @@
+{
+  "events": [
+    {
+      "data": {
+        "message": "Finished release",
+        "project": "sockshop",
+        "result": "pass",
+        "service": "carts",
+        "stage": "production",
+        "status": "succeeded"
+      },
+      "id": "2430f955-645c-49a7-b9ab-0a4bd159c05e",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "shipyard-controller",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:44:47.230Z",
+      "triggeredid": "2060919e-57d9-427f-98a6-77c3f65fac0e",
+      "type": "sh.keptn.event.production.delivery.finished"
+    },
+    {
+      "data": {
+        "message": "Finished release",
+        "project": "sockshop",
+        "release": {
+          "gitCommit": "badb59657c2149f2f1e35d8045389ea7c5158d38"
+        },
+        "result": "pass",
+        "service": "carts",
+        "stage": "production",
+        "status": "succeeded"
+      },
+      "id": "14c3fcec-e8b4-4f5c-8f3d-8f009abb17fb",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "helm-service",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:44:46.951Z",
+      "triggeredid": "6e811da9-6a68-48da-ac01-2e6f8ad077f7",
+      "type": "sh.keptn.event.release.finished"
+    },
+    {
+      "data": {
+        "project": "sockshop",
+        "service": "carts",
+        "stage": "production",
+        "status": "succeeded"
+      },
+      "id": "0d324d6d-dd70-425f-bb49-4c1643534750",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "helm-service",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:44:11.438Z",
+      "triggeredid": "6e811da9-6a68-48da-ac01-2e6f8ad077f7",
+      "type": "sh.keptn.event.release.started"
+    },
+    {
+      "data": {
+        "configurationChange": {
+          "values": {
+            "image": "docker.io/keptnexamples/carts:0.13.3"
+          }
+        },
+        "deployment": {
+          "deploymentNames": ["canary", "direct", "canary", "direct"],
+          "deploymentURIsLocal": ["http://carts.sockshop-production:80"],
+          "deploymentURIsPublic": [
+            "http://carts.sockshop-production.34.66.9.11.nip.io:80",
+            "http://carts.sockshop-dev.34.66.9.11.nip.io:80",
+            "http://carts.sockshop-staging.34.66.9.11.nip.io:80",
+            "http://carts.sockshop-dev.34.66.9.11.nip.io:80"
+          ],
+          "deploymentstrategy": "duplicate",
+          "gitCommit": "0520891318fd35426623657c611dd86b7ba37f32"
+        },
+        "evaluation": {
+          "gitCommit": "",
+          "indicatorResults": null,
+          "result": "pass",
+          "score": 0,
+          "sloFileContent": "",
+          "timeEnd": "2022-01-17T11:41:44.207Z",
+          "timeStart": "2022-01-17T11:41:19.452Z"
+        },
+        "message": "",
+        "project": "sockshop",
+        "release": {
+          "gitCommit": ""
+        },
+        "result": "pass",
+        "service": "carts",
+        "stage": "production",
+        "status": "succeeded",
+        "test": {
+          "end": "2022-01-17T11:41:44.207Z",
+          "gitCommit": "",
+          "start": "2022-01-17T11:41:19.452Z"
+        }
+      },
+      "id": "6e811da9-6a68-48da-ac01-2e6f8ad077f7",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "shipyard-controller",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:44:11.433Z",
+      "type": "sh.keptn.event.release.triggered"
+    },
+    {
+      "data": {
+        "deployment": {
+          "deploymentNames": ["canary"],
+          "deploymentURIsLocal": ["http://carts.sockshop-production:80"],
+          "deploymentURIsPublic": ["http://carts.sockshop-production.34.66.9.11.nip.io:80"],
+          "deploymentstrategy": "duplicate",
+          "gitCommit": "0520891318fd35426623657c611dd86b7ba37f32"
+        },
+        "message": "Successfully deployed",
+        "project": "sockshop",
+        "result": "pass",
+        "service": "carts",
+        "stage": "production",
+        "status": "succeeded"
+      },
+      "id": "c6a39139-6fbb-4aa3-ade3-67b901110521",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "helm-service",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:44:11.228Z",
+      "triggeredid": "288c0ee3-279f-4543-8aeb-66a724109a99",
+      "type": "sh.keptn.event.deployment.finished"
+    },
+    {
+      "data": {
+        "project": "sockshop",
+        "service": "carts",
+        "stage": "production",
+        "status": "succeeded"
+      },
+      "id": "47c649a9-8343-4c05-ab22-b0d68693073c",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "helm-service",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:43:49.339Z",
+      "triggeredid": "288c0ee3-279f-4543-8aeb-66a724109a99",
+      "type": "sh.keptn.event.deployment.started"
+    },
+    {
+      "data": {
+        "configurationChange": {
+          "values": {
+            "image": "docker.io/keptnexamples/carts:0.13.3"
+          }
+        },
+        "deployment": {
+          "deploymentNames": ["direct", "canary", "direct"],
+          "deploymentURIsLocal": null,
+          "deploymentURIsPublic": [
+            "http://carts.sockshop-dev.34.66.9.11.nip.io:80",
+            "http://carts.sockshop-staging.34.66.9.11.nip.io:80",
+            "http://carts.sockshop-dev.34.66.9.11.nip.io:80"
+          ],
+          "deploymentstrategy": "blue_green_service",
+          "gitCommit": "8aaaee3e976459fd5dd0dc8f19673f6195f101c1"
+        },
+        "evaluation": {
+          "gitCommit": "",
+          "indicatorResults": null,
+          "result": "pass",
+          "score": 0,
+          "sloFileContent": "",
+          "timeEnd": "2022-01-17T11:41:44.207Z",
+          "timeStart": "2022-01-17T11:41:19.452Z"
+        },
+        "message": "",
+        "project": "sockshop",
+        "release": {
+          "gitCommit": ""
+        },
+        "result": "",
+        "service": "carts",
+        "stage": "production",
+        "status": "",
+        "test": {
+          "end": "2022-01-17T11:41:44.207Z",
+          "gitCommit": "",
+          "start": "2022-01-17T11:41:19.452Z"
+        }
+      },
+      "id": "288c0ee3-279f-4543-8aeb-66a724109a99",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "shipyard-controller",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:43:49.333Z",
+      "type": "sh.keptn.event.deployment.triggered"
+    },
+    {
+      "data": {
+        "configurationChange": {
+          "values": {
+            "image": "docker.io/keptnexamples/carts:0.13.3"
+          }
+        },
+        "deployment": {
+          "deploymentNames": ["direct", "canary", "direct"],
+          "deploymentURIsLocal": null,
+          "deploymentURIsPublic": [
+            "http://carts.sockshop-dev.34.66.9.11.nip.io:80",
+            "http://carts.sockshop-staging.34.66.9.11.nip.io:80",
+            "http://carts.sockshop-dev.34.66.9.11.nip.io:80"
+          ],
+          "deploymentstrategy": "",
+          "gitCommit": "8aaaee3e976459fd5dd0dc8f19673f6195f101c1"
+        },
+        "evaluation": {
+          "gitCommit": "",
+          "indicatorResults": null,
+          "result": "pass",
+          "score": 0,
+          "sloFileContent": "",
+          "timeEnd": "2022-01-17T11:41:44.207Z",
+          "timeStart": "2022-01-17T11:41:19.452Z"
+        },
+        "message": "Finished release",
+        "project": "sockshop",
+        "release": {
+          "gitCommit": ""
+        },
+        "result": "",
+        "service": "carts",
+        "stage": "production",
+        "status": "",
+        "test": {
+          "end": "2022-01-17T11:41:44.207Z",
+          "gitCommit": "",
+          "start": "2022-01-17T11:41:19.452Z"
+        }
+      },
+      "id": "2060919e-57d9-427f-98a6-77c3f65fac0e",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "shipyard-controller",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:43:47.828Z",
+      "type": "sh.keptn.event.production.delivery.triggered"
+    },
+    {
+      "data": {
+        "message": "Finished release",
+        "project": "sockshop",
+        "result": "pass",
+        "service": "carts",
+        "stage": "staging",
+        "status": "succeeded"
+      },
+      "id": "36638425-8538-4b9a-8625-eb7b4e238ff7",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "shipyard-controller",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:43:47.636Z",
+      "triggeredid": "f80d1845-038d-4d80-a430-e2fb745744fe",
+      "type": "sh.keptn.event.staging.delivery.finished"
+    },
+    {
+      "data": {
+        "message": "Finished release",
+        "project": "sockshop",
+        "release": {
+          "gitCommit": "3aae3dc90a0703d50a62bd85d6b72ad934c38a60"
+        },
+        "result": "pass",
+        "service": "carts",
+        "stage": "staging",
+        "status": "succeeded"
+      },
+      "id": "bbdd05ed-9fd6-400f-ac26-87ad1b1edf82",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "helm-service",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:43:47.482Z",
+      "triggeredid": "791ab1bc-dc9e-4618-980e-456053924404",
+      "type": "sh.keptn.event.release.finished"
+    },
+    {
+      "data": {
+        "project": "sockshop",
+        "service": "carts",
+        "stage": "staging",
+        "status": "succeeded"
+      },
+      "id": "94cd5aea-9f83-41d1-8c73-1ab3edb07022",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "helm-service",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:43:20.436Z",
+      "triggeredid": "791ab1bc-dc9e-4618-980e-456053924404",
+      "type": "sh.keptn.event.release.started"
+    },
+    {
+      "data": {
+        "configurationChange": {
+          "values": {
+            "image": "docker.io/keptnexamples/carts:0.13.3"
+          }
+        },
+        "deployment": {
+          "deploymentNames": ["canary", "direct"],
+          "deploymentURIsLocal": ["http://carts.sockshop-staging:80"],
+          "deploymentURIsPublic": [
+            "http://carts.sockshop-staging.34.66.9.11.nip.io:80",
+            "http://carts.sockshop-dev.34.66.9.11.nip.io:80"
+          ],
+          "deploymentstrategy": "duplicate",
+          "gitCommit": "f9eda50e8d6f11bb4f5a9f80f15e02b8258c1e1c"
+        },
+        "evaluation": {
+          "gitCommit": "",
+          "indicatorResults": null,
+          "result": "pass",
+          "score": 0,
+          "sloFileContent": "",
+          "timeEnd": "2022-01-17T11:43:08.044Z",
+          "timeStart": "2022-01-17T11:42:32.738Z"
+        },
+        "message": "",
+        "project": "sockshop",
+        "release": {
+          "gitCommit": ""
+        },
+        "result": "pass",
+        "service": "carts",
+        "stage": "staging",
+        "status": "succeeded",
+        "test": {
+          "end": "2022-01-17T11:43:08.044Z",
+          "gitCommit": "",
+          "start": "2022-01-17T11:42:32.738Z"
+        }
+      },
+      "id": "791ab1bc-dc9e-4618-980e-456053924404",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "shipyard-controller",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:43:20.431Z",
+      "type": "sh.keptn.event.release.triggered"
+    },
+    {
+      "data": {
+        "evaluation": {
+          "gitCommit": "",
+          "indicatorResults": null,
+          "result": "pass",
+          "score": 0,
+          "sloFileContent": "",
+          "timeEnd": "2022-01-17T11:43:08.044Z",
+          "timeStart": "2022-01-17T11:42:32.738Z"
+        },
+        "message": "no evaluation performed by lighthouse because no SLO file configured for project sockshop",
+        "project": "sockshop",
+        "result": "pass",
+        "service": "carts",
+        "stage": "staging",
+        "status": "succeeded"
+      },
+      "id": "98cf18e1-7dbb-4ebc-b297-5198e44cb5f3",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "lighthouse-service",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:43:20.101Z",
+      "triggeredid": "86cffa68-4fb8-416e-879f-96884b4f59d9",
+      "type": "sh.keptn.event.evaluation.finished"
+    },
+    {
+      "data": {
+        "get-sli": {
+          "end": "2022-01-17T11:43:08.044Z",
+          "start": "2022-01-17T11:42:32.738Z"
+        },
+        "message": "cannot create Dynatrace credentials: invalid Dynatrace token",
+        "project": "sockshop",
+        "result": "fail",
+        "service": "carts",
+        "stage": "staging",
+        "status": "errored"
+      },
+      "id": "bf4ea320-7694-48b4-952d-31acad20f172",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "dynatrace-service",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:43:18.520Z",
+      "triggeredid": "bb573001-20f0-4e40-805e-aaed5e890fb2",
+      "type": "sh.keptn.event.get-sli.finished"
+    },
+    {
+      "data": {
+        "deployment": "canary",
+        "get-sli": {
+          "end": "2022-01-17T11:43:08.044Z",
+          "sliProvider": "dynatrace",
+          "start": "2022-01-17T11:42:32.738Z"
+        },
+        "project": "sockshop",
+        "service": "carts",
+        "stage": "staging"
+      },
+      "id": "bb573001-20f0-4e40-805e-aaed5e890fb2",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "lighthouse-service",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:43:11.008Z",
+      "type": "sh.keptn.event.get-sli.triggered"
+    },
+    {
+      "data": {
+        "project": "sockshop",
+        "result": "pass",
+        "service": "carts",
+        "stage": "staging",
+        "status": "succeeded"
+      },
+      "id": "439e9f8a-bd95-4442-a5d3-7c778497b0a5",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "lighthouse-service",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:43:08.239Z",
+      "triggeredid": "86cffa68-4fb8-416e-879f-96884b4f59d9",
+      "type": "sh.keptn.event.evaluation.started"
+    },
+    {
+      "data": {
+        "configurationChange": {
+          "values": {
+            "image": "docker.io/keptnexamples/carts:0.13.3"
+          }
+        },
+        "deployment": {
+          "deploymentNames": ["canary", "direct"],
+          "deploymentURIsLocal": ["http://carts.sockshop-staging:80"],
+          "deploymentURIsPublic": [
+            "http://carts.sockshop-staging.34.66.9.11.nip.io:80",
+            "http://carts.sockshop-dev.34.66.9.11.nip.io:80"
+          ],
+          "deploymentstrategy": "duplicate",
+          "gitCommit": "f9eda50e8d6f11bb4f5a9f80f15e02b8258c1e1c"
+        },
+        "evaluation": {
+          "gitCommit": "",
+          "indicatorResults": null,
+          "result": "pass",
+          "score": 0,
+          "sloFileContent": "",
+          "timeEnd": "2022-01-17T11:41:44.207Z",
+          "timeStart": "2022-01-17T11:41:19.452Z"
+        },
+        "message": "",
+        "project": "sockshop",
+        "release": {
+          "gitCommit": ""
+        },
+        "result": "pass",
+        "service": "carts",
+        "stage": "staging",
+        "status": "succeeded",
+        "test": {
+          "end": "2022-01-17T11:43:08.044Z",
+          "gitCommit": "",
+          "start": "2022-01-17T11:42:32.738Z"
+        }
+      },
+      "id": "86cffa68-4fb8-416e-879f-96884b4f59d9",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "shipyard-controller",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:43:08.230Z",
+      "type": "sh.keptn.event.evaluation.triggered"
+    },
+    {
+      "data": {
+        "message": "Tests for performance with status = true. Project: sockshop, Service: carts, Stage: staging, TestStrategy: performance, Context: 62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+        "project": "sockshop",
+        "result": "pass",
+        "service": "carts",
+        "stage": "staging",
+        "status": "succeeded",
+        "test": {
+          "end": "2022-01-17T11:43:08.044Z",
+          "gitCommit": "",
+          "start": "2022-01-17T11:42:32.738Z"
+        }
+      },
+      "id": "25cf7f68-ef66-4843-a18d-c50ccfd11c80",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "source": "jmeter-service",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:43:08.046Z",
+      "triggeredid": "ad13f4f6-2ec2-4e40-95db-ef325eed02d9",
+      "type": "sh.keptn.event.test.finished"
+    },
+    {
+      "data": {
+        "project": "sockshop",
+        "result": "pass",
+        "service": "carts",
+        "stage": "staging",
+        "status": "succeeded"
+      },
+      "id": "0810072d-ac70-43f8-bdaa-a51055b8d791",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "source": "jmeter-service",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:42:32.746Z",
+      "triggeredid": "ad13f4f6-2ec2-4e40-95db-ef325eed02d9",
+      "type": "sh.keptn.event.test.started"
+    },
+    {
+      "data": {
+        "configurationChange": {
+          "values": {
+            "image": "docker.io/keptnexamples/carts:0.13.3"
+          }
+        },
+        "deployment": {
+          "deploymentNames": ["canary", "direct"],
+          "deploymentURIsLocal": ["http://carts.sockshop-staging:80"],
+          "deploymentURIsPublic": [
+            "http://carts.sockshop-staging.34.66.9.11.nip.io:80",
+            "http://carts.sockshop-dev.34.66.9.11.nip.io:80"
+          ],
+          "deploymentstrategy": "duplicate",
+          "gitCommit": "f9eda50e8d6f11bb4f5a9f80f15e02b8258c1e1c"
+        },
+        "evaluation": {
+          "gitCommit": "",
+          "indicatorResults": null,
+          "result": "pass",
+          "score": 0,
+          "sloFileContent": "",
+          "timeEnd": "2022-01-17T11:41:44.207Z",
+          "timeStart": "2022-01-17T11:41:19.452Z"
+        },
+        "message": "",
+        "project": "sockshop",
+        "release": {
+          "gitCommit": ""
+        },
+        "result": "pass",
+        "service": "carts",
+        "stage": "staging",
+        "status": "succeeded",
+        "test": {
+          "end": "2022-01-17T11:41:44.207Z",
+          "gitCommit": "",
+          "start": "2022-01-17T11:41:19.452Z",
+          "teststrategy": "performance"
+        }
+      },
+      "id": "ad13f4f6-2ec2-4e40-95db-ef325eed02d9",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "shipyard-controller",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:42:32.736Z",
+      "type": "sh.keptn.event.test.triggered"
+    },
+    {
+      "data": {
+        "deployment": {
+          "deploymentNames": ["canary"],
+          "deploymentURIsLocal": ["http://carts.sockshop-staging:80"],
+          "deploymentURIsPublic": ["http://carts.sockshop-staging.34.66.9.11.nip.io:80"],
+          "deploymentstrategy": "duplicate",
+          "gitCommit": "f9eda50e8d6f11bb4f5a9f80f15e02b8258c1e1c"
+        },
+        "message": "Successfully deployed",
+        "project": "sockshop",
+        "result": "pass",
+        "service": "carts",
+        "stage": "staging",
+        "status": "succeeded"
+      },
+      "id": "4f9ba86f-4177-4782-a710-cd7d92354b6f",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "helm-service",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:42:32.616Z",
+      "triggeredid": "2fe55a84-d972-4683-bba3-8365635ef9a7",
+      "type": "sh.keptn.event.deployment.finished"
+    },
+    {
+      "data": {
+        "project": "sockshop",
+        "service": "carts",
+        "stage": "staging",
+        "status": "succeeded"
+      },
+      "id": "f0224758-4bec-4e2a-b69f-53318982a032",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "helm-service",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:42:03.836Z",
+      "triggeredid": "2fe55a84-d972-4683-bba3-8365635ef9a7",
+      "type": "sh.keptn.event.deployment.started"
+    },
+    {
+      "data": {
+        "configurationChange": {
+          "values": {
+            "image": "docker.io/keptnexamples/carts:0.13.3"
+          }
+        },
+        "deployment": {
+          "deploymentNames": ["direct"],
+          "deploymentURIsLocal": null,
+          "deploymentURIsPublic": ["http://carts.sockshop-dev.34.66.9.11.nip.io:80"],
+          "deploymentstrategy": "blue_green_service",
+          "gitCommit": "8aaaee3e976459fd5dd0dc8f19673f6195f101c1"
+        },
+        "evaluation": {
+          "gitCommit": "",
+          "indicatorResults": null,
+          "result": "pass",
+          "score": 0,
+          "sloFileContent": "",
+          "timeEnd": "2022-01-17T11:41:44.207Z",
+          "timeStart": "2022-01-17T11:41:19.452Z"
+        },
+        "message": "",
+        "project": "sockshop",
+        "release": {
+          "gitCommit": ""
+        },
+        "result": "",
+        "service": "carts",
+        "stage": "staging",
+        "status": "",
+        "test": {
+          "end": "2022-01-17T11:41:44.207Z",
+          "gitCommit": "",
+          "start": "2022-01-17T11:41:19.452Z"
+        }
+      },
+      "id": "2fe55a84-d972-4683-bba3-8365635ef9a7",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "shipyard-controller",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:42:03.830Z",
+      "type": "sh.keptn.event.deployment.triggered"
+    },
+    {
+      "data": {
+        "configurationChange": {
+          "values": {
+            "image": "docker.io/keptnexamples/carts:0.13.3"
+          }
+        },
+        "deployment": {
+          "deploymentNames": ["direct"],
+          "deploymentURIsLocal": null,
+          "deploymentURIsPublic": ["http://carts.sockshop-dev.34.66.9.11.nip.io:80"],
+          "deploymentstrategy": "",
+          "gitCommit": "8aaaee3e976459fd5dd0dc8f19673f6195f101c1"
+        },
+        "evaluation": {
+          "gitCommit": "",
+          "indicatorResults": null,
+          "result": "pass",
+          "score": 0,
+          "sloFileContent": "",
+          "timeEnd": "2022-01-17T11:41:44.207Z",
+          "timeStart": "2022-01-17T11:41:19.452Z"
+        },
+        "message": "Finished release",
+        "project": "sockshop",
+        "release": {
+          "gitCommit": ""
+        },
+        "result": "",
+        "service": "carts",
+        "stage": "staging",
+        "status": "",
+        "test": {
+          "end": "2022-01-17T11:41:44.207Z",
+          "gitCommit": "",
+          "start": "2022-01-17T11:41:19.452Z"
+        }
+      },
+      "id": "f80d1845-038d-4d80-a430-e2fb745744fe",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "shipyard-controller",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:42:01.035Z",
+      "type": "sh.keptn.event.staging.delivery.triggered"
+    },
+    {
+      "data": {
+        "message": "Finished release",
+        "project": "sockshop",
+        "result": "pass",
+        "service": "carts",
+        "stage": "dev",
+        "status": "succeeded"
+      },
+      "id": "bf158580-f25a-4d1f-bbcc-a6a28944a74b",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "shipyard-controller",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:42:01.029Z",
+      "triggeredid": "5fd3870a-bfcc-4a89-91c5-e0b46bbd0443",
+      "type": "sh.keptn.event.dev.delivery.finished"
+    },
+    {
+      "data": {
+        "message": "Finished release",
+        "project": "sockshop",
+        "release": {
+          "gitCommit": ""
+        },
+        "result": "pass",
+        "service": "carts",
+        "stage": "dev",
+        "status": "succeeded"
+      },
+      "id": "a3884102-59d9-4f64-8dfb-a96573fbe51c",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "helm-service",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:41:58.545Z",
+      "triggeredid": "080ed061-b194-4147-a230-1ca1523925e3",
+      "type": "sh.keptn.event.release.finished"
+    },
+    {
+      "data": {
+        "project": "sockshop",
+        "service": "carts",
+        "stage": "dev",
+        "status": "succeeded"
+      },
+      "id": "beac7861-98d2-460e-8dff-8ca2c1223ead",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "helm-service",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:41:58.540Z",
+      "triggeredid": "080ed061-b194-4147-a230-1ca1523925e3",
+      "type": "sh.keptn.event.release.started"
+    },
+    {
+      "data": {
+        "configurationChange": {
+          "values": {
+            "image": "docker.io/keptnexamples/carts:0.13.3"
+          }
+        },
+        "deployment": {
+          "deploymentNames": ["direct"],
+          "deploymentURIsLocal": ["http://carts.sockshop-dev:80"],
+          "deploymentURIsPublic": ["http://carts.sockshop-dev.34.66.9.11.nip.io:80"],
+          "deploymentstrategy": "direct",
+          "gitCommit": "8aaaee3e976459fd5dd0dc8f19673f6195f101c1"
+        },
+        "evaluation": {
+          "gitCommit": "",
+          "indicatorResults": null,
+          "result": "pass",
+          "score": 0,
+          "sloFileContent": "",
+          "timeEnd": "2022-01-17T11:41:44.207Z",
+          "timeStart": "2022-01-17T11:41:19.452Z"
+        },
+        "message": "",
+        "project": "sockshop",
+        "release": null,
+        "result": "pass",
+        "service": "carts",
+        "stage": "dev",
+        "status": "succeeded",
+        "test": {
+          "end": "2022-01-17T11:41:44.207Z",
+          "gitCommit": "",
+          "start": "2022-01-17T11:41:19.452Z"
+        }
+      },
+      "id": "080ed061-b194-4147-a230-1ca1523925e3",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "shipyard-controller",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:41:58.533Z",
+      "type": "sh.keptn.event.release.triggered"
+    },
+    {
+      "data": {
+        "evaluation": {
+          "gitCommit": "",
+          "indicatorResults": null,
+          "result": "pass",
+          "score": 0,
+          "sloFileContent": "",
+          "timeEnd": "2022-01-17T11:41:44.207Z",
+          "timeStart": "2022-01-17T11:41:19.452Z"
+        },
+        "message": "no evaluation performed by lighthouse because no SLO file configured for project sockshop",
+        "project": "sockshop",
+        "result": "pass",
+        "service": "carts",
+        "stage": "dev",
+        "status": "succeeded"
+      },
+      "id": "f5adab4b-0311-4adb-9629-c84e3ff0761c",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "lighthouse-service",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:41:58.406Z",
+      "triggeredid": "6251c8eb-dae8-4a68-9e7f-6dfdb0924802",
+      "type": "sh.keptn.event.evaluation.finished"
+    },
+    {
+      "data": {
+        "get-sli": {
+          "end": "2022-01-17T11:41:44.207Z",
+          "start": "2022-01-17T11:41:19.452Z"
+        },
+        "message": "cannot create Dynatrace credentials: invalid Dynatrace token",
+        "project": "sockshop",
+        "result": "fail",
+        "service": "carts",
+        "stage": "dev",
+        "status": "errored"
+      },
+      "id": "b3b21cf3-d535-4b72-b368-d56ae53c87eb",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "dynatrace-service",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:41:56.743Z",
+      "triggeredid": "471b7e12-8242-4594-b9e6-20bc3e444afc",
+      "type": "sh.keptn.event.get-sli.finished"
+    },
+    {
+      "data": {
+        "deployment": "direct",
+        "get-sli": {
+          "end": "2022-01-17T11:41:44.207Z",
+          "sliProvider": "dynatrace",
+          "start": "2022-01-17T11:41:19.452Z"
+        },
+        "project": "sockshop",
+        "service": "carts",
+        "stage": "dev"
+      },
+      "id": "471b7e12-8242-4594-b9e6-20bc3e444afc",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "lighthouse-service",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:41:47.220Z",
+      "type": "sh.keptn.event.get-sli.triggered"
+    },
+    {
+      "data": {
+        "project": "sockshop",
+        "result": "pass",
+        "service": "carts",
+        "stage": "dev",
+        "status": "succeeded"
+      },
+      "id": "093aa167-0bb2-46d1-b79c-b6ee05cbd076",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "lighthouse-service",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:41:44.442Z",
+      "triggeredid": "6251c8eb-dae8-4a68-9e7f-6dfdb0924802",
+      "type": "sh.keptn.event.evaluation.started"
+    },
+    {
+      "data": {
+        "configurationChange": {
+          "values": {
+            "image": "docker.io/keptnexamples/carts:0.13.3"
+          }
+        },
+        "deployment": {
+          "deploymentNames": ["direct"],
+          "deploymentURIsLocal": ["http://carts.sockshop-dev:80"],
+          "deploymentURIsPublic": ["http://carts.sockshop-dev.34.66.9.11.nip.io:80"],
+          "deploymentstrategy": "direct",
+          "gitCommit": "8aaaee3e976459fd5dd0dc8f19673f6195f101c1"
+        },
+        "evaluation": null,
+        "message": "",
+        "project": "sockshop",
+        "result": "pass",
+        "service": "carts",
+        "stage": "dev",
+        "status": "succeeded",
+        "test": {
+          "end": "2022-01-17T11:41:44.207Z",
+          "gitCommit": "",
+          "start": "2022-01-17T11:41:19.452Z"
+        }
+      },
+      "id": "6251c8eb-dae8-4a68-9e7f-6dfdb0924802",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "shipyard-controller",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:41:44.427Z",
+      "type": "sh.keptn.event.evaluation.triggered"
+    },
+    {
+      "data": {
+        "message": "Tests for functional with status = true. Project: sockshop, Service: carts, Stage: dev, TestStrategy: functional, Context: 62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+        "project": "sockshop",
+        "result": "pass",
+        "service": "carts",
+        "stage": "dev",
+        "status": "succeeded",
+        "test": {
+          "end": "2022-01-17T11:41:44.207Z",
+          "gitCommit": "",
+          "start": "2022-01-17T11:41:19.452Z"
+        }
+      },
+      "id": "2bd2120d-adcc-4467-afe0-dbee2e1b486f",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "source": "jmeter-service",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:41:44.209Z",
+      "triggeredid": "74fae034-1a4f-46eb-80d6-45bf640845f4",
+      "type": "sh.keptn.event.test.finished"
+    },
+    {
+      "data": {
+        "project": "sockshop",
+        "result": "pass",
+        "service": "carts",
+        "stage": "dev",
+        "status": "succeeded"
+      },
+      "id": "be3b2ca0-c3d3-44d5-a992-62e058ed1010",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "source": "jmeter-service",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:41:19.452Z",
+      "triggeredid": "74fae034-1a4f-46eb-80d6-45bf640845f4",
+      "type": "sh.keptn.event.test.started"
+    },
+    {
+      "data": {
+        "configurationChange": {
+          "values": {
+            "image": "docker.io/keptnexamples/carts:0.13.3"
+          }
+        },
+        "deployment": {
+          "deploymentNames": ["direct"],
+          "deploymentURIsLocal": ["http://carts.sockshop-dev:80"],
+          "deploymentURIsPublic": ["http://carts.sockshop-dev.34.66.9.11.nip.io:80"],
+          "deploymentstrategy": "direct",
+          "gitCommit": "8aaaee3e976459fd5dd0dc8f19673f6195f101c1"
+        },
+        "message": "",
+        "project": "sockshop",
+        "result": "pass",
+        "service": "carts",
+        "stage": "dev",
+        "status": "succeeded",
+        "test": {
+          "teststrategy": "functional"
+        }
+      },
+      "id": "74fae034-1a4f-46eb-80d6-45bf640845f4",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "shipyard-controller",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:41:19.440Z",
+      "type": "sh.keptn.event.test.triggered"
+    },
+    {
+      "data": {
+        "deployment": {
+          "deploymentNames": ["direct"],
+          "deploymentURIsLocal": ["http://carts.sockshop-dev:80"],
+          "deploymentURIsPublic": ["http://carts.sockshop-dev.34.66.9.11.nip.io:80"],
+          "deploymentstrategy": "direct",
+          "gitCommit": "8aaaee3e976459fd5dd0dc8f19673f6195f101c1"
+        },
+        "message": "Successfully deployed",
+        "project": "sockshop",
+        "result": "pass",
+        "service": "carts",
+        "stage": "dev",
+        "status": "succeeded"
+      },
+      "id": "50d0b21b-6391-4b2a-ac2d-d30e9ed4fd7d",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "helm-service",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:41:19.310Z",
+      "triggeredid": "ffd870da-bca7-49a1-bafd-726c234bfd3b",
+      "type": "sh.keptn.event.deployment.finished"
+    },
+    {
+      "data": {
+        "project": "sockshop",
+        "service": "carts",
+        "stage": "dev",
+        "status": "succeeded"
+      },
+      "id": "9b902bd0-2d18-4be6-af14-88405605a7e6",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "helm-service",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:41:09.141Z",
+      "triggeredid": "ffd870da-bca7-49a1-bafd-726c234bfd3b",
+      "type": "sh.keptn.event.deployment.started"
+    },
+    {
+      "data": {
+        "configurationChange": {
+          "values": {
+            "image": "docker.io/keptnexamples/carts:0.13.3"
+          }
+        },
+        "deployment": {
+          "deploymentURIsLocal": null,
+          "deploymentstrategy": "direct"
+        },
+        "message": "",
+        "project": "sockshop",
+        "result": "",
+        "service": "carts",
+        "stage": "dev",
+        "status": ""
+      },
+      "id": "ffd870da-bca7-49a1-bafd-726c234bfd3b",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "shipyard-controller",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:41:09.134Z",
+      "type": "sh.keptn.event.deployment.triggered"
+    },
+    {
+      "data": {
+        "configurationChange": {
+          "values": {
+            "image": "docker.io/keptnexamples/carts:0.13.3"
+          }
+        },
+        "deployment": {
+          "deploymentURIsLocal": null,
+          "deploymentstrategy": ""
+        },
+        "project": "sockshop",
+        "service": "carts",
+        "stage": "dev"
+      },
+      "id": "5fd3870a-bfcc-4a89-91c5-e0b46bbd0443",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "https://github.com/keptn/keptn/cli#configuration-change",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:41:07.549Z",
+      "type": "sh.keptn.event.dev.delivery.triggered"
+    }
+  ],
+  "pageSize": 100,
+  "totalCount": 40
+}

@@ -2,9 +2,13 @@ import { TestBed } from '@angular/core/testing';
 import { DataService } from './data.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { AppModule } from '../app.module';
+import { ApiService } from './api.service';
+import { TriggerEvaluationData, TriggerSequenceData } from '../_models/trigger-sequence';
+import moment from 'moment';
 
 describe('DataService', () => {
   let dataService: DataService;
+  let apiService: ApiService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -12,9 +16,71 @@ describe('DataService', () => {
       imports: [AppModule, HttpClientTestingModule],
     });
     dataService = TestBed.inject(DataService);
+    apiService = TestBed.inject(ApiService);
   });
 
   it('should be an instance', () => {
     expect(dataService).toBeTruthy();
+  });
+
+  it('should trigger a delivery', () => {
+    // given
+    const spy = jest.spyOn(apiService, 'triggerSequence');
+    const data: TriggerSequenceData = {
+      project: 'podtato-head',
+      stage: 'hardening',
+      service: 'helloservice',
+      configurationChange: {
+        values: {
+          image: 'docker.io/keptn:v0.1.2',
+        },
+      },
+    };
+
+    // when
+    dataService.triggerDelivery(data);
+
+    // then
+    expect(spy).toHaveBeenCalledWith('sh.keptn.event.hardening.delivery.triggered', data);
+  });
+
+  it('should trigger an evaluation', () => {
+    // given
+    const spy = jest.spyOn(apiService, 'triggerEvaluation');
+    const date = moment().toISOString();
+    const data: TriggerEvaluationData = {
+      project: 'podtato-head',
+      stage: 'hardening',
+      service: 'helloservice',
+      evaluation: {
+        timeframe: '1h15m',
+        start: date,
+      },
+    };
+
+    // when
+    dataService.triggerEvaluation(data);
+
+    // then
+    expect(spy).toHaveBeenCalledWith(data);
+  });
+
+  it('should trigger a custom sequence', () => {
+    // given
+    const spy = jest.spyOn(apiService, 'triggerSequence');
+    const data: TriggerSequenceData = {
+      project: 'podtato-head',
+      stage: 'hardening',
+      service: 'helloservice',
+      labels: {
+        key1: 'val1',
+      },
+    };
+
+    // when
+    dataService.triggerCustomSequence(data, 'testsequence');
+
+    // then
+    expect(spy).toHaveBeenCalledWith('sh.keptn.event.hardening.testsequence.triggered', data);
   });
 });
