@@ -148,9 +148,17 @@ func Test_QualityGates(t *testing.T) {
 	evaluationFinishedPayload := &keptnv2.EvaluationFinishedEventData{}
 	err = keptnv2.Decode(evaluationFinishedEvent.Data, evaluationFinishedPayload)
 	require.Nil(t, err)
-	require.Equal(t, "pass", string(evaluationFinishedPayload.Result))
+	require.Equal(t, "pass", evaluationFinishedPayload.Evaluation.Result)
 	require.Equal(t, float64(0), evaluationFinishedPayload.Evaluation.Score)
 	require.Equal(t, "", evaluationFinishedPayload.Evaluation.SLOFileContent)
+	require.Equal(t, []*keptnv2.SLIEvaluationResult([]*keptnv2.SLIEvaluationResult(nil)), evaluationFinishedPayload.Evaluation.IndicatorResults)
+	require.Equal(t, []string([]string(nil)), evaluationFinishedPayload.Evaluation.ComparedEvents)
+	require.Equal(t, "", evaluationFinishedPayload.EventData.GitCommitID)
+	require.Equal(t, projectName, evaluationFinishedPayload.EventData.Project)
+	require.Equal(t, "hardening", evaluationFinishedPayload.EventData.Stage)
+	require.Equal(t, serviceName, evaluationFinishedPayload.EventData.Service)
+	require.Equal(t, keptnv2.StatusSucceeded, evaluationFinishedPayload.EventData.Status)
+	require.Equal(t, keptnv2.ResultPass, evaluationFinishedPayload.EventData.Result)
 
 	//// now let's add an SLI provider
 	_, err = ExecuteCommand(fmt.Sprintf("kubectl create configmap -n %s lighthouse-config-%s --from-literal=sli-provider=my-sli-provider", GetKeptnNameSpaceFromEnv(), projectName))
@@ -184,11 +192,24 @@ func Test_QualityGates(t *testing.T) {
 		return true
 	}, 1*time.Minute, 10*time.Second)
 
+	require.NotNil(t, evaluationFinishedEvent)
+	require.Equal(t, "lighthouse-service", *evaluationFinishedEvent.Source)
+	require.Equal(t, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), *evaluationFinishedEvent.Type)
 	err = keptnv2.Decode(evaluationFinishedEvent.Data, evaluationFinishedPayload)
 	require.Nil(t, err)
-
-	require.Equal(t, keptnv2.ResultFailed, evaluationFinishedPayload.Result)
+	require.Equal(t, "fail", evaluationFinishedPayload.Evaluation.Result)
+	require.Equal(t, float64(0), evaluationFinishedPayload.Evaluation.Score)
+	require.Equal(t, "", evaluationFinishedPayload.Evaluation.SLOFileContent)
+	require.Equal(t, []*keptnv2.SLIEvaluationResult([]*keptnv2.SLIEvaluationResult(nil)), evaluationFinishedPayload.Evaluation.IndicatorResults)
+	require.Equal(t, []string([]string(nil)), evaluationFinishedPayload.Evaluation.ComparedEvents)
+	require.Equal(t, "", evaluationFinishedPayload.EventData.GitCommitID)
+	require.Equal(t, projectName, evaluationFinishedPayload.EventData.Project)
+	require.Equal(t, "hardening", evaluationFinishedPayload.EventData.Stage)
+	require.Equal(t, serviceName, evaluationFinishedPayload.EventData.Service)
+	require.Equal(t, keptnv2.StatusErrored, evaluationFinishedPayload.EventData.Status)
+	require.Equal(t, keptnv2.ResultFailed, evaluationFinishedPayload.EventData.Result)
 	require.NotEmpty(t, evaluationFinishedPayload.Message)
+
 	//
 	//// ...and an SLO file
 
@@ -204,6 +225,16 @@ func Test_QualityGates(t *testing.T) {
 
 	err = keptnv2.Decode(evaluationFinishedEvent.Data, evaluationFinishedPayload)
 	require.Nil(t, err)
+	require.Equal(t, "", evaluationFinishedPayload.EventData.GitCommitID)
+	require.Equal(t, projectName, evaluationFinishedPayload.EventData.Project)
+	require.Equal(t, "hardening", evaluationFinishedPayload.EventData.Stage)
+	require.Equal(t, serviceName, evaluationFinishedPayload.EventData.Service)
+	require.Equal(t, keptnv2.StatusSucceeded, evaluationFinishedPayload.EventData.Status)
+	require.Equal(t, keptnv2.ResultPass, evaluationFinishedPayload.EventData.Result)
+	require.NotEmpty(t, evaluationFinishedPayload.Message)
+
+	require.Equal(t, "pass", evaluationFinishedPayload.Evaluation.Result)
+	require.Equal(t, float64(100), evaluationFinishedPayload.Evaluation.Score)
 
 	require.Len(t, evaluationFinishedPayload.Evaluation.IndicatorResults, 3)
 	require.Equal(t, &keptnv2.SLIEvaluationResult{
@@ -243,6 +274,48 @@ func Test_QualityGates(t *testing.T) {
 		KeySLI: false,
 	}, evaluationFinishedPayload.Evaluation.IndicatorResults[0])
 
+	require.Equal(t, &keptnv2.SLIEvaluationResult{
+		Score: 1,
+		Value: &keptnv2.SLIResult{
+			Metric:  "throughput",
+			Value:   200,
+			Success: true,
+			Message: "",
+		},
+		DisplayName: "",
+		PassTargets: []*keptnv2.SLITarget{
+			{
+				Criteria:    "<=+100%",
+				TargetValue: 0,
+				Violated:    false,
+			},
+			{
+				Criteria:    ">=-80%",
+				TargetValue: 0,
+				Violated:    false,
+			},
+		},
+		WarningTargets: nil,
+		Status: "pass",
+		KeySLI: false,
+	}, evaluationFinishedPayload.Evaluation.IndicatorResults[1])
+
+	require.Equal(t, &keptnv2.SLIEvaluationResult{
+		Score: 0,
+		Value: &keptnv2.SLIResult{
+			Metric:  "error_rate",
+			Value:   0,
+			ComparedValue: 0,
+			Success: true,
+			Message: "",
+		},
+		DisplayName: "",
+		PassTargets: nil,
+		WarningTargets: nil,
+		Status: "info",
+		KeySLI: false,
+	}, evaluationFinishedPayload.Evaluation.IndicatorResults[2])
+
 	firstEvaluationFinishedID := evaluationFinishedEvent.ID
 
 	// send an evaluation.finished event for this evaluation
@@ -270,6 +343,98 @@ func Test_QualityGates(t *testing.T) {
 	err = keptnv2.Decode(evaluationFinishedEvent.Data, evaluationFinishedPayload)
 	require.Nil(t, err)
 	require.NotContains(t, evaluationFinishedPayload.Evaluation.ComparedEvents, firstEvaluationFinishedID)
+	require.Len(t, evaluationFinishedPayload.Evaluation.ComparedEvents, 1)
+	require.Equal(t, "", evaluationFinishedPayload.EventData.GitCommitID)
+	require.Equal(t, projectName, evaluationFinishedPayload.EventData.Project)
+	require.Equal(t, "hardening", evaluationFinishedPayload.EventData.Stage)
+	require.Equal(t, serviceName, evaluationFinishedPayload.EventData.Service)
+	require.Equal(t, keptnv2.StatusSucceeded, evaluationFinishedPayload.EventData.Status)
+	require.Equal(t, keptnv2.ResultPass, evaluationFinishedPayload.EventData.Result)
+	require.NotEmpty(t, evaluationFinishedPayload.Message)
+
+	require.Equal(t, "pass", evaluationFinishedPayload.Evaluation.Result)
+	require.Equal(t, float64(100), evaluationFinishedPayload.Evaluation.Score)
+
+	require.Len(t, evaluationFinishedPayload.Evaluation.IndicatorResults, 3)
+	require.Equal(t, &keptnv2.SLIEvaluationResult{
+		Score: 1,
+		Value: &keptnv2.SLIResult{
+			Metric:  "response_time_p95",
+			Value:   200,
+			Success: true,
+			Message: "",
+		},
+		DisplayName: "",
+		PassTargets: []*keptnv2.SLITarget{
+			{
+				Criteria:    "<=+75%",
+				TargetValue: 0,
+				Violated:    false,
+			},
+			{
+				Criteria:    "<800",
+				TargetValue: 800,
+				Violated:    false,
+			},
+		},
+		WarningTargets: []*keptnv2.SLITarget{
+			{
+				Criteria:    "<=1000",
+				TargetValue: 1000,
+				Violated:    false,
+			},
+			{
+				Criteria:    "<=+100%",
+				TargetValue: 0,
+				Violated:    false,
+			},
+		},
+		Status: "pass",
+		KeySLI: false,
+	}, evaluationFinishedPayload.Evaluation.IndicatorResults[0])
+
+	require.Equal(t, &keptnv2.SLIEvaluationResult{
+		Score: 1,
+		Value: &keptnv2.SLIResult{
+			Metric:  "throughput",
+			Value:   200,
+			Success: true,
+			Message: "",
+		},
+		DisplayName: "",
+		PassTargets: []*keptnv2.SLITarget{
+			{
+				Criteria:    "<=+100%",
+				TargetValue: 0,
+				Violated:    false,
+			},
+			{
+				Criteria:    ">=-80%",
+				TargetValue: 0,
+				Violated:    false,
+			},
+		},
+		WarningTargets: nil,
+		Status: "pass",
+		KeySLI: false,
+	}, evaluationFinishedPayload.Evaluation.IndicatorResults[1])
+
+	require.Equal(t, &keptnv2.SLIEvaluationResult{
+		Score: 0,
+		Value: &keptnv2.SLIResult{
+			Metric:  "error_rate",
+			Value:   0,
+			ComparedValue: 0,
+			Success: true,
+			Message: "",
+		},
+		DisplayName: "",
+		PassTargets: nil,
+		WarningTargets: nil,
+		Status: "info",
+		KeySLI: false,
+	}, evaluationFinishedPayload.Evaluation.IndicatorResults[2])
+
 	secondEvaluationFinishedID := evaluationFinishedEvent.ID
 
 	// do another evaluation - the resulting .finished event should contain the second .finished event in the list of compared evaluation results
@@ -278,6 +443,99 @@ func Test_QualityGates(t *testing.T) {
 	err = keptnv2.Decode(evaluationFinishedEvent.Data, evaluationFinishedPayload)
 	require.Nil(t, err)
 	require.Contains(t, evaluationFinishedPayload.Evaluation.ComparedEvents, secondEvaluationFinishedID)
+	require.Len(t, evaluationFinishedPayload.Evaluation.ComparedEvents, 1)
+	require.Equal(t, "", evaluationFinishedPayload.EventData.GitCommitID)
+	require.Equal(t, projectName, evaluationFinishedPayload.EventData.Project)
+	require.Equal(t, "hardening", evaluationFinishedPayload.EventData.Stage)
+	require.Equal(t, serviceName, evaluationFinishedPayload.EventData.Service)
+	require.Equal(t, keptnv2.StatusSucceeded, evaluationFinishedPayload.EventData.Status)
+	require.Equal(t, keptnv2.ResultPass, evaluationFinishedPayload.EventData.Result)
+	require.NotEmpty(t, evaluationFinishedPayload.Message)
+
+	require.Equal(t, "pass", evaluationFinishedPayload.Evaluation.Result)
+	require.Equal(t, float64(100), evaluationFinishedPayload.Evaluation.Score)
+
+	require.Len(t, evaluationFinishedPayload.Evaluation.IndicatorResults, 3)
+	require.Equal(t, &keptnv2.SLIEvaluationResult{
+		Score: 1,
+		Value: &keptnv2.SLIResult{
+			Metric:  "response_time_p95",
+			Value:   200,
+			ComparedValue: 200,
+			Success: true,
+			Message: "",
+		},
+		DisplayName: "",
+		PassTargets: []*keptnv2.SLITarget{
+			{
+				Criteria:    "<=+75%",
+				TargetValue: 350,
+				Violated:    false,
+			},
+			{
+				Criteria:    "<800",
+				TargetValue: 800,
+				Violated:    false,
+			},
+		},
+		WarningTargets: []*keptnv2.SLITarget{
+			{
+				Criteria:    "<=1000",
+				TargetValue: 1000,
+				Violated:    false,
+			},
+			{
+				Criteria:    "<=+100%",
+				TargetValue: 400,
+				Violated:    false,
+			},
+		},
+		Status: "pass",
+		KeySLI: false,
+	}, evaluationFinishedPayload.Evaluation.IndicatorResults[0])
+
+	require.Equal(t, &keptnv2.SLIEvaluationResult{
+		Score: 1,
+		Value: &keptnv2.SLIResult{
+			Metric:  "throughput",
+			Value:   200,
+			ComparedValue: 200,
+			Success: true,
+			Message: "",
+		},
+		DisplayName: "",
+		PassTargets: []*keptnv2.SLITarget{
+			{
+				Criteria:    "<=+100%",
+				TargetValue: 400,
+				Violated:    false,
+			},
+			{
+				Criteria:    ">=-80%",
+				TargetValue: 40,
+				Violated:    false,
+			},
+		},
+		WarningTargets: nil,
+		Status: "pass",
+		KeySLI: false,
+	}, evaluationFinishedPayload.Evaluation.IndicatorResults[1])
+
+	require.Equal(t, &keptnv2.SLIEvaluationResult{
+		Score: 0,
+		Value: &keptnv2.SLIResult{
+			Metric:  "error_rate",
+			Value:   0,
+			ComparedValue: 0,
+			Success: true,
+			Message: "",
+		},
+		DisplayName: "",
+		PassTargets: nil,
+		WarningTargets: nil,
+		Status: "info",
+		KeySLI: false,
+	}, evaluationFinishedPayload.Evaluation.IndicatorResults[2])
 
 	project, err := GetProject(projectName)
 	require.Nil(t, err)
@@ -368,6 +626,13 @@ func performResourceServiceTest(t *testing.T, projectName string, serviceName st
 	require.Contains(t, getSLIPayload.GetSLI.Indicators, "response_time_p95")
 	require.Contains(t, getSLIPayload.GetSLI.Indicators, "throughput")
 	require.Contains(t, getSLIPayload.GetSLI.Indicators, "error_rate")
+	require.Equal(t, "", getSLIPayload.EventData.GitCommitID)
+	require.Equal(t, projectName, getSLIPayload.EventData.Project)
+	require.Equal(t, "hardening", getSLIPayload.EventData.Stage)
+	require.Equal(t, serviceName, getSLIPayload.EventData.Service)
+	require.Equal(t, keptnv2.StatusType(""), getSLIPayload.EventData.Status)
+	require.Equal(t, keptnv2.ResultType(""), getSLIPayload.EventData.Result)
+	require.Empty(t, getSLIPayload.EventData.Message)
 
 	//SLI uses a different commitID
 	resp, err = ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
