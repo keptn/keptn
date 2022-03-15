@@ -13,7 +13,7 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	scmodels "github.com/keptn/keptn/shipyard-controller/models"
+	//models "github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
 )
 
@@ -142,7 +142,7 @@ func Test_SequenceState(t *testing.T) {
 		if !IsEqual(t, *context.KeptnContext, state.Shkeptncontext, "state.Shkeptncontext") {
 			return false
 		}
-		if !IsEqual(t, scmodels.SequenceStartedState, state.State, "state.State") {
+		if !IsEqual(t, models.SequenceStartedState, state.State, "state.State") {
 			return false
 		}
 
@@ -193,7 +193,7 @@ func Test_SequenceState(t *testing.T) {
 		if state.Shkeptncontext != *context.KeptnContext {
 			return false
 		}
-		if state.State != scmodels.SequenceStartedState {
+		if state.State != models.SequenceStartedState {
 			return false
 		}
 
@@ -297,7 +297,7 @@ func Test_SequenceState(t *testing.T) {
 		t.Logf("%s", marshal)
 		state := states.States[0]
 
-		if !IsEqual(t, scmodels.SequenceStartedState, state.State, "state.State") {
+		if !IsEqual(t, models.SequenceStartedState, state.State, "state.State") {
 			return false
 		}
 
@@ -403,7 +403,7 @@ func Test_SequenceState_CannotRetrieveShipyard(t *testing.T) {
 	_, err = TriggerSequence(projectName, serviceName, "dev", "evaluation", nil)
 	require.Nil(t, err)
 
-	var states *scmodels.SequenceStates
+	var states *models.SequenceStates
 	require.Eventually(t, func() bool {
 		states, _, err = GetState(projectName)
 		if err != nil {
@@ -415,7 +415,7 @@ func Test_SequenceState_CannotRetrieveShipyard(t *testing.T) {
 	}, 20*time.Second, 3*time.Second)
 
 	require.Len(t, states.States, 1)
-	require.Equal(t, scmodels.SequenceFinished, states.States[0].State)
+	require.Equal(t, models.SequenceFinished, states.States[0].State)
 }
 
 func Test_SequenceState_InvalidShipyard(t *testing.T) {
@@ -455,7 +455,7 @@ func Test_SequenceState_InvalidShipyard(t *testing.T) {
 	_, err = TriggerSequence(projectName, serviceName, "dev", "evaluation", nil)
 	require.Nil(t, err)
 
-	var states *scmodels.SequenceStates
+	var states *models.SequenceStates
 	require.Eventually(t, func() bool {
 		states, _, err = GetState(projectName)
 		if err != nil {
@@ -467,7 +467,7 @@ func Test_SequenceState_InvalidShipyard(t *testing.T) {
 	}, 20*time.Second, 3*time.Second)
 
 	require.Len(t, states.States, 1)
-	require.Equal(t, scmodels.SequenceFinished, states.States[0].State)
+	require.Equal(t, models.SequenceFinished, states.States[0].State)
 }
 
 func Test_SequenceState_SequenceNotFound(t *testing.T) {
@@ -493,14 +493,14 @@ func Test_SequenceState_SequenceNotFound(t *testing.T) {
 	_, err = TriggerSequence(projectName, serviceName, "dev", "unknown", nil)
 	require.Nil(t, err)
 
-	var states *scmodels.SequenceStates
+	var states *models.SequenceStates
 	require.Eventually(t, func() bool {
 		states, _, err = GetState(projectName)
 		if err != nil {
 			return false
 		} else if states == nil || len(states.States) == 0 {
 			return false
-		} else if states.States[0].State != scmodels.SequenceFinished {
+		} else if states.States[0].State != models.SequenceFinished {
 			return false
 		}
 		return true
@@ -530,7 +530,7 @@ func Test_SequenceState_RetrieveMultipleSequence(t *testing.T) {
 	context1, err := TriggerSequence(projectName, serviceName, "dev", "delivery", nil)
 	require.Nil(t, err)
 
-	var states *scmodels.SequenceStates
+	var states *models.SequenceStates
 	require.Eventually(t, func() bool {
 		// filter sequences by providing the context ID
 		states, _, err = GetStateByContext(projectName, context1)

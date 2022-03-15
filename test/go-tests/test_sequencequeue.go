@@ -12,7 +12,7 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	scmodels "github.com/keptn/keptn/shipyard-controller/models"
+	//models "github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
 )
 
@@ -108,14 +108,14 @@ func Test_SequenceQueue(t *testing.T) {
 	context := triggerSequence(t, projectName, serviceName, "dev", "delivery")
 
 	t.Logf("wait for the sequence state to be available")
-	VerifySequenceEndsUpInState(t, projectName, context, 2*time.Minute, []string{scmodels.SequenceStartedState})
+	VerifySequenceEndsUpInState(t, projectName, context, 2*time.Minute, []string{models.SequenceStartedState})
 	t.Log("received the expected state!")
 
 	t.Logf("trigger a second sequence - this one should stay in 'waiting' state until the previous sequence is finished")
 	secondContext := triggerSequence(t, projectName, serviceName, "dev", "delivery")
 
 	t.Logf("checking if the second sequence is in state 'waiting'")
-	VerifySequenceEndsUpInState(t, projectName, secondContext, 2*time.Minute, []string{scmodels.SequenceWaitingState})
+	VerifySequenceEndsUpInState(t, projectName, secondContext, 2*time.Minute, []string{models.SequenceWaitingState})
 	t.Log("received the expected state!")
 
 	t.Logf("check if mytask.triggered has been sent for first sequence - this one should be available")
@@ -146,8 +146,8 @@ func Test_SequenceQueue(t *testing.T) {
 	require.Nil(t, err)
 
 	t.Logf("now that all tasks for the first sequence have been executed, the second sequence should eventually have the status 'started'")
-	t.Logf("waiting for state with keptnContext %s to have the status %s", *context.KeptnContext, scmodels.SequenceStartedState)
-	VerifySequenceEndsUpInState(t, projectName, secondContext, 2*time.Minute, []string{scmodels.SequenceStartedState})
+	t.Logf("waiting for state with keptnContext %s to have the status %s", *context.KeptnContext, models.SequenceStartedState)
+	VerifySequenceEndsUpInState(t, projectName, secondContext, 2*time.Minute, []string{models.SequenceStartedState})
 	t.Log("received the expected state!")
 
 	t.Logf("check if mytask.triggered has been sent for second sequence - now it should be available")
@@ -173,13 +173,13 @@ func Test_SequenceQueue(t *testing.T) {
 
 	t.Logf("trigger the first task sequence - this should time out")
 	context = triggerSequence(t, projectName, serviceName, "staging", "delivery")
-	VerifySequenceEndsUpInState(t, projectName, context, 2*time.Minute, []string{scmodels.TimedOut})
+	VerifySequenceEndsUpInState(t, projectName, context, 2*time.Minute, []string{models.TimedOut})
 	t.Log("received the expected state!")
 
 	t.Logf("now trigger the second sequence - this should start and a .triggered event for mytask should be sent")
 	secondContext = triggerSequence(t, projectName, serviceName, "staging", "delivery")
-	t.Logf("waiting for state with keptnContext %s to have the status %s", *secondContext.KeptnContext, scmodels.SequenceStartedState)
-	VerifySequenceEndsUpInState(t, projectName, secondContext, 2*time.Minute, []string{scmodels.SequenceStartedState})
+	t.Logf("waiting for state with keptnContext %s to have the status %s", *secondContext.KeptnContext, models.SequenceStartedState)
+	VerifySequenceEndsUpInState(t, projectName, secondContext, 2*time.Minute, []string{models.SequenceStartedState})
 	triggeredEventOfSecondSequence, err = GetLatestEventOfType(*secondContext.KeptnContext, projectName, "staging", keptnv2.GetTriggeredEventType("mytask"))
 	require.Nil(t, err)
 	require.NotNil(t, triggeredEventOfSecondSequence)
@@ -199,7 +199,7 @@ func Test_SequenceQueue(t *testing.T) {
 
 	t.Log("starting delivery-with-approval sequence")
 	context = triggerSequence(t, projectName, serviceName, "dev", "delivery-with-approval")
-	VerifySequenceEndsUpInState(t, projectName, context, 2*time.Minute, []string{scmodels.SequenceStartedState})
+	VerifySequenceEndsUpInState(t, projectName, context, 2*time.Minute, []string{models.SequenceStartedState})
 
 	t.Logf("check if approval.triggered has been sent for sequence - now it should be available")
 	approvalTriggeredEvent, err := GetLatestEventOfType(*context.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType(keptnv2.ApprovalTaskName))
@@ -213,7 +213,7 @@ func Test_SequenceQueue(t *testing.T) {
 
 	t.Logf("now let's trigger the other sequence")
 	secondContext = triggerSequence(t, projectName, serviceName, "dev", "delivery")
-	VerifySequenceEndsUpInState(t, projectName, secondContext, 2*time.Minute, []string{scmodels.SequenceStartedState})
+	VerifySequenceEndsUpInState(t, projectName, secondContext, 2*time.Minute, []string{models.SequenceStartedState})
 
 	t.Logf("check if approval.triggered has been sent for sequence - now it should be available")
 	myTaskTriggeredEvent, err := GetLatestEventOfType(*secondContext.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType("mytask"))
@@ -243,7 +243,7 @@ func Test_SequenceQueue(t *testing.T) {
 	require.Nil(t, err)
 
 	t.Logf("this should have completed the task sequence")
-	VerifySequenceEndsUpInState(t, projectName, secondContext, 2*time.Minute, []string{scmodels.SequenceFinished})
+	VerifySequenceEndsUpInState(t, projectName, secondContext, 2*time.Minute, []string{models.SequenceFinished})
 
 	t.Logf("now the mytask.triggered event for the second sequence should eventually become available")
 	require.Eventually(t, func() bool {
@@ -264,7 +264,7 @@ func Test_SequenceQueue(t *testing.T) {
 	wg.Add(nrOfSequences)
 
 	for i := 0; i < nrOfSequences; i++ {
-		go executeSequenceAndVerifyCompletion(t, projectName, serviceName, "qg", &wg, []string{scmodels.SequenceFinished})
+		go executeSequenceAndVerifyCompletion(t, projectName, serviceName, "qg", &wg, []string{models.SequenceFinished})
 	}
 	wg.Wait()
 }
@@ -306,7 +306,7 @@ func Test_SequenceQueue_TriggerMultiple(t *testing.T) {
 	}
 	verifyNumberOfOpenTriggeredEvents(t, projectName, 1)
 
-	var currentActiveSequence scmodels.SequenceState
+	var currentActiveSequence models.SequenceState
 	for i := 0; i < numSequences; i++ {
 		require.Eventually(t, func() bool {
 			states, _, err := GetState(projectName)
@@ -314,7 +314,7 @@ func Test_SequenceQueue_TriggerMultiple(t *testing.T) {
 				return false
 			}
 			for _, state := range states.States {
-				if state.State == scmodels.SequenceStartedState {
+				if state.State == models.SequenceStartedState {
 					// make sure the sequences are started in the chronologically correct order
 					if sequenceContexts[i] != state.Shkeptncontext {
 						return false
@@ -327,8 +327,8 @@ func Test_SequenceQueue_TriggerMultiple(t *testing.T) {
 			return false
 		}, 15*time.Second, 2*time.Second)
 
-		_, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, currentActiveSequence.Shkeptncontext), scmodels.SequenceControlCommand{
-			State: scmodels.AbortSequence,
+		_, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, currentActiveSequence.Shkeptncontext), models.SequenceControlCommand{
+			State: models.AbortSequence,
 			Stage: "",
 		}, 3)
 		require.Nil(t, err)
