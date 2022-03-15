@@ -52,6 +52,17 @@ func TestConfigurationStore(t *testing.T) {
 		assert.NotNil(t, err)
 	})
 
+	t.Run("TestUpdateProject_APIReturnsStatusNotFoundError", func(t *testing.T) {
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusNotFound)
+		}))
+		defer ts.Close()
+
+		instance := NewGitConfigurationStore(ts.URL)
+		err := instance.UpdateProject(keptnapimodels.Project{})
+		assert.NotNil(t, err)
+	})
+
 	t.Run("TestDelete_Success", func(t *testing.T) {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
 		defer ts.Close()
