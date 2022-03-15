@@ -2,9 +2,10 @@ package common
 
 import (
 	"errors"
+	"net/http"
+
 	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	"net/http"
 )
 
 type configStoreErrType int
