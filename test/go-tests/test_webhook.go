@@ -2,16 +2,15 @@ package go_tests
 
 import (
 	"fmt"
+	"github.com/keptn/go-utils/pkg/api/models"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	scmodels "github.com/keptn/keptn/shipyard-controller/models"
+	"github.com/stretchr/testify/require"
 	"net/http"
 	"os"
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/keptn/go-utils/pkg/api/models"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	scmodels "github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/stretchr/testify/require"
 )
 
 const webhookShipyard = `--- 
@@ -196,6 +195,19 @@ spec:
             key: "my-key"
       requests:
         - "curl --header 'x-token: {{.env.secretKey}}' http://shipyard-controller:8080/v1/project/{{.data.project}}"
+        - "curl http://shipyard-controller:8080/v1/project/{{.data.project}}/stage/{{.data.stage}}"`
+
+const webhookSimpleYaml = `apiVersion: webhookconfig.keptn.sh/v1alpha1
+kind: WebhookConfig
+metadata:
+  name: webhook-configuration
+spec:
+  webhooks:
+    - type: "sh.keptn.event.mytask.triggered"
+      subscriptionID: ${mytask-sub-id}
+      sendStarted: true
+      sendFinished: true
+      requests:
         - "curl http://shipyard-controller:8080/v1/project/{{.data.project}}/stage/{{.data.stage}}"`
 
 func Test_Webhook(t *testing.T) {
@@ -445,6 +457,134 @@ func Test_Webhook_OverlappingSubscriptions(t *testing.T) {
 		}
 		return true
 	}, 30*time.Second, 3*time.Second)
+
+}
+
+func Test_WebhookConfigAtProjectLevel(t *testing.T) {
+	projectName := "webhooks-config-project"
+	serviceName := "myservice"
+	stageName := "dev"
+	sequencename := "mysequence"
+
+	simpleWebhookTest(t, stageName, projectName, serviceName, sequencename, "mytask", func(t *testing.T, projectName, webhookFilePath string) {
+		t.Log("Adding webhook.yaml to our service")
+		_, err := ExecuteCommand(fmt.Sprintf("keptn add-resource --project=%s --resource=%s --resourceUri=webhook/webhook.yaml", projectName, webhookFilePath))
+
+		require.Nil(t, err)
+	})
+}
+
+func Test_WebhookConfigAtStageLevel(t *testing.T) {
+	projectName := "webhooks-config-stage"
+	serviceName := "myservice"
+	stageName := "dev"
+	sequencename := "mysequence"
+
+	simpleWebhookTest(t, stageName, projectName, serviceName, sequencename, "mytask", func(t *testing.T, projectName, webhookFilePath string) {
+		t.Log("Adding webhook.yaml to our service")
+		_, err := ExecuteCommand(fmt.Sprintf("keptn add-resource --project=%s --stage=%s --resource=%s --resourceUri=webhook/webhook.yaml", projectName, stageName, webhookFilePath))
+
+		require.Nil(t, err)
+	})
+}
+
+func Test_WebhookConfigAtServiceLevel(t *testing.T) {
+	projectName := "webhooks-config-service"
+	serviceName := "myservice"
+	stageName := "dev"
+	sequencename := "mysequence"
+
+	simpleWebhookTest(t, stageName, projectName, serviceName, sequencename, "mytask", func(t *testing.T, projectName, webhookFilePath string) {
+		t.Log("Adding webhook.yaml to our service")
+		_, err := ExecuteCommand(fmt.Sprintf("keptn add-resource --project=%s --service=%s --resource=%s --resourceUri=webhook/webhook.yaml --all-stages", projectName, serviceName, webhookFilePath))
+
+		require.Nil(t, err)
+	})
+}
+
+// simpleWebhookTest triggers a sequence and checks whether a started and finished event is sent for the given task
+func simpleWebhookTest(t *testing.T, stageName, projectName, serviceName, sequencename, taskname string, addConfigFunc func(t *testing.T, projectName, webhookFilePath string)) {
+	shipyardFilePath, err := CreateTmpShipyardFile(webhookShipyard)
+	require.Nil(t, err)
+	defer func() {
+		err := os.Remove(shipyardFilePath)
+		if err != nil {
+			t.Logf("Could not delete tmp file: %s", err.Error())
+		}
+	}()
+
+	t.Logf("creating project %s", projectName)
+	projectName, err = CreateProject(projectName, shipyardFilePath)
+	require.Nil(t, err)
+
+	t.Logf("creating service %s", serviceName)
+	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
+
+	require.Nil(t, err)
+	require.Contains(t, output, "created successfully")
+
+	// create subscriptions for the webhook-service
+	taskTypes := []string{"mytask"}
+
+	webhookYamlWithSubscriptionIDs := webhookSimpleYaml
+	webhookYamlWithSubscriptionIDs = getWebhookYamlWithSubscriptionIDs(t, taskTypes, projectName, webhookYamlWithSubscriptionIDs)
+
+	// wait some time to make sure the webhook service has pulled the updated subscription
+	<-time.After(20 * time.Second) // sorry :(
+
+	// now, let's add a webhook.yaml file to our service
+	webhookFilePath, err := CreateTmpFile("webhook.yaml", webhookYamlWithSubscriptionIDs)
+	require.Nil(t, err)
+	defer func() {
+		err := os.Remove(webhookFilePath)
+		if err != nil {
+			t.Logf("Could not delete tmp file: %s", err.Error())
+		}
+	}()
+
+	addConfigFunc(t, projectName, webhookFilePath)
+
+	t.Logf("triggering sequence %s in stage %s", sequencename, stageName)
+	keptnContextID, _ := TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
+
+	var taskFinishedEvents []*models.KeptnContextExtendedCE
+	t.Logf("Checking for started event of task %s", taskname)
+	require.Eventually(t, func() bool {
+		taskFinishedEvents, err = GetEventsOfType(keptnContextID, projectName, stageName, keptnv2.GetStartedEventType(taskname))
+		if err != nil {
+			t.Logf("got error: %s. will try again in a few seconds", err.Error())
+			return false
+		} else if taskFinishedEvents == nil {
+			t.Log("did not receive any .started events")
+			return false
+		} else if len(taskFinishedEvents) != 1 {
+			t.Logf("received %d .started events, but expected %d", len(taskFinishedEvents), 1)
+			return false
+		}
+		return true
+	}, 30*time.Second, 3*time.Second)
+
+	t.Logf("Checking for finished event of task %s", taskname)
+	require.Eventually(t, func() bool {
+		taskFinishedEvents, err = GetEventsOfType(keptnContextID, projectName, stageName, keptnv2.GetFinishedEventType(taskname))
+		if err != nil {
+			t.Logf("got error: %s. will try again in a few seconds", err.Error())
+			return false
+		} else if taskFinishedEvents == nil {
+			t.Log("did not receive any .started events")
+			return false
+		} else if len(taskFinishedEvents) != 1 {
+			t.Logf("received %d .started events, but expected %d", len(taskFinishedEvents), 1)
+			return false
+		}
+		return true
+	}, 30*time.Second, 3*time.Second)
+
+	decodedEvent := map[string]interface{}{}
+
+	err = keptnv2.EventDataAs(*taskFinishedEvents[0], &decodedEvent)
+	require.Nil(t, err)
+	require.Equal(t, string(keptnv2.ResultPass), decodedEvent["result"])
 
 }
 

@@ -2,8 +2,6 @@ package config
 
 import (
 	"io/ioutil"
-	"log"
-	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -24,14 +22,7 @@ func init() {
 
 func TestLoadNonExistingCLIConfig(t *testing.T) {
 	mng := NewCLIConfigManager("")
-	tmpDir, err := ioutil.TempDir("", "")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer os.RemoveAll(tmpDir)
-
-	mng.CLIConfigPath = filepath.Join(tmpDir, "config")
+	mng.CLIConfigPath = filepath.Join(t.TempDir(), "config")
 
 	cliConfig, err := mng.LoadCLIConfig()
 	if err != nil {
@@ -47,18 +38,11 @@ func TestLoadNonExistingCLIConfig(t *testing.T) {
 
 func TestStoreCLIConfig(t *testing.T) {
 	mng := NewCLIConfigManager("")
-	tmpDir, err := ioutil.TempDir("", "")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer os.RemoveAll(tmpDir)
-
-	mng.CLIConfigPath = filepath.Join(tmpDir, "config")
+	mng.CLIConfigPath = filepath.Join(t.TempDir(), "config")
 
 	cliConfig := CLIConfig{AutomaticVersionCheck: true, KubeContextCheck: true, LastVersionCheck: &testTime}
 
-	err = mng.StoreCLIConfig(cliConfig)
+	err := mng.StoreCLIConfig(cliConfig)
 	if err != nil {
 		t.Errorf("Unexpected error %v", err)
 	}
@@ -80,14 +64,7 @@ func TestStoreCLIConfig(t *testing.T) {
 
 func TestLoadCLIConfig(t *testing.T) {
 	mng := NewCLIConfigManager("")
-	tmpDir, err := ioutil.TempDir("", "")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer os.RemoveAll(tmpDir)
-
-	mng.CLIConfigPath = filepath.Join(tmpDir, "config")
+	mng.CLIConfigPath = filepath.Join(t.TempDir(), "config")
 	ioutil.WriteFile(mng.CLIConfigPath, []byte(testConfig), 0644)
 
 	cliConfig, err := mng.LoadCLIConfig()

@@ -24,6 +24,9 @@ func Test_GKE(t *testing.T) {
 	t.Run("Test_Webhook_OverlappingSubscriptions", Test_Webhook_OverlappingSubscriptions)
 	t.Run("Test_WebhookWithDisabledFinishedEvents", Test_WebhookWithDisabledFinishedEvents)
 	t.Run("Test_WebhookWithDisabledFinishedEvents", Test_WebhookWithDisabledStartedEvents)
+	t.Run("Test_WebhookConfigAtProjectLevel", Test_WebhookConfigAtProjectLevel)
+	t.Run("Test_WebhookConfigAtStageLevel", Test_WebhookConfigAtStageLevel)
+	t.Run("Test_WebhookConfigAtServiceLevel", Test_WebhookConfigAtServiceLevel)
 	t.Run("Test_SequenceTimeout", Test_SequenceTimeout)
 	t.Run("Test_SequenceTimeoutDelayedTask", Test_SequenceTimeoutDelayedTask)
 	t.Run("Test_SequenceControl_Abort", Test_SequenceControl_Abort)
@@ -44,6 +47,8 @@ func Test_GKE(t *testing.T) {
 	t.Run("Test_DeliveryAssistant", Test_DeliveryAssistant)
 	if res, err := CompareServiceNameWithDeploymentName("configuration-service", "configuration-service"); err == nil && res {
 		t.Run("Test_BackupRestoreConfigService", Test_BackupRestoreConfigService)
+	} else {
+		t.Run("Test_BackupRestoreResourceService", Test_BackupRestoreResourceService)
 	}
 	// TODO add resource service backup/restore test when the git credentials bug is solved
 	t.Run("Test_CustomUserManagedEndpointsTest", Test_CustomUserManagedEndpointsTest)
