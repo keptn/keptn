@@ -53,6 +53,132 @@ func TestEvaluationHandler_CreateEvaluation(t *testing.T) {
 			expectJSONError:    nil,
 		},
 		{
+			name:                             "correctly pass time values (start and time) from json payload",
+			expectCreateEvaluationToBeCalled: true,
+			fields: fields{
+				EvaluationManager: &fake.IEvaluationManagerMock{
+					CreateEvaluationFunc: func(project string, stage string, service string, params *models.CreateEvaluationParams) (*models.CreateEvaluationResponse, *models.Error) {
+						return &models.CreateEvaluationResponse{
+							KeptnContext: "test-context",
+						}, nil
+					},
+				},
+			},
+			jsonPayload: `{"start":"2021-01-02T15:00:00", "timeframe":"5m"}`,
+			expectCreateEvaluationParams: &models.CreateEvaluationParams{
+				Labels:    nil,
+				Start:     "2021-01-02T15:00:00",
+				End:       "",
+				Timeframe: "5m",
+			},
+			expectHttpStatus:   http.StatusOK,
+			expectJSONResponse: &models.CreateEvaluationResponse{KeptnContext: "test-context"},
+			expectJSONError:    nil,
+		},
+		{
+			name:                             "correct params - just timeframe",
+			expectCreateEvaluationToBeCalled: false,
+			fields: fields{
+				EvaluationManager: &fake.IEvaluationManagerMock{
+					CreateEvaluationFunc: func(project string, stage string, service string, params *models.CreateEvaluationParams) (*models.CreateEvaluationResponse, *models.Error) {
+						return &models.CreateEvaluationResponse{
+							KeptnContext: "test-context",
+						}, nil
+					},
+				},
+			},
+			jsonPayload: `{"timeframe":"5m"}`,
+			expectCreateEvaluationParams: &models.CreateEvaluationParams{
+				Labels:    nil,
+				Start:     "",
+				End:       "",
+				Timeframe: "5m",
+			},
+			expectHttpStatus:   http.StatusOK,
+			expectJSONResponse: &models.CreateEvaluationResponse{KeptnContext: "test-context"},
+			expectJSONError:    nil,
+		},
+		{
+			name:                             "no time specifications",
+			expectCreateEvaluationToBeCalled: false,
+			fields: fields{
+				EvaluationManager: &fake.IEvaluationManagerMock{
+					CreateEvaluationFunc: func(project string, stage string, service string, params *models.CreateEvaluationParams) (*models.CreateEvaluationResponse, *models.Error) {
+						return &models.CreateEvaluationResponse{
+							KeptnContext: "test-context",
+						}, nil
+					},
+				},
+			},
+			jsonPayload: `{}`,
+			expectCreateEvaluationParams: &models.CreateEvaluationParams{
+				Labels:    nil,
+				Start:     "",
+				End:       "",
+				Timeframe: "",
+			},
+			expectHttpStatus:   http.StatusOK,
+			expectJSONResponse: &models.CreateEvaluationResponse{KeptnContext: "test-context"},
+			expectJSONError:    nil,
+		},
+		{
+			name:                             "invalid params - end and timeframe together",
+			expectCreateEvaluationToBeCalled: false,
+			fields: fields{
+				EvaluationManager: &fake.IEvaluationManagerMock{
+					CreateEvaluationFunc: func(project string, stage string, service string, params *models.CreateEvaluationParams) (*models.CreateEvaluationResponse, *models.Error) {
+						return &models.CreateEvaluationResponse{
+							KeptnContext: "test-context",
+						}, nil
+					},
+				},
+			},
+			jsonPayload:      `{"start":"2021-01-02T15:00:00", "end":"2021-01-02T15:10:00", "timeframe":"5m"}`,
+			expectHttpStatus: http.StatusBadRequest,
+			expectJSONError: &models.Error{
+				Code:    http.StatusBadRequest,
+				Message: common.Stringp("Invalid request format: timeframe and end time specifications cannot be set together"),
+			},
+		},
+		{
+			name:                             "invalid params - end and timeframe together without start",
+			expectCreateEvaluationToBeCalled: false,
+			fields: fields{
+				EvaluationManager: &fake.IEvaluationManagerMock{
+					CreateEvaluationFunc: func(project string, stage string, service string, params *models.CreateEvaluationParams) (*models.CreateEvaluationResponse, *models.Error) {
+						return &models.CreateEvaluationResponse{
+							KeptnContext: "test-context",
+						}, nil
+					},
+				},
+			},
+			jsonPayload:      `{"end":"2021-01-02T15:10:00", "timeframe":"5m"}`,
+			expectHttpStatus: http.StatusBadRequest,
+			expectJSONError: &models.Error{
+				Code:    http.StatusBadRequest,
+				Message: common.Stringp("Invalid request format: timeframe and end time specifications cannot be set together"),
+			},
+		},
+		{
+			name:                             "invalid params - end without start",
+			expectCreateEvaluationToBeCalled: false,
+			fields: fields{
+				EvaluationManager: &fake.IEvaluationManagerMock{
+					CreateEvaluationFunc: func(project string, stage string, service string, params *models.CreateEvaluationParams) (*models.CreateEvaluationResponse, *models.Error) {
+						return &models.CreateEvaluationResponse{
+							KeptnContext: "test-context",
+						}, nil
+					},
+				},
+			},
+			jsonPayload:      `{"end":"2021-01-02T15:10:00"}`,
+			expectHttpStatus: http.StatusBadRequest,
+			expectJSONError: &models.Error{
+				Code:    http.StatusBadRequest,
+				Message: common.Stringp("Invalid request format: end time specifications cannot be set without start parameter"),
+			},
+		},
+		{
 			name:                             "invalid payload - do not call evaluationManager.CreateEvaluation",
 			expectCreateEvaluationToBeCalled: false,
 			fields: fields{
