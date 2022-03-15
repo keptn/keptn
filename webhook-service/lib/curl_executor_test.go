@@ -61,12 +61,12 @@ func TestCmdCurlExecutor_Curl(t *testing.T) {
 		{
 			name: "valid request - append --fail-with-body flag",
 			args: args{
-				curlCmd: `curl -X POST -H 'Content-type: application/json' --data '{\"text\":\"Hello, World!\"}' https://name:passwd@my.hook.com/foo`,
+				curlCmd: `curl -X POST -H 'Content-type: application/json' --data '{\"email\":\"john.doe@keptn.com\"}' https://name:passwd@my.hook.com/foo`,
 			},
 			want:          "success",
 			shouldExecute: true,
 			wantPassedArgs: []string{
-				"-X", "POST", "-H", "Content-type: application/json", "--data", `{\"text\":\"Hello, World!\"}`, "https://name:passwd@my.hook.com/foo", "--fail-with-body",
+				"-X", "POST", "-H", "Content-type: application/json", "--data", `{\"email\":\"john.doe@keptn.com\"}`, "https://name:passwd@my.hook.com/foo", "--fail-with-body",
 			},
 			wantErr: false,
 		},
@@ -218,7 +218,7 @@ func TestCmdCurlExecutor_Curl(t *testing.T) {
 			wantErr:       true,
 		},
 		{
-			name: "try to upload file using @ notation in data part 3 - should return error",
+			name: "try to upload file using @ notation in data part 4 - should return error",
 			args: args{
 				curlCmd: `curl -X POST -H 'token: abcd' --data ''''''@/etc/hosts https://webhook.site/2775'`,
 			},
