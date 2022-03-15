@@ -155,7 +155,7 @@ jobs:
               -H "Authorization: token $GITHUB_TOKEN" \
               "api.github.com/repos/$REPO_SLUG/actions/workflows/CI.yml/runs?branch=$BRANCH" | \
             jq '[.workflow_runs[] | select(
-              (.head_commit.author.name | endswith("[bot]") | not ) and ( .conclusion == "success" ) 
+              (.head_commit.author.name | endswith("[bot]") | not ) and ( .conclusion == "success" )
             )][0] | .id')
           echo "Run ID that will be used to download artifacts from: $RUN_ID"
           echo "::set-output name=RUN_ID::$RUN_ID"
@@ -489,7 +489,7 @@ jobs:
 
       - name: Integration Tests
         id: test_aggregated
-        timeout-minutes: 90
+        timeout-minutes: 100
         env:
           KEPTN_ENDPOINT: ${{ steps.determine_keptn_endpoint.outputs.KEPTN_ENDPOINT }}
           DO_AUTH: "true"
@@ -510,7 +510,7 @@ jobs:
             TESTSUITE="Test_K3D"
           fi
           
-          gotestsum --no-color=false -- -run "$TESTSUITE" -v -timeout 90m
+          gotestsum --no-color=false -- -run "$TESTSUITE" -v -timeout 100m
 
       - name: "------- TESTS END -------"
         run: echo "------- TESTS END -------"
