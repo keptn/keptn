@@ -162,7 +162,7 @@ func (ce *CmdCurlExecutor) validateCurlOptions(args []string) error {
 			}
 		}
 		// disallow usage of @ inside --data for posting local files
-		if arg == "--data" || arg == "-d" && len(args) >= i+1 {
+		if (arg == "--data" || arg == "-d") && len(args) > i+1 {
 			dataArgValue := args[i+1]
 			if strings.HasPrefix(dataArgValue, "@") {
 				return fmt.Errorf("file uploads using @ in --data is not allowed")
