@@ -95,7 +95,7 @@ If the endpoint specified by `KEPTN_API_ENDPOINT` does not provide a valid SSL c
 
 The remaining parameters, such as `PUBSUB_RECIPIENT`, `PUBSUB_RECIPIENT_PORT` and `PUBSUB_RECIPIENT_PATH`, as well as the `API_PROXY_PORT` can be configured as described above.
 
-## Filtering for a set of stages
+## Filtering for a set of stages, projects, or services
 
 The STAGE_FILTER, PROJECT_FILTER, and SERVICE_FILTER environment variables
 control the Keptn service's subscription to events with Keptn's Control Plane.
