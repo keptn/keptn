@@ -75,7 +75,7 @@ func (sh *StateHandler) GetSequenceState(c *gin.Context) {
 // @Produce  json
 // @Param   project     		path    string  true   "The project name"
 // @Param   keptnContext		path	string	true	"The keptnContext ID of the sequence"
-// @Param   sequenceControl     body    apimodels..SequenceControlCommand true "Sequence Control Command"
+// @Param   sequenceControl     body    apimodels.SequenceControlCommand true "Sequence Control Command"
 // @Success 200 {object} apimodels..SequenceControlResponse	"ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
