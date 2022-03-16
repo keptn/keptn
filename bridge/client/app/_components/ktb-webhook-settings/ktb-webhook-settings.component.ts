@@ -7,7 +7,7 @@ import { DtOverlayConfig } from '@dynatrace/barista-components/overlay';
 import { Secret } from '../../_models/secret';
 import { SelectTreeNode } from '../ktb-tree-list-select/ktb-tree-list-select.component';
 
-type ControlType = 'method' | 'url' | 'payload' | 'proxy' | 'header' | 'sendFinished';
+type ControlType = 'method' | 'url' | 'payload' | 'proxy' | 'header' | 'sendFinished' | 'sendStarted';
 
 @Component({
   selector: 'ktb-webhook-settings',
@@ -23,10 +23,11 @@ export class KtbWebhookSettingsComponent implements OnInit {
     header: new FormArray([]),
     proxy: new FormControl('', [FormUtils.isUrlValidator]),
     sendFinished: new FormControl('true', []),
+    sendStarted: new FormControl('true', []),
   });
   public webhookMethods: WebhookConfigMethod[] = ['GET', 'POST', 'PUT'];
   public secretDataSource: SelectTreeNode[] = [];
-  public sendFinishedOverlayConfig: DtOverlayConfig = {
+  public overlayConfig: DtOverlayConfig = {
     pinnable: true,
     originY: 'center',
   };
@@ -134,6 +135,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
     this._webhook.proxy = this.getFormControl('proxy').value;
     this._webhook.header = this.getFormControl('header').value;
     this._webhook.sendFinished = this.getFormControl('sendFinished').value === 'true';
+    this._webhook.sendStarted = this.getFormControl('sendStarted').value === 'true';
     this.webhookChange.emit(this._webhook);
   }
 
