@@ -429,19 +429,8 @@ func (sc *shipyardController) cancelSequence(cancel models.SequenceControl) erro
 			log.WithError(err).Error("could not delete event")
 		}
 
-		sequenceTriggeredEvent, err := sc.eventRepo.GetTaskSequenceTriggeredEvent(models.EventScope{
-			EventData: keptnv2.EventData{
-				Project: cancel.Project,
-				Stage:   sequenceExecution.Scope.Stage,
-			},
-			KeptnContext: cancel.KeptnContext,
-		}, sequenceExecution.Sequence.Name)
-		if err != nil {
-			return err
-		}
-
-		if sequenceTriggeredEvent != nil {
-			return sc.forceTaskSequenceCompletion(*sequenceTriggeredEvent, sequenceExecution)
+		if err := sc.forceTaskSequenceCompletion(sequenceExecution); err != nil {
+			log.Errorf("Could not complete sequence execution %s: %v", sequenceExecution.Scope.KeptnContext, err)
 		}
 	}
 	return nil
@@ -515,16 +504,13 @@ func (sc *shipyardController) resumeSequence(resume models.SequenceControl) erro
 	return nil
 }
 
-func (sc *shipyardController) forceTaskSequenceCompletion(sequenceTriggeredEvent models.Event, sequenceExecution models.SequenceExecution) error {
-	scope, err := models.NewEventScope(sequenceTriggeredEvent)
-	if err != nil {
-		return err
-	}
+func (sc *shipyardController) forceTaskSequenceCompletion(sequenceExecution models.SequenceExecution) error {
+	scope := sequenceExecution.Scope
 
 	scope.Result = keptnv2.ResultPass
 	scope.Status = keptnv2.StatusAborted
 
-	return sc.completeTaskSequence(*scope, sequenceExecution, models.SequenceFinished)
+	return sc.completeTaskSequence(scope, sequenceExecution, models.SequenceFinished)
 }
 
 func (sc *shipyardController) timeoutSequence(timeout models.SequenceTimeout) error {
@@ -554,14 +540,9 @@ func (sc *shipyardController) timeoutSequence(timeout models.SequenceTimeout) er
 
 	sequenceExecution := sequenceExecutions[0]
 	sc.onSequenceTimeout(timeout.LastEvent)
-	taskSequenceTriggeredEvent, err := sc.eventRepo.GetTaskSequenceTriggeredEvent(*eventScope, sequenceExecution.Sequence.Name)
-	if err != nil {
+
+	if err := sc.completeTaskSequence(sequenceExecution.Scope, sequenceExecution, models.TimedOut); err != nil {
 		return err
-	}
-	if taskSequenceTriggeredEvent != nil {
-		if err := sc.completeTaskSequence(*eventScope, sequenceExecution, models.TimedOut); err != nil {
-			return err
-		}
 	}
 	return nil
 }
@@ -769,7 +750,7 @@ func (sc *shipyardController) triggerNextTaskSequences(eventScope models.EventSc
 
 func (sc *shipyardController) completeTaskSequence(eventScope models.EventScope, sequenceExecution models.SequenceExecution, reason string) error {
 	sequenceExecution.Status.State = reason
-	err := sc.sequenceExecutionRepo.Upsert(sequenceExecution, nil)
+	_, err := sc.sequenceExecutionRepo.UpdateStatus(sequenceExecution)
 
 	if err != nil {
 		return err
