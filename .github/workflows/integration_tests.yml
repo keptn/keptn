@@ -13,6 +13,7 @@ on:
 env:
   META_KEPTN_VERSION: 0.13.2
   META_KEPTN_KEPTN_PROJECT: keptn
+  KEPTN_NAMESPACE: "keptn-test-${{ github.run_number }}-${{ github.run_attempt }}"
 defaults:
   run:
     shell: bash
@@ -30,6 +31,7 @@ jobs:
             KEPTN_SERVICE_TYPE: "ClusterIP"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "true"
+            KEPTN_NAMESPACE: ${{ env.KEPTN_NAMESPACE }}
           - CLOUD_PROVIDER: "k3s-on-GHA"
             PLATFORM_VERSION: "v1.16.15+k3s1" # see https://github.com/rancher/k3s/releases
             KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
@@ -37,6 +39,7 @@ jobs:
             KEPTN_SERVICE_TYPE: "NodePort"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "false"
+            KEPTN_NAMESPACE: ${{ env.KEPTN_NAMESPACE }}
           - CLOUD_PROVIDER: "k3s-on-GHA"
             PLATFORM_VERSION: "v1.21.1+k3s1" # see https://github.com/rancher/k3s/releases
             KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
@@ -45,6 +48,7 @@ jobs:
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "false"
             USE_RESOURCE_SERVICE: "true"
+            KEPTN_NAMESPACE: ${{ env.KEPTN_NAMESPACE }}
           - CLOUD_PROVIDER: "k3d-on-GHA"
             PLATFORM_VERSION: "v4.4.6" # see https://github.com/rancher/k3d/releases
             KUBECONFIG: ""
@@ -53,6 +57,7 @@ jobs:
             RUN_AIRGAPPED_TEST: "true"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "false"
+            KEPTN_NAMESPACE: ${{ env.KEPTN_NAMESPACE }}
           - CLOUD_PROVIDER: "GKE"
             PLATFORM_VERSION: "1.19"
             CLUSTER_NAME: "keptn-integration-test-1"
@@ -62,6 +67,7 @@ jobs:
             RUN_CONTINUOUS_DELIVERY_TEST: "true"
             REMOTE_EXECUTION_PLANE: "true"
             COLLECT_RESOURCE_LIMITS: "false"
+            KEPTN_NAMESPACE: ${{ env.KEPTN_NAMESPACE }}
           - CLOUD_PROVIDER: "GKE"
             PLATFORM_VERSION: "1.21"
             CLUSTER_NAME: "keptn-integration-test-2"
@@ -72,6 +78,18 @@ jobs:
             REMOTE_EXECUTION_PLANE: "false"
             COLLECT_RESOURCE_LIMITS: "true"
             USE_RESOURCE_SERVICE: "true"
+            KEPTN_NAMESPACE: ${{ env.KEPTN_NAMESPACE }}
+          - CLOUD_PROVIDER: "GKE-REDUNDANCY"
+            PLATFORM_VERSION: "1.21"
+            CLUSTER_NAME: "keptn-integration-test-1"
+            KUBECONFIG: ""
+            PLATFORM: "kubernetes"
+            KEPTN_SERVICE_TYPE: "LoadBalancer"
+            RUN_CONTINUOUS_DELIVERY_TEST: "true"
+            REMOTE_EXECUTION_PLANE: "false"
+            COLLECT_RESOURCE_LIMITS: "true"
+            USE_RESOURCE_SERVICE: "true"
+            KEPTN_NAMESPACE: "${{ env.KEPTN_NAMESPACE }}-MR"
     env:
       CLOUD_PROVIDER: ${{ matrix.CLOUD_PROVIDER }}
       PLATFORM: ${{ matrix.PLATFORM }}
@@ -465,29 +483,29 @@ jobs:
             KEPTN_API_HOSTNAME=$(echo "${KEPTN_ENDPOINT}" | awk -F[/] '{print $3}')
   
             helm install helm-service "${HELM_SERVICE_HELM_CHART_NAME}" \
-              -n ${{ env.KEPTN_NAMESPACE }}-helm-service \
+              -n ${{ matrix.KEPTN_NAMESPACE }}-helm-service \
               --set remoteControlPlane.enabled=true \
               --set remoteControlPlane.api.protocol=http \
               --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" \
               --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" \
               --create-namespace
             helm install jmeter-service "${JMETER_SERVICE_HELM_CHART_NAME}" \
-            -n ${{ env.KEPTN_NAMESPACE }}-jmeter-service \
+            -n ${{ matrix.KEPTN_NAMESPACE }}-jmeter-service \
               --set remoteControlPlane.enabled=true \
               --set remoteControlPlane.api.protocol=http \
               --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" \
               --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" \
               --create-namespace
   
-            helm test jmeter-service -n ${{ env.KEPTN_NAMESPACE }}-jmeter-service
-            helm test helm-service -n ${{ env.KEPTN_NAMESPACE }}-helm-service
+            helm test jmeter-service -n ${{ matrix.KEPTN_NAMESPACE }}-jmeter-service
+            helm test helm-service -n ${{ matrix.KEPTN_NAMESPACE }}-helm-service
           else
             # In-cluster execution plane
-            helm install helm-service "${HELM_SERVICE_HELM_CHART_NAME}" -n ${{ env.KEPTN_NAMESPACE }}
-            helm install jmeter-service "${JMETER_SERVICE_HELM_CHART_NAME}" -n ${{ env.KEPTN_NAMESPACE }}
+            helm install helm-service "${HELM_SERVICE_HELM_CHART_NAME}" -n ${{ matrix.KEPTN_NAMESPACE }}
+            helm install jmeter-service "${JMETER_SERVICE_HELM_CHART_NAME}" -n ${{ matrix.KEPTN_NAMESPACE }}
           
-            helm test jmeter-service -n ${{ env.KEPTN_NAMESPACE }}
-            helm test helm-service -n ${{ env.KEPTN_NAMESPACE }}
+            helm test jmeter-service -n ${{ matrix.KEPTN_NAMESPACE }}
+            helm test helm-service -n ${{ matrix.KEPTN_NAMESPACE }}
           fi
             
 
@@ -573,6 +591,7 @@ jobs:
         if: always() && env.CLOUD_PROVIDER == 'GKE'
         run: |
           echo "Cleaning up test resources..."
+
           readarray -t namespaces <<< "$(kubectl get namespaces | awk '{ print $1 }' | grep ${{ env.KEPTN_NAMESPACE }})"
           readarray -t clusterrolebindings <<< "$(kubectl get clusterrolebindings | awk '{ print $1 }' | grep ${{ env.KEPTN_NAMESPACE }})"
 
