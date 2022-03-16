@@ -3,6 +3,7 @@ package go_tests
 import (
 	"context"
 	b64 "encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -431,6 +432,8 @@ func VerifySequenceEndsUpInState(t *testing.T, projectName string, context *mode
 			return false
 		}
 		for _, state := range states.States {
+			m, _ := json.MarshalIndent(state, "", "  ")
+			t.Logf("%s", m)
 			if doesSequenceHaveOneOfTheDesiredStates(state, context, desiredStates) {
 				return true
 			}
