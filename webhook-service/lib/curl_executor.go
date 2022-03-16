@@ -155,10 +155,17 @@ func (ce *CmdCurlExecutor) validateURL(curlCmd string) error {
 }
 
 func (ce *CmdCurlExecutor) validateCurlOptions(args []string) error {
-	for _, arg := range args {
+	for i, arg := range args {
 		for _, o := range ce.unAllowedOptions {
 			if strings.HasPrefix(arg, o) {
 				return fmt.Errorf("curl command contains invalid option '%s'", o)
+			}
+		}
+		// disallow usage of @ inside --data for posting local files
+		if (arg == "--data" || arg == "-d") && len(args) >= i+1 {
+			dataArgValue := args[i+1]
+			if strings.HasPrefix(dataArgValue, "@") {
+				return fmt.Errorf("file uploads using @ in --data is not allowed")
 			}
 		}
 	}
@@ -246,5 +253,15 @@ func parseCommandLine(command string) ([]string, error) {
 		args = append(args, current)
 	}
 
-	return args, nil
+	return deleteEmpty(args), nil
+}
+
+func deleteEmpty(s []string) []string {
+	var r []string
+	for _, str := range s {
+		if str != "" {
+			r = append(r, str)
+		}
+	}
+	return r
 }

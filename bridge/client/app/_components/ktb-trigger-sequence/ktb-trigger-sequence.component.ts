@@ -55,6 +55,8 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
   public isLoading = false;
   public isQualityGatesOnly = false;
   public isValidTimeframe = true;
+  public isValidStartBeforeEnd = true;
+  public isValidStartEndDuration = true;
   private _services: string[] = [];
   private unsubscribe$: Subject<void> = new Subject<void>();
 
@@ -126,8 +128,13 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
     return input !== undefined && input.trim() !== '';
   }
 
-  public isValidStartEndTime(start: string | undefined, end: string | undefined): boolean {
-    return start !== undefined && end !== undefined && this.checkStartEndValidity(start, end);
+  public isValidStartEndTime(): boolean {
+    return (
+      this.evaluationFormData.startDatetime !== undefined &&
+      this.evaluationFormData.endDatetime !== undefined &&
+      this.isValidStartBeforeEnd &&
+      this.isValidStartEndDuration
+    );
   }
 
   public isValidJSON(jsonString: string | undefined): boolean {
@@ -137,10 +144,27 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
     return AppUtils.isValidJson(jsonString);
   }
 
-  public checkStartEndValidity(start: string | undefined, end: string | undefined): boolean {
-    const startMoment = moment(start);
-    const endMoment = moment(end);
-    return startMoment.isBefore(endMoment);
+  private validateStartEndDate(): void {
+    if (this.evaluationFormData.startDatetime && this.evaluationFormData.endDatetime) {
+      const start = moment(this.evaluationFormData.startDatetime);
+      const end = moment(this.evaluationFormData.endDatetime);
+
+      this.isValidStartBeforeEnd = start.isBefore(end);
+      this.isValidStartEndDuration = moment.duration(end.diff(start)).asMinutes() >= 1;
+    } else {
+      this.isValidStartBeforeEnd = true;
+      this.isValidStartEndDuration = true;
+    }
+  }
+
+  public setStartDate(start: string | undefined): void {
+    this.evaluationFormData.startDatetime = start;
+    this.validateStartEndDate();
+  }
+
+  public setEndDate(end: string | undefined): void {
+    this.evaluationFormData.endDatetime = end;
+    this.validateStartEndDate();
   }
 
   public setTimeframe(timeframe: Timeframe): void {

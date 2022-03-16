@@ -28,17 +28,12 @@ const testConfig = `{"automatic_version_check":true,"last_version_check":"2020-0
 func TestSetAutomaticVersionCheckFalse(t *testing.T) {
 
 	configMng = config.NewCLIConfigManager("")
-	tmpDir, err := ioutil.TempDir("", "")
-	if err != nil {
-		t.Errorf("Unexpected error %v", err)
-	}
-
-	defer os.RemoveAll(tmpDir)
+	tmpDir := t.TempDir()
 
 	configMng.CLIConfigPath = filepath.Join(tmpDir, "config")
 	ioutil.WriteFile(configMng.CLIConfigPath, []byte(testConfig), 0644)
 
-	err = setConfigCmd.RunE(nil, []string{"automaticversioncheck", "false"})
+	err := setConfigCmd.RunE(nil, []string{"automaticversioncheck", "false"})
 	assert.Equal(t, err, nil, "Wrong error")
 
 	cliConfig, err := configMng.LoadCLIConfig()

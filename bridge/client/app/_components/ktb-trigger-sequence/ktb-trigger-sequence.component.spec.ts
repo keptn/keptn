@@ -71,14 +71,34 @@ describe('KtbTriggerSequenceComponent', () => {
     const end = moment().date(1).month(1).year(2021);
 
     // when, then
-    expect(component.isValidStartEndTime(undefined, undefined)).toEqual(false);
-    expect(component.isValidStartEndTime(undefined, end.toISOString())).toEqual(false);
-    expect(component.isValidStartEndTime(start.toISOString(), undefined)).toEqual(false);
-    expect(component.isValidStartEndTime(start.toISOString(), end.toISOString())).toEqual(false);
+    component.setStartDate(undefined);
+    component.setEndDate(undefined);
+    expect(component.isValidStartEndTime()).toEqual(false);
+    component.setStartDate(undefined);
+    component.setEndDate(end.toISOString());
+    expect(component.isValidStartEndTime()).toEqual(false);
+    component.setStartDate(start.toISOString());
+    component.setEndDate(undefined);
+    expect(component.isValidStartEndTime()).toEqual(false);
 
-    // given
+    component.setStartDate(start.toISOString());
+    component.setEndDate(end.toISOString());
+    expect(component.isValidStartBeforeEnd).toEqual(false);
+    expect(component.isValidStartEndTime()).toEqual(false);
+
+    start.hours(12).minutes(0).seconds(0);
+    end.hours(12).minutes(0).seconds(5);
+    component.setStartDate(start.toISOString());
+    component.setEndDate(end.toISOString());
+    expect(component.isValidStartEndDuration).toEqual(false);
+    expect(component.isValidStartEndTime()).toEqual(false);
+
     end.date(3).month(1).year(2021);
-    expect(component.isValidStartEndTime(start.toISOString(), end.toISOString())).toEqual(true);
+    component.setStartDate(start.toISOString());
+    component.setEndDate(end.toISOString());
+    expect(component.isValidStartEndDuration).toEqual(true);
+    expect(component.isValidStartBeforeEnd).toEqual(true);
+    expect(component.isValidStartEndTime()).toEqual(true);
   });
 
   it('should return an combined and cleaned string for image and tag', () => {

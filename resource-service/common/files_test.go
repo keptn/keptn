@@ -1,27 +1,16 @@
 package common
 
 import (
-	"github.com/stretchr/testify/require"
-	"io/ioutil"
-	"os"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 // base64 encoded tgz file containing file test.txt with content "test"
 const testTgzContent = "H4sIAOu80mEAA+2Vz0rDQBCHc84zeNgnSGf2b/ZQsFjFkxTRg+BltasGTAtJCjl46N2bZ5/SJ3ATrCW1iqCrlOx3mbAEMpvh+83E1MfWTG0xqGxZRV4AACUEiVTLusIbCEiQo+SCScYYAQqSiojUftrpsigrU7hWbu7nRWZmyZW5vrPFx/fGFyejs9PRweHleJ6bbEbOS1uUnUs6yHvdETAlt9l0iKBSppFzGruThTuhoEGCUKBiqkleZbkduhEhBUiFTkSqKUOJ8X9fIPAjGusHnr+x8n/pnh+e9x6bun/08gRruv6jUpRFRHjuq6Xn/rfzn3SWQFLVv7sI3P+QnH+V/3Qj/ymnEPL/L/hO/jPYkv+SKwUaZVgAO03rvxfr16z8X0af5b/Y8B85kxEBT/106Ln/zeiDwoFAINA/XgHzASEtABIAAA=="
 
 func TestFileSystem_WriteAndReadFile(t *testing.T) {
-	// create a tmp directory in test/tmp
-	err := ensureDirectoryExists("../test/tmp")
-	require.Nil(t, err)
-	dir, err := ioutil.TempDir("../test/tmp/", "project-")
-	require.Nil(t, err)
-	defer func(name string) {
-		err = os.RemoveAll(name)
-		if err != nil {
-			t.Logf("could not delete tmp directory: %v", err)
-		}
-	}(dir)
+	dir := t.TempDir()
 
 	fs := FileSystem{}
 
@@ -29,7 +18,7 @@ func TestFileSystem_WriteAndReadFile(t *testing.T) {
 
 	fileContent := "content"
 
-	err = fs.WriteFile(filePath, []byte(fileContent))
+	err := fs.WriteFile(filePath, []byte(fileContent))
 	require.Nil(t, err)
 
 	fileExists := fs.FileExists(filePath)
@@ -96,20 +85,13 @@ func TestIsHelmChartPath(t *testing.T) {
 
 func TestFileSystem_WriteHelmChart(t *testing.T) {
 	// create a tmp directory in test/tmp
-	dir, err := ioutil.TempDir("../test/tmp/", "project-")
-	require.Nil(t, err)
-	defer func(name string) {
-		err = os.RemoveAll(name)
-		if err != nil {
-			t.Logf("could not delete tmp directory: %v", err)
-		}
-	}(dir)
+	dir := t.TempDir()
 
 	fs := NewFileSystem(dir)
 
 	filePath := dir + "/my-file.tgz"
 
-	err = fs.WriteBase64EncodedFile(filePath, testTgzContent)
+	err := fs.WriteBase64EncodedFile(filePath, testTgzContent)
 	require.Nil(t, err)
 
 	err = fs.WriteHelmChart(filePath)

@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -16,7 +15,7 @@ import (
 )
 
 func Test_executeJMeter(t *testing.T) {
-	localTmpDir, _ := ioutil.TempDir("", "")
+	localTmpDir := t.TempDir()
 	var returnedStatus int
 	var returnedResources keptnapimodels.Resources
 
@@ -108,7 +107,7 @@ func Test_executeJMeter(t *testing.T) {
 					ResourceURI: &res,
 				})
 			}
-			tmpDir, _ := ioutil.TempDir("", "")
+			tmpDir := t.TempDir()
 			got, err := executeJMeter(tt.args.testInfo, tt.args.workload, tmpDir, tt.args.url, tt.args.LTN, tt.args.funcValidation)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("executeJMeter() error = %v, wantErr %v", err, tt.wantErr)

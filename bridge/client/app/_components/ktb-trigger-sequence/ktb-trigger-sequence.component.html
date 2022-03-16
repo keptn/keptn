@@ -218,7 +218,7 @@
             dtSuffix
             variant="nested"
             [disabled]="!evaluationFormData.startDatetime"
-            (click)="evaluationFormData.startDatetime = undefined"
+            (click)="setStartDate(undefined)"
           >
             <dt-icon name="abort"></dt-icon>
           </button>
@@ -230,13 +230,13 @@
             uitestid="keptn-trigger-button-starttime"
             [timeEnabled]="true"
             [secondsEnabled]="true"
-            (selectedDateTime)="evaluationFormData.startDatetime = $event"
+            (selectedDateTime)="setStartDate($event)"
           >
             <dt-icon name="calendar"></dt-icon>
           </button>
-          <dt-hint>Has to be before End at</dt-hint>
+          <dt-hint>Has to be before end date</dt-hint>
         </dt-form-field>
-        <dt-form-field class="overlay-origin">
+        <dt-form-field class="overlay-origin full-width-error">
           <dt-label class="required">End at</dt-label>
           <div class="input-overlay" (click)="endDateButton?._elementRef?.nativeElement.click()"></div>
           <input
@@ -250,7 +250,7 @@
             dtSuffix
             variant="nested"
             [disabled]="!evaluationFormData.endDatetime"
-            (click)="evaluationFormData.endDatetime = undefined"
+            (click)="setEndDate(undefined)"
           >
             <dt-icon name="abort"></dt-icon>
           </button>
@@ -262,20 +262,20 @@
             uitestid="keptn-trigger-button-endtime"
             [timeEnabled]="true"
             [secondsEnabled]="true"
-            (selectedDateTime)="evaluationFormData.endDatetime = $event"
+            (selectedDateTime)="setEndDate($event)"
           >
             <dt-icon name="calendar"></dt-icon>
           </button>
-          <dt-hint>Has to be after Start at</dt-hint>
+          <dt-hint>Has to be after start date</dt-hint>
           <dt-error
-            *ngIf="
-              evaluationFormData.startDatetime &&
-              evaluationFormData.endDatetime &&
-              !checkStartEndValidity(evaluationFormData.startDatetime, evaluationFormData.endDatetime)
-            "
+            *ngIf="!isValidStartBeforeEnd || !isValidStartEndDuration"
             uitestid="keptn-trigger-evaluation-date-error"
-            >Start date must be before end date.</dt-error
           >
+            <ng-container *ngIf="!isValidStartBeforeEnd">Start date must be before end date</ng-container>
+            <ng-container *ngIf="isValidStartBeforeEnd && !isValidStartEndDuration"
+              >The duration has to be minimum 1 minute</ng-container
+            >
+          </dt-error>
         </dt-form-field>
       </div>
 
@@ -297,8 +297,7 @@
         [ngTemplateOutletContext]="{
           isValid:
             (evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.TIMEFRAME && isValidTimeframe) ||
-            (evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.START_END &&
-              isValidStartEndTime(evaluationFormData.startDatetime, evaluationFormData.endDatetime))
+            (evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.START_END && isValidStartEndTime())
         }"
       ></ng-container>
     </div>

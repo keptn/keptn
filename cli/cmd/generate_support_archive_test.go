@@ -5,7 +5,6 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -33,15 +32,10 @@ func TestGenerateSupportArchive(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 
 	// create tempo directory
-	dname, err := ioutil.TempDir("", "docs_temp")
-	defer os.RemoveAll(dname)
-
-	if err != nil {
-		t.Errorf(unexpectedErrMsg, err)
-	}
+	dname := t.TempDir()
 
 	cmd := fmt.Sprintf("generate support-archive --dir=%s --mock", dname)
-	_, err = executeActionCommandC(cmd)
+	_, err := executeActionCommandC(cmd)
 
 	if err != nil {
 		t.Errorf(unexpectedErrMsg, err)
