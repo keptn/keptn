@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/keptn/keptn/shipyard-controller/models"
+	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/nats-io/nats.go"
 	logger "github.com/sirupsen/logrus"
 )
@@ -16,11 +16,11 @@ type PullSubscription struct {
 	subscription   *nats.Subscription
 	ctx            context.Context
 	jetStream      nats.JetStreamContext
-	messageHandler func(event models.Event, sync bool) error
+	messageHandler func(event keptnmodels.KeptnContextExtendedCE, sync bool) error
 	isActive       bool
 }
 
-func NewPullSubscription(ctx context.Context, queueGroup, topic string, js nats.JetStreamContext, messageHandler func(event models.Event, sync bool) error) *PullSubscription {
+func NewPullSubscription(ctx context.Context, queueGroup, topic string, js nats.JetStreamContext, messageHandler func(event keptnmodels.KeptnContextExtendedCE, sync bool) error) *PullSubscription {
 	return &PullSubscription{
 		queueGroup:     queueGroup,
 		topic:          topic,
@@ -78,7 +78,7 @@ func (ps *PullSubscription) pullMessages() {
 }
 
 func (ps *PullSubscription) processMessage(msg *nats.Msg) bool {
-	event := &models.Event{}
+	event := &keptnmodels.KeptnContextExtendedCE{}
 	if err := json.Unmarshal(msg.Data, event); err != nil {
 		logger.WithError(err).Error("could not unmarshal message")
 		// ACK the message to avoid re-sending it

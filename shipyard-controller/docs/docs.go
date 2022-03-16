@@ -15,7 +15,7 @@ var doc = `{
     "schemes": {{ marshal .Schemes }},
     "swagger": "2.0",
     "info": {
-        "description": "{{.Description}}",
+        "description": "{{escape .Description}}",
         "title": "{{.Title}}",
         "contact": {
             "name": "Keptn Team",
@@ -85,7 +85,7 @@ var doc = `{
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "$ref": "#/definitions/models.Events"
+                            "$ref": "#/definitions/models.Event"
                         }
                     },
                     "400": {
@@ -475,7 +475,7 @@ var doc = `{
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "$ref": "#/definitions/models.ExpandedProject"
+                            "$ref": "#/definitions/github.com_keptn_keptn_shipyard-controller_models.ExpandedProject"
                         }
                     },
                     "404": {
@@ -703,7 +703,7 @@ var doc = `{
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "$ref": "#/definitions/models.Stages"
+                            "$ref": "#/definitions/models.ExpandedStages"
                         }
                     },
                     "404": {
@@ -736,7 +736,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Projects"
+                    "Stage"
                 ],
                 "summary": "Get a stage",
                 "parameters": [
@@ -759,7 +759,7 @@ var doc = `{
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "$ref": "#/definitions/models.ExpandedStage"
+                            "$ref": "#/definitions/github.com_keptn_keptn_shipyard-controller_models.ExpandedStage"
                         }
                     },
                     "404": {
@@ -769,7 +769,7 @@ var doc = `{
                         }
                     },
                     "500": {
-                        "description": "Internal Error)",
+                        "description": "Internal Error",
                         "schema": {
                             "$ref": "#/definitions/models.Error"
                         }
@@ -890,7 +890,7 @@ var doc = `{
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "$ref": "#/definitions/models.ExpandedService"
+                            "$ref": "#/definitions/github.com_keptn_keptn_shipyard-controller_models.ExpandedService"
                         }
                     },
                     "400": {
@@ -1393,7 +1393,7 @@ var doc = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.Subscription"
+                                "$ref": "#/definitions/github.com_keptn_keptn_shipyard-controller_models.Subscription"
                             }
                         }
                     },
@@ -1448,7 +1448,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Subscription"
+                            "$ref": "#/definitions/github.com_keptn_keptn_shipyard-controller_models.Subscription"
                         }
                     }
                 ],
@@ -1515,7 +1515,7 @@ var doc = `{
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "$ref": "#/definitions/models.Subscription"
+                            "$ref": "#/definitions/github.com_keptn_keptn_shipyard-controller_models.Subscription"
                         }
                     },
                     "400": {
@@ -1576,7 +1576,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Subscription"
+                            "$ref": "#/definitions/github.com_keptn_keptn_shipyard-controller_models.Subscription"
                         }
                     }
                 ],
@@ -1664,6 +1664,233 @@ var doc = `{
         }
     },
     "definitions": {
+        "github.com_keptn_go-utils_pkg_api_models.ExpandedProject": {
+            "type": "object",
+            "properties": {
+                "creationDate": {
+                    "description": "Creation date of the project",
+                    "type": "string"
+                },
+                "gitRemoteURI": {
+                    "description": "Git remote URI",
+                    "type": "string"
+                },
+                "gitUser": {
+                    "description": "Git User",
+                    "type": "string"
+                },
+                "lastEventContext": {
+                    "description": "last event context",
+                    "$ref": "#/definitions/models.EventContextInfo"
+                },
+                "projectName": {
+                    "description": "Project name",
+                    "type": "string"
+                },
+                "shipyard": {
+                    "description": "Shipyard file content",
+                    "type": "string"
+                },
+                "shipyardVersion": {
+                    "description": "Version of the shipyard file",
+                    "type": "string"
+                },
+                "stages": {
+                    "description": "stages",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github.com_keptn_go-utils_pkg_api_models.ExpandedStage"
+                    }
+                }
+            }
+        },
+        "github.com_keptn_go-utils_pkg_api_models.ExpandedService": {
+            "type": "object",
+            "properties": {
+                "creationDate": {
+                    "description": "Creation date of the service",
+                    "type": "string"
+                },
+                "deployedImage": {
+                    "description": "Currently deployed image",
+                    "type": "string"
+                },
+                "lastEventTypes": {
+                    "description": "last event types",
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/models.EventContextInfo"
+                    }
+                },
+                "openRemediations": {
+                    "description": "open remediations",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Remediation"
+                    }
+                },
+                "serviceName": {
+                    "description": "Service name",
+                    "type": "string"
+                }
+            }
+        },
+        "github.com_keptn_go-utils_pkg_api_models.ExpandedStage": {
+            "type": "object",
+            "properties": {
+                "lastEventContext": {
+                    "description": "last event context",
+                    "$ref": "#/definitions/models.EventContextInfo"
+                },
+                "parentStages": {
+                    "description": "Parent Stages",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "services": {
+                    "description": "services",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github.com_keptn_go-utils_pkg_api_models.ExpandedService"
+                    }
+                },
+                "stageName": {
+                    "description": "Stage name",
+                    "type": "string"
+                }
+            }
+        },
+        "github.com_keptn_go-utils_pkg_api_models.Subscription": {
+            "type": "object",
+            "properties": {
+                "filter": {
+                    "$ref": "#/definitions/models.SubscriptionFilter"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "topics": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "github.com_keptn_keptn_shipyard-controller_models.ExpandedProject": {
+            "type": "object",
+            "properties": {
+                "creationDate": {
+                    "description": "Creation date of the project",
+                    "type": "string"
+                },
+                "gitRemoteURI": {
+                    "description": "Git remote URI",
+                    "type": "string"
+                },
+                "gitUser": {
+                    "description": "Git User",
+                    "type": "string"
+                },
+                "lastEventContext": {
+                    "description": "last event context",
+                    "$ref": "#/definitions/models.EventContextInfo"
+                },
+                "projectName": {
+                    "description": "Project name",
+                    "type": "string"
+                },
+                "shipyard": {
+                    "description": "Shipyard file content",
+                    "type": "string"
+                },
+                "shipyardVersion": {
+                    "description": "Version of the shipyard file",
+                    "type": "string"
+                },
+                "stages": {
+                    "description": "stages",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github.com_keptn_go-utils_pkg_api_models.ExpandedStage"
+                    }
+                }
+            }
+        },
+        "github.com_keptn_keptn_shipyard-controller_models.ExpandedService": {
+            "type": "object",
+            "properties": {
+                "creationDate": {
+                    "description": "Creation date of the service",
+                    "type": "string"
+                },
+                "deployedImage": {
+                    "description": "Currently deployed image",
+                    "type": "string"
+                },
+                "lastEventTypes": {
+                    "description": "last event types",
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/models.EventContextInfo"
+                    }
+                },
+                "openRemediations": {
+                    "description": "open remediations",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Remediation"
+                    }
+                },
+                "serviceName": {
+                    "description": "Service name",
+                    "type": "string"
+                }
+            }
+        },
+        "github.com_keptn_keptn_shipyard-controller_models.ExpandedStage": {
+            "type": "object",
+            "properties": {
+                "lastEventContext": {
+                    "description": "last event context",
+                    "$ref": "#/definitions/models.EventContextInfo"
+                },
+                "parentStages": {
+                    "description": "Parent Stages",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "services": {
+                    "description": "services",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github.com_keptn_go-utils_pkg_api_models.ExpandedService"
+                    }
+                },
+                "stageName": {
+                    "description": "Stage name",
+                    "type": "string"
+                }
+            }
+        },
+        "github.com_keptn_keptn_shipyard-controller_models.Subscription": {
+            "type": "object",
+            "properties": {
+                "event": {
+                    "type": "string"
+                },
+                "filter": {
+                    "$ref": "#/definitions/models.EventSubscriptionFilter"
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
         "models.CreateEvaluationParams": {
             "type": "object",
             "properties": {
@@ -1671,6 +1898,11 @@ var doc = `{
                     "description": "end",
                     "type": "string",
                     "example": "2021-01-02T15:10:00"
+                },
+                "gitcommitid": {
+                    "description": "Evaluation commit ID context",
+                    "type": "string",
+                    "example": "asdf123f"
                 },
                 "labels": {
                     "description": "labels",
@@ -1707,7 +1939,7 @@ var doc = `{
                     "description": "logs",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.LogEntry"
+                        "$ref": "#/definitions/apimodels.LogEntry"
                     }
                 }
             }
@@ -1715,6 +1947,38 @@ var doc = `{
         "models.CreateProjectParams": {
             "type": "object",
             "properties": {
+                "gitPemCertificate": {
+                    "description": "git PEM Certificate",
+                    "type": "string"
+                },
+                "gitPrivateKey": {
+                    "description": "git private key",
+                    "type": "string"
+                },
+                "gitPrivateKeyPass": {
+                    "description": "git private key passphrase",
+                    "type": "string"
+                },
+                "gitProxyInsecure": {
+                    "description": "git proxy insecure",
+                    "type": "boolean"
+                },
+                "gitProxyPassword": {
+                    "description": "git proxy password",
+                    "type": "string"
+                },
+                "gitProxyScheme": {
+                    "description": "git proxy scheme",
+                    "type": "string"
+                },
+                "gitProxyUrl": {
+                    "description": "git proxy URL",
+                    "type": "string"
+                },
+                "gitProxyUser": {
+                    "description": "git proxy user",
+                    "type": "string"
+                },
                 "gitRemoteURL": {
                     "description": "git remote URL",
                     "type": "string"
@@ -1792,12 +2056,14 @@ var doc = `{
                     "type": "string"
                 },
                 "data": {
-                    "description": "data\nRequired: true",
-                    "type": "object"
+                    "description": "data\nRequired: true"
                 },
                 "extensions": {
-                    "description": "extensions",
-                    "type": "object"
+                    "description": "extensions"
+                },
+                "gitcommitid": {
+                    "description": "gitcommitid",
+                    "type": "string"
                 },
                 "id": {
                     "description": "id",
@@ -1805,6 +2071,10 @@ var doc = `{
                 },
                 "shkeptncontext": {
                     "description": "shkeptncontext",
+                    "type": "string"
+                },
+                "shkeptnspecversion": {
+                    "description": "shkeptnspecversion",
                     "type": "string"
                 },
                 "source": {
@@ -1816,7 +2086,7 @@ var doc = `{
                     "type": "string"
                 },
                 "time": {
-                    "description": "time",
+                    "description": "time\nFormat: date-time",
                     "type": "string"
                 },
                 "triggeredid": {
@@ -1829,11 +2099,19 @@ var doc = `{
                 }
             }
         },
-        "models.EventContext": {
+        "models.EventContextInfo": {
             "type": "object",
             "properties": {
+                "eventId": {
+                    "description": "ID of the event",
+                    "type": "string"
+                },
                 "keptnContext": {
-                    "description": "keptn context\nRequired: true",
+                    "description": "Keptn Context ID of the event",
+                    "type": "string"
+                },
+                "time": {
+                    "description": "Time of the event",
                     "type": "string"
                 }
             }
@@ -1875,70 +2153,6 @@ var doc = `{
                 }
             }
         },
-        "models.Events": {
-            "type": "object",
-            "properties": {
-                "events": {
-                    "description": "events",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Event"
-                    }
-                },
-                "nextPageKey": {
-                    "description": "Pointer to next page, base64 encoded",
-                    "type": "string"
-                },
-                "pageSize": {
-                    "description": "Size of returned page",
-                    "type": "number"
-                },
-                "totalCount": {
-                    "description": "Total number of events",
-                    "type": "number"
-                }
-            }
-        },
-        "models.ExpandedProject": {
-            "type": "object",
-            "properties": {
-                "creationDate": {
-                    "description": "Creation date of the project",
-                    "type": "string"
-                },
-                "gitRemoteURI": {
-                    "description": "Git remote URI",
-                    "type": "string"
-                },
-                "gitUser": {
-                    "description": "Git User",
-                    "type": "string"
-                },
-                "lastEventContext": {
-                    "description": "last event context",
-                    "$ref": "#/definitions/models.EventContext"
-                },
-                "projectName": {
-                    "description": "Project name",
-                    "type": "string"
-                },
-                "shipyard": {
-                    "description": "Shipyard file content",
-                    "type": "string"
-                },
-                "shipyardVersion": {
-                    "description": "Version of the shipyard file",
-                    "type": "string"
-                },
-                "stages": {
-                    "description": "stages",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.ExpandedStage"
-                    }
-                }
-            }
-        },
         "models.ExpandedProjects": {
             "type": "object",
             "properties": {
@@ -1954,43 +2168,12 @@ var doc = `{
                     "description": "projects",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.ExpandedProject"
+                        "$ref": "#/definitions/github.com_keptn_go-utils_pkg_api_models.ExpandedProject"
                     }
                 },
                 "totalCount": {
                     "description": "Total number of projects",
                     "type": "number"
-                }
-            }
-        },
-        "models.ExpandedService": {
-            "type": "object",
-            "properties": {
-                "creationDate": {
-                    "description": "Creation date of the service",
-                    "type": "string"
-                },
-                "deployedImage": {
-                    "description": "Currently deployed image",
-                    "type": "string"
-                },
-                "lastEventTypes": {
-                    "description": "last event types",
-                    "type": "object",
-                    "additionalProperties": {
-                        "$ref": "#/definitions/models.EventContext"
-                    }
-                },
-                "openRemediations": {
-                    "description": "open remediations",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Remediation"
-                    }
-                },
-                "serviceName": {
-                    "description": "Service name",
-                    "type": "string"
                 }
             }
         },
@@ -2009,7 +2192,7 @@ var doc = `{
                     "description": "projects",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.ExpandedService"
+                        "$ref": "#/definitions/github.com_keptn_go-utils_pkg_api_models.ExpandedService"
                     }
                 },
                 "totalCount": {
@@ -2018,30 +2201,27 @@ var doc = `{
                 }
             }
         },
-        "models.ExpandedStage": {
+        "models.ExpandedStages": {
             "type": "object",
             "properties": {
-                "lastEventContext": {
-                    "description": "last event context",
-                    "$ref": "#/definitions/models.EventContext"
-                },
-                "parentStages": {
-                    "description": "Parent Stages",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "services": {
-                    "description": "services",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.ExpandedService"
-                    }
-                },
-                "stageName": {
-                    "description": "Stage name",
+                "nextPageKey": {
+                    "description": "Pointer to next page, base64 encoded",
                     "type": "string"
+                },
+                "pageSize": {
+                    "description": "Size of returned page",
+                    "type": "number"
+                },
+                "stages": {
+                    "description": "stages",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github.com_keptn_go-utils_pkg_api_models.ExpandedStage"
+                    }
+                },
+                "totalCount": {
+                    "description": "Total number of stages",
+                    "type": "number"
                 }
             }
         },
@@ -2052,7 +2232,7 @@ var doc = `{
                     "description": "logs",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.LogEntry"
+                        "$ref": "#/definitions/apimodels.LogEntry"
                     }
                 },
                 "nextPageKey": {
@@ -2083,7 +2263,7 @@ var doc = `{
                 },
                 "subscription": {
                     "description": "Deprecated: for backwards compatibility Subscription is populated\nbut new code shall use Subscriptions",
-                    "$ref": "#/definitions/models.Subscription"
+                    "$ref": "#/definitions/github.com_keptn_go-utils_pkg_api_models.Subscription"
                 },
                 "subscriptions": {
                     "type": "array",
@@ -2107,9 +2287,12 @@ var doc = `{
                 }
             }
         },
-        "models.LogEntry": {
+        "apimodels.LogEntry": {
             "type": "object",
             "properties": {
+                "gitcommitid": {
+                    "type": "string"
+                },
                 "integrationid": {
                     "type": "string"
                 },
@@ -2306,47 +2489,6 @@ var doc = `{
                 }
             }
         },
-        "models.Stages": {
-            "type": "object",
-            "properties": {
-                "nextPageKey": {
-                    "description": "Pointer to next page, base64 encoded",
-                    "type": "string"
-                },
-                "pageSize": {
-                    "description": "Size of returned page",
-                    "type": "number"
-                },
-                "stages": {
-                    "description": "stages",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.ExpandedStage"
-                    }
-                },
-                "totalCount": {
-                    "description": "Total number of stages",
-                    "type": "number"
-                }
-            }
-        },
-        "models.Subscription": {
-            "type": "object",
-            "properties": {
-                "filter": {
-                    "$ref": "#/definitions/models.SubscriptionFilter"
-                },
-                "status": {
-                    "type": "string"
-                },
-                "topics": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
         "models.SubscriptionFilter": {
             "type": "object",
             "properties": {
@@ -2364,6 +2506,38 @@ var doc = `{
         "models.UpdateProjectParams": {
             "type": "object",
             "properties": {
+                "gitPemCertificate": {
+                    "description": "git PEM Certificate",
+                    "type": "string"
+                },
+                "gitPrivateKey": {
+                    "description": "git private key",
+                    "type": "string"
+                },
+                "gitPrivateKeyPass": {
+                    "description": "git private key passphrase",
+                    "type": "string"
+                },
+                "gitProxyInsecure": {
+                    "description": "git proxy insecure",
+                    "type": "boolean"
+                },
+                "gitProxyPassword": {
+                    "description": "git proxy password",
+                    "type": "string"
+                },
+                "gitProxyScheme": {
+                    "description": "git proxy scheme",
+                    "type": "string"
+                },
+                "gitProxyUrl": {
+                    "description": "git proxy URL",
+                    "type": "string"
+                },
+                "gitProxyUser": {
+                    "description": "git proxy user",
+                    "type": "string"
+                },
                 "gitRemoteURL": {
                     "description": "git remote URL",
                     "type": "string"
@@ -2429,6 +2603,13 @@ func (s *s) ReadDoc() string {
 			a, _ := json.Marshal(v)
 			return string(a)
 		},
+		"escape": func(v interface{}) string {
+			// escape tabs
+			str := strings.Replace(v.(string), "\t", "\\t", -1)
+			// replace " with \", and if that results in \\", replace that with \\\"
+			str = strings.Replace(str, "\"", "\\\"", -1)
+			return strings.Replace(str, "\\\\\"", "\\\\\\\"", -1)
+		},
 	}).Parse(doc)
 	if err != nil {
 		return doc
@@ -2443,5 +2624,5 @@ func (s *s) ReadDoc() string {
 }
 
 func init() {
-	swag.Register(swag.Name, &s{})
+	swag.Register("swagger", &s{})
 }

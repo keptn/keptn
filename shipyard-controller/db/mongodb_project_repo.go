@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/keptn/keptn/shipyard-controller/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/mitchellh/copystructure"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
@@ -23,8 +23,8 @@ func NewMongoDBProjectsRepo(dbConnection *MongoDBConnection) *MongoDBProjectsRep
 	return &MongoDBProjectsRepo{DBConnection: dbConnection}
 }
 
-func (mdbrepo *MongoDBProjectsRepo) GetProjects() ([]*models.ExpandedProject, error) {
-	result := []*models.ExpandedProject{}
+func (mdbrepo *MongoDBProjectsRepo) GetProjects() ([]*apimodels.ExpandedProject, error) {
+	result := []*apimodels.ExpandedProject{}
 	err := mdbrepo.DBConnection.EnsureDBConnection()
 	if err != nil {
 		return nil, err
@@ -40,7 +40,7 @@ func (mdbrepo *MongoDBProjectsRepo) GetProjects() ([]*models.ExpandedProject, er
 	}
 	defer cursor.Close(ctx)
 	for cursor.Next(ctx) {
-		projectResult := &models.ExpandedProject{}
+		projectResult := &apimodels.ExpandedProject{}
 		err := cursor.Decode(projectResult)
 		if err != nil {
 			fmt.Println("Could not cast to *models.Project")
@@ -51,7 +51,7 @@ func (mdbrepo *MongoDBProjectsRepo) GetProjects() ([]*models.ExpandedProject, er
 	return result, nil
 }
 
-func (mdbrepo *MongoDBProjectsRepo) GetProject(projectName string) (*models.ExpandedProject, error) {
+func (mdbrepo *MongoDBProjectsRepo) GetProject(projectName string) (*apimodels.ExpandedProject, error) {
 	err := mdbrepo.DBConnection.EnsureDBConnection()
 	if err != nil {
 		return nil, err
@@ -64,7 +64,7 @@ func (mdbrepo *MongoDBProjectsRepo) GetProject(projectName string) (*models.Expa
 	if result.Err() != nil && result.Err() == mongo.ErrNoDocuments {
 		return nil, nil
 	}
-	projectResult := &models.ExpandedProject{}
+	projectResult := &apimodels.ExpandedProject{}
 	err = result.Decode(projectResult)
 	if err != nil {
 		fmt.Println(fmt.Sprintf("Could not cast %v to *models.Project\n", result))
@@ -73,7 +73,7 @@ func (mdbrepo *MongoDBProjectsRepo) GetProject(projectName string) (*models.Expa
 	return projectResult, nil
 }
 
-func (m *MongoDBProjectsRepo) CreateProject(project *models.ExpandedProject) error {
+func (m *MongoDBProjectsRepo) CreateProject(project *apimodels.ExpandedProject) error {
 	err := m.DBConnection.EnsureDBConnection()
 	if err != nil {
 		return err
@@ -94,7 +94,7 @@ func (m *MongoDBProjectsRepo) CreateProject(project *models.ExpandedProject) err
 	return nil
 }
 
-func (m *MongoDBProjectsRepo) UpdateProject(project *models.ExpandedProject) error {
+func (m *MongoDBProjectsRepo) UpdateProject(project *apimodels.ExpandedProject) error {
 	err := m.DBConnection.EnsureDBConnection()
 	if err != nil {
 		return err
@@ -156,7 +156,7 @@ func (m *MongoDBProjectsRepo) getProjectsCollection() *mongo.Collection {
 	return projectCollection
 }
 
-func transformProjectToInterface(prj *models.ExpandedProject) (interface{}, error) {
+func transformProjectToInterface(prj *apimodels.ExpandedProject) (interface{}, error) {
 	// marshall and unmarshall again because for some reason the json tags of the golang struct of the project type are not considered
 	marshal, _ := json.Marshal(prj)
 	var prjInterface interface{}
@@ -180,7 +180,7 @@ type MongoDBKeyEncodingProjectsRepo struct {
 	d ProjectRepo
 }
 
-func (m *MongoDBKeyEncodingProjectsRepo) GetProjects() ([]*models.ExpandedProject, error) {
+func (m *MongoDBKeyEncodingProjectsRepo) GetProjects() ([]*apimodels.ExpandedProject, error) {
 	projects, err := m.d.GetProjects()
 	if err != nil {
 		return nil, err
@@ -188,7 +188,7 @@ func (m *MongoDBKeyEncodingProjectsRepo) GetProjects() ([]*models.ExpandedProjec
 	return DecodeProjectsKeys(projects)
 }
 
-func (m *MongoDBKeyEncodingProjectsRepo) GetProject(projectName string) (*models.ExpandedProject, error) {
+func (m *MongoDBKeyEncodingProjectsRepo) GetProject(projectName string) (*apimodels.ExpandedProject, error) {
 	project, err := m.d.GetProject(projectName)
 	if err != nil {
 		return nil, err
@@ -196,7 +196,7 @@ func (m *MongoDBKeyEncodingProjectsRepo) GetProject(projectName string) (*models
 	return DecodeProjectKeys(project), nil
 }
 
-func (m *MongoDBKeyEncodingProjectsRepo) CreateProject(project *models.ExpandedProject) error {
+func (m *MongoDBKeyEncodingProjectsRepo) CreateProject(project *apimodels.ExpandedProject) error {
 	encProject, err := EncodeProjectKeys(project)
 	if err != nil {
 		return err
@@ -204,7 +204,7 @@ func (m *MongoDBKeyEncodingProjectsRepo) CreateProject(project *models.ExpandedP
 	return m.d.CreateProject(encProject)
 }
 
-func (m *MongoDBKeyEncodingProjectsRepo) UpdateProject(project *models.ExpandedProject) error {
+func (m *MongoDBKeyEncodingProjectsRepo) UpdateProject(project *apimodels.ExpandedProject) error {
 	encProject, err := EncodeProjectKeys(project)
 	if err != nil {
 		return err
@@ -220,7 +220,7 @@ func (m *MongoDBKeyEncodingProjectsRepo) DeleteProject(projectName string) error
 	return m.d.DeleteProject(projectName)
 }
 
-func EncodeProjectKeys(project *models.ExpandedProject) (*models.ExpandedProject, error) {
+func EncodeProjectKeys(project *apimodels.ExpandedProject) (*apimodels.ExpandedProject, error) {
 	if project == nil {
 		return nil, nil
 	}
@@ -228,25 +228,25 @@ func EncodeProjectKeys(project *models.ExpandedProject) (*models.ExpandedProject
 	if err != nil {
 		return nil, err
 	}
-	for _, stage := range copiedProject.(*models.ExpandedProject).Stages {
+	for _, stage := range copiedProject.(*apimodels.ExpandedProject).Stages {
 		for _, service := range stage.Services {
-			newLastEvents := make(map[string]models.EventContext)
+			newLastEvents := make(map[string]apimodels.EventContextInfo)
 			for eventType, context := range service.LastEventTypes {
 				newLastEvents[encodeKey(eventType)] = context
 			}
 			service.LastEventTypes = newLastEvents
 		}
 	}
-	return copiedProject.(*models.ExpandedProject), nil
+	return copiedProject.(*apimodels.ExpandedProject), nil
 }
 
-func DecodeProjectKeys(project *models.ExpandedProject) *models.ExpandedProject {
+func DecodeProjectKeys(project *apimodels.ExpandedProject) *apimodels.ExpandedProject {
 	if project == nil {
 		return nil
 	}
 	for _, stage := range project.Stages {
 		for _, service := range stage.Services {
-			newLastEvents := make(map[string]models.EventContext)
+			newLastEvents := make(map[string]apimodels.EventContextInfo)
 			for eventType, context := range service.LastEventTypes {
 				newLastEvents[decodeKey(eventType)] = context
 			}
@@ -256,14 +256,14 @@ func DecodeProjectKeys(project *models.ExpandedProject) *models.ExpandedProject 
 	return project
 }
 
-func DecodeProjectsKeys(projects []*models.ExpandedProject) ([]*models.ExpandedProject, error) {
+func DecodeProjectsKeys(projects []*apimodels.ExpandedProject) ([]*apimodels.ExpandedProject, error) {
 	if projects == nil {
 		return nil, nil
 	}
 	for _, project := range projects {
 		for _, stage := range project.Stages {
 			for _, service := range stage.Services {
-				newLastEvents := make(map[string]models.EventContext)
+				newLastEvents := make(map[string]apimodels.EventContextInfo)
 				for eventType, context := range service.LastEventTypes {
 					newLastEvents[decodeKey(eventType)] = context
 				}

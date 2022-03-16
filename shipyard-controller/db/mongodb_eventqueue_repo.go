@@ -4,14 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"time"
-
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"time"
 )
 
 const eventQueueCollectionName = "shipyard-controller-event-queue"
@@ -100,10 +100,10 @@ func (m *MongoDBEventQueueRepo) IsSequenceOfEventPaused(eventScope models.EventS
 	}
 
 	for _, state := range states {
-		if state.Scope.Stage == "" && state.State == models.SequencePaused {
+		if state.Scope.Stage == "" && state.State == apimodels.SequencePaused {
 			// if the overall state is set to 'paused', this means that all stages are paused
 			return true
-		} else if state.Scope.Stage == eventScope.Stage && state.State == models.SequencePaused {
+		} else if state.Scope.Stage == eventScope.Stage && state.State == apimodels.SequencePaused {
 			// if not the overall state is 'paused', but specifically for this stage, we return true as well
 			return true
 		}

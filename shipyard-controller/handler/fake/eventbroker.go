@@ -2,7 +2,7 @@ package fake
 
 import (
 	"encoding/json"
-	"github.com/keptn/keptn/shipyard-controller/models"
+	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -11,16 +11,16 @@ import (
 
 type EventBroker struct {
 	Server           *httptest.Server
-	ReceivedEvents   []models.Event
+	ReceivedEvents   []keptnmodels.KeptnContextExtendedCE
 	Test             *testing.T
-	HandleEventFunc  func(meb *EventBroker, event *models.Event)
+	HandleEventFunc  func(meb *EventBroker, event *keptnmodels.KeptnContextExtendedCE)
 	VerificationFunc func(meb *EventBroker)
 }
 
-func NewEventBroker(test *testing.T, handleEventFunc func(meb *EventBroker, event *models.Event), verificationFunc func(meb *EventBroker)) *EventBroker {
+func NewEventBroker(test *testing.T, handleEventFunc func(meb *EventBroker, event *keptnmodels.KeptnContextExtendedCE), verificationFunc func(meb *EventBroker)) *EventBroker {
 	meb := &EventBroker{
 		Server:           nil,
-		ReceivedEvents:   []models.Event{},
+		ReceivedEvents:   []keptnmodels.KeptnContextExtendedCE{},
 		Test:             test,
 		HandleEventFunc:  handleEventFunc,
 		VerificationFunc: verificationFunc,
@@ -31,7 +31,7 @@ func NewEventBroker(test *testing.T, handleEventFunc func(meb *EventBroker, even
 		defer func() {
 			_ = request.Body.Close()
 		}()
-		event := &models.Event{}
+		event := &keptnmodels.KeptnContextExtendedCE{}
 
 		_ = json.Unmarshal(b, event)
 		meb.HandleEventFunc(meb, event)

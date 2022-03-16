@@ -4,7 +4,7 @@
 package nats_mock
 
 import (
-	"github.com/keptn/keptn/shipyard-controller/models"
+	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
 	"sync"
 )
 
@@ -14,7 +14,7 @@ import (
 //
 // 		// make and configure a mocked nats.IKeptnNatsMessageHandler
 // 		mockedIKeptnNatsMessageHandler := &IKeptnNatsMessageHandlerMock{
-// 			ProcessFunc: func(event models.Event, sync bool) error {
+// 			ProcessFunc: func(event keptnmodels.KeptnContextExtendedCE, sync bool) error {
 // 				panic("mock out the Process method")
 // 			},
 // 		}
@@ -25,14 +25,14 @@ import (
 // 	}
 type IKeptnNatsMessageHandlerMock struct {
 	// ProcessFunc mocks the Process method.
-	ProcessFunc func(event models.Event, sync bool) error
+	ProcessFunc func(event keptnmodels.KeptnContextExtendedCE, sync bool) error
 
 	// calls tracks calls to the methods.
 	calls struct {
 		// Process holds details about calls to the Process method.
 		Process []struct {
-			// Event is the event argument value.
-			Event models.Event
+			//models.KeptnContextExtendedCEis the event argument value.
+			Event keptnmodels.KeptnContextExtendedCE
 			// Sync is the sync argument value.
 			Sync bool
 		}
@@ -41,12 +41,12 @@ type IKeptnNatsMessageHandlerMock struct {
 }
 
 // Process calls ProcessFunc.
-func (mock *IKeptnNatsMessageHandlerMock) Process(event models.Event, sync bool) error {
+func (mock *IKeptnNatsMessageHandlerMock) Process(event keptnmodels.KeptnContextExtendedCE, sync bool) error {
 	if mock.ProcessFunc == nil {
 		panic("IKeptnNatsMessageHandlerMock.ProcessFunc: method is nil but IKeptnNatsMessageHandler.Process was just called")
 	}
 	callInfo := struct {
-		Event models.Event
+		Event keptnmodels.KeptnContextExtendedCE
 		Sync  bool
 	}{
 		Event: event,
@@ -62,11 +62,11 @@ func (mock *IKeptnNatsMessageHandlerMock) Process(event models.Event, sync bool)
 // Check the length with:
 //     len(mockedIKeptnNatsMessageHandler.ProcessCalls())
 func (mock *IKeptnNatsMessageHandlerMock) ProcessCalls() []struct {
-	Event models.Event
+	Event keptnmodels.KeptnContextExtendedCE
 	Sync  bool
 } {
 	var calls []struct {
-		Event models.Event
+		Event keptnmodels.KeptnContextExtendedCE
 		Sync  bool
 	}
 	mock.lockProcess.RLock()

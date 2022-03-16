@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
 	"time"
 
 	"github.com/benbjohnson/clock"
@@ -92,11 +93,11 @@ func (e *EventDispatcher) OnSequenceAborted(eventScope models.EventScope) {
 	e.cleanupQueueOfSequence(eventScope)
 }
 
-func (e *EventDispatcher) OnSequenceFinished(event models.Event) {
+func (e *EventDispatcher) OnSequenceFinished(event keptnmodels.KeptnContextExtendedCE) {
 	e.cleanupQueueOfSequence(models.EventScope{KeptnContext: event.Shkeptncontext})
 }
 
-func (e *EventDispatcher) OnSequenceTimeout(event models.Event) {
+func (e *EventDispatcher) OnSequenceTimeout(event keptnmodels.KeptnContextExtendedCE) {
 	e.cleanupQueueOfSequence(models.EventScope{KeptnContext: event.Shkeptncontext})
 }
 
@@ -199,7 +200,7 @@ func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event mod
 				Stage:   eventScope.Stage,
 			},
 		},
-		Status: []string{models.SequenceStartedState},
+		Status: []string{keptnmodels.SequenceStartedState},
 	})
 	if err != nil {
 		return err

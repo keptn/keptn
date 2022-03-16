@@ -4,7 +4,7 @@
 package fake
 
 import (
-	"github.com/keptn/keptn/shipyard-controller/models"
+	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
 	"sync"
 )
 
@@ -14,7 +14,7 @@ import (
 //
 // 		// make and configure a mocked sequencehooks.ISequenceTaskFinishedHook
 // 		mockedISequenceTaskFinishedHook := &ISequenceTaskFinishedHookMock{
-// 			OnSequenceTaskFinishedFunc: func(event models.Event)  {
+// 			OnSequenceTaskFinishedFunc: func(event keptnmodels.KeptnContextExtendedCE)  {
 // 				panic("mock out the OnSequenceTaskFinished method")
 // 			},
 // 		}
@@ -25,26 +25,26 @@ import (
 // 	}
 type ISequenceTaskFinishedHookMock struct {
 	// OnSequenceTaskFinishedFunc mocks the OnSequenceTaskFinished method.
-	OnSequenceTaskFinishedFunc func(event models.Event)
+	OnSequenceTaskFinishedFunc func(event keptnmodels.KeptnContextExtendedCE)
 
 	// calls tracks calls to the methods.
 	calls struct {
 		// OnSequenceTaskFinished holds details about calls to the OnSequenceTaskFinished method.
 		OnSequenceTaskFinished []struct {
-			// Event is the event argument value.
-			Event models.Event
+			//models.KeptnContextExtendedCEis the event argument value.
+			Event keptnmodels.KeptnContextExtendedCE
 		}
 	}
 	lockOnSequenceTaskFinished sync.RWMutex
 }
 
 // OnSequenceTaskFinished calls OnSequenceTaskFinishedFunc.
-func (mock *ISequenceTaskFinishedHookMock) OnSequenceTaskFinished(event models.Event) {
+func (mock *ISequenceTaskFinishedHookMock) OnSequenceTaskFinished(event keptnmodels.KeptnContextExtendedCE) {
 	if mock.OnSequenceTaskFinishedFunc == nil {
 		panic("ISequenceTaskFinishedHookMock.OnSequenceTaskFinishedFunc: method is nil but ISequenceTaskFinishedHook.OnSequenceTaskFinished was just called")
 	}
 	callInfo := struct {
-		Event models.Event
+		Event keptnmodels.KeptnContextExtendedCE
 	}{
 		Event: event,
 	}
@@ -58,10 +58,10 @@ func (mock *ISequenceTaskFinishedHookMock) OnSequenceTaskFinished(event models.E
 // Check the length with:
 //     len(mockedISequenceTaskFinishedHook.OnSequenceTaskFinishedCalls())
 func (mock *ISequenceTaskFinishedHookMock) OnSequenceTaskFinishedCalls() []struct {
-	Event models.Event
+	Event keptnmodels.KeptnContextExtendedCE
 } {
 	var calls []struct {
-		Event models.Event
+		Event keptnmodels.KeptnContextExtendedCE
 	}
 	mock.lockOnSequenceTaskFinished.RLock()
 	calls = mock.calls.OnSequenceTaskFinished

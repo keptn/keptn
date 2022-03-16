@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	keptnfake "github.com/keptn/go-utils/pkg/lib/v0_2_0/fake"
 	"github.com/keptn/keptn/shipyard-controller/db"
@@ -39,8 +40,8 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 			name: "everything ok - send evaluation.triggered event",
 			fields: fields{
 				EventSender: &keptnfake.EventSender{},
-				ServiceAPI: &db_mock.ProjectMVRepoMock{GetServiceFunc: func(project string, stage string, service string) (*models.ExpandedService, error) {
-					return &models.ExpandedService{}, nil
+				ServiceAPI: &db_mock.ProjectMVRepoMock{GetServiceFunc: func(project string, stage string, service string) (*apimodels.ExpandedService, error) {
+					return &apimodels.ExpandedService{}, nil
 				}},
 			},
 			args: args{
@@ -78,8 +79,8 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 			name: "invalid timeframe",
 			fields: fields{
 				EventSender: &keptnfake.EventSender{},
-				ServiceAPI: &db_mock.ProjectMVRepoMock{GetServiceFunc: func(project string, stage string, service string) (*models.ExpandedService, error) {
-					return &models.ExpandedService{}, nil
+				ServiceAPI: &db_mock.ProjectMVRepoMock{GetServiceFunc: func(project string, stage string, service string) (*apimodels.ExpandedService, error) {
+					return &apimodels.ExpandedService{}, nil
 				}},
 			},
 			args: args{
@@ -107,8 +108,8 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 						},
 					},
 				},
-				ServiceAPI: &db_mock.ProjectMVRepoMock{GetServiceFunc: func(project string, stage string, service string) (*models.ExpandedService, error) {
-					return &models.ExpandedService{}, nil
+				ServiceAPI: &db_mock.ProjectMVRepoMock{GetServiceFunc: func(project string, stage string, service string) (*apimodels.ExpandedService, error) {
+					return &apimodels.ExpandedService{}, nil
 				}},
 			},
 			args: args{
@@ -130,8 +131,8 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 			name: "time w/ timezone w/o millis",
 			fields: fields{
 				EventSender: &keptnfake.EventSender{},
-				ServiceAPI: &db_mock.ProjectMVRepoMock{GetServiceFunc: func(project string, stage string, service string) (*models.ExpandedService, error) {
-					return &models.ExpandedService{}, nil
+				ServiceAPI: &db_mock.ProjectMVRepoMock{GetServiceFunc: func(project string, stage string, service string) (*apimodels.ExpandedService, error) {
+					return &apimodels.ExpandedService{}, nil
 				}},
 			},
 			args: args{
@@ -169,8 +170,8 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 			name: "time w/ timezone w/o millis w/ offset",
 			fields: fields{
 				EventSender: &keptnfake.EventSender{},
-				ServiceAPI: &db_mock.ProjectMVRepoMock{GetServiceFunc: func(project string, stage string, service string) (*models.ExpandedService, error) {
-					return &models.ExpandedService{}, nil
+				ServiceAPI: &db_mock.ProjectMVRepoMock{GetServiceFunc: func(project string, stage string, service string) (*apimodels.ExpandedService, error) {
+					return &apimodels.ExpandedService{}, nil
 				}},
 			},
 			args: args{
@@ -192,8 +193,8 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 			name: "time w/o timezone w/o millis",
 			fields: fields{
 				EventSender: &keptnfake.EventSender{},
-				ServiceAPI: &db_mock.ProjectMVRepoMock{GetServiceFunc: func(project string, stage string, service string) (*models.ExpandedService, error) {
-					return &models.ExpandedService{}, nil
+				ServiceAPI: &db_mock.ProjectMVRepoMock{GetServiceFunc: func(project string, stage string, service string) (*apimodels.ExpandedService, error) {
+					return &apimodels.ExpandedService{}, nil
 				}},
 			},
 			args: args{

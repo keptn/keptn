@@ -4,7 +4,7 @@
 package common_mock
 
 import (
-	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"sync"
 )
@@ -19,10 +19,10 @@ var _ common.ConfigurationStore = &ConfigurationStoreMock{}
 //
 // 		// make and configure a mocked common.ConfigurationStore
 // 		mockedConfigurationStore := &ConfigurationStoreMock{
-// 			CreateProjectFunc: func(project keptnapimodels.Project) error {
+// 			CreateProjectFunc: func(project apimodels.Project) error {
 // 				panic("mock out the CreateProject method")
 // 			},
-// 			CreateProjectShipyardFunc: func(projectName string, resources []*keptnapimodels.Resource) error {
+// 			CreateProjectShipyardFunc: func(projectName string, resources []*apimodels.Resource) error {
 // 				panic("mock out the CreateProjectShipyard method")
 // 			},
 // 			CreateServiceFunc: func(projectName string, stageName string, serviceName string) error {
@@ -37,16 +37,16 @@ var _ common.ConfigurationStore = &ConfigurationStoreMock{}
 // 			DeleteServiceFunc: func(projectName string, stageName string, serviceName string) error {
 // 				panic("mock out the DeleteService method")
 // 			},
-// 			GetProjectResourceFunc: func(projectName string, resourceURI string) (*keptnapimodels.Resource, error) {
+// 			GetProjectResourceFunc: func(projectName string, resourceURI string) (*apimodels.Resource, error) {
 // 				panic("mock out the GetProjectResource method")
 // 			},
-// 			GetStageResourceFunc: func(projectName string, stageName string, resourceURI string) (*keptnapimodels.Resource, error) {
+// 			GetStageResourceFunc: func(projectName string, stageName string, resourceURI string) (*apimodels.Resource, error) {
 // 				panic("mock out the GetStageResource method")
 // 			},
-// 			UpdateProjectFunc: func(project keptnapimodels.Project) error {
+// 			UpdateProjectFunc: func(project apimodels.Project) error {
 // 				panic("mock out the UpdateProject method")
 // 			},
-// 			UpdateProjectResourceFunc: func(projectName string, resource *keptnapimodels.Resource) error {
+// 			UpdateProjectResourceFunc: func(projectName string, resource *apimodels.Resource) error {
 // 				panic("mock out the UpdateProjectResource method")
 // 			},
 // 		}
@@ -57,10 +57,10 @@ var _ common.ConfigurationStore = &ConfigurationStoreMock{}
 // 	}
 type ConfigurationStoreMock struct {
 	// CreateProjectFunc mocks the CreateProject method.
-	CreateProjectFunc func(project keptnapimodels.Project) error
+	CreateProjectFunc func(project apimodels.Project) error
 
 	// CreateProjectShipyardFunc mocks the CreateProjectShipyard method.
-	CreateProjectShipyardFunc func(projectName string, resources []*keptnapimodels.Resource) error
+	CreateProjectShipyardFunc func(projectName string, resources []*apimodels.Resource) error
 
 	// CreateServiceFunc mocks the CreateService method.
 	CreateServiceFunc func(projectName string, stageName string, serviceName string) error
@@ -75,30 +75,30 @@ type ConfigurationStoreMock struct {
 	DeleteServiceFunc func(projectName string, stageName string, serviceName string) error
 
 	// GetProjectResourceFunc mocks the GetProjectResource method.
-	GetProjectResourceFunc func(projectName string, resourceURI string) (*keptnapimodels.Resource, error)
+	GetProjectResourceFunc func(projectName string, resourceURI string) (*apimodels.Resource, error)
 
 	// GetStageResourceFunc mocks the GetStageResource method.
-	GetStageResourceFunc func(projectName string, stageName string, resourceURI string) (*keptnapimodels.Resource, error)
+	GetStageResourceFunc func(projectName string, stageName string, resourceURI string) (*apimodels.Resource, error)
 
 	// UpdateProjectFunc mocks the UpdateProject method.
-	UpdateProjectFunc func(project keptnapimodels.Project) error
+	UpdateProjectFunc func(project apimodels.Project) error
 
 	// UpdateProjectResourceFunc mocks the UpdateProjectResource method.
-	UpdateProjectResourceFunc func(projectName string, resource *keptnapimodels.Resource) error
+	UpdateProjectResourceFunc func(projectName string, resource *apimodels.Resource) error
 
 	// calls tracks calls to the methods.
 	calls struct {
 		// CreateProject holds details about calls to the CreateProject method.
 		CreateProject []struct {
 			// Project is the project argument value.
-			Project keptnapimodels.Project
+			Project apimodels.Project
 		}
 		// CreateProjectShipyard holds details about calls to the CreateProjectShipyard method.
 		CreateProjectShipyard []struct {
 			// ProjectName is the projectName argument value.
 			ProjectName string
 			// Resources is the resources argument value.
-			Resources []*keptnapimodels.Resource
+			Resources []*apimodels.Resource
 		}
 		// CreateService holds details about calls to the CreateService method.
 		CreateService []struct {
@@ -149,14 +149,14 @@ type ConfigurationStoreMock struct {
 		// UpdateProject holds details about calls to the UpdateProject method.
 		UpdateProject []struct {
 			// Project is the project argument value.
-			Project keptnapimodels.Project
+			Project apimodels.Project
 		}
 		// UpdateProjectResource holds details about calls to the UpdateProjectResource method.
 		UpdateProjectResource []struct {
 			// ProjectName is the projectName argument value.
 			ProjectName string
 			// Resource is the resource argument value.
-			Resource *keptnapimodels.Resource
+			Resource *apimodels.Resource
 		}
 	}
 	lockCreateProject         sync.RWMutex
@@ -172,12 +172,12 @@ type ConfigurationStoreMock struct {
 }
 
 // CreateProject calls CreateProjectFunc.
-func (mock *ConfigurationStoreMock) CreateProject(project keptnapimodels.Project) error {
+func (mock *ConfigurationStoreMock) CreateProject(project apimodels.Project) error {
 	if mock.CreateProjectFunc == nil {
 		panic("ConfigurationStoreMock.CreateProjectFunc: method is nil but ConfigurationStore.CreateProject was just called")
 	}
 	callInfo := struct {
-		Project keptnapimodels.Project
+		Project apimodels.Project
 	}{
 		Project: project,
 	}
@@ -191,10 +191,10 @@ func (mock *ConfigurationStoreMock) CreateProject(project keptnapimodels.Project
 // Check the length with:
 //     len(mockedConfigurationStore.CreateProjectCalls())
 func (mock *ConfigurationStoreMock) CreateProjectCalls() []struct {
-	Project keptnapimodels.Project
+	Project apimodels.Project
 } {
 	var calls []struct {
-		Project keptnapimodels.Project
+		Project apimodels.Project
 	}
 	mock.lockCreateProject.RLock()
 	calls = mock.calls.CreateProject
@@ -203,13 +203,13 @@ func (mock *ConfigurationStoreMock) CreateProjectCalls() []struct {
 }
 
 // CreateProjectShipyard calls CreateProjectShipyardFunc.
-func (mock *ConfigurationStoreMock) CreateProjectShipyard(projectName string, resources []*keptnapimodels.Resource) error {
+func (mock *ConfigurationStoreMock) CreateProjectShipyard(projectName string, resources []*apimodels.Resource) error {
 	if mock.CreateProjectShipyardFunc == nil {
 		panic("ConfigurationStoreMock.CreateProjectShipyardFunc: method is nil but ConfigurationStore.CreateProjectShipyard was just called")
 	}
 	callInfo := struct {
 		ProjectName string
-		Resources   []*keptnapimodels.Resource
+		Resources   []*apimodels.Resource
 	}{
 		ProjectName: projectName,
 		Resources:   resources,
@@ -225,11 +225,11 @@ func (mock *ConfigurationStoreMock) CreateProjectShipyard(projectName string, re
 //     len(mockedConfigurationStore.CreateProjectShipyardCalls())
 func (mock *ConfigurationStoreMock) CreateProjectShipyardCalls() []struct {
 	ProjectName string
-	Resources   []*keptnapimodels.Resource
+	Resources   []*apimodels.Resource
 } {
 	var calls []struct {
 		ProjectName string
-		Resources   []*keptnapimodels.Resource
+		Resources   []*apimodels.Resource
 	}
 	mock.lockCreateProjectShipyard.RLock()
 	calls = mock.calls.CreateProjectShipyard
@@ -382,7 +382,7 @@ func (mock *ConfigurationStoreMock) DeleteServiceCalls() []struct {
 }
 
 // GetProjectResource calls GetProjectResourceFunc.
-func (mock *ConfigurationStoreMock) GetProjectResource(projectName string, resourceURI string) (*keptnapimodels.Resource, error) {
+func (mock *ConfigurationStoreMock) GetProjectResource(projectName string, resourceURI string) (*apimodels.Resource, error) {
 	if mock.GetProjectResourceFunc == nil {
 		panic("ConfigurationStoreMock.GetProjectResourceFunc: method is nil but ConfigurationStore.GetProjectResource was just called")
 	}
@@ -417,7 +417,7 @@ func (mock *ConfigurationStoreMock) GetProjectResourceCalls() []struct {
 }
 
 // GetStageResource calls GetStageResourceFunc.
-func (mock *ConfigurationStoreMock) GetStageResource(projectName string, stageName string, resourceURI string) (*keptnapimodels.Resource, error) {
+func (mock *ConfigurationStoreMock) GetStageResource(projectName string, stageName string, resourceURI string) (*apimodels.Resource, error) {
 	if mock.GetStageResourceFunc == nil {
 		panic("ConfigurationStoreMock.GetStageResourceFunc: method is nil but ConfigurationStore.GetStageResource was just called")
 	}
@@ -456,12 +456,12 @@ func (mock *ConfigurationStoreMock) GetStageResourceCalls() []struct {
 }
 
 // UpdateProject calls UpdateProjectFunc.
-func (mock *ConfigurationStoreMock) UpdateProject(project keptnapimodels.Project) error {
+func (mock *ConfigurationStoreMock) UpdateProject(project apimodels.Project) error {
 	if mock.UpdateProjectFunc == nil {
 		panic("ConfigurationStoreMock.UpdateProjectFunc: method is nil but ConfigurationStore.UpdateProject was just called")
 	}
 	callInfo := struct {
-		Project keptnapimodels.Project
+		Project apimodels.Project
 	}{
 		Project: project,
 	}
@@ -475,10 +475,10 @@ func (mock *ConfigurationStoreMock) UpdateProject(project keptnapimodels.Project
 // Check the length with:
 //     len(mockedConfigurationStore.UpdateProjectCalls())
 func (mock *ConfigurationStoreMock) UpdateProjectCalls() []struct {
-	Project keptnapimodels.Project
+	Project apimodels.Project
 } {
 	var calls []struct {
-		Project keptnapimodels.Project
+		Project apimodels.Project
 	}
 	mock.lockUpdateProject.RLock()
 	calls = mock.calls.UpdateProject
@@ -487,13 +487,13 @@ func (mock *ConfigurationStoreMock) UpdateProjectCalls() []struct {
 }
 
 // UpdateProjectResource calls UpdateProjectResourceFunc.
-func (mock *ConfigurationStoreMock) UpdateProjectResource(projectName string, resource *keptnapimodels.Resource) error {
+func (mock *ConfigurationStoreMock) UpdateProjectResource(projectName string, resource *apimodels.Resource) error {
 	if mock.UpdateProjectResourceFunc == nil {
 		panic("ConfigurationStoreMock.UpdateProjectResourceFunc: method is nil but ConfigurationStore.UpdateProjectResource was just called")
 	}
 	callInfo := struct {
 		ProjectName string
-		Resource    *keptnapimodels.Resource
+		Resource    *apimodels.Resource
 	}{
 		ProjectName: projectName,
 		Resource:    resource,
@@ -509,11 +509,11 @@ func (mock *ConfigurationStoreMock) UpdateProjectResource(projectName string, re
 //     len(mockedConfigurationStore.UpdateProjectResourceCalls())
 func (mock *ConfigurationStoreMock) UpdateProjectResourceCalls() []struct {
 	ProjectName string
-	Resource    *keptnapimodels.Resource
+	Resource    *apimodels.Resource
 } {
 	var calls []struct {
 		ProjectName string
-		Resource    *keptnapimodels.Resource
+		Resource    *apimodels.Resource
 	}
 	mock.lockUpdateProjectResource.RLock()
 	calls = mock.calls.UpdateProjectResource

@@ -5,8 +5,8 @@ package fake
 
 import (
 	"context"
+	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/common"
-	"github.com/keptn/keptn/shipyard-controller/models"
 	"sync"
 )
 
@@ -19,19 +19,19 @@ import (
 // 			ControlSequenceFunc: func(controlSequence models.SequenceControl) error {
 // 				panic("mock out the ControlSequence method")
 // 			},
-// 			GetAllTriggeredEventsFunc: func(filter common.EventFilter) ([]models.Event, error) {
+// 			GetAllTriggeredEventsFunc: func(filter common.EventFilter) ([]keptnmodels.KeptnContextExtendedCE, error) {
 // 				panic("mock out the GetAllTriggeredEvents method")
 // 			},
-// 			GetTriggeredEventsOfProjectFunc: func(project string, filter common.EventFilter) ([]models.Event, error) {
+// 			GetTriggeredEventsOfProjectFunc: func(project string, filter common.EventFilter) ([]keptnmodels.KeptnContextExtendedCE, error) {
 // 				panic("mock out the GetTriggeredEventsOfProject method")
 // 			},
-// 			HandleIncomingEventFunc: func(event models.Event, waitForCompletion bool) error {
+// 			HandleIncomingEventFunc: func(event keptnmodels.KeptnContextExtendedCE, waitForCompletion bool) error {
 // 				panic("mock out the HandleIncomingEvent method")
 // 			},
 // 			StartDispatchersFunc: func(ctx context.Context)  {
 // 				panic("mock out the StartDispatchers method")
 // 			},
-// 			StartTaskSequenceFunc: func(event models.Event) error {
+// 			StartTaskSequenceFunc: func(event keptnmodels.KeptnContextExtendedCE) error {
 // 				panic("mock out the StartTaskSequence method")
 // 			},
 // 			StopDispatchersFunc: func()  {
@@ -45,22 +45,22 @@ import (
 // 	}
 type IShipyardControllerMock struct {
 	// ControlSequenceFunc mocks the ControlSequence method.
-	ControlSequenceFunc func(controlSequence models.SequenceControl) error
+	ControlSequenceFunc func(controlSequence keptnmodels.SequenceControl) error
 
 	// GetAllTriggeredEventsFunc mocks the GetAllTriggeredEvents method.
-	GetAllTriggeredEventsFunc func(filter common.EventFilter) ([]models.Event, error)
+	GetAllTriggeredEventsFunc func(filter common.EventFilter) ([]keptnmodels.KeptnContextExtendedCE, error)
 
 	// GetTriggeredEventsOfProjectFunc mocks the GetTriggeredEventsOfProject method.
-	GetTriggeredEventsOfProjectFunc func(project string, filter common.EventFilter) ([]models.Event, error)
+	GetTriggeredEventsOfProjectFunc func(project string, filter common.EventFilter) ([]keptnmodels.KeptnContextExtendedCE, error)
 
 	// HandleIncomingEventFunc mocks the HandleIncomingEvent method.
-	HandleIncomingEventFunc func(event models.Event, waitForCompletion bool) error
+	HandleIncomingEventFunc func(event keptnmodels.KeptnContextExtendedCE, waitForCompletion bool) error
 
 	// StartDispatchersFunc mocks the StartDispatchers method.
 	StartDispatchersFunc func(ctx context.Context, mode common.SDMode)
 
 	// StartTaskSequenceFunc mocks the StartTaskSequence method.
-	StartTaskSequenceFunc func(event models.Event) error
+	StartTaskSequenceFunc func(event keptnmodels.KeptnContextExtendedCE) error
 
 	// StopDispatchersFunc mocks the StopDispatchers method.
 	StopDispatchersFunc func()
@@ -70,7 +70,7 @@ type IShipyardControllerMock struct {
 		// ControlSequence holds details about calls to the ControlSequence method.
 		ControlSequence []struct {
 			// ControlSequence is the controlSequence argument value.
-			ControlSequence models.SequenceControl
+			ControlSequence keptnmodels.SequenceControl
 		}
 		// GetAllTriggeredEvents holds details about calls to the GetAllTriggeredEvents method.
 		GetAllTriggeredEvents []struct {
@@ -86,8 +86,8 @@ type IShipyardControllerMock struct {
 		}
 		// HandleIncomingEvent holds details about calls to the HandleIncomingEvent method.
 		HandleIncomingEvent []struct {
-			// Event is the event argument value.
-			Event models.Event
+			//models.KeptnContextExtendedCEis the event argument value.
+			Event keptnmodels.KeptnContextExtendedCE
 			// WaitForCompletion is the waitForCompletion argument value.
 			WaitForCompletion bool
 		}
@@ -98,8 +98,8 @@ type IShipyardControllerMock struct {
 		}
 		// StartTaskSequence holds details about calls to the StartTaskSequence method.
 		StartTaskSequence []struct {
-			// Event is the event argument value.
-			Event models.Event
+			//models.KeptnContextExtendedCEis the event argument value.
+			Event keptnmodels.KeptnContextExtendedCE
 		}
 		// StopDispatchers holds details about calls to the StopDispatchers method.
 		StopDispatchers []struct {
@@ -115,12 +115,12 @@ type IShipyardControllerMock struct {
 }
 
 // ControlSequence calls ControlSequenceFunc.
-func (mock *IShipyardControllerMock) ControlSequence(controlSequence models.SequenceControl) error {
+func (mock *IShipyardControllerMock) ControlSequence(controlSequence keptnmodels.SequenceControl) error {
 	if mock.ControlSequenceFunc == nil {
 		panic("IShipyardControllerMock.ControlSequenceFunc: method is nil but IShipyardController.ControlSequence was just called")
 	}
 	callInfo := struct {
-		ControlSequence models.SequenceControl
+		ControlSequence keptnmodels.SequenceControl
 	}{
 		ControlSequence: controlSequence,
 	}
@@ -134,10 +134,10 @@ func (mock *IShipyardControllerMock) ControlSequence(controlSequence models.Sequ
 // Check the length with:
 //     len(mockedIShipyardController.ControlSequenceCalls())
 func (mock *IShipyardControllerMock) ControlSequenceCalls() []struct {
-	ControlSequence models.SequenceControl
+	ControlSequence keptnmodels.SequenceControl
 } {
 	var calls []struct {
-		ControlSequence models.SequenceControl
+		ControlSequence keptnmodels.SequenceControl
 	}
 	mock.lockControlSequence.RLock()
 	calls = mock.calls.ControlSequence
@@ -146,7 +146,7 @@ func (mock *IShipyardControllerMock) ControlSequenceCalls() []struct {
 }
 
 // GetAllTriggeredEvents calls GetAllTriggeredEventsFunc.
-func (mock *IShipyardControllerMock) GetAllTriggeredEvents(filter common.EventFilter) ([]models.Event, error) {
+func (mock *IShipyardControllerMock) GetAllTriggeredEvents(filter common.EventFilter) ([]keptnmodels.KeptnContextExtendedCE, error) {
 	if mock.GetAllTriggeredEventsFunc == nil {
 		panic("IShipyardControllerMock.GetAllTriggeredEventsFunc: method is nil but IShipyardController.GetAllTriggeredEvents was just called")
 	}
@@ -177,7 +177,7 @@ func (mock *IShipyardControllerMock) GetAllTriggeredEventsCalls() []struct {
 }
 
 // GetTriggeredEventsOfProject calls GetTriggeredEventsOfProjectFunc.
-func (mock *IShipyardControllerMock) GetTriggeredEventsOfProject(project string, filter common.EventFilter) ([]models.Event, error) {
+func (mock *IShipyardControllerMock) GetTriggeredEventsOfProject(project string, filter common.EventFilter) ([]keptnmodels.KeptnContextExtendedCE, error) {
 	if mock.GetTriggeredEventsOfProjectFunc == nil {
 		panic("IShipyardControllerMock.GetTriggeredEventsOfProjectFunc: method is nil but IShipyardController.GetTriggeredEventsOfProject was just called")
 	}
@@ -212,12 +212,12 @@ func (mock *IShipyardControllerMock) GetTriggeredEventsOfProjectCalls() []struct
 }
 
 // HandleIncomingEvent calls HandleIncomingEventFunc.
-func (mock *IShipyardControllerMock) HandleIncomingEvent(event models.Event, waitForCompletion bool) error {
+func (mock *IShipyardControllerMock) HandleIncomingEvent(event keptnmodels.KeptnContextExtendedCE, waitForCompletion bool) error {
 	if mock.HandleIncomingEventFunc == nil {
 		panic("IShipyardControllerMock.HandleIncomingEventFunc: method is nil but IShipyardController.HandleIncomingEvent was just called")
 	}
 	callInfo := struct {
-		Event             models.Event
+		Event             keptnmodels.KeptnContextExtendedCE
 		WaitForCompletion bool
 	}{
 		Event:             event,
@@ -233,11 +233,11 @@ func (mock *IShipyardControllerMock) HandleIncomingEvent(event models.Event, wai
 // Check the length with:
 //     len(mockedIShipyardController.HandleIncomingEventCalls())
 func (mock *IShipyardControllerMock) HandleIncomingEventCalls() []struct {
-	Event             models.Event
+	Event             keptnmodels.KeptnContextExtendedCE
 	WaitForCompletion bool
 } {
 	var calls []struct {
-		Event             models.Event
+		Event             keptnmodels.KeptnContextExtendedCE
 		WaitForCompletion bool
 	}
 	mock.lockHandleIncomingEvent.RLock()
@@ -278,12 +278,12 @@ func (mock *IShipyardControllerMock) StartDispatchersCalls() []struct {
 }
 
 // StartTaskSequence calls StartTaskSequenceFunc.
-func (mock *IShipyardControllerMock) StartTaskSequence(event models.Event) error {
+func (mock *IShipyardControllerMock) StartTaskSequence(event keptnmodels.KeptnContextExtendedCE) error {
 	if mock.StartTaskSequenceFunc == nil {
 		panic("IShipyardControllerMock.StartTaskSequenceFunc: method is nil but IShipyardController.StartTaskSequence was just called")
 	}
 	callInfo := struct {
-		Event models.Event
+		Event keptnmodels.KeptnContextExtendedCE
 	}{
 		Event: event,
 	}
@@ -297,10 +297,10 @@ func (mock *IShipyardControllerMock) StartTaskSequence(event models.Event) error
 // Check the length with:
 //     len(mockedIShipyardController.StartTaskSequenceCalls())
 func (mock *IShipyardControllerMock) StartTaskSequenceCalls() []struct {
-	Event models.Event
+	Event keptnmodels.KeptnContextExtendedCE
 } {
 	var calls []struct {
-		Event models.Event
+		Event keptnmodels.KeptnContextExtendedCE
 	}
 	mock.lockStartTaskSequence.RLock()
 	calls = mock.calls.StartTaskSequence

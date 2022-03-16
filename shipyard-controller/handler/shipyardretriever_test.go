@@ -8,7 +8,6 @@ import (
 	common_mock "github.com/keptn/keptn/shipyard-controller/common/fake"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
-	scmodels "github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
 	"reflect"
 	"testing"
@@ -74,8 +73,8 @@ func TestShipyardRetriever_GetShipyard(t *testing.T) {
 					UpdateShipyardFunc: func(projectName string, shipyard string) error {
 						return nil
 					},
-					GetProjectFunc: func(projectName string) (*scmodels.ExpandedProject, error) {
-						return &scmodels.ExpandedProject{ProjectName: "my-project"}, nil
+					GetProjectFunc: func(projectName string) (*models.ExpandedProject, error) {
+						return &models.ExpandedProject{ProjectName: "my-project"}, nil
 					},
 				},
 			},
@@ -100,8 +99,8 @@ func TestShipyardRetriever_GetShipyard(t *testing.T) {
 					UpdateShipyardFunc: func(projectName string, shipyard string) error {
 						return errors.New("oops")
 					},
-					GetProjectFunc: func(projectName string) (*scmodels.ExpandedProject, error) {
-						return &scmodels.ExpandedProject{ProjectName: "my-project"}, nil
+					GetProjectFunc: func(projectName string) (*models.ExpandedProject, error) {
+						return &models.ExpandedProject{ProjectName: "my-project"}, nil
 					},
 				},
 			},
@@ -126,8 +125,8 @@ func TestShipyardRetriever_GetShipyard(t *testing.T) {
 					UpdateShipyardFunc: func(projectName string, shipyard string) error {
 						return errors.New("oops")
 					},
-					GetProjectFunc: func(projectName string) (*scmodels.ExpandedProject, error) {
-						return &scmodels.ExpandedProject{ProjectName: "my-project"}, nil
+					GetProjectFunc: func(projectName string) (*models.ExpandedProject, error) {
+						return &models.ExpandedProject{ProjectName: "my-project"}, nil
 					},
 				},
 			},
@@ -152,8 +151,8 @@ func TestShipyardRetriever_GetShipyard(t *testing.T) {
 					UpdateShipyardFunc: func(projectName string, shipyard string) error {
 						return errors.New("oops")
 					},
-					GetProjectFunc: func(projectName string) (*scmodels.ExpandedProject, error) {
-						return &scmodels.ExpandedProject{ProjectName: "my-project"}, nil
+					GetProjectFunc: func(projectName string) (*models.ExpandedProject, error) {
+						return &models.ExpandedProject{ProjectName: "my-project"}, nil
 					},
 				},
 			},
@@ -175,8 +174,8 @@ func TestShipyardRetriever_GetShipyard(t *testing.T) {
 					UpdateShipyardFunc: func(projectName string, shipyard string) error {
 						return nil
 					},
-					GetProjectFunc: func(projectName string) (*scmodels.ExpandedProject, error) {
-						return &scmodels.ExpandedProject{ProjectName: "my-project"}, nil
+					GetProjectFunc: func(projectName string) (*models.ExpandedProject, error) {
+						return &models.ExpandedProject{ProjectName: "my-project"}, nil
 					},
 				},
 			},
@@ -223,8 +222,8 @@ func TestShipyardRetriever_GetCachedShipyard(t *testing.T) {
 					UpdateShipyardFunc: func(projectName string, shipyard string) error {
 						return nil
 					},
-					GetProjectFunc: func(projectName string) (*scmodels.ExpandedProject, error) {
-						return &scmodels.ExpandedProject{ProjectName: "my-project", Shipyard: validShipyardResourceContent}, nil
+					GetProjectFunc: func(projectName string) (*models.ExpandedProject, error) {
+						return &models.ExpandedProject{ProjectName: "my-project", Shipyard: validShipyardResourceContent}, nil
 					},
 				},
 			},
@@ -241,8 +240,8 @@ func TestShipyardRetriever_GetCachedShipyard(t *testing.T) {
 					UpdateShipyardFunc: func(projectName string, shipyard string) error {
 						return nil
 					},
-					GetProjectFunc: func(projectName string) (*scmodels.ExpandedProject, error) {
-						return &scmodels.ExpandedProject{ProjectName: "my-project", Shipyard: invalidShipyardContent}, nil
+					GetProjectFunc: func(projectName string) (*models.ExpandedProject, error) {
+						return &models.ExpandedProject{ProjectName: "my-project", Shipyard: invalidShipyardContent}, nil
 					},
 				},
 			},
@@ -259,7 +258,7 @@ func TestShipyardRetriever_GetCachedShipyard(t *testing.T) {
 					UpdateShipyardFunc: func(projectName string, shipyard string) error {
 						return nil
 					},
-					GetProjectFunc: func(projectName string) (*scmodels.ExpandedProject, error) {
+					GetProjectFunc: func(projectName string) (*models.ExpandedProject, error) {
 						return nil, errors.New("oops")
 					},
 				},

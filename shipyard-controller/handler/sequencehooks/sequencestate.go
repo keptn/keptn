@@ -3,14 +3,15 @@ package sequencehooks
 import (
 	"errors"
 	"fmt"
-	"sync"
-	"time"
-
+	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
+	"sync"
+	"time"
+	//"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -27,7 +28,7 @@ func NewSequenceStateMaterializedView(stateRepo db.SequenceStateRepo) *SequenceS
 	return &SequenceStateMaterializedView{SequenceStateRepo: stateRepo, mutex: &sync.Mutex{}}
 }
 
-func (smv *SequenceStateMaterializedView) OnSequenceTriggered(event models.Event) {
+func (smv *SequenceStateMaterializedView) OnSequenceTriggered(event keptnmodels.KeptnContextExtendedCE) {
 	smv.mutex.Lock()
 	defer smv.mutex.Unlock()
 	_, sequenceName, _, err := keptnv2.ParseSequenceEventType(*event.Type)
@@ -42,14 +43,14 @@ func (smv *SequenceStateMaterializedView) OnSequenceTriggered(event models.Event
 		return
 	}
 
-	state := models.SequenceState{
+	state := keptnmodels.SequenceState{
 		Name:           sequenceName,
 		Service:        eventScope.Service,
 		Project:        eventScope.Project,
-		Time:           timeutils.GetKeptnTimeStamp(common.ParseTimestamp(event.Time, nil)),
+		Time:           timeutils.GetKeptnTimeStamp(event.Time),
 		Shkeptncontext: eventScope.KeptnContext,
-		State:          models.SequenceTriggeredState,
-		Stages:         []models.SequenceStateStage{},
+		State:          keptnmodels.SequenceTriggeredState,
+		Stages:         []keptnmodels.SequenceStateStage{},
 	}
 
 	//if the next event in sequence is an action we get the problem title form it
@@ -67,7 +68,7 @@ func (smv *SequenceStateMaterializedView) OnSequenceTriggered(event models.Event
 	}
 }
 
-func (smv *SequenceStateMaterializedView) OnSequenceStarted(event models.Event) {
+func (smv *SequenceStateMaterializedView) OnSequenceStarted(event keptnmodels.KeptnContextExtendedCE) {
 	smv.mutex.Lock()
 	defer smv.mutex.Unlock()
 	eventScope, err := models.NewEventScope(event)
@@ -75,10 +76,10 @@ func (smv *SequenceStateMaterializedView) OnSequenceStarted(event models.Event) 
 		log.WithError(err).Errorf(eventScopeErrorMessage)
 		return
 	}
-	smv.updateOverallSequenceState(*eventScope, models.SequenceStartedState)
+	smv.updateOverallSequenceState(*eventScope, keptnmodels.SequenceStartedState)
 }
 
-func (smv *SequenceStateMaterializedView) OnSequenceWaiting(event models.Event) {
+func (smv *SequenceStateMaterializedView) OnSequenceWaiting(event keptnmodels.KeptnContextExtendedCE) {
 	smv.mutex.Lock()
 	defer smv.mutex.Unlock()
 	eventScope, err := models.NewEventScope(event)
@@ -86,10 +87,10 @@ func (smv *SequenceStateMaterializedView) OnSequenceWaiting(event models.Event) 
 		log.WithError(err).Errorf(eventScopeErrorMessage)
 		return
 	}
-	smv.updateOverallSequenceState(*eventScope, models.SequenceWaitingState)
+	smv.updateOverallSequenceState(*eventScope, keptnmodels.SequenceWaitingState)
 }
 
-func (smv *SequenceStateMaterializedView) OnSequenceTaskTriggered(event models.Event) {
+func (smv *SequenceStateMaterializedView) OnSequenceTaskTriggered(event keptnmodels.KeptnContextExtendedCE) {
 	smv.mutex.Lock()
 	defer smv.mutex.Unlock()
 
@@ -111,7 +112,7 @@ func (smv *SequenceStateMaterializedView) OnSequenceTaskTriggered(event models.E
 	}
 }
 
-func (smv *SequenceStateMaterializedView) OnSequenceTaskStarted(event models.Event) {
+func (smv *SequenceStateMaterializedView) OnSequenceTaskStarted(event keptnmodels.KeptnContextExtendedCE) {
 	smv.mutex.Lock()
 	defer smv.mutex.Unlock()
 	state, err := smv.updateLastEventOfSequence(event)
@@ -125,7 +126,7 @@ func (smv *SequenceStateMaterializedView) OnSequenceTaskStarted(event models.Eve
 	}
 }
 
-func (smv *SequenceStateMaterializedView) OnSequenceTaskFinished(event models.Event) {
+func (smv *SequenceStateMaterializedView) OnSequenceTaskFinished(event keptnmodels.KeptnContextExtendedCE) {
 	smv.mutex.Lock()
 	defer smv.mutex.Unlock()
 	state, err := smv.updateLastEventOfSequence(event)
@@ -145,7 +146,7 @@ func (smv *SequenceStateMaterializedView) OnSequenceTaskFinished(event models.Ev
 	}
 }
 
-func (smv *SequenceStateMaterializedView) OnSubSequenceFinished(event models.Event) {
+func (smv *SequenceStateMaterializedView) OnSubSequenceFinished(event keptnmodels.KeptnContextExtendedCE) {
 	smv.mutex.Lock()
 	defer smv.mutex.Unlock()
 	state, err := smv.updateLastEventOfSequence(event)
@@ -159,7 +160,7 @@ func (smv *SequenceStateMaterializedView) OnSubSequenceFinished(event models.Eve
 	}
 }
 
-func (smv *SequenceStateMaterializedView) OnSequenceFinished(event models.Event) {
+func (smv *SequenceStateMaterializedView) OnSequenceFinished(event keptnmodels.KeptnContextExtendedCE) {
 	smv.mutex.Lock()
 	defer smv.mutex.Unlock()
 	eventScope, err := models.NewEventScope(event)
@@ -167,16 +168,16 @@ func (smv *SequenceStateMaterializedView) OnSequenceFinished(event models.Event)
 		log.WithError(err).Errorf(eventScopeErrorMessage)
 		return
 	}
-	smv.updateOverallSequenceState(*eventScope, models.SequenceFinished)
+	smv.updateOverallSequenceState(*eventScope, keptnmodels.SequenceFinished)
 }
 
 func (smv *SequenceStateMaterializedView) OnSequenceAborted(eventScope models.EventScope) {
 	smv.mutex.Lock()
 	defer smv.mutex.Unlock()
-	smv.updateOverallSequenceState(eventScope, models.SequenceAborted)
+	smv.updateOverallSequenceState(eventScope, keptnmodels.SequenceAborted)
 }
 
-func (smv *SequenceStateMaterializedView) OnSequenceTimeout(event models.Event) {
+func (smv *SequenceStateMaterializedView) OnSequenceTimeout(event keptnmodels.KeptnContextExtendedCE) {
 	smv.mutex.Lock()
 	defer smv.mutex.Unlock()
 	eventScope, err := models.NewEventScope(event)
@@ -184,16 +185,16 @@ func (smv *SequenceStateMaterializedView) OnSequenceTimeout(event models.Event) 
 		log.WithError(err).Errorf(eventScopeErrorMessage)
 		return
 	}
-	smv.updateOverallSequenceState(*eventScope, models.TimedOut)
+	smv.updateOverallSequenceState(*eventScope, keptnmodels.TimedOut)
 }
 
 func (smv *SequenceStateMaterializedView) OnSequencePaused(pause models.EventScope) {
 	smv.mutex.Lock()
 	defer smv.mutex.Unlock()
 	if pause.Stage == "" {
-		smv.updateOverallSequenceState(pause, models.SequencePaused)
+		smv.updateOverallSequenceState(pause, keptnmodels.SequencePaused)
 	} else {
-		smv.updateSequenceStateInStage(pause, models.SequencePaused)
+		smv.updateSequenceStateInStage(pause, keptnmodels.SequencePaused)
 	}
 }
 
@@ -201,19 +202,19 @@ func (smv *SequenceStateMaterializedView) OnSequenceResumed(resume models.EventS
 	smv.mutex.Lock()
 	defer smv.mutex.Unlock()
 	if resume.Stage == "" {
-		smv.updateOverallSequenceState(resume, models.SequenceStartedState)
+		smv.updateOverallSequenceState(resume, keptnmodels.SequenceStartedState)
 	} else {
-		smv.updateSequenceStateInStage(resume, models.SequenceStartedState)
+		smv.updateSequenceStateInStage(resume, keptnmodels.SequenceStartedState)
 	}
 }
 
-func (smv *SequenceStateMaterializedView) findSequenceStateForEvent(eventScope models.EventScope) (*models.SequenceState, error) {
+func (smv *SequenceStateMaterializedView) findSequenceStateForEvent(eventScope models.EventScope) (*keptnmodels.SequenceState, error) {
 	return smv.findSequenceState(eventScope.Project, eventScope.KeptnContext)
 }
 
-func (smv *SequenceStateMaterializedView) findSequenceState(project, keptnContext string) (*models.SequenceState, error) {
-	states, err := smv.SequenceStateRepo.FindSequenceStates(models.StateFilter{
-		GetSequenceStateParams: models.GetSequenceStateParams{
+func (smv *SequenceStateMaterializedView) findSequenceState(project, keptnContext string) (*keptnmodels.SequenceState, error) {
+	states, err := smv.SequenceStateRepo.FindSequenceStates(keptnmodels.StateFilter{
+		GetSequenceStateParams: keptnmodels.GetSequenceStateParams{
 			Project:      project,
 			KeptnContext: keptnContext,
 		},
@@ -260,7 +261,7 @@ func (smv *SequenceStateMaterializedView) updateSequenceStateInStage(eventScope 
 	}
 }
 
-func (smv *SequenceStateMaterializedView) updateEvaluationOfSequence(event models.Event, state models.SequenceState) error {
+func (smv *SequenceStateMaterializedView) updateEvaluationOfSequence(event keptnmodels.KeptnContextExtendedCE, state keptnmodels.SequenceState) error {
 	evaluationFinishedEventData := &keptnv2.EvaluationFinishedEventData{}
 	if err := keptnv2.Decode(event.Data, evaluationFinishedEventData); err != nil {
 		return fmt.Errorf("could not decode evaluation.finished event data: %s", err.Error())
@@ -271,7 +272,7 @@ func (smv *SequenceStateMaterializedView) updateEvaluationOfSequence(event model
 	}
 	for index, stage := range state.Stages {
 		if stage.Name == eventScope.Stage {
-			state.Stages[index].LatestEvaluation = &models.SequenceStateEvaluation{
+			state.Stages[index].LatestEvaluation = &keptnmodels.SequenceStateEvaluation{
 				Result: string(eventScope.Result),
 				Score:  evaluationFinishedEventData.Evaluation.Score,
 			}
@@ -280,7 +281,7 @@ func (smv *SequenceStateMaterializedView) updateEvaluationOfSequence(event model
 	return nil
 }
 
-func (smv *SequenceStateMaterializedView) updateImageOfSequence(event models.Event, state models.SequenceState) error {
+func (smv *SequenceStateMaterializedView) updateImageOfSequence(event keptnmodels.KeptnContextExtendedCE, state keptnmodels.SequenceState) error {
 	deploymentTriggeredEventData := &keptnv2.DeploymentTriggeredEventData{}
 	if err := keptnv2.Decode(event.Data, deploymentTriggeredEventData); err != nil {
 		return fmt.Errorf("could not decode deployment.triggered event data: %s", err.Error())
@@ -301,34 +302,34 @@ func (smv *SequenceStateMaterializedView) updateImageOfSequence(event models.Eve
 	return nil
 }
 
-func (smv *SequenceStateMaterializedView) updateLastEventOfSequence(event models.Event) (models.SequenceState, error) {
+func (smv *SequenceStateMaterializedView) updateLastEventOfSequence(event keptnmodels.KeptnContextExtendedCE) (keptnmodels.SequenceState, error) {
 	eventScope, err := models.NewEventScope(event)
 	if err != nil {
-		return models.SequenceState{}, fmt.Errorf("could not determine event scope: %s", err.Error())
+		return keptnmodels.SequenceState{}, fmt.Errorf("could not determine event scope: %s", err.Error())
 	}
 
-	states, err := smv.SequenceStateRepo.FindSequenceStates(models.StateFilter{
-		GetSequenceStateParams: models.GetSequenceStateParams{
+	states, err := smv.SequenceStateRepo.FindSequenceStates(keptnmodels.StateFilter{
+		GetSequenceStateParams: keptnmodels.GetSequenceStateParams{
 			Project:      eventScope.Project,
 			KeptnContext: eventScope.KeptnContext,
 		},
 	})
 
 	if err != nil {
-		return models.SequenceState{}, fmt.Errorf(sequenceStateRetrievalErrorMsg, eventScope.KeptnContext, err.Error())
+		return keptnmodels.SequenceState{}, fmt.Errorf(sequenceStateRetrievalErrorMsg, eventScope.KeptnContext, err.Error())
 	}
 
 	if len(states.States) == 0 {
-		return models.SequenceState{}, fmt.Errorf("could not find sequence state for keptnContext %s", eventScope.KeptnContext)
+		return keptnmodels.SequenceState{}, fmt.Errorf("could not find sequence state for keptnContext %s", eventScope.KeptnContext)
 	}
 	state := states.States[0]
 
 	eventData := &keptnv2.EventData{}
 	if err := keptnv2.Decode(event.Data, eventData); err != nil {
-		return models.SequenceState{}, fmt.Errorf("could not parse event data: %s", err.Error())
+		return keptnmodels.SequenceState{}, fmt.Errorf("could not parse event data: %s", err.Error())
 	}
 
-	newLastEvent := &models.SequenceStateEvent{
+	newLastEvent := &keptnmodels.SequenceStateEvent{
 		Type: *event.Type,
 		ID:   event.ID,
 		Time: timeutils.GetKeptnTimeStamp(time.Now()),
@@ -346,7 +347,7 @@ func (smv *SequenceStateMaterializedView) updateLastEventOfSequence(event models
 		}
 	}
 	if !stageFound {
-		newStage := models.SequenceStateStage{
+		newStage := keptnmodels.SequenceStateStage{
 			Name:        eventScope.Stage,
 			LatestEvent: newLastEvent,
 			State:       getStageState(*eventScope),
@@ -360,7 +361,7 @@ func (smv *SequenceStateMaterializedView) updateLastEventOfSequence(event models
 }
 
 func getStageState(eventScope models.EventScope) string {
-	stageState := models.SequenceTriggeredState
+	stageState := keptnmodels.SequenceTriggeredState
 	// check if this event was a <stage>.<sequence>.finished event - if yes, mark the stage as completed
 	if keptnv2.IsSequenceEventType(eventScope.EventType) {
 		stageState = string(eventScope.Status)

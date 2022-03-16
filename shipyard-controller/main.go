@@ -2,23 +2,10 @@ package main
 
 import (
 	"context"
-	"github.com/google/uuid"
-	"github.com/keptn/keptn/shipyard-controller/nats"
-	"io/ioutil"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1 "k8s.io/client-go/kubernetes/typed/coordination/v1"
-	"k8s.io/client-go/tools/leaderelection"
-	"k8s.io/client-go/tools/leaderelection/resourcelock"
-	"net/http"
-	"os"
-	"os/signal"
-	"strconv"
-	"sync"
-	"syscall"
-	"time"
-
 	"github.com/benbjohnson/clock"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/osutils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/shipyard-controller/common"
@@ -28,10 +15,23 @@ import (
 	_ "github.com/keptn/keptn/shipyard-controller/docs"
 	"github.com/keptn/keptn/shipyard-controller/handler"
 	"github.com/keptn/keptn/shipyard-controller/handler/sequencehooks"
-	"github.com/keptn/keptn/shipyard-controller/models"
+	_ "github.com/keptn/keptn/shipyard-controller/models"
+	"github.com/keptn/keptn/shipyard-controller/nats"
 	log "github.com/sirupsen/logrus"
+	"io/ioutil"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	v1 "k8s.io/client-go/kubernetes/typed/coordination/v1"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/leaderelection"
+	"k8s.io/client-go/tools/leaderelection/resourcelock"
+	"net/http"
+	"os"
+	"os/signal"
+	"strconv"
+	"sync"
+	"syscall"
+	"time"
 )
 
 // @title Control Plane API
@@ -148,7 +148,7 @@ func main() {
 		common.SDModeRW,
 	)
 
-	sequenceTimeoutChannel := make(chan models.SequenceTimeout)
+	sequenceTimeoutChannel := make(chan apimodels.SequenceTimeout)
 
 	shipyardRetriever := handler.NewShipyardRetriever(
 		common.NewGitConfigurationStore(csEndpoint.String()),

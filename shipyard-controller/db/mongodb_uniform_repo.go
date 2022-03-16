@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	logger "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
@@ -114,14 +114,14 @@ func (mdbrepo *MongoDBUniformRepo) CreateOrUpdateSubscription(integrationID stri
 	}
 
 	integration := integrations[0]
-	var keepSubscriptions []keptnmodels.EventSubscription
+	var keepSubscriptions []apimodels.EventSubscription
 	subscriptions := integration.Subscriptions
 	for _, s := range subscriptions {
 		if s.ID != subscription.ID {
 			keepSubscriptions = append(keepSubscriptions, s)
 		}
 	}
-	keepSubscriptions = append(keepSubscriptions, keptnmodels.EventSubscription(subscription))
+	keepSubscriptions = append(keepSubscriptions, apimodels.EventSubscription(subscription))
 	integration.Subscriptions = keepSubscriptions
 
 	opts := options.Update().SetUpsert(true)
@@ -150,7 +150,7 @@ func (mdbrepo *MongoDBUniformRepo) DeleteSubscription(integrationID, subscriptio
 	}
 	integration := integrations[0]
 
-	var keepSubscriptions []keptnmodels.EventSubscription
+	var keepSubscriptions []apimodels.EventSubscription
 	subscriptions := integration.Subscriptions
 	for _, s := range subscriptions {
 		if s.ID != subscriptionID {
@@ -384,7 +384,7 @@ func (mdbrepo *MongoDBUniformRepo) DeleteServiceFromSubscriptions(subscriptionNa
 			//remove subscription if it concerns only the deleted service
 			if len(subscription.Filter.Services) == 1 && subscription.Filter.Services[0] == subscriptionName {
 				copy(integration.Subscriptions[i:], integration.Subscriptions[i+1:])
-				integration.Subscriptions[totalSub-1] = keptnmodels.EventSubscription{}
+				integration.Subscriptions[totalSub-1] = apimodels.EventSubscription{}
 				integration.Subscriptions = integration.Subscriptions[:totalSub-1]
 				totalSub = len(integration.Subscriptions)
 				i--

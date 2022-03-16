@@ -57,7 +57,7 @@ var r=n(617),o=n(618),i=n(395);function a(){return u.TYPED_ARRAY_SUPPORT?2147483
  *
  * Borrows from Modernizr.
  *
- * @param {string} eventNameSuffix Event name, e.g. "click".
+ * @param {string} eventNameSuffixmodels.KeptnContextExtendedCEname, e.g. "click".
  * @param {?boolean} capture Check if the capture phase is supported.
  * @return {boolean} True if the event is supported.
  * @internal

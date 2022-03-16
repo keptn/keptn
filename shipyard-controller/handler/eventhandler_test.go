@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"errors"
 	"github.com/gin-gonic/gin"
+	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/handler"
 	"github.com/keptn/keptn/shipyard-controller/handler/fake"
-	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
@@ -30,7 +30,7 @@ func TestEventHandler_HandleEvent(t *testing.T) {
 			name: "return 500 in case of an error",
 			fields: fields{
 				ShipyardController: &fake.IShipyardControllerMock{
-					HandleIncomingEventFunc: func(event models.Event, waitForCompletion bool) error {
+					HandleIncomingEventFunc: func(event keptnmodels.KeptnContextExtendedCE, waitForCompletion bool) error {
 						return errors.New("")
 					},
 				},
@@ -42,7 +42,7 @@ func TestEventHandler_HandleEvent(t *testing.T) {
 			name: "return 400 on invalid event payload (missing event type)",
 			fields: fields{
 				ShipyardController: &fake.IShipyardControllerMock{
-					HandleIncomingEventFunc: func(event models.Event, waitForCompletion bool) error {
+					HandleIncomingEventFunc: func(event keptnmodels.KeptnContextExtendedCE, waitForCompletion bool) error {
 						return errors.New("")
 					},
 				},
@@ -54,7 +54,7 @@ func TestEventHandler_HandleEvent(t *testing.T) {
 			name: "return 400 on invalid event payload",
 			fields: fields{
 				ShipyardController: &fake.IShipyardControllerMock{
-					HandleIncomingEventFunc: func(event models.Event, waitForCompletion bool) error {
+					HandleIncomingEventFunc: func(event keptnmodels.KeptnContextExtendedCE, waitForCompletion bool) error {
 						return handler.ErrNoMatchingEvent
 					},
 				},
@@ -97,7 +97,7 @@ func TestEventHandler_GetTriggeredEvents(t *testing.T) {
 			name: "return 500 in case of an error when retrieving all open events for all projects",
 			fields: fields{
 				ShipyardController: &fake.IShipyardControllerMock{
-					GetAllTriggeredEventsFunc: func(filter common.EventFilter) ([]models.Event, error) {
+					GetAllTriggeredEventsFunc: func(filter common.EventFilter) ([]keptnmodels.KeptnContextExtendedCE, error) {
 						return nil, errors.New("oops")
 					},
 				},
@@ -109,7 +109,7 @@ func TestEventHandler_GetTriggeredEvents(t *testing.T) {
 			name: "return 500 in case of an error when retrieving all open events for a specific project",
 			fields: fields{
 				ShipyardController: &fake.IShipyardControllerMock{
-					GetTriggeredEventsOfProjectFunc: func(project string, filter common.EventFilter) ([]models.Event, error) {
+					GetTriggeredEventsOfProjectFunc: func(project string, filter common.EventFilter) ([]keptnmodels.KeptnContextExtendedCE, error) {
 						return nil, errors.New("oops")
 					},
 				},
@@ -121,7 +121,7 @@ func TestEventHandler_GetTriggeredEvents(t *testing.T) {
 			name: "return 200 with empty array when no events for a project are available",
 			fields: fields{
 				ShipyardController: &fake.IShipyardControllerMock{
-					GetTriggeredEventsOfProjectFunc: func(project string, filter common.EventFilter) ([]models.Event, error) {
+					GetTriggeredEventsOfProjectFunc: func(project string, filter common.EventFilter) ([]keptnmodels.KeptnContextExtendedCE, error) {
 						return nil, nil
 					},
 				},
@@ -133,7 +133,7 @@ func TestEventHandler_GetTriggeredEvents(t *testing.T) {
 			name: "return 200 with empty array when no events for any project are available",
 			fields: fields{
 				ShipyardController: &fake.IShipyardControllerMock{
-					GetAllTriggeredEventsFunc: func(filter common.EventFilter) ([]models.Event, error) {
+					GetAllTriggeredEventsFunc: func(filter common.EventFilter) ([]keptnmodels.KeptnContextExtendedCE, error) {
 						return nil, nil
 					},
 				},
@@ -145,7 +145,7 @@ func TestEventHandler_GetTriggeredEvents(t *testing.T) {
 			name: "return 404 if project could not be found",
 			fields: fields{
 				ShipyardController: &fake.IShipyardControllerMock{
-					GetTriggeredEventsOfProjectFunc: func(project string, filter common.EventFilter) ([]models.Event, error) {
+					GetTriggeredEventsOfProjectFunc: func(project string, filter common.EventFilter) ([]keptnmodels.KeptnContextExtendedCE, error) {
 						return nil, handler.ErrProjectNotFound
 					},
 				},

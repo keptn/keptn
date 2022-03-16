@@ -4,7 +4,7 @@
 package fake
 
 import (
-	"github.com/keptn/keptn/shipyard-controller/models"
+	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
 	"sync"
 )
 
@@ -14,7 +14,7 @@ import (
 //
 // 		// make and configure a mocked sequencehooks.ISequencePausedHook
 // 		mockedISequencePausedHook := &ISequencePausedHookMock{
-// 			OnSequencePausedFunc: func(event models.Event)  {
+// 			OnSequencePausedFunc: func(event keptnmodels.KeptnContextExtendedCE)  {
 // 				panic("mock out the OnSequencePaused method")
 // 			},
 // 		}
@@ -25,26 +25,26 @@ import (
 // 	}
 type ISequencePausedHookMock struct {
 	// OnSequencePausedFunc mocks the OnSequencePaused method.
-	OnSequencePausedFunc func(event models.Event)
+	OnSequencePausedFunc func(event keptnmodels.KeptnContextExtendedCE)
 
 	// calls tracks calls to the methods.
 	calls struct {
 		// OnSequencePaused holds details about calls to the OnSequencePaused method.
 		OnSequencePaused []struct {
-			// Event is the event argument value.
-			Event models.Event
+			//models.KeptnContextExtendedCEis the event argument value.
+			Event keptnmodels.KeptnContextExtendedCE
 		}
 	}
 	lockOnSequencePaused sync.RWMutex
 }
 
 // OnSequencePaused calls OnSequencePausedFunc.
-func (mock *ISequencePausedHookMock) OnSequencePaused(event models.Event) {
+func (mock *ISequencePausedHookMock) OnSequencePaused(event keptnmodels.KeptnContextExtendedCE) {
 	if mock.OnSequencePausedFunc == nil {
 		panic("ISequencePausedHookMock.OnSequencePausedFunc: method is nil but ISequencePausedHook.OnSequencePaused was just called")
 	}
 	callInfo := struct {
-		Event models.Event
+		Event keptnmodels.KeptnContextExtendedCE
 	}{
 		Event: event,
 	}
@@ -58,10 +58,10 @@ func (mock *ISequencePausedHookMock) OnSequencePaused(event models.Event) {
 // Check the length with:
 //     len(mockedISequencePausedHook.OnSequencePausedCalls())
 func (mock *ISequencePausedHookMock) OnSequencePausedCalls() []struct {
-	Event models.Event
+	Event keptnmodels.KeptnContextExtendedCE
 } {
 	var calls []struct {
-		Event models.Event
+		Event keptnmodels.KeptnContextExtendedCE
 	}
 	mock.lockOnSequencePaused.RLock()
 	calls = mock.calls.OnSequencePaused

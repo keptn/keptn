@@ -4,7 +4,7 @@
 package fake
 
 import (
-	"github.com/keptn/keptn/shipyard-controller/models"
+	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
 	"sync"
 )
 
@@ -14,7 +14,7 @@ import (
 //
 // 		// make and configure a mocked sequencehooks.ISequenceWaitingHook
 // 		mockedISequenceWaitingHook := &ISequenceWaitingHookMock{
-// 			OnSequenceWaitingFunc: func(event models.Event)  {
+// 			OnSequenceWaitingFunc: func(event keptnmodels.KeptnContextExtendedCE)  {
 // 				panic("mock out the OnSequenceWaiting method")
 // 			},
 // 		}
@@ -25,26 +25,26 @@ import (
 // 	}
 type ISequenceWaitingHookMock struct {
 	// OnSequenceWaitingFunc mocks the OnSequenceWaiting method.
-	OnSequenceWaitingFunc func(event models.Event)
+	OnSequenceWaitingFunc func(event keptnmodels.KeptnContextExtendedCE)
 
 	// calls tracks calls to the methods.
 	calls struct {
 		// OnSequenceWaiting holds details about calls to the OnSequenceWaiting method.
 		OnSequenceWaiting []struct {
-			// Event is the event argument value.
-			Event models.Event
+			//models.KeptnContextExtendedCEis the event argument value.
+			Event keptnmodels.KeptnContextExtendedCE
 		}
 	}
 	lockOnSequenceWaiting sync.RWMutex
 }
 
 // OnSequenceWaiting calls OnSequenceWaitingFunc.
-func (mock *ISequenceWaitingHookMock) OnSequenceWaiting(event models.Event) {
+func (mock *ISequenceWaitingHookMock) OnSequenceWaiting(event keptnmodels.KeptnContextExtendedCE) {
 	if mock.OnSequenceWaitingFunc == nil {
 		panic("ISequenceWaitingHookMock.OnSequenceWaitingFunc: method is nil but ISequenceWaitingHook.OnSequenceWaiting was just called")
 	}
 	callInfo := struct {
-		Event models.Event
+		Event keptnmodels.KeptnContextExtendedCE
 	}{
 		Event: event,
 	}
@@ -58,10 +58,10 @@ func (mock *ISequenceWaitingHookMock) OnSequenceWaiting(event models.Event) {
 // Check the length with:
 //     len(mockedISequenceWaitingHook.OnSequenceWaitingCalls())
 func (mock *ISequenceWaitingHookMock) OnSequenceWaitingCalls() []struct {
-	Event models.Event
+	Event keptnmodels.KeptnContextExtendedCE
 } {
 	var calls []struct {
-		Event models.Event
+		Event keptnmodels.KeptnContextExtendedCE
 	}
 	mock.lockOnSequenceWaiting.RLock()
 	calls = mock.calls.OnSequenceWaiting

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 )
@@ -11,7 +12,7 @@ import (
 // Also, for multiple iterations of a sequence, each iteration will get a new instance.
 type SequenceExecution struct {
 	ID string `json:"_id" bson:"_id"`
-	// Sequence containts the complete sequence definition
+	// Sequence contains the complete sequence definition
 	Sequence keptnv2.Sequence        `json:"sequence" bson:"sequence"`
 	Status   SequenceExecutionStatus `json:"status" bson:"status"`
 	Scope    EventScope              `json:"scope" bson:"scope"`
@@ -37,6 +38,10 @@ type TaskExecutionResult struct {
 	// Properties contains the aggregated results of the task's executors
 	Properties map[string]interface{} `json:"properties" bson:"properties"`
 }
+
+type SequenceState models.SequenceStates
+type SequenceControlResponse models.SequenceControlResponse
+type SequenceControlCommand models.SequenceControlCommand
 
 func (r TaskExecutionResult) IsFailed() bool {
 	return r.Result == keptnv2.ResultFailed
@@ -151,12 +156,12 @@ func (e *SequenceExecution) GetNextTriggeredEventData() map[string]interface{} {
 }
 
 func (e *SequenceExecution) IsPaused() bool {
-	return e.Status.State == SequencePaused
+	return e.Status.State == models.SequencePaused
 }
 
 // CanBePaused determines whether a sequence can be paused, based on its current state. E.g. a finished sequence cannot be paused
 func (e *SequenceExecution) CanBePaused() bool {
-	return e.Status.State == SequenceStartedState || e.Status.State == SequenceWaitingState || e.Status.State == SequenceTriggeredState || e.Status.State == SequenceWaitingForApprovalState
+	return e.Status.State == models.SequenceStartedState || e.Status.State == models.SequenceWaitingState || e.Status.State == models.SequenceTriggeredState || e.Status.State == models.SequenceWaitingForApprovalState
 }
 
 // Pause tries to pause the sequence execution, based on its current state. If it was successful, returns true. If it could not be paused, false is returned
@@ -165,7 +170,7 @@ func (e *SequenceExecution) Pause() bool {
 		return false
 	}
 	e.Status.StateBeforePause = e.Status.State
-	e.Status.State = SequencePaused
+	e.Status.State = models.SequencePaused
 	return true
 }
 

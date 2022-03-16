@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 )
 
@@ -15,15 +15,15 @@ var ErrConfigStoreUpstreamNotFound = errors.New("upstream repository not found")
 
 //go:generate moq -pkg common_mock -out ./fake/configurationstore_mock.go . ConfigurationStore
 type ConfigurationStore interface {
-	CreateProject(project keptnapimodels.Project) error
-	UpdateProject(project keptnapimodels.Project) error
-	CreateProjectShipyard(projectName string, resources []*keptnapimodels.Resource) error
-	UpdateProjectResource(projectName string, resource *keptnapimodels.Resource) error
+	CreateProject(project apimodels.Project) error
+	UpdateProject(project apimodels.Project) error
+	CreateProjectShipyard(projectName string, resources []*apimodels.Resource) error
+	UpdateProjectResource(projectName string, resource *apimodels.Resource) error
 	DeleteProject(projectName string) error
 	CreateStage(projectName string, stage string) error
 	CreateService(projectName string, stageName string, serviceName string) error
-	GetProjectResource(projectName string, resourceURI string) (*keptnapimodels.Resource, error)
-	GetStageResource(projectName, stageName, resourceURI string) (*keptnapimodels.Resource, error)
+	GetProjectResource(projectName string, resourceURI string) (*apimodels.Resource, error)
+	GetStageResource(projectName, stageName, resourceURI string) (*apimodels.Resource, error)
 	DeleteService(projectName string, stageName string, serviceName string) error
 }
 
@@ -43,22 +43,22 @@ func NewGitConfigurationStore(configurationServiceEndpoint string) *GitConfigura
 	}
 }
 
-func (g GitConfigurationStore) GetProjectResource(projectName string, resourceURI string) (*keptnapimodels.Resource, error) {
+func (g GitConfigurationStore) GetProjectResource(projectName string, resourceURI string) (*apimodels.Resource, error) {
 	return g.resourceAPI.GetProjectResource(projectName, resourceURI)
 }
 
-func (g GitConfigurationStore) GetStageResource(projectName, stageName, resourceURI string) (*keptnapimodels.Resource, error) {
+func (g GitConfigurationStore) GetStageResource(projectName, stageName, resourceURI string) (*apimodels.Resource, error) {
 	return g.resourceAPI.GetStageResource(projectName, stageName, resourceURI)
 }
 
-func (g GitConfigurationStore) CreateProject(project keptnapimodels.Project) error {
+func (g GitConfigurationStore) CreateProject(project apimodels.Project) error {
 	if _, err := g.projectAPI.CreateProject(project); err != nil {
 		return g.buildErrResponse(err)
 	}
 	return nil
 }
 
-func (g GitConfigurationStore) UpdateProject(project keptnapimodels.Project) error {
+func (g GitConfigurationStore) UpdateProject(project apimodels.Project) error {
 	if _, err := g.projectAPI.UpdateConfigurationServiceProject(project); err != nil {
 		return g.buildErrResponse(err)
 	}
@@ -67,7 +67,7 @@ func (g GitConfigurationStore) UpdateProject(project keptnapimodels.Project) err
 }
 
 func (g GitConfigurationStore) DeleteProject(projectName string) error {
-	p := keptnapimodels.Project{
+	p := apimodels.Project{
 		ProjectName: projectName,
 	}
 	if _, err := g.projectAPI.DeleteProject(p); err != nil {
@@ -76,14 +76,14 @@ func (g GitConfigurationStore) DeleteProject(projectName string) error {
 	return nil
 }
 
-func (g GitConfigurationStore) CreateProjectShipyard(projectName string, resources []*keptnapimodels.Resource) error {
+func (g GitConfigurationStore) CreateProjectShipyard(projectName string, resources []*apimodels.Resource) error {
 	if _, err := g.resourceAPI.CreateProjectResources(projectName, resources); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (g GitConfigurationStore) UpdateProjectResource(projectName string, resource *keptnapimodels.Resource) error {
+func (g GitConfigurationStore) UpdateProjectResource(projectName string, resource *apimodels.Resource) error {
 	if _, err := g.resourceAPI.UpdateProjectResource(projectName, resource); err != nil {
 		return err
 	}
@@ -111,7 +111,7 @@ func (g GitConfigurationStore) DeleteService(projectName string, stageName strin
 	return nil
 }
 
-func (g GitConfigurationStore) buildErrResponse(err *keptnapimodels.Error) error {
+func (g GitConfigurationStore) buildErrResponse(err *apimodels.Error) error {
 	if err.Code == http.StatusFailedDependency {
 		return ErrConfigStoreInvalidToken
 	} else if err.Code == http.StatusNotFound {
