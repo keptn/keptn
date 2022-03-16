@@ -344,6 +344,10 @@ func (sc *shipyardController) wasTaskTriggered(eventScope models.EventScope) (bo
 }
 
 func (sc *shipyardController) cancelSequence(cancel models.SequenceControl) error {
+	sc.onSequenceAborted(models.EventScope{
+		KeptnContext: cancel.KeptnContext,
+		EventData:    keptnv2.EventData{Project: cancel.Project, Stage: cancel.Stage},
+	})
 	taskExecutions, err := sc.taskSequenceRepo.GetTaskExecutions(cancel.Project,
 		models.TaskExecution{
 			KeptnContext: cancel.KeptnContext,
@@ -355,6 +359,12 @@ func (sc *shipyardController) cancelSequence(cancel models.SequenceControl) erro
 	if len(taskExecutions) == 0 {
 		log.Infof("no active task execution for context %s found. Trying to remove it from the queue", cancel.KeptnContext)
 		return sc.cancelQueuedSequence(cancel)
+	}
+
+	err = sc.taskSequenceRepo.DeleteTaskExecutions(cancel.KeptnContext, cancel.Project, cancel.Stage)
+	if err != nil {
+		// log the error, but continue with the rest
+		log.Errorf("Could not delete open task executions for sequence %s in proect %s: %v", cancel.KeptnContext, cancel.Project, err)
 	}
 
 	// delete all open .triggered events for the task sequence
@@ -385,7 +395,6 @@ func (sc *shipyardController) cancelSequence(cancel models.SequenceControl) erro
 }
 
 func (sc *shipyardController) forceTaskSequenceCompletion(sequenceTriggeredEvent models.Event, taskSequenceName string) error {
-	sc.onSequenceAborted(sequenceTriggeredEvent)
 	scope, err := models.NewEventScope(sequenceTriggeredEvent)
 	if err != nil {
 		return err
@@ -413,14 +422,24 @@ func (sc *shipyardController) cancelQueuedSequence(cancel models.SequenceControl
 		log.WithError(err).Errorf("could not remove sequence %s from sequence queue", cancel.KeptnContext)
 	}
 
+	// theoretically, we should not have any open task executions at this point, but call the delete function anyway,
+	// just to be 100% sure no entries of this collection are blocking any new sequences
+	err = sc.taskSequenceRepo.DeleteTaskExecutions(cancel.KeptnContext, cancel.Project, cancel.Stage)
+	if err != nil {
+		// log the error, but continue with the rest
+		log.Errorf("Could not delete open task executions for sequence %s in proect %s: %v", cancel.KeptnContext, cancel.Project, err)
+	}
+
 	events, err := sc.eventRepo.GetEvents(
 		cancel.Project,
 		common.EventFilter{KeptnContext: &cancel.KeptnContext, Stage: &cancel.Stage},
 		common.TriggeredEvent,
 	)
 	if err != nil {
+		// if the sequence.triggered event is not available anymore, we cannot send a referencing .finished event
 		if err == db.ErrNoEventFound {
-			return ErrSequenceNotFound
+			log.Infof("No sequence.triggered event for sequence %s available anymore.", cancel.KeptnContext)
+			return nil
 		}
 		return err
 	} else if len(events) == 0 {
@@ -429,7 +448,9 @@ func (sc *shipyardController) cancelQueuedSequence(cancel models.SequenceControl
 	// the first event of the context should be a task sequence event that contains the sequence name
 	sequenceTriggeredEvent := events[0]
 	if !keptnv2.IsSequenceEventType(*sequenceTriggeredEvent.Type) {
-		return ErrSequenceNotFound
+		// if the sequence.triggered event is not available anymore, we cannot send a referencing .finished event
+		log.Infof("No sequence.triggered event for sequence %s available anymore.", cancel.KeptnContext)
+		return nil
 	}
 	_, sequenceName, _, err := keptnv2.ParseSequenceEventType(*sequenceTriggeredEvent.Type)
 	if err != nil {
@@ -676,7 +697,6 @@ func (sc *shipyardController) completeTaskSequence(eventScope models.EventScope,
 	if err != nil {
 		return err
 	}
-
 	log.Infof("Deleting all task.finished events of task sequence %s with context %s", taskSequenceName, eventScope.KeptnContext)
 	if err := sc.eventRepo.DeleteAllFinishedEvents(eventScope); err != nil {
 		return err

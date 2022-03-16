@@ -91,9 +91,9 @@ func (sc *shipyardController) onSequenceFinished(event models.Event) {
 	}
 }
 
-func (sc *shipyardController) onSequenceAborted(event models.Event) {
+func (sc *shipyardController) onSequenceAborted(eventScope models.EventScope) {
 	for _, hook := range sc.sequenceAbortedHooks {
-		hook.OnSequenceAborted(event)
+		hook.OnSequenceAborted(eventScope)
 	}
 }
 

@@ -14,7 +14,7 @@ import (
 //
 // 		// make and configure a mocked sequencehooks.ISequenceAbortedHook
 // 		mockedISequenceAbortedHook := &ISequenceAbortedHookMock{
-// 			OnSequenceAbortedFunc: func(event models.Event)  {
+// 			OnSequenceAbortedFunc: func(event models.EventScope)  {
 // 				panic("mock out the OnSequenceAborted method")
 // 			},
 // 		}
@@ -25,26 +25,26 @@ import (
 // 	}
 type ISequenceAbortedHookMock struct {
 	// OnSequenceAbortedFunc mocks the OnSequenceAborted method.
-	OnSequenceAbortedFunc func(event models.Event)
+	OnSequenceAbortedFunc func(event models.EventScope)
 
 	// calls tracks calls to the methods.
 	calls struct {
 		// OnSequenceAborted holds details about calls to the OnSequenceAborted method.
 		OnSequenceAborted []struct {
 			// Event is the event argument value.
-			Event models.Event
+			Event models.EventScope
 		}
 	}
 	lockOnSequenceAborted sync.RWMutex
 }
 
 // OnSequenceAborted calls OnSequenceAbortedFunc.
-func (mock *ISequenceAbortedHookMock) OnSequenceAborted(event models.Event) {
+func (mock *ISequenceAbortedHookMock) OnSequenceAborted(event models.EventScope) {
 	if mock.OnSequenceAbortedFunc == nil {
 		panic("ISequenceAbortedHookMock.OnSequenceAbortedFunc: method is nil but ISequenceAbortedHook.OnSequenceAborted was just called")
 	}
 	callInfo := struct {
-		Event models.Event
+		Event models.EventScope
 	}{
 		Event: event,
 	}
@@ -58,10 +58,10 @@ func (mock *ISequenceAbortedHookMock) OnSequenceAborted(event models.Event) {
 // Check the length with:
 //     len(mockedISequenceAbortedHook.OnSequenceAbortedCalls())
 func (mock *ISequenceAbortedHookMock) OnSequenceAbortedCalls() []struct {
-	Event models.Event
+	Event models.EventScope
 } {
 	var calls []struct {
-		Event models.Event
+		Event models.EventScope
 	}
 	mock.lockOnSequenceAborted.RLock()
 	calls = mock.calls.OnSequenceAborted
