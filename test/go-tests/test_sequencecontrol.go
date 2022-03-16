@@ -332,6 +332,9 @@ func Test_SequenceControl_AbortPausedSequenceTaskPartiallyFinished(t *testing.T)
 	_, err = keptn.SendTaskStartedEvent(nil, source2)
 	require.Nil(t, err)
 
+	// simulate task execution time of 10s
+	<-time.After(10 * time.Second)
+
 	t.Logf("send one finished event with result 'fail'")
 	_, err = keptn.SendTaskFinishedEvent(&keptnv2.EventData{Result: keptnv2.ResultFailed, Status: keptnv2.StatusSucceeded}, source1)
 	require.Nil(t, err)
