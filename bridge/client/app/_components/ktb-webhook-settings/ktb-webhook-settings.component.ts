@@ -163,12 +163,22 @@ export class KtbWebhookSettingsComponent implements OnInit {
 
   private setSendFinishedControl(): void {
     if (this._eventType !== 'triggered' && this._eventType !== '>') {
-      this.getFormControl('sendFinished').setValue(null);
-      this.getFormControl('sendFinished').disable();
+      this.disableFormControl('sendStarted');
+      this.disableFormControl('sendFinished');
     } else {
-      this.getFormControl('sendFinished').setValue(this._webhook.sendFinished.toString());
-      this.getFormControl('sendFinished').enable();
+      this.enableFormControl('sendStarted', this._webhook.sendStarted.toString());
+      this.enableFormControl('sendFinished', this._webhook.sendFinished.toString());
     }
+  }
+
+  private disableFormControl(controlName: ControlType): void {
+    this.getFormControl(controlName).setValue(null);
+    this.getFormControl(controlName).disable();
+  }
+
+  private enableFormControl(controlName: ControlType, initValue?: string): void {
+    this.getFormControl(controlName).setValue(initValue);
+    this.getFormControl(controlName).enable();
   }
 
   private mapSecret(secret: Secret): SelectTreeNode {
