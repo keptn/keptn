@@ -19,7 +19,7 @@ func TestEventMsgHandler_Process(t *testing.T) {
 				Status: keptnv2.StatusUnknown,
 			},
 		}
-		err := eh.Process(event, false)
+		err := eh.Process(event)
 		require.Nil(t, err)
 		require.Equal(t, 0, len(pm.DeleteProjectCalls()))
 
@@ -28,7 +28,7 @@ func TestEventMsgHandler_Process(t *testing.T) {
 				Status: keptnv2.StatusErrored,
 			},
 		}
-		err = eh.Process(event, false)
+		err = eh.Process(event)
 		require.Nil(t, err)
 		require.Equal(t, 0, len(pm.DeleteProjectCalls()))
 
@@ -37,7 +37,7 @@ func TestEventMsgHandler_Process(t *testing.T) {
 				Status: keptnv2.StatusAborted,
 			},
 		}
-		err = eh.Process(event, false)
+		err = eh.Process(event)
 		require.Nil(t, err)
 		require.Equal(t, 0, len(pm.DeleteProjectCalls()))
 	})
@@ -51,7 +51,7 @@ func TestEventMsgHandler_Process(t *testing.T) {
 				Status: keptnv2.StatusSucceeded,
 			},
 		}
-		err := eh.Process(event, false)
+		err := eh.Process(event)
 		require.Nil(t, err)
 		require.Equal(t, 0, len(pm.DeleteProjectCalls()))
 	})
@@ -69,7 +69,7 @@ func TestEventMsgHandler_Process(t *testing.T) {
 				Project: "a-project",
 			},
 		}
-		err := eh.Process(event, false)
+		err := eh.Process(event)
 
 		require.Equal(t, 1, len(pm.DeleteProjectCalls()))
 		require.Equal(t, "a-project", pm.DeleteProjectCalls()[0].ProjectName)
@@ -82,7 +82,7 @@ func TestEventMsgHandler_Process(t *testing.T) {
 		}
 		eh := EventHandler(pm)
 		event := models.Event{Data: "something-strange!!!11!"}
-		err := eh.Process(event, false)
+		err := eh.Process(event)
 
 		require.Equal(t, 0, len(pm.DeleteProjectCalls()))
 		require.NotNil(t, err)
