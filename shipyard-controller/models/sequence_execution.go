@@ -39,10 +39,6 @@ type TaskExecutionResult struct {
 	Properties map[string]interface{} `json:"properties" bson:"properties"`
 }
 
-type SequenceState models.SequenceStates
-type SequenceControlResponse models.SequenceControlResponse
-type SequenceControlCommand models.SequenceControlCommand
-
 func (r TaskExecutionResult) IsFailed() bool {
 	return r.Result == keptnv2.ResultFailed
 }
