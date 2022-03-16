@@ -3,6 +3,7 @@ package go_tests
 import (
 	"context"
 	b64 "encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/keptn/go-utils/pkg/common/strutils"
@@ -471,7 +472,10 @@ func VerifySequenceEndsUpInState(t *testing.T, projectName string, context *mode
 		if err != nil {
 			return false
 		}
+
 		for _, state := range states.States {
+			m, _ := json.MarshalIndent(state, "", "  ")
+			t.Logf("%s", m)
 			if doesSequenceHaveOneOfTheDesiredStates(state, context, desiredStates) {
 				return true
 			}
