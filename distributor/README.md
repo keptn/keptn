@@ -1,8 +1,17 @@
 # Distributor
+
 A distributor subscribes a Keptn service with the Keptn Control Plane.
-More specifically, it queries event messages from NATS
+Both local and remote subscriptions are supported:
+
+- Local (Keptn service runs in the same local Kubernetes cluster
+as the Keptn Control Plane) --
+it queries event messages from NATS
 and sends the events to services that have a subscription to the event topic.
-Each service has its own distributor that is configured by the two environment variables:
+- Remote (Keptn service runs in a remote "execution plane") --
+subscriptions are implemented using the Keptn Subscription API.
+
+Each service has its own distributor
+that is configured by the two environment variables:
 
 - `KEPTN_API_ENDPOINT` - Keptn API Endpoint - needed when the distributor runs outside of the Keptn cluster. default = `""`
 - `KEPTN_API_TOKEN` - Keptn API Token - needed when the distributor runs outside of the Keptn cluster. default = `""`
