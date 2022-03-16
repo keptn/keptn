@@ -18,7 +18,7 @@ func EventHandler(projectManager handler.IProjectManager) *EventMsgHandler {
 		pm: projectManager,
 	}
 }
-func (eh *EventMsgHandler) Process(event models.Event, sync bool) error {
+func (eh *EventMsgHandler) Process(event models.Event) error {
 	e := &keptnv2.ProjectDeleteFinishedEventData{}
 	if err := keptnv2.Decode(event.Data, e); err != nil {
 		return err
