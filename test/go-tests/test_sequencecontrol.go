@@ -333,6 +333,9 @@ func Test_SequenceControl_AbortPausedSequenceTaskPartiallyFinished(t *testing.T)
 	_, err = keptn.SendTaskStartedEvent(nil, source2)
 	require.Nil(t, err)
 
+	// simulate the duration of a task execution
+	<-time.After(10 * time.Second)
+
 	t.Logf("send one finished event with result 'fail'")
 	_, err = keptn.SendTaskFinishedEvent(&keptnv2.EventData{Result: keptnv2.ResultFailed, Status: keptnv2.StatusSucceeded}, source1)
 	require.Nil(t, err)
@@ -342,7 +345,7 @@ func Test_SequenceControl_AbortPausedSequenceTaskPartiallyFinished(t *testing.T)
 	secondContextID, _ := TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
 
 	// verify that the second sequence gets the triggered status
-	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&secondContextID}, 2*time.Minute, []string{scmodels.SequenceTriggeredState})
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&secondContextID}, 2*time.Minute, []string{scmodels.SequenceWaitingState})
 
 	// pause the sequence
 	t.Log("pausing sequence")
