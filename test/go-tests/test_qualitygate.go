@@ -2,12 +2,13 @@ package go_tests
 
 import (
 	"fmt"
-	scmodels "github.com/keptn/keptn/shipyard-controller/models"
 	"net/http"
 	"os"
 	"strings"
 	"testing"
 	"time"
+
+	scmodels "github.com/keptn/keptn/shipyard-controller/models"
 
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/api/models"
@@ -624,6 +625,16 @@ func Test_QualityGates_NoSLIAnswer(t *testing.T) {
 	}, 1*time.Minute, 10*time.Second)
 
 	t.Log("got get-sli.triggered event: ", getSLITriggeredEvent)
+
+	t.Logf("Sleeping for 5min...")
+	time.Sleep(5 * time.Minute)
+	t.Logf("Continue to work...")
+
+	t.Log("Verify sequence ends up in timedOut state")
+	sequenceStates, _, err := GetState(projectName)
+	require.Nil(t, err)
+	require.NotEmpty(t, sequenceStates.States)
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{KeptnContext: &keptnContext}, 2*time.Minute, []string{"timedOut"})
 }
 
 func Test_QualityGates_SLIStartedEventSend(t *testing.T) {
@@ -725,6 +736,16 @@ func Test_QualityGates_SLIStartedEventSend(t *testing.T) {
 	}, 3)
 
 	require.Nil(t, err)
+
+	t.Logf("Sleeping for 5min...")
+	time.Sleep(5 * time.Minute)
+	t.Logf("Continue to work...")
+
+	t.Log("Verify sequence ends up in timedOut state")
+	sequenceStates, _, err := GetState(projectName)
+	require.Nil(t, err)
+	require.NotEmpty(t, sequenceStates.States)
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{KeptnContext: &keptnContext}, 2*time.Minute, []string{"timedOut"})
 }
 
 func Test_QualityGates_SLIWrongFinishedPayloadSend(t *testing.T) {
