@@ -6,6 +6,11 @@ import (
 
 func Test_GKE(t *testing.T) {
 	// Common Tests
+	if res, err := CompareServiceNameWithDeploymentName("configuration-service", "configuration-service"); err == nil && res {
+		t.Run("Test_BackupRestoreConfigService", Test_BackupRestoreConfigService)
+	} else {
+		t.Run("Test_BackupRestoreResourceService", Test_BackupRestoreResourceService)
+	}
 	t.Run("Test_LogIngestion", Test_LogIngestion)
 	t.Run("Test_LogForwarding", Test_LogForwarding)
 	t.Run("Test_SequenceState", Test_SequenceState)
@@ -45,11 +50,6 @@ func Test_GKE(t *testing.T) {
 	t.Run("Test_ResourceService", Test_ResourceServiceBasic)
 	t.Run("Test_QualityGates", Test_QualityGates)
 	t.Run("Test_DeliveryAssistant", Test_DeliveryAssistant)
-	if res, err := CompareServiceNameWithDeploymentName("configuration-service", "configuration-service"); err == nil && res {
-		t.Run("Test_BackupRestoreConfigService", Test_BackupRestoreConfigService)
-	} else {
-		t.Run("Test_BackupRestoreResourceService", Test_BackupRestoreResourceService)
-	}
 	// TODO add resource service backup/restore test when the git credentials bug is solved
 	t.Run("Test_CustomUserManagedEndpointsTest", Test_CustomUserManagedEndpointsTest)
 	t.Run("Test_ContinuousDelivery", Test_ContinuousDelivery)
