@@ -269,8 +269,8 @@ func TestCmdCurlExecutor_Curl(t *testing.T) {
 
 func TestBlacklistedURLS(t *testing.T) {
 	fakeCommandExecutor := &fake.ICommandExecutorMock{ExecuteCommandFunc: func(cmd string, args ...string) (string, error) { return "success", nil }}
-	kubeEnvs := map[string]string{"KUBERNETES_SERVICE_HOST": "kube.svc.host", "KUBERNETES_SERVICE_PORT": "9876"}
-	ce := lib.NewCmdCurlExecutor(fakeCommandExecutor, lib.WithUnAllowedURLs(lib.BlacklistedKubeURLS(map[string]string{"KUBERNETES_SERVICE_HOST": "kube.svc.host", "KUBERNETES_SERVICE_PORT": "9876"})))
+	kubeEnvs := map[string]string{"KUBERNETES_SERVICE_HOST": "1.2.3.4", "KUBERNETES_SERVICE_PORT": "9876"}
+	ce := lib.NewCmdCurlExecutor(fakeCommandExecutor, lib.WithUnAllowedURLs(lib.BlacklistedKubeURLS(map[string]string{"KUBERNETES_SERVICE_HOST": "1.2.3.4", "KUBERNETES_SERVICE_PORT": "9876"})))
 	urls := lib.BlacklistedKubeURLS(kubeEnvs)
 	for _, u := range urls {
 		urls = append(urls, "http://"+u)
