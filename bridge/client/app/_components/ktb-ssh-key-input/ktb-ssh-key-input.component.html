@@ -1,0 +1,38 @@
+<div class="input-container">
+  <button dt-button (click)="privateKeyInput.click()">Upload file</button>
+  <input
+    id="shipyard-file-input"
+    hidden
+    type="file"
+    accept=".pem"
+    #privateKeyInput
+    (change)="validateSshPrivateKey(privateKeyInput.files); privateKeyInput.value = ''"
+  />
+</div>
+
+<form [formGroup]="sshKeyForm" (input)="sshDataChanged()" class="mt-2">
+  <dt-form-field>
+    <dt-label class="required">SSH private key as text</dt-label>
+    <textarea
+      formControlName="privateKey"
+      dtInput
+      class="resize-vertical"
+      placeholder="Begins with -----BEGIN OPENSSH PRIVATE KEY-----"
+    ></textarea>
+    <dt-error *ngIf="privateKeyControl.errors?.required">Must not be empty</dt-error>
+    <dt-error *ngIf="privateKeyControl.errors?.sshKey">
+      The private key must start with "-----BEGIN OPENSSH PRIVATE KEY-----" and end with "-----END OPENSSH PRIVATE
+      KEY-----"
+    </dt-error>
+  </dt-form-field>
+  <dt-form-field class="mt-2">
+    <dt-label>Private key passphrase</dt-label>
+    <input
+      dtInput
+      type="password"
+      autocomplete="false"
+      placeholder="Private key passphrase"
+      formControlName="privateKeyPassword"
+    />
+  </dt-form-field>
+</form>

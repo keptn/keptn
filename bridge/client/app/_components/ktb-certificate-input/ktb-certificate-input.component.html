@@ -1,0 +1,27 @@
+<span>Upload PEM certificate file</span>
+<div class="input-container">
+  <button dt-button (click)="certificateInput.click()">Upload file</button>
+  <input
+    id="shipyard-file-input"
+    hidden
+    type="file"
+    accept=".pem"
+    #certificateInput
+    (change)="validateCertificate(certificateInput.files); certificateInput.value = ''"
+  />
+</div>
+<form [formGroup]="certificateForm" (input)="certificateChanged()" class="mt-2">
+  <dt-form-field>
+    <dt-label>PEM certificate as text</dt-label>
+    <textarea
+      [formControl]="certificateControl"
+      dtInput
+      class="resize-vertical"
+      placeholder="Begins with -----BEGIN CERTIFICATE-----"
+    ></textarea>
+    <dt-loading-spinner *ngIf="isLoading" dtPrefix aria-label="Loading data"></dt-loading-spinner>
+    <dt-error>
+      The certificate must start with "-----BEGIN CERTIFICATE-----" and end with "-----END CERTIFICATE-----"
+    </dt-error>
+  </dt-form-field>
+</form>

@@ -1,0 +1,12 @@
+@import '../../../variables';
+@import '~@dynatrace/barista-components/core/src/style/variables';
+
+.input-container {
+  padding: 10px;
+  background-color: $gray-100;
+}
+
+.resize-vertical {
+  resize: vertical;
+  min-height: 100px;
+}
