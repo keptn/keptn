@@ -256,7 +256,6 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 
 	// reset git repositories to current HEAD
 
-	//if serviceUnderTestName == "configuration-service" {
 	t.Logf("Reseting git repositories to current HEAD")
 	err = os.WriteFile(resetGitReposFile, []byte(resetGitRepos), 0666)
 	require.Nil(t, err)
@@ -264,7 +263,6 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	require.Nil(t, err)
 	_, err = ExecuteCommandf("kubectl exec -n %s %s -c %s -- sh ./data/config/%s", keptnNamespace, serviceUnderTestPod, serviceUnderTestName, resetGitReposFile)
 	require.Nil(t, err)
-	//}
 
 	//restore MongoDB data
 
