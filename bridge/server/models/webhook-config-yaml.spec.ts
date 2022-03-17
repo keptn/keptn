@@ -112,7 +112,7 @@ describe('Test webhook-config-yaml', () => {
         },
       ],
       sendFinished: false,
-      sendStarted: true,
+      sendStarted: false,
     });
     expect(result).toEqual(webhookConfig);
   });
@@ -148,7 +148,7 @@ describe('Test webhook-config-yaml', () => {
     // then
     expect(webhookConfigTrue.sendStarted).toBe(true);
     expect(webhookConfigFalse.sendStarted).toBe(false);
-    expect(webhookConfigUndefined.sendStarted).toBe(true);
+    expect(webhookConfigUndefined.sendStarted).toBe(false);
   });
 
   it('should return undefined if subscriptionID does not exist', () => {
