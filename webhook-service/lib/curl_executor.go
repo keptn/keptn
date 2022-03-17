@@ -146,8 +146,9 @@ func (ce *CmdCurlExecutor) parseArgs(curlCmd string) ([]string, error) {
 }
 
 func (ce *CmdCurlExecutor) validateURL(curlCmd string) error {
+	sanitizedCurlCmd := strings.ReplaceAll(curlCmd, "\\", "")
 	for _, url := range ce.unAllowedURLs {
-		if strings.Contains(curlCmd, url) {
+		if strings.Contains(sanitizedCurlCmd, url) {
 			return fmt.Errorf("curl command contains invalid URL %s", url)
 		}
 	}
@@ -254,6 +255,28 @@ func parseCommandLine(command string) ([]string, error) {
 	}
 
 	return deleteEmpty(args), nil
+}
+
+func BlacklistedKubeURLS(env map[string]string) []string {
+	kubeAPIHostIP := env["KUBERNETES_SERVICE_HOST"]
+	kubeAPIPort := env["KUBERNETES_SERVICE_PORT"]
+	return []string{
+		// Block access to Kubernetes API
+		kubeAPIHostIP,
+		kubeAPIHostIP + ":" + kubeAPIPort,
+		"kubernetes",
+		"kubernetes" + ":" + kubeAPIPort,
+		"kubernetes.default",
+		"kubernetes.default" + ":" + kubeAPIPort,
+		"kubernetes.default.svc",
+		"kubernetes.default.svc" + ":" + kubeAPIPort,
+		"kubernetes.default.svc.cluster.local",
+		"kubernetes.default.svc.cluster.local" + ":" + kubeAPIPort,
+		// Block access to localhost
+		"localhost",
+		"127.0.0.1",
+		"::1",
+	}
 }
 
 func deleteEmpty(s []string) []string {
