@@ -25,10 +25,11 @@ type createProjectCmdParams struct {
 
 var createProjectParams *createProjectCmdParams
 
-const gitErrMsg = `Please specify a 'git-user', 'git-token', and 'git-remote-url' as flags for configuring a Git upstream repository`
+const gitErrMsg = `Please specify a 'git-token', and 'git-remote-url' as flags for configuring a Git upstream repository, you can specify a 'git-user' if needed`
 const gitMissingUpstream = `WARNING: Creating a project without Git upstream repository is not recommended and will not be supported in the future anymore.
 You can configure a Git upstream repository using: 
-
+keptn update project PROJECTNAME --git-token=GIT_TOKEN --git-remote-url=GIT_REMOTE_URL
+or
 keptn update project PROJECTNAME --git-user=GIT_USER --git-token=GIT_TOKEN --git-remote-url=GIT_REMOTE_URL
 `
 
@@ -40,7 +41,8 @@ var crProjectCmd = &cobra.Command{
 The shipyard file describes the used stages. These stages are defined by name, as well as their task sequences.
 
 By executing the *create project* command, Keptn initializes an internal Git repository that is used to maintain all project-related resources. 
-To upstream this internal Git repository to a remote repository, the Git user (*--git-user*), an access token (*--git-token*), and the remote URL (*--git-remote-url*) are required.
+To upstream this internal Git repository to a remote repository an access token (*--git-token*), and the remote URL (*--git-remote-url*) are required. 
+Avoid specifying the Git user (*--git-user*) if not explicitly required by your repository provider.
 
 For more information about Shipyard, creating projects, or upstream repositories, please go to [Manage Keptn](https://keptn.sh/docs/` + getReleaseDocsURL() + `/manage/)
 `,
@@ -113,12 +115,12 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-t
 }
 
 func checkGitCredentials() error {
-	if *createProjectParams.GitUser == "" && *createProjectParams.GitToken == "" && *createProjectParams.RemoteURL == "" {
+	if *createProjectParams.GitToken == "" && *createProjectParams.RemoteURL == "" {
 		fmt.Println(gitMissingUpstream)
 		return nil
 	}
 
-	if *createProjectParams.GitUser != "" && *createProjectParams.GitToken != "" && *createProjectParams.RemoteURL != "" {
+	if *createProjectParams.GitToken != "" && *createProjectParams.RemoteURL != "" {
 		return nil
 	}
 	return errors.New(gitErrMsg)
