@@ -70,6 +70,21 @@ spec:
             - name: "release"
 `
 
+const resetGitRepos = `
+#!/bin/sh
+
+cd /data/config/
+for FILE in *; do
+    if [ -d "$FILE" ]; then
+        cd "$FILE"
+        git reset --hard
+        cd ..
+    fi
+done`
+
+// NOTE: When changing this test (especially the reset-get-repos.sh),
+// please update the Keptn documentation for Backup & Restore accordingly.
+
 func Test_BackupRestoreConfigService(t *testing.T) {
 	serviceName := "configuration-service"
 	BackupRestoreTestGeneric(t, serviceName)
@@ -92,6 +107,7 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	serviceBackupFolder := "svc-backup"
 	globalBackupFolder := "keptn-backup"
 	mongoDBBackupFolder := "mongodb-backup"
+	resetGitReposFile := "reset-git-repos.sh"
 
 	t.Logf("Creating a new project %s with a Gitea Upstream", projectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(testingShipyard)
@@ -214,7 +230,7 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 
 	if serviceUnderTestName == "resource-service" {
 		t.Logf("Deleting resource-service pod")
-		_, err = ExecuteCommandf("kubectl delete pod %s -n %s",serviceUnderTestPod, keptnNamespace)
+		_, err = ExecuteCommandf("kubectl delete pod %s -n %s", serviceUnderTestPod, keptnNamespace)
 		require.Nil(t, err)
 	} else {
 		t.Logf("Deleting testing project")
@@ -239,6 +255,16 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	require.Nil(t, err)
 	serviceUnderTestPod = removeQuotes(serviceUnderTestPod)
 	_, err = ExecuteCommandf("kubectl cp ./%s/config/ %s/%s:/data -c %s", serviceBackupFolder, keptnNamespace, serviceUnderTestPod, serviceUnderTestName)
+	require.Nil(t, err)
+
+	// reset git repositories to current HEAD
+
+	t.Logf("Reseting git repositories to current HEAD")
+	err = os.WriteFile(resetGitReposFile, []byte(resetGitRepos), 0666)
+	require.Nil(t, err)
+	_, err = ExecuteCommandf("kubectl cp ./%s %s/%s:/data/config -c %s", resetGitReposFile, keptnNamespace, serviceUnderTestPod, serviceUnderTestName)
+	require.Nil(t, err)
+	_, err = ExecuteCommandf("kubectl exec -n %s %s -c %s -- sh ./data/config/%s", keptnNamespace, serviceUnderTestPod, serviceUnderTestName, resetGitReposFile)
 	require.Nil(t, err)
 
 	//restore MongoDB data
