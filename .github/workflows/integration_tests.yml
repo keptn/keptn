@@ -13,7 +13,6 @@ on:
 env:
   META_KEPTN_VERSION: 0.13.2
   META_KEPTN_KEPTN_PROJECT: keptn
-  KEPTN_NAMESPACE: "keptn-test-${{ github.run_number }}-${{ github.run_attempt }}"
 defaults:
   run:
     shell: bash
@@ -35,13 +34,13 @@ jobs:
             REMOTE_EXECUTION_PLANE: "false"
             COLLECT_RESOURCE_LIMITS: "false"
             USE_RESOURCE_SERVICE: "true"
-            KEPTN_NAMESPACE: "${{ env.KEPTN_NAMESPACE }}-MR"
+            KEPTN_NAMESPACE_SUFFIX: "-MR"
     env:
       CLOUD_PROVIDER: ${{ matrix.CLOUD_PROVIDER }}
       PLATFORM: ${{ matrix.PLATFORM }}
       PLATFORM_VERSION: ${{ matrix.PLATFORM_VERSION }}
       KUBECONFIG: ${{ matrix.KUBECONFIG }}
-      KEPTN_NAMESPACE: "keptn-test-${{ github.run_number }}-${{ github.run_attempt }}"
+      KEPTN_NAMESPACE: "keptn-test-${{ github.run_number }}-${{ github.run_attempt }}${{ matrix.KEPTN_NAMESPACE_SUFFIX }}"
       KEPTN_SERVICE_TYPE: ${{ matrix.KEPTN_SERVICE_TYPE }}
       RUN_CONTINUOUS_DELIVERY_TEST: ${{ matrix.RUN_CONTINUOUS_DELIVERY_TEST }}
       RUN_AIRGAPPED_TEST: ${{ matrix.RUN_AIRGAPPED_TEST }}
@@ -321,7 +320,7 @@ jobs:
             else
               DOCKER_ORG="keptn"
             fi
-            
+          
             installer/airgapped/install_keptn.sh \
               "$AIRGAPPED_REGISTRY_URL/" \
               "$DOCKER_ORG" \
@@ -425,35 +424,35 @@ jobs:
             KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n "$KEPTN_NAMESPACE" -o jsonpath='{.data.keptn-api-token}' | base64 --decode)
             kubectl scale deployment/helm-service -n "${KEPTN_NAMESPACE}" --replicas=0
             kubectl scale deployment/jmeter-service -n "${KEPTN_NAMESPACE}" --replicas=0
-  
+          
             KEPTN_API_HOSTNAME=$(echo "${KEPTN_ENDPOINT}" | awk -F[/] '{print $3}')
-  
+          
             helm install helm-service "${HELM_SERVICE_HELM_CHART_NAME}" \
-              -n ${{ matrix.KEPTN_NAMESPACE }}-helm-service \
+              -n ${{ env.KEPTN_NAMESPACE }}-helm-service \
               --set remoteControlPlane.enabled=true \
               --set remoteControlPlane.api.protocol=http \
               --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" \
               --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" \
               --create-namespace
             helm install jmeter-service "${JMETER_SERVICE_HELM_CHART_NAME}" \
-            -n ${{ matrix.KEPTN_NAMESPACE }}-jmeter-service \
+            -n ${{ env.KEPTN_NAMESPACE }}-jmeter-service \
               --set remoteControlPlane.enabled=true \
               --set remoteControlPlane.api.protocol=http \
               --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" \
               --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" \
               --create-namespace
-  
-            helm test jmeter-service -n ${{ matrix.KEPTN_NAMESPACE }}-jmeter-service
-            helm test helm-service -n ${{ matrix.KEPTN_NAMESPACE }}-helm-service
+          
+            helm test jmeter-service -n ${{ env.KEPTN_NAMESPACE }}-jmeter-service
+            helm test helm-service -n ${{ env.KEPTN_NAMESPACE }}-helm-service
           else
             # In-cluster execution plane
-            helm install helm-service "${HELM_SERVICE_HELM_CHART_NAME}" -n ${{ matrix.KEPTN_NAMESPACE }}
-            helm install jmeter-service "${JMETER_SERVICE_HELM_CHART_NAME}" -n ${{ matrix.KEPTN_NAMESPACE }}
+            helm install helm-service "${HELM_SERVICE_HELM_CHART_NAME}" -n ${{ env.KEPTN_NAMESPACE }}
+            helm install jmeter-service "${JMETER_SERVICE_HELM_CHART_NAME}" -n ${{ env.KEPTN_NAMESPACE }}
           
-            helm test jmeter-service -n ${{ matrix.KEPTN_NAMESPACE }}
-            helm test helm-service -n ${{ matrix.KEPTN_NAMESPACE }}
+            helm test jmeter-service -n ${{ env.KEPTN_NAMESPACE }}
+            helm test helm-service -n ${{ env.KEPTN_NAMESPACE }}
           fi
-            
+
 
       - name: Prepare test run
         id: prepare_test_run
@@ -496,6 +495,8 @@ jobs:
             TESTSUITE="Test_GKE"
           elif [[ "$CLOUD_PROVIDER" == "k3d-on-GHA" ]]; then
             TESTSUITE="Test_K3D"
+          elif [[ "$CLOUD_PROVIDER" == "GKE-REDUNDANCY" ]]; then
+            TESTSUITE="Test_GKE_MR"
           fi
           
           gotestsum --no-color=false -- -run "$TESTSUITE" -v -timeout 90m
@@ -584,7 +585,7 @@ jobs:
                 fi
               done
           fi
-          
+
       - name: Cleanup Minishift cluster
         if: env.CLOUD_PROVIDER == 'minishift-on-GHA'
         timeout-minutes: 3
@@ -688,7 +689,7 @@ jobs:
               console.log(`Reading file: ${fileName}`);
               const platformReportFile = fs.readFileSync(TEST_REPORTS_PATH + fileName, {encoding:'utf8', flag:'r'});
               const platformTestReportRaw = ndJsonParser(platformReportFile);
-              
+            
               // Only pick the test results that have a format like this: Test_GKE/Test_name
               // There are some other results in there for the whole package for example, that we don't want
               platformTestReportRaw.forEach(platformTestResult => {
@@ -702,12 +703,12 @@ jobs:
             
             jsonReportData.forEach(testResult => {
               const trimmedTestResult = { ...testResult, test: testResult.test.split("/")[1] }
-              
+            
               // If this is a new testcase the result list needs to be created first
               if (!(trimmedTestResult.test in testResultMap)) {
                 testResultMap[trimmedTestResult.test] = [];
               }
-              
+            
               // Add to result list
               testResultMap[trimmedTestResult.test].push(trimmedTestResult)
             });
@@ -722,7 +723,7 @@ jobs:
               testResults.forEach(result => {
                 const {test, ...results} = result;
                 Object.assign(finalResult, results);
-                
+            
                 const currentPlatform = Object.keys(results)[0];
                 if(!allPlatforms.includes(currentPlatform)) {
                   allPlatforms.push(currentPlatform);
