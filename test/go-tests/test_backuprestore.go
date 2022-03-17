@@ -82,6 +82,9 @@ for FILE in *; do
     fi
 done`
 
+// NOTE: When changing this test (especially the reset-get-repos.sh),
+// please update the Keptn documentation for Backup & Restore accordingly.
+
 func Test_BackupRestoreConfigService(t *testing.T) {
 	serviceName := "configuration-service"
 	BackupRestoreTestGeneric(t, serviceName)
