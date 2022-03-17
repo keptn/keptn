@@ -2,6 +2,7 @@ package go_tests
 
 import (
 	"fmt"
+	scmodels "github.com/keptn/keptn/shipyard-controller/models"
 	"net/http"
 	"os"
 	"strings"
@@ -296,24 +297,24 @@ func Test_QualityGates(t *testing.T) {
 			},
 		},
 		WarningTargets: nil,
-		Status: "pass",
-		KeySLI: false,
+		Status:         "pass",
+		KeySLI:         false,
 	}, evaluationFinishedPayload.Evaluation.IndicatorResults[1])
 
 	require.Equal(t, &keptnv2.SLIEvaluationResult{
 		Score: 0,
 		Value: &keptnv2.SLIResult{
-			Metric:  "error_rate",
-			Value:   0,
+			Metric:        "error_rate",
+			Value:         0,
 			ComparedValue: 0,
-			Success: true,
-			Message: "",
+			Success:       true,
+			Message:       "",
 		},
-		DisplayName: "",
-		PassTargets: nil,
+		DisplayName:    "",
+		PassTargets:    nil,
 		WarningTargets: nil,
-		Status: "info",
-		KeySLI: false,
+		Status:         "info",
+		KeySLI:         false,
 	}, evaluationFinishedPayload.Evaluation.IndicatorResults[2])
 
 	firstEvaluationFinishedID := evaluationFinishedEvent.ID
@@ -415,24 +416,24 @@ func Test_QualityGates(t *testing.T) {
 			},
 		},
 		WarningTargets: nil,
-		Status: "pass",
-		KeySLI: false,
+		Status:         "pass",
+		KeySLI:         false,
 	}, evaluationFinishedPayload.Evaluation.IndicatorResults[1])
 
 	require.Equal(t, &keptnv2.SLIEvaluationResult{
 		Score: 0,
 		Value: &keptnv2.SLIResult{
-			Metric:  "error_rate",
-			Value:   0,
+			Metric:        "error_rate",
+			Value:         0,
 			ComparedValue: 0,
-			Success: true,
-			Message: "",
+			Success:       true,
+			Message:       "",
 		},
-		DisplayName: "",
-		PassTargets: nil,
+		DisplayName:    "",
+		PassTargets:    nil,
 		WarningTargets: nil,
-		Status: "info",
-		KeySLI: false,
+		Status:         "info",
+		KeySLI:         false,
 	}, evaluationFinishedPayload.Evaluation.IndicatorResults[2])
 
 	secondEvaluationFinishedID := evaluationFinishedEvent.ID
@@ -459,11 +460,11 @@ func Test_QualityGates(t *testing.T) {
 	require.Equal(t, &keptnv2.SLIEvaluationResult{
 		Score: 1,
 		Value: &keptnv2.SLIResult{
-			Metric:  "response_time_p95",
-			Value:   200,
+			Metric:        "response_time_p95",
+			Value:         200,
 			ComparedValue: 200,
-			Success: true,
-			Message: "",
+			Success:       true,
+			Message:       "",
 		},
 		DisplayName: "",
 		PassTargets: []*keptnv2.SLITarget{
@@ -497,11 +498,11 @@ func Test_QualityGates(t *testing.T) {
 	require.Equal(t, &keptnv2.SLIEvaluationResult{
 		Score: 1,
 		Value: &keptnv2.SLIResult{
-			Metric:  "throughput",
-			Value:   200,
+			Metric:        "throughput",
+			Value:         200,
 			ComparedValue: 200,
-			Success: true,
-			Message: "",
+			Success:       true,
+			Message:       "",
 		},
 		DisplayName: "",
 		PassTargets: []*keptnv2.SLITarget{
@@ -517,24 +518,24 @@ func Test_QualityGates(t *testing.T) {
 			},
 		},
 		WarningTargets: nil,
-		Status: "pass",
-		KeySLI: false,
+		Status:         "pass",
+		KeySLI:         false,
 	}, evaluationFinishedPayload.Evaluation.IndicatorResults[1])
 
 	require.Equal(t, &keptnv2.SLIEvaluationResult{
 		Score: 0,
 		Value: &keptnv2.SLIResult{
-			Metric:  "error_rate",
-			Value:   0,
+			Metric:        "error_rate",
+			Value:         0,
 			ComparedValue: 0,
-			Success: true,
-			Message: "",
+			Success:       true,
+			Message:       "",
 		},
-		DisplayName: "",
-		PassTargets: nil,
+		DisplayName:    "",
+		PassTargets:    nil,
 		WarningTargets: nil,
-		Status: "info",
-		KeySLI: false,
+		Status:         "info",
+		KeySLI:         false,
 	}, evaluationFinishedPayload.Evaluation.IndicatorResults[2])
 
 	project, err := GetProject(projectName)
@@ -551,6 +552,317 @@ func Test_QualityGates(t *testing.T) {
 
 }
 
+func Test_QualityGates_NoSLIAnswer(t *testing.T) {
+	projectName := "quality-gates-no-sli-answer"
+	serviceName := "my-service"
+	shipyardFilePath, err := CreateTmpShipyardFile(commitIDShipyard)
+	require.Nil(t, err)
+	defer os.Remove(shipyardFilePath)
+	keptnContext := ""
+
+	t.Log("deleting lighthouse configmap from previous test run")
+	ExecuteCommandf("kubectl delete configmap -n %s lighthouse-config-keptn-%s", GetKeptnNameSpaceFromEnv(), projectName)
+
+	t.Logf("creating project %s", projectName)
+	projectName, err = CreateProject(projectName, shipyardFilePath)
+	require.Nil(t, err)
+
+	t.Logf("creating service %s", serviceName)
+	output, err := ExecuteCommandf("keptn create service %s --project=%s", serviceName, projectName)
+
+	require.Nil(t, err)
+	require.Contains(t, output, "created successfully")
+
+	t.Logf("adding an SLI provider")
+	_, err = ExecuteCommandf("kubectl create configmap -n %s lighthouse-config-%s --from-literal=sli-provider=my-sli-provider", GetKeptnNameSpaceFromEnv(), projectName)
+	require.Nil(t, err)
+
+	t.Log("storing SLO file")
+	_ = storeWithCommit(t, projectName, "hardening", serviceName, qualityGatesShortSLOFileContent, "slo.yaml")
+
+	t.Log("sent hardening.evaluation.triggered")
+	_, err = ExecuteCommandf("keptn trigger evaluation --project=%s --stage=hardening --service=%s --start=2022-01-26T10:05:53.931Z --end=2022-01-26T10:10:53.931Z", projectName, serviceName)
+	require.Nil(t, err)
+
+	var getEvaluationTriggeredEvent *models.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		t.Log("checking if hardening.evaluation.triggered event is available")
+		event, err := GetLatestEventOfType(keptnContext, projectName, "hardening", keptnv2.GetTriggeredEventType("hardening."+keptnv2.EvaluationTaskName))
+		if err != nil || event == nil {
+			return false
+		}
+		getEvaluationTriggeredEvent = event
+		return true
+	}, 1*time.Minute, 10*time.Second)
+
+	keptnContext = getEvaluationTriggeredEvent.Shkeptncontext
+	t.Logf("Shkeptncontext is %s", keptnContext)
+
+	t.Log("got hardening.evaluation.triggered event")
+
+	require.Eventually(t, func() bool {
+		t.Log("checking if hardening.evaluation.triggered event is available")
+		event, err := GetLatestEventOfType(keptnContext, projectName, "hardening", keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName))
+		if err != nil || event == nil {
+			return false
+		}
+		getEvaluationTriggeredEvent = event
+		return true
+	}, 1*time.Minute, 10*time.Second)
+
+	t.Log("got evaluation.triggered event")
+
+	var getSLITriggeredEvent *models.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		t.Log("checking if get-sli.triggered event is available")
+		event, err := GetLatestEventOfType(keptnContext, projectName, "hardening", keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName))
+		if err != nil || event == nil {
+			return false
+		}
+		getSLITriggeredEvent = event
+		return true
+	}, 1*time.Minute, 10*time.Second)
+
+	t.Log("got get-sli.triggered event: ", getSLITriggeredEvent)
+}
+
+func Test_QualityGates_SLIStartedEventSend(t *testing.T) {
+	source := "golang-test"
+	projectName := "quality-gates-no-finished"
+	serviceName := "my-service"
+	shipyardFilePath, err := CreateTmpShipyardFile(commitIDShipyard)
+	require.Nil(t, err)
+	defer os.Remove(shipyardFilePath)
+	keptnContext := ""
+
+	t.Log("deleting lighthouse configmap from previous test run")
+	ExecuteCommandf("kubectl delete configmap -n %s lighthouse-config-keptn-%s", GetKeptnNameSpaceFromEnv(), projectName)
+
+	t.Logf("creating project %s", projectName)
+	projectName, err = CreateProject(projectName, shipyardFilePath)
+	require.Nil(t, err)
+
+	t.Logf("creating service %s", serviceName)
+	output, err := ExecuteCommandf("keptn create service %s --project=%s", serviceName, projectName)
+
+	require.Nil(t, err)
+	require.Contains(t, output, "created successfully")
+
+	t.Logf("adding an SLI provider")
+	_, err = ExecuteCommandf("kubectl create configmap -n %s lighthouse-config-%s --from-literal=sli-provider=my-sli-provider", GetKeptnNameSpaceFromEnv(), projectName)
+	require.Nil(t, err)
+
+	t.Log("storing SLO file")
+	_ = storeWithCommit(t, projectName, "hardening", serviceName, qualityGatesShortSLOFileContent, "slo.yaml")
+
+	t.Log("sent hardening.evaluation.triggered")
+	_, err = ExecuteCommandf("keptn trigger evaluation --project=%s --stage=hardening --service=%s --start=2022-01-26T10:05:53.931Z --end=2022-01-26T10:10:53.931Z", projectName, serviceName)
+	require.Nil(t, err)
+
+	var getEvaluationTriggeredEvent *models.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		t.Log("checking if hardening.evaluation.triggered event is available")
+		event, err := GetLatestEventOfType(keptnContext, projectName, "hardening", keptnv2.GetTriggeredEventType("hardening."+keptnv2.EvaluationTaskName))
+		if err != nil || event == nil {
+			return false
+		}
+		getEvaluationTriggeredEvent = event
+		return true
+	}, 1*time.Minute, 10*time.Second)
+
+	keptnContext = getEvaluationTriggeredEvent.Shkeptncontext
+	t.Logf("Shkeptncontext is %s", keptnContext)
+
+	t.Log("got hardening.evaluation.triggered event")
+
+	require.Eventually(t, func() bool {
+		t.Log("checking if hardening.evaluation.triggered event is available")
+		event, err := GetLatestEventOfType(keptnContext, projectName, "hardening", keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName))
+		if err != nil || event == nil {
+			return false
+		}
+		getEvaluationTriggeredEvent = event
+		return true
+	}, 1*time.Minute, 10*time.Second)
+
+	t.Log("got evaluation.triggered event")
+
+	var getSLITriggeredEvent *models.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		t.Log("checking if get-sli.triggered event is available")
+		event, err := GetLatestEventOfType(keptnContext, projectName, "hardening", keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName))
+		if err != nil || event == nil {
+			return false
+		}
+		getSLITriggeredEvent = event
+		return true
+	}, 1*time.Minute, 10*time.Second)
+
+	t.Log("got get-sli.triggered event: ", getSLITriggeredEvent)
+
+	t.Log("sending get-sli.started event")
+	_, err = ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
+		Contenttype: "application/json",
+		Data: &keptnv2.GetSLIStartedEventData{
+			EventData: keptnv2.EventData{
+				Project: projectName,
+				Stage:   "hardening",
+				Service: serviceName,
+				Status:  keptnv2.StatusSucceeded,
+				Result:  keptnv2.ResultPass,
+				Message: "",
+			},
+		},
+		ID:                 uuid.NewString(),
+		Shkeptncontext:     keptnContext,
+		Shkeptnspecversion: KeptnSpecVersion,
+		Source:             &source,
+		Specversion:        "1.0",
+		Time:               time.Now(),
+		Triggeredid:        getSLITriggeredEvent.ID,
+		GitCommitID:        "",
+		Type:               strutils.Stringp(keptnv2.GetStartedEventType(keptnv2.GetSLITaskName)),
+	}, 3)
+
+	require.Nil(t, err)
+}
+
+func Test_QualityGates_SLIWrongFinishedPayloadSend(t *testing.T) {
+	source := "golang-test"
+	projectName := "quality-gates-invalid-finish"
+	serviceName := "my-service"
+	shipyardFilePath, err := CreateTmpShipyardFile(commitIDShipyard)
+	require.Nil(t, err)
+	defer os.Remove(shipyardFilePath)
+	keptnContext := ""
+
+	t.Log("deleting lighthouse configmap from previous test run")
+	ExecuteCommandf("kubectl delete configmap -n %s lighthouse-config-keptn-%s", GetKeptnNameSpaceFromEnv(), projectName)
+
+	t.Logf("creating project %s", projectName)
+	projectName, err = CreateProject(projectName, shipyardFilePath)
+	require.Nil(t, err)
+
+	t.Logf("creating service %s", serviceName)
+	output, err := ExecuteCommandf("keptn create service %s --project=%s", serviceName, projectName)
+
+	require.Nil(t, err)
+	require.Contains(t, output, "created successfully")
+
+	t.Logf("adding an SLI provider")
+	_, err = ExecuteCommandf("kubectl create configmap -n %s lighthouse-config-%s --from-literal=sli-provider=my-sli-provider", GetKeptnNameSpaceFromEnv(), projectName)
+	require.Nil(t, err)
+
+	t.Log("storing SLO file")
+	_ = storeWithCommit(t, projectName, "hardening", serviceName, qualityGatesShortSLOFileContent, "slo.yaml")
+
+	t.Log("sent hardening.evaluation.triggered")
+	_, err = ExecuteCommandf("keptn trigger evaluation --project=%s --stage=hardening --service=%s --start=2022-01-26T10:05:53.931Z --end=2022-01-26T10:10:53.931Z", projectName, serviceName)
+	require.Nil(t, err)
+
+	var getEvaluationTriggeredEvent *models.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		t.Log("checking if hardening.evaluation.triggered event is available")
+		event, err := GetLatestEventOfType(keptnContext, projectName, "hardening", keptnv2.GetTriggeredEventType("hardening."+keptnv2.EvaluationTaskName))
+		if err != nil || event == nil {
+			return false
+		}
+		getEvaluationTriggeredEvent = event
+		return true
+	}, 1*time.Minute, 10*time.Second)
+
+	keptnContext = getEvaluationTriggeredEvent.Shkeptncontext
+	t.Logf("Shkeptncontext is %s", keptnContext)
+
+	t.Log("got hardening.evaluation.triggered event")
+
+	require.Eventually(t, func() bool {
+		t.Log("checking if hardening.evaluation.triggered event is available")
+		event, err := GetLatestEventOfType(keptnContext, projectName, "hardening", keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName))
+		if err != nil || event == nil {
+			return false
+		}
+		getEvaluationTriggeredEvent = event
+		return true
+	}, 1*time.Minute, 10*time.Second)
+
+	t.Log("got evaluation.triggered event")
+
+	var getSLITriggeredEvent *models.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		t.Log("checking if get-sli.triggered event is available")
+		event, err := GetLatestEventOfType(keptnContext, projectName, "hardening", keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName))
+		if err != nil || event == nil {
+			return false
+		}
+		getSLITriggeredEvent = event
+		return true
+	}, 1*time.Minute, 10*time.Second)
+
+	t.Log("got get-sli.triggered event: ", getSLITriggeredEvent)
+
+	t.Log("sending get-sli.started event")
+	_, err = ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
+		Contenttype: "application/json",
+		Data: &keptnv2.GetSLIStartedEventData{
+			EventData: keptnv2.EventData{
+				Project: projectName,
+				Stage:   "hardening",
+				Service: serviceName,
+				Status:  keptnv2.StatusSucceeded,
+				Result:  keptnv2.ResultPass,
+				Message: "",
+			},
+		},
+		ID:                 uuid.NewString(),
+		Shkeptncontext:     keptnContext,
+		Shkeptnspecversion: KeptnSpecVersion,
+		Source:             &source,
+		Specversion:        "1.0",
+		Time:               time.Now(),
+		Triggeredid:        getSLITriggeredEvent.ID,
+		GitCommitID:        "",
+		Type:               strutils.Stringp(keptnv2.GetStartedEventType(keptnv2.GetSLITaskName)),
+	}, 3)
+
+	require.Nil(t, err)
+
+	t.Log("sending get-sli.finished event")
+	_, err = ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
+		Contenttype: "application/json",
+		Data: &keptnv2.GetSLIFinishedEventData{
+			EventData: keptnv2.EventData{
+				Project: projectName,
+				Stage:   "hardening",
+				Service: serviceName,
+				Labels:  nil,
+				Status:  "some-status",
+				Result:  "strange-one",
+				Message: "",
+			},
+			GetSLI: keptnv2.GetSLIFinished{},
+		},
+		Extensions:         nil,
+		ID:                 uuid.NewString(),
+		Shkeptncontext:     keptnContext,
+		Shkeptnspecversion: KeptnSpecVersion,
+		Source:             &source,
+		Specversion:        "1.0",
+		Time:               time.Now(),
+		Triggeredid:        getSLITriggeredEvent.ID,
+		GitCommitID:        "",
+		Type:               strutils.Stringp(keptnv2.GetFinishedEventType(keptnv2.GetSLITaskName)),
+	}, 3)
+
+	require.Nil(t, err)
+
+	t.Log("Verify sequence ends up in finished state")
+	sequenceStates, _, err := GetState(projectName)
+	require.Nil(t, err)
+	require.NotEmpty(t, sequenceStates.States)
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{KeptnContext: &keptnContext}, 2*time.Minute, []string{scmodels.SequenceFinished})
+}
+
 func performResourceServiceTest(t *testing.T, projectName string, serviceName string, checkCommit bool) (string, *models.KeptnContextExtendedCE) {
 	commitID := ""
 	commitID1 := ""
@@ -564,7 +876,7 @@ func performResourceServiceTest(t *testing.T, projectName string, serviceName st
 	keptnContext := ""
 	source := "golang-test"
 
-	t.Log("sent evaluation.hardening.triggered with commitid= ", commitID)
+	t.Log("sent hardening.evaluation.triggered event with commitid= ", commitID)
 	resp, err := ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
 		Contenttype: "application/json",
 		Data: keptnv2.EvaluationTriggeredEventData{
