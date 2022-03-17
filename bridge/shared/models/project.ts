@@ -5,5 +5,9 @@ export class Project {
   gitUser?: string;
   gitRemoteURI?: string;
   shipyardVersion?: string;
+  gitProxyScheme?: 'https' | 'http';
+  gitProxyUrl?: string;
+  gitProxyUser?: string;
+  gitProxyInsecure = false;
   stages: Stage[] = [];
 }

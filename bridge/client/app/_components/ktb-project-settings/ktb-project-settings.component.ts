@@ -1,10 +1,7 @@
 import { Component, HostListener, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { Observable, of, Subject } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
-import {
-  GitData,
-  KtbProjectSettingsGitComponent,
-} from '../ktb-project-settings-git/ktb-project-settings-git.component';
+import { KtbProjectSettingsGitComponent } from '../ktb-project-settings-git/ktb-project-settings-git.component';
 import { DeleteData, DeleteResult, DeleteType } from '../../_interfaces/delete';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -18,6 +15,8 @@ import { FormUtils } from '../../_utils/form.utils';
 import { KtbProjectCreateMessageComponent } from '../_status-messages/ktb-project-create-message/ktb-project-create-message.component';
 import { NotificationType } from '../../_models/notification';
 import { PendingChangesComponent } from '../../_guards/pending-changes.guard';
+import { IClientFeatureFlags } from '../../../../shared/interfaces/feature-flags';
+import { IGitData, IGitDataExtended } from '../../_interfaces/git-upstream';
 
 type DialogState = null | 'unsaved';
 
@@ -34,7 +33,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
 
   @ViewChild(KtbProjectSettingsGitComponent)
   private gitSettingsSection?: KtbProjectSettingsGitComponent;
-
+  public gitInputDataExtended?: IGitDataExtended;
   public projectName?: string;
   public projectDeletionData?: DeleteData;
   public isProjectLoading: boolean | undefined;
@@ -44,9 +43,10 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
   private pendingChangesSubject = new Subject<boolean>();
   public isProjectFormTouched = false;
   public shipyardFile?: File;
-  public gitData: GitData = {
+  public gitData: IGitData = {
     gitFormValid: true,
   };
+  private gitDataExtended?: IGitDataExtended;
   public projectNameControl = new FormControl('');
   public projectNameForm = new FormGroup({
     projectName: this.projectNameControl,
@@ -54,6 +54,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
 
   public message = 'You have pending changes. Make sure to save your data before you continue.';
   public unsavedDialogState: DialogState = null;
+  public resourceServiceEnabled = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -62,7 +63,11 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
     private router: Router,
     private notificationsService: NotificationsService,
     private eventService: EventService
-  ) {}
+  ) {
+    this.dataService.featureFlags.pipe(takeUntil(this.unsubscribe$)).subscribe((featureFlags: IClientFeatureFlags) => {
+      this.resourceServiceEnabled = featureFlags.RESOURCE_SERVICE_ENABLED;
+    });
+  }
 
   ngOnInit(): void {
     this.route.params.subscribe((params) => {
@@ -122,11 +127,12 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
   }
 
   private loadProject(projectName: string): void {
-    this.dataService.loadPlainProject(projectName).subscribe((project) => {
+    this.dataService.loadPlainProject(projectName).subscribe((project: Project) => {
       this.gitData = {
-        remoteURI: project.gitRemoteURI,
+        gitRemoteURL: project.gitRemoteURI,
         gitUser: project.gitUser,
       };
+      this.gitInputDataExtended = project.gitUpstream;
 
       this.isProjectLoading = false;
     });
@@ -149,12 +155,16 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
     this.router.navigate(['/', 'project', this.projectName, 'settings', 'project']);
   }
 
-  public updateGitData(gitData: GitData): void {
-    this.gitData.remoteURI = gitData.remoteURI;
+  public updateGitData(gitData: IGitData): void {
+    this.gitData.gitRemoteURL = gitData.gitRemoteURL;
     this.gitData.gitUser = gitData.gitUser;
     this.gitData.gitToken = gitData.gitToken;
     this.gitData.gitFormValid = gitData.gitFormValid;
     this.projectFormTouched();
+  }
+
+  public updateGitDataExtended(data?: IGitDataExtended): void {
+    this.gitDataExtended = data;
   }
 
   public updateShipyardFile(shipyardFile: File | undefined): void {
@@ -163,11 +173,11 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
   }
 
   public setGitUpstream(): void {
-    if (this.projectName && this.gitData.remoteURI && this.gitData.gitUser && this.gitData.gitToken) {
+    if (this.projectName && this.gitData.gitRemoteURL && this.gitData.gitUser && this.gitData.gitToken) {
       this.isGitUpstreamInProgress = true;
       this.hideNotification();
       this.dataService
-        .setGitUpstreamUrl(this.projectName, this.gitData.remoteURI, this.gitData.gitUser, this.gitData.gitToken)
+        .setGitUpstreamUrl(this.projectName, this.gitData.gitRemoteURL, this.gitData.gitUser, this.gitData.gitToken)
         .pipe(takeUntil(this.unsubscribe$))
         .subscribe(
           () => {
@@ -200,34 +210,37 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
       if (fileContent) {
         const shipyardBase64 = btoa(fileContent);
         const projectName = this.projectNameControl.value;
-        this.dataService
-          .createProject(
-            projectName,
-            shipyardBase64,
-            this.gitData.remoteURI,
-            this.gitData.gitToken,
-            this.gitData.gitUser
-          )
-          .subscribe(
-            () => {
-              this.projectName = projectName;
-              this.dataService.loadProjects().subscribe(() => {
-                this.isCreatingProjectInProgress = false;
-                this.isProjectFormTouched = false;
-
-                this.router.navigate(['/', 'project', this.projectName, 'settings', 'project'], {
-                  queryParams: { created: true },
-                });
-              });
-            },
-            (err) => {
-              this.notificationsService.addNotification(
-                NotificationType.ERROR,
-                `The project could not be created: ${err.error || 'please, check the logs of configuration-service'}.`
+        const create$ =
+          this.resourceServiceEnabled && this.gitDataExtended
+            ? this.dataService.createProjectExtended(projectName, shipyardBase64, this.gitDataExtended)
+            : this.dataService.createProject(
+                projectName,
+                shipyardBase64,
+                this.gitData.gitRemoteURL,
+                this.gitData.gitToken,
+                this.gitData.gitUser
               );
+
+        create$.subscribe(
+          () => {
+            this.projectName = projectName;
+            this.dataService.loadProjects().subscribe(() => {
               this.isCreatingProjectInProgress = false;
-            }
-          );
+              this.isProjectFormTouched = false;
+
+              this.router.navigate(['/', 'project', this.projectName, 'settings', 'project'], {
+                queryParams: { created: true },
+              });
+            });
+          },
+          (err) => {
+            this.notificationsService.addNotification(
+              NotificationType.ERROR,
+              `The project could not be created: ${err.error || 'please, check the logs of configuration-service'}.`
+            );
+            this.isCreatingProjectInProgress = false;
+          }
+        );
       }
     }
   }
@@ -280,7 +293,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
     return (
       !this.shipyardFile ||
       this.projectNameForm.invalid ||
-      !this.gitData.gitFormValid ||
+      (this.resourceServiceEnabled ? !this.gitDataExtended : !this.gitData.gitFormValid) ||
       this.isCreatingProjectInProgress
     );
   }

@@ -17,6 +17,7 @@
         id="shipyard-file-input"
         hidden
         type="file"
+        accept=".yaml, .yml"
         #shipyardFileInput
         (change)="validateAndUpdateFile(shipyardFileInput.files); shipyardFileInput.value = ''"
       />

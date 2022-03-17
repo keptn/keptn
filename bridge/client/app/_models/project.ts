@@ -6,13 +6,16 @@ import { EventTypes } from '../../../shared/interfaces/event-types';
 import { Sequence } from './sequence';
 import { Project as pj } from '../../../shared/models/project';
 import { Approval } from '../_interfaces/approval';
+import { IGitDataExtended } from '../_interfaces/git-upstream';
+import { isGitInputWithHTTPS } from '../_utils/git-upstream.utils';
 
 export class Project extends pj {
-  allSequencesLoaded = false;
-  projectDetailsLoaded = false; // true if project was fetched via project endpoint of bridge server
-  stages: Stage[] = [];
-  services?: Service[];
-  sequences?: Sequence[];
+  private _gitUpstream?: IGitDataExtended;
+  public allSequencesLoaded = false;
+  public projectDetailsLoaded = false; // true if project was fetched via project endpoint of bridge server
+  public stages: Stage[] = [];
+  public services?: Service[];
+  public sequences?: Sequence[];
 
   static fromJSON(data: unknown): Project {
     const project: Project = Object.assign(new this(), data);
@@ -24,6 +27,35 @@ export class Project extends pj {
   get reduced(): Partial<Project> {
     const { sequences, allSequencesLoaded, projectDetailsLoaded, ...copyProject } = this;
     return copyProject;
+  }
+
+  public get gitUpstream(): IGitDataExtended {
+    if (!this._gitUpstream) {
+      if (isGitInputWithHTTPS(this)) {
+        this._gitUpstream = {
+          https: {
+            gitUser: this.gitUser,
+            gitRemoteURL: this.gitRemoteURI ?? '',
+            gitToken: '',
+            gitProxyScheme: this.gitProxyScheme ?? 'https',
+            gitProxyUrl: this.gitProxyUrl ?? '',
+            gitProxyPassword: '',
+            gitProxyUser: this.gitProxyUser ?? '',
+            gitProxyInsecure: this.gitProxyInsecure,
+          },
+        };
+      } else {
+        this._gitUpstream = {
+          ssh: {
+            gitRemoteURL: this.gitRemoteURI ?? '',
+            gitUser: this.gitUser,
+            gitPrivateKey: '',
+            gitPrivateKeyPass: '',
+          },
+        };
+      }
+    }
+    return this._gitUpstream;
   }
 
   // replace project with a new one, but keep references

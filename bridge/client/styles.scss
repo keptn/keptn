@@ -614,3 +614,14 @@ button.small-btn {
 .inline-block {
   display: inline-block;
 }
+
+input[type=number].hide-arrows {
+  -moz-appearance: textfield; /* Firefox */
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+

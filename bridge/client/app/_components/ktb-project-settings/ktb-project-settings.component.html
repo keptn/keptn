@@ -28,14 +28,24 @@
         </dt-form-field>
       </div>
       <div class="mb-3 settings-section">
-        <ktb-project-settings-git
-          [isLoading]="isProjectLoading"
+        <ktb-project-settings-git-extended
+          *ngIf="resourceServiceEnabled; else defaultGit"
+          [isLoading]="!!isProjectLoading"
           [isCreateMode]="isCreateMode"
-          [gitData]="gitData"
           [isGitUpstreamInProgress]="isGitUpstreamInProgress"
-          (gitDataChanged)="updateGitData($event)"
-          (gitUpstreamSubmit)="setGitUpstream()"
-        ></ktb-project-settings-git>
+          [gitInputData]="gitInputDataExtended"
+          (gitDataChange)="updateGitDataExtended($event)"
+        ></ktb-project-settings-git-extended>
+        <ng-template #defaultGit>
+          <ktb-project-settings-git
+            [isLoading]="isProjectLoading"
+            [isCreateMode]="isCreateMode"
+            [gitData]="gitData"
+            [isGitUpstreamInProgress]="isGitUpstreamInProgress"
+            (gitDataChanged)="updateGitData($event)"
+            (gitUpstreamSubmit)="setGitUpstream()"
+          ></ktb-project-settings-git>
+        </ng-template>
       </div>
 
       <div class="mb-3 settings-section" *ngIf="isCreateMode">
@@ -49,9 +59,9 @@
           <dt-loading-spinner *ngIf="isCreatingProjectInProgress" aria-label="Creating project"></dt-loading-spinner>
           Create project
         </button>
-        <div class="mt-2">
-          <span class="small required-info">fields are required</span>
-        </div>
+      </div>
+      <div class="mt-2">
+        <span class="small required-info">fields are required</span>
       </div>
     </div>
 

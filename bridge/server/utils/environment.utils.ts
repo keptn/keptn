@@ -19,7 +19,7 @@ export class EnvironmentUtils {
   ): void {
     for (const flag of Object.keys(defaultFlags)) {
       if (flag in env) {
-        (defaultFlags as Record<string, boolean>)[flag] = env[flag] === 'true';
+        (defaultFlags as unknown as Record<string, boolean>)[flag] = env[flag] === 'true';
       }
     }
   }

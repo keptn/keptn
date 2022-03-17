@@ -28,6 +28,7 @@ import { ISequencesMetadata } from '../../../shared/interfaces/sequencesMetadata
 import { TriggerEvaluationData, TriggerResponse, TriggerSequenceData } from '../_models/trigger-sequence';
 import { IScopesResult } from '../_interfaces/scopes-result';
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
+import { IGitHttps, IGitSsh } from '../_interfaces/git-upstream';
 
 @Injectable({
   providedIn: 'root',
@@ -129,6 +130,24 @@ export class ApiService {
       gitRemoteUrl,
       gitToken,
       gitUser,
+      name: projectName,
+      shipyard,
+    });
+  }
+
+  public createProjectHTTPS(projectName: string, shipyard: string, data: IGitHttps): Observable<unknown> {
+    const url = `${this._baseUrl}/controlPlane/v1/project`;
+    return this.http.post<unknown>(url, {
+      ...data.https,
+      name: projectName,
+      shipyard,
+    });
+  }
+
+  public createProjectSSH(projectName: string, shipyard: string, data: IGitSsh): Observable<unknown> {
+    const url = `${this._baseUrl}/controlPlane/v1/project`;
+    return this.http.post<unknown>(url, {
+      ...data.ssh,
       name: projectName,
       shipyard,
     });
@@ -363,6 +382,22 @@ export class ApiService {
       gitRemoteURL: gitUrl,
       gitToken,
       gitUser,
+      name: projectName,
+    });
+  }
+
+  public updateGitUpstreamHTTPS(projectName: string, data: IGitHttps): Observable<unknown> {
+    const url = `${this._baseUrl}/controlPlane/v1/project`;
+    return this.http.put(url, {
+      ...data.https,
+      name: projectName,
+    });
+  }
+
+  public updateGitUpstreamSSH(projectName: string, data: IGitSsh): Observable<unknown> {
+    const url = `${this._baseUrl}/controlPlane/v1/project`;
+    return this.http.put(url, {
+      ...data.ssh,
       name: projectName,
     });
   }

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, forkJoin, from, Observable, of, Subject } from 'rxjs';
-import { map, mergeMap, switchMap, take, tap, toArray } from 'rxjs/operators';
+import { filter, map, mergeMap, switchMap, take, tap, toArray } from 'rxjs/operators';
 import { Trace } from '../_models/trace';
 import { Stage } from '../_models/stage';
 import { Project } from '../_models/project';
@@ -32,6 +32,9 @@ import { ISequencesMetadata } from '../../../shared/interfaces/sequencesMetadata
 import { TriggerEvaluationData, TriggerResponse, TriggerSequenceData } from '../_models/trigger-sequence';
 import { EventData } from '../_components/ktb-evaluation-info/ktb-evaluation-info.component';
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
+import { IClientFeatureFlags } from '../../../shared/interfaces/feature-flags';
+import { IGitDataExtended } from '../_interfaces/git-upstream';
+import { isGitHTTPS } from '../_utils/git-upstream.utils';
 
 @Injectable({
   providedIn: 'root',
@@ -77,6 +80,13 @@ export class DataService {
 
   get keptnInfo(): Observable<KeptnInfo | undefined> {
     return this._keptnInfo.asObservable();
+  }
+
+  get featureFlags(): Observable<IClientFeatureFlags> {
+    return this._keptnInfo.pipe(
+      filter((info): info is KeptnInfo => !!info),
+      map((info) => info.bridgeInfo.featureFlags)
+    );
   }
 
   get evaluationResults(): Observable<EvaluationHistory> {
@@ -128,6 +138,14 @@ export class DataService {
     gitUser?: string
   ): Observable<unknown> {
     return this.apiService.createProject(projectName, shipyard, gitRemoteUrl, gitToken, gitUser);
+  }
+
+  public createProjectExtended(projectName: string, shipyard: string, data: IGitDataExtended): Observable<unknown> {
+    if (isGitHTTPS(data)) {
+      return this.apiService.createProjectHTTPS(projectName, shipyard, data);
+    } else {
+      return this.apiService.createProjectSSH(projectName, shipyard, data);
+    }
   }
 
   public createService(projectName: string, serviceName: string): Observable<Record<string, unknown>> {
@@ -239,6 +257,14 @@ export class DataService {
         this.loadProject(projectName);
       })
     );
+  }
+
+  public updateGitUpstream(projectName: string, data: IGitDataExtended): Observable<unknown> {
+    if (isGitHTTPS(data)) {
+      return this.apiService.updateGitUpstreamHTTPS(projectName, data);
+    } else {
+      return this.apiService.updateGitUpstreamSSH(projectName, data);
+    }
   }
 
   public loadKeptnInfo(): void {

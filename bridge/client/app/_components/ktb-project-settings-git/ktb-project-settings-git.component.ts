@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { IGitData } from '../../_interfaces/git-upstream';
 
 @Component({
   selector: 'ktb-project-settings-git',
@@ -7,10 +8,12 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
   styleUrls: ['./ktb-project-settings-git.component.scss'],
 })
 export class KtbProjectSettingsGitComponent implements OnInit {
-  private originalGitData: GitData | undefined;
+  private originalGitData: IGitData | undefined;
 
   @Input()
   public isGitUpstreamInProgress = false;
+
+  @Input() isInGitExtended = false;
 
   @Input()
   public isCreateMode = false;
@@ -34,22 +37,21 @@ export class KtbProjectSettingsGitComponent implements OnInit {
   }
 
   @Input()
-  set gitData(gitData: GitData) {
-    if (!this.originalGitData && gitData.remoteURI && gitData.gitUser) {
+  set gitData(gitData: IGitData) {
+    if (!this.originalGitData && gitData.gitRemoteURL && gitData.gitUser) {
       this.originalGitData = {
-        remoteURI: gitData.remoteURI,
+        gitRemoteURL: gitData.gitRemoteURL,
         gitUser: gitData.gitUser,
       };
     }
-
     this.resetForm(gitData);
   }
 
   @Output()
-  public gitUpstreamSubmit: EventEmitter<GitData> = new EventEmitter();
+  public gitUpstreamSubmit: EventEmitter<IGitData> = new EventEmitter();
 
   @Output()
-  public gitDataChanged: EventEmitter<GitData> = new EventEmitter();
+  public gitDataChanged: EventEmitter<IGitData> = new EventEmitter();
 
   public gitUrlControl = new FormControl('');
   public gitUserControl = new FormControl('');
@@ -60,18 +62,20 @@ export class KtbProjectSettingsGitComponent implements OnInit {
     gitToken: this.gitTokenControl,
   });
   private _isLoading: boolean | undefined;
+  public get required(): boolean {
+    return !this.isCreateMode || this.isInGitExtended;
+  }
 
-  ngOnInit(): void {
-    if (!this.isCreateMode) {
+  public ngOnInit(): void {
+    if (this.required) {
       this.gitUrlControl.setValidators([Validators.required]);
-      this.gitUserControl.setValidators([Validators.required]);
       this.gitTokenControl.setValidators([Validators.required]);
     }
   }
 
   public setGitUpstream(): void {
     this.gitUpstreamSubmit.emit({
-      remoteURI: this.gitUrlControl.value,
+      gitRemoteURL: this.gitUrlControl.value,
       gitUser: this.gitUserControl.value,
       gitToken: this.gitTokenControl.value,
     });
@@ -81,7 +85,7 @@ export class KtbProjectSettingsGitComponent implements OnInit {
 
   public onGitUpstreamFormChange(): void {
     this.gitDataChanged.emit({
-      remoteURI: this.gitUrlControl.value,
+      gitRemoteURL: this.gitUrlControl.value,
       gitUser: this.gitUserControl.value,
       gitToken: this.gitTokenControl.value,
       gitFormValid: !this.isButtonDisabled(),
@@ -96,8 +100,8 @@ export class KtbProjectSettingsGitComponent implements OnInit {
     this.resetForm(this.originalGitData);
   }
 
-  private resetForm(gitData: GitData | undefined): void {
-    this.gitUrlControl.setValue(gitData?.remoteURI || '');
+  private resetForm(gitData: IGitData | undefined): void {
+    this.gitUrlControl.setValue(gitData?.gitRemoteURL || '');
     this.gitUrlControl.markAsUntouched();
     this.gitUrlControl.markAsPristine();
     this.gitUserControl.setValue(gitData?.gitUser || '');
@@ -107,11 +111,4 @@ export class KtbProjectSettingsGitComponent implements OnInit {
     this.gitTokenControl.markAsUntouched();
     this.gitTokenControl.markAsPristine();
   }
-}
-
-export interface GitData {
-  remoteURI?: string;
-  gitUser?: string;
-  gitToken?: string;
-  gitFormValid?: boolean;
 }

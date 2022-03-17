@@ -1,4 +1,4 @@
-import { EnvironmentUtils } from '../utils/environment.utils';
+import { EnvironmentUtils } from './environment.utils';
 import { ServerFeatureFlags } from '../feature-flags';
 
 describe('Test environment utils', () => {

@@ -1,10 +1,12 @@
-<h2>Git upstream repository</h2>
-<p class="mt-0 mb-3">
-  It is recommended to set a Git upstream repository. In future releases, projects without a Git repository will not be
-  supported. Please specify the Git remote url, the user and the token. Instructions on how to set your Git provider can
-  be found in the
-  <a [href]="'/manage/git_upstream/' | keptnUrl" target="_blank">Git-based upstream documentation</a>.
-</p>
+<ng-container *ngIf="!isInGitExtended">
+  <h2>Git upstream repository</h2>
+  <p class="mt-0 mb-3">
+    It is recommended to set a Git upstream repository. In future releases, projects without a Git repository will not
+    be supported. Please specify the Git remote url, the user and the token. Instructions on how to set your Git
+    provider can be found in the
+    <a [href]="'/manage/git_upstream/' | keptnUrl" target="_blank">Git-based upstream documentation</a>.
+  </p>
+</ng-container>
 <form
   [formGroup]="gitUpstreamForm"
   (input)="onGitUpstreamFormChange()"
@@ -14,7 +16,7 @@
 >
   <div fxLayout="column" [ngClass]="{ 'full-width': isCreateMode }">
     <dt-form-field>
-      <dt-label>Git remote URL</dt-label>
+      <dt-label [class.required]="required">Git remote URL</dt-label>
       <input formControlName="gitUrl" type="text" dtInput placeholder="https://git-repo.com/repo.git" />
       <dt-loading-spinner *ngIf="isLoading" dtPrefix aria-label="Loading data"></dt-loading-spinner>
       <dt-error>Must not be empty</dt-error>
@@ -24,16 +26,15 @@
         <dt-label>Git user</dt-label>
         <input formControlName="gitUser" type="text" dtInput placeholder="Username" />
         <dt-loading-spinner *ngIf="isLoading" dtPrefix aria-label="Loading data"></dt-loading-spinner>
-        <dt-error>Must not be empty</dt-error>
       </dt-form-field>
       <dt-form-field>
-        <dt-label>Token</dt-label>
+        <dt-label [class.required]="required">Token</dt-label>
         <input formControlName="gitToken" type="password" dtInput placeholder="Token" autocomplete="false" />
         <dt-error>Must not be empty</dt-error>
       </dt-form-field>
     </div>
   </div>
-  <div class="ml-3" *ngIf="!isCreateMode">
+  <div class="ml-3" *ngIf="!isCreateMode && !isInGitExtended">
     <button [disabled]="isButtonDisabled()" (click)="setGitUpstream()" dt-button>
       <dt-loading-spinner *ngIf="isGitUpstreamInProgress" aria-label="Setting Git upstream URL"></dt-loading-spinner>
       Set Git upstream

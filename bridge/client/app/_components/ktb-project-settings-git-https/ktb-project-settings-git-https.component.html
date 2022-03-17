@@ -1,0 +1,22 @@
+<ktb-project-settings-git
+  [isCreateMode]="true"
+  [isInGitExtended]="true"
+  [gitData]="gitDataRequired"
+  [isLoading]="isLoading"
+  (gitDataChanged)="gitUpstreamChanged($event); inputChanged()"
+></ktb-project-settings-git>
+<h2>Certificate</h2>
+<p class="mt-0">
+  If a certificate is needed for the Git repository connection, upload the certificate file or add it directly as text.
+</p>
+<ktb-certificate-input
+  #certificateInput
+  [isLoading]="isLoading"
+  (certificateChange)="
+    certificate = $event; isCertificateValid = certificateInput.certificateForm.valid; inputChanged()
+  "
+></ktb-certificate-input>
+<h2>Proxy</h2>
+<dt-switch (change)="proxyEnabled = $event.checked; checkedChanged()" [checked]="proxyEnabled">Use proxy</dt-switch>
+<dt-loading-spinner *ngIf="isLoading" class="gray-loading" aria-label="Loading data"></dt-loading-spinner>
+<ktb-proxy-input *ngIf="proxyEnabled" [proxy]="proxy" (proxyChange)="proxy = $event; inputChanged()"></ktb-proxy-input>

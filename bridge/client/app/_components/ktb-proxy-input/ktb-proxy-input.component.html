@@ -1,0 +1,37 @@
+<form uitestid="keptn-proxy-input" [formGroup]="proxyForm" (input)="proxyChanged()">
+  <dt-form-field>
+    <!-- If it is not in a form-field, the height of the page will break -->
+    <dt-checkbox formControlName="isInsecure" class="mt-2">Is insecure</dt-checkbox>
+  </dt-form-field>
+  <div class="mt-2" fxLayout="row" fxLayoutAlign="start end" fxFlexFill>
+    <dt-form-field class="mr-3">
+      <dt-label class="required">Scheme</dt-label>
+      <dt-select formControlName="scheme">
+        <dt-option *ngFor="let scheme of schemes" [value]="scheme.value" [textContent]="scheme.key"></dt-option>
+      </dt-select>
+      <dt-error>Must not be empty</dt-error>
+    </dt-form-field>
+
+    <dt-form-field class="mr-3" fxFlex>
+      <dt-label class="required">Host</dt-label>
+      <input dtInput placeholder="Host" formControlName="host" />
+      <dt-error>Must not be empty</dt-error>
+    </dt-form-field>
+
+    <dt-form-field fxFlex="80px">
+      <dt-label class="required">Port</dt-label>
+      <input dtInput ktbIntegerInput class="hide-arrows" placeholder="Port" formControlName="port" />
+      <dt-error>Must not be empty</dt-error>
+    </dt-form-field>
+  </div>
+  <div class="mt-2" fxLayout="row" fxLayoutAlign="start end" fxFlexFill>
+    <dt-form-field class="mr-3" fxFlex>
+      <dt-label>Username</dt-label>
+      <input dtInput placeholder="Username" formControlName="user" />
+    </dt-form-field>
+    <dt-form-field fxFlex>
+      <dt-label>Password</dt-label>
+      <input dtInput placeholder="Password" type="password" formControlName="password" />
+    </dt-form-field>
+  </div>
+</form>
