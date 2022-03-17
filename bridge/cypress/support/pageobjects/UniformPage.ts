@@ -24,6 +24,8 @@ class UniformPage {
   EDIT_WEBHOOK_FILTER = 'edit-subscription-field-filterStageService';
   EDIT_WEBHOOK_METHOD = 'edit-webhook-field-method';
   EDIT_WEBHOOK_PROXY = 'edit-webhook-field-proxy';
+  SEND_FINISHED_BUTTONS = 'edit-webhook-field-sendFinished';
+  SEND_STARTED_BUTTONS = 'edit-webhook-field-sendStarted';
 
   public visit(project: string): this {
     cy.visit(`/project/${project}/settings/uniform/integrations`).wait('@metadata');
@@ -59,6 +61,54 @@ class UniformPage {
 
   public assertIsUpdateButtonEnabled(isEnabled: boolean): this {
     cy.byTestId(this.UPDATE_SUBSCRIPTION_BUTTON_ID).should(isEnabled ? 'not.have.attr' : 'have.attr', 'disabled');
+    return this;
+  }
+
+  public assertIsSendStartedButtonsEnabled(isEnabled: boolean): this {
+    cy.byTestId(this.SEND_STARTED_BUTTONS)
+      .find('input.dt-radio-input')
+      .eq(0)
+      .should(isEnabled ? 'not.have.attr' : 'have.attr', 'disabled');
+    cy.byTestId(this.SEND_STARTED_BUTTONS)
+      .find('input.dt-radio-input')
+      .eq(1)
+      .should(isEnabled ? 'not.have.attr' : 'have.attr', 'disabled');
+    return this;
+  }
+
+  public assertIsSendStarted(status: boolean): this {
+    cy.byTestId(this.SEND_STARTED_BUTTONS)
+      .find('input.dt-radio-input')
+      .eq(0)
+      .should(status ? 'be.checked' : 'not.be.checked');
+    cy.byTestId(this.SEND_STARTED_BUTTONS)
+      .find('input.dt-radio-input')
+      .eq(1)
+      .should(status ? 'not.be.checked' : 'be.checked');
+    return this;
+  }
+
+  public assertIsSendFinishedButtonsEnabled(isEnabled: boolean): this {
+    cy.byTestId(this.SEND_FINISHED_BUTTONS)
+      .find('input.dt-radio-input')
+      .eq(0)
+      .should(isEnabled ? 'not.have.attr' : 'have.attr', 'disabled');
+    cy.byTestId(this.SEND_FINISHED_BUTTONS)
+      .find('input.dt-radio-input')
+      .eq(1)
+      .should(isEnabled ? 'not.have.attr' : 'have.attr', 'disabled');
+    return this;
+  }
+
+  public assertIsSendFinished(status: boolean): this {
+    cy.byTestId(this.SEND_FINISHED_BUTTONS)
+      .find('input.dt-radio-input')
+      .eq(0)
+      .should(status ? 'be.checked' : 'not.be.checked');
+    cy.byTestId(this.SEND_FINISHED_BUTTONS)
+      .find('input.dt-radio-input')
+      .eq(1)
+      .should(status ? 'not.be.checked' : 'be.checked');
     return this;
   }
 

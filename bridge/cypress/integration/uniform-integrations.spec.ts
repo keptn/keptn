@@ -289,6 +289,24 @@ describe('Add webhook subscriptions', () => {
   it('should not show project checkbox', () => {
     cy.byTestId(uniformPage.EDIT_SUBSCRIPTION_FIELD_GLOBAL_ID).should('not.exist');
   });
+
+  it('should have sendFinished and sendStarted checkbox disabled', () => {
+    uniformPage
+      .setTaskPrefix('deployment')
+      .setTaskSuffix('finished')
+      .assertIsSendStartedButtonsEnabled(false)
+      .assertIsSendFinishedButtonsEnabled(false);
+  });
+
+  it('should have sendFinished and sendStarted checkbox enabled and true by default', () => {
+    uniformPage
+      .setTaskPrefix('deployment')
+      .setTaskSuffix('triggered')
+      .assertIsSendStartedButtonsEnabled(true)
+      .assertIsSendFinishedButtonsEnabled(true)
+      .assertIsSendStarted(true)
+      .assertIsSendFinished(true);
+  });
 });
 
 describe('Add control plane subscription default requests', () => {
