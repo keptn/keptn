@@ -112,7 +112,7 @@ describe('Test webhook-config-yaml', () => {
         },
       ],
       sendFinished: false,
-      sendStarted: false,
+      sendStarted: true,
     });
     expect(result).toEqual(webhookConfig);
   });
