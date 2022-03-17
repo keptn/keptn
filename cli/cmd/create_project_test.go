@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
+	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
@@ -11,9 +13,6 @@ import (
 	"os"
 	"strings"
 	"testing"
-
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
-	"github.com/keptn/keptn/cli/pkg/logging"
 )
 
 func init() {
@@ -67,8 +66,8 @@ func TestCreateProjectCmdWithGitMissingParam(t *testing.T) {
 	shipyardFilePath := "./shipyard.yaml"
 	defer testShipyard(t, shipyardFilePath, "")()
 
-	cmd := fmt.Sprintf("create project sockshop --shipyard=%s --git-user=%s --git-token=%s --mock",
-		shipyardFilePath, "user", "token")
+	cmd := fmt.Sprintf("create project sockshop --shipyard=%s  --git-token=%s --mock",
+		shipyardFilePath, "token")
 	_, err := executeActionCommandC(cmd)
 
 	if !errorContains(err, gitErrMsg) {
@@ -87,6 +86,23 @@ func TestCreateProjectCmdWithGit(t *testing.T) {
 
 	cmd := fmt.Sprintf("create project sockshop --shipyard=%s --git-user=%s --git-token=%s --git-remote-url=%s --mock",
 		shipyardFilePath, "user", "token", "https://")
+	_, err := executeActionCommandC(cmd)
+
+	if err != nil {
+		t.Errorf(unexpectedErrMsg, err)
+	}
+}
+
+// TestCreateProjectCmdWithGitMissingParam tests a successful create project
+// command with git upstream and no user
+func TestCreateProjectCmdNoGitUser(t *testing.T) {
+	credentialmanager.MockAuthCreds = true
+
+	shipyardFilePath := "./shipyard.yaml"
+	defer testShipyard(t, shipyardFilePath, "")()
+
+	cmd := fmt.Sprintf("create project sockshop --shipyard=%s --git-token=%s --git-remote-url=%s --mock",
+		shipyardFilePath, "token", "https://")
 	_, err := executeActionCommandC(cmd)
 
 	if err != nil {
@@ -178,4 +194,14 @@ spec:
 
 		})
 	}
+}
+
+// TestCreateProjectUnknownCommand
+func TestCreateProjectUnknownCommand(t *testing.T) {
+	testInvalidInputHelper("create project sockshop someUnknownCommand --shipyard=shipyard.yaml", "too many arguments set", t)
+}
+
+// TestCreateProjectUnknownParameter
+func TestCreateProjectUnknownParmeter(t *testing.T) {
+	testInvalidInputHelper("create project sockshop --projectt=sockshop", "unknown flag: --projectt", t)
 }
