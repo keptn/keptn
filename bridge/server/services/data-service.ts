@@ -872,7 +872,8 @@ export class DataService {
             curl,
             subscriptionId,
             secrets,
-            webhookConfig.sendFinished
+            webhookConfig.sendFinished,
+            webhookConfig.sendStarted
           );
           await this.apiService.saveWebhookConfig(accessToken, previousWebhookConfig.toYAML(), project, stage, service);
         }

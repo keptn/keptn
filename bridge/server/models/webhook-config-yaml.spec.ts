@@ -23,6 +23,7 @@ const config = WebhookConfigYaml.fromJSON({
           },
         ],
         sendFinished: true,
+        sendStarted: true,
       },
     ],
   },
@@ -51,6 +52,7 @@ const configWithLongCurl = WebhookConfigYaml.fromJSON({
           },
         ],
         sendFinished: true,
+        sendStarted: true,
       },
     ],
   },
@@ -70,6 +72,7 @@ const configWithoutSecrets = WebhookConfigYaml.fromJSON({
           `curl http://keptn.sh/asdf asdf --request GET --header 'content-type: application/json' --header 'Authorization: myVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongHeader' --proxy http://keptn.sh/proxy --data '{"data": "myData"}'`,
         ],
         sendFinished: true,
+        sendStarted: true,
       },
     ],
   },
@@ -109,14 +112,15 @@ describe('Test webhook-config-yaml', () => {
         },
       ],
       sendFinished: false,
+      sendStarted: false,
     });
     expect(result).toEqual(webhookConfig);
   });
 
   it('should set sendFinished to the value specified', () => {
     // given
-    const yamlConfigTrue = getDefaultWebhookYaml(true);
-    const yamlConfigFalse = getDefaultWebhookYaml(false);
+    const yamlConfigTrue = getDefaultWebhookYaml(true, true);
+    const yamlConfigFalse = getDefaultWebhookYaml(false, false);
     const yamlConfigUndefined = getDefaultWebhookYaml();
 
     // when
@@ -128,6 +132,23 @@ describe('Test webhook-config-yaml', () => {
     expect(webhookConfigTrue.sendFinished).toBe(true);
     expect(webhookConfigFalse.sendFinished).toBe(false);
     expect(webhookConfigUndefined.sendFinished).toBe(false);
+  });
+
+  it('should set sendStarted to the value specified', () => {
+    // given
+    const yamlConfigTrue = getDefaultWebhookYaml(true, true);
+    const yamlConfigFalse = getDefaultWebhookYaml(false, false);
+    const yamlConfigUndefined = getDefaultWebhookYaml();
+
+    // when
+    const webhookConfigTrue = yamlConfigTrue.parsedRequest('myID') as WebhookConfig;
+    const webhookConfigFalse = yamlConfigFalse.parsedRequest('myID') as WebhookConfig;
+    const webhookConfigUndefined = yamlConfigUndefined.parsedRequest('myID') as WebhookConfig;
+
+    // then
+    expect(webhookConfigTrue.sendStarted).toBe(true);
+    expect(webhookConfigFalse.sendStarted).toBe(false);
+    expect(webhookConfigUndefined.sendStarted).toBe(true);
   });
 
   it('should return undefined if subscriptionID does not exist', () => {
@@ -149,6 +170,7 @@ describe('Test webhook-config-yaml', () => {
       'curl http://keptn.sh --request GET',
       'mySecondID',
       [],
+      true,
       true
     );
 
@@ -157,6 +179,7 @@ describe('Test webhook-config-yaml', () => {
     expect(yamlConfig.spec.webhooks[1]).toEqual({
       type: 'sh.keptn.events.approval.triggered',
       sendFinished: true,
+      sendStarted: true,
       subscriptionID: 'mySecondID',
       requests: ['curl http://keptn.sh --request GET'],
     } as Webhook);
@@ -181,6 +204,7 @@ describe('Test webhook-config-yaml', () => {
           },
         },
       ],
+      true,
       true
     );
 
@@ -189,6 +213,7 @@ describe('Test webhook-config-yaml', () => {
     expect(yamlConfig.spec.webhooks[0]).toEqual({
       type: 'sh.keptn.events.approval.started',
       sendFinished: true,
+      sendStarted: true,
       envFrom: [
         {
           name: 'mySecret',
@@ -213,6 +238,7 @@ describe('Test webhook-config-yaml', () => {
       'curl http://keptn.sh/second --request GET',
       'myID',
       [],
+      true,
       true
     );
 
@@ -221,6 +247,7 @@ describe('Test webhook-config-yaml', () => {
     expect(yamlConfig.spec.webhooks[0]).toEqual({
       type: 'sh.keptn.events.approval.started',
       sendFinished: true,
+      sendStarted: true,
       subscriptionID: 'myID',
       requests: ['curl http://keptn.sh/second --request GET'],
     } as Webhook);
@@ -261,6 +288,7 @@ spec:
             name: myName
             key: myKey
       sendFinished: true
+      sendStarted: true
 `);
   });
 
@@ -286,6 +314,7 @@ spec:
             name: myName
             key: myKey
       sendFinished: true
+      sendStarted: true
 `);
   });
 
@@ -306,10 +335,11 @@ spec:
         - >-
           curl http://keptn.sh/asdf asdf --request GET --header 'content-type: application/json' --header 'Authorization: myVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongHeader' --proxy http://keptn.sh/proxy --data '{"data": "myData"}'
       sendFinished: true
+      sendStarted: true
 `);
   });
 
-  function getDefaultWebhookYaml(sendFinished?: boolean): WebhookConfigYaml {
+  function getDefaultWebhookYaml(sendFinished?: boolean, sendStarted?: boolean): WebhookConfigYaml {
     return WebhookConfigYaml.fromJSON({
       kind: 'WebhookConfig',
       apiVersion: 'webhookconfig.keptn.sh/v1alpha1',
@@ -331,6 +361,7 @@ spec:
               },
             ],
             ...(sendFinished !== undefined && { sendFinished }),
+            ...(sendStarted !== undefined && { sendStarted }),
           },
         ],
       },

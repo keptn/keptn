@@ -359,6 +359,7 @@ export class ApiServiceMock extends ApiService {
       payload: '{"id":{{.id}}, "shkeptncontext": {{.shkeptncontext}}, "project": {{.data.project}}}',
       header: [],
       sendFinished: false,
+      sendStarted: false,
       proxy: '',
       filter: {
         projects: null,

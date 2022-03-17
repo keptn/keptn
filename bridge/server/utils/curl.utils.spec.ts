@@ -29,6 +29,7 @@ describe('Test curl-parser', () => {
         },
       ],
       sendFinished: false,
+      sendStarted: false,
     });
     expect(generateWebhookConfigCurl(webhookConfig)).toBe(
       `curl --header 'content-type: application/json' --header 'Authorization: Bearer myToken' --request GET --proxy http://keptn.sh/proxy --data '{"data":"myData"}' http://keptn.sh/asdf asdf`
@@ -44,6 +45,7 @@ describe('Test curl-parser', () => {
       method: 'GET',
       secrets: [],
       sendFinished: false,
+      sendStarted: false,
     });
     expect(generateWebhookConfigCurl(webhookConfig)).toBe(
       `curl --request GET --proxy http://keptn.sh/proxy --data '{"data":"myData"}' http://keptn.sh/asdf asdf`
@@ -59,6 +61,7 @@ describe('Test curl-parser', () => {
       method: 'GET',
       secrets: [],
       sendFinished: false,
+      sendStarted: false,
     });
     expect(generateWebhookConfigCurl(webhookConfig)).toBe(
       `curl --request GET --data '{"data":"myData"}' http://keptn.sh/asdf asdf`
@@ -74,6 +77,7 @@ describe('Test curl-parser', () => {
       method: 'GET',
       secrets: [],
       sendFinished: false,
+      sendStarted: false,
     });
     expect(generateWebhookConfigCurl(webhookConfig)).toBe(`curl --request GET http://keptn.sh/asdf`);
   });
@@ -87,6 +91,7 @@ describe('Test curl-parser', () => {
       method: 'GET',
       secrets: [],
       sendFinished: false,
+      sendStarted: false,
     });
     expect(generateWebhookConfigCurl(webhookConfig)).toBe(
       `curl --request GET --data '<meta>myText</meta><meta2>myOtherText</meta2>' http://keptn.sh/asdf`
