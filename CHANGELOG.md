@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.12.5](https://github.com/keptn/keptn/compare/0.12.4...0.12.5) (2022-03-17)
+
+
+### Bug Fixes
+
+* **distributor:** Backport of fix for nats reconnect issue ([#7122](https://github.com/keptn/keptn/issues/7122)) ([65a205c](https://github.com/keptn/keptn/commit/65a205c10b1c713850c64150171bcf1abd892daa))
+
 ### [0.12.4](https://github.com/keptn/keptn/compare/0.12.3...0.12.4) (2022-03-16)
 
 
