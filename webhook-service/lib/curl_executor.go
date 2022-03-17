@@ -140,6 +140,7 @@ func (ce *CmdCurlExecutor) parseArgs(curlCmd string) ([]string, error) {
 	}
 
 	// check if the curl command contains any of the disallowed URLs
+	// TODO: this should only validate the URL and NOT the whole curl cmd
 	if err := ce.validateURL(curlCmd); err != nil {
 		return nil, &CurlError{err: err, reason: UnallowedURLError}
 	}
