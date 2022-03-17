@@ -14,6 +14,10 @@ const (
 	UnallowedURLError
 	RequestError
 )
+const (
+	KubernetesSvcHostEnvVar = "KUBERNETES_SERVICE_HOST"
+	KubernetesAPIPortEnvVar = "KUBERNETES_SERVICE_PORT"
+)
 
 type CurlError struct {
 	err    error
@@ -258,25 +262,33 @@ func parseCommandLine(command string) ([]string, error) {
 }
 
 func BlacklistedKubeURLS(env map[string]string) []string {
-	kubeAPIHostIP := env["KUBERNETES_SERVICE_HOST"]
-	kubeAPIPort := env["KUBERNETES_SERVICE_PORT"]
-	return []string{
+	kubeAPIHostIP := env[KubernetesSvcHostEnvVar]
+	kubeAPIPort := env[KubernetesAPIPortEnvVar]
+
+	urls := []string{
 		// Block access to Kubernetes API
-		kubeAPIHostIP,
-		kubeAPIHostIP + ":" + kubeAPIPort,
 		"kubernetes",
-		"kubernetes" + ":" + kubeAPIPort,
 		"kubernetes.default",
-		"kubernetes.default" + ":" + kubeAPIPort,
 		"kubernetes.default.svc",
-		"kubernetes.default.svc" + ":" + kubeAPIPort,
 		"kubernetes.default.svc.cluster.local",
-		"kubernetes.default.svc.cluster.local" + ":" + kubeAPIPort,
 		// Block access to localhost
 		"localhost",
 		"127.0.0.1",
 		"::1",
 	}
+	if kubeAPIHostIP != "" {
+		urls = append(urls, kubeAPIHostIP)
+	}
+	if kubeAPIPort != "" {
+		urls = append(urls, "kubernetes"+":"+kubeAPIPort)
+		urls = append(urls, "kubernetes.default"+":"+kubeAPIPort)
+		urls = append(urls, "kubernetes.default.svc"+":"+kubeAPIPort)
+		urls = append(urls, "kubernetes.default.svc.cluster.local"+":"+kubeAPIPort)
+	}
+	if kubeAPIHostIP != "" && kubeAPIPort != "" {
+		urls = append(urls, kubeAPIHostIP+":"+kubeAPIPort)
+	}
+	return urls
 }
 
 func deleteEmpty(s []string) []string {
