@@ -28,7 +28,7 @@ func Test_GKE(t *testing.T) {
 	t.Run("Test_Webhook", Test_Webhook)
 	t.Run("Test_Webhook_OverlappingSubscriptions", Test_Webhook_OverlappingSubscriptions)
 	t.Run("Test_WebhookWithDisabledFinishedEvents", Test_WebhookWithDisabledFinishedEvents)
-	t.Run("Test_WebhookWithDisabledFinishedEvents", Test_WebhookWithDisabledStartedEvents)
+	t.Run("Test_WebhookWithDisabledStartedEvents", Test_WebhookWithDisabledStartedEvents)
 	t.Run("Test_WebhookConfigAtProjectLevel", Test_WebhookConfigAtProjectLevel)
 	t.Run("Test_WebhookConfigAtStageLevel", Test_WebhookConfigAtStageLevel)
 	t.Run("Test_WebhookConfigAtServiceLevel", Test_WebhookConfigAtServiceLevel)
