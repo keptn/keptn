@@ -66,8 +66,8 @@ func TestCreateProjectCmdWithGitMissingParam(t *testing.T) {
 	shipyardFilePath := "./shipyard.yaml"
 	defer testShipyard(t, shipyardFilePath, "")()
 
-	cmd := fmt.Sprintf("create project sockshop --shipyard=%s --git-user=%s --git-token=%s --mock",
-		shipyardFilePath, "user", "token")
+	cmd := fmt.Sprintf("create project sockshop --shipyard=%s --git-token=%s --mock",
+		shipyardFilePath, "token")
 	_, err := executeActionCommandC(cmd)
 
 	if !errorContains(err, gitErrMsg) {
@@ -75,7 +75,7 @@ func TestCreateProjectCmdWithGitMissingParam(t *testing.T) {
 	}
 }
 
-// TestCreateProjectCmdWithGitMissingParam tests a successful create project
+// TestCreateProjectCmdWithGit tests a successful create project
 // command with git upstream parameters
 func TestCreateProjectCmdWithGit(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
@@ -85,6 +85,23 @@ func TestCreateProjectCmdWithGit(t *testing.T) {
 
 	cmd := fmt.Sprintf("create project sockshop --shipyard=%s --git-user=%s --git-token=%s --git-remote-url=%s --mock",
 		shipyardFilePath, "user", "token", "https://")
+	_, err := executeActionCommandC(cmd)
+
+	if err != nil {
+		t.Errorf(unexpectedErrMsg, err)
+	}
+}
+
+// TestCreateProjectCmdWithGit tests a successful create project
+// command with git upstream parameters without user
+func TestCreateProjectCmdWithoutGitUser(t *testing.T) {
+	credentialmanager.MockAuthCreds = true
+
+	shipyardFilePath := "./shipyard.yaml"
+	defer testShipyard(t, shipyardFilePath, "")()
+
+	cmd := fmt.Sprintf("create project sockshop --shipyard=%s --git-token=%s --git-remote-url=%s --mock",
+		shipyardFilePath, "token", "https://")
 	_, err := executeActionCommandC(cmd)
 
 	if err != nil {
