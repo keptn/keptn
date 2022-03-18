@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.12.6](https://github.com/keptn/keptn/compare/0.12.5...0.12.6) (2022-03-18)
+
+
+### Bug Fixes
+
+* **configuration-service:** Return 404 when token is invalid ([#7188](https://github.com/keptn/keptn/issues/7188)) ([0ab35df](https://github.com/keptn/keptn/commit/0ab35dfa481d2d7c96b3cefe8ef56ed7931c232a))
+* **webhook-service:** enhance blacklisting of disallowed urls ([#7192](https://github.com/keptn/keptn/issues/7192)) ([61348f8](https://github.com/keptn/keptn/commit/61348f8bd7c2b1ca84137d4cf6cbd3b644c06bcf))
+
 ### [0.12.5](https://github.com/keptn/keptn/compare/0.12.4...0.12.5) (2022-03-17)
 
 
