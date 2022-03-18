@@ -78,3 +78,4 @@ For a realtime overview of current contributors to the Keptn project, we refer t
 * [Luis Marsano](https://github.com/lmmarsano)
 * [Oleg Nenashev](https://github.com/oleg-nenashev)
 * [Stuart Blackler](https://github.com/Im5tu)
+* [Meg McRoberts](https://github.com/Im5tu)
