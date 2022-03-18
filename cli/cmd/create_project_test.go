@@ -195,13 +195,3 @@ spec:
 		})
 	}
 }
-
-// TestCreateProjectUnknownCommand
-func TestCreateProjectUnknownCommand(t *testing.T) {
-	testInvalidInputHelper("create project sockshop someUnknownCommand --shipyard=shipyard.yaml", "too many arguments set", t)
-}
-
-// TestCreateProjectUnknownParameter
-func TestCreateProjectUnknownParmeter(t *testing.T) {
-	testInvalidInputHelper("create project sockshop --projectt=sockshop", "unknown flag: --projectt", t)
-}
