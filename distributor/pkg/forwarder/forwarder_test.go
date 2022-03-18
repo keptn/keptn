@@ -98,7 +98,7 @@ func Test_NATSDown(t *testing.T) {
 	svr.WaitForShutdown()
 
 	// wait until we exceed max reconnect time
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(5 * time.Second)
 
 	// restart embedded NATS cluster
 	svr, shutdownNats = runNATSServerOnPort(natsTestPort)
