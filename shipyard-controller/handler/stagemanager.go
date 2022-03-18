@@ -1,14 +1,14 @@
 package handler
 
 import (
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/db"
-	"github.com/keptn/keptn/shipyard-controller/models"
 )
 
 //go:generate moq -pkg fake -skip-ensure -out ./fake/stagemanager.go . IStageManager
 type IStageManager interface {
-	GetAllStages(projectName string) ([]*models.ExpandedStage, error)
-	GetStage(projectName, stageName string) (*models.ExpandedStage, error)
+	GetAllStages(projectName string) ([]*apimodels.ExpandedStage, error)
+	GetStage(projectName, stageName string) (*apimodels.ExpandedStage, error)
 }
 
 type StageManager struct {
@@ -21,7 +21,7 @@ func NewStageManager(projectMVRepo db.ProjectMVRepo) *StageManager {
 	}
 }
 
-func (sm *StageManager) GetAllStages(projectName string) ([]*models.ExpandedStage, error) {
+func (sm *StageManager) GetAllStages(projectName string) ([]*apimodels.ExpandedStage, error) {
 	project, err := sm.projectMVRepo.GetProject(projectName)
 	if err != nil {
 		return nil, err
@@ -33,7 +33,7 @@ func (sm *StageManager) GetAllStages(projectName string) ([]*models.ExpandedStag
 	return project.Stages, nil
 }
 
-func (sm *StageManager) GetStage(projectName, stageName string) (*models.ExpandedStage, error) {
+func (sm *StageManager) GetStage(projectName, stageName string) (*apimodels.ExpandedStage, error) {
 	project, err := sm.projectMVRepo.GetProject(projectName)
 	if err != nil {
 		return nil, err

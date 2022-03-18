@@ -3,15 +3,15 @@ package handler
 import (
 	"errors"
 	"fmt"
-	"net/http"
-	"sort"
-
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
+	"net/http"
+	"sort"
 )
 
 type IServiceHandler interface {
@@ -142,7 +142,7 @@ func (sh *ServiceHandler) DeleteService(c *gin.Context) {
 // @Param   project     path    string     true        "Project"
 // @Param   stage     path    string     true        "Stage"
 // @Param   service     path    string     true        "Service"
-// @Success 200 {object} models.ExpandedService	"ok"
+// @Success 200 {object} apimodels.ExpandedService	"ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/{project}/stage/{stage}/service/{service} [get]
@@ -175,7 +175,7 @@ func (sh *ServiceHandler) GetService(c *gin.Context) {
 // @Param   stage     path    string     true        "Stage"
 // @Param	pageSize			query		int			false	"The number of items to return"
 // @Param   nextPageKey     	query    	string     	false	"Pointer to the next set of items"
-// @Success 200 {object} models.ExpandedServices	"ok"
+// @Success 200 {object} apimodels.ExpandedServices	"ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/{project}/stage/{stage}/service [get]
@@ -199,11 +199,11 @@ func (sh *ServiceHandler) GetServices(c *gin.Context) {
 		return
 	}
 
-	payload := &models.ExpandedServices{
+	payload := &apimodels.ExpandedServices{
 		PageSize:    0,
 		NextPageKey: "0",
 		TotalCount:  0,
-		Services:    []*models.ExpandedService{},
+		Services:    []*apimodels.ExpandedService{},
 	}
 	sort.Slice(services, func(i, j int) bool {
 		return services[i].ServiceName < services[j].ServiceName

@@ -4,7 +4,7 @@
 package db_mock
 
 import (
-	"github.com/keptn/keptn/shipyard-controller/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"sync"
 )
 
@@ -14,19 +14,19 @@ import (
 //
 // 		// make and configure a mocked db.ProjectRepo
 // 		mockedProjectRepo := &ProjectRepoMock{
-// 			CreateProjectFunc: func(project *models.ExpandedProject) error {
+// 			CreateProjectFunc: func(project *apimodels.ExpandedProject) error {
 // 				panic("mock out the CreateProject method")
 // 			},
 // 			DeleteProjectFunc: func(projectName string) error {
 // 				panic("mock out the DeleteProject method")
 // 			},
-// 			GetProjectFunc: func(projectName string) (*models.ExpandedProject, error) {
+// 			GetProjectFunc: func(projectName string) (*apimodels.ExpandedProject, error) {
 // 				panic("mock out the GetProject method")
 // 			},
-// 			GetProjectsFunc: func() ([]*models.ExpandedProject, error) {
+// 			GetProjectsFunc: func() ([]*apimodels.ExpandedProject, error) {
 // 				panic("mock out the GetProjects method")
 // 			},
-// 			UpdateProjectFunc: func(project *models.ExpandedProject) error {
+// 			UpdateProjectFunc: func(project *apimodels.ExpandedProject) error {
 // 				panic("mock out the UpdateProject method")
 // 			},
 // 			UpdateProjectUpstreamFunc: func(projectName string, uri string, user string) error {
@@ -40,19 +40,19 @@ import (
 // 	}
 type ProjectRepoMock struct {
 	// CreateProjectFunc mocks the CreateProject method.
-	CreateProjectFunc func(project *models.ExpandedProject) error
+	CreateProjectFunc func(project *apimodels.ExpandedProject) error
 
 	// DeleteProjectFunc mocks the DeleteProject method.
 	DeleteProjectFunc func(projectName string) error
 
 	// GetProjectFunc mocks the GetProject method.
-	GetProjectFunc func(projectName string) (*models.ExpandedProject, error)
+	GetProjectFunc func(projectName string) (*apimodels.ExpandedProject, error)
 
 	// GetProjectsFunc mocks the GetProjects method.
-	GetProjectsFunc func() ([]*models.ExpandedProject, error)
+	GetProjectsFunc func() ([]*apimodels.ExpandedProject, error)
 
 	// UpdateProjectFunc mocks the UpdateProject method.
-	UpdateProjectFunc func(project *models.ExpandedProject) error
+	UpdateProjectFunc func(project *apimodels.ExpandedProject) error
 
 	// UpdateProjectUpstreamFunc mocks the UpdateProjectUpstream method.
 	UpdateProjectUpstreamFunc func(projectName string, uri string, user string) error
@@ -62,7 +62,7 @@ type ProjectRepoMock struct {
 		// CreateProject holds details about calls to the CreateProject method.
 		CreateProject []struct {
 			// Project is the project argument value.
-			Project *models.ExpandedProject
+			Project *apimodels.ExpandedProject
 		}
 		// DeleteProject holds details about calls to the DeleteProject method.
 		DeleteProject []struct {
@@ -80,7 +80,7 @@ type ProjectRepoMock struct {
 		// UpdateProject holds details about calls to the UpdateProject method.
 		UpdateProject []struct {
 			// Project is the project argument value.
-			Project *models.ExpandedProject
+			Project *apimodels.ExpandedProject
 		}
 		// UpdateProjectUpstream holds details about calls to the UpdateProjectUpstream method.
 		UpdateProjectUpstream []struct {
@@ -101,12 +101,12 @@ type ProjectRepoMock struct {
 }
 
 // CreateProject calls CreateProjectFunc.
-func (mock *ProjectRepoMock) CreateProject(project *models.ExpandedProject) error {
+func (mock *ProjectRepoMock) CreateProject(project *apimodels.ExpandedProject) error {
 	if mock.CreateProjectFunc == nil {
 		panic("ProjectRepoMock.CreateProjectFunc: method is nil but ProjectRepo.CreateProject was just called")
 	}
 	callInfo := struct {
-		Project *models.ExpandedProject
+		Project *apimodels.ExpandedProject
 	}{
 		Project: project,
 	}
@@ -120,10 +120,10 @@ func (mock *ProjectRepoMock) CreateProject(project *models.ExpandedProject) erro
 // Check the length with:
 //     len(mockedProjectRepo.CreateProjectCalls())
 func (mock *ProjectRepoMock) CreateProjectCalls() []struct {
-	Project *models.ExpandedProject
+	Project *apimodels.ExpandedProject
 } {
 	var calls []struct {
-		Project *models.ExpandedProject
+		Project *apimodels.ExpandedProject
 	}
 	mock.lockCreateProject.RLock()
 	calls = mock.calls.CreateProject
@@ -163,7 +163,7 @@ func (mock *ProjectRepoMock) DeleteProjectCalls() []struct {
 }
 
 // GetProject calls GetProjectFunc.
-func (mock *ProjectRepoMock) GetProject(projectName string) (*models.ExpandedProject, error) {
+func (mock *ProjectRepoMock) GetProject(projectName string) (*apimodels.ExpandedProject, error) {
 	if mock.GetProjectFunc == nil {
 		panic("ProjectRepoMock.GetProjectFunc: method is nil but ProjectRepo.GetProject was just called")
 	}
@@ -194,7 +194,7 @@ func (mock *ProjectRepoMock) GetProjectCalls() []struct {
 }
 
 // GetProjects calls GetProjectsFunc.
-func (mock *ProjectRepoMock) GetProjects() ([]*models.ExpandedProject, error) {
+func (mock *ProjectRepoMock) GetProjects() ([]*apimodels.ExpandedProject, error) {
 	if mock.GetProjectsFunc == nil {
 		panic("ProjectRepoMock.GetProjectsFunc: method is nil but ProjectRepo.GetProjects was just called")
 	}
@@ -220,12 +220,12 @@ func (mock *ProjectRepoMock) GetProjectsCalls() []struct {
 }
 
 // UpdateProject calls UpdateProjectFunc.
-func (mock *ProjectRepoMock) UpdateProject(project *models.ExpandedProject) error {
+func (mock *ProjectRepoMock) UpdateProject(project *apimodels.ExpandedProject) error {
 	if mock.UpdateProjectFunc == nil {
 		panic("ProjectRepoMock.UpdateProjectFunc: method is nil but ProjectRepo.UpdateProject was just called")
 	}
 	callInfo := struct {
-		Project *models.ExpandedProject
+		Project *apimodels.ExpandedProject
 	}{
 		Project: project,
 	}
@@ -239,10 +239,10 @@ func (mock *ProjectRepoMock) UpdateProject(project *models.ExpandedProject) erro
 // Check the length with:
 //     len(mockedProjectRepo.UpdateProjectCalls())
 func (mock *ProjectRepoMock) UpdateProjectCalls() []struct {
-	Project *models.ExpandedProject
+	Project *apimodels.ExpandedProject
 } {
 	var calls []struct {
-		Project *models.ExpandedProject
+		Project *apimodels.ExpandedProject
 	}
 	mock.lockUpdateProject.RLock()
 	calls = mock.calls.UpdateProject

@@ -2,7 +2,7 @@ package db
 
 import (
 	"fmt"
-	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
 	"strings"
@@ -11,28 +11,28 @@ import (
 )
 
 type integrationTest struct {
-	Integration             models.Integration
+	Integration             apimodels.Integration
 	WantedSubscriptionsSize int
 }
 
-func generateIntegrations() []models.Integration {
+func generateIntegrations() []apimodels.Integration {
 
-	integration1 := models.Integration{
+	integration1 := apimodels.Integration{
 		ID:   "i1",
 		Name: "integration1",
-		Subscription: keptnmodels.Subscription{
+		Subscription: apimodels.Subscription{
 			Topics: []string{"sh.keptn.event.test.triggered"},
 			Status: "active",
-			Filter: keptnmodels.SubscriptionFilter{
+			Filter: apimodels.SubscriptionFilter{
 				Project: "pr1",
 				Stage:   "st1,st2",
 				Service: "sv2,sv3",
 			},
 		},
-		Subscriptions: []keptnmodels.EventSubscription{
+		Subscriptions: []apimodels.EventSubscription{
 			{
 				Event: "sh.keptn.event.test.triggered",
-				Filter: keptnmodels.EventSubscriptionFilter{
+				Filter: apimodels.EventSubscriptionFilter{
 					Projects: []string{"pr1"},
 					Services: []string{"sv1", "sv2"},
 					Stages:   []string{"st1", "st2"},
@@ -40,7 +40,7 @@ func generateIntegrations() []models.Integration {
 			},
 			{
 				Event: "sh.keptn.event.test",
-				Filter: keptnmodels.EventSubscriptionFilter{
+				Filter: apimodels.EventSubscriptionFilter{
 					Projects: []string{"pr2"},
 					Services: []string{"sv1"},
 					Stages:   []string{"st1", "st2"},
@@ -48,7 +48,7 @@ func generateIntegrations() []models.Integration {
 			},
 			{
 				Event: "sh.keptn.event",
-				Filter: keptnmodels.EventSubscriptionFilter{
+				Filter: apimodels.EventSubscriptionFilter{
 					Projects: []string{"pr4"},
 					Services: []string{"sv1", "sv2"},
 					Stages:   []string{"st1", "st2"},
@@ -57,22 +57,22 @@ func generateIntegrations() []models.Integration {
 		},
 	}
 
-	integration2 := models.Integration{
+	integration2 := apimodels.Integration{
 		ID:   "i2",
 		Name: "integration2",
-		Subscription: keptnmodels.Subscription{
+		Subscription: apimodels.Subscription{
 			Topics: []string{"sh.keptn.event.deployment.triggered"},
 			Status: "active",
-			Filter: keptnmodels.SubscriptionFilter{
+			Filter: apimodels.SubscriptionFilter{
 				Project: "pr1",
 				Stage:   "st1,st2",
 				Service: "sv0,sv2,sv1",
 			},
 		},
-		Subscriptions: []keptnmodels.EventSubscription{
+		Subscriptions: []apimodels.EventSubscription{
 			{
 				Event: "sh.keptn.event.deployment.triggered",
-				Filter: keptnmodels.EventSubscriptionFilter{
+				Filter: apimodels.EventSubscriptionFilter{
 					Projects: []string{"pr1"},
 					Services: []string{"sv1", "sv2"},
 					Stages:   []string{"st1", "st2"},
@@ -81,22 +81,22 @@ func generateIntegrations() []models.Integration {
 		},
 	}
 
-	integration3 := models.Integration{
+	integration3 := apimodels.Integration{
 		ID:   "i3",
 		Name: "integration3",
-		Subscription: keptnmodels.Subscription{
+		Subscription: apimodels.Subscription{
 			Topics: []string{"sh.keptn.event.deployment.triggered"},
 			Status: "active",
-			Filter: keptnmodels.SubscriptionFilter{
+			Filter: apimodels.SubscriptionFilter{
 				Project: "pr1",
 				Stage:   "st1",
 				Service: "sv1,sv2",
 			},
 		},
-		Subscriptions: []keptnmodels.EventSubscription{
+		Subscriptions: []apimodels.EventSubscription{
 			{
 				Event: "sh.keptn.event.deployment.triggered",
-				Filter: keptnmodels.EventSubscriptionFilter{
+				Filter: apimodels.EventSubscriptionFilter{
 					Projects: []string{"pr1"},
 					Services: []string{"sv1", "sv2"},
 					Stages:   []string{"st1"},
@@ -104,7 +104,7 @@ func generateIntegrations() []models.Integration {
 			},
 			{
 				Event: "sh.keptn.event.deployment",
-				Filter: keptnmodels.EventSubscriptionFilter{
+				Filter: apimodels.EventSubscriptionFilter{
 					Projects: []string{"pr1"},
 					Services: []string{},
 					Stages:   []string{},
@@ -112,7 +112,7 @@ func generateIntegrations() []models.Integration {
 			},
 			{
 				Event: "sh.keptn.event.test",
-				Filter: keptnmodels.EventSubscriptionFilter{
+				Filter: apimodels.EventSubscriptionFilter{
 					Projects: []string{"pr2"},
 					Services: []string{"sv1"},
 					Stages:   []string{"st1"},
@@ -121,22 +121,22 @@ func generateIntegrations() []models.Integration {
 		},
 	}
 
-	integration4 := models.Integration{
+	integration4 := apimodels.Integration{
 		ID:   "i4",
 		Name: "integraiton4",
-		Subscription: keptnmodels.Subscription{
+		Subscription: apimodels.Subscription{
 			Topics: []string{"sh.keptn.event.deployment.triggered"},
 			Status: "active",
-			Filter: keptnmodels.SubscriptionFilter{
+			Filter: apimodels.SubscriptionFilter{
 				Project: "pr1",
 				Stage:   "st1",
 				Service: "sv1",
 			},
 		},
-		Subscriptions: []keptnmodels.EventSubscription{
+		Subscriptions: []apimodels.EventSubscription{
 			{
 				Event: "sh.keptn.event.deployment.triggered",
-				Filter: keptnmodels.EventSubscriptionFilter{
+				Filter: apimodels.EventSubscriptionFilter{
 					Projects: []string{"pr1"},
 					Services: []string{"sv1"},
 					Stages:   []string{"st1"},
@@ -145,17 +145,17 @@ func generateIntegrations() []models.Integration {
 		},
 	}
 
-	integration5 := models.Integration{
+	integration5 := apimodels.Integration{
 		ID:   "i5",
 		Name: "integraiton5",
-		Subscription: keptnmodels.Subscription{
+		Subscription: apimodels.Subscription{
 			Topics: []string{"sh.keptn.event.deployment.triggered"},
 			Status: "active",
-			Filter: keptnmodels.SubscriptionFilter{},
+			Filter: apimodels.SubscriptionFilter{},
 		},
-		Subscriptions: []keptnmodels.EventSubscription{},
+		Subscriptions: []apimodels.EventSubscription{},
 	}
-	return []models.Integration{integration1, integration2, integration3, integration4, integration5}
+	return []apimodels.Integration{integration1, integration2, integration3, integration4, integration5}
 }
 func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 
@@ -271,10 +271,10 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 	require.Empty(t, integrations)
 
 	// add subscription
-	err = mdbrepo.CreateOrUpdateSubscription("i5", models.Subscription{
+	err = mdbrepo.CreateOrUpdateSubscription("i5", apimodels.EventSubscription{
 		ID:    "new-subscription",
 		Event: "a-topic",
-		Filter: keptnmodels.EventSubscriptionFilter{
+		Filter: apimodels.EventSubscriptionFilter{
 			Projects: []string{"a-project"},
 			Stages:   []string{"a-stage"},
 			Services: []string{"a-service"},
@@ -289,10 +289,10 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 	fmt.Println(integrations)
 
 	// update subscription
-	err = mdbrepo.CreateOrUpdateSubscription("i5", models.Subscription{
+	err = mdbrepo.CreateOrUpdateSubscription("i5", apimodels.EventSubscription{
 		ID:    "new-subscription",
 		Event: "a-topic",
-		Filter: keptnmodels.EventSubscriptionFilter{
+		Filter: apimodels.EventSubscriptionFilter{
 			Projects: []string{"a-project", "another-project"},
 			Stages:   []string{"a-stage"},
 			Services: []string{"a-service"},
@@ -396,17 +396,17 @@ func TestMongoDBUniformRepo_RemoveByServiceName(t *testing.T) {
 }
 
 func TestMongoDBUniformRepo_UpdateVersionInfo(t *testing.T) {
-	testIntegration := models.Integration{
+	testIntegration := apimodels.Integration{
 		ID:   "i1",
 		Name: "integration1",
-		MetaData: keptnmodels.MetaData{
+		MetaData: apimodels.MetaData{
 			IntegrationVersion: "1",
 			DistributorVersion: "1",
 		},
-		Subscriptions: []keptnmodels.EventSubscription{
+		Subscriptions: []apimodels.EventSubscription{
 			{
 				Event: "sh.keptn.event.test.triggered",
-				Filter: keptnmodels.EventSubscriptionFilter{
+				Filter: apimodels.EventSubscriptionFilter{
 					Projects: []string{"pr1"},
 					Services: []string{"sv1", "sv2"},
 					Stages:   []string{"st1", "st2"},
@@ -414,7 +414,7 @@ func TestMongoDBUniformRepo_UpdateVersionInfo(t *testing.T) {
 			},
 			{
 				Event: "sh.keptn.event.test",
-				Filter: keptnmodels.EventSubscriptionFilter{
+				Filter: apimodels.EventSubscriptionFilter{
 					Projects: []string{"pr2"},
 					Services: []string{"sv1"},
 					Stages:   []string{"st1", "st2"},
@@ -422,7 +422,7 @@ func TestMongoDBUniformRepo_UpdateVersionInfo(t *testing.T) {
 			},
 			{
 				Event: "sh.keptn.event",
-				Filter: keptnmodels.EventSubscriptionFilter{
+				Filter: apimodels.EventSubscriptionFilter{
 					Projects: []string{"pr4"},
 					Services: []string{"sv1", "sv2"},
 					Stages:   []string{"st1", "st2"},

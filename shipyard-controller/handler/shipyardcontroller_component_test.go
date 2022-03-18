@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/benbjohnson/clock"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
@@ -861,11 +862,11 @@ func Test_shipyardController_TimeoutSequence(t *testing.T) {
 
 	sc, cancel := getTestShipyardController("")
 	defer cancel()
-	fakeTimeoutHook := &fakehooks.ISequenceTimeoutHookMock{OnSequenceTimeoutFunc: func(event models.Event) {}}
+	fakeTimeoutHook := &fakehooks.ISequenceTimeoutHookMock{OnSequenceTimeoutFunc: func(event apimodels.KeptnContextExtendedCE) {}}
 	sc.AddSequenceTimeoutHook(fakeTimeoutHook)
 
 	// insert the test data
-	_ = sc.eventRepo.InsertEvent("my-project", models.Event{
+	_ = sc.eventRepo.InsertEvent("my-project", apimodels.KeptnContextExtendedCE{
 		Data: keptnv2.EventData{
 			Project: "my-project",
 			Stage:   "my-stage",
@@ -876,7 +877,7 @@ func Test_shipyardController_TimeoutSequence(t *testing.T) {
 		Type:           common.Stringp(keptnv2.GetTriggeredEventType("my-stage.delivery")),
 	}, common.TriggeredEvent)
 
-	_ = sc.eventRepo.InsertEvent("my-project", models.Event{
+	_ = sc.eventRepo.InsertEvent("my-project", apimodels.KeptnContextExtendedCE{
 		Data: keptnv2.EventData{
 			Project: "my-project",
 			Stage:   "my-stage",
@@ -893,7 +894,7 @@ func Test_shipyardController_TimeoutSequence(t *testing.T) {
 			Name: "delivery",
 		},
 		Status: models.SequenceExecutionStatus{
-			State: models.SequenceStartedState,
+			State: apimodels.SequenceStartedState,
 			CurrentTask: models.TaskExecutionState{
 				Name:        "deployment",
 				TriggeredID: "my-deployment-triggered-id",
@@ -912,9 +913,9 @@ func Test_shipyardController_TimeoutSequence(t *testing.T) {
 	require.Nil(t, err)
 
 	// invoke the CancelSequence function
-	err = sc.timeoutSequence(models.SequenceTimeout{
+	err = sc.timeoutSequence(apimodels.SequenceTimeout{
 		KeptnContext: "my-keptn-context-id",
-		LastEvent: models.Event{
+		LastEvent: apimodels.KeptnContextExtendedCE{
 			Data: keptnv2.EventData{
 				Project: "my-project",
 				Stage:   "my-stage",
@@ -934,14 +935,14 @@ func Test_shipyardController_CancelSequence(t *testing.T) {
 	defer setupLocalMongoDB()()
 	sc, cancel := getTestShipyardController("")
 	defer cancel()
-	fakeSequenceFinishedHook := &fakehooks.ISequenceFinishedHookMock{OnSequenceFinishedFunc: func(event models.Event) {}}
+	fakeSequenceFinishedHook := &fakehooks.ISequenceFinishedHookMock{OnSequenceFinishedFunc: func(event apimodels.KeptnContextExtendedCE) {}}
 	sc.AddSequenceFinishedHook(fakeSequenceFinishedHook)
 
 	fakeSequenceAbortedHook := &fakehooks.ISequenceAbortedHookMock{OnSequenceAbortedFunc: func(eventScope models.EventScope) {}}
 	sc.AddSequenceAbortedHook(fakeSequenceAbortedHook)
 
 	// insert the test data
-	_ = sc.eventRepo.InsertEvent("my-project", models.Event{
+	_ = sc.eventRepo.InsertEvent("my-project", apimodels.KeptnContextExtendedCE{
 		Data: keptnv2.EventData{
 			Project: "my-project",
 			Stage:   "my-stage",
@@ -952,7 +953,7 @@ func Test_shipyardController_CancelSequence(t *testing.T) {
 		Type:           common.Stringp(keptnv2.GetTriggeredEventType("my-stage.delivery")),
 	}, common.TriggeredEvent)
 
-	_ = sc.eventRepo.InsertEvent("my-project", models.Event{
+	_ = sc.eventRepo.InsertEvent("my-project", apimodels.KeptnContextExtendedCE{
 		Data: keptnv2.EventData{
 			Project: "my-project",
 			Stage:   "my-stage",
@@ -969,7 +970,7 @@ func Test_shipyardController_CancelSequence(t *testing.T) {
 			Name: "delivery",
 		},
 		Status: models.SequenceExecutionStatus{
-			State: models.SequenceStartedState,
+			State: apimodels.SequenceStartedState,
 			CurrentTask: models.TaskExecutionState{
 				Name:        "deployment",
 				TriggeredID: "my-deployment-triggered-id",
@@ -988,7 +989,7 @@ func Test_shipyardController_CancelSequence(t *testing.T) {
 	require.Nil(t, err)
 
 	// invoke the CancelSequence function
-	err = sc.cancelSequence(models.SequenceControl{
+	err = sc.cancelSequence(apimodels.SequenceControl{
 		KeptnContext: "my-keptn-context-id",
 		Project:      "my-project",
 		Stage:        "my-stage",
@@ -1011,14 +1012,14 @@ func Test_shipyardController_CancelQueuedSequence(t *testing.T) {
 
 	sc.sequenceDispatcher = sequenceDispatcherMock
 
-	fakeSequenceFinishedHook := &fakehooks.ISequenceFinishedHookMock{OnSequenceFinishedFunc: func(event models.Event) {}}
+	fakeSequenceFinishedHook := &fakehooks.ISequenceFinishedHookMock{OnSequenceFinishedFunc: func(event apimodels.KeptnContextExtendedCE) {}}
 	sc.AddSequenceFinishedHook(fakeSequenceFinishedHook)
 
 	fakeSequenceAbortedHook := &fakehooks.ISequenceAbortedHookMock{OnSequenceAbortedFunc: func(eventScope models.EventScope) {}}
 	sc.AddSequenceAbortedHook(fakeSequenceAbortedHook)
 
 	// insert the test data
-	_ = sc.eventRepo.InsertEvent("my-project", models.Event{
+	_ = sc.eventRepo.InsertEvent("my-project", apimodels.KeptnContextExtendedCE{
 		Data: keptnv2.EventData{
 			Project: "my-project",
 			Stage:   "my-stage",
@@ -1035,7 +1036,7 @@ func Test_shipyardController_CancelQueuedSequence(t *testing.T) {
 			Name: "delivery",
 		},
 		Status: models.SequenceExecutionStatus{
-			State: models.SequenceTriggeredState,
+			State: apimodels.SequenceTriggeredState,
 		},
 		Scope: models.EventScope{
 			KeptnContext: "my-keptn-context-id",
@@ -1050,7 +1051,7 @@ func Test_shipyardController_CancelQueuedSequence(t *testing.T) {
 	require.Nil(t, err)
 
 	// invoke the CancelSequence function
-	err = sc.cancelSequence(models.SequenceControl{
+	err = sc.cancelSequence(apimodels.SequenceControl{
 		KeptnContext: "my-keptn-context-id",
 		Project:      "my-project",
 		Stage:        "my-stage",
@@ -1073,14 +1074,14 @@ func Test_shipyardController_CancelQueuedSequence_RemoveFromQueueFails(t *testin
 
 	sc.sequenceDispatcher = sequenceDispatcherMock
 
-	fakeSequenceFinishedHook := &fakehooks.ISequenceFinishedHookMock{OnSequenceFinishedFunc: func(event models.Event) {}}
+	fakeSequenceFinishedHook := &fakehooks.ISequenceFinishedHookMock{OnSequenceFinishedFunc: func(event apimodels.KeptnContextExtendedCE) {}}
 	sc.AddSequenceFinishedHook(fakeSequenceFinishedHook)
 
 	fakeSequenceAbortedHook := &fakehooks.ISequenceAbortedHookMock{OnSequenceAbortedFunc: func(eventScope models.EventScope) {}}
 	sc.AddSequenceAbortedHook(fakeSequenceAbortedHook)
 
 	// insert the test data
-	_ = sc.eventRepo.InsertEvent("my-project", models.Event{
+	_ = sc.eventRepo.InsertEvent("my-project", apimodels.KeptnContextExtendedCE{
 		Data: keptnv2.EventData{
 			Project: "my-project",
 			Stage:   "my-stage",
@@ -1097,7 +1098,7 @@ func Test_shipyardController_CancelQueuedSequence_RemoveFromQueueFails(t *testin
 			Name: "delivery",
 		},
 		Status: models.SequenceExecutionStatus{
-			State: models.SequenceTriggeredState,
+			State: apimodels.SequenceTriggeredState,
 		},
 		Scope: models.EventScope{
 			KeptnContext: "my-keptn-context-id",
@@ -1110,7 +1111,7 @@ func Test_shipyardController_CancelQueuedSequence_RemoveFromQueueFails(t *testin
 	}, nil)
 
 	// invoke the CancelSequence function
-	err = sc.cancelSequence(models.SequenceControl{
+	err = sc.cancelSequence(apimodels.SequenceControl{
 		KeptnContext: "my-keptn-context-id",
 		Project:      "my-project",
 		Stage:        "my-stage",
@@ -1133,14 +1134,14 @@ func Test_shipyardController_CancelQueuedSequence_NoTriggeredEventAvailable(t *t
 
 	sc.sequenceDispatcher = sequenceDispatcherMock
 
-	fakeSequenceFinishedHook := &fakehooks.ISequenceFinishedHookMock{OnSequenceFinishedFunc: func(event models.Event) {}}
+	fakeSequenceFinishedHook := &fakehooks.ISequenceFinishedHookMock{OnSequenceFinishedFunc: func(event apimodels.KeptnContextExtendedCE) {}}
 	sc.AddSequenceFinishedHook(fakeSequenceFinishedHook)
 
 	fakeSequenceAbortedHook := &fakehooks.ISequenceAbortedHookMock{OnSequenceAbortedFunc: func(eventScope models.EventScope) {}}
 	sc.AddSequenceAbortedHook(fakeSequenceAbortedHook)
 
 	// invoke the CancelSequence function
-	err := sc.cancelSequence(models.SequenceControl{
+	err := sc.cancelSequence(apimodels.SequenceControl{
 		KeptnContext: "my-keptn-context-id",
 		Project:      "my-project",
 		Stage:        "my-stage",
@@ -1267,7 +1268,7 @@ func getTestShipyardController(shipyardContent string) (*shipyardController, con
 		sequenceExecutionRepo: sequenceExecutionRepo,
 	}
 	sc.eventDispatcher.(*fake.IEventDispatcherMock).AddFunc = func(event models.DispatcherEvent, skipQueue bool) error {
-		ev := &models.Event{}
+		ev := &apimodels.KeptnContextExtendedCE{}
 		err := keptnv2.Decode(&event.Event, ev)
 		if err != nil {
 			return err
@@ -1282,8 +1283,8 @@ func getTestShipyardController(shipyardContent string) (*shipyardController, con
 	return sc, cancel
 }
 
-func filterEvents(eventsCollection []models.Event, filter common.EventFilter) ([]models.Event, error) {
-	result := []models.Event{}
+func filterEvents(eventsCollection []apimodels.KeptnContextExtendedCE, filter common.EventFilter) ([]apimodels.KeptnContextExtendedCE, error) {
+	result := []apimodels.KeptnContextExtendedCE{}
 
 	for _, event := range eventsCollection {
 		scope, _ := models.NewEventScope(event)
@@ -1308,8 +1309,8 @@ func filterEvents(eventsCollection []models.Event, filter common.EventFilter) ([
 	return result, nil
 }
 
-func getDeploymentFinishedEvent(stage string, triggeredID string, source string, result keptnv2.ResultType) models.Event {
-	return models.Event{
+func getDeploymentFinishedEvent(stage string, triggeredID string, source string, result keptnv2.ResultType) apimodels.KeptnContextExtendedCE {
+	return apimodels.KeptnContextExtendedCE{
 		Contenttype: "application/json",
 		Data: keptnv2.DeploymentFinishedEventData{
 			EventData: keptnv2.EventData{
@@ -1332,14 +1333,14 @@ func getDeploymentFinishedEvent(stage string, triggeredID string, source string,
 		Shkeptncontext: "test-context",
 		Source:         common.Stringp(source),
 		Specversion:    "0.2",
-		Time:           "",
+		Time:           time.Now(),
 		Triggeredid:    triggeredID,
 		Type:           common.Stringp("sh.keptn.event.deployment.finished"),
 	}
 }
 
-func getErroredDeploymentFinishedEvent(stage string, triggeredID string, source string) models.Event {
-	return models.Event{
+func getErroredDeploymentFinishedEvent(stage string, triggeredID string, source string) apimodels.KeptnContextExtendedCE {
+	return apimodels.KeptnContextExtendedCE{
 		Contenttype: "application/json",
 		Data: keptnv2.DeploymentFinishedEventData{
 			EventData: keptnv2.EventData{
@@ -1361,14 +1362,14 @@ func getErroredDeploymentFinishedEvent(stage string, triggeredID string, source 
 		Shkeptncontext: "test-context",
 		Source:         common.Stringp(source),
 		Specversion:    "0.2",
-		Time:           "",
+		Time:           time.Now(),
 		Triggeredid:    triggeredID,
 		Type:           common.Stringp("sh.keptn.event.deployment.finished"),
 	}
 }
 
-func getTestTaskFinishedEvent(stage string, triggeredID string) models.Event {
-	return models.Event{
+func getTestTaskFinishedEvent(stage string, triggeredID string) apimodels.KeptnContextExtendedCE {
+	return apimodels.KeptnContextExtendedCE{
 		Contenttype: "application/json",
 		Data: keptnv2.TestFinishedEventData{
 			EventData: keptnv2.EventData{
@@ -1389,14 +1390,14 @@ func getTestTaskFinishedEvent(stage string, triggeredID string) models.Event {
 		Shkeptncontext: "test-context",
 		Source:         common.Stringp("test-source"),
 		Specversion:    "0.2",
-		Time:           "",
+		Time:           time.Now(),
 		Triggeredid:    triggeredID,
 		Type:           common.Stringp("sh.keptn.event.test.finished"),
 	}
 }
 
-func getEvaluationTaskFinishedEvent(stage string, triggeredID string, result keptnv2.ResultType) models.Event {
-	return models.Event{
+func getEvaluationTaskFinishedEvent(stage string, triggeredID string, result keptnv2.ResultType) apimodels.KeptnContextExtendedCE {
+	return apimodels.KeptnContextExtendedCE{
 		Contenttype: "application/json",
 		Data: keptnv2.EvaluationFinishedEventData{
 			EventData: keptnv2.EventData{
@@ -1415,14 +1416,14 @@ func getEvaluationTaskFinishedEvent(stage string, triggeredID string, result kep
 		Shkeptncontext: "test-context",
 		Source:         common.Stringp("test-source"),
 		Specversion:    "0.2",
-		Time:           "",
+		Time:           time.Now(),
 		Triggeredid:    triggeredID,
 		Type:           common.Stringp("sh.keptn.event.evaluation.finished"),
 	}
 }
 
-func getReleaseTaskFinishedEvent(stage string, triggeredID string) models.Event {
-	return models.Event{
+func getReleaseTaskFinishedEvent(stage string, triggeredID string) apimodels.KeptnContextExtendedCE {
+	return apimodels.KeptnContextExtendedCE{
 		Contenttype: "application/json",
 		Data: keptnv2.ReleaseFinishedEventData{
 			EventData: keptnv2.EventData{
@@ -1438,17 +1439,17 @@ func getReleaseTaskFinishedEvent(stage string, triggeredID string) models.Event 
 		Shkeptncontext: "test-context",
 		Source:         common.Stringp("test-source"),
 		Specversion:    "0.2",
-		Time:           "",
+		Time:           time.Now(),
 		Triggeredid:    triggeredID,
 		Type:           common.Stringp("sh.keptn.event.release.finished"),
 	}
 }
 
-func sendFinishedEvent(sc *shipyardController, finishedEvent models.Event) error {
+func sendFinishedEvent(sc *shipyardController, finishedEvent apimodels.KeptnContextExtendedCE) error {
 	return sc.HandleIncomingEvent(finishedEvent, true)
 }
 
-func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEvent models.Event, eventType, nextEventType string, nextStage string) (string, bool) {
+func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEvent apimodels.KeptnContextExtendedCE, eventType, nextEventType string, nextStage string) (string, bool) {
 	err := sc.HandleIncomingEvent(finishedEvent, true)
 	if err != nil {
 		t.Errorf("STEP failed: HandleIncomingEvent(%s) returned %v", *finishedEvent.Type, err)
@@ -1467,7 +1468,7 @@ func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEv
 		ID:      &scope.TriggeredID,
 		Source:  common.Stringp("shipyard-controller"),
 	}, common.TriggeredEvent)
-	require.NotContains(t, triggeredEvents, models.Event{
+	require.NotContains(t, triggeredEvents, apimodels.KeptnContextExtendedCE{
 		ID: scope.TriggeredID,
 	})
 
@@ -1502,7 +1503,7 @@ func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEv
 	return triggeredID, false
 }
 
-func sendFinishedEventAndVerifyTaskSequenceCompletion(t *testing.T, sc *shipyardController, finishedEvent models.Event, eventType, nextStage string) bool {
+func sendFinishedEventAndVerifyTaskSequenceCompletion(t *testing.T, sc *shipyardController, finishedEvent apimodels.KeptnContextExtendedCE, eventType, nextStage string) bool {
 	err := sc.HandleIncomingEvent(finishedEvent, true)
 	if err != nil {
 		t.Errorf("STEP failed: HandleIncomingEvent(%s) returned %v", *finishedEvent.Type, err)
@@ -1535,7 +1536,7 @@ func sendFinishedEventAndVerifyTaskSequenceCompletion(t *testing.T, sc *shipyard
 	return fake.ShouldNotContainEvent(t, startedEvents, keptnv2.GetStartedEventType(eventType), scope.Stage)
 }
 
-func sendAndVerifyPartialFinishedEvent(t *testing.T, sc *shipyardController, finishedEvent models.Event, eventType, nextEventType string, nextStage string) bool {
+func sendAndVerifyPartialFinishedEvent(t *testing.T, sc *shipyardController, finishedEvent apimodels.KeptnContextExtendedCE, eventType, nextEventType string, nextStage string) bool {
 	err := sc.HandleIncomingEvent(finishedEvent, true)
 	if err != nil {
 		t.Errorf("STEP failed: HandleIncomingEvent(%s) returned %v", *finishedEvent.Type, err)
@@ -1579,8 +1580,8 @@ func sendAndVerifyStartedEvent(t *testing.T, sc *shipyardController, taskName st
 	require.Nil(t, err)
 }
 
-func getArtifactDeliveryTriggeredEvent(stage string, commitID string) models.Event {
-	return models.Event{
+func getArtifactDeliveryTriggeredEvent(stage string, commitID string) apimodels.KeptnContextExtendedCE {
+	return apimodels.KeptnContextExtendedCE{
 		Contenttype: "application/json",
 		Data: keptnv2.DeploymentTriggeredEventData{
 			EventData: keptnv2.EventData{
@@ -1605,15 +1606,15 @@ func getArtifactDeliveryTriggeredEvent(stage string, commitID string) models.Eve
 		Shkeptncontext: "test-context",
 		Source:         common.Stringp("test-source"),
 		Specversion:    "0.2",
-		Time:           "",
+		Time:           time.Now(),
 		Triggeredid:    "",
 		GitCommitID:    commitID,
 		Type:           common.Stringp("sh.keptn.event.dev.artifact-delivery.triggered"),
 	}
 }
 
-func getStartedEvent(stage string, triggeredID string, eventType string, source string) models.Event {
-	return models.Event{
+func getStartedEvent(stage string, triggeredID string, eventType string, source string) apimodels.KeptnContextExtendedCE {
+	return apimodels.KeptnContextExtendedCE{
 		Contenttype:    "application/json",
 		Data:           fake.EventScope{Project: "test-project", Stage: stage, Service: "carts"},
 		Extensions:     nil,
@@ -1621,7 +1622,7 @@ func getStartedEvent(stage string, triggeredID string, eventType string, source 
 		Shkeptncontext: "test-context",
 		Source:         common.Stringp(source),
 		Specversion:    "0.2",
-		Time:           "",
+		Time:           time.Now(),
 		Triggeredid:    triggeredID,
 		Type:           common.Stringp(keptnv2.GetStartedEventType(eventType)),
 	}

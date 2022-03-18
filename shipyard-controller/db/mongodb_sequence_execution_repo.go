@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/models"
-
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -222,12 +222,12 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) Clear(projectName string) error {
 
 // PauseContext pauses all sequence executions for the given Keptn Context
 func (mdbrepo *MongoDBSequenceExecutionRepo) PauseContext(eventScope models.EventScope) error {
-	return mdbrepo.updateGlobalSequenceContext(eventScope, models.SequencePaused)
+	return mdbrepo.updateGlobalSequenceContext(eventScope, apimodels.SequencePaused)
 }
 
 // ResumeContext resumes all sequence executions for the given Keptn Context
 func (mdbrepo *MongoDBSequenceExecutionRepo) ResumeContext(eventScope models.EventScope) error {
-	return mdbrepo.updateGlobalSequenceContext(eventScope, models.SequenceStartedState)
+	return mdbrepo.updateGlobalSequenceContext(eventScope, apimodels.SequenceStartedState)
 }
 
 // IsContextPaused checks whether a sequence that belongs to the given Keptn Context is currently paused
@@ -270,10 +270,10 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) IsContextPaused(eventScope models.E
 	}
 
 	for _, state := range stateItems {
-		if state.Scope.Stage == "" && state.State == models.SequencePaused {
+		if state.Scope.Stage == "" && state.State == apimodels.SequencePaused {
 			// if the overall state is set to 'paused', this means that all stages are paused
 			return true
-		} else if state.Scope.Stage == eventScope.Stage && state.State == models.SequencePaused {
+		} else if state.Scope.Stage == eventScope.Stage && state.State == apimodels.SequencePaused {
 			// if not the overall state is 'paused', but specifically for this stage, we return true as well
 			return true
 		}

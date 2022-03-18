@@ -2,6 +2,7 @@ package db_test
 
 import (
 	"github.com/benbjohnson/clock"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -20,7 +21,7 @@ func TestMongoDBLogRepo_InsertAndRetrieve(t *testing.T) {
 	timeTo := timeFrom.Add(10 * time.Second).UTC()
 
 	// insert the first log entry
-	err := repo.CreateLogEntries([]models.LogEntry{
+	err := repo.CreateLogEntries([]apimodels.LogEntry{
 		{
 			IntegrationID: "my-integration-id",
 			Message:       "my message",
@@ -31,7 +32,7 @@ func TestMongoDBLogRepo_InsertAndRetrieve(t *testing.T) {
 	mockClock.Add(11 * time.Second)
 
 	// insert the second log entry
-	err = repo.CreateLogEntries([]models.LogEntry{
+	err = repo.CreateLogEntries([]apimodels.LogEntry{
 		{
 			IntegrationID: "my-integration-id",
 			Message:       "my second message",

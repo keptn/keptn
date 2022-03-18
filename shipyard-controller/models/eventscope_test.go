@@ -1,6 +1,7 @@
 package models
 
 import (
+	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"reflect"
@@ -9,7 +10,7 @@ import (
 
 func Test_NewEventScope(t *testing.T) {
 	type args struct {
-		event Event
+		event models.KeptnContextExtendedCE
 	}
 	tests := []struct {
 		name    string
@@ -20,12 +21,12 @@ func Test_NewEventScope(t *testing.T) {
 		{
 			name: "get event scope",
 			args: args{
-				event: Event{
+				event: models.KeptnContextExtendedCE{
 					Data: keptnv2.EventData{Project: "sockshop", Stage: "dev", Service: "carts"},
 					Type: common.Stringp("my-type"),
 				},
 			},
-			want: &EventScope{EventData: keptnv2.EventData{Project: "sockshop", Stage: "dev", Service: "carts"}, EventType: "my-type", WrappedEvent: Event{
+			want: &EventScope{EventData: keptnv2.EventData{Project: "sockshop", Stage: "dev", Service: "carts"}, EventType: "my-type", WrappedEvent: models.KeptnContextExtendedCE{
 				Data: keptnv2.EventData{Project: "sockshop", Stage: "dev", Service: "carts"},
 				Type: common.Stringp("my-type"),
 			}},
@@ -34,7 +35,7 @@ func Test_NewEventScope(t *testing.T) {
 		{
 			name: "only project available, stage and service missing",
 			args: args{
-				event: Event{
+				event: models.KeptnContextExtendedCE{
 					Data: keptnv2.EventData{Project: "sockshop"},
 				},
 			},
@@ -43,7 +44,7 @@ func Test_NewEventScope(t *testing.T) {
 		{
 			name: "empty data",
 			args: args{
-				event: Event{},
+				event: models.KeptnContextExtendedCE{},
 			},
 			want:    nil,
 			wantErr: true,
@@ -51,7 +52,7 @@ func Test_NewEventScope(t *testing.T) {
 		{
 			name: "nonsense data",
 			args: args{
-				event: Event{Data: "invalid"},
+				event: models.KeptnContextExtendedCE{Data: "invalid"},
 			},
 			want:    nil,
 			wantErr: true,

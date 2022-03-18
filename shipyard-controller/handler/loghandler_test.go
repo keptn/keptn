@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/gin-gonic/gin"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/handler"
 	"github.com/keptn/keptn/shipyard-controller/handler/fake"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -16,7 +17,7 @@ import (
 
 func TestLogHandler_CreateLogEntries(t *testing.T) {
 	myLogEntries := &models.CreateLogsRequest{
-		Logs: []models.LogEntry{
+		Logs: []apimodels.LogEntry{
 			{
 				IntegrationID: "my-id",
 				Message:       "my message",
@@ -109,7 +110,7 @@ func TestLogHandler_GetLogEntries(t *testing.T) {
 							NextPageKey: 0,
 							PageSize:    1,
 							TotalCount:  1,
-							Logs: []models.LogEntry{
+							Logs: []apimodels.LogEntry{
 								{
 									IntegrationID: "my-id",
 									Message:       "my message",
@@ -125,7 +126,7 @@ func TestLogHandler_GetLogEntries(t *testing.T) {
 				NextPageKey: 0,
 				PageSize:    1,
 				TotalCount:  1,
-				Logs: []models.LogEntry{
+				Logs: []apimodels.LogEntry{
 					{
 						IntegrationID: "my-id",
 						Message:       "my message",
@@ -143,7 +144,7 @@ func TestLogHandler_GetLogEntries(t *testing.T) {
 							NextPageKey: 0,
 							PageSize:    1,
 							TotalCount:  1,
-							Logs: []models.LogEntry{
+							Logs: []apimodels.LogEntry{
 								{
 									IntegrationID: "my-id",
 									Message:       "my message",
@@ -159,7 +160,7 @@ func TestLogHandler_GetLogEntries(t *testing.T) {
 				NextPageKey: 0,
 				PageSize:    1,
 				TotalCount:  1,
-				Logs: []models.LogEntry{
+				Logs: []apimodels.LogEntry{
 					{
 						IntegrationID: "my-id",
 						Message:       "my message",

@@ -1,10 +1,10 @@
 package models
 
-import keptnmodels "github.com/keptn/go-utils/pkg/api/models"
+import apimodels "github.com/keptn/go-utils/pkg/api/models"
 
 type CreateLogsRequest struct {
 	// logs
-	Logs []LogEntry `form:"logs" json:"logs"`
+	Logs []apimodels.LogEntry `form:"logs" json:"logs"`
 }
 
 type CreateLogsResponse struct{}
@@ -39,7 +39,5 @@ type GetLogsResponse struct {
 	TotalCount int64 `json:"totalCount,omitempty"`
 
 	// logs
-	Logs []LogEntry `json:"logs"`
+	Logs []apimodels.LogEntry `json:"logs"`
 }
-
-type LogEntry keptnmodels.LogEntry

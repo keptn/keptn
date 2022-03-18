@@ -3,7 +3,7 @@ package db_test
 import (
 	"fmt"
 	"github.com/google/uuid"
-	"github.com/keptn/go-utils/pkg/common/timeutils"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
@@ -118,10 +118,10 @@ func TestMongoDBEventsRepo_InsertAndRetrieve(t *testing.T) {
 	require.Empty(t, events)
 }
 
-func GenerateRootEvents(projectName, stageName, serviceName string, numberOfEvents int) []models.Event {
-	result := []models.Event{}
+func GenerateRootEvents(projectName, stageName, serviceName string, numberOfEvents int) []apimodels.KeptnContextExtendedCE {
+	result := []apimodels.KeptnContextExtendedCE{}
 	for i := 0; i < numberOfEvents; i++ {
-		myRootEvent := models.Event{
+		myRootEvent := apimodels.KeptnContextExtendedCE{
 			Data: keptnv2.EventData{
 				Project: projectName,
 				Stage:   stageName,
@@ -129,7 +129,7 @@ func GenerateRootEvents(projectName, stageName, serviceName string, numberOfEven
 			},
 			ID:             fmt.Sprintf("my-root-event-id-%d", i),
 			Shkeptncontext: fmt.Sprintf("my-keptn-context-%d", i),
-			Time:           timeutils.GetKeptnTimeStamp(time.Now().UTC()),
+			Time:           time.Now().UTC(),
 			Type:           common.Stringp(keptnv2.GetTriggeredEventType("dev.delivery")),
 		}
 		result = append(result, myRootEvent)
@@ -137,8 +137,8 @@ func GenerateRootEvents(projectName, stageName, serviceName string, numberOfEven
 	return result
 }
 
-func GenerateTraceForRootEvent(projectName, stageName, serviceName string, rootEvent models.Event, numberOfTasks int) []models.Event {
-	result := []models.Event{}
+func GenerateTraceForRootEvent(projectName, stageName, serviceName string, rootEvent apimodels.KeptnContextExtendedCE, numberOfTasks int) []apimodels.KeptnContextExtendedCE {
+	result := []apimodels.KeptnContextExtendedCE{}
 
 	for i := 0; i < numberOfTasks; i++ {
 		taskName := fmt.Sprintf("task-%d", i)
@@ -146,7 +146,7 @@ func GenerateTraceForRootEvent(projectName, stageName, serviceName string, rootE
 		taskStartedId := fmt.Sprintf("%s-task-%d-started-id", rootEvent.Shkeptncontext, i)
 		taskFinishedId := fmt.Sprintf("%s-task-%d-finished-id", rootEvent.Shkeptncontext, i)
 
-		taskTriggeredEvent := models.Event{
+		taskTriggeredEvent := apimodels.KeptnContextExtendedCE{
 			Data: keptnv2.EventData{
 				Project: projectName,
 				Stage:   stageName,
@@ -154,12 +154,12 @@ func GenerateTraceForRootEvent(projectName, stageName, serviceName string, rootE
 			},
 			ID:             taskTriggeredId,
 			Shkeptncontext: rootEvent.Shkeptncontext,
-			Time:           timeutils.GetKeptnTimeStamp(time.Now().UTC()),
+			Time:           time.Now().UTC(),
 			Type:           common.Stringp(keptnv2.GetTriggeredEventType(taskName)),
 		}
 		result = append(result, taskTriggeredEvent)
 
-		taskStartedEvent := models.Event{
+		taskStartedEvent := apimodels.KeptnContextExtendedCE{
 			Data: keptnv2.EventData{
 				Project: projectName,
 				Stage:   stageName,
@@ -168,12 +168,12 @@ func GenerateTraceForRootEvent(projectName, stageName, serviceName string, rootE
 			ID:             taskStartedId,
 			Triggeredid:    taskTriggeredId,
 			Shkeptncontext: rootEvent.Shkeptncontext,
-			Time:           timeutils.GetKeptnTimeStamp(time.Now().UTC()),
+			Time:           time.Now().UTC(),
 			Type:           common.Stringp(keptnv2.GetTriggeredEventType(taskName)),
 		}
 		result = append(result, taskStartedEvent)
 
-		taskFinishedEvent := models.Event{
+		taskFinishedEvent := apimodels.KeptnContextExtendedCE{
 			Data: keptnv2.EventData{
 				Project: projectName,
 				Stage:   stageName,
@@ -182,13 +182,13 @@ func GenerateTraceForRootEvent(projectName, stageName, serviceName string, rootE
 			ID:             taskFinishedId,
 			Triggeredid:    taskTriggeredId,
 			Shkeptncontext: rootEvent.Shkeptncontext,
-			Time:           timeutils.GetKeptnTimeStamp(time.Now().UTC()),
+			Time:           time.Now().UTC(),
 			Type:           common.Stringp(keptnv2.GetTriggeredEventType(taskName)),
 		}
 		result = append(result, taskFinishedEvent)
 	}
 
-	mySequenceFinishedEvent := models.Event{
+	mySequenceFinishedEvent := apimodels.KeptnContextExtendedCE{
 		Data: keptnv2.EventData{
 			Project: projectName,
 			Stage:   stageName,
@@ -196,7 +196,7 @@ func GenerateTraceForRootEvent(projectName, stageName, serviceName string, rootE
 		},
 		ID:             uuid.New().String(),
 		Shkeptncontext: rootEvent.Shkeptncontext,
-		Time:           timeutils.GetKeptnTimeStamp(time.Now().UTC()),
+		Time:           time.Now().UTC(),
 		Type:           common.Stringp(keptnv2.GetFinishedEventType("dev.delivery")),
 	}
 	result = append(result, mySequenceFinishedEvent)

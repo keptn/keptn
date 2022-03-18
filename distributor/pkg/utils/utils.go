@@ -3,15 +3,16 @@ package utils
 import (
 	"context"
 	"encoding/json"
-	cloudevents "github.com/cloudevents/sdk-go/v2"
-	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/go-utils/pkg/common/sliceutils"
-	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/distributor/pkg/config"
 	"reflect"
 	"sort"
 	"strings"
 	"sync"
+
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/common/sliceutils"
+	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/distributor/pkg/config"
 )
 
 type EventMatcher struct {
@@ -28,7 +29,7 @@ func NewEventMatcherFromEnv(config config.EnvConfig) *EventMatcher {
 	}
 }
 
-func NewEventMatcherFromSubscription(subscription keptnmodels.EventSubscription) *EventMatcher {
+func NewEventMatcherFromSubscription(subscription apimodels.EventSubscription) *EventMatcher {
 	return &EventMatcher{
 		Project: strings.Join(subscription.Filter.Projects, ","),
 		Stage:   strings.Join(subscription.Filter.Stages, ","),
@@ -218,7 +219,7 @@ func Dedup(elements []string) []string {
 	return result
 }
 
-func ToIds(events []*keptnmodels.KeptnContextExtendedCE) []string {
+func ToIds(events []*apimodels.KeptnContextExtendedCE) []string {
 	ids := []string{}
 	for _, e := range events {
 		ids = append(ids, e.ID)

@@ -2,8 +2,8 @@ package migration
 
 import (
 	"fmt"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/db"
-	"github.com/keptn/keptn/shipyard-controller/models"
 )
 
 // NewProjectMVMigrator creates a new ProjectMVMigrator
@@ -31,7 +31,7 @@ func (p *ProjectMVMigrator) MigrateKeys() error {
 	return p.updateProjects(projects)
 }
 
-func (p *ProjectMVMigrator) updateProjects(projects []*models.ExpandedProject) error {
+func (p *ProjectMVMigrator) updateProjects(projects []*apimodels.ExpandedProject) error {
 	if projects == nil {
 		return nil
 	}

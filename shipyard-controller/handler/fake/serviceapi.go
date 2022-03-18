@@ -4,7 +4,7 @@
 package fake
 
 import (
-	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"sync"
 )
 
@@ -14,7 +14,7 @@ import (
 //
 // 		// make and configure a mocked handler.IServiceAPI
 // 		mockedIServiceAPI := &IServiceAPIMock{
-// 			GetServiceFunc: func(project string, stage string, service string) (*keptnapimodels.Service, error) {
+// 			GetServiceFunc: func(project string, stage string, service string) (*apimodels.Service, error) {
 // 				panic("mock out the GetService method")
 // 			},
 // 		}
@@ -25,7 +25,7 @@ import (
 // 	}
 type IServiceAPIMock struct {
 	// GetServiceFunc mocks the GetService method.
-	GetServiceFunc func(project string, stage string, service string) (*keptnapimodels.Service, error)
+	GetServiceFunc func(project string, stage string, service string) (*apimodels.Service, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -43,7 +43,7 @@ type IServiceAPIMock struct {
 }
 
 // GetService calls GetServiceFunc.
-func (mock *IServiceAPIMock) GetService(project string, stage string, service string) (*keptnapimodels.Service, error) {
+func (mock *IServiceAPIMock) GetService(project string, stage string, service string) (*apimodels.Service, error) {
 	if mock.GetServiceFunc == nil {
 		panic("IServiceAPIMock.GetServiceFunc: method is nil but IServiceAPI.GetService was just called")
 	}

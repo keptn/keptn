@@ -1,15 +1,13 @@
 package go_tests
 
 import (
+	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"os"
 	"path"
 	"testing"
 	"time"
-
-	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/stretchr/testify/require"
 )
 
 const testingShipyard = `apiVersion: "spec.keptn.sh/0.2.3"
@@ -158,7 +156,7 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	sequenceStates, _, err := GetState(projectName)
 	require.Nil(t, err)
 	require.NotEmpty(t, sequenceStates.States)
-	VerifySequenceEndsUpInState(t, projectName, &keptnapimodels.EventContext{KeptnContext: &sequenceStates.States[0].Shkeptncontext}, 2*time.Minute, []string{models.SequenceFinished})
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{KeptnContext: &sequenceStates.States[0].Shkeptncontext}, 2*time.Minute, []string{models.SequenceFinished})
 
 	t.Log("Verify network access to public URI of helloservice in stage prod")
 	cartPubURL, err = GetPublicURLOfService(serviceName, projectName, "prod")
