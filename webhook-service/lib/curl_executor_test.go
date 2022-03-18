@@ -1,7 +1,9 @@
 package lib_test
 
 import (
+	"bytes"
 	"errors"
+	"fmt"
 	"github.com/keptn/keptn/webhook-service/lib"
 	"github.com/keptn/keptn/webhook-service/lib/fake"
 	"github.com/stretchr/testify/assert"
@@ -248,7 +250,7 @@ func TestCmdCurlExecutor_Curl(t *testing.T) {
 				fakeCommandExecutor = tt.fields.commandExecutor
 			}
 
-			ce := lib.NewCmdCurlExecutor(fakeCommandExecutor)
+			ce := lib.NewCmdCurlExecutor(fakeCommandExecutor, lib.WithUnAllowedURLs(lib.BlacklistedKubeURLS(map[string]string{"KUBERNETES_SERVICE_HOST": "kube.svc.host", "KUBERNETES_SERVICE_PORT": "9876"})))
 
 			got, err := ce.Curl(tt.args.curlCmd)
 
@@ -263,6 +265,33 @@ func TestCmdCurlExecutor_Curl(t *testing.T) {
 			require.Equal(t, tt.want, got)
 		})
 	}
+}
+
+func TestBlacklistedURLS(t *testing.T) {
+	fakeCommandExecutor := &fake.ICommandExecutorMock{ExecuteCommandFunc: func(cmd string, args ...string) (string, error) { return "success", nil }}
+	kubeEnvs := map[string]string{"KUBERNETES_SERVICE_HOST": "1.2.3.4", "KUBERNETES_SERVICE_PORT": "9876"}
+	ce := lib.NewCmdCurlExecutor(fakeCommandExecutor, lib.WithUnAllowedURLs(lib.BlacklistedKubeURLS(map[string]string{"KUBERNETES_SERVICE_HOST": "1.2.3.4", "KUBERNETES_SERVICE_PORT": "9876"})))
+	urls := lib.BlacklistedKubeURLS(kubeEnvs)
+	for _, u := range urls {
+		urls = append(urls, "http://"+u)
+		urls = append(urls, "https://"+u)
+	}
+	for _, u := range urls {
+		urls = append(urls, u+".")
+	}
+	for _, u := range urls {
+		urls = append(urls, insertNth(u, '\\', 1))
+	}
+
+	// checking
+	for _, u := range urls {
+		t.Logf("checking url: %s", u)
+		_, err := ce.Curl(fmt.Sprintf("curl -X GET %s", u))
+		require.NotNil(t, err)
+	}
+
+	// check whether we never ever actually called the executor
+	require.Empty(t, fakeCommandExecutor.ExecuteCommandCalls())
 }
 
 func TestIsNoCommandError(t *testing.T) {
@@ -395,4 +424,19 @@ func TestIsRequestError(t *testing.T) {
 			}
 		})
 	}
+}
+
+func insertNth(s string, r rune, n int) string {
+	var buffer bytes.Buffer
+	buffer.WriteRune(r)
+	var n1 = n - 1
+	var l1 = len(s) - 1
+	for i, rune := range s {
+		buffer.WriteRune(rune)
+		if i%n == n1 && i != l1 {
+			buffer.WriteRune(r)
+		}
+	}
+	buffer.WriteRune(r)
+	return buffer.String()
 }
