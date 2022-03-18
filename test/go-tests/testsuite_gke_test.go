@@ -11,6 +11,7 @@ func Test_GKE(t *testing.T) {
 	} else {
 		//t.Run("Test_BackupRestoreResourceService", Test_BackupRestoreResourceService)
 	}
+	t.Run("Test_GracefulShutdown", Test_GracefulShutdown)
 	t.Run("Test_LogIngestion", Test_LogIngestion)
 	t.Run("Test_LogForwarding", Test_LogForwarding)
 	t.Run("Test_SequenceState", Test_SequenceState)
@@ -59,7 +60,6 @@ func Test_GKE(t *testing.T) {
 	// TODO add resource service backup/restore test when the git credentials bug is solved
 	t.Run("Test_CustomUserManagedEndpointsTest", Test_CustomUserManagedEndpointsTest)
 	t.Run("Test_ContinuousDelivery", Test_ContinuousDelivery)
-	t.Run("Test_GracefulShutdown", Test_GracefulShutdown)
 	t.Run("Test_UniformRegistration_TestAPI", Test_UniformRegistration_TestAPI)
 	t.Run("Test_UniformRegistration_RegistrationOfKeptnIntegration", Test_UniformRegistration_RegistrationOfKeptnIntegration)
 	t.Run("Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods", Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods)

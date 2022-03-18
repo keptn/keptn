@@ -213,7 +213,7 @@ ingress:
   tls:
     []
 
-logLevel: debug
+logLevel: "debug"
 
 gracePeriod: 40
 
