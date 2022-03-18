@@ -33,17 +33,17 @@ type SequenceStateRepo interface {
 
 //go:generate moq --skip-ensure -pkg db_mock -out ./mock/uniformrepo_mock.go . UniformRepo
 type UniformRepo interface {
-	GetUniformIntegrations(filter models.GetUniformIntegrationsParams) ([]models.Integration, error)
+	GetUniformIntegrations(filter models.GetUniformIntegrationsParams) ([]apimodels.Integration, error)
 	DeleteUniformIntegration(id string) error
-	CreateUniformIntegration(integration models.Integration) error
-	CreateOrUpdateUniformIntegration(integration models.Integration) error
-	CreateOrUpdateSubscription(integrationID string, subscription models.Subscription) error
+	CreateUniformIntegration(integration apimodels.Integration) error
+	CreateOrUpdateUniformIntegration(integration apimodels.Integration) error
+	CreateOrUpdateSubscription(integrationID string, subscription apimodels.EventSubscription) error
 	DeleteServiceFromSubscriptions(subscriptionName string) error
 	DeleteSubscription(integrationID, subscriptionID string) error
-	GetSubscription(integrationID, subscriptionID string) (*models.Subscription, error)
-	GetSubscriptions(integrationID string) ([]models.Subscription, error)
-	UpdateLastSeen(integrationID string) (*models.Integration, error)
-	UpdateVersionInfo(integrationID, integrationVersion, distributorVersion string) (*models.Integration, error)
+	GetSubscription(integrationID, subscriptionID string) (*apimodels.EventSubscription, error)
+	GetSubscriptions(integrationID string) ([]apimodels.EventSubscription, error)
+	UpdateLastSeen(integrationID string) (*apimodels.Integration, error)
+	UpdateVersionInfo(integrationID, integrationVersion, distributorVersion string) (*apimodels.Integration, error)
 }
 
 type LogRepo interface {

@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/benbjohnson/clock"
-	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	dbmock "github.com/keptn/keptn/shipyard-controller/db/mock"
@@ -18,8 +18,8 @@ import (
 func TestSequenceDispatcher(t *testing.T) {
 	theClock := clock.NewMock()
 
-	startSequenceCalls := []keptnmodels.KeptnContextExtendedCE{}
-	triggeredEvents := []keptnmodels.KeptnContextExtendedCE{
+	startSequenceCalls := []apimodels.KeptnContextExtendedCE{}
+	triggeredEvents := []apimodels.KeptnContextExtendedCE{
 		{
 			Data: keptnv2.EventData{
 				Project: "my-project",
@@ -35,7 +35,7 @@ func TestSequenceDispatcher(t *testing.T) {
 	mockQueue := []models.QueueItem{}
 
 	mockEventRepo := &dbmock.EventRepoMock{
-		GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]keptnmodels.KeptnContextExtendedCE, error) {
+		GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]apimodels.KeptnContextExtendedCE, error) {
 			return triggeredEvents, nil
 		},
 	}
@@ -68,7 +68,7 @@ func TestSequenceDispatcher(t *testing.T) {
 			return &models.SequenceExecution{
 				ID: "my-id",
 				Status: models.SequenceExecutionStatus{
-					State: keptnmodels.SequenceTriggeredState,
+					State: apimodels.SequenceTriggeredState,
 				},
 			}, nil
 		},
@@ -79,7 +79,7 @@ func TestSequenceDispatcher(t *testing.T) {
 
 	sequenceDispatcher := handler.NewSequenceDispatcher(mockEventRepo, mockSequenceQueueRepo, mockSequenceExecutionRepo, 10*time.Second, theClock, common.SDModeRW)
 
-	sequenceDispatcher.Run(context.Background(), common.SDModeRW, func(event keptnmodels.KeptnContextExtendedCE) error {
+	sequenceDispatcher.Run(context.Background(), common.SDModeRW, func(event apimodels.KeptnContextExtendedCE) error {
 		startSequenceCalls = append(startSequenceCalls, event)
 		return nil
 	})
@@ -135,7 +135,7 @@ func TestSequenceDispatcher(t *testing.T) {
 			Name: "delivery",
 		},
 		Status: models.SequenceExecutionStatus{
-			State: keptnmodels.SequenceStartedState,
+			State: apimodels.SequenceStartedState,
 		},
 		Scope: models.EventScope{
 			EventData: keptnv2.EventData{
@@ -157,7 +157,7 @@ func TestSequenceDispatcher(t *testing.T) {
 			},
 			KeptnContext: "my-context-id-2",
 			EventType:    keptnv2.GetTriggeredEventType("dev.delivery"),
-			WrappedEvent: keptnmodels.KeptnContextExtendedCE{
+			WrappedEvent: apimodels.KeptnContextExtendedCE{
 				Type: common.Stringp(keptnv2.GetTriggeredEventType("dev.delivery")),
 			},
 		},
@@ -187,7 +187,7 @@ func TestSequenceDispatcher(t *testing.T) {
 			},
 			KeptnContext: "my-context-id-3",
 			EventType:    keptnv2.GetTriggeredEventType("dev.delivery"),
-			WrappedEvent: keptnmodels.KeptnContextExtendedCE{
+			WrappedEvent: apimodels.KeptnContextExtendedCE{
 				Type: common.Stringp(keptnv2.GetTriggeredEventType("dev.delivery")),
 			},
 		},
@@ -232,7 +232,7 @@ func TestSequenceDispatcher_AddError(t *testing.T) {
 			Name: "delivery",
 		},
 		Status: models.SequenceExecutionStatus{
-			State: keptnmodels.SequenceStartedState,
+			State: apimodels.SequenceStartedState,
 		},
 		Scope: models.EventScope{
 			EventData: keptnv2.EventData{
@@ -243,9 +243,9 @@ func TestSequenceDispatcher_AddError(t *testing.T) {
 			KeptnContext: "my-context-id",
 		},
 	}}
-	startSequenceCalls := []keptnmodels.KeptnContextExtendedCE{}
+	startSequenceCalls := []apimodels.KeptnContextExtendedCE{}
 	mockQueue := []models.QueueItem{}
-	triggeredEvents := []keptnmodels.KeptnContextExtendedCE{
+	triggeredEvents := []apimodels.KeptnContextExtendedCE{
 		{
 			Data: keptnv2.EventData{
 				Project: "my-project",
@@ -259,7 +259,7 @@ func TestSequenceDispatcher_AddError(t *testing.T) {
 	}
 
 	mockEventRepo := &dbmock.EventRepoMock{
-		GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]keptnmodels.KeptnContextExtendedCE, error) {
+		GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]apimodels.KeptnContextExtendedCE, error) {
 			return triggeredEvents, nil
 		},
 	}
@@ -289,7 +289,7 @@ func TestSequenceDispatcher_AddError(t *testing.T) {
 			return &models.SequenceExecution{
 				ID: "my-id",
 				Status: models.SequenceExecutionStatus{
-					State: keptnmodels.SequenceTriggeredState,
+					State: apimodels.SequenceTriggeredState,
 				},
 			}, nil
 		},
@@ -300,7 +300,7 @@ func TestSequenceDispatcher_AddError(t *testing.T) {
 
 	sequenceDispatcher := handler.NewSequenceDispatcher(mockEventRepo, mockSequenceQueueRepo, mockSequenceExecutionRepo, 10*time.Second, theClock, common.SDModeRW)
 
-	sequenceDispatcher.Run(context.Background(), common.SDModeRW, func(event keptnmodels.KeptnContextExtendedCE) error {
+	sequenceDispatcher.Run(context.Background(), common.SDModeRW, func(event apimodels.KeptnContextExtendedCE) error {
 		startSequenceCalls = append(startSequenceCalls, event)
 		return nil
 	})

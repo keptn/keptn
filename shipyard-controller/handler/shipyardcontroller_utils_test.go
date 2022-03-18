@@ -2,7 +2,7 @@ package handler
 
 import (
 	"github.com/go-test/deep"
-	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -485,7 +485,7 @@ func TestExtractEventKind(t *testing.T) {
 	myType := keptnv2.GetTriggeredEventType("dev.delivery")
 	invalidType := "imnotvalid"
 	type args struct {
-		event keptnmodels.KeptnContextExtendedCE
+		event apimodels.KeptnContextExtendedCE
 	}
 	tests := []struct {
 		name    string
@@ -496,7 +496,7 @@ func TestExtractEventKind(t *testing.T) {
 		{
 			name: "get type of valid event",
 			args: args{
-				event: keptnmodels.KeptnContextExtendedCE{
+				event: apimodels.KeptnContextExtendedCE{
 					Data: keptnv2.EventData{},
 					Type: &myType,
 				},
@@ -507,7 +507,7 @@ func TestExtractEventKind(t *testing.T) {
 		{
 			name: "get error for invalid event type",
 			args: args{
-				event: keptnmodels.KeptnContextExtendedCE{
+				event: apimodels.KeptnContextExtendedCE{
 					Data: keptnv2.EventData{},
 					Type: &invalidType,
 				},

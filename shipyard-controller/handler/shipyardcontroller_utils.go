@@ -3,7 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
-	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
@@ -91,7 +91,7 @@ func ObjToJSON(obj interface{}) string {
 	return string(indent)
 }
 
-func ExtractEventKind(event keptnmodels.KeptnContextExtendedCE) (string, error) {
+func ExtractEventKind(event apimodels.KeptnContextExtendedCE) (string, error) {
 	eventData := &keptnv2.EventData{}
 	err := keptnv2.Decode(event.Data, eventData)
 	if err != nil {

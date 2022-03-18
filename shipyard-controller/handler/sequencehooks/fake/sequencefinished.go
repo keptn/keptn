@@ -4,7 +4,7 @@
 package fake
 
 import (
-	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"sync"
 )
 
@@ -14,7 +14,7 @@ import (
 //
 // 		// make and configure a mocked sequencehooks.ISequenceFinishedHook
 // 		mockedISequenceFinishedHook := &ISequenceFinishedHookMock{
-// 			OnSequenceFinishedFunc: func(event keptnmodels.KeptnContextExtendedCE)  {
+// 			OnSequenceFinishedFunc: func(event apimodels.KeptnContextExtendedCE)  {
 // 				panic("mock out the OnSequenceFinished method")
 // 			},
 // 		}
@@ -25,26 +25,26 @@ import (
 // 	}
 type ISequenceFinishedHookMock struct {
 	// OnSequenceFinishedFunc mocks the OnSequenceFinished method.
-	OnSequenceFinishedFunc func(event keptnmodels.KeptnContextExtendedCE)
+	OnSequenceFinishedFunc func(event apimodels.KeptnContextExtendedCE)
 
 	// calls tracks calls to the methods.
 	calls struct {
 		// OnSequenceFinished holds details about calls to the OnSequenceFinished method.
 		OnSequenceFinished []struct {
 			//models.KeptnContextExtendedCEis the event argument value.
-			Event keptnmodels.KeptnContextExtendedCE
+			Event apimodels.KeptnContextExtendedCE
 		}
 	}
 	lockOnSequenceFinished sync.RWMutex
 }
 
 // OnSequenceFinished calls OnSequenceFinishedFunc.
-func (mock *ISequenceFinishedHookMock) OnSequenceFinished(event keptnmodels.KeptnContextExtendedCE) {
+func (mock *ISequenceFinishedHookMock) OnSequenceFinished(event apimodels.KeptnContextExtendedCE) {
 	if mock.OnSequenceFinishedFunc == nil {
 		panic("ISequenceFinishedHookMock.OnSequenceFinishedFunc: method is nil but ISequenceFinishedHook.OnSequenceFinished was just called")
 	}
 	callInfo := struct {
-		Event keptnmodels.KeptnContextExtendedCE
+		Event apimodels.KeptnContextExtendedCE
 	}{
 		Event: event,
 	}
@@ -58,10 +58,10 @@ func (mock *ISequenceFinishedHookMock) OnSequenceFinished(event keptnmodels.Kept
 // Check the length with:
 //     len(mockedISequenceFinishedHook.OnSequenceFinishedCalls())
 func (mock *ISequenceFinishedHookMock) OnSequenceFinishedCalls() []struct {
-	Event keptnmodels.KeptnContextExtendedCE
+	Event apimodels.KeptnContextExtendedCE
 } {
 	var calls []struct {
-		Event keptnmodels.KeptnContextExtendedCE
+		Event apimodels.KeptnContextExtendedCE
 	}
 	mock.lockOnSequenceFinished.RLock()
 	calls = mock.calls.OnSequenceFinished

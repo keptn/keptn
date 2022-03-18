@@ -33,7 +33,7 @@ func NewMongoDBUniformRepo(dbConnection *MongoDBConnection) *MongoDBUniformRepo 
 	return &MongoDBUniformRepo{DbConnection: dbConnection}
 }
 
-func (mdbrepo *MongoDBUniformRepo) GetUniformIntegrations(params models.GetUniformIntegrationsParams) ([]models.Integration, error) {
+func (mdbrepo *MongoDBUniformRepo) GetUniformIntegrations(params models.GetUniformIntegrationsParams) ([]apimodels.Integration, error) {
 	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext()
 	if err != nil {
 		return nil, err
@@ -62,7 +62,7 @@ func (mdbrepo *MongoDBUniformRepo) DeleteUniformIntegration(id string) error {
 	return nil
 }
 
-func (mdbrepo *MongoDBUniformRepo) CreateUniformIntegration(integration models.Integration) error {
+func (mdbrepo *MongoDBUniformRepo) CreateUniformIntegration(integration apimodels.Integration) error {
 	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext()
 	if err != nil {
 		return err
@@ -76,7 +76,7 @@ func (mdbrepo *MongoDBUniformRepo) CreateUniformIntegration(integration models.I
 	return err
 }
 
-func (mdbrepo *MongoDBUniformRepo) CreateOrUpdateUniformIntegration(integration models.Integration) error {
+func (mdbrepo *MongoDBUniformRepo) CreateOrUpdateUniformIntegration(integration apimodels.Integration) error {
 	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext()
 	if err != nil {
 		return err
@@ -94,7 +94,7 @@ func (mdbrepo *MongoDBUniformRepo) CreateOrUpdateUniformIntegration(integration 
 	return nil
 }
 
-func (mdbrepo *MongoDBUniformRepo) CreateOrUpdateSubscription(integrationID string, subscription models.Subscription) error {
+func (mdbrepo *MongoDBUniformRepo) CreateOrUpdateSubscription(integrationID string, subscription apimodels.EventSubscription) error {
 
 	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext()
 	if err != nil {
@@ -168,7 +168,7 @@ func (mdbrepo *MongoDBUniformRepo) DeleteSubscription(integrationID, subscriptio
 	return err
 }
 
-func (mdbrepo *MongoDBUniformRepo) GetSubscription(integrationID, subscriptionID string) (*models.Subscription, error) {
+func (mdbrepo *MongoDBUniformRepo) GetSubscription(integrationID, subscriptionID string) (*apimodels.EventSubscription, error) {
 	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext()
 	if err != nil {
 		return nil, err
@@ -187,14 +187,14 @@ func (mdbrepo *MongoDBUniformRepo) GetSubscription(integrationID, subscriptionID
 
 	for _, s := range integration.Subscriptions {
 		if s.ID == subscriptionID {
-			returnSubscription := models.Subscription(s)
+			returnSubscription := apimodels.EventSubscription(s)
 			return &returnSubscription, nil
 		}
 	}
 	return nil, mongo.ErrNoDocuments
 }
 
-func (mdbrepo *MongoDBUniformRepo) GetSubscriptions(integrationID string) ([]models.Subscription, error) {
+func (mdbrepo *MongoDBUniformRepo) GetSubscriptions(integrationID string) ([]apimodels.EventSubscription, error) {
 	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext()
 	if err != nil {
 		return nil, err
@@ -211,15 +211,15 @@ func (mdbrepo *MongoDBUniformRepo) GetSubscriptions(integrationID string) ([]mod
 	}
 	integration := integrations[0]
 
-	var subscriptions []models.Subscription
+	var subscriptions []apimodels.EventSubscription
 	for _, s := range integration.Subscriptions {
-		subscriptions = append(subscriptions, models.Subscription(s))
+		subscriptions = append(subscriptions, apimodels.EventSubscription(s))
 	}
 
 	return subscriptions, nil
 }
 
-func (mdbrepo *MongoDBUniformRepo) UpdateLastSeen(integrationID string) (*models.Integration, error) {
+func (mdbrepo *MongoDBUniformRepo) UpdateLastSeen(integrationID string) (*apimodels.Integration, error) {
 	now := time.Now().UTC()
 	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext()
 	if err != nil {
@@ -239,7 +239,7 @@ func (mdbrepo *MongoDBUniformRepo) UpdateLastSeen(integrationID string) (*models
 		return nil, result.Err()
 	}
 
-	updatedIntegration := &models.Integration{}
+	updatedIntegration := &apimodels.Integration{}
 	err = result.Decode(updatedIntegration)
 	if err != nil {
 		return nil, err
@@ -248,7 +248,7 @@ func (mdbrepo *MongoDBUniformRepo) UpdateLastSeen(integrationID string) (*models
 
 }
 
-func (mdbrepo *MongoDBUniformRepo) UpdateVersionInfo(integrationID, integrationVersion, distributorVersion string) (*models.Integration, error) {
+func (mdbrepo *MongoDBUniformRepo) UpdateVersionInfo(integrationID, integrationVersion, distributorVersion string) (*apimodels.Integration, error) {
 	now := time.Now().UTC()
 	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext()
 	if err != nil {
@@ -272,7 +272,7 @@ func (mdbrepo *MongoDBUniformRepo) UpdateVersionInfo(integrationID, integrationV
 		return nil, result.Err()
 	}
 
-	updatedIntegration := &models.Integration{}
+	updatedIntegration := &apimodels.Integration{}
 	err = result.Decode(updatedIntegration)
 	if err != nil {
 		return nil, err
@@ -325,17 +325,17 @@ func (mdbrepo *MongoDBUniformRepo) getCollectionAndContext() (*mongo.Collection,
 	return collection, ctx, cancel, nil
 }
 
-func (mdbrepo *MongoDBUniformRepo) findIntegrations(searchParams models.GetUniformIntegrationsParams, collection *mongo.Collection, ctx context.Context) ([]models.Integration, error) {
+func (mdbrepo *MongoDBUniformRepo) findIntegrations(searchParams models.GetUniformIntegrationsParams, collection *mongo.Collection, ctx context.Context) ([]apimodels.Integration, error) {
 	searchOptions := mdbrepo.getSearchOptions(searchParams)
 	cur, err := collection.Find(ctx, searchOptions)
 	if err != nil && err != mongo.ErrNoDocuments {
 		return nil, err
 	}
 
-	result := []models.Integration{}
+	result := []apimodels.Integration{}
 
 	for cur.Next(ctx) {
-		integration := &models.Integration{}
+		integration := &apimodels.Integration{}
 		if err := cur.Decode(integration); err != nil {
 			// log the error, but continue
 			logger.Errorf("could not decode integration: %s", err.Error())
@@ -367,7 +367,7 @@ func (mdbrepo *MongoDBUniformRepo) DeleteServiceFromSubscriptions(subscriptionNa
 	}
 
 	for cur.Next(ctx) {
-		integration := &models.Integration{}
+		integration := &apimodels.Integration{}
 		if err := cur.Decode(integration); err != nil {
 			//log the error, but continue
 			logger.Errorf("could not decode integration: %s", err.Error())

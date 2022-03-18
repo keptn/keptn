@@ -70,10 +70,10 @@ definitions:
         description: Stage name
         type: string
     type: object
-  github.com_keptn_go-utils_pkg_api_models.Subscription:
+  github.com_keptn_go-utils_pkg_api_apimodels.EventSubscription:
     properties:
       filter:
-        $ref: '#/definitions/models.SubscriptionFilter'
+        $ref: '#/definitions/apimodels.EventSubscriptionFilter'
       status:
         type: string
       topics:
@@ -151,7 +151,7 @@ definitions:
         description: Stage name
         type: string
     type: object
-  github.com_keptn_keptn_shipyard-controller_models.Subscription:
+  github.com_keptn_keptn_shipyard-controller_apimodels.EventSubscription:
     properties:
       event:
         type: string
@@ -422,7 +422,7 @@ definitions:
         description: Total number of logs
         type: integer
     type: object
-  models.Integration:
+  apimodels.Integration:
     properties:
       id:
         type: string
@@ -431,7 +431,7 @@ definitions:
       name:
         type: string
       subscription:
-        $ref: '#/definitions/github.com_keptn_go-utils_pkg_api_models.Subscription'
+        $ref: '#/definitions/github.com_keptn_go-utils_pkg_api_apimodels.EventSubscription'
         description: |-
           Deprecated: for backwards compatibility Subscription is populated
           but new code shall use Subscriptions
@@ -583,7 +583,7 @@ definitions:
         description: Total number of events
         type: integer
     type: object
-  models.SubscriptionFilter:
+  apimodels.EventSubscriptionFilter:
     properties:
       project:
         type: string
@@ -1392,7 +1392,7 @@ paths:
           description: ok
           schema:
             items:
-              $ref: '#/definitions/models.Integration'
+              $ref: '#/definitions/apimodels.Integration'
             type: array
         "400":
           description: Invalid payload
@@ -1417,7 +1417,7 @@ paths:
         name: integration
         required: true
         schema:
-          $ref: '#/definitions/models.Integration'
+          $ref: '#/definitions/apimodels.Integration'
       produces:
       - application/json
       responses:
@@ -1489,7 +1489,7 @@ paths:
         "200":
           description: ok
           schema:
-            $ref: '#/definitions/models.Integration'
+            $ref: '#/definitions/apimodels.Integration'
         "404":
           description: Not found
           schema:
@@ -1522,7 +1522,7 @@ paths:
           description: ok
           schema:
             items:
-              $ref: '#/definitions/github.com_keptn_keptn_shipyard-controller_models.Subscription'
+              $ref: '#/definitions/github.com_keptn_keptn_shipyard-controller_apimodels.EventSubscription'
             type: array
         "400":
           description: Invalid payload
@@ -1556,7 +1556,7 @@ paths:
         name: subscription
         required: true
         schema:
-          $ref: '#/definitions/github.com_keptn_keptn_shipyard-controller_models.Subscription'
+          $ref: '#/definitions/github.com_keptn_keptn_shipyard-controller_apimodels.EventSubscription'
       produces:
       - application/json
       responses:
@@ -1638,7 +1638,7 @@ paths:
         "200":
           description: ok
           schema:
-            $ref: '#/definitions/github.com_keptn_keptn_shipyard-controller_models.Subscription'
+            $ref: '#/definitions/github.com_keptn_keptn_shipyard-controller_apimodels.EventSubscription'
         "400":
           description: Invalid payload
           schema:
@@ -1676,7 +1676,7 @@ paths:
         name: subscription
         required: true
         schema:
-          $ref: '#/definitions/github.com_keptn_keptn_shipyard-controller_models.Subscription'
+          $ref: '#/definitions/github.com_keptn_keptn_shipyard-controller_apimodels.EventSubscription'
       produces:
       - application/json
       responses:

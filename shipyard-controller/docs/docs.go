@@ -1191,7 +1191,7 @@ var doc = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.Integration"
+                                "$ref": "#/definitions/apimodels.Integration"
                             }
                         }
                     },
@@ -1233,7 +1233,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Integration"
+                            "$ref": "#/definitions/apimodels.Integration"
                         }
                     }
                 ],
@@ -1342,7 +1342,7 @@ var doc = `{
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "$ref": "#/definitions/models.Integration"
+                            "$ref": "#/definitions/apimodels.Integration"
                         }
                     },
                     "404": {
@@ -1393,7 +1393,7 @@ var doc = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/github.com_keptn_keptn_shipyard-controller_models.Subscription"
+                                "$ref": "#/definitions/github.com_keptn_keptn_shipyard-controller_apimodels.EventSubscription"
                             }
                         }
                     },
@@ -1448,7 +1448,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github.com_keptn_keptn_shipyard-controller_models.Subscription"
+                            "$ref": "#/definitions/github.com_keptn_keptn_shipyard-controller_apimodels.EventSubscription"
                         }
                     }
                 ],
@@ -1515,7 +1515,7 @@ var doc = `{
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "$ref": "#/definitions/github.com_keptn_keptn_shipyard-controller_models.Subscription"
+                            "$ref": "#/definitions/github.com_keptn_keptn_shipyard-controller_apimodels.EventSubscription"
                         }
                     },
                     "400": {
@@ -1576,7 +1576,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github.com_keptn_keptn_shipyard-controller_models.Subscription"
+                            "$ref": "#/definitions/github.com_keptn_keptn_shipyard-controller_apimodels.EventSubscription"
                         }
                     }
                 ],
@@ -1762,11 +1762,11 @@ var doc = `{
                 }
             }
         },
-        "github.com_keptn_go-utils_pkg_api_models.Subscription": {
+        "github.com_keptn_go-utils_pkg_api_apimodels.EventSubscription": {
             "type": "object",
             "properties": {
                 "filter": {
-                    "$ref": "#/definitions/models.SubscriptionFilter"
+                    "$ref": "#/definitions/apimodels.EventSubscriptionFilter"
                 },
                 "status": {
                     "type": "string"
@@ -1877,7 +1877,7 @@ var doc = `{
                 }
             }
         },
-        "github.com_keptn_keptn_shipyard-controller_models.Subscription": {
+        "github.com_keptn_keptn_shipyard-controller_apimodels.EventSubscription": {
             "type": "object",
             "properties": {
                 "event": {
@@ -2249,7 +2249,7 @@ var doc = `{
                 }
             }
         },
-        "models.Integration": {
+        "apimodels.Integration": {
             "type": "object",
             "properties": {
                 "id": {
@@ -2263,7 +2263,7 @@ var doc = `{
                 },
                 "subscription": {
                     "description": "Deprecated: for backwards compatibility Subscription is populated\nbut new code shall use Subscriptions",
-                    "$ref": "#/definitions/github.com_keptn_go-utils_pkg_api_models.Subscription"
+                    "$ref": "#/definitions/github.com_keptn_go-utils_pkg_api_apimodels.EventSubscription"
                 },
                 "subscriptions": {
                     "type": "array",
@@ -2489,7 +2489,7 @@ var doc = `{
                 }
             }
         },
-        "models.SubscriptionFilter": {
+        "apimodels.EventSubscriptionFilter": {
             "type": "object",
             "properties": {
                 "project": {

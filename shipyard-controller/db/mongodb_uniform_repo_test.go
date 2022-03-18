@@ -11,13 +11,13 @@ import (
 )
 
 type integrationTest struct {
-	Integration             models.Integration
+	Integration             apimodels.Integration
 	WantedSubscriptionsSize int
 }
 
-func generateIntegrations() []models.Integration {
+func generateIntegrations() []apimodels.Integration {
 
-	integration1 := models.Integration{
+	integration1 := apimodels.Integration{
 		ID:   "i1",
 		Name: "integration1",
 		Subscription: apimodels.Subscription{
@@ -57,7 +57,7 @@ func generateIntegrations() []models.Integration {
 		},
 	}
 
-	integration2 := models.Integration{
+	integration2 := apimodels.Integration{
 		ID:   "i2",
 		Name: "integration2",
 		Subscription: apimodels.Subscription{
@@ -81,7 +81,7 @@ func generateIntegrations() []models.Integration {
 		},
 	}
 
-	integration3 := models.Integration{
+	integration3 := apimodels.Integration{
 		ID:   "i3",
 		Name: "integration3",
 		Subscription: apimodels.Subscription{
@@ -121,7 +121,7 @@ func generateIntegrations() []models.Integration {
 		},
 	}
 
-	integration4 := models.Integration{
+	integration4 := apimodels.Integration{
 		ID:   "i4",
 		Name: "integraiton4",
 		Subscription: apimodels.Subscription{
@@ -145,7 +145,7 @@ func generateIntegrations() []models.Integration {
 		},
 	}
 
-	integration5 := models.Integration{
+	integration5 := apimodels.Integration{
 		ID:   "i5",
 		Name: "integraiton5",
 		Subscription: apimodels.Subscription{
@@ -155,7 +155,7 @@ func generateIntegrations() []models.Integration {
 		},
 		Subscriptions: []apimodels.EventSubscription{},
 	}
-	return []models.Integration{integration1, integration2, integration3, integration4, integration5}
+	return []apimodels.Integration{integration1, integration2, integration3, integration4, integration5}
 }
 func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 
@@ -271,7 +271,7 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 	require.Empty(t, integrations)
 
 	// add subscription
-	err = mdbrepo.CreateOrUpdateSubscription("i5", models.Subscription{
+	err = mdbrepo.CreateOrUpdateSubscription("i5", apimodels.EventSubscription{
 		ID:    "new-subscription",
 		Event: "a-topic",
 		Filter: apimodels.EventSubscriptionFilter{
@@ -289,7 +289,7 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 	fmt.Println(integrations)
 
 	// update subscription
-	err = mdbrepo.CreateOrUpdateSubscription("i5", models.Subscription{
+	err = mdbrepo.CreateOrUpdateSubscription("i5", apimodels.EventSubscription{
 		ID:    "new-subscription",
 		Event: "a-topic",
 		Filter: apimodels.EventSubscriptionFilter{
@@ -396,7 +396,7 @@ func TestMongoDBUniformRepo_RemoveByServiceName(t *testing.T) {
 }
 
 func TestMongoDBUniformRepo_UpdateVersionInfo(t *testing.T) {
-	testIntegration := models.Integration{
+	testIntegration := apimodels.Integration{
 		ID:   "i1",
 		Name: "integration1",
 		MetaData: apimodels.MetaData{

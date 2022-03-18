@@ -3,7 +3,7 @@ package fake
 import (
 	"encoding/json"
 	"errors"
-	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"testing"
@@ -60,8 +60,8 @@ spec:
       - name: remediation
       - name: evaluation`
 
-func ShouldContainEvent(t *testing.T, events []keptnmodels.KeptnContextExtendedCE, eventType string, stage string, eval func(t *testing.T, event keptnmodels.KeptnContextExtendedCE) bool) bool {
-	var foundEvent *keptnmodels.KeptnContextExtendedCE
+func ShouldContainEvent(t *testing.T, events []apimodels.KeptnContextExtendedCE, eventType string, stage string, eval func(t *testing.T, event apimodels.KeptnContextExtendedCE) bool) bool {
+	var foundEvent *apimodels.KeptnContextExtendedCE
 	for index, event := range events {
 		scope, _ := getEventScope(event)
 		if *event.Type == eventType {
@@ -85,7 +85,7 @@ func ShouldContainEvent(t *testing.T, events []keptnmodels.KeptnContextExtendedC
 	return false
 }
 
-func ShouldNotContainEvent(t *testing.T, events []keptnmodels.KeptnContextExtendedCE, eventType string, stage string) bool {
+func ShouldNotContainEvent(t *testing.T, events []apimodels.KeptnContextExtendedCE, eventType string, stage string) bool {
 	for _, event := range events {
 		if *event.Type == eventType {
 			scope, _ := getEventScope(event)
@@ -101,7 +101,7 @@ func ShouldNotContainEvent(t *testing.T, events []keptnmodels.KeptnContextExtend
 	return false
 }
 
-func getEventScope(event keptnmodels.KeptnContextExtendedCE) (*keptnv2.EventData, error) {
+func getEventScope(event apimodels.KeptnContextExtendedCE) (*keptnv2.EventData, error) {
 	marshal, err := json.Marshal(event.Data)
 	if err != nil {
 		return nil, err
@@ -129,8 +129,8 @@ type EventScope struct {
 	Service string `json:"service"`
 }
 
-func GetTestTriggeredEvent() keptnmodels.KeptnContextExtendedCE {
-	return keptnmodels.KeptnContextExtendedCE{
+func GetTestTriggeredEvent() apimodels.KeptnContextExtendedCE {
+	return apimodels.KeptnContextExtendedCE{
 		Contenttype:    "application/json",
 		Data:           EventScope{Project: "test-project", Stage: "dev", Service: "carts"},
 		Extensions:     nil,
@@ -144,8 +144,8 @@ func GetTestTriggeredEvent() keptnmodels.KeptnContextExtendedCE {
 	}
 }
 
-func GetTestStartedEvent() keptnmodels.KeptnContextExtendedCE {
-	return keptnmodels.KeptnContextExtendedCE{
+func GetTestStartedEvent() apimodels.KeptnContextExtendedCE {
+	return apimodels.KeptnContextExtendedCE{
 		Contenttype:    "application/json",
 		Data:           EventScope{Project: "test-project", Stage: "dev", Service: "carts"},
 		Extensions:     nil,
@@ -159,8 +159,8 @@ func GetTestStartedEvent() keptnmodels.KeptnContextExtendedCE {
 	}
 }
 
-func GetTestStartedEventWithUnmatchedTriggeredID() keptnmodels.KeptnContextExtendedCE {
-	return keptnmodels.KeptnContextExtendedCE{
+func GetTestStartedEventWithUnmatchedTriggeredID() apimodels.KeptnContextExtendedCE {
+	return apimodels.KeptnContextExtendedCE{
 		Contenttype:    "application/json",
 		Data:           EventScope{Project: "test-project", Stage: "dev", Service: "carts"},
 		Extensions:     nil,
@@ -174,8 +174,8 @@ func GetTestStartedEventWithUnmatchedTriggeredID() keptnmodels.KeptnContextExten
 	}
 }
 
-func GetTestFinishedEventWithUnmatchedSource() keptnmodels.KeptnContextExtendedCE {
-	return keptnmodels.KeptnContextExtendedCE{
+func GetTestFinishedEventWithUnmatchedSource() apimodels.KeptnContextExtendedCE {
+	return apimodels.KeptnContextExtendedCE{
 		Contenttype:    "application/json",
 		Data:           EventScope{Project: "test-project", Stage: "dev", Service: "carts"},
 		Extensions:     nil,
