@@ -72,8 +72,10 @@ For more information about updating projects or upstream repositories, please go
 			Name: &args[0],
 		}
 
-		if *updateProjectParams.GitUser != "" && *updateProjectParams.GitToken != "" && *updateProjectParams.RemoteURL != "" {
-			project.GitUser = *updateProjectParams.GitUser
+		if *updateProjectParams.GitToken != "" && *updateProjectParams.RemoteURL != "" {
+			if *updateProjectParams.GitUser != "" {
+				project.GitUser = *updateProjectParams.GitUser
+			}
 			project.GitToken = *updateProjectParams.GitToken
 			project.GitRemoteURL = *updateProjectParams.RemoteURL
 		}
@@ -99,11 +101,9 @@ For more information about updating projects or upstream repositories, please go
 func init() {
 	updateCmd.AddCommand(upProjectCmd)
 	updateProjectParams = &updateProjectCmdParams{}
-
 	updateProjectParams.GitUser = upProjectCmd.Flags().StringP("git-user", "u", "", "The git user of the upstream target")
 	updateProjectParams.GitToken = upProjectCmd.Flags().StringP("git-token", "t", "", "The git token of the git user")
 	updateProjectParams.RemoteURL = upProjectCmd.Flags().StringP("git-remote-url", "r", "", "The remote url of the upstream target")
-	upProjectCmd.MarkFlagRequired("git-user")
 	upProjectCmd.MarkFlagRequired("git-token")
 	upProjectCmd.MarkFlagRequired("git-remote-url")
 }

@@ -18,6 +18,17 @@ func TestUpdateProjectCmd(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 	checkEndPointStatusMock = true
 
+	cmd := fmt.Sprintf("update project sockshop -t token -r https:// --mock")
+	_, err := executeActionCommandC(cmd)
+	if err != nil {
+		t.Errorf(unexpectedErrMsg, err)
+	}
+}
+
+// TestCreateProjectCmd tests the default use of the update project command with git user
+func TestUpdateProjectWithUserCmd(t *testing.T) {
+	credentialmanager.MockAuthCreds = true
+
 	cmd := fmt.Sprintf("update project sockshop -t token -u user -r https:// --mock")
 	_, err := executeActionCommandC(cmd)
 	if err != nil {
