@@ -2,6 +2,8 @@ package handler
 
 import (
 	"errors"
+	"testing"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -10,7 +12,6 @@ import (
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestEvaluationManager_CreateEvaluation(t *testing.T) {
@@ -79,8 +80,8 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 			name: "everything ok with timeframe - send evaluation.triggered event",
 			fields: fields{
 				EventSender: &keptnfake.EventSender{},
-				ServiceAPI: &db_mock.ProjectMVRepoMock{GetServiceFunc: func(project string, stage string, service string) (*models.ExpandedService, error) {
-					return &models.ExpandedService{}, nil
+				ServiceAPI: &db_mock.ProjectMVRepoMock{GetServiceFunc: func(project string, stage string, service string) (*apimodels.ExpandedService, error) {
+					return &apimodels.ExpandedService{}, nil
 				}},
 			},
 			args: args{
@@ -118,7 +119,7 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 			name: "non-existing service",
 			fields: fields{
 				EventSender: &keptnfake.EventSender{},
-				ServiceAPI: &db_mock.ProjectMVRepoMock{GetServiceFunc: func(project string, stage string, service string) (*models.ExpandedService, error) {
+				ServiceAPI: &db_mock.ProjectMVRepoMock{GetServiceFunc: func(project string, stage string, service string) (*apimodels.ExpandedService, error) {
 					return nil, errors.New("service not found")
 				}},
 			},
