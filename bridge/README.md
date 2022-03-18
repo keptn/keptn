@@ -16,6 +16,13 @@ To deploy the current version of the bridge in your Keptn Kubernetes cluster, us
 kubectl apply -f deploy/service.yaml
 ```
 
+### Environment variables
+- `ENABLE_VERSION_CHECK` - If disabled, versions.json is not loaded and the version info will not be displayed.
+- `SHOW_API_TOKEN` - If disabled, the API token will not be shown in the Bridge info.
+- `PROJECTS_PAGE_SIZE` - Determines, how many projects will be fetched for the Bridge. If not set, it defaults to 50.
+- `KEPTN_INSTALLATION_TYPE` - Can take the values: `QUALITY_GATES`, `CONTINUOUS_OPERATIONS`, `CONTINUOUS_DELIVERY` and determines the mode in which the Bridge will be started. If only `QUALITY_GATES` is set, only functionalities and data specific for the Quality Gates Only use case will be displayed. 
+- 
+
 ### Setting up Basic Authentication
 
 Keptn Bridge comes with a very simple basic authentication feature, which can be controlled by setting the following two environment variables:
