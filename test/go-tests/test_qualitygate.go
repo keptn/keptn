@@ -133,6 +133,7 @@ func Test_QualityGates(t *testing.T) {
 	require.Nil(t, err)
 	require.NotEmpty(t, keptnContext)
 
+	t.Log("waiting for hardening.evaluation.finished event...")
 	var evaluationFinishedEvent *models.KeptnContextExtendedCE
 	require.Eventually(t, func() bool {
 		t.Log("checking if evaluation.finished event is available")
@@ -144,6 +145,7 @@ func Test_QualityGates(t *testing.T) {
 		return true
 	}, 2*time.Minute, 10*time.Second)
 
+	t.Log("got hardening.evaluation.finished event")
 	require.NotNil(t, evaluationFinishedEvent)
 	require.Equal(t, "lighthouse-service", *evaluationFinishedEvent.Source)
 	require.Equal(t, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), *evaluationFinishedEvent.Type)
@@ -162,11 +164,15 @@ func Test_QualityGates(t *testing.T) {
 	require.Equal(t, keptnv2.StatusSucceeded, evaluationFinishedPayload.EventData.Status)
 	require.Equal(t, keptnv2.ResultPass, evaluationFinishedPayload.EventData.Result)
 
+	t.Log("hardening.evaluation.finished event is valid")
+
 	//// now let's add an SLI provider
+	t.Log("adding SLI provider")
 	_, err = ExecuteCommand(fmt.Sprintf("kubectl create configmap -n %s lighthouse-config-%s --from-literal=sli-provider=my-sli-provider", GetKeptnNameSpaceFromEnv(), projectName))
 	require.Nil(t, err)
 
 	// ...and an SLO file - but an invalid one :(
+	t.Log("adding invalid SLO file")
 	sloFilePath, err := CreateTmpFile("slo-*.yaml", invalidSLOFileContent)
 	require.Nil(t, err)
 	defer os.Remove(sloFilePath)
@@ -184,6 +190,7 @@ func Test_QualityGates(t *testing.T) {
 	require.NotEmpty(t, keptnContext)
 
 	// wait for the evaluation.finished event to be available and evaluate it
+	t.Log("waiting for hardening.evaluation.finished event...")
 	require.Eventually(t, func() bool {
 		t.Log("checking if evaluation.finished event is available")
 		event, err := GetLatestEventOfType(keptnContext, projectName, "hardening", keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName))
@@ -193,6 +200,7 @@ func Test_QualityGates(t *testing.T) {
 		evaluationFinishedEvent = event
 		return true
 	}, 1*time.Minute, 10*time.Second)
+	t.Log("got hardening.evaluation.finished event")
 
 	require.NotNil(t, evaluationFinishedEvent)
 	require.Equal(t, "lighthouse-service", *evaluationFinishedEvent.Source)
@@ -212,9 +220,12 @@ func Test_QualityGates(t *testing.T) {
 	require.Equal(t, keptnv2.ResultFailed, evaluationFinishedPayload.EventData.Result)
 	require.NotEmpty(t, evaluationFinishedPayload.Message)
 
+	t.Log("hardening.evaluation.finished event is valid")
+
 	//
 	//// ...and an SLO file
 
+	t.Log("adding invalid SLO file")
 	sloFilePath, err = CreateTmpFile("slo-*.yaml", qualityGatesSLOFileContent)
 	require.Nil(t, err)
 	defer os.Remove(sloFilePath)
@@ -222,9 +233,10 @@ func Test_QualityGates(t *testing.T) {
 	_, err = ExecuteCommand(fmt.Sprintf("keptn add-resource --project=%s --stage=%s --service=%s --resource=%s --resourceUri=slo.yaml", projectName, "hardening", serviceName, sloFilePath))
 	require.Nil(t, err)
 
-	t.Log("triggering the evaluation again")
+	t.Log("triggering the evaluation again (this time valid)")
 	keptnContext, evaluationFinishedEvent = performResourceServiceTest(t, projectName, serviceName, checkCommit)
 
+	t.Log("got hardening.evaluation.finished event")
 	err = keptnv2.Decode(evaluationFinishedEvent.Data, evaluationFinishedPayload)
 	require.Nil(t, err)
 	require.Equal(t, "", evaluationFinishedPayload.EventData.GitCommitID)
@@ -318,8 +330,11 @@ func Test_QualityGates(t *testing.T) {
 		KeySLI:         false,
 	}, evaluationFinishedPayload.Evaluation.IndicatorResults[2])
 
+	t.Log("hardening.evaluation.finished event is valid")
+
 	firstEvaluationFinishedID := evaluationFinishedEvent.ID
 
+	t.Log("invalidate the previous evaluation")
 	// send an evaluation.finished event for this evaluation
 	evaluationInvalidatedEventType := "sh.keptn.event.evaluation.invalidated"
 	_, err = ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
@@ -339,8 +354,10 @@ func Test_QualityGates(t *testing.T) {
 	}, 3)
 	require.Nil(t, err)
 
+	t.Log("triggering the evaluation again (this time valid)")
 	// do another evaluation - the resulting .finished event should not contain the first .finished event (which has been invalidated) in the list of compared evaluation results
 	keptnContext, evaluationFinishedEvent = performResourceServiceTest(t, projectName, serviceName, checkCommit)
+	t.Log("got hardening.evaluation.finished event")
 
 	err = keptnv2.Decode(evaluationFinishedEvent.Data, evaluationFinishedPayload)
 	require.Nil(t, err)
@@ -437,10 +454,14 @@ func Test_QualityGates(t *testing.T) {
 		KeySLI:         false,
 	}, evaluationFinishedPayload.Evaluation.IndicatorResults[2])
 
+	t.Log("hardening.evaluation.finished event is valid")
+
 	secondEvaluationFinishedID := evaluationFinishedEvent.ID
 
 	// do another evaluation - the resulting .finished event should contain the second .finished event in the list of compared evaluation results
+	t.Log("triggering the evaluation again (this time it will be compared with the second evaluation)")
 	keptnContext, evaluationFinishedEvent = performResourceServiceTest(t, projectName, serviceName, checkCommit)
+	t.Log("got hardening.evaluation.finished event")
 
 	err = keptnv2.Decode(evaluationFinishedEvent.Data, evaluationFinishedPayload)
 	require.Nil(t, err)
@@ -539,9 +560,13 @@ func Test_QualityGates(t *testing.T) {
 		KeySLI:         false,
 	}, evaluationFinishedPayload.Evaluation.IndicatorResults[2])
 
+	t.Log("hardening.evaluation.finished event is valid")
+
+	t.Log("retrieving project data")
 	project, err := GetProject(projectName)
 	require.Nil(t, err)
 
+	t.Log("testing the retrieved project data")
 	require.NotEmpty(t, project.Stages)
 	require.NotEmpty(t, project.Stages[0].Services)
 	require.NotEmpty(t, project.Stages[0].Services[0].LastEventTypes[keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName)])
@@ -925,6 +950,7 @@ func performResourceServiceTest(t *testing.T, projectName string, serviceName st
 		GitCommitID:        commitID,
 		Type:               strutils.Stringp(keptnv2.GetTriggeredEventType("hardening." + keptnv2.EvaluationTaskName)),
 	}, 3)
+
 	require.Nil(t, err)
 	body := resp.String()
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
@@ -934,6 +960,7 @@ func performResourceServiceTest(t *testing.T, projectName string, serviceName st
 	}{}
 	resp.ToJSON(&kc)
 	keptnContext = *kc.KeptnContext
+
 	var getSLITriggeredEvent *models.KeptnContextExtendedCE
 	require.Eventually(t, func() bool {
 		t.Log("checking if ", keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName), "for context ", keptnContext, " event is available")
@@ -944,12 +971,13 @@ func performResourceServiceTest(t *testing.T, projectName string, serviceName st
 		getSLITriggeredEvent = event
 		return true
 	}, 1*time.Minute, 10*time.Second)
-	t.Log("got SLI triggered event, checking commitid")
+	t.Log("got get-sli.triggered event, checking commitid")
 
 	if checkCommit {
 		require.Equal(t, commitID, getSLITriggeredEvent.GitCommitID)
 	}
 
+	t.Log("validating get-sli.triggered event")
 	getSLIPayload := &keptnv2.GetSLITriggeredEventData{}
 	err = keptnv2.Decode(getSLITriggeredEvent.Data, getSLIPayload)
 	require.Nil(t, err)
@@ -967,7 +995,7 @@ func performResourceServiceTest(t *testing.T, projectName string, serviceName st
 	require.Equal(t, keptnv2.ResultType(""), getSLIPayload.EventData.Result)
 	require.Empty(t, getSLIPayload.EventData.Message)
 
-	//SLI uses a different commitID
+	t.Log("sending get-sli.started event")
 	resp, err = ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
 		Contenttype: "application/json",
 		Data: &keptnv2.GetSLIStartedEventData{
@@ -992,6 +1020,8 @@ func performResourceServiceTest(t *testing.T, projectName string, serviceName st
 	}, 3)
 
 	require.Nil(t, err)
+
+	t.Log("sending get-sli.finished event (valid)")
 	resp, err = ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
 		Contenttype: "application/json",
 		Data: &keptnv2.GetSLIFinishedEventData{
@@ -1048,7 +1078,7 @@ func performResourceServiceTest(t *testing.T, projectName string, serviceName st
 	// wait for the evaluation.finished event to be available and evaluate it
 	var evaluationFinishedEvent *models.KeptnContextExtendedCE
 	require.Eventually(t, func() bool {
-		t.Log("checking if evaluation.finished event is available")
+		t.Log("checking if hardening.evaluation.finished event is available")
 		event, err := GetLatestEventOfType(keptnContext, projectName, "hardening", keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName))
 		if err != nil || event == nil {
 			return false
