@@ -3,17 +3,18 @@ package event_handler
 import (
 	"context"
 	"errors"
+	"net/url"
+	"os"
+	"strings"
+	"sync"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	logger "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"net/url"
-	"os"
-	"strings"
-	"sync"
 
 	utils "github.com/keptn/go-utils/pkg/api/utils"
 	keptn "github.com/keptn/go-utils/pkg/lib"
@@ -52,17 +53,17 @@ var ErrConfigService = errors.New("could not checkout the SLO")
 
 //go:generate moq -pkg event_handler_mock -skip-ensure -out ./fake/resource_handler_mock.go . ResourceHandler
 type ResourceHandler interface {
-	GetResource(scope utils.ResourceScope, options ...utils.URIOption) (*keptnapimodels.Resource, error)
+	GetResource(scope utils.ResourceScope, options ...utils.URIOption) (*apimodels.Resource, error)
 }
 
 //go:generate moq -pkg event_handler_mock -skip-ensure -out ./fake/service_handler_mock.go . ServiceHandler
 type ServiceHandler interface {
-	GetService(project, stage, service string) (*keptnapimodels.Service, error)
+	GetService(project, stage, service string) (*apimodels.Service, error)
 }
 
 //go:generate moq -pkg event_handler_mock -skip-ensure -out ./fake/event_store_mock.go . EventStore
 type EventStore interface {
-	GetEvents(filter *utils.EventFilter) ([]*keptnapimodels.KeptnContextExtendedCE, *keptnapimodels.Error)
+	GetEvents(filter *utils.EventFilter) ([]*apimodels.KeptnContextExtendedCE, *apimodels.Error)
 }
 
 type SLOFileRetriever struct {

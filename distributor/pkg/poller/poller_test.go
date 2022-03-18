@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/common/strutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -25,10 +25,10 @@ func Test_PollAndForwardEvents1(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		eventType := strings.TrimPrefix(request.URL.Path, "/controlPlane/v1/event/triggered/")
-		var events keptnmodels.Events
+		var events apimodels.Events
 		if eventType == "sh.keptn.event.task.triggered" {
-			events = keptnmodels.Events{
-				Events: []*keptnmodels.KeptnContextExtendedCE{
+			events = apimodels.Events{
+				Events: []*apimodels.KeptnContextExtendedCE{
 					{
 						ID:          "id-1",
 						Type:        strutils.Stringp("sh.keptn.event.task.triggered"),
@@ -43,8 +43,8 @@ func Test_PollAndForwardEvents1(t *testing.T) {
 			}
 		}
 		if eventType == "sh.keptn.event.task2.triggered" {
-			events = keptnmodels.Events{
-				Events: []*keptnmodels.KeptnContextExtendedCE{
+			events = apimodels.Events{
+				Events: []*apimodels.KeptnContextExtendedCE{
 					{
 						ID:          "id-2",
 						Type:        strutils.Stringp("sh.keptn.event.task2.triggered"),
@@ -59,8 +59,8 @@ func Test_PollAndForwardEvents1(t *testing.T) {
 			}
 		}
 		if eventType == "sh.keptn.event.task3.triggered" {
-			events = keptnmodels.Events{
-				Events: []*keptnmodels.KeptnContextExtendedCE{
+			events = apimodels.Events{
+				Events: []*apimodels.KeptnContextExtendedCE{
 					{
 						ID:          "id-3",
 						Type:        strutils.Stringp("sh.keptn.event.task3.triggered"),
@@ -91,7 +91,7 @@ func Test_PollAndForwardEvents1(t *testing.T) {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	executionContext := utils.NewExecutionContext(ctx, 1)
-	poller.UpdateSubscriptions([]keptnmodels.EventSubscription{
+	poller.UpdateSubscriptions([]apimodels.EventSubscription{
 		{
 			ID:    "id1",
 			Event: "sh.keptn.event.task.triggered",
@@ -146,10 +146,10 @@ func Test_PollAndForwardEvents2(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		eventType := strings.TrimPrefix(request.URL.Path, "/controlPlane/v1/event/triggered/")
-		var events keptnmodels.Events
+		var events apimodels.Events
 		if eventType == "sh.keptn.event.task.triggered" {
-			events = keptnmodels.Events{
-				Events: []*keptnmodels.KeptnContextExtendedCE{
+			events = apimodels.Events{
+				Events: []*apimodels.KeptnContextExtendedCE{
 					{
 						ID:          "id-1",
 						Type:        strutils.Stringp("sh.keptn.event.task.triggered"),
@@ -183,9 +183,9 @@ func Test_PollAndForwardEvents2(t *testing.T) {
 	executionContext := utils.NewExecutionContext(ctx, 1)
 
 	numSubscriptions := 100
-	subscriptions := []keptnmodels.EventSubscription{}
+	subscriptions := []apimodels.EventSubscription{}
 	for i := 0; i < numSubscriptions; i++ {
-		subscriptions = append(subscriptions, keptnmodels.EventSubscription{
+		subscriptions = append(subscriptions, apimodels.EventSubscription{
 			ID:    fmt.Sprintf("id%d", i),
 			Event: "sh.keptn.event.task.triggered",
 		})
@@ -206,7 +206,7 @@ func Test_PollAndForwardEvents2(t *testing.T) {
 
 func Test_getEventFilterForSubscription(t *testing.T) {
 	type args struct {
-		subscription keptnmodels.EventSubscription
+		subscription apimodels.EventSubscription
 	}
 	tests := []struct {
 		name string
@@ -216,7 +216,7 @@ func Test_getEventFilterForSubscription(t *testing.T) {
 		{
 			name: "get default filter",
 			args: args{
-				subscription: keptnmodels.EventSubscription{
+				subscription: apimodels.EventSubscription{
 					Event: "my-event",
 				},
 			},
@@ -227,9 +227,9 @@ func Test_getEventFilterForSubscription(t *testing.T) {
 		{
 			name: "multiple projects - get default filter",
 			args: args{
-				subscription: keptnmodels.EventSubscription{
+				subscription: apimodels.EventSubscription{
 					Event: "my-event",
-					Filter: keptnmodels.EventSubscriptionFilter{
+					Filter: apimodels.EventSubscriptionFilter{
 						Projects: []string{"a", "b"},
 					},
 				},
@@ -241,9 +241,9 @@ func Test_getEventFilterForSubscription(t *testing.T) {
 		{
 			name: "one project",
 			args: args{
-				subscription: keptnmodels.EventSubscription{
+				subscription: apimodels.EventSubscription{
 					Event: "my-event",
-					Filter: keptnmodels.EventSubscriptionFilter{
+					Filter: apimodels.EventSubscriptionFilter{
 						Projects: []string{"a"},
 					},
 				},
@@ -256,9 +256,9 @@ func Test_getEventFilterForSubscription(t *testing.T) {
 		{
 			name: "one project, one stage",
 			args: args{
-				subscription: keptnmodels.EventSubscription{
+				subscription: apimodels.EventSubscription{
 					Event: "my-event",
-					Filter: keptnmodels.EventSubscriptionFilter{
+					Filter: apimodels.EventSubscriptionFilter{
 						Projects: []string{"a"},
 						Stages:   []string{"stage-a"},
 					},
@@ -273,9 +273,9 @@ func Test_getEventFilterForSubscription(t *testing.T) {
 		{
 			name: "one project, one stage, one service",
 			args: args{
-				subscription: keptnmodels.EventSubscription{
+				subscription: apimodels.EventSubscription{
 					Event: "my-event",
-					Filter: keptnmodels.EventSubscriptionFilter{
+					Filter: apimodels.EventSubscriptionFilter{
 						Projects: []string{"a"},
 						Stages:   []string{"stage-a"},
 						Services: []string{"service-a"},

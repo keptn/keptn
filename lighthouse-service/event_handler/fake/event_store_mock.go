@@ -4,7 +4,7 @@
 package event_handler_mock
 
 import (
-	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"sync"
 )
@@ -15,7 +15,7 @@ import (
 //
 // 		// make and configure a mocked event_handler.EventStore
 // 		mockedEventStore := &EventStoreMock{
-// 			GetEventsFunc: func(filter *keptnapi.EventFilter) ([]*keptnapimodels.KeptnContextExtendedCE, *keptnapimodels.Error) {
+// 			GetEventsFunc: func(filter *keptnapi.EventFilter) ([]*apimodels.KeptnContextExtendedCE, *apimodels.Error) {
 // 				panic("mock out the GetEvents method")
 // 			},
 // 		}
@@ -26,7 +26,7 @@ import (
 // 	}
 type EventStoreMock struct {
 	// GetEventsFunc mocks the GetEvents method.
-	GetEventsFunc func(filter *keptnapi.EventFilter) ([]*keptnapimodels.KeptnContextExtendedCE, *keptnapimodels.Error)
+	GetEventsFunc func(filter *keptnapi.EventFilter) ([]*apimodels.KeptnContextExtendedCE, *apimodels.Error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -40,7 +40,7 @@ type EventStoreMock struct {
 }
 
 // GetEvents calls GetEventsFunc.
-func (mock *EventStoreMock) GetEvents(filter *keptnapi.EventFilter) ([]*keptnapimodels.KeptnContextExtendedCE, *keptnapimodels.Error) {
+func (mock *EventStoreMock) GetEvents(filter *keptnapi.EventFilter) ([]*apimodels.KeptnContextExtendedCE, *apimodels.Error) {
 	if mock.GetEventsFunc == nil {
 		panic("EventStoreMock.GetEventsFunc: method is nil but EventStore.GetEvents was just called")
 	}

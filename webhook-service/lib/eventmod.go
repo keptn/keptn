@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/go-sdk/pkg/sdk"
 )
@@ -20,7 +20,7 @@ type TemporaryData struct {
 }
 
 type EventDataAdapter struct {
-	event        keptnmodels.KeptnContextExtendedCE
+	event        apimodels.KeptnContextExtendedCE
 	eventData    keptnv2.EventData
 	eventDataMap map[string]interface{}
 }
@@ -38,7 +38,7 @@ func NewEventDataAdapter(event sdk.KeptnEvent) (*EventDataAdapter, error) {
 	if err := keptnv2.Decode(event, &eventDataMap); err != nil {
 		return nil, fmt.Errorf("could not apply attributes from incoming event: %w", err)
 	}
-	keptnEvent := keptnmodels.KeptnContextExtendedCE{}
+	keptnEvent := apimodels.KeptnContextExtendedCE{}
 	if err := keptnv2.Decode(event, &keptnEvent); err != nil {
 		return nil, fmt.Errorf("could not decode incoming event payload: %w", err)
 	}
