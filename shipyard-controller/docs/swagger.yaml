@@ -1,165 +1,5 @@
 basePath: /v1
 definitions:
-  github.com_keptn_go-utils_pkg_api_models.ExpandedProject:
-    properties:
-      creationDate:
-        description: Creation date of the project
-        type: string
-      gitRemoteURI:
-        description: Git remote URI
-        type: string
-      gitUser:
-        description: Git User
-        type: string
-      lastEventContext:
-        $ref: '#/definitions/models.EventContextInfo'
-        description: last event context
-      projectName:
-        description: Project name
-        type: string
-      shipyard:
-        description: Shipyard file content
-        type: string
-      shipyardVersion:
-        description: Version of the shipyard file
-        type: string
-      stages:
-        description: stages
-        items:
-          $ref: '#/definitions/github.com_keptn_go-utils_pkg_api_models.ExpandedStage'
-        type: array
-    type: object
-  github.com_keptn_go-utils_pkg_api_models.ExpandedService:
-    properties:
-      creationDate:
-        description: Creation date of the service
-        type: string
-      deployedImage:
-        description: Currently deployed image
-        type: string
-      lastEventTypes:
-        additionalProperties:
-          $ref: '#/definitions/models.EventContextInfo'
-        description: last event types
-        type: object
-      openRemediations:
-        description: open remediations
-        items:
-          $ref: '#/definitions/models.Remediation'
-        type: array
-      serviceName:
-        description: Service name
-        type: string
-    type: object
-  github.com_keptn_go-utils_pkg_api_models.ExpandedStage:
-    properties:
-      lastEventContext:
-        $ref: '#/definitions/models.EventContextInfo'
-        description: last event context
-      parentStages:
-        description: Parent Stages
-        items:
-          type: string
-        type: array
-      services:
-        description: services
-        items:
-          $ref: '#/definitions/github.com_keptn_go-utils_pkg_api_models.ExpandedService'
-        type: array
-      stageName:
-        description: Stage name
-        type: string
-    type: object
-  github.com_keptn_go-utils_pkg_api_apimodels.EventSubscription:
-    properties:
-      filter:
-        $ref: '#/definitions/apimodels.EventSubscriptionFilter'
-      status:
-        type: string
-      topics:
-        items:
-          type: string
-        type: array
-    type: object
-  github.com_keptn_keptn_shipyard-controller_models.ExpandedProject:
-    properties:
-      creationDate:
-        description: Creation date of the project
-        type: string
-      gitRemoteURI:
-        description: Git remote URI
-        type: string
-      gitUser:
-        description: Git User
-        type: string
-      lastEventContext:
-        $ref: '#/definitions/models.EventContextInfo'
-        description: last event context
-      projectName:
-        description: Project name
-        type: string
-      shipyard:
-        description: Shipyard file content
-        type: string
-      shipyardVersion:
-        description: Version of the shipyard file
-        type: string
-      stages:
-        description: stages
-        items:
-          $ref: '#/definitions/github.com_keptn_go-utils_pkg_api_models.ExpandedStage'
-        type: array
-    type: object
-  github.com_keptn_keptn_shipyard-controller_models.ExpandedService:
-    properties:
-      creationDate:
-        description: Creation date of the service
-        type: string
-      deployedImage:
-        description: Currently deployed image
-        type: string
-      lastEventTypes:
-        additionalProperties:
-          $ref: '#/definitions/models.EventContextInfo'
-        description: last event types
-        type: object
-      openRemediations:
-        description: open remediations
-        items:
-          $ref: '#/definitions/models.Remediation'
-        type: array
-      serviceName:
-        description: Service name
-        type: string
-    type: object
-  github.com_keptn_keptn_shipyard-controller_models.ExpandedStage:
-    properties:
-      lastEventContext:
-        $ref: '#/definitions/models.EventContextInfo'
-        description: last event context
-      parentStages:
-        description: Parent Stages
-        items:
-          type: string
-        type: array
-      services:
-        description: services
-        items:
-          $ref: '#/definitions/github.com_keptn_go-utils_pkg_api_models.ExpandedService'
-        type: array
-      stageName:
-        description: Stage name
-        type: string
-    type: object
-  github.com_keptn_keptn_shipyard-controller_apimodels.EventSubscription:
-    properties:
-      event:
-        type: string
-      filter:
-        $ref: '#/definitions/models.EventSubscriptionFilter'
-      id:
-        type: string
-    type: object
   models.CreateEvaluationParams:
     properties:
       end:
@@ -195,7 +35,7 @@ definitions:
       logs:
         description: logs
         items:
-          $ref: '#/definitions/apimodels.LogEntry'
+          $ref: '#/definitions/models.LogEntry'
         type: array
     type: object
   models.CreateProjectParams:
@@ -273,7 +113,199 @@ definitions:
           Required: true
         type: string
     type: object
-  models.Event:
+  models.EventContextInfo:
+    properties:
+      eventId:
+        description: ID of the event
+        type: string
+      keptnContext:
+        description: Keptn Context ID of the event
+        type: string
+      time:
+        description: Time of the event
+        type: string
+    type: object
+  models.EventSubscription:
+    properties:
+      event:
+        type: string
+      filter:
+        $ref: '#/definitions/models.EventSubscriptionFilter'
+      id:
+        type: string
+    type: object
+  models.EventSubscriptionFilter:
+    properties:
+      projects:
+        items:
+          type: string
+        type: array
+      services:
+        items:
+          type: string
+        type: array
+      stages:
+        items:
+          type: string
+        type: array
+    type: object
+  models.ExpandedProject:
+    properties:
+      creationDate:
+        description: Creation date of the project
+        type: string
+      gitRemoteURI:
+        description: Git remote URI
+        type: string
+      gitUser:
+        description: Git User
+        type: string
+      lastEventContext:
+        $ref: '#/definitions/models.EventContextInfo'
+        description: last event context
+      projectName:
+        description: Project name
+        type: string
+      shipyard:
+        description: Shipyard file content
+        type: string
+      shipyardVersion:
+        description: Version of the shipyard file
+        type: string
+      stages:
+        description: stages
+        items:
+          $ref: '#/definitions/models.ExpandedStage'
+        type: array
+    type: object
+  models.ExpandedProjects:
+    properties:
+      nextPageKey:
+        description: Pointer to next page, base64 encoded
+        type: string
+      pageSize:
+        description: Size of returned page
+        type: number
+      projects:
+        description: projects
+        items:
+          $ref: '#/definitions/models.ExpandedProject'
+        type: array
+      totalCount:
+        description: Total number of projects
+        type: number
+    type: object
+  models.ExpandedService:
+    properties:
+      creationDate:
+        description: Creation date of the service
+        type: string
+      deployedImage:
+        description: Currently deployed image
+        type: string
+      lastEventTypes:
+        additionalProperties:
+          $ref: '#/definitions/models.EventContextInfo'
+        description: last event types
+        type: object
+      openRemediations:
+        description: open remediations
+        items:
+          $ref: '#/definitions/models.Remediation'
+        type: array
+      serviceName:
+        description: Service name
+        type: string
+    type: object
+  models.ExpandedServices:
+    properties:
+      nextPageKey:
+        description: Pointer to next page, base64 encoded
+        type: string
+      pageSize:
+        description: Size of returned page
+        type: number
+      services:
+        description: projects
+        items:
+          $ref: '#/definitions/models.ExpandedService'
+        type: array
+      totalCount:
+        description: Total number of projects
+        type: number
+    type: object
+  models.ExpandedStage:
+    properties:
+      lastEventContext:
+        $ref: '#/definitions/models.EventContextInfo'
+        description: last event context
+      parentStages:
+        description: Parent Stages
+        items:
+          type: string
+        type: array
+      services:
+        description: services
+        items:
+          $ref: '#/definitions/models.ExpandedService'
+        type: array
+      stageName:
+        description: Stage name
+        type: string
+    type: object
+  models.ExpandedStages:
+    properties:
+      nextPageKey:
+        description: Pointer to next page, base64 encoded
+        type: string
+      pageSize:
+        description: Size of returned page
+        type: number
+      stages:
+        description: stages
+        items:
+          $ref: '#/definitions/models.ExpandedStage'
+        type: array
+      totalCount:
+        description: Total number of stages
+        type: number
+    type: object
+  models.GetLogsResponse:
+    properties:
+      logs:
+        description: logs
+        items:
+          $ref: '#/definitions/models.LogEntry'
+        type: array
+      nextPageKey:
+        description: Pointer to next page
+        type: integer
+      pageSize:
+        description: Size of returned page
+        type: integer
+      totalCount:
+        description: Total number of logs
+        type: integer
+    type: object
+  models.Integration:
+    properties:
+      id:
+        type: string
+      metadata:
+        $ref: '#/definitions/models.MetaData'
+      name:
+        type: string
+      subscription:
+        $ref: '#/definitions/models.Subscription'
+        description: |-
+          Deprecated: for backwards compatibility Subscription is populated
+          but new code shall use Subscriptions
+      subscriptions:
+        items:
+          $ref: '#/definitions/models.EventSubscription'
+        type: array
+    type: object
+  models.KeptnContextExtendedCE:
     properties:
       contenttype:
         description: contenttype
@@ -318,128 +350,6 @@ definitions:
           Required: true
         type: string
     type: object
-  models.EventContextInfo:
-    properties:
-      eventId:
-        description: ID of the event
-        type: string
-      keptnContext:
-        description: Keptn Context ID of the event
-        type: string
-      time:
-        description: Time of the event
-        type: string
-    type: object
-  models.EventSubscription:
-    properties:
-      event:
-        type: string
-      filter:
-        $ref: '#/definitions/models.EventSubscriptionFilter'
-      id:
-        type: string
-    type: object
-  models.EventSubscriptionFilter:
-    properties:
-      projects:
-        items:
-          type: string
-        type: array
-      services:
-        items:
-          type: string
-        type: array
-      stages:
-        items:
-          type: string
-        type: array
-    type: object
-  models.ExpandedProjects:
-    properties:
-      nextPageKey:
-        description: Pointer to next page, base64 encoded
-        type: string
-      pageSize:
-        description: Size of returned page
-        type: number
-      projects:
-        description: projects
-        items:
-          $ref: '#/definitions/github.com_keptn_go-utils_pkg_api_models.ExpandedProject'
-        type: array
-      totalCount:
-        description: Total number of projects
-        type: number
-    type: object
-  models.ExpandedServices:
-    properties:
-      nextPageKey:
-        description: Pointer to next page, base64 encoded
-        type: string
-      pageSize:
-        description: Size of returned page
-        type: number
-      services:
-        description: projects
-        items:
-          $ref: '#/definitions/github.com_keptn_go-utils_pkg_api_models.ExpandedService'
-        type: array
-      totalCount:
-        description: Total number of projects
-        type: number
-    type: object
-  models.ExpandedStages:
-    properties:
-      nextPageKey:
-        description: Pointer to next page, base64 encoded
-        type: string
-      pageSize:
-        description: Size of returned page
-        type: number
-      stages:
-        description: stages
-        items:
-          $ref: '#/definitions/github.com_keptn_go-utils_pkg_api_models.ExpandedStage'
-        type: array
-      totalCount:
-        description: Total number of stages
-        type: number
-    type: object
-  models.GetLogsResponse:
-    properties:
-      logs:
-        description: logs
-        items:
-          $ref: '#/definitions/apimodels.LogEntry'
-        type: array
-      nextPageKey:
-        description: Pointer to next page
-        type: integer
-      pageSize:
-        description: Size of returned page
-        type: integer
-      totalCount:
-        description: Total number of logs
-        type: integer
-    type: object
-  apimodels.Integration:
-    properties:
-      id:
-        type: string
-      metadata:
-        $ref: '#/definitions/models.MetaData'
-      name:
-        type: string
-      subscription:
-        $ref: '#/definitions/github.com_keptn_go-utils_pkg_api_apimodels.EventSubscription'
-        description: |-
-          Deprecated: for backwards compatibility Subscription is populated
-          but new code shall use Subscriptions
-      subscriptions:
-        items:
-          $ref: '#/definitions/models.EventSubscription'
-        type: array
-    type: object
   models.KubernetesMetaData:
     properties:
       deploymentname:
@@ -449,7 +359,7 @@ definitions:
       podname:
         type: string
     type: object
-  apimodels.LogEntry:
+  models.LogEntry:
     properties:
       gitcommitid:
         type: string
@@ -583,7 +493,18 @@ definitions:
         description: Total number of events
         type: integer
     type: object
-  apimodels.EventSubscriptionFilter:
+  models.Subscription:
+    properties:
+      filter:
+        $ref: '#/definitions/models.SubscriptionFilter'
+      status:
+        type: string
+      topics:
+        items:
+          type: string
+        type: array
+    type: object
+  models.SubscriptionFilter:
     properties:
       project:
         type: string
@@ -680,7 +601,7 @@ paths:
         "200":
           description: ok
           schema:
-            $ref: '#/definitions/models.Event'
+            $ref: '#/definitions/models.KeptnContextExtendedCE'
         "400":
           description: Invalid payload
           schema:
@@ -958,7 +879,7 @@ paths:
         "200":
           description: ok
           schema:
-            $ref: '#/definitions/github.com_keptn_keptn_shipyard-controller_models.ExpandedProject'
+            $ref: '#/definitions/models.ExpandedProject'
         "404":
           description: Not found
           schema:
@@ -1110,7 +1031,7 @@ paths:
         "200":
           description: ok
           schema:
-            $ref: '#/definitions/github.com_keptn_keptn_shipyard-controller_models.ExpandedStage'
+            $ref: '#/definitions/models.ExpandedStage'
         "404":
           description: Not found
           schema:
@@ -1195,7 +1116,7 @@ paths:
         "200":
           description: ok
           schema:
-            $ref: '#/definitions/github.com_keptn_keptn_shipyard-controller_models.ExpandedService'
+            $ref: '#/definitions/models.ExpandedService'
         "400":
           description: Invalid payload
           schema:
@@ -1392,7 +1313,7 @@ paths:
           description: ok
           schema:
             items:
-              $ref: '#/definitions/apimodels.Integration'
+              $ref: '#/definitions/models.Integration'
             type: array
         "400":
           description: Invalid payload
@@ -1417,7 +1338,7 @@ paths:
         name: integration
         required: true
         schema:
-          $ref: '#/definitions/apimodels.Integration'
+          $ref: '#/definitions/models.Integration'
       produces:
       - application/json
       responses:
@@ -1489,7 +1410,7 @@ paths:
         "200":
           description: ok
           schema:
-            $ref: '#/definitions/apimodels.Integration'
+            $ref: '#/definitions/models.Integration'
         "404":
           description: Not found
           schema:
@@ -1522,7 +1443,7 @@ paths:
           description: ok
           schema:
             items:
-              $ref: '#/definitions/github.com_keptn_keptn_shipyard-controller_apimodels.EventSubscription'
+              $ref: '#/definitions/models.EventSubscription'
             type: array
         "400":
           description: Invalid payload
@@ -1556,7 +1477,7 @@ paths:
         name: subscription
         required: true
         schema:
-          $ref: '#/definitions/github.com_keptn_keptn_shipyard-controller_apimodels.EventSubscription'
+          $ref: '#/definitions/models.EventSubscription'
       produces:
       - application/json
       responses:
@@ -1638,7 +1559,7 @@ paths:
         "200":
           description: ok
           schema:
-            $ref: '#/definitions/github.com_keptn_keptn_shipyard-controller_apimodels.EventSubscription'
+            $ref: '#/definitions/models.EventSubscription'
         "400":
           description: Invalid payload
           schema:
@@ -1676,7 +1597,7 @@ paths:
         name: subscription
         required: true
         schema:
-          $ref: '#/definitions/github.com_keptn_keptn_shipyard-controller_apimodels.EventSubscription'
+          $ref: '#/definitions/models.EventSubscription'
       produces:
       - application/json
       responses:
