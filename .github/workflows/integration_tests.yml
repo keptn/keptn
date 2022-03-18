@@ -24,23 +24,60 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - CLOUD_PROVIDER: "minishift-on-GHA"
+            PLATFORM: "openshift"
+            PLATFORM_VERSION: "3.11"
+            KEPTN_SERVICE_TYPE: "ClusterIP"
+            RUN_CONTINUOUS_DELIVERY_TEST: "false"
+            COLLECT_RESOURCE_LIMITS: "true"
+          - CLOUD_PROVIDER: "k3s-on-GHA"
+            PLATFORM_VERSION: "v1.16.15+k3s1" # see https://github.com/rancher/k3s/releases
+            KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
+            PLATFORM: "kubernetes"
+            KEPTN_SERVICE_TYPE: "NodePort"
+            RUN_CONTINUOUS_DELIVERY_TEST: "false"
+            COLLECT_RESOURCE_LIMITS: "false"
+          - CLOUD_PROVIDER: "k3s-on-GHA"
+            PLATFORM_VERSION: "v1.21.1+k3s1" # see https://github.com/rancher/k3s/releases
+            KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
+            PLATFORM: "kubernetes"
+            KEPTN_SERVICE_TYPE: "NodePort"
+            RUN_CONTINUOUS_DELIVERY_TEST: "false"
+            COLLECT_RESOURCE_LIMITS: "false"
+            USE_RESOURCE_SERVICE: "true"
+          - CLOUD_PROVIDER: "k3d-on-GHA"
+            PLATFORM_VERSION: "v4.4.6" # see https://github.com/rancher/k3d/releases
+            KUBECONFIG: ""
+            PLATFORM: "kubernetes"
+            KEPTN_SERVICE_TYPE: "NodePort"
+            RUN_AIRGAPPED_TEST: "true"
+            RUN_CONTINUOUS_DELIVERY_TEST: "false"
+            COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "GKE"
             PLATFORM_VERSION: "1.19"
             CLUSTER_NAME: "keptn-integration-test-1"
             KUBECONFIG: ""
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "LoadBalancer"
-            RUN_CONTINUOUS_DELIVERY_TEST: "false"
-            REMOTE_EXECUTION_PLANE: "false"
+            RUN_CONTINUOUS_DELIVERY_TEST: "true"
+            REMOTE_EXECUTION_PLANE: "true"
             COLLECT_RESOURCE_LIMITS: "false"
+          - CLOUD_PROVIDER: "GKE"
+            PLATFORM_VERSION: "1.21"
+            CLUSTER_NAME: "keptn-integration-test-2"
+            KUBECONFIG: ""
+            PLATFORM: "kubernetes"
+            KEPTN_SERVICE_TYPE: "LoadBalancer"
+            RUN_CONTINUOUS_DELIVERY_TEST: "true"
+            REMOTE_EXECUTION_PLANE: "false"
+            COLLECT_RESOURCE_LIMITS: "true"
             USE_RESOURCE_SERVICE: "true"
-            KEPTN_NAMESPACE_SUFFIX: "-MR"
     env:
       CLOUD_PROVIDER: ${{ matrix.CLOUD_PROVIDER }}
       PLATFORM: ${{ matrix.PLATFORM }}
       PLATFORM_VERSION: ${{ matrix.PLATFORM_VERSION }}
       KUBECONFIG: ${{ matrix.KUBECONFIG }}
-      KEPTN_NAMESPACE: "keptn-test-${{ github.run_number }}-${{ github.run_attempt }}${{ matrix.KEPTN_NAMESPACE_SUFFIX }}"
+      KEPTN_NAMESPACE: "keptn-test-${{ github.run_number }}-${{ github.run_attempt }}"
       KEPTN_SERVICE_TYPE: ${{ matrix.KEPTN_SERVICE_TYPE }}
       RUN_CONTINUOUS_DELIVERY_TEST: ${{ matrix.RUN_CONTINUOUS_DELIVERY_TEST }}
       RUN_AIRGAPPED_TEST: ${{ matrix.RUN_AIRGAPPED_TEST }}
@@ -333,6 +370,7 @@ jobs:
               --create-namespace \
               --set control-plane.apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
               --set control-plane.resourceService.enabled=true \
+              --set control-plane.resourceService.replicas=3 \
               --set continuous-delivery.enabled=${RUN_CONTINUOUS_DELIVERY_TEST}
           else
             # Install Keptn via CLI
@@ -495,8 +533,6 @@ jobs:
             TESTSUITE="Test_GKE"
           elif [[ "$CLOUD_PROVIDER" == "k3d-on-GHA" ]]; then
             TESTSUITE="Test_K3D"
-          elif [[ "$CLOUD_PROVIDER" == "GKE-REDUNDANCY" ]]; then
-            TESTSUITE="Test_GKE_MR"
           fi
           
           gotestsum --no-color=false -- -run "$TESTSUITE" -v -timeout 90m
