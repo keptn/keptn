@@ -3,6 +3,7 @@ package event_handler
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/url"
 	"os"
 	"strings"
@@ -117,7 +118,7 @@ func parseSLO(input []byte) (*keptn.ServiceLevelObjectives, error) {
 	err := yaml.Unmarshal([]byte(input), &slo)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(err.Error())
 	}
 
 	if slo.Comparison == nil {

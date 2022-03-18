@@ -49,6 +49,7 @@ func Test_GKE(t *testing.T) {
 	// Platform-specific Tests
 	t.Run("Test_ResourceService", Test_ResourceServiceBasic)
 	t.Run("Test_QualityGates", Test_QualityGates)
+	t.Run("Test_QualityGates_SLIWrongFinishedPayloadSend", Test_QualityGates_SLIWrongFinishedPayloadSend)
 	t.Run("Test_DeliveryAssistant", Test_DeliveryAssistant)
 	// TODO add resource service backup/restore test when the git credentials bug is solved
 	t.Run("Test_CustomUserManagedEndpointsTest", Test_CustomUserManagedEndpointsTest)

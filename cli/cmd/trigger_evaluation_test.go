@@ -93,6 +93,74 @@ func TestTriggerEvaluationStartTimeSpecified(t *testing.T) {
 	}
 }
 
+func TestTriggerEvaluationStartTimeNotSpecified(t *testing.T) {
+
+	credentialmanager.MockAuthCreds = true
+
+	*triggerEvaluation.Timeframe = ""
+	*triggerEvaluation.Start = ""
+	*triggerEvaluation.End = ""
+
+	cmd := fmt.Sprintf("trigger evaluation --project=%s --stage=%s --service=%s "+
+		"--timeframe=%s --mock", "sockshop", "hardening", "carts", "5m")
+	_, err := executeActionCommandC(cmd)
+
+	if err != nil {
+		assert.EqualValues(t, "required flag(s) \"start\" not set", err.Error())
+	}
+}
+
+func TestTriggerEvaluationProjectNotSpecified(t *testing.T) {
+
+	credentialmanager.MockAuthCreds = true
+
+	*triggerEvaluation.Timeframe = ""
+	*triggerEvaluation.Start = ""
+	*triggerEvaluation.End = ""
+
+	cmd := fmt.Sprintf("trigger evaluation --stage=%s --service=%s "+
+		"--timeframe=%s --start=%s --mock", "hardening", "carts", "5m", "2019-07-24T10:17:12.000Z")
+	_, err := executeActionCommandC(cmd)
+
+	if err != nil {
+		assert.EqualValues(t, "required flag(s) \"project\" not set", err.Error())
+	}
+}
+
+func TestTriggerEvaluationStageNotSpecified(t *testing.T) {
+
+	credentialmanager.MockAuthCreds = true
+
+	*triggerEvaluation.Timeframe = ""
+	*triggerEvaluation.Start = ""
+	*triggerEvaluation.End = ""
+
+	cmd := fmt.Sprintf("trigger evaluation --project=%s --service=%s "+
+		"--timeframe=%s --start=%s --mock", "sockshop", "carts", "5m", "2019-07-24T10:17:12.000Z")
+	_, err := executeActionCommandC(cmd)
+
+	if err != nil {
+		assert.EqualValues(t, "required flag(s) \"stage\" not set", err.Error())
+	}
+}
+
+func TestTriggerEvaluationServiceNotSpecified(t *testing.T) {
+
+	credentialmanager.MockAuthCreds = true
+
+	*triggerEvaluation.Timeframe = ""
+	*triggerEvaluation.Start = ""
+	*triggerEvaluation.End = ""
+
+	cmd := fmt.Sprintf("trigger evaluation --project=%s --stage=%s "+
+		"--timeframe=%s --start=%s --mock", "sockshop", "hardening", "5m", "2019-07-24T10:17:12.000Z")
+	_, err := executeActionCommandC(cmd)
+
+	if err != nil {
+		assert.EqualValues(t, "required flag(s) \"service\" not set", err.Error())
+	}
+}
+
 func TestTriggerEvaluationStartAndEndTimeSpecified(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true

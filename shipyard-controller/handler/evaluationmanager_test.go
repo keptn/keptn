@@ -2,6 +2,8 @@ package handler
 
 import (
 	"errors"
+	"testing"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -10,7 +12,6 @@ import (
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestEvaluationManager_CreateEvaluation(t *testing.T) {
@@ -74,6 +75,68 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 					},
 				},
 			},
+		},
+		{
+			name: "everything ok with timeframe - send evaluation.triggered event",
+			fields: fields{
+				EventSender: &keptnfake.EventSender{},
+				ServiceAPI: &db_mock.ProjectMVRepoMock{GetServiceFunc: func(project string, stage string, service string) (*apimodels.ExpandedService, error) {
+					return &apimodels.ExpandedService{}, nil
+				}},
+			},
+			args: args{
+				project: "test-project",
+				stage:   "test-stage",
+				service: "test-service",
+				params: &models.CreateEvaluationParams{
+					Labels:    map[string]string{"foo": "bar"},
+					Start:     "2020-01-02T15:00:00.000Z",
+					End:       "",
+					Timeframe: "5m",
+				},
+			},
+			wantResponse: true,
+			wantErr:      nil,
+			wantEvents: []eventTypeWithPayload{
+				{
+					eventType: keptnv2.GetTriggeredEventType("test-stage." + keptnv2.EvaluationTaskName),
+					payload: &keptnv2.EvaluationTriggeredEventData{
+						EventData: keptnv2.EventData{
+							Project: "test-project",
+							Stage:   "test-stage",
+							Service: "test-service",
+							Labels:  map[string]string{"foo": "bar"},
+						},
+						Evaluation: keptnv2.Evaluation{
+							Start: "2020-01-02T15:00:00.000Z",
+							End:   "2020-01-02T15:05:00.000Z",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "non-existing service",
+			fields: fields{
+				EventSender: &keptnfake.EventSender{},
+				ServiceAPI: &db_mock.ProjectMVRepoMock{GetServiceFunc: func(project string, stage string, service string) (*apimodels.ExpandedService, error) {
+					return nil, errors.New("service not found")
+				}},
+			},
+			args: args{
+				project: "test-project",
+				stage:   "test-stage",
+				service: "no-test-service",
+				params: &models.CreateEvaluationParams{
+					Labels:    map[string]string{"foo": "bar"},
+					Start:     "2020-01-02T15:00:00.000Z",
+					End:       "2020-01-02T16:00:00.000Z",
+					Timeframe: "",
+				},
+			},
+			wantResponse: false,
+			wantErr:      &models.Error{Code: evaluationErrServiceNotAvailable},
+			wantEvents:   []eventTypeWithPayload{},
 		},
 		{
 			name: "invalid timeframe",
