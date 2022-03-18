@@ -8,8 +8,6 @@ import (
 	"testing"
 	"time"
 
-	scmodels "github.com/keptn/keptn/shipyard-controller/models"
-
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/strutils"
@@ -708,7 +706,7 @@ func Test_QualityGates_SLIWrongFinishedPayloadSend(t *testing.T) {
 	sequenceStates, _, err := GetState(projectName)
 	require.Nil(t, err)
 	require.NotEmpty(t, sequenceStates.States)
-	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{KeptnContext: &keptnContext}, 2*time.Minute, []string{scmodels.SequenceFinished})
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{KeptnContext: &keptnContext}, 2*time.Minute, []string{models.SequenceFinished})
 }
 
 func qualityGatesGenericTestStart(t *testing.T, projectName string, serviceName string) (string, string, string) {
