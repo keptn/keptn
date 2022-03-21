@@ -858,7 +858,7 @@ func TestResourceManager_DeleteResource_Git_ThrowsNonFastForward_Or_ThrowsForceN
 
 	require.Len(t, fields.git.StageAndCommitAllCalls(), 3)
 	require.Len(t, fields.fileSystem.DeleteFileCalls(), 3)
-	require.Len(t, fields.git.PullCalls(), 2)
+	require.Len(t, fields.git.PullCalls(), 3)
 	require.Equal(t, testConfigDir+"/file1", fields.fileSystem.DeleteFileCalls()[0].Path)
 	require.Equal(t, testConfigDir+"/file1", fields.fileSystem.DeleteFileCalls()[1].Path)
 	require.Equal(t, testConfigDir+"/file1", fields.fileSystem.DeleteFileCalls()[2].Path)

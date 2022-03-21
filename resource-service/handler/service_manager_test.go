@@ -42,6 +42,7 @@ func TestServiceManager_CreateService(t *testing.T) {
 	}
 
 	fields := getTestServiceManagerFields()
+
 	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter, fields.configurationContext)
 	err := p.CreateService(params)
 
@@ -184,7 +185,6 @@ func TestServiceManager_CreateService_ServiceAlreadyExists(t *testing.T) {
 	}
 
 	fields := getTestServiceManagerFields()
-
 	fields.fileWriter.FileExistsFunc = func(path string) bool {
 		return true
 	}
@@ -224,7 +224,6 @@ func TestServiceManager_CreateService_CannotCreateDirectory(t *testing.T) {
 	}
 
 	fields := getTestServiceManagerFields()
-
 	fields.fileWriter.MakeDirFunc = func(path string) error {
 		return errors.New("oops")
 	}
@@ -264,7 +263,6 @@ func TestServiceManager_CreateService_CannotCreateMetadata(t *testing.T) {
 	}
 
 	fields := getTestServiceManagerFields()
-
 	fields.fileWriter.WriteFileFunc = func(path string, content []byte) error {
 		return errors.New("oops")
 	}
@@ -305,7 +303,6 @@ func TestServiceManager_CreateService_CannotCommit(t *testing.T) {
 	}
 
 	fields := getTestServiceManagerFields()
-
 	fields.git.StageAndCommitAllFunc = func(gitContext common_models.GitContext, message string) (string, error) {
 		return "", errors.New("oops")
 	}
@@ -341,7 +338,6 @@ func TestServiceManager_DeleteService(t *testing.T) {
 	}
 
 	fields := getTestServiceManagerFields()
-
 	fields.fileWriter.FileExistsFunc = func(path string) bool {
 		if strings.Contains(path, "my-service") {
 			return true
@@ -524,24 +520,13 @@ func TestServiceManager_DeleteService_CannotCommit(t *testing.T) {
 func getTestServiceManagerFields() serviceManagerTestFields {
 	return serviceManagerTestFields{
 		git: &common_mock.IGitMock{
-			ProjectExistsFunc: func(gitContext common_models.GitContext) bool {
-				return true
-			},
-			ProjectRepoExistsFunc: func(projectName string) bool {
-				return true
-			},
-			CloneRepoFunc: func(gitContext common_models.GitContext) (bool, error) {
-				return true, nil
-			},
-			StageAndCommitAllFunc: func(gitContext common_models.GitContext, message string) (string, error) {
-				return "", nil
-			},
-			GetDefaultBranchFunc: func(gitContext common_models.GitContext) (string, error) {
-				return "main", nil
-			},
-			CheckoutBranchFunc: func(gitContext common_models.GitContext, branch string) error {
-				return nil
-			},
+			PullFunc:              func(gitContext common_models.GitContext) error { return nil },
+			ProjectExistsFunc:     func(gitContext common_models.GitContext) bool { return true },
+			ProjectRepoExistsFunc: func(projectName string) bool { return true },
+			CloneRepoFunc:         func(gitContext common_models.GitContext) (bool, error) { return true, nil },
+			StageAndCommitAllFunc: func(gitContext common_models.GitContext, message string) (string, error) { return "", nil },
+			GetDefaultBranchFunc:  func(gitContext common_models.GitContext) (string, error) { return "main", nil },
+			CheckoutBranchFunc:    func(gitContext common_models.GitContext, branch string) error { return nil },
 		},
 		credentialReader: &common_mock.CredentialReaderMock{
 			GetCredentialsFunc: func(project string) (*common_models.GitCredentials, error) {
