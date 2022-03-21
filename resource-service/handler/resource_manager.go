@@ -126,32 +126,34 @@ func (p ResourceManager) DeleteResource(params models.DeleteResourceParams) (*mo
 
 	resourcePath := configPath + "/" + params.ResourceURI
 
-	//try deleting first
-	resultCommit, resultErr := p.deleteResource(gitContext, resourcePath)
+	var resultErr error
+	var resultCommit *models.WriteResourceResponse
+	////try deleting first
+	//resultCommit, resultErr := p.deleteResource(gitContext, resourcePath)
 	// if there are conflicting changes first pull then try again
-	if errors.Is(resultErr, kerrors.ErrNonFastForwardUpdate) || errors.Is(resultErr, kerrors.ErrForceNeeded) {
-		_ = retry.Retry(func() error {
-			err := p.git.Pull(*gitContext)
-			if err != nil {
-				resultErr = err
-				// return nil at this point because retry does not make sense in that case
-				return nil
-			}
-
-			response, err := p.deleteResource(gitContext, resourcePath)
-			if err != nil {
-				if errors.Is(err, kerrors.ErrNonFastForwardUpdate) || errors.Is(err, kerrors.ErrForceNeeded) {
-					return err
-				}
-				resultErr = err
-				// return nil at this point because retry does not make sense in that case
-				return nil
-			}
-			resultCommit = response
+	//if errors.Is(resultErr, kerrors.ErrNonFastForwardUpdate) || errors.Is(resultErr, kerrors.ErrForceNeeded) {
+	_ = retry.Retry(func() error {
+		err := p.git.Pull(*gitContext)
+		if err != nil {
 			resultErr = err
+			// return nil at this point because retry does not make sense in that case
 			return nil
-		}, retry.NumberOfRetries(5), retry.DelayBetweenRetries(1*time.Second))
-	}
+		}
+
+		response, err := p.deleteResource(gitContext, resourcePath)
+		if err != nil {
+			if errors.Is(err, kerrors.ErrNonFastForwardUpdate) || errors.Is(err, kerrors.ErrForceNeeded) {
+				return err
+			}
+			resultErr = err
+			// return nil at this point because retry does not make sense in that case
+			return nil
+		}
+		resultCommit = response
+		resultErr = err
+		return nil
+	}, retry.NumberOfRetries(5), retry.DelayBetweenRetries(1*time.Second))
+	//}
 	return resultCommit, resultErr
 }
 
