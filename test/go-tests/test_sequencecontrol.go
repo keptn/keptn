@@ -233,7 +233,7 @@ func Test_SequenceControl_AbortPausedSequence(t *testing.T) {
 	keptnContextID, _ := TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
 
 	// verify state
-	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{scmodels.SequenceStartedState})
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{models.SequenceStartedState})
 
 	taskTriggeredEvent, err := GetLatestEventOfType(keptnContextID, projectName, stageName, keptnv2.GetTriggeredEventType("task1"))
 	require.Nil(t, err)
@@ -250,14 +250,14 @@ func Test_SequenceControl_AbortPausedSequence(t *testing.T) {
 
 	// pause the sequence
 	t.Log("pausing sequence")
-	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), scmodels.SequenceControlCommand{
-		State: scmodels.PauseSequence,
+	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), models.SequenceControlCommand{
+		State: models.PauseSequence,
 		Stage: "",
 	}, 3)
 	require.Nil(t, err)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 
-	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{scmodels.SequencePaused})
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{models.SequencePaused})
 
 	// now trigger another sequence and make sure it is started eventually
 	// trigger a second sequence which should be put in the queue
@@ -265,17 +265,17 @@ func Test_SequenceControl_AbortPausedSequence(t *testing.T) {
 
 	// now abort the first sequence
 	t.Log("aborting first sequence")
-	resp, err = ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), scmodels.SequenceControlCommand{
-		State: scmodels.AbortSequence,
+	resp, err = ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), models.SequenceControlCommand{
+		State: models.AbortSequence,
 		Stage: "",
 	}, 3)
 	require.Nil(t, err)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 
-	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{scmodels.SequenceAborted})
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{models.SequenceAborted})
 
 	// now that the first sequence is aborted, the other sequence should eventually be started
-	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&secondContextID}, 2*time.Minute, []string{scmodels.SequenceStartedState})
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&secondContextID}, 2*time.Minute, []string{models.SequenceStartedState})
 
 	// also make sure that the triggered event for the first task has been sent
 	require.Eventually(t, func() bool {
@@ -314,7 +314,7 @@ func Test_SequenceControl_AbortPausedSequenceTaskPartiallyFinished(t *testing.T)
 	keptnContextID, _ := TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
 
 	// verify state
-	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{scmodels.SequenceStartedState})
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{models.SequenceStartedState})
 
 	taskTriggeredEvent, err := GetLatestEventOfType(keptnContextID, projectName, stageName, keptnv2.GetTriggeredEventType("task1"))
 	require.Nil(t, err)
@@ -344,32 +344,32 @@ func Test_SequenceControl_AbortPausedSequenceTaskPartiallyFinished(t *testing.T)
 	secondContextID, _ := TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
 
 	// verify that the second sequence gets the triggered status
-	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&secondContextID}, 2*time.Minute, []string{scmodels.SequenceWaitingState})
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&secondContextID}, 2*time.Minute, []string{models.SequenceWaitingState})
 
 	// pause the sequence
 	t.Log("pausing sequence")
-	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), scmodels.SequenceControlCommand{
-		State: scmodels.PauseSequence,
+	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), models.SequenceControlCommand{
+		State: models.PauseSequence,
 		Stage: "",
 	}, 3)
 	require.Nil(t, err)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 
-	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{scmodels.SequencePaused})
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{models.SequencePaused})
 
 	// now abort the first sequence
 	t.Log("aborting first sequence")
-	resp, err = ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), scmodels.SequenceControlCommand{
-		State: scmodels.AbortSequence,
+	resp, err = ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), models.SequenceControlCommand{
+		State: models.AbortSequence,
 		Stage: "",
 	}, 3)
 	require.Nil(t, err)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 
-	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{scmodels.SequenceAborted})
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{models.SequenceAborted})
 
 	// now that the first sequence is aborted, the other sequence should eventually be started
-	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&secondContextID}, 2*time.Minute, []string{scmodels.SequenceStartedState})
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&secondContextID}, 2*time.Minute, []string{models.SequenceStartedState})
 
 	// also make sure that the triggered event for the first task has been sent
 	require.Eventually(t, func() bool {
@@ -473,14 +473,14 @@ func Test_SequenceControl_AbortPausedSequenceMultipleStages(t *testing.T) {
 
 	// now abort the first sequence
 	t.Log("aborting first sequence")
-	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), scmodels.SequenceControlCommand{
-		State: scmodels.AbortSequence,
+	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), models.SequenceControlCommand{
+		State: models.AbortSequence,
 		Stage: "",
 	}, 3)
 	require.Nil(t, err)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 
-	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{scmodels.SequenceAborted})
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{models.SequenceAborted})
 
 	// now that the first sequence is aborted, the other sequence should start in prod-a and prod-b
 	parallelStagesAreTriggered(secondContextID)
