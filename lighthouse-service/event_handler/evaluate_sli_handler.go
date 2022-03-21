@@ -133,16 +133,16 @@ func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(ctx context.Context, sh
 	}
 
 	if e.Status == keptnv2.StatusAborted {
-		evalResult.EventData.Result = keptnv2.ResultPass
-		evalResult.EventData.Status = e.Status
-		evalResult.Message = fmt.Sprintf("no evaluation performed by lighthouse was aborted")
+		evalResult.EventData.Result = keptnv2.ResultFailed
+		evalResult.EventData.Status = keptnv2.StatusErrored
+		evalResult.Message = fmt.Sprintf("evaluation performed by lighthouse was aborted")
 		return sendEvent(shkeptncontext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), commitID, eh.KeptnHandler, &evalResult)
 	}
 
 	if e.Status == keptnv2.StatusErrored {
 		evalResult.EventData.Result = keptnv2.ResultFailed
 		evalResult.EventData.Status = e.Status
-		evalResult.Message = fmt.Sprintf("no evaluation performed by lighthouse received an unexpected error: %s", e.Message)
+		evalResult.Message = fmt.Sprintf("evaluation performed by lighthouse received an unexpected error: %s", e.Message)
 		return sendEvent(shkeptncontext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), commitID, eh.KeptnHandler, &evalResult)
 	}
 

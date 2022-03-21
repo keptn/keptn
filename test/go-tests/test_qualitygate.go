@@ -702,6 +702,10 @@ func Test_QualityGates_SLIWrongFinishedPayloadSend(t *testing.T) {
 
 	require.Nil(t, err)
 
+	t.Logf("Sleeping for 15 sec...")
+	time.Sleep(15 * time.Second)
+	t.Logf("Continue to work...")
+
 	t.Log("Verify sequence ends up in finished state")
 	sequenceStates, _, err := GetState(projectName)
 	require.Nil(t, err)
@@ -801,12 +805,16 @@ func Test_QualityGates_AbortedFinishedPayloadSend(t *testing.T) {
 
 	require.Nil(t, err)
 
+	t.Logf("Sleeping for 15 sec...")
+	time.Sleep(15 * time.Second)
+	t.Logf("Continue to work...")
+
 	t.Log("Verify sequence ends up in finished state")
 	sequenceStates, _, err := GetState(projectName)
 	require.Nil(t, err)
 	require.NotEmpty(t, sequenceStates.States)
-	require.Equal(t, "aborted", sequenceStates.States[0].Stages[0].State)
-	require.Equal(t, "pass", sequenceStates.States[0].Stages[0].LatestEvaluation.Result)
+	require.Equal(t, "errored", sequenceStates.States[0].Stages[0].State)
+	require.Equal(t, "fail", sequenceStates.States[0].Stages[0].LatestEvaluation.Result)
 	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{KeptnContext: &keptnContext}, 2*time.Minute, []string{models.SequenceFinished})
 }
 
@@ -901,6 +909,10 @@ func Test_QualityGates_ErroredFinishedPayloadSend(t *testing.T) {
 	}, 3)
 
 	require.Nil(t, err)
+
+	t.Logf("Sleeping for 15 sec...")
+	time.Sleep(15 * time.Second)
+	t.Logf("Continue to work...")
 
 	t.Log("Verify sequence ends up in finished state")
 	sequenceStates, _, err := GetState(projectName)

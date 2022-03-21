@@ -60,10 +60,8 @@ spec:
               value: 'mongodb-datastore:8080'
             - name: ENVIRONMENT
               value: 'production'
-            - name: POD_NAMESPACE
-              value: 'keptn'
         - name: distributor
-          image: docker.io/keptn/distributor:0.13.0-dev
+          image: docker.io/keptndev/distributor:0.14.0-dev
           ports:
             - containerPort: 8080
           resources:
@@ -78,16 +76,6 @@ spec:
               value: 'nats://keptn-nats'
             - name: PUBSUB_TOPIC
               value: 'sh.keptn.event.evaluation.triggered,sh.keptn.event.get-sli.finished,sh.keptn.event.monitoring.configure'
-            - name: PUBSUB_RECIPIENT
-              value: '127.0.0.1'
-            - name: K8S_NAMESPACE
-              value: keptn
-            - name: K8S_DEPLOYMENT_NAME
-              value: lighthouse-service
-            - name: K8S_NODE_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: spec.nodeName
 ---
 apiVersion: v1
 kind: Service
