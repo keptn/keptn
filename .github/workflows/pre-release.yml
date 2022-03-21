@@ -403,6 +403,7 @@ jobs:
 
       - name: Upload helm charts
         env:
+          GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
           RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
         run: |
           mv ./dist/keptn-installer/*.tgz ./helm-charts/packages
@@ -415,6 +416,7 @@ jobs:
 
       - name: Attach docker image digests to release
         env:
+          GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
           DIGEST_FILE: "digests.csv"
           RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
         run: |
