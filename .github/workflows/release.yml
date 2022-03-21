@@ -386,6 +386,7 @@ jobs:
           RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
         run: |
           gh release create "$RELEASE_TAG" --draft --notes-file "${{ env.RELEASE_NOTES_FILE }}" --title "$RELEASE_TAG"
+          sleep 15
 
       - name: Upload Release Assets
         working-directory: keptn
@@ -393,13 +394,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
           RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
         run: |
-          gh release upload "$RELEASE_TAG" ../dist/keptn-installer/*.tgz
-          gh release upload "$RELEASE_TAG" ../dist/keptn-cli/*.tar.gz
+          gh release upload "$RELEASE_TAG" "../dist/keptn-installer/*.tgz"
+          gh release upload "$RELEASE_TAG" "../dist/keptn-cli/*.tar.gz"
 
       - name: Upload helm charts
         env:
           RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
         run: |
+          ls -laR ./dist
           mv "./dist/keptn-installer/*.tgz" ./helm-charts/packages
           cd ./helm-charts
           helm repo index ./ --url https://charts.keptn.sh/ --merge ./index.yaml
@@ -414,5 +416,5 @@ jobs:
           RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
         run: |
           cat ./dist/image-digests/digest-*.txt >> $DIGEST_FILE
-          
+
           gh release upload "$RELEASE_TAG" "$DIGEST_FILE"
