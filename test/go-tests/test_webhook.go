@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	scmodels "github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"os"
@@ -682,8 +681,8 @@ func Test_WebhookWithDisabledFinishedEvents(t *testing.T) {
 	require.Nil(t, taskFinishedEvent)
 
 	t.Log("verified desired state, aborting sequence")
-	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), scmodels.SequenceControlCommand{
-		State: scmodels.AbortSequence,
+	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), models.SequenceControlCommand{
+		State: models.AbortSequence,
 		Stage: "",
 	}, 3)
 	require.Nil(t, err)
@@ -827,8 +826,8 @@ func Test_WebhookWithDisabledStartedEvents(t *testing.T) {
 	require.Nil(t, taskFinishedEvent)
 
 	t.Log("verified desired state, aborting sequence")
-	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), scmodels.SequenceControlCommand{
-		State: scmodels.AbortSequence,
+	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), models.SequenceControlCommand{
+		State: models.AbortSequence,
 		Stage: "",
 	}, 3)
 	require.Nil(t, err)

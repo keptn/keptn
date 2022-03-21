@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
@@ -14,6 +15,7 @@ import (
 )
 
 func Test_GetAllTriggeredEvents(t *testing.T) {
+	triggered := fake.GetTestTriggeredEvent()
 	type fields struct {
 		projectRepo        db.ProjectMVRepo
 		triggeredEventRepo db.EventRepo
@@ -25,31 +27,31 @@ func Test_GetAllTriggeredEvents(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    []models.Event
+		want    []apimodels.KeptnContextExtendedCE
 		wantErr bool
 	}{
 		{
 			name: "Get triggered events for all projects",
 			fields: fields{
-				projectRepo: &db_mock.ProjectMVRepoMock{GetProjectsFunc: func() ([]*models.ExpandedProject, error) {
-					return []*models.ExpandedProject{{
+				projectRepo: &db_mock.ProjectMVRepoMock{GetProjectsFunc: func() ([]*apimodels.ExpandedProject, error) {
+					return []*apimodels.ExpandedProject{{
 						ProjectName: "sockshop",
 					}, {
 						ProjectName: "rockshop",
 					}}, nil
 				}},
 				triggeredEventRepo: &db_mock.EventRepoMock{
-					GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
-						return []models.Event{fake.GetTestTriggeredEvent()}, nil
+					GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]apimodels.KeptnContextExtendedCE, error) {
+						return []apimodels.KeptnContextExtendedCE{triggered}, nil
 					},
 					InsertEventFunc: nil,
 					DeleteEventFunc: nil,
 				},
 			},
 			args: args{},
-			want: []models.Event{
-				fake.GetTestTriggeredEvent(),
-				fake.GetTestTriggeredEvent(),
+			want: []apimodels.KeptnContextExtendedCE{
+				triggered,
+				triggered,
 			},
 			wantErr: false,
 		},
@@ -73,6 +75,7 @@ func Test_GetAllTriggeredEvents(t *testing.T) {
 }
 
 func Test_GetTriggeredEventsOfProject(t *testing.T) {
+	triggered := fake.GetTestTriggeredEvent()
 	type fields struct {
 		projectRepo        db.ProjectMVRepo
 		triggeredEventRepo db.EventRepo
@@ -85,26 +88,26 @@ func Test_GetTriggeredEventsOfProject(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    []models.Event
+		want    []apimodels.KeptnContextExtendedCE
 		wantErr bool
 	}{
 		{
 			name: "Get triggered events for project",
 			fields: fields{
-				projectRepo: &db_mock.ProjectMVRepoMock{GetProjectFunc: func(projectName string) (*models.ExpandedProject, error) {
-					return &models.ExpandedProject{ProjectName: projectName}, nil
+				projectRepo: &db_mock.ProjectMVRepoMock{GetProjectFunc: func(projectName string) (*apimodels.ExpandedProject, error) {
+					return &apimodels.ExpandedProject{ProjectName: projectName}, nil
 				}},
 				triggeredEventRepo: &db_mock.EventRepoMock{
-					GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
-						return []models.Event{fake.GetTestTriggeredEvent()}, nil
+					GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]apimodels.KeptnContextExtendedCE, error) {
+						return []apimodels.KeptnContextExtendedCE{triggered}, nil
 					},
 					InsertEventFunc: nil,
 					DeleteEventFunc: nil,
 				},
 			},
 			args: args{},
-			want: []models.Event{
-				fake.GetTestTriggeredEvent(),
+			want: []apimodels.KeptnContextExtendedCE{
+				triggered,
 			},
 			wantErr: false,
 		},
@@ -135,7 +138,7 @@ func TestHandleTaskEvent(t *testing.T) {
 		taskFinishedHook      *fakehooks.ISequenceTaskFinishedHookMock
 	}
 	type args struct {
-		event models.Event
+		event apimodels.KeptnContextExtendedCE
 	}
 	tests := []struct {
 		name           string
@@ -149,7 +152,7 @@ func TestHandleTaskEvent(t *testing.T) {
 			fields: fields{
 				projectMvRepo: nil,
 				eventRepo: &db_mock.EventRepoMock{
-					GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
+					GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]apimodels.KeptnContextExtendedCE, error) {
 						if status[0] == common.TriggeredEvent {
 							return nil, nil
 						} else if status[0] == common.StartedEvent {
@@ -157,13 +160,13 @@ func TestHandleTaskEvent(t *testing.T) {
 						}
 						return nil, errors.New("received unexpected request")
 					},
-					InsertEventFunc: func(project string, event models.Event, status common.EventStatus) error {
+					InsertEventFunc: func(project string, event apimodels.KeptnContextExtendedCE, status common.EventStatus) error {
 						return nil
 					},
 					DeleteEventFunc: func(project string, eventID string, status common.EventStatus) error {
 						return nil
 					},
-					GetStartedEventsForTriggeredIDFunc: func(eventScope models.EventScope) ([]models.Event, error) {
+					GetStartedEventsForTriggeredIDFunc: func(eventScope models.EventScope) ([]apimodels.KeptnContextExtendedCE, error) {
 						return nil, nil
 					},
 				},
@@ -172,7 +175,7 @@ func TestHandleTaskEvent(t *testing.T) {
 						return nil, nil
 					},
 				},
-				taskFinishedHook: &fakehooks.ISequenceTaskFinishedHookMock{OnSequenceTaskFinishedFunc: func(event models.Event) {}},
+				taskFinishedHook: &fakehooks.ISequenceTaskFinishedHookMock{OnSequenceTaskFinishedFunc: func(event apimodels.KeptnContextExtendedCE) {}},
 			},
 			args: args{
 				event: fake.GetTestFinishedEventWithUnmatchedSource(),

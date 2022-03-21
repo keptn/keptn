@@ -6,6 +6,7 @@ import (
 	"errors"
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/gin-gonic/gin"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/handler/fake"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -314,15 +315,15 @@ func TestServiceHandler_GetService(t *testing.T) {
 		fields                     fields
 		expectGetServiceToBeCalled bool
 		expectHttpStatus           int
-		expectJSONResponse         *models.ExpandedService
+		expectJSONResponse         *apimodels.ExpandedService
 		expectJSONError            *models.Error
 	}{
 		{
 			name: "get available service - expect 200",
 			fields: fields{
 				serviceManager: &fake.IServiceManagerMock{
-					GetServiceFunc: func(projectName string, stageName string, serviceName string) (*models.ExpandedService, error) {
-						return &models.ExpandedService{
+					GetServiceFunc: func(projectName string, stageName string, serviceName string) (*apimodels.ExpandedService, error) {
+						return &apimodels.ExpandedService{
 							ServiceName: "test-service",
 						}, nil
 					},
@@ -331,7 +332,7 @@ func TestServiceHandler_GetService(t *testing.T) {
 			},
 			expectGetServiceToBeCalled: true,
 			expectHttpStatus:           http.StatusOK,
-			expectJSONResponse: &models.ExpandedService{
+			expectJSONResponse: &apimodels.ExpandedService{
 				ServiceName: "test-service",
 			},
 			expectJSONError: nil,
@@ -340,7 +341,7 @@ func TestServiceHandler_GetService(t *testing.T) {
 			name: "get unavailable service - expect 404",
 			fields: fields{
 				serviceManager: &fake.IServiceManagerMock{
-					GetServiceFunc: func(projectName string, stageName string, serviceName string) (*models.ExpandedService, error) {
+					GetServiceFunc: func(projectName string, stageName string, serviceName string) (*apimodels.ExpandedService, error) {
 						return nil, ErrServiceNotFound
 					},
 				},
@@ -358,7 +359,7 @@ func TestServiceHandler_GetService(t *testing.T) {
 			name: "get unavailable stage - expect 404",
 			fields: fields{
 				serviceManager: &fake.IServiceManagerMock{
-					GetServiceFunc: func(projectName string, stageName string, serviceName string) (*models.ExpandedService, error) {
+					GetServiceFunc: func(projectName string, stageName string, serviceName string) (*apimodels.ExpandedService, error) {
 						return nil, ErrStageNotFound
 					},
 				},
@@ -376,7 +377,7 @@ func TestServiceHandler_GetService(t *testing.T) {
 			name: "get unavailable project - expect 404",
 			fields: fields{
 				serviceManager: &fake.IServiceManagerMock{
-					GetServiceFunc: func(projectName string, stageName string, serviceName string) (*models.ExpandedService, error) {
+					GetServiceFunc: func(projectName string, stageName string, serviceName string) (*apimodels.ExpandedService, error) {
 						return nil, ErrProjectNotFound
 					},
 				},
@@ -394,7 +395,7 @@ func TestServiceHandler_GetService(t *testing.T) {
 			name: "internal error - expect 500",
 			fields: fields{
 				serviceManager: &fake.IServiceManagerMock{
-					GetServiceFunc: func(projectName string, stageName string, serviceName string) (*models.ExpandedService, error) {
+					GetServiceFunc: func(projectName string, stageName string, serviceName string) (*apimodels.ExpandedService, error) {
 						return nil, errors.New("internal error")
 					},
 				},
@@ -441,7 +442,7 @@ func TestServiceHandler_GetService(t *testing.T) {
 			assert.Equal(t, tt.expectHttpStatus, w.Code)
 			responseBytes, _ := ioutil.ReadAll(w.Body)
 			if tt.expectJSONResponse != nil {
-				response := &models.ExpandedService{}
+				response := &apimodels.ExpandedService{}
 				_ = json.Unmarshal(responseBytes, response)
 
 				assert.Equal(t, tt.expectJSONResponse, response)
@@ -466,15 +467,15 @@ func TestServiceHandler_GetServices(t *testing.T) {
 		fields                     fields
 		expectGetServiceToBeCalled bool
 		expectHttpStatus           int
-		expectJSONResponse         *models.ExpandedServices
+		expectJSONResponse         *apimodels.ExpandedServices
 		expectJSONError            *models.Error
 	}{
 		{
 			name: "get available service - expect 200",
 			fields: fields{
 				serviceManager: &fake.IServiceManagerMock{
-					GetAllServicesFunc: func(projectName string, stageName string) ([]*models.ExpandedService, error) {
-						return []*models.ExpandedService{
+					GetAllServicesFunc: func(projectName string, stageName string) ([]*apimodels.ExpandedService, error) {
+						return []*apimodels.ExpandedService{
 							{
 								ServiceName: "test-service",
 							},
@@ -485,10 +486,10 @@ func TestServiceHandler_GetServices(t *testing.T) {
 			},
 			expectGetServiceToBeCalled: true,
 			expectHttpStatus:           http.StatusOK,
-			expectJSONResponse: &models.ExpandedServices{
+			expectJSONResponse: &apimodels.ExpandedServices{
 				NextPageKey: "0",
 				PageSize:    0,
-				Services: []*models.ExpandedService{
+				Services: []*apimodels.ExpandedService{
 					{
 						ServiceName: "test-service",
 					},
@@ -501,7 +502,7 @@ func TestServiceHandler_GetServices(t *testing.T) {
 			name: "get unavailable stage - expect 404",
 			fields: fields{
 				serviceManager: &fake.IServiceManagerMock{
-					GetAllServicesFunc: func(projectName string, stageName string) ([]*models.ExpandedService, error) {
+					GetAllServicesFunc: func(projectName string, stageName string) ([]*apimodels.ExpandedService, error) {
 						return nil, ErrStageNotFound
 					},
 				},
@@ -519,7 +520,7 @@ func TestServiceHandler_GetServices(t *testing.T) {
 			name: "get unavailable project - expect 404",
 			fields: fields{
 				serviceManager: &fake.IServiceManagerMock{
-					GetAllServicesFunc: func(projectName string, stageName string) ([]*models.ExpandedService, error) {
+					GetAllServicesFunc: func(projectName string, stageName string) ([]*apimodels.ExpandedService, error) {
 						return nil, ErrProjectNotFound
 					},
 				},
@@ -537,7 +538,7 @@ func TestServiceHandler_GetServices(t *testing.T) {
 			name: "internal error - expect 500",
 			fields: fields{
 				serviceManager: &fake.IServiceManagerMock{
-					GetAllServicesFunc: func(projectName string, stageName string) ([]*models.ExpandedService, error) {
+					GetAllServicesFunc: func(projectName string, stageName string) ([]*apimodels.ExpandedService, error) {
 						return nil, errors.New("internal error")
 					},
 				},
@@ -583,7 +584,7 @@ func TestServiceHandler_GetServices(t *testing.T) {
 			assert.Equal(t, tt.expectHttpStatus, w.Code)
 			responseBytes, _ := ioutil.ReadAll(w.Body)
 			if tt.expectJSONResponse != nil {
-				response := &models.ExpandedServices{}
+				response := &apimodels.ExpandedServices{}
 				_ = json.Unmarshal(responseBytes, response)
 
 				assert.EqualValues(t, tt.expectJSONResponse, response)

@@ -44,7 +44,7 @@ type IEventDispatcherMock struct {
 	calls struct {
 		// Add holds details about calls to the Add method.
 		Add []struct {
-			// Event is the event argument value.
+			//models.KeptnContextExtendedCEis the event argument value.
 			Event models.DispatcherEvent
 			// SkipQueue is the skipQueue argument value.
 			SkipQueue bool

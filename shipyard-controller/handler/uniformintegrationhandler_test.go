@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/gin-gonic/gin"
-	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/handler"
@@ -32,8 +32,8 @@ func TestUniformIntegrationHandler_GetRegistrations(t *testing.T) {
 			name: "registrations can be retrieved",
 			fields: fields{
 				integrationManager: &db_mock.UniformRepoMock{
-					GetUniformIntegrationsFunc: func(filter models.GetUniformIntegrationsParams) ([]models.Integration, error) {
-						return []models.Integration{}, nil
+					GetUniformIntegrationsFunc: func(filter models.GetUniformIntegrationsParams) ([]apimodels.Integration, error) {
+						return []apimodels.Integration{}, nil
 					},
 				},
 			},
@@ -48,7 +48,7 @@ func TestUniformIntegrationHandler_GetRegistrations(t *testing.T) {
 			name: "registrations can not be retrieved",
 			fields: fields{
 				integrationManager: &db_mock.UniformRepoMock{
-					GetUniformIntegrationsFunc: func(params models.GetUniformIntegrationsParams) ([]models.Integration, error) {
+					GetUniformIntegrationsFunc: func(params models.GetUniformIntegrationsParams) ([]apimodels.Integration, error) {
 						return nil, errors.New("oops")
 					},
 				},
@@ -78,17 +78,17 @@ func TestUniformIntegrationHandler_GetRegistrations(t *testing.T) {
 }
 
 func TestUniformIntegrationHandler_Register(t *testing.T) {
-	myValidIntegration := &models.Integration{
+	myValidIntegration := &apimodels.Integration{
 		ID:   "my-id",
 		Name: "my-name",
-		MetaData: keptnmodels.MetaData{
+		MetaData: apimodels.MetaData{
 			Hostname:           "my-host",
 			DistributorVersion: "0.8.3",
-			KubernetesMetaData: keptnmodels.KubernetesMetaData{
+			KubernetesMetaData: apimodels.KubernetesMetaData{
 				Namespace: "my-namespace",
 			},
 		},
-		Subscriptions: []keptnmodels.EventSubscription{
+		Subscriptions: []apimodels.EventSubscription{
 			{
 				Event: "sh.keptn.event.test.triggered",
 			},
@@ -96,17 +96,17 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 	}
 	validPayload, _ := json.Marshal(myValidIntegration)
 
-	myValidIntegrationUpdated := &models.Integration{
+	myValidIntegrationUpdated := &apimodels.Integration{
 		ID:   "my-id",
 		Name: "my-name",
-		MetaData: keptnmodels.MetaData{
+		MetaData: apimodels.MetaData{
 			Hostname:           "my-host",
 			DistributorVersion: "0.8.4",
-			KubernetesMetaData: keptnmodels.KubernetesMetaData{
+			KubernetesMetaData: apimodels.KubernetesMetaData{
 				Namespace: "my-namespace",
 			},
 		},
-		Subscriptions: []keptnmodels.EventSubscription{
+		Subscriptions: []apimodels.EventSubscription{
 			{
 				Event: "sh.keptn.event.test.triggered",
 			},
@@ -114,13 +114,13 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 	}
 	validPayloadUpdated, _ := json.Marshal(myValidIntegrationUpdated)
 
-	myInvalidIntegration := &keptnmodels.Integration{
+	myInvalidIntegration := &apimodels.Integration{
 		ID:   "my-id",
 		Name: "my-name",
-		MetaData: keptnmodels.MetaData{
+		MetaData: apimodels.MetaData{
 			DistributorVersion: "0.8.3",
 		},
-		Subscriptions: []keptnmodels.EventSubscription{
+		Subscriptions: []apimodels.EventSubscription{
 			{
 				Event: "sh.keptn.event.test.triggered",
 			},
@@ -136,7 +136,7 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 		fields          fields
 		request         *http.Request
 		wantStatus      int
-		wantIntegration *models.Integration
+		wantIntegration *apimodels.Integration
 		wantFuncs       []string
 		wanted          []func(*db_mock.UniformRepoMock)
 	}{
@@ -144,7 +144,7 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 			name: "create registration",
 			fields: fields{
 				integrationManager: &db_mock.UniformRepoMock{
-					CreateUniformIntegrationFunc: func(integration models.Integration) error { return nil },
+					CreateUniformIntegrationFunc: func(integration apimodels.Integration) error { return nil },
 				},
 			},
 			request:         httptest.NewRequest("POST", "/uniform/registration", bytes.NewBuffer(validPayload)),
@@ -155,12 +155,12 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 			name: "create registration already existing",
 			fields: fields{
 				integrationManager: &db_mock.UniformRepoMock{
-					CreateUniformIntegrationFunc: func(integration models.Integration) error { return db.ErrUniformRegistrationAlreadyExists },
-					UpdateLastSeenFunc: func(integrationID string) (*models.Integration, error) {
+					CreateUniformIntegrationFunc: func(integration apimodels.Integration) error { return db.ErrUniformRegistrationAlreadyExists },
+					UpdateLastSeenFunc: func(integrationID string) (*apimodels.Integration, error) {
 						return nil, nil
 					},
-					GetUniformIntegrationsFunc: func(filter models.GetUniformIntegrationsParams) ([]models.Integration, error) {
-						return []models.Integration{*myValidIntegration}, nil
+					GetUniformIntegrationsFunc: func(filter models.GetUniformIntegrationsParams) ([]apimodels.Integration, error) {
+						return []apimodels.Integration{*myValidIntegration}, nil
 					},
 				},
 			},
@@ -173,12 +173,12 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 			name: "create existing registration with different version - should call UpdateVersionInfo func",
 			fields: fields{
 				integrationManager: &db_mock.UniformRepoMock{
-					CreateUniformIntegrationFunc: func(integration models.Integration) error { return db.ErrUniformRegistrationAlreadyExists },
-					UpdateVersionInfoFunc: func(integrationID string, integrationVersion string, distributorVersion string) (*models.Integration, error) {
+					CreateUniformIntegrationFunc: func(integration apimodels.Integration) error { return db.ErrUniformRegistrationAlreadyExists },
+					UpdateVersionInfoFunc: func(integrationID string, integrationVersion string, distributorVersion string) (*apimodels.Integration, error) {
 						return nil, nil
 					},
-					GetUniformIntegrationsFunc: func(filter models.GetUniformIntegrationsParams) ([]models.Integration, error) {
-						return []models.Integration{*myValidIntegration}, nil
+					GetUniformIntegrationsFunc: func(filter models.GetUniformIntegrationsParams) ([]apimodels.Integration, error) {
+						return []apimodels.Integration{*myValidIntegration}, nil
 					},
 				},
 			},
@@ -191,12 +191,12 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 			name: "create existing registration with different version - update fails",
 			fields: fields{
 				integrationManager: &db_mock.UniformRepoMock{
-					CreateUniformIntegrationFunc: func(integration models.Integration) error { return db.ErrUniformRegistrationAlreadyExists },
-					UpdateVersionInfoFunc: func(integrationID string, integrationVersion string, distributorVersion string) (*models.Integration, error) {
+					CreateUniformIntegrationFunc: func(integration apimodels.Integration) error { return db.ErrUniformRegistrationAlreadyExists },
+					UpdateVersionInfoFunc: func(integrationID string, integrationVersion string, distributorVersion string) (*apimodels.Integration, error) {
 						return nil, errors.New("update failed")
 					},
-					GetUniformIntegrationsFunc: func(filter models.GetUniformIntegrationsParams) ([]models.Integration, error) {
-						return []models.Integration{*myValidIntegration}, nil
+					GetUniformIntegrationsFunc: func(filter models.GetUniformIntegrationsParams) ([]apimodels.Integration, error) {
+						return []apimodels.Integration{*myValidIntegration}, nil
 					},
 				},
 			},
@@ -209,7 +209,7 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 			name: "create registration fails",
 			fields: fields{
 				integrationManager: &db_mock.UniformRepoMock{
-					CreateUniformIntegrationFunc: func(integration models.Integration) error { return errors.New("oops") },
+					CreateUniformIntegrationFunc: func(integration apimodels.Integration) error { return errors.New("oops") },
 				},
 			},
 			request:    httptest.NewRequest("POST", "/uniform/registration", bytes.NewBuffer(validPayload)),
@@ -219,7 +219,7 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 			name: "invalid validPayload",
 			fields: fields{
 				integrationManager: &db_mock.UniformRepoMock{
-					CreateUniformIntegrationFunc: func(integration models.Integration) error {
+					CreateUniformIntegrationFunc: func(integration apimodels.Integration) error {
 						return errors.New("oops")
 					},
 				},
@@ -231,7 +231,7 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 			name: "invalid validPayload - kubernetes namespace missing",
 			fields: fields{
 				integrationManager: &db_mock.UniformRepoMock{
-					CreateUniformIntegrationFunc: func(integration models.Integration) error {
+					CreateUniformIntegrationFunc: func(integration apimodels.Integration) error {
 						return errors.New("oops")
 					},
 				},
@@ -278,17 +278,17 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 
 func TestUniformIntegrationKeepAlive(t *testing.T) {
 
-	existingIntegration := &models.Integration{
+	existingIntegration := &apimodels.Integration{
 		ID:   "my-id",
 		Name: "my-name",
-		MetaData: keptnmodels.MetaData{
+		MetaData: apimodels.MetaData{
 			Hostname:           "my-host",
 			DistributorVersion: "0.8.3",
-			KubernetesMetaData: keptnmodels.KubernetesMetaData{
+			KubernetesMetaData: apimodels.KubernetesMetaData{
 				Namespace: "my-namespace",
 			},
 		},
-		Subscriptions: []keptnmodels.EventSubscription{
+		Subscriptions: []apimodels.EventSubscription{
 			{
 				Event: "sh.keptn.event.test.triggered",
 			},
@@ -304,14 +304,14 @@ func TestUniformIntegrationKeepAlive(t *testing.T) {
 		request           *http.Request
 		wantStatus        int
 		wantIntegrationID string
-		wantIntegration   *models.Integration
+		wantIntegration   *apimodels.Integration
 	}{
 		{
 			name: "keepalive registration",
 			fields: fields{
 				integrationManager: &db_mock.UniformRepoMock{
-					UpdateLastSeenFunc: func(integrationID string) (*models.Integration, error) {
-						return &models.Integration{}, nil
+					UpdateLastSeenFunc: func(integrationID string) (*apimodels.Integration, error) {
+						return &apimodels.Integration{}, nil
 					},
 				},
 			},
@@ -324,7 +324,7 @@ func TestUniformIntegrationKeepAlive(t *testing.T) {
 			name: "keepalive registration - no registration found",
 			fields: fields{
 				integrationManager: &db_mock.UniformRepoMock{
-					UpdateLastSeenFunc: func(integrationID string) (*models.Integration, error) {
+					UpdateLastSeenFunc: func(integrationID string) (*apimodels.Integration, error) {
 						return nil, db.ErrUniformRegistrationNotFound
 					},
 				},

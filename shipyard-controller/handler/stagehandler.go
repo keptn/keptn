@@ -3,12 +3,12 @@ package handler
 import (
 	"errors"
 	"fmt"
-	"net/http"
-	"sort"
-
 	"github.com/gin-gonic/gin"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
+	"net/http"
+	"sort"
 )
 
 type IStageHandler interface {
@@ -37,7 +37,7 @@ func NewStageHandler(stageManager IStageManager) *StageHandler {
 // @Param	pageSize			query		int			false	"The number of items to return"
 // @Param   nextPageKey     	query    	string     	false	"Pointer to the next set of items"
 // @Param   disableUpstreamSync	query		boolean		false	"Disable sync of upstream repo before reading content"
-// @Success 200 {object} models.Stages	"ok"
+// @Success 200 {object} apimodels.ExpandedStages	"ok"
 // @Failure 404 {object} models.Error "Not found"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/{project}/stage [get]
@@ -66,10 +66,10 @@ func (sh *StageHandler) GetAllStages(c *gin.Context) {
 		return allStages[i].StageName < allStages[j].StageName
 	})
 
-	var payload = &models.Stages{
+	var payload = &apimodels.ExpandedStages{
 		NextPageKey: "",
 		PageSize:    0,
-		Stages:      []*models.ExpandedStage{},
+		Stages:      []*apimodels.ExpandedStage{},
 		TotalCount:  0,
 	}
 
@@ -93,9 +93,9 @@ func (sh *StageHandler) GetAllStages(c *gin.Context) {
 // @Produce  json
 // @Param	project		path	string	true	"The name of the project"
 // @Param	stage		path	string	true	"The name of the stage"
-// @Success 200 {object} models.ExpandedStage	"ok"
+// @Success 200 {object} apimodels.ExpandedStage	"ok"
 // @Failure 404 {object} models.Error "Not found"
-// @Failure 500 {object} models.Error "Internal Error)
+// @Failure 500 {object} models.Error "Internal Error"
 // @Router /project/{project}/stage/{stage} [get]
 func (sh *StageHandler) GetStage(c *gin.Context) {
 	projectName := c.Param("project")

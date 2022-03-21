@@ -3,13 +3,12 @@ package handler
 import (
 	"errors"
 	"fmt"
-	"net/http"
-
 	"github.com/gin-gonic/gin"
-	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
+	"net/http"
 )
 
 type IEventHandler interface {
@@ -38,7 +37,7 @@ type NextTaskSequence struct {
 // @Param   project     query    string     false        "Project"
 // @Param   stage     query    string     false        "Stage"
 // @Param   service     query    string     false        "Service"
-// @Success 200 {object} models.Events	"ok"
+// @Success 200 {object} apimodels.KeptnContextExtendedCE	"ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /event/triggered/{eventType} [get]
@@ -55,10 +54,10 @@ func (eh *EventHandler) GetTriggeredEvents(c *gin.Context) {
 		PageSize:    0,
 		NextPageKey: "0",
 		TotalCount:  0,
-		Events:      []*models.Event{},
+		Events:      []*apimodels.KeptnContextExtendedCE{},
 	}
 
-	var events []models.Event
+	var events []apimodels.KeptnContextExtendedCE
 	var err error
 
 	eventFilter := common.EventFilter{
@@ -98,12 +97,12 @@ func (eh *EventHandler) GetTriggeredEvents(c *gin.Context) {
 }
 
 func (eh *EventHandler) HandleEvent(c *gin.Context) {
-	event := &models.Event{}
+	event := &apimodels.KeptnContextExtendedCE{}
 	if err := c.ShouldBindJSON(event); err != nil {
 		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
-	keptnEvent := &keptnmodels.KeptnContextExtendedCE{}
+	keptnEvent := &apimodels.KeptnContextExtendedCE{}
 	if err := keptnv2.Decode(event, keptnEvent); err != nil {
 		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return

@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/gin-gonic/gin"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/handler/fake"
-	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
@@ -29,7 +29,7 @@ func TestGetStage(t *testing.T) {
 			name: "GET stage project not found",
 			fields: fields{
 				StageManager: &fake.IStageManagerMock{
-					GetStageFunc: func(projectName string, stageName string) (*models.ExpandedStage, error) {
+					GetStageFunc: func(projectName string, stageName string) (*apimodels.ExpandedStage, error) {
 						return nil, ErrProjectNotFound
 					},
 				},
@@ -40,7 +40,7 @@ func TestGetStage(t *testing.T) {
 			name: "GET stage stage not found",
 			fields: fields{
 				StageManager: &fake.IStageManagerMock{
-					GetStageFunc: func(projectName string, stageName string) (*models.ExpandedStage, error) {
+					GetStageFunc: func(projectName string, stageName string) (*apimodels.ExpandedStage, error) {
 						return nil, ErrStageNotFound
 					},
 				},
@@ -51,7 +51,7 @@ func TestGetStage(t *testing.T) {
 			name: "GET stage error from database",
 			fields: fields{
 				StageManager: &fake.IStageManagerMock{
-					GetStageFunc: func(projectName string, stageName string) (*models.ExpandedStage, error) {
+					GetStageFunc: func(projectName string, stageName string) (*apimodels.ExpandedStage, error) {
 						return nil, errors.New("whoops")
 					},
 				},
@@ -79,16 +79,16 @@ func TestGetStage(t *testing.T) {
 
 func TestGetStages(t *testing.T) {
 
-	s1 := &models.ExpandedStage{
+	s1 := &apimodels.ExpandedStage{
 		StageName: "s1",
 	}
-	s2 := &models.ExpandedStage{
+	s2 := &apimodels.ExpandedStage{
 		StageName: "s2",
 	}
-	s3 := &models.ExpandedStage{
+	s3 := &apimodels.ExpandedStage{
 		StageName: "s3",
 	}
-	expandedStages := []*models.ExpandedStage{s1, s2, s3}
+	expandedStages := []*apimodels.ExpandedStage{s1, s2, s3}
 
 	type fields struct {
 		StageManager IStageManager
@@ -98,14 +98,14 @@ func TestGetStages(t *testing.T) {
 		name               string
 		fields             fields
 		expectHttpStatus   int
-		expectJSONResponse *models.Stages
+		expectJSONResponse *apimodels.ExpandedStages
 		pageSizeQueryParam string
 	}{
 		{
 			name: "GET stages project not found",
 			fields: fields{
 				StageManager: &fake.IStageManagerMock{
-					GetAllStagesFunc: func(projectName string) ([]*models.ExpandedStage, error) {
+					GetAllStagesFunc: func(projectName string) ([]*apimodels.ExpandedStage, error) {
 						return nil, ErrProjectNotFound
 					},
 				},
@@ -116,7 +116,7 @@ func TestGetStages(t *testing.T) {
 			name: "GET stages GetStages fails",
 			fields: fields{
 				StageManager: &fake.IStageManagerMock{
-					GetAllStagesFunc: func(projectName string) ([]*models.ExpandedStage, error) {
+					GetAllStagesFunc: func(projectName string) ([]*apimodels.ExpandedStage, error) {
 						return nil, errors.New("whoops")
 					},
 				},
@@ -127,13 +127,13 @@ func TestGetStages(t *testing.T) {
 			name: "GET stages",
 			fields: fields{
 				StageManager: &fake.IStageManagerMock{
-					GetAllStagesFunc: func(projectName string) ([]*models.ExpandedStage, error) {
+					GetAllStagesFunc: func(projectName string) ([]*apimodels.ExpandedStage, error) {
 						return expandedStages, nil
 					},
 				},
 			},
 			expectHttpStatus: http.StatusOK,
-			expectJSONResponse: &models.Stages{
+			expectJSONResponse: &apimodels.ExpandedStages{
 				NextPageKey: "0",
 				PageSize:    0,
 				Stages:      expandedStages,
@@ -155,7 +155,7 @@ func TestGetStages(t *testing.T) {
 			handler.GetAllStages(c)
 
 			if tt.expectJSONResponse != nil {
-				response := &models.Stages{}
+				response := &apimodels.ExpandedStages{}
 				responseBytes, _ := ioutil.ReadAll(w.Body)
 				json.Unmarshal(responseBytes, response)
 				assert.Equal(t, tt.expectJSONResponse, response)
@@ -167,16 +167,16 @@ func TestGetStages(t *testing.T) {
 
 func TestGetStagesWithPagination(t *testing.T) {
 
-	s1 := &models.ExpandedStage{
+	s1 := &apimodels.ExpandedStage{
 		StageName: "s1",
 	}
-	s2 := &models.ExpandedStage{
+	s2 := &apimodels.ExpandedStage{
 		StageName: "s2",
 	}
-	s3 := &models.ExpandedStage{
+	s3 := &apimodels.ExpandedStage{
 		StageName: "s3",
 	}
-	expandedStages := []*models.ExpandedStage{s1, s2, s3}
+	expandedStages := []*apimodels.ExpandedStage{s1, s2, s3}
 
 	type fields struct {
 		StageManager IStageManager
@@ -186,20 +186,20 @@ func TestGetStagesWithPagination(t *testing.T) {
 		name               string
 		fields             fields
 		expectHttpStatus   int
-		expectJSONResponse *models.Stages
+		expectJSONResponse *apimodels.ExpandedStages
 		url                string
 	}{
 		{
 			name: "GET stages With Pagination",
 			fields: fields{
 				StageManager: &fake.IStageManagerMock{
-					GetAllStagesFunc: func(projectName string) ([]*models.ExpandedStage, error) {
+					GetAllStagesFunc: func(projectName string) ([]*apimodels.ExpandedStage, error) {
 						return expandedStages, nil
 					},
 				},
 			},
 			expectHttpStatus: http.StatusOK,
-			expectJSONResponse: &models.Stages{
+			expectJSONResponse: &apimodels.ExpandedStages{
 				NextPageKey: "1",
 				PageSize:    0,
 				Stages:      expandedStages[0:1],
@@ -211,13 +211,13 @@ func TestGetStagesWithPagination(t *testing.T) {
 			name: "GET stages With Pagination2",
 			fields: fields{
 				StageManager: &fake.IStageManagerMock{
-					GetAllStagesFunc: func(projectName string) ([]*models.ExpandedStage, error) {
+					GetAllStagesFunc: func(projectName string) ([]*apimodels.ExpandedStage, error) {
 						return expandedStages, nil
 					},
 				},
 			},
 			expectHttpStatus: http.StatusOK,
-			expectJSONResponse: &models.Stages{
+			expectJSONResponse: &apimodels.ExpandedStages{
 				NextPageKey: "2",
 				PageSize:    0,
 				Stages:      expandedStages[0:2],
@@ -229,13 +229,13 @@ func TestGetStagesWithPagination(t *testing.T) {
 			name: "GET stages With Pagination2",
 			fields: fields{
 				StageManager: &fake.IStageManagerMock{
-					GetAllStagesFunc: func(projectName string) ([]*models.ExpandedStage, error) {
+					GetAllStagesFunc: func(projectName string) ([]*apimodels.ExpandedStage, error) {
 						return expandedStages, nil
 					},
 				},
 			},
 			expectHttpStatus: http.StatusOK,
-			expectJSONResponse: &models.Stages{
+			expectJSONResponse: &apimodels.ExpandedStages{
 				NextPageKey: "0",
 				PageSize:    0,
 				Stages:      expandedStages[2:3],
@@ -258,7 +258,7 @@ func TestGetStagesWithPagination(t *testing.T) {
 			handler.GetAllStages(c)
 
 			if tt.expectJSONResponse != nil {
-				response := &models.Stages{}
+				response := &apimodels.ExpandedStages{}
 				responseBytes, _ := ioutil.ReadAll(w.Body)
 				json.Unmarshal(responseBytes, response)
 				assert.Equal(t, tt.expectJSONResponse, response)
@@ -268,16 +268,16 @@ func TestGetStagesWithPagination(t *testing.T) {
 	}
 }
 
-func createExpandedStages() []*models.ExpandedStage {
-	s1 := &models.ExpandedStage{
+func createExpandedStages() []*apimodels.ExpandedStage {
+	s1 := &apimodels.ExpandedStage{
 		StageName: "s1",
 	}
-	s2 := &models.ExpandedStage{
+	s2 := &apimodels.ExpandedStage{
 		StageName: "s2",
 	}
-	s3 := &models.ExpandedStage{
+	s3 := &apimodels.ExpandedStage{
 		StageName: "s3",
 	}
-	return []*models.ExpandedStage{s1, s2, s3}
+	return []*apimodels.ExpandedStage{s1, s2, s3}
 
 }

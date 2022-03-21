@@ -3,7 +3,7 @@ package utils
 import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/keptn/go-utils/pkg/api/models"
-	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -409,16 +409,16 @@ func getExpectedCloudEvent() *cloudevents.Event {
 
 func Test_toIDs(t *testing.T) {
 	type args struct {
-		events []*keptnmodels.KeptnContextExtendedCE
+		events []*apimodels.KeptnContextExtendedCE
 	}
 	tests := []struct {
 		name string
 		args args
 		want []string
 	}{
-		{"ToIDs - empty list of events", args{[]*keptnmodels.KeptnContextExtendedCE{}}, []string{}},
-		{"ToIDs - one event", args{[]*keptnmodels.KeptnContextExtendedCE{ce("id1")}}, []string{"id1"}},
-		{"ToIDs - multiple events", args{[]*keptnmodels.KeptnContextExtendedCE{ce("id1"), ce("id2")}}, []string{"id1", "id2"}},
+		{"ToIDs - empty list of events", args{[]*apimodels.KeptnContextExtendedCE{}}, []string{}},
+		{"ToIDs - one event", args{[]*apimodels.KeptnContextExtendedCE{ce("id1")}}, []string{"id1"}},
+		{"ToIDs - multiple events", args{[]*apimodels.KeptnContextExtendedCE{ce("id1"), ce("id2")}}, []string{"id1", "id2"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

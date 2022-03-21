@@ -11,7 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/cli/pkg/config"
 	"github.com/keptn/keptn/cli/pkg/version"
 	shellwords "github.com/mattn/go-shellwords"
@@ -163,7 +163,7 @@ func (r *redirector) revertStdErr() string {
 
 func Test_runVersionCheck(t *testing.T) {
 	var returnedMetadataStatus int
-	var returnedMetadata keptnapimodels.Metadata
+	var returnedMetadata apimodels.Metadata
 
 	// var returnedVersionStatus int
 
@@ -190,7 +190,7 @@ func Test_runVersionCheck(t *testing.T) {
 	tests := []struct {
 		name             string
 		metadataStatus   int
-		metadataResponse keptnapimodels.Metadata
+		metadataResponse apimodels.Metadata
 		cliVersion       string
 		// args excludes the main `keptn` command
 		// e.g., keptn -q install, args would be ['-q', 'install']
@@ -203,7 +203,7 @@ func Test_runVersionCheck(t *testing.T) {
 			name:           "get version",
 			cliVersion:     "0.8.0",
 			metadataStatus: http.StatusOK,
-			metadataResponse: keptnapimodels.Metadata{
+			metadataResponse: apimodels.Metadata{
 				Keptnversion: "0.8.1-dev",
 			},
 			wantOutput: "* Warning: Your Keptn CLI version (0.8.0) and Keptn cluster version (0.8.1-dev) don't match. This can lead to problems. Please make sure to use the same versions.\n",
@@ -242,7 +242,7 @@ func Test_runVersionCheck(t *testing.T) {
 			name:           "show version check for 'keptn command-other-than-install'",
 			cliVersion:     "0.8.0",
 			metadataStatus: http.StatusOK,
-			metadataResponse: keptnapimodels.Metadata{
+			metadataResponse: apimodels.Metadata{
 				Keptnversion: "0.8.1-dev",
 			},
 			args:       []string{"command-other-than-install"},
@@ -257,7 +257,7 @@ func Test_runVersionCheck(t *testing.T) {
 			name:           "show version check for 'keptn --any-flag command-other-than-install'",
 			cliVersion:     "0.8.0",
 			metadataStatus: http.StatusOK,
-			metadataResponse: keptnapimodels.Metadata{
+			metadataResponse: apimodels.Metadata{
 				Keptnversion: "0.8.1-dev",
 			},
 			args:       []string{"--any-flag", "command-other-than-install"},
@@ -272,7 +272,7 @@ func Test_runVersionCheck(t *testing.T) {
 			name:           "don't show warning if the versions match",
 			cliVersion:     "0.8.0",
 			metadataStatus: http.StatusOK,
-			metadataResponse: keptnapimodels.Metadata{
+			metadataResponse: apimodels.Metadata{
 				Keptnversion: "0.8.0",
 			},
 			doNotWantOutput: "* Warning: Your Keptn CLI version (0.8.0) and Keptn cluster version (0.8.0) don't match.",
@@ -281,7 +281,7 @@ func Test_runVersionCheck(t *testing.T) {
 			name:           "show version check if `AutomaticVersionCheck` is set to true",
 			cliVersion:     "0.8.0",
 			metadataStatus: http.StatusOK,
-			metadataResponse: keptnapimodels.Metadata{
+			metadataResponse: apimodels.Metadata{
 				Keptnversion: "0.8.1-dev",
 			},
 			wantOutput: "* Warning: Your Keptn CLI version (0.8.0) and Keptn cluster version (0.8.1-dev) don't match.",
@@ -295,7 +295,7 @@ func Test_runVersionCheck(t *testing.T) {
 			name:           "don't show version check if `AutomaticVersionCheck` is set to false",
 			cliVersion:     "0.8.0",
 			metadataStatus: http.StatusOK,
-			metadataResponse: keptnapimodels.Metadata{
+			metadataResponse: apimodels.Metadata{
 				Keptnversion: "0.8.1-dev",
 			},
 			cliConfig: func() config.CLIConfig {

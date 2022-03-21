@@ -4,6 +4,7 @@
 package fake
 
 import (
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"sync"
 )
@@ -20,10 +21,10 @@ import (
 // 			DeleteServiceFunc: func(projectName string, serviceName string) error {
 // 				panic("mock out the DeleteService method")
 // 			},
-// 			GetAllServicesFunc: func(projectName string, stageName string) ([]*models.ExpandedService, error) {
+// 			GetAllServicesFunc: func(projectName string, stageName string) ([]*apimodels.ExpandedService, error) {
 // 				panic("mock out the GetAllServices method")
 // 			},
-// 			GetServiceFunc: func(projectName string, stageName string, serviceName string) (*models.ExpandedService, error) {
+// 			GetServiceFunc: func(projectName string, stageName string, serviceName string) (*apimodels.ExpandedService, error) {
 // 				panic("mock out the GetService method")
 // 			},
 // 		}
@@ -40,10 +41,10 @@ type IServiceManagerMock struct {
 	DeleteServiceFunc func(projectName string, serviceName string) error
 
 	// GetAllServicesFunc mocks the GetAllServices method.
-	GetAllServicesFunc func(projectName string, stageName string) ([]*models.ExpandedService, error)
+	GetAllServicesFunc func(projectName string, stageName string) ([]*apimodels.ExpandedService, error)
 
 	// GetServiceFunc mocks the GetService method.
-	GetServiceFunc func(projectName string, stageName string, serviceName string) (*models.ExpandedService, error)
+	GetServiceFunc func(projectName string, stageName string, serviceName string) (*apimodels.ExpandedService, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -155,7 +156,7 @@ func (mock *IServiceManagerMock) DeleteServiceCalls() []struct {
 }
 
 // GetAllServices calls GetAllServicesFunc.
-func (mock *IServiceManagerMock) GetAllServices(projectName string, stageName string) ([]*models.ExpandedService, error) {
+func (mock *IServiceManagerMock) GetAllServices(projectName string, stageName string) ([]*apimodels.ExpandedService, error) {
 	if mock.GetAllServicesFunc == nil {
 		panic("IServiceManagerMock.GetAllServicesFunc: method is nil but IServiceManager.GetAllServices was just called")
 	}
@@ -190,7 +191,7 @@ func (mock *IServiceManagerMock) GetAllServicesCalls() []struct {
 }
 
 // GetService calls GetServiceFunc.
-func (mock *IServiceManagerMock) GetService(projectName string, stageName string, serviceName string) (*models.ExpandedService, error) {
+func (mock *IServiceManagerMock) GetService(projectName string, stageName string, serviceName string) (*apimodels.ExpandedService, error) {
 	if mock.GetServiceFunc == nil {
 		panic("IServiceManagerMock.GetServiceFunc: method is nil but IServiceManager.GetService was just called")
 	}

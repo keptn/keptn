@@ -1,15 +1,18 @@
 package event_handler
 
 import (
+	"errors"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/types"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
 	keptn "github.com/keptn/go-utils/pkg/lib"
 
+	"testing"
+
 	"github.com/keptn/go-utils/pkg/common/strutils"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 type getSLOTestObject struct {
@@ -383,6 +386,12 @@ total_score:
 				},
 			},
 			ExpectedError: nil,
+		},
+		{
+			Name:           "Invalid SLO file",
+			SLOFileContent: `invalid`,
+			ExpectedSLO:    nil,
+			ExpectedError:  errors.New("yaml: unmarshal errors:\n  line 1: cannot unmarshal !!str `invalid` into keptn.ServiceLevelObjectives"),
 		},
 	}
 

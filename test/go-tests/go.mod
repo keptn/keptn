@@ -6,8 +6,7 @@ require (
 	github.com/cloudevents/sdk-go/v2 v2.8.0
 	github.com/google/uuid v1.3.0
 	github.com/imroc/req v0.3.2
-	github.com/keptn/go-utils v0.13.1-0.20220309123414-dd687af2e7fd
-	github.com/keptn/keptn/shipyard-controller v0.0.0-00010101000000-000000000000
+	github.com/keptn/go-utils v0.13.1-0.20220318125157-fe974e59cc65
 	github.com/keptn/kubernetes-utils v0.13.1-0.20220309123424-6e3f2bcaf831
 	github.com/stretchr/testify v1.7.0
 	k8s.io/api v0.23.4
@@ -90,5 +89,3 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
-
-replace github.com/keptn/keptn/shipyard-controller => ../../shipyard-controller

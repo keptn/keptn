@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/shipyard-controller/models"
 	natsmock "github.com/keptn/keptn/shipyard-controller/nats/mock"
 	"github.com/nats-io/nats-server/v2/server"
 	natsserver "github.com/nats-io/nats-server/v2/test"
@@ -34,7 +34,7 @@ func TestMain(m *testing.M) {
 
 func TestNatsConnectionHandler(t *testing.T) {
 	mockNatsEventHandler := &natsmock.IKeptnNatsMessageHandlerMock{
-		ProcessFunc: func(event models.Event, sync bool) error {
+		ProcessFunc: func(event apimodels.KeptnContextExtendedCE, sync bool) error {
 			return nil
 		},
 	}
@@ -79,7 +79,7 @@ func TestNatsConnectionHandler(t *testing.T) {
 
 func TestNatsConnectionHandler_EmptyURL(t *testing.T) {
 	mockNatsEventHandler := &natsmock.IKeptnNatsMessageHandlerMock{
-		ProcessFunc: func(event models.Event, sync bool) error {
+		ProcessFunc: func(event apimodels.KeptnContextExtendedCE, sync bool) error {
 			return nil
 		},
 	}
@@ -97,7 +97,7 @@ func TestNatsConnectionHandler_SendBeforeSubscribing(t *testing.T) {
 
 	publisherConn, err := nats.Connect(natsURL())
 
-	event := models.Event{
+	event := apimodels.KeptnContextExtendedCE{
 		Data: map[string]interface{}{
 			"project": "my-project",
 		},
@@ -107,7 +107,7 @@ func TestNatsConnectionHandler_SendBeforeSubscribing(t *testing.T) {
 	_ = publisherConn.Publish(keptnv2.GetTriggeredEventType("test"), marshal)
 
 	mockNatsEventHandler := &natsmock.IKeptnNatsMessageHandlerMock{
-		ProcessFunc: func(event models.Event, sync bool) error {
+		ProcessFunc: func(event apimodels.KeptnContextExtendedCE, sync bool) error {
 			return nil
 		},
 	}
@@ -151,7 +151,7 @@ func TestNatsConnectionHandler_MisconfiguredStreamIsUpdated(t *testing.T) {
 	}
 
 	mockNatsEventHandler := &natsmock.IKeptnNatsMessageHandlerMock{
-		ProcessFunc: func(event models.Event, sync bool) error {
+		ProcessFunc: func(event apimodels.KeptnContextExtendedCE, sync bool) error {
 			return nil
 		},
 	}
@@ -163,7 +163,7 @@ func TestNatsConnectionHandler_MisconfiguredStreamIsUpdated(t *testing.T) {
 
 	require.Nil(t, err)
 
-	event := models.Event{
+	event := apimodels.KeptnContextExtendedCE{
 		Data: map[string]interface{}{
 			"project": "my-project",
 		},
@@ -187,7 +187,7 @@ func TestNatsConnectionHandler_MisconfiguredStreamIsUpdated(t *testing.T) {
 
 func TestNatsConnectionHandler_MultipleSubscribers(t *testing.T) {
 	mockNatsEventHandler := &natsmock.IKeptnNatsMessageHandlerMock{
-		ProcessFunc: func(event models.Event, sync bool) error {
+		ProcessFunc: func(event apimodels.KeptnContextExtendedCE, sync bool) error {
 			return nil
 		},
 	}
@@ -204,7 +204,7 @@ func TestNatsConnectionHandler_MultipleSubscribers(t *testing.T) {
 
 	publisherConn, err := nats.Connect(natsURL())
 
-	event := models.Event{
+	event := apimodels.KeptnContextExtendedCE{
 		Data: map[string]interface{}{
 			"project": "my-project",
 		},
@@ -230,7 +230,7 @@ func TestNatsConnectionHandler_MultipleSubscribers(t *testing.T) {
 
 func TestNatsConnectionHandler_NatsServerDown(t *testing.T) {
 	mockNatsEventHandler := &natsmock.IKeptnNatsMessageHandlerMock{
-		ProcessFunc: func(event models.Event, sync bool) error {
+		ProcessFunc: func(event apimodels.KeptnContextExtendedCE, sync bool) error {
 			return nil
 		},
 	}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"testing"
 	"time"
 
@@ -36,7 +37,7 @@ func Test_WhenTimeOfEventIsOlder_EventIsSentImmediately(t *testing.T) {
 					{
 						ID: "my-id",
 						Status: models.SequenceExecutionStatus{
-							State: models.SequenceTriggeredState,
+							State: apimodels.SequenceTriggeredState,
 						},
 					},
 				}, nil
@@ -96,7 +97,7 @@ func Test_WhenTimeOfEventIsOlder_EventIsSentImmediatelyButSequenceIsPaused(t *te
 					{
 						ID: "my-id",
 						Status: models.SequenceExecutionStatus{
-							State: models.SequencePaused,
+							State: apimodels.SequencePaused,
 						},
 					},
 				}, nil
@@ -163,7 +164,7 @@ func Test_EventIsSentImmediatelyButOtherSequenceIsRunning(t *testing.T) {
 					ID:       "my-task-sequence-execution-id",
 					Sequence: keptnv2.Sequence{},
 					Status: models.SequenceExecutionStatus{
-						State:         models.SequenceStartedState,
+						State:         apimodels.SequenceStartedState,
 						PreviousTasks: nil,
 						CurrentTask:   models.TaskExecutionState{},
 					},
@@ -232,14 +233,14 @@ func Test_EventIsSentImmediatelyAndOtherSequenceIsRunningButIsPaused(t *testing.
 						Scope: models.EventScope{
 							KeptnContext: "my-other-context-id",
 						},
-						State: models.SequenceStartedState, // overall sequence is running
+						State: apimodels.SequenceStartedState, // overall sequence is running
 					},
 					{
 						Scope: models.EventScope{
 							KeptnContext: "my-other-context-id",
 							EventData:    keptnv2.EventData{Stage: "my-stage"}, // but in this stage, it has been paused
 						},
-						State: models.SequencePaused,
+						State: apimodels.SequencePaused,
 					},
 				}, nil
 			}
@@ -255,7 +256,7 @@ func Test_EventIsSentImmediatelyAndOtherSequenceIsRunningButIsPaused(t *testing.
 						ID:       "",
 						Sequence: keptnv2.Sequence{},
 						Status: models.SequenceExecutionStatus{
-							State: models.SequenceStartedState,
+							State: apimodels.SequenceStartedState,
 						},
 						Scope:           models.EventScope{},
 						InputProperties: nil,
@@ -389,8 +390,8 @@ func Test_WhenSyncTimeElapses_EventsAreDispatched(t *testing.T) {
 		return nil
 	}
 
-	eventRepo.GetEventsFunc = func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
-		return []models.Event{{Shkeptncontext: "my-context", ID: *filter.ID, Specversion: "1.0", Source: stringp("source"), Type: stringp("my-type"), Data: keptnv2.EventData{
+	eventRepo.GetEventsFunc = func(project string, filter common.EventFilter, status ...common.EventStatus) ([]apimodels.KeptnContextExtendedCE, error) {
+		return []apimodels.KeptnContextExtendedCE{{Shkeptncontext: "my-context", ID: *filter.ID, Specversion: "1.0", Source: stringp("source"), Type: stringp("my-type"), Data: keptnv2.EventData{
 			Project: "my-project",
 			Stage:   "my-stage",
 			Service: "my-service",
@@ -403,7 +404,7 @@ func Test_WhenSyncTimeElapses_EventsAreDispatched(t *testing.T) {
 				return []models.SequenceExecution{
 					{
 						Status: models.SequenceExecutionStatus{
-							State: models.SequenceStartedState,
+							State: apimodels.SequenceStartedState,
 						},
 					},
 				}, nil
@@ -491,16 +492,16 @@ func Test_WhenAnEventCouldNotBeFetched_NextEventIsProcessed(t *testing.T) {
 		return nil
 	}
 
-	eventRepo.GetEventsFunc = func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
+	eventRepo.GetEventsFunc = func(project string, filter common.EventFilter, status ...common.EventStatus) ([]apimodels.KeptnContextExtendedCE, error) {
 		// first event is not found
 		if *filter.ID == event1.ID {
-			return []models.Event{}, nil
+			return []apimodels.KeptnContextExtendedCE{}, nil
 		}
 		// fetching for second event fails
 		if *filter.ID == event2.ID {
 			return nil, fmt.Errorf("error")
 		}
-		return []models.Event{{ID: *filter.ID, Specversion: "1.0", Source: stringp("source"), Type: stringp("my-type"), Data: keptnv2.EventData{
+		return []apimodels.KeptnContextExtendedCE{{ID: *filter.ID, Specversion: "1.0", Source: stringp("source"), Type: stringp("my-type"), Data: keptnv2.EventData{
 			Project: "my-project",
 			Stage:   "my-stage",
 			Service: "my-service",
@@ -515,7 +516,7 @@ func Test_WhenAnEventCouldNotBeFetched_NextEventIsProcessed(t *testing.T) {
 			return []models.SequenceExecution{
 				{
 					Status: models.SequenceExecutionStatus{
-						State: models.SequenceStartedState,
+						State: apimodels.SequenceStartedState,
 					},
 				},
 			}, nil
@@ -561,7 +562,7 @@ func TestEventDispatcher_OnSequenceFinished(t *testing.T) {
 		eventQueueRepo: eventQueueRepo,
 	}
 
-	dispatcher.OnSequenceFinished(models.Event{Shkeptncontext: "my-context"})
+	dispatcher.OnSequenceFinished(apimodels.KeptnContextExtendedCE{Shkeptncontext: "my-context"})
 
 	require.Len(t, eventQueueRepo.DeleteEventQueueStatesCalls(), 1)
 	require.Len(t, eventQueueRepo.DeleteQueuedEventsCalls(), 1)
@@ -584,7 +585,7 @@ func TestEventDispatcher_OnSequenceTimeout(t *testing.T) {
 		eventQueueRepo: eventQueueRepo,
 	}
 
-	dispatcher.OnSequenceTimeout(models.Event{Shkeptncontext: "my-context"})
+	dispatcher.OnSequenceTimeout(apimodels.KeptnContextExtendedCE{Shkeptncontext: "my-context"})
 
 	require.Len(t, eventQueueRepo.DeleteEventQueueStatesCalls(), 1)
 	require.Len(t, eventQueueRepo.DeleteQueuedEventsCalls(), 1)
@@ -607,7 +608,7 @@ func TestEventDispatcher_OnSequenceFinished_DeletingStateFailsButDeletingQueueSh
 		eventQueueRepo: eventQueueRepo,
 	}
 
-	dispatcher.OnSequenceFinished(models.Event{Shkeptncontext: "my-context"})
+	dispatcher.OnSequenceFinished(apimodels.KeptnContextExtendedCE{Shkeptncontext: "my-context"})
 
 	require.Len(t, eventQueueRepo.DeleteEventQueueStatesCalls(), 1)
 	require.Len(t, eventQueueRepo.DeleteQueuedEventsCalls(), 1)

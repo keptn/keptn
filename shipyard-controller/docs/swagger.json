@@ -70,7 +70,7 @@
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "$ref": "#/definitions/models.Events"
+                            "$ref": "#/definitions/models.KeptnContextExtendedCE"
                         }
                     },
                     "400": {
@@ -688,7 +688,7 @@
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "$ref": "#/definitions/models.Stages"
+                            "$ref": "#/definitions/models.ExpandedStages"
                         }
                     },
                     "404": {
@@ -721,7 +721,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Projects"
+                    "Stage"
                 ],
                 "summary": "Get a stage",
                 "parameters": [
@@ -754,7 +754,7 @@
                         }
                     },
                     "500": {
-                        "description": "Internal Error)",
+                        "description": "Internal Error",
                         "schema": {
                             "$ref": "#/definitions/models.Error"
                         }
@@ -1378,7 +1378,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.Subscription"
+                                "$ref": "#/definitions/models.EventSubscription"
                             }
                         }
                     },
@@ -1433,7 +1433,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Subscription"
+                            "$ref": "#/definitions/models.EventSubscription"
                         }
                     }
                 ],
@@ -1500,7 +1500,7 @@
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "$ref": "#/definitions/models.Subscription"
+                            "$ref": "#/definitions/models.EventSubscription"
                         }
                     },
                     "400": {
@@ -1561,7 +1561,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Subscription"
+                            "$ref": "#/definitions/models.EventSubscription"
                         }
                     }
                 ],
@@ -1657,6 +1657,11 @@
                     "type": "string",
                     "example": "2021-01-02T15:10:00"
                 },
+                "gitcommitid": {
+                    "description": "Evaluation commit ID context",
+                    "type": "string",
+                    "example": "asdf123f"
+                },
                 "labels": {
                     "description": "labels",
                     "type": "object",
@@ -1700,6 +1705,38 @@
         "models.CreateProjectParams": {
             "type": "object",
             "properties": {
+                "gitPemCertificate": {
+                    "description": "git PEM Certificate",
+                    "type": "string"
+                },
+                "gitPrivateKey": {
+                    "description": "git private key",
+                    "type": "string"
+                },
+                "gitPrivateKeyPass": {
+                    "description": "git private key passphrase",
+                    "type": "string"
+                },
+                "gitProxyInsecure": {
+                    "description": "git proxy insecure",
+                    "type": "boolean"
+                },
+                "gitProxyPassword": {
+                    "description": "git proxy password",
+                    "type": "string"
+                },
+                "gitProxyScheme": {
+                    "description": "git proxy scheme",
+                    "type": "string"
+                },
+                "gitProxyUrl": {
+                    "description": "git proxy URL",
+                    "type": "string"
+                },
+                "gitProxyUser": {
+                    "description": "git proxy user",
+                    "type": "string"
+                },
                 "gitRemoteURL": {
                     "description": "git remote URL",
                     "type": "string"
@@ -1769,56 +1806,19 @@
                 }
             }
         },
-        "models.Event": {
+        "models.EventContextInfo": {
             "type": "object",
             "properties": {
-                "contenttype": {
-                    "description": "contenttype",
+                "eventId": {
+                    "description": "ID of the event",
                     "type": "string"
                 },
-                "data": {
-                    "description": "data\nRequired: true",
-                    "type": "object"
-                },
-                "extensions": {
-                    "description": "extensions",
-                    "type": "object"
-                },
-                "id": {
-                    "description": "id",
-                    "type": "string"
-                },
-                "shkeptncontext": {
-                    "description": "shkeptncontext",
-                    "type": "string"
-                },
-                "source": {
-                    "description": "source\nRequired: true",
-                    "type": "string"
-                },
-                "specversion": {
-                    "description": "specversion",
+                "keptnContext": {
+                    "description": "Keptn Context ID of the event",
                     "type": "string"
                 },
                 "time": {
-                    "description": "time",
-                    "type": "string"
-                },
-                "triggeredid": {
-                    "description": "triggeredid",
-                    "type": "string"
-                },
-                "type": {
-                    "description": "type\nRequired: true",
-                    "type": "string"
-                }
-            }
-        },
-        "models.EventContext": {
-            "type": "object",
-            "properties": {
-                "keptnContext": {
-                    "description": "keptn context\nRequired: true",
+                    "description": "Time of the event",
                     "type": "string"
                 }
             }
@@ -1860,30 +1860,6 @@
                 }
             }
         },
-        "models.Events": {
-            "type": "object",
-            "properties": {
-                "events": {
-                    "description": "events",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Event"
-                    }
-                },
-                "nextPageKey": {
-                    "description": "Pointer to next page, base64 encoded",
-                    "type": "string"
-                },
-                "pageSize": {
-                    "description": "Size of returned page",
-                    "type": "number"
-                },
-                "totalCount": {
-                    "description": "Total number of events",
-                    "type": "number"
-                }
-            }
-        },
         "models.ExpandedProject": {
             "type": "object",
             "properties": {
@@ -1901,7 +1877,7 @@
                 },
                 "lastEventContext": {
                     "description": "last event context",
-                    "$ref": "#/definitions/models.EventContext"
+                    "$ref": "#/definitions/models.EventContextInfo"
                 },
                 "projectName": {
                     "description": "Project name",
@@ -1963,7 +1939,7 @@
                     "description": "last event types",
                     "type": "object",
                     "additionalProperties": {
-                        "$ref": "#/definitions/models.EventContext"
+                        "$ref": "#/definitions/models.EventContextInfo"
                     }
                 },
                 "openRemediations": {
@@ -2008,7 +1984,7 @@
             "properties": {
                 "lastEventContext": {
                     "description": "last event context",
-                    "$ref": "#/definitions/models.EventContext"
+                    "$ref": "#/definitions/models.EventContextInfo"
                 },
                 "parentStages": {
                     "description": "Parent Stages",
@@ -2027,6 +2003,30 @@
                 "stageName": {
                     "description": "Stage name",
                     "type": "string"
+                }
+            }
+        },
+        "models.ExpandedStages": {
+            "type": "object",
+            "properties": {
+                "nextPageKey": {
+                    "description": "Pointer to next page, base64 encoded",
+                    "type": "string"
+                },
+                "pageSize": {
+                    "description": "Size of returned page",
+                    "type": "number"
+                },
+                "stages": {
+                    "description": "stages",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ExpandedStage"
+                    }
+                },
+                "totalCount": {
+                    "description": "Total number of stages",
+                    "type": "number"
                 }
             }
         },
@@ -2078,6 +2078,57 @@
                 }
             }
         },
+        "models.KeptnContextExtendedCE": {
+            "type": "object",
+            "properties": {
+                "contenttype": {
+                    "description": "contenttype",
+                    "type": "string"
+                },
+                "data": {
+                    "description": "data\nRequired: true"
+                },
+                "extensions": {
+                    "description": "extensions"
+                },
+                "gitcommitid": {
+                    "description": "gitcommitid",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "id",
+                    "type": "string"
+                },
+                "shkeptncontext": {
+                    "description": "shkeptncontext",
+                    "type": "string"
+                },
+                "shkeptnspecversion": {
+                    "description": "shkeptnspecversion",
+                    "type": "string"
+                },
+                "source": {
+                    "description": "source\nRequired: true",
+                    "type": "string"
+                },
+                "specversion": {
+                    "description": "specversion",
+                    "type": "string"
+                },
+                "time": {
+                    "description": "time\nFormat: date-time",
+                    "type": "string"
+                },
+                "triggeredid": {
+                    "description": "triggeredid",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "type\nRequired: true",
+                    "type": "string"
+                }
+            }
+        },
         "models.KubernetesMetaData": {
             "type": "object",
             "properties": {
@@ -2095,6 +2146,9 @@
         "models.LogEntry": {
             "type": "object",
             "properties": {
+                "gitcommitid": {
+                    "type": "string"
+                },
                 "integrationid": {
                     "type": "string"
                 },
@@ -2291,30 +2345,6 @@
                 }
             }
         },
-        "models.Stages": {
-            "type": "object",
-            "properties": {
-                "nextPageKey": {
-                    "description": "Pointer to next page, base64 encoded",
-                    "type": "string"
-                },
-                "pageSize": {
-                    "description": "Size of returned page",
-                    "type": "number"
-                },
-                "stages": {
-                    "description": "stages",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.ExpandedStage"
-                    }
-                },
-                "totalCount": {
-                    "description": "Total number of stages",
-                    "type": "number"
-                }
-            }
-        },
         "models.Subscription": {
             "type": "object",
             "properties": {
@@ -2349,6 +2379,38 @@
         "models.UpdateProjectParams": {
             "type": "object",
             "properties": {
+                "gitPemCertificate": {
+                    "description": "git PEM Certificate",
+                    "type": "string"
+                },
+                "gitPrivateKey": {
+                    "description": "git private key",
+                    "type": "string"
+                },
+                "gitPrivateKeyPass": {
+                    "description": "git private key passphrase",
+                    "type": "string"
+                },
+                "gitProxyInsecure": {
+                    "description": "git proxy insecure",
+                    "type": "boolean"
+                },
+                "gitProxyPassword": {
+                    "description": "git proxy password",
+                    "type": "string"
+                },
+                "gitProxyScheme": {
+                    "description": "git proxy scheme",
+                    "type": "string"
+                },
+                "gitProxyUrl": {
+                    "description": "git proxy URL",
+                    "type": "string"
+                },
+                "gitProxyUser": {
+                    "description": "git proxy user",
+                    "type": "string"
+                },
                 "gitRemoteURL": {
                     "description": "git remote URL",
                     "type": "string"

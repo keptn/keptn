@@ -4,7 +4,7 @@
 package fake
 
 import (
-	"github.com/keptn/keptn/shipyard-controller/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"sync"
 )
 
@@ -14,7 +14,7 @@ import (
 //
 // 		// make and configure a mocked sequencehooks.ISequenceTaskStartedHook
 // 		mockedISequenceTaskStartedHook := &ISequenceTaskStartedHookMock{
-// 			OnSequenceTaskStartedFunc: func(event models.Event)  {
+// 			OnSequenceTaskStartedFunc: func(event apimodels.KeptnContextExtendedCE)  {
 // 				panic("mock out the OnSequenceTaskStarted method")
 // 			},
 // 		}
@@ -25,26 +25,26 @@ import (
 // 	}
 type ISequenceTaskStartedHookMock struct {
 	// OnSequenceTaskStartedFunc mocks the OnSequenceTaskStarted method.
-	OnSequenceTaskStartedFunc func(event models.Event)
+	OnSequenceTaskStartedFunc func(event apimodels.KeptnContextExtendedCE)
 
 	// calls tracks calls to the methods.
 	calls struct {
 		// OnSequenceTaskStarted holds details about calls to the OnSequenceTaskStarted method.
 		OnSequenceTaskStarted []struct {
-			// Event is the event argument value.
-			Event models.Event
+			//models.KeptnContextExtendedCEis the event argument value.
+			Event apimodels.KeptnContextExtendedCE
 		}
 	}
 	lockOnSequenceTaskStarted sync.RWMutex
 }
 
 // OnSequenceTaskStarted calls OnSequenceTaskStartedFunc.
-func (mock *ISequenceTaskStartedHookMock) OnSequenceTaskStarted(event models.Event) {
+func (mock *ISequenceTaskStartedHookMock) OnSequenceTaskStarted(event apimodels.KeptnContextExtendedCE) {
 	if mock.OnSequenceTaskStartedFunc == nil {
 		panic("ISequenceTaskStartedHookMock.OnSequenceTaskStartedFunc: method is nil but ISequenceTaskStartedHook.OnSequenceTaskStarted was just called")
 	}
 	callInfo := struct {
-		Event models.Event
+		Event apimodels.KeptnContextExtendedCE
 	}{
 		Event: event,
 	}
@@ -58,10 +58,10 @@ func (mock *ISequenceTaskStartedHookMock) OnSequenceTaskStarted(event models.Eve
 // Check the length with:
 //     len(mockedISequenceTaskStartedHook.OnSequenceTaskStartedCalls())
 func (mock *ISequenceTaskStartedHookMock) OnSequenceTaskStartedCalls() []struct {
-	Event models.Event
+	Event apimodels.KeptnContextExtendedCE
 } {
 	var calls []struct {
-		Event models.Event
+		Event apimodels.KeptnContextExtendedCE
 	}
 	mock.lockOnSequenceTaskStarted.RLock()
 	calls = mock.calls.OnSequenceTaskStarted

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"time"
 
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -19,7 +20,7 @@ import (
 // ISequenceDispatcher is responsible for dispatching events to be sent to the event broker
 type ISequenceDispatcher interface {
 	Add(queueItem models.QueueItem) error
-	Run(ctx context.Context, mode common.SDMode, startSequenceFunc func(event models.Event) error)
+	Run(ctx context.Context, mode common.SDMode, startSequenceFunc func(event apimodels.KeptnContextExtendedCE) error)
 	Remove(eventScope models.EventScope) error
 	Stop()
 }
@@ -30,7 +31,7 @@ type SequenceDispatcher struct {
 	sequenceExecutionRepo db.SequenceExecutionRepo
 	theClock              clock.Clock
 	syncInterval          time.Duration
-	startSequenceFunc     func(event models.Event) error
+	startSequenceFunc     func(event apimodels.KeptnContextExtendedCE) error
 	shipyardController    shipyardController
 	ticker                *clock.Ticker
 	mode                  common.SDMode
@@ -92,11 +93,11 @@ func (sd *SequenceDispatcher) Remove(eventScope models.EventScope) error {
 	})
 }
 
-func (sd *SequenceDispatcher) SetStartSequenceCallback(startSequenceFunc func(event models.Event) error) {
+func (sd *SequenceDispatcher) SetStartSequenceCallback(startSequenceFunc func(event apimodels.KeptnContextExtendedCE) error) {
 	sd.startSequenceFunc = startSequenceFunc
 }
 
-func (sd *SequenceDispatcher) Run(ctx context.Context, mode common.SDMode, startSequenceFunc func(event models.Event) error) {
+func (sd *SequenceDispatcher) Run(ctx context.Context, mode common.SDMode, startSequenceFunc func(event apimodels.KeptnContextExtendedCE) error) {
 	// at each run the dispatcher needs to know if it is a leader or not
 	sd.mode = mode
 	sd.ticker = sd.theClock.Ticker(sd.syncInterval)
@@ -170,7 +171,7 @@ func (sd *SequenceDispatcher) dispatchSequence(queueItem models.QueueItem) error
 				Stage:   queueItem.Scope.Stage,
 			},
 		},
-		Status: []string{models.SequenceStartedState},
+		Status: []string{apimodels.SequenceStartedState},
 	})
 
 	if err != nil {

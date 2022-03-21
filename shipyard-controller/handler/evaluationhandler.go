@@ -46,6 +46,11 @@ func (eh *EvaluationHandler) CreateEvaluation(c *gin.Context) {
 		return
 	}
 
+	if err := evaluation.Validate(); err != nil {
+		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		return
+	}
+
 	evaluationContext, err := eh.EvaluationManager.CreateEvaluation(project, stage, service, evaluation)
 	if err != nil {
 		c.JSON(getHTTPStatusForError(err.Code), err)

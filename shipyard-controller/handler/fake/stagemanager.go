@@ -4,7 +4,7 @@
 package fake
 
 import (
-	"github.com/keptn/keptn/shipyard-controller/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"sync"
 )
 
@@ -14,10 +14,10 @@ import (
 //
 // 		// make and configure a mocked handler.IStageManager
 // 		mockedIStageManager := &IStageManagerMock{
-// 			GetAllStagesFunc: func(projectName string) ([]*models.ExpandedStage, error) {
+// 			GetAllStagesFunc: func(projectName string) ([]*apimodels.ExpandedStage, error) {
 // 				panic("mock out the GetAllStages method")
 // 			},
-// 			GetStageFunc: func(projectName string, stageName string) (*models.ExpandedStage, error) {
+// 			GetStageFunc: func(projectName string, stageName string) (*apimodels.ExpandedStage, error) {
 // 				panic("mock out the GetStage method")
 // 			},
 // 		}
@@ -28,10 +28,10 @@ import (
 // 	}
 type IStageManagerMock struct {
 	// GetAllStagesFunc mocks the GetAllStages method.
-	GetAllStagesFunc func(projectName string) ([]*models.ExpandedStage, error)
+	GetAllStagesFunc func(projectName string) ([]*apimodels.ExpandedStage, error)
 
 	// GetStageFunc mocks the GetStage method.
-	GetStageFunc func(projectName string, stageName string) (*models.ExpandedStage, error)
+	GetStageFunc func(projectName string, stageName string) (*apimodels.ExpandedStage, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -53,7 +53,7 @@ type IStageManagerMock struct {
 }
 
 // GetAllStages calls GetAllStagesFunc.
-func (mock *IStageManagerMock) GetAllStages(projectName string) ([]*models.ExpandedStage, error) {
+func (mock *IStageManagerMock) GetAllStages(projectName string) ([]*apimodels.ExpandedStage, error) {
 	if mock.GetAllStagesFunc == nil {
 		panic("IStageManagerMock.GetAllStagesFunc: method is nil but IStageManager.GetAllStages was just called")
 	}
@@ -84,7 +84,7 @@ func (mock *IStageManagerMock) GetAllStagesCalls() []struct {
 }
 
 // GetStage calls GetStageFunc.
-func (mock *IStageManagerMock) GetStage(projectName string, stageName string) (*models.ExpandedStage, error) {
+func (mock *IStageManagerMock) GetStage(projectName string, stageName string) (*apimodels.ExpandedStage, error) {
 	if mock.GetStageFunc == nil {
 		panic("IStageManagerMock.GetStageFunc: method is nil but IStageManager.GetStage was just called")
 	}

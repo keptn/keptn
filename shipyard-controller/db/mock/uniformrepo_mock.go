@@ -4,6 +4,7 @@
 package db_mock
 
 import (
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"sync"
 )
@@ -14,13 +15,13 @@ import (
 //
 // 		// make and configure a mocked db.UniformRepo
 // 		mockedUniformRepo := &UniformRepoMock{
-// 			CreateOrUpdateSubscriptionFunc: func(integrationID string, subscription models.Subscription) error {
+// 			CreateOrUpdateSubscriptionFunc: func(integrationID string, subscriptionapimodels.EventSubscription) error {
 // 				panic("mock out the CreateOrUpdateSubscription method")
 // 			},
-// 			CreateOrUpdateUniformIntegrationFunc: func(integration models.Integration) error {
+// 			CreateOrUpdateUniformIntegrationFunc: func(integration apimodels.Integration) error {
 // 				panic("mock out the CreateOrUpdateUniformIntegration method")
 // 			},
-// 			CreateUniformIntegrationFunc: func(integration models.Integration) error {
+// 			CreateUniformIntegrationFunc: func(integration apimodels.Integration) error {
 // 				panic("mock out the CreateUniformIntegration method")
 // 			},
 // 			DeleteServiceFromSubscriptionsFunc: func(subscriptionName string) error {
@@ -32,19 +33,19 @@ import (
 // 			DeleteUniformIntegrationFunc: func(id string) error {
 // 				panic("mock out the DeleteUniformIntegration method")
 // 			},
-// 			GetSubscriptionFunc: func(integrationID string, subscriptionID string) (*models.Subscription, error) {
+// 			GetSubscriptionFunc: func(integrationID string, subscriptionID string) (*apimodels.EventSubscription, error) {
 // 				panic("mock out the GetSubscription method")
 // 			},
-// 			GetSubscriptionsFunc: func(integrationID string) ([]models.Subscription, error) {
+// 			GetSubscriptionsFunc: func(integrationID string) ([]apimodels.EventSubscription, error) {
 // 				panic("mock out the GetSubscriptions method")
 // 			},
-// 			GetUniformIntegrationsFunc: func(filter models.GetUniformIntegrationsParams) ([]models.Integration, error) {
+// 			GetUniformIntegrationsFunc: func(filter models.GetUniformIntegrationsParams) ([]apimodels.Integration, error) {
 // 				panic("mock out the GetUniformIntegrations method")
 // 			},
-// 			UpdateLastSeenFunc: func(integrationID string) (*models.Integration, error) {
+// 			UpdateLastSeenFunc: func(integrationID string) (*apimodels.Integration, error) {
 // 				panic("mock out the UpdateLastSeen method")
 // 			},
-// 			UpdateVersionInfoFunc: func(integrationID string, integrationVersion string, distributorVersion string) (*models.Integration, error) {
+// 			UpdateVersionInfoFunc: func(integrationID string, integrationVersion string, distributorVersion string) (*apimodels.Integration, error) {
 // 				panic("mock out the UpdateVersionInfo method")
 // 			},
 // 		}
@@ -55,13 +56,13 @@ import (
 // 	}
 type UniformRepoMock struct {
 	// CreateOrUpdateSubscriptionFunc mocks the CreateOrUpdateSubscription method.
-	CreateOrUpdateSubscriptionFunc func(integrationID string, subscription models.Subscription) error
+	CreateOrUpdateSubscriptionFunc func(integrationID string, subscription apimodels.EventSubscription) error
 
 	// CreateOrUpdateUniformIntegrationFunc mocks the CreateOrUpdateUniformIntegration method.
-	CreateOrUpdateUniformIntegrationFunc func(integration models.Integration) error
+	CreateOrUpdateUniformIntegrationFunc func(integration apimodels.Integration) error
 
 	// CreateUniformIntegrationFunc mocks the CreateUniformIntegration method.
-	CreateUniformIntegrationFunc func(integration models.Integration) error
+	CreateUniformIntegrationFunc func(integration apimodels.Integration) error
 
 	// DeleteServiceFromSubscriptionsFunc mocks the DeleteServiceFromSubscriptions method.
 	DeleteServiceFromSubscriptionsFunc func(subscriptionName string) error
@@ -73,19 +74,19 @@ type UniformRepoMock struct {
 	DeleteUniformIntegrationFunc func(id string) error
 
 	// GetSubscriptionFunc mocks the GetSubscription method.
-	GetSubscriptionFunc func(integrationID string, subscriptionID string) (*models.Subscription, error)
+	GetSubscriptionFunc func(integrationID string, subscriptionID string) (*apimodels.EventSubscription, error)
 
 	// GetSubscriptionsFunc mocks the GetSubscriptions method.
-	GetSubscriptionsFunc func(integrationID string) ([]models.Subscription, error)
+	GetSubscriptionsFunc func(integrationID string) ([]apimodels.EventSubscription, error)
 
 	// GetUniformIntegrationsFunc mocks the GetUniformIntegrations method.
-	GetUniformIntegrationsFunc func(filter models.GetUniformIntegrationsParams) ([]models.Integration, error)
+	GetUniformIntegrationsFunc func(filter models.GetUniformIntegrationsParams) ([]apimodels.Integration, error)
 
 	// UpdateLastSeenFunc mocks the UpdateLastSeen method.
-	UpdateLastSeenFunc func(integrationID string) (*models.Integration, error)
+	UpdateLastSeenFunc func(integrationID string) (*apimodels.Integration, error)
 
 	// UpdateVersionInfoFunc mocks the UpdateVersionInfo method.
-	UpdateVersionInfoFunc func(integrationID string, integrationVersion string, distributorVersion string) (*models.Integration, error)
+	UpdateVersionInfoFunc func(integrationID string, integrationVersion string, distributorVersion string) (*apimodels.Integration, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -94,17 +95,17 @@ type UniformRepoMock struct {
 			// IntegrationID is the integrationID argument value.
 			IntegrationID string
 			// Subscription is the subscription argument value.
-			Subscription models.Subscription
+			Subscription apimodels.EventSubscription
 		}
 		// CreateOrUpdateUniformIntegration holds details about calls to the CreateOrUpdateUniformIntegration method.
 		CreateOrUpdateUniformIntegration []struct {
 			// Integration is the integration argument value.
-			Integration models.Integration
+			Integration apimodels.Integration
 		}
 		// CreateUniformIntegration holds details about calls to the CreateUniformIntegration method.
 		CreateUniformIntegration []struct {
 			// Integration is the integration argument value.
-			Integration models.Integration
+			Integration apimodels.Integration
 		}
 		// DeleteServiceFromSubscriptions holds details about calls to the DeleteServiceFromSubscriptions method.
 		DeleteServiceFromSubscriptions []struct {
@@ -169,13 +170,13 @@ type UniformRepoMock struct {
 }
 
 // CreateOrUpdateSubscription calls CreateOrUpdateSubscriptionFunc.
-func (mock *UniformRepoMock) CreateOrUpdateSubscription(integrationID string, subscription models.Subscription) error {
+func (mock *UniformRepoMock) CreateOrUpdateSubscription(integrationID string, subscription apimodels.EventSubscription) error {
 	if mock.CreateOrUpdateSubscriptionFunc == nil {
 		panic("UniformRepoMock.CreateOrUpdateSubscriptionFunc: method is nil but UniformRepo.CreateOrUpdateSubscription was just called")
 	}
 	callInfo := struct {
 		IntegrationID string
-		Subscription  models.Subscription
+		Subscription  apimodels.EventSubscription
 	}{
 		IntegrationID: integrationID,
 		Subscription:  subscription,
@@ -191,11 +192,11 @@ func (mock *UniformRepoMock) CreateOrUpdateSubscription(integrationID string, su
 //     len(mockedUniformRepo.CreateOrUpdateSubscriptionCalls())
 func (mock *UniformRepoMock) CreateOrUpdateSubscriptionCalls() []struct {
 	IntegrationID string
-	Subscription  models.Subscription
+	Subscription  apimodels.EventSubscription
 } {
 	var calls []struct {
 		IntegrationID string
-		Subscription  models.Subscription
+		Subscription  apimodels.EventSubscription
 	}
 	mock.lockCreateOrUpdateSubscription.RLock()
 	calls = mock.calls.CreateOrUpdateSubscription
@@ -204,12 +205,12 @@ func (mock *UniformRepoMock) CreateOrUpdateSubscriptionCalls() []struct {
 }
 
 // CreateOrUpdateUniformIntegration calls CreateOrUpdateUniformIntegrationFunc.
-func (mock *UniformRepoMock) CreateOrUpdateUniformIntegration(integration models.Integration) error {
+func (mock *UniformRepoMock) CreateOrUpdateUniformIntegration(integration apimodels.Integration) error {
 	if mock.CreateOrUpdateUniformIntegrationFunc == nil {
 		panic("UniformRepoMock.CreateOrUpdateUniformIntegrationFunc: method is nil but UniformRepo.CreateOrUpdateUniformIntegration was just called")
 	}
 	callInfo := struct {
-		Integration models.Integration
+		Integration apimodels.Integration
 	}{
 		Integration: integration,
 	}
@@ -223,10 +224,10 @@ func (mock *UniformRepoMock) CreateOrUpdateUniformIntegration(integration models
 // Check the length with:
 //     len(mockedUniformRepo.CreateOrUpdateUniformIntegrationCalls())
 func (mock *UniformRepoMock) CreateOrUpdateUniformIntegrationCalls() []struct {
-	Integration models.Integration
+	Integration apimodels.Integration
 } {
 	var calls []struct {
-		Integration models.Integration
+		Integration apimodels.Integration
 	}
 	mock.lockCreateOrUpdateUniformIntegration.RLock()
 	calls = mock.calls.CreateOrUpdateUniformIntegration
@@ -235,12 +236,12 @@ func (mock *UniformRepoMock) CreateOrUpdateUniformIntegrationCalls() []struct {
 }
 
 // CreateUniformIntegration calls CreateUniformIntegrationFunc.
-func (mock *UniformRepoMock) CreateUniformIntegration(integration models.Integration) error {
+func (mock *UniformRepoMock) CreateUniformIntegration(integration apimodels.Integration) error {
 	if mock.CreateUniformIntegrationFunc == nil {
 		panic("UniformRepoMock.CreateUniformIntegrationFunc: method is nil but UniformRepo.CreateUniformIntegration was just called")
 	}
 	callInfo := struct {
-		Integration models.Integration
+		Integration apimodels.Integration
 	}{
 		Integration: integration,
 	}
@@ -254,10 +255,10 @@ func (mock *UniformRepoMock) CreateUniformIntegration(integration models.Integra
 // Check the length with:
 //     len(mockedUniformRepo.CreateUniformIntegrationCalls())
 func (mock *UniformRepoMock) CreateUniformIntegrationCalls() []struct {
-	Integration models.Integration
+	Integration apimodels.Integration
 } {
 	var calls []struct {
-		Integration models.Integration
+		Integration apimodels.Integration
 	}
 	mock.lockCreateUniformIntegration.RLock()
 	calls = mock.calls.CreateUniformIntegration
@@ -363,7 +364,7 @@ func (mock *UniformRepoMock) DeleteUniformIntegrationCalls() []struct {
 }
 
 // GetSubscription calls GetSubscriptionFunc.
-func (mock *UniformRepoMock) GetSubscription(integrationID string, subscriptionID string) (*models.Subscription, error) {
+func (mock *UniformRepoMock) GetSubscription(integrationID string, subscriptionID string) (*apimodels.EventSubscription, error) {
 	if mock.GetSubscriptionFunc == nil {
 		panic("UniformRepoMock.GetSubscriptionFunc: method is nil but UniformRepo.GetSubscription was just called")
 	}
@@ -398,7 +399,7 @@ func (mock *UniformRepoMock) GetSubscriptionCalls() []struct {
 }
 
 // GetSubscriptions calls GetSubscriptionsFunc.
-func (mock *UniformRepoMock) GetSubscriptions(integrationID string) ([]models.Subscription, error) {
+func (mock *UniformRepoMock) GetSubscriptions(integrationID string) ([]apimodels.EventSubscription, error) {
 	if mock.GetSubscriptionsFunc == nil {
 		panic("UniformRepoMock.GetSubscriptionsFunc: method is nil but UniformRepo.GetSubscriptions was just called")
 	}
@@ -429,7 +430,7 @@ func (mock *UniformRepoMock) GetSubscriptionsCalls() []struct {
 }
 
 // GetUniformIntegrations calls GetUniformIntegrationsFunc.
-func (mock *UniformRepoMock) GetUniformIntegrations(filter models.GetUniformIntegrationsParams) ([]models.Integration, error) {
+func (mock *UniformRepoMock) GetUniformIntegrations(filter models.GetUniformIntegrationsParams) ([]apimodels.Integration, error) {
 	if mock.GetUniformIntegrationsFunc == nil {
 		panic("UniformRepoMock.GetUniformIntegrationsFunc: method is nil but UniformRepo.GetUniformIntegrations was just called")
 	}
@@ -460,7 +461,7 @@ func (mock *UniformRepoMock) GetUniformIntegrationsCalls() []struct {
 }
 
 // UpdateLastSeen calls UpdateLastSeenFunc.
-func (mock *UniformRepoMock) UpdateLastSeen(integrationID string) (*models.Integration, error) {
+func (mock *UniformRepoMock) UpdateLastSeen(integrationID string) (*apimodels.Integration, error) {
 	if mock.UpdateLastSeenFunc == nil {
 		panic("UniformRepoMock.UpdateLastSeenFunc: method is nil but UniformRepo.UpdateLastSeen was just called")
 	}
@@ -491,7 +492,7 @@ func (mock *UniformRepoMock) UpdateLastSeenCalls() []struct {
 }
 
 // UpdateVersionInfo calls UpdateVersionInfoFunc.
-func (mock *UniformRepoMock) UpdateVersionInfo(integrationID string, integrationVersion string, distributorVersion string) (*models.Integration, error) {
+func (mock *UniformRepoMock) UpdateVersionInfo(integrationID string, integrationVersion string, distributorVersion string) (*apimodels.Integration, error) {
 	if mock.UpdateVersionInfoFunc == nil {
 		panic("UniformRepoMock.UpdateVersionInfoFunc: method is nil but UniformRepo.UpdateVersionInfo was just called")
 	}

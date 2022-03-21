@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -19,18 +20,18 @@ import (
 
 func TestGetAllProjects(t *testing.T) {
 
-	s1 := &models.ExpandedStage{StageName: "s1"}
-	s2 := &models.ExpandedStage{StageName: "s2"}
-	s3 := &models.ExpandedStage{StageName: "s3"}
-	s4 := &models.ExpandedStage{StageName: "s4"}
+	s1 := &apimodels.ExpandedStage{StageName: "s1"}
+	s2 := &apimodels.ExpandedStage{StageName: "s2"}
+	s3 := &apimodels.ExpandedStage{StageName: "s3"}
+	s4 := &apimodels.ExpandedStage{StageName: "s4"}
 
-	es1 := []*models.ExpandedStage{s1, s2}
-	es2 := []*models.ExpandedStage{s3, s4}
+	es1 := []*apimodels.ExpandedStage{s1, s2}
+	es2 := []*apimodels.ExpandedStage{s3, s4}
 
-	p1 := &models.ExpandedProject{
+	p1 := &apimodels.ExpandedProject{
 		Stages: es1,
 	}
-	p2 := &models.ExpandedProject{
+	p2 := &apimodels.ExpandedProject{
 		Stages: es2,
 	}
 
@@ -43,14 +44,14 @@ func TestGetAllProjects(t *testing.T) {
 		name               string
 		fields             fields
 		expectHttpStatus   int
-		expectJSONResponse *models.ExpandedProjects
+		expectJSONResponse *apimodels.ExpandedProjects
 		queryParams        string
 	}{
 		{
 			name: "Get all projects DB access fails",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					GetFunc: func() ([]*models.ExpandedProject, error) {
+					GetFunc: func() ([]*apimodels.ExpandedProject, error) {
 						return nil, errors.New("whoops")
 					},
 				},
@@ -62,16 +63,16 @@ func TestGetAllProjects(t *testing.T) {
 			name: "Get all projects",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					GetFunc: func() ([]*models.ExpandedProject, error) {
-						return []*models.ExpandedProject{p1, p2}, nil
+					GetFunc: func() ([]*apimodels.ExpandedProject, error) {
+						return []*apimodels.ExpandedProject{p1, p2}, nil
 					},
 				},
 				EventSender: &fake.IEventSenderMock{},
 			},
 			expectHttpStatus: http.StatusOK,
-			expectJSONResponse: &models.ExpandedProjects{
+			expectJSONResponse: &apimodels.ExpandedProjects{
 				NextPageKey: "0",
-				Projects:    []*models.ExpandedProject{p1, p2},
+				Projects:    []*apimodels.ExpandedProject{p1, p2},
 				TotalCount:  2,
 			},
 		},
@@ -79,16 +80,16 @@ func TestGetAllProjects(t *testing.T) {
 			name: "Get all projects with pagination",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					GetFunc: func() ([]*models.ExpandedProject, error) {
-						return []*models.ExpandedProject{p1, p2}, nil
+					GetFunc: func() ([]*apimodels.ExpandedProject, error) {
+						return []*apimodels.ExpandedProject{p1, p2}, nil
 					},
 				},
 				EventSender: &fake.IEventSenderMock{},
 			},
 			expectHttpStatus: http.StatusOK,
-			expectJSONResponse: &models.ExpandedProjects{
+			expectJSONResponse: &apimodels.ExpandedProjects{
 				NextPageKey: "1",
-				Projects:    []*models.ExpandedProject{p1},
+				Projects:    []*apimodels.ExpandedProject{p1},
 				TotalCount:  2,
 			},
 			queryParams: "/?pageSize=1",
@@ -97,16 +98,16 @@ func TestGetAllProjects(t *testing.T) {
 			name: "Get all projects with pagination",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					GetFunc: func() ([]*models.ExpandedProject, error) {
-						return []*models.ExpandedProject{p1, p2}, nil
+					GetFunc: func() ([]*apimodels.ExpandedProject, error) {
+						return []*apimodels.ExpandedProject{p1, p2}, nil
 					},
 				},
 				EventSender: &fake.IEventSenderMock{},
 			},
 			expectHttpStatus: http.StatusOK,
-			expectJSONResponse: &models.ExpandedProjects{
+			expectJSONResponse: &apimodels.ExpandedProjects{
 				NextPageKey: "0",
-				Projects:    []*models.ExpandedProject{p2},
+				Projects:    []*apimodels.ExpandedProject{p2},
 				TotalCount:  2,
 			},
 			queryParams: "/?pageSize=1&nextPageKey=1",
@@ -124,7 +125,7 @@ func TestGetAllProjects(t *testing.T) {
 			handler.GetAllProjects(c)
 
 			if tt.expectJSONResponse != nil {
-				response := &models.ExpandedProjects{}
+				response := &apimodels.ExpandedProjects{}
 				responseBytes, _ := ioutil.ReadAll(w.Body)
 				json.Unmarshal(responseBytes, response)
 				assert.Equal(t, tt.expectJSONResponse, response)
@@ -136,12 +137,12 @@ func TestGetAllProjects(t *testing.T) {
 }
 
 func TestGetProjectByName(t *testing.T) {
-	s1 := &models.ExpandedStage{StageName: "s1"}
-	s2 := &models.ExpandedStage{StageName: "s2"}
+	s1 := &apimodels.ExpandedStage{StageName: "s1"}
+	s2 := &apimodels.ExpandedStage{StageName: "s2"}
 
-	es1 := []*models.ExpandedStage{s1, s2}
+	es1 := []*apimodels.ExpandedStage{s1, s2}
 
-	p1 := &models.ExpandedProject{Stages: es1}
+	p1 := &apimodels.ExpandedProject{Stages: es1}
 
 	type fields struct {
 		ProjectManager IProjectManager
@@ -152,14 +153,14 @@ func TestGetProjectByName(t *testing.T) {
 		name               string
 		fields             fields
 		expectHttpStatus   int
-		expectJSONResponse *models.ExpandedProject
+		expectJSONResponse *apimodels.ExpandedProject
 		projectNameParam   string
 	}{
 		{
 			name: "Get Project By Name DB access fails",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					GetByNameFunc: func(projectName string) (*models.ExpandedProject, error) {
+					GetByNameFunc: func(projectName string) (*apimodels.ExpandedProject, error) {
 						return nil, errors.New("whoops")
 					},
 				},
@@ -172,7 +173,7 @@ func TestGetProjectByName(t *testing.T) {
 			name: "Get Project By Name project not found",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					GetByNameFunc: func(projectName string) (*models.ExpandedProject, error) {
+					GetByNameFunc: func(projectName string) (*apimodels.ExpandedProject, error) {
 						return nil, ErrProjectNotFound
 					},
 				},
@@ -185,7 +186,7 @@ func TestGetProjectByName(t *testing.T) {
 			name: "Get Project By Name",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					GetByNameFunc: func(projectName string) (*models.ExpandedProject, error) {
+					GetByNameFunc: func(projectName string) (*apimodels.ExpandedProject, error) {
 						return p1, nil
 					},
 				},
@@ -212,7 +213,7 @@ func TestGetProjectByName(t *testing.T) {
 			handler.GetProjectByName(c)
 
 			if tt.expectJSONResponse != nil {
-				response := &models.ExpandedProject{}
+				response := &apimodels.ExpandedProject{}
 				responseBytes, _ := ioutil.ReadAll(w.Body)
 				json.Unmarshal(responseBytes, response)
 				assert.Equal(t, tt.expectJSONResponse, response)

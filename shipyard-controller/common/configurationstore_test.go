@@ -2,7 +2,7 @@ package common
 
 import (
 	"encoding/json"
-	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
@@ -17,7 +17,7 @@ func TestConfigurationStore(t *testing.T) {
 		defer ts.Close()
 
 		instance := NewGitConfigurationStore(ts.URL)
-		err := instance.CreateProject(keptnapimodels.Project{})
+		err := instance.CreateProject(apimodels.Project{})
 		assert.Nil(t, err)
 	})
 
@@ -28,7 +28,7 @@ func TestConfigurationStore(t *testing.T) {
 		defer ts.Close()
 
 		instance := NewGitConfigurationStore(ts.URL)
-		err := instance.CreateProject(keptnapimodels.Project{})
+		err := instance.CreateProject(apimodels.Project{})
 		assert.NotNil(t, err)
 	})
 
@@ -37,7 +37,7 @@ func TestConfigurationStore(t *testing.T) {
 		defer ts.Close()
 
 		instance := NewGitConfigurationStore(ts.URL)
-		err := instance.UpdateProject(keptnapimodels.Project{})
+		err := instance.UpdateProject(apimodels.Project{})
 		assert.Nil(t, err)
 	})
 
@@ -48,7 +48,7 @@ func TestConfigurationStore(t *testing.T) {
 		defer ts.Close()
 
 		instance := NewGitConfigurationStore(ts.URL)
-		err := instance.UpdateProject(keptnapimodels.Project{})
+		err := instance.UpdateProject(apimodels.Project{})
 		assert.NotNil(t, err)
 	})
 
@@ -59,7 +59,7 @@ func TestConfigurationStore(t *testing.T) {
 		defer ts.Close()
 
 		instance := NewGitConfigurationStore(ts.URL)
-		err := instance.UpdateProject(keptnapimodels.Project{})
+		err := instance.UpdateProject(apimodels.Project{})
 		assert.NotNil(t, err)
 	})
 
@@ -175,7 +175,7 @@ func TestConfigurationStore(t *testing.T) {
 
 		instance := NewGitConfigurationStore(ts.URL)
 		resourceUri := "uri"
-		err := instance.UpdateProjectResource("my-project", &keptnapimodels.Resource{
+		err := instance.UpdateProjectResource("my-project", &apimodels.Resource{
 			ResourceContent: "",
 			ResourceURI:     &resourceUri,
 		})
@@ -189,7 +189,7 @@ func TestConfigurationStore(t *testing.T) {
 		defer ts.Close()
 		instance := NewGitConfigurationStore(ts.URL)
 		resourceUri := "uri"
-		err := instance.UpdateProjectResource("my-project", &keptnapimodels.Resource{
+		err := instance.UpdateProjectResource("my-project", &apimodels.Resource{
 			ResourceContent: "",
 			ResourceURI:     &resourceUri,
 		})
@@ -198,7 +198,7 @@ func TestConfigurationStore(t *testing.T) {
 
 	t.Run("TestGetProjectResource_Success", func(t *testing.T) {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			j, _ := json.Marshal(keptnapimodels.Resource{})
+			j, _ := json.Marshal(apimodels.Resource{})
 			io.WriteString(w, string(j))
 		}))
 		defer ts.Close()
@@ -206,7 +206,7 @@ func TestConfigurationStore(t *testing.T) {
 		instance := NewGitConfigurationStore(ts.URL)
 		resource, err := instance.GetProjectResource("my-project", "uri")
 		assert.Nil(t, err)
-		assert.Equal(t, *resource, keptnapimodels.Resource{})
+		assert.Equal(t, *resource, apimodels.Resource{})
 	})
 
 	t.Run("TestGetProjectResource_APIReturnsInternalServerError", func(t *testing.T) {

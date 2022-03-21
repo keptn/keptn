@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	"fmt"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -17,8 +18,8 @@ const (
 type IServiceManager interface {
 	CreateService(projectName string, params *models.CreateServiceParams) error
 	DeleteService(projectName, serviceName string) error
-	GetService(projectName, stageName, serviceName string) (*models.ExpandedService, error)
-	GetAllServices(projectName, stageName string) ([]*models.ExpandedService, error)
+	GetService(projectName, stageName, serviceName string) (*apimodels.ExpandedService, error)
+	GetAllServices(projectName, stageName string) ([]*apimodels.ExpandedService, error)
 }
 
 type serviceManager struct {
@@ -35,7 +36,7 @@ func NewServiceManager(servicesDBOperations db.ProjectMVRepo, configurationStore
 	}
 }
 
-func (sm *serviceManager) GetAllStages(projectName string) ([]*models.ExpandedStage, error) {
+func (sm *serviceManager) GetAllStages(projectName string) ([]*apimodels.ExpandedStage, error) {
 	project, err := sm.projectMVRepo.GetProject(projectName)
 	if err != nil {
 		return nil, err
@@ -48,7 +49,7 @@ func (sm *serviceManager) GetAllStages(projectName string) ([]*models.ExpandedSt
 
 }
 
-func (sm *serviceManager) GetService(projectName, stageName, serviceName string) (*models.ExpandedService, error) {
+func (sm *serviceManager) GetService(projectName, stageName, serviceName string) (*apimodels.ExpandedService, error) {
 	project, err := sm.projectMVRepo.GetProject(projectName)
 	if err != nil {
 		return nil, err
@@ -70,7 +71,7 @@ func (sm *serviceManager) GetService(projectName, stageName, serviceName string)
 	return nil, ErrStageNotFound
 }
 
-func (sm *serviceManager) GetAllServices(projectName, stageName string) ([]*models.ExpandedService, error) {
+func (sm *serviceManager) GetAllServices(projectName, stageName string) ([]*apimodels.ExpandedService, error) {
 	project, err := sm.projectMVRepo.GetProject(projectName)
 	if err != nil {
 		return nil, err
