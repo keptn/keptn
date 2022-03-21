@@ -84,7 +84,7 @@ jobs:
       AIRGAPPED_REGISTRY_URL: "k3d-container-registry.localhost:12345"
       REMOTE_EXECUTION_PLANE: ${{ matrix.REMOTE_EXECUTION_PLANE }}
       COLLECT_RESOURCE_LIMITS: ${{ matrix.COLLECT_RESOURCE_LIMITS }}
-      GO_VERSION: ^1.17
+      GO_VERSION: 1.17
       TEST_REPORT_FOLDER: test-reports-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}
       FINAL_TEST_REPORT_FOLDER: test-reports
       FINAL_TEST_REPORT_PATH: test-reports/test-report-final-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}.log
