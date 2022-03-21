@@ -9,7 +9,7 @@ func Test_GKE(t *testing.T) {
 	if res, err := CompareServiceNameWithDeploymentName("configuration-service", "configuration-service"); err == nil && res {
 		t.Run("Test_BackupRestoreConfigService", Test_BackupRestoreConfigService)
 	} else {
-		//t.Run("Test_BackupRestoreResourceService", Test_BackupRestoreResourceService)
+		t.Run("Test_BackupRestoreResourceService", Test_BackupRestoreResourceService)
 	}
 	t.Run("Test_GracefulShutdown", Test_GracefulShutdown)
 	t.Run("Test_LogIngestion", Test_LogIngestion)
