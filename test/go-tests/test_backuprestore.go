@@ -295,7 +295,7 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	t.Logf("Continue to work...")
 
 	t.Logf("Trigger delivery after restore of helloservice:v0.1.0")
-	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", projectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery")
+	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", projectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.1", "delivery")
 	require.Nil(t, err)
 
 	t.Logf("Sleeping for 60s...")
@@ -303,7 +303,7 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	t.Logf("Continue to work...")
 
 	t.Logf("Verify Direct delivery after restore of %s in stage dev", serviceName)
-	err = VerifyDirectDeployment(serviceName, projectName, "dev", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
+	err = VerifyDirectDeployment(serviceName, projectName, "dev", "ghcr.io/podtato-head/podtatoserver", "v0.1.1")
 	require.Nil(t, err)
 
 	t.Log("Verify network access to public URI of helloservice in stage dev")
@@ -313,7 +313,7 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	require.Nil(t, err)
 
 	t.Logf("Verify Direct delivery after restore of %s in stage prod", serviceName)
-	err = VerifyDirectDeployment(serviceName, projectName, "prod", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
+	err = VerifyDirectDeployment(serviceName, projectName, "prod", "ghcr.io/podtato-head/podtatoserver", "v0.1.1")
 	require.Nil(t, err)
 
 	t.Log("Verify network access to public URI of helloservice in stage prod")
