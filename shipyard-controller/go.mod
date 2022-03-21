@@ -10,7 +10,7 @@ require (
 	github.com/go-test/deep v1.0.8
 	github.com/google/uuid v1.3.0
 	github.com/jeremywohl/flatten v1.0.1
-	github.com/keptn/go-utils v0.13.1-0.20220309123414-dd687af2e7fd
+	github.com/keptn/go-utils v0.13.1-0.20220318125157-fe974e59cc65
 	github.com/mitchellh/copystructure v1.2.0
 	github.com/nats-io/nats-server/v2 v2.7.2
 	github.com/nats-io/nats.go v1.13.1-0.20220121202836-972a071d373d

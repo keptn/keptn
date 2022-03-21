@@ -5,10 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"time"
-
 	"github.com/google/uuid"
-
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
@@ -16,6 +14,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/handler/sequencehooks"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
+	"time"
 )
 
 const maxRepoReadRetries = 5
@@ -27,11 +26,11 @@ var shipyardControllerInstance *shipyardController
 
 //go:generate moq -pkg fake -skip-ensure -out ./fake/shipyardcontroller.go . IShipyardController
 type IShipyardController interface {
-	GetAllTriggeredEvents(filter common.EventFilter) ([]models.Event, error)
-	GetTriggeredEventsOfProject(project string, filter common.EventFilter) ([]models.Event, error)
-	HandleIncomingEvent(event models.Event, waitForCompletion bool) error
-	ControlSequence(controlSequence models.SequenceControl) error
-	StartTaskSequence(event models.Event) error
+	GetAllTriggeredEvents(filter common.EventFilter) ([]apimodels.KeptnContextExtendedCE, error)
+	GetTriggeredEventsOfProject(project string, filter common.EventFilter) ([]apimodels.KeptnContextExtendedCE, error)
+	HandleIncomingEvent(event apimodels.KeptnContextExtendedCE, waitForCompletion bool) error
+	ControlSequence(controlSequence apimodels.SequenceControl) error
+	StartTaskSequence(event apimodels.KeptnContextExtendedCE) error
 	StartDispatchers(ctx context.Context, mode common.SDMode)
 	StopDispatchers()
 }
@@ -42,7 +41,7 @@ type shipyardController struct {
 	projectMvRepo              db.ProjectMVRepo
 	eventDispatcher            IEventDispatcher
 	sequenceDispatcher         ISequenceDispatcher
-	sequenceTimeoutChan        chan models.SequenceTimeout
+	sequenceTimeoutChan        chan apimodels.SequenceTimeout
 	sequenceTriggeredHooks     []sequencehooks.ISequenceTriggeredHook
 	sequenceStartedHooks       []sequencehooks.ISequenceStartedHook
 	sequenceWaitingHooks       []sequencehooks.ISequenceWaitingHook
@@ -62,7 +61,7 @@ func GetShipyardControllerInstance(
 	ctx context.Context,
 	eventDispatcher IEventDispatcher,
 	sequenceDispatcher ISequenceDispatcher,
-	sequenceTimeoutChannel chan models.SequenceTimeout,
+	sequenceTimeoutChannel chan apimodels.SequenceTimeout,
 	shipyardRetriever IShipyardRetriever,
 ) *shipyardController {
 	if shipyardControllerInstance == nil {
@@ -101,12 +100,12 @@ func (sc *shipyardController) run(ctx context.Context) {
 	}()
 }
 
-func (sc *shipyardController) ControlSequence(controlSequence models.SequenceControl) error {
+func (sc *shipyardController) ControlSequence(controlSequence apimodels.SequenceControl) error {
 	switch controlSequence.State {
-	case models.AbortSequence:
+	case apimodels.AbortSequence:
 		log.Info("Processing ABORT sequence control")
 		return sc.cancelSequence(controlSequence)
-	case models.PauseSequence:
+	case apimodels.PauseSequence:
 		log.Info("Processing PAUSE sequence control")
 		sc.onSequencePaused(models.EventScope{
 			EventData: keptnv2.EventData{
@@ -116,7 +115,7 @@ func (sc *shipyardController) ControlSequence(controlSequence models.SequenceCon
 			KeptnContext: controlSequence.KeptnContext,
 		})
 		return sc.pauseSequence(controlSequence)
-	case models.ResumeSequence:
+	case apimodels.ResumeSequence:
 		log.Info("Processing RESUME sequence control")
 		sc.onSequenceResumed(models.EventScope{
 			EventData: keptnv2.EventData{
@@ -140,7 +139,7 @@ func (sc shipyardController) StopDispatchers() {
 	sc.sequenceDispatcher.Stop()
 }
 
-func (sc *shipyardController) HandleIncomingEvent(event models.Event, waitForCompletion bool) error {
+func (sc *shipyardController) HandleIncomingEvent(event apimodels.KeptnContextExtendedCE, waitForCompletion bool) error {
 	statusType, err := ExtractEventKind(event)
 	if err != nil {
 		return err
@@ -197,7 +196,7 @@ func getCompletionCallback(waitForCompletion bool, done chan error) func(err err
 	}
 }
 
-func (sc *shipyardController) handleSequenceTriggered(event models.Event) error {
+func (sc *shipyardController) handleSequenceTriggered(event apimodels.KeptnContextExtendedCE) error {
 	eventScope, err := models.NewEventScope(event)
 	if err != nil {
 		return fmt.Errorf("unable to create event scope: %w", err)
@@ -245,7 +244,7 @@ func (sc *shipyardController) handleSequenceTriggered(event models.Event) error 
 		ID:       uuid.New().String(),
 		Sequence: *sequence,
 		Status: models.SequenceExecutionStatus{
-			State:         models.SequenceTriggeredState,
+			State:         apimodels.SequenceTriggeredState,
 			PreviousTasks: []models.TaskExecutionResult{},
 		},
 		InputProperties: inputProperties,
@@ -267,7 +266,7 @@ func (sc *shipyardController) handleSequenceTriggered(event models.Event) error 
 	err = sc.sequenceDispatcher.Add(models.QueueItem{
 		Scope:     *eventScope,
 		EventID:   eventScope.WrappedEvent.ID,
-		Timestamp: common.ParseTimestamp(eventScope.WrappedEvent.Time, nil),
+		Timestamp: eventScope.WrappedEvent.Time,
 	})
 	if errors.Is(err, ErrSequenceBlockedWaiting) {
 		sc.onSequenceWaiting(eventScope.WrappedEvent)
@@ -277,7 +276,7 @@ func (sc *shipyardController) handleSequenceTriggered(event models.Event) error 
 	return err
 }
 
-func (sc *shipyardController) appendLatestCommitIDToEvent(eventScope models.EventScope, event *models.Event) {
+func (sc *shipyardController) appendLatestCommitIDToEvent(eventScope models.EventScope, event *apimodels.KeptnContextExtendedCE) {
 	// get the latest git commit ID for the stage if it is not specified in the event
 	if eventScope.WrappedEvent.GitCommitID == "" {
 		latestGitCommitID, err := sc.shipyardRetriever.GetLatestCommitID(eventScope.Project, eventScope.Stage)
@@ -289,7 +288,7 @@ func (sc *shipyardController) appendLatestCommitIDToEvent(eventScope models.Even
 	}
 }
 
-func (sc *shipyardController) handleTaskEvent(event models.Event) error {
+func (sc *shipyardController) handleTaskEvent(event apimodels.KeptnContextExtendedCE) error {
 	eventScope, err := models.NewEventScope(event)
 	if err != nil {
 		return fmt.Errorf("unable to handle 'task.finished' event: %w", err)
@@ -317,13 +316,13 @@ func (sc *shipyardController) handleTaskEvent(event models.Event) error {
 	return sc.onTaskProgress(event, *sequenceExecution, eventScope)
 }
 
-func (sc *shipyardController) onTaskProgress(event models.Event, sequenceExecution models.SequenceExecution, eventScope *models.EventScope) error {
+func (sc *shipyardController) onTaskProgress(event apimodels.KeptnContextExtendedCE, sequenceExecution models.SequenceExecution, eventScope *models.EventScope) error {
 	taskEvent := models.TaskEvent{
 		EventType: *event.Type,
 		Source:    *event.Source,
 		Result:    eventScope.Result,
 		Status:    eventScope.Status,
-		Time:      event.Time,
+		Time:      timeutils.GetKeptnTimeStamp(event.Time),
 	}
 	if keptnv2.IsFinishedEventType(taskEvent.EventType) {
 		eventData := map[string]interface{}{}
@@ -385,7 +384,7 @@ func (sc *shipyardController) wasTaskTriggered(eventScope models.EventScope) (bo
 	return true, nil
 }
 
-func (sc *shipyardController) cancelSequence(cancel models.SequenceControl) error {
+func (sc *shipyardController) cancelSequence(cancel apimodels.SequenceControl) error {
 	sc.onSequenceAborted(models.EventScope{
 		KeptnContext: cancel.KeptnContext,
 		EventData:    keptnv2.EventData{Project: cancel.Project, Stage: cancel.Stage},
@@ -436,7 +435,7 @@ func (sc *shipyardController) cancelSequence(cancel models.SequenceControl) erro
 	return nil
 }
 
-func (sc *shipyardController) pauseSequence(pause models.SequenceControl) error {
+func (sc *shipyardController) pauseSequence(pause apimodels.SequenceControl) error {
 	scope := models.EventScope{
 		KeptnContext: pause.KeptnContext,
 		EventData: keptnv2.EventData{
@@ -470,7 +469,7 @@ func (sc *shipyardController) pauseSequence(pause models.SequenceControl) error 
 	return nil
 }
 
-func (sc *shipyardController) resumeSequence(resume models.SequenceControl) error {
+func (sc *shipyardController) resumeSequence(resume apimodels.SequenceControl) error {
 	scope := models.EventScope{
 		KeptnContext: resume.KeptnContext,
 		EventData: keptnv2.EventData{
@@ -504,16 +503,16 @@ func (sc *shipyardController) resumeSequence(resume models.SequenceControl) erro
 	return nil
 }
 
-func (sc *shipyardController) forceTaskSequenceCompletion(sequenceExecution models.SequenceExecution) error {
+func (sc *shipyardController) forceTaskSequenceCompletion(sequenceExecution apimodels.SequenceExecution) error {
 	scope := sequenceExecution.Scope
 
 	scope.Result = keptnv2.ResultPass
 	scope.Status = keptnv2.StatusAborted
 
-	return sc.completeTaskSequence(scope, sequenceExecution, models.SequenceFinished)
+	return sc.completeTaskSequence(*scope, sequenceExecution, apimodels.SequenceFinished)
 }
 
-func (sc *shipyardController) timeoutSequence(timeout models.SequenceTimeout) error {
+func (sc *shipyardController) timeoutSequence(timeout apimodels.SequenceTimeout) error {
 	log.Infof("sequence %s has been timed out", timeout.KeptnContext)
 	eventScope, err := models.NewEventScope(timeout.LastEvent)
 	if err != nil {
@@ -569,7 +568,7 @@ func (sc *shipyardController) triggerSequenceFailed(eventScope models.EventScope
 	}, taskSequenceName, event.ID)
 }
 
-func (sc *shipyardController) StartTaskSequence(event models.Event) error {
+func (sc *shipyardController) StartTaskSequence(event apimodels.KeptnContextExtendedCE) error {
 	eventScope, err := models.NewEventScope(event)
 	if err != nil {
 		return err
@@ -586,7 +585,7 @@ func (sc *shipyardController) StartTaskSequence(event models.Event) error {
 		models.SequenceExecutionFilter{
 			Scope:  *eventScope,
 			Name:   taskSequenceName,
-			Status: []string{models.SequenceTriggeredState},
+			Status: []string{apimodels.SequenceTriggeredState},
 		},
 	)
 	if err != nil {
@@ -598,7 +597,7 @@ func (sc *shipyardController) StartTaskSequence(event models.Event) error {
 		return sc.triggerSequenceFailed(*eventScope, msg, taskSequenceName)
 	}
 	sequenceExecution := sequenceExecutions[0]
-	sequenceExecution.Status.State = models.SequenceStartedState
+	sequenceExecution.Status.State = apimodels.SequenceStartedState
 	updatedSequenceExecution, err := sc.sequenceExecutionRepo.UpdateStatus(sequenceExecution)
 	if err != nil {
 		msg := fmt.Sprintf("could not update sequence execution state %s: %s", taskSequenceName, err.Error())
@@ -649,14 +648,14 @@ func (sc *shipyardController) getFinishedEventData(eventScope models.EventScope)
 	return finishedEventsData, nil
 }
 
-func (sc *shipyardController) GetAllTriggeredEvents(filter common.EventFilter) ([]models.Event, error) {
+func (sc *shipyardController) GetAllTriggeredEvents(filter common.EventFilter) ([]apimodels.KeptnContextExtendedCE, error) {
 	projects, err := sc.projectMvRepo.GetProjects()
 
 	if err != nil {
 		return nil, err
 	}
 
-	allEvents := []models.Event{}
+	allEvents := []apimodels.KeptnContextExtendedCE{}
 	for _, project := range projects {
 		events, err := sc.eventRepo.GetEvents(project.ProjectName, filter, common.TriggeredEvent)
 		if err == nil {
@@ -666,7 +665,7 @@ func (sc *shipyardController) GetAllTriggeredEvents(filter common.EventFilter) (
 	return allEvents, nil
 }
 
-func (sc *shipyardController) GetTriggeredEventsOfProject(projectName string, filter common.EventFilter) ([]models.Event, error) {
+func (sc *shipyardController) GetTriggeredEventsOfProject(projectName string, filter common.EventFilter) ([]apimodels.KeptnContextExtendedCE, error) {
 	project, err := sc.projectMvRepo.GetProject(projectName)
 	if err != nil {
 		return nil, err
@@ -677,7 +676,7 @@ func (sc *shipyardController) GetTriggeredEventsOfProject(projectName string, fi
 	if err != nil && err != db.ErrNoEventFound {
 		return nil, err
 	} else if err != nil && errors.Is(err, db.ErrNoEventFound) {
-		return []models.Event{}, nil
+		return []apimodels.KeptnContextExtendedCE{}, nil
 	}
 	return events, nil
 }
@@ -692,7 +691,7 @@ func (sc *shipyardController) proceedTaskSequence(eventScope models.EventScope, 
 	task := sequenceExecution.GetNextTaskOfSequence()
 	if task == nil {
 		// task sequence completed -> send .finished event and check if a new task sequence should be triggered by the completion
-		err = sc.completeTaskSequence(eventScope, sequenceExecution, models.SequenceFinished)
+		err = sc.completeTaskSequence(eventScope, sequenceExecution, apimodels.SequenceFinished)
 		if err != nil {
 			log.Errorf("Could not complete task sequence %s.%s with KeptnContext %s: %s", eventScope.Stage, sequenceExecution.Sequence.Name, eventScope.KeptnContext, err.Error())
 			return err
@@ -705,7 +704,7 @@ func (sc *shipyardController) proceedTaskSequence(eventScope models.EventScope, 
 
 // this function retrieves the .triggered event for the task sequence and appends its properties to the existing .finished events
 // this ensures that all parameters set in the .triggered event are received by all execution plane services, instead of just the first one
-func (sc *shipyardController) getSequenceTriggeredEvent(sequenceExecution models.SequenceExecution) (*models.Event, error) {
+func (sc *shipyardController) getSequenceTriggeredEvent(sequenceExecution models.SequenceExecution) (*apimodels.KeptnContextExtendedCE, error) {
 	triggeredEvent, err := sc.eventRepo.GetTaskSequenceTriggeredEvent(
 		sequenceExecution.Scope,
 		sequenceExecution.Sequence.Name,
@@ -717,7 +716,7 @@ func (sc *shipyardController) getSequenceTriggeredEvent(sequenceExecution models
 	return triggeredEvent, nil
 }
 
-func (sc *shipyardController) triggerNextTaskSequences(eventScope models.EventScope, inputEvent *models.Event, completedSequence models.SequenceExecution) error {
+func (sc *shipyardController) triggerNextTaskSequences(eventScope models.EventScope, inputEvent *apimodels.KeptnContextExtendedCE, completedSequence models.SequenceExecution) error {
 	shipyard, err := sc.shipyardRetriever.GetCachedShipyard(eventScope.Project)
 	if err != nil {
 		return err
@@ -769,7 +768,7 @@ func (sc *shipyardController) triggerTask(eventScope models.EventScope, sequence
 	event := common.CreateEventWithPayload(eventScope.KeptnContext, "", keptnv2.GetTriggeredEventType(task.Name), eventPayload)
 	event.SetExtension("gitcommitid", sequenceExecution.Scope.GitCommitID)
 
-	storeEvent := &models.Event{}
+	storeEvent := &apimodels.KeptnContextExtendedCE{}
 	if err := keptnv2.Decode(event, storeEvent); err != nil {
 		log.Errorf("could not transform CloudEvent for storage in mongodb: %s", err.Error())
 		return err
@@ -784,7 +783,7 @@ func (sc *shipyardController) triggerTask(eventScope models.EventScope, sequence
 		}
 		log.Infof("queueing %s event with ID %s to be sent at %s", event.Type(), event.ID(), sendTaskTimestamp.String())
 	}
-	storeEvent.Time = timeutils.GetKeptnTimeStamp(sendTaskTimestamp)
+	storeEvent.Time = sendTaskTimestamp
 
 	if err := sc.eventRepo.InsertEvent(eventScope.Project, *storeEvent, common.TriggeredEvent); err != nil {
 		log.Errorf("Could not store event: %s", err.Error())
@@ -801,7 +800,7 @@ func (sc *shipyardController) triggerTask(eventScope models.EventScope, sequence
 
 	// special handling for approval events
 	if task.Name == "approval" {
-		sequenceExecution.Status.State = models.SequenceWaitingForApprovalState
+		sequenceExecution.Status.State = apimodels.SequenceWaitingForApprovalState
 	}
 
 	if err := sc.sequenceExecutionRepo.Upsert(sequenceExecution, nil); err != nil {

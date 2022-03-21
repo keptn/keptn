@@ -15,7 +15,7 @@ var doc = `{
     "schemes": {{ marshal .Schemes }},
     "swagger": "2.0",
     "info": {
-        "description": "{{.Description}}",
+        "description": "{{escape .Description}}",
         "title": "{{.Title}}",
         "contact": {
             "name": "Keptn Team",
@@ -85,7 +85,7 @@ var doc = `{
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "$ref": "#/definitions/models.Events"
+                            "$ref": "#/definitions/models.KeptnContextExtendedCE"
                         }
                     },
                     "400": {
@@ -703,7 +703,7 @@ var doc = `{
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "$ref": "#/definitions/models.Stages"
+                            "$ref": "#/definitions/models.ExpandedStages"
                         }
                     },
                     "404": {
@@ -736,7 +736,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Projects"
+                    "Stage"
                 ],
                 "summary": "Get a stage",
                 "parameters": [
@@ -769,7 +769,7 @@ var doc = `{
                         }
                     },
                     "500": {
-                        "description": "Internal Error)",
+                        "description": "Internal Error",
                         "schema": {
                             "$ref": "#/definitions/models.Error"
                         }
@@ -1393,7 +1393,7 @@ var doc = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.Subscription"
+                                "$ref": "#/definitions/models.EventSubscription"
                             }
                         }
                     },
@@ -1448,7 +1448,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Subscription"
+                            "$ref": "#/definitions/models.EventSubscription"
                         }
                     }
                 ],
@@ -1515,7 +1515,7 @@ var doc = `{
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "$ref": "#/definitions/models.Subscription"
+                            "$ref": "#/definitions/models.EventSubscription"
                         }
                     },
                     "400": {
@@ -1576,7 +1576,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Subscription"
+                            "$ref": "#/definitions/models.EventSubscription"
                         }
                     }
                 ],
@@ -1672,6 +1672,11 @@ var doc = `{
                     "type": "string",
                     "example": "2021-01-02T15:10:00"
                 },
+                "gitcommitid": {
+                    "description": "Evaluation commit ID context",
+                    "type": "string",
+                    "example": "asdf123f"
+                },
                 "labels": {
                     "description": "labels",
                     "type": "object",
@@ -1715,6 +1720,38 @@ var doc = `{
         "models.CreateProjectParams": {
             "type": "object",
             "properties": {
+                "gitPemCertificate": {
+                    "description": "git PEM Certificate",
+                    "type": "string"
+                },
+                "gitPrivateKey": {
+                    "description": "git private key",
+                    "type": "string"
+                },
+                "gitPrivateKeyPass": {
+                    "description": "git private key passphrase",
+                    "type": "string"
+                },
+                "gitProxyInsecure": {
+                    "description": "git proxy insecure",
+                    "type": "boolean"
+                },
+                "gitProxyPassword": {
+                    "description": "git proxy password",
+                    "type": "string"
+                },
+                "gitProxyScheme": {
+                    "description": "git proxy scheme",
+                    "type": "string"
+                },
+                "gitProxyUrl": {
+                    "description": "git proxy URL",
+                    "type": "string"
+                },
+                "gitProxyUser": {
+                    "description": "git proxy user",
+                    "type": "string"
+                },
                 "gitRemoteURL": {
                     "description": "git remote URL",
                     "type": "string"
@@ -1784,56 +1821,19 @@ var doc = `{
                 }
             }
         },
-        "models.Event": {
+        "models.EventContextInfo": {
             "type": "object",
             "properties": {
-                "contenttype": {
-                    "description": "contenttype",
+                "eventId": {
+                    "description": "ID of the event",
                     "type": "string"
                 },
-                "data": {
-                    "description": "data\nRequired: true",
-                    "type": "object"
-                },
-                "extensions": {
-                    "description": "extensions",
-                    "type": "object"
-                },
-                "id": {
-                    "description": "id",
-                    "type": "string"
-                },
-                "shkeptncontext": {
-                    "description": "shkeptncontext",
-                    "type": "string"
-                },
-                "source": {
-                    "description": "source\nRequired: true",
-                    "type": "string"
-                },
-                "specversion": {
-                    "description": "specversion",
+                "keptnContext": {
+                    "description": "Keptn Context ID of the event",
                     "type": "string"
                 },
                 "time": {
-                    "description": "time",
-                    "type": "string"
-                },
-                "triggeredid": {
-                    "description": "triggeredid",
-                    "type": "string"
-                },
-                "type": {
-                    "description": "type\nRequired: true",
-                    "type": "string"
-                }
-            }
-        },
-        "models.EventContext": {
-            "type": "object",
-            "properties": {
-                "keptnContext": {
-                    "description": "keptn context\nRequired: true",
+                    "description": "Time of the event",
                     "type": "string"
                 }
             }
@@ -1875,30 +1875,6 @@ var doc = `{
                 }
             }
         },
-        "models.Events": {
-            "type": "object",
-            "properties": {
-                "events": {
-                    "description": "events",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Event"
-                    }
-                },
-                "nextPageKey": {
-                    "description": "Pointer to next page, base64 encoded",
-                    "type": "string"
-                },
-                "pageSize": {
-                    "description": "Size of returned page",
-                    "type": "number"
-                },
-                "totalCount": {
-                    "description": "Total number of events",
-                    "type": "number"
-                }
-            }
-        },
         "models.ExpandedProject": {
             "type": "object",
             "properties": {
@@ -1916,7 +1892,7 @@ var doc = `{
                 },
                 "lastEventContext": {
                     "description": "last event context",
-                    "$ref": "#/definitions/models.EventContext"
+                    "$ref": "#/definitions/models.EventContextInfo"
                 },
                 "projectName": {
                     "description": "Project name",
@@ -1978,7 +1954,7 @@ var doc = `{
                     "description": "last event types",
                     "type": "object",
                     "additionalProperties": {
-                        "$ref": "#/definitions/models.EventContext"
+                        "$ref": "#/definitions/models.EventContextInfo"
                     }
                 },
                 "openRemediations": {
@@ -2023,7 +1999,7 @@ var doc = `{
             "properties": {
                 "lastEventContext": {
                     "description": "last event context",
-                    "$ref": "#/definitions/models.EventContext"
+                    "$ref": "#/definitions/models.EventContextInfo"
                 },
                 "parentStages": {
                     "description": "Parent Stages",
@@ -2042,6 +2018,30 @@ var doc = `{
                 "stageName": {
                     "description": "Stage name",
                     "type": "string"
+                }
+            }
+        },
+        "models.ExpandedStages": {
+            "type": "object",
+            "properties": {
+                "nextPageKey": {
+                    "description": "Pointer to next page, base64 encoded",
+                    "type": "string"
+                },
+                "pageSize": {
+                    "description": "Size of returned page",
+                    "type": "number"
+                },
+                "stages": {
+                    "description": "stages",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ExpandedStage"
+                    }
+                },
+                "totalCount": {
+                    "description": "Total number of stages",
+                    "type": "number"
                 }
             }
         },
@@ -2093,6 +2093,57 @@ var doc = `{
                 }
             }
         },
+        "models.KeptnContextExtendedCE": {
+            "type": "object",
+            "properties": {
+                "contenttype": {
+                    "description": "contenttype",
+                    "type": "string"
+                },
+                "data": {
+                    "description": "data\nRequired: true"
+                },
+                "extensions": {
+                    "description": "extensions"
+                },
+                "gitcommitid": {
+                    "description": "gitcommitid",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "id",
+                    "type": "string"
+                },
+                "shkeptncontext": {
+                    "description": "shkeptncontext",
+                    "type": "string"
+                },
+                "shkeptnspecversion": {
+                    "description": "shkeptnspecversion",
+                    "type": "string"
+                },
+                "source": {
+                    "description": "source\nRequired: true",
+                    "type": "string"
+                },
+                "specversion": {
+                    "description": "specversion",
+                    "type": "string"
+                },
+                "time": {
+                    "description": "time\nFormat: date-time",
+                    "type": "string"
+                },
+                "triggeredid": {
+                    "description": "triggeredid",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "type\nRequired: true",
+                    "type": "string"
+                }
+            }
+        },
         "models.KubernetesMetaData": {
             "type": "object",
             "properties": {
@@ -2110,6 +2161,9 @@ var doc = `{
         "models.LogEntry": {
             "type": "object",
             "properties": {
+                "gitcommitid": {
+                    "type": "string"
+                },
                 "integrationid": {
                     "type": "string"
                 },
@@ -2306,30 +2360,6 @@ var doc = `{
                 }
             }
         },
-        "models.Stages": {
-            "type": "object",
-            "properties": {
-                "nextPageKey": {
-                    "description": "Pointer to next page, base64 encoded",
-                    "type": "string"
-                },
-                "pageSize": {
-                    "description": "Size of returned page",
-                    "type": "number"
-                },
-                "stages": {
-                    "description": "stages",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.ExpandedStage"
-                    }
-                },
-                "totalCount": {
-                    "description": "Total number of stages",
-                    "type": "number"
-                }
-            }
-        },
         "models.Subscription": {
             "type": "object",
             "properties": {
@@ -2364,6 +2394,38 @@ var doc = `{
         "models.UpdateProjectParams": {
             "type": "object",
             "properties": {
+                "gitPemCertificate": {
+                    "description": "git PEM Certificate",
+                    "type": "string"
+                },
+                "gitPrivateKey": {
+                    "description": "git private key",
+                    "type": "string"
+                },
+                "gitPrivateKeyPass": {
+                    "description": "git private key passphrase",
+                    "type": "string"
+                },
+                "gitProxyInsecure": {
+                    "description": "git proxy insecure",
+                    "type": "boolean"
+                },
+                "gitProxyPassword": {
+                    "description": "git proxy password",
+                    "type": "string"
+                },
+                "gitProxyScheme": {
+                    "description": "git proxy scheme",
+                    "type": "string"
+                },
+                "gitProxyUrl": {
+                    "description": "git proxy URL",
+                    "type": "string"
+                },
+                "gitProxyUser": {
+                    "description": "git proxy user",
+                    "type": "string"
+                },
                 "gitRemoteURL": {
                     "description": "git remote URL",
                     "type": "string"
@@ -2429,6 +2491,13 @@ func (s *s) ReadDoc() string {
 			a, _ := json.Marshal(v)
 			return string(a)
 		},
+		"escape": func(v interface{}) string {
+			// escape tabs
+			str := strings.Replace(v.(string), "\t", "\\t", -1)
+			// replace " with \", and if that results in \\", replace that with \\\"
+			str = strings.Replace(str, "\"", "\\\"", -1)
+			return strings.Replace(str, "\\\\\"", "\\\\\\\"", -1)
+		},
 	}).Parse(doc)
 	if err != nil {
 		return doc
@@ -2443,5 +2512,5 @@ func (s *s) ReadDoc() string {
 }
 
 func init() {
-	swag.Register(swag.Name, &s{})
+	swag.Register("swagger", &s{})
 }

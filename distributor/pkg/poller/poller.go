@@ -3,8 +3,9 @@ package poller
 import (
 	"context"
 	"errors"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/distributor/pkg/config"
@@ -27,7 +28,7 @@ type Poller struct {
 	ceCache              *utils.Cache
 	env                  config.EnvConfig
 	eventMatcher         *utils.EventMatcher
-	currentSubscriptions []keptnmodels.EventSubscription
+	currentSubscriptions []apimodels.EventSubscription
 }
 
 func New(envConfig config.EnvConfig, shipyardControlAPI api.ShipyardControlV1Interface, eventSender EventSender) *Poller {
@@ -63,7 +64,7 @@ func (p *Poller) Start(ctx *utils.ExecutionContext) error {
 	}
 }
 
-func (p *Poller) UpdateSubscriptions(subscriptions []keptnmodels.EventSubscription) {
+func (p *Poller) UpdateSubscriptions(subscriptions []apimodels.EventSubscription) {
 	p.currentSubscriptions = subscriptions
 }
 
@@ -73,7 +74,7 @@ func (p *Poller) doPollEvents() {
 	}
 }
 
-func (p *Poller) pollEventsForSubscription(subscription keptnmodels.EventSubscription) {
+func (p *Poller) pollEventsForSubscription(subscription apimodels.EventSubscription) {
 
 	eventFilter := getEventFilterForSubscription(subscription)
 	events, err := p.shipyardControlAPI.GetOpenTriggeredEvents(eventFilter)
@@ -94,7 +95,7 @@ func (p *Poller) pollEventsForSubscription(subscription keptnmodels.EventSubscri
 
 		logger.Infof("Adding temporary data to event: <subscriptionID=%s>", subscription.ID)
 		// add subscription ID as additional information to the keptn event
-		if err := event.AddTemporaryData("distributor", model.AdditionalSubscriptionData{SubscriptionID: subscription.ID}, keptnmodels.AddTemporaryDataOptions{OverwriteIfExisting: true}); err != nil {
+		if err := event.AddTemporaryData("distributor", model.AdditionalSubscriptionData{SubscriptionID: subscription.ID}, apimodels.AddTemporaryDataOptions{OverwriteIfExisting: true}); err != nil {
 			logger.Errorf("Could not add temporary information about subscriptions to event: %v", err)
 		}
 
@@ -119,7 +120,7 @@ func (p *Poller) pollEventsForSubscription(subscription keptnmodels.EventSubscri
 // If exactly one project, stage or service is specified respectively, they are included in the filter.
 // However, this is only a (very) short term solution for the RBAC use case.
 // In the long term, we should just pass the subscription ID in the request, since the backend knows the required filters associated with the subscription.
-func getEventFilterForSubscription(subscription keptnmodels.EventSubscription) api.EventFilter {
+func getEventFilterForSubscription(subscription apimodels.EventSubscription) api.EventFilter {
 	eventFilter := api.EventFilter{
 		EventType: subscription.Event,
 	}
@@ -137,7 +138,7 @@ func getEventFilterForSubscription(subscription keptnmodels.EventSubscription) a
 	return eventFilter
 }
 
-func (p *Poller) sendEvent(e keptnmodels.KeptnContextExtendedCE, subscription keptnmodels.EventSubscription) error {
+func (p *Poller) sendEvent(e apimodels.KeptnContextExtendedCE, subscription apimodels.EventSubscription) error {
 	event := v0_2_0.ToCloudEvent(e)
 	matcher := utils.NewEventMatcherFromSubscription(subscription)
 	if !matcher.Matches(event) {

@@ -3,7 +3,7 @@ package handler_test
 import (
 	"context"
 	"github.com/benbjohnson/clock"
-	"github.com/keptn/go-utils/pkg/common/timeutils"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
@@ -18,9 +18,9 @@ import (
 func TestSequenceWatcher(t *testing.T) {
 	theClock := clock.NewMock()
 
-	nowTimeStamp := timeutils.GetKeptnTimeStamp(theClock.Now().UTC())
+	nowTimeStamp := theClock.Now().UTC()
 
-	openTriggeredEvents := []models.Event{
+	openTriggeredEvents := []apimodels.KeptnContextExtendedCE{
 		{
 			Data: keptnv2.EventData{
 				Project: "my-project",
@@ -45,7 +45,7 @@ func TestSequenceWatcher(t *testing.T) {
 		},
 	}
 
-	startedEvents := []models.Event{
+	startedEvents := []apimodels.KeptnContextExtendedCE{
 		{
 			Data: keptnv2.EventData{
 				Project: "my-project",
@@ -62,7 +62,7 @@ func TestSequenceWatcher(t *testing.T) {
 
 	eventRepoMock := &db_mock.EventRepoMock{
 		DeleteEventFunc: func(project string, eventID string, status common.EventStatus) error {
-			newOpenTriggeredEvents := []models.Event{}
+			newOpenTriggeredEvents := []apimodels.KeptnContextExtendedCE{}
 
 			for _, event := range openTriggeredEvents {
 				if event.ID != eventID {
@@ -72,11 +72,11 @@ func TestSequenceWatcher(t *testing.T) {
 			openTriggeredEvents = newOpenTriggeredEvents
 			return nil
 		},
-		GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
+		GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]apimodels.KeptnContextExtendedCE, error) {
 			if len(status) > 0 && status[0] == common.TriggeredEvent {
 				return openTriggeredEvents, nil
 			}
-			result := []models.Event{}
+			result := []apimodels.KeptnContextExtendedCE{}
 
 			for _, event := range startedEvents {
 				if filter.TriggeredID != nil && event.Triggeredid == *filter.TriggeredID {
@@ -100,8 +100,8 @@ func TestSequenceWatcher(t *testing.T) {
 	}
 
 	projectRepoMock := &db_mock.ProjectRepoMock{
-		GetProjectsFunc: func() ([]*models.ExpandedProject, error) {
-			return []*models.ExpandedProject{
+		GetProjectsFunc: func() ([]*apimodels.ExpandedProject, error) {
+			return []*apimodels.ExpandedProject{
 				{
 					ProjectName: "my-project",
 				},
@@ -109,7 +109,7 @@ func TestSequenceWatcher(t *testing.T) {
 		},
 	}
 
-	cancelSequenceChannel := make(chan models.SequenceTimeout)
+	cancelSequenceChannel := make(chan apimodels.SequenceTimeout)
 
 	watcher := handler.NewSequenceWatcher(
 		cancelSequenceChannel,

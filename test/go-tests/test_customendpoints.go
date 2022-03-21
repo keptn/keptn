@@ -3,18 +3,17 @@ package go_tests
 import (
 	"context"
 	"fmt"
-	"net/http"
-	"os"
-	"strings"
-	"testing"
-	"time"
-
 	"github.com/imroc/req"
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	keptnkubeutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"net/http"
+	"os"
+	"strings"
+	"testing"
+	"time"
 )
 
 const customEndpointShipyard = `apiVersion: "spec.keptn.sh/0.2.0"

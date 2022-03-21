@@ -1,8 +1,9 @@
 package handler
 
 import (
+	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/handler/sequencehooks"
-	"github.com/keptn/keptn/shipyard-controller/models"
+	scmodels "github.com/keptn/keptn/shipyard-controller/models"
 )
 
 func (sc *shipyardController) AddSequenceTriggeredHook(hook sequencehooks.ISequenceTriggeredHook) {
@@ -53,73 +54,73 @@ func (sc *shipyardController) AddSequenceAbortedHook(hook sequencehooks.ISequenc
 	sc.sequenceAbortedHooks = append(sc.sequenceAbortedHooks, hook)
 }
 
-func (sc *shipyardController) onSequenceTriggered(event models.Event) {
+func (sc *shipyardController) onSequenceTriggered(event models.KeptnContextExtendedCE) {
 	for _, hook := range sc.sequenceTriggeredHooks {
 		hook.OnSequenceTriggered(event)
 	}
 }
 
-func (sc *shipyardController) onSequenceStarted(event models.Event) {
+func (sc *shipyardController) onSequenceStarted(event models.KeptnContextExtendedCE) {
 	for _, hook := range sc.sequenceStartedHooks {
 		hook.OnSequenceStarted(event)
 	}
 }
 
-func (sc *shipyardController) onSequenceWaiting(event models.Event) {
+func (sc *shipyardController) onSequenceWaiting(event models.KeptnContextExtendedCE) {
 	for _, hook := range sc.sequenceWaitingHooks {
 		hook.OnSequenceWaiting(event)
 	}
 }
 
-func (sc *shipyardController) onSequenceTaskStarted(event models.Event) {
+func (sc *shipyardController) onSequenceTaskStarted(event models.KeptnContextExtendedCE) {
 	for _, hook := range sc.sequenceTaskStartedHooks {
 		hook.OnSequenceTaskStarted(event)
 	}
 }
 
-func (sc *shipyardController) onSequenceTaskTriggered(event models.Event) {
+func (sc *shipyardController) onSequenceTaskTriggered(event models.KeptnContextExtendedCE) {
 	for _, hook := range sc.sequenceTaskTriggeredHooks {
 		hook.OnSequenceTaskTriggered(event)
 	}
 }
 
-func (sc *shipyardController) onSequenceTaskFinished(event models.Event) {
+func (sc *shipyardController) onSequenceTaskFinished(event models.KeptnContextExtendedCE) {
 	for _, hook := range sc.sequenceTaskFinishedHooks {
 		hook.OnSequenceTaskFinished(event)
 	}
 }
 
-func (sc *shipyardController) onSubSequenceFinished(event models.Event) {
+func (sc *shipyardController) onSubSequenceFinished(event models.KeptnContextExtendedCE) {
 	for _, hook := range sc.subSequenceFinishedHooks {
 		hook.OnSubSequenceFinished(event)
 	}
 }
 
-func (sc *shipyardController) onSequenceFinished(event models.Event) {
+func (sc *shipyardController) onSequenceFinished(event models.KeptnContextExtendedCE) {
 	for _, hook := range sc.sequenceFinishedHooks {
 		hook.OnSequenceFinished(event)
 	}
 }
 
-func (sc *shipyardController) onSequenceAborted(eventScope models.EventScope) {
+func (sc *shipyardController) onSequenceAborted(eventScope scmodels.EventScope) {
 	for _, hook := range sc.sequenceAbortedHooks {
 		hook.OnSequenceAborted(eventScope)
 	}
 }
 
-func (sc *shipyardController) onSequenceTimeout(event models.Event) {
+func (sc *shipyardController) onSequenceTimeout(event models.KeptnContextExtendedCE) {
 	for _, hook := range sc.sequenceTimoutHooks {
 		hook.OnSequenceTimeout(event)
 	}
 }
 
-func (sc *shipyardController) onSequencePaused(pause models.EventScope) {
+func (sc *shipyardController) onSequencePaused(pause scmodels.EventScope) {
 	for _, hook := range sc.sequencePausedHooks {
 		hook.OnSequencePaused(pause)
 	}
 }
 
-func (sc *shipyardController) onSequenceResumed(resume models.EventScope) {
+func (sc *shipyardController) onSequenceResumed(resume scmodels.EventScope) {
 	for _, hook := range sc.sequenceResumedHooks {
 		hook.OnSequenceResumed(resume)
 	}

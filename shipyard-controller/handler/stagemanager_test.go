@@ -2,8 +2,8 @@ package handler
 
 import (
 	"errors"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
-	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -13,7 +13,7 @@ func TestGetAllStages_GettingProjectFromDBFails(t *testing.T) {
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	instance := NewStageManager(projectMVRepo)
 
-	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
 		return nil, errors.New("whoops")
 	}
 
@@ -26,7 +26,7 @@ func TestGetAllStages_ProjectNotFound(t *testing.T) {
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	instance := NewStageManager(projectMVRepo)
 
-	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
 		return nil, nil
 	}
 
@@ -40,17 +40,17 @@ func TestGetAllStages(t *testing.T) {
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	instance := NewStageManager(projectMVRepo)
 
-	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
 
-		s1 := &models.ExpandedStage{
+		s1 := &apimodels.ExpandedStage{
 			StageName: "stage1",
 		}
-		s2 := &models.ExpandedStage{
+		s2 := &apimodels.ExpandedStage{
 			StageName: "stage2",
 		}
-		p := &models.ExpandedProject{
+		p := &apimodels.ExpandedProject{
 			ProjectName: "my-project",
-			Stages:      []*models.ExpandedStage{s1, s2},
+			Stages:      []*apimodels.ExpandedStage{s1, s2},
 		}
 		return p, nil
 	}
@@ -65,7 +65,7 @@ func TestGetStage_GettingProjectFromDBFails(t *testing.T) {
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	instance := NewStageManager(projectMVRepo)
 
-	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
 		return nil, errors.New("whoops")
 	}
 
@@ -78,7 +78,7 @@ func TestGetStage_ProjectNotFound(t *testing.T) {
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	instance := NewStageManager(projectMVRepo)
 
-	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
 		return nil, nil
 	}
 
@@ -92,17 +92,17 @@ func TestGetStage_StageNotFound(t *testing.T) {
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	instance := NewStageManager(projectMVRepo)
 
-	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
 
-		s1 := &models.ExpandedStage{
+		s1 := &apimodels.ExpandedStage{
 			StageName: "stage1",
 		}
-		s2 := &models.ExpandedStage{
+		s2 := &apimodels.ExpandedStage{
 			StageName: "stage2",
 		}
-		p := &models.ExpandedProject{
+		p := &apimodels.ExpandedProject{
 			ProjectName: "my-project",
-			Stages:      []*models.ExpandedStage{s1, s2},
+			Stages:      []*apimodels.ExpandedStage{s1, s2},
 		}
 		return p, nil
 	}

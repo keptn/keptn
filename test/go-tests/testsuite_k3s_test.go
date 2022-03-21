@@ -46,6 +46,7 @@ func Test_K3S(t *testing.T) {
 
 	// Platform-specific Tests
 	t.Run("Test_QualityGates", Test_QualityGates)
+	t.Run("Test_QualityGates_SLIWrongFinishedPayloadSend", Test_QualityGates_SLIWrongFinishedPayloadSend)
 	t.Run("Test_UniformRegistration_TestAPI", Test_UniformRegistration_TestAPI)
 	t.Run("Test_UniformRegistration_RegistrationOfKeptnIntegration", Test_UniformRegistration_RegistrationOfKeptnIntegration)
 	t.Run("Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods", Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods)

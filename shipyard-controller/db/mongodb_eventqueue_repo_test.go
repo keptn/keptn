@@ -2,6 +2,7 @@ package db_test
 
 import (
 	"github.com/benbjohnson/clock"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -89,7 +90,7 @@ func TestMongoDBEventQueueRepo_InsertAndRetrieveSequenceState(t *testing.T) {
 	repo := db.NewMongoDBEventQueueRepo(db.GetMongoDBConnectionInstance())
 
 	myState := models.EventQueueSequenceState{
-		State: models.SequencePaused,
+		State: apimodels.SequencePaused,
 		Scope: models.EventScope{
 			KeptnContext: "my-context",
 		},
@@ -99,11 +100,11 @@ func TestMongoDBEventQueueRepo_InsertAndRetrieveSequenceState(t *testing.T) {
 		Scope: models.EventScope{
 			EventData: keptnv2.EventData{
 				Stage:  "my-stage",
-				Status: models.SequencePaused,
+				Status: apimodels.SequencePaused,
 			},
 			KeptnContext: "my-context",
 		},
-		State: models.SequenceStartedState,
+		State: apimodels.SequenceStartedState,
 	}
 
 	err := repo.CreateOrUpdateEventQueueState(myState)
@@ -140,7 +141,7 @@ func TestMongoDBEventQueueRepo_InsertAndRetrieveSequenceState(t *testing.T) {
 	require.True(t, paused)
 
 	// test updating a state
-	myState.State = models.SequenceFinished
+	myState.State = apimodels.SequenceFinished
 	err = repo.CreateOrUpdateEventQueueState(myState)
 
 	require.Nil(t, err)

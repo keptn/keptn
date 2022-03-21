@@ -4,6 +4,7 @@
 package db_mock
 
 import (
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"sync"
@@ -62,25 +63,25 @@ type EventRepoMock struct {
 	DeleteEventCollectionsFunc func(project string) error
 
 	// GetEventsFunc mocks the GetEvents method.
-	GetEventsFunc func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error)
+	GetEventsFunc func(project string, filter common.EventFilter, status ...common.EventStatus) ([]apimodels.KeptnContextExtendedCE, error)
 
 	// GetEventsWithRetryFunc mocks the GetEventsWithRetry method.
-	GetEventsWithRetryFunc func(project string, filter common.EventFilter, status common.EventStatus, nrRetries int) ([]models.Event, error)
+	GetEventsWithRetryFunc func(project string, filter common.EventFilter, status common.EventStatus, nrRetries int) ([]apimodels.KeptnContextExtendedCE, error)
 
 	// GetFinishedEventsFunc mocks the GetFinishedEvents method.
-	GetFinishedEventsFunc func(eventScope models.EventScope) ([]models.Event, error)
+	GetFinishedEventsFunc func(eventScope models.EventScope) ([]apimodels.KeptnContextExtendedCE, error)
 
 	// GetRootEventsFunc mocks the GetRootEvents method.
 	GetRootEventsFunc func(params models.GetRootEventParams) (*models.GetEventsResult, error)
 
 	// GetStartedEventsForTriggeredIDFunc mocks the GetStartedEventsForTriggeredID method.
-	GetStartedEventsForTriggeredIDFunc func(eventScope models.EventScope) ([]models.Event, error)
+	GetStartedEventsForTriggeredIDFunc func(eventScope models.EventScope) ([]apimodels.KeptnContextExtendedCE, error)
 
 	// GetTaskSequenceTriggeredEventFunc mocks the GetTaskSequenceTriggeredEvent method.
-	GetTaskSequenceTriggeredEventFunc func(eventScope models.EventScope, taskSequenceName string) (*models.Event, error)
+	GetTaskSequenceTriggeredEventFunc func(eventScope models.EventScope, taskSequenceName string) (*apimodels.KeptnContextExtendedCE, error)
 
 	// InsertEventFunc mocks the InsertEvent method.
-	InsertEventFunc func(project string, event models.Event, status common.EventStatus) error
+	InsertEventFunc func(project string, event apimodels.KeptnContextExtendedCE, status common.EventStatus) error
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -149,8 +150,8 @@ type EventRepoMock struct {
 		InsertEvent []struct {
 			// Project is the project argument value.
 			Project string
-			// Event is the event argument value.
-			Event models.Event
+			//models.KeptnContextExtendedCE is the event argument value.
+			Event apimodels.KeptnContextExtendedCE
 			// Status is the status argument value.
 			Status common.EventStatus
 		}
@@ -269,7 +270,7 @@ func (mock *EventRepoMock) DeleteEventCollectionsCalls() []struct {
 }
 
 // GetEvents calls GetEventsFunc.
-func (mock *EventRepoMock) GetEvents(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
+func (mock *EventRepoMock) GetEvents(project string, filter common.EventFilter, status ...common.EventStatus) ([]apimodels.KeptnContextExtendedCE, error) {
 	if mock.GetEventsFunc == nil {
 		panic("EventRepoMock.GetEventsFunc: method is nil but EventRepo.GetEvents was just called")
 	}
@@ -308,7 +309,7 @@ func (mock *EventRepoMock) GetEventsCalls() []struct {
 }
 
 // GetEventsWithRetry calls GetEventsWithRetryFunc.
-func (mock *EventRepoMock) GetEventsWithRetry(project string, filter common.EventFilter, status common.EventStatus, nrRetries int) ([]models.Event, error) {
+func (mock *EventRepoMock) GetEventsWithRetry(project string, filter common.EventFilter, status common.EventStatus, nrRetries int) ([]apimodels.KeptnContextExtendedCE, error) {
 	if mock.GetEventsWithRetryFunc == nil {
 		panic("EventRepoMock.GetEventsWithRetryFunc: method is nil but EventRepo.GetEventsWithRetry was just called")
 	}
@@ -351,7 +352,7 @@ func (mock *EventRepoMock) GetEventsWithRetryCalls() []struct {
 }
 
 // GetFinishedEvents calls GetFinishedEventsFunc.
-func (mock *EventRepoMock) GetFinishedEvents(eventScope models.EventScope) ([]models.Event, error) {
+func (mock *EventRepoMock) GetFinishedEvents(eventScope models.EventScope) ([]apimodels.KeptnContextExtendedCE, error) {
 	if mock.GetFinishedEventsFunc == nil {
 		panic("EventRepoMock.GetFinishedEventsFunc: method is nil but EventRepo.GetFinishedEvents was just called")
 	}
@@ -413,7 +414,7 @@ func (mock *EventRepoMock) GetRootEventsCalls() []struct {
 }
 
 // GetStartedEventsForTriggeredID calls GetStartedEventsForTriggeredIDFunc.
-func (mock *EventRepoMock) GetStartedEventsForTriggeredID(eventScope models.EventScope) ([]models.Event, error) {
+func (mock *EventRepoMock) GetStartedEventsForTriggeredID(eventScope models.EventScope) ([]apimodels.KeptnContextExtendedCE, error) {
 	if mock.GetStartedEventsForTriggeredIDFunc == nil {
 		panic("EventRepoMock.GetStartedEventsForTriggeredIDFunc: method is nil but EventRepo.GetStartedEventsForTriggeredID was just called")
 	}
@@ -444,7 +445,7 @@ func (mock *EventRepoMock) GetStartedEventsForTriggeredIDCalls() []struct {
 }
 
 // GetTaskSequenceTriggeredEvent calls GetTaskSequenceTriggeredEventFunc.
-func (mock *EventRepoMock) GetTaskSequenceTriggeredEvent(eventScope models.EventScope, taskSequenceName string) (*models.Event, error) {
+func (mock *EventRepoMock) GetTaskSequenceTriggeredEvent(eventScope models.EventScope, taskSequenceName string) (*apimodels.KeptnContextExtendedCE, error) {
 	if mock.GetTaskSequenceTriggeredEventFunc == nil {
 		panic("EventRepoMock.GetTaskSequenceTriggeredEventFunc: method is nil but EventRepo.GetTaskSequenceTriggeredEvent was just called")
 	}
@@ -479,13 +480,13 @@ func (mock *EventRepoMock) GetTaskSequenceTriggeredEventCalls() []struct {
 }
 
 // InsertEvent calls InsertEventFunc.
-func (mock *EventRepoMock) InsertEvent(project string, event models.Event, status common.EventStatus) error {
+func (mock *EventRepoMock) InsertEvent(project string, event apimodels.KeptnContextExtendedCE, status common.EventStatus) error {
 	if mock.InsertEventFunc == nil {
 		panic("EventRepoMock.InsertEventFunc: method is nil but EventRepo.InsertEvent was just called")
 	}
 	callInfo := struct {
 		Project string
-		Event   models.Event
+		Event   apimodels.KeptnContextExtendedCE
 		Status  common.EventStatus
 	}{
 		Project: project,
@@ -503,12 +504,12 @@ func (mock *EventRepoMock) InsertEvent(project string, event models.Event, statu
 //     len(mockedEventRepo.InsertEventCalls())
 func (mock *EventRepoMock) InsertEventCalls() []struct {
 	Project string
-	Event   models.Event
+	Event   apimodels.KeptnContextExtendedCE
 	Status  common.EventStatus
 } {
 	var calls []struct {
 		Project string
-		Event   models.Event
+		Event   apimodels.KeptnContextExtendedCE
 		Status  common.EventStatus
 	}
 	mock.lockInsertEvent.RLock()

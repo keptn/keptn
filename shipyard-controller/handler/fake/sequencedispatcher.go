@@ -5,6 +5,7 @@ package fake
 
 import (
 	"context"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"sync"
@@ -19,10 +20,10 @@ import (
 // 			AddFunc: func(queueItem models.QueueItem) error {
 // 				panic("mock out the Add method")
 // 			},
-// 			RemoveFunc: func(eventScope models.EventScope) error {
+// 			RemoveFunc: func(eventScope apimodels.KeptnContextExtendedCEScope) error {
 // 				panic("mock out the Remove method")
 // 			},
-// 			RunFunc: func(ctx context.Context, startSequenceFunc func(event models.Event) error)  {
+// 			RunFunc: func(ctx context.Context, startSequenceFunc func(event apimodels.KeptnContextExtendedCE) error)  {
 // 				panic("mock out the Run method")
 // 			},
 // 			StopFunc: func()  {
@@ -42,7 +43,7 @@ type ISequenceDispatcherMock struct {
 	RemoveFunc func(eventScope models.EventScope) error
 
 	// RunFunc mocks the Run method.
-	RunFunc func(ctx context.Context, mode common.SDMode, startSequenceFunc func(event models.Event) error)
+	RunFunc func(ctx context.Context, mode common.SDMode, startSequenceFunc func(event apimodels.KeptnContextExtendedCE) error)
 
 	// StopFunc mocks the Stop method.
 	StopFunc func()
@@ -64,7 +65,7 @@ type ISequenceDispatcherMock struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
 			// StartSequenceFunc is the startSequenceFunc argument value.
-			StartSequenceFunc func(event models.Event) error
+			StartSequenceFunc func(event apimodels.KeptnContextExtendedCE) error
 		}
 		// Stop holds details about calls to the Stop method.
 		Stop []struct {
@@ -139,13 +140,13 @@ func (mock *ISequenceDispatcherMock) RemoveCalls() []struct {
 }
 
 // Run calls RunFunc.
-func (mock *ISequenceDispatcherMock) Run(ctx context.Context, mode common.SDMode, startSequenceFunc func(event models.Event) error) {
+func (mock *ISequenceDispatcherMock) Run(ctx context.Context, mode common.SDMode, startSequenceFunc func(event apimodels.KeptnContextExtendedCE) error) {
 	if mock.RunFunc == nil {
 		panic("ISequenceDispatcherMock.RunFunc: method is nil but ISequenceDispatcher.Run was just called")
 	}
 	callInfo := struct {
 		Ctx               context.Context
-		StartSequenceFunc func(event models.Event) error
+		StartSequenceFunc func(event apimodels.KeptnContextExtendedCE) error
 	}{
 		Ctx:               ctx,
 		StartSequenceFunc: startSequenceFunc,
@@ -161,11 +162,11 @@ func (mock *ISequenceDispatcherMock) Run(ctx context.Context, mode common.SDMode
 //     len(mockedISequenceDispatcher.RunCalls())
 func (mock *ISequenceDispatcherMock) RunCalls() []struct {
 	Ctx               context.Context
-	StartSequenceFunc func(event models.Event) error
+	StartSequenceFunc func(event apimodels.KeptnContextExtendedCE) error
 } {
 	var calls []struct {
 		Ctx               context.Context
-		StartSequenceFunc func(event models.Event) error
+		StartSequenceFunc func(event apimodels.KeptnContextExtendedCE) error
 	}
 	mock.lockRun.RLock()
 	calls = mock.calls.Run

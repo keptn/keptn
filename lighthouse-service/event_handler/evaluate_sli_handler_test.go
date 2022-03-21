@@ -22,7 +22,7 @@ import (
 	"time"
 
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	keptnmodelsv2 "github.com/keptn/go-utils/pkg/lib"
+	apimodelsv2 "github.com/keptn/go-utils/pkg/lib"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
@@ -340,7 +340,7 @@ type evaluateComparisonTestObject struct {
 	InSLIResult       *keptnv2.SLIResult
 	InCriteriaObject  *criteriaObject
 	InPreviousResults []*keptnv2.SLIEvaluationResult
-	InComparison      *keptnmodelsv2.SLOComparison
+	InComparison      *apimodelsv2.SLOComparison
 	InTarget          *keptnv2.SLITarget
 	ExpectedResult    bool
 	ExpectedError     error
@@ -391,7 +391,7 @@ func TestEvaluateComparison(t *testing.T) {
 					Status:         "pass",
 				},
 			},
-			InComparison: &keptnmodelsv2.SLOComparison{
+			InComparison: &apimodelsv2.SLOComparison{
 				CompareWith:               "several_results",
 				IncludeResultWithScore:    "pass",
 				NumberOfComparisonResults: 2,
@@ -446,7 +446,7 @@ func TestEvaluateComparison(t *testing.T) {
 					Status:         "pass",
 				},
 			},
-			InComparison: &keptnmodelsv2.SLOComparison{
+			InComparison: &apimodelsv2.SLOComparison{
 				CompareWith:               "several_results",
 				IncludeResultWithScore:    "pass",
 				NumberOfComparisonResults: 2,
@@ -501,7 +501,7 @@ func TestEvaluateComparison(t *testing.T) {
 					Status:         "pass",
 				},
 			},
-			InComparison: &keptnmodelsv2.SLOComparison{
+			InComparison: &apimodelsv2.SLOComparison{
 				CompareWith:               "several_results",
 				IncludeResultWithScore:    "pass",
 				NumberOfComparisonResults: 2,
@@ -556,7 +556,7 @@ func TestEvaluateComparison(t *testing.T) {
 					Status:         "pass",
 				},
 			},
-			InComparison: &keptnmodelsv2.SLOComparison{
+			InComparison: &apimodelsv2.SLOComparison{
 				CompareWith:               "several_results",
 				IncludeResultWithScore:    "pass",
 				NumberOfComparisonResults: 2,
@@ -611,7 +611,7 @@ func TestEvaluateComparison(t *testing.T) {
 					Status:         "pass",
 				},
 			},
-			InComparison: &keptnmodelsv2.SLOComparison{
+			InComparison: &apimodelsv2.SLOComparison{
 				CompareWith:               "several_results",
 				IncludeResultWithScore:    "pass",
 				NumberOfComparisonResults: 2,
@@ -666,7 +666,7 @@ func TestEvaluateComparison(t *testing.T) {
 					Status:         "pass",
 				},
 			},
-			InComparison: &keptnmodelsv2.SLOComparison{
+			InComparison: &apimodelsv2.SLOComparison{
 				CompareWith:               "several_results",
 				IncludeResultWithScore:    "pass",
 				NumberOfComparisonResults: 2,
@@ -721,7 +721,7 @@ func TestEvaluateComparison(t *testing.T) {
 					Status:         "pass",
 				},
 			},
-			InComparison: &keptnmodelsv2.SLOComparison{
+			InComparison: &apimodelsv2.SLOComparison{
 				CompareWith:               "several_results",
 				IncludeResultWithScore:    "pass",
 				NumberOfComparisonResults: 2,
@@ -749,7 +749,7 @@ type evaluateSingleCriteriaTestObject struct {
 	InSLIResult       *keptnv2.SLIResult
 	InCriteria        string
 	InPreviousResults []*keptnv2.SLIEvaluationResult
-	InComparison      *keptnmodelsv2.SLOComparison
+	InComparison      *apimodelsv2.SLOComparison
 	InTarget          *keptnv2.SLITarget
 	ExpectedResult    bool
 	ExpectedError     error
@@ -794,7 +794,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 					Status:         "pass",
 				},
 			},
-			InComparison: &keptnmodelsv2.SLOComparison{
+			InComparison: &apimodelsv2.SLOComparison{
 				CompareWith:               "several_results",
 				IncludeResultWithScore:    "pass",
 				NumberOfComparisonResults: 2,
@@ -843,7 +843,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 					Status:         "pass",
 				},
 			},
-			InComparison: &keptnmodelsv2.SLOComparison{
+			InComparison: &apimodelsv2.SLOComparison{
 				CompareWith:               "several_results",
 				IncludeResultWithScore:    "pass",
 				NumberOfComparisonResults: 2,
@@ -892,7 +892,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 					Status:         "pass",
 				},
 			},
-			InComparison: &keptnmodelsv2.SLOComparison{
+			InComparison: &apimodelsv2.SLOComparison{
 				CompareWith:               "several_results",
 				IncludeResultWithScore:    "pass",
 				NumberOfComparisonResults: 2,
@@ -941,7 +941,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 					Status:         "pass",
 				},
 			},
-			InComparison: &keptnmodelsv2.SLOComparison{
+			InComparison: &apimodelsv2.SLOComparison{
 				CompareWith:               "several_results",
 				IncludeResultWithScore:    "pass",
 				NumberOfComparisonResults: 2,
@@ -990,7 +990,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 					Status:         "pass",
 				},
 			},
-			InComparison: &keptnmodelsv2.SLOComparison{
+			InComparison: &apimodelsv2.SLOComparison{
 				CompareWith:               "several_results",
 				IncludeResultWithScore:    "pass",
 				NumberOfComparisonResults: 2,
@@ -1039,7 +1039,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 					Status:         "pass",
 				},
 			},
-			InComparison: &keptnmodelsv2.SLOComparison{
+			InComparison: &apimodelsv2.SLOComparison{
 				CompareWith:               "several_results",
 				IncludeResultWithScore:    "pass",
 				NumberOfComparisonResults: 2,
@@ -1088,7 +1088,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 					Status:         "pass",
 				},
 			},
-			InComparison: &keptnmodelsv2.SLOComparison{
+			InComparison: &apimodelsv2.SLOComparison{
 				CompareWith:               "several_results",
 				IncludeResultWithScore:    "pass",
 				NumberOfComparisonResults: 2,
@@ -1129,9 +1129,9 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 type evaluateCriteriaSetTestObject struct {
 	Name              string
 	InSLIResult       *keptnv2.SLIResult
-	InCriteriaSet     *keptnmodelsv2.SLOCriteria
+	InCriteriaSet     *apimodelsv2.SLOCriteria
 	InPreviousResults []*keptnv2.SLIEvaluationResult
-	InComparison      *keptnmodelsv2.SLOComparison
+	InComparison      *apimodelsv2.SLOComparison
 	ExpectedTargets   []*keptnv2.SLITarget
 	ExpectedResult    bool
 	ExpectedError     error
@@ -1147,7 +1147,7 @@ func TestEvaluateCriteriaSet(t *testing.T) {
 				Success: true,
 				Message: "",
 			},
-			InCriteriaSet: &keptnmodelsv2.SLOCriteria{
+			InCriteriaSet: &apimodelsv2.SLOCriteria{
 				Criteria: []string{"<=+10%", "<=10.0"},
 			},
 			InPreviousResults: []*keptnv2.SLIEvaluationResult{
@@ -1178,7 +1178,7 @@ func TestEvaluateCriteriaSet(t *testing.T) {
 					Status:         "pass",
 				},
 			},
-			InComparison: &keptnmodelsv2.SLOComparison{
+			InComparison: &apimodelsv2.SLOComparison{
 				CompareWith:               "several_results",
 				IncludeResultWithScore:    "pass",
 				NumberOfComparisonResults: 2,
@@ -1207,7 +1207,7 @@ func TestEvaluateCriteriaSet(t *testing.T) {
 				Success: true,
 				Message: "",
 			},
-			InCriteriaSet: &keptnmodelsv2.SLOCriteria{
+			InCriteriaSet: &apimodelsv2.SLOCriteria{
 				Criteria: []string{"<=+10%", "<=10.0"},
 			},
 			InPreviousResults: []*keptnv2.SLIEvaluationResult{
@@ -1238,7 +1238,7 @@ func TestEvaluateCriteriaSet(t *testing.T) {
 					Status:         "pass",
 				},
 			},
-			InComparison: &keptnmodelsv2.SLOComparison{
+			InComparison: &apimodelsv2.SLOComparison{
 				CompareWith:               "several_results",
 				IncludeResultWithScore:    "pass",
 				NumberOfComparisonResults: 2,
@@ -1274,9 +1274,9 @@ func TestEvaluateCriteriaSet(t *testing.T) {
 type evaluateOrCombinedCriteriaTestObject struct {
 	Name              string
 	InSLIResult       *keptnv2.SLIResult
-	InCriteriaSets    []*keptnmodelsv2.SLOCriteria
+	InCriteriaSets    []*apimodelsv2.SLOCriteria
 	InPreviousResults []*keptnv2.SLIEvaluationResult
-	InComparison      *keptnmodelsv2.SLOComparison
+	InComparison      *apimodelsv2.SLOComparison
 	ExpectedTargets   []*keptnv2.SLITarget
 	ExpectedResult    bool
 	ExpectedError     error
@@ -1292,7 +1292,7 @@ func TestEvaluateOrCombinedCriteria(t *testing.T) {
 				Success: true,
 				Message: "",
 			},
-			InCriteriaSets: []*keptnmodelsv2.SLOCriteria{
+			InCriteriaSets: []*apimodelsv2.SLOCriteria{
 				{
 					Criteria: []string{"<=10.0"},
 				},
@@ -1328,7 +1328,7 @@ func TestEvaluateOrCombinedCriteria(t *testing.T) {
 					Status:         "pass",
 				},
 			},
-			InComparison: &keptnmodelsv2.SLOComparison{
+			InComparison: &apimodelsv2.SLOComparison{
 				CompareWith:               "several_results",
 				IncludeResultWithScore:    "pass",
 				NumberOfComparisonResults: 2,
@@ -1357,7 +1357,7 @@ func TestEvaluateOrCombinedCriteria(t *testing.T) {
 				Success: true,
 				Message: "",
 			},
-			InCriteriaSets: []*keptnmodelsv2.SLOCriteria{
+			InCriteriaSets: []*apimodelsv2.SLOCriteria{
 				{
 					Criteria: []string{"<=10.0"},
 				},
@@ -1393,7 +1393,7 @@ func TestEvaluateOrCombinedCriteria(t *testing.T) {
 					Status:         "pass",
 				},
 			},
-			InComparison: &keptnmodelsv2.SLOComparison{
+			InComparison: &apimodelsv2.SLOComparison{
 				CompareWith:               "several_results",
 				IncludeResultWithScore:    "pass",
 				NumberOfComparisonResults: 2,
@@ -1422,7 +1422,7 @@ func TestEvaluateOrCombinedCriteria(t *testing.T) {
 				Success: true,
 				Message: "",
 			},
-			InCriteriaSets: []*keptnmodelsv2.SLOCriteria{
+			InCriteriaSets: []*apimodelsv2.SLOCriteria{
 				{
 					Criteria: []string{"<=10.0"},
 				},
@@ -1458,7 +1458,7 @@ func TestEvaluateOrCombinedCriteria(t *testing.T) {
 					Status:         "pass",
 				},
 			},
-			InComparison: &keptnmodelsv2.SLOComparison{
+			InComparison: &apimodelsv2.SLOComparison{
 				CompareWith:               "several_results",
 				IncludeResultWithScore:    "pass",
 				NumberOfComparisonResults: 2,
@@ -1496,7 +1496,7 @@ func TestEvaluateOrCombinedCriteria(t *testing.T) {
 type evaluateObjectivesTestObject struct {
 	Name                       string
 	InGetSLIDoneEvent          *keptnv2.GetSLIFinishedEventData
-	InSLOConfig                *keptnmodelsv2.ServiceLevelObjectives
+	InSLOConfig                *apimodelsv2.ServiceLevelObjectives
 	InPreviousEvaluationEvents []*keptnv2.EvaluationFinishedEventData
 	ExpectedEvaluationResult   *keptnv2.EvaluationFinishedEventData
 	ExpectedMaximumScore       float64
@@ -1526,19 +1526,19 @@ func TestEvaluateObjectives(t *testing.T) {
 					},
 				},
 			},
-			InSLOConfig: &keptnmodelsv2.ServiceLevelObjectives{
+			InSLOConfig: &apimodelsv2.ServiceLevelObjectives{
 				SpecVersion: "1.0",
 				Filter:      nil,
-				Comparison: &keptnmodelsv2.SLOComparison{
+				Comparison: &apimodelsv2.SLOComparison{
 					CompareWith:               "several_results",
 					IncludeResultWithScore:    "pass",
 					NumberOfComparisonResults: 2,
 					AggregateFunction:         "avg",
 				},
-				Objectives: []*keptnmodelsv2.SLO{
+				Objectives: []*apimodelsv2.SLO{
 					{
 						SLI: "my-test-metric-1",
-						Pass: []*keptnmodelsv2.SLOCriteria{
+						Pass: []*apimodelsv2.SLOCriteria{
 							{
 								Criteria: []string{"<=15.0"},
 							},
@@ -1546,7 +1546,7 @@ func TestEvaluateObjectives(t *testing.T) {
 								Criteria: []string{"<=+10%"},
 							},
 						},
-						Warning: []*keptnmodelsv2.SLOCriteria{
+						Warning: []*apimodelsv2.SLOCriteria{
 							{
 								Criteria: []string{"<=20.0"},
 							},
@@ -1558,7 +1558,7 @@ func TestEvaluateObjectives(t *testing.T) {
 						KeySLI: false,
 					},
 				},
-				TotalScore: &keptnmodelsv2.SLOScore{
+				TotalScore: &apimodelsv2.SLOScore{
 					Pass:    "90%",
 					Warning: "75%",
 				},
@@ -1670,19 +1670,19 @@ func TestEvaluateObjectives(t *testing.T) {
 					},
 				},
 			},
-			InSLOConfig: &keptnmodelsv2.ServiceLevelObjectives{
+			InSLOConfig: &apimodelsv2.ServiceLevelObjectives{
 				SpecVersion: "1.0",
 				Filter:      nil,
-				Comparison: &keptnmodelsv2.SLOComparison{
+				Comparison: &apimodelsv2.SLOComparison{
 					CompareWith:               "several_results",
 					IncludeResultWithScore:    "pass",
 					NumberOfComparisonResults: 2,
 					AggregateFunction:         "avg",
 				},
-				Objectives: []*keptnmodelsv2.SLO{
+				Objectives: []*apimodelsv2.SLO{
 					{
 						SLI: "my-test-metric-1",
-						Pass: []*keptnmodelsv2.SLOCriteria{
+						Pass: []*apimodelsv2.SLOCriteria{
 							{
 								Criteria: []string{"<=15.0"},
 							},
@@ -1690,7 +1690,7 @@ func TestEvaluateObjectives(t *testing.T) {
 								Criteria: []string{"<=+10%"},
 							},
 						},
-						Warning: []*keptnmodelsv2.SLOCriteria{
+						Warning: []*apimodelsv2.SLOCriteria{
 							{
 								Criteria: []string{"<=20.0"},
 							},
@@ -1702,7 +1702,7 @@ func TestEvaluateObjectives(t *testing.T) {
 						KeySLI: false,
 					},
 				},
-				TotalScore: &keptnmodelsv2.SLOScore{
+				TotalScore: &apimodelsv2.SLOScore{
 					Pass:    "90%",
 					Warning: "75%",
 				},
@@ -1820,19 +1820,19 @@ func TestEvaluateObjectives(t *testing.T) {
 					},
 				},
 			},
-			InSLOConfig: &keptnmodelsv2.ServiceLevelObjectives{
+			InSLOConfig: &apimodelsv2.ServiceLevelObjectives{
 				SpecVersion: "1.0",
 				Filter:      nil,
-				Comparison: &keptnmodelsv2.SLOComparison{
+				Comparison: &apimodelsv2.SLOComparison{
 					CompareWith:               "several_results",
 					IncludeResultWithScore:    "pass",
 					NumberOfComparisonResults: 2,
 					AggregateFunction:         "avg",
 				},
-				Objectives: []*keptnmodelsv2.SLO{
+				Objectives: []*apimodelsv2.SLO{
 					{
 						SLI: "my-test-metric-1",
-						Pass: []*keptnmodelsv2.SLOCriteria{
+						Pass: []*apimodelsv2.SLOCriteria{
 							{
 								Criteria: []string{"<=15.0"},
 							},
@@ -1840,7 +1840,7 @@ func TestEvaluateObjectives(t *testing.T) {
 								Criteria: []string{"<=+10%"},
 							},
 						},
-						Warning: []*keptnmodelsv2.SLOCriteria{
+						Warning: []*apimodelsv2.SLOCriteria{
 							{
 								Criteria: []string{"<=20.0"},
 							},
@@ -1857,7 +1857,7 @@ func TestEvaluateObjectives(t *testing.T) {
 						KeySLI: false,
 					},
 				},
-				TotalScore: &keptnmodelsv2.SLOScore{
+				TotalScore: &apimodelsv2.SLOScore{
 					Pass:    "90%",
 					Warning: "75%",
 				},
@@ -1985,19 +1985,19 @@ func TestEvaluateObjectives(t *testing.T) {
 					},
 				},
 			},
-			InSLOConfig: &keptnmodelsv2.ServiceLevelObjectives{
+			InSLOConfig: &apimodelsv2.ServiceLevelObjectives{
 				SpecVersion: "1.0",
 				Filter:      nil,
-				Comparison: &keptnmodelsv2.SLOComparison{
+				Comparison: &apimodelsv2.SLOComparison{
 					CompareWith:               "several_results",
 					IncludeResultWithScore:    "pass",
 					NumberOfComparisonResults: 2,
 					AggregateFunction:         "avg",
 				},
-				Objectives: []*keptnmodelsv2.SLO{
+				Objectives: []*apimodelsv2.SLO{
 					{
 						SLI: "my-test-metric-1",
-						Pass: []*keptnmodelsv2.SLOCriteria{
+						Pass: []*apimodelsv2.SLOCriteria{
 							{
 								Criteria: []string{"<=15.0"},
 							},
@@ -2005,7 +2005,7 @@ func TestEvaluateObjectives(t *testing.T) {
 								Criteria: []string{"<=+10%"},
 							},
 						},
-						Warning: []*keptnmodelsv2.SLOCriteria{
+						Warning: []*apimodelsv2.SLOCriteria{
 							{
 								Criteria: []string{"<=20.0"},
 							},
@@ -2020,11 +2020,11 @@ func TestEvaluateObjectives(t *testing.T) {
 						SLI:     "my-log-metric",
 						Weight:  1,
 						KeySLI:  false,
-						Pass:    []*keptnmodelsv2.SLOCriteria{},
-						Warning: []*keptnmodelsv2.SLOCriteria{},
+						Pass:    []*apimodelsv2.SLOCriteria{},
+						Warning: []*apimodelsv2.SLOCriteria{},
 					},
 				},
-				TotalScore: &keptnmodelsv2.SLOScore{
+				TotalScore: &apimodelsv2.SLOScore{
 					Pass:    "90%",
 					Warning: "75%",
 				},
@@ -2147,19 +2147,19 @@ func TestEvaluateObjectives(t *testing.T) {
 					},
 				},
 			},
-			InSLOConfig: &keptnmodelsv2.ServiceLevelObjectives{
+			InSLOConfig: &apimodelsv2.ServiceLevelObjectives{
 				SpecVersion: "1.0",
 				Filter:      nil,
-				Comparison: &keptnmodelsv2.SLOComparison{
+				Comparison: &apimodelsv2.SLOComparison{
 					CompareWith:               "several_results",
 					IncludeResultWithScore:    "pass",
 					NumberOfComparisonResults: 2,
 					AggregateFunction:         "avg",
 				},
-				Objectives: []*keptnmodelsv2.SLO{
+				Objectives: []*apimodelsv2.SLO{
 					{
 						SLI: "response_time_p50",
-						Pass: []*keptnmodelsv2.SLOCriteria{
+						Pass: []*apimodelsv2.SLOCriteria{
 							{
 								Criteria: []string{"<=+20%", "<500"},
 							},
@@ -2168,7 +2168,7 @@ func TestEvaluateObjectives(t *testing.T) {
 						KeySLI: false,
 					},
 				},
-				TotalScore: &keptnmodelsv2.SLOScore{
+				TotalScore: &apimodelsv2.SLOScore{
 					Pass:    "90%",
 					Warning: "75%",
 				},
@@ -2238,19 +2238,19 @@ func TestEvaluateObjectives(t *testing.T) {
 					},
 				},
 			},
-			InSLOConfig: &keptnmodelsv2.ServiceLevelObjectives{
+			InSLOConfig: &apimodelsv2.ServiceLevelObjectives{
 				SpecVersion: "1.0",
 				Filter:      nil,
-				Comparison: &keptnmodelsv2.SLOComparison{
+				Comparison: &apimodelsv2.SLOComparison{
 					CompareWith:               "single_result",
 					IncludeResultWithScore:    "pass",
 					NumberOfComparisonResults: 1,
 					AggregateFunction:         "avg",
 				},
-				Objectives: []*keptnmodelsv2.SLO{
+				Objectives: []*apimodelsv2.SLO{
 					{
 						SLI: "response_time_p50",
-						Pass: []*keptnmodelsv2.SLOCriteria{
+						Pass: []*apimodelsv2.SLOCriteria{
 							{
 								Criteria: []string{"<=+20%"},
 							},
@@ -2259,7 +2259,7 @@ func TestEvaluateObjectives(t *testing.T) {
 						KeySLI: false,
 					},
 				},
-				TotalScore: &keptnmodelsv2.SLOScore{
+				TotalScore: &apimodelsv2.SLOScore{
 					Pass:    "90%",
 					Warning: "75%",
 				},
@@ -2355,19 +2355,19 @@ func TestEvaluateObjectives(t *testing.T) {
 					},
 				},
 			},
-			InSLOConfig: &keptnmodelsv2.ServiceLevelObjectives{
+			InSLOConfig: &apimodelsv2.ServiceLevelObjectives{
 				SpecVersion: "1.0",
 				Filter:      nil,
-				Comparison: &keptnmodelsv2.SLOComparison{
+				Comparison: &apimodelsv2.SLOComparison{
 					CompareWith:               "several_results",
 					IncludeResultWithScore:    "pass",
 					NumberOfComparisonResults: 2,
 					AggregateFunction:         "avg",
 				},
-				Objectives: []*keptnmodelsv2.SLO{
+				Objectives: []*apimodelsv2.SLO{
 					{
 						SLI: "a_different_metric",
-						Pass: []*keptnmodelsv2.SLOCriteria{
+						Pass: []*apimodelsv2.SLOCriteria{
 							{
 								Criteria: []string{"<=15.0"},
 							},
@@ -2375,7 +2375,7 @@ func TestEvaluateObjectives(t *testing.T) {
 								Criteria: []string{"<=+10%"},
 							},
 						},
-						Warning: []*keptnmodelsv2.SLOCriteria{
+						Warning: []*apimodelsv2.SLOCriteria{
 							{
 								Criteria: []string{"<=20.0"},
 							},
@@ -2387,7 +2387,7 @@ func TestEvaluateObjectives(t *testing.T) {
 						KeySLI: false,
 					},
 				},
-				TotalScore: &keptnmodelsv2.SLOScore{
+				TotalScore: &apimodelsv2.SLOScore{
 					Pass:    "90%",
 					Warning: "75%",
 				},
@@ -2458,7 +2458,7 @@ type calculateScoreTestObject struct {
 	Name                     string
 	InMaximumScore           float64
 	InEvaluationResult       *keptnv2.EvaluationFinishedEventData
-	InSLOConfig              *keptnmodelsv2.ServiceLevelObjectives
+	InSLOConfig              *apimodelsv2.ServiceLevelObjectives
 	InKeySLIFailed           bool
 	ExpectedEvaluationResult *keptnv2.EvaluationFinishedEventData
 	ExpectedError            error
@@ -2498,19 +2498,19 @@ func TestCalculateScore(t *testing.T) {
 					Stage:   "dev",
 				},
 			},
-			InSLOConfig: &keptnmodelsv2.ServiceLevelObjectives{
+			InSLOConfig: &apimodelsv2.ServiceLevelObjectives{
 				SpecVersion: "1.0",
 				Filter:      nil,
-				Comparison: &keptnmodelsv2.SLOComparison{
+				Comparison: &apimodelsv2.SLOComparison{
 					CompareWith:               "several_results",
 					IncludeResultWithScore:    "pass",
 					NumberOfComparisonResults: 2,
 					AggregateFunction:         "avg",
 				},
-				Objectives: []*keptnmodelsv2.SLO{
+				Objectives: []*apimodelsv2.SLO{
 					{
 						SLI: "my-test-metric-1",
-						Pass: []*keptnmodelsv2.SLOCriteria{
+						Pass: []*apimodelsv2.SLOCriteria{
 							{
 								Criteria: []string{"<=15.0"},
 							},
@@ -2518,7 +2518,7 @@ func TestCalculateScore(t *testing.T) {
 								Criteria: []string{"<=+10%"},
 							},
 						},
-						Warning: []*keptnmodelsv2.SLOCriteria{
+						Warning: []*apimodelsv2.SLOCriteria{
 							{
 								Criteria: []string{"<=20.0"},
 							},
@@ -2530,7 +2530,7 @@ func TestCalculateScore(t *testing.T) {
 						KeySLI: false,
 					},
 				},
-				TotalScore: &keptnmodelsv2.SLOScore{
+				TotalScore: &apimodelsv2.SLOScore{
 					Pass:    "90%",
 					Warning: "75%",
 				},
@@ -2613,19 +2613,19 @@ func TestCalculateScore(t *testing.T) {
 					Stage:   "dev",
 				},
 			},
-			InSLOConfig: &keptnmodelsv2.ServiceLevelObjectives{
+			InSLOConfig: &apimodelsv2.ServiceLevelObjectives{
 				SpecVersion: "1.0",
 				Filter:      nil,
-				Comparison: &keptnmodelsv2.SLOComparison{
+				Comparison: &apimodelsv2.SLOComparison{
 					CompareWith:               "several_results",
 					IncludeResultWithScore:    "pass",
 					NumberOfComparisonResults: 2,
 					AggregateFunction:         "avg",
 				},
-				Objectives: []*keptnmodelsv2.SLO{
+				Objectives: []*apimodelsv2.SLO{
 					{
 						SLI: "my-test-metric-1",
-						Pass: []*keptnmodelsv2.SLOCriteria{
+						Pass: []*apimodelsv2.SLOCriteria{
 							{
 								Criteria: []string{"<=15.0"},
 							},
@@ -2633,7 +2633,7 @@ func TestCalculateScore(t *testing.T) {
 								Criteria: []string{"<=+10%"},
 							},
 						},
-						Warning: []*keptnmodelsv2.SLOCriteria{
+						Warning: []*apimodelsv2.SLOCriteria{
 							{
 								Criteria: []string{"<=20.0"},
 							},
@@ -2646,7 +2646,7 @@ func TestCalculateScore(t *testing.T) {
 					},
 					{
 						SLI: "my-key-metric",
-						Pass: []*keptnmodelsv2.SLOCriteria{
+						Pass: []*apimodelsv2.SLOCriteria{
 							{
 								Criteria: []string{"<=15.0"},
 							},
@@ -2654,7 +2654,7 @@ func TestCalculateScore(t *testing.T) {
 								Criteria: []string{"<=+10%"},
 							},
 						},
-						Warning: []*keptnmodelsv2.SLOCriteria{
+						Warning: []*apimodelsv2.SLOCriteria{
 							{
 								Criteria: []string{"<=20.0"},
 							},
@@ -2666,7 +2666,7 @@ func TestCalculateScore(t *testing.T) {
 						KeySLI: true,
 					},
 				},
-				TotalScore: &keptnmodelsv2.SLOScore{
+				TotalScore: &apimodelsv2.SLOScore{
 					Pass:    "90%",
 					Warning: "75%",
 				},
@@ -2763,19 +2763,19 @@ func TestCalculateScore(t *testing.T) {
 					Stage:   "dev",
 				},
 			},
-			InSLOConfig: &keptnmodelsv2.ServiceLevelObjectives{
+			InSLOConfig: &apimodelsv2.ServiceLevelObjectives{
 				SpecVersion: "1.0",
 				Filter:      nil,
-				Comparison: &keptnmodelsv2.SLOComparison{
+				Comparison: &apimodelsv2.SLOComparison{
 					CompareWith:               "several_results",
 					IncludeResultWithScore:    "pass",
 					NumberOfComparisonResults: 2,
 					AggregateFunction:         "avg",
 				},
-				Objectives: []*keptnmodelsv2.SLO{
+				Objectives: []*apimodelsv2.SLO{
 					{
 						SLI: "my-test-metric-1",
-						Pass: []*keptnmodelsv2.SLOCriteria{
+						Pass: []*apimodelsv2.SLOCriteria{
 							{
 								Criteria: []string{"<=8.0"},
 							},
@@ -2783,7 +2783,7 @@ func TestCalculateScore(t *testing.T) {
 								Criteria: []string{"<=+10%"},
 							},
 						},
-						Warning: []*keptnmodelsv2.SLOCriteria{
+						Warning: []*apimodelsv2.SLOCriteria{
 							{
 								Criteria: []string{"<=13.0"},
 							},
@@ -2796,7 +2796,7 @@ func TestCalculateScore(t *testing.T) {
 					},
 					{
 						SLI: "my-metric",
-						Pass: []*keptnmodelsv2.SLOCriteria{
+						Pass: []*apimodelsv2.SLOCriteria{
 							{
 								Criteria: []string{"<=8.0"},
 							},
@@ -2804,7 +2804,7 @@ func TestCalculateScore(t *testing.T) {
 								Criteria: []string{"<=+10%"},
 							},
 						},
-						Warning: []*keptnmodelsv2.SLOCriteria{
+						Warning: []*apimodelsv2.SLOCriteria{
 							{
 								Criteria: []string{"<=12.0"},
 							},
@@ -2816,7 +2816,7 @@ func TestCalculateScore(t *testing.T) {
 						KeySLI: false,
 					},
 				},
-				TotalScore: &keptnmodelsv2.SLOScore{
+				TotalScore: &apimodelsv2.SLOScore{
 					Pass:    "90%",
 					Warning: "75%",
 				},
@@ -2913,19 +2913,19 @@ func TestCalculateScore(t *testing.T) {
 					Stage:   "dev",
 				},
 			},
-			InSLOConfig: &keptnmodelsv2.ServiceLevelObjectives{
+			InSLOConfig: &apimodelsv2.ServiceLevelObjectives{
 				SpecVersion: "1.0",
 				Filter:      nil,
-				Comparison: &keptnmodelsv2.SLOComparison{
+				Comparison: &apimodelsv2.SLOComparison{
 					CompareWith:               "several_results",
 					IncludeResultWithScore:    "pass",
 					NumberOfComparisonResults: 2,
 					AggregateFunction:         "avg",
 				},
-				Objectives: []*keptnmodelsv2.SLO{
+				Objectives: []*apimodelsv2.SLO{
 					{
 						SLI: "my-test-metric-1",
-						Pass: []*keptnmodelsv2.SLOCriteria{
+						Pass: []*apimodelsv2.SLOCriteria{
 							{
 								Criteria: []string{"<=8.0"},
 							},
@@ -2933,7 +2933,7 @@ func TestCalculateScore(t *testing.T) {
 								Criteria: []string{"<=+10%"},
 							},
 						},
-						Warning: []*keptnmodelsv2.SLOCriteria{
+						Warning: []*apimodelsv2.SLOCriteria{
 							{
 								Criteria: []string{"<=10.0"},
 							},
@@ -2946,7 +2946,7 @@ func TestCalculateScore(t *testing.T) {
 					},
 					{
 						SLI: "my-metric",
-						Pass: []*keptnmodelsv2.SLOCriteria{
+						Pass: []*apimodelsv2.SLOCriteria{
 							{
 								Criteria: []string{"<=8.0"},
 							},
@@ -2954,7 +2954,7 @@ func TestCalculateScore(t *testing.T) {
 								Criteria: []string{"<=+10%"},
 							},
 						},
-						Warning: []*keptnmodelsv2.SLOCriteria{
+						Warning: []*apimodelsv2.SLOCriteria{
 							{
 								Criteria: []string{"<=10.0"},
 							},
@@ -2966,7 +2966,7 @@ func TestCalculateScore(t *testing.T) {
 						KeySLI: false,
 					},
 				},
-				TotalScore: &keptnmodelsv2.SLOScore{
+				TotalScore: &apimodelsv2.SLOScore{
 					Pass:    "90%",
 					Warning: "75%",
 				},
@@ -3064,16 +3064,16 @@ func TestCalculateScore(t *testing.T) {
 					Stage:   "dev",
 				},
 			},
-			InSLOConfig: &keptnmodelsv2.ServiceLevelObjectives{
+			InSLOConfig: &apimodelsv2.ServiceLevelObjectives{
 				SpecVersion: "1.0",
 				Filter:      nil,
-				Comparison: &keptnmodelsv2.SLOComparison{
+				Comparison: &apimodelsv2.SLOComparison{
 					CompareWith:               "several_results",
 					IncludeResultWithScore:    "pass",
 					NumberOfComparisonResults: 2,
 					AggregateFunction:         "avg",
 				},
-				Objectives: []*keptnmodelsv2.SLO{
+				Objectives: []*apimodelsv2.SLO{
 					{
 						SLI:    "my-test-metric-1",
 						Weight: 1,
@@ -3085,7 +3085,7 @@ func TestCalculateScore(t *testing.T) {
 						KeySLI: false,
 					},
 				},
-				TotalScore: &keptnmodelsv2.SLOScore{
+				TotalScore: &apimodelsv2.SLOScore{
 					Pass:    "90%",
 					Warning: "75%",
 				},
@@ -3471,7 +3471,7 @@ func TestEvaluateSLIHandler_HandleEvent(t *testing.T) {
 func Test_aggregateValues(t *testing.T) {
 	type fields struct {
 		InPreviousResults []*keptnv2.SLIEvaluationResult
-		InComparison      *keptnmodelsv2.SLOComparison
+		InComparison      *apimodelsv2.SLOComparison
 	}
 	tests := []struct {
 		name        string
@@ -3510,7 +3510,7 @@ func Test_aggregateValues(t *testing.T) {
 						Status:         "pass",
 					},
 				},
-				InComparison: &keptnmodelsv2.SLOComparison{
+				InComparison: &apimodelsv2.SLOComparison{
 					CompareWith:               "several_results",
 					IncludeResultWithScore:    "pass",
 					NumberOfComparisonResults: 2,
@@ -3522,7 +3522,7 @@ func Test_aggregateValues(t *testing.T) {
 		},
 		{name: "Skip because of no previous results",
 			fields: fields{
-				InComparison: &keptnmodelsv2.SLOComparison{
+				InComparison: &apimodelsv2.SLOComparison{
 					CompareWith:               "several_results",
 					IncludeResultWithScore:    "pass",
 					NumberOfComparisonResults: 2,
@@ -3562,7 +3562,7 @@ func Test_aggregateValues(t *testing.T) {
 						Status:         "pass",
 					},
 				},
-				InComparison: &keptnmodelsv2.SLOComparison{
+				InComparison: &apimodelsv2.SLOComparison{
 					CompareWith:               "several_results",
 					IncludeResultWithScore:    "pass",
 					NumberOfComparisonResults: 2,

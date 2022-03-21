@@ -4,6 +4,7 @@
 package fake
 
 import (
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"sync"
@@ -21,10 +22,10 @@ import (
 // 			DeleteFunc: func(projectName string) (string, error) {
 // 				panic("mock out the Delete method")
 // 			},
-// 			GetFunc: func() ([]*models.ExpandedProject, error) {
+// 			GetFunc: func() ([]*apimodels.ExpandedProject, error) {
 // 				panic("mock out the Get method")
 // 			},
-// 			GetByNameFunc: func(projectName string) (*models.ExpandedProject, error) {
+// 			GetByNameFunc: func(projectName string) (*apimodels.ExpandedProject, error) {
 // 				panic("mock out the GetByName method")
 // 			},
 // 			UpdateFunc: func(params *models.UpdateProjectParams) (error, common.RollbackFunc) {
@@ -44,10 +45,10 @@ type IProjectManagerMock struct {
 	DeleteFunc func(projectName string) (string, error)
 
 	// GetFunc mocks the Get method.
-	GetFunc func() ([]*models.ExpandedProject, error)
+	GetFunc func() ([]*apimodels.ExpandedProject, error)
 
 	// GetByNameFunc mocks the GetByName method.
-	GetByNameFunc func(projectName string) (*models.ExpandedProject, error)
+	GetByNameFunc func(projectName string) (*apimodels.ExpandedProject, error)
 
 	// UpdateFunc mocks the Update method.
 	UpdateFunc func(params *models.UpdateProjectParams) (error, common.RollbackFunc)
@@ -148,7 +149,7 @@ func (mock *IProjectManagerMock) DeleteCalls() []struct {
 }
 
 // Get calls GetFunc.
-func (mock *IProjectManagerMock) Get() ([]*models.ExpandedProject, error) {
+func (mock *IProjectManagerMock) Get() ([]*apimodels.ExpandedProject, error) {
 	if mock.GetFunc == nil {
 		panic("IProjectManagerMock.GetFunc: method is nil but IProjectManager.Get was just called")
 	}
@@ -174,7 +175,7 @@ func (mock *IProjectManagerMock) GetCalls() []struct {
 }
 
 // GetByName calls GetByNameFunc.
-func (mock *IProjectManagerMock) GetByName(projectName string) (*models.ExpandedProject, error) {
+func (mock *IProjectManagerMock) GetByName(projectName string) (*apimodels.ExpandedProject, error) {
 	if mock.GetByNameFunc == nil {
 		panic("IProjectManagerMock.GetByNameFunc: method is nil but IProjectManager.GetByName was just called")
 	}

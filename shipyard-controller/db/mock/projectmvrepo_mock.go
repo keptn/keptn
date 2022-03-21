@@ -4,7 +4,7 @@
 package db_mock
 
 import (
-	"github.com/keptn/keptn/shipyard-controller/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"sync"
 )
 
@@ -17,10 +17,10 @@ import (
 // 			CloseOpenRemediationsFunc: func(project string, stage string, service string, keptnContext string) error {
 // 				panic("mock out the CloseOpenRemediations method")
 // 			},
-// 			CreateProjectFunc: func(prj *models.ExpandedProject) error {
+// 			CreateProjectFunc: func(prj *apimodels.ExpandedProject) error {
 // 				panic("mock out the CreateProject method")
 // 			},
-// 			CreateRemediationFunc: func(project string, stage string, service string, remediation *models.Remediation) error {
+// 			CreateRemediationFunc: func(project string, stage string, service string, remediation *apimodels.Remediation) error {
 // 				panic("mock out the CreateRemediation method")
 // 			},
 // 			CreateServiceFunc: func(project string, stage string, service string) error {
@@ -41,25 +41,25 @@ import (
 // 			DeleteUpstreamInfoFunc: func(projectName string) error {
 // 				panic("mock out the DeleteUpstreamInfo method")
 // 			},
-// 			GetProjectFunc: func(projectName string) (*models.ExpandedProject, error) {
+// 			GetProjectFunc: func(projectName string) (*apimodels.ExpandedProject, error) {
 // 				panic("mock out the GetProject method")
 // 			},
-// 			GetProjectsFunc: func() ([]*models.ExpandedProject, error) {
+// 			GetProjectsFunc: func() ([]*apimodels.ExpandedProject, error) {
 // 				panic("mock out the GetProjects method")
 // 			},
-// 			GetServiceFunc: func(projectName string, stageName string, serviceName string) (*models.ExpandedService, error) {
+// 			GetServiceFunc: func(projectName string, stageName string, serviceName string) (*apimodels.ExpandedService, error) {
 // 				panic("mock out the GetService method")
 // 			},
-// 			OnSequenceTaskFinishedFunc: func(event models.Event)  {
+// 			OnSequenceTaskFinishedFunc: func(event apimodels.KeptnContextExtendedCE)  {
 // 				panic("mock out the OnSequenceTaskFinished method")
 // 			},
-// 			OnSequenceTaskStartedFunc: func(event models.Event)  {
+// 			OnSequenceTaskStartedFunc: func(event apimodels.KeptnContextExtendedCE)  {
 // 				panic("mock out the OnSequenceTaskStarted method")
 // 			},
-// 			UpdateEventOfServiceFunc: func(e models.Event) error {
+// 			UpdateEventOfServiceFunc: func(e apimodels.KeptnContextExtendedCE) error {
 // 				panic("mock out the UpdateEventOfService method")
 // 			},
-// 			UpdateProjectFunc: func(prj *models.ExpandedProject) error {
+// 			UpdateProjectFunc: func(prj *apimodels.ExpandedProject) error {
 // 				panic("mock out the UpdateProject method")
 // 			},
 // 			UpdateShipyardFunc: func(projectName string, shipyardContent string) error {
@@ -82,10 +82,10 @@ type ProjectMVRepoMock struct {
 	CloseOpenRemediationsFunc func(project string, stage string, service string, keptnContext string) error
 
 	// CreateProjectFunc mocks the CreateProject method.
-	CreateProjectFunc func(prj *models.ExpandedProject) error
+	CreateProjectFunc func(prj *apimodels.ExpandedProject) error
 
 	// CreateRemediationFunc mocks the CreateRemediation method.
-	CreateRemediationFunc func(project string, stage string, service string, remediation *models.Remediation) error
+	CreateRemediationFunc func(project string, stage string, service string, remediation *apimodels.Remediation) error
 
 	// CreateServiceFunc mocks the CreateService method.
 	CreateServiceFunc func(project string, stage string, service string) error
@@ -106,25 +106,25 @@ type ProjectMVRepoMock struct {
 	DeleteUpstreamInfoFunc func(projectName string) error
 
 	// GetProjectFunc mocks the GetProject method.
-	GetProjectFunc func(projectName string) (*models.ExpandedProject, error)
+	GetProjectFunc func(projectName string) (*apimodels.ExpandedProject, error)
 
 	// GetProjectsFunc mocks the GetProjects method.
-	GetProjectsFunc func() ([]*models.ExpandedProject, error)
+	GetProjectsFunc func() ([]*apimodels.ExpandedProject, error)
 
 	// GetServiceFunc mocks the GetService method.
-	GetServiceFunc func(projectName string, stageName string, serviceName string) (*models.ExpandedService, error)
+	GetServiceFunc func(projectName string, stageName string, serviceName string) (*apimodels.ExpandedService, error)
 
 	// OnSequenceTaskFinishedFunc mocks the OnSequenceTaskFinished method.
-	OnSequenceTaskFinishedFunc func(event models.Event)
+	OnSequenceTaskFinishedFunc func(event apimodels.KeptnContextExtendedCE)
 
 	// OnSequenceTaskStartedFunc mocks the OnSequenceTaskStarted method.
-	OnSequenceTaskStartedFunc func(event models.Event)
+	OnSequenceTaskStartedFunc func(event apimodels.KeptnContextExtendedCE)
 
 	// UpdateEventOfServiceFunc mocks the UpdateEventOfService method.
-	UpdateEventOfServiceFunc func(e models.Event) error
+	UpdateEventOfServiceFunc func(e apimodels.KeptnContextExtendedCE) error
 
 	// UpdateProjectFunc mocks the UpdateProject method.
-	UpdateProjectFunc func(prj *models.ExpandedProject) error
+	UpdateProjectFunc func(prj *apimodels.ExpandedProject) error
 
 	// UpdateShipyardFunc mocks the UpdateShipyard method.
 	UpdateShipyardFunc func(projectName string, shipyardContent string) error
@@ -151,7 +151,7 @@ type ProjectMVRepoMock struct {
 		// CreateProject holds details about calls to the CreateProject method.
 		CreateProject []struct {
 			// Prj is the prj argument value.
-			Prj *models.ExpandedProject
+			Prj *apimodels.ExpandedProject
 		}
 		// CreateRemediation holds details about calls to the CreateRemediation method.
 		CreateRemediation []struct {
@@ -162,7 +162,7 @@ type ProjectMVRepoMock struct {
 			// Service is the service argument value.
 			Service string
 			// Remediation is the remediation argument value.
-			Remediation *models.Remediation
+			Remediation *apimodels.Remediation
 		}
 		// CreateService holds details about calls to the CreateService method.
 		CreateService []struct {
@@ -225,23 +225,23 @@ type ProjectMVRepoMock struct {
 		}
 		// OnSequenceTaskFinished holds details about calls to the OnSequenceTaskFinished method.
 		OnSequenceTaskFinished []struct {
-			// Event is the event argument value.
-			Event models.Event
+			//models.KeptnContextExtendedCEis the event argument value.
+			Event apimodels.KeptnContextExtendedCE
 		}
 		// OnSequenceTaskStarted holds details about calls to the OnSequenceTaskStarted method.
 		OnSequenceTaskStarted []struct {
-			// Event is the event argument value.
-			Event models.Event
+			//models.KeptnContextExtendedCEis the event argument value.
+			Event apimodels.KeptnContextExtendedCE
 		}
 		// UpdateEventOfService holds details about calls to the UpdateEventOfService method.
 		UpdateEventOfService []struct {
 			// E is the e argument value.
-			E models.Event
+			E apimodels.KeptnContextExtendedCE
 		}
 		// UpdateProject holds details about calls to the UpdateProject method.
 		UpdateProject []struct {
 			// Prj is the prj argument value.
-			Prj *models.ExpandedProject
+			Prj *apimodels.ExpandedProject
 		}
 		// UpdateShipyard holds details about calls to the UpdateShipyard method.
 		UpdateShipyard []struct {
@@ -332,12 +332,12 @@ func (mock *ProjectMVRepoMock) CloseOpenRemediationsCalls() []struct {
 }
 
 // CreateProject calls CreateProjectFunc.
-func (mock *ProjectMVRepoMock) CreateProject(prj *models.ExpandedProject) error {
+func (mock *ProjectMVRepoMock) CreateProject(prj *apimodels.ExpandedProject) error {
 	if mock.CreateProjectFunc == nil {
 		panic("ProjectMVRepoMock.CreateProjectFunc: method is nil but ProjectMVRepo.CreateProject was just called")
 	}
 	callInfo := struct {
-		Prj *models.ExpandedProject
+		Prj *apimodels.ExpandedProject
 	}{
 		Prj: prj,
 	}
@@ -351,10 +351,10 @@ func (mock *ProjectMVRepoMock) CreateProject(prj *models.ExpandedProject) error 
 // Check the length with:
 //     len(mockedProjectMVRepo.CreateProjectCalls())
 func (mock *ProjectMVRepoMock) CreateProjectCalls() []struct {
-	Prj *models.ExpandedProject
+	Prj *apimodels.ExpandedProject
 } {
 	var calls []struct {
-		Prj *models.ExpandedProject
+		Prj *apimodels.ExpandedProject
 	}
 	mock.lockCreateProject.RLock()
 	calls = mock.calls.CreateProject
@@ -363,7 +363,7 @@ func (mock *ProjectMVRepoMock) CreateProjectCalls() []struct {
 }
 
 // CreateRemediation calls CreateRemediationFunc.
-func (mock *ProjectMVRepoMock) CreateRemediation(project string, stage string, service string, remediation *models.Remediation) error {
+func (mock *ProjectMVRepoMock) CreateRemediation(project string, stage string, service string, remediation *apimodels.Remediation) error {
 	if mock.CreateRemediationFunc == nil {
 		panic("ProjectMVRepoMock.CreateRemediationFunc: method is nil but ProjectMVRepo.CreateRemediation was just called")
 	}
@@ -371,7 +371,7 @@ func (mock *ProjectMVRepoMock) CreateRemediation(project string, stage string, s
 		Project     string
 		Stage       string
 		Service     string
-		Remediation *models.Remediation
+		Remediation *apimodels.Remediation
 	}{
 		Project:     project,
 		Stage:       stage,
@@ -391,13 +391,13 @@ func (mock *ProjectMVRepoMock) CreateRemediationCalls() []struct {
 	Project     string
 	Stage       string
 	Service     string
-	Remediation *models.Remediation
+	Remediation *apimodels.Remediation
 } {
 	var calls []struct {
 		Project     string
 		Stage       string
 		Service     string
-		Remediation *models.Remediation
+		Remediation *apimodels.Remediation
 	}
 	mock.lockCreateRemediation.RLock()
 	calls = mock.calls.CreateRemediation
@@ -616,7 +616,7 @@ func (mock *ProjectMVRepoMock) DeleteUpstreamInfoCalls() []struct {
 }
 
 // GetProject calls GetProjectFunc.
-func (mock *ProjectMVRepoMock) GetProject(projectName string) (*models.ExpandedProject, error) {
+func (mock *ProjectMVRepoMock) GetProject(projectName string) (*apimodels.ExpandedProject, error) {
 	if mock.GetProjectFunc == nil {
 		panic("ProjectMVRepoMock.GetProjectFunc: method is nil but ProjectMVRepo.GetProject was just called")
 	}
@@ -647,7 +647,7 @@ func (mock *ProjectMVRepoMock) GetProjectCalls() []struct {
 }
 
 // GetProjects calls GetProjectsFunc.
-func (mock *ProjectMVRepoMock) GetProjects() ([]*models.ExpandedProject, error) {
+func (mock *ProjectMVRepoMock) GetProjects() ([]*apimodels.ExpandedProject, error) {
 	if mock.GetProjectsFunc == nil {
 		panic("ProjectMVRepoMock.GetProjectsFunc: method is nil but ProjectMVRepo.GetProjects was just called")
 	}
@@ -673,7 +673,7 @@ func (mock *ProjectMVRepoMock) GetProjectsCalls() []struct {
 }
 
 // GetService calls GetServiceFunc.
-func (mock *ProjectMVRepoMock) GetService(projectName string, stageName string, serviceName string) (*models.ExpandedService, error) {
+func (mock *ProjectMVRepoMock) GetService(projectName string, stageName string, serviceName string) (*apimodels.ExpandedService, error) {
 	if mock.GetServiceFunc == nil {
 		panic("ProjectMVRepoMock.GetServiceFunc: method is nil but ProjectMVRepo.GetService was just called")
 	}
@@ -712,12 +712,12 @@ func (mock *ProjectMVRepoMock) GetServiceCalls() []struct {
 }
 
 // OnSequenceTaskFinished calls OnSequenceTaskFinishedFunc.
-func (mock *ProjectMVRepoMock) OnSequenceTaskFinished(event models.Event) {
+func (mock *ProjectMVRepoMock) OnSequenceTaskFinished(event apimodels.KeptnContextExtendedCE) {
 	if mock.OnSequenceTaskFinishedFunc == nil {
 		panic("ProjectMVRepoMock.OnSequenceTaskFinishedFunc: method is nil but ProjectMVRepo.OnSequenceTaskFinished was just called")
 	}
 	callInfo := struct {
-		Event models.Event
+		Event apimodels.KeptnContextExtendedCE
 	}{
 		Event: event,
 	}
@@ -731,10 +731,10 @@ func (mock *ProjectMVRepoMock) OnSequenceTaskFinished(event models.Event) {
 // Check the length with:
 //     len(mockedProjectMVRepo.OnSequenceTaskFinishedCalls())
 func (mock *ProjectMVRepoMock) OnSequenceTaskFinishedCalls() []struct {
-	Event models.Event
+	Event apimodels.KeptnContextExtendedCE
 } {
 	var calls []struct {
-		Event models.Event
+		Event apimodels.KeptnContextExtendedCE
 	}
 	mock.lockOnSequenceTaskFinished.RLock()
 	calls = mock.calls.OnSequenceTaskFinished
@@ -743,12 +743,12 @@ func (mock *ProjectMVRepoMock) OnSequenceTaskFinishedCalls() []struct {
 }
 
 // OnSequenceTaskStarted calls OnSequenceTaskStartedFunc.
-func (mock *ProjectMVRepoMock) OnSequenceTaskStarted(event models.Event) {
+func (mock *ProjectMVRepoMock) OnSequenceTaskStarted(event apimodels.KeptnContextExtendedCE) {
 	if mock.OnSequenceTaskStartedFunc == nil {
 		panic("ProjectMVRepoMock.OnSequenceTaskStartedFunc: method is nil but ProjectMVRepo.OnSequenceTaskStarted was just called")
 	}
 	callInfo := struct {
-		Event models.Event
+		Event apimodels.KeptnContextExtendedCE
 	}{
 		Event: event,
 	}
@@ -762,10 +762,10 @@ func (mock *ProjectMVRepoMock) OnSequenceTaskStarted(event models.Event) {
 // Check the length with:
 //     len(mockedProjectMVRepo.OnSequenceTaskStartedCalls())
 func (mock *ProjectMVRepoMock) OnSequenceTaskStartedCalls() []struct {
-	Event models.Event
+	Event apimodels.KeptnContextExtendedCE
 } {
 	var calls []struct {
-		Event models.Event
+		Event apimodels.KeptnContextExtendedCE
 	}
 	mock.lockOnSequenceTaskStarted.RLock()
 	calls = mock.calls.OnSequenceTaskStarted
@@ -774,12 +774,12 @@ func (mock *ProjectMVRepoMock) OnSequenceTaskStartedCalls() []struct {
 }
 
 // UpdateEventOfService calls UpdateEventOfServiceFunc.
-func (mock *ProjectMVRepoMock) UpdateEventOfService(e models.Event) error {
+func (mock *ProjectMVRepoMock) UpdateEventOfService(e apimodels.KeptnContextExtendedCE) error {
 	if mock.UpdateEventOfServiceFunc == nil {
 		panic("ProjectMVRepoMock.UpdateEventOfServiceFunc: method is nil but ProjectMVRepo.UpdateEventOfService was just called")
 	}
 	callInfo := struct {
-		E models.Event
+		E apimodels.KeptnContextExtendedCE
 	}{
 		E: e,
 	}
@@ -793,10 +793,10 @@ func (mock *ProjectMVRepoMock) UpdateEventOfService(e models.Event) error {
 // Check the length with:
 //     len(mockedProjectMVRepo.UpdateEventOfServiceCalls())
 func (mock *ProjectMVRepoMock) UpdateEventOfServiceCalls() []struct {
-	E models.Event
+	E apimodels.KeptnContextExtendedCE
 } {
 	var calls []struct {
-		E models.Event
+		E apimodels.KeptnContextExtendedCE
 	}
 	mock.lockUpdateEventOfService.RLock()
 	calls = mock.calls.UpdateEventOfService
@@ -805,12 +805,12 @@ func (mock *ProjectMVRepoMock) UpdateEventOfServiceCalls() []struct {
 }
 
 // UpdateProject calls UpdateProjectFunc.
-func (mock *ProjectMVRepoMock) UpdateProject(prj *models.ExpandedProject) error {
+func (mock *ProjectMVRepoMock) UpdateProject(prj *apimodels.ExpandedProject) error {
 	if mock.UpdateProjectFunc == nil {
 		panic("ProjectMVRepoMock.UpdateProjectFunc: method is nil but ProjectMVRepo.UpdateProject was just called")
 	}
 	callInfo := struct {
-		Prj *models.ExpandedProject
+		Prj *apimodels.ExpandedProject
 	}{
 		Prj: prj,
 	}
@@ -824,10 +824,10 @@ func (mock *ProjectMVRepoMock) UpdateProject(prj *models.ExpandedProject) error 
 // Check the length with:
 //     len(mockedProjectMVRepo.UpdateProjectCalls())
 func (mock *ProjectMVRepoMock) UpdateProjectCalls() []struct {
-	Prj *models.ExpandedProject
+	Prj *apimodels.ExpandedProject
 } {
 	var calls []struct {
-		Prj *models.ExpandedProject
+		Prj *apimodels.ExpandedProject
 	}
 	mock.lockUpdateProject.RLock()
 	calls = mock.calls.UpdateProject

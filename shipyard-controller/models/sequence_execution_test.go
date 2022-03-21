@@ -1,6 +1,7 @@
 package models
 
 import (
+	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/stretchr/testify/require"
 	"reflect"
@@ -694,7 +695,7 @@ func TestSequenceExecution_IsPaused(t *testing.T) {
 			name: "is paused",
 			fields: fields{
 				Status: SequenceExecutionStatus{
-					State: SequencePaused,
+					State: models.SequencePaused,
 				},
 			},
 			want: true,
@@ -703,7 +704,7 @@ func TestSequenceExecution_IsPaused(t *testing.T) {
 			name: "is not paused",
 			fields: fields{
 				Status: SequenceExecutionStatus{
-					State: SequenceStartedState,
+					State: models.SequenceStartedState,
 				},
 			},
 			want: false,
@@ -742,7 +743,7 @@ func TestSequenceExecution_CanBePaused(t *testing.T) {
 			name: "can be paused",
 			fields: fields{
 				Status: SequenceExecutionStatus{
-					State: SequenceStartedState,
+					State: models.SequenceStartedState,
 				},
 			},
 			want: true,
@@ -751,7 +752,7 @@ func TestSequenceExecution_CanBePaused(t *testing.T) {
 			name: "can not be paused",
 			fields: fields{
 				Status: SequenceExecutionStatus{
-					State: SequenceFinished,
+					State: models.SequenceFinished,
 				},
 			},
 			want: false,
@@ -791,7 +792,7 @@ func TestSequenceExecution_Pause(t *testing.T) {
 			name: "try to pause finished sequence",
 			fields: fields{
 				Status: SequenceExecutionStatus{
-					State: SequenceFinished,
+					State: models.SequenceFinished,
 				},
 			},
 			want: false,
@@ -800,11 +801,11 @@ func TestSequenceExecution_Pause(t *testing.T) {
 			name: "pause sequence - keep track of previous state",
 			fields: fields{
 				Status: SequenceExecutionStatus{
-					State: SequenceStartedState,
+					State: models.SequenceStartedState,
 				},
 			},
 			want:              true,
-			wantPreviousState: SequenceStartedState,
+			wantPreviousState: models.SequenceStartedState,
 		},
 	}
 	for _, tt := range tests {
@@ -844,7 +845,7 @@ func TestSequenceExecution_Resume(t *testing.T) {
 			name: "try to resume non-paused sequence",
 			fields: fields{
 				Status: SequenceExecutionStatus{
-					State: SequenceStartedState,
+					State: models.SequenceStartedState,
 				},
 			},
 			want: false,
@@ -853,12 +854,12 @@ func TestSequenceExecution_Resume(t *testing.T) {
 			name: "resume sequence - set state back to previous state",
 			fields: fields{
 				Status: SequenceExecutionStatus{
-					State:            SequencePaused,
-					StateBeforePause: SequenceTriggeredState,
+					State:            models.SequencePaused,
+					StateBeforePause: models.SequenceTriggeredState,
 				},
 			},
 			want:      true,
-			wantState: SequenceTriggeredState,
+			wantState: models.SequenceTriggeredState,
 		},
 	}
 	for _, tt := range tests {

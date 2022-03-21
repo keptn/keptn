@@ -2,6 +2,7 @@ package db
 
 import (
 	"errors"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"time"
@@ -24,29 +25,29 @@ var ErrOpenRemediationNotFound = errors.New("open remediation not found")
 
 //go:generate moq --skip-ensure -pkg db_mock -out ./mock/sequencestaterepo_mock.go . SequenceStateRepo
 type SequenceStateRepo interface {
-	CreateSequenceState(state models.SequenceState) error
-	FindSequenceStates(filter models.StateFilter) (*models.SequenceStates, error)
-	UpdateSequenceState(state models.SequenceState) error
-	DeleteSequenceStates(filter models.StateFilter) error
+	CreateSequenceState(state apimodels.SequenceState) error
+	FindSequenceStates(filter apimodels.StateFilter) (*apimodels.SequenceStates, error)
+	UpdateSequenceState(state apimodels.SequenceState) error
+	DeleteSequenceStates(filter apimodels.StateFilter) error
 }
 
 //go:generate moq --skip-ensure -pkg db_mock -out ./mock/uniformrepo_mock.go . UniformRepo
 type UniformRepo interface {
-	GetUniformIntegrations(filter models.GetUniformIntegrationsParams) ([]models.Integration, error)
+	GetUniformIntegrations(filter models.GetUniformIntegrationsParams) ([]apimodels.Integration, error)
 	DeleteUniformIntegration(id string) error
-	CreateUniformIntegration(integration models.Integration) error
-	CreateOrUpdateUniformIntegration(integration models.Integration) error
-	CreateOrUpdateSubscription(integrationID string, subscription models.Subscription) error
+	CreateUniformIntegration(integration apimodels.Integration) error
+	CreateOrUpdateUniformIntegration(integration apimodels.Integration) error
+	CreateOrUpdateSubscription(integrationID string, subscription apimodels.EventSubscription) error
 	DeleteServiceFromSubscriptions(subscriptionName string) error
 	DeleteSubscription(integrationID, subscriptionID string) error
-	GetSubscription(integrationID, subscriptionID string) (*models.Subscription, error)
-	GetSubscriptions(integrationID string) ([]models.Subscription, error)
-	UpdateLastSeen(integrationID string) (*models.Integration, error)
-	UpdateVersionInfo(integrationID, integrationVersion, distributorVersion string) (*models.Integration, error)
+	GetSubscription(integrationID, subscriptionID string) (*apimodels.EventSubscription, error)
+	GetSubscriptions(integrationID string) ([]apimodels.EventSubscription, error)
+	UpdateLastSeen(integrationID string) (*apimodels.Integration, error)
+	UpdateVersionInfo(integrationID, integrationVersion, distributorVersion string) (*apimodels.Integration, error)
 }
 
 type LogRepo interface {
-	CreateLogEntries(entries []models.LogEntry) error
+	CreateLogEntries(entries []apimodels.LogEntry) error
 	GetLogEntries(filter models.GetLogParams) (*models.GetLogsResponse, error)
 	DeleteLogEntries(params models.DeleteLogParams) error
 }
@@ -67,25 +68,25 @@ type EventQueueRepo interface {
 
 //go:generate moq --skip-ensure -pkg db_mock -out ./mock/eventrepo_mock.go . EventRepo
 type EventRepo interface {
-	GetEvents(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error)
+	GetEvents(project string, filter common.EventFilter, status ...common.EventStatus) ([]apimodels.KeptnContextExtendedCE, error)
 	GetRootEvents(params models.GetRootEventParams) (*models.GetEventsResult, error)
-	InsertEvent(project string, event models.Event, status common.EventStatus) error
+	InsertEvent(project string, event apimodels.KeptnContextExtendedCE, status common.EventStatus) error
 	DeleteEvent(project string, eventID string, status common.EventStatus) error
 	DeleteEventCollections(project string) error
-	GetStartedEventsForTriggeredID(eventScope models.EventScope) ([]models.Event, error)
-	GetEventsWithRetry(project string, filter common.EventFilter, status common.EventStatus, nrRetries int) ([]models.Event, error)
-	GetTaskSequenceTriggeredEvent(eventScope models.EventScope, taskSequenceName string) (*models.Event, error)
+	GetStartedEventsForTriggeredID(eventScope models.EventScope) ([]apimodels.KeptnContextExtendedCE, error)
+	GetEventsWithRetry(project string, filter common.EventFilter, status common.EventStatus, nrRetries int) ([]apimodels.KeptnContextExtendedCE, error)
+	GetTaskSequenceTriggeredEvent(eventScope models.EventScope, taskSequenceName string) (*apimodels.KeptnContextExtendedCE, error)
 	DeleteAllFinishedEvents(eventScope models.EventScope) error
-	GetFinishedEvents(eventScope models.EventScope) ([]models.Event, error)
+	GetFinishedEvents(eventScope models.EventScope) ([]apimodels.KeptnContextExtendedCE, error)
 }
 
 // ProjectRepo is an interface to access projects
 //go:generate moq --skip-ensure -pkg db_mock -out ./mock/projectrepo_mock.go . ProjectRepo
 type ProjectRepo interface {
-	GetProjects() ([]*models.ExpandedProject, error)
-	GetProject(projectName string) (*models.ExpandedProject, error)
-	CreateProject(project *models.ExpandedProject) error
-	UpdateProject(project *models.ExpandedProject) error
+	GetProjects() ([]*apimodels.ExpandedProject, error)
+	GetProject(projectName string) (*apimodels.ExpandedProject, error)
+	CreateProject(project *apimodels.ExpandedProject) error
+	UpdateProject(project *apimodels.ExpandedProject) error
 	UpdateProjectUpstream(projectName string, uri string, user string) error
 	DeleteProject(projectName string) error
 }
