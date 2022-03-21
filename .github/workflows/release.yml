@@ -394,8 +394,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
           RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
         run: |
-          gh release upload "$RELEASE_TAG" "../dist/keptn-installer/*.tgz"
-          gh release upload "$RELEASE_TAG" "../dist/keptn-cli/*.tar.gz"
+          gh release upload "$RELEASE_TAG" ../dist/keptn-installer/*.tgz
+          gh release upload "$RELEASE_TAG" ../dist/keptn-cli/*.tar.gz
 
       - name: Upload helm charts
         env:
