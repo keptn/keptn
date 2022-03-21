@@ -332,12 +332,12 @@ jobs:
               --header ""
           fi
 
-      - name: Temporarily disable "include administrators" branch protection
-        uses: benjefferies/branch-protection-bot@76b8a9d745a68c6a6e9b4bf745d4b32ad805e9a1
-        with:
-          access_token: ${{ secrets.KEPTN_BOT_TOKEN }}
-          branch: ${{ needs.prepare.outputs.branch }}
-          enforce_admins: false
+#      - name: Temporarily disable "include administrators" branch protection
+#        uses: benjefferies/branch-protection-bot@76b8a9d745a68c6a6e9b4bf745d4b32ad805e9a1
+#        with:
+#          access_token: ${{ secrets.KEPTN_BOT_TOKEN }}
+#          branch: ${{ needs.prepare.outputs.branch }}
+#          enforce_admins: false
 
       - name: Create pre-release package
         id: create-release-package
@@ -366,13 +366,13 @@ jobs:
           echo "⚡️ Pushing changes to remote repository..."
           git push --follow-tags
 
-      - name: Enable "include administrators" branch protection
-        uses: benjefferies/branch-protection-bot@76b8a9d745a68c6a6e9b4bf745d4b32ad805e9a1
-        if: always() # Force to always run this step to ensure "include administrators" is always turned back on
-        with:
-          access_token: ${{ secrets.KEPTN_BOT_TOKEN }}
-          branch: ${{ needs.prepare.outputs.branch }}
-          enforce_admins: true
+#      - name: Enable "include administrators" branch protection
+#        uses: benjefferies/branch-protection-bot@76b8a9d745a68c6a6e9b4bf745d4b32ad805e9a1
+#        if: always() # Force to always run this step to ensure "include administrators" is always turned back on
+#        with:
+#          access_token: ${{ secrets.KEPTN_BOT_TOKEN }}
+#          branch: ${{ needs.prepare.outputs.branch }}
+#          enforce_admins: true
 
       - name: Get k8s resource stats
         working-directory: keptn
