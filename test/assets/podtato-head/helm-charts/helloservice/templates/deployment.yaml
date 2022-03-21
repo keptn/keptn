@@ -10,6 +10,7 @@ spec:
   template:
     metadata:
       labels:
+        cluster-autoscaler.kubernetes.io/safe-to-evict: true
         app: helloservice
       annotations:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
