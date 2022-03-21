@@ -6,7 +6,7 @@ import { ActivatedRoute, ParamMap } from '@angular/router';
 import { filter, map } from 'rxjs/operators';
 import { isGitHTTPS } from '../../_utils/git-upstream.utils';
 
-enum FormType {
+export enum GitFormType {
   SSH,
   HTTPS,
 }
@@ -17,10 +17,12 @@ enum FormType {
   styleUrls: ['./ktb-project-settings-git-extended.component.scss'],
 })
 export class KtbProjectSettingsGitExtendedComponent {
-  private projectName = '';
+  // TODO: on https/ssh change, should the data be discarded or not? If not, the invalid data needs to be temporarily saved
+  //  solution: on change of FormControl in component change the gitInputData. Should be a reference. e.g. https component: get and set for proxy in order to adjust the parent gitDataInput
+  private projectName?: string;
   private _gitInputData?: IGitDataExtended;
-  public FormType = FormType;
-  public selectedForm: FormType = FormType.HTTPS;
+  public FormType = GitFormType;
+  public selectedForm: GitFormType = GitFormType.HTTPS;
   public gitData?: IGitDataExtended;
 
   @Input()
@@ -35,9 +37,7 @@ export class KtbProjectSettingsGitExtendedComponent {
   @Input()
   public set gitInputData(gitData: IGitDataExtended | undefined) {
     this._gitInputData = gitData;
-    if (gitData) {
-      this.selectedForm = isGitHTTPS(gitData) ? FormType.HTTPS : FormType.SSH;
-    }
+    this.selectedForm = !gitData || isGitHTTPS(gitData) ? GitFormType.HTTPS : GitFormType.SSH;
   }
   public get gitInputData(): IGitDataExtended | undefined {
     return this._gitInputData;
@@ -51,7 +51,7 @@ export class KtbProjectSettingsGitExtendedComponent {
   }
 
   public get gitInputDataSSH(): IGitSsh | undefined {
-    return this.gitInputData && isGitHTTPS(this.gitInputData) ? undefined : this.gitInputData;
+    return this.gitInputData && !isGitHTTPS(this.gitInputData) ? this.gitInputData : undefined;
   }
 
   constructor(private readonly dataService: DataService, readonly routes: ActivatedRoute) {
@@ -65,14 +65,14 @@ export class KtbProjectSettingsGitExtendedComponent {
       });
   }
 
-  public setSelectedForm($event: DtRadioChange<FormType>): void {
-    this.selectedForm = $event.value ?? FormType.HTTPS;
-    this.dataChanged(); // on change reset form
+  public setSelectedForm($event: DtRadioChange<GitFormType>): void {
+    this.selectedForm = $event.value ?? GitFormType.HTTPS;
+    this.dataChanged(); // on change reset form because the data is invalid then
   }
 
   public updateUpstream(): void {
-    if (this.gitData) {
-      this.dataService.updateGitUpstream(this.projectName, this.gitData);
+    if (this.gitData && this.projectName) {
+      this.dataService.updateGitUpstream(this.projectName, this.gitData).subscribe();
     }
   }
 

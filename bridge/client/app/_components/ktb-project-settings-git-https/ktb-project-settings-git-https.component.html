@@ -10,10 +10,11 @@
   If a certificate is needed for the Git repository connection, upload the certificate file or add it directly as text.
 </p>
 <ktb-certificate-input
-  #certificateInput
+  #certificateInputElement
   [isLoading]="isLoading"
+  [certificateInput]="certificateInput"
   (certificateChange)="
-    certificate = $event; isCertificateValid = certificateInput.certificateForm.valid; inputChanged()
+    certificate = $event; isCertificateValid = certificateInputElement.certificateForm.valid; inputChanged()
   "
 ></ktb-certificate-input>
 <h2>Proxy</h2>

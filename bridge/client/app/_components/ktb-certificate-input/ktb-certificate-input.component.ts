@@ -16,8 +16,17 @@ export class KtbCertificateInputComponent {
   @Input()
   public isLoading = false;
 
+  @Input()
+  set certificateInput(certificate: string | undefined) {
+    this.certificateControl.setValue(atob(certificate ?? ''));
+    if (certificate !== undefined) {
+      this.certificateControl.markAsDirty();
+      this.certificateChanged();
+    }
+  }
+
   @Output()
-  certificateChange = new EventEmitter<string | undefined>();
+  public certificateChange = new EventEmitter<string | undefined>();
 
   public async validateCertificate(files: FileList | null): Promise<void> {
     const file = files?.[0];

@@ -10,6 +10,7 @@ import { isGitUpstreamValidSet, isGitWithProxy } from '../../_utils/git-upstream
 export class KtbProjectSettingsGitHttpsComponent {
   private gitUpstream?: IRequiredGitData;
   private _gitInputData?: IGitHttps;
+  public certificateInput?: string;
   public proxyEnabled = false;
   public proxy?: IProxy;
   public certificate?: string;
@@ -33,10 +34,11 @@ export class KtbProjectSettingsGitHttpsComponent {
         gitProxyPassword: data.https.gitProxyPassword,
       };
     }
+    this.certificateInput = data?.https.gitPemCertificate;
     this.gitDataRequired = {
-      gitUser: this.gitInputData?.https.gitUser,
-      gitToken: this.gitInputData?.https.gitToken,
-      gitRemoteURL: this.gitInputData?.https.gitRemoteURL,
+      gitUser: data?.https.gitUser,
+      gitToken: data?.https.gitToken,
+      gitRemoteURL: data?.https.gitRemoteURL,
     };
   }
   public get gitInputData(): IGitHttps | undefined {

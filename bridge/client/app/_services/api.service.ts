@@ -135,19 +135,14 @@ export class ApiService {
     });
   }
 
-  public createProjectHTTPS(projectName: string, shipyard: string, data: IGitHttps): Observable<unknown> {
+  public createProjectExtended(
+    projectName: string,
+    shipyard: string,
+    data: IGitHttps['https'] | IGitSsh['ssh']
+  ): Observable<unknown> {
     const url = `${this._baseUrl}/controlPlane/v1/project`;
     return this.http.post<unknown>(url, {
-      ...data.https,
-      name: projectName,
-      shipyard,
-    });
-  }
-
-  public createProjectSSH(projectName: string, shipyard: string, data: IGitSsh): Observable<unknown> {
-    const url = `${this._baseUrl}/controlPlane/v1/project`;
-    return this.http.post<unknown>(url, {
-      ...data.ssh,
+      ...data,
       name: projectName,
       shipyard,
     });
@@ -386,18 +381,13 @@ export class ApiService {
     });
   }
 
-  public updateGitUpstreamHTTPS(projectName: string, data: IGitHttps): Observable<unknown> {
+  public updateGitUpstreamExtended(
+    projectName: string,
+    data: IGitHttps['https'] | IGitSsh['ssh']
+  ): Observable<unknown> {
     const url = `${this._baseUrl}/controlPlane/v1/project`;
     return this.http.put(url, {
-      ...data.https,
-      name: projectName,
-    });
-  }
-
-  public updateGitUpstreamSSH(projectName: string, data: IGitSsh): Observable<unknown> {
-    const url = `${this._baseUrl}/controlPlane/v1/project`;
-    return this.http.put(url, {
-      ...data.ssh,
+      ...data,
       name: projectName,
     });
   }

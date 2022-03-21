@@ -17,6 +17,7 @@ import { NotificationType } from '../../_models/notification';
 import { PendingChangesComponent } from '../../_guards/pending-changes.guard';
 import { IClientFeatureFlags } from '../../../../shared/interfaces/feature-flags';
 import { IGitData, IGitDataExtended } from '../../_interfaces/git-upstream';
+import { AppUtils } from '../../_utils/app.utils';
 
 type DialogState = null | 'unsaved';
 
@@ -34,6 +35,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
   @ViewChild(KtbProjectSettingsGitComponent)
   private gitSettingsSection?: KtbProjectSettingsGitComponent;
   public gitInputDataExtended?: IGitDataExtended;
+  public gitInputDataExtendedDefault?: IGitDataExtended;
   public projectName?: string;
   public projectDeletionData?: DeleteData;
   public isProjectLoading: boolean | undefined;
@@ -69,14 +71,12 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
     });
   }
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.route.params.subscribe((params) => {
       if (!params.projectName) {
         this.isCreateMode = true;
         this.loadProjectsAndSetValidator();
-      }
-
-      if (params.projectName) {
+      } else {
         this.isProjectLoading = true;
         this.isCreateMode = false;
         this.isProjectFormTouched = false;
@@ -104,11 +104,6 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
     });
   }
 
-  ngOnDestroy(): void {
-    this.unsubscribe$.next();
-    this.unsubscribe$.complete();
-  }
-
   private loadProjectsAndSetValidator(): void {
     this.dataService
       .loadProjects()
@@ -132,7 +127,8 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
         gitRemoteURL: project.gitRemoteURI,
         gitUser: project.gitUser,
       };
-      this.gitInputDataExtended = project.gitUpstream;
+      this.gitInputDataExtendedDefault = project.gitUpstream;
+      this.gitInputDataExtended = AppUtils.copyObject(project.gitUpstream); // there should not be a reference. Could lead to problems when the form is reset
 
       this.isProjectLoading = false;
     });
@@ -165,6 +161,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
 
   public updateGitDataExtended(data?: IGitDataExtended): void {
     this.gitDataExtended = data;
+    this.projectFormTouched();
   }
 
   public updateShipyardFile(shipyardFile: File | undefined): void {
@@ -271,7 +268,11 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
   }
 
   public reset(): void {
-    this.gitSettingsSection?.reset();
+    if (this.resourceServiceEnabled) {
+      this.gitInputDataExtended = AppUtils.copyObject(this.gitInputDataExtendedDefault);
+    } else {
+      this.gitSettingsSection?.reset();
+    }
     this.pendingChangesSubject.next(true);
     this.hideNotification();
   }
@@ -302,13 +303,13 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
     return !this.gitData.gitFormValid || this.isGitUpstreamInProgress;
   }
 
-  projectFormTouched(): void {
+  public projectFormTouched(): void {
     this.isProjectFormTouched = true;
   }
 
   // @HostListener allows us to also guard against browser refresh, close, etc.
   @HostListener('window:beforeunload', ['$event'])
-  canDeactivate($event?: BeforeUnloadEvent): Observable<boolean> {
+  public canDeactivate($event?: BeforeUnloadEvent): Observable<boolean> {
     if (this.isProjectFormTouched) {
       if ($event) {
         $event.returnValue = this.message;
@@ -320,7 +321,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
     }
   }
 
-  showNotification(): void {
+  public showNotification(): void {
     this.unsavedDialogState = 'unsaved';
 
     document.querySelector('div[aria-label="Dialog for notifying about unsaved data"]')?.classList.add('shake');
@@ -329,7 +330,12 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
     }, 500);
   }
 
-  hideNotification(): void {
+  public hideNotification(): void {
     this.unsavedDialogState = null;
+  }
+
+  public ngOnDestroy(): void {
+    this.unsubscribe$.next();
+    this.unsubscribe$.complete();
   }
 }

@@ -42,6 +42,7 @@ import { DeploymentResponseMock } from './_mockData/api-responses/deployment-res
 import { ISequencesMetadata } from '../../../shared/interfaces/sequencesMetadata';
 import { SequenceMetadataMock } from './_mockData/sequence-metadata.mock';
 import { TriggerEvaluationData, TriggerResponse, TriggerSequenceData } from '../_models/trigger-sequence';
+import { IGitHttps, IGitSsh } from '../_interfaces/git-upstream';
 
 @Injectable({
   providedIn: null,
@@ -107,6 +108,14 @@ export class ApiServiceMock extends ApiService {
     gitRemoteUrl?: string,
     gitToken?: string,
     gitUser?: string
+  ): Observable<unknown> {
+    return of({});
+  }
+
+  public createProjectExtended(
+    projectName: string,
+    shipyard: string,
+    data: IGitHttps['https'] | IGitSsh['ssh']
   ): Observable<unknown> {
     return of({});
   }
@@ -307,6 +316,13 @@ export class ApiServiceMock extends ApiService {
       events: EvaluationResultsResponseDataMock,
     };
     return of(result);
+  }
+
+  public updateGitUpstreamExtended(
+    projectName: string,
+    data: IGitHttps['https'] | IGitSsh['ssh']
+  ): Observable<unknown> {
+    return of({});
   }
 
   public sendGitUpstreamUrl(

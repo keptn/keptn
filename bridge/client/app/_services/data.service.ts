@@ -141,11 +141,7 @@ export class DataService {
   }
 
   public createProjectExtended(projectName: string, shipyard: string, data: IGitDataExtended): Observable<unknown> {
-    if (isGitHTTPS(data)) {
-      return this.apiService.createProjectHTTPS(projectName, shipyard, data);
-    } else {
-      return this.apiService.createProjectSSH(projectName, shipyard, data);
-    }
+    return this.apiService.createProjectExtended(projectName, shipyard, isGitHTTPS(data) ? data.https : data.ssh);
   }
 
   public createService(projectName: string, serviceName: string): Observable<Record<string, unknown>> {
@@ -260,11 +256,7 @@ export class DataService {
   }
 
   public updateGitUpstream(projectName: string, data: IGitDataExtended): Observable<unknown> {
-    if (isGitHTTPS(data)) {
-      return this.apiService.updateGitUpstreamHTTPS(projectName, data);
-    } else {
-      return this.apiService.updateGitUpstreamSSH(projectName, data);
-    }
+    return this.apiService.updateGitUpstreamExtended(projectName, isGitHTTPS(data) ? data.https : data.ssh);
   }
 
   public loadKeptnInfo(): void {

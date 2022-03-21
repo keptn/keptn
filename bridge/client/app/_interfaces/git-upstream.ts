@@ -39,7 +39,7 @@ export interface IGitSshData {
 
 export interface ISshKeyData {
   gitPrivateKey: string;
-  gitPrivateKeyPass: string;
+  gitPrivateKeyPass?: string;
 }
 
 export interface IGitSsh {

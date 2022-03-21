@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbProjectSettingsGitComponent } from './ktb-project-settings-git.component';
 import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { IGitData } from '../../_interfaces/git-upstream';
 
 describe('KtbProjectSettingsGitComponent', () => {
   let component: KtbProjectSettingsGitComponent;
@@ -25,7 +26,7 @@ describe('KtbProjectSettingsGitComponent', () => {
   it('should set token value to empty string if git uri and git user are set', () => {
     // given
     component.gitData = {
-      remoteURI: 'https://some-repo.git',
+      gitRemoteURL: 'https://some-repo.git',
       gitUser: 'username',
     };
 
@@ -36,7 +37,7 @@ describe('KtbProjectSettingsGitComponent', () => {
   it('should not set git token control when only git uri is set', () => {
     // given
     component.gitData = {
-      remoteURI: 'https://some-repo.git',
+      gitRemoteURL: 'https://some-repo.git',
     };
 
     // then
@@ -72,7 +73,7 @@ describe('KtbProjectSettingsGitComponent', () => {
 
     // when
     fixture.detectChanges();
-    const button = fixture.nativeElement.querySelector('button');
+    const button = fixture.nativeElement.querySelector('button'); //TODO: move to UI test
 
     // then
     expect(button).toBeTruthy();
@@ -157,13 +158,13 @@ describe('KtbProjectSettingsGitComponent', () => {
     expect(component.gitUpstreamForm.invalid).toBe(true);
   });
 
-  it('should be a invalid form when only remoteUri and token fields are set', () => {
+  it('should be a valid form when only remoteUri and token fields are set', () => {
     // given
     component.gitUrlControl.setValue('https://some-repo.git');
     component.gitTokenControl.setValue('testToken');
 
     // then
-    expect(component.gitUpstreamForm.invalid).toBe(true);
+    expect(component.gitUpstreamForm.valid).toBe(true);
   });
 
   it('should be a invalid form when only username and token fields are set', () => {
@@ -220,7 +221,7 @@ describe('KtbProjectSettingsGitComponent', () => {
   it('should emit the changed git data when form is changed', () => {
     // given
     component.gitData = {
-      remoteURI: 'https://some-repo.git',
+      gitRemoteURL: 'https://some-repo.git',
       gitUser: 'username',
     };
 
@@ -234,9 +235,52 @@ describe('KtbProjectSettingsGitComponent', () => {
     expect(spy).toHaveBeenCalledWith({
       gitToken: '',
       gitFormValid: false,
-      remoteURI: 'https://some-other-repo.git',
+      gitRemoteURL: 'https://some-other-repo.git',
       gitUser: 'username',
+    } as IGitData);
+  });
+
+  it('should submit/emit form', () => {
+    // given
+    const emitSpy = jest.spyOn(component.gitUpstreamSubmit, 'emit');
+    const url = 'https://my-git-repo.git';
+    const user = 'myUser';
+    const token = 'myToken';
+    component.gitUrlControl.setValue(url);
+    component.gitUserControl.setValue(user);
+    component.gitTokenControl.setValue(token);
+
+    // when
+    component.setGitUpstream();
+
+    // then
+    expect(emitSpy).toHaveBeenCalledWith({
+      gitRemoteURL: url,
+      gitUser: user,
+      gitToken: token,
     });
+  });
+
+  it('should reset form to input values', () => {
+    // given
+    component.gitData = {
+      gitRemoteURL: 'https://some-repo.git',
+      gitUser: 'username',
+    };
+
+    // when
+    const url = 'https://my-git-repo.git';
+    const user = 'myUser';
+    const token = 'myToken';
+    component.gitUrlControl.setValue(url);
+    component.gitUserControl.setValue(user);
+    component.gitTokenControl.setValue(token);
+
+    component.reset();
+
+    expect(component.gitUrlControl.value).toBe('https://some-repo.git');
+    expect(component.gitUserControl.value).toBe('username');
+    expect(component.gitTokenControl.value).toBe('');
   });
 
   function assertDisabledInputs(isDisabled: boolean): void {

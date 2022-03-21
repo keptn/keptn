@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { ISshKeyData } from '../../_interfaces/git-upstream';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { FormUtils } from '../../_utils/form.utils';
@@ -16,13 +16,25 @@ export class KtbSshKeyInputComponent {
     privateKeyPassword: this.privateKeyPasswordControl,
   });
 
+  @Input()
+  public set sshInput(data: ISshKeyData | undefined) {
+    if (data) {
+      this.privateKeyControl.setValue(atob(data.gitPrivateKey));
+      if (data.gitPrivateKey) {
+        this.privateKeyControl.markAsDirty();
+      }
+      this.privateKeyPasswordControl.setValue(data.gitPrivateKeyPass);
+      this.sshDataChanged();
+    }
+  }
+
   @Output()
   public sshDataChange = new EventEmitter<ISshKeyData | undefined>();
 
   private get data(): ISshKeyData | undefined {
     return this.sshKeyForm.valid
       ? {
-          gitPrivateKey: this.privateKeyControl.value,
+          gitPrivateKey: btoa(this.privateKeyControl.value),
           gitPrivateKeyPass: this.privateKeyPasswordControl.value,
         }
       : undefined;

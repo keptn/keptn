@@ -40,8 +40,16 @@ export class KtbProxyInputComponent {
       this.isInsecureControl.setValue(proxy.gitProxyInsecure);
       this.schemeControl.setValue(proxy.gitProxyScheme);
       this.hostControl.setValue(urlParts.host);
+      if (urlParts.host) {
+        this.hostControl.markAsDirty();
+      }
       this.portControl.setValue(urlParts.port);
-      this.userControl.setValue(proxy.gitProxyUser);
+      if (urlParts.port) {
+        this.portControl.markAsDirty();
+      }
+      this.userControl.setValue(proxy.gitProxyUser ?? '');
+      this.passwordControl.setValue(proxy.gitProxyPassword ?? '');
+      this.proxyChanged();
     }
   }
   public get proxy(): IProxy | undefined {
@@ -64,10 +72,23 @@ export class KtbProxyInputComponent {
 
   private splitURLPort(url: string): { host: string; port: string } {
     const index = url.lastIndexOf(':');
-
-    return {
-      host: url.substring(0, index),
-      port: url.substring(index + 1),
-    };
+    let host, port;
+    if (index === -1) {
+      return {
+        host: url,
+        port: '',
+      };
+    } else {
+      host = url.substring(0, index);
+      port = url.substring(index + 1);
+      if (isNaN(+port)) {
+        port = '';
+        host = url;
+      }
+      return {
+        host,
+        port,
+      };
+    }
   }
 }

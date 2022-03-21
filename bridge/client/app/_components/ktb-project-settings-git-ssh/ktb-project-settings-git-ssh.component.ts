@@ -10,6 +10,7 @@ export class KtbProjectSettingsGitSshComponent {
   public gitUpstream?: IGitSshData;
   public sshKeyData?: ISshKeyData;
   public gitInputData?: IGitSshData;
+  public sshInputData?: ISshKeyData;
 
   @Input()
   public isLoading = false;
@@ -20,6 +21,10 @@ export class KtbProjectSettingsGitSshComponent {
       this.gitInputData = {
         gitRemoteURL: data.ssh.gitRemoteURL,
         gitUser: data.ssh.gitUser,
+      };
+      this.sshInputData = {
+        gitPrivateKeyPass: data.ssh.gitPrivateKeyPass,
+        gitPrivateKey: data.ssh.gitPrivateKey,
       };
     }
   }
