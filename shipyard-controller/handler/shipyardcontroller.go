@@ -503,13 +503,13 @@ func (sc *shipyardController) resumeSequence(resume apimodels.SequenceControl) e
 	return nil
 }
 
-func (sc *shipyardController) forceTaskSequenceCompletion(sequenceExecution apimodels.SequenceExecution) error {
+func (sc *shipyardController) forceTaskSequenceCompletion(sequenceExecution models.SequenceExecution) error {
 	scope := sequenceExecution.Scope
 
 	scope.Result = keptnv2.ResultPass
 	scope.Status = keptnv2.StatusAborted
 
-	return sc.completeTaskSequence(*scope, sequenceExecution, apimodels.SequenceFinished)
+	return sc.completeTaskSequence(scope, sequenceExecution, apimodels.SequenceFinished)
 }
 
 func (sc *shipyardController) timeoutSequence(timeout apimodels.SequenceTimeout) error {
@@ -540,7 +540,7 @@ func (sc *shipyardController) timeoutSequence(timeout apimodels.SequenceTimeout)
 	sequenceExecution := sequenceExecutions[0]
 	sc.onSequenceTimeout(timeout.LastEvent)
 
-	if err := sc.completeTaskSequence(sequenceExecution.Scope, sequenceExecution, models.TimedOut); err != nil {
+	if err := sc.completeTaskSequence(sequenceExecution.Scope, sequenceExecution, apimodels.TimedOut); err != nil {
 		return err
 	}
 	return nil
