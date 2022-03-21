@@ -6,8 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/cloudevents/sdk-go/v2/types"
-	logger "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"math"
 	"net/http"
@@ -16,6 +14,9 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/cloudevents/sdk-go/v2/types"
+	logger "github.com/sirupsen/logrus"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
@@ -128,6 +129,20 @@ func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(ctx context.Context, sh
 	if e.Result == "fail" {
 		evalResult.EventData.Result = keptnv2.ResultFailed
 		evalResult.Message = fmt.Sprintf("no evaluation performed by lighthouse because SLI failed with message %s", e.Message)
+		return sendEvent(shkeptncontext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), commitID, eh.KeptnHandler, &evalResult)
+	}
+
+	if e.Status == keptnv2.StatusAborted {
+		evalResult.EventData.Result = keptnv2.ResultFailed
+		evalResult.EventData.Status = keptnv2.StatusErrored
+		evalResult.Message = fmt.Sprintf("evaluation performed by lighthouse was aborted")
+		return sendEvent(shkeptncontext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), commitID, eh.KeptnHandler, &evalResult)
+	}
+
+	if e.Status == keptnv2.StatusErrored {
+		evalResult.EventData.Result = keptnv2.ResultFailed
+		evalResult.EventData.Status = e.Status
+		evalResult.Message = fmt.Sprintf("evaluation performed by lighthouse received an unexpected error: %s", e.Message)
 		return sendEvent(shkeptncontext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), commitID, eh.KeptnHandler, &evalResult)
 	}
 
