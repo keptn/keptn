@@ -406,6 +406,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
           RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
         run: |
+          ls -laR ./dist
           mv ./dist/keptn-installer/*.tgz ./helm-charts/packages
           cd ./helm-charts
           helm repo index ./ --url https://charts.keptn.sh/ --merge ./index.yaml
@@ -415,11 +416,12 @@ jobs:
           git push
 
       - name: Attach docker image digests to release
+        working-directory: keptn
         env:
           GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
           DIGEST_FILE: "digests.csv"
           RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
         run: |
-          cat ./dist/image-digests/digest-*.txt >> $DIGEST_FILE
+          cat ../dist/image-digests/digest-*.txt >> $DIGEST_FILE
 
           gh release upload "$RELEASE_TAG" "$DIGEST_FILE"
