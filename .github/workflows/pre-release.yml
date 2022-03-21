@@ -390,6 +390,7 @@ jobs:
           RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
         run: |
           gh release create "$RELEASE_TAG" --draft --prerelease --notes-file "${{ env.RELEASE_NOTES_FILE }}" --title "$RELEASE_TAG"
+          sleep 10
 
       - name: Upload Release Assets
         working-directory: keptn
