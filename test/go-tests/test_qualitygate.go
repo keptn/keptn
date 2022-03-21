@@ -805,8 +805,8 @@ func Test_QualityGates_AbortedFinishedPayloadSend(t *testing.T) {
 	sequenceStates, _, err := GetState(projectName)
 	require.Nil(t, err)
 	require.NotEmpty(t, sequenceStates.States)
-	require.Equal(t, sequenceStates.States[0].Stages[0].State, keptnv2.StatusAborted)
-	require.Equal(t, sequenceStates.States[0].Stages[0].LatestEvaluation.Result, keptnv2.ResultFailed)
+	require.Equal(t, "aborted", sequenceStates.States[0].Stages[0].State)
+	require.Equal(t, "pass", sequenceStates.States[0].Stages[0].LatestEvaluation.Result)
 	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{KeptnContext: &keptnContext}, 2*time.Minute, []string{models.SequenceFinished})
 }
 
@@ -906,8 +906,8 @@ func Test_QualityGates_ErroredFinishedPayloadSend(t *testing.T) {
 	sequenceStates, _, err := GetState(projectName)
 	require.Nil(t, err)
 	require.NotEmpty(t, sequenceStates.States)
-	require.Equal(t, sequenceStates.States[0].Stages[0].State, keptnv2.StatusErrored)
-	require.Equal(t, sequenceStates.States[0].Stages[0].LatestEvaluation.Result, keptnv2.ResultFailed)
+	require.Equal(t, "errored", sequenceStates.States[0].Stages[0].State)
+	require.Equal(t, "fail", sequenceStates.States[0].Stages[0].LatestEvaluation.Result)
 	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{KeptnContext: &keptnContext}, 2*time.Minute, []string{models.SequenceFinished})
 }
 

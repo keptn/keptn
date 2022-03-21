@@ -126,10 +126,23 @@ func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(ctx context.Context, sh
 			Labels:  e.Labels,
 		},
 	}
-	if e.Result == "fail" || e.Status == keptnv2.StatusAborted || e.Status == keptnv2.StatusErrored {
+	if e.Result == "fail" {
+		evalResult.EventData.Result = keptnv2.ResultFailed
+		evalResult.Message = fmt.Sprintf("no evaluation performed by lighthouse because SLI failed with message %s", e.Message)
+		return sendEvent(shkeptncontext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), commitID, eh.KeptnHandler, &evalResult)
+	}
+
+	if e.Status == keptnv2.StatusAborted {
+		evalResult.EventData.Result = keptnv2.ResultPass
+		evalResult.EventData.Status = e.Status
+		evalResult.Message = fmt.Sprintf("no evaluation performed by lighthouse was aborted")
+		return sendEvent(shkeptncontext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), commitID, eh.KeptnHandler, &evalResult)
+	}
+
+	if e.Status == keptnv2.StatusErrored {
 		evalResult.EventData.Result = keptnv2.ResultFailed
 		evalResult.EventData.Status = e.Status
-		evalResult.Message = fmt.Sprintf("no evaluation performed by lighthouse because SLI failed with message %s", e.Message)
+		evalResult.Message = fmt.Sprintf("no evaluation performed by lighthouse received an unexpected error: %s", e.Message)
 		return sendEvent(shkeptncontext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), commitID, eh.KeptnHandler, &evalResult)
 	}
 
