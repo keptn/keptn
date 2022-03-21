@@ -241,19 +241,19 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	err = os.WriteFile(secretFileName, []byte(secret), 0644)
 	require.Nil(t, err)
 
-	//if serviceUnderTestName == "resource-service" {
-	//	t.Logf("Deleting resource-service pod")
-	//	_, err = ExecuteCommandf("kubectl delete pod %s -n %s", serviceUnderTestPod, keptnNamespace)
-	//	require.Nil(t, err)
-	//} else {
-	//	t.Logf("Deleting testing project")
-	//	_, err = ExecuteCommandf("keptn delete project %s", projectName)
-	//	require.Nil(t, err)
-	//}
-	//
-	//t.Logf("Sleeping for 60s...")
-	//time.Sleep(60 * time.Second)
-	//t.Logf("Continue to work...")
+	if serviceUnderTestName == "resource-service" {
+		t.Logf("Deleting resource-service pod")
+		_, err = ExecuteCommandf("kubectl delete pod %s -n %s", serviceUnderTestPod, keptnNamespace)
+		require.Nil(t, err)
+	} else {
+		t.Logf("Deleting testing project")
+		_, err = ExecuteCommandf("keptn delete project %s", projectName)
+		require.Nil(t, err)
+	}
+
+	t.Logf("Sleeping for 60s...")
+	time.Sleep(60 * time.Second)
+	t.Logf("Continue to work...")
 	//
 	////restore git-credentials
 	//
