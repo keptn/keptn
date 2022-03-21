@@ -9,9 +9,9 @@ require (
 	github.com/keptn/go-utils v0.13.1-0.20220318125157-fe974e59cc65
 	github.com/keptn/kubernetes-utils v0.13.1-0.20220309123424-6e3f2bcaf831
 	github.com/stretchr/testify v1.7.0
-	k8s.io/api v0.23.4
-	k8s.io/apimachinery v0.23.4
-	k8s.io/client-go v0.23.4
+	k8s.io/api v0.22.7
+	k8s.io/apimachinery v0.22.7
+	k8s.io/client-go v0.22.7
 )
 
 require (
@@ -83,9 +83,7 @@ require (
 	honnef.co/go/tools v0.0.1-2020.1.4 // indirect
 	k8s.io/apiextensions-apiserver v0.21.0 // indirect
 	k8s.io/klog/v2 v2.30.0 // indirect
-	k8s.io/kube-openapi v0.0.0-20211115234752-e816edb12b65 // indirect
 	k8s.io/utils v0.0.0-20211116205334-6203023598ed // indirect
-	sigs.k8s.io/json v0.0.0-20211208200746-9f7c6b3444d2 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
