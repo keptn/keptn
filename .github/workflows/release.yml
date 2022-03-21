@@ -402,7 +402,7 @@ jobs:
           RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
         run: |
           ls -laR ./dist
-          mv "./dist/keptn-installer/*.tgz" ./helm-charts/packages
+          mv ./dist/keptn-installer/*.tgz ./helm-charts/packages
           cd ./helm-charts
           helm repo index ./ --url https://charts.keptn.sh/ --merge ./index.yaml
           git add *.tgz
