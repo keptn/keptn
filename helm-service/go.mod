@@ -15,11 +15,12 @@ require (
 	github.com/stretchr/testify v1.7.0
 	gotest.tools v2.2.0+incompatible
 	helm.sh/helm/v3 v3.6.3
-	k8s.io/api v0.22.7
-	k8s.io/apimachinery v0.22.7
-	k8s.io/cli-runtime v0.22.7
-	k8s.io/client-go v0.22.7
-	k8s.io/kubectl v0.22.7
+	k8s.io/api v0.22.8
+	k8s.io/apimachinery v0.22.8
+	k8s.io/cli-runtime v0.22.8
+	k8s.io/client-go v0.22.8
+	k8s.io/kubectl v0.22.8
+	rsc.io/letsencrypt v0.0.3 // indirect
 	sigs.k8s.io/yaml v1.3.0
 )
 
