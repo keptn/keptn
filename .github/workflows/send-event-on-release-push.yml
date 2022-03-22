@@ -15,7 +15,7 @@ jobs:
     steps:
       - name: Trigger docs auto update in docs repo
         if: github.event_name == 'push'
-        uses: peter-evans/repository-dispatch@v1
+        uses: peter-evans/repository-dispatch@v2
         with:
           token: ${{ secrets.KEPTN_BOT_TOKEN }}
           repository: 'keptn/keptn.github.io'
@@ -24,7 +24,7 @@ jobs:
 
       - name: Trigger manual docs update in docs repo
         if: github.event_name == 'workflow_dispatch'
-        uses: peter-evans/repository-dispatch@v1
+        uses: peter-evans/repository-dispatch@v2
         with:
           token: ${{ secrets.KEPTN_BOT_TOKEN }}
           repository: 'keptn/keptn.github.io'
