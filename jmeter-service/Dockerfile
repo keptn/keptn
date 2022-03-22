@@ -56,8 +56,8 @@ ENV	JMETER_BIN	${JMETER_HOME}/bin
 ENV	JMETER_DOWNLOAD_URL  https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-${JMETER_VERSION}.tgz
 
 # Load additional extensions
-ARG DYNATRACE_EXTENSION_VERSION="1.3"
-ENV DYNATRACE_EXTENSION_URL https://github.com/dynatrace-oss/jmeter-dynatrace-plugin/releases/download/v${DYNATRACE_EXTENSION_VERSION}.snapshot/jmeter-dynatrace-plugin-${DYNATRACE_EXTENSION_VERSION}-SNAPSHOT.jar
+ARG DYNATRACE_EXTENSION_VERSION="1.8.0"
+ENV DYNATRACE_EXTENSION_URL https://github.com/dynatrace-oss/jmeter-dynatrace-plugin/releases/download/${DYNATRACE_EXTENSION_VERSION}/jmeter-dynatrace-plugin-${DYNATRACE_EXTENSION_VERSION}.jar
 
 # Install extra packages
 # See https://github.com/gliderlabs/docker-alpine/issues/136#issuecomment-272703023
