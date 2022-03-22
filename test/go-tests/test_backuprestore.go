@@ -110,14 +110,14 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	mongoDBBackupFolder := "mongodb-backup"
 	resetGitReposFile := "reset-git-repos.sh"
 
-	err := archiver.Archive([]string{serviceChartSrcPath}, serviceChartArchivePath)
-	require.Nil(t, err)
-
 	// Delete chart archive at the end of the test
 	defer func(path string) {
 		err := os.RemoveAll(path)
 		require.Nil(t, err)
 	}(serviceChartArchivePath)
+
+	err := archiver.Archive([]string{serviceChartSrcPath}, serviceChartArchivePath)
+	require.Nil(t, err)
 
 	t.Logf("Creating a new project %s with a Gitea Upstream", projectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(testingShipyard)

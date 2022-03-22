@@ -77,14 +77,14 @@ func Test_SSHPublicKeyAuth(t *testing.T) {
 	serviceChartArchivePath := path.Join(repoLocalDir, "helm-charts", chartFileName)
 	serviceJmeterDir := path.Join(repoLocalDir, "jmeter")
 
-	err := archiver.Archive([]string{serviceChartSrcPath}, serviceChartArchivePath)
-	require.Nil(t, err)
-
 	// Delete chart archive at the end of the test
 	defer func(path string) {
 		err := os.RemoveAll(path)
 		require.Nil(t, err)
 	}(serviceChartArchivePath)
+
+	err := archiver.Archive([]string{serviceChartSrcPath}, serviceChartArchivePath)
+	require.Nil(t, err)
 
 	t.Logf("Creating a new project %s with Gitea Upstream", projectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(testingSSHShipyard)
