@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, forkJoin, from, Observable, of, Subject } from 'rxjs';
-import { map, mergeMap, switchMap, take, tap, toArray } from 'rxjs/operators';
+import { map, mergeMap, switchMap, take, tap, toArray, catchError } from 'rxjs/operators';
 import { Trace } from '../_models/trace';
 import { Stage } from '../_models/stage';
 import { Project } from '../_models/project';
@@ -247,7 +247,7 @@ export class DataService {
     this.apiService.getKeptnInfo().subscribe((bridgeInfo: KeptnInfoResult) => {
       forkJoin({
         availableVersions: bridgeInfo.enableVersionCheckFeature
-          ? this.apiService.getAvailableVersions()
+          ? this.apiService.getAvailableVersions().pipe(catchError((err) => of(undefined)))
           : of(undefined),
         versionCheckEnabled: of(this.apiService.isVersionCheckEnabled()),
         metadata: this.apiService.getMetadata(),
