@@ -2,7 +2,9 @@ package go_tests
 
 import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/mholt/archiver/v3"
 	"github.com/stretchr/testify/require"
+	"os"
 	"path/filepath"
 	"testing"
 	"time"
@@ -44,10 +46,16 @@ type Setup struct {
 func newSetup(t *testing.T) *Setup {
 	repoLocalDir, err := filepath.Abs("../assets/podtato-head")
 	require.Nil(t, err)
+	chartSourceDir := repoLocalDir + "/helm-charts/helloservice"
+	chartArchiveDir := repoLocalDir + "/helm-charts/helloservice.tgz"
+
+	err = archiver.Archive([]string{chartSourceDir}, chartArchiveDir)
+	require.Nil(t, err)
+
 	return &Setup{
 		Project:        "tinypodtato",
 		Service:        "helloservice",
-		Chart:          repoLocalDir + "/helm-charts/helloservice.tgz",
+		Chart:          chartArchiveDir,
 		Jmeter:         repoLocalDir + "/jmeter",
 		HealthEndpoint: "/metrics",
 	}
@@ -56,6 +64,13 @@ func newSetup(t *testing.T) *Setup {
 func Test_GracefulShutdown(t *testing.T) {
 	shipyardPod := "shipyard-controller"
 	setup := newSetup(t)
+
+	// Delete chart archive at the end of the test
+	defer func(path string) {
+		err := os.RemoveAll(path)
+		require.Nil(t, err)
+	}(setup.Chart)
+
 	_ = startDelivery(t, setup)
 
 	waitAndKill(t, shipyardPod, 35)
@@ -63,7 +78,6 @@ func Test_GracefulShutdown(t *testing.T) {
 	t.Logf("Sleeping for 60s...")
 	time.Sleep(60 * time.Second)
 	checkSuccessfulDeployment(t, shipyardPod, setup)
-
 }
 
 func checkSuccessfulDeployment(t *testing.T, shipyardPod string, setup *Setup) {
