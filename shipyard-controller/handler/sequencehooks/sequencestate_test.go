@@ -229,7 +229,16 @@ func TestSequenceStateMaterializedView_OnSequenceFinished(t *testing.T) {
 									Project:        "my-project",
 									Shkeptncontext: "my-context",
 									State:          "triggered",
-									Stages:         nil,
+									Stages: []models.SequenceStateStage{
+										{
+											Name:  "dev",
+											State: "succeeded",
+										},
+										{
+											Name:  "dev",
+											State: "succeeded",
+										},
+									},
 								},
 							},
 						}, nil
@@ -251,6 +260,51 @@ func TestSequenceStateMaterializedView_OnSequenceFinished(t *testing.T) {
 				},
 			},
 			expectUpdateToBeCalled: true,
+		},
+		{
+			name: "try to finish sequence - not all stages finished yet",
+			fields: SequenceStateMVTestFields{
+				SequenceStateRepo: &db_mock.SequenceStateRepoMock{
+					FindSequenceStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
+						return &models.SequenceStates{
+							States: []models.SequenceState{
+								{
+									Name:           "my-sequence",
+									Service:        "my-service",
+									Project:        "my-project",
+									Shkeptncontext: "my-context",
+									State:          "triggered",
+									Stages: []models.SequenceStateStage{
+										{
+											Name:  "dev",
+											State: "succeeded",
+										},
+										{
+											Name:  "dev",
+											State: "triggered",
+										},
+									},
+								},
+							},
+						}, nil
+					},
+					UpdateSequenceStateFunc: func(state models.SequenceState) error {
+						return nil
+					},
+				},
+			},
+			args: args{
+				event: models.Event{
+					Data: keptnv2.EventData{
+						Project: "my-project",
+						Stage:   "my-stage",
+						Service: "my-service",
+					},
+					Shkeptncontext: "my-context",
+					Type:           common.Stringp("my-type"),
+				},
+			},
+			expectUpdateToBeCalled: false,
 		},
 		{
 			name: "invalid event scope - do not update",
