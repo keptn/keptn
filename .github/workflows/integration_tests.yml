@@ -600,7 +600,7 @@ jobs:
           
               for crb in "${clusterrolebindings[@]}"; do
                 if [[ ! -z "${crb// }" ]]; then
-                  echo "Annotating clusterrolebinding $crb with Janitor TTL of 3 days..."
+                  echo "Annotating clusterrolebinding $crb with Janitor TTL of 6 hours..."
                   kubectl annotate clusterrolebinding "$crb" janitor/ttl=6h
                 fi
               done
