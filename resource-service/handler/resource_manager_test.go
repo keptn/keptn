@@ -1259,39 +1259,20 @@ func (fakeFileInfo) Sys() interface{} {
 func getTestResourceManagerFields() testResourceManagerFields {
 	return testResourceManagerFields{
 		git: &common_mock.IGitMock{
-			CheckoutBranchFunc: func(gitContext common_models.GitContext, branch string) error {
-				return nil
-			},
-			CloneRepoFunc: func(gitContext common_models.GitContext) (bool, error) {
-				return true, nil
-			},
-			CreateBranchFunc: func(gitContext common_models.GitContext, branch string, sourceBranch string) error {
-				return nil
-			},
-			GetCurrentRevisionFunc: func(gitContext common_models.GitContext) (string, error) {
-				return "my-revision", nil
-			},
-			GetDefaultBranchFunc: func(gitContext common_models.GitContext) (string, error) {
-				return "main", nil
-			},
+			ResetHardFunc:          func(gitContext common_models.GitContext) error { return nil },
+			CheckoutBranchFunc:     func(gitContext common_models.GitContext, branch string) error { return nil },
+			CloneRepoFunc:          func(gitContext common_models.GitContext) (bool, error) { return true, nil },
+			CreateBranchFunc:       func(gitContext common_models.GitContext, branch string, sourceBranch string) error { return nil },
+			GetCurrentRevisionFunc: func(gitContext common_models.GitContext) (string, error) { return "my-revision", nil },
+			GetDefaultBranchFunc:   func(gitContext common_models.GitContext) (string, error) { return "main", nil },
 			GetFileRevisionFunc: func(gitContext common_models.GitContext, revision string, file string) ([]byte, error) {
 				return []byte("file-content"), nil
 			},
-			ProjectExistsFunc: func(gitContext common_models.GitContext) bool {
-				return true
-			},
-			ProjectRepoExistsFunc: func(projectName string) bool {
-				return true
-			},
-			PullFunc: func(gitContext common_models.GitContext) error {
-				return nil
-			},
-			PushFunc: func(gitContext common_models.GitContext) error {
-				return nil
-			},
-			StageAndCommitAllFunc: func(gitContext common_models.GitContext, message string) (string, error) {
-				return "my-revision", nil
-			},
+			ProjectExistsFunc:     func(gitContext common_models.GitContext) bool { return true },
+			ProjectRepoExistsFunc: func(projectName string) bool { return true },
+			PullFunc:              func(gitContext common_models.GitContext) error { return nil },
+			PushFunc:              func(gitContext common_models.GitContext) error { return nil },
+			StageAndCommitAllFunc: func(gitContext common_models.GitContext, message string) (string, error) { return "my-revision", nil },
 		},
 		credentialReader: &common_mock.CredentialReaderMock{
 			GetCredentialsFunc: func(project string) (*common_models.GitCredentials, error) {
