@@ -46,16 +46,16 @@ func (s ServiceManager) CreateService(params models.CreateServiceParams) error {
 		return err
 	}
 
+	err = s.git.ResetHard(*gitContext)
+	if err != nil {
+		logger.WithError(err).Warn("could not execute git hard reset")
+	}
+
 	var resultErr error
 	_ = retry.Retry(func() error {
-		err := s.git.ResetHard(*gitContext)
-		if err != nil {
-			logger.WithError(err).Warn("could not reset")
-		}
 		err = s.git.Pull(*gitContext)
 		if err != nil {
 			resultErr = err
-			// return nil at this point because retry does not make sense in that case
 			return nil
 		}
 
@@ -65,7 +65,6 @@ func (s ServiceManager) CreateService(params models.CreateServiceParams) error {
 				return err
 			}
 			resultErr = err
-			// return nil at this point because retry does not make sense in that case
 			return nil
 		}
 		resultErr = err
@@ -83,16 +82,15 @@ func (s ServiceManager) DeleteService(params models.DeleteServiceParams) error {
 		return err
 	}
 
+	err = s.git.ResetHard(*gitContext)
+	if err != nil {
+		logger.WithError(err).Warn("could not execute git hard reset")
+	}
 	var resultErr error
 	_ = retry.Retry(func() error {
-		err := s.git.ResetHard(*gitContext)
-		if err != nil {
-			logger.WithError(err).Warn("could not reset")
-		}
 		err = s.git.Pull(*gitContext)
 		if err != nil {
 			resultErr = err
-			// return nil at this point because retry does not make sense in that case
 			return nil
 		}
 
@@ -102,13 +100,11 @@ func (s ServiceManager) DeleteService(params models.DeleteServiceParams) error {
 				return err
 			}
 			resultErr = err
-			// return nil at this point because retry does not make sense in that case
 			return nil
 		}
 		resultErr = err
 		return nil
 	}, retry.NumberOfRetries(5), retry.DelayBetweenRetries(1*time.Second))
-	//}
 	return resultErr
 }
 

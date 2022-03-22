@@ -126,18 +126,17 @@ func (p ResourceManager) DeleteResource(params models.DeleteResourceParams) (*mo
 	}
 
 	resourcePath := configPath + "/" + params.ResourceURI
+	err = p.git.ResetHard(*gitContext)
+	if err != nil {
+		logger.WithError(err).Warn("could not reset")
+	}
 
 	var resultErr error
 	var resultCommit *models.WriteResourceResponse
 	_ = retry.Retry(func() error {
-		err := p.git.ResetHard(*gitContext)
-		if err != nil {
-			logger.WithError(err).Warn("could not reset")
-		}
 		err = p.git.Pull(*gitContext)
 		if err != nil {
 			resultErr = err
-			// return nil at this point because retry does not make sense in that case
 			return nil
 		}
 
@@ -147,14 +146,12 @@ func (p ResourceManager) DeleteResource(params models.DeleteResourceParams) (*mo
 				return err
 			}
 			resultErr = err
-			// return nil at this point because retry does not make sense in that case
 			return nil
 		}
 		resultCommit = response
 		resultErr = err
 		return nil
 	}, retry.NumberOfRetries(5), retry.DelayBetweenRetries(1*time.Second))
-	//}
 	return resultCommit, resultErr
 }
 
@@ -228,23 +225,20 @@ func (p ResourceManager) readResource(gitContext *common_models.GitContext, para
 }
 
 func (p ResourceManager) writeAndCommitResource(gitContext *common_models.GitContext, resourcePath, resourceContent string) (*models.WriteResourceResponse, error) {
-
+	err := p.git.ResetHard(*gitContext)
+	if err != nil {
+		logger.WithError(err).Warn("could not reset")
+	}
 	var resultErr error
 	var resultCommit *models.WriteResourceResponse
 	_ = retry.Retry(func() error {
-		err := p.git.ResetHard(*gitContext)
-		if err != nil {
-			logger.WithError(err).Warn("could not reset")
-		}
 		err = p.git.Pull(*gitContext)
 		if err != nil {
 			resultErr = err
-			// return nil at this point because retry does not make sense in that case
 			return nil
 		}
 		if err := p.storeResource(resourcePath, resourceContent); err != nil {
 			resultErr = err
-			// return nil at this point because retry does not make sense in that case
 			return nil
 		}
 
@@ -254,7 +248,6 @@ func (p ResourceManager) writeAndCommitResource(gitContext *common_models.GitCon
 				return err
 			}
 			resultErr = err
-			// return nil at this point because retry does not make sense in that case
 			return nil
 		}
 		resultCommit = commit
@@ -264,25 +257,22 @@ func (p ResourceManager) writeAndCommitResource(gitContext *common_models.GitCon
 }
 
 func (p ResourceManager) writeAndCommitResources(gitContext *common_models.GitContext, resources []models.Resource, directory string) (*models.WriteResourceResponse, error) {
-
+	err := p.git.ResetHard(*gitContext)
+	if err != nil {
+		logger.WithError(err).Warn("could not execute git hard reset")
+	}
 	var resultErr error
 	var resultCommit *models.WriteResourceResponse
 	_ = retry.Retry(func() error {
-		err := p.git.ResetHard(*gitContext)
-		if err != nil {
-			logger.WithError(err).Warn("could not reset")
-		}
 		err = p.git.Pull(*gitContext)
 		if err != nil {
 			resultErr = err
-			// return nil at this point because retry does not make sense in that case
 			return nil
 		}
 		for _, res := range resources {
 			filePath := directory + "/" + res.ResourceURI
 			if err := p.storeResource(filePath, string(res.ResourceContent)); err != nil {
 				resultErr = err
-				// return nil at this point because retry does not make sense in that case
 				return nil
 			}
 		}
@@ -293,7 +283,6 @@ func (p ResourceManager) writeAndCommitResources(gitContext *common_models.GitCo
 				return err
 			}
 			resultErr = err
-			// return nil at this point because retry does not make sense in that case
 			return nil
 		}
 		resultCommit = commit
