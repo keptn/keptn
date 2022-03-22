@@ -155,6 +155,10 @@ func (p ProjectManager) migrateProject(project models.UpdateProjectParams, gitCo
 	}
 
 	err = retry.Retry(func() error {
+		err := p.git.ResetHard(gitContext)
+		if err != nil {
+			logger.WithError(err).Warn("could not reset")
+		}
 		if err := p.git.Pull(gitContext); err != nil {
 			return err
 		}

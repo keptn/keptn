@@ -8,6 +8,7 @@ import (
 	"github.com/keptn/keptn/resource-service/common_models"
 	kerrors "github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
+	logger "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 	"time"
 )
@@ -45,12 +46,13 @@ func (s ServiceManager) CreateService(params models.CreateServiceParams) error {
 		return err
 	}
 
-	//_, resultErr := s.createService(gitContext, params.ServiceName, servicePath)
 	var resultErr error
-	// if there are conflicting changes first pull then try again
-	//if errors.Is(resultErr, kerrors.ErrNonFastForwardUpdate) || errors.Is(resultErr, kerrors.ErrForceNeeded) {
 	_ = retry.Retry(func() error {
-		err := s.git.Pull(*gitContext)
+		err := s.git.ResetHard(*gitContext)
+		if err != nil {
+			logger.WithError(err).Warn("could not reset")
+		}
+		err = s.git.Pull(*gitContext)
 		if err != nil {
 			resultErr = err
 			// return nil at this point because retry does not make sense in that case
@@ -69,8 +71,6 @@ func (s ServiceManager) CreateService(params models.CreateServiceParams) error {
 		resultErr = err
 		return nil
 	}, retry.NumberOfRetries(5), retry.DelayBetweenRetries(1*time.Second))
-	//}
-	//return fmt.Errorf("could not initialize service %s: %w", params.ServiceName, err)
 	return resultErr
 }
 
@@ -84,11 +84,12 @@ func (s ServiceManager) DeleteService(params models.DeleteServiceParams) error {
 	}
 
 	var resultErr error
-	//_, resultErr := s.deleteService(gitContext, params.ServiceName, servicePath)
-	// if there are conflicting changes first pull then try again
-	//if errors.Is(resultErr, kerrors.ErrNonFastForwardUpdate) || errors.Is(resultErr, kerrors.ErrForceNeeded) {
 	_ = retry.Retry(func() error {
-		err := s.git.Pull(*gitContext)
+		err := s.git.ResetHard(*gitContext)
+		if err != nil {
+			logger.WithError(err).Warn("could not reset")
+		}
+		err = s.git.Pull(*gitContext)
 		if err != nil {
 			resultErr = err
 			// return nil at this point because retry does not make sense in that case

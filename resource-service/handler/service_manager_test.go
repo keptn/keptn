@@ -520,6 +520,7 @@ func TestServiceManager_DeleteService_CannotCommit(t *testing.T) {
 func getTestServiceManagerFields() serviceManagerTestFields {
 	return serviceManagerTestFields{
 		git: &common_mock.IGitMock{
+			ResetHardFunc:         func(gitContext common_models.GitContext) error { return nil },
 			PullFunc:              func(gitContext common_models.GitContext) error { return nil },
 			ProjectExistsFunc:     func(gitContext common_models.GitContext) bool { return true },
 			ProjectRepoExistsFunc: func(projectName string) bool { return true },

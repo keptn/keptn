@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	logger "github.com/sirupsen/logrus"
 	"net/url"
 	"strings"
 	"time"
@@ -128,12 +129,12 @@ func (p ResourceManager) DeleteResource(params models.DeleteResourceParams) (*mo
 
 	var resultErr error
 	var resultCommit *models.WriteResourceResponse
-	////try deleting first
-	//resultCommit, resultErr := p.deleteResource(gitContext, resourcePath)
-	// if there are conflicting changes first pull then try again
-	//if errors.Is(resultErr, kerrors.ErrNonFastForwardUpdate) || errors.Is(resultErr, kerrors.ErrForceNeeded) {
 	_ = retry.Retry(func() error {
-		err := p.git.Pull(*gitContext)
+		err := p.git.ResetHard(*gitContext)
+		if err != nil {
+			logger.WithError(err).Warn("could not reset")
+		}
+		err = p.git.Pull(*gitContext)
 		if err != nil {
 			resultErr = err
 			// return nil at this point because retry does not make sense in that case
@@ -231,7 +232,11 @@ func (p ResourceManager) writeAndCommitResource(gitContext *common_models.GitCon
 	var resultErr error
 	var resultCommit *models.WriteResourceResponse
 	_ = retry.Retry(func() error {
-		err := p.git.Pull(*gitContext)
+		err := p.git.ResetHard(*gitContext)
+		if err != nil {
+			logger.WithError(err).Warn("could not reset")
+		}
+		err = p.git.Pull(*gitContext)
 		if err != nil {
 			resultErr = err
 			// return nil at this point because retry does not make sense in that case
@@ -263,7 +268,11 @@ func (p ResourceManager) writeAndCommitResources(gitContext *common_models.GitCo
 	var resultErr error
 	var resultCommit *models.WriteResourceResponse
 	_ = retry.Retry(func() error {
-		err := p.git.Pull(*gitContext)
+		err := p.git.ResetHard(*gitContext)
+		if err != nil {
+			logger.WithError(err).Warn("could not reset")
+		}
+		err = p.git.Pull(*gitContext)
 		if err != nil {
 			resultErr = err
 			// return nil at this point because retry does not make sense in that case
