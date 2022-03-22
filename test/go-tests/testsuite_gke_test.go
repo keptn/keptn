@@ -9,7 +9,7 @@ func Test_GKE(t *testing.T) {
 	if res, err := CompareServiceNameWithDeploymentName("configuration-service", "configuration-service"); err == nil && res {
 		t.Run("Test_BackupRestoreConfigService", Test_BackupRestoreConfigService)
 	} else {
-		t.Run("Test_BackupRestoreResourceService", Test_BackupRestoreResourceService)
+		//t.Run("Test_BackupRestoreResourceService", Test_BackupRestoreResourceService)
 	}
 	t.Run("Test_LogIngestion", Test_LogIngestion)
 	t.Run("Test_LogForwarding", Test_LogForwarding)
@@ -36,6 +36,9 @@ func Test_GKE(t *testing.T) {
 	t.Run("Test_SequenceTimeoutDelayedTask", Test_SequenceTimeoutDelayedTask)
 	t.Run("Test_SequenceControl_Abort", Test_SequenceControl_Abort)
 	t.Run("Test_SequenceControl_AbortQueuedSequence", Test_SequenceControl_AbortQueuedSequence)
+	t.Run("Test_SequenceControl_AbortPausedSequence", Test_SequenceControl_AbortPausedSequence)
+	t.Run("Test_SequenceControl_AbortPausedSequenceTaskPartiallyFinished", Test_SequenceControl_AbortPausedSequenceTaskPartiallyFinished)
+	t.Run("Test_SequenceControl_AbortPausedSequenceMultipleStages", Test_SequenceControl_AbortPausedSequenceMultipleStages)
 	t.Run("Test_SequenceControl_PauseAndResume", Test_SequenceControl_PauseAndResume)
 	t.Run("Test_SequenceControl_PauseAndResume_2", Test_SequenceControl_PauseAndResume_2)
 	if res, err := CompareServiceNameWithDeploymentName("configuration-service", "resource-service"); err == nil && res {
@@ -50,6 +53,8 @@ func Test_GKE(t *testing.T) {
 	t.Run("Test_ResourceService", Test_ResourceServiceBasic)
 	t.Run("Test_QualityGates", Test_QualityGates)
 	t.Run("Test_QualityGates_SLIWrongFinishedPayloadSend", Test_QualityGates_SLIWrongFinishedPayloadSend)
+	t.Run("Test_QualityGates_AbortedFinishedPayloadSend", Test_QualityGates_AbortedFinishedPayloadSend)
+	t.Run("Test_QualityGates_ErroredFinishedPayloadSend", Test_QualityGates_ErroredFinishedPayloadSend)
 	t.Run("Test_DeliveryAssistant", Test_DeliveryAssistant)
 	// TODO add resource service backup/restore test when the git credentials bug is solved
 	t.Run("Test_CustomUserManagedEndpointsTest", Test_CustomUserManagedEndpointsTest)

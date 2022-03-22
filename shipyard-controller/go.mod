@@ -15,17 +15,16 @@ require (
 	github.com/nats-io/nats-server/v2 v2.7.2
 	github.com/nats-io/nats.go v1.13.1-0.20220121202836-972a071d373d
 	github.com/sirupsen/logrus v1.8.1
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.7.1
 	github.com/swaggo/swag v1.7.9
 	github.com/tryvium-travels/memongo v0.4.0
 	go.mongodb.org/mongo-driver v1.8.4
 	go.uber.org/zap v1.13.0 // indirect
 	golang.org/x/net v0.0.0-20220111093109-d55c255bac03 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
-	k8s.io/api v0.23.4
-	k8s.io/apimachinery v0.23.4
-	k8s.io/client-go v0.23.4
-	sigs.k8s.io/json v0.0.0-20211208200746-9f7c6b3444d2 // indirect
+	k8s.io/api v0.22.8
+	k8s.io/apimachinery v0.22.8
+	k8s.io/client-go v0.22.8
 )
 
 require (

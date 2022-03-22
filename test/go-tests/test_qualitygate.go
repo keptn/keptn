@@ -702,10 +702,224 @@ func Test_QualityGates_SLIWrongFinishedPayloadSend(t *testing.T) {
 
 	require.Nil(t, err)
 
+	t.Logf("Sleeping for 15 sec...")
+	time.Sleep(15 * time.Second)
+	t.Logf("Continue to work...")
+
 	t.Log("Verify sequence ends up in finished state")
 	sequenceStates, _, err := GetState(projectName)
 	require.Nil(t, err)
 	require.NotEmpty(t, sequenceStates.States)
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{KeptnContext: &keptnContext}, 2*time.Minute, []string{models.SequenceFinished})
+}
+
+func Test_QualityGates_AbortedFinishedPayloadSend(t *testing.T) {
+	source := "golang-test"
+	projectName := "quality-gates-aborted-finish"
+	serviceName := "my-service"
+
+	projectName, keptnContext, triggeredID := qualityGatesGenericTestStart(t, projectName, serviceName)
+
+	t.Log("sending get-sli.started event")
+	_, err := ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
+		Contenttype: "application/json",
+		Data: &keptnv2.GetSLIStartedEventData{
+			EventData: keptnv2.EventData{
+				Project: projectName,
+				Stage:   "hardening",
+				Service: serviceName,
+				Status:  keptnv2.StatusSucceeded,
+				Result:  keptnv2.ResultPass,
+				Message: "",
+			},
+		},
+		ID:                 uuid.NewString(),
+		Shkeptncontext:     keptnContext,
+		Shkeptnspecversion: KeptnSpecVersion,
+		Source:             &source,
+		Specversion:        "1.0",
+		Time:               time.Now(),
+		Triggeredid:        triggeredID,
+		GitCommitID:        "",
+		Type:               strutils.Stringp(keptnv2.GetStartedEventType(keptnv2.GetSLITaskName)),
+	}, 3)
+
+	require.Nil(t, err)
+
+	t.Logf("Sleeping for 15 sec...")
+	time.Sleep(15 * time.Second)
+	t.Logf("Continue to work...")
+
+	t.Log("sending invalid get-sli.finished event")
+	_, err = ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
+		Contenttype: "application/json",
+		Data: &keptnv2.GetSLIFinishedEventData{
+			EventData: keptnv2.EventData{
+				Project: projectName,
+				Stage:   "hardening",
+				Service: serviceName,
+				Labels:  nil,
+				Status:  keptnv2.StatusAborted,
+				Result:  keptnv2.ResultPass,
+				Message: "",
+			},
+			GetSLI: keptnv2.GetSLIFinished{
+				End:   "2022-01-26T10:10:53.931Z",
+				Start: "2022-01-26T10:05:53.931Z",
+				IndicatorValues: []*keptnv2.SLIResult{
+					{
+						Metric:        "response_time_p95",
+						Value:         200,
+						ComparedValue: 0,
+						Success:       true,
+						Message:       "",
+					},
+					{
+						Metric:        "throughput",
+						Value:         200,
+						Success:       true,
+						ComparedValue: 0,
+						Message:       "",
+					},
+					{
+						Metric:        "error_rate",
+						Value:         0,
+						ComparedValue: 0,
+						Success:       true,
+						Message:       "",
+					},
+				},
+			},
+		},
+		Extensions:         nil,
+		ID:                 uuid.NewString(),
+		Shkeptncontext:     keptnContext,
+		Shkeptnspecversion: KeptnSpecVersion,
+		Source:             &source,
+		Specversion:        "1.0",
+		Time:               time.Now(),
+		Triggeredid:        triggeredID,
+		GitCommitID:        "",
+		Type:               strutils.Stringp(keptnv2.GetFinishedEventType(keptnv2.GetSLITaskName)),
+	}, 3)
+
+	require.Nil(t, err)
+
+	t.Logf("Sleeping for 15 sec...")
+	time.Sleep(15 * time.Second)
+	t.Logf("Continue to work...")
+
+	t.Log("Verify sequence ends up in finished state")
+	sequenceStates, _, err := GetState(projectName)
+	require.Nil(t, err)
+	require.NotEmpty(t, sequenceStates.States)
+	require.Equal(t, "errored", sequenceStates.States[0].Stages[0].State)
+	require.Equal(t, "fail", sequenceStates.States[0].Stages[0].LatestEvaluation.Result)
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{KeptnContext: &keptnContext}, 2*time.Minute, []string{models.SequenceFinished})
+}
+
+func Test_QualityGates_ErroredFinishedPayloadSend(t *testing.T) {
+	source := "golang-test"
+	projectName := "quality-gates-errored-finish"
+	serviceName := "my-service"
+
+	projectName, keptnContext, triggeredID := qualityGatesGenericTestStart(t, projectName, serviceName)
+
+	t.Log("sending get-sli.started event")
+	_, err := ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
+		Contenttype: "application/json",
+		Data: &keptnv2.GetSLIStartedEventData{
+			EventData: keptnv2.EventData{
+				Project: projectName,
+				Stage:   "hardening",
+				Service: serviceName,
+				Status:  keptnv2.StatusSucceeded,
+				Result:  keptnv2.ResultPass,
+				Message: "",
+			},
+		},
+		ID:                 uuid.NewString(),
+		Shkeptncontext:     keptnContext,
+		Shkeptnspecversion: KeptnSpecVersion,
+		Source:             &source,
+		Specversion:        "1.0",
+		Time:               time.Now(),
+		Triggeredid:        triggeredID,
+		GitCommitID:        "",
+		Type:               strutils.Stringp(keptnv2.GetStartedEventType(keptnv2.GetSLITaskName)),
+	}, 3)
+
+	require.Nil(t, err)
+
+	t.Logf("Sleeping for 15 sec...")
+	time.Sleep(15 * time.Second)
+	t.Logf("Continue to work...")
+
+	t.Log("sending invalid get-sli.finished event")
+	_, err = ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
+		Contenttype: "application/json",
+		Data: &keptnv2.GetSLIFinishedEventData{
+			EventData: keptnv2.EventData{
+				Project: projectName,
+				Stage:   "hardening",
+				Service: serviceName,
+				Labels:  nil,
+				Status:  keptnv2.StatusErrored,
+				Result:  keptnv2.ResultPass,
+				Message: "",
+			},
+			GetSLI: keptnv2.GetSLIFinished{
+				End:   "2022-01-26T10:10:53.931Z",
+				Start: "2022-01-26T10:05:53.931Z",
+				IndicatorValues: []*keptnv2.SLIResult{
+					{
+						Metric:        "response_time_p95",
+						Value:         200,
+						ComparedValue: 0,
+						Success:       true,
+						Message:       "",
+					},
+					{
+						Metric:        "throughput",
+						Value:         200,
+						Success:       true,
+						ComparedValue: 0,
+						Message:       "",
+					},
+					{
+						Metric:        "error_rate",
+						Value:         0,
+						ComparedValue: 0,
+						Success:       true,
+						Message:       "",
+					},
+				},
+			},
+		},
+		Extensions:         nil,
+		ID:                 uuid.NewString(),
+		Shkeptncontext:     keptnContext,
+		Shkeptnspecversion: KeptnSpecVersion,
+		Source:             &source,
+		Specversion:        "1.0",
+		Time:               time.Now(),
+		Triggeredid:        triggeredID,
+		GitCommitID:        "",
+		Type:               strutils.Stringp(keptnv2.GetFinishedEventType(keptnv2.GetSLITaskName)),
+	}, 3)
+
+	require.Nil(t, err)
+
+	t.Logf("Sleeping for 15 sec...")
+	time.Sleep(15 * time.Second)
+	t.Logf("Continue to work...")
+
+	t.Log("Verify sequence ends up in finished state")
+	sequenceStates, _, err := GetState(projectName)
+	require.Nil(t, err)
+	require.NotEmpty(t, sequenceStates.States)
+	require.Equal(t, "errored", sequenceStates.States[0].Stages[0].State)
+	require.Equal(t, "fail", sequenceStates.States[0].Stages[0].LatestEvaluation.Result)
 	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{KeptnContext: &keptnContext}, 2*time.Minute, []string{models.SequenceFinished})
 }
 
