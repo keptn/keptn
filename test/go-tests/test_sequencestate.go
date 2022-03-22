@@ -57,14 +57,14 @@ spec:
       sequences:
         - name: delivery
           triggeredOn:
-            - event: dev.delivery.finished
+            - event: "dev.delivery.finished"
           tasks:
             - name: delivery
     - name: staging-1
       sequences:
         - name: delivery
           triggeredOn:
-            - event: dev.delivery.finished
+            - event: "dev.delivery.finished"
           tasks:
             - name: delivery`
 
@@ -512,7 +512,7 @@ func Test_SequenceStateParallelStages(t *testing.T) {
 		return true
 	}, 10*time.Second, 2*time.Second)
 
-	_, err = keptn.SendTaskFinishedEvent(nil, source)
+	_, err = keptn.SendTaskFinishedEvent(&keptnv2.EventData{Result: keptnv2.ResultPass, Status: keptnv2.StatusSucceeded}, source)
 	require.Nil(t, err)
 
 	// now the sequences in staging-1 and staging-2 should have been triggered
@@ -540,8 +540,8 @@ func Test_SequenceStateParallelStages(t *testing.T) {
 			return false
 		}
 
-		staging1 := state.Stages[1]
-		staging2 := state.Stages[2]
+		staging1 := GetStageOfState(state, "staging-1")
+		staging2 := GetStageOfState(state, "staging-2")
 
 		if staging1.LatestEvent.Type != keptnv2.GetTriggeredEventType("delivery") {
 			return false
@@ -591,8 +591,8 @@ func Test_SequenceStateParallelStages(t *testing.T) {
 			return false
 		}
 
-		staging1 := state.Stages[1]
-		staging2 := state.Stages[2]
+		staging1 := GetStageOfState(state, "staging-1")
+		staging2 := GetStageOfState(state, "staging-2")
 
 		if staging1.LatestEvent.Type != keptnv2.GetStartedEventType("delivery") {
 			return false
@@ -634,8 +634,8 @@ func Test_SequenceStateParallelStages(t *testing.T) {
 			return false
 		}
 
-		staging1 := state.Stages[1]
-		staging2 := state.Stages[2]
+		staging1 := GetStageOfState(state, "staging-1")
+		staging2 := GetStageOfState(state, "staging-2")
 
 		if staging1.LatestEvent.Type != keptnv2.GetFinishedEventType("staging-1.delivery") {
 			return false
@@ -683,8 +683,8 @@ func Test_SequenceStateParallelStages(t *testing.T) {
 			return false
 		}
 
-		staging1 := state.Stages[1]
-		staging2 := state.Stages[2]
+		staging1 := GetStageOfState(state, "staging-1")
+		staging2 := GetStageOfState(state, "staging-2")
 
 		if staging1.LatestEvent.Type != keptnv2.GetFinishedEventType("staging-1.delivery") {
 			return false
@@ -726,8 +726,8 @@ func Test_SequenceStateParallelStages(t *testing.T) {
 			return false
 		}
 
-		staging1 := state.Stages[1]
-		staging2 := state.Stages[2]
+		staging1 := GetStageOfState(state, "staging-1")
+		staging2 := GetStageOfState(state, "staging-2")
 
 		if staging1.LatestEvent.Type != keptnv2.GetFinishedEventType("staging-1.delivery") {
 			return false
@@ -737,6 +737,15 @@ func Test_SequenceStateParallelStages(t *testing.T) {
 		}
 		return true
 	}, 30*time.Second, 2*time.Second)
+}
+
+func GetStageOfState(state scmodels.SequenceState, stageName string) *scmodels.SequenceStateStage {
+	for index, stage := range state.Stages {
+		if stage.Name == stageName {
+			return &state.Stages[index]
+		}
+	}
+	return nil
 }
 
 func Test_SequenceState_CannotRetrieveShipyard(t *testing.T) {
