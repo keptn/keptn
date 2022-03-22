@@ -16,6 +16,11 @@ describe('Bridge Dashboard', () => {
     cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfo.mock' });
   });
 
+  it('should load and show projects', () => {
+    dashboardPage.visitDashboard();
+    dashboardPage.assertProjects(projectsResponse.projects);
+  });
+
   it('should load also if version.json is not available', () => {
     cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfoVersionCheck.mock' }).as('bridgeInfo');
     cy.intercept('/api/v1/metadata', { fixture: 'metadata' });
