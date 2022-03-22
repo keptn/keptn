@@ -14,7 +14,7 @@ require (
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/keptn/go-utils v0.13.1-0.20220318125157-fe974e59cc65
 	github.com/sirupsen/logrus v1.8.1
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.7.1
 	github.com/tryvium-travels/memongo v0.4.0
 	go.mongodb.org/mongo-driver v1.8.4
 	golang.org/x/net v0.0.0-20220225172249-27dd8689420f

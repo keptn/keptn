@@ -12,7 +12,7 @@ require (
 	github.com/keptn/kubernetes-utils v0.13.1-0.20220309123424-6e3f2bcaf831
 	github.com/kinbiko/jsonassert v1.1.0
 	github.com/sirupsen/logrus v1.8.1
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.7.1
 	gotest.tools v2.2.0+incompatible
 	helm.sh/helm/v3 v3.6.3
 	k8s.io/api v0.22.7

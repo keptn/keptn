@@ -9,7 +9,7 @@ require (
 	github.com/keptn/go-utils v0.13.1-0.20220318125157-fe974e59cc65
 	github.com/nats-io/nats-server/v2 v2.7.2
 	github.com/sirupsen/logrus v1.8.1
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.7.1
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	k8s.io/api v0.22.7
 	k8s.io/apimachinery v0.22.7
