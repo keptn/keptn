@@ -368,7 +368,7 @@ func Test_SequenceState(t *testing.T) {
 func Test_SequenceStateParallelStages(t *testing.T) {
 	projectName := "state-parallel-stages"
 	serviceName := "my-service"
-	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(sequenceStateShipyard)
+	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(sequenceStateParallelStagesShipyard)
 	require.Nil(t, err)
 	defer func() {
 		err := os.Remove(sequenceStateShipyardFilePath)
