@@ -17,13 +17,13 @@ export enum GitFormType {
   styleUrls: ['./ktb-project-settings-git-extended.component.scss'],
 })
 export class KtbProjectSettingsGitExtendedComponent {
-  // TODO: on https/ssh change, should the data be discarded or not? If not, the invalid data needs to be temporarily saved
-  //  solution: on change of FormControl in component change the gitInputData. Should be a reference. e.g. https component: get and set for proxy in order to adjust the parent gitDataInput
   private projectName?: string;
-  private _gitInputData?: IGitDataExtended;
+  public gitInputDataHttps?: IGitHttps;
+  public gitInputDataSsh?: IGitSsh;
   public FormType = GitFormType;
   public selectedForm: GitFormType = GitFormType.HTTPS;
-  public gitData?: IGitDataExtended;
+  public gitDataHttps?: IGitHttps;
+  public gitDataSsh?: IGitSsh;
 
   @Input()
   public isLoading = false;
@@ -36,22 +36,24 @@ export class KtbProjectSettingsGitExtendedComponent {
 
   @Input()
   public set gitInputData(gitData: IGitDataExtended | undefined) {
-    this._gitInputData = gitData;
-    this.selectedForm = !gitData || isGitHTTPS(gitData) ? GitFormType.HTTPS : GitFormType.SSH;
-  }
-  public get gitInputData(): IGitDataExtended | undefined {
-    return this._gitInputData;
+    if (gitData) {
+      if (isGitHTTPS(gitData)) {
+        this.gitInputDataHttps = gitData;
+        this.selectedForm = GitFormType.HTTPS;
+      } else {
+        this.gitInputDataSsh = gitData;
+        this.selectedForm = GitFormType.SSH;
+      }
+    } else {
+      this.selectedForm = GitFormType.HTTPS;
+    }
   }
 
   @Output()
   public gitDataChange = new EventEmitter<IGitDataExtended | undefined>();
 
-  public get gitInputDataHTTPS(): IGitHttps | undefined {
-    return this.gitInputData && isGitHTTPS(this.gitInputData) ? this.gitInputData : undefined;
-  }
-
-  public get gitInputDataSSH(): IGitSsh | undefined {
-    return this.gitInputData && !isGitHTTPS(this.gitInputData) ? this.gitInputData : undefined;
+  public get gitData(): IGitDataExtended | undefined {
+    return this.selectedForm === GitFormType.HTTPS ? this.gitDataHttps : this.gitDataSsh;
   }
 
   constructor(private readonly dataService: DataService, readonly routes: ActivatedRoute) {
@@ -67,17 +69,39 @@ export class KtbProjectSettingsGitExtendedComponent {
 
   public setSelectedForm($event: DtRadioChange<GitFormType>): void {
     this.selectedForm = $event.value ?? GitFormType.HTTPS;
-    this.dataChanged(); // on change reset form because the data is invalid then
+    this.dataChanged(this.gitData);
   }
 
   public updateUpstream(): void {
     if (this.gitData && this.projectName) {
-      this.dataService.updateGitUpstream(this.projectName, this.gitData).subscribe();
+      this.isGitUpstreamInProgress = true;
+      this.dataService.updateGitUpstream(this.projectName, this.gitData).subscribe(
+        () => {
+          this.isGitUpstreamInProgress = false;
+        },
+        () => {
+          this.isGitUpstreamInProgress = false;
+        }
+      );
     }
   }
 
   public dataChanged(data?: IGitDataExtended): void {
-    this.gitData = data;
+    // the data should be split into two in order to update the parent form correctly if the selected form is switched.
+    // On switch the child component does not emit new data and therefore the selected data is not updated
+    if (data) {
+      if (isGitHTTPS(data)) {
+        this.gitDataHttps = data;
+      } else {
+        this.gitDataSsh = data;
+      }
+    } else {
+      if (this.selectedForm === GitFormType.HTTPS) {
+        this.gitDataHttps = undefined;
+      } else {
+        this.gitDataSsh = undefined;
+      }
+    }
     this.gitDataChange.emit(data);
   }
 }
