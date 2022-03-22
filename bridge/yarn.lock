@@ -5515,10 +5515,10 @@ eslint-config-airbnb-typescript-prettier@5.0.0:
     eslint-plugin-react "^7.27.1"
     eslint-plugin-react-hooks "^4.3.0"
 
-eslint-config-airbnb-typescript@16.1.2:
-  version "16.1.2"
-  resolved "https://registry.yarnpkg.com/eslint-config-airbnb-typescript/-/eslint-config-airbnb-typescript-16.1.2.tgz#6ad1d6179afd7a857e04bafad8eac131f31cd8e7"
-  integrity sha512-IZnWyJXCYGpWvEmGQ9eyxQUnuH/NTmw4E6pI+NNGNxu4weWclZstaDGjzD+lrld81sP4BKshaigLbqFWBB9QPg==
+eslint-config-airbnb-typescript@16.1.4:
+  version "16.1.4"
+  resolved "https://registry.yarnpkg.com/eslint-config-airbnb-typescript/-/eslint-config-airbnb-typescript-16.1.4.tgz#ac8553a55080cce34aa1ab5625564b4faf5a5f1c"
+  integrity sha512-dfm2cEaYXh4mCYd+RyJO8+PQfd5/zp8WwrCeRznly5qD9W5tal3KTjgdInYWuEAdwWnNJxWcmQ/HFiA4bfkM1g==
   dependencies:
     eslint-config-airbnb-base "^15.0.0"
 
