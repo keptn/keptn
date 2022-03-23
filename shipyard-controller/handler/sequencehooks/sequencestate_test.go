@@ -294,7 +294,7 @@ func TestSequenceStateMaterializedView_OnSequenceFinished(t *testing.T) {
 				},
 			},
 			args: args{
-				event: models.Event{
+				event: models.KeptnContextExtendedCE{
 					Data: keptnv2.EventData{
 						Project: "my-project",
 						Stage:   "my-stage",
