@@ -49,7 +49,6 @@ jobs:
         run: |
           TMP_DIR=$(mktemp -d 2>/dev/null || mktemp -d -t 'keptndeps')
           MODULES=(
-            shipyard-controller
             api
             approval-service
             cli
@@ -62,6 +61,7 @@ jobs:
             mongodb-datastore
             remediation-service
             secret-service
+            shipyard-controller
             statistics-service
             webhook-service
             resource-service
@@ -72,7 +72,7 @@ jobs:
           for MODULE in "${MODULES[@]}"; do
             echo "🔍 Analyzing dependencies in module $MODULE"
             cd ./"$MODULE" || return
-            go mod tidy #> /dev/null 2>&1
+            go mod tidy
             go list -m -json all | \
               go-licence-detector \
                 -depsTemplate=../.dependencies/templates/dependencies.csv.tmpl \
@@ -85,7 +85,7 @@ jobs:
           
           echo "🔍 Analyzing dependencies in go-utils"
           cd ./go-utils || return
-          go mod tidy > /dev/null 2>&1
+          go mod tidy
           go list -m -json all | \
             go-licence-detector \
               -depsTemplate=../keptn/.dependencies/templates/dependencies.csv.tmpl \
@@ -94,7 +94,7 @@ jobs:
           
           echo "🔍 Analyzing dependencies in kubernetes-utils"
           cd ./kubernetes-utils || return
-          go mod tidy > /dev/null 2>&1
+          go mod tidy
           go list -m -json all | \
             go-licence-detector \
               -depsTemplate=../keptn/.dependencies/templates/dependencies.csv.tmpl \
