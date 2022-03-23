@@ -575,6 +575,7 @@ jobs:
         if: always() && env.CLOUD_PROVIDER == 'GKE'
         run: |
           echo "Cleaning up test resources..."
+
           readarray -t namespaces <<< "$(kubectl get namespaces | awk '{ print $1 }' | grep ${{ env.KEPTN_NAMESPACE }})"
           readarray -t clusterrolebindings <<< "$(kubectl get clusterrolebindings | awk '{ print $1 }' | grep ${{ env.KEPTN_NAMESPACE }})"
 
