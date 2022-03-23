@@ -70,14 +70,12 @@ func (ps *PullSubscription) pullMessages() {
 			}
 		}
 		for _, msg := range msgs {
-			if ps.processMessage(msg) {
-				return
-			}
+			ps.processMessage(msg)
 		}
 	}
 }
 
-func (ps *PullSubscription) processMessage(msg *nats.Msg) bool {
+func (ps *PullSubscription) processMessage(msg *nats.Msg) {
 	event := &apimodels.KeptnContextExtendedCE{}
 	if err := json.Unmarshal(msg.Data, event); err != nil {
 		logger.WithError(err).Error("could not unmarshal message")
@@ -85,7 +83,7 @@ func (ps *PullSubscription) processMessage(msg *nats.Msg) bool {
 		if err := msg.Ack(); err != nil {
 			logger.WithError(err).Error("could not ack message")
 		}
-		return true
+		return
 	}
 	if err := ps.messageHandler(*event, false); err != nil {
 		logger.WithError(err).Error("could not process message")
@@ -93,7 +91,6 @@ func (ps *PullSubscription) processMessage(msg *nats.Msg) bool {
 	if err := msg.Ack(); err != nil {
 		logger.WithError(err).Error("could not ack message")
 	}
-	return false
 }
 
 func (ps *PullSubscription) Unsubscribe() error {
