@@ -228,6 +228,51 @@ func TestNatsConnectionHandler_MultipleSubscribers(t *testing.T) {
 	}, 15*time.Second, 5*time.Second)
 }
 
+func TestNatsConnectionHandler_ErrorWhenHandlingEvent(t *testing.T) {
+	mockNatsEventHandler := &natsmock.IKeptnNatsMessageHandlerMock{
+		ProcessFunc: func(event apimodels.KeptnContextExtendedCE, sync bool) error {
+			return nil
+		},
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+
+	nh := NewNatsConnectionHandler(ctx, natsURL())
+
+	err := nh.SubscribeToTopics([]string{"sh.keptn.>"}, NewKeptnNatsMessageHandler(mockNatsEventHandler.Process))
+
+	require.Nil(t, err)
+
+	publisher, err := nh.GetPublisher()
+
+	require.Nil(t, err)
+
+	event := cloudevents.NewEvent()
+	event.SetType(keptnv2.GetTriggeredEventType("test"))
+	_ = event.SetData(cloudevents.ApplicationJSON, map[string]interface{}{
+		"project": "my-project",
+	})
+
+	// send invalid event payload
+	_ = nh.natsConnection.Publish("sh.keptn.invalid", []byte("invalid"))
+
+	// send proper event
+	err = publisher.SendEvent(event)
+	require.Nil(t, err)
+
+	// verify that the event after the bad one was still handled
+	require.Eventually(t, func() bool {
+		return len(mockNatsEventHandler.ProcessCalls()) == 1
+	}, 15*time.Second, 5*time.Second)
+
+	// call cancel() and wait for the consumer to shut down
+	// this is to ensure that the pull subscription created during this test does not interfere with the other tests
+	cancel()
+
+	require.Eventually(t, func() bool {
+		return nh.subscriptions[0].isActive == false
+	}, 15*time.Second, 5*time.Second)
+}
+
 func TestNatsConnectionHandler_NatsServerDown(t *testing.T) {
 	mockNatsEventHandler := &natsmock.IKeptnNatsMessageHandlerMock{
 		ProcessFunc: func(event apimodels.KeptnContextExtendedCE, sync bool) error {
