@@ -238,10 +238,10 @@ func (smv *SequenceStateMaterializedView) updateOverallSequenceState(eventScope 
 	}
 
 	// if the sequence should be set to 'finished'  we need to ensure that all sequences in all stages are finished
-	if status == models.SequenceFinished {
+	if status == apimodels.SequenceFinished {
 		for index := range state.Stages {
 			// if we still have an unfinished stage, we can not set the overall sequence state to 'finished'
-			if state.Stages[index].State == models.SequenceTriggeredState {
+			if state.Stages[index].State == apimodels.SequenceTriggeredState {
 				return
 			}
 		}
