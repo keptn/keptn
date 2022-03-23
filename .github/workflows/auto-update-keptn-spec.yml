@@ -28,7 +28,7 @@ jobs:
         run: echo "SPEC_TAG=${SPEC_REF#refs/tags/}" >> $GITHUB_ENV
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v4
         with:
           token: ${{ secrets.KEPTN_BOT_TOKEN }}
           commit-message: "build(deps): Update keptn/spec to release ${{ env.SPEC_TAG }}"
