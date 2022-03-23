@@ -404,7 +404,7 @@ func Test_SequenceState(t *testing.T) {
 }
 
 func Test_SequenceStateParallelStages(t *testing.T) {
-	projectName := "state-parallel-stages"
+	projectName := "state-parallel-stages3"
 	serviceName := "my-service"
 	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(sequenceStateParallelStagesShipyard)
 	require.Nil(t, err)
@@ -592,10 +592,15 @@ func Test_SequenceStateParallelStages(t *testing.T) {
 
 	// now, finish the sequence in staging-1, but not in staging-2
 
-	// get delivery.triggered event in staging-1
-	staging1TriggeredEvent, err := GetLatestEventOfType(*context.KeptnContext, projectName, "staging-1", keptnv2.GetTriggeredEventType("delivery"))
-	require.Nil(t, err)
-	require.NotNil(t, staging1TriggeredEvent)
+	// get the delivery.triggered event in staging-1 -> use Eventually here since it might not be available immediately after we have verified the state
+	var staging1TriggeredEvent *models.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		staging1TriggeredEvent, err = GetLatestEventOfType(*context.KeptnContext, projectName, "staging-1", keptnv2.GetTriggeredEventType("delivery"))
+		if err != nil || staging1TriggeredEvent == nil {
+			return false
+		}
+		return true
+	}, 30*time.Second, 5*time.Second)
 
 	cloudEvent = keptnv2.ToCloudEvent(*staging1TriggeredEvent)
 
