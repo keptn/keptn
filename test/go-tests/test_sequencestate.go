@@ -419,7 +419,7 @@ func Test_SequenceStateParallelStages(t *testing.T) {
 
 	// check if the project 'state' is already available - if not, delete it before creating it again
 	// check if the project is already available - if not, delete it before creating it again
-	projectName, err = CreateProject(projectName, sequenceStateShipyardFilePath, true)
+	projectName, err = CreateProject(projectName, sequenceStateShipyardFilePath)
 	require.Nil(t, err)
 
 	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
@@ -484,7 +484,7 @@ func Test_SequenceStateParallelStages(t *testing.T) {
 		if !IsEqual(t, *context.KeptnContext, state.Shkeptncontext, "state.Shkeptncontext") {
 			return false
 		}
-		if !IsEqual(t, scmodels.SequenceStartedState, state.State, "state.State") {
+		if !IsEqual(t, models.SequenceStartedState, state.State, "state.State") {
 			return false
 		}
 
@@ -533,7 +533,7 @@ func Test_SequenceStateParallelStages(t *testing.T) {
 		if state.Shkeptncontext != *context.KeptnContext {
 			return false
 		}
-		if state.State != scmodels.SequenceStartedState {
+		if state.State != models.SequenceStartedState {
 			return false
 		}
 
@@ -570,7 +570,7 @@ func Test_SequenceStateParallelStages(t *testing.T) {
 		if state.Shkeptncontext != *context.KeptnContext {
 			return false
 		}
-		if state.State != scmodels.SequenceStartedState {
+		if state.State != models.SequenceStartedState {
 			return false
 		}
 
@@ -621,7 +621,7 @@ func Test_SequenceStateParallelStages(t *testing.T) {
 		if state.Shkeptncontext != *context.KeptnContext {
 			return false
 		}
-		if state.State != scmodels.SequenceStartedState {
+		if state.State != models.SequenceStartedState {
 			return false
 		}
 
@@ -664,7 +664,7 @@ func Test_SequenceStateParallelStages(t *testing.T) {
 		if state.Shkeptncontext != *context.KeptnContext {
 			return false
 		}
-		if state.State != scmodels.SequenceStartedState {
+		if state.State != models.SequenceStartedState {
 			return false
 		}
 
@@ -713,7 +713,7 @@ func Test_SequenceStateParallelStages(t *testing.T) {
 		if state.Shkeptncontext != *context.KeptnContext {
 			return false
 		}
-		if state.State != scmodels.SequenceStartedState {
+		if state.State != models.SequenceStartedState {
 			return false
 		}
 
@@ -756,7 +756,7 @@ func Test_SequenceStateParallelStages(t *testing.T) {
 		if state.Shkeptncontext != *context.KeptnContext {
 			return false
 		}
-		if state.State != scmodels.SequenceFinished {
+		if state.State != models.SequenceFinished {
 			return false
 		}
 
@@ -777,7 +777,7 @@ func Test_SequenceStateParallelStages(t *testing.T) {
 	}, 30*time.Second, 2*time.Second)
 }
 
-func GetStageOfState(state scmodels.SequenceState, stageName string) *scmodels.SequenceStateStage {
+func GetStageOfState(state models.SequenceState, stageName string) *models.SequenceStateStage {
 	for index, stage := range state.Stages {
 		if stage.Name == stageName {
 			return &state.Stages[index]
