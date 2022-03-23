@@ -4,7 +4,7 @@ build:
   local:
     useBuildkit: true
   artifacts:
-    - image: warber/resource-service
+    - image: keptndev/resource-service
       docker:
         dockerfile: Dockerfile
         target: production

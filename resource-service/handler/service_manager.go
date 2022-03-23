@@ -3,6 +3,8 @@ package handler
 import (
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/keptn/go-utils/pkg/common/retry"
 	"github.com/keptn/keptn/resource-service/common"
 	"github.com/keptn/keptn/resource-service/common_models"
@@ -10,7 +12,6 @@ import (
 	"github.com/keptn/keptn/resource-service/models"
 	logger "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
-	"time"
 )
 
 //IServiceManager provides an interface for stage CRUD operations
@@ -48,7 +49,7 @@ func (s ServiceManager) CreateService(params models.CreateServiceParams) error {
 
 	var resultErr error
 	_ = retry.Retry(func() error {
-		err = s.git.ResetHard(*gitContext)
+		err = s.git.ResetHard(*gitContext, "HEAD")
 		if err != nil {
 			logger.WithError(err).Warn("could not execute git hard reset")
 		}
@@ -84,7 +85,7 @@ func (s ServiceManager) DeleteService(params models.DeleteServiceParams) error {
 
 	var resultErr error
 	_ = retry.Retry(func() error {
-		err = s.git.ResetHard(*gitContext)
+		err = s.git.ResetHard(*gitContext, "HEAD")
 		if err != nil {
 			logger.WithError(err).Warn("could not execute git hard reset")
 		}

@@ -41,7 +41,7 @@ type IGit interface {
 	GetCurrentRevision(gitContext common_models.GitContext) (string, error)
 	GetDefaultBranch(gitContext common_models.GitContext) (string, error)
 	MigrateProject(gitContext common_models.GitContext, newMetadatacontent []byte) error
-	ResetHard(gitContext common_models.GitContext) error
+	ResetHard(gitContext common_models.GitContext, revision string) error
 }
 
 type Git struct {
@@ -249,7 +249,7 @@ func (g Git) StageAndCommitAll(gitContext common_models.GitContext, message stri
 		return "", fmt.Errorf(kerrors.ErrMsgCouldNotCommit, gitContext.Project, err)
 	}
 	rollbackFunc := func() {
-		err := g.ResetHard(gitContext)
+		err := g.ResetHard(gitContext, "HEAD~1")
 		if err != nil {
 			logger.WithError(err).Warn("could not reset")
 		}
@@ -683,12 +683,12 @@ func (g *Git) getWorkTree(gitContext common_models.GitContext) (*git.Repository,
 	return repo, worktree, nil
 }
 
-func (g Git) ResetHard(gitContext common_models.GitContext) error {
+func (g Git) ResetHard(gitContext common_models.GitContext, rev string) error {
 	r, w, err := g.getWorkTree(gitContext)
 	if err != nil {
 		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "reset", gitContext.Project, err)
 	}
-	revision, err := r.ResolveRevision("HEAD~1")
+	revision, err := r.ResolveRevision(plumbing.Revision(rev))
 	if err != nil {
 		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "reset", gitContext.Project, err)
 	}

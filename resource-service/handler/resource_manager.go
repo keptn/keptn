@@ -4,10 +4,11 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	logger "github.com/sirupsen/logrus"
 	"net/url"
 	"strings"
 	"time"
+
+	logger "github.com/sirupsen/logrus"
 
 	"github.com/keptn/go-utils/pkg/common/retry"
 	"github.com/keptn/keptn/resource-service/common"
@@ -130,7 +131,7 @@ func (p ResourceManager) DeleteResource(params models.DeleteResourceParams) (*mo
 	var resultErr error
 	var resultCommit *models.WriteResourceResponse
 	_ = retry.Retry(func() error {
-		err = p.git.ResetHard(*gitContext)
+		err = p.git.ResetHard(*gitContext, "HEAD")
 		if err != nil {
 			logger.WithError(err).Warn("could not reset")
 		}
@@ -228,7 +229,7 @@ func (p ResourceManager) writeAndCommitResource(gitContext *common_models.GitCon
 	var resultErr error
 	var resultCommit *models.WriteResourceResponse
 	_ = retry.Retry(func() error {
-		err := p.git.ResetHard(*gitContext)
+		err := p.git.ResetHard(*gitContext, "HEAD")
 		if err != nil {
 			logger.WithError(err).Warn("could not reset")
 		}
@@ -261,7 +262,7 @@ func (p ResourceManager) writeAndCommitResources(gitContext *common_models.GitCo
 	var resultErr error
 	var resultCommit *models.WriteResourceResponse
 	_ = retry.Retry(func() error {
-		err := p.git.ResetHard(*gitContext)
+		err := p.git.ResetHard(*gitContext, "HEAD")
 		if err != nil {
 			logger.WithError(err).Warn("could not execute git hard reset")
 		}

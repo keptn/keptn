@@ -562,7 +562,7 @@ func (mock *IGitMock) PushCalls() []struct {
 }
 
 // ResetHard calls ResetHardFunc.
-func (mock *IGitMock) ResetHard(gitContext common_models.GitContext) error {
+func (mock *IGitMock) ResetHard(gitContext common_models.GitContext, revision string) error {
 	if mock.ResetHardFunc == nil {
 		panic("IGitMock.ResetHardFunc: method is nil but IGit.ResetHard was just called")
 	}
