@@ -126,20 +126,19 @@ func (p ResourceManager) DeleteResource(params models.DeleteResourceParams) (*mo
 	}
 
 	resourcePath := configPath + "/" + params.ResourceURI
-	err = p.git.ResetHard(*gitContext)
-	if err != nil {
-		logger.WithError(err).Warn("could not reset")
-	}
 
 	var resultErr error
 	var resultCommit *models.WriteResourceResponse
 	_ = retry.Retry(func() error {
+		err = p.git.ResetHard(*gitContext)
+		if err != nil {
+			logger.WithError(err).Warn("could not reset")
+		}
 		err = p.git.Pull(*gitContext)
 		if err != nil {
 			resultErr = err
 			return nil
 		}
-
 		response, err := p.deleteResource(gitContext, resourcePath)
 		if err != nil {
 			if errors.Is(err, kerrors.ErrNonFastForwardUpdate) || errors.Is(err, kerrors.ErrForceNeeded) {
@@ -225,13 +224,14 @@ func (p ResourceManager) readResource(gitContext *common_models.GitContext, para
 }
 
 func (p ResourceManager) writeAndCommitResource(gitContext *common_models.GitContext, resourcePath, resourceContent string) (*models.WriteResourceResponse, error) {
-	err := p.git.ResetHard(*gitContext)
-	if err != nil {
-		logger.WithError(err).Warn("could not reset")
-	}
+
 	var resultErr error
 	var resultCommit *models.WriteResourceResponse
 	_ = retry.Retry(func() error {
+		err := p.git.ResetHard(*gitContext)
+		if err != nil {
+			logger.WithError(err).Warn("could not reset")
+		}
 		err = p.git.Pull(*gitContext)
 		if err != nil {
 			resultErr = err
@@ -257,13 +257,14 @@ func (p ResourceManager) writeAndCommitResource(gitContext *common_models.GitCon
 }
 
 func (p ResourceManager) writeAndCommitResources(gitContext *common_models.GitContext, resources []models.Resource, directory string) (*models.WriteResourceResponse, error) {
-	err := p.git.ResetHard(*gitContext)
-	if err != nil {
-		logger.WithError(err).Warn("could not execute git hard reset")
-	}
+
 	var resultErr error
 	var resultCommit *models.WriteResourceResponse
 	_ = retry.Retry(func() error {
+		err := p.git.ResetHard(*gitContext)
+		if err != nil {
+			logger.WithError(err).Warn("could not execute git hard reset")
+		}
 		err = p.git.Pull(*gitContext)
 		if err != nil {
 			resultErr = err
