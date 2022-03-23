@@ -2,7 +2,7 @@ package go_tests
 
 import (
 	"github.com/keptn/go-utils/pkg/api/models"
-	"github.com/mholt/archiver/v3"
+	archiver "github.com/mholt/archiver/v3"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"os"
@@ -107,8 +107,8 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	secretFileName := "-credentials.yaml"
 	serviceBackupFolder := "svc-backup"
 	globalBackupFolder := "keptn-backup"
-	//mongoDBBackupFolder := "mongodb-backup"
-	//resetGitReposFile := "reset-git-repos.sh"
+	mongoDBBackupFolder := "mongodb-backup"
+	resetGitReposFile := "reset-git-repos.sh"
 
 	// Delete chart archive at the end of the test
 	defer func(path string) {
@@ -176,7 +176,14 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
 	require.Nil(t, err)
 
-	//backup Configuration/Resource Service data
+	backupGit := serviceUnderTestName == "configuration-service"
+
+	t.Logf("Extracting name of service %s", serviceUnderTestName)
+	serviceUnderTestPod, err := ExecuteCommandf("kubectl get pods -n %s -lapp.kubernetes.io/name=%s -ojsonpath='{.items[0].metadata.name}'", keptnNamespace, serviceUnderTestName)
+	require.Nil(t, err)
+	serviceUnderTestPod = removeQuotes(serviceUnderTestPod)
+
+	//backup Configuration Service data
 
 	t.Logf("Creating backup directories for %s", serviceUnderTestName)
 	err = os.Chdir(repoLocalDir)
@@ -194,56 +201,58 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 
 	err = os.MkdirAll(serviceBackupFolder, os.ModePerm)
 	require.Nil(t, err)
-
 	defer resetTestPath(t, "../../../go-tests")
 
-	t.Logf("Executing backup of %s", serviceUnderTestName)
-	serviceUnderTestPod, err := ExecuteCommandf("kubectl get pods -n %s -lapp.kubernetes.io/name=%s -ojsonpath='{.items[0].metadata.name}'", keptnNamespace, serviceUnderTestName)
-	require.Nil(t, err)
-	serviceUnderTestPod = removeQuotes(serviceUnderTestPod)
-	_, err = ExecuteCommandf("kubectl cp %s/%s:/data ./%s/ -c %s", keptnNamespace, serviceUnderTestPod, serviceBackupFolder, serviceUnderTestName)
-	require.Nil(t, err)
+	if backupGit {
+		t.Logf("Executing backup of %s", serviceUnderTestName)
+		_, err = ExecuteCommandf("kubectl cp %s/%s:/data ./%s/ -c %s", keptnNamespace, serviceUnderTestPod, serviceBackupFolder, serviceUnderTestName)
+		require.Nil(t, err)
+
+	}
 
 	//backup MongoDB Data
 
-	//t.Logf("Creating backup directories for MongoDb data")
-	//err = os.MkdirAll(mongoDBBackupFolder, os.ModePerm)
-	//require.Nil(t, err)
-	//_, err = ExecuteCommandf("chmod o+w %s", mongoDBBackupFolder)
-	//require.Nil(t, err)
-	//
-	//t.Logf("Execute MongoDb database dump")
-	//mongoDbRootUser, err := ExecuteCommandf("kubectl get secret mongodb-credentials -n %s -ojsonpath={.data.mongodb-root-user}", keptnNamespace)
-	//require.Nil(t, err)
-	//mongoDbRootUser, err = decodeBase64(removeQuotes(mongoDbRootUser))
-	//require.Nil(t, err)
-	//
-	//mongoDbRootPassword, err := ExecuteCommandf("kubectl get secret mongodb-credentials -n %s -ojsonpath={.data.mongodb-root-password}", keptnNamespace)
-	//require.Nil(t, err)
-	//mongoDbRootPassword, err = decodeBase64(removeQuotes(mongoDbRootPassword))
-	//require.Nil(t, err)
-	//
-	//_, err = ExecuteCommandf("kubectl exec svc/keptn-mongo -n %s -- mongodump --authenticationDatabase admin --username %s --password %s -d keptn -h localhost --out=/tmp/dump", keptnNamespace, mongoDbRootUser, mongoDbRootPassword)
-	//require.Nil(t, err)
-	//
-	//t.Logf("Executing backup of MongoDB database")
-	//mongoDbPod, err := ExecuteCommandf("kubectl get pods -n %s -lapp.kubernetes.io/name=mongo -ojsonpath='{.items[0].metadata.name}'", keptnNamespace)
-	//require.Nil(t, err)
-	//mongoDbPod = removeQuotes(mongoDbPod)
-	//_, err = ExecuteCommandf("kubectl cp %s/%s:/tmp/dump ./%s/ -c mongodb", keptnNamespace, mongoDbPod, mongoDBBackupFolder)
-	//require.Nil(t, err)
-
-	//backup git-credentials
-
-	t.Logf("Executing backup of git-credentials")
-	secret, err := ExecuteCommandf("kubectl get secret -n %s git-credentials-%s -oyaml", keptnNamespace, projectName)
+	t.Logf("Creating backup directories for MongoDb data")
+	err = os.MkdirAll(mongoDBBackupFolder, os.ModePerm)
 	require.Nil(t, err)
-	err = os.WriteFile(secretFileName, []byte(secret), 0644)
+	_, err = ExecuteCommandf("chmod o+w %s", mongoDBBackupFolder)
 	require.Nil(t, err)
+
+	t.Logf("Execute MongoDb database dump")
+	mongoDbRootUser, err := ExecuteCommandf("kubectl get secret mongodb-credentials -n %s -ojsonpath={.data.mongodb-root-user}", keptnNamespace)
+	require.Nil(t, err)
+	mongoDbRootUser, err = decodeBase64(removeQuotes(mongoDbRootUser))
+	require.Nil(t, err)
+
+	mongoDbRootPassword, err := ExecuteCommandf("kubectl get secret mongodb-credentials -n %s -ojsonpath={.data.mongodb-root-password}", keptnNamespace)
+	require.Nil(t, err)
+	mongoDbRootPassword, err = decodeBase64(removeQuotes(mongoDbRootPassword))
+	require.Nil(t, err)
+
+	_, err = ExecuteCommandf("kubectl exec svc/keptn-mongo -n %s -- mongodump --authenticationDatabase admin --username %s --password %s -d keptn -h localhost --out=/tmp/dump", keptnNamespace, mongoDbRootUser, mongoDbRootPassword)
+	require.Nil(t, err)
+
+	t.Logf("Executing backup of MongoDB database")
+	mongoDbPod, err := ExecuteCommandf("kubectl get pods -n %s -lapp.kubernetes.io/name=mongo -ojsonpath='{.items[0].metadata.name}'", keptnNamespace)
+	require.Nil(t, err)
+	mongoDbPod = removeQuotes(mongoDbPod)
+	_, err = ExecuteCommandf("kubectl cp %s/%s:/tmp/dump ./%s/ -c mongodb", keptnNamespace, mongoDbPod, mongoDBBackupFolder)
+
+	if backupGit {
+
+		//backup git-credentials
+
+		t.Logf("Executing backup of git-credentials")
+		secret, err := ExecuteCommandf("kubectl get secret -n %s git-credentials-%s -oyaml", keptnNamespace, projectName)
+		require.Nil(t, err)
+		err = os.WriteFile(secretFileName, []byte(secret), 0644)
+		require.Nil(t, err)
+	}
 
 	if serviceUnderTestName == "resource-service" {
-		t.Logf("Deleting resource-service pod")
-		_, err = ExecuteCommandf("kubectl delete pod %s -n %s", serviceUnderTestPod, keptnNamespace)
+		//t.Logf("Deleting resource-service pod")
+		//_, err = ExecuteCommandf("kubectl delete pod %s -n %s", serviceUnderTestPod, keptnNamespace)
+		err := RestartPod(serviceUnderTestName)
 		require.Nil(t, err)
 	} else {
 		t.Logf("Deleting testing project")
@@ -254,47 +263,48 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	t.Logf("Sleeping for 60s...")
 	time.Sleep(60 * time.Second)
 	t.Logf("Continue to work...")
-	//
-	////restore git-credentials
-	//
-	t.Logf("Executing restore of git-credentials")
-	_, err = ExecuteCommandf("kubectl apply -f %s -n %s", secretFileName, keptnNamespace)
-	require.Nil(t, err)
 
-	//restore Configuration/Resource Service data
+	if backupGit {
+		//restore git-credentials
 
-	t.Logf("Restoring %s data", serviceUnderTestName)
-	serviceUnderTestPod, err = ExecuteCommandf("kubectl get pods -n %s -lapp.kubernetes.io/name=%s -ojsonpath='{.items[0].metadata.name}'", keptnNamespace, serviceUnderTestName)
-	require.Nil(t, err)
-	serviceUnderTestPod = removeQuotes(serviceUnderTestPod)
-	_, err = ExecuteCommandf("kubectl cp ./%s/config/ %s/%s:/data -c %s", serviceBackupFolder, keptnNamespace, serviceUnderTestPod, serviceUnderTestName)
-	require.Nil(t, err)
+		t.Logf("Executing restore of git-credentials")
+		_, err = ExecuteCommandf("kubectl apply -f %s -n %s", secretFileName, keptnNamespace)
+		require.Nil(t, err)
 
-	//// reset git repositories to current HEAD
-	//
-	//t.Logf("Reseting git repositories to current HEAD")
-	//err = os.WriteFile(resetGitReposFile, []byte(resetGitRepos), 0666)
-	//require.Nil(t, err)
-	//_, err = ExecuteCommandf("kubectl cp ./%s %s/%s:/data/config -c %s", resetGitReposFile, keptnNamespace, serviceUnderTestPod, serviceUnderTestName)
-	//require.Nil(t, err)
-	//_, err = ExecuteCommandf("kubectl exec -n %s %s -c %s -- sh ./data/config/%s", keptnNamespace, serviceUnderTestPod, serviceUnderTestName, resetGitReposFile)
-	//require.Nil(t, err)
-	//
+		//restore Configuration/Resource Service data
+
+		t.Logf("Restoring %s data", serviceUnderTestName)
+		serviceUnderTestPod, err = ExecuteCommandf("kubectl get pods -n %s -lapp.kubernetes.io/name=%s -ojsonpath='{.items[0].metadata.name}'", keptnNamespace, serviceUnderTestName)
+		require.Nil(t, err)
+		serviceUnderTestPod = removeQuotes(serviceUnderTestPod)
+		_, err = ExecuteCommandf("kubectl cp ./%s/config/ %s/%s:/data -c %s", serviceBackupFolder, keptnNamespace, serviceUnderTestPod, serviceUnderTestName)
+		require.Nil(t, err)
+
+		// reset git repositories to current HEAD
+
+		t.Logf("Reseting git repositories to current HEAD")
+		err = os.WriteFile(resetGitReposFile, []byte(resetGitRepos), 0666)
+		require.Nil(t, err)
+		_, err = ExecuteCommandf("kubectl cp ./%s %s/%s:/data/config -c %s", resetGitReposFile, keptnNamespace, serviceUnderTestPod, serviceUnderTestName)
+		require.Nil(t, err)
+		_, err = ExecuteCommandf("kubectl exec -n %s %s -c %s -- sh ./data/config/%s", keptnNamespace, serviceUnderTestPod, serviceUnderTestName, resetGitReposFile)
+		require.Nil(t, err)
+	}
 	////restore MongoDB data
 	//
-	//t.Logf("Restoring MongoDB data")
-	//_, err = ExecuteCommandf("kubectl cp ./%s/keptn/ %s/%s:/tmp/dump -c mongodb", mongoDBBackupFolder, keptnNamespace, mongoDbPod)
-	//require.Nil(t, err)
-	//
-	//t.Logf("Import MongoDb database dump")
-	//_, err = ExecuteCommandf("kubectl exec svc/keptn-mongo -n %s -- mongorestore --drop --preserveUUID --authenticationDatabase admin --username %s --password %s /tmp/dump", keptnNamespace, mongoDbRootUser, mongoDbRootPassword)
-	//require.Nil(t, err)
-	//
-	//t.Logf("Sleeping for 15s...")
-	//time.Sleep(15 * time.Second)
-	//t.Logf("Continue to work...")
+	t.Logf("Restoring MongoDB data")
+	_, err = ExecuteCommandf("kubectl cp ./%s/keptn/ %s/%s:/tmp/dump -c mongodb", mongoDBBackupFolder, keptnNamespace, mongoDbPod)
+	require.Nil(t, err)
 
-	t.Logf("Trigger delivery after restore of helloservice:v0.1.0")
+	t.Logf("Import MongoDb database dump")
+	_, err = ExecuteCommandf("kubectl exec svc/keptn-mongo -n %s -- mongorestore --drop --preserveUUID --authenticationDatabase admin --username %s --password %s /tmp/dump", keptnNamespace, mongoDbRootUser, mongoDbRootPassword)
+	require.Nil(t, err)
+
+	t.Logf("Sleeping for 15s...")
+	time.Sleep(50 * time.Second)
+	t.Logf("Continue to work...")
+
+	t.Logf("Trigger delivery after restore of helloservice:v0.1.1")
 	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", projectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.1", "delivery")
 	require.Nil(t, err)
 
