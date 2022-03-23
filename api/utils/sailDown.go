@@ -14,12 +14,16 @@ import (
 )
 
 var deploymentsToCheck = []string{
+	// core
 	"approval-service",
 	"lighthouse-service",
 	"remediation-service",
 	"secret-service",
+	"statistics-service",
 	"webhook-service",
+	// execution plane
 	"helm-service",
+	"argo-service",
 	"jmeter-service",
 	"job-executor-service",
 }
@@ -84,10 +88,12 @@ func EnsureDeploymentsAreUp() (bool, error) {
 		}
 	}
 
-	logger.Infof("All deployments are up!")
+	if len(deploymentsToScaleUp) > 0 {
+		// add an extra sleep to be 100% sure
+		time.Sleep(5 * time.Second)
+	}
 
-	// try to scale them down in 5 minutes or so using a goroutine
-	go SailDownLoop(context.TODO())
+	logger.Infof("All deployments are up!")
 
 	return true, nil
 }
