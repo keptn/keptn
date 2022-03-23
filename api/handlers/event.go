@@ -20,6 +20,12 @@ import (
 // PostEventHandlerFunc forwards an event to the event broker
 func PostEventHandlerFunc(params event.PostEventParams, principal *models.Principal) middleware.Responder {
 
+	// do a basic health check
+	if isUp, err := utils.EnsureDeploymentsAreUp(); !isUp {
+		logger.Errorf("Not all required deployments are up (%v), cannot process task.", err)
+		return sendInternalErrorForPost(err)
+	}
+
 	keptnContext := createOrApplyKeptnContext(params.Body.Shkeptncontext)
 
 	logger.Info("API received a keptn event")

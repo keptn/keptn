@@ -108,6 +108,9 @@ func TestPostEventHandlerFunc(t *testing.T) {
 	err = os.Setenv("EVENTBROKER_URI", ts.URL)
 	require.NoError(t, err)
 
+	err = os.Setenv("POD_NAMESPACE", "keptn")
+	require.NoError(t, err)
+
 	type args struct {
 		params    event.PostEventParams
 		principal *models.Principal
