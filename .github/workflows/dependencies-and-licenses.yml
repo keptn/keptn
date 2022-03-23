@@ -114,7 +114,7 @@ jobs:
           cd ./keptn/bridge || return
           yarn install --frozen-lockfile
           synp --source-file ./yarn.lock
-          license-report --only-prod --output=csv > ../../dependencies-and-licenses-node.txt
+          license-report --only=prod --output=csv > ../../dependencies-and-licenses-node.txt
           cd ../..
 
           echo
