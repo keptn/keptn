@@ -593,15 +593,15 @@ jobs:
           elif [[ "${{ github.event_name }}" == 'workflow_dispatch' && "${{ steps.test_aggregated.outcome }}" != 'success' ]]; then
               for namespace in "${namespaces[@]}"; do
                 if [[ ! -z "${namespace// }" ]]; then
-                  echo "Annotating namespace $namespace with Janitor TTL of 6 hours..."
-                  kubectl annotate namespace "$namespace" janitor/ttl=6h
+                  echo "Annotating namespace $namespace with Janitor TTL of 3 hours..."
+                  kubectl annotate namespace "$namespace" janitor/ttl=3h
                 fi
               done
           
               for crb in "${clusterrolebindings[@]}"; do
                 if [[ ! -z "${crb// }" ]]; then
-                  echo "Annotating clusterrolebinding $crb with Janitor TTL of 6 hours..."
-                  kubectl annotate clusterrolebinding "$crb" janitor/ttl=6h
+                  echo "Annotating clusterrolebinding $crb with Janitor TTL of 3 hours..."
+                  kubectl annotate clusterrolebinding "$crb" janitor/ttl=3h
                 fi
               done
           else
