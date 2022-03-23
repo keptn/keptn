@@ -370,7 +370,7 @@ jobs:
               --create-namespace \
               --set control-plane.apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
               --set control-plane.resourceService.enabled=true \
-              --set control-plane.resourceService.replicas=3 \
+              --set control-plane.resourceService.replicas=1 \
               --set control-plane.resourceService.env.DIRECTORY_STAGE_STRUCTURE=true \
               --set continuous-delivery.enabled=${RUN_CONTINUOUS_DELIVERY_TEST}
           else
