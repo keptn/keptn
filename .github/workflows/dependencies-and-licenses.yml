@@ -110,7 +110,7 @@ jobs:
 
       - name: Create license-report config file
         run: |
-          cat '{ "fields": [ "name", "licenseType", "installedVersion", "link" ] }' > config.json
+          echo '{ "fields": [ "name", "licenseType", "installedVersion", "link" ] }' > config.json
       
       - name: Node dependencies and licenses
         run: |
