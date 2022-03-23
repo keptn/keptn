@@ -40,7 +40,7 @@ func (l *EventUniformLog) Start(ctx context.Context, eventChannel chan cloudeven
 					logger.Errorf("Could not handle event: %v", err)
 				}
 			case <-ctx.Done():
-				logger.Info("Closing UniformLogger")
+				logger.Info("Terminating UniformLogger")
 				return
 			}
 		}

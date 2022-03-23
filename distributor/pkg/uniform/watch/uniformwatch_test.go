@@ -3,6 +3,7 @@ package watch
 import (
 	"context"
 	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/keptn/distributor/pkg/utils"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -12,8 +13,9 @@ func Test_UniformWatchReturnsRegistrationID(t *testing.T) {
 	uw := New(&testControlPlane{})
 	uw.RegisterListener(&testListener{})
 
-	id := uw.Start(context.TODO())
+	id, started := uw.Start(utils.NewExecutionContext(context.TODO(), 0))
 	assert.Equal(t, "a-id", id)
+	assert.True(t, started)
 }
 
 func Test_UniformWatchUpdatesListeners(t *testing.T) {
@@ -29,9 +31,9 @@ func Test_UniformWatchUpdatesListeners(t *testing.T) {
 		integrationData: expectedUpdateData,
 	}
 	uw := New(controlPlane)
-	uw.pingInterval = 100 * time.Millisecond
+	uw.HeartbeatInterval = 100 * time.Millisecond
 	uw.RegisterListener(listener)
-	uw.Start(context.TODO())
+	uw.Start(utils.NewExecutionContext(context.TODO(), 0))
 	time.Sleep(2 * time.Second)
 	assert.Eventually(t, func() bool { return len(listener.latestUpdate) > 0 }, 10*time.Second, 100*time.Millisecond)
 	assert.Equal(t, expectedUpdateData.Subscriptions, listener.latestUpdate)

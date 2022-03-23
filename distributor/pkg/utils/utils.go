@@ -54,13 +54,14 @@ func (ef EventMatcher) Matches(e cloudevents.Event) bool {
 
 type ExecutionContext struct {
 	context.Context
-	Wg *sync.WaitGroup
+	Wg       *sync.WaitGroup
+	CancelFn context.CancelFunc
 }
 
 func NewExecutionContext(ctx context.Context, waitGroupCount int) *ExecutionContext {
 	wg := new(sync.WaitGroup)
 	wg.Add(waitGroupCount)
-	return &ExecutionContext{ctx, wg}
+	return &ExecutionContext{ctx, wg, func() {}}
 }
 
 func DecodeNATSMessage(data []byte) (*cloudevents.Event, error) {

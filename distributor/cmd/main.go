@@ -70,8 +70,8 @@ func main() {
 
 	// Eventually start registration process
 	if env.ValidateRegistrationConstraints() {
-		id := uniformWatch.Start(executionContext)
-		if id == "" {
+		id, started := uniformWatch.Start(executionContext)
+		if !started {
 			logger.Fatal("Could not register Uniform")
 		}
 		uniformLogger := log.New(id, apiset.LogsV1())
@@ -91,7 +91,7 @@ func main() {
 			logger.Fatalf("Could not start HTTP event poller: %v", err)
 		}
 	} else {
-		logger.Info("Starting NATS event Receiver")
+		logger.Info("Starting NATS event receiver")
 		natsEventReceiver := receiver.New(env, eventSender, env.ValidateRegistrationConstraints())
 		uniformWatch.RegisterListener(natsEventReceiver)
 		if err := natsEventReceiver.Start(executionContext); err != nil {
@@ -114,8 +114,9 @@ func createExecutionContext() *utils.ExecutionContext {
 	wg := new(sync.WaitGroup)
 	wg.Add(2)
 	executionContext := utils.ExecutionContext{
-		Context: ctx,
-		Wg:      wg,
+		Context:  ctx,
+		Wg:       wg,
+		CancelFn: cancel,
 	}
 	return &executionContext
 }
