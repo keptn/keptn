@@ -10,7 +10,6 @@ import (
 	"github.com/keptn/keptn/resource-service/common_models"
 	kerrors "github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
-	logger "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 )
 
@@ -49,11 +48,6 @@ func (s ServiceManager) CreateService(params models.CreateServiceParams) error {
 
 	var resultErr error
 	_ = retry.Retry(func() error {
-		err = s.git.ResetHard(*gitContext, "HEAD")
-		if err != nil {
-			logger.WithError(err).Warn("could not execute git hard reset")
-		}
-
 		err = s.git.Pull(*gitContext)
 		if err != nil {
 			resultErr = err
@@ -85,10 +79,6 @@ func (s ServiceManager) DeleteService(params models.DeleteServiceParams) error {
 
 	var resultErr error
 	_ = retry.Retry(func() error {
-		err = s.git.ResetHard(*gitContext, "HEAD")
-		if err != nil {
-			logger.WithError(err).Warn("could not execute git hard reset")
-		}
 		err = s.git.Pull(*gitContext)
 		if err != nil {
 			resultErr = err
