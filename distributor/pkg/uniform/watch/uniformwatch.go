@@ -112,15 +112,3 @@ func (sw *UniformWatch) RegisterListener(listener SubscriptionListener) {
 type SubscriptionListener interface {
 	UpdateSubscriptions([]models.EventSubscription)
 }
-
-// TestUniformWatch test implementation of UniformWatch
-type TestUniformWatch struct {
-	subscriptions []models.EventSubscription
-}
-
-func (t *TestUniformWatch) Start(ctx *utils.ExecutionContext) (string, bool) {
-	return "uniform-id", true
-}
-func (t *TestUniformWatch) GetCurrentUniformSubscriptions() []models.EventSubscription {
-	return t.subscriptions
-}
