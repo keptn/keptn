@@ -931,30 +931,15 @@ func TestProjectManager_DeleteProject_CannotDeleteDirectory(t *testing.T) {
 func getTestProjectManagerFields() projectManagerTestFields {
 	return projectManagerTestFields{
 		git: &common_mock.IGitMock{
-			ProjectExistsFunc: func(gitContext common_models.GitContext) bool {
-				return true
-			},
-			ProjectRepoExistsFunc: func(projectName string) bool {
-				return true
-			},
-			CloneRepoFunc: func(gitContext common_models.GitContext) (bool, error) {
-				return true, nil
-			},
-			StageAndCommitAllFunc: func(gitContext common_models.GitContext, message string) (string, error) {
-				return "", nil
-			},
-			GetDefaultBranchFunc: func(gitContext common_models.GitContext) (string, error) {
-				return "main", nil
-			},
-			CheckoutBranchFunc: func(gitContext common_models.GitContext, branch string) error {
-				return nil
-			},
-			MigrateProjectFunc: func(gitContext common_models.GitContext, newMetadatacontent []byte) error {
-				return nil
-			},
-			PullFunc: func(gitContext common_models.GitContext) error {
-				return nil
-			},
+			ResetHardFunc:         func(gitContext common_models.GitContext) error { return nil },
+			ProjectExistsFunc:     func(gitContext common_models.GitContext) bool { return true },
+			ProjectRepoExistsFunc: func(projectName string) bool { return true },
+			CloneRepoFunc:         func(gitContext common_models.GitContext) (bool, error) { return true, nil },
+			StageAndCommitAllFunc: func(gitContext common_models.GitContext, message string) (string, error) { return "", nil },
+			GetDefaultBranchFunc:  func(gitContext common_models.GitContext) (string, error) { return "main", nil },
+			CheckoutBranchFunc:    func(gitContext common_models.GitContext, branch string) error { return nil },
+			MigrateProjectFunc:    func(gitContext common_models.GitContext, newMetadatacontent []byte) error { return nil },
+			PullFunc:              func(gitContext common_models.GitContext) error { return nil },
 		},
 		credentialReader: &common_mock.CredentialReaderMock{
 			GetCredentialsFunc: func(project string) (*common_models.GitCredentials, error) {
