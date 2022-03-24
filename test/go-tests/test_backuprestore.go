@@ -8,7 +8,9 @@ import (
 	"time"
 
 	"github.com/keptn/go-utils/pkg/api/models"
-	archiver "github.com/mholt/archiver/v3"
+	"github.com/mholt/archiver/v3"
+
+	//"archiver "github.com/mholt/archiver/v3"
 	"github.com/stretchr/testify/require"
 )
 
@@ -148,8 +150,8 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", projectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery")
 	require.Nil(t, err)
 
-	t.Logf("Sleeping for 60s...")
-	time.Sleep(60 * time.Second)
+	t.Logf("Sleeping for 90s...")
+	time.Sleep(90 * time.Second)
 	t.Logf("Continue to work...")
 
 	t.Logf("Verify Direct delivery before backup of %s in stage dev", serviceName)
@@ -248,13 +250,14 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	}
 
 	if serviceUnderTestName == "resource-service" {
-		//t.Logf("Deleting resource-service pod")
-		//_, err = ExecuteCommandf("kubectl delete pod %s -n %s", serviceUnderTestPod, keptnNamespace)
+		t.Logf("Restarting resource-service pod")
 		err := RestartPod(serviceUnderTestName)
 		require.Nil(t, err)
 	} else {
-		t.Logf("Deleting testing project")
-		_, err = ExecuteCommandf("keptn delete project %s", projectName)
+		t.Logf("Deleting project data")
+		_, err = ExecuteCommandf("kubectl exec %s -n %s -- rm -rf /tmp/dump/*", mongoDbPod, keptnNamespace)
+		require.Nil(t, err)
+		_, err = ExecuteCommandf("kubectl exec %s -c %s -n %s -- rm -rf /data/config/*", serviceUnderTestPod, serviceUnderTestName, keptnNamespace)
 		require.Nil(t, err)
 	}
 
@@ -264,7 +267,6 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 
 	if backupGit {
 		//restore git-credentials
-
 		t.Logf("Executing restore of git-credentials")
 		_, err = ExecuteCommandf("kubectl apply -f %s -n %s", secretFileName, keptnNamespace)
 		require.Nil(t, err)
