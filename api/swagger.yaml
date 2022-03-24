@@ -130,3 +130,5 @@ definitions:
         type: string
       keptnservices:
         type: object
+      automaticprovisioning:
+        type: string
