@@ -1,7 +1,6 @@
 package watch
 
 import (
-	"fmt"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/retry"
 	"github.com/keptn/keptn/distributor/pkg/config"
@@ -41,7 +40,6 @@ type UniformWatch struct {
 //
 // It returns a pointer to a new UniformWatch without any subscription listeners
 func New(controlPlane controlplane.IControlPlane, env config.EnvConfig) *UniformWatch {
-	fmt.Println(env.HeartbeatIntervalDuration)
 	return &UniformWatch{
 		HeartbeatInterval:   env.HeartbeatIntervalDuration,
 		MaxHeartbeatRetries: env.MaxHeartBeatRetries,
