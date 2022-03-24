@@ -70,9 +70,9 @@ func main() {
 
 	// Eventually start registration process
 	if env.ValidateRegistrationConstraints() {
-		id, started := uniformWatch.Start(executionContext)
-		if !started {
-			logger.Fatal("Could not register Uniform")
+		id, err := uniformWatch.Start(executionContext)
+		if err != nil {
+			logger.Fatal(err)
 		}
 		uniformLogger := log.New(id, apiset.LogsV1())
 		uniformLogger.Start(executionContext, forwarder.EventChannel)

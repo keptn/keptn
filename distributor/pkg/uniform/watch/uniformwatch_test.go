@@ -15,9 +15,9 @@ func Test_UniformWatchReturnsRegistrationID(t *testing.T) {
 	uw := New(&testControlPlane{}, config.EnvConfig{HeartbeatInterval: time.Second, MaxHeartBeatRetries: 5, MaxRegistrationRetries: 5})
 	uw.RegisterListener(&testListener{})
 
-	id, started := uw.Start(utils.NewExecutionContext(context.TODO(), 0))
+	id, err := uw.Start(utils.NewExecutionContext(context.TODO(), 0))
 	assert.Equal(t, "a-id", id)
-	assert.True(t, started)
+	assert.Nil(t, err)
 }
 
 func Test_UniformWatchUpdatesListeners(t *testing.T) {
@@ -31,9 +31,9 @@ func Test_UniformWatchUpdatesListeners(t *testing.T) {
 	uw.RegisterListener(subscriptionListener)
 
 	ctx := utils.NewExecutionContext(context.TODO(), 1)
-	id, started := uw.Start(ctx)
+	id, err := uw.Start(ctx)
 	require.NotEmpty(t, id)
-	require.True(t, started)
+	require.Nil(t, err)
 
 	require.Eventually(t, func() bool { return len(subscriptionListener.latestUpdate) == 1 }, 10*time.Second, 100*time.Millisecond)
 	require.Equal(t, expectedUpdateData.Subscriptions, subscriptionListener.latestUpdate)
@@ -48,9 +48,9 @@ func Test_UniformTermination(t *testing.T) {
 	context, cancel := context.WithCancel(context.Background())
 	ctx := utils.NewExecutionContext(context, 1)
 	ctx.CancelFn = cancel
-	id, started := uw.Start(ctx)
+	id, err := uw.Start(ctx)
 	require.NotEmpty(t, id)
-	require.True(t, started)
+	require.Nil(t, err)
 
 	require.Eventually(t, func() bool { return subscriptionListener.updateSubsccriptionsCalls == 1 }, 10*time.Second, 50*time.Millisecond)
 	require.Eventually(t, func() bool { return subscriptionListener.updateSubsccriptionsCalls == 2 }, 10*time.Second, 50*time.Millisecond)

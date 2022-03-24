@@ -1,6 +1,7 @@
 package watch
 
 import (
+	"fmt"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/retry"
 	"github.com/keptn/keptn/distributor/pkg/config"
@@ -11,7 +12,7 @@ import (
 )
 
 type IUniformWatch interface {
-	Start(ctx *utils.ExecutionContext) (string, bool)
+	Start(ctx *utils.ExecutionContext) (string, error)
 }
 
 // UniformWatch periodically checks the control plane api to get information about
@@ -53,7 +54,7 @@ func New(controlPlane controlplane.IControlPlane, env config.EnvConfig) *Uniform
 // registration to the control plane.
 // If it was successful, it will start to send heartbeat messages in the background
 // This method does not block
-func (sw *UniformWatch) Start(ctx *utils.ExecutionContext) (string, bool) {
+func (sw *UniformWatch) Start(ctx *utils.ExecutionContext) (string, error) {
 	logger.Info("Registering Keptn Integration")
 	var id string
 	failRegisterCount := 0
@@ -70,7 +71,7 @@ func (sw *UniformWatch) Start(ctx *utils.ExecutionContext) (string, bool) {
 		return nil
 	}, retry.NumberOfRetries(uint(sw.MaxRegisterRetries)))
 	if err != nil {
-		return "", false
+		return "", fmt.Errorf("could not start uniform watch")
 	}
 
 	go func() {
@@ -98,7 +99,7 @@ func (sw *UniformWatch) Start(ctx *utils.ExecutionContext) (string, bool) {
 			}
 		}
 	}()
-	return id, true
+	return id, nil
 }
 
 // RegisterListener adds a listener to the UniformWatch that is notified whenever
