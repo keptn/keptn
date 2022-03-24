@@ -55,12 +55,15 @@ func New(controlPlane controlplane.IControlPlane) *UniformWatch {
 func (sw *UniformWatch) Start(ctx *utils.ExecutionContext) (string, bool) {
 	logger.Info("Registering Keptn Integration")
 	var id string
+	failRegisterCount := 0
 	err := retry.Retry(func() error {
 		integrationID, err := sw.controlPlane.Register()
 		if err != nil {
-			logger.Warnf("Could not register to Keptn's control plane: %v", err)
+			failRegisterCount++
+			logger.Warnf("Could not register to Keptn's control plane (retry count: %d/%d), %v", failRegisterCount, sw.MaxRegisterRetries, err)
 			return err
 		}
+		failRegisterCount = 0
 		logger.Infof("Registered Keptn Integration with id %s", integrationID)
 		id = integrationID
 		return nil
@@ -82,8 +85,8 @@ func (sw *UniformWatch) Start(ctx *utils.ExecutionContext) (string, bool) {
 				}
 				integrationData, err := sw.controlPlane.Ping()
 				if err != nil {
-					logger.Warnf("Could not send heart beat to control plane (retry count: %d/%d): %v", failSendHBCount, sw.MaxHeartbeatRetries, err)
 					failSendHBCount++
+					logger.Warnf("Could not send heart beat to control plane (retry count: %d/%d): %v", failSendHBCount, sw.MaxHeartbeatRetries, err)
 					continue
 				}
 				failSendHBCount = 0
