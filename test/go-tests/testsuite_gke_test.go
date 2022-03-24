@@ -50,6 +50,7 @@ func Test_GKE(t *testing.T) {
 		t.Run("Test_ProxyAuth", Test_ProxyAuth)
 	}
 	t.Run("Test_ZeroDownTimeTriggerSequence", Test_ZeroDownTimeTriggerSequence)
+	t.Run("Test_UpgradeZeroDowntime", Test_UpgradeZeroDowntime)
 
 	// Platform-specific Tests
 	t.Run("Test_ResourceService", Test_ResourceServiceBasic)

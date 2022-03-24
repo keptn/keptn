@@ -3,6 +3,7 @@ package go_tests
 import (
 	"fmt"
 	"github.com/imroc/req"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"os"
@@ -48,7 +49,7 @@ func (t *HTTPEndpointTest) Run(wg *sync.WaitGroup) error {
 
 func (t *HTTPEndpointTest) String() string {
 	failureRate := t.Result.FailedRequests / t.NrRequests
-	return fmt.Sprintf("======\nURL: %s\nExecutedRequests: %d\n FailedRequests: %d\n FailureRate: %d\n======\n", t.URL, t.NrRequests, t.Result.FailedRequests, failureRate)
+	return fmt.Sprintf("\n======\nURL: %s\nExecutedRequests: %d\n FailedRequests: %d\n FailureRate: %d\n======\n", t.URL, t.NrRequests, t.Result.FailedRequests, failureRate)
 }
 
 type HTTPEndpointTestResult struct {
@@ -81,7 +82,7 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 
 	// test api endpoints
 	requestsPerEndpoint := 1
-	httpEndpointTests := []HTTPEndpointTest{
+	httpEndpointTests := []*HTTPEndpointTest{
 		{
 			URL:                        "/controlPlane/v1/uniform/registration",
 			Method:                     http.MethodGet,
@@ -91,7 +92,7 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 			WaitSecondsBetweenRequests: 3,
 		},
 		{
-			URL:                        "/api/v1/metadata",
+			URL:                        "/v1/metadata",
 			Method:                     http.MethodGet,
 			Payload:                    nil,
 			ExpectedStatus:             200,
@@ -107,7 +108,7 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 			WaitSecondsBetweenRequests: 3,
 		},
 		{
-			URL:                        "/configuration-service/project/" + projectName + "/resource",
+			URL:                        "/configuration-service/v1/project/" + projectName + "/resource",
 			Method:                     http.MethodGet,
 			Payload:                    nil,
 			ExpectedStatus:             200,
@@ -115,7 +116,7 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 			WaitSecondsBetweenRequests: 3,
 		},
 		{
-			URL:                        "/secrets/secret",
+			URL:                        "/secrets/v1/secret",
 			Method:                     http.MethodGet,
 			Payload:                    nil,
 			ExpectedStatus:             200,
@@ -146,6 +147,7 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 
 	for _, endpointTest := range httpEndpointTests {
 		t.Log(endpointTest.String())
+		assert.Zero(t, endpointTest.Result.FailedRequests)
 	}
 
 }
