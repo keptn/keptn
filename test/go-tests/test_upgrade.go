@@ -83,8 +83,8 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 		}
 	}()
 
-	chartLatestVersion := "https://github.com/keptn/helm-charts-dev/blob/gh-pages/packages/keptn-0.14.0-dev.tgz?raw=true"
-	chartPreviousVersion := "https://github.com/keptn/helm-charts-dev/blob/027ebfdf98176047fdcf6c80f8aa9599a9c66b4e/packages/keptn-0.14.0-dev.tgz?raw=true"
+	chartLatestVersion := "https://github.com/keptn/helm-charts-dev/blob/gh-pages/packages/keptn-0.14.0-dev-PR-7266.tgz?raw=true"
+	chartPreviousVersion := "https://github.com/keptn/helm-charts-dev/blob/8f0b300d52f3fa3c24472f8afafbc598e2f3c3e3/packages/keptn-0.14.0-dev-PR-7266.tgz?raw=true"
 
 	// check if the project 'state' is already available - if not, delete it before creating it again
 	// check if the project is already available - if not, delete it before creating it again
@@ -187,10 +187,12 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 				t.Log("Finished triggering sequences")
 				return
 			default:
-				keptnContext, _ := TriggerSequence(projectName, serviceName, stageName, "evaluation", nil)
+				keptnContext, err := TriggerSequence(projectName, serviceName, stageName, "evaluation", nil)
 				nrTriggeredSequences++
-				keptnContextIDs = append(keptnContextIDs, keptnContext)
-				t.Logf("Triggered new evaluation sequence with KeptnContext %s", keptnContext)
+				if err == nil {
+					keptnContextIDs = append(keptnContextIDs, keptnContext)
+					t.Logf("Triggered new evaluation sequence with KeptnContext %s", keptnContext)
+				}
 				// wait some time before triggering the next sequence
 				<-time.After(time.Duration(rand.Intn(10)) * time.Second)
 			}
@@ -218,8 +220,8 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 
 	t.Logf("Triggered %d sequences. Let's check if they have been finished", nrTriggeredSequences)
 	for _, keptnContext := range keptnContextIDs {
+		t.Logf("Checking if sequence %s has been finished", keptnContext)
 		assert.Eventually(t, func() bool {
-			t.Logf("Checking if sequence %s has been finished", keptnContext)
 			evaluationFinishedEvent, err := GetLatestEventOfType(keptnContext, projectName, stageName, v0_2_0.GetFinishedEventType("dev.evaluation"))
 			if evaluationFinishedEvent == nil || err != nil {
 				return false
