@@ -131,4 +131,4 @@ definitions:
       keptnservices:
         type: object
       automaticprovisioning:
-        type: string
+        type: boolean

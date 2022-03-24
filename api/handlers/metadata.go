@@ -64,7 +64,7 @@ func (h *metadataHandler) getMetadata() middleware.Responder {
 	logger.Info("API received a GET metadata event")
 
 	namespace := os.Getenv("POD_NAMESPACE")
-	automaticProvisioning := os.Getenv("AUTOMATIC_PROVISIONING_URL")
+	automaticProv := os.Getenv("AUTOMATIC_PROVISIONING_URL")
 
 	var payload models.Metadata
 	payload.Namespace = namespace
@@ -72,7 +72,7 @@ func (h *metadataHandler) getMetadata() middleware.Responder {
 	payload.Keptnlabel = "keptn"
 	payload.Bridgeversion = defaultVersion
 	payload.Shipyardversion = "0.2.0"
-	payload.AutomaticProvisioning = automaticProvisioning != ""
+	payload.Automaticprovisioning = automaticProv != ""
 
 	if bridgeVersion, err := h.getBridgeVersion(namespace); err != nil {
 		logger.WithError(err).Error("Error getting bridge version")

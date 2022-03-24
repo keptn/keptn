@@ -18,7 +18,7 @@ import (
 type Metadata struct {
 
 	// automaticprovisioning
-	Automaticprovisioning string `json:"automaticprovisioning,omitempty"`
+	Automaticprovisioning bool `json:"automaticprovisioning,omitempty"`
 
 	// bridgeversion
 	Bridgeversion string `json:"bridgeversion,omitempty"`

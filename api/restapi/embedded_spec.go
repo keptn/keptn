@@ -177,7 +177,7 @@ func init() {
       "type": "object",
       "properties": {
         "automaticprovisioning": {
-          "type": "string"
+          "type": "boolean"
         },
         "bridgeversion": {
           "type": "string"
@@ -373,7 +373,7 @@ func init() {
       "type": "object",
       "properties": {
         "automaticprovisioning": {
-          "type": "string"
+          "type": "boolean"
         },
         "bridgeversion": {
           "type": "string"
