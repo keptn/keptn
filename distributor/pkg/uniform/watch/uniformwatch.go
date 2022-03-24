@@ -13,6 +13,8 @@ type IUniformWatch interface {
 	Start(ctx *utils.ExecutionContext) (string, bool)
 }
 
+// UniformWatch periodically checks the control plane api to get information about
+// new subscriptions
 type UniformWatch struct {
 	// HeartbeatInterval is the time duration between each ping
 	// call to the control plane
