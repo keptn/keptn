@@ -81,6 +81,8 @@ apiService:
   config:
     maxAuthRequestsPerSecond: "1.0"
     maxAuthRequestBurst: "2"
+  features:
+    automaticProvisioningURL: ""
 
 bridge:
   image:

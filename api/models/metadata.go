@@ -34,6 +34,9 @@ type Metadata struct {
 
 	// shipyardversion
 	Shipyardversion string `json:"shipyardversion,omitempty"`
+
+	// automaticprovisioning
+	AutomaticProvisioning bool `json:"automaticprovisioning,omitempty"`
 }
 
 // Validate validates this metadata
