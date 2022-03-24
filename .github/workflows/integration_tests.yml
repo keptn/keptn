@@ -584,47 +584,47 @@ jobs:
           readarray -t clusterrolebindings <<< "$(kubectl get clusterrolebindings | awk '{ print $1 }' | grep ${{ env.KEPTN_NAMESPACE }})"
 
           if [[ "${{ github.event_name }}" == 'schedule' && "${{ steps.test_aggregated.outcome }}" != 'success' ]]; then
-              for namespace in "${namespaces[@]}"; do
-                if [[ ! -z "${namespace// }" ]]; then
-                  echo "Annotating namespace $namespace with Janitor TTL of 3 days..."
-                  kubectl annotate namespace "$namespace" janitor/ttl=3d
-                fi
-              done
-          
-              for crb in "${clusterrolebindings[@]}"; do
-                if [[ ! -z "${crb// }" ]]; then
-                  echo "Annotating clusterrolebinding $crb with Janitor TTL of 3 days..."
-                  kubectl annotate clusterrolebinding "$crb" janitor/ttl=3d
-                fi
-              done
-          elif [[ "${{ github.event_name }}" == 'workflow_dispatch' && "${{ steps.test_aggregated.outcome }}" != 'success' && "${{ github.event.inputs.deleteOnFinish }}" == 'false']]; then
-              for namespace in "${namespaces[@]}"; do
-                if [[ ! -z "${namespace// }" ]]; then
-                  echo "Annotating namespace $namespace with Janitor TTL of 3 hours..."
-                  kubectl annotate namespace "$namespace" janitor/ttl=3h
-                fi
-              done
-          
-              for crb in "${clusterrolebindings[@]}"; do
-                if [[ ! -z "${crb// }" ]]; then
-                  echo "Annotating clusterrolebinding $crb with Janitor TTL of 3 hours..."
-                  kubectl annotate clusterrolebinding "$crb" janitor/ttl=3h
-                fi
-              done
+            for namespace in "${namespaces[@]}"; do
+              if [[ ! -z "${namespace// }" ]]; then
+                echo "Annotating namespace $namespace with Janitor TTL of 3 days..."
+                kubectl annotate namespace "$namespace" janitor/ttl=3d
+              fi
+            done
+        
+            for crb in "${clusterrolebindings[@]}"; do
+              if [[ ! -z "${crb// }" ]]; then
+                echo "Annotating clusterrolebinding $crb with Janitor TTL of 3 days..."
+                kubectl annotate clusterrolebinding "$crb" janitor/ttl=3d
+              fi
+            done
+          elif [[ "${{ github.event_name }}" == 'workflow_dispatch' && "${{ steps.test_aggregated.outcome }}" != 'success' && "${{ github.event.inputs.deleteOnFinish }}" == 'false' ]]; then
+            for namespace in "${namespaces[@]}"; do
+              if [[ ! -z "${namespace// }" ]]; then
+                echo "Annotating namespace $namespace with Janitor TTL of 3 hours..."
+                kubectl annotate namespace "$namespace" janitor/ttl=3h
+              fi
+            done
+        
+            for crb in "${clusterrolebindings[@]}"; do
+              if [[ ! -z "${crb// }" ]]; then
+                echo "Annotating clusterrolebinding $crb with Janitor TTL of 3 hours..."
+                kubectl annotate clusterrolebinding "$crb" janitor/ttl=3h
+              fi
+            done
           else
-              for namespace in "${namespaces[@]}"; do
-                if [[ ! -z "${namespace// }" ]]; then
-                  echo "Deleting namespace $namespace ..."
-                  kubectl delete namespace "$namespace" --wait=false
-                fi
-              done
-          
-              for crb in "${clusterrolebindings[@]}"; do
-                if [[ ! -z "${crb// }" ]]; then
-                  echo "Deleting clusterrolebinding $crb ..."
-                  kubectl delete clusterrolebindings "$crb" --wait=false
-                fi
-              done
+            for namespace in "${namespaces[@]}"; do
+              if [[ ! -z "${namespace// }" ]]; then
+                echo "Deleting namespace $namespace ..."
+                kubectl delete namespace "$namespace" --wait=false
+              fi
+            done
+        
+            for crb in "${clusterrolebindings[@]}"; do
+              if [[ ! -z "${crb// }" ]]; then
+                echo "Deleting clusterrolebinding $crb ..."
+                kubectl delete clusterrolebindings "$crb" --wait=false
+              fi
+            done
           fi
 
       - name: Cleanup Minishift cluster
