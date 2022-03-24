@@ -3,7 +3,6 @@ module github.com/keptn/keptn/resource-service
 go 1.17
 
 require (
-	github.com/cloudevents/sdk-go/v2 v2.5.0
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-git/go-billy/v5 v5.3.1
 	github.com/go-git/go-git-fixtures/v4 v4.3.1
@@ -11,8 +10,8 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.13.1-0.20220318125157-fe974e59cc65
 	github.com/mholt/archiver/v3 v3.5.1
-	github.com/nats-io/nats-server/v2 v2.7.3
-	github.com/nats-io/nats.go v1.13.1-0.20220121202836-972a071d373d
+	github.com/nats-io/nats-server/v2 v2.7.4
+	github.com/nats-io/nats.go v1.13.1-0.20220308171302-2f2f6968e98d
 	github.com/otiai10/copy v1.7.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
@@ -31,6 +30,7 @@ require (
 	github.com/andybalholm/brotli v1.0.1 // indirect
 	github.com/benbjohnson/clock v1.3.0 // indirect
 	github.com/cloudevents/sdk-go/observability/opentelemetry/v2 v2.0.0-20211001212819-74757a691209 // indirect
+	github.com/cloudevents/sdk-go/v2 v2.5.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dsnet/compress v0.0.2-0.20210315054119-f66993602bf5 // indirect
 	github.com/emirpasic/gods v1.12.0 // indirect

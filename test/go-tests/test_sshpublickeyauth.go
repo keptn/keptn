@@ -2,10 +2,12 @@ package go_tests
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/require"
 	"os"
 	"path"
 	"testing"
+
+	"github.com/mholt/archiver/v3"
+	"github.com/stretchr/testify/require"
 )
 
 const testingSSHShipyard = `apiVersion: "spec.keptn.sh/0.2.3"
@@ -71,8 +73,19 @@ func Test_SSHPublicKeyAuth(t *testing.T) {
 	projectName := "public-key-auth"
 	serviceName := "helloservice"
 	secondServiceName := "helloservice2"
-	serviceChartLocalDir := path.Join(repoLocalDir, "helm-charts", "helloservice.tgz")
+	chartFileName := "helloservice.tgz"
+	serviceChartSrcPath := path.Join(repoLocalDir, "helm-charts", "helloservice")
+	serviceChartArchivePath := path.Join(repoLocalDir, "helm-charts", chartFileName)
 	serviceJmeterDir := path.Join(repoLocalDir, "jmeter")
+
+	// Delete chart archive at the end of the test
+	defer func(path string) {
+		err := os.RemoveAll(path)
+		require.Nil(t, err)
+	}(serviceChartArchivePath)
+
+	err := archiver.Archive([]string{serviceChartSrcPath}, serviceChartArchivePath)
+	require.Nil(t, err)
 
 	t.Logf("Creating a new project %s with Gitea Upstream", projectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(testingSSHShipyard)
@@ -85,7 +98,7 @@ func Test_SSHPublicKeyAuth(t *testing.T) {
 	require.Nil(t, err)
 
 	t.Logf("Adding resource for service %s in project %s", serviceName, projectName)
-	_, err = ExecuteCommandf("keptn add-resource --project %s --service=%s --all-stages --resource=%s --resourceUri=%s", projectName, serviceName, serviceChartLocalDir, "helm/helloservice.tgz")
+	_, err = ExecuteCommandf("keptn add-resource --project %s --service=%s --all-stages --resource=%s --resourceUri=%s", projectName, serviceName, serviceChartArchivePath, path.Join("helm", chartFileName))
 	require.Nil(t, err)
 
 	t.Log("Adding jmeter config in prod")
