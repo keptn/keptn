@@ -1,14 +1,15 @@
 package go_tests
 
 import (
-	"github.com/keptn/go-utils/pkg/api/models"
-	archiver "github.com/mholt/archiver/v3"
-	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"os"
 	"path"
 	"testing"
 	"time"
+
+	"github.com/keptn/go-utils/pkg/api/models"
+	archiver "github.com/mholt/archiver/v3"
+	"github.com/stretchr/testify/require"
 )
 
 const testingShipyard = `apiVersion: "spec.keptn.sh/0.2.3"
@@ -203,12 +204,9 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	require.Nil(t, err)
 	defer resetTestPath(t, "../../../go-tests")
 
-	if backupGit {
-		t.Logf("Executing backup of %s", serviceUnderTestName)
-		_, err = ExecuteCommandf("kubectl cp %s/%s:/data ./%s/ -c %s", keptnNamespace, serviceUnderTestPod, serviceBackupFolder, serviceUnderTestName)
-		require.Nil(t, err)
-
-	}
+	t.Logf("Executing backup of %s", serviceUnderTestName)
+	_, err = ExecuteCommandf("kubectl cp %s/%s:/data ./%s/ -c %s", keptnNamespace, serviceUnderTestPod, serviceBackupFolder, serviceUnderTestName)
+	require.Nil(t, err)
 
 	//backup MongoDB Data
 
@@ -270,26 +268,27 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 		t.Logf("Executing restore of git-credentials")
 		_, err = ExecuteCommandf("kubectl apply -f %s -n %s", secretFileName, keptnNamespace)
 		require.Nil(t, err)
-
-		//restore Configuration/Resource Service data
-
-		t.Logf("Restoring %s data", serviceUnderTestName)
-		serviceUnderTestPod, err = ExecuteCommandf("kubectl get pods -n %s -lapp.kubernetes.io/name=%s -ojsonpath='{.items[0].metadata.name}'", keptnNamespace, serviceUnderTestName)
-		require.Nil(t, err)
-		serviceUnderTestPod = removeQuotes(serviceUnderTestPod)
-		_, err = ExecuteCommandf("kubectl cp ./%s/config/ %s/%s:/data -c %s", serviceBackupFolder, keptnNamespace, serviceUnderTestPod, serviceUnderTestName)
-		require.Nil(t, err)
-
-		// reset git repositories to current HEAD
-
-		t.Logf("Reseting git repositories to current HEAD")
-		err = os.WriteFile(resetGitReposFile, []byte(resetGitRepos), 0666)
-		require.Nil(t, err)
-		_, err = ExecuteCommandf("kubectl cp ./%s %s/%s:/data/config -c %s", resetGitReposFile, keptnNamespace, serviceUnderTestPod, serviceUnderTestName)
-		require.Nil(t, err)
-		_, err = ExecuteCommandf("kubectl exec -n %s %s -c %s -- sh ./data/config/%s", keptnNamespace, serviceUnderTestPod, serviceUnderTestName, resetGitReposFile)
-		require.Nil(t, err)
 	}
+
+	//restore Configuration/Resource Service data
+
+	t.Logf("Restoring %s data", serviceUnderTestName)
+	serviceUnderTestPod, err = ExecuteCommandf("kubectl get pods -n %s -lapp.kubernetes.io/name=%s -ojsonpath='{.items[0].metadata.name}'", keptnNamespace, serviceUnderTestName)
+	require.Nil(t, err)
+	serviceUnderTestPod = removeQuotes(serviceUnderTestPod)
+	_, err = ExecuteCommandf("kubectl cp ./%s/config/ %s/%s:/data -c %s", serviceBackupFolder, keptnNamespace, serviceUnderTestPod, serviceUnderTestName)
+	require.Nil(t, err)
+
+	// reset git repositories to current HEAD
+
+	t.Logf("Reseting git repositories to current HEAD")
+	err = os.WriteFile(resetGitReposFile, []byte(resetGitRepos), 0666)
+	require.Nil(t, err)
+	_, err = ExecuteCommandf("kubectl cp ./%s %s/%s:/data/config -c %s", resetGitReposFile, keptnNamespace, serviceUnderTestPod, serviceUnderTestName)
+	require.Nil(t, err)
+	_, err = ExecuteCommandf("kubectl exec -n %s %s -c %s -- sh ./data/config/%s", keptnNamespace, serviceUnderTestPod, serviceUnderTestName, resetGitReposFile)
+	require.Nil(t, err)
+
 	////restore MongoDB data
 	//
 	t.Logf("Restoring MongoDB data")
