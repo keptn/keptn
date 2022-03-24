@@ -213,7 +213,7 @@ ingress:
   tls:
     []
 
-logLevel: info
+logLevel: "info"
 
 gracePeriod: 40
 

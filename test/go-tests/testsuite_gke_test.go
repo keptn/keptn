@@ -5,12 +5,14 @@ import (
 )
 
 func Test_GKE(t *testing.T) {
-	// Common Tests
+	// Shut DownTests
 	if res, err := CompareServiceNameWithDeploymentName("configuration-service", "configuration-service"); err == nil && res {
 		t.Run("Test_BackupRestoreConfigService", Test_BackupRestoreConfigService)
 	} else {
-		//t.Run("Test_BackupRestoreResourceService", Test_BackupRestoreResourceService)
+		t.Run("Test_BackupRestoreResourceService", Test_BackupRestoreResourceService)
 	}
+	t.Run("Test_GracefulShutdown", Test_GracefulShutdown)
+	// Common Tests
 	t.Run("Test_LogIngestion", Test_LogIngestion)
 	t.Run("Test_LogForwarding", Test_LogForwarding)
 	t.Run("Test_SequenceState", Test_SequenceState)
@@ -29,7 +31,7 @@ func Test_GKE(t *testing.T) {
 	t.Run("Test_Webhook", Test_Webhook)
 	t.Run("Test_Webhook_OverlappingSubscriptions", Test_Webhook_OverlappingSubscriptions)
 	t.Run("Test_WebhookWithDisabledFinishedEvents", Test_WebhookWithDisabledFinishedEvents)
-	t.Run("Test_WebhookWithDisabledFinishedEvents", Test_WebhookWithDisabledStartedEvents)
+	t.Run("Test_WebhookWithDisabledStartedEvents", Test_WebhookWithDisabledStartedEvents)
 	t.Run("Test_WebhookConfigAtProjectLevel", Test_WebhookConfigAtProjectLevel)
 	t.Run("Test_WebhookConfigAtStageLevel", Test_WebhookConfigAtStageLevel)
 	t.Run("Test_WebhookConfigAtServiceLevel", Test_WebhookConfigAtServiceLevel)
@@ -57,10 +59,8 @@ func Test_GKE(t *testing.T) {
 	t.Run("Test_QualityGates_AbortedFinishedPayloadSend", Test_QualityGates_AbortedFinishedPayloadSend)
 	t.Run("Test_QualityGates_ErroredFinishedPayloadSend", Test_QualityGates_ErroredFinishedPayloadSend)
 	t.Run("Test_DeliveryAssistant", Test_DeliveryAssistant)
-	// TODO add resource service backup/restore test when the git credentials bug is solved
 	t.Run("Test_CustomUserManagedEndpointsTest", Test_CustomUserManagedEndpointsTest)
 	t.Run("Test_ContinuousDelivery", Test_ContinuousDelivery)
-	t.Run("Test_GracefulShutdown", Test_GracefulShutdown)
 	t.Run("Test_UniformRegistration_TestAPI", Test_UniformRegistration_TestAPI)
 	t.Run("Test_UniformRegistration_RegistrationOfKeptnIntegration", Test_UniformRegistration_RegistrationOfKeptnIntegration)
 	t.Run("Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods", Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods)

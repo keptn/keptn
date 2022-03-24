@@ -2,6 +2,7 @@ package go_tests
 
 import (
 	"github.com/keptn/go-utils/pkg/api/models"
+	archiver "github.com/mholt/archiver/v3"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"os"
@@ -97,7 +98,9 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	repoLocalDir := "../assets/podtato-head"
 	projectName := "backup-restore"
 	serviceName := "helloservice"
-	serviceChartLocalDir := path.Join(repoLocalDir, "helm-charts", "helloservice.tgz")
+	chartFileName := "helloservice.tgz"
+	serviceChartSrcPath := path.Join(repoLocalDir, "helm-charts", "helloservice")
+	serviceChartArchivePath := path.Join(repoLocalDir, "helm-charts", chartFileName)
 	serviceJmeterDir := path.Join(repoLocalDir, "jmeter")
 	keptnNamespace := GetKeptnNameSpaceFromEnv()
 	serviceHealthCheckEndpoint := "/metrics"
@@ -106,6 +109,15 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	globalBackupFolder := "keptn-backup"
 	mongoDBBackupFolder := "mongodb-backup"
 	resetGitReposFile := "reset-git-repos.sh"
+
+	// Delete chart archive at the end of the test
+	defer func(path string) {
+		err := os.RemoveAll(path)
+		require.Nil(t, err)
+	}(serviceChartArchivePath)
+
+	err := archiver.Archive([]string{serviceChartSrcPath}, serviceChartArchivePath)
+	require.Nil(t, err)
 
 	t.Logf("Creating a new project %s with a Gitea Upstream", projectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(testingShipyard)
@@ -120,7 +132,7 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	require.Nil(t, err)
 
 	t.Logf("Adding resource for service %s in project %s", serviceName, projectName)
-	_, err = ExecuteCommandf("keptn add-resource --project %s --service=%s --all-stages --resource=%s --resourceUri=%s", projectName, serviceName, serviceChartLocalDir, "helm/helloservice.tgz")
+	_, err = ExecuteCommandf("keptn add-resource --project %s --service=%s --all-stages --resource=%s --resourceUri=%s", projectName, serviceName, serviceChartArchivePath, path.Join("helm", chartFileName))
 	require.Nil(t, err)
 
 	t.Log("Adding jmeter config in prod")
@@ -164,7 +176,14 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
 	require.Nil(t, err)
 
-	//backup Configuration/Resource Service data
+	backupGit := serviceUnderTestName == "configuration-service"
+
+	t.Logf("Extracting name of service %s", serviceUnderTestName)
+	serviceUnderTestPod, err := ExecuteCommandf("kubectl get pods -n %s -lapp.kubernetes.io/name=%s -ojsonpath='{.items[0].metadata.name}'", keptnNamespace, serviceUnderTestName)
+	require.Nil(t, err)
+	serviceUnderTestPod = removeQuotes(serviceUnderTestPod)
+
+	//backup Configuration Service data
 
 	t.Logf("Creating backup directories for %s", serviceUnderTestName)
 	err = os.Chdir(repoLocalDir)
@@ -172,22 +191,24 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 
 	globalBackupFolder, err = ioutil.TempDir("./", globalBackupFolder)
 	require.Nil(t, err)
-	defer os.RemoveAll(globalBackupFolder)
+	defer func(path string) {
+		err := os.RemoveAll(path)
+		require.Nil(t, err)
+	}(globalBackupFolder)
 
 	err = os.Chdir(globalBackupFolder)
 	require.Nil(t, err)
 
 	err = os.MkdirAll(serviceBackupFolder, os.ModePerm)
 	require.Nil(t, err)
-
 	defer resetTestPath(t, "../../../go-tests")
 
-	t.Logf("Executing backup of %s", serviceUnderTestName)
-	serviceUnderTestPod, err := ExecuteCommandf("kubectl get pods -n %s -lapp.kubernetes.io/name=%s -ojsonpath='{.items[0].metadata.name}'", keptnNamespace, serviceUnderTestName)
-	require.Nil(t, err)
-	serviceUnderTestPod = removeQuotes(serviceUnderTestPod)
-	_, err = ExecuteCommandf("kubectl cp %s/%s:/data ./%s/ -c %s", keptnNamespace, serviceUnderTestPod, serviceBackupFolder, serviceUnderTestName)
-	require.Nil(t, err)
+	if backupGit {
+		t.Logf("Executing backup of %s", serviceUnderTestName)
+		_, err = ExecuteCommandf("kubectl cp %s/%s:/data ./%s/ -c %s", keptnNamespace, serviceUnderTestPod, serviceBackupFolder, serviceUnderTestName)
+		require.Nil(t, err)
+
+	}
 
 	//backup MongoDB Data
 
@@ -216,19 +237,22 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	require.Nil(t, err)
 	mongoDbPod = removeQuotes(mongoDbPod)
 	_, err = ExecuteCommandf("kubectl cp %s/%s:/tmp/dump ./%s/ -c mongodb", keptnNamespace, mongoDbPod, mongoDBBackupFolder)
-	require.Nil(t, err)
 
-	//backup git-credentials
+	if backupGit {
 
-	t.Logf("Executing backup of git-credentials")
-	secret, err := ExecuteCommandf("kubectl get secret -n %s git-credentials-%s -oyaml", keptnNamespace, projectName)
-	require.Nil(t, err)
-	err = os.WriteFile(secretFileName, []byte(secret), 0644)
-	require.Nil(t, err)
+		//backup git-credentials
+
+		t.Logf("Executing backup of git-credentials")
+		secret, err := ExecuteCommandf("kubectl get secret -n %s git-credentials-%s -oyaml", keptnNamespace, projectName)
+		require.Nil(t, err)
+		err = os.WriteFile(secretFileName, []byte(secret), 0644)
+		require.Nil(t, err)
+	}
 
 	if serviceUnderTestName == "resource-service" {
-		t.Logf("Deleting resource-service pod")
-		_, err = ExecuteCommandf("kubectl delete pod %s -n %s", serviceUnderTestPod, keptnNamespace)
+		//t.Logf("Deleting resource-service pod")
+		//_, err = ExecuteCommandf("kubectl delete pod %s -n %s", serviceUnderTestPod, keptnNamespace)
+		err := RestartPod(serviceUnderTestName)
 		require.Nil(t, err)
 	} else {
 		t.Logf("Deleting testing project")
@@ -240,33 +264,34 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	time.Sleep(60 * time.Second)
 	t.Logf("Continue to work...")
 
-	//restore git-credentials
+	if backupGit {
+		//restore git-credentials
 
-	t.Logf("Executing restore of git-credentials")
-	_, err = ExecuteCommandf("kubectl apply -f %s -n %s", secretFileName, keptnNamespace)
-	require.Nil(t, err)
+		t.Logf("Executing restore of git-credentials")
+		_, err = ExecuteCommandf("kubectl apply -f %s -n %s", secretFileName, keptnNamespace)
+		require.Nil(t, err)
 
-	//restore Configuration/Resource Service data
+		//restore Configuration/Resource Service data
 
-	t.Logf("Restoring %s data", serviceUnderTestName)
-	serviceUnderTestPod, err = ExecuteCommandf("kubectl get pods -n %s -lapp.kubernetes.io/name=%s -ojsonpath='{.items[0].metadata.name}'", keptnNamespace, serviceUnderTestName)
-	require.Nil(t, err)
-	serviceUnderTestPod = removeQuotes(serviceUnderTestPod)
-	_, err = ExecuteCommandf("kubectl cp ./%s/config/ %s/%s:/data -c %s", serviceBackupFolder, keptnNamespace, serviceUnderTestPod, serviceUnderTestName)
-	require.Nil(t, err)
+		t.Logf("Restoring %s data", serviceUnderTestName)
+		serviceUnderTestPod, err = ExecuteCommandf("kubectl get pods -n %s -lapp.kubernetes.io/name=%s -ojsonpath='{.items[0].metadata.name}'", keptnNamespace, serviceUnderTestName)
+		require.Nil(t, err)
+		serviceUnderTestPod = removeQuotes(serviceUnderTestPod)
+		_, err = ExecuteCommandf("kubectl cp ./%s/config/ %s/%s:/data -c %s", serviceBackupFolder, keptnNamespace, serviceUnderTestPod, serviceUnderTestName)
+		require.Nil(t, err)
 
-	// reset git repositories to current HEAD
+		// reset git repositories to current HEAD
 
-	t.Logf("Reseting git repositories to current HEAD")
-	err = os.WriteFile(resetGitReposFile, []byte(resetGitRepos), 0666)
-	require.Nil(t, err)
-	_, err = ExecuteCommandf("kubectl cp ./%s %s/%s:/data/config -c %s", resetGitReposFile, keptnNamespace, serviceUnderTestPod, serviceUnderTestName)
-	require.Nil(t, err)
-	_, err = ExecuteCommandf("kubectl exec -n %s %s -c %s -- sh ./data/config/%s", keptnNamespace, serviceUnderTestPod, serviceUnderTestName, resetGitReposFile)
-	require.Nil(t, err)
-
-	//restore MongoDB data
-
+		t.Logf("Reseting git repositories to current HEAD")
+		err = os.WriteFile(resetGitReposFile, []byte(resetGitRepos), 0666)
+		require.Nil(t, err)
+		_, err = ExecuteCommandf("kubectl cp ./%s %s/%s:/data/config -c %s", resetGitReposFile, keptnNamespace, serviceUnderTestPod, serviceUnderTestName)
+		require.Nil(t, err)
+		_, err = ExecuteCommandf("kubectl exec -n %s %s -c %s -- sh ./data/config/%s", keptnNamespace, serviceUnderTestPod, serviceUnderTestName, resetGitReposFile)
+		require.Nil(t, err)
+	}
+	////restore MongoDB data
+	//
 	t.Logf("Restoring MongoDB data")
 	_, err = ExecuteCommandf("kubectl cp ./%s/keptn/ %s/%s:/tmp/dump -c mongodb", mongoDBBackupFolder, keptnNamespace, mongoDbPod)
 	require.Nil(t, err)
@@ -276,11 +301,11 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	require.Nil(t, err)
 
 	t.Logf("Sleeping for 15s...")
-	time.Sleep(15 * time.Second)
+	time.Sleep(50 * time.Second)
 	t.Logf("Continue to work...")
 
-	t.Logf("Trigger delivery after restore of helloservice:v0.1.0")
-	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", projectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery")
+	t.Logf("Trigger delivery after restore of helloservice:v0.1.1")
+	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", projectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.1", "delivery")
 	require.Nil(t, err)
 
 	t.Logf("Sleeping for 60s...")
@@ -288,7 +313,7 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	t.Logf("Continue to work...")
 
 	t.Logf("Verify Direct delivery after restore of %s in stage dev", serviceName)
-	err = VerifyDirectDeployment(serviceName, projectName, "dev", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
+	err = VerifyDirectDeployment(serviceName, projectName, "dev", "ghcr.io/podtato-head/podtatoserver", "v0.1.1")
 	require.Nil(t, err)
 
 	t.Log("Verify network access to public URI of helloservice in stage dev")
@@ -298,7 +323,7 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	require.Nil(t, err)
 
 	t.Logf("Verify Direct delivery after restore of %s in stage prod", serviceName)
-	err = VerifyDirectDeployment(serviceName, projectName, "prod", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
+	err = VerifyDirectDeployment(serviceName, projectName, "prod", "ghcr.io/podtato-head/podtatoserver", "v0.1.1")
 	require.Nil(t, err)
 
 	t.Log("Verify network access to public URI of helloservice in stage prod")

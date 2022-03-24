@@ -7,7 +7,7 @@ describe('Loading Bridge Example', () => {
 
   it('should match the title', () => {
     cy.visit('/');
-    cy.title().should('eq', 'keptn');
+    cy.title().should('eq', 'Keptn');
     cy.screenshot('entry-page');
   });
 });

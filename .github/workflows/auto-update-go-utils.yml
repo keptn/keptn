@@ -25,7 +25,7 @@ jobs:
         run: ./gh-actions-scripts/auto-update-utils.sh "${{ env.GO_UTILS_TARGET }}" "go-utils"
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v4
         with:
           token: ${{ secrets.KEPTN_BOT_TOKEN }}
           commit-message: "build(deps): Update keptn/go-utils to ${{ env.GO_UTILS_TARGET }}"
