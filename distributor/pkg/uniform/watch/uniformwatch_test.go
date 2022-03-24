@@ -3,6 +3,7 @@ package watch
 import (
 	"context"
 	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/keptn/distributor/pkg/config"
 	"github.com/keptn/keptn/distributor/pkg/utils"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -10,7 +11,7 @@ import (
 )
 
 func Test_UniformWatchReturnsRegistrationID(t *testing.T) {
-	uw := New(&testControlPlane{})
+	uw := New(&testControlPlane{}, config.EnvConfig{HeartbeatIntervalDuration: time.Second, MaxHeartBeatRetries: 5, MaxRegistrationRetries: 5})
 	uw.RegisterListener(&testListener{})
 
 	id, started := uw.Start(utils.NewExecutionContext(context.TODO(), 0))
@@ -30,7 +31,7 @@ func Test_UniformWatchUpdatesListeners(t *testing.T) {
 	controlPlane := &testControlPlane{
 		integrationData: expectedUpdateData,
 	}
-	uw := New(controlPlane)
+	uw := New(controlPlane, config.EnvConfig{HeartbeatIntervalDuration: time.Second, MaxHeartBeatRetries: 5, MaxRegistrationRetries: 5})
 	uw.HeartbeatInterval = 100 * time.Millisecond
 	uw.RegisterListener(listener)
 	uw.Start(utils.NewExecutionContext(context.TODO(), 0))

@@ -1,8 +1,10 @@
 package watch
 
 import (
+	"fmt"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/retry"
+	"github.com/keptn/keptn/distributor/pkg/config"
 	"github.com/keptn/keptn/distributor/pkg/uniform/controlplane"
 	"github.com/keptn/keptn/distributor/pkg/utils"
 	logger "github.com/sirupsen/logrus"
@@ -28,7 +30,7 @@ type UniformWatch struct {
 	// MaxRegisterRetries determines how often the distributor
 	// shall retry to do its initial registration to the control plane
 	// before giving up
-	MaxRegisterRetries uint
+	MaxRegisterRetries int
 
 	controlPlane controlplane.IControlPlane
 	listeners    []SubscriptionListener
@@ -38,11 +40,12 @@ type UniformWatch struct {
 // Per default it is configured with: HeartbeatInterval=10s, MaxHeartbeatRetries=20, MaxRegisterRetries=5
 //
 // It returns a pointer to a new UniformWatch without any subscription listeners
-func New(controlPlane controlplane.IControlPlane) *UniformWatch {
+func New(controlPlane controlplane.IControlPlane, env config.EnvConfig) *UniformWatch {
+	fmt.Println(env.HeartbeatIntervalDuration)
 	return &UniformWatch{
-		HeartbeatInterval:   10 * time.Second,
-		MaxHeartbeatRetries: 5,
-		MaxRegisterRetries:  5,
+		HeartbeatInterval:   env.HeartbeatIntervalDuration,
+		MaxHeartbeatRetries: env.MaxHeartBeatRetries,
+		MaxRegisterRetries:  env.MaxRegistrationRetries,
 		controlPlane:        controlPlane,
 		listeners:           []SubscriptionListener{},
 	}
@@ -67,7 +70,7 @@ func (sw *UniformWatch) Start(ctx *utils.ExecutionContext) (string, bool) {
 		logger.Infof("Registered Keptn Integration with id %s", integrationID)
 		id = integrationID
 		return nil
-	}, retry.NumberOfRetries(sw.MaxRegisterRetries))
+	}, retry.NumberOfRetries(uint(sw.MaxRegisterRetries)))
 	if err != nil {
 		return "", false
 	}

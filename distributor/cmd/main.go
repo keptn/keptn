@@ -61,7 +61,7 @@ func main() {
 	}
 
 	controlPlane := controlplane.New(apiset.UniformV1(), env.PubSubConnectionType(), env)
-	uniformWatch := setupUniformWatch(controlPlane)
+	uniformWatch := watch.New(controlPlane, env)
 	forwarder := forwarder.New(apiset.APIV1(), httpClient, env)
 
 	// Start event forwarder
@@ -135,10 +135,6 @@ func createKeptnAPI(httpClient *http.Client, env config.EnvConfig) (keptnapi.Kep
 	}
 
 	return api.NewInternal(httpClient)
-}
-
-func setupUniformWatch(controlPlane controlplane.IControlPlane) *watch.UniformWatch {
-	return watch.New(controlPlane)
 }
 
 func createEventSender(env config.EnvConfig) (poller.EventSender, error) {
