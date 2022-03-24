@@ -1,13 +1,16 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
+	"time"
+
+	"github.com/keptn/go-utils/pkg/common/retry"
 	"github.com/keptn/keptn/resource-service/common"
 	"github.com/keptn/keptn/resource-service/common_models"
-	"github.com/keptn/keptn/resource-service/errors"
+	kerrors "github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
 	"gopkg.in/yaml.v3"
-	"time"
 )
 
 //IServiceManager provides an interface for stage CRUD operations
@@ -43,28 +46,26 @@ func (s ServiceManager) CreateService(params models.CreateServiceParams) error {
 		return err
 	}
 
-	if s.fileSystem.FileExists(servicePath) {
-		return errors.ErrServiceAlreadyExists
-	}
-	if err := s.fileSystem.MakeDir(servicePath); err != nil {
-		return fmt.Errorf("could not create directory for service %s: %w", params.ServiceName, err)
-	}
+	var resultErr error
+	_ = retry.Retry(func() error {
+		err = s.git.Pull(*gitContext)
+		if err != nil {
+			resultErr = err
+			return nil
+		}
 
-	newServiceMetadata := &common.ServiceMetadata{
-		ServiceName:       params.Service.ServiceName,
-		CreationTimestamp: time.Now().UTC().String(),
-	}
-
-	metadataString, err := yaml.Marshal(newServiceMetadata)
-	if err = s.fileSystem.WriteFile(servicePath+"/metadata.yaml", metadataString); err != nil {
-		return fmt.Errorf("could not create metadata file for service %s: %w", params.ServiceName, err)
-	}
-
-	if _, err := s.git.StageAndCommitAll(*gitContext, "Added service: "+params.Service.ServiceName); err != nil {
-		return fmt.Errorf("could not initialize service %s: %w", params.ServiceName, err)
-	}
-
-	return nil
+		_, err = s.createService(gitContext, params.ServiceName, servicePath)
+		if err != nil {
+			if errors.Is(err, kerrors.ErrNonFastForwardUpdate) || errors.Is(err, kerrors.ErrForceNeeded) {
+				return err
+			}
+			resultErr = err
+			return nil
+		}
+		resultErr = err
+		return nil
+	}, retry.NumberOfRetries(5), retry.DelayBetweenRetries(1*time.Second))
+	return resultErr
 }
 
 func (s ServiceManager) DeleteService(params models.DeleteServiceParams) error {
@@ -76,24 +77,44 @@ func (s ServiceManager) DeleteService(params models.DeleteServiceParams) error {
 		return err
 	}
 
+	var resultErr error
+	_ = retry.Retry(func() error {
+		err = s.git.Pull(*gitContext)
+		if err != nil {
+			resultErr = err
+			return nil
+		}
+
+		_, err = s.deleteService(gitContext, params.ServiceName, servicePath)
+		if err != nil {
+			if errors.Is(err, kerrors.ErrNonFastForwardUpdate) || errors.Is(err, kerrors.ErrForceNeeded) {
+				return err
+			}
+			resultErr = err
+			return nil
+		}
+		resultErr = err
+		return nil
+	}, retry.NumberOfRetries(5), retry.DelayBetweenRetries(1*time.Second))
+	return resultErr
+}
+
+func (s ServiceManager) deleteService(gitContext *common_models.GitContext, serviceName, servicePath string) (string, error) {
+
 	if !s.fileSystem.FileExists(servicePath) {
-		return errors.ErrServiceNotFound
+		return "", kerrors.ErrServiceNotFound
 	}
 	if err := s.fileSystem.DeleteFile(servicePath); err != nil {
-		return err
+		return "", err
 	}
 
-	if _, err := s.git.StageAndCommitAll(*gitContext, "Removed service: "+params.Service.ServiceName); err != nil {
-		return fmt.Errorf("could not remove service %s: %w", params.ServiceName, err)
-	}
-
-	return nil
+	return s.git.StageAndCommitAll(*gitContext, "Removed service: "+serviceName)
 }
 
 func (s ServiceManager) establishServiceContext(project models.Project, stage models.Stage, service models.Service) (*common_models.GitContext, string, error) {
 	credentials, err := s.credentialReader.GetCredentials(project.ProjectName)
 	if err != nil {
-		return nil, "", fmt.Errorf(errors.ErrMsgCouldNotRetrieveCredentials, project.ProjectName, err)
+		return nil, "", fmt.Errorf(kerrors.ErrMsgCouldNotRetrieveCredentials, project.ProjectName, err)
 	}
 
 	gitContext := common_models.GitContext{
@@ -102,7 +123,7 @@ func (s ServiceManager) establishServiceContext(project models.Project, stage mo
 	}
 
 	if !s.git.ProjectExists(gitContext) {
-		return nil, "", errors.ErrProjectNotFound
+		return nil, "", kerrors.ErrProjectNotFound
 	}
 
 	configPath, err := s.stageContext.Establish(common_models.ConfigurationContextParams{
@@ -117,4 +138,24 @@ func (s ServiceManager) establishServiceContext(project models.Project, stage mo
 	}
 
 	return &gitContext, configPath, nil
+}
+
+func (s ServiceManager) createService(gitContext *common_models.GitContext, serviceName, servicePath string) (string, error) {
+	if s.fileSystem.FileExists(servicePath) {
+		return "", kerrors.ErrServiceAlreadyExists
+	}
+	if err := s.fileSystem.MakeDir(servicePath); err != nil {
+		return "", fmt.Errorf("could not create directory for service %s: %w", serviceName, err)
+	}
+
+	newServiceMetadata := &common.ServiceMetadata{
+		ServiceName:       serviceName,
+		CreationTimestamp: time.Now().UTC().String(),
+	}
+
+	metadataString, err := yaml.Marshal(newServiceMetadata)
+	if err = s.fileSystem.WriteFile(servicePath+"/metadata.yaml", metadataString); err != nil {
+		return "", fmt.Errorf("could not create metadata file for service %s: %w", serviceName, err)
+	}
+	return s.git.StageAndCommitAll(*gitContext, "Added service: "+serviceName)
 }

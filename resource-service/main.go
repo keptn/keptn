@@ -5,7 +5,7 @@ import (
 	"github.com/kelseyhightower/envconfig"
 	"github.com/keptn/keptn/resource-service/common"
 	nats2 "github.com/keptn/keptn/resource-service/handler/nats"
-	"github.com/keptn/keptn/resource-service/nats"
+	"github.com/keptn/keptn/resource-service/pkg/nats/subscriber"
 	"io/ioutil"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -39,9 +39,7 @@ import (
 
 // @BasePath /v1
 
-const envVarNatsURL = "NATS_URL"
 const envVarLogLevel = "LOG_LEVEL"
-const envVarNatsURLDefault = "nats://keptn-nats"
 const eventProjectDeleteFinished = "sh.keptn.event.project.delete.finished"
 
 func main() {
@@ -130,11 +128,13 @@ func main() {
 		Handler: engine,
 	}
 
-	eventMsgProcessor := nats2.EventHandler(projectManager)
-	eventMsgHandler := nats.NewKeptnNatsMessageHandler(eventMsgProcessor.Process)
-	connectionHandler := nats.NewNatsConnectionHandler(ctx, natsURLFromEnvVar())
-	if err := connectionHandler.SubscribeToTopics([]string{eventProjectDeleteFinished}, eventMsgHandler); err != nil {
-		log.Fatalf("Could not subscribe to nats: %v", err)
+	sub, err := subscriber.ConnectFromEnv()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := sub.Subscribe(eventProjectDeleteFinished, nats2.EventHandler(projectManager).Process); err != nil {
+		log.Fatal(err)
 	}
 
 	// Initializing the server in a goroutine so that
@@ -197,11 +197,4 @@ func createKubeAPI() (*kubernetes.Clientset, error) {
 		return nil, err
 	}
 	return kubeAPI, nil
-}
-
-func natsURLFromEnvVar() string {
-	if natsURL, ok := os.LookupEnv(envVarNatsURL); ok && natsURL != "" {
-		return natsURL
-	}
-	return envVarNatsURLDefault
 }
