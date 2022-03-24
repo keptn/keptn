@@ -41,7 +41,7 @@ type UniformWatch struct {
 // It returns a pointer to a new UniformWatch without any subscription listeners
 func New(controlPlane controlplane.IControlPlane, env config.EnvConfig) *UniformWatch {
 	return &UniformWatch{
-		HeartbeatInterval:   env.HeartbeatIntervalDuration,
+		HeartbeatInterval:   env.HeartbeatInterval,
 		MaxHeartbeatRetries: env.MaxHeartBeatRetries,
 		MaxRegisterRetries:  env.MaxRegistrationRetries,
 		controlPlane:        controlPlane,

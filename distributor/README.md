@@ -21,7 +21,6 @@ Thus, each service has its own distributor that is configured by the two environ
 - `STAGE_FILTER` - Filter events for a specific stage. default = `""`, supports a comma-separated list of stages.
 - `SERVICE_FILTER` - Filter events for a specific service. default = `""`, supports a comma-separated list of services.
 - `DISABLE_REGISTRATION` - Disables automatic registration of the Keptn integration to the control plane. default = `false`
-- `REGISTRATION_INTERVAL` - Time duration between trying to re-register to the Keptn control plane. default =`10s`
 - `LOCATION` - Location the distributor is running on, e.g. "executionPlane-A". default = `""`
 - `DISTRIBUTOR_VERSION` - The software version of the distributor. default = `""`
 - `VERSION` - The version of the Keptn integration. default = `""`
@@ -29,6 +28,10 @@ Thus, each service has its own distributor that is configured by the two environ
 - `K8S_POD_NAME` -  Kubernetes deployment name of the Keptn integration. default = `""`
 - `K8S_NAMESPACE` - Kubernetes namespace of the Keptn integration. default = `""`
 - `K8S_NODE_NAME` - Kubernetes node name the Keptn integration is running on. default = `""`
+- `MAX_HEARTBEAT_RETRIES` - Maximum number of times the distributor tries to do its heartbeat before it gives up. default=`10`
+- `HEARTBEAT_INTERVAL` - TIme duration between each heartbeat.  default:`10s`
+- `MAX_REGISTRATION_RETRIES` - Maximum number of times the distributor is trying to register itself to the control plane when started. default:`10`
+- `REGISTRATION_INTERVAL` - Time duration between trying to re-register to the control plane. default =`10s`
 - `OAUTH_CLIENT_ID` - OAuth client ID used when performing Oauth Client Credentials Flow. default = `""`
 - `OAUTH_CLIENT_SECRET` - OAuth client ID used when performing Oauth Client Credentials Flow. default = `""`
 - `OAUTH_DISCOVERY` - Discovery URL called by the distributor to obtain further information for the OAuth Client Credentials Flow, e.g. the token URL. default = `""`
