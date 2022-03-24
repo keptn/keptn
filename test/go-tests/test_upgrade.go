@@ -25,7 +25,7 @@ type HTTPEndpointTest struct {
 	Result                     HTTPEndpointTestResult
 }
 
-func (t *HTTPEndpointTest) Run(ctx context.Context, wg *sync.WaitGroup) error {
+func (t *HTTPEndpointTest) Run(ctx context.Context, wg *sync.WaitGroup, tst *testing.T) error {
 	apiCaller, err := NewAPICaller()
 	if err != nil {
 		return err
@@ -35,6 +35,7 @@ func (t *HTTPEndpointTest) Run(ctx context.Context, wg *sync.WaitGroup) error {
 		select {
 		case <-ctx.Done():
 			wg.Done()
+			tst.Logf("Finished tests for Endpoint %s", t.URL)
 			return nil
 		default:
 			var resp *req.Resp
@@ -45,7 +46,9 @@ func (t *HTTPEndpointTest) Run(ctx context.Context, wg *sync.WaitGroup) error {
 			case http.MethodPost:
 				resp, err = apiCaller.Post(t.URL, t.Payload, 0)
 			}
+
 			if err != nil || resp.Response().StatusCode != t.ExpectedStatus {
+				tst.Logf("HTTP %s request to %s failed", t.Method, t.URL)
 				t.Result.FailedRequests++
 			}
 			t.NrRequests++
@@ -64,10 +67,13 @@ type HTTPEndpointTestResult struct {
 }
 
 func Test_UpgradeZeroDowntime(t *testing.T) {
-	projectName := "upgrade-zero-downtime"
+	projectName := "upgrade-zero-downtime2"
 	serviceName := "my-service"
 	stageName := "dev"
 	//sequenceName := "evaluation"
+
+	nrOfUpgrades := 2
+
 	shipyardFile, err := CreateTmpShipyardFile(zeroDownTimeShipyard)
 	require.Nil(t, err)
 	defer func() {
@@ -97,35 +103,35 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 			Method:                     http.MethodGet,
 			Payload:                    nil,
 			ExpectedStatus:             200,
-			WaitSecondsBetweenRequests: 3,
+			WaitSecondsBetweenRequests: 3 * time.Second,
 		},
 		{
 			URL:                        "/v1/metadata",
 			Method:                     http.MethodGet,
 			Payload:                    nil,
 			ExpectedStatus:             200,
-			WaitSecondsBetweenRequests: 3,
+			WaitSecondsBetweenRequests: 3 * time.Second,
 		},
 		{
 			URL:                        "/mongodb-datastore/event?project=" + projectName,
 			Method:                     http.MethodGet,
 			Payload:                    nil,
 			ExpectedStatus:             200,
-			WaitSecondsBetweenRequests: 3,
+			WaitSecondsBetweenRequests: 3 * time.Second,
 		},
 		{
 			URL:                        "/configuration-service/v1/project/" + projectName + "/resource",
 			Method:                     http.MethodGet,
 			Payload:                    nil,
 			ExpectedStatus:             200,
-			WaitSecondsBetweenRequests: 3,
+			WaitSecondsBetweenRequests: 3 * time.Second,
 		},
 		{
 			URL:                        "/secrets/v1/secret",
 			Method:                     http.MethodGet,
 			Payload:                    nil,
 			ExpectedStatus:             200,
-			WaitSecondsBetweenRequests: 3,
+			WaitSecondsBetweenRequests: 3 * time.Second,
 		},
 	}
 
@@ -136,7 +142,7 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 	upgradesWaitGroup := &sync.WaitGroup{}
 
 	upgradesWaitGroup.Add(1)
-	nrOfUpgrades := 3
+
 	go func() {
 		for i := 0; i < nrOfUpgrades; i++ {
 			chartURL := ""
@@ -145,12 +151,11 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 			} else {
 				chartURL = chartPreviousVersion
 			}
-			_, err := ExecuteCommand(fmt.Sprintf("helm upgrade -n %s keptn %s --wait --set=\"control-plane.apiGatewayNginx.type=LoadBalancer", GetKeptnNameSpaceFromEnv(), chartURL))
+			t.Logf("Upgrading Keptn to %s", chartURL)
+			_, err := ExecuteCommand(fmt.Sprintf("helm upgrade -n %s keptn %s --wait --set=control-plane.apiGatewayNginx.type=LoadBalancer --set control-plane.resourceService.enabled=true", GetKeptnNameSpaceFromEnv(), chartURL))
 			if err != nil {
 				t.Logf("Encountered error when upgrading keptn: %v", err)
 			}
-			// wait for a random number of seconds (0-10s)  before performing the next update
-			<-time.After(time.Duration(rand.Intn(10)) * time.Second)
 		}
 		upgradesWaitGroup.Done()
 	}()
@@ -161,7 +166,7 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 	for index := range httpEndpointTests {
 		endpointTest := httpEndpointTests[index]
 		go func() {
-			err := endpointTest.Run(ctx, endpointTestsWaitGroup)
+			err := endpointTest.Run(ctx, endpointTestsWaitGroup, t)
 			if err != nil {
 				t.Logf("encountered error: %v", err)
 			}
@@ -171,6 +176,7 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 	// trigger sequences -> keep track of how many sequences we have triggered
 
 	triggerSequenceWaitGroup := &sync.WaitGroup{}
+	triggerSequenceWaitGroup.Add(1)
 	nrTriggeredSequences := 0
 	keptnContextIDs := []string{}
 	go func() {
@@ -178,11 +184,13 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 			select {
 			case <-ctx.Done():
 				triggerSequenceWaitGroup.Done()
+				t.Log("Finished triggering sequences")
 				return
 			default:
 				keptnContext, _ := TriggerSequence(projectName, serviceName, stageName, "evaluation", nil)
 				nrTriggeredSequences++
 				keptnContextIDs = append(keptnContextIDs, keptnContext)
+				t.Logf("Triggered new evaluation sequence with KeptnContext %s", keptnContext)
 				// wait some time before triggering the next sequence
 				<-time.After(time.Duration(rand.Intn(10)) * time.Second)
 			}
@@ -208,8 +216,10 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 	// get the number of dev.delivery.finished events -> this should eventually match the number of
 	assert.Equal(t, len(keptnContextIDs), nrTriggeredSequences)
 
+	t.Logf("Triggered %d sequences. Let's check if they have been finished", nrTriggeredSequences)
 	for _, keptnContext := range keptnContextIDs {
 		assert.Eventually(t, func() bool {
+			t.Logf("Checking if sequence %s has been finished", keptnContext)
 			evaluationFinishedEvent, err := GetLatestEventOfType(keptnContext, projectName, stageName, v0_2_0.GetFinishedEventType("dev.evaluation"))
 			if evaluationFinishedEvent == nil || err != nil {
 				return false

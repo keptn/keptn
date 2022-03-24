@@ -17,6 +17,12 @@ spec:
     matchLabels:
       app.kubernetes.io/name: lighthouse-service
       app.kubernetes.io/instance: {{ .Release.Name }}
+  minReadySeconds: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
   replicas: 1
   template:
     metadata:

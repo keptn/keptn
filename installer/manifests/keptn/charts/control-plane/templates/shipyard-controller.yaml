@@ -20,9 +20,11 @@ spec:
   {{ else }}
   replicas: {{ .Values.shipyardController.config.replicas | default 3 }}
   {{- end }}
-  # recreate the deployment if anything changes (we can not do a rolling upgrade of this deployment as we use a volume)
   strategy:
-    type: Recreate
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
   template:
     metadata:
       labels:
