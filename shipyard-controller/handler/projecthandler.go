@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/keptn/shipyard-controller/handler/validation"
 	"net/http"
 	"sort"
 
@@ -24,14 +25,16 @@ type IProjectHandler interface {
 }
 
 type ProjectHandler struct {
-	ProjectManager IProjectManager
-	EventSender    common.EventSender
+	ProjectManager   IProjectManager
+	EventSender      common.EventSender
+	ProjectValidator validation.ProjectValidator
 }
 
-func NewProjectHandler(projectManager IProjectManager, eventSender common.EventSender) *ProjectHandler {
+func NewProjectHandler(projectManager IProjectManager, eventSender common.EventSender, projectValidator validation.ProjectValidator) *ProjectHandler {
 	return &ProjectHandler{
-		ProjectManager: projectManager,
-		EventSender:    eventSender,
+		ProjectManager:   projectManager,
+		EventSender:      eventSender,
+		ProjectValidator: projectValidator,
 	}
 }
 
@@ -49,7 +52,6 @@ func NewProjectHandler(projectManager IProjectManager, eventSender common.EventS
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project [get]
 func (ph *ProjectHandler) GetAllProjects(c *gin.Context) {
-
 	params := &models.GetProjectParams{}
 	if err := c.ShouldBindQuery(params); err != nil {
 		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
@@ -129,26 +131,26 @@ func (ph *ProjectHandler) GetProjectByName(c *gin.Context) {
 func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 	keptnContext := uuid.New().String()
 
-	createProjectParams := &models.CreateProjectParams{}
-	if err := c.ShouldBindJSON(createProjectParams); err != nil {
+	params := &models.CreateProjectParams{}
+	if err := c.ShouldBindJSON(params); err != nil {
 		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
-	if err := createProjectParams.Validate(); err != nil {
+	if err := ph.ProjectValidator.Validate(params); err != nil {
 		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidPayloadMsg, err.Error()))
 		return
 	}
 
-	common.LockProject(*createProjectParams.Name)
-	defer common.UnlockProject(*createProjectParams.Name)
+	common.LockProject(*params.Name)
+	defer common.UnlockProject(*params.Name)
 
-	if err := ph.sendProjectCreateStartedEvent(keptnContext, createProjectParams); err != nil {
+	if err := ph.sendProjectCreateStartedEvent(keptnContext, params); err != nil {
 		log.Errorf("could not send project.create.started event: %s", err.Error())
 	}
 
-	err, rollback := ph.ProjectManager.Create(createProjectParams)
+	err, rollback := ph.ProjectManager.Create(params)
 	if err != nil {
-		if err := ph.sendProjectCreateFailFinishedEvent(keptnContext, createProjectParams); err != nil {
+		if err := ph.sendProjectCreateFailFinishedEvent(keptnContext, params); err != nil {
 			log.Errorf("could not send project.create.finished event: %s", err.Error())
 		}
 		rollback()
@@ -159,7 +161,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 		SetInternalServerErrorResponse(c, err.Error())
 		return
 	}
-	if err := ph.sendProjectCreateSuccessFinishedEvent(keptnContext, createProjectParams); err != nil {
+	if err := ph.sendProjectCreateSuccessFinishedEvent(keptnContext, params); err != nil {
 		log.Errorf("could not send project.create.finished event: %s", err.Error())
 	}
 
@@ -188,7 +190,7 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
-	if err := params.Validate(); err != nil {
+	if err := ph.ProjectValidator.Validate(params); err != nil {
 		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidPayloadMsg, err.Error()))
 		return
 	}

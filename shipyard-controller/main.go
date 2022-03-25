@@ -4,8 +4,6 @@ import (
 	"context"
 	"github.com/benbjohnson/clock"
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
-	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/kelseyhightower/envconfig"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
@@ -175,11 +173,6 @@ func main() {
 
 	engine := gin.Default()
 
-	//setting up validation
-	projectNameValidator := validation.NewProjectValidator(env)
-	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
-		v.RegisterValidation(projectNameValidator.Tag(), projectNameValidator.Validate)
-	}
 	/// setting up middleware to handle graceful shutdown
 	wg := &sync.WaitGroup{}
 	engine.Use(handler.GracefulShutdownMiddleware(wg))
@@ -187,7 +180,11 @@ func main() {
 	apiV1 := engine.Group("/v1")
 	apiHealth := engine.Group("")
 
-	projectService := handler.NewProjectHandler(projectManager, eventSender)
+	projectService := handler.NewProjectHandler(
+		projectManager, eventSender,
+		validation.ProjectValidator{
+			ProjectNameMaxSize: env.ProjectNameMaxSize,
+		})
 	projectController := controller.NewProjectController(projectService)
 	projectController.Inject(apiV1)
 

@@ -4,10 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"github.com/gin-gonic/gin/binding"
-	"github.com/go-playground/validator/v10"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/keptn/shipyard-controller/config"
 	"github.com/keptn/keptn/shipyard-controller/handler/validation"
 	"io/ioutil"
 	"net/http"
@@ -122,7 +119,7 @@ func TestGetAllProjects(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			w, c := createGinTestContext()
 
-			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender)
+			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, validation.ProjectValidator{ProjectNameMaxSize: 200})
 			c.Request, _ = http.NewRequest(http.MethodGet, tt.queryParams, bytes.NewBuffer([]byte{}))
 
 			handler.GetAllProjects(c)
@@ -209,7 +206,7 @@ func TestGetProjectByName(t *testing.T) {
 				gin.Param{Key: "project", Value: "my-project"},
 			}
 
-			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender)
+			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, validation.ProjectValidator{ProjectNameMaxSize: 200})
 			c.Request, _ = http.NewRequest(http.MethodGet, "", bytes.NewBuffer([]byte{}))
 
 			handler.GetProjectByName(c)
@@ -339,7 +336,7 @@ func TestCreateProject(t *testing.T) {
 			w, c := createGinTestContext()
 			c.Set("projectName", tt.projectNameParam)
 
-			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender)
+			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, validation.ProjectValidator{ProjectNameMaxSize: 200})
 			c.Request, _ = http.NewRequest(http.MethodPost, "", bytes.NewBuffer([]byte(tt.jsonPayload)))
 
 			handler.CreateProject(c)
@@ -725,7 +722,7 @@ func TestUpdateProject(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			w, c := createGinTestContext()
 
-			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender)
+			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, validation.ProjectValidator{ProjectNameMaxSize: 200})
 			c.Request, _ = http.NewRequest(http.MethodPut, "", bytes.NewBuffer([]byte(tt.jsonPayload)))
 
 			handler.UpdateProject(c)
@@ -807,7 +804,7 @@ func TestDeleteProject(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			w, c := createGinTestContext()
 
-			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender)
+			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, validation.ProjectValidator{ProjectNameMaxSize: 200})
 			c.Params = gin.Params{
 				gin.Param{Key: "project", Value: tt.projectPathParam},
 			}
@@ -830,9 +827,5 @@ func TestDeleteProject(t *testing.T) {
 func createGinTestContext() (*httptest.ResponseRecorder, *gin.Context) {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
-	projectNameValidator := validation.NewProjectValidator(config.EnvConfig{ProjectNameMaxSize: 10})
-	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
-		v.RegisterValidation(projectNameValidator.Tag(), projectNameValidator.Validate)
-	}
 	return w, c
 }
