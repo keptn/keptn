@@ -230,7 +230,7 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 				return false
 			}
 			return true
-		}, 2*time.Minute, 10*time.Second)
+		}, 10*time.Minute, 10*time.Second)
 		if evaluationFinishedEvent != nil {
 			nrFinishedSequences++
 		}

@@ -370,11 +370,7 @@ spec:
       app.kubernetes.io/name: api-gateway-nginx
       app.kubernetes.io/instance: {{ .Release.Name }}
   replicas: 1
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 1
+  {{ include "control-plane.common.update-strategy" . }}
   template:
     metadata:
       labels:

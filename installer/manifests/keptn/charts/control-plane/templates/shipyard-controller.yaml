@@ -20,11 +20,7 @@ spec:
   {{ else }}
   replicas: {{ .Values.shipyardController.config.replicas | default 3 }}
   {{- end }}
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 1
+  {{ include "control-plane.common.update-strategy" . }}
   template:
     metadata:
       labels:
