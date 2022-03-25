@@ -320,7 +320,7 @@ export class DataService {
     service.latestSequence?.reduceToStage(options.stageName);
 
     const stage = service.latestSequence?.stages.find((seq) => seq.name === options.stageName);
-    if (stage) {
+    if (stage && !stage.latestEvaluationTrace) {
       stage.latestEvaluationTrace = stageInformation.evaluations.find(
         (t) => t.data.service === service.latestSequence?.service
       );
