@@ -79,7 +79,7 @@ func (p *Poller) pollEventsForSubscription(subscription apimodels.EventSubscript
 	eventFilter := getEventFilterForSubscription(subscription)
 	events, err := p.shipyardControlAPI.GetOpenTriggeredEvents(eventFilter)
 	if err != nil {
-		logger.Errorf("Could not retrieve events of type %s: %s", subscription.Event, err)
+		logger.Warnf("Could not retrieve events of type %s: %s", subscription.Event, err)
 		return
 	}
 
