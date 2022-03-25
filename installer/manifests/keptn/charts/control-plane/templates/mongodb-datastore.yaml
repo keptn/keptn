@@ -19,6 +19,11 @@ spec:
       app.kubernetes.io/name: mongodb-datastore
       app.kubernetes.io/instance: {{ .Release.Name }}
   replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
   template:
     metadata:
       labels:
