@@ -55,6 +55,8 @@ spec:
               value: '2'
             - name: LOG_LEVEL
               value: debug
+            - name: AUTOMATIC_PROVISIONING_URL 
+              value: ""
           livenessProbe:
             httpGet:
               path: /health
@@ -72,7 +74,7 @@ spec:
             timeoutSeconds: 1
             periodSeconds: 5
         - name: distributor
-          image: docker.io/keptn/distributor:0.13.0-dev
+          image: docker.io/keptndev/distributor:0.14.0-dev
           ports:
             - containerPort: 8080
               protocol: TCP

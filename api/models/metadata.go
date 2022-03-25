@@ -17,6 +17,9 @@ import (
 // swagger:model metadata
 type Metadata struct {
 
+	// automaticprovisioning
+	Automaticprovisioning bool `json:"automaticprovisioning,omitempty"`
+
 	// bridgeversion
 	Bridgeversion string `json:"bridgeversion,omitempty"`
 
