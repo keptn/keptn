@@ -4,17 +4,22 @@ import (
 	"context"
 	"github.com/benbjohnson/clock"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
+	"github.com/kelseyhightower/envconfig"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/osutils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/shipyard-controller/common"
+	"github.com/keptn/keptn/shipyard-controller/config"
 	"github.com/keptn/keptn/shipyard-controller/controller"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/db/migration"
 	_ "github.com/keptn/keptn/shipyard-controller/docs"
 	"github.com/keptn/keptn/shipyard-controller/handler"
 	"github.com/keptn/keptn/shipyard-controller/handler/sequencehooks"
+	"github.com/keptn/keptn/shipyard-controller/handler/validation"
 	_ "github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/nats"
 	log "github.com/sirupsen/logrus"
@@ -85,6 +90,12 @@ func main() {
 		// disable GIN request logging in release mode
 		gin.SetMode("release")
 		gin.DefaultWriter = ioutil.Discard
+	}
+
+	// TODO: refactor shippy to use envconfig
+	var env config.EnvConfig
+	if err := envconfig.Process("", &env); err != nil {
+		log.Fatalf("Failed to process env var: %v", err)
 	}
 
 	eventDispatcherSyncInterval, err := strconv.Atoi(osutils.GetOSEnvOrDefault(envVarEventDispatchIntervalSec, envVarEventDispatchIntervalSecDefault))
@@ -163,6 +174,12 @@ func main() {
 	)
 
 	engine := gin.Default()
+
+	//setting up validation
+	projectNameValidator := validation.NewProjectValidator(env)
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation(projectNameValidator.Tag(), projectNameValidator.Validate)
+	}
 	/// setting up middleware to handle graceful shutdown
 	wg := &sync.WaitGroup{}
 	engine.Use(handler.GracefulShutdownMiddleware(wg))

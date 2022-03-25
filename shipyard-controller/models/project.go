@@ -89,7 +89,7 @@ type CreateProjectParams struct {
 	GitPemCertificate string `json:"gitPemCertificate,omitempty"`
 
 	// name
-	Name *string `json:"name"`
+	Name *string `json:"name" binding:"projectname"`
 
 	// shipyard
 	Shipyard *string `json:"shipyard"`
