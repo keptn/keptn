@@ -4,13 +4,14 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/keptn/go-utils/pkg/api/models"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/handler/sequencehooks"
-	"github.com/keptn/keptn/shipyard-controller/models"
+	scmodels "github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
 )
 
@@ -20,7 +21,7 @@ type SequenceStateMVTestFields struct {
 
 func TestSequenceStateMaterializedView_OnSequenceStarted(t *testing.T) {
 	type args struct {
-		event models.Event
+		event models.KeptnContextExtendedCE
 	}
 	tests := []struct {
 		name                   string
@@ -52,7 +53,7 @@ func TestSequenceStateMaterializedView_OnSequenceStarted(t *testing.T) {
 				},
 			},
 			args: args{
-				event: models.Event{
+				event: models.KeptnContextExtendedCE{
 					Data: keptnv2.EventData{
 						Project: "my-project",
 						Stage:   "my-stage",
@@ -82,7 +83,7 @@ func TestSequenceStateMaterializedView_OnSequenceStarted(t *testing.T) {
 
 func TestSequenceStateMaterializedView_OnSequenceWaiting(t *testing.T) {
 	type args struct {
-		event models.Event
+		event models.KeptnContextExtendedCE
 	}
 	tests := []struct {
 		name                   string
@@ -114,7 +115,7 @@ func TestSequenceStateMaterializedView_OnSequenceWaiting(t *testing.T) {
 				},
 			},
 			args: args{
-				event: models.Event{
+				event: models.KeptnContextExtendedCE{
 					Data: keptnv2.EventData{
 						Project: "my-project",
 						Stage:   "my-stage",
@@ -144,7 +145,7 @@ func TestSequenceStateMaterializedView_OnSequenceWaiting(t *testing.T) {
 
 func TestSequenceStateMaterializedView_OnSequenceTimeOud(t *testing.T) {
 	type args struct {
-		event models.Event
+		event models.KeptnContextExtendedCE
 	}
 	tests := []struct {
 		name                   string
@@ -176,7 +177,7 @@ func TestSequenceStateMaterializedView_OnSequenceTimeOud(t *testing.T) {
 				},
 			},
 			args: args{
-				event: models.Event{
+				event: models.KeptnContextExtendedCE{
 					Data: keptnv2.EventData{
 						Project: "my-project",
 						Stage:   "my-stage",
@@ -207,7 +208,7 @@ func TestSequenceStateMaterializedView_OnSequenceTimeOud(t *testing.T) {
 func TestSequenceStateMaterializedView_OnSequenceFinished(t *testing.T) {
 
 	type args struct {
-		event models.Event
+		event models.KeptnContextExtendedCE
 	}
 	tests := []struct {
 		name                   string
@@ -228,7 +229,16 @@ func TestSequenceStateMaterializedView_OnSequenceFinished(t *testing.T) {
 									Project:        "my-project",
 									Shkeptncontext: "my-context",
 									State:          "triggered",
-									Stages:         nil,
+									Stages: []models.SequenceStateStage{
+										{
+											Name:  "dev",
+											State: "succeeded",
+										},
+										{
+											Name:  "dev",
+											State: "succeeded",
+										},
+									},
 								},
 							},
 						}, nil
@@ -239,7 +249,7 @@ func TestSequenceStateMaterializedView_OnSequenceFinished(t *testing.T) {
 				},
 			},
 			args: args{
-				event: models.Event{
+				event: models.KeptnContextExtendedCE{
 					Data: keptnv2.EventData{
 						Project: "my-project",
 						Stage:   "my-stage",
@@ -250,6 +260,51 @@ func TestSequenceStateMaterializedView_OnSequenceFinished(t *testing.T) {
 				},
 			},
 			expectUpdateToBeCalled: true,
+		},
+		{
+			name: "try to finish sequence - not all stages finished yet",
+			fields: SequenceStateMVTestFields{
+				SequenceStateRepo: &db_mock.SequenceStateRepoMock{
+					FindSequenceStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
+						return &models.SequenceStates{
+							States: []models.SequenceState{
+								{
+									Name:           "my-sequence",
+									Service:        "my-service",
+									Project:        "my-project",
+									Shkeptncontext: "my-context",
+									State:          "triggered",
+									Stages: []models.SequenceStateStage{
+										{
+											Name:  "dev",
+											State: "succeeded",
+										},
+										{
+											Name:  "dev",
+											State: "triggered",
+										},
+									},
+								},
+							},
+						}, nil
+					},
+					UpdateSequenceStateFunc: func(state models.SequenceState) error {
+						return nil
+					},
+				},
+			},
+			args: args{
+				event: models.KeptnContextExtendedCE{
+					Data: keptnv2.EventData{
+						Project: "my-project",
+						Stage:   "my-stage",
+						Service: "my-service",
+					},
+					Shkeptncontext: "my-context",
+					Type:           common.Stringp("my-type"),
+				},
+			},
+			expectUpdateToBeCalled: false,
 		},
 		{
 			name: "invalid event scope - do not update",
@@ -275,7 +330,7 @@ func TestSequenceStateMaterializedView_OnSequenceFinished(t *testing.T) {
 				},
 			},
 			args: args{
-				event: models.Event{
+				event: models.KeptnContextExtendedCE{
 					Data:           keptnv2.EventData{},
 					Shkeptncontext: "my-context",
 				},
@@ -295,7 +350,7 @@ func TestSequenceStateMaterializedView_OnSequenceFinished(t *testing.T) {
 				},
 			},
 			args: args{
-				event: models.Event{
+				event: models.KeptnContextExtendedCE{
 					Data: keptnv2.EventData{
 						Project: "my-project",
 						Stage:   "my-stage",
@@ -319,7 +374,7 @@ func TestSequenceStateMaterializedView_OnSequenceFinished(t *testing.T) {
 				},
 			},
 			args: args{
-				event: models.Event{
+				event: models.KeptnContextExtendedCE{
 					Data: keptnv2.EventData{
 						Project: "my-project",
 						Stage:   "my-stage",
@@ -481,7 +536,7 @@ func TestSequenceStateMaterializedView_OnSequenceTaskFinished(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			event := models.Event{
+			event := models.KeptnContextExtendedCE{
 				Data:           tt.eventData,
 				ID:             tt.eventId,
 				Shkeptncontext: tt.keptnContext,
@@ -527,7 +582,7 @@ func TestSequenceStateMaterializedView_MultipleScoresOnSequenceFinished(t *testi
 	badSource := "not the right one"
 	goodSource := sequencehooks.SequenceEvaluationService
 
-	events := []models.Event{
+	events := []models.KeptnContextExtendedCE{
 		{Shkeptncontext: "my-context",
 			Type:   &eventType,
 			Source: &badSource,
@@ -619,7 +674,7 @@ func TestSequenceStateMaterializedView_MultipleScoresOnSequenceFinished(t *testi
 
 func TestSequenceStateMaterializedView_OnSequenceTaskStarted(t *testing.T) {
 	type args struct {
-		event models.Event
+		event models.KeptnContextExtendedCE
 	}
 	tests := []struct {
 		name   string
@@ -753,7 +808,7 @@ func TestSequenceStateMaterializedView_OnSequenceTaskTriggered(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			event := models.Event{
+			event := models.KeptnContextExtendedCE{
 				Data: keptnv2.EventData{
 					Project: tt.project,
 					Stage:   tt.stage,
@@ -913,10 +968,10 @@ func TestSequenceStateMaterializedView_OnSequenceTriggered(t *testing.T) {
 				Stage:   tt.stage,
 				Service: tt.service,
 			}
-			var event models.Event
+			var event models.KeptnContextExtendedCE
 			//construnct a remediation event
 			if tt.problemTitle != "" {
-				event = models.Event{
+				event = models.KeptnContextExtendedCE{
 					Data: keptnv2.GetActionTriggeredEventData{
 						EventData: Data,
 						Problem: keptnv2.ProblemDetails{
@@ -927,7 +982,7 @@ func TestSequenceStateMaterializedView_OnSequenceTriggered(t *testing.T) {
 				}
 			} else {
 				//construct a simple event
-				event = models.Event{
+				event = models.KeptnContextExtendedCE{
 					Data:           Data,
 					Shkeptncontext: tt.keptnContext,
 					Type:           common.Stringp("sh.keptn.event." + tt.stage + "." + tt.sequenceName + ".triggered"),
@@ -959,7 +1014,7 @@ func TestSequenceStateMaterializedView_OnSequencePaused(t *testing.T) {
 		name                        string
 		fields                      SequenceStateMVTestFields
 		expectUpdateStateToBeCalled bool
-		sequencePause               models.EventScope
+		sequencePause               scmodels.EventScope
 	}{
 		{
 			name: "overall sequence paused",
@@ -984,7 +1039,7 @@ func TestSequenceStateMaterializedView_OnSequencePaused(t *testing.T) {
 					},
 				},
 			},
-			sequencePause: models.EventScope{
+			sequencePause: scmodels.EventScope{
 				KeptnContext: "my-context",
 				EventData:    keptnv2.EventData{Project: "my-project"},
 			},
@@ -1016,7 +1071,7 @@ func TestSequenceStateMaterializedView_OnSequencePaused(t *testing.T) {
 					},
 				},
 			},
-			sequencePause: models.EventScope{
+			sequencePause: scmodels.EventScope{
 				KeptnContext: "my-context",
 				EventData:    keptnv2.EventData{Project: "my-project", Stage: "my-stage"},
 			},
@@ -1040,7 +1095,7 @@ func TestSequenceStateMaterializedView_OnSequencePaused(t *testing.T) {
 
 func TestSequenceStateMaterializedView_OnSubSequenceFinished(t *testing.T) {
 	type args struct {
-		event models.Event
+		event models.KeptnContextExtendedCE
 	}
 	tests := []struct {
 		name   string
@@ -1077,7 +1132,7 @@ func TestSequenceStateMaterializedView_OnSubSequenceFinished(t *testing.T) {
 				},
 			},
 			args: args{
-				event: models.Event{
+				event: models.KeptnContextExtendedCE{
 					Data: keptnv2.EventData{
 						Project: "my-project",
 						Stage:   "my-stage",

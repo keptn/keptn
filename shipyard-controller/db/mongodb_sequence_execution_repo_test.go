@@ -1,6 +1,7 @@
 package db
 
 import (
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -194,8 +195,8 @@ func TestMongoDBTaskSequenceV2Repo_UpdateStatus(t *testing.T) {
 	require.Equal(t, sequence, get[0])
 	require.Nil(t, err)
 
-	get[0].Status.State = models.SequencePaused
-	get[0].Status.StateBeforePause = models.SequenceTriggeredState
+	get[0].Status.State = apimodels.SequencePaused
+	get[0].Status.StateBeforePause = apimodels.SequenceTriggeredState
 	updatedSequence, err := mdbrepo.UpdateStatus(get[0])
 
 	require.Nil(t, err)

@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/keptn/keptn/shipyard-controller/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/nats-io/nats.go"
 	logger "github.com/sirupsen/logrus"
 	"reflect"
@@ -17,10 +17,10 @@ const consumerName = "shipyard-controller:all-events"
 
 //go:generate moq --skip-ensure -pkg nats_mock -out ./mock/keptn_nats_handler_mock.go . IKeptnNatsMessageHandler
 type IKeptnNatsMessageHandler interface {
-	Process(event models.Event, sync bool) error
+	Process(event apimodels.KeptnContextExtendedCE, sync bool) error
 }
 
-type processFunc func(event models.Event, sync bool) error
+type processFunc func(event apimodels.KeptnContextExtendedCE, sync bool) error
 
 type keptnNatsMessageHandler struct {
 	f processFunc
@@ -32,7 +32,7 @@ func NewKeptnNatsMessageHandler(f processFunc) *keptnNatsMessageHandler {
 	}
 }
 
-func (nmh *keptnNatsMessageHandler) Process(event models.Event, sync bool) error {
+func (nmh *keptnNatsMessageHandler) Process(event apimodels.KeptnContextExtendedCE, sync bool) error {
 	return nmh.f(event, sync)
 }
 

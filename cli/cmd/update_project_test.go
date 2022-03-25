@@ -18,7 +18,18 @@ func init() {
 func TestUpdateProjectCmd(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 
-	cmd := fmt.Sprintf("update project sockshop --git-token=token --git-user=user --git-remote-url=https://some.url --mock")
+	cmd := fmt.Sprintf("update project sockshop --git-token=token --git-remote-url=https://some.url --mock")
+	_, err := executeActionCommandC(cmd)
+	if err != nil {
+		t.Errorf(unexpectedErrMsg, err)
+	}
+}
+
+// TestUpdateProjectCmd tests the use of the update project command with a git user set up
+func TestUpdateProjectCmdWithUser(t *testing.T) {
+	credentialmanager.MockAuthCreds = true
+
+	cmd := fmt.Sprintf("update project sockshop --git-user=user --git-token=token --git-remote-url=https://some.url --mock")
 	_, err := executeActionCommandC(cmd)
 	if err != nil {
 		t.Errorf(unexpectedErrMsg, err)

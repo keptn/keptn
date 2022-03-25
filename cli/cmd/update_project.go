@@ -42,14 +42,18 @@ var upProjectCmd = &cobra.Command{
 Updating a shipyard file is not possible.
 
 By executing the update project command, Keptn will add the provided upstream repository to the existing internal Git repository that is used to maintain all project-related resources. 
-To upstream this internal Git repository to a remote repository, the Git user (--git-user) and the remote URL (*--git-remote-url*) are required
-together with private key (*--git-private-key*) or access token (*--git-token*). . For using proxy please specify proxy IP address together with port (*--git-proxy-url*) and
+To upstream this internal Git repository to a remote repository and the remote URL (*--git-remote-url*) are required
+together with private key (*--git-private-key*) or access token (*--git-token*). The Git user (--git-user) can be added if required. For using proxy please specify proxy IP address together with port (*--git-proxy-url*) and
 used scheme (*--git-proxy-scheme=*) to connect to proxy. Please be aware that authentication with public/private key and via proxy is 
 supported only when using resource-service.
 
 For more information about updating projects or upstream repositories, please go to [Manage Keptn](https://keptn.sh/docs/` + getReleaseDocsURL() + `/manage/)
 `,
-	Example: `keptn update project PROJECTNAME --git-user=GIT_USER --git-token=GIT_TOKEN --git-remote-url=GIT_REMOTE_URL
+	Example: `keptn update project PROJECTNAME --git-token=GIT_TOKEN --git-remote-url=GIT_REMOTE_URL
+
+or (if the git repo requires user)
+
+keptn update project PROJECTNAME --git-user=GIT_USER --git-token=GIT_TOKEN --git-remote-url=GIT_REMOTE_URL
 
 or (only for resource-service)
 
@@ -168,7 +172,6 @@ func init() {
 
 	updateProjectParams.GitUser = upProjectCmd.Flags().StringP("git-user", "u", "", "The git user of the upstream target")
 	updateProjectParams.GitToken = upProjectCmd.Flags().StringP("git-token", "t", "", "The git token of the git user")
-	upProjectCmd.MarkFlagRequired("git-user")
 	upProjectCmd.MarkFlagRequired("git-remote-url")
 
 	updateProjectParams.RemoteURL = upProjectCmd.Flags().StringP("git-remote-url", "r", "", "The remote url of the upstream target")

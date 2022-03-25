@@ -3,8 +3,8 @@ package migration
 import (
 	"context"
 	"fmt"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/db"
-	"github.com/keptn/keptn/shipyard-controller/models"
 	logger "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -41,13 +41,13 @@ func setupLocalMongoDB() func() {
 func Test_MigratorRunsOnOldData(t *testing.T) {
 	defer setupLocalMongoDB()()
 
-	project := &models.ExpandedProject{
+	project := &apimodels.ExpandedProject{
 		ProjectName: "test-project",
-		Stages: []*models.ExpandedStage{
+		Stages: []*apimodels.ExpandedStage{
 			{
-				Services: []*models.ExpandedService{
+				Services: []*apimodels.ExpandedService{
 					{
-						LastEventTypes: map[string]models.EventContext{
+						LastEventTypes: map[string]apimodels.EventContextInfo{
 							`sh.keptn.event.get-sli.start`:     {},
 							`sh.keptn.event.get-sli~~.started`: {},
 						},
@@ -95,13 +95,13 @@ func Test_MigratorRunsOnOldData(t *testing.T) {
 func Test_MigratorRunsOnAlreadyMigratedData(t *testing.T) {
 	defer setupLocalMongoDB()()
 
-	project := &models.ExpandedProject{
+	project := &apimodels.ExpandedProject{
 		ProjectName: "test-project",
-		Stages: []*models.ExpandedStage{
+		Stages: []*apimodels.ExpandedStage{
 			{
-				Services: []*models.ExpandedService{
+				Services: []*apimodels.ExpandedService{
 					{
-						LastEventTypes: map[string]models.EventContext{
+						LastEventTypes: map[string]apimodels.EventContextInfo{
 							`sh.keptn.event.get-sli.start`:    {},
 							`sh.keptn.event.get-sli~.started`: {},
 						},

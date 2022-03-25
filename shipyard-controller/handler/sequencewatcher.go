@@ -4,19 +4,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"time"
 
 	"github.com/benbjohnson/clock"
-	"github.com/keptn/go-utils/pkg/common/timeutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
-	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
 )
 
 type SequenceWatcher struct {
-	cancelSequenceChannel chan models.SequenceTimeout
+	cancelSequenceChannel chan apimodels.SequenceTimeout
 	eventRepo             db.EventRepo
 	eventQueueRepo        db.EventQueueRepo
 	projectRepo           db.ProjectRepo
@@ -25,7 +24,7 @@ type SequenceWatcher struct {
 	theClock              clock.Clock
 }
 
-func NewSequenceWatcher(cancelSequenceChannel chan models.SequenceTimeout, eventRepo db.EventRepo, eventQueueRepo db.EventQueueRepo, projectRepo db.ProjectRepo, eventTimeout time.Duration, syncInterval time.Duration, theClock clock.Clock) *SequenceWatcher {
+func NewSequenceWatcher(cancelSequenceChannel chan apimodels.SequenceTimeout, eventRepo db.EventRepo, eventQueueRepo db.EventQueueRepo, projectRepo db.ProjectRepo, eventTimeout time.Duration, syncInterval time.Duration, theClock clock.Clock) *SequenceWatcher {
 	return &SequenceWatcher{
 		cancelSequenceChannel: cancelSequenceChannel,
 		eventRepo:             eventRepo,
@@ -84,17 +83,17 @@ func (sw *SequenceWatcher) cleanUpOrphanedTasksOfProject(project string) error {
 		if keptnv2.IsSequenceEventType(*event.Type) {
 			continue
 		}
-		var eventSentTime time.Time
-		eventSentTime, err = time.Parse(timeutils.KeptnTimeFormatISO8601, event.Time)
-		if err != nil {
-			// events in the .triggered collection were stored in this format previously
-			fallbackTimeFormat := "2006-01-02T15:04:05.000000000Z"
-			eventSentTime, err = time.Parse(fallbackTimeFormat, event.Time)
-			if err != nil {
-				log.WithError(err).Errorf("could not parse event timestamp of event with id %s.", event.ID)
-				continue
-			}
-		}
+		var eventSentTime time.Time = event.Time
+		//eventSentTime, err = time.Parse(timeutils.KeptnTimeFormatISO8601, event.Time)
+		//if err != nil {
+		//	// events in the .triggered collection were stored in this format previously
+		//	fallbackTimeFormat := "2006-01-02T15:04:05.000000000Z"
+		//	eventSentTime, err = time.Parse(fallbackTimeFormat, event.Time)
+		//	if err != nil {
+		//		log.WithError(err).Errorf("could not parse event timestamp of event with id %s.", event.ID)
+		//		continue
+		//	}
+		//}
 
 		timeOut := eventSentTime.Add(sw.eventTimeout)
 		now := sw.theClock.Now().UTC()
@@ -117,7 +116,7 @@ func (sw *SequenceWatcher) cleanUpOrphanedTasksOfProject(project string) error {
 			}
 			if len(responseEvents) == 0 {
 				// time out -> tell shipyard controller to complete the task sequence
-				sequenceCancellation := models.SequenceTimeout{
+				sequenceCancellation := apimodels.SequenceTimeout{
 					KeptnContext: event.Shkeptncontext,
 					LastEvent:    event,
 				}

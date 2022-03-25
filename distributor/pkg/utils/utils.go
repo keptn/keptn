@@ -3,21 +3,46 @@ package utils
 import (
 	"context"
 	"encoding/json"
-	cloudevents "github.com/cloudevents/sdk-go/v2"
-	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/go-utils/pkg/common/sliceutils"
-	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/distributor/pkg/config"
 	"reflect"
 	"sort"
 	"strings"
 	"sync"
+
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/common/sliceutils"
+	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/distributor/pkg/config"
 )
 
 type EventMatcher struct {
 	Project string
 	Stage   string
 	Service string
+}
+
+// ExecutionContext is used for synchronizing components e.g.
+// to enable synchronization for smooth graceful shutdown
+type ExecutionContext struct {
+	context.Context
+	// Wg is the go wait group used for synchronization
+	// via this ExecutionContext
+	Wg *sync.WaitGroup
+
+	// CancelFn can be called whenever the components
+	// using this ExecutionContext shall exit/cancel
+	// Calling CancelFn will effectively cancel the underlying
+	// go context
+	CancelFn context.CancelFunc
+}
+
+// NewExecutionContext creates a new ExecutionContext with the given underlying go context.
+// waitGroupCount determines the number of components this ExecutionContext
+// is used in
+func NewExecutionContext(ctx context.Context, waitGroupCount int) *ExecutionContext {
+	wg := new(sync.WaitGroup)
+	wg.Add(waitGroupCount)
+	return &ExecutionContext{ctx, wg, func() {}}
 }
 
 func NewEventMatcherFromEnv(config config.EnvConfig) *EventMatcher {
@@ -28,7 +53,7 @@ func NewEventMatcherFromEnv(config config.EnvConfig) *EventMatcher {
 	}
 }
 
-func NewEventMatcherFromSubscription(subscription keptnmodels.EventSubscription) *EventMatcher {
+func NewEventMatcherFromSubscription(subscription apimodels.EventSubscription) *EventMatcher {
 	return &EventMatcher{
 		Project: strings.Join(subscription.Filter.Projects, ","),
 		Stage:   strings.Join(subscription.Filter.Stages, ","),
@@ -49,17 +74,6 @@ func (ef EventMatcher) Matches(e cloudevents.Event) bool {
 		return false
 	}
 	return true
-}
-
-type ExecutionContext struct {
-	context.Context
-	Wg *sync.WaitGroup
-}
-
-func NewExecutionContext(ctx context.Context, waitGroupCount int) *ExecutionContext {
-	wg := new(sync.WaitGroup)
-	wg.Add(waitGroupCount)
-	return &ExecutionContext{ctx, wg}
 }
 
 func DecodeNATSMessage(data []byte) (*cloudevents.Event, error) {
@@ -218,7 +232,7 @@ func Dedup(elements []string) []string {
 	return result
 }
 
-func ToIds(events []*keptnmodels.KeptnContextExtendedCE) []string {
+func ToIds(events []*apimodels.KeptnContextExtendedCE) []string {
 	ids := []string{}
 	for _, e := range events {
 		ids = append(ids, e.ID)

@@ -6,6 +6,10 @@ definitions:
         description: end
         example: 2021-01-02T15:10:00
         type: string
+      gitcommitid:
+        description: Evaluation commit ID context
+        example: asdf123f
+        type: string
       labels:
         additionalProperties:
           type: string
@@ -36,6 +40,30 @@ definitions:
     type: object
   models.CreateProjectParams:
     properties:
+      gitPemCertificate:
+        description: git PEM Certificate
+        type: string
+      gitPrivateKey:
+        description: git private key
+        type: string
+      gitPrivateKeyPass:
+        description: git private key passphrase
+        type: string
+      gitProxyInsecure:
+        description: git proxy insecure
+        type: boolean
+      gitProxyPassword:
+        description: git proxy password
+        type: string
+      gitProxyScheme:
+        description: git proxy scheme
+        type: string
+      gitProxyUrl:
+        description: git proxy URL
+        type: string
+      gitProxyUser:
+        description: git proxy user
+        type: string
       gitRemoteURL:
         description: git remote URL
         type: string
@@ -85,51 +113,16 @@ definitions:
           Required: true
         type: string
     type: object
-  models.Event:
+  models.EventContextInfo:
     properties:
-      contenttype:
-        description: contenttype
+      eventId:
+        description: ID of the event
         type: string
-      data:
-        description: |-
-          data
-          Required: true
-        type: object
-      extensions:
-        description: extensions
-        type: object
-      id:
-        description: id
-        type: string
-      shkeptncontext:
-        description: shkeptncontext
-        type: string
-      source:
-        description: |-
-          source
-          Required: true
-        type: string
-      specversion:
-        description: specversion
+      keptnContext:
+        description: Keptn Context ID of the event
         type: string
       time:
-        description: time
-        type: string
-      triggeredid:
-        description: triggeredid
-        type: string
-      type:
-        description: |-
-          type
-          Required: true
-        type: string
-    type: object
-  models.EventContext:
-    properties:
-      keptnContext:
-        description: |-
-          keptn context
-          Required: true
+        description: Time of the event
         type: string
     type: object
   models.EventSubscription:
@@ -156,23 +149,6 @@ definitions:
           type: string
         type: array
     type: object
-  models.Events:
-    properties:
-      events:
-        description: events
-        items:
-          $ref: '#/definitions/models.Event'
-        type: array
-      nextPageKey:
-        description: Pointer to next page, base64 encoded
-        type: string
-      pageSize:
-        description: Size of returned page
-        type: number
-      totalCount:
-        description: Total number of events
-        type: number
-    type: object
   models.ExpandedProject:
     properties:
       creationDate:
@@ -185,7 +161,7 @@ definitions:
         description: Git User
         type: string
       lastEventContext:
-        $ref: '#/definitions/models.EventContext'
+        $ref: '#/definitions/models.EventContextInfo'
         description: last event context
       projectName:
         description: Project name
@@ -229,7 +205,7 @@ definitions:
         type: string
       lastEventTypes:
         additionalProperties:
-          $ref: '#/definitions/models.EventContext'
+          $ref: '#/definitions/models.EventContextInfo'
         description: last event types
         type: object
       openRemediations:
@@ -261,7 +237,7 @@ definitions:
   models.ExpandedStage:
     properties:
       lastEventContext:
-        $ref: '#/definitions/models.EventContext'
+        $ref: '#/definitions/models.EventContextInfo'
         description: last event context
       parentStages:
         description: Parent Stages
@@ -276,6 +252,23 @@ definitions:
       stageName:
         description: Stage name
         type: string
+    type: object
+  models.ExpandedStages:
+    properties:
+      nextPageKey:
+        description: Pointer to next page, base64 encoded
+        type: string
+      pageSize:
+        description: Size of returned page
+        type: number
+      stages:
+        description: stages
+        items:
+          $ref: '#/definitions/models.ExpandedStage'
+        type: array
+      totalCount:
+        description: Total number of stages
+        type: number
     type: object
   models.GetLogsResponse:
     properties:
@@ -312,6 +305,51 @@ definitions:
           $ref: '#/definitions/models.EventSubscription'
         type: array
     type: object
+  models.KeptnContextExtendedCE:
+    properties:
+      contenttype:
+        description: contenttype
+        type: string
+      data:
+        description: |-
+          data
+          Required: true
+      extensions:
+        description: extensions
+      gitcommitid:
+        description: gitcommitid
+        type: string
+      id:
+        description: id
+        type: string
+      shkeptncontext:
+        description: shkeptncontext
+        type: string
+      shkeptnspecversion:
+        description: shkeptnspecversion
+        type: string
+      source:
+        description: |-
+          source
+          Required: true
+        type: string
+      specversion:
+        description: specversion
+        type: string
+      time:
+        description: |-
+          time
+          Format: date-time
+        type: string
+      triggeredid:
+        description: triggeredid
+        type: string
+      type:
+        description: |-
+          type
+          Required: true
+        type: string
+    type: object
   models.KubernetesMetaData:
     properties:
       deploymentname:
@@ -323,6 +361,8 @@ definitions:
     type: object
   models.LogEntry:
     properties:
+      gitcommitid:
+        type: string
       integrationid:
         type: string
       message:
@@ -453,23 +493,6 @@ definitions:
         description: Total number of events
         type: integer
     type: object
-  models.Stages:
-    properties:
-      nextPageKey:
-        description: Pointer to next page, base64 encoded
-        type: string
-      pageSize:
-        description: Size of returned page
-        type: number
-      stages:
-        description: stages
-        items:
-          $ref: '#/definitions/models.ExpandedStage'
-        type: array
-      totalCount:
-        description: Total number of stages
-        type: number
-    type: object
   models.Subscription:
     properties:
       filter:
@@ -492,6 +515,30 @@ definitions:
     type: object
   models.UpdateProjectParams:
     properties:
+      gitPemCertificate:
+        description: git PEM Certificate
+        type: string
+      gitPrivateKey:
+        description: git private key
+        type: string
+      gitPrivateKeyPass:
+        description: git private key passphrase
+        type: string
+      gitProxyInsecure:
+        description: git proxy insecure
+        type: boolean
+      gitProxyPassword:
+        description: git proxy password
+        type: string
+      gitProxyScheme:
+        description: git proxy scheme
+        type: string
+      gitProxyUrl:
+        description: git proxy URL
+        type: string
+      gitProxyUser:
+        description: git proxy user
+        type: string
       gitRemoteURL:
         description: git remote URL
         type: string
@@ -554,7 +601,7 @@ paths:
         "200":
           description: ok
           schema:
-            $ref: '#/definitions/models.Events'
+            $ref: '#/definitions/models.KeptnContextExtendedCE'
         "400":
           description: Invalid payload
           schema:
@@ -948,7 +995,7 @@ paths:
         "200":
           description: ok
           schema:
-            $ref: '#/definitions/models.Stages'
+            $ref: '#/definitions/models.ExpandedStages'
         "404":
           description: Not found
           schema:
@@ -990,14 +1037,14 @@ paths:
           schema:
             $ref: '#/definitions/models.Error'
         "500":
-          description: Internal Error)
+          description: Internal Error
           schema:
             $ref: '#/definitions/models.Error'
       security:
       - ApiKeyAuth: []
       summary: Get a stage
       tags:
-      - Projects
+      - Stage
   /project/{project}/stage/{stage}/service:
     get:
       consumes:
@@ -1396,7 +1443,7 @@ paths:
           description: ok
           schema:
             items:
-              $ref: '#/definitions/models.Subscription'
+              $ref: '#/definitions/models.EventSubscription'
             type: array
         "400":
           description: Invalid payload
@@ -1430,7 +1477,7 @@ paths:
         name: subscription
         required: true
         schema:
-          $ref: '#/definitions/models.Subscription'
+          $ref: '#/definitions/models.EventSubscription'
       produces:
       - application/json
       responses:
@@ -1512,7 +1559,7 @@ paths:
         "200":
           description: ok
           schema:
-            $ref: '#/definitions/models.Subscription'
+            $ref: '#/definitions/models.EventSubscription'
         "400":
           description: Invalid payload
           schema:
@@ -1550,7 +1597,7 @@ paths:
         name: subscription
         required: true
         schema:
-          $ref: '#/definitions/models.Subscription'
+          $ref: '#/definitions/models.EventSubscription'
       produces:
       - application/json
       responses:

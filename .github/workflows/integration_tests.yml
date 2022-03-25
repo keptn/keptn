@@ -10,6 +10,11 @@ on:
         description: 'Take CI build artifacts from branch (e.g., master, release-x.y.z)'
         required: true
         default: 'master'
+      deleteOnFinish:
+        type: boolean
+        required: false
+        description: "Check this if you don't want the test namespaces to stay alive after the test run"
+        default: false
 env:
   META_KEPTN_VERSION: 0.13.2
   META_KEPTN_KEPTN_PROJECT: keptn
@@ -84,7 +89,7 @@ jobs:
       AIRGAPPED_REGISTRY_URL: "k3d-container-registry.localhost:12345"
       REMOTE_EXECUTION_PLANE: ${{ matrix.REMOTE_EXECUTION_PLANE }}
       COLLECT_RESOURCE_LIMITS: ${{ matrix.COLLECT_RESOURCE_LIMITS }}
-      GO_VERSION: ^1.17
+      GO_VERSION: 1.17
       TEST_REPORT_FOLDER: test-reports-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}
       FINAL_TEST_REPORT_FOLDER: test-reports
       FINAL_TEST_REPORT_PATH: test-reports/test-report-final-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}.log
@@ -109,7 +114,7 @@ jobs:
         run: mkdir ~/downloads
 
       - name: Cache downloads paths
-        uses: actions/cache@v2.1.7
+        uses: actions/cache@v3.0.0
         with:
           path: |
             ~/downloads
@@ -357,7 +362,7 @@ jobs:
             else
               DOCKER_ORG="keptn"
             fi
-            
+          
             installer/airgapped/install_keptn.sh \
               "$AIRGAPPED_REGISTRY_URL/" \
               "$DOCKER_ORG" \
@@ -370,6 +375,7 @@ jobs:
               --create-namespace \
               --set control-plane.apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
               --set control-plane.resourceService.enabled=true \
+              --set control-plane.resourceService.replicas=1 \
               --set continuous-delivery.enabled=${RUN_CONTINUOUS_DELIVERY_TEST}
           else
             # Install Keptn via CLI
@@ -461,9 +467,9 @@ jobs:
             KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n "$KEPTN_NAMESPACE" -o jsonpath='{.data.keptn-api-token}' | base64 --decode)
             kubectl scale deployment/helm-service -n "${KEPTN_NAMESPACE}" --replicas=0
             kubectl scale deployment/jmeter-service -n "${KEPTN_NAMESPACE}" --replicas=0
-  
+          
             KEPTN_API_HOSTNAME=$(echo "${KEPTN_ENDPOINT}" | awk -F[/] '{print $3}')
-  
+          
             helm install helm-service "${HELM_SERVICE_HELM_CHART_NAME}" \
               -n ${{ env.KEPTN_NAMESPACE }}-helm-service \
               --set remoteControlPlane.enabled=true \
@@ -478,7 +484,7 @@ jobs:
               --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" \
               --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" \
               --create-namespace
-  
+          
             helm test jmeter-service -n ${{ env.KEPTN_NAMESPACE }}-jmeter-service
             helm test helm-service -n ${{ env.KEPTN_NAMESPACE }}-helm-service
           else
@@ -489,7 +495,7 @@ jobs:
             helm test jmeter-service -n ${{ env.KEPTN_NAMESPACE }}
             helm test helm-service -n ${{ env.KEPTN_NAMESPACE }}
           fi
-            
+
 
       - name: Prepare test run
         id: prepare_test_run
@@ -573,75 +579,54 @@ jobs:
         if: always() && env.CLOUD_PROVIDER == 'GKE'
         run: |
           echo "Cleaning up test resources..."
+
           readarray -t namespaces <<< "$(kubectl get namespaces | awk '{ print $1 }' | grep ${{ env.KEPTN_NAMESPACE }})"
-          readarray -t clusterroles <<< "$(kubectl get clusterroles | awk '{ print $1 }' | grep ${{ env.KEPTN_NAMESPACE }})"
           readarray -t clusterrolebindings <<< "$(kubectl get clusterrolebindings | awk '{ print $1 }' | grep ${{ env.KEPTN_NAMESPACE }})"
 
           if [[ "${{ github.event_name }}" == 'schedule' && "${{ steps.test_aggregated.outcome }}" != 'success' ]]; then
-              for namespace in "${namespaces[@]}"; do
-                if [[ ! -z "${namespace// }" ]]; then
-                  echo "Annotating namespace $namespace with Janitor TTL of 3 days..."
-                  kubectl annotate namespace "$namespace" janitor/ttl=3d
-                fi
-              done
-          
-              for cr in "${clusterroles[@]}"; do
-                if [[ ! -z "${cr// }" ]]; then
-                  echo "Annotating clusterrole $cr with Janitor TTL of 3 days..."
-                  kubectl annotate clusterrole "$cr" janitor/ttl=3d
-                fi
-              done
-          
-              for crb in "${clusterrolebindings[@]}"; do
-                if [[ ! -z "${crb// }" ]]; then
-                  echo "Annotating clusterrolebinding $crb with Janitor TTL of 3 days..."
-                  kubectl annotate clusterrolebinding "$crb" janitor/ttl=3d
-                fi
-              done
-          elif [[ "${{ github.event_name }}" == 'workflow_dispatch' && "${{ steps.test_aggregated.outcome }}" != 'success' ]]; then
-              for namespace in "${namespaces[@]}"; do
-                if [[ ! -z "${namespace// }" ]]; then
-                  echo "Annotating namespace $namespace with Janitor TTL of 6 hours..."
-                  kubectl annotate namespace "$namespace" janitor/ttl=6h
-                fi
-              done
-          
-              for cr in "${clusterroles[@]}"; do
-                if [[ ! -z "${cr// }" ]]; then
-                  echo "Annotating clusterrole $cr with Janitor TTL of 3 days..."
-                  kubectl annotate clusterrole "$cr" janitor/ttl=6h
-                fi
-              done
-          
-              for crb in "${clusterrolebindings[@]}"; do
-                if [[ ! -z "${crb// }" ]]; then
-                  echo "Annotating clusterrolebinding $crb with Janitor TTL of 3 days..."
-                  kubectl annotate clusterrolebinding "$crb" janitor/ttl=6h
-                fi
-              done
+            for namespace in "${namespaces[@]}"; do
+              if [[ ! -z "${namespace// }" ]]; then
+                echo "Annotating namespace $namespace with Janitor TTL of 3 days..."
+                kubectl annotate namespace "$namespace" janitor/ttl=3d
+              fi
+            done
+        
+            for crb in "${clusterrolebindings[@]}"; do
+              if [[ ! -z "${crb// }" ]]; then
+                echo "Annotating clusterrolebinding $crb with Janitor TTL of 3 days..."
+                kubectl annotate clusterrolebinding "$crb" janitor/ttl=3d
+              fi
+            done
+          elif [[ "${{ github.event_name }}" == 'workflow_dispatch' && "${{ steps.test_aggregated.outcome }}" != 'success' && "${{ github.event.inputs.deleteOnFinish }}" == 'false' ]]; then
+            for namespace in "${namespaces[@]}"; do
+              if [[ ! -z "${namespace// }" ]]; then
+                echo "Annotating namespace $namespace with Janitor TTL of 3 hours..."
+                kubectl annotate namespace "$namespace" janitor/ttl=3h
+              fi
+            done
+        
+            for crb in "${clusterrolebindings[@]}"; do
+              if [[ ! -z "${crb// }" ]]; then
+                echo "Annotating clusterrolebinding $crb with Janitor TTL of 3 hours..."
+                kubectl annotate clusterrolebinding "$crb" janitor/ttl=3h
+              fi
+            done
           else
-              for namespace in "${namespaces[@]}"; do
-                if [[ ! -z "${namespace// }" ]]; then
-                  echo "Deleting namespace $namespace ..."
-                  kubectl delete namespace "$namespace" --wait=false
-                fi
-              done
-          
-              for cr in "${clusterroles[@]}"; do
-                if [[ ! -z "${cr// }" ]]; then
-                  echo "Deleting clusterrole $cr ..."
-                  kubectl delete clusterrole "$cr" --wait=false
-                fi
-              done
-          
-              for crb in "${clusterrolebindings[@]}"; do
-                if [[ ! -z "${crb// }" ]]; then
-                  echo "Deleting clusterrolebinding $crb ..."
-                  kubectl delete clusterrolebindings "$crb" --wait=false
-                fi
-              done
+            for namespace in "${namespaces[@]}"; do
+              if [[ ! -z "${namespace// }" ]]; then
+                echo "Deleting namespace $namespace ..."
+                kubectl delete namespace "$namespace" --wait=false
+              fi
+            done
+        
+            for crb in "${clusterrolebindings[@]}"; do
+              if [[ ! -z "${crb// }" ]]; then
+                echo "Deleting clusterrolebinding $crb ..."
+                kubectl delete clusterrolebindings "$crb" --wait=false
+              fi
+            done
           fi
-          
+
       - name: Cleanup Minishift cluster
         if: env.CLOUD_PROVIDER == 'minishift-on-GHA'
         timeout-minutes: 3
@@ -745,7 +730,7 @@ jobs:
               console.log(`Reading file: ${fileName}`);
               const platformReportFile = fs.readFileSync(TEST_REPORTS_PATH + fileName, {encoding:'utf8', flag:'r'});
               const platformTestReportRaw = ndJsonParser(platformReportFile);
-              
+            
               // Only pick the test results that have a format like this: Test_GKE/Test_name
               // There are some other results in there for the whole package for example, that we don't want
               platformTestReportRaw.forEach(platformTestResult => {
@@ -759,12 +744,12 @@ jobs:
             
             jsonReportData.forEach(testResult => {
               const trimmedTestResult = { ...testResult, test: testResult.test.split("/")[1] }
-              
+            
               // If this is a new testcase the result list needs to be created first
               if (!(trimmedTestResult.test in testResultMap)) {
                 testResultMap[trimmedTestResult.test] = [];
               }
-              
+            
               // Add to result list
               testResultMap[trimmedTestResult.test].push(trimmedTestResult)
             });
@@ -779,7 +764,7 @@ jobs:
               testResults.forEach(result => {
                 const {test, ...results} = result;
                 Object.assign(finalResult, results);
-                
+            
                 const currentPlatform = Object.keys(results)[0];
                 if(!allPlatforms.includes(currentPlatform)) {
                   allPlatforms.push(currentPlatform);
@@ -1040,7 +1025,7 @@ jobs:
 
       - name: Cache Keptn CLI
         id: keptn-cli-cache
-        uses: actions/cache@v2.1.7
+        uses: actions/cache@v3.0.0
         with:
           path: ~/downloads
           key: ${{ env.META_KEPTN_VERSION }}-cli

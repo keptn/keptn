@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/benbjohnson/clock"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
@@ -34,7 +35,7 @@ func (mdbrepo *MongoDBLogRepo) SetupTTLIndex(duration time.Duration) error {
 	return SetupTTLIndex(ctx, "time", duration, collection)
 }
 
-func (mdbrepo *MongoDBLogRepo) CreateLogEntries(entries []models.LogEntry) error {
+func (mdbrepo *MongoDBLogRepo) CreateLogEntries(entries []apimodels.LogEntry) error {
 	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext()
 	if err != nil {
 		return fmt.Errorf("could not get collection: %s", err.Error())
@@ -85,19 +86,19 @@ func (mdbrepo *MongoDBLogRepo) GetLogEntries(params models.GetLogParams) (*model
 	}
 
 	result := &models.GetLogsResponse{
-		Logs:        []models.LogEntry{},
+		Logs:        []apimodels.LogEntry{},
 		NextPageKey: 0,
 		PageSize:    0,
 		TotalCount:  totalCount,
 	}
-	logs := []models.LogEntry{}
+	logs := []apimodels.LogEntry{}
 
 	if params.PageSize > 0 && params.PageSize+params.NextPageKey < totalCount {
 		result.NextPageKey = params.PageSize + params.NextPageKey
 	}
 
 	for cur.Next(ctx) {
-		logEntry := &models.LogEntry{}
+		logEntry := &apimodels.LogEntry{}
 		if err := cur.Decode(logEntry); err != nil {
 			log.Errorf("could not decode log entry: %s", err.Error())
 		}

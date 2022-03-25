@@ -1,11 +1,12 @@
 package handlers
 
 import (
-	logger "github.com/sirupsen/logrus"
 	"net/http"
 	"os"
 	"strings"
 	"time"
+
+	logger "github.com/sirupsen/logrus"
 
 	k8sutils "github.com/keptn/kubernetes-utils/pkg"
 
@@ -133,7 +134,7 @@ func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams
 				}
 				if strings.Contains(err.Error(), "Authentication failed") || strings.Contains(err.Error(), common.WrongToken) || strings.Contains(err.Error(), common.GitError) {
 					logger.Error("Authentication error detected")
-					return project.NewPutProjectProjectNameBadRequest().WithPayload(&models.Error{Code: http.StatusFailedDependency, Message: swag.String(common.InvalidUpstreamTokenErrorMsg)})
+					return project.NewPutProjectProjectNameBadRequest().WithPayload(&models.Error{Code: http.StatusNotFound, Message: swag.String(common.RepositoryNotFoundErrorMsg)})
 				}
 
 				return project.NewPutProjectProjectNameDefault(http.StatusInternalServerError).WithPayload(&models.Error{Code: http.StatusInternalServerError, Message: swag.String(common.InternalErrorErrMsg)})

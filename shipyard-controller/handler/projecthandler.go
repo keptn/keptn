@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	"fmt"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"net/http"
 	"sort"
 
@@ -44,7 +45,7 @@ func NewProjectHandler(projectManager IProjectManager, eventSender common.EventS
 // @Param	pageSize			query		int			false	"The number of items to return"
 // @Param   nextPageKey     	query    	string     	false	"Pointer to the next set of items"
 // @Param   disableUpstreamSync	query		boolean		false	"Disable sync of upstream repo before reading content"
-// @Success 200 {object} models.ExpandedProjects	"ok"
+// @Success 200 {object} apimodels.ExpandedProjects	"ok"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project [get]
 func (ph *ProjectHandler) GetAllProjects(c *gin.Context) {
@@ -65,11 +66,11 @@ func (ph *ProjectHandler) GetAllProjects(c *gin.Context) {
 		return allProjects[i].ProjectName < allProjects[j].ProjectName
 	})
 
-	var payload = &models.ExpandedProjects{
+	var payload = &apimodels.ExpandedProjects{
 		PageSize:    0,
 		NextPageKey: "0",
 		TotalCount:  0,
-		Projects:    []*models.ExpandedProject{},
+		Projects:    []*apimodels.ExpandedProject{},
 	}
 
 	paginationInfo := common.Paginate(len(allProjects), params.PageSize, params.NextPageKey)
@@ -91,7 +92,7 @@ func (ph *ProjectHandler) GetAllProjects(c *gin.Context) {
 // @Accept	json
 // @Produce  json
 // @Param	project		path	string	true	"The name of the project"
-// @Success 200 {object} models.ExpandedProject	"ok"
+// @Success 200 {object} apimodels.ExpandedProject	"ok"
 // @Failure 404 {object} models.Error "Not found"
 // @Failure 500 {object} models.Error "Internal Error)
 // @Router /project/{project} [get]

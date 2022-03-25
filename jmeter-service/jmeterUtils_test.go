@@ -10,14 +10,14 @@ import (
 	"strings"
 	"testing"
 
-	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 )
 
 func Test_executeJMeter(t *testing.T) {
 	localTmpDir := t.TempDir()
 	var returnedStatus int
-	var returnedResources keptnapimodels.Resources
+	var returnedResources apimodels.Resources
 
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -98,12 +98,12 @@ func Test_executeJMeter(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			returnedStatus = tt.returnedStatus
 
-			returnedResources = keptnapimodels.Resources{
-				Resources: []*keptnapimodels.Resource{},
+			returnedResources = apimodels.Resources{
+				Resources: []*apimodels.Resource{},
 			}
 
 			for _, res := range tt.returnedResources {
-				returnedResources.Resources = append(returnedResources.Resources, &keptnapimodels.Resource{
+				returnedResources.Resources = append(returnedResources.Resources, &apimodels.Resource{
 					ResourceURI: &res,
 				})
 			}

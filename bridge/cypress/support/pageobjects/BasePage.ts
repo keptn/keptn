@@ -69,7 +69,7 @@ class BasePage {
   }
 
   clickMainHeaderKeptn(): void {
-    cy.get('.brand > p').contains('keptn').click();
+    cy.get('.brand > p').contains('Keptn').click();
   }
 
   chooseProjectFromHeaderMenu(projectName: string): this {

@@ -20,6 +20,9 @@ prefixPath: ""
 
 keptnSpecVersion: latest
 
+features:
+  automaticProvisioningURL: ""
+
 nats:
   nameOverride: keptn-nats
   fullnameOverride: keptn-nats
@@ -213,7 +216,7 @@ ingress:
   tls:
     []
 
-logLevel: info
+logLevel: "info"
 
 gracePeriod: 40
 

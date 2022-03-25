@@ -3,9 +3,9 @@ package db_test
 import (
 	"context"
 	"fmt"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	"github.com/keptn/keptn/shipyard-controller/db"
-	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/tryvium-travels/memongo"
@@ -60,7 +60,7 @@ func TestMongoDBStateRepo_FindSequenceStates(t *testing.T) {
 
 	mdbrepo := db.NewMongoDBStateRepo(db.GetMongoDBConnectionInstance())
 
-	state := models.SequenceState{
+	state := apimodels.SequenceState{
 		Name:           "my-sequence",
 		Service:        "my-service",
 		Project:        "my-project",
@@ -69,7 +69,7 @@ func TestMongoDBStateRepo_FindSequenceStates(t *testing.T) {
 		State:          "triggered",
 	}
 
-	state2 := models.SequenceState{
+	state2 := apimodels.SequenceState{
 		Name:           "my-sequence2",
 		Service:        "my-service",
 		Project:        "my-project",
@@ -78,7 +78,7 @@ func TestMongoDBStateRepo_FindSequenceStates(t *testing.T) {
 		State:          "finished",
 	}
 
-	state3 := models.SequenceState{
+	state3 := apimodels.SequenceState{
 		Name:           "my-sequence3",
 		Service:        "my-service",
 		Project:        "my-project",
@@ -97,8 +97,8 @@ func TestMongoDBStateRepo_FindSequenceStates(t *testing.T) {
 	require.Nil(t, err)
 
 	// Find by keptn context
-	states, err := mdbrepo.FindSequenceStates(models.StateFilter{
-		GetSequenceStateParams: models.GetSequenceStateParams{
+	states, err := mdbrepo.FindSequenceStates(apimodels.StateFilter{
+		GetSequenceStateParams: apimodels.GetSequenceStateParams{
 			Project:      "my-project",
 			KeptnContext: "my-context",
 		},
@@ -110,8 +110,8 @@ func TestMongoDBStateRepo_FindSequenceStates(t *testing.T) {
 	require.Equal(t, state, states.States[0])
 
 	// Find by project name
-	states, err = mdbrepo.FindSequenceStates(models.StateFilter{
-		GetSequenceStateParams: models.GetSequenceStateParams{
+	states, err = mdbrepo.FindSequenceStates(apimodels.StateFilter{
+		GetSequenceStateParams: apimodels.GetSequenceStateParams{
 			Project: "my-project",
 		},
 	})
@@ -124,8 +124,8 @@ func TestMongoDBStateRepo_FindSequenceStates(t *testing.T) {
 	require.Equal(t, state3, states.States[2])
 
 	// Find by project and sequence name
-	states, err = mdbrepo.FindSequenceStates(models.StateFilter{
-		GetSequenceStateParams: models.GetSequenceStateParams{
+	states, err = mdbrepo.FindSequenceStates(apimodels.StateFilter{
+		GetSequenceStateParams: apimodels.GetSequenceStateParams{
 			Project: "my-project",
 			Name:    "my-sequence",
 		},
@@ -137,8 +137,8 @@ func TestMongoDBStateRepo_FindSequenceStates(t *testing.T) {
 	require.Equal(t, state, states.States[0])
 
 	// Find by project and sequence state
-	states, err = mdbrepo.FindSequenceStates(models.StateFilter{
-		GetSequenceStateParams: models.GetSequenceStateParams{
+	states, err = mdbrepo.FindSequenceStates(apimodels.StateFilter{
+		GetSequenceStateParams: apimodels.GetSequenceStateParams{
 			Project: "my-project",
 			State:   "finished",
 		},
@@ -150,8 +150,8 @@ func TestMongoDBStateRepo_FindSequenceStates(t *testing.T) {
 	require.Equal(t, state2, states.States[0])
 
 	// Find by project and from time
-	states, err = mdbrepo.FindSequenceStates(models.StateFilter{
-		GetSequenceStateParams: models.GetSequenceStateParams{
+	states, err = mdbrepo.FindSequenceStates(apimodels.StateFilter{
+		GetSequenceStateParams: apimodels.GetSequenceStateParams{
 			Project:  "my-project",
 			FromTime: "2021-05-10T10:14:59.000Z",
 		},
@@ -163,8 +163,8 @@ func TestMongoDBStateRepo_FindSequenceStates(t *testing.T) {
 	require.Equal(t, state, states.States[0])
 
 	// Find by project and before time
-	states, err = mdbrepo.FindSequenceStates(models.StateFilter{
-		GetSequenceStateParams: models.GetSequenceStateParams{
+	states, err = mdbrepo.FindSequenceStates(apimodels.StateFilter{
+		GetSequenceStateParams: apimodels.GetSequenceStateParams{
 			Project:    "my-project",
 			BeforeTime: "2021-05-10T10:00:00.000Z",
 		},
@@ -176,8 +176,8 @@ func TestMongoDBStateRepo_FindSequenceStates(t *testing.T) {
 	require.Equal(t, state3, states.States[0])
 
 	// Find by project and before and from time
-	states, err = mdbrepo.FindSequenceStates(models.StateFilter{
-		GetSequenceStateParams: models.GetSequenceStateParams{
+	states, err = mdbrepo.FindSequenceStates(apimodels.StateFilter{
+		GetSequenceStateParams: apimodels.GetSequenceStateParams{
 			Project:    "my-project",
 			FromTime:   "2021-05-10T09:51:00.000Z",
 			BeforeTime: "2021-05-10T10:14:59.000Z",
@@ -190,8 +190,8 @@ func TestMongoDBStateRepo_FindSequenceStates(t *testing.T) {
 	require.Equal(t, state2, states.States[0])
 
 	// Filter by multiple keptnContext IDs
-	states, err = mdbrepo.FindSequenceStates(models.StateFilter{
-		GetSequenceStateParams: models.GetSequenceStateParams{
+	states, err = mdbrepo.FindSequenceStates(apimodels.StateFilter{
+		GetSequenceStateParams: apimodels.GetSequenceStateParams{
 			Project:      "my-project",
 			KeptnContext: "my-context, my-context2",
 		},
@@ -208,7 +208,7 @@ func TestMongoDBStateRepo_StateRepoInsertAndRetrieve(t *testing.T) {
 
 	mdbrepo := db.NewMongoDBStateRepo(db.GetMongoDBConnectionInstance())
 
-	state := models.SequenceState{
+	state := apimodels.SequenceState{
 		Name:           "my-sequence",
 		Service:        "my-service",
 		Project:        "my-project",
@@ -219,8 +219,8 @@ func TestMongoDBStateRepo_StateRepoInsertAndRetrieve(t *testing.T) {
 	}
 
 	// first, delete any entries that might have been inserted previously
-	err := mdbrepo.DeleteSequenceStates(models.StateFilter{
-		GetSequenceStateParams: models.GetSequenceStateParams{
+	err := mdbrepo.DeleteSequenceStates(apimodels.StateFilter{
+		GetSequenceStateParams: apimodels.GetSequenceStateParams{
 			Project:      "my-project",
 			KeptnContext: "my-context",
 		},
@@ -230,8 +230,8 @@ func TestMongoDBStateRepo_StateRepoInsertAndRetrieve(t *testing.T) {
 	err = mdbrepo.CreateSequenceState(state)
 	require.Nil(t, err)
 
-	states, err := mdbrepo.FindSequenceStates(models.StateFilter{
-		GetSequenceStateParams: models.GetSequenceStateParams{
+	states, err := mdbrepo.FindSequenceStates(apimodels.StateFilter{
+		GetSequenceStateParams: apimodels.GetSequenceStateParams{
 			Project:      "my-project",
 			KeptnContext: "my-context",
 		},
@@ -252,8 +252,8 @@ func TestMongoDBStateRepo_StateRepoInsertAndRetrieve(t *testing.T) {
 	require.Nil(t, err)
 
 	// fetch the state again
-	states, err = mdbrepo.FindSequenceStates(models.StateFilter{
-		GetSequenceStateParams: models.GetSequenceStateParams{
+	states, err = mdbrepo.FindSequenceStates(apimodels.StateFilter{
+		GetSequenceStateParams: apimodels.GetSequenceStateParams{
 			Project:      "my-project",
 			KeptnContext: "my-context",
 		},
@@ -266,16 +266,16 @@ func TestMongoDBStateRepo_StateRepoInsertAndRetrieve(t *testing.T) {
 	require.Equal(t, "finished", states.States[0].State)
 
 	// delete the state
-	err = mdbrepo.DeleteSequenceStates(models.StateFilter{
-		GetSequenceStateParams: models.GetSequenceStateParams{
+	err = mdbrepo.DeleteSequenceStates(apimodels.StateFilter{
+		GetSequenceStateParams: apimodels.GetSequenceStateParams{
 			Project:      state.Project,
 			KeptnContext: "my-context",
 		},
 	})
 	require.Nil(t, err)
 
-	states, err = mdbrepo.FindSequenceStates(models.StateFilter{
-		GetSequenceStateParams: models.GetSequenceStateParams{
+	states, err = mdbrepo.FindSequenceStates(apimodels.StateFilter{
+		GetSequenceStateParams: apimodels.GetSequenceStateParams{
 			Project:      "my-project",
 			KeptnContext: "my-context",
 		},
@@ -290,7 +290,7 @@ func TestMongoDBStateRepo_StateRepoInsertInvalidStates(t *testing.T) {
 	mdbrepo := db.NewMongoDBStateRepo(db.GetMongoDBConnectionInstance())
 
 	// create a state without a project
-	invalidState := models.SequenceState{
+	invalidState := apimodels.SequenceState{
 		Name:           "my-sequence",
 		Service:        "my-service",
 		Time:           "",

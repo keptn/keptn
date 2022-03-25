@@ -176,6 +176,9 @@ func init() {
     "metadata": {
       "type": "object",
       "properties": {
+        "automaticprovisioning": {
+          "type": "boolean"
+        },
         "bridgeversion": {
           "type": "string"
         },
@@ -369,6 +372,9 @@ func init() {
     "metadata": {
       "type": "object",
       "properties": {
+        "automaticprovisioning": {
+          "type": "boolean"
+        },
         "bridgeversion": {
           "type": "string"
         },

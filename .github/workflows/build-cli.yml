@@ -21,7 +21,7 @@ defaults:
   run:
     shell: bash
 env:
-  GO_VERSION: "^1.16"
+  GO_VERSION: "1.17"
 jobs:
   build-cli:
     name: Build Keptn CLI
@@ -56,7 +56,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
       # cache go modules
-      - uses: actions/cache@v2.1.7
+      - uses: actions/cache@v3.0.0
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-cli-${{ hashFiles('cli/go.sum') }}

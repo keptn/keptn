@@ -7,11 +7,11 @@ import (
 	"net/http/httptest"
 	"strings"
 
-	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 )
 
 type ConfigurationService struct {
-	Projects          []*keptnapimodels.Project
+	Projects          []*apimodels.Project
 	ReceivedResources []string
 	Server            *httptest.Server
 }
@@ -64,7 +64,7 @@ func (mcs *ConfigurationService) get(path string) (interface{}, error) {
 func (mcs *ConfigurationService) post(body interface{}, path string) (interface{}, error) {
 	marshal, _ := json.Marshal(body)
 	if strings.Contains(path, "/service") {
-		service := &keptnapimodels.Service{}
+		service := &apimodels.Service{}
 		_ = json.Unmarshal(marshal, service)
 		for _, project := range mcs.Projects {
 			if strings.Contains(path, "/project/"+project.ProjectName) {
@@ -78,7 +78,7 @@ func (mcs *ConfigurationService) post(body interface{}, path string) (interface{
 		}
 
 	} else if strings.Contains(path, "/stage") {
-		stage := &keptnapimodels.Stage{}
+		stage := &apimodels.Stage{}
 		_ = json.Unmarshal(marshal, stage)
 		for _, project := range mcs.Projects {
 			if strings.Contains(path, "/project/"+project.ProjectName) {
@@ -86,16 +86,16 @@ func (mcs *ConfigurationService) post(body interface{}, path string) (interface{
 			}
 		}
 	} else if strings.Contains(path, "/resource") {
-		resources := &keptnapimodels.Resources{}
+		resources := &apimodels.Resources{}
 		_ = json.Unmarshal(marshal, resources)
 		if len(resources.Resources) > 0 {
 			mcs.ReceivedResources = append(mcs.ReceivedResources, *resources.Resources[0].ResourceURI)
 		}
-		return &keptnapimodels.Version{
+		return &apimodels.Version{
 			Version: "",
 		}, nil
 	} else if strings.Contains(path, "/project") {
-		project := &keptnapimodels.Project{}
+		project := &apimodels.Project{}
 		_ = json.Unmarshal(marshal, project)
 		mcs.Projects = append(mcs.Projects, project)
 		return nil, nil
@@ -112,7 +112,7 @@ func (mcs *ConfigurationService) delete(path string) (interface{}, error) {
 		for _, project := range mcs.Projects {
 			if strings.Contains(path, "/project/"+project.ProjectName) {
 				for _, stage := range project.Stages {
-					newServices := []*keptnapimodels.Service{}
+					newServices := []*apimodels.Service{}
 					for svcI, svc := range stage.Services {
 						if !strings.Contains(path, "/service/"+svc.ServiceName) {
 							newServices = append(newServices, stage.Services[svcI])
@@ -124,7 +124,7 @@ func (mcs *ConfigurationService) delete(path string) (interface{}, error) {
 		}
 		return nil, nil
 	} else if strings.Contains(path, "/project") {
-		newProjects := []*keptnapimodels.Project{}
+		newProjects := []*apimodels.Project{}
 
 		for index, project := range mcs.Projects {
 			if !strings.Contains(path, "/project/"+project.ProjectName) {
@@ -139,7 +139,7 @@ func (mcs *ConfigurationService) delete(path string) (interface{}, error) {
 
 func NewSimpleMockConfigurationService() *ConfigurationService {
 	mcs := &ConfigurationService{
-		Projects:          []*keptnapimodels.Project{},
+		Projects:          []*apimodels.Project{},
 		ReceivedResources: []string{},
 	}
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

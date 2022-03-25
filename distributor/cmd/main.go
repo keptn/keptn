@@ -61,7 +61,7 @@ func main() {
 	}
 
 	controlPlane := controlplane.New(apiset.UniformV1(), env.PubSubConnectionType(), env)
-	uniformWatch := setupUniformWatch(controlPlane)
+	uniformWatch := watch.New(controlPlane, env)
 	forwarder := forwarder.New(apiset.APIV1(), httpClient, env)
 
 	// Start event forwarder
@@ -70,9 +70,9 @@ func main() {
 
 	// Eventually start registration process
 	if env.ValidateRegistrationConstraints() {
-		id := uniformWatch.Start(executionContext)
-		if id == "" {
-			logger.Fatal("Could not register Uniform")
+		id, err := uniformWatch.Start(executionContext)
+		if err != nil {
+			logger.Fatal(err)
 		}
 		uniformLogger := log.New(id, apiset.LogsV1())
 		uniformLogger.Start(executionContext, forwarder.EventChannel)
@@ -91,7 +91,7 @@ func main() {
 			logger.Fatalf("Could not start HTTP event poller: %v", err)
 		}
 	} else {
-		logger.Info("Starting NATS event Receiver")
+		logger.Info("Starting NATS event receiver")
 		natsEventReceiver := receiver.New(env, eventSender, env.ValidateRegistrationConstraints())
 		uniformWatch.RegisterListener(natsEventReceiver)
 		if err := natsEventReceiver.Start(executionContext); err != nil {
@@ -114,8 +114,9 @@ func createExecutionContext() *utils.ExecutionContext {
 	wg := new(sync.WaitGroup)
 	wg.Add(2)
 	executionContext := utils.ExecutionContext{
-		Context: ctx,
-		Wg:      wg,
+		Context:  ctx,
+		Wg:       wg,
+		CancelFn: cancel,
 	}
 	return &executionContext
 }
@@ -134,10 +135,6 @@ func createKeptnAPI(httpClient *http.Client, env config.EnvConfig) (keptnapi.Kep
 	}
 
 	return api.NewInternal(httpClient)
-}
-
-func setupUniformWatch(controlPlane controlplane.IControlPlane) *watch.UniformWatch {
-	return watch.New(controlPlane)
 }
 
 func createEventSender(env config.EnvConfig) (poller.EventSender, error) {

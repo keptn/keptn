@@ -4,7 +4,7 @@
 package db_mock
 
 import (
-	"github.com/keptn/keptn/shipyard-controller/models"
+	"github.com/keptn/go-utils/pkg/api/models"
 	"sync"
 )
 
