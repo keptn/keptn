@@ -17,7 +17,6 @@ import (
 	_ "github.com/keptn/keptn/shipyard-controller/docs"
 	"github.com/keptn/keptn/shipyard-controller/handler"
 	"github.com/keptn/keptn/shipyard-controller/handler/sequencehooks"
-	"github.com/keptn/keptn/shipyard-controller/handler/validation"
 	_ "github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/nats"
 	log "github.com/sirupsen/logrus"
@@ -182,7 +181,7 @@ func main() {
 
 	projectService := handler.NewProjectHandler(
 		projectManager, eventSender,
-		validation.ProjectValidator{
+		handler.ProjectValidator{
 			ProjectNameMaxSize: env.ProjectNameMaxSize,
 		})
 	projectController := controller.NewProjectController(projectService)

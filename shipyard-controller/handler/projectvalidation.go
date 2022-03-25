@@ -1,41 +1,15 @@
-package validation
+package handler
 
 import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/go-playground/validator/v10"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
-	"github.com/keptn/keptn/shipyard-controller/config"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"gopkg.in/yaml.v3"
 )
-
-// ConfigurableProjectNameValidator can be used
-// validate a Keptn project name
-type ConfigurableProjectNameValidator struct {
-	projectNameMaxSize int
-}
-
-// NewProjectValidator creates a new ConfigurableProjectNameValidator
-func NewProjectValidator(env config.EnvConfig) *ConfigurableProjectNameValidator {
-	return &ConfigurableProjectNameValidator{projectNameMaxSize: env.ProjectNameMaxSize}
-}
-
-// Validate performs the actual validation on field level
-func (p ConfigurableProjectNameValidator) Validate(fl validator.FieldLevel) bool {
-	if projectName, ok := fl.Field().Interface().(string); ok {
-		return len(projectName) <= p.projectNameMaxSize
-	}
-	return true
-}
-
-// Tag returns the go tag the validator is bound to
-func (p ConfigurableProjectNameValidator) Tag() string {
-	return "projectname"
-}
 
 type ProjectValidator struct {
 	ProjectNameMaxSize int

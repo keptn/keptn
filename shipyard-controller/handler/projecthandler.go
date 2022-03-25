@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/keptn/shipyard-controller/handler/validation"
 	"net/http"
 	"sort"
 
@@ -27,10 +26,10 @@ type IProjectHandler interface {
 type ProjectHandler struct {
 	ProjectManager   IProjectManager
 	EventSender      common.EventSender
-	ProjectValidator validation.ProjectValidator
+	ProjectValidator ProjectValidator
 }
 
-func NewProjectHandler(projectManager IProjectManager, eventSender common.EventSender, projectValidator validation.ProjectValidator) *ProjectHandler {
+func NewProjectHandler(projectManager IProjectManager, eventSender common.EventSender, projectValidator ProjectValidator) *ProjectHandler {
 	return &ProjectHandler{
 		ProjectManager:   projectManager,
 		EventSender:      eventSender,
