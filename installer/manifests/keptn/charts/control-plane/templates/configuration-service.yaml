@@ -42,11 +42,7 @@ spec:
       app.kubernetes.io/name: resource-service
       app.kubernetes.io/instance: {{ .Release.Name }}
   replicas: {{ .Values.resourceService.replicas }}
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 1
+  {{ include "control-plane.common.update-strategy" . }}
   template:
     metadata:
       labels:

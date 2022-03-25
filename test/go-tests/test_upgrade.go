@@ -85,10 +85,8 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 	}()
 
 	chartLatestVersion := "https://github.com/keptn/helm-charts-dev/blob/gh-pages/packages/keptn-0.14.0-dev-PR-7266.tgz?raw=true"
-	chartPreviousVersion := "https://github.com/keptn/helm-charts-dev/blob/f098f43b33540d5bfc822a0038c0c21ccffe9335/packages/keptn-0.14.0-dev-PR-7266.tgz?raw=true"
+	chartPreviousVersion := "https://github.com/keptn/helm-charts-dev/blob/00cdeca802f106128b5a6fbf4e1b7420eee1fbaa/packages/keptn-0.14.0-dev-PR-7266.tgz?raw=true"
 
-	// check if the project 'state' is already available - if not, delete it before creating it again
-	// check if the project is already available - if not, delete it before creating it again
 	projectName, err = CreateProject(projectName, shipyardFile)
 	require.Nil(t, err)
 
@@ -104,35 +102,35 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 			Method:                     http.MethodGet,
 			Payload:                    nil,
 			ExpectedStatus:             200,
-			WaitSecondsBetweenRequests: 3 * time.Second,
+			WaitSecondsBetweenRequests: 1 * time.Second,
 		},
 		{
 			URL:                        "/v1/metadata",
 			Method:                     http.MethodGet,
 			Payload:                    nil,
 			ExpectedStatus:             200,
-			WaitSecondsBetweenRequests: 3 * time.Second,
+			WaitSecondsBetweenRequests: 1 * time.Second,
 		},
 		{
 			URL:                        "/mongodb-datastore/event?project=" + projectName,
 			Method:                     http.MethodGet,
 			Payload:                    nil,
 			ExpectedStatus:             200,
-			WaitSecondsBetweenRequests: 3 * time.Second,
+			WaitSecondsBetweenRequests: 1 * time.Second,
 		},
 		{
 			URL:                        "/configuration-service/v1/project/" + projectName + "/resource",
 			Method:                     http.MethodGet,
 			Payload:                    nil,
 			ExpectedStatus:             200,
-			WaitSecondsBetweenRequests: 3 * time.Second,
+			WaitSecondsBetweenRequests: 1 * time.Second,
 		},
 		{
 			URL:                        "/secrets/v1/secret",
 			Method:                     http.MethodGet,
 			Payload:                    nil,
 			ExpectedStatus:             200,
-			WaitSecondsBetweenRequests: 3 * time.Second,
+			WaitSecondsBetweenRequests: 1 * time.Second,
 		},
 	}
 
