@@ -49,3 +49,9 @@ var UnableControleSequenceMsg = "Unable to control sequence: %s"
 var UnableFindSequenceMsg = "Unable to control sequence: %s"
 
 var UnableQueryIntegrationsMsg = "Unable to query uniform integrations repository: %s"
+
+var UnableMarshallProvisioningData = "Error marshalling provisioning data: %s"
+
+var UnableProvisionInstance = "Error provisioning a project instance: %s"
+
+var UnableProvisionDelete = "Error deleting a provisioned project instance: %s"

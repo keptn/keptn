@@ -1,15 +1,22 @@
 package handler
 
 import (
+	"bytes"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
+
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/shipyard-controller/config"
 	"gopkg.in/yaml.v3"
+
 	"net/http"
+	"os"
 	"sort"
+
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -280,14 +287,33 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
+
+	automaticProvisioningURL := os.Getenv("AUTOMATIC_PROVISIONING_URL")
+	if automaticProvisioningURL != "" && createProjectParams.GitRemoteURL == "" {
+		values := map[string]string{"name": "John Doe", "occupation": "gardener"}
+		json_data, err := json.Marshal(values)
+
+		if err != nil {
+			log.Errorf(UnableMarshallProvisioningData, err.Error())
+			SetFailedDependencyErrorResponse(c, fmt.Sprintf(UnableMarshallProvisioningData, err.Error()))
+		}
+
+		_, err = http.Post(automaticProvisioningURL+"/repository", "application/json", bytes.NewBuffer(json_data))
+
+		if err != nil {
+			log.Errorf(UnableProvisionInstance, err.Error())
+			SetFailedDependencyErrorResponse(c, fmt.Sprintf(UnableProvisionInstance, err.Error()))
+		}
+	}
+
 	projectValidator := ProjectValidator{ProjectNameMaxSize: ph.Env.ProjectNameMaxSize}
 	if err := projectValidator.Validate(params); err != nil {
 		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidPayloadMsg, err.Error()))
 		return
 	}
 
-	common.LockProject(*params.Name)
-	defer common.UnlockProject(*params.Name)
+	common.LockProject(*createProjectParams.Name)
+	defer common.UnlockProject(*createProjectParams.Name)
 
 	if err := ph.sendProjectCreateStartedEvent(keptnContext, params); err != nil {
 		log.Errorf("could not send project.create.started event: %s", err.Error())
@@ -384,6 +410,24 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 func (ph *ProjectHandler) DeleteProject(c *gin.Context) {
 	keptnContext := uuid.New().String()
 	projectName := c.Param("project")
+
+	automaticProvisioningURL := os.Getenv("AUTOMATIC_PROVISIONING_URL")
+	if automaticProvisioningURL != "" {
+		values := map[string]string{"name": "John Doe", "occupation": "gardener"}
+		json_data, err := json.Marshal(values)
+
+		if err != nil {
+			log.Errorf(UnableMarshallProvisioningData, err.Error())
+			SetFailedDependencyErrorResponse(c, fmt.Sprintf(UnableMarshallProvisioningData, err.Error()))
+		}
+
+		_, err = http.NewRequest(http.MethodDelete, automaticProvisioningURL+"/repository", bytes.NewBuffer(json_data))
+
+		if err != nil {
+			log.Errorf(UnableProvisionDelete, err.Error())
+			SetFailedDependencyErrorResponse(c, fmt.Sprintf(UnableProvisionDelete, err.Error()))
+		}
+	}
 
 	common.LockProject(projectName)
 	defer common.UnlockProject(projectName)
