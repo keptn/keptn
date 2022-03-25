@@ -20,6 +20,9 @@ prefixPath: ""
 
 keptnSpecVersion: latest
 
+features:
+  automaticProvisioningURL: ""
+
 nats:
   nameOverride: keptn-nats
   fullnameOverride: keptn-nats
@@ -81,8 +84,6 @@ apiService:
   config:
     maxAuthRequestsPerSecond: "1.0"
     maxAuthRequestBurst: "2"
-  features:
-    automaticProvisioningURL: ""
 
 bridge:
   image:
