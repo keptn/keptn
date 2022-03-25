@@ -830,7 +830,7 @@ func TestDeleteProject(t *testing.T) {
 func createGinTestContext() (*httptest.ResponseRecorder, *gin.Context) {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
-	projectNameValidator := validation.NewProjectValidator(config.EnvConfig{ProjectNameMaxLength: 10})
+	projectNameValidator := validation.NewProjectValidator(config.EnvConfig{ProjectNameMaxSize: 10})
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation(projectNameValidator.Tag(), projectNameValidator.Validate)
 	}

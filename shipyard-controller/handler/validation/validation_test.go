@@ -9,11 +9,11 @@ import (
 
 func TestProjectNameValidator(t *testing.T) {
 	t.Run("Valid project name", func(t *testing.T) {
-		v := NewProjectValidator(config.EnvConfig{ProjectNameMaxLength: 1})
+		v := NewProjectValidator(config.EnvConfig{ProjectNameMaxSize: 1})
 		require.True(t, v.Validate(testFieldLevel{func() reflect.Value { return reflect.ValueOf("a") }}))
 	})
 	t.Run("Project name too long", func(t *testing.T) {
-		v := NewProjectValidator(config.EnvConfig{ProjectNameMaxLength: 1})
+		v := NewProjectValidator(config.EnvConfig{ProjectNameMaxSize: 1})
 		require.False(t, v.Validate(testFieldLevel{func() reflect.Value { return reflect.ValueOf("ab") }}))
 	})
 

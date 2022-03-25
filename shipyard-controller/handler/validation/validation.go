@@ -8,18 +8,18 @@ import (
 // ConfigurableProjectNameValidator can be used
 // validate a Keptn project name
 type ConfigurableProjectNameValidator struct {
-	maxProjectNameLength int
+	projectNameMaxSize int
 }
 
 // NewProjectValidator creates a new ConfigurableProjectNameValidator
 func NewProjectValidator(env config.EnvConfig) *ConfigurableProjectNameValidator {
-	return &ConfigurableProjectNameValidator{maxProjectNameLength: env.ProjectNameMaxLength}
+	return &ConfigurableProjectNameValidator{projectNameMaxSize: env.ProjectNameMaxSize}
 }
 
 // Validate performs the actual validation on field level
 func (p ConfigurableProjectNameValidator) Validate(fl validator.FieldLevel) bool {
 	if projectName, ok := fl.Field().Interface().(string); ok {
-		return len(projectName) <= p.maxProjectNameLength
+		return len(projectName) <= p.projectNameMaxSize
 	}
 	return true
 }
