@@ -1,27 +1,42 @@
 # Distributor
 
-A distributor queries event messages from NATS and sends the events to services that have a subscription to the event topic.
-Thus, each service has its own distributor that is configured by the two environment variables:
+A distributor subscribes a Keptn service with the Keptn Control Plane.
+Both local and remote subscriptions are supported:
+
+- Local (Keptn service runs in the same local Kubernetes cluster
+as the Keptn Control Plane) --
+it queries event messages from NATS
+and sends the events to services that have a subscription to the event topic.
+- Remote (Keptn service runs in a remote "execution plane") --
+subscriptions are implemented using the Keptn Subscription API.
+
+Each service has its own distributor
+that is configured by the two environment variables:
 
 - `KEPTN_API_ENDPOINT` - Keptn API Endpoint - needed when the distributor runs outside of the Keptn cluster. default = `""`
 - `KEPTN_API_TOKEN` - Keptn API Token - needed when the distributor runs outside of the Keptn cluster. default = `""`
-- `API_PROXY_PORT` - Port on which the distributor will listen for incoming Keptn API requests by its execution plane service. default = `8081`.
-- `API_PROXY_PATH` - Path on which the distributor will listen for incoming Keptn API requests by its execution plane service. default = `/`.
+
+Additional environment variables configure other information for the distributor:
+
+- `API_PROXY_PORT` - Port on which the distributor listens for incoming Keptn API requests by its execution plane service. default = `8081`.
+- `API_PROXY_PATH` - Path on which the distributor listens for incoming Keptn API requests by its execution plane service. default = `/`.
 - `API_PROXY_HTTP_TIMEOUT` - Timeout value (in seconds) for the API Proxy's HTTP Client. default = `30`.
-- `HTTP_POLLING_INTERVAL` - Interval (in seconds) in which the distributor will check for new triggered events on the Keptn API. default = `10`
-- `EVENT_FORWARDING_PATH` - Path on which the distributor will listen for incoming events from its execution plane service. default = `/event`
+- `HTTP_POLLING_INTERVAL` - Interval (in seconds) in which the distributor checks for new triggered events on the Keptn API. default = `10`
+- `EVENT_FORWARDING_PATH` - Path on which the distributor listens for incoming events from its execution plane service. default = `/event`
 - `HTTP_SSL_VERIFY` - Determines whether the distributor should check the validity of SSL certificates when sending requests to a Keptn API endpoint via HTTPS. default = `true`
 - `PUBSUB_URL` - The URL of the nats cluster the distributor should connect to when the distributor is running within the Keptn cluster. default = `nats://keptn-nats`
 - `PUBSUB_TOPIC` - Comma separated list of topics (i.e. event types) the distributor should listen to (see https://github.com/keptn/keptn/blob/master/specification/cloudevents.md for details). When running within the Keptn cluster, it is possible to use NATS [Subject hierarchies](https://nats-io.github.io/docs/developer/concepts/subjects.html#matching-a-single-token). When running outside of the cluster (polling events via HTTP), wildcards can not be used. In this case, each specific topic has to be included in the list.
 - `PUBSUB_RECIPIENT` - Hostname of the execution plane service the distributor should forward incoming CloudEvents to. default = `http://127.0.0.1`
 - `PUBSUB_RECIPIENT_PORT` - Port of the execution plane service the distributor should forward incoming CloudEvents to. default = `8080`
 - `PUBSUB_RECIPIENT_PATH` - Path of the execution plane service the distributor should forward incoming CloudEvents to. default = `/`
-- `PUBSUB_GROUP` - Used to join a group for receiving messages from the message broker. Note, that only **one** instance of a distributor in a set of distributors having the same `PUBSUB_GROUP` will be able to receive the event. default = `""`
-- `PROJECT_FILTER` - Filter events for a specific project. default = `""`, supports a comma-separated list of projects.
-- `STAGE_FILTER` - Filter events for a specific stage. default = `""`, supports a comma-separated list of stages.
-- `SERVICE_FILTER` - Filter events for a specific service. default = `""`, supports a comma-separated list of services.
+- `PUBSUB_GROUP` - Used to join a group for receiving messages from the message broker. Note, that only **one** instance of a distributor in a set of distributors having the same `PUBSUB_GROUP` can receive the event. default = `""`
+- `PROJECT_FILTER` - Filter events for a specific project. default = `""` (all); supports a comma-separated list of projects.
+
+- `STAGE_FILTER` - Filter events for a specific stage. default = `""` (all); supports a comma-separated list of stages.
+- `SERVICE_FILTER` - Filter events for a specific service. default = `""` (all); supports a comma-separated list of services.
 - `DISABLE_REGISTRATION` - Disables automatic registration of the Keptn integration to the control plane. default = `false`
-- `LOCATION` - Location the distributor is running on, e.g. "executionPlane-A". default = `""`
+- `REGISTRATION_INTERVAL` - Time duration between trying to re-register to the Keptn control plane. default =`10s`
+- `LOCATION` - Location where the distributor is running, e.g. "executionPlane-A". default = `""`
 - `DISTRIBUTOR_VERSION` - The software version of the distributor. default = `""`
 - `VERSION` - The version of the Keptn integration. default = `""`
 - `K8S_DEPLOYMENT_NAME` - Kubernetes deployment name of the Keptn integration. default = `""`
@@ -35,10 +50,10 @@ Thus, each service has its own distributor that is configured by the two environ
 - `OAUTH_CLIENT_ID` - OAuth client ID used when performing Oauth Client Credentials Flow. default = `""`
 - `OAUTH_CLIENT_SECRET` - OAuth client ID used when performing Oauth Client Credentials Flow. default = `""`
 - `OAUTH_DISCOVERY` - Discovery URL called by the distributor to obtain further information for the OAuth Client Credentials Flow, e.g. the token URL. default = `""`
-- `OAUTH_TOKEN_URL` - Url to obtain the access token. If set, this will override `OAUTH_DISCOVERY` meaning, that no discovery will happen. default = `""`
+- `OAUTH_TOKEN_URL` - Url to obtain the access token. If set, this overrides `OAUTH_DISCOVERY` meaning, that no discovery will happen. default = `""`
 - `OAUTH_SCOPES` - Comma separated list of tokens to be used during the OAuth Client Credentials Flow. =`""`
 
-All cloud events specified in `PUBSUB_TOPIC` and match the filters are forwarded to `http://{PUBSUB_RECIPIENT}:{PUBSUB_RECIPIENT_PORT}{PUBSUB_RECIPIENT_PATH}`, e.g.: `http://helm-service:8080`.
+All cloud events specified in `PUBSUB_TOPIC` and matching the filters are forwarded to `http://{PUBSUB_RECIPIENT}:{PUBSUB_RECIPIENT_PORT}{PUBSUB_RECIPIENT_PATH}`, e.g.: `http://helm-service:8080`.
 
 ### Configuration examples
 
@@ -54,7 +69,7 @@ PUBSUB_TOPIC: "sh.keptn.event.approval.triggered"
 
 However, this is not necessary if the distributor is only used as a proxy for the Keptn API, and not needed for subscribing to any topic.
 
-This will forward all incoming events of that topic to `http://127.0.0.1:8080` - which is the URL of the execution plane service running in the same pod as the distributor. If the execution plane service has a different hostname (e.g., when not running in the same pod), a different port, or listens for events on a different path, the env vars `PUBSUB_RECIPIENT`, `PUBSUB_RECIPIENT_PORT` and `PUBSUB_RECIPIENT_PATH` can be set to change this default URL, e.g.:
+This forwards all incoming events of that topic to `http://127.0.0.1:8080` - which is the URL of the execution plane service running in the same pod as the distributor. If the execution plane service has a different hostname (e.g., when not running in the same pod), a different port, or listens for events on a different path, the env vars `PUBSUB_RECIPIENT`, `PUBSUB_RECIPIENT_PORT` and `PUBSUB_RECIPIENT_PATH` can be set to change this default URL, e.g.:
 
 ```
 PUBSUB_RECIPIENT: "http://my-service
@@ -62,10 +77,10 @@ PUBSUB_RECIPIENT_PORT: "9000"
 PUBSUB_RECIPIENT_PATH: "/event-path
 ```
 
-This will cause the distributor to forward all incoming events for its subscribed topic to `http://my-service:9000/event-path`.
+This causes the distributor to forward all incoming events for its subscribed topic to `http://my-service:9000/event-path`.
 
-The execution plane service will then be able to access the distributor's Keptn API proxy at `http://localhost:8081/`, and can forward events by sending them to `http://localhost:8081/event`.
-The Keptn API services will then be reachable for the execution plane service via the following URLs:
+The execution plane service can then access the distributor's Keptn API proxy at `http://localhost:8081/`, and can forward events by sending them to `http://localhost:8081/event`.
+The Keptn API services are then reachable for the execution plane service via the following URLs:
 
 
 - Mongodb-datastore:
@@ -92,6 +107,17 @@ PUBSUB_TOPIC: "sh.keptn.event.approval.triggered" # can also be left empty in th
 If the endpoint specified by `KEPTN_API_ENDPOINT` does not provide a valid SSL certificate, the distributor will, per default, deny any requests to that endpoint. This behavior can be changed by setting the variable `HTTP_SSL_VERIFY` to `false`.
 
 The remaining parameters, such as `PUBSUB_RECIPIENT`, `PUBSUB_RECIPIENT_PORT` and `PUBSUB_RECIPIENT_PATH`, as well as the `API_PROXY_PORT` can be configured as described above.
+
+## Filtering for a set of stages, projects, or services
+
+The STAGE_FILTER, PROJECT_FILTER, and SERVICE_FILTER environment variables
+control the Keptn service's subscription to events with Keptn's Control Plane.
+The values of these environment variables are set by fields in the values.yaml file for the service;
+by default, all stages, projects, and services are subscribed.
+Provide a comma-separated list of stages, projects, or services to the appropriate variable
+to filter the set.
+Define the value of these variables in the appropriate field of the *value.yaml* file for the service;
+that populates the value of the environment variables that the Distributor uses.
 
 ## Installation
 
