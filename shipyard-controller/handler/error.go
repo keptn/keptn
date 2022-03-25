@@ -52,6 +52,10 @@ var UnableQueryIntegrationsMsg = "Unable to query uniform integrations repositor
 
 var UnableMarshallProvisioningData = "Error marshalling provisioning data: %s"
 
+var UnableUnMarshallProvisioningData = "Error unmarshalling provisioning data: %s"
+
+var UnableReadProvisioningData = "Error reading provisioning data: %s"
+
 var UnableProvisionInstance = "Error provisioning a project instance: %s"
 
 var UnableProvisionDelete = "Error deleting a provisioned project instance: %s"

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
@@ -290,20 +291,46 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 
 	automaticProvisioningURL := os.Getenv("AUTOMATIC_PROVISIONING_URL")
 	if automaticProvisioningURL != "" && createProjectParams.GitRemoteURL == "" {
-		values := map[string]string{"name": "John Doe", "occupation": "gardener"}
+		values := map[string]string{"project": *createProjectParams.Name}
 		json_data, err := json.Marshal(values)
-
 		if err != nil {
 			log.Errorf(UnableMarshallProvisioningData, err.Error())
 			SetFailedDependencyErrorResponse(c, fmt.Sprintf(UnableMarshallProvisioningData, err.Error()))
 		}
 
-		_, err = http.Post(automaticProvisioningURL+"/repository", "application/json", bytes.NewBuffer(json_data))
+		resp, err := http.Post(automaticProvisioningURL+"/repository", "application/json", bytes.NewBuffer(json_data))
 
 		if err != nil {
 			log.Errorf(UnableProvisionInstance, err.Error())
 			SetFailedDependencyErrorResponse(c, fmt.Sprintf(UnableProvisionInstance, err.Error()))
 		}
+
+		if resp.StatusCode == http.StatusConflict {
+			log.Errorf(UnableProvisionInstance, resp.Status)
+			SetFailedDependencyErrorResponse(c, fmt.Sprintf(UnableProvisionInstance, resp.Status))
+		}
+
+		jsonProvisioningData, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Errorf(UnableReadProvisioningData, err.Error())
+			SetFailedDependencyErrorResponse(c, fmt.Sprintf(UnableReadProvisioningData, err.Error()))
+		}
+
+		type ProvisioningData struct {
+			gitRemoteURL string
+			gitToken     string
+			gitUser      string
+		}
+		provisioningData := ProvisioningData{}
+		err = json.Unmarshal(jsonProvisioningData, &provisioningData)
+		if err != nil {
+			log.Errorf(UnableUnMarshallProvisioningData, err.Error())
+			SetFailedDependencyErrorResponse(c, fmt.Sprintf(UnableUnMarshallProvisioningData, err.Error()))
+		}
+
+		createProjectParams.GitRemoteURL = provisioningData.gitRemoteURL
+		createProjectParams.GitToken = provisioningData.gitToken
+		createProjectParams.GitUser = provisioningData.gitUser
 	}
 
 	projectValidator := ProjectValidator{ProjectNameMaxSize: ph.Env.ProjectNameMaxSize}
@@ -410,10 +437,11 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 func (ph *ProjectHandler) DeleteProject(c *gin.Context) {
 	keptnContext := uuid.New().String()
 	projectName := c.Param("project")
+	namespace := c.Param("namespace")
 
 	automaticProvisioningURL := os.Getenv("AUTOMATIC_PROVISIONING_URL")
 	if automaticProvisioningURL != "" {
-		values := map[string]string{"name": "John Doe", "occupation": "gardener"}
+		values := map[string]string{"project": projectName, "namespace": namespace}
 		json_data, err := json.Marshal(values)
 
 		if err != nil {
