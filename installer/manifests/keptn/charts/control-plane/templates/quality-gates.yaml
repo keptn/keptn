@@ -17,7 +17,6 @@ spec:
     matchLabels:
       app.kubernetes.io/name: lighthouse-service
       app.kubernetes.io/instance: {{ .Release.Name }}
-  minReadySeconds: 5
   {{ include "control-plane.common.update-strategy" . }}
   replicas: 1
   template:
