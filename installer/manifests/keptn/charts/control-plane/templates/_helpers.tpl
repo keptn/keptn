@@ -266,15 +266,13 @@ securityContext:
 {{- define "control-plane.common.update-strategy" -}}
 {{- if (.Values.common).strategy -}}
 strategy:
-{{- range $key, $value := .Values.common.strategy }}
-  {{ $key }}: {{- toYaml $value | nindent 4 }}
-{{- end -}}
+{{- toYaml .Values.common.strategy | nindent 4 -}}
 {{- else -}}
 strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 1
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 1
 {{- end -}}
 {{- end -}}
 
