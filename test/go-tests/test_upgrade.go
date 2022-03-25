@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/imroc/req"
+	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -58,8 +59,8 @@ func (t *HTTPEndpointTest) Run(ctx context.Context, wg *sync.WaitGroup, tst *tes
 }
 
 func (t *HTTPEndpointTest) String() string {
-	failureRate := t.Result.FailedRequests / t.NrRequests
-	return fmt.Sprintf("\n======\nURL: %s\nExecutedRequests: %d\n FailedRequests: %d\n FailureRate: %d\n======\n", t.URL, t.NrRequests, t.Result.FailedRequests, failureRate)
+	failureRate := float64(t.Result.FailedRequests) / float64(t.NrRequests)
+	return fmt.Sprintf("\n======\nURL: %s\nExecutedRequests: %d\n FailedRequests: %d\n FailureRate: %f\n======\n", t.URL, t.NrRequests, t.Result.FailedRequests, failureRate)
 }
 
 type HTTPEndpointTestResult struct {
@@ -84,7 +85,7 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 	}()
 
 	chartLatestVersion := "https://github.com/keptn/helm-charts-dev/blob/gh-pages/packages/keptn-0.14.0-dev-PR-7266.tgz?raw=true"
-	chartPreviousVersion := "https://github.com/keptn/helm-charts-dev/blob/8f0b300d52f3fa3c24472f8afafbc598e2f3c3e3/packages/keptn-0.14.0-dev-PR-7266.tgz?raw=true"
+	chartPreviousVersion := "https://github.com/keptn/helm-charts-dev/blob/f098f43b33540d5bfc822a0038c0c21ccffe9335/packages/keptn-0.14.0-dev-PR-7266.tgz?raw=true"
 
 	// check if the project 'state' is already available - if not, delete it before creating it again
 	// check if the project is already available - if not, delete it before creating it again
@@ -219,15 +220,20 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 	assert.Equal(t, len(keptnContextIDs), nrTriggeredSequences)
 
 	t.Logf("Triggered %d sequences. Let's check if they have been finished", nrTriggeredSequences)
+	nrFinishedSequences := 0
 	for _, keptnContext := range keptnContextIDs {
 		t.Logf("Checking if sequence %s has been finished", keptnContext)
+		var evaluationFinishedEvent *models.KeptnContextExtendedCE
 		assert.Eventually(t, func() bool {
-			evaluationFinishedEvent, err := GetLatestEventOfType(keptnContext, projectName, stageName, v0_2_0.GetFinishedEventType("dev.evaluation"))
+			evaluationFinishedEvent, err = GetLatestEventOfType(keptnContext, projectName, stageName, v0_2_0.GetFinishedEventType("dev.evaluation"))
 			if evaluationFinishedEvent == nil || err != nil {
 				return false
 			}
 			return true
 		}, 2*time.Minute, 10*time.Second)
+		if evaluationFinishedEvent != nil {
+			nrFinishedSequences++
+		}
 	}
-
+	t.Logf("Finished sequences: %d/%d", nrFinishedSequences, nrTriggeredSequences)
 }
