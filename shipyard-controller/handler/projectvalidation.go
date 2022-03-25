@@ -30,7 +30,7 @@ func (p ProjectValidator) validateCreateProjectParams(createProjectParams *model
 		return errors.New("project name missing")
 	}
 	if len(*createProjectParams.Name) > p.ProjectNameMaxSize {
-		return fmt.Errorf("project name exceeds maximum lenght of %d characters", p.ProjectNameMaxSize)
+		return fmt.Errorf("project name exceeds maximum size of %d characters", p.ProjectNameMaxSize)
 	}
 	if !keptncommon.ValidateKeptnEntityName(*createProjectParams.Name) {
 		return errors.New("provided project name is not a valid Keptn entity name")
