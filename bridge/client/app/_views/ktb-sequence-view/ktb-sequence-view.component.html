@@ -81,8 +81,16 @@
               <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="15px">
                 <div class="mt-1 mb-1 sequence-title" fxLayout="row" fxLayoutAlign="start center">
                   <p class="m-0">
-                    <span class="bold" [textContent]="currentSequence.name"></span>&nbsp;
-                    <span [textContent]="currentSequence.getStatus()"></span>
+                    <span class="bold" [textContent]="currentSequence.name"></span>
+                    of
+                    <span
+                      class="bold"
+                      *ngIf="currentSequence.getShortImageName(); else noImageName"
+                      [textContent]="currentSequence.getShortImageName()"
+                    ></span>
+                    <ng-template #noImageName>
+                      <span class="bold" [textContent]="currentSequence.service"></span> </ng-template
+                    >&nbsp;<span [textContent]="currentSequence.getStatus()"></span>
                   </p>
                   <button *ngIf="currentSequence.isFaulty()" dt-icon-button disabled variant="nested">
                     <dt-icon name="criticalevent"></dt-icon>
