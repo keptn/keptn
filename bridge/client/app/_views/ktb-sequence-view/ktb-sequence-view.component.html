@@ -105,15 +105,8 @@
           <p class="m-0 mb-1">
             <span class="bold">Context: </span><span [textContent]="currentSequence.shkeptncontext"></span>
           </p>
-          <p class="m-0">
-            <dt-tag
-              class="mr-1"
-              *ngIf="currentSequence.getShortImageName(); else noImageName"
-              [textContent]="currentSequence.getShortImageName()"
-            ></dt-tag>
-            <ng-template #noImageName>
-              <dt-tag class="mr-1" [textContent]="currentSequence.service"></dt-tag>
-            </ng-template>
+          <p class="m-0 mb-1">
+            <span [textContent]="currentSequence.time | toDate | amCalendar: dateUtil.getCalendarFormats()"></span>
           </p>
           <dt-alert class="mt-1" *ngIf="currentSequence.isWaiting()" severity="warning"
             >Sequence might be waiting for previous sequences to be finished.
