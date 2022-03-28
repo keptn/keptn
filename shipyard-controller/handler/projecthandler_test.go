@@ -9,7 +9,10 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
+
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/gin-gonic/gin"
@@ -234,6 +237,7 @@ func TestCreateProject(t *testing.T) {
 	examplePayload := `{"gitRemoteURL":"http://remote-url.com","gitToken":"99c4c193-4813-43c5-864f-ad6f12ac1d82","gitUser":"gituser","name":"myproject","shipyard":"YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAoKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyczoKICAgICAgLSBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6IAogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW5fc2VydmljZQogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBraW5kOiBwZXJmb3JtYW5jZQogICAgICAtIG5hbWU6IGV2YWx1YXRpb24KICAgICAgLSBuYW1lOiByZWxlYXNlCiAgICAgICAgCiAgLSBuYW1lOiBwcm9kdWN0aW9uCiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5IAogICAgICB0cmlnZ2VyczoKICAgICAgLSBoYXJkZW5pbmcuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBzdHJhdGVneTogYmx1ZV9ncmVlbgogICAgICAtIG5hbWU6IHJlbGVhc2UKICAgICAgCiAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg=="}`
 	examplePayloadInvalidToolongPrjName := `{"gitRemoteURL":"http://remote-url.com","gitToken":"99c4c193-4813-43c5-864f-ad6f12ac1d82","gitUser":"gituser","name":"myprojecttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt","shipyard":"YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAoKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyczoKICAgICAgLSBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6IAogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW5fc2VydmljZQogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBraW5kOiBwZXJmb3JtYW5jZQogICAgICAtIG5hbWU6IGV2YWx1YXRpb24KICAgICAgLSBuYW1lOiByZWxlYXNlCiAgICAgICAgCiAgLSBuYW1lOiBwcm9kdWN0aW9uCiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5IAogICAgICB0cmlnZ2VyczoKICAgICAgLSBoYXJkZW5pbmcuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBzdHJhdGVneTogYmx1ZV9ncmVlbgogICAgICAtIG5hbWU6IHJlbGVhc2UKICAgICAgCiAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg=="}`
 	examplePayloadInvalid := `{"gitRemoteURL":"http://remote-url.com","gitToken":"99c4c193-4813-43c5-864f-ad6f12ac1d82","gitUser":"gituser","name":"myPPPProject","shipyard":"YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAoKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyczoKICAgICAgLSBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6IAogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW5fc2VydmljZQogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBraW5kOiBwZXJmb3JtYW5jZQogICAgICAtIG5hbWU6IGV2YWx1YXRpb24KICAgICAgLSBuYW1lOiByZWxlYXNlCiAgICAgICAgCiAgLSBuYW1lOiBwcm9kdWN0aW9uCiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5IAogICAgICB0cmlnZ2VyczoKICAgICAgLSBoYXJkZW5pbmcuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBzdHJhdGVneTogYmx1ZV9ncmVlbgogICAgICAtIG5hbWU6IHJlbGVhc2UKICAgICAgCiAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg=="}`
+	exampleProvisioningPayload := `{"name":"myproject","shipyard":"YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAoKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyczoKICAgICAgLSBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6IAogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW5fc2VydmljZQogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBraW5kOiBwZXJmb3JtYW5jZQogICAgICAtIG5hbWU6IGV2YWx1YXRpb24KICAgICAgLSBuYW1lOiByZWxlYXNlCiAgICAgICAgCiAgLSBuYW1lOiBwcm9kdWN0aW9uCiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5IAogICAgICB0cmlnZ2VyczoKICAgICAgLSBoYXJkZW5pbmcuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBzdHJhdGVneTogYmx1ZV9ncmVlbgogICAgICAtIG5hbWU6IHJlbGVhc2UKICAgICAgCiAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg=="}`
 
 	rollbackCalled := false
 
@@ -244,6 +248,7 @@ func TestCreateProject(t *testing.T) {
 		expectHttpStatus     int
 		projectNameParam     string
 		expectRollbackCalled bool
+		provisioningURL      string
 	}{
 		{
 			name: "Create project with invalid payload",
@@ -265,6 +270,7 @@ func TestCreateProject(t *testing.T) {
 			jsonPayload:      examplePayloadInvalid,
 			expectHttpStatus: http.StatusBadRequest,
 			projectNameParam: "my-project",
+			provisioningURL:  "",
 		},
 		{
 			name:             "Create project with invalid payload - too long project name",
@@ -288,6 +294,7 @@ func TestCreateProject(t *testing.T) {
 			jsonPayload:      examplePayload,
 			expectHttpStatus: http.StatusConflict,
 			projectNameParam: "my-project",
+			provisioningURL:  "",
 		},
 		{
 			name: "Create project creating project fails",
@@ -310,6 +317,7 @@ func TestCreateProject(t *testing.T) {
 			expectHttpStatus:     http.StatusInternalServerError,
 			projectNameParam:     "my-project",
 			expectRollbackCalled: true,
+			provisioningURL:      "",
 		},
 		{
 			name: "Create project",
@@ -328,6 +336,27 @@ func TestCreateProject(t *testing.T) {
 			jsonPayload:      examplePayload,
 			expectHttpStatus: http.StatusOK,
 			projectNameParam: "my-project",
+			provisioningURL:  "",
+		},
+		{
+			name: "Create project with provisioning",
+			fields: fields{
+				ProjectManager: &fake.IProjectManagerMock{
+					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+						return nil, func() error { return nil }
+					},
+				},
+				EventSender: &fake.IEventSenderMock{
+					SendEventFunc: func(eventMoqParam event.Event) error {
+						return nil
+					},
+				},
+			},
+			jsonPayload:          exampleProvisioningPayload,
+			expectHttpStatus:     http.StatusFailedDependency,
+			projectNameParam:     "my-project",
+			expectRollbackCalled: false,
+			provisioningURL:      "http://some-invalid.url",
 		},
 	}
 
@@ -335,6 +364,10 @@ func TestCreateProject(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			w, c := createGinTestContext()
 			c.Set("projectName", tt.projectNameParam)
+			if tt.provisioningURL != "" {
+				os.Setenv("AUTOMATIC_PROVISIONING_URL", tt.provisioningURL)
+			}
+			defer os.Unsetenv("AUTOMATIC_PROVISIONING_URL")
 
 			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, config.EnvConfig{ProjectNameMaxSize: 20})
 			c.Request, _ = http.NewRequest(http.MethodPost, "", bytes.NewBuffer([]byte(tt.jsonPayload)))
@@ -528,6 +561,7 @@ func TestDeleteProject(t *testing.T) {
 		expectHttpStatus   int
 		expectJSONResponse *models.DeleteProjectResponse
 		projectPathParam   string
+		provisioningURL    string
 	}{
 		{
 			name: "Delete Project deleting project fails",
@@ -545,6 +579,7 @@ func TestDeleteProject(t *testing.T) {
 			},
 			expectHttpStatus: http.StatusInternalServerError,
 			projectPathParam: "myproject",
+			provisioningURL:  "",
 		},
 		{
 			name: "Delete Project deleting project fails",
@@ -562,6 +597,7 @@ func TestDeleteProject(t *testing.T) {
 			},
 			expectHttpStatus: http.StatusInternalServerError,
 			projectPathParam: "myproject",
+			provisioningURL:  "",
 		},
 		{
 			name: "Delete Project",
@@ -580,6 +616,25 @@ func TestDeleteProject(t *testing.T) {
 			expectHttpStatus:   http.StatusOK,
 			projectPathParam:   "myproject",
 			expectJSONResponse: &models.DeleteProjectResponse{Message: "a-message"},
+			provisioningURL:    "",
+		},
+		{
+			name: "Delete Project with provisioningURL",
+			fields: fields{
+				ProjectManager: &fake.IProjectManagerMock{
+					DeleteFunc: func(projectName string) (string, error) {
+						return "a-message", nil
+					},
+				},
+				EventSender: &fake.IEventSenderMock{
+					SendEventFunc: func(eventMoqParam event.Event) error {
+						return nil
+					},
+				},
+			},
+			expectHttpStatus: http.StatusFailedDependency,
+			projectPathParam: "myproject",
+			provisioningURL:  "http://some-invalid.url",
 		},
 	}
 
@@ -590,7 +645,12 @@ func TestDeleteProject(t *testing.T) {
 			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, config.EnvConfig{ProjectNameMaxSize: 200})
 			c.Params = gin.Params{
 				gin.Param{Key: "project", Value: tt.projectPathParam},
+				gin.Param{Key: "namespace", Value: "keptn"},
 			}
+			if tt.provisioningURL != "" {
+				os.Setenv("AUTOMATIC_PROVISIONING_URL", tt.provisioningURL)
+			}
+			defer os.Unsetenv("AUTOMATIC_PROVISIONING_URL")
 			c.Request, _ = http.NewRequest(http.MethodDelete, "", bytes.NewBuffer([]byte{}))
 
 			handler.DeleteProject(c)

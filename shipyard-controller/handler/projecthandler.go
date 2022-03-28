@@ -292,28 +292,32 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 	automaticProvisioningURL := os.Getenv("AUTOMATIC_PROVISIONING_URL")
 	if automaticProvisioningURL != "" && createProjectParams.GitRemoteURL == "" {
 		values := map[string]string{"project": *createProjectParams.Name}
-		json_data, err := json.Marshal(values)
+		jsonRequestData, err := json.Marshal(values)
 		if err != nil {
 			log.Errorf(UnableMarshallProvisioningData, err.Error())
 			SetFailedDependencyErrorResponse(c, fmt.Sprintf(UnableMarshallProvisioningData, err.Error()))
+			return
 		}
 
-		resp, err := http.Post(automaticProvisioningURL+"/repository", "application/json", bytes.NewBuffer(json_data))
+		resp, err := http.Post(automaticProvisioningURL+"/repository", "application/json", bytes.NewBuffer(jsonRequestData))
 
 		if err != nil {
 			log.Errorf(UnableProvisionInstance, err.Error())
 			SetFailedDependencyErrorResponse(c, fmt.Sprintf(UnableProvisionInstance, err.Error()))
+			return
 		}
 
 		if resp.StatusCode == http.StatusConflict {
 			log.Errorf(UnableProvisionInstance, resp.Status)
 			SetFailedDependencyErrorResponse(c, fmt.Sprintf(UnableProvisionInstance, resp.Status))
+			return
 		}
 
 		jsonProvisioningData, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			log.Errorf(UnableReadProvisioningData, err.Error())
 			SetFailedDependencyErrorResponse(c, fmt.Sprintf(UnableReadProvisioningData, err.Error()))
+			return
 		}
 
 		type ProvisioningData struct {
@@ -326,6 +330,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 		if err != nil {
 			log.Errorf(UnableUnMarshallProvisioningData, err.Error())
 			SetFailedDependencyErrorResponse(c, fmt.Sprintf(UnableUnMarshallProvisioningData, err.Error()))
+			return
 		}
 
 		createProjectParams.GitRemoteURL = provisioningData.gitRemoteURL
@@ -442,17 +447,19 @@ func (ph *ProjectHandler) DeleteProject(c *gin.Context) {
 	automaticProvisioningURL := os.Getenv("AUTOMATIC_PROVISIONING_URL")
 	if automaticProvisioningURL != "" {
 		values := map[string]string{"project": projectName, "namespace": namespace}
-		json_data, err := json.Marshal(values)
+		jsonRequestData, err := json.Marshal(values)
 
 		if err != nil {
 			log.Errorf(UnableMarshallProvisioningData, err.Error())
 			SetFailedDependencyErrorResponse(c, fmt.Sprintf(UnableMarshallProvisioningData, err.Error()))
+			return
 		}
 
-		req, err := http.NewRequest(http.MethodDelete, automaticProvisioningURL+"/repository", bytes.NewBuffer(json_data))
+		req, err := http.NewRequest(http.MethodDelete, automaticProvisioningURL+"/repository", bytes.NewBuffer(jsonRequestData))
 		if err != nil {
 			log.Errorf(UnableProvisionDeleteReq, err.Error())
 			SetFailedDependencyErrorResponse(c, fmt.Sprintf(UnableProvisionDeleteReq, err.Error()))
+			return
 		}
 		client := &http.Client{}
 		resp, err := client.Do(req)
@@ -460,11 +467,13 @@ func (ph *ProjectHandler) DeleteProject(c *gin.Context) {
 		if err != nil {
 			log.Errorf(UnableProvisionDelete, err.Error())
 			SetFailedDependencyErrorResponse(c, fmt.Sprintf(UnableProvisionDelete, err.Error()))
+			return
 		}
 
 		if resp.StatusCode == http.StatusNotFound {
 			log.Errorf(UnableProvisionDelete, resp.Status)
 			SetFailedDependencyErrorResponse(c, fmt.Sprintf(UnableProvisionDelete, resp.Status))
+			return
 		}
 	}
 
