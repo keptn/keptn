@@ -15,6 +15,29 @@ import (
 	"sort"
 )
 
+type ServiceParamsValidator struct{}
+
+func (s ServiceParamsValidator) Validate(params interface{}) error {
+	switch t := params.(type) {
+	case *models.CreateServiceParams:
+		return s.validateCreateServiceParams(t)
+	default:
+		return nil
+	}
+}
+
+func (s ServiceParamsValidator) validateCreateServiceParams(params *models.CreateServiceParams) error {
+	if params.ServiceName == nil || *params.ServiceName == "" {
+		return errors.New("Must provide a service name")
+	}
+	if !keptncommon.ValidateUnixDirectoryName(*params.ServiceName) {
+		return errors.New("Service name contains special character(s). " +
+			"The service name has to be a valid Unix directory name. For details see " +
+			"https://www.cyberciti.biz/faq/linuxunix-rules-for-naming-file-and-directory-names/")
+	}
+	return nil
+}
+
 type IServiceHandler interface {
 	CreateService(context *gin.Context)
 	DeleteService(context *gin.Context)
@@ -323,29 +346,6 @@ func (sh *ServiceHandler) sendServiceDeleteFailedFinishedEvent(keptnContext, pro
 
 	if err := sh.EventSender.SendEvent(event); err != nil {
 		return errors.New("could not send create.service.started event: " + err.Error())
-	}
-	return nil
-}
-
-type ServiceParamsValidator struct{}
-
-func (s ServiceParamsValidator) Validate(params interface{}) error {
-	switch t := params.(type) {
-	case *models.CreateServiceParams:
-		return s.validateCreateServiceParams(t)
-	default:
-		return nil
-	}
-}
-
-func (s ServiceParamsValidator) validateCreateServiceParams(params *models.CreateServiceParams) error {
-	if params.ServiceName == nil || *params.ServiceName == "" {
-		return errors.New("Must provide a service name")
-	}
-	if !keptncommon.ValidateUnixDirectoryName(*params.ServiceName) {
-		return errors.New("Service name contains special character(s). " +
-			"The service name has to be a valid Unix directory name. For details see " +
-			"https://www.cyberciti.biz/faq/linuxunix-rules-for-naming-file-and-directory-names/")
 	}
 	return nil
 }
