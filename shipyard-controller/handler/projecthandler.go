@@ -449,11 +449,22 @@ func (ph *ProjectHandler) DeleteProject(c *gin.Context) {
 			SetFailedDependencyErrorResponse(c, fmt.Sprintf(UnableMarshallProvisioningData, err.Error()))
 		}
 
-		_, err = http.NewRequest(http.MethodDelete, automaticProvisioningURL+"/repository", bytes.NewBuffer(json_data))
+		req, err := http.NewRequest(http.MethodDelete, automaticProvisioningURL+"/repository", bytes.NewBuffer(json_data))
+		if err != nil {
+			log.Errorf(UnableProvisionDeleteReq, err.Error())
+			SetFailedDependencyErrorResponse(c, fmt.Sprintf(UnableProvisionDeleteReq, err.Error()))
+		}
+		client := &http.Client{}
+		resp, err := client.Do(req)
 
 		if err != nil {
 			log.Errorf(UnableProvisionDelete, err.Error())
 			SetFailedDependencyErrorResponse(c, fmt.Sprintf(UnableProvisionDelete, err.Error()))
+		}
+
+		if resp.StatusCode == http.StatusNotFound {
+			log.Errorf(UnableProvisionDelete, resp.Status)
+			SetFailedDependencyErrorResponse(c, fmt.Sprintf(UnableProvisionDelete, resp.Status))
 		}
 	}
 
