@@ -22,10 +22,10 @@ func TestNewCmdCurlExecutor_InvalidCommand(t *testing.T) {
 	require.Empty(t, output)
 }
 
-func TestNewCmdCurlExecutor_UnAllowedURL(t *testing.T) {
+func TestNewCmdCurlExecutor_DeniedURL(t *testing.T) {
 	executor := lib.NewCmdCurlExecutor(&fake.ICommandExecutorMock{ExecuteCommandFunc: func(cmd string, args ...string) (string, error) {
 		return "", nil
-	}}, lib.WithUnAllowedURLs([]string{"kube-api"}))
+	}}, lib.WithDeniedURLs([]string{"kube-api"}))
 
 	output, err := executor.Curl("curl http://kube-api")
 
@@ -250,7 +250,7 @@ func TestCmdCurlExecutor_Curl(t *testing.T) {
 				fakeCommandExecutor = tt.fields.commandExecutor
 			}
 
-			ce := lib.NewCmdCurlExecutor(fakeCommandExecutor, lib.WithUnAllowedURLs(lib.BlacklistedKubeURLS(map[string]string{"KUBERNETES_SERVICE_HOST": "kube.svc.host", "KUBERNETES_SERVICE_PORT": "9876"})))
+			ce := lib.NewCmdCurlExecutor(fakeCommandExecutor, lib.WithDeniedURLs(lib.DeniedURLs(map[string]string{"KUBERNETES_SERVICE_HOST": "kube.svc.host", "KUBERNETES_SERVICE_PORT": "9876"})))
 
 			got, err := ce.Curl(tt.args.curlCmd)
 
@@ -267,11 +267,11 @@ func TestCmdCurlExecutor_Curl(t *testing.T) {
 	}
 }
 
-func TestBlacklistedURLS(t *testing.T) {
+func TestDeniedURLS(t *testing.T) {
 	fakeCommandExecutor := &fake.ICommandExecutorMock{ExecuteCommandFunc: func(cmd string, args ...string) (string, error) { return "success", nil }}
 	kubeEnvs := map[string]string{"KUBERNETES_SERVICE_HOST": "1.2.3.4", "KUBERNETES_SERVICE_PORT": "9876"}
-	ce := lib.NewCmdCurlExecutor(fakeCommandExecutor, lib.WithUnAllowedURLs(lib.BlacklistedKubeURLS(map[string]string{"KUBERNETES_SERVICE_HOST": "1.2.3.4", "KUBERNETES_SERVICE_PORT": "9876"})))
-	urls := lib.BlacklistedKubeURLS(kubeEnvs)
+	ce := lib.NewCmdCurlExecutor(fakeCommandExecutor, lib.WithDeniedURLs(lib.DeniedURLs(map[string]string{"KUBERNETES_SERVICE_HOST": "1.2.3.4", "KUBERNETES_SERVICE_PORT": "9876"})))
+	urls := lib.DeniedURLs(kubeEnvs)
 	for _, u := range urls {
 		urls = append(urls, "http://"+u)
 		urls = append(urls, "https://"+u)
@@ -360,7 +360,7 @@ func TestIsInvalidCommandError(t *testing.T) {
 	}
 }
 
-func TestIsUnallowedURLError(t *testing.T) {
+func TestIsDeniedURLError(t *testing.T) {
 	type args struct {
 		err error
 	}
@@ -370,9 +370,9 @@ func TestIsUnallowedURLError(t *testing.T) {
 		want bool
 	}{
 		{
-			name: "unallowed URL error",
+			name: "denied URL error",
 			args: args{
-				err: lib.NewCurlError(errors.New("oops"), lib.UnallowedURLError),
+				err: lib.NewCurlError(errors.New("oops"), lib.DeniedURLError),
 			},
 			want: true,
 		},
@@ -386,8 +386,8 @@ func TestIsUnallowedURLError(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := lib.IsUnallowedURLError(tt.args.err); got != tt.want {
-				t.Errorf("IsUnallowedURLError() = %v, want %v", got, tt.want)
+			if got := lib.IsDeniedURLError(tt.args.err); got != tt.want {
+				t.Errorf("IsDeniedURLError() = %v, want %v", got, tt.want)
 			}
 		})
 	}
