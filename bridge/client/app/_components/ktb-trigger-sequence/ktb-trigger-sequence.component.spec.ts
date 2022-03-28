@@ -295,6 +295,7 @@ describe('KtbTriggerSequenceComponent', () => {
     component.triggerSequence();
 
     // then
+    const expectedDate = date.subtract(1, 'hours').subtract(15, 'minutes').toISOString();
     expect(spy).toHaveBeenCalledWith({
       project: 'podtato-head',
       stage: 'hardening',
@@ -304,7 +305,7 @@ describe('KtbTriggerSequenceComponent', () => {
           key1: 'val1',
         },
         timeframe: '1h15m',
-        start: date.toISOString(),
+        start: expectedDate,
       },
     });
   });
@@ -343,6 +344,90 @@ describe('KtbTriggerSequenceComponent', () => {
         end: end.toISOString(),
       },
     });
+  });
+
+  it('should calculate the proper start utc timestamp for a timeframe with start date', () => {
+    // given
+    const start = moment();
+    const timeframe: Timeframe = {
+      hours: 1,
+      minutes: 2,
+      seconds: 3,
+      millis: 4,
+      micros: 5,
+    };
+
+    // when
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const calculatedTime = component.calculateTimeframeStartTime(start.toISOString(), timeframe);
+
+    // then
+    const expectedTime = start
+      .subtract(timeframe.hours, 'hours')
+      .subtract(timeframe.minutes, 'minutes')
+      .subtract(timeframe.seconds, 'seconds')
+      .subtract(timeframe.millis, 'milliseconds');
+    expect(calculatedTime).toEqual(expectedTime.toISOString());
+  });
+
+  it('should ignore milliseconds in the start time calculation', () => {
+    // given
+    const start = moment();
+    const timeframe: Timeframe = {
+      hours: undefined,
+      minutes: undefined,
+      seconds: undefined,
+      millis: undefined,
+      micros: 5000, // corresponds to 5 millis
+    };
+
+    // when
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const calculatedTime = component.calculateTimeframeStartTime(start.toISOString(), timeframe);
+
+    // then
+    expect(calculatedTime).toEqual(start.toISOString());
+  });
+
+  it('should have a now date set if no start date is given to the start date calculation', () => {
+    // given
+    const timeframe: Timeframe = {
+      hours: undefined,
+      minutes: undefined,
+      seconds: undefined,
+      millis: undefined,
+      micros: undefined,
+    };
+
+    // when
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const calculatedTime = component.calculateTimeframeStartTime(undefined, timeframe);
+
+    // then
+    expect(calculatedTime).toBeDefined();
+  });
+
+  it('should have the same date if no timeframe is set for start date calcuation', () => {
+    // given
+    const start = moment();
+    const timeframe: Timeframe = {
+      hours: undefined,
+      minutes: undefined,
+      seconds: undefined,
+      millis: undefined,
+      micros: undefined,
+    };
+
+    // when
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const calculatedTime = component.calculateTimeframeStartTime(start.toISOString(), timeframe);
+
+    // then
+    expect(calculatedTime).toEqual(start.toISOString());
   });
 
   it('should trigger the evaluation sequence with no timeframe set', () => {
