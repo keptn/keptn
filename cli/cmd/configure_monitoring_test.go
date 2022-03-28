@@ -14,7 +14,7 @@ func init() {
 	logging.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
 }
 
-func TestConfigureMonitoringCmd(t *testing.T) {
+func TestConfigureMonitoringCmdForPrometheus(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
 	*params.Project = ""
@@ -26,7 +26,21 @@ func TestConfigureMonitoringCmd(t *testing.T) {
 	}
 }
 
-func TestConfigureMonitoringCmdForPrometheus(t *testing.T) {
+func TestConfigureMonitoringCmdForDatadog(t *testing.T) {
+
+	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
+
+	*params.Project = ""
+	*params.Service = ""
+	cmd := fmt.Sprintf("configure monitoring datadog --project=%s --service=%s --mock", "sockshop", "carts")
+	_, err := executeActionCommandC(cmd)
+	if err != nil {
+		t.Errorf(unexpectedErrMsg, err)
+	}
+}
+
+func TestConfigureMonitoringCmdForPrometheusWithWrongArgs(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
 
@@ -35,6 +49,32 @@ func TestConfigureMonitoringCmdForPrometheus(t *testing.T) {
 	cmd := fmt.Sprintf("configure monitoring prometheus --project=%s --mock", "sockshop")
 	_, err := executeActionCommandC(cmd)
 	if err.Error() != "Please specify a service" {
+		t.Errorf(unexpectedErrMsg, err)
+	}
+
+	cmd = fmt.Sprintf("configure monitoring prometheus --service=%s --mock", "carts")
+	_, err = executeActionCommandC(cmd)
+	if err.Error() != "Please specify a project" {
+		t.Errorf(unexpectedErrMsg, err)
+	}
+}
+
+func TestConfigureMonitoringCmdForDatadogWithWrongArgs(t *testing.T) {
+
+	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
+
+	*params.Project = ""
+	*params.Service = ""
+	cmd := fmt.Sprintf("configure monitoring datadog --project=%s --mock", "sockshop")
+	_, err := executeActionCommandC(cmd)
+	if err.Error() != "Please specify a service" {
+		t.Errorf(unexpectedErrMsg, err)
+	}
+
+	cmd = fmt.Sprintf("configure monitoring datadog --service=%s --mock", "carts")
+	_, err = executeActionCommandC(cmd)
+	if err.Error() != "Please specify a project" {
 		t.Errorf(unexpectedErrMsg, err)
 	}
 }
