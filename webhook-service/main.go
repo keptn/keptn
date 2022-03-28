@@ -8,11 +8,11 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"os"
+	"strings"
 )
 
 const eventTypeWildcard = "*"
 const serviceName = "webhook-service"
-
 const envVarLogLevel = "LOG_LEVEL"
 
 func main() {
@@ -30,30 +30,9 @@ func main() {
 	}
 	secretReader := lib.NewK8sSecretReader(kubeAPI)
 
-	kubeAPIHostIP := os.Getenv("KUBERNETES_SERVICE_HOST")
-	kubeAPIPort := os.Getenv("KUBERNETES_SERVICE_PORT")
-
 	curlExecutor := lib.NewCmdCurlExecutor(
 		&lib.OSCmdExecutor{},
-		lib.WithUnAllowedURLs(
-			[]string{
-				// Block access to Kubernetes API
-				kubeAPIHostIP,
-				kubeAPIHostIP + ":" + kubeAPIPort,
-				"kubernetes",
-				"kubernetes" + ":" + kubeAPIPort,
-				"kubernetes.default",
-				"kubernetes.default" + ":" + kubeAPIPort,
-				"kubernetes.default.svc",
-				"kubernetes.default.svc" + ":" + kubeAPIPort,
-				"kubernetes.default.svc.cluster.local",
-				"kubernetes.default.svc.cluster.local" + ":" + kubeAPIPort,
-				// Block access to localhost
-				"localhost",
-				"127.0.0.1",
-				"::1",
-			},
-		),
+		lib.WithUnAllowedURLs(lib.BlacklistedKubeURLS(getEnv())),
 	)
 	taskHandler := handler.NewTaskHandler(&lib.TemplateEngine{}, curlExecutor, secretReader)
 
@@ -81,4 +60,14 @@ func createKubeAPI() (*kubernetes.Clientset, error) {
 		return nil, err
 	}
 	return kubeAPI, nil
+}
+
+func getEnv() map[string]string {
+	envMap := make(map[string]string)
+	for _, e := range os.Environ() {
+		if i := strings.Index(e, "="); i >= 0 {
+			envMap[e[:i]] = e[i+1:]
+		}
+	}
+	return envMap
 }
