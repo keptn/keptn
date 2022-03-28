@@ -32,7 +32,7 @@ func main() {
 
 	curlExecutor := lib.NewCmdCurlExecutor(
 		&lib.OSCmdExecutor{},
-		lib.WithUnAllowedURLs(lib.BlacklistedKubeURLS(getEnv())),
+		lib.WithDeniedURLs(lib.DeniedURLs(getEnv())),
 	)
 	taskHandler := handler.NewTaskHandler(&lib.TemplateEngine{}, curlExecutor, secretReader)
 
