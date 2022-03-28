@@ -18,7 +18,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: mongodb-datastore
       app.kubernetes.io/instance: {{ .Release.Name }}
-  replicas: 1
+  replicas: 2
   {{ include "control-plane.common.update-strategy" . }}
   template:
     metadata:
