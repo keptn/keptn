@@ -94,7 +94,7 @@ spec:
               value: {{ .Values.shipyardController.config.disableLeaderElection | default false | quote }}
               {{- end}}
             - name: PROJECT_NAME_MAX_SIZE
-              value: {{ .Values.shipyardController.config.validation.projectNameMaxSize }}
+              value: {{ .Values.shipyardController.config.validation.projectNameMaxSize | quote }}
           ports:
             - containerPort: 8080
           resources:
