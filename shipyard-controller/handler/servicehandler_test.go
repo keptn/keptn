@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/gin-gonic/gin"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
@@ -595,6 +596,51 @@ func TestServiceHandler_GetServices(t *testing.T) {
 
 				assert.Equal(t, tt.expectJSONError, errorResponse)
 			}
+		})
+	}
+}
+
+func TestServiceParamsValidator(t *testing.T) {
+	type args struct {
+		params *models.CreateServiceParams
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Service Name nil",
+			args: args{
+				params: &models.CreateServiceParams{},
+			},
+
+			wantErr: assert.Error,
+		},
+		{
+			name: "Service Name empty",
+			args: args{
+				params: &models.CreateServiceParams{
+					ServiceName: stringp(""),
+				},
+			},
+			wantErr: assert.Error,
+		},
+		{
+			name: "Params valid",
+			args: args{
+				params: &models.CreateServiceParams{
+					ServiceName: stringp("service-name"),
+				},
+			},
+
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := ServiceParamsValidator{}
+			tt.wantErr(t, s.validateCreateServiceParams(tt.args.params), fmt.Sprintf("validateCreateServiceParams(%v)", tt.args.params))
 		})
 	}
 }
