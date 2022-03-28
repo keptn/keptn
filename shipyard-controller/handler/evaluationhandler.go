@@ -8,6 +8,33 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 )
 
+type EvaluationParamsValidator struct{}
+
+func (e EvaluationParamsValidator) Validate(params interface{}) error {
+	switch t := params.(type) {
+	case *models.CreateEvaluationParams:
+		return e.validateEvaluationParams(t)
+	default:
+		return nil
+	}
+}
+
+func (e EvaluationParamsValidator) validateEvaluationParams(params *models.CreateEvaluationParams) error {
+	if params.Timeframe != "" && params.End != "" {
+		return fmt.Errorf("timeframe and end time specifications cannot be set together")
+	}
+	if params.Start != "" {
+		if params.Timeframe == "" && params.End == "" {
+			return fmt.Errorf("timeframe or end time specifications need to be specified when using start parameter")
+		}
+	} else {
+		if params.End != "" {
+			return fmt.Errorf("end time specifications cannot be set without start parameter")
+		}
+	}
+	return nil
+}
+
 type IEvaluationHandler interface {
 	CreateEvaluation(context *gin.Context)
 }
@@ -40,18 +67,19 @@ func (eh *EvaluationHandler) CreateEvaluation(c *gin.Context) {
 	stage := c.Param("stage")
 	service := c.Param("service")
 
-	evaluation := &models.CreateEvaluationParams{}
-	if err := c.ShouldBindJSON(evaluation); err != nil {
+	params := &models.CreateEvaluationParams{}
+	if err := c.ShouldBindJSON(params); err != nil {
 		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
-	if err := evaluation.Validate(); err != nil {
+	evaluationValidator := EvaluationParamsValidator{}
+	if err := evaluationValidator.Validate(params); err != nil {
 		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
-	evaluationContext, err := eh.EvaluationManager.CreateEvaluation(project, stage, service, evaluation)
+	evaluationContext, err := eh.EvaluationManager.CreateEvaluation(project, stage, service, params)
 	if err != nil {
 		c.JSON(getHTTPStatusForError(err.Code), err)
 		return

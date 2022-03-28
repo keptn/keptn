@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/keptn/shipyard-controller/config"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -118,7 +119,7 @@ func TestGetAllProjects(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			w, c := createGinTestContext()
 
-			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, ProjectValidator{ProjectNameMaxSize: 200})
+			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, config.EnvConfig{ProjectNameMaxSize: 200})
 			c.Request, _ = http.NewRequest(http.MethodGet, tt.queryParams, bytes.NewBuffer([]byte{}))
 
 			handler.GetAllProjects(c)
@@ -205,7 +206,7 @@ func TestGetProjectByName(t *testing.T) {
 				gin.Param{Key: "project", Value: "my-project"},
 			}
 
-			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, ProjectValidator{ProjectNameMaxSize: 200})
+			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, config.EnvConfig{ProjectNameMaxSize: 200})
 			c.Request, _ = http.NewRequest(http.MethodGet, "", bytes.NewBuffer([]byte{}))
 
 			handler.GetProjectByName(c)
@@ -335,7 +336,7 @@ func TestCreateProject(t *testing.T) {
 			w, c := createGinTestContext()
 			c.Set("projectName", tt.projectNameParam)
 
-			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, ProjectValidator{ProjectNameMaxSize: 20})
+			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, config.EnvConfig{ProjectNameMaxSize: 20})
 			c.Request, _ = http.NewRequest(http.MethodPost, "", bytes.NewBuffer([]byte(tt.jsonPayload)))
 
 			handler.CreateProject(c)
@@ -504,7 +505,7 @@ func TestUpdateProject(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			w, c := createGinTestContext()
 
-			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, ProjectValidator{ProjectNameMaxSize: 200})
+			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, config.EnvConfig{ProjectNameMaxSize: 200})
 			c.Request, _ = http.NewRequest(http.MethodPut, "", bytes.NewBuffer([]byte(tt.jsonPayload)))
 
 			handler.UpdateProject(c)
@@ -586,7 +587,7 @@ func TestDeleteProject(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			w, c := createGinTestContext()
 
-			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, ProjectValidator{ProjectNameMaxSize: 200})
+			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, config.EnvConfig{ProjectNameMaxSize: 200})
 			c.Params = gin.Params{
 				gin.Param{Key: "project", Value: tt.projectPathParam},
 			}

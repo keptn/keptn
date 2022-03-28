@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -47,12 +48,13 @@ func (sh *ServiceHandler) CreateService(c *gin.Context) {
 		return
 	}
 	// validate the input
-	createServiceParams := &models.CreateServiceParams{}
-	if err := c.ShouldBindJSON(createServiceParams); err != nil {
+	params := &models.CreateServiceParams{}
+	if err := c.ShouldBindJSON(params); err != nil {
 		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
-	if err := createServiceParams.Validate(); err != nil {
+	serviceValidator := ServiceParamsValidator{}
+	if err := serviceValidator.Validate(params); err != nil {
 		SetBadRequestErrorResponse(c, err.Error())
 		return
 	}
@@ -60,12 +62,12 @@ func (sh *ServiceHandler) CreateService(c *gin.Context) {
 	common.LockProject(projectName)
 	defer common.UnlockProject(projectName)
 
-	if err := sh.sendServiceCreateStartedEvent(keptnContext, projectName, createServiceParams); err != nil {
+	if err := sh.sendServiceCreateStartedEvent(keptnContext, projectName, params); err != nil {
 		log.Errorf("could not send service.create.started event: %s", err.Error())
 	}
-	if err := sh.serviceManager.CreateService(projectName, createServiceParams); err != nil {
+	if err := sh.serviceManager.CreateService(projectName, params); err != nil {
 
-		if err2 := sh.sendServiceCreateFailedFinishedEvent(keptnContext, projectName, createServiceParams); err2 != nil {
+		if err2 := sh.sendServiceCreateFailedFinishedEvent(keptnContext, projectName, params); err2 != nil {
 			log.Errorf("could not send service.create.finished event: %s", err2.Error())
 		}
 
@@ -77,7 +79,7 @@ func (sh *ServiceHandler) CreateService(c *gin.Context) {
 		SetInternalServerErrorResponse(c, err.Error())
 		return
 	}
-	if err := sh.sendServiceCreateSuccessFinishedEvent(keptnContext, projectName, createServiceParams); err != nil {
+	if err := sh.sendServiceCreateSuccessFinishedEvent(keptnContext, projectName, params); err != nil {
 		log.Errorf("could not send service.create.finished event: %s", err.Error())
 	}
 
@@ -321,6 +323,29 @@ func (sh *ServiceHandler) sendServiceDeleteFailedFinishedEvent(keptnContext, pro
 
 	if err := sh.EventSender.SendEvent(event); err != nil {
 		return errors.New("could not send create.service.started event: " + err.Error())
+	}
+	return nil
+}
+
+type ServiceParamsValidator struct{}
+
+func (s ServiceParamsValidator) Validate(params interface{}) error {
+	switch t := params.(type) {
+	case *models.CreateServiceParams:
+		return s.validateCreateServiceParams(t)
+	default:
+		return nil
+	}
+}
+
+func (s ServiceParamsValidator) validateCreateServiceParams(params *models.CreateServiceParams) error {
+	if params.ServiceName == nil || *params.ServiceName == "" {
+		return errors.New("Must provide a service name")
+	}
+	if !keptncommon.ValidateUnixDirectoryName(*params.ServiceName) {
+		return errors.New("Service name contains special character(s). " +
+			"The service name has to be a valid Unix directory name. For details see " +
+			"https://www.cyberciti.biz/faq/linuxunix-rules-for-naming-file-and-directory-names/")
 	}
 	return nil
 }

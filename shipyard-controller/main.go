@@ -179,11 +179,8 @@ func main() {
 	apiV1 := engine.Group("/v1")
 	apiHealth := engine.Group("")
 
-	projectService := handler.NewProjectHandler(
-		projectManager, eventSender,
-		handler.ProjectValidator{
-			ProjectNameMaxSize: env.ProjectNameMaxSize,
-		})
+	projectService := handler.NewProjectHandler(projectManager, eventSender, env)
+
 	projectController := controller.NewProjectController(projectService)
 	projectController.Inject(apiV1)
 
