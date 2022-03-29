@@ -235,7 +235,6 @@ jobs:
             const jobStartedTime = new Date(jobs[0].started_at).getTime();
             
             const queueTime = (jobStartedTime - runStartedTime) / 1000;
-            console.log(queueTime);
             return queueTime;
             
 
