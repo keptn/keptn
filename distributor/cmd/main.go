@@ -14,6 +14,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"github.com/kelseyhightower/envconfig"
@@ -34,8 +35,10 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"strconv"
 	"sync"
 	"syscall"
+	"time"
 )
 
 var gitCommit string
@@ -47,7 +50,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	printPreamble()
+	preamble(env)
 
 	executionContext := createExecutionContext()
 	eventSender, err := createEventSender(env)
@@ -106,8 +109,38 @@ func main() {
 	executionContext.Wg.Wait()
 }
 
-func printPreamble() {
-	fmt.Println("GIT_COMMIT: " + gitCommit)
+func preamble(env config.EnvConfig) {
+	padR := func(str string) string {
+		width := 40
+		if len(str) >= width {
+			return str
+		}
+		buf := bytes.NewBufferString(str)
+		for i := 0; i < width-len(str); i++ {
+			buf.WriteByte('.')
+		}
+		return buf.String()
+	}
+
+	strOrUnknown := func(s string) string {
+		if s == "" {
+			return "unknown"
+		}
+		return s
+	}
+	fmt.Printf("%s%s\n", padR("Git commit"), strOrUnknown(gitCommit))
+	fmt.Printf("%s%s\n", padR("Start time"), time.Now().UTC().String())
+	fmt.Printf("%s%t\n", padR("Remote execution plane"), env.PubSubConnectionType() == config.ConnectionTypeHTTP)
+	fmt.Printf("%s%t\n", padR("Oauth enabled"), env.OAuthEnabled())
+	fmt.Printf("%s%s\n", padR("K8S pod name"), strOrUnknown(env.K8sPodName))
+	fmt.Printf("%s%s\n", padR("K8S deployment name"), strOrUnknown(env.K8sDeploymentName))
+	fmt.Printf("%s%s\n", padR("K8S node name"), strOrUnknown(env.K8sNodeName))
+	fmt.Printf("%s%s\n", padR("Keptn API endpoint"), strOrUnknown(env.KeptnAPIEndpoint))
+	fmt.Printf("%s%s\n", padR("Api proxy path"), strOrUnknown(env.APIProxyPath))
+	fmt.Printf("%s%s\n", padR("Api proxy path"), strOrUnknown(strconv.Itoa(env.APIProxyPort)))
+	fmt.Printf("%s%s\n", padR("PubSub URL"), strOrUnknown(env.PubSubURL))
+	fmt.Printf("%s%s\n", padR("PubSub topic"), strOrUnknown(env.PubSubTopic))
+	fmt.Printf("%s%s\n", padR("PubSub group"), strOrUnknown(env.PubSubGroup))
 }
 
 func createExecutionContext() *utils.ExecutionContext {
