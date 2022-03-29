@@ -209,6 +209,36 @@ jobs:
           echo "::set-output name=TIME::$(date +'%H%M')"
           echo "::set-output name=DATETIME::$(date +'%Y%m%d')$(date +'%H%M')"
 
+      - name: Calculate queue time
+        id: calculate_queue_time
+        uses: actions/github-script@v6
+        env:
+          RUN_ID: ${{ env.GITHUB_RUN_ID }}
+        with:
+          script: |
+            const { RUN_ID } = process.env;
+            const repo = "keptn";
+            
+            const workflowRun = octokit.rest.actions.getWorkflowRun({
+              repo,
+              repo,
+              RUN_ID
+            });
+              
+            console.log(workflowRun);
+            return workflowRun;
+
+#      - name: Ingest Pipeline Metrics
+#        uses: dynatrace-oss/dynatrace-github-action@v8
+#        with:
+#          url: ${{ secrets.MONITORING_TENANT_URL }}
+#          token: ${{ secrets.MONITORING_API_TOKEN }}
+#          metrics: |
+#            - metric: "github.workflow_queue_time"
+#            value: "${{ steps.calculate_queue_time.queue_time }}"
+#            dimensions:
+#              workflow_name: "CI"
+
   store-output-in-build-config:
     name: "Store output of last step in build-config.env"
     needs: prepare_ci_run
