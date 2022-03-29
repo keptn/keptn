@@ -219,7 +219,7 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 				//_, err = ExecuteCommand(fmt.Sprintf("kubectl -n %s set image deployment.v1.apps/lighthouse-service lighthouse-service=keptndev/lighthouse-service:0.14.0-dev-PR-7266.202203280650", GetKeptnNameSpaceFromEnv()))
 			}
 			t.Logf("Upgrading Keptn to %s", chartURL)
-			_, err = ExecuteCommand(fmt.Sprintf("helm upgrade -n %s keptn %s --wait --set=control-plane.apiGatewayNginx.type=LoadBalancer --set=control-plane.common.strategy.rollingUpdate.maxUnavailable=1 --set control-plane.resourceService.enabled=true --set control-plane.resourceService.DIRECTORY_STAGE_STRUCTURE=true", GetKeptnNameSpaceFromEnv(), chartURL))
+			_, err = ExecuteCommand(fmt.Sprintf("helm upgrade -n %s keptn %s --wait --set=control-plane.apiGatewayNginx.type=LoadBalancer --set=control-plane.common.strategy.rollingUpdate.maxUnavailable=0 --set control-plane.resourceService.enabled=true", GetKeptnNameSpaceFromEnv(), chartURL))
 			if err != nil {
 				t.Logf("Encountered error when upgrading keptn: %v", err)
 			}
