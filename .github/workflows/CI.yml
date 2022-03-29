@@ -218,14 +218,24 @@ jobs:
           script: |
             const repo = "keptn";
             
-            const workflowRun = await github.rest.actions.getWorkflowRun({
+            const workflowRunReponse = await github.rest.actions.getWorkflowRun({
               owner: repo,
               repo: repo,
               run_id: context.runId
             });
+            
+            const jobResponse = await github.rest.actions.getJobForWorkflowRun({
+              owner: repo,
+              repo: repo,
+              job_id: context.jobId
+            });
+            const workflowRun = workflowRunReponse.data;
+            const job = jobResponse.data;
+            
+            console.log(job);
               
-            console.log(workflowRun);
-            return workflowRun;
+            const runStartedTime = workflowRun.created_at;
+            const jobStartedTime = job.started_at;
 
 #      - name: Ingest Pipeline Metrics
 #        uses: dynatrace-oss/dynatrace-github-action@v8
