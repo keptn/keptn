@@ -22,8 +22,8 @@ export class KtbWebhookSettingsComponent implements OnInit {
     payload: new FormControl('', [FormUtils.payloadSpecialCharValidator]),
     header: new FormArray([]),
     proxy: new FormControl('', [FormUtils.isUrlValidator]),
-    sendFinished: new FormControl('true', []),
-    sendStarted: new FormControl('true', []),
+    sendFinished: new FormControl('true'),
+    sendStarted: new FormControl('true'),
   });
   public webhookMethods: WebhookConfigMethod[] = ['GET', 'POST', 'PUT'];
   public secretDataSource: SelectTreeNode[] = [];
