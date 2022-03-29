@@ -32,6 +32,7 @@ ARG debugBuild
 ARG datetime
 ARG gitsha
 
+RUN echo "GITSHA $gitsha"
 
 # set buildflags for debug build
 RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi
