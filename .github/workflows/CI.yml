@@ -212,9 +212,8 @@ jobs:
       - name: Calculate queue time
         id: calculate_queue_time
         uses: actions/github-script@v6
-        env:
-          RUN_ID: ${{ env.GITHUB_RUN_ID }}
         with:
+          result-encoding: string
           script: |
             const repo = "keptn";
             
@@ -242,16 +241,16 @@ jobs:
             return queueTime;
             
 
-#      - name: Ingest Pipeline Metrics
-#        uses: dynatrace-oss/dynatrace-github-action@v8
-#        with:
-#          url: ${{ secrets.MONITORING_TENANT_URL }}
-#          token: ${{ secrets.MONITORING_API_TOKEN }}
-#          metrics: |
-#            - metric: "github.workflow_queue_time"
-#            value: "${{ steps.calculate_queue_time.queue_time }}"
-#            dimensions:
-#              workflow_name: "CI"
+      - name: Ingest Pipeline Metrics
+        uses: dynatrace-oss/dynatrace-github-action@v8
+        with:
+          url: ${{ secrets.MONITORING_TENANT_URL }}
+          token: ${{ secrets.MONITORING_API_TOKEN }}
+          metrics: |
+            - metric: "github.workflow_queue_time"
+            value: "${{ steps.calculate_queue_time.outputs.result }}"
+            dimensions:
+              workflow_name: "CI"
 
   store-output-in-build-config:
     name: "Store output of last step in build-config.env"
