@@ -64,8 +64,5 @@ ENV GOTRACEBACK=all
 RUN adduser -D nonroot -u 65532
 USER nonroot
 
-COPY entrypoint.sh /
-ENTRYPOINT ["/entrypoint.sh"]
-
 # Run the web service on container startup.
 CMD ["/distributor"]
