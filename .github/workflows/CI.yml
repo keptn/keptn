@@ -246,9 +246,9 @@ jobs:
           token: ${{ secrets.MONITORING_API_TOKEN }}
           metrics: |
             - metric: "github.workflow_queue_time"
-            value: "${{ steps.calculate_queue_time.outputs.result }}"
-            dimensions:
-              workflow_name: "CI"
+              value: "${{ steps.calculate_queue_time.outputs.result }}"
+              dimensions:
+                workflow_name: "CI"
 
   store-output-in-build-config:
     name: "Store output of last step in build-config.env"
