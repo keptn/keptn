@@ -29,7 +29,6 @@ func TestConfigureMonitoringCmdForPrometheus(t *testing.T) {
 func TestConfigureMonitoringCmdForDatadog(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
 
 	*params.Project = ""
 	*params.Service = ""
@@ -62,7 +61,6 @@ func TestConfigureMonitoringCmdForPrometheusWithWrongArgs(t *testing.T) {
 func TestConfigureMonitoringCmdForDatadogWithWrongArgs(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
 
 	*params.Project = ""
 	*params.Service = ""
