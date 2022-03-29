@@ -8,10 +8,12 @@ import (
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"gopkg.in/yaml.v3"
 	"k8s.io/apimachinery/pkg/util/rand"
 	"net/http"
 	"os"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -68,14 +70,31 @@ type HTTPEndpointTestResult struct {
 }
 
 func Test_UpgradeZeroDowntime(t *testing.T) {
-	projectName := "upgrade-zero-downtime2"
+	projectName := "upgrade-zero-downtime4"
 	serviceName := "my-service"
-	stageName := "dev"
 	//sequenceName := "evaluation"
 
 	nrOfUpgrades := 2
 
-	shipyardFile, err := CreateTmpShipyardFile(zeroDownTimeShipyard)
+	nrStages := 10
+
+	shipyard := &v0_2_0.Shipyard{
+		ApiVersion: "0.2.3",
+		Kind:       "shipyard",
+		Metadata:   v0_2_0.Metadata{},
+		Spec: v0_2_0.ShipyardSpec{
+			Stages: []v0_2_0.Stage{},
+		},
+	}
+
+	for i := 0; i < nrStages; i++ {
+		newStageName := fmt.Sprintf("dev-%d", i)
+		shipyard.Spec.Stages = append(shipyard.Spec.Stages, v0_2_0.Stage{Name: newStageName})
+	}
+
+	shipyardFileContent, _ := yaml.Marshal(shipyard)
+
+	shipyardFile, err := CreateTmpShipyardFile(string(shipyardFileContent))
 	require.Nil(t, err)
 	defer func() {
 		err := os.Remove(shipyardFile)
@@ -85,7 +104,7 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 	}()
 
 	chartLatestVersion := "https://github.com/keptn/helm-charts-dev/blob/gh-pages/packages/keptn-0.14.0-dev-PR-7266.tgz?raw=true"
-	chartPreviousVersion := "https://github.com/keptn/helm-charts-dev/blob/00cdeca802f106128b5a6fbf4e1b7420eee1fbaa/packages/keptn-0.14.0-dev-PR-7266.tgz?raw=true"
+	chartPreviousVersion := "https://github.com/keptn/helm-charts-dev/blob/6c2e1fce0e3a47d0b931d9f9782d0177f70db609/packages/keptn-0.14.0-dev-PR-7266.tgz?raw=true"
 
 	projectName, err = CreateProject(projectName, shipyardFile)
 	require.Nil(t, err)
@@ -145,16 +164,20 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 	go func() {
 		for i := 0; i < nrOfUpgrades; i++ {
 			chartURL := ""
+			var err error
 			if i%2 == 0 {
 				chartURL = chartLatestVersion
+				_, err = ExecuteCommand(fmt.Sprintf("kubectl -n %s set image deployment.v1.apps/lighthouse-service lighthouse-service=keptndev/lighthouse-service:0.14.0-dev", GetKeptnNameSpaceFromEnv()))
 			} else {
 				chartURL = chartPreviousVersion
+				_, err = ExecuteCommand(fmt.Sprintf("kubectl -n %s set image deployment.v1.apps/lighthouse-service lighthouse-service=keptndev/lighthouse-service:0.14.0-dev-PR-7266.202203280650", GetKeptnNameSpaceFromEnv()))
 			}
 			t.Logf("Upgrading Keptn to %s", chartURL)
-			_, err := ExecuteCommand(fmt.Sprintf("helm upgrade -n %s keptn %s --wait --set=control-plane.apiGatewayNginx.type=LoadBalancer --set control-plane.resourceService.enabled=true", GetKeptnNameSpaceFromEnv(), chartURL))
+			//_, err := ExecuteCommand(fmt.Sprintf("helm upgrade -n %s keptn %s --wait --set=control-plane.apiGatewayNginx.type=LoadBalancer --set=control-plane.common.strategy.rollingUpdate.maxUnavailable=1 --set control-plane.resourceService.enabled=true --set control-plane.resourceService.DIRECTORY_STAGE_STRUCTURE=true", GetKeptnNameSpaceFromEnv(), chartURL))
 			if err != nil {
 				t.Logf("Encountered error when upgrading keptn: %v", err)
 			}
+			<-time.After(5 * time.Second)
 		}
 		upgradesWaitGroup.Done()
 	}()
@@ -177,7 +200,10 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 	triggerSequenceWaitGroup := &sync.WaitGroup{}
 	triggerSequenceWaitGroup.Add(1)
 	nrTriggeredSequences := 0
-	keptnContextIDs := []string{}
+	triggeredSequences := []struct {
+		keptnContext string
+		stage        string
+	}{}
 	go func() {
 		for {
 			select {
@@ -186,14 +212,22 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 				t.Log("Finished triggering sequences")
 				return
 			default:
-				keptnContext, err := TriggerSequence(projectName, serviceName, stageName, "evaluation", nil)
+				stageNr := nrTriggeredSequences % nrStages
+				sequenceStageName := fmt.Sprintf("dev-%d", stageNr)
+				keptnContext, err := TriggerSequence(projectName, serviceName, sequenceStageName, "evaluation", nil)
 				nrTriggeredSequences++
 				if err == nil {
-					keptnContextIDs = append(keptnContextIDs, keptnContext)
+					triggeredSequences = append(triggeredSequences, struct {
+						keptnContext string
+						stage        string
+					}{
+						keptnContext: keptnContext,
+						stage:        sequenceStageName,
+					})
 					t.Logf("Triggered new evaluation sequence with KeptnContext %s", keptnContext)
 				}
 				// wait some time before triggering the next sequence
-				<-time.After(time.Duration(rand.Intn(10)) * time.Second)
+				<-time.After(time.Duration(rand.Intn(100)) * time.Millisecond)
 			}
 		}
 	}()
@@ -215,23 +249,33 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 	}
 
 	// get the number of dev.delivery.finished events -> this should eventually match the number of
-	assert.Equal(t, len(keptnContextIDs), nrTriggeredSequences)
+	assert.Equal(t, len(triggeredSequences), nrTriggeredSequences)
 
 	t.Logf("Triggered %d sequences. Let's check if they have been finished", nrTriggeredSequences)
-	nrFinishedSequences := 0
-	for _, keptnContext := range keptnContextIDs {
-		t.Logf("Checking if sequence %s has been finished", keptnContext)
-		var evaluationFinishedEvent *models.KeptnContextExtendedCE
-		assert.Eventually(t, func() bool {
-			evaluationFinishedEvent, err = GetLatestEventOfType(keptnContext, projectName, stageName, v0_2_0.GetFinishedEventType("dev.evaluation"))
-			if evaluationFinishedEvent == nil || err != nil {
-				return false
+	var nrFinishedSequences uint64
+
+	checkSequencesWg := &sync.WaitGroup{}
+
+	checkSequencesWg.Add(len(triggeredSequences))
+	for _, triggeredSequence := range triggeredSequences {
+		go func(keptnContext, stage string) {
+			var evaluationFinishedEvent *models.KeptnContextExtendedCE
+			assert.Eventually(t, func() bool {
+				evaluationFinishedEvent, err = GetLatestEventOfType(keptnContext, projectName, stage, v0_2_0.GetFinishedEventType("dev.evaluation"))
+				if evaluationFinishedEvent == nil || err != nil {
+					return false
+				}
+				return true
+			}, 10*time.Minute, 10*time.Second)
+			if evaluationFinishedEvent != nil {
+				atomic.AddUint64(&nrFinishedSequences, 1)
+			} else {
+				t.Logf("Sequence %s in stage %s has not been finished", keptnContext, stage)
 			}
-			return true
-		}, 10*time.Minute, 10*time.Second)
-		if evaluationFinishedEvent != nil {
-			nrFinishedSequences++
-		}
+			checkSequencesWg.Done()
+		}(triggeredSequence.keptnContext, triggeredSequence.stage)
 	}
+
+	checkSequencesWg.Wait()
 	t.Logf("Finished sequences: %d/%d", nrFinishedSequences, nrTriggeredSequences)
 }

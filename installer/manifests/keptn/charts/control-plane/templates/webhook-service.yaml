@@ -17,7 +17,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: webhook-service
       app.kubernetes.io/instance: {{ .Release.Name }}
-  replicas: 2
+  replicas: 1
   {{ include "control-plane.common.update-strategy" . }}
   template:
     metadata:
@@ -78,7 +78,7 @@ spec:
             - name: PUBSUB_TOPIC
               value: ''
             - name: PUBSUB_RECIPIENT
-              value: '127.0.0.1'
+              value: 'http://webhook-service'
             - name: PUBSUB_RECIPIENT_PATH
               value: '/v1/event'
           {{- include "control-plane.dist.common.env.vars" . | nindent 12 }}

@@ -2,6 +2,7 @@ package receiver
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/keptn/keptn/distributor/pkg/model"
@@ -61,9 +62,11 @@ func (n *NATSEventReceiver) Start(ctx *utils.ExecutionContext) error {
 		return fmt.Errorf("could not Start NatsEventReceiver: %w", err)
 	}
 	n.natsConnectionHandler.MessageHandler = n.handleMessage
-	err := n.natsConnectionHandler.QueueSubscribeToTopics(n.env.PubSubTopics(), n.env.PubSubGroup)
-	if err != nil {
-		return fmt.Errorf("could not subscribe to events: %w", err)
+	if !n.pullSubscriptions {
+		err := n.natsConnectionHandler.QueueSubscribeToTopics(n.env.PubSubTopics(), n.env.PubSubGroup)
+		if err != nil {
+			return fmt.Errorf("could not subscribe to events: %w", err)
+		}
 	}
 
 	defer func() {
@@ -100,26 +103,32 @@ func (n *NATSEventReceiver) handleMessage(m *nats.Msg) {
 		// decode to cloudevent
 		cloudEvent, err := utils.DecodeNATSMessage(m.Data)
 		if err != nil {
+			logger.Warnf("Could not decode cloud event: %v", err)
 			return
 		}
 
 		// decode to keptn event
 		keptnEvent, err := v0_2_0.ToKeptnEvent(*cloudEvent)
 		if err != nil {
+			logger.Warnf("Could not decode cloud event to keptn event: %v", err)
 			return
 		}
 
 		// determine subscription for the received message
 		subscriptions := n.getSubscriptionsFromReceivedMessage(m, *cloudEvent)
 		if len(subscriptions) > 0 {
+			logger.Infof("found %d subscriptions. Trying to match one of them.", len(subscriptions))
 			if err := n.sendEventForSubscriptions(subscriptions, keptnEvent); err != nil {
 				logger.Errorf("Could not send cloud event: %v", err)
 			}
 		} else if !n.pullSubscriptions {
 			// forward keptn event
+			logger.Infof("service does not pull subscriptions from uniform api. Sending event to service.")
 			if err := n.sendEvent(keptnEvent, nil); err != nil {
 				logger.Errorf("Could not send cloud event: %v", err)
 			}
+		} else {
+			logger.Infof("no subscription found and pullSubscriptions is set to true. What now?")
 		}
 	}()
 }
@@ -171,11 +180,16 @@ func (n *NATSEventReceiver) getSubscriptionsFromReceivedMessage(m *nats.Msg, eve
 func (n *NATSEventReceiver) sendEvent(e models.KeptnContextExtendedCE, subscription *models.EventSubscription) error {
 	event := v0_2_0.ToCloudEvent(e)
 	if subscription != nil {
+		m, _ := json.MarshalIndent(subscription, "", " ")
+		logger.Infof("Subscription: %s", m)
 		matcher := utils.NewEventMatcherFromSubscription(*subscription)
 		if !matcher.Matches(event) {
+			logger.Infof("Subscription does not match. not sending event")
 			return nil
 		}
 	} else if !n.eventMatcher.Matches(event) {
+
+		logger.Infof("Subscription does not match %s:%s:%s. Not sending event", n.eventMatcher.Project, n.eventMatcher.Stage, n.eventMatcher.Service)
 		return nil
 	}
 
