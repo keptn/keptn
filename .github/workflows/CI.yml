@@ -234,8 +234,13 @@ jobs:
             
             console.log(job);
               
-            const runStartedTime = workflowRun.created_at;
-            const jobStartedTime = job.started_at;
+            const runStartedTime = new Date(workflowRun.created_at).getTime();
+            const jobStartedTime = new Date(job.started_at).getTime();
+            
+            const queueTime = jobStartedTime - runStartedTime;
+            console.log(queueTime);
+            return queueTime;
+            
 
 #      - name: Ingest Pipeline Metrics
 #        uses: dynatrace-oss/dynatrace-github-action@v8
