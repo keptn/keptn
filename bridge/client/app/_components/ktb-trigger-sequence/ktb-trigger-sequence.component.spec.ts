@@ -457,6 +457,7 @@ describe('KtbTriggerSequenceComponent', () => {
     component.triggerSequence();
 
     // then
+    const expectedDate = date.subtract(5, 'minutes');
     expect(spy).toHaveBeenCalledWith({
       project: 'podtato-head',
       stage: 'hardening',
@@ -466,7 +467,7 @@ describe('KtbTriggerSequenceComponent', () => {
           key1: 'val1',
         },
         timeframe: '5m',
-        start: date.toISOString(),
+        start: expectedDate.toISOString(),
       },
     });
   });
