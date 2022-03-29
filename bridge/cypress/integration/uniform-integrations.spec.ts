@@ -290,7 +290,15 @@ describe('Add webhook subscriptions', () => {
     cy.byTestId(uniformPage.EDIT_SUBSCRIPTION_FIELD_GLOBAL_ID).should('not.exist');
   });
 
-  it('should have sendFinished and sendStarted checkbox disabled', () => {
+  it('should have sendFinished and sendStarted checkbox disabled for started events', () => {
+    uniformPage
+      .setTaskPrefix('deployment')
+      .setTaskSuffix('started')
+      .assertIsSendStartedButtonsEnabled(false)
+      .assertIsSendFinishedButtonsEnabled(false);
+  });
+
+  it('should have sendFinished and sendStarted checkbox disabled for finished events', () => {
     uniformPage
       .setTaskPrefix('deployment')
       .setTaskSuffix('finished')
@@ -298,7 +306,7 @@ describe('Add webhook subscriptions', () => {
       .assertIsSendFinishedButtonsEnabled(false);
   });
 
-  it('should have sendFinished and sendStarted checkbox enabled and true by default', () => {
+  it('should have sendFinished and sendStarted checkbox enabled and true by default for triggered events', () => {
     uniformPage
       .setTaskPrefix('deployment')
       .setTaskSuffix('triggered')
