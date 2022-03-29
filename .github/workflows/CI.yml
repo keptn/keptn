@@ -216,13 +216,12 @@ jobs:
           RUN_ID: ${{ env.GITHUB_RUN_ID }}
         with:
           script: |
-            console.log(context);
             const repo = "keptn";
             
             const workflowRun = github.rest.actions.getWorkflowRun({
               owner: repo,
               repo: repo,
-              run_id: "0"
+              run_id: context.runId
             });
               
             console.log(workflowRun);
