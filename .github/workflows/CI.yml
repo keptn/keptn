@@ -219,10 +219,10 @@ jobs:
             const { RUN_ID } = process.env;
             const repo = "keptn";
             
-            const workflowRun = octokit.rest.actions.getWorkflowRun({
-              repo,
-              repo,
-              RUN_ID
+            const workflowRun = github.rest.actions.getWorkflowRun({
+              owner: repo,
+              repo: repo,
+              run_id: RUN_ID
             });
               
             console.log(workflowRun);
