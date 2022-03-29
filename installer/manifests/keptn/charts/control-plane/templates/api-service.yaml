@@ -91,6 +91,7 @@ spec:
           {{- include "control-plane.dist.common.env.vars" . | nindent 12 }}
           {{- include "control-plane.common.container-security-context" . | nindent 10 }}
       serviceAccountName: keptn-api-service
+      terminationGracePeriodSeconds: {{ .Values.gracePeriod | default 30 }}
 ---
 apiVersion: v1
 kind: Service

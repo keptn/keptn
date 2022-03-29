@@ -80,7 +80,7 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 	serviceName := "my-service"
 	//sequenceName := "evaluation"
 
-	nrOfUpgrades := 2
+	nrOfUpgrades := 6
 
 	nrStages := 10
 
@@ -266,7 +266,8 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 						stage:        sequenceStageName,
 						sequenceName: "evaluation",
 					})
-					t.Logf("Triggered new evaluation sequence with KeptnContext %s", keptnContext)
+				} else {
+					t.Logf("Could not trigger evaluation sequence: %v", err)
 				}
 				// trigger a webhook sequence
 				keptnContext, err = TriggerSequence(projectName, serviceName, sequenceStageName, "hooks", nil)
@@ -277,7 +278,8 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 						stage:        sequenceStageName,
 						sequenceName: "hooks",
 					})
-					t.Logf("Triggered new hooks sequence with KeptnContext %s", keptnContext)
+				} else {
+					t.Logf("Could not trigger hooks sequence: %v", err)
 				}
 				// wait some time before triggering the next sequence
 				<-time.After(time.Duration(rand.Intn(100)) * time.Millisecond)
@@ -311,12 +313,12 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 
 	checkSequencesWg.Add(len(triggeredSequences))
 	for _, triggeredSequence := range triggeredSequences {
-		go func(keptnContext, stage string) {
+		go func(sequence TriggeredSequence) {
 			var sequenceFinishedEvent *models.KeptnContextExtendedCE
 
-			stageSequenceName := fmt.Sprintf("%s.%s", triggeredSequence.stage, triggeredSequence.sequenceName)
+			stageSequenceName := fmt.Sprintf("%s.%s", sequence.stage, sequence.sequenceName)
 			assert.Eventually(t, func() bool {
-				sequenceFinishedEvent, err = GetLatestEventOfType(keptnContext, projectName, stage, v0_2_0.GetFinishedEventType(stageSequenceName))
+				sequenceFinishedEvent, err = GetLatestEventOfType(sequence.keptnContext, projectName, sequence.stage, v0_2_0.GetFinishedEventType(stageSequenceName))
 				if sequenceFinishedEvent == nil || err != nil {
 					return false
 				}
@@ -325,10 +327,10 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 			if sequenceFinishedEvent != nil {
 				atomic.AddUint64(&nrFinishedSequences, 1)
 			} else {
-				t.Logf("Sequence %s in stage %s has not been finished", keptnContext, stage)
+				t.Logf("Sequence %s in stage %s has not been finished", sequence.keptnContext, sequence.stage)
 			}
 			checkSequencesWg.Done()
-		}(triggeredSequence.keptnContext, triggeredSequence.stage)
+		}(triggeredSequence)
 	}
 
 	checkSequencesWg.Wait()
