@@ -296,40 +296,10 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 
 	automaticProvisioningURL := os.Getenv("AUTOMATIC_PROVISIONING_URL")
 	if automaticProvisioningURL != "" && params.GitRemoteURL == "" {
-		values := map[string]string{"project": *params.Name}
-		jsonRequestData, err := json.Marshal(values)
-		log.Infof("Creating project %s with provisioned gitRemoteURL", *params.Name)
+		provisioningData, err := getProvisioningData(*params.Name, automaticProvisioningURL)
 		if err != nil {
-			log.Errorf(UnableMarshallProvisioningData, err.Error())
-			SetFailedDependencyErrorResponse(c, fmt.Sprintf(UnableMarshallProvisioningData, err.Error()))
-			return
-		}
-
-		resp, err := http.Post(automaticProvisioningURL+"/repository", "application/json", bytes.NewBuffer(jsonRequestData))
-
-		if err != nil {
-			log.Errorf(UnableProvisionInstance, err.Error())
-			SetFailedDependencyErrorResponse(c, fmt.Sprintf(UnableProvisionInstance, err.Error()))
-			return
-		}
-
-		if resp.StatusCode == http.StatusConflict {
-			log.Errorf(UnableProvisionInstance, resp.Status)
-			SetFailedDependencyErrorResponse(c, fmt.Sprintf(UnableProvisionInstance, resp.Status))
-			return
-		}
-
-		jsonProvisioningData, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			log.Errorf(UnableReadProvisioningData, err.Error())
-			SetFailedDependencyErrorResponse(c, fmt.Sprintf(UnableReadProvisioningData, err.Error()))
-			return
-		}
-
-		provisioningData := ProvisioningData{}
-		if err := json.Unmarshal([]byte(jsonProvisioningData), &provisioningData); err != nil {
-			log.Errorf(UnableUnMarshallProvisioningData, err.Error())
-			SetFailedDependencyErrorResponse(c, fmt.Sprintf(UnableUnMarshallProvisioningData, err.Error()))
+			log.Errorf(err.Error())
+			SetFailedDependencyErrorResponse(c, err.Error())
 			return
 		}
 
@@ -446,34 +416,10 @@ func (ph *ProjectHandler) DeleteProject(c *gin.Context) {
 
 	automaticProvisioningURL := os.Getenv("AUTOMATIC_PROVISIONING_URL")
 	if automaticProvisioningURL != "" {
-		values := map[string]string{"project": projectName, "namespace": namespace}
-		jsonRequestData, err := json.Marshal(values)
-		log.Infof("Deleting project %s with provisioned gitRemoteURL", projectName)
-
+		err := deleteProvisioningData(projectName, automaticProvisioningURL, namespace)
 		if err != nil {
-			log.Errorf(UnableMarshallProvisioningData, err.Error())
-			SetFailedDependencyErrorResponse(c, fmt.Sprintf(UnableMarshallProvisioningData, err.Error()))
-			return
-		}
-
-		req, err := http.NewRequest(http.MethodDelete, automaticProvisioningURL+"/repository", bytes.NewBuffer(jsonRequestData))
-		if err != nil {
-			log.Errorf(UnableProvisionDeleteReq, err.Error())
-			SetFailedDependencyErrorResponse(c, fmt.Sprintf(UnableProvisionDeleteReq, err.Error()))
-			return
-		}
-		client := &http.Client{}
-		resp, err := client.Do(req)
-
-		if err != nil {
-			log.Errorf(UnableProvisionDelete, err.Error())
-			SetFailedDependencyErrorResponse(c, fmt.Sprintf(UnableProvisionDelete, err.Error()))
-			return
-		}
-
-		if resp.StatusCode == http.StatusNotFound {
-			log.Errorf(UnableProvisionDelete, resp.Status)
-			SetFailedDependencyErrorResponse(c, fmt.Sprintf(UnableProvisionDelete, resp.Status))
+			log.Errorf(err.Error())
+			SetFailedDependencyErrorResponse(c, err.Error())
 			return
 		}
 	}
@@ -567,4 +513,61 @@ func (ph *ProjectHandler) sendProjectDeleteFailFinishedEvent(keptnContext, proje
 
 	ce := common.CreateEventWithPayload(keptnContext, "", keptnv2.GetFinishedEventType(keptnv2.ProjectDeleteTaskName), eventPayload)
 	return ph.EventSender.SendEvent(ce)
+}
+
+func getProvisioningData(projectName string, url string) (*ProvisioningData, error) {
+	values := map[string]string{"project": projectName}
+	jsonRequestData, err := json.Marshal(values)
+	log.Infof("Creating project %s with provisioned gitRemoteURL", projectName)
+	if err != nil {
+		return nil, fmt.Errorf(UnableMarshallProvisioningData, err.Error())
+	}
+
+	resp, err := http.Post(url+"/repository", "application/json", bytes.NewBuffer(jsonRequestData))
+	if err != nil {
+		return nil, fmt.Errorf(UnableProvisionInstance, err.Error())
+	}
+
+	if resp.StatusCode == http.StatusConflict {
+		return nil, fmt.Errorf(UnableProvisionInstance, err.Error())
+	}
+
+	jsonProvisioningData, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf(UnableReadProvisioningData, err.Error())
+	}
+
+	provisioningData := ProvisioningData{}
+	if err := json.Unmarshal([]byte(jsonProvisioningData), &provisioningData); err != nil {
+		return nil, fmt.Errorf(UnableUnMarshallProvisioningData, err.Error())
+	}
+
+	return &provisioningData, nil
+}
+
+func deleteProvisioningData(projectName string, url string, namespace string) error {
+	values := map[string]string{"project": projectName, "namespace": namespace}
+	jsonRequestData, err := json.Marshal(values)
+	log.Infof("Deleting project %s with provisioned gitRemoteURL", projectName)
+
+	if err != nil {
+		return fmt.Errorf(UnableMarshallProvisioningData, err.Error())
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, url+"/repository", bytes.NewBuffer(jsonRequestData))
+	if err != nil {
+		return fmt.Errorf(UnableProvisionDeleteReq, err.Error())
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf(UnableProvisionDelete, err.Error())
+	}
+
+	if resp.StatusCode == http.StatusNotFound {
+		return fmt.Errorf(UnableProvisionDelete, err.Error())
+	}
+
+	return nil
 }
