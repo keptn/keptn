@@ -449,7 +449,7 @@ jobs:
             keptndev/${{ matrix.config.artifact }}:${{ env.VERSION }}.${{ env.DATETIME }}
           build-args: |
             version=${{ env.VERSION }}
-            datetime=${{ env.DATETIME }}
-            gitsha=${{ env.GIT_SHA }}
+            buildTime=${{ env.DATETIME }}
+            gitSha=${{ env.GIT_SHA }}
           push: ${{ matrix.config.should-push-image == 'true' && (( github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository ) || ( github.event_name == 'push' )) && github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' }}
           pull: true

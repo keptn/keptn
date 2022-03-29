@@ -42,6 +42,7 @@ import (
 )
 
 var gitCommit string
+var buildTime string
 
 func main() {
 	env := config.EnvConfig{}
@@ -129,18 +130,20 @@ func preamble(env config.EnvConfig) {
 		return s
 	}
 	fmt.Printf("%s%s\n", padR("Git commit"), strOrUnknown(gitCommit))
+	fmt.Printf("%s%s\n", padR("Build time"), strOrUnknown(buildTime))
 	fmt.Printf("%s%s\n", padR("Start time"), time.Now().UTC().String())
 	fmt.Printf("%s%t\n", padR("Remote execution plane"), env.PubSubConnectionType() == config.ConnectionTypeHTTP)
 	fmt.Printf("%s%t\n", padR("Oauth enabled"), env.OAuthEnabled())
-	fmt.Printf("%s%s\n", padR("K8S pod name"), strOrUnknown(env.K8sPodName))
-	fmt.Printf("%s%s\n", padR("K8S deployment name"), strOrUnknown(env.K8sDeploymentName))
-	fmt.Printf("%s%s\n", padR("K8S node name"), strOrUnknown(env.K8sNodeName))
 	fmt.Printf("%s%s\n", padR("Keptn API endpoint"), strOrUnknown(env.KeptnAPIEndpoint))
 	fmt.Printf("%s%s\n", padR("Api proxy path"), strOrUnknown(env.APIProxyPath))
 	fmt.Printf("%s%s\n", padR("Api proxy path"), strOrUnknown(strconv.Itoa(env.APIProxyPort)))
 	fmt.Printf("%s%s\n", padR("PubSub URL"), strOrUnknown(env.PubSubURL))
 	fmt.Printf("%s%s\n", padR("PubSub topic"), strOrUnknown(env.PubSubTopic))
 	fmt.Printf("%s%s\n", padR("PubSub group"), strOrUnknown(env.PubSubGroup))
+	fmt.Printf("%s%s\n", padR("K8S node name"), strOrUnknown(env.K8sNodeName))
+	fmt.Printf("%s%s\n", padR("K8S namespace"), strOrUnknown(env.K8sNamespace))
+	fmt.Printf("%s%s\n", padR("K8S deployment name"), strOrUnknown(env.K8sDeploymentName))
+	fmt.Printf("%s%s\n", padR("K8S pod name"), strOrUnknown(env.K8sPodName))
 }
 
 func createExecutionContext() *utils.ExecutionContext {
