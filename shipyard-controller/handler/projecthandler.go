@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/shipyard-controller/config"
 	"gopkg.in/yaml.v3"
@@ -29,6 +28,12 @@ import (
 
 type ProjectValidator struct {
 	ProjectNameMaxSize int
+}
+
+type ProvisioningData struct {
+	GitRemoteURL string `json:"gitRemoteURL"`
+	GitToken     string `json:"gitToken"`
+	GitUser      string `json:"gitUser"`
 }
 
 func (p ProjectValidator) Validate(params interface{}) error {
@@ -290,9 +295,10 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 	}
 
 	automaticProvisioningURL := os.Getenv("AUTOMATIC_PROVISIONING_URL")
-	if automaticProvisioningURL != "" && createProjectParams.GitRemoteURL == "" {
-		values := map[string]string{"project": *createProjectParams.Name}
+	if automaticProvisioningURL != "" && params.GitRemoteURL == "" {
+		values := map[string]string{"project": *params.Name}
 		jsonRequestData, err := json.Marshal(values)
+		log.Infof("Creating project %s with provisioned gitRemoteURL", *params.Name)
 		if err != nil {
 			log.Errorf(UnableMarshallProvisioningData, err.Error())
 			SetFailedDependencyErrorResponse(c, fmt.Sprintf(UnableMarshallProvisioningData, err.Error()))
@@ -320,22 +326,16 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 			return
 		}
 
-		type ProvisioningData struct {
-			gitRemoteURL string
-			gitToken     string
-			gitUser      string
-		}
 		provisioningData := ProvisioningData{}
-		err = json.Unmarshal(jsonProvisioningData, &provisioningData)
-		if err != nil {
+		if err := json.Unmarshal([]byte(jsonProvisioningData), &provisioningData); err != nil {
 			log.Errorf(UnableUnMarshallProvisioningData, err.Error())
 			SetFailedDependencyErrorResponse(c, fmt.Sprintf(UnableUnMarshallProvisioningData, err.Error()))
 			return
 		}
 
-		createProjectParams.GitRemoteURL = provisioningData.gitRemoteURL
-		createProjectParams.GitToken = provisioningData.gitToken
-		createProjectParams.GitUser = provisioningData.gitUser
+		params.GitRemoteURL = provisioningData.GitRemoteURL
+		params.GitToken = provisioningData.GitToken
+		params.GitUser = provisioningData.GitUser
 	}
 
 	projectValidator := ProjectValidator{ProjectNameMaxSize: ph.Env.ProjectNameMaxSize}
@@ -344,8 +344,8 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 		return
 	}
 
-	common.LockProject(*createProjectParams.Name)
-	defer common.UnlockProject(*createProjectParams.Name)
+	common.LockProject(*params.Name)
+	defer common.UnlockProject(*params.Name)
 
 	if err := ph.sendProjectCreateStartedEvent(keptnContext, params); err != nil {
 		log.Errorf("could not send project.create.started event: %s", err.Error())
@@ -448,6 +448,7 @@ func (ph *ProjectHandler) DeleteProject(c *gin.Context) {
 	if automaticProvisioningURL != "" {
 		values := map[string]string{"project": projectName, "namespace": namespace}
 		jsonRequestData, err := json.Marshal(values)
+		log.Infof("Deleting project %s with provisioned gitRemoteURL", projectName)
 
 		if err != nil {
 			log.Errorf(UnableMarshallProvisioningData, err.Error())

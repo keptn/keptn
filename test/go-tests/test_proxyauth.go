@@ -122,7 +122,7 @@ func Test_ProxyAuth(t *testing.T) {
 
 	namespace := osutils.GetOSEnvOrDefault(KeptnNamespaceEnvVar, DefaultKeptnNamespace)
 
-	squidIP, err := GetSquidExternalIP(namespace)
+	squidIP, err := GetServiceExternalIP(namespace, "squid")
 	require.Nil(t, err)
 
 	// apply the k8s job for creating the git upstream
