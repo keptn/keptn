@@ -223,17 +223,13 @@ jobs:
               run_id: context.runId
             });
             
-            console.log(workflowRunReponse.data);
-            
             const jobResponse = await github.rest.actions.listJobsForWorkflowRun({
               owner: repo,
               repo: repo,
               run_id: context.runId
             });
             const workflowRun = workflowRunReponse.data;
-            const jobs = jobResponse.data;
-            
-            console.log(jobs);
+            const jobs = jobResponse.data.jobs;
               
             const runStartedTime = new Date(workflowRun.created_at).getTime();
             const jobStartedTime = new Date(jobs[0].started_at).getTime();
