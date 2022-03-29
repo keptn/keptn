@@ -218,7 +218,7 @@ jobs:
           script: |
             const repo = "keptn";
             
-            const workflowRun = github.rest.actions.getWorkflowRun({
+            const workflowRun = await github.rest.actions.getWorkflowRun({
               owner: repo,
               repo: repo,
               run_id: context.runId
