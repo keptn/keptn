@@ -2,6 +2,8 @@ package go_tests
 
 import (
 	"encoding/json"
+	"fmt"
+	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
@@ -41,8 +43,21 @@ func Test_ProvisioningURL(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, 201, resp.Response().StatusCode)
 
-	t.Logf("Deleting project %s with a provisioned Gitea Upstream", projectName)
+	t.Logf("Getting project %s with a provisioned Gitea Upstream", projectName)
+	resp, err = ApiGETRequest(baseProjectPath+"/"+projectName, 3)
+	require.Nil(t, err)
+	require.Equal(t, 200, resp.Response().StatusCode)
 
+	t.Logf("Checking if upstream was provisioned")
+	user := GetGiteaUser()
+	url := fmt.Sprintf("http://gitea-http:3000/%s/%s", user, projectName)
+	project := models.ExpandedProject{}
+	err = resp.ToJSON(&project)
+	require.Nil(t, err)
+	require.Equal(t, user, project.GitUser)
+	require.Equal(t, url, project.GitRemoteURI)
+
+	t.Logf("Deleting project %s with a provisioned Gitea Upstream", projectName)
 	resp, err = ApiDELETERequest(baseProjectPath+"/"+projectName, 3)
 	require.Nil(t, err)
 	require.Equal(t, 200, resp.Response().StatusCode)
