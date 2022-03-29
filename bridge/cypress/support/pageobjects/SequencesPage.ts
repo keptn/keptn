@@ -9,6 +9,16 @@ export class SequencesPage {
     return this;
   }
 
+  public assertTaskState(taskName: string, isFailed: boolean, isSuccess: boolean): this {
+    cy.byTestId(`keptn-task-item-${taskName}`)
+      .find('ktb-expandable-tile')
+      .should(isFailed ? 'have.class' : 'not.have.class', 'ktb-tile-error');
+    cy.byTestId(`keptn-task-item-${taskName}`)
+      .find('ktb-expandable-tile')
+      .should(isSuccess ? 'have.class' : 'not.have.class', 'ktb-tile-success');
+    return this;
+  }
+
   public assertTimelineTime(stage: string, time: string): this {
     cy.get('.stage-info')
       .contains(stage)
