@@ -223,9 +223,7 @@ jobs:
               run_id: context.runId
             });
             
-            console.log(context);
-            console.log(context.runId);
-            console.log(context.jobId);
+            console.log(workflowRunReponse.data);
             
             const jobResponse = await github.rest.actions.getJobForWorkflowRun({
               owner: repo,
