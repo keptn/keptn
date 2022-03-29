@@ -12,9 +12,11 @@ export class SequencesPage {
   public assertTaskState(taskName: string, isFailed: boolean, isSuccess: boolean): this {
     cy.byTestId(`keptn-task-item-${taskName}`)
       .find('ktb-expandable-tile')
+      .eq(0)
       .should(isFailed ? 'have.class' : 'not.have.class', 'ktb-tile-error');
     cy.byTestId(`keptn-task-item-${taskName}`)
       .find('ktb-expandable-tile')
+      .eq(0)
       .should(isSuccess ? 'have.class' : 'not.have.class', 'ktb-tile-success');
     return this;
   }
