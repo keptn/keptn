@@ -225,18 +225,18 @@ jobs:
             
             console.log(workflowRunReponse.data);
             
-            const jobResponse = await github.rest.actions.getJobForWorkflowRun({
+            const jobResponse = await github.rest.actions.listJobsForWorkflowRun({
               owner: repo,
               repo: repo,
-              job_id: context.jobId
+              run_id: context.runId
             });
             const workflowRun = workflowRunReponse.data;
-            const job = jobResponse.data;
+            const jobs = jobResponse.data;
             
-            console.log(job);
+            console.log(jobs);
               
             const runStartedTime = new Date(workflowRun.created_at).getTime();
-            const jobStartedTime = new Date(job.started_at).getTime();
+            const jobStartedTime = new Date(jobs[0].started_at).getTime();
             
             const queueTime = jobStartedTime - runStartedTime;
             console.log(queueTime);
