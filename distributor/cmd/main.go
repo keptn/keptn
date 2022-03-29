@@ -15,6 +15,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/kelseyhightower/envconfig"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -37,12 +38,16 @@ import (
 	"syscall"
 )
 
+var gitCommit string
+
 func main() {
 	env := config.EnvConfig{}
 	if err := envconfig.Process("", &env); err != nil {
 		logger.Errorf("Failed to process env var: %v", err)
 		os.Exit(1)
 	}
+
+	printPreamble()
 
 	executionContext := createExecutionContext()
 	eventSender, err := createEventSender(env)
@@ -99,6 +104,10 @@ func main() {
 		}
 	}
 	executionContext.Wg.Wait()
+}
+
+func printPreamble() {
+	fmt.Println("GIT_COMMIT: " + gitCommit)
 }
 
 func createExecutionContext() *utils.ExecutionContext {
