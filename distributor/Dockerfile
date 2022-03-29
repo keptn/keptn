@@ -39,6 +39,12 @@ RUN CGO_ENABLED=0 GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS 
 
 FROM alpine:3.15 as production
 ARG version=develop
+ARG datetime
+ARG gitsha
+
+RUN echo "DATETIME $datetime GITSHA $gitsha"
+
+
 LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
     org.opencontainers.image.url="https://keptn.sh" \
     org.opencontainers.image.title="Keptn Distributor" \
@@ -57,6 +63,9 @@ ENV GOTRACEBACK=all
 
 RUN adduser -D nonroot -u 65532
 USER nonroot
+
+COPY entrypoint.sh /
+ENTRYPOINT ["/entrypoint.sh"]
 
 # Run the web service on container startup.
 CMD ["/distributor"]
