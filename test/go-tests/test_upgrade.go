@@ -18,6 +18,12 @@ import (
 	"time"
 )
 
+type TriggeredSequence struct {
+	keptnContext string
+	stage        string
+	sequenceName string
+}
+
 type HTTPEndpointTest struct {
 	URL                        string
 	Method                     string
@@ -89,7 +95,21 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 
 	for i := 0; i < nrStages; i++ {
 		newStageName := fmt.Sprintf("dev-%d", i)
-		shipyard.Spec.Stages = append(shipyard.Spec.Stages, v0_2_0.Stage{Name: newStageName})
+		newStage := v0_2_0.Stage{
+			Name: newStageName,
+			Sequences: []v0_2_0.Sequence{
+				{
+					Name: "hooks",
+					Tasks: []v0_2_0.Task{
+						{
+							Name: "mytask",
+						},
+					},
+				},
+			},
+		}
+
+		shipyard.Spec.Stages = append(shipyard.Spec.Stages, newStage)
 	}
 
 	shipyardFileContent, _ := yaml.Marshal(shipyard)
@@ -104,7 +124,7 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 	}()
 
 	chartLatestVersion := "https://github.com/keptn/helm-charts-dev/blob/gh-pages/packages/keptn-0.14.0-dev-PR-7266.tgz?raw=true"
-	chartPreviousVersion := "https://github.com/keptn/helm-charts-dev/blob/6c2e1fce0e3a47d0b931d9f9782d0177f70db609/packages/keptn-0.14.0-dev-PR-7266.tgz?raw=true"
+	chartPreviousVersion := "https://github.com/keptn/helm-charts-dev/blob/d5895c9a7fc0bba826f7cf81752c9e6d8d6f5912/packages/keptn-0.14.0-dev-PR-7266.tgz?raw=true"
 
 	projectName, err = CreateProject(projectName, shipyardFile)
 	require.Nil(t, err)
@@ -113,6 +133,32 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 
 	require.Nil(t, err)
 	require.Contains(t, output, "created successfully")
+
+	// set up webhook
+
+	// create subscriptions for the webhook-service
+	taskTypes := []string{"mytask"}
+
+	webhookYamlWithSubscriptionIDs := webhookSimpleYaml
+	webhookYamlWithSubscriptionIDs = getWebhookYamlWithSubscriptionIDs(t, taskTypes, projectName, webhookYamlWithSubscriptionIDs)
+
+	// wait some time to make sure the webhook service has pulled the updated subscription
+	<-time.After(20 * time.Second) // sorry :(
+
+	// now, let's add a webhook.yaml file to our service
+	webhookFilePath, err := CreateTmpFile("webhook.yaml", webhookYamlWithSubscriptionIDs)
+	require.Nil(t, err)
+	defer func() {
+		err := os.Remove(webhookFilePath)
+		if err != nil {
+			t.Logf("Could not delete tmp file: %s", err.Error())
+		}
+	}()
+
+	t.Log("Adding webhook.yaml to our service")
+	_, err = ExecuteCommand(fmt.Sprintf("keptn add-resource --project=%s --service=%s --resource=%s --resourceUri=webhook/webhook.yaml --all-stages", projectName, serviceName, webhookFilePath))
+
+	require.Nil(t, err)
 
 	// test api endpoints
 	httpEndpointTests := []*HTTPEndpointTest{
@@ -167,13 +213,13 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 			var err error
 			if i%2 == 0 {
 				chartURL = chartLatestVersion
-				_, err = ExecuteCommand(fmt.Sprintf("kubectl -n %s set image deployment.v1.apps/lighthouse-service lighthouse-service=keptndev/lighthouse-service:0.14.0-dev", GetKeptnNameSpaceFromEnv()))
+				//_, err = ExecuteCommand(fmt.Sprintf("kubectl -n %s set image deployment.v1.apps/lighthouse-service lighthouse-service=keptndev/lighthouse-service:0.14.0-dev", GetKeptnNameSpaceFromEnv()))
 			} else {
 				chartURL = chartPreviousVersion
-				_, err = ExecuteCommand(fmt.Sprintf("kubectl -n %s set image deployment.v1.apps/lighthouse-service lighthouse-service=keptndev/lighthouse-service:0.14.0-dev-PR-7266.202203280650", GetKeptnNameSpaceFromEnv()))
+				//_, err = ExecuteCommand(fmt.Sprintf("kubectl -n %s set image deployment.v1.apps/lighthouse-service lighthouse-service=keptndev/lighthouse-service:0.14.0-dev-PR-7266.202203280650", GetKeptnNameSpaceFromEnv()))
 			}
 			t.Logf("Upgrading Keptn to %s", chartURL)
-			//_, err := ExecuteCommand(fmt.Sprintf("helm upgrade -n %s keptn %s --wait --set=control-plane.apiGatewayNginx.type=LoadBalancer --set=control-plane.common.strategy.rollingUpdate.maxUnavailable=1 --set control-plane.resourceService.enabled=true --set control-plane.resourceService.DIRECTORY_STAGE_STRUCTURE=true", GetKeptnNameSpaceFromEnv(), chartURL))
+			_, err = ExecuteCommand(fmt.Sprintf("helm upgrade -n %s keptn %s --wait --set=control-plane.apiGatewayNginx.type=LoadBalancer --set=control-plane.common.strategy.rollingUpdate.maxUnavailable=1 --set control-plane.resourceService.enabled=true --set control-plane.resourceService.DIRECTORY_STAGE_STRUCTURE=true", GetKeptnNameSpaceFromEnv(), chartURL))
 			if err != nil {
 				t.Logf("Encountered error when upgrading keptn: %v", err)
 			}
@@ -200,10 +246,7 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 	triggerSequenceWaitGroup := &sync.WaitGroup{}
 	triggerSequenceWaitGroup.Add(1)
 	nrTriggeredSequences := 0
-	triggeredSequences := []struct {
-		keptnContext string
-		stage        string
-	}{}
+	triggeredSequences := []TriggeredSequence{}
 	go func() {
 		for {
 			select {
@@ -214,17 +257,27 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 			default:
 				stageNr := nrTriggeredSequences % nrStages
 				sequenceStageName := fmt.Sprintf("dev-%d", stageNr)
+				// trigger an evaluation sequence
 				keptnContext, err := TriggerSequence(projectName, serviceName, sequenceStageName, "evaluation", nil)
 				nrTriggeredSequences++
 				if err == nil {
-					triggeredSequences = append(triggeredSequences, struct {
-						keptnContext string
-						stage        string
-					}{
+					triggeredSequences = append(triggeredSequences, TriggeredSequence{
 						keptnContext: keptnContext,
 						stage:        sequenceStageName,
+						sequenceName: "evaluation",
 					})
 					t.Logf("Triggered new evaluation sequence with KeptnContext %s", keptnContext)
+				}
+				// trigger a webhook sequence
+				keptnContext, err = TriggerSequence(projectName, serviceName, sequenceStageName, "hooks", nil)
+				nrTriggeredSequences++
+				if err == nil {
+					triggeredSequences = append(triggeredSequences, TriggeredSequence{
+						keptnContext: keptnContext,
+						stage:        sequenceStageName,
+						sequenceName: "hooks",
+					})
+					t.Logf("Triggered new hooks sequence with KeptnContext %s", keptnContext)
 				}
 				// wait some time before triggering the next sequence
 				<-time.After(time.Duration(rand.Intn(100)) * time.Millisecond)
@@ -259,15 +312,17 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 	checkSequencesWg.Add(len(triggeredSequences))
 	for _, triggeredSequence := range triggeredSequences {
 		go func(keptnContext, stage string) {
-			var evaluationFinishedEvent *models.KeptnContextExtendedCE
+			var sequenceFinishedEvent *models.KeptnContextExtendedCE
+
+			stageSequenceName := fmt.Sprintf("%s.%s", triggeredSequence.stage, triggeredSequence.sequenceName)
 			assert.Eventually(t, func() bool {
-				evaluationFinishedEvent, err = GetLatestEventOfType(keptnContext, projectName, stage, v0_2_0.GetFinishedEventType("dev.evaluation"))
-				if evaluationFinishedEvent == nil || err != nil {
+				sequenceFinishedEvent, err = GetLatestEventOfType(keptnContext, projectName, stage, v0_2_0.GetFinishedEventType(stageSequenceName))
+				if sequenceFinishedEvent == nil || err != nil {
 					return false
 				}
 				return true
 			}, 10*time.Minute, 10*time.Second)
-			if evaluationFinishedEvent != nil {
+			if sequenceFinishedEvent != nil {
 				atomic.AddUint64(&nrFinishedSequences, 1)
 			} else {
 				t.Logf("Sequence %s in stage %s has not been finished", keptnContext, stage)
