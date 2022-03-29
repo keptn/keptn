@@ -32,14 +32,12 @@ ARG debugBuild
 ARG datetime
 ARG gitsha
 
-RUN echo "GITSHA $gitsha"
-
 # set buildflags for debug build
 RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi
 
 # Build the command inside the container.
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags '-linkmode=external -X main.gitCommit=$gitsha' $BUILDFLAGS -v -o distributor ./cmd/
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-linkmode=external -X main.gitCommit=$gitsha" $BUILDFLAGS -v -o distributor ./cmd/
 
 FROM alpine:3.15 as production
 ARG version=develop
