@@ -51,7 +51,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	preamble(env)
+	bark(env)
 
 	executionContext := createExecutionContext()
 	eventSender, err := createEventSender(env)
@@ -110,7 +110,7 @@ func main() {
 	executionContext.Wg.Wait()
 }
 
-func preamble(env config.EnvConfig) {
+func bark(env config.EnvConfig) {
 	padR := func(str string) string {
 		width := 40
 		if len(str) >= width {
