@@ -60,7 +60,7 @@ class UniformPage {
   }
 
   public assertIsUpdateButtonEnabled(isEnabled: boolean): this {
-    cy.byTestId(this.UPDATE_SUBSCRIPTION_BUTTON_ID).should(isEnabled ? 'not.have.attr' : 'have.attr', 'disabled');
+    cy.byTestId(this.UPDATE_SUBSCRIPTION_BUTTON_ID).should(isEnabled ? 'be.enabled' : 'be.disabled');
     return this;
   }
 
@@ -68,11 +68,11 @@ class UniformPage {
     cy.byTestId(this.SEND_STARTED_BUTTONS)
       .find('input.dt-radio-input')
       .eq(0)
-      .should(isEnabled ? 'not.have.attr' : 'have.attr', 'disabled');
+      .should(isEnabled ? 'be.enabled' : 'be.disabled');
     cy.byTestId(this.SEND_STARTED_BUTTONS)
       .find('input.dt-radio-input')
       .eq(1)
-      .should(isEnabled ? 'not.have.attr' : 'have.attr', 'disabled');
+      .should(isEnabled ? 'be.enabled' : 'be.disabled');
     return this;
   }
 
@@ -92,11 +92,11 @@ class UniformPage {
     cy.byTestId(this.SEND_FINISHED_BUTTONS)
       .find('input.dt-radio-input')
       .eq(0)
-      .should(isEnabled ? 'not.have.attr' : 'have.attr', 'disabled');
+      .should(isEnabled ? 'be.enabled' : 'be.disabled');
     cy.byTestId(this.SEND_FINISHED_BUTTONS)
       .find('input.dt-radio-input')
       .eq(1)
-      .should(isEnabled ? 'not.have.attr' : 'have.attr', 'disabled');
+      .should(isEnabled ? 'be.enabled' : 'be.disabled');
     return this;
   }
 
