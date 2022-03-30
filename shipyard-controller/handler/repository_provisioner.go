@@ -16,8 +16,7 @@ type IRepositoryProvisioner interface {
 }
 
 type RepositoryProvisioner struct {
-	repositoryProvisioner IRepositoryProvisioner
-	provisioningURL       string
+	provisioningURL string
 }
 
 type ProvisioningData struct {
