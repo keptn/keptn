@@ -5,10 +5,12 @@ import (
 	"github.com/benbjohnson/clock"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/kelseyhightower/envconfig"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/osutils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/shipyard-controller/common"
+	"github.com/keptn/keptn/shipyard-controller/config"
 	"github.com/keptn/keptn/shipyard-controller/controller"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/db/migration"
@@ -87,6 +89,12 @@ func main() {
 		gin.DefaultWriter = ioutil.Discard
 	}
 
+	// TODO: refactor shippy to use envconfig
+	var env config.EnvConfig
+	if err := envconfig.Process("", &env); err != nil {
+		log.Fatalf("Failed to process env var: %v", err)
+	}
+
 	eventDispatcherSyncInterval, err := strconv.Atoi(osutils.GetOSEnvOrDefault(envVarEventDispatchIntervalSec, envVarEventDispatchIntervalSecDefault))
 	if err != nil {
 		log.Fatalf("Unexpected value of EVENT_DISPATCH_INTERVAL_SEC environment variable. Need to be a number")
@@ -163,6 +171,7 @@ func main() {
 	)
 
 	engine := gin.Default()
+
 	/// setting up middleware to handle graceful shutdown
 	wg := &sync.WaitGroup{}
 	engine.Use(handler.GracefulShutdownMiddleware(wg))
@@ -170,7 +179,8 @@ func main() {
 	apiV1 := engine.Group("/v1")
 	apiHealth := engine.Group("")
 
-	projectService := handler.NewProjectHandler(projectManager, eventSender)
+	projectService := handler.NewProjectHandler(projectManager, eventSender, env)
+
 	projectController := controller.NewProjectController(projectService)
 	projectController.Inject(apiV1)
 

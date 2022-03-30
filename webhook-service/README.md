@@ -76,7 +76,7 @@ Note that the execution of the defined requests will fail if any of the referenc
 By default, the webhook service will send one `<task>.started` and one `<task>.finished` event for each received triggered event, where the `<task>.finished` event contains the aggregated responses 
 of the executed requests. This behavior can be changed such that the responsibility of sending the `<task>.finished` events is moved to the services called by the webhook service. In this case,
 the webhook service will send a `<task>.started` event for each of the curl requests that are to be executed. Afterwards, the requests are executed and, if they are successful, no `<task>.finished` event is sent by the webhook service.
-If, however, one of the requests fails (e.g. due to an unknown environment variable, or if an unallowed curl command has been detected) the webhook service will send a `<task>.finished` event with `resutl=fail;status=errored` for this particular request and all requests that should have been executed afterwards. The remaining requests will not be executed in this case.
+If, however, one of the requests fails (e.g. due to an unknown environment variable, or if a disallowed curl command has been detected) the webhook service will send a `<task>.finished` event with `resutl=fail;status=errored` for this particular request and all requests that should have been executed afterwards. The remaining requests will not be executed in this case.
 Sending the finished events can be disabled by setting `sendFinished` to `false` within the webhook configuration, e.g.:
 
 ```yaml
