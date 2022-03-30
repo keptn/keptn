@@ -363,7 +363,7 @@ func TestCreateProject(t *testing.T) {
 			projectNameParam: "my-project",
 		},
 		{
-			name: "Create project with provisioning",
+			name: "Create project with provisioning - fail",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
 					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
@@ -384,6 +384,35 @@ func TestCreateProject(t *testing.T) {
 			},
 			jsonPayload:          exampleProvisioningPayload,
 			expectHttpStatus:     http.StatusFailedDependency,
+			projectNameParam:     "my-project",
+			expectRollbackCalled: false,
+		},
+		{
+			name: "Create project with provisioning",
+			fields: fields{
+				ProjectManager: &fake.IProjectManagerMock{
+					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+						return nil, func() error { return nil }
+					},
+				},
+				EventSender: &fake.IEventSenderMock{
+					SendEventFunc: func(eventMoqParam event.Event) error {
+						return nil
+					},
+				},
+				EnvConfig: config.EnvConfig{ProjectNameMaxSize: 20, AutomaticProvisioningURL: "http://some-valid.url"},
+				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{
+					ProvideRepositoryFn: func(s string) (*models.ProvisioningData, error) {
+						return &models.ProvisioningData{
+							GitRemoteURL: "http://some-valid-url.com",
+							GitToken:     "user",
+							GitUser:      "token",
+						}, nil
+					},
+				},
+			},
+			jsonPayload:          exampleProvisioningPayload,
+			expectHttpStatus:     http.StatusOK,
 			projectNameParam:     "my-project",
 			expectRollbackCalled: false,
 		},
@@ -667,7 +696,7 @@ func TestDeleteProject(t *testing.T) {
 			expectJSONResponse: &models.DeleteProjectResponse{Message: "a-message"},
 		},
 		{
-			name: "Delete Project with provisioningURL",
+			name: "Delete Project with provisioningURL - failure",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
 					DeleteFunc: func(projectName string) (string, error) {
@@ -687,6 +716,29 @@ func TestDeleteProject(t *testing.T) {
 				},
 			},
 			expectHttpStatus: http.StatusFailedDependency,
+			projectPathParam: "myproject",
+		},
+		{
+			name: "Delete Project with provisioningURL",
+			fields: fields{
+				ProjectManager: &fake.IProjectManagerMock{
+					DeleteFunc: func(projectName string) (string, error) {
+						return "a-message", nil
+					},
+				},
+				EventSender: &fake.IEventSenderMock{
+					SendEventFunc: func(eventMoqParam event.Event) error {
+						return nil
+					},
+				},
+				EnvConfig: config.EnvConfig{ProjectNameMaxSize: 200, AutomaticProvisioningURL: "http://some-invalid.url"},
+				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{
+					DeleteRepositoryFn: func(s string, s2 string) error {
+						return nil
+					},
+				},
+			},
+			expectHttpStatus: http.StatusOK,
 			projectPathParam: "myproject",
 		},
 	}
