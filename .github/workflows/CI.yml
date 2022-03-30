@@ -479,7 +479,7 @@ jobs:
     uses: ./.github/workflows/pipeline-total-runtime.yml
     with:
       workflow_name: "CI"
-      branch: ${{ needs.prepare_ci_run.outputs.BRANCH }}
+      branch: ${{ github.ref }}
     secrets:
       monitoring_api_token: ${{ secrets.MONITORING_API_TOKEN }}
       monitoring_tenant_url: ${{ secrets.MONITORING_TENANT_URL }}
