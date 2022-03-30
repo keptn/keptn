@@ -14,7 +14,9 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"fmt"
 	"github.com/kelseyhightower/envconfig"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -33,9 +35,14 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"strconv"
 	"sync"
 	"syscall"
+	"time"
 )
+
+var gitCommit string
+var buildTime string
 
 func main() {
 	env := config.EnvConfig{}
@@ -43,6 +50,8 @@ func main() {
 		logger.Errorf("Failed to process env var: %v", err)
 		os.Exit(1)
 	}
+
+	bark(env)
 
 	executionContext := createExecutionContext()
 	eventSender, err := createEventSender(env)
@@ -99,6 +108,43 @@ func main() {
 		}
 	}
 	executionContext.Wg.Wait()
+}
+
+func bark(env config.EnvConfig) {
+	padR := func(str string) string {
+		width := 40
+		if len(str) >= width {
+			return str
+		}
+		buf := bytes.NewBufferString(str)
+		for i := 0; i < width-len(str); i++ {
+			buf.WriteByte('.')
+		}
+		return buf.String()
+	}
+
+	strOrUnknown := func(s string) string {
+		if s == "" {
+			return "unknown"
+		}
+		return s
+	}
+	printFmtStr := "%s%s\n"
+	printFmtBool := "%s%t\n"
+	fmt.Printf(printFmtStr, padR("Git commit"), strOrUnknown(gitCommit))
+	fmt.Printf(printFmtStr, padR("Build time"), strOrUnknown(buildTime))
+	fmt.Printf(printFmtStr, padR("Start time"), time.Now().UTC().String())
+	fmt.Printf(printFmtBool, padR("Remote execution plane"), env.PubSubConnectionType() == config.ConnectionTypeHTTP)
+	fmt.Printf(printFmtBool, padR("Oauth enabled"), env.OAuthEnabled())
+	fmt.Printf(printFmtStr, padR("Keptn API endpoint"), strOrUnknown(env.KeptnAPIEndpoint))
+	fmt.Printf(printFmtStr, padR("Api proxy path"), strOrUnknown(env.APIProxyPath))
+	fmt.Printf(printFmtStr, padR("Api proxy port"), strOrUnknown(strconv.Itoa(env.APIProxyPort)))
+	fmt.Printf(printFmtStr, padR("PubSub URL"), strOrUnknown(env.PubSubURL))
+	fmt.Printf(printFmtStr, padR("PubSub group"), strOrUnknown(env.PubSubGroup))
+	fmt.Printf(printFmtStr, padR("K8S node name"), strOrUnknown(env.K8sNodeName))
+	fmt.Printf(printFmtStr, padR("K8S namespace"), strOrUnknown(env.K8sNamespace))
+	fmt.Printf(printFmtStr, padR("K8S deployment name"), strOrUnknown(env.K8sDeploymentName))
+	fmt.Printf(printFmtStr, padR("K8S pod name"), strOrUnknown(env.K8sPodName))
 }
 
 func createExecutionContext() *utils.ExecutionContext {

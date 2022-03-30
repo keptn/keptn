@@ -449,6 +449,9 @@ jobs:
         name: "Docker Build keptn/${{ matrix.config.artifact }}"
         if: matrix.config.should-push-image == 'true' && ( matrix.config.should-run == 'true' || needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' )
         uses: docker/build-push-action@v2
+        env:
+          DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
+          GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
         with:
           context: ${{ matrix.config.working-dir }}
           tags: |
@@ -456,5 +459,7 @@ jobs:
             keptndev/${{ matrix.config.artifact }}:${{ env.VERSION }}.${{ env.DATETIME }}
           build-args: |
             version=${{ env.VERSION }}
+            buildTime=${{ env.DATETIME }}
+            gitSha=${{ env.GIT_SHA }}
           push: ${{ matrix.config.should-push-image == 'true' && (( github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository ) || ( github.event_name == 'push' )) && github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' }}
           pull: true
