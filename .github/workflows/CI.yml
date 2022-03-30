@@ -465,6 +465,7 @@ jobs:
           pull: true
 
   calculate-total-runtime:
+    name: Calculate End-of-Pipeline Metrics
     if: always()
     needs:
       - calculate-queue-time

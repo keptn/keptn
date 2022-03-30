@@ -34,9 +34,8 @@ jobs:
                 repo: repo,
                 run_id: context.runId
             });
-            const totalJobCount = jobResponse.data.jobs.length;
             
-            console.log(jobResponse.data.jobs);
+            const totalJobCount = jobResponse.data.jobs.filter(job => job.conclusion !== "skipped").length;
 
             return totalJobCount;
 
