@@ -12,7 +12,6 @@ import {
   EvaluationSequenceFormData,
   TRIGGER_EVALUATION_TIME,
   TRIGGER_SEQUENCE,
-  TriggerEvaluationData,
   TriggerResponse,
   TriggerSequenceData,
 } from '../../_models/trigger-sequence';
@@ -260,33 +259,27 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
   }
 
   private triggerEvaluation(): void {
-    const data: TriggerEvaluationData = {
+    const data: TriggerSequenceData = {
       project: this.projectName || '',
       stage: this.selectedStage || '',
       service: this.selectedService || '',
-      evaluation: {},
     };
+    data.evaluation = {};
     if (this.evaluationFormData.labels && this.evaluationFormData.labels.trim() !== '') {
-      data.evaluation.labels = this.parseLabels(this.evaluationFormData.labels);
+      data.labels = this.parseLabels(this.evaluationFormData.labels);
     }
 
     if (this.evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.TIMEFRAME) {
-      let timeframe: Timeframe;
       if (this.evaluationFormData.timeframe && !this.isTimeframeEmpty(this.evaluationFormData.timeframe)) {
         data.evaluation.timeframe = this.parseTimeframe(this.evaluationFormData.timeframe);
-        timeframe = this.evaluationFormData.timeframe;
       } else {
-        timeframe = {
-          hours: undefined,
-          minutes: 5,
-          seconds: undefined,
-          millis: undefined,
-          micros: undefined,
-        };
         data.evaluation.timeframe = '5m';
       }
 
-      data.evaluation.start = this.calculateTimeframeStartTime(this.evaluationFormData.timeframeStart, timeframe);
+      if (this.evaluationFormData.timeframeStart) {
+        // This has only to be set, if entered by the user. If not, we can just set the timeframe and let lighthouse-service do the calculation
+        data.evaluation.start = moment(this.evaluationFormData.timeframeStart).toISOString();
+      }
     } else if (this.evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.START_END) {
       data.evaluation.start = moment(this.evaluationFormData.startDatetime || undefined).toISOString();
       data.evaluation.end = moment(this.evaluationFormData.endDatetime || undefined).toISOString();
@@ -346,27 +339,6 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
           }
         );
       });
-  }
-
-  private calculateTimeframeStartTime(start: string | undefined, timeframe: Timeframe): string {
-    const date = moment(start || undefined);
-
-    if (timeframe.hours) {
-      date.subtract(timeframe.hours, 'hours');
-    }
-    if (timeframe.minutes) {
-      date.subtract(timeframe.minutes, 'minutes');
-    }
-    if (timeframe.seconds) {
-      date.subtract(timeframe.seconds, 'seconds');
-    }
-    if (timeframe.millis) {
-      date.subtract(timeframe.millis, 'milliseconds');
-    }
-    // To be consistent with the CLI, we do not process microseconds,
-    // as UTC timestamp only supports a granularity of milliseconds
-
-    return date.toISOString();
   }
 
   private isTimeframeEmpty(timeframe: Timeframe): boolean {
