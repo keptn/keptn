@@ -251,7 +251,7 @@ jobs:
   build-helm-charts:
     needs: prepare
     name: Build Helm Charts
-    uses: keptn/keptn/.github/workflows/build-helm-charts.yml@master
+    uses: ./.github/workflows/build-helm-charts.yml
     with:
       branch: ${{ needs.prepare.outputs.branch }}
       version: ${{ needs.prepare.outputs.next-version }}
@@ -263,7 +263,7 @@ jobs:
   ############################################################################
   build-cli:
     needs: prepare
-    uses: keptn/keptn/.github/workflows/build-cli.yml@master
+    uses: ./.github/workflows/build-cli.yml
     with:
       branch: ${{ needs.prepare.outputs.branch }}
       version: ${{ needs.prepare.outputs.next-version }}

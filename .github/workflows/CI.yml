@@ -336,7 +336,7 @@ jobs:
     name: Build Keptn CLI
     needs: [prepare_ci_run, unit-tests-cli]
     if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_CLI == 'true')
-    uses: keptn/keptn/.github/workflows/build-cli.yml@master
+    uses: ./.github/workflows/build-cli.yml
     with:
       branch: ${{ needs.prepare_ci_run.outputs.BRANCH }}
       version: ${{ needs.prepare_ci_run.outputs.VERSION }}
@@ -349,7 +349,7 @@ jobs:
     name: Build Helm Charts
     needs: prepare_ci_run
     if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_INSTALLER == 'true')
-    uses: keptn/keptn/.github/workflows/build-helm-charts.yml@master
+    uses: ./.github/workflows/build-helm-charts.yml
     with:
       branch: ${{ needs.prepare_ci_run.outputs.BRANCH }}
       version: ${{ needs.prepare_ci_run.outputs.VERSION }}
