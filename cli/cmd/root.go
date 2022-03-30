@@ -146,7 +146,6 @@ func runVersionCheck(vChecker *version.VersionChecker, flags []string, cliConfig
 // skipVersionCheck checks if the subcommand is `install` or `--oauth`
 // args here does not contain the main command
 // e.g., For `keptn -q install`, args would be just ['-q', 'install']
-//
 func skipVersionCheck(args []string) bool {
 	for _, arg := range args {
 		switch {
