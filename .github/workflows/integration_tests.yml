@@ -26,7 +26,7 @@ jobs:
     name: "Calculate Queue Time"
     uses: keptn/keptn/.github/workflows/pipeline-queuetime.yml@master
     with:
-      workflow_name: "CI"
+      workflow_name: "Integration Tests"
 
   integration-test:
     name: "Tests"
