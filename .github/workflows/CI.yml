@@ -477,7 +477,7 @@ jobs:
       - helm_charts_build
       - helm_charts_upload
       - docker_build
-    uses: ./.github/workflows/pipeline-total-runtime.yml
+    uses: ./.github/workflows/end-of-pipeline-metrics.yml
     with:
       workflow_name: "CI"
       branch: ${{ github.ref }}

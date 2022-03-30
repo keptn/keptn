@@ -1103,7 +1103,7 @@ jobs:
       - publish-final-test-report
       - deploy_keptn_with_keptn
       - trigger_keptn_delivery
-    uses: ./.github/workflows/pipeline-total-runtime.yml
+    uses: ./.github/workflows/end-of-pipeline-metrics.yml
     with:
       workflow_name: "Integration Tests"
       branch: ${{ github.ref }}
