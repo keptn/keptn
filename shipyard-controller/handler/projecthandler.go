@@ -13,7 +13,6 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"net/http"
-	"os"
 	"sort"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
@@ -294,7 +293,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 		return
 	}
 
-	automaticProvisioningURL := os.Getenv("AUTOMATIC_PROVISIONING_URL")
+	automaticProvisioningURL := ph.Env.AutomaticProvisioningURL
 	if automaticProvisioningURL != "" && params.GitRemoteURL == "" {
 		provisioningData, err := getProvisioningData(*params.Name, automaticProvisioningURL)
 		if err != nil {
@@ -414,7 +413,7 @@ func (ph *ProjectHandler) DeleteProject(c *gin.Context) {
 	projectName := c.Param("project")
 	namespace := c.Param("namespace")
 
-	automaticProvisioningURL := os.Getenv("AUTOMATIC_PROVISIONING_URL")
+	automaticProvisioningURL := ph.Env.AutomaticProvisioningURL
 	if automaticProvisioningURL != "" {
 		err := deleteProvisioningData(projectName, automaticProvisioningURL, namespace)
 		if err != nil {
@@ -538,7 +537,7 @@ func getProvisioningData(projectName string, url string) (*ProvisioningData, err
 	}
 
 	provisioningData := ProvisioningData{}
-	if err := json.Unmarshal([]byte(jsonProvisioningData), &provisioningData); err != nil {
+	if err := json.Unmarshal(jsonProvisioningData, &provisioningData); err != nil {
 		return nil, fmt.Errorf(UnableUnMarshallProvisioningData, err.Error())
 	}
 
