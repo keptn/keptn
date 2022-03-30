@@ -11,8 +11,12 @@ type errType int
 const (
 	NoCommandError errType = iota
 	InvalidCommandError
-	UnallowedURLError
+	DeniedURLError
 	RequestError
+)
+const (
+	KubernetesSvcHostEnvVar = "KUBERNETES_SERVICE_HOST"
+	KubernetesAPIPortEnvVar = "KUBERNETES_SERVICE_PORT"
 )
 
 type CurlError struct {
@@ -47,10 +51,10 @@ func IsInvalidCommandError(err error) bool {
 	return false
 }
 
-func IsUnallowedURLError(err error) bool {
+func IsDeniedURLError(err error) bool {
 	var curlErr *CurlError
 	if errors.As(err, &curlErr) {
-		return curlErr.reason == UnallowedURLError
+		return curlErr.reason == DeniedURLError
 	}
 	return false
 }
@@ -69,27 +73,27 @@ type ICurlExecutor interface {
 }
 
 type CmdCurlExecutor struct {
-	unAllowedURLs       []string
-	unAllowedCharacters []string
-	unAllowedOptions    []string
-	requiredOptions     []string
-	commandExecutor     ICommandExecutor
+	deniedURLs       []string
+	deniedCharacters []string
+	deniedOptions    []string
+	requiredOptions  []string
+	commandExecutor  ICommandExecutor
 }
 
 type CmdCurlExecutorOption func(executor *CmdCurlExecutor)
 
-func WithUnAllowedURLs(urls []string) CmdCurlExecutorOption {
+func WithDeniedURLs(urls []string) CmdCurlExecutorOption {
 	return func(executor *CmdCurlExecutor) {
-		executor.unAllowedURLs = urls
+		executor.deniedURLs = urls
 	}
 }
 
 func NewCmdCurlExecutor(cmdExecutor ICommandExecutor, opts ...CmdCurlExecutorOption) *CmdCurlExecutor {
 	executor := &CmdCurlExecutor{
-		unAllowedCharacters: []string{"$", "|", ";", ">", "$(", " &", "&&", "`", "/var/run"},
-		unAllowedOptions:    []string{"-o", "--output", "-F", "--form", "-T", "--upload-file", "-K", "--config"},
-		requiredOptions:     []string{"--fail-with-body"},
-		commandExecutor:     cmdExecutor,
+		deniedCharacters: []string{"$", "|", ";", ">", "$(", " &", "&&", "`", "/var/run"},
+		deniedOptions:    []string{"-o", "--output", "-F", "--form", "-T", "--upload-file", "-K", "--config"},
+		requiredOptions:  []string{"--fail-with-body"},
+		commandExecutor:  cmdExecutor,
 	}
 	for _, o := range opts {
 		o(executor)
@@ -116,9 +120,9 @@ func (ce *CmdCurlExecutor) parseArgs(curlCmd string) ([]string, error) {
 		return nil, &CurlError{err: errors.New("no command provided"), reason: NoCommandError}
 	}
 
-	for _, unallowedCharacter := range ce.unAllowedCharacters {
-		if strings.Contains(curlCmd, unallowedCharacter) {
-			return nil, &CurlError{err: fmt.Errorf("curl command contains unallowed character '%s'", unallowedCharacter), reason: InvalidCommandError}
+	for _, char := range ce.deniedCharacters {
+		if strings.Contains(curlCmd, char) {
+			return nil, &CurlError{err: fmt.Errorf("curl command contains denied character '%s'", char), reason: InvalidCommandError}
 		}
 	}
 
@@ -136,8 +140,9 @@ func (ce *CmdCurlExecutor) parseArgs(curlCmd string) ([]string, error) {
 	}
 
 	// check if the curl command contains any of the disallowed URLs
+	// TODO: this should only validate the URL and NOT the whole curl cmd
 	if err := ce.validateURL(curlCmd); err != nil {
-		return nil, &CurlError{err: err, reason: UnallowedURLError}
+		return nil, &CurlError{err: err, reason: DeniedURLError}
 	}
 
 	args = ce.appendOptions(args)
@@ -146,8 +151,9 @@ func (ce *CmdCurlExecutor) parseArgs(curlCmd string) ([]string, error) {
 }
 
 func (ce *CmdCurlExecutor) validateURL(curlCmd string) error {
-	for _, url := range ce.unAllowedURLs {
-		if strings.Contains(curlCmd, url) {
+	sanitizedCurlCmd := strings.ReplaceAll(curlCmd, "\\", "")
+	for _, url := range ce.deniedURLs {
+		if strings.Contains(sanitizedCurlCmd, url) {
 			return fmt.Errorf("curl command contains invalid URL %s", url)
 		}
 	}
@@ -156,7 +162,7 @@ func (ce *CmdCurlExecutor) validateURL(curlCmd string) error {
 
 func (ce *CmdCurlExecutor) validateCurlOptions(args []string) error {
 	for i, arg := range args {
-		for _, o := range ce.unAllowedOptions {
+		for _, o := range ce.deniedOptions {
 			if strings.HasPrefix(arg, o) {
 				return fmt.Errorf("curl command contains invalid option '%s'", o)
 			}
@@ -254,6 +260,36 @@ func parseCommandLine(command string) ([]string, error) {
 	}
 
 	return deleteEmpty(args), nil
+}
+
+func DeniedURLs(env map[string]string) []string {
+	kubeAPIHostIP := env[KubernetesSvcHostEnvVar]
+	kubeAPIPort := env[KubernetesAPIPortEnvVar]
+
+	urls := []string{
+		// Block access to Kubernetes API
+		"kubernetes",
+		"kubernetes.default",
+		"kubernetes.default.svc",
+		"kubernetes.default.svc.cluster.local",
+		// Block access to localhost
+		"localhost",
+		"127.0.0.1",
+		"::1",
+	}
+	if kubeAPIHostIP != "" {
+		urls = append(urls, kubeAPIHostIP)
+	}
+	if kubeAPIPort != "" {
+		urls = append(urls, "kubernetes"+":"+kubeAPIPort)
+		urls = append(urls, "kubernetes.default"+":"+kubeAPIPort)
+		urls = append(urls, "kubernetes.default.svc"+":"+kubeAPIPort)
+		urls = append(urls, "kubernetes.default.svc.cluster.local"+":"+kubeAPIPort)
+	}
+	if kubeAPIHostIP != "" && kubeAPIPort != "" {
+		urls = append(urls, kubeAPIHostIP+":"+kubeAPIPort)
+	}
+	return urls
 }
 
 func deleteEmpty(s []string) []string {
