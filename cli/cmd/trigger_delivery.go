@@ -76,10 +76,9 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 	if err != nil {
 		return errors.New(authErrorMsg)
 	}
-	*deliveryInputData.Image = strings.Split(*deliveryInputData.Image, ":")[0]
 
 	logging.PrintLog("Starting to deliver the service "+
-		*deliveryInputData.Service+" in project "+*deliveryInputData.Project+" in version "+*deliveryInputData.Image+":"+*deliveryInputData.Tag, logging.InfoLevel)
+		*deliveryInputData.Service+" in project "+*deliveryInputData.Project+" with image: "+*deliveryInputData.Image+":"+*deliveryInputData.Tag, logging.InfoLevel)
 
 	api, err := internal.APIProvider(endPoint.String(), apiToken)
 	if err != nil {
