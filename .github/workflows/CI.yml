@@ -113,10 +113,17 @@ defaults:
   run:
     shell: bash
 jobs:
+  calculate-queue-time:
+    name: "Calculate Queue Time"
+    uses: keptn/keptn/.github/workflows/pipeline-queuetime.yml@master
+    with:
+      workflow_name: "CI"
+
   prepare_ci_run:
     name: Prepare CI Run
     # Prepare CI Run looks at what has been changed in this commit/PR/... and determines which artifacts should be
     # built afterwards (in other jobs that depend on this one).
+    needs: calculate-queue-time
     runs-on: ubuntu-20.04
     outputs: # declare what this job outputs (so it can be re-used for other jobs)
       # build config

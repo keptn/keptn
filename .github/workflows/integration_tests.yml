@@ -22,54 +22,16 @@ defaults:
   run:
     shell: bash
 jobs:
-  prepare:
-    name: "Prepare"
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Calculate queue time
-        id: calculate_queue_time
-        uses: actions/github-script@v6
-        with:
-          result-encoding: string
-          script: |
-            const repo = "keptn";
-
-            const workflowRunReponse = await github.rest.actions.getWorkflowRun({
-              owner: repo,
-              repo: repo,
-              run_id: context.runId
-            });
-
-            const jobResponse = await github.rest.actions.listJobsForWorkflowRun({
-              owner: repo,
-              repo: repo,
-              run_id: context.runId
-            });
-            const workflowRun = workflowRunReponse.data;
-            const jobs = jobResponse.data.jobs;
-
-            const runStartedTime = new Date(workflowRun.created_at).getTime();
-            const jobStartedTime = new Date(jobs[0].started_at).getTime();
-
-            const queueTime = (jobStartedTime - runStartedTime) / 1000;
-            return queueTime;
-
-
-      - name: Ingest Pipeline Metrics
-        uses: dynatrace-oss/dynatrace-github-action@v8
-        with:
-          url: ${{ secrets.MONITORING_TENANT_URL }}
-          token: ${{ secrets.MONITORING_API_TOKEN }}
-          metrics: |
-            - metric: "github.workflow_queue_time"
-              value: "${{ steps.calculate_queue_time.outputs.result }}"
-              dimensions:
-                workflow_name: "Integration Tests"
+  calculate-queue-time:
+    name: "Calculate Queue Time"
+    uses: keptn/keptn/.github/workflows/pipeline-queuetime.yml@master
+    with:
+      workflow_name: "CI"
 
   integration-test:
     name: "Tests"
     runs-on: ubuntu-20.04
-    needs: prepare
+    needs: calculate-queue-time
     strategy:
       fail-fast: false
       matrix:
