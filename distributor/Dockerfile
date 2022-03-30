@@ -29,8 +29,8 @@ CMD gotestsum --no-color=false -- -coverprofile=coverage.txt -covermode=atomic -
 FROM builder-base as builder
 
 ARG debugBuild
-ARG buildTime
-ARG gitSha
+ARG buildTime=unknown
+ARG gitSha=unknown
 
 # set buildflags for debug build
 RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi
