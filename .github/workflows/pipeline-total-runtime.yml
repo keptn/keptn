@@ -21,10 +21,28 @@ jobs:
   calculate-total-runtime:
     runs-on: ubuntu-20.04
     steps:
+      - name: Calculate total job count
+        id: calculate_total_job_count
+        uses: actions/github-script@v6
+        with:
+          result-encoding: string
+          script: |
+            const repo = "keptn";
+
+            const jobResponse = await github.rest.actions.listJobsForWorkflowRun({
+                owner: repo,
+                repo: repo,
+                run_id: context.runId
+            });
+            const totalJobCount = jobResponse.data.jobs.length;
+
+            return totalJobCount;
+
       - name: Calculate total runtime
         id: calculate_total_runtime
         uses: actions/github-script@v6
         with:
+          result-encoding: string
           script: |
             const repo = "keptn";
 
@@ -42,7 +60,6 @@ jobs:
             const totalRunTime = (runEndTime - runStartedTime) / 1000;
             return totalRunTime;
 
-
       - name: Ingest Pipeline Metrics
         uses: dynatrace-oss/dynatrace-github-action@v8
         with:
@@ -51,6 +68,13 @@ jobs:
           metrics: |
             - metric: "github.workflow_total_run_time"
               value: "${{ steps.calculate_total_runtime.outputs.result }}"
+              dimensions:
+                workflow_name: "${{ inputs.workflow_name }}"
+                owner_name: "keptn"
+                repo_name: "keptn"
+                branch: "${{ inputs.branch }}"
+            - metric: "github.workflow_total_job_count"
+              value: "${{ steps.calculate_total_job_count.outputs.result }}"
               dimensions:
                 workflow_name: "${{ inputs.workflow_name }}"
                 owner_name: "keptn"
