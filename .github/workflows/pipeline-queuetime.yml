@@ -6,6 +6,11 @@ on:
         type: string
         required: true
         description: "Name of the calling workflow for easy differentiation between metric datapoints"
+    secrets:
+      monitoring_api_token:
+        required: true
+      monitoring_tenant_url:
+        required: true
 defaults:
   run:
     shell: bash
@@ -45,8 +50,8 @@ jobs:
       - name: Ingest Pipeline Metrics
         uses: dynatrace-oss/dynatrace-github-action@v8
         with:
-          url: ${{ secrets.MONITORING_TENANT_URL }}
-          token: ${{ secrets.MONITORING_API_TOKEN }}
+          url: ${{ secrets.monitoring_tenant_url }}
+          token: ${{ secrets.monitoring_api_token }}
           metrics: |
             - metric: "github.workflow_queue_time"
               value: "${{ steps.calculate_queue_time.outputs.result }}"
