@@ -115,7 +115,7 @@ defaults:
 jobs:
   calculate-queue-time:
     name: "Calculate Queue Time"
-    uses: keptn/keptn/.github/workflows/pipeline-queuetime.yml@master
+    uses: keptn/keptn/.github/workflows/pipeline-queuetime.yml@pipeline-metrics
     with:
       workflow_name: "CI"
 
