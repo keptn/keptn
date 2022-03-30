@@ -33,6 +33,7 @@ spec:
     spec:
       {{- include "control-plane.common.pod-security-context" . | nindent 6 }}
       serviceAccountName: keptn-default
+      terminationGracePeriodSeconds: {{ .Values.gracePeriod | default 30 }}
       containers:
       - name: mongodb-datastore
         image: {{ .Values.mongodbDatastore.image.repository }}:{{ .Values.mongodbDatastore.image.tag | default .Chart.AppVersion }}
