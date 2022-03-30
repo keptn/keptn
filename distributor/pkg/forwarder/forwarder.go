@@ -50,13 +50,13 @@ func (f *Forwarder) Start(executionContext *utils.ExecutionContext) {
 	}
 
 	//quitChan := make(chan struct{})
-	//go func() {
-	defer executionContext.Wg.Done()
-	if err := svr.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		logger.Fatalf("Unexpected HTTP server error in event forwarder: %v", err)
-	}
-	//<-quitChan
-	//}()
+	go func() {
+		defer executionContext.Wg.Done()
+		if err := svr.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			logger.Fatalf("Unexpected HTTP server error in event forwarder: %v", err)
+		}
+		//<-quitChan
+	}()
 	//go func() {
 	//	<-executionContext.Done()
 	//	logger.Info("Terminating event forwarder")
