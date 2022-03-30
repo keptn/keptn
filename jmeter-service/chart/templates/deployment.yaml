@@ -51,6 +51,10 @@ spec:
               port: 8080
             initialDelaySeconds: 0
             periodSeconds: 5
+          lifecycle:
+              preStop:
+                exec:
+                  command: [ "/bin/sleep","90" ]
           readinessProbe:
             httpGet:
               path: /health
@@ -61,10 +65,6 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
         - name: distributor
           image: "{{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}"
-          lifecycle:
-            preStop:
-              exec:
-                command: ["/bin/sleep","60"]
           livenessProbe:
             httpGet:
               path: /health

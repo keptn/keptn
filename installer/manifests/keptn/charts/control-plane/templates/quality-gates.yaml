@@ -32,6 +32,7 @@ spec:
       {{- include "control-plane.common.pod-security-context" . | nindent 6 }}
       containers:
         - name: lighthouse-service
+          {{- include "control-plane.dist.prestop" . | nindent 10 }}
           image: {{ .Values.lighthouseService.image.repository }}:{{ .Values.lighthouseService.image.tag | default .Chart.AppVersion }}
           livenessProbe:
             httpGet:
@@ -75,7 +76,6 @@ spec:
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
           {{- include "control-plane.dist.readinessProbe" . | nindent 10 }}
-          {{- include "control-plane.dist.prestop" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080

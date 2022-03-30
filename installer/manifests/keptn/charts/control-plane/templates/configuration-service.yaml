@@ -63,6 +63,7 @@ spec:
         {{- end }}
       containers:
         - name: resource-service
+          {{- include "control-plane.dist.prestop" . | nindent 10 }}
           image: {{ .Values.resourceService.image.repository }}:{{ .Values.resourceService.image.tag | default .Chart.AppVersion }}
           livenessProbe:
             httpGet:
