@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -72,7 +73,7 @@ func TestTriggerDelivery(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
 
-	receivedEvent := make(chan bool)
+	receivedEvent := make(chan *apimodels.KeptnContextExtendedCE)
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")
@@ -91,7 +92,7 @@ func TestTriggerDelivery(t *testing.T) {
 					t.Errorf("did not receive correct event: %s", err.Error())
 				}
 				go func() {
-					receivedEvent <- true
+					receivedEvent <- event
 				}()
 			} else if strings.Contains(r.RequestURI, "/v1/metadata") {
 				defer r.Body.Close()
@@ -113,7 +114,7 @@ func TestTriggerDelivery(t *testing.T) {
 	os.Setenv("MOCK_SERVER", ts.URL)
 
 	cmd := fmt.Sprintf("trigger delivery --project=%s --service=%s --stage=%s --sequence=%s "+
-		"--image=%s --tag=%s --values=a.b.c=d --mock --values=c.d=e", "sockshop", "carts", "dev", "artifact-delivery", "docker.io/keptnexamples/carts", "0.9.1")
+		"--image=%s --tag=%s --values=a.b.c=d --mock --values=c.d=e", "sockshop", "carts", "dev", "artifact-delivery", "docker-registry:5000/keptnexamples/carts", "0.9.1")
 	_, err := executeActionCommandC(cmd)
 
 	if err != nil {
@@ -121,8 +122,14 @@ func TestTriggerDelivery(t *testing.T) {
 	}
 
 	select {
-	case <-receivedEvent:
-		t.Log("event has been sent successfully")
+	case event := <-receivedEvent:
+		data, _ := json.Marshal(event.Data)
+		deplyomentTriggeredData := &keptnv2.DeploymentTriggeredEventData{}
+		json.Unmarshal(data, deplyomentTriggeredData)
+		require.Equal(t, "docker-registry:5000/keptnexamples/carts:0.9.1", deplyomentTriggeredData.ConfigurationChange.Values["image"])
+		require.Equal(t, "sockshop", deplyomentTriggeredData.Project)
+		require.Equal(t, "carts", deplyomentTriggeredData.Service)
+		require.Equal(t, "dev", deplyomentTriggeredData.Stage)
 		break
 	case <-time.After(5 * time.Second):
 		t.Error("event was not sent")

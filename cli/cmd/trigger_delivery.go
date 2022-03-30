@@ -127,12 +127,7 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 			Service: *deliveryInputData.Service,
 			Labels:  *deliveryInputData.Labels,
 		},
-		ConfigurationChange: keptnv2.ConfigurationChange{
-			//Values: map[string]interface{}{
-			//	"image": *deliveryInputData.Image + ":" + *deliveryInputData.Tag,
-			//},
-			Values: valuesJson,
-		},
+		ConfigurationChange: keptnv2.ConfigurationChange{Values: valuesJson},
 	}
 
 	sdkEvent := cloudevents.NewEvent()
