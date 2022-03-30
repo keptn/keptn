@@ -35,6 +35,8 @@ jobs:
                 run_id: context.runId
             });
             const totalJobCount = jobResponse.data.jobs.length;
+            
+            console.log(jobResponse.data.jobs);
 
             return totalJobCount;
 
