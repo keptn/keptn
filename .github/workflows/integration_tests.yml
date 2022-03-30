@@ -22,9 +22,19 @@ defaults:
   run:
     shell: bash
 jobs:
+  calculate-queue-time:
+    name: "Calculate Queue Time"
+    uses: ./.github/workflows/pipeline-queuetime.yml
+    with:
+      workflow_name: "Integration Tests"
+    secrets:
+      monitoring_api_token: ${{ secrets.MONITORING_API_TOKEN }}
+      monitoring_tenant_url: ${{ secrets.MONITORING_TENANT_URL }}
+
   integration-test:
     name: "Tests"
     runs-on: ubuntu-20.04
+    needs: calculate-queue-time
     strategy:
       fail-fast: false
       matrix:
