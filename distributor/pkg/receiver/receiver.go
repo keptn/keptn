@@ -63,10 +63,11 @@ func (n *NATSEventReceiver) Start(ctx *utils.ExecutionContext) error {
 	n.natsConnectionHandler.MessageHandler = n.handleMessage
 
 	// we can register now to NATS topics only if we are pulling events,
+	// or if the service does not register to Uniform
 	// otherwise we wait for QueueSubscribeTopics to be called
 	// by the uniform watcher via UpdateSubscriptions
 	// this should ensure we do not lose events at rolling update
-	if n.pullSubscriptions {
+	if n.pullSubscriptions || !n.env.ValidateRegistrationConstraints() {
 		err := n.natsConnectionHandler.QueueSubscribeToTopics(n.env.PubSubTopics(), n.env.PubSubGroup)
 		if err != nil {
 			return fmt.Errorf("could not subscribe to events: %w", err)
