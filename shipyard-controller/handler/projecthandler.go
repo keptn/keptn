@@ -1,12 +1,9 @@
 package handler
 
 import (
-	"bytes"
 	"encoding/base64"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/shipyard-controller/config"
@@ -27,12 +24,6 @@ import (
 
 type ProjectValidator struct {
 	ProjectNameMaxSize int
-}
-
-type ProvisioningData struct {
-	GitRemoteURL string `json:"gitRemoteURL"`
-	GitToken     string `json:"gitToken"`
-	GitUser      string `json:"gitUser"`
 }
 
 func (p ProjectValidator) Validate(params interface{}) error {
@@ -181,16 +172,18 @@ type IProjectHandler interface {
 }
 
 type ProjectHandler struct {
-	ProjectManager IProjectManager
-	EventSender    common.EventSender
-	Env            config.EnvConfig
+	ProjectManager        IProjectManager
+	EventSender           common.EventSender
+	Env                   config.EnvConfig
+	RepositoryProvisioner *RepositoryProvisioner
 }
 
-func NewProjectHandler(projectManager IProjectManager, eventSender common.EventSender, env config.EnvConfig) *ProjectHandler {
+func NewProjectHandler(projectManager IProjectManager, eventSender common.EventSender, env config.EnvConfig, repositoryProvisioner *RepositoryProvisioner) *ProjectHandler {
 	return &ProjectHandler{
-		ProjectManager: projectManager,
-		EventSender:    eventSender,
-		Env:            env,
+		ProjectManager:        projectManager,
+		EventSender:           eventSender,
+		Env:                   env,
+		RepositoryProvisioner: repositoryProvisioner,
 	}
 }
 
@@ -295,7 +288,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 
 	automaticProvisioningURL := ph.Env.AutomaticProvisioningURL
 	if automaticProvisioningURL != "" && params.GitRemoteURL == "" {
-		provisioningData, err := getProvisioningData(*params.Name, automaticProvisioningURL)
+		provisioningData, err := ph.RepositoryProvisioner.ProvideRepository(*params.Name)
 		if err != nil {
 			log.Errorf(err.Error())
 			SetFailedDependencyErrorResponse(c, err.Error())
@@ -415,7 +408,7 @@ func (ph *ProjectHandler) DeleteProject(c *gin.Context) {
 
 	automaticProvisioningURL := ph.Env.AutomaticProvisioningURL
 	if automaticProvisioningURL != "" {
-		err := deleteProvisioningData(projectName, automaticProvisioningURL, namespace)
+		err := ph.RepositoryProvisioner.DeleteRepository(projectName, namespace)
 		if err != nil {
 			log.Errorf(err.Error())
 			SetFailedDependencyErrorResponse(c, err.Error())
@@ -512,61 +505,4 @@ func (ph *ProjectHandler) sendProjectDeleteFailFinishedEvent(keptnContext, proje
 
 	ce := common.CreateEventWithPayload(keptnContext, "", keptnv2.GetFinishedEventType(keptnv2.ProjectDeleteTaskName), eventPayload)
 	return ph.EventSender.SendEvent(ce)
-}
-
-func getProvisioningData(projectName string, url string) (*ProvisioningData, error) {
-	values := map[string]string{"project": projectName}
-	jsonRequestData, err := json.Marshal(values)
-	log.Infof("Creating project %s with provisioned gitRemoteURL", projectName)
-	if err != nil {
-		return nil, fmt.Errorf(UnableMarshallProvisioningData, err.Error())
-	}
-
-	resp, err := http.Post(url+"/repository", "application/json", bytes.NewBuffer(jsonRequestData))
-	if err != nil {
-		return nil, fmt.Errorf(UnableProvisionInstance, err.Error())
-	}
-
-	if resp.StatusCode == http.StatusConflict {
-		return nil, fmt.Errorf(UnableProvisionInstance, err.Error())
-	}
-
-	jsonProvisioningData, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf(UnableReadProvisioningData, err.Error())
-	}
-
-	provisioningData := ProvisioningData{}
-	if err := json.Unmarshal(jsonProvisioningData, &provisioningData); err != nil {
-		return nil, fmt.Errorf(UnableUnMarshallProvisioningData, err.Error())
-	}
-
-	return &provisioningData, nil
-}
-
-func deleteProvisioningData(projectName string, url string, namespace string) error {
-	values := map[string]string{"project": projectName, "namespace": namespace}
-	jsonRequestData, err := json.Marshal(values)
-	log.Infof("Deleting project %s with provisioned gitRemoteURL", projectName)
-
-	if err != nil {
-		return fmt.Errorf(UnableMarshallProvisioningData, err.Error())
-	}
-
-	req, err := http.NewRequest(http.MethodDelete, url+"/repository", bytes.NewBuffer(jsonRequestData))
-	if err != nil {
-		return fmt.Errorf(UnableProvisionDeleteReq, err.Error())
-	}
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return fmt.Errorf(UnableProvisionDelete, err.Error())
-	}
-
-	if resp.StatusCode == http.StatusNotFound {
-		return fmt.Errorf(UnableProvisionDelete, err.Error())
-	}
-
-	return nil
 }

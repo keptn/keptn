@@ -76,11 +76,12 @@ data:
     mockserver.initializationJsonPath=/config/initializerJson.json
 `
 
-// @Description: Test_ProvisioningURL tests the behaviour of the system, when no git credentials are submitted by user as
-// they should be provisioned by a 3rd partly REST API when AUTOMATIC_PROVISIONING_URL env variable is set. We are using
-// a simple mockserver to mock the responses from the 3rd partly REST API, which responses with a valid git credentials.
-// @Outcome Creating and deleting the project is tested using the provisoned git credentials
-// @Issue 7149
+/* @Description: Test_ProvisioningURL tests the behaviour of the system, when no git credentials are submitted by user as
+ * they should be provisioned by a 3rd partly REST API when AUTOMATIC_PROVISIONING_URL env variable is set. We are using
+ * a simple mockserver to mock the responses from the 3rd partly REST API, which responses with a valid git credentials.
+ * @Outcome Creating and deleting the project is tested using the provisoned git credentials
+ * @Issue 7149
+ */
 func Test_ProvisioningURL(t *testing.T) {
 	projectName := "url-provisioning"
 	mockserverConfigFileName := "mockserver-config.yaml"
