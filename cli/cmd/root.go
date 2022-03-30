@@ -2,13 +2,12 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-	"strings"
-
 	"github.com/keptn/keptn/cli/pkg/config"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/pkg/version"
 	"github.com/spf13/cobra"
+	"os"
+	"strings"
 )
 
 var cfgFile string
@@ -88,11 +87,10 @@ func initConfig() {
 	logging.PrintLog(fmt.Sprintf("Using config file: %s", cfgMgr.CLIConfigPath), logging.VerboseLevel)
 
 	var err error
-	configCLI, err := cfgMgr.LoadCLIConfig()
+	rootCLIConfig, err = cfgMgr.LoadCLIConfig()
 	if err != nil {
 		logging.PrintLog(err.Error(), logging.InfoLevel)
 	}
-	rootCLIConfig = configCLI
 
 }
 
@@ -149,7 +147,6 @@ func runVersionCheck(vChecker *version.VersionChecker, flags []string, cliConfig
 // args here does not contain the main command
 // e.g., For `keptn -q install`, args would be just ['-q', 'install']
 //
-
 func skipVersionCheck(args []string) bool {
 	for _, arg := range args {
 		switch {
