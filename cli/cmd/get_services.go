@@ -72,7 +72,7 @@ keptn get services carts --project=sockshop -o=json  # Get details of the carts 
 
 		api, err := internal.APIProvider(endPoint.String(), apiToken)
 		if err != nil {
-			return err
+			return internal.OnAPIError(err)
 		}
 
 		if !mocking {

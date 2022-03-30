@@ -2,10 +2,14 @@ package internal
 
 import (
 	"context"
+	"fmt"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/internal/auth"
 	"net/http"
+	"strings"
 )
+
+const ErrWithStatusCode = "error with status code %d"
 
 var PublicDiscovery = auth.NewOauthDiscovery(&http.Client{})
 
@@ -66,4 +70,21 @@ func getAPISetWithOauthGetter(baseURL string, keptnXToken string, oauthAuthentic
 		}
 	}
 	return apiutils.New(baseURL, apiutils.WithAuthToken(keptnXToken), apiutils.WithHTTPClient(client))
+}
+
+func OnAPIError(err error) error {
+	switch 0 {
+	case compareError(err, ErrWithStatusCode, 401):
+		return fmt.Errorf("You are not authenticated. Use the keptn auth command to authenticate based on the API token or an OAuth client.")
+	case compareError(err, ErrWithStatusCode, 403):
+		return fmt.Errorf("You do not have enough permissions. This for all commands")
+	case compareError(err, ErrWithStatusCode, 500):
+		return fmt.Errorf("Keptn API seems to be down")
+	default:
+		return err
+	}
+}
+
+func compareError(err error, msg string, code int) int {
+	return strings.Compare(err.Error(), fmt.Sprintf(msg, code))
 }
