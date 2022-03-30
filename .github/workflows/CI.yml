@@ -118,8 +118,9 @@ jobs:
     uses: keptn/keptn/.github/workflows/pipeline-queuetime.yml@pipeline-metrics
     with:
       workflow_name: "CI"
-      monitoring_api_token: "${{ secrets.MONITORING_API_TOKEN }}"
-      monitoring_tenant_url: "${{ secrets.MONITORING_TENANT_URL }}"
+    secrets:
+      monitoring_api_token: ${{ secrets.MONITORING_API_TOKEN }}
+      monitoring_tenant_url: ${{ secrets.MONITORING_TENANT_URL }}
 
   prepare_ci_run:
     name: Prepare CI Run
