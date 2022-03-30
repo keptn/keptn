@@ -465,6 +465,7 @@ jobs:
           pull: true
 
   calculate-total-runtime:
+    if: always()
     needs:
       - calculate-queue-time
       - prepare_ci_run
