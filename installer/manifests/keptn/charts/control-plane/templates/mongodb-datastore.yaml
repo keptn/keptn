@@ -85,8 +85,10 @@ spec:
         - name: LOG_LEVEL
           value: {{ .Values.logLevel | default "info" }}
         {{- include "control-plane.common.container-security-context" . | nindent 8 }}
+        {{- include "control-plane.dist.prestop" . | nindent 8 }}
       - name: distributor
         image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
+        {{- include "control-plane.dist.prestop" . | nindent 8 }}
         {{- include "control-plane.dist.livenessProbe" . | nindent 8 }}
         {{- include "control-plane.dist.readinessProbe" . | nindent 8 }}
         imagePullPolicy: IfNotPresent

@@ -101,6 +101,7 @@ spec:
               memory: "128Mi"
               cpu: "100m"
           {{- include "control-plane.common.container-security-context" . | nindent 10 }}
+          {{- include "control-plane.dist.prestop" . | nindent 10 }}
       terminationGracePeriodSeconds: {{ .Values.gracePeriod | default 30 }}
 ---
 apiVersion: v1

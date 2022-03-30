@@ -62,6 +62,7 @@ spec:
         {{- end }}
       containers:
         - name: resource-service
+          {{- include "control-plane.dist.prestop" . | nindent 10 }}
           image: {{ .Values.resourceService.image.repository }}:{{ .Values.resourceService.image.tag | default .Chart.AppVersion }}
           livenessProbe:
             httpGet:
@@ -109,6 +110,7 @@ spec:
         - name: resource-volume
           emptyDir: {}
       serviceAccountName: keptn-configuration-service
+      terminationGracePeriodSeconds: {{ .Values.gracePeriod | default 30 }}
 {{- else }}
 apiVersion: v1
 kind: PersistentVolumeClaim
