@@ -24,7 +24,7 @@ defaults:
 jobs:
   calculate-queue-time:
     name: "Calculate Queue Time"
-    uses: ./keptn/keptn/.github/workflows/pipeline-queuetime.yml
+    uses: ./.github/workflows/pipeline-queuetime.yml
     with:
       workflow_name: "Integration Tests"
     secrets:
