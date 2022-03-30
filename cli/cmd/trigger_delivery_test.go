@@ -123,9 +123,11 @@ func TestTriggerDelivery(t *testing.T) {
 
 	select {
 	case event := <-receivedEvent:
-		data, _ := json.Marshal(event.Data)
+		data, err := json.Marshal(event.Data)
+		require.Nil(t, err)
 		deplyomentTriggeredData := &keptnv2.DeploymentTriggeredEventData{}
-		json.Unmarshal(data, deplyomentTriggeredData)
+		require.Nil(t, json.Unmarshal(data, deplyomentTriggeredData))
+
 		require.Equal(t, "docker-registry:5000/keptnexamples/carts:0.9.1", deplyomentTriggeredData.ConfigurationChange.Values["image"])
 		require.Equal(t, "sockshop", deplyomentTriggeredData.Project)
 		require.Equal(t, "carts", deplyomentTriggeredData.Service)
