@@ -1095,7 +1095,7 @@ jobs:
           done
 
   calculate-total-runtime:
-    name: Calculate End-of-Pipeline Metrics
+    name: End-of-Pipeline Metrics
     if: always()
     needs:
       - calculate-queue-time
