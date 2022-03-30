@@ -61,9 +61,16 @@ func (n *NATSEventReceiver) Start(ctx *utils.ExecutionContext) error {
 		return fmt.Errorf("could not Start NatsEventReceiver: %w", err)
 	}
 	n.natsConnectionHandler.MessageHandler = n.handleMessage
-	err := n.natsConnectionHandler.QueueSubscribeToTopics(n.env.PubSubTopics(), n.env.PubSubGroup)
-	if err != nil {
-		return fmt.Errorf("could not subscribe to events: %w", err)
+
+	// we can register now to NATS topics only if we are pulling events,
+	// otherwise we wait for QueueSubscribeTopics to be called
+	// by the uniform watcher via UpdateSubscriptions
+	// this should ensure we do not lose events at rolling update
+	if n.pullSubscriptions {
+		err := n.natsConnectionHandler.QueueSubscribeToTopics(n.env.PubSubTopics(), n.env.PubSubGroup)
+		if err != nil {
+			return fmt.Errorf("could not subscribe to events: %w", err)
+		}
 	}
 
 	defer func() {
