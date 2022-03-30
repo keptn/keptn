@@ -175,10 +175,10 @@ type ProjectHandler struct {
 	ProjectManager        IProjectManager
 	EventSender           common.EventSender
 	Env                   config.EnvConfig
-	RepositoryProvisioner *RepositoryProvisioner
+	RepositoryProvisioner IRepositoryProvisioner
 }
 
-func NewProjectHandler(projectManager IProjectManager, eventSender common.EventSender, env config.EnvConfig, repositoryProvisioner *RepositoryProvisioner) *ProjectHandler {
+func NewProjectHandler(projectManager IProjectManager, eventSender common.EventSender, env config.EnvConfig, repositoryProvisioner IRepositoryProvisioner) *ProjectHandler {
 	return &ProjectHandler{
 		ProjectManager:        projectManager,
 		EventSender:           eventSender,

@@ -7,29 +7,30 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	oauthutils "github.com/keptn/go-utils/pkg/common/oauth2"
+	"github.com/keptn/keptn/shipyard-controller/models"
+
 	log "github.com/sirupsen/logrus"
 )
 
 type IRepositoryProvisioner interface {
-	ProvideRepository(projectName string, url string) (*ProvisioningData, error)
-	DeleteRepository(projectName string, url string, namespace string) error
+	ProvideRepository(projectName string) (*models.ProvisioningData, error)
+	DeleteRepository(projectName string, namespace string) error
 }
 
 type RepositoryProvisioner struct {
 	provisioningURL string
+	client          oauthutils.HTTPClient
 }
 
-type ProvisioningData struct {
-	GitRemoteURL string `json:"gitRemoteURL"`
-	GitToken     string `json:"gitToken"`
-	GitUser      string `json:"gitUser"`
+func NewRepositoryProvisioner(provisioningURL string, client oauthutils.HTTPClient) *RepositoryProvisioner {
+	return &RepositoryProvisioner{
+		provisioningURL: provisioningURL,
+		client:          client,
+	}
 }
 
-func NewRepositoryProvisioner(provisioningURL string) *RepositoryProvisioner {
-	return &RepositoryProvisioner{provisioningURL: provisioningURL}
-}
-
-func (rp *RepositoryProvisioner) ProvideRepository(projectName string) (*ProvisioningData, error) {
+func (rp *RepositoryProvisioner) ProvideRepository(projectName string) (*models.ProvisioningData, error) {
 	values := map[string]string{"project": projectName}
 	jsonRequestData, err := json.Marshal(values)
 	log.Infof("Creating project %s with provisioned gitRemoteURL", projectName)
@@ -37,7 +38,12 @@ func (rp *RepositoryProvisioner) ProvideRepository(projectName string) (*Provisi
 		return nil, fmt.Errorf(UnableMarshallProvisioningData, err.Error())
 	}
 
-	resp, err := http.Post(rp.provisioningURL+"/repository", "application/json", bytes.NewBuffer(jsonRequestData))
+	req, err := http.NewRequest(http.MethodPost, rp.provisioningURL+"/repository", bytes.NewBuffer(jsonRequestData))
+	if err != nil {
+		return nil, fmt.Errorf(UnableProvisionPostReq, err.Error())
+	}
+
+	resp, err := rp.client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf(UnableProvisionInstance, err.Error())
 	}
@@ -51,7 +57,7 @@ func (rp *RepositoryProvisioner) ProvideRepository(projectName string) (*Provisi
 		return nil, fmt.Errorf(UnableReadProvisioningData, err.Error())
 	}
 
-	provisioningData := ProvisioningData{}
+	provisioningData := models.ProvisioningData{}
 	if err := json.Unmarshal(jsonProvisioningData, &provisioningData); err != nil {
 		return nil, fmt.Errorf(UnableUnMarshallProvisioningData, err.Error())
 	}
@@ -73,8 +79,7 @@ func (rp *RepositoryProvisioner) DeleteRepository(projectName string, namespace 
 		return fmt.Errorf(UnableProvisionDeleteReq, err.Error())
 	}
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := rp.client.Do(req)
 	if err != nil {
 		return fmt.Errorf(UnableProvisionDelete, err.Error())
 	}

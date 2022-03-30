@@ -133,7 +133,7 @@ func main() {
 		createSequenceQueueRepo(),
 		createEventQueueRepo())
 
-	repositoryProvisioner := handler.NewRepositoryProvisioner(env.AutomaticProvisioningURL)
+	repositoryProvisioner := handler.NewRepositoryProvisioner(env.AutomaticProvisioningURL, &http.Client{})
 
 	uniformRepo := createUniformRepo()
 	err = uniformRepo.SetupTTLIndex(getDurationFromEnvVar(envVarUniformIntegrationTTL, envVarUniformTTLDefault))

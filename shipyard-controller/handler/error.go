@@ -61,3 +61,5 @@ var UnableProvisionInstance = "Error provisioning a project instance: %s"
 var UnableProvisionDelete = "Error deleting a provisioned project instance: %s"
 
 var UnableProvisionDeleteReq = "Error creating delete provision request: %s"
+
+var UnableProvisionPostReq = "Error creating post provision request: %s"
