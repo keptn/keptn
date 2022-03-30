@@ -51,4 +51,4 @@ jobs:
             - metric: "github.workflow_queue_time"
               value: "${{ steps.calculate_queue_time.outputs.result }}"
               dimensions:
-                workflow_name: ${{ inputs.workflow_name }}
+                workflow_name: "${{ inputs.workflow_name }}"
