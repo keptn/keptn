@@ -1,0 +1,58 @@
+name: Calculate Totla Pipeline Runtime
+on:
+  workflow_call:
+    inputs:
+      workflow_name:
+        type: string
+        required: true
+        description: "Name of the calling workflow for easy differentiation between metric datapoints"
+      branch:
+        type: string
+        required: true
+    secrets:
+      monitoring_api_token:
+        required: true
+      monitoring_tenant_url:
+        required: true
+defaults:
+  run:
+    shell: bash
+jobs:
+  calculate-total-runtime:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Calculate total runtime
+        id: calculate_total_runtime
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const repo = "keptn";
+
+            const workflowRunReponse = await github.rest.actions.getWorkflowRun({
+              owner: repo,
+              repo: repo,
+              run_id: context.runId
+            });
+
+            const workflowRun = workflowRunReponse.data;
+
+            const runStartedTime = new Date(workflowRun.created_at).getTime();
+            const runEndTime = new Date().getTime();
+
+            const totalRunTime = (runEndTime - runStartedTime) / 1000;
+            return totalRunTime;
+
+
+      - name: Ingest Pipeline Metrics
+        uses: dynatrace-oss/dynatrace-github-action@v8
+        with:
+          url: ${{ secrets.monitoring_tenant_url }}
+          token: ${{ secrets.monitoring_api_token }}
+          metrics: |
+            - metric: "github.workflow_total_run_time"
+              value: "${{ steps.calculate_total_runtime.outputs.result }}"
+              dimensions:
+                workflow_name: "${{ inputs.workflow_name }}"
+                owner_name: "keptn"
+                repo_name: "keptn"
+                branch: "${{ inputs.branch }}"

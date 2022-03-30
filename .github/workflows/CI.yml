@@ -463,3 +463,22 @@ jobs:
             gitSha=${{ env.GIT_SHA }}
           push: ${{ matrix.config.should-push-image == 'true' && (( github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository ) || ( github.event_name == 'push' )) && github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' }}
           pull: true
+
+  calculate-total-runtime:
+    needs:
+      - calculate-queue-time
+      - prepare_ci_run
+      - store-output-in-build-config
+      - unit-tests-microservices
+      - unit-tests-cli
+      - build-cli
+      - helm_charts_build
+      - helm_charts_upload
+      - docker_build
+    uses: ./.github/workflows/pipeline-total-runtime.yml
+    with:
+      workflow_name: "CI"
+      branch: ${{ needs.prepare_ci_run.outputs.BRANCH }}
+    secrets:
+      monitoring_api_token: ${{ secrets.MONITORING_API_TOKEN }}
+      monitoring_tenant_url: ${{ secrets.MONITORING_TENANT_URL }}
