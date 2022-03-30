@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
@@ -363,12 +362,8 @@ func TestCreateProject(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			w, c := createGinTestContext()
 			c.Set("projectName", tt.projectNameParam)
-			if tt.provisioningURL != "" {
-				os.Setenv("AUTOMATIC_PROVISIONING_URL", tt.provisioningURL)
-			}
-			defer os.Unsetenv("AUTOMATIC_PROVISIONING_URL")
 
-			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, config.EnvConfig{ProjectNameMaxSize: 20})
+			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, config.EnvConfig{ProjectNameMaxSize: 20, AutomaticProvisioningURL: tt.provisioningURL})
 			c.Request, _ = http.NewRequest(http.MethodPost, "", bytes.NewBuffer([]byte(tt.jsonPayload)))
 
 			handler.CreateProject(c)
@@ -641,15 +636,12 @@ func TestDeleteProject(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			w, c := createGinTestContext()
 
-			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, config.EnvConfig{ProjectNameMaxSize: 200})
+			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, config.EnvConfig{ProjectNameMaxSize: 200, AutomaticProvisioningURL: tt.provisioningURL})
 			c.Params = gin.Params{
 				gin.Param{Key: "project", Value: tt.projectPathParam},
 				gin.Param{Key: "namespace", Value: "keptn"},
 			}
-			if tt.provisioningURL != "" {
-				os.Setenv("AUTOMATIC_PROVISIONING_URL", tt.provisioningURL)
-			}
-			defer os.Unsetenv("AUTOMATIC_PROVISIONING_URL")
+
 			c.Request, _ = http.NewRequest(http.MethodDelete, "", bytes.NewBuffer([]byte{}))
 
 			handler.DeleteProject(c)
