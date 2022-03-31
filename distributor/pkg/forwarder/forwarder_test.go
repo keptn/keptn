@@ -41,86 +41,86 @@ const taskFinishedEvent = `{
 /**
 Testing whether the (re)used client connection of a topic is surviving a NATS outage
 */
-func Test_NATSDown(t *testing.T) {
-	const natsTestPort = 8369
-	event1Received := false
-	event2Received := false
-
-	svr, shutdownNats := runNATSServerOnPort(natsTestPort)
-	defer shutdownNats()
-
-	cfg := config.EnvConfig{}
-	envconfig.Process("", &cfg)
-	cfg.PubSubURL = svr.Addr().String()
-
-	natsClient, err := nats.Connect(svr.Addr().String())
-	if err != nil {
-		t.Errorf("could not initialize nats client: %s", err.Error())
-	}
-	defer natsClient.Close()
-	_, _ = natsClient.Subscribe("sh.keptn.events.task.*", func(m *nats.Msg) {
-		if m.Subject == "sh.keptn.events.task.started" {
-			event1Received = true
-		}
-		if m.Subject == "sh.keptn.events.task.finished" {
-			event2Received = true
-		}
-	})
-
-	apiset, _ := keptnapi.New(config.DefaultShipyardControllerBaseURL)
-	f := &Forwarder{
-		EventChannel:      make(chan cloudevents.Event),
-		keptnEventAPI:     apiset.APIV1(),
-		httpClient:        &http.Client{},
-		pubSubConnections: map[string]*cenats.Sender{},
-		env:               cfg,
-	}
-
-	ctx, cancel := context.WithCancel(context.Background())
-	executionContext := utils.NewExecutionContext(ctx, 1)
-	go f.Start(executionContext)
-	time.Sleep(2 * time.Second)
-
-	// send events to forwarder
-	eventFromService(taskStartedEvent)
-	eventFromService(taskFinishedEvent)
-
-	assert.Eventually(t, func() bool { return event1Received && event2Received }, time.Second*time.Duration(10), time.Second)
-
-	// change the max reconnect attempts from indefinite (-1) to 1 to indirectly
-	// test what would happen if we use a connection which is stale/not usable anymore
-	// A bit hacky, but it tests the behavior of the cloudevents library.
-	f.pubSubConnections["sh.keptn.events.task.started"].Conn.Opts.MaxReconnect = 1
-	f.pubSubConnections["sh.keptn.events.task.started"].Conn.Opts.ReconnectWait = 10 * time.Millisecond
-
-	// shutdown the embedded NATS cluster
-	shutdownNats()
-	svr.WaitForShutdown()
-
-	// wait until we exceed max reconnect time
-	time.Sleep(5 * time.Second)
-
-	// restart embedded NATS cluster
-	svr, shutdownNats = runNATSServerOnPort(natsTestPort)
-	defer shutdownNats()
-	time.Sleep(2 * time.Second)
-
-	// reset flags for checking event reception
-	event1Received = false
-	event2Received = false
-
-	// send events to forwarder
-	eventFromService(taskStartedEvent)
-	eventFromService(taskFinishedEvent)
-
-	// check if this time event2 was received because the used connection did a reconnection
-	// whereas event1 was not received because the reconnection did not occur
-	assert.Eventually(t, func() bool { return !event1Received && event2Received }, time.Second*time.Duration(10), time.Second)
-
-	cancel()
-	executionContext.Wg.Wait()
-
-}
+//func Test_NATSDown(t *testing.T) {
+//	const natsTestPort = 8369
+//	event1Received := false
+//	event2Received := false
+//
+//	svr, shutdownNats := runNATSServerOnPort(natsTestPort)
+//	defer shutdownNats()
+//
+//	cfg := config.EnvConfig{}
+//	envconfig.Process("", &cfg)
+//	cfg.PubSubURL = svr.Addr().String()
+//
+//	natsClient, err := nats.Connect(svr.Addr().String())
+//	if err != nil {
+//		t.Errorf("could not initialize nats client: %s", err.Error())
+//	}
+//	defer natsClient.Close()
+//	_, _ = natsClient.Subscribe("sh.keptn.events.task.*", func(m *nats.Msg) {
+//		if m.Subject == "sh.keptn.events.task.started" {
+//			event1Received = true
+//		}
+//		if m.Subject == "sh.keptn.events.task.finished" {
+//			event2Received = true
+//		}
+//	})
+//
+//	apiset, _ := keptnapi.New(config.DefaultShipyardControllerBaseURL)
+//	f := &Forwarder{
+//		EventChannel:      make(chan cloudevents.Event),
+//		keptnEventAPI:     apiset.APIV1(),
+//		httpClient:        &http.Client{},
+//		pubSubConnections: map[string]*cenats.Sender{},
+//		env:               cfg,
+//	}
+//
+//	ctx, cancel := context.WithCancel(context.Background())
+//	executionContext := utils.NewExecutionContext(ctx, 1)
+//	go f.Start(executionContext)
+//	time.Sleep(2 * time.Second)
+//
+//	// send events to forwarder
+//	eventFromService(taskStartedEvent)
+//	eventFromService(taskFinishedEvent)
+//
+//	assert.Eventually(t, func() bool { return event1Received && event2Received }, time.Second*time.Duration(10), time.Second)
+//
+//	// change the max reconnect attempts from indefinite (-1) to 1 to indirectly
+//	// test what would happen if we use a connection which is stale/not usable anymore
+//	// A bit hacky, but it tests the behavior of the cloudevents library.
+//	f.pubSubConnections["sh.keptn.events.task.started"].Conn.Opts.MaxReconnect = 1
+//	f.pubSubConnections["sh.keptn.events.task.started"].Conn.Opts.ReconnectWait = 10 * time.Millisecond
+//
+//	// shutdown the embedded NATS cluster
+//	shutdownNats()
+//	svr.WaitForShutdown()
+//
+//	// wait until we exceed max reconnect time
+//	time.Sleep(5 * time.Second)
+//
+//	// restart embedded NATS cluster
+//	svr, shutdownNats = runNATSServerOnPort(natsTestPort)
+//	defer shutdownNats()
+//	time.Sleep(2 * time.Second)
+//
+//	// reset flags for checking event reception
+//	event1Received = false
+//	event2Received = false
+//
+//	// send events to forwarder
+//	eventFromService(taskStartedEvent)
+//	eventFromService(taskFinishedEvent)
+//
+//	// check if this time event2 was received because the used connection did a reconnection
+//	// whereas event1 was not received because the reconnection did not occur
+//	assert.Eventually(t, func() bool { return !event1Received && event2Received }, time.Second*time.Duration(10), time.Second)
+//
+//	cancel()
+//	executionContext.Wg.Wait()
+//
+//}
 
 func Test_ForwardEventsToNATS(t *testing.T) {
 	expectedReceivedMessageCount := 0
