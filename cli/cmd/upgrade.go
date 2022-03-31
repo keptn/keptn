@@ -325,7 +325,14 @@ func doUpgrade() error {
 	// if yes, they need to be installed separately as they have moved to their own charts
 	helmHelper := helm.NewHelper()
 
-	if err := helmHelper.UpgradeChart(keptnUpgradeChart, keptnReleaseName, keptnNamespace, nil); err != nil {
+	// fetch user-defined values of the previous Keptn installation and provide those to the upgrade command
+	// this will ensure that options such as 'apiGatewayNginx.type' will stay the same, but newly introduced values will correctly be set to their default
+	previousValues, err := helmHelper.GetValues(keptnReleaseName, keptnNamespace)
+	if err != nil {
+		return fmt.Errorf("Could not complete Keptn upgrade: %s", err.Error())
+	}
+
+	if err := helmHelper.UpgradeChart(keptnUpgradeChart, keptnReleaseName, keptnNamespace, previousValues); err != nil {
 		msg := fmt.Sprintf("Could not complete Keptn upgrade: %s \nFor troubleshooting, please check the status of the keptn deployment by executing the following command: \n\nkubectl get pods -n %s\n", err.Error(), keptnNamespace)
 		return errors.New(msg)
 	}
