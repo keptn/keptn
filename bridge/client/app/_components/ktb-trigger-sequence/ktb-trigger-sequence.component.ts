@@ -12,7 +12,6 @@ import {
   EvaluationSequenceFormData,
   TRIGGER_EVALUATION_TIME,
   TRIGGER_SEQUENCE,
-  TriggerEvaluationData,
   TriggerResponse,
   TriggerSequenceData,
 } from '../../_models/trigger-sequence';
@@ -260,14 +259,14 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
   }
 
   private triggerEvaluation(): void {
-    const data: TriggerEvaluationData = {
+    const data: TriggerSequenceData = {
       project: this.projectName || '',
       stage: this.selectedStage || '',
       service: this.selectedService || '',
-      evaluation: {},
     };
+    data.evaluation = {};
     if (this.evaluationFormData.labels && this.evaluationFormData.labels.trim() !== '') {
-      data.evaluation.labels = this.parseLabels(this.evaluationFormData.labels);
+      data.labels = this.parseLabels(this.evaluationFormData.labels);
     }
 
     if (this.evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.TIMEFRAME) {
@@ -276,7 +275,11 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
       } else {
         data.evaluation.timeframe = '5m';
       }
-      data.evaluation.start = moment(this.evaluationFormData.timeframeStart || undefined).toISOString();
+
+      if (this.evaluationFormData.timeframeStart) {
+        // This has only to be set, if entered by the user. If not, we can just set the timeframe and let lighthouse-service do the calculation
+        data.evaluation.start = moment(this.evaluationFormData.timeframeStart).toISOString();
+      }
     } else if (this.evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.START_END) {
       data.evaluation.start = moment(this.evaluationFormData.startDatetime || undefined).toISOString();
       data.evaluation.end = moment(this.evaluationFormData.endDatetime || undefined).toISOString();
