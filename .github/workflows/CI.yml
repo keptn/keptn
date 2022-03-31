@@ -466,7 +466,7 @@ jobs:
 
   calculate-total-runtime:
     name: End-of-Pipeline Metrics
-    if: always()
+    if: always() && (( github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository ) || ( github.event_name == 'push' ))
     needs:
       - calculate-queue-time
       - prepare_ci_run
