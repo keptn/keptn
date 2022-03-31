@@ -128,6 +128,18 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.KEPTN_BOT_TOKEN }}
 
+      - name: Extract branch name
+        id: extract_branch
+        # see https://github.com/keptn/gh-action-extract-branch-name for details
+        uses: keptn/gh-action-extract-branch-name@main
+
+      - name: Get current date and time
+        id: get_datetime
+        run: |
+          echo "::set-output name=DATE::$(date +'%Y%m%d')"
+          echo "::set-output name=TIME::$(date +'%H%M')"
+          echo "::set-output name=DATETIME::$(date +'%Y%m%d')$(date +'%H%M')"
+
       - name: Find next version number
         id: version_number
         env:
@@ -217,6 +229,9 @@ jobs:
       - id: docker_build_image
         name: "Docker Build keptn/${{ matrix.config.artifact }}"
         uses: docker/build-push-action@v2
+        env:
+          DATETIME: ${{ steps.get_datetime.outputs.DATETIME }}
+          GIT_SHA: ${{ steps.extract_branch.outputs.GIT_SHA }}
         with:
           context: ${{ matrix.config.working-dir }}
           tags: |
@@ -225,6 +240,8 @@ jobs:
             ghcr.io/keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}
           build-args: |
             version=${{ env.VERSION }}
+            buildTime=${{ env.DATETIME }}
+            gitSha=${{ env.GIT_SHA }}
           push: ${{ matrix.config.should-push-image }}
           pull: true
 
