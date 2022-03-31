@@ -40,7 +40,10 @@ export class DateUtil {
     return result;
   }
 
-  public getCalendarFormats(showSeconds?: boolean): {
+  public getCalendarFormats(
+    showSeconds?: boolean,
+    startUppercase?: boolean
+  ): {
     lastDay: string;
     sameDay: string;
     nextDay: string;
@@ -49,7 +52,7 @@ export class DateUtil {
     sameElse: string;
   } {
     if (showSeconds) {
-      return {
+      const calendarFormatsWithSeconds = {
         lastDay: '[yesterday at] HH:mm:ss',
         sameDay: '[today at] HH:mm:ss',
         nextDay: '[tomorrow at] HH:mm:ss',
@@ -57,8 +60,20 @@ export class DateUtil {
         nextWeek: 'dddd [at] HH:mm:ss',
         sameElse: 'YYYY-MM-DD HH:mm:ss',
       };
+      if (startUppercase) {
+        return {
+          ...calendarFormatsWithSeconds,
+          lastDay: '[Yesterday at] HH:mm:ss',
+          sameDay: '[Today at] HH:mm:ss',
+          nextDay: '[Tomorrow at] HH:mm:ss',
+          lastWeek: '[Last] dddd [at] HH:mm:ss',
+        };
+      }
+
+      return calendarFormatsWithSeconds;
     }
-    return {
+
+    const calendarFormats = {
       lastDay: '[yesterday at] HH:mm',
       sameDay: '[today at] HH:mm',
       nextDay: '[tomorrow at] HH:mm',
@@ -66,6 +81,17 @@ export class DateUtil {
       nextWeek: 'dddd [at] HH:mm',
       sameElse: 'YYYY-MM-DD HH:mm',
     };
+    if (startUppercase) {
+      return {
+        ...calendarFormats,
+        lastDay: '[Yesterday at] HH:mm',
+        sameDay: '[Today at] HH:mm',
+        nextDay: '[Tomorrow at] HH:mm',
+        lastWeek: '[Last] dddd [at] HH:mm',
+      };
+    }
+
+    return calendarFormats;
   }
 
   public getDateTimeFormat(): string {
