@@ -126,7 +126,7 @@ spec:
 func Test_ContinuousDelivery(t *testing.T) {
 	repoLocalDir, err := filepath.Abs("../assets/podtato-head")
 	require.Nil(t, err)
-	projectName := "po"
+	projectName := "podtato-head"
 	serviceName := "helloservice"
 	chartFileName := "helloservice.tgz"
 	serviceChartSrcPath := path.Join(repoLocalDir, "helm-charts", "helloservice")
