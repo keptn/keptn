@@ -36,6 +36,19 @@ type EnvFrom struct {
 	Name      string           `yaml:"name"`
 }
 
+type Request struct {
+	URL     string   `yaml:"url"`
+	Method  string   `yaml:"method"`
+	Headers []Header `yaml:"headers,omitempty"`
+	Payload string   `yaml:"payload,omitempty"`
+	Options string   `yaml:"options,omitempty"`
+}
+
+type Header struct {
+	Key   string `yaml:"key"`
+	Value string `yaml:"value"`
+}
+
 type WebHookSecretRef struct {
 	Key  string `yaml:"key"`
 	Name string `yaml:"name"`
