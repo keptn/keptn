@@ -56,7 +56,7 @@ func (s SecretHandler) CreateSecret(c *gin.Context) {
 			SetConflictErrorResponse(c, fmt.Sprintf(ErrCreateSecretMsg, err.Error()))
 			return
 		}
-		if errors.Is(err, backend.ErrTooBigKeySize) {
+		if errors.Is(err, backend.ErrTooBigKeySize) || errors.Is(err, backend.ErrScopeNotFound) {
 			SetBadRequestErrorResponse(c, fmt.Sprintf(ErrCreateSecretMsg, err.Error()))
 			return
 		}
@@ -88,7 +88,7 @@ func (s SecretHandler) UpdateSecret(c *gin.Context) {
 
 	err := s.SecretManager.UpdateSecret(secret)
 	if err != nil {
-		if errors.Is(err, backend.ErrSecretNotFound) {
+		if errors.Is(err, backend.ErrSecretNotFound) || errors.Is(err, backend.ErrScopeNotFound) {
 			SetNotFoundErrorResponse(c, fmt.Sprintf(ErrUpdateSecretMsg, err.Error()))
 			return
 		}
@@ -126,7 +126,7 @@ func (s SecretHandler) DeleteSecret(c *gin.Context) {
 	}
 	err := s.SecretManager.DeleteSecret(secret)
 	if err != nil {
-		if errors.Is(err, backend.ErrSecretNotFound) {
+		if errors.Is(err, backend.ErrSecretNotFound) || errors.Is(err, backend.ErrScopeNotFound) {
 			SetNotFoundErrorResponse(c, fmt.Sprintf(ErrDeleteSecretMsg, err.Error()))
 			return
 		}

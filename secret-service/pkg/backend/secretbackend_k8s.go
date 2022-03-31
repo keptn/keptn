@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
+	"strings"
+
 	"github.com/keptn/keptn/secret-service/pkg/common"
 	"github.com/keptn/keptn/secret-service/pkg/model"
 	"github.com/keptn/keptn/secret-service/pkg/repository"
@@ -14,8 +17,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"sort"
-	"strings"
 )
 
 const SecretBackendTypeK8s = "kubernetes"
@@ -24,6 +25,30 @@ const SecretServiceName = "keptn-secret-service"
 var ErrSecretAlreadyExists = errors.New("secret already exists")
 var ErrSecretNotFound = errors.New("secret not found")
 var ErrTooBigKeySize = errors.New("name and key values must be no more than 253 characters")
+var ErrScopeNotFound = errors.New("")
+
+// ScopeErrorNotFound provides a way to better describe the error when a scope is not found.
+type ScopeErrorNotFound struct {
+	Scope  string
+	Secret string
+	Err    error
+}
+
+func NewScopeErrorNotFound(scope, secret string) *ScopeErrorNotFound {
+	return &ScopeErrorNotFound{
+		Scope:  scope,
+		Secret: secret,
+		Err:    ErrScopeNotFound,
+	}
+}
+
+func (ve ScopeErrorNotFound) Error() string {
+	return fmt.Sprintf("scope %s not available for creation of Secret %s", ve.Scope, ve.Secret)
+}
+
+func (ve ScopeErrorNotFound) Unwrap() error {
+	return ve.Err
+}
 
 type K8sSecretBackend struct {
 	KubeAPI                kubernetes.Interface
@@ -46,7 +71,7 @@ func (k K8sSecretBackend) checkScopeDefined(secret model.Secret) (model.Scopes, 
 	}
 	if _, ok := scopes.Scopes[secret.Scope]; !ok {
 		log.Errorf("Unable to find scope %s for secret %s", secret.Scope, secret.Name)
-		return model.Scopes{}, fmt.Errorf("scope %s not available for creation of Secret %s", secret.Scope, secret.Name)
+		return model.Scopes{}, NewScopeErrorNotFound(secret.Scope, secret.Name)
 	}
 	return scopes, nil
 }
