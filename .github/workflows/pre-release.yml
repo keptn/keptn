@@ -98,6 +98,8 @@ jobs:
     outputs:
       next-version: ${{ steps.version_number.outputs.next-version }}
       branch: ${{ steps.current_branch.outputs.branch }}
+      datetime: ${{ steps.get_datetime.outputs.DATETIME }}
+      git_sha: ${{ steps.extract_branch.outputs.GIT_SHA }}
       keptn-spec-version: ${{ steps.keptn_spec_version.outputs.keptn-spec-version }}
       BUILD_EVERYTHING: ${{ steps.build_everything.outputs.BUILD_EVERYTHING }}
       BUILD_INSTALLER: ${{ steps.check_modified_files.outputs.BUILD_INSTALLER }}
@@ -127,6 +129,18 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.KEPTN_BOT_TOKEN }}
+
+      - name: Extract branch name
+        id: extract_branch
+        # see https://github.com/keptn/gh-action-extract-branch-name for details
+        uses: keptn/gh-action-extract-branch-name@main
+
+      - name: Get current date and time
+        id: get_datetime
+        run: |
+          echo "::set-output name=DATE::$(date +'%Y%m%d')"
+          echo "::set-output name=TIME::$(date +'%H%M')"
+          echo "::set-output name=DATETIME::$(date +'%Y%m%d')$(date +'%H%M')"
 
       - name: Find next version number
         id: version_number
@@ -225,6 +239,8 @@ jobs:
             ghcr.io/keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}
           build-args: |
             version=${{ env.VERSION }}
+            buildTime=${{ needs.prepare.outputs.datetime }}
+            gitSha=${{ needs.prepare.outputs.git_sha }}
           push: ${{ matrix.config.should-push-image }}
           pull: true
 
