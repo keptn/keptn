@@ -325,6 +325,8 @@ func doUpgrade() error {
 	// if yes, they need to be installed separately as they have moved to their own charts
 	helmHelper := helm.NewHelper()
 
+	// fetch user-defined values of the previous Keptn installation and provide those to the upgrade command
+	// this will ensure that options such as 'apiGatewayNginx.type' will stay the same, but newly introduced values will correctly be set to their default
 	previousValues, err := helmHelper.GetValues(keptnReleaseName, keptnNamespace)
 	if err != nil {
 		return fmt.Errorf("Could not complete Keptn upgrade: %s", err.Error())
