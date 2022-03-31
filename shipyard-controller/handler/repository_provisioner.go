@@ -47,9 +47,10 @@ func (rp *RepositoryProvisioner) ProvideRepository(projectName string) (*models.
 	if err != nil {
 		return nil, fmt.Errorf(UnableProvisionInstance, err.Error())
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusConflict {
-		return nil, fmt.Errorf(UnableProvisionInstance, err.Error())
+		return nil, fmt.Errorf(UnableProvisionInstance, http.StatusText(http.StatusConflict))
 	}
 
 	jsonProvisioningData, err := ioutil.ReadAll(resp.Body)
@@ -83,9 +84,10 @@ func (rp *RepositoryProvisioner) DeleteRepository(projectName string, namespace 
 	if err != nil {
 		return fmt.Errorf(UnableProvisionDelete, err.Error())
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusNotFound {
-		return fmt.Errorf(UnableProvisionDelete, err.Error())
+		return fmt.Errorf(UnableProvisionDelete, http.StatusText(http.StatusNotFound))
 	}
 
 	return nil
