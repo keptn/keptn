@@ -10,6 +10,9 @@ import (
 )
 
 const ErrWithStatusCode = "error with status code %d"
+const ErrNotAuthenticated = "You are not authenticated. Use the keptn auth command to authenticate based on the API token or an OAuth client"
+const ErrForbidden = "You do not have enough permissions"
+const ErrInternalServerError = "Keptn API seems to be down"
 
 var PublicDiscovery = auth.NewOauthDiscovery(&http.Client{})
 
@@ -75,11 +78,11 @@ func getAPISetWithOauthGetter(baseURL string, keptnXToken string, oauthAuthentic
 func OnAPIError(err error) error {
 	switch 0 {
 	case compareError(err, ErrWithStatusCode, 401):
-		return fmt.Errorf("You are not authenticated. Use the keptn auth command to authenticate based on the API token or an OAuth client.")
+		return fmt.Errorf(ErrNotAuthenticated)
 	case compareError(err, ErrWithStatusCode, 403):
-		return fmt.Errorf("You do not have enough permissions. This for all commands")
+		return fmt.Errorf(ErrForbidden)
 	case compareError(err, ErrWithStatusCode, 500):
-		return fmt.Errorf("Keptn API seems to be down")
+		return fmt.Errorf(ErrInternalServerError)
 	default:
 		return err
 	}
