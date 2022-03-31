@@ -76,7 +76,7 @@ type HTTPEndpointTestResult struct {
 }
 
 func Test_UpgradeZeroDowntime(t *testing.T) {
-	projectName := "upgrade-zero-downtime5"
+	projectName := "upgrade-zero-downtime6"
 	serviceName := "my-service"
 	//sequenceName := "evaluation"
 
@@ -123,8 +123,8 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 		}
 	}()
 
-	chartLatestVersion := "https://github.com/keptn/helm-charts-dev/blob/gh-pages/packages/keptn-0.14.0-dev-PR-7266.tgz?raw=true"
-	chartPreviousVersion := "https://github.com/keptn/helm-charts-dev/blob/6a5522055c4faa112056e492c3cd5440d96e5133/packages/keptn-0.14.0-dev-PR-7266.tgz?raw=true"
+	chartLatestVersion := "https://github.com/keptn/helm-charts-dev/blob/e6f9cffe7c96ac53a9965a29176022be2736b98f/packages/keptn-0.14.1-dev-PR-7266.tgz?raw=true"
+	chartPreviousVersion := "https://github.com/keptn/helm-charts-dev/blob/cc38c167a1823eecfb9895ac823116b79f021324/packages/keptn-0.14.1-dev-PR-7266.tgz?raw=true"
 
 	projectName, err = CreateProject(projectName, shipyardFile)
 	require.Nil(t, err)
@@ -219,7 +219,7 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 				//_, err = ExecuteCommand(fmt.Sprintf("kubectl -n %s set image deployment.v1.apps/lighthouse-service lighthouse-service=keptndev/lighthouse-service:0.14.0-dev-PR-7266.202203280650", GetKeptnNameSpaceFromEnv()))
 			}
 			t.Logf("Upgrading Keptn to %s", chartURL)
-			_, err = ExecuteCommand(fmt.Sprintf("helm upgrade -n %s keptn %s --wait --set=control-plane.apiGatewayNginx.type=LoadBalancer --set=control-plane.common.strategy.rollingUpdate.maxUnavailable=0 --set control-plane.resourceService.enabled=true --set control-plane.resourceService.env.DIRECTORY_STAGE_STRUCTURE=true", GetKeptnNameSpaceFromEnv(), chartURL))
+			_, err = ExecuteCommand(fmt.Sprintf("helm upgrade -n %s keptn %s --wait --set=control-plane.apiGatewayNginx.type=LoadBalancer --set=control-plane.common.strategy.rollingUpdate.maxUnavailable=0 --set control-plane.resourceService.enabled=true --set control-plane.resourceService.env.DIRECTORY_STAGE_STRUCTURE=true --set control-plane.distributor.image.repository=docker.io/annare/keptndev_distributor --set control-plane.distributor.image.tag=0.13.0-177-gc33a657b0", GetKeptnNameSpaceFromEnv(), chartURL))
 			if err != nil {
 				t.Logf("Encountered error when upgrading keptn: %v", err)
 			}
@@ -260,33 +260,33 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 				var keptnContext string
 				var err error
 				// trigger an evaluation sequence
-				//keptnContext, err = TriggerSequence(projectName, serviceName, sequenceStageName, "evaluation", nil)
-				//nrTriggeredSequences++
-				//if err == nil && keptnContext != "" {
-				//	triggeredSequences = append(triggeredSequences, TriggeredSequence{
-				//		keptnContext: keptnContext,
-				//		stage:        sequenceStageName,
-				//		sequenceName: "evaluation",
-				//	})
-				//} else {
-				//	if err != nil {
-				//		t.Logf("Could not trigger evaluation sequence: %v", err)
-				//	} else {
-				//		t.Log("Could not trigger evaluation sequence: did not get keptnContext")
-				//	}
-				//}
-				// trigger a webhook sequence
-				keptnContext, err = TriggerSequence(projectName, serviceName, sequenceStageName, "hooks", nil)
+				keptnContext, err = TriggerSequence(projectName, serviceName, sequenceStageName, "evaluation", nil)
 				nrTriggeredSequences++
-				if err == nil {
+				if err == nil && keptnContext != "" {
 					triggeredSequences = append(triggeredSequences, TriggeredSequence{
 						keptnContext: keptnContext,
 						stage:        sequenceStageName,
-						sequenceName: "hooks",
+						sequenceName: "evaluation",
 					})
 				} else {
-					t.Logf("Could not trigger hooks sequence: %v", err)
+					if err != nil {
+						t.Logf("Could not trigger evaluation sequence: %v", err)
+					} else {
+						t.Log("Could not trigger evaluation sequence: did not get keptnContext")
+					}
 				}
+				// trigger a webhook sequence
+				//keptnContext, err = TriggerSequence(projectName, serviceName, sequenceStageName, "hooks", nil)
+				//nrTriggeredSequences++
+				//if err == nil {
+				//	triggeredSequences = append(triggeredSequences, TriggeredSequence{
+				//		keptnContext: keptnContext,
+				//		stage:        sequenceStageName,
+				//		sequenceName: "hooks",
+				//	})
+				//} else {
+				//	t.Logf("Could not trigger hooks sequence: %v", err)
+				//}
 				// wait some time before triggering the next sequence
 				<-time.After(time.Duration(100+rand.Intn(900)) * time.Millisecond)
 			}
