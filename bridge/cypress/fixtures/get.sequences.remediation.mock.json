@@ -1,0 +1,74 @@
+{
+  "states": [
+    {
+      "name": "remediation",
+      "service": "carts",
+      "project": "sockshop",
+      "time": "2022-03-29T08:44:07.600Z",
+      "shkeptncontext": "cfaadbb1-3c47-46e5-a230-2e312cf1828a",
+      "state": "started",
+      "stages": [
+        {
+          "name": "production",
+          "state": "triggered",
+          "latestEvent": {
+            "type": "sh.keptn.event.action.started",
+            "id": "605b7950-ae61-4a25-9979-e66be562cfe9",
+            "time": "2022-03-29T08:44:08.867Z"
+          }
+        }
+      ],
+      "problemTitle": "Response time degradation"
+    },
+    {
+      "name": "remediation",
+      "service": "carts",
+      "project": "sockshop",
+      "time": "2022-03-08T09:48:35.562Z",
+      "shkeptncontext": "cfaadbb1-3c47-46e5-a230-d0f055f4f518",
+      "state": "finished",
+      "stages": [
+        {
+          "name": "production",
+          "state": "succeeded",
+          "latestEvaluation": {
+            "result": "pass",
+            "score": 0
+          },
+          "latestEvent": {
+            "type": "sh.keptn.event.production.remediation.finished",
+            "id": "e2b8ae91-da35-4d65-a2d3-c64bad75558e",
+            "time": "2022-03-08T09:50:39.596Z"
+          }
+        }
+      ],
+      "problemTitle": "Response time degradation"
+    },
+    {
+      "name": "remediation",
+      "service": "carts",
+      "project": "sockshop",
+      "time": "2022-03-08T09:45:41.795Z",
+      "shkeptncontext": "29355a07-7b65-47fa-896e-06f656283c5d",
+      "state": "finished",
+      "stages": [
+        {
+          "name": "production",
+          "state": "errored",
+          "latestEvent": {
+            "type": "sh.keptn.event.production.remediation.finished",
+            "id": "9986776b-65a3-420b-b639-b6d5f2d51ffb",
+            "time": "2022-03-08T09:45:45.498Z"
+          },
+          "latestFailedEvent": {
+            "type": "sh.keptn.event.production.remediation.finished",
+            "id": "9986776b-65a3-420b-b639-b6d5f2d51ffb",
+            "time": "2022-03-08T09:45:45.498Z"
+          }
+        }
+      ],
+      "problemTitle": "Response time degradation"
+    }
+  ],
+  "totalCount": 3
+}

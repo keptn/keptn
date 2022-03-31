@@ -1,0 +1,86 @@
+{
+  "stages": [
+    {
+      "services": [
+        {
+          "lastEventTypes": {
+            "sh.keptn.event.action.finished": {
+              "eventId": "44cf1ec4-0ae2-4433-a1d2-ccf1aa40799c",
+              "keptnContext": "cfaadbb1-3c47-46e5-a230-d0f055f4f518",
+              "time": "1646732919097753192"
+            },
+            "sh.keptn.event.action.started": {
+              "eventId": "0887e14f-c643-49c3-85ea-c4b13e10133b",
+              "keptnContext": "cfaadbb1-3c47-46e5-a230-2e312cf1828a",
+              "time": "1646732916998363944"
+            },
+            "sh.keptn.event.action.triggered": {
+              "eventId": "1c522f96-f375-4205-b752-792b1f384d11",
+              "keptnContext": "cfaadbb1-3c47-46e5-a230-2e312cf1828a",
+              "time": "1646732916896684028"
+            },
+            "sh.keptn.event.evaluation.finished": {
+              "eventId": "8d160d92-8fdc-4389-b81e-b0b33c8ea82b",
+              "keptnContext": "cfaadbb1-3c47-46e5-a230-d0f055f4f518",
+              "time": "1646733039496250690"
+            },
+            "sh.keptn.event.evaluation.started": {
+              "eventId": "3d19cd99-6fe2-4ccd-8ef8-8c6f59efc2a8",
+              "keptnContext": "cfaadbb1-3c47-46e5-a230-d0f055f4f518",
+              "time": "1646733039293028995"
+            },
+            "sh.keptn.event.evaluation.triggered": {
+              "eventId": "2c9732d6-9651-4dc2-9c42-3362dbccdd0d",
+              "keptnContext": "cfaadbb1-3c47-46e5-a230-d0f055f4f518",
+              "time": "1646732919297949716"
+            },
+            "sh.keptn.event.get-action.finished": {
+              "eventId": "67fb1ad4-98fe-43e5-bbfd-36dcb4117eec",
+              "keptnContext": "cfaadbb1-3c47-46e5-a230-2e312cf1828a",
+              "time": "1646732916793392167"
+            },
+            "sh.keptn.event.get-action.started": {
+              "eventId": "a2b6ebda-3c69-4629-9b3a-f04babd925b6",
+              "keptnContext": "cfaadbb1-3c47-46e5-a230-2e312cf1828a",
+              "time": "1646732916497820088"
+            },
+            "sh.keptn.event.get-action.triggered": {
+              "eventId": "8df20adf-38cf-4a89-8c8c-f69efc03e10d",
+              "keptnContext": "cfaadbb1-3c47-46e5-a230-2e312cf1828a",
+              "time": "1646732916193696156"
+            }
+          },
+          "openRemediations": [],
+          "openApprovals": [],
+          "creationDate": "1646731967299163474",
+          "serviceName": "carts",
+          "latestSequence": {
+            "name": "remediation",
+            "service": "carts",
+            "project": "sockshop",
+            "time": "2022-03-29T08:44:07.600Z",
+            "shkeptncontext": "cfaadbb1-3c47-46e5-a230-2e312cf1828a",
+            "state": "started",
+            "stages": [
+              {
+                "name": "production",
+                "state": "triggered",
+                "latestEvent": {
+                  "type": "sh.keptn.event.action.started",
+                  "id": "605b7950-ae61-4a25-9979-e66be562cfe9",
+                  "time": "2022-03-29T08:44:08.867Z"
+                }
+              }
+            ],
+            "problemTitle": "Response time degradation"
+          }
+        }
+      ],
+      "stageName": "production"
+    }
+  ],
+  "creationDate": "1646731884606469142",
+  "projectName": "sockshop",
+  "shipyard": "apiVersion: spec.keptn.sh/0.2.0\nkind: Shipyard\nmetadata:\n    name: shipyard-sockshop\nspec:\n    stages:\n        - name: production\n          sequences:\n            - name: remediation\n              triggeredOn:\n                - event: production.remediation.finished\n                  selector:\n                    match:\n                        evaluation.result: fail\n              tasks:\n                - name: get-action\n                  properties: null\n                - name: action\n                  properties: null\n                - name: evaluation\n                  triggeredAfter: 2m\n                  properties:\n                    timeframe: 2m\n",
+  "shipyardVersion": "spec.keptn.sh/0.2.0"
+}
