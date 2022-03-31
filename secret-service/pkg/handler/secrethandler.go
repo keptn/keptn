@@ -88,8 +88,12 @@ func (s SecretHandler) UpdateSecret(c *gin.Context) {
 
 	err := s.SecretManager.UpdateSecret(secret)
 	if err != nil {
-		if errors.Is(err, backend.ErrSecretNotFound) || errors.Is(err, backend.ErrScopeNotFound) {
+		if errors.Is(err, backend.ErrSecretNotFound) {
 			SetNotFoundErrorResponse(c, fmt.Sprintf(ErrUpdateSecretMsg, err.Error()))
+			return
+		}
+		if errors.Is(err, backend.ErrScopeNotFound) {
+			SetBadRequestErrorResponse(c, fmt.Sprintf(ErrUpdateSecretMsg, err.Error()))
 			return
 		}
 		SetInternalServerErrorResponse(c, fmt.Sprintf(ErrUpdateSecretMsg, err.Error()))
@@ -126,8 +130,12 @@ func (s SecretHandler) DeleteSecret(c *gin.Context) {
 	}
 	err := s.SecretManager.DeleteSecret(secret)
 	if err != nil {
-		if errors.Is(err, backend.ErrSecretNotFound) || errors.Is(err, backend.ErrScopeNotFound) {
+		if errors.Is(err, backend.ErrSecretNotFound) {
 			SetNotFoundErrorResponse(c, fmt.Sprintf(ErrDeleteSecretMsg, err.Error()))
+			return
+		}
+		if errors.Is(err, backend.ErrScopeNotFound) {
+			SetBadRequestErrorResponse(c, fmt.Sprintf(ErrDeleteSecretMsg, err.Error()))
 			return
 		}
 		SetInternalServerErrorResponse(c, fmt.Sprintf(ErrDeleteSecretMsg, err.Error()))
