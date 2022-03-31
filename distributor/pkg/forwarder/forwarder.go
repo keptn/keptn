@@ -49,26 +49,20 @@ func (f *Forwarder) Start(executionContext *utils.ExecutionContext) {
 		Handler: mux,
 	}
 
-	//quitChan := make(chan struct{})
 	go func() {
-		defer executionContext.Wg.Done()
+
 		if err := svr.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logger.Fatalf("Unexpected HTTP server error in event forwarder: %v", err)
 		}
-		//<-quitChan
+
 	}()
-	//go func() {
-	//	<-executionContext.Done()
-	//	logger.Info("Terminating event forwarder")
-	//	//ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	//	//defer cancel()
-	//
-	//	svr.SetKeepAlivesEnabled(false)
-	//	if err := svr.Shutdown(ctx); err != nil {
-	//		logger.Fatalf("Could not gracefully shutdown HTTP server of event forwarder: %v", err)
-	//	}
-	//	quitChan <- struct{}{}
-	//}()
+
+	go func() {
+		<-executionContext.Done()
+		//do nothing at sigterm to keep on forwarding events from the service
+		// forwarder will be killed only by SIGKILL
+		logger.Info("Keeping alive the event forwarder")
+	}()
 }
 
 func (f *Forwarder) handleEvent(rw http.ResponseWriter, req *http.Request) {
