@@ -152,12 +152,6 @@ describe('Sequences', () => {
     cy.get('.dt-filter-field-input ').type('{esc}');
   }
 
-  it('should show remediation in regular state while running', () => {});
-
-  it('should show remediation green when successful', () => {});
-
-  it('should show remediation red when failed', () => {});
-
   function testSelectableTiles(expectedLength: number, textElementSelector: string, expectedText: string): void {
     const selectableTiles = cy.byTestId('keptn-sequence-view-roots').get('ktb-selectable-tile');
     selectableTiles.should('have.length', expectedLength);
