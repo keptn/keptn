@@ -325,24 +325,12 @@ func doUpgrade() error {
 	// if yes, they need to be installed separately as they have moved to their own charts
 	helmHelper := helm.NewHelper()
 
-	// this object holds values that were not set in previous versions of Keptn and which need to be explicitly set if using the --reuse-values flag
-	newVals := map[string]interface{}{
-		"control-plane": map[string]interface{}{
-			"nats": map[string]interface{}{
-				"nats": map[string]interface{}{
-					"image": "nats:2.7.2-alpine",
-					"jetstream": map[string]interface{}{
-						"enabled": true,
-					},
-				},
-				"exporter": map[string]interface{}{
-					"image": "natsio/prometheus-nats-exporter:0.9.1",
-				},
-			},
-		},
+	previousValues, err := helmHelper.GetValues(keptnReleaseName, keptnNamespace)
+	if err != nil {
+		return fmt.Errorf("Could not complete Keptn upgrade: %s", err.Error())
 	}
 
-	if err := helmHelper.UpgradeChart(keptnUpgradeChart, keptnReleaseName, keptnNamespace, newVals); err != nil {
+	if err := helmHelper.UpgradeChart(keptnUpgradeChart, keptnReleaseName, keptnNamespace, previousValues); err != nil {
 		msg := fmt.Sprintf("Could not complete Keptn upgrade: %s \nFor troubleshooting, please check the status of the keptn deployment by executing the following command: \n\nkubectl get pods -n %s\n", err.Error(), keptnNamespace)
 		return errors.New(msg)
 	}
