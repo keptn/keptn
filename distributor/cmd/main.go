@@ -14,9 +14,8 @@
 package main
 
 import (
-	"bytes"
 	"context"
-	"fmt"
+	"crypto/tls"
 	"github.com/kelseyhightower/envconfig"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -35,6 +34,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"path"
 	"strconv"
 	"sync"
 	"syscall"
@@ -85,6 +85,10 @@ func main() {
 		}
 		uniformLogger := log.New(id, apiset.LogsV1())
 		uniformLogger.Start(executionContext, forwarder.EventChannel)
+	}
+
+	//explicitly wait for service to be up before starting NATS/pollers
+	for waitForService(env) {
 	}
 
 	logger.Infof("Connection type: %s", env.PubSubConnectionType())
@@ -189,4 +193,21 @@ func createEventSender(env config.EnvConfig) (poller.EventSender, error) {
 		return nil, err
 	}
 	return eventSender, nil
+}
+
+func waitForService(env config.EnvConfig) bool {
+	host := env.PubSubRecipient
+	pathToHealth := path.Join(env.PubSubRecipientPath, "/health")
+	port := env.PubSubRecipientPort
+	serviceurl := "http://" + host + ":" + port + pathToHealth
+
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	response, err := http.Get(serviceurl)
+
+	if err != nil || response.StatusCode != 200 {
+		logger.Infof("%s %s %s\n", serviceurl, "Service not responding", err.Error())
+		return true
+	}
+	logger.Infof("%s %s response code %d\n", serviceurl, "Service UP and RUNNING", response.StatusCode)
+	return false
 }
