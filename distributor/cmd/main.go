@@ -204,12 +204,12 @@ func waitForService(env config.EnvConfig) bool {
 	serviceurl := "http://" + host + ":" + port + pathToHealth
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-	response, err := http.Get(serviceurl)
+	_, err := http.Get(serviceurl)
 
-	if err != nil || response.StatusCode != 200 {
+	if err != nil {
 		logger.Infof("%s %s %s\n", serviceurl, "Service not responding", err.Error())
 		return true
 	}
-	logger.Infof("%s %s response code %d\n", serviceurl, "Service UP and RUNNING", response.StatusCode)
+	logger.Infof("%s %s\n", serviceurl, "Service UP and RUNNING")
 	return false
 }
