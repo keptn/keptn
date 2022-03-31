@@ -4,12 +4,15 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	apimodels "github.com/keptn/go-utils/pkg/api/models"
+
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/shipyard-controller/config"
 	"gopkg.in/yaml.v3"
+
 	"net/http"
 	"sort"
+
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -169,16 +172,18 @@ type IProjectHandler interface {
 }
 
 type ProjectHandler struct {
-	ProjectManager IProjectManager
-	EventSender    common.EventSender
-	Env            config.EnvConfig
+	ProjectManager        IProjectManager
+	EventSender           common.EventSender
+	Env                   config.EnvConfig
+	RepositoryProvisioner IRepositoryProvisioner
 }
 
-func NewProjectHandler(projectManager IProjectManager, eventSender common.EventSender, env config.EnvConfig) *ProjectHandler {
+func NewProjectHandler(projectManager IProjectManager, eventSender common.EventSender, env config.EnvConfig, repositoryProvisioner IRepositoryProvisioner) *ProjectHandler {
 	return &ProjectHandler{
-		ProjectManager: projectManager,
-		EventSender:    eventSender,
-		Env:            env,
+		ProjectManager:        projectManager,
+		EventSender:           eventSender,
+		Env:                   env,
+		RepositoryProvisioner: repositoryProvisioner,
 	}
 }
 
@@ -280,6 +285,21 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
+
+	automaticProvisioningURL := ph.Env.AutomaticProvisioningURL
+	if automaticProvisioningURL != "" && params.GitRemoteURL == "" {
+		provisioningData, err := ph.RepositoryProvisioner.ProvideRepository(*params.Name)
+		if err != nil {
+			log.Errorf(err.Error())
+			SetFailedDependencyErrorResponse(c, UnableProvisionInstanceGeneric)
+			return
+		}
+
+		params.GitRemoteURL = provisioningData.GitRemoteURL
+		params.GitToken = provisioningData.GitToken
+		params.GitUser = provisioningData.GitUser
+	}
+
 	projectValidator := ProjectValidator{ProjectNameMaxSize: ph.Env.ProjectNameMaxSize}
 	if err := projectValidator.Validate(params); err != nil {
 		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidPayloadMsg, err.Error()))
@@ -384,6 +404,17 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 func (ph *ProjectHandler) DeleteProject(c *gin.Context) {
 	keptnContext := uuid.New().String()
 	projectName := c.Param("project")
+	namespace := c.Param("namespace")
+
+	automaticProvisioningURL := ph.Env.AutomaticProvisioningURL
+	if automaticProvisioningURL != "" {
+		err := ph.RepositoryProvisioner.DeleteRepository(projectName, namespace)
+		if err != nil {
+			log.Errorf(err.Error())
+			SetFailedDependencyErrorResponse(c, UnableProvisionDeleteGeneric)
+			return
+		}
+	}
 
 	common.LockProject(projectName)
 	defer common.UnlockProject(projectName)
