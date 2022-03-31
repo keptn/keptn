@@ -413,10 +413,10 @@ jobs:
       - name: Install Mockserver
         id: install_mockserver
         if: env.RUN_AIRGAPPED_TEST != 'true'
-        timeout-minutes: 2
+        timeout-minutes: 5
         run: |
           helm repo add mockserver https://www.mock-server.com
-          helm upgrade --install --namespace ${KEPTN_NAMESPACE} --version 5.13.0 mockserver mockserver/mockserver
+          helm upgrade --install --namespace ${KEPTN_NAMESPACE} --version 5.13.0 mockserver mockserver/mockserver --set service.type=ClusterIP
 
       - name: Expose Keptn API (Minishift)
         if: env.CLOUD_PROVIDER == 'minishift-on-GHA'
