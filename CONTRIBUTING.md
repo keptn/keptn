@@ -79,11 +79,11 @@ to indicate that this issue is good to get started with contributing to Keptn.
 
 ### Fork Repositories and work in a branch
 
-For contributions to Keptn, please fork the Keptn repository and work in a branch. More information about forking is written down in the [docs/fork](docs/fork.md).
+For contributions to Keptn, please fork the Keptn repository and work in a branch. More information about forking is written down in the [docs/fork](docs/developer/fork.md).
 
 We are loosely following the [Git Flow branching model](https://nvie.com/posts/a-successful-git-branching-model/) however, we try to avoid the extra step of the `develop` branch and instead work directly on the `master` branch.
 
-* If you work on an improvement, [fork the repository](docs/fork.md), branch away from the `master` branch and use the following schema for naming your branches:
+* If you work on an improvement, [fork the repository](docs/developer/fork.md), branch away from the `master` branch and use the following schema for naming your branches:
 ```
 <ticket-type>/<github-issue-number>/<descriptive-name-with-dashes>
 
@@ -157,7 +157,7 @@ Skaffold does then:
 * deploy the service to the Kubernetes cluster using the image that was just built, and
 * print log output to your terminal.
 
-In case you are using JetBrains GoLand, you can also use the built-in debugging features using Skaffold and Google Cloud Code as described [here](docs/debugging.md).
+In case you are using JetBrains GoLand, you can also use the built-in debugging features using Skaffold and Google Cloud Code as described [here](docs/developer/debugging.md).
 
 
 ### Make a Pull Request
