@@ -64,7 +64,6 @@ spec:
           {{- include "control-plane.common.container-security-context" . | nindent 10 }}
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
-          {{- include "control-plane.dist.prestop" . | nindent 10 }}
           {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
           {{- include "control-plane.dist.readinessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent

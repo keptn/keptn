@@ -80,7 +80,7 @@ readinessProbe:
 lifecycle:
    preStop:
       exec:
-       command: ["/bin/sleep", "30"]
+       command: ["/bin/sleep", "90"]
 {{- end }}
 
 {{- define "control-plane.dist.common.env.vars" -}}
