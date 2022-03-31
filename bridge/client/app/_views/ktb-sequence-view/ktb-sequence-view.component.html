@@ -103,7 +103,9 @@
             </div>
           </dt-info-group-title>
           <p class="m-0 mb-1">
-            <span [textContent]="currentSequence.time | toDate | amCalendar: dateUtil.getCalendarFormats()"></span>
+            <span
+              [textContent]="currentSequence.time | toDate | amCalendar: dateUtil.getCalendarFormats(false, true)"
+            ></span>
           </p>
           <dt-alert class="mt-1" *ngIf="currentSequence.isWaiting()" severity="warning"
             >Sequence might be waiting for previous sequences to be finished.
