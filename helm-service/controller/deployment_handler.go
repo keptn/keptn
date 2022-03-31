@@ -256,7 +256,6 @@ func (h *DeploymentHandler) getFinishedEventDataForSuccess(inEventData keptnv2.D
 			DeploymentURIsPublic: publicURIs,
 			DeploymentURIsLocal:  localURIs,
 			DeploymentNames:      []string{deploymentName},
-			GitCommit:            gitCommit,
 		},
 	}, nil
 

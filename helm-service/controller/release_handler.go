@@ -83,7 +83,7 @@ func (h *ReleaseHandler) HandleEvent(ce cloudevents.Event) {
 	}
 
 	// Send finished event
-	data := h.getFinishedEventData(e.EventData, keptnv2.StatusSucceeded, e.Result, "Finished release", commitID)
+	data := h.getFinishedEventData(e.EventData, keptnv2.StatusSucceeded, e.Result, "Finished release")
 	if err := h.sendEvent(ce.ID(), keptnv2.GetFinishedEventType(keptnv2.ReleaseTaskName), data); err != nil {
 		h.handleError(ce.ID(), err, keptnv2.ReleaseTaskName, h.getFinishedEventDataForError(e.EventData, err))
 		return
@@ -182,7 +182,7 @@ func (h *ReleaseHandler) getStartedEventData(inEventData keptnv2.EventData) kept
 }
 
 func (h *ReleaseHandler) getFinishedEventData(inEventData keptnv2.EventData, status keptnv2.StatusType, result keptnv2.ResultType,
-	message string, gitCommit string) keptnv2.ReleaseFinishedEventData {
+	message string) keptnv2.ReleaseFinishedEventData {
 
 	inEventData.Status = status
 	inEventData.Result = result
@@ -190,10 +190,9 @@ func (h *ReleaseHandler) getFinishedEventData(inEventData keptnv2.EventData, sta
 
 	return keptnv2.ReleaseFinishedEventData{
 		EventData: inEventData,
-		Release:   keptnv2.ReleaseData{GitCommit: gitCommit},
 	}
 }
 
 func (h *ReleaseHandler) getFinishedEventDataForError(eventData keptnv2.EventData, err error) keptnv2.ReleaseFinishedEventData {
-	return h.getFinishedEventData(eventData, keptnv2.StatusErrored, keptnv2.ResultFailed, err.Error(), "")
+	return h.getFinishedEventData(eventData, keptnv2.StatusErrored, keptnv2.ResultFailed, err.Error())
 }
