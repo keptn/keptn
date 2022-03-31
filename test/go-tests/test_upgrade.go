@@ -124,7 +124,7 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 	}()
 
 	chartLatestVersion := "https://github.com/keptn/helm-charts-dev/blob/gh-pages/packages/keptn-0.14.0-dev-PR-7266.tgz?raw=true"
-	chartPreviousVersion := "https://github.com/keptn/helm-charts-dev/blob/0a8347beae62a203bf0bf534cde716314a2e51c2/packages/keptn-0.14.0-dev-PR-7266.tgz?raw=true"
+	chartPreviousVersion := "https://github.com/keptn/helm-charts-dev/blob/6a5522055c4faa112056e492c3cd5440d96e5133/packages/keptn-0.14.0-dev-PR-7266.tgz?raw=true"
 
 	projectName, err = CreateProject(projectName, shipyardFile)
 	require.Nil(t, err)
@@ -260,33 +260,33 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 				var keptnContext string
 				var err error
 				// trigger an evaluation sequence
-				keptnContext, err = TriggerSequence(projectName, serviceName, sequenceStageName, "evaluation", nil)
-				nrTriggeredSequences++
-				if err == nil && keptnContext != "" {
-					triggeredSequences = append(triggeredSequences, TriggeredSequence{
-						keptnContext: keptnContext,
-						stage:        sequenceStageName,
-						sequenceName: "evaluation",
-					})
-				} else {
-					if err != nil {
-						t.Logf("Could not trigger evaluation sequence: %v", err)
-					} else {
-						t.Log("Could not trigger evaluation sequence: did not get keptnContext")
-					}
-				}
-				// trigger a webhook sequence
-				//keptnContext, err = TriggerSequence(projectName, serviceName, sequenceStageName, "hooks", nil)
+				//keptnContext, err = TriggerSequence(projectName, serviceName, sequenceStageName, "evaluation", nil)
 				//nrTriggeredSequences++
-				//if err == nil {
+				//if err == nil && keptnContext != "" {
 				//	triggeredSequences = append(triggeredSequences, TriggeredSequence{
 				//		keptnContext: keptnContext,
 				//		stage:        sequenceStageName,
-				//		sequenceName: "hooks",
+				//		sequenceName: "evaluation",
 				//	})
 				//} else {
-				//	t.Logf("Could not trigger hooks sequence: %v", err)
+				//	if err != nil {
+				//		t.Logf("Could not trigger evaluation sequence: %v", err)
+				//	} else {
+				//		t.Log("Could not trigger evaluation sequence: did not get keptnContext")
+				//	}
 				//}
+				// trigger a webhook sequence
+				keptnContext, err = TriggerSequence(projectName, serviceName, sequenceStageName, "hooks", nil)
+				nrTriggeredSequences++
+				if err == nil {
+					triggeredSequences = append(triggeredSequences, TriggeredSequence{
+						keptnContext: keptnContext,
+						stage:        sequenceStageName,
+						sequenceName: "hooks",
+					})
+				} else {
+					t.Logf("Could not trigger hooks sequence: %v", err)
+				}
 				// wait some time before triggering the next sequence
 				<-time.After(time.Duration(100+rand.Intn(900)) * time.Millisecond)
 			}
