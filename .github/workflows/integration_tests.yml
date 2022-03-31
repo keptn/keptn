@@ -410,7 +410,6 @@ jobs:
           kubectl create secret generic gitea-access -n ${KEPTN_NAMESPACE} --from-literal=username=${GITEA_ADMIN_USER} --from-literal=password=${GITEA_TOKEN} --from-literal=private-key="${GITEA_PRIVATE_KEY}" --from-literal=private-key-pass=${GITEA_PRIVATE_KEY_PASSPHRASE}
           helm repo add mockserver https://www.mock-server.com
           helm upgrade --install --namespace ${KEPTN_NAMESPACE} --version 5.13.0 mockserver mockserver/mockserver
-          kubectl patch svc mockserver -p '{"spec": {"type": "LoadBalancer"}}' -n ${KEPTN_NAMESPACE}
           rm gitea-token.txt
 
       - name: Expose Keptn API (Minishift)

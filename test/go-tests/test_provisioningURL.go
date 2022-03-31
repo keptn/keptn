@@ -86,6 +86,7 @@ func Test_ProvisioningURL(t *testing.T) {
 	projectName := "url-provisioning"
 	mockserverConfigFileName := "mockserver-config.yaml"
 	keptnNamespace := GetKeptnNameSpaceFromEnv()
+	mockServerIP := "http://mockserver:1080"
 	user := GetGiteaUser()
 	url := fmt.Sprintf("http://gitea-http:3000/%s/%s", user, projectName)
 	token, _ := GetGiteaToken()
@@ -111,10 +112,8 @@ func Test_ProvisioningURL(t *testing.T) {
 	t.Logf("Continue to work...")
 
 	t.Logf("Setting up AUTOMATIC_PROVISIONING_URL env variable")
-	mockServerIP, err := GetServiceExternalIP(keptnNamespace, "mockserver")
-	require.Nil(t, err)
 	t.Logf("External mockserver IP address: %s", mockServerIP)
-	_, err = ExecuteCommandf("kubectl set env deployment/shipyard-controller AUTOMATIC_PROVISIONING_URL=http://%s:1080 -n %s", mockServerIP, keptnNamespace)
+	_, err = ExecuteCommandf("kubectl set env deployment/shipyard-controller AUTOMATIC_PROVISIONING_URL=%s -n %s", mockServerIP, keptnNamespace)
 	require.Nil(t, err)
 
 	t.Logf("Sleeping for 30s...")
