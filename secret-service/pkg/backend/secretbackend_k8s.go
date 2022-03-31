@@ -27,27 +27,27 @@ var ErrSecretNotFound = errors.New("secret not found")
 var ErrTooBigKeySize = errors.New("name and key values must be no more than 253 characters")
 var ErrScopeNotFound = errors.New("")
 
-// ScopeErrorNotFound provides a way to better describe the error when a scope is not found.
-type ScopeErrorNotFound struct {
+// scopeErrorNotFound provides a way to better describe the error when a scope is not found.
+type scopeErrorNotFound struct {
 	Scope  string
 	Secret string
 	Err    error
 }
 
-func NewScopeErrorNotFound(scope, secret string) *ScopeErrorNotFound {
-	return &ScopeErrorNotFound{
+func NewScopeErrorNotFound(scope, secret string) *scopeErrorNotFound {
+	return &scopeErrorNotFound{
 		Scope:  scope,
 		Secret: secret,
 		Err:    ErrScopeNotFound,
 	}
 }
 
-func (ve ScopeErrorNotFound) Error() string {
-	return fmt.Sprintf("scope %s not available for creation of Secret %s", ve.Scope, ve.Secret)
+func (se scopeErrorNotFound) Error() string {
+	return fmt.Sprintf("scope %s not available for creation of Secret %s", se.Scope, se.Secret)
 }
 
-func (ve ScopeErrorNotFound) Unwrap() error {
-	return ve.Err
+func (se scopeErrorNotFound) Unwrap() error {
+	return se.Err
 }
 
 type K8sSecretBackend struct {
@@ -223,10 +223,16 @@ func (k K8sSecretBackend) GetSecrets() ([]model.GetSecretResponseItem, error) {
 
 func (k K8sSecretBackend) UpdateSecret(secret model.Secret) error {
 	log.Infof("Updating secret: %s with scope %s", secret.Name, secret.Scope)
+
+	_, err := k.checkScopeDefined(secret)
+	if err != nil {
+		return err
+	}
+
 	namespace := k.KeptnNamespaceProvider()
 	kubeSecret := k.createK8sSecretObj(secret, namespace)
 
-	_, err := k.KubeAPI.CoreV1().Secrets(namespace).Update(context.TODO(), kubeSecret, metav1.UpdateOptions{})
+	_, err = k.KubeAPI.CoreV1().Secrets(namespace).Update(context.TODO(), kubeSecret, metav1.UpdateOptions{})
 	if err != nil {
 		log.Errorf("Unable to update secret %s: %s", secret.Name, err)
 		if statusError, isStatus := err.(*k8serr.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonNotFound {
