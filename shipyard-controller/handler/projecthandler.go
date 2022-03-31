@@ -291,7 +291,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 		provisioningData, err := ph.RepositoryProvisioner.ProvideRepository(*params.Name)
 		if err != nil {
 			log.Errorf(err.Error())
-			SetFailedDependencyErrorResponse(c, err.Error())
+			SetFailedDependencyErrorResponse(c, UnableProvisionInstanceGeneric)
 			return
 		}
 
@@ -411,7 +411,7 @@ func (ph *ProjectHandler) DeleteProject(c *gin.Context) {
 		err := ph.RepositoryProvisioner.DeleteRepository(projectName, namespace)
 		if err != nil {
 			log.Errorf(err.Error())
-			SetFailedDependencyErrorResponse(c, err.Error())
+			SetFailedDependencyErrorResponse(c, UnableProvisionDeleteGeneric)
 			return
 		}
 	}

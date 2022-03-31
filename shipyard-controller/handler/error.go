@@ -1,6 +1,9 @@
 package handler
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 var ErrProjectAlreadyExists = errors.New("project already exists")
 
@@ -58,7 +61,11 @@ var UnableReadProvisioningData = "Error reading provisioning data: %s"
 
 var UnableProvisionInstance = "Error provisioning a project instance: %s"
 
+var UnableProvisionInstanceGeneric = fmt.Sprintf(UnableProvisionInstance, "unable to provision an instance")
+
 var UnableProvisionDelete = "Error deleting a provisioned project instance: %s"
+
+var UnableProvisionDeleteGeneric = fmt.Sprintf(UnableProvisionDelete, "unable to delete an instance")
 
 var UnableProvisionDeleteReq = "Error creating delete provision request: %s"
 
