@@ -1101,3 +1101,20 @@ jobs:
           while [[ $(keptn get event sh.keptn.event.dev.delivery.finished --keptn-context "$KEPTN_CONTEXT" --project keptn | jq -r '.data.result' 2>/dev/null) != pass ]]; do
             sleep 10;
           done
+
+  calculate-total-runtime:
+    name: End-of-Pipeline Metrics
+    if: always()
+    needs:
+      - calculate-queue-time
+      - integration-test
+      - publish-final-test-report
+      - deploy_keptn_with_keptn
+      - trigger_keptn_delivery
+    uses: ./.github/workflows/end-of-pipeline-metrics.yml
+    with:
+      workflow_name: "Integration Tests"
+      branch: ${{ github.ref }}
+    secrets:
+      monitoring_api_token: ${{ secrets.MONITORING_API_TOKEN }}
+      monitoring_tenant_url: ${{ secrets.MONITORING_TENANT_URL }}

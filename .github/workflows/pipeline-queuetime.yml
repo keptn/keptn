@@ -1,4 +1,4 @@
-name: Build Helm Charts
+name: Calculate Pipeline Queue Time
 on:
   workflow_call:
     inputs:

@@ -460,3 +460,24 @@ jobs:
             gitSha=${{ needs.prepare_ci_run.outputs.GIT_SHA }}
           push: ${{ matrix.config.should-push-image == 'true' && (( github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository ) || ( github.event_name == 'push' )) && github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' }}
           pull: true
+
+  calculate-total-runtime:
+    name: End-of-Pipeline Metrics
+    if: always() && (( github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository ) || ( github.event_name == 'push' ))
+    needs:
+      - calculate-queue-time
+      - prepare_ci_run
+      - store-output-in-build-config
+      - unit-tests-microservices
+      - unit-tests-cli
+      - build-cli
+      - helm_charts_build
+      - helm_charts_upload
+      - docker_build
+    uses: ./.github/workflows/end-of-pipeline-metrics.yml
+    with:
+      workflow_name: "CI"
+      branch: ${{ github.ref }}
+    secrets:
+      monitoring_api_token: ${{ secrets.MONITORING_API_TOKEN }}
+      monitoring_tenant_url: ${{ secrets.MONITORING_TENANT_URL }}
