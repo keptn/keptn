@@ -3,7 +3,7 @@ import { DataService } from './data.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { AppModule } from '../app.module';
 import { ApiService } from './api.service';
-import { TriggerEvaluationData, TriggerSequenceData } from '../_models/trigger-sequence';
+import { TriggerSequenceData } from '../_models/trigger-sequence';
 import moment from 'moment';
 
 describe('DataService', () => {
@@ -46,9 +46,9 @@ describe('DataService', () => {
 
   it('should trigger an evaluation', () => {
     // given
-    const spy = jest.spyOn(apiService, 'triggerEvaluation');
+    const spy = jest.spyOn(apiService, 'triggerSequence');
     const date = moment().toISOString();
-    const data: TriggerEvaluationData = {
+    const data: TriggerSequenceData = {
       project: 'podtato-head',
       stage: 'hardening',
       service: 'helloservice',
@@ -62,7 +62,7 @@ describe('DataService', () => {
     dataService.triggerEvaluation(data);
 
     // then
-    expect(spy).toHaveBeenCalledWith(data);
+    expect(spy).toHaveBeenCalledWith('sh.keptn.event.hardening.evaluation.triggered', data);
   });
 
   it('should trigger a custom sequence', () => {

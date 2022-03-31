@@ -268,7 +268,43 @@ describe('KtbTriggerSequenceComponent', () => {
     });
   });
 
-  it('should trigger the evaluation sequence with a timeframe set', () => {
+  it('should trigger the evaluation sequence with a start / end date set', () => {
+    // given
+    const dataService = TestBed.inject(DataService);
+    const spy = jest.spyOn(dataService, 'triggerEvaluation');
+    const start = moment().date(1).month(1).year(2021);
+    const end = moment().date(2).month(1).year(2021);
+    component.sequenceType = TRIGGER_SEQUENCE.EVALUATION;
+    component.selectedStage = 'hardening';
+    component.selectedService = 'helloservice';
+    component.evaluationFormData = {
+      evaluationType: TRIGGER_EVALUATION_TIME.START_END,
+      labels: 'key1=val1',
+      timeframe: undefined,
+      timeframeStart: undefined,
+      startDatetime: start.toISOString(),
+      endDatetime: end.toISOString(),
+    };
+
+    // when
+    component.triggerSequence();
+
+    // then
+    expect(spy).toHaveBeenCalledWith({
+      project: 'podtato-head',
+      stage: 'hardening',
+      service: 'helloservice',
+      labels: {
+        key1: 'val1',
+      },
+      evaluation: {
+        start: start.toISOString(),
+        end: end.toISOString(),
+      },
+    });
+  });
+
+  it('should trigger the evaluation sequence with a timeframe and a date set', () => {
     // given
     const dataService = TestBed.inject(DataService);
     const spy = jest.spyOn(dataService, 'triggerEvaluation');
@@ -299,32 +335,36 @@ describe('KtbTriggerSequenceComponent', () => {
       project: 'podtato-head',
       stage: 'hardening',
       service: 'helloservice',
+      labels: {
+        key1: 'val1',
+      },
       evaluation: {
-        labels: {
-          key1: 'val1',
-        },
         timeframe: '1h15m',
         start: date.toISOString(),
       },
     });
   });
 
-  it('should trigger the evaluation sequence with a start / end date set', () => {
+  it('should trigger the evaluation sequence with only a timeframe and no date set', () => {
     // given
     const dataService = TestBed.inject(DataService);
     const spy = jest.spyOn(dataService, 'triggerEvaluation');
-    const start = moment().date(1).month(1).year(2021);
-    const end = moment().date(2).month(1).year(2021);
     component.sequenceType = TRIGGER_SEQUENCE.EVALUATION;
     component.selectedStage = 'hardening';
     component.selectedService = 'helloservice';
     component.evaluationFormData = {
-      evaluationType: TRIGGER_EVALUATION_TIME.START_END,
+      evaluationType: TRIGGER_EVALUATION_TIME.TIMEFRAME,
       labels: 'key1=val1',
-      timeframe: undefined,
+      timeframe: {
+        hours: 1,
+        minutes: 15,
+        seconds: undefined,
+        millis: undefined,
+        micros: undefined,
+      },
       timeframeStart: undefined,
-      startDatetime: start.toISOString(),
-      endDatetime: end.toISOString(),
+      startDatetime: undefined,
+      endDatetime: undefined,
     };
 
     // when
@@ -335,12 +375,43 @@ describe('KtbTriggerSequenceComponent', () => {
       project: 'podtato-head',
       stage: 'hardening',
       service: 'helloservice',
+      labels: {
+        key1: 'val1',
+      },
       evaluation: {
-        labels: {
-          key1: 'val1',
-        },
-        start: start.toISOString(),
-        end: end.toISOString(),
+        timeframe: '1h15m',
+      },
+    });
+
+    //given
+    component.evaluationFormData = {
+      evaluationType: TRIGGER_EVALUATION_TIME.TIMEFRAME,
+      labels: 'key1=val1',
+      timeframe: {
+        hours: 1,
+        minutes: 15,
+        seconds: undefined,
+        millis: undefined,
+        micros: undefined,
+      },
+      timeframeStart: '',
+      startDatetime: undefined,
+      endDatetime: undefined,
+    };
+
+    // when
+    component.triggerSequence();
+
+    // then
+    expect(spy).toHaveBeenCalledWith({
+      project: 'podtato-head',
+      stage: 'hardening',
+      service: 'helloservice',
+      labels: {
+        key1: 'val1',
+      },
+      evaluation: {
+        timeframe: '1h15m',
       },
     });
   });
@@ -376,10 +447,10 @@ describe('KtbTriggerSequenceComponent', () => {
       project: 'podtato-head',
       stage: 'hardening',
       service: 'helloservice',
+      labels: {
+        key1: 'val1',
+      },
       evaluation: {
-        labels: {
-          key1: 'val1',
-        },
         timeframe: '5m',
         start: date.toISOString(),
       },

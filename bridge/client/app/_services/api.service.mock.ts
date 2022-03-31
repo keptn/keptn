@@ -41,7 +41,7 @@ import { ServiceStatesResultResponseMock } from './_mockData/api-responses/servi
 import { DeploymentResponseMock } from './_mockData/api-responses/deployment-response.mock';
 import { ISequencesMetadata } from '../../../shared/interfaces/sequencesMetadata';
 import { SequenceMetadataMock } from './_mockData/sequence-metadata.mock';
-import { TriggerEvaluationData, TriggerResponse, TriggerSequenceData } from '../_models/trigger-sequence';
+import { TriggerResponse, TriggerSequenceData } from '../_models/trigger-sequence';
 
 @Injectable({
   providedIn: null,
@@ -405,10 +405,6 @@ export class ApiServiceMock extends ApiService {
 
   public triggerSequence(type: string, data: TriggerSequenceData): Observable<TriggerResponse> {
     return of({ keptnContext: '6c98fbb0-4c40-4bff-ba9f-b20556a57c8a' });
-  }
-
-  public triggerEvaluation(data: TriggerEvaluationData): Observable<TriggerResponse> {
-    return of({ keptnContext: 'c59d9760-4955-4181-b26a-82a366a60e5c' });
   }
 }
 /* eslint-enable @typescript-eslint/no-unused-vars */
