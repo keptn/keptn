@@ -98,6 +98,8 @@ jobs:
     outputs:
       next-version: ${{ steps.version_number.outputs.next-version }}
       branch: ${{ steps.current_branch.outputs.branch }}
+      datetime: ${{ steps.get_datetime.outputs.DATETIME }}
+      git_sha: ${{ steps.extract_branch.outputs.GIT_SHA }}
       keptn-spec-version: ${{ steps.keptn_spec_version.outputs.keptn-spec-version }}
       BUILD_EVERYTHING: ${{ steps.build_everything.outputs.BUILD_EVERYTHING }}
       BUILD_INSTALLER: ${{ steps.check_modified_files.outputs.BUILD_INSTALLER }}
@@ -230,8 +232,8 @@ jobs:
         name: "Docker Build keptn/${{ matrix.config.artifact }}"
         uses: docker/build-push-action@v2
         env:
-          DATETIME: ${{ steps.get_datetime.outputs.DATETIME }}
-          GIT_SHA: ${{ steps.extract_branch.outputs.GIT_SHA }}
+          DATETIME: ${{ needs.prepare.outputs.datetime }}
+          GIT_SHA: ${{ needs.prepare.outputs.git_sha }}
         with:
           context: ${{ matrix.config.working-dir }}
           tags: |
