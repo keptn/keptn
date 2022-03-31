@@ -219,6 +219,7 @@ ingress:
   host: {}
   path: /
   pathType: Prefix
+  className: ""
   tls:
     []
 
