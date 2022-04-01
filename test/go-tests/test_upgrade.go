@@ -18,6 +18,17 @@ import (
 	"time"
 )
 
+type TriggeredSequences struct {
+	sequences []TriggeredSequence
+	mutex     *sync.Mutex
+}
+
+func (ts *TriggeredSequences) Add(s TriggeredSequence) {
+	ts.mutex.Lock()
+	defer ts.mutex.Unlock()
+	ts.sequences = append(ts.sequences, s)
+}
+
 type TriggeredSequence struct {
 	keptnContext string
 	stage        string
@@ -29,7 +40,7 @@ type HTTPEndpointTest struct {
 	Method                     string
 	Payload                    interface{}
 	ExpectedStatus             int
-	NrRequests                 int
+	NrRequests                 int64
 	WaitSecondsBetweenRequests time.Duration
 	Result                     HTTPEndpointTestResult
 }
@@ -47,20 +58,23 @@ func (t *HTTPEndpointTest) Run(ctx context.Context, wg *sync.WaitGroup, tst *tes
 			tst.Logf("Finished tests for Endpoint %s", t.URL)
 			return nil
 		default:
-			var resp *req.Resp
-			var err error
-			switch t.Method {
-			case http.MethodGet:
-				resp, err = apiCaller.Get(t.URL, 0)
-			case http.MethodPost:
-				resp, err = apiCaller.Post(t.URL, t.Payload, 0)
-			}
+			go func() {
+				var resp *req.Resp
+				var err error
+				switch t.Method {
+				case http.MethodGet:
+					resp, err = apiCaller.Get(t.URL, 0)
+				case http.MethodPost:
+					resp, err = apiCaller.Post(t.URL, t.Payload, 0)
+				}
 
-			if err != nil || resp.Response().StatusCode != t.ExpectedStatus {
-				tst.Logf("HTTP %s request to %s failed", t.Method, t.URL)
-				t.Result.FailedRequests++
-			}
-			t.NrRequests++
+				if err != nil || resp.Response().StatusCode != t.ExpectedStatus {
+					tst.Logf("HTTP %s request to %s failed: %v", t.Method, t.URL, err)
+					atomic.AddInt64(&t.Result.FailedRequests, 1)
+				}
+				atomic.AddInt64(&t.NrRequests, 1)
+			}()
+
 			<-time.After(t.WaitSecondsBetweenRequests)
 		}
 	}
@@ -72,7 +86,7 @@ func (t *HTTPEndpointTest) String() string {
 }
 
 type HTTPEndpointTestResult struct {
-	FailedRequests int
+	FailedRequests int64
 }
 
 func Test_UpgradeZeroDowntime(t *testing.T) {
@@ -82,7 +96,7 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 
 	nrOfUpgrades := 2
 
-	nrStages := 20
+	nrStages := int64(10)
 
 	shipyard := &v0_2_0.Shipyard{
 		ApiVersion: "0.2.3",
@@ -93,7 +107,7 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 		},
 	}
 
-	for i := 0; i < nrStages; i++ {
+	for i := int64(0); i < nrStages; i++ {
 		newStageName := fmt.Sprintf("dev-%d", i)
 		newStage := v0_2_0.Stage{
 			Name: newStageName,
@@ -123,8 +137,8 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 		}
 	}()
 
-	chartLatestVersion := "https://github.com/keptn/helm-charts-dev/blob/e6f9cffe7c96ac53a9965a29176022be2736b98f/packages/keptn-0.14.1-dev-PR-7266.tgz?raw=true"
-	chartPreviousVersion := "https://github.com/keptn/helm-charts-dev/blob/cc38c167a1823eecfb9895ac823116b79f021324/packages/keptn-0.14.1-dev-PR-7266.tgz?raw=true"
+	chartLatestVersion := "https://github.com/keptn/helm-charts-dev/blob/b5d01b0a4f42404abee23a031fb5a9e693a57486/packages/keptn-0.14.1-dev-PR-7266.tgz?raw=true"
+	chartPreviousVersion := "https://github.com/keptn/helm-charts-dev/blob/087273a72ee19dfb71d766ccdc6ebfb3a5ef5dec/packages/keptn-0.14.1-dev-PR-7266.tgz?raw=true"
 
 	projectName, err = CreateProject(projectName, shipyardFile)
 	require.Nil(t, err)
@@ -219,7 +233,8 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 				//_, err = ExecuteCommand(fmt.Sprintf("kubectl -n %s set image deployment.v1.apps/lighthouse-service lighthouse-service=keptndev/lighthouse-service:0.14.0-dev-PR-7266.202203280650", GetKeptnNameSpaceFromEnv()))
 			}
 			t.Logf("Upgrading Keptn to %s", chartURL)
-			_, err = ExecuteCommand(fmt.Sprintf("helm upgrade -n %s keptn %s --wait --set=control-plane.apiGatewayNginx.type=LoadBalancer --set=control-plane.common.strategy.rollingUpdate.maxUnavailable=0 --set control-plane.resourceService.enabled=true --set control-plane.resourceService.env.DIRECTORY_STAGE_STRUCTURE=true --set control-plane.distributor.image.repository=docker.io/annare/keptndev_distributor --set control-plane.distributor.image.tag=0.13.0-177-gc33a657b0", GetKeptnNameSpaceFromEnv(), chartURL))
+			//_, err = ExecuteCommand(fmt.Sprintf("helm upgrade -n %s keptn %s --wait --set=control-plane.apiGatewayNginx.type=LoadBalancer --set=control-plane.common.strategy.rollingUpdate.maxUnavailable=0 --set control-plane.resourceService.enabled=true --set control-plane.resourceService.env.DIRECTORY_STAGE_STRUCTURE=true", GetKeptnNameSpaceFromEnv(), chartURL))
+			_, err = ExecuteCommand(fmt.Sprintf("helm upgrade -n %s keptn %s --wait --set=control-plane.apiGatewayNginx.type=LoadBalancer --set=control-plane.common.strategy.rollingUpdate.maxUnavailable=0 --set control-plane.resourceService.enabled=true --set control-plane.resourceService.env.DIRECTORY_STAGE_STRUCTURE=true --set control-plane.distributor.image.repository=docker.io/keptndev/distributor --set control-plane.distributor.image.tag=0.14.1-dev-PR-7308.202204010740", GetKeptnNameSpaceFromEnv(), chartURL))
 			if err != nil {
 				t.Logf("Encountered error when upgrading keptn: %v", err)
 			}
@@ -245,8 +260,33 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 
 	triggerSequenceWaitGroup := &sync.WaitGroup{}
 	triggerSequenceWaitGroup.Add(1)
-	nrTriggeredSequences := 0
-	triggeredSequences := []TriggeredSequence{}
+	var nrTriggeredSequences int64
+	triggeredSequences := &TriggeredSequences{
+		mutex: &sync.Mutex{},
+	}
+
+	triggerSequence := func(sequenceName, sequenceStageName string) {
+		var keptnContext string
+		var err error
+		// trigger an evaluation sequence
+		keptnContext, err = TriggerSequence(projectName, serviceName, sequenceStageName, sequenceName, nil)
+		atomic.AddInt64(&nrTriggeredSequences, 1)
+
+		if err == nil && keptnContext != "" {
+			triggeredSequences.Add(TriggeredSequence{
+				keptnContext: keptnContext,
+				stage:        sequenceStageName,
+				sequenceName: "evaluation",
+			})
+		} else {
+			if err != nil {
+				t.Logf("Could not trigger evaluation sequence: %v", err)
+			} else {
+				t.Log("Could not trigger evaluation sequence: did not get keptnContext")
+			}
+		}
+	}
+
 	go func() {
 		for {
 			select {
@@ -257,36 +297,13 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 			default:
 				stageNr := nrTriggeredSequences % nrStages
 				sequenceStageName := fmt.Sprintf("dev-%d", stageNr)
-				var keptnContext string
-				var err error
-				// trigger an evaluation sequence
-				keptnContext, err = TriggerSequence(projectName, serviceName, sequenceStageName, "evaluation", nil)
-				nrTriggeredSequences++
-				if err == nil && keptnContext != "" {
-					triggeredSequences = append(triggeredSequences, TriggeredSequence{
-						keptnContext: keptnContext,
-						stage:        sequenceStageName,
-						sequenceName: "evaluation",
-					})
-				} else {
-					if err != nil {
-						t.Logf("Could not trigger evaluation sequence: %v", err)
-					} else {
-						t.Log("Could not trigger evaluation sequence: did not get keptnContext")
-					}
-				}
+				//go func(stage string) {
+				triggerSequence("evaluation", sequenceStageName)
+				//}(sequenceStageName)
 				// trigger a webhook sequence
-				//keptnContext, err = TriggerSequence(projectName, serviceName, sequenceStageName, "hooks", nil)
-				//nrTriggeredSequences++
-				//if err == nil {
-				//	triggeredSequences = append(triggeredSequences, TriggeredSequence{
-				//		keptnContext: keptnContext,
-				//		stage:        sequenceStageName,
-				//		sequenceName: "hooks",
-				//	})
-				//} else {
-				//	t.Logf("Could not trigger hooks sequence: %v", err)
-				//}
+				//go func(stage string) {
+				triggerSequence("hooks", sequenceStageName)
+				//}(sequenceStageName)
 				// wait some time before triggering the next sequence
 				<-time.After(time.Duration(100+rand.Intn(900)) * time.Millisecond)
 			}
@@ -310,15 +327,15 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 	}
 
 	// get the number of dev.delivery.finished events -> this should eventually match the number of
-	assert.Equal(t, len(triggeredSequences), nrTriggeredSequences)
+	assert.Equal(t, int64(len(triggeredSequences.sequences)), nrTriggeredSequences)
 
 	t.Logf("Triggered %d sequences. Let's check if they have been finished", nrTriggeredSequences)
 	var nrFinishedSequences uint64
 
 	checkSequencesWg := &sync.WaitGroup{}
 
-	checkSequencesWg.Add(len(triggeredSequences))
-	for _, triggeredSequence := range triggeredSequences {
+	checkSequencesWg.Add(len(triggeredSequences.sequences))
+	for _, triggeredSequence := range triggeredSequences.sequences {
 		go func(sequence TriggeredSequence) {
 			var sequenceFinishedEvent *models.KeptnContextExtendedCE
 
