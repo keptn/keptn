@@ -4,7 +4,7 @@ import { IGitSsh, IGitSshData, ISshKeyData } from '../../_interfaces/git-upstrea
 @Component({
   selector: 'ktb-project-settings-git-ssh',
   templateUrl: './ktb-project-settings-git-ssh.component.html',
-  styleUrls: ['./ktb-project-settings-git-ssh.component.scss'],
+  styleUrls: [],
 })
 export class KtbProjectSettingsGitSshComponent {
   public gitUpstream?: IGitSshData;

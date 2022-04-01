@@ -14,7 +14,7 @@ export enum GitFormType {
 @Component({
   selector: 'ktb-project-settings-git-extended',
   templateUrl: './ktb-project-settings-git-extended.component.html',
-  styleUrls: ['./ktb-project-settings-git-extended.component.scss'],
+  styleUrls: [],
 })
 export class KtbProjectSettingsGitExtendedComponent {
   private projectName?: string;

@@ -6,7 +6,7 @@ import { IGitSshData } from '../../_interfaces/git-upstream';
 @Component({
   selector: 'ktb-project-settings-git-ssh-input',
   templateUrl: './ktb-project-settings-git-ssh-input.component.html',
-  styleUrls: ['./ktb-project-settings-git-ssh-input.component.scss'],
+  styleUrls: [],
 })
 export class KtbProjectSettingsGitSshInputComponent {
   public gitUrlControl = new FormControl('', [Validators.required, FormUtils.isSshValidator]);

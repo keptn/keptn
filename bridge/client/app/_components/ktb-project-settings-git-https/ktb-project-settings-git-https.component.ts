@@ -5,7 +5,7 @@ import { isGitUpstreamValidSet, isGitWithProxy } from '../../_utils/git-upstream
 @Component({
   selector: 'ktb-project-settings-git-https',
   templateUrl: './ktb-project-settings-git-https.component.html',
-  styleUrls: ['./ktb-project-settings-git-https.component.scss'],
+  styleUrls: [],
 })
 export class KtbProjectSettingsGitHttpsComponent {
   private gitUpstream?: IRequiredGitData;
