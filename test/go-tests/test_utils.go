@@ -281,13 +281,9 @@ func CreateProjectWithProxy(projectName string, shipyardFilePath string) (string
 		if err != nil {
 			return err
 		}
-		squidIP, err := GetServiceExternalIP(namespace, "squid")
-		if err != nil {
-			return err
-		}
 
 		// apply the k8s job for creating the git upstream
-		out, err := ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=%s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s --git-proxy-url=%s:3128 --git-proxy-scheme=http --git-proxy-insecure", newProjectName, shipyardFilePath, user, newProjectName, user, token, squidIP))
+		out, err := ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=%s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s --git-proxy-url=squid:3128 --git-proxy-scheme=http --git-proxy-insecure", newProjectName, shipyardFilePath, user, newProjectName, user, token))
 
 		if !strings.Contains(out, "created successfully") {
 			return fmt.Errorf("unable to create project: %s", out)
