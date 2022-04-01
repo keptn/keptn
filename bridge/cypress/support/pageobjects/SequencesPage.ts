@@ -76,8 +76,9 @@ export class SequencesPage {
     return this;
   }
 
-  public assertServiceName(name: string, tag?: string) {
+  public assertServiceName(name: string, tag?: string): this {
     const serviceName = tag ? `${name}:${tag}` : name;
     cy.byTestId('keptn-sequence-view-serviceName').should('have.text', serviceName);
+    return this;
   }
 }
