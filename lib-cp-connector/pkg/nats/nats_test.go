@@ -1,8 +1,10 @@
-package subscriber_test
+package nats_test
 
 import (
 	"github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/keptn/lib-cp-connector/pkg/nats/subscriber"
+	"github.com/keptn/go-utils/pkg/common/strutils"
+	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	nats2 "github.com/keptn/keptn/lib-cp-connector/pkg/nats"
 	"github.com/nats-io/nats-server/v2/server"
 	natstest "github.com/nats-io/nats-server/v2/test"
 	"github.com/nats-io/nats.go"
@@ -14,13 +16,13 @@ import (
 func TestConnect(t *testing.T) {
 	svr, shutdown := runNATSServer()
 	defer shutdown()
-	sub, err := subscriber.Connect(svr.ClientURL())
+	sub, err := nats2.Connect(svr.ClientURL())
 	require.NotNil(t, sub)
 	require.Nil(t, err)
 }
 
 func TestConnectFails(t *testing.T) {
-	sub, err := subscriber.Connect("nats://something:3456")
+	sub, err := nats2.Connect("nats://something:3456")
 	require.Nil(t, sub)
 	require.NotNil(t, err)
 
@@ -39,7 +41,7 @@ func TestSubscribe(t *testing.T) {
 
 	svr, shutdown := runNATSServer()
 	defer shutdown()
-	sub, _ := subscriber.Connect(svr.ClientURL())
+	sub, _ := nats2.Connect(svr.ClientURL())
 	require.NotNil(t, sub)
 
 	err := sub.Subscribe("subj", func(event models.KeptnContextExtendedCE) error {
@@ -61,7 +63,7 @@ func TestSubscribeReceiveInvalidEvent(t *testing.T) {
 
 	svr, shutdown := runNATSServer()
 	defer shutdown()
-	sub, _ := subscriber.Connect(svr.ClientURL())
+	sub, _ := nats2.Connect(svr.ClientURL())
 	require.NotNil(t, sub)
 
 	err := sub.Subscribe("subj", func(event models.KeptnContextExtendedCE) error {
@@ -77,27 +79,27 @@ func TestSubscribeReceiveInvalidEvent(t *testing.T) {
 func TestSubscribeTwice(t *testing.T) {
 	svr, shutdown := runNATSServer()
 	defer shutdown()
-	sub, _ := subscriber.Connect(svr.ClientURL())
+	sub, _ := nats2.Connect(svr.ClientURL())
 	err := sub.Subscribe("subj", func(event models.KeptnContextExtendedCE) error { return nil })
 	require.Nil(t, err)
 	err = sub.Subscribe("subj", func(event models.KeptnContextExtendedCE) error { return nil })
-	require.ErrorIs(t, err, subscriber.ErrSubAlreadySubscribed)
+	require.ErrorIs(t, err, nats2.ErrSubAlreadySubscribed)
 }
 
 func TestSubscribeEmptySubject(t *testing.T) {
 	svr, shutdown := runNATSServer()
 	defer shutdown()
-	sub, _ := subscriber.Connect(svr.ClientURL())
+	sub, _ := nats2.Connect(svr.ClientURL())
 	err := sub.Subscribe("", func(event models.KeptnContextExtendedCE) error { return nil })
-	require.ErrorIs(t, err, subscriber.ErrSubEmptySubject)
+	require.ErrorIs(t, err, nats2.ErrSubEmptySubject)
 }
 
 func TestSubscribeWithEmptyProcessFn(t *testing.T) {
 	svr, shutdown := runNATSServer()
 	defer shutdown()
-	sub, _ := subscriber.Connect(svr.ClientURL())
+	sub, _ := nats2.Connect(svr.ClientURL())
 	err := sub.Subscribe("subj", nil)
-	require.ErrorIs(t, err, subscriber.ErrSubNilMessageProcessor)
+	require.ErrorIs(t, err, nats2.ErrSubNilMessageProcessor)
 }
 
 func TestSubscribeMultiple(t *testing.T) {
@@ -106,7 +108,7 @@ func TestSubscribeMultiple(t *testing.T) {
 
 	svr, shutdown := runNATSServer()
 	defer shutdown()
-	sub, _ := subscriber.Connect(svr.ClientURL())
+	sub, _ := nats2.Connect(svr.ClientURL())
 	require.NotNil(t, sub)
 
 	subscriptions := []models.EventSubscription{
@@ -146,7 +148,7 @@ func TestUnsubscribeAll(t *testing.T) {
 	receivedBeforeUnsubscribeAll := false
 	receivedAfterUnsubscribeAll := false
 
-	sub, err := subscriber.Connect(svr.ClientURL())
+	sub, err := nats2.Connect(svr.ClientURL())
 	require.NoError(t, err)
 
 	err = sub.Subscribe("subj", func(event models.KeptnContextExtendedCE) error {
@@ -166,6 +168,47 @@ func TestUnsubscribeAll(t *testing.T) {
 
 	require.NoError(t, localClient.Publish("subj", []byte(event)))
 	require.False(t, receivedAfterUnsubscribeAll)
+}
+
+func TestPublish(t *testing.T) {
+	received := false
+	event := models.KeptnContextExtendedCE{
+		Type: strutils.Stringp("subj"),
+		Data: v0_2_0.EventData{
+			Project: "someProject",
+			Stage:   "someStage",
+			Service: "someService",
+		},
+	}
+
+	svr, shutdown := runNATSServer()
+	defer shutdown()
+	sub, _ := nats2.Connect(svr.ClientURL())
+	require.NotNil(t, sub)
+
+	err := sub.Subscribe("subj", func(e models.KeptnContextExtendedCE) error {
+		received = true
+		return nil
+	})
+	require.Nil(t, err)
+
+	err = sub.Publish(event)
+	require.NoError(t, err)
+
+	require.Eventually(t, func() bool {
+		return received
+	}, 10*time.Second, time.Second)
+}
+
+func TestPublishEventMissingType(t *testing.T) {
+	event := models.KeptnContextExtendedCE{}
+	svr, shutdown := runNATSServer()
+	defer shutdown()
+	sub, _ := nats2.Connect(svr.ClientURL())
+	require.NotNil(t, sub)
+	err := sub.Publish(event)
+	require.ErrorIs(t, err, nats2.ErrPubEventTypeMissing)
+
 }
 
 func runNATSServer() (*server.Server, func()) {
