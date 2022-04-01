@@ -12,6 +12,7 @@ import (
 	"github.com/kelseyhightower/envconfig"
 	logger "github.com/sirupsen/logrus"
 
+	"github.com/keptn/keptn/lib-cp-connector/pkg/controlplane"
 	"github.com/keptn/keptn/lighthouse-service/event_handler"
 )
 
@@ -24,6 +25,8 @@ type envConfig struct {
 }
 
 func main() {
+	controlplane.New()
+
 	if os.Getenv(envVarLogLevel) != "" {
 		logLevel, err := logger.ParseLevel(os.Getenv(envVarLogLevel))
 		if err != nil {
