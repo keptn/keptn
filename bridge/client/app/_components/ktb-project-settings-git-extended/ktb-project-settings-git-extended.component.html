@@ -7,10 +7,17 @@
 </p>
 <p class="required">Connect via</p>
 <dt-radio-group (change)="setSelectedForm($event)">
-  <dt-radio-button [value]="FormType.HTTPS" [checked]="selectedForm === FormType.HTTPS" class="mr-2">
+  <dt-radio-button
+    [value]="FormType.HTTPS"
+    [checked]="selectedForm === FormType.HTTPS"
+    class="mr-2"
+    uitestid="ktb-https-form-button"
+  >
     HTTPS
   </dt-radio-button>
-  <dt-radio-button [value]="FormType.SSH" [checked]="selectedForm === FormType.SSH"> SSH </dt-radio-button>
+  <dt-radio-button [value]="FormType.SSH" [checked]="selectedForm === FormType.SSH" uitestid="ktb-ssh-form-button">
+    SSH
+  </dt-radio-button>
 </dt-radio-group>
 <div class="mt-2">
   <!-- hidden instead of switch to keep the component instance and related data  -->

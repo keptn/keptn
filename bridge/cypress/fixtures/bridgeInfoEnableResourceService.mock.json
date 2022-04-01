@@ -9,6 +9,6 @@
   "authType": "OAUTH",
   "user": "claus.keptn-dev@ruxitlabs.com",
   "featureFlags": {
-    "RESOURCE_SERVICE_ENABLED": false
+    "RESOURCE_SERVICE_ENABLED": true
   }
 }

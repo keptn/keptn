@@ -56,7 +56,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
 
   public message = 'You have pending changes. Make sure to save your data before you continue.';
   public unsavedDialogState: DialogState = null;
-  public resourceServiceEnabled = false;
+  public resourceServiceEnabled?: boolean;
 
   constructor(
     private route: ActivatedRoute,

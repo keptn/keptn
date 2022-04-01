@@ -18,6 +18,15 @@
   "
 ></ktb-certificate-input>
 <h2>Proxy</h2>
-<dt-switch (change)="proxyEnabled = $event.checked; checkedChanged()" [checked]="proxyEnabled">Use proxy</dt-switch>
+<dt-switch
+  (change)="proxyEnabled = $event.checked; inputChanged()"
+  [checked]="proxyEnabled"
+  uitestid="ktb-enable-git-proxy"
+  >Use proxy</dt-switch
+>
 <dt-loading-spinner *ngIf="isLoading" class="gray-loading" aria-label="Loading data"></dt-loading-spinner>
-<ktb-proxy-input *ngIf="proxyEnabled" [proxy]="proxy" (proxyChange)="proxy = $event; inputChanged()"></ktb-proxy-input>
+<ktb-proxy-input
+  [hidden]="!proxyEnabled"
+  [proxy]="proxyInput"
+  (proxyChange)="proxy = $event; inputChanged()"
+></ktb-proxy-input>

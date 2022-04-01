@@ -1,11 +1,9 @@
 /// <reference types="cypress" />
 import BasePage from '../support/pageobjects/BasePage';
-import NewProjectCreatePage from '../support/pageobjects/NewProjectCreatePage';
 
 describe('Create new project test', () => {
   it('test new project create', () => {
     const basePage = new BasePage();
-    const newProjectCreatePage = new NewProjectCreatePage();
     const GIT_USERNAME = 'carpe-github-username';
     const PROJECT_NAME = 'test-project-bycypress-001';
     const GIT_REMOTE_URL = 'https://git-repo.com';
@@ -46,13 +44,11 @@ describe('Create new project test', () => {
     cy.wait('@metadataCmpl');
     basePage
       .clickCreateNewProjectButton()
-      .inputProjectName(PROJECT_NAME)
-      .inputGitUrl(GIT_REMOTE_URL)
-      .inputGitUsername(GIT_USERNAME)
-      .inputGitToken(GIT_TOKEN);
-
-    cy.get('input[id="shipyard-file-input"]').attachFile('shipyard.yaml');
-
-    newProjectCreatePage.clickCreateProject();
+      .typeProjectName(PROJECT_NAME)
+      .typeGitUrl(GIT_REMOTE_URL)
+      .typeGitUsername(GIT_USERNAME)
+      .typeGitToken(GIT_TOKEN)
+      .setShipyardFile()
+      .clickCreateProject();
   });
 });

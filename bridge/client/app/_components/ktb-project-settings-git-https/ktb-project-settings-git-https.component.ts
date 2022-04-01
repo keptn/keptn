@@ -16,6 +16,7 @@ export class KtbProjectSettingsGitHttpsComponent {
   public certificate?: string;
   public isCertificateValid = true;
   public gitDataRequired: IGitData = {};
+  public proxyInput?: IProxy;
 
   @Input()
   public isCreateMode = false;
@@ -26,7 +27,7 @@ export class KtbProjectSettingsGitHttpsComponent {
     this._gitInputData = data;
     if (data && isGitWithProxy(data)) {
       this.proxyEnabled = true;
-      this.proxy = {
+      this.proxyInput = {
         gitProxyUrl: data.https.gitProxyUrl,
         gitProxyInsecure: data.https.gitProxyInsecure,
         gitProxyScheme: data.https.gitProxyScheme,
@@ -52,7 +53,7 @@ export class KtbProjectSettingsGitHttpsComponent {
       ? {
           https: {
             ...this.gitUpstream,
-            ...(this.proxy || {}),
+            ...(this.proxyEnabled && this.proxy),
             gitPemCertificate: this.certificate,
           },
         }
@@ -65,13 +66,6 @@ export class KtbProjectSettingsGitHttpsComponent {
 
   public get isValid(): boolean {
     return this.isProxyValid && this.isCertificateValid && !!this.gitUpstream;
-  }
-
-  public checkedChanged(): void {
-    if (!this.proxyEnabled) {
-      this.proxy = undefined;
-    }
-    this.inputChanged();
   }
 
   public inputChanged(): void {

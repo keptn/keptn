@@ -55,5 +55,6 @@ e2e/screenshots/*
 
 # certificates
 *.pem
+!cypress/fixtures/files/*.pem
 *.crt
 *.key

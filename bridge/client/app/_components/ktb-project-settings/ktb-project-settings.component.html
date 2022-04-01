@@ -7,7 +7,7 @@
           <input
             type="text"
             formControlName="projectName"
-            id="projectNameInput"
+            uitestid="ktb-project-name-input"
             (input)="projectFormTouched()"
             required
             dtInput
@@ -27,7 +27,7 @@
           </dt-error>
         </dt-form-field>
       </div>
-      <div class="mb-3 settings-section">
+      <div class="mb-3 settings-section" *ngIf="resourceServiceEnabled !== undefined">
         <ktb-project-settings-git-extended
           *ngIf="resourceServiceEnabled; else defaultGit"
           [isLoading]="!!isProjectLoading"
@@ -55,7 +55,12 @@
         ></ktb-project-settings-shipyard>
       </div>
       <div class="mt-3 settings-section settings-actions" *ngIf="isCreateMode">
-        <button [disabled]="isProjectCreateFormInvalid()" (click)="createProject()" dt-button>
+        <button
+          [disabled]="isProjectCreateFormInvalid()"
+          (click)="createProject()"
+          dt-button
+          uitestid="ktb-create-project"
+        >
           <dt-loading-spinner *ngIf="isCreatingProjectInProgress" aria-label="Creating project"></dt-loading-spinner>
           Create project
         </button>
