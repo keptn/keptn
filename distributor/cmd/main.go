@@ -38,6 +38,7 @@ import (
 	"os/signal"
 	"path"
 	"strconv"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -201,7 +202,11 @@ func waitForService(env config.EnvConfig) bool {
 	host := env.PubSubRecipient
 	pathToHealth := path.Join(env.PubSubRecipientPath, "/health")
 	port := env.PubSubRecipientPort
-	serviceurl := "http://" + host + ":" + port + pathToHealth
+	serviceurl := host + ":" + port + pathToHealth
+
+	if !strings.HasPrefix(serviceurl, "http") {
+		serviceurl = "http://" + serviceurl
+	}
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	_, err := http.Get(serviceurl)
