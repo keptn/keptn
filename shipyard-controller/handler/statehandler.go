@@ -3,11 +3,11 @@ package handler
 import (
 	"errors"
 	"fmt"
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/db"
-	"github.com/keptn/keptn/shipyard-controller/models"
+	_ "github.com/keptn/keptn/shipyard-controller/models"
+	"net/http"
 )
 
 type IStateHandler interface {
@@ -42,20 +42,20 @@ func NewStateHandler(stateRepo db.SequenceStateRepo, shipyardController IShipyar
 // @Param	pageSize			query	int		false	"The number of items to return"
 // @Param   nextPageKey     	query   string  false	"Pointer to the next set of items"
 // @Param   keptnContext		query	string	false	"Comma separated list of keptnContext IDs"
-// @Success 200 {object} models.SequenceStates	"ok"
+// @Success 200 {object} apimodels.SequenceStates	"ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /sequence/{project} [get]
 func (sh *StateHandler) GetSequenceState(c *gin.Context) {
 	projectName := c.Param("project")
-	params := &models.GetSequenceStateParams{}
+	params := &apimodels.GetSequenceStateParams{}
 	if err := c.ShouldBindQuery(params); err != nil {
 		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 	params.Project = projectName
 
-	states, err := sh.StateRepo.FindSequenceStates(models.StateFilter{
+	states, err := sh.StateRepo.FindSequenceStates(apimodels.StateFilter{
 		GetSequenceStateParams: *params,
 	})
 	if err != nil {
@@ -75,8 +75,8 @@ func (sh *StateHandler) GetSequenceState(c *gin.Context) {
 // @Produce  json
 // @Param   project     		path    string  true   "The project name"
 // @Param   keptnContext		path	string	true	"The keptnContext ID of the sequence"
-// @Param   sequenceControl     body    models.SequenceControlCommand true "Sequence Control Command"
-// @Success 200 {object} models.SequenceControlResponse	"ok"
+// @Param   sequenceControl     body    apimodels.SequenceControlCommand true "Sequence Control Command"
+// @Success 200 {object} apimodels.SequenceControlResponse	"ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /sequence/{project}/{keptnContext}/control [post]
@@ -84,13 +84,13 @@ func (sh *StateHandler) ControlSequenceState(c *gin.Context) {
 	keptnContext := c.Param("keptnContext")
 	project := c.Param("project")
 
-	params := &models.SequenceControlCommand{}
+	params := &apimodels.SequenceControlCommand{}
 	if err := c.ShouldBindJSON(params); err != nil {
 		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
-	err := sh.shipyardController.ControlSequence(models.SequenceControl{
+	err := sh.shipyardController.ControlSequence(apimodels.SequenceControl{
 		State:        params.State,
 		KeptnContext: keptnContext,
 		Stage:        params.Stage,
@@ -104,5 +104,5 @@ func (sh *StateHandler) ControlSequenceState(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, models.SequenceControlResponse{})
+	c.JSON(http.StatusOK, apimodels.SequenceControlResponse{})
 }

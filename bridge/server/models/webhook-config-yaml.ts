@@ -66,7 +66,8 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
     curl: string,
     subscriptionId: string,
     secrets: WebhookSecret[],
-    sendFinished: boolean
+    sendFinished: boolean,
+    sendStarted: boolean
   ): void {
     const webhook = this.getWebhook(subscriptionId);
     if (!webhook) {
@@ -76,12 +77,14 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
         ...(secrets.length && { envFrom: secrets }),
         subscriptionID: subscriptionId,
         sendFinished: sendFinished,
+        sendStarted: sendStarted,
       });
     } else {
       // overwrite
       webhook.type = eventType;
       webhook.requests[0] = curl;
       webhook.sendFinished = sendFinished;
+      webhook.sendStarted = sendStarted;
       if (secrets.length) {
         webhook.envFrom = secrets;
       } else {
@@ -110,6 +113,7 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
         const parsedConfig = this.parseConfig(curl);
         parsedConfig.secrets = webhook.envFrom;
         parsedConfig.sendFinished = webhook.sendFinished ?? false;
+        parsedConfig.sendStarted = webhook.sendStarted ?? true;
         parsedConfig.type = webhook.type;
         return parsedConfig;
       }

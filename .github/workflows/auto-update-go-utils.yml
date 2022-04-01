@@ -15,7 +15,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v3
         with:
-          go-version: 1.16.x
+          go-version: 1.17
           check-latest: true
 
       - name: Checkout code
@@ -25,7 +25,7 @@ jobs:
         run: ./gh-actions-scripts/auto-update-utils.sh "${{ env.GO_UTILS_TARGET }}" "go-utils"
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v4
         with:
           token: ${{ secrets.KEPTN_BOT_TOKEN }}
           commit-message: "build(deps): Update keptn/go-utils to ${{ env.GO_UTILS_TARGET }}"

@@ -23,8 +23,8 @@ const errUpdateProject = "failed to update project '%s': %w"
 
 //go:generate moq -pkg fake -skip-ensure -out ./fake/projectmanager.go . IProjectManager
 type IProjectManager interface {
-	Get() ([]*models.ExpandedProject, error)
-	GetByName(projectName string) (*models.ExpandedProject, error)
+	Get() ([]*apimodels.ExpandedProject, error)
+	GetByName(projectName string) (*apimodels.ExpandedProject, error)
 	Create(params *models.CreateProjectParams) (error, common.RollbackFunc)
 	Update(params *models.UpdateProjectParams) (error, common.RollbackFunc)
 	Delete(projectName string) (string, error)
@@ -64,7 +64,7 @@ func NewProjectManager(
 	return projectUpdater
 }
 
-func (pm *ProjectManager) Get() ([]*models.ExpandedProject, error) {
+func (pm *ProjectManager) Get() ([]*apimodels.ExpandedProject, error) {
 	allProjects, err := pm.ProjectMaterializedView.GetProjects()
 	if err != nil {
 		return nil, err
@@ -72,7 +72,7 @@ func (pm *ProjectManager) Get() ([]*models.ExpandedProject, error) {
 	return allProjects, nil
 }
 
-func (pm *ProjectManager) GetByName(projectName string) (*models.ExpandedProject, error) {
+func (pm *ProjectManager) GetByName(projectName string) (*apimodels.ExpandedProject, error) {
 	project, err := pm.ProjectMaterializedView.GetProject(projectName)
 	if err != nil {
 		return nil, err
@@ -392,17 +392,17 @@ func (pm *ProjectManager) deleteProjectSequenceCollections(projectName string) {
 
 func (pm *ProjectManager) createProjectInRepository(params *models.CreateProjectParams, decodedShipyard []byte, shipyard *keptnv2.Shipyard) error {
 
-	var expandedStages []*models.ExpandedStage
+	var expandedStages []*apimodels.ExpandedStage
 
 	for _, s := range shipyard.Spec.Stages {
-		es := &models.ExpandedStage{
-			Services:  []*models.ExpandedService{},
+		es := &apimodels.ExpandedStage{
+			Services:  []*apimodels.ExpandedService{},
 			StageName: s.Name,
 		}
 		expandedStages = append(expandedStages, es)
 	}
 
-	p := &models.ExpandedProject{
+	p := &apimodels.ExpandedProject{
 		CreationDate:    strconv.FormatInt(time.Now().UnixNano(), 10),
 		GitRemoteURI:    params.GitRemoteURL,
 		GitUser:         params.GitUser,
@@ -496,7 +496,7 @@ func getShipyardNotAvailableError(project string) string {
 		"This may cause problems if a project with the same name is created later.", project)
 }
 
-func toModelProject(project models.ExpandedProject) apimodels.Project {
+func toModelProject(project apimodels.ExpandedProject) apimodels.Project {
 	return apimodels.Project{
 
 		CreationDate:    project.CreationDate,
@@ -507,7 +507,7 @@ func toModelProject(project models.ExpandedProject) apimodels.Project {
 	}
 }
 
-func validateShipyardStagesUnchaged(oldProject *models.ExpandedProject, newProject *models.ExpandedProject) error {
+func validateShipyardStagesUnchaged(oldProject *apimodels.ExpandedProject, newProject *apimodels.ExpandedProject) error {
 	if len(newProject.Stages) != len(oldProject.Stages) {
 		return fmt.Errorf("unallowed addition/removal of project stages")
 	}
@@ -534,7 +534,7 @@ func validateShipyardStagesUnchaged(oldProject *models.ExpandedProject, newProje
 	return nil
 }
 
-func stageInArrayOfStages(comparedStage string, stages []*models.ExpandedStage) bool {
+func stageInArrayOfStages(comparedStage string, stages []*apimodels.ExpandedStage) bool {
 	for _, arrayStage := range stages {
 		if arrayStage.StageName == comparedStage {
 			return true
@@ -543,21 +543,21 @@ func stageInArrayOfStages(comparedStage string, stages []*models.ExpandedStage) 
 	return false
 }
 
-func validateShipyardUpdate(params *models.UpdateProjectParams, oldProject *models.ExpandedProject) error {
+func validateShipyardUpdate(params *models.UpdateProjectParams, oldProject *apimodels.ExpandedProject) error {
 	shipyard := &keptnv2.Shipyard{}
 	decodedShipyard, _ := base64.StdEncoding.DecodeString(*params.Shipyard)
 	_ = yaml.Unmarshal([]byte(decodedShipyard), shipyard)
-	var expandedStages []*models.ExpandedStage
+	var expandedStages []*apimodels.ExpandedStage
 
 	for _, s := range shipyard.Spec.Stages {
-		es := &models.ExpandedStage{
-			Services:  []*models.ExpandedService{},
+		es := &apimodels.ExpandedStage{
+			Services:  []*apimodels.ExpandedService{},
 			StageName: s.Name,
 		}
 		expandedStages = append(expandedStages, es)
 	}
 
-	newProject := &models.ExpandedProject{
+	newProject := &apimodels.ExpandedProject{
 		CreationDate:    strconv.FormatInt(time.Now().UnixNano(), 10),
 		GitRemoteURI:    params.GitRemoteURL,
 		GitUser:         params.GitUser,

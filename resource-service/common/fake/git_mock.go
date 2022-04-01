@@ -47,6 +47,9 @@ import (
 // 			PushFunc: func(gitContext common_models.GitContext) error {
 // 				panic("mock out the Push method")
 // 			},
+// 			ResetHardFunc: func(gitContext common_models.GitContext) error {
+// 				panic("mock out the ResetHard method")
+// 			},
 // 			StageAndCommitAllFunc: func(gitContext common_models.GitContext, message string) (string, error) {
 // 				panic("mock out the StageAndCommitAll method")
 // 			},
@@ -89,6 +92,9 @@ type IGitMock struct {
 
 	// PushFunc mocks the Push method.
 	PushFunc func(gitContext common_models.GitContext) error
+
+	// ResetHardFunc mocks the ResetHard method.
+	ResetHardFunc func(gitContext common_models.GitContext) error
 
 	// StageAndCommitAllFunc mocks the StageAndCommitAll method.
 	StageAndCommitAllFunc func(gitContext common_models.GitContext, message string) (string, error)
@@ -162,6 +168,11 @@ type IGitMock struct {
 			// GitContext is the gitContext argument value.
 			GitContext common_models.GitContext
 		}
+		// ResetHard holds details about calls to the ResetHard method.
+		ResetHard []struct {
+			// GitContext is the gitContext argument value.
+			GitContext common_models.GitContext
+		}
 		// StageAndCommitAll holds details about calls to the StageAndCommitAll method.
 		StageAndCommitAll []struct {
 			// GitContext is the gitContext argument value.
@@ -181,6 +192,7 @@ type IGitMock struct {
 	lockProjectRepoExists  sync.RWMutex
 	lockPull               sync.RWMutex
 	lockPush               sync.RWMutex
+	lockResetHard          sync.RWMutex
 	lockStageAndCommitAll  sync.RWMutex
 }
 
@@ -546,6 +558,37 @@ func (mock *IGitMock) PushCalls() []struct {
 	mock.lockPush.RLock()
 	calls = mock.calls.Push
 	mock.lockPush.RUnlock()
+	return calls
+}
+
+// ResetHard calls ResetHardFunc.
+func (mock *IGitMock) ResetHard(gitContext common_models.GitContext, revision string) error {
+	if mock.ResetHardFunc == nil {
+		panic("IGitMock.ResetHardFunc: method is nil but IGit.ResetHard was just called")
+	}
+	callInfo := struct {
+		GitContext common_models.GitContext
+	}{
+		GitContext: gitContext,
+	}
+	mock.lockResetHard.Lock()
+	mock.calls.ResetHard = append(mock.calls.ResetHard, callInfo)
+	mock.lockResetHard.Unlock()
+	return mock.ResetHardFunc(gitContext)
+}
+
+// ResetHardCalls gets all the calls that were made to ResetHard.
+// Check the length with:
+//     len(mockedIGit.ResetHardCalls())
+func (mock *IGitMock) ResetHardCalls() []struct {
+	GitContext common_models.GitContext
+} {
+	var calls []struct {
+		GitContext common_models.GitContext
+	}
+	mock.lockResetHard.RLock()
+	calls = mock.calls.ResetHard
+	mock.lockResetHard.RUnlock()
 	return calls
 }
 

@@ -3,16 +3,40 @@ package handler
 import (
 	"errors"
 	"fmt"
-	"net/http"
-	"sort"
-
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
+	"net/http"
+	"sort"
 )
+
+type ServiceParamsValidator struct{}
+
+func (s ServiceParamsValidator) Validate(params interface{}) error {
+	switch t := params.(type) {
+	case *models.CreateServiceParams:
+		return s.validateCreateServiceParams(t)
+	default:
+		return nil
+	}
+}
+
+func (s ServiceParamsValidator) validateCreateServiceParams(params *models.CreateServiceParams) error {
+	if params.ServiceName == nil || *params.ServiceName == "" {
+		return errors.New("Must provide a service name")
+	}
+	if !keptncommon.ValidateUnixDirectoryName(*params.ServiceName) {
+		return errors.New("Service name contains special character(s). " +
+			"The service name has to be a valid Unix directory name. For details see " +
+			"https://www.cyberciti.biz/faq/linuxunix-rules-for-naming-file-and-directory-names/")
+	}
+	return nil
+}
 
 type IServiceHandler interface {
 	CreateService(context *gin.Context)
@@ -47,12 +71,13 @@ func (sh *ServiceHandler) CreateService(c *gin.Context) {
 		return
 	}
 	// validate the input
-	createServiceParams := &models.CreateServiceParams{}
-	if err := c.ShouldBindJSON(createServiceParams); err != nil {
+	params := &models.CreateServiceParams{}
+	if err := c.ShouldBindJSON(params); err != nil {
 		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
-	if err := createServiceParams.Validate(); err != nil {
+	serviceValidator := ServiceParamsValidator{}
+	if err := serviceValidator.Validate(params); err != nil {
 		SetBadRequestErrorResponse(c, err.Error())
 		return
 	}
@@ -60,12 +85,12 @@ func (sh *ServiceHandler) CreateService(c *gin.Context) {
 	common.LockProject(projectName)
 	defer common.UnlockProject(projectName)
 
-	if err := sh.sendServiceCreateStartedEvent(keptnContext, projectName, createServiceParams); err != nil {
+	if err := sh.sendServiceCreateStartedEvent(keptnContext, projectName, params); err != nil {
 		log.Errorf("could not send service.create.started event: %s", err.Error())
 	}
-	if err := sh.serviceManager.CreateService(projectName, createServiceParams); err != nil {
+	if err := sh.serviceManager.CreateService(projectName, params); err != nil {
 
-		if err2 := sh.sendServiceCreateFailedFinishedEvent(keptnContext, projectName, createServiceParams); err2 != nil {
+		if err2 := sh.sendServiceCreateFailedFinishedEvent(keptnContext, projectName, params); err2 != nil {
 			log.Errorf("could not send service.create.finished event: %s", err2.Error())
 		}
 
@@ -77,7 +102,7 @@ func (sh *ServiceHandler) CreateService(c *gin.Context) {
 		SetInternalServerErrorResponse(c, err.Error())
 		return
 	}
-	if err := sh.sendServiceCreateSuccessFinishedEvent(keptnContext, projectName, createServiceParams); err != nil {
+	if err := sh.sendServiceCreateSuccessFinishedEvent(keptnContext, projectName, params); err != nil {
 		log.Errorf("could not send service.create.finished event: %s", err.Error())
 	}
 
@@ -142,7 +167,7 @@ func (sh *ServiceHandler) DeleteService(c *gin.Context) {
 // @Param   project     path    string     true        "Project"
 // @Param   stage     path    string     true        "Stage"
 // @Param   service     path    string     true        "Service"
-// @Success 200 {object} models.ExpandedService	"ok"
+// @Success 200 {object} apimodels.ExpandedService	"ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/{project}/stage/{stage}/service/{service} [get]
@@ -175,7 +200,7 @@ func (sh *ServiceHandler) GetService(c *gin.Context) {
 // @Param   stage     path    string     true        "Stage"
 // @Param	pageSize			query		int			false	"The number of items to return"
 // @Param   nextPageKey     	query    	string     	false	"Pointer to the next set of items"
-// @Success 200 {object} models.ExpandedServices	"ok"
+// @Success 200 {object} apimodels.ExpandedServices	"ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/{project}/stage/{stage}/service [get]
@@ -199,11 +224,11 @@ func (sh *ServiceHandler) GetServices(c *gin.Context) {
 		return
 	}
 
-	payload := &models.ExpandedServices{
+	payload := &apimodels.ExpandedServices{
 		PageSize:    0,
 		NextPageKey: "0",
 		TotalCount:  0,
-		Services:    []*models.ExpandedService{},
+		Services:    []*apimodels.ExpandedService{},
 	}
 	sort.Slice(services, func(i, j int) bool {
 		return services[i].ServiceName < services[j].ServiceName

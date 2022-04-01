@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
-	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/shipyard-controller/models"
+	//	"github.com/keptn/keptn/shipyard-controller/models"
 	keptnkubeutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/stretchr/testify/require"
 )
@@ -117,18 +117,18 @@ const echoServiceName = "echo-service"
 // Test_UniformRegistration_TestAPI directly tests the API for (un)registering Keptn integrations
 // to the Keptn control plane
 func Test_UniformRegistration_TestAPI(t *testing.T) {
-	uniformIntegration := &keptnmodels.Integration{
+	uniformIntegration := &models.Integration{
 		Name: "my-uniform-service",
-		MetaData: keptnmodels.MetaData{
+		MetaData: models.MetaData{
 			DistributorVersion: "0.8.3",
 			Hostname:           "hostname",
-			KubernetesMetaData: keptnmodels.KubernetesMetaData{
+			KubernetesMetaData: models.KubernetesMetaData{
 				Namespace: "my-namespace",
 			},
 		},
-		Subscriptions: []keptnmodels.EventSubscription{{
+		Subscriptions: []models.EventSubscription{{
 			Event: keptnv2.GetTriggeredEventType(keptnv2.TestTaskName),
-			Filter: keptnmodels.EventSubscriptionFilter{
+			Filter: models.EventSubscriptionFilter{
 				Projects: []string{},
 				Stages:   []string{},
 				Services: []string{},
@@ -143,7 +143,7 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, http.StatusCreated, resp.Response().StatusCode)
 
-	registrationResponse := &models.RegisterResponse{}
+	registrationResponse := &models.RegisterIntegrationResponse{}
 	err = resp.ToJSON(registrationResponse)
 	require.Nil(t, err)
 
@@ -167,9 +167,9 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 	require.NotEmpty(t, integrations[0].MetaData.LastSeen)
 
 	// add a subscription to the integration
-	newSubscription := keptnmodels.EventSubscription{
+	newSubscription := models.EventSubscription{
 		Event: keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName),
-		Filter: keptnmodels.EventSubscriptionFilter{
+		Filter: models.EventSubscriptionFilter{
 			Projects: []string{"my-project"},
 			Stages:   []string{"my-stage"},
 			Services: []string{"my-service"},
@@ -238,7 +238,7 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 	// update version of distributor
 	updatedUniformIntegration := uniformIntegration
 	updatedUniformIntegration.MetaData.DistributorVersion = "0.8.4"
-	updatedUniformIntegration.Subscriptions = []keptnmodels.EventSubscription{}
+	updatedUniformIntegration.Subscriptions = []models.EventSubscription{}
 
 	resp, err = ApiPOSTRequest("/controlPlane/v1/uniform/registration", updatedUniformIntegration, 3)
 	require.Nil(t, err)
@@ -460,7 +460,7 @@ func testUniformIntegration(t *testing.T, configureIntegrationFunc func(), clean
 	require.Nil(t, err)
 
 	// wait for echo integration registered
-	var fetchedEchoIntegration keptnmodels.Integration
+	var fetchedEchoIntegration models.Integration
 	require.Eventually(t, func() bool {
 		fetchedEchoIntegration, err = GetIntegrationWithName(echoServiceName)
 		return err == nil
@@ -493,7 +493,7 @@ func testUniformIntegration(t *testing.T, configureIntegrationFunc func(), clean
 	// we need to wait a few seconds here if we want to be really sure that only one .started event has been sent afterwards
 	<-time.After(10 * time.Second)
 
-	var startedEvents []*keptnmodels.KeptnContextExtendedCE
+	var startedEvents []*models.KeptnContextExtendedCE
 	// make sure the echo service has received the task event and reacted with a .started event
 	require.Eventually(t, func() bool {
 		var err error

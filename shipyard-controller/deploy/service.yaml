@@ -69,6 +69,8 @@ spec:
             value: "0.2.3"
           - name: TASK_STARTED_WAIT_DURATION
             value: "10m"
+          - name: AUTOMATIC_PROVISIONING_URL
+            value: ""
           - name: DISABLE_LEADER_ELECTION
             value: "true"
         ports:

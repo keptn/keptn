@@ -829,6 +829,41 @@ func TestResourceManager_DeleteResource_ProjectResource_DeleteFails(t *testing.T
 	require.Equal(t, testConfigDir+"/file1", fields.fileSystem.DeleteFileCalls()[0].Path)
 }
 
+func TestResourceManager_DeleteResource_Git_ThrowsNonFastForward_Or_ThrowsForceNeeded(t *testing.T) {
+	fields := getTestResourceManagerFields()
+	fields.git.StageAndCommitAllFunc = func(gitContext common_models.GitContext, message string) (string, error) {
+		stageAndCommitCalls := fields.git.StageAndCommitAllCalls()
+		if len(stageAndCommitCalls) == 1 {
+			return "", errors2.ErrNonFastForwardUpdate
+		}
+		if len(stageAndCommitCalls) == 2 {
+			return "", errors2.ErrForceNeeded
+		}
+
+		return "my-revision", nil
+	}
+
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
+
+	revision, err := rm.DeleteResource(models.DeleteResourceParams{
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
+		},
+		ResourceURI: "file1",
+	})
+
+	require.Nil(t, err)
+
+	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision"}, revision)
+
+	require.Len(t, fields.git.StageAndCommitAllCalls(), 3)
+	require.Len(t, fields.fileSystem.DeleteFileCalls(), 3)
+	require.Len(t, fields.git.PullCalls(), 3)
+	require.Equal(t, testConfigDir+"/file1", fields.fileSystem.DeleteFileCalls()[0].Path)
+	require.Equal(t, testConfigDir+"/file1", fields.fileSystem.DeleteFileCalls()[1].Path)
+	require.Equal(t, testConfigDir+"/file1", fields.fileSystem.DeleteFileCalls()[2].Path)
+}
+
 func TestResourceManager_DeleteResource_ProjectResource_CommitFails(t *testing.T) {
 	fields := getTestResourceManagerFields()
 
@@ -1224,39 +1259,20 @@ func (fakeFileInfo) Sys() interface{} {
 func getTestResourceManagerFields() testResourceManagerFields {
 	return testResourceManagerFields{
 		git: &common_mock.IGitMock{
-			CheckoutBranchFunc: func(gitContext common_models.GitContext, branch string) error {
-				return nil
-			},
-			CloneRepoFunc: func(gitContext common_models.GitContext) (bool, error) {
-				return true, nil
-			},
-			CreateBranchFunc: func(gitContext common_models.GitContext, branch string, sourceBranch string) error {
-				return nil
-			},
-			GetCurrentRevisionFunc: func(gitContext common_models.GitContext) (string, error) {
-				return "my-revision", nil
-			},
-			GetDefaultBranchFunc: func(gitContext common_models.GitContext) (string, error) {
-				return "main", nil
-			},
+			ResetHardFunc:          func(gitContext common_models.GitContext) error { return nil },
+			CheckoutBranchFunc:     func(gitContext common_models.GitContext, branch string) error { return nil },
+			CloneRepoFunc:          func(gitContext common_models.GitContext) (bool, error) { return true, nil },
+			CreateBranchFunc:       func(gitContext common_models.GitContext, branch string, sourceBranch string) error { return nil },
+			GetCurrentRevisionFunc: func(gitContext common_models.GitContext) (string, error) { return "my-revision", nil },
+			GetDefaultBranchFunc:   func(gitContext common_models.GitContext) (string, error) { return "main", nil },
 			GetFileRevisionFunc: func(gitContext common_models.GitContext, revision string, file string) ([]byte, error) {
 				return []byte("file-content"), nil
 			},
-			ProjectExistsFunc: func(gitContext common_models.GitContext) bool {
-				return true
-			},
-			ProjectRepoExistsFunc: func(projectName string) bool {
-				return true
-			},
-			PullFunc: func(gitContext common_models.GitContext) error {
-				return nil
-			},
-			PushFunc: func(gitContext common_models.GitContext) error {
-				return nil
-			},
-			StageAndCommitAllFunc: func(gitContext common_models.GitContext, message string) (string, error) {
-				return "my-revision", nil
-			},
+			ProjectExistsFunc:     func(gitContext common_models.GitContext) bool { return true },
+			ProjectRepoExistsFunc: func(projectName string) bool { return true },
+			PullFunc:              func(gitContext common_models.GitContext) error { return nil },
+			PushFunc:              func(gitContext common_models.GitContext) error { return nil },
+			StageAndCommitAllFunc: func(gitContext common_models.GitContext, message string) (string, error) { return "my-revision", nil },
 		},
 		credentialReader: &common_mock.CredentialReaderMock{
 			GetCredentialsFunc: func(project string) (*common_models.GitCredentials, error) {

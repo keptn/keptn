@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	common_mock "github.com/keptn/keptn/shipyard-controller/common/fake"
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
@@ -21,7 +22,7 @@ func TestCreateService_GettingStagesFails(t *testing.T) {
 		ServiceName: common.Stringp("service-name"),
 	}
 
-	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
 		return nil, errors.New("whoops")
 	}
 
@@ -39,22 +40,22 @@ func TestCreateService_ServiceAlreadyExists(t *testing.T) {
 		ServiceName: common.Stringp("service-name"),
 	}
 
-	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
-		service := &models.ExpandedService{
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
+		service := &apimodels.ExpandedService{
 			ServiceName: "service-name",
 		}
-		stage1 := &models.ExpandedStage{
-			Services:  []*models.ExpandedService{service},
+		stage1 := &apimodels.ExpandedStage{
+			Services:  []*apimodels.ExpandedService{service},
 			StageName: "dev",
 		}
-		stage2 := &models.ExpandedStage{
-			Services:  []*models.ExpandedService{service},
+		stage2 := &apimodels.ExpandedStage{
+			Services:  []*apimodels.ExpandedService{service},
 			StageName: "prod",
 		}
 
-		project := &models.ExpandedProject{
+		project := &apimodels.ExpandedProject{
 			ProjectName: "my-project",
-			Stages:      []*models.ExpandedStage{stage1, stage2},
+			Stages:      []*apimodels.ExpandedStage{stage1, stage2},
 		}
 		return project, nil
 	}
@@ -73,20 +74,20 @@ func TestCreatService_CreatingServiceInConfigurationServiceFails(t *testing.T) {
 		ServiceName: common.Stringp("service-name"),
 	}
 
-	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
 
-		stage1 := &models.ExpandedStage{
-			Services:  []*models.ExpandedService{},
+		stage1 := &apimodels.ExpandedStage{
+			Services:  []*apimodels.ExpandedService{},
 			StageName: "dev",
 		}
-		stage2 := &models.ExpandedStage{
-			Services:  []*models.ExpandedService{},
+		stage2 := &apimodels.ExpandedStage{
+			Services:  []*apimodels.ExpandedService{},
 			StageName: "prod",
 		}
 
-		project := &models.ExpandedProject{
+		project := &apimodels.ExpandedProject{
 			ProjectName: "my-project",
-			Stages:      []*models.ExpandedStage{stage1, stage2},
+			Stages:      []*apimodels.ExpandedStage{stage1, stage2},
 		}
 		return project, nil
 	}
@@ -111,20 +112,20 @@ func TestCreatService_CreatingServiceInDBFails(t *testing.T) {
 		ServiceName: common.Stringp("service-name"),
 	}
 
-	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
 
-		stage1 := &models.ExpandedStage{
-			Services:  []*models.ExpandedService{},
+		stage1 := &apimodels.ExpandedStage{
+			Services:  []*apimodels.ExpandedService{},
 			StageName: "dev",
 		}
-		stage2 := &models.ExpandedStage{
-			Services:  []*models.ExpandedService{},
+		stage2 := &apimodels.ExpandedStage{
+			Services:  []*apimodels.ExpandedService{},
 			StageName: "prod",
 		}
 
-		project := &models.ExpandedProject{
+		project := &apimodels.ExpandedProject{
 			ProjectName: "my-project",
-			Stages:      []*models.ExpandedStage{stage1, stage2},
+			Stages:      []*apimodels.ExpandedStage{stage1, stage2},
 		}
 		return project, nil
 	}
@@ -152,20 +153,20 @@ func TestCreateService(t *testing.T) {
 		ServiceName: common.Stringp("service-name"),
 	}
 
-	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
 
-		stage1 := &models.ExpandedStage{
-			Services:  []*models.ExpandedService{},
+		stage1 := &apimodels.ExpandedStage{
+			Services:  []*apimodels.ExpandedService{},
 			StageName: "dev",
 		}
-		stage2 := &models.ExpandedStage{
-			Services:  []*models.ExpandedService{},
+		stage2 := &apimodels.ExpandedStage{
+			Services:  []*apimodels.ExpandedService{},
 			StageName: "prod",
 		}
 
-		project := &models.ExpandedProject{
+		project := &apimodels.ExpandedProject{
 			ProjectName: "my-project",
-			Stages:      []*models.ExpandedStage{stage1, stage2},
+			Stages:      []*apimodels.ExpandedStage{stage1, stage2},
 		}
 		return project, nil
 	}
@@ -204,7 +205,7 @@ func TestDeleteService_GettingAllStagesFails(t *testing.T) {
 	configurationStore := &common_mock.ConfigurationStoreMock{}
 	uniformRepo := &db_mock.UniformRepoMock{}
 	instance := NewServiceManager(projectMVRepo, configurationStore, uniformRepo)
-	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
 		return nil, errors.New("whoops")
 	}
 
@@ -218,22 +219,22 @@ func TestDeleteService_DeleteServiceInConfigurationServiceFails(t *testing.T) {
 	configurationStore := &common_mock.ConfigurationStoreMock{}
 	uniformRepo := &db_mock.UniformRepoMock{}
 	instance := NewServiceManager(projectMVRepo, configurationStore, uniformRepo)
-	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
-		service := &models.ExpandedService{
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
+		service := &apimodels.ExpandedService{
 			ServiceName: "service-name",
 		}
-		stage1 := &models.ExpandedStage{
-			Services:  []*models.ExpandedService{service},
+		stage1 := &apimodels.ExpandedStage{
+			Services:  []*apimodels.ExpandedService{service},
 			StageName: "dev",
 		}
-		stage2 := &models.ExpandedStage{
-			Services:  []*models.ExpandedService{service},
+		stage2 := &apimodels.ExpandedStage{
+			Services:  []*apimodels.ExpandedService{service},
 			StageName: "prod",
 		}
 
-		project := &models.ExpandedProject{
+		project := &apimodels.ExpandedProject{
 			ProjectName: "my-project",
-			Stages:      []*models.ExpandedStage{stage1, stage2},
+			Stages:      []*apimodels.ExpandedStage{stage1, stage2},
 		}
 		return project, nil
 	}
@@ -253,22 +254,22 @@ func TestDeleteService_DeleteServiceInDBFails(t *testing.T) {
 	configurationStore := &common_mock.ConfigurationStoreMock{}
 	uniformRepo := &db_mock.UniformRepoMock{}
 	instance := NewServiceManager(projectMVRepo, configurationStore, uniformRepo)
-	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
-		service := &models.ExpandedService{
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
+		service := &apimodels.ExpandedService{
 			ServiceName: "service-name",
 		}
-		stage1 := &models.ExpandedStage{
-			Services:  []*models.ExpandedService{service},
+		stage1 := &apimodels.ExpandedStage{
+			Services:  []*apimodels.ExpandedService{service},
 			StageName: "dev",
 		}
-		stage2 := &models.ExpandedStage{
-			Services:  []*models.ExpandedService{service},
+		stage2 := &apimodels.ExpandedStage{
+			Services:  []*apimodels.ExpandedService{service},
 			StageName: "prod",
 		}
 
-		project := &models.ExpandedProject{
+		project := &apimodels.ExpandedProject{
 			ProjectName: "my-project",
-			Stages:      []*models.ExpandedStage{stage1, stage2},
+			Stages:      []*apimodels.ExpandedStage{stage1, stage2},
 		}
 		return project, nil
 	}
@@ -292,22 +293,22 @@ func TestDeleteService(t *testing.T) {
 	configurationStore := &common_mock.ConfigurationStoreMock{}
 	uniformRepo := &db_mock.UniformRepoMock{}
 	instance := NewServiceManager(projectMVRepo, configurationStore, uniformRepo)
-	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
-		service := &models.ExpandedService{
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
+		service := &apimodels.ExpandedService{
 			ServiceName: "service-name",
 		}
-		stage1 := &models.ExpandedStage{
-			Services:  []*models.ExpandedService{service},
+		stage1 := &apimodels.ExpandedStage{
+			Services:  []*apimodels.ExpandedService{service},
 			StageName: "dev",
 		}
-		stage2 := &models.ExpandedStage{
-			Services:  []*models.ExpandedService{service},
+		stage2 := &apimodels.ExpandedStage{
+			Services:  []*apimodels.ExpandedService{service},
 			StageName: "prod",
 		}
 
-		project := &models.ExpandedProject{
+		project := &apimodels.ExpandedProject{
 			ProjectName: "my-project",
-			Stages:      []*models.ExpandedStage{stage1, stage2},
+			Stages:      []*apimodels.ExpandedStage{stage1, stage2},
 		}
 		return project, nil
 	}

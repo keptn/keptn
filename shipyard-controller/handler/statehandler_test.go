@@ -3,10 +3,10 @@ package handler_test
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/handler"
-	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"

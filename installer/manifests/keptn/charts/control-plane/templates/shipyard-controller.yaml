@@ -87,12 +87,16 @@ spec:
               value: {{ .Values.shipyardController.config.uniformIntegrationTTL | default "2m" }}
             - name: LOG_LEVEL
               value: {{ .Values.logLevel | default "info" }}
+            - name: AUTOMATIC_PROVISIONING_URL
+              value: {{ (.Values.features).automaticProvisioningURL | default "" }}
             - name: DISABLE_LEADER_ELECTION
               {{- if  lt .Capabilities.KubeVersion.Minor "14"}}
               value: {{ true | quote }}
               {{else }}
               value: {{ .Values.shipyardController.config.disableLeaderElection | default false | quote }}
               {{- end}}
+            - name: PROJECT_NAME_MAX_SIZE
+              value: {{ .Values.shipyardController.config.validation.projectNameMaxSize | default 200 | quote }}
           ports:
             - containerPort: 8080
           resources:

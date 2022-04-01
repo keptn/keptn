@@ -10,7 +10,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	scmodels "github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
 )
 
@@ -105,8 +104,8 @@ func Test_SequenceTimeout(t *testing.T) {
 	require.NotNil(t, context.KeptnContext)
 
 	// wait for the recreated state to be available
-	t.Logf("waiting for state with keptnContext %s to have the status %s", *context.KeptnContext, scmodels.TimedOut)
-	VerifySequenceEndsUpInState(t, projectName, context, 2*time.Minute, []string{scmodels.TimedOut})
+	t.Logf("waiting for state with keptnContext %s to have the status %s", *context.KeptnContext, models.TimedOut)
+	VerifySequenceEndsUpInState(t, projectName, context, 2*time.Minute, []string{models.TimedOut})
 	t.Log("received the expected state!")
 }
 
@@ -152,7 +151,7 @@ func Test_SequenceTimeoutDelayedTask(t *testing.T) {
 	require.Len(t, states.States, 1)
 	state := states.States[0]
 
-	require.Equal(t, scmodels.SequenceStartedState, state.State)
+	require.Equal(t, models.SequenceStartedState, state.State)
 
 	// after some time, the unknown.triggered event should be available
 	require.Eventually(t, func() bool {

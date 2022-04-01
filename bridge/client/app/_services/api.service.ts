@@ -25,7 +25,7 @@ import { Deployment } from '../../../shared/interfaces/deployment';
 import { IServiceRemediationInformation } from '../_interfaces/service-remediation-information';
 import { EndSessionData } from '../../../shared/interfaces/end-session-data';
 import { ISequencesMetadata } from '../../../shared/interfaces/sequencesMetadata';
-import { TriggerEvaluationData, TriggerResponse, TriggerSequenceData } from '../_models/trigger-sequence';
+import { TriggerResponse, TriggerSequenceData } from '../_models/trigger-sequence';
 import { IScopesResult } from '../_interfaces/scopes-result';
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
 import { IGitHttps, IGitSsh } from '../_interfaces/git-upstream';
@@ -528,13 +528,6 @@ export class ApiService {
       source: 'bridge',
     };
     return this.http.post<TriggerResponse>(`${this._baseUrl}/v1/event`, JSON.stringify(body));
-  }
-
-  public triggerEvaluation(data: TriggerEvaluationData): Observable<TriggerResponse> {
-    return this.http.post<TriggerResponse>(
-      `${this._baseUrl}/controlPlane/v1/project/${data.project}/stage/${data.stage}/service/${data.service}/evaluation`,
-      data.evaluation
-    );
   }
 
   public getSecretScopes(): Observable<IScopesResult> {

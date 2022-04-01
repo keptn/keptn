@@ -40,6 +40,10 @@ const gitErrMsg = `Please specify a 'git-user' and 'git-remote-url' as flags for
 const gitMissingUpstream = `WARNING: Creating a project without Git upstream repository is not recommended and will not be supported in the future anymore.
 You can configure a Git upstream repository using: 
 
+keptn update project PROJECTNAME --git-remote-url=GIT_REMOTE_URL --git-token=GIT_TOKEN
+
+or (if your repository provider allows to use user and password)
+
 keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE_URL --git-token=GIT_TOKEN
 
 or (only for resource-service)
@@ -61,8 +65,9 @@ var crProjectCmd = &cobra.Command{
 The shipyard file describes the used stages. These stages are defined by name, as well as their task sequences.
 
 By executing the *create project* command, Keptn initializes an internal Git repository that is used to maintain all project-related resources. 
-To upstream this internal Git repository to a remote repository, the Git user (*--git-user*) and the remote URL (*--git-remote-url*) are required
-together with private key (*--git-private-key*) or access token (*--git-token*). For using proxy please specify proxy IP address together with port (*--git-proxy-url*) and
+To upstream this internal Git repository to a remote repository, the remote URL (*--git-remote-url*) is required
+together with private key (*--git-private-key*) or access token (*--git-token*). The Git user (*--git-user*) can be specified if the repository allows it. 
+For using proxy please specify proxy IP address together with port (*--git-proxy-url*) and
 used scheme (*--git-proxy-scheme=*) to connect to proxy. Please be aware that authentication with public/private key and via proxy is 
 supported only when using resource-service.
 
@@ -163,7 +168,7 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-r
 
 		api, err := internal.APIProvider(endPoint.String(), apiToken)
 		if err != nil {
-			return err
+			return internal.OnAPIError(err)
 		}
 
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
@@ -185,7 +190,7 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-r
 }
 
 func checkGitCredentials() error {
-	if *createProjectParams.GitUser == "" && *createProjectParams.GitToken == "" && *createProjectParams.RemoteURL == "" {
+	if *createProjectParams.GitToken == "" && *createProjectParams.RemoteURL == "" {
 		fmt.Println(gitMissingUpstream)
 		return nil
 	}

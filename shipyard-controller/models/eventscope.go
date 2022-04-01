@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
 
@@ -14,15 +15,15 @@ var ErrInvalidEventScope = errors.New("invalid event scope")
 // for the shipyard controller for its decision logic
 type EventScope struct {
 	v0_2_0.EventData `bson:",inline"`
-	KeptnContext     string `json:"keptnContext" bson:"keptnContext"`
-	TriggeredID      string `json:"triggeredId" bson:"triggeredId"`
-	GitCommitID      string `json:"gitcommitid" bson:"gitcommitid"`
-	EventType        string `json:"eventType" bson:"eventType"`
-	EventSource      string `json:"-" bson:"-"`
-	WrappedEvent     Event  `json:"-" bson:"-"`
+	KeptnContext     string                        `json:"keptnContext" bson:"keptnContext"`
+	TriggeredID      string                        `json:"triggeredId" bson:"triggeredId"`
+	GitCommitID      string                        `json:"gitcommitid" bson:"gitcommitid"`
+	EventType        string                        `json:"eventType" bson:"eventType"`
+	EventSource      string                        `json:"-" bson:"-"`
+	WrappedEvent     models.KeptnContextExtendedCE `json:"-" bson:"-"`
 }
 
-func NewEventScope(event Event) (*EventScope, error) {
+func NewEventScope(event models.KeptnContextExtendedCE) (*EventScope, error) {
 	marshal, err := json.Marshal(event.Data)
 	if err != nil {
 		return nil, err

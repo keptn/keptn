@@ -319,14 +319,13 @@ export class DataService {
     service.latestSequence = latestSequence ? Sequence.fromJSON(latestSequence) : undefined;
     service.latestSequence?.reduceToStage(options.stageName);
 
-    if (!cachedSequence && service.latestSequence) {
-      const stage = service.latestSequence.stages.find((seq) => seq.name === options.stageName);
-      if (stage) {
-        stage.latestEvaluationTrace = stageInformation.evaluations.find(
-          (t) => t.data.service === service.latestSequence?.service
-        );
-      }
+    const stage = service.latestSequence?.stages.find((seq) => seq.name === options.stageName);
+    if (stage && !stage.latestEvaluationTrace) {
+      stage.latestEvaluationTrace = stageInformation.evaluations.find(
+        (t) => t.data.service === service.latestSequence?.service
+      );
     }
+
     const deployment = stageDeployments.find((t) => t.data.service === service.serviceName);
     if (deployment) {
       service.deploymentInformation = {
@@ -872,7 +871,8 @@ export class DataService {
             curl,
             subscriptionId,
             secrets,
-            webhookConfig.sendFinished
+            webhookConfig.sendFinished,
+            webhookConfig.sendStarted
           );
           await this.apiService.saveWebhookConfig(accessToken, previousWebhookConfig.toYAML(), project, stage, service);
         }

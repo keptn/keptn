@@ -2,7 +2,9 @@ package internal
 
 import (
 	"context"
+	"errors"
 	"github.com/keptn/keptn/cli/internal/auth"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
@@ -99,4 +101,38 @@ func Test_WhenHeadRequestFails_OAuthFlowIsTriggeredAgain(t *testing.T) {
 		require.False(t, authorizationCodeFlowStarted)
 		require.Equal(t, "XToken", apiSet.Token())
 	})
+}
+
+func TestOnAPIError(t *testing.T) {
+	tests := []struct {
+		name    string
+		err     error
+		wantErr error
+	}{
+		{name: "test 401",
+			err:     errors.New("error with status code 401"),
+			wantErr: errors.New(ErrNotAuthenticated),
+		},
+		{name: "test 403",
+			err:     errors.New("error with status code 403"),
+			wantErr: errors.New(ErrForbidden),
+		},
+		{name: "test 500",
+			err:     errors.New("error with status code 500"),
+			wantErr: errors.New(ErrInternalServerError),
+		},
+		{name: "test not covered code 418",
+			err:     errors.New("error with status code 418"),
+			wantErr: errors.New("error with status code 418"),
+		},
+		{name: "test does not overwrite a covered code error with more stuff in it",
+			err:     errors.New("This is an error coming from git and it tells you for project x you got error with status code 401"),
+			wantErr: errors.New("This is an error coming from git and it tells you for project x you got error with status code 401"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, OnAPIError(tt.err), tt.wantErr)
+		})
+	}
 }

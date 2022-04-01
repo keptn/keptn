@@ -3,16 +3,15 @@ package db
 import (
 	"errors"
 	"fmt"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	goutilsmodels "github.com/keptn/go-utils/pkg/api/models"
 	goutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
-	"strings"
-
-	"github.com/keptn/keptn/shipyard-controller/models"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -25,25 +24,25 @@ type EventsRetriever interface {
 
 //go:generate moq --skip-ensure -pkg db_mock -out ./mock/projectmvrepo_mock.go . ProjectMVRepo
 type ProjectMVRepo interface {
-	CreateProject(prj *models.ExpandedProject) error
+	CreateProject(prj *apimodels.ExpandedProject) error
 	UpdateShipyard(projectName string, shipyardContent string) error
-	UpdateProject(prj *models.ExpandedProject) error
+	UpdateProject(prj *apimodels.ExpandedProject) error
 	UpdateUpstreamInfo(projectName string, uri, user string) error
 	UpdatedShipyard(projectName string, shipyard string) error
 	DeleteUpstreamInfo(projectName string) error
-	GetProjects() ([]*models.ExpandedProject, error)
-	GetProject(projectName string) (*models.ExpandedProject, error)
+	GetProjects() ([]*apimodels.ExpandedProject, error)
+	GetProject(projectName string) (*apimodels.ExpandedProject, error)
 	DeleteProject(projectName string) error
 	CreateStage(project string, stage string) error
 	DeleteStage(project string, stage string) error
 	CreateService(project string, stage string, service string) error
-	GetService(projectName, stageName, serviceName string) (*models.ExpandedService, error)
+	GetService(projectName, stageName, serviceName string) (*apimodels.ExpandedService, error)
 	DeleteService(project string, stage string, service string) error
-	UpdateEventOfService(e models.Event) error
-	CreateRemediation(project, stage, service string, remediation *models.Remediation) error
+	UpdateEventOfService(e apimodels.KeptnContextExtendedCE) error
+	CreateRemediation(project, stage, service string, remediation *apimodels.Remediation) error
 	CloseOpenRemediations(project, stage, service, keptnContext string) error
-	OnSequenceTaskStarted(event models.Event)
-	OnSequenceTaskFinished(event models.Event)
+	OnSequenceTaskStarted(event apimodels.KeptnContextExtendedCE)
+	OnSequenceTaskFinished(event apimodels.KeptnContextExtendedCE)
 }
 
 type MongoDBProjectMVRepo struct {
@@ -62,7 +61,7 @@ func NewProjectMVRepo(projectRepo ProjectRepo, eventRepo EventRepo) *MongoDBProj
 }
 
 // CreateProject creates a project
-func (mv *MongoDBProjectMVRepo) CreateProject(prj *models.ExpandedProject) error {
+func (mv *MongoDBProjectMVRepo) CreateProject(prj *apimodels.ExpandedProject) error {
 	existingProject, err := mv.GetProject(prj.ProjectName)
 	if existingProject != nil {
 		return nil
@@ -95,7 +94,7 @@ func (mv *MongoDBProjectMVRepo) UpdateShipyard(projectName string, shipyardConte
 	return mv.projectRepo.UpdateProject(&updatedProject)
 }
 
-func generateStageInfo(project models.ExpandedProject) (models.ExpandedProject, error) {
+func generateStageInfo(project apimodels.ExpandedProject) (apimodels.ExpandedProject, error) {
 	shipyard, err := common.UnmarshalShipyard(project.Shipyard)
 	if err != nil {
 		return project, err
@@ -143,11 +142,11 @@ func getParentStages(stageName string, shipyard *keptnv2.Shipyard) []string {
 }
 
 // UpdateProject updates a project
-func (mv *MongoDBProjectMVRepo) UpdateProject(prj *models.ExpandedProject) error {
+func (mv *MongoDBProjectMVRepo) UpdateProject(prj *apimodels.ExpandedProject) error {
 	return mv.projectRepo.UpdateProject(prj)
 }
 
-func setShipyardVersion(existingProject *models.ExpandedProject) error {
+func setShipyardVersion(existingProject *apimodels.ExpandedProject) error {
 	const previousShipyardVersion = "spec.keptn.sh/0.1.7"
 	if existingProject.Shipyard == "" {
 		// if the field is not set, it can only be 0.1.7, since in Keptn 0.8 we ensure that the shipyard content is always included in the materialized view
@@ -229,7 +228,7 @@ func (mv *MongoDBProjectMVRepo) DeleteUpstreamInfo(projectName string) error {
 }
 
 // GetProjects returns all projects
-func (mv *MongoDBProjectMVRepo) GetProjects() ([]*models.ExpandedProject, error) {
+func (mv *MongoDBProjectMVRepo) GetProjects() ([]*apimodels.ExpandedProject, error) {
 	projects, err := mv.projectRepo.GetProjects()
 	if err != nil {
 		return nil, err
@@ -244,7 +243,7 @@ func (mv *MongoDBProjectMVRepo) GetProjects() ([]*models.ExpandedProject, error)
 }
 
 // GetProject returns a project by its name
-func (mv *MongoDBProjectMVRepo) GetProject(projectName string) (*models.ExpandedProject, error) {
+func (mv *MongoDBProjectMVRepo) GetProject(projectName string) (*apimodels.ExpandedProject, error) {
 	project, err := mv.projectRepo.GetProject(projectName)
 	if err != nil {
 		return nil, err
@@ -286,8 +285,8 @@ func (mv *MongoDBProjectMVRepo) CreateStage(project string, stage string) error 
 		return nil
 	}
 
-	prj.Stages = append(prj.Stages, &models.ExpandedStage{
-		Services:  []*models.ExpandedService{},
+	prj.Stages = append(prj.Stages, &apimodels.ExpandedStage{
+		Services:  []*apimodels.ExpandedService{},
 		StageName: stage,
 	})
 
@@ -300,7 +299,7 @@ func (mv *MongoDBProjectMVRepo) CreateStage(project string, stage string) error 
 	return nil
 }
 
-func (mv *MongoDBProjectMVRepo) createProject(project *models.ExpandedProject) error {
+func (mv *MongoDBProjectMVRepo) createProject(project *apimodels.ExpandedProject) error {
 
 	err := mv.projectRepo.CreateProject(project)
 	if err != nil {
@@ -355,7 +354,7 @@ func (mv *MongoDBProjectMVRepo) CreateService(project string, stage string, serv
 					return nil
 				}
 			}
-			stg.Services = append(stg.Services, &models.ExpandedService{
+			stg.Services = append(stg.Services, &apimodels.ExpandedService{
 				CreationDate:  strconv.FormatInt(time.Now().UnixNano(), 10),
 				DeployedImage: "",
 				ServiceName:   service,
@@ -373,7 +372,7 @@ func (mv *MongoDBProjectMVRepo) CreateService(project string, stage string, serv
 	return nil
 }
 
-func (mv *MongoDBProjectMVRepo) GetService(projectName, stageName, serviceName string) (*models.ExpandedService, error) {
+func (mv *MongoDBProjectMVRepo) GetService(projectName, stageName, serviceName string) (*apimodels.ExpandedService, error) {
 	project, err := mv.GetProject(projectName)
 	if err != nil {
 		return nil, err
@@ -431,7 +430,7 @@ func (mv *MongoDBProjectMVRepo) DeleteService(project string, stage string, serv
 }
 
 // UpdateEventOfService updates a service event
-func (mv *MongoDBProjectMVRepo) UpdateEventOfService(e models.Event) error {
+func (mv *MongoDBProjectMVRepo) UpdateEventOfService(e apimodels.KeptnContextExtendedCE) error {
 	if e.Type == nil {
 		return errors.New("event type must be set")
 	}
@@ -451,14 +450,14 @@ func (mv *MongoDBProjectMVRepo) UpdateEventOfService(e models.Event) error {
 		return ErrProjectNotFound
 	}
 
-	contextInfo := &models.EventContext{
+	contextInfo := &apimodels.EventContextInfo{
 		EventID:      e.ID,
 		KeptnContext: e.Shkeptncontext,
 		Time:         strconv.FormatInt(time.Now().UnixNano(), 10),
 	}
-	err = updateServiceInStage(existingProject, eventData.Stage, eventData.Service, func(service *models.ExpandedService) error {
+	err = updateServiceInStage(existingProject, eventData.Stage, eventData.Service, func(service *apimodels.ExpandedService) error {
 		if service.LastEventTypes == nil {
-			service.LastEventTypes = map[string]models.EventContext{}
+			service.LastEventTypes = map[string]apimodels.EventContextInfo{}
 		}
 		service.LastEventTypes[*e.Type] = *contextInfo
 
@@ -499,16 +498,16 @@ func (mv *MongoDBProjectMVRepo) UpdateEventOfService(e models.Event) error {
 }
 
 // CreateRemediation creates a remediation action
-func (mv *MongoDBProjectMVRepo) CreateRemediation(project, stage, service string, remediation *models.Remediation) error {
+func (mv *MongoDBProjectMVRepo) CreateRemediation(project, stage, service string, remediation *apimodels.Remediation) error {
 	existingProject, err := mv.GetProject(project)
 	if err != nil {
 		log.Errorf("Could not create remediation for service %s in stage %s in project%s. Could not load project: %s", service, stage, project, err.Error())
 		return ErrProjectNotFound
 	}
 
-	err = updateServiceInStage(existingProject, stage, service, func(service *models.ExpandedService) error {
+	err = updateServiceInStage(existingProject, stage, service, func(service *apimodels.ExpandedService) error {
 		if service.OpenRemediations == nil {
-			service.OpenRemediations = []*models.Remediation{}
+			service.OpenRemediations = []*apimodels.Remediation{}
 		}
 		service.OpenRemediations = append(service.OpenRemediations, remediation)
 		return nil
@@ -528,9 +527,9 @@ func (mv *MongoDBProjectMVRepo) CloseOpenRemediations(project, stage, service, k
 		return errors.New("no keptnContext has been set")
 	}
 
-	err = updateServiceInStage(existingProject, stage, service, func(service *models.ExpandedService) error {
+	err = updateServiceInStage(existingProject, stage, service, func(service *apimodels.ExpandedService) error {
 		foundRemediation := false
-		updatedRemediations := []*models.Remediation{}
+		updatedRemediations := []*apimodels.Remediation{}
 		for _, approval := range service.OpenRemediations {
 			if approval.KeptnContext == keptnContext {
 				foundRemediation = true
@@ -553,28 +552,28 @@ func (mv *MongoDBProjectMVRepo) CloseOpenRemediations(project, stage, service, k
 	return mv.projectRepo.UpdateProject(existingProject)
 }
 
-func (mv *MongoDBProjectMVRepo) OnSequenceTaskTriggered(event models.Event) {
+func (mv *MongoDBProjectMVRepo) OnSequenceTaskTriggered(event apimodels.KeptnContextExtendedCE) {
 	err := mv.UpdateEventOfService(event)
 	if err != nil {
 		log.WithError(err).Errorf("Could not update lastEvent property for task.started event")
 	}
 }
 
-func (mv *MongoDBProjectMVRepo) OnSequenceTaskStarted(event models.Event) {
+func (mv *MongoDBProjectMVRepo) OnSequenceTaskStarted(event apimodels.KeptnContextExtendedCE) {
 	err := mv.UpdateEventOfService(event)
 	if err != nil {
 		log.WithError(err).Errorf("could not update lastEvent property for task.started event")
 	}
 }
 
-func (mv *MongoDBProjectMVRepo) OnSequenceTaskFinished(event models.Event) {
+func (mv *MongoDBProjectMVRepo) OnSequenceTaskFinished(event apimodels.KeptnContextExtendedCE) {
 	err := mv.UpdateEventOfService(event)
 	if err != nil {
 		log.WithError(err).Errorf("could not update lastEvent property for task.finished event")
 	}
 }
 
-func (mv *MongoDBProjectMVRepo) getAllDeploymentTriggeredEvents(eventData *keptnv2.EventData, triggeredID string, keptnContext string) ([]models.Event, error) {
+func (mv *MongoDBProjectMVRepo) getAllDeploymentTriggeredEvents(eventData *keptnv2.EventData, triggeredID string, keptnContext string) ([]apimodels.KeptnContextExtendedCE, error) {
 	stage := eventData.GetStage()
 	service := eventData.GetService()
 	events, errObj := mv.eventRepo.GetEvents(eventData.GetProject(), common.EventFilter{
@@ -587,9 +586,9 @@ func (mv *MongoDBProjectMVRepo) getAllDeploymentTriggeredEvents(eventData *keptn
 	return events, errObj
 }
 
-type serviceUpdateFunc func(service *models.ExpandedService) error
+type serviceUpdateFunc func(service *apimodels.ExpandedService) error
 
-func updateServiceInStage(project *models.ExpandedProject, stage string, service string, fn serviceUpdateFunc) error {
+func updateServiceInStage(project *apimodels.ExpandedProject, stage string, service string, fn serviceUpdateFunc) error {
 	if project == nil {
 		return errors.New("cannot update service in nil project")
 	}

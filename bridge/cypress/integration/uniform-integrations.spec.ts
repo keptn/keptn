@@ -289,6 +289,140 @@ describe('Add webhook subscriptions', () => {
   it('should not show project checkbox', () => {
     cy.byTestId(uniformPage.EDIT_SUBSCRIPTION_FIELD_GLOBAL_ID).should('not.exist');
   });
+
+  it('should have sendFinished and sendStarted checkbox disabled for started events', () => {
+    uniformPage
+      .setTaskPrefix('deployment')
+      .setTaskSuffix('started')
+      .assertIsSendStartedButtonsEnabled(false)
+      .assertIsSendFinishedButtonsEnabled(false);
+  });
+
+  it('should have sendFinished and sendStarted checkbox disabled for finished events', () => {
+    uniformPage
+      .setTaskPrefix('deployment')
+      .setTaskSuffix('finished')
+      .assertIsSendStartedButtonsEnabled(false)
+      .assertIsSendFinishedButtonsEnabled(false);
+  });
+
+  it('should have sendFinished and sendStarted checkbox enabled and true by default for triggered events', () => {
+    uniformPage
+      .setTaskPrefix('deployment')
+      .setTaskSuffix('triggered')
+      .assertIsSendStartedButtonsEnabled(true)
+      .assertIsSendFinishedButtonsEnabled(true)
+      .assertIsSendStarted(true)
+      .assertIsSendFinished(true);
+  });
+
+  it('should set sendFinished and sendStarted checkbox correctly onload to false', () => {
+    const subscriptionID = 'a0b7ea6b-01a7-4016-97ca-bc3251cd18ef';
+    const registrationID = '0f2d35875bbaa72b972157260a7bd4af4f2826df';
+
+    cy.intercept(`/api/controlPlane/v1/uniform/registration/${registrationID}/subscription/${subscriptionID}`, {
+      body: {
+        event: 'sh.keptn.event.deployment.triggered',
+        filter: {
+          projects: ['sockshop'],
+          services: [],
+          stages: [],
+        },
+        id: subscriptionID,
+      },
+    });
+    cy.intercept(`/api/uniform/registration/webhook-service/config/${subscriptionID}?projectName=sockshop`, {
+      body: {
+        type: '',
+        method: 'GET',
+        url: 'https://keptn.sh',
+        payload: '',
+        header: [],
+        sendStarted: false,
+        sendFinished: false,
+        proxy: '',
+      },
+    });
+
+    uniformPage
+      .visitEdit(registrationID, subscriptionID)
+      .assertIsSendStartedButtonsEnabled(true)
+      .assertIsSendFinishedButtonsEnabled(true)
+      .assertIsSendStarted(false)
+      .assertIsSendFinished(false);
+  });
+
+  it('should set sendFinished and sendStarted checkbox correctly onload to true', () => {
+    const subscriptionID = 'a0b7ea6b-01a7-4016-97ca-bc3251cd18ef';
+    const registrationID = '0f2d35875bbaa72b972157260a7bd4af4f2826df';
+
+    cy.intercept(`/api/controlPlane/v1/uniform/registration/${registrationID}/subscription/${subscriptionID}`, {
+      body: {
+        event: 'sh.keptn.event.deployment.triggered',
+        filter: {
+          projects: ['sockshop'],
+          services: [],
+          stages: [],
+        },
+        id: subscriptionID,
+      },
+    });
+    cy.intercept(`/api/uniform/registration/webhook-service/config/${subscriptionID}?projectName=sockshop`, {
+      body: {
+        type: '',
+        method: 'GET',
+        url: 'https://keptn.sh',
+        payload: '',
+        header: [],
+        sendStarted: true,
+        sendFinished: true,
+        proxy: '',
+      },
+    });
+
+    uniformPage
+      .visitEdit(registrationID, subscriptionID)
+      .assertIsSendStartedButtonsEnabled(true)
+      .assertIsSendFinishedButtonsEnabled(true)
+      .assertIsSendStarted(true)
+      .assertIsSendFinished(true);
+  });
+
+  it('should set sendFinished and sendStarted checkbox correctly onload to true/false', () => {
+    const subscriptionID = 'a0b7ea6b-01a7-4016-97ca-bc3251cd18ef';
+    const registrationID = '0f2d35875bbaa72b972157260a7bd4af4f2826df';
+
+    cy.intercept(`/api/controlPlane/v1/uniform/registration/${registrationID}/subscription/${subscriptionID}`, {
+      body: {
+        event: 'sh.keptn.event.deployment.triggered',
+        filter: {
+          projects: ['sockshop'],
+          services: [],
+          stages: [],
+        },
+        id: subscriptionID,
+      },
+    });
+    cy.intercept(`/api/uniform/registration/webhook-service/config/${subscriptionID}?projectName=sockshop`, {
+      body: {
+        type: '',
+        method: 'GET',
+        url: 'https://keptn.sh',
+        payload: '',
+        header: [],
+        sendStarted: true,
+        sendFinished: false,
+        proxy: '',
+      },
+    });
+
+    uniformPage
+      .visitEdit(registrationID, subscriptionID)
+      .assertIsSendStartedButtonsEnabled(true)
+      .assertIsSendFinishedButtonsEnabled(true)
+      .assertIsSendStarted(true)
+      .assertIsSendFinished(false);
+  });
 });
 
 describe('Add control plane subscription default requests', () => {

@@ -10,6 +10,11 @@ on:
         description: 'Take CI build artifacts from branch (e.g., master, release-x.y.z)'
         required: true
         default: 'master'
+      deleteOnFinish:
+        type: boolean
+        required: false
+        description: "Check this if you don't want the test namespaces to stay alive after the test run"
+        default: false
 env:
   META_KEPTN_VERSION: 0.13.2
   META_KEPTN_KEPTN_PROJECT: keptn
@@ -17,9 +22,19 @@ defaults:
   run:
     shell: bash
 jobs:
+  calculate-queue-time:
+    name: "Calculate Queue Time"
+    uses: ./.github/workflows/pipeline-queuetime.yml
+    with:
+      workflow_name: "Integration Tests"
+    secrets:
+      monitoring_api_token: ${{ secrets.MONITORING_API_TOKEN }}
+      monitoring_tenant_url: ${{ secrets.MONITORING_TENANT_URL }}
+
   integration-test:
     name: "Tests"
     runs-on: ubuntu-20.04
+    needs: calculate-queue-time
     strategy:
       fail-fast: false
       matrix:
@@ -84,7 +99,7 @@ jobs:
       AIRGAPPED_REGISTRY_URL: "k3d-container-registry.localhost:12345"
       REMOTE_EXECUTION_PLANE: ${{ matrix.REMOTE_EXECUTION_PLANE }}
       COLLECT_RESOURCE_LIMITS: ${{ matrix.COLLECT_RESOURCE_LIMITS }}
-      GO_VERSION: ^1.17
+      GO_VERSION: 1.17
       TEST_REPORT_FOLDER: test-reports-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}
       FINAL_TEST_REPORT_FOLDER: test-reports
       FINAL_TEST_REPORT_PATH: test-reports/test-report-final-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}.log
@@ -109,7 +124,7 @@ jobs:
         run: mkdir ~/downloads
 
       - name: Cache downloads paths
-        uses: actions/cache@v2.1.7
+        uses: actions/cache@v3.0.1
         with:
           path: |
             ~/downloads
@@ -357,7 +372,7 @@ jobs:
             else
               DOCKER_ORG="keptn"
             fi
-            
+          
             installer/airgapped/install_keptn.sh \
               "$AIRGAPPED_REGISTRY_URL/" \
               "$DOCKER_ORG" \
@@ -370,6 +385,7 @@ jobs:
               --create-namespace \
               --set control-plane.apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
               --set control-plane.resourceService.enabled=true \
+              --set control-plane.resourceService.replicas=1 \
               --set continuous-delivery.enabled=${RUN_CONTINUOUS_DELIVERY_TEST}
           else
             # Install Keptn via CLI
@@ -403,6 +419,14 @@ jobs:
           GITEA_TOKEN=$(cat gitea-token.txt | jq -r .sha1)
           kubectl create secret generic gitea-access -n ${KEPTN_NAMESPACE} --from-literal=username=${GITEA_ADMIN_USER} --from-literal=password=${GITEA_TOKEN} --from-literal=private-key="${GITEA_PRIVATE_KEY}" --from-literal=private-key-pass=${GITEA_PRIVATE_KEY_PASSPHRASE}
           rm gitea-token.txt
+
+      - name: Install Mockserver
+        id: install_mockserver
+        if: env.RUN_AIRGAPPED_TEST != 'true'
+        timeout-minutes: 5
+        run: |
+          helm repo add mockserver https://www.mock-server.com
+          helm upgrade --install --namespace ${KEPTN_NAMESPACE} --version 5.13.0 mockserver mockserver/mockserver --set service.type=ClusterIP
 
       - name: Expose Keptn API (Minishift)
         if: env.CLOUD_PROVIDER == 'minishift-on-GHA'
@@ -461,9 +485,9 @@ jobs:
             KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n "$KEPTN_NAMESPACE" -o jsonpath='{.data.keptn-api-token}' | base64 --decode)
             kubectl scale deployment/helm-service -n "${KEPTN_NAMESPACE}" --replicas=0
             kubectl scale deployment/jmeter-service -n "${KEPTN_NAMESPACE}" --replicas=0
-  
+          
             KEPTN_API_HOSTNAME=$(echo "${KEPTN_ENDPOINT}" | awk -F[/] '{print $3}')
-  
+          
             helm install helm-service "${HELM_SERVICE_HELM_CHART_NAME}" \
               -n ${{ env.KEPTN_NAMESPACE }}-helm-service \
               --set remoteControlPlane.enabled=true \
@@ -478,7 +502,7 @@ jobs:
               --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" \
               --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" \
               --create-namespace
-  
+          
             helm test jmeter-service -n ${{ env.KEPTN_NAMESPACE }}-jmeter-service
             helm test helm-service -n ${{ env.KEPTN_NAMESPACE }}-helm-service
           else
@@ -489,7 +513,7 @@ jobs:
             helm test jmeter-service -n ${{ env.KEPTN_NAMESPACE }}
             helm test helm-service -n ${{ env.KEPTN_NAMESPACE }}
           fi
-            
+
 
       - name: Prepare test run
         id: prepare_test_run
@@ -573,75 +597,54 @@ jobs:
         if: always() && env.CLOUD_PROVIDER == 'GKE'
         run: |
           echo "Cleaning up test resources..."
+
           readarray -t namespaces <<< "$(kubectl get namespaces | awk '{ print $1 }' | grep ${{ env.KEPTN_NAMESPACE }})"
-          readarray -t clusterroles <<< "$(kubectl get clusterroles | awk '{ print $1 }' | grep ${{ env.KEPTN_NAMESPACE }})"
           readarray -t clusterrolebindings <<< "$(kubectl get clusterrolebindings | awk '{ print $1 }' | grep ${{ env.KEPTN_NAMESPACE }})"
 
           if [[ "${{ github.event_name }}" == 'schedule' && "${{ steps.test_aggregated.outcome }}" != 'success' ]]; then
-              for namespace in "${namespaces[@]}"; do
-                if [[ ! -z "${namespace// }" ]]; then
-                  echo "Annotating namespace $namespace with Janitor TTL of 3 days..."
-                  kubectl annotate namespace "$namespace" janitor/ttl=3d
-                fi
-              done
-          
-              for cr in "${clusterroles[@]}"; do
-                if [[ ! -z "${cr// }" ]]; then
-                  echo "Annotating clusterrole $cr with Janitor TTL of 3 days..."
-                  kubectl annotate clusterrole "$cr" janitor/ttl=3d
-                fi
-              done
-          
-              for crb in "${clusterrolebindings[@]}"; do
-                if [[ ! -z "${crb// }" ]]; then
-                  echo "Annotating clusterrolebinding $crb with Janitor TTL of 3 days..."
-                  kubectl annotate clusterrolebinding "$crb" janitor/ttl=3d
-                fi
-              done
-          elif [[ "${{ github.event_name }}" == 'workflow_dispatch' && "${{ steps.test_aggregated.outcome }}" != 'success' ]]; then
-              for namespace in "${namespaces[@]}"; do
-                if [[ ! -z "${namespace// }" ]]; then
-                  echo "Annotating namespace $namespace with Janitor TTL of 6 hours..."
-                  kubectl annotate namespace "$namespace" janitor/ttl=6h
-                fi
-              done
-          
-              for cr in "${clusterroles[@]}"; do
-                if [[ ! -z "${cr// }" ]]; then
-                  echo "Annotating clusterrole $cr with Janitor TTL of 3 days..."
-                  kubectl annotate clusterrole "$cr" janitor/ttl=6h
-                fi
-              done
-          
-              for crb in "${clusterrolebindings[@]}"; do
-                if [[ ! -z "${crb// }" ]]; then
-                  echo "Annotating clusterrolebinding $crb with Janitor TTL of 3 days..."
-                  kubectl annotate clusterrolebinding "$crb" janitor/ttl=6h
-                fi
-              done
+            for namespace in "${namespaces[@]}"; do
+              if [[ ! -z "${namespace// }" ]]; then
+                echo "Annotating namespace $namespace with Janitor TTL of 3 days..."
+                kubectl annotate namespace "$namespace" janitor/ttl=3d
+              fi
+            done
+        
+            for crb in "${clusterrolebindings[@]}"; do
+              if [[ ! -z "${crb// }" ]]; then
+                echo "Annotating clusterrolebinding $crb with Janitor TTL of 3 days..."
+                kubectl annotate clusterrolebinding "$crb" janitor/ttl=3d
+              fi
+            done
+          elif [[ "${{ github.event_name }}" == 'workflow_dispatch' && "${{ steps.test_aggregated.outcome }}" != 'success' && "${{ github.event.inputs.deleteOnFinish }}" == 'false' ]]; then
+            for namespace in "${namespaces[@]}"; do
+              if [[ ! -z "${namespace// }" ]]; then
+                echo "Annotating namespace $namespace with Janitor TTL of 3 hours..."
+                kubectl annotate namespace "$namespace" janitor/ttl=3h
+              fi
+            done
+        
+            for crb in "${clusterrolebindings[@]}"; do
+              if [[ ! -z "${crb// }" ]]; then
+                echo "Annotating clusterrolebinding $crb with Janitor TTL of 3 hours..."
+                kubectl annotate clusterrolebinding "$crb" janitor/ttl=3h
+              fi
+            done
           else
-              for namespace in "${namespaces[@]}"; do
-                if [[ ! -z "${namespace// }" ]]; then
-                  echo "Deleting namespace $namespace ..."
-                  kubectl delete namespace "$namespace" --wait=false
-                fi
-              done
-          
-              for cr in "${clusterroles[@]}"; do
-                if [[ ! -z "${cr// }" ]]; then
-                  echo "Deleting clusterrole $cr ..."
-                  kubectl delete clusterrole "$cr" --wait=false
-                fi
-              done
-          
-              for crb in "${clusterrolebindings[@]}"; do
-                if [[ ! -z "${crb// }" ]]; then
-                  echo "Deleting clusterrolebinding $crb ..."
-                  kubectl delete clusterrolebindings "$crb" --wait=false
-                fi
-              done
+            for namespace in "${namespaces[@]}"; do
+              if [[ ! -z "${namespace// }" ]]; then
+                echo "Deleting namespace $namespace ..."
+                kubectl delete namespace "$namespace" --wait=false
+              fi
+            done
+        
+            for crb in "${clusterrolebindings[@]}"; do
+              if [[ ! -z "${crb// }" ]]; then
+                echo "Deleting clusterrolebinding $crb ..."
+                kubectl delete clusterrolebindings "$crb" --wait=false
+              fi
+            done
           fi
-          
+
       - name: Cleanup Minishift cluster
         if: env.CLOUD_PROVIDER == 'minishift-on-GHA'
         timeout-minutes: 3
@@ -745,7 +748,7 @@ jobs:
               console.log(`Reading file: ${fileName}`);
               const platformReportFile = fs.readFileSync(TEST_REPORTS_PATH + fileName, {encoding:'utf8', flag:'r'});
               const platformTestReportRaw = ndJsonParser(platformReportFile);
-              
+            
               // Only pick the test results that have a format like this: Test_GKE/Test_name
               // There are some other results in there for the whole package for example, that we don't want
               platformTestReportRaw.forEach(platformTestResult => {
@@ -759,12 +762,12 @@ jobs:
             
             jsonReportData.forEach(testResult => {
               const trimmedTestResult = { ...testResult, test: testResult.test.split("/")[1] }
-              
+            
               // If this is a new testcase the result list needs to be created first
               if (!(trimmedTestResult.test in testResultMap)) {
                 testResultMap[trimmedTestResult.test] = [];
               }
-              
+            
               // Add to result list
               testResultMap[trimmedTestResult.test].push(trimmedTestResult)
             });
@@ -779,7 +782,7 @@ jobs:
               testResults.forEach(result => {
                 const {test, ...results} = result;
                 Object.assign(finalResult, results);
-                
+            
                 const currentPlatform = Object.keys(results)[0];
                 if(!allPlatforms.includes(currentPlatform)) {
                   allPlatforms.push(currentPlatform);
@@ -1040,7 +1043,7 @@ jobs:
 
       - name: Cache Keptn CLI
         id: keptn-cli-cache
-        uses: actions/cache@v2.1.7
+        uses: actions/cache@v3.0.1
         with:
           path: ~/downloads
           key: ${{ env.META_KEPTN_VERSION }}-cli
@@ -1098,3 +1101,20 @@ jobs:
           while [[ $(keptn get event sh.keptn.event.dev.delivery.finished --keptn-context "$KEPTN_CONTEXT" --project keptn | jq -r '.data.result' 2>/dev/null) != pass ]]; do
             sleep 10;
           done
+
+  calculate-total-runtime:
+    name: End-of-Pipeline Metrics
+    if: always()
+    needs:
+      - calculate-queue-time
+      - integration-test
+      - publish-final-test-report
+      - deploy_keptn_with_keptn
+      - trigger_keptn_delivery
+    uses: ./.github/workflows/end-of-pipeline-metrics.yml
+    with:
+      workflow_name: "Integration Tests"
+      branch: ${{ github.ref }}
+    secrets:
+      monitoring_api_token: ${{ secrets.MONITORING_API_TOKEN }}
+      monitoring_tenant_url: ${{ secrets.MONITORING_TENANT_URL }}

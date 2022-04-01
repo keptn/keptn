@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/cli/internal"
 	"strconv"
 	"strings"
 	"time"
@@ -38,7 +39,7 @@ Supported keys:
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cliConfig, err := configMng.LoadCLIConfig()
 		if err != nil {
-			return err
+			return internal.OnAPIError(err)
 		}
 
 		key := strings.ToLower(args[0])

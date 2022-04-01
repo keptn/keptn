@@ -5,6 +5,11 @@
   height: auto;
 }
 
+p {
+  word-break: break-word;
+  white-space: normal;
+}
+
 .error {
   color: $error-color;
 }

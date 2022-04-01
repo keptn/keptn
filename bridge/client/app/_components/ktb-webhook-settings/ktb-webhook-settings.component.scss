@@ -16,8 +16,10 @@
   fill: var(--dt-theme-main-default-color);
 }
 
-.send-finished-input + .dt-overlay-trigger {
-  margin-top: 2.5em;
+.send-finished-input + .dt-overlay-trigger,
+.send-started-input + .dt-overlay-trigger {
+  margin-top: 2.7em;
+  margin-left: .3em;
 }
 
 ::ng-deep {

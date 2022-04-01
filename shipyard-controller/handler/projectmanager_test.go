@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	common_mock "github.com/keptn/keptn/shipyard-controller/common/fake"
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
@@ -23,11 +23,11 @@ func TestGetProjects(t *testing.T) {
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
 	sequenceExecutionRepo := &db_mock.SequenceExecutionRepoMock{}
 
-	p1 := &models.ExpandedProject{}
-	p2 := &models.ExpandedProject{}
-	expectedProjects := []*models.ExpandedProject{p1, p2}
+	p1 := &apimodels.ExpandedProject{}
+	p2 := &apimodels.ExpandedProject{}
+	expectedProjects := []*apimodels.ExpandedProject{p1, p2}
 
-	projectMVRepo.GetProjectsFunc = func() ([]*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectsFunc = func() ([]*apimodels.ExpandedProject, error) {
 		return expectedProjects, nil
 	}
 
@@ -46,7 +46,7 @@ func TestGetProjectsErr(t *testing.T) {
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
 	sequenceExecutionRepo := &db_mock.SequenceExecutionRepoMock{}
 
-	projectMVRepo.GetProjectsFunc = func() ([]*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectsFunc = func() ([]*apimodels.ExpandedProject, error) {
 		return nil, fmt.Errorf("whoops")
 	}
 
@@ -65,8 +65,8 @@ func TestGetByName(t *testing.T) {
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
 	sequenceExecutionRepo := &db_mock.SequenceExecutionRepoMock{}
 
-	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
-		return &models.ExpandedProject{}, nil
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
+		return &apimodels.ExpandedProject{}, nil
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
@@ -85,7 +85,7 @@ func TestGetByNameErr(t *testing.T) {
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
 	sequenceExecutionRepo := &db_mock.SequenceExecutionRepoMock{}
 
-	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
 		return nil, fmt.Errorf("whoops")
 	}
 
@@ -105,7 +105,7 @@ func TestGetByNameNotFound(t *testing.T) {
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
 	sequenceExecutionRepo := &db_mock.SequenceExecutionRepoMock{}
 
-	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) { return nil, nil }
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) { return nil, nil }
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	project, err := instance.GetByName("my-project")
@@ -124,7 +124,7 @@ func TestCreate_GettingProjectFails(t *testing.T) {
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
 	sequenceExecutionRepo := &db_mock.SequenceExecutionRepoMock{}
 
-	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
 		return nil, fmt.Errorf("whoops")
 	}
 
@@ -151,8 +151,8 @@ func TestCreateWithAlreadyExistingProject(t *testing.T) {
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
 	sequenceExecutionRepo := &db_mock.SequenceExecutionRepoMock{}
 
-	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
-		project := &models.ExpandedProject{
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
+		project := &apimodels.ExpandedProject{
 			ProjectName: "existing-project",
 		}
 		return project, nil
@@ -181,11 +181,11 @@ func TestCreate_WhenCreatingProjectInConfigStoreFails_ThenSecretGetsDeletedAgain
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
 	sequenceExecutionRepo := &db_mock.SequenceExecutionRepoMock{}
 
-	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
 		return nil, nil
 	}
 
-	configStore.CreateProjectFunc = func(keptnapimodels.Project) error {
+	configStore.CreateProjectFunc = func(apimodels.Project) error {
 		return fmt.Errorf("whoops")
 	}
 
@@ -218,11 +218,11 @@ func TestCreate_WhenCreatingStageInConfigStoreFails_ThenProjectAndSecretGetDelet
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
 	sequenceExecutionRepo := &db_mock.SequenceExecutionRepoMock{}
 
-	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
 		return nil, nil
 	}
 
-	configStore.CreateProjectFunc = func(keptnapimodels.Project) error {
+	configStore.CreateProjectFunc = func(apimodels.Project) error {
 		return nil
 	}
 
@@ -269,11 +269,11 @@ func TestCreate_WhenUploadingShipyardFails_thenProjectAndSecretGetDeletedAgain(t
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
 	sequenceExecutionRepo := &db_mock.SequenceExecutionRepoMock{}
 
-	projectMvRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMvRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
 		return nil, nil
 	}
 
-	configStore.CreateProjectFunc = func(keptnapimodels.Project) error {
+	configStore.CreateProjectFunc = func(apimodels.Project) error {
 		return nil
 	}
 
@@ -281,7 +281,7 @@ func TestCreate_WhenUploadingShipyardFails_thenProjectAndSecretGetDeletedAgain(t
 		return nil
 	}
 
-	configStore.CreateProjectShipyardFunc = func(projectName string, resources []*keptnapimodels.Resource) error {
+	configStore.CreateProjectShipyardFunc = func(projectName string, resources []*apimodels.Resource) error {
 		return fmt.Errorf("whoops")
 	}
 
@@ -296,7 +296,7 @@ func TestCreate_WhenUploadingShipyardFails_thenProjectAndSecretGetDeletedAgain(t
 	secretStore.DeleteSecretFunc = func(name string) error {
 		return nil
 	}
-	projectMvRepo.CreateProjectFunc = func(prj *models.ExpandedProject) error {
+	projectMvRepo.CreateProjectFunc = func(prj *apimodels.ExpandedProject) error {
 		return nil
 	}
 
@@ -328,14 +328,14 @@ func TestCreate_WhenSavingProjectInRepositoryFails_thenProjectAndSecretGetDelete
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
 	sequenceExecutionRepo := &db_mock.SequenceExecutionRepoMock{}
 
-	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) { return nil, nil }
-	configStore.CreateProjectFunc = func(keptnapimodels.Project) error { return nil }
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) { return nil, nil }
+	configStore.CreateProjectFunc = func(apimodels.Project) error { return nil }
 	configStore.CreateStageFunc = func(projectName string, stageName string) error { return nil }
-	configStore.CreateProjectShipyardFunc = func(projectName string, resources []*keptnapimodels.Resource) error { return nil }
+	configStore.CreateProjectShipyardFunc = func(projectName string, resources []*apimodels.Resource) error { return nil }
 	configStore.DeleteProjectFunc = func(projectName string) error { return nil }
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error { return nil }
 	secretStore.DeleteSecretFunc = func(name string) error { return nil }
-	projectMVRepo.CreateProjectFunc = func(prj *models.ExpandedProject) error {
+	projectMVRepo.CreateProjectFunc = func(prj *apimodels.ExpandedProject) error {
 		return fmt.Errorf("whoops")
 	}
 
@@ -367,11 +367,11 @@ func TestCreate(t *testing.T) {
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
 	sequenceExecutionRepo := &db_mock.SequenceExecutionRepoMock{}
 
-	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
 		return nil, nil
 	}
 
-	configStore.CreateProjectFunc = func(keptnapimodels.Project) error {
+	configStore.CreateProjectFunc = func(apimodels.Project) error {
 		return nil
 	}
 
@@ -379,7 +379,7 @@ func TestCreate(t *testing.T) {
 		return nil
 	}
 
-	configStore.CreateProjectShipyardFunc = func(projectName string, resources []*keptnapimodels.Resource) error {
+	configStore.CreateProjectShipyardFunc = func(projectName string, resources []*apimodels.Resource) error {
 		return nil
 	}
 
@@ -387,7 +387,7 @@ func TestCreate(t *testing.T) {
 		return nil
 	}
 
-	projectMVRepo.CreateProjectFunc = func(prj *models.ExpandedProject) error {
+	projectMVRepo.CreateProjectFunc = func(prj *apimodels.ExpandedProject) error {
 		return nil
 	}
 
@@ -474,7 +474,7 @@ func TestUpdate_GettingOldProjectFails(t *testing.T) {
 	secretStore.GetSecretFunc = func(name string) (map[string][]byte, error) {
 		return map[string][]byte{"git-credentials": oldSecretsData}, nil
 	}
-	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
 		return nil, fmt.Errorf("whoops")
 	}
 
@@ -510,7 +510,7 @@ func TestUpdate_OldProjectNotAvailable(t *testing.T) {
 	secretStore.GetSecretFunc = func(name string) (map[string][]byte, error) {
 		return map[string][]byte{"git-credentials": oldSecretsData}, nil
 	}
-	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
 		return nil, nil
 	}
 
@@ -551,8 +551,8 @@ func TestUpdate_UpdateGitRepositorySecretFails(t *testing.T) {
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
 		return fmt.Errorf("whoops")
 	}
-	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
-		return &models.ExpandedProject{}, nil
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
+		return &apimodels.ExpandedProject{}, nil
 	}
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	params := &models.UpdateProjectParams{
@@ -591,7 +591,7 @@ func TestUpdate_UpdateProjectInConfigurationStoreFails(t *testing.T) {
 		RemoteURI: "git-url",
 	})
 
-	rollbackProjectData := &models.ExpandedProject{
+	rollbackProjectData := &apimodels.ExpandedProject{
 		CreationDate:    "old-creationdate",
 		GitRemoteURI:    "http://my-old-remote.uri",
 		GitUser:         "my-old-user",
@@ -608,11 +608,11 @@ func TestUpdate_UpdateProjectInConfigurationStoreFails(t *testing.T) {
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
 		return nil
 	}
-	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
 		return rollbackProjectData, nil
 	}
 
-	configStore.UpdateProjectFunc = func(project keptnapimodels.Project) error {
+	configStore.UpdateProjectFunc = func(project apimodels.Project) error {
 		return fmt.Errorf("whoops")
 	}
 
@@ -627,7 +627,7 @@ func TestUpdate_UpdateProjectInConfigurationStoreFails(t *testing.T) {
 	assert.NotNil(t, err)
 	rollback()
 
-	expectedProjectUpdate := keptnapimodels.Project{
+	expectedProjectUpdate := apimodels.Project{
 		ProjectName: *params.Name,
 	}
 	assert.Equal(t, expectedProjectUpdate, configStore.UpdateProjectCalls()[0].Project)
@@ -662,7 +662,7 @@ func TestUpdate_UpdateProjectShipyardResourceFails(t *testing.T) {
 		RemoteURI: "git-url",
 	})
 
-	oldProject := &models.ExpandedProject{
+	oldProject := &apimodels.ExpandedProject{
 		CreationDate:    "old-creationdate",
 		GitRemoteURI:    "http://my-old-remote.uri",
 		GitUser:         "my-old-user",
@@ -679,15 +679,15 @@ func TestUpdate_UpdateProjectShipyardResourceFails(t *testing.T) {
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
 		return nil
 	}
-	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
 		return oldProject, nil
 	}
 
-	configStore.UpdateProjectFunc = func(project keptnapimodels.Project) error {
+	configStore.UpdateProjectFunc = func(project apimodels.Project) error {
 		return nil
 	}
 
-	configStore.UpdateProjectResourceFunc = func(projectName string, resource *keptnapimodels.Resource) error {
+	configStore.UpdateProjectResourceFunc = func(projectName string, resource *apimodels.Resource) error {
 		return fmt.Errorf("whoops")
 	}
 
@@ -704,11 +704,11 @@ func TestUpdate_UpdateProjectShipyardResourceFails(t *testing.T) {
 	assert.NotNil(t, err)
 	rollback()
 
-	expectedProjectUpdateInConfigSvc := keptnapimodels.Project{
+	expectedProjectUpdateInConfigSvc := apimodels.Project{
 		ProjectName: *params.Name,
 	}
 
-	rollbackProjectData := keptnapimodels.Project{
+	rollbackProjectData := apimodels.Project{
 		CreationDate:    oldProject.CreationDate,
 		GitRemoteURI:    oldProject.GitRemoteURI,
 		GitUser:         oldProject.GitUser,
@@ -749,7 +749,7 @@ func TestUpdate_UpdateProjectInRepositoryFails(t *testing.T) {
 		RemoteURI: "git-url",
 	})
 
-	oldProject := &models.ExpandedProject{
+	oldProject := &apimodels.ExpandedProject{
 		CreationDate:    "old-creationdate",
 		GitRemoteURI:    "http://my-old-remote.uri",
 		GitUser:         "my-old-user",
@@ -766,19 +766,19 @@ func TestUpdate_UpdateProjectInRepositoryFails(t *testing.T) {
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
 		return nil
 	}
-	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
 		return oldProject, nil
 	}
 
-	configStore.UpdateProjectFunc = func(project keptnapimodels.Project) error {
+	configStore.UpdateProjectFunc = func(project apimodels.Project) error {
 		return nil
 	}
 
-	configStore.UpdateProjectResourceFunc = func(projectName string, resource *keptnapimodels.Resource) error {
+	configStore.UpdateProjectResourceFunc = func(projectName string, resource *apimodels.Resource) error {
 		return nil
 	}
 
-	projectMVRepo.UpdateProjectFunc = func(prj *models.ExpandedProject) error {
+	projectMVRepo.UpdateProjectFunc = func(prj *apimodels.ExpandedProject) error {
 		return fmt.Errorf("whoops")
 	}
 
@@ -795,11 +795,11 @@ func TestUpdate_UpdateProjectInRepositoryFails(t *testing.T) {
 	assert.NotNil(t, err)
 	rollback()
 
-	projectUpdateData := keptnapimodels.Project{
+	projectUpdateData := apimodels.Project{
 		ProjectName: *params.Name,
 	}
 
-	projectDBUpdateData := &models.ExpandedProject{
+	projectDBUpdateData := &apimodels.ExpandedProject{
 		CreationDate:    "old-creationdate",
 		GitRemoteURI:    "git-url",
 		GitUser:         "git-user",
@@ -808,11 +808,11 @@ func TestUpdate_UpdateProjectInRepositoryFails(t *testing.T) {
 		ShipyardVersion: "v1",
 	}
 
-	updateShipyardResourceData := &keptnapimodels.Resource{
+	updateShipyardResourceData := &apimodels.Resource{
 		ResourceContent: *params.Shipyard,
 		ResourceURI:     common.Stringp("shipyard.yaml")}
 
-	rollbackShipyardResourceData := &keptnapimodels.Resource{
+	rollbackShipyardResourceData := &apimodels.Resource{
 		ResourceContent: oldProject.Shipyard,
 		ResourceURI:     common.Stringp("shipyard.yaml")}
 
@@ -852,7 +852,7 @@ func TestUpdate(t *testing.T) {
 		RemoteURI: "git-url",
 	})
 
-	oldProjectData := &models.ExpandedProject{
+	oldProjectData := &apimodels.ExpandedProject{
 		CreationDate:    "old-creationdate",
 		GitRemoteURI:    "http://my-old-remote.uri",
 		GitUser:         "my-old-user",
@@ -869,19 +869,19 @@ func TestUpdate(t *testing.T) {
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
 		return nil
 	}
-	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
 		return oldProjectData, nil
 	}
 
-	configStore.UpdateProjectFunc = func(project keptnapimodels.Project) error {
+	configStore.UpdateProjectFunc = func(project apimodels.Project) error {
 		return nil
 	}
 
-	configStore.UpdateProjectResourceFunc = func(projectName string, resource *keptnapimodels.Resource) error {
+	configStore.UpdateProjectResourceFunc = func(projectName string, resource *apimodels.Resource) error {
 		return nil
 	}
 
-	projectMVRepo.UpdateProjectFunc = func(prj *models.ExpandedProject) error {
+	projectMVRepo.UpdateProjectFunc = func(prj *apimodels.ExpandedProject) error {
 		return nil
 	}
 
@@ -898,11 +898,11 @@ func TestUpdate(t *testing.T) {
 	assert.Nil(t, err)
 	rollback()
 
-	projectUpdateData := keptnapimodels.Project{
+	projectUpdateData := apimodels.Project{
 		ProjectName: *params.Name,
 	}
 
-	projectDBUpdateData := &models.ExpandedProject{
+	projectDBUpdateData := &apimodels.ExpandedProject{
 		CreationDate:    "old-creationdate",
 		GitRemoteURI:    "git-url",
 		GitUser:         "git-user",
@@ -911,7 +911,7 @@ func TestUpdate(t *testing.T) {
 		ShipyardVersion: "v1",
 	}
 
-	expectedUpdateShipyardResourceData := &keptnapimodels.Resource{
+	expectedUpdateShipyardResourceData := &apimodels.Resource{
 		ResourceContent: *params.Shipyard,
 		ResourceURI:     common.Stringp("shipyard.yaml")}
 
@@ -938,7 +938,7 @@ func TestUpdate_WithEmptyShipyard_ShallNotUpdateResource(t *testing.T) {
 		RemoteURI: "http://my-old-remote.uri",
 	})
 
-	oldProjectData := &models.ExpandedProject{
+	oldProjectData := &apimodels.ExpandedProject{
 		CreationDate:    "old-creationdate",
 		GitRemoteURI:    "http://my-old-remote.uri",
 		GitUser:         "my-old-user",
@@ -955,19 +955,19 @@ func TestUpdate_WithEmptyShipyard_ShallNotUpdateResource(t *testing.T) {
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
 		return nil
 	}
-	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
 		return oldProjectData, nil
 	}
 
-	configStore.UpdateProjectFunc = func(project keptnapimodels.Project) error {
+	configStore.UpdateProjectFunc = func(project apimodels.Project) error {
 		return nil
 	}
 
-	configStore.UpdateProjectResourceFunc = func(projectName string, resource *keptnapimodels.Resource) error {
+	configStore.UpdateProjectResourceFunc = func(projectName string, resource *apimodels.Resource) error {
 		return nil
 	}
 
-	projectMVRepo.UpdateProjectFunc = func(prj *models.ExpandedProject) error {
+	projectMVRepo.UpdateProjectFunc = func(prj *apimodels.ExpandedProject) error {
 		return nil
 	}
 
@@ -1004,7 +1004,7 @@ func TestUpdate_WithEmptyGitCredentials_ShallNotUpdateResource(t *testing.T) {
 		RemoteURI: "http://my-old-remote.uri",
 	})
 
-	oldProjectData := &models.ExpandedProject{
+	oldProjectData := &apimodels.ExpandedProject{
 		CreationDate:    "old-creationdate",
 		GitRemoteURI:    "http://my-old-remote.uri",
 		GitUser:         "my-old-user",
@@ -1021,19 +1021,19 @@ func TestUpdate_WithEmptyGitCredentials_ShallNotUpdateResource(t *testing.T) {
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
 		return nil
 	}
-	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
 		return oldProjectData, nil
 	}
 
-	configStore.UpdateProjectFunc = func(project keptnapimodels.Project) error {
+	configStore.UpdateProjectFunc = func(project apimodels.Project) error {
 		return nil
 	}
 
-	configStore.UpdateProjectResourceFunc = func(projectName string, resource *keptnapimodels.Resource) error {
+	configStore.UpdateProjectResourceFunc = func(projectName string, resource *apimodels.Resource) error {
 		return nil
 	}
 
-	projectMVRepo.UpdateProjectFunc = func(prj *models.ExpandedProject) error {
+	projectMVRepo.UpdateProjectFunc = func(prj *apimodels.ExpandedProject) error {
 		return nil
 	}
 
@@ -1063,9 +1063,9 @@ func TestDelete(t *testing.T) {
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
 	sequenceExecutionRepo := &db_mock.SequenceExecutionRepoMock{}
 
-	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
 
-		p := &models.ExpandedProject{
+		p := &apimodels.ExpandedProject{
 			CreationDate:    "creationdate",
 			GitRemoteURI:    "http://my-remote.uri",
 			GitUser:         "my-user",
@@ -1096,8 +1096,8 @@ func TestDelete(t *testing.T) {
 		return nil
 	}
 
-	configStore.GetProjectResourceFunc = func(projectName string, resourceURI string) (*keptnapimodels.Resource, error) {
-		resource := keptnapimodels.Resource{}
+	configStore.GetProjectResourceFunc = func(projectName string, resourceURI string) (*apimodels.Resource, error) {
+		resource := apimodels.Resource{}
 		return &resource, nil
 	}
 	eventRepo.DeleteEventCollectionsFunc = func(project string) error {
@@ -1125,15 +1125,15 @@ func TestDelete(t *testing.T) {
 }
 
 func TestValidateShipyardStagesUnchaged(t *testing.T) {
-	oldStages := []*models.ExpandedStage{{StageName: "dev"}, {StageName: "staging"}, {StageName: "prod-a"}, {StageName: "prod-b"}}
-	newStages := [][]*models.ExpandedStage{
+	oldStages := []*apimodels.ExpandedStage{{StageName: "dev"}, {StageName: "staging"}, {StageName: "prod-a"}, {StageName: "prod-b"}}
+	newStages := [][]*apimodels.ExpandedStage{
 		{{StageName: "dev"}, {StageName: "staging"}, {StageName: "prod-a"}, {StageName: "prod-b"}},
 		{{StageName: "dev2"}, {StageName: "staging2"}, {StageName: "prod-ab"}, {StageName: "prod-ba"}},
 		{{StageName: "dev"}, {StageName: "staging"}, {StageName: "prod-a"}},
 		{{StageName: "dev"}, {StageName: "staging"}, {StageName: "prod-a"}, {StageName: "prod-b"}, {StageName: "prod-c"}},
 		{{StageName: "staging"}, {StageName: "dev"}, {StageName: "prod-b"}, {StageName: "prod-a"}},
 	}
-	oldProject := &models.ExpandedProject{
+	oldProject := &apimodels.ExpandedProject{
 		CreationDate:    "creationdate",
 		GitRemoteURI:    "http://my-remote.uri",
 		GitUser:         "my-user",
@@ -1144,13 +1144,13 @@ func TestValidateShipyardStagesUnchaged(t *testing.T) {
 	}
 
 	var tests = []struct {
-		oldProject *models.ExpandedProject
-		newProject *models.ExpandedProject
+		oldProject *apimodels.ExpandedProject
+		newProject *apimodels.ExpandedProject
 		err        bool
 	}{
 		{
 			oldProject: oldProject,
-			newProject: &models.ExpandedProject{
+			newProject: &apimodels.ExpandedProject{
 				CreationDate:    "creationdate",
 				GitRemoteURI:    "http://my-remote.uri",
 				GitUser:         "my-user",
@@ -1163,7 +1163,7 @@ func TestValidateShipyardStagesUnchaged(t *testing.T) {
 		},
 		{
 			oldProject: oldProject,
-			newProject: &models.ExpandedProject{
+			newProject: &apimodels.ExpandedProject{
 				CreationDate:    "creationdate",
 				GitRemoteURI:    "http://my-remote.uri",
 				GitUser:         "my-user",
@@ -1176,7 +1176,7 @@ func TestValidateShipyardStagesUnchaged(t *testing.T) {
 		},
 		{
 			oldProject: oldProject,
-			newProject: &models.ExpandedProject{
+			newProject: &apimodels.ExpandedProject{
 				CreationDate:    "creationdate",
 				GitRemoteURI:    "http://my-remote.uri",
 				GitUser:         "my-user",
@@ -1189,7 +1189,7 @@ func TestValidateShipyardStagesUnchaged(t *testing.T) {
 		},
 		{
 			oldProject: oldProject,
-			newProject: &models.ExpandedProject{
+			newProject: &apimodels.ExpandedProject{
 				CreationDate:    "creationdate",
 				GitRemoteURI:    "http://my-remote.uri",
 				GitUser:         "my-user",
@@ -1202,7 +1202,7 @@ func TestValidateShipyardStagesUnchaged(t *testing.T) {
 		},
 		{
 			oldProject: oldProject,
-			newProject: &models.ExpandedProject{
+			newProject: &apimodels.ExpandedProject{
 				CreationDate:    "creationdate",
 				GitRemoteURI:    "http://my-remote.uri",
 				GitUser:         "my-user",

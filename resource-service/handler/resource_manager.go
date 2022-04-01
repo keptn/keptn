@@ -126,7 +126,27 @@ func (p ResourceManager) DeleteResource(params models.DeleteResourceParams) (*mo
 
 	resourcePath := configPath + "/" + params.ResourceURI
 
-	return p.deleteResource(gitContext, resourcePath)
+	var resultErr error
+	var resultCommit *models.WriteResourceResponse
+	_ = retry.Retry(func() error {
+		err = p.git.Pull(*gitContext)
+		if err != nil {
+			resultErr = err
+			return nil
+		}
+		response, err := p.deleteResource(gitContext, resourcePath)
+		if err != nil {
+			if errors.Is(err, kerrors.ErrNonFastForwardUpdate) || errors.Is(err, kerrors.ErrForceNeeded) {
+				return err
+			}
+			resultErr = err
+			return nil
+		}
+		resultCommit = response
+		resultErr = err
+		return nil
+	}, retry.NumberOfRetries(5), retry.DelayBetweenRetries(1*time.Second))
+	return resultCommit, resultErr
 }
 
 func (p ResourceManager) establishContext(project models.Project, stage *models.Stage, service *models.Service) (*common_models.GitContext, string, error) {
@@ -206,12 +226,10 @@ func (p ResourceManager) writeAndCommitResource(gitContext *common_models.GitCon
 		err := p.git.Pull(*gitContext)
 		if err != nil {
 			resultErr = err
-			// return nil at this point because retry does not make sense in that case
 			return nil
 		}
 		if err := p.storeResource(resourcePath, resourceContent); err != nil {
 			resultErr = err
-			// return nil at this point because retry does not make sense in that case
 			return nil
 		}
 
@@ -221,7 +239,6 @@ func (p ResourceManager) writeAndCommitResource(gitContext *common_models.GitCon
 				return err
 			}
 			resultErr = err
-			// return nil at this point because retry does not make sense in that case
 			return nil
 		}
 		resultCommit = commit
@@ -238,14 +255,12 @@ func (p ResourceManager) writeAndCommitResources(gitContext *common_models.GitCo
 		err := p.git.Pull(*gitContext)
 		if err != nil {
 			resultErr = err
-			// return nil at this point because retry does not make sense in that case
 			return nil
 		}
 		for _, res := range resources {
 			filePath := directory + "/" + res.ResourceURI
 			if err := p.storeResource(filePath, string(res.ResourceContent)); err != nil {
 				resultErr = err
-				// return nil at this point because retry does not make sense in that case
 				return nil
 			}
 		}
@@ -256,7 +271,6 @@ func (p ResourceManager) writeAndCommitResources(gitContext *common_models.GitCo
 				return err
 			}
 			resultErr = err
-			// return nil at this point because retry does not make sense in that case
 			return nil
 		}
 		resultCommit = commit

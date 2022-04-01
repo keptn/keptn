@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, forkJoin, from, Observable, of, Subject } from 'rxjs';
-import { filter, map, mergeMap, switchMap, take, tap, toArray } from 'rxjs/operators';
+import { catchError, filter, map, mergeMap, switchMap, take, tap, toArray } from 'rxjs/operators';
 import { Trace } from '../_models/trace';
 import { Stage } from '../_models/stage';
 import { Project } from '../_models/project';
@@ -29,7 +29,7 @@ import { ServiceState } from '../_models/service-state';
 import { ServiceRemediationInformation } from '../_models/service-remediation-information';
 import { EndSessionData } from '../../../shared/interfaces/end-session-data';
 import { ISequencesMetadata } from '../../../shared/interfaces/sequencesMetadata';
-import { TriggerEvaluationData, TriggerResponse, TriggerSequenceData } from '../_models/trigger-sequence';
+import { TriggerResponse, TriggerSequenceData } from '../_models/trigger-sequence';
 import { EventData } from '../_components/ktb-evaluation-info/ktb-evaluation-info.component';
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
 import { IClientFeatureFlags } from '../../../shared/interfaces/feature-flags';
@@ -265,7 +265,7 @@ export class DataService {
     this.apiService.getKeptnInfo().subscribe((bridgeInfo: KeptnInfoResult) => {
       forkJoin({
         availableVersions: bridgeInfo.enableVersionCheckFeature
-          ? this.apiService.getAvailableVersions()
+          ? this.apiService.getAvailableVersions().pipe(catchError(() => of(undefined)))
           : of(undefined),
         versionCheckEnabled: of(this.apiService.isVersionCheckEnabled()),
         metadata: this.apiService.getMetadata(),
@@ -804,8 +804,9 @@ export class DataService {
     return this.apiService.triggerSequence(type, data);
   }
 
-  public triggerEvaluation(data: TriggerEvaluationData): Observable<TriggerResponse> {
-    return this.apiService.triggerEvaluation(data);
+  public triggerEvaluation(data: TriggerSequenceData): Observable<TriggerResponse> {
+    const type = EventTypes.PREFIX + data.stage + EventTypes.EVALUATION_TRIGGERED_SUFFIX;
+    return this.apiService.triggerSequence(type, data);
   }
 
   public triggerCustomSequence(data: TriggerSequenceData, sequence: string): Observable<TriggerResponse> {

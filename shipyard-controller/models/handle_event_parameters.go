@@ -1,5 +1,7 @@
 package models
 
+import "github.com/keptn/go-utils/pkg/api/models"
+
 // NewHandleEventParams creates a new HandleEventParams object
 // no default values defined in spec.
 func NewHandleEventParams() HandleEventParams {
@@ -12,5 +14,5 @@ func NewHandleEventParams() HandleEventParams {
 //
 // swagger:parameters handle event
 type HandleEventParams struct {
-	Event
+	models.KeptnContextExtendedCE
 }

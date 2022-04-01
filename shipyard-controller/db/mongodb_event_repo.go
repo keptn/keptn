@@ -5,10 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"time"
-
 	"github.com/jeremywohl/flatten"
-	"github.com/keptn/go-utils/pkg/common/timeutils"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -16,6 +14,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"time"
 )
 
 const maxRepoReadRetries = 5
@@ -41,7 +40,7 @@ func NewMongoDBEventsRepo(dbConnection *MongoDBConnection) *MongoDBEventsRepo {
 }
 
 // GetEvents gets all events of a project, based on the provided filter
-func (mdbrepo *MongoDBEventsRepo) GetEvents(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
+func (mdbrepo *MongoDBEventsRepo) GetEvents(project string, filter common.EventFilter, status ...common.EventStatus) ([]apimodels.KeptnContextExtendedCE, error) {
 	collection, ctx, cancel, err := mdbrepo.getEventsCollection(project, status...)
 	if err != nil {
 		return nil, err
@@ -60,7 +59,7 @@ func (mdbrepo *MongoDBEventsRepo) GetEvents(project string, filter common.EventF
 		return nil, ErrNoEventFound
 	}
 
-	events := []models.Event{}
+	events := []apimodels.KeptnContextExtendedCE{}
 
 	defer cur.Close(ctx)
 	for cur.Next(ctx) {
@@ -74,7 +73,7 @@ func (mdbrepo *MongoDBEventsRepo) GetEvents(project string, filter common.EventF
 	return events, nil
 }
 
-func decodeKeptnEvent(cur *mongo.Cursor) (*models.Event, error) {
+func decodeKeptnEvent(cur *mongo.Cursor) (*apimodels.KeptnContextExtendedCE, error) {
 	var outputEvent interface{}
 	err := cur.Decode(&outputEvent)
 	if err != nil {
@@ -87,7 +86,7 @@ func decodeKeptnEvent(cur *mongo.Cursor) (*models.Event, error) {
 
 	data, _ := json.Marshal(outputEvent)
 
-	event := &models.Event{}
+	event := &apimodels.KeptnContextExtendedCE{}
 	if err := json.Unmarshal(data, event); err != nil {
 		return nil, err
 	}
@@ -120,12 +119,12 @@ func (mdbrepo *MongoDBEventsRepo) GetRootEvents(getRootParams models.GetRootEven
 	}
 
 	result := &models.GetEventsResult{
-		Events:      []models.Event{},
+		Events:      []apimodels.KeptnContextExtendedCE{},
 		NextPageKey: 0,
 		PageSize:    0,
 		TotalCount:  totalCount,
 	}
-	events := []models.Event{}
+	events := []apimodels.KeptnContextExtendedCE{}
 
 	if getRootParams.PageSize > 0 && getRootParams.PageSize+getRootParams.NextPageKey < totalCount {
 		result.NextPageKey = getRootParams.PageSize + getRootParams.NextPageKey
@@ -144,7 +143,7 @@ func (mdbrepo *MongoDBEventsRepo) GetRootEvents(getRootParams models.GetRootEven
 }
 
 // InsertEvent inserts an event into the collection of the specified project
-func (mdbrepo *MongoDBEventsRepo) InsertEvent(project string, event models.Event, status common.EventStatus) error {
+func (mdbrepo *MongoDBEventsRepo) InsertEvent(project string, event apimodels.KeptnContextExtendedCE, status common.EventStatus) error {
 	collection, ctx, cancel, err := mdbrepo.getEventsCollection(project, status)
 	if err != nil {
 		return err
@@ -155,7 +154,7 @@ func (mdbrepo *MongoDBEventsRepo) InsertEvent(project string, event models.Event
 		return errors.New("invalid event type")
 	}
 
-	event.Time = timeutils.GetKeptnTimeStamp(time.Now().UTC())
+	event.Time = time.Now().UTC()
 
 	marshal, _ := json.Marshal(event)
 	var eventInterface interface{}
@@ -225,7 +224,7 @@ func (mdbrepo *MongoDBEventsRepo) DeleteEventCollections(project string) error {
 	return nil
 }
 
-func (e *MongoDBEventsRepo) GetStartedEventsForTriggeredID(eventScope models.EventScope) ([]models.Event, error) {
+func (e *MongoDBEventsRepo) GetStartedEventsForTriggeredID(eventScope models.EventScope) ([]apimodels.KeptnContextExtendedCE, error) {
 	startedEventType, err := keptnv2.ReplaceEventTypeKind(eventScope.EventType, string(common.StartedEvent))
 	if err != nil {
 		return nil, err
@@ -238,7 +237,7 @@ func (e *MongoDBEventsRepo) GetStartedEventsForTriggeredID(eventScope models.Eve
 	return e.GetEventsWithRetry(eventScope.Project, filter, common.StartedEvent, maxRepoReadRetries)
 }
 
-func (e *MongoDBEventsRepo) GetEventsWithRetry(project string, filter common.EventFilter, status common.EventStatus, nrRetries int) ([]models.Event, error) {
+func (e *MongoDBEventsRepo) GetEventsWithRetry(project string, filter common.EventFilter, status common.EventStatus, nrRetries int) ([]apimodels.KeptnContextExtendedCE, error) {
 	for i := 0; i <= nrRetries; i++ {
 		events, err := e.GetEvents(project, filter, status)
 		if err != nil && errors.Is(err, ErrNoEventFound) {
@@ -250,7 +249,7 @@ func (e *MongoDBEventsRepo) GetEventsWithRetry(project string, filter common.Eve
 	return nil, nil
 }
 
-func (e *MongoDBEventsRepo) GetTaskSequenceTriggeredEvent(eventScope models.EventScope, taskSequenceName string) (*models.Event, error) {
+func (e *MongoDBEventsRepo) GetTaskSequenceTriggeredEvent(eventScope models.EventScope, taskSequenceName string) (*apimodels.KeptnContextExtendedCE, error) {
 	events, err := e.GetEvents(eventScope.Project, common.EventFilter{
 		Type:         keptnv2.GetTriggeredEventType(eventScope.Stage + "." + taskSequenceName),
 		Stage:        &eventScope.Stage,
@@ -306,7 +305,7 @@ func (e *MongoDBEventsRepo) DeleteAllFinishedEvents(eventScope models.EventScope
 	return nil
 }
 
-func (e *MongoDBEventsRepo) GetFinishedEvents(eventScope models.EventScope) ([]models.Event, error) {
+func (e *MongoDBEventsRepo) GetFinishedEvents(eventScope models.EventScope) ([]apimodels.KeptnContextExtendedCE, error) {
 	return e.GetEvents(eventScope.Project, common.EventFilter{
 		Stage:        &eventScope.Stage,
 		KeptnContext: &eventScope.KeptnContext,

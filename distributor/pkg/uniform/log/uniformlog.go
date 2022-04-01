@@ -3,12 +3,13 @@ package log
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptn "github.com/keptn/go-utils/pkg/api/utils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	logger "github.com/sirupsen/logrus"
-	"strings"
 )
 
 type UniformLog interface {
@@ -39,7 +40,7 @@ func (l *EventUniformLog) Start(ctx context.Context, eventChannel chan cloudeven
 					logger.Errorf("Could not handle event: %v", err)
 				}
 			case <-ctx.Done():
-				logger.Info("Closing UniformLogger")
+				logger.Info("Terminating UniformLogger")
 				return
 			}
 		}
@@ -61,7 +62,7 @@ func (l *EventUniformLog) onEvent(event cloudevents.Event) error {
 
 		if eventData.Status == keptnv2.StatusErrored {
 			logger.Info("Received '.finished' event with status 'errored'. Forwarding log message to log ingestion API")
-			l.Log(keptnapimodels.LogEntry{
+			l.Log(apimodels.LogEntry{
 				IntegrationID: l.IntegrationID,
 				Message:       eventData.Message,
 				KeptnContext:  keptnEvent.Shkeptncontext,
@@ -83,7 +84,7 @@ func (l *EventUniformLog) onEvent(event cloudevents.Event) error {
 			// overwrite default integrationID if it has been set in the event
 			integrationID = eventData.IntegrationID
 		}
-		l.Log(keptnapimodels.LogEntry{
+		l.Log(apimodels.LogEntry{
 			IntegrationID: integrationID,
 			Message:       eventData.Message,
 			KeptnContext:  keptnEvent.Shkeptncontext,
@@ -94,6 +95,6 @@ func (l *EventUniformLog) onEvent(event cloudevents.Event) error {
 	return nil
 }
 
-func (l *EventUniformLog) Log(entry keptnapimodels.LogEntry) {
-	l.logHandler.Log([]keptnapimodels.LogEntry{entry})
+func (l *EventUniformLog) Log(entry apimodels.LogEntry) {
+	l.logHandler.Log([]apimodels.LogEntry{entry})
 }

@@ -18,7 +18,7 @@ for file in ./{**/,}*; do
       # fetch the desired version (this will update go.mod and go.sum)
       go get "github.com/keptn/$ARTIFACT@$TARGET" && \
       go get ./... && \
-      go mod tidy
+      go mod tidy -go=1.16 && go mod tidy -go=1.17
       cd - || exit
     fi
   fi

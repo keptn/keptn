@@ -2,10 +2,10 @@ package db
 
 import (
 	"errors"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
-	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -34,7 +34,7 @@ func Test_projectsMaterializedView_CreateProject(t *testing.T) {
 		ProjectRepo ProjectRepo
 	}
 	type args struct {
-		prj *models.ExpandedProject
+		prj *apimodels.ExpandedProject
 	}
 	tests := []struct {
 		name    string
@@ -46,17 +46,17 @@ func Test_projectsMaterializedView_CreateProject(t *testing.T) {
 			name: "create project that did not exist before",
 			fields: fields{
 				ProjectRepo: &db_mock.ProjectRepoMock{
-					CreateProjectFunc: func(project *models.ExpandedProject) error {
+					CreateProjectFunc: func(project *apimodels.ExpandedProject) error {
 						return nil
 					},
 
-					GetProjectFunc: func(projectName string) (project *models.ExpandedProject, err error) {
+					GetProjectFunc: func(projectName string) (project *apimodels.ExpandedProject, err error) {
 						return nil, errors.New("")
 					},
 				},
 			},
 			args: args{
-				prj: &models.ExpandedProject{
+				prj: &apimodels.ExpandedProject{
 					ProjectName: "test-project",
 				},
 			},
@@ -66,11 +66,11 @@ func Test_projectsMaterializedView_CreateProject(t *testing.T) {
 			name: "create project that did exist before",
 			fields: fields{
 				ProjectRepo: &db_mock.ProjectRepoMock{
-					CreateProjectFunc: func(project *models.ExpandedProject) error {
+					CreateProjectFunc: func(project *apimodels.ExpandedProject) error {
 						return nil
 					},
-					GetProjectFunc: func(projectName string) (project *models.ExpandedProject, err error) {
-						return &models.ExpandedProject{
+					GetProjectFunc: func(projectName string) (project *apimodels.ExpandedProject, err error) {
+						return &apimodels.ExpandedProject{
 							ProjectName: "test-project",
 						}, nil
 					},
@@ -80,7 +80,7 @@ func Test_projectsMaterializedView_CreateProject(t *testing.T) {
 				},
 			},
 			args: args{
-				prj: &models.ExpandedProject{
+				prj: &apimodels.ExpandedProject{
 					ProjectName: "test-project",
 				},
 			},
@@ -90,10 +90,10 @@ func Test_projectsMaterializedView_CreateProject(t *testing.T) {
 			name: "return error if creating project failed",
 			fields: fields{
 				ProjectRepo: &db_mock.ProjectRepoMock{
-					CreateProjectFunc: func(project *models.ExpandedProject) error {
+					CreateProjectFunc: func(project *apimodels.ExpandedProject) error {
 						return errors.New("")
 					},
-					GetProjectFunc: func(projectName string) (project *models.ExpandedProject, err error) {
+					GetProjectFunc: func(projectName string) (project *apimodels.ExpandedProject, err error) {
 						return nil, nil
 					},
 					UpdateProjectFunc: nil,
@@ -102,7 +102,7 @@ func Test_projectsMaterializedView_CreateProject(t *testing.T) {
 				},
 			},
 			args: args{
-				prj: &models.ExpandedProject{
+				prj: &apimodels.ExpandedProject{
 					ProjectName: "test-project",
 				},
 			},
@@ -181,7 +181,7 @@ func Test_projectsMaterializedView_UpdateShipyard(t *testing.T) {
 		name          string
 		fields        fields
 		args          args
-		expectProject *models.ExpandedProject
+		expectProject *apimodels.ExpandedProject
 		wantErr       bool
 	}{
 		{
@@ -189,10 +189,10 @@ func Test_projectsMaterializedView_UpdateShipyard(t *testing.T) {
 			fields: fields{
 				ProjectRepo: &db_mock.ProjectRepoMock{
 					CreateProjectFunc: nil,
-					GetProjectFunc: func(projectName string) (project *models.ExpandedProject, err error) {
-						return &models.ExpandedProject{
+					GetProjectFunc: func(projectName string) (project *apimodels.ExpandedProject, err error) {
+						return &apimodels.ExpandedProject{
 							ProjectName: "test-project",
-							Stages: []*models.ExpandedStage{
+							Stages: []*apimodels.ExpandedStage{
 								{
 									StageName: "dev",
 								},
@@ -201,7 +201,7 @@ func Test_projectsMaterializedView_UpdateShipyard(t *testing.T) {
 								},
 							}}, nil
 					},
-					UpdateProjectFunc: func(project *models.ExpandedProject) error {
+					UpdateProjectFunc: func(project *apimodels.ExpandedProject) error {
 						return nil
 					},
 					DeleteProjectFunc: nil,
@@ -212,11 +212,11 @@ func Test_projectsMaterializedView_UpdateShipyard(t *testing.T) {
 				projectName:     "test-project",
 				shipyardContent: testShipyardContent,
 			},
-			expectProject: &models.ExpandedProject{
+			expectProject: &apimodels.ExpandedProject{
 				ProjectName:     "test-project",
 				Shipyard:        testShipyardContent,
 				ShipyardVersion: "spec.keptn.sh/0.2.0",
-				Stages: []*models.ExpandedStage{
+				Stages: []*apimodels.ExpandedStage{
 					{
 						StageName:    "dev",
 						ParentStages: []string{},
@@ -234,7 +234,7 @@ func Test_projectsMaterializedView_UpdateShipyard(t *testing.T) {
 			fields: fields{
 				ProjectRepo: &db_mock.ProjectRepoMock{
 					CreateProjectFunc: nil,
-					GetProjectFunc: func(projectName string) (project *models.ExpandedProject, err error) {
+					GetProjectFunc: func(projectName string) (project *apimodels.ExpandedProject, err error) {
 						return nil, errors.New("")
 					},
 					UpdateProjectFunc: nil,
@@ -294,10 +294,10 @@ func Test_projectsMaterializedView_CreateStage(t *testing.T) {
 			fields: fields{
 				ProjectRepo: &db_mock.ProjectRepoMock{
 					CreateProjectFunc: nil,
-					GetProjectFunc: func(projectName string) (project *models.ExpandedProject, err error) {
-						return &models.ExpandedProject{ProjectName: "test-project"}, nil
+					GetProjectFunc: func(projectName string) (project *apimodels.ExpandedProject, err error) {
+						return &apimodels.ExpandedProject{ProjectName: "test-project"}, nil
 					},
-					UpdateProjectFunc: func(project *models.ExpandedProject) error {
+					UpdateProjectFunc: func(project *apimodels.ExpandedProject) error {
 						if len(project.Stages) == 0 {
 							return errors.New("unexpected length of stages array")
 						}
@@ -321,10 +321,10 @@ func Test_projectsMaterializedView_CreateStage(t *testing.T) {
 			fields: fields{
 				ProjectRepo: &db_mock.ProjectRepoMock{
 					CreateProjectFunc: nil,
-					GetProjectFunc: func(projectName string) (project *models.ExpandedProject, err error) {
-						return &models.ExpandedProject{
+					GetProjectFunc: func(projectName string) (project *apimodels.ExpandedProject, err error) {
+						return &apimodels.ExpandedProject{
 							ProjectName: "test-project",
-							Stages: []*models.ExpandedStage{
+							Stages: []*apimodels.ExpandedStage{
 								{
 									Services:  nil,
 									StageName: "dev",
@@ -332,7 +332,7 @@ func Test_projectsMaterializedView_CreateStage(t *testing.T) {
 							},
 						}, nil
 					},
-					UpdateProjectFunc: func(project *models.ExpandedProject) error {
+					UpdateProjectFunc: func(project *apimodels.ExpandedProject) error {
 						// should not be called in this case
 						return errors.New("update func should not be called in this case")
 					},
@@ -351,10 +351,10 @@ func Test_projectsMaterializedView_CreateStage(t *testing.T) {
 			fields: fields{
 				ProjectRepo: &db_mock.ProjectRepoMock{
 					CreateProjectFunc: nil,
-					GetProjectFunc: func(projectName string) (project *models.ExpandedProject, err error) {
-						return &models.ExpandedProject{
+					GetProjectFunc: func(projectName string) (project *apimodels.ExpandedProject, err error) {
+						return &apimodels.ExpandedProject{
 							ProjectName: "test-project",
-							Stages: []*models.ExpandedStage{
+							Stages: []*apimodels.ExpandedStage{
 								{
 									Services:  nil,
 									StageName: "dev",
@@ -362,7 +362,7 @@ func Test_projectsMaterializedView_CreateStage(t *testing.T) {
 							},
 						}, nil
 					},
-					UpdateProjectFunc: func(project *models.ExpandedProject) error {
+					UpdateProjectFunc: func(project *apimodels.ExpandedProject) error {
 						if len(project.Stages) != 2 {
 							return errors.New("unexpected length of stages array")
 						}
@@ -389,7 +389,7 @@ func Test_projectsMaterializedView_CreateStage(t *testing.T) {
 			fields: fields{
 				ProjectRepo: &db_mock.ProjectRepoMock{
 					CreateProjectFunc: nil,
-					GetProjectFunc: func(projectName string) (project *models.ExpandedProject, err error) {
+					GetProjectFunc: func(projectName string) (project *apimodels.ExpandedProject, err error) {
 						return nil, errors.New("")
 					},
 					UpdateProjectFunc: nil,
@@ -435,10 +435,10 @@ func Test_projectsMaterializedView_DeleteStage(t *testing.T) {
 			fields: fields{
 				ProjectRepo: &db_mock.ProjectRepoMock{
 					CreateProjectFunc: nil,
-					GetProjectFunc: func(projectName string) (project *models.ExpandedProject, err error) {
-						return &models.ExpandedProject{
+					GetProjectFunc: func(projectName string) (project *apimodels.ExpandedProject, err error) {
+						return &apimodels.ExpandedProject{
 							ProjectName: "test-project",
-							Stages: []*models.ExpandedStage{
+							Stages: []*apimodels.ExpandedStage{
 								{
 									Services:  nil,
 									StageName: "dev",
@@ -446,7 +446,7 @@ func Test_projectsMaterializedView_DeleteStage(t *testing.T) {
 							},
 						}, nil
 					},
-					UpdateProjectFunc: func(project *models.ExpandedProject) error {
+					UpdateProjectFunc: func(project *apimodels.ExpandedProject) error {
 						if len(project.Stages) != 0 {
 							return errors.New("unexpected length of stages array")
 						}
@@ -467,12 +467,12 @@ func Test_projectsMaterializedView_DeleteStage(t *testing.T) {
 			fields: fields{
 				ProjectRepo: &db_mock.ProjectRepoMock{
 					CreateProjectFunc: nil,
-					GetProjectFunc: func(projectName string) (project *models.ExpandedProject, err error) {
-						return &models.ExpandedProject{
+					GetProjectFunc: func(projectName string) (project *apimodels.ExpandedProject, err error) {
+						return &apimodels.ExpandedProject{
 							ProjectName: "test-project",
 						}, nil
 					},
-					UpdateProjectFunc: func(project *models.ExpandedProject) error {
+					UpdateProjectFunc: func(project *apimodels.ExpandedProject) error {
 						// should not be called in this case
 						return errors.New("update func should not be called in this case")
 					},
@@ -491,7 +491,7 @@ func Test_projectsMaterializedView_DeleteStage(t *testing.T) {
 			fields: fields{
 				ProjectRepo: &db_mock.ProjectRepoMock{
 					CreateProjectFunc: nil,
-					GetProjectFunc: func(projectName string) (project *models.ExpandedProject, err error) {
+					GetProjectFunc: func(projectName string) (project *apimodels.ExpandedProject, err error) {
 						return nil, errors.New("")
 					},
 					UpdateProjectFunc: nil,
@@ -538,10 +538,10 @@ func Test_projectsMaterializedView_CreateService(t *testing.T) {
 			fields: fields{
 				ProjectRepo: &db_mock.ProjectRepoMock{
 					CreateProjectFunc: nil,
-					GetProjectFunc: func(projectName string) (project *models.ExpandedProject, err error) {
-						return &models.ExpandedProject{
+					GetProjectFunc: func(projectName string) (project *apimodels.ExpandedProject, err error) {
+						return &apimodels.ExpandedProject{
 							ProjectName: "test-project",
-							Stages: []*models.ExpandedStage{
+							Stages: []*apimodels.ExpandedStage{
 								{
 									Services:  nil,
 									StageName: "dev",
@@ -549,7 +549,7 @@ func Test_projectsMaterializedView_CreateService(t *testing.T) {
 							},
 						}, nil
 					},
-					UpdateProjectFunc: func(project *models.ExpandedProject) error {
+					UpdateProjectFunc: func(project *apimodels.ExpandedProject) error {
 						if len(project.Stages) != 1 {
 							return errors.New("unexpected length of stages array")
 						}
@@ -580,12 +580,12 @@ func Test_projectsMaterializedView_CreateService(t *testing.T) {
 			fields: fields{
 				ProjectRepo: &db_mock.ProjectRepoMock{
 					CreateProjectFunc: nil,
-					GetProjectFunc: func(projectName string) (project *models.ExpandedProject, err error) {
-						return &models.ExpandedProject{
+					GetProjectFunc: func(projectName string) (project *apimodels.ExpandedProject, err error) {
+						return &apimodels.ExpandedProject{
 							ProjectName: "test-project",
-							Stages: []*models.ExpandedStage{
+							Stages: []*apimodels.ExpandedStage{
 								{
-									Services: []*models.ExpandedService{
+									Services: []*apimodels.ExpandedService{
 										{
 											ServiceName: "test-service",
 										},
@@ -595,7 +595,7 @@ func Test_projectsMaterializedView_CreateService(t *testing.T) {
 							},
 						}, nil
 					},
-					UpdateProjectFunc: func(project *models.ExpandedProject) error {
+					UpdateProjectFunc: func(project *apimodels.ExpandedProject) error {
 						// should not be called in this case
 						return errors.New("")
 					},
@@ -615,12 +615,12 @@ func Test_projectsMaterializedView_CreateService(t *testing.T) {
 			fields: fields{
 				ProjectRepo: &db_mock.ProjectRepoMock{
 					CreateProjectFunc: nil,
-					GetProjectFunc: func(projectName string) (project *models.ExpandedProject, err error) {
-						return &models.ExpandedProject{
+					GetProjectFunc: func(projectName string) (project *apimodels.ExpandedProject, err error) {
+						return &apimodels.ExpandedProject{
 							ProjectName: "test-project",
-							Stages: []*models.ExpandedStage{
+							Stages: []*apimodels.ExpandedStage{
 								{
-									Services: []*models.ExpandedService{
+									Services: []*apimodels.ExpandedService{
 										{
 											ServiceName: "test-service",
 										},
@@ -630,7 +630,7 @@ func Test_projectsMaterializedView_CreateService(t *testing.T) {
 							},
 						}, nil
 					},
-					UpdateProjectFunc: func(project *models.ExpandedProject) error {
+					UpdateProjectFunc: func(project *apimodels.ExpandedProject) error {
 						if len(project.Stages) != 1 {
 							return errors.New("unexpected length of stages array")
 						}
@@ -665,7 +665,7 @@ func Test_projectsMaterializedView_CreateService(t *testing.T) {
 			fields: fields{
 				ProjectRepo: &db_mock.ProjectRepoMock{
 					CreateProjectFunc: nil,
-					GetProjectFunc: func(projectName string) (project *models.ExpandedProject, err error) {
+					GetProjectFunc: func(projectName string) (project *apimodels.ExpandedProject, err error) {
 						return nil, errors.New("")
 					},
 					UpdateProjectFunc: nil,
@@ -713,10 +713,10 @@ func Test_projectsMaterializedView_DeleteService(t *testing.T) {
 			fields: fields{
 				ProjectRepo: &db_mock.ProjectRepoMock{
 					CreateProjectFunc: nil,
-					GetProjectFunc: func(projectName string) (project *models.ExpandedProject, err error) {
-						return &models.ExpandedProject{
+					GetProjectFunc: func(projectName string) (project *apimodels.ExpandedProject, err error) {
+						return &apimodels.ExpandedProject{
 							ProjectName: "test-project",
-							Stages: []*models.ExpandedStage{
+							Stages: []*apimodels.ExpandedStage{
 								{
 									Services:  nil,
 									StageName: "dev",
@@ -724,7 +724,7 @@ func Test_projectsMaterializedView_DeleteService(t *testing.T) {
 							},
 						}, nil
 					},
-					UpdateProjectFunc: func(project *models.ExpandedProject) error {
+					UpdateProjectFunc: func(project *apimodels.ExpandedProject) error {
 						return errors.New("should not be called in this case")
 					},
 					DeleteProjectFunc: nil,
@@ -743,12 +743,12 @@ func Test_projectsMaterializedView_DeleteService(t *testing.T) {
 			fields: fields{
 				ProjectRepo: &db_mock.ProjectRepoMock{
 					CreateProjectFunc: nil,
-					GetProjectFunc: func(projectName string) (project *models.ExpandedProject, err error) {
-						return &models.ExpandedProject{
+					GetProjectFunc: func(projectName string) (project *apimodels.ExpandedProject, err error) {
+						return &apimodels.ExpandedProject{
 							ProjectName: "test-project",
-							Stages: []*models.ExpandedStage{
+							Stages: []*apimodels.ExpandedStage{
 								{
-									Services: []*models.ExpandedService{
+									Services: []*apimodels.ExpandedService{
 										{
 											ServiceName: "test-service",
 										},
@@ -758,7 +758,7 @@ func Test_projectsMaterializedView_DeleteService(t *testing.T) {
 							},
 						}, nil
 					},
-					UpdateProjectFunc: func(project *models.ExpandedProject) error {
+					UpdateProjectFunc: func(project *apimodels.ExpandedProject) error {
 						if len(project.Stages[0].Services) != 0 {
 							return errors.New("service was not removed properly before update")
 						}
@@ -780,7 +780,7 @@ func Test_projectsMaterializedView_DeleteService(t *testing.T) {
 			fields: fields{
 				ProjectRepo: &db_mock.ProjectRepoMock{
 					CreateProjectFunc: nil,
-					GetProjectFunc: func(projectName string) (project *models.ExpandedProject, err error) {
+					GetProjectFunc: func(projectName string) (project *apimodels.ExpandedProject, err error) {
 						return nil, errors.New("")
 					},
 					UpdateProjectFunc: nil,
@@ -810,7 +810,7 @@ func Test_projectsMaterializedView_DeleteService(t *testing.T) {
 
 func Test_updateServiceInStage(t *testing.T) {
 	type args struct {
-		project *models.ExpandedProject
+		project *apimodels.ExpandedProject
 		stage   string
 		service string
 		fn      serviceUpdateFunc
@@ -823,11 +823,11 @@ func Test_updateServiceInStage(t *testing.T) {
 		{
 			name: "Expect function to be called",
 			args: args{
-				project: &models.ExpandedProject{
+				project: &apimodels.ExpandedProject{
 					ProjectName: "test-project",
-					Stages: []*models.ExpandedStage{
+					Stages: []*apimodels.ExpandedStage{
 						{
-							Services: []*models.ExpandedService{
+							Services: []*apimodels.ExpandedService{
 								{
 									ServiceName: "test-service",
 								},
@@ -838,7 +838,7 @@ func Test_updateServiceInStage(t *testing.T) {
 				},
 				stage:   "dev",
 				service: "test-service",
-				fn: func(service *models.ExpandedService) error {
+				fn: func(service *apimodels.ExpandedService) error {
 					return nil
 				},
 			},
@@ -847,18 +847,18 @@ func Test_updateServiceInStage(t *testing.T) {
 		{
 			name: "Expect function to not be called",
 			args: args{
-				project: &models.ExpandedProject{
+				project: &apimodels.ExpandedProject{
 					ProjectName: "test-project",
-					Stages: []*models.ExpandedStage{
+					Stages: []*apimodels.ExpandedStage{
 						{
-							Services:  []*models.ExpandedService{},
+							Services:  []*apimodels.ExpandedService{},
 							StageName: "dev",
 						},
 					},
 				},
 				stage:   "dev",
 				service: "test-service",
-				fn: func(service *models.ExpandedService) error {
+				fn: func(service *apimodels.ExpandedService) error {
 					return nil
 				},
 			},
@@ -870,7 +870,7 @@ func Test_updateServiceInStage(t *testing.T) {
 				project: nil,
 				stage:   "dev",
 				service: "test-service",
-				fn: func(service *models.ExpandedService) error {
+				fn: func(service *apimodels.ExpandedService) error {
 					return nil
 				},
 			},
@@ -892,7 +892,7 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 		EventRetriever EventRepo
 	}
 	type args struct {
-		event models.Event
+		event apimodels.KeptnContextExtendedCE
 	}
 	tests := []struct {
 		name    string
@@ -907,7 +907,7 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 				EventRetriever: &db_mock.EventRepoMock{},
 			},
 			args: args{
-				event: models.Event{
+				event: apimodels.KeptnContextExtendedCE{
 					Data:           &keptnv2.EventData{Project: "test-project", Stage: "dev", Service: "test-service"},
 					Shkeptncontext: "test-context",
 					ID:             "test-event-id",
@@ -923,7 +923,7 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 				EventRetriever: &db_mock.EventRepoMock{},
 			},
 			args: args{
-				event: models.Event{
+				event: apimodels.KeptnContextExtendedCE{
 					Data:           "invalid",
 					Shkeptncontext: "test-context",
 					Type:           common.Stringp(keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName)),
@@ -938,14 +938,14 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 			fields: fields{
 				ProjectRepo: &db_mock.ProjectRepoMock{
 					CreateProjectFunc: nil,
-					GetProjectFunc: func(projectName string) (project *models.ExpandedProject, err error) {
+					GetProjectFunc: func(projectName string) (project *apimodels.ExpandedProject, err error) {
 						return nil, nil
 					},
 				},
 				EventRetriever: &db_mock.EventRepoMock{},
 			},
 			args: args{
-				event: models.Event{
+				event: apimodels.KeptnContextExtendedCE{
 					Data:           &keptnv2.EventData{Project: "test-project", Stage: "dev", Service: "test-service"},
 					Shkeptncontext: "test-context",
 					Type:           common.Stringp(keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName)),
@@ -960,14 +960,14 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 			fields: fields{
 				ProjectRepo: &db_mock.ProjectRepoMock{
 					CreateProjectFunc: nil,
-					GetProjectFunc: func(projectName string) (project *models.ExpandedProject, err error) {
+					GetProjectFunc: func(projectName string) (project *apimodels.ExpandedProject, err error) {
 						return nil, errors.New("oops")
 					},
 				},
 				EventRetriever: &db_mock.EventRepoMock{},
 			},
 			args: args{
-				event: models.Event{
+				event: apimodels.KeptnContextExtendedCE{
 					Data:           &keptnv2.EventData{Project: "test-project", Stage: "dev", Service: "test-service"},
 					Shkeptncontext: "test-context",
 					Type:           common.Stringp(keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName)),
@@ -999,7 +999,7 @@ func Test_projectsMaterializedView_OnTaskFinished(t *testing.T) {
 		EventRetriever EventRepo
 	}
 	type args struct {
-		event models.Event
+		event apimodels.KeptnContextExtendedCE
 	}
 	tests := []struct {
 		name   string
@@ -1011,12 +1011,12 @@ func Test_projectsMaterializedView_OnTaskFinished(t *testing.T) {
 			fields: fields{
 				ProjectRepo: &db_mock.ProjectRepoMock{
 					CreateProjectFunc: nil,
-					GetProjectFunc: func(projectName string) (project *models.ExpandedProject, err error) {
-						return &models.ExpandedProject{
+					GetProjectFunc: func(projectName string) (project *apimodels.ExpandedProject, err error) {
+						return &apimodels.ExpandedProject{
 							ProjectName: "test-project",
-							Stages: []*models.ExpandedStage{
+							Stages: []*apimodels.ExpandedStage{
 								{
-									Services: []*models.ExpandedService{
+									Services: []*apimodels.ExpandedService{
 										{
 											ServiceName: "test-service",
 										},
@@ -1026,7 +1026,7 @@ func Test_projectsMaterializedView_OnTaskFinished(t *testing.T) {
 							},
 						}, nil
 					},
-					UpdateProjectFunc: func(project *models.ExpandedProject) error {
+					UpdateProjectFunc: func(project *apimodels.ExpandedProject) error {
 						if project.Stages[0].Services[0].DeployedImage == "the-service-image:latest" {
 							return nil
 						}
@@ -1036,9 +1036,9 @@ func Test_projectsMaterializedView_OnTaskFinished(t *testing.T) {
 					GetProjectsFunc:   nil,
 				},
 				EventRetriever: &db_mock.EventRepoMock{
-					GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
-						//e1 := models.Event{Triggeredid: "a-triggered-id"}
-						e2 := models.Event{
+					GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]apimodels.KeptnContextExtendedCE, error) {
+						//e1 := apimodels.KeptnContextExtendedCE{Triggeredid: "a-triggered-id"}
+						e2 := apimodels.KeptnContextExtendedCE{
 							Data: keptnv2.DeploymentTriggeredEventData{
 								EventData: keptnv2.EventData{
 									Project: "test-project",
@@ -1052,13 +1052,13 @@ func Test_projectsMaterializedView_OnTaskFinished(t *testing.T) {
 							},
 							ID: "the-triggered-id",
 						}
-						return []models.Event{e2}, nil
+						return []apimodels.KeptnContextExtendedCE{e2}, nil
 
 					},
 				},
 			},
 			args: args{
-				event: models.Event{
+				event: apimodels.KeptnContextExtendedCE{
 					Data:           &keptnv2.EventData{Project: "test-project", Stage: "dev", Service: "test-service"},
 					Type:           common.Stringp(keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName)),
 					Shkeptncontext: "test-context",
@@ -1092,7 +1092,7 @@ func Test_projectsMaterializedView_OnTaskTriggered(t *testing.T) {
 		EventRetriever EventRepo
 	}
 	type args struct {
-		event models.Event
+		event apimodels.KeptnContextExtendedCE
 	}
 	tests := []struct {
 		name   string
@@ -1104,12 +1104,12 @@ func Test_projectsMaterializedView_OnTaskTriggered(t *testing.T) {
 			fields: fields{
 				ProjectRepo: &db_mock.ProjectRepoMock{
 					CreateProjectFunc: nil,
-					GetProjectFunc: func(projectName string) (project *models.ExpandedProject, err error) {
-						return &models.ExpandedProject{
+					GetProjectFunc: func(projectName string) (project *apimodels.ExpandedProject, err error) {
+						return &apimodels.ExpandedProject{
 							ProjectName: "test-project",
-							Stages: []*models.ExpandedStage{
+							Stages: []*apimodels.ExpandedStage{
 								{
-									Services: []*models.ExpandedService{
+									Services: []*apimodels.ExpandedService{
 										{
 											ServiceName: "test-service",
 										},
@@ -1119,7 +1119,7 @@ func Test_projectsMaterializedView_OnTaskTriggered(t *testing.T) {
 							},
 						}, nil
 					},
-					UpdateProjectFunc: func(project *models.ExpandedProject) error {
+					UpdateProjectFunc: func(project *apimodels.ExpandedProject) error {
 						if project.Stages[0].Services[0].LastEventTypes[keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName)].KeptnContext == "test-context" {
 							return nil
 						}
@@ -1130,7 +1130,7 @@ func Test_projectsMaterializedView_OnTaskTriggered(t *testing.T) {
 				},
 			},
 			args: args{
-				event: models.Event{
+				event: apimodels.KeptnContextExtendedCE{
 					Data:           &keptnv2.EventData{Project: "test-project", Stage: "dev", Service: "test-service"},
 					Type:           common.Stringp(keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName)),
 					Shkeptncontext: "test-context",
@@ -1163,7 +1163,7 @@ func Test_projectsMaterializedView_OnTaskStarted(t *testing.T) {
 		EventRetriever EventRepo
 	}
 	type args struct {
-		event models.Event
+		event apimodels.KeptnContextExtendedCE
 	}
 	tests := []struct {
 		name   string
@@ -1175,12 +1175,12 @@ func Test_projectsMaterializedView_OnTaskStarted(t *testing.T) {
 			fields: fields{
 				ProjectRepo: &db_mock.ProjectRepoMock{
 					CreateProjectFunc: nil,
-					GetProjectFunc: func(projectName string) (project *models.ExpandedProject, err error) {
-						return &models.ExpandedProject{
+					GetProjectFunc: func(projectName string) (project *apimodels.ExpandedProject, err error) {
+						return &apimodels.ExpandedProject{
 							ProjectName: "test-project",
-							Stages: []*models.ExpandedStage{
+							Stages: []*apimodels.ExpandedStage{
 								{
-									Services: []*models.ExpandedService{
+									Services: []*apimodels.ExpandedService{
 										{
 											ServiceName: "test-service",
 										},
@@ -1190,7 +1190,7 @@ func Test_projectsMaterializedView_OnTaskStarted(t *testing.T) {
 							},
 						}, nil
 					},
-					UpdateProjectFunc: func(project *models.ExpandedProject) error {
+					UpdateProjectFunc: func(project *apimodels.ExpandedProject) error {
 						if project.Stages[0].Services[0].LastEventTypes[keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName)].KeptnContext == "test-context" {
 							return nil
 						}
@@ -1201,7 +1201,7 @@ func Test_projectsMaterializedView_OnTaskStarted(t *testing.T) {
 				},
 			},
 			args: args{
-				event: models.Event{
+				event: apimodels.KeptnContextExtendedCE{
 					Data:           &keptnv2.EventData{Project: "test-project", Stage: "dev", Service: "test-service"},
 					Type:           common.Stringp(keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName)),
 					Shkeptncontext: "test-context",
@@ -1237,7 +1237,7 @@ func Test_projectsMaterializedView_CreateRemediation(t *testing.T) {
 		project     string
 		stage       string
 		service     string
-		remediation *models.Remediation
+		remediation *apimodels.Remediation
 	}
 	tests := []struct {
 		name    string
@@ -1250,12 +1250,12 @@ func Test_projectsMaterializedView_CreateRemediation(t *testing.T) {
 			fields: fields{
 				ProjectRepo: &db_mock.ProjectRepoMock{
 					CreateProjectFunc: nil,
-					GetProjectFunc: func(projectName string) (project *models.ExpandedProject, err error) {
-						return &models.ExpandedProject{
+					GetProjectFunc: func(projectName string) (project *apimodels.ExpandedProject, err error) {
+						return &apimodels.ExpandedProject{
 							ProjectName: "test-project",
-							Stages: []*models.ExpandedStage{
+							Stages: []*apimodels.ExpandedStage{
 								{
-									Services: []*models.ExpandedService{
+									Services: []*apimodels.ExpandedService{
 										{
 											ServiceName: "test-service",
 										},
@@ -1265,7 +1265,7 @@ func Test_projectsMaterializedView_CreateRemediation(t *testing.T) {
 							},
 						}, nil
 					},
-					UpdateProjectFunc: func(project *models.ExpandedProject) error {
+					UpdateProjectFunc: func(project *apimodels.ExpandedProject) error {
 						if len(project.Stages[0].Services[0].OpenRemediations) == 0 {
 							return errors.New("project was not updated correctly - no approval has been added")
 						}
@@ -1296,7 +1296,7 @@ func Test_projectsMaterializedView_CreateRemediation(t *testing.T) {
 				project: "test-project",
 				stage:   "dev",
 				service: "test-service",
-				remediation: &models.Remediation{
+				remediation: &apimodels.Remediation{
 					EventID:      "test-event-id",
 					KeptnContext: "test-context",
 					Time:         "1",
@@ -1340,15 +1340,15 @@ func Test_projectsMaterializedView_CloseOpenRemediations(t *testing.T) {
 			fields: fields{
 				ProjectRepo: &db_mock.ProjectRepoMock{
 					CreateProjectFunc: nil,
-					GetProjectFunc: func(projectName string) (project *models.ExpandedProject, err error) {
-						return &models.ExpandedProject{
+					GetProjectFunc: func(projectName string) (project *apimodels.ExpandedProject, err error) {
+						return &apimodels.ExpandedProject{
 							ProjectName: "test-project",
-							Stages: []*models.ExpandedStage{
+							Stages: []*apimodels.ExpandedStage{
 								{
-									Services: []*models.ExpandedService{
+									Services: []*apimodels.ExpandedService{
 										{
 											ServiceName: "test-service",
-											OpenRemediations: []*models.Remediation{
+											OpenRemediations: []*apimodels.Remediation{
 												{
 													EventID:      "test-event-id",
 													KeptnContext: "test-context",
@@ -1369,7 +1369,7 @@ func Test_projectsMaterializedView_CloseOpenRemediations(t *testing.T) {
 							},
 						}, nil
 					},
-					UpdateProjectFunc: func(project *models.ExpandedProject) error {
+					UpdateProjectFunc: func(project *apimodels.ExpandedProject) error {
 						if len(project.Stages[0].Services[0].OpenRemediations) != 0 {
 							return errors.New("project was not updated correctly - open approval was not removed")
 						}

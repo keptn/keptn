@@ -25,7 +25,6 @@ import (
 	"github.com/keptn/go-utils/pkg/common/osutils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	scmodels "github.com/keptn/keptn/shipyard-controller/models"
 	keptnkubeutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/stretchr/testify/require"
 )
@@ -282,7 +281,7 @@ func CreateProjectWithProxy(projectName string, shipyardFilePath string) (string
 		if err != nil {
 			return err
 		}
-		squidIP, err := GetSquidExternalIP(namespace)
+		squidIP, err := GetServiceExternalIP(namespace, "squid")
 		if err != nil {
 			return err
 		}
@@ -304,8 +303,13 @@ func CreateProjectWithProxy(projectName string, shipyardFilePath string) (string
 
 }
 
-func GetSquidExternalIP(namespace string) (string, error) {
-	return ExecuteCommand(fmt.Sprintf("kubectl get svc squid -n %s -ojsonpath='{.status.loadBalancer.ingress[0].ip}'", namespace))
+func GetServiceExternalIP(namespace string, service string) (string, error) {
+	ipAddr, err := ExecuteCommand(fmt.Sprintf("kubectl get svc %s -n %s -ojsonpath='{.status.loadBalancer.ingress[0].ip}'", service, namespace))
+	if err != nil {
+		return "", err
+	}
+
+	return removeQuotes(ipAddr), nil
 }
 
 func GetPrivateKeyAndPassphrase() (string, string, error) {
@@ -395,7 +399,7 @@ func CreateSubscription(t *testing.T, serviceName string, subscription models.Ev
 	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/uniform/registration/%s/subscription", fetchedIntegration.ID), subscription, 3)
 	require.Nil(t, err)
 
-	subscriptionResponse := &scmodels.CreateSubscriptionResponse{}
+	subscriptionResponse := &models.CreateSubscriptionResponse{}
 
 	err = resp.ToJSON(subscriptionResponse)
 	require.Nil(t, err)
@@ -586,7 +590,7 @@ func VerifySequenceEndsUpInState(t *testing.T, projectName string, context *mode
 	}, timeout, 10*time.Second, GetDiagnostics("shipyard-controller", ""))
 }
 
-func doesSequenceHaveOneOfTheDesiredStates(state scmodels.SequenceState, context *models.EventContext, desiredStates []string) bool {
+func doesSequenceHaveOneOfTheDesiredStates(state models.SequenceState, context *models.EventContext, desiredStates []string) bool {
 	if state.Shkeptncontext == *context.KeptnContext {
 		for _, desiredState := range desiredStates {
 			if state.State == desiredState {
@@ -597,8 +601,8 @@ func doesSequenceHaveOneOfTheDesiredStates(state scmodels.SequenceState, context
 	return false
 }
 
-func GetState(projectName string) (*scmodels.SequenceStates, *req.Resp, error) {
-	states := &scmodels.SequenceStates{}
+func GetState(projectName string) (*models.SequenceStates, *req.Resp, error) {
+	states := &models.SequenceStates{}
 
 	resp, err := ApiGETRequest("/controlPlane/v1/sequence/"+projectName, 3)
 	err = resp.ToJSON(states)
@@ -606,8 +610,8 @@ func GetState(projectName string) (*scmodels.SequenceStates, *req.Resp, error) {
 	return states, resp, err
 }
 
-func GetStateByContext(projectName, keptnContext string) (*scmodels.SequenceStates, *req.Resp, error) {
-	states := &scmodels.SequenceStates{}
+func GetStateByContext(projectName, keptnContext string) (*models.SequenceStates, *req.Resp, error) {
+	states := &models.SequenceStates{}
 
 	resp, err := ApiGETRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s?keptnContext=%s", projectName, keptnContext), 3)
 	err = resp.ToJSON(states)
@@ -615,8 +619,8 @@ func GetStateByContext(projectName, keptnContext string) (*scmodels.SequenceStat
 	return states, resp, err
 }
 
-func GetProject(projectName string) (*scmodels.ExpandedProject, error) {
-	project := &scmodels.ExpandedProject{}
+func GetProject(projectName string) (*models.ExpandedProject, error) {
+	project := &models.ExpandedProject{}
 
 	resp, err := ApiGETRequest("/controlPlane/v1/project/"+projectName, 3)
 	if err != nil {

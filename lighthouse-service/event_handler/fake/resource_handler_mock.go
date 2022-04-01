@@ -4,7 +4,7 @@
 package event_handler_mock
 
 import (
-	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"sync"
 )
@@ -15,7 +15,7 @@ import (
 //
 // 		// make and configure a mocked event_handler.ResourceHandler
 // 		mockedResourceHandler := &ResourceHandlerMock{
-// 			GetResourceFunc: func(scope keptnapi.ResourceScope, options ...keptnapi.URIOption) (*keptnapimodels.Resource, error) {
+// 			GetResourceFunc: func(scope keptnapi.ResourceScope, options ...keptnapi.URIOption) (*apimodels.Resource, error) {
 // 				panic("mock out the GetResource method")
 // 			},
 // 		}
@@ -26,7 +26,7 @@ import (
 // 	}
 type ResourceHandlerMock struct {
 	// GetResourceFunc mocks the GetResource method.
-	GetResourceFunc func(scope keptnapi.ResourceScope, options ...keptnapi.URIOption) (*keptnapimodels.Resource, error)
+	GetResourceFunc func(scope keptnapi.ResourceScope, options ...keptnapi.URIOption) (*apimodels.Resource, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -42,7 +42,7 @@ type ResourceHandlerMock struct {
 }
 
 // GetResource calls GetResourceFunc.
-func (mock *ResourceHandlerMock) GetResource(scope keptnapi.ResourceScope, options ...keptnapi.URIOption) (*keptnapimodels.Resource, error) {
+func (mock *ResourceHandlerMock) GetResource(scope keptnapi.ResourceScope, options ...keptnapi.URIOption) (*apimodels.Resource, error) {
 	if mock.GetResourceFunc == nil {
 		panic("ResourceHandlerMock.GetResourceFunc: method is nil but ResourceHandler.GetResource was just called")
 	}

@@ -49,15 +49,8 @@ export type TriggerSequenceData = {
   service: string;
   labels?: { [key: string]: string };
   configurationChange?: { values: unknown };
-};
-
-export type TriggerEvaluationData = {
-  project: string;
-  stage: string;
-  service: string;
-  evaluation: {
+  evaluation?: {
     end?: string; // ISO 8601
-    labels?: { [key: string]: string };
     start?: string; // ISO 8601
     timeframe?: string; // e.g. 1h5m
   };

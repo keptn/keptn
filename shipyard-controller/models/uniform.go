@@ -1,9 +1,5 @@
 package models
 
-import (
-	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
-)
-
 type GetUniformIntegrationsParams struct {
 	Name    string `form:"name" json:"name"`
 	ID      string `form:"id" json:"id"`
@@ -22,7 +18,3 @@ type CreateSubscriptionResponse struct {
 type UnregisterResponse struct{}
 
 type DeleteSubscriptionResponse struct{}
-
-type Integration keptnmodels.Integration
-
-type Subscription keptnmodels.EventSubscription
