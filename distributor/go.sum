@@ -141,8 +141,8 @@ github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024/go.mod h1
 github.com/jstemmer/go-junit-report v0.9.1/go.mod h1:Brl9GWCQeLvo8nXZwPNNblvFj/XSXhF0NWZEnDohbsk=
 github.com/kelseyhightower/envconfig v1.4.0 h1:Im6hONhd3pLkfDFsbRgu68RDNkGF1r3dvMUtDTo2cv8=
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
-github.com/keptn/go-utils v0.13.1-0.20220331132343-846c2d79fea0 h1:9JMvPJz5p1o10hr7kgu0xgNxAVTIPKd4y+nVi0KtgTk=
-github.com/keptn/go-utils v0.13.1-0.20220331132343-846c2d79fea0/go.mod h1:CIRwnEp/QYaSBa/r146x3h4yqWB4FS3YNKHzftoyhVA=
+github.com/keptn/go-utils v0.13.1-0.20220401064518-3b0fea3f0860 h1:y75Fm/WHRPi7JC0uTz7OSW99dgS4/HqSrBptu4aRokU=
+github.com/keptn/go-utils v0.13.1-0.20220401064518-3b0fea3f0860/go.mod h1:CIRwnEp/QYaSBa/r146x3h4yqWB4FS3YNKHzftoyhVA=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/klauspost/compress v1.11.12/go.mod h1:aoV0uJVorq1K+umq18yTdKaF57EivdYsUV+/s2qKfXs=
 github.com/klauspost/compress v1.13.4 h1:0zhec2I8zGnjWcKyLl6i3gPqKANCCn5e9xmviEEeX6s=

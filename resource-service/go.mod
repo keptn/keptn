@@ -8,7 +8,7 @@ require (
 	github.com/go-git/go-git-fixtures/v4 v4.3.1
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.13.1-0.20220331132343-846c2d79fea0
+	github.com/keptn/go-utils v0.13.1-0.20220401064518-3b0fea3f0860
 	github.com/mholt/archiver/v3 v3.5.1
 	github.com/nats-io/nats-server/v2 v2.7.4
 	github.com/nats-io/nats.go v1.13.1-0.20220308171302-2f2f6968e98d

@@ -65,8 +65,8 @@ github.com/json-iterator/go v1.1.10 h1:Kz6Cvnvv2wGdaG/V8yMvfkmNiXq9Ya2KUv4rouJJr
 github.com/json-iterator/go v1.1.10/go.mod h1:KdQUCv79m/52Kvf8AW2vK1V8akMuk1QjK/uOdHXbAo4=
 github.com/kelseyhightower/envconfig v1.4.0 h1:Im6hONhd3pLkfDFsbRgu68RDNkGF1r3dvMUtDTo2cv8=
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
-github.com/keptn/go-utils v0.13.1-0.20220331132343-846c2d79fea0 h1:9JMvPJz5p1o10hr7kgu0xgNxAVTIPKd4y+nVi0KtgTk=
-github.com/keptn/go-utils v0.13.1-0.20220331132343-846c2d79fea0/go.mod h1:CIRwnEp/QYaSBa/r146x3h4yqWB4FS3YNKHzftoyhVA=
+github.com/keptn/go-utils v0.13.1-0.20220401064518-3b0fea3f0860 h1:y75Fm/WHRPi7JC0uTz7OSW99dgS4/HqSrBptu4aRokU=
+github.com/keptn/go-utils v0.13.1-0.20220401064518-3b0fea3f0860/go.mod h1:CIRwnEp/QYaSBa/r146x3h4yqWB4FS3YNKHzftoyhVA=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
 github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=
 github.com/kr/text v0.2.0 h1:5Nx0Ya0ZqY2ygV366QzturHI13Jq95ApcVaJBhpS+AY=
