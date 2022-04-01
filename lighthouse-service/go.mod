@@ -7,6 +7,7 @@ require (
 	github.com/go-test/deep v1.0.8
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.13.1-0.20220318125157-fe974e59cc65
+	github.com/keptn/keptn/lib-cp-connector v0.0.0-20220401054001-2fe45a872e62
 	github.com/nats-io/nats-server/v2 v2.7.2
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
@@ -15,6 +16,8 @@ require (
 	k8s.io/apimachinery v0.22.8
 	k8s.io/client-go v0.22.8
 )
+
+replace github.com/keptn/keptn/lib-cp-connector => ../lib-cp-connector
 
 require (
 	github.com/benbjohnson/clock v1.3.0 // indirect
