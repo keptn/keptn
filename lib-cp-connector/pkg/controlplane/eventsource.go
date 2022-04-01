@@ -9,10 +9,13 @@ import (
 	"time"
 )
 
+type EventSender func(ce models.KeptnContextExtendedCE) error
+
 type EventSource interface {
 	Start(context.Context, chan models.KeptnContextExtendedCE) error
 	OnSubscriptionUpdate([]models.EventSubscription)
 	Subscriptions() []models.EventSubscription
+	Sender() EventSender
 }
 
 type NATSEventSource struct {
@@ -53,6 +56,10 @@ func (n *NATSEventSource) OnSubscriptionUpdate(subscriptions []models.EventSubsc
 
 func (n *NATSEventSource) Subscriptions() []models.EventSubscription {
 	return n.currentSubscriptions
+}
+
+func (n *NATSEventSource) Sender() EventSender {
+	return n.connector.Publish
 }
 
 type HTTPEventSource struct {

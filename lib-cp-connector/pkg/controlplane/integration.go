@@ -7,6 +7,6 @@ import (
 type RegistrationData models.Integration
 
 type Integration interface {
-	OnEvent(event models.KeptnContextExtendedCE)
+	OnEvent(event models.KeptnContextExtendedCE, publisher EventSender) error
 	RegistrationData() RegistrationData
 }

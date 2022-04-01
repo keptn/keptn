@@ -2,8 +2,13 @@ package controlplane
 
 import (
 	"context"
+	"errors"
 	"github.com/keptn/go-utils/pkg/api/models"
+	"log"
 )
+
+var ErrEventHandleFatal = errors.New("fatal event handling error")
+var ErrEventHandleIgnore = errors.New("event handling error")
 
 type ControlPlaneOptions struct {
 	KeptnAPIEndpoint string
@@ -35,7 +40,13 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 	for {
 		select {
 		case event := <-eventUpdates:
-			integration.OnEvent(event)
+			err := integration.OnEvent(event, cp.eventSource.Sender())
+			if errors.Is(err, ErrEventHandleFatal) {
+				return err
+			}
+			if errors.Is(err, ErrEventHandleIgnore) {
+				log.Print("error during handling of event")
+			}
 		case subscriptions := <-subscriptionUpdates:
 			cp.eventSource.OnSubscriptionUpdate(subscriptions)
 		case <-ctx.Done():
