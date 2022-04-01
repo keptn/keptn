@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, forkJoin, from, Observable, of, Subject } from 'rxjs';
-import { catchError, filter, map, mergeMap, switchMap, take, tap, toArray } from 'rxjs/operators';
+import { catchError, map, mergeMap, switchMap, take, tap, toArray } from 'rxjs/operators';
 import { Trace } from '../_models/trace';
 import { Stage } from '../_models/stage';
 import { Project } from '../_models/project';
@@ -32,7 +32,6 @@ import { ISequencesMetadata } from '../../../shared/interfaces/sequencesMetadata
 import { TriggerResponse, TriggerSequenceData } from '../_models/trigger-sequence';
 import { EventData } from '../_components/ktb-evaluation-info/ktb-evaluation-info.component';
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
-import { IClientFeatureFlags } from '../../../shared/interfaces/feature-flags';
 import { IGitDataExtended } from '../_interfaces/git-upstream';
 import { isGitHTTPS } from '../_utils/git-upstream.utils';
 
@@ -80,13 +79,6 @@ export class DataService {
 
   get keptnInfo(): Observable<KeptnInfo | undefined> {
     return this._keptnInfo.asObservable();
-  }
-
-  get featureFlags(): Observable<IClientFeatureFlags> {
-    return this._keptnInfo.pipe(
-      filter((info): info is KeptnInfo => !!info),
-      map((info) => info.bridgeInfo.featureFlags)
-    );
   }
 
   get evaluationResults(): Observable<EvaluationHistory> {

@@ -18,6 +18,7 @@ import { PendingChangesComponent } from '../../_guards/pending-changes.guard';
 import { IClientFeatureFlags } from '../../../../shared/interfaces/feature-flags';
 import { IGitData, IGitDataExtended } from '../../_interfaces/git-upstream';
 import { AppUtils } from '../../_utils/app.utils';
+import { FeatureFlagsService } from '../../_services/feature-flags.service';
 
 type DialogState = null | 'unsaved';
 
@@ -64,11 +65,14 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
     private toast: DtToast,
     private router: Router,
     private notificationsService: NotificationsService,
-    private eventService: EventService
+    private eventService: EventService,
+    featureFlagService: FeatureFlagsService
   ) {
-    this.dataService.featureFlags.pipe(takeUntil(this.unsubscribe$)).subscribe((featureFlags: IClientFeatureFlags) => {
-      this.resourceServiceEnabled = featureFlags.RESOURCE_SERVICE_ENABLED;
-    });
+    featureFlagService.featureFlags$
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((featureFlags: IClientFeatureFlags) => {
+        this.resourceServiceEnabled = featureFlags.RESOURCE_SERVICE_ENABLED;
+      });
   }
 
   public ngOnInit(): void {
