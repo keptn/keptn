@@ -25,30 +25,7 @@ const SecretServiceName = "keptn-secret-service"
 var ErrSecretAlreadyExists = errors.New("secret already exists")
 var ErrSecretNotFound = errors.New("secret not found")
 var ErrTooBigKeySize = errors.New("name and key values must be no more than 253 characters")
-var ErrScopeNotFound = errors.New("")
-
-// scopeErrorNotFound provides a way to better describe the error when a scope is not found.
-type scopeErrorNotFound struct {
-	Scope  string
-	Secret string
-	Err    error
-}
-
-func NewScopeErrorNotFound(scope, secret string) *scopeErrorNotFound {
-	return &scopeErrorNotFound{
-		Scope:  scope,
-		Secret: secret,
-		Err:    ErrScopeNotFound,
-	}
-}
-
-func (se scopeErrorNotFound) Error() string {
-	return fmt.Sprintf("scope %s not available for creation of Secret %s", se.Scope, se.Secret)
-}
-
-func (se scopeErrorNotFound) Unwrap() error {
-	return se.Err
-}
+var ErrScopeNotFound = errors.New("scope not found")
 
 type K8sSecretBackend struct {
 	KubeAPI                kubernetes.Interface
@@ -71,7 +48,7 @@ func (k K8sSecretBackend) checkScopeDefined(secret model.Secret) (model.Scopes, 
 	}
 	if _, ok := scopes.Scopes[secret.Scope]; !ok {
 		log.Errorf("Unable to find scope %s for secret %s", secret.Scope, secret.Name)
-		return model.Scopes{}, NewScopeErrorNotFound(secret.Scope, secret.Name)
+		return model.Scopes{}, fmt.Errorf("unable to check defined scope %s for secret %s: %w", secret.Scope, secret.Name, ErrScopeNotFound)
 	}
 	return scopes, nil
 }
