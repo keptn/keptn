@@ -9,6 +9,10 @@ import (
 	"time"
 )
 
+type EventSenderKeyType struct{}
+
+var EventSenderKey = EventSenderKeyType{}
+
 type EventSender func(ce models.KeptnContextExtendedCE) error
 
 type EventSource interface {

@@ -40,7 +40,7 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 	for {
 		select {
 		case event := <-eventUpdates:
-			err := integration.OnEvent(event, cp.eventSource.Sender())
+			err := integration.OnEvent(context.WithValue(ctx, EventSenderKey, cp.eventSource.Sender()), event)
 			if errors.Is(err, ErrEventHandleFatal) {
 				return err
 			}

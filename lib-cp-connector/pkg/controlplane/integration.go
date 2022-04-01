@@ -1,12 +1,13 @@
 package controlplane
 
 import (
+	"context"
 	"github.com/keptn/go-utils/pkg/api/models"
 )
 
 type RegistrationData models.Integration
 
 type Integration interface {
-	OnEvent(event models.KeptnContextExtendedCE, publisher EventSender) error
+	OnEvent(context.Context, models.KeptnContextExtendedCE) error
 	RegistrationData() RegistrationData
 }
