@@ -215,7 +215,7 @@ ingress:
 
 logLevel: "info"
 
-gracePeriod: 40
+gracePeriod: 60
 
 common:
   strategy:
