@@ -11,7 +11,7 @@ export class AppUtils {
   }
 
   public static copyObject<T>(data: T): T {
-    return JSON.parse(JSON.stringify(data));
+    return data === undefined ? undefined : JSON.parse(JSON.stringify(data));
   }
 
   public static truncateNumber(value: number, decimals: number): number {
