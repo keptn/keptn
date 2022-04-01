@@ -36,7 +36,7 @@
 </div>
 
 <div class="mt-3" *ngIf="!isCreateMode">
-  <button [disabled]="!gitData" (click)="updateUpstream()" dt-button>
+  <button [disabled]="!gitData || isGitUpstreamInProgress" (click)="updateUpstream()" dt-button>
     <dt-loading-spinner *ngIf="isGitUpstreamInProgress" aria-label="Setting Git upstream URL"></dt-loading-spinner>
     Set Git upstream
   </button>
