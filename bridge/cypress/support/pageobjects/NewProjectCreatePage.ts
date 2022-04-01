@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-import { interceptMain, interceptMainResourceEnabled } from '../intercept';
+import { interceptMain, interceptMainResourceEnabled, interceptProjectBoard } from '../intercept';
 
 class NewProjectCreatePage {
   private validCertificateInput = '-----BEGIN CERTIFICATE-----\nmyCertificate\n-----END CERTIFICATE-----';
@@ -14,8 +14,23 @@ class NewProjectCreatePage {
     return this;
   }
 
+  public interceptSettings(resourceServiceEnabled = false): this {
+    interceptProjectBoard();
+    if (resourceServiceEnabled) {
+      interceptMainResourceEnabled();
+    } else {
+      interceptMain();
+    }
+    return this;
+  }
+
   public visit(): this {
     cy.visit('/create/project').wait('@metadata');
+    return this;
+  }
+
+  public visitSettings(project: string): this {
+    cy.visit(`/project/${project}/settings/project`);
     return this;
   }
 
@@ -305,6 +320,16 @@ class NewProjectCreatePage {
 
   public assertCreateButtonEnabled(status: boolean): this {
     cy.byTestId('ktb-create-project').should(status ? 'be.enabled' : 'be.disabled');
+    return this;
+  }
+
+  public assertSshFormExists(status: boolean): this {
+    cy.get('ktb-project-settings-git-ssh').should(status ? 'exist' : 'not.exist');
+    return this;
+  }
+
+  public assertHttpsFormExists(status: boolean): this {
+    cy.get('ktb-project-settings-git-https').should(status ? 'exist' : 'not.exist');
     return this;
   }
 
