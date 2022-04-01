@@ -51,43 +51,23 @@ export class DateUtil {
     nextWeek: string;
     sameElse: string;
   } {
-    if (showSeconds) {
-      const calendarFormatsWithSeconds = {
-        lastDay: '[yesterday at] HH:mm:ss',
-        sameDay: '[today at] HH:mm:ss',
-        nextDay: '[tomorrow at] HH:mm:ss',
-        lastWeek: '[last] dddd [at] HH:mm:ss',
-        nextWeek: 'dddd [at] HH:mm:ss',
-        sameElse: 'YYYY-MM-DD HH:mm:ss',
-      };
-      if (startUppercase) {
-        return {
-          ...calendarFormatsWithSeconds,
-          lastDay: '[Yesterday at] HH:mm:ss',
-          sameDay: '[Today at] HH:mm:ss',
-          nextDay: '[Tomorrow at] HH:mm:ss',
-          lastWeek: '[Last] dddd [at] HH:mm:ss',
-        };
-      }
-
-      return calendarFormatsWithSeconds;
-    }
-
+    const timeFormat = showSeconds ? 'HH:mm:ss' : 'HH:mm';
     const calendarFormats = {
-      lastDay: '[yesterday at] HH:mm',
-      sameDay: '[today at] HH:mm',
-      nextDay: '[tomorrow at] HH:mm',
-      lastWeek: '[last] dddd [at] HH:mm',
-      nextWeek: 'dddd [at] HH:mm',
-      sameElse: 'YYYY-MM-DD HH:mm',
+      lastDay: `[yesterday at] ${timeFormat}`,
+      sameDay: `[today at] ${timeFormat}`,
+      nextDay: `[tomorrow at] ${timeFormat}`,
+      lastWeek: `[last] dddd [at] ${timeFormat}`,
+      nextWeek: `dddd [at] ${timeFormat}`,
+      sameElse: `YYYY-MM-DD ${timeFormat}`,
     };
+
     if (startUppercase) {
       return {
         ...calendarFormats,
-        lastDay: '[Yesterday at] HH:mm',
-        sameDay: '[Today at] HH:mm',
-        nextDay: '[Tomorrow at] HH:mm',
-        lastWeek: '[Last] dddd [at] HH:mm',
+        lastDay: `[Yesterday at] ${timeFormat}`,
+        sameDay: `[Today at] ${timeFormat}`,
+        nextDay: `[Tomorrow at] ${timeFormat}`,
+        lastWeek: `[Last] dddd [at] ${timeFormat}`,
       };
     }
 
