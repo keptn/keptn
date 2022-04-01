@@ -84,12 +84,13 @@
                     <span class="bold" [textContent]="currentSequence.name"></span>
                     of
                     <span
-                      class="bold"
-                      *ngIf="currentSequence.getShortImageName(); else noImageName"
-                      [textContent]="currentSequence.getShortImageName()"
-                    ></span>
-                    <ng-template #noImageName>
-                      <span class="bold" [textContent]="currentSequence.service"></span> </ng-template
+                      class="bold service-name"
+                      [textContent]="
+                        currentSequence.getShortImageName()
+                          ? currentSequence.getShortImageName()
+                          : currentSequence.service
+                      "
+                    ></span
                     >&nbsp;<span [textContent]="currentSequence.getStatus()"></span>
                   </p>
                   <button *ngIf="currentSequence.isFaulty()" dt-icon-button disabled variant="nested">

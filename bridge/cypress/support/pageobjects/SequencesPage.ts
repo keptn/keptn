@@ -25,4 +25,9 @@ export class SequencesPage {
       .should(exists ? 'exist' : 'not.exist');
     return this;
   }
+
+  public assertServiceName(name: string, tag?: string) {
+    const serviceName = tag ? `${name}:${tag}` : name;
+    cy.get('.service-name').should('have.text', serviceName);
+  }
 }
