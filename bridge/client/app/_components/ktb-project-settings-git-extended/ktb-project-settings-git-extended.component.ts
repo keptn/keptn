@@ -52,6 +52,9 @@ export class KtbProjectSettingsGitExtendedComponent {
   @Output()
   public gitDataChange = new EventEmitter<IGitDataExtended | undefined>();
 
+  @Output()
+  public resetTouched = new EventEmitter<void>();
+
   public get gitData(): IGitDataExtended | undefined {
     return this.selectedForm === GitFormType.HTTPS ? this.gitDataHttps : this.gitDataSsh;
   }
@@ -78,6 +81,7 @@ export class KtbProjectSettingsGitExtendedComponent {
       this.dataService.updateGitUpstream(this.projectName, this.gitData).subscribe(
         () => {
           this.isGitUpstreamInProgress = false;
+          this.resetTouched.emit();
         },
         () => {
           this.isGitUpstreamInProgress = false;
