@@ -4,13 +4,14 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"github.com/keptn/go-utils/pkg/common/oauth2"
+	"net/http"
+	"time"
+
+	oauthutils "github.com/keptn/go-utils/pkg/common/oauth2"
 	"github.com/keptn/keptn/distributor/pkg/config"
 	logger "github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/clientcredentials"
-	"net/http"
-	"time"
 )
 
 // CreateClientGetter returns a HTTPClientGetter implementation based on the values certain properties

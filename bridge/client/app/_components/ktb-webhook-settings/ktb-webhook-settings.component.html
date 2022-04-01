@@ -169,6 +169,27 @@
     </dt-form-field>
   </div>
   <div class="settings-section" fxLayout="row" fxLayoutAlign="start center">
+    <dt-form-field uitestid="edit-webhook-field-sendStarted" class="send-started-input">
+      <dt-label>Send started event</dt-label>
+      <dt-radio-group name="sendStarted" formControlName="sendStarted" (change)="onWebhookFormChange()">
+        <dt-radio-button value="true" class="mr-2"> automatically </dt-radio-button>
+        <dt-radio-button value="false"> by webhook receiver </dt-radio-button>
+      </dt-radio-group>
+    </dt-form-field>
+    <div [dtOverlay]="sendStartedOverlay" style="cursor: pointer" [dtOverlayConfig]="overlayConfig">
+      <dt-icon name="information" class="info mr-1"></dt-icon>
+    </div>
+    <ng-template #sendStartedOverlay>
+      <p>
+        If you subscribe your webhook to a task event of type triggered, the corresponding started and finished events
+        are sent automatically.
+        <br /><br />
+        To move the responsibility of sending the started event to the webhook receiver, select the option 'by webhook
+        receiver'.
+      </p>
+    </ng-template>
+  </div>
+  <div class="settings-section" fxLayout="row" fxLayoutAlign="start center">
     <dt-form-field uitestid="edit-webhook-field-sendFinished" class="send-finished-input">
       <dt-label>Send finished event</dt-label>
       <dt-radio-group name="sendFinished" formControlName="sendFinished" (change)="onWebhookFormChange()">
@@ -176,7 +197,7 @@
         <dt-radio-button value="false"> by webhook receiver </dt-radio-button>
       </dt-radio-group>
     </dt-form-field>
-    <div [dtOverlay]="sendFinishedOverlay" style="cursor: pointer" [dtOverlayConfig]="sendFinishedOverlayConfig">
+    <div [dtOverlay]="sendFinishedOverlay" style="cursor: pointer" [dtOverlayConfig]="overlayConfig">
       <dt-icon name="information" class="info mr-1"></dt-icon>
     </div>
     <ng-template #sendFinishedOverlay>

@@ -4,12 +4,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	apimodels "github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/keptn/shipyard-controller/config"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/keptn/keptn/shipyard-controller/config"
+
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/gin-gonic/gin"
@@ -37,8 +40,10 @@ func TestGetAllProjects(t *testing.T) {
 	}
 
 	type fields struct {
-		ProjectManager IProjectManager
-		EventSender    common.EventSender
+		ProjectManager        IProjectManager
+		EventSender           common.EventSender
+		RepositoryProvisioner IRepositoryProvisioner
+		EnvConfig             config.EnvConfig
 	}
 
 	tests := []struct {
@@ -56,7 +61,9 @@ func TestGetAllProjects(t *testing.T) {
 						return nil, errors.New("whoops")
 					},
 				},
-				EventSender: &fake.IEventSenderMock{},
+				EventSender:           &fake.IEventSenderMock{},
+				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
+				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
 			},
 			expectHttpStatus: http.StatusInternalServerError,
 		},
@@ -68,7 +75,9 @@ func TestGetAllProjects(t *testing.T) {
 						return []*apimodels.ExpandedProject{p1, p2}, nil
 					},
 				},
-				EventSender: &fake.IEventSenderMock{},
+				EventSender:           &fake.IEventSenderMock{},
+				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
+				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
 			},
 			expectHttpStatus: http.StatusOK,
 			expectJSONResponse: &apimodels.ExpandedProjects{
@@ -85,7 +94,9 @@ func TestGetAllProjects(t *testing.T) {
 						return []*apimodels.ExpandedProject{p1, p2}, nil
 					},
 				},
-				EventSender: &fake.IEventSenderMock{},
+				EventSender:           &fake.IEventSenderMock{},
+				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
+				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
 			},
 			expectHttpStatus: http.StatusOK,
 			expectJSONResponse: &apimodels.ExpandedProjects{
@@ -103,7 +114,9 @@ func TestGetAllProjects(t *testing.T) {
 						return []*apimodels.ExpandedProject{p1, p2}, nil
 					},
 				},
-				EventSender: &fake.IEventSenderMock{},
+				EventSender:           &fake.IEventSenderMock{},
+				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
+				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
 			},
 			expectHttpStatus: http.StatusOK,
 			expectJSONResponse: &apimodels.ExpandedProjects{
@@ -119,7 +132,7 @@ func TestGetAllProjects(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			w, c := createGinTestContext()
 
-			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, config.EnvConfig{ProjectNameMaxSize: 200})
+			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, tt.fields.EnvConfig, tt.fields.RepositoryProvisioner)
 			c.Request, _ = http.NewRequest(http.MethodGet, tt.queryParams, bytes.NewBuffer([]byte{}))
 
 			handler.GetAllProjects(c)
@@ -145,8 +158,10 @@ func TestGetProjectByName(t *testing.T) {
 	p1 := &apimodels.ExpandedProject{Stages: es1}
 
 	type fields struct {
-		ProjectManager IProjectManager
-		EventSender    common.EventSender
+		ProjectManager        IProjectManager
+		EventSender           common.EventSender
+		RepositoryProvisioner IRepositoryProvisioner
+		EnvConfig             config.EnvConfig
 	}
 
 	tests := []struct {
@@ -164,7 +179,9 @@ func TestGetProjectByName(t *testing.T) {
 						return nil, errors.New("whoops")
 					},
 				},
-				EventSender: &fake.IEventSenderMock{},
+				EventSender:           &fake.IEventSenderMock{},
+				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
+				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
 			},
 			expectHttpStatus: http.StatusInternalServerError,
 			projectNameParam: "my-project",
@@ -177,7 +194,9 @@ func TestGetProjectByName(t *testing.T) {
 						return nil, ErrProjectNotFound
 					},
 				},
-				EventSender: &fake.IEventSenderMock{},
+				EventSender:           &fake.IEventSenderMock{},
+				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
+				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
 			},
 			expectHttpStatus: http.StatusNotFound,
 			projectNameParam: "my-project",
@@ -190,7 +209,9 @@ func TestGetProjectByName(t *testing.T) {
 						return p1, nil
 					},
 				},
-				EventSender: &fake.IEventSenderMock{},
+				EventSender:           &fake.IEventSenderMock{},
+				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
+				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
 			},
 			expectHttpStatus:   http.StatusOK,
 			projectNameParam:   "my-project",
@@ -206,7 +227,7 @@ func TestGetProjectByName(t *testing.T) {
 				gin.Param{Key: "project", Value: "my-project"},
 			}
 
-			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, config.EnvConfig{ProjectNameMaxSize: 200})
+			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, tt.fields.EnvConfig, tt.fields.RepositoryProvisioner)
 			c.Request, _ = http.NewRequest(http.MethodGet, "", bytes.NewBuffer([]byte{}))
 
 			handler.GetProjectByName(c)
@@ -228,12 +249,15 @@ func TestGetProjectByName(t *testing.T) {
 func TestCreateProject(t *testing.T) {
 
 	type fields struct {
-		ProjectManager IProjectManager
-		EventSender    common.EventSender
+		ProjectManager        IProjectManager
+		EventSender           common.EventSender
+		RepositoryProvisioner IRepositoryProvisioner
+		EnvConfig             config.EnvConfig
 	}
 	examplePayload := `{"gitRemoteURL":"http://remote-url.com","gitToken":"99c4c193-4813-43c5-864f-ad6f12ac1d82","gitUser":"gituser","name":"myproject","shipyard":"YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAoKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyczoKICAgICAgLSBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6IAogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW5fc2VydmljZQogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBraW5kOiBwZXJmb3JtYW5jZQogICAgICAtIG5hbWU6IGV2YWx1YXRpb24KICAgICAgLSBuYW1lOiByZWxlYXNlCiAgICAgICAgCiAgLSBuYW1lOiBwcm9kdWN0aW9uCiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5IAogICAgICB0cmlnZ2VyczoKICAgICAgLSBoYXJkZW5pbmcuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBzdHJhdGVneTogYmx1ZV9ncmVlbgogICAgICAtIG5hbWU6IHJlbGVhc2UKICAgICAgCiAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg=="}`
 	examplePayloadInvalidToolongPrjName := `{"gitRemoteURL":"http://remote-url.com","gitToken":"99c4c193-4813-43c5-864f-ad6f12ac1d82","gitUser":"gituser","name":"myprojecttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt","shipyard":"YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAoKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyczoKICAgICAgLSBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6IAogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW5fc2VydmljZQogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBraW5kOiBwZXJmb3JtYW5jZQogICAgICAtIG5hbWU6IGV2YWx1YXRpb24KICAgICAgLSBuYW1lOiByZWxlYXNlCiAgICAgICAgCiAgLSBuYW1lOiBwcm9kdWN0aW9uCiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5IAogICAgICB0cmlnZ2VyczoKICAgICAgLSBoYXJkZW5pbmcuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBzdHJhdGVneTogYmx1ZV9ncmVlbgogICAgICAtIG5hbWU6IHJlbGVhc2UKICAgICAgCiAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg=="}`
 	examplePayloadInvalid := `{"gitRemoteURL":"http://remote-url.com","gitToken":"99c4c193-4813-43c5-864f-ad6f12ac1d82","gitUser":"gituser","name":"myPPPProject","shipyard":"YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAoKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyczoKICAgICAgLSBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6IAogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW5fc2VydmljZQogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBraW5kOiBwZXJmb3JtYW5jZQogICAgICAtIG5hbWU6IGV2YWx1YXRpb24KICAgICAgLSBuYW1lOiByZWxlYXNlCiAgICAgICAgCiAgLSBuYW1lOiBwcm9kdWN0aW9uCiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5IAogICAgICB0cmlnZ2VyczoKICAgICAgLSBoYXJkZW5pbmcuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBzdHJhdGVneTogYmx1ZV9ncmVlbgogICAgICAtIG5hbWU6IHJlbGVhc2UKICAgICAgCiAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg=="}`
+	exampleProvisioningPayload := `{"name":"myproject","shipyard":"YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAoKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyczoKICAgICAgLSBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6IAogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW5fc2VydmljZQogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBraW5kOiBwZXJmb3JtYW5jZQogICAgICAtIG5hbWU6IGV2YWx1YXRpb24KICAgICAgLSBuYW1lOiByZWxlYXNlCiAgICAgICAgCiAgLSBuYW1lOiBwcm9kdWN0aW9uCiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5IAogICAgICB0cmlnZ2VyczoKICAgICAgLSBoYXJkZW5pbmcuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBzdHJhdGVneTogYmx1ZV9ncmVlbgogICAgICAtIG5hbWU6IHJlbGVhc2UKICAgICAgCiAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg=="}`
 
 	rollbackCalled := false
 
@@ -244,6 +268,7 @@ func TestCreateProject(t *testing.T) {
 		expectHttpStatus     int
 		projectNameParam     string
 		expectRollbackCalled bool
+		provisioningURL      string
 	}{
 		{
 			name: "Create project with invalid payload",
@@ -261,6 +286,8 @@ func TestCreateProject(t *testing.T) {
 						return nil
 					},
 				},
+				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 20},
+				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
 			},
 			jsonPayload:      examplePayloadInvalid,
 			expectHttpStatus: http.StatusBadRequest,
@@ -284,6 +311,8 @@ func TestCreateProject(t *testing.T) {
 						return nil
 					},
 				},
+				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 20},
+				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
 			},
 			jsonPayload:      examplePayload,
 			expectHttpStatus: http.StatusConflict,
@@ -305,6 +334,8 @@ func TestCreateProject(t *testing.T) {
 						return nil
 					},
 				},
+				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 20},
+				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
 			},
 			jsonPayload:          examplePayload,
 			expectHttpStatus:     http.StatusInternalServerError,
@@ -324,10 +355,66 @@ func TestCreateProject(t *testing.T) {
 						return nil
 					},
 				},
+				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 20},
+				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
 			},
 			jsonPayload:      examplePayload,
 			expectHttpStatus: http.StatusOK,
 			projectNameParam: "my-project",
+		},
+		{
+			name: "Create project with provisioning - fail",
+			fields: fields{
+				ProjectManager: &fake.IProjectManagerMock{
+					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+						return nil, func() error { return nil }
+					},
+				},
+				EventSender: &fake.IEventSenderMock{
+					SendEventFunc: func(eventMoqParam event.Event) error {
+						return nil
+					},
+				},
+				EnvConfig: config.EnvConfig{ProjectNameMaxSize: 20, AutomaticProvisioningURL: "http://some-invalid.url"},
+				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{
+					ProvideRepositoryFn: func(s string) (*models.ProvisioningData, error) {
+						return nil, fmt.Errorf("some error")
+					},
+				},
+			},
+			jsonPayload:          exampleProvisioningPayload,
+			expectHttpStatus:     http.StatusFailedDependency,
+			projectNameParam:     "my-project",
+			expectRollbackCalled: false,
+		},
+		{
+			name: "Create project with provisioning",
+			fields: fields{
+				ProjectManager: &fake.IProjectManagerMock{
+					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+						return nil, func() error { return nil }
+					},
+				},
+				EventSender: &fake.IEventSenderMock{
+					SendEventFunc: func(eventMoqParam event.Event) error {
+						return nil
+					},
+				},
+				EnvConfig: config.EnvConfig{ProjectNameMaxSize: 20, AutomaticProvisioningURL: "http://some-valid.url"},
+				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{
+					ProvideRepositoryFn: func(s string) (*models.ProvisioningData, error) {
+						return &models.ProvisioningData{
+							GitRemoteURL: "http://some-valid-url.com",
+							GitToken:     "user",
+							GitUser:      "token",
+						}, nil
+					},
+				},
+			},
+			jsonPayload:          exampleProvisioningPayload,
+			expectHttpStatus:     http.StatusOK,
+			projectNameParam:     "my-project",
+			expectRollbackCalled: false,
 		},
 	}
 
@@ -336,7 +423,7 @@ func TestCreateProject(t *testing.T) {
 			w, c := createGinTestContext()
 			c.Set("projectName", tt.projectNameParam)
 
-			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, config.EnvConfig{ProjectNameMaxSize: 20})
+			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, tt.fields.EnvConfig, tt.fields.RepositoryProvisioner)
 			c.Request, _ = http.NewRequest(http.MethodPost, "", bytes.NewBuffer([]byte(tt.jsonPayload)))
 
 			handler.CreateProject(c)
@@ -351,8 +438,10 @@ func TestCreateProject(t *testing.T) {
 func TestUpdateProject(t *testing.T) {
 
 	type fields struct {
-		ProjectManager IProjectManager
-		EventSender    common.EventSender
+		ProjectManager        IProjectManager
+		EventSender           common.EventSender
+		RepositoryProvisioner IRepositoryProvisioner
+		EnvConfig             config.EnvConfig
 	}
 	examplePayload := `{"gitRemoteURL":"http://remote-url.com","gitToken":"99c4c193-4813-43c5-864f-ad6f12ac1d82","gitUser":"gituser","name":"myproject"}`
 	examplePayloadInvalid := `{"gitRemoteURL":"http://remote-url.com","gitToken":"99c4c193-4813-43c5-864f-ad6f12ac1d82","gitUser":"gituser","name":"myPPPProject","shipyard":"YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAoKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyczoKICAgICAgLSBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6IAogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW5fc2VydmljZQogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBraW5kOiBwZXJmb3JtYW5jZQogICAgICAtIG5hbWU6IGV2YWx1YXRpb24KICAgICAgLSBuYW1lOiByZWxlYXNlCiAgICAgICAgCiAgLSBuYW1lOiBwcm9kdWN0aW9uCiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5IAogICAgICB0cmlnZ2VyczoKICAgICAgLSBoYXJkZW5pbmcuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBzdHJhdGVneTogYmx1ZV9ncmVlbgogICAgICAtIG5hbWU6IHJlbGVhc2UKICAgICAgCiAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg=="}`
@@ -376,6 +465,8 @@ func TestUpdateProject(t *testing.T) {
 						return nil
 					},
 				},
+				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
+				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
 			},
 			jsonPayload:        examplePayload,
 			expectedHTTPStatus: http.StatusFailedDependency,
@@ -393,6 +484,8 @@ func TestUpdateProject(t *testing.T) {
 						return nil
 					},
 				},
+				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
+				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
 			},
 			jsonPayload:        examplePayloadInvalid,
 			expectedHTTPStatus: http.StatusBadRequest,
@@ -410,6 +503,8 @@ func TestUpdateProject(t *testing.T) {
 						return nil
 					},
 				},
+				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
+				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
 			},
 			jsonPayload:        examplePayload,
 			expectedHTTPStatus: http.StatusNotFound,
@@ -427,6 +522,8 @@ func TestUpdateProject(t *testing.T) {
 						return nil
 					},
 				},
+				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
+				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
 			},
 			jsonPayload:        examplePayload,
 			expectedHTTPStatus: http.StatusOK,
@@ -444,6 +541,8 @@ func TestUpdateProject(t *testing.T) {
 						return nil
 					},
 				},
+				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
+				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
 			},
 			jsonPayload:        examplePayload,
 			expectedHTTPStatus: http.StatusFailedDependency,
@@ -461,6 +560,8 @@ func TestUpdateProject(t *testing.T) {
 						return nil
 					},
 				},
+				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
+				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
 			},
 			jsonPayload:        examplePayload,
 			expectedHTTPStatus: http.StatusNotFound,
@@ -478,6 +579,8 @@ func TestUpdateProject(t *testing.T) {
 						return nil
 					},
 				},
+				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
+				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
 			},
 			jsonPayload:        examplePayload,
 			expectedHTTPStatus: http.StatusBadRequest,
@@ -495,6 +598,8 @@ func TestUpdateProject(t *testing.T) {
 						return nil
 					},
 				},
+				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
+				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
 			},
 			jsonPayload:        examplePayload,
 			expectedHTTPStatus: http.StatusInternalServerError,
@@ -505,7 +610,7 @@ func TestUpdateProject(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			w, c := createGinTestContext()
 
-			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, config.EnvConfig{ProjectNameMaxSize: 200})
+			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, tt.fields.EnvConfig, tt.fields.RepositoryProvisioner)
 			c.Request, _ = http.NewRequest(http.MethodPut, "", bytes.NewBuffer([]byte(tt.jsonPayload)))
 
 			handler.UpdateProject(c)
@@ -518,8 +623,10 @@ func TestUpdateProject(t *testing.T) {
 func TestDeleteProject(t *testing.T) {
 
 	type fields struct {
-		ProjectManager IProjectManager
-		EventSender    common.EventSender
+		ProjectManager        IProjectManager
+		EventSender           common.EventSender
+		RepositoryProvisioner IRepositoryProvisioner
+		EnvConfig             config.EnvConfig
 	}
 
 	tests := []struct {
@@ -528,6 +635,7 @@ func TestDeleteProject(t *testing.T) {
 		expectHttpStatus   int
 		expectJSONResponse *models.DeleteProjectResponse
 		projectPathParam   string
+		provisioningURL    string
 	}{
 		{
 			name: "Delete Project deleting project fails",
@@ -542,6 +650,8 @@ func TestDeleteProject(t *testing.T) {
 						return nil
 					},
 				},
+				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
+				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
 			},
 			expectHttpStatus: http.StatusInternalServerError,
 			projectPathParam: "myproject",
@@ -559,6 +669,8 @@ func TestDeleteProject(t *testing.T) {
 						return nil
 					},
 				},
+				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
+				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
 			},
 			expectHttpStatus: http.StatusInternalServerError,
 			projectPathParam: "myproject",
@@ -576,10 +688,58 @@ func TestDeleteProject(t *testing.T) {
 						return nil
 					},
 				},
+				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
+				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
 			},
 			expectHttpStatus:   http.StatusOK,
 			projectPathParam:   "myproject",
 			expectJSONResponse: &models.DeleteProjectResponse{Message: "a-message"},
+		},
+		{
+			name: "Delete Project with provisioningURL - failure",
+			fields: fields{
+				ProjectManager: &fake.IProjectManagerMock{
+					DeleteFunc: func(projectName string) (string, error) {
+						return "a-message", nil
+					},
+				},
+				EventSender: &fake.IEventSenderMock{
+					SendEventFunc: func(eventMoqParam event.Event) error {
+						return nil
+					},
+				},
+				EnvConfig: config.EnvConfig{ProjectNameMaxSize: 200, AutomaticProvisioningURL: "http://some-invalid.url"},
+				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{
+					DeleteRepositoryFn: func(s string, s2 string) error {
+						return fmt.Errorf("some error")
+					},
+				},
+			},
+			expectHttpStatus: http.StatusFailedDependency,
+			projectPathParam: "myproject",
+		},
+		{
+			name: "Delete Project with provisioningURL",
+			fields: fields{
+				ProjectManager: &fake.IProjectManagerMock{
+					DeleteFunc: func(projectName string) (string, error) {
+						return "a-message", nil
+					},
+				},
+				EventSender: &fake.IEventSenderMock{
+					SendEventFunc: func(eventMoqParam event.Event) error {
+						return nil
+					},
+				},
+				EnvConfig: config.EnvConfig{ProjectNameMaxSize: 200, AutomaticProvisioningURL: "http://some-invalid.url"},
+				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{
+					DeleteRepositoryFn: func(s string, s2 string) error {
+						return nil
+					},
+				},
+			},
+			expectHttpStatus: http.StatusOK,
+			projectPathParam: "myproject",
 		},
 	}
 
@@ -587,10 +747,12 @@ func TestDeleteProject(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			w, c := createGinTestContext()
 
-			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, config.EnvConfig{ProjectNameMaxSize: 200})
+			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, tt.fields.EnvConfig, tt.fields.RepositoryProvisioner)
 			c.Params = gin.Params{
 				gin.Param{Key: "project", Value: tt.projectPathParam},
+				gin.Param{Key: "namespace", Value: "keptn"},
 			}
+
 			c.Request, _ = http.NewRequest(http.MethodDelete, "", bytes.NewBuffer([]byte{}))
 
 			handler.DeleteProject(c)

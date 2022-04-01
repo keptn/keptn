@@ -303,21 +303,21 @@ func recursiveZip(pathToZip, destPath string) error {
 			return nil
 		}
 		if err != nil {
-			return err
+			return internal.OnAPIError(err)
 		}
 		relPath := strings.TrimPrefix(filePath, filepath.Dir(pathToZip))
 		zipFile, err := myZip.Create(relPath)
 		if err != nil {
-			return err
+			return internal.OnAPIError(err)
 		}
 		filePath = filepath.Clean(filePath)
 		fsFile, err := os.Open(filePath)
 		if err != nil {
-			return err
+			return internal.OnAPIError(err)
 		}
 		_, err = io.Copy(zipFile, fsFile)
 		if err != nil {
-			return err
+			return internal.OnAPIError(err)
 		}
 		return nil
 	})

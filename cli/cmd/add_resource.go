@@ -80,7 +80,7 @@ keptn add-resource --project=keptn --service=keptn-control-plane --all-stages --
 
 		api, err := internal.APIProvider(endPoint.String(), apiToken)
 		if err != nil {
-			return err
+			return internal.OnAPIError(err)
 		}
 
 		// Handle different cases of adding resource to a projects default branch, stage branch, and/or service sub-directory

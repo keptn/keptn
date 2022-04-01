@@ -281,7 +281,7 @@ func CreateProjectWithProxy(projectName string, shipyardFilePath string) (string
 		if err != nil {
 			return err
 		}
-		squidIP, err := GetSquidExternalIP(namespace)
+		squidIP, err := GetServiceExternalIP(namespace, "squid")
 		if err != nil {
 			return err
 		}
@@ -303,8 +303,13 @@ func CreateProjectWithProxy(projectName string, shipyardFilePath string) (string
 
 }
 
-func GetSquidExternalIP(namespace string) (string, error) {
-	return ExecuteCommand(fmt.Sprintf("kubectl get svc squid -n %s -ojsonpath='{.status.loadBalancer.ingress[0].ip}'", namespace))
+func GetServiceExternalIP(namespace string, service string) (string, error) {
+	ipAddr, err := ExecuteCommand(fmt.Sprintf("kubectl get svc %s -n %s -ojsonpath='{.status.loadBalancer.ingress[0].ip}'", service, namespace))
+	if err != nil {
+		return "", err
+	}
+
+	return removeQuotes(ipAddr), nil
 }
 
 func GetPrivateKeyAndPassphrase() (string, string, error) {

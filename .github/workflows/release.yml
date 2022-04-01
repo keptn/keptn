@@ -98,6 +98,8 @@ jobs:
       next-version: ${{ steps.version_number.outputs.next-version }}
       branch: ${{ steps.current_branch.outputs.branch }}
       keptn-spec-version: ${{ steps.keptn_spec_version.outputs.keptn-spec-version }}
+      datetime: ${{ steps.get_datetime.outputs.DATETIME }}
+      git_sha: ${{ steps.extract_branch.outputs.GIT_SHA }}
       BUILD_EVERYTHING: ${{ steps.build_everything.outputs.BUILD_EVERYTHING }}
       BUILD_INSTALLER: ${{ steps.check_modified_files.outputs.BUILD_INSTALLER }}
       BUILD_CLI: ${{ steps.check_modified_files.outputs.BUILD_CLI }}
@@ -126,6 +128,18 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.KEPTN_BOT_TOKEN }}
+
+      - name: Extract branch name
+        id: extract_branch
+        # see https://github.com/keptn/gh-action-extract-branch-name for details
+        uses: keptn/gh-action-extract-branch-name@main
+
+      - name: Get current date and time
+        id: get_datetime
+        run: |
+          echo "::set-output name=DATE::$(date +'%Y%m%d')"
+          echo "::set-output name=TIME::$(date +'%H%M')"
+          echo "::set-output name=DATETIME::$(date +'%Y%m%d')$(date +'%H%M')"
 
       - name: Find next version number
         id: version_number
@@ -222,6 +236,8 @@ jobs:
             ghcr.io/keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}
           build-args: |
             version=${{ env.VERSION }}
+            buildTime=${{ needs.prepare.outputs.datetime }}
+            gitSha=${{ needs.prepare.outputs.git_sha }}
           push: ${{ matrix.config.should-push-image }}
           pull: true
 
@@ -248,7 +264,7 @@ jobs:
   build-helm-charts:
     needs: prepare
     name: Build Helm Charts
-    uses: keptn/keptn/.github/workflows/build-helm-charts.yml@master
+    uses: ./.github/workflows/build-helm-charts.yml
     with:
       branch: ${{ needs.prepare.outputs.branch }}
       version: ${{ needs.prepare.outputs.next-version }}
@@ -260,7 +276,7 @@ jobs:
   ############################################################################
   build-cli:
     needs: prepare
-    uses: keptn/keptn/.github/workflows/build-cli.yml@master
+    uses: ./.github/workflows/build-cli.yml
     with:
       branch: ${{ needs.prepare.outputs.branch }}
       version: ${{ needs.prepare.outputs.next-version }}

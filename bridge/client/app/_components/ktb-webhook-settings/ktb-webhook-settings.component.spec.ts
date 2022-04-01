@@ -288,51 +288,43 @@ describe('KtbWebhookSettingsComponent', () => {
       payload: 'payload',
       proxy: 'https://proxy.com',
       sendFinished: true,
+      sendStarted: true,
       type: '',
       url: 'https://example.com',
     });
   });
 
-  it('sendFinished should be enabled for triggered events and true by default', () => {
+  it('should set sendFinished and sendStarted true by default for triggered events', () => {
     // given
-    const checkbox = fixture.nativeElement.querySelector('[uitestid=edit-webhook-field-sendFinished] input');
     component.eventType = 'triggered';
     fixture.detectChanges();
 
-    // when
-
     // then
-    expect(checkbox.disabled).toEqual(false);
     expect(component.getFormControl('sendFinished').value).toEqual('true');
+    expect(component.getFormControl('sendStarted').value).toEqual('true');
   });
 
-  it('sendFinished should be disabled for started events and null', () => {
+  it('should set sendFinished and sendStarted null when eventType started', () => {
     // given
-    const checkbox = fixture.nativeElement.querySelector('[uitestid=edit-webhook-field-sendFinished] input');
     component.eventType = 'started';
     fixture.detectChanges();
 
-    // when
-
     // then
-    expect(checkbox.disabled).toEqual(true);
     expect(component.getFormControl('sendFinished').value).toEqual(null);
+    expect(component.getFormControl('sendStarted').value).toEqual(null);
   });
 
-  it('sendFinished should be disabled for finished events and null', () => {
+  it('should set sendFinished and sendStarted null for finished events', () => {
     // given
-    const checkbox = fixture.nativeElement.querySelector('[uitestid=edit-webhook-field-sendFinished] input');
     component.eventType = 'finished';
     fixture.detectChanges();
 
-    // when
-
     // then
-    expect(checkbox.disabled).toEqual(true);
     expect(component.getFormControl('sendFinished').value).toEqual(null);
+    expect(component.getFormControl('sendStarted').value).toEqual(null);
   });
 
-  it('sendFinished should be set to true', () => {
+  it('should have sendFinished and sendStarted set to true', () => {
     // given
     component.eventType = 'triggered';
     component.webhook = {
@@ -341,6 +333,7 @@ describe('KtbWebhookSettingsComponent', () => {
       payload: 'payload',
       proxy: 'https://proxy.com',
       sendFinished: true,
+      sendStarted: true,
       filter: {
         projects: null,
         services: null,
@@ -354,9 +347,10 @@ describe('KtbWebhookSettingsComponent', () => {
 
     // then
     expect(component.getFormControl('sendFinished').value).toEqual('true');
+    expect(component.getFormControl('sendStarted').value).toEqual('true');
   });
 
-  it('sendFinished should be set to false', () => {
+  it('should have sendFinished and sendStarted set to false', () => {
     // given
     component.eventType = 'triggered';
     component.webhook = {
@@ -365,6 +359,7 @@ describe('KtbWebhookSettingsComponent', () => {
       payload: 'payload',
       proxy: 'https://proxy.com',
       sendFinished: false,
+      sendStarted: false,
       filter: {
         projects: null,
         services: null,
@@ -378,6 +373,7 @@ describe('KtbWebhookSettingsComponent', () => {
 
     // then
     expect(component.getFormControl('sendFinished').value).toEqual('false');
+    expect(component.getFormControl('sendStarted').value).toEqual('false');
   });
 
   it('should correctly set event payload', () => {
