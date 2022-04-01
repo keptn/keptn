@@ -85,7 +85,7 @@ spec:
             - name: PUBSUB_TOPIC
               value: 'sh.keptn.event.evaluation.triggered,sh.keptn.event.get-sli.finished,sh.keptn.event.monitoring.configure'
             - name: PUBSUB_RECIPIENT
-              value: 'http://lighthouse-service'
+              value: 'lighthouse-service'
           {{- include "control-plane.dist.common.env.vars" . | nindent 12 }}
         {{- include "control-plane.common.container-security-context" . | nindent 10 }}
       serviceAccountName: keptn-lighthouse-service
