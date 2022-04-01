@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.1](https://github.com/keptn/keptn/compare/0.14.0...0.14.1) (2022-04-01)
+
+
+### Bug Fixes
+
+* **bridge:** Do not send a start date for evaluation if none is given by the user  ([12d83c3](https://github.com/keptn/keptn/commit/12d83c3adfba400752060783c78a077d4f691bcd))
+* **bridge:** Show remediation sequence in default color while running ([#7300](https://github.com/keptn/keptn/issues/7300)) ([#7319](https://github.com/keptn/keptn/issues/7319)) ([4d0887d](https://github.com/keptn/keptn/commit/4d0887d21ac63c2ca8b5f987ce075266f8f8b0cd))
+* **cli:** Provide values needed for upgrading the nats dependency ([#7316](https://github.com/keptn/keptn/issues/7316)) ([d3d9faf](https://github.com/keptn/keptn/commit/d3d9faf9edaddb20a2dfef15f1bd7565df63f236))
+
 ## [0.14.0](https://github.com/keptn/keptn/compare/0.13.0...0.14.0) (2022-03-30)
 
 
