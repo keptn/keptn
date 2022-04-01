@@ -196,8 +196,9 @@ func (th *TaskHandler) performWebhookRequests(webhook lib.Webhook, eventAdapter 
 	executedRequests := 0
 	logger.Infof("executing webhooks for subscriptionID %s", webhook.SubscriptionID)
 	for _, req := range webhook.Requests {
+		buildRequest, err := th.createBeta1Request(req)
 		// parse the data from the event, together with the secret env vars
-		parsedCurlCommand, err := th.templateEngine.ParseTemplate(eventAdapter.Get(), req)
+		parsedCurlCommand, err := th.templateEngine.ParseTemplate(eventAdapter.Get(), buildRequest)
 		if err != nil {
 			return nil, lib.NewWebhookExecutionError(true, fmt.Errorf("could not parse request '%s' : %s", req, err.Error()), lib.WithNrOfExecutedRequests(executedRequests))
 		}
@@ -222,6 +223,11 @@ func (th *TaskHandler) gatherSecretEnvVars(webhook lib.Webhook) (map[string]stri
 		secretEnvVars[secretRef.Name] = secretValue
 	}
 	return secretEnvVars, nil
+}
+
+func (th *TaskHandler) createBeta1Request(request interface{}) (string, error) {
+	// TODO implement
+	return fmt.Sprintf("%s", request), nil
 }
 
 func sdkError(msg string, err error) *sdk.Error {

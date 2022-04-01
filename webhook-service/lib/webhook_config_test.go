@@ -49,7 +49,7 @@ spec:
 									Name: "mysecret",
 								},
 							},
-							Requests: []string{
+							Requests: []interface{}{
 								"curl http://localhost:8080 {{.data.project}} {{.env.mysecret}}",
 							},
 						},
@@ -148,7 +148,7 @@ func TestWebhook_ShouldSendStartedEvent(t *testing.T) {
 		SendFinished   bool
 		SendStarted    *bool
 		EnvFrom        []EnvFrom
-		Requests       []string
+		Requests       []interface{}
 	}
 	tests := []struct {
 		name   string
@@ -201,7 +201,7 @@ func TestWebhook_ShouldSendFinishedEvent(t *testing.T) {
 		SendFinished   bool
 		SendStarted    *bool
 		EnvFrom        []EnvFrom
-		Requests       []string
+		Requests       []interface{}
 	}
 	tests := []struct {
 		name   string
