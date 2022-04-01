@@ -23,12 +23,12 @@ type WebHookConfigSpec struct {
 }
 
 type Webhook struct {
-	Type           string    `yaml:"type"`
-	SubscriptionID string    `yaml:"subscriptionID"`
-	SendFinished   bool      `yaml:"sendFinished"`
-	SendStarted    *bool     `yaml:"sendStarted,omitempty"`
-	EnvFrom        []EnvFrom `yaml:"envFrom"`
-	Requests       []string  `yaml:"requests"`
+	Type           string        `yaml:"type"`
+	SubscriptionID string        `yaml:"subscriptionID"`
+	SendFinished   bool          `yaml:"sendFinished"`
+	SendStarted    *bool         `yaml:"sendStarted,omitempty"`
+	EnvFrom        []EnvFrom     `yaml:"envFrom"`
+	Requests       []interface{} `yaml:"requests"`
 }
 
 type EnvFrom struct {
