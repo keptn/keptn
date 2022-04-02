@@ -1,21 +1,6 @@
 package event_handler
 
-import (
-	"github.com/sirupsen/logrus"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/kubernetes/fake"
-	"net/http"
-	"os"
-	"testing"
-
-	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/go-test/deep"
-
-	keptn "github.com/keptn/go-utils/pkg/lib"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-)
-
+/*
 func TestNewEventHandler(t *testing.T) {
 	incomingEvent := cloudevents.NewEvent()
 	incomingEvent.SetID("my-id")
@@ -101,4 +86,4 @@ func TestNewEventHandler(t *testing.T) {
 			}
 		})
 	}
-}
+}*/
