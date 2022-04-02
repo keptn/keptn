@@ -6,6 +6,8 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/lib-cp-connector/pkg/nats"
 	"log"
+	"reflect"
+	"sort"
 )
 
 type EventSenderKeyType struct{}
@@ -22,16 +24,16 @@ type EventSource interface {
 
 type NATSEventSource struct {
 	//TODO: should be list of string ( topics/subjects )
-	currentSubscriptions []string
-	connector            *nats.NatsConnector
-	eventProcessFn       nats.ProcessEventFn
+	currentSubjects []string
+	connector       *nats.NatsConnector
+	eventProcessFn  nats.ProcessEventFn
 }
 
 func NewNATSEventSource(natsConnector *nats.NatsConnector) *NATSEventSource {
 	return &NATSEventSource{
-		currentSubscriptions: []string{},
-		connector:            natsConnector,
-		eventProcessFn:       func(event models.KeptnContextExtendedCE) error { return nil },
+		currentSubjects: []string{},
+		connector:       natsConnector,
+		eventProcessFn:  func(event models.KeptnContextExtendedCE) error { return nil },
 	}
 }
 
@@ -40,20 +42,23 @@ func (n *NATSEventSource) Start(ctx context.Context, eventChannel chan models.Ke
 		eventChannel <- event
 		return nil
 	}
-	if err := n.connector.SubscribeMultiple(n.currentSubscriptions, n.eventProcessFn); err != nil {
+	if err := n.connector.SubscribeMultiple(n.currentSubjects, n.eventProcessFn); err != nil {
 		return fmt.Errorf("could not start NATS event source: %w", err)
 	}
 	return nil
 }
 
-func (n *NATSEventSource) OnSubscriptionUpdate(subscriptions []string) {
-	n.currentSubscriptions = subscriptions
-	err := n.connector.UnsubscribeAll()
-	if err != nil {
-		log.Printf("error during handling of subscription update: %v\n", err)
-	}
-	if err := n.connector.SubscribeMultiple(n.currentSubscriptions, n.eventProcessFn); err != nil {
-		log.Printf("error during handling of subscription update: %v\n", err)
+func (n *NATSEventSource) OnSubscriptionUpdate(subjects []string) {
+	s := dedup(subjects)
+	if !isEqual(n.currentSubjects, s) {
+		n.currentSubjects = s
+		err := n.connector.UnsubscribeAll()
+		if err != nil {
+			log.Printf("error during handling of subscription update: %v\n", err)
+		}
+		if err := n.connector.SubscribeMultiple(n.currentSubjects, n.eventProcessFn); err != nil {
+			log.Printf("error during handling of subscription update: %v\n", err)
+		}
 	}
 }
 
@@ -76,4 +81,22 @@ func (H HTTPEventSource) OnSubscriptionUpdate(strings []string) {
 func (H HTTPEventSource) Sender() EventSender {
 	//TODO implement me
 	panic("implement me")
+}
+
+func isEqual(a1 []string, a2 []string) bool {
+	sort.Strings(a2)
+	sort.Strings(a1)
+	return reflect.DeepEqual(a1, a2)
+}
+
+func dedup(elements []string) []string {
+	result := make([]string, 0, len(elements))
+	temp := map[string]struct{}{}
+	for _, el := range elements {
+		if _, ok := temp[el]; !ok {
+			temp[el] = struct{}{}
+			result = append(result, el)
+		}
+	}
+	return result
 }
