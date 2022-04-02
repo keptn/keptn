@@ -80,13 +80,13 @@ func (nc *NatsConnector) Subscribe(subject string, fn ProcessEventFn) error {
 	return nc.subscribe(subject, fn)
 }
 
-func (nc *NatsConnector) SubscribeMultiple(subjects []models.EventSubscription, fn ProcessEventFn) error {
+func (nc *NatsConnector) SubscribeMultiple(subjects []string, fn ProcessEventFn) error {
 	if fn == nil {
 		return ErrSubNilMessageProcessor
 	}
 
 	for _, sub := range subjects {
-		if err := nc.subscribe(sub.Event, fn); err != nil {
+		if err := nc.subscribe(sub, fn); err != nil {
 			return fmt.Errorf("could not subscribe to subject %s: %w", sub, err)
 		}
 	}
