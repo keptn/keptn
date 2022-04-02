@@ -87,8 +87,6 @@ github.com/go-logr/logr v0.4.0/go.mod h1:z6/tIYblkpsD+a4lm/fGIIU9mZ+XfAiaFtq7xTg
 github.com/go-openapi/jsonpointer v0.19.3/go.mod h1:Pl9vOtqEWErmShwVjC8pYs9cog34VGT37dQOVbmoatg=
 github.com/go-openapi/jsonreference v0.19.3/go.mod h1:rjx6GuL8TTa9VaixXglHmQmIL98+wF9xc8zWvFonSJ8=
 github.com/go-openapi/swag v0.19.5/go.mod h1:POnQmlKehdgb5mhVOsnJFsivZCEZ/vjK9gh66Z9tfKk=
-github.com/go-test/deep v1.0.8 h1:TDsG77qcSprGbC6vTN8OuXp5g+J+b5Pcguhf7Zt61VM=
-github.com/go-test/deep v1.0.8/go.mod h1:5C2ZWiW0ErCdrYzpqxLbTX7MG14M9iiw8DgHncVwcsE=
 github.com/gogo/protobuf v1.3.2 h1:Ov1cvc58UF3b5XjBnZv7+opcTcQFZebYjWzi34vdm4Q=
 github.com/gogo/protobuf v1.3.2/go.mod h1:P1XiOD3dCwIKUDQYPy72D8LYyHL2YPYrpS2s69NZV8Q=
 github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b/go.mod h1:SBH7ygxi8pfUlaOkMMuAQtPIUF8ecWP5IEl/CR7VP2Q=
@@ -163,8 +161,8 @@ github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024/go.mod h1
 github.com/jstemmer/go-junit-report v0.9.1/go.mod h1:Brl9GWCQeLvo8nXZwPNNblvFj/XSXhF0NWZEnDohbsk=
 github.com/keptn/go-utils v0.13.1-0.20220318125157-fe974e59cc65 h1:6D3I4KKQqeuxw1przl8dWo/3FfzR3z0QhRZR74JSzLU=
 github.com/keptn/go-utils v0.13.1-0.20220318125157-fe974e59cc65/go.mod h1:CIRwnEp/QYaSBa/r146x3h4yqWB4FS3YNKHzftoyhVA=
-github.com/keptn/keptn/lib-cp-connector v0.0.0-20220402183415-471030865a79 h1:mR6NnHhGJj0hkyqnnHFif4crMhRUzYCh8mtgKFBM6PI=
-github.com/keptn/keptn/lib-cp-connector v0.0.0-20220402183415-471030865a79/go.mod h1:WL4Ya6EVLIjeKT9furB6JreWMkgaBCFNagUzU5SIko4=
+github.com/keptn/keptn/lib-cp-connector v0.0.0-20220402194029-a2b470534f9b h1:Mg/Wc5c2jCiMAkDv6SfJV5uwmy+8dqtvd1/MRNmjuD8=
+github.com/keptn/keptn/lib-cp-connector v0.0.0-20220402194029-a2b470534f9b/go.mod h1:WL4Ya6EVLIjeKT9furB6JreWMkgaBCFNagUzU5SIko4=
 github.com/kisielk/errcheck v1.5.0/go.mod h1:pFxgyoBC7bSaBwPgfKdkLd5X25qrDl4LWUI2bnpBCr8=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/klauspost/compress v1.14.4 h1:eijASRJcobkVtSt81Olfh7JX43osYLwy5krOJo6YEu4=

@@ -4,9 +4,8 @@ go 1.17
 
 require (
 	github.com/cloudevents/sdk-go/v2 v2.8.0
-	github.com/go-test/deep v1.0.8
 	github.com/keptn/go-utils v0.13.1-0.20220318125157-fe974e59cc65
-	github.com/keptn/keptn/lib-cp-connector v0.0.0-20220402183415-471030865a79
+	github.com/keptn/keptn/lib-cp-connector v0.0.0-20220402194029-a2b470534f9b
 	github.com/nats-io/nats-server/v2 v2.7.4
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.8.1
