@@ -111,19 +111,9 @@ func TestSubscribeMultiple(t *testing.T) {
 	sub, _ := nats2.Connect(svr.ClientURL())
 	require.NotNil(t, sub)
 
-	subscriptions := []models.EventSubscription{
-		{
-			ID:     "1",
-			Event:  "subj1",
-			Filter: models.EventSubscriptionFilter{},
-		},
-		{
-			ID:     "2",
-			Event:  "subj2",
-			Filter: models.EventSubscriptionFilter{},
-		},
-	}
-	err := sub.SubscribeMultiple(subscriptions, func(event models.KeptnContextExtendedCE) error {
+	subjects := []string{"subj1", "subj2"}
+
+	err := sub.SubscribeMultiple(subjects, func(event models.KeptnContextExtendedCE) error {
 		numberReceived++
 		return nil
 	})
