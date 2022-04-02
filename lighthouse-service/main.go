@@ -2,18 +2,14 @@ package main
 
 import (
 	"context"
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	"os"
-	"os/signal"
-	"sync"
-	"syscall"
-
-	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/kelseyhightower/envconfig"
-	logger "github.com/sirupsen/logrus"
-
+	models "github.com/keptn/go-utils/pkg/api/models"
+	api "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/lib-cp-connector/pkg/controlplane"
+	"github.com/keptn/keptn/lib-cp-connector/pkg/nats"
 	"github.com/keptn/keptn/lighthouse-service/event_handler"
+	"github.com/pkg/errors"
+	"log"
 )
 
 const envVarLogLevel = "LOG_LEVEL"
@@ -25,8 +21,66 @@ type envConfig struct {
 }
 
 func main() {
-	controlplane.New()
+	o := controlplane.ControlPlaneOptions{
+		KeptnAPIEndpoint: "",
+		KeptnAPIToken:    "",
+		NATSEndpoint:     "",
+	}
 
+	keptnAPI, err := api.New(o.KeptnAPIEndpoint, api.WithAuthToken(o.KeptnAPIToken))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	subscriptionSource := controlplane.NewSubscriptionSource(keptnAPI.UniformV1())
+	natsConnector, err := nats.Connect(o.NATSEndpoint)
+	if err != nil {
+		log.Fatal(err)
+	}
+	eventSource := controlplane.NewNATSEventSource(natsConnector)
+
+	controlPlane := controlplane.New(subscriptionSource, eventSource)
+	err = controlPlane.Register(context.TODO(), LighthouseService{})
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+type LighthouseService struct{}
+
+func (l LighthouseService) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE) error {
+
+	ce := v0_2_0.ToCloudEvent(event)
+	handler, err := event_handler.NewEventHandler(ctx, ce)
+
+	if err != nil {
+		return errors.Wrap(controlplane.ErrEventHandleIgnore, err.Error())
+	}
+	if handler != nil {
+		return handler.HandleEvent(ctx)
+	}
+
+	return nil
+}
+
+func (l LighthouseService) RegistrationData() controlplane.RegistrationData {
+	return controlplane.RegistrationData{
+		Name: "lh-wuppi",
+		MetaData: models.MetaData{
+			Hostname:           "localhost",
+			IntegrationVersion: "dev",
+			DistributorVersion: "0.15.0",
+			Location:           "local",
+			KubernetesMetaData: models.KubernetesMetaData{
+				Namespace:      "keptn",
+				PodName:        "lh-wuppi",
+				DeploymentName: "lh-wuppi",
+			},
+		},
+	}
+}
+
+/*func main2() {
 	if os.Getenv(envVarLogLevel) != "" {
 		logLevel, err := logger.ParseLevel(os.Getenv(envVarLogLevel))
 		if err != nil {
@@ -96,4 +150,4 @@ func getGracefulContext() context.Context {
 	}()
 
 	return ctx
-}
+}*/

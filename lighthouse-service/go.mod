@@ -5,10 +5,10 @@ go 1.17
 require (
 	github.com/cloudevents/sdk-go/v2 v2.8.0
 	github.com/go-test/deep v1.0.8
-	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.13.1-0.20220318125157-fe974e59cc65
-	github.com/keptn/keptn/lib-cp-connector v0.0.0-20220401054001-2fe45a872e62
-	github.com/nats-io/nats-server/v2 v2.7.2
+	github.com/keptn/keptn/lib-cp-connector v0.0.0-20220402183415-471030865a79
+	github.com/nats-io/nats-server/v2 v2.7.4
+	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
@@ -16,8 +16,6 @@ require (
 	k8s.io/apimachinery v0.22.8
 	k8s.io/client-go v0.22.8
 )
-
-replace github.com/keptn/keptn/lib-cp-connector => ../lib-cp-connector
 
 require (
 	github.com/benbjohnson/clock v1.3.0 // indirect
@@ -33,14 +31,14 @@ require (
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/googleapis/gnostic v0.5.5 // indirect
 	github.com/json-iterator/go v1.1.11 // indirect
-	github.com/klauspost/compress v1.13.4 // indirect
-	github.com/minio/highwayhash v1.0.1 // indirect
+	github.com/klauspost/compress v1.14.4 // indirect
+	github.com/minio/highwayhash v1.0.2 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/nats-io/jwt/v2 v2.2.1-0.20220113022732-58e87895b296 // indirect
+	github.com/nats-io/nats.go v1.13.1-0.20220308171302-2f2f6968e98d // indirect
 	github.com/nats-io/nkeys v0.3.0 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.27.0 // indirect
 	go.opentelemetry.io/otel v1.2.0 // indirect
