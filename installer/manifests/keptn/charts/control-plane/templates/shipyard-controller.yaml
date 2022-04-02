@@ -87,6 +87,8 @@ spec:
               value: {{ .Values.shipyardController.config.uniformIntegrationTTL | default "2m" }}
             - name: LOG_LEVEL
               value: {{ .Values.logLevel | default "info" }}
+            - name: AUTOMATIC_PROVISIONING_URL
+              value: {{ (.Values.features).automaticProvisioningURL | default "" }}
             - name: DISABLE_LEADER_ELECTION
               {{- if  lt .Capabilities.KubeVersion.Minor "14"}}
               value: {{ true | quote }}

@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
+	"strings"
+
 	"github.com/keptn/keptn/secret-service/pkg/common"
 	"github.com/keptn/keptn/secret-service/pkg/model"
 	"github.com/keptn/keptn/secret-service/pkg/repository"
@@ -14,8 +17,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"sort"
-	"strings"
 )
 
 const SecretBackendTypeK8s = "kubernetes"
@@ -24,6 +25,7 @@ const SecretServiceName = "keptn-secret-service"
 var ErrSecretAlreadyExists = errors.New("secret already exists")
 var ErrSecretNotFound = errors.New("secret not found")
 var ErrTooBigKeySize = errors.New("name and key values must be no more than 253 characters")
+var ErrScopeNotFound = errors.New("scope not found")
 
 type K8sSecretBackend struct {
 	KubeAPI                kubernetes.Interface
@@ -46,7 +48,7 @@ func (k K8sSecretBackend) checkScopeDefined(secret model.Secret) (model.Scopes, 
 	}
 	if _, ok := scopes.Scopes[secret.Scope]; !ok {
 		log.Errorf("Unable to find scope %s for secret %s", secret.Scope, secret.Name)
-		return model.Scopes{}, fmt.Errorf("scope %s not available for creation of Secret %s", secret.Scope, secret.Name)
+		return model.Scopes{}, fmt.Errorf("unable to check defined scope %s for secret %s: %w", secret.Scope, secret.Name, ErrScopeNotFound)
 	}
 	return scopes, nil
 }
@@ -198,10 +200,16 @@ func (k K8sSecretBackend) GetSecrets() ([]model.GetSecretResponseItem, error) {
 
 func (k K8sSecretBackend) UpdateSecret(secret model.Secret) error {
 	log.Infof("Updating secret: %s with scope %s", secret.Name, secret.Scope)
+
+	_, err := k.checkScopeDefined(secret)
+	if err != nil {
+		return err
+	}
+
 	namespace := k.KeptnNamespaceProvider()
 	kubeSecret := k.createK8sSecretObj(secret, namespace)
 
-	_, err := k.KubeAPI.CoreV1().Secrets(namespace).Update(context.TODO(), kubeSecret, metav1.UpdateOptions{})
+	_, err = k.KubeAPI.CoreV1().Secrets(namespace).Update(context.TODO(), kubeSecret, metav1.UpdateOptions{})
 	if err != nil {
 		log.Errorf("Unable to update secret %s: %s", secret.Name, err)
 		if statusError, isStatus := err.(*k8serr.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonNotFound {

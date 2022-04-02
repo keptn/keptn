@@ -8,7 +8,6 @@ import (
 
 	"github.com/mholt/archiver/v3"
 
-	"github.com/keptn/go-utils/pkg/common/osutils"
 	"github.com/stretchr/testify/require"
 )
 
@@ -120,13 +119,8 @@ func Test_ProxyAuth(t *testing.T) {
 	token, err := GetGiteaToken()
 	require.Nil(t, err)
 
-	namespace := osutils.GetOSEnvOrDefault(KeptnNamespaceEnvVar, DefaultKeptnNamespace)
-
-	squidIP, err := GetSquidExternalIP(namespace)
-	require.Nil(t, err)
-
 	// apply the k8s job for creating the git upstream
-	_, err = ExecuteCommand(fmt.Sprintf("keptn update project %s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s --git-proxy-url=%s:3128 --git-proxy-scheme=http --git-proxy-insecure", projectName, user, projectName, user, token, squidIP))
+	_, err = ExecuteCommand(fmt.Sprintf("keptn update project %s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s --git-proxy-url=squid:3128 --git-proxy-scheme=http --git-proxy-insecure", projectName, user, projectName, user, token))
 	require.Nil(t, err)
 
 	t.Logf("Creating service %s in project %s", secondServiceName, projectName)
@@ -138,6 +132,6 @@ func Test_ProxyAuth(t *testing.T) {
 	require.Nil(t, err)
 
 	//Modify the proxy settings to be certain that no other project use the proxy
-	_, err = ExecuteCommand(fmt.Sprintf("keptn update project %s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s --git-proxy-url=%s:3124 --git-proxy-scheme=http --git-proxy-insecure", projectName, user, projectName, user, token, squidIP))
+	_, err = ExecuteCommand(fmt.Sprintf("keptn update project %s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s --git-proxy-url=squid:3124 --git-proxy-scheme=http --git-proxy-insecure", projectName, user, projectName, user, token))
 	require.Nil(t, err)
 }

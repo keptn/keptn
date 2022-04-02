@@ -11,9 +11,14 @@ import (
 )
 
 const (
-	loginSuccessHTML = `<p><strong>Login successful!</strong></p>`
-	redirectURL      = "http://localhost:3000/oauth/redirect"
-	openIDScope      = "openid"
+	loginSuccessHTML = `<p><strong>Login successful!</strong></p>
+						<script type="text/javascript">	
+								setTimeout(function(){
+											close();
+								},1500)
+						</script>`
+	redirectURL = "http://localhost:3000/oauth/redirect"
+	openIDScope = "openid"
 )
 
 // OAuthenticator represents just the interface for a component performing OAuth authentication
@@ -100,6 +105,7 @@ func (a *OauthAuthenticator) Auth(clientValues OauthClientValues) error {
 // GetOauthClient will eventually return an already ready to use http client which is configured to use
 // a OAUth Access Token
 func (a *OauthAuthenticator) OauthClient(ctx context.Context) (*http.Client, error) {
+
 	oauthInfo, err := a.tokenStore.GetOauthInfo()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get OAuth HTTP client: %w", err)

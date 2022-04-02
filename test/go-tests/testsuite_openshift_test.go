@@ -44,6 +44,7 @@ func Test_Openshift(t *testing.T) {
 		t.Run("Test_ProxyAuth", Test_ProxyAuth)
 	}
 	t.Run("Test_ZeroDownTimeTriggerSequence", Test_ZeroDownTimeTriggerSequence)
+	t.Run("Test_ProvisioningURL", Test_ProvisioningURL)
 
 	// Platform-specific Tests
 }

@@ -2,6 +2,15 @@ package main
 
 import (
 	"context"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"os/signal"
+	"strconv"
+	"sync"
+	"syscall"
+	"time"
+
 	"github.com/benbjohnson/clock"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -20,20 +29,12 @@ import (
 	_ "github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/nats"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	v1 "k8s.io/client-go/kubernetes/typed/coordination/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/leaderelection"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
-	"net/http"
-	"os"
-	"os/signal"
-	"strconv"
-	"sync"
-	"syscall"
-	"time"
 )
 
 // @title Control Plane API
@@ -132,6 +133,8 @@ func main() {
 		createSequenceQueueRepo(),
 		createEventQueueRepo())
 
+	repositoryProvisioner := handler.NewRepositoryProvisioner(env.AutomaticProvisioningURL, &http.Client{})
+
 	uniformRepo := createUniformRepo()
 	err = uniformRepo.SetupTTLIndex(getDurationFromEnvVar(envVarUniformIntegrationTTL, envVarUniformTTLDefault))
 	if err != nil {
@@ -179,7 +182,7 @@ func main() {
 	apiV1 := engine.Group("/v1")
 	apiHealth := engine.Group("")
 
-	projectService := handler.NewProjectHandler(projectManager, eventSender, env)
+	projectService := handler.NewProjectHandler(projectManager, eventSender, env, repositoryProvisioner)
 
 	projectController := controller.NewProjectController(projectService)
 	projectController.Inject(apiV1)

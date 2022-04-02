@@ -106,7 +106,7 @@ func doUpgradePreRunCheck(vChecker *version.KeptnVersionChecker) error {
 	if !*upgradeParams.SkipUpgradeCheck {
 		res, err := isUpgradeCompatible(vChecker)
 		if err != nil {
-			return err
+			return internal.OnAPIError(err)
 		}
 		if !res {
 			installedKeptnVersion, err := getInstalledKeptnVersion()
@@ -162,7 +162,7 @@ func doUpgradePreRunCheck(vChecker *version.KeptnVersionChecker) error {
 	} else {
 		err = platformManager.ReadCreds(assumeYes)
 		if err != nil {
-			return err
+			return internal.OnAPIError(err)
 		}
 	}
 
@@ -190,7 +190,7 @@ func doUpgradePreRunCheck(vChecker *version.KeptnVersionChecker) error {
 	if statisticsDeploymentAvailable {
 		statisticsServiceManagedByHelm, err := kube.CheckDeploymentManagedByHelm("statistics-service", namespace)
 		if err != nil {
-			return err
+			return internal.OnAPIError(err)
 		}
 		if !statisticsServiceManagedByHelm {
 			return errors.New("deployment for statistics-service is already running and not managed by Helm. Please uninstall it")

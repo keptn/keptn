@@ -22,6 +22,9 @@ metadata:
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
     helm.sh/chart: {{ include "control-plane.chart" . }}
 spec:
+  {{- if and .Values.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- end }}
   rules:
   {{- if .Values.ingress.host }}
     - host: {{ .Values.ingress.host }}

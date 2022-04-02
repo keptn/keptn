@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/cli/internal"
 	"net/http"
 	"net/url"
 	"os"
@@ -91,10 +92,12 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 			if err != nil {
 				return err
 			}
+			fmt.Println("Successfully logged out")
 			return nil
 		}
 
 		if *authParams.oauth {
+
 			if *authParams.oauthDiscovery == "" {
 				return fmt.Errorf("Unable to login: No OAuth Discovery URL provided")
 			}
@@ -113,14 +116,15 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 				return err
 			}
 		}
+
 		return authenticator.Auth(AuthenticatorOptions{Endpoint: *authParams.endPoint, APIToken: *authParams.apiToken})
 	},
 }
 
 func init() {
+
 	rootCmd.AddCommand(authCmd)
 	authParams = &authCmdParams{}
-
 	authParams.endPoint = authCmd.Flags().StringP("endpoint", "e", "", "The endpoint exposed by the Keptn installation (e.g., api.keptn.127.0.0.1.xip.io)")
 	authParams.apiToken = authCmd.Flags().StringP("api-token", "a", "", "The API token to communicate with the Keptn installation")
 	authParams.exportConfig = authCmd.Flags().BoolP("export", "c", false, "To export the current cluster config i.e API token and Endpoint")
@@ -155,7 +159,7 @@ func verifyAuthParams(authParams *authCmdParams, smartKeptnAuth smartKeptnAuthPa
 	if !*authParams.skipNamespaceListing && (authParams.endPoint == nil || *authParams.endPoint == "") && (authParams.apiToken == nil || *authParams.apiToken == "") {
 		namespace, err = smartKeptnCLIAuth()
 		if err != nil {
-			return err
+			return internal.OnAPIError(err)
 		}
 	}
 

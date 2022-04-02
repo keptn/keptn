@@ -91,7 +91,7 @@ keptn get project sockshop -output=json  # Returns project details in JSON forma
 
 		api, err := internal.APIProvider(endPoint.String(), apiToken)
 		if err != nil {
-			return err
+			return internal.OnAPIError(err)
 		}
 
 		if !mocking {
@@ -104,7 +104,7 @@ keptn get project sockshop -output=json  # Returns project details in JSON forma
 
 			projects, err := api.ProjectsV1().GetAllProjects()
 			if err != nil {
-				return err
+				return internal.OnAPIError(err)
 			}
 
 			filteredProjects := filterProjects(projects, getProjectNameFromArgs(args))

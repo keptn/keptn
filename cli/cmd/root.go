@@ -2,13 +2,12 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-	"strings"
-
 	"github.com/keptn/keptn/cli/pkg/config"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/pkg/version"
 	"github.com/spf13/cobra"
+	"os"
+	"strings"
 )
 
 var cfgFile string
@@ -106,13 +105,9 @@ func (s *options) appendIfNotEmpty(newOption string) {
 // passing flags and cliConfig as arguments makes it easy to test this function
 func runVersionCheck(vChecker *version.VersionChecker, flags []string, cliConfig config.CLIConfig) {
 	// Don't check version if AutomaticVersionCheck is disabled
-	if !cliConfig.AutomaticVersionCheck {
-		return
-	}
-
 	// Server version won't be available during `install`
-	// because the Server is not installed yet
-	if isInstallSubCommand(flags) {
+	// Server version should not be needed when using oauth
+	if !cliConfig.AutomaticVersionCheck || skipVersionCheck(flags) {
 		return
 	}
 
@@ -148,14 +143,15 @@ func runVersionCheck(vChecker *version.VersionChecker, flags []string, cliConfig
 	}
 }
 
-// isInstallSubCommand checks if the subcommand is `install`
+// skipVersionCheck checks if the subcommand requires to skip the version check step
+// (for now this is true in case of  `install` or `--oauth`)
 // args here does not contain the main command
 // e.g., For `keptn -q install`, args would be just ['-q', 'install']
-func isInstallSubCommand(args []string) bool {
+func skipVersionCheck(args []string) bool {
 	for _, arg := range args {
 		switch {
-		// skip flags
-		// e.g., keptn -q install
+		case arg == "--oauth":
+			return true
 		case strings.HasPrefix(arg, "-"):
 			continue
 		case arg == "install":
