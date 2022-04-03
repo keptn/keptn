@@ -102,6 +102,7 @@ spec:
             value: '/event'
           {{- include "control-plane.dist.common.env.vars" . | nindent 10 }}
         {{- include "control-plane.common.container-security-context" . | nindent 8 }}
+      {{- include "keptn.nodeSelector" (dict "value" .Values.mongodbDatastore.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
 ---
 apiVersion: v1
 kind: Service
