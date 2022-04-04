@@ -17,13 +17,12 @@ var EventSenderKey = EventSenderKeyType{}
 type EventSender func(ce models.KeptnContextExtendedCE) error
 
 type EventSource interface {
-	Start(context.Context, chan models.KeptnContextExtendedCE) error
+	Start(context.Context, RegistrationData, chan models.KeptnContextExtendedCE) error
 	OnSubscriptionUpdate([]string)
 	Sender() EventSender
 }
 
 type NATSEventSource struct {
-	//TODO: should be list of string ( topics/subjects )
 	currentSubjects []string
 	connector       *nats.NatsConnector
 	eventProcessFn  nats.ProcessEventFn
@@ -37,12 +36,12 @@ func NewNATSEventSource(natsConnector *nats.NatsConnector) *NATSEventSource {
 	}
 }
 
-func (n *NATSEventSource) Start(ctx context.Context, eventChannel chan models.KeptnContextExtendedCE) error {
+func (n *NATSEventSource) Start(ctx context.Context, registrationData RegistrationData, eventChannel chan models.KeptnContextExtendedCE) error {
 	n.eventProcessFn = func(event models.KeptnContextExtendedCE) error {
 		eventChannel <- event
 		return nil
 	}
-	if err := n.connector.SubscribeMultiple(n.currentSubjects, n.eventProcessFn); err != nil {
+	if err := n.connector.QueueSubscribeMultiple(registrationData.MetaData.KubernetesMetaData.PodName, n.currentSubjects, n.eventProcessFn); err != nil {
 		return fmt.Errorf("could not start NATS event source: %w", err)
 	}
 	return nil
@@ -68,7 +67,7 @@ func (n *NATSEventSource) Sender() EventSender {
 
 type HTTPEventSource struct{}
 
-func (H HTTPEventSource) Start(ctx context.Context, ces chan models.KeptnContextExtendedCE) error {
+func (H HTTPEventSource) Start(ctx context.Context, registrationData RegistrationData, ces chan models.KeptnContextExtendedCE) error {
 	//TODO implement me
 	panic("implement me")
 }

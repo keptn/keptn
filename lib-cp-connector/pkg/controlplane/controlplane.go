@@ -37,7 +37,7 @@ func New(subscriptionSource *SubscriptionSource, eventSource EventSource) *Contr
 func (cp *ControlPlane) Register(ctx context.Context, integration Integration) error {
 	eventUpdates := make(chan models.KeptnContextExtendedCE)
 	subscriptionUpdates := make(chan []models.EventSubscription)
-	if err := cp.eventSource.Start(ctx, eventUpdates); err != nil {
+	if err := cp.eventSource.Start(ctx, integration.RegistrationData(), eventUpdates); err != nil {
 		return err
 	}
 	if err := cp.subscriptionSource.Start(ctx, integration.RegistrationData(), subscriptionUpdates); err != nil {

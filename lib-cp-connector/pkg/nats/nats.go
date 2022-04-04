@@ -71,22 +71,30 @@ func (nc *NatsConnector) UnsubscribeAll() error {
 // It takes the subject as string (usually the event type) and a function fn
 // being called when an event is received
 func (nc *NatsConnector) Subscribe(subject string, fn ProcessEventFn) error {
+	return nc.QueueSubscribe("", subject, fn)
+}
+
+func (nc *NatsConnector) QueueSubscribe(queueGroup string, subject string, fn ProcessEventFn) error {
 	if subject == "" {
 		return ErrSubEmptySubject
 	}
 	if fn == nil {
 		return ErrSubNilMessageProcessor
 	}
-	return nc.subscribe(subject, fn)
+	return nc.queueSubscribe(subject, queueGroup, fn)
 }
 
 func (nc *NatsConnector) SubscribeMultiple(subjects []string, fn ProcessEventFn) error {
+	return nc.QueueSubscribeMultiple("", subjects, fn)
+}
+
+func (nc *NatsConnector) QueueSubscribeMultiple(queueGroup string, subjects []string, fn ProcessEventFn) error {
 	if fn == nil {
 		return ErrSubNilMessageProcessor
 	}
 
 	for _, sub := range subjects {
-		if err := nc.subscribe(sub, fn); err != nil {
+		if err := nc.queueSubscribe(sub, queueGroup, fn); err != nil {
 			return fmt.Errorf("could not subscribe to subject %s: %w", sub, err)
 		}
 	}
@@ -104,8 +112,8 @@ func (nc *NatsConnector) Publish(event models.KeptnContextExtendedCE) error {
 	return nc.conn.Publish(*event.Type, serializedEvent)
 }
 
-func (nc *NatsConnector) subscribe(subject string, fn ProcessEventFn) error {
-	sub, err := nc.conn.Subscribe(subject, func(m *nats.Msg) {
+func (nc *NatsConnector) queueSubscribe(subject string, queueGroup string, fn ProcessEventFn) error {
+	sub, err := nc.conn.QueueSubscribe(subject, queueGroup, func(m *nats.Msg) {
 		event := &models.KeptnContextExtendedCE{}
 		if err := json.Unmarshal(m.Data, event); err != nil {
 			fmt.Printf("could not unmarshal message %s: %v\n", string(m.Data), err)
