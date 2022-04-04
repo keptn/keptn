@@ -63,7 +63,7 @@ export class SequencesPage {
     cy.get('.stage-info')
       .contains(stage)
       .parentsUntilTestId(`keptn-sequence-timeline-stage-${stage}`)
-      .should('contain.text', time);
+      .should('contain.text', `${stage}|${time}`);
     return this;
   }
 
