@@ -6,9 +6,8 @@ require (
 	github.com/benbjohnson/clock v1.3.0
 	github.com/cloudevents/sdk-go/protocol/nats/v2 v2.8.0
 	github.com/cloudevents/sdk-go/v2 v2.8.0
-	github.com/imroc/req v0.3.2
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.13.1-0.20220318125157-fe974e59cc65
+	github.com/keptn/go-utils v0.13.1-0.20220401070819-250f381c468c
 	github.com/nats-io/nats-server/v2 v2.7.2
 	github.com/nats-io/nats.go v1.13.1-0.20220121202836-972a071d373d
 	github.com/sirupsen/logrus v1.8.1

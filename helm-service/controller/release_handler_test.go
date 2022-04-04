@@ -130,7 +130,6 @@ func TestHandleReleaseTriggeredEvent_WithInvalidDeploymentStrategy(t *testing.T)
 			Result:  ResultFailed,
 			Message: "The deployment strategy ??? is invalid",
 		},
-		Release: ReleaseData{},
 	})
 
 	require.Equal(t, 2, len(mockedBaseHandler.sentCloudEvents))
