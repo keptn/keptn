@@ -56,12 +56,12 @@ func (a *Authenticator) Auth(authenticatorOptions AuthenticatorOptions) error {
 	if authenticatorOptions.Endpoint == "" {
 		endpoint, apiToken, err = a.CredentialManager.GetCreds(a.Namespace)
 		if err != nil {
-			return err
+			return internal.OnAPIError(err)
 		}
 	} else {
 		endpoint, err = a.parseURL(authenticatorOptions.Endpoint)
 		if err != nil {
-			return err
+			return internal.OnAPIError(err)
 		}
 		apiToken = authenticatorOptions.APIToken
 	}
@@ -85,9 +85,6 @@ func (a *Authenticator) Auth(authenticatorOptions AuthenticatorOptions) error {
 	if a.OauthStore.Created() {
 		fmt.Printf("Successfully authenticated against the Keptn cluster %s\n", endpoint.String())
 		fmt.Printf("Bridge URL: %s\n", getBridgeURLFromAPIURL(endpoint))
-		if apiToken == "" {
-			fmt.Println("WARNING: You are using the OAuth integration feature without a Keptn API Token. Please verify that your configuration allows it")
-		}
 		return a.CredentialManager.SetCreds(endpoint, apiToken, namespace)
 	}
 

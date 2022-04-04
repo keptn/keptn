@@ -784,6 +784,14 @@ paths:
           description: Invalid payload
           schema:
             $ref: '#/definitions/models.Error'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/models.Error'
+        "424":
+          description: Failed dependency
+          schema:
+            $ref: '#/definitions/models.Error'
         "500":
           description: Internal error
           schema:
@@ -852,6 +860,10 @@ paths:
             $ref: '#/definitions/models.DeleteProjectResponse'
         "400":
           description: Invalid payload
+          schema:
+            $ref: '#/definitions/models.Error'
+        "424":
+          description: Failed dependency
           schema:
             $ref: '#/definitions/models.Error'
         "500":

@@ -10,7 +10,7 @@ require (
 	github.com/go-test/deep v1.0.8
 	github.com/google/uuid v1.3.0
 	github.com/jeremywohl/flatten v1.0.1
-	github.com/keptn/go-utils v0.13.1-0.20220318125157-fe974e59cc65
+	github.com/keptn/go-utils v0.13.1-0.20220401070819-250f381c468c
 	github.com/mitchellh/copystructure v1.2.0
 	github.com/nats-io/nats-server/v2 v2.7.4
 	github.com/nats-io/nats.go v1.13.1-0.20220308171302-2f2f6968e98d
@@ -26,6 +26,8 @@ require (
 	k8s.io/apimachinery v0.22.8
 	k8s.io/client-go v0.22.8
 )
+
+require github.com/kelseyhightower/envconfig v1.4.0
 
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect

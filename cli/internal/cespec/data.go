@@ -111,7 +111,6 @@ var deploymentFinishedEventData = keptnv2.DeploymentFinishedEventData{
 		DeploymentURIsLocal:  []string{"http://carts.sockshop-staging.svc.cluster.local"},
 		DeploymentURIsPublic: []string{"http://carts.sockshot.local:80"},
 		DeploymentNames:      []string{"deployment-1"},
-		GitCommit:            "ca82a6dff817gc66f44342007202690a93763949",
 	},
 }
 
@@ -149,9 +148,8 @@ var testStatusChangedEventData = keptnv2.TestStatusChangedEventData{
 var testTestFinishedEventData = keptnv2.TestFinishedEventData{
 	EventData: commonEventData,
 	Test: keptnv2.TestFinishedDetails{
-		Start:     "2019-10-20T07:57:27.152330783Z",
-		End:       "2019-10-20T08:57:27.152330783Z",
-		GitCommit: "ca82a6dff817gc66f44342007202690a93763949",
+		Start: "2019-10-20T07:57:27.152330783Z",
+		End:   "2019-10-20T08:57:27.152330783Z",
 	},
 }
 
@@ -211,7 +209,6 @@ var evaluationFinishedEventData = keptnv2.EvaluationFinishedEventData{
 		},
 		},
 		ComparedEvents: []string{"event-id-1", "event-id-2"},
-		GitCommit:      "ca82a6dff817gc66f44342007202690a93763949",
 	},
 }
 
@@ -224,7 +221,6 @@ var releaseTriggeredEventData = keptnv2.ReleaseTriggeredEventData{
 		DeploymentURIsLocal:  []string{"http://carts.sockshop-staging.svc.cluster.local"},
 		DeploymentURIsPublic: []string{"http://carts.sockshot.local:80"},
 		DeploymentNames:      []string{"carts-primary", "carts-generated"},
-		GitCommit:            "ca82a6dff817gc66f44342007202690a93763949",
 	},
 }
 
@@ -238,9 +234,6 @@ var releaseStatusChangedEventData = keptnv2.ReleaseStatusChangedEventData{
 
 var releaseFinishedEventData = keptnv2.ReleaseFinishedEventData{
 	EventData: commonEventData,
-	Release: keptnv2.ReleaseData{
-		GitCommit: "ca82a6dff817gc66f44342007202690a93763949",
-	},
 }
 
 var getActionTriggeredEventData = keptnv2.GetActionTriggeredEventData{
@@ -291,9 +284,6 @@ var actionStartedEventData = keptnv2.ActionStartedEventData{
 
 var actionFinishedEventData = keptnv2.ActionFinishedEventData{
 	EventData: commonEventData,
-	Action: keptnv2.ActionData{
-		GitCommit: "93a5-3fas-a09d-8ckf",
-	},
 }
 
 var getSLITriggeredEventData = keptnv2.GetSLITriggeredEventData{

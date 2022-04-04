@@ -77,11 +77,10 @@ func (em *EvaluationManager) CreateEvaluation(project, stage, service string, pa
 
 	evaluationTriggeredEvent := keptnv2.EvaluationTriggeredEventData{
 		EventData: keptnv2.EventData{
-			Project:     project,
-			Service:     service,
-			Stage:       stage,
-			Labels:      params.Labels,
-			GitCommitID: params.GitCommitID,
+			Project: project,
+			Service: service,
+			Stage:   stage,
+			Labels:  params.Labels,
 		},
 		Evaluation: keptnv2.Evaluation{
 			Start: timeutils.GetKeptnTimeStamp(*start),

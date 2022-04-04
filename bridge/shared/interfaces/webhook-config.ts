@@ -17,4 +17,5 @@ export interface WebhookConfig {
   header: { name: string; value: string }[];
   proxy?: string;
   sendFinished: boolean;
+  sendStarted: boolean;
 }

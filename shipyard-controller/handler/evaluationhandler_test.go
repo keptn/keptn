@@ -3,6 +3,7 @@ package handler
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -14,6 +15,46 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/assert"
 )
+
+func TestEvaluationParamsValidator(t *testing.T) {
+	type args struct {
+		params *models.CreateEvaluationParams
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "End and time frame both set",
+			args: args{params: &models.CreateEvaluationParams{
+				End:       "t1",
+				Timeframe: "d1",
+			}},
+			wantErr: assert.Error,
+		},
+		{
+			name: "End and Timeframe both not set",
+			args: args{params: &models.CreateEvaluationParams{
+				Start: "t1",
+			}},
+			wantErr: assert.Error,
+		},
+		{
+			name: "End set but start not set",
+			args: args{params: &models.CreateEvaluationParams{
+				End: "t1",
+			}},
+			wantErr: assert.Error,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := EvaluationParamsValidator{}
+			tt.wantErr(t, e.Validate(tt.args.params), fmt.Sprintf("validateEvaluationParams(%v)", tt.args.params))
+		})
+	}
+}
 
 func TestEvaluationHandler_CreateEvaluation(t *testing.T) {
 	type fields struct {

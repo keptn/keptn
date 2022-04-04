@@ -21,6 +21,30 @@ type EventMatcher struct {
 	Service string
 }
 
+// ExecutionContext is used for synchronizing components e.g.
+// to enable synchronization for smooth graceful shutdown
+type ExecutionContext struct {
+	context.Context
+	// Wg is the go wait group used for synchronization
+	// via this ExecutionContext
+	Wg *sync.WaitGroup
+
+	// CancelFn can be called whenever the components
+	// using this ExecutionContext shall exit/cancel
+	// Calling CancelFn will effectively cancel the underlying
+	// go context
+	CancelFn context.CancelFunc
+}
+
+// NewExecutionContext creates a new ExecutionContext with the given underlying go context.
+// waitGroupCount determines the number of components this ExecutionContext
+// is used in
+func NewExecutionContext(ctx context.Context, waitGroupCount int) *ExecutionContext {
+	wg := new(sync.WaitGroup)
+	wg.Add(waitGroupCount)
+	return &ExecutionContext{ctx, wg, func() {}}
+}
+
 func NewEventMatcherFromEnv(config config.EnvConfig) *EventMatcher {
 	return &EventMatcher{
 		Project: config.ProjectFilter,
@@ -50,17 +74,6 @@ func (ef EventMatcher) Matches(e cloudevents.Event) bool {
 		return false
 	}
 	return true
-}
-
-type ExecutionContext struct {
-	context.Context
-	Wg *sync.WaitGroup
-}
-
-func NewExecutionContext(ctx context.Context, waitGroupCount int) *ExecutionContext {
-	wg := new(sync.WaitGroup)
-	wg.Add(waitGroupCount)
-	return &ExecutionContext{ctx, wg}
 }
 
 func DecodeNATSMessage(data []byte) (*cloudevents.Event, error) {

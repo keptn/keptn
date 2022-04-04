@@ -1,3 +1,4 @@
+//go:build !nokubectl
 // +build !nokubectl
 
 // Copyright © 2019 NAME HERE <EMAIL ADDRESS>
@@ -208,7 +209,6 @@ func (c Helper) UpgradeChart(ch *chart.Chart, releaseName, namespace string, val
 		iCli.Namespace = namespace
 		iCli.Wait = true
 		iCli.Timeout = time.Duration(timeoutInMinutes) * time.Minute
-		iCli.ReuseValues = true // reuse values when overwriting existing installation (similar to keptn upgrade)
 		newRelease, err = iCli.Run(releaseName, ch, vals)
 	}
 	// check if install/upgrade worked

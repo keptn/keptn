@@ -7,9 +7,9 @@ helmservice:
     enabled: true                            # Creates a Kubernetes Service for the helm-service
 
 distributor:
-  stageFilter: ""                            # Sets the stage this helm service belongs to
-  serviceFilter: ""                          # Sets the service this helm service belongs to
-  projectFilter: ""                          # Sets the project this helm service belongs to
+  stageFilter: ""                            # Stage to which this helm service belongs; default=all; comma-separated list to filter for set of stages
+  serviceFilter: ""                          # Service to which this helm service belongs; default=all; comma-separated list to filter for set of services
+  projectFilter: ""                          # Project to which this helm service belongs; default=all; comma-separated list to filter for set of projects
   image:
     repository: docker.io/keptn/distributor  # Container Image Name
     pullPolicy: IfNotPresent                 # Kubernetes Image Pull Policy

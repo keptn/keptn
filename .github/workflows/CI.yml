@@ -113,10 +113,20 @@ defaults:
   run:
     shell: bash
 jobs:
+  calculate-queue-time:
+    name: "Calculate Queue Time"
+    uses: ./.github/workflows/pipeline-queuetime.yml
+    with:
+      workflow_name: "CI"
+    secrets:
+      monitoring_api_token: ${{ secrets.MONITORING_API_TOKEN }}
+      monitoring_tenant_url: ${{ secrets.MONITORING_TENANT_URL }}
+
   prepare_ci_run:
     name: Prepare CI Run
     # Prepare CI Run looks at what has been changed in this commit/PR/... and determines which artifacts should be
     # built afterwards (in other jobs that depend on this one).
+    needs: calculate-queue-time
     runs-on: ubuntu-20.04
     outputs: # declare what this job outputs (so it can be re-used for other jobs)
       # build config
@@ -310,7 +320,7 @@ jobs:
           fetch-depth: 0
 
       # cache go modules
-      - uses: actions/cache@v3.0.0
+      - uses: actions/cache@v3.0.1
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-cli-${{ hashFiles('cli/go.sum') }}
@@ -336,7 +346,7 @@ jobs:
     name: Build Keptn CLI
     needs: [prepare_ci_run, unit-tests-cli]
     if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_CLI == 'true')
-    uses: keptn/keptn/.github/workflows/build-cli.yml@master
+    uses: ./.github/workflows/build-cli.yml
     with:
       branch: ${{ needs.prepare_ci_run.outputs.BRANCH }}
       version: ${{ needs.prepare_ci_run.outputs.VERSION }}
@@ -349,7 +359,7 @@ jobs:
     name: Build Helm Charts
     needs: prepare_ci_run
     if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_INSTALLER == 'true')
-    uses: keptn/keptn/.github/workflows/build-helm-charts.yml@master
+    uses: ./.github/workflows/build-helm-charts.yml
     with:
       branch: ${{ needs.prepare_ci_run.outputs.BRANCH }}
       version: ${{ needs.prepare_ci_run.outputs.VERSION }}
@@ -446,5 +456,28 @@ jobs:
             keptndev/${{ matrix.config.artifact }}:${{ env.VERSION }}.${{ env.DATETIME }}
           build-args: |
             version=${{ env.VERSION }}
+            buildTime=${{ needs.prepare_ci_run.outputs.DATETIME }}
+            gitSha=${{ needs.prepare_ci_run.outputs.GIT_SHA }}
           push: ${{ matrix.config.should-push-image == 'true' && (( github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository ) || ( github.event_name == 'push' )) && github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' }}
           pull: true
+
+  calculate-total-runtime:
+    name: End-of-Pipeline Metrics
+    if: always() && (( github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository ) || ( github.event_name == 'push' ))
+    needs:
+      - calculate-queue-time
+      - prepare_ci_run
+      - store-output-in-build-config
+      - unit-tests-microservices
+      - unit-tests-cli
+      - build-cli
+      - helm_charts_build
+      - helm_charts_upload
+      - docker_build
+    uses: ./.github/workflows/end-of-pipeline-metrics.yml
+    with:
+      workflow_name: "CI"
+      branch: ${{ github.ref }}
+    secrets:
+      monitoring_api_token: ${{ secrets.MONITORING_API_TOKEN }}
+      monitoring_tenant_url: ${{ secrets.MONITORING_TENANT_URL }}

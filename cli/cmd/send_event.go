@@ -50,7 +50,7 @@ In addition, the payload of the CloudEvent needs to follow the Keptn spec (https
 		}
 		eventString, err := fileutils.ReadFile(*eventFilePath)
 		if err != nil {
-			return err
+			return internal.OnAPIError(err)
 		}
 
 		apiEvent := apimodels.KeptnContextExtendedCE{}
@@ -61,7 +61,7 @@ In addition, the payload of the CloudEvent needs to follow the Keptn spec (https
 
 		api, err := internal.APIProvider(endPoint.String(), apiToken)
 		if err != nil {
-			return err
+			return internal.OnAPIError(err)
 		}
 
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)

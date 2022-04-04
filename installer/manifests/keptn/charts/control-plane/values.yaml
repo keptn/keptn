@@ -20,6 +20,9 @@ prefixPath: ""
 
 keptnSpecVersion: latest
 
+features:
+  automaticProvisioningURL: ""
+
 nats:
   nameOverride: keptn-nats
   fullnameOverride: keptn-nats
@@ -148,6 +151,12 @@ shipyardController:
     uniformIntegrationTTL: "48h"
     disableLeaderElection: false
     replicas: 1
+    validation:
+      # On Database level, Keptn creates collections that are named like <PROJECTNAME>-<suffix>
+      # Keep in mind that "suffix" can occupy up to 20 characters so that you will eventually
+      # hit the database limit for max collection name size when your project name is too long.
+      # projectNameMaxSize can be used to forbid project names longer than a certain size in Keptn
+      projectNameMaxSize: 200
 
 secretService:
   image:
@@ -210,6 +219,7 @@ ingress:
   host: {}
   path: /
   pathType: Prefix
+  className: ""
   tls:
     []
 

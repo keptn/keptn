@@ -22,9 +22,19 @@ defaults:
   run:
     shell: bash
 jobs:
+  calculate-queue-time:
+    name: "Calculate Queue Time"
+    uses: ./.github/workflows/pipeline-queuetime.yml
+    with:
+      workflow_name: "Integration Tests"
+    secrets:
+      monitoring_api_token: ${{ secrets.MONITORING_API_TOKEN }}
+      monitoring_tenant_url: ${{ secrets.MONITORING_TENANT_URL }}
+
   integration-test:
     name: "Tests"
     runs-on: ubuntu-20.04
+    needs: calculate-queue-time
     strategy:
       fail-fast: false
       matrix:
@@ -114,7 +124,7 @@ jobs:
         run: mkdir ~/downloads
 
       - name: Cache downloads paths
-        uses: actions/cache@v3.0.0
+        uses: actions/cache@v3.0.1
         with:
           path: |
             ~/downloads
@@ -410,6 +420,14 @@ jobs:
           kubectl create secret generic gitea-access -n ${KEPTN_NAMESPACE} --from-literal=username=${GITEA_ADMIN_USER} --from-literal=password=${GITEA_TOKEN} --from-literal=private-key="${GITEA_PRIVATE_KEY}" --from-literal=private-key-pass=${GITEA_PRIVATE_KEY_PASSPHRASE}
           rm gitea-token.txt
 
+      - name: Install Mockserver
+        id: install_mockserver
+        if: env.RUN_AIRGAPPED_TEST != 'true'
+        timeout-minutes: 5
+        run: |
+          helm repo add mockserver https://www.mock-server.com
+          helm upgrade --install --namespace ${KEPTN_NAMESPACE} --version 5.13.0 mockserver mockserver/mockserver --set service.type=ClusterIP
+
       - name: Expose Keptn API (Minishift)
         if: env.CLOUD_PROVIDER == 'minishift-on-GHA'
         run: oc expose svc/api-gateway-nginx -n ${KEPTN_NAMESPACE} --hostname=api.${KEPTN_NAMESPACE}.127.0.0.1.nip.io
@@ -700,7 +718,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Set up Node
-        uses: actions/setup-node@v3.0.0
+        uses: actions/setup-node@v3.1.0
         with:
           node-version: 16
       - run: npm install ndjson-parse@1.0.4
@@ -1025,7 +1043,7 @@ jobs:
 
       - name: Cache Keptn CLI
         id: keptn-cli-cache
-        uses: actions/cache@v3.0.0
+        uses: actions/cache@v3.0.1
         with:
           path: ~/downloads
           key: ${{ env.META_KEPTN_VERSION }}-cli
@@ -1083,3 +1101,20 @@ jobs:
           while [[ $(keptn get event sh.keptn.event.dev.delivery.finished --keptn-context "$KEPTN_CONTEXT" --project keptn | jq -r '.data.result' 2>/dev/null) != pass ]]; do
             sleep 10;
           done
+
+  calculate-total-runtime:
+    name: End-of-Pipeline Metrics
+    if: always()
+    needs:
+      - calculate-queue-time
+      - integration-test
+      - publish-final-test-report
+      - deploy_keptn_with_keptn
+      - trigger_keptn_delivery
+    uses: ./.github/workflows/end-of-pipeline-metrics.yml
+    with:
+      workflow_name: "Integration Tests"
+      branch: ${{ github.ref }}
+    secrets:
+      monitoring_api_token: ${{ secrets.MONITORING_API_TOKEN }}
+      monitoring_tenant_url: ${{ secrets.MONITORING_TENANT_URL }}

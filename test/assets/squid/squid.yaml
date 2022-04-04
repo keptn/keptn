@@ -50,7 +50,7 @@ metadata:
   labels:
     name: squid
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   ports:
     - port: 3128
       targetPort: 3128

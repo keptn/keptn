@@ -4,15 +4,16 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/keptn/secret-service/pkg/backend"
 	"github.com/keptn/keptn/secret-service/pkg/backend/fake"
 	"github.com/keptn/keptn/secret-service/pkg/handler"
 	"github.com/keptn/keptn/secret-service/pkg/model"
 	"github.com/stretchr/testify/assert"
-	"net/http"
-	"net/http/httptest"
-	"testing"
 )
 
 func Test_CreateNewHandler(t *testing.T) {
@@ -103,6 +104,16 @@ func TestHandler_CreateSecret(t *testing.T) {
 			request:            httptest.NewRequest("POST", "/secret", bytes.NewBuffer([]byte(`{"scope":"my-scope","data":{"username":"keptn"}}`))),
 			expectedHTTPStatus: http.StatusBadRequest,
 		},
+		{
+			name: "POST Secret - not existing scope",
+			fields: fields{
+				Backend: &fake.SecretBackendMock{
+					UpdateSecretFunc: func(secret model.Secret) error { return backend.ErrScopeNotFound },
+				},
+			},
+			request:            httptest.NewRequest("POST", "/secret", bytes.NewBuffer([]byte(`{"scope":"my-other-scope","data":{"username":"keptn"}}`))),
+			expectedHTTPStatus: http.StatusBadRequest,
+		},
 	}
 
 	for _, tt := range tests {
@@ -187,6 +198,16 @@ func TestHandler_DeleteSecret(t *testing.T) {
 			request:            httptest.NewRequest("DELETE", "/secret?name=my-secret", nil),
 			expectedHTTPStatus: http.StatusBadRequest,
 		},
+		{
+			name: "DELETE Secret - not existing scope",
+			fields: fields{
+				Backend: &fake.SecretBackendMock{
+					DeleteSecretFunc: func(secret model.Secret) error { return backend.ErrScopeNotFound },
+				},
+			},
+			request:            httptest.NewRequest("DELETE", "/secret?name=my-secret&scope=my-other-scope", nil),
+			expectedHTTPStatus: http.StatusBadRequest,
+		},
 	}
 
 	for _, tt := range tests {
@@ -269,6 +290,16 @@ func TestHandler_Update(t *testing.T) {
 				},
 			},
 			request:            httptest.NewRequest("PUT", "/secret", bytes.NewBuffer([]byte(`{"scope":"my-scope","data":{"username":"keptn"}}`))),
+			expectedHTTPStatus: http.StatusBadRequest,
+		},
+		{
+			name: "UPDATE Secret - not existing scope",
+			fields: fields{
+				Backend: &fake.SecretBackendMock{
+					UpdateSecretFunc: func(secret model.Secret) error { return backend.ErrScopeNotFound },
+				},
+			},
+			request:            httptest.NewRequest("PUT", "/secret", bytes.NewBuffer([]byte(`{"name":"my-secret","data":{"username":"keptn"}}`))),
 			expectedHTTPStatus: http.StatusBadRequest,
 		},
 	}

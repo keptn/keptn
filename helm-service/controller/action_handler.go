@@ -84,16 +84,12 @@ func (h *ActionTriggeredHandler) getStartedEventData(inEventData keptnv2.EventDa
 	}
 }
 
-func (h *ActionTriggeredHandler) getFinishedEventDataForSuccess(inEventData keptnv2.EventData,
-	gitCommit string) keptnv2.ActionFinishedEventData {
+func (h *ActionTriggeredHandler) getFinishedEventDataForSuccess(inEventData keptnv2.EventData) keptnv2.ActionFinishedEventData {
 	inEventData.Status = keptnv2.StatusSucceeded
 	inEventData.Result = keptnv2.ResultPass
 	inEventData.Message = "Successfully executed scaling action"
 	return keptnv2.ActionFinishedEventData{
 		EventData: inEventData,
-		Action: keptnv2.ActionData{
-			GitCommit: gitCommit,
-		},
 	}
 }
 
@@ -148,5 +144,5 @@ func (h *ActionTriggeredHandler) handleScaling(e keptnv2.ActionTriggeredEventDat
 		return h.getFinishedEventDataForError(e.EventData, err)
 	}
 
-	return h.getFinishedEventDataForSuccess(e.EventData, commitID)
+	return h.getFinishedEventDataForSuccess(e.EventData)
 }

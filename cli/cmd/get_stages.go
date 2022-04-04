@@ -65,7 +65,7 @@ staging        2020-04-06T14:37:45.210Z
 
 		api, err := internal.APIProvider(endPoint.String(), apiToken)
 		if err != nil {
-			return err
+			return internal.OnAPIError(err)
 		}
 
 		if !mocking {

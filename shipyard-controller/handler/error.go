@@ -1,6 +1,9 @@
 package handler
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 var ErrProjectAlreadyExists = errors.New("project already exists")
 
@@ -49,3 +52,21 @@ var UnableControleSequenceMsg = "Unable to control sequence: %s"
 var UnableFindSequenceMsg = "Unable to control sequence: %s"
 
 var UnableQueryIntegrationsMsg = "Unable to query uniform integrations repository: %s"
+
+var UnableMarshallProvisioningData = "Error marshalling provisioning data: %s"
+
+var UnableUnMarshallProvisioningData = "Error unmarshalling provisioning data: %s"
+
+var UnableReadProvisioningData = "Error reading provisioning data: %s"
+
+var UnableProvisionInstance = "Error provisioning a project instance: %s"
+
+var UnableProvisionInstanceGeneric = fmt.Sprintf(UnableProvisionInstance, "unable to provision an instance")
+
+var UnableProvisionDelete = "Error deleting a provisioned project instance: %s"
+
+var UnableProvisionDeleteGeneric = fmt.Sprintf(UnableProvisionDelete, "unable to delete an instance")
+
+var UnableProvisionDeleteReq = "Error creating delete provision request: %s"
+
+var UnableProvisionPostReq = "Error creating post provision request: %s"

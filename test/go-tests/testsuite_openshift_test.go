@@ -9,6 +9,7 @@ func Test_Openshift(t *testing.T) {
 	t.Run("Test_LogIngestion", Test_LogIngestion)
 	t.Run("Test_LogForwarding", Test_LogForwarding)
 	t.Run("Test_SequenceState", Test_SequenceState)
+	t.Run("Test_SequenceStateParallelStages", Test_SequenceStateParallelStages)
 	t.Run("Test_SequenceState_RetrieveMultipleSequence", Test_SequenceState_RetrieveMultipleSequence)
 	t.Run("Test_SequenceState_SequenceNotFound", Test_SequenceState_SequenceNotFound)
 	t.Run("Test_SequenceState_InvalidShipyard", Test_SequenceState_InvalidShipyard)
@@ -43,6 +44,7 @@ func Test_Openshift(t *testing.T) {
 		t.Run("Test_ProxyAuth", Test_ProxyAuth)
 	}
 	t.Run("Test_ZeroDownTimeTriggerSequence", Test_ZeroDownTimeTriggerSequence)
+	t.Run("Test_ProvisioningURL", Test_ProvisioningURL)
 
 	// Platform-specific Tests
 }

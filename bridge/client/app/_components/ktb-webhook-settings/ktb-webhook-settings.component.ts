@@ -7,7 +7,7 @@ import { DtOverlayConfig } from '@dynatrace/barista-components/overlay';
 import { Secret } from '../../_models/secret';
 import { SelectTreeNode } from '../ktb-tree-list-select/ktb-tree-list-select.component';
 
-type ControlType = 'method' | 'url' | 'payload' | 'proxy' | 'header' | 'sendFinished';
+type ControlType = 'method' | 'url' | 'payload' | 'proxy' | 'header' | 'sendFinished' | 'sendStarted';
 
 @Component({
   selector: 'ktb-webhook-settings',
@@ -22,11 +22,12 @@ export class KtbWebhookSettingsComponent implements OnInit {
     payload: new FormControl('', [FormUtils.payloadSpecialCharValidator]),
     header: new FormArray([]),
     proxy: new FormControl('', [FormUtils.isUrlValidator]),
-    sendFinished: new FormControl('true', []),
+    sendFinished: new FormControl('true'),
+    sendStarted: new FormControl('true'),
   });
   public webhookMethods: WebhookConfigMethod[] = ['GET', 'POST', 'PUT'];
   public secretDataSource: SelectTreeNode[] = [];
-  public sendFinishedOverlayConfig: DtOverlayConfig = {
+  public overlayConfig: DtOverlayConfig = {
     pinnable: true,
     originY: 'center',
   };
@@ -134,6 +135,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
     this._webhook.proxy = this.getFormControl('proxy').value;
     this._webhook.header = this.getFormControl('header').value;
     this._webhook.sendFinished = this.getFormControl('sendFinished').value === 'true';
+    this._webhook.sendStarted = this.getFormControl('sendStarted').value === 'true';
     this.webhookChange.emit(this._webhook);
   }
 
@@ -161,12 +163,22 @@ export class KtbWebhookSettingsComponent implements OnInit {
 
   private setSendFinishedControl(): void {
     if (this._eventType !== 'triggered' && this._eventType !== '>') {
-      this.getFormControl('sendFinished').setValue(null);
-      this.getFormControl('sendFinished').disable();
+      this.disableFormControl('sendStarted');
+      this.disableFormControl('sendFinished');
     } else {
-      this.getFormControl('sendFinished').setValue(this._webhook.sendFinished.toString());
-      this.getFormControl('sendFinished').enable();
+      this.enableFormControl('sendStarted', this._webhook.sendStarted.toString());
+      this.enableFormControl('sendFinished', this._webhook.sendFinished.toString());
     }
+  }
+
+  private disableFormControl(controlName: ControlType): void {
+    this.getFormControl(controlName).setValue(null);
+    this.getFormControl(controlName).disable();
+  }
+
+  private enableFormControl(controlName: ControlType, initValue?: string): void {
+    this.getFormControl(controlName).setValue(initValue);
+    this.getFormControl(controlName).enable();
   }
 
   private mapSecret(secret: Secret): SelectTreeNode {

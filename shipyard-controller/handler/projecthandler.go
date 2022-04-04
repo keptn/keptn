@@ -1,11 +1,18 @@
 package handler
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
-	apimodels "github.com/keptn/go-utils/pkg/api/models"
+
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	"github.com/keptn/keptn/shipyard-controller/config"
+	"gopkg.in/yaml.v3"
+
 	"net/http"
 	"sort"
+
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -14,6 +21,147 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
 )
+
+type ProjectValidator struct {
+	ProjectNameMaxSize int
+}
+
+func (p ProjectValidator) Validate(params interface{}) error {
+	switch t := params.(type) {
+	case *models.CreateProjectParams:
+		return p.validateCreateProjectParams(t)
+	case *models.UpdateProjectParams:
+		return p.validateUpdateProjectParams(t)
+	default:
+		return nil
+	}
+}
+func (p ProjectValidator) validateCreateProjectParams(createProjectParams *models.CreateProjectParams) error {
+	if createProjectParams.Name == nil || *createProjectParams.Name == "" {
+		return errors.New("project name missing")
+	}
+	if len(*createProjectParams.Name) > p.ProjectNameMaxSize {
+		return fmt.Errorf("project name exceeds maximum size of %d characters", p.ProjectNameMaxSize)
+	}
+	if !keptncommon.ValidateKeptnEntityName(*createProjectParams.Name) {
+		return errors.New("provided project name is not a valid Keptn entity name")
+	}
+	if createProjectParams.Shipyard == nil || *createProjectParams.Shipyard == "" {
+		return errors.New("shipyard must contain a valid shipyard spec encoded in base64")
+	}
+	shipyard := &keptnv2.Shipyard{}
+	decodeString, err := base64.StdEncoding.DecodeString(*createProjectParams.Shipyard)
+	if err != nil {
+		return errors.New("could not decode shipyard content")
+	}
+
+	err = yaml.Unmarshal(decodeString, shipyard)
+	if err != nil {
+		return fmt.Errorf("could not unmarshal provided shipyard content")
+	}
+
+	if err := common.ValidateShipyardVersion(shipyard); err != nil {
+		return fmt.Errorf("provided shipyard file is not valid: %s", err.Error())
+	}
+
+	if err := common.ValidateShipyardStages(shipyard); err != nil {
+		return fmt.Errorf("provided shipyard file is not valid: %s", err.Error())
+	}
+
+	if err := common.ValidateGitRemoteURL(createProjectParams.GitRemoteURL); err != nil {
+		return fmt.Errorf("provided gitRemoteURL is not valid: %s", err.Error())
+	}
+
+	if createProjectParams.GitPrivateKey != "" && createProjectParams.GitToken != "" {
+		return fmt.Errorf("privateKey and token cannot be used together")
+	}
+
+	if createProjectParams.GitPrivateKey != "" && createProjectParams.GitProxyURL != "" {
+		return fmt.Errorf("privateKey and proxy cannot be used together")
+	}
+
+	if createProjectParams.GitPrivateKey != "" {
+		decodeString, err = base64.StdEncoding.DecodeString(createProjectParams.GitPrivateKey)
+		if err != nil {
+			return errors.New("could not decode privateKey content")
+		}
+	}
+
+	if createProjectParams.GitPrivateKey != "" && createProjectParams.GitPemCertificate != "" {
+		return fmt.Errorf("SSH authorization and PEM Certificate be used together")
+	}
+
+	if createProjectParams.GitPemCertificate != "" {
+		decodeString, err = base64.StdEncoding.DecodeString(createProjectParams.GitPemCertificate)
+		if err != nil {
+			return errors.New("could not decode PEM Certificate content")
+		}
+	}
+
+	return nil
+}
+
+func (p ProjectValidator) validateUpdateProjectParams(updateProjectParams *models.UpdateProjectParams) error {
+	if updateProjectParams.Name == nil || *updateProjectParams.Name == "" {
+		return errors.New("project name missing")
+	}
+	if !keptncommon.ValidateKeptnEntityName(*updateProjectParams.Name) {
+		return errors.New("provided project name is not a valid Keptn entity name")
+	}
+
+	if updateProjectParams.Shipyard != nil && *updateProjectParams.Shipyard != "" {
+		shipyard := &keptnv2.Shipyard{}
+		decodeString, err := base64.StdEncoding.DecodeString(*updateProjectParams.Shipyard)
+		if err != nil {
+			return errors.New("could not decode shipyard content")
+		}
+
+		err = yaml.Unmarshal(decodeString, shipyard)
+		if err != nil {
+			return fmt.Errorf("could not unmarshal provided shipyard content")
+		}
+
+		if err := common.ValidateShipyardVersion(shipyard); err != nil {
+			return fmt.Errorf("provided shipyard file is not valid: %s", err.Error())
+		}
+
+		if err := common.ValidateShipyardStages(shipyard); err != nil {
+			return fmt.Errorf("provided shipyard file is not valid: %s", err.Error())
+		}
+	}
+
+	if err := common.ValidateGitRemoteURL(updateProjectParams.GitRemoteURL); err != nil {
+		return fmt.Errorf("provided gitRemoteURL is not valid: %s", err.Error())
+	}
+
+	if updateProjectParams.GitPrivateKey != "" && updateProjectParams.GitToken != "" {
+		return fmt.Errorf("privateKey and token cannot be used together")
+	}
+
+	if updateProjectParams.GitPrivateKey != "" && updateProjectParams.GitProxyURL != "" {
+		return fmt.Errorf("privateKey and proxy cannot be used together")
+	}
+
+	if updateProjectParams.GitPrivateKey != "" {
+		_, err := base64.StdEncoding.DecodeString(updateProjectParams.GitPrivateKey)
+		if err != nil {
+			return errors.New("could not decode privateKey content")
+		}
+	}
+
+	if updateProjectParams.GitPrivateKey != "" && updateProjectParams.GitPemCertificate != "" {
+		return fmt.Errorf("SSH authorization and PEM Certificate be used together")
+	}
+
+	if updateProjectParams.GitPemCertificate != "" {
+		_, err := base64.StdEncoding.DecodeString(updateProjectParams.GitPemCertificate)
+		if err != nil {
+			return errors.New("could not decode PEM Certificate content")
+		}
+	}
+
+	return nil
+}
 
 type IProjectHandler interface {
 	GetAllProjects(context *gin.Context)
@@ -24,14 +172,18 @@ type IProjectHandler interface {
 }
 
 type ProjectHandler struct {
-	ProjectManager IProjectManager
-	EventSender    common.EventSender
+	ProjectManager        IProjectManager
+	EventSender           common.EventSender
+	Env                   config.EnvConfig
+	RepositoryProvisioner IRepositoryProvisioner
 }
 
-func NewProjectHandler(projectManager IProjectManager, eventSender common.EventSender) *ProjectHandler {
+func NewProjectHandler(projectManager IProjectManager, eventSender common.EventSender, env config.EnvConfig, repositoryProvisioner IRepositoryProvisioner) *ProjectHandler {
 	return &ProjectHandler{
-		ProjectManager: projectManager,
-		EventSender:    eventSender,
+		ProjectManager:        projectManager,
+		EventSender:           eventSender,
+		Env:                   env,
+		RepositoryProvisioner: repositoryProvisioner,
 	}
 }
 
@@ -49,7 +201,6 @@ func NewProjectHandler(projectManager IProjectManager, eventSender common.EventS
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project [get]
 func (ph *ProjectHandler) GetAllProjects(c *gin.Context) {
-
 	params := &models.GetProjectParams{}
 	if err := c.ShouldBindQuery(params); err != nil {
 		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
@@ -129,26 +280,42 @@ func (ph *ProjectHandler) GetProjectByName(c *gin.Context) {
 func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 	keptnContext := uuid.New().String()
 
-	createProjectParams := &models.CreateProjectParams{}
-	if err := c.ShouldBindJSON(createProjectParams); err != nil {
+	params := &models.CreateProjectParams{}
+	if err := c.ShouldBindJSON(params); err != nil {
 		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
-	if err := createProjectParams.Validate(); err != nil {
+
+	automaticProvisioningURL := ph.Env.AutomaticProvisioningURL
+	if automaticProvisioningURL != "" && params.GitRemoteURL == "" {
+		provisioningData, err := ph.RepositoryProvisioner.ProvideRepository(*params.Name)
+		if err != nil {
+			log.Errorf(err.Error())
+			SetFailedDependencyErrorResponse(c, UnableProvisionInstanceGeneric)
+			return
+		}
+
+		params.GitRemoteURL = provisioningData.GitRemoteURL
+		params.GitToken = provisioningData.GitToken
+		params.GitUser = provisioningData.GitUser
+	}
+
+	projectValidator := ProjectValidator{ProjectNameMaxSize: ph.Env.ProjectNameMaxSize}
+	if err := projectValidator.Validate(params); err != nil {
 		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidPayloadMsg, err.Error()))
 		return
 	}
 
-	common.LockProject(*createProjectParams.Name)
-	defer common.UnlockProject(*createProjectParams.Name)
+	common.LockProject(*params.Name)
+	defer common.UnlockProject(*params.Name)
 
-	if err := ph.sendProjectCreateStartedEvent(keptnContext, createProjectParams); err != nil {
+	if err := ph.sendProjectCreateStartedEvent(keptnContext, params); err != nil {
 		log.Errorf("could not send project.create.started event: %s", err.Error())
 	}
 
-	err, rollback := ph.ProjectManager.Create(createProjectParams)
+	err, rollback := ph.ProjectManager.Create(params)
 	if err != nil {
-		if err := ph.sendProjectCreateFailFinishedEvent(keptnContext, createProjectParams); err != nil {
+		if err := ph.sendProjectCreateFailFinishedEvent(keptnContext, params); err != nil {
 			log.Errorf("could not send project.create.finished event: %s", err.Error())
 		}
 		rollback()
@@ -159,7 +326,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 		SetInternalServerErrorResponse(c, err.Error())
 		return
 	}
-	if err := ph.sendProjectCreateSuccessFinishedEvent(keptnContext, createProjectParams); err != nil {
+	if err := ph.sendProjectCreateSuccessFinishedEvent(keptnContext, params); err != nil {
 		log.Errorf("could not send project.create.finished event: %s", err.Error())
 	}
 
@@ -188,7 +355,8 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
-	if err := params.Validate(); err != nil {
+	projectValidator := ProjectValidator{ProjectNameMaxSize: ph.Env.ProjectNameMaxSize}
+	if err := projectValidator.Validate(params); err != nil {
 		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidPayloadMsg, err.Error()))
 		return
 	}
@@ -236,6 +404,17 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 func (ph *ProjectHandler) DeleteProject(c *gin.Context) {
 	keptnContext := uuid.New().String()
 	projectName := c.Param("project")
+	namespace := c.Param("namespace")
+
+	automaticProvisioningURL := ph.Env.AutomaticProvisioningURL
+	if automaticProvisioningURL != "" {
+		err := ph.RepositoryProvisioner.DeleteRepository(projectName, namespace)
+		if err != nil {
+			log.Errorf(err.Error())
+			SetFailedDependencyErrorResponse(c, UnableProvisionDeleteGeneric)
+			return
+		}
+	}
 
 	common.LockProject(projectName)
 	defer common.UnlockProject(projectName)
