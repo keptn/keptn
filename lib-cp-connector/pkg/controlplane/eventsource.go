@@ -41,7 +41,7 @@ func (n *NATSEventSource) Start(ctx context.Context, registrationData Registrati
 		eventChannel <- event
 		return nil
 	}
-	if err := n.connector.QueueSubscribeMultiple(registrationData.MetaData.KubernetesMetaData.PodName, n.currentSubjects, n.eventProcessFn); err != nil {
+	if err := n.connector.QueueSubscribeMultiple(registrationData.Name, n.currentSubjects, n.eventProcessFn); err != nil {
 		return fmt.Errorf("could not start NATS event source: %w", err)
 	}
 	return nil
