@@ -86,11 +86,7 @@
                     <span
                       class="bold"
                       uitestid="keptn-sequence-view-serviceName"
-                      [textContent]="
-                        currentSequence.getShortImageName()
-                          ? currentSequence.getShortImageName()
-                          : currentSequence.service
-                      "
+                      [textContent]="currentSequence.getShortImageName() || currentSequence.service"
                     ></span
                     >&nbsp;<span [textContent]="currentSequence.getStatus()"></span>
                   </p>
