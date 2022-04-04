@@ -117,9 +117,9 @@ describe('Sequences', () => {
     sequencePage
       .visit('sockshop')
       .selectSequence('62cca6f3-dc54-4df6-a04c-6ffc894a4b5e')
-      .assertTimelineTime('dev', '12:41')
-      .assertTimelineTime('staging', '12:42')
-      .assertTimelineTime('production', '12:43');
+      .assertTimelineTime('dev', '03:41')
+      .assertTimelineTime('staging', '03:42')
+      .assertTimelineTime('production', '03:43');
   });
 
   it('should select sequence and show loading indicators if traces are not loaded yet', () => {
