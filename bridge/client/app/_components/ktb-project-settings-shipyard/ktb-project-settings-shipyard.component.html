@@ -17,7 +17,7 @@
         uitestid="ktb-shipyard-file-input"
         hidden
         type="file"
-        accept=".yaml, .yml"
+        [accept]="allowedExtensions.join(',')"
         #shipyardFileInput
         (change)="validateAndUpdateFile(shipyardFileInput.files); shipyardFileInput.value = ''"
       />

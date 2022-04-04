@@ -5,7 +5,9 @@
   be found in the
   <a [href]="'/manage/git_upstream/' | keptnUrl" target="_blank">Git-based upstream documentation</a>.
 </p>
-<p class="required">Connect via</p>
+<label class="dt-form-field-label">
+  <dt-label class="required">Connect via</dt-label>
+</label>
 <dt-radio-group (change)="setSelectedForm($event)">
   <dt-radio-button
     [value]="FormType.HTTPS"
@@ -19,7 +21,7 @@
     SSH
   </dt-radio-button>
 </dt-radio-group>
-<div class="mt-2">
+<div class="mt-3">
   <!-- hidden instead of switch to keep the component instance and related data  -->
   <ktb-project-settings-git-https
     [hidden]="selectedForm !== FormType.HTTPS"

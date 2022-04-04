@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { IGitData } from '../../_interfaces/git-upstream';
+import { FormUtils } from '../../_utils/form.utils';
 
 @Component({
   selector: 'ktb-project-settings-git',
@@ -68,8 +69,10 @@ export class KtbProjectSettingsGitComponent implements OnInit {
 
   public ngOnInit(): void {
     if (this.required) {
-      this.gitUrlControl.setValidators([Validators.required]);
+      this.gitUrlControl.setValidators([Validators.required, FormUtils.isUrlHttpsValidator]);
       this.gitTokenControl.setValidators([Validators.required]);
+    } else {
+      this.gitUrlControl.setValidators([FormUtils.isUrlHttpsValidator]);
     }
   }
 

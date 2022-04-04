@@ -8,10 +8,12 @@ import { FormUtils } from '../../_utils/form.utils';
   styleUrls: ['./ktb-certificate-input.component.scss'],
 })
 export class KtbCertificateInputComponent {
+  public readonly allowedExtensions = ['.pem'];
   public certificateControl = new FormControl('', FormUtils.isCertificateValidator);
   public certificateForm = new FormGroup({
     certificate: this.certificateControl,
   });
+  public dropError?: string;
 
   @Input()
   public isLoading = false;

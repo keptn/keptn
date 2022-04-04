@@ -1,16 +1,20 @@
-<span>Upload PEM certificate file</span>
-<div class="input-container">
-  <button dt-button (click)="certificateInput.click()">Upload file</button>
+<label class="dt-form-field-label">
+  <dt-label>Upload PEM certificate file</dt-label>
+</label>
+<div ktbDragAndDrop (dropped)="validateCertificate($event); dropError = undefined" (dropError)="dropError = $event">
+  <p>Drag and drop a file here<br />or</p>
+  <button dt-button (click)="certificateInput.click()">Select a file</button>
   <input
     uitestid="ktb-certificate-file-input"
     hidden
     type="file"
-    accept=".pem"
+    [accept]="allowedExtensions.join(',')"
     #certificateInput
-    (change)="validateCertificate(certificateInput.files); certificateInput.value = ''"
+    (change)="validateCertificate(certificateInput.files); certificateInput.value = ''; dropError = undefined"
   />
+  <p class="drop-error" [textContent]="dropError" *ngIf="dropError"></p>
 </div>
-<form [formGroup]="certificateForm" (input)="certificateChanged()" class="mt-2">
+<form [formGroup]="certificateForm" (input)="certificateChanged()" class="mt-3">
   <dt-form-field>
     <dt-label>PEM certificate as text</dt-label>
     <textarea

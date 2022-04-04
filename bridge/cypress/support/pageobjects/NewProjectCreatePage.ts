@@ -259,11 +259,13 @@ class NewProjectCreatePage {
     return this;
   }
 
-  public enterBasicValidProjectSsh(): this {
-    return this.typeProjectName('my-project')
-      .setShipyardFile()
-      .typeGitUrlSsh('ssh://example.com')
-      .typeValidSshPrivateKey();
+  public enterBasicValidProjectSsh(fillPrivateKey = true): this {
+    this.typeProjectName('my-project').setShipyardFile().typeGitUrlSsh('ssh://example.com');
+    if (fillPrivateKey) {
+      return this.typeValidSshPrivateKey();
+    } else {
+      return this;
+    }
   }
 
   public enterFullValidProjectSsh(): this {

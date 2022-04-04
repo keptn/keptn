@@ -15,6 +15,7 @@ export class KtbSshKeyInputComponent {
     privateKey: this.privateKeyControl,
     privateKeyPassword: this.privateKeyPasswordControl,
   });
+  public dropError?: string;
 
   @Input()
   public set sshInput(data: ISshKeyData | undefined) {

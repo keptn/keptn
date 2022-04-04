@@ -187,19 +187,19 @@ describe('Create extended project ssh test', () => {
   });
 
   it('should be valid private key and have enabled button', () => {
-    createProjectPage.enterBasicValidProjectSsh().typeValidSshPrivateKey().assertCreateButtonEnabled(true);
+    createProjectPage.enterBasicValidProjectSsh(false).typeValidSshPrivateKey().assertCreateButtonEnabled(true);
   });
 
   it('should be invalid private key and have disabled button and error', () => {
-    createProjectPage.enterBasicValidProjectSsh().typeInvalidSshPrivateKey().assertCreateButtonEnabled(false);
+    createProjectPage.enterBasicValidProjectSsh(false).typeInvalidSshPrivateKey().assertCreateButtonEnabled(false);
   });
 
   it('should be valid private key file and have enabled button', () => {
-    createProjectPage.enterBasicValidProjectSsh().setValidSshPrivateKeyFile().assertCreateButtonEnabled(true);
+    createProjectPage.enterBasicValidProjectSsh(false).setValidSshPrivateKeyFile().assertCreateButtonEnabled(true);
   });
 
   it('should be invalid private key file and have disabled button and error', () => {
-    createProjectPage.enterBasicValidProjectSsh().setInvalidSshPrivateKeyFile().assertCreateButtonEnabled(false);
+    createProjectPage.enterBasicValidProjectSsh(false).setInvalidSshPrivateKeyFile().assertCreateButtonEnabled(false);
   });
 });
 

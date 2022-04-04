@@ -7,7 +7,7 @@ import { FormUtils } from '../../_utils/form.utils';
   styleUrls: ['./ktb-project-settings-shipyard.component.scss'],
 })
 export class KtbProjectSettingsShipyardComponent {
-  public readonly allowedExtensions = ['yaml', 'yml'];
+  public readonly allowedExtensions = ['.yaml', '.yml'];
 
   @Input()
   public isCreateMode = false;

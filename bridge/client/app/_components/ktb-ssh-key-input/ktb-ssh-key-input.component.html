@@ -1,16 +1,20 @@
-<div class="input-container">
-  <button dt-button (click)="privateKeyInput.click()">Upload file</button>
+<label class="dt-form-field-label">
+  <dt-label>Upload private key file</dt-label>
+</label>
+<div ktbDragAndDrop (dropped)="validateSshPrivateKey($event); dropError = undefined" (dropError)="dropError = $event">
+  <p>Drag and drop a file here<br />or</p>
+  <button dt-button (click)="privateKeyInput.click()">Select a file</button>
   <input
     uitestid="ktb-ssh-private-key-file-input"
     hidden
     type="file"
-    accept=".pem"
     #privateKeyInput
-    (change)="validateSshPrivateKey(privateKeyInput.files); privateKeyInput.value = ''"
+    (change)="validateSshPrivateKey(privateKeyInput.files); privateKeyInput.value = ''; dropError = undefined"
   />
+  <p class="drop-error" [textContent]="dropError" *ngIf="dropError"></p>
 </div>
 
-<form [formGroup]="sshKeyForm" (input)="sshDataChanged()" class="mt-2">
+<form [formGroup]="sshKeyForm" (input)="sshDataChanged()" class="mt-3">
   <dt-form-field>
     <dt-label class="required">SSH private key as text</dt-label>
     <textarea
@@ -26,7 +30,7 @@
       KEY-----"
     </dt-error>
   </dt-form-field>
-  <dt-form-field class="mt-2">
+  <dt-form-field class="mt-3">
     <dt-label>Private key passphrase</dt-label>
     <input
       dtInput
