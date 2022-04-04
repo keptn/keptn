@@ -159,10 +159,12 @@ github.com/json-iterator/go v1.1.11 h1:uVUAXhF2To8cbw/3xN3pxj6kk7TYKs98NIrTqPlMW
 github.com/json-iterator/go v1.1.11/go.mod h1:KdQUCv79m/52Kvf8AW2vK1V8akMuk1QjK/uOdHXbAo4=
 github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024/go.mod h1:6v2b51hI/fHJwM22ozAgKL4VKDeJcHhJFhtBdhmNjmU=
 github.com/jstemmer/go-junit-report v0.9.1/go.mod h1:Brl9GWCQeLvo8nXZwPNNblvFj/XSXhF0NWZEnDohbsk=
+github.com/kelseyhightower/envconfig v1.4.0 h1:Im6hONhd3pLkfDFsbRgu68RDNkGF1r3dvMUtDTo2cv8=
+github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
 github.com/keptn/go-utils v0.13.1-0.20220318125157-fe974e59cc65 h1:6D3I4KKQqeuxw1przl8dWo/3FfzR3z0QhRZR74JSzLU=
 github.com/keptn/go-utils v0.13.1-0.20220318125157-fe974e59cc65/go.mod h1:CIRwnEp/QYaSBa/r146x3h4yqWB4FS3YNKHzftoyhVA=
-github.com/keptn/keptn/lib-cp-connector v0.0.0-20220402194029-a2b470534f9b h1:Mg/Wc5c2jCiMAkDv6SfJV5uwmy+8dqtvd1/MRNmjuD8=
-github.com/keptn/keptn/lib-cp-connector v0.0.0-20220402194029-a2b470534f9b/go.mod h1:WL4Ya6EVLIjeKT9furB6JreWMkgaBCFNagUzU5SIko4=
+github.com/keptn/keptn/lib-cp-connector v0.0.0-20220404122528-933408c6d7e9 h1:zUI3Il6MHTkutGrRGlVe6NMB2I4ee58eMf8HIbj8aLs=
+github.com/keptn/keptn/lib-cp-connector v0.0.0-20220404122528-933408c6d7e9/go.mod h1:WL4Ya6EVLIjeKT9furB6JreWMkgaBCFNagUzU5SIko4=
 github.com/kisielk/errcheck v1.5.0/go.mod h1:pFxgyoBC7bSaBwPgfKdkLd5X25qrDl4LWUI2bnpBCr8=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/klauspost/compress v1.14.4 h1:eijASRJcobkVtSt81Olfh7JX43osYLwy5krOJo6YEu4=
