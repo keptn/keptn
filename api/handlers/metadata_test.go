@@ -20,6 +20,7 @@ import (
 	fakeappsv1 "k8s.io/client-go/kubernetes/typed/apps/v1/fake"
 	test "k8s.io/client-go/testing"
 
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/metadata"
 )
@@ -92,7 +93,7 @@ func Test_metadataHandler_getMetadata(t *testing.T) {
 				k8sClient: clientSet,
 			},
 			want: &metadata.MetadataOK{
-				Payload: &models.Metadata{
+				Payload: &apimodels.Metadata{
 					Bridgeversion:         "0.8.0",
 					Keptnlabel:            "keptn",
 					Keptnservices:         nil,
@@ -111,7 +112,7 @@ func Test_metadataHandler_getMetadata(t *testing.T) {
 			},
 			k8sAPIError: true,
 			want: &metadata.MetadataOK{
-				Payload: &models.Metadata{
+				Payload: &apimodels.Metadata{
 					Bridgeversion:         "N/A",
 					Keptnlabel:            "keptn",
 					Keptnservices:         nil,

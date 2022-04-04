@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/keptn/keptn/api/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 )
 
 // MetadataOKCode is the HTTP code returned for type MetadataOK
@@ -25,7 +25,7 @@ type MetadataOK struct {
 	/*
 	  In: Body
 	*/
-	Payload *models.Metadata `json:"body,omitempty"`
+	Payload *apimodels.Metadata `json:"body,omitempty"`
 }
 
 // NewMetadataOK creates MetadataOK with default headers values
@@ -35,13 +35,13 @@ func NewMetadataOK() *MetadataOK {
 }
 
 // WithPayload adds the payload to the metadata o k response
-func (o *MetadataOK) WithPayload(payload *models.Metadata) *MetadataOK {
+func (o *MetadataOK) WithPayload(payload *apimodels.Metadata) *MetadataOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the metadata o k response
-func (o *MetadataOK) SetPayload(payload *models.Metadata) {
+func (o *MetadataOK) SetPayload(payload *apimodels.Metadata) {
 	o.Payload = payload
 }
 
