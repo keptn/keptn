@@ -124,7 +124,7 @@ func Test_SSHPublicKeyAuth(t *testing.T) {
 	project := models.ExpandedProject{}
 	err = resp.ToJSON(&project)
 	require.Nil(t, err)
-	require.Contains(t, "ssh://", project.GitRemoteURI)
+	require.Contains(t, project.GitRemoteURI, "ssh://")
 	require.Equal(t, projectName, project.ProjectName)
 
 	t.Logf("Updating project credentials")
