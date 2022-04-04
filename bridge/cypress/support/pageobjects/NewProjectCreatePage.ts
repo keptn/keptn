@@ -198,7 +198,7 @@ class NewProjectCreatePage {
   }
 
   public setProxyInsecure(status: boolean): this {
-    cy.byTestId('ktb-proxy-insecure').toggleSwitch(status);
+    cy.byTestId('ktb-proxy-insecure').dtCheck(status);
     return this;
   }
 
@@ -248,7 +248,7 @@ class NewProjectCreatePage {
   }
 
   public setEnableProxy(status: boolean): this {
-    cy.byTestId('ktb-enable-git-proxy').toggleSwitch(status);
+    cy.byTestId('ktb-enable-git-proxy').dtCheck(status);
     return this;
   }
 

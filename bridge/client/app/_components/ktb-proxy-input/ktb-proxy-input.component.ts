@@ -6,7 +6,7 @@ import { IProxy } from '../../_interfaces/git-upstream';
 @Component({
   selector: 'ktb-proxy-input',
   templateUrl: './ktb-proxy-input.component.html',
-  styleUrls: ['./ktb-proxy-input.component.scss'],
+  styleUrls: [],
 })
 export class KtbProxyInputComponent {
   public readonly schemes: KeyValue<string, string>[] = [

@@ -68,6 +68,10 @@ describe('Create extended project https test', () => {
     cy.intercept('/api/project/sockshop', {
       body: project,
     });
-    projectSettingsPage.interceptSettings(true).visitSettings('sockshop').assertSshFormVisible(true);
+    projectSettingsPage
+      .interceptSettings(true)
+      .visitSettings('sockshop')
+      .assertSshFormVisible(true)
+      .assertGitUsernameSsh('myGitUser');
   });
 });

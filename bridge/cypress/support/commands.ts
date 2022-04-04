@@ -9,7 +9,11 @@ declare global {
     interface Chainable<Subject> {
       byTestId<E extends Node = HTMLElement>(id: string): Cypress.Chainable<JQuery<E>>;
       parentsUntilTestId<E extends Node = HTMLElement>(id: string): Cypress.Chainable<JQuery<E>>;
-      toggleSwitch<E extends Node = HTMLElement>(status: boolean): Cypress.Chainable<JQuery<E>>;
+      /**
+       * Toggles a dt-switch and checks a dt-checkbox
+       * @param status
+       */
+      dtCheck<E extends Node = HTMLElement>(status: boolean): Cypress.Chainable<JQuery<E>>;
       dtSelect<E extends Node = HTMLElement>(element: string): Cypress.Chainable<JQuery<E>>;
       clickOutside<E extends Node = HTMLElement>(): Cypress.Chainable<JQuery<E>>;
     }
@@ -21,7 +25,7 @@ Cypress.Commands.add('clickOutside', () => cy.get('body').click(0, 0));
 Cypress.Commands.add('parentsUntilTestId', { prevSubject: 'element' }, (subject: JQuery<HTMLElement>, testId: string) =>
   cy.wrap(subject).parentsUntil(`[uitestid="${testId}"]`).parent()
 );
-Cypress.Commands.add('toggleSwitch', { prevSubject: 'element' }, (subject: JQuery<HTMLElement>, status: boolean) => {
+Cypress.Commands.add('dtCheck', { prevSubject: 'element' }, (subject: JQuery<HTMLElement>, status: boolean) => {
   const isChecked = subject.find('input').attr('aria-checked') as 'true' | 'false' | undefined;
 
   if ((status && isChecked !== 'true') || (!status && isChecked === 'true')) {
