@@ -15,7 +15,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
-	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/metadata"
 )
@@ -67,13 +66,14 @@ func (h *metadataHandler) getMetadata() middleware.Responder {
 	namespace := os.Getenv("POD_NAMESPACE")
 	automaticProvisioningURL := os.Getenv("AUTOMATIC_PROVISIONING_URL")
 
-	var payload apimodels.Metadata
+	var payload models.Metadata
 	payload.Namespace = namespace
 	payload.Keptnversion = defaultVersion
 	payload.Keptnlabel = "keptn"
 	payload.Bridgeversion = defaultVersion
 	payload.Shipyardversion = "0.2.0"
-	payload.Automaticprovisioning = automaticProvisioningURL != ""
+	automaticProvisioningURLValue := automaticProvisioningURL != ""
+	payload.Automaticprovisioning = &automaticProvisioningURLValue
 
 	if bridgeVersion, err := h.getBridgeVersion(namespace); err != nil {
 		logger.WithError(err).Error("Error getting bridge version")
