@@ -63,7 +63,7 @@ func TestMongoDBEventRepo_InsertAndRetrieve(t *testing.T) {
 	events, err := repo.GetEventsByType(
 		event.GetEventsByTypeParams{
 			EventType: "test",
-			Filter:    &filter,
+			Filter:    filter,
 			Limit:     &pageSize,
 		},
 	)
@@ -123,7 +123,7 @@ func TestMongoDBEventRepo_InsertAndRetrieve(t *testing.T) {
 	eventsByType, err := repo.GetEventsByType(
 		event.GetEventsByTypeParams{
 			EventType: evaluationEventType,
-			Filter:    &filter,
+			Filter:    filter,
 			Limit:     &pageSize,
 		},
 	)
@@ -138,7 +138,7 @@ func TestMongoDBEventRepo_InsertAndRetrieve(t *testing.T) {
 		event.GetEventsByTypeParams{
 			EventType:          evaluationEventType,
 			ExcludeInvalidated: &excludeInvalidated,
-			Filter:             &filter,
+			Filter:             filter,
 			Limit:              &pageSize,
 		},
 	)
@@ -156,7 +156,7 @@ func TestMongoDBEventRepo_Retrieve_NoProjectOrKeptnContext(t *testing.T) {
 	eventsByType, err := repo.GetEventsByType(
 		event.GetEventsByTypeParams{
 			EventType: keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName),
-			Filter:    &filter,
+			Filter:    filter,
 			Limit:     &pageSize,
 		},
 	)
