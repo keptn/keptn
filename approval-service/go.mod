@@ -6,7 +6,7 @@ require (
 	github.com/cloudevents/sdk-go/v2 v2.8.0
 	github.com/google/uuid v1.3.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.13.1-0.20220404080730-c6d49838bec8
+	github.com/keptn/go-utils v0.14.1-0.20220404112417-297c1b2ddd7c
 	github.com/sirupsen/logrus v1.8.1
 )
 
