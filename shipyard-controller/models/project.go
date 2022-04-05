@@ -30,6 +30,9 @@ type UpdateProjectParams struct {
 	GitProxyUser string `json:"gitProxyUser,omitempty"`
 
 	// git proxy insecure
+	// omitempty property is missing due to fallback of this
+	// parameter to "undefined" when marshalling/unmarshalling data
+	// when "false" value is present
 	GitProxyInsecure bool `json:"gitProxyInsecure"`
 
 	// git proxy password
@@ -72,6 +75,9 @@ type CreateProjectParams struct {
 	GitProxyUser string `json:"gitProxyUser,omitempty"`
 
 	// git proxy insecure
+	// omitempty property is missing due to fallback of this
+	// parameter to "undefined" when marshalling/unmarshalling data
+	// when "false" value is present
 	GitProxyInsecure bool `json:"gitProxyInsecure"`
 
 	// git proxy password

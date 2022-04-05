@@ -19,7 +19,10 @@ type GitCredentials struct {
 	GitProxyUser      string `json:"gitProxyUser,omitempty"`
 	GitProxyPassword  string `json:"gitProxyPassword,omitempty"`
 	GitPemCertificate string `json:"gitPemCertificate,omitempty"`
-	GitProxyInsecure  bool   `json:"gitProxyInsecure"`
+	// omitempty property is missing due to fallback of this
+	// parameter to "undefined" when marshalling/unmarshalling data
+	// when "false" value is present
+	GitProxyInsecure bool `json:"gitProxyInsecure"`
 }
 
 type GitContext struct {
