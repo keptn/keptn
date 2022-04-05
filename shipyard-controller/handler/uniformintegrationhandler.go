@@ -5,16 +5,15 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"net/http"
-	"strings"
-	"time"
-
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"go.mongodb.org/mongo-driver/mongo"
+	"net/http"
+	"strings"
+	"time"
 )
 
 type IUniformIntegrationHandler interface {
@@ -35,6 +34,71 @@ type UniformIntegrationHandler struct {
 
 func NewUniformIntegrationHandler(uniformRepo db.UniformRepo) *UniformIntegrationHandler {
 	return &UniformIntegrationHandler{uniformRepo: uniformRepo}
+}
+
+type UniformParamsValidator struct{}
+
+func (u UniformParamsValidator) Validate(params interface{}) error {
+	switch t := params.(type) {
+	case apimodels.EventSubscription:
+		return u.validateSubscriptionParams(t, false)
+	case apimodels.Integration:
+		return u.validateIntegration(t)
+	default:
+		return nil
+	}
+}
+
+func (u UniformParamsValidator) validateIntegration(params apimodels.Integration) error {
+
+	if params.Subscription.Topics == nil {
+		return fmt.Errorf("the subscription must have a topic")
+	}
+
+	// in case of webhook we need to check the project
+	checkProject := false
+	if params.Name == "webhook-service" {
+		checkProject = true
+	}
+
+	for _, subscription := range params.Subscriptions {
+		if err := u.validateSubscriptionParams(subscription, checkProject); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (u UniformParamsValidator) validateSubscriptionParams(params apimodels.EventSubscription, checkProject bool) error {
+
+	if params.Event == "" {
+		return fmt.Errorf("the event must be specified when setting up a subscription")
+	}
+
+	if err := u.validateFilterParams(params.Filter, checkProject); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u UniformParamsValidator) validateFilterParams(params apimodels.EventSubscriptionFilter, checkProject bool) error {
+
+	// Since empty project stands for all projects, we cannot impose a project in the validation
+
+	// If the service is specified then also the stage should be
+	if params.Services != nil && params.Stages == nil {
+		return fmt.Errorf("at least one stage must be specified when setting up a subscription filter for a service")
+	}
+
+	//if the service is the webhook it should not be able to apply for all projects
+	if checkProject && (params.Projects == nil || len(params.Projects) > 1) {
+		return fmt.Errorf("webhook should refer to exactly one project")
+	}
+
+	return nil
 }
 
 // Register creates or updates a uniform integration
@@ -106,6 +170,15 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 				},
 			}
 			integration.Subscriptions = append(integration.Subscriptions, ts)
+		}
+
+		// we validate integrations here to make sure to verify both subscription and subscriptions
+
+		validator := UniformParamsValidator{}
+
+		if err := validator.Validate(integration); err != nil {
+			SetBadRequestErrorResponse(c, err.Error())
+			return
 		}
 
 		raw := fmt.Sprintf("%s-%s-%s-%s-%s", integration.Name, integration.MetaData.KubernetesMetaData.Namespace, integration.Subscription.Filter.Project, integration.Subscription.Filter.Stage, integration.Subscription.Filter.Service)
@@ -264,8 +337,16 @@ func (rh *UniformIntegrationHandler) CreateSubscription(c *gin.Context) {
 		SetBadRequestErrorResponse(c, err.Error())
 		return
 	}
+	validator := UniformParamsValidator{}
+
+	if err := validator.Validate(subscription); err != nil {
+		SetBadRequestErrorResponse(c, err.Error())
+		return
+	}
+
 	subscription.ID = uuid.New().String()
 
+	//TODO should we modify mongo db to check for webhook ? In that case only one project should be set
 	err := rh.uniformRepo.CreateOrUpdateSubscription(integrationID, *subscription)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
@@ -307,6 +388,14 @@ func (rh *UniformIntegrationHandler) UpdateSubscription(c *gin.Context) {
 		SetBadRequestErrorResponse(c, err.Error())
 		return
 	}
+
+	validator := UniformParamsValidator{}
+
+	if err := validator.Validate(subscription); err != nil {
+		SetBadRequestErrorResponse(c, err.Error())
+		return
+	}
+
 	subscription.ID = subscriptionID
 
 	err := rh.uniformRepo.CreateOrUpdateSubscription(integrationID, *subscription)
