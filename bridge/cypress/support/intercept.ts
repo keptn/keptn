@@ -58,6 +58,12 @@ export function interceptMain(): void {
   cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfo.mock' });
 }
 
+export function interceptDashboard(): void {
+  interceptMain();
+  cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=5', { fixture: 'sequences.sockshop' });
+  cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
+}
+
 export function interceptProjectBoard(): void {
   interceptMain();
   cy.intercept('/api/project/sockshop?approval=true&remediation=true', { fixture: 'project.mock' });

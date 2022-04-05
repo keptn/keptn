@@ -1,7 +1,7 @@
 import { Express, NextFunction, Request, Response } from 'express';
 import { BaseClient, errors, Issuer, TokenSet } from 'openid-client';
 import { SessionService } from './session';
-import { getRootLocation, oauthRouter, reduceRefreshDateBy } from './oauth-routes';
+import { getBuildableRootLocation, getRootLocation, oauthRouter, reduceRefreshDateBy } from './oauth-routes';
 import { defaultContentSecurityPolicyOptions } from '../app';
 import helmet from 'helmet';
 
@@ -15,9 +15,8 @@ async function setupOAuth(
   baseUrl: string
 ): Promise<SessionService> {
   const session = await new SessionService().init();
-  let prefix = getRootLocation();
+  const prefix = getBuildableRootLocation();
   baseUrl = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
-  prefix = prefix.endsWith('/') ? prefix : `${prefix}/`;
   const site = `${baseUrl}${prefix}`;
   const redirectUri = `${site}oauth/redirect`;
   const logoutUri = `${site}logoutsession`;

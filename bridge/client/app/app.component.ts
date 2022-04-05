@@ -1,5 +1,5 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { Component, HostBinding, OnInit } from '@angular/core';
 import { filter, take } from 'rxjs/operators';
 import { DataService } from './_services/data.service';
 
@@ -7,18 +7,20 @@ import { DataService } from './_services/data.service';
 declare let dT_: any;
 
 @Component({
-  selector: 'ktb-root',
+  selector: 'ktb-app',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit {
+  @HostBinding('class') cls = 'main-container';
+
   constructor(private http: HttpClient, private dataService: DataService) {
     if (typeof dT_ !== 'undefined' && dT_.initAngularNg) {
       dT_.initAngularNg(http, HttpHeaders);
     }
   }
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.dataService.loadKeptnInfo();
     this.dataService.keptnInfo
       .pipe(filter((keptnInfo) => !!keptnInfo))
