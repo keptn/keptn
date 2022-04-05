@@ -59,6 +59,51 @@ spec:
 			wantErr: false,
 		},
 		{
+			name: "valid Beta1 version input",
+			args: args{
+				webhookConfigYaml: []byte(`apiVersion: webhookconfig.keptn.sh/v1beta1
+kind: WebhookConfig
+metadata:
+  name: webhook-configuration
+spec:
+  webhooks:
+    - type: "sh.keptn.event.webhook.triggered"
+      subscriptionID: "my-subscription-id"
+      envFrom:
+        - secretRef:
+          name: mysecret
+      requests:
+        - url: http://localhost:8080
+          method: POST`),
+			},
+			want: &WebHookConfig{
+				ApiVersion: "webhookconfig.keptn.sh/v1beta1",
+				Kind:       "WebhookConfig",
+				Metadata: Metadata{
+					Name: "webhook-configuration",
+				},
+				Spec: WebHookConfigSpec{
+					Webhooks: []Webhook{
+						{
+							Type:           "sh.keptn.event.webhook.triggered",
+							SubscriptionID: "my-subscription-id",
+							EnvFrom: []EnvFrom{
+								{
+									Name: "mysecret",
+								},
+							},
+							Requests: []interface{}{
+								map[string]interface{}{
+									"method": "POST", "url": "http://localhost:8080",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
 			name: "invalid input",
 			args: args{
 				webhookConfigYaml: []byte("hulumulu"),

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/mitchellh/mapstructure"
 	"gopkg.in/yaml.v3"
 )
 
@@ -56,6 +57,7 @@ type WebHookSecretRef struct {
 }
 
 const webhookConfInvalid = "Webhook configuration invalid: "
+const betaApiVersion = "webhookconfig.keptn.sh/v1beta1"
 
 // DecodeWebHookConfigYAML takes a webhook config string formatted as YAML and decodes it to
 // Shipyard value
@@ -84,10 +86,12 @@ func DecodeWebHookConfigYAML(webhookConfigYaml []byte) (*WebHookConfig, error) {
 		}
 	}
 
-	if webHookConfig.ApiVersion == "v1beta1" {
+	if webHookConfig.ApiVersion == betaApiVersion {
 		for _, webhook := range webHookConfig.Spec.Webhooks {
 			for _, request := range webhook.Requests {
-				if err := verifyBeta1Request(request.(Request)); err != nil {
+				requestStruct := Request{}
+				mapstructure.Decode(request, &requestStruct)
+				if err := verifyBeta1Request(requestStruct); err != nil {
 					return nil, err
 				}
 			}
@@ -99,9 +103,11 @@ func DecodeWebHookConfigYAML(webhookConfigYaml []byte) (*WebHookConfig, error) {
 
 func verifyBeta1Request(request Request) error {
 	if request.URL == "" {
+		//+ validate URL
 		return fmt.Errorf(webhookConfInvalid + "webhook request URL empty")
 	}
 	if request.Method == "" {
+		//+validate method
 		return fmt.Errorf(webhookConfInvalid + "webhook request method empty")
 	}
 	if len(request.Headers) > 0 {
