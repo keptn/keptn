@@ -57,6 +57,7 @@ func ConnectFromEnv() (*NatsConnector, error) {
 	return Connect(natsURL)
 }
 
+// UnsubscribeAll deletes all current subscriptions
 func (nc *NatsConnector) UnsubscribeAll() error {
 	for _, s := range nc.subscriptions {
 		if err := s.Unsubscribe(); err != nil {
@@ -74,6 +75,7 @@ func (nc *NatsConnector) Subscribe(subject string, fn ProcessEventFn) error {
 	return nc.QueueSubscribe("", subject, fn)
 }
 
+// QueueSubscribe adds a queue subscription to the NatsConnector
 func (nc *NatsConnector) QueueSubscribe(queueGroup string, subject string, fn ProcessEventFn) error {
 	if subject == "" {
 		return ErrSubEmptySubject
@@ -84,10 +86,12 @@ func (nc *NatsConnector) QueueSubscribe(queueGroup string, subject string, fn Pr
 	return nc.queueSubscribe(subject, queueGroup, fn)
 }
 
+// SubscribeMultiple adds multiple subscriptions to the NatsConnector
 func (nc *NatsConnector) SubscribeMultiple(subjects []string, fn ProcessEventFn) error {
 	return nc.QueueSubscribeMultiple("", subjects, fn)
 }
 
+// QueueSubscribeMultiple adds multiple queue subscriptions to the NatsConnector
 func (nc *NatsConnector) QueueSubscribeMultiple(queueGroup string, subjects []string, fn ProcessEventFn) error {
 	if fn == nil {
 		return ErrSubNilMessageProcessor
@@ -101,6 +105,7 @@ func (nc *NatsConnector) QueueSubscribeMultiple(queueGroup string, subjects []st
 	return nil
 }
 
+// Publish sends a keptn event to the message broker
 func (nc *NatsConnector) Publish(event models.KeptnContextExtendedCE) error {
 	if event.Type == nil || *event.Type == "" {
 		return ErrPubEventTypeMissing
@@ -113,7 +118,6 @@ func (nc *NatsConnector) Publish(event models.KeptnContextExtendedCE) error {
 }
 
 func (nc *NatsConnector) queueSubscribe(subject string, queueGroup string, fn ProcessEventFn) error {
-	fmt.Printf("QueueSubscribe() using subject %s and queuegroup %s\n", subject, queueGroup)
 	sub, err := nc.conn.QueueSubscribe(subject, queueGroup, func(m *nats.Msg) {
 		event := &models.KeptnContextExtendedCE{}
 		if err := json.Unmarshal(m.Data, event); err != nil {

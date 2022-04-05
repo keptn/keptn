@@ -16,12 +16,21 @@ var EventSenderKey = EventSenderKeyType{}
 
 type EventSender func(ce models.KeptnContextExtendedCE) error
 
+// EventSource is anything that can be used
+// to get events from the Keptn Control Plane
 type EventSource interface {
+	// Start triggers the execution of the EventSource
 	Start(context.Context, RegistrationData, chan models.KeptnContextExtendedCE) error
+	// OnSubscriptionUpdate can be called to tell the EventSource that
+	// the current subscriptions have been changed
 	OnSubscriptionUpdate([]string)
+	// Sender returns a component that gives the possiblity to send events back
+	// to the Keptn Control plane
 	Sender() EventSender
 }
 
+// NATSEventSource is an implementation of EventSource
+// that is using the NATS event broker internally
 type NATSEventSource struct {
 	currentSubjects []string
 	connector       *nats.NatsConnector
@@ -29,6 +38,7 @@ type NATSEventSource struct {
 	queueGroup      string
 }
 
+// NewNATSEventSource creates a new NATSEventSource
 func NewNATSEventSource(natsConnector *nats.NatsConnector) *NATSEventSource {
 	return &NATSEventSource{
 		currentSubjects: []string{},
@@ -67,6 +77,8 @@ func (n *NATSEventSource) Sender() EventSender {
 	return n.connector.Publish
 }
 
+// HTTPEventSource is an implementation of EventSource that is using
+// using the puhblic Keptn API internally
 type HTTPEventSource struct{}
 
 func (H HTTPEventSource) Start(ctx context.Context, registrationData RegistrationData, ces chan models.KeptnContextExtendedCE) error {

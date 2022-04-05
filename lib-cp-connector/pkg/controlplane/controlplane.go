@@ -14,18 +14,16 @@ type AdditionalSubscriptionData struct {
 	SubscriptionID string `json:"subscriptionID"`
 }
 
-type ControlPlaneOptions struct {
-	KeptnAPIEndpoint string
-	KeptnAPIToken    string
-	NATSEndpoint     string
-}
-
+// ControlPlane can be used to connect to the Keptn Control Plane
 type ControlPlane struct {
 	subscriptionSource   *SubscriptionSource
 	eventSource          EventSource
 	currentSubscriptions []models.EventSubscription
 }
 
+// New creates a new ControlPlane
+// It is using a SubscriptionSource source to get information about current uniform subscriptions
+// as well as an EventSource to actually receive events from Keptn
 func New(subscriptionSource *SubscriptionSource, eventSource EventSource) *ControlPlane {
 	return &ControlPlane{
 		subscriptionSource:   subscriptionSource,
@@ -34,6 +32,7 @@ func New(subscriptionSource *SubscriptionSource, eventSource EventSource) *Contr
 	}
 }
 
+// Register is initially used to register the Keptn integration to the Control Plane
 func (cp *ControlPlane) Register(ctx context.Context, integration Integration) error {
 	eventUpdates := make(chan models.KeptnContextExtendedCE)
 	subscriptionUpdates := make(chan []models.EventSubscription)
