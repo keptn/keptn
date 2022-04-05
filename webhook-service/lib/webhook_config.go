@@ -2,6 +2,7 @@ package lib
 
 import (
 	"errors"
+	"fmt"
 
 	"gopkg.in/yaml.v3"
 )
@@ -79,9 +80,34 @@ func DecodeWebHookConfigYAML(webhookConfigYaml []byte) (*WebHookConfig, error) {
 		if len(webhook.Requests) == 0 {
 			return nil, errors.New("Webhook configuration invalid: missing 'webhooks[].Requests[]' part")
 		}
+
+		if webHookConfig.ApiVersion == "v1beta1" {
+			for _, request := range webhook.Requests {
+				if err := verifyBeta1Request(request.(Request)); err != nil {
+					return nil, err
+				}
+			}
+		}
 	}
 
 	return webHookConfig, nil
+}
+
+func verifyBeta1Request(request Request) error {
+	if request.URL == "" {
+		return fmt.Errorf("Webhook configuration invalid: webhook request URL empty")
+	}
+	if request.Method == "" {
+		return fmt.Errorf("Webhook configuration invalid: webhook request method empty")
+	}
+	if len(request.Headers) > 0 {
+		for _, header := range request.Headers {
+			if header.Key == "" || header.Value == "" {
+				return fmt.Errorf("Webhook configuration invalid: webhook request header or value empty")
+			}
+		}
+	}
+	return nil
 }
 
 func (wh Webhook) ShouldSendStartedEvent() bool {

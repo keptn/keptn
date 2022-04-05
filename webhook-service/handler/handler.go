@@ -200,12 +200,12 @@ func (th *TaskHandler) performWebhookRequests(webhook lib.Webhook, eventAdapter 
 		// parse the data from the event, together with the secret env vars
 		parsedCurlCommand, err := th.templateEngine.ParseTemplate(eventAdapter.Get(), buildRequest)
 		if err != nil {
-			return nil, lib.NewWebhookExecutionError(true, fmt.Errorf("could not parse request '%s' : %s", req, err.Error()), lib.WithNrOfExecutedRequests(executedRequests))
+			return nil, lib.NewWebhookExecutionError(true, fmt.Errorf("could not parse request '%s' : %s", buildRequest, err.Error()), lib.WithNrOfExecutedRequests(executedRequests))
 		}
 		// perform the request
 		response, err := th.curlExecutor.Curl(parsedCurlCommand)
 		if err != nil {
-			return nil, lib.NewWebhookExecutionError(true, fmt.Errorf("could not execute request '%s': %s", req, err.Error()), lib.WithNrOfExecutedRequests(executedRequests))
+			return nil, lib.NewWebhookExecutionError(true, fmt.Errorf("could not execute request '%s': %s", buildRequest, err.Error()), lib.WithNrOfExecutedRequests(executedRequests))
 		}
 		executedRequests = executedRequests + 1
 		responses = append(responses, response)
@@ -226,8 +226,31 @@ func (th *TaskHandler) gatherSecretEnvVars(webhook lib.Webhook) (map[string]stri
 }
 
 func (th *TaskHandler) createBeta1Request(request interface{}) (string, error) {
-	// TODO implement
-	return fmt.Sprintf("%s", request), nil
+	switch req := request.(type) {
+	case string:
+		return req, nil
+	case lib.Request:
+		return buildBeta1CurlRequest(req), nil
+	default:
+		return "", fmt.Errorf("could not create request: invalid request type")
+	}
+}
+
+func buildBeta1CurlRequest(req lib.Request) string {
+	tmpReq := fmt.Sprintf("curl --request %s", req.Method)
+	if len(req.Headers) > 0 {
+		for _, header := range req.Headers {
+			tmpReq = fmt.Sprintf(tmpReq+" --header \"%s %s\"", header.Key, header.Value)
+		}
+	}
+	if req.Payload != "" {
+		tmpReq = fmt.Sprintf(tmpReq+" --data \"%s\"", req.Payload)
+	}
+	if req.Options != "" {
+		tmpReq = fmt.Sprintf(tmpReq+" %s", req.Options)
+	}
+	tmpReq = fmt.Sprintf(tmpReq+" %s", req.URL)
+	return tmpReq
 }
 
 func sdkError(msg string, err error) *sdk.Error {
