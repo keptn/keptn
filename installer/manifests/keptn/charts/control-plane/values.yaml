@@ -194,8 +194,8 @@ mongodbDatastore:
 
 lighthouseService:
   image:
-    repository: docker.io/keptn/lighthouse-service
-    tag: ""
+    repository: docker.io/warber/warber_lighthouse-service
+    tag: "0.14.0-15-g933408c6d-dirty"
 
 statisticsService:
   image:
