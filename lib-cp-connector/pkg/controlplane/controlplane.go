@@ -10,10 +10,6 @@ import (
 var ErrEventHandleFatal = errors.New("fatal event handling error")
 var ErrEventHandleIgnore = errors.New("event handling error")
 
-type AdditionalSubscriptionData struct {
-	SubscriptionID string `json:"subscriptionID"`
-}
-
 // ControlPlane can be used to connect to the Keptn Control Plane
 type ControlPlane struct {
 	subscriptionSource   *SubscriptionSource
@@ -69,10 +65,7 @@ func (cp *ControlPlane) handle(ctx context.Context, event models.KeptnContextExt
 		}
 	}
 
-	for _, t := range subscriptionsForTopic {
-		if err := event.AddTemporaryData("distributor", AdditionalSubscriptionData{SubscriptionID: t.ID}, models.AddTemporaryDataOptions{OverwriteIfExisting: true}); err != nil {
-			log.Printf("Could not add temporary information about subscriptions to event: %v\n", err)
-		}
+	for range subscriptionsForTopic {
 		if err := integration.OnEvent(context.WithValue(ctx, EventSenderKey, cp.eventSource.Sender()), event); err != nil {
 			if errors.Is(err, ErrEventHandleFatal) {
 				return err
