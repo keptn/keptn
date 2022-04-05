@@ -10,6 +10,7 @@ import (
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/handler"
 	"github.com/keptn/keptn/shipyard-controller/models"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
@@ -78,22 +79,7 @@ func TestUniformIntegrationHandler_GetRegistrations(t *testing.T) {
 }
 
 func TestUniformIntegrationHandler_Register(t *testing.T) {
-	myValidIntegration := &apimodels.Integration{
-		ID:   "my-id",
-		Name: "my-name",
-		MetaData: apimodels.MetaData{
-			Hostname:           "my-host",
-			DistributorVersion: "0.8.3",
-			KubernetesMetaData: apimodels.KubernetesMetaData{
-				Namespace: "my-namespace",
-			},
-		},
-		Subscriptions: []apimodels.EventSubscription{
-			{
-				Event: "sh.keptn.event.test.triggered",
-			},
-		},
-	}
+	myValidIntegration := getValidIntegration()
 	validPayload, _ := json.Marshal(myValidIntegration)
 
 	myValidIntegrationUpdated := &apimodels.Integration{
@@ -406,5 +392,144 @@ func TestUniformIntegrationHandler_Unregister(t *testing.T) {
 				require.Equal(t, tt.wantID, tt.fields.integrationManager.DeleteUniformIntegrationCalls()[0].ID)
 			}
 		})
+	}
+}
+
+func TestUniformParamsValidator_Validate(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		params  interface{}
+		wantErr error
+	}{
+		{
+			name:    "test bad subscription",
+			params:  apimodels.EventSubscription{},
+			wantErr: errors.New("the event must be specified when setting up a subscription"),
+		},
+		{
+			name:    "test good integration",
+			params:  getValidIntegration(),
+			wantErr: nil,
+		},
+		{
+			name: "test error webhook subscription - too many projects",
+			params: apimodels.Integration{
+				ID:       "an-id",
+				Name:     "webhook-service",
+				MetaData: apimodels.MetaData{},
+				Subscription: apimodels.Subscription{
+					Topics: []string{"mytopic"},
+				},
+				Subscriptions: []apimodels.EventSubscription{
+					{
+						ID:    "",
+						Event: "started.test.whatever",
+						Filter: apimodels.EventSubscriptionFilter{
+							Projects: []string{"demo", "podtato"},
+						},
+					},
+				},
+			},
+			wantErr: errors.New("webhook should refer to exactly one project"),
+		},
+		{
+			name: "test error no subscription topic",
+			params: apimodels.Integration{
+				ID:            "an-id",
+				Name:          "we-service",
+				MetaData:      apimodels.MetaData{},
+				Subscription:  apimodels.Subscription{},
+				Subscriptions: []apimodels.EventSubscription{},
+			},
+			wantErr: errors.New("the subscription must have a topic"),
+		},
+		{
+			name: "test error webhook subscription - no projects",
+			params: apimodels.Integration{
+				ID:       "an-id",
+				Name:     "webhook-service",
+				MetaData: apimodels.MetaData{},
+				Subscription: apimodels.Subscription{
+					Topics: []string{"mytopic"},
+				},
+				Subscriptions: []apimodels.EventSubscription{
+					{
+						ID:     "",
+						Event:  "started.test.whatever",
+						Filter: apimodels.EventSubscriptionFilter{},
+					},
+				},
+			},
+			wantErr: errors.New("webhook should refer to exactly one project"),
+		},
+		{
+			name: "test service - no projects no stage no service",
+			params: apimodels.Integration{
+				ID:       "an-id",
+				Name:     "any-service",
+				MetaData: apimodels.MetaData{},
+				Subscription: apimodels.Subscription{
+					Topics: []string{"mytopic"},
+				},
+				Subscriptions: []apimodels.EventSubscription{
+					{
+						ID:     "",
+						Event:  "started.test.whatever",
+						Filter: apimodels.EventSubscriptionFilter{},
+					},
+				},
+			},
+			wantErr: nil,
+		},
+
+		{
+			name: "test error service -  no stage but service defined",
+			params: apimodels.Integration{
+				ID:       "an-id",
+				Name:     "webhook-service",
+				MetaData: apimodels.MetaData{},
+				Subscription: apimodels.Subscription{
+					Topics: []string{"mytopic"},
+				},
+				Subscriptions: []apimodels.EventSubscription{
+					{
+						ID:    "",
+						Event: "started.test.whatever",
+						Filter: apimodels.EventSubscriptionFilter{
+							Services: []string{"my-service"},
+						},
+					},
+				},
+			},
+			wantErr: errors.New("at least one stage must be specified when setting up a subscription filter for a service"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			u := handler.UniformParamsValidator{}
+			err := u.Validate(tt.params)
+			assert.Equal(t, err, tt.wantErr)
+
+		})
+	}
+}
+
+func getValidIntegration() *apimodels.Integration {
+	return &apimodels.Integration{
+		ID:   "my-id",
+		Name: "my-name",
+		MetaData: apimodels.MetaData{
+			Hostname:           "my-host",
+			DistributorVersion: "0.8.3",
+			KubernetesMetaData: apimodels.KubernetesMetaData{
+				Namespace: "my-namespace",
+			},
+		},
+		Subscriptions: []apimodels.EventSubscription{
+			{
+				Event: "sh.keptn.event.test.triggered",
+			},
+		},
 	}
 }

@@ -172,15 +172,6 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 			integration.Subscriptions = append(integration.Subscriptions, ts)
 		}
 
-		// we validate integrations here to make sure to verify both subscription and subscriptions
-
-		validator := UniformParamsValidator{}
-
-		if err := validator.Validate(integration); err != nil {
-			SetBadRequestErrorResponse(c, err.Error())
-			return
-		}
-
 		raw := fmt.Sprintf("%s-%s-%s-%s-%s", integration.Name, integration.MetaData.KubernetesMetaData.Namespace, integration.Subscription.Filter.Project, integration.Subscription.Filter.Stage, integration.Subscription.Filter.Service)
 		hasher := sha1.New() //nolint:gosec
 		_, err = hasher.Write([]byte(raw))
@@ -189,6 +180,15 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 		}
 		hash = hex.EncodeToString(hasher.Sum(nil))
 		integration.ID = hash
+	}
+
+	// we validate integrations here to make sure to verify both subscription and subscriptions
+
+	validator := UniformParamsValidator{}
+
+	if err := validator.Validate(integration); err != nil {
+		SetBadRequestErrorResponse(c, err.Error())
+		return
 	}
 
 	err = rh.uniformRepo.CreateUniformIntegration(*integration)
