@@ -51,7 +51,7 @@ func (u UniformParamsValidator) Validate(params interface{}) error {
 
 func (u UniformParamsValidator) validateIntegration(params apimodels.Integration) error {
 
-	if params.Subscription.Topics == nil {
+	if params.Subscription.Topics == nil && (params.Subscriptions == nil || len(params.Subscriptions) == 0) {
 		return fmt.Errorf("the subscription must have a topic")
 	}
 

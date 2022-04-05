@@ -447,12 +447,10 @@ func TestUniformParamsValidator_Validate(t *testing.T) {
 		{
 			name: "test error webhook subscription - no projects",
 			params: apimodels.Integration{
-				ID:       "an-id",
-				Name:     "webhook-service",
-				MetaData: apimodels.MetaData{},
-				Subscription: apimodels.Subscription{
-					Topics: []string{"mytopic"},
-				},
+				ID:           "an-id",
+				Name:         "webhook-service",
+				MetaData:     apimodels.MetaData{},
+				Subscription: apimodels.Subscription{},
 				Subscriptions: []apimodels.EventSubscription{
 					{
 						ID:     "",
