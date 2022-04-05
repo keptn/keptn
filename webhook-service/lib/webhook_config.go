@@ -89,9 +89,7 @@ func DecodeWebHookConfigYAML(webhookConfigYaml []byte) (*WebHookConfig, error) {
 	if webHookConfig.ApiVersion == betaApiVersion {
 		for _, webhook := range webHookConfig.Spec.Webhooks {
 			for _, request := range webhook.Requests {
-				requestStruct := Request{}
-				mapstructure.Decode(request, &requestStruct)
-				if err := verifyBeta1Request(requestStruct); err != nil {
+				if err := verifyBeta1Request(ConvertToRequest(request)); err != nil {
 					return nil, err
 				}
 			}
@@ -129,4 +127,10 @@ func (wh Webhook) ShouldSendStartedEvent() bool {
 
 func (wh Webhook) ShouldSendFinishedEvent() bool {
 	return wh.SendFinished
+}
+
+func ConvertToRequest(data interface{}) Request {
+	requestStruct := Request{}
+	mapstructure.Decode(data, &requestStruct)
+	return requestStruct
 }

@@ -227,10 +227,12 @@ func (th *TaskHandler) gatherSecretEnvVars(webhook lib.Webhook) (map[string]stri
 
 func (th *TaskHandler) createRequest(request interface{}) (string, error) {
 	switch req := request.(type) {
+	// v1alpha1 version
 	case string:
 		return req, nil
-	case lib.Request:
-		return buildBetaCurlRequest(req), nil
+	// v1beta1 version
+	case map[string]interface{}:
+		return buildBetaCurlRequest(lib.ConvertToRequest(req)), nil
 	default:
 		return "", fmt.Errorf("could not create request: invalid request type")
 	}
