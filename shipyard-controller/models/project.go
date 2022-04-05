@@ -30,7 +30,7 @@ type UpdateProjectParams struct {
 	GitProxyUser string `json:"gitProxyUser,omitempty"`
 
 	// git proxy insecure
-	GitProxyInsecure bool `json:"gitProxyInsecure,omitempty"`
+	GitProxyInsecure bool `json:"gitProxyInsecure"`
 
 	// git proxy password
 	GitProxyPassword string `json:"gitProxyPassword,omitempty"`
@@ -72,7 +72,7 @@ type CreateProjectParams struct {
 	GitProxyUser string `json:"gitProxyUser,omitempty"`
 
 	// git proxy insecure
-	GitProxyInsecure bool `json:"gitProxyInsecure,omitempty"`
+	GitProxyInsecure bool `json:"gitProxyInsecure"`
 
 	// git proxy password
 	GitProxyPassword string `json:"gitProxyPassword,omitempty"`

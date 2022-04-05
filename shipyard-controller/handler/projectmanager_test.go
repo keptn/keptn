@@ -626,9 +626,13 @@ func TestUpdate_UpdateProjectInConfigurationStoreFails(t *testing.T) {
 	})
 
 	newSecretsEncoded, _ := json.Marshal(gitCredentials{
-		User:      "git-user",
-		Token:     "git-token",
-		RemoteURI: "git-url",
+		User:             "git-user",
+		Token:            "git-token",
+		RemoteURI:        "git-url",
+		GitProxyURL:      "some-url",
+		GitProxyScheme:   "http",
+		GitProxyUser:     "proxy-user",
+		GitProxyInsecure: false,
 	})
 
 	rollbackProjectData := &apimodels.ExpandedProject{
@@ -658,10 +662,14 @@ func TestUpdate_UpdateProjectInConfigurationStoreFails(t *testing.T) {
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	params := &models.UpdateProjectParams{
-		GitRemoteURL: "git-url",
-		GitToken:     "git-token",
-		GitUser:      "git-user",
-		Name:         common.Stringp("my-project"),
+		GitRemoteURL:     "git-url",
+		GitToken:         "git-token",
+		GitUser:          "git-user",
+		GitProxyURL:      "some-url",
+		GitProxyScheme:   "http",
+		GitProxyUser:     "proxy-user",
+		GitProxyInsecure: false,
+		Name:             common.Stringp("my-project"),
 	}
 	err, rollback := instance.Update(params)
 	assert.NotNil(t, err)
@@ -792,9 +800,13 @@ func TestUpdate_UpdateProjectInRepositoryFails(t *testing.T) {
 	})
 
 	newSecretsEncoded, _ := json.Marshal(gitCredentials{
-		User:      "git-user",
-		Token:     "git-token",
-		RemoteURI: "git-url",
+		User:             "git-user",
+		Token:            "git-token",
+		RemoteURI:        "git-url",
+		GitProxyURL:      "some-url",
+		GitProxyScheme:   "http",
+		GitProxyUser:     "proxy-user",
+		GitProxyInsecure: false,
 	})
 
 	oldProject := &apimodels.ExpandedProject{
@@ -833,11 +845,15 @@ func TestUpdate_UpdateProjectInRepositoryFails(t *testing.T) {
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	myShipyard := "my-shipyard"
 	params := &models.UpdateProjectParams{
-		GitRemoteURL: "git-url",
-		GitToken:     "git-token",
-		GitUser:      "git-user",
-		Name:         common.Stringp("my-project"),
-		Shipyard:     &myShipyard,
+		GitRemoteURL:     "git-url",
+		GitToken:         "git-token",
+		GitUser:          "git-user",
+		GitProxyURL:      "some-url",
+		GitProxyScheme:   "http",
+		GitProxyUser:     "proxy-user",
+		GitProxyInsecure: false,
+		Name:             common.Stringp("my-project"),
+		Shipyard:         &myShipyard,
 	}
 	err, rollback := instance.Update(params)
 	assert.NotNil(t, err)
@@ -848,12 +864,16 @@ func TestUpdate_UpdateProjectInRepositoryFails(t *testing.T) {
 	}
 
 	projectDBUpdateData := &apimodels.ExpandedProject{
-		CreationDate:    "old-creationdate",
-		GitRemoteURI:    "git-url",
-		GitUser:         "git-user",
-		ProjectName:     "my-project",
-		Shipyard:        myShipyard,
-		ShipyardVersion: "v1",
+		CreationDate:     "old-creationdate",
+		GitRemoteURI:     "git-url",
+		GitUser:          "git-user",
+		ProjectName:      "my-project",
+		GitProxyURL:      "some-url",
+		GitProxyScheme:   "http",
+		GitProxyUser:     "proxy-user",
+		GitProxyInsecure: false,
+		Shipyard:         myShipyard,
+		ShipyardVersion:  "v1",
 	}
 
 	updateShipyardResourceData := &apimodels.Resource{
@@ -895,9 +915,13 @@ func TestUpdate(t *testing.T) {
 	})
 
 	updateSecretsData, _ := json.Marshal(gitCredentials{
-		User:      "git-user",
-		Token:     "git-token",
-		RemoteURI: "git-url",
+		User:             "git-user",
+		Token:            "git-token",
+		RemoteURI:        "git-url",
+		GitProxyURL:      "some-url",
+		GitProxyScheme:   "http",
+		GitProxyUser:     "proxy-user",
+		GitProxyInsecure: false,
 	})
 
 	oldProjectData := &apimodels.ExpandedProject{
@@ -936,11 +960,15 @@ func TestUpdate(t *testing.T) {
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	myShipyard := "my-shipyard"
 	params := &models.UpdateProjectParams{
-		GitRemoteURL: "git-url",
-		GitToken:     "git-token",
-		GitUser:      "git-user",
-		Name:         common.Stringp("my-project"),
-		Shipyard:     &myShipyard,
+		GitRemoteURL:     "git-url",
+		GitToken:         "git-token",
+		GitUser:          "git-user",
+		Name:             common.Stringp("my-project"),
+		GitProxyURL:      "some-url",
+		GitProxyScheme:   "http",
+		GitProxyUser:     "proxy-user",
+		GitProxyInsecure: false,
+		Shipyard:         &myShipyard,
 	}
 	err, rollback := instance.Update(params)
 	assert.Nil(t, err)
@@ -951,12 +979,118 @@ func TestUpdate(t *testing.T) {
 	}
 
 	projectDBUpdateData := &apimodels.ExpandedProject{
+		CreationDate:     "old-creationdate",
+		GitRemoteURI:     "git-url",
+		GitUser:          "git-user",
+		ProjectName:      "my-project",
+		Shipyard:         "my-shipyard",
+		GitProxyURL:      "some-url",
+		GitProxyScheme:   "http",
+		GitProxyUser:     "proxy-user",
+		GitProxyInsecure: false,
+		ShipyardVersion:  "v1",
+	}
+
+	expectedUpdateShipyardResourceData := &apimodels.Resource{
+		ResourceContent: *params.Shipyard,
+		ResourceURI:     common.Stringp("shipyard.yaml")}
+
+	assert.Equal(t, projectUpdateData, configStore.UpdateProjectCalls()[0].Project)
+	assert.Equal(t, "git-credentials-my-project", secretStore.UpdateSecretCalls()[0].Name)
+	assert.Equal(t, updateSecretsData, secretStore.UpdateSecretCalls()[0].Content["git-credentials"])
+	assert.Equal(t, projectDBUpdateData, projectMVRepo.UpdateProjectCalls()[0].Prj)
+	assert.Equal(t, expectedUpdateShipyardResourceData, configStore.UpdateProjectResourceCalls()[0].Resource)
+}
+
+func TestUpdateNoInsecureParameter(t *testing.T) {
+
+	secretStore := &common_mock.SecretStoreMock{}
+	projectMVRepo := &db_mock.ProjectMVRepoMock{}
+	eventRepo := &db_mock.EventRepoMock{}
+	configStore := &common_mock.ConfigurationStoreMock{}
+	sequenceQueueRepo := &db_mock.SequenceQueueRepoMock{}
+	eventQueueRepo := &db_mock.EventQueueRepoMock{}
+	sequenceExecutionRepo := &db_mock.SequenceExecutionRepoMock{}
+
+	oldSecretsData, _ := json.Marshal(gitCredentials{
+		User:      "my-old-user",
+		Token:     "my-old-token",
+		RemoteURI: "http://my-old-remote.uri",
+	})
+
+	updateSecretsData, _ := json.Marshal(gitCredentials{
+		User:           "git-user",
+		Token:          "git-token",
+		RemoteURI:      "git-url",
+		GitProxyURL:    "some-url",
+		GitProxyScheme: "http",
+		GitProxyUser:   "proxy-user",
+	})
+
+	oldProjectData := &apimodels.ExpandedProject{
 		CreationDate:    "old-creationdate",
-		GitRemoteURI:    "git-url",
-		GitUser:         "git-user",
+		GitRemoteURI:    "http://my-old-remote.uri",
+		GitUser:         "my-old-user",
 		ProjectName:     "my-project",
-		Shipyard:        "my-shipyard",
+		Shipyard:        "",
 		ShipyardVersion: "v1",
+	}
+
+	secretStore.GetSecretFunc = func(name string) (map[string][]byte, error) {
+
+		return map[string][]byte{"git-credentials": oldSecretsData}, nil
+	}
+
+	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
+		return nil
+	}
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
+		return oldProjectData, nil
+	}
+
+	configStore.UpdateProjectFunc = func(project apimodels.Project) error {
+		return nil
+	}
+
+	configStore.UpdateProjectResourceFunc = func(projectName string, resource *apimodels.Resource) error {
+		return nil
+	}
+
+	projectMVRepo.UpdateProjectFunc = func(prj *apimodels.ExpandedProject) error {
+		return nil
+	}
+
+	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	myShipyard := "my-shipyard"
+	params := &models.UpdateProjectParams{
+		GitRemoteURL:   "git-url",
+		GitToken:       "git-token",
+		GitUser:        "git-user",
+		Name:           common.Stringp("my-project"),
+		GitProxyURL:    "some-url",
+		GitProxyScheme: "http",
+		GitProxyUser:   "proxy-user",
+		Shipyard:       &myShipyard,
+	}
+	err, rollback := instance.Update(params)
+	assert.Nil(t, err)
+	rollback()
+
+	projectUpdateData := apimodels.Project{
+		ProjectName: *params.Name,
+	}
+
+	projectDBUpdateData := &apimodels.ExpandedProject{
+		CreationDate:     "old-creationdate",
+		GitRemoteURI:     "git-url",
+		GitUser:          "git-user",
+		ProjectName:      "my-project",
+		Shipyard:         "my-shipyard",
+		GitProxyURL:      "some-url",
+		GitProxyScheme:   "http",
+		GitProxyUser:     "proxy-user",
+		GitProxyInsecure: false,
+		ShipyardVersion:  "v1",
 	}
 
 	expectedUpdateShipyardResourceData := &apimodels.Resource{
