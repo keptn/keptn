@@ -1,0 +1,22 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+  height: 50px;
+  padding: 0 28px;
+  border-radius: 3px;
+}
+
+.ktb-loading-distractor-label {
+  font-size: 20px;
+  line-height: 1.6;
+  font-weight: 400;
+  display: block;
+  box-sizing: border-box;
+  text-decoration: none;
+  color: var(--dt-theme-main-default-color);
+  padding-left: 8px;
+}
+
+.ktb-loading-spinner .ktb-loading-distractor-label {
+  padding-left: 8px;
+}

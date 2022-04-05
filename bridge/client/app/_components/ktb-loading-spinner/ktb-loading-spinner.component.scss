@@ -1,0 +1,84 @@
+@import '~@dynatrace/barista-components/core/src/style/variables';
+
+$ktb-loading-spinner-default-size: 30px;
+$ktb-loading-spinner-small-size: 15px;
+$ktb-loading-spinner-offset: 22px * 3.1416; // r(-gap)*2*3.14
+$ktb-loading-spinner-duration: 1700ms;
+$ktb-loading-spinner-ease: cubic-bezier(0.645, 0.045, 0.355, 1);
+
+:host {
+  display: inline-block;
+  width: $ktb-loading-spinner-default-size;
+  height: $ktb-loading-spinner-default-size;
+}
+
+// There is an issue in angular with the combination of :host ans :host-context.
+// As a workaround you have to move the :host-context after the :host selector
+:host :host-context(.dt-form-field),
+:host :host-context(.dt-filter-field),
+:host :host-context(.dt-button) {
+  width: $ktb-loading-spinner-small-size;
+  height: $ktb-loading-spinner-small-size;
+
+  // This overrides the min-with requirement for prefix/suffix
+  min-width: $ktb-loading-spinner-small-size;
+}
+
+.ktb-loading-spinner-svg {
+  display: block;
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  stroke-width: 4px;
+  stroke: $logolime;
+  fill: none;
+  animation: ktb-loading-spinner-spin $ktb-loading-spinner-duration * 2 linear infinite;
+}
+
+:host-context(.dt-form-field) .ktb-loading-spinner-svg[dtPrefix],
+:host-context(.dt-form-field) .ktb-loading-spinner-svg[dtSuffix],
+:host-context(.dt-filter-field) .ktb-loading-spinner-svg {
+  stroke: $gray-500;
+}
+
+:host-context(.dt-button) {
+  // align icon with the baseline of the text
+  vertical-align: -3px;
+  margin-right: 8px;
+
+  .ktb-loading-spinner-svg {
+    stroke: #ffffff;
+  }
+}
+
+:host-context(.dt-button-secondary) .ktb-loading-spinner-svg {
+  stroke: $gray-300;
+}
+
+.ktb-loading-spinner-path {
+  stroke-dasharray: $ktb-loading-spinner-offset;
+  transform-origin: center;
+  animation: ktb-loading-spinner-dash $ktb-loading-spinner-duration
+  $ktb-loading-spinner-ease infinite;
+}
+
+@keyframes ktb-loading-spinner-spin {
+  0% {
+    transform: rotate(0);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ktb-loading-spinner-dash {
+  0% {
+    stroke-dashoffset: 138.2304px;
+  }
+  50% {
+    stroke-dashoffset: 86.394px;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
