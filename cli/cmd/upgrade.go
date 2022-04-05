@@ -267,11 +267,20 @@ func addWarningNonExistingProjectUpstream() error {
 		return fmt.Errorf("failed to get all projects from namespace %s", namespace)
 	}
 
+	missingUpstreamProjects := make([]string, 0)
 	for _, project := range projects {
 		if project.GitRemoteURI == "" {
-			fmt.Printf("WARNING:  the project %s has no Git upstream configured. Please consider setting a Git upstream repository using:\n\n", project.ProjectName)
-			fmt.Printf("\tkeptn update project %s --git-user=GIT_USER --git-token=GIT_TOKEN --git-remote-url=GIT_REMOTE_URL\n\n", project.ProjectName)
+			missingUpstreamProjects = append(missingUpstreamProjects, project.ProjectName)
 		}
+	}
+
+	if len(missingUpstreamProjects) > 0 {
+		fmt.Print("WARNING: the following projects have no Git upstream configured:\n")
+		for _, projectName := range missingUpstreamProjects {
+			fmt.Printf("  - %s\n", projectName)
+		}
+		fmt.Print("Please consider setting a Git upstream repository using:\n")
+		fmt.Print("  keptn update project PROJECT_NAME --git-user=GIT_USER --git-token=GIT_TOKEN --git-remote-url=GIT_REMOTE_URL\n\n")
 	}
 
 	return nil
