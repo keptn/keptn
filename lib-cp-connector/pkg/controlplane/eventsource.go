@@ -26,6 +26,7 @@ type NATSEventSource struct {
 	currentSubjects []string
 	connector       *nats.NatsConnector
 	eventProcessFn  nats.ProcessEventFn
+	queueGroup      string
 }
 
 func NewNATSEventSource(natsConnector *nats.NatsConnector) *NATSEventSource {
@@ -37,11 +38,12 @@ func NewNATSEventSource(natsConnector *nats.NatsConnector) *NATSEventSource {
 }
 
 func (n *NATSEventSource) Start(ctx context.Context, registrationData RegistrationData, eventChannel chan models.KeptnContextExtendedCE) error {
+	n.queueGroup = registrationData.Name
 	n.eventProcessFn = func(event models.KeptnContextExtendedCE) error {
 		eventChannel <- event
 		return nil
 	}
-	if err := n.connector.QueueSubscribeMultiple(registrationData.Name, n.currentSubjects, n.eventProcessFn); err != nil {
+	if err := n.connector.QueueSubscribeMultiple(n.queueGroup, n.currentSubjects, n.eventProcessFn); err != nil {
 		return fmt.Errorf("could not start NATS event source: %w", err)
 	}
 	return nil
@@ -55,7 +57,7 @@ func (n *NATSEventSource) OnSubscriptionUpdate(subjects []string) {
 		if err != nil {
 			log.Printf("error during handling of subscription update: %v\n", err)
 		}
-		if err := n.connector.SubscribeMultiple(n.currentSubjects, n.eventProcessFn); err != nil {
+		if err := n.connector.QueueSubscribeMultiple(n.queueGroup, n.currentSubjects, n.eventProcessFn); err != nil {
 			log.Printf("error during handling of subscription update: %v\n", err)
 		}
 	}
