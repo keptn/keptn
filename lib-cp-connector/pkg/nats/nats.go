@@ -113,6 +113,7 @@ func (nc *NatsConnector) Publish(event models.KeptnContextExtendedCE) error {
 }
 
 func (nc *NatsConnector) queueSubscribe(subject string, queueGroup string, fn ProcessEventFn) error {
+	fmt.Printf("QueueSubscribe() using subject %s and queuegroup %s", subject, queueGroup)
 	sub, err := nc.conn.QueueSubscribe(subject, queueGroup, func(m *nats.Msg) {
 		event := &models.KeptnContextExtendedCE{}
 		if err := json.Unmarshal(m.Data, event); err != nil {
