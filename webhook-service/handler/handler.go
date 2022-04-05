@@ -230,17 +230,17 @@ func (th *TaskHandler) createRequest(request interface{}) (string, error) {
 	case string:
 		return req, nil
 	case lib.Request:
-		return buildBeta1CurlRequest(req), nil
+		return buildBetaCurlRequest(req), nil
 	default:
 		return "", fmt.Errorf("could not create request: invalid request type")
 	}
 }
 
-func buildBeta1CurlRequest(req lib.Request) string {
+func buildBetaCurlRequest(req lib.Request) string {
 	tmpReq := fmt.Sprintf("curl --request %s", req.Method)
 	if len(req.Headers) > 0 {
 		for _, header := range req.Headers {
-			tmpReq = fmt.Sprintf(tmpReq+" --header \"%s %s\"", header.Key, header.Value)
+			tmpReq = fmt.Sprintf(tmpReq+" --header \"%s: %s\"", header.Key, header.Value)
 		}
 	}
 	if req.Payload != "" {
