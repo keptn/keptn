@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { IGitData, IGitHttps, IProxy, IRequiredGitData } from '../../_interfaces/git-upstream';
 import { isGitUpstreamValidSet, isGitWithProxy } from '../../_utils/git-upstream.utils';
+import { AppUtils } from '../../_utils/app.utils';
 
 @Component({
   selector: 'ktb-project-settings-git-https',
@@ -34,8 +35,10 @@ export class KtbProjectSettingsGitHttpsComponent {
         gitProxyUser: data.https.gitProxyUser,
         gitProxyPassword: data.https.gitProxyPassword,
       };
+      this.proxy = AppUtils.copyObject(this.proxyInput);
     }
     this.certificateInput = data?.https.gitPemCertificate;
+    this.certificate = data?.https.gitPemCertificate;
     this.gitDataRequired = {
       gitUser: data?.https.gitUser,
       gitToken: data?.https.gitToken,

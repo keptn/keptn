@@ -23,7 +23,6 @@ export class KtbCertificateInputComponent {
     this.certificateControl.setValue(atob(certificate ?? ''));
     if (certificate !== undefined) {
       this.certificateControl.markAsDirty();
-      this.certificateChanged();
     }
   }
 

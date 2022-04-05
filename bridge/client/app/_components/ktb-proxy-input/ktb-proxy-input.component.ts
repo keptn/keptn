@@ -49,7 +49,6 @@ export class KtbProxyInputComponent {
       }
       this.userControl.setValue(proxy.gitProxyUser ?? '');
       this.passwordControl.setValue(proxy.gitProxyPassword ?? '');
-      this.proxyChanged();
     }
   }
   public get proxy(): IProxy | undefined {

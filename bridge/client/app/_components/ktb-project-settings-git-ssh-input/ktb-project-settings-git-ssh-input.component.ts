@@ -27,7 +27,6 @@ export class KtbProjectSettingsGitSshInputComponent {
         this.gitUrlControl.markAsDirty();
       }
       this.gitUserControl.setValue(data.gitUser);
-      this.dataChanged();
     }
   }
   @Output()

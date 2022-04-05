@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { IGitSsh, IGitSshData, ISshKeyData } from '../../_interfaces/git-upstream';
+import { AppUtils } from '../../_utils/app.utils';
 
 @Component({
   selector: 'ktb-project-settings-git-ssh',
@@ -22,6 +23,7 @@ export class KtbProjectSettingsGitSshComponent {
         gitRemoteURL: data.ssh.gitRemoteURL,
         gitUser: data.ssh.gitUser,
       };
+      this.gitUpstream = AppUtils.copyObject(this.gitInputData);
       this.sshInputData = {
         gitPrivateKeyPass: data.ssh.gitPrivateKeyPass,
         gitPrivateKey: data.ssh.gitPrivateKey,

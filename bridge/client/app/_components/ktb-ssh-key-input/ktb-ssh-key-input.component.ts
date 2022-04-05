@@ -25,7 +25,6 @@ export class KtbSshKeyInputComponent {
         this.privateKeyControl.markAsDirty();
       }
       this.privateKeyPasswordControl.setValue(data.gitPrivateKeyPass);
-      this.sshDataChanged();
     }
   }
 
