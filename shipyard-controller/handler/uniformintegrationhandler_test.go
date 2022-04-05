@@ -398,19 +398,32 @@ func TestUniformIntegrationHandler_Unregister(t *testing.T) {
 func TestUniformParamsValidator_Validate(t *testing.T) {
 
 	tests := []struct {
-		name    string
-		params  interface{}
-		wantErr error
+		name         string
+		params       interface{}
+		wantErr      error
+		checkProject bool
 	}{
 		{
-			name:    "test bad subscription",
-			params:  apimodels.EventSubscription{},
-			wantErr: errors.New("the event must be specified when setting up a subscription"),
+			name:         "test error bad subscription",
+			params:       apimodels.EventSubscription{},
+			wantErr:      errors.New("the event must be specified when setting up a subscription"),
+			checkProject: false,
 		},
 		{
-			name:    "test good integration",
-			params:  getValidIntegration(),
-			wantErr: nil,
+			name: "test error update subscription for webhook, empty project",
+			params: apimodels.EventSubscription{
+				ID:     "webhookID",
+				Event:  "my-event.started",
+				Filter: apimodels.EventSubscriptionFilter{},
+			},
+			wantErr:      errors.New("webhook should refer to exactly one project"),
+			checkProject: true,
+		},
+		{
+			name:         "test good integration",
+			params:       getValidIntegration(),
+			wantErr:      nil,
+			checkProject: false,
 		},
 		{
 			name: "test error webhook subscription - too many projects",
@@ -431,7 +444,8 @@ func TestUniformParamsValidator_Validate(t *testing.T) {
 					},
 				},
 			},
-			wantErr: errors.New("webhook should refer to exactly one project"),
+			wantErr:      errors.New("webhook should refer to exactly one project"),
+			checkProject: false,
 		},
 		{
 			name: "test error no subscription topic",
@@ -442,7 +456,8 @@ func TestUniformParamsValidator_Validate(t *testing.T) {
 				Subscription:  apimodels.Subscription{},
 				Subscriptions: []apimodels.EventSubscription{},
 			},
-			wantErr: errors.New("the subscription must have a topic"),
+			wantErr:      errors.New("the subscription must have a topic"),
+			checkProject: false,
 		},
 		{
 			name: "test error webhook subscription - no projects",
@@ -459,7 +474,8 @@ func TestUniformParamsValidator_Validate(t *testing.T) {
 					},
 				},
 			},
-			wantErr: errors.New("webhook should refer to exactly one project"),
+			wantErr:      errors.New("webhook should refer to exactly one project"),
+			checkProject: false,
 		},
 		{
 			name: "test service - no projects no stage no service",
@@ -478,7 +494,8 @@ func TestUniformParamsValidator_Validate(t *testing.T) {
 					},
 				},
 			},
-			wantErr: nil,
+			wantErr:      nil,
+			checkProject: false,
 		},
 
 		{
@@ -500,12 +517,13 @@ func TestUniformParamsValidator_Validate(t *testing.T) {
 					},
 				},
 			},
-			wantErr: errors.New("at least one stage must be specified when setting up a subscription filter for a service"),
+			wantErr:      errors.New("at least one stage must be specified when setting up a subscription filter for a service"),
+			checkProject: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			u := handler.UniformParamsValidator{}
+			u := handler.UniformParamsValidator{tt.checkProject}
 			err := u.Validate(tt.params)
 			assert.Equal(t, err, tt.wantErr)
 

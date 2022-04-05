@@ -36,12 +36,14 @@ func NewUniformIntegrationHandler(uniformRepo db.UniformRepo) *UniformIntegratio
 	return &UniformIntegrationHandler{uniformRepo: uniformRepo}
 }
 
-type UniformParamsValidator struct{}
+type UniformParamsValidator struct {
+	CheckProject bool
+}
 
 func (u UniformParamsValidator) Validate(params interface{}) error {
 	switch t := params.(type) {
 	case apimodels.EventSubscription:
-		return u.validateSubscriptionParams(t, false)
+		return u.validateSubscriptionParams(t)
 	case apimodels.Integration:
 		return u.validateIntegration(t)
 	default:
@@ -56,13 +58,13 @@ func (u UniformParamsValidator) validateIntegration(params apimodels.Integration
 	}
 
 	// in case of webhook we need to check the project
-	checkProject := false
+
 	if params.Name == "webhook-service" {
-		checkProject = true
+		u.CheckProject = true
 	}
 
 	for _, subscription := range params.Subscriptions {
-		if err := u.validateSubscriptionParams(subscription, checkProject); err != nil {
+		if err := u.validateSubscriptionParams(subscription); err != nil {
 			return err
 		}
 
@@ -71,13 +73,13 @@ func (u UniformParamsValidator) validateIntegration(params apimodels.Integration
 	return nil
 }
 
-func (u UniformParamsValidator) validateSubscriptionParams(params apimodels.EventSubscription, checkProject bool) error {
+func (u UniformParamsValidator) validateSubscriptionParams(params apimodels.EventSubscription) error {
 
 	if params.Event == "" {
 		return fmt.Errorf("the event must be specified when setting up a subscription")
 	}
 
-	if err := u.validateFilterParams(params.Filter, checkProject); err != nil {
+	if err := u.validateFilterParams(params.Filter, u.CheckProject); err != nil {
 		return err
 	}
 
@@ -184,7 +186,7 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 
 	// we validate integrations here to make sure to verify both subscription and subscriptions
 
-	validator := UniformParamsValidator{}
+	validator := UniformParamsValidator{false}
 
 	if err := validator.Validate(integration); err != nil {
 		SetBadRequestErrorResponse(c, err.Error())
@@ -337,7 +339,7 @@ func (rh *UniformIntegrationHandler) CreateSubscription(c *gin.Context) {
 		SetBadRequestErrorResponse(c, err.Error())
 		return
 	}
-	validator := UniformParamsValidator{}
+	validator := UniformParamsValidator{false}
 
 	if err := validator.Validate(subscription); err != nil {
 		SetBadRequestErrorResponse(c, err.Error())
@@ -389,7 +391,16 @@ func (rh *UniformIntegrationHandler) UpdateSubscription(c *gin.Context) {
 		return
 	}
 
-	validator := UniformParamsValidator{}
+	oldIntegration, err := rh.uniformRepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{
+		ID: integrationID,
+	})
+
+	checkProject := false
+	if len(oldIntegration) == 1 && oldIntegration[0].Name == "webhook-service" {
+		checkProject = true
+	}
+
+	validator := UniformParamsValidator{checkProject}
 
 	if err := validator.Validate(subscription); err != nil {
 		SetBadRequestErrorResponse(c, err.Error())
@@ -398,7 +409,7 @@ func (rh *UniformIntegrationHandler) UpdateSubscription(c *gin.Context) {
 
 	subscription.ID = subscriptionID
 
-	err := rh.uniformRepo.CreateOrUpdateSubscription(integrationID, *subscription)
+	err = rh.uniformRepo.CreateOrUpdateSubscription(integrationID, *subscription)
 	if err != nil {
 		//TODO: set appropriate http codes
 		SetInternalServerErrorResponse(c, err.Error())
