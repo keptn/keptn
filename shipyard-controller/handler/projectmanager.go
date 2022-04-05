@@ -245,11 +245,15 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 
 	// project content in configuration service to rollback
 	projectToRollback := apimodels.Project{
-		CreationDate:    oldProject.CreationDate,
-		GitRemoteURI:    oldProject.GitRemoteURI,
-		GitUser:         oldProject.GitUser,
-		ProjectName:     oldProject.ProjectName,
-		ShipyardVersion: oldProject.ShipyardVersion,
+		CreationDate:     oldProject.CreationDate,
+		GitRemoteURI:     oldProject.GitRemoteURI,
+		GitUser:          oldProject.GitUser,
+		ProjectName:      oldProject.ProjectName,
+		GitProxyURL:      oldProject.GitProxyURL,
+		GitProxyScheme:   oldProject.GitProxyScheme,
+		GitProxyUser:     oldProject.GitProxyUser,
+		GitProxyInsecure: oldProject.GitProxyInsecure,
+		ShipyardVersion:  oldProject.ShipyardVersion,
 	}
 
 	// try to update the project information in configuration service
@@ -297,6 +301,10 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 	updateProject := *oldProject
 	updateProject.GitUser = params.GitUser
 	updateProject.GitRemoteURI = params.GitRemoteURL
+	updateProject.GitProxyURL = params.GitProxyURL
+	updateProject.GitProxyScheme = params.GitProxyScheme
+	updateProject.GitProxyUser = params.GitProxyUser
+	updateProject.GitProxyInsecure = params.GitProxyInsecure
 	if isShipyardPresent {
 		updateProject.Shipyard = *params.Shipyard
 	}
