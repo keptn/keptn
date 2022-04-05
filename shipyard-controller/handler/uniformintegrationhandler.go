@@ -348,7 +348,6 @@ func (rh *UniformIntegrationHandler) CreateSubscription(c *gin.Context) {
 
 	subscription.ID = uuid.New().String()
 
-	//TODO should we modify mongo db to check for webhook ? In that case only one project should be set
 	err := rh.uniformRepo.CreateOrUpdateSubscription(integrationID, *subscription)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
