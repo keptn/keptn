@@ -1,18 +1,14 @@
-# Use the official Golang image to create a build artifact.
-# This is based on Debian and sets the GOPATH to /go.
-FROM golang:1.18.7-alpine3.16 as builder
+FROM --platform=$BUILDPLATFORM golang:1.18.7-alpine3.16 as builder
 
 ARG version=develop
 ARG debugBuild
 
 WORKDIR /go/src/github.com/keptn/keptn/approval-service
 
-# Force the go compiler to use modules
-ENV GO111MODULE=on
 ENV BUILDFLAGS=""
 ENV GOPROXY=https://proxy.golang.org
 
-RUN apk add --no-cache gcc libc-dev git
+RUN apk add --no-cache gcc libc-dev
 
 # Copy `go.mod` for definitions and `go.sum` to invalidate the next layer
 # in case of a change in the dependencies
@@ -24,12 +20,24 @@ RUN go mod download
 # Copy local code to the container image.
 COPY . .
 
+FROM builder-base as builder
+ARG version=develop
+ARG debugBuild
+
+# Target OS and architecture to build against (set automatically)
+ARG TARGETOS
+ARG TARGETARCH
+ENV GOOS=$TARGETOS
+ENV GOARCH=$TARGETARCH
+
+RUN if [ "$GOARCH" == *'amd64'* ]; then export LINKERFLAGS="-ldflags '-linkmode=external'"; fi
+
 # set buildflags for debug build
 RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi
 
 # Build the command inside the container.
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
-RUN GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -v -o approval-service
+RUN go build $LINKERFLAGS $BUILDFLAGS -v -o approval-service
 
 FROM alpine:3.16 as production
 ARG version=develop

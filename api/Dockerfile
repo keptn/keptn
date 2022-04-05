@@ -1,21 +1,15 @@
-# Use the official Golang image to create a build artifact.
-# This is based on Debian and sets the GOPATH to /go.
-FROM golang:1.18.7-alpine3.16 as builder
+FROM --platform=$BUILDPLATFORM golang:1.18.7-alpine3.16 as builder
 
 ARG version=develop
 ARG debugBuild
 
 WORKDIR /go/src/github.com/keptn/keptn/api
 
-# Force the go compiler to use modules
-ENV GO111MODULE=on
 ENV BUILDFLAGS=""
 ENV GOPROXY=https://proxy.golang.org
 
-RUN apk add --no-cache gcc libc-dev git
+RUN apk add --no-cache gcc libc-dev
 
-# Copy `go.mod` for definitions and `go.sum` to invalidate the next layer
-# in case of a change in the dependencies
 COPY go.mod go.sum ./
 
 # Download dependencies
@@ -24,14 +18,22 @@ RUN go mod download
 # Copy local code to the container image.
 COPY . .
 
+# Target OS and architecture to build against (set automatically)
+ARG TARGETOS
+ARG TARGETARCH
+ENV GOOS=$TARGETOS
+ENV GOARCH=$TARGETARCH
+
+RUN if [ "$GOARCH" == *'amd64'* ]; then export LINKERFLAGS="-ldflags '-linkmode=external'"; fi
+
 # set buildflags for debug build
+# set the gcflags for all packages, disable optimizations and inlining
 RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi
 
-RUN sed -i "s/version: develop/version: ${version}/g" /go/src/github.com/keptn/keptn/api/swagger.yaml
+RUN sed -i "s/version: develop/version: ${version}/g" swagger.yaml
+RUN sed -i "s|basePath: /v1|basePath: /api/v1 |g" swagger.yaml
 
-# Build the command inside the container.
-# (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
-RUN GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -v cmd/api-server/main.go
+RUN go build $LINKERFLAGS $BUILDFLAGS -v cmd/api-server/main.go
 
 
 FROM alpine:3.16 as production
@@ -51,8 +53,6 @@ RUN apk add --no-cache ca-certificates libc6-compat
 COPY --from=builder /go/src/github.com/keptn/keptn/api/main /api
 COPY --from=builder /go/src/github.com/keptn/keptn/api/swagger-ui /swagger-ui
 COPY --from=builder /go/src/github.com/keptn/keptn/api/swagger.yaml /swagger-ui/swagger.yaml
-
-RUN sed -i "s|basePath: /v1|basePath: /api/v1 |g" /swagger-ui/swagger.yaml
 
 EXPOSE 8080
 

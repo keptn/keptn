@@ -1,23 +1,15 @@
-# Use the official Golang image to create a build artifact.
-# This is based on Debian and sets the GOPATH to /go.
-# https://hub.docker.com/_/golang
-FROM golang:1.18.7-alpine3.16 as builder
+FROM --platform=$BUILDPLATFORM golang:1.18.7-alpine3.16 as builder
 
 # `skaffold debug` sets SKAFFOLD_GO_GCFLAGS to disable compiler optimizations
 ARG SKAFFOLD_GO_GCFLAGS
 
-# Copy local code to the container image.
 WORKDIR /go/src/github.com/keptn/keptn/lighthouse-service
 
-# Force the go compiler to use modules
-ENV GO111MODULE=on
 ENV BUILDFLAGS=""
 ENV GOPROXY=https://proxy.golang.org
 
-RUN apk add --no-cache gcc libc-dev git
+RUN apk add --no-cache gcc libc-dev
 
-# Copy `go.mod` for definitions and `go.sum` to invalidate the next layer
-# in case of a change in the dependencies
 COPY go.mod go.sum ./
 
 # Download dependencies
@@ -25,12 +17,18 @@ RUN go mod download
 
 COPY . .
 
+# Target OS and architecture to build against (set automatically)
+ARG TARGETOS
+ARG TARGETARCH
+ENV GOOS=$TARGETOS
+ENV GOARCH=$TARGETARCH
+
+RUN if [ "$GOARCH" == *'amd64'* ]; then export LINKERFLAGS="-ldflags '-linkmode=external'"; fi
+
 # Build the command inside the container.
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
-RUN GOOS=linux go build -ldflags '-linkmode=external' -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v -o lighthouse-service
+RUN go build $LINKERFLAGS -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v -o lighthouse-service
 
-# Use a Docker multi-stage build to create a lean production image.
-# https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
 FROM alpine:3.16 as production
 ARG version=develop
 LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \

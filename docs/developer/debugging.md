@@ -41,7 +41,6 @@ Most of our services should already have a working setup. But just in case the s
 
     WORKDIR /go/src/github.com/keptn-contrib/some-go-service
 
-    ENV GO111MODULE=on
     COPY go.mod go.sum ./
     RUN go mod download
     COPY . .

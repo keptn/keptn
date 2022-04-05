@@ -1,4 +1,4 @@
-FROM node:14-alpine3.15 as bridge-builder
+FROM --platform=$BUILDPLATFORM node:14-alpine3.15 as bridge-builder
 
 ARG version=develop
 ENV VERSION="${version}"
