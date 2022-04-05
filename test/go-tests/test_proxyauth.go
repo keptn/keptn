@@ -6,6 +6,7 @@ import (
 	"path"
 	"testing"
 
+	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/mholt/archiver/v3"
 
 	"github.com/stretchr/testify/require"
@@ -68,6 +69,7 @@ spec:
                 deploymentstrategy: "direct"
             - name: "release"
 `
+const baseProxyProjectPath = "/controlPlane/v1/project"
 
 func Test_ProxyAuth(t *testing.T) {
 	repoLocalDir := "../assets/podtato-head"
@@ -113,6 +115,21 @@ func Test_ProxyAuth(t *testing.T) {
 	t.Logf("Trigger delivery of helloservice:v0.1.0")
 	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", projectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery")
 	require.Nil(t, err)
+
+	t.Logf("Getting project %s with a proxy", projectName)
+	resp, err := ApiGETRequest(baseProxyProjectPath+"/"+projectName, 3)
+	require.Nil(t, err)
+	require.Equal(t, 200, resp.Response().StatusCode)
+
+	t.Logf("Checking if upstream was provisioned")
+	project := models.ExpandedProject{}
+	err = resp.ToJSON(&project)
+	require.Nil(t, err)
+	require.Equal(t, "squid:3128", project.GitProxyURL)
+	require.Equal(t, "http", project.GitProxyScheme)
+	require.Equal(t, "", project.GitProxyUser)
+	require.Equal(t, true, project.GitProxyInsecure)
+	require.Equal(t, projectName, project.ProjectName)
 
 	t.Logf("Updating project credentials")
 	user := GetGiteaUser()

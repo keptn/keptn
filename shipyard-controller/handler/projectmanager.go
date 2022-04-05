@@ -403,13 +403,17 @@ func (pm *ProjectManager) createProjectInRepository(params *models.CreateProject
 	}
 
 	p := &apimodels.ExpandedProject{
-		CreationDate:    strconv.FormatInt(time.Now().UnixNano(), 10),
-		GitRemoteURI:    params.GitRemoteURL,
-		GitUser:         params.GitUser,
-		ProjectName:     *params.Name,
-		Shipyard:        string(decodedShipyard),
-		ShipyardVersion: shipyardVersion,
-		Stages:          expandedStages,
+		CreationDate:     strconv.FormatInt(time.Now().UnixNano(), 10),
+		GitRemoteURI:     params.GitRemoteURL,
+		GitUser:          params.GitUser,
+		ProjectName:      *params.Name,
+		Shipyard:         string(decodedShipyard),
+		ShipyardVersion:  shipyardVersion,
+		GitProxyURL:      params.GitProxyURL,
+		GitProxyScheme:   params.GitProxyScheme,
+		GitProxyUser:     params.GitProxyUser,
+		GitProxyInsecure: params.GitProxyInsecure,
+		Stages:           expandedStages,
 	}
 
 	err := pm.ProjectMaterializedView.CreateProject(p)
@@ -558,13 +562,17 @@ func validateShipyardUpdate(params *models.UpdateProjectParams, oldProject *apim
 	}
 
 	newProject := &apimodels.ExpandedProject{
-		CreationDate:    strconv.FormatInt(time.Now().UnixNano(), 10),
-		GitRemoteURI:    params.GitRemoteURL,
-		GitUser:         params.GitUser,
-		ProjectName:     *params.Name,
-		Shipyard:        string(decodedShipyard),
-		ShipyardVersion: shipyardVersion,
-		Stages:          expandedStages,
+		CreationDate:     strconv.FormatInt(time.Now().UnixNano(), 10),
+		GitRemoteURI:     params.GitRemoteURL,
+		GitUser:          params.GitUser,
+		ProjectName:      *params.Name,
+		Shipyard:         string(decodedShipyard),
+		ShipyardVersion:  shipyardVersion,
+		GitProxyURL:      params.GitProxyURL,
+		GitProxyScheme:   params.GitProxyScheme,
+		GitProxyUser:     params.GitProxyUser,
+		GitProxyInsecure: params.GitProxyInsecure,
+		Stages:           expandedStages,
 	}
 
 	err := validateShipyardStagesUnchaged(oldProject, newProject)
