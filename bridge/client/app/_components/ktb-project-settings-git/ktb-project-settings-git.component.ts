@@ -69,10 +69,10 @@ export class KtbProjectSettingsGitComponent implements OnInit {
 
   public ngOnInit(): void {
     if (this.required) {
-      this.gitUrlControl.setValidators([Validators.required, FormUtils.isUrlHttpsValidator]);
+      this.gitUrlControl.setValidators([Validators.required, FormUtils.isUrlValidator]);
       this.gitTokenControl.setValidators([Validators.required]);
     } else {
-      this.gitUrlControl.setValidators([FormUtils.isUrlHttpsValidator]);
+      this.gitUrlControl.setValidators([FormUtils.isUrlValidator]);
     }
   }
 

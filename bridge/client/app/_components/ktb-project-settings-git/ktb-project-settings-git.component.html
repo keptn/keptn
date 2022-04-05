@@ -26,7 +26,7 @@
       />
       <dt-loading-spinner *ngIf="isLoading" dtPrefix aria-label="Loading data"></dt-loading-spinner>
       <dt-error *ngIf="gitUrlControl.hasError('required')">Must not be empty</dt-error>
-      <dt-error *ngIf="gitUrlControl.hasError('url')">Must start with https://</dt-error>
+      <dt-error *ngIf="gitUrlControl.hasError('url')">Must start with http(s)://</dt-error>
       <dt-error *ngIf="gitUrlControl.hasError('space')">Must not contain spaces</dt-error>
     </dt-form-field>
     <div class="mt-2" fxLayout="row" fxLayoutAlign="start end">

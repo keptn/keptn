@@ -8,25 +8,15 @@ export class FormUtils {
     };
   }
 
-  public static isUrlValidator(control: AbstractControl): ValidationErrors | null {
+  public static isUrlValidator(
+    control: AbstractControl
+  ): { url: { value: boolean } } | { space: { value: boolean } } | null {
     if (control.value) {
-      return FormUtils.validateUrl(control.value, false);
-    }
-    return null;
-  }
-
-  private static validateUrl(url: string, isHttps: boolean): ValidationErrors | null {
-    if ((isHttps && !url.startsWith('https://')) || url.search(/^http(s?):\/\//) === -1) {
-      return { url: { value: true } };
-    } else if (url.includes(' ')) {
-      return { space: { value: true } };
-    }
-    return null;
-  }
-
-  public static isUrlHttpsValidator(control: AbstractControl): ValidationErrors | null {
-    if (control.value) {
-      return FormUtils.validateUrl(control.value, true);
+      if (control.value.search(/^http(s?):\/\//) === -1) {
+        return { url: { value: true } };
+      } else if (control.value.includes(' ')) {
+        return { space: { value: true } };
+      }
     }
     return null;
   }
