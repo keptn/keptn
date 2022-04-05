@@ -196,7 +196,7 @@ func (th *TaskHandler) performWebhookRequests(webhook lib.Webhook, eventAdapter 
 	executedRequests := 0
 	logger.Infof("executing webhooks for subscriptionID %s", webhook.SubscriptionID)
 	for _, req := range webhook.Requests {
-		request, err := th.createRequest(req)
+		request, err := CreateRequest(req)
 		// parse the data from the event, together with the secret env vars
 		parsedCurlCommand, err := th.templateEngine.ParseTemplate(eventAdapter.Get(), request)
 		if err != nil {
@@ -225,7 +225,7 @@ func (th *TaskHandler) gatherSecretEnvVars(webhook lib.Webhook) (map[string]stri
 	return secretEnvVars, nil
 }
 
-func (th *TaskHandler) createRequest(request interface{}) (string, error) {
+func CreateRequest(request interface{}) (string, error) {
 	switch req := request.(type) {
 	// v1alpha1 version
 	case string:

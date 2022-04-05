@@ -184,6 +184,25 @@ spec:
 			wantErr: true,
 		},
 		{
+			name: "Beta1 version input - empty requests",
+			args: args{
+				webhookConfigYaml: []byte(`apiVersion: webhookconfig.keptn.sh/v1beta1
+kind: WebhookConfig
+metadata:
+  name: webhook-configuration
+spec:
+  webhooks:
+    - type: "sh.keptn.event.webhook.triggered"
+      subscriptionID: "my-subscription-id"
+      envFrom:
+        - secretRef:
+          name: mysecret
+      requests:`),
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
 			name: "Beta1 version input - invalid method",
 			args: args{
 				webhookConfigYaml: []byte(`apiVersion: webhookconfig.keptn.sh/v1beta1
