@@ -8,8 +8,10 @@ package models
 import (
 	"context"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // Metadata metadata
@@ -18,7 +20,8 @@ import (
 type Metadata struct {
 
 	// automaticprovisioning
-	Automaticprovisioning bool `json:"automaticprovisioning,omitempty"`
+	// Required: true
+	Automaticprovisioning *bool `json:"automaticprovisioning"`
 
 	// bridgeversion
 	Bridgeversion string `json:"bridgeversion,omitempty"`
@@ -41,6 +44,24 @@ type Metadata struct {
 
 // Validate validates this metadata
 func (m *Metadata) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateAutomaticprovisioning(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *Metadata) validateAutomaticprovisioning(formats strfmt.Registry) error {
+
+	if err := validate.Required("automaticprovisioning", "body", m.Automaticprovisioning); err != nil {
+		return err
+	}
+
 	return nil
 }
 

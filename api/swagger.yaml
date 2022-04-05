@@ -132,3 +132,5 @@ definitions:
         type: object
       automaticprovisioning:
         type: boolean
+    required:
+      - automaticprovisioning

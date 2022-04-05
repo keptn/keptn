@@ -72,7 +72,8 @@ func (h *metadataHandler) getMetadata() middleware.Responder {
 	payload.Keptnlabel = "keptn"
 	payload.Bridgeversion = defaultVersion
 	payload.Shipyardversion = "0.2.0"
-	payload.Automaticprovisioning = automaticProvisioningURL != ""
+	automaticProvisioningURLValue := automaticProvisioningURL != ""
+	payload.Automaticprovisioning = &automaticProvisioningURLValue
 
 	if bridgeVersion, err := h.getBridgeVersion(namespace); err != nil {
 		logger.WithError(err).Error("Error getting bridge version")

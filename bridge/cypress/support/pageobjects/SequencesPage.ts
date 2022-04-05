@@ -75,4 +75,10 @@ export class SequencesPage {
       .should(exists ? 'exist' : 'not.exist');
     return this;
   }
+
+  public assertServiceName(name: string, tag?: string): this {
+    const serviceName = tag ? `${name}:${tag}` : name;
+    cy.byTestId('keptn-sequence-view-serviceName').should('have.text', serviceName);
+    return this;
+  }
 }

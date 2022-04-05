@@ -64,7 +64,6 @@ func TestHandleEventWithDeploymentURLAndUserManagedDeploymentStrategy(t *testing
 			DeploymentStrategy:   "user_managed",
 			DeploymentURIsPublic: []string{"https://myurl"},
 			DeploymentNames:      []string{"user_managed"},
-			GitCommit:            "USER_CHART_GIT_ID",
 		},
 	})
 
@@ -128,7 +127,6 @@ func TestHandleEventWithDeploymentURLAndDirectDeploymentStrategy(t *testing.T) {
 			DeploymentURIsLocal:  []string{"http://my-service.my-project-production:80"},
 			DeploymentURIsPublic: []string{"http://my-service.my-project-production.svc.cluster.local:80"},
 			DeploymentNames:      []string{"direct"},
-			GitCommit:            "USER_CHART_GIT_ID",
 		},
 	})
 
@@ -194,7 +192,6 @@ func TestHandleEventWithNoConfigurationChangeAndDirectDeploymentStrategy(t *test
 			DeploymentURIsLocal:  []string{"http://my-service.my-project-my-stage:80"},
 			DeploymentURIsPublic: []string{"http://my-service.my-project-my-stage.svc.cluster.local:80"},
 			DeploymentNames:      []string{"direct"},
-			GitCommit:            "USER_CHART_GIT_ID",
 		},
 	})
 
@@ -268,7 +265,6 @@ func TestHandleEventWithDeploymentURLResourceAndUserManagedDeploymentStrategy(t 
 			DeploymentURIsLocal:  []string{"https://my-local-url"},
 			DeploymentURIsPublic: []string{"https://myurl"},
 			DeploymentNames:      []string{"user_managed"},
-			GitCommit:            "USER_CHART_GIT_ID",
 		},
 	})
 
@@ -334,7 +330,6 @@ func TestHandleEventWithoutDeploymentURLAndUserManagedDeploymentStrategy(t *test
 		Deployment: keptnv2.DeploymentFinishedData{
 			DeploymentStrategy: "user_managed",
 			DeploymentNames:    []string{"user_managed"},
-			GitCommit:          "USER_CHART_GIT_ID",
 		},
 	})
 

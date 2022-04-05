@@ -18,7 +18,6 @@ func TestCreateActionHandler(t *testing.T) {
 }
 
 func TestHandleActionTriggeredEvent(t *testing.T) {
-
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockedBaseHandler := NewMockedHandler(createKeptn(), "")
@@ -75,9 +74,6 @@ func TestHandleActionTriggeredEvent(t *testing.T) {
 			Status:  keptnv2.StatusSucceeded,
 			Result:  keptnv2.ResultPass,
 			Message: "Successfully executed scaling action",
-		},
-		Action: keptnv2.ActionData{
-			GitCommit: "123-456",
 		},
 	})
 
@@ -146,9 +142,6 @@ func TestHandleEvent_InvalidData(t *testing.T) {
 			Result:  keptnv2.ResultFailed,
 			Message: "could not parse action.value to int",
 		},
-		Action: keptnv2.ActionData{
-			GitCommit: "",
-		},
 	})
 
 	ce := cloudevents.NewEvent()
@@ -177,9 +170,6 @@ func TestHandleUnparsableEvent(t *testing.T) {
 			Status:  "errored",
 			Result:  "fail",
 			Message: "Failed to unmarshal data: unable to convert json data from cloudEvent to action event",
-		},
-		Action: keptnv2.ActionData{
-			GitCommit: "",
 		},
 	}
 
@@ -234,7 +224,6 @@ func TestHandleEvent_SendStartEventFails(t *testing.T) {
 			Result:  "fail",
 			Message: "Failed at sending event of type sh.keptn.event.action.started",
 		},
-		Action: keptnv2.ActionData{},
 	}
 	ce := cloudevents.NewEvent()
 	_ = ce.SetData(cloudevents.ApplicationJSON, actionTriggeredEventData)
@@ -291,7 +280,6 @@ func TestHandleEvent_SendFinishEventFails(t *testing.T) {
 			Result:  "fail",
 			Message: "Failed at sending event of type sh.keptn.event.action.finished",
 		},
-		Action: keptnv2.ActionData{},
 	}
 	ce := cloudevents.NewEvent()
 	_ = ce.SetData(cloudevents.ApplicationJSON, actionTriggeredEventData)

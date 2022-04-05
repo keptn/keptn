@@ -79,4 +79,5 @@ For a realtime overview of current contributors to the Keptn project, we refer t
 * [Oleg Nenashev](https://github.com/oleg-nenashev)
 * [Stuart Blackler](https://github.com/Im5tu)
 * [Joseph Petersen](https://github.com/jetersen)
+* [Eric Y. Kim](https://github.com/eyskim)
 * [Markus Lackner](https://github.com/markuslackner)
