@@ -55,6 +55,8 @@ type WebHookSecretRef struct {
 	Name string `yaml:"name"`
 }
 
+const webhookConfInvalid = "Webhook configuration invalid: "
+
 // DecodeWebHookConfigYAML takes a webhook config string formatted as YAML and decodes it to
 // Shipyard value
 func DecodeWebHookConfigYAML(webhookConfigYaml []byte) (*WebHookConfig, error) {
@@ -65,23 +67,25 @@ func DecodeWebHookConfigYAML(webhookConfigYaml []byte) (*WebHookConfig, error) {
 	}
 
 	if len(webHookConfig.Spec.Webhooks) == 0 {
-		return nil, errors.New("Webhook configuration invalid: missing 'webhooks[]' part")
+		return nil, errors.New(webhookConfInvalid + "missing 'webhooks[]' part")
 	}
 
 	for _, webhook := range webHookConfig.Spec.Webhooks {
 		if webhook.Type == "" {
-			return nil, errors.New("Webhook configuration invalid: missing 'webhooks[].Type' part")
+			return nil, errors.New(webhookConfInvalid + "missing 'webhooks[].Type' part")
 		}
 
 		if webhook.SubscriptionID == "" {
-			return nil, errors.New("Webhook configuration invalid: missing 'webhooks[].SubscriptionID' part")
+			return nil, errors.New(webhookConfInvalid + "missing 'webhooks[].SubscriptionID' part")
 		}
 
 		if len(webhook.Requests) == 0 {
-			return nil, errors.New("Webhook configuration invalid: missing 'webhooks[].Requests[]' part")
+			return nil, errors.New(webhookConfInvalid + "missing 'webhooks[].Requests[]' part")
 		}
+	}
 
-		if webHookConfig.ApiVersion == "v1beta1" {
+	if webHookConfig.ApiVersion == "v1beta1" {
+		for _, webhook := range webHookConfig.Spec.Webhooks {
 			for _, request := range webhook.Requests {
 				if err := verifyBeta1Request(request.(Request)); err != nil {
 					return nil, err
@@ -95,15 +99,15 @@ func DecodeWebHookConfigYAML(webhookConfigYaml []byte) (*WebHookConfig, error) {
 
 func verifyBeta1Request(request Request) error {
 	if request.URL == "" {
-		return fmt.Errorf("Webhook configuration invalid: webhook request URL empty")
+		return fmt.Errorf(webhookConfInvalid + "webhook request URL empty")
 	}
 	if request.Method == "" {
-		return fmt.Errorf("Webhook configuration invalid: webhook request method empty")
+		return fmt.Errorf(webhookConfInvalid + "webhook request method empty")
 	}
 	if len(request.Headers) > 0 {
 		for _, header := range request.Headers {
 			if header.Key == "" || header.Value == "" {
-				return fmt.Errorf("Webhook configuration invalid: webhook request header or value empty")
+				return fmt.Errorf(webhookConfInvalid + "webhook request header or value empty")
 			}
 		}
 	}

@@ -196,16 +196,16 @@ func (th *TaskHandler) performWebhookRequests(webhook lib.Webhook, eventAdapter 
 	executedRequests := 0
 	logger.Infof("executing webhooks for subscriptionID %s", webhook.SubscriptionID)
 	for _, req := range webhook.Requests {
-		buildRequest, err := th.createBeta1Request(req)
+		request, err := th.createRequest(req)
 		// parse the data from the event, together with the secret env vars
-		parsedCurlCommand, err := th.templateEngine.ParseTemplate(eventAdapter.Get(), buildRequest)
+		parsedCurlCommand, err := th.templateEngine.ParseTemplate(eventAdapter.Get(), request)
 		if err != nil {
-			return nil, lib.NewWebhookExecutionError(true, fmt.Errorf("could not parse request '%s' : %s", buildRequest, err.Error()), lib.WithNrOfExecutedRequests(executedRequests))
+			return nil, lib.NewWebhookExecutionError(true, fmt.Errorf("could not parse request '%s' : %s", request, err.Error()), lib.WithNrOfExecutedRequests(executedRequests))
 		}
 		// perform the request
 		response, err := th.curlExecutor.Curl(parsedCurlCommand)
 		if err != nil {
-			return nil, lib.NewWebhookExecutionError(true, fmt.Errorf("could not execute request '%s': %s", buildRequest, err.Error()), lib.WithNrOfExecutedRequests(executedRequests))
+			return nil, lib.NewWebhookExecutionError(true, fmt.Errorf("could not execute request '%s': %s", request, err.Error()), lib.WithNrOfExecutedRequests(executedRequests))
 		}
 		executedRequests = executedRequests + 1
 		responses = append(responses, response)
@@ -225,7 +225,7 @@ func (th *TaskHandler) gatherSecretEnvVars(webhook lib.Webhook) (map[string]stri
 	return secretEnvVars, nil
 }
 
-func (th *TaskHandler) createBeta1Request(request interface{}) (string, error) {
+func (th *TaskHandler) createRequest(request interface{}) (string, error) {
 	switch req := request.(type) {
 	case string:
 		return req, nil
