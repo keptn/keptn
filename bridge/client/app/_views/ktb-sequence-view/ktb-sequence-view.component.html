@@ -127,9 +127,13 @@
         <dt-tag
           >Last time fetched:
           <span
-            [textContent]="getTracesLastUpdated(currentSequence) | amCalendar: dateUtil.getCalendarFormats(true)"
-          ></span
-        ></dt-tag>
+            *ngIf="getTracesLastUpdated(currentSequence) as time; else noTime"
+            [textContent]="time | amCalendar: dateUtil.getCalendarFormats(true)"
+          ></span>
+          <ng-template #noTime>
+            <span>never</span>
+          </ng-template>
+        </dt-tag>
         <button class="ml-2" dt-button (click)="loadTraces(currentSequence)" *ngIf="showReloadButton(currentSequence)">
           <dt-icon name="refresh"></dt-icon>
           Reload
