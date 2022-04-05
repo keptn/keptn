@@ -80,9 +80,6 @@ COPY --from=bridge-server-builder /usr/src/app/server/dist /usr/src/app/server/d
 COPY --from=bridge-server-builder /usr/src/app/server/package.json /usr/src/app/server/
 COPY --from=bridge-server-builder /usr/src/app/server/node_modules /usr/src/app/server/node_modules
 
-# Copy server static files
-COPY ./server/views /usr/src/app/server/views
-
 RUN addgroup mygroup --gid 65532 && adduser -D -G mygroup myuser --uid 65532 && mkdir -p /usr/src/app && chown -R myuser /usr/src/app
 
 # Set user
