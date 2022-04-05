@@ -17,7 +17,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: webhook-service
       app.kubernetes.io/instance: {{ .Release.Name }}
-  replicas: 2
+  replicas: 1
   {{ include "control-plane.common.update-strategy" . }}
   template:
     metadata:
