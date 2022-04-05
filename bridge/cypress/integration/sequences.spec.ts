@@ -147,6 +147,26 @@ describe('Sequences', () => {
       .assertTimelineTimeLoading('production', false);
   });
 
+  it('should select sequence and should have image tag in name', () => {
+    const context = '62cca6f3-dc54-4df6-a04c-6ffc894a4b5e';
+    const project = 'sockshop';
+    cy.intercept(`/api/mongodb-datastore/event?keptnContext=${context}&project=${project}`, {
+      fixture: 'sequence.traces.mock.json',
+    });
+
+    sequencePage.visit(project).selectSequence(context).assertServiceName('carts', 'v0.13.1');
+  });
+
+  it('should select sequence and should not have image tag in name', () => {
+    const context = 'bb03865b-2bdd-43cc-9848-2a9cced86ff3';
+    const project = 'sockshop';
+    cy.intercept(`/api/mongodb-datastore/event?keptnContext=${context}&project=${project}`, {
+      fixture: 'sequence.traces.mock.json',
+    });
+
+    sequencePage.visit(project).selectSequence(context).assertServiceName('carts');
+  });
+
   function clearFilter(): void {
     cy.get('.dt-filter-field-clear-all-button').click();
     cy.get('.dt-filter-field-input ').type('{esc}');

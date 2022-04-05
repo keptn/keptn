@@ -93,7 +93,6 @@
       "stages": [
         {
           "name": "staging",
-          "image": "docker.io/keptnexamples/carts:v0.13.1",
           "state": "finished",
           "latestEvaluation": {
             "result": "fail",
