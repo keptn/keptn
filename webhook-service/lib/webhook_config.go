@@ -59,6 +59,8 @@ type WebHookSecretRef struct {
 const webhookConfInvalid = "Webhook configuration invalid: "
 const betaApiVersion = "webhookconfig.keptn.sh/v1beta1"
 
+var supportedCurlMethods = [4]string{"POST", "PUT", "GET", "HEAD"}
+
 // DecodeWebHookConfigYAML takes a webhook config string formatted as YAML and decodes it to
 // Shipyard value
 func DecodeWebHookConfigYAML(webhookConfigYaml []byte) (*WebHookConfig, error) {
@@ -87,26 +89,36 @@ func DecodeWebHookConfigYAML(webhookConfigYaml []byte) (*WebHookConfig, error) {
 	}
 
 	if webHookConfig.ApiVersion == betaApiVersion {
-		for _, webhook := range webHookConfig.Spec.Webhooks {
-			for _, request := range webhook.Requests {
-				if err := verifyBeta1Request(ConvertToRequest(request)); err != nil {
-					return nil, err
-				}
-			}
+		if err := normalizeBeta1Requests(webHookConfig.Spec.Webhooks); err != nil {
+			return nil, err
 		}
 	}
 
 	return webHookConfig, nil
 }
 
+func normalizeBeta1Requests(webhooks []Webhook) error {
+	for i, webhook := range webhooks {
+		for j, request := range webhook.Requests {
+			convertedRequest := ConvertToRequest(request)
+			if err := verifyBeta1Request(convertedRequest); err != nil {
+				return err
+			}
+			webhooks[i].Requests[j] = convertedRequest
+		}
+	}
+	return nil
+}
+
 func verifyBeta1Request(request Request) error {
 	if request.URL == "" {
-		//+ validate URL
 		return fmt.Errorf(webhookConfInvalid + "webhook request URL empty")
 	}
 	if request.Method == "" {
-		//+validate method
 		return fmt.Errorf(webhookConfInvalid + "webhook request method empty")
+	}
+	if !isMethodSupported(request.Method) {
+		return fmt.Errorf(webhookConfInvalid + "unsupported webhook request method")
 	}
 	if len(request.Headers) > 0 {
 		for _, header := range request.Headers {
@@ -116,6 +128,15 @@ func verifyBeta1Request(request Request) error {
 		}
 	}
 	return nil
+}
+
+func isMethodSupported(method string) bool {
+	for _, m := range supportedCurlMethods {
+		if m == method {
+			return true
+		}
+	}
+	return false
 }
 
 func (wh Webhook) ShouldSendStartedEvent() bool {

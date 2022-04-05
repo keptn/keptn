@@ -231,8 +231,8 @@ func (th *TaskHandler) createRequest(request interface{}) (string, error) {
 	case string:
 		return req, nil
 	// v1beta1 version
-	case map[string]interface{}:
-		return buildBetaCurlRequest(lib.ConvertToRequest(req)), nil
+	case lib.Request:
+		return buildBetaCurlRequest(req), nil
 	default:
 		return "", fmt.Errorf("could not create request: invalid request type")
 	}

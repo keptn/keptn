@@ -93,8 +93,9 @@ spec:
 								},
 							},
 							Requests: []interface{}{
-								map[string]interface{}{
-									"method": "POST", "url": "http://localhost:8080",
+								Request{
+									Method: "POST",
+									URL:    "http://localhost:8080",
 								},
 							},
 						},
@@ -102,6 +103,192 @@ spec:
 				},
 			},
 			wantErr: false,
+		},
+		{
+			name: "valid Beta1 version input - full",
+			args: args{
+				webhookConfigYaml: []byte(`apiVersion: webhookconfig.keptn.sh/v1beta1
+kind: WebhookConfig
+metadata:
+  name: webhook-configuration
+spec:
+  webhooks:
+    - type: "sh.keptn.event.webhook.triggered"
+      subscriptionID: "my-subscription-id"
+      envFrom:
+        - secretRef:
+          name: mysecret
+      requests:
+        - url: http://localhost:8080
+          method: POST
+          payload: "some payload"
+          options: "some options"
+          headers:
+            - value: value
+              key: key`),
+			},
+			want: &WebHookConfig{
+				ApiVersion: "webhookconfig.keptn.sh/v1beta1",
+				Kind:       "WebhookConfig",
+				Metadata: Metadata{
+					Name: "webhook-configuration",
+				},
+				Spec: WebHookConfigSpec{
+					Webhooks: []Webhook{
+						{
+							Type:           "sh.keptn.event.webhook.triggered",
+							SubscriptionID: "my-subscription-id",
+							EnvFrom: []EnvFrom{
+								{
+									Name: "mysecret",
+								},
+							},
+							Requests: []interface{}{
+								Request{
+									Headers: []Header{
+										{
+											Key:   "key",
+											Value: "value",
+										},
+									},
+									Method:  "POST",
+									Options: "some options",
+									Payload: "some payload",
+									URL:     "http://localhost:8080",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Beta1 version input - missing method",
+			args: args{
+				webhookConfigYaml: []byte(`apiVersion: webhookconfig.keptn.sh/v1beta1
+kind: WebhookConfig
+metadata:
+  name: webhook-configuration
+spec:
+  webhooks:
+    - type: "sh.keptn.event.webhook.triggered"
+      subscriptionID: "my-subscription-id"
+      envFrom:
+        - secretRef:
+          name: mysecret
+      requests:
+        - url: http://localhost:8080`),
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "Beta1 version input - invalid method",
+			args: args{
+				webhookConfigYaml: []byte(`apiVersion: webhookconfig.keptn.sh/v1beta1
+kind: WebhookConfig
+metadata:
+  name: webhook-configuration
+spec:
+  webhooks:
+    - type: "sh.keptn.event.webhook.triggered"
+      subscriptionID: "my-subscription-id"
+      envFrom:
+        - secretRef:
+          name: mysecret
+      requests:
+        - url: http://localhost:8080
+          method: DELETE`),
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "Beta1 version input - missing url",
+			args: args{
+				webhookConfigYaml: []byte(`apiVersion: webhookconfig.keptn.sh/v1beta1
+kind: WebhookConfig
+metadata:
+  name: webhook-configuration
+spec:
+  webhooks:
+    - type: "sh.keptn.event.webhook.triggered"
+      subscriptionID: "my-subscription-id"
+      envFrom:
+        - secretRef:
+          name: mysecret
+      requests:
+        - method: POST`),
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "Beta1 version input - alpha version requests",
+			args: args{
+				webhookConfigYaml: []byte(`apiVersion: webhookconfig.keptn.sh/v1beta1
+kind: WebhookConfig
+metadata:
+  name: webhook-configuration
+spec:
+  webhooks:
+    - type: "sh.keptn.event.webhook.triggered"
+      subscriptionID: "my-subscription-id"
+      envFrom:
+        - secretRef:
+          name: mysecret
+      requests:
+        - "curl http://localhost:8080 {{.data.project}} {{.env.mysecret}}"`),
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "Beta1 version input - missing headers value",
+			args: args{
+				webhookConfigYaml: []byte(`apiVersion: webhookconfig.keptn.sh/v1beta1
+kind: WebhookConfig
+metadata:
+  name: webhook-configuration
+spec:
+  webhooks:
+    - type: "sh.keptn.event.webhook.triggered"
+      subscriptionID: "my-subscription-id"
+      envFrom:
+        - secretRef:
+          name: mysecret
+      requests:
+        - url: http://localhost:8080
+          method: POST
+		  headers:
+            - key: key`),
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "Beta1 version input - missing headers key",
+			args: args{
+				webhookConfigYaml: []byte(`apiVersion: webhookconfig.keptn.sh/v1beta1
+kind: WebhookConfig
+metadata:
+  name: webhook-configuration
+spec:
+  webhooks:
+    - type: "sh.keptn.event.webhook.triggered"
+      subscriptionID: "my-subscription-id"
+      envFrom:
+        - secretRef:
+          name: mysecret
+      requests:
+        - url: http://localhost:8080
+          method: POST
+		  headers:
+            - value: value`),
+			},
+			want:    nil,
+			wantErr: true,
 		},
 		{
 			name: "invalid input",
