@@ -33,6 +33,12 @@ describe('KtbSshKeyInputComponent', () => {
     };
 
     // then
+    expect(emitSpy).not.toHaveBeenCalled();
+
+    // when
+    component.sshDataChanged();
+
+    // then
     expect(emitSpy).toHaveBeenCalledWith({
       gitPrivateKeyPass: 'myPassphrase',
       gitPrivateKey: btoa(validFileContent),

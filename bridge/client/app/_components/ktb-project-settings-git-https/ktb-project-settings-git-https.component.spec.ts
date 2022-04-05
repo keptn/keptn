@@ -178,7 +178,7 @@ describe('KtbProjectSettingsGitHttpsComponent', () => {
   it('should emit data if proxy and certificate are not set', () => {
     // given
     const emitSpy = jest.spyOn(component.dataChange, 'emit');
-    component.gitInputData = getInputDataWithoutProxy('myToken');
+    component.gitInputData = getInputDataWithoutProxyAndCertificate('myToken');
 
     // when
     component.gitUpstreamChanged({
@@ -258,6 +258,16 @@ describe('KtbProjectSettingsGitHttpsComponent', () => {
         gitToken,
         gitUser: 'myUser',
         gitPemCertificate: btoa('-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----'),
+      },
+    };
+  }
+
+  function getInputDataWithoutProxyAndCertificate(gitToken = ''): IGitHttps {
+    return {
+      https: {
+        gitRemoteURL: 'https://myGitUrl.com',
+        gitToken,
+        gitUser: 'myUser',
       },
     };
   }

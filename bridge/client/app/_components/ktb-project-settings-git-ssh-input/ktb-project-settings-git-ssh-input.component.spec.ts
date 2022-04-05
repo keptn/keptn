@@ -36,6 +36,12 @@ describe('KtbProjectSettingsGitSshInputComponent', () => {
     expect(component.gitUpstreamForm.controls.gitUser.value).toBe('myUser');
 
     expect(triggerValidationOnURL).toHaveBeenCalled();
+    expect(emitSpy).not.toHaveBeenCalled();
+
+    // when
+    component.dataChanged();
+
+    // then
     expect(emitSpy).toHaveBeenCalledWith({
       gitRemoteURL: 'ssh://myGitUrl',
       gitUser: 'myUser',
