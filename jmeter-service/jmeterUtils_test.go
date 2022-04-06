@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"os/exec"
 
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"net/http"
@@ -40,7 +41,7 @@ func Test_executeJMeter(t *testing.T) {
 		}),
 	)
 	defer ts.Close()
-
+	checkJmeter()
 	os.Setenv("CONFIGURATION_SERVICE", ts.URL)
 	os.Setenv("env", "production")
 
@@ -124,7 +125,7 @@ func Test_executeJMeter(t *testing.T) {
 				logger:         nil,
 			},
 			want:    false,
-			wantErr: false,
+			wantErr: checkJmeter(),
 			returnedResources: []string{`{
 				"metadata": {
 					"branch": "dev",
@@ -161,6 +162,16 @@ func Test_executeJMeter(t *testing.T) {
 			}
 		})
 	}
+}
+
+func checkJmeter() bool {
+	//check if jmeter command exists
+	cmd := exec.Command("jmeter")
+	_, err := cmd.CombinedOutput()
+	if err != nil {
+		return true
+	}
+	return false
 }
 
 func Test_derivePort(t *testing.T) {
