@@ -216,7 +216,7 @@ func execute(testInfo TestInfo, workload *Workload, err error, jMeterCommandLine
 	} else {
 		logger.Errorf("Could not parse JMeter test (%v). Error: %s  ", testInfo, err.Error())
 	}
-	return result, nil
+	return result, err
 }
 
 func createDir(dir string) error {
