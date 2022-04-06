@@ -123,7 +123,7 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-r
 			Shipyard: &encodedShipyardContent,
 		}
 
-		if *createProjectParams.GitUser != "" && *createProjectParams.RemoteURL != "" {
+		if *createProjectParams.RemoteURL != "" {
 			if *createProjectParams.GitToken == "" && *createProjectParams.GitPrivateKey == "" {
 				return errors.New("Access token or private key must be set")
 			}

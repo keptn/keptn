@@ -97,7 +97,7 @@ keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE
 			Name: &args[0],
 		}
 
-		if *updateProjectParams.GitUser != "" && *updateProjectParams.RemoteURL != "" {
+		if *updateProjectParams.RemoteURL != "" {
 			if *updateProjectParams.GitToken == "" && *updateProjectParams.GitPrivateKey == "" {
 				return errors.New("Access token or private key must be set")
 			}
