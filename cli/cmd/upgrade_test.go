@@ -23,6 +23,7 @@ import (
 
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/helm"
+	"github.com/keptn/keptn/cli/pkg/kube"
 	"github.com/keptn/keptn/cli/pkg/version"
 )
 
@@ -42,8 +43,9 @@ func TestSkipUpgradeCheck(t *testing.T) {
 		},
 	}
 	helmHelper := helm.NewHelper()
+	namespaceHandler := kube.NewKubernetesUtilsKeptnNamespaceHandler()
 
-	testUpgraderCmd := NewUpgraderCommand(vChecker, helmHelper)
+	testUpgraderCmd := NewUpgraderCommand(vChecker, helmHelper, namespaceHandler)
 
 	upgraderCmd.RunE = testUpgraderCmd.RunE
 	r := newRedirector()

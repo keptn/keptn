@@ -37,7 +37,6 @@ import (
 	"github.com/keptn/keptn/cli/pkg/platform"
 
 	"github.com/keptn/keptn/cli/pkg/kube"
-	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"helm.sh/helm/v3/pkg/chart"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
@@ -50,11 +49,12 @@ var upgradeParams installUpgradeParams
 var keptnUpgradeChart *chart.Chart
 
 // installCmd represents the version command
-var upgraderCmd = NewUpgraderCommand(version.NewKeptnVersionChecker(), helm.NewHelper())
+var upgraderCmd = NewUpgraderCommand(version.NewKeptnVersionChecker(), helm.NewHelper(), kube.NewKubernetesUtilsKeptnNamespaceHandler())
 
-func NewUpgraderCommand(vChecker *version.KeptnVersionChecker, helmHelper helm.IHelper) *cobra.Command {
+func NewUpgraderCommand(vChecker *version.KeptnVersionChecker, helmHelper helm.IHelper, namespaceHandler kube.IKeptnNamespaceHandler) *cobra.Command {
 	upgradeCmdHandler := &UpgradeCmdHandler{
-		helmHelper: helmHelper,
+		helmHelper:       helmHelper,
+		namespaceHandler: namespaceHandler,
 	}
 
 	upgradeCmd := &cobra.Command{
@@ -78,7 +78,7 @@ keptn upgrade --platform=kubernetes # upgrades Keptn on the Kubernetes cluster
 			}
 			if !mocking {
 				if *upgradeParams.PatchNamespace {
-					return patchNamespace()
+					return upgradeCmdHandler.patchNamespace()
 				}
 				return upgradeCmdHandler.doUpgrade()
 			}
@@ -304,7 +304,8 @@ func init() {
 }
 
 type UpgradeCmdHandler struct {
-	helmHelper helm.IHelper
+	helmHelper       helm.IHelper
+	namespaceHandler kube.IKeptnNamespaceHandler
 }
 
 func (u *UpgradeCmdHandler) doUpgrade() error {
@@ -390,8 +391,8 @@ func isContinuousDeliveryEnabled(configValues map[string]interface{}) bool {
 	return false
 }
 
-func patchNamespace() error {
-	err := keptnutils.PatchKeptnManagedNamespace(false, namespace)
+func (u *UpgradeCmdHandler) patchNamespace() error {
+	err := u.namespaceHandler.PatchKeptnManagedNamespace(false, namespace)
 	if err != nil {
 		return err
 	}
