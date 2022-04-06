@@ -625,3 +625,7 @@ input[type=number].hide-arrows {
   }
 }
 
+textarea.resize-vertical {
+  resize: vertical;
+  min-height: 100px;
+}

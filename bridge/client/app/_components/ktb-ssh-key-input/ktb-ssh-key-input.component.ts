@@ -6,7 +6,7 @@ import { FormUtils } from '../../_utils/form.utils';
 @Component({
   selector: 'ktb-ssh-key-input',
   templateUrl: './ktb-ssh-key-input.component.html',
-  styleUrls: ['./ktb-ssh-key-input.component.scss'],
+  styleUrls: [],
 })
 export class KtbSshKeyInputComponent {
   public privateKeyControl = new FormControl('', [Validators.required, FormUtils.isSshKeyValidator]);

@@ -13,7 +13,7 @@ describe('GitUpstreamUtils', () => {
     ).toBe(true);
   });
 
-  it('should not be SSH configuration', () => {
+  it('should be SSH configuration', () => {
     expect(
       gitUtils.isGitHTTPS({
         ssh: {

@@ -1,6 +1,4 @@
-<label class="dt-form-field-label">
-  <dt-label>Upload PEM certificate file</dt-label>
-</label>
+<dt-label class="dt-form-field-label">Upload PEM certificate file</dt-label>
 <div ktbDragAndDrop (dropped)="validateCertificate($event); dropError = undefined" (dropError)="dropError = $event">
   <p>Drag and drop a file here<br />or</p>
   <button dt-button (click)="certificateInput.click()">Select a file</button>

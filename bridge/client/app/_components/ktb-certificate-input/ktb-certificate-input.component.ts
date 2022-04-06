@@ -5,10 +5,10 @@ import { FormUtils } from '../../_utils/form.utils';
 @Component({
   selector: 'ktb-certificate-input',
   templateUrl: './ktb-certificate-input.component.html',
-  styleUrls: ['./ktb-certificate-input.component.scss'],
+  styleUrls: [],
 })
 export class KtbCertificateInputComponent {
-  public readonly allowedExtensions = ['.pem'];
+  public readonly allowedExtensions = ['.pem', '.crt', '.cer', 'der'];
   public certificateControl = new FormControl('', FormUtils.isCertificateValidator);
   public certificateForm = new FormGroup({
     certificate: this.certificateControl,

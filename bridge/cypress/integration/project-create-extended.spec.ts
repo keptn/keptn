@@ -7,6 +7,10 @@ describe('Create extended project https test', () => {
     createProjectPage.intercept(true).visit();
   });
 
+  it('should not show "Set Git upstream" button', () => {
+    createProjectPage.assertUpdateButtonExists(false);
+  });
+
   it('should have enabled button if form is valid', () => {
     createProjectPage.enterBasicValidProjectHttps().assertCreateButtonEnabled(true);
   });

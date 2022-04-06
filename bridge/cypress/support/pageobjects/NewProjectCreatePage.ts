@@ -364,6 +364,11 @@ class NewProjectCreatePage {
     cy.byTestId('ktb-create-project').click();
     return this;
   }
+
+  public assertUpdateButtonExists(status: boolean): this {
+    cy.byTestId('ktb-project-update-button').should(status ? 'exist' : 'not.exist');
+    return this;
+  }
 }
 
 export default NewProjectCreatePage;

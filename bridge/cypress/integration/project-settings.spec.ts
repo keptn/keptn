@@ -74,4 +74,8 @@ describe('Create extended project https test', () => {
       .assertSshFormVisible(true)
       .assertGitUsernameSsh('myGitUser');
   });
+
+  it('should show "Set Git upstream" button', () => {
+    projectSettingsPage.assertUpdateButtonExists(true);
+  });
 });

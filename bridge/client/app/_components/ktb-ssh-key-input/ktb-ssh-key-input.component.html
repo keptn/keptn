@@ -1,6 +1,4 @@
-<label class="dt-form-field-label">
-  <dt-label>Upload private key file</dt-label>
-</label>
+<dt-label class="dt-form-field-label">Upload private key file</dt-label>
 <div ktbDragAndDrop (dropped)="validateSshPrivateKey($event); dropError = undefined" (dropError)="dropError = $event">
   <p>Drag and drop a file here<br />or</p>
   <button dt-button (click)="privateKeyInput.click()">Select a file</button>

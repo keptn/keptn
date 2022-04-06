@@ -1,13 +1,10 @@
 <h2 class="required">Git upstream repository</h2>
 <p class="mt-0 mb-3">
-  It is recommended to set a Git upstream repository. In future releases, projects without a Git repository will not be
-  supported. Please specify the Git remote url, the user and the token. Instructions on how to set your Git provider can
-  be found in the
+  A Git upstream repository has to be set. You can connect your Git repository with HTTPS or SSH. Instructions, on how
+  to set up your Git provider can be found in the
   <a [href]="'/manage/git_upstream/' | keptnUrl" target="_blank">Git-based upstream documentation</a>.
 </p>
-<label class="dt-form-field-label">
-  <dt-label class="required">Connect via</dt-label>
-</label>
+<dt-label class="required dt-form-field-label">Connect via</dt-label>
 <dt-radio-group (change)="setSelectedForm($event)">
   <dt-radio-button
     [value]="FormType.HTTPS"
@@ -38,7 +35,12 @@
 </div>
 
 <div class="mt-3" *ngIf="!isCreateMode">
-  <button [disabled]="!gitData || isGitUpstreamInProgress" (click)="updateUpstream()" dt-button>
+  <button
+    [disabled]="!gitData || isGitUpstreamInProgress"
+    (click)="updateUpstream()"
+    dt-button
+    uitestid="ktb-project-update-button"
+  >
     <dt-loading-spinner *ngIf="isGitUpstreamInProgress" aria-label="Setting Git upstream URL"></dt-loading-spinner>
     Set Git upstream
   </button>

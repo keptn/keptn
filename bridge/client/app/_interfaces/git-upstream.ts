@@ -7,7 +7,6 @@ export interface IGitData {
 
 export interface IRequiredGitData extends IGitData {
   gitRemoteURL: string;
-  gitUser?: string;
   gitToken: string;
 }
 

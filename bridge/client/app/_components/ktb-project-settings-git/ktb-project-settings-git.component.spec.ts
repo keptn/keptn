@@ -67,18 +67,6 @@ describe('KtbProjectSettingsGitComponent', () => {
     expect(button).toBeFalsy();
   });
 
-  it('should show "Set Git upstream" button when create mode is false', () => {
-    // given
-    component.isCreateMode = false;
-
-    // when
-    fixture.detectChanges();
-    const button = fixture.nativeElement.querySelector('button'); //TODO: move to UI test
-
-    // then
-    expect(button).toBeTruthy();
-  });
-
   it('should disable the inputs when loading in edit mode', () => {
     // given, when
     component.isCreateMode = false;

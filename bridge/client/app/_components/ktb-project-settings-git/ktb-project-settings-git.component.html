@@ -50,7 +50,7 @@
     </div>
   </div>
   <div class="ml-3" *ngIf="!isCreateMode && !isInGitExtended">
-    <button [disabled]="isButtonDisabled()" (click)="setGitUpstream()" dt-button>
+    <button [disabled]="isButtonDisabled()" (click)="setGitUpstream()" dt-button uitestid="ktb-project-update-button">
       <dt-loading-spinner *ngIf="isGitUpstreamInProgress" aria-label="Setting Git upstream URL"></dt-loading-spinner>
       Set Git upstream
     </button>

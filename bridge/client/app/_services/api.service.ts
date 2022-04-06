@@ -386,7 +386,7 @@ export class ApiService {
     data: IGitHttps['https'] | IGitSsh['ssh']
   ): Observable<unknown> {
     const url = `${this._baseUrl}/controlPlane/v1/project`;
-    return this.http.put(url, {
+    return this.http.put<unknown>(url, {
       ...data,
       name: projectName,
     });
