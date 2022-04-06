@@ -2,14 +2,15 @@ package go_tests
 
 import (
 	"fmt"
-	"github.com/keptn/go-utils/pkg/api/models"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"os"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/keptn/go-utils/pkg/api/models"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/stretchr/testify/require"
 )
 
 const webhookShipyard = `--- 
@@ -47,7 +48,7 @@ spec:
           tasks:
             - name: "mytask"`
 
-const webhookYaml = `apiVersion: webhookconfig.keptn.sh/v1alpha1
+const webhookYamlAlpha = `apiVersion: webhookconfig.keptn.sh/v1alpha1
 kind: WebhookConfig
 metadata:
   name: webhook-configuration
@@ -115,7 +116,87 @@ spec:
         - "curl --header 'x-token: {{.env.secretKey}}' http://shipyard-controller:8080/v1/project/{{.data.project}}"
         - "curl http://shipyard-controller:8080/v1/project/{{.data.project}}/stage/{{.data.stage}}"`
 
-const webhookWithDisabledFinishedEventsYaml = `apiVersion: webhookconfig.keptn.sh/v1alpha1
+const webhookYamlBeta = `apiVersion: webhookconfig.keptn.sh/v1beta1
+kind: WebhookConfig
+metadata:
+  name: webhook-configuration
+spec:
+  webhooks:
+    - type: "sh.keptn.event.othertask.triggered"
+      subscriptionID: ${othertask-sub-id}
+      sendFinished: true
+      envFrom: 
+        - name: "secretKey"
+          secretRef:
+            name: "my-webhook-k8s-secret"
+            key: "my-key"
+      requests:
+        - url: http://shipyard-controller:8080/v1/project{{.unknownKey}}
+          method: GET
+    - type: "sh.keptn.event.failedtask.triggered"
+      subscriptionID: ${failedtask-sub-id}
+      sendFinished: true
+      requests:
+        - url: http://shipyard-controller:8080/v1/some-unknown-api
+          method: GET
+    - type: "sh.keptn.event.unallowedtask.triggered"
+      subscriptionID: ${unallowedtask-sub-id}
+      sendFinished: true
+      envFrom: 
+        - name: "secretKey"
+          secretRef:
+            name: "my-webhook-k8s-secret"
+            key: "my-key"
+      requests:
+        - url: http://kubernetes.default.svc.cluster.local:443/v1
+          method: GET
+    - type: "sh.keptn.event.loopback.triggered"
+      subscriptionID: ${loopback-sub-id}
+      sendFinished: true
+      requests:
+        - url: http://localhost:8080
+          method: GET
+    - type: "sh.keptn.event.loopback2.triggered"
+      subscriptionID: ${loopback2-sub-id}
+      sendFinished: true
+      requests:
+        - url: http://127.0.0.1:8080
+          method: GET
+    - type: "sh.keptn.event.loopback3.triggered"
+      subscriptionID: ${loopback3-sub-id}
+      sendFinished: true
+      requests:
+        - url: http://[::1]:8080
+          method: GET
+    - type: "sh.keptn.event.mytask.finished"
+      subscriptionID: ${mytask-finished-sub-id}
+      sendFinished: true
+      envFrom: 
+        - name: "secretKey"
+          secretRef:
+            name: "my-webhook-k8s-secret"
+            key: "my-key"
+      requests:
+        - url: http://shipyard-controller:8080/v1/some-unknown-api
+          method: GET
+    - type: "sh.keptn.event.mytask.triggered"
+      subscriptionID: ${mytask-sub-id}
+      sendFinished: true
+      envFrom: 
+        - name: "secretKey"
+          secretRef:
+            name: "my-webhook-k8s-secret"
+            key: "my-key"
+      requests:
+        - url: http://shipyard-controller:8080/v1/project/{{.data.project}}
+          method: GET
+          headers:
+            - key: x-token
+              value: {{.env.secretKey}}
+        - url: http://shipyard-controller:8080/v1/project/{{.data.project}}/stage/{{.data.stage}}
+          method: GET`
+
+const webhookWithDisabledFinishedEventsYamlAlpha = `apiVersion: webhookconfig.keptn.sh/v1alpha1
 kind: WebhookConfig
 metadata:
   name: webhook-configuration
@@ -155,7 +236,56 @@ spec:
         - "curl --header 'x-token: {{.env.secretKey}}' http://shipyard-controller:8080/v1/project/{{.data.project}}"
         - "curl http://shipyard-controller:8080/v1/project/{{.data.project}}/stage/{{.data.stage}}"`
 
-const webhookWithDisabledStartedEventsYaml = `apiVersion: webhookconfig.keptn.sh/v1alpha1
+const webhookWithDisabledFinishedEventsYamlBeta = `apiVersion: webhookconfig.keptn.sh/v1beta1
+kind: WebhookConfig
+metadata:
+  name: webhook-configuration
+spec:
+  webhooks:
+    - type: "sh.keptn.event.othertask.triggered"
+      subscriptionID: ${othertask-sub-id}
+      sendFinished: false
+      envFrom: 
+        - name: "secretKey"
+          secretRef:
+            name: "my-webhook-k8s-secret"
+            key: "my-key"
+      requests:
+        - url: http://shipyard-controller:8080/v1/project{{.unknownKey}}
+          method: GET
+        - url: http://shipyard-controller:8080/v1/project{{.unknownKey}}
+          method: GET
+    - type: "sh.keptn.event.unallowedtask.triggered"
+      subscriptionID: ${unallowedtask-sub-id}
+      sendFinished: false
+      envFrom: 
+        - name: "secretKey"
+          secretRef:
+            name: "my-webhook-k8s-secret"
+            key: "my-key"
+      requests:
+        - url: http://shipyard-controller:8080/v1/project/{{.data.project}}/stage/{{.data.stage}}
+          method: GET
+        - url: http://kubernetes.default.svc.cluster.local:443/v1
+          method: GET
+    - type: "sh.keptn.event.mytask.triggered"
+      subscriptionID: ${mytask-sub-id}
+      sendFinished: false
+      envFrom: 
+        - name: "secretKey"
+          secretRef:
+            name: "my-webhook-k8s-secret"
+            key: "my-key"
+      requests:
+        - url: http://shipyard-controller:8080/v1/project/{{.data.project}}
+          method: GET
+          headers:
+            - key: x-token
+              value: {{.env.secretKey}}
+        - url: http://shipyard-controller:8080/v1/project/{{.data.project}}/stage/{{.data.stage}}
+          method: GET`
+
+const webhookWithDisabledStartedEventsYamlAlpha = `apiVersion: webhookconfig.keptn.sh/v1alpha1
 kind: WebhookConfig
 metadata:
   name: webhook-configuration
@@ -173,7 +303,29 @@ spec:
       requests:
         - "curl --header 'x-token: {{.env.secretKey}}' http://shipyard-controller:8080/v1/project/{{.data.project}}"`
 
-const webhookWithOverlappingSubscriptionsYaml = `apiVersion: webhookconfig.keptn.sh/v1alpha1
+const webhookWithDisabledStartedEventsYamlBeta = `apiVersion: webhookconfig.keptn.sh/v1beta1
+kind: WebhookConfig
+metadata:
+  name: webhook-configuration
+spec:
+  webhooks:
+    - type: "sh.keptn.event.mytask.triggered"
+      subscriptionID: ${mytask-sub-id}
+      sendStarted: false
+      sendFinished: false
+      envFrom: 
+        - name: "secretKey"
+          secretRef:
+            name: "my-webhook-k8s-secret"
+            key: "my-key"
+      requests:
+      - url: http://shipyard-controller:8080/v1/project/{{.data.project}}
+        method: GET
+        headers:
+          - key: x-token
+            value: {{.env.secretKey}}`
+
+const webhookWithOverlappingSubscriptionsYamlAlpha = `apiVersion: webhookconfig.keptn.sh/v1alpha1
 kind: WebhookConfig
 metadata:
   name: webhook-configuration
@@ -196,7 +348,36 @@ spec:
         - "curl --header 'x-token: {{.env.secretKey}}' http://shipyard-controller:8080/v1/project/{{.data.project}}"
         - "curl http://shipyard-controller:8080/v1/project/{{.data.project}}/stage/{{.data.stage}}"`
 
-const webhookSimpleYaml = `apiVersion: webhookconfig.keptn.sh/v1alpha1
+const webhookWithOverlappingSubscriptionsYamlBeta = `apiVersion: webhookconfig.keptn.sh/v1beta1
+kind: WebhookConfig
+metadata:
+  name: webhook-configuration
+spec:
+  webhooks:
+    - type: "sh.keptn.event.mytask.triggered"
+      subscriptionID: ${mytask-sub-id}
+      sendFinished: true
+      requests:
+        - url: http://shipyard-controller:8080/v1/project/{{.data.project}}/stage/{{.data.stage}}
+          method: GET
+    - type: "sh.keptn.event.mytask.triggered"
+      subscriptionID: ${mytask-sub-2-id}
+      sendFinished: true
+      envFrom: 
+        - name: "secretKey"
+          secretRef:
+            name: "my-webhook-k8s-secret"
+            key: "my-key"
+      requests:
+        - url: http://shipyard-controller:8080/v1/project/{{.data.project}}
+          method: GET
+          headers:
+            - key: x-token
+              value: {{.env.secretKey}}"
+        - url: http://shipyard-controller:8080/v1/project/{{.data.project}}/stage/{{.data.stage}}
+          method: GET`
+
+const webhookSimpleYamlAlpha = `apiVersion: webhookconfig.keptn.sh/v1alpha1
 kind: WebhookConfig
 metadata:
   name: webhook-configuration
@@ -209,7 +390,29 @@ spec:
       requests:
         - "curl http://shipyard-controller:8080/v1/project/{{.data.project}}/stage/{{.data.stage}}"`
 
-func Test_Webhook(t *testing.T) {
+const webhookSimpleYamlBeta = `apiVersion: webhookconfig.keptn.sh/v1beta11
+kind: WebhookConfig
+metadata:
+  name: webhook-configuration
+spec:
+  webhooks:
+    - type: "sh.keptn.event.mytask.triggered"
+      subscriptionID: ${mytask-sub-id}
+      sendStarted: true
+      sendFinished: true
+      requests:
+        - url: http://shipyard-controller:8080/v1/project/{{.data.project}}/stage/{{.data.stage}}
+          method: GET`
+
+func Test_Webhook_Alpha(t *testing.T) {
+	Test_Webhook(t, webhookYamlAlpha)
+}
+
+func Test_Webhook_Beta(t *testing.T) {
+	Test_Webhook(t, webhookYamlBeta)
+}
+
+func Test_Webhook(t *testing.T, webhookYaml string) {
 	projectName := "webhooks"
 	serviceName := "myservice"
 	stageName := "dev"
@@ -366,7 +569,15 @@ func Test_Webhook(t *testing.T) {
 	})
 }
 
-func Test_Webhook_OverlappingSubscriptions(t *testing.T) {
+func Test_Webhook_OverlappingSubscriptions_Alpha(t *testing.T) {
+	Test_Webhook_OverlappingSubscriptions(t, webhookWithOverlappingSubscriptionsYamlAlpha)
+}
+
+func Test_Webhook_OverlappingSubscriptions_Beta(t *testing.T) {
+	Test_Webhook_OverlappingSubscriptions(t, webhookWithOverlappingSubscriptionsYamlBeta)
+}
+
+func Test_Webhook_OverlappingSubscriptions(t *testing.T, webhookWithOverlappingSubscriptionsYaml string) {
 	projectName := "webhooks-subscription-overlap"
 	serviceName := "myservice"
 	stageName := "dev"
@@ -459,7 +670,15 @@ func Test_Webhook_OverlappingSubscriptions(t *testing.T) {
 
 }
 
-func Test_WebhookConfigAtProjectLevel(t *testing.T) {
+func Test_WebhookConfigAtProjectLevel_Alpha(t *testing.T) {
+	Test_WebhookConfigAtProjectLevel(t, webhookSimpleYamlAlpha)
+}
+
+func Test_WebhookConfigAtProjectLevel_Beta(t *testing.T) {
+	Test_WebhookConfigAtProjectLevel(t, webhookSimpleYamlBeta)
+}
+
+func Test_WebhookConfigAtProjectLevel(t *testing.T, webhookSimpleYaml string) {
 	projectName := "webhooks-config-project"
 	serviceName := "myservice"
 	stageName := "dev"
@@ -470,10 +689,18 @@ func Test_WebhookConfigAtProjectLevel(t *testing.T) {
 		_, err := ExecuteCommand(fmt.Sprintf("keptn add-resource --project=%s --resource=%s --resourceUri=webhook/webhook.yaml", projectName, webhookFilePath))
 
 		require.Nil(t, err)
-	})
+	}, webhookSimpleYaml)
 }
 
-func Test_WebhookConfigAtStageLevel(t *testing.T) {
+func Test_WebhookConfigAtStageLevel_Alpha(t *testing.T) {
+	Test_WebhookConfigAtStageLevel(t, webhookSimpleYamlAlpha)
+}
+
+func Test_WebhookConfigAtStageLevel_Beta(t *testing.T) {
+	Test_WebhookConfigAtStageLevel(t, webhookSimpleYamlBeta)
+}
+
+func Test_WebhookConfigAtStageLevel(t *testing.T, webhookSimpleYaml string) {
 	projectName := "webhooks-config-stage"
 	serviceName := "myservice"
 	stageName := "dev"
@@ -484,10 +711,18 @@ func Test_WebhookConfigAtStageLevel(t *testing.T) {
 		_, err := ExecuteCommand(fmt.Sprintf("keptn add-resource --project=%s --stage=%s --resource=%s --resourceUri=webhook/webhook.yaml", projectName, stageName, webhookFilePath))
 
 		require.Nil(t, err)
-	})
+	}, webhookSimpleYaml)
 }
 
-func Test_WebhookConfigAtServiceLevel(t *testing.T) {
+func Test_WebhookConfigAtServiceLevel_Alpha(t *testing.T) {
+	Test_WebhookConfigAtServiceLevel(t, webhookSimpleYamlAlpha)
+}
+
+func Test_WebhookConfigAtServiceLevel_Beta(t *testing.T) {
+	Test_WebhookConfigAtServiceLevel(t, webhookSimpleYamlBeta)
+}
+
+func Test_WebhookConfigAtServiceLevel(t *testing.T, webhookSimpleYaml string) {
 	projectName := "webhooks-config-service"
 	serviceName := "myservice"
 	stageName := "dev"
@@ -498,11 +733,11 @@ func Test_WebhookConfigAtServiceLevel(t *testing.T) {
 		_, err := ExecuteCommand(fmt.Sprintf("keptn add-resource --project=%s --service=%s --resource=%s --resourceUri=webhook/webhook.yaml --all-stages", projectName, serviceName, webhookFilePath))
 
 		require.Nil(t, err)
-	})
+	}, webhookSimpleYaml)
 }
 
 // simpleWebhookTest triggers a sequence and checks whether a started and finished event is sent for the given task
-func simpleWebhookTest(t *testing.T, stageName, projectName, serviceName, sequencename, taskname string, addConfigFunc func(t *testing.T, projectName, webhookFilePath string)) {
+func simpleWebhookTest(t *testing.T, stageName, projectName, serviceName, sequencename, taskname string, addConfigFunc func(t *testing.T, projectName, webhookFilePath string), webhookSimpleYaml string) {
 	shipyardFilePath, err := CreateTmpShipyardFile(webhookShipyard)
 	require.Nil(t, err)
 	defer func() {
@@ -587,7 +822,15 @@ func simpleWebhookTest(t *testing.T, stageName, projectName, serviceName, sequen
 
 }
 
-func Test_WebhookWithDisabledFinishedEvents(t *testing.T) {
+func Test_WebhookWithDisabledFinishedEvents_Alpha(t *testing.T) {
+	Test_WebhookWithDisabledFinishedEvents(t, webhookWithDisabledFinishedEventsYamlAlpha)
+}
+
+func Test_WebhookWithDisabledFinishedEvents_Beta(t *testing.T) {
+	Test_WebhookWithDisabledFinishedEvents(t, webhookWithDisabledFinishedEventsYamlBeta)
+}
+
+func Test_WebhookWithDisabledFinishedEvents(t *testing.T, webhookWithDisabledFinishedEventsYaml string) {
 	projectName := "webhooks-no-finish"
 	serviceName := "myservice"
 	stageName := "dev"
@@ -751,7 +994,15 @@ func Test_WebhookWithDisabledFinishedEvents(t *testing.T) {
 	}
 }
 
-func Test_WebhookWithDisabledStartedEvents(t *testing.T) {
+func Test_WebhookWithDisabledStartedEvents_Alpha(t *testing.T) {
+	Test_WebhookWithDisabledStartedEvents(t, webhookWithDisabledStartedEventsYamlAlpha)
+}
+
+func Test_WebhookWithDisabledStartedEvents_Beta(t *testing.T) {
+	Test_WebhookWithDisabledStartedEvents(t, webhookWithDisabledStartedEventsYamlBeta)
+}
+
+func Test_WebhookWithDisabledStartedEvents(t *testing.T, webhookWithDisabledStartedEventsYaml string) {
 	projectName := "webhooks-no-started"
 	serviceName := "myservice"
 	stageName := "dev"
