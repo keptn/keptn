@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-import BasePage from '../support/pageobjects/BasePage';
+import { ProjectBoardPage } from '../support/pageobjects/ProjectBoardPage';
 import { ServicesSettingsPage } from '../support/pageobjects/ServicesSettingsPage';
 import NewProjectCreatePage from '../support/pageobjects/NewProjectCreatePage';
 
@@ -40,7 +40,7 @@ describe('Test notifications', () => {
   });
 
   it('should test notification fade out', () => {
-    const basePage = new BasePage();
+    const basePage = new ProjectBoardPage();
     cy.visit('/project/dynatrace/settings/services/create');
     showSuccess();
 
@@ -58,7 +58,7 @@ describe('Test notifications', () => {
   });
 
   it('should test notification close', () => {
-    const basePage = new BasePage();
+    const basePage = new ProjectBoardPage();
     cy.visit('/project/dynatrace/settings/services/create');
     showSuccess();
 
@@ -82,7 +82,7 @@ describe('Test notifications', () => {
   });
 
   function createProject(): void {
-    const basePage = new BasePage();
+    const basePage = new ProjectBoardPage();
     const newProjectCreatePage = new NewProjectCreatePage();
     const GIT_USERNAME = 'carpe-github-username';
     const PROJECT_NAME = 'dynatrace';

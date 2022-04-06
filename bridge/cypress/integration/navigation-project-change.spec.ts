@@ -1,10 +1,10 @@
 /// <reference types="cypress" />
 
-import BasePage from '../support/pageobjects/BasePage';
+import { ProjectBoardPage } from '../support/pageobjects/ProjectBoardPage';
 
 describe('Test project navigation', () => {
   it('should correctly load service states of different service', () => {
-    const basePage = new BasePage();
+    const basePage = new ProjectBoardPage();
     const secondProject = 'dynatrace2';
     const serviceNameOfSecondProject = 'serviceOfDynatrace2';
 

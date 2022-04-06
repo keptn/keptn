@@ -1,10 +1,10 @@
 /// <reference types="cypress" />
-import BasePage from '../support/pageobjects/BasePage';
+import { ProjectBoardPage } from '../support/pageobjects/ProjectBoardPage';
 import NewProjectCreatePage from '../support/pageobjects/NewProjectCreatePage';
 
 describe('Create new project test', () => {
   it('test new project create', () => {
-    const basePage = new BasePage();
+    const basePage = new ProjectBoardPage();
     const newProjectCreatePage = new NewProjectCreatePage();
     const GIT_USERNAME = 'carpe-github-username';
     const PROJECT_NAME = 'test-project-bycypress-001';

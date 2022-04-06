@@ -1,27 +1,12 @@
 import { SequencesPage } from '../support/pageobjects/SequencesPage';
+import { interceptProjectBoard } from '../support/intercept';
 
 describe('Sequences', () => {
   const sequencePage = new SequencesPage();
 
   beforeEach(() => {
-    cy.intercept('/api/v1/metadata', { fixture: 'metadata.mock' });
-    cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfo.mock' });
-    cy.intercept('/api/project/sockshop?approval=true&remediation=true', { fixture: 'project.mock' });
-    cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: false });
-
-    cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
-    cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=25', { fixture: 'sequences.sockshop' }).as(
-      'Sequences'
-    );
-    cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=25&fromTime=*', {
-      body: {
-        states: [],
-      },
-    });
-
-    cy.intercept('/api/project/sockshop/sequences/metadata', { fixture: 'sequence.metadata.mock' }).as(
-      'SequencesMetadata'
-    );
+    interceptProjectBoard();
+    sequencePage.intercept();
   });
 
   it('should show a loading indicator when sequences are not loaded', () => {
@@ -36,12 +21,12 @@ describe('Sequences', () => {
   });
 
   it('should show an empty state if no sequences are loaded', () => {
-    sequencePage.visit('sockshop');
     cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=25', {
       body: {
         states: [],
       },
     });
+    sequencePage.visit('sockshop');
 
     cy.byTestId('keptn-noSequences').should('exist');
   });
@@ -111,9 +96,6 @@ describe('Sequences', () => {
   });
 
   it('should select sequence and show the right timestamps in the timeline', () => {
-    cy.intercept('/api/mongodb-datastore/event?keptnContext=62cca6f3-dc54-4df6-a04c-6ffc894a4b5e&project=sockshop', {
-      fixture: 'sequence.traces.mock.json',
-    });
     sequencePage
       .visit('sockshop')
       .selectSequence('62cca6f3-dc54-4df6-a04c-6ffc894a4b5e')
@@ -136,9 +118,6 @@ describe('Sequences', () => {
   });
 
   it('should select sequence and should not have loading indicators', () => {
-    cy.intercept('/api/mongodb-datastore/event?keptnContext=62cca6f3-dc54-4df6-a04c-6ffc894a4b5e&project=sockshop', {
-      fixture: 'sequence.traces.mock.json',
-    });
     sequencePage
       .visit('sockshop')
       .selectSequence('62cca6f3-dc54-4df6-a04c-6ffc894a4b5e')
@@ -148,13 +127,10 @@ describe('Sequences', () => {
   });
 
   it('should select sequence and should have image tag in name', () => {
-    const context = '62cca6f3-dc54-4df6-a04c-6ffc894a4b5e';
-    const project = 'sockshop';
-    cy.intercept(`/api/mongodb-datastore/event?keptnContext=${context}&project=${project}`, {
-      fixture: 'sequence.traces.mock.json',
-    });
-
-    sequencePage.visit(project).selectSequence(context).assertServiceName('carts', 'v0.13.1');
+    sequencePage
+      .visit('sockshop')
+      .selectSequence('62cca6f3-dc54-4df6-a04c-6ffc894a4b5e')
+      .assertServiceName('carts', 'v0.13.1');
   });
 
   it('should select sequence and should not have image tag in name', () => {

@@ -1,12 +1,10 @@
 /// <reference types="cypress" />
 
-import BasePage from '../support/pageobjects/BasePage';
+import { ProjectBoardPage } from '../support/pageobjects/ProjectBoardPage';
 
 describe('Test Navigation Buttons In Evaluation Screen', () => {
   it('The test clicks on Navigation buttons and make sure the pages are open respectively ', () => {
-    const basePage = new BasePage();
-
-    cy.fixture('get.project.json').as('initProjectJSON');
+    const basePage = new ProjectBoardPage();
     cy.fixture('metadata.json').as('initmetadata');
 
     cy.intercept('GET', 'api/v1/metadata', { fixture: 'metadata.json' }).as('metadataCmpl');
@@ -80,8 +78,7 @@ describe('Test Navigation Buttons In Evaluation Screen', () => {
       body: { deployments: [], filter: { stages: [], services: [] } },
     });
 
-    cy.visit('/');
-    cy.wait(500);
+    cy.visit('/').wait('@initProjects');
     basePage.clickProjectTile('dynatrace');
 
     basePage

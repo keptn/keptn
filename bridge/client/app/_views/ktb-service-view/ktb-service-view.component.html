@@ -59,6 +59,7 @@
           [service]="serviceState"
           [(selectedDeploymentInfo)]="selectedDeployment"
           (selectedDeploymentInfoChange)="deploymentSelected($event, projectName)"
+          [attr.uitestid]="'ktb-service-tile-' + serviceName + '-content'"
         ></ktb-deployment-list>
       </ktb-expandable-tile>
 

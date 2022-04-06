@@ -1,10 +1,16 @@
 /// <reference types="cypress" />
 
 import { Project } from '../../../client/app/_models/project';
+import { interceptDashboard } from '../intercept';
 
 class DashboardPage {
-  visitDashboard(): this {
-    cy.visit(`/`);
+  public intercept(): this {
+    interceptDashboard();
+    return this;
+  }
+
+  public visit(): this {
+    cy.visit(`/`).wait('@metadata');
     return this;
   }
 

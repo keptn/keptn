@@ -125,6 +125,8 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    let setStageWithEventId: string | undefined;
+    let setStageWithKeptnContext: string | undefined;
     AppUtils.createTimer(0, this._sequenceTimerInterval)
       .pipe(
         switchMap(() => this.project$),
@@ -161,15 +163,23 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     combineLatest([this.route.params, this.sequencesUpdated$])
       .pipe(
         takeUntil(this.unsubscribe$),
-        takeWhile(([params]) => !this.currentSequence && params.shkeptncontext)
+        takeWhile(([params]) => !this.currentSequence && params.shkeptncontext && !setStageWithEventId)
       )
       .subscribe(([params]: [Params, void]) => {
         if (params.shkeptncontext && this.project?.sequences) {
           const sequence = this.project.sequences.find((s) => s.shkeptncontext === params.shkeptncontext);
-          const stage = params.eventId ? sequence?.traces.find((t) => t.id === params.eventId)?.stage : params.stage;
+          const stage = params.eventId ? undefined : params.stage;
           const eventId = params.eventId;
+
           if (sequence) {
-            this.selectSequence({ sequence, stage, eventId });
+            if (params.eventId && !sequence.traces.length) {
+              setStageWithEventId = params.eventId;
+              setStageWithKeptnContext = params.shkeptncontext;
+              // at this moment, no traces for the sequence are loaded, wait till next sequencesUpdated$
+              this.loadTraces(sequence);
+            } else {
+              this.selectSequence({ sequence, stage, eventId });
+            }
           } else if (params.shkeptncontext && this.project) {
             // is running twice because project is changed on start before the first call finishes
             this.dataService.loadUntilRoot(this.project, params.shkeptncontext);
@@ -185,6 +195,16 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
         this.unfinishedSequences = this.project.sequences.filter((sequence) => !sequence.isFinished());
         // Needed for the updates to work properly
         this.changeDetectorRef_.detectChanges();
+        if (setStageWithKeptnContext && setStageWithEventId) {
+          const sequence = this.project.sequences.find((s) => s.shkeptncontext === setStageWithKeptnContext);
+          if (sequence && sequence.traces.length) {
+            const stage = sequence.findTrace((t) => t.id === setStageWithEventId)?.stage;
+            if (stage) {
+              this.selectSequence({ sequence, stage, eventId: setStageWithEventId }, false);
+            }
+            setStageWithKeptnContext = setStageWithEventId = undefined;
+          }
+        }
       }
     });
   }
@@ -197,7 +217,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     });
   }
 
-  selectSequence(event: { sequence: Sequence; stage?: string; eventId?: string }): void {
+  selectSequence(event: { sequence: Sequence; stage?: string; eventId?: string }, loadTraces = true): void {
     if (event.eventId) {
       const routeUrl = this.router.createUrlTree([
         '/project',
@@ -223,7 +243,9 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     this.currentSequence = event.sequence;
     this.selectedStage = event.stage || event.sequence.getStages().pop();
     this.updateLatestDeployedImage();
-    this.loadTraces(this.currentSequence);
+    if (loadTraces) {
+      this.loadTraces(this.currentSequence);
+    }
   }
 
   loadTraces(sequence: Sequence): void {
