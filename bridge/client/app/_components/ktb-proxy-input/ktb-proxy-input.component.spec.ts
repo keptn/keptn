@@ -22,8 +22,6 @@ describe('KtbProxyInputComponent', () => {
   it('should correctly set input data and emit data', () => {
     // given
     const emitSpy = jest.spyOn(component.proxyChange, 'emit');
-    const triggerValidationHostSpy = jest.spyOn(component.hostControl, 'markAsDirty');
-    const triggerValidationPortSpy = jest.spyOn(component.portControl, 'markAsDirty');
 
     // when
     component.proxy = {
@@ -41,8 +39,6 @@ describe('KtbProxyInputComponent', () => {
     expect(component.schemeControl.value).toBe('https');
     expect(component.passwordControl.value).toBe('myPassword');
     expect(component.userControl.value).toBe('myUser');
-    expect(triggerValidationHostSpy).toHaveBeenCalled();
-    expect(triggerValidationPortSpy).toHaveBeenCalled();
     expect(emitSpy).not.toHaveBeenCalled();
 
     // when

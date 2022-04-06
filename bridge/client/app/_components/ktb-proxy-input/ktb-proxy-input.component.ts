@@ -41,13 +41,7 @@ export class KtbProxyInputComponent {
       this.isInsecureControl.setValue(proxy.gitProxyInsecure);
       this.schemeControl.setValue(proxy.gitProxyScheme);
       this.hostControl.setValue(urlParts.host);
-      if (urlParts.host) {
-        this.hostControl.markAsDirty();
-      }
       this.portControl.setValue(urlParts.port);
-      if (urlParts.port) {
-        this.portControl.markAsDirty();
-      }
       this.userControl.setValue(proxy.gitProxyUser ?? '');
       this.passwordControl.setValue(proxy.gitProxyPassword ?? '');
     }
