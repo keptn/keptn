@@ -19,7 +19,7 @@ type GetEventsByTypeURL struct {
 	EventType string
 
 	ExcludeInvalidated *bool
-	Filter             *string
+	Filter             string
 	FromTime           *string
 	Limit              *int64
 
@@ -72,10 +72,7 @@ func (o *GetEventsByTypeURL) Build() (*url.URL, error) {
 		qs.Set("excludeInvalidated", excludeInvalidatedQ)
 	}
 
-	var filterQ string
-	if o.Filter != nil {
-		filterQ = *o.Filter
-	}
+	filterQ := o.Filter
 	if filterQ != "" {
 		qs.Set("filter", filterQ)
 	}

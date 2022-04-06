@@ -136,6 +136,7 @@ paths:
         - name: filter
           in: query
           type: string
+          required: true
         - name: excludeInvalidated
           in: query
           type: boolean

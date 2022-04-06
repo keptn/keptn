@@ -18,7 +18,7 @@ require (
 	github.com/keptn/go-utils v0.14.1-0.20220405094754-802847e81750
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
-	golang.org/x/net v0.0.0-20220325170049-de3da57026de
+	golang.org/x/net v0.0.0-20220403103023-749bd193bc2b
 	golang.org/x/time v0.0.0-20220224211638-0e9765cccd65
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.22.8

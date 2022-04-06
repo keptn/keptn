@@ -3,6 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"os/exec"
+
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -15,9 +18,11 @@ import (
 )
 
 func Test_executeJMeter(t *testing.T) {
+
 	localTmpDir := t.TempDir()
 	var returnedStatus int
 	var returnedResources apimodels.Resources
+	myurl, _ := url.Parse("http://keptn.sh/test/")
 
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -36,7 +41,7 @@ func Test_executeJMeter(t *testing.T) {
 		}),
 	)
 	defer ts.Close()
-
+	checkJmeter()
 	os.Setenv("CONFIGURATION_SERVICE", ts.URL)
 	os.Setenv("env", "production")
 
@@ -93,6 +98,45 @@ func Test_executeJMeter(t *testing.T) {
 			wantErr:        true,
 			returnedStatus: 500,
 		},
+		{
+			name: "Jmeter returns unparsable result",
+			args: args{
+				testInfo: TestInfo{
+					Project:           "sockshop",
+					Stage:             "dev",
+					Service:           "carts",
+					TestStrategy:      "functional",
+					Context:           localTmpDir,
+					TriggeredID:       "",
+					CommitID:          "",
+					TestTriggeredData: keptnv2.TestTriggeredEventData{},
+					ServiceURL:        nil,
+				},
+				workload: &Workload{
+					Script:    "test.jmx",
+					VUser:     1,
+					LoopCount: 1,
+					ThinkTime: 10,
+				},
+				resultsDir:     localTmpDir,
+				url:            myurl,
+				LTN:            "",
+				funcValidation: false,
+				logger:         nil,
+			},
+			want:    false,
+			wantErr: checkJmeter(),
+			returnedResources: []string{`{
+				"metadata": {
+					"branch": "dev",
+					"version": "de2037b85919406ea949bdfc3aa4bbbe6b0e1e61"
+				},
+				"resourceContent": "cHJvamVjdG5hbWU6IHBvdGF0bwpjcmVhdGlvbnRpbWVzdGFtcDogMjAyMi0wMy0zMCAxNToyMjo0MS4zMTIzNDE2NzYgKzAwMDAgVVRDIG09KzcxOTIuNDk5OTkxODIxCg==",
+				"resourceURI": "test.jmx"
+			}`,
+			},
+			returnedStatus: 200,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -118,6 +162,16 @@ func Test_executeJMeter(t *testing.T) {
 			}
 		})
 	}
+}
+
+func checkJmeter() bool {
+	//check if jmeter command exists
+	cmd := exec.Command("jmeter")
+	_, err := cmd.CombinedOutput()
+	if err != nil {
+		return true
+	}
+	return false
 }
 
 func Test_derivePort(t *testing.T) {

@@ -381,7 +381,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     });
   }
 
-  getTracesLastUpdated(sequence: Sequence): Date {
+  public getTracesLastUpdated(sequence: Sequence): Date | undefined {
     return this.dataService.getTracesLastUpdated(sequence);
   }
 
