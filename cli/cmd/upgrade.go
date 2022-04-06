@@ -50,9 +50,13 @@ var upgradeParams installUpgradeParams
 var keptnUpgradeChart *chart.Chart
 
 // installCmd represents the version command
-var upgraderCmd = NewUpgraderCommand(version.NewKeptnVersionChecker())
+var upgraderCmd = NewUpgraderCommand(version.NewKeptnVersionChecker(), helm.NewHelper())
 
-func NewUpgraderCommand(vChecker *version.KeptnVersionChecker) *cobra.Command {
+func NewUpgraderCommand(vChecker *version.KeptnVersionChecker, helmHelper helm.IHelper) *cobra.Command {
+	upgradeCmdHandler := &UpgradeCmdHandler{
+		helmHelper: helmHelper,
+	}
+
 	upgradeCmd := &cobra.Command{
 		Use:   "upgrade",
 		Args:  cobra.NoArgs,
@@ -76,7 +80,7 @@ keptn upgrade --platform=kubernetes # upgrades Keptn on the Kubernetes cluster
 				if *upgradeParams.PatchNamespace {
 					return patchNamespace()
 				}
-				return doUpgrade()
+				return upgradeCmdHandler.doUpgrade()
 			}
 			fmt.Println("Skipping upgrade due to mocking flag")
 			return nil
@@ -299,7 +303,11 @@ func init() {
 	upgradeParams.SkipUpgradeCheck = upgraderCmd.Flags().BoolP("skip-upgrade-check", "", false, "Skip upgrade compatibility check, useful for nightly version upgrades or upgrades to preview versions")
 }
 
-func doUpgrade() error {
+type UpgradeCmdHandler struct {
+	helmHelper helm.IHelper
+}
+
+func (u *UpgradeCmdHandler) doUpgrade() error {
 	keptnNamespace := namespace
 
 	installedKeptnVersion, err := getInstalledKeptnVersion()
@@ -332,35 +340,34 @@ func doUpgrade() error {
 
 	// check if the helm-service and jmeter-service are part of the previous installation
 	// if yes, they need to be installed separately as they have moved to their own charts
-	helmHelper := helm.NewHelper()
 
 	// fetch user-defined values of the previous Keptn installation and provide those to the upgrade command
 	// this will ensure that options such as 'apiGatewayNginx.type' will stay the same, but newly introduced values will correctly be set to their default
-	previousValues, err := helmHelper.GetValues(keptnReleaseName, keptnNamespace)
+	previousValues, err := u.helmHelper.GetValues(keptnReleaseName, keptnNamespace)
 	if err != nil {
 		return fmt.Errorf("Could not complete Keptn upgrade: %s", err.Error())
 	}
 
-	if err := helmHelper.UpgradeChart(keptnUpgradeChart, keptnReleaseName, keptnNamespace, previousValues); err != nil {
+	if err := u.helmHelper.UpgradeChart(keptnUpgradeChart, keptnReleaseName, keptnNamespace, previousValues); err != nil {
 		msg := fmt.Sprintf("Could not complete Keptn upgrade: %s \nFor troubleshooting, please check the status of the keptn deployment by executing the following command: \n\nkubectl get pods -n %s\n", err.Error(), keptnNamespace)
 		return errors.New(msg)
 	}
 
 	logging.PrintLog("Upgrading of Keptn control plane has been successful.", logging.InfoLevel)
 
-	values, err := helmHelper.GetValues(keptnReleaseName, keptnNamespace)
+	values, err := u.helmHelper.GetValues(keptnReleaseName, keptnNamespace)
 	if err != nil {
 		return fmt.Errorf("Could not determine configuration of current Keptn installation: %s", err.Error())
 	}
 	if isContinuousDeliveryEnabled(values) {
 		logging.PrintLog("Upgrading execution plane services for continuous-delivery use case.", logging.InfoLevel)
-		continuousDeliveryServiceCharts, err := fetchContinuousDeliveryCharts(*helmHelper, upgradeParams.ChartRepoURL)
+		continuousDeliveryServiceCharts, err := fetchContinuousDeliveryCharts(u.helmHelper, upgradeParams.ChartRepoURL)
 		if err != nil {
 			return fmt.Errorf("Could not fetch continuous delivery execution service charts: %s \n", err.Error())
 		}
 
 		for _, serviceChart := range continuousDeliveryServiceCharts {
-			if err := helmHelper.UpgradeChart(serviceChart, serviceChart.Name(), keptnNamespace, values); err != nil {
+			if err := u.helmHelper.UpgradeChart(serviceChart, serviceChart.Name(), keptnNamespace, values); err != nil {
 				msg := fmt.Sprintf("Could not complete upgrade of Keptn execution plane services: %s \nFor troubleshooting, please check the status of the keptn deployment by executing the following command: \n\nkubectl get pods -n %s\n", err.Error(), keptnNamespace)
 				return errors.New(msg)
 			}

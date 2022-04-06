@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
+	"github.com/keptn/keptn/cli/pkg/helm"
 	"github.com/keptn/keptn/cli/pkg/version"
 )
 
@@ -40,8 +41,9 @@ func TestSkipUpgradeCheck(t *testing.T) {
 			VersionURL: ts.URL,
 		},
 	}
+	helmHelper := helm.NewHelper()
 
-	testUpgraderCmd := NewUpgraderCommand(vChecker)
+	testUpgraderCmd := NewUpgraderCommand(vChecker, helmHelper)
 
 	upgraderCmd.RunE = testUpgraderCmd.RunE
 	r := newRedirector()
