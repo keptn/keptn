@@ -49,12 +49,13 @@ var upgradeParams installUpgradeParams
 var keptnUpgradeChart *chart.Chart
 
 // installCmd represents the version command
-var upgraderCmd = NewUpgraderCommand(version.NewKeptnVersionChecker(), helm.NewHelper(), kube.NewKubernetesUtilsKeptnNamespaceHandler())
+var upgraderCmd = NewUpgraderCommand(version.NewKeptnVersionChecker(), helm.NewHelper(), kube.NewKubernetesUtilsKeptnNamespaceHandler(), common.NewUserInput())
 
-func NewUpgraderCommand(vChecker *version.KeptnVersionChecker, helmHelper helm.IHelper, namespaceHandler kube.IKeptnNamespaceHandler) *cobra.Command {
+func NewUpgraderCommand(vChecker *version.KeptnVersionChecker, helmHelper helm.IHelper, namespaceHandler kube.IKeptnNamespaceHandler, userInput common.IUserInput) *cobra.Command {
 	upgradeCmdHandler := &UpgradeCmdHandler{
 		helmHelper:       helmHelper,
 		namespaceHandler: namespaceHandler,
+		userInput:        userInput,
 	}
 
 	upgradeCmd := &cobra.Command{
@@ -73,7 +74,7 @@ keptn upgrade --platform=kubernetes # upgrades Keptn on the Kubernetes cluster
 `,
 		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := doUpgradePreRunCheck(vChecker); err != nil {
+			if err := upgradeCmdHandler.doUpgradePreRunCheck(vChecker); err != nil {
 				return err
 			}
 			if !mocking {
@@ -90,7 +91,7 @@ keptn upgrade --platform=kubernetes # upgrades Keptn on the Kubernetes cluster
 	return upgradeCmd
 }
 
-func doUpgradePreRunCheck(vChecker *version.KeptnVersionChecker) error {
+func (u *UpgradeCmdHandler) doUpgradePreRunCheck(vChecker *version.KeptnVersionChecker) error {
 	if *upgradeParams.PatchNamespace {
 		return nil
 	}
@@ -178,7 +179,7 @@ func doUpgradePreRunCheck(vChecker *version.KeptnVersionChecker) error {
 			return fmt.Errorf("Failed to check kubernetes server version: %w", err)
 		} else if isNewerVersion {
 			logging.PrintLog("The Kubernetes server version is higher than the one officially supported. This is not recommended and could have negative impacts on the stability of Keptn - use at your own risk.", logging.InfoLevel)
-			userConfirmation := common.NewUserInput().AskBool("Do you want to continue?", &common.UserInputOptions{AssumeYes: assumeYes})
+			userConfirmation := u.userInput.AskBool("Do you want to continue?", &common.UserInputOptions{AssumeYes: assumeYes})
 
 			if !userConfirmation {
 				return fmt.Errorf("Stopping upgrade.")
@@ -306,6 +307,7 @@ func init() {
 type UpgradeCmdHandler struct {
 	helmHelper       helm.IHelper
 	namespaceHandler kube.IKeptnNamespaceHandler
+	userInput        common.IUserInput
 }
 
 func (u *UpgradeCmdHandler) doUpgrade() error {
@@ -332,7 +334,7 @@ func (u *UpgradeCmdHandler) doUpgrade() error {
 		fmt.Printf("CAUTION: While upgrading Keptn from version %s to version %s there is a possibility of data loss due to moving to a new database model.\n", installedKeptnVersion, getAppVersion(keptnUpgradeChart))
 		fmt.Printf("Please backup your data before proceeding to the next step. Information about backing up and restoring the data is described here: https://keptn.sh/docs/0.11.x/operate/upgrade/\n")
 
-		userConfirmation := common.NewUserInput().AskBool("Did you create a backup of the database or do you want to proceed without it?", &common.UserInputOptions{AssumeYes: assumeYes})
+		userConfirmation := u.userInput.AskBool("Did you create a backup of the database or do you want to proceed without it?", &common.UserInputOptions{AssumeYes: assumeYes})
 
 		if !userConfirmation {
 			return fmt.Errorf("Stopping upgrade.")
