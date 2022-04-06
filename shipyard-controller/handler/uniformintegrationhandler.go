@@ -10,6 +10,7 @@ import (
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
+	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
 	"strings"
@@ -189,6 +190,7 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 	validator := UniformParamsValidator{false}
 
 	if err := validator.Validate(integration); err != nil {
+		log.Info("Bad request: ", err.Error())
 		SetBadRequestErrorResponse(c, err.Error())
 		return
 	}
@@ -342,6 +344,7 @@ func (rh *UniformIntegrationHandler) CreateSubscription(c *gin.Context) {
 	validator := UniformParamsValidator{false}
 
 	if err := validator.Validate(subscription); err != nil {
+		log.Info("Bad request: ", err.Error())
 		SetBadRequestErrorResponse(c, err.Error())
 		return
 	}
@@ -402,6 +405,7 @@ func (rh *UniformIntegrationHandler) UpdateSubscription(c *gin.Context) {
 	validator := UniformParamsValidator{checkProject}
 
 	if err := validator.Validate(subscription); err != nil {
+		log.Info("Bad request: ", err.Error())
 		SetBadRequestErrorResponse(c, err.Error())
 		return
 	}
