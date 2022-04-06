@@ -5,6 +5,7 @@ import { interceptMain, interceptMainResourceEnabled, interceptProjectBoard } fr
 class NewProjectCreatePage {
   private validCertificateInput = '-----BEGIN CERTIFICATE-----\nmyCertificate\n-----END CERTIFICATE-----';
   private validPrivateKeyInput = '-----BEGIN OPENSSH PRIVATE KEY-----\nmyPrivateKey\n-----END OPENSSH PRIVATE KEY-----';
+
   public intercept(resourceServiceEnabled = false): this {
     if (resourceServiceEnabled) {
       interceptMainResourceEnabled();
@@ -39,13 +40,13 @@ class NewProjectCreatePage {
     return this;
   }
 
-  public typeProjectName(PROJECT_NAME: string): this {
-    cy.byTestId('ktb-project-name-input').type(PROJECT_NAME);
+  public typeProjectName(projectName: string): this {
+    cy.byTestId('ktb-project-name-input').type(projectName);
     return this;
   }
 
-  public typeGitUrl(GIT_URL: string): this {
-    cy.byTestId('ktb-git-url-input').type(GIT_URL);
+  public typeGitUrl(url: string): this {
+    cy.byTestId('ktb-git-url-input').type(url);
     return this;
   }
 
@@ -64,8 +65,8 @@ class NewProjectCreatePage {
     return this;
   }
 
-  public typeGitUsername(GIT_USERNAME: string): this {
-    cy.byTestId('ktb-git-username-input').type(GIT_USERNAME);
+  public typeGitUsername(username: string): this {
+    cy.byTestId('ktb-git-username-input').type(username);
     return this;
   }
 
@@ -84,8 +85,8 @@ class NewProjectCreatePage {
     return this;
   }
 
-  public typeGitToken(GIT_TOKEN: string): this {
-    cy.byTestId('ktb-git-token-input').type(GIT_TOKEN);
+  public typeGitToken(token: string): this {
+    cy.byTestId('ktb-git-token-input').type(token);
     return this;
   }
 
