@@ -182,7 +182,8 @@ func init() {
           {
             "type": "string",
             "name": "filter",
-            "in": "query"
+            "in": "query",
+            "required": true
           },
           {
             "type": "boolean",
@@ -518,7 +519,8 @@ func init() {
           {
             "type": "string",
             "name": "filter",
-            "in": "query"
+            "in": "query",
+            "required": true
           },
           {
             "type": "boolean",
