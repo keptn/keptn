@@ -137,8 +137,8 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 		}
 	}()
 
-	chartLatestVersion := "https://github.com/keptn/helm-charts-dev/blob/b5d01b0a4f42404abee23a031fb5a9e693a57486/packages/keptn-0.14.1-dev-PR-7266.tgz?raw=true"
-	chartPreviousVersion := "https://github.com/keptn/helm-charts-dev/blob/087273a72ee19dfb71d766ccdc6ebfb3a5ef5dec/packages/keptn-0.14.1-dev-PR-7266.tgz?raw=true"
+	chartLatestVersion := "https://github.com/keptn/helm-charts-dev/blob/1efe3dab77da9ea3cf2b7dd5eff4b2fac6f76633/packages/keptn-0.15.0-dev-PR-7266.tgz?raw=true"
+	chartPreviousVersion := "https://github.com/keptn/helm-charts-dev/blob/5b4fbc630895a2a71721763110376b452f4c2c67/packages/keptn-0.15.0-dev-PR-7266.tgz?raw=true"
 
 	projectName, err = CreateProject(projectName, shipyardFile)
 	require.Nil(t, err)
@@ -225,17 +225,20 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 	go func() {
 		for i := 0; i < nrOfUpgrades; i++ {
 			chartURL := ""
+			lighthouseVersion := ""
 			var err error
 			if i%2 == 0 {
+				lighthouseVersion = "v1"
 				chartURL = chartLatestVersion
 				//_, err = ExecuteCommand(fmt.Sprintf("kubectl -n %s set image deployment.v1.apps/lighthouse-service lighthouse-service=keptndev/lighthouse-service:0.14.0-dev", GetKeptnNameSpaceFromEnv()))
 			} else {
+				lighthouseVersion = "v2"
 				chartURL = chartPreviousVersion
 				//_, err = ExecuteCommand(fmt.Sprintf("kubectl -n %s set image deployment.v1.apps/lighthouse-service lighthouse-service=keptndev/lighthouse-service:0.14.0-dev-PR-7266.202203280650", GetKeptnNameSpaceFromEnv()))
 			}
 			t.Logf("Upgrading Keptn to %s", chartURL)
 			//_, err = ExecuteCommand(fmt.Sprintf("helm upgrade -n %s keptn %s --wait --set=control-plane.apiGatewayNginx.type=LoadBalancer --set=control-plane.common.strategy.rollingUpdate.maxUnavailable=0 --set control-plane.resourceService.enabled=true --set control-plane.resourceService.env.DIRECTORY_STAGE_STRUCTURE=true", GetKeptnNameSpaceFromEnv(), chartURL))
-			_, err = ExecuteCommand(fmt.Sprintf("helm upgrade -n %s keptn %s --wait --set=control-plane.apiGatewayNginx.type=LoadBalancer --set=control-plane.common.strategy.rollingUpdate.maxUnavailable=0 --set control-plane.resourceService.enabled=true --set control-plane.resourceService.env.DIRECTORY_STAGE_STRUCTURE=true --set control-plane.distributor.image.repository=docker.io/keptndev/distributor --set control-plane.distributor.image.tag=0.14.1-dev-PR-7308.202204010740", GetKeptnNameSpaceFromEnv(), chartURL))
+			_, err = ExecuteCommand(fmt.Sprintf(`helm upgrade -n %s keptn %s --wait --set=control-plane.apiGatewayNginx.type=LoadBalancer --set=control-plane.common.strategy.rollingUpdate.maxUnavailable=0 --set control-plane.resourceService.enabled=true --set control-plane.resourceService.env.DIRECTORY_STAGE_STRUCTURE=true --set control-plane.distributor.image.repository=docker.io/keptndev/distributor --set control-plane.distributor.image.tag=0.14.1-dev-PR-7308.202204010740 --set control-plane.lighthouseService.image.repository=docker.io/warber/lighthouse-service --set control-plane.lighthouseService.image.tag=%s`, GetKeptnNameSpaceFromEnv(), chartURL, lighthouseVersion))
 			if err != nil {
 				t.Logf("Encountered error when upgrading keptn: %v", err)
 			}
@@ -299,11 +302,11 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 				stageNr := nrTriggeredSequences % nrStages
 				sequenceStageName := fmt.Sprintf("dev-%d", stageNr)
 				//go func(stage string) {
-				//triggerSequence("evaluation", sequenceStageName)
+				triggerSequence("evaluation", sequenceStageName)
 				//}(sequenceStageName)
 				// trigger a webhook sequence
 				//go func(stage string) {
-				triggerSequence("hooks", sequenceStageName)
+				//triggerSequence("hooks", sequenceStageName)
 				//}(sequenceStageName)
 				// wait some time before triggering the next sequence
 				<-time.After(time.Duration(100+rand.Intn(900)) * time.Millisecond)
@@ -330,8 +333,8 @@ func Test_UpgradeZeroDowntime(t *testing.T) {
 	// get the number of dev.delivery.finished events -> this should eventually match the number of
 	assert.Equal(t, int64(len(triggeredSequences.sequences)), nrTriggeredSequences)
 	// TODO remove return again
-	return
 	t.Logf("Triggered %d sequences. Let's check if they have been finished", nrTriggeredSequences)
+	return
 	var nrFinishedSequences uint64
 
 	checkSequencesWg := &sync.WaitGroup{}
