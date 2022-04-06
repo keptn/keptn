@@ -286,7 +286,7 @@ func TestTriggerDeliveryNonExistingProject(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run("", func(t *testing.T) {
-			cmd := fmt.Sprintf("trigger delivery --project=%s --service=mysvc --image=%s:=%s --mock",
+			cmd := fmt.Sprintf("trigger delivery --project=%s --service=mysvc --image=%s:%s --mock",
 				tt.project,
 				"docker.io/keptnexamples/carts",
 				"0.9.1")
