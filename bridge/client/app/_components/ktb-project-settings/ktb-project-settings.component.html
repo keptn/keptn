@@ -71,7 +71,11 @@
       </div>
     </div>
 
-    <div [ngClass]="['settings-section', unsavedDialogState ? 'notification-open' : '']" *ngIf="!isCreateMode">
+    <div
+      [ngClass]="['settings-section', unsavedDialogState ? 'notification-open' : '']"
+      *ngIf="!isCreateMode"
+      class="pb-4"
+    >
       <ktb-danger-zone [data]="projectDeletionData"></ktb-danger-zone>
     </div>
   </div>

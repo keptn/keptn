@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { KeyValue } from '@angular/common';
 import { IProxy } from '../../_interfaces/git-upstream';
+import { AppUtils } from '../../_utils/app.utils';
 
 @Component({
   selector: 'ktb-proxy-input',
@@ -36,7 +37,7 @@ export class KtbProxyInputComponent {
   @Input()
   public set proxy(proxy: IProxy | undefined) {
     if (proxy) {
-      const urlParts = this.splitURLPort(proxy.gitProxyUrl);
+      const urlParts = AppUtils.splitURLPort(proxy.gitProxyUrl);
       this.isInsecureControl.setValue(proxy.gitProxyInsecure);
       this.schemeControl.setValue(proxy.gitProxyScheme);
       this.hostControl.setValue(urlParts.host);
@@ -67,27 +68,5 @@ export class KtbProxyInputComponent {
 
   public proxyChanged(): void {
     this.proxyChange.emit(this.proxy);
-  }
-
-  private splitURLPort(url: string): { host: string; port: string } {
-    const index = url.lastIndexOf(':');
-    let host, port;
-    if (index === -1) {
-      return {
-        host: url,
-        port: '',
-      };
-    } else {
-      host = url.substring(0, index);
-      port = url.substring(index + 1);
-      if (isNaN(+port)) {
-        port = '';
-        host = url;
-      }
-      return {
-        host,
-        port,
-      };
-    }
   }
 }

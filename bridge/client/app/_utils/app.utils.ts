@@ -46,6 +46,24 @@ export class AppUtils {
       return false;
     }
   }
+
+  public static splitURLPort(url: string): { host: string; port: string } {
+    const index = url.lastIndexOf(':');
+    let host = url;
+    let port = '';
+
+    if (index !== -1) {
+      const portSubstr = url.substring(index + 1);
+      if (!isNaN(+portSubstr)) {
+        host = url.substring(0, index);
+        port = portSubstr;
+      }
+    }
+    return {
+      host,
+      port,
+    };
+  }
 }
 
 export const POLLING_INTERVAL_MILLIS = new InjectionToken<number>('Polling interval in millis');
