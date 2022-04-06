@@ -1,8 +1,8 @@
 @import '../variables';
 @import '~@dynatrace/barista-components/core/src/style/variables';
 
-:host.main-container {
-  flex-direction: column;
+:host {
+  height: 100%;
 }
 
 #page-content {
