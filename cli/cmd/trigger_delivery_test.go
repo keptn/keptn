@@ -220,7 +220,11 @@ func TestCheckImageAvailabilityD(t *testing.T) {
 	for _, validImg := range validImgs {
 		*delivery.Project = "sockshop"
 		*delivery.Service = "carts"
-		*delivery.Image = fmt.Sprintf("%s:%s", validImg.Image, validImg.Tag)
+		if validImg.Tag != "" {
+			*delivery.Image = fmt.Sprintf("%s:%s", validImg.Image, validImg.Tag)
+		} else {
+			*delivery.Image = validImg.Tag
+		}
 
 		err := triggerDeliveryCmd.PreRunE(triggerDeliveryCmd, []string{})
 
