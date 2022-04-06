@@ -224,7 +224,7 @@ export class DataService {
     return this._rootsLastUpdated[project.projectName];
   }
 
-  public getTracesLastUpdated(sequence: Sequence): Date {
+  public getTracesLastUpdated(sequence: Sequence): Date | undefined {
     return this._tracesLastUpdated[sequence.shkeptncontext];
   }
 
