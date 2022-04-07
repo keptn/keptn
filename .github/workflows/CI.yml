@@ -115,7 +115,6 @@ defaults:
 jobs:
   calculate-queue-time:
     name: "Calculate Queue Time"
-    if: ( github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository ) || ( github.event_name == 'push' )
     uses: ./.github/workflows/pipeline-queuetime.yml
     with:
       workflow_name: "CI"
