@@ -53,13 +53,7 @@ For pulling an image from a private registry, we would like to refer to the Kube
 	SilenceUsage: true,
 	Args:         cobra.NoArgs,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		trimmedImage := strings.TrimSuffix(*delivery.Image, "/")
-
-		// make sure that the image includes a tag - if no tag has been provided initially, 'latest'  will be appended per default
-		image, tag := docker.SplitImageName(trimmedImage)
-		sanitizedImageName := fmt.Sprintf("%s:%s", image, tag)
-		delivery.Image = &sanitizedImageName
-		return docker.CheckImageAvailability(image, tag, nil)
+		return doTriggerDeliveryPreRunCheck(delivery)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return doTriggerDelivery(delivery)
@@ -173,6 +167,13 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 	}
 
 	return nil
+}
+
+func doTriggerDeliveryPreRunCheck(deliveryInputData deliveryStruct) error {
+	trimmedImage := strings.TrimSuffix(*deliveryInputData.Image, "/")
+
+	image, tag := docker.SplitImageName(trimmedImage)
+	return docker.CheckImageAvailability(image, tag, nil)
 }
 
 func init() {
