@@ -82,7 +82,7 @@ spec:
             value: '127.0.0.1'
         {{- include "control-plane.dist.common.env.vars" . | nindent 10 }}
         {{- include "control-plane.common.container-security-context" . | nindent 8 }}
-      serviceAccountName: keptn-default
+      serviceAccountName: {{ .Values.remediationService.serviceAccountName | default "keptn-default" }}
       terminationGracePeriodSeconds: {{ .Values.gracePeriod | default 30 }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.remediationService.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
 ---
