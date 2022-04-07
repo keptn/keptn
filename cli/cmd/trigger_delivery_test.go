@@ -288,15 +288,14 @@ func TestTriggerDeliveryNonExistingProject(t *testing.T) {
 		t.Run("", func(t *testing.T) {
 			cmd := fmt.Sprintf("trigger delivery --project=%s --service=mysvc --image=%s:%s --mock",
 				tt.project,
-				"docker.io/keptnexamples/carts",
+				"someregistry/carts",
 				"0.9.1")
 			_, err := executeActionCommandC(cmd)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("wanted error: %t, got: %v", tt.wantErr, err)
 			}
-			msg := fmt.Sprintf("%v", err)
-			if !strings.Contains(msg, "Project not found") {
+			if !strings.Contains(err.Error(), "Project not found") {
 				t.Errorf("wanted project not found")
 			}
 		})
@@ -350,7 +349,7 @@ func TestTriggerDeliveryNonExistingService(t *testing.T) {
 			cmd := fmt.Sprintf("trigger delivery --project=%s --service=%s --image=%s:%s --values=a.b.c=d --mock",
 				projectName,
 				tt.service,
-				"docker.io/keptnexamples/carts",
+				"someregistry/carts",
 				"0.9.1")
 			_, err := executeActionCommandC(cmd)
 
