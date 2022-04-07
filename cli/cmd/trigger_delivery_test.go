@@ -295,6 +295,7 @@ func TestTriggerDeliveryNonExistingProject(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Errorf("wanted error: %t, got: %v", tt.wantErr, err)
 			}
+			t.Log(err.Error())
 			if !strings.Contains(err.Error(), "Project not found") {
 				t.Errorf("wanted project not found")
 			}
