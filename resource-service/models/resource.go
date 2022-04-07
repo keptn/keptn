@@ -209,7 +209,7 @@ type GetResourcesResponse struct {
 // swagger:model GetResourceResponse
 type GetResourceResponse struct {
 	Resource
-	Metadata Version
+	Metadata Version `json:"metadata"`
 }
 
 type WriteResourceResponse struct {
