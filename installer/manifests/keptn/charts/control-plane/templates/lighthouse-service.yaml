@@ -87,7 +87,7 @@ spec:
               value: '127.0.0.1'
           {{- include "control-plane.dist.common.env.vars" . | nindent 12 }}
         {{- include "control-plane.common.container-security-context" . | nindent 10 }}
-      serviceAccountName: keptn-lighthouse-service
+      serviceAccountName: {{ .Values.lighthouseService.serviceAccountName | default "keptn-lighthouse-service" }}
       terminationGracePeriodSeconds: {{ .Values.gracePeriod | default 30 }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.lighthouseService.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
 ---

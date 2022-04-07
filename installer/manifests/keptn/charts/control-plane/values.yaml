@@ -212,6 +212,7 @@ lighthouseService:
   image:
     repository: docker.io/keptn/lighthouse-service
     tag: ""
+  serviceAccountName: null
   nodeSelector: {}
 
 statisticsService:
