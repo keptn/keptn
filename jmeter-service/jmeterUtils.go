@@ -210,13 +210,14 @@ func execute(testInfo TestInfo, workload *Workload, err error, jMeterCommandLine
 		}
 	}
 	// Step 3: Parse result and lets analyze the result
+	logger.Debugf("Executing jmeter tests with the following configuration: %v", testInfo)
 	result, err := parseJMeterResult(jmeterCommandResult, testInfo, workload, funcValidation)
-	if result && err != nil {
-		logger.Debugf("Successfully executed JMeter test: %v", testInfo)
-	} else {
-		logger.Errorf("Could not parse JMeter test (%v). Error: %s  ", testInfo, err.Error())
+	if err != nil {
+		logger.Errorf("Could not parse JMeter test (%v). Error: %v  ", testInfo, err)
+		return false, err
 	}
-	return result, err
+	logger.Debugf("Jmeter tests passed: %t", result)
+	return result, nil
 }
 
 func createDir(dir string) error {
