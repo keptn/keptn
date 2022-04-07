@@ -235,9 +235,11 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
             });
           },
           (err) => {
+            const service = this.resourceServiceEnabled ? 'resource-service' : 'configuration-service';
+            const errorMessage = err.error || `please, check the logs of ${service}`;
             this.notificationsService.addNotification(
               NotificationType.ERROR,
-              `The project could not be created: ${err.error || 'please, check the logs of configuration-service'}.`
+              `The project could not be created: ${errorMessage}.`
             );
             this.isCreatingProjectInProgress = false;
           }
