@@ -53,7 +53,7 @@ For pulling an image from a private registry, we would like to refer to the Kube
 	SilenceUsage: true,
 	Args:         cobra.NoArgs,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		return doTriggerDeliveryPreRunCheck(delivery)
+		return checkImageAvailable(delivery)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return doTriggerDelivery(delivery)
@@ -169,7 +169,7 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 	return nil
 }
 
-func doTriggerDeliveryPreRunCheck(deliveryInputData deliveryStruct) error {
+func checkImageAvailable(deliveryInputData deliveryStruct) error {
 	trimmedImage := strings.TrimSuffix(*deliveryInputData.Image, "/")
 
 	image, tag := docker.SplitImageName(trimmedImage)
@@ -183,11 +183,11 @@ func init() {
 
 	delivery.Project = triggerDeliveryCmd.Flags().StringP("project", "", "",
 		"The project containing the service for which the new artifact will be delivered")
-	_ = triggerDeliveryCmd.MarkFlagRequired("project")
+	triggerDeliveryCmd.MarkFlagRequired("project")
 
 	delivery.Service = triggerDeliveryCmd.Flags().StringP("service", "", "",
 		"The service which for which the new artifact will be delivered")
-	_ = triggerDeliveryCmd.MarkFlagRequired("service")
+	triggerDeliveryCmd.MarkFlagRequired("service")
 
 	delivery.Stage = triggerDeliveryCmd.Flags().StringP("stage", "", "",
 		"The stage containing the service for which a new artifact will be delivered")
@@ -195,7 +195,7 @@ func init() {
 "docker.io/<YOUR_ORG>/<YOUR_IMAGE> or quay.io/<YOUR_ORG>/<YOUR_IMAGE>
 "Optionally, you can append a tag using ":<YOUR_TAG>. If no tag is provided, "latest" will be used per default`)
 
-	_ = triggerDeliveryCmd.MarkFlagRequired("image")
+	triggerDeliveryCmd.MarkFlagRequired("image")
 
 	delivery.Labels = triggerDeliveryCmd.Flags().StringToStringP("labels", "l", nil, "Additional labels to be included in the event")
 	delivery.Sequence = triggerDeliveryCmd.Flags().StringP("sequence", "", "delivery", "The name of the sequence to be triggered")
