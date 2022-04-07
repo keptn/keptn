@@ -32,6 +32,7 @@ metadata:
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
 ---
+{{- if not .Values.secretService.serviceAccountName }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -41,6 +42,7 @@ metadata:
     app.kubernetes.io/name: keptn-secret-service
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
+{{- end }}
 ---
 {{- if not .Values.lighthouseService.serviceAccountName }}
 apiVersion: v1
@@ -320,6 +322,7 @@ subjects:
     name: keptn-shipyard-controller
 
 ---
+{{- if not .Values.secretService.serviceAccountName }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -336,7 +339,6 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: keptn-secret-service
-
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -371,7 +373,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: keptn-secret-service
-
+{{- end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding

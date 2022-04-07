@@ -171,6 +171,7 @@ secretService:
   image:
     repository: docker.io/keptn/secret-service
     tag: ""
+  serviceAccountName: null
   nodeSelector: {}
 
 configurationService:
