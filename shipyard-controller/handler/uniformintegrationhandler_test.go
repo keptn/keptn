@@ -448,7 +448,7 @@ func TestUniformParamsValidator_Validate(t *testing.T) {
 			checkProject: false,
 		},
 		{
-			name: "test error no subscription topic",
+			name: "test no subscription topic",
 			params: apimodels.Integration{
 				ID:            "an-id",
 				Name:          "we-service",
@@ -456,7 +456,7 @@ func TestUniformParamsValidator_Validate(t *testing.T) {
 				Subscription:  apimodels.Subscription{},
 				Subscriptions: []apimodels.EventSubscription{},
 			},
-			wantErr:      errors.New("the subscription must have a topic"),
+			wantErr:      nil,
 			checkProject: false,
 		},
 		{
