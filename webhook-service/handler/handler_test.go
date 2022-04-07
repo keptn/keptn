@@ -999,7 +999,7 @@ func Test_createRequest(t *testing.T) {
 				Payload: "some payload",
 				URL:     "http://localhost:8080",
 			},
-			want:    "curl --request POST --header \"key: value\" --data \"some payload\" --some-options http://localhost:8080",
+			want:    "curl --request POST --header 'key: value' --data 'some payload' --some-options http://localhost:8080",
 			wantErr: false,
 		},
 		{
@@ -1014,7 +1014,7 @@ func Test_createRequest(t *testing.T) {
 				Method: "POST",
 				URL:    "http://localhost:8080",
 			},
-			want:    "curl --request POST --header \"key: value\" http://localhost:8080",
+			want:    "curl --request POST --header 'key: value' http://localhost:8080",
 			wantErr: false,
 		},
 		{

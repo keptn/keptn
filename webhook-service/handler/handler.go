@@ -248,18 +248,17 @@ func CreateRequest(request interface{}) (string, error) {
 }
 
 func buildBetaCurlRequest(req lib.Request) string {
-	logger.Info("creating CURL request from type Request in buildBetaCurlRequest()")
 	tmpReq := ""
 	if req.Method != "" {
 		tmpReq = fmt.Sprintf("curl --request %s", req.Method)
 	}
 	if len(req.Headers) > 0 {
 		for _, header := range req.Headers {
-			tmpReq = fmt.Sprintf(tmpReq+" --header \"%s: %s\"", header.Key, header.Value)
+			tmpReq = fmt.Sprintf(tmpReq+" --header '%s: %s'", header.Key, header.Value)
 		}
 	}
 	if req.Payload != "" {
-		tmpReq = fmt.Sprintf(tmpReq+" --data \"%s\"", req.Payload)
+		tmpReq = fmt.Sprintf(tmpReq+" --data '%s'", req.Payload)
 	}
 	if req.Options != "" {
 		tmpReq = fmt.Sprintf(tmpReq+" %s", req.Options)

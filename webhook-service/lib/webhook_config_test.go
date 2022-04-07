@@ -119,12 +119,12 @@ spec:
         - secretRef:
           name: mysecret
       requests:
-        - url: http://localhost:8080
+        - url: http://localhost:8080/{{.env.secretKey}}
           method: POST
           payload: "some payload"
           options: "some options"
           headers:
-            - value: value
+            - value: "{{.env.secretKey}}"
               key: key`),
 			},
 			want: &WebHookConfig{
@@ -148,13 +148,13 @@ spec:
 									Headers: []Header{
 										{
 											Key:   "key",
-											Value: "value",
+											Value: "{{.env.secretKey}}",
 										},
 									},
 									Method:  "POST",
 									Options: "some options",
 									Payload: "some payload",
-									URL:     "http://localhost:8080",
+									URL:     "http://localhost:8080/{{.env.secretKey}}",
 								},
 							},
 						},
@@ -280,7 +280,7 @@ spec:
       requests:
         - url: http://localhost:8080
           method: POST
-		  headers:
+          headers:
             - key: key`),
 			},
 			want:    nil,
@@ -303,7 +303,7 @@ spec:
       requests:
         - url: http://localhost:8080
           method: POST
-		  headers:
+    		  headers:
             - value: value`),
 			},
 			want:    nil,

@@ -192,7 +192,7 @@ spec:
           method: GET
           headers:
             - key: x-token
-              value: {{.env.secretKey}}
+              value: "{{.env.secretKey}}"
         - url: http://shipyard-controller:8080/v1/project/{{.data.project}}/stage/{{.data.stage}}
           method: GET`
 
@@ -281,7 +281,7 @@ spec:
           method: GET
           headers:
             - key: x-token
-              value: {{.env.secretKey}}
+              value: "{{.env.secretKey}}"
         - url: http://shipyard-controller:8080/v1/project/{{.data.project}}/stage/{{.data.stage}}
           method: GET`
 
@@ -323,7 +323,7 @@ spec:
         method: GET
         headers:
           - key: x-token
-            value: {{.env.secretKey}}`
+            value: "{{.env.secretKey}}"`
 
 const webhookWithOverlappingSubscriptionsYamlAlpha = `apiVersion: webhookconfig.keptn.sh/v1alpha1
 kind: WebhookConfig
@@ -373,7 +373,7 @@ spec:
           method: GET
           headers:
             - key: x-token
-              value: {{.env.secretKey}}"
+              value: "{{.env.secretKey}}"
         - url: http://shipyard-controller:8080/v1/project/{{.data.project}}/stage/{{.data.stage}}
           method: GET`
 

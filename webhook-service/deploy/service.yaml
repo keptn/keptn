@@ -44,11 +44,11 @@ spec:
               value: info
           resources:
             limits:
-              cpu: 100m
-              memory: 64Mi
+              cpu: 500m
+              memory: 512Mi
             requests:
-              cpu: 25m
-              memory: 32Mi
+              cpu: 50m
+              memory: 64Mi
           livenessProbe:
             httpGet:
               path: /health
