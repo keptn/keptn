@@ -49,6 +49,7 @@ metadata:
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
 ---
+{{- if not .Values.apiService.serviceAccountName }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -58,6 +59,7 @@ metadata:
     app.kubernetes.io/name: keptn-api-service
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
+{{- end }}
 ---
 {{- if .Values.webhookService.enabled }}
 apiVersion: v1
@@ -256,6 +258,7 @@ subjects:
     name: keptn-lighthouse-service
 
 ---
+{{- if not .Values.apiService.serviceAccountName }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -272,7 +275,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: keptn-api-service
-
+{{- end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
