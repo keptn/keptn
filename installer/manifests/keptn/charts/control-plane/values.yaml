@@ -70,6 +70,7 @@ apiGatewayNginx:
   image:
     repository: docker.io/nginxinc/nginx-unprivileged
     tag: 1.21.6-alpine
+  serviceAccountName: keptn-default
   nodeSelector: {}
 
 remediationService:

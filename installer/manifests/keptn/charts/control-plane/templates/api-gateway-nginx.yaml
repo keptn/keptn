@@ -430,7 +430,7 @@ spec:
         - name: api-nginx-config
           configMap:
             name: api-nginx-config # place ConfigMap `api-nginx-config` on /etc/nginx
-      serviceAccountName: keptn-default
+      serviceAccountName: {{ .Values.apiGatewayNginx.serviceAccountName | default "keptn-default" }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.apiGatewayNginx.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
 ---
 apiVersion: v1
