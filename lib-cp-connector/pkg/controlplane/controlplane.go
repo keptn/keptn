@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/keptn/go-utils/pkg/api/models"
-	"log"
+	"github.com/keptn/keptn/lib-cp-connector/pkg/logger"
 )
 
 var ErrEventHandleFatal = errors.New("fatal event handling error")
@@ -15,6 +15,7 @@ type ControlPlane struct {
 	subscriptionSource   *SubscriptionSource
 	eventSource          EventSource
 	currentSubscriptions []models.EventSubscription
+	logger               logger.Logger
 }
 
 // New creates a new ControlPlane
@@ -25,6 +26,7 @@ func New(subscriptionSource *SubscriptionSource, eventSource EventSource) *Contr
 		subscriptionSource:   subscriptionSource,
 		eventSource:          eventSource,
 		currentSubscriptions: []models.EventSubscription{},
+		logger:               logger.NewDefaultLogger(),
 	}
 }
 
@@ -68,10 +70,11 @@ func (cp *ControlPlane) handle(ctx context.Context, event models.KeptnContextExt
 	for range subscriptionsForTopic {
 		if err := integration.OnEvent(context.WithValue(ctx, EventSenderKey, cp.eventSource.Sender()), event); err != nil {
 			if errors.Is(err, ErrEventHandleFatal) {
+				cp.logger.Errorf("Fatal error during handling of event: %v", err)
 				return err
 			}
 			if errors.Is(err, ErrEventHandleIgnore) {
-				log.Print("error during handling of event")
+				cp.logger.Warnf("Error during handling of event: %v", err)
 			}
 		}
 	}

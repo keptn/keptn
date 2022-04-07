@@ -6,6 +6,7 @@ import (
 	"github.com/benbjohnson/clock"
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/keptn/lib-cp-connector/pkg/logger"
 	"time"
 )
 
@@ -14,6 +15,7 @@ type SubscriptionSource struct {
 	uniformAPI    api.UniformV1Interface
 	clock         clock.Clock
 	fetchInterval time.Duration
+	logger        logger.Logger
 }
 
 // WithFetchInterval specifies the interval the subscription source should
@@ -26,7 +28,7 @@ func WithFetchInterval(interval time.Duration) func(s *SubscriptionSource) {
 
 // NewSubscriptionSource creates a new SubscriptionSource
 func NewSubscriptionSource(uniformAPI api.UniformV1Interface, options ...func(source *SubscriptionSource)) *SubscriptionSource {
-	subscriptionSource := &SubscriptionSource{uniformAPI: uniformAPI, clock: clock.New(), fetchInterval: time.Second * 5}
+	subscriptionSource := &SubscriptionSource{uniformAPI: uniformAPI, clock: clock.New(), fetchInterval: time.Second * 5, logger: logger.NewDefaultLogger()}
 	for _, o := range options {
 		o(subscriptionSource)
 	}
@@ -56,7 +58,7 @@ func (s *SubscriptionSource) Start(ctx context.Context, registrationData Registr
 func (s *SubscriptionSource) ping(integrationID string) []models.EventSubscription {
 	updatedIntegrationData, err := s.uniformAPI.Ping(integrationID)
 	if err != nil {
-		fmt.Println("Unable to ping control plane")
+		s.logger.Errorf("Unable to ping control plane: %v", err)
 	}
 	return updatedIntegrationData.Subscriptions
 

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/keptn/lib-cp-connector/pkg/logger"
 	"github.com/nats-io/nats.go"
 	"os"
 )
@@ -29,6 +30,7 @@ type ProcessEventFn func(event models.KeptnContextExtendedCE) error
 type NatsConnector struct {
 	conn          *nats.Conn
 	subscriptions map[string]*nats.Subscription
+	logger        logger.Logger
 }
 
 // Connect connects a NatsConnector to NATS.
@@ -42,6 +44,7 @@ func Connect(connectURL string) (*NatsConnector, error) {
 	return &NatsConnector{
 		conn:          conn,
 		subscriptions: make(map[string]*nats.Subscription),
+		logger:        logger.NewDefaultLogger(),
 	}, nil
 }
 
@@ -127,12 +130,12 @@ func (nc *NatsConnector) queueSubscribe(subject string, queueGroup string, fn Pr
 	sub, err := nc.conn.QueueSubscribe(subject, queueGroup, func(m *nats.Msg) {
 		event := &models.KeptnContextExtendedCE{}
 		if err := json.Unmarshal(m.Data, event); err != nil {
-			fmt.Printf("could not unmarshal message %s: %v\n", string(m.Data), err)
+			nc.logger.Errorf("could not unmarshal message %s: %v", string(m.Data), err)
 			return
 		}
 		err := fn(*event)
 		if err != nil {
-			fmt.Printf("Could not process message %s: %v\n", string(m.Data), err)
+			nc.logger.Errorf("Could not process message %s: %v\n", string(m.Data), err)
 		}
 	})
 	if err != nil {

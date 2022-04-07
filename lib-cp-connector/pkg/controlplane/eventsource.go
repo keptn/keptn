@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/keptn/lib-cp-connector/pkg/logger"
 	"github.com/keptn/keptn/lib-cp-connector/pkg/nats"
-	"log"
 	"reflect"
 	"sort"
 )
@@ -38,6 +38,7 @@ type NATSEventSource struct {
 	connector       *nats.NatsConnector
 	eventProcessFn  nats.ProcessEventFn
 	queueGroup      string
+	logger          logger.Logger
 }
 
 // NewNATSEventSource creates a new NATSEventSource
@@ -46,6 +47,7 @@ func NewNATSEventSource(natsConnector *nats.NatsConnector) *NATSEventSource {
 		currentSubjects: []string{},
 		connector:       natsConnector,
 		eventProcessFn:  func(event models.KeptnContextExtendedCE) error { return nil },
+		logger:          logger.NewDefaultLogger(),
 	}
 }
 
@@ -63,7 +65,7 @@ func (n *NATSEventSource) Start(ctx context.Context, registrationData Registrati
 			select {
 			case <-ctx.Done():
 				if err := n.connector.Disconnect(); err != nil {
-					log.Printf("Unable to disconneect NATS connector\n")
+					n.logger.Errorf("Unable to disconnect from NATS: %v", err)
 					return
 				}
 				return
@@ -79,10 +81,10 @@ func (n *NATSEventSource) OnSubscriptionUpdate(subjects []string) {
 		n.currentSubjects = s
 		err := n.connector.UnsubscribeAll()
 		if err != nil {
-			log.Printf("error during handling of subscription update: %v\n", err)
+			n.logger.Errorf("Could not handle subscription update: %v", err)
 		}
 		if err := n.connector.QueueSubscribeMultiple(n.queueGroup, n.currentSubjects, n.eventProcessFn); err != nil {
-			log.Printf("error during handling of subscription update: %v\n", err)
+			n.logger.Errorf("Could not handle subscription update: %v", err)
 		}
 	}
 }
