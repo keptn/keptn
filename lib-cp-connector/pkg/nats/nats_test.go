@@ -33,7 +33,8 @@ func TestDisconnect(t *testing.T) {
 	nc, err := nats2.Connect(svr.ClientURL())
 	require.NotNil(t, nc)
 	require.Nil(t, err)
-	nc.Disconnect()
+	err = nc.Disconnect()
+	require.Nil(t, err)
 	require.Eventually(t, func() bool { return svr.NumClients() == 0 }, 10*time.Second, time.Second)
 }
 

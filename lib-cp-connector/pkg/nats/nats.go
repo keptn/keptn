@@ -118,8 +118,9 @@ func (nc *NatsConnector) Publish(event models.KeptnContextExtendedCE) error {
 }
 
 // Disconnect disconnects/closes the connection to NATS
-func (nc *NatsConnector) Disconnect() {
+func (nc *NatsConnector) Disconnect() error {
 	nc.conn.Close()
+	return nil
 }
 
 func (nc *NatsConnector) queueSubscribe(subject string, queueGroup string, fn ProcessEventFn) error {

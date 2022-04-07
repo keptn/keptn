@@ -27,6 +27,8 @@ type EventSource interface {
 	// Sender returns a component that gives the possiblity to send events back
 	// to the Keptn Control plane
 	Sender() EventSender
+	//Stop is stopping the EventSource
+	Stop() error
 }
 
 // NATSEventSource is an implementation of EventSource
@@ -56,6 +58,18 @@ func (n *NATSEventSource) Start(ctx context.Context, registrationData Registrati
 	if err := n.connector.QueueSubscribeMultiple(n.queueGroup, n.currentSubjects, n.eventProcessFn); err != nil {
 		return fmt.Errorf("could not start NATS event source: %w", err)
 	}
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				if err := n.connector.Disconnect(); err != nil {
+					log.Printf("Unable to disconneect NATS connector\n")
+					return
+				}
+				return
+			}
+		}
+	}()
 	return nil
 }
 
@@ -75,6 +89,10 @@ func (n *NATSEventSource) OnSubscriptionUpdate(subjects []string) {
 
 func (n *NATSEventSource) Sender() EventSender {
 	return n.connector.Publish
+}
+
+func (n *NATSEventSource) Stop() error {
+	return n.connector.Disconnect()
 }
 
 // HTTPEventSource is an implementation of EventSource that is using
