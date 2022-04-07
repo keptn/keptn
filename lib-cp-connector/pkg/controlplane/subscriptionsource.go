@@ -48,18 +48,15 @@ func (s *SubscriptionSource) Start(ctx context.Context, registrationData Registr
 			case <-ctx.Done():
 				return
 			case <-ticker.C:
-				subscriptionChannel <- s.ping(integrationID)
+				updatedIntegrationData, err := s.uniformAPI.Ping(integrationID)
+				if err != nil {
+					s.logger.Errorf("Unable to ping control plane: %v", err)
+					continue
+				}
+				fmt.Println("ok new event subscription")
+				subscriptionChannel <- updatedIntegrationData.Subscriptions
 			}
 		}
 	}()
 	return nil
-}
-
-func (s *SubscriptionSource) ping(integrationID string) []models.EventSubscription {
-	updatedIntegrationData, err := s.uniformAPI.Ping(integrationID)
-	if err != nil {
-		s.logger.Errorf("Unable to ping control plane: %v", err)
-	}
-	return updatedIntegrationData.Subscriptions
-
 }

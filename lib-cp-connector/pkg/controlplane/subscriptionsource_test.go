@@ -2,6 +2,7 @@ package controlplane
 
 import (
 	"context"
+	"fmt"
 	"github.com/benbjohnson/clock"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/stretchr/testify/require"
@@ -37,6 +38,43 @@ func (m *UniformInterfaceMock) UnregisterIntegration(integrationID string) error
 
 func (m *UniformInterfaceMock) GetRegistrations() ([]*models.Integration, error) {
 	panic("implement me")
+}
+
+func TestSubscriptionSourceInitialRegistrationFails(t *testing.T) {
+	initialRegistrationData := RegistrationData{}
+
+	uniformInterface := &UniformInterfaceMock{
+		RegisterIntegrationFn: func(integration models.Integration) (string, error) { return "", fmt.Errorf("error occured") },
+	}
+	subscriptionSource := NewSubscriptionSource(uniformInterface)
+	err := subscriptionSource.Start(context.Background(), initialRegistrationData, nil)
+	require.Error(t, err)
+}
+
+func TestSubscriptionSourceCPPingFails(t *testing.T) {
+	initialRegistrationData := RegistrationData{}
+
+	uniformInterface := &UniformInterfaceMock{
+		RegisterIntegrationFn: func(integration models.Integration) (string, error) { return "id", nil },
+		PingFn: func(s string) (*models.Integration, error) {
+			return nil, fmt.Errorf("error occured")
+		}}
+	subscriptionUpdates := make(chan []models.EventSubscription)
+	go func() {
+		<-subscriptionUpdates
+		require.FailNow(t, "got subscription event via channel")
+	}()
+
+	subscriptionSource := NewSubscriptionSource(uniformInterface)
+	clock := clock.NewMock()
+	subscriptionSource.clock = clock
+	err := subscriptionSource.Start(context.TODO(), initialRegistrationData, subscriptionUpdates)
+	require.NoError(t, err)
+	clock.Add(5 * time.Second)
+}
+
+func TestSubscriptionSourceWithFetchInterval(t *testing.T) {
+	//TODO: implement
 }
 
 func TestSubscriptionSource(t *testing.T) {
