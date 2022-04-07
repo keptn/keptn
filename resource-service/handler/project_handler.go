@@ -26,7 +26,8 @@ func NewProjectHandler(projectManager IProjectManager) *ProjectHandler {
 
 // CreateProject godoc
 // @Summary Create a new project
-// @Description Create a new project
+// @Deprecated true
+// @Description INTERNAL Endpoint: Create a new project
 // @Tags Project
 // @Security ApiKeyAuth
 // @Accept  json
@@ -59,7 +60,8 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 
 // UpdateProject godoc
 // @Summary Updates an existing project
-// @Description Updates an existing project
+// @Deprecated true
+// @Description INTERNAL Endpoint: Updates an existing project
 // @Tags Project
 // @Security ApiKeyAuth
 // @Accept  json
@@ -92,7 +94,8 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 
 // DeleteProject godoc
 // @Summary Updates an existing project
-// @Description Updates an existing project
+// @Deprecated true
+// @Description INTERNAL Endpoint: Updates an existing project
 // @Tags Project
 // @Security ApiKeyAuth
 // @Accept  json

@@ -124,7 +124,12 @@ func (p ResourceManager) DeleteResource(params models.DeleteResourceParams) (*mo
 		return nil, err
 	}
 
-	resourcePath := configPath + "/" + params.ResourceURI
+	unescapedResource, err := url.QueryUnescape(params.ResourceURI)
+	if err != nil {
+		return nil, err
+	}
+
+	resourcePath := configPath + "/" + unescapedResource
 
 	var resultErr error
 	var resultCommit *models.WriteResourceResponse
