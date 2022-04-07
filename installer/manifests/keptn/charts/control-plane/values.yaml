@@ -130,6 +130,7 @@ bridge:
     scope: ""
     userIdentifier: ""
     mongoConnectionString: ""
+  serviceAccountName: null
   nodeSelector: {}
 
 distributor:

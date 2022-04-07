@@ -227,7 +227,7 @@ spec:
             - name: bridge-oauth-mongodb-credentials
               mountPath: /config/oauth_mongodb
         {{- include "control-plane.bridge.container-security-context" . | nindent 10 }}
-      serviceAccountName: keptn-default
+      serviceAccountName: {{ .Values.bridge.serviceAccountName | default "keptn-default" }}
       volumes:
         - emptyDir: {}
           name: assets
