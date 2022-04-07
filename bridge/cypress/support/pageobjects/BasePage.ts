@@ -83,11 +83,7 @@ class BasePage {
   }
 
   notificationErrorVisible(text?: string): Chainable<JQuery<HTMLElement>> {
-    let element = cy.get('.dt-alert-icon-container dt-icon');
-    if (text) {
-      element = element.contains(text);
-    }
-    return element.get('.dt-alert-icon').should('be.visible');
+    return this.checkNotification('dt-alert', text);
   }
 
   notificationWarningVisible(text?: string): Chainable<JQuery<HTMLElement>> {
