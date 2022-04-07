@@ -198,7 +198,7 @@ func (th *TaskHandler) performWebhookRequests(webhook lib.Webhook, eventAdapter 
 	for _, req := range webhook.Requests {
 		request, err := CreateRequest(req)
 		if err != nil {
-			logger.Infof("creating CURL request failed")
+			logger.Infof("creating CURL request failed: %s", err.Error())
 			return nil, err
 		}
 		// parse the data from the event, together with the secret env vars
@@ -233,21 +233,26 @@ func CreateRequest(request interface{}) (string, error) {
 	switch req := request.(type) {
 	// v1alpha1 version
 	case string:
-		logger.Infof("creating CURL request from type string")
+		logger.Info("creating CURL request from type string")
 		return req, nil
 	// v1beta1 version
-	case lib.Request:
-		logger.Infof("creating CURL request from type Request")
-		request := buildBetaCurlRequest(req)
-		if request != "" {
-			return request, nil
+	default:
+		logger.Info("creating CURL request from type Request")
+		betaRequest := buildBetaCurlRequest(lib.ConvertToRequest(request))
+		if betaRequest != "" {
+			return betaRequest, nil
 		}
 	}
+
 	return "", fmt.Errorf("could not create request: invalid request type")
 }
 
 func buildBetaCurlRequest(req lib.Request) string {
-	tmpReq := fmt.Sprintf("curl --request %s", req.Method)
+	logger.Info("creating CURL request from type Request in buildBetaCurlRequest()")
+	tmpReq := ""
+	if req.Method != "" {
+		tmpReq = fmt.Sprintf("curl --request %s", req.Method)
+	}
 	if len(req.Headers) > 0 {
 		for _, header := range req.Headers {
 			tmpReq = fmt.Sprintf(tmpReq+" --header \"%s: %s\"", header.Key, header.Value)
@@ -259,7 +264,9 @@ func buildBetaCurlRequest(req lib.Request) string {
 	if req.Options != "" {
 		tmpReq = fmt.Sprintf(tmpReq+" %s", req.Options)
 	}
-	tmpReq = fmt.Sprintf(tmpReq+" %s", req.URL)
+	if req.URL != "" {
+		tmpReq = fmt.Sprintf(tmpReq+" %s", req.URL)
+	}
 	return tmpReq
 }
 
@@ -280,7 +287,7 @@ func (th *TaskHandler) getWebHookConfig(keptnHandler sdk.IKeptn, eventAdapter *l
 	}
 	resourceScope := *keptn.NewResourceScope().Project(eventAdapter.Project()).Stage(eventAdapter.Stage()).Service(eventAdapter.Service()).Resource(webhookConfigFileName)
 	resource, err := keptnHandler.GetResourceHandler().GetResource(resourceScope, keptn.AppendQuery(commitOption))
-	logger.Infof("searching for webhook config at service level...")
+	logger.Info("searching for webhook config at service level...")
 	if err == nil && resource != nil {
 		if matchingWebhook := getMatchingWebhookFromResource(resource, subscriptionID); matchingWebhook != nil {
 			return matchingWebhook, nil
@@ -290,7 +297,7 @@ func (th *TaskHandler) getWebHookConfig(keptnHandler sdk.IKeptn, eventAdapter *l
 	// if we didn't find a config in the service directory, look at the stage
 	resourceScope = *keptn.NewResourceScope().Project(eventAdapter.Project()).Stage(eventAdapter.Stage()).Resource(webhookConfigFileName)
 	resource, err = keptnHandler.GetResourceHandler().GetResource(resourceScope, keptn.AppendQuery(commitOption))
-	logger.Infof("searching for webhook config at service level...")
+	logger.Info("searching for webhook config at stage level...")
 	if err == nil && resource != nil {
 		if matchingWebhook := getMatchingWebhookFromResource(resource, subscriptionID); matchingWebhook != nil {
 			return matchingWebhook, nil
@@ -300,7 +307,7 @@ func (th *TaskHandler) getWebHookConfig(keptnHandler sdk.IKeptn, eventAdapter *l
 	// finally, look at project level
 	resourceScope = *keptn.NewResourceScope().Project(eventAdapter.Project()).Resource(webhookConfigFileName)
 	resource, err = keptnHandler.GetResourceHandler().GetResource(resourceScope, keptn.AppendQuery(commitOption))
-	logger.Infof("searching for webhook config at service level...")
+	logger.Info("searching for webhook config at project level...")
 	if err == nil && resource != nil {
 		if matchingWebhook := getMatchingWebhookFromResource(resource, subscriptionID); matchingWebhook != nil {
 			return matchingWebhook, nil
