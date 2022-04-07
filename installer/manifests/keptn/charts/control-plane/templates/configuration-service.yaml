@@ -109,7 +109,7 @@ spec:
       volumes:
         - name: resource-volume
           emptyDir: {}
-      serviceAccountName: keptn-configuration-service
+      serviceAccountName: {{ .Values.configurationService.serviceAccountName | default "keptn-configuration-service" }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.resourceService.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
 {{- else }}
 apiVersion: v1
@@ -236,6 +236,6 @@ spec:
         - name: configuration-volume
           persistentVolumeClaim:
             claimName: configuration-volume
-      serviceAccountName: keptn-configuration-service
+      serviceAccountName: {{ .Values.resourceService.serviceAccountName | default "keptn-configuration-service" }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.configurationService.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
 {{- end }}
