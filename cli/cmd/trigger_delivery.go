@@ -26,7 +26,6 @@ type deliveryStruct struct {
 	Service   *string            `json:"service"`
 	Stage     *string            `json:"stage"`
 	Image     *string            `json:"image"`
-	Tag       *string            `json:"tag"`
 	Sequence  *string            `json:"sequence"`
 	Values    *[]string          `json:"values"`
 	Labels    *map[string]string `json:"labels"`
@@ -50,11 +49,11 @@ Note: The value provided in the --image flag has to contain the full qualified i
 The only exception is "docker.io", as this is the default in Kubernetes.
 For pulling an image from a private registry, we would like to refer to the Kubernetes documentation (https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/).
 `,
-	Example:      `keptn trigger delivery --project=<project> --service=<service> --image=<image> --tag=<tag> [--sequence=<sequence>]`,
+	Example:      `keptn trigger delivery --project=<project> --service=<service> --image=<image[:tag]> [--sequence=<sequence>]`,
 	SilenceUsage: true,
 	Args:         cobra.NoArgs,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		return doTriggerDeliveryPreRunCheck(delivery)
+		return checkImageAvailability(*delivery.Image)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return doTriggerDelivery(delivery)
@@ -78,7 +77,7 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 	}
 
 	logging.PrintLog("Starting to deliver the service "+
-		*deliveryInputData.Service+" in project "+*deliveryInputData.Project+" with image: "+*deliveryInputData.Image+":"+*deliveryInputData.Tag, logging.InfoLevel)
+		*deliveryInputData.Service+" in project "+*deliveryInputData.Project+" with image: "+*deliveryInputData.Image, logging.InfoLevel)
 
 	api, err := internal.APIProvider(endPoint.String(), apiToken)
 	if err != nil {
@@ -114,7 +113,7 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 	}
 
 	valuesJson := map[string]interface{}{}
-	valuesJson["image"] = *deliveryInputData.Image + ":" + *deliveryInputData.Tag
+	valuesJson["image"] = *deliveryInputData.Image
 	err = json.Unmarshal([]byte(jsonStr), &valuesJson)
 	if err != nil {
 		return fmt.Errorf("error unmarshalling json in project %v: %v", *deliveryInputData.Project, err)
@@ -135,7 +134,9 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 	sdkEvent.SetType(keptnv2.GetTriggeredEventType(*deliveryInputData.Stage + "." + *deliveryInputData.Sequence))
 	sdkEvent.SetSource("https://github.com/keptn/keptn/cli#configuration-change")
 	sdkEvent.SetDataContentType(cloudevents.ApplicationJSON)
-	sdkEvent.SetData(cloudevents.ApplicationJSON, deploymentEvent)
+	if err := sdkEvent.SetData(cloudevents.ApplicationJSON, deploymentEvent); err != nil {
+		return fmt.Errorf("failed to create cloud event %s", err.Error())
+	}
 
 	eventByte, err := sdkEvent.MarshalJSON()
 	if err != nil {
@@ -168,14 +169,11 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 	return nil
 }
 
-func doTriggerDeliveryPreRunCheck(deliveryInputData deliveryStruct) error {
-	trimmedImage := strings.TrimSuffix(*deliveryInputData.Image, "/")
-	deliveryInputData.Image = &trimmedImage
+func checkImageAvailability(img string) error {
+	trimmedImage := strings.TrimSuffix(img, "/")
 
-	if deliveryInputData.Tag == nil || *deliveryInputData.Tag == "" {
-		*deliveryInputData.Image, *deliveryInputData.Tag = docker.SplitImageName(*deliveryInputData.Image)
-	}
-	return docker.CheckImageAvailability(*deliveryInputData.Image, *deliveryInputData.Tag, nil)
+	image, tag := docker.SplitImageName(trimmedImage)
+	return docker.CheckImageAvailability(image, tag, nil)
 }
 
 func init() {
@@ -193,16 +191,14 @@ func init() {
 		"The stage containing the service for which a new artifact will be delivered")
 	delivery.Image = triggerDeliveryCmd.Flags().StringP("image", "", "", `The image name, e.g.
 "docker.io/<YOUR_ORG>/<YOUR_IMAGE> or quay.io/<YOUR_ORG>/<YOUR_IMAGE>
-"Optionally, you can append a tag using ":<YOUR_TAG>`)
+"Optionally, you can append a tag using ":<YOUR_TAG>. If no tag is provided, "latest" will be used per default`)
 
 	triggerDeliveryCmd.MarkFlagRequired("image")
 
 	delivery.Labels = triggerDeliveryCmd.Flags().StringToStringP("labels", "l", nil, "Additional labels to be included in the event")
-	delivery.Tag = triggerDeliveryCmd.Flags().StringP("tag", "", "", `The tag of the image. If no tag is specified, the "latest" tag is used`)
 	delivery.Sequence = triggerDeliveryCmd.Flags().StringP("sequence", "", "delivery", "The name of the sequence to be triggered")
 	delivery.Values = triggerDeliveryCmd.Flags().StringSlice("values", []string{}, "Values to use for the new artifact to be delivered")
 	delivery.Output = AddOutputFormatFlag(triggerDeliveryCmd)
 	delivery.Watch = AddWatchFlag(triggerDeliveryCmd)
 	delivery.WatchTime = AddWatchTimeFlag(triggerDeliveryCmd)
-
 }
