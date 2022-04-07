@@ -9,7 +9,6 @@ export type DeploymentInformation = { deploymentUrl?: string; image?: string };
 
 export class Service extends sv {
   stage!: string;
-  sequences: Sequence[] = [];
   openApprovals: Approval[] = [];
   openRemediations: Sequence[] = [];
   latestSequence?: Sequence;
