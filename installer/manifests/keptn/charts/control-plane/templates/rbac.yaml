@@ -22,6 +22,7 @@ metadata:
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
 {{- end }}
 ---
+{{- if not .Values.shipyardController.serviceAccountName }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -31,6 +32,7 @@ metadata:
     app.kubernetes.io/name: keptn-shipyard-controller
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
+{{- end }}
 ---
 {{- if not .Values.secretService.serviceAccountName }}
 apiVersion: v1
@@ -304,6 +306,7 @@ subjects:
     name: keptn-configuration-service
 {{- end }}
 ---
+{{- if not .Values.shipyardController.serviceAccountName }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -320,7 +323,26 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: keptn-shipyard-controller
-
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: keptn-shipyard-controller-acquire-lease
+  labels:
+    app.kubernetes.io/name: keptn-shipyard-controller-acquire-lease
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: keptn-acquire-lease
+subjects:
+  - kind: ServiceAccount
+    name: keptn-shipyard-controller
+{{- end }}
 ---
 {{- if not .Values.secretService.serviceAccountName }}
 apiVersion: rbac.authorization.k8s.io/v1
@@ -374,22 +396,3 @@ subjects:
   - kind: ServiceAccount
     name: keptn-secret-service
 {{- end }}
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: keptn-shipyard-controller-acquire-lease
-  labels:
-    app.kubernetes.io/name: keptn-shipyard-controller-acquire-lease
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: keptn-acquire-lease
-subjects:
-  - kind: ServiceAccount
-    name: keptn-shipyard-controller

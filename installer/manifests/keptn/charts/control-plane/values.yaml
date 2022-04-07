@@ -165,6 +165,7 @@ shipyardController:
       # hit the database limit for max collection name size when your project name is too long.
       # projectNameMaxSize can be used to forbid project names longer than a certain size in Keptn
       projectNameMaxSize: 200
+  serviceAccountName: null
   nodeSelector: {}
 
 secretService:
