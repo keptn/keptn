@@ -49,7 +49,6 @@ export class HttpErrorInterceptor implements HttpInterceptor {
           this.notificationService.addNotification(NotificationType.ERROR, error.message);
         }
 
-        console.log('Interceptor throws error');
         return throwError(error);
       })
     );
