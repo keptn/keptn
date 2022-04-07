@@ -331,7 +331,7 @@ jobs:
         working-directory: cli
         run: |
           go get gotest.tools/gotestsum@v1.7.0
-          gotestsum --no-color=false --format=testname -- -race -v  -coverprofile=coverage.txt -covermode=atomic ./...
+          gotestsum --no-color=false --format=testname -- -v  -coverprofile=coverage.txt -covermode=atomic ./...
 
       - name: Report test coverage for CLI
         uses: codecov/codecov-action@v2
