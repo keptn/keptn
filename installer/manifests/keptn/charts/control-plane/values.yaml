@@ -221,6 +221,7 @@ statisticsService:
   image:
     repository: docker.io/keptn/statistics-service
     tag: ""
+  serviceAccountName: null
   nodeSelector: {}
 
 approvalService:

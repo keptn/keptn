@@ -31,7 +31,7 @@ spec:
         helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
       {{- include "control-plane.common.pod-security-context" . | nindent 6 }}
-      serviceAccountName: keptn-default
+      serviceAccountName: {{ .Values.statisticsService.serviceAccountName | default "keptn-default" }}
       containers:
         - name: statistics-service
           image: {{ .Values.statisticsService.image.repository }}:{{ .Values.statisticsService.image.tag | default .Chart.AppVersion }}
