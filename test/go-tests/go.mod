@@ -9,10 +9,10 @@ require (
 	github.com/keptn/go-utils v0.14.1-0.20220405094754-802847e81750
 	github.com/keptn/kubernetes-utils v0.13.1-0.20220309123424-6e3f2bcaf831
 	github.com/mholt/archiver/v3 v3.5.1
-	github.com/stretchr/testify v1.7.0
-	k8s.io/api v0.22.7
-	k8s.io/apimachinery v0.22.7
-	k8s.io/client-go v0.22.7
+	github.com/stretchr/testify v1.7.1
+	k8s.io/api v0.22.8
+	k8s.io/apimachinery v0.22.8
+	k8s.io/client-go v0.22.8
 )
 
 require (
