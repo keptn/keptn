@@ -221,6 +221,7 @@ approvalService:
     repository: docker.io/keptn/approval-service
     tag: ""
   nodeSelector: {}
+  serviceAccountName: null
 
 webhookService:
   enabled: true
