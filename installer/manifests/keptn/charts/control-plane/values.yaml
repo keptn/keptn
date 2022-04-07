@@ -205,6 +205,7 @@ mongodbDatastore:
   image:
     repository: docker.io/keptn/mongodb-datastore
     tag: ""
+  serviceAccountName: null
   nodeSelector: {}
 
 lighthouseService:
