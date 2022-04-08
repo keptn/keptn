@@ -24,6 +24,9 @@
   --dt-critical-background-color: #f9acaf;
 
   --dt-accent-active-background-color: #c2e5ff;
+
+  --dt-loading-indicator-color: var(--dt-theme-main-default-color);
+  --dt-loading-indicator-background-color: transparent;
 }
 
 .dt-button {

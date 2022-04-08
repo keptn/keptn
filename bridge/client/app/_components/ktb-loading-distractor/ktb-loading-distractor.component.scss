@@ -1,4 +1,5 @@
 :host {
+  background-color: var(--dt-loading-indicator-background-color);
   display: inline-flex;
   align-items: center;
   height: 50px;
@@ -13,10 +14,6 @@
   display: block;
   box-sizing: border-box;
   text-decoration: none;
-  color: var(--dt-theme-main-default-color);
-  padding-left: 8px;
-}
-
-.ktb-loading-spinner .ktb-loading-distractor-label {
+  color: var(--dt-loading-indicator-color);
   padding-left: 8px;
 }
