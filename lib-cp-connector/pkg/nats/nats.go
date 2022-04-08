@@ -15,6 +15,16 @@ const (
 	envVarNatsURLDefault = "nats://keptn-nats"
 )
 
+type NATS interface {
+	Subscribe(subject string, fn ProcessEventFn) error
+	QueueSubscribe(queueGroup string, subject string, fn ProcessEventFn) error
+	SubscribeMultiple(subjects []string, fn ProcessEventFn) error
+	QueueSubscribeMultiple(queueGroup string, subjects []string, fn ProcessEventFn) error
+	Publish(event models.KeptnContextExtendedCE) error
+	Disconnect() error
+	UnsubscribeAll() error
+}
+
 var (
 	ErrSubAlreadySubscribed   = errors.New("already subscribed")
 	ErrSubNilMessageProcessor = errors.New("message processor is nil")
@@ -138,6 +148,7 @@ func (nc *NatsConnector) queueSubscribe(subject string, queueGroup string, fn Pr
 			nc.logger.Errorf("Could not process message %s: %v\n", string(m.Data), err)
 		}
 	})
+
 	if err != nil {
 		return fmt.Errorf("could not subscribe to subject %s: %w", subject, err)
 	}

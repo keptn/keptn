@@ -53,7 +53,6 @@ func (s *SubscriptionSource) Start(ctx context.Context, registrationData Registr
 					s.logger.Errorf("Unable to ping control plane: %v", err)
 					continue
 				}
-				fmt.Println("ok new event subscription")
 				subscriptionChannel <- updatedIntegrationData.Subscriptions
 			}
 		}

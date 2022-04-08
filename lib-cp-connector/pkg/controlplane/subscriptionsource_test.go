@@ -74,7 +74,85 @@ func TestSubscriptionSourceCPPingFails(t *testing.T) {
 }
 
 func TestSubscriptionSourceWithFetchInterval(t *testing.T) {
-	//TODO: implement
+	integrationID := "iID"
+	integrationName := "integrationName"
+	pingCount := 0
+
+	initialRegistrationData := RegistrationData{
+		Name:          integrationName,
+		MetaData:      models.MetaData{},
+		Subscriptions: []models.EventSubscription{{Event: "keptn.event", Filter: models.EventSubscriptionFilter{}}},
+	}
+
+	uniformInterface := &UniformInterfaceMock{
+		RegisterIntegrationFn: func(integration models.Integration) (string, error) { return integrationID, nil },
+		PingFn: func(id string) (*models.Integration, error) {
+			pingCount++
+			require.Equal(t, id, integrationID)
+			return &models.Integration{
+				ID:            integrationID,
+				Name:          integrationName,
+				MetaData:      models.MetaData{},
+				Subscriptions: []models.EventSubscription{{ID: "sID", Event: "keptn.event", Filter: models.EventSubscriptionFilter{}}},
+			}, nil
+		},
+	}
+
+	subscriptionSource := NewSubscriptionSource(uniformInterface, WithFetchInterval(10*time.Second))
+	clock := clock.NewMock()
+	subscriptionSource.clock = clock
+
+	subscriptionUpdates := make(chan []models.EventSubscription)
+
+	err := subscriptionSource.Start(context.TODO(), initialRegistrationData, subscriptionUpdates)
+	require.NoError(t, err)
+	for i := 0; i < 100; i++ {
+		clock.Add(10 * time.Second)
+		<-subscriptionUpdates
+	}
+	require.Equal(t, 100, pingCount)
+}
+
+func TestSubscriptionSourceCancel(t *testing.T) {
+	integrationID := "iID"
+	integrationName := "integrationName"
+	pingCount := 0
+
+	initialRegistrationData := RegistrationData{
+		Name:          integrationName,
+		MetaData:      models.MetaData{},
+		Subscriptions: []models.EventSubscription{{Event: "keptn.event", Filter: models.EventSubscriptionFilter{}}},
+	}
+
+	uniformInterface := &UniformInterfaceMock{
+		RegisterIntegrationFn: func(integration models.Integration) (string, error) { return integrationID, nil },
+		PingFn: func(id string) (*models.Integration, error) {
+			pingCount++
+			require.Equal(t, id, integrationID)
+			return &models.Integration{
+				ID:            integrationID,
+				Name:          integrationName,
+				MetaData:      models.MetaData{},
+				Subscriptions: []models.EventSubscription{{ID: "sID", Event: "keptn.event", Filter: models.EventSubscriptionFilter{}}},
+			}, nil
+		},
+	}
+
+	subscriptionSource := NewSubscriptionSource(uniformInterface, WithFetchInterval(10*time.Second))
+	clock := clock.NewMock()
+	subscriptionSource.clock = clock
+
+	subscriptionUpdates := make(chan []models.EventSubscription)
+
+	ctx, cancel := context.WithCancel(context.TODO())
+	err := subscriptionSource.Start(ctx, initialRegistrationData, subscriptionUpdates)
+	require.NoError(t, err)
+	clock.Add(10 * time.Second)
+	<-subscriptionUpdates
+	cancel()
+	clock.Add(9 * time.Second)
+	clock.Add(1 * time.Second)
+	require.Equal(t, 1, pingCount)
 }
 
 func TestSubscriptionSource(t *testing.T) {
@@ -83,16 +161,9 @@ func TestSubscriptionSource(t *testing.T) {
 	subscriptionID := "sID"
 
 	initialRegistrationData := RegistrationData{
-		ID:       "",
-		Name:     integrationName,
-		MetaData: models.MetaData{},
-		Subscriptions: []models.EventSubscription{
-			{
-				ID:     "",
-				Event:  "keptn.event",
-				Filter: models.EventSubscriptionFilter{},
-			},
-		},
+		Name:          integrationName,
+		MetaData:      models.MetaData{},
+		Subscriptions: []models.EventSubscription{{Event: "keptn.event", Filter: models.EventSubscriptionFilter{}}},
 	}
 
 	uniformInterface := &UniformInterfaceMock{
@@ -103,16 +174,10 @@ func TestSubscriptionSource(t *testing.T) {
 		PingFn: func(id string) (*models.Integration, error) {
 			require.Equal(t, id, integrationID)
 			return &models.Integration{
-				ID:       integrationID,
-				Name:     integrationName,
-				MetaData: models.MetaData{},
-				Subscriptions: []models.EventSubscription{
-					{
-						ID:     subscriptionID,
-						Event:  "keptn.event",
-						Filter: models.EventSubscriptionFilter{},
-					},
-				},
+				ID:            integrationID,
+				Name:          integrationName,
+				MetaData:      models.MetaData{},
+				Subscriptions: []models.EventSubscription{{ID: subscriptionID, Event: "keptn.event", Filter: models.EventSubscriptionFilter{}}},
 			}, nil
 		},
 	}

@@ -35,14 +35,14 @@ type EventSource interface {
 // that is using the NATS event broker internally
 type NATSEventSource struct {
 	currentSubjects []string
-	connector       *nats.NatsConnector
+	connector       nats.NATS
 	eventProcessFn  nats.ProcessEventFn
 	queueGroup      string
 	logger          logger.Logger
 }
 
 // NewNATSEventSource creates a new NATSEventSource
-func NewNATSEventSource(natsConnector *nats.NatsConnector) *NATSEventSource {
+func NewNATSEventSource(natsConnector nats.NATS) *NATSEventSource {
 	return &NATSEventSource{
 		currentSubjects: []string{},
 		connector:       natsConnector,
@@ -61,15 +61,10 @@ func (n *NATSEventSource) Start(ctx context.Context, registrationData Registrati
 		return fmt.Errorf("could not start NATS event source: %w", err)
 	}
 	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				if err := n.connector.Disconnect(); err != nil {
-					n.logger.Errorf("Unable to disconnect from NATS: %v", err)
-					return
-				}
-				return
-			}
+		<-ctx.Done()
+		if err := n.connector.Disconnect(); err != nil {
+			n.logger.Errorf("Unable to disconnect from NATS: %v", err)
+			return
 		}
 	}()
 	return nil
@@ -78,14 +73,16 @@ func (n *NATSEventSource) Start(ctx context.Context, registrationData Registrati
 func (n *NATSEventSource) OnSubscriptionUpdate(subjects []string) {
 	s := dedup(subjects)
 	if !isEqual(n.currentSubjects, s) {
-		n.currentSubjects = s
 		err := n.connector.UnsubscribeAll()
 		if err != nil {
 			n.logger.Errorf("Could not handle subscription update: %v", err)
+			return
 		}
-		if err := n.connector.QueueSubscribeMultiple(n.queueGroup, n.currentSubjects, n.eventProcessFn); err != nil {
+		if err := n.connector.QueueSubscribeMultiple(n.queueGroup, subjects, n.eventProcessFn); err != nil {
 			n.logger.Errorf("Could not handle subscription update: %v", err)
+			return
 		}
+		n.currentSubjects = s
 	}
 }
 
@@ -95,25 +92,6 @@ func (n *NATSEventSource) Sender() EventSender {
 
 func (n *NATSEventSource) Stop() error {
 	return n.connector.Disconnect()
-}
-
-// HTTPEventSource is an implementation of EventSource that is using
-// using the puhblic Keptn API internally
-type HTTPEventSource struct{}
-
-func (H HTTPEventSource) Start(ctx context.Context, registrationData RegistrationData, ces chan models.KeptnContextExtendedCE) error {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (H HTTPEventSource) OnSubscriptionUpdate(strings []string) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (H HTTPEventSource) Sender() EventSender {
-	//TODO implement me
-	panic("implement me")
 }
 
 func isEqual(a1 []string, a2 []string) bool {
