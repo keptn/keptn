@@ -213,7 +213,8 @@ type GetResourceResponse struct {
 }
 
 type WriteResourceResponse struct {
-	CommitID string `json:"commitID"`
+	CommitID string  `json:"commitID"`
+	Metadata Version `json:"metadata"`
 }
 
 func validateResourceURI(uri string) error {
