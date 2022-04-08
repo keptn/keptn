@@ -91,6 +91,7 @@ func Test_ProvisioningURL(t *testing.T) {
 	url := fmt.Sprintf("http://gitea-http:3000/%s/%s", user, projectName)
 	token, _ := GetGiteaToken()
 	provisioningConfigMap := fmt.Sprintf(provisioningConfigMapTemplate, user, token, user)
+	shipyardPod := "shipyard-controller"
 
 	mockserverconfigFilePath, err := CreateTmpFile(mockserverConfigFileName, provisioningConfigMap)
 	defer func() {
@@ -116,9 +117,9 @@ func Test_ProvisioningURL(t *testing.T) {
 	_, err = ExecuteCommandf("kubectl set env deployment/shipyard-controller AUTOMATIC_PROVISIONING_URL=%s -n %s", mockServerIP, keptnNamespace)
 	require.Nil(t, err)
 
-	t.Logf("Sleeping for 30s...")
-	time.Sleep(30 * time.Second)
-	t.Logf("Continue to work...")
+	//kubectl set kills shipyard pod, instead of sleeping we wait for the deployment to be ready
+	err = WaitForPodOfDeployment(shipyardPod)
+	require.Nil(t, err)
 
 	t.Logf("Creating a new upstream repository for project %s", projectName)
 	err = RecreateProjectUpstream(projectName)
@@ -157,8 +158,8 @@ func Test_ProvisioningURL(t *testing.T) {
 	_, err = ExecuteCommandf("kubectl set env deployment/shipyard-controller AUTOMATIC_PROVISIONING_URL=%s -n %s", "", keptnNamespace)
 	require.Nil(t, err)
 
-	t.Logf("Sleeping for 30s...")
-	time.Sleep(30 * time.Second)
+	err = WaitForPodOfDeployment(shipyardPod)
+	require.Nil(t, err)
 
 	t.Log("Deleting mockserver ConfigMap")
 	_, err = ExecuteCommandf("kubectl delete configmap mockserver-config -n %s", keptnNamespace)
