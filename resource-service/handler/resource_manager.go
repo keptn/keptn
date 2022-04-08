@@ -301,8 +301,15 @@ func (p ResourceManager) stageAndCommit(gitContext *common_models.GitContext, me
 	if err != nil {
 		return nil, err
 	}
+	result := &models.WriteResourceResponse{
+		CommitID: commitID,
+		Metadata: models.Version{
+			UpstreamURL: gitContext.Credentials.RemoteURI,
+			Version:     commitID,
+		},
+	}
 
-	return &models.WriteResourceResponse{CommitID: commitID}, nil
+	return result, nil
 }
 
 func (p ResourceManager) deleteResource(gitContext *common_models.GitContext, resourcePath string) (*models.WriteResourceResponse, error) {
