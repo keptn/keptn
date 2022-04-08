@@ -1,5 +1,5 @@
 :host {
-  background-color: var(--dt-loading-indicator-background-color);
+  background-color: var(--ktb-loading-distractor-background-color);
   display: inline-flex;
   align-items: center;
   height: 50px;
@@ -14,6 +14,6 @@
   display: block;
   box-sizing: border-box;
   text-decoration: none;
-  color: var(--dt-loading-indicator-color);
+  color: var(--ktb-loading-distractor-color);
   padding-left: 8px;
 }

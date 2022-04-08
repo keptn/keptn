@@ -30,7 +30,7 @@ $ktb-loading-spinner-ease: cubic-bezier(0.645, 0.045, 0.355, 1);
   padding: 0;
   margin: 0;
   stroke-width: 4px;
-  stroke: var(--dt-loading-indicator-color);
+  stroke: var(--ktb-loading-distractor-color);
   fill: none;
   animation: ktb-loading-spinner-spin $ktb-loading-spinner-duration * 2 linear infinite;
 }

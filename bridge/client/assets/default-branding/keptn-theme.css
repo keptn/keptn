@@ -25,8 +25,8 @@
 
   --dt-accent-active-background-color: #c2e5ff;
 
-  --dt-loading-indicator-color: var(--dt-theme-main-default-color);
-  --dt-loading-indicator-background-color: transparent;
+  --ktb-loading-distractor-color: var(--dt-theme-main-default-color);
+  --ktb-loading-distractor-background-color: transparent;
 }
 
 .dt-button {
