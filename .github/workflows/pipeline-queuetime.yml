@@ -5,7 +5,7 @@ on:
       workflow_name:
         type: string
         required: true
-        description: "Name of the calling workflow for easy differentiation between metric datapoints"
+        description: "Name of the calling workflow for easy differentiation between metric data points"
     secrets:
       monitoring_api_token:
         required: true
@@ -48,6 +48,7 @@ jobs:
 
 
       - name: Ingest Pipeline Metrics
+        if: ( github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository ) || ( github.event_name == 'push' )
         uses: dynatrace-oss/dynatrace-github-action@v8
         with:
           url: ${{ secrets.monitoring_tenant_url }}

@@ -101,13 +101,9 @@ export class Project extends pj {
   getLatestDeploymentTraceOfSequence(service: Service | undefined, stage?: Stage): Trace | undefined {
     const currentService = service ? this.getService(service.serviceName) : undefined;
 
-    return currentService?.sequences
-      ?.find((r) => r.shkeptncontext === currentService.lastEventTypes?.[EventTypes.DEPLOYMENT_FINISHED]?.keptnContext)
+    return this.sequences
+      ?.find((r) => r.shkeptncontext === currentService?.lastEventTypes?.[EventTypes.DEPLOYMENT_FINISHED]?.keptnContext)
       ?.findTrace((trace) => (stage ? trace.isDeployment() === stage.stageName : !!trace.isDeployment()));
-  }
-
-  getSequence(service: Service, event: Trace): Sequence | undefined {
-    return service.sequences.find((sequence) => sequence.shkeptncontext === event.shkeptncontext);
   }
 
   getApprovalEvaluation(trace: Trace): Trace | undefined {

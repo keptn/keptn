@@ -5,16 +5,15 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"net/http"
-	"strings"
-	"time"
-
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"go.mongodb.org/mongo-driver/mongo"
+	"net/http"
+	"strings"
+	"time"
 )
 
 type IUniformIntegrationHandler interface {
@@ -35,6 +34,68 @@ type UniformIntegrationHandler struct {
 
 func NewUniformIntegrationHandler(uniformRepo db.UniformRepo) *UniformIntegrationHandler {
 	return &UniformIntegrationHandler{uniformRepo: uniformRepo}
+}
+
+type UniformParamsValidator struct {
+	CheckProject bool
+}
+
+func (u UniformParamsValidator) Validate(params interface{}) error {
+	switch t := params.(type) {
+	case apimodels.EventSubscription:
+		return u.validateSubscriptionParams(t)
+	case apimodels.Integration:
+		return u.validateIntegration(t)
+	default:
+		return nil
+	}
+}
+
+func (u UniformParamsValidator) validateIntegration(params apimodels.Integration) error {
+
+	// in case of webhook we need to check the project
+	if params.Name == "webhook-service" {
+		u.CheckProject = true
+	}
+
+	for _, subscription := range params.Subscriptions {
+		if err := u.validateSubscriptionParams(subscription); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (u UniformParamsValidator) validateSubscriptionParams(params apimodels.EventSubscription) error {
+
+	if params.Event == "" {
+		return fmt.Errorf("the event must be specified when setting up a subscription")
+	}
+
+	if err := u.validateFilterParams(params.Filter, u.CheckProject); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u UniformParamsValidator) validateFilterParams(params apimodels.EventSubscriptionFilter, checkProject bool) error {
+
+	// Since empty project stands for all projects, we cannot impose a project in the validation
+
+	// If the service is specified then also the stage should be
+	if params.Services != nil && params.Stages == nil {
+		return fmt.Errorf("at least one stage must be specified when setting up a subscription filter for a service")
+	}
+
+	//if the service is the webhook it should not be able to apply for all projects
+	if checkProject && (params.Projects == nil || len(params.Projects) > 1) {
+		return fmt.Errorf("webhook should refer to exactly one project")
+	}
+
+	return nil
 }
 
 // Register creates or updates a uniform integration
@@ -116,6 +177,15 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 		}
 		hash = hex.EncodeToString(hasher.Sum(nil))
 		integration.ID = hash
+	}
+
+	// we validate integrations here to make sure to verify both subscription and subscriptions
+
+	validator := UniformParamsValidator{false}
+
+	if err := validator.Validate(integration); err != nil {
+		SetBadRequestErrorResponse(c, err.Error())
+		return
 	}
 
 	err = rh.uniformRepo.CreateUniformIntegration(*integration)
@@ -264,6 +334,13 @@ func (rh *UniformIntegrationHandler) CreateSubscription(c *gin.Context) {
 		SetBadRequestErrorResponse(c, err.Error())
 		return
 	}
+	validator := UniformParamsValidator{false}
+
+	if err := validator.Validate(subscription); err != nil {
+		SetBadRequestErrorResponse(c, err.Error())
+		return
+	}
+
 	subscription.ID = uuid.New().String()
 
 	err := rh.uniformRepo.CreateOrUpdateSubscription(integrationID, *subscription)
@@ -307,9 +384,26 @@ func (rh *UniformIntegrationHandler) UpdateSubscription(c *gin.Context) {
 		SetBadRequestErrorResponse(c, err.Error())
 		return
 	}
+
+	oldIntegration, err := rh.uniformRepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{
+		ID: integrationID,
+	})
+
+	checkProject := false
+	if len(oldIntegration) == 1 && oldIntegration[0].Name == "webhook-service" {
+		checkProject = true
+	}
+
+	validator := UniformParamsValidator{checkProject}
+
+	if err := validator.Validate(subscription); err != nil {
+		SetBadRequestErrorResponse(c, err.Error())
+		return
+	}
+
 	subscription.ID = subscriptionID
 
-	err := rh.uniformRepo.CreateOrUpdateSubscription(integrationID, *subscription)
+	err = rh.uniformRepo.CreateOrUpdateSubscription(integrationID, *subscription)
 	if err != nil {
 		//TODO: set appropriate http codes
 		SetInternalServerErrorResponse(c, err.Error())
