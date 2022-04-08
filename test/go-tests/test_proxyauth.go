@@ -73,7 +73,7 @@ const baseProxyProjectPath = "/controlPlane/v1/project"
 
 func Test_ProxyAuth(t *testing.T) {
 	repoLocalDir := "../assets/podtato-head"
-	projectName := "proxy-auth"
+	projectName := "proxy-auth3"
 	serviceName := "helloservice"
 	secondServiceName := "helloservice2"
 	chartFileName := "helloservice.tgz"
@@ -128,7 +128,7 @@ func Test_ProxyAuth(t *testing.T) {
 	require.Equal(t, "squid:3128", project.GitProxyURL)
 	require.Equal(t, "http", project.GitProxyScheme)
 	require.Equal(t, "", project.GitProxyUser)
-	require.Equal(t, true, project.GitProxyInsecure)
+	require.Equal(t, true, project.InsecureSkipTLS)
 	require.Equal(t, projectName, project.ProjectName)
 
 	t.Logf("Updating project credentials")
