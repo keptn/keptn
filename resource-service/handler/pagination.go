@@ -50,7 +50,7 @@ func Paginate(totalCount int, pageSize int64, nextPageKeyString string) *Paginat
 }
 
 // GetPaginatedResources returns a paginated resources set
-func GetPaginatedResources(dir string, pageSize int64, nextPageKey string, writer common.IFileSystem) (*models.GetResourcesResponse, error) {
+func GetPaginatedResources(dir string, pageSize int64, nextPageKey string, writer common.IFileSystem, metadata models.Version) (*models.GetResourcesResponse, error) {
 	var result = &models.GetResourcesResponse{
 		PageSize:    0,
 		NextPageKey: "0",
@@ -86,9 +86,12 @@ func GetPaginatedResources(dir string, pageSize int64, nextPageKey string, write
 	totalCount := len(files)
 	if paginationInfo.NextPageKey < int64(totalCount) {
 		for _, resourceURI := range files[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
-			var resource = models.GetResourceResponse{Resource: models.Resource{
-				ResourceURI: resourceURI,
-			}}
+			var resource = models.GetResourceResponse{
+				Resource: models.Resource{
+					ResourceURI: resourceURI,
+				},
+				Metadata: metadata,
+			}
 			result.Resources = append(result.Resources, resource)
 		}
 	}

@@ -59,12 +59,20 @@ func (p ResourceManager) GetResources(params models.GetResourcesParams) (*models
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
-	_, configPath, err := p.establishContext(params.Project, params.Stage, params.Service)
+	gitContext, configPath, err := p.establishContext(params.Project, params.Stage, params.Service)
 	if err != nil {
 		return nil, err
 	}
+	revision, err := p.git.GetCurrentRevision(*gitContext)
+	if err != nil {
+		return nil, err
+	}
+	metadata := models.Version{
+		UpstreamURL: gitContext.Credentials.RemoteURI,
+		Version:     revision,
+	}
 
-	result, err := GetPaginatedResources(configPath, params.PageSize, params.NextPageKey, p.fileSystem)
+	result, err := GetPaginatedResources(configPath, params.PageSize, params.NextPageKey, p.fileSystem, metadata)
 	if err != nil {
 		return nil, err
 	}
