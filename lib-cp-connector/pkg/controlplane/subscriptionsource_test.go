@@ -10,6 +10,17 @@ import (
 	"time"
 )
 
+type SubscriptionSourceMock struct {
+	StartFn func(ctx context.Context, data RegistrationData, c chan []models.EventSubscription) error
+}
+
+func (u *SubscriptionSourceMock) Start(ctx context.Context, data RegistrationData, c chan []models.EventSubscription) error {
+	if u.StartFn != nil {
+		return u.StartFn(ctx, data, c)
+	}
+	panic("implement me")
+}
+
 type UniformInterfaceMock struct {
 	RegisterIntegrationFn func(models.Integration) (string, error)
 	PingFn                func(string) (*models.Integration, error)
@@ -46,7 +57,7 @@ func TestSubscriptionSourceInitialRegistrationFails(t *testing.T) {
 	uniformInterface := &UniformInterfaceMock{
 		RegisterIntegrationFn: func(integration models.Integration) (string, error) { return "", fmt.Errorf("error occured") },
 	}
-	subscriptionSource := NewSubscriptionSource(uniformInterface)
+	subscriptionSource := NewUniformSubscriptionSource(uniformInterface)
 	err := subscriptionSource.Start(context.Background(), initialRegistrationData, nil)
 	require.Error(t, err)
 }
@@ -65,7 +76,7 @@ func TestSubscriptionSourceCPPingFails(t *testing.T) {
 		require.FailNow(t, "got subscription event via channel")
 	}()
 
-	subscriptionSource := NewSubscriptionSource(uniformInterface)
+	subscriptionSource := NewUniformSubscriptionSource(uniformInterface)
 	clock := clock.NewMock()
 	subscriptionSource.clock = clock
 	err := subscriptionSource.Start(context.TODO(), initialRegistrationData, subscriptionUpdates)
@@ -98,7 +109,7 @@ func TestSubscriptionSourceWithFetchInterval(t *testing.T) {
 		},
 	}
 
-	subscriptionSource := NewSubscriptionSource(uniformInterface, WithFetchInterval(10*time.Second))
+	subscriptionSource := NewUniformSubscriptionSource(uniformInterface, WithFetchInterval(10*time.Second))
 	clock := clock.NewMock()
 	subscriptionSource.clock = clock
 
@@ -138,7 +149,7 @@ func TestSubscriptionSourceCancel(t *testing.T) {
 		},
 	}
 
-	subscriptionSource := NewSubscriptionSource(uniformInterface, WithFetchInterval(10*time.Second))
+	subscriptionSource := NewUniformSubscriptionSource(uniformInterface, WithFetchInterval(10*time.Second))
 	clock := clock.NewMock()
 	subscriptionSource.clock = clock
 
@@ -182,7 +193,7 @@ func TestSubscriptionSource(t *testing.T) {
 		},
 	}
 
-	subscriptionSource := NewSubscriptionSource(uniformInterface)
+	subscriptionSource := NewUniformSubscriptionSource(uniformInterface)
 	clock := clock.NewMock()
 	subscriptionSource.clock = clock
 

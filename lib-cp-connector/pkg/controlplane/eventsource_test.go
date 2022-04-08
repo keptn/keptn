@@ -10,6 +10,41 @@ import (
 	"time"
 )
 
+type EventSourceMock struct {
+	StartFn                func(context.Context, RegistrationData, chan models.KeptnContextExtendedCE) error
+	OnSubscriptionUpdateFn func([]string)
+	SenderFn               func() EventSender
+	StopFn                 func() error
+}
+
+func (e *EventSourceMock) Start(ctx context.Context, data RegistrationData, ces chan models.KeptnContextExtendedCE) error {
+	if e.StartFn != nil {
+		return e.StartFn(ctx, data, ces)
+	}
+	panic("implement me")
+}
+
+func (e *EventSourceMock) OnSubscriptionUpdate(strings []string) {
+	if e.OnSubscriptionUpdateFn != nil {
+		e.OnSubscriptionUpdateFn(strings)
+	}
+	panic("implement me")
+}
+
+func (e *EventSourceMock) Sender() EventSender {
+	if e.SenderFn != nil {
+		return e.SenderFn()
+	}
+	panic("implement me")
+}
+
+func (e *EventSourceMock) Stop() error {
+	if e.StopFn != nil {
+		return e.StopFn()
+	}
+	panic("implement me")
+}
+
 type NATSConnectorMock struct {
 	SubscribeFn                 func(string, nats2.ProcessEventFn) error
 	QueueSubscribeFn            func(string, string, nats2.ProcessEventFn) error

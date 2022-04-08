@@ -12,7 +12,7 @@ var ErrEventHandleIgnore = errors.New("event handling error")
 
 // ControlPlane can be used to connect to the Keptn Control Plane
 type ControlPlane struct {
-	subscriptionSource   *SubscriptionSource
+	subscriptionSource   SubscriptionSource
 	eventSource          EventSource
 	currentSubscriptions []models.EventSubscription
 	logger               logger.Logger
@@ -21,7 +21,7 @@ type ControlPlane struct {
 // New creates a new ControlPlane
 // It is using a SubscriptionSource source to get information about current uniform subscriptions
 // as well as an EventSource to actually receive events from Keptn
-func New(subscriptionSource *SubscriptionSource, eventSource EventSource) *ControlPlane {
+func New(subscriptionSource SubscriptionSource, eventSource EventSource) *ControlPlane {
 	return &ControlPlane{
 		subscriptionSource:   subscriptionSource,
 		eventSource:          eventSource,
