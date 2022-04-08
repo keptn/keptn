@@ -81,3 +81,4 @@ For a realtime overview of current contributors to the Keptn project, we refer t
 * [Joseph Petersen](https://github.com/jetersen)
 * [Eric Y. Kim](https://github.com/eyskim)
 * [Markus Lackner](https://github.com/markuslackner)
+* [René Panzar](https://github.com/renepanzar)

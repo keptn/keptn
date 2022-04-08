@@ -154,6 +154,8 @@ import {
 } from './_components/ktb-datetime-picker/ktb-datetime-picker.component';
 import { DtDatepickerModule } from '@dynatrace/barista-components/experimental/datepicker';
 import { TruncateNumberPipe } from './_pipes/truncate-number';
+import { KtbLoadingDistractorComponent } from './_components/ktb-loading-distractor/ktb-loading-distractor.component';
+import { KtbLoadingSpinnerComponent } from './_components/ktb-loading-spinner/ktb-loading-spinner.component';
 
 registerLocaleData(localeEn, 'en');
 
@@ -249,6 +251,8 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     KtbDatetimePickerComponent,
     KtbDatetimePickerDirective,
     TruncateNumberPipe,
+    KtbLoadingDistractorComponent,
+    KtbLoadingSpinnerComponent,
   ],
   imports: [
     BrowserModule,
