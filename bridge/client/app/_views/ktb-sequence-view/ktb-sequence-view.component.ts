@@ -194,16 +194,6 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
         this.unfinishedSequences = this.project.sequences.filter((sequence) => !sequence.isFinished());
         // Needed for the updates to work properly
         this.changeDetectorRef_.detectChanges();
-        if (setStageWithKeptnContext && setStageWithEventId) {
-          const sequence = this.project.sequences.find((s) => s.shkeptncontext === setStageWithKeptnContext);
-          if (sequence && sequence.traces.length) {
-            const stage = sequence.findTrace((t) => t.id === setStageWithEventId)?.stage;
-            if (stage) {
-              this.selectSequence({ sequence, stage, eventId: setStageWithEventId }, false);
-            }
-            setStageWithKeptnContext = setStageWithEventId = undefined;
-          }
-        }
       }
     });
   }
