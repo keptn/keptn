@@ -6,5 +6,4 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   styleUrls: ['./ktb-loading-distractor.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KtbLoadingDistractorComponent {
-}
+export class KtbLoadingDistractorComponent {}

@@ -6,5 +6,4 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   styleUrls: ['./ktb-loading-spinner.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KtbLoadingSpinnerComponent {
-}
+export class KtbLoadingSpinnerComponent {}
