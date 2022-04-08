@@ -233,11 +233,11 @@ func CreateRequest(request interface{}) (string, error) {
 	switch req := request.(type) {
 	// v1alpha1 version
 	case string:
-		logger.Info("creating CURL request from type string")
+		logger.Debug("creating CURL request from type string")
 		return req, nil
 	// v1beta1 version
 	default:
-		logger.Info("creating CURL request from type Request")
+		logger.Debug("creating CURL request from type Request")
 		betaRequest := buildBetaCurlRequest(lib.ConvertToRequest(request))
 		if betaRequest != "" {
 			return betaRequest, nil
@@ -286,7 +286,7 @@ func (th *TaskHandler) getWebHookConfig(keptnHandler sdk.IKeptn, eventAdapter *l
 	}
 	resourceScope := *keptn.NewResourceScope().Project(eventAdapter.Project()).Stage(eventAdapter.Stage()).Service(eventAdapter.Service()).Resource(webhookConfigFileName)
 	resource, err := keptnHandler.GetResourceHandler().GetResource(resourceScope, keptn.AppendQuery(commitOption))
-	logger.Info("searching for webhook config at service level...")
+	logger.Debug("searching for webhook config at service level...")
 	if err == nil && resource != nil {
 		if matchingWebhook := getMatchingWebhookFromResource(resource, subscriptionID); matchingWebhook != nil {
 			return matchingWebhook, nil
@@ -296,7 +296,7 @@ func (th *TaskHandler) getWebHookConfig(keptnHandler sdk.IKeptn, eventAdapter *l
 	// if we didn't find a config in the service directory, look at the stage
 	resourceScope = *keptn.NewResourceScope().Project(eventAdapter.Project()).Stage(eventAdapter.Stage()).Resource(webhookConfigFileName)
 	resource, err = keptnHandler.GetResourceHandler().GetResource(resourceScope, keptn.AppendQuery(commitOption))
-	logger.Info("searching for webhook config at stage level...")
+	logger.Debug("searching for webhook config at stage level...")
 	if err == nil && resource != nil {
 		if matchingWebhook := getMatchingWebhookFromResource(resource, subscriptionID); matchingWebhook != nil {
 			return matchingWebhook, nil
@@ -306,14 +306,14 @@ func (th *TaskHandler) getWebHookConfig(keptnHandler sdk.IKeptn, eventAdapter *l
 	// finally, look at project level
 	resourceScope = *keptn.NewResourceScope().Project(eventAdapter.Project()).Resource(webhookConfigFileName)
 	resource, err = keptnHandler.GetResourceHandler().GetResource(resourceScope, keptn.AppendQuery(commitOption))
-	logger.Info("searching for webhook config at project level...")
+	logger.Debug("searching for webhook config at project level...")
 	if err == nil && resource != nil {
 		if matchingWebhook := getMatchingWebhookFromResource(resource, subscriptionID); matchingWebhook != nil {
 			return matchingWebhook, nil
 		}
 	}
 	if err != nil {
-		logger.Infof("no webhook config found, err: %s", err.Error())
+		logger.Debugf("no webhook config found, err: %s", err.Error())
 	}
 	return nil, errors.New("no webhook config found")
 }
