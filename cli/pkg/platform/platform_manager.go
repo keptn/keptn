@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/keptn/go-utils/pkg/common/fileutils"
 	"os"
 	"strings"
+
+	"github.com/keptn/go-utils/pkg/common/fileutils"
 
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 )
@@ -29,11 +30,11 @@ type platform interface {
 // PlatformManager allows to manage (i.e. check requirements) for supported platforms
 type PlatformManager struct {
 	platform          platform
-	credentialManager credentialmanager.CredentialManagerInterface
+	credentialManager credentialmanager.CMInterface
 }
 
 // NewPlatformManager creates a new manager for the provided platform
-func NewPlatformManager(platformIdentifier string, cm credentialmanager.CredentialManagerInterface) (*PlatformManager, error) {
+func NewPlatformManager(platformIdentifier string, cm credentialmanager.CMInterface) (*PlatformManager, error) {
 
 	switch strings.ToLower(platformIdentifier) {
 	case OpenShiftIdentifier:
@@ -46,7 +47,7 @@ func NewPlatformManager(platformIdentifier string, cm credentialmanager.Credenti
 	}
 }
 
-func (mng *PlatformManager) GetCredentialManager() credentialmanager.CredentialManagerInterface {
+func (mng *PlatformManager) GetCredentialManager() credentialmanager.CMInterface {
 	return mng.credentialManager
 }
 

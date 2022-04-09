@@ -97,7 +97,7 @@ func TestRateLimiter(t *testing.T) {
 	}}
 	rl := NewRateLimiter(1.0, 1, tokenValidator, mockClock)
 
-	mh := &MockHttpHandler{}
+	mh := &MockHTTPHandler{}
 	req, err := http.NewRequest(http.MethodGet, "", nil)
 	require.Nil(t, err)
 
@@ -144,12 +144,12 @@ func TestRateLimiter(t *testing.T) {
 	require.Empty(t, rl.visitors)
 }
 
-type MockHttpHandler struct {
+type MockHTTPHandler struct {
 	calls int
 	lock  sync.Mutex
 }
 
-func (mh *MockHttpHandler) ServeHTTP(http.ResponseWriter, *http.Request) {
+func (mh *MockHTTPHandler) ServeHTTP(http.ResponseWriter, *http.Request) {
 	mh.lock.Lock()
 	defer mh.lock.Unlock()
 	mh.calls++

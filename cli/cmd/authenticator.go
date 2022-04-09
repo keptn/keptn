@@ -2,11 +2,12 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/keptn/keptn/cli/internal"
-	"github.com/keptn/keptn/cli/internal/auth"
 	"net"
 	"net/url"
 	"time"
+
+	"github.com/keptn/keptn/cli/internal"
+	"github.com/keptn/keptn/cli/internal/auth"
 )
 
 type MockedCredentialGetSetter struct {
@@ -78,7 +79,7 @@ func (a *Authenticator) Auth(authenticatorOptions AuthenticatorOptions) error {
 	}
 
 	if !LookupHostname(endpoint.Hostname(), net.LookupHost, time.Sleep) {
-		return fmt.Errorf("Authentication was unsuccessful - could not resolve hostname.")
+		return fmt.Errorf("Authentication was unsuccessful - could not resolve hostname")
 	}
 
 	// Skip usual auth call if we use OAuth

@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
+
 	"github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/internal"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"gopkg.in/yaml.v3"
-	"strings"
 )
 
 func parseSecretData(in []string) (map[string]string, error) {
@@ -28,7 +28,7 @@ func parseSecretData(in []string) (map[string]string, error) {
 const defaultSecretScope = "keptn-default"
 
 type SecretCmdHandler struct {
-	credentialManager credentialmanager.CredentialManagerInterface
+	credentialManager credentialmanager.CMInterface
 	secretAPI         api.SecretHandlerInterface
 }
 
@@ -138,7 +138,7 @@ func parseLiteralKeyValuePair(in string) (string, string, error) {
 	return split[0], split[1], nil
 }
 
-func NewSecretCmdHandler(cm credentialmanager.CredentialManagerInterface) (*SecretCmdHandler, error) {
+func NewSecretCmdHandler(cm credentialmanager.CMInterface) (*SecretCmdHandler, error) {
 	sh := &SecretCmdHandler{credentialManager: cm}
 	endPoint, apiToken, err := cm.GetCreds(namespace)
 	if err != nil {

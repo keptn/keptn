@@ -127,7 +127,7 @@ keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE
 			if strings.HasPrefix(*updateProjectParams.RemoteURL, "ssh://") {
 				content, err := ioutil.ReadFile(*updateProjectParams.GitPrivateKey)
 				if err != nil {
-					return fmt.Errorf("unable to read privateKey file: %s\n", err.Error())
+					return fmt.Errorf("unable to read privateKey file: %s", err.Error())
 				}
 
 				project.GitPrivateKey = string(base64.StdEncoding.EncodeToString(content))
@@ -137,7 +137,7 @@ keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE
 			if *updateProjectParams.GitPemCertificate != "" {
 				content, err := ioutil.ReadFile(*updateProjectParams.GitPemCertificate)
 				if err != nil {
-					return fmt.Errorf("unable to read PEM Certificate file: %s\n", err.Error())
+					return fmt.Errorf("unable to read PEM Certificate file: %s", err.Error())
 				}
 
 				project.GitPemCertificate = string(base64.StdEncoding.EncodeToString(content))

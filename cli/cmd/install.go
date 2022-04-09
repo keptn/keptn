@@ -20,6 +20,8 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"strings"
+
 	goutils "github.com/keptn/go-utils/pkg/common/httputils"
 	"github.com/keptn/keptn/cli/pkg/common"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
@@ -31,7 +33,6 @@ import (
 	"github.com/spf13/cobra"
 	"helm.sh/helm/v3/pkg/chart"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"strings"
 )
 
 type installCmdParams struct {
@@ -140,7 +141,7 @@ keptn install --hide-sensitive-data                                    # install
 					userConfirmation := userInput.AskBool("Do you want to continue?", &common.UserInputOptions{assumeYes})
 
 					if !userConfirmation {
-						return fmt.Errorf("Stopping installation.")
+						return fmt.Errorf("Stopping installation")
 					}
 				}
 			}
@@ -251,7 +252,7 @@ func (i *InstallCmdHandler) doInstallation(installParams installCmdParams) error
 		userConfirmation := i.userInput.AskBool("Do you want to overwrite this installation?", &common.UserInputOptions{assumeYes})
 
 		if !userConfirmation {
-			return fmt.Errorf("Stopping installation.")
+			return fmt.Errorf("stopping installation")
 		}
 	} else {
 		namespaceMetadata := metav1.ObjectMeta{

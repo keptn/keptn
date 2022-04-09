@@ -15,7 +15,7 @@ import (
 
 func TestSecretCmdHandler_CreateSecret(t *testing.T) {
 	type fields struct {
-		credentialManager credentialmanager.CredentialManagerInterface
+		credentialManager credentialmanager.CMInterface
 		secretAPI         *fakeapi.SecretHandlerInterfaceMock
 	}
 	type args struct {
@@ -150,7 +150,7 @@ func TestSecretCmdHandler_CreateSecret(t *testing.T) {
 
 func TestSecretCmdHandler_UpdateSecret(t *testing.T) {
 	type fields struct {
-		credentialManager credentialmanager.CredentialManagerInterface
+		credentialManager credentialmanager.CMInterface
 		secretAPI         *fakeapi.SecretHandlerInterfaceMock
 	}
 	type args struct {
@@ -284,7 +284,7 @@ func TestSecretCmdHandler_UpdateSecret(t *testing.T) {
 
 func TestSecretCmdHandler_DeleteSecret(t *testing.T) {
 	type fields struct {
-		credentialManager credentialmanager.CredentialManagerInterface
+		credentialManager credentialmanager.CMInterface
 		secretAPI         api.SecretHandlerInterface
 	}
 	type args struct {
@@ -353,7 +353,7 @@ func createMockCredentialManager() *credentialmanager_mock.CredentialManagerInte
 
 func TestSecretCmdHandler_GetSecrets(t *testing.T) {
 	type fields struct {
-		credentialManager credentialmanager.CredentialManagerInterface
+		credentialManager credentialmanager.CMInterface
 		secretAPI         api.SecretHandlerInterface
 	}
 	type args struct {

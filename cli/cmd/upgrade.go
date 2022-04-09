@@ -117,7 +117,7 @@ func doUpgradePreRunCheck(vChecker *version.KeptnVersionChecker) error {
 				vChecker := version.NewVersionChecker()
 				cliVersionCheck, _ := vChecker.CheckCLIVersion(Version, false)
 				if cliVersionCheck {
-					return fmt.Errorf("Please upgrade Keptn CLI to upgrade your Keptn Cluster!")
+					return fmt.Errorf("Please upgrade Keptn CLI to upgrade your Keptn Cluster")
 				}
 				return fmt.Errorf("Unable to upgrade due to the aforementioned error")
 			}
@@ -177,7 +177,7 @@ func doUpgradePreRunCheck(vChecker *version.KeptnVersionChecker) error {
 			userConfirmation := common.NewUserInput().AskBool("Do you want to continue?", &common.UserInputOptions{AssumeYes: assumeYes})
 
 			if !userConfirmation {
-				return fmt.Errorf("Stopping upgrade.")
+				return fmt.Errorf("Stopping upgrade")
 			}
 		}
 	}
@@ -316,7 +316,7 @@ func doUpgrade() error {
 	}
 	in = strings.ToLower(strings.TrimSpace(in))
 	if !(in == "y" || in == "yes") {
-		return fmt.Errorf("Stopping upgrade.")
+		return fmt.Errorf("Stopping upgrade")
 	}
 
 	if strings.HasPrefix(getAppVersion(keptnUpgradeChart), "0.11") {
@@ -326,7 +326,7 @@ func doUpgrade() error {
 		userConfirmation := common.NewUserInput().AskBool("Did you create a backup of the database or do you want to proceed without it?", &common.UserInputOptions{AssumeYes: assumeYes})
 
 		if !userConfirmation {
-			return fmt.Errorf("Stopping upgrade.")
+			return fmt.Errorf("Stopping upgrade")
 		}
 	}
 
@@ -356,7 +356,7 @@ func doUpgrade() error {
 		logging.PrintLog("Upgrading execution plane services for continuous-delivery use case.", logging.InfoLevel)
 		continuousDeliveryServiceCharts, err := fetchContinuousDeliveryCharts(*helmHelper, upgradeParams.ChartRepoURL)
 		if err != nil {
-			return fmt.Errorf("Could not fetch continuous delivery execution service charts: %s \n", err.Error())
+			return fmt.Errorf("Could not fetch continuous delivery execution service charts: %s ", err.Error())
 		}
 
 		for _, serviceChart := range continuousDeliveryServiceCharts {

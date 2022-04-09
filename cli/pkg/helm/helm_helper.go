@@ -200,7 +200,7 @@ func (c Helper) UpgradeChart(ch *chart.Chart, releaseName, namespace string, val
 		for _, r := range releases {
 			if r.Info.Status == release.StatusPendingInstall || r.Info.Status == release.StatusPendingUpgrade ||
 				r.Info.Status == release.StatusPendingRollback {
-				return fmt.Errorf("Previous installation (e.g., using keptn install or helm upgrade) is still in progress. Please try again in %d minutes.", timeoutInMinutes)
+				return fmt.Errorf("Previous installation (e.g., using keptn install or helm upgrade) is still in progress. Please try again in %d minutes", timeoutInMinutes)
 			}
 		}
 

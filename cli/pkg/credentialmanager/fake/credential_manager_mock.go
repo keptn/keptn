@@ -10,11 +10,11 @@ import (
 	"sync"
 )
 
-// CredentialManagerInterfaceMock is a mock implementation of credentialmanager.CredentialManagerInterface.
+// CredentialManagerInterfaceMock is a mock implementation of credentialmanager.CMInterface.
 //
 // 	func TestSomethingThatUsesCredentialManagerInterface(t *testing.T) {
 //
-// 		// make and configure a mocked credentialmanager.CredentialManagerInterface
+// 		// make and configure a mocked credentialmanager.CMInterface
 // 		mockedCredentialManagerInterface := &CredentialManagerInterfaceMock{
 // 			GetCredsFunc: func(namespace string) (url.URL, string, error) {
 // 				panic("mock out the GetCreds method")
@@ -42,7 +42,7 @@ import (
 // 			},
 // 		}
 //
-// 		// use mockedCredentialManagerInterface in code that requires credentialmanager.CredentialManagerInterface
+// 		// use mockedCredentialManagerInterface in code that requires credentialmanager.CMInterface
 // 		// and then make assertions.
 //
 // 	}
@@ -125,7 +125,7 @@ type CredentialManagerInterfaceMock struct {
 // GetCreds calls GetCredsFunc.
 func (mock *CredentialManagerInterfaceMock) GetCreds(namespace string) (url.URL, string, error) {
 	if mock.GetCredsFunc == nil {
-		panic("CredentialManagerInterfaceMock.GetCredsFunc: method is nil but CredentialManagerInterface.GetCreds was just called")
+		panic("CredentialManagerInterfaceMock.GetCredsFunc: method is nil but CMInterface.GetCreds was just called")
 	}
 	callInfo := struct {
 		Namespace string
@@ -156,7 +156,7 @@ func (mock *CredentialManagerInterfaceMock) GetCredsCalls() []struct {
 // GetCurrentKeptnCLIConfig calls GetCurrentKeptnCLIConfigFunc.
 func (mock *CredentialManagerInterfaceMock) GetCurrentKeptnCLIConfig() config.CLIConfig {
 	if mock.GetCurrentKeptnCLIConfigFunc == nil {
-		panic("CredentialManagerInterfaceMock.GetCurrentKeptnCLIConfigFunc: method is nil but CredentialManagerInterface.GetCurrentKeptnCLIConfig was just called")
+		panic("CredentialManagerInterfaceMock.GetCurrentKeptnCLIConfigFunc: method is nil but CMInterface.GetCurrentKeptnCLIConfig was just called")
 	}
 	callInfo := struct {
 	}{}
@@ -182,7 +182,7 @@ func (mock *CredentialManagerInterfaceMock) GetCurrentKeptnCLIConfigCalls() []st
 // GetCurrentKubeConfig calls GetCurrentKubeConfigFunc.
 func (mock *CredentialManagerInterfaceMock) GetCurrentKubeConfig() credentialmanager.KubeConfigFileType {
 	if mock.GetCurrentKubeConfigFunc == nil {
-		panic("CredentialManagerInterfaceMock.GetCurrentKubeConfigFunc: method is nil but CredentialManagerInterface.GetCurrentKubeConfig was just called")
+		panic("CredentialManagerInterfaceMock.GetCurrentKubeConfigFunc: method is nil but CMInterface.GetCurrentKubeConfig was just called")
 	}
 	callInfo := struct {
 	}{}
@@ -208,7 +208,7 @@ func (mock *CredentialManagerInterfaceMock) GetCurrentKubeConfigCalls() []struct
 // GetInstallCreds calls GetInstallCredsFunc.
 func (mock *CredentialManagerInterfaceMock) GetInstallCreds() (string, error) {
 	if mock.GetInstallCredsFunc == nil {
-		panic("CredentialManagerInterfaceMock.GetInstallCredsFunc: method is nil but CredentialManagerInterface.GetInstallCreds was just called")
+		panic("CredentialManagerInterfaceMock.GetInstallCredsFunc: method is nil but CMInterface.GetInstallCreds was just called")
 	}
 	callInfo := struct {
 	}{}
@@ -234,7 +234,7 @@ func (mock *CredentialManagerInterfaceMock) GetInstallCredsCalls() []struct {
 // SetCreds calls SetCredsFunc.
 func (mock *CredentialManagerInterfaceMock) SetCreds(endPoint url.URL, apiToken string, namespace string) error {
 	if mock.SetCredsFunc == nil {
-		panic("CredentialManagerInterfaceMock.SetCredsFunc: method is nil but CredentialManagerInterface.SetCreds was just called")
+		panic("CredentialManagerInterfaceMock.SetCredsFunc: method is nil but CMInterface.SetCreds was just called")
 	}
 	callInfo := struct {
 		EndPoint  url.URL
@@ -273,7 +273,7 @@ func (mock *CredentialManagerInterfaceMock) SetCredsCalls() []struct {
 // SetCurrentKeptnCLIConfig calls SetCurrentKeptnCLIConfigFunc.
 func (mock *CredentialManagerInterfaceMock) SetCurrentKeptnCLIConfig(cliConfig config.CLIConfig) {
 	if mock.SetCurrentKeptnCLIConfigFunc == nil {
-		panic("CredentialManagerInterfaceMock.SetCurrentKeptnCLIConfigFunc: method is nil but CredentialManagerInterface.SetCurrentKeptnCLIConfig was just called")
+		panic("CredentialManagerInterfaceMock.SetCurrentKeptnCLIConfigFunc: method is nil but CMInterface.SetCurrentKeptnCLIConfig was just called")
 	}
 	callInfo := struct {
 		CliConfig config.CLIConfig
@@ -304,7 +304,7 @@ func (mock *CredentialManagerInterfaceMock) SetCurrentKeptnCLIConfigCalls() []st
 // SetCurrentKubeConfig calls SetCurrentKubeConfigFunc.
 func (mock *CredentialManagerInterfaceMock) SetCurrentKubeConfig(kubeConfig credentialmanager.KubeConfigFileType) {
 	if mock.SetCurrentKubeConfigFunc == nil {
-		panic("CredentialManagerInterfaceMock.SetCurrentKubeConfigFunc: method is nil but CredentialManagerInterface.SetCurrentKubeConfig was just called")
+		panic("CredentialManagerInterfaceMock.SetCurrentKubeConfigFunc: method is nil but CMInterface.SetCurrentKubeConfig was just called")
 	}
 	callInfo := struct {
 		KubeConfig credentialmanager.KubeConfigFileType
@@ -335,7 +335,7 @@ func (mock *CredentialManagerInterfaceMock) SetCurrentKubeConfigCalls() []struct
 // SetInstallCreds calls SetInstallCredsFunc.
 func (mock *CredentialManagerInterfaceMock) SetInstallCreds(creds string) error {
 	if mock.SetInstallCredsFunc == nil {
-		panic("CredentialManagerInterfaceMock.SetInstallCredsFunc: method is nil but CredentialManagerInterface.SetInstallCreds was just called")
+		panic("CredentialManagerInterfaceMock.SetInstallCredsFunc: method is nil but CMInterface.SetInstallCreds was just called")
 	}
 	callInfo := struct {
 		Creds string

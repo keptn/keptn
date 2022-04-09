@@ -99,7 +99,7 @@ func TestCheckDeploymentManagedByHelm(t *testing.T) {
 		{"CheckDeploymentManagedByHelm - labelAndValueHelm", "my-deployment", func(string, []string) (string, error) { return responseWithManagedByLabelValueHelm, nil }, true, false},
 		{"CheckDeploymentManagedByHelm - labelWithoutAValue", "my-deployment", func(string, []string) (string, error) { return responseWithManagedByLabelNoValue, nil }, false, false},
 		{"CheckDeploymentManagedByHelm - noLabelPresent", "my-deployment", func(string, []string) (string, error) { return responseWithoutManagedByLabel, nil }, false, false},
-		{"CheckDeploymentManagedByHelm - errorOnKubectlCmd", "my-deployment", func(string, []string) (string, error) { return "", errors.New("Whoops...") }, false, true},
+		{"CheckDeploymentManagedByHelm - errorOnKubectlCmd", "my-deployment", func(string, []string) (string, error) { return "", errors.New("Whoops... ") }, false, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -133,7 +133,7 @@ func TestCheckDeploymentAvailable(t *testing.T) {
 	}{
 		{"CheckDeploymentAvailable - responseWithDeploymentAvailable", "my-deployment", func(string, []string) (string, error) { return responseWithDeployment, nil }, true, false},
 		{"CheckDeploymentAvailable - responseWithDeploymentAvailable", "my-deployment", func(string, []string) (string, error) { return responseWithNoDeployment, nil }, false, false},
-		{"CheckDeploymentAvailable - responseWithDeploymentAvailable", "my-deployment", func(string, []string) (string, error) { return "", errors.New("Whoops...") }, false, true},
+		{"CheckDeploymentAvailable - responseWithDeploymentAvailable", "my-deployment", func(string, []string) (string, error) { return "", errors.New("Whoops... ") }, false, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -87,9 +87,9 @@ func TestAddCorrectHttpPrefix(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run("", func(t *testing.T) {
-			s := addCorrectHttpPrefix(&tt.in)
+			s := addCorrectHTTPPrefix(&tt.in)
 			if s != tt.out {
-				t.Errorf("addCorrectHttpPrefix(): got %s, want %s", s, tt.out)
+				t.Errorf("addCorrectHTTPPrefix(): got %s, want %s", s, tt.out)
 			}
 		})
 	}

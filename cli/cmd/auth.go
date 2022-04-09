@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"github.com/keptn/keptn/cli/internal"
 	"net/http"
 	"net/url"
 	"os"
@@ -12,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/keptn/keptn/cli/internal"
 	"github.com/keptn/keptn/cli/internal/auth"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
@@ -171,7 +171,7 @@ func verifyAuthParams(authParams *authCmdParams, smartKeptnAuth smartKeptnAuthPa
 }
 
 // Removes given prefix and adds the right one according to cmd paramters
-func addCorrectHttpPrefix(authParams *authCmdParams) string {
+func addCorrectHTTPPrefix(authParams *authCmdParams) string {
 	prefix := "http://"
 
 	if *authParams.secure || strings.HasPrefix(*authParams.endPoint, "https://") {
@@ -201,7 +201,7 @@ func smartFetchKeptnAuthParameters(authParams *authCmdParams, smartKeptnAuth sma
 		*authParams.endPoint = *authParams.endPoint + "/api"
 	}
 
-	*authParams.endPoint = addCorrectHttpPrefix(authParams)
+	*authParams.endPoint = addCorrectHTTPPrefix(authParams)
 
 	if authParams.apiToken == nil || *authParams.apiToken == "" {
 		*authParams.apiToken, err = keptnutils.GetKeptnAPITokenFromSecret(false, namespace, smartKeptnAuth.secretName)

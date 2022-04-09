@@ -24,8 +24,8 @@ const credsLab = "keptn"
 const serverURL = "https://keptn.sh"
 const installCredsKey = "https://keptn-install.sh"
 
-//go:generate moq -pkg credentialmanager_mock -skip-ensure -out ./fake/credential_manager_mock.go . CredentialManagerInterface
-type CredentialManagerInterface interface {
+//go:generate moq -pkg credentialmanager_mock -skip-ensure -out ./fake/credential_manager_mock.go . CMInterface
+type CMInterface interface {
 	SetCreds(endPoint url.URL, apiToken string, namespace string) error
 	GetCreds(namespace string) (url.URL, string, error)
 	SetInstallCreds(creds string) error
@@ -151,7 +151,7 @@ func handleCustomCreds(configLocation string, namespace string) (url.URL, string
 }
 
 // initChecks needs to be run when credentialManager is called or initialized
-func initChecks(autoApplyNewContext bool, cm CredentialManagerInterface) {
+func initChecks(autoApplyNewContext bool, cm CMInterface) {
 	cliConfigManager := config.NewCLIConfigManager("")
 	cliConfig, err := cliConfigManager.LoadCLIConfig()
 	if err != nil {

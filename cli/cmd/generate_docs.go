@@ -1,8 +1,7 @@
-// Inspired by `hugo gen doc`  - see https://github.com/gohugoio/hugo/blob/release-0.69.0/commands/gendoc.go
+// Package cmd : Inspired by `hugo gen doc`  - see https://github.com/gohugoio/hugo/blob/release-0.69.0/commands/gendoc.go
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -50,7 +49,7 @@ keptn generate docs --dir=/some/directory`,
 		// check if output directory exists
 		if _, err := os.Stat(outputDir); os.IsNotExist(err) {
 			// outputDir does not exist
-			return errors.New(fmt.Sprintf("Error trying to access directory %s. Please make sure the directory exists.", outputDir))
+			return fmt.Errorf("Error trying to access directory %s. Please make sure the directory exists", outputDir)
 		}
 
 		// define a prepender function for compatibility with Hugo templates

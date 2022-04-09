@@ -112,9 +112,9 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 		return fmt.Errorf("error while parsing --values flag %v", err)
 	}
 
-	valuesJson := map[string]interface{}{}
-	valuesJson["image"] = *deliveryInputData.Image
-	err = json.Unmarshal([]byte(jsonStr), &valuesJson)
+	valuesJSON := map[string]interface{}{}
+	valuesJSON["image"] = *deliveryInputData.Image
+	err = json.Unmarshal([]byte(jsonStr), &valuesJSON)
 	if err != nil {
 		return fmt.Errorf("error unmarshalling json in project %v: %v", *deliveryInputData.Project, err)
 	}
@@ -126,7 +126,7 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 			Service: *deliveryInputData.Service,
 			Labels:  *deliveryInputData.Labels,
 		},
-		ConfigurationChange: keptnv2.ConfigurationChange{Values: valuesJson},
+		ConfigurationChange: keptnv2.ConfigurationChange{Values: valuesJSON},
 	}
 
 	sdkEvent := cloudevents.NewEvent()
