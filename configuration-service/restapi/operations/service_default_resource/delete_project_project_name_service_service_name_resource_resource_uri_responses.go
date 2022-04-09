@@ -34,13 +34,13 @@ func NewDeleteProjectProjectNameServiceServiceNameResourceResourceURINoContent()
 	return &DeleteProjectProjectNameServiceServiceNameResourceResourceURINoContent{}
 }
 
-// WithPayload adds the payload to the delete project project name service service name resource resource Uri no content response
+// WithPayload adds the payload to the delete project project name service service name resource resource URI no content response
 func (o *DeleteProjectProjectNameServiceServiceNameResourceResourceURINoContent) WithPayload(payload *models.Version) *DeleteProjectProjectNameServiceServiceNameResourceResourceURINoContent {
 	o.Payload = payload
 	return o
 }
 
-// SetPayload sets the payload to the delete project project name service service name resource resource Uri no content response
+// SetPayload sets the payload to the delete project project name service service name resource resource URI no content response
 func (o *DeleteProjectProjectNameServiceServiceNameResourceResourceURINoContent) SetPayload(payload *models.Version) {
 	o.Payload = payload
 }
@@ -78,13 +78,13 @@ func NewDeleteProjectProjectNameServiceServiceNameResourceResourceURIBadRequest(
 	return &DeleteProjectProjectNameServiceServiceNameResourceResourceURIBadRequest{}
 }
 
-// WithPayload adds the payload to the delete project project name service service name resource resource Uri bad request response
+// WithPayload adds the payload to the delete project project name service service name resource resource URI bad request response
 func (o *DeleteProjectProjectNameServiceServiceNameResourceResourceURIBadRequest) WithPayload(payload *models.Error) *DeleteProjectProjectNameServiceServiceNameResourceResourceURIBadRequest {
 	o.Payload = payload
 	return o
 }
 
-// SetPayload sets the payload to the delete project project name service service name resource resource Uri bad request response
+// SetPayload sets the payload to the delete project project name service service name resource resource URI bad request response
 func (o *DeleteProjectProjectNameServiceServiceNameResourceResourceURIBadRequest) SetPayload(payload *models.Error) {
 	o.Payload = payload
 }

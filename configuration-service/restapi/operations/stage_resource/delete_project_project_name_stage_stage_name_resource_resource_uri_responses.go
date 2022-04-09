@@ -34,13 +34,13 @@ func NewDeleteProjectProjectNameStageStageNameResourceResourceURINoContent() *De
 	return &DeleteProjectProjectNameStageStageNameResourceResourceURINoContent{}
 }
 
-// WithPayload adds the payload to the delete project project name stage stage name resource resource Uri no content response
+// WithPayload adds the payload to the delete project project name stage stage name resource resource URI no content response
 func (o *DeleteProjectProjectNameStageStageNameResourceResourceURINoContent) WithPayload(payload *models.Version) *DeleteProjectProjectNameStageStageNameResourceResourceURINoContent {
 	o.Payload = payload
 	return o
 }
 
-// SetPayload sets the payload to the delete project project name stage stage name resource resource Uri no content response
+// SetPayload sets the payload to the delete project project name stage stage name resource resource URI no content response
 func (o *DeleteProjectProjectNameStageStageNameResourceResourceURINoContent) SetPayload(payload *models.Version) {
 	o.Payload = payload
 }
@@ -78,13 +78,13 @@ func NewDeleteProjectProjectNameStageStageNameResourceResourceURIBadRequest() *D
 	return &DeleteProjectProjectNameStageStageNameResourceResourceURIBadRequest{}
 }
 
-// WithPayload adds the payload to the delete project project name stage stage name resource resource Uri bad request response
+// WithPayload adds the payload to the delete project project name stage stage name resource resource URI bad request response
 func (o *DeleteProjectProjectNameStageStageNameResourceResourceURIBadRequest) WithPayload(payload *models.Error) *DeleteProjectProjectNameStageStageNameResourceResourceURIBadRequest {
 	o.Payload = payload
 	return o
 }
 
-// SetPayload sets the payload to the delete project project name stage stage name resource resource Uri bad request response
+// SetPayload sets the payload to the delete project project name stage stage name resource resource URI bad request response
 func (o *DeleteProjectProjectNameStageStageNameResourceResourceURIBadRequest) SetPayload(payload *models.Error) {
 	o.Payload = payload
 }

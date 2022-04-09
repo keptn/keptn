@@ -34,13 +34,13 @@ func NewGetProjectProjectNameStageStageNameResourceResourceURIOK() *GetProjectPr
 	return &GetProjectProjectNameStageStageNameResourceResourceURIOK{}
 }
 
-// WithPayload adds the payload to the get project project name stage stage name resource resource Uri o k response
+// WithPayload adds the payload to the get project project name stage stage name resource resource URI o k response
 func (o *GetProjectProjectNameStageStageNameResourceResourceURIOK) WithPayload(payload *models.Resource) *GetProjectProjectNameStageStageNameResourceResourceURIOK {
 	o.Payload = payload
 	return o
 }
 
-// SetPayload sets the payload to the get project project name stage stage name resource resource Uri o k response
+// SetPayload sets the payload to the get project project name stage stage name resource resource URI o k response
 func (o *GetProjectProjectNameStageStageNameResourceResourceURIOK) SetPayload(payload *models.Resource) {
 	o.Payload = payload
 }
@@ -78,13 +78,13 @@ func NewGetProjectProjectNameStageStageNameResourceResourceURINotFound() *GetPro
 	return &GetProjectProjectNameStageStageNameResourceResourceURINotFound{}
 }
 
-// WithPayload adds the payload to the get project project name stage stage name resource resource Uri not found response
+// WithPayload adds the payload to the get project project name stage stage name resource resource URI not found response
 func (o *GetProjectProjectNameStageStageNameResourceResourceURINotFound) WithPayload(payload *models.Error) *GetProjectProjectNameStageStageNameResourceResourceURINotFound {
 	o.Payload = payload
 	return o
 }
 
-// SetPayload sets the payload to the get project project name stage stage name resource resource Uri not found response
+// SetPayload sets the payload to the get project project name stage stage name resource resource URI not found response
 func (o *GetProjectProjectNameStageStageNameResourceResourceURINotFound) SetPayload(payload *models.Error) {
 	o.Payload = payload
 }

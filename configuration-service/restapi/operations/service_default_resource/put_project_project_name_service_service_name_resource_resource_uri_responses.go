@@ -34,13 +34,13 @@ func NewPutProjectProjectNameServiceServiceNameResourceResourceURICreated() *Put
 	return &PutProjectProjectNameServiceServiceNameResourceResourceURICreated{}
 }
 
-// WithPayload adds the payload to the put project project name service service name resource resource Uri created response
+// WithPayload adds the payload to the put project project name service service name resource resource URI created response
 func (o *PutProjectProjectNameServiceServiceNameResourceResourceURICreated) WithPayload(payload *models.Version) *PutProjectProjectNameServiceServiceNameResourceResourceURICreated {
 	o.Payload = payload
 	return o
 }
 
-// SetPayload sets the payload to the put project project name service service name resource resource Uri created response
+// SetPayload sets the payload to the put project project name service service name resource resource URI created response
 func (o *PutProjectProjectNameServiceServiceNameResourceResourceURICreated) SetPayload(payload *models.Version) {
 	o.Payload = payload
 }
@@ -78,13 +78,13 @@ func NewPutProjectProjectNameServiceServiceNameResourceResourceURIBadRequest() *
 	return &PutProjectProjectNameServiceServiceNameResourceResourceURIBadRequest{}
 }
 
-// WithPayload adds the payload to the put project project name service service name resource resource Uri bad request response
+// WithPayload adds the payload to the put project project name service service name resource resource URI bad request response
 func (o *PutProjectProjectNameServiceServiceNameResourceResourceURIBadRequest) WithPayload(payload *models.Error) *PutProjectProjectNameServiceServiceNameResourceResourceURIBadRequest {
 	o.Payload = payload
 	return o
 }
 
-// SetPayload sets the payload to the put project project name service service name resource resource Uri bad request response
+// SetPayload sets the payload to the put project project name service service name resource resource URI bad request response
 func (o *PutProjectProjectNameServiceServiceNameResourceResourceURIBadRequest) SetPayload(payload *models.Error) {
 	o.Payload = payload
 }

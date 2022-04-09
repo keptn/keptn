@@ -34,13 +34,13 @@ func NewPutProjectProjectNameResourceResourceURICreated() *PutProjectProjectName
 	return &PutProjectProjectNameResourceResourceURICreated{}
 }
 
-// WithPayload adds the payload to the put project project name resource resource Uri created response
+// WithPayload adds the payload to the put project project name resource resource URI created response
 func (o *PutProjectProjectNameResourceResourceURICreated) WithPayload(payload *models.Version) *PutProjectProjectNameResourceResourceURICreated {
 	o.Payload = payload
 	return o
 }
 
-// SetPayload sets the payload to the put project project name resource resource Uri created response
+// SetPayload sets the payload to the put project project name resource resource URI created response
 func (o *PutProjectProjectNameResourceResourceURICreated) SetPayload(payload *models.Version) {
 	o.Payload = payload
 }
@@ -78,13 +78,13 @@ func NewPutProjectProjectNameResourceResourceURIBadRequest() *PutProjectProjectN
 	return &PutProjectProjectNameResourceResourceURIBadRequest{}
 }
 
-// WithPayload adds the payload to the put project project name resource resource Uri bad request response
+// WithPayload adds the payload to the put project project name resource resource URI bad request response
 func (o *PutProjectProjectNameResourceResourceURIBadRequest) WithPayload(payload *models.Error) *PutProjectProjectNameResourceResourceURIBadRequest {
 	o.Payload = payload
 	return o
 }
 
-// SetPayload sets the payload to the put project project name resource resource Uri bad request response
+// SetPayload sets the payload to the put project project name resource resource URI bad request response
 func (o *PutProjectProjectNameResourceResourceURIBadRequest) SetPayload(payload *models.Error) {
 	o.Payload = payload
 }

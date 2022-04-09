@@ -34,13 +34,13 @@ func NewGetProjectProjectNameServiceServiceNameResourceResourceURIOK() *GetProje
 	return &GetProjectProjectNameServiceServiceNameResourceResourceURIOK{}
 }
 
-// WithPayload adds the payload to the get project project name service service name resource resource Uri o k response
+// WithPayload adds the payload to the get project project name service service name resource resource URI o k response
 func (o *GetProjectProjectNameServiceServiceNameResourceResourceURIOK) WithPayload(payload *models.Resource) *GetProjectProjectNameServiceServiceNameResourceResourceURIOK {
 	o.Payload = payload
 	return o
 }
 
-// SetPayload sets the payload to the get project project name service service name resource resource Uri o k response
+// SetPayload sets the payload to the get project project name service service name resource resource URI o k response
 func (o *GetProjectProjectNameServiceServiceNameResourceResourceURIOK) SetPayload(payload *models.Resource) {
 	o.Payload = payload
 }
@@ -78,13 +78,13 @@ func NewGetProjectProjectNameServiceServiceNameResourceResourceURINotFound() *Ge
 	return &GetProjectProjectNameServiceServiceNameResourceResourceURINotFound{}
 }
 
-// WithPayload adds the payload to the get project project name service service name resource resource Uri not found response
+// WithPayload adds the payload to the get project project name service service name resource resource URI not found response
 func (o *GetProjectProjectNameServiceServiceNameResourceResourceURINotFound) WithPayload(payload *models.Error) *GetProjectProjectNameServiceServiceNameResourceResourceURINotFound {
 	o.Payload = payload
 	return o
 }
 
-// SetPayload sets the payload to the get project project name service service name resource resource Uri not found response
+// SetPayload sets the payload to the get project project name service service name resource resource URI not found response
 func (o *GetProjectProjectNameServiceServiceNameResourceResourceURINotFound) SetPayload(payload *models.Error) {
 	o.Payload = payload
 }

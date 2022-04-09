@@ -38,7 +38,7 @@ func (*IstioMesh) GenerateVirtualService(name string, gateways []string, hosts [
 	}
 
 	httpRoute := v1alpha3.HTTPRoute{Route: destinations}
-	spec := v1alpha3.VirtualServiceSpec{Gateways: gateways, Hosts: hosts, Http: []*v1alpha3.HTTPRoute{&httpRoute}}
+	spec := v1alpha3.VirtualServiceSpec{Gateways: gateways, Hosts: hosts, HTTP: []*v1alpha3.HTTPRoute{&httpRoute}}
 
 	vs := v1alpha3.VirtualService{TypeMeta: metav1.TypeMeta{Kind: "VirtualService", APIVersion: "networking.istio.io/v1alpha3"},
 		ObjectMeta: metav1.ObjectMeta{Name: name}, Spec: spec}
@@ -59,7 +59,7 @@ func (*IstioMesh) UpdateWeights(virtualService []byte, canaryWeight int32) ([]by
 		return nil, errors.New("Invalid canary weight")
 	}
 
-	for _, httpRoute := range vs.Spec.Http {
+	for _, httpRoute := range vs.Spec.HTTP {
 		for _, dst := range httpRoute.Route {
 
 			if !strings.HasPrefix(dst.Destination.Host, vs.ObjectMeta.Name) {

@@ -34,13 +34,13 @@ func NewGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI
 	return &GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIOK{}
 }
 
-// WithPayload adds the payload to the get project project name stage stage name service service name resource resource Uri o k response
+// WithPayload adds the payload to the get project project name stage stage name service service name resource resource URI o k response
 func (o *GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIOK) WithPayload(payload *models.Resource) *GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIOK {
 	o.Payload = payload
 	return o
 }
 
-// SetPayload sets the payload to the get project project name stage stage name service service name resource resource Uri o k response
+// SetPayload sets the payload to the get project project name stage stage name service service name resource resource URI o k response
 func (o *GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIOK) SetPayload(payload *models.Resource) {
 	o.Payload = payload
 }
@@ -78,13 +78,13 @@ func NewGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI
 	return &GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURINotFound{}
 }
 
-// WithPayload adds the payload to the get project project name stage stage name service service name resource resource Uri not found response
+// WithPayload adds the payload to the get project project name stage stage name service service name resource resource URI not found response
 func (o *GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURINotFound) WithPayload(payload *models.Error) *GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURINotFound {
 	o.Payload = payload
 	return o
 }
 
-// SetPayload sets the payload to the get project project name stage stage name service service name resource resource Uri not found response
+// SetPayload sets the payload to the get project project name stage stage name service service name resource resource URI not found response
 func (o *GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURINotFound) SetPayload(payload *models.Error) {
 	o.Payload = payload
 }

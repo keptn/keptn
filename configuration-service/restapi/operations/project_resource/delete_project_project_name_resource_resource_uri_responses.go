@@ -34,13 +34,13 @@ func NewDeleteProjectProjectNameResourceResourceURINoContent() *DeleteProjectPro
 	return &DeleteProjectProjectNameResourceResourceURINoContent{}
 }
 
-// WithPayload adds the payload to the delete project project name resource resource Uri no content response
+// WithPayload adds the payload to the delete project project name resource resource URI no content response
 func (o *DeleteProjectProjectNameResourceResourceURINoContent) WithPayload(payload *models.Version) *DeleteProjectProjectNameResourceResourceURINoContent {
 	o.Payload = payload
 	return o
 }
 
-// SetPayload sets the payload to the delete project project name resource resource Uri no content response
+// SetPayload sets the payload to the delete project project name resource resource URI no content response
 func (o *DeleteProjectProjectNameResourceResourceURINoContent) SetPayload(payload *models.Version) {
 	o.Payload = payload
 }
@@ -78,13 +78,13 @@ func NewDeleteProjectProjectNameResourceResourceURIBadRequest() *DeleteProjectPr
 	return &DeleteProjectProjectNameResourceResourceURIBadRequest{}
 }
 
-// WithPayload adds the payload to the delete project project name resource resource Uri bad request response
+// WithPayload adds the payload to the delete project project name resource resource URI bad request response
 func (o *DeleteProjectProjectNameResourceResourceURIBadRequest) WithPayload(payload *models.Error) *DeleteProjectProjectNameResourceResourceURIBadRequest {
 	o.Payload = payload
 	return o
 }
 
-// SetPayload sets the payload to the delete project project name resource resource Uri bad request response
+// SetPayload sets the payload to the delete project project name resource resource URI bad request response
 func (o *DeleteProjectProjectNameResourceResourceURIBadRequest) SetPayload(payload *models.Error) {
 	o.Payload = payload
 }

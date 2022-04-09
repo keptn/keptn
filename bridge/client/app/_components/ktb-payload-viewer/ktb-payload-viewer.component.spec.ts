@@ -178,7 +178,7 @@ describe('KtbPayloadViewerComponent', () => {
         url: `http://localhost:3000/api/mongodb-datastore/event?pageSize=1&type=${trace.type}&project=${trace.data.project}`,
         ok: false,
         name: 'HttpErrorResponse',
-        message: `Http failure response for http://localhost:3000/api/mongodb-datastore/event?pageSize=1&type=${trace.type}&project=${trace.data.project}: 401 Unauthorized`,
+        message: `HTTP failure response for http://localhost:3000/api/mongodb-datastore/event?pageSize=1&type=${trace.type}&project=${trace.data.project}: 401 Unauthorized`,
         error: 'Request failed with status code 401',
       })
     );
@@ -198,7 +198,7 @@ describe('KtbPayloadViewerComponent', () => {
     expect(component.event).toBe(undefined);
     expect(payloadDialogMessage).toBeTruthy();
     expect(payloadDialogMessage?.textContent?.trim().toString()).toBe(
-      `Http failure response for http://localhost:3000/api/mongodb-datastore/event?pageSize=1&type=${trace.type}&project=${trace.data.project}: 401 Unauthorized`
+      `HTTP failure response for http://localhost:3000/api/mongodb-datastore/event?pageSize=1&type=${trace.type}&project=${trace.data.project}: 401 Unauthorized`
     );
   }));
 

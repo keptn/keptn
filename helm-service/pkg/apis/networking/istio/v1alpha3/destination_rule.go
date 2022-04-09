@@ -89,58 +89,58 @@ type DestinationRule struct {
 }
 
 // Standard load balancing algorithms that require no tuning.
-type LoadBalancerSettings_SimpleLB int32
+type LoadBalancerSettingsSimpleLB int32
 
 const (
 	// Round Robin policy. Default
-	LoadBalancerSettings_ROUND_ROBIN LoadBalancerSettings_SimpleLB = 0
+	LoadBalancerSettingsRR LoadBalancerSettingsSimpleLB = 0
 	// The least request load balancer uses an O(1) algorithm which selects
 	// two random healthy hosts and picks the host which has fewer active
 	// requests.
-	LoadBalancerSettings_LEAST_CONN LoadBalancerSettings_SimpleLB = 1
+	LoadBalancerSettingsLEASTCONN LoadBalancerSettingsSimpleLB = 1
 	// The random load balancer selects a random healthy host. The random
 	// load balancer generally performs better than round robin if no health
 	// checking policy is configured.
-	LoadBalancerSettings_RANDOM LoadBalancerSettings_SimpleLB = 2
+	LoadBalancerSettingsRANDOM LoadBalancerSettingsSimpleLB = 2
 	// This option will forward the connection to the original IP address
 	// requested by the caller without doing any form of load
 	// balancing. This option must be used with care. It is meant for
 	// advanced use cases. Refer to Original Destination load balancer in
 	// Envoy for further details.
-	LoadBalancerSettings_PASSTHROUGH LoadBalancerSettings_SimpleLB = 3
+	LoadBalancerSettingsPASSTHROUGH LoadBalancerSettingsSimpleLB = 3
 )
 
 // Policy for upgrading http1.1 connections to http2.
-type ConnectionPoolSettings_HTTPSettings_H2UpgradePolicy int32
+type ConnectionPoolSettingsHTTPSettingsH2UpgradePolicy int32
 
 const (
 	// Use the global default.
-	ConnectionPoolSettings_HTTPSettings_DEFAULT ConnectionPoolSettings_HTTPSettings_H2UpgradePolicy = 0
+	ConnectionPoolSettingsHTTPSettingsDEFAULT ConnectionPoolSettingsHTTPSettingsH2UpgradePolicy = 0
 	// Do not upgrade the connection to http2.
 	// This opt-out option overrides the default.
-	ConnectionPoolSettings_HTTPSettings_DO_NOT_UPGRADE ConnectionPoolSettings_HTTPSettings_H2UpgradePolicy = 1
+	ConnectionPoolSettingsHTTPSettingsDONOTUPGRADE ConnectionPoolSettingsHTTPSettingsH2UpgradePolicy = 1
 	// Upgrade the connection to http2.
 	// This opt-in option overrides the default.
-	ConnectionPoolSettings_HTTPSettings_UPGRADE ConnectionPoolSettings_HTTPSettings_H2UpgradePolicy = 2
+	ConnectionPoolSettingsHTTPSettingsUPGRADE ConnectionPoolSettingsHTTPSettingsH2UpgradePolicy = 2
 )
 
 // TLS connection mode
-type TLSSettings_TLSmode int32
+type TLSSettingsTLSmode int32
 
 const (
 	// Do not setup a TLS connection to the upstream endpoint.
-	TLSSettings_DISABLE TLSSettings_TLSmode = 0
+	TLSSettingsDISABLE TLSSettingsTLSmode = 0
 	// Originate a TLS connection to the upstream endpoint.
-	TLSSettings_SIMPLE TLSSettings_TLSmode = 1
+	TLSSettingsSIMPLE TLSSettingsTLSmode = 1
 	// Secure connections to the upstream using mutual TLS by presenting
 	// client certificates for authentication.
-	TLSSettings_MUTUAL TLSSettings_TLSmode = 2
+	TLSSettingsMUTUAL TLSSettingsTLSmode = 2
 	// Secure connections to the upstream using mutual TLS by presenting
 	// client certificates for authentication.
 	// Compared to Mutual mode, this mode uses certificates generated
 	// automatically by Istio for mTLS authentication. When this mode is
 	// used, all other fields in `TLSSettings` should be empty.
-	TLSSettings_ISTIO_MUTUAL TLSSettings_TLSmode = 3
+	TLSSettingsISTIOMUTUAL TLSSettingsTLSmode = 3
 )
 
 type DestinationRuleSpec struct {
@@ -197,17 +197,17 @@ type TrafficPolicy struct {
 	// Settings controlling eviction of unhealthy hosts from the load balancing pool
 	OutlierDetection *OutlierDetection `protobuf:"bytes,3,opt,name=outlier_detection,json=outlierDetection,proto3" json:"outlier_detection,omitempty"`
 	// TLS related settings for connections to the upstream service.
-	Tls *TLSSettings `protobuf:"bytes,4,opt,name=tls,proto3" json:"tls,omitempty"`
+	TLS *TLSSettings `protobuf:"bytes,4,opt,name=tls,proto3" json:"tls,omitempty"`
 	// Traffic policies specific to individual ports. Note that port level
 	// settings will override the destination-level settings. Traffic
 	// settings specified at the destination-level will not be inherited when
 	// overridden by port-level settings, i.e. default values will be applied
 	// to fields omitted in port-level traffic policies.
-	PortLevelSettings []*TrafficPolicy_PortTrafficPolicy `protobuf:"bytes,5,rep,name=port_level_settings,json=portLevelSettings,proto3" json:"port_level_settings,omitempty"`
+	PortLevelSettings []*TrafficPolicyPortTrafficPolicy `protobuf:"bytes,5,rep,name=port_level_settings,json=portLevelSettings,proto3" json:"port_level_settings,omitempty"`
 }
 
 // Traffic policies that apply to specific ports of the service
-type TrafficPolicy_PortTrafficPolicy struct {
+type TrafficPolicyPortTrafficPolicy struct {
 	// Specifies the number of a port on the destination service
 	// on which this policy is being applied.
 	//
@@ -219,7 +219,7 @@ type TrafficPolicy_PortTrafficPolicy struct {
 	// Settings controlling eviction of unhealthy hosts from the load balancing pool
 	OutlierDetection *OutlierDetection `protobuf:"bytes,4,opt,name=outlier_detection,json=outlierDetection,proto3" json:"outlier_detection,omitempty"`
 	// TLS related settings for connections to the upstream service.
-	Tls *TLSSettings `protobuf:"bytes,5,opt,name=tls,proto3" json:"tls,omitempty"`
+	TLS *TLSSettings `protobuf:"bytes,5,opt,name=tls,proto3" json:"tls,omitempty"`
 }
 
 // A subset of endpoints of a service. Subsets can be used for scenarios
@@ -315,22 +315,22 @@ type LoadBalancerSettings struct {
 	// Upstream load balancing policy.
 	//
 	// Types that are valid to be assigned to LbPolicy:
-	//	*LoadBalancerSettings_Simple
-	//	*LoadBalancerSettings_ConsistentHash
-	LbPolicy isLoadBalancerSettings_LbPolicy `protobuf_oneof:"lb_policy"`
+	//	*LoadBalancerSettingsSimple
+	//	*LoadBalancerSettingsConsistentHash
+	LbPolicy isLoadBalancerSettingsLbPolicy `protobuf_oneof:"lb_policy"`
 }
 
-type isLoadBalancerSettings_LbPolicy interface {
-	isLoadBalancerSettings_LbPolicy()
+type isLoadBalancerSettingsLbPolicy interface {
+	isLoadBalancerSettingsLbPolicy()
 	MarshalTo([]byte) (int, error)
 	Size() int
 }
 
-type LoadBalancerSettings_Simple struct {
-	Simple LoadBalancerSettings_SimpleLB `protobuf:"varint,1,opt,name=simple,proto3,enum=istio.networking.v1alpha3.LoadBalancerSettings_SimpleLB,oneof"`
+type LoadBalancerSettingsSimple struct {
+	Simple LoadBalancerSettingsSimpleLB `protobuf:"varint,1,opt,name=simple,proto3,enum=istio.networking.v1alpha3.LoadBalancerSettingsSimpleLB,oneof"`
 }
-type LoadBalancerSettings_ConsistentHash struct {
-	ConsistentHash *LoadBalancerSettings_ConsistentHashLB `protobuf:"bytes,2,opt,name=consistent_hash,json=consistentHash,proto3,oneof"`
+type LoadBalancerSettingsConsistentHash struct {
+	ConsistentHash *LoadBalancerSettingsConsistentHashLB `protobuf:"bytes,2,opt,name=consistent_hash,json=consistentHash,proto3,oneof"`
 }
 
 // Consistent Hash-based load balancing can be used to provide soft
@@ -339,14 +339,14 @@ type LoadBalancerSettings_ConsistentHash struct {
 // connections. The affinity to a particular destination host will be
 // lost when one or more hosts are added/removed from the destination
 // service.
-type LoadBalancerSettings_ConsistentHashLB struct {
+type LoadBalancerSettingsConsistentHashLB struct {
 	// REQUIRED: The hash key to use.
 	//
 	// Types that are valid to be assigned to HashKey:
-	//	*LoadBalancerSettings_ConsistentHashLB_HttpHeaderName
-	//	*LoadBalancerSettings_ConsistentHashLB_HttpCookie
-	//	*LoadBalancerSettings_ConsistentHashLB_UseSourceIp
-	HashKey isLoadBalancerSettings_ConsistentHashLB_HashKey `protobuf_oneof:"hash_key"`
+	//	*LoadBalancerSettingsConsistentHashLBHTTPHeaderName
+	//	*LoadBalancerSettingsConsistentHashLBHTTPCookie
+	//	*LoadBalancerSettingsConsistentHashLBUseSourceIP
+	HashKey isLoadBalancerSettingsConsistentHashLBHashKey `protobuf_oneof:"hash_key"`
 	// The minimum number of virtual nodes to use for the hash
 	// ring. Defaults to 1024. Larger ring sizes result in more granular
 	// load distributions. If the number of hosts in the load balancing
@@ -355,32 +355,32 @@ type LoadBalancerSettings_ConsistentHashLB struct {
 	MinimumRingSize uint64 `protobuf:"varint,4,opt,name=minimum_ring_size,json=minimumRingSize,proto3" json:"minimum_ring_size,omitempty"`
 }
 
-type isLoadBalancerSettings_ConsistentHashLB_HashKey interface {
-	isLoadBalancerSettings_ConsistentHashLB_HashKey()
+type isLoadBalancerSettingsConsistentHashLBHashKey interface {
+	isLoadBalancerSettingsConsistentHashLBHashKey()
 	MarshalTo([]byte) (int, error)
 	Size() int
 }
 
-type LoadBalancerSettings_ConsistentHashLB_HttpHeaderName struct {
-	HttpHeaderName string `protobuf:"bytes,1,opt,name=http_header_name,json=httpHeaderName,proto3,oneof"`
+type LoadBalancerSettingsConsistentHashLBHTTPHeaderName struct {
+	HTTPHeaderName string `protobuf:"bytes,1,opt,name=http_header_name,json=httpHeaderName,proto3,oneof"`
 }
-type LoadBalancerSettings_ConsistentHashLB_HttpCookie struct {
-	HttpCookie *LoadBalancerSettings_ConsistentHashLB_HTTPCookie `protobuf:"bytes,2,opt,name=http_cookie,json=httpCookie,proto3,oneof"`
+type LoadBalancerSettingsConsistentHashLBHTTPCookie struct {
+	HTTPCookie *LoadBalancerSettingsConsistentHashLBHTTPCookie `protobuf:"bytes,2,opt,name=http_cookie,json=httpCookie,proto3,oneof"`
 }
-type LoadBalancerSettings_ConsistentHashLB_UseSourceIp struct {
-	UseSourceIp bool `protobuf:"varint,3,opt,name=use_source_ip,json=useSourceIp,proto3,oneof"`
+type LoadBalancerSettingsConsistentHashLBUseSourceIP struct {
+	UseSourceIP bool `protobuf:"varint,3,opt,name=use_source_ip,json=useSourceIp,proto3,oneof"`
 }
 
 // Describes a HTTP cookie that will be used as the hash key for the
 // Consistent Hash load balancer. If the cookie is not present, it will
 // be generated.
-type LoadBalancerSettings_ConsistentHashLB_HTTPCookie struct {
+type LoadBalancerSettingsConsistentHashLBHTTPCookie struct {
 	// REQUIRED. Name of the cookie.
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	// Path to set for the cookie.
 	Path string `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
 	// REQUIRED. Lifetime of the cookie.
-	Ttl *time.Duration `protobuf:"bytes,3,opt,name=ttl,proto3,stdduration" json:"ttl,omitempty"`
+	TTL *time.Duration `protobuf:"bytes,3,opt,name=ttl,proto3,stdduration" json:"ttl,omitempty"`
 }
 
 // Connection pool settings for an upstream host. The settings apply to
@@ -410,23 +410,23 @@ type LoadBalancerSettings_ConsistentHashLB_HTTPCookie struct {
 // ```
 type ConnectionPoolSettings struct {
 	// Settings common to both HTTP and TCP upstream connections.
-	Tcp *ConnectionPoolSettings_TCPSettings `protobuf:"bytes,1,opt,name=tcp,proto3" json:"tcp,omitempty"`
+	TCP *ConnectionPoolSettingsTCPSettings `protobuf:"bytes,1,opt,name=tcp,proto3" json:"tcp,omitempty"`
 	// HTTP connection pool settings.
-	Http *ConnectionPoolSettings_HTTPSettings `protobuf:"bytes,2,opt,name=http,proto3" json:"http,omitempty"`
+	HTTP *ConnectionPoolSettingsHTTPSettings `protobuf:"bytes,2,opt,name=http,proto3" json:"http,omitempty"`
 }
 
 // Settings common to both HTTP and TCP upstream connections.
-type ConnectionPoolSettings_TCPSettings struct {
+type ConnectionPoolSettingsTCPSettings struct {
 	// Maximum number of HTTP1 /TCP connections to a destination host. Default 1024.
 	MaxConnections int32 `protobuf:"varint,1,opt,name=max_connections,json=maxConnections,proto3" json:"max_connections,omitempty"`
 	// TCP connection timeout.
 	ConnectTimeout *types.Duration `protobuf:"bytes,2,opt,name=connect_timeout,json=connectTimeout,proto3" json:"connect_timeout,omitempty"`
 	// If set then set SO_KEEPALIVE on the socket to enable TCP Keepalives.
-	TcpKeepalive *ConnectionPoolSettings_TCPSettings_TcpKeepalive `protobuf:"bytes,3,opt,name=tcp_keepalive,json=tcpKeepalive,proto3" json:"tcp_keepalive,omitempty"`
+	TCPKeepalive *ConnectionPoolSettingsTCPSettingsTCPKeepalive `protobuf:"bytes,3,opt,name=tcp_keepalive,json=tcpKeepalive,proto3" json:"tcp_keepalive,omitempty"`
 }
 
 // TCP keepalive.
-type ConnectionPoolSettings_TCPSettings_TcpKeepalive struct {
+type ConnectionPoolSettingsTCPSettingsTCPKeepalive struct {
 	// Maximum number of keepalive probes to send without response before
 	// deciding the connection is dead. Default is to use the OS level configuration
 	// (unless overridden, Linux defaults to 9.)
@@ -442,11 +442,11 @@ type ConnectionPoolSettings_TCPSettings_TcpKeepalive struct {
 }
 
 // Settings applicable to HTTP1.1/HTTP2/GRPC connections.
-type ConnectionPoolSettings_HTTPSettings struct {
+type ConnectionPoolSettingsHTTPSettings struct {
 	// Maximum number of pending HTTP requests to a destination. Default 1024.
-	Http1MaxPendingRequests int32 `protobuf:"varint,1,opt,name=http1_max_pending_requests,json=http1MaxPendingRequests,proto3" json:"http1_max_pending_requests,omitempty"`
+	HTTP1MaxPendingRequests int32 `protobuf:"varint,1,opt,name=http1_max_pending_requests,json=http1MaxPendingRequests,proto3" json:"http1_max_pending_requests,omitempty"`
 	// Maximum number of requests to a backend. Default 1024.
-	Http2MaxRequests int32 `protobuf:"varint,2,opt,name=http2_max_requests,json=http2MaxRequests,proto3" json:"http2_max_requests,omitempty"`
+	HTTP2MaxRequests int32 `protobuf:"varint,2,opt,name=http2_max_requests,json=http2MaxRequests,proto3" json:"http2_max_requests,omitempty"`
 	// Maximum number of requests per connection to a backend. Setting this
 	// parameter to 1 disables keep alive. Default 0, meaning "unlimited",
 	// up to 2^29.
@@ -459,7 +459,7 @@ type ConnectionPoolSettings_HTTPSettings struct {
 	// Note that request based timeouts mean that HTTP/2 PINGs will not keep the connection alive. Applies to both HTTP1.1 and HTTP2 connections.
 	IdleTimeout *types.Duration `protobuf:"bytes,5,opt,name=idle_timeout,json=idleTimeout,proto3" json:"idle_timeout,omitempty"`
 	// Specify if http1.1 connection should be upgraded to http2 for the associated destination.
-	H2UpgradePolicy ConnectionPoolSettings_HTTPSettings_H2UpgradePolicy `protobuf:"varint,6,opt,name=h2_upgrade_policy,json=h2UpgradePolicy,proto3,enum=istio.networking.v1alpha3.ConnectionPoolSettings_HTTPSettings_H2UpgradePolicy" json:"h2_upgrade_policy,omitempty"`
+	H2UpgradePolicy ConnectionPoolSettingsHTTPSettingsH2UpgradePolicy `protobuf:"varint,6,opt,name=h2_upgrade_policy,json=h2UpgradePolicy,proto3,enum=istio.networking.v1alpha3.ConnectionPoolSettingsHTTPSettingsH2UpgradePolicy" json:"h2_upgrade_policy,omitempty"`
 }
 
 // A Circuit breaker implementation that tracks the status of each
@@ -580,7 +580,7 @@ type OutlierDetection struct {
 type TLSSettings struct {
 	// REQUIRED: Indicates whether connections to this port should be secured
 	// using TLS. The value of this field determines how TLS is enforced.
-	Mode TLSSettings_TLSmode `protobuf:"varint,1,opt,name=mode,proto3,enum=istio.networking.v1alpha3.TLSSettings_TLSmode" json:"mode,omitempty"`
+	Mode TLSSettingsTLSmode `protobuf:"varint,1,opt,name=mode,proto3,enum=istio.networking.v1alpha3.TLSSettingsTLSmode" json:"mode,omitempty"`
 	// REQUIRED if mode is `MUTUAL`. The path to the file holding the
 	// client-side TLS certificate to use.
 	// Should be empty if mode is `ISTIO_MUTUAL`.

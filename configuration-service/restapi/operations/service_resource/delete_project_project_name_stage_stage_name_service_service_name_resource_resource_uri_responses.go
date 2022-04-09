@@ -34,13 +34,13 @@ func NewDeleteProjectProjectNameStageStageNameServiceServiceNameResourceResource
 	return &DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURINoContent{}
 }
 
-// WithPayload adds the payload to the delete project project name stage stage name service service name resource resource Uri no content response
+// WithPayload adds the payload to the delete project project name stage stage name service service name resource resource URI no content response
 func (o *DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURINoContent) WithPayload(payload *models.Version) *DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURINoContent {
 	o.Payload = payload
 	return o
 }
 
-// SetPayload sets the payload to the delete project project name stage stage name service service name resource resource Uri no content response
+// SetPayload sets the payload to the delete project project name stage stage name service service name resource resource URI no content response
 func (o *DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURINoContent) SetPayload(payload *models.Version) {
 	o.Payload = payload
 }
@@ -78,13 +78,13 @@ func NewDeleteProjectProjectNameStageStageNameServiceServiceNameResourceResource
 	return &DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIBadRequest{}
 }
 
-// WithPayload adds the payload to the delete project project name stage stage name service service name resource resource Uri bad request response
+// WithPayload adds the payload to the delete project project name stage stage name service service name resource resource URI bad request response
 func (o *DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIBadRequest) WithPayload(payload *models.Error) *DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIBadRequest {
 	o.Payload = payload
 	return o
 }
 
-// SetPayload sets the payload to the delete project project name stage stage name service service name resource resource Uri bad request response
+// SetPayload sets the payload to the delete project project name stage stage name service service name resource resource URI bad request response
 func (o *DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIBadRequest) SetPayload(payload *models.Error) {
 	o.Payload = payload
 }

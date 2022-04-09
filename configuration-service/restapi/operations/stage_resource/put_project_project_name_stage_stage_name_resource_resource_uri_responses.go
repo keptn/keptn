@@ -34,13 +34,13 @@ func NewPutProjectProjectNameStageStageNameResourceResourceURICreated() *PutProj
 	return &PutProjectProjectNameStageStageNameResourceResourceURICreated{}
 }
 
-// WithPayload adds the payload to the put project project name stage stage name resource resource Uri created response
+// WithPayload adds the payload to the put project project name stage stage name resource resource URI created response
 func (o *PutProjectProjectNameStageStageNameResourceResourceURICreated) WithPayload(payload *models.Version) *PutProjectProjectNameStageStageNameResourceResourceURICreated {
 	o.Payload = payload
 	return o
 }
 
-// SetPayload sets the payload to the put project project name stage stage name resource resource Uri created response
+// SetPayload sets the payload to the put project project name stage stage name resource resource URI created response
 func (o *PutProjectProjectNameStageStageNameResourceResourceURICreated) SetPayload(payload *models.Version) {
 	o.Payload = payload
 }
@@ -78,13 +78,13 @@ func NewPutProjectProjectNameStageStageNameResourceResourceURIBadRequest() *PutP
 	return &PutProjectProjectNameStageStageNameResourceResourceURIBadRequest{}
 }
 
-// WithPayload adds the payload to the put project project name stage stage name resource resource Uri bad request response
+// WithPayload adds the payload to the put project project name stage stage name resource resource URI bad request response
 func (o *PutProjectProjectNameStageStageNameResourceResourceURIBadRequest) WithPayload(payload *models.Error) *PutProjectProjectNameStageStageNameResourceResourceURIBadRequest {
 	o.Payload = payload
 	return o
 }
 
-// SetPayload sets the payload to the put project project name stage stage name resource resource Uri bad request response
+// SetPayload sets the payload to the put project project name stage stage name resource resource URI bad request response
 func (o *PutProjectProjectNameStageStageNameResourceResourceURIBadRequest) SetPayload(payload *models.Error) {
 	o.Payload = payload
 }

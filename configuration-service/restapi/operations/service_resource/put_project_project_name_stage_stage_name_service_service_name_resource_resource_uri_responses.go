@@ -34,13 +34,13 @@ func NewPutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI
 	return &PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURICreated{}
 }
 
-// WithPayload adds the payload to the put project project name stage stage name service service name resource resource Uri created response
+// WithPayload adds the payload to the put project project name stage stage name service service name resource resource URI created response
 func (o *PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURICreated) WithPayload(payload *models.Version) *PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURICreated {
 	o.Payload = payload
 	return o
 }
 
-// SetPayload sets the payload to the put project project name stage stage name service service name resource resource Uri created response
+// SetPayload sets the payload to the put project project name stage stage name service service name resource resource URI created response
 func (o *PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURICreated) SetPayload(payload *models.Version) {
 	o.Payload = payload
 }
@@ -78,13 +78,13 @@ func NewPutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI
 	return &PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIBadRequest{}
 }
 
-// WithPayload adds the payload to the put project project name stage stage name service service name resource resource Uri bad request response
+// WithPayload adds the payload to the put project project name stage stage name service service name resource resource URI bad request response
 func (o *PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIBadRequest) WithPayload(payload *models.Error) *PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIBadRequest {
 	o.Payload = payload
 	return o
 }
 
-// SetPayload sets the payload to the put project project name stage stage name service service name resource resource Uri bad request response
+// SetPayload sets the payload to the put project project name stage stage name service service name resource resource URI bad request response
 func (o *PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIBadRequest) SetPayload(payload *models.Error) {
 	o.Payload = payload
 }

@@ -34,13 +34,13 @@ func NewGetProjectProjectNameResourceResourceURIOK() *GetProjectProjectNameResou
 	return &GetProjectProjectNameResourceResourceURIOK{}
 }
 
-// WithPayload adds the payload to the get project project name resource resource Uri o k response
+// WithPayload adds the payload to the get project project name resource resource URI o k response
 func (o *GetProjectProjectNameResourceResourceURIOK) WithPayload(payload *models.Resource) *GetProjectProjectNameResourceResourceURIOK {
 	o.Payload = payload
 	return o
 }
 
-// SetPayload sets the payload to the get project project name resource resource Uri o k response
+// SetPayload sets the payload to the get project project name resource resource URI o k response
 func (o *GetProjectProjectNameResourceResourceURIOK) SetPayload(payload *models.Resource) {
 	o.Payload = payload
 }
@@ -78,13 +78,13 @@ func NewGetProjectProjectNameResourceResourceURINotFound() *GetProjectProjectNam
 	return &GetProjectProjectNameResourceResourceURINotFound{}
 }
 
-// WithPayload adds the payload to the get project project name resource resource Uri not found response
+// WithPayload adds the payload to the get project project name resource resource URI not found response
 func (o *GetProjectProjectNameResourceResourceURINotFound) WithPayload(payload *models.Error) *GetProjectProjectNameResourceResourceURINotFound {
 	o.Payload = payload
 	return o
 }
 
-// SetPayload sets the payload to the get project project name resource resource Uri not found response
+// SetPayload sets the payload to the get project project name resource resource URI not found response
 func (o *GetProjectProjectNameResourceResourceURINotFound) SetPayload(payload *models.Error) {
 	o.Payload = payload
 }

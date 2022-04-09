@@ -160,7 +160,7 @@ type VirtualServiceSpec struct {
 	// ports with protocol HTTP/HTTP2/GRPC/ TLS-terminated-HTTPS and service
 	// entry ports using HTTP/HTTP2/GRPC protocols.  The first rule matching
 	// an incoming request is used.
-	Http []*HTTPRoute `protobuf:"bytes,3,rep,name=http,proto3" json:"http,omitempty"`
+	HTTP []*HTTPRoute `protobuf:"bytes,3,rep,name=http,proto3" json:"http,omitempty"`
 	// An ordered list of route rule for non-terminated TLS & HTTPS
 	// traffic. Routing is typically performed using the SNI value presented
 	// by the ClientHello message. TLS routes will be applied to platform
@@ -170,11 +170,11 @@ type VirtualServiceSpec struct {
 	// incoming request is used.  NOTE: Traffic 'https-*' or 'tls-*' ports
 	// without associated virtual service will be treated as opaque TCP
 	// traffic.
-	Tls []*TLSRoute `protobuf:"bytes,5,rep,name=tls,proto3" json:"tls,omitempty"`
+	TLS []*TLSRoute `protobuf:"bytes,5,rep,name=tls,proto3" json:"tls,omitempty"`
 	// An ordered list of route rules for opaque TCP traffic. TCP routes will
 	// be applied to any port that is not a HTTP or TLS port. The first rule
 	// matching an incoming request is used.
-	Tcp []*TCPRoute `protobuf:"bytes,4,rep,name=tcp,proto3" json:"tcp,omitempty"`
+	TCP []*TCPRoute `protobuf:"bytes,4,rep,name=tcp,proto3" json:"tcp,omitempty"`
 	// A list of namespaces to which this virtual service is exported. Exporting a
 	// virtual service allows it to be used by sidecars and gateways defined in
 	// other namespaces. This feature provides a mechanism for service owners
@@ -446,14 +446,14 @@ type HTTPRoute struct {
 type Headers struct {
 	// Header manipulation rules to apply before forwarding a request
 	// to the destination service
-	Request *Headers_HeaderOperations `protobuf:"bytes,1,opt,name=request,proto3" json:"request,omitempty"`
+	Request *HeadersHeaderOperations `protobuf:"bytes,1,opt,name=request,proto3" json:"request,omitempty"`
 	// Header manipulation rules to apply before returning a response
 	// to the caller
-	Response *Headers_HeaderOperations `protobuf:"bytes,2,opt,name=response,proto3" json:"response,omitempty"`
+	Response *HeadersHeaderOperations `protobuf:"bytes,2,opt,name=response,proto3" json:"response,omitempty"`
 }
 
 // HeaderOperations Describes the header manipulations to apply
-type Headers_HeaderOperations struct {
+type HeadersHeaderOperations struct {
 	// Overwrite the headers specified by key with the given values
 	Set map[string]string `protobuf:"bytes,1,rep,name=set,proto3" json:"set,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	// Append the given values to the headers specified by keys
@@ -579,7 +579,7 @@ type HTTPMatchRequest struct {
 	//
 	// **Note:** Case-insensitive matching could be enabled via the
 	// `ignore_uri_case` flag.
-	Uri *StringMatch `protobuf:"bytes,1,opt,name=uri,proto3" json:"uri,omitempty"`
+	URI *StringMatch `protobuf:"bytes,1,opt,name=uri,proto3" json:"uri,omitempty"`
 	// URI Scheme
 	// values are case-sensitive and formatted as follows:
 	//
@@ -648,7 +648,7 @@ type HTTPMatchRequest struct {
 	//
 	// **Note:** The case will be ignored only in the case of `exact` and `prefix`
 	// URI matches.
-	IgnoreUriCase bool `protobuf:"varint,10,opt,name=ignore_uri_case,json=ignoreUriCase,proto3" json:"ignore_uri_case,omitempty"`
+	IgnoreURICase bool `protobuf:"varint,10,opt,name=ignore_uri_case,json=ignoreUriCase,proto3" json:"ignore_uri_case,omitempty"`
 }
 
 // Each routing rule is associated with one or more service versions (see
@@ -835,7 +835,7 @@ type HTTPRedirect struct {
 	// On a redirect, overwrite the Path portion of the URL with this
 	// value. Note that the entire path will be replaced, irrespective of the
 	// request URI being matched as an exact path or prefix.
-	Uri string `protobuf:"bytes,1,opt,name=uri,proto3" json:"uri,omitempty"`
+	URI string `protobuf:"bytes,1,opt,name=uri,proto3" json:"uri,omitempty"`
 	// On a redirect, overwrite the Authority/Host portion of the URL with
 	// this value.
 	Authority string `protobuf:"bytes,2,opt,name=authority,proto3" json:"authority,omitempty"`
@@ -874,7 +874,7 @@ type HTTPRewrite struct {
 	// rewrite the path (or the prefix) portion of the URI with this
 	// value. If the original URI was matched based on prefix, the value
 	// provided in this field will replace the corresponding matched prefix.
-	Uri string `protobuf:"bytes,1,opt,name=uri,proto3" json:"uri,omitempty"`
+	URI string `protobuf:"bytes,1,opt,name=uri,proto3" json:"uri,omitempty"`
 	// rewrite the Authority/Host header with this value.
 	Authority string `protobuf:"bytes,2,opt,name=authority,proto3" json:"authority,omitempty"`
 }
@@ -883,25 +883,25 @@ type HTTPRewrite struct {
 // case-sensitive.
 type StringMatch struct {
 	// Types that are valid to be assigned to MatchType:
-	//	*StringMatch_Exact
-	//	*StringMatch_Prefix
-	//	*StringMatch_Regex
-	MatchType isStringMatch_MatchType `protobuf_oneof:"match_type"`
+	//	*StringMatchExact
+	//	*StringMatchPrefix
+	//	*StringMatchRegex
+	MatchType isStringMatchMatchType `protobuf_oneof:"match_type"`
 }
 
-type isStringMatch_MatchType interface {
-	isStringMatch_MatchType()
+type isStringMatchMatchType interface {
+	isStringMatchMatchType()
 	MarshalTo([]byte) (int, error)
 	Size() int
 }
 
-type StringMatch_Exact struct {
+type StringMatchExact struct {
 	Exact string `protobuf:"bytes,1,opt,name=exact,proto3,oneof"`
 }
-type StringMatch_Prefix struct {
+type StringMatchPrefix struct {
 	Prefix string `protobuf:"bytes,2,opt,name=prefix,proto3,oneof"`
 }
-type StringMatch_Regex struct {
+type StringMatchRegex struct {
 	Regex string `protobuf:"bytes,3,opt,name=regex,proto3,oneof"`
 }
 
@@ -1001,7 +1001,7 @@ type CorsPolicy struct {
 // HTTPFaultInjection can be used to specify one or more faults to inject
 // while forwarding http requests to the destination specified in a route.
 // Fault specification is part of a VirtualService rule. Faults include
-// aborting the Http request from downstream service, and/or delaying
+// aborting the HTTP request from downstream service, and/or delaying
 // proxying of requests. A fault rule MUST HAVE delay or abort or both.
 //
 // *Note:* Delay and abort faults are independent of one another, even if
@@ -1009,10 +1009,10 @@ type CorsPolicy struct {
 type HTTPFaultInjection struct {
 	// Delay requests before forwarding, emulating various failures such as
 	// network issues, overloaded upstream service, etc.
-	Delay *HTTPFaultInjection_Delay `protobuf:"bytes,1,opt,name=delay,proto3" json:"delay,omitempty"`
-	// Abort Http request attempts and return error codes back to downstream
+	Delay *HTTPFaultInjectionDelay `protobuf:"bytes,1,opt,name=delay,proto3" json:"delay,omitempty"`
+	// Abort HTTP request attempts and return error codes back to downstream
 	// service, giving the impression that the upstream service is faulty.
-	Abort *HTTPFaultInjection_Abort `protobuf:"bytes,2,opt,name=abort,proto3" json:"abort,omitempty"`
+	Abort *HTTPFaultInjectionAbort `protobuf:"bytes,2,opt,name=abort,proto3" json:"abort,omitempty"`
 }
 
 // Delay specification is used to inject latency into the request
@@ -1046,29 +1046,29 @@ type HTTPFaultInjection struct {
 // The _fixedDelay_ field is used to indicate the amount of delay in seconds.
 // The optional _percentage_ field can be used to only delay a certain
 // percentage of requests. If left unspecified, all request will be delayed.
-type HTTPFaultInjection_Delay struct {
+type HTTPFaultInjectionDelay struct {
 	// Percentage of requests on which the delay will be injected (0-100).
 	// Use of integer `percent` value is deprecated. Use the double `percentage`
 	// field instead.
 	Percent int32 `protobuf:"varint,1,opt,name=percent,proto3" json:"percent,omitempty"` // Deprecated: Do not use.
-	// Types that are valid to be assigned to HttpDelayType:
-	//	*HTTPFaultInjection_Delay_FixedDelay
-	//	*HTTPFaultInjection_Delay_ExponentialDelay
-	HttpDelayType isHTTPFaultInjection_Delay_HttpDelayType `protobuf_oneof:"http_delay_type"`
+	// Types that are valid to be assigned to HTTPDelayType:
+	//	*HTTPFaultInjectionDelayFixedDelay
+	//	*HTTPFaultInjectionDelayExponentialDelay
+	HTTPDelayType isHTTPFaultInjectionDelayHTTPDelayType `protobuf_oneof:"http_delay_type"`
 	// Percentage of requests on which the delay will be injected.
 	Percentage *Percent `protobuf:"bytes,5,opt,name=percentage,proto3" json:"percentage,omitempty"`
 }
 
-type isHTTPFaultInjection_Delay_HttpDelayType interface {
-	isHTTPFaultInjection_Delay_HttpDelayType()
+type isHTTPFaultInjectionDelayHTTPDelayType interface {
+	isHTTPFaultInjectionDelayHTTPDelayType()
 	MarshalTo([]byte) (int, error)
 	Size() int
 }
 
-type HTTPFaultInjection_Delay_FixedDelay struct {
+type HTTPFaultInjectionDelayFixedDelay struct {
 	FixedDelay *types.Duration `protobuf:"bytes,2,opt,name=fixed_delay,json=fixedDelay,proto3,oneof"`
 }
-type HTTPFaultInjection_Delay_ExponentialDelay struct {
+type HTTPFaultInjectionDelayExponentialDelay struct {
 	ExponentialDelay *types.Duration `protobuf:"bytes,3,opt,name=exponential_delay,json=exponentialDelay,proto3,oneof"`
 }
 
@@ -1100,55 +1100,55 @@ type HTTPFaultInjection_Delay_ExponentialDelay struct {
 // return to the caller. The optional _percentage_ field can be used to only
 // abort a certain percentage of requests. If not specified, all requests are
 // aborted.
-type HTTPFaultInjection_Abort struct {
+type HTTPFaultInjectionAbort struct {
 	// Percentage of requests to be aborted with the error code provided (0-100).
 	// Use of integer `percent` value is deprecated. Use the double `percentage`
 	// field instead.
 	Percent int32 `protobuf:"varint,1,opt,name=percent,proto3" json:"percent,omitempty"` // Deprecated: Do not use.
 	// Types that are valid to be assigned to ErrorType:
-	//	*HTTPFaultInjection_Abort_HttpStatus
-	//	*HTTPFaultInjection_Abort_GrpcStatus
-	//	*HTTPFaultInjection_Abort_Http2Error
-	ErrorType isHTTPFaultInjection_Abort_ErrorType `protobuf_oneof:"error_type"`
+	//	*HTTPFaultInjectionAbortHTTPStatus
+	//	*HTTPFaultInjectionAbortGrpcStatus
+	//	*HTTPFaultInjectionAbortHTTP2Error
+	ErrorType isHTTPFaultInjectionAbortErrorType `protobuf_oneof:"error_type"`
 	// Percentage of requests to be aborted with the error code provided.
 	Percentage *Percent `protobuf:"bytes,5,opt,name=percentage,proto3" json:"percentage,omitempty"`
 }
 
-type isHTTPFaultInjection_Abort_ErrorType interface {
-	isHTTPFaultInjection_Abort_ErrorType()
+type isHTTPFaultInjectionAbortErrorType interface {
+	isHTTPFaultInjectionAbortErrorType()
 	MarshalTo([]byte) (int, error)
 	Size() int
 }
 
-type HTTPFaultInjection_Abort_HttpStatus struct {
-	HttpStatus int32 `protobuf:"varint,2,opt,name=http_status,json=httpStatus,proto3,oneof"`
+type HTTPFaultInjectionAbortHTTPStatus struct {
+	HTTPStatus int32 `protobuf:"varint,2,opt,name=http_status,json=httpStatus,proto3,oneof"`
 }
-type HTTPFaultInjection_Abort_GrpcStatus struct {
+type HTTPFaultInjectionAbortGrpcStatus struct {
 	GrpcStatus string `protobuf:"bytes,3,opt,name=grpc_status,json=grpcStatus,proto3,oneof"`
 }
-type HTTPFaultInjection_Abort_Http2Error struct {
-	Http2Error string `protobuf:"bytes,4,opt,name=http2_error,json=http2Error,proto3,oneof"`
+type HTTPFaultInjectionAbortHTTP2Error struct {
+	HTTP2Error string `protobuf:"bytes,4,opt,name=http2_error,json=http2Error,proto3,oneof"`
 }
 
 // PortSelector specifies the number of a port to be used for
 // matching or selection for final routing.
 type PortSelector struct {
 	// Types that are valid to be assigned to Port:
-	//	*PortSelector_Number
-	//	*PortSelector_Name
-	Port isPortSelector_Port `protobuf_oneof:"port"`
+	//	*PortSelectorNumber
+	//	*PortSelectorName
+	Port isPortSelectorPort `protobuf_oneof:"port"`
 }
 
-type isPortSelector_Port interface {
-	isPortSelector_Port()
+type isPortSelectorPort interface {
+	isPortSelectorPort()
 	MarshalTo([]byte) (int, error)
 	Size() int
 }
 
-type PortSelector_Number struct {
+type PortSelectorNumber struct {
 	Number uint32 `protobuf:"varint,1,opt,name=number,proto3,oneof"`
 }
-type PortSelector_Name struct {
+type PortSelectorName struct {
 	Name string `protobuf:"bytes,2,opt,name=name,proto3,oneof"`
 }
 
