@@ -12,7 +12,7 @@ import { UniformRegistrationInfo } from '../../../../shared/interfaces/uniform-r
 import { WebhookConfig } from '../../../../shared/models/webhook-config';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AbstractControl } from '@angular/forms';
-import { ApiService } from '../../_services/api.service';
+import { APIService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 
 describe('KtbModifyUniformSubscriptionComponent', () => {
@@ -30,7 +30,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     await TestBed.configureTestingModule({
       imports: [AppModule, HttpClientTestingModule],
       providers: [
-        { provide: ApiService, useClass: ApiServiceMock },
+        { provide: APIService, useClass: ApiServiceMock },
         {
           provide: ActivatedRoute,
           useValue: {

@@ -13,7 +13,7 @@ func TestApiSetInternalMappings(t *testing.T) {
 		require.Nil(t, err)
 		require.NotNil(t, internal)
 		assert.Equal(t, DefaultInClusterAPIMappings[MongoDBDatastore], internal.EventsV1().(*api.EventHandler).BaseURL)
-		assert.Equal(t, DefaultInClusterAPIMappings[ApiService], internal.AuthV1().(*api.AuthHandler).BaseURL)
+		assert.Equal(t, DefaultInClusterAPIMappings[APIService], internal.AuthV1().(*api.AuthHandler).BaseURL)
 		assert.Equal(t, DefaultInClusterAPIMappings[ShipyardController], internal.APIV1().(*api.APIHandler).BaseURL)
 		assert.Equal(t, DefaultInClusterAPIMappings[ShipyardController], internal.ShipyardControlV1().(*api.ShipyardControllerHandler).BaseURL)
 		assert.Equal(t, DefaultInClusterAPIMappings[ShipyardController], internal.UniformV1().(*api.UniformHandler).BaseURL)
@@ -29,7 +29,7 @@ func TestApiSetInternalMappings(t *testing.T) {
 		overrideMappings := InClusterAPIMappings{
 			ConfigurationService: "special-configuration-service:8080",
 			ShipyardController:   "special-shipyard-controller:8080",
-			ApiService:           "speclial-api-service:8080",
+			APIService:           "speclial-api-service:8080",
 			SecretService:        "special-secret-service:8080",
 			MongoDBDatastore:     "special-monogodb-datastore:8080",
 		}
@@ -37,7 +37,7 @@ func TestApiSetInternalMappings(t *testing.T) {
 		require.Nil(t, err)
 		require.NotNil(t, internal)
 		assert.Equal(t, overrideMappings[MongoDBDatastore], internal.EventsV1().(*api.EventHandler).BaseURL)
-		assert.Equal(t, overrideMappings[ApiService], internal.AuthV1().(*api.AuthHandler).BaseURL)
+		assert.Equal(t, overrideMappings[APIService], internal.AuthV1().(*api.AuthHandler).BaseURL)
 		assert.Equal(t, overrideMappings[ShipyardController], internal.APIV1().(*api.APIHandler).BaseURL)
 		assert.Equal(t, overrideMappings[ShipyardController], internal.ShipyardControlV1().(*api.ShipyardControllerHandler).BaseURL)
 		assert.Equal(t, overrideMappings[ShipyardController], internal.UniformV1().(*api.UniformHandler).BaseURL)

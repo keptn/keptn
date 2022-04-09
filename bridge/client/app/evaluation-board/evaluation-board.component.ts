@@ -5,7 +5,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 import { Root } from '../_models/root';
 import { Trace } from '../_models/trace';
-import { ApiService } from '../_services/api.service';
+import { APIService } from '../_services/api.service';
 import { EventTypes } from '../../../shared/interfaces/event-types';
 import { DataService } from '../_services/data.service';
 import { environment } from '../../environments/environment';
@@ -33,7 +33,7 @@ export class EvaluationBoardComponent implements OnInit, OnDestroy {
     private _changeDetectorRef: ChangeDetectorRef,
     private location: Location,
     private route: ActivatedRoute,
-    private apiService: ApiService,
+    private apiService: APIService,
     private dataService: DataService
   ) {
     this.hasHistory = window.history.length > 1;

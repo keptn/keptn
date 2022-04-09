@@ -7,7 +7,7 @@ import { AppModule } from '../../app.module';
 import { NotificationsService } from '../../_services/notifications.service';
 import { NotificationType } from '../../_models/notification';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ApiService } from '../../_services/api.service';
+import { APIService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 
 describe('KtbCreateServiceComponent', () => {
@@ -21,7 +21,7 @@ describe('KtbCreateServiceComponent', () => {
     await TestBed.configureTestingModule({
       imports: [AppModule],
       providers: [
-        { provide: ApiService, useClass: ApiServiceMock },
+        { provide: APIService, useClass: ApiServiceMock },
         {
           provide: ActivatedRoute,
           useValue: {

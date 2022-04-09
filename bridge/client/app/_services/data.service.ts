@@ -4,7 +4,7 @@ import { catchError, map, mergeMap, switchMap, take, tap, toArray } from 'rxjs/o
 import { Trace } from '../_models/trace';
 import { Project } from '../_models/project';
 import { EventTypes } from '../../../shared/interfaces/event-types';
-import { ApiService } from './api.service';
+import { APIService } from './api.service';
 import moment from 'moment';
 import { Sequence } from '../_models/sequence';
 import { UniformRegistrationLog } from '../../../shared/interfaces/uniform-registration-log';
@@ -56,7 +56,7 @@ export class DataService {
 
   public isTriggerSequenceOpen = false;
 
-  constructor(private apiService: ApiService) {}
+  constructor(private apiService: APIService) {}
 
   get projects(): Observable<Project[] | undefined> {
     return this._projects.asObservable();

@@ -7,7 +7,7 @@ import { EvaluationsMock } from '../../_services/_mockData/evaluations.mock';
 import { Trace } from '../../_models/trace';
 import { EvaluationChartItemMock } from '../../_services/_mockData/evaluation-chart-item.mock';
 import { SliInfoMock } from '../../_services/_mockData/sli-info.mock';
-import { ApiService } from '../../_services/api.service';
+import { APIService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 
 describe('KtbEvaluationDetailsComponent', () => {
@@ -18,7 +18,7 @@ describe('KtbEvaluationDetailsComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [],
       imports: [AppModule, HttpClientTestingModule],
-      providers: [{ provide: ApiService, useClass: ApiServiceMock }],
+      providers: [{ provide: APIService, useClass: ApiServiceMock }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbEvaluationDetailsComponent);

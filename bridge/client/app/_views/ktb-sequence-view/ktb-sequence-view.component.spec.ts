@@ -5,7 +5,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
-import { ApiService } from '../../_services/api.service';
+import { APIService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 import { SequenceMetadataMock } from '../../_services/_mockData/sequence-metadata.mock';
 import { SequencesMock } from '../../_services/_mockData/sequences.mock';
@@ -31,7 +31,7 @@ describe('KtbEventsListComponent', () => {
           },
         },
         { provide: POLLING_INTERVAL_MILLIS, useValue: 0 },
-        { provide: ApiService, useClass: ApiServiceMock },
+        { provide: APIService, useClass: ApiServiceMock },
       ],
     }).compileComponents();
 

@@ -5,7 +5,7 @@ import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
-import { ApiService } from '../../_services/api.service';
+import { APIService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 
 describe('KtbServiceSettingsListComponent', () => {
@@ -16,7 +16,7 @@ describe('KtbServiceSettingsListComponent', () => {
     await TestBed.configureTestingModule({
       imports: [AppModule, HttpClientTestingModule],
       providers: [
-        { provide: ApiService, useClass: ApiServiceMock },
+        { provide: APIService, useClass: ApiServiceMock },
         { provide: POLLING_INTERVAL_MILLIS, useValue: 0 },
         {
           provide: ActivatedRoute,

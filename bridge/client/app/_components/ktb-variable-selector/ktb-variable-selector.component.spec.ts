@@ -3,7 +3,7 @@ import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { FormControl } from '@angular/forms';
 import { KtbVariableSelectorComponent } from './ktb-variable-selector.component';
-import { ApiService } from '../../_services/api.service';
+import { APIService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 
 describe('KtbSecretSelectorComponent', () => {
@@ -14,7 +14,7 @@ describe('KtbSecretSelectorComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AppModule, HttpClientTestingModule],
-      providers: [{ provide: ApiService, useClass: ApiServiceMock }],
+      providers: [{ provide: APIService, useClass: ApiServiceMock }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbVariableSelectorComponent);

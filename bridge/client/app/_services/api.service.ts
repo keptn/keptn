@@ -32,7 +32,7 @@ import { SecretScope } from '../../../shared/interfaces/secret-scope';
 @Injectable({
   providedIn: 'root',
 })
-export class ApiService {
+export class APIService {
   protected _baseUrl: string;
   protected readonly VERSION_CHECK_COOKIE = 'keptn_versioncheck';
   protected readonly ENVIRONMENT_FILTER_COOKIE = 'keptn_environment_filter';

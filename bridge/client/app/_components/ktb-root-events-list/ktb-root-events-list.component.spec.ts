@@ -8,7 +8,7 @@ import { of } from 'rxjs';
 import { Project } from '../../_models/project';
 import { By } from '@angular/platform-browser';
 import { take } from 'rxjs/operators';
-import { ApiService } from '../../_services/api.service';
+import { APIService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 
 describe('KtbRootEventsListComponent', () => {
@@ -24,7 +24,7 @@ describe('KtbRootEventsListComponent', () => {
       imports: [AppModule, HttpClientTestingModule],
       providers: [
         {
-          provide: ApiService,
+          provide: APIService,
           useClass: ApiServiceMock,
         },
         {

@@ -4,7 +4,7 @@ import { HttpErrorInterceptor } from './http-error-interceptor';
 import { Overlay } from '@angular/cdk/overlay';
 import { HttpClientTestingModule, HttpTestingController, TestRequest } from '@angular/common/http/testing';
 import { RETRY_ON_HTTP_ERROR } from '../_utils/app.utils';
-import { ApiService } from '../_services/api.service';
+import { APIService } from '../_services/api.service';
 import { NotificationsService } from '../_services/notifications.service';
 import { NotificationType } from '../_models/notification';
 import { SecretScopeDefault } from '../../../shared/interfaces/secret-scope';
@@ -13,7 +13,7 @@ import { Secret } from '../_models/secret';
 describe('HttpErrorInterceptorService', () => {
   let httpErrorInterceptor: HttpErrorInterceptor;
   let httpMock: HttpTestingController;
-  let apiService: ApiService;
+  let apiService: APIService;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -31,7 +31,7 @@ describe('HttpErrorInterceptorService', () => {
 
     httpErrorInterceptor = TestBed.inject(HttpErrorInterceptor);
     httpMock = TestBed.inject(HttpTestingController);
-    apiService = TestBed.inject(ApiService);
+    apiService = TestBed.inject(APIService);
   });
 
   it('should be an instance', () => {

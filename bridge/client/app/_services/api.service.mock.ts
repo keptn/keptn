@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Injectable } from '@angular/core';
-import { ApiService } from './api.service';
+import { APIService } from './api.service';
 import { Observable, of } from 'rxjs';
 import { KeptnInfoResult } from '../../../shared/interfaces/keptn-info-result';
 import moment from 'moment';
@@ -46,7 +46,7 @@ import { TriggerResponse, TriggerSequenceData } from '../_models/trigger-sequenc
 @Injectable({
   providedIn: null,
 })
-export class ApiServiceMock extends ApiService {
+export class ApiServiceMock extends APIService {
   private localStoreMock: Map<string, string> = new Map();
 
   public get environmentFilter(): { [projectName: string]: { services: string[] } } {

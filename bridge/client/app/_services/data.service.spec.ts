@@ -2,13 +2,13 @@ import { TestBed } from '@angular/core/testing';
 import { DataService } from './data.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { AppModule } from '../app.module';
-import { ApiService } from './api.service';
+import { APIService } from './api.service';
 import { TriggerSequenceData } from '../_models/trigger-sequence';
 import moment from 'moment';
 
 describe('DataService', () => {
   let dataService: DataService;
-  let apiService: ApiService;
+  let apiService: APIService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -16,7 +16,7 @@ describe('DataService', () => {
       imports: [AppModule, HttpClientTestingModule],
     });
     dataService = TestBed.inject(DataService);
-    apiService = TestBed.inject(ApiService);
+    apiService = TestBed.inject(APIService);
   });
 
   it('should be an instance', () => {

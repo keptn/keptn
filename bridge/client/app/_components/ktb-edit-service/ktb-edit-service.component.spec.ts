@@ -11,7 +11,7 @@ import { ProjectMock } from '../../_models/project.mock';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { FileTreeMock } from '../../_services/_mockData/fileTree.mock';
 import { By } from '@angular/platform-browser';
-import { ApiService } from '../../_services/api.service';
+import { APIService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 
 const paramMapSubject = new BehaviorSubject(
@@ -29,7 +29,7 @@ describe('KtbEditServiceComponent', () => {
     await TestBed.configureTestingModule({
       imports: [AppModule, HttpClientTestingModule],
       providers: [
-        { provide: ApiService, useClass: ApiServiceMock },
+        { provide: APIService, useClass: ApiServiceMock },
         {
           provide: ActivatedRoute,
           useValue: {

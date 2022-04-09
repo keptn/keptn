@@ -7,7 +7,7 @@ import { Router } from '@angular/router';
 import { AppModule } from './app.module';
 import { RouterTestingModule } from '@angular/router/testing';
 import { routes } from './app.routing';
-import { ApiService } from './_services/api.service';
+import { APIService } from './_services/api.service';
 import { ApiServiceMock } from './_services/api.service.mock';
 
 describe('AppComponent', () => {
@@ -28,7 +28,7 @@ describe('AppComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [],
       imports: [AppModule, HttpClientTestingModule, RouterTestingModule.withRoutes(routes)],
-      providers: [{ provide: ApiService, useClass: ApiServiceMock }],
+      providers: [{ provide: APIService, useClass: ApiServiceMock }],
     }).compileComponents();
 
     router = TestBed.inject(Router);

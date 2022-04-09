@@ -8,7 +8,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { take } from 'rxjs/operators';
-import { ApiService } from '../../_services/api.service';
+import { APIService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 
 describe('KtbSequenceControlsComponent', () => {
@@ -23,7 +23,7 @@ describe('KtbSequenceControlsComponent', () => {
       imports: [AppModule, HttpClientTestingModule],
       providers: [
         {
-          provide: ApiService,
+          provide: APIService,
           useClass: ApiServiceMock,
         },
         {

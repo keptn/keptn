@@ -5,7 +5,7 @@ import { BehaviorSubject, of } from 'rxjs';
 import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ApiService } from '../../_services/api.service';
+import { APIService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 import { PendingChangesGuard } from '../../_guards/pending-changes.guard';
 
@@ -23,7 +23,7 @@ describe('KtbProjectSettingsComponent', () => {
       imports: [AppModule, HttpClientTestingModule],
       providers: [
         PendingChangesGuard,
-        { provide: ApiService, useClass: ApiServiceMock },
+        { provide: APIService, useClass: ApiServiceMock },
         {
           provide: ActivatedRoute,
           useValue: {

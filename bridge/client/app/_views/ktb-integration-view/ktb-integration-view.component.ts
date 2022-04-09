@@ -4,7 +4,7 @@ import { DataService } from '../../_services/data.service';
 import { Subject } from 'rxjs';
 import moment from 'moment';
 import { ClipboardService } from '../../_services/clipboard.service';
-import { ApiService } from '../../_services/api.service';
+import { APIService } from '../../_services/api.service';
 import { KeptnInfo } from '../../_models/keptn-info';
 import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 
@@ -26,7 +26,7 @@ export class KtbIntegrationViewComponent implements OnInit, OnDestroy {
   constructor(
     private dataService: DataService,
     private clipboard: ClipboardService,
-    private apiService: ApiService,
+    private apiService: APIService,
     @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number
   ) {}
 

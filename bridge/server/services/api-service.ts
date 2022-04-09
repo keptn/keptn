@@ -14,7 +14,7 @@ import { KeptnService } from '../../shared/models/keptn-service';
 import { IStage } from '../../shared/interfaces/stage';
 import { SequenceOptions, TraceOptions } from './data-service';
 
-export class ApiService {
+export class APIService {
   private readonly axios: AxiosInstance;
   private readonly escapeSlash = '%252F';
 

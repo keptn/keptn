@@ -1,10 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { AppModule } from '../app.module';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { ApiService } from '../_services/api.service';
+import { APIService } from '../_services/api.service';
 
 describe(`HttpDefaultInterceptor`, () => {
-  let service: ApiService;
+  let service: APIService;
   let httpMock: HttpTestingController;
 
   beforeEach(async () => {
@@ -12,7 +12,7 @@ describe(`HttpDefaultInterceptor`, () => {
       imports: [AppModule, HttpClientTestingModule],
     }).compileComponents();
 
-    service = TestBed.inject(ApiService);
+    service = TestBed.inject(APIService);
     httpMock = TestBed.inject(HttpTestingController);
   });
 

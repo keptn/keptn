@@ -5,7 +5,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { DataService } from '../../_services/data.service';
 import { Project } from '../../_models/project';
 import { filter, take } from 'rxjs/operators';
-import { ApiService } from '../../_services/api.service';
+import { APIService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 
 describe('KtbSequenceStateInfoComponent', () => {
@@ -21,7 +21,7 @@ describe('KtbSequenceStateInfoComponent', () => {
       imports: [AppModule, HttpClientTestingModule],
       providers: [
         {
-          provide: ApiService,
+          provide: APIService,
           useClass: ApiServiceMock,
         },
       ],

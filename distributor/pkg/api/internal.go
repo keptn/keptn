@@ -2,12 +2,13 @@ package api
 
 import (
 	"crypto/tls"
+	"net/http"
+	"time"
+
 	"github.com/benbjohnson/clock"
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
-	"net/http"
-	"time"
 )
 
 // InternalAPISet is an implementation of APISet
@@ -35,7 +36,7 @@ type InternalService int
 const (
 	ConfigurationService InternalService = iota
 	ShipyardController
-	ApiService
+	APIService
 	SecretService
 	MongoDBDatastore
 )
@@ -47,7 +48,7 @@ type InClusterAPIMappings map[InternalService]string
 var DefaultInClusterAPIMappings = InClusterAPIMappings{
 	ConfigurationService: "configuration-service:8080",
 	ShipyardController:   "shipyard-controller:8080",
-	ApiService:           "api-service:8080",
+	APIService:           "api-service:8080",
 	SecretService:        "secret-service:8080",
 	MongoDBDatastore:     "mongodb-datastore:8080",
 }
@@ -75,7 +76,7 @@ func NewInternal(client *http.Client, apiMappings ...InClusterAPIMappings) (*Int
 	}
 
 	as.authHandler = &api.AuthHandler{
-		BaseURL:    apimap[ApiService],
+		BaseURL:    apimap[APIService],
 		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))},
 		Scheme:     "http",
 	}

@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { AppModule } from '../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { FeatureFlagsService } from './feature-flags.service';
-import { ApiService } from './api.service';
+import { APIService } from './api.service';
 import { ApiServiceMock } from './api.service.mock';
 import { DataService } from './data.service';
 
@@ -13,7 +13,7 @@ describe('FeatureFlagsService', () => {
     TestBed.configureTestingModule({
       declarations: [],
       imports: [AppModule, HttpClientTestingModule],
-      providers: [{ provide: ApiService, useClass: ApiServiceMock }],
+      providers: [{ provide: APIService, useClass: ApiServiceMock }],
     });
 
     service = TestBed.inject(FeatureFlagsService);

@@ -1,10 +1,10 @@
 import MockAdapter from 'axios-mock-adapter';
-import { ApiService } from '../services/api-service';
+import { APIService } from '../services/api-service';
 import { setupServer } from '../.jest/setupServer';
 import { AxiosResponse } from 'axios';
 
 describe('Test setting header authorization', () => {
-  let apiService: ApiService;
+  let apiService: APIService;
   let axiosMock: MockAdapter;
   const myAccessToken = 'myAccessToken';
   const authorizationHeader = `Bearer ${myAccessToken}`;
@@ -15,7 +15,7 @@ describe('Test setting header authorization', () => {
   });
 
   beforeEach(async () => {
-    apiService = new ApiService('./', undefined);
+    apiService = new APIService('./', undefined);
   });
 
   afterEach(() => {
@@ -40,7 +40,7 @@ describe('Test setting header authorization', () => {
     for (const key of Reflect.ownKeys(Object.getPrototypeOf(apiService))) {
       if (!ignoreMethods.some((method: string) => method === key)) {
         const method = (
-          apiService[key as keyof ApiService] as unknown as (
+          apiService[key as keyof APIService] as unknown as (
             accessToken: string | undefined,
             ...params: string[]
           ) => Promise<AxiosResponse>

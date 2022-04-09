@@ -1,4 +1,4 @@
-import { ApiService } from './api-service';
+import { APIService } from './api-service';
 import { Sequence } from '../models/sequence';
 import { SequenceTypes } from '../../shared/models/sequence-types';
 import { Trace } from '../models/trace';
@@ -75,13 +75,13 @@ interface ServiceDetailsOptions {
 }
 
 export class DataService {
-  private apiService: ApiService;
+  private apiService: APIService;
   private readonly MAX_SEQUENCE_PAGE_SIZE = 100;
   private readonly MAX_TRACE_PAGE_SIZE = 50;
   private readonly MAX_PAGE_SIZE = 100;
 
   constructor(apiUrl: string, apiToken: string | undefined) {
-    this.apiService = new ApiService(apiUrl, apiToken);
+    this.apiService = new APIService(apiUrl, apiToken);
   }
 
   public async getProjects(accessToken: string | undefined): Promise<Project[]> {

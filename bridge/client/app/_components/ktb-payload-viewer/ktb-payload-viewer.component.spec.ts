@@ -7,7 +7,7 @@ import { of, throwError } from 'rxjs';
 import { Trace } from '../../_models/trace';
 import { EvaluationTracesMock } from '../../_services/_mockData/trace.mock';
 import { TestUtils } from '../../_utils/test.utils';
-import { ApiService } from '../../_services/api.service';
+import { APIService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 
 describe('KtbPayloadViewerComponent', () => {
@@ -19,7 +19,7 @@ describe('KtbPayloadViewerComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [],
       imports: [AppModule, HttpClientTestingModule],
-      providers: [{ provide: ApiService, useClass: ApiServiceMock }],
+      providers: [{ provide: APIService, useClass: ApiServiceMock }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbPayloadViewerComponent);

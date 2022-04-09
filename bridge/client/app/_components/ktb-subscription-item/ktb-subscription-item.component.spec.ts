@@ -5,7 +5,7 @@ import { AppModule } from '../../app.module';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { UniformSubscription } from '../../_models/uniform-subscription';
-import { ApiService } from '../../_services/api.service';
+import { APIService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 import { DataService } from '../../_services/data.service';
 
@@ -18,7 +18,7 @@ describe('KtbSubscriptionItemComponent', () => {
     await TestBed.configureTestingModule({
       imports: [AppModule, HttpClientTestingModule],
       providers: [
-        { provide: ApiService, useClass: ApiServiceMock },
+        { provide: APIService, useClass: ApiServiceMock },
         {
           provide: ActivatedRoute,
           useValue: {

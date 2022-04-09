@@ -3,7 +3,7 @@ import { Project } from '../../_models/project';
 import { Stage } from '../../_models/stage';
 import { DataService } from '../../_services/data.service';
 import { DtFilterFieldChangeEvent, DtFilterFieldDefaultDataSource } from '@dynatrace/barista-components/filter-field';
-import { ApiService } from '../../_services/api.service';
+import { APIService } from '../../_services/api.service';
 import { Service } from '../../_models/service';
 import { DtAutoComplete, DtFilter, DtFilterArray } from '../../_models/dt-filter';
 import { filter, map, switchMap, takeUntil, tap } from 'rxjs/operators';
@@ -30,7 +30,7 @@ export class KtbStageOverviewComponent implements OnDestroy, OnInit {
   @Output() selectedStageChange: EventEmitter<{ stage: Stage; filterType: ServiceFilterType }> = new EventEmitter();
   @Output() filteredServicesChange: EventEmitter<string[]> = new EventEmitter<string[]>();
 
-  constructor(private dataService: DataService, private apiService: ApiService, private route: ActivatedRoute) {}
+  constructor(private dataService: DataService, private apiService: APIService, private route: ActivatedRoute) {}
 
   public ngOnInit(): void {
     // needs to be in init because of emitter

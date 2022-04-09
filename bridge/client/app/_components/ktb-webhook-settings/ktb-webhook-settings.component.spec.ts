@@ -6,7 +6,7 @@ import { AbstractControl } from '@angular/forms';
 import { WebhookConfigMock } from '../../_services/_mockData/webhook-config.mock';
 import { Secret } from '../../_models/secret';
 import { SecretScopeDefault } from '../../../../shared/interfaces/secret-scope';
-import { ApiService } from '../../_services/api.service';
+import { APIService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 
 describe('KtbWebhookSettingsComponent', () => {
@@ -54,7 +54,7 @@ describe('KtbWebhookSettingsComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [],
       imports: [AppModule, HttpClientTestingModule],
-      providers: [{ provide: ApiService, useClass: ApiServiceMock }],
+      providers: [{ provide: APIService, useClass: ApiServiceMock }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbWebhookSettingsComponent);
