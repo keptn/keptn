@@ -27,6 +27,7 @@ func (e *EventSourceMock) Start(ctx context.Context, data RegistrationData, ces 
 func (e *EventSourceMock) OnSubscriptionUpdate(strings []string) {
 	if e.OnSubscriptionUpdateFn != nil {
 		e.OnSubscriptionUpdateFn(strings)
+		return
 	}
 	panic("implement me")
 }
