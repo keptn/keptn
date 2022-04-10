@@ -10,6 +10,17 @@ import (
 var ErrEventHandleFatal = errors.New("fatal event handling error")
 var ErrEventHandleIgnore = errors.New("event handling error")
 
+type RegistrationData models.Integration
+
+// Integration represents a Keptn Service that wants to receive events from the Keptn Control plane
+type Integration interface {
+	// OnEvent is called when a new event was received
+	OnEvent(context.Context, models.KeptnContextExtendedCE) error
+
+	// RegistrationData is called to get the initial registration data
+	RegistrationData() RegistrationData
+}
+
 // ControlPlane can be used to connect to the Keptn Control Plane
 type ControlPlane struct {
 	subscriptionSource   SubscriptionSource
