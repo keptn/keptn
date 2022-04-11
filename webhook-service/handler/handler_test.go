@@ -975,13 +975,13 @@ func TestTaskHandler_Execute_WebhookConfigInProject(t *testing.T) {
 func Test_createRequest(t *testing.T) {
 	tests := []struct {
 		name    string
-		data    interface{}
+		data    lib.IRequest
 		want    string
 		wantErr bool
 	}{
 		{
 			name:    "valid alpha input",
-			data:    "curl command",
+			data:    lib.RequestAlpha("curl command"),
 			want:    "curl command",
 			wantErr: false,
 		},
@@ -1025,12 +1025,6 @@ func Test_createRequest(t *testing.T) {
 			},
 			want:    "curl --request POST http://localhost:8080",
 			wantErr: false,
-		},
-		{
-			name:    "invalid input",
-			data:    1,
-			want:    "",
-			wantErr: true,
 		},
 	}
 

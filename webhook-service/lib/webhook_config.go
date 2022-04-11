@@ -3,7 +3,6 @@ package lib
 import (
 	"errors"
 	"fmt"
-
 	"github.com/mitchellh/mapstructure"
 	"gopkg.in/yaml.v3"
 )
@@ -25,17 +24,23 @@ type WebHookConfigSpec struct {
 }
 
 type Webhook struct {
-	Type           string        `yaml:"type"`
-	SubscriptionID string        `yaml:"subscriptionID"`
-	SendFinished   bool          `yaml:"sendFinished"`
-	SendStarted    *bool         `yaml:"sendStarted,omitempty"`
-	EnvFrom        []EnvFrom     `yaml:"envFrom"`
-	Requests       []interface{} `yaml:"requests"`
+	Type           string     `yaml:"type"`
+	SubscriptionID string     `yaml:"subscriptionID"`
+	SendFinished   bool       `yaml:"sendFinished"`
+	SendStarted    *bool      `yaml:"sendStarted,omitempty"`
+	EnvFrom        []EnvFrom  `yaml:"envFrom"`
+	Requests       []IRequest `yaml:"requests"`
 }
 
 type EnvFrom struct {
 	SecretRef WebHookSecretRef `yaml:"secretRef"`
 	Name      string           `yaml:"name"`
+}
+
+////////////////////////////////
+
+type IRequest interface {
+	String() string
 }
 
 type Request struct {
@@ -45,6 +50,36 @@ type Request struct {
 	Payload string   `yaml:"payload,omitempty"`
 	Options string   `yaml:"options,omitempty"`
 }
+
+func (r Request) String() string {
+	tmpReq := ""
+	if r.Method != "" {
+		tmpReq = fmt.Sprintf("curl --request %s", r.Method)
+	}
+	if len(r.Headers) > 0 {
+		for _, header := range r.Headers {
+			tmpReq = fmt.Sprintf(tmpReq+" --header '%s: %s'", header.Key, header.Value)
+		}
+	}
+	if r.Payload != "" {
+		tmpReq = fmt.Sprintf(tmpReq+" --data '%s'", r.Payload)
+	}
+	if r.Options != "" {
+		tmpReq = fmt.Sprintf(tmpReq+" %s", r.Options)
+	}
+	if r.URL != "" {
+		tmpReq = fmt.Sprintf(tmpReq+" %s", r.URL)
+	}
+	return tmpReq
+}
+
+type RequestAlpha string
+
+func (r RequestAlpha) String() string {
+	return string(r)
+}
+
+///////////////////////////
 
 type Header struct {
 	Key   string `yaml:"key"`

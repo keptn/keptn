@@ -49,8 +49,8 @@ spec:
 									Name: "mysecret",
 								},
 							},
-							Requests: []interface{}{
-								"curl http://localhost:8080 {{.data.project}} {{.env.mysecret}}",
+							Requests: []IRequest{
+								RequestAlpha("curl http://localhost:8080 {{.data.project}} {{.env.mysecret}}"),
 							},
 						},
 					},
