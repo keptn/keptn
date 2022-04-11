@@ -51,18 +51,15 @@ export class HttpErrorInterceptor implements HttpInterceptor {
       return throwError(response);
     }
 
-    if (response.error instanceof ErrorEvent) {
-      // A client-side or network error occurred. Handle it accordingly.
-      this.notificationService.addNotification(NotificationType.ERROR, response.error.message);
+    if (typeof response.error === 'string') {
+      // The backend returned an unsuccessful response code.
+      // The response body may contain clues as to what went wrong,
+      this.notificationService.addNotification(NotificationType.ERROR, response.error);
       return throwError(response);
     }
 
-    // The backend returned an unsuccessful response code.
-    // The response body may contain clues as to what went wrong,
-    this.notificationService.addNotification(
-      NotificationType.ERROR,
-      typeof response.error === 'string' ? response.error : response.message
-    );
+    // A client-side or network error occurred. Handle it accordingly.
+    this.notificationService.addNotification(NotificationType.ERROR, response.message);
     return throwError(response);
   }
 
