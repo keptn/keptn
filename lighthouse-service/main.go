@@ -38,7 +38,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	subscriptionSource := controlplane.NewSubscriptionSource(api.UniformV1())
+	subscriptionSource := controlplane.NewUniformSubscriptionSource(api.UniformV1())
 	natsConnector, err := nats.ConnectFromEnv()
 	if err != nil {
 		log.Fatal(err)
