@@ -8,6 +8,7 @@ import (
 	"time"
 
 	keptnmongoutils "github.com/keptn/go-utils/pkg/common/mongoutils"
+	logger "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -41,35 +42,38 @@ func (m *MongoDBConnection) EnsureDBConnection() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	if m.Client == nil {
-		fmt.Println("No MongoDB client has been initialized yet. Creating a new one.")
+		logger.Info("No MongoDB client has been initialized yet. Creating a new one.")
 		return m.connectMongoDBClient()
 	} else if err = m.Client.Ping(ctx, nil); err != nil {
-		fmt.Println("MongoDB client lost connection. Attempt reconnect.")
+		logger.Info("MongoDB client lost connection. Attempt reconnect.")
+		err2 := m.Client.Disconnect(ctx)
+		if err2 != nil {
+			logger.Errorf("failed to disconnect client from MongoDB: %v", err2)
+		}
 		return m.connectMongoDBClient()
 	}
 	return nil
 }
 
 func (m *MongoDBConnection) connectMongoDBClient() error {
-	var err error
-
 	connectionString, _, err := keptnmongoutils.GetMongoConnectionStringFromEnv()
 	if err != nil {
+		logger.Errorf("failed to create mongo client: %v", err)
 		return fmt.Errorf("failed to create mongo client: %v", err)
 	}
 	m.Client, err = mongo.NewClient(options.Client().ApplyURI(connectionString))
 	if err != nil {
-		err := fmt.Errorf("failed to create mongo client: %v", err)
-		return err
+		logger.Errorf("failed to create mongo client: %v", err)
+		return fmt.Errorf("failed to create mongo client: %v", err)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	err = m.Client.Connect(ctx)
 	if err != nil {
-		err := fmt.Errorf("failed to connect client to MongoDB: %v", err)
-		return err
+		logger.Infof("failed to connect client to MongoDB: %v", err)
+		return fmt.Errorf("failed to connect client to MongoDB: %v", err)
 	}
 	return nil
 }
