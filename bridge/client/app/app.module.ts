@@ -157,6 +157,8 @@ import { TruncateNumberPipe } from './_pipes/truncate-number';
 import { KtbErrorViewComponent } from './_views/ktb-error-view/ktb-error-view.component';
 import { KtbRootComponent } from './ktb-root/ktb-root.component';
 import { KtbLogoutViewComponent } from './_views/ktb-logout-view/ktb-logout-view.component';
+import { KtbLoadingDistractorComponent } from './_components/ktb-loading-distractor/ktb-loading-distractor.component';
+import { KtbLoadingSpinnerComponent } from './_components/ktb-loading-spinner/ktb-loading-spinner.component';
 
 registerLocaleData(localeEn, 'en');
 
@@ -255,6 +257,8 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     KtbErrorViewComponent,
     KtbRootComponent,
     KtbLogoutViewComponent,
+    KtbLoadingDistractorComponent,
+    KtbLoadingSpinnerComponent,
   ],
   imports: [
     BrowserModule,
