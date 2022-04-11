@@ -9,7 +9,6 @@ import { NotificationsService } from '../_services/notifications.service';
 import { NotificationType } from '../_models/notification';
 import { SecretScopeDefault } from '../../../shared/interfaces/secret-scope';
 import { Secret } from '../_models/secret';
-import { take } from 'rxjs/internal/operators/take';
 
 describe('HttpErrorInterceptorService', () => {
   let httpErrorInterceptor: HttpErrorInterceptor;
@@ -39,11 +38,11 @@ describe('HttpErrorInterceptorService', () => {
     expect(httpErrorInterceptor).toBeTruthy();
   });
 
-  it('should show an error when any other error than 401 is returned', async () => {
+  it('should show an error when any other error than 401 is returned', () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
-    await apiService.getMetadata().pipe(take(1)).toPromise();
+    apiService.getMetadata().subscribe();
 
     const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
     const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
@@ -53,11 +52,11 @@ describe('HttpErrorInterceptorService', () => {
     expect(spy).toHaveBeenCalled();
   });
 
-  it('should show an generic error when unauthorized', async () => {
+  it('should show an generic error when unauthorized', () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
-    await apiService.getMetadata().pipe(take(1)).toPromise();
+    apiService.getMetadata().subscribe();
 
     const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
     const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
@@ -67,11 +66,11 @@ describe('HttpErrorInterceptorService', () => {
     expect(spy).toHaveBeenCalled();
   });
 
-  it('should show a toast when oauth is redirected', async () => {
+  it('should show a toast when oauth is redirected', () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
-    await apiService.getMetadata().pipe(take(1)).toPromise();
+    apiService.getMetadata().subscribe();
 
     const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
     const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
@@ -82,11 +81,11 @@ describe('HttpErrorInterceptorService', () => {
     expect(spy).toHaveBeenCalledWith(NotificationType.INFO, 'Login required. Redirecting to login.');
   });
 
-  it('should show a error notification when basic auth is unauthorized', async () => {
+  it('should show a error notification when basic auth is unauthorized', () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
-    await apiService.getMetadata().pipe(take(1)).toPromise();
+    apiService.getMetadata().subscribe();
 
     const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
     const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
@@ -108,7 +107,7 @@ describe('HttpErrorInterceptorService', () => {
     secret.name = 'secret';
     secret.scope = SecretScopeDefault.DEFAULT;
 
-    apiService.addSecret(secret).pipe(take(1)).toPromise();
+    apiService.addSecret(secret).subscribe();
 
     const testRequest: TestRequest = httpMock.expectOne('./api/secrets/v1/secret');
     const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
@@ -120,12 +119,12 @@ describe('HttpErrorInterceptorService', () => {
     expect(spy).toHaveBeenCalledTimes(0);
   });
 
-  it('should show error only once in case of 401 and OAUTH', async () => {
+  it('should show error only once in case of 401 and OAUTH', () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
-    await apiService.getMetadata().pipe(take(1)).toPromise();
-    await apiService.getProjects().pipe(take(1)).toPromise();
+    apiService.getMetadata().subscribe();
+    apiService.getProjects().subscribe();
 
     const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
     const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
@@ -142,12 +141,12 @@ describe('HttpErrorInterceptorService', () => {
     expect(spy).toHaveBeenCalledWith(NotificationType.INFO, 'Login required. Redirecting to login.');
   });
 
-  it('should show error only once in case of 401 and BASIC auth', async () => {
+  it('should show error only once in case of 401 and BASIC auth', () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
-    await apiService.getMetadata().pipe(take(1)).toPromise();
-    await apiService.getProjects().pipe(take(1)).toPromise();
+    apiService.getMetadata().subscribe();
+    apiService.getProjects().subscribe();
 
     const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
     const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
@@ -167,12 +166,12 @@ describe('HttpErrorInterceptorService', () => {
     );
   });
 
-  it('should show error only once in case of 401', async () => {
+  it('should show error only once in case of 401', () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
-    await apiService.getMetadata().pipe(take(1)).toPromise();
-    await apiService.getProjects().pipe(take(1)).toPromise();
+    apiService.getMetadata().subscribe();
+    apiService.getProjects().subscribe();
 
     const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
     const errorEvent: ErrorEvent = new ErrorEvent('incorrect api key auth');
@@ -188,11 +187,11 @@ describe('HttpErrorInterceptorService', () => {
     expect(spy).toHaveBeenCalledWith(NotificationType.ERROR, 'Could not authorize.');
   });
 
-  it('should show error in case of 403', async () => {
+  it('should show error in case of 403', () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
-    await apiService.getMetadata().pipe(take(1)).toPromise();
+    apiService.getMetadata().subscribe();
 
     const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
     const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
