@@ -59,6 +59,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
         showInSidebar: true,
         autocomplete: [
           { name: 'Active', value: 'started' },
+          { name: 'Waiting', value: 'waiting' },
           { name: 'Failed', value: 'failed' },
           { name: 'Aborted', value: 'aborted' },
           { name: 'Succeeded', value: 'succeeded' },
@@ -125,6 +126,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    let initParametersHandled = false;
     AppUtils.createTimer(0, this._sequenceTimerInterval)
       .pipe(
         switchMap(() => this.project$),
@@ -161,15 +163,23 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     combineLatest([this.route.params, this.sequencesUpdated$])
       .pipe(
         takeUntil(this.unsubscribe$),
-        takeWhile(([params]) => !this.currentSequence && params.shkeptncontext)
+        takeWhile(([params]) => !this.currentSequence && params.shkeptncontext && !initParametersHandled)
+        // initParametersHandled to prevent executing it again after traces are loaded if a eventId is provided
       )
       .subscribe(([params]: [Params, void]) => {
         if (params.shkeptncontext && this.project?.sequences) {
           const sequence = this.project.sequences.find((s) => s.shkeptncontext === params.shkeptncontext);
-          const stage = params.eventId ? sequence?.traces.find((t) => t.id === params.eventId)?.stage : params.stage;
+          const stage = params.eventId ? undefined : params.stage;
           const eventId = params.eventId;
+
           if (sequence) {
-            this.selectSequence({ sequence, stage, eventId });
+            if (params.eventId && !sequence.traces.length) {
+              // at this moment, no traces for the sequence are loaded, wait till next sequencesUpdated$
+              initParametersHandled = true;
+              this.loadTraces(sequence, params.eventId);
+            } else {
+              this.selectSequence({ sequence, stage, eventId });
+            }
           } else if (params.shkeptncontext && this.project) {
             // is running twice because project is changed on start before the first call finishes
             this.dataService.loadUntilRoot(this.project, params.shkeptncontext);
@@ -197,7 +207,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     });
   }
 
-  selectSequence(event: { sequence: Sequence; stage?: string; eventId?: string }): void {
+  public selectSequence(event: { sequence: Sequence; stage?: string; eventId?: string }, loadTraces = true): void {
     if (event.eventId) {
       const routeUrl = this.router.createUrlTree([
         '/project',
@@ -223,21 +233,33 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     this.currentSequence = event.sequence;
     this.selectedStage = event.stage || event.sequence.getStages().pop();
     this.updateLatestDeployedImage();
-    this.loadTraces(this.currentSequence);
+    if (loadTraces) {
+      this.loadTraces(this.currentSequence);
+    }
   }
 
-  loadTraces(sequence: Sequence): void {
+  public loadTraces(sequence: Sequence, eventId?: string): void {
     this._tracesTimer.unsubscribe();
     if (moment().subtract(1, 'day').isBefore(sequence.time)) {
       this._tracesTimer = AppUtils.createTimer(0, this._tracesTimerInterval)
         .pipe(takeUntil(this.unsubscribe$))
         .subscribe(() => {
-          this.dataService.loadTraces(sequence);
+          this.setTraces(sequence, eventId);
         });
     } else {
-      this.dataService.loadTraces(sequence);
+      this.setTraces(sequence, eventId);
       this._tracesTimer = Subscription.EMPTY;
     }
+  }
+
+  private setTraces(sequence: Sequence, eventId?: string): void {
+    this.dataService.getTracesOfSequence(sequence).subscribe((traces) => {
+      sequence.traces = traces;
+      if (eventId) {
+        const stage = sequence.findTrace((t) => t.id === eventId)?.stage;
+        this.selectSequence({ sequence, stage, eventId }, false);
+      }
+    });
   }
 
   private updateLatestDeployedImage(): void {
@@ -359,7 +381,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     });
   }
 
-  getTracesLastUpdated(sequence: Sequence): Date {
+  public getTracesLastUpdated(sequence: Sequence): Date | undefined {
     return this.dataService.getTracesLastUpdated(sequence);
   }
 

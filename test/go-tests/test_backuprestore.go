@@ -147,7 +147,7 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	require.Nil(t, err)
 
 	t.Logf("Trigger delivery before backup of helloservice:v0.1.0")
-	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", projectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery")
+	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s:%s --sequence=%s", projectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery")
 	require.Nil(t, err)
 
 	t.Logf("Sleeping for 90s...")
@@ -306,7 +306,7 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	t.Logf("Continue to work...")
 
 	t.Logf("Trigger delivery after restore of helloservice:v0.1.1")
-	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s --tag=%s --sequence=%s", projectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.1", "delivery")
+	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s:%s --sequence=%s", projectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.1", "delivery")
 	require.Nil(t, err)
 
 	t.Logf("Sleeping for 60s...")

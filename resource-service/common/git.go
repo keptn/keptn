@@ -113,6 +113,13 @@ func getAuthMethod(gitContext common_models.GitContext) (transport.AuthMethod, e
 			// To use unsecure conenction, GitProxyInsecure parameter should be set to true and https protocol will be used without TLS verification
 			client.InstallProtocol("https", http.NewClient(customClient))
 		}
+
+		if gitContext.Credentials.User == "" {
+			//we try the authentication anyway since in most git servers
+			//any user apart from an empty string is fine when we use a token
+			//this auth will fail in case user is using bitbucket
+			gitContext.Credentials.User = "keptnuser"
+		}
 		return &http.BasicAuth{
 			Username: gitContext.Credentials.User,
 			Password: gitContext.Credentials.Token,

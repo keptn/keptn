@@ -285,14 +285,14 @@ jobs:
 
       - name: Report test coverage for ${{ matrix.config.artifact }}
         if: matrix.config.should-push-image == 'true'
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           fail_ci_if_error: false
           flags: ${{ matrix.config.artifact }}
 
       - name: Report test coverage for bridge-server
         if: matrix.config.should-push-image == 'false' && matrix.config.artifact == 'bridge2' && matrix.config.docker-test-target == 'bridge-server-test'
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           fail_ci_if_error: false
           flags: bridge-server
@@ -334,7 +334,7 @@ jobs:
           gotestsum --no-color=false --format=testname -- -race -v  -coverprofile=coverage.txt -covermode=atomic ./...
 
       - name: Report test coverage for CLI
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           fail_ci_if_error: true
           flags: cli

@@ -194,6 +194,10 @@ func executeJMeter(testInfo TestInfo, workload *Workload, resultsDir string, url
 	}
 	// Step 2: Lets execute the script - but be aware that we launch jmeter from the localTempDir as a working directory!
 	jMeterCommandLineArgs := addJMeterCommandLineArguments(testInfo, createJMeterCLIArguments(workload, url, resultsDir, loadTestName))
+	return execute(testInfo, workload, err, jMeterCommandLineArgs, localTempDir, removeTempFiles, funcValidation)
+}
+
+func execute(testInfo TestInfo, workload *Workload, err error, jMeterCommandLineArgs []string, localTempDir string, removeTempFiles bool, funcValidation bool) (bool, error) {
 	jmeterCommandResult, err := keptnutils.ExecuteCommandInDirectory("jmeter", jMeterCommandLineArgs, localTempDir)
 	if err != nil {
 		logger.Error(err.Error())
@@ -206,13 +210,14 @@ func executeJMeter(testInfo TestInfo, workload *Workload, resultsDir string, url
 		}
 	}
 	// Step 3: Parse result and lets analyze the result
+	logger.Debugf("Executing jmeter tests with the following configuration: %v", testInfo)
 	result, err := parseJMeterResult(jmeterCommandResult, testInfo, workload, funcValidation)
-	if result && err != nil {
-		logger.Debugf("Successfully executed JMeter test: %v", testInfo)
-	} else {
-		logger.Errorf("Successfully executed JMeter test: %v", testInfo)
+	if err != nil {
+		logger.Errorf("Could not parse JMeter test (%v). Error: %v  ", testInfo, err)
+		return false, err
 	}
-	return result, err
+	logger.Debugf("Jmeter tests passed: %t", result)
+	return result, nil
 }
 
 func createDir(dir string) error {

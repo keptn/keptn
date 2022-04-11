@@ -96,5 +96,5 @@ Use the following set of examples to help you familiarize yourself with running 
 
 - Send a new artifact event for the onboarded service
   ```console
-  keptn send event new-artifact --project=my-first-project --service=my-service --image=docker.io/keptnexamples/my-service --tag=0.1.0
+  keptn trigger delivery --project=my-first-project --service=my-service --image=docker.io/keptnexamples/my-service:0.1.0
   ```

@@ -1025,6 +1025,29 @@ func Test_getAuthMethod(t *testing.T) {
 			},
 		},
 		{
+			name: "valid credentials no user",
+			gitContext: common_models.GitContext{
+				Credentials: &common_models.GitCredentials{
+					RemoteURI:         "https://some.url",
+					Token:             "some-token",
+					User:              "",
+					GitPrivateKey:     "",
+					GitPrivateKeyPass: "",
+					GitProxyURL:       "",
+					GitProxyInsecure:  false,
+					GitProxyScheme:    "",
+					GitProxyUser:      "",
+					GitProxyPassword:  "",
+				},
+				Project: "my-proj",
+			},
+			wantErr: false,
+			expectedOutput: &http.BasicAuth{
+				Username: "keptnuser",
+				Password: "some-token",
+			},
+		},
+		{
 			name: "invalid credentials",
 			gitContext: common_models.GitContext{
 				Credentials: &common_models.GitCredentials{

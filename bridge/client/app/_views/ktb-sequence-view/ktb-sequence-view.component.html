@@ -105,8 +105,8 @@
               [textContent]="currentSequence.time | toDate | amCalendar: dateUtil.getCalendarFormats(false, true)"
             ></span>
           </p>
-          <dt-alert class="mt-1" *ngIf="currentSequence.isWaiting()" severity="warning"
-            >Sequence might be waiting for previous sequences to be finished.
+          <dt-alert class="mt-1" *ngIf="currentSequence.isWaiting()" severity="warning">
+            Sequence is waiting for previous sequences to finish.
           </dt-alert>
         </dt-info-group>
       </div>
@@ -125,9 +125,13 @@
         <dt-tag
           >Last time fetched:
           <span
-            [textContent]="getTracesLastUpdated(currentSequence) | amCalendar: dateUtil.getCalendarFormats(true)"
-          ></span
-        ></dt-tag>
+            *ngIf="getTracesLastUpdated(currentSequence) as time; else noTime"
+            [textContent]="time | amCalendar: dateUtil.getCalendarFormats(true)"
+          ></span>
+          <ng-template #noTime>
+            <span>never</span>
+          </ng-template>
+        </dt-tag>
         <button class="ml-2" dt-button (click)="loadTraces(currentSequence)" *ngIf="showReloadButton(currentSequence)">
           <dt-icon name="refresh"></dt-icon>
           Reload

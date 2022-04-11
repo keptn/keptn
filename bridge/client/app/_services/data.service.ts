@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, forkJoin, from, Observable, of, Subject } from 'rxjs';
 import { catchError, map, mergeMap, switchMap, take, tap, toArray } from 'rxjs/operators';
 import { Trace } from '../_models/trace';
-import { Stage } from '../_models/stage';
 import { Project } from '../_models/project';
 import { EventTypes } from '../../../shared/interfaces/event-types';
 import { ApiService } from './api.service';
@@ -224,7 +223,7 @@ export class DataService {
     return this._rootsLastUpdated[project.projectName];
   }
 
-  public getTracesLastUpdated(sequence: Sequence): Date {
+  public getTracesLastUpdated(sequence: Sequence): Date | undefined {
     return this._tracesLastUpdated[sequence.shkeptncontext];
   }
 
@@ -397,9 +396,6 @@ export class DataService {
         if (this.allSequencesLoaded(project.sequences?.length || 0, totalCount, fromTime, beforeTime)) {
           project.allSequencesLoaded = true;
         }
-        project.stages.forEach((stage) => {
-          this.stageSequenceMapper(stage, project);
-        });
         this._sequencesUpdated.next();
       });
   }
@@ -501,33 +497,20 @@ export class DataService {
     });
   }
 
-  public loadTraces(sequence: Sequence): void {
+  public getTracesOfSequence(sequence: Sequence): Observable<Trace[]> {
     const fromTime: Date = this._tracesLastUpdated[sequence.shkeptncontext];
-    this.apiService
-      .getTraces(sequence.shkeptncontext, sequence.project, fromTime?.toISOString())
-      .pipe(
-        map((response) => {
-          this.updateTracesUpdated(response, sequence.shkeptncontext);
-          return response.body;
-        }),
-        map((result) => result?.events || []),
-        map((traces) => traces.map((trace) => Trace.fromJSON(trace)))
-      )
-      .subscribe((traces: Trace[]) => {
-        sequence.traces = Trace.traceMapper([...(traces || []), ...(sequence.traces || [])]);
-        this.getProject(sequence.project)
-          .pipe(take(1))
-          .subscribe((project) => {
-            if (project) {
-              project.stages
-                .filter((s) => sequence.getStages().includes(s.stageName))
-                .forEach((stage) => {
-                  this.stageSequenceMapper(stage, project);
-                });
-            }
-          });
+    return this.apiService.getTraces(sequence.shkeptncontext, sequence.project, fromTime?.toISOString()).pipe(
+      map((response) => {
+        this.updateTracesUpdated(response, sequence.shkeptncontext);
+        return response.body;
+      }),
+      map((result) => result?.events || []),
+      map((traces) => traces.map((trace) => Trace.fromJSON(trace))),
+      map((traces) => Trace.traceMapper([...(traces || []), ...(sequence.traces || [])])),
+      tap(() => {
         this._sequencesUpdated.next();
-      });
+      })
+    );
   }
 
   public loadTracesByContext(shkeptncontext: string): void {
@@ -611,11 +594,13 @@ export class DataService {
       if (project?.projectName) {
         const stage = project.stages.find((st) => st.stageName === approval.data.stage);
         const service = stage?.services.find((sv) => sv.serviceName === approval.data.service);
-        const sequence = service?.sequences.find((seq) => seq.shkeptncontext === approval.shkeptncontext);
+        const sequence = project.sequences?.find((seq) => seq.shkeptncontext === approval.shkeptncontext);
 
         if (sequence) {
           // update data of sequence screen
-          this.loadTraces(sequence);
+          this.getTracesOfSequence(sequence).subscribe((traces) => {
+            sequence.traces = traces;
+          });
         }
         if (service) {
           // update data of environment screen
@@ -715,16 +700,6 @@ export class DataService {
       ),
       toArray()
     );
-  }
-
-  protected stageSequenceMapper(stage: Stage, project: Project): void {
-    stage.services.forEach((service) => {
-      if (project.sequences) {
-        service.sequences = project.sequences.filter(
-          (s) => s.service === service.serviceName && s.getStages().includes(stage.stageName)
-        );
-      }
-    });
   }
 
   private rootMapper(roots: Trace[]): Observable<Root[]> {
