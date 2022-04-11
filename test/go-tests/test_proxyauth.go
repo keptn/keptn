@@ -149,6 +149,6 @@ func Test_ProxyAuth(t *testing.T) {
 	require.Nil(t, err)
 
 	//Modify the proxy settings to be certain that no other project use the proxy
-	_, err = ExecuteCommand(fmt.Sprintf("keptn update project %s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s --git-proxy-url=squid:3124 --git-proxy-scheme=http --git-proxy-insecure", projectName, user, projectName, user, token))
+	_, err = ExecuteCommand(fmt.Sprintf("keptn update project %s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s --git-proxy-url=squid:3124 --git-proxy-scheme=http --insecure-skip-tls", projectName, user, projectName, user, token))
 	require.Nil(t, err)
 }
