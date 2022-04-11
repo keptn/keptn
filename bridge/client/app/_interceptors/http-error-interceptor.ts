@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@angular/core';
 import { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
-import { Observable, throwError, NEVER, EMPTY } from 'rxjs';
+import { EMPTY, NEVER, Observable, throwError } from 'rxjs';
 import { catchError, retryWhen } from 'rxjs/operators';
 import { genericRetryStrategy, RetryParams } from './http-generic-retry-strategy';
 import { Location } from '@angular/common';
@@ -28,38 +28,42 @@ export class HttpErrorInterceptor implements HttpInterceptor {
     return next.handle(request).pipe(
       retryWhen(genericRetryStrategy(params)),
       catchError((error: HttpErrorResponse) => {
-        if (error.status === 401) {
-          return this._handleUnauthorizedError(error);
-        }
-
-        if (error.status === 403) {
-          this.notificationService.addNotification(
-            NotificationType.ERROR,
-            'You do not have the permissions to perform this action.'
-          );
-          return EMPTY;
-        }
-
-        if (error.status === 409 && error.url?.endsWith('/api/secrets/v1/secret')) {
-          // Special case for already existing secrets - for unit test has to be before instanceof ErrorEvent
-          return throwError(error);
-        }
-
-        if (error.error instanceof ErrorEvent) {
-          // A client-side or network error occurred. Handle it accordingly.
-          this.notificationService.addNotification(NotificationType.ERROR, error.error.message);
-          return throwError(error);
-        }
-
-        // The backend returned an unsuccessful response code.
-        // The response body may contain clues as to what went wrong,
-        this.notificationService.addNotification(NotificationType.ERROR, error.message);
-        return throwError(error);
+        return this.handleError(error);
       })
     );
   }
 
-  private _handleUnauthorizedError(error: HttpErrorResponse): Observable<HttpEvent<unknown>> {
+  handleError(error: HttpErrorResponse): Observable<HttpEvent<unknown>> {
+    if (error.status === 401) {
+      return this.handleUnauthorizedError(error);
+    }
+
+    if (error.status === 403) {
+      this.notificationService.addNotification(
+        NotificationType.ERROR,
+        'You do not have the permissions to perform this action.'
+      );
+      return EMPTY;
+    }
+
+    if (error.status === 409 && error.url?.endsWith('/api/secrets/v1/secret')) {
+      // Special case for already existing secrets - for unit test has to be before instanceof ErrorEvent
+      return throwError(error);
+    }
+
+    if (error.error instanceof ErrorEvent) {
+      // A client-side or network error occurred. Handle it accordingly.
+      this.notificationService.addNotification(NotificationType.ERROR, error.error.message);
+      return throwError(error);
+    }
+
+    // The backend returned an unsuccessful response code.
+    // The response body may contain clues as to what went wrong,
+    this.notificationService.addNotification(NotificationType.ERROR, error.message);
+    return throwError(error);
+  }
+
+  handleUnauthorizedError(error: HttpErrorResponse): Observable<HttpEvent<unknown>> {
     const authType = error.headers.get('keptn-auth-type');
 
     if (this.isAuthorizedErrorShown) {
@@ -76,7 +80,9 @@ export class HttpErrorInterceptor implements HttpInterceptor {
       // Wait for few moments to let user see the toast message and navigate to external login route
       setTimeout(() => (window.location.href = this.location.prepareExternalUrl('/oauth/login')), 1000);
       return NEVER;
-    } else if (authType === 'BASIC') {
+    }
+
+    if (authType === 'BASIC') {
       this.isAuthorizedErrorShown = true;
       this.notificationService.addNotification(
         NotificationType.ERROR,
