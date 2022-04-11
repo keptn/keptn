@@ -150,7 +150,22 @@
           }
         }
       ]
+    },
+    {
+      "name": "delivery-direct",
+      "service": "carts-db",
+      "project": "sockshop",
+      "time": "2022-01-09T15:04:09.199Z",
+      "shkeptncontext": "f78c2fc7-d272-4bcd-9845-3f3041080ae1",
+      "state": "waiting",
+      "stages": [
+        {
+          "name": "dev",
+          "image": "docker.io/mongo:v4.2.2",
+          "state": "waiting"
+        }
+      ]
     }
   ],
-  "totalCount": 4
+  "totalCount": 5
 }

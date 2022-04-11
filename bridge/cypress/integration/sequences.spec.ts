@@ -15,9 +15,7 @@ describe('Sequences', () => {
       fixture: 'sequences.sockshop',
     });
 
-    sequencePage.visit('sockshop');
-
-    cy.byTestId('keptn-loadingSequences').should('exist');
+    sequencePage.visit('sockshop').assertIsLoadingSequences(true);
   });
 
   it('should show an empty state if no sequences are loaded', () => {
@@ -32,9 +30,7 @@ describe('Sequences', () => {
   });
 
   it('should show a list of sequences if everything is loaded', () => {
-    sequencePage.visit('sockshop');
-
-    cy.byTestId('keptn-sequence-view-roots').get('ktb-selectable-tile').should('have.length', 4);
+    sequencePage.visit('sockshop').assertSequenceCount(5);
   });
 
   it('should show a filtered list if filters are applied', () => {
@@ -44,55 +40,60 @@ describe('Sequences', () => {
     cy.wait(500);
 
     // Test single filters
+    sequencePage
+      .checkServiceFilter('carts')
+      .assertSequenceCount(3)
+      .assertServiceNameOfSequences('carts')
 
-    cy.get('dt-quick-filter-group').eq(0).find('dt-checkbox').eq(0).click();
-    testSelectableTiles(3, 'keptn-sequence-info-serviceName', 'carts');
+      .clearFilter()
+      .checkServiceFilter('carts-db')
+      .assertSequenceCount(2)
+      .assertServiceNameOfSequences('carts-db')
 
-    clearFilter();
-    cy.get('dt-quick-filter-group').eq(0).find('dt-checkbox').eq(1).click();
-    testSelectableTiles(1, 'keptn-sequence-info-serviceName', 'carts-db');
+      .clearFilter()
+      .checkStageFilter('production')
+      .assertSequenceCount(2)
+      .assertStageNamesOfSequences(['dev', 'staging', 'production'])
 
-    clearFilter();
-    cy.get('dt-quick-filter-group').eq(1).find('dt-checkbox').eq(2).click();
-    cy.byTestId('keptn-sequence-info-stageDetails').each((el) => {
-      cy.wrap(el).find('ktb-stage-badge').should('have.length', 3);
-    });
+      .clearFilter()
+      .checkSequenceFilter('delivery')
+      .assertSequenceCount(3)
+      .assertSequenceNameOfSequences('delivery')
 
-    clearFilter();
-    cy.get('dt-quick-filter-group').eq(2).find('dt-checkbox').eq(0).click();
-    testSelectableTiles(3, 'keptn-sequence-info-sequenceName', 'delivery');
+      .clearFilter()
+      .checkSequenceFilter('delivery-direct')
+      .assertSequenceCount(2)
+      .assertSequenceNameOfSequences('delivery-direct')
 
-    clearFilter();
-    cy.get('dt-quick-filter-group').eq(2).find('dt-checkbox').eq(1).click();
-    testSelectableTiles(1, 'keptn-sequence-info-sequenceName', 'delivery-direct');
+      .clearFilter()
+      .checkStatusFilter('Active')
+      .assertNoSequencesMessageExists(true)
 
-    clearFilter();
-    cy.get('dt-quick-filter-group').eq(3).find('dt-checkbox').eq(0).click();
-    cy.byTestId('keptn-noSequencesFiltered').should('exist');
+      .clearFilter()
+      .checkStatusFilter('Failed')
+      .assertSequenceCount(2)
+      .assertStatusOfSequences('failed')
 
-    clearFilter();
-    cy.get('dt-quick-filter-group').eq(3).find('dt-checkbox').eq(1).click();
-    testSelectableTiles(2, 'keptn-sequence-info-status', 'failed');
+      .clearFilter()
+      .checkStatusFilter('Aborted')
+      .assertNoSequencesFilteredMessageExists(true)
 
-    clearFilter();
-    cy.get('dt-quick-filter-group').eq(3).find('dt-checkbox').eq(2).click();
-    cy.byTestId('keptn-noSequencesFiltered').should('exist');
+      .clearFilter()
+      .checkStatusFilter('Succeeded')
+      .assertSequenceCount(2)
+      .assertStatusOfSequences('succeeded')
+      .assertLoadingOldSequencesButtonExists(false)
 
-    clearFilter();
-    cy.get('dt-quick-filter-group').eq(3).find('dt-checkbox').eq(3).click();
-    testSelectableTiles(2, 'keptn-sequence-info-status', 'succeeded');
-    cy.byTestId('keptn-loadingOldSequences').should('not.exist');
-
-    // Test one combined filter
-    clearFilter();
-    cy.get('dt-quick-filter-group').eq(0).find('dt-checkbox').eq(0).click();
-    cy.get('dt-quick-filter-group').eq(1).find('dt-checkbox').eq(2).click();
-    cy.get('dt-quick-filter-group').eq(2).find('dt-checkbox').eq(0).click();
-    cy.get('dt-quick-filter-group').eq(3).find('dt-checkbox').eq(3).click();
-
-    testSelectableTiles(1, 'keptn-sequence-info-serviceName', 'carts');
-    testSelectableTiles(1, 'keptn-sequence-info-sequenceName', 'delivery');
-    testSelectableTiles(1, 'keptn-sequence-info-status', 'succeeded');
+      // Test one combined filter
+      .clearFilter()
+      .checkServiceFilter('carts')
+      .checkStageFilter('production')
+      .checkSequenceFilter('delivery')
+      .checkStatusFilter('Succeeded')
+      .assertStageNameOfSequences('production')
+      .assertServiceNameOfSequences('carts')
+      .assertSequenceNameOfSequences('delivery')
+      .assertStatusOfSequences('succeeded');
   });
 
   it('should select sequence and show the right timestamps in the timeline', () => {
@@ -143,17 +144,28 @@ describe('Sequences', () => {
     sequencePage.visit(project).selectSequence(context).assertServiceName('carts');
   });
 
-  function clearFilter(): void {
-    cy.get('.dt-filter-field-clear-all-button').click();
-    cy.get('.dt-filter-field-input ').type('{esc}');
-  }
-
-  function testSelectableTiles(expectedLength: number, textElementSelector: string, expectedText: string): void {
-    const selectableTiles = cy.byTestId('keptn-sequence-view-roots').get('ktb-selectable-tile');
-    selectableTiles.should('have.length', expectedLength);
-
-    cy.byTestId(textElementSelector).each((el) => {
-      cy.wrap(el).should('have.text', expectedText);
+  it('should show waiting sequence', () => {
+    const context = 'f78c2fc7-d272-4bcd-9845-3f3041080ae1';
+    const project = 'sockshop';
+    cy.intercept(`/api/mongodb-datastore/event?keptnContext=${context}&project=${project}`, {
+      body: {
+        events: [],
+      },
     });
-  }
+
+    sequencePage
+      .visit(project)
+      .assertIsWaitingSequence(context, true)
+      .selectSequence(context)
+      .assertIsSelectedSequenceWaiting(true);
+  });
+
+  it('should filter waiting sequences', () => {
+    sequencePage.visit('sockshop');
+    cy.wait('@SequencesMetadata');
+    cy.wait('@Sequences');
+    cy.wait(500);
+
+    sequencePage.checkStatusFilter('Waiting').assertSequenceCount(1).assertStatusOfSequences('waiting');
+  });
 });

@@ -25,7 +25,7 @@
         </div>
       </ktb-selectable-tile-header>
       <p class="m-0 small" *ngIf="sequence.isWaiting(); else notWaiting">
-        Sequence might be waiting for previous sequences to be finished.
+        Sequence is waiting for previous sequences to finish.
       </p>
       <ng-template #notWaiting>
         <p class="m-0 small" uitestid="keptn-root-events-list-eventTiming">

@@ -138,21 +138,7 @@ export class Sequence extends sq {
   }
 
   public isWaiting(): boolean {
-    if (this.isRemediation()) {
-      return false;
-    }
-
-    const lastStageName = this.getLastStage();
-    if (lastStageName && this.state === SequenceState.STARTED) {
-      const lastStage = this.getStage(lastStageName);
-      return (
-        lastStage?.state === SequenceState.FINISHED || // last stages is finished, but sequence is still started, means it is waiting for next stage to be triggered
-        (lastStage?.state === SequenceState.TRIGGERED && !!lastStage?.latestEvent?.type.endsWith('.triggered'))
-      ); // last stage is triggered, but has no running tasks
-    } else {
-      // no stages yet, sequence is triggered, so waiting
-      return this.state === SequenceState.TRIGGERED;
-    }
+    return this.state === SequenceState.WAITING;
   }
 
   public isRemediation(): boolean {
