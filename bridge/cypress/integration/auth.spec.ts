@@ -7,7 +7,7 @@ describe('Test auth errors', () => {
     cy.intercept('/api/v1/metadata', { fixture: 'metadata' });
   });
 
-  it('should show error for 401 response', () => {
+  it('should show an error for 401 response', () => {
     cy.intercept('/api/bridgeInfo', { statusCode: 401 });
     cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', {
       statusCode: 401,
@@ -17,7 +17,7 @@ describe('Test auth errors', () => {
     basePage.notificationErrorVisible('Could not authorize.');
   });
 
-  it('should show error for invalid token', () => {
+  it('should show an error for invalid token', () => {
     cy.intercept('/api/bridgeInfo', {
       statusCode: 401,
       body: 'incorrect api key auth',
