@@ -309,7 +309,7 @@ jobs:
           token: ${{ secrets.KEPTN_BOT_TOKEN }}
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3.0.0
+        uses: actions/setup-node@v3.1.0
         with:
           node-version: ${{ env.NODE_VERSION }}
 

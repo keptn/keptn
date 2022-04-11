@@ -162,6 +162,8 @@ import { KtbIntegerInputDirective } from './_directives/ktb-integer-input/ktb-in
 import { KtbCertificateInputComponent } from './_components/ktb-certificate-input/ktb-certificate-input.component';
 import { KtbSshKeyInputComponent } from './_components/ktb-ssh-key-input/ktb-ssh-key-input.component';
 import { KtbProjectSettingsGitSshInputComponent } from './_components/ktb-project-settings-git-ssh-input/ktb-project-settings-git-ssh-input.component';
+import { KtbLoadingDistractorComponent } from './_components/ktb-loading-distractor/ktb-loading-distractor.component';
+import { KtbLoadingSpinnerComponent } from './_components/ktb-loading-spinner/ktb-loading-spinner.component';
 
 registerLocaleData(localeEn, 'en');
 
@@ -265,6 +267,8 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     KtbCertificateInputComponent,
     KtbSshKeyInputComponent,
     KtbProjectSettingsGitSshInputComponent,
+    KtbLoadingDistractorComponent,
+    KtbLoadingSpinnerComponent,
   ],
   imports: [
     BrowserModule,

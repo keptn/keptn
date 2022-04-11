@@ -241,3 +241,4 @@ spec:
           secret:
             secretName: bridge-oauth-mongodb-credentials
             defaultMode: 0400
+      {{- include "keptn.nodeSelector" (dict "value" .Values.bridge.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}

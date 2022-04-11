@@ -98,7 +98,7 @@ export class KtbIntegrationViewComponent implements OnInit, OnDestroy {
   addDeploymentUseCaseToIntegrations(): void {
     this.useCaseExamples.cli.push({
       label: 'Trigger deployment with a new artifact',
-      code: `keptn trigger delivery --project=\${PROJECT} --service=\${SERVICE} --image=\${IMAGE} --tag=\${TAG} --sequence=\${SEQUENCE}`,
+      code: `keptn trigger delivery --project=\${PROJECT} --service=\${SERVICE} --image=\${IMAGE}:\${TAG} --sequence=\${SEQUENCE}`,
     });
     this.useCaseExamples.api.push({
       label: 'Trigger deployment with a new artifact',

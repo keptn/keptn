@@ -77,6 +77,8 @@ func Test_metadataHandler_getMetadata(t *testing.T) {
 		getBridgeDeployment(),
 	)
 
+	falseValue := false
+
 	type fields struct {
 		k8sClient kubernetes.Interface
 	}
@@ -99,7 +101,7 @@ func Test_metadataHandler_getMetadata(t *testing.T) {
 					Keptnversion:          "develop",
 					Shipyardversion:       "0.2.0",
 					Namespace:             "keptn",
-					Automaticprovisioning: false,
+					Automaticprovisioning: &falseValue,
 				},
 			},
 		},
@@ -118,7 +120,7 @@ func Test_metadataHandler_getMetadata(t *testing.T) {
 					Keptnversion:          "develop",
 					Shipyardversion:       "0.2.0",
 					Namespace:             "keptn",
-					Automaticprovisioning: false,
+					Automaticprovisioning: &falseValue,
 				},
 			},
 		},

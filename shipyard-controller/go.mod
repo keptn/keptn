@@ -10,7 +10,7 @@ require (
 	github.com/go-test/deep v1.0.8
 	github.com/google/uuid v1.3.0
 	github.com/jeremywohl/flatten v1.0.1
-	github.com/keptn/go-utils v0.13.1-0.20220318125157-fe974e59cc65
+	github.com/keptn/go-utils v0.14.1-0.20220405094754-802847e81750
 	github.com/mitchellh/copystructure v1.2.0
 	github.com/nats-io/nats-server/v2 v2.7.4
 	github.com/nats-io/nats.go v1.13.1-0.20220308171302-2f2f6968e98d
@@ -27,10 +27,7 @@ require (
 	k8s.io/client-go v0.22.8
 )
 
-require (
-	github.com/go-playground/validator/v10 v10.4.1
-	github.com/kelseyhightower/envconfig v1.4.0
-)
+require github.com/kelseyhightower/envconfig v1.4.0
 
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
@@ -50,6 +47,7 @@ require (
 	github.com/go-openapi/swag v0.19.15 // indirect
 	github.com/go-playground/locales v0.13.0 // indirect
 	github.com/go-playground/universal-translator v0.17.0 // indirect
+	github.com/go-playground/validator/v10 v10.4.1 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect

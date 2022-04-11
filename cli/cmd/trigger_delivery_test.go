@@ -21,6 +21,8 @@ import (
 	"github.com/keptn/keptn/cli/pkg/logging"
 )
 
+const metadataMockResponse = `{"bridgeversion":"v1","keptnlabel":"keptn","keptnversion":"0.8.0","namespace":"keptn"}`
+
 const getProjectMockResponse = `{
 	"creationDate": "1638796448951137480",
 	"projectName": "%s",
@@ -114,7 +116,7 @@ func TestTriggerDelivery(t *testing.T) {
 	os.Setenv("MOCK_SERVER", ts.URL)
 
 	cmd := fmt.Sprintf("trigger delivery --project=%s --service=%s --stage=%s --sequence=%s "+
-		"--image=%s --tag=%s --values=a.b.c=d --mock --values=c.d=e", "sockshop", "carts", "dev", "artifact-delivery", "docker-registry:5000/keptnexamples/carts", "0.9.1")
+		"--image=%s --values=a.b.c=d --mock --values=c.d=e", "sockshop", "carts", "dev", "artifact-delivery", "docker-registry:5000/keptnexamples/carts:0.9.1")
 	_, err := executeActionCommandC(cmd)
 
 	if err != nil {
@@ -184,7 +186,7 @@ func TestTriggerDeliveryNoStageProvided(t *testing.T) {
 	os.Setenv("MOCK_SERVER", ts.URL)
 
 	cmd := fmt.Sprintf("trigger delivery --project=%s --service=%s --sequence=%s "+
-		"--image=%s --tag=%s --values=a.b.c=d --mock --values=c.d=e", "sockshop", "carts", "artifact-delivery", "docker.io/keptnexamples/carts", "0.9.1")
+		"--image=%s:%s --values=a.b.c=d --mock --values=c.d=e", "sockshop", "carts", "artifact-delivery", "docker.io/keptnexamples/carts", "0.9.1")
 	_, err := executeActionCommandC(cmd)
 
 	if err != nil {
@@ -218,8 +220,11 @@ func TestCheckImageAvailabilityD(t *testing.T) {
 	for _, validImg := range validImgs {
 		*delivery.Project = "sockshop"
 		*delivery.Service = "carts"
-		*delivery.Image = validImg.Image
-		*delivery.Tag = validImg.Tag
+		if validImg.Tag != "" {
+			*delivery.Image = fmt.Sprintf("%s:%s", validImg.Image, validImg.Tag)
+		} else {
+			*delivery.Image = validImg.Tag
+		}
 
 		err := triggerDeliveryCmd.PreRunE(triggerDeliveryCmd, []string{})
 
@@ -241,7 +246,6 @@ func TestCheckImageNonAvailabilityD(t *testing.T) {
 		*delivery.Project = "sockshop"
 		*delivery.Service = "carts"
 		*delivery.Image = validImg.Image
-		*delivery.Tag = validImg.Tag
 
 		err := triggerDeliveryCmd.PreRunE(triggerDeliveryCmd, []string{})
 
@@ -282,17 +286,16 @@ func TestTriggerDeliveryNonExistingProject(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run("", func(t *testing.T) {
-			cmd := fmt.Sprintf("trigger delivery --project=%s --service=mysvc --image=%s --tag=%s --mock",
+			cmd := fmt.Sprintf("trigger delivery --project=%s --service=mysvc --image=%s:%s --mock",
 				tt.project,
-				"docker.io/keptnexamples/carts",
+				"someregistry/carts",
 				"0.9.1")
 			_, err := executeActionCommandC(cmd)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("wanted error: %t, got: %v", tt.wantErr, err)
 			}
-			msg := fmt.Sprintf("%v", err)
-			if !strings.Contains(msg, "Project not found") {
+			if !strings.Contains(err.Error(), "Project not found") {
 				t.Errorf("wanted project not found")
 			}
 		})
@@ -343,10 +346,10 @@ func TestTriggerDeliveryNonExistingService(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run("", func(t *testing.T) {
-			cmd := fmt.Sprintf("trigger delivery --project=%s --service=%s --image=%s --tag=%s --values=a.b.c=d --mock",
+			cmd := fmt.Sprintf("trigger delivery --project=%s --service=%s --image=%s:%s --values=a.b.c=d --mock",
 				projectName,
 				tt.service,
-				"docker.io/keptnexamples/carts",
+				"someregistry/carts",
 				"0.9.1")
 			_, err := executeActionCommandC(cmd)
 
@@ -359,10 +362,10 @@ func TestTriggerDeliveryNonExistingService(t *testing.T) {
 
 // TestTriggerDeliveryUnknownCommand
 func TestTriggerDeliveryUnknownCommand(t *testing.T) {
-	testInvalidInputHelper("trigger delivery someUnknownCommand --project=sockshop --service=service --image=image --tag=tag", "unknown command \"someUnknownCommand\" for \"keptn trigger delivery\"", t)
+	testInvalidInputHelper("trigger delivery someUnknownCommand --project=sockshop --service=service --image=image:=tag", "unknown command \"someUnknownCommand\" for \"keptn trigger delivery\"", t)
 }
 
 // TestTriggerDeliveryUnknownParameter
 func TestTriggerDeliveryUnknownParmeter(t *testing.T) {
-	testInvalidInputHelper("trigger delivery --projectt=sockshop --service=service --image=image --tag=tag", "unknown flag: --projectt", t)
+	testInvalidInputHelper("trigger delivery --projectt=sockshop --service=service --image=image:tag", "unknown flag: --projectt", t)
 }

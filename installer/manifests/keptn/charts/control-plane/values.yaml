@@ -70,11 +70,13 @@ apiGatewayNginx:
   image:
     repository: docker.io/nginxinc/nginx-unprivileged
     tag: 1.21.6-alpine
+  nodeSelector: {}
 
 remediationService:
   image:
     repository: docker.io/keptn/remediation-service
     tag: ""
+  nodeSelector: {}
 
 apiService:
   tokenSecretName:
@@ -84,6 +86,7 @@ apiService:
   config:
     maxAuthRequestsPerSecond: "1.0"
     maxAuthRequestBurst: "2"
+  nodeSelector: {}
 
 bridge:
   image:
@@ -124,6 +127,7 @@ bridge:
     scope: ""
     userIdentifier: ""
     mongoConnectionString: ""
+  nodeSelector: {}
 
 distributor:
   metadata:
@@ -157,11 +161,13 @@ shipyardController:
       # hit the database limit for max collection name size when your project name is too long.
       # projectNameMaxSize can be used to forbid project names longer than a certain size in Keptn
       projectNameMaxSize: 200
+  nodeSelector: {}
 
 secretService:
   image:
     repository: docker.io/keptn/secret-service
     tag: ""
+  nodeSelector: {}
 
 configurationService:
   image:
@@ -175,6 +181,7 @@ configurationService:
   env:
     GIT_KEPTN_USER: "keptn"
     GIT_KEPTN_EMAIL: "keptn@keptn.sh"
+  nodeSelector: {}
 
 resourceService:
   enabled: false
@@ -186,32 +193,38 @@ resourceService:
     GIT_KEPTN_USER: "keptn"
     GIT_KEPTN_EMAIL: "keptn@keptn.sh"
     DIRECTORY_STAGE_STRUCTURE: "false"
+  nodeSelector: {}
 
 mongodbDatastore:
   image:
     repository: docker.io/keptn/mongodb-datastore
     tag: ""
+  nodeSelector: {}
 
 lighthouseService:
   image:
     repository: docker.io/keptn/lighthouse-service
     tag: ""
+  nodeSelector: {}
 
 statisticsService:
   image:
     repository: docker.io/keptn/statistics-service
     tag: ""
+  nodeSelector: {}
 
 approvalService:
   image:
     repository: docker.io/keptn/approval-service
     tag: ""
+  nodeSelector: {}
 
 webhookService:
   enabled: true
   image:
     repository: docker.io/keptn/webhook-service
     tag: ""
+  nodeSelector: {}
 
 ingress:
   enabled: false
@@ -239,3 +252,4 @@ common:
     readOnlyRootFilesystem: true
     allowPrivilegeEscalation: false
     privileged: false
+  nodeSelector: {}

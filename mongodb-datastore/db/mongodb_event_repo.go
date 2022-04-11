@@ -201,12 +201,12 @@ func (mr *MongoDBEventRepo) GetEvents(params event.GetEventsParams) (*EventsResu
 }
 
 func (mr *MongoDBEventRepo) GetEventsByType(params event.GetEventsByTypeParams) (*EventsResult, error) {
-	if params.Filter == nil {
+	if params.Filter == "" {
 		//return nil, common.NewInvalidEventFilterError("event filter must not be empty")
 		return nil, fmt.Errorf("event filter must not be empty: %w", common.ErrInvalidEventFilter)
 	}
 
-	matchFields := parseFilter(*params.Filter)
+	matchFields := parseFilter(params.Filter)
 	if err := validateFilter(matchFields); err != nil {
 		return nil, err
 	}
