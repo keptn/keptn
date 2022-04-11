@@ -114,7 +114,7 @@ func (g GitConfigurationStore) DeleteService(projectName string, stageName strin
 func (g GitConfigurationStore) buildErrResponse(err *apimodels.Error) error {
 	if err.Code == http.StatusFailedDependency {
 		return ErrConfigStoreInvalidToken
-	} else if err.Code == http.StatusNotFound {
+	} else if err.Code == http.StatusNotFound || err.Code == http.StatusBadRequest {
 		return ErrConfigStoreUpstreamNotFound
 	}
 	return errors.New(*err.Message)
