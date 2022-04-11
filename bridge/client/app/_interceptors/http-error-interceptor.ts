@@ -98,7 +98,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
       errorInfo = 'Could not authorize.';
     }
     this.isAuthorizedErrorShown = true;
-    this.notificationService.addNotification(NotificationType.ERROR, ' ' + errorInfo);
+    this.notificationService.addNotification(NotificationType.ERROR, errorInfo);
 
     return EMPTY;
   }
