@@ -740,11 +740,11 @@ describe('Sequence', () => {
   function getWaitingSequence(): Sequence {
     const sequence = {
       ...SequenceResponseMock[0],
-      state: SequenceState.STARTED,
+      state: SequenceState.WAITING,
       stages: [
         {
           ...SequenceResponseMock[0].stages[0],
-          state: SequenceState.TRIGGERED,
+          state: SequenceState.WAITING,
           latestEvent: {
             id: 'my Id',
             time: '',
