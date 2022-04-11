@@ -52,20 +52,6 @@ describe('HttpErrorInterceptorService', () => {
     expect(spy).toHaveBeenCalledWith(NotificationType.ERROR, 'server error');
   });
 
-  it('should show an error for ErrorEvent with error', () => {
-    // given
-    const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
-
-    apiService.getMetadata().subscribe();
-
-    const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
-    const errorEvent: ErrorEvent = new ErrorEvent('', { error: 'Not found' });
-    testRequest.error(errorEvent, { status: 404 });
-
-    // then
-    expect(spy).toHaveBeenCalledWith(NotificationType.ERROR, 'Not found');
-  });
-
   it('should show an error for ErrorEvent with message', () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
