@@ -19,6 +19,9 @@ var mongoDBConnectionInstance *MongoDBConnection
 
 var mongoConnectionOnce sync.Once
 
+const clientCreationFailed = "failed to create mongo client: %v"
+const clientConnectionFailed = "failed to create mongo client: %v"
+
 // MongoDBConnection takes care of establishing a connection to the mongodb
 type MongoDBConnection struct {
 	Client *mongo.Client
@@ -58,13 +61,13 @@ func (m *MongoDBConnection) EnsureDBConnection() error {
 func (m *MongoDBConnection) connectMongoDBClient() error {
 	connectionString, _, err := keptnmongoutils.GetMongoConnectionStringFromEnv()
 	if err != nil {
-		logger.Errorf("failed to create mongo client: %v", err)
-		return fmt.Errorf("failed to create mongo client: %v", err)
+		logger.Errorf(clientCreationFailed, err)
+		return fmt.Errorf(clientCreationFailed, err)
 	}
 	m.Client, err = mongo.NewClient(options.Client().ApplyURI(connectionString))
 	if err != nil {
-		logger.Errorf("failed to create mongo client: %v", err)
-		return fmt.Errorf("failed to create mongo client: %v", err)
+		logger.Errorf(clientCreationFailed, err)
+		return fmt.Errorf(clientCreationFailed, err)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -72,8 +75,8 @@ func (m *MongoDBConnection) connectMongoDBClient() error {
 
 	err = m.Client.Connect(ctx)
 	if err != nil {
-		logger.Infof("failed to connect client to MongoDB: %v", err)
-		return fmt.Errorf("failed to connect client to MongoDB: %v", err)
+		logger.Infof(clientConnectionFailed, err)
+		return fmt.Errorf(clientConnectionFailed, err)
 	}
 	return nil
 }
