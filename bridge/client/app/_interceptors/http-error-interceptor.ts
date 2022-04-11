@@ -27,18 +27,18 @@ export class HttpErrorInterceptor implements HttpInterceptor {
       : { maxAttempts: 3, scalingDuration: 0, shouldRetry: (): boolean => false };
     return next.handle(request).pipe(
       retryWhen(genericRetryStrategy(params)),
-      catchError((error: HttpErrorResponse) => {
-        return this.handleError(error);
+      catchError((response: HttpErrorResponse) => {
+        return this.handleError(response);
       })
     );
   }
 
-  handleError(error: HttpErrorResponse): Observable<HttpEvent<unknown>> {
-    if (error.status === 401) {
-      return this.handleUnauthorizedError(error);
+  handleError(response: HttpErrorResponse): Observable<HttpEvent<unknown>> {
+    if (response.status === 401) {
+      return this.handleUnauthorizedError(response);
     }
 
-    if (error.status === 403) {
+    if (response.status === 403) {
       this.notificationService.addNotification(
         NotificationType.ERROR,
         'You do not have the permissions to perform this action.'
@@ -46,21 +46,21 @@ export class HttpErrorInterceptor implements HttpInterceptor {
       return EMPTY;
     }
 
-    if (error.status === 409 && error.url?.endsWith('/api/secrets/v1/secret')) {
+    if (response.status === 409 && response.url?.endsWith('/api/secrets/v1/secret')) {
       // Special case for already existing secrets - for unit test has to be before instanceof ErrorEvent
-      return throwError(error);
+      return throwError(response);
     }
 
-    if (error.error instanceof ErrorEvent) {
+    if (response.error instanceof ErrorEvent) {
       // A client-side or network error occurred. Handle it accordingly.
-      this.notificationService.addNotification(NotificationType.ERROR, error.error.message);
-      return throwError(error);
+      this.notificationService.addNotification(NotificationType.ERROR, response.error.error || response.error.message);
+      return throwError(response);
     }
 
     // The backend returned an unsuccessful response code.
     // The response body may contain clues as to what went wrong,
-    this.notificationService.addNotification(NotificationType.ERROR, error.message);
-    return throwError(error);
+    this.notificationService.addNotification(NotificationType.ERROR, response.error || response.message);
+    return throwError(response);
   }
 
   handleUnauthorizedError(error: HttpErrorResponse): Observable<HttpEvent<unknown>> {

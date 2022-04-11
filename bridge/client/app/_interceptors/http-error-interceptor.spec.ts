@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { HTTP_INTERCEPTORS, HttpHeaders } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { HttpErrorInterceptor } from './http-error-interceptor';
 import { Overlay } from '@angular/cdk/overlay';
 import { HttpClientTestingModule, HttpTestingController, TestRequest } from '@angular/common/http/testing';
@@ -38,65 +38,152 @@ describe('HttpErrorInterceptorService', () => {
     expect(httpErrorInterceptor).toBeTruthy();
   });
 
-  it('should show an error when any other error than 401 is returned', () => {
+  it('should show error for HttpErrorResponse', () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
     apiService.getMetadata().subscribe();
 
     const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
-    const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
+    const errorEvent: HttpErrorResponse = new HttpErrorResponse({ status: 500 });
+    testRequest.flush('server error', errorEvent);
+
+    // then
+    expect(spy).toHaveBeenCalledWith(NotificationType.ERROR, 'server error');
+  });
+
+  it('should show an error for ErrorEvent with error', () => {
+    // given
+    const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
+
+    apiService.getMetadata().subscribe();
+
+    const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
+    const errorEvent: ErrorEvent = new ErrorEvent('', { error: 'Not found' });
     testRequest.error(errorEvent, { status: 404 });
 
     // then
-    expect(spy).toHaveBeenCalled();
+    expect(spy).toHaveBeenCalledWith(NotificationType.ERROR, 'Not found');
   });
 
-  it('should show an generic error when unauthorized', () => {
+  it('should show an error for ErrorEvent with message', () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
     apiService.getMetadata().subscribe();
 
     const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
-    const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
-    testRequest.error(errorEvent, { status: 401 });
+    const errorEvent: ErrorEvent = new ErrorEvent('', { message: 'Not found' });
+    testRequest.error(errorEvent, { status: 404 });
 
     // then
-    expect(spy).toHaveBeenCalled();
+    expect(spy).toHaveBeenCalledWith(NotificationType.ERROR, 'Not found');
   });
 
-  it('should show a toast when oauth is redirected', () => {
+  it('should show a generic error notification when unauthorized', () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
     apiService.getMetadata().subscribe();
+    apiService.getProjects().subscribe();
 
     const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
-    const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
-    const headers = new HttpHeaders({ 'keptn-auth-type': 'OAUTH' });
-    testRequest.error(errorEvent, { headers, status: 401 });
+    const errorEvent: HttpErrorResponse = new HttpErrorResponse({ status: 401 });
+    testRequest.flush('', errorEvent);
+
+    const testRequestProjects: TestRequest = httpMock.expectOne(
+      './api/controlPlane/v1/project?disableUpstreamSync=true'
+    );
+    testRequestProjects.flush('', errorEvent);
 
     // then
-    expect(spy).toHaveBeenCalledWith(NotificationType.INFO, 'Login required. Redirecting to login.');
+    expect(spy).toBeCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith(NotificationType.ERROR, 'Could not authorize.');
   });
 
-  it('should show a error notification when basic auth is unauthorized', () => {
+  it('should show error notification when incorrect api key', () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
     apiService.getMetadata().subscribe();
+    apiService.getProjects().subscribe();
+
+    const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
+    const errorEvent: HttpErrorResponse = new HttpErrorResponse({ status: 401 });
+    testRequest.flush('incorrect api key auth', errorEvent);
+
+    const testRequestProjects: TestRequest = httpMock.expectOne(
+      './api/controlPlane/v1/project?disableUpstreamSync=true'
+    );
+    testRequestProjects.flush('incorrect api key auth', errorEvent);
+
+    // then
+    expect(spy).toBeCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith(
+      NotificationType.ERROR,
+      'Could not authorize API token. Please check the configured API token.'
+    );
+  });
+
+  it('should show error notification when basic auth is unauthorized', () => {
+    // given
+    const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
+
+    apiService.getMetadata().subscribe();
+    apiService.getProjects().subscribe();
 
     const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
     const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
     const headers = new HttpHeaders({ 'keptn-auth-type': 'BASIC' });
     testRequest.error(errorEvent, { headers, status: 401 });
 
+    const testRequestProjects: TestRequest = httpMock.expectOne(
+      './api/controlPlane/v1/project?disableUpstreamSync=true'
+    );
+    testRequestProjects.error(errorEvent, { headers, status: 401 });
+
     // then
+    expect(spy).toBeCalledTimes(1);
     expect(spy).toHaveBeenCalledWith(
       NotificationType.ERROR,
       'Login credentials invalid. Please check your provided username and password.'
     );
+  });
+
+  it('should show info notification when oauth is unauthorized', () => {
+    // given
+    const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
+
+    apiService.getMetadata().subscribe();
+    apiService.getProjects().subscribe();
+
+    const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
+    const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
+    const headers = new HttpHeaders({ 'keptn-auth-type': 'OAUTH' });
+    testRequest.error(errorEvent, { headers, status: 401 });
+
+    const testRequestProjects: TestRequest = httpMock.expectOne(
+      './api/controlPlane/v1/project?disableUpstreamSync=true'
+    );
+    testRequestProjects.error(errorEvent, { headers, status: 401 });
+
+    // then
+    expect(spy).toBeCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith(NotificationType.INFO, 'Login required. Redirecting to login.');
+  });
+
+  it('should show error notification in case of 403', () => {
+    // given
+    const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
+
+    apiService.getMetadata().subscribe();
+
+    const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
+    const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
+    testRequest.error(errorEvent, { status: 403 });
+
+    // then
+    expect(spy).toHaveBeenCalledWith(NotificationType.ERROR, 'You do not have the permissions to perform this action.');
   });
 
   it('should not show any notification when a secret already exists', () => {
@@ -117,87 +204,5 @@ describe('HttpErrorInterceptorService', () => {
 
     // then
     expect(spy).toHaveBeenCalledTimes(0);
-  });
-
-  it('should show error only once in case of 401 and OAUTH', () => {
-    // given
-    const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
-
-    apiService.getMetadata().subscribe();
-    apiService.getProjects().subscribe();
-
-    const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
-    const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
-    const headers = new HttpHeaders({ 'keptn-auth-type': 'OAUTH' });
-    testRequest.error(errorEvent, { headers, status: 401 });
-
-    const testRequestProjects: TestRequest = httpMock.expectOne(
-      './api/controlPlane/v1/project?disableUpstreamSync=true'
-    );
-    testRequestProjects.error(errorEvent, { headers, status: 401 });
-
-    // then
-    expect(spy).toBeCalledTimes(1);
-    expect(spy).toHaveBeenCalledWith(NotificationType.INFO, 'Login required. Redirecting to login.');
-  });
-
-  it('should show error only once in case of 401 and BASIC auth', () => {
-    // given
-    const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
-
-    apiService.getMetadata().subscribe();
-    apiService.getProjects().subscribe();
-
-    const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
-    const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
-    const headers = new HttpHeaders({ 'keptn-auth-type': 'BASIC' });
-    testRequest.error(errorEvent, { headers, status: 401 });
-
-    const testRequestProjects: TestRequest = httpMock.expectOne(
-      './api/controlPlane/v1/project?disableUpstreamSync=true'
-    );
-    testRequestProjects.error(errorEvent, { headers, status: 401 });
-
-    // then
-    expect(spy).toBeCalledTimes(1);
-    expect(spy).toHaveBeenCalledWith(
-      NotificationType.ERROR,
-      'Login credentials invalid. Please check your provided username and password.'
-    );
-  });
-
-  it('should show error only once in case of 401', () => {
-    // given
-    const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
-
-    apiService.getMetadata().subscribe();
-    apiService.getProjects().subscribe();
-
-    const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
-    const errorEvent: ErrorEvent = new ErrorEvent('incorrect api key auth');
-    testRequest.error(errorEvent, { status: 401 });
-
-    const testRequestProjects: TestRequest = httpMock.expectOne(
-      './api/controlPlane/v1/project?disableUpstreamSync=true'
-    );
-    testRequestProjects.error(errorEvent, { status: 401 });
-
-    // then
-    expect(spy).toBeCalledTimes(1);
-    expect(spy).toHaveBeenCalledWith(NotificationType.ERROR, 'Could not authorize.');
-  });
-
-  it('should show error in case of 403', () => {
-    // given
-    const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
-
-    apiService.getMetadata().subscribe();
-
-    const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
-    const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
-    testRequest.error(errorEvent, { status: 403 });
-
-    // then
-    expect(spy).toHaveBeenCalledWith(NotificationType.ERROR, 'You do not have the permissions to perform this action.');
   });
 });
