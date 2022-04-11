@@ -9,6 +9,7 @@ import { NotificationsService } from '../_services/notifications.service';
 import { NotificationType } from '../_models/notification';
 import { SecretScopeDefault } from '../../../shared/interfaces/secret-scope';
 import { Secret } from '../_models/secret';
+import { take } from 'rxjs/internal/operators/take';
 
 describe('HttpErrorInterceptorService', () => {
   let httpErrorInterceptor: HttpErrorInterceptor;
@@ -42,7 +43,7 @@ describe('HttpErrorInterceptorService', () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
-    await apiService.getMetadata().subscribe();
+    await apiService.getMetadata().pipe(take(1)).toPromise();
 
     const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
     const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
@@ -56,7 +57,7 @@ describe('HttpErrorInterceptorService', () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
-    await apiService.getMetadata().subscribe();
+    await apiService.getMetadata().pipe(take(1)).toPromise();
 
     const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
     const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
@@ -70,7 +71,7 @@ describe('HttpErrorInterceptorService', () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
-    await apiService.getMetadata().subscribe();
+    await apiService.getMetadata().pipe(take(1)).toPromise();
 
     const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
     const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
@@ -85,7 +86,7 @@ describe('HttpErrorInterceptorService', () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
-    await apiService.getMetadata().subscribe();
+    await apiService.getMetadata().pipe(take(1)).toPromise();
 
     const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
     const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
@@ -107,7 +108,7 @@ describe('HttpErrorInterceptorService', () => {
     secret.name = 'secret';
     secret.scope = SecretScopeDefault.DEFAULT;
 
-    apiService.addSecret(secret).subscribe();
+    apiService.addSecret(secret).pipe(take(1)).toPromise();
 
     const testRequest: TestRequest = httpMock.expectOne('./api/secrets/v1/secret');
     const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
@@ -123,8 +124,8 @@ describe('HttpErrorInterceptorService', () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
-    await apiService.getMetadata().subscribe();
-    await apiService.getProjects().subscribe();
+    await apiService.getMetadata().pipe(take(1)).toPromise();
+    await apiService.getProjects().pipe(take(1)).toPromise();
 
     const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
     const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
@@ -145,8 +146,8 @@ describe('HttpErrorInterceptorService', () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
-    await apiService.getMetadata().subscribe();
-    await apiService.getProjects().subscribe();
+    await apiService.getMetadata().pipe(take(1)).toPromise();
+    await apiService.getProjects().pipe(take(1)).toPromise();
 
     const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
     const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
@@ -170,8 +171,8 @@ describe('HttpErrorInterceptorService', () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
-    await apiService.getMetadata().subscribe();
-    await apiService.getProjects().subscribe();
+    await apiService.getMetadata().pipe(take(1)).toPromise();
+    await apiService.getProjects().pipe(take(1)).toPromise();
 
     const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
     const errorEvent: ErrorEvent = new ErrorEvent('incorrect api key auth');
@@ -191,7 +192,7 @@ describe('HttpErrorInterceptorService', () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
-    await apiService.getMetadata().subscribe();
+    await apiService.getMetadata().pipe(take(1)).toPromise();
 
     const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
     const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
