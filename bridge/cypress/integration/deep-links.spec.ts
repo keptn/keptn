@@ -159,6 +159,7 @@ describe('Test deep links', () => {
     cy.location('pathname').should('eq', `/project/${mockedProject}/sequence/${mockedKeptnContext}/stage/production`);
 
     projectBoardPage.assertOnlySequencesViewSelected();
+    sequencePage.assertTimelineStageSelected('production', true);
   });
 
   it('deepLink trace/:shkeptncontext/:stage', () => {
