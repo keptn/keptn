@@ -8,6 +8,7 @@ import (
 	"time"
 
 	keptnmongoutils "github.com/keptn/go-utils/pkg/common/mongoutils"
+	logger "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -17,6 +18,9 @@ var mutex = &sync.Mutex{}
 var mongoDBConnectionInstance *MongoDBConnection
 
 var mongoConnectionOnce sync.Once
+
+const clientCreationFailed = "failed to create mongo client: %v"
+const clientConnectionFailed = "failed to create mongo client: %v"
 
 // MongoDBConnection takes care of establishing a connection to the mongodb
 type MongoDBConnection struct {
@@ -41,35 +45,38 @@ func (m *MongoDBConnection) EnsureDBConnection() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	if m.Client == nil {
-		fmt.Println("No MongoDB client has been initialized yet. Creating a new one.")
+		logger.Info("No MongoDB client has been initialized yet. Creating a new one.")
 		return m.connectMongoDBClient()
 	} else if err = m.Client.Ping(ctx, nil); err != nil {
-		fmt.Println("MongoDB client lost connection. Attempt reconnect.")
+		logger.Info("MongoDB client lost connection. Attempt reconnect.")
+		err2 := m.Client.Disconnect(ctx)
+		if err2 != nil {
+			logger.Errorf("failed to disconnect client from MongoDB: %v", err2)
+		}
 		return m.connectMongoDBClient()
 	}
 	return nil
 }
 
 func (m *MongoDBConnection) connectMongoDBClient() error {
-	var err error
-
 	connectionString, _, err := keptnmongoutils.GetMongoConnectionStringFromEnv()
 	if err != nil {
-		return fmt.Errorf("failed to create mongo client: %v", err)
+		logger.Errorf(clientCreationFailed, err)
+		return fmt.Errorf(clientCreationFailed, err)
 	}
 	m.Client, err = mongo.NewClient(options.Client().ApplyURI(connectionString))
 	if err != nil {
-		err := fmt.Errorf("failed to create mongo client: %v", err)
-		return err
+		logger.Errorf(clientCreationFailed, err)
+		return fmt.Errorf(clientCreationFailed, err)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	err = m.Client.Connect(ctx)
 	if err != nil {
-		err := fmt.Errorf("failed to connect client to MongoDB: %v", err)
-		return err
+		logger.Infof(clientConnectionFailed, err)
+		return fmt.Errorf(clientConnectionFailed, err)
 	}
 	return nil
 }
