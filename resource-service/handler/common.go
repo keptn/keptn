@@ -13,9 +13,11 @@ const pathParamProjectName = "projectName"
 const pathParamStageName = "stageName"
 const pathParamServiceName = "serviceName"
 const pathParamResourceURI = "resourceURI"
+const upstreamNotFound = "Upstream repository not found"
 
 func OnAPIError(c *gin.Context, err error) {
 	logger.Infof("Could not complete request %s %s: %v", c.Request.Method, c.Request.RequestURI, err)
+
 	if errors.Is(err, errors2.ErrProjectAlreadyExists) {
 		SetConflictErrorResponse(c, "Project already exists")
 	} else if errors.Is(err, errors2.ErrStageAlreadyExists) || errors.Is(err, errors2.ErrBranchExists) {
@@ -25,15 +27,13 @@ func OnAPIError(c *gin.Context, err error) {
 	} else if errors.Is(err, errors2.ErrInvalidGitToken) {
 		SetFailedDependencyErrorResponse(c, "Invalid git token")
 	} else if errors.Is(err, errors2.ErrCredentialsTokenMustNotBeEmpty) {
-		SetBadRequestErrorResponse(c, "Upstream repository not found")
+		SetBadRequestErrorResponse(c, upstreamNotFound)
 	} else if errors.Is(err, errors2.ErrCredentialsNotFound) {
 		SetNotFoundErrorResponse(c, "Could not find credentials for upstream repository")
 	} else if errors.Is(err, errors2.ErrMalformedCredentials) {
 		SetFailedDependencyErrorResponse(c, "Could not decode credentials for upstream repository")
-	} else if errors.Is(err, errors2.ErrCredentialsInvalidRemoteURI) {
-		SetBadRequestErrorResponse(c, "Upstream repository not found")
-	} else if errors.Is(err, errors2.ErrRepositoryNotFound) {
-		SetNotFoundErrorResponse(c, "Upstream repository not found")
+	} else if errors.Is(err, errors2.ErrCredentialsInvalidRemoteURI) || errors.Is(err, errors2.ErrRepositoryNotFound) {
+		SetBadRequestErrorResponse(c, upstreamNotFound)
 	} else if errors.Is(err, errors2.ErrProjectNotFound) {
 		SetNotFoundErrorResponse(c, "Project not found")
 	} else if errors.Is(err, errors2.ErrStageNotFound) || errors.Is(err, errors2.ErrReferenceNotFound) {
