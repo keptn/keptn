@@ -4,6 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
+	"testing"
+	"time"
+
 	"github.com/benbjohnson/clock"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -18,9 +22,6 @@ import (
 	"github.com/tryvium-travels/memongo"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"os"
-	"testing"
-	"time"
 )
 
 const testShipyardFileWithInvalidVersion = `apiVersion: 0
@@ -766,7 +767,7 @@ func Test_shipyardController_Scenario5(t *testing.T) {
 func Test_shipyardController_Scenario6(t *testing.T) {
 	defer setupLocalMongoDB()()
 
-	t.Logf("Executing Shipyard Controller Scenario 5 with shipyard file %s", testShipyardFileWithInvalidVersion)
+	t.Logf("Executing Shipyard Controller Scenario 6 with shipyard file %s", testShipyardFileWithInvalidVersion)
 	sc, cancel := getTestShipyardController(testShipyardFileWithInvalidVersion)
 
 	defer cancel()
@@ -786,7 +787,7 @@ func Test_shipyardController_Scenario6(t *testing.T) {
 func Test_shipyardController_Scenario7(t *testing.T) {
 	defer setupLocalMongoDB()()
 
-	t.Logf("Executing Shipyard Controller Scenario 5 with shipyard file %s", testShipyardFileWithInvalidVersion)
+	t.Logf("Executing Shipyard Controller Scenario 7 with shipyard file %s", testShipyardFileWithInvalidVersion)
 	sc, cancel := getTestShipyardController(testShipyardFileWithInvalidVersion)
 
 	defer cancel()
