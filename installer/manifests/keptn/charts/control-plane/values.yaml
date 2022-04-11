@@ -48,6 +48,21 @@ nats:
         storageDirectory: /data/
         storageClassName: ""
 
+    resources:
+      requests:
+        memory: "16Mi"
+        cpu: "5m"
+      limits:
+        memory: "64Mi"
+        cpu: "50m"
+
+    securityContext:
+      runAsUser: 65532
+      runAsNonRoot: true
+      readOnlyRootFilesystem: true
+      allowPrivilegeEscalation: false
+      privileged: false
+
   natsbox:
     enabled: false
   reloader:
