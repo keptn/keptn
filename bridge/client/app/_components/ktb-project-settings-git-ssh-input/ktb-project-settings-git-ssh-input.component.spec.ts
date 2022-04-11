@@ -22,7 +22,6 @@ describe('KtbProjectSettingsGitSshInputComponent', () => {
 
   it('should correctly set input data and emit data', () => {
     // given
-    const triggerValidationOnURL = jest.spyOn(component.gitUrlControl, 'markAsDirty');
     const emitSpy = jest.spyOn(component.gitDataChange, 'emit');
 
     // when
@@ -34,8 +33,6 @@ describe('KtbProjectSettingsGitSshInputComponent', () => {
     // then
     expect(component.gitUrlControl.value).toBe('ssh://myGitUrl');
     expect(component.gitUpstreamForm.controls.gitUser.value).toBe('myUser');
-
-    expect(triggerValidationOnURL).toHaveBeenCalled();
     expect(emitSpy).not.toHaveBeenCalled();
 
     // when

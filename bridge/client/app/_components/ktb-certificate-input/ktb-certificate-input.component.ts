@@ -21,9 +21,6 @@ export class KtbCertificateInputComponent {
   @Input()
   set certificateInput(certificate: string | undefined) {
     this.certificateControl.setValue(atob(certificate ?? ''));
-    if (certificate !== undefined) {
-      this.certificateControl.markAsDirty();
-    }
   }
 
   @Output()

@@ -24,7 +24,6 @@ describe('KtbSshKeyInputComponent', () => {
   it('should set input data correctly', () => {
     // given
     const emitSpy = jest.spyOn(component.sshDataChange, 'emit');
-    const triggerValidationPrivateKey = jest.spyOn(component.privateKeyControl, 'markAsDirty');
 
     // when
     component.sshInput = {
@@ -43,7 +42,6 @@ describe('KtbSshKeyInputComponent', () => {
       gitPrivateKeyPass: 'myPassphrase',
       gitPrivateKey: btoa(validFileContent),
     });
-    expect(triggerValidationPrivateKey).toHaveBeenCalled();
   });
 
   it('should emit valid data', () => {

@@ -23,9 +23,6 @@ export class KtbProjectSettingsGitSshInputComponent {
   public set gitInputData(data: IGitSshData | undefined) {
     if (data) {
       this.gitUrlControl.setValue(data.gitRemoteURL);
-      if (data.gitRemoteURL) {
-        this.gitUrlControl.markAsDirty();
-      }
       this.gitUserControl.setValue(data.gitUser);
     }
   }
