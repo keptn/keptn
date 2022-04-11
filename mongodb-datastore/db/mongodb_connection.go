@@ -59,7 +59,9 @@ func (m *MongoDBConnection) EnsureDBConnection() error {
 		return m.connectMongoDBClient()
 	} else if err = m.client.Ping(ctx, nil); err != nil {
 		logger.Info("MongoDB client lost connection. Attempt reconnect.")
-		err2 := m.client.Disconnect(ctx)
+		ctxDisconnect, cancelDisconnect := context.WithTimeout(context.TODO(), 30*time.Second)
+		defer cancelDisconnect()
+		err2 := m.client.Disconnect(ctxDisconnect)
 		if err2 != nil {
 			logger.Errorf("failed to disconnect client from MongoDB: %v", err2)
 		}
