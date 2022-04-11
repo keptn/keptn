@@ -174,7 +174,7 @@ describe('HttpErrorInterceptorService', () => {
     await apiService.getProjects().subscribe();
 
     const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
-    const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
+    const errorEvent: ErrorEvent = new ErrorEvent('incorrect api key auth');
     testRequest.error(errorEvent, { status: 401 });
 
     const testRequestProjects: TestRequest = httpMock.expectOne(
