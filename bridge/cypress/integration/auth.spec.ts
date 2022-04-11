@@ -68,7 +68,7 @@ describe('Test OAuth', () => {
     cy.visit('/');
     basePage.notificationInfoVisible('Login required. Redirecting to login.');
 
-    cy.url().should('include', '/oauth/login');
+    cy.location('pathname').should('eq', '/oauth/login');
   });
 
   it('should show message for 403 response', () => {
