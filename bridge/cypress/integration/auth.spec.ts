@@ -39,7 +39,7 @@ describe('Test BASIC auth', () => {
     cy.intercept('/api/v1/metadata', { fixture: 'metadata' });
   });
 
-  it('should show error for 401 response', () => {
+  it('should show an error for 401 response', () => {
     cy.intercept('/api/bridgeInfo', { statusCode: 401, headers: { 'keptn-auth-type': 'BASIC' } });
     cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', {
       statusCode: 401,
@@ -71,7 +71,7 @@ describe('Test OAuth', () => {
     cy.location('pathname').should('eq', '/oauth/login');
   });
 
-  it('should show message for 403 response', () => {
+  it('should show a message for 403 response', () => {
     cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfo.mock' });
     cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { statusCode: 403 });
 
