@@ -73,7 +73,7 @@ const baseProxyProjectPath = "/controlPlane/v1/project"
 
 func Test_ProxyAuth(t *testing.T) {
 	repoLocalDir := "../assets/podtato-head"
-	projectName := "proxy-auth3"
+	projectName := "proxy-auth"
 	serviceName := "helloservice"
 	secondServiceName := "helloservice2"
 	chartFileName := "helloservice.tgz"
@@ -137,7 +137,7 @@ func Test_ProxyAuth(t *testing.T) {
 	require.Nil(t, err)
 
 	// apply the k8s job for creating the git upstream
-	_, err = ExecuteCommand(fmt.Sprintf("keptn update project %s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s --git-proxy-url=squid:3128 --git-proxy-scheme=http --git-proxy-insecure", projectName, user, projectName, user, token))
+	_, err = ExecuteCommand(fmt.Sprintf("keptn update project %s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s --git-proxy-url=squid:3128 --git-proxy-scheme=http --insecure-skip-tls", projectName, user, projectName, user, token))
 	require.Nil(t, err)
 
 	t.Logf("Creating service %s in project %s", secondServiceName, projectName)
