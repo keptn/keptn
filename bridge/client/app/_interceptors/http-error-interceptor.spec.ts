@@ -118,4 +118,86 @@ describe('HttpErrorInterceptorService', () => {
     // then
     expect(spy).toHaveBeenCalledTimes(0);
   });
+
+  it('should show error only once in case of 401 and OAUTH', async () => {
+    // given
+    const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
+
+    await apiService.getMetadata().subscribe();
+    await apiService.getProjects().subscribe();
+
+    const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
+    const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
+    const headers = new HttpHeaders({ 'keptn-auth-type': 'OAUTH' });
+    testRequest.error(errorEvent, { headers, status: 401 });
+
+    const testRequestProjects: TestRequest = httpMock.expectOne(
+      './api/controlPlane/v1/project?disableUpstreamSync=true'
+    );
+    testRequestProjects.error(errorEvent, { headers, status: 401 });
+
+    // then
+    expect(spy).toBeCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith(NotificationType.INFO, 'Login required. Redirecting to login.');
+  });
+
+  it('should show error only once in case of 401 and BASIC auth', async () => {
+    // given
+    const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
+
+    await apiService.getMetadata().subscribe();
+    await apiService.getProjects().subscribe();
+
+    const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
+    const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
+    const headers = new HttpHeaders({ 'keptn-auth-type': 'BASIC' });
+    testRequest.error(errorEvent, { headers, status: 401 });
+
+    const testRequestProjects: TestRequest = httpMock.expectOne(
+      './api/controlPlane/v1/project?disableUpstreamSync=true'
+    );
+    testRequestProjects.error(errorEvent, { headers, status: 401 });
+
+    // then
+    expect(spy).toBeCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith(
+      NotificationType.ERROR,
+      'Login credentials invalid. Please check your provided username and password.'
+    );
+  });
+
+  it('should show error only once in case of 401', async () => {
+    // given
+    const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
+
+    await apiService.getMetadata().subscribe();
+    await apiService.getProjects().subscribe();
+
+    const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
+    const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
+    testRequest.error(errorEvent, { status: 401 });
+
+    const testRequestProjects: TestRequest = httpMock.expectOne(
+      './api/controlPlane/v1/project?disableUpstreamSync=true'
+    );
+    testRequestProjects.error(errorEvent, { status: 401 });
+
+    // then
+    expect(spy).toBeCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith(NotificationType.ERROR, 'Could not authorize.');
+  });
+
+  it('should show error in case of 403', async () => {
+    // given
+    const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
+
+    await apiService.getMetadata().subscribe();
+
+    const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
+    const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
+    testRequest.error(errorEvent, { status: 403 });
+
+    // then
+    expect(spy).toHaveBeenCalledWith(NotificationType.ERROR, 'You do not have the permissions to perform this action.');
+  });
 });
