@@ -38,7 +38,7 @@ describe('HttpErrorInterceptorService', () => {
     expect(httpErrorInterceptor).toBeTruthy();
   });
 
-  it('should show error for HttpErrorResponse', () => {
+  it('should show an error for HttpErrorResponse', () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
@@ -87,7 +87,7 @@ describe('HttpErrorInterceptorService', () => {
     expect(spy).toHaveBeenCalledWith(NotificationType.ERROR, 'Could not authorize.');
   });
 
-  it('should show error notification when incorrect api key', () => {
+  it('should show an error notification when API key is incorrect', () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
@@ -111,7 +111,7 @@ describe('HttpErrorInterceptorService', () => {
     );
   });
 
-  it('should show error notification when basic auth is unauthorized', () => {
+  it('should show an error notification when basic auth is unauthorized', () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
@@ -136,7 +136,7 @@ describe('HttpErrorInterceptorService', () => {
     );
   });
 
-  it('should show info notification when oauth is unauthorized', () => {
+  it('should show an info notification when oauth is unauthorized', () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
@@ -158,7 +158,7 @@ describe('HttpErrorInterceptorService', () => {
     expect(spy).toHaveBeenCalledWith(NotificationType.INFO, 'Login required. Redirecting to login.');
   });
 
-  it('should show error notification in case of 403', () => {
+  it('should show an  error notification in case of 403', () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
