@@ -19,7 +19,7 @@ type NATS interface {
 	Subscribe(subject string, fn ProcessEventFn) error
 	QueueSubscribe(queueGroup string, subject string, fn ProcessEventFn) error
 	SubscribeMultiple(subjects []string, fn ProcessEventFn) error
-	QueueSubscribeMultiple(queueGroup string, subjects []string, fn ProcessEventFn) error
+	QueueSubscribeMultiple(subjects []string, queueGroup string, fn ProcessEventFn) error
 	Publish(event models.KeptnContextExtendedCE) error
 	Disconnect() error
 	UnsubscribeAll() error
@@ -85,11 +85,11 @@ func (nc *NatsConnector) UnsubscribeAll() error {
 // It takes the subject as string (usually the event type) and a function fn
 // being called when an event is received
 func (nc *NatsConnector) Subscribe(subject string, fn ProcessEventFn) error {
-	return nc.QueueSubscribe("", subject, fn)
+	return nc.QueueSubscribe(subject, "", fn)
 }
 
 // QueueSubscribe adds a queue subscription to the NatsConnector
-func (nc *NatsConnector) QueueSubscribe(queueGroup string, subject string, fn ProcessEventFn) error {
+func (nc *NatsConnector) QueueSubscribe(subject string, queueGroup string, fn ProcessEventFn) error {
 	if subject == "" {
 		return ErrSubEmptySubject
 	}
@@ -101,11 +101,11 @@ func (nc *NatsConnector) QueueSubscribe(queueGroup string, subject string, fn Pr
 
 // SubscribeMultiple adds multiple subscriptions to the NatsConnector
 func (nc *NatsConnector) SubscribeMultiple(subjects []string, fn ProcessEventFn) error {
-	return nc.QueueSubscribeMultiple("", subjects, fn)
+	return nc.QueueSubscribeMultiple(subjects, "", fn)
 }
 
 // QueueSubscribeMultiple adds multiple queue subscriptions to the NatsConnector
-func (nc *NatsConnector) QueueSubscribeMultiple(queueGroup string, subjects []string, fn ProcessEventFn) error {
+func (nc *NatsConnector) QueueSubscribeMultiple(subjects []string, queueGroup string, fn ProcessEventFn) error {
 	if fn == nil {
 		return ErrSubNilMessageProcessor
 	}

@@ -139,6 +139,16 @@ func TestSubscribeMultiple(t *testing.T) {
 	}, 10*time.Second, time.Second)
 }
 
+func TestSubscribeMultipleFails(t *testing.T) {
+	svr, shutdown := runNATSServer()
+	defer shutdown()
+	nc, _ := nats2.Connect(svr.ClientURL())
+	require.NotNil(t, nc)
+
+	err := nc.SubscribeMultiple([]string{}, nil)
+	require.ErrorIs(t, err, nats2.ErrSubNilMessageProcessor)
+}
+
 func TestUnsubscribeAll(t *testing.T) {
 	event := `{}`
 

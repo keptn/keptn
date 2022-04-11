@@ -57,7 +57,7 @@ func (n *NATSEventSource) Start(ctx context.Context, registrationData Registrati
 		eventChannel <- event
 		return nil
 	}
-	if err := n.connector.QueueSubscribeMultiple(n.queueGroup, n.currentSubjects, n.eventProcessFn); err != nil {
+	if err := n.connector.QueueSubscribeMultiple(n.currentSubjects, n.queueGroup, n.eventProcessFn); err != nil {
 		return fmt.Errorf("could not start NATS event source: %w", err)
 	}
 	go func() {
@@ -78,7 +78,7 @@ func (n *NATSEventSource) OnSubscriptionUpdate(subjects []string) {
 			n.logger.Errorf("Could not handle subscription update: %v", err)
 			return
 		}
-		if err := n.connector.QueueSubscribeMultiple(n.queueGroup, subjects, n.eventProcessFn); err != nil {
+		if err := n.connector.QueueSubscribeMultiple(subjects, n.queueGroup, n.eventProcessFn); err != nil {
 			n.logger.Errorf("Could not handle subscription update: %v", err)
 			return
 		}

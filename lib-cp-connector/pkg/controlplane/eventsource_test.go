@@ -50,7 +50,7 @@ type NATSConnectorMock struct {
 	SubscribeFn                 func(string, nats2.ProcessEventFn) error
 	QueueSubscribeFn            func(string, string, nats2.ProcessEventFn) error
 	SubscribeMultipleFn         func([]string, nats2.ProcessEventFn) error
-	QueueSubscribeMultipleFn    func(string, []string, nats2.ProcessEventFn) error
+	QueueSubscribeMultipleFn    func([]string, string, nats2.ProcessEventFn) error
 	QueueSubscribeMultipleCalls int
 	PublishFn                   func(ce models.KeptnContextExtendedCE) error
 	PublishCalls                int
@@ -69,7 +69,7 @@ func (ncm *NATSConnectorMock) Subscribe(subject string, fn nats2.ProcessEventFn)
 	panic("implement me")
 }
 
-func (ncm *NATSConnectorMock) QueueSubscribe(queueGroup string, subject string, fn nats2.ProcessEventFn) error {
+func (ncm *NATSConnectorMock) QueueSubscribe(subject string, queueGroup string, fn nats2.ProcessEventFn) error {
 	if ncm.QueueSubscribeFn != nil {
 		return ncm.QueueSubscribeFn(queueGroup, subject, fn)
 	}
@@ -83,12 +83,12 @@ func (ncm *NATSConnectorMock) SubscribeMultiple(subjects []string, fn nats2.Proc
 	panic("implement me")
 }
 
-func (ncm *NATSConnectorMock) QueueSubscribeMultiple(queueGroup string, subjects []string, fn nats2.ProcessEventFn) error {
+func (ncm *NATSConnectorMock) QueueSubscribeMultiple(subjects []string, queueGroup string, fn nats2.ProcessEventFn) error {
 	ncm.ProcessEventFn = fn
 	ncm.QueueSubscribeMultipleCalls++
 
 	if ncm.QueueSubscribeMultipleFn != nil {
-		return ncm.QueueSubscribeMultipleFn(queueGroup, subjects, fn)
+		return ncm.QueueSubscribeMultipleFn(subjects, queueGroup, fn)
 	}
 	panic("implement me")
 }
@@ -119,7 +119,7 @@ func (ncm *NATSConnectorMock) UnsubscribeAll() error {
 
 func TestEventSourceForwardsEventToChannel(t *testing.T) {
 	natsConnectorMock := &NATSConnectorMock{
-		QueueSubscribeMultipleFn: func(queueGroup string, subjects []string, fn nats2.ProcessEventFn) error { return nil },
+		QueueSubscribeMultipleFn: func(subjects []string, queueGroup string, fn nats2.ProcessEventFn) error { return nil },
 		UnsubscribeAllFn:         func() error { return nil },
 	}
 	eventChannel := make(chan models.KeptnContextExtendedCE)
@@ -134,7 +134,7 @@ func TestEventSourceForwardsEventToChannel(t *testing.T) {
 
 func TestEventSourceCancelDisconnectsFromBroker(t *testing.T) {
 	natsConnectorMock := &NATSConnectorMock{
-		QueueSubscribeMultipleFn: func(queueGroup string, subjects []string, fn nats2.ProcessEventFn) error { return nil },
+		QueueSubscribeMultipleFn: func(subjects []string, queueGroup string, fn nats2.ProcessEventFn) error { return nil },
 		DisconnectFn:             func() error { return nil },
 	}
 	ctx, cancel := context.WithCancel(context.TODO())
@@ -145,7 +145,7 @@ func TestEventSourceCancelDisconnectsFromBroker(t *testing.T) {
 
 func TestEventSourceCancelDisconnectFromBrokerFails(t *testing.T) {
 	natsConnectorMock := &NATSConnectorMock{
-		QueueSubscribeMultipleFn: func(queueGroup string, subjects []string, fn nats2.ProcessEventFn) error { return nil },
+		QueueSubscribeMultipleFn: func(subjects []string, queueGroup string, fn nats2.ProcessEventFn) error { return nil },
 		DisconnectFn:             func() error { return fmt.Errorf("error occured") },
 	}
 	ctx, cancel := context.WithCancel(context.TODO())
@@ -155,7 +155,7 @@ func TestEventSourceCancelDisconnectFromBrokerFails(t *testing.T) {
 }
 
 func TestEventSourceQueueSubscribeFails(t *testing.T) {
-	natsConnectorMock := &NATSConnectorMock{QueueSubscribeMultipleFn: func(s string, strings []string, fn nats2.ProcessEventFn) error { return fmt.Errorf("error occured") }}
+	natsConnectorMock := &NATSConnectorMock{QueueSubscribeMultipleFn: func(strings []string, s string, fn nats2.ProcessEventFn) error { return fmt.Errorf("error occured") }}
 	eventSource := NewNATSEventSource(natsConnectorMock)
 	err := eventSource.Start(context.TODO(), RegistrationData{}, make(chan models.KeptnContextExtendedCE))
 	require.Error(t, err)
@@ -163,7 +163,7 @@ func TestEventSourceQueueSubscribeFails(t *testing.T) {
 
 func TestEventSourceOnSubscriptionUpdate(t *testing.T) {
 	natsConnectorMock := &NATSConnectorMock{
-		QueueSubscribeMultipleFn: func(queueGroup string, subjects []string, fn nats2.ProcessEventFn) error { return nil },
+		QueueSubscribeMultipleFn: func(subjects []string, queueGroup string, fn nats2.ProcessEventFn) error { return nil },
 		UnsubscribeAllFn:         func() error { return nil },
 	}
 	eventSource := NewNATSEventSource(natsConnectorMock)
@@ -177,7 +177,7 @@ func TestEventSourceOnSubscriptionUpdate(t *testing.T) {
 
 func TestEventSourceOnSubscriptiOnUpdateUnsubscribeAllFails(t *testing.T) {
 	natsConnectorMock := &NATSConnectorMock{
-		QueueSubscribeMultipleFn: func(queueGroup string, subjects []string, fn nats2.ProcessEventFn) error { return nil },
+		QueueSubscribeMultipleFn: func(subjects []string, queueGroup string, fn nats2.ProcessEventFn) error { return nil },
 		UnsubscribeAllFn:         func() error { return fmt.Errorf("error occured") },
 	}
 	eventSource := NewNATSEventSource(natsConnectorMock)
@@ -191,14 +191,14 @@ func TestEventSourceOnSubscriptiOnUpdateUnsubscribeAllFails(t *testing.T) {
 
 func TestEventSourceOnSubscriptionUpdateQueueSubscribeMultipleFails(t *testing.T) {
 	natsConnectorMock := &NATSConnectorMock{
-		QueueSubscribeMultipleFn: func(queueGroup string, subjects []string, fn nats2.ProcessEventFn) error { return nil },
+		QueueSubscribeMultipleFn: func(subjects []string, queueGroup string, fn nats2.ProcessEventFn) error { return nil },
 		UnsubscribeAllFn:         func() error { return nil },
 	}
 	eventSource := NewNATSEventSource(natsConnectorMock)
 	err := eventSource.Start(context.TODO(), RegistrationData{}, make(chan models.KeptnContextExtendedCE))
 	require.NoError(t, err)
 	require.Equal(t, 1, natsConnectorMock.QueueSubscribeMultipleCalls)
-	natsConnectorMock.QueueSubscribeMultipleFn = func(queueGroup string, subjects []string, fn nats2.ProcessEventFn) error {
+	natsConnectorMock.QueueSubscribeMultipleFn = func(subjects []string, queueGroup string, fn nats2.ProcessEventFn) error {
 		return fmt.Errorf("error occured")
 	}
 	eventSource.OnSubscriptionUpdate([]string{"a"})
