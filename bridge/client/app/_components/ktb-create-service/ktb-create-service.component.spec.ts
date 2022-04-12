@@ -111,7 +111,8 @@ describe('KtbCreateServiceComponent', () => {
     component.createService(projectName);
 
     // then
-    expect(notificationSpy).toHaveBeenCalledWith(NotificationType.ERROR, 'service already exists');
+    expect(notificationSpy).toBeCalledTimes(0);
+    expect(component.isCreating).toBe(false);
   });
 
   it('should go back', () => {
