@@ -20,7 +20,7 @@ var mongoDBConnectionInstance *MongoDBConnection
 var mongoConnectionOnce sync.Once
 
 const clientCreationFailed = "failed to create mongo client: %v"
-const clientConnectionFailed = "failed to create mongo client: %v"
+const clientConnectionFailed = "failed to connect client to MongoDB: %v"
 
 // MongoDBConnection takes care of establishing a connection to the mongodb
 type MongoDBConnection struct {
