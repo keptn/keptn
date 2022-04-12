@@ -40,6 +40,7 @@ func getDatabaseName() string {
 
 // EnsureDBConnection makes sure a connection to the mongodb is established
 func (m *MongoDBConnection) EnsureDBConnection() error {
+	// Mutex is neccessary for not creating multiple clients after restarting the pod
 	mutex.Lock()
 	defer mutex.Unlock()
 	var err error
