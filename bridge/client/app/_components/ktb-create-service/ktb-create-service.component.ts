@@ -73,7 +73,7 @@ export class KtbCreateServiceComponent implements OnDestroy {
         await this.cancel();
         this.notificationsService.addNotification(NotificationType.SUCCESS, 'Service successfully created!');
       },
-      (error: HttpErrorResponse) => {
+      () => {
         this.isCreating = false;
       }
     );
