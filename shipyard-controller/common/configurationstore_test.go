@@ -221,3 +221,52 @@ func TestConfigurationStore(t *testing.T) {
 	})
 
 }
+
+func Test_isServiceNotFoundErr(t *testing.T) {
+	configSvcErrMsg := configServiceSvcDoesNotExistErrorMsg
+	resourceSvcErrMsg := resourceServiceSvcDoesNotExistErrorMsg
+	type args struct {
+		err keptnapimodels.Error
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "service not found error from configuration-service",
+			args: args{
+				err: keptnapimodels.Error{
+					Code:    http.StatusBadRequest,
+					Message: &configSvcErrMsg,
+				},
+			},
+			want: true,
+		},
+		{
+			name: "service not found error from resource-service",
+			args: args{
+				err: keptnapimodels.Error{
+					Code:    http.StatusNotFound,
+					Message: &resourceSvcErrMsg,
+				},
+			},
+			want: true,
+		},
+		{
+			name: "other error",
+			args: args{
+				err: keptnapimodels.Error{
+					Code:    http.StatusNotFound,
+					Message: nil,
+				},
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, isServiceNotFoundErr(tt.args.err), "isServiceNotFoundErr(%v)", tt.args.err)
+		})
+	}
+}

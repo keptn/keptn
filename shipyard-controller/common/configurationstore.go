@@ -3,6 +3,7 @@ package common
 import (
 	"errors"
 	"net/http"
+	"strings"
 
 	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
@@ -12,6 +13,10 @@ type configStoreErrType int
 
 var ErrConfigStoreInvalidToken = errors.New("invalid git token")
 var ErrConfigStoreUpstreamNotFound = errors.New("upstream repository not found")
+var ErrServiceNotFound = errors.New("service not found")
+
+const configServiceSvcDoesNotExistErrorMsg = "service does not exists" // [sic] this is what we get from the configuration service
+const resourceServiceSvcDoesNotExistErrorMsg = "service not found"
 
 //go:generate moq -pkg common_mock -out ./fake/configurationstore_mock.go . ConfigurationStore
 type ConfigurationStore interface {
@@ -109,8 +114,24 @@ func (g GitConfigurationStore) DeleteService(projectName string, stageName strin
 func (g GitConfigurationStore) buildErrResponse(err *keptnapimodels.Error) error {
 	if err.Code == http.StatusFailedDependency {
 		return ErrConfigStoreInvalidToken
+	} else if isServiceNotFoundErr(*err) {
+		return ErrServiceNotFound
 	} else if err.Code == http.StatusNotFound {
 		return ErrConfigStoreUpstreamNotFound
 	}
 	return errors.New(*err.Message)
+}
+
+func isServiceNotFoundErr(err keptnapimodels.Error) bool {
+	if err.Message == nil {
+		// if there is no message, we cannot deduct it being a service not found error
+		return false
+	}
+	if err.Code == http.StatusBadRequest || err.Code == http.StatusNotFound {
+		errMsg := strings.ToLower(*err.Message)
+		if strings.Contains(errMsg, configServiceSvcDoesNotExistErrorMsg) || strings.Contains(errMsg, resourceServiceSvcDoesNotExistErrorMsg) {
+			return true
+		}
+	}
+	return false
 }
