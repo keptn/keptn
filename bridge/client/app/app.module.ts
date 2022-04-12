@@ -156,6 +156,7 @@ import { DtDatepickerModule } from '@dynatrace/barista-components/experimental/d
 import { TruncateNumberPipe } from './_pipes/truncate-number';
 import { KtbLoadingDistractorComponent } from './_components/ktb-loading-distractor/ktb-loading-distractor.component';
 import { KtbLoadingSpinnerComponent } from './_components/ktb-loading-spinner/ktb-loading-spinner.component';
+import { SanitizeHtmlPipe } from './_pipes/sanitize-html';
 
 registerLocaleData(localeEn, 'en');
 
@@ -253,6 +254,7 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     TruncateNumberPipe,
     KtbLoadingDistractorComponent,
     KtbLoadingSpinnerComponent,
+    SanitizeHtmlPipe,
   ],
   imports: [
     BrowserModule,
