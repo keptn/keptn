@@ -37,7 +37,7 @@ func (m *MongoDBConnection) EnsureDBConnection() error {
 		logger.Info("No MongoDB client has been initialized yet. Creating a new one.")
 		return m.connectMongoDBClient()
 	} else if err = m.Client.Ping(ctx, nil); err != nil {
-		logger.Info("MongoDB client lost connection. Attempt reconnect.")
+		logger.Info("MongoDB client lost connection. Attempting reconnect.")
 		ctxDisconnect, cancelDisconnect := context.WithTimeout(context.TODO(), 30*time.Second)
 		defer cancelDisconnect()
 		err2 := m.Client.Disconnect(ctxDisconnect)
