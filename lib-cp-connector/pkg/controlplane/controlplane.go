@@ -68,24 +68,19 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 }
 
 func (cp *ControlPlane) handle(ctx context.Context, eventUpdate EventUpdate, integration Integration) error {
-	subscriptionsForTopic := []models.EventSubscription{}
 	for _, subscription := range cp.currentSubscriptions {
 		if subscription.Event == eventUpdate.MetaData.Subject {
 			matcher := NewEventMatcherFromSubscription(subscription)
 			if matcher.Matches(eventUpdate.KeptnEvent) {
-				subscriptionsForTopic = append(subscriptionsForTopic, subscription)
-			}
-		}
-	}
-
-	for range subscriptionsForTopic {
-		if err := integration.OnEvent(context.WithValue(ctx, EventSenderKey, cp.eventSource.Sender()), eventUpdate.KeptnEvent); err != nil {
-			if errors.Is(err, ErrEventHandleFatal) {
-				cp.logger.Errorf("Fatal error during handling of event: %v", err)
-				return err
-			}
-			if errors.Is(err, ErrEventHandleIgnore) {
-				cp.logger.Warnf("Error during handling of event: %v", err)
+				if err := integration.OnEvent(context.WithValue(ctx, EventSenderKey, cp.eventSource.Sender()), eventUpdate.KeptnEvent); err != nil {
+					if errors.Is(err, ErrEventHandleFatal) {
+						cp.logger.Errorf("Fatal error during handling of event: %v", err)
+						return err
+					}
+					if errors.Is(err, ErrEventHandleIgnore) {
+						cp.logger.Warnf("Error during handling of event: %v", err)
+					}
+				}
 			}
 		}
 	}
