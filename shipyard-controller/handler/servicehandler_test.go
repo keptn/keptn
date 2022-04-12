@@ -634,12 +634,16 @@ func TestServiceHandler_GetServices(t *testing.T) {
 }
 
 func TestServiceParamsValidator(t *testing.T) {
+	type fields struct {
+		serviceNameMaxSize int
+	}
 	type args struct {
 		params *models.CreateServiceParams
 	}
 	tests := []struct {
 		name    string
 		args    args
+		fields  fields
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -647,7 +651,7 @@ func TestServiceParamsValidator(t *testing.T) {
 			args: args{
 				params: &models.CreateServiceParams{},
 			},
-
+			fields:  fields{serviceNameMaxSize: 43},
 			wantErr: assert.Error,
 		},
 		{
@@ -657,6 +661,7 @@ func TestServiceParamsValidator(t *testing.T) {
 					ServiceName: stringp(""),
 				},
 			},
+			fields:  fields{serviceNameMaxSize: 43},
 			wantErr: assert.Error,
 		},
 		{
@@ -666,13 +671,23 @@ func TestServiceParamsValidator(t *testing.T) {
 					ServiceName: stringp("service-name"),
 				},
 			},
-
+			fields:  fields{serviceNameMaxSize: 43},
 			wantErr: assert.NoError,
+		},
+		{
+			name: "Service name too long",
+			args: args{
+				params: &models.CreateServiceParams{
+					ServiceName: stringp("service-name"),
+				},
+			},
+			fields:  fields{serviceNameMaxSize: 11},
+			wantErr: assert.Error,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := ServiceParamsValidator{}
+			s := ServiceParamsValidator{ServiceNameMaxSize: tt.fields.serviceNameMaxSize}
 			tt.wantErr(t, s.validateCreateServiceParams(tt.args.params), fmt.Sprintf("validateCreateServiceParams(%v)", tt.args.params))
 		})
 	}
