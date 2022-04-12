@@ -24,6 +24,7 @@ import (
 	"github.com/keptn/keptn/cli/pkg/common"
 	commonfake "github.com/keptn/keptn/cli/pkg/common/fake"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
+	credmanagerfake "github.com/keptn/keptn/cli/pkg/credentialmanager/fake"
 	"github.com/keptn/keptn/cli/pkg/helm"
 	helmfake "github.com/keptn/keptn/cli/pkg/helm/fake"
 	"github.com/keptn/keptn/cli/pkg/kube"
@@ -35,9 +36,10 @@ import (
 
 func TestUpgradeCmdHandler_doUpgradePreRunCheck(t *testing.T) {
 	type fields struct {
-		helmHelper       *helmfake.IHelperMock
-		namespaceHandler *kubefake.IKeptnNamespaceHandlerMock
-		userInput        *commonfake.IUserInputMock
+		helmHelper        *helmfake.IHelperMock
+		namespaceHandler  *kubefake.IKeptnNamespaceHandlerMock
+		userInput         *commonfake.IUserInputMock
+		credentialManager *credmanagerfake.CredentialManagerInterfaceMock
 	}
 	tests := []struct {
 		name              string
@@ -169,8 +171,9 @@ func TestSkipUpgradeCheck(t *testing.T) {
 	helmHelper := helm.NewHelper()
 	namespaceHandler := kube.NewKubernetesUtilsKeptnNamespaceHandler()
 	userInput := common.NewUserInput()
+	cm := credentialmanager.NewCredentialManager(assumeYes)
 
-	testUpgraderCmd := NewUpgraderCommand(vChecker, helmHelper, namespaceHandler, userInput)
+	testUpgraderCmd := NewUpgraderCommand(vChecker, helmHelper, namespaceHandler, userInput, cm)
 
 	upgraderCmd.RunE = testUpgraderCmd.RunE
 	r := newRedirector()

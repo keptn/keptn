@@ -49,13 +49,14 @@ var upgradeParams installUpgradeParams
 var keptnUpgradeChart *chart.Chart
 
 // installCmd represents the version command
-var upgraderCmd = NewUpgraderCommand(version.NewKeptnVersionChecker(), helm.NewHelper(), kube.NewKubernetesUtilsKeptnNamespaceHandler(), common.NewUserInput())
+var upgraderCmd = NewUpgraderCommand(version.NewKeptnVersionChecker(), helm.NewHelper(), kube.NewKubernetesUtilsKeptnNamespaceHandler(), common.NewUserInput(), credentialmanager.NewCredentialManager(assumeYes))
 
-func NewUpgraderCommand(vChecker *version.KeptnVersionChecker, helmHelper helm.IHelper, namespaceHandler kube.IKeptnNamespaceHandler, userInput common.IUserInput) *cobra.Command {
+func NewUpgraderCommand(vChecker *version.KeptnVersionChecker, helmHelper helm.IHelper, namespaceHandler kube.IKeptnNamespaceHandler, userInput common.IUserInput, credentialManager *credentialmanager.CredentialManager) *cobra.Command {
 	upgradeCmdHandler := &UpgradeCmdHandler{
-		helmHelper:       helmHelper,
-		namespaceHandler: namespaceHandler,
-		userInput:        userInput,
+		helmHelper:        helmHelper,
+		namespaceHandler:  namespaceHandler,
+		userInput:         userInput,
+		credentialManager: *credentialManager,
 	}
 
 	upgradeCmd := &cobra.Command{
@@ -135,7 +136,7 @@ func (u *UpgradeCmdHandler) doUpgradePreRunCheck(vChecker *version.KeptnVersionC
 
 	logging.PrintLog(fmt.Sprintf("Helm Chart used for Keptn upgrade: %s", chartRepoURL), logging.InfoLevel)
 
-	cm := credentialmanager.NewCredentialManager(assumeYes)
+	cm := u.credentialManager
 	currentKeptnCLIContext := cm.GetCurrentKeptnCLIConfig().CurrentContext
 	currentKubernetesContext := cm.GetCurrentKubeConfig().CurrentContext
 
@@ -143,7 +144,7 @@ func (u *UpgradeCmdHandler) doUpgradePreRunCheck(vChecker *version.KeptnVersionC
 		return fmt.Errorf("your current Keptn CLI context '%s' does not match current Kubeconfig '%s'. Please ensure your kubectl CLI is connected to '%s' before upgrading your Keptn cluster", currentKeptnCLIContext, currentKubernetesContext, currentKubernetesContext)
 	}
 
-	platformManager, err := platform.NewPlatformManager(*upgradeParams.PlatformIdentifier, cm)
+	platformManager, err := platform.NewPlatformManager(*upgradeParams.PlatformIdentifier, &u.credentialManager)
 	if err != nil {
 		return err
 	}
@@ -202,7 +203,7 @@ func (u *UpgradeCmdHandler) doUpgradePreRunCheck(vChecker *version.KeptnVersionC
 		}
 	}
 
-	if err = addWarningNonExistingProjectUpstream(); err != nil {
+	if err = u.addWarningNonExistingProjectUpstream(); err != nil {
 		return err
 	}
 
@@ -254,8 +255,8 @@ func getLatestKeptnRelease() (*release.Release, error) {
 
 }
 
-func addWarningNonExistingProjectUpstream() error {
-	endPoint, apiToken, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
+func (u *UpgradeCmdHandler) addWarningNonExistingProjectUpstream() error {
+	endPoint, apiToken, err := u.credentialManager.GetCreds(namespace)
 	if err != nil {
 		return errors.New(authErrorMsg)
 	}
@@ -305,9 +306,10 @@ func init() {
 }
 
 type UpgradeCmdHandler struct {
-	helmHelper       helm.IHelper
-	namespaceHandler kube.IKeptnNamespaceHandler
-	userInput        common.IUserInput
+	helmHelper        helm.IHelper
+	namespaceHandler  kube.IKeptnNamespaceHandler
+	userInput         common.IUserInput
+	credentialManager credentialmanager.CredentialManager
 }
 
 func (u *UpgradeCmdHandler) doUpgrade() error {
