@@ -6,9 +6,11 @@ mongo:
     nameOverride: 'mongo'
     port: 27017
   auth:
-    database: 'keptn'
+    databases:
+      - 'keptn'
     existingSecret: 'mongodb-credentials' # If the password and rootPassword values below are used, remove this field.
-    username: 'keptn'
+    usernames:
+      - 'keptn'
     password: null
     rootUser: 'admin'
     rootPassword: null

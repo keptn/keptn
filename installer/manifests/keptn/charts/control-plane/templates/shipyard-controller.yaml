@@ -70,7 +70,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: mongodb-credentials
-                  key: mongodb-password
+                  key: mongodb-passwords
             - name: MONGODB_DATABASE
               value: {{ .Values.mongo.auth.database | default "keptn" }}
             - name: MONGODB_EXTERNAL_CONNECTION_STRING
