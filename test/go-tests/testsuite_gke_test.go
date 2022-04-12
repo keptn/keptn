@@ -60,7 +60,6 @@ func Test_GKE(t *testing.T) {
 	t.Run("Test_ZeroDownTimeTriggerSequence", Test_ZeroDownTimeTriggerSequence)
 
 	// Platform-specific Tests
-	t.Run("Test_ResourceService", Test_ResourceServiceBasic)
 	t.Run("Test_QualityGates", Test_QualityGates)
 	t.Run("Test_QualityGates_SLIWrongFinishedPayloadSend", Test_QualityGates_SLIWrongFinishedPayloadSend)
 	t.Run("Test_QualityGates_AbortedFinishedPayloadSend", Test_QualityGates_AbortedFinishedPayloadSend)
