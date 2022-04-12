@@ -6,7 +6,7 @@
 >
   <div fxLayout="row" fxLayoutAlign="space-between center">
     <dt-icon *ngIf="notification.isPinned" name="pin" class="pin-icon"></dt-icon>
-    <span *ngIf="!notification.componentInfo" [innerHtml]="notification.message | sanitizeHtml"></span>
+    <span *ngIf="!notification.componentInfo" [textContent]="notification.message"></span>
     <ng-template #showComponent></ng-template>
     <div>
       <button
