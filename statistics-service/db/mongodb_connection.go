@@ -44,6 +44,7 @@ func (m *MongoDBConnection) EnsureDBConnection() error {
 		if err2 != nil {
 			logger.Errorf("failed to disconnect client from MongoDB: %v", err2)
 		}
+		m.Client = nil
 		return m.connectMongoDBClient()
 	}
 	return nil
@@ -57,7 +58,10 @@ func (m *MongoDBConnection) connectMongoDBClient() error {
 		return fmt.Errorf(clientCreationFailed, err)
 	}
 	databaseName = dbName
-	m.Client, err = mongo.NewClient(options.Client().ApplyURI(connectionString))
+	clientOptions := options.Client()
+	clientOptions = clientOptions.ApplyURI(connectionString)
+	clientOptions = clientOptions.SetConnectTimeout(30 * time.Second)
+	m.Client, err = mongo.NewClient(clientOptions)
 	if err != nil {
 		logger.Errorf(clientCreationFailed, err)
 		return fmt.Errorf(clientCreationFailed, err)
@@ -67,8 +71,14 @@ func (m *MongoDBConnection) connectMongoDBClient() error {
 
 	err = m.Client.Connect(ctx)
 	if err != nil {
-		logger.Infof(clientConnectionFailed, err)
+		logger.Errorf(clientConnectionFailed, err)
 		return fmt.Errorf(clientConnectionFailed, err)
 	}
+	if err = m.Client.Ping(ctx, nil); err != nil {
+		logger.Errorf(clientConnectionFailed, err)
+		return fmt.Errorf(clientConnectionFailed, err)
+	}
+
+	logger.Info("Successfully connected to MongoDB")
 	return nil
 }
