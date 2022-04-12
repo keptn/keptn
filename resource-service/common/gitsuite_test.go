@@ -1034,7 +1034,7 @@ func Test_getAuthMethod(t *testing.T) {
 					GitPrivateKey:     "",
 					GitPrivateKeyPass: "",
 					GitProxyURL:       "",
-					GitProxyInsecure:  false,
+					InsecureSkipTLS:   false,
 					GitProxyScheme:    "",
 					GitProxyUser:      "",
 					GitProxyPassword:  "",
