@@ -2,13 +2,18 @@
 
 import SettingsPage from './SettingsPage';
 import NewProjectCreatePage from './NewProjectCreatePage';
-import EnvironmentPage from './EnvironmentPage';
 import ServicesPage from './ServicesPage';
 import Chainable = Cypress.Chainable;
 
+enum View {
+  SERVICE_VIEW = 'service-view',
+  ENVIRONMENT_VIEW = 'environment-view',
+  SEQUENCE_VIEW = 'sequence-view',
+  SETTINGS_VIEW = 'settings-view',
+}
+
 export class ProjectBoardPage {
   NAVIGATION_MENU_LOCATOR = 'button[aria-label="Open page_pattern view"]';
-  PROJECT_TILE_LOCATOR = 'dt-tile[id="proj_patten"]';
 
   public interceptDeepLinks(): this {
     const mockedKeptnContext = '62cca6f3-dc54-4df6-a04c-6ffc894a4b5e';
@@ -58,11 +63,6 @@ export class ProjectBoardPage {
       .get('.cdk-overlay-container dt-option')
       .contains(projectName)
       .click();
-  }
-
-  public clickProjectTile(projectName: string): EnvironmentPage {
-    cy.wait(500).get(this.PROJECT_TILE_LOCATOR.replace('proj_patten', projectName)).click();
-    return new EnvironmentPage();
   }
 
   public clickCreateNewProjectButton(): NewProjectCreatePage {
@@ -117,31 +117,26 @@ export class ProjectBoardPage {
   }
 
   public assertOnlyEnvironmentViewSelected(): this {
-    return this.assertMenuItemsSelected(true, false, false, false);
+    return this.assertMenuItemSelected(View.ENVIRONMENT_VIEW);
   }
 
   public assertOnlyServicesViewSelected(): this {
-    return this.assertMenuItemsSelected(false, true, false, false);
+    return this.assertMenuItemSelected(View.SERVICE_VIEW);
   }
 
   public assertOnlySequencesViewSelected(): this {
-    return this.assertMenuItemsSelected(false, false, true, false);
+    return this.assertMenuItemSelected(View.SEQUENCE_VIEW);
   }
 
   public assertOnlySettingsViewSelected(): this {
-    return this.assertMenuItemsSelected(false, false, false, true);
+    return this.assertMenuItemSelected(View.SETTINGS_VIEW);
   }
 
-  private assertMenuItemsSelected(
-    environmentView: boolean,
-    servicesView: boolean,
-    sequencesView: boolean,
-    settingsView: boolean
-  ): this {
-    return this.assertServicesViewSelected(servicesView)
-      .assertEnvironmentViewSelected(environmentView)
-      .assertSequencesViewSelected(sequencesView)
-      .assertSettingsViewSelected(settingsView);
+  private assertMenuItemSelected(view: View): this {
+    return this.assertServicesViewSelected(view === View.SERVICE_VIEW)
+      .assertEnvironmentViewSelected(view === View.ENVIRONMENT_VIEW)
+      .assertSequencesViewSelected(view === View.SEQUENCE_VIEW)
+      .assertSettingsViewSelected(view === View.SETTINGS_VIEW);
   }
 
   private assertMenuSelected(selector: string, status: boolean): this {

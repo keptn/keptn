@@ -1,10 +1,13 @@
 /// <reference types="cypress" />
 
 import { ProjectBoardPage } from '../support/pageobjects/ProjectBoardPage';
+import DashboardPage from '../support/pageobjects/DashboardPage';
 
 describe('Test Navigation Buttons In Evaluation Screen', () => {
+  const projectBoardPage = new ProjectBoardPage();
+  const dashboardPage = new DashboardPage();
+
   it('The test clicks on Navigation buttons and make sure the pages are open respectively ', () => {
-    const basePage = new ProjectBoardPage();
     cy.fixture('metadata.json').as('initmetadata');
 
     cy.intercept('GET', 'api/v1/metadata', { fixture: 'metadata.json' }).as('metadataCmpl');
@@ -79,9 +82,9 @@ describe('Test Navigation Buttons In Evaluation Screen', () => {
     });
 
     cy.visit('/').wait('@initProjects');
-    basePage.clickProjectTile('dynatrace');
+    dashboardPage.clickProjectTile('dynatrace');
 
-    basePage
+    projectBoardPage
       .goToServicesPage()
       .clickOnServicePanelByName('items')
       .clickOnServiceInnerPanelByName('items')
@@ -93,13 +96,13 @@ describe('Test Navigation Buttons In Evaluation Screen', () => {
 
     cy.get('*[uitestid="keptn-sequence-view-roots"]');
 
-    basePage
+    projectBoardPage
       .goToServicesPage()
       .clickOnServicePanelByName('items')
       .clickOnServiceInnerPanelByName('items')
       .clickEvaluationBoardButton()
       .clickGoBack()
       .verifyCurrentOpenServiceNameEvaluationPanel('items');
-    basePage.clickMainHeaderKeptn();
+    projectBoardPage.clickMainHeaderKeptn();
   });
 });

@@ -1,10 +1,12 @@
 /// <reference types="cypress" />
 import { ProjectBoardPage } from '../support/pageobjects/ProjectBoardPage';
+import DashboardPage from '../support/pageobjects/DashboardPage';
 
 describe('Project delete test', () => {
-  it('test', () => {
-    const basePage = new ProjectBoardPage();
+  const projectBoardPage = new ProjectBoardPage();
+  const dashboardPage = new DashboardPage();
 
+  it('test', () => {
     cy.fixture('get.project.json').as('initProjectJSON');
     cy.fixture('metadata.json').as('initmetadata');
 
@@ -37,7 +39,7 @@ describe('Project delete test', () => {
     cy.wait('@metadataCmpl');
     cy.wait('@initProjects');
     cy.wait(500);
-    basePage.clickProjectTile('dynatrace');
-    basePage.gotoSettingsPage().clickDeleteProjectButton().typeProjectNameToDelete('dynatrace').submitDelete();
+    dashboardPage.clickProjectTile('dynatrace');
+    projectBoardPage.gotoSettingsPage().clickDeleteProjectButton().typeProjectNameToDelete('dynatrace').submitDelete();
   });
 });

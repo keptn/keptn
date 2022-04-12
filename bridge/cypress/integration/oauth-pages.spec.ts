@@ -36,7 +36,7 @@ describe('Test logout page', () => {
   const logoutPage = new LogoutPage();
   it('should be logout page and redirect to dashboard', () => {
     interceptDashboard();
-    logoutPage.visit().assertHeaderText('You haven been logged out').clickLocation();
+    logoutPage.visit().assertHeaderText('You have been logged out').clickLocation();
     cy.location('pathname').should('eq', '/dashboard');
   });
 });
