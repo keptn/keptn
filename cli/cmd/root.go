@@ -2,12 +2,13 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/keptn/keptn/cli/pkg/config"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/pkg/version"
 	"github.com/spf13/cobra"
-	"os"
-	"strings"
 )
 
 var cfgFile string
@@ -130,7 +131,9 @@ func runVersionCheck(vChecker *version.VersionChecker, flags []string, cliConfig
 		}
 
 		if clusterVersion != Version {
-			fmt.Fprintf(os.Stderr, "* Warning: Your Keptn CLI version (%s) and Keptn cluster version (%s) don't match. This can lead to problems. Please make sure to use the same versions.\n", Version, clusterVersion)
+			if len(flags) == 0 || flags[0] != "upgrade" {
+				fmt.Fprintf(os.Stderr, "* Warning: Your Keptn CLI version (%s) and Keptn cluster version (%s) don't match. This can lead to problems. Please make sure to use the same versions.\n", Version, clusterVersion)
+			}
 		}
 	}
 

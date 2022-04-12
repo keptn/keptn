@@ -232,6 +232,16 @@ func Test_runVersionCheck(t *testing.T) {
 			doNotWantOutput: "* Warning: could not check Keptn server version: Error connecting to server:",
 		},
 		{
+			name:           "dont show warning for 'keptn upgrade'",
+			cliVersion:     "0.8.0",
+			metadataStatus: http.StatusOK,
+			args:           []string{"upgrade"},
+			metadataResponse: apimodels.Metadata{
+				Keptnversion: "0.8.1-dev",
+			},
+			doNotWantOutput: "* Warning: Your Keptn CLI version (0.8.0) and Keptn cluster version (0.8.1-dev) don't match. This can lead to problems. Please make sure to use the same versions.",
+		},
+		{
 			name:            "skip version check for 'keptn --any-flag install'",
 			cliVersion:      "0.8.0",
 			metadataStatus:  http.StatusServiceUnavailable,
