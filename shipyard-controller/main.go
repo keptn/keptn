@@ -187,7 +187,7 @@ func main() {
 	projectController := controller.NewProjectController(projectService)
 	projectController.Inject(apiV1)
 
-	serviceHandler := handler.NewServiceHandler(serviceManager, eventSender)
+	serviceHandler := handler.NewServiceHandler(serviceManager, eventSender, env)
 	serviceController := controller.NewServiceController(serviceHandler)
 	serviceController.Inject(apiV1)
 
