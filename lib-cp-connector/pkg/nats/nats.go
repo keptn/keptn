@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	envVarNatsURL        = "NATS_URL"
-	envVarNatsURLDefault = "nats://keptn-nats"
+	EnvVarNatsURL        = "NATS_URL"
+	EnvVarNatsURLDefault = "nats://keptn-nats"
 )
 
 type NATS interface {
@@ -33,7 +33,7 @@ var (
 )
 
 // ProcessEventFn is used to process a received keptn event
-type ProcessEventFn func(event models.KeptnContextExtendedCE) error
+type ProcessEventFn func(msg *nats.Msg) error
 
 // NatsConnector can be used to subscribe to certain events
 // on the NATS event system
@@ -63,9 +63,9 @@ func Connect(connectURL string) (*NatsConnector, error) {
 // If the URL is not set via the environment variable "NATS_URL",
 // it falls back to the default URL "nats://keptn-nats"
 func ConnectFromEnv() (*NatsConnector, error) {
-	natsURL := os.Getenv(envVarNatsURL)
+	natsURL := os.Getenv(EnvVarNatsURL)
 	if natsURL == "" {
-		natsURL = envVarNatsURLDefault
+		natsURL = EnvVarNatsURLDefault
 	}
 	return Connect(natsURL)
 }
@@ -138,12 +138,7 @@ func (nc *NatsConnector) Disconnect() error {
 
 func (nc *NatsConnector) queueSubscribe(subject string, queueGroup string, fn ProcessEventFn) error {
 	sub, err := nc.conn.QueueSubscribe(subject, queueGroup, func(m *nats.Msg) {
-		event := &models.KeptnContextExtendedCE{}
-		if err := json.Unmarshal(m.Data, event); err != nil {
-			nc.logger.Errorf("could not unmarshal message %s: %v", string(m.Data), err)
-			return
-		}
-		err := fn(*event)
+		err := fn(m)
 		if err != nil {
 			nc.logger.Errorf("Could not process message %s: %v\n", string(m.Data), err)
 		}

@@ -2,10 +2,12 @@ package controlplane
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/lib-cp-connector/pkg/logger"
-	"github.com/keptn/keptn/lib-cp-connector/pkg/nats"
+	natseventsource "github.com/keptn/keptn/lib-cp-connector/pkg/nats"
+	"github.com/nats-io/nats.go"
 	"reflect"
 	"sort"
 )
@@ -16,11 +18,23 @@ var EventSenderKey = EventSenderKeyType{}
 
 type EventSender func(ce models.KeptnContextExtendedCE) error
 
+// EventUpdate wraps a new Keptn event received from the Event source
+type EventUpdate struct {
+	KeptnEvent models.KeptnContextExtendedCE
+	MetaData   EventUpdateMetaData
+}
+
+// EventUpdateMetaData is additional metadata for bound to the
+// event received from the event source
+type EventUpdateMetaData struct {
+	Subject string
+}
+
 // EventSource is anything that can be used
 // to get events from the Keptn Control Plane
 type EventSource interface {
 	// Start triggers the execution of the EventSource
-	Start(context.Context, RegistrationData, chan models.KeptnContextExtendedCE) error
+	Start(context.Context, RegistrationData, chan EventUpdate) error
 	// OnSubscriptionUpdate can be called to tell the EventSource that
 	// the current subscriptions have been changed
 	OnSubscriptionUpdate([]string)
@@ -35,26 +49,33 @@ type EventSource interface {
 // that is using the NATS event broker internally
 type NATSEventSource struct {
 	currentSubjects []string
-	connector       nats.NATS
-	eventProcessFn  nats.ProcessEventFn
+	connector       natseventsource.NATS
+	eventProcessFn  natseventsource.ProcessEventFn
 	queueGroup      string
 	logger          logger.Logger
 }
 
 // NewNATSEventSource creates a new NATSEventSource
-func NewNATSEventSource(natsConnector nats.NATS) *NATSEventSource {
+func NewNATSEventSource(natsConnector natseventsource.NATS) *NATSEventSource {
 	return &NATSEventSource{
 		currentSubjects: []string{},
 		connector:       natsConnector,
-		eventProcessFn:  func(event models.KeptnContextExtendedCE) error { return nil },
+		eventProcessFn:  func(event *nats.Msg) error { return nil },
 		logger:          logger.NewDefaultLogger(),
 	}
 }
 
-func (n *NATSEventSource) Start(ctx context.Context, registrationData RegistrationData, eventChannel chan models.KeptnContextExtendedCE) error {
+func (n *NATSEventSource) Start(ctx context.Context, registrationData RegistrationData, eventChannel chan EventUpdate) error {
 	n.queueGroup = registrationData.Name
-	n.eventProcessFn = func(event models.KeptnContextExtendedCE) error {
-		eventChannel <- event
+	n.eventProcessFn = func(event *nats.Msg) error {
+		keptnEvent := models.KeptnContextExtendedCE{}
+		if err := json.Unmarshal(event.Data, &keptnEvent); err != nil {
+			return fmt.Errorf("could not unmarshal message: %w", err)
+		}
+		eventChannel <- EventUpdate{
+			KeptnEvent: keptnEvent,
+			MetaData:   EventUpdateMetaData{event.Sub.Subject},
+		}
 		return nil
 	}
 	if err := n.connector.QueueSubscribeMultiple(n.currentSubjects, n.queueGroup, n.eventProcessFn); err != nil {

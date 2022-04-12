@@ -9,6 +9,7 @@ import (
 	natstest "github.com/nats-io/nats-server/v2/test"
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/require"
+	"os"
 	"testing"
 	"time"
 )
@@ -17,6 +18,16 @@ func TestConnect(t *testing.T) {
 	svr, shutdown := runNATSServer()
 	defer shutdown()
 	sub, err := nats2.Connect(svr.ClientURL())
+	require.NotNil(t, sub)
+	require.Nil(t, err)
+}
+
+func TestConnectFromEnv(t *testing.T) {
+	svr, shutdown := runNATSServer()
+	defer shutdown()
+	os.Setenv(nats2.EnvVarNatsURL, svr.ClientURL())
+	defer os.Unsetenv(nats2.EnvVarNatsURL)
+	sub, err := nats2.ConnectFromEnv()
 	require.NotNil(t, sub)
 	require.Nil(t, err)
 }
@@ -40,7 +51,7 @@ func TestDisconnect(t *testing.T) {
 
 func TestSubscribe(t *testing.T) {
 	received := false
-	event := `{
+	msg := `{
 				"data": "",
 				"id": "6de83495-4f83-481c-8dbe-fcceb2e0243b",
 				"source": "my-service",
@@ -54,7 +65,7 @@ func TestSubscribe(t *testing.T) {
 	nc, _ := nats2.Connect(svr.ClientURL())
 	require.NotNil(t, nc)
 
-	err := nc.Subscribe("subj", func(event models.KeptnContextExtendedCE) error {
+	err := nc.Subscribe("subj", func(msg *nats.Msg) error {
 		received = true
 		return nil
 	})
@@ -62,37 +73,19 @@ func TestSubscribe(t *testing.T) {
 	localClient, _ := nats.Connect(svr.ClientURL())
 	defer localClient.Close()
 
-	localClient.Publish("subj", []byte(event))
+	localClient.Publish("subj", []byte(msg))
 	require.Eventually(t, func() bool {
 		return received
 	}, 10*time.Second, time.Second)
-}
-
-func TestSubscribeReceiveInvalidEvent(t *testing.T) {
-	event := `garbage`
-
-	svr, shutdown := runNATSServer()
-	defer shutdown()
-	nc, _ := nats2.Connect(svr.ClientURL())
-	require.NotNil(t, nc)
-
-	err := nc.Subscribe("subj", func(event models.KeptnContextExtendedCE) error {
-		t.FailNow()
-		return nil
-	})
-	require.Nil(t, err)
-	localClient, _ := nats.Connect(svr.ClientURL())
-	defer localClient.Close()
-	localClient.Publish("subj", []byte(event))
 }
 
 func TestSubscribeTwice(t *testing.T) {
 	svr, shutdown := runNATSServer()
 	defer shutdown()
 	nc, _ := nats2.Connect(svr.ClientURL())
-	err := nc.Subscribe("subj", func(event models.KeptnContextExtendedCE) error { return nil })
+	err := nc.Subscribe("subj", func(msg *nats.Msg) error { return nil })
 	require.Nil(t, err)
-	err = nc.Subscribe("subj", func(event models.KeptnContextExtendedCE) error { return nil })
+	err = nc.Subscribe("subj", func(msg *nats.Msg) error { return nil })
 	require.ErrorIs(t, err, nats2.ErrSubAlreadySubscribed)
 }
 
@@ -100,7 +93,7 @@ func TestSubscribeEmptySubject(t *testing.T) {
 	svr, shutdown := runNATSServer()
 	defer shutdown()
 	nc, _ := nats2.Connect(svr.ClientURL())
-	err := nc.Subscribe("", func(event models.KeptnContextExtendedCE) error { return nil })
+	err := nc.Subscribe("", func(msg *nats.Msg) error { return nil })
 	require.ErrorIs(t, err, nats2.ErrSubEmptySubject)
 }
 
@@ -114,7 +107,7 @@ func TestSubscribeWithEmptyProcessFn(t *testing.T) {
 
 func TestSubscribeMultiple(t *testing.T) {
 	numberReceived := 0
-	event := `{}`
+	msg := `{}`
 
 	svr, shutdown := runNATSServer()
 	defer shutdown()
@@ -123,7 +116,7 @@ func TestSubscribeMultiple(t *testing.T) {
 
 	subjects := []string{"subj1", "subj2"}
 
-	err := nc.SubscribeMultiple(subjects, func(event models.KeptnContextExtendedCE) error {
+	err := nc.SubscribeMultiple(subjects, func(msg *nats.Msg) error {
 		numberReceived++
 		return nil
 	})
@@ -131,8 +124,8 @@ func TestSubscribeMultiple(t *testing.T) {
 	localClient, _ := nats.Connect(svr.ClientURL())
 	defer localClient.Close()
 
-	require.NoError(t, localClient.Publish("subj1", []byte(event)))
-	require.NoError(t, localClient.Publish("subj2", []byte(event)))
+	require.NoError(t, localClient.Publish("subj1", []byte(msg)))
+	require.NoError(t, localClient.Publish("subj2", []byte(msg)))
 
 	require.Eventually(t, func() bool {
 		return numberReceived == 2
@@ -150,7 +143,7 @@ func TestSubscribeMultipleFails(t *testing.T) {
 }
 
 func TestUnsubscribeAll(t *testing.T) {
-	event := `{}`
+	msg := `{}`
 
 	svr, shutDown := runNATSServer()
 	defer shutDown()
@@ -161,14 +154,14 @@ func TestUnsubscribeAll(t *testing.T) {
 	nc, err := nats2.Connect(svr.ClientURL())
 	require.NoError(t, err)
 
-	err = nc.Subscribe("subj", func(event models.KeptnContextExtendedCE) error {
+	err = nc.Subscribe("subj", func(msg *nats.Msg) error {
 		receivedBeforeUnsubscribeAll = true
 		return nil
 	})
 	require.NoError(t, err)
 	localClient, _ := nats.Connect(svr.ClientURL())
 	defer localClient.Close()
-	require.NoError(t, localClient.Publish("subj", []byte(event)))
+	require.NoError(t, localClient.Publish("subj", []byte(msg)))
 	require.Eventually(t, func() bool {
 		return receivedBeforeUnsubscribeAll
 	}, 10*time.Second, time.Second)
@@ -176,13 +169,13 @@ func TestUnsubscribeAll(t *testing.T) {
 	err = nc.UnsubscribeAll()
 	require.NoError(t, err)
 
-	require.NoError(t, localClient.Publish("subj", []byte(event)))
+	require.NoError(t, localClient.Publish("subj", []byte(msg)))
 	require.False(t, receivedAfterUnsubscribeAll)
 }
 
 func TestPublish(t *testing.T) {
 	received := false
-	event := models.KeptnContextExtendedCE{
+	msg := models.KeptnContextExtendedCE{
 		Type: strutils.Stringp("subj"),
 		Data: v0_2_0.EventData{
 			Project: "someProject",
@@ -196,13 +189,13 @@ func TestPublish(t *testing.T) {
 	nc, _ := nats2.Connect(svr.ClientURL())
 	require.NotNil(t, nc)
 
-	err := nc.Subscribe("subj", func(e models.KeptnContextExtendedCE) error {
+	err := nc.Subscribe("subj", func(e *nats.Msg) error {
 		received = true
 		return nil
 	})
 	require.Nil(t, err)
 
-	err = nc.Publish(event)
+	err = nc.Publish(msg)
 	require.NoError(t, err)
 
 	require.Eventually(t, func() bool {
@@ -211,12 +204,12 @@ func TestPublish(t *testing.T) {
 }
 
 func TestPublishEventMissingType(t *testing.T) {
-	event := models.KeptnContextExtendedCE{}
+	msg := models.KeptnContextExtendedCE{}
 	svr, shutdown := runNATSServer()
 	defer shutdown()
 	nc, _ := nats2.Connect(svr.ClientURL())
 	require.NotNil(t, nc)
-	err := nc.Publish(event)
+	err := nc.Publish(msg)
 	require.ErrorIs(t, err, nats2.ErrPubEventTypeMissing)
 
 }

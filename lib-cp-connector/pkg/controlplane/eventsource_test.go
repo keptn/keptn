@@ -5,19 +5,20 @@ import (
 	"fmt"
 	"github.com/keptn/go-utils/pkg/api/models"
 	nats2 "github.com/keptn/keptn/lib-cp-connector/pkg/nats"
+	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
 )
 
 type EventSourceMock struct {
-	StartFn                func(context.Context, RegistrationData, chan models.KeptnContextExtendedCE) error
+	StartFn                func(context.Context, RegistrationData, chan EventUpdate) error
 	OnSubscriptionUpdateFn func([]string)
 	SenderFn               func() EventSender
 	StopFn                 func() error
 }
 
-func (e *EventSourceMock) Start(ctx context.Context, data RegistrationData, ces chan models.KeptnContextExtendedCE) error {
+func (e *EventSourceMock) Start(ctx context.Context, data RegistrationData, ces chan EventUpdate) error {
 	if e.StartFn != nil {
 		return e.StartFn(ctx, data, ces)
 	}
@@ -122,14 +123,16 @@ func TestEventSourceForwardsEventToChannel(t *testing.T) {
 		QueueSubscribeMultipleFn: func(subjects []string, queueGroup string, fn nats2.ProcessEventFn) error { return nil },
 		UnsubscribeAllFn:         func() error { return nil },
 	}
-	eventChannel := make(chan models.KeptnContextExtendedCE)
+	eventChannel := make(chan EventUpdate)
 	eventSource := NewNATSEventSource(natsConnectorMock)
 	eventSource.Start(context.TODO(), RegistrationData{}, eventChannel)
 	eventSource.OnSubscriptionUpdate([]string{"a"})
 	event := models.KeptnContextExtendedCE{ID: "id"}
-	go natsConnectorMock.ProcessEventFn(event)
+	jsonEvent, _ := event.ToJSON()
+	e := &nats.Msg{Data: jsonEvent, Sub: &nats.Subscription{Subject: "subscription"}} //models.KeptnContextExtendedCE{ID: "id"}
+	go natsConnectorMock.ProcessEventFn(e)
 	eventFromChan := <-eventChannel
-	require.Equal(t, eventFromChan, event)
+	require.Equal(t, eventFromChan.KeptnEvent, event)
 }
 
 func TestEventSourceCancelDisconnectsFromBroker(t *testing.T) {
@@ -138,7 +141,7 @@ func TestEventSourceCancelDisconnectsFromBroker(t *testing.T) {
 		DisconnectFn:             func() error { return nil },
 	}
 	ctx, cancel := context.WithCancel(context.TODO())
-	NewNATSEventSource(natsConnectorMock).Start(ctx, RegistrationData{}, make(chan models.KeptnContextExtendedCE))
+	NewNATSEventSource(natsConnectorMock).Start(ctx, RegistrationData{}, make(chan EventUpdate))
 	cancel()
 	require.Eventually(t, func() bool { return natsConnectorMock.DisconnectCalls == 1 }, 2*time.Second, 100*time.Millisecond)
 }
@@ -149,7 +152,7 @@ func TestEventSourceCancelDisconnectFromBrokerFails(t *testing.T) {
 		DisconnectFn:             func() error { return fmt.Errorf("error occured") },
 	}
 	ctx, cancel := context.WithCancel(context.TODO())
-	NewNATSEventSource(natsConnectorMock).Start(ctx, RegistrationData{}, make(chan models.KeptnContextExtendedCE))
+	NewNATSEventSource(natsConnectorMock).Start(ctx, RegistrationData{}, make(chan EventUpdate))
 	cancel()
 	require.Eventually(t, func() bool { return natsConnectorMock.DisconnectCalls == 1 }, 2*time.Second, 100*time.Millisecond)
 }
@@ -157,7 +160,7 @@ func TestEventSourceCancelDisconnectFromBrokerFails(t *testing.T) {
 func TestEventSourceQueueSubscribeFails(t *testing.T) {
 	natsConnectorMock := &NATSConnectorMock{QueueSubscribeMultipleFn: func(strings []string, s string, fn nats2.ProcessEventFn) error { return fmt.Errorf("error occured") }}
 	eventSource := NewNATSEventSource(natsConnectorMock)
-	err := eventSource.Start(context.TODO(), RegistrationData{}, make(chan models.KeptnContextExtendedCE))
+	err := eventSource.Start(context.TODO(), RegistrationData{}, make(chan EventUpdate))
 	require.Error(t, err)
 }
 
@@ -167,7 +170,7 @@ func TestEventSourceOnSubscriptionUpdate(t *testing.T) {
 		UnsubscribeAllFn:         func() error { return nil },
 	}
 	eventSource := NewNATSEventSource(natsConnectorMock)
-	err := eventSource.Start(context.TODO(), RegistrationData{}, make(chan models.KeptnContextExtendedCE))
+	err := eventSource.Start(context.TODO(), RegistrationData{}, make(chan EventUpdate))
 	require.NoError(t, err)
 	require.Equal(t, 1, natsConnectorMock.QueueSubscribeMultipleCalls)
 	eventSource.OnSubscriptionUpdate([]string{"a"})
@@ -181,7 +184,7 @@ func TestEventSourceOnSubscriptiOnUpdateUnsubscribeAllFails(t *testing.T) {
 		UnsubscribeAllFn:         func() error { return fmt.Errorf("error occured") },
 	}
 	eventSource := NewNATSEventSource(natsConnectorMock)
-	err := eventSource.Start(context.TODO(), RegistrationData{}, make(chan models.KeptnContextExtendedCE))
+	err := eventSource.Start(context.TODO(), RegistrationData{}, make(chan EventUpdate))
 	require.NoError(t, err)
 	require.Equal(t, 1, natsConnectorMock.QueueSubscribeMultipleCalls)
 	eventSource.OnSubscriptionUpdate([]string{"a"})
@@ -195,7 +198,7 @@ func TestEventSourceOnSubscriptionUpdateQueueSubscribeMultipleFails(t *testing.T
 		UnsubscribeAllFn:         func() error { return nil },
 	}
 	eventSource := NewNATSEventSource(natsConnectorMock)
-	err := eventSource.Start(context.TODO(), RegistrationData{}, make(chan models.KeptnContextExtendedCE))
+	err := eventSource.Start(context.TODO(), RegistrationData{}, make(chan EventUpdate))
 	require.NoError(t, err)
 	require.Equal(t, 1, natsConnectorMock.QueueSubscribeMultipleCalls)
 	natsConnectorMock.QueueSubscribeMultipleFn = func(subjects []string, queueGroup string, fn nats2.ProcessEventFn) error {

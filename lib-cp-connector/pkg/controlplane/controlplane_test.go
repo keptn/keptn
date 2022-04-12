@@ -32,7 +32,7 @@ func (e ExampleIntegration) RegistrationData() RegistrationData {
 
 func TestControlPlaneEventSourceFailsToStart(t *testing.T) {
 	ssm := &SubscriptionSourceMock{}
-	esm := &EventSourceMock{StartFn: func(ctx context.Context, data RegistrationData, ces chan models.KeptnContextExtendedCE) error {
+	esm := &EventSourceMock{StartFn: func(ctx context.Context, data RegistrationData, ces chan EventUpdate) error {
 		return fmt.Errorf("error occured")
 	}}
 	integration := ExampleIntegration{RegistrationDataFn: func() RegistrationData { return RegistrationData{} }}
@@ -46,7 +46,7 @@ func TestControlPlaneSubscriptionSourceFailsToStart(t *testing.T) {
 			return fmt.Errorf("error occured")
 		},
 	}
-	esm := &EventSourceMock{StartFn: func(ctx context.Context, data RegistrationData, ces chan models.KeptnContextExtendedCE) error {
+	esm := &EventSourceMock{StartFn: func(ctx context.Context, data RegistrationData, ces chan EventUpdate) error {
 		return nil
 	}}
 	integration := ExampleIntegration{RegistrationDataFn: func() RegistrationData { return RegistrationData{} }}
@@ -55,10 +55,10 @@ func TestControlPlaneSubscriptionSourceFailsToStart(t *testing.T) {
 }
 
 func TestControlPlaneInboundEventIsForwardedToIntegration(t *testing.T) {
-	var eventChan chan models.KeptnContextExtendedCE
+	var eventChan chan EventUpdate
 	var subsChan chan []models.EventSubscription
 	var integrationReceivedEvent models.KeptnContextExtendedCE
-	inboundEvent := models.KeptnContextExtendedCE{ID: "some-id", Type: strutils.Stringp("sh.keptn.event.echo.triggered")}
+	eventUpdate := EventUpdate{KeptnEvent: models.KeptnContextExtendedCE{ID: "some-id", Type: strutils.Stringp("sh.keptn.event.echo.triggered")}, MetaData: EventUpdateMetaData{Subject: "sh.keptn.event.echo.triggered"}}
 
 	callBackSender := func(ce models.KeptnContextExtendedCE) error { return nil }
 
@@ -69,7 +69,7 @@ func TestControlPlaneInboundEventIsForwardedToIntegration(t *testing.T) {
 		},
 	}
 	esm := &EventSourceMock{
-		StartFn: func(ctx context.Context, data RegistrationData, ces chan models.KeptnContextExtendedCE) error {
+		StartFn: func(ctx context.Context, data RegistrationData, ces chan EventUpdate) error {
 			eventChan = ces
 			return nil
 		},
@@ -91,13 +91,16 @@ func TestControlPlaneInboundEventIsForwardedToIntegration(t *testing.T) {
 	require.Eventually(t, func() bool { return eventChan != nil }, time.Second, time.Millisecond*100)
 
 	subsChan <- []models.EventSubscription{{ID: "some-id", Event: "sh.keptn.event.echo.triggered", Filter: models.EventSubscriptionFilter{}}}
-	eventChan <- inboundEvent
+	eventChan <- eventUpdate
 
-	require.Eventually(t, func() bool { return reflect.DeepEqual(inboundEvent, integrationReceivedEvent) }, time.Second, time.Millisecond*100)
+	require.Eventually(t, func() bool {
+		return reflect.DeepEqual(eventUpdate.KeptnEvent, integrationReceivedEvent)
+	},
+		time.Second, time.Millisecond*100)
 }
 
 func TestControlPlaneIntegrationOnEventThrowsIgnoreableError(t *testing.T) {
-	var eventChan chan models.KeptnContextExtendedCE
+	var eventChan chan EventUpdate
 	var subsChan chan []models.EventSubscription
 	var integrationReceivedEvent bool
 
@@ -110,7 +113,7 @@ func TestControlPlaneIntegrationOnEventThrowsIgnoreableError(t *testing.T) {
 		},
 	}
 	esm := &EventSourceMock{
-		StartFn: func(ctx context.Context, data RegistrationData, ces chan models.KeptnContextExtendedCE) error {
+		StartFn: func(ctx context.Context, data RegistrationData, ces chan EventUpdate) error {
 			eventChan = ces
 			return nil
 		},
@@ -133,14 +136,14 @@ func TestControlPlaneIntegrationOnEventThrowsIgnoreableError(t *testing.T) {
 	require.Eventually(t, func() bool { return eventChan != nil }, time.Second, time.Millisecond*100)
 
 	subsChan <- []models.EventSubscription{{ID: "some-id", Event: "sh.keptn.event.echo.triggered", Filter: models.EventSubscriptionFilter{}}}
-	eventChan <- models.KeptnContextExtendedCE{ID: "some-id", Type: strutils.Stringp("sh.keptn.event.echo.triggered")}
+	eventChan <- EventUpdate{KeptnEvent: models.KeptnContextExtendedCE{ID: "some-id", Type: strutils.Stringp("sh.keptn.event.echo.triggered")}, MetaData: EventUpdateMetaData{Subject: "sh.keptn.event.echo.triggered"}}
 
 	require.Eventually(t, func() bool { return integrationReceivedEvent }, time.Second, time.Millisecond*100)
 	require.Never(t, func() bool { return controlPlaneErr != nil }, time.Second, time.Millisecond*100)
 }
 
 func TestControlPlaneIntegrationOnEventThrowsFatalError(t *testing.T) {
-	var eventChan chan models.KeptnContextExtendedCE
+	var eventChan chan EventUpdate
 	var subsChan chan []models.EventSubscription
 	var integrationReceivedEvent bool
 
@@ -153,7 +156,7 @@ func TestControlPlaneIntegrationOnEventThrowsFatalError(t *testing.T) {
 		},
 	}
 	esm := &EventSourceMock{
-		StartFn: func(ctx context.Context, data RegistrationData, ces chan models.KeptnContextExtendedCE) error {
+		StartFn: func(ctx context.Context, data RegistrationData, ces chan EventUpdate) error {
 			eventChan = ces
 			return nil
 		},
@@ -176,7 +179,7 @@ func TestControlPlaneIntegrationOnEventThrowsFatalError(t *testing.T) {
 	require.Eventually(t, func() bool { return eventChan != nil }, time.Second, time.Millisecond*100)
 
 	subsChan <- []models.EventSubscription{{ID: "some-id", Event: "sh.keptn.event.echo.triggered", Filter: models.EventSubscriptionFilter{}}}
-	eventChan <- models.KeptnContextExtendedCE{ID: "some-id", Type: strutils.Stringp("sh.keptn.event.echo.triggered")}
+	eventChan <- EventUpdate{KeptnEvent: models.KeptnContextExtendedCE{ID: "some-id", Type: strutils.Stringp("sh.keptn.event.echo.triggered")}, MetaData: EventUpdateMetaData{Subject: "sh.keptn.event.echo.triggered"}}
 
 	require.Eventually(t, func() bool { return integrationReceivedEvent }, time.Second, time.Millisecond*100)
 	require.Eventually(t, func() bool { return controlPlaneErr != nil }, time.Second, time.Millisecond*100)

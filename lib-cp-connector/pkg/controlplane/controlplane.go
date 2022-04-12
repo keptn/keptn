@@ -43,7 +43,7 @@ func New(subscriptionSource SubscriptionSource, eventSource EventSource) *Contro
 
 // Register is initially used to register the Keptn integration to the Control Plane
 func (cp *ControlPlane) Register(ctx context.Context, integration Integration) error {
-	eventUpdates := make(chan models.KeptnContextExtendedCE)
+	eventUpdates := make(chan EventUpdate)
 	subscriptionUpdates := make(chan []models.EventSubscription)
 	if err := cp.eventSource.Start(ctx, integration.RegistrationData(), eventUpdates); err != nil {
 		return err
@@ -67,19 +67,19 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 	}
 }
 
-func (cp *ControlPlane) handle(ctx context.Context, event models.KeptnContextExtendedCE, integration Integration) error {
+func (cp *ControlPlane) handle(ctx context.Context, eventUpdate EventUpdate, integration Integration) error {
 	subscriptionsForTopic := []models.EventSubscription{}
 	for _, subscription := range cp.currentSubscriptions {
-		if subscription.Event == *event.Type { // need to check against the name of the subscription because this can be a wildcard as well
+		if subscription.Event == eventUpdate.MetaData.Subject {
 			matcher := NewEventMatcherFromSubscription(subscription)
-			if matcher.Matches(event) {
+			if matcher.Matches(eventUpdate.KeptnEvent) {
 				subscriptionsForTopic = append(subscriptionsForTopic, subscription)
 			}
 		}
 	}
 
 	for range subscriptionsForTopic {
-		if err := integration.OnEvent(context.WithValue(ctx, EventSenderKey, cp.eventSource.Sender()), event); err != nil {
+		if err := integration.OnEvent(context.WithValue(ctx, EventSenderKey, cp.eventSource.Sender()), eventUpdate.KeptnEvent); err != nil {
 			if errors.Is(err, ErrEventHandleFatal) {
 				cp.logger.Errorf("Fatal error during handling of event: %v", err)
 				return err
