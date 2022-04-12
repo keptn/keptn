@@ -6,7 +6,6 @@ import { filter, map, takeUntil } from 'rxjs/operators';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { NotificationsService } from '../../_services/notifications.service';
 import { NotificationType } from '../../_models/notification';
-import { HttpErrorResponse } from '@angular/common/http';
 import { FormUtils } from '../../_utils/form.utils';
 
 @Component({
