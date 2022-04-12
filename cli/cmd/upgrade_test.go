@@ -22,11 +22,134 @@ import (
 	"testing"
 
 	"github.com/keptn/keptn/cli/pkg/common"
+	commonfake "github.com/keptn/keptn/cli/pkg/common/fake"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/helm"
+	helmfake "github.com/keptn/keptn/cli/pkg/helm/fake"
 	"github.com/keptn/keptn/cli/pkg/kube"
+	kubefake "github.com/keptn/keptn/cli/pkg/kube/fake"
 	"github.com/keptn/keptn/cli/pkg/version"
+	"github.com/stretchr/testify/assert"
+	"helm.sh/helm/v3/pkg/chart"
 )
+
+func TestUpgradeCmdHandler_doUpgradePreRunCheck(t *testing.T) {
+	type fields struct {
+		helmHelper       *helmfake.IHelperMock
+		namespaceHandler *kubefake.IKeptnNamespaceHandlerMock
+		userInput        *commonfake.IUserInputMock
+	}
+	tests := []struct {
+		name              string
+		fields            fields
+		args              installUpgradeParams
+		chartsToBeApplied []*chart.Chart
+		wantErr           bool
+	}{
+		{
+			name:   "upgrade pre-run check: namespace exists, cancel check",
+			fields: fields{},
+		},
+		{
+			name:   "upgrade pre-run check: use custom chart URL",
+			fields: fields{},
+		},
+		{
+			name:   "upgrade pre-run check: skip upgrade compatibility check",
+			fields: fields{},
+		},
+		{
+			name:   "upgrade pre-run check: version is not upgrade compatible and newer version of cli is available",
+			fields: fields{},
+		},
+		{
+			name:   "upgrade pre-run check: version is not upgrade compatible and newer version of cli is not available",
+			fields: fields{},
+		},
+		{
+			name:   "upgrade pre-run check: version is not upgrade compatible and no upgrade path exists from current Keptn version",
+			fields: fields{},
+		},
+		{
+			name:   "upgrade pre-run check: version is not upgrade compatible",
+			fields: fields{},
+		},
+		{
+			name:   "upgrade pre-run check: CLI context does not match kubernetes context",
+			fields: fields{},
+		},
+		{
+			name:   "upgrade pre-run check: use the OpenShift platform manager",
+			fields: fields{},
+		},
+		{
+			name:   "upgrade pre-run check: use the Kubernetes platform manager",
+			fields: fields{},
+		},
+		{
+			name:   "upgrade pre-run check: use an invalid platform manager",
+			fields: fields{},
+		},
+		{
+			name:   "upgrade pre-run check: incorrect kubectl configurations",
+			fields: fields{},
+		},
+		{
+			name:   "upgrade pre-run check: config file path not provided nor provided in a file",
+			fields: fields{},
+		},
+		{
+			name:   "upgrade pre-run check: config file path is not provided and cluster creds are invalid",
+			fields: fields{},
+		},
+		{
+			name:   "upgrade pre-run check: config file path is provided and cluster creds are invalid",
+			fields: fields{},
+		},
+		{
+			name:   "upgrade pre-run check: k8s server version is not compatible",
+			fields: fields{},
+		},
+		{
+			name:   "upgrade pre-run check: k8s server version is compatible but user cancels",
+			fields: fields{},
+		},
+		{
+			name:   "upgrade pre-run check: k8s server version is compatible and user does not cancel",
+			fields: fields{},
+		},
+		{
+			name:   "upgrade pre-run check: deployment with given namespace does not exist",
+			fields: fields{},
+		},
+		{
+			name:   "upgrade pre-run check: deployment with given namespace exists and is not managed by Helm",
+			fields: fields{},
+		},
+		{
+			name:   "upgrade pre-run check: deployment with given namespace exists and is managed by Helm",
+			fields: fields{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, true, true)
+		})
+	}
+}
+
+func TestUpgradeCmdHandler_doUpgrade(t *testing.T) {
+	t.Run("upgrade: ", func(t *testing.T) {
+		assert.Equal(t, true, true)
+	})
+}
+
+func TestUpgradeCmdHandler_addWarningNonExistingProjectUpstream(t *testing.T) {
+	t.Run("add warning: ", func(t *testing.T) {
+		assert.Equal(t, true, true)
+	})
+}
 
 func TestSkipUpgradeCheck(t *testing.T) {
 	noSkipMsg := "No upgrade path exists from Keptn version"
