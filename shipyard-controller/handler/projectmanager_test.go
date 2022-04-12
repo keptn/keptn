@@ -130,15 +130,15 @@ func TestCreate_GettingProjectFails(t *testing.T) {
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	params := &models.CreateProjectParams{
-		GitRemoteURL:     "git-url",
-		GitToken:         "git-token",
-		GitUser:          "git-user",
-		Name:             common.Stringp("existing-project"),
-		GitProxyURL:      "some-url",
-		GitProxyScheme:   "http",
-		GitProxyUser:     "proxy-user",
-		GitProxyInsecure: false,
-		Shipyard:         common.Stringp("shipyard"),
+		GitRemoteURL:    "git-url",
+		GitToken:        "git-token",
+		GitUser:         "git-user",
+		Name:            common.Stringp("existing-project"),
+		GitProxyURL:     "some-url",
+		GitProxyScheme:  "http",
+		GitProxyUser:    "proxy-user",
+		InsecureSkipTLS: false,
+		Shipyard:        common.Stringp("shipyard"),
 	}
 	err, rollback := instance.Create(params)
 	assert.NotNil(t, err)
@@ -164,15 +164,15 @@ func TestCreateWithAlreadyExistingProject(t *testing.T) {
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	params := &models.CreateProjectParams{
-		GitRemoteURL:     "git-url",
-		GitToken:         "git-token",
-		GitUser:          "git-user",
-		GitProxyURL:      "some-url",
-		GitProxyScheme:   "http",
-		GitProxyUser:     "proxy-user",
-		GitProxyInsecure: false,
-		Name:             common.Stringp("existing-project"),
-		Shipyard:         common.Stringp("shipyard"),
+		GitRemoteURL:    "git-url",
+		GitToken:        "git-token",
+		GitUser:         "git-user",
+		GitProxyURL:     "some-url",
+		GitProxyScheme:  "http",
+		GitProxyUser:    "proxy-user",
+		InsecureSkipTLS: false,
+		Name:            common.Stringp("existing-project"),
+		Shipyard:        common.Stringp("shipyard"),
 	}
 	err, rollback := instance.Create(params)
 	assert.NotNil(t, err)
@@ -310,15 +310,15 @@ func TestCreate_WhenUploadingShipyardFails_thenProjectAndSecretGetDeletedAgain(t
 
 	instance := NewProjectManager(configStore, secretStore, projectMvRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	params := &models.CreateProjectParams{
-		GitRemoteURL:     "git-url",
-		GitToken:         "git-token",
-		GitUser:          "git-user",
-		GitProxyURL:      "some-url",
-		GitProxyScheme:   "http",
-		GitProxyUser:     "proxy-user",
-		GitProxyInsecure: false,
-		Name:             common.Stringp("my-project"),
-		Shipyard:         common.Stringp(encodedShipyard),
+		GitRemoteURL:    "git-url",
+		GitToken:        "git-token",
+		GitUser:         "git-user",
+		GitProxyURL:     "some-url",
+		GitProxyScheme:  "http",
+		GitProxyUser:    "proxy-user",
+		InsecureSkipTLS: false,
+		Name:            common.Stringp("my-project"),
+		Shipyard:        common.Stringp(encodedShipyard),
 	}
 	err, rollback := instance.Create(params)
 	assert.NotNil(t, err)
@@ -353,15 +353,15 @@ func TestCreate_WhenSavingProjectInRepositoryFails_thenProjectAndSecretGetDelete
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	params := &models.CreateProjectParams{
-		GitRemoteURL:     "git-url",
-		GitToken:         "git-token",
-		GitUser:          "git-user",
-		GitProxyURL:      "some-url",
-		GitProxyScheme:   "http",
-		GitProxyUser:     "proxy-user",
-		GitProxyInsecure: false,
-		Name:             common.Stringp("my-project"),
-		Shipyard:         common.Stringp(encodedShipyard),
+		GitRemoteURL:    "git-url",
+		GitToken:        "git-token",
+		GitUser:         "git-user",
+		GitProxyURL:     "some-url",
+		GitProxyScheme:  "http",
+		GitProxyUser:    "proxy-user",
+		InsecureSkipTLS: false,
+		Name:            common.Stringp("my-project"),
+		Shipyard:        common.Stringp(encodedShipyard),
 	}
 	err, rollback := instance.Create(params)
 	assert.NotNil(t, err)
@@ -425,15 +425,15 @@ func TestCreate(t *testing.T) {
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	params := &models.CreateProjectParams{
-		GitRemoteURL:     "git-url",
-		GitToken:         "git-token",
-		GitUser:          "git-user",
-		GitProxyURL:      "some-url",
-		GitProxyScheme:   "http",
-		GitProxyUser:     "proxy-user",
-		GitProxyInsecure: false,
-		Name:             common.Stringp("my-project"),
-		Shipyard:         common.Stringp(encodedShipyard),
+		GitRemoteURL:    "git-url",
+		GitToken:        "git-token",
+		GitUser:         "git-user",
+		GitProxyURL:     "some-url",
+		GitProxyScheme:  "http",
+		GitProxyUser:    "proxy-user",
+		InsecureSkipTLS: false,
+		Name:            common.Stringp("my-project"),
+		Shipyard:        common.Stringp(encodedShipyard),
 	}
 	instance.Create(params)
 	assert.Equal(t, 3, len(configStore.CreateStageCalls()))
@@ -448,7 +448,7 @@ func TestCreate(t *testing.T) {
 	assert.Equal(t, "some-url", projectMVRepo.CreateProjectCalls()[0].Prj.GitProxyURL)
 	assert.Equal(t, "http", projectMVRepo.CreateProjectCalls()[0].Prj.GitProxyScheme)
 	assert.Equal(t, "proxy-user", projectMVRepo.CreateProjectCalls()[0].Prj.GitProxyUser)
-	assert.Equal(t, false, projectMVRepo.CreateProjectCalls()[0].Prj.GitProxyInsecure)
+	assert.Equal(t, false, projectMVRepo.CreateProjectCalls()[0].Prj.InsecureSkipTLS)
 	assert.Equal(t, "my-project", projectMVRepo.CreateProjectCalls()[0].Prj.ProjectName)
 }
 
@@ -468,14 +468,14 @@ func TestUpdate_GettingOldSecretFails(t *testing.T) {
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	params := &models.UpdateProjectParams{
-		GitRemoteURL:     "git-url",
-		GitToken:         "git-token",
-		GitUser:          "git-user",
-		GitProxyURL:      "some-url",
-		GitProxyScheme:   "http",
-		GitProxyUser:     "proxy-user",
-		GitProxyInsecure: false,
-		Name:             common.Stringp("my-project"),
+		GitRemoteURL:    "git-url",
+		GitToken:        "git-token",
+		GitUser:         "git-user",
+		GitProxyURL:     "some-url",
+		GitProxyScheme:  "http",
+		GitProxyUser:    "proxy-user",
+		InsecureSkipTLS: false,
+		Name:            common.Stringp("my-project"),
 	}
 	err, rollback := instance.Update(params)
 	assert.NotNil(t, err)
@@ -508,14 +508,14 @@ func TestUpdate_GettingOldProjectFails(t *testing.T) {
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	params := &models.UpdateProjectParams{
-		GitRemoteURL:     "git-url",
-		GitToken:         "git-token",
-		GitUser:          "git-user",
-		GitProxyURL:      "some-url",
-		GitProxyScheme:   "http",
-		GitProxyUser:     "proxy-user",
-		GitProxyInsecure: false,
-		Name:             common.Stringp("my-project"),
+		GitRemoteURL:    "git-url",
+		GitToken:        "git-token",
+		GitUser:         "git-user",
+		GitProxyURL:     "some-url",
+		GitProxyScheme:  "http",
+		GitProxyUser:    "proxy-user",
+		InsecureSkipTLS: false,
+		Name:            common.Stringp("my-project"),
 	}
 	err, rollback := instance.Update(params)
 	assert.NotNil(t, err)
@@ -548,14 +548,14 @@ func TestUpdate_OldProjectNotAvailable(t *testing.T) {
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	params := &models.UpdateProjectParams{
-		GitRemoteURL:     "git-url",
-		GitToken:         "git-token",
-		GitUser:          "git-user",
-		GitProxyURL:      "some-url",
-		GitProxyScheme:   "http",
-		GitProxyUser:     "proxy-user",
-		GitProxyInsecure: false,
-		Name:             common.Stringp("my-project"),
+		GitRemoteURL:    "git-url",
+		GitToken:        "git-token",
+		GitUser:         "git-user",
+		GitProxyURL:     "some-url",
+		GitProxyScheme:  "http",
+		GitProxyUser:    "proxy-user",
+		InsecureSkipTLS: false,
+		Name:            common.Stringp("my-project"),
 	}
 	err, rollback := instance.Update(params)
 	assert.NotNil(t, err)
@@ -592,14 +592,14 @@ func TestUpdate_UpdateGitRepositorySecretFails(t *testing.T) {
 	}
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	params := &models.UpdateProjectParams{
-		GitRemoteURL:     "git-url",
-		GitToken:         "git-token",
-		GitUser:          "git-user",
-		GitProxyURL:      "some-url",
-		GitProxyScheme:   "http",
-		GitProxyUser:     "proxy-user",
-		GitProxyInsecure: false,
-		Name:             common.Stringp("my-project"),
+		GitRemoteURL:    "git-url",
+		GitToken:        "git-token",
+		GitUser:         "git-user",
+		GitProxyURL:     "some-url",
+		GitProxyScheme:  "http",
+		GitProxyUser:    "proxy-user",
+		InsecureSkipTLS: false,
+		Name:            common.Stringp("my-project"),
 	}
 	err, rollback := instance.Update(params)
 	assert.NotNil(t, err)
@@ -626,13 +626,13 @@ func TestUpdate_UpdateProjectInConfigurationStoreFails(t *testing.T) {
 	})
 
 	newSecretsEncoded, _ := json.Marshal(gitCredentials{
-		User:             "git-user",
-		Token:            "git-token",
-		RemoteURI:        "git-url",
-		GitProxyURL:      "some-url",
-		GitProxyScheme:   "http",
-		GitProxyUser:     "proxy-user",
-		GitProxyInsecure: false,
+		User:            "git-user",
+		Token:           "git-token",
+		RemoteURI:       "git-url",
+		GitProxyURL:     "some-url",
+		GitProxyScheme:  "http",
+		GitProxyUser:    "proxy-user",
+		InsecureSkipTLS: false,
 	})
 
 	rollbackProjectData := &apimodels.ExpandedProject{
@@ -662,14 +662,14 @@ func TestUpdate_UpdateProjectInConfigurationStoreFails(t *testing.T) {
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	params := &models.UpdateProjectParams{
-		GitRemoteURL:     "git-url",
-		GitToken:         "git-token",
-		GitUser:          "git-user",
-		GitProxyURL:      "some-url",
-		GitProxyScheme:   "http",
-		GitProxyUser:     "proxy-user",
-		GitProxyInsecure: false,
-		Name:             common.Stringp("my-project"),
+		GitRemoteURL:    "git-url",
+		GitToken:        "git-token",
+		GitUser:         "git-user",
+		GitProxyURL:     "some-url",
+		GitProxyScheme:  "http",
+		GitProxyUser:    "proxy-user",
+		InsecureSkipTLS: false,
+		Name:            common.Stringp("my-project"),
 	}
 	err, rollback := instance.Update(params)
 	assert.NotNil(t, err)
@@ -705,13 +705,13 @@ func TestUpdate_UpdateProjectShipyardResourceFails(t *testing.T) {
 	})
 
 	newSecretsEncoded, _ := json.Marshal(gitCredentials{
-		User:             "git-user",
-		Token:            "git-token",
-		RemoteURI:        "git-url",
-		GitProxyURL:      "some-url",
-		GitProxyScheme:   "http",
-		GitProxyUser:     "proxy-user",
-		GitProxyInsecure: false,
+		User:            "git-user",
+		Token:           "git-token",
+		RemoteURI:       "git-url",
+		GitProxyURL:     "some-url",
+		GitProxyScheme:  "http",
+		GitProxyUser:    "proxy-user",
+		InsecureSkipTLS: false,
 	})
 
 	oldProject := &apimodels.ExpandedProject{
@@ -746,15 +746,15 @@ func TestUpdate_UpdateProjectShipyardResourceFails(t *testing.T) {
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	myShipyard := "my-shipyard"
 	params := &models.UpdateProjectParams{
-		GitRemoteURL:     "git-url",
-		GitToken:         "git-token",
-		GitUser:          "git-user",
-		GitProxyURL:      "some-url",
-		GitProxyScheme:   "http",
-		GitProxyUser:     "proxy-user",
-		GitProxyInsecure: false,
-		Name:             common.Stringp("my-project"),
-		Shipyard:         &myShipyard,
+		GitRemoteURL:    "git-url",
+		GitToken:        "git-token",
+		GitUser:         "git-user",
+		GitProxyURL:     "some-url",
+		GitProxyScheme:  "http",
+		GitProxyUser:    "proxy-user",
+		InsecureSkipTLS: false,
+		Name:            common.Stringp("my-project"),
+		Shipyard:        &myShipyard,
 	}
 	err, rollback := instance.Update(params)
 	assert.NotNil(t, err)
@@ -800,13 +800,13 @@ func TestUpdate_UpdateProjectInRepositoryFails(t *testing.T) {
 	})
 
 	newSecretsEncoded, _ := json.Marshal(gitCredentials{
-		User:             "git-user",
-		Token:            "git-token",
-		RemoteURI:        "git-url",
-		GitProxyURL:      "some-url",
-		GitProxyScheme:   "http",
-		GitProxyUser:     "proxy-user",
-		GitProxyInsecure: false,
+		User:            "git-user",
+		Token:           "git-token",
+		RemoteURI:       "git-url",
+		GitProxyURL:     "some-url",
+		GitProxyScheme:  "http",
+		GitProxyUser:    "proxy-user",
+		InsecureSkipTLS: false,
 	})
 
 	oldProject := &apimodels.ExpandedProject{
@@ -845,15 +845,15 @@ func TestUpdate_UpdateProjectInRepositoryFails(t *testing.T) {
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	myShipyard := "my-shipyard"
 	params := &models.UpdateProjectParams{
-		GitRemoteURL:     "git-url",
-		GitToken:         "git-token",
-		GitUser:          "git-user",
-		GitProxyURL:      "some-url",
-		GitProxyScheme:   "http",
-		GitProxyUser:     "proxy-user",
-		GitProxyInsecure: false,
-		Name:             common.Stringp("my-project"),
-		Shipyard:         &myShipyard,
+		GitRemoteURL:    "git-url",
+		GitToken:        "git-token",
+		GitUser:         "git-user",
+		GitProxyURL:     "some-url",
+		GitProxyScheme:  "http",
+		GitProxyUser:    "proxy-user",
+		InsecureSkipTLS: false,
+		Name:            common.Stringp("my-project"),
+		Shipyard:        &myShipyard,
 	}
 	err, rollback := instance.Update(params)
 	assert.NotNil(t, err)
@@ -864,16 +864,16 @@ func TestUpdate_UpdateProjectInRepositoryFails(t *testing.T) {
 	}
 
 	projectDBUpdateData := &apimodels.ExpandedProject{
-		CreationDate:     "old-creationdate",
-		GitRemoteURI:     "git-url",
-		GitUser:          "git-user",
-		ProjectName:      "my-project",
-		GitProxyURL:      "some-url",
-		GitProxyScheme:   "http",
-		GitProxyUser:     "proxy-user",
-		GitProxyInsecure: false,
-		Shipyard:         myShipyard,
-		ShipyardVersion:  "v1",
+		CreationDate:    "old-creationdate",
+		GitRemoteURI:    "git-url",
+		GitUser:         "git-user",
+		ProjectName:     "my-project",
+		GitProxyURL:     "some-url",
+		GitProxyScheme:  "http",
+		GitProxyUser:    "proxy-user",
+		InsecureSkipTLS: false,
+		Shipyard:        myShipyard,
+		ShipyardVersion: "v1",
 	}
 
 	updateShipyardResourceData := &apimodels.Resource{
@@ -915,13 +915,13 @@ func TestUpdate(t *testing.T) {
 	})
 
 	updateSecretsData, _ := json.Marshal(gitCredentials{
-		User:             "git-user",
-		Token:            "git-token",
-		RemoteURI:        "git-url",
-		GitProxyURL:      "some-url",
-		GitProxyScheme:   "http",
-		GitProxyUser:     "proxy-user",
-		GitProxyInsecure: false,
+		User:            "git-user",
+		Token:           "git-token",
+		RemoteURI:       "git-url",
+		GitProxyURL:     "some-url",
+		GitProxyScheme:  "http",
+		GitProxyUser:    "proxy-user",
+		InsecureSkipTLS: false,
 	})
 
 	oldProjectData := &apimodels.ExpandedProject{
@@ -960,15 +960,15 @@ func TestUpdate(t *testing.T) {
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	myShipyard := "my-shipyard"
 	params := &models.UpdateProjectParams{
-		GitRemoteURL:     "git-url",
-		GitToken:         "git-token",
-		GitUser:          "git-user",
-		Name:             common.Stringp("my-project"),
-		GitProxyURL:      "some-url",
-		GitProxyScheme:   "http",
-		GitProxyUser:     "proxy-user",
-		GitProxyInsecure: false,
-		Shipyard:         &myShipyard,
+		GitRemoteURL:    "git-url",
+		GitToken:        "git-token",
+		GitUser:         "git-user",
+		Name:            common.Stringp("my-project"),
+		GitProxyURL:     "some-url",
+		GitProxyScheme:  "http",
+		GitProxyUser:    "proxy-user",
+		InsecureSkipTLS: false,
+		Shipyard:        &myShipyard,
 	}
 	err, rollback := instance.Update(params)
 	assert.Nil(t, err)
@@ -979,16 +979,16 @@ func TestUpdate(t *testing.T) {
 	}
 
 	projectDBUpdateData := &apimodels.ExpandedProject{
-		CreationDate:     "old-creationdate",
-		GitRemoteURI:     "git-url",
-		GitUser:          "git-user",
-		ProjectName:      "my-project",
-		Shipyard:         "my-shipyard",
-		GitProxyURL:      "some-url",
-		GitProxyScheme:   "http",
-		GitProxyUser:     "proxy-user",
-		GitProxyInsecure: false,
-		ShipyardVersion:  "v1",
+		CreationDate:    "old-creationdate",
+		GitRemoteURI:    "git-url",
+		GitUser:         "git-user",
+		ProjectName:     "my-project",
+		Shipyard:        "my-shipyard",
+		GitProxyURL:     "some-url",
+		GitProxyScheme:  "http",
+		GitProxyUser:    "proxy-user",
+		InsecureSkipTLS: false,
+		ShipyardVersion: "v1",
 	}
 
 	expectedUpdateShipyardResourceData := &apimodels.Resource{
@@ -1081,16 +1081,16 @@ func TestUpdateNoInsecureParameter(t *testing.T) {
 	}
 
 	projectDBUpdateData := &apimodels.ExpandedProject{
-		CreationDate:     "old-creationdate",
-		GitRemoteURI:     "git-url",
-		GitUser:          "git-user",
-		ProjectName:      "my-project",
-		Shipyard:         "my-shipyard",
-		GitProxyURL:      "some-url",
-		GitProxyScheme:   "http",
-		GitProxyUser:     "proxy-user",
-		GitProxyInsecure: false,
-		ShipyardVersion:  "v1",
+		CreationDate:    "old-creationdate",
+		GitRemoteURI:    "git-url",
+		GitUser:         "git-user",
+		ProjectName:     "my-project",
+		Shipyard:        "my-shipyard",
+		GitProxyURL:     "some-url",
+		GitProxyScheme:  "http",
+		GitProxyUser:    "proxy-user",
+		InsecureSkipTLS: false,
+		ShipyardVersion: "v1",
 	}
 
 	expectedUpdateShipyardResourceData := &apimodels.Resource{

@@ -92,7 +92,7 @@ func getAuthMethod(gitContext common_models.GitContext) (transport.AuthMethod, e
 		if gitContext.Credentials.GitProxyURL != "" {
 			customClient := &nethttp.Client{
 				Transport: &nethttp.Transport{
-					TLSClientConfig: &tls.Config{InsecureSkipVerify: gitContext.Credentials.GitProxyInsecure},
+					TLSClientConfig: &tls.Config{InsecureSkipVerify: gitContext.Credentials.InsecureSkipTLS},
 					Proxy: nethttp.ProxyURL(&url.URL{
 						Scheme: gitContext.Credentials.GitProxyScheme,
 						User:   url.UserPassword(gitContext.Credentials.GitProxyUser, gitContext.Credentials.GitProxyPassword),
@@ -110,7 +110,7 @@ func getAuthMethod(gitContext common_models.GitContext) (transport.AuthMethod, e
 			}
 
 			// Istalling https protocol as a default one means that all the proxy traffic will be routed via secure connection
-			// To use unsecure conenction, GitProxyInsecure parameter should be set to true and https protocol will be used without TLS verification
+			// To use unsecure conenction, InsecureSkipTLS parameter should be set to true and https protocol will be used without TLS verification
 			client.InstallProtocol("https", http.NewClient(customClient))
 		}
 
@@ -148,8 +148,9 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 	}
 	clone, err := g.git.PlainClone(projectPath, false,
 		&git.CloneOptions{
-			URL:  gitContext.Credentials.RemoteURI,
-			Auth: auth,
+			URL:             gitContext.Credentials.RemoteURI,
+			Auth:            auth,
+			InsecureSkipTLS: gitContext.Credentials.InsecureSkipTLS,
 		},
 	)
 
@@ -298,8 +299,9 @@ func (g Git) Push(gitContext common_models.GitContext) error {
 		return err
 	}
 	err = repo.Push(&git.PushOptions{
-		RemoteName: "origin",
-		Auth:       auth,
+		RemoteName:      "origin",
+		Auth:            auth,
+		InsecureSkipTLS: gitContext.Credentials.InsecureSkipTLS,
 	})
 	if err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
 		if errors.Is(err, git.ErrForceNeeded) {
@@ -326,14 +328,15 @@ func (g *Git) Pull(gitContext common_models.GitContext) error {
 			return err
 		}
 		err = w.Pull(&git.PullOptions{
-			RemoteName:    "origin",
-			Force:         true,
-			ReferenceName: head.Name(),
-			Auth:          auth,
+			RemoteName:      "origin",
+			Force:           true,
+			ReferenceName:   head.Name(),
+			Auth:            auth,
+			InsecureSkipTLS: gitContext.Credentials.InsecureSkipTLS,
 		})
 		if err != nil && errors.Is(err, plumbing.ErrReferenceNotFound) {
 			// reference not there yet
-			err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true, Auth: auth})
+			err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true, Auth: auth, InsecureSkipTLS: gitContext.Credentials.InsecureSkipTLS})
 		}
 		if err != nil && errors.Is(err, git.ErrNonFastForwardUpdate) {
 			return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, err)
@@ -480,8 +483,9 @@ func (g *Git) fetch(gitContext common_models.GitContext, r *git.Repository) erro
 		// <src>:<dst>, + update the reference even if it isn’t a fast-forward.
 		//// take all branch from remote and put them in the local repo as origin branches and as branches
 		//RefSpecs: []config.RefSpec{"+refs/heads/*:refs/remotes/origin/*", "+refs/heads/*:refs/heads/*"},
-		Force: true,
-		Auth:  auth,
+		Force:           true,
+		Auth:            auth,
+		InsecureSkipTLS: gitContext.Credentials.InsecureSkipTLS,
 	}); err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
 		return err
 	}
