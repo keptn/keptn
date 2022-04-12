@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/common"
+	"github.com/keptn/keptn/shipyard-controller/config"
 	"github.com/keptn/keptn/shipyard-controller/handler/fake"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/assert"
@@ -23,6 +24,7 @@ func TestServiceHandler_CreateService(t *testing.T) {
 	type fields struct {
 		serviceManager IServiceManager
 		EventSender    common.EventSender
+		EnvConfig      config.EnvConfig
 	}
 	tests := []struct {
 		name                          string
@@ -47,6 +49,7 @@ func TestServiceHandler_CreateService(t *testing.T) {
 						return nil
 					},
 				},
+				EnvConfig: config.EnvConfig{ServiceNameMaxSize: 43},
 			},
 			jsonPayload:                   `{"serviceName":"my-service"}`,
 			expectCreateServiceToBeCalled: true,
@@ -70,6 +73,7 @@ func TestServiceHandler_CreateService(t *testing.T) {
 						return nil
 					},
 				},
+				EnvConfig: config.EnvConfig{ServiceNameMaxSize: 43},
 			},
 			jsonPayload:                   `{"serviceName":"my-service"}`,
 			expectCreateServiceToBeCalled: true,
@@ -92,8 +96,32 @@ func TestServiceHandler_CreateService(t *testing.T) {
 						return nil
 					},
 				},
+				EnvConfig: config.EnvConfig{ServiceNameMaxSize: 43},
 			},
 			jsonPayload:                   `invalid`,
+			expectCreateServiceToBeCalled: false,
+			expectCreateServiceParams: &models.CreateServiceParams{
+				ServiceName: &testServiceName,
+			},
+			expectHttpStatus:   http.StatusBadRequest,
+			expectJSONResponse: &models.CreateServiceResponse{},
+			expectJSONError: &models.Error{
+				Code:    http.StatusBadRequest,
+				Message: stringp("Invalid request format"),
+			},
+		},
+		{
+			name: "service name too long - return 400",
+			fields: fields{
+				serviceManager: &fake.IServiceManagerMock{},
+				EventSender: &fake.IEventSenderMock{
+					SendEventFunc: func(eventMoqParam event.Event) error {
+						return nil
+					},
+				},
+				EnvConfig: config.EnvConfig{ServiceNameMaxSize: 25},
+			},
+			jsonPayload:                   `{"serviceName":"my-service-name-is-too-long"}`,
 			expectCreateServiceToBeCalled: false,
 			expectCreateServiceParams: &models.CreateServiceParams{
 				ServiceName: &testServiceName,
@@ -114,6 +142,7 @@ func TestServiceHandler_CreateService(t *testing.T) {
 						return nil
 					},
 				},
+				EnvConfig: config.EnvConfig{ServiceNameMaxSize: 43},
 			},
 			jsonPayload:                   `{"serviceName":"my/service"}`,
 			expectCreateServiceToBeCalled: false,
@@ -140,6 +169,7 @@ func TestServiceHandler_CreateService(t *testing.T) {
 						return nil
 					},
 				},
+				EnvConfig: config.EnvConfig{ServiceNameMaxSize: 43},
 			},
 			jsonPayload:                   `{"serviceName":"my-service"}`,
 			expectCreateServiceToBeCalled: false,
@@ -168,6 +198,7 @@ func TestServiceHandler_CreateService(t *testing.T) {
 			sh := &ServiceHandler{
 				serviceManager: tt.fields.serviceManager,
 				EventSender:    tt.fields.EventSender,
+				Env:            tt.fields.EnvConfig,
 			}
 
 			sh.CreateService(c)
@@ -310,6 +341,7 @@ func TestServiceHandler_GetService(t *testing.T) {
 	type fields struct {
 		serviceManager IServiceManager
 		EventSender    common.EventSender
+		EnvConfig      config.EnvConfig
 	}
 	tests := []struct {
 		name                       string
@@ -424,7 +456,7 @@ func TestServiceHandler_GetService(t *testing.T) {
 
 			c.Request, _ = http.NewRequest(http.MethodPost, "", bytes.NewBuffer([]byte{}))
 
-			sh := NewServiceHandler(tt.fields.serviceManager, tt.fields.EventSender)
+			sh := NewServiceHandler(tt.fields.serviceManager, tt.fields.EventSender, tt.fields.EnvConfig)
 
 			sh.GetService(c)
 
@@ -462,6 +494,7 @@ func TestServiceHandler_GetServices(t *testing.T) {
 	type fields struct {
 		serviceManager IServiceManager
 		EventSender    common.EventSender
+		EnvConfig      config.EnvConfig
 	}
 	tests := []struct {
 		name                       string
@@ -567,7 +600,7 @@ func TestServiceHandler_GetServices(t *testing.T) {
 
 			c.Request, _ = http.NewRequest(http.MethodPost, "", bytes.NewBuffer([]byte{}))
 
-			sh := NewServiceHandler(tt.fields.serviceManager, tt.fields.EventSender)
+			sh := NewServiceHandler(tt.fields.serviceManager, tt.fields.EventSender, tt.fields.EnvConfig)
 
 			sh.GetServices(c)
 

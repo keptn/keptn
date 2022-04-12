@@ -91,12 +91,6 @@ func (sm *serviceManager) GetAllServices(projectName, stageName string) ([]*apim
 func (sm *serviceManager) CreateService(projectName string, params *models.CreateServiceParams) error {
 	log.Infof("Received request to create service %s in project %s", *params.ServiceName, projectName)
 
-	// check service name length
-	log.Infof("Validating service %s", *params.ServiceName)
-	if err := validateServiceName(*params.ServiceName); err != nil {
-		return sm.logAndReturnError(fmt.Sprintf("could not create service %s for project %s: %s", *params.ServiceName, projectName, err.Error()))
-	}
-
 	stages, err := sm.GetAllStages(projectName)
 	if err != nil {
 		return sm.logAndReturnError(fmt.Sprintf("could not get stages of project %s: %s", projectName, err.Error()))
@@ -146,19 +140,6 @@ func (sm *serviceManager) DeleteService(projectName, serviceName string) error {
 		}
 	}
 	log.Infof("deleted service %s from project %s", serviceName, projectName)
-
-	return nil
-}
-
-// validateServiceName validates that the service name is less than 43 characters (this is a requirement of helm-service)
-func validateServiceName(serviceName string) error {
-	// helm-service creates release names that have the service name and the string -generated in them
-	// this means that we need to ensure in here that service names are not too long
-	allowedLength := serviceNameMaxLen - len("generated") // = 43
-
-	if len(serviceName) > allowedLength {
-		return fmt.Errorf("service name needs to be less than %d characters", allowedLength)
-	}
 
 	return nil
 }

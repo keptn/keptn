@@ -8,7 +8,6 @@ import (
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"testing"
 )
 
@@ -344,42 +343,4 @@ func TestDeleteService(t *testing.T) {
 	assert.Equal(t, "my-project", projectMVRepo.DeleteServiceCalls()[1].Project)
 	assert.Equal(t, "prod", projectMVRepo.DeleteServiceCalls()[1].Stage)
 	assert.Equal(t, "my-service", projectMVRepo.DeleteServiceCalls()[1].Service)
-}
-
-func Test_validateServiceName(t *testing.T) {
-	testcases := []struct {
-		name          string
-		projectName   string
-		stageName     string
-		serviceName   string
-		expectedError bool
-	}{
-		{
-			name:          "Valid Service name",
-			serviceName:   "my-service",
-			expectedError: false,
-		},
-		{
-			name:          "Valid Service name (fits just)",
-			serviceName:   "very-very-very-super-super-long-honk-service",
-			expectedError: false,
-		},
-		{
-			name:          "Invalid Service name (too long)",
-			serviceName:   "very-very-very-super-super-long-honk-service1",
-			expectedError: true,
-		},
-	}
-
-	for _, tc := range testcases {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			err := validateServiceName(tc.serviceName)
-			if tc.expectedError {
-				require.Error(t, err)
-			} else {
-				require.NoError(t, err)
-			}
-		})
-	}
 }

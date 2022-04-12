@@ -161,6 +161,11 @@ shipyardController:
       # hit the database limit for max collection name size when your project name is too long.
       # projectNameMaxSize can be used to forbid project names longer than a certain size in Keptn
       projectNameMaxSize: 200
+      # The limit of 43 characters for a service's name is currently imposed by the helm-service,
+      # which, if being used for the CD use case with blue/green deployments generates a helm release called <serviceName>-generated,
+      # and helm releases have a maximum length of 53 characters. Therefore, we use this value as a default.
+      # If the helm chart generation for blue/green deployments is not needed, and this value is too small, it can be adapted here
+      serviceNameMaxSize: 43
   nodeSelector: {}
 
 secretService:
