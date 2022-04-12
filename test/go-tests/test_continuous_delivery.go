@@ -164,9 +164,9 @@ func Test_ContinuousDelivery(t *testing.T) {
 	time.Sleep(60 * time.Second)
 	t.Logf("Continue to work...")
 
-	//t.Log("Verify Direct delivery of helloservice in stage dev")
-	//err = VerifyDirectDeployment(serviceName, projectName, "dev", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
-	//require.Nil(t, err)
+	t.Log("Verify Direct delivery of helloservice in stage dev")
+	err = VerifyDirectDeployment(serviceName, projectName, "dev", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
+	require.Nil(t, err)
 
 	t.Log("Verify network access to public URI of helloservice in stage dev")
 	cartPubURL, err := GetPublicURLOfService(serviceName, projectName, "dev")
@@ -174,9 +174,9 @@ func Test_ContinuousDelivery(t *testing.T) {
 	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
 	require.Nil(t, err)
 
-	//t.Log("Verify delivery of helloservice:v0.1.0 in stage staging")
-	//err = VerifyBlueGreenDeployment(serviceName, projectName, "staging", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
-	//require.Nil(t, err)
+	t.Log("Verify delivery of helloservice:v0.1.0 in stage staging")
+	err = VerifyBlueGreenDeployment(serviceName, projectName, "staging", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
+	require.Nil(t, err)
 
 	t.Log("Verify network access to public URI of helloservice in stage staging")
 	cartPubURL, err = GetPublicURLOfService(serviceName, projectName, "staging")
@@ -184,9 +184,9 @@ func Test_ContinuousDelivery(t *testing.T) {
 	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
 	require.Nil(t, err)
 
-	//t.Log("Verify delivery of helloservice:v0.1.0 in stage prod-a")
-	//err = VerifyBlueGreenDeployment(serviceName, projectName, "prod-a", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
-	//require.Nil(t, err)
+	t.Log("Verify delivery of helloservice:v0.1.0 in stage prod-a")
+	err = VerifyBlueGreenDeployment(serviceName, projectName, "prod-a", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
+	require.Nil(t, err)
 
 	t.Log("Verify network access to public URI of helloservice in stage prod-a")
 	cartPubURL, err = GetPublicURLOfService(serviceName, projectName, "prod-a")
@@ -194,9 +194,9 @@ func Test_ContinuousDelivery(t *testing.T) {
 	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
 	require.Nil(t, err)
 
-	//t.Log("Verify delivery of helloservice:v0.1.0 in stage prod-b")
-	//err = VerifyBlueGreenDeployment(serviceName, projectName, "prod-b", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
-	//require.Nil(t, err)
+	t.Log("Verify delivery of helloservice:v0.1.0 in stage prod-b")
+	err = VerifyBlueGreenDeployment(serviceName, projectName, "prod-b", "ghcr.io/podtato-head/podtatoserver", "v0.1.0")
+	require.Nil(t, err)
 
 	t.Log("Verify network access to public URI of helloservice in stage prod-b")
 	cartPubURL, err = GetPublicURLOfService(serviceName, projectName, "prod-b")
@@ -216,9 +216,9 @@ func Test_ContinuousDelivery(t *testing.T) {
 	time.Sleep(60 * time.Second)
 	t.Logf("Continue to work...")
 
-	//t.Log("Verify Direct delivery of helloservice in stage dev")
-	//err = VerifyDirectDeployment(serviceName, projectName, "dev", "ghcr.io/podtato-head/podtatoserver", "v0.1.1")
-	//require.Nil(t, err)
+	t.Log("Verify Direct delivery of helloservice in stage dev")
+	err = VerifyDirectDeployment(serviceName, projectName, "dev", "ghcr.io/podtato-head/podtatoserver", "v0.1.1")
+	require.Nil(t, err)
 
 	t.Log("Verify network access to public URI of helloservice in stage dev")
 	cartPubURL, err = GetPublicURLOfService(serviceName, projectName, "dev")
@@ -226,9 +226,9 @@ func Test_ContinuousDelivery(t *testing.T) {
 	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
 	require.Nil(t, err)
 
-	//t.Log("Verify delivery of helloservice:v0.1.1 in stage staging")
-	//err = VerifyBlueGreenDeployment(serviceName, projectName, "staging", "ghcr.io/podtato-head/podtatoserver", "v0.1.1")
-	//require.Nil(t, err)
+	t.Log("Verify delivery of helloservice:v0.1.1 in stage staging")
+	err = VerifyBlueGreenDeployment(serviceName, projectName, "staging", "ghcr.io/podtato-head/podtatoserver", "v0.1.1")
+	require.Nil(t, err)
 
 	t.Log("Verify network access to public URI of helloservice in stage staging")
 	cartPubURL, err = GetPublicURLOfService(serviceName, projectName, "staging")
@@ -236,9 +236,9 @@ func Test_ContinuousDelivery(t *testing.T) {
 	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
 	require.Nil(t, err)
 
-	//t.Log("Verify delivery of helloservice:v0.1.1 in stage prod-a")
-	//err = VerifyBlueGreenDeployment(serviceName, projectName, "prod-a", "ghcr.io/podtato-head/podtatoserver", "v0.1.1")
-	//require.Nil(t, err)
+	t.Log("Verify delivery of helloservice:v0.1.1 in stage prod-a")
+	err = VerifyBlueGreenDeployment(serviceName, projectName, "prod-a", "ghcr.io/podtato-head/podtatoserver", "v0.1.1")
+	require.Nil(t, err)
 
 	t.Log("Verify network access to public URI of helloservice in stage prod-a")
 	cartPubURL, err = GetPublicURLOfService(serviceName, projectName, "prod-a")
@@ -246,9 +246,9 @@ func Test_ContinuousDelivery(t *testing.T) {
 	err = WaitForURL(cartPubURL+serviceHealthCheckEndpoint, time.Minute)
 	require.Nil(t, err)
 
-	//t.Log("Verify delivery of helloservice:v0.1.1 in stage prod-b")
-	//err = VerifyBlueGreenDeployment(serviceName, projectName, "prod-b", "ghcr.io/podtato-head/podtatoserver", "v0.1.1")
-	//require.Nil(t, err)
+	t.Log("Verify delivery of helloservice:v0.1.1 in stage prod-b")
+	err = VerifyBlueGreenDeployment(serviceName, projectName, "prod-b", "ghcr.io/podtato-head/podtatoserver", "v0.1.1")
+	require.Nil(t, err)
 
 	t.Log("Verify network access to public URI of helloservice in stage prod-b")
 	cartPubURL, err = GetPublicURLOfService(serviceName, projectName, "prod-b")
