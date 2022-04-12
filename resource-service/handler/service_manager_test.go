@@ -425,7 +425,7 @@ func TestServiceManager_DeleteService_ServiceDoesNotExist(t *testing.T) {
 	p := NewServiceManager(fields.git, fields.credentialReader, fields.fileWriter, fields.configurationContext)
 	err := p.DeleteService(params)
 
-	require.ErrorIs(t, err, errors2.ErrServiceNotFound)
+	require.Nil(t, err)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
 	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)

@@ -507,9 +507,7 @@ func Test_ResourceServiceBasic(t *testing.T) {
 			t.Logf("Deleting non-existing service %s in stage %s in project %s", nonExistingServiceName, stageReq.StageName, projectName)
 			resp, err = internalKeptnAPI.Delete(basePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+nonExistingServiceName, 3)
 			require.Nil(t, err)
-			// configuration-service returns 400
-			// resource-service returns 404
-			require.Contains(t, []int{400, 404}, resp.Response().StatusCode)
+			require.Equal(t, 204, resp.Response().StatusCode)
 		}
 	}
 

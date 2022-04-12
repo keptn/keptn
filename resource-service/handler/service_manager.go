@@ -102,7 +102,8 @@ func (s ServiceManager) DeleteService(params models.DeleteServiceParams) error {
 func (s ServiceManager) deleteService(gitContext *common_models.GitContext, serviceName, servicePath string) (string, error) {
 
 	if !s.fileSystem.FileExists(servicePath) {
-		return "", kerrors.ErrServiceNotFound
+		// if the service is not there, we can return immediately
+		return "", nil
 	}
 	if err := s.fileSystem.DeleteFile(servicePath); err != nil {
 		return "", err

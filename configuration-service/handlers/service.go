@@ -81,8 +81,9 @@ func DeleteProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(params 
 		return service.NewDeleteProjectProjectNameStageStageNameServiceServiceNameDefault(400).WithPayload(&models.Error{Code: 400, Message: swag.String("Stage  " + params.StageName + " does not exist.")})
 	}
 
+	// if the service is not there, we return 204, since the removal of the service was the goal in the first place
 	if !common.ServiceExists(params.ProjectName, params.StageName, params.ServiceName, false) {
-		return service.NewDeleteProjectProjectNameStageStageNameServiceServiceNameBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Service does not exists")})
+		return service.NewDeleteProjectProjectNameStageStageNameServiceServiceNameNoContent()
 	}
 
 	logger.Debug(fmt.Sprintf("Deleting service %s of project %s in stage %s", params.ServiceName, params.ProjectName, params.StageName))
