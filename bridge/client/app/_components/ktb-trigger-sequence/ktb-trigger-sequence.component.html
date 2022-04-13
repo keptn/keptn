@@ -1,7 +1,9 @@
 <div class="ktb-trigger-sequence pl-3 pr-3 pb-3">
   <div fxFlex="66">
     <div fxLayout="column" *ngIf="state === 'ENTRY'">
-      <h2 uitestid="keptn-trigger-entry-h2">Trigger a new sequence for project {{ projectName }}</h2>
+      <div fxLayout="row" fxFlexAlign="space-between">
+        <h2 uitestid="keptn-trigger-entry-h2">Trigger a new sequence for project {{ projectName }}</h2>
+      </div>
       <dt-form-field>
         <dt-label class="mb-1 mt-2">Sequence type</dt-label>
         <dt-radio-group
@@ -25,8 +27,8 @@
               *ngIf="customSequences?.length === 0"
               class="radio-button-overlay"
               [dtOverlay]="noCustomSequencesOverlay"
-            ></div
-          ></dt-radio-button>
+            ></div>
+          </dt-radio-button>
           <ng-container *ngIf="!customSequences">
             <dt-loading-spinner></dt-loading-spinner>
             <span>Loading custom sequences ...</span>
@@ -67,6 +69,9 @@
         </dt-form-field>
       </div>
       <div class="mt-3" fxLayout="row" fxLayoutAlign="space-between">
+        <button dt-button variant="secondary" (click)="formClosed.emit()" uitestid="keptn-trigger-button-close">
+          Cancel
+        </button>
         <button
           dt-button
           variant="secondary"
@@ -74,10 +79,8 @@
           [disabled]="!selectedService || !selectedStage"
           (click)="setFormState()"
         >
-          Next<dt-icon name="right"></dt-icon>
-        </button>
-        <button dt-button variant="secondary" (click)="formClosed.emit()" uitestid="keptn-trigger-button-close">
-          Cancel and close
+          Next
+          <dt-icon name="right"></dt-icon>
         </button>
       </div>
     </div>
@@ -273,8 +276,8 @@
           >
             <ng-container *ngIf="!isValidStartBeforeEnd">Start date must be before end date</ng-container>
             <ng-container *ngIf="isValidStartBeforeEnd && !isValidStartEndDuration"
-              >The duration has to be minimum 1 minute</ng-container
-            >
+              >The duration has to be minimum 1 minute
+            </ng-container>
           </dt-error>
         </dt-form-field>
       </div>
@@ -344,21 +347,22 @@
   <div class="mt-3" fxLayout="row" fxLayoutAlign="space-between">
     <div fxLayoutGap="15px">
       <button dt-button variant="secondary" uitestid="keptn-trigger-button-back" (click)="state = 'ENTRY'">
-        <dt-icon name="left"></dt-icon>Back
+        <dt-icon name="left"></dt-icon>
+        Back
       </button>
-      <button
-        dt-button
-        uitestid="keptn-trigger-button-trigger"
-        [disabled]="!isValid || isLoading"
-        (click)="triggerSequence()"
-      >
-        <dt-icon name="flash" *ngIf="!isLoading"></dt-icon>
-        <dt-loading-spinner *ngIf="isLoading"></dt-loading-spinner>
-        Trigger sequence
+      <button dt-button variant="secondary" uitestid="keptn-trigger-button-close" (click)="formClosed.emit()">
+        Cancel
       </button>
     </div>
-    <button dt-button variant="secondary" uitestid="keptn-trigger-button-close" (click)="formClosed.emit()">
-      Cancel and close
+    <button
+      dt-button
+      uitestid="keptn-trigger-button-trigger"
+      [disabled]="!isValid || isLoading"
+      (click)="triggerSequence()"
+    >
+      <dt-icon name="flash" *ngIf="!isLoading"></dt-icon>
+      <dt-loading-spinner *ngIf="isLoading"></dt-loading-spinner>
+      Trigger sequence
     </button>
   </div>
 </ng-template>
