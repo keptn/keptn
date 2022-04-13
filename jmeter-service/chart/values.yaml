@@ -5,6 +5,7 @@ jmeterservice:
     tag: ""                                    # Container Tag
   service:
     enabled: true                              # Creates a Kubernetes Service for the jmeter-service
+  gracePeriod: 90
 
 distributor:
   stageFilter: ""                            # Sets the stage this helm service belongs to
