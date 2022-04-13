@@ -204,4 +204,4 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      terminationGracePeriodSeconds: {{ .Values.helmService.gracePeriod | default 60 }}
+      terminationGracePeriodSeconds: {{ .Values.helmservice.gracePeriod | default 60 }}

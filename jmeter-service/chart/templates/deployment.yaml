@@ -170,4 +170,4 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      terminationGracePeriodSeconds: {{ .Values.jmeterService.gracePeriod | default 90 }}
+      terminationGracePeriodSeconds: {{ .Values.jmeterservice.gracePeriod | default 90 }}

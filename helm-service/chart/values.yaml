@@ -5,6 +5,7 @@ helmservice:
     tag: ""                                  # Container Tag
   service:
     enabled: true                            # Creates a Kubernetes Service for the helm-service
+  gracePeriod: 60
 
 distributor:
   stageFilter: ""                            # Stage to which this helm service belongs; default=all; comma-separated list to filter for set of stages
