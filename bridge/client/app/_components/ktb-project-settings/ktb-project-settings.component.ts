@@ -197,7 +197,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
             this.isGitUpstreamInProgress = false;
             this.notificationsService.addNotification(
               NotificationType.ERROR,
-              `<div class="long-note align-left p-3">The Git upstream could not be changed:<br/><span class="small">${err.error}</span></div>`
+              `The Git upstream could not be changed: ${err.error}`
             );
           }
         );
