@@ -176,7 +176,8 @@ func init() {
     "metadata": {
       "type": "object",
       "required": [
-        "automaticprovisioning"
+        "automaticprovisioning",
+        "continuousdeliveryenabled"
       ],
       "properties": {
         "automaticprovisioning": {
@@ -378,7 +379,8 @@ func init() {
     "metadata": {
       "type": "object",
       "required": [
-        "automaticprovisioning"
+        "automaticprovisioning",
+        "continuousdeliveryenabled"
       ],
       "properties": {
         "automaticprovisioning": {

@@ -25,7 +25,8 @@ type Metadata struct {
 	Bridgeversion string `json:"bridgeversion,omitempty"`
 
 	// continuousdeliveryenabled
-	Continuousdeliveryenabled bool `json:"continuousdeliveryenabled,omitempty"`
+	// Required: true
+	Continuousdeliveryenabled *bool `json:"continuousdeliveryenabled"`
 
 	// keptnlabel
 	Keptnlabel string `json:"keptnlabel,omitempty"`
@@ -51,6 +52,10 @@ func (m *Metadata) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateContinuousdeliveryenabled(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -60,6 +65,15 @@ func (m *Metadata) Validate(formats strfmt.Registry) error {
 func (m *Metadata) validateAutomaticprovisioning(formats strfmt.Registry) error {
 
 	if err := validate.Required("automaticprovisioning", "body", m.Automaticprovisioning); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Metadata) validateContinuousdeliveryenabled(formats strfmt.Registry) error {
+
+	if err := validate.Required("continuousdeliveryenabled", "body", m.Continuousdeliveryenabled); err != nil {
 		return err
 	}
 
