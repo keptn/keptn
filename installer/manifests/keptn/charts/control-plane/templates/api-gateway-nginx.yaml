@@ -370,6 +370,7 @@ spec:
       app.kubernetes.io/name: api-gateway-nginx
       app.kubernetes.io/instance: {{ .Release.Name }}
   replicas: 1
+  {{ include "control-plane.common.update-strategy" . }}
   template:
     metadata:
       labels:
@@ -384,9 +385,11 @@ spec:
         rollme: {{ randAlphaNum 5 | quote }}
     spec:
       {{- include "control-plane.apiGatewayNginx.pod-security-context" . | nindent 6 }}
+      terminationGracePeriodSeconds: {{ .Values.gracePeriod | default 30 }}
       containers:
         - name: api-gateway-nginx
           image: {{ .Values.apiGatewayNginx.image.repository }}:{{ .Values.apiGatewayNginx.image.tag }}
+          {{- include "control-plane.dist.prestop" . | nindent 10 }}
           ports:
             - containerPort: 8080
           livenessProbe:

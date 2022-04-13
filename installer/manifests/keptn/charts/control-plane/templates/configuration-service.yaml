@@ -42,8 +42,7 @@ spec:
       app.kubernetes.io/name: resource-service
       app.kubernetes.io/instance: {{ .Release.Name }}
   replicas: {{ .Values.resourceService.replicas }}
-  strategy:
-    type: Recreate
+  {{ include "control-plane.common.update-strategy" . }}
   template:
     metadata:
       labels:
@@ -61,9 +60,11 @@ spec:
         seccompProfile:
           type: RuntimeDefault
         {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.gracePeriod | default 30 }}
       containers:
         - name: resource-service
           image: {{ .Values.resourceService.image.repository }}:{{ .Values.resourceService.image.tag | default .Chart.AppVersion }}
+          {{- include "control-plane.dist.prestop" . | nindent 10 }}
           livenessProbe:
             httpGet:
               path: /health
@@ -151,9 +152,7 @@ spec:
       app.kubernetes.io/name: configuration-service
       app.kubernetes.io/instance: {{ .Release.Name }}
   replicas: 1
-  # recreate the deployment if anything changes (we can not do a rolling upgrade of this deployment as we use a volume)
-  strategy:
-    type: Recreate
+  {{ include "control-plane.common.update-strategy" . }}
   template:
     metadata:
       labels:
@@ -185,9 +184,11 @@ spec:
             - -c
             - chown -R {{ .Values.configurationService.fsGroup | default 1001 }} /data/config
 {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.gracePeriod | default 30 }}
       containers:
         - name: configuration-service
           image: {{ .Values.configurationService.image.repository }}:{{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
+          {{- include "control-plane.dist.prestop" . | nindent 10 }}
           livenessProbe:
             httpGet:
               path: /health

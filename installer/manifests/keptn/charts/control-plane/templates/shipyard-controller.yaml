@@ -21,8 +21,7 @@ spec:
   replicas: {{ .Values.shipyardController.config.replicas | default 3 }}
   {{- end }}
   # recreate the deployment if anything changes (we can not do a rolling upgrade of this deployment as we use a volume)
-  strategy:
-    type: Recreate
+  {{ include "control-plane.common.update-strategy" . }}
   template:
     metadata:
       labels:
@@ -39,6 +38,7 @@ spec:
       containers:
         - name: shipyard-controller
           image: {{ .Values.shipyardController.image.repository }}:{{ .Values.shipyardController.image.tag | default .Chart.AppVersion }}
+          {{- include "control-plane.dist.prestop" . | nindent 10 }}
           livenessProbe:
             httpGet:
               path: /health

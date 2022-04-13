@@ -28,6 +28,7 @@ spec:
         helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
       {{- include "control-plane.common.pod-security-context" . | nindent 6 }}
+      terminationGracePeriodSeconds: {{ .Values.gracePeriod | default 30 }}
       serviceAccountName: keptn-default
       containers:
         - name: approval-service
@@ -64,7 +65,6 @@ spec:
           {{- include "control-plane.common.container-security-context" . | nindent 10 }}
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
-          {{- include "control-plane.dist.prestop" . | nindent 10 }}
           {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
           {{- include "control-plane.dist.readinessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
@@ -78,7 +78,6 @@ spec:
               value: '127.0.0.1'
           {{- include "control-plane.dist.common.env.vars" . | nindent 12 }}
           {{- include "control-plane.common.container-security-context" . | nindent 10 }}
-      terminationGracePeriodSeconds: {{ .Values.gracePeriod | default 30 }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.approvalService.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
 ---
 apiVersion: v1
