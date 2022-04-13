@@ -112,10 +112,10 @@ func (g GitConfigurationStore) DeleteService(projectName string, stageName strin
 }
 
 func (g GitConfigurationStore) buildErrResponse(err *keptnapimodels.Error) error {
-	if err.Code == http.StatusFailedDependency {
-		return ErrConfigStoreInvalidToken
-	} else if isServiceNotFoundErr(*err) {
+	if isServiceNotFoundErr(*err) {
 		return ErrServiceNotFound
+	} else if err.Code == http.StatusFailedDependency {
+		return ErrConfigStoreInvalidToken
 	} else if err.Code == http.StatusNotFound {
 		return ErrConfigStoreUpstreamNotFound
 	}
