@@ -249,6 +249,50 @@ func TestDeleteService_DeleteServiceInConfigurationServiceFails(t *testing.T) {
 	assert.Equal(t, 0, len(projectMVRepo.DeleteServiceCalls()))
 }
 
+func TestDeleteService_DeleteServiceInConfigurationServiceReturnsServiceNotFound(t *testing.T) {
+	projectMVRepo := &db_mock.ProjectMVRepoMock{}
+	configurationStore := &common_mock.ConfigurationStoreMock{}
+	uniformRepo := &db_mock.UniformRepoMock{}
+	instance := NewServiceManager(projectMVRepo, configurationStore, uniformRepo)
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
+		service := &apimodels.ExpandedService{
+			ServiceName: "service-name",
+		}
+		stage1 := &apimodels.ExpandedStage{
+			Services:  []*apimodels.ExpandedService{service},
+			StageName: "dev",
+		}
+		stage2 := &apimodels.ExpandedStage{
+			Services:  []*apimodels.ExpandedService{service},
+			StageName: "prod",
+		}
+
+		project := &apimodels.ExpandedProject{
+			ProjectName: "my-project",
+			Stages:      []*apimodels.ExpandedStage{stage1, stage2},
+		}
+		return project, nil
+	}
+	projectMVRepo.DeleteServiceFunc = func(project string, stage string, service string) error {
+		return nil
+	}
+
+	uniformRepo.DeleteServiceFromSubscriptionsFunc = func(subscriptionName string) error {
+		return nil
+	}
+
+	configurationStore.DeleteServiceFunc = func(projectName string, stageName string, serviceName string) error {
+		return common.ErrServiceNotFound
+	}
+
+	err := instance.DeleteService("my-project", "my-service")
+	assert.Nil(t, err)
+	assert.Equal(t, 2, len(configurationStore.DeleteServiceCalls()))
+	// in this case we expect the service to be deleted from the database, because it is already gone from the upstream
+	assert.Equal(t, 2, len(projectMVRepo.DeleteServiceCalls()))
+	assert.Equal(t, 2, len(uniformRepo.DeleteServiceFromSubscriptionsCalls()))
+}
+
 func TestDeleteService_DeleteServiceInDBFails(t *testing.T) {
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
 	configurationStore := &common_mock.ConfigurationStoreMock{}
