@@ -148,4 +148,28 @@ describe('KtbTimeInputComponent', () => {
       micros: undefined,
     });
   });
+
+  it('should set all components to enabled by default', () => {
+    for (const control of Object.values(component.timeControls)) {
+      expect(control.enabled).toBe(true);
+    }
+  });
+
+  it('should set all components to disabled and then to enabled', () => {
+    // when
+    component.disabled = true;
+
+    // then
+    for (const control of Object.values(component.timeControls)) {
+      expect(control.enabled).toBe(false);
+    }
+
+    // when
+    component.disabled = false;
+
+    // then
+    for (const control of Object.values(component.timeControls)) {
+      expect(control.enabled).toBe(true);
+    }
+  });
 });

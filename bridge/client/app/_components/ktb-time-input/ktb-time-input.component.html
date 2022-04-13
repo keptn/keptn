@@ -4,6 +4,7 @@
   [ngClass]="{ focused: isFocused }"
   (click)="focusClick($event, hourInput)"
   (focus)="hourInput.focus()"
+  [class.disabled]="disabled"
 >
   <form uitestid="keptn-time-input">
     <input

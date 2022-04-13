@@ -1,8 +1,17 @@
-import { Component, EventEmitter, Inject, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Inject,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { DataService } from '../../_services/data.service';
 import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 import { Timeframe } from '../../_models/timeframe';
-import { DtButton } from '@dynatrace/barista-components/button';
 import moment from 'moment';
 import { ErrorStateMatcher } from '@angular/material/core';
 import { FormControl, FormGroupDirective, NgForm } from '@angular/forms';
@@ -18,6 +27,7 @@ import {
 import { Router } from '@angular/router';
 import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
+import { ICustomSequences } from '../../../../shared/interfaces/custom-sequences';
 
 export class ShowErrorStateMatcher implements ErrorStateMatcher {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -41,12 +51,12 @@ export class JsonErrorStateMatcher implements ErrorStateMatcher {
   templateUrl: './ktb-trigger-sequence.component.html',
   styleUrls: ['./ktb-trigger-sequence.component.scss'],
 })
-export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
+export class KtbTriggerSequenceComponent implements OnInit, OnDestroy, AfterViewInit {
   public TRIGGER_SEQUENCE = TRIGGER_SEQUENCE;
   public TRIGGER_EVALUATION_TIME = TRIGGER_EVALUATION_TIME;
   public state: TRIGGER_SEQUENCE | 'ENTRY' = 'ENTRY';
   public sequenceType: TRIGGER_SEQUENCE = TRIGGER_SEQUENCE.DELIVERY;
-  public customSequences: string[] | undefined;
+  public customSequences: ICustomSequences | undefined;
   public selectedService: string | undefined;
   public selectedStage: string | undefined;
   public showErrorStateMatcher = new ShowErrorStateMatcher();
@@ -86,13 +96,32 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
 
   @Output() public formClosed: EventEmitter<void> = new EventEmitter<void>();
 
-  @ViewChild('timeframeStartButton') timeFrameStartButton?: DtButton;
-
   constructor(
     private dataService: DataService,
     @Inject(POLLING_INTERVAL_MILLIS) private pollingInterval: number,
-    private router: Router
+    private router: Router,
+    private _changeDetectorRef: ChangeDetectorRef
   ) {}
+
+  public ngAfterViewInit(): void {
+    // workaround for "Expression has changed after it was checked"
+    // for "disable" of the radio-button of #customSequencesSelect
+    this._changeDetectorRef.detectChanges();
+  }
+
+  public get customSequencesOfStage(): string[] | undefined {
+    if (this.selectedStage) {
+      return this.customSequences?.[this.selectedStage];
+    }
+    return undefined;
+  }
+
+  public selectedStageChanged(): void {
+    if (this.sequenceType === TRIGGER_SEQUENCE.CUSTOM && this.selectedStage && !this.customSequencesOfStage?.length) {
+      this.sequenceType = this.isQualityGatesOnly ? TRIGGER_SEQUENCE.EVALUATION : TRIGGER_SEQUENCE.DELIVERY;
+    }
+    this.customFormData.sequence = undefined;
+  }
 
   public ngOnDestroy(): void {
     this.unsubscribe$.next();
@@ -112,7 +141,7 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(() => {
         if (this.projectName) {
-          this.dataService.getCustomSequenceNames(this.projectName).subscribe((customSequences) => {
+          this.dataService.getCustomSequences(this.projectName).subscribe((customSequences) => {
             this.customSequences = customSequences;
           });
         }
@@ -276,9 +305,9 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
         data.evaluation.timeframe = '5m';
       }
 
-      if (this.evaluationFormData.timeframeStart) {
+      if (this.evaluationFormData.startDatetime) {
         // This has only to be set, if entered by the user. If not, we can just set the timeframe and let lighthouse-service do the calculation
-        data.evaluation.start = moment(this.evaluationFormData.timeframeStart).toISOString();
+        data.evaluation.start = moment(this.evaluationFormData.startDatetime).toISOString();
       }
     } else if (this.evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.START_END) {
       data.evaluation.start = moment(this.evaluationFormData.startDatetime || undefined).toISOString();

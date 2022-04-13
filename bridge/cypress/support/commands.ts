@@ -26,7 +26,17 @@ declare global {
   }
 }
 // Commands have to be added by hooking them to Cypress
-Cypress.Commands.add('byTestId', (testId: string) => cy.get(`[uitestid="${testId}"]`));
+Cypress.Commands.add(
+  'byTestId',
+  { prevSubject: ['optional', 'element'] },
+  (sbj: JQuery<HTMLElement> | void, testId: string) => {
+    const selector = `[uitestid="${testId}"]`;
+    if (sbj) {
+      return cy.wrap(sbj).find(selector);
+    }
+    return cy.get(selector);
+  }
+);
 Cypress.Commands.add('clickOutside', () => cy.get('body').click(0, 0));
 Cypress.Commands.add('parentsUntilTestId', { prevSubject: 'element' }, (subject: JQuery<HTMLElement>, testId: string) =>
   cy.wrap(subject).parentsUntil(`[uitestid="${testId}"]`).parent()
@@ -40,7 +50,7 @@ Cypress.Commands.add('dtCheck', { prevSubject: 'element' }, (subject: JQuery<HTM
 });
 
 Cypress.Commands.add('dtSelect', { prevSubject: 'element' }, (subject: JQuery<HTMLElement>, element: string) => {
-  subject.trigger('click');
+  cy.wrap(subject).click();
   cy.get('.dt-select-content dt-option').contains(element).click();
 });
 

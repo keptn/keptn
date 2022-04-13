@@ -35,6 +35,7 @@ import { IStage } from '../../shared/interfaces/stage';
 import { ISequencesMetadata, SequenceMetadataDeployment } from '../../shared/interfaces/sequencesMetadata';
 import { SecretScope, SecretScopeDefault } from '../../shared/interfaces/secret-scope';
 import { generateWebhookConfigCurl } from '../utils/curl.utils';
+import { ICustomSequences } from '../../shared/interfaces/custom-sequences';
 
 type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
 type FlatSecret = { path: string; name: string; key: string; parsedPath: string };
@@ -618,20 +619,19 @@ export class DataService {
     return this.reduceServiceNames(stages);
   }
 
-  public async getCustomSequenceNames(accessToken: string | undefined, projectName: string): Promise<string[]> {
+  public async getCustomSequenceNames(accessToken: string | undefined, projectName: string): Promise<ICustomSequences> {
     const shipyard = await this.getShipyard(accessToken, projectName);
-    const sequenceSet = new Set<string>();
+    const ignoredSequences = ['delivery', 'evaluation'];
+    const sequences: ICustomSequences = {};
 
     for (const stage of shipyard.spec.stages) {
-      if (stage.sequences) {
-        for (const seq of stage.sequences) {
-          if (seq.name !== 'delivery' && seq.name !== 'evaluation') {
-            sequenceSet.add(seq.name);
-          }
-        }
-      }
+      sequences[stage.name] =
+        stage.sequences
+          ?.filter((seq) => !ignoredSequences.includes(seq.name))
+          .map((seq) => seq.name)
+          .sort() ?? [];
     }
-    return Array.from(sequenceSet);
+    return sequences;
   }
 
   private reduceServiceNames(stages: IStage[]): string[] {

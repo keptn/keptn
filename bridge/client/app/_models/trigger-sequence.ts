@@ -29,7 +29,6 @@ export type EvaluationSequenceFormData = {
   stage?: string;
   evaluationType: TRIGGER_EVALUATION_TIME;
   timeframe?: Timeframe;
-  timeframeStart?: string; // ISO 8601
   startDatetime?: string; // ISO 8601
   endDatetime?: string; // ISO 8601
   labels?: string;

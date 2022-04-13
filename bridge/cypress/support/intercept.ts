@@ -17,7 +17,7 @@ export function interceptEmptyEnvironmentScreen(): void {
 export function interceptEnvironmentScreen(): void {
   const project = 'sockshop';
   interceptProjectBoard();
-  cy.intercept('/api/project/sockshop/customSequences', { body: ['delivery-direct', 'rollback', 'remediation'] });
+  cy.intercept('/api/project/sockshop/customSequences', { fixture: 'custom-sequences.mock' }).as('customSequences');
   cy.intercept('POST', '/api/v1/event', { body: { keptnContext: '6c98fbb0-4c40-4bff-ba9f-b20556a57c8a' } });
   cy.intercept('POST', '/api/controlPlane/v1/project/sockshop/stage/dev/service/carts/evaluation', {
     body: { keptnContext: '6c98fbb0-4c40-4bff-ba9f-b20556a57c8a' },
@@ -145,6 +145,16 @@ export function interceptIntegrations(): void {
     '/api/uniform/registration/355311a7bec3f35bf3abc2484ab09bcba8e2b297/subscription/0e021b71-1533-4cfe-875a-b756aa6107ba',
     { body: {} }
   );
+}
+
+export function interceptSequencesScreen(): void {
+  cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=25', { fixture: 'sequences.sockshop' });
+  cy.intercept('/api/project/sockshop/sequences/metadata', { fixture: 'sequence.metadata.mock' });
+  cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=25&fromTime=*', {
+    body: {
+      states: [],
+    },
+  });
 }
 
 export function interceptSecrets(): void {

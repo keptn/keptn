@@ -1,5 +1,12 @@
+import { interceptSequencesScreen } from '../intercept';
+
 export class SequencesPage {
   private readonly sequenceWaitingMessage = ' Sequence is waiting for previous sequences to finish. ';
+
+  public intercept(): this {
+    interceptSequencesScreen();
+    return this;
+  }
 
   public visit(projectName: string): this {
     cy.visit(`/project/${projectName}/sequence`);

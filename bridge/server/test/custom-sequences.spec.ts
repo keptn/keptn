@@ -24,7 +24,11 @@ describe('Test /project/:projectName/customSequences', () => {
       .onGet(`${global.baseUrl}/configuration-service/v1/project/${projectName}/resource/shipyard.yaml`)
       .reply(200, ShipyardResponse);
     const response = await request(app).get(`/api/project/${projectName}/customSequences`);
-    expect(response.body).toEqual(['delivery-direct', 'rollback', 'remediation']);
+    expect(response.body).toEqual({
+      dev: ['delivery-direct'],
+      staging: ['delivery-direct', 'rollback'],
+      production: ['delivery-direct', 'remediation', 'rollback'],
+    });
     expect(response.statusCode).toBe(200);
   });
 });

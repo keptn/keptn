@@ -24,8 +24,8 @@
   }
 
   .dt-form-field.full-width-error .dt-form-field-error {
-    width: calc(200% + 15px);
-    left: calc(-100% - 15px);
+    width: calc(200% + 96px);
+    left: calc(-100% - 96px);
   }
 }
 
@@ -33,13 +33,8 @@
   position: relative;
 }
 
-.radio-button-overlay {
-  height: 30px;
-  width: 100px;
-  position: absolute;
-  left: 0;
-  top: 0;
-  z-index: 1;
+.sequence-select {
+  width: 300px;
 }
 
 .input-overlay {

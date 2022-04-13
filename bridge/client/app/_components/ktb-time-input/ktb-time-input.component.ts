@@ -8,6 +8,7 @@ import { FormControl } from '@angular/forms';
   styleUrls: ['./ktb-time-input.component.scss'],
 })
 export class KtbTimeInputComponent implements OnInit {
+  private _disabled = false;
   @Input() required = false;
   @Input() label = '';
   @Input() hint = '';
@@ -18,6 +19,20 @@ export class KtbTimeInputComponent implements OnInit {
   @Input() min?: Timeframe;
   @Input() max?: Timeframe;
   @Input() timeframe: Timeframe | undefined;
+  @Input()
+  public set disabled(status: boolean) {
+    this._disabled = status;
+    for (const control of Object.values(this.timeControls)) {
+      if (status) {
+        control.disable();
+      } else {
+        control.enable();
+      }
+    }
+  }
+  public get disabled(): boolean {
+    return this._disabled;
+  }
   @Output()
   timeChanged: EventEmitter<Timeframe> = new EventEmitter<Timeframe>();
 

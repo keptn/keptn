@@ -281,7 +281,6 @@ describe('KtbTriggerSequenceComponent', () => {
       evaluationType: TRIGGER_EVALUATION_TIME.START_END,
       labels: 'key1=val1',
       timeframe: undefined,
-      timeframeStart: undefined,
       startDatetime: start.toISOString(),
       endDatetime: end.toISOString(),
     };
@@ -322,8 +321,7 @@ describe('KtbTriggerSequenceComponent', () => {
         millis: undefined,
         micros: undefined,
       },
-      timeframeStart: date.toISOString(),
-      startDatetime: undefined,
+      startDatetime: date.toISOString(),
       endDatetime: undefined,
     };
 
@@ -362,7 +360,6 @@ describe('KtbTriggerSequenceComponent', () => {
         millis: undefined,
         micros: undefined,
       },
-      timeframeStart: undefined,
       startDatetime: undefined,
       endDatetime: undefined,
     };
@@ -394,8 +391,7 @@ describe('KtbTriggerSequenceComponent', () => {
         millis: undefined,
         micros: undefined,
       },
-      timeframeStart: '',
-      startDatetime: undefined,
+      startDatetime: '',
       endDatetime: undefined,
     };
 
@@ -434,8 +430,7 @@ describe('KtbTriggerSequenceComponent', () => {
         millis: undefined,
         micros: undefined,
       },
-      timeframeStart: date.toISOString(),
-      startDatetime: undefined,
+      startDatetime: date.toISOString(),
       endDatetime: undefined,
     };
 
@@ -487,6 +482,109 @@ describe('KtbTriggerSequenceComponent', () => {
       },
       'testsequence'
     );
+  });
+
+  it('should return custom sequences of stage', () => {
+    // given
+    component.customSequences = {
+      dev: ['seq1', 'seq2'],
+      staging: ['seq3'],
+    };
+
+    // when
+    component.selectedStage = 'dev';
+
+    // then
+    expect(component.customSequencesOfStage).toEqual(['seq1', 'seq2']);
+
+    // when
+    component.selectedStage = 'staging';
+
+    // then
+    expect(component.customSequencesOfStage).toEqual(['seq3']);
+  });
+
+  it('should not return custom sequences of stage', () => {
+    // given
+    component.customSequences = {
+      dev: ['seq1', 'seq2'],
+      staging: ['seq3'],
+    };
+
+    // when
+    component.selectedStage = 'production';
+
+    // then
+    expect(component.customSequencesOfStage).toBe(undefined);
+  });
+
+  it('should revert selected sequence after stage change', () => {
+    // given
+    component.customSequences = {
+      dev: ['seq1'],
+    };
+    component.selectedStage = 'dev';
+    component.customFormData.sequence = 'seq1';
+    component.sequenceType = TRIGGER_SEQUENCE.CUSTOM;
+
+    // when
+    component.selectedStageChanged();
+
+    // then
+    expect(component.customFormData.sequence).toBe(undefined);
+    expect(component.sequenceType).toBe(TRIGGER_SEQUENCE.CUSTOM);
+  });
+
+  it('should select delivery sequence if stage is changed and does not have custom sequences', () => {
+    // given
+    component.customFormData.sequence = 'seq1';
+    component.customSequences = {
+      dev: ['seq1'],
+    };
+    component.selectedStage = 'staging';
+    component.sequenceType = TRIGGER_SEQUENCE.CUSTOM;
+
+    // when
+    component.selectedStageChanged();
+
+    // then
+    expect(component.customFormData.sequence).toBe(undefined);
+    expect(component.sequenceType).toBe(TRIGGER_SEQUENCE.DELIVERY);
+  });
+
+  it('should select evaluation sequence if it is quality-gates-only and stage is changed and does not have custom sequences', () => {
+    // given
+    component.customFormData.sequence = 'seq1';
+    component.isQualityGatesOnly = true;
+    component.customSequences = {
+      dev: ['seq1'],
+    };
+    component.selectedStage = 'staging';
+    component.sequenceType = TRIGGER_SEQUENCE.CUSTOM;
+
+    // when
+    component.selectedStageChanged();
+
+    // then
+    expect(component.customFormData.sequence).toBe(undefined);
+    expect(component.sequenceType).toBe(TRIGGER_SEQUENCE.EVALUATION);
+  });
+
+  it('should not change selected sequence if stage is changed and does not have custom sequences', () => {
+    // given
+    component.customFormData.sequence = 'seq1';
+    component.customSequences = {
+      dev: ['seq1'],
+    };
+    component.selectedStage = 'staging';
+    component.sequenceType = TRIGGER_SEQUENCE.EVALUATION;
+
+    // when
+    component.selectedStageChanged();
+
+    // then
+    expect(component.customFormData.sequence).toBe(undefined);
+    expect(component.sequenceType).toBe(TRIGGER_SEQUENCE.EVALUATION);
   });
 
   function assertTimeframeValid(timeframe: Timeframe, isValid: boolean): void {

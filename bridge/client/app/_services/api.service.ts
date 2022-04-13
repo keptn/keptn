@@ -29,6 +29,7 @@ import { TriggerResponse, TriggerSequenceData } from '../_models/trigger-sequenc
 import { IScopesResult } from '../_interfaces/scopes-result';
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
 import { IGitHttps, IGitSsh } from '../_interfaces/git-upstream';
+import { ICustomSequences } from '../../../shared/interfaces/custom-sequences';
 
 @Injectable({
   providedIn: 'root',
@@ -285,9 +286,9 @@ export class ApiService {
     return this.http.get<string[]>(url);
   }
 
-  public getCustomSequenceNames(projectName: string): Observable<string[]> {
+  public getCustomSequences(projectName: string): Observable<ICustomSequences> {
     const url = `${this._baseUrl}/project/${projectName}/customSequences`;
-    return this.http.get<string[]>(url);
+    return this.http.get<ICustomSequences>(url);
   }
 
   public getSequences(

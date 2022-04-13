@@ -39,6 +39,10 @@ input {
     outline: 2px solid $gray-400;
     outline-offset: 1px;
   }
+
+  &.disabled {
+    background-color: $gray-130;
+  }
 }
 
 .dt-hint, .dt-error {
