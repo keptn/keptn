@@ -136,3 +136,4 @@ definitions:
         type: boolean
     required:
       - automaticprovisioning
+      - continuousdeliveryenabled
