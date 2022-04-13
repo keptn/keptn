@@ -36,18 +36,11 @@ export class KtbIntegrationViewComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((keptnInfo) => {
         this.keptnInfo = keptnInfo;
-        if (this.keptnInfo.bridgeInfo.keptnInstallationType) {
-          if (this.keptnInfo.bridgeInfo.keptnInstallationType.includes('CONTINUOUS_DELIVERY')) {
-            this.addDeploymentUseCaseToIntegrations();
-          }
-          if (this.keptnInfo.bridgeInfo.keptnInstallationType.includes('QUALITY_GATES')) {
-            this.addEvaluationUseCaseToIntegrations();
-          }
-          if (this.keptnInfo.bridgeInfo.keptnInstallationType.includes('CONTINUOUS_OPERATIONS')) {
-            this.addRemediationUseCaseToIntegrations();
-          }
-          this.updateIntegrations();
-        }
+
+        this.addDeploymentUseCaseToIntegrations();
+        this.addEvaluationUseCaseToIntegrations();
+        this.addRemediationUseCaseToIntegrations();
+        this.updateIntegrations();
       });
 
     AppUtils.createTimer(0, this.initialDelayMillis)
@@ -58,24 +51,18 @@ export class KtbIntegrationViewComponent implements OnInit, OnDestroy {
   }
 
   updateIntegrations(): void {
-    if (
-      this.keptnInfo &&
-      this.keptnInfo.bridgeInfo.keptnInstallationType &&
-      this.keptnInfo.bridgeInfo.keptnInstallationType.includes('QUALITY_GATES')
-    ) {
-      this.currentTime = this.getCurrentTime();
-      const cliItem = this.useCaseExamples.cli.find((e) => e.label === 'Trigger a quality gate evaluation');
-      const apiItem = this.useCaseExamples.api.find((e) => e.label === 'Trigger a quality gate evaluation');
-      if (cliItem) {
-        cliItem.code = `keptn trigger evaluation --project=\${PROJECT} --stage=\${STAGE} --service=\${SERVICE} --start=${this.currentTime} --timeframe=5m`;
-      }
-      if (apiItem) {
-        apiItem.code = `curl -X POST "\${KEPTN_API_ENDPOINT}/controlPlane/v1/project/\${PROJECT}/stage/\${STAGE}/service/\${SERVICE}/evaluation" \\
+    this.currentTime = this.getCurrentTime();
+    const cliItem = this.useCaseExamples.cli.find((e) => e.label === 'Trigger a quality gate evaluation');
+    const apiItem = this.useCaseExamples.api.find((e) => e.label === 'Trigger a quality gate evaluation');
+    if (cliItem) {
+      cliItem.code = `keptn trigger evaluation --project=\${PROJECT} --stage=\${STAGE} --service=\${SERVICE} --start=${this.currentTime} --timeframe=5m`;
+    }
+    if (apiItem) {
+      apiItem.code = `curl -X POST "\${KEPTN_API_ENDPOINT}/controlPlane/v1/project/\${PROJECT}/stage/\${STAGE}/service/\${SERVICE}/evaluation" \\
     -H "accept: application/json; charset=utf-8" \\
     -H "x-token: \${KEPTN_API_TOKEN}" \\
     -H "Content-Type: application/json; charset=utf-8" \\
     -d "{\\"start\\": \\"${this.currentTime}\\", \\"timeframe\\": \\"5m\\", \\"labels\\":{\\"buildId\\":\\"build-17\\", \\"owner\\":\\"JohnDoe\\",\\"testNo\\":\\"47-11\\"}}"`;
-      }
     }
   }
 
