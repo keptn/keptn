@@ -276,9 +276,6 @@ func (i *InstallCmdHandler) doInstallation(installParams installCmdParams) error
 			"apiGatewayNginx": map[string]interface{}{
 				"type": installParams.EndPointServiceType.String(),
 			},
-			"bridge": map[string]interface{}{
-				"installationType": getInstallationTypeEnvVar(*installParams.UseCaseInput),
-			},
 		},
 	}
 
@@ -332,13 +329,6 @@ func fetchContinuousDeliveryCharts(helmHelper helm.IHelper, chartRepoURL *string
 		charts = append(charts, serviceChart)
 	}
 	return charts, nil
-}
-
-func getInstallationTypeEnvVar(useCase string) string {
-	if useCase == ContinuousDelivery.String() {
-		return "QUALITY_GATES,CONTINUOUS_OPERATIONS,CONTINUOUS_DELIVERY"
-	}
-	return "QUALITY_GATES,CONTINUOUS_OPERATIONS"
 }
 
 func checkIstioInstallation() error {

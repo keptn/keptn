@@ -100,7 +100,6 @@ bridge:
     enabled: true
   showApiToken:
     enabled: true
-  installationType: null
   lookAndFeelUrl: null
   podSecurityContext:
     enabled: true

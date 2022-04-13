@@ -148,8 +148,6 @@ spec:
               value: "{{ .Values.bridge.versionCheck.enabled }}"
             - name: SHOW_API_TOKEN
               value: "{{ .Values.bridge.showApiToken.enabled }}"
-            - name: KEPTN_INSTALLATION_TYPE
-              value: "{{ .Values.bridge.installationType |default (print "QUALITY_GATES,CONTINUOUS_OPERATIONS") }}"
             - name: LOOK_AND_FEEL_URL
               value: "{{ .Values.bridge.lookAndFeelUrl |default (print "") }}"
             - name: PREFIX_PATH
