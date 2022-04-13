@@ -135,6 +135,7 @@ func (sm *serviceManager) DeleteService(projectName, serviceName string) error {
 	for _, stage := range stages {
 		log.Infof("Deleting service %s from stage %s", serviceName, stage.StageName)
 		if err := sm.configurationStore.DeleteService(projectName, stage.StageName, serviceName); err != nil {
+			log.Infof("Encountered error when trying to remove service from configuration store") // TODO remove this log output
 			// If we get a ErrServiceNotFound, we can proceed with deleting the service from the db.
 			// For other types of errors (e.g. due to a temporary upstream repo connection issue), we return without deleting it from the db.
 			// Otherwise, it could be that the service directory is still present in the configuration service, but gone from the db, which means we cannot
