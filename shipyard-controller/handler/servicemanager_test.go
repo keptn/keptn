@@ -281,7 +281,7 @@ func TestDeleteService_DeleteServiceInConfigurationServiceReturnsServiceNotFound
 	}
 
 	configurationStore.DeleteServiceFunc = func(projectName string, stageName string, serviceName string) error {
-		return ErrServiceNotFound
+		return common.ErrServiceNotFound
 	}
 
 	err := instance.DeleteService("my-project", "my-service")
