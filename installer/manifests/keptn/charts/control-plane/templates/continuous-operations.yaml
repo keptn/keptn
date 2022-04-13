@@ -65,10 +65,6 @@ spec:
         {{- include "control-plane.common.container-security-context" . | nindent 8 }}
       - name: distributor
         image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
-        lifecycle:
-          preStop:
-            exec:
-              command: ["/bin/sleep", "30"]
         imagePullPolicy: IfNotPresent
         {{- include "control-plane.dist.livenessProbe" . | nindent 8 }}
         {{- include "control-plane.dist.readinessProbe" . | nindent 8 }}

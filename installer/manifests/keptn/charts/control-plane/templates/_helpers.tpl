@@ -80,7 +80,7 @@ readinessProbe:
 lifecycle:
    preStop:
       exec:
-       command: ["/bin/sleep", "20"]
+       command: ["/bin/sleep", "90"]
 {{- end }}
 
 {{- define "control-plane.dist.common.env.vars" -}}
@@ -260,6 +260,19 @@ securityContext:
   readOnlyRootFilesystem: false
   allowPrivilegeEscalation: false
   privileged: false
+{{- end -}}
+{{- end -}}
+
+{{- define "control-plane.common.update-strategy" -}}
+{{- if (.Values.common).strategy -}}
+strategy:
+{{- toYaml .Values.common.strategy | nindent 4 -}}
+{{- else -}}
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 1
 {{- end -}}
 {{- end -}}
 
