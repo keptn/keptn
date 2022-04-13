@@ -25,7 +25,7 @@
         dtInput
         cols="60"
         rows="1"
-        class="resize-vertical"
+        class="resize-vertical url-input"
       ></textarea>
       <dt-error *ngIf="getFormControl('url').errors?.required">URL must not be empty</dt-error>
       <dt-error *ngIf="getFormControl('url').errors?.url"> URL must start with http(s):// </dt-error>

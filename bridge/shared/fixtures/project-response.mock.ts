@@ -968,6 +968,7 @@ const projectDetailsResponseURLFallback = {
     },
   ],
   projectName: 'sockshop',
+  gitProxyInsecure: false,
 };
 
 const projectDetailsResponseEvaluationFallback = {
@@ -1053,6 +1054,7 @@ const projectDetailsResponseEvaluationFallback = {
     },
   ],
   projectName: 'sockshop',
+  gitProxyInsecure: false,
 };
 
 export { projectResponseMock as ProjectResponse };

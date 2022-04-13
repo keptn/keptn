@@ -8,6 +8,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 import { PendingChangesGuard } from '../../_guards/pending-changes.guard';
+import { IGitData } from '../../_interfaces/git-upstream';
+import { TestUtils } from '../../_utils/test.utils';
 
 describe('KtbProjectSettingsComponent', () => {
   let component: KtbProjectSettingsComponent;
@@ -37,6 +39,7 @@ describe('KtbProjectSettingsComponent', () => {
     fixture = TestBed.createComponent(KtbProjectSettingsComponent);
     component = fixture.componentInstance;
     dataService = fixture.debugElement.injector.get(DataService);
+    dataService.loadKeptnInfo();
 
     const notifications = document.getElementsByTagName('dt-confirmation-dialog-state');
     if (notifications.length > 0) {
@@ -94,8 +97,8 @@ describe('KtbProjectSettingsComponent', () => {
 
   it('should call DataService.setGitUpstreamUrl on setGitUpstream', () => {
     // given
-    const gitData = {
-      remoteURI: 'https://test.git',
+    const gitData: IGitData = {
+      gitRemoteURL: 'https://test.git',
       gitUser: 'username',
       gitToken: 'token',
     };
@@ -127,32 +130,25 @@ describe('KtbProjectSettingsComponent', () => {
     fixture.detectChanges();
 
     component.projectNameControl.setValue('Sockshop');
-    component.projectNameForm.updateValueAndValidity();
-    expect(component.projectNameForm.hasError('pattern'));
+    expect(component.projectNameControl.hasError('pattern')).toBe(true);
 
     component.projectNameControl.setValue('1ockshop');
-    component.projectNameForm.updateValueAndValidity();
-    expect(component.projectNameForm.hasError('pattern'));
+    expect(component.projectNameControl.hasError('pattern')).toBe(true);
 
     component.projectNameControl.setValue('-ockshop');
-    component.projectNameForm.updateValueAndValidity();
-    expect(component.projectNameForm.hasError('pattern'));
+    expect(component.projectNameControl.hasError('pattern')).toBe(true);
 
     component.projectNameControl.setValue('$ockshop');
-    component.projectNameForm.updateValueAndValidity();
-    expect(component.projectNameForm.hasError('pattern'));
+    expect(component.projectNameControl.hasError('pattern')).toBe(true);
 
     component.projectNameControl.setValue('soCkshop');
-    component.projectNameForm.updateValueAndValidity();
-    expect(component.projectNameForm.hasError('pattern'));
+    expect(component.projectNameControl.hasError('pattern')).toBe(true);
 
     component.projectNameControl.setValue('sock_shop');
-    component.projectNameForm.updateValueAndValidity();
-    expect(component.projectNameForm.hasError('pattern'));
+    expect(component.projectNameControl.hasError('pattern')).toBe(true);
 
     component.projectNameControl.setValue('sockshop-1');
-    component.projectNameForm.updateValueAndValidity();
-    expect(component.projectNameForm.errors).toBeNull();
+    expect(component.projectNameControl.errors).toBeNull();
   });
 
   it('should delete a project and navigate to dashboard', () => {
@@ -186,7 +182,12 @@ describe('KtbProjectSettingsComponent', () => {
     // given
 
     // when
-    component.updateGitData({ gitUser: 'someUser', remoteURI: 'someUri', gitToken: 'someToken', gitFormValid: true });
+    component.updateGitData({
+      gitUser: 'someUser',
+      gitRemoteURL: 'someUri',
+      gitToken: 'someToken',
+      gitFormValid: true,
+    });
     fixture.detectChanges();
 
     // then
@@ -195,7 +196,12 @@ describe('KtbProjectSettingsComponent', () => {
 
   it('should show a dialog when showNotification is called', () => {
     // given
-    component.updateGitData({ gitUser: 'someUser', remoteURI: 'someUri', gitToken: 'someToken', gitFormValid: true });
+    component.updateGitData({
+      gitUser: 'someUser',
+      gitRemoteURL: 'someUri',
+      gitToken: 'someToken',
+      gitFormValid: true,
+    });
     fixture.detectChanges();
 
     // when
@@ -214,7 +220,12 @@ describe('KtbProjectSettingsComponent', () => {
 
   it('should not show dialog when the notification was closed', () => {
     // given
-    component.updateGitData({ gitUser: 'someUser', remoteURI: 'someUri', gitToken: 'someToken', gitFormValid: true });
+    component.updateGitData({
+      gitUser: 'someUser',
+      gitRemoteURL: 'someUri',
+      gitToken: 'someToken',
+      gitFormValid: true,
+    });
     fixture.detectChanges();
 
     // given
@@ -229,5 +240,107 @@ describe('KtbProjectSettingsComponent', () => {
     const notification = document.getElementsByTagName('dt-confirmation-dialog-state')[0];
     // It still exists in the dom but is hidden - so we test for aria-hidden
     expect(notification.getAttribute('aria-hidden')).toEqual('true');
+  });
+
+  it('should update extended Git HTTPS data', async () => {
+    // given
+    const apiService = TestBed.inject(ApiService);
+    const createExtendedSpy = jest.spyOn(apiService, 'createProjectExtended');
+    TestUtils.enableResourceService();
+    expect(component.resourceServiceEnabled).toBe(true);
+    expect(component.isProjectFormTouched).toBe(false);
+    component.shipyardFile = new File(['test content'], 'test1.yaml');
+    component.projectNameControl.setValue('myProject');
+
+    // when
+    component.updateGitDataExtended({
+      https: {
+        gitRemoteURL: 'https://myurl.git',
+        gitToken: '',
+        gitProxyInsecure: false,
+        gitProxyPassword: '',
+        gitProxyScheme: 'https',
+        gitProxyUrl: '',
+        gitProxyUser: '',
+        gitUser: 'myUser',
+      },
+    });
+    expect(component.isProjectFormTouched).toBe(true);
+
+    // when
+    await component.createProject();
+
+    // then
+    expect(createExtendedSpy).toHaveBeenCalledWith('myProject', btoa('test content'), {
+      gitRemoteURL: 'https://myurl.git',
+      gitToken: '',
+      gitProxyInsecure: false,
+      gitProxyPassword: '',
+      gitProxyScheme: 'https',
+      gitProxyUrl: '',
+      gitProxyUser: '',
+      gitUser: 'myUser',
+    });
+  });
+
+  it('should update extended Git SSH data', async () => {
+    // given
+    const apiService = TestBed.inject(ApiService);
+    const createExtendedSpy = jest.spyOn(apiService, 'createProjectExtended');
+    TestUtils.enableResourceService();
+    expect(component.resourceServiceEnabled).toBe(true);
+    expect(component.isProjectFormTouched).toBe(false);
+    component.shipyardFile = new File(['test content'], 'test1.yaml');
+    component.projectNameControl.setValue('myProject');
+
+    // when
+    component.updateGitDataExtended({
+      ssh: {
+        gitPrivateKeyPass: 'myPrivateKeyPass',
+        gitPrivateKey: 'myPrivateKey',
+        gitRemoteURL: 'https://my-git-url.com',
+      },
+    });
+    expect(component.isProjectFormTouched).toBe(true);
+
+    // when
+    await component.createProject();
+
+    // then
+    expect(createExtendedSpy).toHaveBeenCalledWith('myProject', btoa('test content'), {
+      gitPrivateKeyPass: 'myPrivateKeyPass',
+      gitPrivateKey: 'myPrivateKey',
+      gitRemoteURL: 'https://my-git-url.com',
+    });
+  });
+
+  it('should reset input for extended git data to default', () => {
+    // given
+    TestUtils.enableResourceService();
+    // is a reference and may be modified by child components
+    component.gitInputDataExtended = {
+      ssh: {
+        gitPrivateKeyPass: 'myPrivateKeyPass',
+        gitPrivateKey: 'myPrivateKey',
+        gitRemoteURL: 'https://my-git-url.com',
+      },
+    };
+
+    // when
+    component.reset();
+
+    // then
+    expect(component.gitInputDataExtended).toEqual({
+      https: {
+        gitProxyInsecure: false,
+        gitProxyPassword: '',
+        gitProxyScheme: 'https',
+        gitProxyUrl: '',
+        gitProxyUser: '',
+        gitRemoteURL: 'https://github.com/Kirdock/keptn-dynatrace',
+        gitToken: '',
+        gitUser: 'Kirdock',
+      },
+    });
   });
 });

@@ -1,0 +1,11 @@
+<ktb-project-settings-git-ssh-input
+  (gitDataChange)="gitUpstream = $event; sshChanged()"
+  [gitInputData]="gitInputData"
+  [isLoading]="isLoading"
+></ktb-project-settings-git-ssh-input>
+
+<h2 class="required mt-3">SSH private key</h2>
+<p class="mt-0">
+  For SSH the private key is needed to connect to the repository. Provide it as file or directly as text.
+</p>
+<ktb-ssh-key-input [sshInput]="sshInputData" (sshDataChange)="sshKeyData = $event; sshChanged()"></ktb-ssh-key-input>

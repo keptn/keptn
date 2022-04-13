@@ -7,7 +7,7 @@
           <input
             type="text"
             formControlName="projectName"
-            id="projectNameInput"
+            uitestid="ktb-project-name-input"
             (input)="projectFormTouched()"
             required
             dtInput
@@ -27,15 +27,26 @@
           </dt-error>
         </dt-form-field>
       </div>
-      <div class="mb-3 settings-section">
-        <ktb-project-settings-git
-          [isLoading]="isProjectLoading"
+      <div class="mb-3 settings-section" *ngIf="resourceServiceEnabled !== undefined">
+        <ktb-project-settings-git-extended
+          *ngIf="resourceServiceEnabled; else defaultGit"
+          [isLoading]="!!isProjectLoading"
           [isCreateMode]="isCreateMode"
-          [gitData]="gitData"
           [isGitUpstreamInProgress]="isGitUpstreamInProgress"
-          (gitDataChanged)="updateGitData($event)"
-          (gitUpstreamSubmit)="setGitUpstream()"
-        ></ktb-project-settings-git>
+          [gitInputData]="gitInputDataExtended"
+          (resetTouched)="isProjectFormTouched = false"
+          (gitDataChange)="updateGitDataExtended($event)"
+        ></ktb-project-settings-git-extended>
+        <ng-template #defaultGit>
+          <ktb-project-settings-git
+            [isLoading]="isProjectLoading"
+            [isCreateMode]="isCreateMode"
+            [gitData]="gitData"
+            [isGitUpstreamInProgress]="isGitUpstreamInProgress"
+            (gitDataChanged)="updateGitData($event)"
+            (gitUpstreamSubmit)="setGitUpstream()"
+          ></ktb-project-settings-git>
+        </ng-template>
       </div>
 
       <div class="mb-3 settings-section" *ngIf="isCreateMode">
@@ -45,17 +56,26 @@
         ></ktb-project-settings-shipyard>
       </div>
       <div class="mt-3 settings-section settings-actions" *ngIf="isCreateMode">
-        <button [disabled]="isProjectCreateFormInvalid()" (click)="createProject()" dt-button>
+        <button
+          [disabled]="isProjectCreateFormInvalid()"
+          (click)="createProject()"
+          dt-button
+          uitestid="ktb-create-project"
+        >
           <dt-loading-spinner *ngIf="isCreatingProjectInProgress" aria-label="Creating project"></dt-loading-spinner>
           Create project
         </button>
-        <div class="mt-2">
-          <span class="small required-info">fields are required</span>
-        </div>
+      </div>
+      <div class="mt-2">
+        <span class="small required-info">fields are required</span>
       </div>
     </div>
 
-    <div [ngClass]="['settings-section', unsavedDialogState ? 'notification-open' : '']" *ngIf="!isCreateMode">
+    <div
+      [ngClass]="['settings-section', unsavedDialogState ? 'notification-open' : '']"
+      *ngIf="!isCreateMode"
+      class="pb-4"
+    >
       <ktb-danger-zone [data]="projectDeletionData"></ktb-danger-zone>
     </div>
   </div>

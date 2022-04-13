@@ -1,4 +1,4 @@
-import { Crypto, IEncrypted } from '../user/crypto';
+import { Crypto, IEncrypted } from './crypto';
 
 describe('Test crypto.ts', () => {
   it('should encrypt and decrypt data', () => {

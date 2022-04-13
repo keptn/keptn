@@ -28,6 +28,7 @@ import { ISequencesMetadata } from '../../../shared/interfaces/sequencesMetadata
 import { TriggerResponse, TriggerSequenceData } from '../_models/trigger-sequence';
 import { IScopesResult } from '../_interfaces/scopes-result';
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
+import { IGitHttps, IGitSsh } from '../_interfaces/git-upstream';
 
 @Injectable({
   providedIn: 'root',
@@ -129,6 +130,19 @@ export class ApiService {
       gitRemoteUrl,
       gitToken,
       gitUser,
+      name: projectName,
+      shipyard,
+    });
+  }
+
+  public createProjectExtended(
+    projectName: string,
+    shipyard: string,
+    data: IGitHttps['https'] | IGitSsh['ssh']
+  ): Observable<unknown> {
+    const url = `${this._baseUrl}/controlPlane/v1/project`;
+    return this.http.post<unknown>(url, {
+      ...data,
       name: projectName,
       shipyard,
     });
@@ -363,6 +377,17 @@ export class ApiService {
       gitRemoteURL: gitUrl,
       gitToken,
       gitUser,
+      name: projectName,
+    });
+  }
+
+  public updateGitUpstreamExtended(
+    projectName: string,
+    data: IGitHttps['https'] | IGitSsh['ssh']
+  ): Observable<unknown> {
+    const url = `${this._baseUrl}/controlPlane/v1/project`;
+    return this.http.put<unknown>(url, {
+      ...data,
       name: projectName,
     });
   }

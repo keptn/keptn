@@ -5,6 +5,7 @@ import { FeatureFlagsService } from './feature-flags.service';
 import { ApiService } from './api.service';
 import { ApiServiceMock } from './api.service.mock';
 import { DataService } from './data.service';
+import { take } from 'rxjs/operators';
 
 describe('FeatureFlagsService', () => {
   let service: FeatureFlagsService;
@@ -23,9 +24,12 @@ describe('FeatureFlagsService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should set feature flags', () => {
+  it('should set feature flags', async () => {
     const dataService = TestBed.inject(DataService);
     dataService.loadKeptnInfo();
-    expect(service.featureFlags).toEqual({});
+    const flags = await service.featureFlags$.pipe(take(1)).toPromise();
+    expect(flags).toEqual({
+      RESOURCE_SERVICE_ENABLED: false,
+    });
   });
 });
