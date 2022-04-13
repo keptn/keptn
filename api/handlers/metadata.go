@@ -75,7 +75,8 @@ func (h *metadataHandler) getMetadata() middleware.Responder {
 	payload.Shipyardversion = "0.2.0"
 	automaticProvisioningURLValue := automaticProvisioningURL != ""
 	payload.Automaticprovisioning = &automaticProvisioningURLValue
-	payload.Continuousdeliveryenabled = continuousDeliveryEnabled == "true"
+	ContinuousDeliveryEnabledValue := continuousDeliveryEnabled == "true"
+	payload.Continuousdeliveryenabled = &ContinuousDeliveryEnabledValue
 
 	if bridgeVersion, err := h.getBridgeVersion(namespace); err != nil {
 		logger.WithError(err).Error("Error getting bridge version")
