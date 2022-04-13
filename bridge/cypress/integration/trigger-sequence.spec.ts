@@ -171,7 +171,6 @@ describe('Trigger a sequence', () => {
   });
 
   it('should revert to delivery if stage is changed and does not contain any custom sequences', () => {
-    // should not have enabled button, if previous one was valid
     triggerSequencePage
       .clickOpen()
       .selectStage('dev')
@@ -181,8 +180,31 @@ describe('Trigger a sequence', () => {
       .assertDeliverySelected(true);
   });
 
-  it('should have disabled custom sequence', () => {
+  it('should have disabled next button if a valid custom sequence is entered and then the stage changes', () => {
+    triggerSequencePage
+      .clickOpen()
+      .selectStage('dev')
+      .selectCustomSequence('delivery-direct')
+      .selectStage('staging')
+      .assertCustomSequenceSelected(true)
+      .assertNextPageEnabled(false);
+  });
+
+  it('should have disabled custom sequence if stage does not have custom sequences', () => {
     triggerSequencePage.clickOpen().selectStage('production').assertCustomSequenceEnabled(false);
+  });
+
+  it('should have enabled custom sequence if stage without sequences is changed to stage with sequences', () => {
+    triggerSequencePage.clickOpen().selectStage('production').selectStage('dev').assertCustomSequenceEnabled(true);
+  });
+
+  it('should have disabled next button if custom sequence radio is selected but no sequence is selected', () => {
+    triggerSequencePage
+      .clickOpen()
+      .selectStage('dev')
+      .selectService('carts')
+      .selectCustomSequence()
+      .assertNextPageEnabled(false);
   });
 });
 

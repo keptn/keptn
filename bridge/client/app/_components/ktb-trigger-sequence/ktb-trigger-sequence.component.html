@@ -54,7 +54,10 @@
         <dt-radio-button [value]="TRIGGER_SEQUENCE.EVALUATION" uitestid="ktb-trigger-sequence-evaluation-radio"
           >Evaluation</dt-radio-button
         >
-        <div *ngIf="false; else customSequencesSelect" [dtOverlay]="noCustomSequencesOverlay">
+        <div
+          *ngIf="customSequencesOfStage?.length === 0; else customSequencesSelect"
+          [dtOverlay]="noCustomSequencesOverlay"
+        >
           <ng-container *ngTemplateOutlet="customSequencesSelect"></ng-container>
         </div>
         <ng-template #customSequencesSelect>
@@ -98,7 +101,9 @@
           dt-button
           variant="secondary"
           uitestid="keptn-trigger-button-next"
-          [disabled]="!selectedService || !selectedStage"
+          [disabled]="
+            !selectedService || !selectedStage || (sequenceType === TRIGGER_SEQUENCE.CUSTOM && !customFormData.sequence)
+          "
           (click)="setFormState()"
         >
           Next

@@ -40,15 +40,20 @@ export class TriggerSequenceSubPage {
     return this;
   }
 
-  public selectCustomSequence(sequence: string): this {
-    cy.byTestId('keptn-trigger-custom-sequence-select').dtSelect(sequence);
+  public selectCustomSequence(sequence?: string): this {
+    if (sequence) {
+      cy.byTestId('keptn-trigger-custom-sequence-select').dtSelect(sequence);
+      return this;
+    }
+    cy.byTestId('ktb-trigger-sequence-custom-radio').dtCheck(true);
     return this;
   }
 
-  public assertCustomSequenceSelected(status: boolean): this {
+  public assertCustomSequenceSelected(status: boolean, sequence = ' Select ... '): this {
     cy.byTestId('ktb-trigger-sequence-custom-radio')
       .find('input')
       .should(status ? 'be.checked' : 'not.be.checked');
+    cy.byTestId('keptn-trigger-custom-sequence-select').should('have.text', sequence);
     return this;
   }
 
@@ -280,16 +285,24 @@ export class TriggerSequenceSubPage {
     this.clickOpen().selectService(service).selectStage(stage);
     switch (view) {
       case TriggerSequenceView.DELIVERY:
-        this.selectDelivery();
-        break;
+        return this.selectDelivery()
+          .clickNext()
+          .clickBack()
+          .assertDeliverySelected(true)
+          .assertHeadlineDefault(project);
       case TriggerSequenceView.EVALUATION:
-        this.selectEvaluation();
-        break;
+        return this.selectEvaluation()
+          .clickNext()
+          .clickBack()
+          .assertEvaluationSelected(true)
+          .assertHeadlineDefault(project);
       default:
-        this.selectCustomSequence(sequence ?? '');
-        break;
+        return this.selectCustomSequence(sequence ?? '')
+          .clickNext()
+          .clickBack()
+          .assertCustomSequenceSelected(true, sequence)
+          .assertHeadlineDefault(project);
     }
-    return this.clickNext().clickBack().assertHeadlineDefault(project);
   }
 
   public closeAndValidate(): this {
