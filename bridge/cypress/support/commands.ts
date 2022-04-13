@@ -15,6 +15,12 @@ declare global {
        */
       dtCheck<E extends Node = HTMLElement>(status: boolean): Cypress.Chainable<JQuery<E>>;
       dtSelect<E extends Node = HTMLElement>(element: string): Cypress.Chainable<JQuery<E>>;
+      dtQuickFilterCheck<E extends Node = HTMLElement>(
+        filterName: string,
+        itemName: string,
+        status: boolean
+      ): Cypress.Chainable<JQuery<E>>;
+      clearDtFilter<E extends Node = HTMLElement>(): Cypress.Chainable<JQuery<E>>;
       clickOutside<E extends Node = HTMLElement>(): Cypress.Chainable<JQuery<E>>;
     }
   }
@@ -32,7 +38,27 @@ Cypress.Commands.add('dtCheck', { prevSubject: 'element' }, (subject: JQuery<HTM
     cy.wrap(subject).click();
   }
 });
+
 Cypress.Commands.add('dtSelect', { prevSubject: 'element' }, (subject: JQuery<HTMLElement>, element: string) => {
   subject.trigger('click');
   cy.get('.dt-select-content dt-option').contains(element).click();
+});
+
+Cypress.Commands.add(
+  'dtQuickFilterCheck',
+  { prevSubject: 'element' },
+  (subject: JQuery<HTMLElement>, filterName: string, itemName: string, status: boolean) => {
+    cy.wrap(subject)
+      .find('.dt-quick-filter-group .dt-quick-filter-group-headline')
+      .contains(filterName)
+      .parent()
+      .find('dt-checkbox')
+      .contains(itemName)
+      .dtCheck(status);
+  }
+);
+
+Cypress.Commands.add('clearDtFilter', { prevSubject: 'element' }, (subject: JQuery<HTMLElement>) => {
+  subject.find('.dt-filter-field-clear-all-button').trigger('click');
+  cy.wrap(subject).find('.dt-filter-field-input ').type('{esc}');
 });

@@ -3,9 +3,14 @@ package handler_test
 import (
 	"encoding/json"
 	"errors"
+	"io/ioutil"
+	"log"
+	"reflect"
+	"testing"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/go-utils/pkg/api/utils"
+	api "github.com/keptn/go-utils/pkg/api/utils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/go-sdk/pkg/sdk"
 	"github.com/keptn/keptn/webhook-service/handler"
@@ -14,10 +19,6 @@ import (
 	"github.com/keptn/keptn/webhook-service/lib/fake"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"io/ioutil"
-	"log"
-	"reflect"
-	"testing"
 )
 
 const webHookContent = `apiVersion: webhookconfig.keptn.sh/v1alpha1
@@ -969,4 +970,79 @@ func TestTaskHandler_Execute_WebhookConfigInProject(t *testing.T) {
 	require.Equal(t, "", scopeVals3.FieldByName("service").String())
 	require.Equal(t, "", scopeVals3.FieldByName("stage").String())
 	require.Equal(t, "myproject", scopeVals3.FieldByName("project").String())
+}
+
+func Test_createRequest(t *testing.T) {
+	tests := []struct {
+		name    string
+		data    interface{}
+		want    string
+		wantErr bool
+	}{
+		{
+			name:    "valid alpha input",
+			data:    "curl command",
+			want:    "curl command",
+			wantErr: false,
+		},
+		{
+			name: "valid beta input #1",
+			data: lib.Request{
+				Headers: []lib.Header{
+					{
+						Key:   "key",
+						Value: "value",
+					},
+				},
+				Method:  "POST",
+				Options: "--some-options",
+				Payload: "some payload",
+				URL:     "http://localhost:8080",
+			},
+			want:    "curl --request POST --header 'key: value' --data 'some payload' --some-options http://localhost:8080",
+			wantErr: false,
+		},
+		{
+			name: "valid beta input #2",
+			data: lib.Request{
+				Headers: []lib.Header{
+					{
+						Key:   "key",
+						Value: "value",
+					},
+				},
+				Method: "POST",
+				URL:    "http://localhost:8080",
+			},
+			want:    "curl --request POST --header 'key: value' http://localhost:8080",
+			wantErr: false,
+		},
+		{
+			name: "valid beta input #3",
+			data: lib.Request{
+				Method: "POST",
+				URL:    "http://localhost:8080",
+			},
+			want:    "curl --request POST http://localhost:8080",
+			wantErr: false,
+		},
+		{
+			name:    "invalid input",
+			data:    1,
+			want:    "",
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := handler.CreateRequest(tt.data)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("CreateRequest() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			require.Equal(t, tt.want, got)
+		})
+	}
 }

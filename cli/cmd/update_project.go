@@ -28,7 +28,7 @@ type updateProjectCmdParams struct {
 	GitProxyUser      *string
 	GitProxyPassword  *string
 	GitPemCertificate *string
-	GitProxyInsecure  *bool
+	InsecureSkipTLS   *bool
 }
 
 var updateProjectParams *updateProjectCmdParams
@@ -61,7 +61,7 @@ keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE
 
 or (only for resource-service)
 
-keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE_URL --git-token=GIT_TOKEN --git-proxy-url=PROXY_IP --git-proxy-scheme=SCHEME --git-proxy-user=PROXY_USER --git-proxy-password=PROXY_PASS --git-proxy-insecure`,
+keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE_URL --git-token=GIT_TOKEN --git-proxy-url=PROXY_IP --git-proxy-scheme=SCHEME --git-proxy-user=PROXY_USER --git-proxy-password=PROXY_PASS --insecure-skip-tls`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
 		_, _, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
@@ -122,7 +122,7 @@ keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE
 			project.GitProxyScheme = *updateProjectParams.GitProxyScheme
 			project.GitProxyUser = *updateProjectParams.GitProxyUser
 			project.GitProxyPassword = *updateProjectParams.GitProxyPassword
-			project.GitProxyInsecure = *updateProjectParams.GitProxyInsecure
+			project.InsecureSkipTLS = *updateProjectParams.InsecureSkipTLS
 
 			if strings.HasPrefix(*updateProjectParams.RemoteURL, "ssh://") {
 				content, err := ioutil.ReadFile(*updateProjectParams.GitPrivateKey)
@@ -183,7 +183,7 @@ func init() {
 	updateProjectParams.GitProxyScheme = upProjectCmd.Flags().StringP("git-proxy-scheme", "j", "", "The git proxy scheme")
 	updateProjectParams.GitProxyUser = upProjectCmd.Flags().StringP("git-proxy-user", "w", "", "The git proxy user")
 	updateProjectParams.GitProxyPassword = upProjectCmd.Flags().StringP("git-proxy-password", "e", "", "The git proxy password")
-	updateProjectParams.GitProxyInsecure = upProjectCmd.Flags().BoolP("git-proxy-insecure", "x", false, "The git proxy insecure TLS connection")
+	updateProjectParams.InsecureSkipTLS = upProjectCmd.Flags().BoolP("insecure-skip-tls", "x", false, "Disable TLS verification to allow connections to servers using self signed certificates")
 
 	updateProjectParams.GitPemCertificate = upProjectCmd.Flags().StringP("git-pem-certificate", "g", "", "The git PEM Certificate file")
 }
