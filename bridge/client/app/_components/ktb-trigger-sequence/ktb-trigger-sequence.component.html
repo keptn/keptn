@@ -1,9 +1,7 @@
 <div class="ktb-trigger-sequence pl-3 pr-3 pb-3">
   <div fxFlex="66">
     <div fxLayout="column" *ngIf="state === 'ENTRY'">
-      <div fxLayout="row" fxFlexAlign="space-between">
-        <h2 uitestid="keptn-trigger-entry-h2">Trigger a new sequence for project {{ projectName }}</h2>
-      </div>
+      <h2 uitestid="keptn-trigger-entry-h2">Trigger a new sequence for project {{ projectName }}</h2>
       <dt-form-field>
         <dt-label class="mb-1 mt-2">Sequence type</dt-label>
         <dt-radio-group
