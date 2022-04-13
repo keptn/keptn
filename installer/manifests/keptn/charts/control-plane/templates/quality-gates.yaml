@@ -87,7 +87,7 @@ spec:
           {{- include "control-plane.dist.common.env.vars" . | nindent 12 }}
         {{- include "control-plane.common.container-security-context" . | nindent 10 }}
       serviceAccountName: keptn-lighthouse-service
-      terminationGracePeriodSeconds: {{ .Values.gracePeriod | default 30 }}
+      terminationGracePeriodSeconds: {{ .Values.lighthouseService.gracePeriod | default 30 }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.lighthouseService.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
 ---
 apiVersion: v1

@@ -1,0 +1,2 @@
+jmeterService:
+  gracePeriod: 90

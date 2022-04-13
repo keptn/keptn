@@ -54,10 +54,6 @@ Create the name of the service account to use
 {{- end }}
 {{- end }}
 
-{{- define "control-plane.gracePeriod" -}}
-      terminationGracePeriodSeconds: 50
-{{- end }}
-
 {{- define "control-plane.dist.livenessProbe" -}}
 livenessProbe:
   httpGet:

@@ -79,7 +79,7 @@ spec:
         {{- include "control-plane.dist.common.env.vars" . | nindent 10 }}
         {{- include "control-plane.common.container-security-context" . | nindent 8 }}
       serviceAccountName: keptn-default
-      terminationGracePeriodSeconds: {{ .Values.gracePeriod | default 30 }}
+      terminationGracePeriodSeconds: {{ .Values.remediationService.gracePeriod | default 30 }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.remediationService.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
 ---
 apiVersion: v1

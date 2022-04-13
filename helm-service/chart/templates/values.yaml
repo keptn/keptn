@@ -1,0 +1,2 @@
+helmService:
+  gracePeriod: 60

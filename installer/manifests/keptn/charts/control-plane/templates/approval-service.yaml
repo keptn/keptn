@@ -28,7 +28,7 @@ spec:
         helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
       {{- include "control-plane.common.pod-security-context" . | nindent 6 }}
-      terminationGracePeriodSeconds: {{ .Values.gracePeriod | default 30 }}
+      terminationGracePeriodSeconds: {{ .Values.approvalService.gracePeriod | default 30 }}
       serviceAccountName: keptn-default
       containers:
         - name: approval-service
