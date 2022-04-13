@@ -3,6 +3,7 @@
 import { Project } from '../../../client/app/_models/project';
 import { interceptDashboard } from '../intercept';
 import EnvironmentPage from './EnvironmentPage';
+import NewProjectCreatePage from './NewProjectCreatePage';
 
 class DashboardPage {
   private PROJECT_TILE_LOCATOR = 'dt-tile[id="proj_pattern"]';
@@ -32,6 +33,11 @@ class DashboardPage {
         .should('contain.text', `${project.stages.length} Stages, ${project.stages[0].services.length} Services `);
     });
     return this;
+  }
+
+  public clickCreateNewProjectButton(): NewProjectCreatePage {
+    cy.get('.dt-button-primary > span.dt-button-label').contains('Create a new project').click();
+    return new NewProjectCreatePage();
   }
 }
 

@@ -13,7 +13,7 @@ describe('Sequences', () => {
     cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=25', {
       delay: 2000,
       fixture: 'sequences.sockshop',
-    });
+    }).as('Sequences');
 
     sequencePage.visit('sockshop').assertIsLoadingSequences(true);
   });
@@ -23,7 +23,7 @@ describe('Sequences', () => {
       body: {
         states: [],
       },
-    });
+    }).as('Sequences');
     sequencePage.visit('sockshop');
 
     cy.byTestId('keptn-noSequences').should('exist');

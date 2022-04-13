@@ -1,8 +1,9 @@
 /// <reference types="cypress" />
 
-import { ProjectBoardPage } from '../support/pageobjects/ProjectBoardPage';
 import { ServicesSettingsPage } from '../support/pageobjects/ServicesSettingsPage';
 import NewProjectCreatePage from '../support/pageobjects/NewProjectCreatePage';
+import DashboardPage from '../support/pageobjects/DashboardPage';
+import BasePage from '../support/pageobjects/BasePage';
 
 describe('Test notifications', () => {
   beforeEach(() => {
@@ -40,7 +41,7 @@ describe('Test notifications', () => {
   });
 
   it('should test notification fade out', () => {
-    const basePage = new ProjectBoardPage();
+    const basePage = new BasePage();
     cy.visit('/project/dynatrace/settings/services/create');
     showSuccess();
 
@@ -58,7 +59,7 @@ describe('Test notifications', () => {
   });
 
   it('should test notification close', () => {
-    const basePage = new ProjectBoardPage();
+    const basePage = new BasePage();
     cy.visit('/project/dynatrace/settings/services/create');
     showSuccess();
 
@@ -82,7 +83,7 @@ describe('Test notifications', () => {
   });
 
   function createProject(): void {
-    const basePage = new ProjectBoardPage();
+    const dashboardPage = new DashboardPage();
     const newProjectCreatePage = new NewProjectCreatePage();
     const GIT_USERNAME = 'carpe-github-username';
     const PROJECT_NAME = 'dynatrace';
@@ -101,7 +102,7 @@ describe('Test notifications', () => {
     }).as('createProjectUrl');
 
     cy.visit('/');
-    basePage
+    dashboardPage
       .clickCreateNewProjectButton()
       .typeProjectName(PROJECT_NAME)
       .typeGitUrl(GIT_REMOTE_URL)

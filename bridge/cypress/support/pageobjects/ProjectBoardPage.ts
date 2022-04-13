@@ -1,9 +1,7 @@
 /// <reference types="cypress" />
 
 import SettingsPage from './SettingsPage';
-import NewProjectCreatePage from './NewProjectCreatePage';
 import ServicesPage from './ServicesPage';
-import Chainable = Cypress.Chainable;
 
 enum View {
   SERVICE_VIEW = 'service-view',
@@ -57,49 +55,6 @@ export class ProjectBoardPage {
       .click();
   }
 
-  public selectProjectThroughHeader(projectName: string): void {
-    cy.byTestId('keptn-nav-projectSelect')
-      .click()
-      .get('.cdk-overlay-container dt-option')
-      .contains(projectName)
-      .click();
-  }
-
-  public clickCreateNewProjectButton(): NewProjectCreatePage {
-    cy.get('.dt-button-primary > span.dt-button-label').contains('Create a new project').click();
-    return new NewProjectCreatePage();
-  }
-
-  public clickMainHeaderKeptn(): void {
-    cy.byTestId('ktb-header-title').click();
-  }
-
-  public chooseProjectFromHeaderMenu(projectName: string): this {
-    cy.get('dt-select[aria-label="Choose project"]').click();
-    cy.get('dt-option[id^="dt-option"]').contains(projectName).click();
-    return this;
-  }
-
-  public notificationSuccessVisible(text?: string): Chainable<JQuery<HTMLElement>> {
-    return this.checkNotification('dt-alert.dt-alert-success', text);
-  }
-
-  public notificationErrorVisible(text?: string): Chainable<JQuery<HTMLElement>> {
-    let element = cy.get('.dt-alert-icon-container dt-icon');
-    if (text) {
-      element = element.contains(text);
-    }
-    return element.get('.dt-alert-icon').should('be.visible');
-  }
-
-  public notificationWarningVisible(text?: string): Chainable<JQuery<HTMLElement>> {
-    return this.checkNotification('dt-alert.dt-alert-warning', text);
-  }
-
-  public notificationInfoVisible(text?: string): Chainable<JQuery<HTMLElement>> {
-    return this.checkNotification('dt-alert.dt-alert-info', text);
-  }
-
   private assertEnvironmentViewSelected(status: boolean): this {
     return this.assertMenuSelected('ktb-environment-menu-button', status);
   }
@@ -142,13 +97,5 @@ export class ProjectBoardPage {
   private assertMenuSelected(selector: string, status: boolean): this {
     cy.byTestId(selector).should(status ? 'have.class' : 'not.have.class', 'active');
     return this;
-  }
-
-  private checkNotification(selector: string, text?: string): Chainable<JQuery<HTMLElement>> {
-    let element = cy.get(selector);
-    if (text) {
-      element = element.contains(text);
-    }
-    return element.should('be.visible');
   }
 }

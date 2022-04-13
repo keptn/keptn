@@ -4,6 +4,7 @@ import DashboardPage from '../support/pageobjects/DashboardPage';
 import ServicesPage from '../support/pageobjects/ServicesPage';
 import { SequencesPage } from '../support/pageobjects/SequencesPage';
 import { EventTypes } from '../../shared/interfaces/event-types';
+import BasePage from '../support/pageobjects/BasePage';
 
 describe('Test deep links', () => {
   const projectBoardPage = new ProjectBoardPage();
@@ -11,6 +12,7 @@ describe('Test deep links', () => {
   const dashboardPage = new DashboardPage();
   const servicesPage = new ServicesPage();
   const sequencePage = new SequencesPage();
+  const basePage = new BasePage();
   const mockedKeptnContext = '62cca6f3-dc54-4df6-a04c-6ffc894a4b5e';
   const mockedProject = 'sockshop';
   const mockedService = 'carts';
@@ -44,7 +46,7 @@ describe('Test deep links', () => {
   it('should navigate to dashboard through click on header icon', () => {
     environmentPage.visit(mockedProject);
     cy.location('pathname').should('eq', `/project/${mockedProject}`);
-    projectBoardPage.clickMainHeaderKeptn();
+    basePage.clickMainHeaderKeptn();
 
     cy.location('pathname').should('eq', '/dashboard');
   });

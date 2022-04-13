@@ -2,10 +2,12 @@
 
 import { ProjectBoardPage } from '../support/pageobjects/ProjectBoardPage';
 import DashboardPage from '../support/pageobjects/DashboardPage';
+import BasePage from '../support/pageobjects/BasePage';
 
 describe('Test Navigation Buttons In Evaluation Screen', () => {
   const projectBoardPage = new ProjectBoardPage();
   const dashboardPage = new DashboardPage();
+  const basePage = new BasePage();
 
   it('The test clicks on Navigation buttons and make sure the pages are open respectively ', () => {
     cy.fixture('metadata.json').as('initmetadata');
@@ -103,6 +105,6 @@ describe('Test Navigation Buttons In Evaluation Screen', () => {
       .clickEvaluationBoardButton()
       .clickGoBack()
       .verifyCurrentOpenServiceNameEvaluationPanel('items');
-    projectBoardPage.clickMainHeaderKeptn();
+    basePage.clickMainHeaderKeptn();
   });
 });
