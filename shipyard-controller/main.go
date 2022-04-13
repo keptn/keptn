@@ -294,7 +294,11 @@ func main() {
 		go LeaderElection(kubeAPI.CoordinationV1(), ctx, shipyardController.StartDispatchers, shipyardController.StopDispatchers)
 	}
 
-	GracefulShutdown(ctx, wg, srv)
+	GracefulShutdown(wg, srv, func() {
+		// invoke the cancel() function to shut down the periodically executed
+		// tasks such as nats subscription, sequence watcher, sequence dispatcher, event dispatcher
+		cancel()
+	})
 
 }
 
@@ -350,13 +354,15 @@ func LeaderElection(client v1.CoordinationV1Interface, ctx context.Context, star
 	})
 }
 
-func GracefulShutdown(ctx context.Context, wg *sync.WaitGroup, srv *http.Server) {
+func GracefulShutdown(wg *sync.WaitGroup, srv *http.Server, onSigTerm func()) {
 	// Wait for interrupt signal to gracefully shut down the server
 	quit := make(chan os.Signal, 1)
 
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	log.Println("Shutting down server...")
+
+	go onSigTerm()
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
