@@ -1,7 +1,6 @@
 {
   "bridgeVersion": "0.13.2",
   "featureFlags": {},
-  "keptnInstallationType": "QUALITY_GATES,CONTINUOUS_OPERATIONS,CONTINUOUS_DELIVERY",
   "apiUrl": "",
   "apiToken": "",
   "cliDownloadLink": "https://github.com/keptn/keptn/releases/tag/0.13.2",

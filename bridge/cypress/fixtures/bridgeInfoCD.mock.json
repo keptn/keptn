@@ -1,6 +1,5 @@
 {
   "bridgeVersion": "0.10.0-next.1",
-  "keptnInstallationType": "CONTINUOUS_DELIVERY",
   "apiUrl": "",
   "apiToken": "",
   "cliDownloadLink": "https://github.com/keptn/keptn/releases/tag/0.10.0-next.1",
