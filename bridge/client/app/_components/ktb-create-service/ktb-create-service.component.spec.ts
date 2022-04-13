@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { KtbCreateServiceComponent } from './ktb-create-service.component';
 import { DataService } from '../../_services/data.service';
 import { ActivatedRoute, convertToParamMap, ParamMap, Router } from '@angular/router';
@@ -98,10 +98,15 @@ describe('KtbCreateServiceComponent', () => {
     expect(notificationSpy).toHaveBeenCalledWith(NotificationType.SUCCESS, 'Service successfully created!');
   });
 
-  it('should not create service', () => {
+  it('should not create service', fakeAsync(() => {
     // given
     const notificationService = TestBed.inject(NotificationsService);
     const notificationSpy = jest.spyOn(notificationService, 'addNotification');
+    const inProgressSpy = jest.fn();
+    Object.defineProperty(component, 'isCreating', {
+      get: jest.fn(() => true),
+      set: inProgressSpy,
+    });
     const dataService = TestBed.inject(DataService);
     dataService.createService = jest
       .fn()
@@ -111,8 +116,11 @@ describe('KtbCreateServiceComponent', () => {
     component.createService(projectName);
 
     // then
-    expect(notificationSpy).toHaveBeenCalledWith(NotificationType.ERROR, 'service already exists');
-  });
+    expect(inProgressSpy).toHaveBeenCalledWith(true);
+    tick();
+    expect(inProgressSpy).toHaveBeenCalledWith(false);
+    expect(notificationSpy).toBeCalledTimes(0);
+  }));
 
   it('should go back', () => {
     // given
