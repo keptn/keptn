@@ -77,6 +77,7 @@ func main() {
 	apiV1.GET("/statistics", api.GetStatistics)
 
 	apiV1.POST("/event", api.HandleEvent)
+
 	router.Static("/swagger-ui", "./swagger-ui")
 
 	apiHealth := router.Group("")
