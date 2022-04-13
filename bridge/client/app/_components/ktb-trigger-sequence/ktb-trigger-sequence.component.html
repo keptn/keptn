@@ -187,7 +187,12 @@
             [errorStateMatcher]="showErrorStateMatcher"
           />
 
-          <dt-hint>Defaults to now if not filled in</dt-hint>
+          <dt-hint *ngIf="evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.TIMEFRAME; else endDateHint">
+            Defaults to now if not filled in
+          </dt-hint>
+          <ng-template #endDateHint>
+            <dt-hint>Has to be before end date</dt-hint>
+          </ng-template>
           <button
             dt-icon-button
             dtSuffix
@@ -234,6 +239,7 @@
                 dtInput
                 [(ngModel)]="evaluationFormData.endDatetime"
                 [errorStateMatcher]="showErrorStateMatcher"
+                [disabled]="evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.TIMEFRAME"
               />
               <button
                 dt-icon-button
