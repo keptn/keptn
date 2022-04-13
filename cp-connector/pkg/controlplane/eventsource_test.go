@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/keptn/go-utils/pkg/api/models"
-	nats2 "github.com/keptn/keptn/lib-cp-connector/pkg/nats"
+	nats2 "github.com/keptn/keptn/cp-connector/pkg/nats"
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/require"
 	"testing"

@@ -1,6 +1,6 @@
-# lib-cp-connector
+# cp-connector
 
-`lib-cp-connector` is a **GO** library that can be used to implement a Keptn Service.
+`cp-connector` is a **GO** library that can be used to implement a Keptn Service.
 
 ## Example
 
@@ -12,8 +12,8 @@ import (
 	"fmt"
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
-	"github.com/keptn/keptn/lib-cp-connector/pkg/controlplane"
-	"github.com/keptn/keptn/lib-cp-connector/pkg/nats"
+	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
+	"github.com/keptn/keptn/cp-connector/pkg/nats"
 	"log"
 )
 

@@ -6,7 +6,7 @@ import (
 	"github.com/benbjohnson/clock"
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
-	"github.com/keptn/keptn/lib-cp-connector/pkg/logger"
+	"github.com/keptn/keptn/cp-connector/pkg/logger"
 	"time"
 )
 

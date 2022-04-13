@@ -1,4 +1,4 @@
-module github.com/keptn/keptn/lib-cp-connector
+module github.com/keptn/keptn/cp-connector
 
 go 1.17
 

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/keptn/lib-cp-connector/pkg/logger"
+	"github.com/keptn/keptn/cp-connector/pkg/logger"
 	"github.com/nats-io/nats.go"
 	"os"
 )
