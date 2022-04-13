@@ -226,7 +226,7 @@ func Test_isServiceNotFoundErr(t *testing.T) {
 	configSvcErrMsg := configServiceSvcDoesNotExistErrorMsg
 	resourceSvcErrMsg := resourceServiceSvcDoesNotExistErrorMsg
 	type args struct {
-		err keptnapimodels.Error
+		err apimodels.Error
 	}
 	tests := []struct {
 		name string
@@ -236,7 +236,7 @@ func Test_isServiceNotFoundErr(t *testing.T) {
 		{
 			name: "service not found error from configuration-service",
 			args: args{
-				err: keptnapimodels.Error{
+				err: apimodels.Error{
 					Code:    http.StatusBadRequest,
 					Message: &configSvcErrMsg,
 				},
@@ -246,7 +246,7 @@ func Test_isServiceNotFoundErr(t *testing.T) {
 		{
 			name: "service not found error from resource-service",
 			args: args{
-				err: keptnapimodels.Error{
+				err: apimodels.Error{
 					Code:    http.StatusNotFound,
 					Message: &resourceSvcErrMsg,
 				},
@@ -256,7 +256,7 @@ func Test_isServiceNotFoundErr(t *testing.T) {
 		{
 			name: "other error",
 			args: args{
-				err: keptnapimodels.Error{
+				err: apimodels.Error{
 					Code:    http.StatusNotFound,
 					Message: nil,
 				},

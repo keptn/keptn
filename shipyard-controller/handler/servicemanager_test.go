@@ -254,22 +254,22 @@ func TestDeleteService_DeleteServiceInConfigurationServiceReturnsServiceNotFound
 	configurationStore := &common_mock.ConfigurationStoreMock{}
 	uniformRepo := &db_mock.UniformRepoMock{}
 	instance := NewServiceManager(projectMVRepo, configurationStore, uniformRepo)
-	projectMVRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
-		service := &models.ExpandedService{
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
+		service := &apimodels.ExpandedService{
 			ServiceName: "service-name",
 		}
-		stage1 := &models.ExpandedStage{
-			Services:  []*models.ExpandedService{service},
+		stage1 := &apimodels.ExpandedStage{
+			Services:  []*apimodels.ExpandedService{service},
 			StageName: "dev",
 		}
-		stage2 := &models.ExpandedStage{
-			Services:  []*models.ExpandedService{service},
+		stage2 := &apimodels.ExpandedStage{
+			Services:  []*apimodels.ExpandedService{service},
 			StageName: "prod",
 		}
 
-		project := &models.ExpandedProject{
+		project := &apimodels.ExpandedProject{
 			ProjectName: "my-project",
-			Stages:      []*models.ExpandedStage{stage1, stage2},
+			Stages:      []*apimodels.ExpandedStage{stage1, stage2},
 		}
 		return project, nil
 	}
