@@ -31,7 +31,7 @@ type createProjectCmdParams struct {
 	GitProxyUser      *string
 	GitProxyPassword  *string
 	GitPemCertificate *string
-	GitProxyInsecure  *bool
+	InsecureSkipTLS   *bool
 }
 
 var createProjectParams *createProjectCmdParams
@@ -52,7 +52,7 @@ keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE
 
 or (only for resource-service)
 
-keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE_URL --git-token=GIT_TOKEN --git-proxy-url=PROXY_IP --git-proxy-scheme=SCHEME --git-proxy-user=PROXY_USER --git-proxy-password=PROXY_PASS --git-proxy-insecure
+keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE_URL --git-token=GIT_TOKEN --git-proxy-url=PROXY_IP --git-proxy-scheme=SCHEME --git-proxy-user=PROXY_USER --git-proxy-password=PROXY_PASS --insecure-skip-tls
 
 Please be aware that authentication with public/private key and via proxy is supported only when using resource-service.
 `
@@ -82,7 +82,7 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-r
 
 or (only for resource-service)
 
-keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-remote-url=GIT_REMOTE_URL --git-token=GIT_TOKEN --git-proxy-url=PROXY_IP --git-proxy-scheme=SCHEME --git-proxy-user=PROXY_USER --git-proxy-password=PROXY_PASS --git-proxy-insecure
+keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-remote-url=GIT_REMOTE_URL --git-token=GIT_TOKEN --git-proxy-url=PROXY_IP --git-proxy-scheme=SCHEME --git-proxy-user=PROXY_USER --git-proxy-password=PROXY_PASS --insecure-skip-tls
 `,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
@@ -144,7 +144,7 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-r
 			project.GitProxyScheme = *createProjectParams.GitProxyScheme
 			project.GitProxyUser = *createProjectParams.GitProxyUser
 			project.GitProxyPassword = *createProjectParams.GitProxyPassword
-			project.GitProxyInsecure = *createProjectParams.GitProxyInsecure
+			project.InsecureSkipTLS = *createProjectParams.InsecureSkipTLS
 
 			if strings.HasPrefix(*createProjectParams.RemoteURL, "ssh://") {
 				content, err := ioutil.ReadFile(*createProjectParams.GitPrivateKey)
@@ -242,7 +242,7 @@ func init() {
 	createProjectParams.GitProxyScheme = crProjectCmd.Flags().StringP("git-proxy-scheme", "j", "", "The git proxy scheme")
 	createProjectParams.GitProxyUser = crProjectCmd.Flags().StringP("git-proxy-user", "w", "", "The git proxy user")
 	createProjectParams.GitProxyPassword = crProjectCmd.Flags().StringP("git-proxy-password", "e", "", "The git proxy password")
-	createProjectParams.GitProxyInsecure = crProjectCmd.Flags().BoolP("git-proxy-insecure", "x", false, "The git proxy insecure TLS connection")
+	createProjectParams.InsecureSkipTLS = crProjectCmd.Flags().BoolP("insecure-skip-tls", "x", false, "Disable TLS verification to allow connections to servers using self signed certificates")
 
 	createProjectParams.GitPemCertificate = crProjectCmd.Flags().StringP("git-pem-certificate", "g", "", "The git PEM Certificate file")
 

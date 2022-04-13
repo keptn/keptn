@@ -22,7 +22,7 @@ type GitCredentials struct {
 	// omitempty property is missing due to fallback of this
 	// parameter to "undefined" when marshalling/unmarshalling data
 	// when "false" value is present
-	GitProxyInsecure bool `json:"gitProxyInsecure"`
+	InsecureSkipTLS bool `json:"insecureSkipTLS"`
 }
 
 type GitContext struct {

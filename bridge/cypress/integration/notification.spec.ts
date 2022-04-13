@@ -103,12 +103,11 @@ describe('Test notifications', () => {
     cy.visit('/');
     basePage
       .clickCreateNewProjectButton()
-      .inputProjectName(PROJECT_NAME)
-      .inputGitUrl(GIT_REMOTE_URL)
-      .inputGitUsername(GIT_USERNAME)
-      .inputGitToken(GIT_TOKEN);
-
-    cy.get('input[id="shipyard-file-input"]').attachFile('shipyard.yaml');
+      .typeProjectName(PROJECT_NAME)
+      .typeGitUrl(GIT_REMOTE_URL)
+      .typeGitUsername(GIT_USERNAME)
+      .typeGitToken(GIT_TOKEN)
+      .setShipyardFile();
 
     cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'get.projects' });
     newProjectCreatePage.clickCreateProject();

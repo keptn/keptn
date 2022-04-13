@@ -46,13 +46,11 @@ describe('Create new project test', () => {
     cy.wait('@metadataCmpl');
     basePage
       .clickCreateNewProjectButton()
-      .inputProjectName(PROJECT_NAME)
-      .inputGitUrl(GIT_REMOTE_URL)
-      .inputGitUsername(GIT_USERNAME)
-      .inputGitToken(GIT_TOKEN);
-
-    cy.get('input[id="shipyard-file-input"]').attachFile('shipyard.yaml');
-
-    newProjectCreatePage.clickCreateProject();
+      .typeProjectName(PROJECT_NAME)
+      .typeGitUrl(GIT_REMOTE_URL)
+      .typeGitUsername(GIT_USERNAME)
+      .typeGitToken(GIT_TOKEN)
+      .setShipyardFile()
+      .clickCreateProject();
   });
 });

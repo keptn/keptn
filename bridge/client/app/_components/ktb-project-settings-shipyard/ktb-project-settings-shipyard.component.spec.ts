@@ -127,7 +127,7 @@ describe('KtbProjectSettingsEditProjectComponent', () => {
   it('should call validateAndUpdateFile when file input was changed', () => {
     // given
     const spy = jest.spyOn(component, 'validateAndUpdateFile');
-    const input = fixture.nativeElement.querySelector('#shipyard-file-input');
+    const input = fixture.nativeElement.querySelector('[uitestid="ktb-shipyard-file-input"]');
 
     // when
     input.dispatchEvent(new Event('change'));

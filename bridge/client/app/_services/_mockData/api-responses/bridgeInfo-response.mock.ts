@@ -1,6 +1,12 @@
+import { IClientFeatureFlags } from '../../../../../shared/interfaces/feature-flags';
+
+const featureFlags: IClientFeatureFlags = {
+  RESOURCE_SERVICE_ENABLED: false,
+};
+
 const bridgeInfo = {
   bridgeVersion: '0.10.0',
-  featureFlags: {},
+  featureFlags,
   keptnInstallationType: 'QUALITY_GATES,CONTINUOUS_OPERATIONS,CONTINUOUS_DELIVERY',
   apiUrl: 'http://example.com/api',
   apiToken: 'random_api_token',

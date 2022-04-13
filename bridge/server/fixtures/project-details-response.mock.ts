@@ -1015,6 +1015,7 @@ const projectDetailsResponse = {
     },
   ],
   creationDate: '1632999780800366280',
+  gitProxyInsecure: false,
   gitRemoteURI: 'https://github.com/Kirdock/keptn-dynatrace-v1',
   gitUser: 'Kirdock',
   projectName: 'sockshop',

@@ -1,4 +1,4 @@
-import { AbstractControl, ValidatorFn } from '@angular/forms';
+import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 
 export class FormUtils {
   public static nameExistsValidator(names: string[]): ValidatorFn {
@@ -21,9 +21,37 @@ export class FormUtils {
     return null;
   }
 
+  public static isSshValidator(control: AbstractControl): ValidationErrors | null {
+    if (control.value && !control.value.startsWith('ssh://')) {
+      return { ssh: true };
+    }
+    return null;
+  }
+
   public static payloadSpecialCharValidator(control: AbstractControl): { specialChar: { value: boolean } } | null {
     if (control.value && control.value.match(/(\$|\||;|>|&|`|\/var\/run)/gi)) {
       return { specialChar: { value: true } };
+    }
+    return null;
+  }
+
+  public static isCertificateValidator(control: AbstractControl): ValidationErrors | null {
+    if (
+      control.value &&
+      (!control.value.startsWith('-----BEGIN CERTIFICATE-----') || !control.value.endsWith('-----END CERTIFICATE-----'))
+    ) {
+      return { certificate: true };
+    }
+    return null;
+  }
+
+  public static isSshKeyValidator(control: AbstractControl): ValidationErrors | null {
+    if (
+      control.value &&
+      (!control.value.startsWith('-----BEGIN OPENSSH PRIVATE KEY-----') ||
+        !control.value.endsWith('-----END OPENSSH PRIVATE KEY-----'))
+    ) {
+      return { sshKey: true };
     }
     return null;
   }

@@ -101,6 +101,8 @@ spec:
               value: openid
             - name: CONFIG_DIR
               value: "/config"
+            - name: RESOURCE_SERVICE_ENABLED
+              value: 'false'
           envFrom:
             - secretRef:
                 name: bridge-credentials

@@ -53,9 +53,16 @@ function getEvaluationUrls(project: string, service: string): string[] {
   ];
 }
 
+export function interceptMainResourceEnabled(): void {
+  cy.intercept('/api/v1/metadata', { fixture: 'metadata.mock' }).as('metadata');
+  cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfoEnableResourceService.mock' });
+  cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
+}
+
 export function interceptMain(): void {
   cy.intercept('/api/v1/metadata', { fixture: 'metadata.mock' }).as('metadata');
   cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfo.mock' });
+  cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
 }
 
 export function interceptDashboard(): void {
@@ -70,7 +77,6 @@ export function interceptProjectBoard(): void {
   interceptMain();
   cy.intercept('/api/project/sockshop?approval=true&remediation=true', { fixture: 'project.mock' });
   cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: false });
-  cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
 }
 
 export function interceptServicesPage(): void {

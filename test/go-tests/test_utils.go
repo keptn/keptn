@@ -198,7 +198,7 @@ func CreateProject(projectName string, shipyardFilePath string) (string, error) 
 
 	err := retry.Retry(func() error {
 		if err := RecreateProjectUpstream(newProjectName); err != nil {
-			return nil
+			return err
 		}
 
 		user := GetGiteaUser()
@@ -206,9 +206,9 @@ func CreateProject(projectName string, shipyardFilePath string) (string, error) 
 		if err != nil {
 			return err
 		}
-
+		var out string
 		// apply the k8s job for creating the git upstream
-		out, err := ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=%s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s", newProjectName, shipyardFilePath, user, newProjectName, user, token))
+		out, err = ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=%s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s", newProjectName, shipyardFilePath, user, newProjectName, user, token))
 
 		if !strings.Contains(out, "created successfully") {
 			return fmt.Errorf("unable to create project: %s", out)
@@ -283,7 +283,7 @@ func CreateProjectWithProxy(projectName string, shipyardFilePath string) (string
 		}
 
 		// apply the k8s job for creating the git upstream
-		out, err := ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=%s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s --git-proxy-url=squid:3128 --git-proxy-scheme=http --git-proxy-insecure", newProjectName, shipyardFilePath, user, newProjectName, user, token))
+		out, err := ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=%s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s --git-proxy-url=squid:3128 --git-proxy-scheme=http --insecure-skip-tls", newProjectName, shipyardFilePath, user, newProjectName, user, token))
 
 		if !strings.Contains(out, "created successfully") {
 			return fmt.Errorf("unable to create project: %s", out)
