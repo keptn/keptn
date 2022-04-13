@@ -6,9 +6,6 @@ import NewProjectCreatePage from '../support/pageobjects/NewProjectCreatePage';
 
 describe('Test notifications', () => {
   beforeEach(() => {
-    cy.fixture('get.projects.json').as('initProjectJSON');
-    cy.fixture('metadata.json').as('initmetadata');
-
     cy.intercept('GET', 'api/v1/metadata', { fixture: 'metadata.json' }).as('metadataCmpl');
     cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfo.mock' });
 
@@ -41,7 +38,7 @@ describe('Test notifications', () => {
 
   it('should test notification fade out', () => {
     const basePage = new BasePage();
-    cy.visit('/project/dynatrace/settings/services/create');
+    cy.visit('/project/dynatrace/settings/services/create').wait('@getApproval');
     showSuccess();
 
     basePage
@@ -59,7 +56,7 @@ describe('Test notifications', () => {
 
   it('should test notification close', () => {
     const basePage = new BasePage();
-    cy.visit('/project/dynatrace/settings/services/create');
+    cy.visit('/project/dynatrace/settings/services/create').wait('@getApproval');
     showSuccess();
 
     const notification = basePage.notificationSuccessVisible();
@@ -68,7 +65,8 @@ describe('Test notifications', () => {
   });
 
   it('should not show the same notifications', () => {
-    cy.visit('/project/dynatrace/settings/services').byTestId('keptn-create-service-button').click();
+    cy.visit('/project/dynatrace/settings/services').wait('@getApproval');
+    cy.byTestId('keptn-create-service-button').click();
     showSuccess();
     cy.byTestId('keptn-create-service-button').click();
     showSuccess();
@@ -100,7 +98,7 @@ describe('Test notifications', () => {
       body: {},
     }).as('createProjectUrl');
 
-    cy.visit('/');
+    cy.visit('/').wait('@metadataCmpl');
     basePage
       .clickCreateNewProjectButton()
       .typeProjectName(PROJECT_NAME)
