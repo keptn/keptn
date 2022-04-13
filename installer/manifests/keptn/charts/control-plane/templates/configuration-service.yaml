@@ -60,7 +60,7 @@ spec:
         seccompProfile:
           type: RuntimeDefault
         {{- end }}
-      terminationGracePeriodSeconds: {{ .Values.gracePeriod | default 30 }}
+      terminationGracePeriodSeconds: {{ .Values.resourceService.gracePeriod | default 30 }}
       containers:
         - name: resource-service
           image: {{ .Values.resourceService.image.repository }}:{{ .Values.resourceService.image.tag | default .Chart.AppVersion }}
@@ -184,7 +184,7 @@ spec:
             - -c
             - chown -R {{ .Values.configurationService.fsGroup | default 1001 }} /data/config
 {{- end }}
-      terminationGracePeriodSeconds: {{ .Values.gracePeriod | default 30 }}
+      terminationGracePeriodSeconds: {{ .Values.configurationService.gracePeriod | default 30 }}
       containers:
         - name: configuration-service
           image: {{ .Values.configurationService.image.repository }}:{{ .Values.configurationService.image.tag | default .Chart.AppVersion }}

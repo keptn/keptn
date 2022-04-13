@@ -29,7 +29,7 @@ spec:
         helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
       {{- include "control-plane.common.pod-security-context" . | nindent 6 }}
-      terminationGracePeriodSeconds: {{ .Values.gracePeriod | default 30 }}
+      terminationGracePeriodSeconds: {{ .Values.apiService.gracePeriod | default 30 }}
       containers:
         - name: api-service
           image: {{ .Values.apiService.image.repository }}:{{ .Values.apiService.image.tag | default .Chart.AppVersion }}
