@@ -34,7 +34,6 @@ const apiRouter = (params: {
   const bridgeVersion = process.env.VERSION;
   const projectsPageSize = EnvironmentUtils.getNumber(process.env.PROJECTS_PAGE_SIZE);
   const servicesPageSize = EnvironmentUtils.getNumber(process.env.SERVICES_PAGE_SIZE);
-  const keptnInstallationType = process.env.KEPTN_INSTALLATION_TYPE;
   const dataService = new DataService(apiUrl, apiToken);
 
   // bridgeInfo endpoint: Provide certain metadata for Bridge
@@ -43,7 +42,6 @@ const apiRouter = (params: {
     const bridgeInfo: KeptnInfoResult = {
       bridgeVersion,
       featureFlags,
-      keptnInstallationType,
       apiUrl,
       ...(showApiToken && { apiToken }),
       cliDownloadLink,

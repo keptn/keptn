@@ -252,7 +252,8 @@ export class DataService {
 
   public loadKeptnInfo(): void {
     // #4165 Get bridge info first to get info if versions.json should be loaded or not
-    // Versions should not be loaded if enableVersionCheckFeature is set to false (when ENABLE_VERSION_CHECK is set to false in env)
+    // Versions should not be loaded if enableVersionCheckFeature is set to false (when ENABLE_VERSION_CHECK is set to
+    // false in env)
     this.apiService.getKeptnInfo().subscribe((bridgeInfo: KeptnInfoResult) => {
       forkJoin({
         availableVersions: bridgeInfo.enableVersionCheckFeature
@@ -278,7 +279,7 @@ export class DataService {
 
             keptnInfo.authCommand = `keptn auth --endpoint=${keptnInfo.bridgeInfo.apiUrl} --api-token=${keptnInfo.bridgeInfo.apiToken}`;
 
-            this._isQualityGatesOnly.next(!keptnInfo.bridgeInfo.keptnInstallationType?.includes('CONTINUOUS_DELIVERY'));
+            this._isQualityGatesOnly.next(!keptnInfo.metadata.continuousdeliveryenabled);
           }
           this._keptnInfo.next(keptnInfo);
         },
