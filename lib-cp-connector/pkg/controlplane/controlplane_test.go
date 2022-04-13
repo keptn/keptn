@@ -127,7 +127,7 @@ func TestControlPlaneIntegrationOnEventThrowsIgnoreableError(t *testing.T) {
 		RegistrationDataFn: func() RegistrationData { return RegistrationData{} },
 		OnEventFn: func(ctx context.Context, ce models.KeptnContextExtendedCE) error {
 			integrationReceivedEvent = true
-			return fmt.Errorf("could not handle event: %w", ErrEventHandleIgnore)
+			return fmt.Errorf("could not handle event: %w", fmt.Errorf("error occured"))
 		},
 	}
 	var controlPlaneErr error

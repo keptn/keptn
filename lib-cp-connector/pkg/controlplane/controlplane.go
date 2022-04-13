@@ -8,7 +8,6 @@ import (
 )
 
 var ErrEventHandleFatal = errors.New("fatal event handling error")
-var ErrEventHandleIgnore = errors.New("event handling error")
 
 type RegistrationData models.Integration
 
@@ -77,9 +76,7 @@ func (cp *ControlPlane) handle(ctx context.Context, eventUpdate EventUpdate, int
 						cp.logger.Errorf("Fatal error during handling of event: %v", err)
 						return err
 					}
-					if errors.Is(err, ErrEventHandleIgnore) {
-						cp.logger.Warnf("Error during handling of event: %v", err)
-					}
+					cp.logger.Warnf("Error during handling of event: %v", err)
 				}
 			}
 		}
