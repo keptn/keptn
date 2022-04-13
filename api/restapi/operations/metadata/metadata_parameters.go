@@ -13,8 +13,7 @@ import (
 )
 
 // NewMetadataParams creates a new MetadataParams object
-//
-// There are no default values defined in the spec.
+// no default values defined in spec.
 func NewMetadataParams() MetadataParams {
 
 	return MetadataParams{}

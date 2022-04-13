@@ -73,6 +73,8 @@ spec:
                   fieldPath: metadata.namespace
             - name: AUTOMATIC_PROVISIONING_URL 
               value: {{ (.Values.features).automaticProvisioningURL | default "" }}
+            - name: CONTINUOUS_DELIVERY_ENABLED
+              value: {{ .Values.continuous-delivery.enabled | default "false" }}
             - name: MAX_AUTH_REQUESTS_PER_SECOND
               value: '{{ .Values.apiService.config.maxAuthRequestsPerSecond | default "1.0"}}'
             - name: MAX_AUTH_REQUESTS_BURST

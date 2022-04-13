@@ -10,19 +10,20 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/go-openapi/errors"
-	"github.com/go-openapi/loads"
-	"github.com/go-openapi/runtime"
-	"github.com/go-openapi/runtime/middleware"
-	"github.com/go-openapi/runtime/security"
-	"github.com/go-openapi/spec"
-	"github.com/go-openapi/strfmt"
+	errors "github.com/go-openapi/errors"
+	loads "github.com/go-openapi/loads"
+	runtime "github.com/go-openapi/runtime"
+	middleware "github.com/go-openapi/runtime/middleware"
+	security "github.com/go-openapi/runtime/security"
+	spec "github.com/go-openapi/spec"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
-	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/auth"
 	"github.com/keptn/keptn/api/restapi/operations/event"
 	"github.com/keptn/keptn/api/restapi/operations/metadata"
+
+	models "github.com/keptn/keptn/api/models"
 )
 
 // NewKeptnAPI creates a new Keptn instance
@@ -37,30 +38,24 @@ func NewKeptnAPI(spec *loads.Document) *KeptnAPI {
 		PreServerShutdown:   func() {},
 		ServerShutdown:      func() {},
 		spec:                spec,
-		useSwaggerUI:        false,
 		ServeError:          errors.ServeError,
 		BasicAuthenticator:  security.BasicAuth,
 		APIKeyAuthenticator: security.APIKeyAuth,
 		BearerAuthenticator: security.BearerAuth,
-
-		JSONConsumer: runtime.JSONConsumer(),
-
-		JSONProducer: runtime.JSONProducer(),
-
+		JSONConsumer:        runtime.JSONConsumer(),
+		JSONProducer:        runtime.JSONProducer(),
 		EventPostEventHandler: event.PostEventHandlerFunc(func(params event.PostEventParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation event.PostEvent has not yet been implemented")
+			return middleware.NotImplemented("operation EventPostEvent has not yet been implemented")
+		}), AuthAuthHandler: auth.AuthHandlerFunc(func(params auth.AuthParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation AuthAuth has not yet been implemented")
+		}), MetadataMetadataHandler: metadata.MetadataHandlerFunc(func(params metadata.MetadataParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation MetadataMetadata has not yet been implemented")
 		}),
-		AuthAuthHandler: auth.AuthHandlerFunc(func(params auth.AuthParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation auth.Auth has not yet been implemented")
-		}),
-		MetadataMetadataHandler: metadata.MetadataHandlerFunc(func(params metadata.MetadataParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation metadata.Metadata has not yet been implemented")
-		}),
-
 		// Applies when the "x-token" header is set
 		KeyAuth: func(token string) (*models.Principal, error) {
 			return nil, errors.NotImplemented("api key auth (key) x-token from header param [x-token] has not yet been implemented")
 		},
+
 		// default authorizer is authorized meaning no requests are blocked
 		APIAuthorizer: security.Authorized(),
 	}
@@ -77,25 +72,20 @@ type KeptnAPI struct {
 	defaultConsumes string
 	defaultProduces string
 	Middleware      func(middleware.Builder) http.Handler
-	useSwaggerUI    bool
 
 	// BasicAuthenticator generates a runtime.Authenticator from the supplied basic auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BasicAuthenticator func(security.UserPassAuthentication) runtime.Authenticator
-
 	// APIKeyAuthenticator generates a runtime.Authenticator from the supplied token auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	APIKeyAuthenticator func(string, string, security.TokenAuthentication) runtime.Authenticator
-
 	// BearerAuthenticator generates a runtime.Authenticator from the supplied bearer token auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
-
 	// JSONConsumer registers a consumer for the following mime types:
 	//   - application/cloudevents+json
 	//   - application/json
 	JSONConsumer runtime.Consumer
-
 	// JSONProducer registers a producer for the following mime types:
 	//   - application/json
 	JSONProducer runtime.Producer
@@ -131,16 +121,6 @@ type KeptnAPI struct {
 
 	// User defined logger function.
 	Logger func(string, ...interface{})
-}
-
-// UseRedoc for documentation at /docs
-func (o *KeptnAPI) UseRedoc() {
-	o.useSwaggerUI = false
-}
-
-// UseSwaggerUI for documentation at /docs
-func (o *KeptnAPI) UseSwaggerUI() {
-	o.useSwaggerUI = true
 }
 
 // SetDefaultProduces sets the default produces media type
@@ -197,9 +177,11 @@ func (o *KeptnAPI) Validate() error {
 	if o.EventPostEventHandler == nil {
 		unregistered = append(unregistered, "event.PostEventHandler")
 	}
+
 	if o.AuthAuthHandler == nil {
 		unregistered = append(unregistered, "auth.AuthHandler")
 	}
+
 	if o.MetadataMetadataHandler == nil {
 		unregistered = append(unregistered, "metadata.MetadataHandler")
 	}
@@ -218,10 +200,13 @@ func (o *KeptnAPI) ServeErrorFor(operationID string) func(http.ResponseWriter, *
 
 // AuthenticatorsFor gets the authenticators for the specified security schemes
 func (o *KeptnAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
+
 	result := make(map[string]runtime.Authenticator)
 	for name := range schemes {
 		switch name {
+
 		case "key":
+
 			scheme := schemes[name]
 			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, func(token string) (interface{}, error) {
 				return o.KeyAuth(token)
@@ -230,11 +215,14 @@ func (o *KeptnAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map
 		}
 	}
 	return result
+
 }
 
 // Authorizer returns the registered authorizer
 func (o *KeptnAPI) Authorizer() runtime.Authorizer {
+
 	return o.APIAuthorizer
+
 }
 
 // ConsumersFor gets the consumers for the specified media types.
@@ -300,6 +288,7 @@ func (o *KeptnAPI) Context() *middleware.Context {
 
 func (o *KeptnAPI) initHandlerCache() {
 	o.Context() // don't care about the result, just that the initialization happened
+
 	if o.handlers == nil {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
@@ -308,14 +297,17 @@ func (o *KeptnAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/event"] = event.NewPostEvent(o.context, o.EventPostEventHandler)
+
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/auth"] = auth.NewAuth(o.context, o.AuthAuthHandler)
+
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/metadata"] = metadata.NewMetadata(o.context, o.MetadataMetadataHandler)
+
 }
 
 // Serve creates a http handler to serve the API over HTTP
@@ -325,9 +317,6 @@ func (o *KeptnAPI) Serve(builder middleware.Builder) http.Handler {
 
 	if o.Middleware != nil {
 		return o.Middleware(builder)
-	}
-	if o.useSwaggerUI {
-		return o.context.APIHandlerSwaggerUI(builder)
 	}
 	return o.context.APIHandler(builder)
 }
@@ -347,16 +336,4 @@ func (o *KeptnAPI) RegisterConsumer(mediaType string, consumer runtime.Consumer)
 // RegisterProducer allows you to add (or override) a producer for a media type.
 func (o *KeptnAPI) RegisterProducer(mediaType string, producer runtime.Producer) {
 	o.customProducers[mediaType] = producer
-}
-
-// AddMiddlewareFor adds a http middleware to existing handler
-func (o *KeptnAPI) AddMiddlewareFor(method, path string, builder middleware.Builder) {
-	um := strings.ToUpper(method)
-	if path == "/" {
-		path = ""
-	}
-	o.Init()
-	if h, ok := o.handlers[um][path]; ok {
-		o.handlers[method][path] = builder(h)
-	}
 }

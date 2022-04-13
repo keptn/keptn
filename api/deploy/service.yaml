@@ -57,6 +57,8 @@ spec:
               value: debug
             - name: AUTOMATIC_PROVISIONING_URL 
               value: ""
+            - name: CONTINUOUS_DELIVERY_ENABLED
+              value: "false"
           livenessProbe:
             httpGet:
               path: /health

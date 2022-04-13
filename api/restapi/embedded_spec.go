@@ -175,12 +175,18 @@ func init() {
     },
     "metadata": {
       "type": "object",
+      "required": [
+        "automaticprovisioning"
+      ],
       "properties": {
         "automaticprovisioning": {
           "type": "boolean"
         },
         "bridgeversion": {
           "type": "string"
+        },
+        "continuousdeliveryenabled": {
+          "type": "boolean"
         },
         "keptnlabel": {
           "type": "string"
@@ -215,8 +221,8 @@ func init() {
 }`))
 	FlatSwaggerJSON = json.RawMessage([]byte(`{
   "consumes": [
-    "application/cloudevents+json",
-    "application/json"
+    "application/json",
+    "application/cloudevents+json"
   ],
   "produces": [
     "application/json"
@@ -371,12 +377,18 @@ func init() {
     },
     "metadata": {
       "type": "object",
+      "required": [
+        "automaticprovisioning"
+      ],
       "properties": {
         "automaticprovisioning": {
           "type": "boolean"
         },
         "bridgeversion": {
           "type": "string"
+        },
+        "continuousdeliveryenabled": {
+          "type": "boolean"
         },
         "keptnlabel": {
           "type": "string"

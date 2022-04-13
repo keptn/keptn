@@ -6,16 +6,14 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"context"
+	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-openapi/errors"
-	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // Metadata metadata
-//
 // swagger:model metadata
 type Metadata struct {
 
@@ -25,6 +23,9 @@ type Metadata struct {
 
 	// bridgeversion
 	Bridgeversion string `json:"bridgeversion,omitempty"`
+
+	// continuousdeliveryenabled
+	Continuousdeliveryenabled bool `json:"continuousdeliveryenabled,omitempty"`
 
 	// keptnlabel
 	Keptnlabel string `json:"keptnlabel,omitempty"`
@@ -62,11 +63,6 @@ func (m *Metadata) validateAutomaticprovisioning(formats strfmt.Registry) error 
 		return err
 	}
 
-	return nil
-}
-
-// ContextValidate validates this metadata based on context it is used
-func (m *Metadata) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

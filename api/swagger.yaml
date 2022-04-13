@@ -132,5 +132,7 @@ definitions:
         type: object
       automaticprovisioning:
         type: boolean
+      continuousdeliveryenabled:
+        type: boolean
     required:
       - automaticprovisioning

@@ -65,6 +65,7 @@ func (h *metadataHandler) getMetadata() middleware.Responder {
 
 	namespace := os.Getenv("POD_NAMESPACE")
 	automaticProvisioningURL := os.Getenv("AUTOMATIC_PROVISIONING_URL")
+	continuousDeliveryEnabled := os.Getenv("CONTINUOUS_DELIVERY_ENABLED")
 
 	var payload models.Metadata
 	payload.Namespace = namespace
@@ -74,6 +75,7 @@ func (h *metadataHandler) getMetadata() middleware.Responder {
 	payload.Shipyardversion = "0.2.0"
 	automaticProvisioningURLValue := automaticProvisioningURL != ""
 	payload.Automaticprovisioning = &automaticProvisioningURLValue
+	payload.Continuousdeliveryenabled = continuousDeliveryEnabled == "true"
 
 	if bridgeVersion, err := h.getBridgeVersion(namespace); err != nil {
 		logger.WithError(err).Error("Error getting bridge version")
