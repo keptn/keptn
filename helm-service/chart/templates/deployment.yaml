@@ -7,7 +7,6 @@ metadata:
 
 spec:
   replicas: 1
-  {{ include "helm-service.update-strategy" . | nindent 2 }}
   selector:
     matchLabels:
       {{- include "helm-service.selectorLabels" . | nindent 6 }}

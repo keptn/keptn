@@ -69,15 +69,3 @@ lifecycle:
        command: ["/bin/sleep", "60"]
 {{- end }}
 
-{{- define "helm-service.update-strategy" -}}
-{{- if (.Values.common).strategy -}}
-strategy:
-{{- toYaml .Values.common.strategy | nindent 4 -}}
-{{- else -}}
-strategy:
-  type: RollingUpdate
-  rollingUpdate:
-    maxSurge: 1
-    maxUnavailable: 1
-{{- end -}}
-{{- end -}}
