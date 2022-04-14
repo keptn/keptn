@@ -64,7 +64,7 @@ require (
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.11 // indirect
-	github.com/keptn/go-utils v0.14.1-0.20220405094754-802847e81750 // indirect
+	github.com/keptn/go-utils v0.14.1-0.20220414063712-1a9a056bfcc7 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/klauspost/pgzip v1.2.5 // indirect
 	github.com/kr/pretty v0.2.0 // indirect
