@@ -38,7 +38,7 @@ jobs:
             bridge
             cli
             configuration-service
-            resource-service
+            cp-connector
             deps
             deps-dev
             distributor
@@ -49,6 +49,7 @@ jobs:
             lighthouse-service
             mongodb-datastore
             remediation-service
+            resource-service
             secret-service
             shipyard-controller
             statistics-service
