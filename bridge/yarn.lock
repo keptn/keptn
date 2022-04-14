@@ -1849,10 +1849,10 @@
   resolved "https://registry.yarnpkg.com/@dynatrace/barista-fonts/-/barista-fonts-1.0.1.tgz#a930cadd6ad2e2a653bf31fa1ef650c56abe3ab8"
   integrity sha512-Bt8wSfDvn97UDvTJFVv3t/LU2KS7rLejaAQkjwKHkTT/UFSrapXf9vIklLXtNlvGPcOrxVCLTCemOkw9oQLocA==
 
-"@dynatrace/barista-icons@7.17.0":
-  version "7.17.0"
-  resolved "https://registry.yarnpkg.com/@dynatrace/barista-icons/-/barista-icons-7.17.0.tgz#b3cbc89199efc99396c5e0f855cf3d3a51eca962"
-  integrity sha512-12JHdZPYdbEVitEtkCS/Xj4C+htHgZ8JiD9O1blVSvCXrkumk1kVKb6HV2oUdKiwMIVDZpD7q7H2NG5yXGXrhA==
+"@dynatrace/barista-icons@7.20.0":
+  version "7.20.0"
+  resolved "https://registry.yarnpkg.com/@dynatrace/barista-icons/-/barista-icons-7.20.0.tgz#7c7815b5950e3ad605502a0c9add2907ab75caea"
+  integrity sha512-nJZXgr2gCAVc+jvQiqbQkTmbHHxsQi7XsmOGSWX1Ij8xQ/Kgufy868m0UDeTiJCBtNU4Ayt0OIyYArSp+DOPfA==
 
 "@es-joy/jsdoccomment@~0.20.1":
   version "0.20.1"
@@ -10058,10 +10058,10 @@ prettier-linter-helpers@^1.0.0:
   dependencies:
     fast-diff "^1.1.2"
 
-prettier@2.5.1:
-  version "2.5.1"
-  resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.5.1.tgz#fff75fa9d519c54cf0fce328c1017d94546bc56a"
-  integrity sha512-vBZcPRUR5MZJwoyi3ZoyQlc1rXeEck8KgeC9AwwOn+exuxLxq5toTRDTSaVrXHxelDMHy9zlicw8u66yxoSUFg==
+prettier@2.6.2:
+  version "2.6.2"
+  resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.6.2.tgz#e26d71a18a74c3d0f0597f55f01fb6c06c206032"
+  integrity sha512-PkUpF+qoXTqhOeWL9fu7As8LXsIUZ1WYaJiY/a7McAQzxjk82OF0tibkFXVCDImZtWxbvojFjerkiLb0/q8mew==
 
 pretty-bytes@^5.3.0, pretty-bytes@^5.6.0:
   version "5.6.0"

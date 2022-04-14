@@ -51,7 +51,7 @@
     "@angular/router": "11.2.14",
     "@dynatrace/barista-components": "9.13.1",
     "@dynatrace/barista-fonts": "1.0.1",
-    "@dynatrace/barista-icons": "7.17.0",
+    "@dynatrace/barista-icons": "7.20.0",
     "cypress-file-upload": "5.0.8",
     "d3-scale": "4.0.2",
     "d3-shape": "3.1.0",
@@ -107,7 +107,7 @@
     "jest-preset-angular": "11.1.1",
     "minimist": "1.2.6",
     "npm-run-all": "4.1.5",
-    "prettier": "2.5.1",
+    "prettier": "2.6.2",
     "start-server-and-test": "1.14.0",
     "ts-node": "10.7.0",
     "typescript": "4.1.6"

@@ -1,24 +1,64 @@
 /// <reference types="cypress" />
 
 import { SliResult } from '../../../client/app/_models/sli-result';
+import { interceptServicesPage } from '../intercept';
 
 type SliColumn = 'name' | 'value' | 'weight' | 'score' | 'result' | 'criteria' | 'pass-criteria' | 'warning-criteria';
 
 class ServicesPage {
   SERVICE_PANEL_TEXT_LOC = 'dt-info-group-title.dt-info-group-title > div > h2';
 
-  visitServicePage(projectName: string): this {
-    cy.visit(`/project/${projectName}/service`);
+  public intercept(): this {
+    interceptServicesPage();
     return this;
   }
 
-  selectService(serviceName: string, version: string): this {
+  public visitServicePage(projectName: string): this {
+    cy.visit(`/project/${projectName}/service`).wait('@metadata');
+    return this;
+  }
+
+  public visitService(projectName: string, serviceName: string): this {
+    cy.visit(`/project/${projectName}/service/${serviceName}`).wait('@metadata');
+    return this;
+  }
+
+  public visitServiceDeployment(projectName: string, serviceName: string, keptnContext: string, stage?: string): this {
+    let url = `/project/${projectName}/service/${serviceName}/context/${keptnContext}`;
+    if (stage) {
+      url += `/stage/${stage}`;
+    }
+    cy.visit(url).wait('@metadata');
+    return this;
+  }
+
+  public assertServiceExpanded(serviceName: string, status: boolean): this {
+    cy.byTestId(`ktb-service-tile-${serviceName}-content`).should(status ? 'exist' : 'not.exist');
+    return this;
+  }
+
+  public assertDeploymentSelected(serviceName: string, version: string, status: boolean): this {
+    cy.byTestId(`ktb-service-${serviceName}-deployment-${version}`).should(
+      status ? 'have.class' : 'not.have.class',
+      'active'
+    );
+    return this;
+  }
+
+  public assertStageSelected(stageName: string, status: boolean): this {
+    cy.get('ktb-deployment-timeline>div>div ktb-stage-badge dt-tag')
+      .contains(stageName)
+      .should(status ? 'have.class' : 'not.have.class', 'focused');
+    return this;
+  }
+
+  public selectService(serviceName: string, version: string): this {
     cy.byTestId(`keptn-service-view-service-${serviceName}`).click();
     cy.get('dt-row').contains(version).click();
     return this;
   }
 
-  clickSliBreakdownHeader(columnName: string): this {
+  public clickSliBreakdownHeader(columnName: string): this {
     cy.byTestId('keptn-sli-breakdown')
       .find('dt-header-row')
       .first()

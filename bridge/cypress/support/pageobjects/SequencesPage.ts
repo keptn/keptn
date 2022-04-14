@@ -1,21 +1,49 @@
-import { interceptSequencesScreen } from '../intercept';
+import { interceptMain, interceptSequencesPage } from '../intercept';
+import { EventTypes } from '../../../shared/interfaces/event-types';
 
 export class SequencesPage {
   private readonly sequenceWaitingMessage = ' Sequence is waiting for previous sequences to finish. ';
 
   public intercept(): this {
-    interceptSequencesScreen();
+    interceptSequencesPage();
     return this;
   }
 
   public visit(projectName: string): this {
-    cy.visit(`/project/${projectName}/sequence`);
+    cy.visit(`/project/${projectName}/sequence`).wait('@metadata');
+    return this;
+  }
+
+  public visitContext(projectName: string, keptnContext: string, stage?: string): this {
+    let url = `/project/${projectName}/sequence/${keptnContext}`;
+    if (stage) {
+      url += `/stage/${stage}`;
+    }
+    cy.visit(url).wait('@metadata');
+    return this;
+  }
+
+  public visitEvent(projectName: string, keptnContext: string, eventId: string): this {
+    cy.visit(`/project/${projectName}/sequence/${keptnContext}/event/${eventId}`).wait('@metadata');
+    return this;
+  }
+
+  public visitByContext(keptnContext: string, stage?: string): this {
+    let url = `/trace/${keptnContext}`;
+    if (stage) {
+      url += `/${stage}`;
+    }
+    cy.visit(url).wait('@metadata');
+    return this;
+  }
+
+  public visitByEventType(keptnContext: string, eventType: EventTypes | string): this {
+    cy.visit(`/trace/${keptnContext}/${eventType}`).wait('@metadata');
     return this;
   }
 
   public interceptRemediationSequences(): this {
-    cy.intercept('/api/v1/metadata', { fixture: 'metadata.mock' });
-    cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfo.mock' });
+    interceptMain();
     cy.intercept('/api/project/sockshop?approval=true&remediation=true', {
       fixture: 'get.project.sockshop.remediation.mock',
     });
@@ -173,6 +201,20 @@ export class SequencesPage {
       .contains(stage)
       .parentsUntilTestId(`keptn-sequence-timeline-stage-${stage}`)
       .should('contain.text', time);
+    return this;
+  }
+
+  public assertTimelineStageSelected(stageName: string, status: boolean): this {
+    cy.byTestId(`keptn-sequence-timeline-stage-${stageName}`)
+      .find('.stage-text')
+      .should(status ? 'have.class' : 'not.have.class', 'focused');
+    return this;
+  }
+
+  public assertTaskExpanded(eventId: string, status: boolean): this {
+    cy.byTestId(`ktb-task-${eventId}`)
+      .find('.ktb-expandable-tile-content')
+      .should(status ? 'be.visible' : 'not.be.visible');
     return this;
   }
 

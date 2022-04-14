@@ -81,6 +81,7 @@
         dtMenuItem
         variant="nested"
         aria-label="Open environment view"
+        uitestid="ktb-environment-menu-button"
         [disabled]="isCreateMode"
         [dtOverlay]="overlay"
         [dtOverlayConfig]="{ data: { text: 'Environment' } }"
@@ -96,6 +97,7 @@
         dtMenuItem
         variant="nested"
         aria-label="Open services view"
+        uitestid="ktb-services-menu-button"
         [disabled]="isCreateMode"
         [dtOverlay]="overlay"
         [dtOverlayConfig]="{ data: { text: 'Services' } }"
@@ -110,6 +112,7 @@
         dtMenuItem
         variant="nested"
         aria-label="Open sequences view"
+        uitestid="ktb-sequences-menu-button"
         [disabled]="isCreateMode"
         [dtOverlay]="overlay"
         [dtOverlayConfig]="{ data: { text: 'Sequences' } }"
@@ -127,6 +130,7 @@
           dtMenuItem
           variant="nested"
           aria-label="Open settings view"
+          uitestid="ktb-settings-menu-button"
           [dtOverlay]="overlay"
           [dtOverlayConfig]="{ data: { text: 'Settings' } }"
           routerLinkActive="active"
@@ -142,6 +146,7 @@
         dtMenuItem
         variant="nested"
         aria-label="Open create project view"
+        uitestid="ktb-create-project-menu-button"
         [dtOverlay]="overlay"
         [dtOverlayConfig]="{ data: { text: 'Create project' } }"
         routerLinkActive="active"

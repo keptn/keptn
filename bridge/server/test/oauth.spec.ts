@@ -151,7 +151,7 @@ describe('Test OAuth env variables', () => {
     process.env.OAUTH_DISCOVERY = 'http://localhost/.well-known/openid-configuration';
     const app = await init();
     // if not found, index.html is sent
-    for (const endpoint of ['/oauth/login', '/oauth/redirect', '/logoutsession']) {
+    for (const endpoint of ['/oauth/login', '/oauth/redirect']) {
       const response = await request(app).get(endpoint);
       expect(response.text).not.toBeUndefined();
     }
@@ -189,6 +189,7 @@ describe('Test OAuth', () => {
     await request(app).get('/oauth/login/');
     const response = await request(app).get(`/oauth/redirect?code=someCode`);
     expect(response.headers['set-cookie']?.length ?? 0).toBe(0);
+    expect(response.headers.location).toEqual('/error');
     expect(response.text).not.toBeUndefined(); // error view is rendered
   });
 
@@ -196,6 +197,7 @@ describe('Test OAuth', () => {
     await request(app).get('/oauth/login/');
     const response = await request(app).get(`/oauth/redirect?state=someState`);
     expect(response.headers['set-cookie']?.length ?? 0).toBe(0);
+    expect(response.headers.location).toEqual('/error');
     expect(response.text).not.toBeUndefined();
   });
 
@@ -203,6 +205,7 @@ describe('Test OAuth', () => {
     await request(app).get('/oauth/login/');
     const response = await request(app).get(`/oauth/redirect?state=invalidState?code=someCode`);
     expect(response.headers['set-cookie']?.length ?? 0).toBe(0);
+    expect(response.headers.location).toEqual('/error');
     expect(response.text).not.toBeUndefined();
   });
 
@@ -217,6 +220,7 @@ describe('Test OAuth', () => {
     const { state } = await login(app);
     const response = await request(app).get(`/oauth/redirect?state=${state}&code=someOtherCode`);
     expect(response.headers['set-cookie']?.length ?? 0).toBe(0);
+    expect(response.headers.location).toEqual('/error');
     expect(response.text).not.toBeUndefined();
   });
 
@@ -246,6 +250,30 @@ describe('Test OAuth', () => {
     const { cookies } = await login(app);
     const dataResponse = await request(app).get('/api/bridgeInfo').set('Cookie', cookies);
     expect(dataResponse.status).not.toBe(401);
+  });
+
+  afterAll(() => {
+    sessionMock?.resetAllMocks();
+  });
+});
+
+describe('Test OAuth with error on callback', () => {
+  beforeEach(() => {
+    store = {};
+  });
+
+  it('should redirect to insufficient permission page if callback fails', async () => {
+    mockOpenId(true, false, false, 403);
+    const app = await setupOAuth();
+    const { response } = await login(app);
+    expect(response.headers.location).toEqual('/error?status=403');
+  });
+
+  it('should redirect to internal error page if callback fails', async () => {
+    mockOpenId(true, false, false, 500);
+    const app = await setupOAuth();
+    const { response } = await login(app);
+    expect(response.headers.location).toEqual('/error');
   });
 
   afterAll(() => {
@@ -306,7 +334,12 @@ describe('Test OAuth logout without end session endpoint', () => {
   });
 });
 
-function mockOpenId(includeEndSessionEndpoint: boolean, expiredToken = false, failRefresh = false): void {
+function mockOpenId(
+  includeEndSessionEndpoint: boolean,
+  expiredToken = false,
+  failRefresh = false,
+  exceptionStatusCodeOnCallback?: number
+): void {
   // jest currently does not really support mocking of ESM
 
   const issuer = {
@@ -327,14 +360,23 @@ function mockOpenId(includeEndSessionEndpoint: boolean, expiredToken = false, fa
       };
     }
     async callback(): Promise<TokenSet> {
-      return new TokenSet({
-        access_token: 'myAccessToken',
-        token_type: 'Bearer',
-        id_token: idToken,
-        refresh_token: 'myRefreshToken',
-        scope: 'openid',
-        expires_at: new Date().getTime() / 1000 + (expiredToken ? -1 : 10 * 60 * 1000),
-      });
+      if (exceptionStatusCodeOnCallback !== undefined) {
+        const error = new Error() as Error & { response: { statusCode: number } };
+
+        error.response = {
+          statusCode: exceptionStatusCodeOnCallback,
+        };
+        throw error;
+      } else {
+        return new TokenSet({
+          access_token: 'myAccessToken',
+          token_type: 'Bearer',
+          id_token: idToken,
+          refresh_token: 'myRefreshToken',
+          scope: 'openid',
+          expires_at: new Date().getTime() / 1000 + (expiredToken ? -1 : 10 * 60 * 1000),
+        });
+      }
     }
 
     async refresh(tokenSet: TokenSet): Promise<TokenSet> {

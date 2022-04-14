@@ -1,9 +1,9 @@
-import BasePage from '../support/pageobjects/BasePage';
+import { ProjectBoardPage } from '../support/pageobjects/ProjectBoardPage';
 import SecretsPage from '../support/pageobjects/SecretsPage';
 import { interceptSecrets } from '../support/intercept';
 
 describe('Keptn Secrets adding deleting test', () => {
-  const basePage = new BasePage();
+  const basePage = new ProjectBoardPage();
   const secretsPage = new SecretsPage();
   const DYNATRACE_PROJECT = 'dynatrace';
 

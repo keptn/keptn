@@ -1,9 +1,9 @@
 /// <reference types="cypress" />
-import BasePage from '../support/pageobjects/BasePage';
+import DashboardPage from '../support/pageobjects/DashboardPage';
 
 describe('Create new project test', () => {
   it('test new project create', () => {
-    const basePage = new BasePage();
+    const dashboardPage = new DashboardPage();
     const GIT_USERNAME = 'carpe-github-username';
     const PROJECT_NAME = 'test-project-bycypress-001';
     const GIT_REMOTE_URL = 'https://git-repo.com';
@@ -42,7 +42,7 @@ describe('Create new project test', () => {
 
     cy.visit('/');
     cy.wait('@metadataCmpl');
-    basePage
+    dashboardPage
       .clickCreateNewProjectButton()
       .typeProjectName(PROJECT_NAME)
       .typeGitUrl(GIT_REMOTE_URL)

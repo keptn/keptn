@@ -1,7 +1,7 @@
 import { TestBed, waitForAsync } from '@angular/core/testing';
 
 import { PendingChangesComponent, PendingChangesGuard } from './pending-changes.guard';
-import { Observable, Subject, of } from 'rxjs';
+import { Observable, of, Subject } from 'rxjs';
 
 type NotificationState = null | 'unsaved';
 class MockComponent implements PendingChangesComponent {
@@ -23,7 +23,7 @@ class MockComponent implements PendingChangesComponent {
     this.hideNotification();
   }
 
-  canDeactivate($event?: BeforeUnloadEvent): Observable<boolean> {
+  canDeactivate(): Observable<boolean> {
     if (this.formTouched) {
       this.showNotification();
       return this.pendingChangesSubject.asObservable();
@@ -61,33 +61,27 @@ describe('PendingChangesGuard', () => {
     expect(guard.canDeactivate(mockComponent)).toBeTruthy();
   });
 
-  it(
-    'will route if guarded and user accepted the dialog',
-    waitForAsync(() => {
-      // Mock the behavior of the GuardedComponent:
-      mockComponent.touchForm();
-      const canDeactivate$ = <Observable<boolean>>guard.canDeactivate(mockComponent);
-      canDeactivate$.subscribe((deactivate) => {
-        // This is the real test!
-        expect(deactivate).toBeTruthy();
-      });
-      // emulate the accept()
-      mockComponent.saveForm();
-    })
-  );
+  it('will route if guarded and user accepted the dialog', waitForAsync(() => {
+    // Mock the behavior of the GuardedComponent:
+    mockComponent.touchForm();
+    const canDeactivate$ = <Observable<boolean>>guard.canDeactivate(mockComponent);
+    canDeactivate$.subscribe((deactivate) => {
+      // This is the real test!
+      expect(deactivate).toBeTruthy();
+    });
+    // emulate the accept()
+    mockComponent.saveForm();
+  }));
 
-  it(
-    'will not route if guarded and user rejected the dialog',
-    waitForAsync(() => {
-      // Mock the behavior of the GuardedComponent:
-      mockComponent.touchForm();
-      const canDeactivate$ = <Observable<boolean>>guard.canDeactivate(mockComponent);
-      canDeactivate$.subscribe((deactivate) => {
-        // This is the real test!
-        expect(deactivate).toBeFalsy();
-      });
-      // emulate the reject()
-      mockComponent.rejectChanges();
-    })
-  );
+  it('will not route if guarded and user rejected the dialog', waitForAsync(() => {
+    // Mock the behavior of the GuardedComponent:
+    mockComponent.touchForm();
+    const canDeactivate$ = <Observable<boolean>>guard.canDeactivate(mockComponent);
+    canDeactivate$.subscribe((deactivate) => {
+      // This is the real test!
+      expect(deactivate).toBeFalsy();
+    });
+    // emulate the reject()
+    mockComponent.rejectChanges();
+  }));
 });

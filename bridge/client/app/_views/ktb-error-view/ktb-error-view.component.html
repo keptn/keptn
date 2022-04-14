@@ -1,0 +1,20 @@
+<div class="container">
+  <div class="image">
+    <img [src]="logoUrl" alt="Logo" />
+  </div>
+  <div class="text">
+    <ng-container [ngSwitch]="error">
+      <ng-container *ngSwitchCase="ServerErrors.INSUFFICIENT_PERMISSION">
+        <h2>Permission denied</h2>
+        <p>User is not allowed to access the instance.</p>
+      </ng-container>
+      <ng-container *ngSwitchDefault>
+        <h2>Internal error</h2>
+        <p>Error while handling the redirect. Please retry and check whether the problem still exists.</p>
+        <div class="location">
+          <a routerLink="/" uitestid="ktb-location-link">Go to dashboard</a>
+        </div>
+      </ng-container>
+    </ng-container>
+  </div>
+</div>

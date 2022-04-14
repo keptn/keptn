@@ -1,6 +1,19 @@
 /// <reference types="cypress" />
 
+import { interceptEmptyEnvironmentScreen, interceptEnvironmentScreen } from '../intercept';
+
 class EnvironmentPage {
+  
+  public intercept(): this {
+    interceptEnvironmentScreen();
+    return this;
+  }
+
+  public interceptEmpty(): this {
+    interceptEmptyEnvironmentScreen();
+    return this;
+  }
+
   public visit(project: string): this {
     cy.visit(`/project/${project}`).wait('@metadata');
     return this;
