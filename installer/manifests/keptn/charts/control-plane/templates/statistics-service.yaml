@@ -35,6 +35,7 @@ spec:
       containers:
         - name: statistics-service
           image: {{ .Values.statisticsService.image.repository }}:{{ .Values.statisticsService.image.tag | default .Chart.AppVersion }}
+          {{- include "control-plane.dist.prestop" . | nindent 10 }}
           livenessProbe:
             httpGet:
               path: /health
