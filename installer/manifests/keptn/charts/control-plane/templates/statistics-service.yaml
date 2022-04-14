@@ -16,7 +16,6 @@ spec:
       app.kubernetes.io/name: statistics-service
       app.kubernetes.io/instance: {{ .Release.Name }}
   replicas: 1
-  {{ include "control-plane.common.update-strategy" . }}
   strategy:
     type: Recreate
   template:
