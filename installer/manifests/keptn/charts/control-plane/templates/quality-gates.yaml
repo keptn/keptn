@@ -18,6 +18,7 @@ spec:
       app.kubernetes.io/name: lighthouse-service
       app.kubernetes.io/instance: {{ .Release.Name }}
   replicas: 1
+  {{ include "control-plane.common.update-strategy" . }}
   template:
     metadata:
       labels:
