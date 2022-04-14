@@ -174,7 +174,7 @@ configurationService:
     repository: docker.io/keptn/configuration-service
     tag: ""
   # storage and storageClass are the settings for the PVC used by the configuration-storage
-  storage: 100Mi
+  storage: 1Gi
   storageClass: null
   fsGroup: 1001
   initContainer: true
