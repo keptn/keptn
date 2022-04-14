@@ -14,6 +14,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { AbstractControl } from '@angular/forms';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
+import { ProjectsMock } from '../../_services/_mockData/projects.mock';
 
 describe('KtbModifyUniformSubscriptionComponent', () => {
   let component: KtbModifyUniformSubscriptionComponent;
@@ -77,7 +78,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     expect(subscription.event).toEqual('sh.keptn.>');
   });
 
-  it('should update subscription for deplyoment keptn wildcard events with keptn.sh.event.approval.>', () => {
+  it('should update subscription for deployment keptn wildcard events with keptn.sh.event.approval.>', () => {
     // given
     const subscription = setSubscription(2, 0);
     getTaskPrefix().setValue('deployment');
@@ -216,6 +217,89 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     setSubscription(10, 0);
     fixture.detectChanges();
     expect(component.eventPayload).toEqual(eventPayload);
+  });
+
+  it('should remove deleted service from subscription', () => {
+    // given
+    const subscription = setSubscription(2, 0);
+    fixture.detectChanges();
+    const dataService = TestBed.inject(DataService);
+
+    // when
+    jest.spyOn(dataService, 'getProject').mockReturnValue(of(ProjectsMock[2]));
+    component.data$.subscribe();
+
+    // then
+    expect(subscription.filter.services).toEqual([]);
+    expect(component._dataSource.data).toEqual({
+      autocomplete: [
+        {
+          name: 'Stage',
+          autocomplete: [
+            {
+              name: 'dev',
+            },
+            {
+              name: 'staging',
+            },
+            {
+              name: 'production',
+            },
+          ],
+        },
+        {
+          name: 'Service',
+          autocomplete: [
+            {
+              name: 'carts-db',
+            },
+          ],
+        },
+      ],
+    });
+  });
+
+  it('should add new service to datasource', () => {
+    // given
+    const dataService = TestBed.inject(DataService);
+    jest.spyOn(dataService, 'getProject').mockReturnValue(of(ProjectsMock[2]));
+
+    setSubscription(2, 0);
+
+    // when
+    jest.spyOn(dataService, 'getProject').mockReturnValue(of(ProjectsMock[0]));
+    component.data$.subscribe();
+
+    // then
+    expect(component._dataSource.data).toEqual({
+      autocomplete: [
+        {
+          name: 'Stage',
+          autocomplete: [
+            {
+              name: 'dev',
+            },
+            {
+              name: 'staging',
+            },
+            {
+              name: 'production',
+            },
+          ],
+        },
+        {
+          name: 'Service',
+          autocomplete: [
+            {
+              name: 'carts-db',
+            },
+            {
+              name: 'carts',
+            },
+          ],
+        },
+      ],
+    });
   });
 
   function setSubscription(integrationIndex: number, subscriptionIndex?: number): UniformSubscription {
