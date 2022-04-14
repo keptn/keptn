@@ -183,6 +183,9 @@ func performResourceServiceEvaluationTest(t *testing.T, projectName string, serv
 
 	require.Nil(t, err)
 
+	//some time should pass between started and finished event
+	time.Sleep(10 * time.Second)
+
 	t.Log("sending get-sli.finished event")
 	_, err = ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
 		Contenttype: "application/json",

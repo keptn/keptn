@@ -1,0 +1,47 @@
+<h2 class="required">Git upstream repository</h2>
+<p class="mt-0 mb-3">
+  A Git upstream repository has to be set. You can connect your Git repository with HTTPS or SSH. Instructions, on how
+  to set up your Git provider can be found in the
+  <a [href]="'/manage/git_upstream/' | keptnUrl" target="_blank">Git-based upstream documentation</a>.
+</p>
+<dt-label class="required dt-form-field-label">Connect via</dt-label>
+<dt-radio-group (change)="setSelectedForm($event)">
+  <dt-radio-button
+    [value]="FormType.HTTPS"
+    [checked]="selectedForm === FormType.HTTPS"
+    class="mr-2"
+    uitestid="ktb-https-form-button"
+  >
+    HTTPS
+  </dt-radio-button>
+  <dt-radio-button [value]="FormType.SSH" [checked]="selectedForm === FormType.SSH" uitestid="ktb-ssh-form-button">
+    SSH
+  </dt-radio-button>
+</dt-radio-group>
+<div class="mt-3">
+  <!-- hidden instead of switch to keep the component instance and related data  -->
+  <ktb-project-settings-git-https
+    [hidden]="selectedForm !== FormType.HTTPS"
+    (dataChange)="dataChanged($event)"
+    [gitInputData]="gitInputDataHttps"
+    [isLoading]="isLoading"
+  ></ktb-project-settings-git-https>
+  <ktb-project-settings-git-ssh
+    [hidden]="selectedForm !== FormType.SSH"
+    (sshChange)="dataChanged($event)"
+    [gitInputSshData]="gitInputDataSsh"
+    [isLoading]="isLoading"
+  ></ktb-project-settings-git-ssh>
+</div>
+
+<div class="mt-3" *ngIf="!isCreateMode">
+  <button
+    [disabled]="!gitData || isGitUpstreamInProgress"
+    (click)="updateUpstream()"
+    dt-button
+    uitestid="ktb-project-update-button"
+  >
+    <dt-loading-spinner *ngIf="isGitUpstreamInProgress" aria-label="Setting Git upstream URL"></dt-loading-spinner>
+    Set Git upstream
+  </button>
+</div>

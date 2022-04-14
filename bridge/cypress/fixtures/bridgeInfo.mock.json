@@ -7,5 +7,8 @@
   "enableVersionCheckFeature": false,
   "showApiToken": true,
   "authType": "OAUTH",
-  "user": "claus.keptn-dev@ruxitlabs.com"
+  "user": "claus.keptn-dev@ruxitlabs.com",
+  "featureFlags": {
+    "RESOURCE_SERVICE_ENABLED": false
+  }
 }

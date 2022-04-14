@@ -154,6 +154,14 @@ import {
 } from './_components/ktb-datetime-picker/ktb-datetime-picker.component';
 import { DtDatepickerModule } from '@dynatrace/barista-components/experimental/datepicker';
 import { TruncateNumberPipe } from './_pipes/truncate-number';
+import { KtbProjectSettingsGitExtendedComponent } from './_components/ktb-project-settings-git-extended/ktb-project-settings-git-extended.component';
+import { KtbProjectSettingsGitHttpsComponent } from './_components/ktb-project-settings-git-https/ktb-project-settings-git-https.component';
+import { KtbProjectSettingsGitSshComponent } from './_components/ktb-project-settings-git-ssh/ktb-project-settings-git-ssh.component';
+import { KtbProxyInputComponent } from './_components/ktb-proxy-input/ktb-proxy-input.component';
+import { KtbIntegerInputDirective } from './_directives/ktb-integer-input/ktb-integer-input.directive';
+import { KtbCertificateInputComponent } from './_components/ktb-certificate-input/ktb-certificate-input.component';
+import { KtbSshKeyInputComponent } from './_components/ktb-ssh-key-input/ktb-ssh-key-input.component';
+import { KtbProjectSettingsGitSshInputComponent } from './_components/ktb-project-settings-git-ssh-input/ktb-project-settings-git-ssh-input.component';
 import { KtbLoadingDistractorComponent } from './_components/ktb-loading-distractor/ktb-loading-distractor.component';
 import { KtbLoadingSpinnerComponent } from './_components/ktb-loading-spinner/ktb-loading-spinner.component';
 
@@ -251,6 +259,14 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     KtbDatetimePickerComponent,
     KtbDatetimePickerDirective,
     TruncateNumberPipe,
+    KtbProjectSettingsGitExtendedComponent,
+    KtbProjectSettingsGitHttpsComponent,
+    KtbProjectSettingsGitSshComponent,
+    KtbProxyInputComponent,
+    KtbIntegerInputDirective,
+    KtbCertificateInputComponent,
+    KtbSshKeyInputComponent,
+    KtbProjectSettingsGitSshInputComponent,
     KtbLoadingDistractorComponent,
     KtbLoadingSpinnerComponent,
   ],

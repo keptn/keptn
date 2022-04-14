@@ -11,7 +11,7 @@ export class AppUtils {
   }
 
   public static copyObject<T>(data: T): T {
-    return JSON.parse(JSON.stringify(data));
+    return data === undefined ? undefined : JSON.parse(JSON.stringify(data));
   }
 
   public static truncateNumber(value: number, decimals: number): number {
@@ -45,6 +45,24 @@ export class AppUtils {
     } catch (e) {
       return false;
     }
+  }
+
+  public static splitURLPort(url: string): { host: string; port: string } {
+    const index = url.lastIndexOf(':');
+    let host = url;
+    let port = '';
+
+    if (index !== -1) {
+      const portSubstr = url.substring(index + 1);
+      if (!isNaN(+portSubstr)) {
+        host = url.substring(0, index);
+        port = portSubstr;
+      }
+    }
+    return {
+      host,
+      port,
+    };
   }
 }
 

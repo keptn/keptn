@@ -1,0 +1,42 @@
+<dt-label class="dt-form-field-label">Upload private key file</dt-label>
+<div ktbDragAndDrop (dropped)="validateSshPrivateKey($event); dropError = undefined" (dropError)="dropError = $event">
+  <p>Drag and drop a file here<br />or</p>
+  <button dt-button (click)="privateKeyInput.click()">Select a file</button>
+  <input
+    uitestid="ktb-ssh-private-key-file-input"
+    hidden
+    type="file"
+    #privateKeyInput
+    (change)="validateSshPrivateKey(privateKeyInput.files); privateKeyInput.value = ''; dropError = undefined"
+  />
+  <p class="drop-error" [textContent]="dropError" *ngIf="dropError"></p>
+</div>
+
+<form [formGroup]="sshKeyForm" (input)="sshDataChanged()" class="mt-3">
+  <dt-form-field>
+    <dt-label class="required">SSH private key as text</dt-label>
+    <textarea
+      formControlName="privateKey"
+      dtInput
+      class="resize-vertical"
+      placeholder="Begins with -----BEGIN OPENSSH PRIVATE KEY-----"
+      uitestid="ktb-ssh-private-key-input"
+    ></textarea>
+    <dt-error *ngIf="privateKeyControl.errors?.required">Must not be empty</dt-error>
+    <dt-error *ngIf="privateKeyControl.errors?.sshKey">
+      The private key must start with "-----BEGIN OPENSSH PRIVATE KEY-----" and end with "-----END OPENSSH PRIVATE
+      KEY-----"
+    </dt-error>
+  </dt-form-field>
+  <dt-form-field class="mt-3">
+    <dt-label>Private key passphrase</dt-label>
+    <input
+      dtInput
+      type="password"
+      autocomplete="false"
+      placeholder="Private key passphrase"
+      formControlName="privateKeyPassword"
+      uitestid="ktb-ssh-private-key-passphrase-input"
+    />
+  </dt-form-field>
+</form>

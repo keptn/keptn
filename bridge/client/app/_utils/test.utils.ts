@@ -1,5 +1,9 @@
-import { ComponentFixture, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed, tick } from '@angular/core/testing';
 import { Trace } from '../_models/trace';
+import { ApiService } from '../_services/api.service';
+import { BridgeInfoResponseMock } from '../_services/_mockData/api-responses/bridgeInfo-response.mock';
+import { of } from 'rxjs';
+import { DataService } from '../_services/data.service';
 
 export class TestUtils {
   public static createNewDropEventWithFiles(files: File[]): DragEvent {
@@ -19,6 +23,48 @@ export class TestUtils {
       },
     });
     return event;
+  }
+
+  public static createFileList(content: string): FileList {
+    const file: File = {
+      name: '',
+      lastModified: 0,
+      type: 'text/plain',
+      text(): Promise<string> {
+        return Promise.resolve(content);
+      },
+      size: 0,
+      slice(): Blob {
+        return new Blob();
+      },
+      arrayBuffer(): Promise<ArrayBuffer> {
+        return Promise.resolve(new ArrayBuffer(0));
+      },
+      stream(): ReadableStream<unknown> {
+        return new ReadableStream<unknown>();
+      },
+    };
+
+    return {
+      0: file,
+      length: 1,
+      item(): File {
+        return file;
+      },
+    };
+  }
+
+  public static enableResourceService(): void {
+    const apiService = TestBed.inject(ApiService);
+    const dataService = TestBed.inject(DataService);
+    const mock = {
+      ...BridgeInfoResponseMock,
+      featureFlags: {
+        RESOURCE_SERVICE_ENABLED: true,
+      },
+    };
+    jest.spyOn(apiService, 'getKeptnInfo').mockReturnValue(of(mock));
+    dataService.loadKeptnInfo();
   }
 
   public static mockWindowMatchMedia(): void {

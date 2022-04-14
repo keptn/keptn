@@ -9,6 +9,7 @@ import Chainable = Cypress.Chainable;
 class BasePage {
   NAVIGATION_MENU_LOCATOR: string;
   PROJECT_TILE_LOCATOR: string;
+
   constructor() {
     const NAVIGATION_MENU_LOCATOR = "button[aria-label='Open page_pattern view']";
     const PROJECT_TILE_LOCATOR = "dt-tile[id='proj_patten']";
@@ -79,27 +80,23 @@ class BasePage {
   }
 
   notificationSuccessVisible(text?: string): Chainable<JQuery<HTMLElement>> {
-    return this.checkNotification('dt-alert.dt-alert-success', text);
+    return this.checkNotification('ktb-notification-success', text);
   }
 
   notificationErrorVisible(text?: string): Chainable<JQuery<HTMLElement>> {
-    let element = cy.get('.dt-alert-icon-container dt-icon');
-    if (text) {
-      element = element.contains(text);
-    }
-    return element.get('.dt-alert-icon').should('be.visible');
+    return this.checkNotification('ktb-notification-error', text);
   }
 
   notificationWarningVisible(text?: string): Chainable<JQuery<HTMLElement>> {
-    return this.checkNotification('dt-alert.dt-alert-warning', text);
+    return this.checkNotification('ktb-notification-warning', text);
   }
 
   notificationInfoVisible(text?: string): Chainable<JQuery<HTMLElement>> {
-    return this.checkNotification('dt-alert.dt-alert-info', text);
+    return this.checkNotification('ktb-notification-info', text);
   }
 
   private checkNotification(selector: string, text?: string): Chainable<JQuery<HTMLElement>> {
-    let element = cy.get(selector);
+    let element = cy.byTestId(selector);
     if (text) {
       element = element.contains(text);
     }

@@ -6,7 +6,6 @@ import { filter, map, takeUntil } from 'rxjs/operators';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { NotificationsService } from '../../_services/notifications.service';
 import { NotificationType } from '../../_models/notification';
-import { HttpErrorResponse } from '@angular/common/http';
 import { FormUtils } from '../../_utils/form.utils';
 
 @Component({
@@ -73,8 +72,7 @@ export class KtbCreateServiceComponent implements OnDestroy {
         await this.cancel();
         this.notificationsService.addNotification(NotificationType.SUCCESS, 'Service successfully created!');
       },
-      (error: HttpErrorResponse) => {
-        this.notificationsService.addNotification(NotificationType.ERROR, error.error);
+      () => {
         this.isCreating = false;
       }
     );

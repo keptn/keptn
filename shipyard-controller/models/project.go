@@ -29,11 +29,11 @@ type UpdateProjectParams struct {
 	// git proxy user
 	GitProxyUser string `json:"gitProxyUser,omitempty"`
 
-	// git proxy insecure
+	// insecure skip tls
 	// omitempty property is missing due to fallback of this
 	// parameter to "undefined" when marshalling/unmarshalling data
 	// when "false" value is present
-	GitProxyInsecure bool `json:"gitProxyInsecure"`
+	InsecureSkipTLS bool `json:"insecureSkipTLS"`
 
 	// git proxy password
 	GitProxyPassword string `json:"gitProxyPassword,omitempty"`
@@ -74,11 +74,11 @@ type CreateProjectParams struct {
 	// git proxy user
 	GitProxyUser string `json:"gitProxyUser,omitempty"`
 
-	// git proxy insecure
+	// insecure skip tls
 	// omitempty property is missing due to fallback of this
 	// parameter to "undefined" when marshalling/unmarshalling data
 	// when "false" value is present
-	GitProxyInsecure bool `json:"gitProxyInsecure"`
+	InsecureSkipTLS bool `json:"insecureSkipTLS"`
 
 	// git proxy password
 	GitProxyPassword string `json:"gitProxyPassword,omitempty"`

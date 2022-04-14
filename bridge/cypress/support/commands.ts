@@ -14,6 +14,7 @@ declare global {
        * @param status
        */
       dtCheck<E extends Node = HTMLElement>(status: boolean): Cypress.Chainable<JQuery<E>>;
+      dtSelect<E extends Node = HTMLElement>(element: string): Cypress.Chainable<JQuery<E>>;
       dtQuickFilterCheck<E extends Node = HTMLElement>(
         filterName: string,
         itemName: string,
@@ -27,7 +28,7 @@ declare global {
 // Commands have to be added by hooking them to Cypress
 Cypress.Commands.add('byTestId', (testId: string) => cy.get(`[uitestid="${testId}"]`));
 Cypress.Commands.add('clickOutside', () => cy.get('body').click(0, 0));
-Cypress.Commands.add('parentsUntilTestId', { prevSubject: true }, (subject, testId) =>
+Cypress.Commands.add('parentsUntilTestId', { prevSubject: 'element' }, (subject: JQuery<HTMLElement>, testId: string) =>
   cy.wrap(subject).parentsUntil(`[uitestid="${testId}"]`).parent()
 );
 Cypress.Commands.add('dtCheck', { prevSubject: 'element' }, (subject: JQuery<HTMLElement>, status: boolean) => {
@@ -37,6 +38,12 @@ Cypress.Commands.add('dtCheck', { prevSubject: 'element' }, (subject: JQuery<HTM
     cy.wrap(subject).click();
   }
 });
+
+Cypress.Commands.add('dtSelect', { prevSubject: 'element' }, (subject: JQuery<HTMLElement>, element: string) => {
+  subject.trigger('click');
+  cy.get('.dt-select-content dt-option').contains(element).click();
+});
+
 Cypress.Commands.add(
   'dtQuickFilterCheck',
   { prevSubject: 'element' },
