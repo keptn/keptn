@@ -19,87 +19,98 @@ import { KtbServiceSettingsComponent } from './_components/ktb-service-settings/
 import { KtbEditServiceComponent } from './_components/ktb-edit-service/ktb-edit-service.component';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { PendingChangesGuard } from './_guards/pending-changes.guard';
+import { KtbErrorViewComponent } from './_views/ktb-error-view/ktb-error-view.component';
+import { AppComponent } from './app.component';
+import { KtbLogoutViewComponent } from './_views/ktb-logout-view/ktb-logout-view.component';
 
 const routingConfiguration: ExtraOptions = {
   paramsInheritanceStrategy: 'always',
 };
 
 const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
-  { path: 'dashboard', component: DashboardComponent },
+  { path: 'error', component: KtbErrorViewComponent },
+  { path: 'logoutsession', component: KtbLogoutViewComponent },
   {
-    path: 'create',
-    component: ProjectBoardComponent,
-    children: [{ path: 'project', component: KtbProjectSettingsComponent, canDeactivate: [PendingChangesGuard] }],
-  },
-  {
-    path: 'project/:projectName',
-    component: ProjectBoardComponent,
+    path: '',
+    component: AppComponent,
     children: [
-      { path: '', pathMatch: 'full', component: KtbEnvironmentViewComponent },
+      { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+      { path: 'dashboard', component: DashboardComponent },
       {
-        path: 'settings',
-        component: KtbSettingsViewComponent,
+        path: 'create',
+        component: ProjectBoardComponent,
+        children: [{ path: 'project', component: KtbProjectSettingsComponent, canDeactivate: [PendingChangesGuard] }],
+      },
+      {
+        path: 'project/:projectName',
+        component: ProjectBoardComponent,
         children: [
-          { path: 'project', component: KtbProjectSettingsComponent, canDeactivate: [PendingChangesGuard] },
+          { path: '', pathMatch: 'full', component: KtbEnvironmentViewComponent },
           {
-            path: 'services',
-            component: KtbServiceSettingsComponent,
+            path: 'settings',
+            component: KtbSettingsViewComponent,
             children: [
-              { path: 'create', component: KtbCreateServiceComponent },
-              { path: 'edit/:serviceName', component: KtbEditServiceComponent },
-              { path: '', pathMatch: 'full', component: KtbServiceSettingsOverviewComponent },
+              { path: 'project', component: KtbProjectSettingsComponent, canDeactivate: [PendingChangesGuard] },
+              {
+                path: 'services',
+                component: KtbServiceSettingsComponent,
+                children: [
+                  { path: 'create', component: KtbCreateServiceComponent },
+                  { path: 'edit/:serviceName', component: KtbEditServiceComponent },
+                  { path: '', pathMatch: 'full', component: KtbServiceSettingsOverviewComponent },
+                ],
+              },
+              {
+                path: 'uniform',
+                children: [
+                  { path: 'integrations', component: KtbKeptnServicesListComponent },
+                  { path: 'integrations/:integrationId', component: KtbKeptnServicesListComponent },
+                  {
+                    path: 'integrations/:integrationId/subscriptions/add',
+                    component: KtbModifyUniformSubscriptionComponent,
+                  },
+                  {
+                    path: 'integrations/:integrationId/subscriptions/:subscriptionId/edit',
+                    component: KtbModifyUniformSubscriptionComponent,
+                  },
+                  {
+                    path: 'secrets',
+                    component: KtbSecretsListComponent,
+                  },
+                  { path: 'secrets/add', component: KtbCreateSecretFormComponent },
+                  { path: '', pathMatch: 'full', redirectTo: 'integrations' },
+                ],
+              },
+              {
+                path: 'support',
+                children: [
+                  {
+                    path: 'common-use-cases',
+                    component: KtbIntegrationViewComponent,
+                  },
+                  { path: '', pathMatch: 'full', redirectTo: 'common-use-cases' },
+                ],
+              },
+              { path: '', pathMatch: 'full', redirectTo: 'project' },
             ],
           },
-          {
-            path: 'uniform',
-            children: [
-              { path: 'integrations', component: KtbKeptnServicesListComponent },
-              { path: 'integrations/:integrationId', component: KtbKeptnServicesListComponent },
-              {
-                path: 'integrations/:integrationId/subscriptions/add',
-                component: KtbModifyUniformSubscriptionComponent,
-              },
-              {
-                path: 'integrations/:integrationId/subscriptions/:subscriptionId/edit',
-                component: KtbModifyUniformSubscriptionComponent,
-              },
-              {
-                path: 'secrets',
-                component: KtbSecretsListComponent,
-              },
-              { path: 'secrets/add', component: KtbCreateSecretFormComponent },
-              { path: '', pathMatch: 'full', redirectTo: 'integrations' },
-            ],
-          },
-          {
-            path: 'support',
-            children: [
-              {
-                path: 'common-use-cases',
-                component: KtbIntegrationViewComponent,
-              },
-              { path: '', pathMatch: 'full', redirectTo: 'common-use-cases' },
-            ],
-          },
-          { path: '', pathMatch: 'full', redirectTo: 'project' },
+          { path: 'service', component: KtbServiceViewComponent },
+          { path: 'sequence', component: KtbSequenceViewComponent },
+          { path: 'service/:serviceName', component: KtbServiceViewComponent },
+          { path: 'service/:serviceName/context/:shkeptncontext', component: KtbServiceViewComponent },
+          { path: 'service/:serviceName/context/:shkeptncontext/stage/:stage', component: KtbServiceViewComponent },
+          { path: 'sequence/:shkeptncontext', component: KtbSequenceViewComponent },
+          { path: 'sequence/:shkeptncontext/event/:eventId', component: KtbSequenceViewComponent },
+          { path: 'sequence/:shkeptncontext/stage/:stage', component: KtbSequenceViewComponent },
         ],
       },
-      { path: 'service', component: KtbServiceViewComponent },
-      { path: 'sequence', component: KtbSequenceViewComponent },
-      { path: 'service/:serviceName', component: KtbServiceViewComponent },
-      { path: 'service/:serviceName/context/:shkeptncontext', component: KtbServiceViewComponent },
-      { path: 'service/:serviceName/context/:shkeptncontext/stage/:stage', component: KtbServiceViewComponent },
-      { path: 'sequence/:shkeptncontext', component: KtbSequenceViewComponent },
-      { path: 'sequence/:shkeptncontext/event/:eventId', component: KtbSequenceViewComponent },
-      { path: 'sequence/:shkeptncontext/stage/:stage', component: KtbSequenceViewComponent },
+      { path: 'trace/:shkeptncontext', component: ProjectBoardComponent },
+      { path: 'trace/:shkeptncontext/:eventselector', component: ProjectBoardComponent },
+      { path: 'evaluation/:shkeptncontext', component: EvaluationBoardComponent },
+      { path: 'evaluation/:shkeptncontext/:eventselector', component: EvaluationBoardComponent },
+      { path: '**', component: NotFoundComponent },
     ],
   },
-  { path: 'trace/:shkeptncontext', component: ProjectBoardComponent },
-  { path: 'trace/:shkeptncontext/:eventselector', component: ProjectBoardComponent },
-  { path: 'evaluation/:shkeptncontext', component: EvaluationBoardComponent },
-  { path: 'evaluation/:shkeptncontext/:eventselector', component: EvaluationBoardComponent },
-  { path: '**', component: NotFoundComponent },
 ];
 
 @NgModule({

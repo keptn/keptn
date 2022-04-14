@@ -7,7 +7,7 @@ import { DataService } from './_services/data.service';
 declare let dT_: any;
 
 @Component({
-  selector: 'ktb-root',
+  selector: 'ktb-app',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
@@ -18,7 +18,7 @@ export class AppComponent implements OnInit {
     }
   }
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.dataService.loadKeptnInfo();
     this.dataService.keptnInfo
       .pipe(filter((keptnInfo) => !!keptnInfo))

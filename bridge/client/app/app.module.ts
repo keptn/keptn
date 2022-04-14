@@ -154,6 +154,9 @@ import {
 } from './_components/ktb-datetime-picker/ktb-datetime-picker.component';
 import { DtDatepickerModule } from '@dynatrace/barista-components/experimental/datepicker';
 import { TruncateNumberPipe } from './_pipes/truncate-number';
+import { KtbErrorViewComponent } from './_views/ktb-error-view/ktb-error-view.component';
+import { KtbRootComponent } from './ktb-root/ktb-root.component';
+import { KtbLogoutViewComponent } from './_views/ktb-logout-view/ktb-logout-view.component';
 import { KtbProjectSettingsGitExtendedComponent } from './_components/ktb-project-settings-git-extended/ktb-project-settings-git-extended.component';
 import { KtbProjectSettingsGitHttpsComponent } from './_components/ktb-project-settings-git-https/ktb-project-settings-git-https.component';
 import { KtbProjectSettingsGitSshComponent } from './_components/ktb-project-settings-git-ssh/ktb-project-settings-git-ssh.component';
@@ -259,6 +262,9 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     KtbDatetimePickerComponent,
     KtbDatetimePickerDirective,
     TruncateNumberPipe,
+    KtbErrorViewComponent,
+    KtbRootComponent,
+    KtbLogoutViewComponent,
     KtbProjectSettingsGitExtendedComponent,
     KtbProjectSettingsGitHttpsComponent,
     KtbProjectSettingsGitSshComponent,
@@ -363,6 +369,6 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
       useValue: true,
     },
   ],
-  bootstrap: [AppComponent],
+  bootstrap: [KtbRootComponent],
 })
 export class AppModule {}

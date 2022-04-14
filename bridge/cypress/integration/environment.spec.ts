@@ -1,12 +1,10 @@
-import { interceptEmptyEnvironmentScreen, interceptEnvironmentScreen } from '../support/intercept';
 import EnvironmentPage from '../support/pageobjects/EnvironmentPage';
 import { ServicesSettingsPage } from '../support/pageobjects/ServicesSettingsPage';
 
 describe('Environment Screen empty', () => {
   const environmentPage = new EnvironmentPage();
   beforeEach(() => {
-    interceptEmptyEnvironmentScreen();
-    environmentPage.visit('dynatrace');
+    environmentPage.interceptEmpty().visit('dynatrace');
   });
 
   it('should redirect to create service and redirect back after creation', () => {
@@ -25,8 +23,7 @@ describe('Environment Screen default requests', () => {
   const stage = 'dev';
 
   beforeEach(() => {
-    interceptEnvironmentScreen();
-    environmentPage.visit(project);
+    environmentPage.intercept().visit(project);
   });
 
   it('should not show evaluation history loading indicators', () => {
@@ -48,7 +45,7 @@ describe('Environment Screen dynamic requests', () => {
   const stage = 'dev';
 
   beforeEach(() => {
-    interceptEnvironmentScreen();
+    environmentPage.intercept();
   });
 
   it('should show evaluation history loading indicators', () => {
