@@ -20,7 +20,6 @@ spec:
   {{ else }}
   replicas: {{ .Values.shipyardController.config.replicas | default 3 }}
   {{- end }}
-  # recreate the deployment if anything changes (we can not do a rolling upgrade of this deployment as we use a volume)
   {{ include "control-plane.common.update-strategy" . }}
   template:
     metadata:
