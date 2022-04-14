@@ -6,7 +6,7 @@ import { EvaluationsMock } from '../../_services/_mockData/evaluations.mock';
 import { Trace } from '../../_models/trace';
 import { IndicatorResult } from '../../../../shared/interfaces/indicator-result';
 import { SloConfig } from '../../../../shared/interfaces/slo-config';
-import Yaml from 'yaml';
+import { parse as parseYaml } from 'yaml';
 
 describe('KtbSliBreakdownComponent', () => {
   let component: KtbSliBreakdownComponent;
@@ -97,9 +97,7 @@ describe('KtbSliBreakdownComponent', () => {
     const selectedEvaluation = EvaluationsMock.data.evaluationHistory?.[selectedEvaluationIndex] as Trace;
     component.indicatorResults = selectedEvaluation.data.evaluation?.indicatorResults as IndicatorResult[];
 
-    const sloFileContentParsed = Yaml.parse(
-      atob(selectedEvaluation.data.evaluation?.sloFileContent ?? '')
-    ) as SloConfig;
+    const sloFileContentParsed = parseYaml(atob(selectedEvaluation.data.evaluation?.sloFileContent ?? '')) as SloConfig;
     component.objectives = sloFileContentParsed.objectives;
     component.score = selectedEvaluation.data.evaluation?.score as number;
 
