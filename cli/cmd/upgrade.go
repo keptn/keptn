@@ -105,17 +105,17 @@ func (u *UpgradeCmdHandler) doUpgradePreRunCheck(vChecker *version.KeptnVersionC
 	}
 
 	var err error
-	if keptnUpgradeChart, err = helm.NewHelper().DownloadChart(chartRepoURL); err != nil {
+	if keptnUpgradeChart, err = u.helmHelper.DownloadChart(chartRepoURL); err != nil {
 		return err
 	}
 
 	if !*upgradeParams.SkipUpgradeCheck {
-		res, err := isUpgradeCompatible(vChecker)
+		res, err := u.isUpgradeCompatible(vChecker)
 		if err != nil {
 			return internal.OnAPIError(err)
 		}
 		if !res {
-			installedKeptnVersion, err := getInstalledKeptnVersion()
+			installedKeptnVersion, err := u.getInstalledKeptnVersion()
 			if err != nil {
 				return err
 			}
@@ -210,12 +210,12 @@ func (u *UpgradeCmdHandler) doUpgradePreRunCheck(vChecker *version.KeptnVersionC
 	return nil
 }
 
-func getInstalledKeptnVersion() (string, error) {
+func (u *UpgradeCmdHandler) getInstalledKeptnVersion() (string, error) {
 	if mocking {
 		// return a fake version
 		return "0.7.0", nil
 	}
-	lastRelease, err := getLatestKeptnRelease()
+	lastRelease, err := u.getLatestKeptnRelease()
 	if err != nil {
 		return "", err
 	}
@@ -226,17 +226,17 @@ func getAppVersion(ch *chart.Chart) string {
 	return ch.Metadata.AppVersion
 }
 
-func isUpgradeCompatible(versionChecker *version.KeptnVersionChecker) (bool, error) {
-	installedVersion, err := getInstalledKeptnVersion()
+func (u *UpgradeCmdHandler) isUpgradeCompatible(versionChecker *version.KeptnVersionChecker) (bool, error) {
+	installedVersion, err := u.getInstalledKeptnVersion()
 	if err != nil {
 		return false, err
 	}
 	return versionChecker.IsUpgradable(Version, installedVersion, getAppVersion(keptnUpgradeChart))
 }
 
-func getLatestKeptnRelease() (*release.Release, error) {
+func (u *UpgradeCmdHandler) getLatestKeptnRelease() (*release.Release, error) {
 	keptnNamespace := namespace
-	releases, err := helm.NewHelper().GetHistory(keptnReleaseName, keptnNamespace)
+	releases, err := u.helmHelper.GetHistory(keptnReleaseName, keptnNamespace)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to check if Keptn release is available in namespace %s: %v", keptnNamespace, err)
 	}
@@ -315,7 +315,7 @@ type UpgradeCmdHandler struct {
 func (u *UpgradeCmdHandler) doUpgrade() error {
 	keptnNamespace := namespace
 
-	installedKeptnVersion, err := getInstalledKeptnVersion()
+	installedKeptnVersion, err := u.getInstalledKeptnVersion()
 	if err != nil {
 		return err
 	}
