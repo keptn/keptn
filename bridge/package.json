@@ -51,7 +51,7 @@
     "@angular/router": "11.2.14",
     "@dynatrace/barista-components": "9.13.1",
     "@dynatrace/barista-fonts": "1.0.1",
-    "@dynatrace/barista-icons": "7.17.0",
+    "@dynatrace/barista-icons": "7.20.0",
     "cypress-file-upload": "5.0.8",
     "d3-scale": "4.0.2",
     "d3-shape": "3.1.0",
