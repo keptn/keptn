@@ -192,16 +192,6 @@ export function interceptIntegrations(): void {
   );
 }
 
-export function interceptSequencesScreen(): void {
-  cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=25', { fixture: 'sequences.sockshop' });
-  cy.intercept('/api/project/sockshop/sequences/metadata', { fixture: 'sequence.metadata.mock' });
-  cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=25&fromTime=*', {
-    body: {
-      states: [],
-    },
-  });
-}
-
 export function interceptSecrets(): void {
   cy.fixture('get.project.json').as('initProjectJSON');
   cy.fixture('metadata.json').as('initmetadata');

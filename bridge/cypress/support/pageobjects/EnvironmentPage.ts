@@ -3,7 +3,6 @@
 import { interceptEmptyEnvironmentScreen, interceptEnvironmentScreen } from '../intercept';
 
 class EnvironmentPage {
-  
   public intercept(): this {
     interceptEnvironmentScreen();
     return this;
