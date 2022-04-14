@@ -145,9 +145,9 @@
           uitestid="keptn-trigger-delivery-labels"
           [(ngModel)]="deliveryFormData.labels"
           dtInput
-          placeholder="e.g. key1=value1,key2=value2"
+          placeholder="key1=value1,key2=value2"
         />
-        <dt-hint>Comma separated. Allowed: key=value</dt-hint>
+        <dt-hint>Comma-separated list of key-value pairs.</dt-hint>
       </dt-form-field>
 
       <dt-form-field class="mb-3">
@@ -156,11 +156,11 @@
           [errorStateMatcher]="jsonErrorStateMatcher"
           [(ngModel)]="deliveryFormData.values"
           dtInput
-          placeholder='e.g.: {"key1": "stringVal", "key2": {"key3": true}'
+          placeholder='{"key1": "stringVal", "key2": {"key3": true}}'
           style="resize: vertical"
           uitestid="keptn-trigger-delivery-values"
         ></textarea>
-        <dt-hint>JSON object</dt-hint>
+        <dt-hint>The values of a Helm Chart represented by a JSON object.</dt-hint>
         <dt-error uitestid="keptn-trigger-delivery-values-error">Must be valid JSON</dt-error>
       </dt-form-field>
 
@@ -310,7 +310,7 @@
           >
             <dt-icon name="calendar"></dt-icon>
           </button>
-          <dt-hint>Has to be after start date</dt-hint>
+          <dt-hint>The end date and time of an evluation that has to be after the start date and time.</dt-hint>
           <dt-error
             *ngIf="!isValidStartBeforeEnd || !isValidStartEndDuration"
             uitestid="keptn-trigger-evaluation-date-error"
@@ -329,10 +329,10 @@
           <input
             [(ngModel)]="evaluationFormData.labels"
             dtInput
-            placeholder="e.g. key1=value1,key2=value2"
+            placeholder="key1=value1,key2=value2"
             uitestid="keptn-trigger-evaluation-labels"
           />
-          <dt-hint>Comma separated. Allowed: key=value</dt-hint>
+          <dt-hint>Comma-separated list of key-value pairs.</dt-hint>
         </dt-form-field>
       </div>
 
@@ -356,10 +356,10 @@
         <input
           [(ngModel)]="customFormData.labels"
           dtInput
-          placeholder="e.g. key1=value1,key2=value2"
+          placeholder="key1=value1,key2=value2"
           uitestid="keptn-trigger-custom-labels"
         />
-        <dt-hint>Comma separated. Allowed: key=value</dt-hint>
+        <dt-hint>Comma-separated list of key-value pairs.</dt-hint>
       </dt-form-field>
 
       <ng-container
