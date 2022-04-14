@@ -33,6 +33,7 @@ spec:
       containers:
       - name: remediation-service
         image: {{ .Values.remediationService.image.repository }}:{{ .Values.remediationService.image.tag | default .Chart.AppVersion }}
+        {{- include "control-plane.dist.prestop" . | nindent 10 }}
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
