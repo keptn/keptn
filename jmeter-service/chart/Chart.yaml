@@ -21,3 +21,8 @@ version: 0.1.0
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 appVersion: latest
+
+dependencies:
+  - name: common
+    repository: https://charts-dev.keptn.sh
+    version: 0.15.0-dev

@@ -2,22 +2,18 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "jmeter-service.fullname" . }}
-  labels:
-    {{- include "jmeter-service.labels" . | nindent 4 }}
-
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
 spec:
   replicas: 1
   selector:
-    matchLabels:
-      {{- include "jmeter-service.selectorLabels" . | nindent 6 }}
+    matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      labels:
-        {{- include "jmeter-service.labels" . | nindent 8 }}
+      labels: {{- include "common.labels.standard" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:

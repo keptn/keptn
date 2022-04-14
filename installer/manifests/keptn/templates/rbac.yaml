@@ -3,9 +3,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: keptn-default
-  labels:
-    {{ include "keptn.labels" . | nindent 4 }}
-    app.kubernetes.io/name: keptn-default
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "keptn.name" . }}
 ---
@@ -13,9 +11,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: keptn-configuration-service
-  labels:
-    {{ include "keptn.labels" . | nindent 4 }}
-    app.kubernetes.io/name: keptn-configuration-service
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "keptn.name" . }}
 ---
@@ -23,9 +19,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: keptn-shipyard-controller
-  labels:
-    {{ include "keptn.labels" . | nindent 4 }}
-    app.kubernetes.io/name: keptn-shipyard-controller
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "keptn.name" . }}
 ---
@@ -33,9 +27,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: keptn-secret-service
-  labels:
-    {{ include "keptn.labels" . | nindent 4 }}
-    app.kubernetes.io/name: keptn-secret-service
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "keptn.name" . }}
 ---
@@ -43,9 +35,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: keptn-lighthouse-service
-  labels:
-    {{ include "keptn.labels" . | nindent 4 }}
-    app.kubernetes.io/name: keptn-lighthouse-service
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "keptn.name" . }}
 ---
@@ -53,9 +43,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: keptn-api-service
-  labels:
-    {{ include "keptn.labels" . | nindent 4 }}
-    app.kubernetes.io/name: keptn-api-service
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "keptn.name" . }}
 ---
@@ -64,9 +52,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: keptn-webhook-service
-  labels:
-    {{ include "keptn.labels" . | nindent 4 }}
-    app.kubernetes.io/name: keptn-api-service
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "keptn.name" . }}
 ---
@@ -75,9 +61,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: keptn-manage-secrets
-  labels:
-    {{ include "keptn.labels" . | nindent 4 }}
-    app.kubernetes.io/name: keptn-manage-secrets
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "keptn.name" . }}
 rules:
@@ -97,9 +81,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: keptn-get-secrets
-  labels:
-    {{ include "keptn.labels" . | nindent 4 }}
-    app.kubernetes.io/name: keptn-get-secrets
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "keptn.name" . }}
 rules:
@@ -115,9 +97,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: keptn-manage-roles
-  labels:
-    {{ include "keptn.labels" . | nindent 4 }}
-    app.kubernetes.io/name: keptn-manage-roles
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "keptn.name" . }}
 rules:
@@ -136,9 +116,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: keptn-manage-rolebindings
-  labels:
-    {{ include "keptn.labels" . | nindent 4 }}
-    app.kubernetes.io/name: keptn-manage-rolebindings
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "keptn.name" . }}
 rules:
@@ -157,9 +135,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: keptn-read-metadata
-  labels:
-    {{ include "keptn.labels" . | nindent 4 }}
-    app.kubernetes.io/name: keptn-read-metadata
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "keptn.name" . }}
 rules:
@@ -177,9 +153,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: keptn-manage-configmaps
-  labels:
-    {{ include "keptn.labels" . | nindent 4 }}
-    app.kubernetes.io/name: keptn-manage-configmaps
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "keptn.name" . }}
 rules:
@@ -217,9 +191,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: keptn-delete-bridge-pod
-  labels:
-    {{ include "keptn.labels" . | nindent 4 }}
-    app.kubernetes.io/name: keptn-delete-bridge-pod
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "keptn.name" . }}
 rules:
@@ -237,13 +209,9 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: keptn-acquire-lease
-  labels:
-    app.kubernetes.io/name: keptn-acquire-lease
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "keptn.name" . }}
-    helm.sh/chart: {{ include "keptn.chart" . }}
 rules:
   - apiGroups:
       - "coordination.k8s.io"
@@ -262,9 +230,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: keptn-lighthouse-service
-  labels:
-    {{ include "keptn.labels" . | nindent 4 }}
-    app.kubernetes.io/name: keptn-lighthouse-service
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "keptn.name" . }}
 roleRef:
@@ -298,9 +264,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: keptn-api-service-metadata
-  labels:
-    {{ include "keptn.labels" . | nindent 4 }}
-    app.kubernetes.io/name: keptn-api-service-metadata
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "keptn.name" . }}
 roleRef:
@@ -316,9 +280,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: keptn-configuration-service-get-secrets
-  labels:
-    {{ include "keptn.labels" . | nindent 4 }}
-    app.kubernetes.io/name: keptn-configuration-service-get-secrets
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "keptn.name" . }}
 roleRef:
@@ -334,9 +296,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: keptn-shipyard-controller-manage-secrets
-  labels:
-    {{ include "keptn.labels" . | nindent 4 }}
-    app.kubernetes.io/name: keptn-shipyard-controller-manage-secrets
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "keptn.name" . }}
 roleRef:
@@ -352,9 +312,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: keptn-secret-service-manage-secrets
-  labels:
-    {{ include "keptn.labels" . | nindent 4 }}
-    app.kubernetes.io/name: keptn-secret-service-manage-secrets
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "keptn.name" . }}
 roleRef:
@@ -370,9 +328,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: keptn-secret-service-manage-roles
-  labels:
-    {{ include "keptn.labels" . | nindent 4 }}
-    app.kubernetes.io/name: keptn-secret-service-manage-roles
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "keptn.name" . }}
 roleRef:
@@ -387,9 +343,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: keptn-secret-service-manage-rolebindings
-  labels:
-    {{ include "keptn.labels" . | nindent 4 }}
-    app.kubernetes.io/name: keptn-secret-service-manage-secrets
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "keptn.name" . }}
 roleRef:
@@ -405,13 +359,9 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: keptn-shipyard-controller-acquire-lease
-  labels:
-    app.kubernetes.io/name: keptn-shipyard-controller-acquire-lease
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "keptn.name" . }}
-    helm.sh/chart: {{ include "keptn.chart" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role

@@ -14,13 +14,9 @@ metadata:
 {{- end }}
   name: keptn-ingress
   namespace: {{ .Release.Namespace }}
-  labels:
-    app.kubernetes.io/name: ingress
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "keptn.name" . }}
-    helm.sh/chart: {{ include "keptn.chart" . }}
 spec:
   {{- if and .Values.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
   ingressClassName: {{ .Values.ingress.className }}
