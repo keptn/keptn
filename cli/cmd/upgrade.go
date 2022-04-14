@@ -49,9 +49,9 @@ var upgradeParams installUpgradeParams
 var keptnUpgradeChart *chart.Chart
 
 // installCmd represents the version command
-var upgraderCmd = NewUpgraderCommand(version.NewKeptnVersionChecker(), helm.NewHelper(), kube.NewKubernetesUtilsKeptnNamespaceHandler(), common.NewUserInput(), credentialmanager.NewCredentialManager(assumeYes))
+var upgradeCmd = NewUpgradeCommand(version.NewKeptnVersionChecker(), helm.NewHelper(), kube.NewKubernetesUtilsKeptnNamespaceHandler(), common.NewUserInput(), credentialmanager.NewCredentialManager(assumeYes))
 
-func NewUpgraderCommand(vChecker *version.KeptnVersionChecker, helmHelper helm.IHelper, namespaceHandler kube.IKeptnNamespaceHandler, userInput common.IUserInput, credentialManager *credentialmanager.CredentialManager) *cobra.Command {
+func NewUpgradeCommand(vChecker *version.KeptnVersionChecker, helmHelper helm.IHelper, namespaceHandler kube.IKeptnNamespaceHandler, userInput common.IUserInput, credentialManager *credentialmanager.CredentialManager) *cobra.Command {
 	upgradeCmdHandler := &UpgradeCmdHandler{
 		helmHelper:        helmHelper,
 		namespaceHandler:  namespaceHandler,
@@ -293,16 +293,16 @@ func (u *UpgradeCmdHandler) addWarningNonExistingProjectUpstream() error {
 }
 
 func init() {
-	rootCmd.AddCommand(upgraderCmd)
+	rootCmd.AddCommand(upgradeCmd)
 	upgradeParams = installUpgradeParams{}
-	upgradeParams.PlatformIdentifier = upgraderCmd.Flags().StringP("platform", "p", "kubernetes",
+	upgradeParams.PlatformIdentifier = upgradeCmd.Flags().StringP("platform", "p", "kubernetes",
 		"The platform to run Keptn on ["+platform.KubernetesIdentifier+","+platform.OpenShiftIdentifier+"]")
 
-	upgradeParams.ChartRepoURL = upgraderCmd.Flags().StringP("chart-repo", "",
+	upgradeParams.ChartRepoURL = upgradeCmd.Flags().StringP("chart-repo", "",
 		"", "URL of the Keptn Helm Chart repository")
-	upgraderCmd.Flags().MarkHidden("chart-repo")
-	upgradeParams.PatchNamespace = upgraderCmd.Flags().BoolP("patch-namespace", "", false, "Patch the namespace with the annotation & label 'keptn.sh/managed-by: keptn'")
-	upgradeParams.SkipUpgradeCheck = upgraderCmd.Flags().BoolP("skip-upgrade-check", "", false, "Skip upgrade compatibility check, useful for nightly version upgrades or upgrades to preview versions")
+	upgradeCmd.Flags().MarkHidden("chart-repo")
+	upgradeParams.PatchNamespace = upgradeCmd.Flags().BoolP("patch-namespace", "", false, "Patch the namespace with the annotation & label 'keptn.sh/managed-by: keptn'")
+	upgradeParams.SkipUpgradeCheck = upgradeCmd.Flags().BoolP("skip-upgrade-check", "", false, "Skip upgrade compatibility check, useful for nightly version upgrades or upgrades to preview versions")
 }
 
 type UpgradeCmdHandler struct {

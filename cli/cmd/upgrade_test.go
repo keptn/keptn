@@ -173,9 +173,9 @@ func TestSkipUpgradeCheck(t *testing.T) {
 	userInput := common.NewUserInput()
 	cm := credentialmanager.NewCredentialManager(assumeYes)
 
-	testUpgraderCmd := NewUpgraderCommand(vChecker, helmHelper, namespaceHandler, userInput, cm)
+	testUpgradeCmd := NewUpgradeCommand(vChecker, helmHelper, namespaceHandler, userInput, cm)
 
-	upgraderCmd.RunE = testUpgraderCmd.RunE
+	upgradeCmd.RunE = testUpgradeCmd.RunE
 	r := newRedirector()
 	r.redirectStdOut()
 
