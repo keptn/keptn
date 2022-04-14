@@ -56,7 +56,7 @@ func NewUpgradeCommand(vChecker *version.KeptnVersionChecker, helmHelper helm.IH
 		helmHelper:        helmHelper,
 		namespaceHandler:  namespaceHandler,
 		userInput:         userInput,
-		credentialManager: *credentialManager,
+		credentialManager: credentialManager,
 	}
 
 	upgradeCmd := &cobra.Command{
@@ -144,7 +144,7 @@ func (u *UpgradeCmdHandler) doUpgradePreRunCheck(vChecker *version.KeptnVersionC
 		return fmt.Errorf("your current Keptn CLI context '%s' does not match current Kubeconfig '%s'. Please ensure your kubectl CLI is connected to '%s' before upgrading your Keptn cluster", currentKeptnCLIContext, currentKubernetesContext, currentKubernetesContext)
 	}
 
-	platformManager, err := platform.NewPlatformManager(*upgradeParams.PlatformIdentifier, &u.credentialManager)
+	platformManager, err := platform.NewPlatformManager(*upgradeParams.PlatformIdentifier, u.credentialManager)
 	if err != nil {
 		return err
 	}
@@ -309,7 +309,7 @@ type UpgradeCmdHandler struct {
 	helmHelper        helm.IHelper
 	namespaceHandler  kube.IKeptnNamespaceHandler
 	userInput         common.IUserInput
-	credentialManager credentialmanager.CredentialManager
+	credentialManager credentialmanager.CredentialManagerInterface
 }
 
 func (u *UpgradeCmdHandler) doUpgrade() error {
