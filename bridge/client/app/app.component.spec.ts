@@ -1,8 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AppComponent } from './app.component';
-import { By } from '@angular/platform-browser';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { Location } from '@angular/common';
 import { Router } from '@angular/router';
 import { AppModule } from './app.module';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -13,17 +11,8 @@ import { DataService } from './_services/data.service';
 
 describe('AppComponent', () => {
   let router: Router;
-  let location: Location;
   let comp: AppComponent;
   let fixture: ComponentFixture<AppComponent>;
-  enum MENU_ITEM {
-    ENVIRONMENT,
-    SERVICES,
-    SEQUENCES,
-    INTEGRATIONS,
-    UNIFORM,
-    SETTINGS,
-  }
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -33,7 +22,6 @@ describe('AppComponent', () => {
     }).compileComponents();
 
     router = TestBed.inject(Router);
-    location = TestBed.inject(Location);
     fixture = TestBed.createComponent(AppComponent);
     comp = fixture.componentInstance;
 
@@ -98,45 +86,4 @@ describe('AppComponent', () => {
 
     expect(loadSpy).toHaveBeenCalled();
   });
-
-  function assertMenuItems(activeItem: MENU_ITEM): void {
-    const menuItems = fixture.debugElement.queryAll(By.css('.dt-menu .dt-menu-item'));
-    expect(menuItems.length).toEqual(6);
-
-    if (activeItem === MENU_ITEM.ENVIRONMENT) {
-      expect(menuItems[0].nativeElement.getAttribute('class')).toContain('active');
-    } else {
-      expect(menuItems[0].nativeElement.getAttribute('class')).not.toContain('active');
-    }
-
-    if (activeItem === MENU_ITEM.SERVICES) {
-      expect(menuItems[1].nativeElement.getAttribute('class')).toContain('active');
-    } else {
-      expect(menuItems[1].nativeElement.getAttribute('class')).not.toContain('active');
-    }
-
-    if (activeItem === MENU_ITEM.SEQUENCES) {
-      expect(menuItems[2].nativeElement.getAttribute('class')).toContain('active');
-    } else {
-      expect(menuItems[2].nativeElement.getAttribute('class')).not.toContain('active');
-    }
-
-    if (activeItem === MENU_ITEM.INTEGRATIONS) {
-      expect(menuItems[3].nativeElement.getAttribute('class')).toContain('active');
-    } else {
-      expect(menuItems[3].nativeElement.getAttribute('class')).not.toContain('active');
-    }
-
-    if (activeItem === MENU_ITEM.UNIFORM) {
-      expect(menuItems[4].nativeElement.getAttribute('class')).toContain('active');
-    } else {
-      expect(menuItems[4].nativeElement.getAttribute('class')).not.toContain('active');
-    }
-
-    if (activeItem === MENU_ITEM.SETTINGS) {
-      expect(menuItems[5].nativeElement.getAttribute('class')).toContain('active');
-    } else {
-      expect(menuItems[5].nativeElement.getAttribute('class')).not.toContain('active');
-    }
-  }
 });
