@@ -68,3 +68,11 @@ lifecycle:
       exec:
        command: ["/bin/sleep", "60"]
 {{- end }}
+
+{{- define "helm-service.update-strategy" -}}
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 1
+{{- end -}}
