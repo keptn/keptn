@@ -174,7 +174,7 @@
           <dt-label>Start at</dt-label>
           <div class="input-overlay" (click)="timeFrameStartButton?._elementRef?.nativeElement.click()"></div>
           <input readonly dtInput [(ngModel)]="evaluationFormData.timeframeStart" />
-          <dt-hint>The start date and time of an evluation that defaults to now if not filled in.</dt-hint>
+          <dt-hint>The start date and time of an evaluation that defaults to now if not filled in.</dt-hint>
           <button
             dt-icon-button
             dtSuffix
@@ -235,7 +235,7 @@
           >
             <dt-icon name="calendar"></dt-icon>
           </button>
-          <dt-hint>Has to be before end date</dt-hint>
+          <dt-hint>The start date and time of an evaluation that defaults to now if not filled in.</dt-hint>
         </dt-form-field>
         <dt-form-field class="overlay-origin full-width-error">
           <dt-label class="required">End at</dt-label>
@@ -267,7 +267,7 @@
           >
             <dt-icon name="calendar"></dt-icon>
           </button>
-          <dt-hint>The end date and time of an evluation that has to be after the start date and time.</dt-hint>
+          <dt-hint>The end date and time of an evaluation that has to be after the start date and time.</dt-hint>
           <dt-error
             *ngIf="!isValidStartBeforeEnd || !isValidStartEndDuration"
             uitestid="keptn-trigger-evaluation-date-error"
