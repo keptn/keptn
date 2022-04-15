@@ -21,7 +21,7 @@ var wg = new(sync.WaitGroup)
 
 func TestZeroDowntime(t *testing.T) {
 	t.Parallel()
-	// run tests before update
+	// run a tests before starting update
 	go t.Run("Triggering tests", Test_Evaluation)
 
 	ticker := clock.New().Ticker(apiProbeInterval)
