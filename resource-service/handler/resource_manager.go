@@ -59,12 +59,20 @@ func (p ResourceManager) GetResources(params models.GetResourcesParams) (*models
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
-	_, configPath, err := p.establishContext(params.Project, params.Stage, params.Service)
+	gitContext, configPath, err := p.establishContext(params.Project, params.Stage, params.Service)
 	if err != nil {
 		return nil, err
 	}
+	revision, err := p.git.GetCurrentRevision(*gitContext)
+	if err != nil {
+		return nil, err
+	}
+	metadata := models.Version{
+		UpstreamURL: gitContext.Credentials.RemoteURI,
+		Version:     revision,
+	}
 
-	result, err := GetPaginatedResources(configPath, params.PageSize, params.NextPageKey, p.fileSystem)
+	result, err := GetPaginatedResources(configPath, params.PageSize, params.NextPageKey, p.fileSystem, metadata)
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +132,12 @@ func (p ResourceManager) DeleteResource(params models.DeleteResourceParams) (*mo
 		return nil, err
 	}
 
-	resourcePath := configPath + "/" + params.ResourceURI
+	unescapedResource, err := url.QueryUnescape(params.ResourceURI)
+	if err != nil {
+		return nil, err
+	}
+
+	resourcePath := configPath + "/" + unescapedResource
 
 	var resultErr error
 	var resultCommit *models.WriteResourceResponse
@@ -296,8 +309,15 @@ func (p ResourceManager) stageAndCommit(gitContext *common_models.GitContext, me
 	if err != nil {
 		return nil, err
 	}
+	result := &models.WriteResourceResponse{
+		CommitID: commitID,
+		Metadata: models.Version{
+			UpstreamURL: gitContext.Credentials.RemoteURI,
+			Version:     commitID,
+		},
+	}
 
-	return &models.WriteResourceResponse{CommitID: commitID}, nil
+	return result, nil
 }
 
 func (p ResourceManager) deleteResource(gitContext *common_models.GitContext, resourcePath string) (*models.WriteResourceResponse, error) {

@@ -91,6 +91,19 @@ func TestProjectHandler_CreateProject(t *testing.T) {
 			wantStatus: http.StatusNotFound,
 		},
 		{
+			name: "invalid url or empty credentials",
+			fields: fields{
+				ProjectManager: &handler_mock.IProjectManagerMock{CreateProjectFunc: func(project models.CreateProjectParams) error {
+					return errors2.ErrCredentialsInvalidRemoteURI
+				}},
+			},
+			request: httptest.NewRequest(http.MethodPost, "/project", bytes.NewBuffer([]byte(createProjectTestPayload))),
+			wantParams: &models.CreateProjectParams{
+				Project: models.Project{ProjectName: "my-project"},
+			},
+			wantStatus: http.StatusBadRequest,
+		},
+		{
 			name: "invalid git token",
 			fields: fields{
 				ProjectManager: &handler_mock.IProjectManagerMock{CreateProjectFunc: func(project models.CreateProjectParams) error {
