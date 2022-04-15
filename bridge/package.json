@@ -65,7 +65,7 @@
     "normalize.css": "8.0.1",
     "rxjs": "6.6.7",
     "semver": "7.3.7",
-    "yaml": "1.10.2",
+    "yaml": "2.0.0",
     "zone.js": "0.11.5"
   },
   "devDependencies": {
