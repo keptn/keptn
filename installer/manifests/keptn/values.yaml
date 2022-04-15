@@ -4,5 +4,5 @@ control-plane:
     type: ClusterIP
     port: 80
 
-continuous-delivery:
+continuousDelivery:
   enabled: false

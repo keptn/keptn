@@ -252,3 +252,6 @@ common:
     allowPrivilegeEscalation: false
     privileged: false
   nodeSelector: {}
+
+continuousDelivery:
+  enabled: false
