@@ -19,7 +19,7 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
 	golang.org/x/net v0.0.0-20220403103023-749bd193bc2b
-	golang.org/x/time v0.0.0-20220224211638-0e9765cccd65
+	golang.org/x/time v0.0.0-20220411224347-583f2d630306
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.22.8
 	k8s.io/apimachinery v0.22.8
