@@ -1176,6 +1176,63 @@ const projectsData: any = [
       },
     ],
   },
+  {
+    // project without 'carts'
+    creationDate: '1614603785739925270',
+    gitRemoteURI: 'https://github.com/Kirdock/keptn-dynatrace',
+    gitUser: 'Kirdock',
+    projectName: 'sockshop-carts-db',
+    shipyard:
+      'apiVersion: spec.keptn.sh/0.2.0\nkind: Shipyard\nmetadata:\n  name: shipyard-sockshop\nspec:\n  stages:\n  - name: dev\n    sequences:\n    - name: delivery\n      tasks:\n      - name: deployment\n        properties:\n          deploymentstrategy: direct\n      - name: test\n        properties:\n          teststrategy: functional\n      - name: evaluation\n        properties: null\n      - name: release\n        properties: null\n    - name: delivery-direct\n      tasks:\n      - name: deployment\n        properties:\n          deploymentstrategy: direct\n      - name: release\n        properties: null\n  - name: staging\n    sequences:\n    - name: delivery\n      tasks:\n      - name: deployment\n        properties:\n          deploymentstrategy: blue_green_service\n      - name: test\n        properties:\n          teststrategy: performance\n      - name: evaluation\n        properties: null\n      - name: release\n        properties: null\n      triggeredOn:\n      - event: dev.delivery.finished\n        selector:\n          match: null\n    - name: rollback\n      tasks:\n      - name: rollback\n        properties: null\n      triggeredOn:\n      - event: staging.delivery.finished\n        selector:\n          match:\n            result: fail\n    - name: delivery-direct\n      tasks:\n      - name: deployment\n        properties:\n          deploymentstrategy: direct\n      - name: release\n        properties: null\n      triggeredOn:\n      - event: dev.delivery-direct.finished\n        selector:\n          match: null\n  - name: production\n    sequences:\n    - name: delivery\n      tasks:\n      - name: deployment\n        properties:\n          deploymentstrategy: blue_green_service\n      - name: release\n        properties: null\n      triggeredOn:\n      - event: staging.delivery.finished\n        selector:\n          match: null\n    - name: rollback\n      tasks:\n      - name: rollback\n        properties: null\n      triggeredOn:\n      - event: production.delivery.finished\n        selector:\n          match:\n            result: fail\n    - name: delivery-direct\n      tasks:\n      - name: deployment\n        properties:\n          deploymentstrategy: direct\n      - name: release\n        properties: null\n      triggeredOn:\n      - event: staging.delivery-direct.finished\n        selector:\n          match: null\n',
+    shipyardVersion: 'spec.keptn.sh/0.2.0',
+    stages: [
+      {
+        services: [
+          {
+            roots: [],
+            openApprovals: [],
+            creationDate: '1614603919173353566',
+            deployedImage: 'docker.io/mongo:4.2.2',
+            lastEventTypes: {},
+            openRemediations: null,
+            serviceName: 'carts-db',
+            stage: 'dev',
+          },
+        ],
+        stageName: 'dev',
+      },
+      {
+        services: [
+          {
+            roots: [],
+            openApprovals: [],
+            creationDate: '1614603922172957849',
+            deployedImage: 'docker.io/mongo:4.2.2',
+            lastEventTypes: {},
+            openRemediations: null,
+            serviceName: 'carts-db',
+            stage: 'staging',
+          },
+        ],
+        stageName: 'staging',
+      },
+      {
+        services: [
+          {
+            roots: [],
+            openApprovals: [],
+            creationDate: '1614603925140444462',
+            deployedImage: 'docker.io/mongo:4.2.2',
+            lastEventTypes: {},
+            openRemediations: null,
+            serviceName: 'carts-db',
+            stage: 'production',
+          },
+        ],
+        stageName: 'production',
+      },
+    ],
+  },
 ];
 
 const projects: Project[] = projectsData.map((project: Project) => {
