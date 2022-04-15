@@ -100,7 +100,7 @@ spec:
               value: '/v1/event'
           {{- include "control-plane.dist.common.env.vars" . | nindent 12 }}
         {{- include "control-plane.common.container-security-context" . | nindent 10 }}
-      terminationGracePeriodSeconds: {{ .Values.statisticsService.gracePeriod | default 30 }}
+      terminationGracePeriodSeconds: {{ .Values.statisticsService.gracePeriod | default 120 }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.statisticsService.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
 ---
 apiVersion: v1

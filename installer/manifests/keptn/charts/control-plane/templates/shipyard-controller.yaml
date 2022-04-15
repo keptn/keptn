@@ -106,7 +106,7 @@ spec:
               memory: "128Mi"
               cpu: "100m"
           {{- include "control-plane.common.container-security-context" . | nindent 10 }}
-      terminationGracePeriodSeconds: {{ .Values.shipyardControllergracePeriod | default 30 }}
+      terminationGracePeriodSeconds: {{ .Values.shipyardControllergracePeriod | default 120 }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.shipyardController.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
 ---
 apiVersion: v1
