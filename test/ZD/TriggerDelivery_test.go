@@ -89,6 +89,7 @@ func (suite *TestEvaluation) checkSequence(keptnContext string, sequenceType str
 		atomic.AddUint64(&FailedSequences, 1)
 	}
 
+	suite.T().Logf("Finished %s in %s ", sequenceType, suite.projectName)
 }
 
 func getShipyard() (string, error) {
