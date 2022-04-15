@@ -73,14 +73,14 @@ apiGatewayNginx:
     repository: docker.io/nginxinc/nginx-unprivileged
     tag: 1.21.6-alpine
   nodeSelector: {}
-  gracePeriod: 30
+  gracePeriod: 30     # gracePeriod set to 30s, which is the default value and is enough
 
 remediationService:
   image:
     repository: docker.io/keptn/remediation-service
     tag: ""
   nodeSelector: {}
-  gracePeriod: 30
+  gracePeriod: 30     # gracePeriod set to 30s, which is the default value and is enough
 
 apiService:
   tokenSecretName:
@@ -91,7 +91,7 @@ apiService:
     maxAuthRequestsPerSecond: "1.0"
     maxAuthRequestBurst: "2"
   nodeSelector: {}
-  gracePeriod: 30
+  gracePeriod: 30     # gracePeriod set to 30s, which is the default value and is enough
 
 bridge:
   image:
@@ -167,14 +167,14 @@ shipyardController:
       # projectNameMaxSize can be used to forbid project names longer than a certain size in Keptn
       projectNameMaxSize: 200
   nodeSelector: {}
-  gracePeriod: 30
+  gracePeriod: 30     # gracePeriod set to 30s, which is the default value and is enough
 
 secretService:
   image:
     repository: docker.io/keptn/secret-service
     tag: ""
   nodeSelector: {}
-  gracePeriod: 30
+  gracePeriod: 30     # gracePeriod set to 30s, which is the default value and is enough
 
 configurationService:
   image:
@@ -189,7 +189,7 @@ configurationService:
     GIT_KEPTN_USER: "keptn"
     GIT_KEPTN_EMAIL: "keptn@keptn.sh"
   nodeSelector: {}
-  gracePeriod: 30
+  gracePeriod: 30     # gracePeriod set to 30s, which is the default value and is enough
 
 resourceService:
   enabled: false
@@ -202,35 +202,35 @@ resourceService:
     GIT_KEPTN_EMAIL: "keptn@keptn.sh"
     DIRECTORY_STAGE_STRUCTURE: "false"
   nodeSelector: {}
-  gracePeriod: 30
+  gracePeriod: 30     # gracePeriod set to 30s, which is the default value and is enough
 
 mongodbDatastore:
   image:
     repository: docker.io/keptn/mongodb-datastore
     tag: ""
   nodeSelector: {}
-  gracePeriod: 30
+  gracePeriod: 30     # gracePeriod set to 30s, which is the default value and is enough
 
 lighthouseService:
   image:
     repository: docker.io/keptn/lighthouse-service
     tag: ""
   nodeSelector: {}
-  gracePeriod: 30
+  gracePeriod: 30     # gracePeriod set to 30s, which is the default value and is enough
 
 statisticsService:
   image:
     repository: docker.io/keptn/statistics-service
     tag: ""
   nodeSelector: {}
-  gracePeriod: 30
+  gracePeriod: 30     # gracePeriod set to 30s, which is the default value and is enough
 
 approvalService:
   image:
     repository: docker.io/keptn/approval-service
     tag: ""
   nodeSelector: {}
-  gracePeriod: 30
+  gracePeriod: 30     # gracePeriod set to 30s, which is the default value and is enough
 
 webhookService:
   enabled: true
@@ -238,7 +238,7 @@ webhookService:
     repository: docker.io/keptn/webhook-service
     tag: ""
   nodeSelector: {}
-  gracePeriod: 30
+  gracePeriod: 30     # gracePeriod set to 30s, which is the default value and is enough
 
 ingress:
   enabled: false

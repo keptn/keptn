@@ -74,9 +74,10 @@ readinessProbe:
 
 {{- define "control-plane.dist.prestop" -}}
 lifecycle:
-   preStop:
-      exec:
-       command: ["/bin/sleep", "90"]
+  preStop:
+    exec:
+      # using 30s of sleeping to be on the safe side before terminating the pod
+      command: ["/bin/sleep", "30"]
 {{- end }}
 
 {{- define "control-plane.dist.common.env.vars" -}}

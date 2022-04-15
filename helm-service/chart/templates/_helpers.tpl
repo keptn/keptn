@@ -64,8 +64,9 @@ Create the name of the service account to use
 
 {{- define "helm-service.prestop" -}}
 lifecycle:
-   preStop:
-      exec:
-       command: ["/bin/sleep", "60"]
+  preStop:
+    exec:
+      # using 60s of sleeping to be on the safe side before terminating the pod
+      command: ["/bin/sleep", "60"] 
 {{- end }}
 
