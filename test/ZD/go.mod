@@ -3,11 +3,14 @@ module github.com/keptn/keptn/test/ZD
 go 1.17
 
 require (
+	github.com/anandvarma/namegen v0.0.0-20220201190339-64f3be2de60a
 	github.com/benbjohnson/clock v1.3.0
+	github.com/keptn/go-utils v0.14.1-0.20220411063724-003ee3f85292
 	github.com/keptn/keptn/test/go-tests v0.0.0-20220414105226-0ff21f3a3353
 	github.com/steinfletcher/apitest v1.5.11
 	github.com/steinfletcher/apitest-jsonpath v1.7.1
 	github.com/stretchr/testify v1.7.1
+	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )
 
 require (
@@ -45,7 +48,6 @@ require (
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/imroc/req v0.3.2 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/keptn/go-utils v0.14.1-0.20220411063724-003ee3f85292 // indirect
 	github.com/keptn/kubernetes-utils v0.13.1-0.20220309123424-6e3f2bcaf831 // indirect
 	github.com/klauspost/compress v1.11.4 // indirect
 	github.com/klauspost/pgzip v1.2.5 // indirect
@@ -90,7 +92,6 @@ require (
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 	helm.sh/helm/v3 v3.6.1 // indirect
 	honnef.co/go/tools v0.0.1-2020.1.4 // indirect
 	k8s.io/api v0.22.8 // indirect
