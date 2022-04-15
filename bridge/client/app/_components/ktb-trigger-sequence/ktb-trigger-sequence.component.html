@@ -35,62 +35,65 @@
       </div>
 
       <!--   Sequence Selection   -->
-      <dt-radio-group
-        class="mb-3"
-        name="sequenceType"
-        fxLayout="row"
-        fxLayoutGap="15px"
-        fxLayoutAlign="start center"
-        [(ngModel)]="sequenceType"
-        uitestid="keptn-trigger-sequence-selection"
-      >
-        <dt-radio-button
-          *ngIf="!isQualityGatesOnly"
-          [value]="TRIGGER_SEQUENCE.DELIVERY"
-          uitestid="ktb-trigger-sequence-delivery-radio"
+      <dt-form-field>
+        <dt-label class="mb-1 mt-2">Sequence type</dt-label>
+        <dt-radio-group
+          class="mb-3"
+          name="sequenceType"
+          fxLayout="row"
+          fxLayoutGap="15px"
+          fxLayoutAlign="start center"
+          [(ngModel)]="sequenceType"
+          uitestid="keptn-trigger-sequence-selection"
         >
-          Delivery
-        </dt-radio-button>
-        <dt-radio-button [value]="TRIGGER_SEQUENCE.EVALUATION" uitestid="ktb-trigger-sequence-evaluation-radio"
-          >Evaluation</dt-radio-button
-        >
-        <div
-          *ngIf="customSequencesOfStage?.length === 0; else customSequencesSelect"
-          [dtOverlay]="noCustomSequencesOverlay"
-        >
-          <ng-container *ngTemplateOutlet="customSequencesSelect"></ng-container>
-        </div>
-        <ng-template #customSequencesSelect>
           <dt-radio-button
-            [value]="TRIGGER_SEQUENCE.CUSTOM"
-            [disabled]="!customSequencesOfStage?.length"
-            uitestid="ktb-trigger-sequence-custom-radio"
+            *ngIf="!isQualityGatesOnly"
+            [value]="TRIGGER_SEQUENCE.DELIVERY"
+            uitestid="ktb-trigger-sequence-delivery-radio"
           >
-            <dt-select
-              [disabled]="!customSequencesOfStage?.length"
-              [(ngModel)]="customFormData.sequence"
-              class="sequence-select"
-              name="customSequence"
-              placeholder="Select ..."
-              uitestid="keptn-trigger-custom-sequence-select"
-            >
-              <dt-option
-                *ngFor="let sequence of customSequencesOfStage"
-                [value]="sequence"
-                [textContent]="sequence"
-              ></dt-option>
-            </dt-select>
+            Delivery
           </dt-radio-button>
-        </ng-template>
-        <ng-container *ngIf="!customSequences">
-          <dt-loading-spinner></dt-loading-spinner>
-          <span>Loading custom sequences ...</span>
-        </ng-container>
+          <dt-radio-button [value]="TRIGGER_SEQUENCE.EVALUATION" uitestid="ktb-trigger-sequence-evaluation-radio"
+            >Evaluation</dt-radio-button
+          >
+          <div
+            *ngIf="customSequencesOfStage?.length === 0; else customSequencesSelect"
+            [dtOverlay]="noCustomSequencesOverlay"
+          >
+            <ng-container *ngTemplateOutlet="customSequencesSelect"></ng-container>
+          </div>
+          <ng-template #customSequencesSelect>
+            <dt-radio-button
+              [value]="TRIGGER_SEQUENCE.CUSTOM"
+              [disabled]="!customSequencesOfStage?.length"
+              uitestid="ktb-trigger-sequence-custom-radio"
+            >
+              <dt-select
+                [disabled]="!customSequencesOfStage?.length"
+                [(ngModel)]="customFormData.sequence"
+                class="sequence-select"
+                name="customSequence"
+                placeholder="Select ..."
+                uitestid="keptn-trigger-custom-sequence-select"
+              >
+                <dt-option
+                  *ngFor="let sequence of customSequencesOfStage"
+                  [value]="sequence"
+                  [textContent]="sequence"
+                ></dt-option>
+              </dt-select>
+            </dt-radio-button>
+          </ng-template>
+          <ng-container *ngIf="!customSequences">
+            <dt-loading-spinner></dt-loading-spinner>
+            <span>Loading custom sequences ...</span>
+          </ng-container>
 
-        <ng-template #noCustomSequencesOverlay>
-          There are no custom sequences available in the shipyard.yaml file
-        </ng-template>
-      </dt-radio-group>
+          <ng-template #noCustomSequencesOverlay>
+            There are no custom sequences available in the shipyard.yaml file
+          </ng-template>
+        </dt-radio-group>
+      </dt-form-field>
       <!--   Sequence Selection   -->
 
       <div class="mt-3" fxLayout="row" fxLayoutAlign="space-between">
@@ -152,7 +155,7 @@
           [(ngModel)]="deliveryFormData.values"
           dtInput
           placeholder='e.g.: {"key1": "stringVal", "key2": {"key3": true}'
-          class="resize-vertical"
+          style="resize: vertical"
           uitestid="keptn-trigger-delivery-values"
         ></textarea>
         <dt-hint>JSON object</dt-hint>
@@ -172,33 +175,38 @@
 
     <div fxLayout="column" *ngIf="state === TRIGGER_SEQUENCE.EVALUATION">
       <h2 uitestid="ktb-trigger-headline">Trigger an evaluation for {{ selectedService }} in {{ selectedStage }}</h2>
-
-      <div fxLayout="row" class="mb-3" fxLayoutGap="20px">
-        <!--   Start date     -->
+      <dt-radio-group
+        class="mb-3 mt-2"
+        name="evaluationTimeSelect"
+        fxLayout="row"
+        fxLayoutGap="15px"
+        uitestid="keptn-trigger-evaluation-type"
+        [(ngModel)]="evaluationFormData.evaluationType"
+      >
+        <dt-radio-button [value]="TRIGGER_EVALUATION_TIME.TIMEFRAME" uitestid="ktb-trigger-sequence-radio-timeframe">
+          Use timeframe
+        </dt-radio-button>
+        <dt-radio-button [value]="TRIGGER_EVALUATION_TIME.START_END" uitestid="ktb-trigger-sequence-radio-end-date">
+          Use start / end time
+        </dt-radio-button>
+      </dt-radio-group>
+      <div
+        fxLayout="row"
+        class="mb-3"
+        fxLayoutGap="15px"
+        *ngIf="evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.TIMEFRAME"
+      >
         <dt-form-field class="overlay-origin">
-          <dt-label [class.required]="evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.START_END"
-            >Start at</dt-label
-          >
-          <div class="input-overlay" (click)="timeFrameStartButton._elementRef?.nativeElement.click()"></div>
-          <input
-            readonly
-            dtInput
-            [(ngModel)]="evaluationFormData.startDatetime"
-            [errorStateMatcher]="showErrorStateMatcher"
-          />
-
-          <dt-hint *ngIf="evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.TIMEFRAME; else endDateHint">
-            Defaults to now if not filled in
-          </dt-hint>
-          <ng-template #endDateHint>
-            <dt-hint>Has to be before end date</dt-hint>
-          </ng-template>
+          <dt-label>Start at</dt-label>
+          <div class="input-overlay" (click)="timeFrameStartButton?._elementRef?.nativeElement.click()"></div>
+          <input readonly dtInput [(ngModel)]="evaluationFormData.timeframeStart" />
+          <dt-hint>Defaults to now if not filled in</dt-hint>
           <button
             dt-icon-button
             dtSuffix
             variant="nested"
-            [disabled]="!evaluationFormData.startDatetime"
-            (click)="setStartDate(undefined)"
+            [disabled]="!evaluationFormData.timeframeStart"
+            (click)="evaluationFormData.timeframeStart = undefined"
           >
             <dt-icon name="abort"></dt-icon>
           </button>
@@ -210,100 +218,100 @@
             ktbDatetimePicker
             [timeEnabled]="true"
             [secondsEnabled]="true"
-            (selectedDateTime)="setStartDate($event)"
+            (selectedDateTime)="evaluationFormData.timeframeStart = $event"
           >
             <dt-icon name="calendar"></dt-icon>
           </button>
         </dt-form-field>
 
-        <dt-radio-group
-          name="evaluationTimeSelect"
-          fxLayout="column"
-          fxLayoutGap="15px"
-          uitestid="keptn-trigger-evaluation-type"
-          [(ngModel)]="evaluationFormData.evaluationType"
-          fxFlex
-        >
-          <div fxLayout="row" fxLayoutAlign="start center">
-            <dt-radio-button
-              [value]="TRIGGER_EVALUATION_TIME.START_END"
-              uitestid="ktb-trigger-sequence-radio-end-date"
-            ></dt-radio-button>
-            <dt-form-field class="overlay-origin full-width-error" fxFlex>
-              <dt-label [class.required]="evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.START_END">
-                End at
-              </dt-label>
-              <div class="input-overlay" (click)="endDateButton?._elementRef?.nativeElement.click()"></div>
-              <input
-                readonly
-                dtInput
-                [(ngModel)]="evaluationFormData.endDatetime"
-                [errorStateMatcher]="showErrorStateMatcher"
-                [disabled]="evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.TIMEFRAME"
-              />
-              <button
-                dt-icon-button
-                dtSuffix
-                variant="nested"
-                uitestid="ktb-trigger-button-reset-end-date"
-                [disabled]="
-                  !evaluationFormData.endDatetime ||
-                  evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.TIMEFRAME
-                "
-                (click)="setEndDate(undefined)"
-              >
-                <dt-icon name="abort"></dt-icon>
-              </button>
-              <button
-                #endDateButton
-                dt-icon-button
-                dtSuffix
-                ktbDatetimePicker
-                uitestid="keptn-trigger-button-end-date"
-                [timeEnabled]="true"
-                [disabled]="evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.TIMEFRAME"
-                [secondsEnabled]="true"
-                (selectedDateTime)="setEndDate($event)"
-              >
-                <dt-icon name="calendar"></dt-icon>
-              </button>
-              <dt-hint>Has to be after start date</dt-hint>
-              <dt-error
-                *ngIf="
-                  (!isValidStartBeforeEnd || !isValidStartEndDuration) &&
-                  evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.START_END
-                "
-                uitestid="keptn-trigger-evaluation-date-error"
-              >
-                <ng-container *ngIf="!isValidStartBeforeEnd">Start date must be before end date</ng-container>
-                <ng-container *ngIf="isValidStartBeforeEnd && !isValidStartEndDuration">
-                  The duration has to be minimum 1 minute
-                </ng-container>
-              </dt-error>
-            </dt-form-field>
-          </div>
+        <ktb-time-input
+          [label]="'Timeframe'"
+          [hint]="'Min. 1m, defaults to 5m if not filled in'"
+          [error]="isValidTimeframe ? '' : 'Timeframe has to be minimum 1 minute'"
+          [timeframe]="evaluationFormData.timeframe"
+          (timeChanged)="setTimeframe($event)"
+        ></ktb-time-input>
+      </div>
 
-          <div fxLayout="row" fxLayoutAlign="start center">
-            <dt-radio-button
-              [value]="TRIGGER_EVALUATION_TIME.TIMEFRAME"
-              uitestid="ktb-trigger-sequence-radio-timeframe"
-            ></dt-radio-button>
-            <ktb-time-input
-              [label]="'Timeframe'"
-              [hint]="'Min. 1m, defaults to 5m if not filled in'"
-              [error]="
-                isValidTimeframe || evaluationFormData.evaluationType !== TRIGGER_EVALUATION_TIME.TIMEFRAME
-                  ? ''
-                  : 'Timeframe has to be minimum 1 minute'
-              "
-              [timeframe]="evaluationFormData.timeframe"
-              (timeChanged)="setTimeframe($event)"
-              [microsEnabled]="false"
-              [millisEnabled]="false"
-              [disabled]="evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.START_END"
-            ></ktb-time-input>
-          </div>
-        </dt-radio-group>
+      <div
+        fxLayout="row"
+        class="mb-3"
+        fxLayoutGap="15px"
+        *ngIf="evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.START_END"
+      >
+        <dt-form-field class="overlay-origin">
+          <dt-label class="required">Start at</dt-label>
+          <div class="input-overlay" (click)="startDateButton?._elementRef?.nativeElement.click()"></div>
+          <input
+            readonly
+            dtInput
+            [(ngModel)]="evaluationFormData.startDatetime"
+            [errorStateMatcher]="showErrorStateMatcher"
+          />
+          <button
+            dt-icon-button
+            dtSuffix
+            variant="nested"
+            [disabled]="!evaluationFormData.startDatetime"
+            (click)="setStartDate(undefined)"
+          >
+            <dt-icon name="abort"></dt-icon>
+          </button>
+          <button
+            #startDateButton
+            dt-icon-button
+            dtSuffix
+            ktbDatetimePicker
+            uitestid="keptn-trigger-button-starttime"
+            [timeEnabled]="true"
+            [secondsEnabled]="true"
+            (selectedDateTime)="setStartDate($event)"
+          >
+            <dt-icon name="calendar"></dt-icon>
+          </button>
+          <dt-hint>Has to be before end date</dt-hint>
+        </dt-form-field>
+        <dt-form-field class="overlay-origin full-width-error">
+          <dt-label class="required">End at</dt-label>
+          <div class="input-overlay" (click)="endDateButton?._elementRef?.nativeElement.click()"></div>
+          <input
+            readonly
+            dtInput
+            [(ngModel)]="evaluationFormData.endDatetime"
+            [errorStateMatcher]="showErrorStateMatcher"
+          />
+          <button
+            dt-icon-button
+            dtSuffix
+            variant="nested"
+            [disabled]="!evaluationFormData.endDatetime"
+            (click)="setEndDate(undefined)"
+          >
+            <dt-icon name="abort"></dt-icon>
+          </button>
+          <button
+            #endDateButton
+            dt-icon-button
+            dtSuffix
+            ktbDatetimePicker
+            uitestid="keptn-trigger-button-end-date"
+            [timeEnabled]="true"
+            [secondsEnabled]="true"
+            (selectedDateTime)="setEndDate($event)"
+          >
+            <dt-icon name="calendar"></dt-icon>
+          </button>
+          <dt-hint>Has to be after start date</dt-hint>
+          <dt-error
+            *ngIf="!isValidStartBeforeEnd || !isValidStartEndDuration"
+            uitestid="keptn-trigger-evaluation-date-error"
+          >
+            <ng-container *ngIf="!isValidStartBeforeEnd">Start date must be before end date</ng-container>
+            <ng-container *ngIf="isValidStartBeforeEnd && !isValidStartEndDuration"
+              >The duration has to be minimum 1 minute
+            </ng-container>
+          </dt-error>
+        </dt-form-field>
       </div>
 
       <div class="mb-3 full-width" fxLayout="row">

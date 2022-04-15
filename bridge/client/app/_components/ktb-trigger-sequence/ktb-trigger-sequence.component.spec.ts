@@ -281,6 +281,7 @@ describe('KtbTriggerSequenceComponent', () => {
       evaluationType: TRIGGER_EVALUATION_TIME.START_END,
       labels: 'key1=val1',
       timeframe: undefined,
+      timeframeStart: undefined,
       startDatetime: start.toISOString(),
       endDatetime: end.toISOString(),
     };
@@ -321,7 +322,8 @@ describe('KtbTriggerSequenceComponent', () => {
         millis: undefined,
         micros: undefined,
       },
-      startDatetime: date.toISOString(),
+      timeframeStart: date.toISOString(),
+      startDatetime: undefined,
       endDatetime: undefined,
     };
 
@@ -360,6 +362,7 @@ describe('KtbTriggerSequenceComponent', () => {
         millis: undefined,
         micros: undefined,
       },
+      timeframeStart: undefined,
       startDatetime: undefined,
       endDatetime: undefined,
     };
@@ -391,7 +394,8 @@ describe('KtbTriggerSequenceComponent', () => {
         millis: undefined,
         micros: undefined,
       },
-      startDatetime: '',
+      timeframeStart: '',
+      startDatetime: undefined,
       endDatetime: undefined,
     };
 
@@ -430,7 +434,8 @@ describe('KtbTriggerSequenceComponent', () => {
         millis: undefined,
         micros: undefined,
       },
-      startDatetime: date.toISOString(),
+      timeframeStart: date.toISOString(),
+      startDatetime: undefined,
       endDatetime: undefined,
     };
 

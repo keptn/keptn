@@ -6,7 +6,7 @@ enum TriggerSequenceView {
   CUSTOM,
 }
 
-type TimeUnits = 'hours' | 'minutes' | 'seconds';
+type TimeUnits = 'hours' | 'minutes' | 'seconds' | 'micros' | 'millis';
 
 export class TriggerSequenceSubPage {
   private environmentPage = new EnvironmentPage();
@@ -173,22 +173,8 @@ export class TriggerSequenceSubPage {
     return this;
   }
 
-  public assertEndDateEnabled(status: boolean, resetEnabled: boolean): this {
-    cy.byTestId('ktb-trigger-button-reset-end-date').should(resetEnabled ? 'be.enabled' : 'be.disabled');
-    cy.byTestId('keptn-trigger-button-end-date').should(status ? 'be.enabled' : 'be.disabled');
-    return this;
-  }
-
   public selectEvaluationTimeframe(): this {
     cy.byTestId('ktb-trigger-sequence-radio-timeframe').click();
-    return this;
-  }
-
-  public assertTimeframeEnabled(status: boolean): this {
-    cy.byTestId('keptn-time-input-hours').should(status ? 'be.enabled' : 'be.disabled');
-    cy.byTestId('keptn-time-input-minutes').should(status ? 'be.enabled' : 'be.disabled');
-    cy.byTestId('keptn-time-input-seconds').should(status ? 'be.enabled' : 'be.disabled');
-    cy.get('ktb-time-input .timeframe-input').should(status ? 'not.have.class' : 'have.class', 'disabled');
     return this;
   }
 

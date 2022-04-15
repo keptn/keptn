@@ -305,9 +305,9 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy, AfterView
         data.evaluation.timeframe = '5m';
       }
 
-      if (this.evaluationFormData.startDatetime) {
+      if (this.evaluationFormData.timeframeStart) {
         // This has only to be set, if entered by the user. If not, we can just set the timeframe and let lighthouse-service do the calculation
-        data.evaluation.start = moment(this.evaluationFormData.startDatetime).toISOString();
+        data.evaluation.start = moment(this.evaluationFormData.timeframeStart).toISOString();
       }
     } else if (this.evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.START_END) {
       data.evaluation.start = moment(this.evaluationFormData.startDatetime || undefined).toISOString();

@@ -127,6 +127,14 @@ describe('Trigger a sequence', () => {
       .assertTriggerSequenceEnabled(false)
       .assertEvaluationTimeframeErrorExists(true)
       .clearEvaluationTimeInput('seconds')
+      .typeTimeframe('millis', '59999')
+      .assertTriggerSequenceEnabled(false)
+      .assertEvaluationTimeframeErrorExists(true)
+      .clearEvaluationTimeInput('millis')
+      .typeTimeframe('micros', '59999999')
+      .assertTriggerSequenceEnabled(false)
+      .assertEvaluationTimeframeErrorExists(true)
+      .clearEvaluationTimeInput('micros')
 
       .typeTimeframe('minutes', '5')
       .assertTriggerSequenceEnabled(true)
@@ -277,30 +285,6 @@ describe('Trigger an evaluation sequence', () => {
       .setStartDate(0, '1', '15', '0')
       .assertEvaluationDateErrorExists(false)
       .assertTriggerSequenceEnabled(true);
-  });
-
-  it('should have disabled timeframe if end date is selected', () => {
-    triggerSequencePage.selectEvaluationEndDate().assertTimeframeEnabled(false).assertEndDateEnabled(true, false);
-  });
-
-  it('should have disabled timeframe even if filled and if end date is selected', () => {
-    triggerSequencePage
-      .typeTimeframe('hours', '1')
-      .selectEvaluationEndDate()
-      .assertTimeframeEnabled(false)
-      .assertEndDateEnabled(true, false);
-  });
-
-  it('should have disabled endDate if timeframe is selected', () => {
-    triggerSequencePage.assertTimeframeEnabled(true).assertEndDateEnabled(false, false);
-  });
-
-  it('should have disabled endDate even if filled and timeframe is selected', () => {
-    triggerSequencePage
-      .selectEvaluationEndDate()
-      .setEndDate(0, '1', '1', '1')
-      .selectEvaluationTimeframe()
-      .assertEndDateEnabled(false, false);
   });
 
   it('should have disabled button if switched from valid timeframe to empty endDate', () => {
