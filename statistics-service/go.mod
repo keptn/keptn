@@ -13,7 +13,7 @@ require (
 	github.com/stretchr/testify v1.7.1
 	github.com/swaggo/swag v1.7.9
 	github.com/tryvium-travels/memongo v0.4.0
-	go.mongodb.org/mongo-driver v1.8.4
+	go.mongodb.org/mongo-driver v1.8.5
 )
 
 require (
