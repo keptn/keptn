@@ -80,7 +80,7 @@ remediationService:
     repository: docker.io/keptn/remediation-service
     tag: ""
   nodeSelector: {}
-  gracePeriod: 90     # gracePeriod set to preStop hook +30s
+  gracePeriod: 120     # gracePeriod set to preStop hook +30s
 
 apiService:
   tokenSecretName:
@@ -91,7 +91,7 @@ apiService:
     maxAuthRequestsPerSecond: "1.0"
     maxAuthRequestBurst: "2"
   nodeSelector: {}
-  gracePeriod: 90     # gracePeriod set to preStop hook +30s
+  gracePeriod: 120     # gracePeriod set to preStop hook +30s
 
 bridge:
   image:
@@ -167,14 +167,14 @@ shipyardController:
       # projectNameMaxSize can be used to forbid project names longer than a certain size in Keptn
       projectNameMaxSize: 200
   nodeSelector: {}
-  gracePeriod: 90     # gracePeriod set to preStop hook +30s
+  gracePeriod: 120     # gracePeriod set to preStop hook +30s
 
 secretService:
   image:
     repository: docker.io/keptn/secret-service
     tag: ""
   nodeSelector: {}
-  gracePeriod: 90     # gracePeriod set to preStop hook +30s
+  gracePeriod: 120     # gracePeriod set to preStop hook +30s
 
 configurationService:
   image:
@@ -189,7 +189,7 @@ configurationService:
     GIT_KEPTN_USER: "keptn"
     GIT_KEPTN_EMAIL: "keptn@keptn.sh"
   nodeSelector: {}
-  gracePeriod: 90     # gracePeriod set to preStop hook +30s
+  gracePeriod: 120     # gracePeriod set to preStop hook +30s
 
 resourceService:
   enabled: false
@@ -202,35 +202,35 @@ resourceService:
     GIT_KEPTN_EMAIL: "keptn@keptn.sh"
     DIRECTORY_STAGE_STRUCTURE: "false"
   nodeSelector: {}
-  gracePeriod: 90     # gracePeriod set to preStop hook +30s
+  gracePeriod: 120     # gracePeriod set to preStop hook +30s
 
 mongodbDatastore:
   image:
     repository: docker.io/keptn/mongodb-datastore
     tag: ""
   nodeSelector: {}
-  gracePeriod: 90     # gracePeriod set to preStop hook +30s
+  gracePeriod: 120     # gracePeriod set to preStop hook +30s
 
 lighthouseService:
   image:
     repository: docker.io/keptn/lighthouse-service
     tag: ""
   nodeSelector: {}
-  gracePeriod: 90     # gracePeriod set to preStop hook +30s
+  gracePeriod: 120     # gracePeriod set to preStop hook +30s
 
 statisticsService:
   image:
     repository: docker.io/keptn/statistics-service
     tag: ""
   nodeSelector: {}
-  gracePeriod: 90     # gracePeriod set to preStop hook +30s
+  gracePeriod: 120     # gracePeriod set to preStop hook +30s
 
 approvalService:
   image:
     repository: docker.io/keptn/approval-service
     tag: ""
   nodeSelector: {}
-  gracePeriod: 90     # gracePeriod set to preStop hook +30s
+  gracePeriod: 120     # gracePeriod set to preStop hook +30s
 
 webhookService:
   enabled: true
@@ -238,7 +238,7 @@ webhookService:
     repository: docker.io/keptn/webhook-service
     tag: ""
   nodeSelector: {}
-  gracePeriod: 90     # gracePeriod set to preStop hook +30s
+  gracePeriod: 120     # gracePeriod set to preStop hook +30s
 
 ingress:
   enabled: false
