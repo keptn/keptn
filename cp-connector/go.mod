@@ -2,7 +2,7 @@ module github.com/keptn/keptn/cp-connector
 
 go 1.17
 
-require github.com/keptn/go-utils v0.13.1-0.20220318125157-fe974e59cc65
+require github.com/keptn/go-utils v0.14.0
 
 require (
 	github.com/benbjohnson/clock v1.3.0
