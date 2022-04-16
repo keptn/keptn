@@ -9,7 +9,7 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.14.1-0.20220414081235-2e23eb712e3d
 	github.com/nats-io/nats-server/v2 v2.7.2
-	github.com/nats-io/nats.go v1.13.1-0.20220121202836-972a071d373d
+	github.com/nats-io/nats.go v1.14.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.27.0
