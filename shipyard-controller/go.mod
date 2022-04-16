@@ -16,7 +16,7 @@ require (
 	github.com/nats-io/nats.go v1.13.1-0.20220308171302-2f2f6968e98d
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
-	github.com/swaggo/swag v1.7.9
+	github.com/swaggo/swag v1.8.1
 	github.com/tryvium-travels/memongo v0.4.0
 	go.mongodb.org/mongo-driver v1.8.5
 	go.uber.org/zap v1.13.0 // indirect
