@@ -113,6 +113,7 @@ describe('Trigger a sequence', () => {
       .typeEvaluationLabels('key1=val1')
       .assertTriggerSequenceEnabled(true)
       .setStartDate(0, '1', '15', '0')
+      .assertStartDateDisplayValue('2022-03-01 01:15')
       .assertTriggerSequenceEnabled(true)
 
       .typeTimeframe('hours', '0')
@@ -262,13 +263,16 @@ describe('Trigger an evaluation sequence', () => {
   it('should not show date error if invalid end date is changed to valid end date', () => {
     triggerSequencePage
       .selectEvaluationEndDate()
-      .setStartDate(1, '1', '15', '0')
+      .setStartDate(0, '2', '15', '0')
+      .assertStartDateDisplayValue('2022-03-01 02:15')
       .assertTriggerSequenceEnabled(false)
       .setEndDate(0, '1', '15', '0')
+      .assertEndDateDisplayValue('2022-03-02 01:15')
       .assertEvaluationDateErrorExists(true)
       .assertTriggerSequenceEnabled(false)
 
-      .setEndDate(2, '1', '15', '0')
+      .setEndDate(0, '3', '15', '0')
+      .assertEndDateDisplayValue('2022-03-02 03:15')
       .assertEvaluationDateErrorExists(false)
       .assertTriggerSequenceEnabled(true);
   });
@@ -276,9 +280,9 @@ describe('Trigger an evaluation sequence', () => {
   it('should not show date error if invalid start date is changed to valid start date', () => {
     triggerSequencePage
       .selectEvaluationEndDate()
-      .setStartDate(2, '1', '15', '0')
+      .setStartDate(0, '3', '15', '0')
       .assertTriggerSequenceEnabled(false)
-      .setEndDate(1, '1', '15', '0')
+      .setEndDate(0, '2', '15', '0')
       .assertEvaluationDateErrorExists(true)
       .assertTriggerSequenceEnabled(false)
 

@@ -75,6 +75,16 @@ export class TriggerSequenceSubPage {
     return this.clickEndTime().selectDateTime(calElement, hours, minutes, seconds);
   }
 
+  public assertStartDateDisplayValue(value: string): this {
+    cy.byTestId('keptn-trigger-evaluation-start-date').should('have.value', value);
+    return this;
+  }
+
+  public assertEndDateDisplayValue(value: string): this {
+    cy.byTestId('keptn-trigger-evaluation-end-date').should('have.value', value);
+    return this;
+  }
+
   public selectDateTime(calElement: number, hours: string, minutes: string, seconds: string): this {
     cy.get('.dt-calendar-header-button-prev-month').click();
     cy.get('.dt-calendar-table-cell').eq(calElement).click();

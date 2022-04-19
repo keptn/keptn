@@ -201,7 +201,12 @@
         <dt-form-field class="overlay-origin">
           <dt-label>Start at</dt-label>
           <div class="input-overlay" (click)="timeframeStartButton?._elementRef?.nativeElement.click()"></div>
-          <input readonly dtInput [(ngModel)]="evaluationFormData.timeframeStart | formatDate" />
+          <input
+            uitestid="keptn-trigger-evaluation-timeframe-start"
+            readonly
+            dtInput
+            [ngModel]="evaluationFormData.timeframeStart | formatDate"
+          />
           <dt-hint>Defaults to now if not filled in</dt-hint>
           <button
             dt-icon-button
@@ -245,6 +250,7 @@
           <dt-label class="required">Start at</dt-label>
           <div class="input-overlay" (click)="startDateButton?._elementRef?.nativeElement.click()"></div>
           <input
+            uitestid="keptn-trigger-evaluation-start-date"
             readonly
             dtInput
             [ngModel]="evaluationFormData.startDatetime | formatDate"
@@ -277,6 +283,7 @@
           <dt-label class="required">End at</dt-label>
           <div class="input-overlay" (click)="endDateButton?._elementRef?.nativeElement.click()"></div>
           <input
+            uitestid="keptn-trigger-evaluation-end-date"
             readonly
             dtInput
             [ngModel]="evaluationFormData.endDatetime | formatDate"
