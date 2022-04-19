@@ -15,6 +15,10 @@ describe('SanitizeHtml', () => {
     expect(pipe.transform('<p>Some text</p>')).toBe('<p>Some text</p>');
   });
 
+  it('sanitize html with classes', () => {
+    expect(pipe.transform('<p class="align-left">Some text</p>')).toBe('<p class="align-left">Some text</p>');
+  });
+
   it('sanitize html with some script', () => {
     expect(pipe.transform('<p>Some text</p><script>alert("hello world")</script>')).toBe('<p>Some text</p>');
   });
