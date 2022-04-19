@@ -50,6 +50,28 @@ func (suite *TestSuiteEnv) Test_API_Service() {
 
 }
 
+func (suite *TestSuiteEnv) Test_Statistic_Service() {
+
+	apiURL := suite.keptnAPIURL + "/statistics/v1"
+
+	apitest.New("Test statistics-service").EnableNetworking(getClient(1)).Debug().Get(apiURL+"/statistics").
+		Query("from", "1648190000").Query("to", "1648195292").
+		Headers(map[string]string{"x-token": suite.token}).
+		Expect(suite.T()).Status(http.StatusNotFound).
+		Assert(jsonpath.Equal(`$.message`, "no statistics found for selected time frame")).End()
+
+}
+
+func (suite *TestSuiteEnv) Test_Secret_Service() {
+
+	apiURL := suite.keptnAPIURL + "/secrets/v1"
+	apitest.New("Test secret-service").EnableNetworking(getClient(1)).Debug().
+		Get(apiURL + "/scope").
+		Headers(map[string]string{"x-token": suite.token}).
+		Expect(suite.T()).Status(http.StatusOK).Assert(jsonpath.Contains(`$.scopes`, "keptn-default")).End()
+
+}
+
 func (suite *TestSuiteEnv) Test_Configuration_Service() {
 
 	apiURL := suite.keptnAPIURL + "/configuration-service/v1"
