@@ -38,7 +38,9 @@ func TestZeroDowntime(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	//start update
-	go rollingUpgrade(cancel, 2, t)
+	go t.Run("rolling update", func(t *testing.T) {
+		rollingUpgrade(cancel, 2, t)
+	})
 
 	// run tests meanwhile
 	go func() {
@@ -62,6 +64,7 @@ func TestZeroDowntime(t *testing.T) {
 			t.Run("Summary: ", printResults)
 			return
 		case <-seqTicker.C:
+			wg.Add(2)
 			go t.Run("Sequences test", Test_Run)
 
 		}

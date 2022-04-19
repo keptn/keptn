@@ -22,24 +22,6 @@ type TestEvaluation struct {
 	project string
 }
 
-//type TriggeredSequences struct {
-//	sequences []TriggeredSequence
-//	mutex     *sync.Mutex
-//}
-
-//func NewTriggeredSequences() *TriggeredSequences {
-//	return &TriggeredSequences{
-//		sequences: []TriggeredSequence{},
-//		mutex:     new(sync.Mutex),
-//	}
-//}
-//
-//func (ts *TriggeredSequences) Add(s TriggeredSequence) {
-//	ts.mutex.Lock()
-//	defer ts.mutex.Unlock()
-//	ts.sequences = append(ts.sequences, s)
-//}
-
 type TriggeredSequence struct {
 	keptnContext string
 	projectName  string
@@ -68,7 +50,6 @@ func (suite *TestEvaluation) SetupSuite() {
 }
 
 func Test_Run(t *testing.T) {
-	wg.Add(2)
 	atomic.AddUint64(&FiredSequences, 2)
 	suite.Run(t, new(TestEvaluation))
 }
