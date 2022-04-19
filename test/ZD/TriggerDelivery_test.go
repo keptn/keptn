@@ -5,7 +5,6 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/stretchr/testify/suite"
-	"sync"
 	"testing"
 	"time"
 
@@ -23,23 +22,23 @@ type TestEvaluation struct {
 	project string
 }
 
-type TriggeredSequences struct {
-	sequences []TriggeredSequence
-	mutex     *sync.Mutex
-}
+//type TriggeredSequences struct {
+//	sequences []TriggeredSequence
+//	mutex     *sync.Mutex
+//}
 
-func NewTriggeredSequences() *TriggeredSequences {
-	return &TriggeredSequences{
-		sequences: []TriggeredSequence{},
-		mutex:     new(sync.Mutex),
-	}
-}
-
-func (ts *TriggeredSequences) Add(s TriggeredSequence) {
-	ts.mutex.Lock()
-	defer ts.mutex.Unlock()
-	ts.sequences = append(ts.sequences, s)
-}
+//func NewTriggeredSequences() *TriggeredSequences {
+//	return &TriggeredSequences{
+//		sequences: []TriggeredSequence{},
+//		mutex:     new(sync.Mutex),
+//	}
+//}
+//
+//func (ts *TriggeredSequences) Add(s TriggeredSequence) {
+//	ts.mutex.Lock()
+//	defer ts.mutex.Unlock()
+//	ts.sequences = append(ts.sequences, s)
+//}
 
 type TriggeredSequence struct {
 	keptnContext string
@@ -70,6 +69,7 @@ func (suite *TestEvaluation) SetupSuite() {
 
 func Test_Run(t *testing.T) {
 	wg.Add(2)
+	atomic.AddUint64(&FiredSequences, 2)
 	suite.Run(t, new(TestEvaluation))
 }
 

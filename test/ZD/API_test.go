@@ -23,17 +23,6 @@ func (suite *TestSuiteEnv) SetupSuite() {
 	suite.Assert().Nil(err)
 }
 
-// Running after each test
-func (suite *TestSuiteEnv) TearDownTest() {
-
-}
-
-// Running after all tests are completed
-func (suite *TestSuiteEnv) TearDownSuite() {
-
-}
-
-// This gets run automatically by `go test` so we call `suite.Run` inside it
 func TestAPIs(t *testing.T) {
 	suite.Run(t, new(TestSuiteEnv))
 }
@@ -97,7 +86,6 @@ func (suite *TestSuiteEnv) Test_ControlPlane() {
 
 	apiURL := suite.keptnAPIURL + "/controlPlane/v1"
 
-	// can add Body(`{"name": "jon", "id": "1234"}`) or .Assert(jsonpath.Equal(`$.key`, value )) Debug().
 	apitest.New("Test control-plane: check uniform").EnableNetworking(getClient(1)).Debug().
 		Get(apiURL+"/uniform/registration").Query("name", "lighthouse-service").
 		Headers(map[string]string{"x-token": suite.token}).
