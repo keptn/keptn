@@ -111,8 +111,6 @@ func (suite *TestEvaluation) checkSequence(keptnContext string, sequence Trigger
 		suite.T().Logf("Sequence %s in stage %s has not been finished", keptnContext, sequence.projectName)
 		atomic.AddUint64(&FailedSequences, 1)
 	}
-
-	suite.T().Logf("Finished %s in %s ", sequence.sequenceName, sequence.projectName)
 }
 
 //func CheckSequence(sequence TriggeredSequence, wg sync.WaitGroup, t *testing.T) {
