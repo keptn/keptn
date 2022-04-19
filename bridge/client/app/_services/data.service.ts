@@ -236,10 +236,10 @@ export class DataService {
   public setGitUpstreamUrl(
     projectName: string,
     gitUrl: string,
-    gitUser: string,
-    gitToken: string
+    gitToken: string,
+    gitUser?: string
   ): Observable<unknown> {
-    return this.apiService.sendGitUpstreamUrl(projectName, gitUrl, gitUser, gitToken).pipe(
+    return this.apiService.sendGitUpstreamUrl(projectName, gitUrl, gitToken, gitUser).pipe(
       tap(() => {
         this.loadProject(projectName);
       })
