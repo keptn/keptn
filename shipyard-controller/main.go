@@ -297,6 +297,7 @@ func main() {
 	GracefulShutdown(wg, srv, func() {
 		// invoke the cancel() function to shut down the periodically executed
 		// tasks such as nats subscription, sequence watcher, sequence dispatcher, event dispatcher
+		// this should ensure that no iteration of either of these tasks is attempted to be started right before the termination of the pod
 		cancel()
 	})
 
