@@ -103,8 +103,11 @@
                           [href]="deployment.deploymentUrl"
                           [title]="'View ' + service.serviceName + ' in ' + selectedStage.stageName"
                           target="_blank"
-                          ><button dt-icon-button variant="nested"><dt-icon name="externallink"></dt-icon></button
-                        ></a>
+                        >
+                          <button dt-icon-button variant="nested">
+                            <dt-icon name="externallink"></dt-icon>
+                          </button>
+                        </a>
                       </ng-container>
                     </div>
                   </dt-info-group-title>
@@ -175,7 +178,7 @@
                     variant="nested"
                     *ngIf="!remediationAction.isFinished()"
                   >
-                    <dt-loading-spinner aria-label="Action is running..."></dt-loading-spinner>
+                    <ktb-loading-spinner aria-label="Action is running..."></ktb-loading-spinner>
                   </button>
                   <ng-container
                     *ngIf="remediationSequence.getEvaluationTrace(service.stage)?.getFinishedEvent() as evaluation"
@@ -200,11 +203,9 @@
                           ?.getEvaluationFinishedEvent() as evaluation
                       "
                     >
-                      <ktb-evaluation-info
-                        class="display-inline-block"
-                        [evaluation]="evaluation"
-                      ></ktb-evaluation-info> </ng-container
-                    >.
+                      <ktb-evaluation-info class="display-inline-block" [evaluation]="evaluation"></ktb-evaluation-info>
+                    </ng-container>
+                    .
                   </p>
                 </div>
                 <button

@@ -24,8 +24,8 @@
             </ng-template>
             <ng-template #isGlobalCheckbox>
               <dt-checkbox formControlName="isGlobal" uitestid="ktb-modify-subscription-project-checkbox"
-                >Use for all projects</dt-checkbox
-              >
+                >Use for all projects
+              </dt-checkbox>
             </ng-template>
           </dt-form-field>
         </div>
@@ -75,8 +75,8 @@
             uitestid="edit-subscription-field-filterStageService"
           ></dt-filter-field>
           <dt-error *ngIf="data.subscription.filter.services?.length && !data.subscription.filter.stages?.length"
-            >If you add a service you must add a stage</dt-error
-          >
+            >If you add a service you must add a stage
+          </dt-error>
         </div>
         <ktb-payload-viewer
           [buttonTitle]="'Show example payload'"
@@ -101,10 +101,10 @@
             (click)="updateSubscription(data.project.projectName, data.integrationId, data.subscription, data.webhook)"
             dt-button
           >
-            <dt-loading-spinner
+            <ktb-loading-spinner
               *ngIf="updating"
               aria-label="{{ editMode ? 'Updating' : 'Creating' }} subscription"
-            ></dt-loading-spinner>
+            ></ktb-loading-spinner>
             {{ editMode ? 'Update' : 'Create' }} subscription
           </button>
           <button type="reset" dt-button variant="secondary" [routerLink]="editMode ? '../../../' : '../../'">
@@ -116,6 +116,6 @@
     </ng-container>
   </ng-container>
   <ng-template #loading>
-    <dt-loading-spinner></dt-loading-spinner>
+    <ktb-loading-distractor>Loading ...</ktb-loading-distractor>
   </ng-template>
 </div>

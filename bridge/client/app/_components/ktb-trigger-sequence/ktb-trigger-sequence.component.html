@@ -23,7 +23,6 @@
           <dt-select
             [disabled]="stages.length === 0"
             [(ngModel)]="selectedStage"
-            (selectionChange)="selectedStageChanged()"
             placeholder="Select ..."
             uitestid="keptn-trigger-stage-selection"
           >
@@ -33,72 +32,6 @@
           </dt-select>
         </dt-form-field>
       </div>
-
-      <!--   Sequence Selection   -->
-      <dt-form-field>
-        <dt-label class="mb-1 mt-2">Sequence</dt-label>
-        <dt-radio-group
-          class="mb-3"
-          name="sequenceType"
-          fxLayout="row"
-          fxLayoutGap="15px"
-          fxLayoutAlign="start center"
-          [(ngModel)]="sequenceType"
-          uitestid="keptn-trigger-sequence-selection"
-        >
-          <dt-radio-button
-            *ngIf="!isQualityGatesOnly"
-            [value]="TRIGGER_SEQUENCE.DELIVERY"
-            uitestid="ktb-trigger-sequence-delivery-radio"
-          >
-            Delivery
-          </dt-radio-button>
-          <dt-radio-button [value]="TRIGGER_SEQUENCE.EVALUATION" uitestid="ktb-trigger-sequence-evaluation-radio"
-            >Evaluation</dt-radio-button
-          >
-          <div
-            *ngIf="customSequencesOfStage?.length === 0; else customSequencesSelect"
-            [dtOverlay]="noCustomSequencesOverlay"
-            fxFlex="0 1 300px"
-          >
-            <ng-container *ngTemplateOutlet="customSequencesSelect"></ng-container>
-          </div>
-          <ng-template #customSequencesSelect>
-            <dt-radio-button
-              [value]="TRIGGER_SEQUENCE.CUSTOM"
-              [disabled]="!customSequencesOfStage?.length"
-              uitestid="ktb-trigger-sequence-custom-radio"
-              class="custom-sequence-radio"
-              fxFlex="0 1 300px"
-            >
-              <dt-select
-                [disabled]="!customSequencesOfStage?.length"
-                [(ngModel)]="customFormData.sequence"
-                class="sequence-select"
-                name="customSequence"
-                placeholder="Select ..."
-                uitestid="keptn-trigger-custom-sequence-select"
-              >
-                <dt-option
-                  *ngFor="let sequence of customSequencesOfStage"
-                  [value]="sequence"
-                  [textContent]="sequence"
-                ></dt-option>
-              </dt-select>
-            </dt-radio-button>
-          </ng-template>
-          <div *ngIf="!customSequences">
-            <dt-loading-spinner></dt-loading-spinner>
-            <span>Loading custom sequences ...</span>
-          </div>
-
-          <ng-template #noCustomSequencesOverlay>
-            There are no custom sequences available for this stage in the shipyard.yaml file
-          </ng-template>
-        </dt-radio-group>
-      </dt-form-field>
-      <!--   Sequence Selection   -->
-
       <div class="mt-3" fxLayout="row" fxLayoutAlign="space-between">
         <button dt-button variant="secondary" (click)="formClosed.emit()" uitestid="keptn-trigger-button-close">
           Cancel
@@ -382,7 +315,7 @@
       (click)="triggerSequence()"
     >
       <dt-icon name="flash" *ngIf="!isLoading"></dt-icon>
-      <dt-loading-spinner *ngIf="isLoading"></dt-loading-spinner>
+      <ktb-loading-spinner *ngIf="isLoading"></ktb-loading-spinner>
       Trigger sequence
     </button>
   </div>

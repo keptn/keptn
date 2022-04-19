@@ -8,9 +8,11 @@
   &.success {
     border: 1px solid $cta-color !important;
   }
+
   &.warning {
     border: 1px solid $warning-color !important;
   }
+
   &.error {
     border: 1px solid $error-color !important;
   }
@@ -21,7 +23,7 @@
   color: white;
 }
 
-dt-loading-spinner {
+ktb-loading-spinner {
   height: 20px;
   width: 20px;
   vertical-align: bottom;
