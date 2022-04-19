@@ -12,5 +12,3 @@ Object.defineProperty(window, 'DragEvent', {
 TestUtils.mockWindowMatchMedia();
 
 jest.setTimeout(30000);
-
-process.env.TZ = 'Europe/Berlin';
