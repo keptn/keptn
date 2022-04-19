@@ -2,82 +2,105 @@ package ZD
 
 import (
 	"fmt"
+	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/stretchr/testify/suite"
+	"sync"
 	"testing"
+	"time"
 
 	//"github.com/anandvarma/namegen"
-	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	testutils "github.com/keptn/keptn/test/go-tests"
 	"gopkg.in/yaml.v3"
 	"sync/atomic"
-	"time"
 )
 
 var shipyardFile, _ = getShipyard()
 
 type TestEvaluation struct {
-	id          string
-	projectName string
-	serviceName string
-	stageName   string
 	suite.Suite
+	project string
+}
+
+type TriggeredSequences struct {
+	sequences []TriggeredSequence
+	mutex     *sync.Mutex
+}
+
+func NewTriggeredSequences() *TriggeredSequences {
+	return &TriggeredSequences{
+		sequences: []TriggeredSequence{},
+		mutex:     new(sync.Mutex),
+	}
+}
+
+func (ts *TriggeredSequences) Add(s TriggeredSequence) {
+	ts.mutex.Lock()
+	defer ts.mutex.Unlock()
+	ts.sequences = append(ts.sequences, s)
+}
+
+type TriggeredSequence struct {
+	keptnContext string
+	projectName  string
+	sequenceName string
+}
+
+func NewTriggeredSequence(keptnContext string, projectName string, seqName string) TriggeredSequence {
+	return TriggeredSequence{
+		keptnContext: keptnContext,
+		projectName:  projectName,
+		sequenceName: seqName,
+	}
 }
 
 func (suite *TestEvaluation) SetupSuite() {
 	var err error
-	suite.id = gedId()
-	suite.serviceName = "myservice"
-	suite.stageName = "dev"
-
-	projectName := "zd" + suite.id
-	suite.projectName, err = testutils.CreateProject(projectName, shipyardFile)
+	projectName := "zd" + gedId()
+	suite.project, err = testutils.CreateProject(projectName, shipyardFile)
 	suite.Nil(err)
 
-	output, err := testutils.ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", suite.serviceName, suite.projectName))
+	output, err := testutils.ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", "myservice", suite.project))
 	suite.Nil(err)
 	suite.Contains(output, "created successfully")
+
+	suite.T().Logf("Starting test for project %s ", suite.project)
 }
 
-func Test_Evaluation(t *testing.T) {
+func Test_Run(t *testing.T) {
+	wg.Add(2)
 	suite.Run(t, new(TestEvaluation))
 }
 
 func (suite *TestEvaluation) Test_EvaluationFails() {
-	wg.Add(1)
-
-	suite.T().Logf("Starting test evaluation for project %s ", suite.projectName)
-
-	var keptnContext string
-	// trigger a delivery sequence
-	keptnContext, err := testutils.TriggerSequence(suite.projectName, suite.serviceName, suite.stageName, "evaluation", nil)
-	suite.Nil(err)
-	go suite.checkSequence(keptnContext, "evaluation")
-
+	suite.trigger("evaluation", nil)
 }
 
 func (suite *TestEvaluation) Test_DeliveryFails() {
-
-	wg.Add(1)
-
-	suite.T().Logf("Starting test Delivery for project %s ", suite.projectName)
-
-	var keptnContext string
-	// trigger a delivery sequence
-	keptnContext, err := testutils.TriggerSequence(suite.projectName, suite.serviceName, suite.stageName, "delivery", nil)
-	suite.Nil(err)
-	go suite.checkSequence(keptnContext, "delivery")
-
+	suite.trigger("delivery", nil)
 }
 
-func (suite *TestEvaluation) checkSequence(keptnContext string, sequenceType string) {
+func (suite *TestEvaluation) trigger(triggerType string, data keptn.EventProperties) {
+
+	// trigger a delivery sequence
+	keptnContext, err := testutils.TriggerSequence(suite.project, "myservice", "dev", triggerType, data)
+	suite.Nil(err)
+	//
+	sequence := NewTriggeredSequence(keptnContext, suite.project, triggerType)
+	//sequences.Add(sequence)
+
+	go suite.checkSequence(keptnContext, sequence)
+}
+
+func (suite *TestEvaluation) checkSequence(keptnContext string, sequence TriggeredSequence) {
 
 	defer wg.Done()
 	var sequenceFinishedEvent *models.KeptnContextExtendedCE
-	stageSequenceName := fmt.Sprintf("%s.%s", suite.stageName, sequenceType)
+	stageSequenceName := fmt.Sprintf("%s.%s", "dev", sequence.sequenceName)
 	var err error
 	suite.Eventually(func() bool {
-		sequenceFinishedEvent, err = testutils.GetLatestEventOfType(keptnContext, suite.projectName, suite.stageName, v0_2_0.GetFinishedEventType(stageSequenceName))
+		sequenceFinishedEvent, err = testutils.GetLatestEventOfType(keptnContext, sequence.projectName, "dev", v0_2_0.GetFinishedEventType(stageSequenceName))
 		if sequenceFinishedEvent == nil || err != nil {
 			return false
 		}
@@ -85,12 +108,35 @@ func (suite *TestEvaluation) checkSequence(keptnContext string, sequenceType str
 		return true
 	}, 30*time.Second, 5*time.Second)
 	if sequenceFinishedEvent == nil || err != nil {
-		suite.T().Logf("Sequence %s in stage %s has not been finished", keptnContext, suite.stageName)
+		suite.T().Logf("Sequence %s in stage %s has not been finished", keptnContext, sequence.projectName)
 		atomic.AddUint64(&FailedSequences, 1)
 	}
 
-	suite.T().Logf("Finished %s in %s ", sequenceType, suite.projectName)
+	suite.T().Logf("Finished %s in %s ", sequence.sequenceName, sequence.projectName)
 }
+
+//func CheckSequence(sequence TriggeredSequence, wg sync.WaitGroup, t *testing.T) {
+//	defer wg.Done()
+//	t.Logf("Checking Sequence %s in project %s", sequence.keptnContext, sequence.projectName)
+//	var sequenceFinishedEvent *models.KeptnContextExtendedCE
+//	stageSequenceName := fmt.Sprintf("%s.%s", "dev", sequence.sequenceName)
+//	var err error
+//	assert.Eventually(t, func() bool {
+//		sequenceFinishedEvent, err = testutils.GetLatestEventOfType(sequence.keptnContext, sequence.projectName, "dev", v0_2_0.GetFinishedEventType(stageSequenceName))
+//		if sequenceFinishedEvent == nil || err != nil {
+//			return false
+//		}
+//		atomic.AddUint64(&PassedSequences, 1)
+//
+//		return true
+//	}, 10*time.Second, 5*time.Second)
+//	if sequenceFinishedEvent == nil || err != nil {
+//
+//		t.Logf("Sequence %s in stage %s has not been finished", sequence.keptnContext, "dev")
+//		atomic.AddUint64(&FailedSequences, 1)
+//
+//	}
+//}
 
 func getShipyard() (string, error) {
 	shipyard := &v0_2_0.Shipyard{

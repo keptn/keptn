@@ -18,25 +18,36 @@ const deliveryInterval = 10 * time.Second
 var chartLatestVersion = "https://github.com/keptn/helm-charts-dev/blob/1efe3dab77da9ea3cf2b7dd5eff4b2fac6f76633/packages/keptn-0.15.0-dev-PR-7266.tgz?raw=true"
 var chartPreviousVersion = "https://github.com/keptn/helm-charts-dev/blob/5b4fbc630895a2a71721763110376b452f4c2c67/packages/keptn-0.15.0-dev-PR-7266.tgz?raw=true"
 
-var FailedSequences uint64 = 0
-var PassedSequences uint64 = 0
-var Id uint64 = 0
+var FailedSequences uint64
+var PassedSequences uint64
+var Id uint64
 
-var wg = new(sync.WaitGroup)
+//var sequences *TriggeredSequences
+
+var wg = sync.WaitGroup{}
+
+func initZeroDowntime() {
+	FailedSequences = uint64(0)
+	PassedSequences = uint64(0)
+	Id = uint64(0)
+	//sequences = NewTriggeredSequences()
+}
 
 func TestZeroDowntime(t *testing.T) {
+
+	initZeroDowntime()
 	t.Parallel()
 	// run a tests before starting update
-	go t.Run("Triggering tests", Test_Evaluation)
+	go t.Run("Triggering tests", Test_Run)
 
 	ticker := clock.New().Ticker(apiProbeInterval)
 	ticker2 := clock.New().Ticker(deliveryInterval)
 	ctx, cancel := context.WithCancel(context.Background())
 
 	//start update
-	//go t.Run("Rolling Updates", func(t *testing.T) {
 	go rollingUpgrade(cancel, 2, t)
-	//})
+
+	// run tests meanwhile
 
 	go func() {
 		for {
@@ -45,38 +56,37 @@ func TestZeroDowntime(t *testing.T) {
 				return
 			case <-ticker.C:
 				go t.Run("API test", TestAPIs)
-
 			}
 		}
 	}()
 
-	// run tests meanwhile
 	for {
 		select {
 		case <-ctx.Done():
 			err := os.Remove(shipyardFile)
 			assert.Nil(t, err)
-
 			wg.Wait()
-
-			t.Log("Total run seq: ", PassedSequences+FailedSequences)
-			t.Log("TOTAL SUCCESS ", PassedSequences)
-			t.Log("TOTAL FAILURES ", FailedSequences)
+			t.Run("Summary: ", printResults)
 			return
 		case <-ticker2.C:
-			go t.Run("Triggering tests", Test_Evaluation)
+			go t.Run("Sequences test", Test_Run)
 
 		}
 	}
 
 }
 
+func printResults(t *testing.T) {
+	//	t.Log("Total run seq: ", len(sequences.sequences))
+	t.Log("TOTAL SUCCESS ", PassedSequences)
+	t.Log("TOTAL FAILURES ", FailedSequences)
+}
+
 func rollingUpgrade(cancel context.CancelFunc, nrOfUpgrades int, t *testing.T) {
 	defer cancel()
-	t.Log("rolling")
-	time.Sleep(40 * time.Second)
+	t.Log("Rolling")
+	//time.Sleep(20 * time.Second)
 
-	//TODO setup helm upgrade here
 	for i := 0; i < nrOfUpgrades; i++ {
 		chartURL := ""
 		//lighthouseVersion := ""
