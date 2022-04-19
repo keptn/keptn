@@ -87,9 +87,8 @@ func (suite *TestEvaluation) checkSequence(keptnContext string, sequence Trigger
 		}
 		atomic.AddUint64(&PassedSequences, 1)
 		return true
-	}, 30*time.Second, 5*time.Second)
+	}, 20*time.Second, 5*time.Second)
 	if sequenceFinishedEvent == nil || err != nil {
-		suite.T().Logf("Sequence %s in stage %s has not been finished", keptnContext, sequence.projectName)
 		atomic.AddUint64(&FailedSequences, 1)
 	}
 }

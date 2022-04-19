@@ -104,7 +104,7 @@ func rollingUpgrade(cancel context.CancelFunc, nrOfUpgrades int, t *testing.T) {
 			t.Logf("Encountered error when upgrading keptn: %v", err)
 
 		}
-		<-time.After(5 * time.Second)
+		<-time.After(60 * time.Second)
 	}
 
 }
