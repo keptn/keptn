@@ -132,7 +132,8 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
         gitUser: project.gitUser,
       };
       this.gitInputDataExtendedDefault = project.gitUpstream;
-      this.gitInputDataExtended = AppUtils.copyObject(project.gitUpstream); // there should not be a reference. Could lead to problems when the form is reset
+      this.gitInputDataExtended = AppUtils.copyObject(project.gitUpstream); // there should not be a reference. Could
+      // lead to problems when the form is reset
 
       this.isProjectLoading = false;
     });
@@ -197,7 +198,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
             this.isGitUpstreamInProgress = false;
             this.notificationsService.addNotification(
               NotificationType.ERROR,
-              `The Git upstream could not be changed: ${err.error}`
+              `<div class="long-note align-left p-3">The Git upstream could not be changed:<br/><span class="small">${err.error}</span></div>`
             );
           }
         );
