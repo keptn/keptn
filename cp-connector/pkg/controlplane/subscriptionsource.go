@@ -73,7 +73,7 @@ type FixedSubscriptionSource struct {
 }
 
 // WithFixedSubscriptions adds a fixed list of subscriptions to the FixedSubscriptionSource
-func WithFixedSubscriptions(subscriptions []models.EventSubscription) func(s *FixedSubscriptionSource) {
+func WithFixedSubscriptions(subscriptions ...models.EventSubscription) func(s *FixedSubscriptionSource) {
 	return func(s *FixedSubscriptionSource) {
 		s.fixedSubscriptions = subscriptions
 	}

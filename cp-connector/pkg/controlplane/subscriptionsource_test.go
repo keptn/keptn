@@ -210,7 +210,7 @@ func TestSubscriptionSource(t *testing.T) {
 }
 
 func TestFixedSubscriptionSource_WithSubscriptions(t *testing.T) {
-	fss := NewFixedSubscriptionSource(WithFixedSubscriptions([]models.EventSubscription{{Event: "some.event"}}))
+	fss := NewFixedSubscriptionSource(WithFixedSubscriptions(models.EventSubscription{Event: "some.event"}))
 	subchan := make(chan []models.EventSubscription)
 	err := fss.Start(context.TODO(), RegistrationData{}, subchan)
 	require.NoError(t, err)
