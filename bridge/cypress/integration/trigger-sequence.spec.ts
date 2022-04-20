@@ -100,6 +100,9 @@ describe('Trigger a sequence', () => {
   });
 
   it('should trigger an evaluation sequence with a timeframe', () => {
+    const currentDate = new Date();
+    const currentMonthFormatted = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+
     triggerSequencePage
       .clickOpen()
       .assertNextPageEnabled(false)
@@ -113,7 +116,7 @@ describe('Trigger a sequence', () => {
       .typeEvaluationLabels('key1=val1')
       .assertTriggerSequenceEnabled(true)
       .setStartDate(0, '1', '15', '0')
-      .assertStartDateDisplayValue('2022-03-01 01:15:00')
+      .assertStartDateDisplayValue(`${currentDate.getFullYear()}-${currentMonthFormatted}-01 01:15:00`)
       .assertTriggerSequenceEnabled(true)
 
       .typeTimeframe('hours', '0')
@@ -232,10 +235,15 @@ describe('Trigger an evaluation sequence', () => {
   });
 
   it('should trigger an evaluation sequence with a start end date', () => {
+    const currentDate = new Date();
+    const currentMonthFormatted = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+
     triggerSequencePage
       .selectEvaluationEndDate()
       .setStartDate(0, '1', '15', '0')
+      .assertStartDateDisplayValue(`${currentDate.getFullYear()}-${currentMonthFormatted}-01 01:15:00`)
       .setEndDate(1, '1', '15', '0')
+      .assertEndDateDisplayValue(`${currentDate.getFullYear()}-${currentMonthFormatted}-01 01:15:00`)
       .assertEvaluationDateErrorExists(false)
       .assertTriggerSequenceEnabled(true)
       .clickTriggerSequence();
@@ -261,18 +269,21 @@ describe('Trigger an evaluation sequence', () => {
   });
 
   it('should not show date error if invalid end date is changed to valid end date', () => {
+    const currentDate = new Date();
+    const currentMonthFormatted = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+
     triggerSequencePage
       .selectEvaluationEndDate()
       .setStartDate(0, '2', '15', '0')
-      .assertStartDateDisplayValue('2022-03-01 02:15:00')
+      .assertStartDateDisplayValue(`${currentDate.getFullYear()}-${currentMonthFormatted}-01 01:15:00`)
       .assertTriggerSequenceEnabled(false)
       .setEndDate(0, '1', '15', '0')
-      .assertEndDateDisplayValue('2022-03-02 01:15:00')
+      .assertEndDateDisplayValue(`${currentDate.getFullYear()}-${currentMonthFormatted}-01 01:15:00`)
       .assertEvaluationDateErrorExists(true)
       .assertTriggerSequenceEnabled(false)
 
       .setEndDate(0, '3', '15', '0')
-      .assertEndDateDisplayValue('2022-03-02 03:15:00')
+      .assertEndDateDisplayValue(`${currentDate.getFullYear()}-${currentMonthFormatted}-01 01:15:00`)
       .assertEvaluationDateErrorExists(false)
       .assertTriggerSequenceEnabled(true);
   });
