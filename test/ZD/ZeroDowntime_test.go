@@ -58,9 +58,9 @@ func TestZeroDowntime(t *testing.T) {
 	for {
 		select {
 		case <-ctx.Done():
+			wg.Wait()
 			err := os.Remove(shipyardFile)
 			assert.Nil(t, err)
-			wg.Wait()
 			t.Run("Summary: ", printResults)
 			return
 		case <-seqTicker.C:

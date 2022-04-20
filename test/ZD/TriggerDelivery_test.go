@@ -64,14 +64,15 @@ func (suite *TestEvaluation) Test_DeliveryFails() {
 
 func (suite *TestEvaluation) trigger(triggerType string, data keptn.EventProperties) {
 
+	suite.T().Logf("triggering sequence %s for project %s", triggerType, suite.project)
 	// trigger a delivery sequence
 	keptnContext, err := testutils.TriggerSequence(suite.project, "myservice", "dev", triggerType, data)
 	suite.Nil(err)
-	//
+	suite.T().Logf("triggered sequence %s for project %s with context %s", triggerType, suite.project, keptnContext)
 	sequence := NewTriggeredSequence(keptnContext, suite.project, triggerType)
 	//sequences.Add(sequence)
 
-	go suite.checkSequence(keptnContext, sequence)
+	suite.checkSequence(keptnContext, sequence)
 }
 
 func (suite *TestEvaluation) checkSequence(keptnContext string, sequence TriggeredSequence) {
@@ -80,6 +81,7 @@ func (suite *TestEvaluation) checkSequence(keptnContext string, sequence Trigger
 	var sequenceFinishedEvent *models.KeptnContextExtendedCE
 	stageSequenceName := fmt.Sprintf("%s.%s", "dev", sequence.sequenceName)
 	var err error
+	suite.T().Logf("verifying completion of sequence %s with keptnContext %s in project %s", sequence.sequenceName, keptnContext, suite.project)
 	suite.Eventually(func() bool {
 		sequenceFinishedEvent, err = testutils.GetLatestEventOfType(keptnContext, sequence.projectName, "dev", v0_2_0.GetFinishedEventType(stageSequenceName))
 		if sequenceFinishedEvent == nil || err != nil {
@@ -87,9 +89,12 @@ func (suite *TestEvaluation) checkSequence(keptnContext string, sequence Trigger
 		}
 		atomic.AddUint64(&PassedSequences, 1)
 		return true
-	}, 20*time.Second, 5*time.Second)
+	}, 5*time.Minute, 5*time.Second)
 	if sequenceFinishedEvent == nil || err != nil {
+		suite.T().Logf("sequence %s with keptnContext %s in project %s has NOT been finished", sequence.sequenceName, keptnContext, suite.project)
 		atomic.AddUint64(&FailedSequences, 1)
+	} else {
+		suite.T().Logf("sequence %s with keptnContext %s in project %s has been finished", sequence.sequenceName, keptnContext, suite.project)
 	}
 }
 
