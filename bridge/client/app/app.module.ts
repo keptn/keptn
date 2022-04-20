@@ -167,7 +167,6 @@ import { KtbCertificateInputComponent } from './_components/ktb-certificate-inpu
 import { KtbSshKeyInputComponent } from './_components/ktb-ssh-key-input/ktb-ssh-key-input.component';
 import { KtbProjectSettingsGitSshInputComponent } from './_components/ktb-project-settings-git-ssh-input/ktb-project-settings-git-ssh-input.component';
 import { SanitizeHtmlPipe } from './_pipes/sanitize-html.pipe';
-import { FormatDatePipe } from './_pipes/format-date.pipe';
 
 registerLocaleData(localeEn, 'en');
 
@@ -277,7 +276,6 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     KtbLoadingDistractorComponent,
     KtbLoadingSpinnerComponent,
     SanitizeHtmlPipe,
-    FormatDatePipe,
   ],
   imports: [
     BrowserModule,
