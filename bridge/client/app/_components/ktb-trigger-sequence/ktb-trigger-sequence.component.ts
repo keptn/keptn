@@ -51,7 +51,8 @@ export class JsonErrorStateMatcher implements ErrorStateMatcher {
   templateUrl: './ktb-trigger-sequence.component.html',
   styleUrls: ['./ktb-trigger-sequence.component.scss'],
 })
-export class KtbTriggerSequenceComponent implements OnInit, OnDestroy, AfterViewInit {
+export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
+  public DATE_FORMAT = 'YYYY-MM-dd HH:mm:ss';
   public TRIGGER_SEQUENCE = TRIGGER_SEQUENCE;
   public TRIGGER_EVALUATION_TIME = TRIGGER_EVALUATION_TIME;
   public state: TRIGGER_SEQUENCE | 'ENTRY' = 'ENTRY';
@@ -80,10 +81,12 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy, AfterView
   @Input() public projectName!: string;
   @Input() public stage: string | undefined;
   @Input() public stages: string[] = [];
+
   @Input()
   get services(): string[] {
     return this._services;
   }
+
   set services(services: string[]) {
     if (services) {
       this._services = services;
@@ -306,7 +309,8 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy, AfterView
       }
 
       if (this.evaluationFormData.timeframeStart) {
-        // This has only to be set, if entered by the user. If not, we can just set the timeframe and let lighthouse-service do the calculation
+        // This has only to be set, if entered by the user. If not, we can just set the timeframe and let
+        // lighthouse-service do the calculation
         data.evaluation.start = moment(this.evaluationFormData.timeframeStart).toISOString();
       }
     } else if (this.evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.START_END) {
