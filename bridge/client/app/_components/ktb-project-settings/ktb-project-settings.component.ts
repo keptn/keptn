@@ -175,11 +175,11 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
   }
 
   public setGitUpstream(): void {
-    if (this.projectName && this.gitData.gitRemoteURL && this.gitData.gitUser && this.gitData.gitToken) {
+    if (this.projectName && this.gitData.gitRemoteURL && this.gitData.gitToken) {
       this.isGitUpstreamInProgress = true;
       this.hideNotification();
       this.dataService
-        .setGitUpstreamUrl(this.projectName, this.gitData.gitRemoteURL, this.gitData.gitUser, this.gitData.gitToken)
+        .setGitUpstreamUrl(this.projectName, this.gitData.gitRemoteURL, this.gitData.gitToken, this.gitData.gitUser)
         .pipe(takeUntil(this.unsubscribe$))
         .subscribe(
           () => {
