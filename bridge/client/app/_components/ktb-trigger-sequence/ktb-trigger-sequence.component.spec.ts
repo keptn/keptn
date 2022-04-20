@@ -523,7 +523,7 @@ describe('KtbTriggerSequenceComponent', () => {
     expect(component.customSequencesOfStage).toBe(undefined);
   });
 
-  it('should revert selected sequence after stage change', () => {
+  it('should reset selected sequence after stage change', () => {
     // given
     component.customSequences = {
       dev: ['seq1'],

@@ -59,6 +59,7 @@
           <div
             *ngIf="customSequencesOfStage?.length === 0; else customSequencesSelect"
             [dtOverlay]="noCustomSequencesOverlay"
+            fxFlex="0 1 300px"
           >
             <ng-container *ngTemplateOutlet="customSequencesSelect"></ng-container>
           </div>
@@ -67,6 +68,8 @@
               [value]="TRIGGER_SEQUENCE.CUSTOM"
               [disabled]="!customSequencesOfStage?.length"
               uitestid="ktb-trigger-sequence-custom-radio"
+              class="custom-sequence-radio"
+              fxFlex="0 1 300px"
             >
               <dt-select
                 [disabled]="!customSequencesOfStage?.length"
@@ -84,13 +87,13 @@
               </dt-select>
             </dt-radio-button>
           </ng-template>
-          <ng-container *ngIf="!customSequences">
+          <div *ngIf="!customSequences">
             <dt-loading-spinner></dt-loading-spinner>
             <span>Loading custom sequences ...</span>
-          </ng-container>
+          </div>
 
           <ng-template #noCustomSequencesOverlay>
-            There are no custom sequences available in the shipyard.yaml file
+            There are no custom sequences available for this stage in the shipyard.yaml file
           </ng-template>
         </dt-radio-group>
       </dt-form-field>
@@ -198,7 +201,7 @@
       >
         <dt-form-field class="overlay-origin">
           <dt-label>Start at</dt-label>
-          <div class="input-overlay" (click)="timeFrameStartButton?._elementRef?.nativeElement.click()"></div>
+          <div class="input-overlay" (click)="timeframeStartButton?._elementRef?.nativeElement.click()"></div>
           <input readonly dtInput [(ngModel)]="evaluationFormData.timeframeStart" />
           <dt-hint>Defaults to now if not filled in</dt-hint>
           <button
@@ -212,7 +215,7 @@
           </button>
           <button
             uitestid="keptn-trigger-button-starttime"
-            #timeFrameStartButton
+            #timeframeStartButton
             dt-icon-button
             dtSuffix
             ktbDatetimePicker
