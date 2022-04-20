@@ -208,3 +208,22 @@ func TestSubscriptionSource(t *testing.T) {
 	subs = <-subscriptionUpdates
 	require.Equal(t, 1, len(subs))
 }
+
+func TestFixedSubscriptionSource_WithSubscriptions(t *testing.T) {
+	fss := NewFixedSubscriptionSource(WithFixedSubscriptions([]models.EventSubscription{{Event: "some.event"}}))
+	subchan := make(chan []models.EventSubscription)
+	err := fss.Start(context.TODO(), RegistrationData{}, subchan)
+	require.NoError(t, err)
+	updates := <-subchan
+	require.Equal(t, 1, len(updates))
+	require.Equal(t, []models.EventSubscription{{Event: "some.event"}}, updates)
+}
+
+func TestFixedSubscriptionSourcer_WithNoSubscriptions(t *testing.T) {
+	fss := NewFixedSubscriptionSource()
+	subchan := make(chan []models.EventSubscription)
+	err := fss.Start(context.TODO(), RegistrationData{}, subchan)
+	require.NoError(t, err)
+	updates := <-subchan
+	require.Equal(t, 0, len(updates))
+}
