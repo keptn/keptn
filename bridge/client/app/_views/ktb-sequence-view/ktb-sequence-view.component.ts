@@ -299,6 +299,10 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
       },
       {}
     );
+    const filterParams = Object.keys(this.sequenceFilters).reduce((params, key) => {
+      return params.concat(this.sequenceFilters[key].map((value) => [key, value]));
+    }, [] as string[][]);
+    console.log('URLSearchParams', new URLSearchParams(filterParams).toString());
   }
 
   updateFilterSequence(sequences?: Sequence[]): void {
