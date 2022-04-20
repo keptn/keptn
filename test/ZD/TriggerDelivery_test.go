@@ -5,6 +5,7 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/stretchr/testify/suite"
+	"sync"
 	"testing"
 	"time"
 
@@ -16,6 +17,8 @@ import (
 )
 
 var shipyardFile, _ = getShipyard()
+var ZDexistingProject = "zd-project"
+var once sync.Once
 
 type TestEvaluation struct {
 	suite.Suite
@@ -38,6 +41,13 @@ func NewTriggeredSequence(keptnContext string, projectName string, seqName strin
 
 func (suite *TestEvaluation) SetupSuite() {
 	var err error
+	go once.Do(func() {
+		ZDexistingProject, err = testutils.CreateProject(ZDexistingProject, shipyardFile)
+		suite.Nil(err)
+		_, err = testutils.ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", "myservice", ZDexistingProject))
+		suite.Nil(err)
+	})
+
 	projectName := "zd" + gedId()
 	suite.project, err = testutils.CreateProject(projectName, shipyardFile)
 	suite.Nil(err)
@@ -55,21 +65,34 @@ func Test_Run(t *testing.T) {
 }
 
 func (suite *TestEvaluation) Test_EvaluationFails() {
-	suite.trigger("evaluation", nil)
+	suite.trigger("evaluation", nil, false)
 }
 
 func (suite *TestEvaluation) Test_DeliveryFails() {
-	suite.trigger("delivery", nil)
+	suite.trigger("delivery", nil, false)
 }
 
-func (suite *TestEvaluation) trigger(triggerType string, data keptn.EventProperties) {
+func (suite *TestEvaluation) Test_ExistingEvaluationFails() {
+	suite.trigger("evaluation", nil, true)
+}
+
+func (suite *TestEvaluation) Test_ExistingDeliveryFails() {
+	suite.trigger("delivery", nil, true)
+}
+
+func (suite *TestEvaluation) trigger(triggerType string, data keptn.EventProperties, existing bool) {
+
+	project := suite.project
+	if existing {
+		project = ZDexistingProject
+	}
 
 	suite.T().Logf("triggering sequence %s for project %s", triggerType, suite.project)
 	// trigger a delivery sequence
-	keptnContext, err := testutils.TriggerSequence(suite.project, "myservice", "dev", triggerType, data)
+	keptnContext, err := testutils.TriggerSequence(project, "myservice", "dev", triggerType, data)
 	suite.Nil(err)
 	suite.T().Logf("triggered sequence %s for project %s with context %s", triggerType, suite.project, keptnContext)
-	sequence := NewTriggeredSequence(keptnContext, suite.project, triggerType)
+	sequence := NewTriggeredSequence(keptnContext, project, triggerType)
 	//sequences.Add(sequence)
 
 	suite.checkSequence(keptnContext, sequence)
