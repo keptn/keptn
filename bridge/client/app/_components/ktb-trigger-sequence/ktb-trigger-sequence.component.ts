@@ -1,14 +1,4 @@
-import {
-  AfterViewInit,
-  ChangeDetectorRef,
-  Component,
-  EventEmitter,
-  Inject,
-  Input,
-  OnDestroy,
-  OnInit,
-  Output,
-} from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Inject, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { DataService } from '../../_services/data.service';
 import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 import { Timeframe } from '../../_models/timeframe';
