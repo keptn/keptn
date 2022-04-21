@@ -57,10 +57,10 @@ func TestUpgradeCmdHandler_doUpgradePreRunCheck(t *testing.T) {
 				vChecker: version.NewKeptnVersionChecker(),
 				helmHelper: &helmfake.IHelperMock{
 					DownloadChartFunc: func(chartRepoURL string) (*chart.Chart, error) {
-						return nil, errors.New("DownloadChartFunc should not be called")
+						return nil, errors.New("DownloadChart should not be called")
 					},
 					GetHistoryFunc: func(releaseName string, namespace string) ([]*release.Release, error) {
-						return nil, errors.New("GetHistoryFunc should not be called")
+						return nil, errors.New("GetHistory should not be called")
 					},
 				},
 				namespaceHandler:  &kubefake.IKeptnNamespaceHandlerMock{},
