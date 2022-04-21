@@ -42,8 +42,7 @@ spec:
       app.kubernetes.io/name: resource-service
       app.kubernetes.io/instance: {{ .Release.Name }}
   replicas: {{ .Values.resourceService.replicas }}
-  strategy:
-    type: Recreate
+  {{- include "control-plane.common.update-strategy" . | nindent 2 }}
   template:
     metadata:
       labels:
@@ -61,9 +60,12 @@ spec:
         seccompProfile:
           type: RuntimeDefault
         {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.resourceService.gracePeriod | default 120 }}
       containers:
         - name: resource-service
           image: {{ .Values.resourceService.image.repository }}:{{ .Values.resourceService.image.tag | default .Chart.AppVersion }}
+          {{- $prestop := .Values.resourceService.preStopHookTime | default 90 | quote -}}
+          {{- include "control-plane.prestop" $prestop | nindent 10 }}
           livenessProbe:
             httpGet:
               path: /health
@@ -151,9 +153,7 @@ spec:
       app.kubernetes.io/name: configuration-service
       app.kubernetes.io/instance: {{ .Release.Name }}
   replicas: 1
-  # recreate the deployment if anything changes (we can not do a rolling upgrade of this deployment as we use a volume)
-  strategy:
-    type: Recreate
+  {{- include "control-plane.common.update-strategy" . | nindent 2 }}
   template:
     metadata:
       labels:
@@ -185,9 +185,12 @@ spec:
             - -c
             - chown -R {{ .Values.configurationService.fsGroup | default 1001 }} /data/config
 {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.configurationService.gracePeriod | default 120 }}
       containers:
         - name: configuration-service
           image: {{ .Values.configurationService.image.repository }}:{{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
+          {{- $prestop := .Values.configurationService.preStopHookTime | default 90 | quote -}}
+          {{- include "control-plane.prestop" $prestop | nindent 10 }}
           livenessProbe:
             httpGet:
               path: /health

@@ -61,3 +61,15 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+preStop hook for helm-service deployment
+*/}}
+{{- define "helm-service.prestop" -}}
+lifecycle:
+  preStop:
+    exec:
+      # using 60s of sleeping to be on the safe side before terminating the pod
+      command: ["/bin/sleep", {{ .Values.helmservice.preStopHookTime | default 60 | quote }} ]
+{{- end }}
+

@@ -18,6 +18,7 @@ spec:
       app.kubernetes.io/name: remediation-service
       app.kubernetes.io/instance: {{ .Release.Name }}
   replicas: 1
+  {{- include "control-plane.common.update-strategy" . | nindent 2 }}
   template:
     metadata:
       labels:
@@ -33,6 +34,8 @@ spec:
       containers:
       - name: remediation-service
         image: {{ .Values.remediationService.image.repository }}:{{ .Values.remediationService.image.tag | default .Chart.AppVersion }}
+        {{- $prestop := .Values.remediationService.preStopHookTime | default 90 | quote -}}
+        {{- include "control-plane.prestop" $prestop | nindent 8 }}
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -65,10 +68,6 @@ spec:
         {{- include "control-plane.common.container-security-context" . | nindent 8 }}
       - name: distributor
         image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
-        lifecycle:
-          preStop:
-            exec:
-              command: ["/bin/sleep", "30"]
         imagePullPolicy: IfNotPresent
         {{- include "control-plane.dist.livenessProbe" . | nindent 8 }}
         {{- include "control-plane.dist.readinessProbe" . | nindent 8 }}
@@ -83,7 +82,7 @@ spec:
         {{- include "control-plane.dist.common.env.vars" . | nindent 10 }}
         {{- include "control-plane.common.container-security-context" . | nindent 8 }}
       serviceAccountName: keptn-default
-      terminationGracePeriodSeconds: {{ .Values.gracePeriod | default 30 }}
+      terminationGracePeriodSeconds: {{ .Values.remediationService.gracePeriod | default 120 }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.remediationService.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
 ---
 apiVersion: v1
