@@ -3,8 +3,14 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/cp-connector/pkg/nats"
+	"log"
 	"net/url"
 	"strings"
+	"sync"
+	"time"
 
 	logger "github.com/sirupsen/logrus"
 
@@ -12,42 +18,79 @@ import (
 	"github.com/go-openapi/swag"
 	"github.com/google/uuid"
 
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/event"
 	"github.com/keptn/keptn/api/utils"
 )
 
-// PostEventHandlerFunc forwards an event to the event broker
-func PostEventHandlerFunc(params event.PostEventParams, principal *models.Principal) middleware.Responder {
+type IEventPublisher interface {
+	Publish(event apimodels.KeptnContextExtendedCE) error
+}
 
+var eventHandlerInstance *EventHandler
+var instanceOnce = sync.Once{}
+
+type EventHandler struct {
+	EventPublisher IEventPublisher
+}
+
+func GetEventHandlerInstance() *EventHandler {
+	instanceOnce.Do(func() {
+		conn, err := nats.ConnectFromEnv()
+		if err != nil {
+			log.Fatalf("cannot connect to nats server: %v", err)
+		}
+		eventHandlerInstance = &EventHandler{EventPublisher: conn}
+	})
+	return eventHandlerInstance
+}
+
+func (eh *EventHandler) PostEvent(params event.PostEventParams) (*models.EventContext, error) {
 	keptnContext := createOrApplyKeptnContext(params.Body.Shkeptncontext)
 
 	logger.Info("API received a keptn event")
 
-	var source *url.URL
-	var err error
+	var source string
 	if params.Body.Source != nil && len(*params.Body.Source) > 0 {
-		source, err = url.Parse(*params.Body.Source)
+		sourceURL, err := url.Parse(*params.Body.Source)
 		if err != nil {
 			logger.Info("Unable to parse source from the received CloudEvent")
+			// use a fallback value for the source
+			source = "https://github.com/keptn/keptn/api"
+		} else {
+			source = sourceURL.String()
 		}
 	}
 
-	if source == nil {
-		// Use this URL as fallback source
-		source, _ = url.Parse("https://github.com/keptn/keptn/api")
+	outEvent := &apimodels.KeptnContextExtendedCE{}
+	if err := keptnv2.Decode(params.Body, outEvent); err != nil {
+		return nil, err
 	}
 
-	err = utils.SendEvent(keptnContext, params.Body.Triggeredid, params.Body.Gitcommitid, *params.Body.Type, source.String(), params.Body.Data)
+	outEvent.Source = &source
+	outEvent.ID = uuid.New().String()
+	outEvent.Time = time.Now().UTC()
+	outEvent.Contenttype = cloudevents.ApplicationJSON
+	outEvent.Shkeptncontext = keptnContext
 
+	if err := eh.EventPublisher.Publish(*outEvent); err != nil {
+		return nil, err
+	}
+
+	eventContext := &models.EventContext{KeptnContext: &keptnContext}
+	return eventContext, nil
+}
+
+// PostEventHandlerFunc forwards an event to the event broker
+func PostEventHandlerFunc(params event.PostEventParams, principal *models.Principal) middleware.Responder {
+	eh := GetEventHandlerInstance()
+	keptnContext, err := eh.PostEvent(params)
 	if err != nil {
 		return sendInternalErrorForPost(err)
 	}
-
-	eventContext := models.EventContext{KeptnContext: &keptnContext}
-
-	return event.NewPostEventOK().WithPayload(&eventContext)
+	return event.NewPostEventOK().WithPayload(keptnContext)
 }
 
 func createOrApplyKeptnContext(eventKeptnContext string) string {
