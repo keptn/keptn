@@ -34,7 +34,8 @@ spec:
       containers:
         - name: approval-service
           image: {{ .Values.approvalService.image.repository }}:{{ .Values.approvalService.image.tag | default .Chart.AppVersion }}
-          {{- include "control-plane.prestop" . | nindent 10 }}
+          {{$prestop := .Values.approvalService.preStop | default 90 | quote }}
+          {{- include "control-plane.prestop" $prestop | nindent 10 }}
           livenessProbe:
             httpGet:
               path: /health

@@ -389,7 +389,8 @@ spec:
       containers:
         - name: api-gateway-nginx
           image: {{ .Values.apiGatewayNginx.image.repository }}:{{ .Values.apiGatewayNginx.image.tag }}
-          {{- include "control-plane.prestop" . | nindent 10 }}
+          {{$prestop := .Values.apiGatewayNginx.preStop | default 90 | quote }}
+          {{- include "control-plane.prestop" $prestop | nindent 10 }}
           ports:
             - containerPort: 8080
           livenessProbe:

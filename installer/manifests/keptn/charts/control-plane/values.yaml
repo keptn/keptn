@@ -74,6 +74,7 @@ apiGatewayNginx:
     tag: 1.21.6-alpine
   nodeSelector: {}
   gracePeriod: 120     # gracePeriod set to preStop hook +30s
+  preStop: 90
 
 remediationService:
   image:
@@ -81,6 +82,7 @@ remediationService:
     tag: ""
   nodeSelector: {}
   gracePeriod: 120     # gracePeriod set to preStop hook +30s
+  preStop: 90
 
 apiService:
   tokenSecretName:
@@ -92,6 +94,7 @@ apiService:
     maxAuthRequestBurst: "2"
   nodeSelector: {}
   gracePeriod: 120     # gracePeriod set to preStop hook +30s
+  preStop: 90
 
 bridge:
   image:
@@ -168,6 +171,7 @@ shipyardController:
       projectNameMaxSize: 200
   nodeSelector: {}
   gracePeriod: 120     # gracePeriod set to preStop hook +30s
+  preStop: 90
 
 secretService:
   image:
@@ -175,6 +179,7 @@ secretService:
     tag: ""
   nodeSelector: {}
   gracePeriod: 120     # gracePeriod set to preStop hook +30s
+  preStop: 90
 
 configurationService:
   image:
@@ -190,6 +195,7 @@ configurationService:
     GIT_KEPTN_EMAIL: "keptn@keptn.sh"
   nodeSelector: {}
   gracePeriod: 120     # gracePeriod set to preStop hook +30s
+  preStop: 90
 
 resourceService:
   enabled: false
@@ -203,6 +209,7 @@ resourceService:
     DIRECTORY_STAGE_STRUCTURE: "false"
   nodeSelector: {}
   gracePeriod: 120     # gracePeriod set to preStop hook +30s
+  preStop: 90
 
 mongodbDatastore:
   image:
@@ -210,6 +217,7 @@ mongodbDatastore:
     tag: ""
   nodeSelector: {}
   gracePeriod: 120     # gracePeriod set to preStop hook +30s
+  preStop: 90
 
 lighthouseService:
   image:
@@ -217,6 +225,7 @@ lighthouseService:
     tag: ""
   nodeSelector: {}
   gracePeriod: 120     # gracePeriod set to preStop hook +30s
+  preStop: 90
 
 statisticsService:
   image:
@@ -224,6 +233,7 @@ statisticsService:
     tag: ""
   nodeSelector: {}
   gracePeriod: 120     # gracePeriod set to preStop hook +30s
+  preStop: 90
 
 approvalService:
   image:
@@ -231,6 +241,7 @@ approvalService:
     tag: ""
   nodeSelector: {}
   gracePeriod: 120     # gracePeriod set to preStop hook +30s
+  preStop: 90
 
 webhookService:
   enabled: true
@@ -239,6 +250,7 @@ webhookService:
     tag: ""
   nodeSelector: {}
   gracePeriod: 120     # gracePeriod set to preStop hook +30s
+  preStop: 90
 
 ingress:
   enabled: false

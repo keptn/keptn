@@ -35,7 +35,8 @@ spec:
       containers:
         - name: webhook-service
           image: {{ .Values.webhookService.image.repository }}:{{ .Values.webhookService.image.tag | default .Chart.AppVersion }}
-          {{- include "control-plane.prestop" . | nindent 10 }}
+          {{$prestop := .Values.webhookService.preStop | default 90 | quote }}
+          {{- include "control-plane.prestop" $prestop | nindent 10 }}
           livenessProbe:
             httpGet:
               path: /health

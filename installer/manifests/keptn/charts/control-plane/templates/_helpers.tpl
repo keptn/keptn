@@ -78,7 +78,7 @@ lifecycle:
   preStop:
     exec:
       # using 90s of sleeping to be on the safe side before terminating the pod
-      command: ["/bin/sleep", "90"]
+      command: ["/bin/sleep", {{ . }} ]
 {{- end }}
 
 {{- define "control-plane.dist.common.env.vars" -}}
