@@ -164,7 +164,6 @@ describe('Trigger a sequence', () => {
   });
 
   it('should open the trigger form from the sequence screen', () => {
-    cy.intercept('/api/mongodb-datastore/event?keptnContext=6c98fbb0-4c40-4bff-ba9f-b20556a57c8a&project=sockshop');
     cy.visit('/project/sockshop/sequence');
     triggerSequencePage.assertOpenTriggerSequenceExists(true).clickOpen();
     cy.location('pathname').should('eq', '/project/sockshop');
