@@ -66,27 +66,27 @@ The following table includes short descriptions and the general syntax for all o
 | Command  | Description  |
 |:---:|---|
 | `abort`  | Aborts the execution of a sequence |
-| `add-resource`  | Adds a resource to a service within your project in the specified stage |
-| `auth`  | Authenticate the Keptn CLI against a Keptn installation  |
+| `add-resource`  | Adds a local resource to a service within your project in the specified stage |
+| `auth`  | Authenticates the Keptn CLI against a Keptn installation  |
 | `completion`  | Generate completion script  |
 | `configure`  | Configures one of the specified parts of Keptn  |
-| `create`  | Create currently allows to create a project |
+| `create`  | Creates a new project, service or secret |
 | `delete`  | Deletes a project |
 | `generate`  | Generates the markdown CLI documentation or a support archive |
 | `get`  | Displays an event or Keptn entities such as project, stage, or service |
 | `help`  | Help about any command |
-| `install`  | Install Keptn on your Kubernetes cluster |
+| `install`  | Installs Keptn on a Kubernetes cluster |
 | `pause`  | Pauses the execution of a sequence |
 | `resume`  | Resumes the execution of a sequence |
 | `onboard`  | Onboard allows to onboard a new service |
-| `send`  | Send a Keptn event in combination with the subcommand *event* |
+| `send`  | Sends an event to Keptn |
 | `set`  | Sets flags of the CLI configuration |
 | `status`  | Checks the status of the CLI |
 | `trigger`  | Triggers the execution of an action in keptn |
-| `uninstall`  | Uninstalls Keptn on your Kubernetes cluster |
+| `uninstall`  | Uninstalls Keptn from a Kubernetes cluster |
 | `update`  | Updates an existing Keptn project |
 | `upgrade`  | Upgrades Keptn on a Kubernetes cluster |
-| `version`  | Prints the CLI version for the current context |
+| `version`  | Shows the version of Keptn and Keptn CLI |
 
 ## Examples: Common operations
 Use the following set of examples to help you familiarize yourself with running the commonly used `keptn` operations:
