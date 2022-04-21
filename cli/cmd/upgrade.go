@@ -75,7 +75,7 @@ keptn upgrade --platform=kubernetes # upgrades Keptn on the Kubernetes cluster
 `,
 		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := upgradeCmdHandler.doUpgradePreRunCheck(vChecker); err != nil {
+			if err := upgradeCmdHandler.doUpgradePreRunCheck(vChecker, upgradeParams); err != nil {
 				return err
 			}
 			if !mocking {
@@ -92,7 +92,7 @@ keptn upgrade --platform=kubernetes # upgrades Keptn on the Kubernetes cluster
 	return upgradeCmd
 }
 
-func (u *UpgradeCmdHandler) doUpgradePreRunCheck(vChecker *version.KeptnVersionChecker) error {
+func (u *UpgradeCmdHandler) doUpgradePreRunCheck(vChecker *version.KeptnVersionChecker, upgradeParams installUpgradeParams) error {
 	if *upgradeParams.PatchNamespace {
 		return nil
 	}
