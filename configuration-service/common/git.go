@@ -397,6 +397,9 @@ func isNoRemoteHeadFoundError(err error) bool {
 }
 
 func getRepoURI(uri string, user string, token string) string {
+	if user == "" {
+		user = "keptn"
+	}
 	if strings.Contains(user, "@") {
 		// username contains an @, probably an e-mail; need to encode it
 		// see https://stackoverflow.com/a/29356143
