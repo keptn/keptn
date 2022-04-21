@@ -90,8 +90,11 @@ func configureAPI(api *operations.KeptnAPI) http.Handler {
 
 	//api.EvaluationTriggerEvaluationHandler = evaluation.TriggerEvaluationHandlerFunc(handlers.TriggerEvaluationHandlerFunc)
 
-	rateLimiter := custommiddleware.NewRateLimiter(env.AuthEnabled, env.AuthRequestsPerSecond, env.AuthRequestMaxBurst, tokenValidator, clock.New())
-	api.AddMiddlewareFor(http.MethodPost, "/auth", rateLimiter.Handle)
+	if env.AuthEnabled {
+		rateLimiter := custommiddleware.NewRateLimiter(env.AuthRequestsPerSecond, env.AuthRequestMaxBurst, tokenValidator, clock.New())
+		api.AddMiddlewareFor(http.MethodPost, "/auth", rateLimiter.Handle)
+	}
+
 	api.ServerShutdown = func() {}
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))

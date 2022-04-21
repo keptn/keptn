@@ -96,7 +96,7 @@ func TestRateLimiter(t *testing.T) {
 	tokenValidator := &middleware_mock.TokenValidatorMock{ValidateTokenFunc: func(token string) (*models.Principal, error) {
 		return nil, errors.New("oops")
 	}}
-	rl := NewRateLimiter(true, 1.0, 1, tokenValidator, mockClock)
+	rl := NewRateLimiter(1.0, 1, tokenValidator, mockClock)
 
 	mh := &MockHttpHandler{}
 	req, err := http.NewRequest(http.MethodGet, "", nil)
@@ -143,39 +143,6 @@ func TestRateLimiter(t *testing.T) {
 	// proceed the internal clock of the limiter and check if the visitors are being cleaned up
 	mockClock.Add(2 * time.Minute)
 	require.Empty(t, rl.visitors)
-}
-
-func TestRateLimiterDisabled(t *testing.T) {
-	mockClock := clock.NewMock()
-	tokenValidator := &middleware_mock.TokenValidatorMock{ValidateTokenFunc: func(token string) (*models.Principal, error) {
-		return nil, errors.New("oops")
-	}}
-	rl := NewRateLimiter(false, 1.0, 1, tokenValidator, mockClock)
-
-	mh := &MockHttpHandler{}
-	req, err := http.NewRequest(http.MethodGet, "", nil)
-	require.Nil(t, err)
-
-	// send one request
-	rl.Apply(&httptest.ResponseRecorder{}, req, mh)
-	require.Equal(t, 1, mh.calls)
-
-	// send a couple of requests at once
-	wg := &sync.WaitGroup{}
-	wg.Add(6)
-
-	for i := 0; i <= 5; i++ {
-		go func() {
-			defer wg.Done()
-			req, err := http.NewRequest(http.MethodGet, "", nil)
-			require.Nil(t, err)
-
-			rl.Apply(&httptest.ResponseRecorder{}, req, mh)
-		}()
-	}
-	wg.Wait()
-	// 1 initial + 6 burst
-	require.Equal(t, 7, mh.calls)
 }
 
 type MockHttpHandler struct {

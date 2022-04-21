@@ -23,10 +23,9 @@ type RateLimiter struct {
 	theClock          clock.Clock
 	visitors          map[string]*visitor
 	mutex             *sync.Mutex
-	enabled           bool
 }
 
-func NewRateLimiter(isAuthEnabled bool, requestsPerSecond float64, maxBurstSize int, tokenValidator TokenValidator, theClock clock.Clock) *RateLimiter {
+func NewRateLimiter(requestsPerSecond float64, maxBurstSize int, tokenValidator TokenValidator, theClock clock.Clock) *RateLimiter {
 	rl := &RateLimiter{
 		RequestsPerSecond: requestsPerSecond,
 		MaxBurstSize:      maxBurstSize,
@@ -34,7 +33,6 @@ func NewRateLimiter(isAuthEnabled bool, requestsPerSecond float64, maxBurstSize 
 		visitors:          map[string]*visitor{},
 		mutex:             &sync.Mutex{},
 		tokenValidator:    tokenValidator,
-		enabled:           isAuthEnabled,
 	}
 
 	ticker := rl.theClock.Ticker(1 * time.Minute)
@@ -55,19 +53,17 @@ func (r *RateLimiter) Handle(handler http.Handler) http.Handler {
 }
 
 func (r *RateLimiter) Apply(w http.ResponseWriter, req *http.Request, handler http.Handler) {
-	if r.enabled {
-		r.mutex.Lock()
-		defer r.mutex.Unlock()
-		ipAddress := getRemoteIP(req)
-		limiter := r.getIPBucket(ipAddress)
-		if !limiter.Allow() {
-			http.Error(w, http.StatusText(http.StatusTooManyRequests), http.StatusTooManyRequests)
-			return
-		}
-		_, err := r.tokenValidator.ValidateToken(req.Header.Get("x-token"))
-		if err == nil {
-			r.clearIPBucket(ipAddress)
-		}
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
+	ipAddress := getRemoteIP(req)
+	limiter := r.getIPBucket(ipAddress)
+	if !limiter.Allow() {
+		http.Error(w, http.StatusText(http.StatusTooManyRequests), http.StatusTooManyRequests)
+		return
+	}
+	_, err := r.tokenValidator.ValidateToken(req.Header.Get("x-token"))
+	if err == nil {
+		r.clearIPBucket(ipAddress)
 	}
 	handler.ServeHTTP(w, req)
 }
