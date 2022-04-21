@@ -34,7 +34,7 @@ spec:
       containers:
         - name: lighthouse-service
           image: {{ .Values.lighthouseService.image.repository }}:{{ .Values.lighthouseService.image.tag | default .Chart.AppVersion }}
-          {{- $prestop := .Values.lighthouseService.preStop | default 90 | quote -}}
+          {{- $prestop := .Values.lighthouseService.preStopHookTime | default 90 | quote -}}
           {{- include "control-plane.prestop" $prestop | nindent 10 }}
           livenessProbe:
             httpGet:

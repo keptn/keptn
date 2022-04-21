@@ -72,7 +72,9 @@ readinessProbe:
   periodSeconds: 5
 {{- end }}
 
-# preStop hook for control-plane deployments
+{{/*
+preStop hook for control-plane deployments
+*/}}
 {{- define "control-plane.prestop" -}}
 lifecycle:
   preStop:
@@ -261,7 +263,9 @@ securityContext:
 {{- end -}}
 {{- end -}}
 
-# rollingUpdate upgrade strategy for control plane deployments
+{{/*
+rollingUpdate upgrade strategy for control plane deployments
+*/}}
 {{- define "control-plane.common.update-strategy" -}}
 {{- if (.Values.common).strategy -}}
 strategy:

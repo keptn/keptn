@@ -33,7 +33,7 @@ spec:
       containers:
         - name: api-service
           image: {{ .Values.apiService.image.repository }}:{{ .Values.apiService.image.tag | default .Chart.AppVersion }}
-          {{- $prestop := .Values.apiService.preStop | default 90 | quote -}}
+          {{- $prestop := .Values.apiService.preStopHookTime | default 90 | quote -}}
           {{- include "control-plane.prestop" $prestop | nindent 10 }}
           livenessProbe:
             httpGet:

@@ -37,7 +37,7 @@ spec:
       containers:
       - name: mongodb-datastore
         image: {{ .Values.mongodbDatastore.image.repository }}:{{ .Values.mongodbDatastore.image.tag | default .Chart.AppVersion }}
-        {{- $prestop := .Values.mongodbDatastore.preStop | default 90 | quote -}}
+        {{- $prestop := .Values.mongodbDatastore.preStopHookTime | default 90 | quote -}}
         {{- include "control-plane.prestop" $prestop | nindent 8 }}
         livenessProbe:
           httpGet:

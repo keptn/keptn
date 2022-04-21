@@ -389,7 +389,7 @@ spec:
       containers:
         - name: api-gateway-nginx
           image: {{ .Values.apiGatewayNginx.image.repository }}:{{ .Values.apiGatewayNginx.image.tag }}
-          {{- $prestop := .Values.apiGatewayNginx.preStop | default 90 | quote -}}
+          {{- $prestop := .Values.apiGatewayNginx.preStopHookTime | default 90 | quote -}}
           {{- include "control-plane.prestop" $prestop | nindent 10 }}
           ports:
             - containerPort: 8080

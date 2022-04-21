@@ -34,8 +34,8 @@ spec:
       containers:
       - name: remediation-service
         image: {{ .Values.remediationService.image.repository }}:{{ .Values.remediationService.image.tag | default .Chart.AppVersion }}
-        {{- $prestop := .Values.remediationService.preStop | default 90 | quote -}}
-          {{- include "control-plane.prestop" $prestop | nindent 8 }}
+        {{- $prestop := .Values.remediationService.preStopHookTime | default 90 | quote -}}
+        {{- include "control-plane.prestop" $prestop | nindent 8 }}
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
