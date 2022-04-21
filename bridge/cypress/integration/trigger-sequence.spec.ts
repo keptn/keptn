@@ -96,7 +96,11 @@ describe('Trigger a sequence', () => {
       .typeDeliveryTag('v0.1.2')
       .assertTriggerSequenceEnabled(true)
       .clickTriggerSequence();
-    cy.url().should('include', '/project/sockshop/sequence/6c98fbb0-4c40-4bff-ba9f-b20556a57c8a/stage/dev');
+    cy.wait('@triggeredSequence')
+      .wait('@betweenTriggeredSequence')
+      .wait('@triggeredSequenceEvents')
+      .wait('@SequencesMetadata');
+    cy.location('pathname').should('eq', '/project/sockshop/sequence/6c98fbb0-4c40-4bff-ba9f-b20556a57c8a/stage/dev');
   });
 
   it('should trigger an evaluation sequence with a timeframe', () => {
@@ -144,7 +148,11 @@ describe('Trigger a sequence', () => {
       .assertTriggerSequenceEnabled(true)
       .assertEvaluationTimeframeErrorExists(false)
       .clickTriggerSequence();
-    cy.url().should('include', '/project/sockshop/sequence/6c98fbb0-4c40-4bff-ba9f-b20556a57c8a/stage/dev');
+    cy.wait('@triggeredSequence')
+      .wait('@betweenTriggeredSequence')
+      .wait('@triggeredSequenceEvents')
+      .wait('@SequencesMetadata');
+    cy.location('pathname').should('eq', '/project/sockshop/sequence/6c98fbb0-4c40-4bff-ba9f-b20556a57c8a/stage/dev');
   });
 
   it('should trigger a custom sequence', () => {
@@ -160,6 +168,10 @@ describe('Trigger a sequence', () => {
       .typeCustomLabels('key1=val1')
       .assertTriggerSequenceEnabled(true)
       .clickTriggerSequence();
+    cy.wait('@triggeredSequence')
+      .wait('@betweenTriggeredSequence')
+      .wait('@triggeredSequenceEvents')
+      .wait('@SequencesMetadata');
     cy.location('pathname').should('eq', '/project/sockshop/sequence/6c98fbb0-4c40-4bff-ba9f-b20556a57c8a/stage/dev');
   });
 
@@ -246,7 +258,11 @@ describe('Trigger an evaluation sequence', () => {
       .assertEvaluationDateErrorExists(false)
       .assertTriggerSequenceEnabled(true)
       .clickTriggerSequence();
-    cy.url().should('include', '/project/sockshop/sequence/6c98fbb0-4c40-4bff-ba9f-b20556a57c8a/stage/dev');
+    cy.wait('@triggeredSequence')
+      .wait('@betweenTriggeredSequence')
+      .wait('@triggeredSequenceEvents')
+      .wait('@SequencesMetadata');
+    cy.location('pathname').should('eq', '/project/sockshop/sequence/6c98fbb0-4c40-4bff-ba9f-b20556a57c8a/stage/dev');
   });
 
   it('should have disabled trigger button if end date is selected and start date is not provided', () => {
