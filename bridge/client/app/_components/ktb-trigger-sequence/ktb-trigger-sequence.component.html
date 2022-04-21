@@ -54,8 +54,8 @@
             Delivery
           </dt-radio-button>
           <dt-radio-button [value]="TRIGGER_SEQUENCE.EVALUATION" uitestid="ktb-trigger-sequence-evaluation-radio"
-            >Evaluation</dt-radio-button
-          >
+            >Evaluation
+          </dt-radio-button>
           <div
             *ngIf="customSequencesOfStage?.length === 0; else customSequencesSelect"
             [dtOverlay]="noCustomSequencesOverlay"
@@ -202,7 +202,7 @@
           <dt-label>Start at</dt-label>
           <div class="input-overlay" (click)="timeframeStartButton?._elementRef?.nativeElement.click()"></div>
           <input
-            uitestid="keptn-trigger-evaluation-timeframe-start"
+            uitestid="keptn-trigger-evaluation-start-date"
             readonly
             dtInput
             [ngModel]="evaluationFormData.timeframeStart | date: DATE_FORMAT"

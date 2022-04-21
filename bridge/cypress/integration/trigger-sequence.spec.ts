@@ -242,8 +242,8 @@ describe('Trigger an evaluation sequence', () => {
       .selectEvaluationEndDate()
       .setStartDate(0, '1', '15', '0')
       .assertStartDateDisplayValue(`${currentDate.getFullYear()}-${currentMonthFormatted}-01 01:15:00`)
-      .setEndDate(1, '1', '15', '0')
-      .assertEndDateDisplayValue(`${currentDate.getFullYear()}-${currentMonthFormatted}-01 01:15:00`)
+      .setEndDate(0, '3', '15', '0')
+      .assertEndDateDisplayValue(`${currentDate.getFullYear()}-${currentMonthFormatted}-01 03:15:00`)
       .assertEvaluationDateErrorExists(false)
       .assertTriggerSequenceEnabled(true)
       .clickTriggerSequence();
@@ -275,7 +275,7 @@ describe('Trigger an evaluation sequence', () => {
     triggerSequencePage
       .selectEvaluationEndDate()
       .setStartDate(0, '2', '15', '0')
-      .assertStartDateDisplayValue(`${currentDate.getFullYear()}-${currentMonthFormatted}-01 01:15:00`)
+      .assertStartDateDisplayValue(`${currentDate.getFullYear()}-${currentMonthFormatted}-01 02:15:00`)
       .assertTriggerSequenceEnabled(false)
       .setEndDate(0, '1', '15', '0')
       .assertEndDateDisplayValue(`${currentDate.getFullYear()}-${currentMonthFormatted}-01 01:15:00`)
@@ -283,7 +283,7 @@ describe('Trigger an evaluation sequence', () => {
       .assertTriggerSequenceEnabled(false)
 
       .setEndDate(0, '3', '15', '0')
-      .assertEndDateDisplayValue(`${currentDate.getFullYear()}-${currentMonthFormatted}-01 01:15:00`)
+      .assertEndDateDisplayValue(`${currentDate.getFullYear()}-${currentMonthFormatted}-01 03:15:00`)
       .assertEvaluationDateErrorExists(false)
       .assertTriggerSequenceEnabled(true);
   });
