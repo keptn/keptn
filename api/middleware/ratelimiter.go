@@ -1,13 +1,14 @@
 package middleware
 
 import (
-	"github.com/benbjohnson/clock"
-	"golang.org/x/time/rate"
 	"net"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/benbjohnson/clock"
+	"golang.org/x/time/rate"
 )
 
 type visitor struct {
@@ -22,9 +23,10 @@ type RateLimiter struct {
 	theClock          clock.Clock
 	visitors          map[string]*visitor
 	mutex             *sync.Mutex
+	enabled           bool
 }
 
-func NewRateLimiter(requestsPerSecond float64, maxBurstSize int, tokenValidator TokenValidator, theClock clock.Clock) *RateLimiter {
+func NewRateLimiter(isAuthEnabled bool, requestsPerSecond float64, maxBurstSize int, tokenValidator TokenValidator, theClock clock.Clock) *RateLimiter {
 	rl := &RateLimiter{
 		RequestsPerSecond: requestsPerSecond,
 		MaxBurstSize:      maxBurstSize,
@@ -32,6 +34,7 @@ func NewRateLimiter(requestsPerSecond float64, maxBurstSize int, tokenValidator 
 		visitors:          map[string]*visitor{},
 		mutex:             &sync.Mutex{},
 		tokenValidator:    tokenValidator,
+		enabled:           isAuthEnabled,
 	}
 
 	ticker := rl.theClock.Ticker(1 * time.Minute)
@@ -52,17 +55,19 @@ func (r *RateLimiter) Handle(handler http.Handler) http.Handler {
 }
 
 func (r *RateLimiter) Apply(w http.ResponseWriter, req *http.Request, handler http.Handler) {
-	r.mutex.Lock()
-	defer r.mutex.Unlock()
-	ipAddress := getRemoteIP(req)
-	limiter := r.getIPBucket(ipAddress)
-	if limiter.Allow() == false {
-		http.Error(w, http.StatusText(http.StatusTooManyRequests), http.StatusTooManyRequests)
-		return
-	}
-	_, err := r.tokenValidator.ValidateToken(req.Header.Get("x-token"))
-	if err == nil {
-		r.clearIPBucket(ipAddress)
+	if r.enabled {
+		r.mutex.Lock()
+		defer r.mutex.Unlock()
+		ipAddress := getRemoteIP(req)
+		limiter := r.getIPBucket(ipAddress)
+		if !limiter.Allow() {
+			http.Error(w, http.StatusText(http.StatusTooManyRequests), http.StatusTooManyRequests)
+			return
+		}
+		_, err := r.tokenValidator.ValidateToken(req.Header.Get("x-token"))
+		if err == nil {
+			r.clearIPBucket(ipAddress)
+		}
 	}
 	handler.ServeHTTP(w, req)
 }
@@ -95,16 +100,16 @@ func (r *RateLimiter) cleanIPBuckets() {
 }
 
 func getRemoteIP(r *http.Request) string {
-	// first, check 'x-real-ip'
-	if realIP := r.Header.Get("X-Real-IP"); realIP != "" {
-		return realIP
-	}
-	// then, check 'x-forwarded-for' header
+	// first, check 'x-forwarded-for' header
 	if forwardedFor := r.Header.Get("X-Forwarded-For"); forwardedFor != "" {
 		split := strings.Split(forwardedFor, ",")
 		if len(split) > 0 {
 			return strings.TrimSpace(split[0])
 		}
+	}
+	// then, check 'x-real-ip'
+	if realIP := r.Header.Get("X-Real-IP"); realIP != "" {
+		return realIP
 	}
 	// finally, try to use RemoteAddr
 	if r.RemoteAddr != "" {
