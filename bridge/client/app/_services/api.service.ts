@@ -41,6 +41,7 @@ export class ApiService {
   protected readonly VERSION_CHECK_COOKIE = 'keptn_versioncheck';
   protected readonly ENVIRONMENT_FILTER_COOKIE = 'keptn_environment_filter';
   protected readonly INTEGRATION_DATES = 'keptn_integration_dates';
+  protected readonly SEQUENCE_FILTERS_COOKIE = 'keptn_sequence_filters';
 
   constructor(protected http: HttpClient) {
     this._baseUrl = `./api`;
@@ -52,6 +53,15 @@ export class ApiService {
 
   public get baseUrl(): string {
     return this._baseUrl;
+  }
+
+  public get sequenceFilters(): { [key: string]: string[] } {
+    const filters = localStorage.getItem(this.SEQUENCE_FILTERS_COOKIE);
+    return filters ? JSON.parse(filters) : {};
+  }
+
+  public set sequenceFilters(filters: { [key: string]: string[] }): void {
+    localStorage.setItem(this.SEQUENCE_FILTERS_COOKIE, JSON.stringify(filters));
   }
 
   public get environmentFilter(): { [projectName: string]: { services: string[] } } {
