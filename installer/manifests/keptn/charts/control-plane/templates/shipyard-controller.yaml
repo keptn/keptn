@@ -20,7 +20,7 @@ spec:
   {{ else }}
   replicas: {{ .Values.shipyardController.config.replicas | default 3 }}
   {{- end }}
-  {{ include "control-plane.common.update-strategy" . }}
+  {{ include "control-plane.common.update-strategy" . | nindent 2 }}
   template:
     metadata:
       labels:
