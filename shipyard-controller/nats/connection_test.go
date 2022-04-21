@@ -77,6 +77,54 @@ func TestNatsConnectionHandler(t *testing.T) {
 	}, 15*time.Second, 5*time.Second)
 }
 
+func TestNatsConnectionHandler_ShutdownSubscriber(t *testing.T) {
+	mockNatsEventHandler := &natsmock.IKeptnNatsMessageHandlerMock{
+		ProcessFunc: func(event apimodels.KeptnContextExtendedCE, sync bool) error {
+			return nil
+		},
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+
+	nh := NewNatsConnectionHandler(ctx, natsURL())
+
+	err := nh.SubscribeToTopics([]string{"sh.keptn.>"}, NewKeptnNatsMessageHandler(mockNatsEventHandler.Process))
+
+	require.Nil(t, err)
+
+	publisher, err := nh.GetPublisher()
+
+	require.Nil(t, err)
+
+	event := cloudevents.NewEvent()
+	event.SetType(keptnv2.GetTriggeredEventType("test"))
+	_ = event.SetData(cloudevents.ApplicationJSON, map[string]interface{}{
+		"project": "my-project",
+	})
+
+	// send with Send method
+	err = publisher.Send(context.TODO(), event)
+	require.Nil(t, err)
+
+	// send with SendEvent method
+	err = publisher.SendEvent(event)
+	require.Nil(t, err)
+
+	require.Eventually(t, func() bool {
+		return len(mockNatsEventHandler.ProcessCalls()) == 2
+	}, 15*time.Second, 5*time.Second)
+
+	// call cancel() and wait for the consumer to shut down
+	// this is to ensure that the pull subscription created during this test does not interfere with the other tests
+	cancel()
+
+	// send another event
+	err = publisher.Send(context.TODO(), event)
+	require.Nil(t, err)
+
+	// this event should not have gotten through to the subscriber
+	require.Equal(t, 2, len(mockNatsEventHandler.ProcessCalls()))
+}
+
 func TestNatsConnectionHandler_EmptyURL(t *testing.T) {
 	mockNatsEventHandler := &natsmock.IKeptnNatsMessageHandlerMock{
 		ProcessFunc: func(event apimodels.KeptnContextExtendedCE, sync bool) error {
