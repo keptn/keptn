@@ -4,8 +4,9 @@ import { EventTypes } from '../../../shared/interfaces/event-types';
 export class SequencesPage {
   private readonly sequenceWaitingMessage = ' Sequence is waiting for previous sequences to finish. ';
 
-  public intercept(): void {
+  public intercept(): this {
     interceptSequencesPage();
+    return this;
   }
 
   public visit(projectName: string): this {
