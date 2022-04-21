@@ -72,7 +72,7 @@ func (K8sCredentialReader) GetCredentials(project string) (*common_models.GitCre
 	if err != nil {
 		return nil, fmt.Errorf(unmarshalGitCredentialsFail)
 	}
-	if credentials.User != "" && credentials.Token != "" && credentials.RemoteURI != "" {
+	if credentials.Token != "" && credentials.RemoteURI != "" {
 		return &credentials, nil
 	}
 	return nil, nil
@@ -544,7 +544,7 @@ func GetCredentials(project string) (*common_models.GitCredentials, error) {
 	if err != nil {
 		return nil, fmt.Errorf(unmarshalGitCredentialsFail)
 	}
-	if credentials.User != "" && credentials.Token != "" && credentials.RemoteURI != "" {
+	if credentials.Token != "" && credentials.RemoteURI != "" {
 		return &credentials, nil
 	}
 	return nil, nil
