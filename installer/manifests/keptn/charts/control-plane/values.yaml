@@ -82,6 +82,7 @@ apiService:
     repository: docker.io/keptn/api
     tag: ""
   config:
+    maxAuthEnabled: true
     maxAuthRequestsPerSecond: "1.0"
     maxAuthRequestBurst: "2"
 
