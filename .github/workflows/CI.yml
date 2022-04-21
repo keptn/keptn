@@ -321,6 +321,7 @@ jobs:
         working-directory: cli
         run: |
           go get gotest.tools/gotestsum@v1.7.0
+          which gotestsum
           gotestsum --no-color=false --format=testname -- -race -v  -coverprofile=coverage.txt -covermode=atomic ./...
 
       - name: Report test coverage for CLI

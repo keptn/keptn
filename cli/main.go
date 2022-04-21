@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	// Version information which is passed by ldflags
+	// Version information which is passed by ldflagsasdasdasd
 	Version = "develop"
 )
 
