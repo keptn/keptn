@@ -265,7 +265,7 @@ securityContext:
 {{- define "control-plane.common.update-strategy" -}}
 {{- if (.Values.common).strategy -}}
 strategy:
-{{- toYaml .Values.common.strategy -}}
+{{- toYaml .Values.common.strategy | nindent 2 -}}
 {{- else -}}
 strategy:
   type: RollingUpdate

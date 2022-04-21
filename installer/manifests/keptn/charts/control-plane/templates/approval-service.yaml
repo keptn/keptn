@@ -16,7 +16,7 @@ spec:
       app.kubernetes.io/name: approval-service
       app.kubernetes.io/instance: {{ .Release.Name }}
   replicas: 1
-  {{ include "control-plane.common.update-strategy" . | nindent 2 }}
+  {{- include "control-plane.common.update-strategy" . | nindent 2 }}
   template:
     metadata:
       labels:
