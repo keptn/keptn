@@ -7,7 +7,7 @@ require (
 	github.com/go-openapi/errors v0.20.2
 	github.com/go-openapi/loads v0.21.1
 	github.com/go-openapi/runtime v0.23.3
-	github.com/go-openapi/spec v0.20.4
+	github.com/go-openapi/spec v0.20.5
 	github.com/go-openapi/strfmt v0.21.2
 	github.com/go-openapi/swag v0.21.1
 	github.com/go-openapi/validate v0.21.0
@@ -18,7 +18,7 @@ require (
 	github.com/otiai10/copy v1.7.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
-	golang.org/x/net v0.0.0-20220403103023-749bd193bc2b
+	golang.org/x/net v0.0.0-20220418201149-a630d4f3e7a2
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	k8s.io/apimachinery v0.22.8
 	k8s.io/client-go v0.22.8
@@ -36,8 +36,6 @@ require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.1.1 // indirect
 	github.com/Masterminds/sprig/v3 v3.2.2 // indirect
-	github.com/PuerkitoBio/purell v1.1.1 // indirect
-	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/andybalholm/brotli v1.0.1 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
 	github.com/benbjohnson/clock v1.3.0 // indirect
@@ -50,7 +48,7 @@ require (
 	github.com/go-logr/logr v0.4.0 // indirect
 	github.com/go-openapi/analysis v0.21.2 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
-	github.com/go-openapi/jsonreference v0.19.6 // indirect
+	github.com/go-openapi/jsonreference v0.20.0 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
@@ -64,7 +62,7 @@ require (
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.11 // indirect
-	github.com/keptn/go-utils v0.14.1-0.20220405094754-802847e81750 // indirect
+	github.com/keptn/go-utils v0.14.1-0.20220414081235-2e23eb712e3d // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/klauspost/pgzip v1.2.5 // indirect
 	github.com/kr/pretty v0.2.0 // indirect

@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../_services/data.service';
-import { forkJoin, Observable, of, Subject, throwError } from 'rxjs';
+import { combineLatest, forkJoin, Observable, of, Subject, throwError } from 'rxjs';
 import { catchError, filter, map, switchMap, take, takeUntil, tap } from 'rxjs/operators';
 import { UniformSubscription } from '../../_models/uniform-subscription';
 import { DtFilterFieldDefaultDataSource } from '@dynatrace/barista-components/filter-field';
@@ -155,9 +155,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     );
     const project$ = projectName$.pipe(
       switchMap((projectName) => this.dataService.getProject(projectName)),
-      filter((project?: Project): project is Project => !!project),
-      tap((project) => this.updateDataSource(project)),
-      take(1)
+      filter((project?: Project): project is Project => !!project)
     );
 
     const webhook$ = forkJoin({
@@ -199,14 +197,21 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       })
     );
 
-    this.data$ = forkJoin({
-      taskNames: taskNames$,
-      subscription: subscription$,
-      project: project$,
-      integrationId: integrationId$,
-      webhook: webhook$,
-      webhookSecrets: webhookSecrets$,
-    });
+    this.data$ = combineLatest([taskNames$, subscription$, project$, integrationId$, webhook$, webhookSecrets$]).pipe(
+      map(([taskNames, subscription, project, integrationId, webhook, webhookSecrets]) => {
+        return {
+          taskNames,
+          subscription,
+          project,
+          integrationId,
+          webhook,
+          webhookSecrets,
+        };
+      }),
+      tap((data) => {
+        this.updateDataSource(data.project, data.subscription);
+      })
+    );
   }
 
   private updateEventPayload(projectName: string, stages: string[], services: string[]): void {
@@ -230,20 +235,30 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     window.location.reload();
   }
 
-  private updateDataSource(project: Project): void {
+  private updateDataSource(project: Project, subscription: UniformSubscription): void {
+    const stages: { name: string }[] = project.stages.map((stage) => ({
+      name: stage.stageName,
+    }));
+    const services: { name: string }[] = project.getServices().map((service) => ({
+      name: service.serviceName,
+    }));
+    const availableServices = subscription.filter.services?.filter((service) =>
+      services.some((s) => s.name === service)
+    );
+
+    // check if services have been deleted
+    if (availableServices && availableServices?.length !== subscription.filter.services?.length) {
+      subscription.filter.services = availableServices;
+    }
     this._dataSource.data = {
       autocomplete: [
         {
           name: 'Stage',
-          autocomplete: project.stages.map((stage) => ({
-            name: stage.stageName,
-          })),
+          autocomplete: stages,
         },
         {
           name: 'Service',
-          autocomplete: project.getServices().map((service) => ({
-            name: service.serviceName,
-          })),
+          autocomplete: services,
         },
       ],
     } as DtFilterFieldDefaultDataSourceAutocomplete;

@@ -121,9 +121,9 @@ func (ph *ServiceResourceHandler) GetServiceResources(c *gin.Context) {
 }
 
 // UpdateServiceResources godoc
-// @Summary Updates project resources
+// @Summary Updates service resources
 // @Description Update list of new resources for the service in the given stage of a project
-// @Tags Project Resource
+// @Tags Service Resource
 // @Security ApiKeyAuth
 // @Accept  json
 // @Produce  json

@@ -318,9 +318,14 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 		if err := ph.sendProjectCreateFailFinishedEvent(keptnContext, params); err != nil {
 			log.Errorf("could not send project.create.finished event: %s", err.Error())
 		}
+
 		rollback()
 		if errors.Is(err, ErrProjectAlreadyExists) {
 			SetConflictErrorResponse(c, err.Error())
+			return
+		}
+		if errors.Is(err, common.ErrConfigStoreUpstreamNotFound) {
+			SetBadRequestErrorResponse(c, err.Error())
 			return
 		}
 		SetInternalServerErrorResponse(c, err.Error())

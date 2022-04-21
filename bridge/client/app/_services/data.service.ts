@@ -33,6 +33,7 @@ import { EventData } from '../_components/ktb-evaluation-info/ktb-evaluation-inf
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
 import { IGitDataExtended } from '../_interfaces/git-upstream';
 import { isGitHTTPS } from '../_utils/git-upstream.utils';
+import { ICustomSequences } from '../../../shared/interfaces/custom-sequences';
 
 @Injectable({
   providedIn: 'root',
@@ -236,10 +237,10 @@ export class DataService {
   public setGitUpstreamUrl(
     projectName: string,
     gitUrl: string,
-    gitUser: string,
-    gitToken: string
+    gitToken: string,
+    gitUser?: string
   ): Observable<unknown> {
-    return this.apiService.sendGitUpstreamUrl(projectName, gitUrl, gitUser, gitToken).pipe(
+    return this.apiService.sendGitUpstreamUrl(projectName, gitUrl, gitToken, gitUser).pipe(
       tap(() => {
         this.loadProject(projectName);
       })
@@ -675,8 +676,8 @@ export class DataService {
       .pipe(map((serviceNames) => serviceNames.sort((serviceA, serviceB) => serviceA.localeCompare(serviceB))));
   }
 
-  public getCustomSequenceNames(projectName: string): Observable<string[]> {
-    return this.apiService.getCustomSequenceNames(projectName);
+  public getCustomSequences(projectName: string): Observable<ICustomSequences> {
+    return this.apiService.getCustomSequences(projectName);
   }
 
   public getWebhookConfig(

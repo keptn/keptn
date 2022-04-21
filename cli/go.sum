@@ -741,8 +741,8 @@ github.com/imdario/mergo v0.3.12/go.mod h1:jmQim1M+e3UYxmgPu/WyfjB3N3VflVyUjjjwH
 github.com/inconshreveable/mousetrap v1.0.0 h1:Z8tu5sraLXCXIcARxBp/8cbvlwVa7Z1NHg9XEKhtSvM=
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
 github.com/influxdata/influxdb1-client v0.0.0-20191209144304-8bf82d3c094d/go.mod h1:qj24IKcXYK6Iy9ceXlo3Tc+vtHo9lIhSX5JddghvEPo=
-github.com/invopop/jsonschema v0.1.0 h1:dw4iVnbNpnMSHNU0mjbKfIPVWzYRU3qszMWCoqwr8Gw=
-github.com/invopop/jsonschema v0.1.0/go.mod h1:O9uiLokuu0+MGFlyiaqtWxwqJm41/+8Nj0lD7A36YH0=
+github.com/invopop/jsonschema v0.4.0 h1:Yuy/unfgCnfV5Wl7H0HgFufp/rlurqPOOuacqyByrws=
+github.com/invopop/jsonschema v0.4.0/go.mod h1:O9uiLokuu0+MGFlyiaqtWxwqJm41/+8Nj0lD7A36YH0=
 github.com/j-keck/arping v0.0.0-20160618110441-2cf9dc699c56/go.mod h1:ymszkNOg6tORTn+6F6j+Jc8TOr5osrynvN6ivFWZ2GA=
 github.com/jmespath/go-jmespath v0.0.0-20160202185014-0b12d6b521d8/go.mod h1:Nht3zPeWKUH0NzdCt2Blrr5ys8VGpn0CEB0cQHVjt7k=
 github.com/jmespath/go-jmespath v0.0.0-20160803190731-bd40a432e4c7/go.mod h1:Nht3zPeWKUH0NzdCt2Blrr5ys8VGpn0CEB0cQHVjt7k=
@@ -772,12 +772,8 @@ github.com/julienschmidt/httprouter v1.3.0/go.mod h1:JR6WtHb+2LUe8TCKY3cZOxFyyO8
 github.com/karrick/godirwalk v1.15.8 h1:7+rWAZPn9zuRxaIqqT8Ohs2Q2Ac0msBqwRdxNCr2VVs=
 github.com/karrick/godirwalk v1.15.8/go.mod h1:j4mkqPuvaLI8mp1DroR3P6ad7cyYd4c1qeJ3RV7ULlk=
 github.com/keptn/go-utils v0.13.0/go.mod h1:yJM7pnCUj23VHKa2az9eWUTAmLDv94f6DVHON9qV1kU=
-github.com/keptn/go-utils v0.14.1-0.20220405094754-802847e81750 h1:Yr04Dn8b3+pgOXbpClW+wDLOiBjSpc6l3Rkqt4h5JAY=
-github.com/keptn/go-utils v0.14.1-0.20220405094754-802847e81750/go.mod h1:CIRwnEp/QYaSBa/r146x3h4yqWB4FS3YNKHzftoyhVA=
-github.com/keptn/go-utils v0.14.1-0.20220408082744-c0f7b6907919 h1:C4+AQokzNJz2U/7v80YpWbz2wlLYFvCT+OixkS7AG5c=
-github.com/keptn/go-utils v0.14.1-0.20220408082744-c0f7b6907919/go.mod h1:CIRwnEp/QYaSBa/r146x3h4yqWB4FS3YNKHzftoyhVA=
-github.com/keptn/go-utils v0.14.1-0.20220411063724-003ee3f85292 h1:OazXyR04lnwKQtGqvoPMh+Rc0Xa+ISRFk9Fxo4J4Bro=
-github.com/keptn/go-utils v0.14.1-0.20220411063724-003ee3f85292/go.mod h1:CIRwnEp/QYaSBa/r146x3h4yqWB4FS3YNKHzftoyhVA=
+github.com/keptn/go-utils v0.14.1-0.20220414081235-2e23eb712e3d h1:qe35rM3wzvEXnbONB8gDgdLWlDcuJbc2DtJkCl6cDFg=
+github.com/keptn/go-utils v0.14.1-0.20220414081235-2e23eb712e3d/go.mod h1:CIRwnEp/QYaSBa/r146x3h4yqWB4FS3YNKHzftoyhVA=
 github.com/keptn/kubernetes-utils v0.13.1-0.20220309123424-6e3f2bcaf831 h1:ShKHMDFsDEmStfdiRWe3A8iYFvwzlF6Te9dHJdp4d3Y=
 github.com/keptn/kubernetes-utils v0.13.1-0.20220309123424-6e3f2bcaf831/go.mod h1:KKNyfkROz8pFdwHcLEPmWYh+MfWj3/30nP3BQ8zkjqk=
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=
@@ -1450,8 +1446,8 @@ golang.org/x/oauth2 v0.0.0-20210805134026-6f1e6394065a/go.mod h1:KelEdhl1UZF7XfJ
 golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f/go.mod h1:KelEdhl1UZF7XfJ4dDtk6s++YSgaE7mD/BuKKDLBl4A=
 golang.org/x/oauth2 v0.0.0-20211005180243-6b3c2da341f1/go.mod h1:KelEdhl1UZF7XfJ4dDtk6s++YSgaE7mD/BuKKDLBl4A=
 golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8/go.mod h1:KelEdhl1UZF7XfJ4dDtk6s++YSgaE7mD/BuKKDLBl4A=
-golang.org/x/oauth2 v0.0.0-20220309155454-6242fa91716a h1:qfl7ob3DIEs3Ml9oLuPwY2N04gymzAW04WsUQHIClgM=
-golang.org/x/oauth2 v0.0.0-20220309155454-6242fa91716a/go.mod h1:DAh4E804XQdzx2j+YRIaUnCqCV2RuMz24cGBJ5QYIrc=
+golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5 h1:OSnWWcOd/CtWQC2cYSBgbTSJv3ciqd8r54ySIW2y3RE=
+golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5/go.mod h1:DAh4E804XQdzx2j+YRIaUnCqCV2RuMz24cGBJ5QYIrc=
 golang.org/x/sync v0.0.0-20180314180146-1d60e4601c6f/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
 golang.org/x/sync v0.0.0-20181108010431-42b317875d0f/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
 golang.org/x/sync v0.0.0-20181221193216-37e7f081c4d4/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=

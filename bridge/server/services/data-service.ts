@@ -9,7 +9,7 @@ import { EventTypes } from '../../shared/interfaces/event-types';
 import { Approval } from '../interfaces/approval';
 import { ResultTypes } from '../../shared/models/result-types';
 import { UniformRegistration } from '../models/uniform-registration';
-import Yaml from 'yaml';
+import { parse as parseYaml } from 'yaml';
 import { Shipyard } from '../interfaces/shipyard';
 import { UniformRegistrationLocations } from '../../shared/interfaces/uniform-registration-locations';
 import { WebhookConfig, WebhookConfigFilter, WebhookSecret } from '../../shared/models/webhook-config';
@@ -35,6 +35,7 @@ import { IStage } from '../../shared/interfaces/stage';
 import { ISequencesMetadata, SequenceMetadataDeployment } from '../../shared/interfaces/sequencesMetadata';
 import { SecretScope, SecretScopeDefault } from '../../shared/interfaces/secret-scope';
 import { generateWebhookConfigCurl } from '../utils/curl.utils';
+import { ICustomSequences } from '../../shared/interfaces/custom-sequences';
 
 type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
 type FlatSecret = { path: string; name: string; key: string; parsedPath: string };
@@ -618,20 +619,19 @@ export class DataService {
     return this.reduceServiceNames(stages);
   }
 
-  public async getCustomSequenceNames(accessToken: string | undefined, projectName: string): Promise<string[]> {
+  public async getCustomSequenceNames(accessToken: string | undefined, projectName: string): Promise<ICustomSequences> {
     const shipyard = await this.getShipyard(accessToken, projectName);
-    const sequenceSet = new Set<string>();
+    const ignoredSequences = ['delivery', 'evaluation'];
+    const sequences: ICustomSequences = {};
 
     for (const stage of shipyard.spec.stages) {
-      if (stage.sequences) {
-        for (const seq of stage.sequences) {
-          if (seq.name !== 'delivery' && seq.name !== 'evaluation') {
-            sequenceSet.add(seq.name);
-          }
-        }
-      }
+      sequences[stage.name] =
+        stage.sequences
+          ?.filter((seq) => !ignoredSequences.includes(seq.name))
+          .map((seq) => seq.name)
+          .sort() ?? [];
     }
-    return Array.from(sequenceSet);
+    return sequences;
   }
 
   private reduceServiceNames(stages: IStage[]): string[] {
@@ -760,7 +760,7 @@ export class DataService {
   private async getShipyard(accessToken: string | undefined, projectName: string): Promise<Shipyard> {
     const response = await this.apiService.getShipyard(accessToken, projectName);
     const shipyard = Buffer.from(response.data.resourceContent, 'base64').toString('utf-8');
-    return Yaml.parse(shipyard);
+    return parseYaml(shipyard);
   }
 
   public async createSubscription(
@@ -798,7 +798,7 @@ export class DataService {
 
     try {
       const webhookConfigFile = Buffer.from(response.data.resourceContent, 'base64').toString('utf-8');
-      return WebhookConfigYaml.fromJSON(Yaml.parse(webhookConfigFile));
+      return WebhookConfigYaml.fromJSON(parseYaml(webhookConfigFile));
     } catch (error) {
       throw Error('Could not parse webhook.yaml');
     }

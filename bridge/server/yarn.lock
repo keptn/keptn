@@ -1244,10 +1244,10 @@ bser@2.1.1:
   dependencies:
     node-int64 "^0.4.0"
 
-bson@^4.6.1:
-  version "4.6.1"
-  resolved "https://registry.yarnpkg.com/bson/-/bson-4.6.1.tgz#2b5da517539bb0f7f3ffb54ac70a384ca899641c"
-  integrity sha512-I1LQ7Hz5zgwR4QquilLNZwbhPw0Apx7i7X9kGMBTsqPdml/03Q9NBtD9nt/19ahjlphktQImrnderxqpzeVDjw==
+bson@^4.6.2:
+  version "4.6.2"
+  resolved "https://registry.yarnpkg.com/bson/-/bson-4.6.2.tgz#3241c79d23d225b86ab6d2bc268b803d8a5fd444"
+  integrity sha512-VeJKHShcu1b/ugl0QiujlVuBepab714X9nNyBdA1kfekuDGecxgpTA2Z6nYbagrWFeiIyzSWIOzju3lhj+RNyQ==
   dependencies:
     buffer "^5.6.0"
 
@@ -3107,12 +3107,12 @@ mongodb-connection-string-url@^2.5.2:
     "@types/whatwg-url" "^8.2.1"
     whatwg-url "^11.0.0"
 
-mongodb@4.4.1:
-  version "4.4.1"
-  resolved "https://registry.yarnpkg.com/mongodb/-/mongodb-4.4.1.tgz#e604cfbe2d5e125ae156ad04b52d261bed480b99"
-  integrity sha512-IAD3nFtCR4s22vi5qjqkCBnuyDDrOW8WVSSmgHquOvGaP1iTD+XpC5tr8wAUbZ2EeZkaswwBKQFHDvl4qYcKqQ==
+mongodb@4.5.0:
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/mongodb/-/mongodb-4.5.0.tgz#d74c2008567b606dccef220f62a44cd7b934eb92"
+  integrity sha512-A2l8MjEpKojnhbCM0MK3+UOGUSGvTNNSv7AkP1fsT7tkambrkkqN/5F2y+PhzsV0Nbv58u04TETpkaSEdI2zKA==
   dependencies:
-    bson "^4.6.1"
+    bson "^4.6.2"
     denque "^2.0.1"
     mongodb-connection-string-url "^2.5.2"
     socks "^2.6.2"
@@ -4270,10 +4270,10 @@ yallist@^4.0.0:
   resolved "https://registry.yarnpkg.com/yallist/-/yallist-4.0.0.tgz#9bb92790d9c0effec63be73519e11a35019a3a72"
   integrity sha512-3wdGidZyq5PB084XLES5TpOSRA3wjXAlIWMhum2kRcv/41Sn2emQ0dycQW4uZXLejwKvg6EsvbdlVL+FYEct7A==
 
-yaml@2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/yaml/-/yaml-2.0.0.tgz#cbc588ad58e0cd924cd3f5f2b1a9485103048e25"
-  integrity sha512-JbfdlHKGP2Ik9IHylzWlGd4pPK++EU46/IxMykphS2ZKw7a7h+dHNmcXObLgpRDriBY+rpWslldikckX8oruWQ==
+yaml@2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/yaml/-/yaml-2.0.1.tgz#71886d6021f3da28169dbefde78d4dd0f8d83650"
+  integrity sha512-1NpAYQ3wjzIlMs0mgdBmYzLkFgWBIWrzYVDYfrixhoFNNgJ444/jT2kUT2sicRbJES3oQYRZugjB6Ro8SjKeFg==
 
 yargs-parser@20.x, yargs-parser@^20.2.2:
   version "20.2.9"

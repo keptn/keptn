@@ -209,11 +209,12 @@ type GetResourcesResponse struct {
 // swagger:model GetResourceResponse
 type GetResourceResponse struct {
 	Resource
-	Metadata Version
+	Metadata Version `json:"metadata"`
 }
 
 type WriteResourceResponse struct {
-	CommitID string `json:"commitID"`
+	CommitID string  `json:"commitID"`
+	Metadata Version `json:"metadata"`
 }
 
 func validateResourceURI(uri string) error {

@@ -261,12 +261,8 @@ github.com/karrick/godirwalk v1.8.0/go.mod h1:H5KPZjojv4lE+QYImBI8xVtrBRgYrIVsaR
 github.com/karrick/godirwalk v1.10.3/go.mod h1:RoGL9dQei4vP9ilrpETWE8CLOZ1kiN0LhBygSwrAsHA=
 github.com/kelseyhightower/envconfig v1.4.0 h1:Im6hONhd3pLkfDFsbRgu68RDNkGF1r3dvMUtDTo2cv8=
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
-github.com/keptn/go-utils v0.14.1-0.20220405094754-802847e81750 h1:Yr04Dn8b3+pgOXbpClW+wDLOiBjSpc6l3Rkqt4h5JAY=
-github.com/keptn/go-utils v0.14.1-0.20220405094754-802847e81750/go.mod h1:CIRwnEp/QYaSBa/r146x3h4yqWB4FS3YNKHzftoyhVA=
-github.com/keptn/go-utils v0.14.1-0.20220408082744-c0f7b6907919 h1:C4+AQokzNJz2U/7v80YpWbz2wlLYFvCT+OixkS7AG5c=
-github.com/keptn/go-utils v0.14.1-0.20220408082744-c0f7b6907919/go.mod h1:CIRwnEp/QYaSBa/r146x3h4yqWB4FS3YNKHzftoyhVA=
-github.com/keptn/go-utils v0.14.1-0.20220411063724-003ee3f85292 h1:OazXyR04lnwKQtGqvoPMh+Rc0Xa+ISRFk9Fxo4J4Bro=
-github.com/keptn/go-utils v0.14.1-0.20220411063724-003ee3f85292/go.mod h1:CIRwnEp/QYaSBa/r146x3h4yqWB4FS3YNKHzftoyhVA=
+github.com/keptn/go-utils v0.14.1-0.20220414081235-2e23eb712e3d h1:qe35rM3wzvEXnbONB8gDgdLWlDcuJbc2DtJkCl6cDFg=
+github.com/keptn/go-utils v0.14.1-0.20220414081235-2e23eb712e3d/go.mod h1:CIRwnEp/QYaSBa/r146x3h4yqWB4FS3YNKHzftoyhVA=
 github.com/kisielk/errcheck v1.5.0/go.mod h1:pFxgyoBC7bSaBwPgfKdkLd5X25qrDl4LWUI2bnpBCr8=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/klauspost/compress v1.9.5/go.mod h1:RyIbtBH6LamlWaDj8nUwkbUhJ87Yi3uG0guNDohfE1A=
@@ -409,8 +405,8 @@ github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9dec
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
 github.com/yuin/goldmark v1.4.0/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
 go.mongodb.org/mongo-driver v1.7.0/go.mod h1:Q4oFMbo1+MSNqICAdYMlC/zSTrwCogR4R8NzkI+yfU8=
-go.mongodb.org/mongo-driver v1.8.4 h1:NruvZPPL0PBcRJKmbswoWSrmHeUvzdxA3GCPfD/NEOA=
-go.mongodb.org/mongo-driver v1.8.4/go.mod h1:0sQWfOeY63QTntERDJJ/0SuKK0T1uVSgKCuAROlKEPY=
+go.mongodb.org/mongo-driver v1.8.5 h1:FinPXB+/El6MPrpahVZHXhnPEUlq76jaaRZnI6L5pTQ=
+go.mongodb.org/mongo-driver v1.8.5/go.mod h1:0sQWfOeY63QTntERDJJ/0SuKK0T1uVSgKCuAROlKEPY=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=
 go.opencensus.io v0.22.0/go.mod h1:+kGneAE2xo2IficOXnaByMWTGM9T73dGwxeWcUqIpI8=
 go.opencensus.io v0.22.2/go.mod h1:yxeiOL68Rb0Xd1ddK5vPZ/oVn4vY4Ynel7k9FzqtOIw=

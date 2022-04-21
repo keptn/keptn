@@ -33,13 +33,8 @@
   position: relative;
 }
 
-.radio-button-overlay {
-  height: 30px;
-  width: 100px;
-  position: absolute;
-  left: 0;
-  top: 0;
-  z-index: 1;
+.sequence-select, ::ng-deep .custom-sequence-radio .dt-radio-content {
+  width: 100%;
 }
 
 .input-overlay {
