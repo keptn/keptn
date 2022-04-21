@@ -6,6 +6,7 @@ jmeterservice:
   service:
     enabled: true                              # Creates a Kubernetes Service for the jmeter-service
   gracePeriod: 120                             # PreStop hook +30s
+  preStop: 90
 
 distributor:
   stageFilter: ""                            # Sets the stage this helm service belongs to

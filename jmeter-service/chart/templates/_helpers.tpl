@@ -67,6 +67,6 @@ Create the name of the service account to use
 lifecycle:
   preStop:
     exec:
-      # using 90s of sleeping to be on the safe side before terminating the pod
-      command: ["/bin/sleep", "90"]
+      # using 90s of sleeping defaultly to be on the safe side before terminating the pod
+      command: ["/bin/sleep", {{ .Values.jmeterservice.preStop | default 90 | quote }} ]
 {{- end }}

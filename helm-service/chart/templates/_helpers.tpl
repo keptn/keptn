@@ -68,6 +68,6 @@ lifecycle:
   preStop:
     exec:
       # using 60s of sleeping to be on the safe side before terminating the pod
-      command: ["/bin/sleep", "60"] 
+      command: ["/bin/sleep", {{ .Values.helmservice.preStop | default 60 | quote }} ]
 {{- end }}
 
