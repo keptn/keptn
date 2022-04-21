@@ -168,3 +168,4 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       terminationGracePeriodSeconds: {{ .Values.jmeterservice.gracePeriod | default 120 }}
+      

@@ -37,7 +37,7 @@ spec:
       containers:
       - name: mongodb-datastore
         image: {{ .Values.mongodbDatastore.image.repository }}:{{ .Values.mongodbDatastore.image.tag | default .Chart.AppVersion }}
-        {{- include "control-plane.dist.prestop" . | nindent 8 }}
+        {{- include "control-plane.prestop" . | nindent 8 }}
         livenessProbe:
           httpGet:
             path: /health

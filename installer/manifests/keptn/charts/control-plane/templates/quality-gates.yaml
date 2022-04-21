@@ -34,7 +34,7 @@ spec:
       containers:
         - name: lighthouse-service
           image: {{ .Values.lighthouseService.image.repository }}:{{ .Values.lighthouseService.image.tag | default .Chart.AppVersion }}
-          {{- include "control-plane.dist.prestop" . | nindent 10 }}
+          {{- include "control-plane.prestop" . | nindent 10 }}
           livenessProbe:
             httpGet:
               path: /health

@@ -4,13 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"sync"
-	"time"
 
 	"github.com/keptn/keptn/distributor/pkg/model"
 	nats2 "github.com/keptn/keptn/distributor/pkg/natsconnection"
 	"github.com/keptn/keptn/distributor/pkg/poller"
 	"github.com/keptn/keptn/distributor/pkg/utils"
+	"sync"
+	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/keptn/go-utils/pkg/api/models"

@@ -62,6 +62,7 @@ Create the name of the service account to use
 {{- end }}
 {{- end }}
 
+# preStop hook for jmeter-service deployment
 {{- define "jmeter-service.prestop" -}}
 lifecycle:
   preStop:

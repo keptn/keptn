@@ -72,7 +72,8 @@ readinessProbe:
   periodSeconds: 5
 {{- end }}
 
-{{- define "control-plane.dist.prestop" -}}
+# preStop hook for control-plane deployments
+{{- define "control-plane.prestop" -}}
 lifecycle:
   preStop:
     exec:
@@ -260,16 +261,17 @@ securityContext:
 {{- end -}}
 {{- end -}}
 
+# rollingUpdate upgrade strategy for control plane deployments
 {{- define "control-plane.common.update-strategy" -}}
 {{- if (.Values.common).strategy -}}
 strategy:
-{{- toYaml .Values.common.strategy | nindent 4 -}}
+{{- toYaml .Values.common.strategy -}}
 {{- else -}}
 strategy:
   type: RollingUpdate
   rollingUpdate:
     maxSurge: 1
-    maxUnavailable: 1
+    maxUnavailable: 0
 {{- end -}}
 {{- end -}}
 

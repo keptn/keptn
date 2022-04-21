@@ -62,6 +62,7 @@ Create the name of the service account to use
 {{- end }}
 {{- end }}
 
+# preStop hook for helm-service deployment
 {{- define "helm-service.prestop" -}}
 lifecycle:
   preStop:

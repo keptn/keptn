@@ -33,7 +33,7 @@ spec:
       containers:
         - name: api-service
           image: {{ .Values.apiService.image.repository }}:{{ .Values.apiService.image.tag | default .Chart.AppVersion }}
-          {{- include "control-plane.dist.prestop" . | nindent 10 }}
+          {{- include "control-plane.prestop" . | nindent 10 }}
           livenessProbe:
             httpGet:
               path: /health
