@@ -43,13 +43,13 @@ keptn [command] [entity] [name] [flags]
 
 where **command**, **entity**, **name**, and **flags** are:
 
-- **command**: Specifies the operation that you want to perform, for example, install, create, onboard, send.
+- **command**: Specifies the operation that you want to perform, for example, install, create, send.
 
-- **entity**: Specifies the entity type. For example, the following commands run a create, onboard, and update operation on the project, service, and domain entity:
+- **entity**: Specifies the entity type. For example, the following commands run a create, get, and update operation on the project, service, and domain entity:
 
     ```console
     keptn create project 
-    keptn onboard service
+    keptn get service
     keptn configure domain
     ```
 
@@ -78,7 +78,6 @@ The following table includes short descriptions and the general syntax for all o
 | `install`  | Installs Keptn on a Kubernetes cluster |
 | `pause`  | Pauses the execution of a sequence |
 | `resume`  | Resumes the execution of a sequence |
-| `onboard`  | Onboard allows to onboard a new service |
 | `send`  | Sends an event to Keptn |
 | `set`  | Sets flags of the CLI configuration |
 | `status`  | Checks the status of the CLI |
@@ -98,15 +97,15 @@ Use the following set of examples to help you familiarize yourself with running 
 
 - Create a project using the definition in a shipyard.yaml
   ```console
-  keptn create project my-first-project shipyard.yaml
+  keptn create project my-first-project --shipyard=shipyard.yaml
   ```
 
-- Onboard a (micro)service to the created project
+- Create a service for the new project
   ```console
-  keptn onboard service my-service values.yaml
+  keptn create service my-first-service --project=my-first-project
   ```
 
-- Send a new artifact event for the onboarded service
+- Trigger the delivery of a new artifact for the project's new service
   ```console
-  keptn trigger delivery --project=my-first-project --service=my-service --image=docker.io/keptnexamples/my-service:0.1.0
+  keptn trigger delivery --project=my-first-project --service=my-first-service --image=docker.io/keptnexamples/my-service:0.1.0
   ```
