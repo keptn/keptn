@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -32,10 +33,12 @@ import (
 	"github.com/keptn/keptn/cli/pkg/version"
 	"github.com/stretchr/testify/assert"
 	"helm.sh/helm/v3/pkg/chart"
+	"helm.sh/helm/v3/pkg/release"
 )
 
 func TestUpgradeCmdHandler_doUpgradePreRunCheck(t *testing.T) {
 	type fields struct {
+		vChecker          *version.KeptnVersionChecker
 		helmHelper        *helmfake.IHelperMock
 		namespaceHandler  *kubefake.IKeptnNamespaceHandlerMock
 		userInput         *commonfake.IUserInputMock
@@ -49,94 +52,45 @@ func TestUpgradeCmdHandler_doUpgradePreRunCheck(t *testing.T) {
 		wantErr           bool
 	}{
 		{
-			name:   "upgrade pre-run check: namespace exists, cancel check",
-			fields: fields{},
-		},
-		{
-			name:   "upgrade pre-run check: use custom chart URL",
-			fields: fields{},
-		},
-		{
-			name:   "upgrade pre-run check: skip upgrade compatibility check",
-			fields: fields{},
-		},
-		{
-			name:   "upgrade pre-run check: version is not upgrade compatible and newer version of cli is available",
-			fields: fields{},
-		},
-		{
-			name:   "upgrade pre-run check: version is not upgrade compatible and newer version of cli is not available",
-			fields: fields{},
-		},
-		{
-			name:   "upgrade pre-run check: version is not upgrade compatible and no upgrade path exists from current Keptn version",
-			fields: fields{},
-		},
-		{
-			name:   "upgrade pre-run check: version is not upgrade compatible",
-			fields: fields{},
-		},
-		{
-			name:   "upgrade pre-run check: CLI context does not match kubernetes context",
-			fields: fields{},
-		},
-		{
-			name:   "upgrade pre-run check: use the OpenShift platform manager",
-			fields: fields{},
-		},
-		{
-			name:   "upgrade pre-run check: use the Kubernetes platform manager",
-			fields: fields{},
-		},
-		{
-			name:   "upgrade pre-run check: use an invalid platform manager",
-			fields: fields{},
-		},
-		{
-			name:   "upgrade pre-run check: incorrect kubectl configurations",
-			fields: fields{},
-		},
-		{
-			name:   "upgrade pre-run check: config file path not provided nor provided in a file",
-			fields: fields{},
-		},
-		{
-			name:   "upgrade pre-run check: config file path is not provided and cluster creds are invalid",
-			fields: fields{},
-		},
-		{
-			name:   "upgrade pre-run check: config file path is provided and cluster creds are invalid",
-			fields: fields{},
-		},
-		{
-			name:   "upgrade pre-run check: k8s server version is not compatible",
-			fields: fields{},
-		},
-		{
-			name:   "upgrade pre-run check: k8s server version is compatible but user cancels",
-			fields: fields{},
-		},
-		{
-			name:   "upgrade pre-run check: k8s server version is compatible and user does not cancel",
-			fields: fields{},
-		},
-		{
-			name:   "upgrade pre-run check: deployment with given namespace does not exist",
-			fields: fields{},
-		},
-		{
-			name:   "upgrade pre-run check: deployment with given namespace exists and is not managed by Helm",
-			fields: fields{},
-		},
-		{
-			name:   "upgrade pre-run check: deployment with given namespace exists and is managed by Helm",
-			fields: fields{},
+			name: "upgrade pre-run check: namespace exists, end check",
+			fields: fields{
+				vChecker: version.NewKeptnVersionChecker(),
+				helmHelper: &helmfake.IHelperMock{
+					DownloadChartFunc: func(chartRepoURL string) (*chart.Chart, error) {
+						return nil, errors.New("DownloadChartFunc should not be called")
+					},
+					GetHistoryFunc: func(releaseName string, namespace string) ([]*release.Release, error) {
+						return nil, errors.New("GetHistoryFunc should not be called")
+					},
+				},
+				namespaceHandler:  &kubefake.IKeptnNamespaceHandlerMock{},
+				userInput:         &commonfake.IUserInputMock{},
+				credentialManager: &credmanagerfake.CredentialManagerInterfaceMock{},
+			},
+			args: installUpgradeParams{
+				PatchNamespace: boolp(true),
+			},
+			chartsToBeApplied: []*chart.Chart{},
+			wantErr:           false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, true, true)
+			u := &UpgradeCmdHandler{
+				helmHelper:        tt.fields.helmHelper,
+				namespaceHandler:  tt.fields.namespaceHandler,
+				userInput:         tt.fields.userInput,
+				credentialManager: tt.fields.credentialManager,
+			}
+
+			if err := u.doUpgradePreRunCheck(tt.fields.vChecker, tt.args); (err != nil) != tt.wantErr {
+				t.Errorf("doUpgradePreRunCheck error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			for index, upgradeChartCall := range tt.fields.helmHelper.UpgradeChartCalls() {
+				assert.Equal(t, tt.chartsToBeApplied[index], upgradeChartCall.Ch)
+			}
 		})
 	}
 }
