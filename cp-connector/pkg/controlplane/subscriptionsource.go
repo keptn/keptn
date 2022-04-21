@@ -63,3 +63,32 @@ func (s *UniformSubscriptionSource) Start(ctx context.Context, registrationData 
 	}()
 	return nil
 }
+
+// FixedSubscriptionSource can be used to use a fixed list of subscriptions rather than
+// consulting the Keptn API for subscriptions.
+// This is useful when you want to consume events from an event source, but NOT register
+// as an Keptn integration to the control plane
+type FixedSubscriptionSource struct {
+	fixedSubscriptions []models.EventSubscription
+}
+
+// WithFixedSubscriptions adds a fixed list of subscriptions to the FixedSubscriptionSource
+func WithFixedSubscriptions(subscriptions ...models.EventSubscription) func(s *FixedSubscriptionSource) {
+	return func(s *FixedSubscriptionSource) {
+		s.fixedSubscriptions = subscriptions
+	}
+}
+
+// NewFixedSubscriptionSource creates a new instance of FixedSubscriptionSource
+func NewFixedSubscriptionSource(options ...func(source *FixedSubscriptionSource)) *FixedSubscriptionSource {
+	fss := &FixedSubscriptionSource{fixedSubscriptions: []models.EventSubscription{}}
+	for _, o := range options {
+		o(fss)
+	}
+	return fss
+}
+
+func (s FixedSubscriptionSource) Start(ctx context.Context, data RegistrationData, c chan []models.EventSubscription) error {
+	go func() { c <- s.fixedSubscriptions }()
+	return nil
+}
