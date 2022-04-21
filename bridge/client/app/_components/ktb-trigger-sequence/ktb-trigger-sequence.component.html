@@ -199,14 +199,6 @@
         fxLayoutGap="15px"
         *ngIf="evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.TIMEFRAME"
       >
-        <ktb-time-input
-          [label]="'Timeframe'"
-          [hint]="'The time frame to evaluate that has to be at least 1 minute but defaults to 5 if not filled in.'"
-          [error]="isValidTimeframe ? '' : 'Timeframe has to be minimum 1 minute'"
-          [timeframe]="evaluationFormData.timeframe"
-          (timeChanged)="setTimeframe($event)"
-        ></ktb-time-input>
-
         <dt-form-field class="overlay-origin">
           <dt-label>Start at</dt-label>
           <div class="input-overlay" (click)="timeframeStartButton?._elementRef?.nativeElement.click()"></div>
@@ -237,7 +229,7 @@
 
         <ktb-time-input
           [label]="'Timeframe'"
-          [hint]="'Min. 1m, defaults to 5m if not filled in'"
+          [hint]="'The time frame to evaluate that has to be at least 1 minute but defaults to 5 if not filled in.'"
           [error]="isValidTimeframe ? '' : 'Timeframe has to be minimum 1 minute'"
           [timeframe]="evaluationFormData.timeframe"
           (timeChanged)="setTimeframe($event)"
