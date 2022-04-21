@@ -64,7 +64,7 @@ spec:
       containers:
         - name: resource-service
           image: {{ .Values.resourceService.image.repository }}:{{ .Values.resourceService.image.tag | default .Chart.AppVersion }}
-          {{$prestop := .Values.resourceService.preStop | default 90 | quote }}
+          {{- $prestop := .Values.resourceService.preStop | default 90 | quote -}}
           {{- include "control-plane.prestop" $prestop | nindent 10 }}
           livenessProbe:
             httpGet:
@@ -189,7 +189,7 @@ spec:
       containers:
         - name: configuration-service
           image: {{ .Values.configurationService.image.repository }}:{{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
-          {{$prestop := .Values.configurationService.preStop | default 90 | quote }}
+          {{- $prestop := .Values.configurationService.preStop | default 90 | quote -}}
           {{- include "control-plane.prestop" $prestop | nindent 10 }}
           livenessProbe:
             httpGet:
