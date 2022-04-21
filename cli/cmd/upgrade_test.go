@@ -36,7 +36,7 @@ import (
 	"helm.sh/helm/v3/pkg/release"
 )
 
-func TestUpgradeCmdHandler_doUpgradePreRunCheck(t *testing.T) {
+func TestUpgradeCmdHandler_doUpgradePreRunCheck_namespace_exists(t *testing.T) {
 	type fields struct {
 		vChecker          *version.KeptnVersionChecker
 		helmHelper        *helmfake.IHelperMock
@@ -44,55 +44,47 @@ func TestUpgradeCmdHandler_doUpgradePreRunCheck(t *testing.T) {
 		userInput         *commonfake.IUserInputMock
 		credentialManager *credmanagerfake.CredentialManagerInterfaceMock
 	}
-	tests := []struct {
+	test := struct {
 		name              string
 		fields            fields
 		args              installUpgradeParams
 		chartsToBeApplied []*chart.Chart
 		wantErr           bool
 	}{
-		{
-			name: "upgrade pre-run check: namespace exists, end check",
-			fields: fields{
-				vChecker: version.NewKeptnVersionChecker(),
-				helmHelper: &helmfake.IHelperMock{
-					DownloadChartFunc: func(chartRepoURL string) (*chart.Chart, error) {
-						return nil, errors.New("DownloadChart should not be called")
-					},
-					GetHistoryFunc: func(releaseName string, namespace string) ([]*release.Release, error) {
-						return nil, errors.New("GetHistory should not be called")
-					},
+		name: "upgrade pre-run check: namespace exists, end check immediately",
+		fields: fields{
+			vChecker: version.NewKeptnVersionChecker(),
+			helmHelper: &helmfake.IHelperMock{
+				DownloadChartFunc: func(chartRepoURL string) (*chart.Chart, error) {
+					return nil, errors.New("DownloadChart should not be called")
 				},
-				namespaceHandler:  &kubefake.IKeptnNamespaceHandlerMock{},
-				userInput:         &commonfake.IUserInputMock{},
-				credentialManager: &credmanagerfake.CredentialManagerInterfaceMock{},
+				GetHistoryFunc: func(releaseName string, namespace string) ([]*release.Release, error) {
+					return nil, errors.New("GetHistory should not be called")
+				},
 			},
-			args: installUpgradeParams{
-				PatchNamespace: boolp(true),
-			},
-			chartsToBeApplied: []*chart.Chart{},
-			wantErr:           false,
+			namespaceHandler:  &kubefake.IKeptnNamespaceHandlerMock{},
+			userInput:         &commonfake.IUserInputMock{},
+			credentialManager: &credmanagerfake.CredentialManagerInterfaceMock{},
 		},
+		args: installUpgradeParams{
+			PatchNamespace: boolp(true),
+		},
+		chartsToBeApplied: []*chart.Chart{},
+		wantErr:           false,
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			u := &UpgradeCmdHandler{
-				helmHelper:        tt.fields.helmHelper,
-				namespaceHandler:  tt.fields.namespaceHandler,
-				userInput:         tt.fields.userInput,
-				credentialManager: tt.fields.credentialManager,
-			}
+	t.Run(test.name, func(t *testing.T) {
+		u := &UpgradeCmdHandler{
+			helmHelper:        test.fields.helmHelper,
+			namespaceHandler:  test.fields.namespaceHandler,
+			userInput:         test.fields.userInput,
+			credentialManager: test.fields.credentialManager,
+		}
 
-			if err := u.doUpgradePreRunCheck(tt.fields.vChecker, tt.args); (err != nil) != tt.wantErr {
-				t.Errorf("doUpgradePreRunCheck error = %v, wantErr %v", err, tt.wantErr)
-			}
-
-			for index, upgradeChartCall := range tt.fields.helmHelper.UpgradeChartCalls() {
-				assert.Equal(t, tt.chartsToBeApplied[index], upgradeChartCall.Ch)
-			}
-		})
-	}
+		if err := u.doUpgradePreRunCheck(test.fields.vChecker, test.args); (err != nil) != test.wantErr {
+			t.Errorf("doUpgradePreRunCheck error = %v, wantErr %v", err, test.wantErr)
+		}
+	})
 }
 
 func TestUpgradeCmdHandler_doUpgrade(t *testing.T) {
