@@ -18,6 +18,7 @@ export class KtbTimeInputComponent implements OnInit {
   @Input() min?: Timeframe;
   @Input() max?: Timeframe;
   @Input() timeframe: Timeframe | undefined;
+
   @Output()
   timeChanged: EventEmitter<Timeframe> = new EventEmitter<Timeframe>();
 
