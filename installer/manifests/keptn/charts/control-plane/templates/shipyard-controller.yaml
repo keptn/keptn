@@ -17,12 +17,10 @@ spec:
       app.kubernetes.io/instance: {{ .Release.Name }}
   {{- if or (lt .Capabilities.KubeVersion.Minor "14") (.Values.shipyardController.config.disableLeaderElection) }}
   replicas : 1
-  {{ else }}
+  {{- else }}
   replicas: {{ .Values.shipyardController.config.replicas | default 3 }}
   {{- end }}
-  # recreate the deployment if anything changes (we can not do a rolling upgrade of this deployment as we use a volume)
-  strategy:
-    type: Recreate
+  {{- include "control-plane.common.update-strategy" . | nindent 2 }}
   template:
     metadata:
       labels:
@@ -39,6 +37,8 @@ spec:
       containers:
         - name: shipyard-controller
           image: {{ .Values.shipyardController.image.repository }}:{{ .Values.shipyardController.image.tag | default .Chart.AppVersion }}
+          {{- $prestop := .Values.shipyardController.preStopHookTime | default 90 | quote -}}
+          {{- include "control-plane.prestop" $prestop | nindent 10 }}
           livenessProbe:
             httpGet:
               path: /health
@@ -107,7 +107,7 @@ spec:
               memory: "128Mi"
               cpu: "100m"
           {{- include "control-plane.common.container-security-context" . | nindent 10 }}
-      terminationGracePeriodSeconds: {{ .Values.gracePeriod | default 30 }}
+      terminationGracePeriodSeconds: {{ .Values.shipyardController.gracePeriod | default 120 }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.shipyardController.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
 ---
 apiVersion: v1
