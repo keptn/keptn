@@ -369,8 +369,8 @@ export class ApiService {
   public sendGitUpstreamUrl(
     projectName: string,
     gitUrl: string,
-    gitUser: string,
-    gitToken: string
+    gitToken: string,
+    gitUser?: string
   ): Observable<unknown> {
     const url = `${this._baseUrl}/controlPlane/v1/project`;
     return this.http.put(url, {

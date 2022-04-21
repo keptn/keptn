@@ -6,6 +6,7 @@
   [success]="task.isSuccessful()"
   [highlight]="!!task.isApproval()"
   *ngIf="task && (project$ | async) as project"
+  [attr.uitestid]="'ktb-task-' + task.id"
 >
   <ktb-expandable-tile-header>
     <div fxLayout="row">

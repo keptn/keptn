@@ -1,6 +1,18 @@
 /// <reference types="cypress" />
 
+import { interceptEmptyEnvironmentScreen, interceptEnvironmentScreen } from '../intercept';
+
 class EnvironmentPage {
+  public intercept(): this {
+    interceptEnvironmentScreen();
+    return this;
+  }
+
+  public interceptEmpty(): this {
+    interceptEmptyEnvironmentScreen();
+    return this;
+  }
+
   public selectTriggerDelivery(): this {
     cy.byTestId('keptn-trigger-sequence-selection').children().first().click();
     this.selectTriggerServiceAndStage();

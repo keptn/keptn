@@ -20,6 +20,15 @@ function getRootLocation(): string {
   return '/';
 }
 
+/**
+ * returns the root location and ends with "/"
+ */
+export function getBuildableRootLocation(): string {
+  const prefix = getRootLocation();
+  return prefix.endsWith('/') ? prefix : `${prefix}/`;
+  // currently "/bridge/" leads to an empty page. That's why getRootLocation is not changed to end with "/"
+}
+
 function oauthRouter(
   client: BaseClient,
   redirectUri: string,
@@ -35,7 +44,7 @@ function oauthRouter(
   /**
    * Router level middleware for login
    */
-  router.get('/oauth/login', async (req: Request, res: Response) => {
+  router.get('/oauth/login', async (_req: Request, res: Response) => {
     const codeVerifier = generators.codeVerifier();
     const codeChallenge = generators.codeChallenge(codeVerifier);
     const nonce = generators.nonce();
@@ -62,20 +71,16 @@ function oauthRouter(
    */
   router.get('/oauth/redirect', async (req: Request, res: Response) => {
     const params = client.callbackParams(req);
-    const invalidRequest = {
-      title: 'Internal error',
-      message: 'Error while handling the redirect. Please retry and check whether the problem still exists.',
-      location: getRootLocation(),
-    };
+    const errorPageUrl = `${getBuildableRootLocation()}error`;
 
     if (!params.code || !params.state) {
-      return res.render('error', invalidRequest);
+      return res.redirect(errorPageUrl);
     }
 
     try {
       const validationData = await session.getAndRemoveValidationData(params.state);
       if (!validationData) {
-        return res.render('error', invalidRequest);
+        return res.redirect(errorPageUrl);
       }
 
       const tokenSet = await client.callback(redirectUri, params, {
@@ -92,13 +97,9 @@ function oauthRouter(
       console.log(`Error while handling the redirect. Cause : ${err.message}`);
 
       if (err.response?.statusCode === 403) {
-        return res.render('error', {
-          title: 'Permission denied',
-          message:
-            (err.response.body as Record<string, string>).message ?? 'User is not allowed to access the instance.',
-        });
+        return res.redirect(`${errorPageUrl}?status=403`);
       } else {
-        return res.render('error', invalidRequest);
+        return res.redirect(errorPageUrl);
       }
     }
   });
@@ -129,11 +130,6 @@ function oauthRouter(
     } else {
       return res.json();
     }
-  });
-
-  // exception for this endpoint (not "/oauth/" before) because this will be moved to the client in future
-  router.get('/logoutsession', (req: Request, res: Response) => {
-    return res.render('logout', { location: getRootLocation() });
   });
 
   return router;

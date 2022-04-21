@@ -343,4 +343,25 @@ describe('KtbProjectSettingsComponent', () => {
       },
     });
   });
+
+  it('should update git upstream without user', () => {
+    // given
+    const updateSpy = jest.spyOn(dataService, 'setGitUpstreamUrl');
+    component.projectName = 'sockshop';
+    component.gitData = {
+      gitRemoteURL: 'https://github.com/Kirdock/keptn-dynatrace',
+      gitToken: 'myGitToken',
+    };
+
+    // when
+    component.setGitUpstream();
+
+    // then
+    expect(updateSpy).toHaveBeenCalledWith(
+      'sockshop',
+      'https://github.com/Kirdock/keptn-dynatrace',
+      'myGitToken',
+      undefined
+    );
+  });
 });

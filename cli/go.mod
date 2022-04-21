@@ -8,15 +8,15 @@ require (
 	github.com/docker/docker-credential-helpers v0.6.4
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/go-version v1.4.0
-	github.com/invopop/jsonschema v0.1.0
-	github.com/keptn/go-utils v0.14.1-0.20220411063724-003ee3f85292
+	github.com/invopop/jsonschema v0.4.0
+	github.com/keptn/go-utils v0.14.1-0.20220414081235-2e23eb712e3d
 	github.com/keptn/kubernetes-utils v0.13.1-0.20220309123424-6e3f2bcaf831
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/mapstructure v1.4.3
 	github.com/spf13/cobra v1.3.0
 	github.com/spf13/viper v1.10.1
 	github.com/stretchr/testify v1.7.1
-	golang.org/x/oauth2 v0.0.0-20220309155454-6242fa91716a
+	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	gotest.tools v2.2.0+incompatible
 	helm.sh/helm/v3 v3.7.2

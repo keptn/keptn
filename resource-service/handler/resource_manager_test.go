@@ -52,7 +52,7 @@ func TestResourceManager_CreateResources_ProjectResource(t *testing.T) {
 
 	require.Nil(t, err)
 
-	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision"}, revision)
+	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision", Metadata: models.Version{Branch: "", UpstreamURL: "remote-url", Version: "my-revision"}}, revision)
 
 	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
 
@@ -92,7 +92,7 @@ func TestResourceManager_CreateResources_StageResource(t *testing.T) {
 
 	require.Nil(t, err)
 
-	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision"}, revision)
+	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision", Metadata: models.Version{Branch: "", UpstreamURL: "remote-url", Version: "my-revision"}}, revision)
 
 	require.Len(t, fields.stageContext.EstablishCalls(), 1)
 	require.Equal(t, models.Project{ProjectName: "my-project"}, fields.stageContext.EstablishCalls()[0].Params.Project, 1)
@@ -133,7 +133,7 @@ func TestResourceManager_CreateResources_ServiceResource(t *testing.T) {
 
 	require.Nil(t, err)
 
-	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision"}, revision)
+	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision", Metadata: models.Version{Branch: "", UpstreamURL: "remote-url", Version: "my-revision"}}, revision)
 
 	require.Len(t, fields.stageContext.EstablishCalls(), 1)
 	require.Equal(t, models.Project{ProjectName: "my-project"}, fields.stageContext.EstablishCalls()[0].Params.Project, 1)
@@ -170,7 +170,7 @@ func TestResourceManager_CreateResources_ServiceResource_HelmChart(t *testing.T)
 
 	require.Nil(t, err)
 
-	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision"}, revision)
+	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision", Metadata: models.Version{Branch: "", UpstreamURL: "remote-url", Version: "my-revision"}}, revision)
 
 	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
 
@@ -353,7 +353,7 @@ func TestResourceManager_UpdateResources_ProjectResource(t *testing.T) {
 
 	require.Nil(t, err)
 
-	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision"}, revision)
+	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision", Metadata: models.Version{Branch: "", UpstreamURL: "remote-url", Version: "my-revision"}}, revision)
 
 	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
 
@@ -546,7 +546,7 @@ func TestResourceManager_UpdateResources_ProjectResource_CommitFailsOnFirstTry(t
 
 	require.Nil(t, err)
 
-	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision"}, revision)
+	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision", Metadata: models.Version{Branch: "", UpstreamURL: "remote-url", Version: "my-revision"}}, revision)
 
 	require.Len(t, fields.git.StageAndCommitAllCalls(), 2)
 
@@ -572,7 +572,7 @@ func TestResourceManager_UpdateResource_ProjectResource(t *testing.T) {
 
 	require.Nil(t, err)
 
-	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision"}, revision)
+	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision", Metadata: models.Version{Branch: "", UpstreamURL: "remote-url", Version: "my-revision"}}, revision)
 
 	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
 
@@ -721,7 +721,7 @@ func TestResourceManager_UpdateResource_ProjectResource_CommitFailsOnFirstTry(t 
 
 	require.Nil(t, err)
 
-	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision"}, revision)
+	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision", Metadata: models.Version{Branch: "", UpstreamURL: "remote-url", Version: "my-revision"}}, revision)
 
 	require.Len(t, fields.git.StageAndCommitAllCalls(), 2)
 
@@ -743,7 +743,7 @@ func TestResourceManager_DeleteResource_ProjectResource(t *testing.T) {
 
 	require.Nil(t, err)
 
-	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision"}, revision)
+	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision", Metadata: models.Version{Branch: "", UpstreamURL: "remote-url", Version: "my-revision"}}, revision)
 
 	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
 
@@ -854,7 +854,7 @@ func TestResourceManager_DeleteResource_Git_ThrowsNonFastForward_Or_ThrowsForceN
 
 	require.Nil(t, err)
 
-	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision"}, revision)
+	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision", Metadata: models.Version{Branch: "", UpstreamURL: "remote-url", Version: "my-revision"}}, revision)
 
 	require.Len(t, fields.git.StageAndCommitAllCalls(), 3)
 	require.Len(t, fields.fileSystem.DeleteFileCalls(), 3)
@@ -1186,8 +1186,8 @@ func TestResourceManager_GetResources(t *testing.T) {
 				},
 				Metadata: models.Version{
 					Branch:      "",
-					UpstreamURL: "",
-					Version:     "",
+					UpstreamURL: "remote-url",
+					Version:     "my-revision",
 				},
 			},
 			{
@@ -1197,8 +1197,8 @@ func TestResourceManager_GetResources(t *testing.T) {
 				},
 				Metadata: models.Version{
 					Branch:      "",
-					UpstreamURL: "",
-					Version:     "",
+					UpstreamURL: "remote-url",
+					Version:     "my-revision",
 				},
 			},
 			{
@@ -1208,8 +1208,8 @@ func TestResourceManager_GetResources(t *testing.T) {
 				},
 				Metadata: models.Version{
 					Branch:      "",
-					UpstreamURL: "",
-					Version:     "",
+					UpstreamURL: "remote-url",
+					Version:     "my-revision",
 				},
 			},
 		},

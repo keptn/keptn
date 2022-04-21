@@ -36,5 +36,9 @@
     [class.active]="
       selectedDeploymentInfo?.deploymentInformation?.keptnContext === (row | toType: DeploymentClass).keptnContext
     "
+    [attr.uitestid]="
+      'ktb-service-' + service?.name + '-deployment-' + (row | toType: DeploymentClass).version ||
+      (row | toType: DeploymentClass).name
+    "
   ></dt-row>
 </dt-table>

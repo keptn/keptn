@@ -121,7 +121,7 @@ func (g GitConfigurationStore) buildErrResponse(err *apimodels.Error) error {
 		return ErrServiceNotFound
 	} else if err.Code == http.StatusFailedDependency {
 		return ErrConfigStoreInvalidToken
-	} else if err.Code == http.StatusNotFound {
+	} else if err.Code == http.StatusNotFound || err.Code == http.StatusBadRequest {
 		return ErrConfigStoreUpstreamNotFound
 	}
 	return errors.New(*err.Message)

@@ -196,7 +196,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: mongodb-credentials
-                  key: mongodb-password
+                  key: mongodb-passwords
             - name: MONGODB_DATABASE
               value: {{ .Values.mongo.auth.bridgeAuthDatabase | default "openid" }}
             - name: CONFIG_DIR

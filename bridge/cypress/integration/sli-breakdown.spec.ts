@@ -1,32 +1,17 @@
 import ServicesPage from '../support/pageobjects/ServicesPage';
 import { SliResult } from '../../client/app/_models/sli-result';
+import { interceptProjectBoard } from '../support/intercept';
 
 describe('sli-breakdown', () => {
   const servicesPage = new ServicesPage();
 
   beforeEach(() => {
-    cy.intercept('/api/v1/metadata', { fixture: 'metadata.mock' });
-    cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfo.mock' });
-    cy.intercept('/api/project/sockshop?approval=true&remediation=true', { fixture: 'project.mock' });
-    cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: false });
-    cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
+    interceptProjectBoard();
   });
 
   it('should load the heatmap with sli breakdown in service screen', () => {
-    cy.intercept('GET', '/api/project/sockshop/serviceStates', {
-      statusCode: 200,
-      fixture: 'get.sockshop.service.states.mock.json',
-    });
-    cy.intercept('GET', '/api/project/sockshop/deployment/da740469-9920-4e0c-b304-0fd4b18d17c2', {
-      statusCode: 200,
-      fixture: 'get.sockshop.service.carts.deployment.mock.json',
-    });
-    cy.intercept('GET', 'api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?*', {
-      statusCode: 200,
-      fixture: 'get.sockshop.service.carts.evaluations.mock.json',
-    });
-
     servicesPage
+      .intercept()
       .visitServicePage('sockshop')
       .selectService('carts', 'v0.1.2')
       .verifySliBreakdown(

@@ -30,7 +30,6 @@ const requestsWithinTime = +(process.env.REQUESTS_WITHIN_TIME || 10); // x reque
 const cleanBucketsInterval = +(process.env.CLEAN_BUCKET_INTERVAL || 60) * 60 * 1000; // clean buckets every x minutes
 const throttleBucket: { [ip: string]: number[] } = {};
 const rootFolder = join(__dirname, process.env.NODE_ENV === 'test' ? '../' : '../../../');
-const serverFolder = join(rootFolder, 'server');
 const oneWeek = 7 * 24 * 3_600_000; // 3600000msec == 1hour
 const defaultContentSecurityPolicyOptions: Readonly<ContentSecurityPolicyOptions> = {
   useDefaults: true,
@@ -39,7 +38,6 @@ const defaultContentSecurityPolicyOptions: Readonly<ContentSecurityPolicyOptions
       "'self'",
       "'unsafe-eval'",
       "'sha256-9Ts7nfXdJQSKqVPxtB4Jwhf9pXSA/krLvgk8JROkI6g='", // script to set base-href inside index.html
-      `'sha256-1bE+yX7acJRNcaa95nVUmUtsD9IfSBgk5ofu7ClfR5Y='`, // script to set base-href inside common.pug
     ],
     'style-src': [`'self'`, `'unsafe-inline'`, 'https://fonts.googleapis.com'],
     'upgrade-insecure-requests': null,
@@ -81,10 +79,6 @@ async function init(): Promise<Express> {
     integrationsPageLink = 'https://get.keptn.sh/integrations.html';
   }
 
-  // server static files - Images & CSS
-  app.use('/static', express.static(join(serverFolder, 'views/static'), { maxAge: oneWeek }));
-  app.use('/branding', express.static(join(rootFolder, 'dist/assets/branding'), { maxAge: oneWeek }));
-
   // UI static files - Angular application
   app.use(
     express.static(join(rootFolder, 'dist'), {
@@ -99,10 +93,6 @@ async function init(): Promise<Express> {
       },
     })
   );
-
-  // Server views based on Pug
-  app.set('views', join(serverFolder, 'views'));
-  app.set('view engine', 'pug');
 
   // add some middlewares
   app.use(logger('dev'));
@@ -266,15 +256,15 @@ function setupLookAndFeel(url: string): void {
         response.pipe(file);
         file.on('finish', () => {
           file.end();
-          try {
-            const zip = new AdmZip(destFile);
-            zip.extractAllToAsync(destDir, true, () => {
-              unlinkSync(destFile);
-              console.log('Custom Look-and-Feel downloaded and extracted successfully');
-            });
-          } catch (err) {
-            console.error(`[ERROR] Error while extracting custom Look-and-Feel file. ${err}`);
-          }
+          const zip = new AdmZip(destFile);
+          zip.extractAllToAsync(destDir, true, false, (error?: Error) => {
+            unlinkSync(destFile);
+            if (error) {
+              console.error(`[ERROR] Error while extracting custom Look-and-Feel file. ${error}`);
+              return;
+            }
+            console.log('Custom Look-and-Feel downloaded and extracted successfully');
+          });
         });
         file.on('error', async (err) => {
           file.end();

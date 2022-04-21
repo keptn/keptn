@@ -65,10 +65,55 @@ export function interceptMain(): void {
   cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
 }
 
+export function interceptDashboard(): void {
+  interceptMain();
+  cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=5', { fixture: 'sequences.sockshop' }).as('sequences');
+  cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' }).as(
+    'projects'
+  );
+}
+
 export function interceptProjectBoard(): void {
   interceptMain();
   cy.intercept('/api/project/sockshop?approval=true&remediation=true', { fixture: 'project.mock' });
   cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: false });
+}
+
+export function interceptServicesPage(): void {
+  cy.intercept('GET', '/api/project/sockshop/serviceStates', {
+    statusCode: 200,
+    fixture: 'get.sockshop.service.states.mock.json',
+  });
+  cy.intercept('GET', '/api/project/sockshop/deployment/da740469-9920-4e0c-b304-0fd4b18d17c2', {
+    statusCode: 200,
+    fixture: 'get.sockshop.service.carts.deployment.mock.json',
+  });
+  cy.intercept('GET', 'api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?*', {
+    statusCode: 200,
+    fixture: 'get.sockshop.service.carts.evaluations.mock.json',
+  });
+}
+
+export function interceptSequencesPage(): void {
+  cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=25', { fixture: 'sequences.sockshop' }).as('Sequences');
+  cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=25&fromTime=*', {
+    body: {
+      states: [],
+    },
+  });
+
+  cy.intercept('/api/project/sockshop/sequences/metadata', { fixture: 'sequence.metadata.mock' }).as(
+    'SequencesMetadata'
+  );
+  cy.intercept('/api/mongodb-datastore/event?keptnContext=62cca6f3-dc54-4df6-a04c-6ffc894a4b5e&project=sockshop', {
+    fixture: 'sequence.traces.mock.json',
+  });
+  cy.intercept(
+    '/api/mongodb-datastore/event?keptnContext=62cca6f3-dc54-4df6-a04c-6ffc894a4b5e&project=sockshop&fromTime=*',
+    {
+      body: [],
+    }
+  );
 }
 
 export function interceptIntegrations(): void {

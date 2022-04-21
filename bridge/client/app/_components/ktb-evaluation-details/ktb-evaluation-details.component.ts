@@ -26,7 +26,7 @@ import { IndicatorResult, Target } from '../../../../shared/interfaces/indicator
 import { ResultTypes } from '../../../../shared/models/result-types';
 import { EvaluationHistory } from '../../_interfaces/evaluation-history';
 import { AppUtils } from '../../_utils/app.utils';
-import Yaml from 'yaml';
+import { parse as parseYaml } from 'yaml';
 import { SloConfig } from '../../../../shared/interfaces/slo-config';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -393,7 +393,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   private parseSloFile(evaluationTraces: Trace[]): void {
     for (const evaluationData of evaluationTraces) {
       if (evaluationData?.data?.evaluation?.sloFileContent && !evaluationData.data.evaluation.sloFileContentParsed) {
-        evaluationData.data.evaluation.sloFileContentParsed = Yaml.parse(
+        evaluationData.data.evaluation.sloFileContentParsed = parseYaml(
           atob(evaluationData.data.evaluation.sloFileContent)
         ) as SloConfig;
         evaluationData.data.evaluation.score_pass =

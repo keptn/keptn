@@ -1,28 +1,18 @@
-import { ComponentFixture, discardPeriodicTasks, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AppComponent } from './app.component';
-import { By } from '@angular/platform-browser';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { Location } from '@angular/common';
 import { Router } from '@angular/router';
 import { AppModule } from './app.module';
 import { RouterTestingModule } from '@angular/router/testing';
 import { routes } from './app.routing';
 import { ApiService } from './_services/api.service';
 import { ApiServiceMock } from './_services/api.service.mock';
+import { DataService } from './_services/data.service';
 
 describe('AppComponent', () => {
   let router: Router;
-  let location: Location;
   let comp: AppComponent;
   let fixture: ComponentFixture<AppComponent>;
-  enum MENU_ITEM {
-    ENVIRONMENT,
-    SERVICES,
-    SEQUENCES,
-    INTEGRATIONS,
-    UNIFORM,
-    SETTINGS,
-  }
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -32,7 +22,6 @@ describe('AppComponent', () => {
     }).compileComponents();
 
     router = TestBed.inject(Router);
-    location = TestBed.inject(Location);
     fixture = TestBed.createComponent(AppComponent);
     comp = fixture.componentInstance;
 
@@ -42,24 +31,6 @@ describe('AppComponent', () => {
   it('should create the app', () => {
     expect(comp).toBeTruthy();
   });
-
-  it('should render title', fakeAsync(() => {
-    fixture.detectChanges();
-    const compiled = fixture.debugElement.nativeElement;
-    expect(compiled.querySelector('.brand p').textContent).toContain('keptn');
-
-    tick(3000);
-    discardPeriodicTasks(); // fixes "x timer(s) still in the queue"; TODO: check if that message means that subscriptions are not correctly unsubscribed?
-  }));
-
-  it('should render project "sockshop"', fakeAsync(() => {
-    fixture.detectChanges();
-    const projectTileTitle = fixture.debugElement.query(By.css('#sockshop .dt-tile-title'));
-    expect(projectTileTitle.nativeElement.textContent).toContain('sockshop');
-
-    tick(3000);
-    discardPeriodicTasks(); // fixes "x timer(s) still in the queue"; TODO: check if that message means that subscriptions are not correctly unsubscribed?
-  }));
 
   it('should set base href correctly', () => {
     fixture.detectChanges();
@@ -108,312 +79,11 @@ describe('AppComponent', () => {
     );
   });
 
-  it('should render project board for "sockshop"', fakeAsync(() => {
-    router.navigate(['project', 'sockshop']);
-
-    tick();
+  it('should load projects after info is loaded', () => {
+    const dataService = TestBed.inject(DataService);
+    const loadSpy = jest.spyOn(dataService, 'loadProjects');
     fixture.detectChanges();
 
-    expect(location.path()).toEqual('/project/sockshop');
-
-    router.navigate(['/']);
-    tick();
-    fixture.detectChanges();
-    discardPeriodicTasks(); // fixes "x timer(s) still in the queue"; TODO: check if that message means that subscriptions are not correctly unsubscribed?
-
-    expect(location.path()).toEqual('/dashboard');
-  }));
-
-  xit('deepLink project/:projectName', fakeAsync(() => {
-    router.navigate(['project', 'sockshop']);
-
-    tick(3000);
-    fixture.detectChanges();
-
-    expect(location.path()).toEqual('/project/sockshop');
-    assertMenuItems(MENU_ITEM.ENVIRONMENT);
-
-    router.navigate(['/']);
-    tick();
-    fixture.detectChanges();
-    discardPeriodicTasks(); // fixes "x timer(s) still in the queue"; TODO: check if that message means that subscriptions are not correctly unsubscribed?
-
-    expect(location.path()).toEqual('/dashboard');
-  }));
-
-  xit('deepLink project/:projectName/service', fakeAsync(() => {
-    router.navigate(['project', 'sockshop', 'service']);
-
-    tick();
-    fixture.detectChanges();
-
-    expect(location.path()).toEqual('/project/sockshop/service');
-
-    assertMenuItems(MENU_ITEM.SERVICES);
-
-    router.navigate(['/']);
-    tick();
-    fixture.detectChanges();
-    discardPeriodicTasks(); // fixes "x timer(s) still in the queue"; TODO: check if that message means that subscriptions are not correctly unsubscribed?
-
-    expect(location.path()).toEqual('/dashboard');
-  }));
-
-  xit('deepLink project/:projectName/service/:serviceName', fakeAsync(() => {
-    router.navigate(['project', 'sockshop', 'service', 'carts']);
-
-    tick();
-    fixture.detectChanges();
-
-    expect(location.path()).toEqual('/project/sockshop/service/carts');
-
-    assertMenuItems(MENU_ITEM.SERVICES);
-
-    router.navigate(['/']);
-    tick();
-    fixture.detectChanges();
-    discardPeriodicTasks(); // fixes "x timer(s) still in the queue"; TODO: check if that message means that subscriptions are not correctly unsubscribed?
-
-    expect(location.path()).toEqual('/dashboard');
-  }));
-
-  xit('deepLink project/:projectName/service/:serviceName/context/:shkeptncontext', fakeAsync(() => {
-    router.navigate(['project', 'sockshop', 'service', 'carts', 'context', '6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432']);
-
-    tick();
-    fixture.detectChanges();
-
-    expect(location.path()).toEqual('/project/sockshop/service/carts/context/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432');
-
-    assertMenuItems(MENU_ITEM.SERVICES);
-
-    router.navigate(['/']);
-    tick();
-    fixture.detectChanges();
-    discardPeriodicTasks(); // fixes "x timer(s) still in the queue"; TODO: check if that message means that subscriptions are not correctly unsubscribed?
-
-    expect(location.path()).toEqual('/dashboard');
-  }));
-
-  xit('deepLink project/:projectName/service/:serviceName/context/:shkeptncontext/stage/:stage', fakeAsync(() => {
-    router.navigate([
-      'project',
-      'sockshop',
-      'service',
-      'carts',
-      'context',
-      '6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432',
-      'stage',
-      'staging',
-    ]);
-
-    tick();
-    fixture.detectChanges();
-
-    expect(location.path()).toEqual(
-      '/project/sockshop/service/carts/context/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432/stage/staging'
-    );
-
-    assertMenuItems(MENU_ITEM.SERVICES);
-
-    router.navigate(['/']);
-    tick();
-    fixture.detectChanges();
-    discardPeriodicTasks(); // fixes "x timer(s) still in the queue"; TODO: check if that message means that subscriptions are not correctly unsubscribed?
-
-    expect(location.path()).toEqual('/dashboard');
-  }));
-
-  xit('deepLink project/:projectName/sequence', fakeAsync(() => {
-    router.navigate(['project', 'sockshop', 'sequence']);
-
-    tick();
-    fixture.detectChanges();
-
-    expect(location.path()).toEqual('/project/sockshop/sequence');
-
-    assertMenuItems(MENU_ITEM.SEQUENCES);
-
-    router.navigate(['/']);
-    tick();
-    fixture.detectChanges();
-    discardPeriodicTasks(); // fixes "x timer(s) still in the queue"; TODO: check if that message means that subscriptions are not correctly unsubscribed?
-
-    expect(location.path()).toEqual('/dashboard');
-  }));
-
-  xit('deepLink project/:projectName/sequence/:shkeptncontext', fakeAsync(() => {
-    router.navigate(['project', 'sockshop', 'sequence', '6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432']);
-
-    tick();
-    fixture.detectChanges();
-
-    expect(location.path()).toEqual('/project/sockshop/sequence/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432/stage/staging');
-
-    assertMenuItems(MENU_ITEM.SEQUENCES);
-
-    router.navigate(['/']);
-    tick();
-    fixture.detectChanges();
-    discardPeriodicTasks(); // fixes "x timer(s) still in the queue"; TODO: check if that message means that subscriptions are not correctly unsubscribed?
-
-    expect(location.path()).toEqual('/dashboard');
-  }));
-
-  xit('deepLink project/:projectName/sequence/:shkeptncontext/stage/:stage', fakeAsync(() => {
-    router.navigate(['project', 'sockshop', 'sequence', '6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432', 'stage', 'dev']);
-
-    tick();
-    fixture.detectChanges();
-
-    expect(location.path()).toEqual('/project/sockshop/sequence/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432/stage/dev');
-
-    assertMenuItems(MENU_ITEM.SEQUENCES);
-
-    router.navigate(['/']);
-    tick();
-    fixture.detectChanges();
-    discardPeriodicTasks(); // fixes "x timer(s) still in the queue"; TODO: check if that message means that subscriptions are not correctly unsubscribed?
-
-    expect(location.path()).toEqual('/dashboard');
-  }));
-
-  xit('deepLink project/:projectName/sequence/:shkeptncontext/event/:eventId', fakeAsync(() => {
-    router.navigate([
-      'project',
-      'sockshop',
-      'sequence',
-      '6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432',
-      'event',
-      'e8f12220-b0f7-4e2f-898a-b6b7e699f12a',
-    ]);
-
-    tick();
-    fixture.detectChanges();
-
-    expect(location.path()).toEqual(
-      '/project/sockshop/sequence/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432/event/e8f12220-b0f7-4e2f-898a-b6b7e699f12a'
-    );
-
-    assertMenuItems(MENU_ITEM.SEQUENCES);
-
-    router.navigate(['/']);
-    tick();
-    fixture.detectChanges();
-    discardPeriodicTasks(); // fixes "x timer(s) still in the queue"; TODO: check if that message means that subscriptions are not correctly unsubscribed?
-
-    expect(location.path()).toEqual('/dashboard');
-  }));
-
-  xit('deepLink trace/:shkeptncontext', fakeAsync(() => {
-    router.navigate(['trace', '6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432']);
-
-    tick();
-    fixture.detectChanges();
-
-    expect(location.path()).toEqual('/trace/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432');
-
-    tick();
-    fixture.detectChanges();
-
-    expect(location.path()).toEqual('/project/sockshop/sequence/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432/stage/staging');
-
-    assertMenuItems(MENU_ITEM.SEQUENCES);
-
-    router.navigate(['/']);
-    tick();
-    fixture.detectChanges();
-    discardPeriodicTasks(); // fixes "x timer(s) still in the queue"; TODO: check if that message means that subscriptions are not correctly unsubscribed?
-
-    expect(location.path()).toEqual('/dashboard');
-  }));
-
-  xit('deepLink trace/:shkeptncontext/:stage', fakeAsync(() => {
-    router.navigate(['trace', '6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432', 'dev']);
-
-    tick();
-    fixture.detectChanges();
-
-    expect(location.path()).toEqual('/trace/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432/dev');
-
-    tick();
-    fixture.detectChanges();
-
-    expect(location.path()).toEqual('/project/sockshop/sequence/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432/stage/dev');
-
-    assertMenuItems(MENU_ITEM.SEQUENCES);
-
-    router.navigate(['/']);
-    tick();
-    fixture.detectChanges();
-    discardPeriodicTasks(); // fixes "x timer(s) still in the queue"; TODO: check if that message means that subscriptions are not correctly unsubscribed?
-
-    expect(location.path()).toEqual('/dashboard');
-  }));
-
-  xit('deepLink trace/:shkeptncontext/:eventtype', fakeAsync(() => {
-    router.navigate(['trace', '6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432', 'sh.keptn.event.evaluation.triggered']);
-
-    tick();
-    fixture.detectChanges();
-
-    expect(location.path()).toEqual('/trace/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432/sh.keptn.event.evaluation.triggered');
-
-    tick();
-    fixture.detectChanges();
-
-    expect(location.path()).toEqual(
-      '/project/sockshop/sequence/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432/event/7c105021-3a50-47c7-aaa9-2e6286b17d89'
-    );
-
-    assertMenuItems(MENU_ITEM.SEQUENCES);
-
-    router.navigate(['/']);
-    tick();
-    fixture.detectChanges();
-    discardPeriodicTasks(); // fixes "x timer(s) still in the queue"; TODO: check if that message means that subscriptions are not correctly unsubscribed?
-
-    expect(location.path()).toEqual('/dashboard');
-  }));
-
-  function assertMenuItems(activeItem: MENU_ITEM): void {
-    const menuItems = fixture.debugElement.queryAll(By.css('.dt-menu .dt-menu-item'));
-    expect(menuItems.length).toEqual(6);
-
-    if (activeItem === MENU_ITEM.ENVIRONMENT) {
-      expect(menuItems[0].nativeElement.getAttribute('class')).toContain('active');
-    } else {
-      expect(menuItems[0].nativeElement.getAttribute('class')).not.toContain('active');
-    }
-
-    if (activeItem === MENU_ITEM.SERVICES) {
-      expect(menuItems[1].nativeElement.getAttribute('class')).toContain('active');
-    } else {
-      expect(menuItems[1].nativeElement.getAttribute('class')).not.toContain('active');
-    }
-
-    if (activeItem === MENU_ITEM.SEQUENCES) {
-      expect(menuItems[2].nativeElement.getAttribute('class')).toContain('active');
-    } else {
-      expect(menuItems[2].nativeElement.getAttribute('class')).not.toContain('active');
-    }
-
-    if (activeItem === MENU_ITEM.INTEGRATIONS) {
-      expect(menuItems[3].nativeElement.getAttribute('class')).toContain('active');
-    } else {
-      expect(menuItems[3].nativeElement.getAttribute('class')).not.toContain('active');
-    }
-
-    if (activeItem === MENU_ITEM.UNIFORM) {
-      expect(menuItems[4].nativeElement.getAttribute('class')).toContain('active');
-    } else {
-      expect(menuItems[4].nativeElement.getAttribute('class')).not.toContain('active');
-    }
-
-    if (activeItem === MENU_ITEM.SETTINGS) {
-      expect(menuItems[5].nativeElement.getAttribute('class')).toContain('active');
-    } else {
-      expect(menuItems[5].nativeElement.getAttribute('class')).not.toContain('active');
-    }
-  }
+    expect(loadSpy).toHaveBeenCalled();
+  });
 });

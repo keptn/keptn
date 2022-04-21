@@ -1,10 +1,10 @@
 /// <reference types="cypress" />
 
-import BasePage from '../support/pageobjects/BasePage';
+import { ProjectBoardPage } from '../support/pageobjects/ProjectBoardPage';
 
 describe('Changing git credentials', () => {
   it('The test changes git credentials and makes sure they changed successfully', () => {
-    const basePage = new BasePage();
+    const basePage = new ProjectBoardPage();
     const DYNATRACE_PROJECT = 'dynatrace';
     const GIT_URL = 'https://git-repo.com';
     const GIT_USER = 'test-username';
@@ -56,7 +56,7 @@ describe('Changing git credentials', () => {
   });
 
   it('Prevent data loss if git crendetials not saved before navigation', () => {
-    const basePage = new BasePage();
+    const basePage = new ProjectBoardPage();
     const DYNATRACE_PROJECT = 'dynatrace';
     const GIT_URL = 'https://git-repo.com';
     const GIT_USER = 'test-username';

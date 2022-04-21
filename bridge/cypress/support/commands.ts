@@ -40,7 +40,7 @@ Cypress.Commands.add('dtCheck', { prevSubject: 'element' }, (subject: JQuery<HTM
 });
 
 Cypress.Commands.add('dtSelect', { prevSubject: 'element' }, (subject: JQuery<HTMLElement>, element: string) => {
-  subject.trigger('click');
+  cy.wrap(subject).click();
   cy.get('.dt-select-content dt-option').contains(element).click();
 });
 

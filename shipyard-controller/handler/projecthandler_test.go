@@ -319,6 +319,26 @@ func TestCreateProject(t *testing.T) {
 			projectNameParam: "my-project",
 		},
 		{
+			name: "Create project project resource-service cannot find repo",
+			fields: fields{
+				ProjectManager: &fake.IProjectManagerMock{
+					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+						return common.ErrConfigStoreUpstreamNotFound, func() error { return nil }
+					},
+				},
+				EventSender: &fake.IEventSenderMock{
+					SendEventFunc: func(eventMoqParam event.Event) error {
+						return nil
+					},
+				},
+				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 20},
+				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
+			},
+			jsonPayload:      examplePayload,
+			expectHttpStatus: http.StatusBadRequest,
+			projectNameParam: "my-project",
+		},
+		{
 			name: "Create project creating project fails",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
