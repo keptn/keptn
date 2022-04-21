@@ -22,12 +22,14 @@ import { PendingChangesGuard } from './_guards/pending-changes.guard';
 import { KtbErrorViewComponent } from './_views/ktb-error-view/ktb-error-view.component';
 import { AppComponent } from './app.component';
 import { KtbLogoutViewComponent } from './_views/ktb-logout-view/ktb-logout-view.component';
+import { KtbHeatmapComponent } from './ktb-heatmap/ktb-heatmap.component';
 
 const routingConfiguration: ExtraOptions = {
   paramsInheritanceStrategy: 'always',
 };
 
 const routes: Routes = [
+  { path: 'd3', component: KtbHeatmapComponent }, // TODO: Remove afterwards
   { path: 'error', component: KtbErrorViewComponent },
   { path: 'logoutsession', component: KtbLogoutViewComponent },
   {

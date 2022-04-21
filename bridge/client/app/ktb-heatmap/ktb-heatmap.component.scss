@@ -1,0 +1,81 @@
+::ng-deep {
+  $axis-identifier-size: 12px;
+
+  .svg-container {
+    display: inline-block;
+    position: relative;
+    width: 100%;
+    padding-bottom: 100%; /* aspect ratio */
+    vertical-align: top;
+    overflow: hidden;
+  }
+  .svg-content-responsive {
+    display: inline-block;
+    position: absolute;
+    top: 10px;
+    left: 0;
+  }
+
+  .x-axis-container {
+    font-size: $axis-identifier-size;
+  }
+
+  .x-axis-identifier {
+    text-anchor: end;
+    transform: rotate(-45deg);
+  }
+
+  .y-axis-container {
+    font-size: $axis-identifier-size;
+  }
+
+  .tooltip {
+    position: absolute;
+    z-index: 1070;
+    background-color: white;
+    border: 2px solid;
+    border-radius: 5px;
+    padding: 5px;
+    pointer-events: none;
+    opacity: 0;
+
+    &.show {
+      opacity: 1;
+    }
+  }
+
+  .data-point {
+    cursor: pointer;
+
+    &:hover {
+      opacity: 0.5;
+    }
+
+    &.pass {
+      fill: #7dc540
+    }
+
+    &.warning {
+      fill: #e6be00;
+    }
+
+    &.fail {
+      fill: #dc172a;
+    }
+  }
+
+  .highlight-primary {
+    stroke-width: 2;
+    stroke: #6d6d6d;
+    fill: hsla(0,0%,43%,.4);
+    pointer-events: none;
+  }
+
+  .highlight-secondary {
+    stroke-width: 1;
+    stroke-dasharray: 5,5;
+    stroke: #898989;
+    fill: hsla(0,0%,54%,.2);
+    pointer-events: none;
+  }
+}
