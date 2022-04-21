@@ -3,10 +3,10 @@ package common
 import (
 	"errors"
 	"fmt"
-	"github.com/bmizerany/assert"
 	common_mock "github.com/keptn/keptn/configuration-service/common/fake"
 	"github.com/keptn/keptn/configuration-service/common_models"
 	"github.com/keptn/keptn/configuration-service/models"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"os"
 	"strings"
@@ -71,6 +71,15 @@ func Test_getRepoURI(t *testing.T) {
 				token: "token",
 			},
 			want: "https://user:token@my-repo.git",
+		},
+		{
+			name: "get url with default keptn user",
+			args: args{
+				uri:   "https://my-repo.git",
+				user:  "",
+				token: "token",
+			},
+			want: "https://keptn:token@my-repo.git",
 		},
 		{
 			name: "get url with https:// where user is already included in the url",
@@ -783,6 +792,58 @@ func TestGit_CloneRepo(t *testing.T) {
 			if got != tt.want {
 				t.Errorf("CloneRepo() got = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func Test_unmarshalGitCredentials(t *testing.T) {
+	type args struct {
+		data []byte
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *common_models.GitCredentials
+		wantErr bool
+	}{
+		{
+			name: "get secret",
+			args: args{
+				data: []byte(`{"user":"user","token":"token","remoteURI":"http://remote-url.git"}`),
+			},
+			want: &common_models.GitCredentials{
+				User:      "user",
+				Token:     "token",
+				RemoteURI: "http://remote-url.git",
+			},
+			wantErr: false,
+		},
+		{
+			name: "no token and remote URI",
+			args: args{
+				data: []byte(`{"user":"user","token":"","remoteURI":""}`),
+			},
+			want:    nil,
+			wantErr: false,
+		},
+		{
+			name: "malformed credentials",
+			args: args{
+				data: []byte(`invalid`),
+			},
+			want:    nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := unmarshalGitCredentials(tt.args.data)
+			if tt.wantErr {
+				require.NotNil(t, err)
+			} else {
+				require.Nil(t, err)
+			}
+			require.Equalf(t, tt.want, got, "unmarshalGitCredentials(%v)", tt.args.data)
 		})
 	}
 }

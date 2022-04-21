@@ -67,9 +67,12 @@ func (K8sCredentialReader) GetCredentials(project string) (*common_models.GitCre
 	}
 
 	// secret found -> unmarshal it
+	return unmarshalGitCredentials(secret.Data["git-credentials"])
+}
+
+func unmarshalGitCredentials(data []byte) (*common_models.GitCredentials, error) {
 	var credentials common_models.GitCredentials
-	err = json.Unmarshal(secret.Data["git-credentials"], &credentials)
-	if err != nil {
+	if err := json.Unmarshal(data, &credentials); err != nil {
 		return nil, fmt.Errorf(unmarshalGitCredentialsFail)
 	}
 	if credentials.Token != "" && credentials.RemoteURI != "" {
@@ -398,7 +401,7 @@ func isNoRemoteHeadFoundError(err error) bool {
 
 func getRepoURI(uri string, user string, token string) string {
 	if user == "" {
-		user = "keptn"
+		user = gitKeptnUserDefault
 	}
 	if strings.Contains(user, "@") {
 		// username contains an @, probably an e-mail; need to encode it
