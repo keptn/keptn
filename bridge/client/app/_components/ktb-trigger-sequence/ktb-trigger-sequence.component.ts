@@ -1,4 +1,14 @@
-import { ChangeDetectorRef, Component, EventEmitter, Inject, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Inject,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { DataService } from '../../_services/data.service';
 import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 import { Timeframe } from '../../_models/timeframe';
@@ -41,7 +51,7 @@ export class JsonErrorStateMatcher implements ErrorStateMatcher {
   templateUrl: './ktb-trigger-sequence.component.html',
   styleUrls: ['./ktb-trigger-sequence.component.scss'],
 })
-export class KtbTriggerSequenceComponent implements OnInit, OnDestroy {
+export class KtbTriggerSequenceComponent implements OnInit, OnDestroy, AfterViewInit {
   public DATE_FORMAT = 'YYYY-MM-dd HH:mm:ss';
   public TRIGGER_SEQUENCE = TRIGGER_SEQUENCE;
   public TRIGGER_EVALUATION_TIME = TRIGGER_EVALUATION_TIME;
