@@ -50,20 +50,20 @@ type TaskEvent struct {
 	Properties string             `json:"properties" bson:"properties"`
 }
 
-func FromSequenceExecution(se models.SequenceExecution) (*SequenceExecution, error) {
-	inputPropertiesJsonString, err := json.Marshal(se.InputProperties)
-	if err != nil {
-		return nil, err
+func FromSequenceExecution(se models.SequenceExecution) SequenceExecution {
+	newSE := SequenceExecution{
+		ID:       se.ID,
+		Sequence: se.Sequence,
+		Status:   transformStatus(se.Status),
+		Scope:    se.Scope,
 	}
-	newSE := &SequenceExecution{
-		ID:              se.ID,
-		Sequence:        se.Sequence,
-		Status:          transformStatus(se.Status),
-		Scope:           se.Scope,
-		InputProperties: string(inputPropertiesJsonString),
+	if se.InputProperties != nil {
+		inputPropertiesJsonString, err := json.Marshal(se.InputProperties)
+		if err == nil {
+			newSE.InputProperties = string(inputPropertiesJsonString)
+		}
 	}
-
-	return newSE, nil
+	return newSE
 }
 
 func transformStatus(status models.SequenceExecutionStatus) SequenceExecutionStatus {
@@ -98,9 +98,11 @@ func transformTaskEvents(events []models.TaskEvent) []TaskEvent {
 			Time:      e.Time,
 		}
 
-		properties, err := json.Marshal(e.Properties)
-		if err == nil {
-			newTaskEvent.Properties = string(properties)
+		if e.Properties != nil {
+			properties, err := json.Marshal(e.Properties)
+			if err == nil {
+				newTaskEvent.Properties = string(properties)
+			}
 		}
 		newTaskEvents = append(newTaskEvents, newTaskEvent)
 	}
@@ -118,9 +120,11 @@ func transformPreviousTasks(tasks []models.TaskExecutionResult) []TaskExecutionR
 			Status:      t.Status,
 		}
 
-		properties, err := json.Marshal(t.Properties)
-		if err == nil {
-			newPreviousTask.Properties = string(properties)
+		if t.Properties != nil {
+			properties, err := json.Marshal(t.Properties)
+			if err == nil {
+				newPreviousTask.Properties = string(properties)
+			}
 		}
 		newPreviousTasks = append(newPreviousTasks, newPreviousTask)
 	}
