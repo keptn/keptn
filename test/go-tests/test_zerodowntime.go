@@ -54,6 +54,13 @@ func Test_ZeroDownTimeTriggerSequence(t *testing.T) {
 	// scale down the shipyard controller
 	err = ScaleDownUniform([]string{"shipyard-controller"})
 
+	defer func() {
+		if err := ScaleUpUniform([]string{"shipyard-controller"}, 1); err != nil {
+			t.Errorf("could not scale up shipyard-controller: %v", err)
+		}
+
+	}()
+
 	require.Nil(t, err)
 
 	err = WaitForDeploymentToBeScaledDown("shipyard-controller")
