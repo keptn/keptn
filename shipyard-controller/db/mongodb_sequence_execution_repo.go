@@ -365,7 +365,7 @@ func transformBSONToSequenceExecution(outInterface interface{}) (*models.Sequenc
 	if err := json.Unmarshal(data, sequenceExecution); err != nil {
 		return nil, err
 	}
-	//sequenceExecution.ID = outInterface.(map[string]interface{})["_id"].(string)
+
 	return sequenceExecution, nil
 }
 
