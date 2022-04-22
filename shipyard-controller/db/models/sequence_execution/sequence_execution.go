@@ -58,12 +58,71 @@ func FromSequenceExecution(se models.SequenceExecution) (*SequenceExecution, err
 	newSE := &SequenceExecution{
 		ID:              se.ID,
 		Sequence:        se.Sequence,
-		Status:          SequenceExecutionStatus{},
+		Status:          transformStatus(se.Status),
 		Scope:           se.Scope,
 		InputProperties: string(inputPropertiesJsonString),
 	}
 
-	status, err :=
-
 	return newSE, nil
+}
+
+func transformStatus(status models.SequenceExecutionStatus) SequenceExecutionStatus {
+	newStatus := SequenceExecutionStatus{
+		State:            status.State,
+		StateBeforePause: status.StateBeforePause,
+		PreviousTasks:    transformPreviousTasks(status.PreviousTasks),
+		CurrentTask:      transformCurrentTask(status.CurrentTask),
+	}
+
+	return newStatus
+}
+
+func transformCurrentTask(task models.TaskExecutionState) TaskExecutionState {
+	newTaskExecutionState := TaskExecutionState{
+		Name:        task.Name,
+		TriggeredID: task.TriggeredID,
+		Events:      transformTaskEvents(task.Events),
+	}
+	return newTaskExecutionState
+}
+
+func transformTaskEvents(events []models.TaskEvent) []TaskEvent {
+	newTaskEvents := []TaskEvent{}
+
+	for _, e := range events {
+		newTaskEvent := TaskEvent{
+			EventType: e.EventType,
+			Source:    e.Source,
+			Result:    e.Result,
+			Status:    e.Status,
+			Time:      e.Time,
+		}
+
+		properties, err := json.Marshal(e.Properties)
+		if err == nil {
+			newTaskEvent.Properties = string(properties)
+		}
+		newTaskEvents = append(newTaskEvents, newTaskEvent)
+	}
+	return newTaskEvents
+}
+
+func transformPreviousTasks(tasks []models.TaskExecutionResult) []TaskExecutionResult {
+	newPreviousTasks := []TaskExecutionResult{}
+
+	for _, t := range tasks {
+		newPreviousTask := TaskExecutionResult{
+			Name:        t.Name,
+			TriggeredID: t.TriggeredID,
+			Result:      t.Result,
+			Status:      t.Status,
+		}
+
+		properties, err := json.Marshal(t.Properties)
+		if err == nil {
+			newPreviousTask.Properties = string(properties)
+		}
+		newPreviousTasks = append(newPreviousTasks, newPreviousTask)
+	}
+	return newPreviousTasks
 }
