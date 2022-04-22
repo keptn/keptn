@@ -9,7 +9,7 @@
         placeholder="ssh://git-repo.com/repo.git"
         uitestid="ktb-ssh-git-url-input"
       />
-      <dt-loading-spinner *ngIf="isLoading" dtprefix aria-label="Loading data"></dt-loading-spinner>
+      <ktb-loading-spinner *ngIf="isLoading" dtprefix aria-label="Loading data"></ktb-loading-spinner>
       <dt-error *ngIf="gitUrlControl.errors?.required">Must not be empty</dt-error>
       <dt-error *ngIf="gitUrlControl.errors?.ssh">Must start with ssh://</dt-error>
     </dt-form-field>
@@ -22,7 +22,7 @@
         placeholder="Username"
         uitestid="ktb-ssh-git-username-input"
       />
-      <dt-loading-spinner *ngIf="isLoading" dtprefix aria-label="Loading data"></dt-loading-spinner>
+      <ktb-loading-spinner *ngIf="isLoading" dtprefix aria-label="Loading data"></ktb-loading-spinner>
     </dt-form-field>
   </div>
 </form>

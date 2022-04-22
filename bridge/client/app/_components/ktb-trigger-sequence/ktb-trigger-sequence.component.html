@@ -87,10 +87,9 @@
               </dt-select>
             </dt-radio-button>
           </ng-template>
-          <div *ngIf="!customSequences">
-            <dt-loading-spinner></dt-loading-spinner>
-            <span>Loading custom sequences ...</span>
-          </div>
+          <ktb-loading-distractor *ngIf="!customSequences" class="smaller"
+            >Loading custom sequences ...
+          </ktb-loading-distractor>
 
           <ng-template #noCustomSequencesOverlay>
             There are no custom sequences available for this stage in the shipyard.yaml file
@@ -382,7 +381,7 @@
       (click)="triggerSequence()"
     >
       <dt-icon name="flash" *ngIf="!isLoading"></dt-icon>
-      <dt-loading-spinner *ngIf="isLoading"></dt-loading-spinner>
+      <ktb-loading-spinner *ngIf="isLoading"></ktb-loading-spinner>
       Trigger sequence
     </button>
   </div>
