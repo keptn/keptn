@@ -819,6 +819,17 @@ func Test_unmarshalGitCredentials(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "get secret",
+			args: args{
+				data: []byte(`{"token":"token","remoteURI":"http://remote-url.git"}`),
+			},
+			want: &common_models.GitCredentials{
+				Token:     "token",
+				RemoteURI: "http://remote-url.git",
+			},
+			wantErr: false,
+		},
+		{
 			name: "no token and remote URI",
 			args: args{
 				data: []byte(`{"user":"user","token":"","remoteURI":""}`),
