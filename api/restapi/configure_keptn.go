@@ -5,13 +5,14 @@ package restapi
 import (
 	"crypto/tls"
 	"fmt"
-	"github.com/benbjohnson/clock"
-	"github.com/kelseyhightower/envconfig"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/benbjohnson/clock"
+	"github.com/kelseyhightower/envconfig"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
@@ -31,6 +32,7 @@ import (
 const envVarLogLevel = "LOG_LEVEL"
 
 type EnvConfig struct {
+	AuthEnabled           bool    `envconfig:"MAX_AUTH_ENABLED" default:"true"`
 	AuthRequestsPerSecond float64 `envconfig:"MAX_AUTH_REQUESTS_PER_SECOND" default:"1"`
 	AuthRequestMaxBurst   int     `envconfig:"MAX_AUTH_REQUESTS_BURST" default:"2"`
 }
@@ -88,7 +90,7 @@ func configureAPI(api *operations.KeptnAPI) http.Handler {
 
 	//api.EvaluationTriggerEvaluationHandler = evaluation.TriggerEvaluationHandlerFunc(handlers.TriggerEvaluationHandlerFunc)
 
-	rateLimiter := custommiddleware.NewRateLimiter(env.AuthRequestsPerSecond, env.AuthRequestMaxBurst, tokenValidator, clock.New())
+	rateLimiter := custommiddleware.NewRateLimiter(env.AuthEnabled, env.AuthRequestsPerSecond, env.AuthRequestMaxBurst, tokenValidator, clock.New())
 	api.AddMiddlewareFor(http.MethodPost, "/auth", rateLimiter.Handle)
 	api.ServerShutdown = func() {}
 
