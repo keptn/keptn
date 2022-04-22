@@ -11,11 +11,11 @@ on:
       - 'master'
       - '[0-9]+.[1-9][0-9]*.x'
 env:
-  GO_VERSION: "^1.16"
+  GO_VERSION: "~1.16"
   KUBE_CONSTRAINTS: ">= 1.14, <= 1.21"
   CLI_FOLDER: "cli/"
   INSTALLER_FOLDER: "installer/"
-  
+
   BRIDGE_ARTIFACT_PREFIX: "BRIDGE"
   BRIDGE_UI_TEST_ARTIFACT_PREFIX: "BRIDGE_UI_TEST"
   BRIDGE_CODE_STYLE_ARTIFACT_PREFIX: "BRIDGE_CODE_STYLE"
@@ -182,7 +182,7 @@ jobs:
 
           GIT_NEXT_TAG=$(cat VERSION.txt)
           git checkout HEAD -- VERSION.txt
-          
+
           echo "GIT_NEXT_TAG=${GIT_NEXT_TAG}"
 
           if [[ "$BRANCH" == "master" ]]; then
