@@ -245,7 +245,6 @@ func CreateRequest(request interface{}) (string, error) {
 		err := validateBetaRequest(convertedRequest)
 		if err != nil {
 			return "", err
-
 		}
 		betaRequest := buildBetaCurlRequest(convertedRequest)
 		if betaRequest != "" {
@@ -280,7 +279,7 @@ func buildBetaCurlRequest(req lib.Request) string {
 
 func validateBetaRequest(req lib.Request) error {
 	if req.URL == "" {
-		fmt.Errorf("Invalid curl URL: %s", req.URL)
+		return fmt.Errorf("Invalid curl URL: %s", req.URL)
 	}
 	denyList, err := getConfigDenyList()
 	if err != nil {
@@ -309,19 +308,16 @@ func resolveIPAdresses(curlURL string) []string {
 		logger.Errorf("Unable to parse URL: %s", curlURL)
 		return ipAddresses
 	}
-
 	ips, err := net.LookupIP(parsedURL.Hostname())
 	if err != nil {
 		logger.Errorf("Unable to look up IP for URL: %s", curlURL)
 		return ipAddresses
 	}
-
 	for _, ip := range ips {
 		if addr := ip.To4(); addr != nil {
 			ipAddresses = append(ipAddresses, addr.String())
 		}
 	}
-
 	return ipAddresses
 }
 
