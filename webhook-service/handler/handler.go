@@ -1,12 +1,15 @@
 package handler
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"net"
 	"net/url"
 	"strings"
 
 	keptn "github.com/keptn/go-utils/pkg/api/utils"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -238,7 +241,13 @@ func CreateRequest(request interface{}) (string, error) {
 	// v1beta1 version
 	default:
 		logger.Debug("creating CURL request from type Request")
-		betaRequest := buildBetaCurlRequest(lib.ConvertToRequest(request))
+		convertedRequest := lib.ConvertToRequest(request)
+		err := validateBetaRequest(convertedRequest)
+		if err != nil {
+			return "", err
+
+		}
+		betaRequest := buildBetaCurlRequest(convertedRequest)
 		if betaRequest != "" {
 			return betaRequest, nil
 		}
@@ -267,6 +276,72 @@ func buildBetaCurlRequest(req lib.Request) string {
 		tmpReq = fmt.Sprintf(tmpReq+" %s", req.URL)
 	}
 	return tmpReq
+}
+
+func validateBetaRequest(req lib.Request) error {
+	if req.URL == "" {
+		fmt.Errorf("Invalid curl URL: %s", req.URL)
+	}
+	denyList, err := getConfigDenyList()
+	if err != nil {
+		logger.Errorf("Unable to read ConfigMap %s: %s", lib.WebhookConfigMap, err.Error())
+		denyList = lib.DeniedURLs(lib.GetEnv())
+	}
+
+	for _, url := range denyList {
+		if strings.Contains(req.URL, url) {
+			return fmt.Errorf("curl command contains denied URL %s", url)
+		}
+		ipAddresses := resolveIPAdresses(req.URL)
+		for _, ip := range ipAddresses {
+			if strings.Contains(req.URL, ip) {
+				return fmt.Errorf("curl command contains denied IP address %s", url)
+			}
+		}
+	}
+	return nil
+}
+
+func resolveIPAdresses(curlURL string) []string {
+	ipAddresses := make([]string, 0)
+	parsedURL, err := url.Parse(curlURL)
+	if err != nil {
+		logger.Errorf("Unable to parse URL: %s", curlURL)
+		return ipAddresses
+	}
+
+	ips, err := net.LookupIP(parsedURL.Hostname())
+	if err != nil {
+		logger.Errorf("Unable to look up IP for URL: %s", curlURL)
+		return ipAddresses
+	}
+
+	for _, ip := range ips {
+		if addr := ip.To4(); addr != nil {
+			ipAddresses = append(ipAddresses, addr.String())
+		}
+	}
+
+	return ipAddresses
+}
+
+func getConfigDenyList() ([]string, error) {
+	denyList := make([]string, 0)
+	kubeAPI, err := lib.GetConfig().GetKubeAPI()
+	if err != nil {
+		logger.Errorf("Unable to get kubeAPI: %s", err.Error())
+		return denyList, fmt.Errorf("cannot get kubeAPI")
+	}
+
+	configMap, err := kubeAPI.CoreV1().ConfigMaps(lib.GetNamespaceFromEnvVar()).Get(context.TODO(), lib.WebhookConfigMap, v1.GetOptions{})
+	if err != nil {
+		logger.Errorf("Unable to get ConfigMap %s: %s", lib.WebhookConfigMap, err.Error())
+		return denyList, fmt.Errorf("cannot get ConfigMap %s", lib.WebhookConfigMap)
+	}
+
+	denyListString := configMap.Data["denyList"]
+	denyList = strings.Fields(denyListString)
+	return denyList, nil
 }
 
 func sdkError(msg string, err error) *sdk.Error {
