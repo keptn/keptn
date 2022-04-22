@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-this-alias */
-import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import * as d3 from 'd3';
 import { BaseType, ScaleBand, Selection, ValueFn } from 'd3';
 import { ResultTypes } from '../../../shared/models/result-types';
@@ -35,6 +35,7 @@ export class KtbHeatmapComponent implements OnInit, OnDestroy {
   private heatmap?: Selection<SVGGElement, unknown, HTMLElement, unknown>;
   private xAxis?: ScaleBand<string>;
   private readonly chartSelector = 'div#myChart';
+  private readonly firstSliPadding = 6; // "score" will then be 6px smaller than the rest.
   private readonly yAxisLabelWidth = 100;
   private readonly xAxisLabelWidth = 150;
   private readonly heightPerSli = 40;
@@ -83,7 +84,7 @@ export class KtbHeatmapComponent implements OnInit, OnDestroy {
     return this._selectedDataPoint;
   }
 
-  constructor(private elementRef: ElementRef) {
+  constructor() {
     this.mouseMoveListener = this.getMouseMoveListener();
     document.addEventListener('mousemove', this.mouseMoveListener);
   }
@@ -248,7 +249,7 @@ export class KtbHeatmapComponent implements OnInit, OnDestroy {
   }
 
   private addYAxis(heatmap: HeatmapSelection, slis: string[]): ScaleBand<string> {
-    const y = d3.scaleBand().range([this.height, 0]).domain(slis).paddingInner(0.03);
+    const y = d3.scaleBand().range([this.height, 0]).domain(slis);
     heatmap
       .append('g')
       .attr('class', 'y-axis-container')
@@ -331,17 +332,31 @@ export class KtbHeatmapComponent implements OnInit, OnDestroy {
     tooltip: HeatmapTooltip
   ): void {
     const _this = this;
+    const yAxisElements = y.domain();
+    const firstSli = yAxisElements[yAxisElements.length - 1];
     heatmap
       .selectAll()
       .data(data)
       .join('rect')
       .attr('x', (dataPoint) => x(dataPoint.date) ?? null)
-      .attr('y', (dataPoint) => y(dataPoint.sli) ?? null)
+      .attr('y', (dataPoint) => {
+        const yCoordinate = y(dataPoint.sli);
+        if (yCoordinate !== undefined && dataPoint.sli === firstSli) {
+          return yCoordinate + this.firstSliPadding / 2;
+        }
+        return yCoordinate ?? null;
+      })
       .attr('class', (dataPoint) => dataPoint.color)
       .classed('data-point', true)
       .attr('uitestid', (dataPoint) => `ktb-heatmap-tile-${dataPoint.sli.replace(/ /g, '-')}`) // TODO: do we need this?
       .attr('width', x.bandwidth())
-      .attr('height', y.bandwidth())
+      .attr('height', (dataPoint) => {
+        const height = y.bandwidth();
+        if (dataPoint.sli === firstSli) {
+          return height - this.firstSliPadding;
+        }
+        return height;
+      })
       .on('click', function (this: BaseType, _event: MouseEvent, dataPoint: DataPoint) {
         _this.click(dataPoint);
       })
