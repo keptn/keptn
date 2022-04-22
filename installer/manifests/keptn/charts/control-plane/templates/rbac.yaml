@@ -5,8 +5,7 @@ metadata:
   name: keptn-default
   labels:
     {{ include "control-plane.labels" . | indent 4 }}
-    app.kubernetes.io/name: keptn-default
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    app.kubernetes.io/name: keptn-default 
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -14,8 +13,7 @@ metadata:
   name: keptn-configuration-service
   labels:
     {{ include "control-plane.labels" . | indent 4 }}
-    app.kubernetes.io/name: keptn-configuration-service
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    app.kubernetes.io/name: keptn-configuration-service    
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -23,8 +21,7 @@ metadata:
   name: keptn-shipyard-controller
   labels:
     {{ include "control-plane.labels" . | indent 4 }}
-    app.kubernetes.io/name: keptn-shipyard-controller
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    app.kubernetes.io/name: keptn-shipyard-controller    
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -33,7 +30,6 @@ metadata:
   labels:
     {{ include "control-plane.labels" . | indent 4 }}
     app.kubernetes.io/name: keptn-secret-service
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -42,7 +38,6 @@ metadata:
   labels:
     {{ include "control-plane.labels" . | indent 4 }}
     app.kubernetes.io/name: keptn-lighthouse-service
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -51,7 +46,6 @@ metadata:
   labels:
     {{ include "control-plane.labels" . | indent 4 }}
     app.kubernetes.io/name: keptn-api-service
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
 ---
 {{- if .Values.webhookService.enabled }}
 apiVersion: v1
@@ -61,7 +55,6 @@ metadata:
   labels:
     {{ include "control-plane.labels" . | indent 4 }}
     app.kubernetes.io/name: keptn-api-service
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
 ---
 {{- end }}
 apiVersion: rbac.authorization.k8s.io/v1
@@ -71,7 +64,6 @@ metadata:
   labels:
     {{ include "control-plane.labels" . | indent 4 }}
     app.kubernetes.io/name: keptn-manage-secrets
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
 rules:
   - apiGroups:
       - ""
@@ -83,7 +75,6 @@ rules:
       - delete
       - update
       - list
-
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -92,7 +83,6 @@ metadata:
   labels:
     {{ include "control-plane.labels" . | indent 4 }}
     app.kubernetes.io/name: keptn-get-secrets
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
 rules:
   - apiGroups:
       - ""
@@ -109,7 +99,6 @@ metadata:
   labels:
     {{ include "control-plane.labels" . | indent 4 }}
     app.kubernetes.io/name: keptn-manage-roles
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
 rules:
   - apiGroups:
       - rbac.authorization.k8s.io
@@ -129,7 +118,6 @@ metadata:
   labels:
     {{ include "control-plane.labels" . | indent 4 }}
     app.kubernetes.io/name: keptn-manage-rolebindings
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
 rules:
   - apiGroups:
       - rbac.authorization.k8s.io
@@ -149,7 +137,6 @@ metadata:
   labels:
     {{ include "control-plane.labels" . | indent 4 }}
     app.kubernetes.io/name: keptn-read-metadata
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
 rules:
   - apiGroups:
       - extensions
@@ -168,7 +155,6 @@ metadata:
   labels:
     {{ include "control-plane.labels" . | indent 4 }}
     app.kubernetes.io/name: keptn-manage-configmaps
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
 rules:
   - apiGroups:
       - ""
@@ -187,7 +173,6 @@ metadata:
   labels:
     {{ include "control-plane.labels" . | indent 4 }}
     app.kubernetes.io/name: keptn-delete-bridge-pod
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
 rules:
   - apiGroups:
       - ""
@@ -206,7 +191,6 @@ metadata:
   labels:
     {{ include "control-plane.labels" . | indent 4 }}
     app.kubernetes.io/name: keptn-acquire-lease
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
 rules:
   - apiGroups:
       - "coordination.k8s.io"
@@ -228,7 +212,6 @@ metadata:
   labels:
     {{ include "control-plane.labels" . | indent 4 }}
     app.kubernetes.io/name: keptn-lighthouse-service
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -245,7 +228,6 @@ metadata:
   labels:
     {{ include "control-plane.labels" . | indent 4 }}
     app.kubernetes.io/name: keptn-api-service-metadata
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -262,7 +244,6 @@ metadata:
   labels:
     {{ include "control-plane.labels" . | indent 4 }}
     app.kubernetes.io/name: keptn-configuration-service-get-secrets
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -279,7 +260,6 @@ metadata:
   labels:
     {{ include "control-plane.labels" . | indent 4 }}
     app.kubernetes.io/name: keptn-shipyard-controller-manage-secrets
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -296,7 +276,6 @@ metadata:
   labels:
     {{ include "control-plane.labels" . | indent 4 }}
     app.kubernetes.io/name: keptn-secret-service-manage-secrets
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -313,7 +292,6 @@ metadata:
   labels:
     {{ include "control-plane.labels" . | indent 4 }}
     app.kubernetes.io/name: keptn-secret-service-manage-roles
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -329,7 +307,6 @@ metadata:
   labels:
     {{ include "control-plane.labels" . | indent 4 }}
     app.kubernetes.io/name: keptn-secret-service-manage-secrets
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -346,7 +323,6 @@ metadata:
   labels:
     {{ include "control-plane.labels" . | indent 4 }}
     app.kubernetes.io/name: keptn-shipyard-controller-acquire-lease
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role

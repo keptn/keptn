@@ -5,7 +5,6 @@ metadata:
   labels:
     {{ include "control-plane.labels" . | indent 4 }}
     app.kubernetes.io/name: configuration-service
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
 spec:
   ports:
     - port: 8080
@@ -28,7 +27,6 @@ metadata:
   labels:
     {{ include "control-plane.baseLabels" . | indent 4 }}
     app.kubernetes.io/name: resource-service
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
     app.kubernetes.io/version: {{ .Values.resourceService.image.tag | default .Chart.AppVersion }}
 spec:
   selector:
@@ -42,7 +40,6 @@ spec:
       labels:
         {{ include "control-plane.baseLabels" . | indent 8 }}
         app.kubernetes.io/name: resource-service
-        app.kubernetes.io/component: {{ include "control-plane.name" . }}
         app.kubernetes.io/version: {{ .Values.resourceService.image.tag | default .Chart.AppVersion }}
     spec:
       securityContext:
@@ -112,7 +109,6 @@ metadata:
   labels:
     {{ include "control-plane.labels" . | indent 4 }}
     app.kubernetes.io/name: configuration-volume
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
 spec:
   accessModes:
     - ReadWriteOnce
@@ -130,7 +126,6 @@ metadata:
   labels:
     {{ include "control-plane.baseLabels" . | indent 4 }}
     app.kubernetes.io/name: configuration-service
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
     app.kubernetes.io/version: {{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
 spec:
   selector:
@@ -144,7 +139,6 @@ spec:
       labels:
         {{ include "control-plane.baseLabels" . | indent 8 }}
         app.kubernetes.io/name: configuration-service
-        app.kubernetes.io/component: {{ include "control-plane.name" . }}
         app.kubernetes.io/version: {{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
     spec:
       securityContext:

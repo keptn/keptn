@@ -37,12 +37,8 @@ kind: Secret
 metadata:
   name: keptn-api-token
   labels:
+    {{ include "control-plane.labels" . | indent 4 }}
     app.kubernetes.io/name: keptn-api-token
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
 type: Opaque
 data:
   keptn-api-token: {{ $apiToken }}
@@ -54,12 +50,8 @@ kind: Secret
 metadata:
   name: bridge-credentials
   labels:
+    {{ include "control-plane.labels" . | indent 4 }}
     app.kubernetes.io/name: bridge-credentials
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
 type: Opaque
 data:
   BASIC_AUTH_USERNAME: 'a2VwdG4='
@@ -71,12 +63,8 @@ kind: Secret
 metadata:
   name: bridge-oauth
   labels:
+    {{ include "control-plane.labels" . | indent 4 }}
     app.kubernetes.io/name: bridge-oauth
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
 type: Opaque
 data:
   session_secret: {{ $bridgeSessionSecret }}
@@ -87,12 +75,8 @@ kind: Secret
 metadata:
   name: bridge-oauth-mongodb-credentials
   labels:
+    {{ include "control-plane.labels" . | indent 4 }}
     app.kubernetes.io/name: bridge-oauth-mongodb-credentials
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
 type: Opaque
 data:
   external_connection_string: {{ $bridgeMongoConnectionString }}
@@ -103,13 +87,9 @@ kind: Deployment
 metadata:
   name: bridge
   labels:
+    {{ include "control-plane.baseLabels" . | indent 4 }}
     app.kubernetes.io/name: bridge
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
     app.kubernetes.io/version: {{ .Values.bridge.image.tag | default .Chart.AppVersion }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
 spec:
   selector:
     matchLabels:
@@ -119,13 +99,9 @@ spec:
   template:
     metadata:
       labels:
+        {{ include "control-plane.baseLabels" . | indent 8 }}
         app.kubernetes.io/name: bridge
-        app.kubernetes.io/instance: {{ .Release.Name }}
-        app.kubernetes.io/managed-by: {{ .Release.Service }}
-        app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-        app.kubernetes.io/component: {{ include "control-plane.name" . }}
         app.kubernetes.io/version: {{ .Values.bridge.image.tag | default .Chart.AppVersion }}
-        helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
       {{- include "control-plane.bridge.pod-security-context" . | nindent 6 }}
       containers:

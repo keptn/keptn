@@ -38,6 +38,7 @@ Base labels
 helm.sh/chart: {{ include "control-plane.chart" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+app.kubernetes.io/component: {{ include "control-plane.name" . }}
 {{- end }}
 
 {{/*
@@ -48,7 +49,6 @@ Common labels
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
 {{/*

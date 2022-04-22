@@ -7,7 +7,6 @@ metadata:
   labels:
     {{ include "control-plane.baseLabels" . | indent 4 }}
     app.kubernetes.io/name: remediation-service
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
     app.kubernetes.io/version: {{ .Values.remediationService.image.tag | default .Chart.AppVersion }}
 spec:
   selector:
@@ -21,7 +20,6 @@ spec:
       labels:
         {{ include "control-plane.baseLabels" . | indent 8 }}
         app.kubernetes.io/name: remediation-service
-        app.kubernetes.io/component: {{ include "control-plane.name" . }}
         app.kubernetes.io/version: {{ .Values.remediationService.image.tag | default .Chart.AppVersion }}
     spec:
       {{- include "control-plane.common.pod-security-context" . | nindent 6 }}
@@ -86,7 +84,6 @@ metadata:
   labels:
     {{ include "control-plane.baseLabels" . | indent 4 }}
     app.kubernetes.io/name: remediation-service
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
     app.kubernetes.io/version: {{ .Values.remediationService.image.tag | default .Chart.AppVersion }}
 spec:
   ports:

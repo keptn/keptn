@@ -5,7 +5,6 @@ metadata:
   labels:
     {{ include "control-plane.labels" . | indent 4 }}
     app.kubernetes.io/name: bridge
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
 spec:
   ports:
     - port: 8080
