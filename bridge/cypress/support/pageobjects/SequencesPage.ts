@@ -10,7 +10,7 @@ export class SequencesPage {
   }
 
   public visit(projectName: string): this {
-    cy.visit(`/project/${projectName}/sequence`).wait('@metadata');
+    cy.visit(`/project/${projectName}/sequence`).wait('@metadata').wait('@SequencesMetadata');
     return this;
   }
 
