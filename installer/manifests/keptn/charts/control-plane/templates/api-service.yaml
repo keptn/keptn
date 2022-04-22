@@ -75,12 +75,14 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-            - name: AUTOMATIC_PROVISIONING_URL 
+            - name: AUTOMATIC_PROVISIONING_URL
               value: {{ (.Values.features).automaticProvisioningURL | default "" }}
+            - name: MAX_AUTH_ENABLED
+              value: {{ (.Values.apiService.maxAuth).enabled | default true }}
             - name: MAX_AUTH_REQUESTS_PER_SECOND
-              value: '{{ .Values.apiService.config.maxAuthRequestsPerSecond | default "1.0"}}'
+              value: '{{ (.Values.apiService.maxAuth).requestsPerSecond | default "1.0"}}'
             - name: MAX_AUTH_REQUESTS_BURST
-              value: '{{ .Values.apiService.config.maxAuthRequestBurst | default "2"}}'
+              value: '{{ (.Values.apiService.maxAuth).requestBurst | default "2"}}'
             - name: LOG_LEVEL
               value: {{ .Values.logLevel | default "info" }}
           {{- include "control-plane.common.container-security-context" . | nindent 10 }}
