@@ -18,6 +18,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"testing"
@@ -85,15 +86,40 @@ func TestUpgradeCmdHandler_doUpgradePreRunCheck_namespace_exists(t *testing.T) {
 	})
 }
 
-func TestUpgradeCmdHandler_doUpgrade(t *testing.T) {
-	t.Run("upgrade: ", func(t *testing.T) {
-		assert.Equal(t, true, true)
-	})
-}
+func TestUpgradeCmdHandler_addWarningNonExistingProjectUpstream_authError(t *testing.T) {
+	type fields struct {
+		helmHelper        *helmfake.IHelperMock
+		namespaceHandler  *kubefake.IKeptnNamespaceHandlerMock
+		userInput         *commonfake.IUserInputMock
+		credentialManager *credmanagerfake.CredentialManagerInterfaceMock
+	}
+	test := struct {
+		name    string
+		fields  fields
+		args    installUpgradeParams
+		wantErr bool
+	}{
+		fields: fields{
+			helmHelper:       &helmfake.IHelperMock{},
+			namespaceHandler: &kubefake.IKeptnNamespaceHandlerMock{},
+			userInput:        &commonfake.IUserInputMock{},
+			credentialManager: &credmanagerfake.CredentialManagerInterfaceMock{
+				GetCredsFunc: func(namespace string) (url.URL, string, error) {
+					return url.URL{}, "", errors.New(authErrorMsg)
+				},
+			},
+		},
+	}
 
-func TestUpgradeCmdHandler_addWarningNonExistingProjectUpstream(t *testing.T) {
-	t.Run("add warning: ", func(t *testing.T) {
-		assert.Equal(t, true, true)
+	t.Run("add warning: auth error", func(t *testing.T) {
+		u := &UpgradeCmdHandler{
+			helmHelper:        test.fields.helmHelper,
+			namespaceHandler:  test.fields.namespaceHandler,
+			userInput:         test.fields.userInput,
+			credentialManager: test.fields.credentialManager,
+		}
+		err := u.addWarningNonExistingProjectUpstream()
+		assert.Equal(t, err.Error(), authErrorMsg)
 	})
 }
 
