@@ -55,6 +55,7 @@ func Test_ZeroDownTimeTriggerSequence(t *testing.T) {
 	err = ScaleDownUniform([]string{"shipyard-controller"})
 
 	defer func() {
+		// make sure the shipyard-controller deployment is scaled back up in any case, even when there is an unexpected error during the test
 		if err := ScaleUpUniform([]string{"shipyard-controller"}, 1); err != nil {
 			t.Errorf("could not scale up shipyard-controller: %v", err)
 		}
