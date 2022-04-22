@@ -102,13 +102,13 @@ ktb-loading-distractor.smaller .ktb-loading-distractor-label {
   color: $gray-700;
 }
 
-ktb-loading-distractor.smaller {
-  .ktb-loading-spinner {
-    --ktb-loading-distractor-color: #{$gray-700};
+ktb-loading-spinner.smaller,
+ktb-loading-distractor.smaller .ktb-loading-spinner {
+  --ktb-loading-distractor-color: #{$gray-700};
 
-    height: 20px;
-    width: 20px;
-  }
+  height: 16px;
+  width: 16px;
+  vertical-align: text-top;
 }
 
 p.small,

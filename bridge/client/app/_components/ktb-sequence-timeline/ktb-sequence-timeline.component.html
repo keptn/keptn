@@ -53,7 +53,7 @@
           [textContent]="currentSequence.getStageTime(stage) | date: 'HH:mm'"
         ></p>
         <ng-template #showLoadingSpinner>
-          <ktb-loading-distractor class="smaller">Fetching events ...</ktb-loading-distractor>
+          <ktb-loading-spinner class="smaller" aria-label="Fetching events ..."></ktb-loading-spinner>
         </ng-template>
       </div>
     </div>
