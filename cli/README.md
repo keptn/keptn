@@ -45,12 +45,11 @@ where **command**, **entity**, **name**, and **flags** are:
 
 - **command**: Specifies the operation that you want to perform, for example, install, create, send.
 
-- **entity**: Specifies the entity type. For example, the following commands run a create, get, and update operation on the project, service, and domain entity:
+- **entity**: Specifies the entity type. For example, the following commands run a create operation on the project and service entities:
 
     ```console
     keptn create project 
-    keptn get service
-    keptn configure domain
+    keptn create service
     ```
 
 - **name**: Specifies the name of the entity. Names are case-sensitive. 
