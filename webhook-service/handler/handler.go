@@ -15,6 +15,7 @@ import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/go-sdk/pkg/sdk"
 	"github.com/keptn/keptn/webhook-service/lib"
+	keptnkubeutils "github.com/keptn/kubernetes-utils/pkg"
 	logger "github.com/sirupsen/logrus"
 )
 
@@ -323,7 +324,7 @@ func resolveIPAdresses(curlURL string) []string {
 
 func getConfigDenyList() ([]string, error) {
 	denyList := make([]string, 0)
-	kubeAPI, err := lib.GetConfig().GetKubeAPI()
+	kubeAPI, err := keptnkubeutils.GetClientset(false)
 	if err != nil {
 		logger.Errorf("Unable to get kubeAPI: %s", err.Error())
 		return denyList, fmt.Errorf("cannot get kubeAPI")
