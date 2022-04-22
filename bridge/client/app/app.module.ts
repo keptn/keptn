@@ -169,6 +169,7 @@ import { KtbLoadingDistractorComponent } from './_components/ktb-loading-distrac
 import { KtbLoadingSpinnerComponent } from './_components/ktb-loading-spinner/ktb-loading-spinner.component';
 import { SanitizeHtmlPipe } from './_pipes/sanitize-html.pipe';
 import { KtbHeatmapComponent } from './ktb-heatmap/ktb-heatmap.component';
+import { KtbTestHeatmapComponent } from './_components/ktb-test-heatmap/ktb-test-heatmap.component';
 
 registerLocaleData(localeEn, 'en');
 
@@ -279,6 +280,7 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     KtbLoadingSpinnerComponent,
     SanitizeHtmlPipe,
     KtbHeatmapComponent,
+    KtbTestHeatmapComponent,
   ],
   imports: [
     BrowserModule,

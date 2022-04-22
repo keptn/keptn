@@ -16,8 +16,12 @@
     left: 0;
   }
 
-  .x-axis-container {
+  .x-axis-container, .y-axis-container, .legend-text {
     font-size: $axis-identifier-size;
+  }
+
+  .legend-text {
+    alignment-baseline: middle;
   }
 
   .x-axis-identifier {
@@ -25,12 +29,8 @@
     transform: rotate(-45deg);
   }
 
-  .y-axis-container {
-    font-size: $axis-identifier-size;
-  }
-
   .tooltip {
-    position: absolute;
+    position: fixed;
     z-index: 1070;
     background-color: white;
     border: 2px solid;
@@ -38,13 +38,18 @@
     padding: 5px;
     pointer-events: none;
     opacity: 0;
+    display: inline-block;
 
     &.show {
       opacity: 1;
     }
   }
 
-  .data-point {
+  .legend-item {
+    cursor: pointer;
+  }
+
+  .data-point, .legend-circle {
     cursor: pointer;
 
     &:hover {
@@ -61,6 +66,14 @@
 
     &.fail {
       fill: #dc172a;
+    }
+
+    &.info {
+      fill: #ddf4ff;
+    }
+
+    &.disabled {
+      fill: #cccccc;
     }
   }
 

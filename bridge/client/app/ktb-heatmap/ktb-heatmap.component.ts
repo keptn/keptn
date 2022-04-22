@@ -8,7 +8,7 @@ export interface DataPoint {
   date: string;
   sli: string;
   value: number; // or tooltip: { allNeededValues }
-  color: ResultTypes;
+  color: EvaluationResultType;
   comparedIndices: number[];
   /**
    * Unique identifier like keptnContext that can be used on tileSelected
@@ -19,6 +19,11 @@ export interface DataPoint {
 type HeatmapSelection = Selection<SVGGElement, unknown, HTMLElement, unknown>;
 type HeatmapTooltip = Selection<HTMLDivElement, unknown, HTMLElement, unknown>;
 type HeatMapMouseFunction = (this: BaseType, event: MouseEvent, d: DataPoint) => void;
+type HeatmapTiles = Selection<SVGRectElement | null, DataPoint, SVGGElement, unknown>;
+enum EvaluationResultTypeExtension {
+  INFO = 'info',
+}
+type EvaluationResultType = ResultTypes | EvaluationResultTypeExtension;
 
 @Component({
   selector: 'ktb-heatmap',
@@ -32,31 +37,36 @@ export class KtbHeatmapComponent implements OnInit, OnDestroy {
   private readonly chartSelector = 'div#myChart';
   private readonly yAxisLabelWidth = 100;
   private readonly xAxisLabelWidth = 150;
+  private readonly heightPerSli = 40;
+  private readonly legendHeight = 50;
+  private readonly legendItems: EvaluationResultType[] = [
+    ResultTypes.PASSED,
+    ResultTypes.WARNING,
+    ResultTypes.FAILED,
+    EvaluationResultTypeExtension.INFO,
+  ];
   private width = 1920; // - margin-left - margin-right. Margin-left will be the space for xAxis labels
-  private height = 40;
-  private heightPerSli = 40; // 40 per SLI
+  private height = 40; // 40 per SLI
   private highlight?: Selection<SVGRectElement, unknown, HTMLElement, unknown>;
   private secondaryHighlights: Selection<SVGRectElement, unknown, HTMLElement, unknown>[] = [];
   private _selectedDataPoint?: DataPoint;
   private mouseCoordinates = { x: 0, y: 0 };
   private scrollListener?: (this: BaseType, _evt: Event) => void;
-  private mouseMoveListener?: (this: Document, _evt: MouseEvent) => void;
+  private readonly mouseMoveListener: (this: Document, _evt: MouseEvent) => void;
 
   @Output() selectedDataPointChange = new EventEmitter<DataPoint>();
   // unsure about:
   // should tileSelected emit the datapoint or just the identifier?
   // Re-positioning of tooltip only on hover-item-change?
+  //
 
   // TODO:
   //  - Create <ktb-heatmap-tooltip #myTooltip>, get it via ViewChild and trigger show/hide with correct x and y coordinates and dataPoint.
   //    Check if myComponentRef.attr.transform(x,y) can be used
+  //    repositioning too far on the left/top,
   //  - Only show every xth date if there are too many dataPoints
-  //  - Consider case for hide/show SLIs if there are more than 10
-  //  - Show "warning", "failed", "succeeded" legend underneath heatmap. Also filter?
-  //  - There is also an INFO state. Not only fail, warn, pass.
-  //  - Allow filtering by clicking on the legend
+  //  - Consider case for hide/show SLIs if there are more than 10. Add button in .html and reposition/display it with d3
   //  - Remove testing data afterwards
-  //  - tooltip: repositioning on too much on left, top,
 
   @Input() set dataPoints(data: DataPoint[]) {
     this._data = data;
@@ -95,12 +105,16 @@ export class KtbHeatmapComponent implements OnInit, OnDestroy {
       .classed('svg-container', true)
       .append('svg')
       .attr('preserveAspectRatio', 'xMinYMin meet')
-      .attr('viewBox', `0 0 ${this.width + this.yAxisLabelWidth} ${this.height + this.xAxisLabelWidth}`)
+      .attr(
+        'viewBox',
+        `0 0 ${this.width + this.yAxisLabelWidth} ${this.height + this.xAxisLabelWidth + this.legendHeight}`
+      )
       .classed('svg-content-responsive', true)
       .append('g')
       .attr('transform', 'translate(' + this.yAxisLabelWidth + ',' + 0 + ')');
 
     this.setData(this.heatmap, data, dates, slis);
+    this.createLegend(this.heatmap);
   }
 
   private generateTestData(sliCounter: number, counter: number): DataPoint[] {
@@ -135,7 +149,7 @@ export class KtbHeatmapComponent implements OnInit, OnDestroy {
         data.push({
           date: new Date(dateMillis + i).toISOString(),
           sli: category,
-          color: this.getColor(Math.floor(Math.random() * 3)),
+          color: this.getColor(Math.floor(Math.random() * 4)),
           value: Math.random(),
           identifier: `keptnContext_${i}`,
           comparedIndices: [],
@@ -147,8 +161,9 @@ export class KtbHeatmapComponent implements OnInit, OnDestroy {
     data[7].comparedIndices = [5, 6];
     return data;
   }
-
-  private setUniqueHeaders(dataPoints: DataPoint[], key: 'sli' | 'date', compare: 'sli' | 'date'): void {
+  private setUniqueHeaders(dataPoints: DataPoint[], key: 'date', compare: 'sli'): void;
+  private setUniqueHeaders(dataPoints: DataPoint[], key: 'sli', compare: 'date'): void;
+  private setUniqueHeaders(dataPoints: DataPoint[], key: 'sli' | 'date', compare: 'date' | 'sli'): void {
     // TODO: change the first found duplicate to (1)?
     dataPoints.forEach((dataPoint, index) => {
       let duplicates = 0;
@@ -180,14 +195,17 @@ export class KtbHeatmapComponent implements OnInit, OnDestroy {
     this.generateHeatmapTiles(heatmap, data, this.xAxis, y, tooltip);
   }
 
-  private getColor(value: number): ResultTypes {
+  private getColor(value: number): EvaluationResultType {
     if (value === 0) {
       return ResultTypes.FAILED;
     }
     if (value === 1) {
       return ResultTypes.WARNING;
     }
-    return ResultTypes.PASSED;
+    if (value === 2) {
+      return ResultTypes.PASSED;
+    }
+    return EvaluationResultTypeExtension.INFO;
   }
 
   private addXAxis(heatmap: HeatmapSelection, dates: string[]): ScaleBand<string> {
@@ -260,8 +278,8 @@ export class KtbHeatmapComponent implements OnInit, OnDestroy {
     return function (event: MouseEvent, d: DataPoint): void {
       tooltip
         .html('The exact value of<br>this cell is: ' + d.value)
-        .style('left', event.x + window.scrollX + 'px')
-        .style('top', event.y + window.scrollY + 'px');
+        .style('left', event.x + 'px')
+        .style('top', event.y + 'px');
     };
   }
 
@@ -319,7 +337,8 @@ export class KtbHeatmapComponent implements OnInit, OnDestroy {
       .join('rect')
       .attr('x', (dataPoint) => x(dataPoint.date) ?? null)
       .attr('y', (dataPoint) => y(dataPoint.sli) ?? null)
-      .attr('class', (dataPoint) => `data-point ${dataPoint.color}`)
+      .attr('class', (dataPoint) => dataPoint.color)
+      .classed('data-point', true)
       .attr('uitestid', (dataPoint) => `ktb-heatmap-tile-${dataPoint.sli.replace(/ /g, '-')}`) // TODO: do we need this?
       .attr('width', x.bandwidth())
       .attr('height', y.bandwidth())
@@ -364,6 +383,58 @@ export class KtbHeatmapComponent implements OnInit, OnDestroy {
         tooltip.classed('show', false);
       }
     };
+  }
+
+  private createLegend(heatmap: HeatmapSelection): void {
+    const legendPadding = 30;
+    const legend = heatmap.append('g');
+    const yCoordinate = this.height + this.xAxisLabelWidth + 10;
+    const _this = this;
+    let xCoordinate = 0;
+    for (const category of this.legendItems) {
+      const legendItem = legend
+        .append('g')
+        .classed('legend-item', true)
+        .on('click', function (this: BaseType, event: MouseEvent, dataPoint: unknown) {
+          _this.disableLegend(heatmap, legendItem, category);
+        });
+      legendItem
+        .append('circle')
+        .attr('cx', xCoordinate)
+        .attr('cy', yCoordinate)
+        .attr('r', 6)
+        .classed('legend-circle', true)
+        .classed(category, true);
+      xCoordinate += 10;
+      const text = legendItem
+        .append('text')
+        .attr('x', xCoordinate)
+        .attr('y', yCoordinate)
+        .text(category)
+        .classed('legend-text', true);
+      const textWidth = text.node()?.getComputedTextLength() ?? 0;
+      xCoordinate += textWidth + legendPadding;
+    }
+    const fullLength = legend.node()?.getBoundingClientRect().width ?? 0;
+    const centerXPosition = (this.width - fullLength) / 2;
+    legend.attr('transform', `translate(${centerXPosition}, ${0})`);
+  }
+
+  private disableLegend(heatmap: HeatmapSelection, legendItem: HeatmapSelection, category: EvaluationResultType): void {
+    const circle = legendItem.select('circle');
+    const isDisabled = circle.classed('disabled');
+    circle.classed('disabled', !isDisabled);
+
+    (heatmap.selectAll('.data-point') as HeatmapTiles).each(function (
+      this: SVGGElement | null,
+      dataPoint: DataPoint,
+      index: number,
+      dataPoints: BaseType[] | ArrayLike<BaseType>
+    ) {
+      if (this && dataPoint.color === category) {
+        d3.select(this).classed('disabled', !isDisabled);
+      }
+    });
   }
 
   public ngOnDestroy(): void {

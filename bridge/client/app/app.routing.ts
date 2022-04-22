@@ -23,6 +23,7 @@ import { KtbErrorViewComponent } from './_views/ktb-error-view/ktb-error-view.co
 import { AppComponent } from './app.component';
 import { KtbLogoutViewComponent } from './_views/ktb-logout-view/ktb-logout-view.component';
 import { KtbHeatmapComponent } from './ktb-heatmap/ktb-heatmap.component';
+import { KtbTestHeatmapComponent } from './_components/ktb-test-heatmap/ktb-test-heatmap.component';
 
 const routingConfiguration: ExtraOptions = {
   paramsInheritanceStrategy: 'always',
@@ -30,6 +31,7 @@ const routingConfiguration: ExtraOptions = {
 
 const routes: Routes = [
   { path: 'd3', component: KtbHeatmapComponent }, // TODO: Remove afterwards
+  { path: 'd3-comp', component: KtbTestHeatmapComponent }, // TODO: Remove afterwards
   { path: 'error', component: KtbErrorViewComponent },
   { path: 'logoutsession', component: KtbLogoutViewComponent },
   {
