@@ -85,11 +85,10 @@ apiService:
   image:
     repository: docker.io/keptn/api
     tag: ""
-  config:
-    maxAuth:
-      enabled: true
-      requestsPerSecond: "1.0"
-      requestBurst: "2"
+  maxAuth:
+    enabled: true
+    requestsPerSecond: "1.0"
+    requestBurst: "2"
   nodeSelector: {}
 
 bridge:

@@ -32,9 +32,9 @@ import (
 const envVarLogLevel = "LOG_LEVEL"
 
 type EnvConfig struct {
-	AuthEnabled           bool    `envconfig:"MAX_AUTH_ENABLED" default:"true"`
-	AuthRequestsPerSecond float64 `envconfig:"MAX_AUTH_REQUESTS_PER_SECOND" default:"1"`
-	AuthRequestMaxBurst   int     `envconfig:"MAX_AUTH_REQUESTS_BURST" default:"2"`
+	MaxAuthEnabled           bool    `envconfig:"MAX_AUTH_ENABLED" default:"true"`
+	MaxAuthRequestsPerSecond float64 `envconfig:"MAX_AUTH_REQUESTS_PER_SECOND" default:"1"`
+	MaxAuthRequestBurst      int     `envconfig:"MAX_AUTH_REQUESTS_BURST" default:"2"`
 }
 
 func configureFlags(api *operations.KeptnAPI) {
@@ -90,8 +90,8 @@ func configureAPI(api *operations.KeptnAPI) http.Handler {
 
 	//api.EvaluationTriggerEvaluationHandler = evaluation.TriggerEvaluationHandlerFunc(handlers.TriggerEvaluationHandlerFunc)
 
-	if env.AuthEnabled {
-		rateLimiter := custommiddleware.NewRateLimiter(env.AuthRequestsPerSecond, env.AuthRequestMaxBurst, tokenValidator, clock.New())
+	if env.MaxAuthEnabled {
+		rateLimiter := custommiddleware.NewRateLimiter(env.MaxAuthRequestsPerSecond, env.MaxAuthRequestBurst, tokenValidator, clock.New())
 		api.AddMiddlewareFor(http.MethodPost, "/auth", rateLimiter.Handle)
 	}
 

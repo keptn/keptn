@@ -17,15 +17,15 @@ func Test_getEnvConfig(t *testing.T) {
 
 	config, err := getEnvConfig()
 	require.Nil(t, err)
-	require.Equal(t, false, config.AuthEnabled)
-	require.Equal(t, 0.5, config.AuthRequestsPerSecond)
-	require.Equal(t, 1, config.AuthRequestMaxBurst)
+	require.Equal(t, false, config.MaxAuthEnabled)
+	require.Equal(t, 0.5, config.MaxAuthRequestsPerSecond)
+	require.Equal(t, 1, config.MaxAuthRequestBurst)
 }
 
 func Test_getEnvConfigUseDefaults(t *testing.T) {
 	config, err := getEnvConfig()
 	require.Nil(t, err)
-	require.Equal(t, true, config.AuthEnabled)
-	require.Equal(t, float64(1), config.AuthRequestsPerSecond)
-	require.Equal(t, 2, config.AuthRequestMaxBurst)
+	require.Equal(t, true, config.MaxAuthEnabled)
+	require.Equal(t, float64(1), config.MaxAuthRequestsPerSecond)
+	require.Equal(t, 2, config.MaxAuthRequestBurst)
 }
