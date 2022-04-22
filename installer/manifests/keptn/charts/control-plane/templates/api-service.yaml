@@ -74,7 +74,7 @@ spec:
             - name: AUTOMATIC_PROVISIONING_URL
               value: {{ (.Values.features).automaticProvisioningURL | default "" }}
             - name: MAX_AUTH_ENABLED
-              value: {{ (.Values.apiService.config).maxAuthEnabled | default true }}
+              value: {{ (.Values.apiService.config).maxAuthEnabled | default true | quote }}
             - name: MAX_AUTH_REQUESTS_PER_SECOND
               value: '{{ .Values.apiService.config.maxAuthRequestsPerSecond | default "1.0"}}'
             - name: MAX_AUTH_REQUESTS_BURST
