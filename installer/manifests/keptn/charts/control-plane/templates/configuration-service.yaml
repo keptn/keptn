@@ -3,12 +3,9 @@ kind: Service
 metadata:
   name: configuration-service
   labels:
+    {{ include "control-plane.labels" . | indent 4 }}
     app.kubernetes.io/name: configuration-service
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
 spec:
   ports:
     - port: 8080
@@ -29,13 +26,10 @@ kind: Deployment
 metadata:
   name: resource-service
   labels:
+    {{ include "control-plane.baseLabels" . | indent 4 }}
     app.kubernetes.io/name: resource-service
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
     app.kubernetes.io/version: {{ .Values.resourceService.image.tag | default .Chart.AppVersion }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
 spec:
   selector:
     matchLabels:
@@ -46,13 +40,10 @@ spec:
   template:
     metadata:
       labels:
+        {{ include "control-plane.baseLabels" . | indent 8 }}
         app.kubernetes.io/name: resource-service
-        app.kubernetes.io/instance: {{ .Release.Name }}
-        app.kubernetes.io/managed-by: {{ .Release.Service }}
-        app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "control-plane.name" . }}
         app.kubernetes.io/version: {{ .Values.resourceService.image.tag | default .Chart.AppVersion }}
-        helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
       securityContext:
         fsGroup: {{ .Values.configurationService.fsGroup | default 1001 }}
@@ -119,12 +110,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: configuration-volume
   labels:
+    {{ include "control-plane.labels" . | indent 4 }}
     app.kubernetes.io/name: configuration-volume
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
 spec:
   accessModes:
     - ReadWriteOnce
@@ -140,13 +128,10 @@ kind: Deployment
 metadata:
   name: configuration-service
   labels:
+    {{ include "control-plane.baseLabels" . | indent 4 }}
     app.kubernetes.io/name: configuration-service
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
     app.kubernetes.io/version: {{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
 spec:
   selector:
     matchLabels:
@@ -157,13 +142,10 @@ spec:
   template:
     metadata:
       labels:
+        {{ include "control-plane.baseLabels" . | indent 8 }}
         app.kubernetes.io/name: configuration-service
-        app.kubernetes.io/instance: {{ .Release.Name }}
-        app.kubernetes.io/managed-by: {{ .Release.Service }}
-        app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "control-plane.name" . }}
         app.kubernetes.io/version: {{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
-        helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
       securityContext:
         fsGroup: {{ .Values.configurationService.fsGroup | default 1001 }}

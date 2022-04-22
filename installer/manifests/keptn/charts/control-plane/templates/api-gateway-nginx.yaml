@@ -5,12 +5,10 @@ kind: ConfigMap
 metadata:
   name: api-nginx-config
   labels:
+    {{ include "control-plane.baseLabels" . | indent 4 }}
     app.kubernetes.io/name: api-nginx-config-cm
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
+    app.kubernetes.io/version: {{ .Values.apiGatewayNginx.image.tag }}
 data:
   nginx.conf: |
     worker_processes  3;
@@ -357,13 +355,10 @@ kind: Deployment
 metadata:
   name: api-gateway-nginx
   labels:
+    {{ include "control-plane.baseLabels" . | indent 4 }}
     app.kubernetes.io/name: api-gateway-nginx
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
     app.kubernetes.io/version: {{ .Values.apiGatewayNginx.image.tag }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
 spec:
   selector:
     matchLabels:
@@ -374,13 +369,10 @@ spec:
   template:
     metadata:
       labels:
+        {{ include "control-plane.baseLabels" . | indent 8 }}
         app.kubernetes.io/name: api-gateway-nginx
-        app.kubernetes.io/instance: {{ .Release.Name }}
-        app.kubernetes.io/managed-by: {{ .Release.Service }}
-        app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "control-plane.name" . }}
         app.kubernetes.io/version: {{ .Values.apiGatewayNginx.image.tag }}
-        helm.sh/chart: {{ include "control-plane.chart" . }}
       annotations: # add randomizer to restart the deployment if anything changes - see https://github.com/keptn/keptn/issues/3320
         rollme: {{ randAlphaNum 5 | quote }}
     spec:
@@ -442,12 +434,10 @@ kind: Service
 metadata:
   name: api-gateway-nginx
   labels:
+    {{ include "control-plane.baseLabels" . | indent 4 }}
     app.kubernetes.io/name: api-gateway-nginx
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
+    app.kubernetes.io/version: {{ .Values.apiGatewayNginx.image.tag }}
 spec:
   type: {{ .Values.apiGatewayNginx.type }}
   ports:

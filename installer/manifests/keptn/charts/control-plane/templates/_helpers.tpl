@@ -32,11 +32,19 @@ Create chart name and version as used by the chart label.
 {{- end }}
 
 {{/*
+Base labels
+*/}}
+{{- define "control-plane.baseLabels" }}
+helm.sh/chart: {{ include "control-plane.chart" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{/*
 Common labels
 */}}
 {{- define "control-plane.labels" -}}
-helm.sh/chart: {{ include "control-plane.chart" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
+{{ include "control-plane.baseLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}

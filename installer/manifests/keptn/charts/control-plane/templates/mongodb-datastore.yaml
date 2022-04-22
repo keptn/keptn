@@ -6,13 +6,10 @@ metadata:
   annotations:
     fluentbit.io/exclude: "true"
   labels:
+    {{ include "control-plane.baseLabels" . | indent 4 }}
     app.kubernetes.io/name: mongodb-datastore
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
     app.kubernetes.io/version: {{ .Values.mongodbDatastore.image.tag | default .Chart.AppVersion }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
 spec:
   selector:
     matchLabels:
@@ -23,13 +20,10 @@ spec:
   template:
     metadata:
       labels:
+        {{ include "control-plane.baseLabels" . | indent 8 }}
         app.kubernetes.io/name: mongodb-datastore
-        app.kubernetes.io/instance: {{ .Release.Name }}
-        app.kubernetes.io/managed-by: {{ .Release.Service }}
-        app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "control-plane.name" . }}
         app.kubernetes.io/version: {{ .Values.mongodbDatastore.image.tag | default .Chart.AppVersion }}
-        helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
       {{- include "control-plane.common.pod-security-context" . | nindent 6 }}
       serviceAccountName: keptn-default
@@ -113,12 +107,10 @@ kind: Service
 metadata:
   name: mongodb-datastore
   labels:
+    {{ include "control-plane.baseLabels" . | indent 4 }}
     app.kubernetes.io/name: mongodb-datastore
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
+    app.kubernetes.io/version: {{ .Values.mongodbDatastore.image.tag | default .Chart.AppVersion }}
 spec:
   ports:
   - port: 8080

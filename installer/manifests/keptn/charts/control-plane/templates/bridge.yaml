@@ -3,12 +3,9 @@ kind: Service
 metadata:
   name: bridge
   labels:
+    {{ include "control-plane.labels" . | indent 4 }}
     app.kubernetes.io/name: bridge
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
 spec:
   ports:
     - port: 8080
