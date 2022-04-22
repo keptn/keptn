@@ -34,7 +34,7 @@ class EnvironmentPage {
 
   public assertEvaluationHistoryLoadingCount(service: string, count: number): this {
     this.getServiceDetailsContainer(service)
-      .find('ktb-evaluation-info dt-tag-list[aria-label="evaluation-history"] dt-tag dt-loading-spinner')
+      .find('ktb-evaluation-info dt-tag-list[aria-label="evaluation-history"] dt-tag ktb-loading-spinner')
       .should('have.length', count);
     return this;
   }
@@ -69,4 +69,5 @@ class EnvironmentPage {
     return cy.get('ktb-stage-details ktb-expandable-tile h2').contains(service).parentsUntil('ktb-expandable-tile');
   }
 }
+
 export default EnvironmentPage;

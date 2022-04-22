@@ -22,6 +22,7 @@
 
   .stage-info {
     height: 25px;
+
     & > * {
       vertical-align: middle;
     }
@@ -43,22 +44,21 @@
     &.error {
       background-color: $error-color;
     }
+
     &.success {
       background-color: $cta-color-active;
     }
+
     &.highlight {
       background-color: $approval-color;
     }
+
     &.warning {
       background-color: $warning-color;
     }
+
     &.aborted {
       background-color: $aborted-color;
     }
-  }
-
-  dt-loading-spinner.gray-loading {
-    height: 20px;
-    width: 20px;
   }
 }
