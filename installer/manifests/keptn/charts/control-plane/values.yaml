@@ -1,6 +1,7 @@
 ## Additional labels to add to all resources
 additionalLabels: {}
   # app: keptn
+  # role: control-plane
 
 mongo:
   enabled: true

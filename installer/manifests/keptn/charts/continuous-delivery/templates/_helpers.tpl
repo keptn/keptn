@@ -34,13 +34,18 @@ Create chart name and version as used by the chart label.
 {{/*
 Common labels
 */}}
-{{- define "continuous-delivery.labels" -}}
+{{- define "continuous-delivery.labels" }}
 helm.sh/chart: {{ include "continuous-delivery.chart" . }}
-{{ include "continuous-delivery.selectorLabels" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+app.kubernetes.io/component: {{ include "continuous-delivery.name" . }}
+app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- if .Values.additionalLabels }}
+{{ toYaml .Values.additionalLabels }}
+{{- end }}
 {{- end }}
 
 {{/*

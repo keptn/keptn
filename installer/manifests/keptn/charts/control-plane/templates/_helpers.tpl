@@ -37,8 +37,9 @@ Base labels
 {{- define "control-plane.baseLabels" }}
 helm.sh/chart: {{ include "control-plane.chart" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
 app.kubernetes.io/component: {{ include "control-plane.name" . }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
 {{- if .Values.additionalLabels }}
 {{ toYaml .Values.additionalLabels }}
 {{- end }}

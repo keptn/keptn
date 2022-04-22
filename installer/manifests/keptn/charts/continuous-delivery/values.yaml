@@ -1,3 +1,8 @@
+## Additional labels to add to all resources
+additionalLabels: {}
+  # app: keptn
+  # role: continuous-delivery
+
 openshift:
   enabled: false
 
