@@ -11,7 +11,7 @@ require (
 	github.com/keptn/go-utils v0.14.1-0.20220414081235-2e23eb712e3d
 	github.com/mholt/archiver/v3 v3.5.1
 	github.com/nats-io/nats-server/v2 v2.7.4
-	github.com/nats-io/nats.go v1.13.1-0.20220308171302-2f2f6968e98d
+	github.com/nats-io/nats.go v1.14.0
 	github.com/otiai10/copy v1.7.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
