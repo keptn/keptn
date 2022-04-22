@@ -45,11 +45,10 @@ func TestUpgradeCmdHandler_doUpgradePreRunCheck_namespace_exists(t *testing.T) {
 		credentialManager *credmanagerfake.CredentialManagerInterfaceMock
 	}
 	test := struct {
-		name              string
-		fields            fields
-		args              installUpgradeParams
-		chartsToBeApplied []*chart.Chart
-		wantErr           bool
+		name    string
+		fields  fields
+		args    installUpgradeParams
+		wantErr bool
 	}{
 		name: "upgrade pre-run check: namespace exists, end check immediately",
 		fields: fields{
@@ -69,8 +68,7 @@ func TestUpgradeCmdHandler_doUpgradePreRunCheck_namespace_exists(t *testing.T) {
 		args: installUpgradeParams{
 			PatchNamespace: boolp(true),
 		},
-		chartsToBeApplied: []*chart.Chart{},
-		wantErr:           false,
+		wantErr: false,
 	}
 
 	t.Run(test.name, func(t *testing.T) {
