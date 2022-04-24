@@ -868,7 +868,7 @@ func WaitForDeploymentToBeScaledDown(deploymentName string) error {
 			}
 		}
 		return nil
-	})
+	}, retry.NumberOfRetries(40))
 
 	return err
 }

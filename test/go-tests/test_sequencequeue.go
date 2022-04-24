@@ -436,7 +436,7 @@ func executeSequenceAndVerifyCompletion(t *testing.T, projectName, serviceName, 
 		}
 		taskTriggeredEvent = event
 		return true
-	}, 5*time.Minute, 10*time.Second)
+	}, 10*time.Minute, 10*time.Second)
 	require.NotNil(t, taskTriggeredEvent)
 
 	cloudEvent := keptnv2.ToCloudEvent(*taskTriggeredEvent)
