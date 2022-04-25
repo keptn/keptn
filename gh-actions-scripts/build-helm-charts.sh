@@ -37,6 +37,19 @@ find . -name values.yaml -exec sed -i -- "s/docker.io\/keptn\//docker.io\/${DOCK
 mkdir keptn-charts/
 
 # ####################
+# COMMON HELM CHART
+# ####################
+COMMON_CHART_BASE_PATH=installer/manifests/common
+
+helm package ${COMMON_CHART_BASE_PATH} --app-version "$IMAGE_TAG" --version "$VERSION"
+if [ $? -ne 0 ]; then
+  echo "Error packaging common chart, exiting..."
+  exit 1
+fi
+
+mv "common-${VERSION}.tgz" "keptn-charts/common-${VERSION}.tgz"
+
+# ####################
 # INSTALLER HELM CHART
 # ####################
 INSTALLER_BASE_PATH=installer/manifests
@@ -65,6 +78,8 @@ fi
 # ####################
 HELM_SVC_BASE_PATH=helm-service
 
+helm dependency build ${HELM_SVC_BASE_PATH}/chart
+
 helm package ${HELM_SVC_BASE_PATH}/chart --app-version "$IMAGE_TAG" --version "$VERSION"
 if [ $? -ne 0 ]; then
   echo "Error packaging installer, exiting..."
@@ -85,6 +100,8 @@ fi
 # JMETER-SVC HELM CHART
 # ####################
 JMETER_SVC_BASE_PATH=jmeter-service
+
+helm dependency build ${JMETER_SVC_BASE_PATH}/chart
 
 helm package ${JMETER_SVC_BASE_PATH}/chart --app-version "$IMAGE_TAG" --version "$VERSION"
 if [ $? -ne 0 ]; then
