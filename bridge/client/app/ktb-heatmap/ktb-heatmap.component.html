@@ -1,5 +1,12 @@
 <div id="myChart"></div>
 
-<button dt-button variant="secondary" [class.hidden]="!showMoreVisible" class="show-more-button" #showMoreButton>
+<button
+  dt-button
+  variant="secondary"
+  [class.hidden]="!showMoreVisible"
+  class="show-more-button"
+  (click)="showMoreToggle()"
+  #showMoreButton
+>
   Show more SLIs
 </button>
