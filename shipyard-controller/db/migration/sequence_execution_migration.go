@@ -5,6 +5,7 @@ import (
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/db"
+	v02 "github.com/keptn/keptn/shipyard-controller/db/models/sequence_execution/v02"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	logger "github.com/sirupsen/logrus"
 )
@@ -15,7 +16,7 @@ import (
 func NewSequenceExecutionMigrator(dbConnection *db.MongoDBConnection) *SequenceExecutionMigrator {
 	return &SequenceExecutionMigrator{
 		projectRepo:           db.NewMongoDBKeyEncodingProjectsRepo(dbConnection),
-		sequenceExecutionRepo: db.NewMongoDBSequenceExecutionRepo(dbConnection),
+		sequenceExecutionRepo: db.NewMongoDBSequenceExecutionRepo(dbConnection, db.WithSequenceExecutionModelTransformer(&v02.ModelTransformer{})),
 	}
 }
 
@@ -50,7 +51,7 @@ func (s *SequenceExecutionMigrator) updateSequenceExecutionsOfProject(projects [
 			continue
 		}
 		for _, sequenceExecution := range sequenceExecutions {
-			// check if sequence execution has already been migrated
+			// TODO check if sequence execution has already been migrated
 			if err := s.sequenceExecutionRepo.Upsert(sequenceExecution, nil); err != nil {
 				logger.Errorf("Could not update sequence execution with ID %s for project %s: %v", sequenceExecution.ID, project.ProjectName, err)
 				continue

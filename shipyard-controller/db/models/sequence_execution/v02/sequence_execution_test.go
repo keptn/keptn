@@ -1,4 +1,4 @@
-package sequence_execution
+package v02
 
 import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -143,31 +143,6 @@ var testJsonStringEncodedSequenceExecution = JsonStringEncodedSequenceExecution{
 		KeptnContext: "ctx1",
 	},
 	InputProperties: `{"foo.bar":"xyz"}`,
-}
-
-func TestFromSequenceExecution(t *testing.T) {
-	type args struct {
-		se models.SequenceExecution
-	}
-	tests := []struct {
-		name string
-		args args
-		want JsonStringEncodedSequenceExecution
-	}{
-		{
-			name: "transform sequence execution",
-			args: args{
-				se: testSequenceExecution,
-			},
-			want: testJsonStringEncodedSequenceExecution,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := FromSequenceExecution(tt.args.se)
-			require.Equal(t, tt.want, got)
-		})
-	}
 }
 
 func TestJsonStringEncodedSequenceExecution_ToSequenceExecution(t *testing.T) {

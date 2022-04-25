@@ -1,0 +1,10 @@
+package sequence_execution
+
+import "github.com/keptn/keptn/shipyard-controller/models"
+
+// ISequenceExecutionModelTransformer is an interface that defines functions for transforming between the internal representation
+// of a sequence execution and the model structure outside the db package
+type ISequenceExecutionModelTransformer interface {
+	TransformToDBModel(execution models.SequenceExecution) interface{}
+	TransformToSequenceExecution(dbItem interface{}) (*models.SequenceExecution, error)
+}
