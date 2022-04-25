@@ -1,21 +1,17 @@
 package handler
 
 import (
-	"context"
 	"errors"
 	"fmt"
-	"net"
 	"net/url"
 	"strings"
 
 	keptn "github.com/keptn/go-utils/pkg/api/utils"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/go-sdk/pkg/sdk"
 	"github.com/keptn/keptn/webhook-service/lib"
-	keptnkubeutils "github.com/keptn/kubernetes-utils/pkg"
 	logger "github.com/sirupsen/logrus"
 )
 
@@ -28,13 +24,15 @@ type SecretEnv struct {
 type TaskHandler struct {
 	templateEngine lib.ITemplateEngine
 	curlExecutor   lib.ICurlExecutor
+	curlValidator  lib.ICurlValidator
 	secretReader   lib.ISecretReader
 }
 
-func NewTaskHandler(templateEngine lib.ITemplateEngine, curlExecutor lib.ICurlExecutor, secretReader lib.ISecretReader) *TaskHandler {
+func NewTaskHandler(templateEngine lib.ITemplateEngine, curlExecutor lib.ICurlExecutor, curlValidator lib.ICurlValidator, secretReader lib.ISecretReader) *TaskHandler {
 	return &TaskHandler{
 		templateEngine: templateEngine,
 		curlExecutor:   curlExecutor,
+		curlValidator:  curlValidator,
 		secretReader:   secretReader,
 	}
 }
@@ -200,7 +198,7 @@ func (th *TaskHandler) performWebhookRequests(webhook lib.Webhook, eventAdapter 
 	executedRequests := 0
 	logger.Infof("executing webhooks for subscriptionID %s", webhook.SubscriptionID)
 	for _, req := range webhook.Requests {
-		request, err := CreateRequest(req)
+		request, err := th.CreateRequest(req)
 		if err != nil {
 			logger.Infof("creating CURL request failed: %s", err.Error())
 			return nil, err
@@ -233,7 +231,7 @@ func (th *TaskHandler) gatherSecretEnvVars(webhook lib.Webhook) (map[string]stri
 	return secretEnvVars, nil
 }
 
-func CreateRequest(request interface{}) (string, error) {
+func (th *TaskHandler) CreateRequest(request interface{}) (string, error) {
 	switch req := request.(type) {
 	// v1alpha1 version
 	case string:
@@ -243,7 +241,7 @@ func CreateRequest(request interface{}) (string, error) {
 	default:
 		logger.Debug("creating CURL request from type Request")
 		convertedRequest := lib.ConvertToRequest(request)
-		if err := validateBetaRequest(convertedRequest); err != nil {
+		if err := th.curlValidator.Validate(convertedRequest); err != nil {
 			return "", err
 		}
 		betaRequest := buildBetaCurlRequest(convertedRequest)
@@ -275,67 +273,6 @@ func buildBetaCurlRequest(req lib.Request) string {
 		tmpReq = fmt.Sprintf(tmpReq+" %s", req.URL)
 	}
 	return tmpReq
-}
-
-func validateBetaRequest(req lib.Request) error {
-	if req.URL == "" {
-		return fmt.Errorf("Invalid curl URL: %s", req.URL)
-	}
-	denyList, err := getConfigDenyList()
-	if err != nil {
-		logger.Errorf("Unable to read ConfigMap %s: %s", lib.WebhookConfigMap, err.Error())
-		denyList = lib.GetDeniedURLs(lib.GetEnv())
-	}
-
-	for _, url := range denyList {
-		if strings.Contains(req.URL, url) {
-			return fmt.Errorf("curl command contains denied URL %s", url)
-		}
-		ipAddresses := resolveIPAdresses(req.URL)
-		for _, ip := range ipAddresses {
-			if strings.Contains(req.URL, ip) {
-				return fmt.Errorf("curl command contains denied IP address %s", url)
-			}
-		}
-	}
-	return nil
-}
-
-func resolveIPAdresses(curlURL string) []string {
-	ipAddresses := make([]string, 0)
-	parsedURL, err := url.Parse(curlURL)
-	if err != nil {
-		logger.Errorf("Unable to parse URL: %s", curlURL)
-		return ipAddresses
-	}
-	ips, err := net.LookupIP(parsedURL.Hostname())
-	if err != nil {
-		logger.Errorf("Unable to look up IP for URL: %s", curlURL)
-		return ipAddresses
-	}
-	for _, ip := range ips {
-		ipAddresses = append(ipAddresses, ip.String())
-	}
-	return ipAddresses
-}
-
-func getConfigDenyList() ([]string, error) {
-	denyList := make([]string, 0)
-	kubeAPI, err := keptnkubeutils.GetKubeAPI(false)
-	if err != nil {
-		logger.Errorf("Unable to get kubeAPI: %s", err.Error())
-		return denyList, fmt.Errorf("cannot get kubeAPI")
-	}
-
-	configMap, err := kubeAPI.ConfigMaps(lib.GetNamespaceFromEnvVar()).Get(context.TODO(), lib.WebhookConfigMap, v1.GetOptions{})
-	if err != nil {
-		logger.Errorf("Unable to get ConfigMap %s: %s", lib.WebhookConfigMap, err.Error())
-		return denyList, fmt.Errorf("cannot get ConfigMap %s", lib.WebhookConfigMap)
-	}
-
-	denyListString := configMap.Data["denyList"]
-	denyList = strings.Fields(denyListString)
-	return denyList, nil
 }
 
 func sdkError(msg string, err error) *sdk.Error {

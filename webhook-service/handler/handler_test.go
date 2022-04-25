@@ -175,7 +175,9 @@ func Test_HandleIncomingTriggeredEvent(t *testing.T) {
 		return "success", nil
 	}
 
-	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
+	curlValidatorMock := &fake.ICurlValidatorMock{}
+
+	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, curlValidatorMock, secretReaderMock)
 
 	fakeKeptn := sdk.NewFakeKeptn(
 		"test-webhook-svc")
@@ -217,7 +219,9 @@ func Test_HandleIncomingStartedEvent(t *testing.T) {
 		return "success", nil
 	}
 
-	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
+	curlValidatorMock := &fake.ICurlValidatorMock{}
+
+	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, curlValidatorMock, secretReaderMock)
 
 	fakeKeptn := sdk.NewFakeKeptn(
 		"test-webhook-svc")
@@ -250,7 +254,9 @@ func Test_HandleIncomingStartedEventWithResultingError(t *testing.T) {
 		return "", errors.New("oops")
 	}
 
-	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
+	curlValidatorMock := &fake.ICurlValidatorMock{}
+
+	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, curlValidatorMock, secretReaderMock)
 
 	fakeKeptn := sdk.NewFakeKeptn(
 		"test-webhook-svc")
@@ -283,7 +289,9 @@ func Test_HandleIncomingFinishedEvent(t *testing.T) {
 		return "success", nil
 	}
 
-	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
+	curlValidatorMock := &fake.ICurlValidatorMock{}
+
+	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, curlValidatorMock, secretReaderMock)
 
 	fakeKeptn := sdk.NewFakeKeptn(
 		"test-webhook-svc")
@@ -316,7 +324,9 @@ func Test_HandleIncomingFinishedEventWithResultingError(t *testing.T) {
 		return "", errors.New("oops")
 	}
 
-	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
+	curlValidatorMock := &fake.ICurlValidatorMock{}
+
+	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, curlValidatorMock, secretReaderMock)
 
 	fakeKeptn := sdk.NewFakeKeptn(
 		"test-webhook-svc")
@@ -349,7 +359,9 @@ func Test_HandleIncomingTriggeredEvent_SendMultipleRequests(t *testing.T) {
 		return "success", nil
 	}
 
-	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
+	curlValidatorMock := &fake.ICurlValidatorMock{}
+
+	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, curlValidatorMock, secretReaderMock)
 
 	fakeKeptn := sdk.NewFakeKeptn(
 		"test-webhook-svc")
@@ -393,7 +405,9 @@ func Test_HandleIncomingTriggeredEvent_SendMultipleRequestsDisableFinished(t *te
 		return "success", nil
 	}
 
-	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
+	curlValidatorMock := &fake.ICurlValidatorMock{}
+
+	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, curlValidatorMock, secretReaderMock)
 
 	fakeKeptn := sdk.NewFakeKeptn(
 		"test-webhook-svc")
@@ -434,7 +448,9 @@ func Test_HandleIncomingTriggeredEvent_SendMultipleRequestsDisableStarted(t *tes
 		return "success", nil
 	}
 
-	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
+	curlValidatorMock := &fake.ICurlValidatorMock{}
+
+	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, curlValidatorMock, secretReaderMock)
 
 	fakeKeptn := sdk.NewFakeKeptn(
 		"test-webhook-svc")
@@ -475,7 +491,9 @@ func Test_HandleIncomingTriggeredEvent_SendMultipleRequestsDisableFinishedOneReq
 		return "success", nil
 	}
 
-	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
+	curlValidatorMock := &fake.ICurlValidatorMock{}
+
+	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, curlValidatorMock, secretReaderMock)
 
 	fakeKeptn := sdk.NewFakeKeptn(
 		"test-webhook-svc")
@@ -519,7 +537,9 @@ func Test_HandleIncomingTriggeredEvent_NoMatchingWebhookFound(t *testing.T) {
 		return "success", nil
 	}
 
-	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
+	curlValidatorMock := &fake.ICurlValidatorMock{}
+
+	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, curlValidatorMock, secretReaderMock)
 
 	fakeKeptn := sdk.NewFakeKeptn(
 		"test-webhook-svc")
@@ -549,8 +569,9 @@ func TestTaskHandler_Execute_WebhookCannotBeRetrieved(t *testing.T) {
 	templateEngineMock := &fake.ITemplateEngineMock{}
 	secretReaderMock := &fake.ISecretReaderMock{}
 	curlExecutorMock := &fake.ICurlExecutorMock{}
+	curlValidatorMock := &fake.ICurlValidatorMock{}
 
-	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
+	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, curlValidatorMock, secretReaderMock)
 
 	fakeKeptn := sdk.NewFakeKeptn(
 		"test-webhook-svc")
@@ -578,8 +599,9 @@ func TestTaskHandler_Execute_NoSubscriptionIDInEvent(t *testing.T) {
 	templateEngineMock := &fake.ITemplateEngineMock{}
 	secretReaderMock := &fake.ISecretReaderMock{}
 	curlExecutorMock := &fake.ICurlExecutorMock{}
+	curlValidatorMock := &fake.ICurlValidatorMock{}
 
-	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
+	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, curlValidatorMock, secretReaderMock)
 
 	fakeKeptn := sdk.NewFakeKeptn(
 		"test-webhook-svc")
@@ -600,8 +622,9 @@ func TestTaskHandler_Execute_InvalidEvent(t *testing.T) {
 	templateEngineMock := &fake.ITemplateEngineMock{}
 	secretReaderMock := &fake.ISecretReaderMock{}
 	curlExecutorMock := &fake.ICurlExecutorMock{}
+	curlValidatorMock := &fake.ICurlValidatorMock{}
 
-	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
+	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, curlValidatorMock, secretReaderMock)
 
 	fakeKeptn := sdk.NewFakeKeptn(
 		"test-webhook-svc")
@@ -625,8 +648,9 @@ func TestTaskHandler_CannotReadSecret(t *testing.T) {
 		return "", errors.New("unable to read secret :(")
 	}
 	curlExecutorMock := &fake.ICurlExecutorMock{}
+	curlValidatorMock := &fake.ICurlValidatorMock{}
 
-	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
+	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, curlValidatorMock, secretReaderMock)
 
 	fakeKeptn := sdk.NewFakeKeptn(
 		"test-webhook-svc")
@@ -661,7 +685,9 @@ func TestTaskHandler_IncompleteDataForTemplate(t *testing.T) {
 	}
 	curlExecutorMock := &fake.ICurlExecutorMock{}
 
-	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
+	curlValidatorMock := &fake.ICurlValidatorMock{}
+
+	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, curlValidatorMock, secretReaderMock)
 
 	fakeKeptn := sdk.NewFakeKeptn(
 		"test-webhook-svc")
@@ -702,7 +728,8 @@ func TestTaskHandler_CurlExecutorFails(t *testing.T) {
 	curlExecutorMock.CurlFunc = func(curlCmd string) (string, error) {
 		return "", errors.New("unable to execute curl call")
 	}
-	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
+	curlValidatorMock := &fake.ICurlValidatorMock{}
+	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, curlValidatorMock, secretReaderMock)
 
 	fakeKeptn := sdk.NewFakeKeptn(
 		"test-webhook-svc")
@@ -743,7 +770,8 @@ func TestTaskHandler_CurlExecutorFailsHideSecret(t *testing.T) {
 	curlExecutorMock.CurlFunc = func(curlCmd string) (string, error) {
 		return "", errors.New("unable to execute curl call containing secret my-secret-value")
 	}
-	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
+	curlValidatorMock := &fake.ICurlValidatorMock{}
+	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, curlValidatorMock, secretReaderMock)
 
 	fakeKeptn := sdk.NewFakeKeptn(
 		"test-webhook-svc")
@@ -795,7 +823,9 @@ func TestTaskHandler_Execute_WebhookConfigInService(t *testing.T) {
 		}, nil
 	}
 
-	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
+	curlValidatorMock := &fake.ICurlValidatorMock{}
+
+	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, curlValidatorMock, secretReaderMock)
 
 	fakeKeptn := sdk.NewFakeKeptn(
 		"test-webhook-svc")
@@ -858,7 +888,9 @@ func TestTaskHandler_Execute_WebhookConfigInStage(t *testing.T) {
 		}, nil
 	}
 
-	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
+	curlValidatorMock := &fake.ICurlValidatorMock{}
+
+	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, curlValidatorMock, secretReaderMock)
 
 	fakeKeptn := sdk.NewFakeKeptn(
 		"test-webhook-svc")
@@ -927,7 +959,9 @@ func TestTaskHandler_Execute_WebhookConfigInProject(t *testing.T) {
 		}, nil
 	}
 
-	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, secretReaderMock)
+	curlValidatorMock := &fake.ICurlValidatorMock{}
+
+	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, curlValidatorMock, secretReaderMock)
 
 	fakeKeptn := sdk.NewFakeKeptn(
 		"test-webhook-svc")
@@ -973,6 +1007,16 @@ func TestTaskHandler_Execute_WebhookConfigInProject(t *testing.T) {
 }
 
 func Test_createRequest(t *testing.T) {
+	templateEngineMock := &fake.ITemplateEngineMock{}
+	secretReaderMock := &fake.ISecretReaderMock{}
+	curlExecutorMock := &fake.ICurlExecutorMock{}
+	curlValidatorMock := &fake.ICurlValidatorMock{}
+	curlValidatorMock.ValidateFunc = func(request lib.Request) error {
+		return nil
+	}
+
+	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, curlValidatorMock, secretReaderMock)
+
 	tests := []struct {
 		name    string
 		data    interface{}
@@ -1036,7 +1080,7 @@ func Test_createRequest(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := handler.CreateRequest(tt.data)
+			got, err := taskHandler.CreateRequest(tt.data)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("CreateRequest() error = %v, wantErr %v", err, tt.wantErr)
 				return
