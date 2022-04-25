@@ -386,15 +386,15 @@ jobs:
               --set control-plane.apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
               --set control-plane.resourceService.enabled=true \
               --set control-plane.resourceService.replicas=1 \
-              --set control-plane.shipyardController.gracePeriod=0
-              --set control-plane.shipyardController.preStopHookTime=0
+              --set control-plane.shipyardController.gracePeriod=0 \
+              --set control-plane.shipyardController.preStopHookTime=0 \
               --set continuous-delivery.enabled=${RUN_CONTINUOUS_DELIVERY_TEST}
           else
             helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} \
               --create-namespace \
               --set control-plane.apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
-              --set control-plane.shipyardController.gracePeriod=0
-              --set control-plane.shipyardController.preStopHookTime=0
+              --set control-plane.shipyardController.gracePeriod=0 \
+              --set control-plane.shipyardController.preStopHookTime=0 \
               --set continuous-delivery.enabled=${RUN_CONTINUOUS_DELIVERY_TEST}
           fi
           echo "::endgroup::"
