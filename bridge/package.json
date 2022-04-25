@@ -5,7 +5,7 @@
     "start": "cd ./server && yarn start",
     "start:dev": "npm-run-all -p start:client:dev start:server:dev",
     "start:prod": "yarn build && yarn start",
-    "start:client:dev": "ng build --watch --prod",
+    "start:client:dev": "ng build --watch",
     "start:server:dev": "cd ./server && yarn dev",
     "start:ci": "ng serve --port=5000 --no-live-reload --configuration=test",
     "ng": "ng",
