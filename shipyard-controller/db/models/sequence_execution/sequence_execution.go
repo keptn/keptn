@@ -8,12 +8,19 @@ import (
 
 type SequenceExecution struct {
 	ID string `json:"_id" bson:"_id"`
+	// SchemaVersion indicates the version of the schema - needed to decide if items in collection need to be migrated
+	SchemaVersion string `json:"schemaVersion" bson:"schemaVersion"`
 	// Sequence contains the complete sequence definition
 	Sequence Sequence                `json:"sequence" bson:"sequence"`
 	Status   SequenceExecutionStatus `json:"status" bson:"status"`
 	Scope    models.EventScope       `json:"scope" bson:"scope"`
 	// InputProperties contains properties of the event which triggered the task sequence
 	InputProperties string `json:"inputProperties" bson:"inputProperties"`
+}
+
+func (e SequenceExecution) ToSequenceExecution() (*models.SequenceExecution, error) {
+	// TODO
+	return nil, nil
 }
 
 type Sequence struct {

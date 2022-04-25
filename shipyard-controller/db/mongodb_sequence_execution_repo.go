@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/keptn/shipyard-controller/db/models/sequence_execution"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
@@ -115,8 +116,11 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) Upsert(item models.SequenceExecutio
 	}
 	opts := options.Update().SetUpsert(true)
 
-	filter := bson.D{{"_id", item.ID}}
-	update := bson.D{{"$set", item}}
+	internalItem := sequence_execution.FromSequenceExecution(item)
+	internalItem.SchemaVersion = "0.2" // TODO
+
+	filter := bson.D{{"_id", internalItem.ID}}
+	update := bson.D{{"$set", internalItem}}
 
 	_, err = collection.UpdateOne(ctx, filter, update, opts)
 	if err != nil {
@@ -147,6 +151,8 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) AppendTaskEvent(taskSequence models
 
 	// by using the $push operator in the FindOneAndUpdate function, we ensure that we follow an append-only approach to this property,
 	// since this is the one property that can potentially be updated by multiple threads handling .finished/.started events for the same task
+
+	// TODO transform event into internal structure
 	update := bson.M{"$push": bson.M{"status.currentTask.events": event}}
 
 	res := collection.FindOneAndUpdate(ctx, filter, update, opts)
@@ -361,8 +367,20 @@ func transformBSONToSequenceExecution(outInterface interface{}) (*models.Sequenc
 
 	data, _ := json.Marshal(outInterface)
 
+	internalSequenceExecution := &sequence_execution.SequenceExecution{}
+	if err := json.Unmarshal(data, internalSequenceExecution); err != nil {
+		return nil, err
+	}
+
+	// TODO
+	// if the current schema version is being used, we need to transform it to model.SequenceExecution
+	if internalSequenceExecution.SchemaVersion == "0.2" {
+		return internalSequenceExecution.ToSequenceExecution()
+	}
+
+	// if the old schema is still being used by that item, we can directly unmarshal it to a model.SequenceExecution
 	sequenceExecution := &models.SequenceExecution{}
-	if err := json.Unmarshal(data, sequenceExecution); err != nil {
+	if err := json.Unmarshal(data, internalSequenceExecution); err != nil {
 		return nil, err
 	}
 
