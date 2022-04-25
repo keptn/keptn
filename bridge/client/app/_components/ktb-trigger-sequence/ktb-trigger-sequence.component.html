@@ -233,7 +233,7 @@
 
         <ktb-time-input
           [label]="'Timeframe'"
-          [hint]="'The time frame to evaluate that must be at least 1 minute but defaults to 5 if not filled in.'"
+          [hint]="'The time frame to evaluate that must be at least 1 minute but defaults to 5 if not specified.'"
           [error]="isValidTimeframe ? '' : 'Timeframe must be minimum 1 minute'"
           [timeframe]="evaluationFormData.timeframe"
           (timeChanged)="setTimeframe($event)"
@@ -277,7 +277,7 @@
           >
             <dt-icon name="calendar"></dt-icon>
           </button>
-          <dt-hint>The start date and time of an evaluation that defaults to now if not filled in.</dt-hint>
+          <dt-hint>The start date and time of an evaluation that defaults to now if not specified.</dt-hint>
         </dt-form-field>
         <dt-form-field class="overlay-origin full-width-error">
           <dt-label class="required">End at</dt-label>
