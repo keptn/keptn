@@ -1,20 +1,9 @@
+.show-more-button {
+  position: absolute;
+}
+
 ::ng-deep {
   $axis-identifier-size: 12px;
-
-  .svg-container {
-    display: inline-block;
-    position: relative;
-    width: 100%;
-    padding-bottom: 100%; /* aspect ratio */
-    vertical-align: top;
-    overflow: hidden;
-  }
-  .svg-content-responsive {
-    display: inline-block;
-    position: absolute;
-    top: 10px;
-    left: 0;
-  }
 
   .x-axis-container, .y-axis-container, .legend-text {
     font-size: $axis-identifier-size;
@@ -37,15 +26,14 @@
     border-radius: 5px;
     padding: 5px;
     pointer-events: none;
-    opacity: 0;
     display: inline-block;
-
-    &.show {
-      opacity: 1;
-    }
   }
 
-  .legend-item {
+  .hidden {
+    opacity: 0;
+  }
+
+  .legend-container {
     cursor: pointer;
   }
 
