@@ -201,7 +201,7 @@ func (th *TaskHandler) performWebhookRequests(webhook lib.Webhook, eventAdapter 
 		request, err := th.CreateRequest(req)
 		if err != nil {
 			logger.Errorf("creating CURL request failed: %s", err.Error())
-			return nil, fmt.Errorf("creating CURL request failed: %s", err.Error())
+			return nil, lib.NewWebhookExecutionError(true, fmt.Errorf("creating CURL request failed: %s", err.Error()), lib.WithNrOfExecutedRequests(executedRequests))
 		}
 		// parse the data from the event, together with the secret env vars
 		parsedCurlCommand, err := th.templateEngine.ParseTemplate(eventAdapter.Get(), request)
