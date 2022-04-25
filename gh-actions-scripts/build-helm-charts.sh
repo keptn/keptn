@@ -54,7 +54,6 @@ mv "common-${VERSION}.tgz" "keptn-charts/common-${VERSION}.tgz"
 # ####################
 INSTALLER_BASE_PATH=installer/manifests
 
-helm repo add nats https://nats-io.github.io/k8s/helm/charts/
 helm dependency build ${INSTALLER_BASE_PATH}/keptn/charts/control-plane
 
 helm package ${INSTALLER_BASE_PATH}/keptn --app-version "$IMAGE_TAG" --version "$VERSION"
