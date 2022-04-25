@@ -145,11 +145,6 @@ var testJsonStringEncodedSequenceExecution = JsonStringEncodedSequenceExecution{
 	InputProperties: `{"foo.bar":"xyz"}`,
 }
 
-//func TestSequenceExecutionTransformation(t *testing.T) {
-//	sequenceExecution := testSequenceExecution
-//
-//}
-
 func TestFromSequenceExecution(t *testing.T) {
 	type args struct {
 		se models.SequenceExecution
