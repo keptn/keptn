@@ -117,7 +117,7 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) Upsert(item models.SequenceExecutio
 	opts := options.Update().SetUpsert(true)
 
 	internalItem := sequence_execution.FromSequenceExecution(item)
-	internalItem.SchemaVersion = "0.2" // TODO
+	internalItem.SchemaVersion = sequence_execution.SchemaVersionV02
 
 	filter := bson.D{{"_id", internalItem.ID}}
 	update := bson.D{{"$set", internalItem}}
@@ -372,9 +372,8 @@ func transformBSONToSequenceExecution(outInterface interface{}) (*models.Sequenc
 		return nil, err
 	}
 
-	// TODO
 	// if the current schema version is being used, we need to transform it to model.JsonStringEncodedSequenceExecution
-	if internalSequenceExecution.SchemaVersion == "0.2" {
+	if internalSequenceExecution.SchemaVersion == sequence_execution.SchemaVersionV02 {
 		transformedSequenceExecution := internalSequenceExecution.ToSequenceExecution()
 		return &transformedSequenceExecution, nil
 	}

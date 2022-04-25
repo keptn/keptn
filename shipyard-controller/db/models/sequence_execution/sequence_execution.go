@@ -6,6 +6,8 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 )
 
+const SchemaVersionV02 = "0.2"
+
 type JsonStringEncodedSequenceExecution struct {
 	ID string `json:"_id" bson:"_id"`
 	// SchemaVersion indicates the version of the schema - needed to decide if items in collection need to be migrated
