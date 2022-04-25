@@ -1,6 +1,6 @@
 <div fxFlexFill fxLayout="column" class="container" *ngIf="projectName as projectName">
   <div fxLayout="column" fxFlex="0 0 60%" class="overflow-y-scroll">
-    <dt-loading-spinner *ngIf="isLoadingUniformRegistrations"></dt-loading-spinner>
+    <ktb-loading-distractor *ngIf="isLoadingUniformRegistrations">Loading ...</ktb-loading-distractor>
 
     <div *ngIf="!isLoadingUniformRegistrations && uniformRegistrations.data && uniformRegistrations.data.length === 0">
       No integrations available.
@@ -114,7 +114,7 @@
             <h3 class="mt-0 mb-0">Error events</h3>
           </ktb-expandable-tile-header>
 
-          <dt-loading-spinner *ngIf="isLoadingLogs"></dt-loading-spinner>
+          <ktb-loading-distractor *ngIf="isLoadingLogs">Loading ...</ktb-loading-distractor>
 
           <div fxLayout="column" *ngIf="!isLoadingLogs">
             <ktb-uniform-registration-logs

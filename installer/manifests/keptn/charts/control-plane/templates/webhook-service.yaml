@@ -18,9 +18,7 @@ spec:
       app.kubernetes.io/name: webhook-service
       app.kubernetes.io/instance: {{ .Release.Name }}
   replicas: 1
-  # recreate the deployment if anything changes (we can not do a rolling upgrade of this deployment as we use a volume)
-  strategy:
-    type: Recreate
+  {{- include "control-plane.common.update-strategy" . | nindent 2 }}
   template:
     metadata:
       labels:
@@ -37,6 +35,8 @@ spec:
       containers:
         - name: webhook-service
           image: {{ .Values.webhookService.image.repository }}:{{ .Values.webhookService.image.tag | default .Chart.AppVersion }}
+          {{- $prestop := .Values.webhookService.preStopHookTime | default 90 | quote -}}
+          {{- include "control-plane.prestop" $prestop | nindent 10 }}
           livenessProbe:
             httpGet:
               path: /health
@@ -69,7 +69,6 @@ spec:
           {{- include "control-plane.common.container-security-context" . | nindent 10 }}
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
-          {{- include "control-plane.dist.prestop" . | nindent 10 }}
           {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
           {{- include "control-plane.dist.readinessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
@@ -85,7 +84,7 @@ spec:
               value: '/v1/event'
           {{- include "control-plane.dist.common.env.vars" . | nindent 12 }}
           {{- include "control-plane.common.container-security-context" . | nindent 10 }}
-      terminationGracePeriodSeconds: {{ .Values.gracePeriod | default 30 }}
+      terminationGracePeriodSeconds: {{ .Values.webhookService.gracePeriod | default 120 }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.webhookService.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
 ---
 apiVersion: v1

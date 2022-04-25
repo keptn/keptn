@@ -20,8 +20,8 @@
         </ng-container>
         <ng-container *ngSwitchCase="'trace'">
           <dt-empty-state-item-title class="mt-2" aria-level="2"
-            >Traces for <span class="italic" [textContent]="contextId"></span> not found</dt-empty-state-item-title
-          >
+            >Traces for <span class="italic" [textContent]="contextId"></span> not found
+          </dt-empty-state-item-title>
           <p>
             Sorry, traces with this shkeptncontext could not be loaded. Check out the
             <a href="https://keptn.sh/docs/quickstart/" target="_blank" rel="noopener noreferrer">Quick Start</a>
@@ -55,8 +55,7 @@
   *ngIf="(isCreateMode$ | async) === false && (error$ | async) === undefined && (hasProject$ | async) === undefined"
 >
   <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
-    <dt-loading-spinner></dt-loading-spinner>
-    <p>Loading ...</p>
+    <ktb-loading-distractor>Loading ...</ktb-loading-distractor>
   </div>
 </div>
 <div class="project-board" fxLayout="row" *ngIf="(hasProject$ | async) || (isCreateMode$ | async)">
