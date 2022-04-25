@@ -448,6 +448,18 @@ func executeSequenceAndVerifyCompletion(t *testing.T, projectName, serviceName, 
 	_, err = keptn.SendTaskStartedEvent(nil, source)
 	require.Nil(t, err)
 
+	// verify that the started event has made its way to shippy
+	require.Eventually(t, func() bool {
+		state, _, err := GetStateByContext(projectName, *context.KeptnContext)
+		if err != nil {
+			return false
+		}
+		if len(state.States) == 0 || len(state.States[0].Stages) == 0 {
+			return false
+		}
+		return state.States[0].Stages[0].LatestEvent.Type == keptnv2.GetStartedEventType("mytask")
+	}, 1*time.Minute, 5*time.Second)
+
 	// send finished event with result=fail
 	_, err = keptn.SendTaskFinishedEvent(&keptnv2.EventData{
 		Status: keptnv2.StatusSucceeded,
