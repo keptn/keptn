@@ -243,8 +243,7 @@ func CreateRequest(request interface{}) (string, error) {
 	default:
 		logger.Debug("creating CURL request from type Request")
 		convertedRequest := lib.ConvertToRequest(request)
-		err := validateBetaRequest(convertedRequest)
-		if err != nil {
+		if err := validateBetaRequest(convertedRequest); err != nil {
 			return "", err
 		}
 		betaRequest := buildBetaCurlRequest(convertedRequest)
@@ -315,22 +314,20 @@ func resolveIPAdresses(curlURL string) []string {
 		return ipAddresses
 	}
 	for _, ip := range ips {
-		if addr := ip.To4(); addr != nil {
-			ipAddresses = append(ipAddresses, addr.String())
-		}
+		ipAddresses = append(ipAddresses, ip.String())
 	}
 	return ipAddresses
 }
 
 func getConfigDenyList() ([]string, error) {
 	denyList := make([]string, 0)
-	kubeAPI, err := keptnkubeutils.GetClientset(false)
+	kubeAPI, err := keptnkubeutils.GetKubeAPI(false)
 	if err != nil {
 		logger.Errorf("Unable to get kubeAPI: %s", err.Error())
 		return denyList, fmt.Errorf("cannot get kubeAPI")
 	}
 
-	configMap, err := kubeAPI.CoreV1().ConfigMaps(lib.GetNamespaceFromEnvVar()).Get(context.TODO(), lib.WebhookConfigMap, v1.GetOptions{})
+	configMap, err := kubeAPI.ConfigMaps(lib.GetNamespaceFromEnvVar()).Get(context.TODO(), lib.WebhookConfigMap, v1.GetOptions{})
 	if err != nil {
 		logger.Errorf("Unable to get ConfigMap %s: %s", lib.WebhookConfigMap, err.Error())
 		return denyList, fmt.Errorf("cannot get ConfigMap %s", lib.WebhookConfigMap)
