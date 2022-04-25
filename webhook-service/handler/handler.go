@@ -236,6 +236,9 @@ func (th *TaskHandler) CreateRequest(request interface{}) (string, error) {
 	// v1alpha1 version
 	case string:
 		logger.Debug("creating CURL request from type string")
+		if err := th.validateAlphaCurlRequest(req); err != nil {
+			return "", err
+		}
 		return req, nil
 	// v1beta1 version
 	default:
@@ -251,6 +254,17 @@ func (th *TaskHandler) CreateRequest(request interface{}) (string, error) {
 	}
 
 	return "", fmt.Errorf("could not create request: invalid request type")
+}
+
+func (th *TaskHandler) validateAlphaCurlRequest(curlCmd string) error {
+	sanitizedCurlCmd := strings.ReplaceAll(curlCmd, "\\", "")
+	denyList := lib.GetDeniedURLs(lib.GetEnv())
+	for _, url := range denyList {
+		if strings.Contains(sanitizedCurlCmd, url) {
+			return fmt.Errorf("curl command contains denied URL '%s'", url)
+		}
+	}
+	return nil
 }
 
 func (th *TaskHandler) validateBetaCurlRequest(request lib.Request) error {

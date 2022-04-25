@@ -34,7 +34,7 @@ spec:
         - secretRef:
           name: mysecret
       requests:
-        - "curl http://localhost:8080 {{.data.project}} {{.env.mysecret}}"`
+        - "curl http://local:8080 {{.data.project}} {{.env.mysecret}}"`
 
 const webHookContentWithStartedEvent = `apiVersion: webhookconfig.keptn.sh/v1alpha1
 kind: WebhookConfig
@@ -49,7 +49,7 @@ spec:
         - secretRef:
           name: mysecret
       requests:
-        - "curl http://localhost:8080 {{.data.project}} {{.env.mysecret}}"`
+        - "curl http://local:8080 {{.data.project}} {{.env.mysecret}}"`
 
 const webHookContentWithFinishedEvent = `apiVersion: webhookconfig.keptn.sh/v1alpha1
 kind: WebhookConfig
@@ -64,7 +64,7 @@ spec:
         - secretRef:
           name: mysecret
       requests:
-        - "curl http://localhost:8080 {{.data.project}} {{.env.mysecret}}"`
+        - "curl http://local:8080 {{.data.project}} {{.env.mysecret}}"`
 
 const webHookContentWithMultipleRequests = `apiVersion: webhookconfig.keptn.sh/v1alpha1
 kind: WebhookConfig
@@ -79,8 +79,8 @@ spec:
         - secretRef:
           name: mysecret
       requests:
-        - "curl http://localhost:8080 {{.data.project}} {{.env.mysecret}}"
-        - "curl http://localhost:8080 {{.data.project}} {{.env.mysecret}}"`
+        - "curl http://local:8080 {{.data.project}} {{.env.mysecret}}"
+        - "curl http://local:8080 {{.data.project}} {{.env.mysecret}}"`
 
 const webHookContentWithMultipleRequestsAndDisabledFinished = `apiVersion: webhookconfig.keptn.sh/v1alpha1
 kind: WebhookConfig
@@ -95,10 +95,10 @@ spec:
         - secretRef:
           name: mysecret
       requests:
-        - "curl http://localhost:8080 {{.data.project}} {{.env.mysecret}}"
-        - "curl http://localhost:8080 {{.data.project}} {{.env.mysecret}}"
-        - "curl http://localhost:8080 {{.data.project}} {{.env.mysecret}}"
-        - "curl http://localhost:8080 {{.data.project}} {{.env.mysecret}}"`
+        - "curl http://local:8080 {{.data.project}} {{.env.mysecret}}"
+        - "curl http://local:8080 {{.data.project}} {{.env.mysecret}}"
+        - "curl http://local:8080 {{.data.project}} {{.env.mysecret}}"
+        - "curl http://local:8080 {{.data.project}} {{.env.mysecret}}"`
 
 const webHookContentWithMultipleRequestsAndDisabledStarted = `apiVersion: webhookconfig.keptn.sh/v1alpha1
 kind: WebhookConfig
@@ -114,10 +114,10 @@ spec:
         - secretRef:
           name: mysecret
       requests:
-        - "curl http://localhost:8080 {{.data.project}} {{.env.mysecret}}"
-        - "curl http://localhost:8080 {{.data.project}} {{.env.mysecret}}"
-        - "curl http://localhost:8080 {{.data.project}} {{.env.mysecret}}"
-        - "curl http://localhost:8080 {{.data.project}} {{.env.mysecret}}"`
+        - "curl http://local:8080 {{.data.project}} {{.env.mysecret}}"
+        - "curl http://local:8080 {{.data.project}} {{.env.mysecret}}"
+        - "curl http://local:8080 {{.data.project}} {{.env.mysecret}}"
+        - "curl http://local:8080 {{.data.project}} {{.env.mysecret}}"`
 
 const webHookContentWithMissingTemplateData = `apiVersion: webhookconfig.keptn.sh/v1alpha1
 kind: WebhookConfig
@@ -132,7 +132,7 @@ spec:
         - secretRef:
           name: mysecret
       requests:
-        - "curl http://localhost:8080 {{.unavailable}} {{.env.mysecret}}"`
+        - "curl http://local:8080 {{.unavailable}} {{.env.mysecret}}"`
 
 const webHookContentWithNoMatchingSubscriptionID = `apiVersion: webhookconfig.keptn.sh/v1alpha1
 kind: WebhookConfig
@@ -146,7 +146,7 @@ spec:
         - secretRef:
           name: mysecret
       requests:
-        - "curl http://localhost:8080 {{.data.project}} {{.env.mysecret}}"`
+        - "curl http://local:8080 {{.data.project}} {{.env.mysecret}}"`
 
 func newWebhookTriggeredEvent(filename string) cloudevents.Event {
 	content, err := ioutil.ReadFile(filename)
@@ -188,7 +188,7 @@ func Test_HandleIncomingTriggeredEvent(t *testing.T) {
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
 
 	require.Len(t, curlExecutorMock.CurlCalls(), 1)
-	assert.Equal(t, "curl http://localhost:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
+	assert.Equal(t, "curl http://local:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
 
 	//verify sent events
 	require.Equal(t, 2, len(fakeKeptn.GetEventSender().SentEvents))
@@ -232,7 +232,7 @@ func Test_HandleIncomingStartedEvent(t *testing.T) {
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.started.json"))
 
 	require.Len(t, curlExecutorMock.CurlCalls(), 1)
-	assert.Equal(t, "curl http://localhost:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
+	assert.Equal(t, "curl http://local:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
 
 	//verify sent events
 	require.Empty(t, fakeKeptn.GetEventSender().SentEvents)
@@ -267,7 +267,7 @@ func Test_HandleIncomingStartedEventWithResultingError(t *testing.T) {
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.started.json"))
 
 	require.Len(t, curlExecutorMock.CurlCalls(), 1)
-	assert.Equal(t, "curl http://localhost:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
+	assert.Equal(t, "curl http://local:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
 
 	//verify sent events
 	require.Empty(t, fakeKeptn.GetEventSender().SentEvents)
@@ -302,7 +302,7 @@ func Test_HandleIncomingFinishedEvent(t *testing.T) {
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.finished.json"))
 
 	require.Len(t, curlExecutorMock.CurlCalls(), 1)
-	assert.Equal(t, "curl http://localhost:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
+	assert.Equal(t, "curl http://local:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
 
 	//verify sent events
 	require.Empty(t, fakeKeptn.GetEventSender().SentEvents)
@@ -337,7 +337,7 @@ func Test_HandleIncomingFinishedEventWithResultingError(t *testing.T) {
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.finished.json"))
 
 	require.Len(t, curlExecutorMock.CurlCalls(), 1)
-	assert.Equal(t, "curl http://localhost:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
+	assert.Equal(t, "curl http://local:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
 
 	//verify sent events
 	require.Empty(t, fakeKeptn.GetEventSender().SentEvents)
@@ -373,8 +373,8 @@ func Test_HandleIncomingTriggeredEvent_SendMultipleRequests(t *testing.T) {
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
 
 	require.Len(t, curlExecutorMock.CurlCalls(), 2)
-	assert.Equal(t, "curl http://localhost:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
-	assert.Equal(t, "curl http://localhost:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[1].CurlCmd)
+	assert.Equal(t, "curl http://local:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
+	assert.Equal(t, "curl http://local:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[1].CurlCmd)
 
 	//verify sent events
 	require.Equal(t, 2, len(fakeKeptn.GetEventSender().SentEvents))
@@ -419,10 +419,10 @@ func Test_HandleIncomingTriggeredEvent_SendMultipleRequestsDisableFinished(t *te
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
 
 	require.Len(t, curlExecutorMock.CurlCalls(), 4)
-	assert.Equal(t, "curl http://localhost:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
-	assert.Equal(t, "curl http://localhost:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[1].CurlCmd)
-	assert.Equal(t, "curl http://localhost:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[2].CurlCmd)
-	assert.Equal(t, "curl http://localhost:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[3].CurlCmd)
+	assert.Equal(t, "curl http://local:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
+	assert.Equal(t, "curl http://local:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[1].CurlCmd)
+	assert.Equal(t, "curl http://local:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[2].CurlCmd)
+	assert.Equal(t, "curl http://local:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[3].CurlCmd)
 
 	//verify sent events
 	require.Equal(t, 4, len(fakeKeptn.GetEventSender().SentEvents))
@@ -462,10 +462,10 @@ func Test_HandleIncomingTriggeredEvent_SendMultipleRequestsDisableStarted(t *tes
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
 
 	require.Len(t, curlExecutorMock.CurlCalls(), 4)
-	assert.Equal(t, "curl http://localhost:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
-	assert.Equal(t, "curl http://localhost:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[1].CurlCmd)
-	assert.Equal(t, "curl http://localhost:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[2].CurlCmd)
-	assert.Equal(t, "curl http://localhost:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[3].CurlCmd)
+	assert.Equal(t, "curl http://local:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
+	assert.Equal(t, "curl http://local:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[1].CurlCmd)
+	assert.Equal(t, "curl http://local:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[2].CurlCmd)
+	assert.Equal(t, "curl http://local:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[3].CurlCmd)
 
 	//verify sent events
 	require.Empty(t, len(fakeKeptn.GetEventSender().SentEvents))
@@ -505,8 +505,8 @@ func Test_HandleIncomingTriggeredEvent_SendMultipleRequestsDisableFinishedOneReq
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
 
 	require.Len(t, curlExecutorMock.CurlCalls(), 2)
-	assert.Equal(t, "curl http://localhost:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
-	assert.Equal(t, "curl http://localhost:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[1].CurlCmd)
+	assert.Equal(t, "curl http://local:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
+	assert.Equal(t, "curl http://local:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[1].CurlCmd)
 
 	//verify sent events
 	require.Equal(t, 7, len(fakeKeptn.GetEventSender().SentEvents))
@@ -742,7 +742,7 @@ func TestTaskHandler_CurlExecutorFails(t *testing.T) {
 
 	require.NotEmpty(t, secretReaderMock.ReadSecretCalls())
 	require.NotEmpty(t, templateEngineMock.ParseTemplateCalls())
-	require.Equal(t, "curl http://localhost:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
+	require.Equal(t, "curl http://local:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
 
 	//verify sent events
 	require.Equal(t, 2, len(fakeKeptn.GetEventSender().SentEvents))
@@ -784,7 +784,7 @@ func TestTaskHandler_CurlExecutorFailsHideSecret(t *testing.T) {
 
 	require.NotEmpty(t, secretReaderMock.ReadSecretCalls())
 	require.NotEmpty(t, templateEngineMock.ParseTemplateCalls())
-	require.Equal(t, "curl http://localhost:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
+	require.Equal(t, "curl http://local:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
 
 	//verify sent events
 	require.Equal(t, 2, len(fakeKeptn.GetEventSender().SentEvents))
@@ -1034,6 +1034,18 @@ func Test_createRequest(t *testing.T) {
 			data:    "curl command",
 			want:    "curl command",
 			wantErr: false,
+		},
+		{
+			name:    "invalid alpha input #1",
+			data:    "curl http:localhost",
+			want:    "",
+			wantErr: true,
+		},
+		{
+			name:    "invalid alpha input #2",
+			data:    "curl kubernetes.svc",
+			want:    "",
+			wantErr: true,
 		},
 		{
 			name: "valid beta input #1",

@@ -139,25 +139,9 @@ func (ce *CmdCurlExecutor) parseArgs(curlCmd string) ([]string, error) {
 		return nil, &CurlError{err: err, reason: InvalidCommandError}
 	}
 
-	// check if the curl command contains any of the disallowed URLs
-	// TODO: this should only validate the URL and NOT the whole curl cmd
-	if err := ce.validateURL(curlCmd); err != nil {
-		return nil, &CurlError{err: err, reason: DeniedURLError}
-	}
-
 	args = ce.appendOptions(args)
 
 	return args, nil
-}
-
-func (ce *CmdCurlExecutor) validateURL(curlCmd string) error {
-	sanitizedCurlCmd := strings.ReplaceAll(curlCmd, "\\", "")
-	for _, url := range ce.deniedURLs {
-		if strings.Contains(sanitizedCurlCmd, url) {
-			return fmt.Errorf("curl command contains invalid URL %s", url)
-		}
-	}
-	return nil
 }
 
 func (ce *CmdCurlExecutor) validateCurlOptions(args []string) error {
