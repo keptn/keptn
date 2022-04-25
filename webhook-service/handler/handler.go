@@ -241,9 +241,7 @@ func (th *TaskHandler) CreateRequest(request interface{}) (string, error) {
 	default:
 		logger.Debug("creating CURL request from type Request")
 		convertedRequest := lib.ConvertToRequest(request)
-		denyList := th.curlValidator.GetConfigDenyList()
-		ipAddresses := th.curlValidator.ResolveIPAdresses(convertedRequest.URL)
-		if err := th.curlValidator.Validate(convertedRequest, denyList, ipAddresses); err != nil {
+		if err := th.validateBetaCurlRequest(convertedRequest); err != nil {
 			return "", err
 		}
 		betaRequest := buildBetaCurlRequest(convertedRequest)
@@ -253,6 +251,12 @@ func (th *TaskHandler) CreateRequest(request interface{}) (string, error) {
 	}
 
 	return "", fmt.Errorf("could not create request: invalid request type")
+}
+
+func (th *TaskHandler) validateBetaCurlRequest(request lib.Request) error {
+	denyList := th.curlValidator.GetConfigDenyList()
+	ipAddresses := th.curlValidator.ResolveIPAdresses(request.URL)
+	return th.curlValidator.Validate(request, denyList, ipAddresses)
 }
 
 func buildBetaCurlRequest(req lib.Request) string {

@@ -66,20 +66,20 @@ func TestCurlValidator_Validate(t *testing.T) {
 				Method:  "POST",
 				Options: "--some-options",
 				Payload: "some payload",
-				URL:     "http://google.com",
+				URL:     "http://some-denied-url",
 			},
 			curlValidatorMock: &fake.ICurlValidatorMock{
 				ValidateFunc: func(request lib.Request, denyList []string, ipAddresses []string) error {
 					return curlValidator.Validate(request, denyList, ipAddresses)
 				},
 				GetConfigDenyListFunc: func() []string {
-					return []string{"google"}
+					return []string{"some-denied"}
 				},
 				ResolveIPAdressesFunc: func(curlURL string) []string {
 					return []string{"1.1.1.1"}
 				},
 			},
-			want:    fmt.Errorf("curl command contains denied URL 'google'"),
+			want:    fmt.Errorf("curl command contains denied URL 'some-denied'"),
 			wantErr: true,
 		},
 		{
@@ -94,7 +94,7 @@ func TestCurlValidator_Validate(t *testing.T) {
 				Method:  "POST",
 				Options: "--some-options",
 				Payload: "some payload",
-				URL:     "http://google.com",
+				URL:     "http://som-url",
 			},
 			curlValidatorMock: &fake.ICurlValidatorMock{
 				ValidateFunc: func(request lib.Request, denyList []string, ipAddresses []string) error {
