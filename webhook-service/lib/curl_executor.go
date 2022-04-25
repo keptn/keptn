@@ -262,36 +262,6 @@ func parseCommandLine(command string) ([]string, error) {
 	return deleteEmpty(args), nil
 }
 
-func DeniedURLs(env map[string]string) []string {
-	kubeAPIHostIP := env[KubernetesSvcHostEnvVar]
-	kubeAPIPort := env[KubernetesAPIPortEnvVar]
-
-	urls := []string{
-		// Block access to Kubernetes API
-		"kubernetes",
-		"kubernetes.default",
-		"kubernetes.default.svc",
-		"kubernetes.default.svc.cluster.local",
-		// Block access to localhost
-		"localhost",
-		"127.0.0.1",
-		"::1",
-	}
-	if kubeAPIHostIP != "" {
-		urls = append(urls, kubeAPIHostIP)
-	}
-	if kubeAPIPort != "" {
-		urls = append(urls, "kubernetes"+":"+kubeAPIPort)
-		urls = append(urls, "kubernetes.default"+":"+kubeAPIPort)
-		urls = append(urls, "kubernetes.default.svc"+":"+kubeAPIPort)
-		urls = append(urls, "kubernetes.default.svc.cluster.local"+":"+kubeAPIPort)
-	}
-	if kubeAPIHostIP != "" && kubeAPIPort != "" {
-		urls = append(urls, kubeAPIHostIP+":"+kubeAPIPort)
-	}
-	return urls
-}
-
 func deleteEmpty(s []string) []string {
 	var r []string
 	for _, str := range s {

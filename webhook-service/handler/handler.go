@@ -284,7 +284,7 @@ func validateBetaRequest(req lib.Request) error {
 	denyList, err := getConfigDenyList()
 	if err != nil {
 		logger.Errorf("Unable to read ConfigMap %s: %s", lib.WebhookConfigMap, err.Error())
-		denyList = lib.DeniedURLs(lib.GetEnv())
+		denyList = lib.GetDeniedURLs(lib.GetEnv())
 	}
 
 	for _, url := range denyList {

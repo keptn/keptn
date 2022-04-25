@@ -20,3 +20,33 @@ func GetEnv() map[string]string {
 	}
 	return envMap
 }
+
+func GetDeniedURLs(env map[string]string) []string {
+	kubeAPIHostIP := env[KubernetesSvcHostEnvVar]
+	kubeAPIPort := env[KubernetesAPIPortEnvVar]
+
+	urls := []string{
+		// Block access to Kubernetes API
+		"kubernetes",
+		"kubernetes.default",
+		"kubernetes.default.svc",
+		"kubernetes.default.svc.cluster.local",
+		// Block access to localhost
+		"localhost",
+		"127.0.0.1",
+		"::1",
+	}
+	if kubeAPIHostIP != "" {
+		urls = append(urls, kubeAPIHostIP)
+	}
+	if kubeAPIPort != "" {
+		urls = append(urls, "kubernetes"+":"+kubeAPIPort)
+		urls = append(urls, "kubernetes.default"+":"+kubeAPIPort)
+		urls = append(urls, "kubernetes.default.svc"+":"+kubeAPIPort)
+		urls = append(urls, "kubernetes.default.svc.cluster.local"+":"+kubeAPIPort)
+	}
+	if kubeAPIHostIP != "" && kubeAPIPort != "" {
+		urls = append(urls, kubeAPIHostIP+":"+kubeAPIPort)
+	}
+	return urls
+}

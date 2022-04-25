@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"testing"
+
 	"github.com/keptn/keptn/webhook-service/lib"
 	"github.com/keptn/keptn/webhook-service/lib/fake"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestNewCmdCurlExecutor_InvalidCommand(t *testing.T) {
@@ -250,7 +251,7 @@ func TestCmdCurlExecutor_Curl(t *testing.T) {
 				fakeCommandExecutor = tt.fields.commandExecutor
 			}
 
-			ce := lib.NewCmdCurlExecutor(fakeCommandExecutor, lib.WithDeniedURLs(lib.DeniedURLs(map[string]string{"KUBERNETES_SERVICE_HOST": "kube.svc.host", "KUBERNETES_SERVICE_PORT": "9876"})))
+			ce := lib.NewCmdCurlExecutor(fakeCommandExecutor, lib.WithDeniedURLs(lib.GetDeniedURLs(map[string]string{"KUBERNETES_SERVICE_HOST": "kube.svc.host", "KUBERNETES_SERVICE_PORT": "9876"})))
 
 			got, err := ce.Curl(tt.args.curlCmd)
 
@@ -270,8 +271,8 @@ func TestCmdCurlExecutor_Curl(t *testing.T) {
 func TestDeniedURLS(t *testing.T) {
 	fakeCommandExecutor := &fake.ICommandExecutorMock{ExecuteCommandFunc: func(cmd string, args ...string) (string, error) { return "success", nil }}
 	kubeEnvs := map[string]string{"KUBERNETES_SERVICE_HOST": "1.2.3.4", "KUBERNETES_SERVICE_PORT": "9876"}
-	ce := lib.NewCmdCurlExecutor(fakeCommandExecutor, lib.WithDeniedURLs(lib.DeniedURLs(map[string]string{"KUBERNETES_SERVICE_HOST": "1.2.3.4", "KUBERNETES_SERVICE_PORT": "9876"})))
-	urls := lib.DeniedURLs(kubeEnvs)
+	ce := lib.NewCmdCurlExecutor(fakeCommandExecutor, lib.WithDeniedURLs(lib.GetDeniedURLs(map[string]string{"KUBERNETES_SERVICE_HOST": "1.2.3.4", "KUBERNETES_SERVICE_PORT": "9876"})))
+	urls := lib.GetDeniedURLs(kubeEnvs)
 	for _, u := range urls {
 		urls = append(urls, "http://"+u)
 		urls = append(urls, "https://"+u)
