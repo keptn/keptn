@@ -1,5 +1,5 @@
 import { OverlayModule } from '@angular/cdk/overlay';
-import { APP_BASE_HREF, registerLocaleData } from '@angular/common';
+import { APP_BASE_HREF, CommonModule, registerLocaleData } from '@angular/common';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import localeEn from '@angular/common/locales/en';
 import { APP_INITIALIZER, NgModule } from '@angular/core';
@@ -329,6 +329,7 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     DtTreeTableModule,
     OverlayModule,
     DtDatepickerModule,
+    CommonModule,
   ],
   entryComponents: [KtbDeletionDialogComponent, KtbConfirmationDialogComponent],
   providers: [

@@ -96,10 +96,17 @@ describe('Trigger a sequence', () => {
       .typeDeliveryTag('v0.1.2')
       .assertTriggerSequenceEnabled(true)
       .clickTriggerSequence();
-    cy.url().should('include', '/project/sockshop/sequence/6c98fbb0-4c40-4bff-ba9f-b20556a57c8a/stage/dev');
+    cy.wait('@triggeredSequence')
+      .wait('@betweenTriggeredSequence')
+      .wait('@triggeredSequenceEvents')
+      .wait('@SequencesMetadata');
+    cy.location('pathname').should('eq', '/project/sockshop/sequence/6c98fbb0-4c40-4bff-ba9f-b20556a57c8a/stage/dev');
   });
 
   it('should trigger an evaluation sequence with a timeframe', () => {
+    const currentDate = new Date();
+    const currentMonthFormatted = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+
     triggerSequencePage
       .clickOpen()
       .assertNextPageEnabled(false)
@@ -113,6 +120,7 @@ describe('Trigger a sequence', () => {
       .typeEvaluationLabels('key1=val1')
       .assertTriggerSequenceEnabled(true)
       .setStartDate(0, '1', '15', '0')
+      .assertStartDateDisplayValue(`${currentDate.getFullYear()}-${currentMonthFormatted}-01 01:15:00`)
       .assertTriggerSequenceEnabled(true)
 
       .typeTimeframe('hours', '0')
@@ -140,7 +148,11 @@ describe('Trigger a sequence', () => {
       .assertTriggerSequenceEnabled(true)
       .assertEvaluationTimeframeErrorExists(false)
       .clickTriggerSequence();
-    cy.url().should('include', '/project/sockshop/sequence/6c98fbb0-4c40-4bff-ba9f-b20556a57c8a/stage/dev');
+    cy.wait('@triggeredSequence')
+      .wait('@betweenTriggeredSequence')
+      .wait('@triggeredSequenceEvents')
+      .wait('@SequencesMetadata');
+    cy.location('pathname').should('eq', '/project/sockshop/sequence/6c98fbb0-4c40-4bff-ba9f-b20556a57c8a/stage/dev');
   });
 
   it('should trigger a custom sequence', () => {
@@ -156,11 +168,14 @@ describe('Trigger a sequence', () => {
       .typeCustomLabels('key1=val1')
       .assertTriggerSequenceEnabled(true)
       .clickTriggerSequence();
+    cy.wait('@triggeredSequence')
+      .wait('@betweenTriggeredSequence')
+      .wait('@triggeredSequenceEvents')
+      .wait('@SequencesMetadata');
     cy.location('pathname').should('eq', '/project/sockshop/sequence/6c98fbb0-4c40-4bff-ba9f-b20556a57c8a/stage/dev');
   });
 
   it('should open the trigger form from the sequence screen', () => {
-    cy.intercept('/api/mongodb-datastore/event?keptnContext=6c98fbb0-4c40-4bff-ba9f-b20556a57c8a&project=sockshop');
     cy.visit('/project/sockshop/sequence');
     triggerSequencePage.assertOpenTriggerSequenceExists(true).clickOpen();
     cy.location('pathname').should('eq', '/project/sockshop');
@@ -231,14 +246,23 @@ describe('Trigger an evaluation sequence', () => {
   });
 
   it('should trigger an evaluation sequence with a start end date', () => {
+    const currentDate = new Date();
+    const currentMonthFormatted = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+
     triggerSequencePage
       .selectEvaluationEndDate()
       .setStartDate(0, '1', '15', '0')
-      .setEndDate(1, '1', '15', '0')
+      .assertStartDateDisplayValue(`${currentDate.getFullYear()}-${currentMonthFormatted}-01 01:15:00`)
+      .setEndDate(0, '3', '15', '0')
+      .assertEndDateDisplayValue(`${currentDate.getFullYear()}-${currentMonthFormatted}-01 03:15:00`)
       .assertEvaluationDateErrorExists(false)
       .assertTriggerSequenceEnabled(true)
       .clickTriggerSequence();
-    cy.url().should('include', '/project/sockshop/sequence/6c98fbb0-4c40-4bff-ba9f-b20556a57c8a/stage/dev');
+    cy.wait('@triggeredSequence')
+      .wait('@betweenTriggeredSequence')
+      .wait('@triggeredSequenceEvents')
+      .wait('@SequencesMetadata');
+    cy.location('pathname').should('eq', '/project/sockshop/sequence/6c98fbb0-4c40-4bff-ba9f-b20556a57c8a/stage/dev');
   });
 
   it('should have disabled trigger button if end date is selected and start date is not provided', () => {
@@ -260,15 +284,21 @@ describe('Trigger an evaluation sequence', () => {
   });
 
   it('should not show date error if invalid end date is changed to valid end date', () => {
+    const currentDate = new Date();
+    const currentMonthFormatted = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+
     triggerSequencePage
       .selectEvaluationEndDate()
-      .setStartDate(1, '1', '15', '0')
+      .setStartDate(0, '2', '15', '0')
+      .assertStartDateDisplayValue(`${currentDate.getFullYear()}-${currentMonthFormatted}-01 02:15:00`)
       .assertTriggerSequenceEnabled(false)
       .setEndDate(0, '1', '15', '0')
+      .assertEndDateDisplayValue(`${currentDate.getFullYear()}-${currentMonthFormatted}-01 01:15:00`)
       .assertEvaluationDateErrorExists(true)
       .assertTriggerSequenceEnabled(false)
 
-      .setEndDate(2, '1', '15', '0')
+      .setEndDate(0, '3', '15', '0')
+      .assertEndDateDisplayValue(`${currentDate.getFullYear()}-${currentMonthFormatted}-01 03:15:00`)
       .assertEvaluationDateErrorExists(false)
       .assertTriggerSequenceEnabled(true);
   });
@@ -276,9 +306,9 @@ describe('Trigger an evaluation sequence', () => {
   it('should not show date error if invalid start date is changed to valid start date', () => {
     triggerSequencePage
       .selectEvaluationEndDate()
-      .setStartDate(2, '1', '15', '0')
+      .setStartDate(0, '3', '15', '0')
       .assertTriggerSequenceEnabled(false)
-      .setEndDate(1, '1', '15', '0')
+      .setEndDate(0, '2', '15', '0')
       .assertEvaluationDateErrorExists(true)
       .assertTriggerSequenceEnabled(false)
 
