@@ -50,6 +50,7 @@ func (s *SequenceExecutionMigrator) updateSequenceExecutionsOfProject(projects [
 			continue
 		}
 		for _, sequenceExecution := range sequenceExecutions {
+			// check if sequence execution has already been migrated
 			if err := s.sequenceExecutionRepo.Upsert(sequenceExecution, nil); err != nil {
 				logger.Errorf("Could not update sequence execution with ID %s for project %s: %v", sequenceExecution.ID, project.ProjectName, err)
 				continue

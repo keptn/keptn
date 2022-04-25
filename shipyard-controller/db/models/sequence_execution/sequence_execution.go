@@ -9,11 +9,22 @@ import (
 type SequenceExecution struct {
 	ID string `json:"_id" bson:"_id"`
 	// Sequence contains the complete sequence definition
-	Sequence keptnv2.Sequence        `json:"sequence" bson:"sequence"`
+	Sequence Sequence                `json:"sequence" bson:"sequence"`
 	Status   SequenceExecutionStatus `json:"status" bson:"status"`
 	Scope    models.EventScope       `json:"scope" bson:"scope"`
 	// InputProperties contains properties of the event which triggered the task sequence
 	InputProperties string `json:"inputProperties" bson:"inputProperties"`
+}
+
+type Sequence struct {
+	Name  string `json:"name" bson:"name"`
+	Tasks []Task `json:"tasks" bson:"tasks"`
+}
+
+type Task struct {
+	Name           string `json:"name" bson:"name"`
+	TriggeredAfter string `json:"triggeredAfter,omitempty" bson:"triggeredAfter,omitempty"`
+	Properties     string `json:"properties" bson:"properties"`
 }
 
 type SequenceExecutionStatus struct {
@@ -52,10 +63,13 @@ type TaskEvent struct {
 
 func FromSequenceExecution(se models.SequenceExecution) SequenceExecution {
 	newSE := SequenceExecution{
-		ID:       se.ID,
-		Sequence: se.Sequence,
-		Status:   transformStatus(se.Status),
-		Scope:    se.Scope,
+		ID: se.ID,
+		Sequence: Sequence{
+			Name:  se.Sequence.Name,
+			Tasks: transformTasks(se.Sequence.Tasks),
+		},
+		Status: transformStatus(se.Status),
+		Scope:  se.Scope,
 	}
 	if se.InputProperties != nil {
 		inputPropertiesJsonString, err := json.Marshal(se.InputProperties)
@@ -64,6 +78,25 @@ func FromSequenceExecution(se models.SequenceExecution) SequenceExecution {
 		}
 	}
 	return newSE
+}
+
+func transformTasks(tasks []keptnv2.Task) []Task {
+	result := []Task{}
+
+	for _, task := range tasks {
+		newTask := Task{
+			Name:           task.Name,
+			TriggeredAfter: task.TriggeredAfter,
+		}
+		if task.Properties != nil {
+			taskPropertiesString, err := json.Marshal(task.Properties)
+			if err == nil {
+				newTask.Properties = string(taskPropertiesString)
+			}
+		}
+		result = append(result, newTask)
+	}
+	return result
 }
 
 func transformStatus(status models.SequenceExecutionStatus) SequenceExecutionStatus {

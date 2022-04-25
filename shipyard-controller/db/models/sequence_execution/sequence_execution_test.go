@@ -26,6 +26,9 @@ func TestFromSequenceExecution(t *testing.T) {
 						Tasks: []keptnv2.Task{
 							{
 								Name: "deployment",
+								Properties: map[string]string{
+									"deployment.strategy": "direct",
+								},
 							},
 							{
 								Name: "evaluation",
@@ -93,11 +96,12 @@ func TestFromSequenceExecution(t *testing.T) {
 			},
 			want: SequenceExecution{
 				ID: "id",
-				Sequence: keptnv2.Sequence{
+				Sequence: Sequence{
 					Name: "delivery",
-					Tasks: []keptnv2.Task{
+					Tasks: []Task{
 						{
-							Name: "deployment",
+							Name:       "deployment",
+							Properties: `{"deployment.strategy":"direct"}`,
 						},
 						{
 							Name: "evaluation",
