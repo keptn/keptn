@@ -166,6 +166,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     this.resizeDataPoints();
     this.resizeHighlights();
     this.resizeShowMoreButton();
+    this.resizeLegend();
   }
 
   private resizeSvg(width: number, height: number): void {
@@ -208,6 +209,13 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
       htmlElement.style.left = `${this.showMoreButtonLeftOffset}px`;
       htmlElement.style.width = `${this.dataPointContentWidth}px`;
     }
+  }
+
+  private resizeLegend(): void {
+    const legend = d3.select('#legend-container') as HeatmapSelection;
+    const fullLength = legend.node()?.getBoundingClientRect().width ?? 0;
+    const centerXPosition = (this.dataPointContentWidth - fullLength) / 2;
+    legend.attr('transform', `translate(${centerXPosition}, ${0})`);
   }
 
   private generateTestData(sliCounter: number, counter: number): DataPoint[] {
@@ -513,13 +521,13 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
 
   private createLegend(heatmap: HeatmapSelection, showMoreVisible: boolean): void {
     const legendPadding = 30;
-    const legend = heatmap.append('g');
+    const legend = heatmap.append('g').attr('id', 'legend-container');
     const yCoordinate = this.height + this.xAxisLabelWidth + 10 + (showMoreVisible ? this.showMoreButtonHeight : 0);
     let xCoordinate = 0;
     for (const category of this.legendItems) {
       const legendContainer = legend
         .append('g')
-        .classed('legend-container', true)
+        .classed('legend-item', true)
         .on('click', () => {
           this.disableLegend(heatmap, legendContainer, category);
         });
@@ -540,9 +548,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
       const textWidth = text.node()?.getComputedTextLength() ?? 0;
       xCoordinate += textWidth + legendPadding;
     }
-    const fullLength = legend.node()?.getBoundingClientRect().width ?? 0;
-    const centerXPosition = (this.dataPointContentWidth - fullLength) / 2;
-    legend.attr('transform', `translate(${centerXPosition}, ${0})`);
+    this.resizeLegend();
   }
 
   private disableLegend(heatmap: HeatmapSelection, legendItem: HeatmapSelection, category: EvaluationResultType): void {
