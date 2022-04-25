@@ -375,7 +375,8 @@ func transformBSONToSequenceExecution(outInterface interface{}) (*models.Sequenc
 	// TODO
 	// if the current schema version is being used, we need to transform it to model.JsonStringEncodedSequenceExecution
 	if internalSequenceExecution.SchemaVersion == "0.2" {
-		return internalSequenceExecution.ToSequenceExecution()
+		transformedSequenceExecution := internalSequenceExecution.ToSequenceExecution()
+		return &transformedSequenceExecution, nil
 	}
 
 	// if the old schema is still being used by that item, we can directly unmarshal it to a model.JsonStringEncodedSequenceExecution

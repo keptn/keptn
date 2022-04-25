@@ -127,8 +127,8 @@ type TaskEvent struct {
 	Properties string             `json:"properties" bson:"properties"`
 }
 
-func (e JsonStringEncodedSequenceExecution) ToSequenceExecution() (*models.SequenceExecution, error) {
-	result := &models.SequenceExecution{
+func (e JsonStringEncodedSequenceExecution) ToSequenceExecution() models.SequenceExecution {
+	result := models.SequenceExecution{
 		ID: e.ID,
 		Sequence: keptnv2.Sequence{
 			Name:  e.Sequence.Name,
@@ -151,7 +151,7 @@ func (e JsonStringEncodedSequenceExecution) ToSequenceExecution() (*models.Seque
 	if err == nil {
 		result.InputProperties = inputProperties
 	}
-	return nil, nil
+	return result
 }
 
 func FromSequenceExecution(se models.SequenceExecution) JsonStringEncodedSequenceExecution {
