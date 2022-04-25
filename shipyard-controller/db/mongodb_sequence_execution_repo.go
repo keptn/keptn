@@ -367,18 +367,18 @@ func transformBSONToSequenceExecution(outInterface interface{}) (*models.Sequenc
 
 	data, _ := json.Marshal(outInterface)
 
-	internalSequenceExecution := &sequence_execution.SequenceExecution{}
+	internalSequenceExecution := &sequence_execution.JsonStringEncodedSequenceExecution{}
 	if err := json.Unmarshal(data, internalSequenceExecution); err != nil {
 		return nil, err
 	}
 
 	// TODO
-	// if the current schema version is being used, we need to transform it to model.SequenceExecution
+	// if the current schema version is being used, we need to transform it to model.JsonStringEncodedSequenceExecution
 	if internalSequenceExecution.SchemaVersion == "0.2" {
 		return internalSequenceExecution.ToSequenceExecution()
 	}
 
-	// if the old schema is still being used by that item, we can directly unmarshal it to a model.SequenceExecution
+	// if the old schema is still being used by that item, we can directly unmarshal it to a model.JsonStringEncodedSequenceExecution
 	sequenceExecution := &models.SequenceExecution{}
 	if err := json.Unmarshal(data, internalSequenceExecution); err != nil {
 		return nil, err

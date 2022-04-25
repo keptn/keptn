@@ -6,7 +6,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 )
 
-type SequenceExecution struct {
+type JsonStringEncodedSequenceExecution struct {
 	ID string `json:"_id" bson:"_id"`
 	// SchemaVersion indicates the version of the schema - needed to decide if items in collection need to be migrated
 	SchemaVersion string `json:"schemaVersion" bson:"schemaVersion"`
@@ -18,14 +18,28 @@ type SequenceExecution struct {
 	InputProperties string `json:"inputProperties" bson:"inputProperties"`
 }
 
-func (e SequenceExecution) ToSequenceExecution() (*models.SequenceExecution, error) {
-	// TODO
-	return nil, nil
-}
-
 type Sequence struct {
 	Name  string `json:"name" bson:"name"`
 	Tasks []Task `json:"tasks" bson:"tasks"`
+}
+
+func (s Sequence) DecodeTasks() []keptnv2.Task {
+	tasks := []keptnv2.Task{}
+
+	for _, task := range s.Tasks {
+		newTask := keptnv2.Task{
+			Name:           task.Name,
+			TriggeredAfter: task.TriggeredAfter,
+		}
+		if task.Properties != "" {
+			properties := map[string]interface{}{}
+			if err := json.Unmarshal([]byte(task.Properties), &properties); err == nil {
+				newTask.Properties = properties
+			}
+		}
+		tasks = append(tasks, newTask)
+	}
+	return tasks
 }
 
 type Task struct {
@@ -44,6 +58,29 @@ type SequenceExecutionStatus struct {
 	CurrentTask TaskExecutionState `json:"currentTask" bson:"currentTask"`
 }
 
+func (s SequenceExecutionStatus) DecodePreviousTasks() []models.TaskExecutionResult {
+	result := []models.TaskExecutionResult{}
+
+	for _, previousTask := range s.PreviousTasks {
+		newPreviousTask := models.TaskExecutionResult{
+			Name:        previousTask.Name,
+			TriggeredID: previousTask.TriggeredID,
+			Result:      previousTask.Result,
+			Status:      previousTask.Status,
+		}
+
+		if previousTask.Properties != "" {
+			properties := map[string]interface{}{}
+			if err := json.Unmarshal([]byte(previousTask.Properties), &properties); err == nil {
+				newPreviousTask.Properties = properties
+			}
+		}
+
+		result = append(result, newPreviousTask)
+	}
+	return result
+}
+
 type TaskExecutionResult struct {
 	Name        string             `json:"name" bson:"name"`
 	TriggeredID string             `json:"triggeredID" bson:"triggeredID"`
@@ -59,6 +96,28 @@ type TaskExecutionState struct {
 	Events      []TaskEvent `json:"events" bson:"events"`
 }
 
+func (s TaskExecutionState) DecodeEvents() []models.TaskEvent {
+	result := []models.TaskEvent{}
+
+	for _, event := range s.Events {
+		newEvent := models.TaskEvent{
+			EventType: event.EventType,
+			Source:    event.Source,
+			Result:    event.Result,
+			Status:    event.Status,
+			Time:      event.Time,
+		}
+		if event.Properties != "" {
+			properties := map[string]interface{}{}
+			if err := json.Unmarshal([]byte(event.Properties), &properties); err == nil {
+				newEvent.Properties = properties
+			}
+		}
+		result = append(result, newEvent)
+	}
+	return result
+}
+
 type TaskEvent struct {
 	EventType  string             `json:"eventType" bson:"eventType"`
 	Source     string             `json:"source" bson:"source"`
@@ -68,8 +127,35 @@ type TaskEvent struct {
 	Properties string             `json:"properties" bson:"properties"`
 }
 
-func FromSequenceExecution(se models.SequenceExecution) SequenceExecution {
-	newSE := SequenceExecution{
+func (e JsonStringEncodedSequenceExecution) ToSequenceExecution() (*models.SequenceExecution, error) {
+	result := &models.SequenceExecution{
+		ID: e.ID,
+		Sequence: keptnv2.Sequence{
+			Name:  e.Sequence.Name,
+			Tasks: e.Sequence.DecodeTasks(),
+		},
+		Status: models.SequenceExecutionStatus{
+			State:            e.Status.State,
+			StateBeforePause: e.Status.StateBeforePause,
+			PreviousTasks:    e.Status.DecodePreviousTasks(),
+			CurrentTask: models.TaskExecutionState{
+				Name:        e.Status.CurrentTask.Name,
+				TriggeredID: e.Status.CurrentTask.TriggeredID,
+				Events:      e.Status.CurrentTask.DecodeEvents(),
+			},
+		},
+		Scope: e.Scope,
+	}
+	inputProperties := map[string]interface{}{}
+	err := json.Unmarshal([]byte(e.InputProperties), &inputProperties)
+	if err == nil {
+		result.InputProperties = inputProperties
+	}
+	return nil, nil
+}
+
+func FromSequenceExecution(se models.SequenceExecution) JsonStringEncodedSequenceExecution {
+	newSE := JsonStringEncodedSequenceExecution{
 		ID: se.ID,
 		Sequence: Sequence{
 			Name:  se.Sequence.Name,

@@ -14,7 +14,7 @@ func TestFromSequenceExecution(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want SequenceExecution
+		want JsonStringEncodedSequenceExecution
 	}{
 		{
 			name: "transform sequence execution",
@@ -94,7 +94,7 @@ func TestFromSequenceExecution(t *testing.T) {
 					},
 				},
 			},
-			want: SequenceExecution{
+			want: JsonStringEncodedSequenceExecution{
 				ID: "id",
 				Sequence: Sequence{
 					Name: "delivery",
