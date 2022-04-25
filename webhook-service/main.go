@@ -34,7 +34,7 @@ func main() {
 		&lib.OSCmdExecutor{},
 		lib.WithDeniedURLs(lib.GetDeniedURLs(lib.GetEnv())),
 	)
-	curlValidator := lib.NewCurlValidator(lib.GetDeniedURLs(lib.GetEnv()))
+	curlValidator := lib.NewCurlValidator(&lib.CurlValidator{}, lib.GetDeniedURLs(lib.GetEnv()))
 	taskHandler := handler.NewTaskHandler(&lib.TemplateEngine{}, curlExecutor, curlValidator, secretReader)
 
 	log.Fatal(sdk.NewKeptn(

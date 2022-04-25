@@ -13,41 +13,38 @@ import (
 )
 
 type ICurlValidator interface {
-	Validate(request Request) error
+	Validate(request Request, denyList []string, ipAddresses []string) error
 	ResolveIPAdresses(curlURL string) []string
-	GetConfigDenyList() ([]string, error)
+	GetConfigDenyList() []string
 }
 
 type CurlValidator struct {
-	deniedURLs []string
+	deniedURLs    []string
+	curlValidator ICurlValidator
 }
 
-func NewCurlValidator(deniedURLs []string) *CurlValidator {
+func NewCurlValidator(curlValidator ICurlValidator, deniedURLs []string) *CurlValidator {
 	validator := &CurlValidator{
-		deniedURLs: deniedURLs,
+		deniedURLs:    deniedURLs,
+		curlValidator: curlValidator,
 	}
-
 	return validator
 }
 
-func (c *CurlValidator) Validate(request Request) error {
+func (c *CurlValidator) Validate(request Request, denyList []string, ipAddresses []string) error {
 	if request.URL == "" {
-		return fmt.Errorf("Invalid curl URL: %s", request.URL)
-	}
-	denyList, err := c.GetConfigDenyList()
-	if err != nil {
-		logger.Errorf("Unable to read ConfigMap %s: %s", WebhookConfigMap, err.Error())
-		denyList = c.deniedURLs
+		return fmt.Errorf("Invalid curl URL: '%s'", request.URL)
 	}
 
 	for _, url := range denyList {
+		//logger.Infof("url v denylist: %s", url)
 		if strings.Contains(request.URL, url) {
-			return fmt.Errorf("curl command contains denied URL %s", url)
+			return fmt.Errorf("curl command contains denied URL '%s'", url)
 		}
-		ipAddresses := c.ResolveIPAdresses(request.URL)
 		for _, ip := range ipAddresses {
-			if strings.Contains(request.URL, ip) {
-				return fmt.Errorf("curl command contains denied IP address %s", url)
+			//logger.Infof("ip address: %s", ip)
+			if strings.Contains(ip, url) {
+				return fmt.Errorf("curl command contains denied IP address '%s'", url)
 			}
 		}
 	}
@@ -72,21 +69,21 @@ func (c *CurlValidator) ResolveIPAdresses(curlURL string) []string {
 	return ipAddresses
 }
 
-func (c *CurlValidator) GetConfigDenyList() ([]string, error) {
+func (c *CurlValidator) GetConfigDenyList() []string {
 	denyList := make([]string, 0)
 	kubeAPI, err := keptnkubeutils.GetKubeAPI(false)
 	if err != nil {
-		logger.Errorf("Unable to get kubeAPI: %s", err.Error())
-		return denyList, fmt.Errorf("cannot get kubeAPI")
+		logger.Errorf("Unable to read ConfigMap %s: cannot get kubeAPI: %s", WebhookConfigMap, err.Error())
+		return c.deniedURLs
 	}
 
 	configMap, err := kubeAPI.ConfigMaps(GetNamespaceFromEnvVar()).Get(context.TODO(), WebhookConfigMap, v1.GetOptions{})
 	if err != nil {
 		logger.Errorf("Unable to get ConfigMap %s: %s", WebhookConfigMap, err.Error())
-		return denyList, fmt.Errorf("cannot get ConfigMap %s", WebhookConfigMap)
+		return c.deniedURLs
 	}
 
 	denyListString := configMap.Data["denyList"]
 	denyList = strings.Fields(denyListString)
-	return denyList, nil
+	return denyList
 }

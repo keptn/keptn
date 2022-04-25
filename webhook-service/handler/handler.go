@@ -241,7 +241,9 @@ func (th *TaskHandler) CreateRequest(request interface{}) (string, error) {
 	default:
 		logger.Debug("creating CURL request from type Request")
 		convertedRequest := lib.ConvertToRequest(request)
-		if err := th.curlValidator.Validate(convertedRequest); err != nil {
+		denyList := th.curlValidator.GetConfigDenyList()
+		ipAddresses := th.curlValidator.ResolveIPAdresses(convertedRequest.URL)
+		if err := th.curlValidator.Validate(convertedRequest, denyList, ipAddresses); err != nil {
 			return "", err
 		}
 		betaRequest := buildBetaCurlRequest(convertedRequest)

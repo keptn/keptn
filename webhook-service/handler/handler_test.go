@@ -1011,8 +1011,14 @@ func Test_createRequest(t *testing.T) {
 	secretReaderMock := &fake.ISecretReaderMock{}
 	curlExecutorMock := &fake.ICurlExecutorMock{}
 	curlValidatorMock := &fake.ICurlValidatorMock{}
-	curlValidatorMock.ValidateFunc = func(request lib.Request) error {
+	curlValidatorMock.ValidateFunc = func(request lib.Request, denyList []string, ipAddresses []string) error {
 		return nil
+	}
+	curlValidatorMock.GetConfigDenyListFunc = func() []string {
+		return make([]string, 0)
+	}
+	curlValidatorMock.ResolveIPAdressesFunc = func(url string) []string {
+		return make([]string, 0)
 	}
 
 	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, curlValidatorMock, secretReaderMock)
