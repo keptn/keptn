@@ -35,7 +35,6 @@ describe('Sequences', () => {
 
   it('should show a filtered list if filters are applied', () => {
     sequencePage.visit('sockshop');
-    cy.wait('@SequencesMetadata');
     cy.wait('@Sequences');
     cy.wait(500);
 
@@ -162,7 +161,6 @@ describe('Sequences', () => {
 
   it('should filter waiting sequences', () => {
     sequencePage.visit('sockshop');
-    cy.wait('@SequencesMetadata');
     cy.wait('@Sequences');
     cy.wait(500);
 
