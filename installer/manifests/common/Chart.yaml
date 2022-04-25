@@ -1,6 +1,6 @@
 apiVersion: v2
 name: common
-description: A Library Helm Chart for grouping common login needed for different keptn charts. This chart cannot be deployed by itself.
+description: A Library Helm Chart for grouping common logic needed for different keptn charts. This chart cannot be deployed by itself.
 home: "https://github.com/keptn/keptn/tree/master/installer/manifests/common"
 icon: "https://raw.githubusercontent.com/cncf/artwork/master/projects/keptn/icon/color/keptn-icon-color.svg"
 annotations:
