@@ -715,7 +715,7 @@ func SetShipyardControllerEnvVar(t *testing.T, envVar, timeoutValue string) erro
 	}
 
 	// wait 10s to make sure we wait for the updated pod to be ready
-	<-time.After(10 * time.Second)
+	<-time.After(20 * time.Second)
 	t.Log("waiting for shipyard controller pod to be ready again")
 	err = WaitForPodOfDeployment("shipyard-controller")
 	if err != nil {
