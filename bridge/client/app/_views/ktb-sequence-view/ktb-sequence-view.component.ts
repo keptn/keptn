@@ -1,5 +1,4 @@
 import { ChangeDetectorRef, Component, HostBinding, Inject, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
-import { Location } from '@angular/common';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import {
   DtQuickFilterChangeEvent,
@@ -16,6 +15,7 @@ import { DateUtil } from '../../_utils/date.utils';
 import { Sequence } from '../../_models/sequence';
 import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 import { ISequencesMetadata } from '../../../../shared/interfaces/sequencesMetadata';
+import { ApiService } from '../../_services/api.service';
 
 export type FilterType = [
   {
@@ -96,10 +96,10 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
 
   constructor(
     private dataService: DataService,
+    private apiService: ApiService,
     private route: ActivatedRoute,
     public dateUtil: DateUtil,
     private router: Router,
-    private location: Location,
     private changeDetectorRef_: ChangeDetectorRef,
     @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number
   ) {
@@ -220,25 +220,22 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
 
   public selectSequence(event: { sequence: Sequence; stage?: string; eventId?: string }, loadTraces = true): void {
     if (event.eventId) {
-      const routeUrl = this.router.createUrlTree([
-        '/project',
-        event.sequence.project,
-        'sequence',
-        event.sequence.shkeptncontext,
-        'event',
-        event.eventId,
-      ]);
-      this.location.go(routeUrl.toString());
+      this.router.navigate(
+        ['/project', event.sequence.project, 'sequence', event.sequence.shkeptncontext, 'event', event.eventId],
+        { queryParamsHandling: 'preserve' }
+      );
     } else {
       const stage = event.stage || event.sequence.getStages().pop();
-      const routeUrl = this.router.createUrlTree([
-        '/project',
-        event.sequence.project,
-        'sequence',
-        event.sequence.shkeptncontext,
-        ...(stage ? ['stage', stage] : []),
-      ]);
-      this.location.go(routeUrl.toString());
+      this.router.navigate(
+        [
+          '/project',
+          event.sequence.project,
+          'sequence',
+          event.sequence.shkeptncontext,
+          ...(stage ? ['stage', stage] : []),
+        ],
+        { queryParamsHandling: 'preserve' }
+      );
     }
 
     this.currentSequence = event.sequence;
@@ -299,10 +296,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
       },
       {}
     );
-    const filterParams = Object.keys(this.sequenceFilters).reduce((params, key) => {
-      return params.concat(this.sequenceFilters[key].map((value) => [key, value]));
-    }, [] as string[][]);
-    console.log('URLSearchParams', new URLSearchParams(filterParams).toString());
+    this.saveFilters(this.sequenceFilters);
   }
 
   updateFilterSequence(sequences?: Sequence[]): void {
@@ -406,16 +400,10 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
 
   selectStage(stageName: string): void {
     if (this.currentSequence) {
-      const routeUrl = this.router.createUrlTree([
-        '/project',
-        this.currentSequence.project,
-        'sequence',
-        this.currentSequence.shkeptncontext,
-        'stage',
-        stageName,
-      ]);
-      this.location.go(routeUrl.toString());
-
+      this.router.navigate(
+        ['/project', this.currentSequence.project, 'sequence', this.currentSequence.shkeptncontext, 'stage', stageName],
+        { queryParamsHandling: 'preserve' }
+      );
       this.selectedStage = stageName;
       this.updateLatestDeployedImage();
     }
@@ -425,6 +413,16 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     this.dataService.isTriggerSequenceOpen = true;
     this.router.navigate(['/project/' + this.project?.projectName]);
   }
+
+  public saveFilters(sequenceFilters: { [p: string]: string[] }): void {
+    this.apiService.sequenceFilters = this.sequenceFilters;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: sequenceFilters,
+    });
+  }
+
+  public loadFilters(): void {}
 
   ngOnDestroy(): void {
     this._tracesTimer.unsubscribe();

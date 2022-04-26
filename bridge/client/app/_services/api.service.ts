@@ -60,7 +60,7 @@ export class ApiService {
     return filters ? JSON.parse(filters) : {};
   }
 
-  public set sequenceFilters(filters: { [key: string]: string[] }): void {
+  public set sequenceFilters(filters: { [key: string]: string[] }) {
     localStorage.setItem(this.SEQUENCE_FILTERS_COOKIE, JSON.stringify(filters));
   }
 
