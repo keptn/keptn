@@ -37,12 +37,10 @@ func (c *CurlValidator) Validate(request Request, denyList []string, ipAddresses
 	}
 
 	for _, url := range denyList {
-		//logger.Infof("url v denylist: %s", url)
 		if strings.Contains(request.URL, url) {
 			return fmt.Errorf("curl command contains denied URL '%s'", url)
 		}
 		for _, ip := range ipAddresses {
-			//logger.Infof("ip address: %s", ip)
 			if strings.Contains(ip, url) {
 				return fmt.Errorf("curl command contains denied IP address '%s'", url)
 			}
