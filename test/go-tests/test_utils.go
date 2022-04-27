@@ -67,6 +67,7 @@ func NewAPICaller() (*APICaller, error) {
 
 func (a *APICaller) Get(path string, retries int) (*req.Resp, error) {
 	return a.doHTTPRequestWithRetry(func() (*req.Resp, error) {
+		req.SetTimeout(10 * time.Second)
 		return req.Get(a.baseURL+path, a.getAuthHeader())
 	}, retries)
 }
