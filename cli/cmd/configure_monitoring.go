@@ -41,7 +41,9 @@ var monitoringCmd = &cobra.Command{
 See https://keptn.sh/docs/` + getReleaseDocsURL() + `/monitoring/dynatrace/install/ for more information.
 `,
 	Example: `keptn configure monitoring dynatrace --project=PROJECTNAME
-keptn configure monitoring prometheus --project=PROJECTNAME --service=SERVICENAME`,
+keptn configure monitoring prometheus --project=PROJECTNAME --service=SERVICENAME
+keptn configure monitoring datadog --project=PROJECTNAME --service=SERVICENAME
+**Note:** datadog support is experimental.`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
