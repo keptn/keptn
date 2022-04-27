@@ -18,6 +18,7 @@ func Test_Openshift(t *testing.T) {
 	require.Nil(t, err)
 
 	shipyardDeployment.Spec.Strategy.Type = "Recreate"
+	shipyardDeployment.Spec.Strategy.RollingUpdate = nil
 
 	_, err = clientset.AppsV1().Deployments(GetKeptnNameSpaceFromEnv()).Update(context.TODO(), shipyardDeployment, v1.UpdateOptions{})
 	require.Nil(t, err)
