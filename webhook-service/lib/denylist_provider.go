@@ -17,7 +17,7 @@ type DenyListProvider struct {
 }
 
 func (d DenyListProvider) GetDenyList() []string {
-	denyList := make([]string, 0)
+	denyList := GetDeniedURLs(GetEnv())
 	kubeAPI, err := keptnkubeutils.GetKubeAPI(false)
 	if err != nil {
 		logger.Errorf("Unable to read ConfigMap %s: cannot get kubeAPI: %s", WebhookConfigMap, err.Error())
@@ -33,4 +33,24 @@ func (d DenyListProvider) GetDenyList() []string {
 	denyListString := configMap.Data["denyList"]
 	denyList = strings.Fields(denyListString)
 	return denyList
+}
+
+func GetDeniedURLs(env map[string]string) []string {
+	kubeAPIHostIP := env[KubernetesSvcHostEnvVar]
+	kubeAPIPort := env[KubernetesAPIPortEnvVar]
+
+	urls := make([]string, 0)
+	if kubeAPIHostIP != "" {
+		urls = append(urls, kubeAPIHostIP)
+	}
+	if kubeAPIPort != "" {
+		urls = append(urls, "kubernetes"+":"+kubeAPIPort)
+		urls = append(urls, "kubernetes.default"+":"+kubeAPIPort)
+		urls = append(urls, "kubernetes.default.svc"+":"+kubeAPIPort)
+		urls = append(urls, "kubernetes.default.svc.cluster.local"+":"+kubeAPIPort)
+	}
+	if kubeAPIHostIP != "" && kubeAPIPort != "" {
+		urls = append(urls, kubeAPIHostIP+":"+kubeAPIPort)
+	}
+	return urls
 }

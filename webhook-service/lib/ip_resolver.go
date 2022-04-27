@@ -24,7 +24,7 @@ func NewIPResolver(lookUpIPFunc ...LookupFunc) IPResolver {
 }
 
 func (i IPResolver) ResolveIPAdresses(curlURL string) []string {
-	ipAddresses := GetDeniedURLs(GetEnv())
+	ipAddresses := make([]string, 0)
 	parsedURL, err := url.Parse(curlURL)
 	if err != nil {
 		logger.Errorf("Unable to parse URL: %s", curlURL)
@@ -39,24 +39,4 @@ func (i IPResolver) ResolveIPAdresses(curlURL string) []string {
 		ipAddresses = append(ipAddresses, ip.String())
 	}
 	return ipAddresses
-}
-
-func GetDeniedURLs(env map[string]string) []string {
-	kubeAPIHostIP := env[KubernetesSvcHostEnvVar]
-	kubeAPIPort := env[KubernetesAPIPortEnvVar]
-
-	urls := make([]string, 0)
-	if kubeAPIHostIP != "" {
-		urls = append(urls, kubeAPIHostIP)
-	}
-	if kubeAPIPort != "" {
-		urls = append(urls, "kubernetes"+":"+kubeAPIPort)
-		urls = append(urls, "kubernetes.default"+":"+kubeAPIPort)
-		urls = append(urls, "kubernetes.default.svc"+":"+kubeAPIPort)
-		urls = append(urls, "kubernetes.default.svc.cluster.local"+":"+kubeAPIPort)
-	}
-	if kubeAPIHostIP != "" && kubeAPIPort != "" {
-		urls = append(urls, kubeAPIHostIP+":"+kubeAPIPort)
-	}
-	return urls
 }
