@@ -8,31 +8,58 @@ import (
 	"github.com/stretchr/testify/suite"
 	"net/http"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
 )
 
-type TestSuiteEnv struct {
+type TestSuiteAPI struct {
 	suite.Suite
 	token       string
 	keptnAPIURL string
 }
 
 // Tests are run before they start
-func (suite *TestSuiteEnv) SetupSuite() {
+func (suite *TestSuiteAPI) SetupSuite() {
 	var err error
 	suite.token, suite.keptnAPIURL, err = testutils.GetApiCredentials()
 	suite.Assert().Nil(err)
 }
 
-func TestAPIs(t *testing.T) {
-	suite.Run(t, new(TestSuiteEnv))
+func (suite *TestSuiteAPI) TearDownSuite() {
 }
+
+func TestAPIs(t *testing.T) {
+	wgAPI := sync.WaitGroup{}
+Loop:
+	for {
+		select {
+		case <-env.Ctx.Done():
+			break Loop
+		case <-env.ApiTicker.C:
+			wgAPI.Add(1)
+			go func() {
+				suite.Run(t, new(TestSuiteAPI))
+				wgAPI.Done()
+			}()
+
+		}
+	}
+	wgAPI.Wait()
+	t.Run("Summary", printAPIresults)
+	env.Wg.Wait()
+
+}
+
+//
+//func TestAPIs(t *testing.T) {
+//	suite.Run(t, new(TestSuiteAPI))
+//}
 
 //TODO to generate html report add 	.Report(apitest.SequenceDiagram())
 
-func (suite *TestSuiteEnv) Test_API_Service() {
+func (suite *TestSuiteAPI) Test_API_Service() {
 
 	started := time.Now()
 	apiURL := suite.keptnAPIURL + "/v1"
@@ -50,7 +77,7 @@ func (suite *TestSuiteEnv) Test_API_Service() {
 
 }
 
-func (suite *TestSuiteEnv) Test_Statistic_Service() {
+func (suite *TestSuiteAPI) Test_Statistic_Service() {
 
 	started := time.Now()
 	apiURL := suite.keptnAPIURL + "/statistics/v1"
@@ -68,7 +95,7 @@ func (suite *TestSuiteEnv) Test_Statistic_Service() {
 
 }
 
-func (suite *TestSuiteEnv) Test_Secret_Service() {
+func (suite *TestSuiteAPI) Test_Secret_Service() {
 
 	started := time.Now()
 	apiURL := suite.keptnAPIURL + "/secrets/v1"
@@ -84,7 +111,7 @@ func (suite *TestSuiteEnv) Test_Secret_Service() {
 
 }
 
-func (suite *TestSuiteEnv) Test_Configuration_Service() {
+func (suite *TestSuiteAPI) Test_Configuration_Service() {
 
 	started := time.Now()
 	apiURL := suite.keptnAPIURL + "/configuration-service/v1"
@@ -107,7 +134,7 @@ func (suite *TestSuiteEnv) Test_Configuration_Service() {
 
 }
 
-func (suite *TestSuiteEnv) Test_ControlPlane() {
+func (suite *TestSuiteAPI) Test_ControlPlane() {
 	started := time.Now()
 	apiURL := suite.keptnAPIURL + "/controlPlane/v1"
 
@@ -122,7 +149,7 @@ func (suite *TestSuiteEnv) Test_ControlPlane() {
 
 }
 
-func (suite *TestSuiteEnv) Test_MongoDB() {
+func (suite *TestSuiteAPI) Test_MongoDB() {
 	started := time.Now()
 	apiURL := suite.keptnAPIURL + "/mongodb-datastore"
 
@@ -137,8 +164,8 @@ func (suite *TestSuiteEnv) Test_MongoDB() {
 
 }
 
-func (suite *TestSuiteEnv) logResult(res *http.Response, apiTest *apitest.APITest, expected int, started time.Time) {
-
+func (suite *TestSuiteAPI) logResult(res *http.Response, apiTest *apitest.APITest, expected int, started time.Time) {
+	atomic.AddUint64(&(env.TotalAPICalls), 1)
 	finished := time.Now()
 	//remove headers cookies and auth from request
 	censoredReq := strings.Split(strings.Split(fmt.Sprintf("%+v", *apiTest.Request()), "{interceptor:<nil>")[1], "headers:")[0]
@@ -147,9 +174,9 @@ func (suite *TestSuiteEnv) logResult(res *http.Response, apiTest *apitest.APITes
 	suite.T().Logf("Response Body: %v", res.Body)
 	suite.T().Logf("Duration: %s", finished.Sub(started))
 	if res.StatusCode != expected {
-		atomic.AddUint64(&FailedAPICalls, 1)
+		atomic.AddUint64(&env.FailedAPICalls, 1)
 	} else {
-		atomic.AddUint64(&PassedAPICalls, 1)
+		atomic.AddUint64(&env.PassedAPICalls, 1)
 	}
 }
 
@@ -157,4 +184,12 @@ func getClient(sec time.Duration) *http.Client {
 	return &http.Client{
 		Timeout: time.Second * sec,
 	}
+}
+
+func printAPIresults(t *testing.T) {
+	t.Log("-----------------------------------------------")
+	t.Log("TOTAL API PROBES", env.TotalAPICalls)
+	t.Log("TOTAL PROBES SUCCEEDED", env.PassedAPICalls)
+	t.Log("TOTAL PROBES FAILED", env.FailedAPICalls)
+	t.Log("-----------------------------------------------")
 }

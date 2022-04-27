@@ -3,10 +3,7 @@ package ZD
 import (
 	"context"
 	"github.com/benbjohnson/clock"
-	"github.com/stretchr/testify/assert"
-	"os"
 	"sync"
-	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -17,78 +14,116 @@ const sequencesInterval = 15 * time.Second
 var chartLatestVersion = "https://github.com/keptn/helm-charts-dev/blob/1efe3dab77da9ea3cf2b7dd5eff4b2fac6f76633/packages/keptn-0.15.0-dev-PR-7266.tgz?raw=true"
 var chartPreviousVersion = "https://github.com/keptn/helm-charts-dev/blob/5b4fbc630895a2a71721763110376b452f4c2c67/packages/keptn-0.15.0-dev-PR-7266.tgz?raw=true"
 
-var TotalAPICalls uint64 = 0
-var FailedAPICalls uint64 = 0
-var PassedAPICalls uint64 = 0
-var FiredSequences uint64 = 0
-var FailedSequences uint64 = 0
-var PassedSequences uint64 = 0
-var Id uint64 = 0
+var env = SetupZD()
 
-var wg = sync.WaitGroup{}
+type ZeroDowntimeEnv struct {
+	Ctx             context.Context
+	Cancel          context.CancelFunc
+	ApiTicker       *clock.Ticker
+	SeqTicker       *clock.Ticker
+	NrOfUpgrades    int
+	Wg              *sync.WaitGroup
+	ShipyardFile    string
+	TotalAPICalls   uint64
+	FailedAPICalls  uint64
+	PassedAPICalls  uint64
+	FiredSequences  uint64
+	FailedSequences uint64
+	PassedSequences uint64
+	Id              uint64
+}
 
-func TestZeroDowntime(t *testing.T) {
+func SetupZD() *ZeroDowntimeEnv {
 
-	t.Parallel()
-	// run a tests before starting update
-	go t.Run("Before upgrade sequences", Test_Run)
+	zd := ZeroDowntimeEnv{}
+	zd.Ctx, zd.Cancel = context.WithCancel(context.Background())
+	zd.ApiTicker = clock.New().Ticker(apiProbeInterval)
+	zd.SeqTicker = clock.New().Ticker(sequencesInterval)
+	zd.NrOfUpgrades = 2
+	zd.Wg = &sync.WaitGroup{}
+	zd.ShipyardFile, _ = GetShipyard()
+	zd.TotalAPICalls = 0
+	zd.FailedAPICalls = 0
+	zd.PassedAPICalls = 0
+	zd.FiredSequences = 0
+	zd.FailedSequences = 0
+	zd.PassedSequences = 0
+	zd.Id = 0
 
-	apiTicker := clock.New().Ticker(apiProbeInterval)
-	seqTicker := clock.New().Ticker(sequencesInterval)
-	ctx, cancel := context.WithCancel(context.Background())
+	return &zd
+}
 
-	//start update
-	go t.Run("rolling update", func(t *testing.T) {
-		rollingUpgrade(cancel, 2, t)
+func TestParallelZeroDowntime(t *testing.T) {
+
+	t.Run("Rolling Upgrade", func(t2 *testing.T) {
+		t2.Parallel()
+		rollingUpgrade(t2)
+
 	})
 
-	// run tests meanwhile
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-apiTicker.C:
-				atomic.AddUint64(&TotalAPICalls, 1)
-				go t.Run("API test", TestAPIs)
-			}
-		}
+	t.Run("API", func(t2 *testing.T) {
+		t2.Parallel()
+		TestAPIs(t2)
+	})
+
+	t.Run("Sequences", func(t2 *testing.T) {
+		t2.Parallel()
+		Test_Sequences(t2)
+
+	})
+
+}
+
+//
+//func TestZeroDowntime(t *testing.T) {
+//
+//	ExistingProject, err := testutils.CreateProject("projectzd", env.ShipyardFile)
+//	assert.Nil(t, err)
+//	_, err = testutils.ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", "myservice", ExistingProject))
+//	assert.Nil(t, err)
+//
+//	t.Parallel()
+//	// run a tests before starting update
+//	go t.Run("Before upgrade sequences", Test_Sequences)
+//
+//	//start update
+//	go t.Run("rolling update", rollingUpgrade)
+//
+//	// run tests meanwhile
+//	go func() {
+//		for {
+//			select {
+//			case <-env.Ctx.Done():
+//				break
+//			case <-env.ApiTicker.C:
+//				atomic.AddUint64(&env.TotalAPICalls, 1)
+//				go t.Run("API test", TestAPIs)
+//			}
+//		}
+//	}()
+//
+//	for {
+//		select {
+//		case <-env.Ctx.Done():
+//			break
+//		case <-env.SeqTicker.C:
+//			env.Wg.Add(1)
+//			go t.Run("Before upgrade sequences", Test_Sequences)
+//		}
+//	}
+//
+//	env.Wg.Wait()
+//	t.Run("Summary: ", printResults)
+//}
+
+func rollingUpgrade(t *testing.T) {
+	defer func() {
+		env.Cancel()
+		t.Log("Ended")
 	}()
-
-	for {
-		select {
-		case <-ctx.Done():
-			wg.Wait()
-			err := os.Remove(shipyardFile)
-			assert.Nil(t, err)
-			t.Run("Summary: ", printResults)
-			return
-		case <-seqTicker.C:
-			wg.Add(4)
-			go t.Run("Sequences test", Test_Run)
-
-		}
-	}
-
-}
-
-func printResults(t *testing.T) {
-	t.Log("-----------------------------------------------")
-	t.Log("TOTAL SEQUENCES: ", FiredSequences)
-	t.Log("TOTAL SUCCESS ", PassedSequences)
-	t.Log("TOTAL FAILURES ", FailedSequences)
-	t.Log("-----------------------------------------------")
-	t.Log("TOTAL API PROBES", TotalAPICalls)
-	t.Log("TOTAL PROBES SUCCEEDED", PassedAPICalls)
-	t.Log("TOTAL PROBES FAILED", FailedAPICalls)
-	t.Log("-----------------------------------------------")
-}
-
-func rollingUpgrade(cancel context.CancelFunc, nrOfUpgrades int, t *testing.T) {
-	defer cancel()
 	t.Log("Rolling")
-	time.Sleep(20 * time.Second)
-
+	time.Sleep(1 * time.Minute)
+	//
 	//for i := 0; i < nrOfUpgrades; i++ {
 	//	chartURL := ""
 	//	var err error
@@ -108,5 +143,4 @@ func rollingUpgrade(cancel context.CancelFunc, nrOfUpgrades int, t *testing.T) {
 	//
 	//	}
 	//}
-
 }
