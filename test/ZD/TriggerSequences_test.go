@@ -6,6 +6,7 @@ import (
 	"github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	testutils "github.com/keptn/keptn/test/go-tests"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"gopkg.in/yaml.v3"
 	"sync"
@@ -14,11 +15,9 @@ import (
 	"time"
 )
 
-var once sync.Once
-var ExistingProject string
-
 type TestSuiteSequences struct {
 	suite.Suite
+	env     *ZeroDowntimeEnv
 	project string
 }
 
@@ -45,9 +44,9 @@ func (suite *TestSuiteSequences) SetupSuite() {
 
 func (suite *TestSuiteSequences) createNew() {
 	var err error
-	projectName := "zd" + gedId()
+	projectName := "zd" + suite.gedId()
 	suite.T().Logf("Creating project with id %s ", projectName)
-	suite.project, err = testutils.CreateProject(projectName, env.ShipyardFile)
+	suite.project, err = testutils.CreateProject(projectName, suite.env.ShipyardFile)
 	suite.Nil(err)
 	output, err := testutils.ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", "myservice", suite.project))
 	suite.Nil(err)
@@ -56,24 +55,30 @@ func (suite *TestSuiteSequences) createNew() {
 	suite.T().Logf("Starting test for project %s ", suite.project)
 }
 
-func (suite *TestSuiteSequences) TearDownSuite() {
-
-}
-
-func (suite *TestSuiteSequences) SetupTest() {
-	//suite.T().Parallel()
-}
-
-func (suite *TestSuiteSequences) TearDownTest() {
-}
-
 func (suite *TestSuiteSequences) BeforeTest(suiteName, testName string) {
-	atomic.AddUint64(&env.FiredSequences, 1)
-	suite.T().Log("Running one more test, tot ", env.FiredSequences)
+	atomic.AddUint64(&suite.env.FiredSequences, 1)
+	suite.T().Log("Running one more test, tot ", suite.env.FiredSequences)
+}
+
+//Test_Sequences can be used to test a single run of the test suite
+func Test_Sequences(t *testing.T) {
+	////TODO setup a one run env
+
+	Env := SetupZD()
+	var err error
+	Env.ExistingProject, err = testutils.CreateProject("projectzd", Env.ShipyardFile)
+	assert.Nil(t, err)
+	_, err = testutils.ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", "myservice", Env.ExistingProject))
+	assert.Nil(t, err)
+
+	s := &TestSuiteSequences{
+		env: SetupZD(),
+	}
+	suite.Run(t, s)
 }
 
 // to perform tests sequentially inside ZD
-func Test_Sequences(t *testing.T) {
+func Sequences(t *testing.T, env *ZeroDowntimeEnv) {
 	var s *TestSuiteSequences
 	env.Wg.Add(1)
 	wgSequences := &sync.WaitGroup{}
@@ -83,7 +88,9 @@ Loop:
 		case <-env.Ctx.Done():
 			break Loop
 		case <-env.SeqTicker.C:
-			s = new(TestSuiteSequences)
+			s = &TestSuiteSequences{
+				env: env,
+			}
 			wgSequences.Add(1)
 			go func() {
 				suite.Run(t, s)
@@ -94,10 +101,18 @@ Loop:
 	}
 
 	wgSequences.Wait()
-	t.Run("Summary", printSequencesResults)
+	t.Run("Summary", func(t2 *testing.T) {
+		PrintSequencesResults(t2, env)
+	})
 	env.Wg.Done()
 
 }
+
+//webhook
+
+//trigger a sequence while graceful
+
+//approval
 
 //func Test_Sequences(t *testing.T) {
 //	suite.Run(t, new(TestSuiteSequences))
@@ -124,7 +139,7 @@ func (suite *TestSuiteSequences) trigger(triggerType string, data keptn.EventPro
 	suite.T().Log("Started Trigger")
 	project := suite.project
 	if existing {
-		project = ExistingProject
+		project = suite.env.ExistingProject
 	}
 
 	suite.T().Logf("triggering sequence %s for project %s", triggerType, project)
@@ -150,12 +165,12 @@ func (suite *TestSuiteSequences) checkSequence(sequence TriggeredSequence) {
 		if sequenceFinishedEvent == nil || err != nil {
 			return false
 		}
-		atomic.AddUint64(&env.PassedSequences, 1)
+		atomic.AddUint64(&suite.env.PassedSequences, 1)
 		return true
 	}, 15*time.Second, 5*time.Second)
 
 	if sequenceFinishedEvent == nil || err != nil {
-		atomic.AddUint64(&env.FailedSequences, 1)
+		atomic.AddUint64(&suite.env.FailedSequences, 1)
 		suite.T().Errorf("sequence %s with keptnContext %s in project %s has NOT been finished", sequence.sequenceName, sequence.keptnContext, sequence.projectName)
 
 	} else {
@@ -194,12 +209,12 @@ func GetShipyard() (string, error) {
 	return testutils.CreateTmpShipyardFile(string(shipyardFileContent))
 }
 
-func gedId() string {
-	atomic.AddUint64(&env.Id, 1)
-	return fmt.Sprintf("%d", env.Id)
+func (suite *TestSuiteSequences) gedId() string {
+	atomic.AddUint64(&suite.env.Id, 1)
+	return fmt.Sprintf("%d", suite.env.Id)
 }
 
-func printSequencesResults(t *testing.T) {
+func PrintSequencesResults(t *testing.T, env *ZeroDowntimeEnv) {
 
 	t.Log("-----------------------------------------------")
 	t.Log("TOTAL SEQUENCES: ", env.FiredSequences)

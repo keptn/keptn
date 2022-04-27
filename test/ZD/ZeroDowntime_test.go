@@ -2,7 +2,10 @@ package ZD
 
 import (
 	"context"
+	"fmt"
 	"github.com/benbjohnson/clock"
+	testutils "github.com/keptn/keptn/test/go-tests"
+	"github.com/stretchr/testify/suite"
 	"sync"
 	"testing"
 	"time"
@@ -13,8 +16,6 @@ const sequencesInterval = 15 * time.Second
 
 var chartLatestVersion = "https://github.com/keptn/helm-charts-dev/blob/1efe3dab77da9ea3cf2b7dd5eff4b2fac6f76633/packages/keptn-0.15.0-dev-PR-7266.tgz?raw=true"
 var chartPreviousVersion = "https://github.com/keptn/helm-charts-dev/blob/5b4fbc630895a2a71721763110376b452f4c2c67/packages/keptn-0.15.0-dev-PR-7266.tgz?raw=true"
-
-var env = SetupZD()
 
 type ZeroDowntimeEnv struct {
 	Ctx             context.Context
@@ -31,6 +32,7 @@ type ZeroDowntimeEnv struct {
 	FailedSequences uint64
 	PassedSequences uint64
 	Id              uint64
+	ExistingProject string
 }
 
 func SetupZD() *ZeroDowntimeEnv {
@@ -49,74 +51,55 @@ func SetupZD() *ZeroDowntimeEnv {
 	zd.FailedSequences = 0
 	zd.PassedSequences = 0
 	zd.Id = 0
-
 	return &zd
 }
 
-func TestParallelZeroDowntime(t *testing.T) {
+type TestSuiteDowntime struct {
+	suite.Suite
+	env *ZeroDowntimeEnv
+}
 
-	t.Run("Rolling Upgrade", func(t2 *testing.T) {
+func (suite *TestSuiteDowntime) SetupSuite() {
+	suite.env = SetupZD()
+	var err error
+	suite.env.ExistingProject, err = testutils.CreateProject("projectzd", suite.env.ShipyardFile)
+	suite.Nil(err)
+	_, err = testutils.ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", "myservice", suite.env.ExistingProject))
+	suite.Nil(err)
+
+}
+
+func Test_ZeroDowntime(t *testing.T) {
+	suite.Run(t, new(TestSuiteDowntime))
+}
+
+func (suite *TestSuiteDowntime) TestParallelZeroDowntime() {
+
+	suite.T().Run("Rolling Upgrade", func(t2 *testing.T) {
 		t2.Parallel()
-		rollingUpgrade(t2)
-
+		rollingUpgrade(t2, suite.env)
 	})
 
-	t.Run("API", func(t2 *testing.T) {
+	suite.T().Run("API", func(t2 *testing.T) {
 		t2.Parallel()
-		TestAPIs(t2)
+		APIs(t2, suite.env)
 	})
 
-	t.Run("Sequences", func(t2 *testing.T) {
+	suite.T().Run("Sequences", func(t2 *testing.T) {
 		t2.Parallel()
-		Test_Sequences(t2)
-
+		Sequences(t2, suite.env)
 	})
 
 }
 
-//
-//func TestZeroDowntime(t *testing.T) {
-//
-//	ExistingProject, err := testutils.CreateProject("projectzd", env.ShipyardFile)
-//	assert.Nil(t, err)
-//	_, err = testutils.ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", "myservice", ExistingProject))
-//	assert.Nil(t, err)
-//
-//	t.Parallel()
-//	// run a tests before starting update
-//	go t.Run("Before upgrade sequences", Test_Sequences)
-//
-//	//start update
-//	go t.Run("rolling update", rollingUpgrade)
-//
-//	// run tests meanwhile
-//	go func() {
-//		for {
-//			select {
-//			case <-env.Ctx.Done():
-//				break
-//			case <-env.ApiTicker.C:
-//				atomic.AddUint64(&env.TotalAPICalls, 1)
-//				go t.Run("API test", TestAPIs)
-//			}
-//		}
-//	}()
-//
-//	for {
-//		select {
-//		case <-env.Ctx.Done():
-//			break
-//		case <-env.SeqTicker.C:
-//			env.Wg.Add(1)
-//			go t.Run("Before upgrade sequences", Test_Sequences)
-//		}
-//	}
-//
-//	env.Wg.Wait()
-//	t.Run("Summary: ", printResults)
-//}
+func (suite *TestSuiteDowntime) TestResults() {
+	suite.T().Run("Summary:", func(t2 *testing.T) {
+		PrintSequencesResults(t2, suite.env)
+		PrintAPIresults(t2, suite.env)
+	})
+}
 
-func rollingUpgrade(t *testing.T) {
+func rollingUpgrade(t *testing.T, env *ZeroDowntimeEnv) {
 	defer func() {
 		env.Cancel()
 		t.Log("Ended")

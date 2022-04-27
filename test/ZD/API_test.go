@@ -5,6 +5,7 @@ import (
 	testutils "github.com/keptn/keptn/test/go-tests"
 	"github.com/steinfletcher/apitest"
 	jsonpath "github.com/steinfletcher/apitest-jsonpath"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"net/http"
 	"strings"
@@ -16,6 +17,7 @@ import (
 
 type TestSuiteAPI struct {
 	suite.Suite
+	env         *ZeroDowntimeEnv
 	token       string
 	keptnAPIURL string
 }
@@ -27,10 +29,25 @@ func (suite *TestSuiteAPI) SetupSuite() {
 	suite.Assert().Nil(err)
 }
 
-func (suite *TestSuiteAPI) TearDownSuite() {
+//Test_API can be used to test a single call to all the tests in the API test suite
+func Test_API(t *testing.T) {
+	////TODO setup a one run env
+
+	Env := SetupZD()
+	var err error
+	Env.ExistingProject, err = testutils.CreateProject("projectzd", Env.ShipyardFile)
+	assert.Nil(t, err)
+	_, err = testutils.ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", "myservice", Env.ExistingProject))
+	assert.Nil(t, err)
+
+	s := &TestSuiteAPI{
+		env: SetupZD(),
+	}
+	suite.Run(t, s)
 }
 
-func TestAPIs(t *testing.T) {
+// APIs is called in the zero downtime test suite
+func APIs(t *testing.T, env *ZeroDowntimeEnv) {
 	wgAPI := sync.WaitGroup{}
 Loop:
 	for {
@@ -39,15 +56,20 @@ Loop:
 			break Loop
 		case <-env.ApiTicker.C:
 			wgAPI.Add(1)
+			apisuite := &TestSuiteAPI{
+				env: env,
+			}
 			go func() {
-				suite.Run(t, new(TestSuiteAPI))
+				suite.Run(t, apisuite)
 				wgAPI.Done()
 			}()
 
 		}
 	}
 	wgAPI.Wait()
-	t.Run("Summary", printAPIresults)
+	t.Run("Summary", func(t2 *testing.T) {
+		PrintAPIresults(t2, env)
+	})
 	env.Wg.Wait()
 
 }
@@ -165,7 +187,7 @@ func (suite *TestSuiteAPI) Test_MongoDB() {
 }
 
 func (suite *TestSuiteAPI) logResult(res *http.Response, apiTest *apitest.APITest, expected int, started time.Time) {
-	atomic.AddUint64(&(env.TotalAPICalls), 1)
+	atomic.AddUint64(&(suite.env.TotalAPICalls), 1)
 	finished := time.Now()
 	//remove headers cookies and auth from request
 	censoredReq := strings.Split(strings.Split(fmt.Sprintf("%+v", *apiTest.Request()), "{interceptor:<nil>")[1], "headers:")[0]
@@ -174,9 +196,9 @@ func (suite *TestSuiteAPI) logResult(res *http.Response, apiTest *apitest.APITes
 	suite.T().Logf("Response Body: %v", res.Body)
 	suite.T().Logf("Duration: %s", finished.Sub(started))
 	if res.StatusCode != expected {
-		atomic.AddUint64(&env.FailedAPICalls, 1)
+		atomic.AddUint64(&suite.env.FailedAPICalls, 1)
 	} else {
-		atomic.AddUint64(&env.PassedAPICalls, 1)
+		atomic.AddUint64(&suite.env.PassedAPICalls, 1)
 	}
 }
 
@@ -186,7 +208,7 @@ func getClient(sec time.Duration) *http.Client {
 	}
 }
 
-func printAPIresults(t *testing.T) {
+func PrintAPIresults(t *testing.T, env *ZeroDowntimeEnv) {
 	t.Log("-----------------------------------------------")
 	t.Log("TOTAL API PROBES", env.TotalAPICalls)
 	t.Log("TOTAL PROBES SUCCEEDED", env.PassedAPICalls)
