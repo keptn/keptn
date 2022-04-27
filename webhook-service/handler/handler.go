@@ -244,7 +244,7 @@ func (th *TaskHandler) CreateRequest(request interface{}) (string, error) {
 	default:
 		logger.Debug("creating CURL request from type Request")
 		convertedRequest := lib.ConvertToRequest(request)
-		if err := th.validateBetaCurlRequest(convertedRequest); err != nil {
+		if err := th.curlValidator.Validate(convertedRequest); err != nil {
 			return "", err
 		}
 		betaRequest := buildBetaCurlRequest(convertedRequest)
@@ -258,19 +258,13 @@ func (th *TaskHandler) CreateRequest(request interface{}) (string, error) {
 
 func (th *TaskHandler) validateAlphaCurlRequest(curlCmd string) error {
 	sanitizedCurlCmd := strings.ReplaceAll(curlCmd, "\\", "")
-	denyList := lib.GetDeniedURLs(lib.GetEnv())
+	denyList := lib.GetDeniedAlphaURLs(lib.GetEnv())
 	for _, url := range denyList {
 		if strings.Contains(sanitizedCurlCmd, url) {
 			return fmt.Errorf("curl command contains denied URL '%s'", url)
 		}
 	}
 	return nil
-}
-
-func (th *TaskHandler) validateBetaCurlRequest(request lib.Request) error {
-	denyList := th.curlValidator.GetConfigDenyList()
-	ipAddresses := th.curlValidator.ResolveIPAdresses(request.URL)
-	return th.curlValidator.Validate(request, denyList, ipAddresses)
 }
 
 func buildBetaCurlRequest(req lib.Request) string {

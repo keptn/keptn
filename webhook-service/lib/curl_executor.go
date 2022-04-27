@@ -73,7 +73,6 @@ type ICurlExecutor interface {
 }
 
 type CmdCurlExecutor struct {
-	deniedURLs       []string
 	deniedCharacters []string
 	deniedOptions    []string
 	requiredOptions  []string
@@ -81,12 +80,6 @@ type CmdCurlExecutor struct {
 }
 
 type CmdCurlExecutorOption func(executor *CmdCurlExecutor)
-
-func WithDeniedURLs(urls []string) CmdCurlExecutorOption {
-	return func(executor *CmdCurlExecutor) {
-		executor.deniedURLs = urls
-	}
-}
 
 func NewCmdCurlExecutor(cmdExecutor ICommandExecutor, opts ...CmdCurlExecutorOption) *CmdCurlExecutor {
 	executor := &CmdCurlExecutor{

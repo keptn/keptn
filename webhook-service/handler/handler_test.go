@@ -770,7 +770,7 @@ func TestTaskHandler_CurlExecutorFailsHideSecret(t *testing.T) {
 	curlExecutorMock.CurlFunc = func(curlCmd string) (string, error) {
 		return "", errors.New("unable to execute curl call containing secret my-secret-value")
 	}
-	curlValidatorMock := &fake.ICurlValidatorMock{}
+	curlValidatorMock := fake.ICurlValidatorMock{}
 	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, curlValidatorMock, secretReaderMock)
 
 	fakeKeptn := sdk.NewFakeKeptn(
@@ -1011,14 +1011,8 @@ func Test_createRequest(t *testing.T) {
 	secretReaderMock := &fake.ISecretReaderMock{}
 	curlExecutorMock := &fake.ICurlExecutorMock{}
 	curlValidatorMock := &fake.ICurlValidatorMock{}
-	curlValidatorMock.ValidateFunc = func(request lib.Request, denyList []string, ipAddresses []string) error {
+	curlValidatorMock.ValidateFunc = func(request lib.Request) error {
 		return nil
-	}
-	curlValidatorMock.GetConfigDenyListFunc = func() []string {
-		return make([]string, 0)
-	}
-	curlValidatorMock.ResolveIPAdressesFunc = func(url string) []string {
-		return make([]string, 0)
 	}
 
 	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, curlValidatorMock, secretReaderMock)

@@ -239,7 +239,7 @@ func TestCmdCurlExecutor_Curl(t *testing.T) {
 				fakeCommandExecutor = tt.fields.commandExecutor
 			}
 
-			ce := lib.NewCmdCurlExecutor(fakeCommandExecutor, lib.WithDeniedURLs(lib.GetDeniedURLs(map[string]string{"KUBERNETES_SERVICE_HOST": "kube.svc.host", "KUBERNETES_SERVICE_PORT": "9876"})))
+			ce := lib.NewCmdCurlExecutor(fakeCommandExecutor)
 
 			got, err := ce.Curl(tt.args.curlCmd)
 

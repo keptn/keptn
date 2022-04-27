@@ -2,6 +2,7 @@ package lib_test
 
 import (
 	"fmt"
+	"net"
 	"testing"
 
 	"github.com/keptn/keptn/webhook-service/lib"
@@ -10,13 +11,13 @@ import (
 )
 
 func TestCurlValidator_Validate(t *testing.T) {
-	curlValidator := &lib.CurlValidator{}
 	tests := []struct {
-		name              string
-		data              lib.Request
-		curlValidatorMock lib.ICurlValidator
-		want              error
-		wantErr           bool
+		name             string
+		data             lib.Request
+		want             error
+		ipResolver       lib.IPResolver
+		denyListProvider lib.IDenyListProvider
+		wantErr          bool
 	}{
 		{
 			name: "valid input",
@@ -32,9 +33,16 @@ func TestCurlValidator_Validate(t *testing.T) {
 				Payload: "some payload",
 				URL:     "http://some-valid-url",
 			},
-			curlValidatorMock: lib.NewCurlValidator(curlValidator, []string{"some-invalid-url"}),
-			want:              nil,
-			wantErr:           false,
+			ipResolver: lib.NewIPResolver(func(host string) ([]net.IP, error) {
+				return []net.IP{net.ParseIP("1.1.1.1")}, nil
+			}),
+			denyListProvider: fake.IDenyListProviderMock{
+				GetDenyListFunc: func() []string {
+					return []string{"1.1.1.2"}
+				},
+			},
+			want:    nil,
+			wantErr: false,
 		},
 		{
 			name: "invalid input",
@@ -50,9 +58,16 @@ func TestCurlValidator_Validate(t *testing.T) {
 				Payload: "some payload",
 				URL:     "",
 			},
-			curlValidatorMock: lib.NewCurlValidator(curlValidator, []string{"some-invalid-url"}),
-			want:              fmt.Errorf("Invalid curl URL: ''"),
-			wantErr:           true,
+			ipResolver: lib.NewIPResolver(func(host string) ([]net.IP, error) {
+				return []net.IP{net.ParseIP("1.1.1.1")}, nil
+			}),
+			denyListProvider: fake.IDenyListProviderMock{
+				GetDenyListFunc: func() []string {
+					return []string{"1.1.1.1"}
+				},
+			},
+			want:    fmt.Errorf("Invalid curl URL: ''"),
+			wantErr: true,
 		},
 		{
 			name: "denied URL input",
@@ -68,15 +83,12 @@ func TestCurlValidator_Validate(t *testing.T) {
 				Payload: "some payload",
 				URL:     "http://some-denied-url",
 			},
-			curlValidatorMock: &fake.ICurlValidatorMock{
-				ValidateFunc: func(request lib.Request, denyList []string, ipAddresses []string) error {
-					return curlValidator.Validate(request, denyList, ipAddresses)
-				},
-				GetConfigDenyListFunc: func() []string {
+			ipResolver: lib.NewIPResolver(func(host string) ([]net.IP, error) {
+				return []net.IP{net.ParseIP("1.1.1.1")}, nil
+			}),
+			denyListProvider: fake.IDenyListProviderMock{
+				GetDenyListFunc: func() []string {
 					return []string{"some-denied"}
-				},
-				ResolveIPAdressesFunc: func(curlURL string) []string {
-					return []string{"1.1.1.1"}
 				},
 			},
 			want:    fmt.Errorf("curl command contains denied URL 'some-denied'"),
@@ -96,14 +108,11 @@ func TestCurlValidator_Validate(t *testing.T) {
 				Payload: "some payload",
 				URL:     "http://som-url",
 			},
-			curlValidatorMock: &fake.ICurlValidatorMock{
-				ValidateFunc: func(request lib.Request, denyList []string, ipAddresses []string) error {
-					return curlValidator.Validate(request, denyList, ipAddresses)
-				},
-				GetConfigDenyListFunc: func() []string {
-					return []string{"1.1.1.1"}
-				},
-				ResolveIPAdressesFunc: func(curlURL string) []string {
+			ipResolver: lib.NewIPResolver(func(host string) ([]net.IP, error) {
+				return []net.IP{net.ParseIP("1.1.1.1")}, nil
+			}),
+			denyListProvider: fake.IDenyListProviderMock{
+				GetDenyListFunc: func() []string {
 					return []string{"1.1.1.1"}
 				},
 			},
@@ -114,7 +123,8 @@ func TestCurlValidator_Validate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tt.curlValidatorMock.Validate(tt.data, tt.curlValidatorMock.GetConfigDenyList(), tt.curlValidatorMock.ResolveIPAdresses(tt.data.URL))
+			curlValidator := lib.NewCurlValidator(tt.denyListProvider, tt.ipResolver)
+			err := curlValidator.Validate(tt.data)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
 				return
