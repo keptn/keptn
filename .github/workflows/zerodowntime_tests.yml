@@ -443,10 +443,7 @@ jobs:
     if: always()
     needs:
       - calculate-queue-time
-      - integration-test
-      - publish-final-test-report
-      - deploy_keptn_with_keptn
-      - trigger_keptn_delivery
+      - zd-test
     uses: ./.github/workflows/end-of-pipeline-metrics.yml
     with:
       workflow_name: "Integration Tests"
