@@ -21,9 +21,9 @@ require (
 	golang.org/x/net v0.0.0-20220421235706-1d1ef9303861
 	golang.org/x/time v0.0.0-20220411224347-583f2d630306
 	gopkg.in/yaml.v2 v2.4.0
-	k8s.io/api v0.22.8
-	k8s.io/apimachinery v0.22.8
-	k8s.io/client-go v0.22.8
+	k8s.io/api v0.22.9
+	k8s.io/apimachinery v0.22.9
+	k8s.io/client-go v0.22.9
 )
 
 require (

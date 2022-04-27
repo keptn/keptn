@@ -15,11 +15,11 @@ require (
 	github.com/stretchr/testify v1.7.1
 	gotest.tools v2.2.0+incompatible
 	helm.sh/helm/v3 v3.6.3
-	k8s.io/api v0.22.8
-	k8s.io/apimachinery v0.22.8
-	k8s.io/cli-runtime v0.22.8
-	k8s.io/client-go v0.22.8
-	k8s.io/kubectl v0.22.8
+	k8s.io/api v0.22.9
+	k8s.io/apimachinery v0.22.9
+	k8s.io/cli-runtime v0.22.9
+	k8s.io/client-go v0.22.9
+	k8s.io/kubectl v0.22.9
 	sigs.k8s.io/yaml v1.3.0
 )
 
@@ -154,10 +154,11 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 	k8s.io/apiextensions-apiserver v0.21.0 // indirect
 	k8s.io/apiserver v0.21.0 // indirect
-	k8s.io/component-base v0.22.8 // indirect
+	k8s.io/component-base v0.22.9 // indirect
 	k8s.io/klog/v2 v2.9.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20211109043538-20434351676c // indirect
 	k8s.io/utils v0.0.0-20211116205334-6203023598ed // indirect
+	rsc.io/letsencrypt v0.0.3 // indirect
 	sigs.k8s.io/kustomize/api v0.8.11 // indirect
 	sigs.k8s.io/kustomize/kyaml v0.11.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
