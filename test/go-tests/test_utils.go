@@ -702,14 +702,52 @@ func GetPublicURLOfService(serviceName, projectName, stageName string) (string, 
 
 }
 
-func SetShipyardControllerEnvVar(t *testing.T, envVar, timeoutValue string) error {
-	_, err := ExecuteCommand(fmt.Sprintf("kubectl -n %s set env deployment shipyard-controller %s=%s", GetKeptnNameSpaceFromEnv(), envVar, timeoutValue))
+func SetShipyardControllerEnvVar(t *testing.T, envVarName, envVarValue string) error {
+	_, err := ExecuteCommand(fmt.Sprintf("kubectl -n %s set env deployment shipyard-controller %s=%s", GetKeptnNameSpaceFromEnv(), envVarName, envVarValue))
 	if err != nil {
 		return err
 	}
 
-	// wait 20s to make sure we wait for the updated pod to be ready
-	<-time.After(20 * time.Second)
+	//k8sClient, err := keptnkubeutils.GetClientset(false)
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//shipyardDeployment, err := k8sClient.AppsV1().Deployments(GetKeptnNameSpaceFromEnv()).Get(context.TODO(), "shipyard-controller", v1.GetOptions{})
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//if len(shipyardDeployment.Spec.Template.Spec.Containers) == 0 {
+	//	return errors.New("shipyard deployment does not contain any container")
+	//}
+	//envVarFound := false
+	//for index, ev := range shipyardDeployment.Spec.Template.Spec.Containers[0].Env {
+	//	if ev.Name == envVarName {
+	//		envVarFound = true
+	//		shipyardDeployment.Spec.Template.Spec.Containers[0].Env[index].Value = envVarValue
+	//	}
+	//}
+	//
+	//if !envVarFound {
+	//	shipyardDeployment.Spec.Template.Spec.Containers[0].Env = append(shipyardDeployment.Spec.Template.Spec.Containers[0].Env, corev1.EnvVar{
+	//		Name:  envVarName,
+	//		Value: envVarValue,
+	//	})
+	//}
+	//
+	//_, err = k8sClient.AppsV1().Deployments(GetKeptnNameSpaceFromEnv()).Update(context.TODO(), shipyardDeployment, v1.UpdateOptions{})
+	//if err != nil {
+	//	return err
+	//}
+
+	// wait 40s to make sure we wait for the updated pod to be ready
+	<-time.After(40 * time.Second)
+
+	//require.Eventually(t, func() bool {
+	//	get, err2 := k8sClient.CoreV1().Pods(GetKeptnNameSpaceFromEnv()).List(context.TODO(), v1.ListOptions{LabelSelector: })
+	//}, 3*time.Minute, 10*time.Second)
+
 	t.Log("waiting for shipyard controller pod to be ready again")
 	err = WaitForPodOfDeployment("shipyard-controller")
 	if err != nil {
