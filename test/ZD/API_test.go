@@ -31,8 +31,6 @@ func (suite *TestSuiteAPI) SetupSuite() {
 
 //Test_API can be used to test a single call to all the tests in the API test suite
 func Test_API(t *testing.T) {
-	////TODO setup a one run env
-
 	Env := SetupZD()
 	var err error
 	Env.ExistingProject, err = testutils.CreateProject("projectzd", Env.ShipyardFile)
@@ -44,6 +42,7 @@ func Test_API(t *testing.T) {
 		env: SetupZD(),
 	}
 	suite.Run(t, s)
+
 }
 
 // APIs is called in the zero downtime test suite
@@ -67,19 +66,11 @@ Loop:
 		}
 	}
 	wgAPI.Wait()
-	t.Run("Summary", func(t2 *testing.T) {
-		PrintAPIresults(t2, env)
-	})
 	env.Wg.Wait()
 
 }
 
-//
-//func TestAPIs(t *testing.T) {
-//	suite.Run(t, new(TestSuiteAPI))
-//}
-
-//TODO to generate html report add 	.Report(apitest.SequenceDiagram())
+//to generate html report we can add 	.Report(apitest.SequenceDiagram())
 
 func (suite *TestSuiteAPI) Test_API_Service() {
 

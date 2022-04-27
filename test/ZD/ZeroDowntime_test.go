@@ -25,6 +25,7 @@ type ZeroDowntimeEnv struct {
 	NrOfUpgrades    int
 	Wg              *sync.WaitGroup
 	ShipyardFile    string
+	ExistingProject string
 	TotalAPICalls   uint64
 	FailedAPICalls  uint64
 	PassedAPICalls  uint64
@@ -32,7 +33,6 @@ type ZeroDowntimeEnv struct {
 	FailedSequences uint64
 	PassedSequences uint64
 	Id              uint64
-	ExistingProject string
 }
 
 func SetupZD() *ZeroDowntimeEnv {
@@ -105,25 +105,24 @@ func rollingUpgrade(t *testing.T, env *ZeroDowntimeEnv) {
 		t.Log("Ended")
 	}()
 	t.Log("Rolling")
-	time.Sleep(1 * time.Minute)
-	//
-	//for i := 0; i < nrOfUpgrades; i++ {
-	//	chartURL := ""
-	//	var err error
-	//	if i%2 == 0 {
-	//		chartURL = chartLatestVersion
-	//	} else {
-	//		chartURL = chartPreviousVersion
-	//	}
-	//	t.Logf("Upgrading Keptn to %s", chartURL)
-	//	_, err = testutils.ExecuteCommand(
-	//		fmt.Sprintf(
-	//			"helm upgrade -n %s keptn %s --wait --set=control-plane.apiGatewayNginx.type=LoadBalancer "+
-	//				"--set=control-plane.common.strategy.rollingUpdate.maxUnavailable=0 --set control-plane.resourceService.enabled=true"+
-	//				" --set control-plane.resourceService.env.DIRECTORY_STAGE_STRUCTURE=true", testutils.GetKeptnNameSpaceFromEnv(), chartURL))
-	//	if err != nil {
-	//		t.Logf("Encountered error when upgrading keptn: %v", err)
-	//
-	//	}
-	//}
+
+	for i := 0; i < env.NrOfUpgrades; i++ {
+		chartURL := ""
+		var err error
+		if i%2 == 0 {
+			chartURL = chartLatestVersion
+		} else {
+			chartURL = chartPreviousVersion
+		}
+		t.Logf("Upgrading Keptn to %s", chartURL)
+		_, err = testutils.ExecuteCommand(
+			fmt.Sprintf(
+				"helm upgrade -n %s keptn %s --wait --set=control-plane.apiGatewayNginx.type=LoadBalancer "+
+					"--set=control-plane.common.strategy.rollingUpdate.maxUnavailable=0 --set control-plane.resourceService.enabled=true"+
+					" --set control-plane.resourceService.env.DIRECTORY_STAGE_STRUCTURE=true", testutils.GetKeptnNameSpaceFromEnv(), chartURL))
+		if err != nil {
+			t.Logf("Encountered error when upgrading keptn: %v", err)
+
+		}
+	}
 }

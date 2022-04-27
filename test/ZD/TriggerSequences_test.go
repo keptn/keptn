@@ -62,8 +62,6 @@ func (suite *TestSuiteSequences) BeforeTest(suiteName, testName string) {
 
 //Test_Sequences can be used to test a single run of the test suite
 func Test_Sequences(t *testing.T) {
-	////TODO setup a one run env
-
 	Env := SetupZD()
 	var err error
 	Env.ExistingProject, err = testutils.CreateProject("projectzd", Env.ShipyardFile)
@@ -101,9 +99,6 @@ Loop:
 	}
 
 	wgSequences.Wait()
-	t.Run("Summary", func(t2 *testing.T) {
-		PrintSequencesResults(t2, env)
-	})
 	env.Wg.Done()
 
 }
