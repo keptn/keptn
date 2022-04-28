@@ -1,3 +1,11 @@
+global:
+  keptn:
+    repository: ~
+    appVersion: ~
+  apiGatewayNginx:
+    repository: ~
+    tag: ~
+
 control-plane:
   enabled: true
   apiGatewayNginx:

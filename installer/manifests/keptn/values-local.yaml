@@ -1,0 +1,14 @@
+# This is a local values file
+# use it if you want to customise your locally created keptn artefacts.
+# for local templating use helm template . -f values-local.yaml --name-template test-control-plane --output-dir ../../temp
+
+global:
+# use custom image/version e.g. for local testing
+  keptn:
+    registry: "test/it/like-a-dude"          # keptn registry/image name
+    appVersion: xx.xx.xx                       # keptn version/tag
+
+# only change if version at ./charts/control-plane/values.yaml --> apiGatewayNginx.repository/tag is not satisfying
+#  apiGatewayNginx:
+#    repository: this.is.a.test                 # nginx registry/image name
+#    tag: 100.0.0                               # ngnix version/tag
