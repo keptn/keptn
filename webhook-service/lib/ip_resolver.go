@@ -18,11 +18,11 @@ type IPResolver struct {
 }
 
 func NewIPResolver(lookUpIPFunc ...LookupFunc) IPResolver {
-	resolver := IPResolver{
-		LookupIP: net.LookupIP,
-	}
+	resolver := IPResolver{}
 	if len(lookUpIPFunc) > 0 {
 		resolver.LookupIP = lookUpIPFunc[0]
+	} else {
+		resolver.LookupIP = net.LookupIP
 	}
 	return resolver
 }
