@@ -196,6 +196,24 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
+  name: keptn-get-configmaps
+  labels:
+    {{ include "control-plane.labels" . | nindent 4 }}
+    app.kubernetes.io/name: keptn-get-configmaps
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - get
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
   name: keptn-delete-bridge-pod
   labels:
     {{ include "control-plane.labels" . | nindent 4 }}
@@ -254,6 +272,24 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: keptn-lighthouse-service
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: keptn-webhook-service
+  labels:
+    {{ include "control-plane.labels" . | nindent 4 }}
+    app.kubernetes.io/name: keptn-webhook-service
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: keptn-get-configmaps
+subjects:
+  - kind: ServiceAccount
+    name: keptn-webhook-service
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
