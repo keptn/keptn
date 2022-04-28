@@ -37,9 +37,7 @@ Common labels
 {{- define "continuous-delivery.labels" -}}
 helm.sh/chart: {{ include "continuous-delivery.chart" . }}
 {{ include "continuous-delivery.selectorLabels" . }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end }}
+app.kubernetes.io/version: {{ .Values.global.keptn.appVersion | default .Chart.AppVersion }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 

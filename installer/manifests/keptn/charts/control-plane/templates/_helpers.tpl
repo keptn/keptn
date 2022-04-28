@@ -37,9 +37,7 @@ Common labels
 {{- define "control-plane.labels" -}}
 helm.sh/chart: {{ include "control-plane.chart" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end }}
+app.kubernetes.io/version: {{ .Values.global.keptn.appVersion | default .Chart.AppVersion | quote }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
@@ -91,11 +89,7 @@ lifecycle:
     fieldRef:
       fieldPath: metadata.labels['app.kubernetes.io/version']
 - name: DISTRIBUTOR_VERSION
-{{- if .Values.distributor.image.tag }}
-  value: {{ .Values.distributor.image.tag }}
-{{- else }}
-  value: {{ .Chart.AppVersion }}
-{{- end }}
+  value: {{ include "service.tag" ( dict "imageRoot" .Values.distributor.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote}}
 - name: LOCATION
   valueFrom:
    fieldRef:

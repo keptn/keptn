@@ -10,7 +10,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    app.kubernetes.io/version: {{ .Values.lighthouseService.image.tag | default .Chart.AppVersion }}
+    app.kubernetes.io/version: {{ include "service.tag" ( dict "imageRoot" .Values.lighthouseService.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
     helm.sh/chart: {{ include "control-plane.chart" . }}
 spec:
   selector:
@@ -27,13 +27,13 @@ spec:
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "control-plane.name" . }}
-        app.kubernetes.io/version: {{ .Values.lighthouseService.image.tag | default .Chart.AppVersion }}
+        app.kubernetes.io/version: {{ include "service.tag" ( dict "imageRoot" .Values.lighthouseService.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
         helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
       {{- include "control-plane.common.pod-security-context" . | nindent 6 }}
       containers:
         - name: lighthouse-service
-          image: {{ .Values.lighthouseService.image.repository }}:{{ .Values.lighthouseService.image.tag | default .Chart.AppVersion }}
+          image: {{ include "service.image" ( dict "imageRoot" .Values.lighthouseService.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
           {{- $prestop := .Values.lighthouseService.preStopHookTime | default 90 | quote -}}
           {{- include "control-plane.prestop" $prestop | nindent 10 }}
           livenessProbe:
@@ -75,7 +75,7 @@ spec:
               value: {{ .Values.logLevel | default "info" }}
           {{- include "control-plane.common.container-security-context" . | nindent 10 }}
         - name: distributor
-          image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
+          image: {{ include "service.image" ( dict "imageRoot" .Values.distributor.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
           {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
           {{- include "control-plane.dist.readinessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
