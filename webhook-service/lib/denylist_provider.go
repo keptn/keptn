@@ -18,7 +18,7 @@ type DenyListProvider struct {
 
 func (d DenyListProvider) GetDenyList() []string {
 	denyList := GetDeniedURLs(GetEnv())
-	kubeAPI, err := keptnkubeutils.GetKubeAPI(false)
+	kubeAPI, err := keptnkubeutils.GetKubeAPI(true)
 	if err != nil {
 		logger.Errorf("Unable to read ConfigMap %s: cannot get kubeAPI: %s", WebhookConfigMap, err.Error())
 		return denyList

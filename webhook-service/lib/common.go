@@ -5,7 +5,11 @@ import (
 	"strings"
 )
 
-const WebhookConfigMap = "keptn-webhook-config"
+const (
+	WebhookConfigMap        = "keptn-webhook-config"
+	KubernetesSvcHostEnvVar = "KUBERNETES_SERVICE_HOST"
+	KubernetesAPIPortEnvVar = "KUBERNETES_SERVICE_PORT"
+)
 
 func GetNamespaceFromEnvVar() string {
 	return os.Getenv("POD_NAMESPACE")

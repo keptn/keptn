@@ -14,10 +14,6 @@ const (
 	DeniedURLError
 	RequestError
 )
-const (
-	KubernetesSvcHostEnvVar = "KUBERNETES_SERVICE_HOST"
-	KubernetesAPIPortEnvVar = "KUBERNETES_SERVICE_PORT"
-)
 
 type CurlError struct {
 	err    error
