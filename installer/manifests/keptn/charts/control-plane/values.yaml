@@ -1,3 +1,11 @@
+global:
+  keptn:
+    registry: docker.io/keptn                # Registry where the image is located.
+    tag: ""                                  # Container Tag globally for all keptn services
+  apiGatewayNginx:
+    registry: docker.io/nginxinc             # Nginx Registry
+    tag: 1.21.6-alpine                       # Nginx Tag
+
 mongo:
   enabled: true
   host: mongodb:27017
@@ -70,16 +78,18 @@ apiGatewayNginx:
     allowPrivilegeEscalation: false
     privileged: false
   image:
-    repository: docker.io/nginxinc/nginx-unprivileged
-    tag: 1.21.6-alpine
+    registry: ""                             # Container Registry
+    repository: "nginx-unprivileged"         # Container Image Name
+    tag: ""                                  # Container Tag
   nodeSelector: {}
   gracePeriod: 120     # gracePeriod set to preStop hook time +30s
   preStopHookTime: 90
 
 remediationService:
   image:
-    repository: docker.io/keptn/remediation-service
-    tag: ""
+    registry: ""                             # Container Registry
+    repository: "remediation-service"        # Container Image Name
+    tag: ""                                  # Container Tag
   nodeSelector: {}
   gracePeriod: 120     # gracePeriod set to preStop hook time +30s
   preStopHookTime: 90
@@ -87,8 +97,9 @@ remediationService:
 apiService:
   tokenSecretName:
   image:
-    repository: docker.io/keptn/api
-    tag: ""
+    registry: ""                             # Container Registry
+    repository: "api"                        # Container Image Name
+    tag: ""                                  # Container Tag
   maxAuth:
     enabled: true
     requestsPerSecond: "1.0"
@@ -99,8 +110,9 @@ apiService:
 
 bridge:
   image:
-    repository: docker.io/keptn/bridge2
-    tag: ""
+    registry: ""                             # Container Registry
+    repository: "bridge2"                    # Container Image Name
+    tag: ""                                  # Container Tag
   cliDownloadLink: null
   integrationsPageLink: null
   secret:
@@ -143,8 +155,9 @@ distributor:
     hostname:
     namespace:
   image:
-    repository: docker.io/keptn/distributor
-    tag: ""
+    registry: ""                             # Container Registry
+    repository: "distributor"                # Container Image Name
+    tag: ""                                  # Container Tag
   config:
     queueGroup:
       enabled: true
@@ -157,8 +170,9 @@ distributor:
 
 shipyardController:
   image:
-    repository: docker.io/keptn/shipyard-controller
-    tag: ""
+    registry: ""                             # Container Registry
+    repository: "shipyard-controller"        # Container Image Name
+    tag: ""                                  # Container Tag
   config:
     taskStartedWaitDuration: "10m"
     uniformIntegrationTTL: "48h"
@@ -176,16 +190,18 @@ shipyardController:
 
 secretService:
   image:
-    repository: docker.io/keptn/secret-service
-    tag: ""
+    registry: ""                             # Container Registry
+    repository: "secret-service"             # Container Image Name
+    tag: ""                                  # Container Tag
   nodeSelector: {}
   gracePeriod: 120     # gracePeriod set to preStop hook time +30s
   preStopHookTime: 90
 
 configurationService:
   image:
-    repository: docker.io/keptn/configuration-service
-    tag: ""
+    registry: ""                             # Container Registry
+    repository: "configuration-service"      # Container Image Name
+    tag: ""                                  # Container Tag
   # storage and storageClass are the settings for the PVC used by the configuration-storage
   storage: 100Mi
   storageClass: null
@@ -202,8 +218,9 @@ resourceService:
   enabled: false
   replicas: 1
   image:
-    repository: docker.io/keptn/resource-service
-    tag: ""
+    registry: ""                             # Container Registry
+    repository: "resource-service"           # Container Image Name
+    tag: ""                                  # Container Tag
   env:
     GIT_KEPTN_USER: "keptn"
     GIT_KEPTN_EMAIL: "keptn@keptn.sh"
@@ -214,32 +231,36 @@ resourceService:
 
 mongodbDatastore:
   image:
-    repository: docker.io/keptn/mongodb-datastore
-    tag: ""
+    registry: ""                             # Container Registry
+    repository: "mongodb-datastore"          # Container Image Name
+    tag: ""                                  # Container Tag
   nodeSelector: {}
   gracePeriod: 120     # gracePeriod set to preStop hook time +30s
   preStopHookTime: 90
 
 lighthouseService:
   image:
-    repository: docker.io/keptn/lighthouse-service
-    tag: ""
+    registry: ""                             # Container Registry
+    repository: "lighthouse-service"         # Container Image Name
+    tag: ""                                  # Container Tag
   nodeSelector: {}
   gracePeriod: 120     # gracePeriod set to preStop hook time +30s
   preStopHookTime: 90
 
 statisticsService:
   image:
-    repository: docker.io/keptn/statistics-service
-    tag: ""
+    registry: ""                             # Container Registry
+    repository: "statistics-service"         # Container Image Name
+    tag: ""                                  # Container Tag
   nodeSelector: {}
   gracePeriod: 120     # gracePeriod set to preStop hook time +30s
   preStopHookTime: 90
 
 approvalService:
   image:
-    repository: docker.io/keptn/approval-service
-    tag: ""
+    registry: ""                             # Container Registry
+    repository: "approval-service"           # Container Image Name
+    tag: ""                                  # Container Tag
   nodeSelector: {}
   gracePeriod: 120     # gracePeriod set to preStop hook time +30s
   preStopHookTime: 90
@@ -247,8 +268,9 @@ approvalService:
 webhookService:
   enabled: true
   image:
-    repository: docker.io/keptn/webhook-service
-    tag: ""
+    registry: ""                             # Container Registry
+    repository: "webhook-service"            # Container Image Name
+    tag: ""                                  # Container Tag
   nodeSelector: {}
   gracePeriod: 120     # gracePeriod set to preStop hook time +30s
   preStopHookTime: 90

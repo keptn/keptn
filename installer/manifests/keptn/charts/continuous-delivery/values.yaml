@@ -1,3 +1,8 @@
+global:
+  keptn:
+    repository: docker.io/keptn
+    appVersion: ""
+
 openshift:
   enabled: false
 
@@ -9,5 +14,5 @@ ingressConfig:
 
 distributor:
   image:
-    repository: docker.io/keptn/distributor
-    tag: ""
+    repository: "{{ .Values.global.keptn.repository }}/distributor"
+    tag: "{{ .Values.global.keptn.appVersion }}"
