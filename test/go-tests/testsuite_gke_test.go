@@ -21,7 +21,7 @@ func Test_GKE(t *testing.T) {
 	t.Run("Test_SequenceState_SequenceNotFound", Test_SequenceState_SequenceNotFound)
 	t.Run("Test_SequenceState_InvalidShipyard", Test_SequenceState_InvalidShipyard)
 	t.Run("Test_SequenceState_CannotRetrieveShipyard", Test_SequenceState_CannotRetrieveShipyard)
-	t.Run("Test_SequenceQueue", Test_SequenceQueue)
+	//t.Run("Test_SequenceQueue", Test_SequenceQueue)
 	t.Run("Test_SequenceQueue_TriggerMultiple", Test_SequenceQueue_TriggerMultiple)
 	t.Run("Test_SequenceQueue_TriggerAndDeleteProject", Test_SequenceQueue_TriggerAndDeleteProject)
 	t.Run("Test_SequenceLoopIntegrationTest", Test_SequenceLoopIntegrationTest)
