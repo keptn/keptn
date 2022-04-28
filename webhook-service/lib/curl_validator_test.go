@@ -2,7 +2,6 @@ package lib_test
 
 import (
 	"fmt"
-	"net"
 	"testing"
 
 	"github.com/keptn/keptn/webhook-service/lib"
@@ -15,7 +14,7 @@ func TestCurlValidator_Validate(t *testing.T) {
 		name             string
 		data             lib.Request
 		want             error
-		ipResolver       lib.IPResolver
+		ipResolver       lib.IIPResolver
 		denyListProvider lib.IDenyListProvider
 		wantErr          bool
 	}{
@@ -33,9 +32,11 @@ func TestCurlValidator_Validate(t *testing.T) {
 				Payload: "some payload",
 				URL:     "http://some-valid-url",
 			},
-			ipResolver: lib.NewIPResolver(func(host string) ([]net.IP, error) {
-				return []net.IP{net.ParseIP("1.1.1.1")}, nil
-			}),
+			ipResolver: fake.IIPResolverMock{
+				ResolveIPAdressesFunc: func(curlURL string) []string {
+					return []string{"1.1.1.1"}
+				},
+			},
 			denyListProvider: fake.IDenyListProviderMock{
 				GetDenyListFunc: func() []string {
 					return []string{"1.1.1.2"}
@@ -58,9 +59,11 @@ func TestCurlValidator_Validate(t *testing.T) {
 				Payload: "some payload",
 				URL:     "",
 			},
-			ipResolver: lib.NewIPResolver(func(host string) ([]net.IP, error) {
-				return []net.IP{net.ParseIP("1.1.1.1")}, nil
-			}),
+			ipResolver: fake.IIPResolverMock{
+				ResolveIPAdressesFunc: func(curlURL string) []string {
+					return []string{"1.1.1.1"}
+				},
+			},
 			denyListProvider: fake.IDenyListProviderMock{
 				GetDenyListFunc: func() []string {
 					return []string{"1.1.1.1"}
@@ -83,9 +86,11 @@ func TestCurlValidator_Validate(t *testing.T) {
 				Payload: "some payload",
 				URL:     "http://some-denied-url",
 			},
-			ipResolver: lib.NewIPResolver(func(host string) ([]net.IP, error) {
-				return []net.IP{net.ParseIP("1.1.1.1")}, nil
-			}),
+			ipResolver: fake.IIPResolverMock{
+				ResolveIPAdressesFunc: func(curlURL string) []string {
+					return []string{"1.1.1.1"}
+				},
+			},
 			denyListProvider: fake.IDenyListProviderMock{
 				GetDenyListFunc: func() []string {
 					return []string{"some-denied"}
@@ -108,9 +113,11 @@ func TestCurlValidator_Validate(t *testing.T) {
 				Payload: "some payload",
 				URL:     "http://som-url",
 			},
-			ipResolver: lib.NewIPResolver(func(host string) ([]net.IP, error) {
-				return []net.IP{net.ParseIP("1.1.1.1")}, nil
-			}),
+			ipResolver: fake.IIPResolverMock{
+				ResolveIPAdressesFunc: func(curlURL string) []string {
+					return []string{"1.1.1.1"}
+				},
+			},
 			denyListProvider: fake.IDenyListProviderMock{
 				GetDenyListFunc: func() []string {
 					return []string{"1.1.1.1"}

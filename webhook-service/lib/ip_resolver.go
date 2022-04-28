@@ -7,6 +7,10 @@ import (
 	logger "github.com/sirupsen/logrus"
 )
 
+type IIPResolver interface {
+	ResolveIPAdresses(curlURL string) []string
+}
+
 type LookupFunc func(host string) ([]net.IP, error)
 
 type IPResolver struct {

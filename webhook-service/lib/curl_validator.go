@@ -7,14 +7,14 @@ import (
 
 type CurlValidator struct {
 	denyListProvider IDenyListProvider
-	ipResolver       IPResolver
+	ipResolver       IIPResolver
 }
 
 type ICurlValidator interface {
 	Validate(request Request) error
 }
 
-func NewCurlValidator(denyListProvider IDenyListProvider, ipResolver IPResolver) CurlValidator {
+func NewCurlValidator(denyListProvider IDenyListProvider, ipResolver IIPResolver) CurlValidator {
 	validator := CurlValidator{
 		denyListProvider: denyListProvider,
 		ipResolver:       ipResolver,
