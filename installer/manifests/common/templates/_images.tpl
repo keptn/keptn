@@ -19,7 +19,7 @@
 {{- end -}}
 {{- end -}}
 
-{{/*Return the proper serivce image tag*/}}
+{{/*Return the proper serivce image name*/}}
 {{- define "service.tag" -}}
 {{/*{{- include "common.images.image" ( dict "imageRoot" .Values.helmservice.image "global" .Values.global.keptn "defaultTag" .Chart.appVersion) -}}*/}}
 {{- $tag := "" -}}

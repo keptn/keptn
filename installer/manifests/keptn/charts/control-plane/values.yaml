@@ -1,10 +1,10 @@
 global:
   keptn:
     registry: docker.io/keptn                # Registry where the image is located.
-    tag: ~                                   # Container Tag globally for all keptn services
+    tag: ""                                  # Container Tag globally for all keptn services
   apiGatewayNginx:
     registry: docker.io/nginxinc             # Nginx Registry
-    tag: 1.21.6-alpine                     # Nginx Tag
+    tag: 1.21.6-alpine                       # Nginx Tag
 
 mongo:
   enabled: true
