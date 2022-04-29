@@ -337,7 +337,7 @@ jobs:
         id: prepare_test_run
         run: |
           go install gotest.tools/gotestsum@v1.7.0
-          cd test/go-tests
+          cd test/zerodowntime
           go get ./...
 
       - name: "------- TESTS START -------"
@@ -360,7 +360,7 @@ jobs:
           UNLEASH_SERVICE_VERSION: "release-0.3.2"
           GOTESTSUM_FORMAT: "testname"
         run: |
-          cd test/ZD           
+          cd test/zerodowntime          
           gotestsum --no-color=false -- -run Test_ZeroDowntime -v -timeout 90m
 
       - name: "------- TESTS END -------"
