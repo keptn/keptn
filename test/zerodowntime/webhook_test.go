@@ -1,7 +1,6 @@
 package zerodowntime
 
 import (
-	"fmt"
 	"github.com/benbjohnson/clock"
 	testutils "github.com/keptn/keptn/test/go-tests"
 	"github.com/stretchr/testify/suite"
@@ -66,7 +65,7 @@ Loop:
 }
 
 func (suite *TestSuiteWebhook) Test_Webhook() {
-	projectName := "webhooks" + suite.gedId()
+	projectName := "webhooks" + suite.env.gedId()
 	serviceName := "myservice"
 
 	//test considered failed by default so that we can use require
@@ -84,9 +83,4 @@ func (suite *TestSuiteWebhook) Test_Webhook() {
 	//if test returns then it's passed
 	atomic.AddUint64(&suite.env.FailedSequences, ^uint64(1-1))
 	atomic.AddUint64(&suite.env.PassedSequences, 1)
-}
-
-func (suite *TestSuiteWebhook) gedId() string {
-	atomic.AddUint64(&suite.env.Id, 1)
-	return fmt.Sprintf("%d", suite.env.Id)
 }

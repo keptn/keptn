@@ -2,8 +2,11 @@ package zerodowntime
 
 import (
 	"context"
+	"fmt"
+	testutils "github.com/keptn/keptn/test/go-tests"
 	"github.com/stretchr/testify/suite"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -51,6 +54,11 @@ func SetupZD() *ZeroDowntimeEnv {
 	return &zd
 }
 
+func (env *ZeroDowntimeEnv) gedId() string {
+	atomic.AddUint64(&env.Id, 1)
+	return fmt.Sprintf("%d", env.Id)
+}
+
 type TestSuiteDowntime struct {
 	suite.Suite
 }
@@ -64,9 +72,9 @@ func Test_ZeroDowntime(t *testing.T) {
 	suite.Run(t, new(TestSuiteDowntime))
 }
 
-//func (suite *TestSuiteDowntime) TestSequences() {
-//	ZDTestTemplate(suite.T(), Sequences, "Sequences")
-//}
+func (suite *TestSuiteDowntime) TestSequences() {
+	ZDTestTemplate(suite.T(), Sequences, "Sequences")
+}
 
 func (suite *TestSuiteDowntime) TestWebhook() {
 	ZDTestTemplate(suite.T(), Webhook, "Webhook")
@@ -107,24 +115,34 @@ func RollingUpgrade(t *testing.T, env *ZeroDowntimeEnv) {
 
 	}()
 	t.Log("Upgrade in progress")
-	time.Sleep(1 * time.Minute)
-	//for i := 0; i < env.NrOfUpgrades; i++ {
-	//	chartURL := ""
-	//	var err error
-	//	if i%2 == 0 {
-	//		chartURL = chartLatestVersion
-	//	} else {
-	//		chartURL = chartPreviousVersion
-	//	}
-	//	t.Logf("Upgrading Keptn to %s", chartURL)
-	//	_, err = testutils.ExecuteCommand(
-	//		fmt.Sprintf(
-	//			"helm upgrade -n %s keptn %s --wait --set=control-plane.apiGatewayNginx.type=LoadBalancer "+
-	//				"--set=control-plane.common.strategy.rollingUpdate.maxUnavailable=0 --set control-plane.resourceService.enabled=true"+
-	//				" --set control-plane.resourceService.env.DIRECTORY_STAGE_STRUCTURE=true", testutils.GetKeptnNameSpaceFromEnv(), chartURL))
-	//	if err != nil {
-	//		t.Logf("Encountered error when upgrading keptn: %v", err)
-	//
-	//	}
-	//}
+	//	time.Sleep(1 * time.Minute)
+	for i := 0; i < env.NrOfUpgrades; i++ {
+		chartURL := ""
+		var err error
+		if i%2 == 0 {
+			chartURL = chartLatestVersion
+		} else {
+			chartURL = chartPreviousVersion
+		}
+		t.Logf("Upgrading Keptn to %s", chartURL)
+		_, err = testutils.ExecuteCommand(
+			fmt.Sprintf(
+				"helm upgrade -n %s keptn %s --wait --set=control-plane.apiGatewayNginx.type=LoadBalancer "+
+					"--set=control-plane.common.strategy.rollingUpdate.maxUnavailable=0 --set control-plane.resourceService.enabled=true"+
+					" --set control-plane.resourceService.env.DIRECTORY_STAGE_STRUCTURE=true", testutils.GetKeptnNameSpaceFromEnv(), chartURL))
+		if err != nil {
+			t.Logf("Encountered error when upgrading keptn: %v", err)
+
+		}
+	}
+}
+
+func PrintSequencesResults(t *testing.T, env *ZeroDowntimeEnv) {
+
+	t.Log("-----------------------------------------------")
+	t.Log("TOTAL SEQUENCES: ", env.FiredSequences)
+	t.Log("TOTAL SUCCESS ", env.PassedSequences)
+	t.Log("TOTAL FAILURES ", env.FailedSequences)
+	t.Log("-----------------------------------------------")
+
 }

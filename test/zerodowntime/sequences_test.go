@@ -45,7 +45,7 @@ func (suite *TestSuiteSequences) SetupSuite() {
 
 func (suite *TestSuiteSequences) createNew() {
 	var err error
-	projectName := "zd-sequence" + suite.gedId()
+	projectName := "zd-sequence" + suite.env.gedId()
 	suite.T().Logf("Creating project with id %s ", projectName)
 	suite.project, err = testutils.CreateProject(projectName, suite.env.ShipyardFile)
 	suite.Nil(err)
@@ -208,19 +208,4 @@ func GetShipyard() (string, error) {
 	shipyardFileContent, _ := yaml.Marshal(shipyard)
 
 	return testutils.CreateTmpShipyardFile(string(shipyardFileContent))
-}
-
-func (suite *TestSuiteSequences) gedId() string {
-	atomic.AddUint64(&suite.env.Id, 1)
-	return fmt.Sprintf("%d", suite.env.Id)
-}
-
-func PrintSequencesResults(t *testing.T, env *ZeroDowntimeEnv) {
-
-	t.Log("-----------------------------------------------")
-	t.Log("TOTAL SEQUENCES: ", env.FiredSequences)
-	t.Log("TOTAL SUCCESS ", env.PassedSequences)
-	t.Log("TOTAL FAILURES ", env.FailedSequences)
-	t.Log("-----------------------------------------------")
-
 }
