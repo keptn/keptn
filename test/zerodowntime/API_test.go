@@ -1,4 +1,4 @@
-package ZD
+package zerodowntime
 
 import (
 	"fmt"
