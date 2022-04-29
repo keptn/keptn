@@ -29,7 +29,7 @@ func (suite *TestSuiteWebhook) BeforeTest(suiteName, testName string) {
 //Test_Sequences can be used to test a single run of the sequence test suite
 func Test_Webhook(t *testing.T) {
 
-	s := &TestSuiteSequences{
+	s := &TestSuiteWebhook{
 		env: SetupZD(),
 	}
 	suite.Run(t, s)
@@ -98,7 +98,7 @@ func (suite *TestSuiteWebhook) Test_Webhook() {
 			suite.T().Logf("Could not delete tmp file: %s", err.Error())
 		}
 	}()
-	Test_Webhook(suite.T(), testutils.WebhookYamlBeta, projectName, serviceName)
+	testutils.Test_Webhook(suite.T(), testutils.WebhookYamlBeta, projectName, serviceName)
 }
 
 func PrintWebhookResults(t *testing.T, env *ZeroDowntimeEnv) {
