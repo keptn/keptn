@@ -196,15 +196,15 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: keptn-get-configmaps
+  name: keptn-get-webhook-config
   labels:
     {{ include "control-plane.labels" . | nindent 4 }}
-    app.kubernetes.io/name: keptn-get-configmaps
+    app.kubernetes.io/name: keptn-get-webhook-config
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
 rules:
   - apiGroups:
-      - ""
+      - keptn-webhook-config
     resources:
       - configmaps
     verbs:
@@ -286,7 +286,7 @@ metadata:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: keptn-get-configmaps
+  name: keptn-get-webhook-config
 subjects:
   - kind: ServiceAccount
     name: keptn-webhook-service

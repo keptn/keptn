@@ -200,7 +200,7 @@ func (th *TaskHandler) performWebhookRequests(webhook lib.Webhook, eventAdapter 
 	for _, req := range webhook.Requests {
 		request, err := th.CreateRequest(req)
 		if err != nil {
-			logger.Errorf("creating CURL request failed: %s", err.Error())
+			logger.Infof("creating CURL request failed: %s", err.Error())
 			return nil, lib.NewWebhookExecutionError(true, fmt.Errorf("creating CURL request failed: %s", err.Error()), lib.WithNrOfExecutedRequests(executedRequests))
 		}
 		// parse the data from the event, together with the secret env vars
