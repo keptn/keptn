@@ -50,7 +50,7 @@ func TestCurlValidator_ResolveIPAddresses(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.ipResolver.ResolveIPAdresses(tt.url)
+			got := tt.ipResolver.Resolve(tt.url)
 			require.Equal(t, tt.want, got)
 		})
 	}

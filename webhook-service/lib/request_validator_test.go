@@ -15,7 +15,7 @@ func TestRequestValidator_Validate(t *testing.T) {
 		data             lib.Request
 		want             error
 		ipResolver       lib.IPResolver
-		denyListProvider lib.IDenyListProvider
+		denyListProvider lib.DenyListProvider
 		wantErr          bool
 	}{
 		{
@@ -37,7 +37,7 @@ func TestRequestValidator_Validate(t *testing.T) {
 					return []string{"1.1.1.1"}
 				},
 			},
-			denyListProvider: fake.IDenyListProviderMock{
+			denyListProvider: fake.DenyListProviderMock{
 				GetDenyListFunc: func() []string {
 					return []string{"1.1.1.2"}
 				},
@@ -64,12 +64,12 @@ func TestRequestValidator_Validate(t *testing.T) {
 					return []string{"1.1.1.1"}
 				},
 			},
-			denyListProvider: fake.IDenyListProviderMock{
+			denyListProvider: fake.DenyListProviderMock{
 				GetDenyListFunc: func() []string {
 					return []string{"1.1.1.1"}
 				},
 			},
-			want:    fmt.Errorf("Invalid curl URL: ''"),
+			want:    fmt.Errorf("invalid curl URL: ''"),
 			wantErr: true,
 		},
 		{
@@ -91,7 +91,7 @@ func TestRequestValidator_Validate(t *testing.T) {
 					return []string{"1.1.1.1"}
 				},
 			},
-			denyListProvider: fake.IDenyListProviderMock{
+			denyListProvider: fake.DenyListProviderMock{
 				GetDenyListFunc: func() []string {
 					return []string{"some-denied"}
 				},
@@ -118,7 +118,7 @@ func TestRequestValidator_Validate(t *testing.T) {
 					return []string{"1.1.1.1"}
 				},
 			},
-			denyListProvider: fake.IDenyListProviderMock{
+			denyListProvider: fake.DenyListProviderMock{
 				GetDenyListFunc: func() []string {
 					return []string{"1.1.1.1"}
 				},

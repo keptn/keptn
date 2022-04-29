@@ -8,7 +8,7 @@ import (
 )
 
 type IPResolver interface {
-	ResolveIPAdresses(curlURL string) []string
+	Resolve(curlURL string) []string
 }
 
 type LookupFunc func(host string) ([]net.IP, error)
@@ -23,7 +23,7 @@ func NewIPResolver(lookUpIPFunc ...LookupFunc) IPResolver {
 	}
 }
 
-func (i IpResolver) ResolveIPAdresses(curlURL string) []string {
+func (i IpResolver) Resolve(curlURL string) []string {
 	ipAddresses := make([]string, 0)
 	parsedURL, err := url.Parse(curlURL)
 	if err != nil {

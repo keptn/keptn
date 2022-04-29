@@ -11,11 +11,11 @@ import (
 	v1 "k8s.io/client-go/kubernetes/typed/core/v1"
 )
 
-type IDenyListProvider interface {
-	GetDenyList() []string
+type DenyListProvider interface {
+	Get() []string
 }
 
-type DenyListProvider struct {
+type DenyListProviderStruct struct {
 	GetKubeAPI                  GetKubeAPIFunc
 	GetDeniedURLs               GetDeniedURLsFunc
 	GetWebhookDenyListConfigMap GetWebhookDenyListConfigMapFunc
@@ -26,14 +26,14 @@ type GetDeniedURLsFunc func(env map[string]string) []string
 type GetWebhookDenyListConfigMapFunc func(kubeAPI v1.CoreV1Interface) (*corev1.ConfigMap, error)
 
 func NewDenyListProvider() DenyListProvider {
-	return DenyListProvider{
+	return DenyListProviderStruct{
 		GetKubeAPI:                  keptnkubeutils.GetKubeAPI,
 		GetDeniedURLs:               GetDeniedURLs,
 		GetWebhookDenyListConfigMap: getWebhookDenyListConfigMap,
 	}
 }
 
-func (d DenyListProvider) GetDenyList() []string {
+func (d DenyListProviderStruct) Get() []string {
 	denyList := d.GetDeniedURLs(GetEnv())
 	kubeAPI, err := d.GetKubeAPI(true)
 	if err != nil {

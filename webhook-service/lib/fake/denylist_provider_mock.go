@@ -1,10 +1,10 @@
 package fake
 
-type IDenyListProviderMock struct {
+type DenyListProviderMock struct {
 	GetDenyListFunc func() []string
 }
 
-func (r IDenyListProviderMock) GetDenyList() []string {
+func (r DenyListProviderMock) Get() []string {
 	if r.GetDenyListFunc != nil {
 		return r.GetDenyListFunc()
 	}

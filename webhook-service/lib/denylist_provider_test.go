@@ -29,7 +29,7 @@ func TestGetDenyList(t *testing.T) {
 	}{
 		{
 			name: "cannot get kubeAPI",
-			denyListProvider: lib.DenyListProvider{
+			denyListProvider: lib.DenyListProviderStruct{
 				GetKubeAPI: func(useInClusterConfig bool) (v1.CoreV1Interface, error) {
 					return nil, fmt.Errorf("cannot get kubeAPIClient")
 				},
@@ -41,7 +41,7 @@ func TestGetDenyList(t *testing.T) {
 		},
 		{
 			name: "cannot get configmap",
-			denyListProvider: lib.DenyListProvider{
+			denyListProvider: lib.DenyListProviderStruct{
 				GetKubeAPI: func(useInClusterConfig bool) (v1.CoreV1Interface, error) {
 					return &v1.CoreV1Client{}, nil
 				},
@@ -56,7 +56,7 @@ func TestGetDenyList(t *testing.T) {
 		},
 		{
 			name: "valid empty configmap",
-			denyListProvider: lib.DenyListProvider{
+			denyListProvider: lib.DenyListProviderStruct{
 				GetKubeAPI: func(useInClusterConfig bool) (v1.CoreV1Interface, error) {
 					return &v1.CoreV1Client{}, nil
 				},
@@ -71,7 +71,7 @@ func TestGetDenyList(t *testing.T) {
 		},
 		{
 			name: "valid",
-			denyListProvider: lib.DenyListProvider{
+			denyListProvider: lib.DenyListProviderStruct{
 				GetKubeAPI: func(useInClusterConfig bool) (v1.CoreV1Interface, error) {
 					return &v1.CoreV1Client{}, nil
 				},
@@ -88,7 +88,7 @@ func TestGetDenyList(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.denyListProvider.GetDenyList()
+			got := tt.denyListProvider.Get()
 			require.Equal(t, tt.want, got)
 		})
 	}

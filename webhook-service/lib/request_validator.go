@@ -6,7 +6,7 @@ import (
 )
 
 type requestValidator struct {
-	denyListProvider IDenyListProvider
+	denyListProvider DenyListProvider
 	ipResolver       IPResolver
 }
 
@@ -14,7 +14,7 @@ type RequestValidator interface {
 	Validate(request Request) error
 }
 
-func NewRequestValidator(denyListProvider IDenyListProvider, ipResolver IPResolver) RequestValidator {
+func NewRequestValidator(denyListProvider DenyListProvider, ipResolver IPResolver) RequestValidator {
 	validator := requestValidator{
 		denyListProvider: denyListProvider,
 		ipResolver:       ipResolver,
@@ -24,11 +24,11 @@ func NewRequestValidator(denyListProvider IDenyListProvider, ipResolver IPResolv
 
 func (c requestValidator) Validate(request Request) error {
 	if request.URL == "" {
-		return fmt.Errorf("Invalid curl URL: '%s'", request.URL)
+		return fmt.Errorf("invalid curl URL: '%s'", request.URL)
 	}
 
-	denyList := c.denyListProvider.GetDenyList()
-	ipAddresses := c.ipResolver.ResolveIPAdresses(request.URL)
+	denyList := c.denyListProvider.Get()
+	ipAddresses := c.ipResolver.Resolve(request.URL)
 
 	for _, url := range denyList {
 		if strings.Contains(request.URL, url) {
