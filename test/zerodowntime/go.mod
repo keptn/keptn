@@ -1,4 +1,4 @@
-module github.com/keptn/keptn/test/ZD
+module github.com/keptn/keptn/test/zerodowntime
 
 go 1.17
 
