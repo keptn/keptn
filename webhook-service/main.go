@@ -35,7 +35,7 @@ func main() {
 	)
 
 	ipResolver := lib.NewIPResolver()
-	denyListProvider := lib.NewDenyListProvider()
+	denyListProvider := lib.NewDenyListProvider(kubeAPI)
 	requestValidator := lib.NewRequestValidator(denyListProvider, ipResolver)
 	taskHandler := handler.NewTaskHandler(&lib.TemplateEngine{}, curlExecutor, requestValidator, secretReader)
 

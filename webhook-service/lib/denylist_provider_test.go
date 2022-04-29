@@ -4,10 +4,14 @@ import (
 	"fmt"
 	"testing"
 
+	"k8s.io/apimachinery/pkg/runtime"
+
 	"github.com/keptn/keptn/webhook-service/lib"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes/fake"
+	k8stesting "k8s.io/client-go/testing"
 )
 
 func TestDeniedURLS(t *testing.T) {
@@ -20,6 +24,23 @@ func TestDeniedURLS(t *testing.T) {
 	require.Equal(t, expected, urls)
 }
 
+func TestCannotGetConfigMap(t *testing.T) {
+	client := fake.NewSimpleClientset()
+	client.PrependReactor("get", "configmap", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+		return true, nil, fmt.Errorf("cannot get configmap")
+	})
+	denyListProvider := lib.DenyListProviderStruct{
+		GetDeniedURLs: func(env map[string]string) []string {
+			return []string{"1.2.3.4", "kubernetes:9876"}
+		},
+		KubeClient: client,
+	}
+
+	got := denyListProvider.Get()
+	require.Equal(t, []string{"1.2.3.4", "kubernetes:9876"}, got)
+
+}
+
 func TestGetDenyList(t *testing.T) {
 	denyListString := "some\nurl\nip"
 	tests := []struct {
@@ -28,56 +49,33 @@ func TestGetDenyList(t *testing.T) {
 		want             []string
 	}{
 		{
-			name: "cannot get kubeAPI",
-			denyListProvider: lib.DenyListProviderStruct{
-				GetKubeAPI: func(useInClusterConfig bool) (v1.CoreV1Interface, error) {
-					return nil, fmt.Errorf("cannot get kubeAPIClient")
-				},
-				GetDeniedURLs: func(env map[string]string) []string {
-					return []string{"1.2.3.4", "kubernetes:9876"}
-				},
-			},
-			want: []string{"1.2.3.4", "kubernetes:9876"},
-		},
-		{
-			name: "cannot get configmap",
-			denyListProvider: lib.DenyListProviderStruct{
-				GetKubeAPI: func(useInClusterConfig bool) (v1.CoreV1Interface, error) {
-					return &v1.CoreV1Client{}, nil
-				},
-				GetWebhookDenyListConfigMap: func(kubeAPI v1.CoreV1Interface) (*corev1.ConfigMap, error) {
-					return nil, fmt.Errorf("cannot get configmap")
-				},
-				GetDeniedURLs: func(env map[string]string) []string {
-					return []string{"1.2.3.4", "kubernetes:9876"}
-				},
-			},
-			want: []string{"1.2.3.4", "kubernetes:9876"},
-		},
-		{
 			name: "valid empty configmap",
 			denyListProvider: lib.DenyListProviderStruct{
-				GetKubeAPI: func(useInClusterConfig bool) (v1.CoreV1Interface, error) {
-					return &v1.CoreV1Client{}, nil
-				},
-				GetWebhookDenyListConfigMap: func(kubeAPI v1.CoreV1Interface) (*corev1.ConfigMap, error) {
-					return &corev1.ConfigMap{}, nil
-				},
 				GetDeniedURLs: func(env map[string]string) []string {
 					return []string{"1.2.3.4", "kubernetes:9876"}
 				},
+				KubeClient: fake.NewSimpleClientset(
+					&corev1.ConfigMap{
+						ObjectMeta: metav1.ObjectMeta{
+							Name: "keptn-webhook-config",
+						},
+						Data: map[string]string{
+							"denyList": ""},
+					}),
 			},
 			want: []string{"1.2.3.4", "kubernetes:9876"},
 		},
 		{
 			name: "valid",
 			denyListProvider: lib.DenyListProviderStruct{
-				GetKubeAPI: func(useInClusterConfig bool) (v1.CoreV1Interface, error) {
-					return &v1.CoreV1Client{}, nil
-				},
-				GetWebhookDenyListConfigMap: func(kubeAPI v1.CoreV1Interface) (*corev1.ConfigMap, error) {
-					return &corev1.ConfigMap{Data: map[string]string{"denyList": denyListString}}, nil
-				},
+				KubeClient: fake.NewSimpleClientset(
+					&corev1.ConfigMap{
+						ObjectMeta: metav1.ObjectMeta{
+							Name: "keptn-webhook-config",
+						},
+						Data: map[string]string{
+							"denyList": denyListString},
+					}),
 				GetDeniedURLs: func(env map[string]string) []string {
 					return []string{"1.2.3.4", "kubernetes:9876"}
 				},

@@ -204,9 +204,11 @@ metadata:
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
 rules:
   - apiGroups:
-      - keptn-webhook-config
+      - ""
     resources:
       - configmaps
+    resourceNames:
+      - "keptn-webhook-config"
     verbs:
       - get
 
