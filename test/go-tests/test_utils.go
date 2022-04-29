@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	v12 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"net/http"
 	"os"
@@ -704,11 +705,10 @@ func GetPublicURLOfService(serviceName, projectName, stageName string) (string, 
 
 }
 
+// SetShipyardControllerEnvVar sets the provided value of the shipyard-controller deployment.
+// This function is specific to the shipyard-controller, and eventually we should avoid setting env vars of deployments in general, as this
+// leads to the respective pod being restarted, which increases the duration of the integration tests and prevents us from executing tests in parallel
 func SetShipyardControllerEnvVar(t *testing.T, envVarName, envVarValue string) error {
-	//_, err := ExecuteCommand(fmt.Sprintf("kubectl -n %s set env deployment shipyard-controller %s=%s", GetKeptnNameSpaceFromEnv(), envVarName, envVarValue))
-	//if err != nil {
-	//	return err
-	//}
 
 	k8sClient, err := keptnkubeutils.GetClientset(false)
 	if err != nil {
@@ -789,6 +789,29 @@ func SetShipyardControllerEnvVar(t *testing.T, envVarName, envVarValue string) e
 
 		return true
 	}, 30*time.Second, 5*time.Second)
+
+	return nil
+}
+
+// SetRecreateUpgradeStrategyForDeployment sets the upgrade strategy
+func SetRecreateUpgradeStrategyForDeployment(deploymentName string) error {
+	clientset, err := keptnkubeutils.GetClientset(false)
+	if err != nil {
+		return err
+	}
+
+	deployment, err := clientset.AppsV1().Deployments(GetKeptnNameSpaceFromEnv()).Get(context.TODO(), deploymentName, v1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	deployment.Spec.Strategy.Type = v12.RecreateDeploymentStrategyType
+	deployment.Spec.Strategy.RollingUpdate = nil
+
+	_, err = clientset.AppsV1().Deployments(GetKeptnNameSpaceFromEnv()).Update(context.TODO(), deployment, v1.UpdateOptions{})
+	if err != nil {
+		return nil
+	}
 
 	return nil
 }

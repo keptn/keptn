@@ -1,29 +1,16 @@
 package go_tests
 
 import (
-	"context"
-	keptnkubeutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/stretchr/testify/require"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"testing"
-	"time"
 )
 
 func Test_Openshift(t *testing.T) {
 
-	clientset, err := keptnkubeutils.GetClientset(false)
+	// On the minishift tests running on GKE, using the rollingUpgrade strategy lead to random failures due to the
+	// shipyard controller not being available after a restart.
+	err := SetRecreateUpgradeStrategyForDeployment("shipyard-controller")
 	require.Nil(t, err)
-
-	shipyardDeployment, err := clientset.AppsV1().Deployments(GetKeptnNameSpaceFromEnv()).Get(context.TODO(), "shipyard-controller", v1.GetOptions{})
-	require.Nil(t, err)
-
-	shipyardDeployment.Spec.Strategy.Type = "Recreate"
-	shipyardDeployment.Spec.Strategy.RollingUpdate = nil
-
-	_, err = clientset.AppsV1().Deployments(GetKeptnNameSpaceFromEnv()).Update(context.TODO(), shipyardDeployment, v1.UpdateOptions{})
-	require.Nil(t, err)
-
-	<-time.After(1 * time.Minute)
 
 	// Common Tests
 	t.Run("Test_LogIngestion", Test_LogIngestion)
