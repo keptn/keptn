@@ -3,7 +3,6 @@ description: Keptn should integrate with this tool. Let's make it happen...
 title: "[integration] "
 labels: ["integrations"]
 assignees:
-  - agardnerit
 body:
   - type: markdown
     attributes:
@@ -13,7 +12,7 @@ body:
         Before you start!
 
         - If your tool is already containerised or can run as a script (PowerShell, Shell or Python), look into the [job executor service](https://github.com/keptn-contrib/job-executor-service).
-        - If you only need to notify a tool of a Keptn event, use the [webhook service](https://github.com/keptn/keptn/tree/master/webhook-service) (comes preinstalled with Keptn).
+        - If you only need to notify a tool of a Keptn event (and your tool has an HTTP API able to receive HTTPS requests), use the [webhook service](https://github.com/keptn/keptn/tree/master/webhook-service) (comes preinstalled with Keptn).
 
   - type: input
     id: tool
@@ -61,15 +60,6 @@ body:
         - "No"
     validations:
       required: true
-
-  - type: input
-    id: contact
-    attributes:
-      label: Contact Details
-      description: How can we get in touch with you if we need more info?
-      placeholder: ex. email@example.com
-    validations:
-      required: false
 
   - type: textarea
     id: other_info
