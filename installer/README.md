@@ -10,3 +10,19 @@ The scripts and manifests are finally put into a container, which starts the ini
 * PKS
 * Kubernetes
 * Minikube 1.2
+
+## Customise Charts with own values.yaml for local testing
+Create `installer/manifests/keptn/values-local.yaml` file for your local values to be stored. The file should look like this:
+For local templating use `helm template . -f values-local.yaml --name-template test-control-plane --output-dir ../../temp`
+
+```
+global:
+  keptn:
+    registry: "testregistry/keptn"      # keptn registry/image name
+    tag: "0.0.1"                        # keptn version/tag
+
+# only change if version at ./charts/control-plane/values.yaml --> apiGatewayNginx.registry/tag is not satisfying
+#  apiGatewayNginx:
+#    registry: this.is.a.test           # nginx registry/image name
+#    tag: 10.0.0                        # ngnix version/tag
+```
