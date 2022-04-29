@@ -11,42 +11,11 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"gopkg.in/yaml.v3"
-	"os"
 	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
 )
-
-const qualityGatesSLOFileContent = `---
-spec_version: "0.1.1"
-comparison:
-  aggregate_function: "avg"
-  compare_with: "single_result"
-  include_result_with_score: "pass"
-  number_of_comparison_results: 1
-filter:
-objectives:
-  - sli: "response_time_p95"
-    key_sli: false
-    pass:             # pass if (relative change <= 75% AND absolute value is < 75ms)
-      - criteria:
-          - "<=+75%"  # relative values require a prefixed sign (plus or minus)
-          - "<800"     # absolute values only require a logical operator
-    warning:          # if the response time is below 200ms, the result should be a warning
-      - criteria:
-          - "<=1000"
-          - "<=+100%"
-    weight: 1
-  - sli: "throughput"
-    pass:
-      - criteria:
-          - "<=+100%"
-          - ">=-80%"
-  - sli: "error_rate"
-total_score:
-  pass: "90%"
-  warning: "75%"`
 
 type TestSuiteSequences struct {
 	suite.Suite
@@ -130,8 +99,8 @@ func TestSequencesZD(t *testing.T) {
 		t2.Parallel()
 		Sequences(t2, env)
 	})
-
 	env.Wg.Wait()
+
 }
 
 // to perform tests sequentially inside ZD
@@ -173,20 +142,7 @@ func (suite *TestSuiteSequences) Test_Evaluation() {
 	_, err := testutils.ExecuteCommand(fmt.Sprintf("kubectl create configmap -n %s lighthouse-config-%s --from-literal=sli-provider=my-sli-provider", testutils.GetKeptnNameSpaceFromEnv(), suite.project))
 	require.Nil(t, err)
 
-	// ...and an SLO file - but an invalid one :(
-	t.Log("adding SLO file")
-	sloFilePath, err := testutils.CreateTmpFile("slo-*.yaml", qualityGatesSLOFileContent)
-	require.Nil(t, err)
-	defer os.Remove(sloFilePath)
-
-	_, err = testutils.ExecuteCommand(fmt.Sprintf("keptn add-resource --project=%s --stage=%s --service=%s --resource=%s --resourceUri=slo.yaml", suite.project, "hardening", "myservice", sloFilePath))
-	require.Nil(t, err)
-	keptnContext, err := testutils.TriggerEvaluation(suite.project, "hardening", "myservice")
-	suite.Nil(err)
-	suite.T().Logf("triggered evaluation for project %s with context %s", suite.project, keptnContext)
-	sequence := NewTriggeredSequence(keptnContext, suite.project, "evaluation")
-
-	suite.checkSequence(sequence)
+	testutils.PerformResourceServiceTest(t, suite.project, "myservice", true)
 }
 
 func (suite *TestSuiteSequences) Test_DeliveryFails() {
