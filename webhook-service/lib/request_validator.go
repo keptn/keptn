@@ -7,14 +7,14 @@ import (
 
 type requestValidator struct {
 	denyListProvider IDenyListProvider
-	ipResolver       IIPResolver
+	ipResolver       IPResolver
 }
 
 type RequestValidator interface {
 	Validate(request Request) error
 }
 
-func NewRequestValidator(denyListProvider IDenyListProvider, ipResolver IIPResolver) RequestValidator {
+func NewRequestValidator(denyListProvider IDenyListProvider, ipResolver IPResolver) RequestValidator {
 	validator := requestValidator{
 		denyListProvider: denyListProvider,
 		ipResolver:       ipResolver,

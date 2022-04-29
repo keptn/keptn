@@ -13,13 +13,13 @@ func TestCurlValidator_ResolveIPAddresses(t *testing.T) {
 	tests := []struct {
 		name       string
 		url        string
-		ipResolver lib.IPResolver
+		ipResolver lib.IpResolver
 		want       []string
 	}{
 		{
 			name: "error output",
 			url:  "http://some-url",
-			ipResolver: lib.IPResolver{
+			ipResolver: lib.IpResolver{
 				LookupIP: func(host string) ([]net.IP, error) {
 					return make([]net.IP, 0), fmt.Errorf("some error")
 				},
@@ -29,7 +29,7 @@ func TestCurlValidator_ResolveIPAddresses(t *testing.T) {
 		{
 			name: "no existing address",
 			url:  "http://some-url",
-			ipResolver: lib.IPResolver{
+			ipResolver: lib.IpResolver{
 				LookupIP: func(host string) ([]net.IP, error) {
 					return make([]net.IP, 0), nil
 				},
@@ -39,7 +39,7 @@ func TestCurlValidator_ResolveIPAddresses(t *testing.T) {
 		{
 			name: "ip addresses list",
 			url:  "http://some-url",
-			ipResolver: lib.IPResolver{
+			ipResolver: lib.IpResolver{
 				LookupIP: func(host string) ([]net.IP, error) {
 					return []net.IP{net.ParseIP("1.1.1.1"), net.ParseIP("2.2.2.2")}, nil
 				},

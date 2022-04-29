@@ -7,23 +7,23 @@ import (
 	logger "github.com/sirupsen/logrus"
 )
 
-type IIPResolver interface {
+type IPResolver interface {
 	ResolveIPAdresses(curlURL string) []string
 }
 
 type LookupFunc func(host string) ([]net.IP, error)
 
-type IPResolver struct {
+type IpResolver struct {
 	LookupIP LookupFunc
 }
 
 func NewIPResolver(lookUpIPFunc ...LookupFunc) IPResolver {
-	return IPResolver{
+	return IpResolver{
 		LookupIP: net.LookupIP,
 	}
 }
 
-func (i IPResolver) ResolveIPAdresses(curlURL string) []string {
+func (i IpResolver) ResolveIPAdresses(curlURL string) []string {
 	ipAddresses := make([]string, 0)
 	parsedURL, err := url.Parse(curlURL)
 	if err != nil {

@@ -1,10 +1,10 @@
 package fake
 
-type IIPResolverMock struct {
+type IPResolverMock struct {
 	ResolveIPAdressesFunc func(curlURL string) []string
 }
 
-func (r IIPResolverMock) ResolveIPAdresses(curlURL string) []string {
+func (r IPResolverMock) ResolveIPAdresses(curlURL string) []string {
 	if r.ResolveIPAdressesFunc != nil {
 		return r.ResolveIPAdressesFunc(curlURL)
 	}

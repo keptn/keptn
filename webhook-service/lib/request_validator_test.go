@@ -14,7 +14,7 @@ func TestRequestValidator_Validate(t *testing.T) {
 		name             string
 		data             lib.Request
 		want             error
-		ipResolver       lib.IIPResolver
+		ipResolver       lib.IPResolver
 		denyListProvider lib.IDenyListProvider
 		wantErr          bool
 	}{
@@ -32,7 +32,7 @@ func TestRequestValidator_Validate(t *testing.T) {
 				Payload: "some payload",
 				URL:     "http://some-valid-url",
 			},
-			ipResolver: fake.IIPResolverMock{
+			ipResolver: fake.IPResolverMock{
 				ResolveIPAdressesFunc: func(curlURL string) []string {
 					return []string{"1.1.1.1"}
 				},
@@ -59,7 +59,7 @@ func TestRequestValidator_Validate(t *testing.T) {
 				Payload: "some payload",
 				URL:     "",
 			},
-			ipResolver: fake.IIPResolverMock{
+			ipResolver: fake.IPResolverMock{
 				ResolveIPAdressesFunc: func(curlURL string) []string {
 					return []string{"1.1.1.1"}
 				},
@@ -86,7 +86,7 @@ func TestRequestValidator_Validate(t *testing.T) {
 				Payload: "some payload",
 				URL:     "http://some-denied-url",
 			},
-			ipResolver: fake.IIPResolverMock{
+			ipResolver: fake.IPResolverMock{
 				ResolveIPAdressesFunc: func(curlURL string) []string {
 					return []string{"1.1.1.1"}
 				},
@@ -113,7 +113,7 @@ func TestRequestValidator_Validate(t *testing.T) {
 				Payload: "some payload",
 				URL:     "http://som-url",
 			},
-			ipResolver: fake.IIPResolverMock{
+			ipResolver: fake.IPResolverMock{
 				ResolveIPAdressesFunc: func(curlURL string) []string {
 					return []string{"1.1.1.1"}
 				},
