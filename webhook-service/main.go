@@ -35,7 +35,7 @@ func main() {
 	)
 
 	ipResolver := lib.NewIPResolver()
-	denyListProvider := lib.DenyListProvider{}
+	denyListProvider := lib.NewDenyListProvider()
 	curlValidator := lib.NewCurlValidator(denyListProvider, ipResolver)
 	taskHandler := handler.NewTaskHandler(&lib.TemplateEngine{}, curlExecutor, curlValidator, secretReader)
 

@@ -18,13 +18,9 @@ type IPResolver struct {
 }
 
 func NewIPResolver(lookUpIPFunc ...LookupFunc) IPResolver {
-	resolver := IPResolver{}
-	if len(lookUpIPFunc) > 0 {
-		resolver.LookupIP = lookUpIPFunc[0]
-	} else {
-		resolver.LookupIP = net.LookupIP
+	return IPResolver{
+		LookupIP: net.LookupIP,
 	}
-	return resolver
 }
 
 func (i IPResolver) ResolveIPAdresses(curlURL string) []string {

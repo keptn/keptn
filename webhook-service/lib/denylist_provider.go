@@ -6,7 +6,9 @@ import (
 
 	keptnkubeutils "github.com/keptn/kubernetes-utils/pkg"
 	logger "github.com/sirupsen/logrus"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	v1 "k8s.io/client-go/kubernetes/typed/core/v1"
 )
 
 type IDenyListProvider interface {
@@ -14,25 +16,40 @@ type IDenyListProvider interface {
 }
 
 type DenyListProvider struct {
+	GetKubeAPI                  GetKubeAPIFunc
+	GetDeniedURLs               GetDeniedURLsFunc
+	GetWebhookDenyListConfigMap GetWebhookDenyListConfigMapFunc
+}
+
+type GetKubeAPIFunc func(useInClusterConfig bool) (v1.CoreV1Interface, error)
+type GetDeniedURLsFunc func(env map[string]string) []string
+type GetWebhookDenyListConfigMapFunc func(kubeAPI v1.CoreV1Interface) (*corev1.ConfigMap, error)
+
+func NewDenyListProvider() DenyListProvider {
+	return DenyListProvider{
+		GetKubeAPI:                  keptnkubeutils.GetKubeAPI,
+		GetDeniedURLs:               GetDeniedURLs,
+		GetWebhookDenyListConfigMap: getWebhookDenyListConfigMap,
+	}
 }
 
 func (d DenyListProvider) GetDenyList() []string {
-	denyList := GetDeniedURLs(GetEnv())
-	kubeAPI, err := keptnkubeutils.GetKubeAPI(true)
+	denyList := d.GetDeniedURLs(GetEnv())
+	kubeAPI, err := d.GetKubeAPI(true)
 	if err != nil {
 		logger.Errorf("Unable to read ConfigMap %s: cannot get kubeAPI: %s", WebhookConfigMap, err.Error())
 		return denyList
 	}
 
-	configMap, err := kubeAPI.ConfigMaps(GetNamespaceFromEnvVar()).Get(context.TODO(), WebhookConfigMap, v1.GetOptions{})
+	configMap, err := d.GetWebhookDenyListConfigMap(kubeAPI)
 	if err != nil {
 		logger.Errorf("Unable to get ConfigMap %s content: %s", WebhookConfigMap, err.Error())
 		return denyList
 	}
 
 	denyListString := configMap.Data["denyList"]
-	denyList = strings.Fields(denyListString)
-	return denyList
+	denyListConfig := strings.Fields(denyListString)
+	return append(denyList, denyListConfig...)
 }
 
 func GetDeniedURLs(env map[string]string) []string {
@@ -53,4 +70,8 @@ func GetDeniedURLs(env map[string]string) []string {
 		urls = append(urls, kubeAPIHostIP+":"+kubeAPIPort)
 	}
 	return urls
+}
+
+func getWebhookDenyListConfigMap(kubeAPI v1.CoreV1Interface) (*corev1.ConfigMap, error) {
+	return kubeAPI.ConfigMaps(GetNamespaceFromEnvVar()).Get(context.TODO(), WebhookConfigMap, metav1.GetOptions{})
 }
