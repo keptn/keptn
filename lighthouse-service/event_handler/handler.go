@@ -2,8 +2,9 @@ package event_handler
 
 import (
 	"context"
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"net/http"
+
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	logger "github.com/sirupsen/logrus"
@@ -11,16 +12,18 @@ import (
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
 )
 
 type EvaluationEventHandler interface {
 	HandleEvent(ctx context.Context) error
 }
 
-func NewEventHandler(event cloudevents.Event) (EvaluationEventHandler, error) {
+func NewEventHandler(ctx context.Context, event cloudevents.Event) (EvaluationEventHandler, error) {
 	logger.Debug("Received event: " + event.Type())
 
-	keptnHandler, err := keptnv2.NewKeptn(&event, keptncommon.KeptnOpts{})
+	eventSender := ctx.Value(controlplane.EventSenderKey).(controlplane.EventSender)
+	keptnHandler, err := keptnv2.NewKeptn(&event, keptncommon.KeptnOpts{EventSender: &CPEventSender{eventSender}})
 	if err != nil {
 		return nil, err
 	}
