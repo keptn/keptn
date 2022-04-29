@@ -8,13 +8,45 @@ import (
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	testutils "github.com/keptn/keptn/test/go-tests"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"gopkg.in/yaml.v3"
+	"os"
 	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
 )
+
+const qualityGatesSLOFileContent = `---
+spec_version: "0.1.1"
+comparison:
+  aggregate_function: "avg"
+  compare_with: "single_result"
+  include_result_with_score: "pass"
+  number_of_comparison_results: 1
+filter:
+objectives:
+  - sli: "response_time_p95"
+    key_sli: false
+    pass:             # pass if (relative change <= 75% AND absolute value is < 75ms)
+      - criteria:
+          - "<=+75%"  # relative values require a prefixed sign (plus or minus)
+          - "<800"     # absolute values only require a logical operator
+    warning:          # if the response time is below 200ms, the result should be a warning
+      - criteria:
+          - "<=1000"
+          - "<=+100%"
+    weight: 1
+  - sli: "throughput"
+    pass:
+      - criteria:
+          - "<=+100%"
+          - ">=-80%"
+  - sli: "error_rate"
+total_score:
+  pass: "90%"
+  warning: "75%"`
 
 type TestSuiteSequences struct {
 	suite.Suite
@@ -40,12 +72,12 @@ func (suite *TestSuiteSequences) SetupSuite() {
 
 	suite.T().Log("Starting test for sequences")
 	// if needed the following line can setup a project eat very clock tick
-	//suite.createNew()
+	suite.createNew()
 }
 
 func (suite *TestSuiteSequences) createNew() {
 	var err error
-	projectName := "zd" + suite.gedId()
+	projectName := "zd-sequence" + suite.gedId()
 	suite.T().Logf("Creating project with id %s ", projectName)
 	suite.project, err = testutils.CreateProject(projectName, suite.env.ShipyardFile)
 	suite.Nil(err)
@@ -132,8 +164,29 @@ Loop:
 }
 
 func (suite *TestSuiteSequences) Test_Evaluation() {
-	suite.T().Log("Started Evaluation")
-	suite.T().Run("Test_QualityGates", testutils.Test_QualityGates)
+	t := suite.T()
+	t.Log("deleting lighthouse configmap from previous test run")
+	_, _ = testutils.ExecuteCommand(fmt.Sprintf("kubectl delete configmap -n %s lighthouse-config-%s", testutils.GetKeptnNameSpaceFromEnv(), suite.project))
+
+	//// now let's add an SLI provider
+	t.Log("adding SLI provider")
+	_, err := testutils.ExecuteCommand(fmt.Sprintf("kubectl create configmap -n %s lighthouse-config-%s --from-literal=sli-provider=my-sli-provider", testutils.GetKeptnNameSpaceFromEnv(), suite.project))
+	require.Nil(t, err)
+
+	// ...and an SLO file - but an invalid one :(
+	t.Log("adding SLO file")
+	sloFilePath, err := testutils.CreateTmpFile("slo-*.yaml", qualityGatesSLOFileContent)
+	require.Nil(t, err)
+	defer os.Remove(sloFilePath)
+
+	_, err = testutils.ExecuteCommand(fmt.Sprintf("keptn add-resource --project=%s --stage=%s --service=%s --resource=%s --resourceUri=slo.yaml", suite.project, "hardening", "myservice", sloFilePath))
+	require.Nil(t, err)
+	keptnContext, err := testutils.TriggerEvaluation(suite.project, "hardening", "myservice")
+	suite.Nil(err)
+	suite.T().Logf("triggered evaluation for project %s with context %s", suite.project, keptnContext)
+	sequence := NewTriggeredSequence(keptnContext, suite.project, "evaluation")
+
+	suite.checkSequence(sequence)
 }
 
 func (suite *TestSuiteSequences) Test_DeliveryFails() {
@@ -144,12 +197,7 @@ func (suite *TestSuiteSequences) Test_ExistingEvaluationFails() {
 	suite.trigger("evaluation", nil, true)
 }
 
-func (suite *TestSuiteSequences) Test_ExistingDeliveryFails() {
-	suite.trigger("delivery", nil, true)
-}
-
 func (suite *TestSuiteSequences) trigger(triggerType string, data keptn.EventProperties, existing bool) {
-	suite.T().Log("Started Trigger")
 	project := suite.project
 	if existing {
 		project = suite.env.ExistingProject
@@ -157,11 +205,10 @@ func (suite *TestSuiteSequences) trigger(triggerType string, data keptn.EventPro
 
 	suite.T().Logf("triggering sequence %s for project %s", triggerType, project)
 	// trigger a delivery sequence
-	keptnContext, err := testutils.TriggerSequence(project, "myservice", "dev", triggerType, data)
+	keptnContext, err := testutils.TriggerSequence(project, "myservice", "hardening", triggerType, data)
 	suite.Nil(err)
 	suite.T().Logf("triggered sequence %s for project %s with context %s", triggerType, project, keptnContext)
 	sequence := NewTriggeredSequence(keptnContext, project, triggerType)
-	//sequences.Add(sequence)
 
 	suite.checkSequence(sequence)
 }
@@ -169,18 +216,18 @@ func (suite *TestSuiteSequences) trigger(triggerType string, data keptn.EventPro
 func (suite *TestSuiteSequences) checkSequence(sequence TriggeredSequence) {
 
 	var sequenceFinishedEvent *models.KeptnContextExtendedCE
-	stageSequenceName := fmt.Sprintf("%s.%s", "dev", sequence.sequenceName)
+	stageSequenceName := fmt.Sprintf("%s.%s", "hardening", sequence.sequenceName)
 	var err error
 
 	suite.T().Logf("verifying completion of sequence %s with keptnContext %s in project %s", sequence.sequenceName, sequence.keptnContext, sequence.projectName)
 	suite.Eventually(func() bool {
-		sequenceFinishedEvent, err = testutils.GetLatestEventOfType(sequence.keptnContext, sequence.projectName, "dev", v0_2_0.GetFinishedEventType(stageSequenceName))
+		sequenceFinishedEvent, err = testutils.GetLatestEventOfType(sequence.keptnContext, sequence.projectName, "hardening", v0_2_0.GetFinishedEventType(stageSequenceName))
 		if sequenceFinishedEvent == nil || err != nil {
 			return false
 		}
 		atomic.AddUint64(&suite.env.PassedSequences, 1)
 		return true
-	}, 15*time.Second, 5*time.Second)
+	}, 1*time.Minute, 5*time.Second)
 
 	if sequenceFinishedEvent == nil || err != nil {
 		atomic.AddUint64(&suite.env.FailedSequences, 1)
@@ -202,7 +249,7 @@ func GetShipyard() (string, error) {
 	}
 
 	stage := v0_2_0.Stage{
-		Name: "dev",
+		Name: "hardening",
 		Sequences: []v0_2_0.Sequence{
 			{
 				Name: "hooks",

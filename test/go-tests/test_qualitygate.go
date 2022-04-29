@@ -126,7 +126,7 @@ func Test_QualityGates(t *testing.T) {
 	require.Contains(t, cliResp, "service not found")
 
 	t.Log("triggering evaluation for existing project/stage/service with no SLO file and no SLI provider")
-	keptnContext, err := triggerEvaluation(projectName, "hardening", serviceName)
+	keptnContext, err := TriggerEvaluation(projectName, "hardening", serviceName)
 
 	require.Nil(t, err)
 	require.NotEmpty(t, keptnContext)
@@ -182,7 +182,7 @@ func Test_QualityGates(t *testing.T) {
 	}
 
 	t.Log("triggering the evaluation again")
-	keptnContext, err = triggerEvaluation(projectName, "hardening", serviceName)
+	keptnContext, err = TriggerEvaluation(projectName, "hardening", serviceName)
 	require.Nil(t, err)
 	require.NotEmpty(t, keptnContext)
 
@@ -1287,7 +1287,7 @@ func PerformResourceServiceTest(t *testing.T, projectName string, serviceName st
 	return keptnContext, evaluationFinishedEvent
 }
 
-func triggerEvaluation(projectName, stageName, serviceName string) (string, error) {
+func TriggerEvaluation(projectName, stageName, serviceName string) (string, error) {
 	cliResp, err := ExecuteCommand(fmt.Sprintf("keptn trigger evaluation --project=%s --stage=%s --service=%s --timeframe=5m", projectName, stageName, serviceName))
 
 	if err != nil {
