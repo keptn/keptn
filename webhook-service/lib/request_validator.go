@@ -5,24 +5,24 @@ import (
 	"strings"
 )
 
-type CurlValidator struct {
+type requestValidator struct {
 	denyListProvider IDenyListProvider
 	ipResolver       IIPResolver
 }
 
-type ICurlValidator interface {
+type RequestValidator interface {
 	Validate(request Request) error
 }
 
-func NewCurlValidator(denyListProvider IDenyListProvider, ipResolver IIPResolver) CurlValidator {
-	validator := CurlValidator{
+func NewRequestValidator(denyListProvider IDenyListProvider, ipResolver IIPResolver) RequestValidator {
+	validator := requestValidator{
 		denyListProvider: denyListProvider,
 		ipResolver:       ipResolver,
 	}
 	return validator
 }
 
-func (c CurlValidator) Validate(request Request) error {
+func (c requestValidator) Validate(request Request) error {
 	if request.URL == "" {
 		return fmt.Errorf("Invalid curl URL: '%s'", request.URL)
 	}

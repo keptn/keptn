@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCurlValidator_Validate(t *testing.T) {
+func TestRequestValidator_Validate(t *testing.T) {
 	tests := []struct {
 		name             string
 		data             lib.Request
@@ -130,8 +130,8 @@ func TestCurlValidator_Validate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			curlValidator := lib.NewCurlValidator(tt.denyListProvider, tt.ipResolver)
-			err := curlValidator.Validate(tt.data)
+			requestValidator := lib.NewRequestValidator(tt.denyListProvider, tt.ipResolver)
+			err := requestValidator.Validate(tt.data)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
 				return

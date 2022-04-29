@@ -22,18 +22,18 @@ type SecretEnv struct {
 }
 
 type TaskHandler struct {
-	templateEngine lib.ITemplateEngine
-	curlExecutor   lib.ICurlExecutor
-	curlValidator  lib.ICurlValidator
-	secretReader   lib.ISecretReader
+	templateEngine   lib.ITemplateEngine
+	curlExecutor     lib.ICurlExecutor
+	requestValidator lib.RequestValidator
+	secretReader     lib.ISecretReader
 }
 
-func NewTaskHandler(templateEngine lib.ITemplateEngine, curlExecutor lib.ICurlExecutor, curlValidator lib.ICurlValidator, secretReader lib.ISecretReader) *TaskHandler {
+func NewTaskHandler(templateEngine lib.ITemplateEngine, curlExecutor lib.ICurlExecutor, requestValidator lib.RequestValidator, secretReader lib.ISecretReader) *TaskHandler {
 	return &TaskHandler{
-		templateEngine: templateEngine,
-		curlExecutor:   curlExecutor,
-		curlValidator:  curlValidator,
-		secretReader:   secretReader,
+		templateEngine:   templateEngine,
+		curlExecutor:     curlExecutor,
+		requestValidator: requestValidator,
+		secretReader:     secretReader,
 	}
 }
 
@@ -244,7 +244,7 @@ func (th *TaskHandler) CreateRequest(request interface{}) (string, error) {
 	default:
 		logger.Debug("creating CURL request from type Request")
 		convertedRequest := lib.ConvertToRequest(request)
-		if err := th.curlValidator.Validate(convertedRequest); err != nil {
+		if err := th.requestValidator.Validate(convertedRequest); err != nil {
 			return "", err
 		}
 		betaRequest := buildBetaCurlRequest(convertedRequest)

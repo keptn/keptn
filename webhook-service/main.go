@@ -36,8 +36,8 @@ func main() {
 
 	ipResolver := lib.NewIPResolver()
 	denyListProvider := lib.NewDenyListProvider()
-	curlValidator := lib.NewCurlValidator(denyListProvider, ipResolver)
-	taskHandler := handler.NewTaskHandler(&lib.TemplateEngine{}, curlExecutor, curlValidator, secretReader)
+	requestValidator := lib.NewRequestValidator(denyListProvider, ipResolver)
+	taskHandler := handler.NewTaskHandler(&lib.TemplateEngine{}, curlExecutor, requestValidator, secretReader)
 
 	log.Fatal(sdk.NewKeptn(
 		serviceName,
