@@ -36,6 +36,27 @@ spec:
       requests:
         - "curl http://local:8080 {{.data.project}} {{.env.mysecret}}"`
 
+const webHookContentBeta = `apiVersion: webhookconfig.keptn.sh/v1beta1
+kind: WebhookConfig
+metadata:
+	name: webhook-configuration
+spec:
+	webhooks:
+	- type: "sh.keptn.event.webhook.triggered"
+		subscriptionID: "my-subscription-id"
+		sendFinished: true
+		envFrom:
+		- secretRef:
+			name: mysecret
+		requests:
+		- url: http://local:8080
+		  method: GET
+		  headers:
+            - key: x-token
+              value: "{{.env.secretKey}}"
+			  - key: project
+              value: "{{.data.project}}"`
+
 const webHookContentWithStartedEvent = `apiVersion: webhookconfig.keptn.sh/v1alpha1
 kind: WebhookConfig
 metadata:
@@ -743,6 +764,50 @@ func TestTaskHandler_CurlExecutorFails(t *testing.T) {
 	require.NotEmpty(t, secretReaderMock.ReadSecretCalls())
 	require.NotEmpty(t, templateEngineMock.ParseTemplateCalls())
 	require.Equal(t, "curl http://local:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
+
+	//verify sent events
+	require.Equal(t, 2, len(fakeKeptn.GetEventSender().SentEvents))
+	assert.Equal(t, "sh.keptn.event.webhook.started", fakeKeptn.GetEventSender().SentEvents[0].Type())
+	assert.Equal(t, "sh.keptn.event.webhook.finished", fakeKeptn.GetEventSender().SentEvents[1].Type())
+
+	finishedEvent, err := keptnv2.ToKeptnEvent(fakeKeptn.GetEventSender().SentEvents[1])
+	eventData := &keptnv2.EventData{}
+	keptnv2.EventDataAs(finishedEvent, eventData)
+	require.Nil(t, err)
+	assert.Equal(t, keptnv2.StatusErrored, eventData.Status)
+	assert.Equal(t, keptnv2.ResultFailed, eventData.Result)
+}
+
+func TestTaskHandler_RequestValidatorFails(t *testing.T) {
+	templateEngineMock := &fake.ITemplateEngineMock{ParseTemplateFunc: func(data interface{}, templateStr string) (string, error) {
+		tplE := &lib.TemplateEngine{}
+		return tplE.ParseTemplate(data, templateStr)
+	}}
+	secretReaderMock := &fake.ISecretReaderMock{}
+	secretReaderMock.ReadSecretFunc = func(name string, key string) (string, error) {
+		return "my-secret-value", nil
+	}
+	curlExecutorMock := &fake.ICurlExecutorMock{}
+	curlExecutorMock.CurlFunc = func(curlCmd string) (string, error) {
+		return "", errors.New("unable to execute curl call")
+	}
+	requestValidatorMock := &fake.RequestValidatorMock{}
+	requestValidatorMock.ValidateFunc = func(request lib.Request) error {
+		return errors.New("validation failed")
+	}
+	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, requestValidatorMock, secretReaderMock)
+
+	fakeKeptn := sdk.NewFakeKeptn(
+		"test-webhook-svc")
+	fakeKeptn.SetResourceHandler(sdk.StringResourceHandler{ResourceContent: webHookContentBeta})
+	fakeKeptn.AddTaskHandler("*", taskHandler)
+	fakeKeptn.SetAutomaticResponse(false)
+
+	fakeKeptn.Start()
+	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
+
+	require.Empty(t, secretReaderMock.ReadSecretCalls())
+	require.Empty(t, templateEngineMock.ParseTemplateCalls())
 
 	//verify sent events
 	require.Equal(t, 2, len(fakeKeptn.GetEventSender().SentEvents))
