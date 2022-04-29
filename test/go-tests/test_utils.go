@@ -815,6 +815,12 @@ func SetRecreateUpgradeStrategyForDeployment(deploymentName string) error {
 		return nil
 	}
 
+	<-time.After(30 * time.Second)
+
+	if err := WaitForDeploymentInNamespace(deploymentName, GetKeptnNameSpaceFromEnv()); err != nil {
+		return err
+	}
+
 	return nil
 }
 
