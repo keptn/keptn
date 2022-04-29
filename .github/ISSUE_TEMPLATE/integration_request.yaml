@@ -1,6 +1,6 @@
 name: New Tool Integration
 description: Keptn should integrate with this tool. Let's make it happen...
-title: ""
+title: "[integration] "
 labels: ["integrations"]
 assignees:
   - agardnerit
