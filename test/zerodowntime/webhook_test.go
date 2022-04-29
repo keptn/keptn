@@ -35,27 +35,6 @@ func Test_Webhook(t *testing.T) {
 	suite.Run(t, s)
 }
 
-//Zero Downtime Test
-func TestWebhookZD(t *testing.T) {
-
-	env := SetupZD()
-	t.Run("Rolling Upgrade", func(t2 *testing.T) {
-		t2.Parallel()
-		RollingUpgrade(t2, env)
-	})
-
-	t.Run("API", func(t2 *testing.T) {
-		t2.Parallel()
-		APIs(t2, env)
-	})
-
-	t.Run("Webhook", func(t2 *testing.T) {
-		t2.Parallel()
-		Webhook(t2, env)
-	})
-
-}
-
 //This performs tests sequentially inside ZD
 func Webhook(t *testing.T, env *ZeroDowntimeEnv) {
 	var s *TestSuiteWebhook
@@ -89,6 +68,10 @@ Loop:
 func (suite *TestSuiteWebhook) Test_Webhook() {
 	projectName := "webhooks" + suite.gedId()
 	serviceName := "myservice"
+
+	//test considered failed by default so that we can use require
+	atomic.AddUint64(&suite.env.FailedSequences, 1)
+
 	projectName, shipyardFilePath := testutils.CreateWebhookProject(suite.T(), projectName, serviceName)
 	defer func() {
 		err := os.Remove(shipyardFilePath)
@@ -97,6 +80,10 @@ func (suite *TestSuiteWebhook) Test_Webhook() {
 		}
 	}()
 	testutils.Test_Webhook(suite.T(), testutils.WebhookYamlBeta, projectName, serviceName)
+
+	//if test returns then it's passed
+	atomic.AddUint64(&suite.env.FailedSequences, ^uint64(1-1))
+	atomic.AddUint64(&suite.env.PassedSequences, 1)
 }
 
 func (suite *TestSuiteWebhook) gedId() string {

@@ -81,26 +81,6 @@ func setEnv(t *testing.T) *ZeroDowntimeEnv {
 	return Env
 }
 
-func TestSequencesZD(t *testing.T) {
-
-	env := setEnv(t)
-	t.Run("Rolling Upgrade", func(t2 *testing.T) {
-		t2.Parallel()
-		RollingUpgrade(t2, env)
-	})
-
-	t.Run("API", func(t2 *testing.T) {
-		t2.Parallel()
-		APIs(t2, env)
-	})
-
-	t.Run("Sequences", func(t2 *testing.T) {
-		t2.Parallel()
-		Sequences(t2, env)
-	})
-
-}
-
 // to perform tests sequentially inside ZD
 func Sequences(t *testing.T, env *ZeroDowntimeEnv) {
 	var s *TestSuiteSequences
@@ -130,6 +110,15 @@ Loop:
 }
 
 func (suite *TestSuiteSequences) Test_Evaluation() {
+	var finished *models.KeptnContextExtendedCE
+	defer func() {
+		if finished.Data == nil {
+			atomic.AddUint64(&suite.env.FailedSequences, 1)
+		} else {
+			atomic.AddUint64(&suite.env.PassedSequences, 1)
+		}
+	}()
+
 	suite.T().Log("deleting lighthouse configmap from previous test run")
 	_, _ = testutils.ExecuteCommand(fmt.Sprintf("kubectl delete configmap -n %s lighthouse-config-%s", testutils.GetKeptnNameSpaceFromEnv(), suite.project))
 
@@ -137,12 +126,7 @@ func (suite *TestSuiteSequences) Test_Evaluation() {
 	suite.T().Log("adding SLI provider")
 	_, err := testutils.ExecuteCommand(fmt.Sprintf("kubectl create configmap -n %s lighthouse-config-%s --from-literal=sli-provider=my-sli-provider", testutils.GetKeptnNameSpaceFromEnv(), suite.project))
 	suite.Nil(err)
-	_, finished := testutils.PerformResourceServiceTest(suite.T(), suite.project, "myservice", true)
-	if finished.Data == nil {
-		atomic.AddUint64(&suite.env.FailedSequences, 1)
-	} else {
-		atomic.AddUint64(&suite.env.PassedSequences, 1)
-	}
+	_, finished = testutils.PerformResourceServiceTest(suite.T(), suite.project, "myservice", true)
 
 }
 

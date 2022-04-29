@@ -69,7 +69,6 @@ Loop:
 		}
 	}
 	wgAPI.Wait()
-	PrintAPIresults(t, env)
 }
 
 //to generate html report we can add 	.Report(apitest.SequenceDiagram())
