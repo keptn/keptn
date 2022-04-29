@@ -7,7 +7,7 @@ import (
 
 func Test_Openshift(t *testing.T) {
 
-	// On the minishift tests running on GKE, using the rollingUpgrade strategy lead to random failures due to the
+	// On the minishift tests running on Github, using the rollingUpgrade strategy lead to random failures due to the
 	// shipyard controller not being available after a restart.
 	err := SetRecreateUpgradeStrategyForDeployment("shipyard-controller")
 	require.Nil(t, err)

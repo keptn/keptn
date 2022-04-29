@@ -793,7 +793,9 @@ func SetShipyardControllerEnvVar(t *testing.T, envVarName, envVarValue string) e
 	return nil
 }
 
-// SetRecreateUpgradeStrategyForDeployment sets the upgrade strategy
+// SetRecreateUpgradeStrategyForDeployment sets the upgrade strategy of a deployment to "Recreate".
+// Needed for our minishift tests right now, as there are problems with the RollingUpdate strategy of the shipyard-controller
+// Should become obsolete when we switch to testing on an OpenShift 4.x cluster instead.
 func SetRecreateUpgradeStrategyForDeployment(deploymentName string) error {
 	clientset, err := keptnkubeutils.GetClientset(false)
 	if err != nil {
