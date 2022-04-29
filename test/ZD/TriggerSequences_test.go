@@ -8,7 +8,6 @@ import (
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	testutils "github.com/keptn/keptn/test/go-tests"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"gopkg.in/yaml.v3"
 	"sync"
@@ -99,7 +98,6 @@ func TestSequencesZD(t *testing.T) {
 		t2.Parallel()
 		Sequences(t2, env)
 	})
-	env.Wg.Wait()
 
 }
 
@@ -128,21 +126,24 @@ Loop:
 		}
 	}
 	wgSequences.Wait()
-	PrintSequencesResults(t, env)
 	env.Wg.Done()
 }
 
 func (suite *TestSuiteSequences) Test_Evaluation() {
-	t := suite.T()
-	t.Log("deleting lighthouse configmap from previous test run")
+	suite.T().Log("deleting lighthouse configmap from previous test run")
 	_, _ = testutils.ExecuteCommand(fmt.Sprintf("kubectl delete configmap -n %s lighthouse-config-%s", testutils.GetKeptnNameSpaceFromEnv(), suite.project))
 
 	//// now let's add an SLI provider
-	t.Log("adding SLI provider")
+	suite.T().Log("adding SLI provider")
 	_, err := testutils.ExecuteCommand(fmt.Sprintf("kubectl create configmap -n %s lighthouse-config-%s --from-literal=sli-provider=my-sli-provider", testutils.GetKeptnNameSpaceFromEnv(), suite.project))
-	require.Nil(t, err)
+	suite.Nil(err)
+	_, finished := testutils.PerformResourceServiceTest(suite.T(), suite.project, "myservice", true)
+	if finished.Data == nil {
+		atomic.AddUint64(&suite.env.FailedSequences, 1)
+	} else {
+		atomic.AddUint64(&suite.env.PassedSequences, 1)
+	}
 
-	testutils.PerformResourceServiceTest(t, suite.project, "myservice", true)
 }
 
 func (suite *TestSuiteSequences) Test_DeliveryFails() {

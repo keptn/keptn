@@ -82,8 +82,6 @@ Loop:
 	}
 
 	wgSequences.Wait()
-	PrintWebhookResults(t, env)
-	PrintAPIresults(t, env)
 	env.Wg.Done()
 
 }
@@ -99,16 +97,6 @@ func (suite *TestSuiteWebhook) Test_Webhook() {
 		}
 	}()
 	testutils.Test_Webhook(suite.T(), testutils.WebhookYamlBeta, projectName, serviceName)
-}
-
-func PrintWebhookResults(t *testing.T, env *ZeroDowntimeEnv) {
-
-	t.Log("-----------------------------------------------")
-	t.Log("TOTAL WEBHOOK SEQUENCES: ", env.FiredSequences)
-	t.Log("TOTAL SUCCESS ", env.PassedSequences)
-	t.Log("TOTAL FAILURES ", env.FailedSequences)
-	t.Log("-----------------------------------------------")
-
 }
 
 func (suite *TestSuiteWebhook) gedId() string {

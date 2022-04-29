@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	testutils "github.com/keptn/keptn/test/go-tests"
+	"github.com/stretchr/testify/suite"
 	"sync"
 	"testing"
 	"time"
@@ -12,7 +13,7 @@ import (
 const apiProbeInterval = 5 * time.Second
 const sequencesInterval = 15 * time.Second
 
-var chartLatestVersion = "https://github.com/keptn/helm-charts-dev/blob/e242b0ab5d4eba9ec7b170a60e6d6e2421bcea86/packages/keptn-0.15.0-dev.tgz?raw=true"
+var chartLatestVersion = "https://github.com/keptn/helm-charts-dev/blob/1c234d5370f76532e0338adb8d135fe6e1d4caf8/packages/keptn-0.15.0-dev.tgz?raw=true"
 var chartPreviousVersion = "https://github.com/keptn/helm-charts-dev/blob/366d236e97e147596e332b48d94f44b094fb349a/packages/keptn-0.15.0-dev-PR-7504.tgz?raw=true"
 
 type ZeroDowntimeEnv struct {
@@ -52,15 +53,40 @@ func SetupZD() *ZeroDowntimeEnv {
 	return &zd
 }
 
+type TestSuiteDowntime struct {
+	suite.Suite
+}
+
+func (suite *TestSuiteDowntime) SetupSuite() {
+
+}
+
 func Test_ZeroDowntime(t *testing.T) {
-	t.Run("Sequences Zero Downtime", TestSequencesZD)
-	t.Run("Webhook Zero Downtime", TestWebhookZD)
+	suite.Run(t, new(TestSuiteDowntime))
+}
+
+func (suite *TestSuiteDowntime) TestSequences() {
+	suite.T().Run("Sequences Zero Downtime", TestSequencesZD)
+
+}
+
+func (suite *TestSuiteDowntime) TestWebhook() {
+	suite.T().Run("Webhook Zero Downtime", TestWebhookZD)
+}
+
+func (suite *TestSuiteDowntime) TearDownSuite() {
 }
 
 func RollingUpgrade(t *testing.T, env *ZeroDowntimeEnv) {
 	defer func() {
 		env.Cancel()
 		t.Log("Rolling upgrade terminated")
+		env.Wg.Wait()
+		t.Run("Summary:", func(t1 *testing.T) {
+			PrintSequencesResults(t, env)
+			PrintAPIresults(t, env)
+		})
+
 	}()
 	t.Log("Upgrade in progress")
 	//time.Sleep(1 * time.Minute)
