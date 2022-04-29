@@ -2,6 +2,7 @@ package ZD
 
 import (
 	"fmt"
+	"github.com/benbjohnson/clock"
 	testutils "github.com/keptn/keptn/test/go-tests"
 	"github.com/steinfletcher/apitest"
 	jsonpath "github.com/steinfletcher/apitest-jsonpath"
@@ -39,7 +40,7 @@ func Test_API(t *testing.T) {
 	assert.Nil(t, err)
 
 	s := &TestSuiteAPI{
-		env: SetupZD(),
+		env: Env,
 	}
 	suite.Run(t, s)
 
@@ -48,12 +49,14 @@ func Test_API(t *testing.T) {
 // APIs is called in the zero downtime test suite
 func APIs(t *testing.T, env *ZeroDowntimeEnv) {
 	wgAPI := sync.WaitGroup{}
+	apiTicker := clock.New().Ticker(apiProbeInterval)
+
 Loop:
 	for {
 		select {
 		case <-env.Ctx.Done():
 			break Loop
-		case <-env.ApiTicker.C:
+		case <-apiTicker.C:
 			wgAPI.Add(1)
 			apisuite := &TestSuiteAPI{
 				env: env,
@@ -66,8 +69,7 @@ Loop:
 		}
 	}
 	wgAPI.Wait()
-	env.Wg.Wait()
-
+	PrintAPIresults(t, env)
 }
 
 //to generate html report we can add 	.Report(apitest.SequenceDiagram())

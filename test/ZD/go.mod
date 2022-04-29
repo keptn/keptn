@@ -3,10 +3,9 @@ module github.com/keptn/keptn/test/ZD
 go 1.17
 
 require (
-	github.com/anandvarma/namegen v0.0.0-20220201190339-64f3be2de60a
 	github.com/benbjohnson/clock v1.3.0
-	github.com/keptn/go-utils v0.14.1-0.20220411063724-003ee3f85292
-	github.com/keptn/keptn/test/go-tests v0.0.0-20220414105226-0ff21f3a3353
+	github.com/keptn/go-utils v0.14.1-0.20220414081235-2e23eb712e3d
+	github.com/keptn/keptn/test/go-tests v0.0.0-20220429033335-f4d5242055f9
 	github.com/steinfletcher/apitest v1.5.11
 	github.com/steinfletcher/apitest-jsonpath v1.7.1
 	github.com/stretchr/testify v1.7.1

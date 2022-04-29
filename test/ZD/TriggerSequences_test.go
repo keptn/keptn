@@ -2,6 +2,7 @@ package ZD
 
 import (
 	"fmt"
+	"github.com/benbjohnson/clock"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -38,8 +39,8 @@ func NewTriggeredSequence(keptnContext string, projectName string, seqName strin
 func (suite *TestSuiteSequences) SetupSuite() {
 
 	suite.T().Log("Starting test for sequences")
-	// setup a project every clock ticker
-	suite.createNew()
+	// if needed the following line can setup a project eat very clock tick
+	//suite.createNew()
 }
 
 func (suite *TestSuiteSequences) createNew() {
@@ -60,19 +61,45 @@ func (suite *TestSuiteSequences) BeforeTest(suiteName, testName string) {
 	suite.T().Log("Running one more test, tot ", suite.env.FiredSequences)
 }
 
-//Test_Sequences can be used to test a single run of the test suite
+//Test_Sequences can be used to test a single run of the sequence test suite
 func Test_Sequences(t *testing.T) {
+	Env := setEnv(t)
+
+	s := &TestSuiteSequences{
+		env: Env,
+	}
+	suite.Run(t, s)
+}
+
+func setEnv(t *testing.T) *ZeroDowntimeEnv {
 	Env := SetupZD()
 	var err error
 	Env.ExistingProject, err = testutils.CreateProject("projectzd", Env.ShipyardFile)
 	assert.Nil(t, err)
 	_, err = testutils.ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", "myservice", Env.ExistingProject))
 	assert.Nil(t, err)
+	return Env
+}
 
-	s := &TestSuiteSequences{
-		env: SetupZD(),
-	}
-	suite.Run(t, s)
+func TestSequencesZD(t *testing.T) {
+
+	env := setEnv(t)
+	t.Run("Rolling Upgrade", func(t2 *testing.T) {
+		t2.Parallel()
+		RollingUpgrade(t2, env)
+	})
+
+	t.Run("API", func(t2 *testing.T) {
+		t2.Parallel()
+		APIs(t2, env)
+	})
+
+	t.Run("Sequences", func(t2 *testing.T) {
+		t2.Parallel()
+		Sequences(t2, env)
+	})
+
+	env.Wg.Wait()
 }
 
 // to perform tests sequentially inside ZD
@@ -80,12 +107,14 @@ func Sequences(t *testing.T, env *ZeroDowntimeEnv) {
 	var s *TestSuiteSequences
 	env.Wg.Add(1)
 	wgSequences := &sync.WaitGroup{}
+	seqTicker := clock.New().Ticker(sequencesInterval)
+
 Loop:
 	for {
 		select {
 		case <-env.Ctx.Done():
 			break Loop
-		case <-env.SeqTicker.C:
+		case <-seqTicker.C:
 			s = &TestSuiteSequences{
 				env: env,
 			}
@@ -97,25 +126,14 @@ Loop:
 
 		}
 	}
-
 	wgSequences.Wait()
+	PrintSequencesResults(t, env)
 	env.Wg.Done()
-
 }
 
-//webhook
-
-//trigger a sequence while graceful
-
-//approval
-
-//func Test_Sequences(t *testing.T) {
-//	suite.Run(t, new(TestSuiteSequences))
-//}
-
-func (suite *TestSuiteSequences) Test_EvaluationFails() {
-	suite.T().Log("Started Ev")
-	suite.trigger("evaluation", nil, false)
+func (suite *TestSuiteSequences) Test_Evaluation() {
+	suite.T().Log("Started Evaluation")
+	suite.T().Run("Test_QualityGates", testutils.Test_QualityGates)
 }
 
 func (suite *TestSuiteSequences) Test_DeliveryFails() {
