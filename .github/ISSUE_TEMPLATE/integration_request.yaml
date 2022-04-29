@@ -2,7 +2,7 @@ name: New Tool Integration
 description: Keptn should integrate with this tool. Let's make it happen...
 title: "[integration] "
 labels: ["integrations"]
-assignees:
+assignees: ""
 body:
   - type: markdown
     attributes:
