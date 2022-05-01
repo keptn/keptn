@@ -1,5 +1,5 @@
-import { interceptMain, interceptSequencesPage } from '../intercept';
 import { EventTypes } from '../../../shared/interfaces/event-types';
+import { interceptMain, interceptSequencesPage } from '../intercept';
 
 export class SequencesPage {
   private readonly sequenceWaitingMessage = ' Sequence is waiting for previous sequences to finish. ';
@@ -10,7 +10,7 @@ export class SequencesPage {
   }
 
   public visit(projectName: string): this {
-    cy.visit(`/project/${projectName}/sequence`).wait('@metadata');
+    cy.visit(`/project/${projectName}/sequence`).wait('@metadata').wait('@SequencesMetadata');
     return this;
   }
 
@@ -222,7 +222,7 @@ export class SequencesPage {
     cy.get('.stage-info')
       .contains(stage)
       .parentsUntilTestId(`keptn-sequence-timeline-stage-${stage}`)
-      .find('dt-loading-spinner')
+      .find('ktb-loading-spinner')
       .should(exists ? 'exist' : 'not.exist');
     return this;
   }

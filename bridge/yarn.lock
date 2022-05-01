@@ -1854,14 +1854,14 @@
   resolved "https://registry.yarnpkg.com/@dynatrace/barista-icons/-/barista-icons-7.20.0.tgz#7c7815b5950e3ad605502a0c9add2907ab75caea"
   integrity sha512-nJZXgr2gCAVc+jvQiqbQkTmbHHxsQi7XsmOGSWX1Ij8xQ/Kgufy868m0UDeTiJCBtNU4Ayt0OIyYArSp+DOPfA==
 
-"@es-joy/jsdoccomment@~0.22.1":
-  version "0.22.1"
-  resolved "https://registry.yarnpkg.com/@es-joy/jsdoccomment/-/jsdoccomment-0.22.1.tgz#3c86d458780231769215a795105bd3b03b2616f2"
-  integrity sha512-/WMkqLYfwCf0waCAMC8Eddt3iAOdghkDF5vmyKEu8pfO66KRFY1L15yks8mfgURiwOAOJpAQ3blvB3Znj6ZwBw==
+"@es-joy/jsdoccomment@~0.29.0":
+  version "0.29.0"
+  resolved "https://registry.yarnpkg.com/@es-joy/jsdoccomment/-/jsdoccomment-0.29.0.tgz#527c7eefadeaf5c5d0c3b2721b5fa425d2119e98"
+  integrity sha512-4yKy5t+/joLihG+ei6CCU6sc08sjUdEdXCQ2U+9h9VP13EiqHQ4YMgDC18ys/AsLdJDBX3KRx/AWY6PR7hn52Q==
   dependencies:
     comment-parser "1.3.1"
     esquery "^1.4.0"
-    jsdoc-type-pratt-parser "~2.2.5"
+    jsdoc-type-pratt-parser "~3.0.1"
 
 "@eslint/eslintrc@^0.4.3":
   version "0.4.3"
@@ -2441,10 +2441,10 @@
   resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.178.tgz#341f6d2247db528d4a13ddbb374bcdc80406f4f8"
   integrity sha512-0d5Wd09ItQWH1qFbEyQ7oTQ3GZrMfth5JkbN3EvTKLXcHLRDSXeLnlvlOn0wvxVIwK5o2M8JzP/OWz7T3NRsbw==
 
-"@types/lodash@4.14.181":
-  version "4.14.181"
-  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.181.tgz#d1d3740c379fda17ab175165ba04e2d03389385d"
-  integrity sha512-n3tyKthHJbkiWhDZs3DkhkCzt2MexYHXlX0td5iMplyfwketaOeKboEVBqzceH7juqvEg3q5oUoBFxSLu7zFag==
+"@types/lodash@4.14.182":
+  version "4.14.182"
+  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.182.tgz#05301a4d5e62963227eaafe0ce04dd77c54ea5c2"
+  integrity sha512-/THyiqyQAP9AfARo4pF+aCGcyiQ94tX/Is2I7HofNRqoYLgN1PBoOWu2/zTA5zMxzP5EFutMtWtGAFRKUe961Q==
 
 "@types/marked@4.0.3":
   version "4.0.3"
@@ -2461,10 +2461,10 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-14.17.33.tgz#011ee28e38dc7aee1be032ceadf6332a0ab15b12"
   integrity sha512-noEeJ06zbn3lOh4gqe2v7NMGS33jrulfNqYFDjjEbhpDEHR5VTxgYNQSBqBlJIsBJW3uEYDgD6kvMnrrhGzq8g==
 
-"@types/node@14.18.13":
-  version "14.18.13"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.18.13.tgz#6ad4d9db59e6b3faf98dcfe4ca9d2aec84443277"
-  integrity sha512-Z6/KzgyWOga3pJNS42A+zayjhPbf2zM3hegRQaOPnLOzEi86VV++6FLDWgR1LGrVCRufP/ph2daa3tEa5br1zA==
+"@types/node@14.18.16":
+  version "14.18.16"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.18.16.tgz#878f670ba3f00482bf859b6550b6010610fc54b5"
+  integrity sha512-X3bUMdK/VmvrWdoTkz+VCn6nwKwrKCFTHtqwBIaQJNx4RUIBBUFXM00bqPz/DsDd+Icjmzm6/tyYZzeGVqb6/Q==
 
 "@types/parse-json@^4.0.0":
   version "4.0.0"
@@ -5622,17 +5622,17 @@ eslint-plugin-import@^2.25.3:
     resolve "^1.20.0"
     tsconfig-paths "^3.12.0"
 
-eslint-plugin-jsdoc@39.2.1:
-  version "39.2.1"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-jsdoc/-/eslint-plugin-jsdoc-39.2.1.tgz#39c85a7b36fd49b2799d0e8652108f1e8e85fc64"
-  integrity sha512-bNNAJPhFUKVBHJMKU7zAQ1LvlVWoDbxAA/Ty9hwSI2hy+AVpc9wq16W6YHXd0PuMhXlv4FgYtjizHMu8Mnc4GA==
+eslint-plugin-jsdoc@39.2.9:
+  version "39.2.9"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-jsdoc/-/eslint-plugin-jsdoc-39.2.9.tgz#bc351de403f1862f1ef8c440d12dedc28e74cbbb"
+  integrity sha512-gaPYJT94rWlWyQcisQyyEJHtLaaJqN4baFlLCEr/LcXVibS9wzQTL2dskqk327ggwqQopR+Xecu2Lng1IJ9Ypw==
   dependencies:
-    "@es-joy/jsdoccomment" "~0.22.1"
+    "@es-joy/jsdoccomment" "~0.29.0"
     comment-parser "1.3.1"
     debug "^4.3.4"
     escape-string-regexp "^4.0.0"
     esquery "^1.4.0"
-    semver "^7.3.6"
+    semver "^7.3.7"
     spdx-expression-parse "^3.0.1"
 
 eslint-plugin-jsx-a11y@^6.5.1:
@@ -7802,10 +7802,10 @@ jest-pnp-resolver@^1.2.2:
   resolved "https://registry.yarnpkg.com/jest-pnp-resolver/-/jest-pnp-resolver-1.2.2.tgz#b704ac0ae028a89108a4d040b3f919dfddc8e33c"
   integrity sha512-olV41bKSMm8BdnuMsewT4jqlZ8+3TCARAXjZGT9jcoSnrfUnRCqnMoF9XEeoWjbzObpqF9dRhHQj0Xb9QdF6/w==
 
-jest-preset-angular@11.1.1:
-  version "11.1.1"
-  resolved "https://registry.yarnpkg.com/jest-preset-angular/-/jest-preset-angular-11.1.1.tgz#cc1c0a1395727af332c439174fb689d92e853f6a"
-  integrity sha512-ZlYiKJhAQSU9wIjncX59xutcj49R4MiDsTPSwZiwdTAHQvHm32MS6SGimQIVBqh1DukfwYX0NXKS0D/onLAsLQ==
+jest-preset-angular@11.1.2:
+  version "11.1.2"
+  resolved "https://registry.yarnpkg.com/jest-preset-angular/-/jest-preset-angular-11.1.2.tgz#127a53747821d9a979877da4c42ab00334c7e815"
+  integrity sha512-qPvOP6wnLP8M01TDVSa3UC3PcDWxoj87T58mWEp5yWlWPrXBJ6rhnTEI+HPmZLyehwlK686+O/49hwFRVXFP0A==
   dependencies:
     bs-logger "^0.2.6"
     esbuild-wasm "0.14.11"
@@ -8041,10 +8041,10 @@ jsbn@~0.1.0:
   resolved "https://registry.yarnpkg.com/jsbn/-/jsbn-0.1.1.tgz#a5e654c2e5a2deb5f201d96cefbca80c0ef2f513"
   integrity sha1-peZUwuWi3rXyAdls77yoDA7y9RM=
 
-jsdoc-type-pratt-parser@~2.2.5:
-  version "2.2.5"
-  resolved "https://registry.yarnpkg.com/jsdoc-type-pratt-parser/-/jsdoc-type-pratt-parser-2.2.5.tgz#c9f93afac7ee4b5ed4432fe3f09f7d36b05ed0ff"
-  integrity sha512-2a6eRxSxp1BW040hFvaJxhsCMI9lT8QB8t14t+NY5tC5rckIR0U9cr2tjOeaFirmEOy6MHvmJnY7zTBHq431Lw==
+jsdoc-type-pratt-parser@~3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/jsdoc-type-pratt-parser/-/jsdoc-type-pratt-parser-3.0.1.tgz#ccbc7a4180bc8748af64d2cc431aaa92f88175bb"
+  integrity sha512-vqMCdAFVIiFhVgBYE/X8naf3L/7qiJsaYWTfUJZZZ124dR3OUz9HrmaMUGpYIYAN4VSuodf6gIZY0e8ktPw9cg==
 
 jsdom@^16.6.0:
   version "16.7.0"
@@ -8825,10 +8825,10 @@ mkdirp@^1.0.3, mkdirp@^1.0.4, mkdirp@~1.0.4:
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-1.0.4.tgz#3eb5ed62622756d79a5f0e2a221dfebad75c2f7e"
   integrity sha512-vVqVZQyf3WLx2Shd0qJ9xuvqgAyKPLAiqITEtqW0oIUjzo3PePDd6fW9iFz30ef7Ysp/oiWqbhszeGWW2T6Gzw==
 
-moment@2.29.2:
-  version "2.29.2"
-  resolved "https://registry.yarnpkg.com/moment/-/moment-2.29.2.tgz#00910c60b20843bcba52d37d58c628b47b1f20e4"
-  integrity sha512-UgzG4rvxYpN15jgCmVJwac49h9ly9NurikMWGPdVxm8GZD6XjkKPxDTjQQ43gtGgnV3X0cAyWDdP2Wexoquifg==
+moment@2.29.3:
+  version "2.29.3"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.29.3.tgz#edd47411c322413999f7a5940d526de183c031f3"
+  integrity sha512-c6YRvhEo//6T2Jz/vVtYzqBzwvPT95JBQ+smCytzf7c50oMZRsR/a4w88aD34I+/QVSfnoAnSBFPJHItlOMJVw==
 
 move-concurrently@^1.0.1:
   version "1.0.1"
@@ -10869,7 +10869,7 @@ semver@7.3.4:
   dependencies:
     lru-cache "^6.0.0"
 
-semver@7.3.7, semver@^7.3.6:
+semver@7.3.7, semver@^7.3.7:
   version "7.3.7"
   resolved "https://registry.yarnpkg.com/semver/-/semver-7.3.7.tgz#12c5b649afdbf9049707796e22a4028814ce523f"
   integrity sha512-QlYTucUYOews+WeEujDoEGziz4K6c47V/Bd+LjSSYcA94p+DmINdf7ncaUinThfvZyu13lN9OY1XDxt8C0Tw0g==

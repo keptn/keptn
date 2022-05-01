@@ -107,19 +107,19 @@ func Test_ProvisioningURL(t *testing.T) {
 	_, err = ExecuteCommandf("kubectl rollout restart deployment mockserver -n %s", keptnNamespace)
 	require.Nil(t, err)
 
-	t.Logf("Sleeping for 30s to make sure it is deleted...")
-	time.Sleep(30 * time.Second)
-	t.Logf("Checking if mockserver is running")
-	err = WaitForPodOfDeployment("mockserver")
-	require.Nil(t, err)
-
 	t.Logf("Setting up AUTOMATIC_PROVISIONING_URL env variable")
 	t.Logf("External mockserver IP address: %s", mockServerIP)
 	_, err = ExecuteCommandf("kubectl set env deployment/shipyard-controller AUTOMATIC_PROVISIONING_URL=%s -n %s", mockServerIP, keptnNamespace)
 	require.Nil(t, err)
 
-	t.Logf("Sleeping for 30s to make sure shipyard pod is deleted...")
-	time.Sleep(30 * time.Second)
+	t.Logf("Sleeping for 240s to make sure shipyard pod is deleted...")
+	// due to termination grae period this takes quite some time now...
+	time.Sleep(240 * time.Second)
+
+	t.Logf("Checking if mockserver is running")
+	err = WaitForPodOfDeployment("mockserver")
+	require.Nil(t, err)
+
 	//kubectl set kills shipyard pod, instead of sleeping we wait for the deployment to be ready
 	t.Logf("Waiting for Shipyard-controller to be running")
 	err = WaitForPodOfDeployment(shipyardPod)

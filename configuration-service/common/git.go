@@ -67,12 +67,15 @@ func (K8sCredentialReader) GetCredentials(project string) (*common_models.GitCre
 	}
 
 	// secret found -> unmarshal it
+	return unmarshalGitCredentials(secret.Data["git-credentials"])
+}
+
+func unmarshalGitCredentials(data []byte) (*common_models.GitCredentials, error) {
 	var credentials common_models.GitCredentials
-	err = json.Unmarshal(secret.Data["git-credentials"], &credentials)
-	if err != nil {
+	if err := json.Unmarshal(data, &credentials); err != nil {
 		return nil, fmt.Errorf(unmarshalGitCredentialsFail)
 	}
-	if credentials.User != "" && credentials.Token != "" && credentials.RemoteURI != "" {
+	if credentials.Token != "" && credentials.RemoteURI != "" {
 		return &credentials, nil
 	}
 	return nil, nil
@@ -397,6 +400,9 @@ func isNoRemoteHeadFoundError(err error) bool {
 }
 
 func getRepoURI(uri string, user string, token string) string {
+	if user == "" {
+		user = gitKeptnUserDefault
+	}
 	if strings.Contains(user, "@") {
 		// username contains an @, probably an e-mail; need to encode it
 		// see https://stackoverflow.com/a/29356143
@@ -519,32 +525,8 @@ func ServiceExists(project string, stage string, service string, disableUpstream
 
 // GetCredentials returns the git upstream credentials for a given project (stored as a secret), if available
 func GetCredentials(project string) (*common_models.GitCredentials, error) {
-	clientSet, err := getK8sClient()
-	if err != nil {
-		return nil, fmt.Errorf(gitCredentialsFail)
-	}
-
-	secretName := fmt.Sprintf("git-credentials-%s", project)
-
-	secret, err := clientSet.CoreV1().Secrets(namespace).Get(context.TODO(), secretName, metav1.GetOptions{})
-	if err != nil && k8serrors.IsNotFound(err) {
-		// if no secret was found, we just assume the user doesn't want a git upstream repo for this project
-		return nil, nil
-	}
-	if err != nil {
-		return nil, fmt.Errorf(gitCredentialsFail)
-	}
-
-	// secret found -> unmarshal it
-	var credentials common_models.GitCredentials
-	err = json.Unmarshal(secret.Data["git-credentials"], &credentials)
-	if err != nil {
-		return nil, fmt.Errorf(unmarshalGitCredentialsFail)
-	}
-	if credentials.User != "" && credentials.Token != "" && credentials.RemoteURI != "" {
-		return &credentials, nil
-	}
-	return nil, nil
+	credentialsReader := &K8sCredentialReader{}
+	return credentialsReader.GetCredentials(project)
 }
 
 func getK8sClient() (*kubernetes.Clientset, error) {

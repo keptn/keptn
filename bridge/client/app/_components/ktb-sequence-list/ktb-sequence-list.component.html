@@ -6,7 +6,7 @@
       <ng-container *ngIf="isRemediation(row) as sequence; else trace">
         <div fxLayout="row" fxLayoutAlign="start center">
           <button *ngIf="sequence.isLoading(); else finished" class="m-0 p-0" dt-button disabled variant="nested">
-            <dt-loading-spinner aria-label="Remediation is running..."></dt-loading-spinner>
+            <ktb-loading-spinner aria-label="Remediation is running..."></ktb-loading-spinner>
           </button>
           <ng-template #finished>
             <dt-icon
@@ -33,7 +33,7 @@
           ></dt-icon>
           <ng-template #loading>
             <button class="m-0 p-0" dt-button disabled variant="nested">
-              <dt-loading-spinner aria-label="Task is running..."></dt-loading-spinner>
+              <ktb-loading-spinner aria-label="Task is running..."></ktb-loading-spinner>
             </button>
           </ng-template>
           <span

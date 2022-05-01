@@ -35,8 +35,8 @@ $ktb-loading-spinner-ease: cubic-bezier(0.645, 0.045, 0.355, 1);
   animation: ktb-loading-spinner-spin $ktb-loading-spinner-duration * 2 linear infinite;
 }
 
-:host-context(.dt-form-field) .ktb-loading-spinner-svg[dtPrefix],
-:host-context(.dt-form-field) .ktb-loading-spinner-svg[dtSuffix],
+:host-context(.dt-form-field) :host[dtPrefix] .ktb-loading-spinner-svg,
+:host-context(.dt-form-field) :host[dtSuffix] .ktb-loading-spinner-svg,
 :host-context(.dt-filter-field) .ktb-loading-spinner-svg {
   stroke: $gray-500;
 }

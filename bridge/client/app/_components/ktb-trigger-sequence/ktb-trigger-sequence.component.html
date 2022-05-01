@@ -54,8 +54,8 @@
             Delivery
           </dt-radio-button>
           <dt-radio-button [value]="TRIGGER_SEQUENCE.EVALUATION" uitestid="ktb-trigger-sequence-evaluation-radio"
-            >Evaluation</dt-radio-button
-          >
+            >Evaluation
+          </dt-radio-button>
           <div
             *ngIf="customSequencesOfStage?.length === 0; else customSequencesSelect"
             [dtOverlay]="noCustomSequencesOverlay"
@@ -87,10 +87,9 @@
               </dt-select>
             </dt-radio-button>
           </ng-template>
-          <div *ngIf="!customSequences">
-            <dt-loading-spinner></dt-loading-spinner>
-            <span>Loading custom sequences ...</span>
-          </div>
+          <ktb-loading-distractor *ngIf="!customSequences" class="smaller"
+            >Loading custom sequences ...
+          </ktb-loading-distractor>
 
           <ng-template #noCustomSequencesOverlay>
             There are no custom sequences available for this stage in the shipyard.yaml file
@@ -202,7 +201,12 @@
         <dt-form-field class="overlay-origin">
           <dt-label>Start at</dt-label>
           <div class="input-overlay" (click)="timeframeStartButton?._elementRef?.nativeElement.click()"></div>
-          <input readonly dtInput [(ngModel)]="evaluationFormData.timeframeStart" />
+          <input
+            uitestid="keptn-trigger-evaluation-start-date"
+            readonly
+            dtInput
+            [ngModel]="evaluationFormData.timeframeStart | date: DATE_FORMAT"
+          />
           <dt-hint>Defaults to now if not filled in</dt-hint>
           <button
             dt-icon-button
@@ -246,9 +250,10 @@
           <dt-label class="required">Start at</dt-label>
           <div class="input-overlay" (click)="startDateButton?._elementRef?.nativeElement.click()"></div>
           <input
+            uitestid="keptn-trigger-evaluation-start-date"
             readonly
             dtInput
-            [(ngModel)]="evaluationFormData.startDatetime"
+            [ngModel]="evaluationFormData.startDatetime | date: DATE_FORMAT"
             [errorStateMatcher]="showErrorStateMatcher"
           />
           <button
@@ -278,9 +283,10 @@
           <dt-label class="required">End at</dt-label>
           <div class="input-overlay" (click)="endDateButton?._elementRef?.nativeElement.click()"></div>
           <input
+            uitestid="keptn-trigger-evaluation-end-date"
             readonly
             dtInput
-            [(ngModel)]="evaluationFormData.endDatetime"
+            [ngModel]="evaluationFormData.endDatetime | date: DATE_FORMAT"
             [errorStateMatcher]="showErrorStateMatcher"
           />
           <button
@@ -382,7 +388,7 @@
       (click)="triggerSequence()"
     >
       <dt-icon name="flash" *ngIf="!isLoading"></dt-icon>
-      <dt-loading-spinner *ngIf="isLoading"></dt-loading-spinner>
+      <ktb-loading-spinner *ngIf="isLoading"></ktb-loading-spinner>
       Trigger sequence
     </button>
   </div>

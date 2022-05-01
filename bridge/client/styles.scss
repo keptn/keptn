@@ -8,13 +8,10 @@ $fonts-dir: '^./assets/fonts';
 @import '~@dynatrace/barista-components/style/main';
 @import '~@dynatrace/barista-components/style/index';
 
-dt-loading-spinner.gray-loading svg {
-  stroke: #898989 !important;
-}
-
 .relative {
   position: relative;
 }
+
 .notification-indicator, .notification-indicator-text {
   border-radius: 11px;
   background-color: $red-500;
@@ -97,11 +94,21 @@ ktb-root,
 }
 
 p.smaller,
-span.smaller {
+span.smaller,
+ktb-loading-distractor.smaller .ktb-loading-distractor-label {
   font-family: BerninaSansWeb, OpenSans, sans-serif;
   font-weight: 400;
   font-size: 13px;
   color: $gray-700;
+}
+
+ktb-loading-spinner.smaller,
+ktb-loading-distractor.smaller .ktb-loading-spinner {
+  --ktb-loading-distractor-color: #{$gray-700};
+
+  height: 16px;
+  width: 16px;
+  vertical-align: text-top;
 }
 
 p.small,
