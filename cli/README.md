@@ -43,7 +43,7 @@ keptn [command] [entity] [name] [flags]
 
 where **command**, **entity**, **name**, and **flags** are:
 
-- **command**: Specifies the operation that you want to perform, for example, install, create, send.
+- **command**: Specifies the operation that you want to perform, such as, install, create, send.
 
 - **entity**: Specifies the entity type. For example, the following commands run a create operation on the project and service entities:
 
@@ -87,7 +87,7 @@ The following table includes short descriptions and the general syntax for all o
 | `version`  | Shows the version of Keptn and Keptn CLI |
 
 ## Examples: Common operations
-Use the following set of examples to help you familiarize yourself with running the commonly used `keptn` operations:
+Use the following set of examples to familiarize yourself with running the commonly used `keptn` operations:
 
 - Install Keptn on a plain Kubernetes cluster
   ```console
