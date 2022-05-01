@@ -1,42 +1,8 @@
 <div class="ktb-trigger-sequence pl-3 pr-3 pb-3">
   <div fxFlex="66">
     <div fxLayout="column" *ngIf="state === 'ENTRY'">
-      <h2 uitestid="keptn-trigger-entry-h2">Trigger a new sequence for project {{ projectName }}</h2>
-      <dt-form-field>
-        <dt-label class="mb-1 mt-2">Sequence type</dt-label>
-        <dt-radio-group
-          class="mb-3"
-          name="sequenceType"
-          fxLayout="row"
-          fxLayoutGap="15px"
-          fxLayoutAlign="start center"
-          [(ngModel)]="sequenceType"
-          uitestid="keptn-trigger-sequence-selection"
-        >
-          <dt-radio-button *ngIf="!isQualityGatesOnly" [value]="TRIGGER_SEQUENCE.DELIVERY">Delivery</dt-radio-button>
-          <dt-radio-button [value]="TRIGGER_SEQUENCE.EVALUATION">Evaluation</dt-radio-button>
-          <dt-radio-button
-            class="overlay-origin"
-            [value]="TRIGGER_SEQUENCE.CUSTOM"
-            [disabled]="!customSequences || customSequences?.length === 0"
-          >
-            Custom
-            <div
-              *ngIf="customSequences?.length === 0"
-              class="radio-button-overlay"
-              [dtOverlay]="noCustomSequencesOverlay"
-            ></div>
-          </dt-radio-button>
-          <ng-container *ngIf="!customSequences">
-            <dt-loading-spinner></dt-loading-spinner>
-            <span>Loading custom sequences ...</span>
-          </ng-container>
+      <h2 uitestid="ktb-trigger-headline">Trigger a new sequence for project {{ projectName }}</h2>
 
-          <ng-template #noCustomSequencesOverlay>
-            There are no custom sequences available in the shipyard.yaml file
-          </ng-template>
-        </dt-radio-group>
-      </dt-form-field>
       <div class="mb-3" fxLayout="row" fxLayoutGap="15px">
         <dt-form-field>
           <dt-label class="required">Service</dt-label>
@@ -57,6 +23,7 @@
           <dt-select
             [disabled]="stages.length === 0"
             [(ngModel)]="selectedStage"
+            (selectionChange)="selectedStageChanged()"
             placeholder="Select ..."
             uitestid="keptn-trigger-stage-selection"
           >
@@ -66,6 +33,71 @@
           </dt-select>
         </dt-form-field>
       </div>
+
+      <!--   Sequence Selection   -->
+      <dt-form-field>
+        <dt-label class="mb-1 mt-2">Sequence</dt-label>
+        <dt-radio-group
+          class="mb-3"
+          name="sequenceType"
+          fxLayout="row"
+          fxLayoutGap="15px"
+          fxLayoutAlign="start center"
+          [(ngModel)]="sequenceType"
+          uitestid="keptn-trigger-sequence-selection"
+        >
+          <dt-radio-button
+            *ngIf="!isQualityGatesOnly"
+            [value]="TRIGGER_SEQUENCE.DELIVERY"
+            uitestid="ktb-trigger-sequence-delivery-radio"
+          >
+            Delivery
+          </dt-radio-button>
+          <dt-radio-button [value]="TRIGGER_SEQUENCE.EVALUATION" uitestid="ktb-trigger-sequence-evaluation-radio"
+            >Evaluation
+          </dt-radio-button>
+          <div
+            *ngIf="customSequencesOfStage?.length === 0; else customSequencesSelect"
+            [dtOverlay]="noCustomSequencesOverlay"
+            fxFlex="0 1 300px"
+          >
+            <ng-container *ngTemplateOutlet="customSequencesSelect"></ng-container>
+          </div>
+          <ng-template #customSequencesSelect>
+            <dt-radio-button
+              [value]="TRIGGER_SEQUENCE.CUSTOM"
+              [disabled]="!customSequencesOfStage?.length"
+              uitestid="ktb-trigger-sequence-custom-radio"
+              class="custom-sequence-radio"
+              fxFlex="0 1 300px"
+            >
+              <dt-select
+                [disabled]="!customSequencesOfStage?.length"
+                [(ngModel)]="customFormData.sequence"
+                class="sequence-select"
+                name="customSequence"
+                placeholder="Select ..."
+                uitestid="keptn-trigger-custom-sequence-select"
+              >
+                <dt-option
+                  *ngFor="let sequence of customSequencesOfStage"
+                  [value]="sequence"
+                  [textContent]="sequence"
+                ></dt-option>
+              </dt-select>
+            </dt-radio-button>
+          </ng-template>
+          <ktb-loading-distractor *ngIf="!customSequences" class="smaller"
+            >Loading custom sequences ...
+          </ktb-loading-distractor>
+
+          <ng-template #noCustomSequencesOverlay>
+            There are no custom sequences available for this stage in the shipyard.yaml file
+          </ng-template>
+        </dt-radio-group>
+      </dt-form-field>
+      <!--   Sequence Selection   -->
+
       <div class="mt-3" fxLayout="row" fxLayoutAlign="space-between">
         <button dt-button variant="secondary" (click)="formClosed.emit()" uitestid="keptn-trigger-button-close">
           Cancel
@@ -74,7 +106,9 @@
           dt-button
           variant="secondary"
           uitestid="keptn-trigger-button-next"
-          [disabled]="!selectedService || !selectedStage"
+          [disabled]="
+            !selectedService || !selectedStage || (sequenceType === TRIGGER_SEQUENCE.CUSTOM && !customFormData.sequence)
+          "
           (click)="setFormState()"
         >
           Next
@@ -84,7 +118,7 @@
     </div>
 
     <div fxLayout="column" *ngIf="state === TRIGGER_SEQUENCE.DELIVERY">
-      <h2 uitestid="keptn-trigger-delivery-h2">Trigger a delivery for {{ selectedService }} in {{ selectedStage }}</h2>
+      <h2 uitestid="ktb-trigger-headline">Trigger a delivery for {{ selectedService }} in {{ selectedStage }}</h2>
       <div class="mb-3 mt-2" fxLayout="row" fxLayoutGap="15px">
         <dt-form-field>
           <dt-label class="required">Image</dt-label>
@@ -142,9 +176,7 @@
     </div>
 
     <div fxLayout="column" *ngIf="state === TRIGGER_SEQUENCE.EVALUATION">
-      <h2 uitestid="keptn-trigger-evaluation-h2">
-        Trigger an evaluation for {{ selectedService }} in {{ selectedStage }}
-      </h2>
+      <h2 uitestid="ktb-trigger-headline">Trigger an evaluation for {{ selectedService }} in {{ selectedStage }}</h2>
       <dt-radio-group
         class="mb-3 mt-2"
         name="evaluationTimeSelect"
@@ -153,8 +185,12 @@
         uitestid="keptn-trigger-evaluation-type"
         [(ngModel)]="evaluationFormData.evaluationType"
       >
-        <dt-radio-button [value]="TRIGGER_EVALUATION_TIME.TIMEFRAME">Use timeframe</dt-radio-button>
-        <dt-radio-button [value]="TRIGGER_EVALUATION_TIME.START_END">Use start / end time</dt-radio-button>
+        <dt-radio-button [value]="TRIGGER_EVALUATION_TIME.TIMEFRAME" uitestid="ktb-trigger-sequence-radio-timeframe">
+          Use timeframe
+        </dt-radio-button>
+        <dt-radio-button [value]="TRIGGER_EVALUATION_TIME.START_END" uitestid="ktb-trigger-sequence-radio-end-date">
+          Use start / end time
+        </dt-radio-button>
       </dt-radio-group>
       <div
         fxLayout="row"
@@ -162,18 +198,15 @@
         fxLayoutGap="15px"
         *ngIf="evaluationFormData.evaluationType === TRIGGER_EVALUATION_TIME.TIMEFRAME"
       >
-        <ktb-time-input
-          [label]="'Timeframe'"
-          [hint]="'Min. 1m, defaults to 5m if not filled in'"
-          [error]="isValidTimeframe ? '' : 'Timeframe has to be minimum 1 minute'"
-          [timeframe]="evaluationFormData.timeframe"
-          (timeChanged)="setTimeframe($event)"
-        ></ktb-time-input>
-
         <dt-form-field class="overlay-origin">
           <dt-label>Start at</dt-label>
-          <div class="input-overlay" (click)="timeFrameStartButton?._elementRef?.nativeElement.click()"></div>
-          <input readonly dtInput [(ngModel)]="evaluationFormData.timeframeStart" />
+          <div class="input-overlay" (click)="timeframeStartButton?._elementRef?.nativeElement.click()"></div>
+          <input
+            uitestid="keptn-trigger-evaluation-start-date"
+            readonly
+            dtInput
+            [ngModel]="evaluationFormData.timeframeStart | date: DATE_FORMAT"
+          />
           <dt-hint>Defaults to now if not filled in</dt-hint>
           <button
             dt-icon-button
@@ -197,6 +230,14 @@
             <dt-icon name="calendar"></dt-icon>
           </button>
         </dt-form-field>
+
+        <ktb-time-input
+          [label]="'Timeframe'"
+          [hint]="'Min. 1m, defaults to 5m if not filled in'"
+          [error]="isValidTimeframe ? '' : 'Timeframe has to be minimum 1 minute'"
+          [timeframe]="evaluationFormData.timeframe"
+          (timeChanged)="setTimeframe($event)"
+        ></ktb-time-input>
       </div>
 
       <div
@@ -209,9 +250,10 @@
           <dt-label class="required">Start at</dt-label>
           <div class="input-overlay" (click)="startDateButton?._elementRef?.nativeElement.click()"></div>
           <input
+            uitestid="keptn-trigger-evaluation-start-date"
             readonly
             dtInput
-            [(ngModel)]="evaluationFormData.startDatetime"
+            [ngModel]="evaluationFormData.startDatetime | date: DATE_FORMAT"
             [errorStateMatcher]="showErrorStateMatcher"
           />
           <button
@@ -241,9 +283,10 @@
           <dt-label class="required">End at</dt-label>
           <div class="input-overlay" (click)="endDateButton?._elementRef?.nativeElement.click()"></div>
           <input
+            uitestid="keptn-trigger-evaluation-end-date"
             readonly
             dtInput
-            [(ngModel)]="evaluationFormData.endDatetime"
+            [ngModel]="evaluationFormData.endDatetime | date: DATE_FORMAT"
             [errorStateMatcher]="showErrorStateMatcher"
           />
           <button
@@ -260,7 +303,7 @@
             dt-icon-button
             dtSuffix
             ktbDatetimePicker
-            uitestid="keptn-trigger-button-endtime"
+            uitestid="keptn-trigger-button-end-date"
             [timeEnabled]="true"
             [secondsEnabled]="true"
             (selectedDateTime)="setEndDate($event)"
@@ -304,23 +347,9 @@
     </div>
 
     <div fxLayout="column" *ngIf="state === TRIGGER_SEQUENCE.CUSTOM">
-      <h2 uitestid="keptn-trigger-custom-h2">
-        Trigger a {{ customFormData.sequence || 'custom' }} sequence for {{ selectedService }} in {{ selectedStage }}
+      <h2 uitestid="ktb-trigger-headline">
+        Trigger a {{ customFormData.sequence }} sequence for {{ selectedService }} in {{ selectedStage }}
       </h2>
-      <dt-form-field class="mb-3 mt-2 full-width">
-        <dt-label class="required">Sequence</dt-label>
-        <dt-select
-          [disabled]="!customSequences || customSequences.length === 0"
-          [(ngModel)]="customFormData.sequence"
-          name="customSequence"
-          placeholder="Select ..."
-          uitestid="keptn-trigger-custom-sequence"
-        >
-          <ng-container *ngFor="let sequence of customSequences">
-            <dt-option [value]="sequence">{{ sequence }}</dt-option>
-          </ng-container>
-        </dt-select>
-      </dt-form-field>
 
       <dt-form-field class="mb-3 full-width">
         <dt-label>Labels</dt-label>
@@ -359,7 +388,7 @@
       (click)="triggerSequence()"
     >
       <dt-icon name="flash" *ngIf="!isLoading"></dt-icon>
-      <dt-loading-spinner *ngIf="isLoading"></dt-loading-spinner>
+      <ktb-loading-spinner *ngIf="isLoading"></ktb-loading-spinner>
       Trigger sequence
     </button>
   </div>

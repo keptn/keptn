@@ -17,7 +17,7 @@ export function interceptEmptyEnvironmentScreen(): void {
 export function interceptEnvironmentScreen(): void {
   const project = 'sockshop';
   interceptProjectBoard();
-  cy.intercept('/api/project/sockshop/customSequences', { body: ['delivery-direct', 'rollback', 'remediation'] });
+  cy.intercept('/api/project/sockshop/customSequences', { fixture: 'custom-sequences.mock' }).as('customSequences');
   cy.intercept('POST', '/api/v1/event', { body: { keptnContext: '6c98fbb0-4c40-4bff-ba9f-b20556a57c8a' } });
   cy.intercept('POST', '/api/controlPlane/v1/project/sockshop/stage/dev/service/carts/evaluation', {
     body: { keptnContext: '6c98fbb0-4c40-4bff-ba9f-b20556a57c8a' },
@@ -25,7 +25,22 @@ export function interceptEnvironmentScreen(): void {
 
   cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=1&keptnContext=6c98fbb0-4c40-4bff-ba9f-b20556a57c8a', {
     fixture: 'eventByContext.mock',
-  });
+  }).as('triggeredSequence');
+  cy.intercept(
+    '/api/controlPlane/v1/sequence/sockshop?pageSize=10&fromTime=2022-02-23T14:28:50.504Z&beforeTime=2022-01-09T15:04:09.199Z',
+    {
+      body: {
+        states: [],
+      },
+    }
+  ).as('betweenTriggeredSequence');
+  cy.intercept('/api/mongodb-datastore/event?keptnContext=6c98fbb0-4c40-4bff-ba9f-b20556a57c8a&project=sockshop*', {
+    body: {
+      events: [],
+      pageSize: 100,
+      totalCount: 0,
+    },
+  }).as('triggeredSequenceEvents');
 
   for (const url of getEvaluationUrls(project, 'carts')) {
     cy.intercept('GET', url, { body: { events: [] } });

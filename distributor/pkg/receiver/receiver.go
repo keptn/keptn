@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/keptn/keptn/distributor/pkg/model"
 	nats2 "github.com/keptn/keptn/distributor/pkg/natsconnection"
 	"github.com/keptn/keptn/distributor/pkg/poller"
