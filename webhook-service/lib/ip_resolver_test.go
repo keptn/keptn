@@ -1,11 +1,11 @@
-package lib_test
+package lib
 
 import (
 	"fmt"
 	"net"
+	"net/url"
 	"testing"
 
-	"github.com/keptn/keptn/webhook-service/lib"
 	"github.com/stretchr/testify/require"
 )
 
@@ -13,15 +13,15 @@ func TestCurlValidator_ResolveIPAddresses(t *testing.T) {
 	tests := []struct {
 		name       string
 		url        string
-		ipResolver lib.IpResolver
+		ipResolver ipResolver
 		want       []string
 	}{
 		{
-			name: "error output",
+			name: "unparsable address",
 			url:  "http://some-url",
-			ipResolver: lib.IpResolver{
-				LookupIP: func(host string) ([]net.IP, error) {
-					return make([]net.IP, 0), fmt.Errorf("some error")
+			ipResolver: ipResolver{
+				Parse: func(rawURL string) (*url.URL, error) {
+					return nil, fmt.Errorf("some error")
 				},
 			},
 			want: make([]string, 0),
@@ -29,7 +29,12 @@ func TestCurlValidator_ResolveIPAddresses(t *testing.T) {
 		{
 			name: "no existing address",
 			url:  "http://some-url",
-			ipResolver: lib.IpResolver{
+			ipResolver: ipResolver{
+				Parse: func(rawURL string) (*url.URL, error) {
+					return &url.URL{
+						Host: "some-url",
+					}, nil
+				},
 				LookupIP: func(host string) ([]net.IP, error) {
 					return make([]net.IP, 0), nil
 				},
@@ -39,7 +44,12 @@ func TestCurlValidator_ResolveIPAddresses(t *testing.T) {
 		{
 			name: "ip addresses list",
 			url:  "http://some-url",
-			ipResolver: lib.IpResolver{
+			ipResolver: ipResolver{
+				Parse: func(rawURL string) (*url.URL, error) {
+					return &url.URL{
+						Host: "some-url",
+					}, nil
+				},
 				LookupIP: func(host string) ([]net.IP, error) {
 					return []net.IP{net.ParseIP("1.1.1.1"), net.ParseIP("2.2.2.2")}, nil
 				},

@@ -13,7 +13,7 @@ type DenyListProvider interface {
 	Get() []string
 }
 
-type DenyListProviderStruct struct {
+type denyListProvider struct {
 	GetDeniedURLs GetDeniedURLsFunc
 	KubeClient    kubernetes.Interface
 }
@@ -21,13 +21,13 @@ type DenyListProviderStruct struct {
 type GetDeniedURLsFunc func(env map[string]string) []string
 
 func NewDenyListProvider(kubeClient kubernetes.Interface) DenyListProvider {
-	return DenyListProviderStruct{
+	return denyListProvider{
 		GetDeniedURLs: GetDeniedURLs,
 		KubeClient:    kubeClient,
 	}
 }
 
-func (d DenyListProviderStruct) Get() []string {
+func (d denyListProvider) Get() []string {
 	denyList := d.GetDeniedURLs(GetEnv())
 
 	configMap, err := d.KubeClient.CoreV1().ConfigMaps(GetNamespaceFromEnvVar()).Get(context.TODO(), WebhookConfigMap, metav1.GetOptions{})

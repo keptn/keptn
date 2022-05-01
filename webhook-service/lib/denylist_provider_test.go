@@ -1,4 +1,4 @@
-package lib_test
+package lib
 
 import (
 	"fmt"
@@ -6,7 +6,6 @@ import (
 
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/keptn/keptn/webhook-service/lib"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -16,7 +15,7 @@ import (
 
 func TestDeniedURLS(t *testing.T) {
 	kubeEnvs := map[string]string{"KUBERNETES_SERVICE_HOST": "1.2.3.4", "KUBERNETES_SERVICE_PORT": "9876"}
-	urls := lib.GetDeniedURLs(kubeEnvs)
+	urls := GetDeniedURLs(kubeEnvs)
 
 	expected := []string{"1.2.3.4", "kubernetes:9876", "kubernetes.default:9876", "kubernetes.default.svc:9876", "kubernetes.default.svc.cluster.local:9876", "1.2.3.4:9876"}
 
@@ -29,7 +28,7 @@ func TestCannotGetConfigMap(t *testing.T) {
 	client.PrependReactor("get", "configmap", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
 		return true, nil, fmt.Errorf("cannot get configmap")
 	})
-	denyListProvider := lib.DenyListProviderStruct{
+	denyListProvider := denyListProvider{
 		GetDeniedURLs: func(env map[string]string) []string {
 			return []string{"1.2.3.4", "kubernetes:9876"}
 		},
@@ -45,12 +44,12 @@ func TestGetDenyList(t *testing.T) {
 	denyListString := "some\nurl\nip"
 	tests := []struct {
 		name             string
-		denyListProvider lib.DenyListProvider
+		denyListProvider DenyListProvider
 		want             []string
 	}{
 		{
 			name: "valid empty configmap",
-			denyListProvider: lib.DenyListProviderStruct{
+			denyListProvider: denyListProvider{
 				GetDeniedURLs: func(env map[string]string) []string {
 					return []string{"1.2.3.4", "kubernetes:9876"}
 				},
@@ -67,7 +66,7 @@ func TestGetDenyList(t *testing.T) {
 		},
 		{
 			name: "valid",
-			denyListProvider: lib.DenyListProviderStruct{
+			denyListProvider: denyListProvider{
 				KubeClient: fake.NewSimpleClientset(
 					&corev1.ConfigMap{
 						ObjectMeta: metav1.ObjectMeta{

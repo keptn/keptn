@@ -24,7 +24,7 @@ func NewRequestValidator(denyListProvider DenyListProvider, ipResolver IPResolve
 
 func (c requestValidator) Validate(request Request) error {
 	if request.URL == "" {
-		return fmt.Errorf("invalid curl URL: '%s'", request.URL)
+		return fmt.Errorf("curl command contains empty URL")
 	}
 
 	denyList := c.denyListProvider.Get()

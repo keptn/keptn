@@ -2,37 +2,40 @@ package lib
 
 import (
 	"net"
-	"net/url"
+	neturl "net/url"
 
 	logger "github.com/sirupsen/logrus"
 )
 
 type IPResolver interface {
-	Resolve(curlURL string) []string
+	Resolve(url string) []string
 }
 
 type LookupFunc func(host string) ([]net.IP, error)
+type ParseFunc func(rawURL string) (*neturl.URL, error)
 
-type IpResolver struct {
+type ipResolver struct {
 	LookupIP LookupFunc
+	Parse    ParseFunc
 }
 
-func NewIPResolver(lookUpIPFunc ...LookupFunc) IPResolver {
-	return IpResolver{
+func NewIPResolver() IPResolver {
+	return ipResolver{
 		LookupIP: net.LookupIP,
+		Parse:    neturl.Parse,
 	}
 }
 
-func (i IpResolver) Resolve(curlURL string) []string {
+func (i ipResolver) Resolve(url string) []string {
 	ipAddresses := make([]string, 0)
-	parsedURL, err := url.Parse(curlURL)
+	parsedURL, err := i.Parse(url)
 	if err != nil {
-		logger.Errorf("Unable to parse URL: %s", curlURL)
+		logger.Errorf("Unable to parse URL: %s", url)
 		return ipAddresses
 	}
 	ips, err := i.LookupIP(parsedURL.Hostname())
 	if err != nil {
-		logger.Errorf("Unable to look up IP for URL: %s", curlURL)
+		logger.Errorf("Unable to look up IP for URL: %s", url)
 		return ipAddresses
 	}
 	for _, ip := range ips {

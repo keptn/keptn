@@ -69,7 +69,7 @@ func TestRequestValidator_Validate(t *testing.T) {
 					return []string{"1.1.1.1"}
 				},
 			},
-			want:    fmt.Errorf("invalid curl URL: ''"),
+			want:    fmt.Errorf("curl command contains empty URL"),
 			wantErr: true,
 		},
 		{
