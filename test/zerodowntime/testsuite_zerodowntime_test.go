@@ -1,25 +1,26 @@
 package zerodowntime
 
 import (
-	"context"
 	"fmt"
 	testutils "github.com/keptn/keptn/test/go-tests"
 	"github.com/stretchr/testify/suite"
+	"os"
 	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
 )
 
+const EnvInstallVersion = "INSTALL_HELM_CHART"
+const EnvUpgradeVersion = "UPGRADE_HELM_CHART"
+const pathToChart = "https://charts-dev.keptn.sh/packages/"
+const rawChart = "?raw=true"
+
 const apiProbeInterval = 5 * time.Second
 const sequencesInterval = 15 * time.Second
 
-var chartLatestVersion = "https://github.com/keptn/helm-charts-dev/blob/1c234d5370f76532e0338adb8d135fe6e1d4caf8/packages/keptn-0.15.0-dev.tgz?raw=true"
-var chartPreviousVersion = "https://github.com/keptn/helm-charts-dev/blob/366d236e97e147596e332b48d94f44b094fb349a/packages/keptn-0.15.0-dev-PR-7504.tgz?raw=true"
-
 type ZeroDowntimeEnv struct {
-	Ctx          context.Context //TODO substitute context & cancel with a quit channel not to store/share context
-	Cancel       context.CancelFunc
+	quit         chan struct{}
 	NrOfUpgrades int
 	Wg           *sync.WaitGroup
 
@@ -40,7 +41,7 @@ type ZeroDowntimeEnv struct {
 func SetupZD() *ZeroDowntimeEnv {
 
 	zd := ZeroDowntimeEnv{}
-	zd.Ctx, zd.Cancel = context.WithCancel(context.Background())
+	zd.quit = make(chan struct{})
 	zd.NrOfUpgrades = 2
 	zd.Wg = &sync.WaitGroup{}
 	zd.ShipyardFile, _ = GetShipyard()
@@ -57,6 +58,19 @@ func SetupZD() *ZeroDowntimeEnv {
 func (env *ZeroDowntimeEnv) gedId() string {
 	atomic.AddUint64(&env.Id, 1)
 	return fmt.Sprintf("%d", env.Id)
+}
+
+func (env *ZeroDowntimeEnv) failSequence() {
+	atomic.AddUint64(&env.FailedSequences, 1)
+}
+
+func (env *ZeroDowntimeEnv) passSequence() {
+	atomic.AddUint64(&env.PassedSequences, 1)
+}
+
+func (env *ZeroDowntimeEnv) passFailedSequence() {
+	atomic.AddUint64(&env.FailedSequences, ^uint64(1-1))
+	env.passSequence()
 }
 
 type TestSuiteDowntime struct {
@@ -106,7 +120,7 @@ func ZDTestTemplate(t *testing.T, F func(t1 *testing.T, e *ZeroDowntimeEnv), nam
 
 func RollingUpgrade(t *testing.T, env *ZeroDowntimeEnv) {
 	defer func() {
-		env.Cancel()
+		close(env.quit)
 		t.Log("Rolling upgrade terminated")
 		env.Wg.Wait()
 
@@ -114,8 +128,11 @@ func RollingUpgrade(t *testing.T, env *ZeroDowntimeEnv) {
 		PrintAPIresults(t, env)
 
 	}()
+
+	chartPreviousVersion, chartLatestVersion := GetCharts()
+
 	t.Log("Upgrade in progress")
-	//	time.Sleep(1 * time.Minute)
+	time.Sleep(1 * time.Minute)
 	for i := 0; i < env.NrOfUpgrades; i++ {
 		chartURL := ""
 		var err error
@@ -145,4 +162,21 @@ func PrintSequencesResults(t *testing.T, env *ZeroDowntimeEnv) {
 	t.Log("TOTAL FAILURES ", env.FailedSequences)
 	t.Log("-----------------------------------------------")
 
+}
+
+//Returns current test helm charts for the rolling upgrade
+func GetCharts() (string, string) {
+	var install, upgrade string
+
+	chartInstallVersion := "https://charts-dev.keptn.sh/packages/keptn-0.15.0-dev.tgz?raw=true"
+	chartUpgradeVersion := "https://charts-dev.keptn.sh/packages/keptn-0.15.0-dev-PR-7504.tgz?raw=true"
+
+	if install = os.Getenv(EnvInstallVersion); install != "" {
+		chartInstallVersion = pathToChart + install + rawChart
+	}
+	if upgrade = os.Getenv(EnvUpgradeVersion); upgrade != "" {
+		chartUpgradeVersion = pathToChart + upgrade + rawChart
+	}
+
+	return chartInstallVersion, chartUpgradeVersion
 }

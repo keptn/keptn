@@ -52,7 +52,6 @@ func (suite *TestSuiteSequences) createNew() {
 	output, err := testutils.ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", "myservice", suite.project))
 	suite.Nil(err)
 	suite.Contains(output, "created successfully")
-
 	suite.T().Logf("Starting test for project %s ", suite.project)
 }
 
@@ -91,7 +90,7 @@ func Sequences(t *testing.T, env *ZeroDowntimeEnv) {
 Loop:
 	for {
 		select {
-		case <-env.Ctx.Done():
+		case <-env.quit:
 			break Loop
 		case <-seqTicker.C:
 			s = &TestSuiteSequences{
@@ -111,14 +110,7 @@ Loop:
 
 func (suite *TestSuiteSequences) Test_Evaluation() {
 	var finished *models.KeptnContextExtendedCE
-	defer func() {
-		if finished.Data == nil {
-			atomic.AddUint64(&suite.env.FailedSequences, 1)
-		} else {
-			atomic.AddUint64(&suite.env.PassedSequences, 1)
-		}
-	}()
-
+	suite.env.failSequence()
 	suite.T().Log("deleting lighthouse configmap from previous test run")
 	_, _ = testutils.ExecuteCommand(fmt.Sprintf("kubectl delete configmap -n %s lighthouse-config-%s", testutils.GetKeptnNameSpaceFromEnv(), suite.project))
 
@@ -127,7 +119,9 @@ func (suite *TestSuiteSequences) Test_Evaluation() {
 	_, err := testutils.ExecuteCommand(fmt.Sprintf("kubectl create configmap -n %s lighthouse-config-%s --from-literal=sli-provider=my-sli-provider", testutils.GetKeptnNameSpaceFromEnv(), suite.project))
 	suite.Nil(err)
 	_, finished = testutils.PerformResourceServiceTest(suite.T(), suite.project, "myservice", true)
-
+	if finished.Data != nil {
+		suite.env.passFailedSequence()
+	}
 }
 
 func (suite *TestSuiteSequences) Test_DeliveryFails() {
@@ -166,12 +160,12 @@ func (suite *TestSuiteSequences) checkSequence(sequence TriggeredSequence) {
 		if sequenceFinishedEvent == nil || err != nil {
 			return false
 		}
-		atomic.AddUint64(&suite.env.PassedSequences, 1)
+		suite.env.passSequence()
 		return true
 	}, 1*time.Minute, 5*time.Second)
 
 	if sequenceFinishedEvent == nil || err != nil {
-		atomic.AddUint64(&suite.env.FailedSequences, 1)
+		suite.env.failSequence()
 		suite.T().Errorf("sequence %s with keptnContext %s in project %s has NOT been finished", sequence.sequenceName, sequence.keptnContext, sequence.projectName)
 
 	} else {

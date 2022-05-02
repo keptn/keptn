@@ -44,7 +44,7 @@ func Webhook(t *testing.T, env *ZeroDowntimeEnv) {
 Loop:
 	for {
 		select {
-		case <-env.Ctx.Done():
+		case <-env.quit:
 			break Loop
 		case <-seqTicker.C:
 			s = &TestSuiteWebhook{

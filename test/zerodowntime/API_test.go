@@ -54,7 +54,7 @@ func APIs(t *testing.T, env *ZeroDowntimeEnv) {
 Loop:
 	for {
 		select {
-		case <-env.Ctx.Done():
+		case <-env.quit:
 			break Loop
 		case <-apiTicker.C:
 			wgAPI.Add(1)
