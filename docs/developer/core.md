@@ -35,19 +35,20 @@ Keptn follows also some best practises that are listed in this section.
 
 ### Environment Variables
 
-Keptn adhere to the following conventions for setting up environment variables:
+Keptn adheres to the following conventions for setting up environment variables:
 
 - For enabling/disabling a feature, the variable name MUST be called with the feature name and suffixed by `ENABLED`. Example: `MAX_AUTH_ENABLED`
 
 
 ### Log and Error format
 
-Keptn adhere to the following conventions for logging error messages:
+Keptn adheres to the following conventions for logging error messages:
 
 - Log lines MUST start with capital letter
 - Log lines MUST NOT end with a dot
 - Logging MUST use the default Go approach using the default [log package](https://pkg.go.dev/log)
-- Returned error messages MUST start with a lower case letter and MUST NOT end with a dot
+- Returned error messages MUST start with a lower case letter
+- Returned error messages MUST NOT end with a dot
 - Error messages MUST use "could not ..." for everything that is not supported, e.g. avoid using "unable to", "not able to", "not possible"
 - Errors MUST provide context information wrapping errors with `%w`
 - Errors MUST be compared by types using `error.Is()` or the default [error package](https://pkg.go.dev/errors)
