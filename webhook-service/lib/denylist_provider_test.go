@@ -29,10 +29,10 @@ func TestCannotGetConfigMap(t *testing.T) {
 		return true, nil, fmt.Errorf("cannot get configmap")
 	})
 	denyListProvider := denyListProvider{
-		GetDeniedURLs: func(env map[string]string) []string {
+		getDeniedURLs: func(env map[string]string) []string {
 			return []string{"1.2.3.4", "kubernetes:9876"}
 		},
-		KubeClient: client,
+		kubeClient: client,
 	}
 
 	got := denyListProvider.Get()
@@ -50,10 +50,10 @@ func TestGetDenyList(t *testing.T) {
 		{
 			name: "valid empty configmap",
 			denyListProvider: denyListProvider{
-				GetDeniedURLs: func(env map[string]string) []string {
+				getDeniedURLs: func(env map[string]string) []string {
 					return []string{"1.2.3.4", "kubernetes:9876"}
 				},
-				KubeClient: fake.NewSimpleClientset(
+				kubeClient: fake.NewSimpleClientset(
 					&corev1.ConfigMap{
 						ObjectMeta: metav1.ObjectMeta{
 							Name: "keptn-webhook-config",
@@ -67,7 +67,10 @@ func TestGetDenyList(t *testing.T) {
 		{
 			name: "valid",
 			denyListProvider: denyListProvider{
-				KubeClient: fake.NewSimpleClientset(
+				getDeniedURLs: func(env map[string]string) []string {
+					return []string{"1.2.3.4", "kubernetes:9876"}
+				},
+				kubeClient: fake.NewSimpleClientset(
 					&corev1.ConfigMap{
 						ObjectMeta: metav1.ObjectMeta{
 							Name: "keptn-webhook-config",
@@ -75,9 +78,6 @@ func TestGetDenyList(t *testing.T) {
 						Data: map[string]string{
 							"denyList": denyListString},
 					}),
-				GetDeniedURLs: func(env map[string]string) []string {
-					return []string{"1.2.3.4", "kubernetes:9876"}
-				},
 			},
 			want: []string{"1.2.3.4", "kubernetes:9876", "some", "url", "ip"},
 		},
