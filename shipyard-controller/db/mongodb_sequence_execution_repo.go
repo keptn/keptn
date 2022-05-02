@@ -145,9 +145,13 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) Upsert(item models.SequenceExecutio
 	}
 
 	filter := bson.D{{"_id", item.ID}}
-	update := bson.D{{"$set", internalDBItem}}
 
-	_, err = collection.UpdateOne(ctx, filter, update, opts)
+	if upsertOptions != nil && upsertOptions.Replace {
+		_, err = collection.ReplaceOne(ctx, filter, internalDBItem)
+	} else {
+		update := bson.D{{"$set", internalDBItem}}
+		_, err = collection.UpdateOne(ctx, filter, update, opts)
+	}
 	if err != nil {
 		return err
 	}

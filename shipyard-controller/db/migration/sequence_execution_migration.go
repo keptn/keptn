@@ -55,7 +55,9 @@ func (s *SequenceExecutionMigrator) updateSequenceExecutionsOfProject(projects [
 			if sequenceExecution.SchemaVersion == v1.SchemaVersionV1 {
 				continue
 			}
-			if err := s.sequenceExecutionRepo.Upsert(sequenceExecution, nil); err != nil {
+			if err := s.sequenceExecutionRepo.Upsert(sequenceExecution, &models.SequenceExecutionUpsertOptions{
+				Replace: true,
+			}); err != nil {
 				logger.Errorf("Could not update sequence execution with ID %s for project %s: %v", sequenceExecution.ID, project.ProjectName, err)
 				continue
 			}

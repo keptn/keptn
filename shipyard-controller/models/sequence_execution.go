@@ -264,4 +264,5 @@ type SequenceExecutionFilter struct {
 
 type SequenceExecutionUpsertOptions struct {
 	CheckUniqueTriggeredID bool
+	Replace                bool
 }
