@@ -16,7 +16,7 @@ import * as d3 from 'd3';
 import { BaseType, ScaleBand, Selection, ValueFn } from 'd3';
 import { ResultTypes } from '../../../shared/models/result-types';
 import { DtButton } from '@dynatrace/barista-components/button';
-import { v4 } from 'uuid';
+import { v4 as uuid } from 'uuid';
 
 export interface DataPoint {
   date: string;
@@ -46,7 +46,7 @@ type GroupedDataPoints = { [sli: string]: DataPoint[] };
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KtbHeatmapComponent implements OnInit, OnDestroy, AfterViewInit {
-  public readonly uniqueId = `heatmap-${v4()}`;
+  public readonly uniqueId = `heatmap-${uuid()}`;
   private readonly chartSelector = `#${this.uniqueId}`;
   private readonly heatmapSelector = `${this.chartSelector} .heatmap-container`;
   private readonly tooltipSelector = `${this.chartSelector} .tooltip`;
@@ -68,7 +68,7 @@ export class KtbHeatmapComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly mouseMoveListener: (this: Document, _evt: MouseEvent) => void;
   private xAxis?: ScaleBand<string>;
   private yAxis?: ScaleBand<string>;
-  private dataPointContentWidth = 1720; // - margin-left - margin-right. Margin-left will be the space for xAxis labels
+  private dataPointContentWidth = 0;
   private height = 0;
   private highlight?: Selection<SVGRectElement, unknown, HTMLElement, unknown>;
   private secondaryHighlights: Selection<SVGRectElement, unknown, HTMLElement, unknown>[] = [];
@@ -83,7 +83,7 @@ export class KtbHeatmapComponent implements OnInit, OnDestroy, AfterViewInit {
   // unsure about:
   // should tileSelected emit the datapoint or just the identifier?
   // Re-positioning of tooltip only on hover-item-change?
-  //
+  // Should the secondaryHighlight be an index or the identifier of the dataPoint?
 
   // TODO:
   //  - Create <ktb-heatmap-tooltip #myTooltip>, get it via ViewChild and trigger show/hide with correct x and y coordinates and dataPoint.
