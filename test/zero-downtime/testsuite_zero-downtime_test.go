@@ -15,9 +15,6 @@ const sequencesInterval = 15 * time.Second
 const EnvInstallVersion = "INSTALL_HELM_CHART"
 const EnvUpgradeVersion = "UPGRADE_HELM_CHART"
 
-const pathToChart = "https://charts-dev.keptn.sh/packages/"
-const rawChart = "?raw=true"
-
 type ZeroDowntimeEnv struct {
 	Ctx          context.Context //TODO substitute context & cancel with a quit channel not to store/share context
 	Cancel       context.CancelFunc
@@ -62,18 +59,16 @@ func (suite *TestSuiteDowntime) TearDownSuite() {
 }
 
 //Returns current test helm charts for the rolling upgrade
-func GetCharts() (string, string) {
+//Returns current test helm charts for the rolling upgrade
+func GetCharts(t *testing.T) (string, string) {
 	var install, upgrade string
 
-	chartInstallVersion := "https://charts-dev.keptn.sh/packages/keptn-0.15.0-dev.tgz?raw=true"
-	chartUpgradeVersion := "https://charts-dev.keptn.sh/packages/keptn-0.15.0-dev-PR-7504.tgz?raw=true"
-
-	if install = os.Getenv(EnvInstallVersion); install != "" {
-		chartInstallVersion = pathToChart + install + rawChart
+	if install = os.Getenv(EnvInstallVersion); install == "" {
+		t.Errorf("Helm chart unavailable, please set env variable %s", EnvInstallVersion)
 	}
-	if upgrade = os.Getenv(EnvUpgradeVersion); upgrade != "" {
-		chartUpgradeVersion = pathToChart + upgrade + rawChart
+	if upgrade = os.Getenv(EnvUpgradeVersion); upgrade == "" {
+		t.Errorf("Helm chart unavailable, please set env variable %s", EnvUpgradeVersion)
 	}
 
-	return chartInstallVersion, chartUpgradeVersion
+	return install, upgrade
 }
