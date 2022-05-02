@@ -14,6 +14,7 @@ mongo:
     nameOverride: 'mongo'
     port: 27017
   auth:
+    enabled: true
     databases:
       - 'keptn'
     existingSecret: 'mongodb-credentials' # If the password and rootPassword values below are used, remove this field.
