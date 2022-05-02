@@ -188,6 +188,9 @@ jobs:
           helm repo update
           helm pull keptndev/keptn --version ${{ github.event.inputs.upgradeTo }} --destination test/zero-downtime 
           cd test/zero-downtime
+          echo "downloaded files"
+          ls -la ./keptn*.tgz
+          
           echo "INSTALL_HELM_CHART=$(ls ./keptn*.tgz)" >> $GITHUB_ENV
           echo "UPGRADE_HELM_CHART=${{ github.event.inputs.upgradeTo }}" >> $GITHUB_ENV
 
