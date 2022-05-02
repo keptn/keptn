@@ -1,5 +1,9 @@
 .show-more-button {
-  position: absolute;
+  position: relative;
+}
+
+.heatmap {
+  margin-top: -32px; // remove show-more button height
 }
 
 ::ng-deep {

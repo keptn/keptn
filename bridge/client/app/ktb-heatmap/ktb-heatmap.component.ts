@@ -62,7 +62,8 @@ export class KtbHeatmapComponent implements OnInit, OnDestroy, AfterViewInit {
     ResultTypes.FAILED,
     EvaluationResultTypeExtension.INFO,
   ];
-  private readonly showMoreButtonHeight = 38;
+  private readonly showMoreButtonPadding = 6;
+  private readonly showMoreButtonHeight = 32 + this.showMoreButtonPadding;
   // has to be globally instead of component bound, else scrolling into it will not have any mouse coordinates
   private readonly mouseMoveListener: (this: Document, _evt: MouseEvent) => void;
   private xAxis?: ScaleBand<string>;
@@ -120,8 +121,7 @@ export class KtbHeatmapComponent implements OnInit, OnDestroy, AfterViewInit {
 
   get showMoreButtonTopOffset(): number {
     const heatmapHeight = this.dataPointContainer?.node()?.getBoundingClientRect().height ?? 0;
-    const heightOffset = (this.elementRef.nativeElement as HTMLElement).offsetTop;
-    return heatmapHeight + heightOffset + 5;
+    return heatmapHeight + this.showMoreButtonPadding;
   }
 
   get yAxisContainer(): SVGGSelection {
@@ -130,8 +130,7 @@ export class KtbHeatmapComponent implements OnInit, OnDestroy, AfterViewInit {
 
   get showMoreButtonLeftOffset(): number {
     const yAxisWidth = this.yAxisContainer?.node()?.getBoundingClientRect().width ?? 0;
-    const widthOffset = (this.elementRef.nativeElement as HTMLElement).offsetLeft;
-    return yAxisWidth + widthOffset - 2;
+    return yAxisWidth - 2;
   }
 
   public get tooltip(): HeatmapTooltip {

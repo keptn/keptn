@@ -1,5 +1,3 @@
-<div [id]="uniqueId"></div>
-
 <button
   dt-button
   variant="secondary"
@@ -12,3 +10,5 @@
   <dt-icon [name]="showMoreExpanded ? 'sorter2-up' : 'sorter2-down'"></dt-icon>
   <span [textContent]="showMoreExpanded ? 'Collapse all SLIs' : 'Show all SLIs'"></span>
 </button>
+
+<div [id]="uniqueId" class="heatmap"></div>
