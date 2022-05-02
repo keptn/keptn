@@ -43,6 +43,7 @@ func (suite *TestSuiteDowntime) TestSequences() {
 	suite.T().Run("Rolling Upgrade", func(t1 *testing.T) {
 		RollingUpgrade(t1, env)
 	})
+	suite.FailNow("This test fails on purpose")
 }
 
 func (suite *TestSuiteDowntime) TearDownSuite() {
