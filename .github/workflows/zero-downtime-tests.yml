@@ -184,7 +184,6 @@ jobs:
       - name: Setup upgrade charts
         id: setup_upgrade_charts
         run: |
-          ls *.tgz # debug output
           helm repo add keptndev "https://charts-dev.keptn.sh"
           helm repo update
           helm pull keptndev/keptn --version ${{ github.event.inputs.upgradeTo }} --destination test/zero-downtime 
