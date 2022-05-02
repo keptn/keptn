@@ -1,4 +1,4 @@
-<div id="myChart"></div>
+<div [id]="uniqueId"></div>
 
 <button
   dt-button
@@ -8,5 +8,7 @@
   (click)="showMoreToggle()"
   #showMoreButton
 >
-  Show more SLIs
+  <!--  ng-container with switch or if/else does not work. Icon is not placed inside the icon-label -->
+  <dt-icon [name]="showMoreExpanded ? 'sorter2-up' : 'sorter2-down'"></dt-icon>
+  <span [textContent]="showMoreExpanded ? 'Collapse all SLIs' : 'Show all SLIs'"></span>
 </button>

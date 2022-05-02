@@ -66,6 +66,7 @@
     "normalize.css": "8.0.1",
     "rxjs": "6.6.7",
     "semver": "7.3.7",
+    "uuid": "^8.3.2",
     "yaml": "2.0.1",
     "zone.js": "0.11.5"
   },
@@ -88,6 +89,7 @@
     "@types/marked": "4.0.3",
     "@types/node": "14.18.13",
     "@types/semver": "7.3.9",
+    "@types/uuid": "^8.3.4",
     "@typescript-eslint/eslint-plugin": "5.19.0",
     "@typescript-eslint/parser": "5.19.0",
     "cypress": "9.5.4",
