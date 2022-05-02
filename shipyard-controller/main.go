@@ -264,6 +264,14 @@ func main() {
 	}
 	log.Info("Finished migrating project key format")
 
+	log.Info("Migrating sequence execution format")
+	sequenceExecutionMigrator := migration.NewSequenceExecutionMigrator(db.GetMongoDBConnectionInstance())
+	err = sequenceExecutionMigrator.Run()
+	if err != nil {
+		log.Errorf("Unable to run sequence execution migrator: %v", err)
+	}
+	log.Info("Finished migrating sequence execution format")
+
 	healthHandler := handler.NewHealthHandler()
 	healthController := controller.NewHealthController(healthHandler)
 	healthController.Inject(apiHealth)
