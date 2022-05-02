@@ -13,8 +13,7 @@ import (
 
 const EnvInstallVersion = "INSTALL_HELM_CHART"
 const EnvUpgradeVersion = "UPGRADE_HELM_CHART"
-const pathToChart = "https://charts-dev.keptn.sh/packages/"
-const rawChart = "?raw=true"
+const valuesFile = "test-values.yaml"
 
 const apiProbeInterval = 5 * time.Second
 const sequencesInterval = 15 * time.Second
@@ -129,24 +128,22 @@ func RollingUpgrade(t *testing.T, env *ZeroDowntimeEnv) {
 
 	}()
 
-	chartPreviousVersion, chartLatestVersion := GetCharts()
+	chartPreviousVersion, chartLatestVersion := GetCharts(t)
 
 	t.Log("Upgrade in progress")
 	time.Sleep(1 * time.Minute)
 	for i := 0; i < env.NrOfUpgrades; i++ {
-		chartURL := ""
+		chartPath := ""
 		var err error
 		if i%2 == 0 {
-			chartURL = chartLatestVersion
+			chartPath = chartLatestVersion
 		} else {
-			chartURL = chartPreviousVersion
+			chartPath = chartPreviousVersion
 		}
-		t.Logf("Upgrading Keptn to %s", chartURL)
+		t.Logf("Upgrading Keptn to %s", chartPath)
 		_, err = testutils.ExecuteCommand(
 			fmt.Sprintf(
-				"helm upgrade -n %s keptn %s --wait --set=control-plane.apiGatewayNginx.type=LoadBalancer "+
-					"--set=control-plane.common.strategy.rollingUpdate.maxUnavailable=0 --set control-plane.resourceService.enabled=true"+
-					" --set control-plane.resourceService.env.DIRECTORY_STAGE_STRUCTURE=true", testutils.GetKeptnNameSpaceFromEnv(), chartURL))
+				"helm upgrade -n %s keptn %s --wait --values=%s ", testutils.GetKeptnNameSpaceFromEnv(), chartPath, valuesFile))
 		if err != nil {
 			t.Logf("Encountered error when upgrading keptn: %v", err)
 
@@ -165,18 +162,15 @@ func PrintSequencesResults(t *testing.T, env *ZeroDowntimeEnv) {
 }
 
 //Returns current test helm charts for the rolling upgrade
-func GetCharts() (string, string) {
+func GetCharts(t *testing.T) (string, string) {
 	var install, upgrade string
 
-	chartInstallVersion := "https://charts-dev.keptn.sh/packages/keptn-0.15.0-dev.tgz?raw=true"
-	chartUpgradeVersion := "https://charts-dev.keptn.sh/packages/keptn-0.15.0-dev-PR-7504.tgz?raw=true"
-
-	if install = os.Getenv(EnvInstallVersion); install != "" {
-		chartInstallVersion = pathToChart + install + rawChart
+	if install = os.Getenv(EnvInstallVersion); install == "" {
+		t.Errorf("Helm chart unavailable, please set env variable %s", EnvInstallVersion)
 	}
-	if upgrade = os.Getenv(EnvUpgradeVersion); upgrade != "" {
-		chartUpgradeVersion = pathToChart + upgrade + rawChart
+	if upgrade = os.Getenv(EnvUpgradeVersion); upgrade == "" {
+		t.Errorf("Helm chart unavailable, please set env variable %s", EnvUpgradeVersion)
 	}
 
-	return chartInstallVersion, chartUpgradeVersion
+	return install, upgrade
 }
