@@ -1,0 +1,13 @@
+name: Zero-Downtime Tests
+on:
+  workflow_dispatch:
+defaults:
+  run:
+    shell: bash
+jobs:
+  hello-world:
+    name: "Hello World"
+    runs-on: ubuntu-20.04
+    steps:
+      - run: |
+          echo "Hello World!"
