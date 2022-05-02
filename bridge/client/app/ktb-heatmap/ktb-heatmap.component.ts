@@ -90,7 +90,6 @@ export class KtbHeatmapComponent implements OnInit, OnDestroy, AfterViewInit {
   //    Check if myComponentRef.attr.transform(x,y) can be used
   //    repositioning if too far on the left/top,
   //  - Only show every xth date if there are too many dataPoints?
-  //  - disable Tooltip if item in legend is disabled
   //  - Remove testing data afterwards
 
   @Input() set dataPoints(data: DataPoint[]) {
@@ -200,7 +199,7 @@ export class KtbHeatmapComponent implements OnInit, OnDestroy, AfterViewInit {
       clientY: y,
       clientX: x,
     });
-    this.setTooltipVisibility(true);
+    this.mouseOver(element);
     this.mouseMove(mouseEvent, dt);
   }
 
@@ -443,7 +442,10 @@ export class KtbHeatmapComponent implements OnInit, OnDestroy, AfterViewInit {
     return d3.select(this.chartSelector).append('div').attr('class', 'tooltip');
   }
 
-  private mouseOver(): void {
+  private mouseOver(element: SVGGElement): void {
+    if (element.classList.contains('disabled')) {
+      return;
+    }
     this.setTooltipVisibility(true);
   }
 
@@ -538,6 +540,8 @@ export class KtbHeatmapComponent implements OnInit, OnDestroy, AfterViewInit {
     } else {
       container = this.dataPointContainer;
     }
+    const _this = this;
+    const categoryDisabledStatus = this.getCategoryDisabledStatus();
     const dataPoints = container
       .selectAll()
       .data(yAxisElements)
@@ -549,12 +553,20 @@ export class KtbHeatmapComponent implements OnInit, OnDestroy, AfterViewInit {
       .join('rect')
       .attr('class', (dataPoint) => dataPoint.color)
       .classed('data-point', true)
+      // set all new dataPoints (show all SLIs) to disabled if needed
+      .classed('disabled', (dataPoint: DataPoint) => categoryDisabledStatus[dataPoint.color])
       .attr('uitestid', (dataPoint) => `ktb-heatmap-tile-${dataPoint.date.replace(/ /g, '-')}`) // TODO: do we need this?
       .on('click', (_event: PointerEvent, dataPoint: DataPoint) => this.click(dataPoint))
-      .on('mouseover', () => this.mouseOver())
+      .on('mouseover', function (this: SVGGElement | null) {
+        if (!this) {
+          return;
+        }
+        _this.mouseOver(this);
+      })
       .on('mousemove', (event: MouseEvent, dataPoint: DataPoint) => this.mouseMove(event, dataPoint))
       .on('mouseleave', () => this.mouseLeave());
 
+    // legend: disabled is not set
     this.setDataPointCoordinates(dataPoints, x, y);
   }
 
@@ -590,7 +602,8 @@ export class KtbHeatmapComponent implements OnInit, OnDestroy, AfterViewInit {
         .append('g')
         .classed('legend-item', true)
         .on('click', () => {
-          this.disableLegend(heatmap, legendItem, category);
+          const isDisabled = this.disableLegend(legendItem);
+          this.setDataPointsDisabled(category, isDisabled);
         });
       legendItem
         .append('circle')
@@ -606,14 +619,32 @@ export class KtbHeatmapComponent implements OnInit, OnDestroy, AfterViewInit {
     this.resizeLegend();
   }
 
-  private disableLegend(heatmap: SVGGSelection, legendItem: SVGGSelection, category: EvaluationResultType): void {
+  private disableLegend(legendItem: SVGGSelection): boolean {
     const circle = legendItem.select('circle');
     const isDisabled = circle.classed('disabled');
     circle.classed('disabled', !isDisabled);
+    return !isDisabled;
+  }
 
-    (heatmap.selectAll('.data-point') as HeatmapTiles).each(function (this: SVGGElement | null, dataPoint: DataPoint) {
+  private getCategoryDisabledStatus(): { [category: string]: boolean } {
+    const legendContainer = d3.select(this.heatmapSelector).select('.legend-container');
+
+    return this.legendItems.reduce(
+      (categoryStatus: { [category: string]: boolean }, category: EvaluationResultType) => {
+        categoryStatus[category] = !legendContainer.select(`.legend-circle.${category}.disabled`).empty();
+        return categoryStatus;
+      },
+      {}
+    );
+  }
+
+  private setDataPointsDisabled(category: EvaluationResultType, isDisabled: boolean): void {
+    (d3.select(this.heatmapSelector).selectAll('.data-point') as HeatmapTiles).each(function (
+      this: SVGGElement | null,
+      dataPoint: DataPoint
+    ) {
       if (this && dataPoint.color === category) {
-        d3.select(this).classed('disabled', !isDisabled);
+        d3.select(this).classed('disabled', isDisabled);
       }
     });
   }
@@ -631,14 +662,15 @@ export class KtbHeatmapComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private expandHeatmap(): void {
+    if (!this.xAxis || !this.yAxis) {
+      return;
+    }
     const slis = Object.keys(this.groupedData);
     this.setHeight(slis.length);
-    if (this.xAxis && this.yAxis) {
-      // TODO: also update xAxis? Because we have "score" there won't be any new dates
-      this.updateYAxis(slis);
+    // TODO: also update xAxis? Because we have "score" there won't be any new dates
+    this.updateYAxis(slis);
 
-      this.generateHeatmapTiles(this.groupedData, this.xAxis, this.yAxis, this.getHiddenSLIs(slis), false);
-    }
+    this.generateHeatmapTiles(this.groupedData, this.xAxis, this.yAxis, this.getHiddenSLIs(slis), false);
   }
 
   private getHiddenSLIs(slis: string[]): string[] {

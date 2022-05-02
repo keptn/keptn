@@ -44,7 +44,7 @@
   .data-point, .legend-circle {
     cursor: pointer;
 
-    &:hover {
+    &:hover:not(.disabled) {
       opacity: 0.5;
     }
 
