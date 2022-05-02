@@ -10,7 +10,7 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.14.1-0.20220414081235-2e23eb712e3d
 	github.com/mholt/archiver/v3 v3.5.1
-	github.com/nats-io/nats-server/v2 v2.7.4
+	github.com/nats-io/nats-server/v2 v2.8.1
 	github.com/nats-io/nats.go v1.14.0
 	github.com/otiai10/copy v1.7.0
 	github.com/sirupsen/logrus v1.8.1
@@ -63,7 +63,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
-	github.com/nats-io/jwt/v2 v2.2.1-0.20220113022732-58e87895b296 // indirect
+	github.com/nats-io/jwt/v2 v2.2.1-0.20220330180145-442af02fd36a // indirect
 	github.com/nats-io/nkeys v0.3.0 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/nwaples/rardecode v1.1.0 // indirect
