@@ -22,16 +22,18 @@ type SecretEnv struct {
 }
 
 type TaskHandler struct {
-	templateEngine lib.ITemplateEngine
-	curlExecutor   lib.ICurlExecutor
-	secretReader   lib.ISecretReader
+	templateEngine   lib.ITemplateEngine
+	curlExecutor     lib.ICurlExecutor
+	requestValidator lib.RequestValidator
+	secretReader     lib.ISecretReader
 }
 
-func NewTaskHandler(templateEngine lib.ITemplateEngine, curlExecutor lib.ICurlExecutor, secretReader lib.ISecretReader) *TaskHandler {
+func NewTaskHandler(templateEngine lib.ITemplateEngine, curlExecutor lib.ICurlExecutor, requestValidator lib.RequestValidator, secretReader lib.ISecretReader) *TaskHandler {
 	return &TaskHandler{
-		templateEngine: templateEngine,
-		curlExecutor:   curlExecutor,
-		secretReader:   secretReader,
+		templateEngine:   templateEngine,
+		curlExecutor:     curlExecutor,
+		requestValidator: requestValidator,
+		secretReader:     secretReader,
 	}
 }
 
@@ -196,10 +198,10 @@ func (th *TaskHandler) performWebhookRequests(webhook lib.Webhook, eventAdapter 
 	executedRequests := 0
 	logger.Infof("executing webhooks for subscriptionID %s", webhook.SubscriptionID)
 	for _, req := range webhook.Requests {
-		request, err := CreateRequest(req)
+		request, err := th.CreateRequest(req)
 		if err != nil {
 			logger.Infof("creating CURL request failed: %s", err.Error())
-			return nil, err
+			return nil, lib.NewWebhookExecutionError(true, fmt.Errorf("creating CURL request failed: %s", err.Error()), lib.WithNrOfExecutedRequests(executedRequests))
 		}
 		// parse the data from the event, together with the secret env vars
 		parsedCurlCommand, err := th.templateEngine.ParseTemplate(eventAdapter.Get(), request)
@@ -229,22 +231,40 @@ func (th *TaskHandler) gatherSecretEnvVars(webhook lib.Webhook) (map[string]stri
 	return secretEnvVars, nil
 }
 
-func CreateRequest(request interface{}) (string, error) {
+func (th *TaskHandler) CreateRequest(request interface{}) (string, error) {
 	switch req := request.(type) {
 	// v1alpha1 version
 	case string:
 		logger.Debug("creating CURL request from type string")
+		if err := th.validateAlphaCurlRequest(req); err != nil {
+			return "", err
+		}
 		return req, nil
 	// v1beta1 version
 	default:
 		logger.Debug("creating CURL request from type Request")
-		betaRequest := buildBetaCurlRequest(lib.ConvertToRequest(request))
+		convertedRequest := lib.ConvertToRequest(request)
+		if err := th.requestValidator.Validate(convertedRequest); err != nil {
+			return "", err
+		}
+		betaRequest := buildBetaCurlRequest(convertedRequest)
 		if betaRequest != "" {
 			return betaRequest, nil
 		}
 	}
 
 	return "", fmt.Errorf("could not create request: invalid request type")
+}
+
+func (th *TaskHandler) validateAlphaCurlRequest(curlCmd string) error {
+	sanitizedCurlCmd := strings.ReplaceAll(curlCmd, "\\", "")
+	denyList := lib.GetDeniedAlphaURLs(lib.GetEnv())
+	for _, url := range denyList {
+		if strings.Contains(sanitizedCurlCmd, url) {
+			return fmt.Errorf("curl command contains denied URL '%s'", url)
+		}
+	}
+	return nil
 }
 
 func buildBetaCurlRequest(req lib.Request) string {
