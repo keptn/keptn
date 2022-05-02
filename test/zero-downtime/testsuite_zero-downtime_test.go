@@ -40,8 +40,8 @@ func Test_ZeroDowntime(t *testing.T) {
 
 func (suite *TestSuiteDowntime) TestSequences() {
 	env := SetupZD()
-	suite.T().Run("Rolling Upgrade", func(t *testing.T) {
-		RollingUpgrade(t, env)
+	suite.T().Run("Rolling Upgrade", func(t1 *testing.T) {
+		RollingUpgrade(t1, env)
 	})
 }
 
