@@ -42,12 +42,10 @@
   }
 
   .data-point, .legend-circle {
-    &:not(.disabled) {
-      cursor: pointer;
+    cursor: pointer;
 
-      &:hover {
-        opacity: 0.5;
-      }
+    &:hover:not(.disabled) {
+      opacity: 0.5;
     }
 
     &.pass {

@@ -127,11 +127,6 @@ export class KtbHeatmapComponent implements OnInit, OnDestroy, AfterViewInit {
     return d3.select(this.heatmapSelector).select('.y-axis-container') as SVGGSelection;
   }
 
-  get showMoreButtonLeftOffset(): number {
-    const yAxisWidth = this.yAxisContainer?.node()?.getBoundingClientRect().width ?? 0;
-    return yAxisWidth - 2;
-  }
-
   public get tooltip(): HeatmapTooltip {
     return d3.select(this.tooltipSelector);
   }
@@ -287,7 +282,7 @@ export class KtbHeatmapComponent implements OnInit, OnDestroy, AfterViewInit {
       const htmlElement = this.showMoreButton._elementRef.nativeElement as HTMLElement;
 
       htmlElement.style.top = `${this.showMoreButtonTopOffset}px`;
-      htmlElement.style.left = `${this.showMoreButtonLeftOffset}px`;
+      htmlElement.style.left = `${this.yAxisLabelWidth}px`;
       htmlElement.style.width = `${this.dataPointContentWidth}px`;
     }
   }
@@ -409,33 +404,34 @@ export class KtbHeatmapComponent implements OnInit, OnDestroy, AfterViewInit {
     return x;
   }
 
+  private addYAxis(heatmap: SVGGSelection, slis: string[]): ScaleBand<string> {
+    const y = d3.scaleBand().range([this.height, 0]).domain(slis);
+    const yAxis = heatmap.append('g').attr('class', 'y-axis-container').call(d3.axisLeft(y).tickSize(0));
+    this.setYAxisEllipsis(yAxis);
+    return y;
+  }
+
+  private setYAxisEllipsis(yAxis: SVGGSelection): void {
+    yAxis.selectAll('.tick').each(this.setEllipsisStyle(this.yAxisLabelWidth));
+  }
+
   private setEllipsisStyle(labelWidth: number): ValueFn<BaseType, unknown, void> {
     return function (this: BaseType): void {
-      const self = d3.select(this as SVGTextContentElement);
+      const self = d3.select(this as SVGGElement);
       if (self) {
-        const originalText = self.text();
-        let textLength = self.node()?.getComputedTextLength() ?? 0;
+        const textElement = self.select('text');
+        const originalText = textElement.text();
+        let textLength = self.node()?.getBoundingClientRect().width ?? 0;
         let text = originalText;
 
         while (textLength > labelWidth && text.length > 0) {
           text = text.slice(0, -1);
-          self.text(text + '...');
-          textLength = self.node()?.getComputedTextLength() ?? 0;
+          textElement.text(text + '...');
+          textLength = self.node()?.getBoundingClientRect().width ?? 0;
         }
         self.append('title').text(originalText);
       }
     };
-  }
-
-  private addYAxis(heatmap: SVGGSelection, slis: string[]): ScaleBand<string> {
-    const y = d3.scaleBand().range([this.height, 0]).domain(slis);
-    heatmap
-      .append('g')
-      .attr('class', 'y-axis-container')
-      .call(d3.axisLeft(y).tickSize(0))
-      .selectAll('text')
-      .each(this.setEllipsisStyle(this.yAxisLabelWidth));
-    return y;
   }
 
   private buildTooltip(): HeatmapTooltip {
@@ -684,7 +680,8 @@ export class KtbHeatmapComponent implements OnInit, OnDestroy, AfterViewInit {
   private updateYAxis(slis: string[]): void {
     if (this.yAxis) {
       this.yAxis = this.yAxis.range([this.height, 0]).domain(slis);
-      this.yAxisContainer.call(d3.axisLeft(this.yAxis).tickSize(0));
+      const yAxis = this.yAxisContainer.call(d3.axisLeft(this.yAxis).tickSize(0));
+      this.setYAxisEllipsis(yAxis);
     }
   }
 
