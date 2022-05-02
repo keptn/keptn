@@ -363,7 +363,7 @@ jobs:
           GOTESTSUM_FORMAT: "testname"
         run: |
           cd test/zero-downtime          
-          gotest --no-color=false -- -run Test_ZeroDowntime -v -timeout 90m
+          gotestsum --no-color=false -- -run Test_ZeroDowntime -v -timeout 90m
 
       - name: "------- TESTS END -------"
         run: echo "------- TESTS END -------"
