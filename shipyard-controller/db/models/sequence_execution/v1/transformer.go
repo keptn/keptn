@@ -13,6 +13,10 @@ func (ModelTransformer) TransformToDBModel(execution models.SequenceExecution) i
 	return fromSequenceExecution(execution)
 }
 
+func (ModelTransformer) TransformEventToDBModel(event models.TaskEvent) interface{} {
+	return transformTaskEvent(event)
+}
+
 func (ModelTransformer) TransformToSequenceExecution(dbItem interface{}) (*models.SequenceExecution, error) {
 	data, _ := json.Marshal(dbItem)
 
@@ -54,7 +58,7 @@ func fromSequenceExecution(se models.SequenceExecution) JsonStringEncodedSequenc
 	if se.InputProperties != nil {
 		inputPropertiesJsonString, err := json.Marshal(se.InputProperties)
 		if err == nil {
-			newSE.InputProperties = string(inputPropertiesJsonString)
+			newSE.EncodedInputProperties = string(inputPropertiesJsonString)
 		}
 	}
 	return newSE
@@ -71,7 +75,7 @@ func transformTasks(tasks []keptnv2.Task) []Task {
 		if task.Properties != nil {
 			taskPropertiesString, err := json.Marshal(task.Properties)
 			if err == nil {
-				newTask.Properties = string(taskPropertiesString)
+				newTask.EncodedProperties = string(taskPropertiesString)
 			}
 		}
 		result = append(result, newTask)
@@ -103,23 +107,28 @@ func transformTaskEvents(events []models.TaskEvent) []TaskEvent {
 	newTaskEvents := []TaskEvent{}
 
 	for _, e := range events {
-		newTaskEvent := TaskEvent{
-			EventType: e.EventType,
-			Source:    e.Source,
-			Result:    e.Result,
-			Status:    e.Status,
-			Time:      e.Time,
-		}
-
-		if e.Properties != nil {
-			properties, err := json.Marshal(e.Properties)
-			if err == nil {
-				newTaskEvent.Properties = string(properties)
-			}
-		}
+		newTaskEvent := transformTaskEvent(e)
 		newTaskEvents = append(newTaskEvents, newTaskEvent)
 	}
 	return newTaskEvents
+}
+
+func transformTaskEvent(e models.TaskEvent) TaskEvent {
+	newTaskEvent := TaskEvent{
+		EventType: e.EventType,
+		Source:    e.Source,
+		Result:    e.Result,
+		Status:    e.Status,
+		Time:      e.Time,
+	}
+
+	if e.Properties != nil {
+		properties, err := json.Marshal(e.Properties)
+		if err == nil {
+			newTaskEvent.EncodedProperties = string(properties)
+		}
+	}
+	return newTaskEvent
 }
 
 func transformPreviousTasks(tasks []models.TaskExecutionResult) []TaskExecutionResult {
@@ -136,7 +145,7 @@ func transformPreviousTasks(tasks []models.TaskExecutionResult) []TaskExecutionR
 		if t.Properties != nil {
 			properties, err := json.Marshal(t.Properties)
 			if err == nil {
-				newPreviousTask.Properties = string(properties)
+				newPreviousTask.EncodedProperties = string(properties)
 			}
 		}
 		newPreviousTasks = append(newPreviousTasks, newPreviousTask)

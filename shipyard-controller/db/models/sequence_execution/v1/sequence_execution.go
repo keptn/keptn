@@ -19,8 +19,8 @@ type JsonStringEncodedSequenceExecution struct {
 	Sequence Sequence                `json:"sequence" bson:"sequence"`
 	Status   SequenceExecutionStatus `json:"status" bson:"status"`
 	Scope    models.EventScope       `json:"scope" bson:"scope"`
-	// InputProperties contains properties of the event which triggered the task sequence
-	InputProperties string `json:"inputProperties" bson:"inputProperties"`
+	// EncodedInputProperties contains properties of the event which triggered the task sequence
+	EncodedInputProperties string `json:"encodedInputProperties" bson:"encodedInputProperties"`
 }
 
 type Sequence struct {
@@ -36,9 +36,9 @@ func (s Sequence) DecodeTasks() []keptnv2.Task {
 			Name:           task.Name,
 			TriggeredAfter: task.TriggeredAfter,
 		}
-		if task.Properties != "" {
+		if task.EncodedProperties != "" {
 			properties := map[string]interface{}{}
-			if err := json.Unmarshal([]byte(task.Properties), &properties); err == nil {
+			if err := json.Unmarshal([]byte(task.EncodedProperties), &properties); err == nil {
 				newTask.Properties = properties
 			}
 		}
@@ -48,9 +48,9 @@ func (s Sequence) DecodeTasks() []keptnv2.Task {
 }
 
 type Task struct {
-	Name           string `json:"name" bson:"name"`
-	TriggeredAfter string `json:"triggeredAfter,omitempty" bson:"triggeredAfter,omitempty"`
-	Properties     string `json:"properties" bson:"properties"`
+	Name              string `json:"name" bson:"name"`
+	TriggeredAfter    string `json:"triggeredAfter,omitempty" bson:"triggeredAfter,omitempty"`
+	EncodedProperties string `json:"encodedProperties" bson:"encodedProperties"`
 }
 
 type SequenceExecutionStatus struct {
@@ -74,9 +74,9 @@ func (s SequenceExecutionStatus) DecodePreviousTasks() []models.TaskExecutionRes
 			Status:      previousTask.Status,
 		}
 
-		if previousTask.Properties != "" {
+		if previousTask.EncodedProperties != "" {
 			properties := map[string]interface{}{}
-			if err := json.Unmarshal([]byte(previousTask.Properties), &properties); err == nil {
+			if err := json.Unmarshal([]byte(previousTask.EncodedProperties), &properties); err == nil {
 				newPreviousTask.Properties = properties
 			}
 		}
@@ -91,8 +91,8 @@ type TaskExecutionResult struct {
 	TriggeredID string             `json:"triggeredID" bson:"triggeredID"`
 	Result      keptnv2.ResultType `json:"result" bson:"result"`
 	Status      keptnv2.StatusType `json:"status" bson:"status"`
-	// Properties contains the aggregated results of the task's executors
-	Properties string `json:"properties" bson:"properties"`
+	// EncodedProperties contains the aggregated results of the task's executors
+	EncodedProperties string `json:"encodedProperties" bson:"encodedProperties"`
 }
 
 type TaskExecutionState struct {
@@ -112,9 +112,9 @@ func (s TaskExecutionState) DecodeEvents() []models.TaskEvent {
 			Status:    event.Status,
 			Time:      event.Time,
 		}
-		if event.Properties != "" {
+		if event.EncodedProperties != "" {
 			properties := map[string]interface{}{}
-			if err := json.Unmarshal([]byte(event.Properties), &properties); err == nil {
+			if err := json.Unmarshal([]byte(event.EncodedProperties), &properties); err == nil {
 				newEvent.Properties = properties
 			}
 		}
@@ -124,12 +124,12 @@ func (s TaskExecutionState) DecodeEvents() []models.TaskEvent {
 }
 
 type TaskEvent struct {
-	EventType  string             `json:"eventType" bson:"eventType"`
-	Source     string             `json:"source" bson:"source"`
-	Result     keptnv2.ResultType `json:"result" bson:"result"`
-	Status     keptnv2.StatusType `json:"status" bson:"status"`
-	Time       string             `json:"time" bson:"time"`
-	Properties string             `json:"properties" bson:"properties"`
+	EventType         string             `json:"eventType" bson:"eventType"`
+	Source            string             `json:"source" bson:"source"`
+	Result            keptnv2.ResultType `json:"result" bson:"result"`
+	Status            keptnv2.StatusType `json:"status" bson:"status"`
+	Time              string             `json:"time" bson:"time"`
+	EncodedProperties string             `json:"encodedProperties" bson:"encodedProperties"`
 }
 
 func (e JsonStringEncodedSequenceExecution) ToSequenceExecution() models.SequenceExecution {
@@ -152,7 +152,7 @@ func (e JsonStringEncodedSequenceExecution) ToSequenceExecution() models.Sequenc
 		Scope: e.Scope,
 	}
 	inputProperties := map[string]interface{}{}
-	err := json.Unmarshal([]byte(e.InputProperties), &inputProperties)
+	err := json.Unmarshal([]byte(e.EncodedInputProperties), &inputProperties)
 	if err == nil {
 		result.InputProperties = inputProperties
 	}

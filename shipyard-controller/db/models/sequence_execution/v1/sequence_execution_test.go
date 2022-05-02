@@ -84,12 +84,15 @@ var testSequenceExecution = models.SequenceExecution{
 
 var testJsonStringEncodedSequenceExecution = JsonStringEncodedSequenceExecution{
 	ID: "id",
+	SchemaVersion: SchemaVersion{
+		SchemaVersion: SchemaVersionV1,
+	},
 	Sequence: Sequence{
 		Name: "delivery",
 		Tasks: []Task{
 			{
-				Name:       "deployment",
-				Properties: `{"deployment.strategy":"direct"}`,
+				Name:              "deployment",
+				EncodedProperties: `{"deployment.strategy":"direct"}`,
 			},
 			{
 				Name: "evaluation",
@@ -104,18 +107,18 @@ var testJsonStringEncodedSequenceExecution = JsonStringEncodedSequenceExecution{
 		StateBeforePause: "",
 		PreviousTasks: []TaskExecutionResult{
 			{
-				Name:        "deployment",
-				TriggeredID: "tr1",
-				Result:      "pass",
-				Status:      "succeeded",
-				Properties:  `{"foo.bar":"xyz"}`,
+				Name:              "deployment",
+				TriggeredID:       "tr1",
+				Result:            "pass",
+				Status:            "succeeded",
+				EncodedProperties: `{"foo.bar":"xyz"}`,
 			},
 			{
-				Name:        "evaluation",
-				TriggeredID: "tr2",
-				Result:      "pass",
-				Status:      "succeeded",
-				Properties:  `{"foo":{"bar":"xyz"}}`,
+				Name:              "evaluation",
+				TriggeredID:       "tr2",
+				Result:            "pass",
+				Status:            "succeeded",
+				EncodedProperties: `{"foo":{"bar":"xyz"}}`,
 			},
 		},
 		CurrentTask: TaskExecutionState{
@@ -127,9 +130,9 @@ var testJsonStringEncodedSequenceExecution = JsonStringEncodedSequenceExecution{
 					Source:    "helm",
 				},
 				{
-					EventType:  keptnv2.GetFinishedEventType("release"),
-					Source:     "helm",
-					Properties: `{"release.xyz":"foo"}`,
+					EventType:         keptnv2.GetFinishedEventType("release"),
+					Source:            "helm",
+					EncodedProperties: `{"release.xyz":"foo"}`,
 				},
 			},
 		},
@@ -142,7 +145,7 @@ var testJsonStringEncodedSequenceExecution = JsonStringEncodedSequenceExecution{
 		},
 		KeptnContext: "ctx1",
 	},
-	InputProperties: `{"foo.bar":"xyz"}`,
+	EncodedInputProperties: `{"foo.bar":"xyz"}`,
 }
 
 func TestJsonStringEncodedSequenceExecution_ToSequenceExecution(t *testing.T) {

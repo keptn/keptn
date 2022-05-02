@@ -176,9 +176,14 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) AppendTaskEvent(taskSequence models
 
 	// by using the $push operator in the FindOneAndUpdate function, we ensure that we follow an append-only approach to this property,
 	// since this is the one property that can potentially be updated by multiple threads handling .finished/.started events for the same task
-
-	// TODO transform event into internal structure
-	update := bson.M{"$push": bson.M{"status.currentTask.events": event}}
+	var eventItem interface{}
+	if mdbrepo.ModelTransformer != nil {
+		// if we have a transformer that defines how the event should be stored internally, use it to transform the item
+		eventItem = mdbrepo.ModelTransformer.TransformEventToDBModel(event)
+	} else {
+		eventItem = event
+	}
+	update := bson.M{"$push": bson.M{"status.currentTask.events": eventItem}}
 
 	res := collection.FindOneAndUpdate(ctx, filter, update, opts)
 	if res.Err() != nil {

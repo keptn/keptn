@@ -6,5 +6,6 @@ import "github.com/keptn/keptn/shipyard-controller/models"
 // of a sequence execution and the model structure outside the db package
 type ModelTransformer interface {
 	TransformToDBModel(execution models.SequenceExecution) interface{}
+	TransformEventToDBModel(event models.TaskEvent) interface{}
 	TransformToSequenceExecution(dbItem interface{}) (*models.SequenceExecution, error)
 }
