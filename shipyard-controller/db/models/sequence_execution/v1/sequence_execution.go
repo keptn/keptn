@@ -1,4 +1,4 @@
-package v02
+package v1
 
 import (
 	"encoding/json"
@@ -6,12 +6,15 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 )
 
-const SchemaVersionV02 = "0.2"
+const SchemaVersionV1 = "1"
 
+type SchemaVersion struct {
+	SchemaVersion string `json:"schemaVersion" bson:"schemaVersion"`
+}
 type JsonStringEncodedSequenceExecution struct {
 	ID string `json:"_id" bson:"_id"`
 	// SchemaVersion indicates the version of the schema - needed to decide if items in collection need to be migrated
-	SchemaVersion string `json:"schemaVersion" bson:"schemaVersion"`
+	SchemaVersion `bson:",inline"`
 	// Sequence contains the complete sequence definition
 	Sequence Sequence                `json:"sequence" bson:"sequence"`
 	Status   SequenceExecutionStatus `json:"status" bson:"status"`

@@ -5,7 +5,7 @@ import (
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/db"
-	v02 "github.com/keptn/keptn/shipyard-controller/db/models/sequence_execution/v02"
+	v1 "github.com/keptn/keptn/shipyard-controller/db/models/sequence_execution/v1"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	logger "github.com/sirupsen/logrus"
 )
@@ -16,7 +16,7 @@ import (
 func NewSequenceExecutionMigrator(dbConnection *db.MongoDBConnection) *SequenceExecutionMigrator {
 	return &SequenceExecutionMigrator{
 		projectRepo:           db.NewMongoDBKeyEncodingProjectsRepo(dbConnection),
-		sequenceExecutionRepo: db.NewMongoDBSequenceExecutionRepo(dbConnection, db.WithSequenceExecutionModelTransformer(&v02.ModelTransformer{})),
+		sequenceExecutionRepo: db.NewMongoDBSequenceExecutionRepo(dbConnection, db.WithSequenceExecutionModelTransformer(&v1.ModelTransformer{})),
 	}
 }
 
@@ -25,10 +25,10 @@ type SequenceExecutionMigrator struct {
 	projectRepo           db.ProjectRepo
 }
 
-// MigrateSequenceExecutions retrieves all existing sequence executions from the repository
+// Run retrieves all existing sequence executions from the repository
 // and performs an update operation on each of them using the SequenceExecutionJsonStringRepo.
 // This way, sequence executions containing stored with the previous format are migrated to the new one
-func (s *SequenceExecutionMigrator) MigrateSequenceExecutions() error {
+func (s *SequenceExecutionMigrator) Run() error {
 	projects, err := s.projectRepo.GetProjects()
 	if err != nil {
 		return fmt.Errorf("could not migrate sequence executions to new format: %w", err)
@@ -41,17 +41,20 @@ func (s *SequenceExecutionMigrator) updateSequenceExecutionsOfProject(projects [
 		return nil
 	}
 	for _, project := range projects {
-		sequenceExecutions, err := s.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{Scope: models.EventScope{
-			EventData: keptnv2.EventData{
-				Project: project.ProjectName,
-			},
-		}})
+		sequenceExecutions, err := s.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
+			Scope: models.EventScope{
+				EventData: keptnv2.EventData{
+					Project: project.ProjectName,
+				},
+			}})
 		if err != nil {
 			logger.Errorf("Could not retrieve sequence executions for project %s: %v", project.ProjectName, err)
 			continue
 		}
 		for _, sequenceExecution := range sequenceExecutions {
-			// TODO check if sequence execution has already been migrated
+			if sequenceExecution.SchemaVersion == v1.SchemaVersionV1 {
+				continue
+			}
 			if err := s.sequenceExecutionRepo.Upsert(sequenceExecution, nil); err != nil {
 				logger.Errorf("Could not update sequence execution with ID %s for project %s: %v", sequenceExecution.ID, project.ProjectName, err)
 				continue

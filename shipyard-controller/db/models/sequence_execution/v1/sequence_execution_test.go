@@ -1,4 +1,4 @@
-package v02
+package v1
 
 import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"

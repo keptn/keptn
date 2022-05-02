@@ -7,7 +7,7 @@ import (
 	"fmt"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/db/models/sequence_execution"
-	v02 "github.com/keptn/keptn/shipyard-controller/db/models/sequence_execution/v02"
+	v02 "github.com/keptn/keptn/shipyard-controller/db/models/sequence_execution/v1"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
@@ -26,21 +26,23 @@ var ErrSequenceIDMustNotBeEmpty = errors.New("sequence ID must not be empty")
 
 type SequenceExecutionRepoOpt func(repo *MongoDBSequenceExecutionRepo)
 
-func WithSequenceExecutionModelTransformer(transformer sequence_execution.ISequenceExecutionModelTransformer) SequenceExecutionRepoOpt {
+func WithSequenceExecutionModelTransformer(transformer sequence_execution.ModelTransformer) SequenceExecutionRepoOpt {
 	return func(repo *MongoDBSequenceExecutionRepo) {
 		repo.ModelTransformer = transformer
 	}
 }
 
 type MongoDBSequenceExecutionRepo struct {
-	DbConnection     *MongoDBConnection
-	ModelTransformer sequence_execution.ISequenceExecutionModelTransformer
+	DbConnection *MongoDBConnection
+	// ModelTransformer allows transforming sequence execution objects before storing and after retrieving to and from the database.
+	// This is needed if the items for that collection should be stored in a different format while retaining its structure used outside the package
+	ModelTransformer sequence_execution.ModelTransformer
 }
 
 func NewMongoDBSequenceExecutionRepo(dbConnection *MongoDBConnection, opts ...SequenceExecutionRepoOpt) *MongoDBSequenceExecutionRepo {
 	repo := &MongoDBSequenceExecutionRepo{
 		DbConnection: dbConnection,
-		// use the v02 ModelTransformer by default
+		// use the v1 ModelTransformer by default
 		ModelTransformer: &v02.ModelTransformer{},
 	}
 

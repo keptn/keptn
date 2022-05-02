@@ -1,4 +1,4 @@
-package v02
+package v1
 
 import (
 	"github.com/keptn/keptn/shipyard-controller/models"
