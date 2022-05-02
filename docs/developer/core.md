@@ -33,7 +33,38 @@ TBD. How to port-forwarding and create the connection string.
 
 Keptn follows also some best practises that are listed in this section.
 
+### Environment Variables
+
+Keptn adheres to the following conventions for setting up environment variables:
+
+- For enabling/disabling a feature, the variable name MUST be called with the feature name and suffixed by `ENABLED`. Example: `MAX_AUTH_ENABLED`
+
+
 ### Log and Error format
+
+Keptn adheres to the following conventions for logging error messages:
+
+- Log lines MUST start with capital letter
+- Log lines MUST NOT end with a dot
+- Logging MUST use the default Go approach using the default [log package](https://pkg.go.dev/log)
+- Returned error messages MUST start with a lower case letter
+- Returned error messages MUST NOT end with a dot
+- Error messages MUST use "could not ..." for everything that is not supported, e.g. avoid using "unable to", "not able to", "not possible"
+- Errors MUST provide context information wrapping errors with `%w`
+- Errors MUST be compared by types using `error.Is()` or the default [error package](https://pkg.go.dev/errors)
+- Custom errors MUST implement the `String()` method
+
+Example:
+```go
+err := fmt.Errorf("could not access resource: %w", ErrPermission)
+...
+if errors.Is(err, ErrPermission) {
+  log.Errorf("Failed reading resource: %v", err)
+}
+```
+
+The Go website provides a good resource around this topic: https://go.dev/blog/go1.13-errors
+
 
 ### Mocking
 
