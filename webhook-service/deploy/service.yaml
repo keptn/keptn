@@ -71,7 +71,7 @@ spec:
             failureThreshold: 3
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           securityContext:
             privileged: false
             runAsUser: 65532
@@ -79,7 +79,7 @@ spec:
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
         - name: distributor
-          image: 'docker.io/keptndev/distributor:0.15.0-dev-PR-7329.202204070716'
+          image: 'docker.io/keptndev/distributor:0.15.0-dev'
           ports:
             - containerPort: 8080
               protocol: TCP
