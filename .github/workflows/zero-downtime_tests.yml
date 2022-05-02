@@ -108,7 +108,7 @@ jobs:
 
           echo "##[set-output name=BRANCH;]$(echo ${BRANCH})"
 
-      - name: Find latest successful run ID
+      - name: Find latest and one before latest successful run ID
         id: last_run_id
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -128,7 +128,7 @@ jobs:
 
       # download artifacts from the specified branch with event type push (e.g., push to master/release branch)
       - name: Download all artifacts from last successful build of specified branch
-        uses: dawidd6/action-download-artifact@v2.18.0
+        uses: dawidd6/action-download-artifact@v2.19.0
         id: download_artifacts_push
         with:
           # Download last successful artifact from a CI build
@@ -221,10 +221,6 @@ jobs:
           
           echo "##[set-output name=CLUSTER_NAME_NIGHTLY;]$(echo ${CLUSTER_NAME_NIGHTLY})"
 
-      - name: Install Istio
-        if: env.CLOUD_PROVIDER != 'minishift-on-GHA' && env.CLOUD_PROVIDER != 'GKE' # no need to install istio on minishift or GKE (pre-installed)
-        run: test/utils/install_istio.sh
-
       - name: Install Keptn
         id: keptn_install
         timeout-minutes: 10
@@ -236,23 +232,15 @@ jobs:
           
           echo "{}" > creds.json # empty credentials file
           
-          
           echo "::group::Keptn Installation Log"
-          if [[ $RUN_AIRGAPPED_TEST == "true" ]]; then
-            # Install Keptn via Helper Script
-            if [[ "$VERSION" == *"dev"* ]]; then
-              DOCKER_ORG="keptndev"
-            else
-              DOCKER_ORG="keptn"
-            fi
-          
-            # Use Keptn helm chart to be able to customize the values
-            helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} \
-              --create-namespace \
-              --set control-plane.apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
-              --set control-plane.resourceService.enabled=true \
-              --set control-plane.resourceService.replicas=1 \
-              --set continuous-delivery.enabled=true
+         
+          # Use Keptn helm chart to be able to customize the values
+          helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} \
+            --create-namespace \
+            --set control-plane.apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
+            --set control-plane.resourceService.enabled=true \
+            --set control-plane.resourceService.replicas=1 \
+            --set continuous-delivery.enabled=true
           
           echo "::endgroup::"
 
@@ -337,7 +325,7 @@ jobs:
         id: prepare_test_run
         run: |
           go install gotest.tools/gotestsum@v1.7.0
-          cd test/zerodowntime
+          cd test/zero-downtime
           go get ./...
 
       - name: "------- TESTS START -------"
@@ -360,7 +348,7 @@ jobs:
           UNLEASH_SERVICE_VERSION: "release-0.3.2"
           GOTESTSUM_FORMAT: "testname"
         run: |
-          cd test/zerodowntime          
+          cd test/zero-downtime          
           gotestsum --no-color=false -- -run Test_ZeroDowntime -v -timeout 90m
 
       - name: "------- TESTS END -------"
@@ -381,6 +369,7 @@ jobs:
           mv support-archive/keptn*.zip support-archive/${SUPPORT_ARCHIVE_FILENAME}.zip
 
       - name: Cleanup test namespace
+        if: always()
         run: |
           echo "Cleaning up test resources..."
 
