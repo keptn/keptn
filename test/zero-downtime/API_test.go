@@ -1,4 +1,4 @@
-package zerodowntime
+package zero_downtime
 
 import (
 	"fmt"
