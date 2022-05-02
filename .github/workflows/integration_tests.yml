@@ -379,20 +379,11 @@ jobs:
               "$HELM_CHART_NAME" \
               "$HELM_SERVICE_HELM_CHART_NAME" \
               "$JMETER_SERVICE_HELM_CHART_NAME"
-          elif [[ "$USE_RESOURCE_SERVICE" == "true" ]]; then
-            # Use Keptn helm chart to be able to customize the values
-            helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} \
-              --create-namespace \
-              --set apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
-              --set resourceService.enabled=true \
-              --set resourceService.replicas=1 \
-              --set shipyardController.gracePeriod=10 \
-              --set shipyardController.preStopHookTime=5 \
-              --set continuousDelivery.enabled=${RUN_CONTINUOUS_DELIVERY_TEST}
           else
             helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} \
               --create-namespace \
               --set apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
+              --set resourceService.enabled=${USE_RESOURCE_SERVICE} \
               --set shipyardController.gracePeriod=10 \
               --set shipyardController.preStopHookTime=5 \
               --set continuousDelivery.enabled=${RUN_CONTINUOUS_DELIVERY_TEST}
