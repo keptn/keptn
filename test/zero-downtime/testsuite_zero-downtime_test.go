@@ -3,6 +3,7 @@ package zero_downtime
 import (
 	"context"
 	"github.com/stretchr/testify/suite"
+	"os"
 	"sync"
 	"testing"
 	"time"
@@ -11,8 +12,11 @@ import (
 const apiProbeInterval = 5 * time.Second
 const sequencesInterval = 15 * time.Second
 
-var chartLatestVersion = "https://charts-dev.keptn.sh/packages/keptn-0.15.0-dev.tgz?raw=true"
-var chartPreviousVersion = "https://charts-dev.keptn.sh/packages/keptn-0.15.0-dev-PR-7504.tgz?raw=true"
+const EnvInstallVersion = "INSTALL_HELM_CHART"
+const EnvUpgradeVersion = "UPGRADE_HELM_CHART"
+
+const pathToChart = "https://charts-dev.keptn.sh/packages/"
+const rawChart = "?raw=true"
 
 type ZeroDowntimeEnv struct {
 	Ctx          context.Context //TODO substitute context & cancel with a quit channel not to store/share context
@@ -55,4 +59,21 @@ func (suite *TestSuiteDowntime) TestWebhook() {
 }
 
 func (suite *TestSuiteDowntime) TearDownSuite() {
+}
+
+//Returns current test helm charts for the rolling upgrade
+func GetCharts() (string, string) {
+	var install, upgrade string
+
+	chartInstallVersion := "https://charts-dev.keptn.sh/packages/keptn-0.15.0-dev.tgz?raw=true"
+	chartUpgradeVersion := "https://charts-dev.keptn.sh/packages/keptn-0.15.0-dev-PR-7504.tgz?raw=true"
+
+	if install = os.Getenv(EnvInstallVersion); install != "" {
+		chartInstallVersion = pathToChart + install + rawChart
+	}
+	if upgrade = os.Getenv(EnvUpgradeVersion); upgrade != "" {
+		chartUpgradeVersion = pathToChart + upgrade + rawChart
+	}
+
+	return chartInstallVersion, chartUpgradeVersion
 }
