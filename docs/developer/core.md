@@ -48,14 +48,14 @@ Keptn adhere to the following conventions for logging error messages:
 - Log lines MUST NOT end with a dot
 - Logging MUST use the default Go approach using the default [log package](https://pkg.go.dev/log)
 - Returned error messages MUST start with a lower case letter and MUST NOT end with a dot
-- Error messages MUST use "Could not ..." for everything that is not supported, e.g. avoid using "unable to", "not able to", "not possible".
+- Error messages MUST use "could not ..." for everything that is not supported, e.g. avoid using "unable to", "not able to", "not possible"
 - Errors MUST provide context information wrapping errors with `%w`
-- Errors MUST be compared by types using `error.Is`
+- Errors MUST be compared by types using `error.Is()` or the default [error package](https://pkg.go.dev/errors)
 - Custom errors MUST implement the `String()` method
 
 Example:
 ```go
-err := fmt.Errorf("Could not access resource: %w", ErrPermission)
+err := fmt.Errorf("could not access resource: %w", ErrPermission)
 ...
 if errors.Is(err, ErrPermission) {
   log.Errorf("Failed reading resource: %v", err)
