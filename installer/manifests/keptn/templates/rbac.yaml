@@ -198,10 +198,10 @@ kind: Role
 metadata:
   name: keptn-get-webhook-config
   labels:
-    {{ include "control-plane.labels" . | nindent 4 }}
+    {{ include "keptn.labels" . | nindent 4 }}
     app.kubernetes.io/name: keptn-get-webhook-config
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    app.kubernetes.io/component: {{ include "keptn.name" . }}
 rules:
   - apiGroups:
       - ""
@@ -281,10 +281,10 @@ kind: RoleBinding
 metadata:
   name: keptn-webhook-service
   labels:
-    {{ include "control-plane.labels" . | nindent 4 }}
+    {{ include "keptn.labels" . | nindent 4 }}
     app.kubernetes.io/name: keptn-webhook-service
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    app.kubernetes.io/component: {{ include "keptn.name" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
