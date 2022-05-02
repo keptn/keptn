@@ -4,4 +4,5 @@ export interface Metadata {
   keptnlabel: string;
   bridgeversion: string;
   shipyardversion: string;
+  automaticprovisioning?: boolean;
 }
