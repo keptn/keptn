@@ -1,13 +1,454 @@
-name: Zero-Downtime Tests
+name: ZeroDowntime Tests
 on:
-  workflow_dispatch:
+  workflow_dispatch: # run integration tests only when triggered manually
+    inputs:
+      branch:
+        description: 'Take CI build artifacts from branch (e.g., master, release-x.y.z)'
+        required: true
+        default: 'master'
+      upgradeTo:
+        description: 'Helm chart path to run upgrade command'
+        required: true
+        default: '0.15.0-dev-PR-7504'
+      deleteOnFinish:
+        type: boolean
+        required: false
+        description: "Check this if you don't want the test namespaces to stay alive after the test run"
+        default: false
 defaults:
   run:
     shell: bash
 jobs:
-  hello-world:
-    name: "Hello World"
+  calculate-queue-time:
+    name: "Calculate Queue Time"
+    uses: ./.github/workflows/pipeline-queuetime.yml
+    with:
+      workflow_name: "Zero Downtime Tests"
+    secrets:
+      monitoring_api_token: ${{ secrets.MONITORING_API_TOKEN }}
+      monitoring_tenant_url: ${{ secrets.MONITORING_TENANT_URL }}
+
+  zd-test:
+    name: "Tests"
     runs-on: ubuntu-20.04
+    needs: calculate-queue-time
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - CLOUD_PROVIDER: "GKE"
+            PLATFORM_VERSION: "1.21"
+            CLUSTER_NAME: "keptn-integration-test-2"
+            KUBECONFIG: ""
+            PLATFORM: "kubernetes"
+            KEPTN_SERVICE_TYPE: "LoadBalancer"
+            COLLECT_RESOURCE_LIMITS: "true"
+            USE_RESOURCE_SERVICE: "true"
+    env:
+      CLOUD_PROVIDER: ${{ matrix.CLOUD_PROVIDER }}
+      PLATFORM: ${{ matrix.PLATFORM }}
+      PLATFORM_VERSION: ${{ matrix.PLATFORM_VERSION }}
+      KUBECONFIG: ${{ matrix.KUBECONFIG }}
+      KEPTN_NAMESPACE: "keptn-zd-test-${{ github.run_number }}-${{ github.run_attempt }}"
+      KEPTN_SERVICE_TYPE: ${{ matrix.KEPTN_SERVICE_TYPE }}
+      COLLECT_RESOURCE_LIMITS: ${{ matrix.COLLECT_RESOURCE_LIMITS }}
+      GO_VERSION: 1.17
+      TEST_REPORT_FOLDER: test-reports-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}
+      FINAL_TEST_REPORT_FOLDER: test-reports
+      FINAL_TEST_REPORT_PATH: test-reports/test-report-final-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}.log
+      TEST_REPORT_FILENAME_SUFFIX: test-report-${{ github.run_id }}-${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}.log
+    outputs:
+      BRANCH: ${{ steps.determine_branch.outputs.BRANCH }}
+      ARTIFACT_RUN_ID: ${{ steps.last_run_id.outputs.RUN_ID }}
     steps:
-      - run: |
-          echo "Hello World!"
+
+      #######################################################################
+      # SETUP
+      #######################################################################
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Check out code.
+        uses: actions/checkout@v3
+
+      - name: Create downloads folder
+        run: mkdir ~/downloads
+
+      - name: Cache downloads paths
+        uses: actions/cache@v3.0.2
+        with:
+          path: |
+            ~/downloads
+          key: ${{ runner.os }}-${{ matrix.CLOUD_PROVIDER }}-downloads
+
+      # This step is supposed to determine the target branch where to download the build-artifacts from
+      - name: Determine Target Branch for Integration Tests
+        id: determine_branch
+        run: |
+          if [[ "${{ github.event.inputs.branch }}" != "" ]]; then
+            # branch was manually set by user -> probably a workflow_dispatch action
+            BRANCH=${{ github.event.inputs.branch }}
+            echo "Using $BRANCH as target branch for integration tests"
+          else
+            echo "Determining branch based on what triggered this workflow"
+
+            if [[ "${GITHUB_REF}" == "refs/heads"* ]]; then
+              echo "This is a push to a local branch -> using branch name"
+              BRANCH=${GITHUB_REF#refs/heads/}
+              echo "Branch Name: $BRANCH"
+            else
+              if [[ "${GITHUB_REF}" == "refs/pull/"* ]]; then
+                # usually the format for PRs is: refs/pull/1234/merge
+                echo "::error::This is a Pull Request, and PRs are not supported yet"
+                exit 1
+              else
+                echo "::error This is neither a push, nor a PR, probably something else... Exiting"
+                exit 1
+              fi
+            fi
+          fi
+
+          echo "##[set-output name=BRANCH;]$(echo ${BRANCH})"
+
+      - name: Find latest successful run ID
+        id: last_run_id
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO_SLUG: "keptn/keptn"
+          BRANCH: ${{ steps.determine_branch.outputs.BRANCH }}
+        run: |
+          RUN_ID=$(\
+            curl -sL \
+              -H 'Accept: application/vnd.github.v3+json' \
+              -H "Authorization: token $GITHUB_TOKEN" \
+              "api.github.com/repos/$REPO_SLUG/actions/workflows/CI.yml/runs?branch=$BRANCH" | \
+            jq '[.workflow_runs[] | select(
+              (.head_commit != null) and (.head_commit.author.name | endswith("[bot]") | not ) and ( .conclusion == "success" ) 
+            )][0] | .id')
+          echo "Run ID that will be used to download artifacts from: $RUN_ID"
+          echo "::set-output name=RUN_ID::$RUN_ID"
+
+      # download artifacts from the specified branch with event type push (e.g., push to master/release branch)
+      - name: Download all artifacts from last successful build of specified branch
+        uses: dawidd6/action-download-artifact@v2.19.0
+        id: download_artifacts_push
+        with:
+          # Download last successful artifact from a CI build
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          workflow: CI.yml
+          run_id: ${{ steps.last_run_id.outputs.RUN_ID }}
+          # directory where to extract artifacts to
+          path: ./dist
+
+      # load build-config
+      - name: Load Build-Config Environment from ./dist/build-config/build-config.env
+        id: load_build_env
+        uses: c-py/action-dotenv-to-setenv@v3
+        with:
+          env-file: ./dist/build-config/build-config.env
+
+      - name: Overwrite VERSION String for all builds
+        run: |
+          # use VERSION.DATETIME for the cli version (e.g., nightly build)
+          VERSION=${VERSION}.${DATETIME}
+          # overwrite VERSION
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+
+      - name: Print Build-Config
+        run: |
+          echo VERSION=${VERSION}
+          echo BRANCH=${BRANCH}
+
+      - name: Extract Keptn CLI artifact
+        run: |
+          tar -zxvf dist/keptn-cli/keptn-*-linux-amd64.tar.gz
+          sudo mv keptn-*-linux-amd64 /usr/local/bin/keptn
+
+      - name: Verify Keptn CLI works
+        timeout-minutes: 1
+        run: keptn version
+
+      - name: Extract name of helm chart
+        id: extract_helm_chart_name
+        run: |
+          ls dist/keptn-installer/*.tgz # debug output
+          HELM_CHART_NAME=$(ls dist/keptn-installer/keptn*.tgz)
+          HELM_SERVICE_HELM_CHART_NAME=$(ls dist/keptn-installer/helm*.tgz)
+          JMETER_SERVICE_HELM_CHART_NAME=$(ls dist/keptn-installer/jmeter*.tgz)
+          echo "##[set-output name=HELM_CHART_NAME;]$(echo ${HELM_CHART_NAME})"
+          echo "##[set-output name=HELM_SERVICE_HELM_CHART_NAME;]$(echo ${HELM_SERVICE_HELM_CHART_NAME})"
+          echo "##[set-output name=JMETER_SERVICE_HELM_CHART_NAME;]$(echo ${JMETER_SERVICE_HELM_CHART_NAME})"
+
+      - name: Setup upgrade charts
+        id: setup_upgrade_charts
+        run: |
+          ls *.tgz # debug output
+          helm repo add keptndev "https://charts-dev.keptn.sh"
+          helm repo update
+          helm pull keptndev/keptn --version ${{ github.event.inputs.upgradeTo }} --destination test/zero-downtime 
+          cd test/zero-downtime
+          echo "INSTALL_HELM_CHART=$(ls ./keptn*.tgz)" >> $GITHUB_ENV
+          echo "UPGRADE_HELM_CHART=${{ github.event.inputs.upgradeTo }}" >> $GITHUB_ENV
+
+      - name: Install and start GKE cluster
+        if: env.CLOUD_PROVIDER == 'GKE'
+        env:
+          GKE_VERSION: ${{ matrix.PLATFORM_VERSION }}
+          GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_RESTRICTED_SERVICE_KEY }}
+          GCLOUD_PROJECT_NAME: ${{ secrets.GCLOUD_PROJECT_NAME }}
+          CLOUDSDK_COMPUTE_ZONE: "us-east1-b"
+          CLOUDSDK_REGION: "us-east1"
+          GKE_KUBECONFIG: ${{ secrets.INTEGRATION_TEST_KUBECONFIG }}
+          BRANCH: ${{ steps.determine_branch.outputs.BRANCH}}
+        id: install_gke
+        run: |
+          export CLUSTER_NAME_NIGHTLY=${{ matrix.CLUSTER_NAME }}
+          echo "Setting up GCloud CLI"
+          export OS_TYPE="linux"
+          
+          echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
+          export GOOGLE_APPLICATION_CREDENTIALS=~/gcloud-service-key.json
+          export CLOUDSDK_CORE_DISABLE_PROMPTS=1;
+          
+          gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
+          gcloud --quiet config set project "$GCLOUD_PROJECT_NAME"
+          gcloud --quiet config set container/cluster "$CLUSTER_NAME_NIGHTLY"
+          gcloud --quiet config set compute/zone "${CLOUDSDK_COMPUTE_ZONE}"
+          
+          echo "GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}" >> $GITHUB_ENV
+          
+          echo "Setting up kubectl"
+          echo "Setting KUBECONFIG to $PWD/.kubeconfig"
+          
+          echo "$GKE_KUBECONFIG" >> "$PWD/.kubeconfig"
+          chmod 600 "$PWD/.kubeconfig"
+          export KUBECONFIG="$PWD/.kubeconfig"
+          
+          echo "KUBECONFIG=${KUBECONFIG}" >> $GITHUB_ENV
+          
+          echo "Setting kube context..."
+          kubectl config use-context "$CLUSTER_NAME_NIGHTLY"
+          
+          echo "##[set-output name=CLUSTER_NAME_NIGHTLY;]$(echo ${CLUSTER_NAME_NIGHTLY})"
+
+      - name: Install Keptn
+        id: keptn_install
+        timeout-minutes: 10
+        env:
+          HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_CHART_NAME }}
+          USE_RESOURCE_SERVICE: ${{ matrix.USE_RESOURCE_SERVICE }}
+        run: |
+          echo "Installing Keptn on cluster"
+          
+          echo "{}" > creds.json # empty credentials file
+          
+          echo "::group::Keptn Installation Log"
+          
+          # Use Keptn helm chart to be able to customize the values
+          helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} \
+            --create-namespace \
+            --set control-plane.apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
+            --set control-plane.resourceService.enabled=true \
+            --set control-plane.resourceService.replicas=1 \
+            --set continuous-delivery.enabled=true
+          
+          echo "::endgroup::"
+
+      - name: Install Gitea
+        id: install_gitea
+        timeout-minutes: 5
+        run: |
+          helm repo add gitea-charts https://dl.gitea.io/charts/
+          helm install --values test/assets/gitea/values.yaml gitea gitea-charts/gitea -n ${KEPTN_NAMESPACE} --wait --version v5.0.0
+          GITEA_ADMIN_USER=$(kubectl get pod -n ${KEPTN_NAMESPACE} gitea-0 -ojsonpath='{@.spec.initContainers[?(@.name=="configure-gitea")].env[?(@.name=="GITEA_ADMIN_USERNAME")].value}')
+          GITEA_ADMIN_PASSWORD=$(kubectl get pod -n ${KEPTN_NAMESPACE} gitea-0 -ojsonpath='{@.spec.initContainers[?(@.name=="configure-gitea")].env[?(@.name=="GITEA_ADMIN_PASSWORD")].value}')
+          kubectl create configmap squid.conf --from-file=test/assets/squid/squid.conf -n ${KEPTN_NAMESPACE}
+          kubectl apply -f test/assets/squid/squid.yaml -n ${KEPTN_NAMESPACE}
+          sleep 30 # TODO
+          ssh-keygen -t rsa -C "gitea-http" -f "rsa_gitea" -P "myGiteaPassPhrase"
+          GITEA_PRIVATE_KEY=$(cat rsa_gitea)
+          GITEA_PUBLIC_KEY=$(cat rsa_gitea.pub)
+          GITEA_PRIVATE_KEY_PASSPHRASE=myGiteaPassPhrase
+          sleep 30 # TODO
+          kubectl port-forward -n ${KEPTN_NAMESPACE} svc/gitea-http 3000:3000 &
+          kubectl port-forward -n ${KEPTN_NAMESPACE} svc/gitea-ssh 3001:22 &
+          sleep 30 # TODO
+          curl -vkL --silent --user ${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASSWORD} -X POST "http://localhost:3000/api/v1/users/${GITEA_ADMIN_USER}/tokens" -H "accept: application/json" -H "Content-Type: application/json; charset=utf-8" -d "{ \"name\": \"my-token\" }" -o gitea-token.txt
+          curl -vkL --silent --user ${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASSWORD} -X POST "http://localhost:3000/api/v1/user/keys" -H "accept: application/json" -H "Content-Type: application/json; charset=utf-8" -d "{ \"key\": \"$GITEA_PUBLIC_KEY\",  \"title\": \"public-key-gitea\"}"
+          GITEA_TOKEN=$(cat gitea-token.txt | jq -r .sha1)
+          kubectl create secret generic gitea-access -n ${KEPTN_NAMESPACE} --from-literal=username=${GITEA_ADMIN_USER} --from-literal=password=${GITEA_TOKEN} --from-literal=private-key="${GITEA_PRIVATE_KEY}" --from-literal=private-key-pass=${GITEA_PRIVATE_KEY_PASSPHRASE}
+          rm gitea-token.txt
+
+      - name: Expose Deployed Services via Istio (for CD use-case)
+        run: |
+          # set ingress-hostname params
+          INGRESS_IP=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          echo "INGRESS_IP=$INGRESS_IP"
+          kubectl create configmap -n ${KEPTN_NAMESPACE} ingress-config \
+            --from-literal=ingress_hostname_suffix=${INGRESS_IP}.nip.io \
+            --from-literal=ingress_port=80 \
+            --from-literal=ingress_protocol=http \
+            --from-literal=ingress_gateway=public-gateway.istio-system \
+            -oyaml --dry-run=client | kubectl replace -f -
+          # restart helm-service
+          kubectl delete pod -n ${KEPTN_NAMESPACE} -lapp.kubernetes.io/name=helm-service
+          sleep 15
+
+      - name: Determine Keptn Endpoint
+        id: determine_keptn_endpoint
+        timeout-minutes: 5
+        run: |
+          source test/utils.sh
+
+          # authenticate at Keptn API
+          
+          if [[ "$KEPTN_SERVICE_TYPE" == "NodePort" ]]; then
+            API_PORT=$(kubectl get svc api-gateway-nginx -n ${KEPTN_NAMESPACE} -o jsonpath='{.spec.ports[?(@.name=="http")].nodePort}')
+            INTERNAL_NODE_IP=$(kubectl get nodes -o jsonpath='{ $.items[0].status.addresses[?(@.type=="InternalIP")].address }')
+            KEPTN_ENDPOINT="http://${INTERNAL_NODE_IP}:${API_PORT}"/api
+          else
+            KEPTN_ENDPOINT=http://$(kubectl -n ${KEPTN_NAMESPACE} get service api-gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')/api
+          fi
+          
+          KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n ${KEPTN_NAMESPACE} -ojsonpath={.data.keptn-api-token} | base64 --decode)
+
+          echo "KEPTN_ENDPOINT=${KEPTN_ENDPOINT}"
+          echo "##[set-output name=KEPTN_ENDPOINT;]$(echo ${KEPTN_ENDPOINT})"
+
+      - name: Install Helm/JMeter Service
+        timeout-minutes: 5
+        env:
+          KEPTN_ENDPOINT: ${{ steps.determine_keptn_endpoint.outputs.KEPTN_ENDPOINT }}
+          HELM_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_SERVICE_HELM_CHART_NAME }}
+          JMETER_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.JMETER_SERVICE_HELM_CHART_NAME }}
+        run: |
+          
+          # In-cluster execution plane
+          helm install helm-service "${HELM_SERVICE_HELM_CHART_NAME}" -n ${{ env.KEPTN_NAMESPACE }}
+          helm install jmeter-service "${JMETER_SERVICE_HELM_CHART_NAME}" -n ${{ env.KEPTN_NAMESPACE }}
+          
+          helm test jmeter-service -n ${{ env.KEPTN_NAMESPACE }}
+          helm test helm-service -n ${{ env.KEPTN_NAMESPACE }}
+
+
+      - name: Prepare test run
+        id: prepare_test_run
+        run: |
+          go install gotest.tools/gotestsum@v1.7.0
+          cd test/zero-downtime
+          go get ./...
+
+      - name: "------- TESTS START -------"
+        run: echo "------- TESTS START -------"
+
+      #######################################################################
+      # TESTS
+      #######################################################################
+
+      #######################################################################
+      # COMMON TESTS
+      ##############
+
+      - name: Zero Downtime Tests
+        id: test_aggregated
+        timeout-minutes: 90
+        env:
+          KEPTN_ENDPOINT: ${{ steps.determine_keptn_endpoint.outputs.KEPTN_ENDPOINT }}
+          DO_AUTH: "true"
+          UNLEASH_SERVICE_VERSION: "release-0.3.2"
+          GOTESTSUM_FORMAT: "testname"
+        run: |
+          cd test/zero-downtime          
+          gotestsum --no-color=false -- -run Test_ZeroDowntime -v -timeout 90m
+
+      - name: "------- TESTS END -------"
+        run: echo "------- TESTS END -------"
+
+      #######################################################################
+      # TEARDOWN
+      #######################################################################
+
+      - name: keptn generate support-archive
+        if: always()
+        env:
+          SUPPORT_ARCHIVE_FILENAME: keptn-support-archive-${{ github.run_id }}-${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}
+        timeout-minutes: 5
+        run: |
+          mkdir support-archive/
+          echo "y" | keptn generate support-archive -n ${KEPTN_NAMESPACE}
+          mv support-archive/keptn*.zip support-archive/${SUPPORT_ARCHIVE_FILENAME}.zip
+
+      - name: Cleanup test namespace
+        if: always()
+        run: |
+          echo "Cleaning up test resources..."
+
+          readarray -t namespaces <<< "$(kubectl get namespaces | awk '{ print $1 }' | grep ${{ env.KEPTN_NAMESPACE }})"
+          readarray -t clusterrolebindings <<< "$(kubectl get clusterrolebindings | awk '{ print $1 }' | grep ${{ env.KEPTN_NAMESPACE }})"
+
+          if [[ "${{ github.event_name }}" == 'schedule' && "${{ steps.test_aggregated.outcome }}" != 'success' ]]; then
+            for namespace in "${namespaces[@]}"; do
+              if [[ ! -z "${namespace// }" ]]; then
+                echo "Annotating namespace $namespace with Janitor TTL of 3 days..."
+                kubectl annotate namespace "$namespace" janitor/ttl=3d
+              fi
+            done
+          
+            for crb in "${clusterrolebindings[@]}"; do
+              if [[ ! -z "${crb// }" ]]; then
+                echo "Annotating clusterrolebinding $crb with Janitor TTL of 3 days..."
+                kubectl annotate clusterrolebinding "$crb" janitor/ttl=3d
+              fi
+            done
+          elif [[ "${{ github.event_name }}" == 'workflow_dispatch' && "${{ steps.test_aggregated.outcome }}" != 'success' && "${{ github.event.inputs.deleteOnFinish }}" == 'false' ]]; then
+            for namespace in "${namespaces[@]}"; do
+              if [[ ! -z "${namespace// }" ]]; then
+                echo "Annotating namespace $namespace with Janitor TTL of 3 hours..."
+                kubectl annotate namespace "$namespace" janitor/ttl=3h
+              fi
+            done
+          
+            for crb in "${clusterrolebindings[@]}"; do
+              if [[ ! -z "${crb// }" ]]; then
+                echo "Annotating clusterrolebinding $crb with Janitor TTL of 3 hours..."
+                kubectl annotate clusterrolebinding "$crb" janitor/ttl=3h
+              fi
+            done
+          else
+            for namespace in "${namespaces[@]}"; do
+              if [[ ! -z "${namespace// }" ]]; then
+                echo "Deleting namespace $namespace ..."
+                kubectl delete namespace "$namespace" --wait=false
+              fi
+            done
+          
+            for crb in "${clusterrolebindings[@]}"; do
+              if [[ ! -z "${crb// }" ]]; then
+                echo "Deleting clusterrolebinding $crb ..."
+                kubectl delete clusterrolebindings "$crb" --wait=false
+              fi
+            done
+          fi
+
+      - name: Upload support archive as an artifact
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: support-archive
+          path: support-archive/*.zip
+
+  calculate-total-runtime:
+    name: End-of-Pipeline Metrics
+    if: always()
+    needs:
+      - calculate-queue-time
+      - zd-test
+    uses: ./.github/workflows/end-of-pipeline-metrics.yml
+    with:
+      workflow_name: "Integration Tests"
+      branch: ${{ github.ref }}
+    secrets:
+      monitoring_api_token: ${{ secrets.MONITORING_API_TOKEN }}
+      monitoring_tenant_url: ${{ secrets.MONITORING_TENANT_URL }}
