@@ -9,7 +9,7 @@ on:
       upgradeTo:
         description: 'Helm chart path to run upgrade command'
         required: true
-        default: 'keptn-0.15.0-dev-PR-7504'
+        default: 'keptn-0.15.0-dev-PR-7504.tgz'
       deleteOnFinish:
         type: boolean
         required: false
@@ -181,17 +181,16 @@ jobs:
           echo "##[set-output name=HELM_SERVICE_HELM_CHART_NAME;]$(echo ${HELM_SERVICE_HELM_CHART_NAME})"
           echo "##[set-output name=JMETER_SERVICE_HELM_CHART_NAME;]$(echo ${JMETER_SERVICE_HELM_CHART_NAME})"
 
-    - name: Setup upgrade charts
+      - name: Setup upgrade charts
         id: setup_upgrade_charts
         run: |
           cd dist/keptn-installer
           ls *.tgz # debug output
           INSTALL_HELM_CHART=$(ls keptn*.tgz)
           UPGRADE_HELM_CHART=${{ github.event.inputs.upgradeTo }}
-
+          
           echo "##[set-output name=INSTALL_HELM_CHART;]$(echo ${INSTALL_HELM_CHART})"
           echo "##[set-output name=UPGRADE_HELM_CHART;]$(echo ${UPGRADE_HELM_CHART})"
-
       # setup cloud provider kubernetes instance
 
       - name: Install and start GKE cluster
