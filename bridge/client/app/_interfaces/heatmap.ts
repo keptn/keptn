@@ -47,7 +47,7 @@ export interface IDataPoint {
   color: EvaluationResultType;
   comparedIdentifier: string[];
   /**
-   * Unique identifier like keptnContext that can be used on tileSelected
+   * Unique identifier for a column like keptnContext that can be used on dataPointClicked
    */
   identifier: string;
 }

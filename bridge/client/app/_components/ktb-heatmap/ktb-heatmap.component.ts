@@ -54,6 +54,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   private readonly showMoreButtonPadding = 6;
   private readonly showMoreButtonHeight = 32 + this.showMoreButtonPadding;
   private readonly mouseMoveListener: (this: Document, _evt: MouseEvent) => void;
+  private readonly minWidthPerXAxisElement = 25;
   private xAxis?: ScaleBand<string>;
   private yAxis?: ScaleBand<string>;
   private dataPointContentWidth = 0;
@@ -72,9 +73,9 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   // unsure about:
   // should tileSelected emit the datapoint or just the identifier?
   // Re-positioning of tooltip only on hover-item-change?
+  // cache highlights or not? Can easily be retrieved via selectors
 
   // TODO:
-  //  - Only show every xth date if there are too many dataPoints?
   //  - Remove previous heatmap
   //      What to do with selected datapoint?
   //  - Should the heatmap group the dataPoints or the component that provides them?
@@ -213,7 +214,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
 
     svg.append('g').classed('heatmap-container', true).attr('transform', `translate(${this.yAxisLabelWidth}, 0)`);
 
-    this.setData(data, distinctDates, slis, this.showMoreVisible);
+    this.setData(data, distinctDates, slis);
     this.createLegend();
   }
 
@@ -243,9 +244,10 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
       return;
     }
     this.xAxis = this.xAxis.range([0, this.dataPointContentWidth]);
-    this.xAxisContainer
-      .call(d3.axisBottom(this.xAxis))
-      .attr('transform', `translate(0, ${this.height + (this.showMoreVisible ? this.showMoreButtonHeight : 0)})`);
+    const xAxisContainer = this.xAxisContainer;
+
+    this.setXAxisCoordinates(xAxisContainer);
+    this.attachXAxis(xAxisContainer, this.xAxis);
   }
 
   private resizeDataPoints(): void {
@@ -306,45 +308,69 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     });
   }
 
-  private setData(
-    data: GroupedDataPoints,
-    xAxisElements: string[],
-    yAxisElements: string[],
-    showMoreVisible: boolean
-  ): void {
+  private setData(data: GroupedDataPoints, xAxisElements: string[], yAxisElements: string[]): void {
     const heatmap: SVGGSelection = d3.select(this.heatmapSelector);
-    this.xAxis = this.addXAxis(heatmap, xAxisElements, showMoreVisible);
+    this.xAxis = this.addXAxis(heatmap, xAxisElements);
     this.yAxis = this.addYAxis(heatmap, yAxisElements);
     this.generateHeatmapTiles(data, this.xAxis, this.yAxis);
   }
 
-  private addXAxis(heatmap: SVGGSelection, dates: string[], showMoreVisible: boolean): ScaleBand<string> {
+  private addXAxis(heatmap: SVGGSelection, dates: string[]): ScaleBand<string> {
     const x = d3.scaleBand().range([0, this.dataPointContentWidth]).domain(dates);
-    heatmap
-      .append('g')
-      .attr('class', 'x-axis-container')
-      .attr('transform', `translate(0, ${this.height + (showMoreVisible ? this.showMoreButtonHeight : 0)})`)
-      .call(d3.axisBottom(x).tickSize(5))
+    const xAxisContainer = heatmap.append('g').attr('class', 'x-axis-container');
+
+    this.setXAxisCoordinates(xAxisContainer);
+    this.attachXAxis(xAxisContainer, x);
+    return x;
+  }
+
+  private setXAxisCoordinates(xAxisContainer: SVGGSelection): void {
+    xAxisContainer.attr(
+      'transform',
+      `translate(0, ${this.height + (this.showMoreVisible ? this.showMoreButtonHeight : 0)})`
+    );
+  }
+
+  /**
+   * Attaches the xAxis to the heatmap and sets the correct style.
+   * If there are too many elements, every second element is shown in the axis
+   * @param xAxisContainer
+   * @param x
+   * @private
+   */
+  private attachXAxis(xAxisContainer: SVGGSelection, x: ScaleBand<string>): void {
+    let reducedXAxis = x.domain();
+    const widthPerDatePoint = this.dataPointContentWidth / reducedXAxis.length;
+
+    if (widthPerDatePoint < this.minWidthPerXAxisElement) {
+      const rest = reducedXAxis.length % 2;
+      // the latest one is the most important one. If even then the latest element is even, if not even then the latest element is not even
+      // index starts with 0, that's why we use !== rest instead of === rest
+      reducedXAxis = reducedXAxis.filter((_date, index) => index % 2 !== rest);
+    }
+    xAxisContainer
+      .call(d3.axisBottom(x).tickSize(5).tickValues(reducedXAxis))
       .selectAll('text')
       .attr('class', 'x-axis-identifier')
       .attr('dx', '-.8em')
       .attr('dy', '.15em');
-    return x;
   }
 
   private addYAxis(heatmap: SVGGSelection, slis: string[]): ScaleBand<string> {
     const y = d3.scaleBand().range([this.height, 0]).domain(slis);
     const yAxisContainer = heatmap.append('g').attr('class', 'y-axis-container');
-    const yAxis = this.callYAxis(yAxisContainer, y);
-    this.setYAxisStyle(yAxis);
+    this.attachYAxis(yAxisContainer, y);
     return y;
   }
 
-  private callYAxis(yAxisContainer: SVGGSelection, y: ScaleBand<string>): SVGGSelection {
-    return yAxisContainer.call(d3.axisLeft(y).tickSize(0));
-  }
-
-  private setYAxisStyle(yAxis: SVGGSelection): void {
+  /**
+   * Attaches the yAxis to the heatmap, sets the correct style and adds ellipsis style to the text if needed
+   * @param yAxisContainer
+   * @param y
+   * @private
+   */
+  private attachYAxis(yAxisContainer: SVGGSelection, y: ScaleBand<string>): void {
+    const yAxis = yAxisContainer.call(d3.axisLeft(y).tickSize(0));
     yAxis.selectAll('.tick').each(this.setEllipsisStyle(this.yAxisLabelWidth));
     yAxis.select('.domain').remove();
   }
@@ -385,21 +411,22 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     this.tooltip.tooltip = dataPoint.tooltip;
     const htmlElement: HTMLElement = this.tooltip._elementRef.nativeElement;
     const tooltipWidth = htmlElement.getBoundingClientRect().width;
-    const scrollbarWidth = this.isScrollbarVisible() ? 18 : 0; // just take a default value
-    const offset = 5; // tooltip should not exactly appear on the cursor
+    const scrollbarWidth = this.isScrollbarVisible() ? 18 : 0; // just assume a default scrollbar-width of 18px
+    const offset = 5; // tooltip should not exactly appear next to the cursor
 
     const endOfWidth = (event.x + tooltipWidth) * window.devicePixelRatio + scrollbarWidth + offset;
 
-    htmlElement.style.top = event.y + offset + 'px';
+    htmlElement.style.top = `${event.y + offset}px`;
 
     if (endOfWidth > window.outerWidth) {
-      htmlElement.style.left = event.x - tooltipWidth - offset + 'px';
+      htmlElement.style.left = `${event.x - tooltipWidth - offset}px`;
     } else {
-      htmlElement.style.left = event.x + offset + 'px';
+      htmlElement.style.left = `${event.x + offset}px`;
     }
   }
 
   private isScrollbarVisible(): boolean {
+    // we only care about the scrollbar of the window (root element) not of a component
     const element = document.querySelector('body')?.firstElementChild;
     if (!element) {
       return false;
@@ -638,8 +665,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
       return;
     }
     this.yAxis = this.yAxis.range([this.height, 0]).domain(slis);
-    const yAxis = this.callYAxis(this.yAxisContainer, this.yAxis);
-    this.setYAxisStyle(yAxis);
+    this.attachYAxis(this.yAxisContainer, this.yAxis);
   }
 
   private collapseHeatmap(): void {
