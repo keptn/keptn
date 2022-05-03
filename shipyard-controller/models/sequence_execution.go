@@ -148,6 +148,11 @@ func (e *SequenceExecution) GetNextTriggeredEventData() map[string]interface{} {
 		eventPayload[nextTask.Name] = common.Merge(eventPayload[nextTask.Name], nextTask.Properties)
 	}
 
+	// remove any messages set by previous task executors
+	if eventPayload["message"] != nil {
+		eventPayload["message"] = ""
+	}
+
 	return eventPayload
 }
 
