@@ -77,161 +77,161 @@ jobs:
             ~/downloads
           key: ${{ runner.os }}-${{ matrix.CLOUD_PROVIDER }}-downloads
 
-      # This step is supposed to determine the target branch where to download the build-artifacts from
-      - name: Determine Target Branch for Integration Tests
-        id: determine_branch
-        run: |
-          if [[ "${{ github.event.inputs.branch }}" != "" ]]; then
-            # branch was manually set by user -> probably a workflow_dispatch action
-            BRANCH=${{ github.event.inputs.branch }}
-            echo "Using $BRANCH as target branch for integration tests"
-          else
-            echo "Determining branch based on what triggered this workflow"
-
-            if [[ "${GITHUB_REF}" == "refs/heads"* ]]; then
-              echo "This is a push to a local branch -> using branch name"
-              BRANCH=${GITHUB_REF#refs/heads/}
-              echo "Branch Name: $BRANCH"
-            else
-              if [[ "${GITHUB_REF}" == "refs/pull/"* ]]; then
-                # usually the format for PRs is: refs/pull/1234/merge
-                echo "::error::This is a Pull Request, and PRs are not supported yet"
-                exit 1
-              else
-                echo "::error This is neither a push, nor a PR, probably something else... Exiting"
-                exit 1
-              fi
-            fi
-          fi
-
-          echo "##[set-output name=BRANCH;]$(echo ${BRANCH})"
-
-      - name: Find latest successful run ID
-        id: last_run_id
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO_SLUG: "keptn/keptn"
-          BRANCH: ${{ steps.determine_branch.outputs.BRANCH }}
-        run: |
-          RUN_ID=$(\
-            curl -sL \
-              -H 'Accept: application/vnd.github.v3+json' \
-              -H "Authorization: token $GITHUB_TOKEN" \
-              "api.github.com/repos/$REPO_SLUG/actions/workflows/CI.yml/runs?branch=$BRANCH" | \
-            jq '[.workflow_runs[] | select(
-              (.head_commit != null) and (.head_commit.author.name | endswith("[bot]") | not ) and ( .conclusion == "success" ) 
-            )][0] | .id')
-          echo "Run ID that will be used to download artifacts from: $RUN_ID"
-          echo "::set-output name=RUN_ID::$RUN_ID"
-
-      # download artifacts from the specified branch with event type push (e.g., push to master/release branch)
-      - name: Download all artifacts from last successful build of specified branch
-        uses: dawidd6/action-download-artifact@v2.19.0
-        id: download_artifacts_push
-        with:
-          # Download last successful artifact from a CI build
-          github_token: ${{secrets.GITHUB_TOKEN}}
-          workflow: CI.yml
-          run_id: ${{ steps.last_run_id.outputs.RUN_ID }}
-          # directory where to extract artifacts to
-          path: ./dist
-
-      # load build-config
-      - name: Load Build-Config Environment from ./dist/build-config/build-config.env
-        id: load_build_env
-        uses: c-py/action-dotenv-to-setenv@v3
-        with:
-          env-file: ./dist/build-config/build-config.env
-
-      - name: Overwrite VERSION String for all builds
-        run: |
-          # use VERSION.DATETIME for the cli version (e.g., nightly build)
-          VERSION=${VERSION}.${DATETIME}
-          # overwrite VERSION
-          echo "VERSION=${VERSION}" >> $GITHUB_ENV
-
-      - name: Print Build-Config
-        run: |
-          echo VERSION=${VERSION}
-          echo BRANCH=${BRANCH}
-
-      - name: Extract Keptn CLI artifact
-        run: |
-          tar -zxvf dist/keptn-cli/keptn-*-linux-amd64.tar.gz
-          sudo mv keptn-*-linux-amd64 /usr/local/bin/keptn
-
-      - name: Verify Keptn CLI works
-        timeout-minutes: 1
-        run: keptn version
-
-      - name: Extract name of helm chart
-        id: extract_helm_chart_name
-        run: |
-          ls dist/keptn-installer/*.tgz # debug output
-          HELM_CHART_NAME=$(ls dist/keptn-installer/keptn*.tgz)
-          HELM_SERVICE_HELM_CHART_NAME=$(ls dist/keptn-installer/helm*.tgz)
-          JMETER_SERVICE_HELM_CHART_NAME=$(ls dist/keptn-installer/jmeter*.tgz)
-          echo "##[set-output name=HELM_CHART_NAME;]$(echo ${HELM_CHART_NAME})"
-          echo "##[set-output name=HELM_SERVICE_HELM_CHART_NAME;]$(echo ${HELM_SERVICE_HELM_CHART_NAME})"
-          echo "##[set-output name=JMETER_SERVICE_HELM_CHART_NAME;]$(echo ${JMETER_SERVICE_HELM_CHART_NAME})"
-
-      - name: Setup upgrade charts
-        id: setup_upgrade_charts
-        run: |
-          CHART_REPO="https://charts.keptn.sh"
-          if [[ ${{ github.event.inputs.upgradeTo }} == *"-dev"* ]]; then 
-            CHART_REPO="https://charts-dev.keptn.sh" 
-          fi
-          helm repo add keptndev $CHART_REPO
-          helm repo update
-          helm pull keptndev/keptn --version ${{ github.event.inputs.upgradeTo }} --destination test/zero-downtime 
-          cd test/zero-downtime
-          echo "downloaded files"
-          ls -la ./keptn*.tgz
-          
-          echo "INSTALL_HELM_CHART=$(ls ./keptn*.tgz)" >> $GITHUB_ENV
-          echo "UPGRADE_HELM_CHART=${{ github.event.inputs.upgradeTo }}" >> $GITHUB_ENV
-
-      - name: Install and start GKE cluster
-        if: env.CLOUD_PROVIDER == 'GKE'
-        env:
-          GKE_VERSION: ${{ matrix.PLATFORM_VERSION }}
-          GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_RESTRICTED_SERVICE_KEY }}
-          GCLOUD_PROJECT_NAME: ${{ secrets.GCLOUD_PROJECT_NAME }}
-          CLOUDSDK_COMPUTE_ZONE: "us-east1-b"
-          CLOUDSDK_REGION: "us-east1"
-          GKE_KUBECONFIG: ${{ secrets.INTEGRATION_TEST_KUBECONFIG }}
-          BRANCH: ${{ steps.determine_branch.outputs.BRANCH}}
-        id: install_gke
-        run: |
-          export CLUSTER_NAME_NIGHTLY=${{ matrix.CLUSTER_NAME }}
-          echo "Setting up GCloud CLI"
-          export OS_TYPE="linux"
-          
-          echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
-          export GOOGLE_APPLICATION_CREDENTIALS=~/gcloud-service-key.json
-          export CLOUDSDK_CORE_DISABLE_PROMPTS=1;
-          
-          gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
-          gcloud --quiet config set project "$GCLOUD_PROJECT_NAME"
-          gcloud --quiet config set container/cluster "$CLUSTER_NAME_NIGHTLY"
-          gcloud --quiet config set compute/zone "${CLOUDSDK_COMPUTE_ZONE}"
-          
-          echo "GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}" >> $GITHUB_ENV
-          
-          echo "Setting up kubectl"
-          echo "Setting KUBECONFIG to $PWD/.kubeconfig"
-          
-          echo "$GKE_KUBECONFIG" >> "$PWD/.kubeconfig"
-          chmod 600 "$PWD/.kubeconfig"
-          export KUBECONFIG="$PWD/.kubeconfig"
-          
-          echo "KUBECONFIG=${KUBECONFIG}" >> $GITHUB_ENV
-          
-          echo "Setting kube context..."
-          kubectl config use-context "$CLUSTER_NAME_NIGHTLY"
-          
-          echo "##[set-output name=CLUSTER_NAME_NIGHTLY;]$(echo ${CLUSTER_NAME_NIGHTLY})"
+#      # This step is supposed to determine the target branch where to download the build-artifacts from
+#      - name: Determine Target Branch for Integration Tests
+#        id: determine_branch
+#        run: |
+#          if [[ "${{ github.event.inputs.branch }}" != "" ]]; then
+#            # branch was manually set by user -> probably a workflow_dispatch action
+#            BRANCH=${{ github.event.inputs.branch }}
+#            echo "Using $BRANCH as target branch for integration tests"
+#          else
+#            echo "Determining branch based on what triggered this workflow"
+#
+#            if [[ "${GITHUB_REF}" == "refs/heads"* ]]; then
+#              echo "This is a push to a local branch -> using branch name"
+#              BRANCH=${GITHUB_REF#refs/heads/}
+#              echo "Branch Name: $BRANCH"
+#            else
+#              if [[ "${GITHUB_REF}" == "refs/pull/"* ]]; then
+#                # usually the format for PRs is: refs/pull/1234/merge
+#                echo "::error::This is a Pull Request, and PRs are not supported yet"
+#                exit 1
+#              else
+#                echo "::error This is neither a push, nor a PR, probably something else... Exiting"
+#                exit 1
+#              fi
+#            fi
+#          fi
+#
+#          echo "##[set-output name=BRANCH;]$(echo ${BRANCH})"
+#
+#      - name: Find latest successful run ID
+#        id: last_run_id
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#          REPO_SLUG: "keptn/keptn"
+#          BRANCH: ${{ steps.determine_branch.outputs.BRANCH }}
+#        run: |
+#          RUN_ID=$(\
+#            curl -sL \
+#              -H 'Accept: application/vnd.github.v3+json' \
+#              -H "Authorization: token $GITHUB_TOKEN" \
+#              "api.github.com/repos/$REPO_SLUG/actions/workflows/CI.yml/runs?branch=$BRANCH" | \
+#            jq '[.workflow_runs[] | select(
+#              (.head_commit != null) and (.head_commit.author.name | endswith("[bot]") | not ) and ( .conclusion == "success" )
+#            )][0] | .id')
+#          echo "Run ID that will be used to download artifacts from: $RUN_ID"
+#          echo "::set-output name=RUN_ID::$RUN_ID"
+#
+#      # download artifacts from the specified branch with event type push (e.g., push to master/release branch)
+#      - name: Download all artifacts from last successful build of specified branch
+#        uses: dawidd6/action-download-artifact@v2.19.0
+#        id: download_artifacts_push
+#        with:
+#          # Download last successful artifact from a CI build
+#          github_token: ${{secrets.GITHUB_TOKEN}}
+#          workflow: CI.yml
+#          run_id: ${{ steps.last_run_id.outputs.RUN_ID }}
+#          # directory where to extract artifacts to
+#          path: ./dist
+#
+#      # load build-config
+#      - name: Load Build-Config Environment from ./dist/build-config/build-config.env
+#        id: load_build_env
+#        uses: c-py/action-dotenv-to-setenv@v3
+#        with:
+#          env-file: ./dist/build-config/build-config.env
+#
+#      - name: Overwrite VERSION String for all builds
+#        run: |
+#          # use VERSION.DATETIME for the cli version (e.g., nightly build)
+#          VERSION=${VERSION}.${DATETIME}
+#          # overwrite VERSION
+#          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+#
+#      - name: Print Build-Config
+#        run: |
+#          echo VERSION=${VERSION}
+#          echo BRANCH=${BRANCH}
+#
+#      - name: Extract Keptn CLI artifact
+#        run: |
+#          tar -zxvf dist/keptn-cli/keptn-*-linux-amd64.tar.gz
+#          sudo mv keptn-*-linux-amd64 /usr/local/bin/keptn
+#
+#      - name: Verify Keptn CLI works
+#        timeout-minutes: 1
+#        run: keptn version
+#
+#      - name: Extract name of helm chart
+#        id: extract_helm_chart_name
+#        run: |
+#          ls dist/keptn-installer/*.tgz # debug output
+#          HELM_CHART_NAME=$(ls dist/keptn-installer/keptn*.tgz)
+#          HELM_SERVICE_HELM_CHART_NAME=$(ls dist/keptn-installer/helm*.tgz)
+#          JMETER_SERVICE_HELM_CHART_NAME=$(ls dist/keptn-installer/jmeter*.tgz)
+#          echo "##[set-output name=HELM_CHART_NAME;]$(echo ${HELM_CHART_NAME})"
+#          echo "##[set-output name=HELM_SERVICE_HELM_CHART_NAME;]$(echo ${HELM_SERVICE_HELM_CHART_NAME})"
+#          echo "##[set-output name=JMETER_SERVICE_HELM_CHART_NAME;]$(echo ${JMETER_SERVICE_HELM_CHART_NAME})"
+#
+#      - name: Setup upgrade charts
+#        id: setup_upgrade_charts
+#        run: |
+#          CHART_REPO="https://charts.keptn.sh"
+#          if [[ ${{ github.event.inputs.upgradeTo }} == *"-dev"* ]]; then
+#            CHART_REPO="https://charts-dev.keptn.sh"
+#          fi
+#          helm repo add keptndev $CHART_REPO
+#          helm repo update
+#          helm pull keptndev/keptn --version ${{ github.event.inputs.upgradeTo }} --destination test/zero-downtime
+#          cd test/zero-downtime
+#          echo "downloaded files"
+#          ls -la ./keptn*.tgz
+#
+#          echo "INSTALL_HELM_CHART=$(ls ./keptn*.tgz)" >> $GITHUB_ENV
+#          echo "UPGRADE_HELM_CHART=${{ github.event.inputs.upgradeTo }}" >> $GITHUB_ENV
+#
+#      - name: Install and start GKE cluster
+#        if: env.CLOUD_PROVIDER == 'GKE'
+#        env:
+#          GKE_VERSION: ${{ matrix.PLATFORM_VERSION }}
+#          GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_RESTRICTED_SERVICE_KEY }}
+#          GCLOUD_PROJECT_NAME: ${{ secrets.GCLOUD_PROJECT_NAME }}
+#          CLOUDSDK_COMPUTE_ZONE: "us-east1-b"
+#          CLOUDSDK_REGION: "us-east1"
+#          GKE_KUBECONFIG: ${{ secrets.INTEGRATION_TEST_KUBECONFIG }}
+#          BRANCH: ${{ steps.determine_branch.outputs.BRANCH}}
+#        id: install_gke
+#        run: |
+#          export CLUSTER_NAME_NIGHTLY=${{ matrix.CLUSTER_NAME }}
+#          echo "Setting up GCloud CLI"
+#          export OS_TYPE="linux"
+#
+#          echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
+#          export GOOGLE_APPLICATION_CREDENTIALS=~/gcloud-service-key.json
+#          export CLOUDSDK_CORE_DISABLE_PROMPTS=1;
+#
+#          gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
+#          gcloud --quiet config set project "$GCLOUD_PROJECT_NAME"
+#          gcloud --quiet config set container/cluster "$CLUSTER_NAME_NIGHTLY"
+#          gcloud --quiet config set compute/zone "${CLOUDSDK_COMPUTE_ZONE}"
+#
+#          echo "GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}" >> $GITHUB_ENV
+#
+#          echo "Setting up kubectl"
+#          echo "Setting KUBECONFIG to $PWD/.kubeconfig"
+#
+#          echo "$GKE_KUBECONFIG" >> "$PWD/.kubeconfig"
+#          chmod 600 "$PWD/.kubeconfig"
+#          export KUBECONFIG="$PWD/.kubeconfig"
+#
+#          echo "KUBECONFIG=${KUBECONFIG}" >> $GITHUB_ENV
+#
+#          echo "Setting kube context..."
+#          kubectl config use-context "$CLUSTER_NAME_NIGHTLY"
+#
+#          echo "##[set-output name=CLUSTER_NAME_NIGHTLY;]$(echo ${CLUSTER_NAME_NIGHTLY})"
 
       - name: Install Keptn
         id: keptn_install
@@ -241,7 +241,7 @@ jobs:
           USE_RESOURCE_SERVICE: ${{ matrix.USE_RESOURCE_SERVICE }}
         run: |
           echo "Installing Keptn on cluster"
-          
+          echo pwd
           echo "{}" > creds.json # empty credentials file
           
           echo "::group::Keptn Installation Log"
