@@ -126,6 +126,8 @@ func ZDTestTemplate(t *testing.T, F func(t1 *testing.T, e *ZeroDowntimeEnv), nam
 		t2.Parallel()
 		F(t2, env)
 
+		// The test summary should be printed after the tests have finished and before the test suite returns
+		// to avoid failure due to test context expired
 		t2.Run("Summary", func(t3 *testing.T) {
 			PrintSequencesResults(t3, env)
 			PrintAPIresults(t3, env)
