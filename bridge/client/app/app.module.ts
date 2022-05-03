@@ -168,8 +168,9 @@ import { KtbProjectSettingsGitSshInputComponent } from './_components/ktb-projec
 import { KtbLoadingDistractorComponent } from './_components/ktb-loading-distractor/ktb-loading-distractor.component';
 import { KtbLoadingSpinnerComponent } from './_components/ktb-loading-spinner/ktb-loading-spinner.component';
 import { SanitizeHtmlPipe } from './_pipes/sanitize-html.pipe';
-import { KtbHeatmapComponent } from './ktb-heatmap/ktb-heatmap.component';
+import { KtbHeatmapComponent } from './_components/ktb-heatmap/ktb-heatmap.component';
 import { KtbTestHeatmapComponent } from './_components/ktb-test-heatmap/ktb-test-heatmap.component';
+import { KtbHeatmapTooltipComponent } from './_components/ktb-heatmap-tooltip/ktb-heatmap-tooltip.component';
 
 registerLocaleData(localeEn, 'en');
 
@@ -281,6 +282,7 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     SanitizeHtmlPipe,
     KtbHeatmapComponent,
     KtbTestHeatmapComponent,
+    KtbHeatmapTooltipComponent,
   ],
   imports: [
     BrowserModule,

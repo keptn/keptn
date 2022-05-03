@@ -6,6 +6,13 @@
   margin-top: -32px; // remove show-more button height
 }
 
+.tooltip {
+  position: fixed;
+  z-index: 1070;
+  pointer-events: none;
+  display: inline-block;
+}
+
 ::ng-deep {
   $axis-identifier-size: 12px;
 
@@ -20,17 +27,6 @@
   .x-axis-identifier {
     text-anchor: end;
     transform: rotate(-45deg);
-  }
-
-  .tooltip {
-    position: fixed;
-    z-index: 1070;
-    background-color: white;
-    border: 2px solid;
-    border-radius: 5px;
-    padding: 5px;
-    pointer-events: none;
-    display: inline-block;
   }
 
   .hidden {

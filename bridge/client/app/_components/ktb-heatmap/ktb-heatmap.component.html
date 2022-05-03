@@ -10,5 +10,6 @@
   <dt-icon [name]="showMoreExpanded ? 'sorter2-up' : 'sorter2-down'"></dt-icon>
   <span [textContent]="showMoreExpanded ? 'Collapse all SLIs' : 'Show all SLIs'"></span>
 </button>
+<ktb-heatmap-tooltip #tooltip class="tooltip"></ktb-heatmap-tooltip>
 
 <div [id]="uniqueId" class="heatmap"></div>
