@@ -2,13 +2,13 @@ module github.com/keptn/keptn/cp-connector
 
 go 1.17
 
-require github.com/keptn/go-utils v0.14.0
+require github.com/keptn/go-utils v0.14.1-0.20220503104228-1b4e7655618b
 
 require (
 	github.com/benbjohnson/clock v1.3.0
 	github.com/nats-io/nats-server/v2 v2.8.1
 	github.com/nats-io/nats.go v1.14.0
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.7.1
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.27.0
 )
 
