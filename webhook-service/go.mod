@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/cloudevents/sdk-go/v2 v2.9.0
-	github.com/keptn/go-utils v0.14.1-0.20220414081235-2e23eb712e3d
+	github.com/keptn/go-utils v0.14.1-0.20220503135032-bd1b73e51bee
 	github.com/keptn/keptn/go-sdk v0.0.0-20220207111546-fac316c656d7
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/sirupsen/logrus v1.8.1
@@ -22,10 +22,10 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/evanphx/json-patch v4.11.0+incompatible // indirect
 	github.com/felixge/httpsnoop v1.0.2 // indirect
-	github.com/go-logr/logr v0.4.0 // indirect
+	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/google/go-cmp v0.5.6 // indirect
+	github.com/google/go-cmp v0.5.7 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/googleapis/gnostic v0.5.5 // indirect
@@ -36,10 +36,10 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.27.0 // indirect
-	go.opentelemetry.io/otel v1.2.0 // indirect
+	go.opentelemetry.io/otel v1.7.0 // indirect
 	go.opentelemetry.io/otel/internal/metric v0.25.0 // indirect
 	go.opentelemetry.io/otel/metric v0.25.0 // indirect
-	go.opentelemetry.io/otel/trace v1.2.0 // indirect
+	go.opentelemetry.io/otel/trace v1.7.0 // indirect
 	go.uber.org/atomic v1.5.0 // indirect
 	go.uber.org/multierr v1.3.0 // indirect
 	go.uber.org/tools v0.0.0-20190618225709-2cfd321de3ee // indirect
