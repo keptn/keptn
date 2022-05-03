@@ -30,6 +30,7 @@ func TestMongoDBTaskSequenceV2Repo_InsertAndRetrieve(t *testing.T) {
 	require.Nil(t, err)
 
 	require.Len(t, get, 1)
+	get[0].SchemaVersion = ""
 	require.Equal(t, sequence, get[0])
 
 	err = mdbrepo.Clear("my-project")
@@ -63,6 +64,7 @@ func TestMongoDBTaskSequenceV2Repo_GetByTriggeredID(t *testing.T) {
 	require.Nil(t, err)
 
 	require.Len(t, get, 1)
+	get[0].SchemaVersion = ""
 	require.Equal(t, sequence, get[0])
 
 	sequenceByTriggeredID, err := mdbrepo.GetByTriggeredID("my-project", "my-triggered-id")
@@ -104,6 +106,7 @@ func TestMongoDBTaskSequenceV2Repo_AppendTaskEvent(t *testing.T) {
 	require.Nil(t, err)
 
 	require.Len(t, get, 1)
+	get[0].SchemaVersion = ""
 	require.Equal(t, sequence, get[0])
 
 	triggeredEvent := models.TaskEvent{
@@ -137,6 +140,7 @@ func TestMongoDBTaskSequenceV2Repo_AppendTaskEventMultipleWriters(t *testing.T) 
 	require.Nil(t, err)
 
 	require.Len(t, get, 1)
+	get[0].SchemaVersion = ""
 	require.Equal(t, sequence, get[0])
 
 	triggeredEvent := models.TaskEvent{
@@ -192,6 +196,7 @@ func TestMongoDBTaskSequenceV2Repo_UpdateStatus(t *testing.T) {
 	require.Nil(t, err)
 
 	require.Len(t, get, 1)
+	get[0].SchemaVersion = ""
 	require.Equal(t, sequence, get[0])
 	require.Nil(t, err)
 
