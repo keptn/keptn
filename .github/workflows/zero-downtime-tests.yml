@@ -186,8 +186,8 @@ jobs:
           helm repo update
           helm pull keptndev/keptn --version ${{ github.event.inputs.upgradeTo }} --destination test/zero-downtime
           echo "copying helm chart in zero downtime folder" 
-          cp $HELM_CHART_NAME ./test/zero-downtime/keptn-installed.tgz
-          echo "INSTALL_HELM_CHART=$(ls ./keptn-installed.tgz)"" >> $GITHUB_ENV
+          cp ${HELM_CHART_NAME} ./test/zero-downtime/keptn-installed.tgz
+          echo "INSTALL_HELM_CHART=$(ls ./keptn-installed.tgz)" >> $GITHUB_ENV
           cd test/zero-downtime
           echo "downloaded files"
           ls -la ./keptn*.tgz
