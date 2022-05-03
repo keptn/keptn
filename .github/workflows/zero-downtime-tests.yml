@@ -253,7 +253,7 @@ jobs:
             --set control-plane.resourceService.enabled=${USE_RESOURCE_SERVICE} \
             --set control-plane.resourceService.replicas=1 \
             --set continuous-delivery.enabled=true \
-            --values=test/zero-downtime/test-values.yaml 
+            --values=./test/zero-downtime/test-values.yaml 
           
           echo "::endgroup::"
 
