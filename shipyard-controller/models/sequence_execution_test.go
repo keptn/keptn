@@ -175,6 +175,82 @@ func TestSequenceExecution_GetNextTriggeredEventData(t *testing.T) {
 				"status": keptnv2.StatusSucceeded,
 			},
 		},
+		{
+			name: "get next triggered event - with input data and completed tasks with same properties",
+			fields: fields{
+				Sequence: keptnv2.Sequence{
+					Name: "delivery",
+					Tasks: []keptnv2.Task{
+						{
+							Name: "deployment",
+							Properties: map[string]interface{}{
+								"foo": "bar",
+							},
+						},
+						{
+							Name: "my-second-task",
+						},
+					},
+				},
+				Status: SequenceExecutionStatus{
+					PreviousTasks: []TaskExecutionResult{
+						{
+							Name:   "deployment",
+							Result: keptnv2.ResultPass,
+							Status: keptnv2.StatusSucceeded,
+							Properties: map[string]interface{}{
+								"deployment": map[string]interface{}{
+									"deploymentURIsLocal": []interface{}{
+										"http://carts.sockshop-dev:80",
+									},
+									"deploymentURIsPublic": []interface{}{
+										"http://carts.sockshop-staging.svc.cluster.local:80",
+									},
+								},
+							},
+						},
+					},
+					CurrentTask: TaskExecutionState{},
+				},
+				Scope: EventScope{
+					EventData: keptnv2.EventData{
+						Project: "my-project",
+						Stage:   "my-stage",
+						Service: "my-service",
+					},
+				},
+				InputProperties: map[string]interface{}{
+					"configurationChange": map[string]interface{}{
+						"image": "1.0",
+					},
+					"deployment": map[string]interface{}{
+						"deploymentURIsLocal": nil,
+						"deploymentURIsPublic": []interface{}{
+							"http://carts.sockshop-dev.svc.cluster.local:80",
+						},
+					},
+				},
+			},
+			want: map[string]interface{}{
+				"project": "my-project",
+				"stage":   "my-stage",
+				"service": "my-service",
+				"configurationChange": map[string]interface{}{
+					"image": "1.0",
+				},
+				"deployment": map[string]interface{}{
+					"deploymentURIsLocal": []interface{}{
+						"http://carts.sockshop-dev:80",
+					},
+					"deploymentURIsPublic": []interface{}{
+						"http://carts.sockshop-staging.svc.cluster.local:80",
+						"http://carts.sockshop-dev.svc.cluster.local:80",
+					},
+				},
+				"result": keptnv2.ResultPass,
+				"status": keptnv2.StatusSucceeded,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

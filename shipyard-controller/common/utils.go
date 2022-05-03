@@ -28,29 +28,34 @@ func Stringp(s string) *string {
 	return &s
 }
 
+// Merge merges together the two provided objects.
+// If any of the two objects' properties do not have matching types, the property of in2 will override the one of in1
 func Merge(in1, in2 interface{}) interface{} {
 	switch in1 := in1.(type) {
 	case []interface{}:
-		in2, ok := in2.([]interface{})
-		if !ok {
-			return in1
+		in2Slice, ok := in2.([]interface{})
+		if !ok && in2 != nil {
+			return in2
 		}
-		return append(in1, in2...)
+		return append(in1, in2Slice...)
 	case map[string]interface{}:
-		in2, ok := in2.(map[string]interface{})
-		if !ok {
-			return in1
+		in2Map, ok := in2.(map[string]interface{})
+		if !ok && in2 != nil {
+			return in2
 		}
-		mergeMaps(in1, in2)
+		mergeMaps(in1, in2Map)
 	case string:
-		if in2, ok := in2.(string); ok {
+		in2String, ok := in2.(string)
+		if !ok && in2 != nil {
 			return in2
 		}
+		return in2String
 	case nil:
-		in2, ok := in2.(map[string]interface{})
-		if ok {
+		in2Map, ok := in2.(map[string]interface{})
+		if !ok && in2 != nil {
 			return in2
 		}
+		return in2Map
 	}
 	return in1
 }

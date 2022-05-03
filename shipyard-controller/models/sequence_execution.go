@@ -126,10 +126,6 @@ func (e *SequenceExecution) CompleteCurrentTask() (keptnv2.ResultType, keptnv2.S
 func (e *SequenceExecution) GetNextTriggeredEventData() map[string]interface{} {
 	eventPayload := map[string]interface{}{}
 
-	if e.InputProperties != nil {
-		eventPayload = common.CopyMap(e.InputProperties)
-	}
-
 	eventPayload["project"] = e.Scope.Project
 	eventPayload["stage"] = e.Scope.Stage
 	eventPayload["service"] = e.Scope.Service
@@ -141,6 +137,10 @@ func (e *SequenceExecution) GetNextTriggeredEventData() map[string]interface{} {
 		lastTaskIndex := len(e.Status.PreviousTasks) - 1
 		eventPayload["result"] = e.Status.PreviousTasks[lastTaskIndex].Result
 		eventPayload["status"] = e.Status.PreviousTasks[lastTaskIndex].Status
+	}
+
+	if e.InputProperties != nil {
+		eventPayload = common.Merge(eventPayload, e.InputProperties).(map[string]interface{})
 	}
 
 	nextTask := e.GetNextTaskOfSequence()

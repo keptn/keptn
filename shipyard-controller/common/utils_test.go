@@ -1,6 +1,7 @@
 package common
 
 import (
+	"github.com/stretchr/testify/require"
 	"reflect"
 	"testing"
 	"time"
@@ -103,12 +104,28 @@ func TestMerge(t *testing.T) {
 			},
 			want: []interface{}{"item1", "item2", "item3"},
 		},
+		{
+			name: "merge structures with different types for same property names",
+			args: args{
+				in1: map[string]interface{}{
+					"foo": map[string]interface{}{
+						"bar": "xyz",
+					},
+				},
+				in2: map[string]interface{}{
+					"foo": "bar",
+				},
+			},
+			want: map[string]interface{}{
+				"foo": "bar",
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := Merge(tt.args.in1, tt.args.in2); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Merge() = %v, want %v", got, tt.want)
-			}
+			got := Merge(tt.args.in1, tt.args.in2)
+
+			require.Equal(t, tt.want, got)
 		})
 	}
 }
