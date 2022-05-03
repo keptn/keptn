@@ -36,6 +36,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -173,8 +174,18 @@ func createKeptnAPI(httpClient *http.Client, env config.EnvConfig) (keptnapi.Kep
 	}
 	if env.PubSubConnectionType() == config.ConnectionTypeHTTP {
 		scheme := "http"
-		parsed, _ := url.Parse(env.KeptnAPIEndpoint)
-		if parsed.Scheme != "" {
+		parsed, err := url.ParseRequestURI(env.KeptnAPIEndpoint)
+		if err != nil {
+			return nil, err
+		}
+
+		if env.KeptnAPIEndpoint != "" && parsed.Scheme == "" {
+			return nil, fmt.Errorf("invalid scheme for keptn endpoint, %s is not http or https", env.KeptnAPIEndpoint)
+		}
+
+		if strings.HasPrefix(parsed.Scheme, "http") {
+			// if no value is assigned to the endpoint than we keep the default scheme
+			// otherwise we override
 			scheme = parsed.Scheme
 		}
 		return keptnapi.New(env.KeptnAPIEndpoint, keptnapi.WithScheme(scheme), keptnapi.WithHTTPClient(httpClient), keptnapi.WithAuthToken(env.KeptnAPIToken))
