@@ -35,11 +35,17 @@ export interface IHeatmapSliTooltip {
 export type IHeatmapTooltip = IHeatmapScoreTooltip | IHeatmapSliTooltip;
 
 export interface IDataPoint {
+  /**
+   * Identifier for xAxis. If there are duplicates, " ${number}" will be attached
+   */
   date: string;
+  /**
+   * Identifier for yAxis. If there are duplicates, " ${number}" will be attached
+   */
   sli: string;
   tooltip: IHeatmapTooltip;
   color: EvaluationResultType;
-  comparedIndices: number[];
+  comparedIdentifier: string[];
   /**
    * Unique identifier like keptnContext that can be used on tileSelected
    */

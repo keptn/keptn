@@ -72,17 +72,20 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   // unsure about:
   // should tileSelected emit the datapoint or just the identifier?
   // Re-positioning of tooltip only on hover-item-change?
-  // Should the secondaryHighlight be an index or the identifier of the dataPoint?
 
   // TODO:
   //  - Only show every xth date if there are too many dataPoints?
+  //  - Remove previous heatmap
+  //      What to do with selected datapoint?
+  //  - Should the heatmap group the dataPoints or the component that provides them?
+  //  -
+  //  - Should the way how a datapoint is selected be changed? If there is just one dataPoint for a given date the user has to click on this dataPoint and can't click on the space (other SLIs are empty and can't be clicked)
+  //       onHover has to be changed. In the old heatmap the nearest tile (y axis) is hovered if the cursor is on an empty (not existing) tile/dataPoint
+  //  - onExpand/onCollapse also update xAxis? Because we have our "score" there won't be any new dates, because each evaluation has at least the score
   //  - Remove testing data afterwards
 
   @Input()
   set dataPoints(data: IDataPoint[]) {
-    // TODO: remove previous heatmap
-    //  What to do with selected datapoint?
-    //  Should the heatmap group the dataPoints or the component that provides them?
     this.setUniqueHeaders(data, 'date', 'sli');
     this.setUniqueHeaders(data, 'sli', 'date');
     this.groupedData = data.reduce((groupedData: GroupedDataPoints, dataPoint) => {
@@ -126,12 +129,6 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     // has to be globally instead of component bound, else scrolling into it will not have any mouse coordinates
     this.mouseMoveListener = (event: MouseEvent): void => this.onMouseMove(event);
     document.addEventListener('mousemove', this.mouseMoveListener);
-  }
-
-  public ngAfterViewInit(): void {
-    this.dataPoints = this.generateTestData(12, 50); // TODO: remove testing data afterwards
-    this.click(this.groupedData.score[1]);
-    this.resizeShowMoreButton();
   }
 
   private onMouseMove(event: MouseEvent): void {
@@ -265,7 +262,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
       this.setHighlightCoordinates(this.highlight, this.selectedDataPoint.date);
     }
     for (let i = 0; i < this.secondaryHighlights.length; ++i) {
-      this.setSecondaryHighlightCoordinates(this.secondaryHighlights[i], this.selectedDataPoint.comparedIndices[i]);
+      this.setSecondaryHighlightCoordinates(this.secondaryHighlights[i], this.selectedDataPoint.comparedIdentifier[i]);
     }
   }
 
@@ -285,118 +282,6 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     const centerXPosition = (this.dataPointContentWidth - fullLength) / 2;
     const yPosition = this.height + this.xAxisLabelWidth + 10 + (this.showMoreVisible ? this.showMoreButtonHeight : 0);
     legend.attr('transform', `translate(${centerXPosition}, ${yPosition})`);
-  }
-
-  private generateTestData(sliCounter: number, counter: number): IDataPoint[] {
-    const categories = [];
-    for (let i = 0; i < sliCounter; ++i) {
-      categories.push(`response time p${i}`);
-    }
-    const data: IDataPoint[] = [];
-    const dateMillis = new Date().getTime();
-
-    // adding one duplicate (two evaluations have the same time)
-    for (const category of categories) {
-      data.push({
-        date: new Date(dateMillis).toISOString(),
-        sli: category,
-        color: this.getColor(Math.floor(Math.random() * 4)),
-        tooltip: {
-          type: IHeatmapTooltipType.SLI,
-          value: Math.random(),
-          keySli: Math.floor(Math.random() * 2) === 1,
-          score: Math.floor(Math.random() * 100),
-          passTargets: [
-            {
-              targetValue: 0,
-              criteria: '<=1',
-              violated: true,
-            },
-          ],
-          warningTargets: [
-            {
-              targetValue: 0,
-              violated: false,
-              criteria: '<=10',
-            },
-          ],
-        },
-        identifier: `keptnContext_${-1}`,
-        comparedIndices: [],
-      });
-    }
-
-    // fill SLIs with random data (-1 to have an evaluation with "missing" data)
-    for (const category of categories) {
-      for (let i = 0; i < counter - 1; ++i) {
-        data.push({
-          date: new Date(dateMillis + i).toISOString(),
-          sli: category,
-          color: this.getColor(Math.floor(Math.random() * 4)),
-          tooltip: {
-            type: IHeatmapTooltipType.SLI,
-            value: Math.random(),
-            keySli: Math.floor(Math.random() * 2) === 1,
-            score: Math.floor(Math.random() * 100),
-            passTargets: [
-              {
-                targetValue: 0,
-                criteria: '<=1',
-                violated: true,
-              },
-            ],
-            warningTargets: [
-              {
-                targetValue: 0,
-                violated: false,
-                criteria: '<=10',
-              },
-            ],
-          },
-          identifier: `keptnContext_${i}`,
-          comparedIndices: [],
-        });
-      }
-    }
-    categories.push('score');
-    for (let i = 0; i < counter; ++i) {
-      data.push({
-        date: new Date(dateMillis + i).toISOString(),
-        sli: 'score',
-        color: this.getColor(Math.floor(Math.random() * 4)),
-        tooltip: {
-          type: IHeatmapTooltipType.SCORE,
-          value: Math.random(),
-          fail: Math.floor(Math.random() * 2) === 1,
-          failedCount: Math.random(),
-          warn: Math.floor(Math.random() * 2) === 1,
-          passCount: Math.random(),
-          thresholdPass: Math.random(),
-          thresholdWarn: Math.random(),
-          warningCount: Math.random(),
-        },
-        identifier: `keptnContext_${i}`,
-        comparedIndices: [],
-      });
-    }
-
-    data[5].comparedIndices = [0, 1, 2]; //TODO: has to be set for all SLIs
-    data[6].comparedIndices = [0, 1];
-    data[7].comparedIndices = [5, 6];
-    return data;
-  }
-
-  private getColor(value: number): EvaluationResultType {
-    if (value === 0) {
-      return ResultTypes.FAILED;
-    }
-    if (value === 1) {
-      return ResultTypes.WARNING;
-    }
-    if (value === 2) {
-      return ResultTypes.PASSED;
-    }
-    return EvaluationResultTypeExtension.INFO;
   }
 
   private setUniqueHeaders(dataPoints: IDataPoint[], key: 'date', compare: 'sli'): void;
@@ -543,9 +428,9 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     this.highlight = heatmap.append('rect').attr('class', 'highlight-primary');
     this.setHighlightCoordinates(this.highlight, dataPoint.date);
 
-    this.secondaryHighlights = dataPoint.comparedIndices.map((index) => {
+    this.secondaryHighlights = dataPoint.comparedIdentifier.map((identifier) => {
       const secondaryHighlight = heatmap.append('rect').attr('class', 'highlight-secondary');
-      this.setSecondaryHighlightCoordinates(secondaryHighlight, index);
+      this.setSecondaryHighlightCoordinates(secondaryHighlight, identifier);
       return secondaryHighlight;
     });
 
@@ -576,17 +461,30 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
 
   private setSecondaryHighlightCoordinates(
     secondaryHighlight: Selection<SVGRectElement, unknown, HTMLElement, unknown>,
-    secondaryIndex: number
+    identifier: string
   ): void {
     if (!this.xAxis) {
       return;
     }
-    const xAxisElements = this.xAxis.domain();
+    const date = this.findDateThroughIdentifier(identifier);
+    if (!date) {
+      return;
+    }
     secondaryHighlight
-      .attr('x', this.xAxis(xAxisElements[secondaryIndex]) ?? null)
+      .attr('x', this.xAxis(date) ?? null)
       .attr('y', 0)
       .attr('height', this.height)
       .attr('width', this.getHighlightWidth());
+  }
+
+  private findDateThroughIdentifier(identifier: string): string | undefined {
+    for (const key of Object.keys(this.groupedData)) {
+      const dataPoint = this.groupedData[key].find((dt) => dt.identifier === identifier);
+      if (dataPoint) {
+        return dataPoint.date;
+      }
+    }
+    return undefined;
   }
 
   private generateHeatmapTiles(
@@ -722,7 +620,6 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     }
     const slis = Object.keys(this.groupedData);
     this.setHeight(slis.length);
-    // TODO: also update xAxis? Because we have "score" there won't be any new dates
     this.updateYAxis(slis);
 
     this.generateHeatmapTiles(this.groupedData, this.xAxis, this.yAxis, this.getHiddenSLIs(slis));
@@ -763,5 +660,122 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   public ngOnDestroy(): void {
     document.removeEventListener('mousemove', this.mouseMoveListener);
   }
+
+  /* test data */
+
+  public ngAfterViewInit(): void {
+    this.dataPoints = this.generateTestData(12, 50); // TODO: remove testing data afterwards
+    this.click(this.groupedData.score[1]);
+  }
+
+  private generateTestData(sliCounter: number, counter: number): IDataPoint[] {
+    const categories = [];
+    for (let i = 0; i < sliCounter; ++i) {
+      categories.push(`response time p${i}`);
+    }
+    const data: IDataPoint[] = [];
+    const dateMillis = new Date().getTime();
+
+    // adding one duplicate (two evaluations have the same time)
+    for (const category of [...categories, 'score']) {
+      data.push({
+        date: new Date(dateMillis).toISOString(),
+        sli: category,
+        color: this.getColor(Math.floor(Math.random() * 4)),
+        tooltip: {
+          type: IHeatmapTooltipType.SLI,
+          value: Math.random(),
+          keySli: Math.floor(Math.random() * 2) === 1,
+          score: Math.floor(Math.random() * 100),
+          passTargets: [
+            {
+              targetValue: 0,
+              criteria: '<=1',
+              violated: true,
+            },
+          ],
+          warningTargets: [
+            {
+              targetValue: 0,
+              violated: false,
+              criteria: '<=10',
+            },
+          ],
+        },
+        identifier: `keptnContext_${-1}`,
+        comparedIdentifier: [],
+      });
+    }
+
+    // fill SLIs with random data (-1 to have an evaluation with "missing" data)
+    for (const category of categories) {
+      for (let i = 0; i < counter - 1; ++i) {
+        data.push({
+          date: new Date(dateMillis + i).toISOString(),
+          sli: category,
+          color: this.getColor(Math.floor(Math.random() * 4)),
+          tooltip: {
+            type: IHeatmapTooltipType.SLI,
+            value: Math.random(),
+            keySli: Math.floor(Math.random() * 2) === 1,
+            score: Math.floor(Math.random() * 100),
+            passTargets: [
+              {
+                targetValue: 0,
+                criteria: '<=1',
+                violated: true,
+              },
+            ],
+            warningTargets: [
+              {
+                targetValue: 0,
+                violated: false,
+                criteria: '<=10',
+              },
+            ],
+          },
+          identifier: `keptnContext_${i}`,
+          comparedIdentifier: [`keptnContext_${i - 1}`, `keptnContext_${i - 2}`],
+        });
+      }
+    }
+    categories.push('score');
+    for (let i = 0; i < counter; ++i) {
+      data.push({
+        date: new Date(dateMillis + i).toISOString(),
+        sli: 'score',
+        color: this.getColor(Math.floor(Math.random() * 4)),
+        tooltip: {
+          type: IHeatmapTooltipType.SCORE,
+          value: Math.random(),
+          fail: Math.floor(Math.random() * 2) === 1,
+          failedCount: Math.random(),
+          warn: Math.floor(Math.random() * 2) === 1,
+          passCount: Math.random(),
+          thresholdPass: Math.random(),
+          thresholdWarn: Math.random(),
+          warningCount: Math.random(),
+        },
+        identifier: `keptnContext_${i}`,
+        comparedIdentifier: [`keptnContext_${i - 1}`, `keptnContext_${i - 2}`],
+      });
+    }
+    return data;
+  }
+
+  private getColor(value: number): EvaluationResultType {
+    if (value === 0) {
+      return ResultTypes.FAILED;
+    }
+    if (value === 1) {
+      return ResultTypes.WARNING;
+    }
+    if (value === 2) {
+      return ResultTypes.PASSED;
+    }
+    return EvaluationResultTypeExtension.INFO;
+  }
+
+  /* test data */
 }
 /* eslint-enable @typescript-eslint/no-this-alias */
