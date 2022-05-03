@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/keptn/shipyard-controller/db/models/sequence_execution"
+	v02 "github.com/keptn/keptn/shipyard-controller/db/models/sequence_execution/v1"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
@@ -22,12 +24,32 @@ const eventQueueSequenceStateCollectionName = "shipyard-controller-event-queue-s
 var ErrProjectNameMustNotBeEmpty = errors.New("project name must not be empty")
 var ErrSequenceIDMustNotBeEmpty = errors.New("sequence ID must not be empty")
 
-type MongoDBSequenceExecutionRepo struct {
-	DbConnection *MongoDBConnection
+type SequenceExecutionRepoOpt func(repo *MongoDBSequenceExecutionRepo)
+
+func WithSequenceExecutionModelTransformer(transformer sequence_execution.ModelTransformer) SequenceExecutionRepoOpt {
+	return func(repo *MongoDBSequenceExecutionRepo) {
+		repo.ModelTransformer = transformer
+	}
 }
 
-func NewMongoDBSequenceExecutionRepo(dbConnection *MongoDBConnection) *MongoDBSequenceExecutionRepo {
-	return &MongoDBSequenceExecutionRepo{DbConnection: dbConnection}
+type MongoDBSequenceExecutionRepo struct {
+	DbConnection *MongoDBConnection
+	// ModelTransformer allows transforming sequence execution objects before storing and after retrieving to and from the database.
+	// This is needed if the items for that collection should be stored in a different format while retaining its structure used outside the package
+	ModelTransformer sequence_execution.ModelTransformer
+}
+
+func NewMongoDBSequenceExecutionRepo(dbConnection *MongoDBConnection, opts ...SequenceExecutionRepoOpt) *MongoDBSequenceExecutionRepo {
+	repo := &MongoDBSequenceExecutionRepo{
+		DbConnection: dbConnection,
+		// use the v1 ModelTransformer by default
+		ModelTransformer: &v02.ModelTransformer{},
+	}
+
+	for _, opt := range opts {
+		opt(repo)
+	}
+	return repo
 }
 
 // Get returns all matching sequence executions, based on the given filter
@@ -50,7 +72,7 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) Get(filter models.SequenceExecution
 	for cur.Next(ctx) {
 		var outInterface interface{}
 		err := cur.Decode(&outInterface)
-		sequenceExecution, err := transformBSONToSequenceExecution(outInterface)
+		sequenceExecution, err := mdbrepo.transformBSONToSequenceExecution(outInterface)
 		if err != nil {
 			log.Errorf("Could not decode sequenceExecution: %v", err)
 			continue
@@ -83,7 +105,7 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) GetByTriggeredID(project, triggered
 	if err := item.Decode(&outInterface); err != nil {
 		return nil, err
 	}
-	sequenceExecution, err := transformBSONToSequenceExecution(outInterface)
+	sequenceExecution, err := mdbrepo.transformBSONToSequenceExecution(outInterface)
 	if err != nil {
 		return nil, err
 	}
@@ -115,10 +137,21 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) Upsert(item models.SequenceExecutio
 	}
 	opts := options.Update().SetUpsert(true)
 
-	filter := bson.D{{"_id", item.ID}}
-	update := bson.D{{"$set", item}}
+	var internalDBItem interface{}
+	if mdbrepo.ModelTransformer != nil {
+		internalDBItem = mdbrepo.ModelTransformer.TransformToDBModel(item)
+	} else {
+		internalDBItem = item
+	}
 
-	_, err = collection.UpdateOne(ctx, filter, update, opts)
+	filter := bson.D{{"_id", item.ID}}
+
+	if upsertOptions != nil && upsertOptions.Replace {
+		_, err = collection.ReplaceOne(ctx, filter, internalDBItem)
+	} else {
+		update := bson.D{{"$set", internalDBItem}}
+		_, err = collection.UpdateOne(ctx, filter, update, opts)
+	}
 	if err != nil {
 		return err
 	}
@@ -147,7 +180,14 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) AppendTaskEvent(taskSequence models
 
 	// by using the $push operator in the FindOneAndUpdate function, we ensure that we follow an append-only approach to this property,
 	// since this is the one property that can potentially be updated by multiple threads handling .finished/.started events for the same task
-	update := bson.M{"$push": bson.M{"status.currentTask.events": event}}
+	var eventItem interface{}
+	if mdbrepo.ModelTransformer != nil {
+		// if we have a transformer that defines how the event should be stored internally, use it to transform the item
+		eventItem = mdbrepo.ModelTransformer.TransformEventToDBModel(event)
+	} else {
+		eventItem = event
+	}
+	update := bson.M{"$push": bson.M{"status.currentTask.events": eventItem}}
 
 	res := collection.FindOneAndUpdate(ctx, filter, update, opts)
 	if res.Err() != nil {
@@ -159,7 +199,7 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) AppendTaskEvent(taskSequence models
 	if err != nil {
 		return nil, err
 	}
-	sequenceExecution, err := transformBSONToSequenceExecution(outInterface)
+	sequenceExecution, err := mdbrepo.transformBSONToSequenceExecution(outInterface)
 	if err != nil {
 		return nil, err
 	}
@@ -201,7 +241,7 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) UpdateStatus(taskSequence models.Se
 	if err != nil {
 		return nil, err
 	}
-	sequenceExecution, err := transformBSONToSequenceExecution(outInterface)
+	sequenceExecution, err := mdbrepo.transformBSONToSequenceExecution(outInterface)
 	if err != nil {
 		return nil, err
 	}
@@ -353,19 +393,28 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) updateGlobalSequenceContext(eventSc
 	return err
 }
 
-func transformBSONToSequenceExecution(outInterface interface{}) (*models.SequenceExecution, error) {
+func (mdbrepo *MongoDBSequenceExecutionRepo) transformBSONToSequenceExecution(outInterface interface{}) (*models.SequenceExecution, error) {
 	outInterface, err := flattenRecursively(outInterface)
 	if err != nil {
 		return nil, err
 	}
 
-	data, _ := json.Marshal(outInterface)
+	// if we have a model transformer, use that one to transform the item into a model.SequenceExecution object
+	if mdbrepo.ModelTransformer != nil {
+		return mdbrepo.ModelTransformer.TransformToSequenceExecution(outInterface)
+	}
+
+	// if we have no model transformer, directly decode to models.SequenceExecution
+	data, err := json.Marshal(outInterface)
+	if err != nil {
+		return nil, err
+	}
 
 	sequenceExecution := &models.SequenceExecution{}
 	if err := json.Unmarshal(data, sequenceExecution); err != nil {
 		return nil, err
 	}
-	//sequenceExecution.ID = outInterface.(map[string]interface{})["_id"].(string)
+
 	return sequenceExecution, nil
 }
 

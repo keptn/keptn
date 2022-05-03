@@ -12,6 +12,8 @@ import (
 // Also, for multiple iterations of a sequence, each iteration will get a new instance.
 type SequenceExecution struct {
 	ID string `json:"_id" bson:"_id"`
+	// SchemaVersion indicates the scheme that is used for the internal representation of the sequence execution
+	SchemaVersion string `json:"schemaVersion" bson:"schemaVersion"`
 	// Sequence contains the complete sequence definition
 	Sequence keptnv2.Sequence        `json:"sequence" bson:"sequence"`
 	Status   SequenceExecutionStatus `json:"status" bson:"status"`
@@ -262,4 +264,5 @@ type SequenceExecutionFilter struct {
 
 type SequenceExecutionUpsertOptions struct {
 	CheckUniqueTriggeredID bool
+	Replace                bool
 }

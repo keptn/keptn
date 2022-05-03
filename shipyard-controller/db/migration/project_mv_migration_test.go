@@ -22,11 +22,13 @@ func setupLocalMongoDB() func() {
 	mongoServer, err := memongo.Start(mongoDbVersion)
 	randomDbName := memongo.RandomDatabase()
 
+	mongoURL := fmt.Sprintf("%s/%s", mongoServer.URI(), randomDbName)
 	os.Setenv("MONGODB_DATABASE", randomDbName)
-	os.Setenv("MONGODB_EXTERNAL_CONNECTION_STRING", fmt.Sprintf("%s/%s", mongoServer.URI(), randomDbName))
+	os.Setenv("MONGODB_EXTERNAL_CONNECTION_STRING", mongoURL)
 
 	var mongoDBClient *mongo.Client
 	mongoDBClient, err = mongo.NewClient(options.Client().ApplyURI(mongoServer.URI()))
+	logger.Infof("MongoDB Server runnning at: %s", mongoURL)
 	if err != nil {
 		logger.Fatalf("Mongo Client setup failed: %s", err)
 	}
