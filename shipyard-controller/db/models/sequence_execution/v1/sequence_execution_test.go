@@ -8,7 +8,8 @@ import (
 )
 
 var testSequenceExecution = models.SequenceExecution{
-	ID: "id",
+	ID:            "id",
+	SchemaVersion: SchemaVersionV1,
 	Sequence: keptnv2.Sequence{
 		Name: "delivery",
 		Tasks: []keptnv2.Task{

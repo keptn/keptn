@@ -134,7 +134,8 @@ type TaskEvent struct {
 
 func (e JsonStringEncodedSequenceExecution) ToSequenceExecution() models.SequenceExecution {
 	result := models.SequenceExecution{
-		ID: e.ID,
+		ID:            e.ID,
+		SchemaVersion: SchemaVersionV1,
 		Sequence: keptnv2.Sequence{
 			Name:  e.Sequence.Name,
 			Tasks: e.Sequence.DecodeTasks(),
