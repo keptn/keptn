@@ -41,6 +41,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   public readonly uniqueId = `heatmap-${uuid()}`;
   private readonly chartSelector = `#${this.uniqueId}`;
   private readonly heatmapSelector = `${this.chartSelector} .heatmap-container`;
+  private readonly svgSelector = `${this.chartSelector}>svg`;
   private readonly firstSliPadding = 6; // "score" will then be 6px smaller than the rest.
   private readonly yAxisLabelWidth = 150;
   private readonly xAxisLabelWidth = 150;
@@ -70,22 +71,20 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   @ViewChild('showMoreButton', { static: false }) showMoreButton!: DtButton;
   @ViewChild('tooltip', { static: false }) tooltip!: KtbHeatmapTooltipComponent;
   @Output() selectedDataPointChange = new EventEmitter<IDataPoint>();
-  // unsure about:
-  // should tileSelected emit the datapoint or just the identifier?
-  // Re-positioning of tooltip only on hover-item-change?
+  // TODO: unsure about:
+  //  - should tileSelected emit the datapoint or just the identifier?
+  //  - Re-positioning of tooltip only on hover-item-change?
+  //  - Should the way how a datapoint is selected be changed? If there is just one dataPoint for a given date the user has to click on this dataPoint and can't click on the space (other SLIs are empty and can't be clicked)
+  //       onHover has to be changed. In the old heatmap the nearest tile on the top (y axis) is hovered if the cursor is on an empty (not existing) tile/dataPoint
+  //  - Should onExpand/onCollapse update the xAxis? Because we have our "score" there won't be any new dates, because each evaluation has at least the score
+  //  - Should the heatmap group the dataPoints or the component that provides them? If the component groups them there may be an unwanted order for the SLIs
 
   // TODO:
-  //  - Remove previous heatmap
-  //      What to do with selected datapoint?
-  //  - Should the heatmap group the dataPoints or the component that provides them?
-  //  -
-  //  - Should the way how a datapoint is selected be changed? If there is just one dataPoint for a given date the user has to click on this dataPoint and can't click on the space (other SLIs are empty and can't be clicked)
-  //       onHover has to be changed. In the old heatmap the nearest tile (y axis) is hovered if the cursor is on an empty (not existing) tile/dataPoint
-  //  - onExpand/onCollapse also update xAxis? Because we have our "score" there won't be any new dates, because each evaluation has at least the score
   //  - Remove testing data afterwards
 
   @Input()
   set dataPoints(data: IDataPoint[]) {
+    this.removeHeatmap();
     this.setUniqueHeaders(data, 'date', 'sli');
     this.setUniqueHeaders(data, 'sli', 'date');
     this.groupedData = data.reduce((groupedData: GroupedDataPoints, dataPoint) => {
@@ -95,13 +94,14 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     }, {});
     this.createHeatmap(this.groupedData);
     this.onResize(); // generating the heatmap may introduce a scrollbar
+    this.click(this.selectedDataPoint, true); // restore previously selected dataPoint
   }
 
   @Input()
-  set selectedDataPoint(dataPoint: IDataPoint | undefined) {
-    this.click(dataPoint);
+  public set selectedDataPoint(dataPoint: IDataPoint | undefined) {
+    this.click(dataPoint, true);
   }
-  get selectedDataPoint(): IDataPoint | undefined {
+  public get selectedDataPoint(): IDataPoint | undefined {
     return this._selectedDataPoint;
   }
 
@@ -195,6 +195,10 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     this.mouseMove(mouseEvent, dt);
   }
 
+  private removeHeatmap(): void {
+    d3.select(this.svgSelector).remove();
+  }
+
   private setTooltipVisibility(visible: boolean): void {
     const element: HTMLElement = this.tooltip._elementRef.nativeElement;
     const classList = element.classList;
@@ -242,10 +246,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   }
 
   private resizeSvg(width: number, height: number): void {
-    d3.select(`${this.chartSelector}>svg`)
-      .attr('viewBox', `0 0 ${width} ${height}`)
-      .attr('width', width)
-      .attr('height', height);
+    d3.select(this.svgSelector).attr('viewBox', `0 0 ${width} ${height}`).attr('width', width).attr('height', height);
   }
 
   private resizeXAxis(): void {
@@ -446,7 +447,14 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     this.secondaryHighlights.remove();
   }
 
-  private click(dataPoint?: IDataPoint): void {
+  /**
+   * Selects the given dataPoint and sets primary and secondary highlights accordingly.
+   * @param dataPoint the dataPoint that should be selected
+   * @param preSelectDataPoint if true the selected dataPoint is not emitted
+   *  and there is a check beforehand if the dataPoint exists
+   * @private
+   */
+  private click(dataPoint?: IDataPoint, preSelectDataPoint = false): void {
     this.removeHighlights();
     const heatmap = this.heatmapInstance;
 
@@ -456,13 +464,30 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     }
     this._selectedDataPoint = dataPoint;
 
+    if (preSelectDataPoint && !this.findDateThroughIdentifier(dataPoint.identifier)) {
+      this._selectedDataPoint = undefined;
+      return;
+    }
+
     heatmap.append('rect').attr('class', 'highlight-primary');
     this.setHighlightCoordinates(dataPoint.date);
 
-    heatmap.selectAll().data(dataPoint.comparedIdentifier).join('rect').attr('class', 'highlight-secondary');
-    this.setSecondaryHighlightCoordinates(dataPoint.comparedIdentifier);
+    const foundIdentifiers = this.getAvailableIdentifiers(dataPoint.comparedIdentifier);
+    heatmap.selectAll().data(foundIdentifiers).join('rect').attr('class', 'highlight-secondary');
+    this.setSecondaryHighlightCoordinates(foundIdentifiers);
 
-    this.selectedDataPointChange.emit(dataPoint);
+    if (!preSelectDataPoint) {
+      this.selectedDataPointChange.emit(dataPoint);
+    }
+  }
+
+  /**
+   * Returns a subset of the given identifiers that are available in the given dataPoints
+   * @param identifiers
+   * @private
+   */
+  private getAvailableIdentifiers(identifiers: string[]): string[] {
+    return identifiers.filter((identifier) => !!this.findDateThroughIdentifier(identifier));
   }
 
   private getHighlightWidth(): number {
@@ -690,7 +715,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   /* test data */
 
   public ngAfterViewInit(): void {
-    this.dataPoints = this.generateTestData(12, 50); // TODO: remove testing data afterwards
+    this.dataPoints = this.generateTestData(12, 50);
     this.click(this.groupedData.score[1]);
   }
 
