@@ -3,15 +3,11 @@ package sdk
 import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
+	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
 	"log"
 )
-
-type envConfig struct {
-	Port                    int    `envconfig:"RCV_PORT" default:"8080"`
-	Path                    string `envconfig:"RCV_PATH" default:"/"`
-	ConfigurationServiceURL string `envconfig:"CONFIGURATION_SERVICE" default:"configuration-service:8080"`
-}
 
 func NewHTTPClientFromEnv() cloudevents.Client {
 	var env envConfig
@@ -36,4 +32,30 @@ func NewResourceHandlerFromEnv() *api.ResourceHandler {
 		log.Fatalf("failed to process env var: %s", err)
 	}
 	return api.NewResourceHandler(env.ConfigurationServiceURL)
+}
+
+func NewRegistrationDataFromEnv() controlplane.RegistrationData {
+	var env envConfig
+	if err := envconfig.Process("", &env); err != nil {
+		log.Fatalf("failed to process env var: %s", err)
+	}
+	return controlplane.RegistrationData{
+		Name: "local-service",
+		MetaData: models.MetaData{
+			Hostname:           "localhost",
+			IntegrationVersion: env.Version,
+			Location:           env.Location,
+			KubernetesMetaData: models.KubernetesMetaData{
+				Namespace:      env.K8sNamespace,
+				PodName:        env.K8sPodName,
+				DeploymentName: env.K8sDeploymentName,
+			},
+		},
+		Subscriptions: []models.EventSubscription{},
+	}
+}
+
+func NewControlPlaneFromEnv() controlplane.ControlPlane {
+	// TODO
+	return nil
 }
