@@ -2,7 +2,6 @@ package zero_downtime
 
 import (
 	"fmt"
-	testutils "github.com/keptn/keptn/test/go-tests"
 	"github.com/stretchr/testify/suite"
 	"os"
 	"sync"
@@ -96,6 +95,8 @@ func (suite *TestSuiteDowntime) TestWebhook() {
 func (suite *TestSuiteDowntime) TearDownSuite() {
 }
 
+// ZDTestTemplate runs a test function in parallel to rolling upgrade and api probing,
+// this can be used to create more zero downtime scenarios in the suite
 func ZDTestTemplate(t *testing.T, F func(t1 *testing.T, e *ZeroDowntimeEnv), name string) {
 
 	env := SetupZD()
@@ -111,44 +112,46 @@ func ZDTestTemplate(t *testing.T, F func(t1 *testing.T, e *ZeroDowntimeEnv), nam
 
 	t.Run(name, func(t2 *testing.T) {
 		t2.Parallel()
+		env.Wg.Add(1)
 		F(t2, env)
-
+		env.Wg.Done()
 	})
 
+	t.Run("Summary:", func(t2 *testing.T) {
+		env.Wg.Wait()
+		PrintSequencesResults(t, env)
+		PrintAPIresults(t, env)
+	})
 }
 
 func RollingUpgrade(t *testing.T, env *ZeroDowntimeEnv) {
 	defer func() {
 		close(env.quit)
 		t.Log("Rolling upgrade terminated")
-		env.Wg.Wait()
-
-		PrintSequencesResults(t, env)
-		PrintAPIresults(t, env)
 
 	}()
 
-	chartPreviousVersion, chartLatestVersion := GetCharts(t)
+	//chartPreviousVersion, chartLatestVersion := GetCharts(t)
 
 	t.Log("Upgrade in progress")
 	time.Sleep(1 * time.Minute)
-	for i := 0; i < env.NrOfUpgrades; i++ {
-		chartPath := ""
-		var err error
-		if i%2 == 0 {
-			chartPath = chartLatestVersion
-		} else {
-			chartPath = chartPreviousVersion
-		}
-		t.Logf("Upgrading Keptn to %s", chartPath)
-		_, err = testutils.ExecuteCommand(
-			fmt.Sprintf(
-				"helm upgrade -n %s keptn %s --wait --values=%s ", testutils.GetKeptnNameSpaceFromEnv(), chartPath, valuesFile))
-		if err != nil {
-			t.Logf("Encountered error when upgrading keptn: %v", err)
-
-		}
-	}
+	//for i := 0; i < env.NrOfUpgrades; i++ {
+	//	chartPath := ""
+	//	var err error
+	//	if i%2 == 0 {
+	//		chartPath = chartLatestVersion
+	//	} else {
+	//		chartPath = chartPreviousVersion
+	//	}
+	//	t.Logf("Upgrading Keptn to %s", chartPath)
+	//	_, err = testutils.ExecuteCommand(
+	//		fmt.Sprintf(
+	//			"helm upgrade -n %s keptn %s --wait --values=%s ", testutils.GetKeptnNameSpaceFromEnv(), chartPath, valuesFile))
+	//	if err != nil {
+	//		t.Logf("Encountered error when upgrading keptn: %v", err)
+	//
+	//	}
+	//}
 }
 
 func PrintSequencesResults(t *testing.T, env *ZeroDowntimeEnv) {
@@ -161,7 +164,9 @@ func PrintSequencesResults(t *testing.T, env *ZeroDowntimeEnv) {
 
 }
 
-//Returns current test helm charts for the rolling upgrade
+// GetCharts returns the versions of helm charts for the rolling upgrade
+// these can be set by two environment variables:
+// "INSTALL_HELM_CHART" and "UPGRADE_HELM_CHART"
 func GetCharts(t *testing.T) (string, string) {
 	var install, upgrade string
 

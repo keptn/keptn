@@ -83,7 +83,6 @@ func setEnv(t *testing.T) *ZeroDowntimeEnv {
 // to perform tests sequentially inside ZD
 func Sequences(t *testing.T, env *ZeroDowntimeEnv) {
 	var s *TestSuiteSequences
-	env.Wg.Add(1)
 	wgSequences := &sync.WaitGroup{}
 	seqTicker := clock.New().Ticker(sequencesInterval)
 
@@ -105,7 +104,7 @@ Loop:
 		}
 	}
 	wgSequences.Wait()
-	env.Wg.Done()
+
 }
 
 func (suite *TestSuiteSequences) Test_Evaluation() {

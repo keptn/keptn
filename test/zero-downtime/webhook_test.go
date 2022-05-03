@@ -37,10 +37,8 @@ func Test_Webhook(t *testing.T) {
 //This performs tests sequentially inside ZD
 func Webhook(t *testing.T, env *ZeroDowntimeEnv) {
 	var s *TestSuiteWebhook
-	env.Wg.Add(1)
 	wgSequences := &sync.WaitGroup{}
 	seqTicker := clock.New().Ticker(sequencesInterval)
-
 Loop:
 	for {
 		select {
@@ -58,9 +56,7 @@ Loop:
 
 		}
 	}
-
 	wgSequences.Wait()
-	env.Wg.Done()
 
 }
 
@@ -69,7 +65,7 @@ func (suite *TestSuiteWebhook) Test_Webhook() {
 	serviceName := "myservice"
 
 	//test considered failed by default so that we can use require
-	atomic.AddUint64(&suite.env.FailedSequences, 1)
+	suite.env.failSequence()
 
 	projectName, shipyardFilePath := testutils.CreateWebhookProject(suite.T(), projectName, serviceName)
 	defer func() {
@@ -81,6 +77,5 @@ func (suite *TestSuiteWebhook) Test_Webhook() {
 	testutils.Test_Webhook(suite.T(), testutils.WebhookYamlBeta, projectName, serviceName)
 
 	//if test returns then it's passed
-	atomic.AddUint64(&suite.env.FailedSequences, ^uint64(1-1))
-	atomic.AddUint64(&suite.env.PassedSequences, 1)
+	suite.env.passFailedSequence()
 }
