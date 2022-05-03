@@ -9,13 +9,16 @@ import (
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
+	"github.com/keptn/keptn/shipyard-controller/config"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"sort"
 )
 
-type ServiceParamsValidator struct{}
+type ServiceParamsValidator struct {
+	ServiceNameMaxSize int
+}
 
 func (s ServiceParamsValidator) Validate(params interface{}) error {
 	switch t := params.(type) {
@@ -28,7 +31,10 @@ func (s ServiceParamsValidator) Validate(params interface{}) error {
 
 func (s ServiceParamsValidator) validateCreateServiceParams(params *models.CreateServiceParams) error {
 	if params.ServiceName == nil || *params.ServiceName == "" {
-		return errors.New("Must provide a service name")
+		return errors.New("must provide a service name")
+	}
+	if len(*params.ServiceName) > s.ServiceNameMaxSize {
+		return fmt.Errorf("project name exceeds maximum size of %d characters", s.ServiceNameMaxSize)
 	}
 	if !keptncommon.ValidateUnixDirectoryName(*params.ServiceName) {
 		return errors.New("Service name contains special character(s). " +
@@ -48,6 +54,15 @@ type IServiceHandler interface {
 type ServiceHandler struct {
 	serviceManager IServiceManager
 	EventSender    common.EventSender
+	Env            config.EnvConfig
+}
+
+func NewServiceHandler(serviceManager IServiceManager, eventSender common.EventSender, env config.EnvConfig) IServiceHandler {
+	return &ServiceHandler{
+		serviceManager: serviceManager,
+		EventSender:    eventSender,
+		Env:            env,
+	}
 }
 
 // CreateService godoc
@@ -76,7 +91,9 @@ func (sh *ServiceHandler) CreateService(c *gin.Context) {
 		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
-	serviceValidator := ServiceParamsValidator{}
+	serviceValidator := ServiceParamsValidator{
+		ServiceNameMaxSize: sh.Env.ServiceNameMaxSize,
+	}
 	if err := serviceValidator.Validate(params); err != nil {
 		SetBadRequestErrorResponse(c, err.Error())
 		return
@@ -242,13 +259,6 @@ func (sh *ServiceHandler) GetServices(c *gin.Context) {
 	payload.NextPageKey = paginationInfo.NewNextPageKey
 
 	c.JSON(http.StatusOK, payload)
-}
-
-func NewServiceHandler(serviceManager IServiceManager, eventSender common.EventSender) IServiceHandler {
-	return &ServiceHandler{
-		serviceManager: serviceManager,
-		EventSender:    eventSender,
-	}
 }
 
 func (sh *ServiceHandler) sendServiceCreateStartedEvent(keptnContext string, projectName string, params *models.CreateServiceParams) error {
