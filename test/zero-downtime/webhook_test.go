@@ -25,7 +25,7 @@ func (suite *TestSuiteWebhook) BeforeTest(suiteName, testName string) {
 	suite.T().Log("Running one more test, tot ", suite.env.FiredSequences)
 }
 
-//Test_Sequences can be used to test a single run of the sequence test suite
+// Test_Webhook can be used to test a single run of the test suite
 func Test_Webhook(t *testing.T) {
 
 	s := &TestSuiteWebhook{
@@ -34,7 +34,7 @@ func Test_Webhook(t *testing.T) {
 	suite.Run(t, s)
 }
 
-//This performs tests sequentially inside ZD
+// Webhook performs tests sequentially inside the zerodowntime suite
 func Webhook(t *testing.T, env *ZeroDowntimeEnv) {
 	var s *TestSuiteWebhook
 	wgSequences := &sync.WaitGroup{}
@@ -60,6 +60,7 @@ Loop:
 
 }
 
+// 1 Pass 7 Fails
 func (suite *TestSuiteWebhook) Test_Webhook() {
 	projectName := "webhooks" + suite.env.gedId()
 	serviceName := "myservice"

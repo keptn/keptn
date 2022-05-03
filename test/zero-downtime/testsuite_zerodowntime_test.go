@@ -15,6 +15,16 @@ const EnvInstallVersion = "INSTALL_HELM_CHART"
 const EnvUpgradeVersion = "UPGRADE_HELM_CHART"
 const valuesFile = "test-values.yaml"
 
+const shipyard = `--- 
+apiVersion: spec.keptn.sh/0.2.0
+kind: Shipyard
+metadata: 
+  name: shipyard-quality-gates
+spec: 
+  stages: 
+    - 
+      name: hardening`
+
 const apiProbeInterval = 5 * time.Second
 const sequencesInterval = 15 * time.Second
 
@@ -112,30 +122,30 @@ func ZDTestTemplate(t *testing.T, F func(t1 *testing.T, e *ZeroDowntimeEnv), nam
 	})
 
 	t.Run(name, func(t2 *testing.T) {
-		t2.Parallel()
 		env.Wg.Add(1)
+		t2.Parallel()
 		F(t2, env)
-		env.Wg.Done()
+
+		t2.Run("Summary", func(t3 *testing.T) {
+			PrintSequencesResults(t3, env)
+			PrintAPIresults(t3, env)
+			env.Wg.Done()
+		})
 	})
 
-	t.Run("Summary:", func(t2 *testing.T) {
-		env.Wg.Wait()
-		PrintSequencesResults(t, env)
-		PrintAPIresults(t, env)
-	})
 }
 
 func RollingUpgrade(t *testing.T, env *ZeroDowntimeEnv) {
 	defer func() {
 		close(env.quit)
 		t.Log("Rolling upgrade terminated")
-
+		env.Wg.Wait()
 	}()
 
 	chartPreviousVersion, chartLatestVersion := GetCharts(t)
 
 	t.Log("Upgrade in progress")
-	time.Sleep(1 * time.Minute)
+	time.Sleep(30 * time.Second)
 	for i := 0; i < env.NrOfUpgrades; i++ {
 		chartPath := ""
 		var err error
@@ -179,4 +189,8 @@ func GetCharts(t *testing.T) (string, string) {
 	}
 
 	return install, upgrade
+}
+
+func GetShipyard() (string, error) {
+	return testutils.CreateTmpShipyardFile(shipyard)
 }

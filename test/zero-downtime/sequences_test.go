@@ -9,7 +9,6 @@ import (
 	testutils "github.com/keptn/keptn/test/go-tests"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"gopkg.in/yaml.v3"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -57,12 +56,12 @@ func (suite *TestSuiteSequences) createNew() {
 
 func (suite *TestSuiteSequences) BeforeTest(suiteName, testName string) {
 	atomic.AddUint64(&suite.env.FiredSequences, 1)
-	suite.T().Log("Running one more test, tot ", suite.env.FiredSequences)
+	suite.T().Log("Running one more test, total tests: ", suite.env.FiredSequences)
 }
 
 //Test_Sequences can be used to test a single run of the sequence test suite
 func Test_Sequences(t *testing.T) {
-	Env := setEnv(t)
+	Env := setSequencesEnv(t)
 
 	s := &TestSuiteSequences{
 		env: Env,
@@ -70,7 +69,7 @@ func Test_Sequences(t *testing.T) {
 	suite.Run(t, s)
 }
 
-func setEnv(t *testing.T) *ZeroDowntimeEnv {
+func setSequencesEnv(t *testing.T) *ZeroDowntimeEnv {
 	Env := SetupZD()
 	var err error
 	Env.ExistingProject, err = testutils.CreateProject("projectzd", Env.ShipyardFile)
@@ -80,7 +79,7 @@ func setEnv(t *testing.T) *ZeroDowntimeEnv {
 	return Env
 }
 
-// to perform tests sequentially inside ZD
+// Sequences is used to perform tests sequentially inside the zerodowntime suite
 func Sequences(t *testing.T, env *ZeroDowntimeEnv) {
 	var s *TestSuiteSequences
 	wgSequences := &sync.WaitGroup{}
@@ -107,6 +106,7 @@ Loop:
 
 }
 
+// Pass : evaluation 100
 func (suite *TestSuiteSequences) Test_Evaluation() {
 	var finished *models.KeptnContextExtendedCE
 	suite.env.failSequence()
@@ -123,12 +123,14 @@ func (suite *TestSuiteSequences) Test_Evaluation() {
 	}
 }
 
+// Fails : no task sequence with name delivery found in stage hardening
 func (suite *TestSuiteSequences) Test_DeliveryFails() {
 	suite.trigger("delivery", nil, false)
 }
 
+// Fails : Evaluation 0 event does not contain evaluation timeframe
 func (suite *TestSuiteSequences) Test_ExistingEvaluationFails() {
-	suite.trigger("evaluation", nil, true)
+	suite.trigger("evaluation", nil, false)
 }
 
 func (suite *TestSuiteSequences) trigger(triggerType string, data keptn.EventProperties, existing bool) {
@@ -170,35 +172,4 @@ func (suite *TestSuiteSequences) checkSequence(sequence TriggeredSequence) {
 	} else {
 		suite.T().Logf("sequence %s with keptnContext %s in project %s has been finished", sequence.sequenceName, sequence.keptnContext, sequence.projectName)
 	}
-}
-
-func GetShipyard() (string, error) {
-	shipyard := &v0_2_0.Shipyard{
-		ApiVersion: "0.2.3",
-		Kind:       "shipyard",
-		Metadata:   v0_2_0.Metadata{},
-		Spec: v0_2_0.ShipyardSpec{
-			Stages: []v0_2_0.Stage{},
-		},
-	}
-
-	stage := v0_2_0.Stage{
-		Name: "hardening",
-		Sequences: []v0_2_0.Sequence{
-			{
-				Name: "hooks",
-				Tasks: []v0_2_0.Task{
-					{
-						Name: "mytask",
-					},
-				},
-			},
-		},
-	}
-
-	shipyard.Spec.Stages = append(shipyard.Spec.Stages, stage)
-
-	shipyardFileContent, _ := yaml.Marshal(shipyard)
-
-	return testutils.CreateTmpShipyardFile(string(shipyardFileContent))
 }
