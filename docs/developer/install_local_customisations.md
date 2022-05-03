@@ -9,17 +9,21 @@
 * ...
 
 ## Customise Charts and install with own values-local.yaml for local testing
-1. Create a new cluster (e.g., using k3s)
+1. Create a new cluster (e.g., using k3d)
 2. Build keptn artefacts 
    - Build all (call from keptn root folder)
       - `VERSION=latest ; for d in $(find . -name "Dockerfile" | sed -e "s/\.\/\(.*\)\/Dockerfile$/\1/g") ; do echo "building dir $d" ; cd $d ; docker build . -t "keptn/$d:$VERSION" ; cd .. ; done`
    - Just only the one you want to test
       - `docker build . -t keptn/api:my-local-api-tag`  
-3. - Build Keptn CLI from master:
+3. Load locally build images in k3d cluster
+   - If you want to load all keptn images `for i in $(docker images "keptn/*" --format "{{.Repository}}"); do k3d image load $i\:local-snapshot -c mykeptn ; done`
+   - If you want to load only single images e.g. `k3d image load keptn/bridge-service:local-snapshot -c mykeptn`
+   - For further information see [k3d image import](https://k3d.io/v5.2.0/usage/commands/k3d_image_import/)
+4. - Build Keptn CLI from master:
     - download source,
     - go to `/keptn/cli` and run `go build  -o keptn main.go`
    - Or use an older CLI from a previous release, e.g., `curl -sL https://get.keptn.sh | KEPTN_VERSION=0.13.0 bash`
-4. Create `installer/manifests/keptn/values-local.yaml` file for your local values to be stored. The file should look like this:
+5. Create `installer/manifests/keptn/values-local.yaml` file for your local values to be stored. The file should look like this:
    - global keptn configuration: Set global.keptn.registry/tag if you did a local full build of keptn artefacts
    - service configuration: If you only want to install one single artefact from your local build (e.g. apiService)
 
@@ -43,7 +47,7 @@ global:
 #    tag: 10.0.0                        # ngnix version/tag
 #
 ```
-4. Install in local cluster `helm upgrade --install -f values-local.yaml local-keptn . -n local-keptn`
+5. Install in local cluster `helm upgrade --install -f values-local.yaml local-keptn . -n local-keptn`
 
 ## How to test helm charts locally
 For local templating of helm charts to take a look about the changes use:
