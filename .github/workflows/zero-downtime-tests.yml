@@ -180,7 +180,7 @@ jobs:
         run: |
           CHART_REPO="https://charts.keptn.sh"
           if [[ ${{ github.event.inputs.upgradeTo }} == *"-dev"* ]]; then 
-            CHART_REPO= "https://charts-dev.keptn.sh" 
+            CHART_REPO="https://charts-dev.keptn.sh" 
           fi
           helm repo add keptndev $CHART_REPO
           helm repo update
