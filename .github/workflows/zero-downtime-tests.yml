@@ -185,12 +185,12 @@ jobs:
           helm repo add keptndev $CHART_REPO
           helm repo update
           helm pull keptndev/keptn --version ${{ github.event.inputs.upgradeTo }} --destination test/zero-downtime 
+          cp dist/keptn-installer/keptn*.tgz test/zero-downtime/keptn*.tgz
+          echo "INSTALL_HELM_CHART=$(ls ./test/zero-downtime/keptn*.tgz)" >> $GITHUB_ENV
           cd test/zero-downtime
           echo "downloaded files"
           ls -la ./keptn*.tgz
-          
-          echo "INSTALL_HELM_CHART=$(ls ./keptn*.tgz)" >> $GITHUB_ENV
-          echo "UPGRADE_HELM_CHART=${{ github.event.inputs.upgradeTo }}" >> $GITHUB_ENV
+          echo "UPGRADE_HELM_CHART='./keptn-${{ github.event.inputs.upgradeTo }}.tgz'" >> $GITHUB_ENV
 
       - name: Install and start GKE cluster
         if: env.CLOUD_PROVIDER == 'GKE'

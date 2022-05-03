@@ -10,7 +10,7 @@ import (
 
 const EnvInstallVersion = "INSTALL_HELM_CHART"
 const EnvUpgradeVersion = "UPGRADE_HELM_CHART"
-const valuesFile = "test-values.yml"
+const valuesFile = "./test-values.yml"
 
 type ZeroDowntimeEnv struct {
 	quit         chan struct{}
@@ -69,7 +69,7 @@ func RollingUpgrade(t *testing.T, env *ZeroDowntimeEnv) {
 		t.Logf("Upgrading Keptn to %s", chartPath)
 		_, err = testutils.ExecuteCommand(
 			fmt.Sprintf(
-				"helm upgrade -n %s keptn %s --wait --values=%s ", testutils.GetKeptnNameSpaceFromEnv(), chartPath, valuesFile))
+				"helm upgrade keptn %s --wait --values=%s --debug --namespace=%s", chartPath, valuesFile, testutils.GetKeptnNameSpaceFromEnv()))
 		if err != nil {
 			t.Logf("Encountered error when upgrading keptn: %v", err)
 
@@ -87,6 +87,5 @@ func GetCharts(t *testing.T) (string, string) {
 	if upgrade = os.Getenv(EnvUpgradeVersion); upgrade == "" {
 		t.Errorf("Helm chart unavailable, please set env variable %s", EnvUpgradeVersion)
 	}
-	upgrade = "keptn-" + upgrade + ".tgz"
 	return install, upgrade
 }
