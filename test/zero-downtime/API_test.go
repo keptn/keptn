@@ -200,10 +200,12 @@ func getClient(sec time.Duration) *http.Client {
 	}
 }
 
-func PrintAPIresults(t *testing.T, env *ZeroDowntimeEnv) {
-	t.Log("-----------------------------------------------")
-	t.Log("TOTAL API PROBES", env.TotalAPICalls)
-	t.Log("TOTAL PROBES SUCCEEDED", env.PassedAPICalls)
-	t.Log("TOTAL PROBES FAILED", env.FailedAPICalls)
-	t.Log("-----------------------------------------------")
+func PrintAPIresults(env *ZeroDowntimeEnv) {
+
+	fmt.Println("-----------------------------------------------")
+	fmt.Println("TOTAL API PROBES", env.TotalAPICalls)
+	fmt.Println("TOTAL PROBES SUCCEEDED", env.PassedAPICalls)
+	fmt.Println("TOTAL PROBES FAILED", env.FailedAPICalls)
+	fmt.Println("-----------------------------------------------")
+
 }

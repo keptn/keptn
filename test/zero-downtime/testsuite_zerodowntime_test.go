@@ -129,8 +129,8 @@ func ZDTestTemplate(t *testing.T, F func(t1 *testing.T, e *ZeroDowntimeEnv), nam
 		// The test summary should be printed after the tests have finished and before the test suite returns
 		// to avoid failure due to test context expired
 		t2.Run("Summary", func(t3 *testing.T) {
-			PrintSequencesResults(t3, env)
-			PrintAPIresults(t3, env)
+			PrintSequencesResults(env)
+			PrintAPIresults(env)
 			env.Wg.Done()
 		})
 	})
@@ -167,13 +167,13 @@ func RollingUpgrade(t *testing.T, env *ZeroDowntimeEnv) {
 	}
 }
 
-func PrintSequencesResults(t *testing.T, env *ZeroDowntimeEnv) {
-
-	t.Log("-----------------------------------------------")
-	t.Log("TOTAL SEQUENCES: ", env.FiredSequences)
-	t.Log("TOTAL SUCCESS ", env.PassedSequences)
-	t.Log("TOTAL FAILURES ", env.FailedSequences)
-	t.Log("-----------------------------------------------")
+func PrintSequencesResults(env *ZeroDowntimeEnv) {
+	// print so that the log is shown even in case the test passes with gotestsum
+	fmt.Println("-----------------------------------------------")
+	fmt.Println("TOTAL SEQUENCES: ", env.FiredSequences)
+	fmt.Println("TOTAL SUCCESS ", env.PassedSequences)
+	fmt.Println("TOTAL FAILURES ", env.FailedSequences)
+	fmt.Println("-----------------------------------------------")
 
 }
 
