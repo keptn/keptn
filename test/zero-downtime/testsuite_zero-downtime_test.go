@@ -10,7 +10,7 @@ import (
 
 const EnvInstallVersion = "INSTALL_HELM_CHART"
 const EnvUpgradeVersion = "UPGRADE_HELM_CHART"
-const valuesFile = "test-values.yaml"
+const valuesFile = "test-values.yml"
 
 type ZeroDowntimeEnv struct {
 	quit         chan struct{}
