@@ -241,7 +241,7 @@ jobs:
           USE_RESOURCE_SERVICE: ${{ matrix.USE_RESOURCE_SERVICE }}
         run: |
           echo "Installing Keptn on cluster"
-          echo pwd
+          pwd
           echo "{}" > creds.json # empty credentials file
           
           echo "::group::Keptn Installation Log"
