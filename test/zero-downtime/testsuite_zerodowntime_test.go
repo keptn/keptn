@@ -2,6 +2,7 @@ package zero_downtime
 
 import (
 	"fmt"
+	testutils "github.com/keptn/keptn/test/go-tests"
 	"github.com/stretchr/testify/suite"
 	"os"
 	"sync"
@@ -131,27 +132,27 @@ func RollingUpgrade(t *testing.T, env *ZeroDowntimeEnv) {
 
 	}()
 
-	//chartPreviousVersion, chartLatestVersion := GetCharts(t)
+	chartPreviousVersion, chartLatestVersion := GetCharts(t)
 
 	t.Log("Upgrade in progress")
 	time.Sleep(1 * time.Minute)
-	//for i := 0; i < env.NrOfUpgrades; i++ {
-	//	chartPath := ""
-	//	var err error
-	//	if i%2 == 0 {
-	//		chartPath = chartLatestVersion
-	//	} else {
-	//		chartPath = chartPreviousVersion
-	//	}
-	//	t.Logf("Upgrading Keptn to %s", chartPath)
-	//	_, err = testutils.ExecuteCommand(
-	//		fmt.Sprintf(
-	//			"helm upgrade -n %s keptn %s --wait --values=%s ", testutils.GetKeptnNameSpaceFromEnv(), chartPath, valuesFile))
-	//	if err != nil {
-	//		t.Logf("Encountered error when upgrading keptn: %v", err)
-	//
-	//	}
-	//}
+	for i := 0; i < env.NrOfUpgrades; i++ {
+		chartPath := ""
+		var err error
+		if i%2 == 0 {
+			chartPath = chartLatestVersion
+		} else {
+			chartPath = chartPreviousVersion
+		}
+		t.Logf("Upgrading Keptn to %s", chartPath)
+		_, err = testutils.ExecuteCommand(
+			fmt.Sprintf(
+				"helm upgrade -n %s keptn %s --wait --values=%s ", testutils.GetKeptnNameSpaceFromEnv(), chartPath, valuesFile))
+		if err != nil {
+			t.Logf("Encountered error when upgrading keptn: %v", err)
+
+		}
+	}
 }
 
 func PrintSequencesResults(t *testing.T, env *ZeroDowntimeEnv) {
