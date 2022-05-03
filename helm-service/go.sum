@@ -511,8 +511,8 @@ github.com/julienschmidt/httprouter v1.3.0/go.mod h1:JR6WtHb+2LUe8TCKY3cZOxFyyO8
 github.com/kelseyhightower/envconfig v1.4.0 h1:Im6hONhd3pLkfDFsbRgu68RDNkGF1r3dvMUtDTo2cv8=
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
 github.com/keptn/go-utils v0.13.0/go.mod h1:yJM7pnCUj23VHKa2az9eWUTAmLDv94f6DVHON9qV1kU=
-github.com/keptn/go-utils v0.14.1-0.20220414081235-2e23eb712e3d h1:qe35rM3wzvEXnbONB8gDgdLWlDcuJbc2DtJkCl6cDFg=
-github.com/keptn/go-utils v0.14.1-0.20220414081235-2e23eb712e3d/go.mod h1:CIRwnEp/QYaSBa/r146x3h4yqWB4FS3YNKHzftoyhVA=
+github.com/keptn/go-utils v0.14.1-0.20220503160417-a0381c53c6d8 h1:g8UrFLGtGiVigt2PE2sAW3lTRUgWdkkGX21NmF4hin4=
+github.com/keptn/go-utils v0.14.1-0.20220503160417-a0381c53c6d8/go.mod h1:oxLLKz2u9KId2HgLH63+T0pUbcgiDd2GDkRrRKwxGUU=
 github.com/keptn/kubernetes-utils v0.13.1-0.20220503135705-31953b55954c h1:+W5pNNVQDSjcvPkhuzUqtCMEXNlTtEUobJASjOTn0yw=
 github.com/keptn/kubernetes-utils v0.13.1-0.20220503135705-31953b55954c/go.mod h1:cu8MTtcyy0QPyM+xbFISx76DMkrNkeHWNBXTzxDkUn4=
 github.com/kinbiko/jsonassert v1.1.0 h1:AakKgkRFsuzE1FNLYrcxTI7ga5YYcbujOUbSf8l+WmU=
