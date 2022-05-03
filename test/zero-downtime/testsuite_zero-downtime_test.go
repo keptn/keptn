@@ -87,6 +87,6 @@ func GetCharts(t *testing.T) (string, string) {
 	if upgrade = os.Getenv(EnvUpgradeVersion); upgrade == "" {
 		t.Errorf("Helm chart unavailable, please set env variable %s", EnvUpgradeVersion)
 	}
-
+	upgrade = "keptn-" + upgrade + ".tgz"
 	return install, upgrade
 }
