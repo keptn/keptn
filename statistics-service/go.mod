@@ -11,9 +11,9 @@ require (
 	github.com/mitchellh/copystructure v1.2.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
-	github.com/swaggo/swag v1.7.9
-	github.com/tryvium-travels/memongo v0.4.0
-	go.mongodb.org/mongo-driver v1.8.5
+	github.com/swaggo/swag v1.8.1
+	github.com/tryvium-travels/memongo v0.5.0
+	go.mongodb.org/mongo-driver v1.9.0
 )
 
 require (

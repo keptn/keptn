@@ -6,7 +6,7 @@ require (
 	github.com/go-openapi/errors v0.20.2
 	github.com/go-openapi/loads v0.21.1
 	github.com/go-openapi/runtime v0.23.3
-	github.com/go-openapi/spec v0.20.5
+	github.com/go-openapi/spec v0.20.6
 	github.com/go-openapi/strfmt v0.21.2
 	github.com/go-openapi/swag v0.21.1
 	github.com/go-openapi/validate v0.21.0
@@ -15,9 +15,9 @@ require (
 	github.com/keptn/go-utils v0.14.1-0.20220414081235-2e23eb712e3d
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
-	github.com/tryvium-travels/memongo v0.4.0
-	go.mongodb.org/mongo-driver v1.8.5
-	golang.org/x/net v0.0.0-20220421235706-1d1ef9303861
+	github.com/tryvium-travels/memongo v0.5.0
+	go.mongodb.org/mongo-driver v1.9.0
+	golang.org/x/net v0.0.0-20220425223048-2871e0cb64e4
 )
 
 require (

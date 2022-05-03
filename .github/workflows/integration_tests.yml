@@ -2,7 +2,7 @@ name: Integration Tests
 on:
   schedule:
     # * is a special character in YAML so you have to quote this string
-    - cron: '0 3 * * 1-5' # run integration tests at 3 AM, monday to friday (1-5)
+    - cron: '0 1 * * 1-5' # run integration tests at 1 AM (UTC), monday to friday (1-5)
 
   workflow_dispatch: # run integration tests only when triggered manually
     inputs:
@@ -99,7 +99,7 @@ jobs:
       AIRGAPPED_REGISTRY_URL: "k3d-container-registry.localhost:12345"
       REMOTE_EXECUTION_PLANE: ${{ matrix.REMOTE_EXECUTION_PLANE }}
       COLLECT_RESOURCE_LIMITS: ${{ matrix.COLLECT_RESOURCE_LIMITS }}
-      GO_VERSION: 1.17
+      GO_VERSION: "~1.17"
       TEST_REPORT_FOLDER: test-reports-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}
       FINAL_TEST_REPORT_FOLDER: test-reports
       FINAL_TEST_REPORT_PATH: test-reports/test-report-final-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}.log
@@ -386,11 +386,16 @@ jobs:
               --set control-plane.apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
               --set control-plane.resourceService.enabled=true \
               --set control-plane.resourceService.replicas=1 \
+              --set control-plane.shipyardController.gracePeriod=10 \
+              --set control-plane.shipyardController.preStopHookTime=5 \
               --set continuous-delivery.enabled=${RUN_CONTINUOUS_DELIVERY_TEST}
           else
-            # Install Keptn via CLI
-            keptn install --platform=${PLATFORM} --namespace=${KEPTN_NAMESPACE} --endpoint-service-type=${KEPTN_SERVICE_TYPE} \
-               --chart-repo=${HELM_CHART_NAME} --creds=creds.json $USE_CASE
+            helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} \
+              --create-namespace \
+              --set control-plane.apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
+              --set control-plane.shipyardController.gracePeriod=10 \
+              --set control-plane.shipyardController.preStopHookTime=5 \
+              --set continuous-delivery.enabled=${RUN_CONTINUOUS_DELIVERY_TEST}
           fi
           echo "::endgroup::"
 
@@ -483,8 +488,6 @@ jobs:
           if [[ "$REMOTE_EXECUTION_PLANE" == 'true' ]]; then
             # Remote execution plane
             KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n "$KEPTN_NAMESPACE" -o jsonpath='{.data.keptn-api-token}' | base64 --decode)
-            kubectl scale deployment/helm-service -n "${KEPTN_NAMESPACE}" --replicas=0
-            kubectl scale deployment/jmeter-service -n "${KEPTN_NAMESPACE}" --replicas=0
           
             KEPTN_API_HOSTNAME=$(echo "${KEPTN_ENDPOINT}" | awk -F[/] '{print $3}')
           
@@ -537,7 +540,7 @@ jobs:
 
       - name: Integration Tests
         id: test_aggregated
-        timeout-minutes: 90
+        timeout-minutes: 100
         env:
           KEPTN_ENDPOINT: ${{ steps.determine_keptn_endpoint.outputs.KEPTN_ENDPOINT }}
           DO_AUTH: "true"
@@ -558,7 +561,7 @@ jobs:
             TESTSUITE="Test_K3D"
           fi
           
-          gotestsum --no-color=false -- -run "$TESTSUITE" -v -timeout 90m
+          gotestsum --no-color=false -- -run "$TESTSUITE" -v -timeout 100m
 
       - name: "------- TESTS END -------"
         run: echo "------- TESTS END -------"

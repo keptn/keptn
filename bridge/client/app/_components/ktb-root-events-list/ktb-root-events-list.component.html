@@ -50,7 +50,7 @@
     </ktb-selectable-tile>
   </div>
   <div fxLayout="row" fxLayoutAlign="center center">
-    <dt-loading-distractor *ngIf="loading" uitestid="keptn-loadingOldSequences">Loading …</dt-loading-distractor>
+    <ktb-loading-distractor *ngIf="loading" uitestid="keptn-loadingOldSequences">Loading …</ktb-loading-distractor>
     <button dt-show-more *ngIf="!loading && !project?.allSequencesLoaded" (click)="loadOldSequences()">
       Show older sequences
     </button>

@@ -31,7 +31,7 @@
               variant="nested"
               *ngIf="currentSequence.isLoading() && !currentSequence.isWaiting()"
             >
-              <dt-loading-spinner aria-label="Task is running..."></dt-loading-spinner>
+              <ktb-loading-spinner aria-label="Task is running..."></ktb-loading-spinner>
             </button>
             <dt-icon *ngIf="currentSequence.isWaiting()" class="event-icon" name="idle"></dt-icon>
           </ng-template>
@@ -53,7 +53,7 @@
           [textContent]="currentSequence.getStageTime(stage) | date: 'HH:mm'"
         ></p>
         <ng-template #showLoadingSpinner>
-          <dt-loading-spinner class="gray-loading" aria-label="Fetching events..."></dt-loading-spinner>
+          <ktb-loading-spinner class="smaller" aria-label="Fetching events ..."></ktb-loading-spinner>
         </ng-template>
       </div>
     </div>
