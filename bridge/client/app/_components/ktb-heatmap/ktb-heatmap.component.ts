@@ -26,6 +26,8 @@ import {
 } from '../../_interfaces/heatmap';
 
 type SVGGSelection = Selection<SVGGElement, unknown, HTMLElement, unknown>;
+type HighlightSelection = Selection<SVGRectElement, unknown, HTMLElement, unknown>;
+type SecondaryHighlightSelections = Selection<SVGRectElement, unknown, SVGGElement, unknown>;
 type HeatmapTiles = Selection<SVGRectElement | null, IDataPoint, SVGGElement, unknown>;
 type GroupedDataPoints = { [sli: string]: IDataPoint[] };
 
@@ -59,8 +61,6 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   private yAxis?: ScaleBand<string>;
   private dataPointContentWidth = 0;
   private height = 0;
-  private highlight?: Selection<SVGRectElement, unknown, HTMLElement, unknown>;
-  private secondaryHighlights: Selection<SVGRectElement, unknown, HTMLElement, unknown>[] = [];
   private _selectedDataPoint?: IDataPoint;
   private mouseCoordinates = { x: 0, y: 0 };
   private groupedData: GroupedDataPoints = {};
@@ -73,7 +73,6 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   // unsure about:
   // should tileSelected emit the datapoint or just the identifier?
   // Re-positioning of tooltip only on hover-item-change?
-  // cache highlights or not? Can easily be retrieved via selectors
 
   // TODO:
   //  - Remove previous heatmap
@@ -106,24 +105,36 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     return this._selectedDataPoint;
   }
 
+  private get heatmapInstance(): SVGGSelection {
+    return d3.select(this.heatmapSelector);
+  }
+
   private get dataPointContainer(): SVGGSelection {
-    return d3.select(this.heatmapSelector).select('.data-point-container');
+    return this.heatmapInstance.select('.data-point-container');
   }
 
   private get yAxisContainer(): SVGGSelection {
-    return d3.select(this.heatmapSelector).select('.y-axis-container');
+    return this.heatmapInstance.select('.y-axis-container');
   }
 
   private get xAxisContainer(): SVGGSelection {
-    return d3.select(this.heatmapSelector).select('.x-axis-container');
+    return this.heatmapInstance.select('.x-axis-container');
   }
 
   private get legendContainer(): SVGGSelection {
-    return d3.select(this.heatmapSelector).select('.legend-container');
+    return this.heatmapInstance.select('.legend-container');
   }
 
   private get dataPointElements(): HeatmapTiles {
     return this.dataPointContainer.selectAll('.data-point');
+  }
+
+  private get highlight(): HighlightSelection {
+    return this.heatmapInstance.select('.highlight-primary');
+  }
+
+  private get secondaryHighlights(): SecondaryHighlightSelections {
+    return this.heatmapInstance.selectAll('.highlight-secondary');
   }
 
   constructor(private elementRef: ElementRef, private _changeDetectorRef: ChangeDetectorRef) {
@@ -163,9 +174,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
       return;
     }
 
-    const isDataPointInHeatmapInstance = (d3.select(this.chartSelector).node() as HTMLElement | undefined)?.contains(
-      element
-    );
+    const isDataPointInHeatmapInstance = this.heatmapInstance.node()?.contains(element);
     if (!isDataPointInHeatmapInstance) {
       this.setTooltipVisibility(false);
       return;
@@ -260,12 +269,9 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     if (!this.selectedDataPoint) {
       return;
     }
-    if (this.highlight) {
-      this.setHighlightCoordinates(this.highlight, this.selectedDataPoint.date);
-    }
-    for (let i = 0; i < this.secondaryHighlights.length; ++i) {
-      this.setSecondaryHighlightCoordinates(this.secondaryHighlights[i], this.selectedDataPoint.comparedIdentifier[i]);
-    }
+
+    this.setHighlightCoordinates(this.selectedDataPoint.date);
+    this.setSecondaryHighlightCoordinates(this.selectedDataPoint.comparedIdentifier);
   }
 
   private resizeShowMoreButton(): void {
@@ -309,7 +315,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   }
 
   private setData(data: GroupedDataPoints, xAxisElements: string[], yAxisElements: string[]): void {
-    const heatmap: SVGGSelection = d3.select(this.heatmapSelector);
+    const heatmap = this.heatmapInstance;
     this.xAxis = this.addXAxis(heatmap, xAxisElements);
     this.yAxis = this.addYAxis(heatmap, yAxisElements);
     this.generateHeatmapTiles(data, this.xAxis, this.yAxis);
@@ -436,15 +442,13 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   }
 
   private removeHighlights(): void {
-    this.highlight?.remove();
-    for (const highlight of this.secondaryHighlights) {
-      highlight.remove();
-    }
+    this.highlight.remove();
+    this.secondaryHighlights.remove();
   }
 
   private click(dataPoint?: IDataPoint): void {
     this.removeHighlights();
-    const heatmap: SVGGSelection = d3.select(this.heatmapSelector);
+    const heatmap = this.heatmapInstance;
 
     if (!this.xAxis || !dataPoint) {
       this._selectedDataPoint = undefined;
@@ -452,14 +456,11 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     }
     this._selectedDataPoint = dataPoint;
 
-    this.highlight = heatmap.append('rect').attr('class', 'highlight-primary');
-    this.setHighlightCoordinates(this.highlight, dataPoint.date);
+    heatmap.append('rect').attr('class', 'highlight-primary');
+    this.setHighlightCoordinates(dataPoint.date);
 
-    this.secondaryHighlights = dataPoint.comparedIdentifier.map((identifier) => {
-      const secondaryHighlight = heatmap.append('rect').attr('class', 'highlight-secondary');
-      this.setSecondaryHighlightCoordinates(secondaryHighlight, identifier);
-      return secondaryHighlight;
-    });
+    heatmap.selectAll().data(dataPoint.comparedIdentifier).join('rect').attr('class', 'highlight-secondary');
+    this.setSecondaryHighlightCoordinates(dataPoint.comparedIdentifier);
 
     this.selectedDataPointChange.emit(dataPoint);
   }
@@ -472,33 +473,32 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     return this.dataPointContentWidth / xAxisElements.length;
   }
 
-  private setHighlightCoordinates(
-    highlight: Selection<SVGRectElement, unknown, HTMLElement, unknown>,
-    identifier: string
-  ): void {
+  private setHighlightCoordinates(identifier: string): void {
     if (!this.xAxis) {
       return;
     }
-    highlight
+
+    this.highlight
       .attr('x', this.xAxis(identifier) ?? null)
       .attr('y', 0)
       .attr('height', this.height)
       .attr('width', this.getHighlightWidth());
   }
 
-  private setSecondaryHighlightCoordinates(
-    secondaryHighlight: Selection<SVGRectElement, unknown, HTMLElement, unknown>,
-    identifier: string
-  ): void {
+  private setSecondaryHighlightCoordinates(identifiers: string[]): void {
     if (!this.xAxis) {
       return;
     }
-    const date = this.findDateThroughIdentifier(identifier);
-    if (!date) {
-      return;
-    }
-    secondaryHighlight
-      .attr('x', this.xAxis(date) ?? null)
+    const xAxis = this.xAxis;
+
+    this.secondaryHighlights
+      .attr('x', (_dt, index) => {
+        const date = this.findDateThroughIdentifier(identifiers[index]);
+        if (!date) {
+          return null;
+        }
+        return xAxis(date) ?? null;
+      })
       .attr('y', 0)
       .attr('height', this.height)
       .attr('width', this.getHighlightWidth());
@@ -522,10 +522,10 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   ): void {
     const _this = this;
     const categoryDisabledStatus = this.getCategoryDisabledStatus();
-    let container: SVGGSelection = this.dataPointContainer;
+    let container = this.dataPointContainer;
 
     if (container.empty()) {
-      container = d3.select(this.heatmapSelector).append('g').classed('data-point-container', true);
+      container = this.heatmapInstance.append('g').classed('data-point-container', true);
     }
     const dataPoints = container
       .selectAll()
@@ -578,7 +578,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
 
   private createLegend(): void {
     const spaceBetweenLegendItems = 30;
-    const legend = d3.select(this.heatmapSelector).append('g').attr('class', 'legend-container');
+    const legend = this.heatmapInstance.append('g').attr('class', 'legend-container');
     let xCoordinate = 0;
     for (const category of this.legendItems) {
       const legendItem = legend

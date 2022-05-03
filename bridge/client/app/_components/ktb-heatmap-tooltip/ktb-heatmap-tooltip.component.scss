@@ -1,3 +1,5 @@
+$min-container-width: 150px;
+
 .tooltip-container {
   font-family: BerninaSansWeb,OpenSans,sans-serif;
   font-weight: 400;
@@ -9,7 +11,11 @@
   color: #454646;
   padding: 12px;
   max-width: 620px;
-  min-width: 150px;
+  min-width: $min-container-width;
+}
+
+.tooltip-container dt-key-value-list {
+  min-width: $min-container-width;
 }
 
 .key-value-parent {
