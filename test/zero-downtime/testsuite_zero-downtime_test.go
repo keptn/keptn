@@ -42,8 +42,8 @@ func (suite *TestSuiteDowntime) TestSequences() {
 	env := SetupZD()
 	suite.T().Run("Rolling Upgrade", func(t1 *testing.T) {
 		RollingUpgrade(t1, env)
+		fmt.Printf("Test executed, logging report")
 	})
-	suite.FailNow("This test fails on purpose")
 }
 
 func (suite *TestSuiteDowntime) TearDownSuite() {

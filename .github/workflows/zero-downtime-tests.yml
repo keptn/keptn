@@ -1,15 +1,14 @@
 name: ZeroDowntime Tests
 on:
-  workflow_dispatch: # run integration tests only when triggered manually
+  workflow_dispatch: # run zero downtime tests selecting the installation branch and the upgrade chart
     inputs:
       branch:
-        description: 'Take CI build artifacts from branch (e.g., master, release-x.y.z)'
+        description: 'Take CI build artifacts from branch (e.g., master, release-x.y.z), this changes the chart version that will be installed in the cluster'
         required: true
         default: 'master'
       upgradeTo:
-        description: 'Helm chart path to run upgrade command'
+        description: 'The helm upgrade command will run with this version (e.g. 0.15.0-dev-PR-7504)'
         required: true
-        default: '0.15.0-dev-PR-7504'
       deleteOnFinish:
         type: boolean
         required: false
@@ -51,12 +50,7 @@ jobs:
       KUBECONFIG: ${{ matrix.KUBECONFIG }}
       KEPTN_NAMESPACE: "keptn-zd-test-${{ github.run_number }}-${{ github.run_attempt }}"
       KEPTN_SERVICE_TYPE: ${{ matrix.KEPTN_SERVICE_TYPE }}
-      COLLECT_RESOURCE_LIMITS: ${{ matrix.COLLECT_RESOURCE_LIMITS }}
       GO_VERSION: 1.17
-      TEST_REPORT_FOLDER: test-reports-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}
-      FINAL_TEST_REPORT_FOLDER: test-reports
-      FINAL_TEST_REPORT_PATH: test-reports/test-report-final-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}.log
-      TEST_REPORT_FILENAME_SUFFIX: test-report-${{ github.run_id }}-${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}.log
     outputs:
       BRANCH: ${{ steps.determine_branch.outputs.BRANCH }}
       ARTIFACT_RUN_ID: ${{ steps.last_run_id.outputs.RUN_ID }}
@@ -184,7 +178,11 @@ jobs:
       - name: Setup upgrade charts
         id: setup_upgrade_charts
         run: |
-          helm repo add keptndev "https://charts-dev.keptn.sh"
+          CHART_REPO="https://charts.keptn.sh"
+          if [[ ${{ github.event.inputs.upgradeTo }} == *"-dev"* ]]; then 
+            CHART_REPO= "https://charts-dev.keptn.sh" 
+          fi
+          helm repo add keptndev $CHART_REPO
           helm repo update
           helm pull keptndev/keptn --version ${{ github.event.inputs.upgradeTo }} --destination test/zero-downtime 
           cd test/zero-downtime
@@ -252,9 +250,10 @@ jobs:
           helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} \
             --create-namespace \
             --set control-plane.apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
-            --set control-plane.resourceService.enabled=true \
+            --set control-plane.resourceService.enabled=${USE_RESOURCE_SERVICE} \
             --set control-plane.resourceService.replicas=1 \
-            --set continuous-delivery.enabled=true
+            --set continuous-delivery.enabled=true \
+            --values=test/zero-downtime/test-values.yaml 
           
           echo "::endgroup::"
 
@@ -349,17 +348,12 @@ jobs:
       # TESTS
       #######################################################################
 
-      #######################################################################
-      # COMMON TESTS
-      ##############
-
       - name: Zero Downtime Tests
-        id: test_aggregated
+        id: test_zero_downtime
         timeout-minutes: 90
         env:
           KEPTN_ENDPOINT: ${{ steps.determine_keptn_endpoint.outputs.KEPTN_ENDPOINT }}
           DO_AUTH: "true"
-          UNLEASH_SERVICE_VERSION: "release-0.3.2"
           GOTESTSUM_FORMAT: "testname"
         run: |
           cd test/zero-downtime          
@@ -390,7 +384,7 @@ jobs:
           readarray -t namespaces <<< "$(kubectl get namespaces | awk '{ print $1 }' | grep ${{ env.KEPTN_NAMESPACE }})"
           readarray -t clusterrolebindings <<< "$(kubectl get clusterrolebindings | awk '{ print $1 }' | grep ${{ env.KEPTN_NAMESPACE }})"
 
-          if [[ "${{ github.event_name }}" == 'schedule' && "${{ steps.test_aggregated.outcome }}" != 'success' ]]; then
+          if [[ "${{ github.event_name }}" == 'schedule' && "${{ steps.test_zero_downtime.outcome }}" != 'success' ]]; then
             for namespace in "${namespaces[@]}"; do
               if [[ ! -z "${namespace// }" ]]; then
                 echo "Annotating namespace $namespace with Janitor TTL of 3 days..."
@@ -404,7 +398,7 @@ jobs:
                 kubectl annotate clusterrolebinding "$crb" janitor/ttl=3d
               fi
             done
-          elif [[ "${{ github.event_name }}" == 'workflow_dispatch' && "${{ steps.test_aggregated.outcome }}" != 'success' && "${{ github.event.inputs.deleteOnFinish }}" == 'false' ]]; then
+          elif [[ "${{ github.event_name }}" == 'workflow_dispatch' && "${{ steps.test_zero_downtime.outcome }}" != 'success' && "${{ github.event.inputs.deleteOnFinish }}" == 'false' ]]; then
             for namespace in "${namespaces[@]}"; do
               if [[ ! -z "${namespace// }" ]]; then
                 echo "Annotating namespace $namespace with Janitor TTL of 3 hours..."
@@ -449,7 +443,7 @@ jobs:
       - zd-test
     uses: ./.github/workflows/end-of-pipeline-metrics.yml
     with:
-      workflow_name: "Integration Tests"
+      workflow_name: "Zero Downtime Tests"
       branch: ${{ github.ref }}
     secrets:
       monitoring_api_token: ${{ secrets.MONITORING_API_TOKEN }}
