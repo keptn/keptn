@@ -33,12 +33,13 @@ func (s *SequenceExecutionMigrator) Run() error {
 	if err != nil {
 		return fmt.Errorf("could not migrate sequence executions to new format: %w", err)
 	}
-	return s.updateSequenceExecutionsOfProject(projects)
+	s.updateSequenceExecutionsOfProject(projects)
+	return nil
 }
 
-func (s *SequenceExecutionMigrator) updateSequenceExecutionsOfProject(projects []*apimodels.ExpandedProject) error {
+func (s *SequenceExecutionMigrator) updateSequenceExecutionsOfProject(projects []*apimodels.ExpandedProject) {
 	if projects == nil {
-		return nil
+		return
 	}
 	for _, project := range projects {
 		sequenceExecutions, err := s.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
@@ -63,5 +64,4 @@ func (s *SequenceExecutionMigrator) updateSequenceExecutionsOfProject(projects [
 			}
 		}
 	}
-	return nil
 }

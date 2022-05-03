@@ -6,6 +6,7 @@ import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
+	v1 "github.com/keptn/keptn/shipyard-controller/db/models/sequence_execution/v1"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -125,12 +126,16 @@ func TestSequenceExecutionMigrator_MigrateSequenceExecutions(t *testing.T) {
 	require.Nil(t, err)
 
 	require.Len(t, migratedSE1, 1)
+	// set the SchemaVersion property of the original sequence execution here, so we can use require.Equal next
+	sequenceExecution1.SchemaVersion = v1.SchemaVersionV1
 	require.Equal(t, sequenceExecution1, migratedSE1[0])
 
 	migratedSE2, err := newSequenceExecutionRepo.Get(models.SequenceExecutionFilter{Scope: models.EventScope{EventData: keptnv2.EventData{Project: "my-second-project"}}})
 	require.Nil(t, err)
 
 	require.Len(t, migratedSE2, 1)
+	// set the SchemaVersion property of the original sequence execution here, so we can use require.Equal next
+	sequenceExecution2.SchemaVersion = v1.SchemaVersionV1
 	require.Equal(t, sequenceExecution2, migratedSE2[0])
 }
 
@@ -173,12 +178,16 @@ func TestSequenceExecutionMigrator_MigrateSequenceExecutions_MixedOldAndNew(t *t
 	require.Nil(t, err)
 
 	require.Len(t, migratedSE1, 1)
-	require.Equal(t, testSequenceExecution, migratedSE1[0])
+	// set the SchemaVersion property of the original sequence execution here, so we can use require.Equal next
+	sequenceExecution1.SchemaVersion = v1.SchemaVersionV1
+	require.Equal(t, sequenceExecution1, migratedSE1[0])
 
 	migratedSE2, err := newSequenceExecutionRepo.Get(models.SequenceExecutionFilter{Scope: models.EventScope{EventData: keptnv2.EventData{Project: "my-second-project"}}})
 	require.Nil(t, err)
 
 	require.Len(t, migratedSE2, 1)
+	// set the SchemaVersion property of the original sequence execution here, so we can use require.Equal next
+	sequenceExecution2.SchemaVersion = v1.SchemaVersionV1
 	require.Equal(t, sequenceExecution2, migratedSE2[0])
 }
 
@@ -220,6 +229,8 @@ func TestSequenceExecutionMigrator_MigrateMultipleTimes(t *testing.T) {
 
 	// verify that one sequence is returned, i.e. the migrator should not duplicate anything
 	require.Len(t, migratedSE1, 1)
+	// set the SchemaVersion property of the original sequence execution here, so we can use require.Equal next
+	sequenceExecution1.SchemaVersion = v1.SchemaVersionV1
 	require.Equal(t, sequenceExecution1, migratedSE1[0])
 }
 
