@@ -404,7 +404,7 @@ jobs:
           GITEA_ADMIN_PASSWORD=$(kubectl get pod -n ${KEPTN_NAMESPACE} gitea-0 -ojsonpath='{@.spec.initContainers[?(@.name=="configure-gitea")].env[?(@.name=="GITEA_ADMIN_PASSWORD")].value}')
           kubectl create configmap squid.conf --from-file=test/assets/squid/squid.conf -n ${KEPTN_NAMESPACE}
           kubectl apply -f test/assets/squid/squid.yaml -n ${KEPTN_NAMESPACE}
-          kubectl wait -n ${KEPTN_NAMESPACE} --for=condition=ready pod -lname=squid
+          kubectl rollout status deployments squid -n ${KEPTN_NAMESPACE}
 
           ssh-keygen -t rsa -C "gitea-http" -f "rsa_gitea" -P "myGiteaPassPhrase"
           GITEA_PRIVATE_KEY=$(cat rsa_gitea)
