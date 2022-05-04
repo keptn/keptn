@@ -38,7 +38,7 @@ func Merge(in1, in2 interface{}) interface{} {
 			return in2
 		}
 		// as defined in https://github.com/keptn/keptn/issues/7627, the slice should start with the entries of the second property
-		return append(in2Slice, in1...)
+		return Dedup(append(in2Slice, in1...))
 	case map[string]interface{}:
 		in2Map, ok := in2.(map[string]interface{})
 		if !ok && in2 != nil {
@@ -83,4 +83,31 @@ func CopyMap(m map[string]interface{}) map[string]interface{} {
 	}
 
 	return cp
+}
+
+// Dedup removes duplicate items from the given slice
+func Dedup(items interface{}) interface{} {
+	switch items := items.(type) {
+	case []string:
+		result := make([]interface{}, 0, len(items))
+		temp := map[string]struct{}{}
+		for _, item := range items {
+			if _, ok := temp[item]; !ok {
+				temp[item] = struct{}{}
+				result = append(result, item)
+			}
+		}
+		return result
+	case []int:
+		result := make([]interface{}, 0, len(items))
+		temp := map[int]struct{}{}
+		for _, item := range items {
+			if _, ok := temp[item]; !ok {
+				temp[item] = struct{}{}
+				result = append(result, item)
+			}
+		}
+		return result
+	}
+	return items
 }

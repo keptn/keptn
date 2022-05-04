@@ -230,7 +230,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	evaluationEvent := &keptnv2.EvaluationTriggeredEventData{}
 	err = verifyEvent.Event.DataAs(evaluationEvent)
 	require.Nil(t, err)
-	require.Equal(t, 2, len(evaluationEvent.Deployment.DeploymentNames))
+	require.Equal(t, 1, len(evaluationEvent.Deployment.DeploymentNames))
 	require.Equal(t, "start", evaluationEvent.Test.Start)
 	require.Equal(t, "end", evaluationEvent.Test.End)
 
