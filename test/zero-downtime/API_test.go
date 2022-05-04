@@ -28,15 +28,12 @@ func (suite *TestSuiteAPI) SetupSuite() {
 	var err error
 	suite.token, suite.keptnAPIURL, err = testutils.GetApiCredentials()
 	suite.T().Log("KEPTN ENDPOINT", suite.keptnAPIURL)
-	suite.Nil(err)
+	suite.Require().Nil(err)
 }
 
 func (suite *TestSuiteAPI) BeforeTest(suiteName, testName string) {
-	var err error
 	fmt.Println("running ", testName)
 	suite.T().Parallel()
-	suite.token, suite.keptnAPIURL, err = testutils.GetApiCredentials()
-	suite.Require().Nil(err)
 }
 
 //Test_API can be used to test a single call to all the tests in the API test suite
