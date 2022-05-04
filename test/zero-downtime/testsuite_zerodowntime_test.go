@@ -111,14 +111,15 @@ func (suite *TestSuiteDowntime) TearDownSuite() {
 func ZDTestTemplate(t *testing.T, F func(t1 *testing.T, e *ZeroDowntimeEnv), name string) {
 
 	env := SetupZD()
-	t.Run("Rolling Upgrade", func(t2 *testing.T) {
-		t2.Parallel()
-		RollingUpgrade(t2, env)
-	})
 
 	t.Run("API", func(t2 *testing.T) {
 		t2.Parallel()
 		APIs(t2, env)
+	})
+
+	t.Run("Rolling Upgrade", func(t2 *testing.T) {
+		t2.Parallel()
+		RollingUpgrade(t2, env)
 	})
 
 	t.Run(name, func(t2 *testing.T) {
