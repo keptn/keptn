@@ -51,7 +51,7 @@ export class KtbProjectSettingsGitExtendedComponent implements OnInit {
         this.selectedForm = GitFormType.SSH;
         this.upstreamConfigured = true;
       } else {
-        this.selectedForm = GitFormType.NO_UPSTREAM;
+        this.selectedForm = this.required ? GitFormType.HTTPS : GitFormType.NO_UPSTREAM;
         this.upstreamConfigured = false;
       }
     }
@@ -75,12 +75,10 @@ export class KtbProjectSettingsGitExtendedComponent implements OnInit {
   }
 
   public ngOnInit(): void {
-    if (this.required && this.isCreateMode) {
-      this.selectedForm = GitFormType.HTTPS;
+    this.selectedForm = this.required ? GitFormType.HTTPS : GitFormType.NO_UPSTREAM;
+    if (this.selectedForm === GitFormType.NO_UPSTREAM) {
+      this.dataChanged(this.selectedForm, this.gitData);
     }
-
-    this.selectedForm = GitFormType.NO_UPSTREAM;
-    this.dataChanged(GitFormType.NO_UPSTREAM, this.gitData);
   }
 
   constructor(private readonly dataService: DataService, readonly routes: ActivatedRoute) {
