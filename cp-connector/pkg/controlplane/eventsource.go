@@ -30,6 +30,13 @@ type EventUpdateMetaData struct {
 	Subject string
 }
 
+// AdditionalSubscriptionData is the data the cp-connector
+// will add as temporary data to the keptn events forwarded
+// to the keptn integration
+type AdditionalSubscriptionData struct {
+	SubscriptionID string `json:"subscriptionID"`
+}
+
 // EventSource is anything that can be used
 // to get events from the Keptn Control Plane
 type EventSource interface {

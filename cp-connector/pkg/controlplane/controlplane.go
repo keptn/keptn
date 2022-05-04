@@ -71,6 +71,18 @@ func (cp *ControlPlane) handle(ctx context.Context, eventUpdate EventUpdate, int
 		if subscription.Event == eventUpdate.MetaData.Subject {
 			matcher := NewEventMatcherFromSubscription(subscription)
 			if matcher.Matches(eventUpdate.KeptnEvent) {
+				err := eventUpdate.KeptnEvent.AddTemporaryData(
+					"distributor",
+					AdditionalSubscriptionData{
+						SubscriptionID: subscription.ID,
+					},
+					models.AddTemporaryDataOptions{
+						OverwriteIfExisting: true,
+					},
+				)
+				if err != nil {
+					cp.logger.Warnf("Could not append subscription data to event: %v", err)
+				}
 				if err := integration.OnEvent(context.WithValue(ctx, EventSenderKey, cp.eventSource.Sender()), eventUpdate.KeptnEvent); err != nil {
 					if errors.Is(err, ErrEventHandleFatal) {
 						cp.logger.Errorf("Fatal error during handling of event: %v", err)
