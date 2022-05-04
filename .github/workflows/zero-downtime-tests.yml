@@ -324,7 +324,7 @@ jobs:
       - name: Prepare test run
         id: prepare_test_run
         run: |
-          go install gotest.tools/gotestsum@v1.7.0
+          go install github.com/haveyoudebuggedit/gotestfmt/v2/cmd/gotestfmt@latest
           cd test/zero-downtime
           go get ./...
 
@@ -344,7 +344,7 @@ jobs:
           GOTESTSUM_FORMAT: "testname"
         run: |
           cd test/zero-downtime          
-          gotestsum --no-color=false -- -run Test_ZeroDowntime -v -timeout 90m
+          go test -json -v -run Test_ZeroDowntime -v -timeout 90m 2>&1 | tee /tmp/gotest.log | gotestfmt
 
       - name: "------- TESTS END -------"
         run: echo "------- TESTS END -------"
@@ -421,6 +421,15 @@ jobs:
         with:
           name: support-archive
           path: support-archive/*.zip
+
+        # Upload the original go test log as an artifact for later review.
+      - name: Upload test log
+        uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: test-log
+          path: /tmp/gotest.log
+          if-no-files-found: error
 
   calculate-total-runtime:
     name: End-of-Pipeline Metrics
