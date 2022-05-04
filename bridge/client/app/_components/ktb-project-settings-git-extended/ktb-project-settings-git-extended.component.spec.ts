@@ -32,6 +32,7 @@ describe('KtbProjectSettingsGitExtendedComponent', () => {
     }).compileComponents();
     fixture = TestBed.createComponent(KtbProjectSettingsGitExtendedComponent);
     component = fixture.componentInstance;
+    component.required = true;
     fixture.detectChanges();
   });
 
@@ -41,6 +42,13 @@ describe('KtbProjectSettingsGitExtendedComponent', () => {
 
   it('should default select HTTPS', () => {
     expect(component.selectedForm).toBe(GitFormType.HTTPS);
+  });
+
+  it('should default select NO_UPSTREAM if git upstream is not required', () => {
+    fixture = TestBed.createComponent(KtbProjectSettingsGitExtendedComponent);
+    component = fixture.componentInstance;
+    component.required = false;
+    expect(component.selectedForm).toBe(GitFormType.NO_UPSTREAM);
   });
 
   it('should update selected form to SSH and back to HTTPS', () => {
@@ -54,6 +62,22 @@ describe('KtbProjectSettingsGitExtendedComponent', () => {
 
     // then
     expect(component.selectedForm).toBe(GitFormType.HTTPS);
+  });
+
+  it('should update selected form to SSH and back to NO_UPSTREAM if git upstream is not required', () => {
+    // given
+    fixture = TestBed.createComponent(KtbProjectSettingsGitExtendedComponent);
+    component = fixture.componentInstance;
+    component.required = false;
+    component.gitInputData = getDefaultSshData();
+    // then
+    expect(component.selectedForm).toBe(GitFormType.SSH);
+
+    // when
+    component.gitInputData = undefined;
+
+    // then
+    expect(component.selectedForm).toBe(GitFormType.NO_UPSTREAM);
   });
 
   it('should select another form and data should be invalidated', () => {
@@ -75,7 +99,7 @@ describe('KtbProjectSettingsGitExtendedComponent', () => {
     const emitSpy = jest.spyOn(component.gitDataChange, 'emit');
 
     // when
-    component.dataChanged(getDefaultSshData());
+    component.dataChanged(GitFormType.SSH, getDefaultSshData());
 
     // then
     expect(emitSpy).toHaveBeenCalledWith(getDefaultSshData());
@@ -105,7 +129,7 @@ describe('KtbProjectSettingsGitExtendedComponent', () => {
 
     // when
     setSelectedForm(GitFormType.SSH);
-    component.dataChanged(getDefaultSshData());
+    component.dataChanged(GitFormType.SSH, getDefaultSshData());
     component.updateUpstream();
 
     // then
@@ -128,7 +152,7 @@ describe('KtbProjectSettingsGitExtendedComponent', () => {
 
     // when
     setSelectedForm(GitFormType.SSH);
-    component.dataChanged(getDefaultSshData());
+    component.dataChanged(GitFormType.SSH, getDefaultSshData());
     component.updateUpstream();
 
     // then
@@ -151,6 +175,15 @@ describe('KtbProjectSettingsGitExtendedComponent', () => {
     expect(component.gitInputDataHttps).toBe(undefined);
   });
 
+  it('should correctly return data if no upstream is selected', () => {
+    const spy = jest.spyOn(component.gitDataChange, 'emit');
+    component.required = false;
+    setSelectedForm(GitFormType.NO_UPSTREAM);
+    expect(component.gitInputDataSsh).toEqual(undefined);
+    expect(component.gitInputDataHttps).toBe(undefined);
+    expect(spy).toHaveBeenCalledWith({ noupstream: '' });
+  });
+
   it('should return undefined if input is undefined', () => {
     component.gitInputData = undefined;
     expect(component.gitInputDataSsh).toBe(undefined);
@@ -159,7 +192,7 @@ describe('KtbProjectSettingsGitExtendedComponent', () => {
 
   it('should emit cached https data if it switched back', () => {
     // given
-    component.dataChanged(getDefaultHttpsData());
+    component.dataChanged(GitFormType.HTTPS, getDefaultHttpsData());
 
     // when
     setSelectedForm(GitFormType.SSH);
@@ -176,7 +209,7 @@ describe('KtbProjectSettingsGitExtendedComponent', () => {
   it('should emit cached ssh data if it switched back', () => {
     // given
     setSelectedForm(GitFormType.SSH);
-    component.dataChanged(getDefaultSshData());
+    component.dataChanged(GitFormType.SSH, getDefaultSshData());
 
     // when
     setSelectedForm(GitFormType.HTTPS);
@@ -206,7 +239,7 @@ describe('KtbProjectSettingsGitExtendedComponent', () => {
   function getDefaultHttpsData(): IGitHttps {
     return {
       https: {
-        gitRemoteURL: '',
+        gitRemoteURL: 'https://github.com/keptn/keptn',
         gitToken: '',
       },
     };

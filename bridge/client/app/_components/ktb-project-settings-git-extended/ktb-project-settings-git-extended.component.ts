@@ -54,6 +54,9 @@ export class KtbProjectSettingsGitExtendedComponent implements OnInit {
         this.selectedForm = this.required ? GitFormType.HTTPS : GitFormType.NO_UPSTREAM;
         this.upstreamConfigured = false;
       }
+    } else {
+      this.selectedForm = this.required ? GitFormType.HTTPS : GitFormType.NO_UPSTREAM;
+      this.upstreamConfigured = false;
     }
   }
 
@@ -125,8 +128,11 @@ export class KtbProjectSettingsGitExtendedComponent implements OnInit {
           break;
       }
     } else {
-      this.gitDataHttps = undefined;
-      this.gitDataSsh = undefined;
+      if (this.selectedForm === GitFormType.HTTPS) {
+        this.gitDataHttps = undefined;
+      } else if (this.selectedForm === GitFormType.SSH) {
+        this.gitDataSsh = undefined;
+      }
     }
     this.gitDataChange.emit(data);
   }
