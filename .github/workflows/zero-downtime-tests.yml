@@ -301,7 +301,6 @@ jobs:
           KEPTN_ENDPOINT=http://$(kubectl -n ${KEPTN_NAMESPACE} get service api-gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')/api
  
           KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n ${KEPTN_NAMESPACE} -ojsonpath={.data.keptn-api-token} | base64 --decode)
-
           echo "KEPTN_ENDPOINT=${KEPTN_ENDPOINT}"
           echo "##[set-output name=KEPTN_ENDPOINT;]$(echo ${KEPTN_ENDPOINT})"
 

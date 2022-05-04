@@ -1,8 +1,10 @@
 package zero_downtime
 
 import (
+	"errors"
 	"fmt"
 	"github.com/benbjohnson/clock"
+	"github.com/keptn/go-utils/pkg/common/retry"
 	testutils "github.com/keptn/keptn/test/go-tests"
 	"github.com/steinfletcher/apitest"
 	jsonpath "github.com/steinfletcher/apitest-jsonpath"
@@ -27,13 +29,19 @@ type TestSuiteAPI struct {
 func (suite *TestSuiteAPI) SetupSuite() {
 	var err error
 	suite.token, suite.keptnAPIURL, err = testutils.GetApiCredentials()
-	suite.T().Log("KEPTN ENDPOINT", suite.keptnAPIURL)
 	suite.Require().Nil(err)
-}
-
-func (suite *TestSuiteAPI) BeforeTest(suiteName, testName string) {
-	fmt.Println("running ", testName)
-	suite.T().Parallel()
+	suite.T().Log("KEPTN ENDPOINT", suite.keptnAPIURL)
+	err = retry.Retry(func() error {
+		out, err := testutils.ExecuteCommand(fmt.Sprintf("keptn auth --endpoint=%s --api-token=%s", suite.keptnAPIURL, suite.token))
+		if err != nil {
+			return err
+		}
+		if !strings.Contains(out, "Successfully authenticated") {
+			return errors.New("authentication unsuccessful")
+		}
+		return nil
+	}, retry.NumberOfRetries(10))
+	suite.Require().Nil(err)
 }
 
 //Test_API can be used to test a single call to all the tests in the API test suite
