@@ -179,13 +179,13 @@ func createKeptnAPI(httpClient *http.Client, env config.EnvConfig) (keptnapi.Kep
 			return nil, err
 		}
 
-		if env.KeptnAPIEndpoint != "" && parsed.Scheme == "" {
+		// accepts either "" or http
+		if env.KeptnAPIEndpoint != "" && (parsed.Scheme == "" || !strings.HasPrefix(parsed.Scheme, "http")) {
 			return nil, fmt.Errorf("invalid scheme for keptn endpoint, %s is not http or https", env.KeptnAPIEndpoint)
 		}
 
 		if strings.HasPrefix(parsed.Scheme, "http") {
 			// if no value is assigned to the endpoint than we keep the default scheme
-			// otherwise we override
 			scheme = parsed.Scheme
 		}
 		return keptnapi.New(env.KeptnAPIEndpoint, keptnapi.WithScheme(scheme), keptnapi.WithHTTPClient(httpClient), keptnapi.WithAuthToken(env.KeptnAPIToken))
