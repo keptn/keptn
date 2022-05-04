@@ -77,7 +77,7 @@
               *ngFor="let deploymentURIPublic of finishedEvent.data?.deployment?.deploymentURIsPublic"
               [href]="deploymentURIPublic"
               target="_blank"
-              (click)="$event.stopPropagation();"
+              (click)="$event.stopPropagation()"
             >
               <button dt-icon-button variant="nested" [title]="'View ' + task.service + ' in ' + task.stage">
                 <dt-icon name="externallink"></dt-icon>
