@@ -134,16 +134,15 @@ func ZDTestTemplate(t *testing.T, F func(t2 *testing.T, e *ZeroDowntimeEnv), nam
 		t1.Parallel()
 		RollingUpgrade(t1, env)
 	})
-
+	env.Wg.Add(1)
 	t.Run("API", func(t1 *testing.T) {
 		t1.Parallel()
-		env.Wg.Add(1)
+
 		APIs(t1, env)
 		env.Wg.Done()
 	})
-
+	env.Wg.Add(1)
 	t.Run(name, func(t1 *testing.T) {
-		env.Wg.Add(1)
 		t1.Parallel()
 		F(t1, env)
 		// The test summary should be printed after the tests have finished and before the test suite returns
