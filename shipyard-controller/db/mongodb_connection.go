@@ -82,8 +82,8 @@ func (m *MongoDBConnection) connectMongoDBClient() error {
 		logger.Errorf(clientCreationFailed, err)
 		return fmt.Errorf(clientCreationFailed, err)
 	}
-	clientOptions := options.Client()
-	clientOptions = clientOptions.ApplyURI(connectionString).SetWriteConcern(writeconcern.New(writeconcern.WMajority(), writeconcern.WTimeout(getMongoDBWriteConcernTimeout())))
+	clientOptions := options.Client().SetWriteConcern(writeconcern.New(writeconcern.WMajority(), writeconcern.WTimeout(getMongoDBWriteConcernTimeout())))
+	clientOptions = clientOptions.ApplyURI(connectionString)
 	clientOptions = clientOptions.SetConnectTimeout(30 * time.Second)
 	m.Client, err = mongo.NewClient(clientOptions)
 	if err != nil {
