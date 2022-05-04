@@ -51,12 +51,7 @@ spec:
           ports:
             - containerPort: 8080
           resources:
-            requests:
-              memory: "32Mi"
-              cpu: "50m"
-            limits:
-              memory: "64Mi"
-              cpu: "100m"
+            {{- toYaml .Values.apiService.resources | nindent 12 }}
           env:
             - name: PREFIX_PATH
               value: "{{ .Values.prefixPath }}"

@@ -3,6 +3,14 @@ control-plane:
   apiGatewayNginx:
     type: ClusterIP
     port: 80
+  distributor:  
+    resources:
+      requests:
+        memory: "16Mi"
+        cpu: "25m"
+      limits:
+        memory: "32Mi"
+        cpu: "100m"
 
 continuous-delivery:
   enabled: false

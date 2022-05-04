@@ -53,12 +53,7 @@ spec:
           ports:
             - containerPort: 8080
           resources:
-            requests:
-              memory: "32Mi"
-              cpu: "25m"
-            limits:
-              memory: "64Mi"
-              cpu: "100m"
+            {{- toYaml .Values.webhookService.resources | nindent 12 }}
           env:
             - name: POD_NAMESPACE
               valueFrom:
