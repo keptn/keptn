@@ -57,6 +57,7 @@ Loop:
 		case <-env.quit:
 			break Loop
 		case <-apiTicker.C:
+			fmt.Println("ADDING one API test")
 			wgAPI.Add(1)
 			apisuite := &TestSuiteAPI{
 				env: env,
@@ -75,7 +76,7 @@ Loop:
 //to generate html report we can add 	.Report(apitest.SequenceDiagram())
 
 func (suite *TestSuiteAPI) Test_API_Service() {
-
+	fmt.Println("Pinging api service")
 	started := time.Now()
 	apiURL := suite.keptnAPIURL + "/v1"
 
