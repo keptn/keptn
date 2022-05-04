@@ -127,7 +127,8 @@ func (e *SequenceExecution) GetNextTriggeredEventData() map[string]interface{} {
 	eventPayload := map[string]interface{}{}
 
 	if e.InputProperties != nil {
-		eventPayload = common.Merge(eventPayload, e.InputProperties).(map[string]interface{})
+		inputProperties := common.CopyMap(e.InputProperties)
+		eventPayload = common.Merge(eventPayload, inputProperties).(map[string]interface{})
 	}
 
 	eventPayload["project"] = e.Scope.Project
