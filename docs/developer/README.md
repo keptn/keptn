@@ -25,7 +25,7 @@ We recommend to read our [CONTRIBUTING](../CONTRIBUTING.md) guidelines before re
 * Docker
 * You have installed the Keptn CLI and have a working installation of Keptn on Kubernetes (see [Quickstart](https://keptn.sh/docs/quickstart/)).
 * Docker Hub Account (any other container registry works too)
-* Go (Version 1.17.x)
+* Go (Version 1.18.x)
 * GitHub Account (required for making Pull Requests)
 * If you want to use in-cluster debugging, please take a look at our [debugging guide](debugging.md).
 
