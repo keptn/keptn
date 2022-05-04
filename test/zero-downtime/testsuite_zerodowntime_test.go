@@ -92,9 +92,7 @@ func (suite *TestSuiteDowntime) SetupSuite() {
 
 //Test_ZeroDowntime runs all test suites
 func Test_ZeroDowntime(t *testing.T) {
-	ZDTestTemplate(t, Sequences, "Sequences")
-	ZDTestTemplate(t, Webhook, "Webhook")
-	//suite.Run(t, new(TestSuiteDowntime))
+	suite.Run(t, new(TestSuiteDowntime))
 }
 
 func (suite *TestSuiteDowntime) TestSequences() {
@@ -113,30 +111,28 @@ func (suite *TestSuiteDowntime) TearDownSuite() {
 func ZDTestTemplate(t *testing.T, F func(t *testing.T, e *ZeroDowntimeEnv), name string) {
 
 	env := SetupZD()
-	t.Run("ZD", func(t *testing.T) {
-		t.Run("Rolling Upgrade", func(t *testing.T) {
-			t.Parallel()
-			RollingUpgrade(t, env)
-		})
+	t.Run("Rolling Upgrade", func(t *testing.T) {
+		t.Parallel()
+		RollingUpgrade(t, env)
+	})
 
-		t.Run("API", func(t *testing.T) {
-			t.Parallel()
-			APIs(t, env)
-		})
+	t.Run("API", func(t *testing.T) {
+		t.Parallel()
+		APIs(t, env)
+	})
 
-		t.Run(name, func(t *testing.T) {
-			env.Wg.Add(1)
-			t.Parallel()
-			F(t, env)
+	t.Run(name, func(t *testing.T) {
+		env.Wg.Add(1)
+		t.Parallel()
+		F(t, env)
 
-			// The test summary should be printed after the tests have finished and before the test suite returns
-			// to avoid failure due to test context expired
-			t.Run("Summary", func(t *testing.T) {
-				fmt.Println("Test results for ", name)
-				PrintSequencesResults(env)
-				PrintAPIresults(env)
-				env.Wg.Done()
-			})
+		// The test summary should be printed after the tests have finished and before the test suite returns
+		// to avoid failure due to test context expired
+		t.Run("Summary", func(t *testing.T) {
+			fmt.Println("Test results for ", name)
+			PrintSequencesResults(env)
+			PrintAPIresults(env)
+			env.Wg.Done()
 		})
 	})
 
@@ -149,27 +145,27 @@ func RollingUpgrade(t *testing.T, env *ZeroDowntimeEnv) {
 		env.Wg.Wait()
 	}()
 
-	//chartPreviousVersion, chartLatestVersion := GetCharts(t)
+	chartPreviousVersion, chartLatestVersion := GetCharts(t)
 
 	t.Log("Upgrade in progress")
-	time.Sleep(30 * time.Second)
-	//for i := 0; i < env.NrOfUpgrades; i++ {
-	//	chartPath := ""
-	//	var err error
-	//	if i%2 == 0 {
-	//		chartPath = chartLatestVersion
-	//	} else {
-	//		chartPath = chartPreviousVersion
-	//	}
-	//	t.Logf("Upgrading Keptn to %s", chartPath)
-	//	_, err = testutils.ExecuteCommand(
-	//		fmt.Sprintf(
-	//			"helm upgrade -n %s keptn %s --wait --values=%s ", testutils.GetKeptnNameSpaceFromEnv(), chartPath, valuesFile))
-	//	if err != nil {
-	//		t.Logf("Encountered error when upgrading keptn: %v", err)
-	//
-	//	}
-	//}
+
+	for i := 0; i < env.NrOfUpgrades; i++ {
+		chartPath := ""
+		var err error
+		if i%2 == 0 {
+			chartPath = chartLatestVersion
+		} else {
+			chartPath = chartPreviousVersion
+		}
+		t.Logf("Upgrading Keptn to %s", chartPath)
+		_, err = testutils.ExecuteCommand(
+			fmt.Sprintf(
+				"helm upgrade -n %s keptn %s --wait --values=%s ", testutils.GetKeptnNameSpaceFromEnv(), chartPath, valuesFile))
+		if err != nil {
+			t.Logf("Encountered error when upgrading keptn: %v", err)
+
+		}
+	}
 }
 
 func PrintSequencesResults(env *ZeroDowntimeEnv) {

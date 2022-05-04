@@ -64,7 +64,6 @@ func Test_API(t *testing.T) {
 func APIs(t *testing.T, env *ZeroDowntimeEnv) {
 	wgAPI := sync.WaitGroup{}
 	apiTicker := clock.New().Ticker(apiProbeInterval)
-	fmt.Println("RUNNING")
 Loop:
 	for {
 		select {
@@ -84,13 +83,11 @@ Loop:
 		}
 	}
 	wgAPI.Wait()
-	fmt.Println("DONE")
 }
 
 //to generate html report we can add 	.Report(apitest.SequenceDiagram())
 
 func (suite *TestSuiteAPI) Test_API_Service() {
-	fmt.Println("Pinging api service")
 	suite.T().Log("API SERVICE ")
 	started := time.Now()
 	apiURL := suite.keptnAPIURL + "/v1"
