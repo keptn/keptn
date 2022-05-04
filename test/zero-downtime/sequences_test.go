@@ -49,8 +49,8 @@ func (suite *TestSuiteSequences) createNew() {
 	suite.project, err = testutils.CreateProject(projectName, suite.env.ShipyardFile)
 	suite.Nil(err)
 	output, err := testutils.ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", "myservice", suite.project))
-	suite.Nil(err)
-	suite.Contains(output, "created successfully")
+	suite.Require().Nil(err)
+	suite.Require().Contains(output, "created successfully")
 	suite.T().Logf("Starting test for project %s ", suite.project)
 }
 
@@ -116,7 +116,7 @@ func (suite *TestSuiteSequences) Test_Evaluation() {
 	//// now let's add an SLI provider
 	suite.T().Log("adding SLI provider")
 	_, err := testutils.ExecuteCommand(fmt.Sprintf("kubectl create configmap -n %s lighthouse-config-%s --from-literal=sli-provider=my-sli-provider", testutils.GetKeptnNameSpaceFromEnv(), suite.project))
-	suite.Nil(err)
+	suite.Require().Nil(err)
 	_, finished = testutils.PerformResourceServiceTest(suite.T(), suite.project, "myservice", true)
 	if finished.Data != nil {
 		suite.env.passFailedSequence()

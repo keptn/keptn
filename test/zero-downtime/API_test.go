@@ -30,6 +30,14 @@ func (suite *TestSuiteAPI) SetupSuite() {
 	suite.Nil(err)
 }
 
+func (suite *TestSuiteAPI) BeforeTest(suiteName, testName string) {
+	var err error
+	fmt.Println("running ", testName)
+	suite.T().Parallel()
+	suite.token, suite.keptnAPIURL, err = testutils.GetApiCredentials()
+	suite.Require().Nil(err)
+}
+
 //Test_API can be used to test a single call to all the tests in the API test suite
 func Test_API(t *testing.T) {
 	Env := SetupZD()
