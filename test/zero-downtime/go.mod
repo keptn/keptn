@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/benbjohnson/clock v1.3.0
 	github.com/keptn/go-utils v0.14.1-0.20220503160417-a0381c53c6d8
-	github.com/keptn/keptn/test/go-tests v0.0.0-20220504064819-0a2ca97b982c
+	github.com/keptn/keptn/test/go-tests v0.0.0-20220504093323-b5454bf37c78
 	github.com/steinfletcher/apitest v1.5.11
 	github.com/steinfletcher/apitest-jsonpath v1.7.1
 	github.com/stretchr/testify v1.7.1
