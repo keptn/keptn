@@ -44,7 +44,7 @@ func getMongoDBWriteConcernTimeout() time.Duration {
 	timeoutString := os.Getenv("MONGODB_WRITECONCERN_TIMEOUT")
 	timeout, err := strconv.Atoi(timeoutString)
 	if err != nil {
-		logger.Errorf("failed to read MongoDB WriteConcern Timeout from env variable: %w", err)
+		logger.Errorf("failed to read MongoDB WriteConcern Timeout from env variable: %v", err.Error())
 		return 30 * time.Second
 	}
 	return time.Duration(timeout) * time.Second
