@@ -327,9 +327,6 @@ jobs:
           cd test/zero-downtime
           go get ./...
 
-      - name: "------- TESTS START -------"
-        run: echo "------- TESTS START -------"
-
       #######################################################################
       # TESTS
       #######################################################################
@@ -342,10 +339,13 @@ jobs:
         run: |
           set -euo pipefail
           cd test/zero-downtime          
-          go test -json -v -run Test_ZeroDowntime -v -timeout 90m 2>&1 | tee /tmp/gotest.log | gotestfmt
+          go test -json -v -run Test_ZeroDowntime -v -timeout 90m 2>&1 | tee /tmp/gotest.log
 
-      - name: "------- TESTS END -------"
-        run: echo "------- TESTS END -------"
+      - name: Format log output
+        if: always()
+        run: |
+          set -euo pipefail
+          cat /tmp/gotest.log | gotestfmt
 
       #######################################################################
       # TEARDOWN
