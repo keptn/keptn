@@ -6,7 +6,6 @@ import (
 	testutils "github.com/keptn/keptn/test/go-tests"
 	"github.com/steinfletcher/apitest"
 	jsonpath "github.com/steinfletcher/apitest-jsonpath"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"net/http"
 	"strings"
@@ -33,12 +32,6 @@ func (suite *TestSuiteAPI) SetupSuite() {
 //Test_API can be used to test a single call to all the tests in the API test suite
 func Test_API(t *testing.T) {
 	Env := SetupZD()
-	var err error
-	Env.ExistingProject, err = testutils.CreateProject("projectzd", Env.ShipyardFile)
-	assert.Nil(t, err)
-	_, err = testutils.ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", "myservice", Env.ExistingProject))
-	assert.Nil(t, err)
-
 	s := &TestSuiteAPI{
 		env: Env,
 	}

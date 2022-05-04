@@ -110,13 +110,13 @@ func (suite *TestSuiteDowntime) SetupSuite() {
 
 //Test_ZeroDowntime runs all test suites
 func Test_ZeroDowntime(t *testing.T) {
-	t.Run("API", Test_API)
-	//suite.Run(t, new(TestSuiteDowntime))
+	suite.Run(t, new(TestSuiteDowntime))
 }
 
-func (suite *TestSuiteDowntime) TestSequences() {
-	ZDTestTemplate(suite.T(), Sequences, "Sequences")
-}
+//
+//func (suite *TestSuiteDowntime) TestSequences() {
+//	ZDTestTemplate(suite.T(), Sequences, "Sequences")
+//}
 
 func (suite *TestSuiteDowntime) TestWebhook() {
 	ZDTestTemplate(suite.T(), Webhook, "Webhook")
@@ -130,14 +130,18 @@ func (suite *TestSuiteDowntime) TearDownSuite() {
 func ZDTestTemplate(t *testing.T, F func(t *testing.T, e *ZeroDowntimeEnv), name string) {
 
 	env := SetupZD()
+
+	t.Run("API", func(t *testing.T) {
+		env.Wg.Add(1)
+		t.Parallel()
+		APIs(t, env)
+		env.Wg.Done()
+	})
+
 	t.Run("Rolling Upgrade", func(t *testing.T) {
 		t.Parallel()
 		RollingUpgrade(t, env)
-	})
-
-	t.Run("API", func(t *testing.T) {
-		t.Parallel()
-		APIs(t, env)
+		env.Wg.Wait()
 	})
 
 	t.Run(name, func(t *testing.T) {
@@ -161,7 +165,6 @@ func RollingUpgrade(t *testing.T, env *ZeroDowntimeEnv) {
 	defer func() {
 		close(env.quit)
 		t.Log("Rolling upgrade terminated")
-		env.Wg.Wait()
 	}()
 	time.Sleep(20 * time.Second)
 	//chartPreviousVersion, chartLatestVersion := GetCharts(t)
