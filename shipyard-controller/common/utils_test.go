@@ -229,35 +229,3 @@ func TestCopyMap(t *testing.T) {
 		})
 	}
 }
-
-func TestDedup(t *testing.T) {
-	type args struct {
-		items []interface{}
-	}
-	tests := []struct {
-		name string
-		args args
-		want []interface{}
-	}{
-		{
-			name: "dedup string slice",
-			args: args{
-				items: []interface{}{"a", "b", "a"},
-			},
-			want: []interface{}{"a", "b"},
-		},
-		{
-			name: "dedup int slice",
-			args: args{
-				items: []interface{}{1, 2, 1},
-			},
-			want: []interface{}{1, 2},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := Dedup(tt.args.items)
-			require.Equal(t, tt.want, got)
-		})
-	}
-}
