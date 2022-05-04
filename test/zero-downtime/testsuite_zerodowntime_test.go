@@ -1,10 +1,13 @@
 package zero_downtime
 
 import (
+	"errors"
 	"fmt"
+	"github.com/keptn/go-utils/pkg/common/retry"
 	testutils "github.com/keptn/keptn/test/go-tests"
 	"github.com/stretchr/testify/suite"
 	"os"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -88,6 +91,21 @@ type TestSuiteDowntime struct {
 
 func (suite *TestSuiteDowntime) SetupSuite() {
 
+	token, keptnAPIURL, err := testutils.GetApiCredentials()
+	suite.Require().Nil(err)
+	suite.T().Log("KEPTN ENDPOINT", keptnAPIURL)
+	suite.T().Log("Authenticating keptn CLI")
+	err = retry.Retry(func() error {
+		out, err := testutils.ExecuteCommand(fmt.Sprintf("keptn auth --endpoint=%s --api-token=%s", keptnAPIURL, token))
+		if err != nil {
+			return err
+		}
+		if !strings.Contains(out, "Successfully authenticated") {
+			return errors.New("authentication unsuccessful")
+		}
+		return nil
+	}, retry.NumberOfRetries(10))
+	suite.Require().Nil(err)
 }
 
 //Test_ZeroDowntime runs all test suites
