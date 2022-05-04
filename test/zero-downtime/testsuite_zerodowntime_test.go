@@ -110,7 +110,8 @@ func (suite *TestSuiteDowntime) SetupSuite() {
 
 //Test_ZeroDowntime runs all test suites
 func Test_ZeroDowntime(t *testing.T) {
-	suite.Run(t, new(TestSuiteDowntime))
+	t.Run("API", Test_API)
+	//suite.Run(t, new(TestSuiteDowntime))
 }
 
 func (suite *TestSuiteDowntime) TestSequences() {
