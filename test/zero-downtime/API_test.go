@@ -27,6 +27,7 @@ type TestSuiteAPI struct {
 func (suite *TestSuiteAPI) SetupSuite() {
 	var err error
 	suite.token, suite.keptnAPIURL, err = testutils.GetApiCredentials()
+	suite.T().Log("KEPTN ENDPOINT", suite.keptnAPIURL)
 	suite.Nil(err)
 }
 
@@ -85,6 +86,7 @@ Loop:
 
 func (suite *TestSuiteAPI) Test_API_Service() {
 	fmt.Println("Pinging api service")
+	suite.T().Log("API SERVICE ")
 	started := time.Now()
 	apiURL := suite.keptnAPIURL + "/v1"
 
@@ -102,7 +104,7 @@ func (suite *TestSuiteAPI) Test_API_Service() {
 }
 
 func (suite *TestSuiteAPI) Test_Statistic_Service() {
-
+	suite.T().Log("STATISTIC SERVICE ")
 	started := time.Now()
 	apiURL := suite.keptnAPIURL + "/statistics/v1"
 
@@ -170,7 +172,7 @@ func (suite *TestSuiteAPI) Test_ControlPlane() {
 	api.Get(apiURL+"/uniform/registration").Query("name", "lighthouse-service").
 		Headers(map[string]string{"x-token": suite.token}).
 		Expect(suite.T()).Status(http.StatusOK).Assert(jsonpath.Equal(`$[0].name`, "lighthouse-service")).End()
-
+	suite.T().Log("Done with control plane")
 }
 
 func (suite *TestSuiteAPI) Test_MongoDB() {
