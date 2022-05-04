@@ -2,13 +2,12 @@ package go_tests
 
 import (
 	"fmt"
-	"os"
-	"testing"
-	"time"
-
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/stretchr/testify/require"
+	"os"
+	"testing"
+	"time"
 )
 
 const zeroDownTimeShipyard = `apiVersion: "spec.keptn.sh/0.2.0"

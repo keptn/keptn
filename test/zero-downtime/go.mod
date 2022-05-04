@@ -4,8 +4,8 @@ go 1.17
 
 require (
 	github.com/benbjohnson/clock v1.3.0
-	github.com/keptn/go-utils v0.14.1-0.20220414081235-2e23eb712e3d
-	github.com/keptn/keptn/test/go-tests v0.0.0-20220429033335-f4d5242055f9
+	github.com/keptn/go-utils v0.14.1-0.20220503160417-a0381c53c6d8
+	github.com/keptn/keptn/test/go-tests v0.0.0-20220504064819-0a2ca97b982c
 	github.com/steinfletcher/apitest v1.5.11
 	github.com/steinfletcher/apitest-jsonpath v1.7.1
 	github.com/stretchr/testify v1.7.1
@@ -14,8 +14,8 @@ require (
 require (
 	cloud.google.com/go v0.81.0 // indirect
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
-	github.com/Azure/go-autorest/autorest v0.11.21 // indirect
-	github.com/Azure/go-autorest/autorest/adal v0.9.14 // indirect
+	github.com/Azure/go-autorest/autorest v0.11.27 // indirect
+	github.com/Azure/go-autorest/autorest/adal v0.9.18 // indirect
 	github.com/Azure/go-autorest/autorest/date v0.3.0 // indirect
 	github.com/Azure/go-autorest/logger v0.2.1 // indirect
 	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
@@ -27,15 +27,15 @@ require (
 	github.com/PaesslerAG/jsonpath v0.1.1 // indirect
 	github.com/andybalholm/brotli v1.0.1 // indirect
 	github.com/cloudevents/sdk-go/observability/opentelemetry/v2 v2.0.0-20211001212819-74757a691209 // indirect
-	github.com/cloudevents/sdk-go/v2 v2.8.0 // indirect
+	github.com/cloudevents/sdk-go/v2 v2.9.0 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dsnet/compress v0.0.2-0.20210315054119-f66993602bf5 // indirect
 	github.com/felixge/httpsnoop v1.0.2 // indirect
-	github.com/form3tech-oss/jwt-go v3.2.3+incompatible // indirect
 	github.com/go-logr/logr v1.2.0 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
+	github.com/golang-jwt/jwt/v4 v4.2.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.2 // indirect
 	github.com/google/go-cmp v0.5.6 // indirect
@@ -46,7 +46,7 @@ require (
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/imroc/req v0.3.2 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/keptn/kubernetes-utils v0.13.1-0.20220309123424-6e3f2bcaf831 // indirect
+	github.com/keptn/kubernetes-utils v0.13.1-0.20220503135705-31953b55954c // indirect
 	github.com/klauspost/compress v1.11.4 // indirect
 	github.com/klauspost/pgzip v1.2.5 // indirect
 	github.com/mholt/archiver/v3 v3.5.1 // indirect
