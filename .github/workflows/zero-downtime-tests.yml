@@ -339,8 +339,6 @@ jobs:
         timeout-minutes: 90
         env:
           KEPTN_ENDPOINT: ${{ steps.determine_keptn_endpoint.outputs.KEPTN_ENDPOINT }}
-          DO_AUTH: "true"
-          GOTESTSUM_FORMAT: "testname"
         run: |
           set -euo pipefail
           cd test/zero-downtime          
