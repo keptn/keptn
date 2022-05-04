@@ -3,7 +3,7 @@
     [class.error]="project.isShipyardNotSupported(supportedShipyardVersion)"
     uitestid="keptn-project-tile-title"
   >
-    <a [routerLink]="['/project', project.projectName]" style="text-decoration: none">{{ project.projectName }}</a>
+    <a [routerLink]="['/project', project.projectName]">{{ project.projectName }}</a>
   </dt-tile-title>
   <dt-tile-subtitle>
     <p class="mt-0 mb-2" *ngIf="project.stages" uitestid="keptn-project-tile-numStagesServices">
