@@ -40,15 +40,12 @@ jobs:
             CLUSTER_NAME: "keptn-integration-test-2"
             KUBECONFIG: ""
             PLATFORM: "kubernetes"
-            KEPTN_SERVICE_TYPE: "LoadBalancer"
-            USE_RESOURCE_SERVICE: "true"
     env:
       CLOUD_PROVIDER: ${{ matrix.CLOUD_PROVIDER }}
       PLATFORM: ${{ matrix.PLATFORM }}
       PLATFORM_VERSION: ${{ matrix.PLATFORM_VERSION }}
       KUBECONFIG: ${{ matrix.KUBECONFIG }}
       KEPTN_NAMESPACE: "keptn-zd-test-${{ github.run_number }}-${{ github.run_attempt }}"
-      KEPTN_SERVICE_TYPE: ${{ matrix.KEPTN_SERVICE_TYPE }}
       GO_VERSION: 1.17
     outputs:
       BRANCH: ${{ steps.determine_branch.outputs.BRANCH }}
@@ -240,7 +237,6 @@ jobs:
         timeout-minutes: 10
         env:
           HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_CHART_NAME }}
-          USE_RESOURCE_SERVICE: ${{ matrix.USE_RESOURCE_SERVICE }}
         run: |
           echo "Installing Keptn on cluster"
           echo "{}" > creds.json # empty credentials file
@@ -250,9 +246,6 @@ jobs:
           # Use Keptn helm chart to be able to customize the values
           helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} \
             --create-namespace \
-            --set control-plane.apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
-            --set control-plane.resourceService.enabled=${USE_RESOURCE_SERVICE} \
-            --set continuous-delivery.enabled=true \
             --values=./test/zero-downtime/test-values.yml 
           
           echo "::endgroup::"
@@ -305,14 +298,8 @@ jobs:
 
           # authenticate at Keptn API
           
-          if [[ "$KEPTN_SERVICE_TYPE" == "NodePort" ]]; then
-            API_PORT=$(kubectl get svc api-gateway-nginx -n ${KEPTN_NAMESPACE} -o jsonpath='{.spec.ports[?(@.name=="http")].nodePort}')
-            INTERNAL_NODE_IP=$(kubectl get nodes -o jsonpath='{ $.items[0].status.addresses[?(@.type=="InternalIP")].address }')
-            KEPTN_ENDPOINT="http://${INTERNAL_NODE_IP}:${API_PORT}"/api
-          else
-            KEPTN_ENDPOINT=http://$(kubectl -n ${KEPTN_NAMESPACE} get service api-gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')/api
-          fi
-          
+          KEPTN_ENDPOINT=http://$(kubectl -n ${KEPTN_NAMESPACE} get service api-gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')/api
+ 
           KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n ${KEPTN_NAMESPACE} -ojsonpath={.data.keptn-api-token} | base64 --decode)
 
           echo "KEPTN_ENDPOINT=${KEPTN_ENDPOINT}"
