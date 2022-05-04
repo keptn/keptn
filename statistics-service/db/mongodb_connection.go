@@ -3,6 +3,8 @@ package db
 import (
 	"context"
 	"fmt"
+	"os"
+	"strconv"
 	"sync"
 	"time"
 
@@ -11,6 +13,7 @@ import (
 	logger "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 )
 
 var databaseName string
@@ -23,6 +26,16 @@ const clientConnectionFailed = "failed to connect client to MongoDB: %v"
 // MongoDBConnection takes care of establishing a connection to the mongodb
 type MongoDBConnection struct {
 	Client *mongo.Client
+}
+
+func getMongoDBWriteConcernTimeout() time.Duration {
+	timeoutString := os.Getenv("MONGODB_WRITECONCERN_TIMEOUT")
+	timeout, err := strconv.Atoi(timeoutString)
+	if err != nil {
+		logger.Errorf("failed to read MongoDB WriteConcern Timeout from env variable: %w", err)
+		return 30 * time.Second
+	}
+	return time.Duration(timeout) * time.Second
 }
 
 // EnsureDBConnection makes sure a connection to the mongodb is established
@@ -60,7 +73,7 @@ func (m *MongoDBConnection) connectMongoDBClient() error {
 	}
 	databaseName = dbName
 	clientOptions := options.Client()
-	clientOptions = clientOptions.ApplyURI(connectionString)
+	clientOptions = clientOptions.ApplyURI(connectionString).SetWriteConcern(writeconcern.New(writeconcern.WMajority().WTimeout(getMongoDBWriteConcernTimeout())))
 	clientOptions = clientOptions.SetConnectTimeout(30 * time.Second)
 	m.Client, err = mongo.NewClient(clientOptions)
 	if err != nil {

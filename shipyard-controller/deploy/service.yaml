@@ -55,6 +55,8 @@ spec:
                 key: mongodb-password
           - name: MONGODB_DATABASE
             value: "keptn"
+          - name: MONGODB_WRITECONCERN_TIMEOUT
+            value: "30"
           - name: MONGODB_EXTERNAL_CONNECTION_STRING
             valueFrom:
               secretKeyRef:

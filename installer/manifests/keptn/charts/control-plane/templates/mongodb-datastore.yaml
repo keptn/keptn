@@ -68,6 +68,8 @@ spec:
           value: '{{ .Release.Name }}-{{ .Values.mongo.service.nameOverride }}:{{ .Values.mongo.service.port }}'
         - name: MONGODB_DATABASE
           value: {{ .Values.mongo.auth.database | default "keptn" }}
+        - name: MONGODB_WRITECONCERN_TIMEOUT
+          value: '{{ .Values.mongo.writeconcernTimeout | default 30 }}'
         - name: MONGODB_USER
           valueFrom:
             secretKeyRef:

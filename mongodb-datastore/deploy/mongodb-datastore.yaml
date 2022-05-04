@@ -49,6 +49,8 @@ spec:
           value: 'keptn-mongo:27017'
         - name: MONGODB_DATABASE
           value: 'keptn'
+        - name: MONGODB_WRITECONCERN_TIMEOUT
+          value: "30"
         - name: MONGODB_USER
           valueFrom:
             secretKeyRef:

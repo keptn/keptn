@@ -5,6 +5,7 @@ mongo:
   service:
     nameOverride: 'mongo'
     port: 27017
+  writeconcernTimeout: 30
   auth:
     databases:
       - 'keptn'

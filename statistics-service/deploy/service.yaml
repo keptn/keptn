@@ -45,6 +45,8 @@ spec:
                   key: password
             - name: MONGODB_DATABASE
               value: 'keptn'
+            - name: MONGODB_WRITECONCERN_TIMEOUT
+              value: "30"
         - name: distributor
           image: keptndev/distributor:latest
           ports:
