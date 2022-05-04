@@ -456,9 +456,6 @@ jobs:
             --from-literal=ingress_protocol=http \
             --from-literal=ingress_gateway=public-gateway.istio-system \
             -oyaml --dry-run=client | kubectl replace -f -
-          # restart helm-service
-          kubectl delete pod -n ${KEPTN_NAMESPACE} -lapp.kubernetes.io/name=helm-service
-          kubectl wait -n ${KEPTN_NAMESPACE} --for=condition=ready pod -lapp.kubernetes.io/name=helm-service
 
       - name: Determine Keptn Endpoint
         id: determine_keptn_endpoint
