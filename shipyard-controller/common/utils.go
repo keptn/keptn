@@ -86,28 +86,18 @@ func CopyMap(m map[string]interface{}) map[string]interface{} {
 }
 
 // Dedup removes duplicate items from the given slice
-func Dedup(items interface{}) interface{} {
-	switch items := items.(type) {
-	case []string:
-		result := make([]interface{}, 0, len(items))
-		temp := map[string]struct{}{}
-		for _, item := range items {
-			if _, ok := temp[item]; !ok {
-				temp[item] = struct{}{}
+func Dedup(items []interface{}) interface{} {
+	result := make([]interface{}, 0, len(items))
+	temp := map[string]struct{}{}
+	for _, item := range items {
+		if itemString, ok := item.(string); ok {
+			if _, ok := temp[itemString]; !ok {
+				temp[itemString] = struct{}{}
 				result = append(result, item)
 			}
+		} else {
+			result = append(result, item)
 		}
-		return result
-	case []int:
-		result := make([]interface{}, 0, len(items))
-		temp := map[int]struct{}{}
-		for _, item := range items {
-			if _, ok := temp[item]; !ok {
-				temp[item] = struct{}{}
-				result = append(result, item)
-			}
-		}
-		return result
 	}
-	return items
+	return result
 }
