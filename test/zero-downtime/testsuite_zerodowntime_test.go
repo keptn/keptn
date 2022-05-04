@@ -90,7 +90,6 @@ type TestSuiteDowntime struct {
 }
 
 func (suite *TestSuiteDowntime) SetupSuite() {
-
 	token, keptnAPIURL, err := testutils.GetApiCredentials()
 	suite.Require().Nil(err)
 	suite.T().Log("KEPTN ENDPOINT", keptnAPIURL)
@@ -106,6 +105,7 @@ func (suite *TestSuiteDowntime) SetupSuite() {
 		return nil
 	}, retry.NumberOfRetries(10))
 	suite.Require().Nil(err)
+
 }
 
 //Test_ZeroDowntime runs all test suites
@@ -113,45 +113,40 @@ func Test_ZeroDowntime(t *testing.T) {
 	suite.Run(t, new(TestSuiteDowntime))
 }
 
-//
-//func (suite *TestSuiteDowntime) TestSequences() {
-//	ZDTestTemplate(suite.T(), Sequences, "Sequences")
-//}
-
-func (suite *TestSuiteDowntime) TestWebhook() {
-	ZDTestTemplate(suite.T(), Webhook, "Webhook")
+func (suite *TestSuiteDowntime) TestSequences() {
+	ZDTestTemplate(suite.T(), Sequences, "Sequences")
 }
+
+//func (suite *TestSuiteDowntime) TestWebhook() {
+//	ZDTestTemplate(suite.T(), Webhook, "Webhook")
+//}
 
 func (suite *TestSuiteDowntime) TearDownSuite() {
 }
 
 // ZDTestTemplate runs a test function in parallel to rolling upgrade and api probing,
 // this can be used to create more zero downtime scenarios in the suite
-func ZDTestTemplate(t *testing.T, F func(t *testing.T, e *ZeroDowntimeEnv), name string) {
+func ZDTestTemplate(t *testing.T, F func(t2 *testing.T, e *ZeroDowntimeEnv), name string) {
 
 	env := SetupZD()
 
-	t.Run("API", func(t *testing.T) {
-		env.Wg.Add(1)
-		t.Parallel()
-		APIs(t, env)
-		env.Wg.Done()
+	t.Run("Rolling Upgrade", func(t1 *testing.T) {
+		t1.Parallel()
+		RollingUpgrade(t1, env)
 	})
 
-	t.Run("Rolling Upgrade", func(t *testing.T) {
-		t.Parallel()
-		RollingUpgrade(t, env)
-		env.Wg.Wait()
+	t.Run("API", func(t1 *testing.T) {
+		t1.Parallel()
+		APIs(t1, env)
 	})
 
-	t.Run(name, func(t *testing.T) {
+	t.Run(name, func(t1 *testing.T) {
 		env.Wg.Add(1)
-		t.Parallel()
-		F(t, env)
-
+		t1.Parallel()
+		F(t1, env)
 		// The test summary should be printed after the tests have finished and before the test suite returns
 		// to avoid failure due to test context expired
-		t.Run("Summary", func(t *testing.T) {
+		t1.Run("Summary", func(t *testing.T) {
 			fmt.Println("Test results for ", name)
 			PrintSequencesResults(env)
 			PrintAPIresults(env)
@@ -165,11 +160,12 @@ func RollingUpgrade(t *testing.T, env *ZeroDowntimeEnv) {
 	defer func() {
 		close(env.quit)
 		t.Log("Rolling upgrade terminated")
+		env.Wg.Wait()
 	}()
-	time.Sleep(20 * time.Second)
+	time.Sleep(30 * time.Second)
 	//chartPreviousVersion, chartLatestVersion := GetCharts(t)
 	//
-	//t.Log("Upgrade in progress")
+	t.Log("Upgrade in progress")
 	//
 	//for i := 0; i < env.NrOfUpgrades; i++ {
 	//	chartPath := ""
