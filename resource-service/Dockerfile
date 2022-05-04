@@ -11,7 +11,7 @@ ENV BUILDFLAGS=""
 ENV GOPROXY=https://proxy.golang.org
 
 # Pre-Req for gin-gonic/go-swagger: Install swag cli to generate swagger.yaml and swagger.json
-RUN go get -u github.com/swaggo/swag/cmd/swag@v1.7.0
+RUN go install github.com/swaggo/swag/cmd/swag@v1.7.0
 
 WORKDIR /go/src/github.com/keptn/keptn/resource-service
 
