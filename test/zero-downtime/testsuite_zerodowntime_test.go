@@ -13,7 +13,7 @@ import (
 
 const EnvInstallVersion = "INSTALL_HELM_CHART"
 const EnvUpgradeVersion = "UPGRADE_HELM_CHART"
-const valuesFile = "test-values.yaml"
+const valuesFile = "./assets/test-values.yml"
 
 const shipyard = `--- 
 apiVersion: spec.keptn.sh/0.2.0
@@ -157,10 +157,11 @@ func RollingUpgrade(t *testing.T, env *ZeroDowntimeEnv) {
 		} else {
 			chartPath = chartPreviousVersion
 		}
+		chartPath = "C:/Users/anna.reale/keptn-0.15.0-dev.tgz"
 		t.Logf("Upgrading Keptn to %s", chartPath)
 		_, err = testutils.ExecuteCommand(
 			fmt.Sprintf(
-				"helm upgrade -n %s keptn %s --wait --values=%s ", testutils.GetKeptnNameSpaceFromEnv(), chartPath, valuesFile))
+				"helm upgrade keptn -n %s %s --wait --values=%s", testutils.GetKeptnNameSpaceFromEnv(), chartPath, valuesFile))
 		if err != nil {
 			t.Logf("Encountered error when upgrading keptn: %v", err)
 

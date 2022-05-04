@@ -246,7 +246,7 @@ jobs:
           # Use Keptn helm chart to be able to customize the values
           helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} \
             --create-namespace \
-            --values=./test/zero-downtime/test-values.yml 
+            --values=./test/zero-downtime/assets/test-values.yml 
           
           echo "::endgroup::"
 
