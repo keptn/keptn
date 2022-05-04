@@ -19,6 +19,7 @@ import { IClientFeatureFlags } from '../../../../shared/interfaces/feature-flags
 import { IGitData, IGitDataExtended } from '../../_interfaces/git-upstream';
 import { AppUtils } from '../../_utils/app.utils';
 import { FeatureFlagsService } from '../../_services/feature-flags.service';
+import { KeptnInfo } from '../../_models/keptn-info';
 
 type DialogState = null | 'unsaved';
 
@@ -50,6 +51,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
     gitFormValid: true,
   };
   private gitDataExtended?: IGitDataExtended;
+  public gitUpstreamRequired = true;
   public projectNameControl = new FormControl('');
   public projectNameForm = new FormGroup({
     projectName: this.projectNameControl,
@@ -72,6 +74,16 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((featureFlags: IClientFeatureFlags) => {
         this.resourceServiceEnabled = featureFlags.RESOURCE_SERVICE_ENABLED;
+      });
+
+    this.dataService.keptnInfo
+      .pipe(
+        filter((keptnInfo: KeptnInfo | undefined): keptnInfo is KeptnInfo => !!keptnInfo),
+        takeUntil(this.unsubscribe$)
+      )
+      .subscribe((keptnInfo) => {
+        // if automaticprovisioning is false or undefined, git is required
+        this.gitUpstreamRequired = !keptnInfo.metadata.automaticprovisioning;
       });
   }
 
