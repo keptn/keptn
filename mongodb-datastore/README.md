@@ -36,7 +36,7 @@ If you are using VS Code for your development, you can use the following launch 
             "mode": "auto",
             "program": "${workspaceFolder}/cmd/mongo-db-datastore-server/main.go",
             "env": {
-                "MONGO_DB_CONNECTION_STRING":"mongodb://user:password@localhost:27017/keptn",
+                "MONGO_DB_CONNECTION_STRING":"mongodb://user:password@localhost:27017/keptn?w=majority&wtimeoutMS=30000",
                 "MONGODB_DATABASE":"keptn"
             },
             "args": ["--port=8080"]
