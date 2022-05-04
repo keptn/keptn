@@ -119,6 +119,14 @@ func TestMerge(t *testing.T) {
 			want: []interface{}{"item3", "item1", "item2"},
 		},
 		{
+			name: "merge different structures 3",
+			args: args{
+				in1: []interface{}{"item1", map[string]interface{}{"x": "y", "b": []interface{}{1, "b", []string{"hello"}}}},
+				in2: []interface{}{"item3"},
+			},
+			want: []interface{}{"item3", "item1", map[string]interface{}{"x": "y", "b": []interface{}{1, "b", []string{"hello"}}}},
+		},
+		{
 			name: "merge structures with different types for same property names: map vs string",
 			args: args{
 				in1: map[string]interface{}{
