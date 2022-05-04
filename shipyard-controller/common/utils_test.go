@@ -116,7 +116,7 @@ func TestMerge(t *testing.T) {
 				in1: []interface{}{"item1", "item2"},
 				in2: []interface{}{"item3"},
 			},
-			want: []interface{}{"item1", "item2", "item3"},
+			want: []interface{}{"item3", "item1", "item2"},
 		},
 		{
 			name: "merge structures with different types for same property names: map vs string",
@@ -226,6 +226,38 @@ func TestCopyMap(t *testing.T) {
 			if got := CopyMap(tt.args.m); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("CopyMap() = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func TestDedup(t *testing.T) {
+	type args struct {
+		items []interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+		want []interface{}
+	}{
+		{
+			name: "dedup string slice",
+			args: args{
+				items: []interface{}{"a", "b", "a"},
+			},
+			want: []interface{}{"a", "b"},
+		},
+		{
+			name: "dedup int slice",
+			args: args{
+				items: []interface{}{1, 2, 1},
+			},
+			want: []interface{}{1, 2},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Dedup(tt.args.items)
+			require.Equal(t, tt.want, got)
 		})
 	}
 }

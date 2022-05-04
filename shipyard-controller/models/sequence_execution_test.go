@@ -210,6 +210,18 @@ func TestSequenceExecution_GetNextTriggeredEventData(t *testing.T) {
 								"message": "task finished",
 							},
 						},
+						{
+							Name:   "test",
+							Result: keptnv2.ResultPass,
+							Status: keptnv2.StatusSucceeded,
+							Properties: map[string]interface{}{
+								"test": map[string]interface{}{
+									"start": "3",
+									"end":   "4",
+								},
+								"message": "task finished",
+							},
+						},
 					},
 					CurrentTask: TaskExecutionState{},
 				},
@@ -230,6 +242,10 @@ func TestSequenceExecution_GetNextTriggeredEventData(t *testing.T) {
 							"http://carts.sockshop-dev.svc.cluster.local:80",
 						},
 					},
+					"test": map[string]interface{}{
+						"start": "1",
+						"end":   "2",
+					},
 				},
 			},
 			want: map[string]interface{}{
@@ -247,6 +263,10 @@ func TestSequenceExecution_GetNextTriggeredEventData(t *testing.T) {
 						"http://carts.sockshop-staging.svc.cluster.local:80",
 						"http://carts.sockshop-dev.svc.cluster.local:80",
 					},
+				},
+				"test": map[string]interface{}{
+					"start": "3",
+					"end":   "4",
 				},
 				"result":  keptnv2.ResultPass,
 				"status":  keptnv2.StatusSucceeded,
