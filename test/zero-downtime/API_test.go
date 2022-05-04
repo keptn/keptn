@@ -27,7 +27,7 @@ type TestSuiteAPI struct {
 func (suite *TestSuiteAPI) SetupSuite() {
 	var err error
 	suite.token, suite.keptnAPIURL, err = testutils.GetApiCredentials()
-	suite.Assert().Nil(err)
+	suite.Nil(err)
 }
 
 //Test_API can be used to test a single call to all the tests in the API test suite
@@ -50,7 +50,7 @@ func Test_API(t *testing.T) {
 func APIs(t *testing.T, env *ZeroDowntimeEnv) {
 	wgAPI := sync.WaitGroup{}
 	apiTicker := clock.New().Ticker(apiProbeInterval)
-
+	fmt.Println("RUNNING")
 Loop:
 	for {
 		select {
@@ -69,6 +69,7 @@ Loop:
 		}
 	}
 	wgAPI.Wait()
+	fmt.Println("DONE")
 }
 
 //to generate html report we can add 	.Report(apitest.SequenceDiagram())

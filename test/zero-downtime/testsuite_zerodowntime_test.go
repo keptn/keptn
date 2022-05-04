@@ -92,7 +92,9 @@ func (suite *TestSuiteDowntime) SetupSuite() {
 
 //Test_ZeroDowntime runs all test suites
 func Test_ZeroDowntime(t *testing.T) {
-	suite.Run(t, new(TestSuiteDowntime))
+	ZDTestTemplate(t, Sequences, "Sequences")
+	ZDTestTemplate(t, Webhook, "Webhook")
+	//suite.Run(t, new(TestSuiteDowntime))
 }
 
 func (suite *TestSuiteDowntime) TestSequences() {
@@ -108,32 +110,33 @@ func (suite *TestSuiteDowntime) TearDownSuite() {
 
 // ZDTestTemplate runs a test function in parallel to rolling upgrade and api probing,
 // this can be used to create more zero downtime scenarios in the suite
-func ZDTestTemplate(t *testing.T, F func(t1 *testing.T, e *ZeroDowntimeEnv), name string) {
+func ZDTestTemplate(t *testing.T, F func(t *testing.T, e *ZeroDowntimeEnv), name string) {
 
 	env := SetupZD()
+	t.Run("ZD", func(t *testing.T) {
+		t.Run("Rolling Upgrade", func(t *testing.T) {
+			t.Parallel()
+			RollingUpgrade(t, env)
+		})
 
-	t.Run("API", func(t2 *testing.T) {
-		t2.Parallel()
-		APIs(t2, env)
-	})
+		t.Run("API", func(t *testing.T) {
+			t.Parallel()
+			APIs(t, env)
+		})
 
-	t.Run("Rolling Upgrade", func(t2 *testing.T) {
-		t2.Parallel()
-		RollingUpgrade(t2, env)
-	})
+		t.Run(name, func(t *testing.T) {
+			env.Wg.Add(1)
+			t.Parallel()
+			F(t, env)
 
-	t.Run(name, func(t2 *testing.T) {
-		env.Wg.Add(1)
-		t2.Parallel()
-		F(t2, env)
-
-		// The test summary should be printed after the tests have finished and before the test suite returns
-		// to avoid failure due to test context expired
-		t2.Run("Summary", func(t3 *testing.T) {
-			fmt.Println("Test results for ", name)
-			PrintSequencesResults(env)
-			PrintAPIresults(env)
-			env.Wg.Done()
+			// The test summary should be printed after the tests have finished and before the test suite returns
+			// to avoid failure due to test context expired
+			t.Run("Summary", func(t *testing.T) {
+				fmt.Println("Test results for ", name)
+				PrintSequencesResults(env)
+				PrintAPIresults(env)
+				env.Wg.Done()
+			})
 		})
 	})
 
