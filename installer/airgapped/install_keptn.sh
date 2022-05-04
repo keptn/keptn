@@ -23,25 +23,13 @@ kubectl create namespace "${KEPTN_NAMESPACE}"
 
 helm upgrade keptn "${KEPTN_HELM_CHART}" --install --create-namespace -n "${KEPTN_NAMESPACE}" --wait \
 --set="control-plane.apiGatewayNginx.type=${KEPTN_SERVICE_TYPE},continuous-delivery.enabled=true,\
+global.keptn.registry=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG},\
 control-plane.mongo.image.registry=${TARGET_INTERNAL_DOCKER_REGISTRY%/},\
 control-plane.nats.nats.image=${TARGET_INTERNAL_DOCKER_REGISTRY}nats:2.7.2-alpine,\
 control-plane.nats.reloader.image=${TARGET_INTERNAL_DOCKER_REGISTRY}natsio/nats-server-config-reloader:0.6.2,\
 control-plane.nats.exporter.image=${TARGET_INTERNAL_DOCKER_REGISTRY}natsio/prometheus-nats-exporter:0.9.1,\
-control-plane.apiGatewayNginx.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}nginxinc/nginx-unprivileged,\
-control-plane.apiGatewayNginx.image.tag=1.21.4-alpine,\
-control-plane.remediationService.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG}/remediation-service,\
-control-plane.apiService.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG}/api,\
-control-plane.bridge.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG}/bridge2,\
-control-plane.distributor.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG}/distributor,\
-control-plane.shipyardController.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG}/shipyard-controller,\
-control-plane.configurationService.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG}/configuration-service,\
-control-plane.mongodbDatastore.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG}/mongodb-datastore,\
-control-plane.statisticsService.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG}/statistics-service,\
-control-plane.lighthouseService.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG}/lighthouse-service,\
-control-plane.secretService.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG}/secret-service,\
-control-plane.approvalService.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG}/approval-service,\
-control-plane.webhookService.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG}/webhook-service,\
-continuous-delivery.distributor.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG}/distributor"
+global.apiGatewayNginx.registry=${TARGET_INTERNAL_DOCKER_REGISTRY}nginxinc/nginx-unprivileged,\
+global.apiGatewayNginx.tag=1.21.4-alpine"
 
 if [[ $? -ne 0 ]]; then
   echo "Installing Keptn failed."
@@ -55,8 +43,7 @@ echo "Installing Keptn Helm-Service Helm Chart in Namespace ${KEPTN_NAMESPACE}"
 echo "-----------------------------------------------------------------------"
 
 helm upgrade helm-service "${KEPTN_HELM_SERVICE_HELM_CHART}" --install -n "${KEPTN_NAMESPACE}" \
---set="helmservice.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}keptn/helm-service,\
-distributor.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}keptn/distributor"
+--set="global.keptn.registry=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG}"
 
 if [[ $? -ne 0 ]]; then
   echo "Installing helm-service failed."
@@ -70,8 +57,7 @@ echo "Installing Keptn JMeter-Service Helm Chart in Namespace ${KEPTN_NAMESPACE}
 echo "-----------------------------------------------------------------------"
 
 helm upgrade jmeter-service "${KEPTN_JMETER_SERVICE_HELM_CHART}" --install -n "${KEPTN_NAMESPACE}" \
---set="jmeterservice.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}keptn/jmeter-service,\
-distributor.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}keptn/distributor"
+--set="global.keptn.registry=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG}"
 
 if [[ $? -ne 0 ]]; then
   echo "Installing jmeter-service failed."
