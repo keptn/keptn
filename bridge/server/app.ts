@@ -17,6 +17,7 @@ import { ClientFeatureFlags, ServerFeatureFlags } from './feature-flags';
 import { setupOAuth } from './user/oauth';
 import { SessionService } from './user/session';
 import { ContentSecurityPolicyOptions } from 'helmet/dist/types/middlewares/content-security-policy';
+import { printError } from './utils/print-utils';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -324,10 +325,6 @@ function cleanIpBuckets(): void {
   }
 }
 
-function isAxiosError(err: Error | AxiosError): err is AxiosError {
-  return err.hasOwnProperty('isAxiosError');
-}
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function handleError(err: any, req: Request, res: Response, authType: string): number {
   // set locals, only providing error in development
@@ -342,13 +339,7 @@ function handleError(err: any, req: Request, res: Response, authType: string): n
     res.setHeader('keptn-auth-type', authType);
   }
 
-  if (isAxiosError(err)) {
-    const method = (err.request || err.config).method;
-    const url = err.request?.path ?? err.config.url;
-    console.error(`Error for ${method} ${url}: ${err.message}`);
-  } else {
-    console.error(err);
-  }
+  printError(err);
 
   return err.response?.status || 500;
 }

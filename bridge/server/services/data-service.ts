@@ -16,7 +16,7 @@ import { WebhookConfig, WebhookConfigFilter, WebhookSecret } from '../../shared/
 import { UniformRegistrationInfo } from '../../shared/interfaces/uniform-registration-info';
 import { WebhookConfigYaml } from '../models/webhook-config-yaml';
 import { UniformSubscription, UniformSubscriptionFilter } from '../../shared/interfaces/uniform-subscription';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { Resource } from '../../shared/interfaces/resource';
 import { FileTree, TreeEntry } from '../../shared/interfaces/resourceFileTree';
 import { EventResult } from '../interfaces/event-result';
@@ -36,6 +36,7 @@ import { ISequencesMetadata, SequenceMetadataDeployment } from '../../shared/int
 import { SecretScope, SecretScopeDefault } from '../../shared/interfaces/secret-scope';
 import { generateWebhookConfigCurl } from '../utils/curl.utils';
 import { ICustomSequences } from '../../shared/interfaces/custom-sequences';
+import { printError } from '../utils/print-utils';
 
 type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
 type FlatSecret = { path: string; name: string; key: string; parsedPath: string };
@@ -314,7 +315,7 @@ export class DataService {
         cachedSequence ??
         (await this.getSequence(accessToken, options.projectName, options.stageName, options.keptnContext));
     } catch (error) {
-      console.error(error);
+      printError(error as AxiosError | Error);
       return;
     }
     service.latestSequence = latestSequence ? Sequence.fromJSON(latestSequence) : undefined;
