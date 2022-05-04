@@ -137,7 +137,9 @@ func ZDTestTemplate(t *testing.T, F func(t2 *testing.T, e *ZeroDowntimeEnv), nam
 
 	t.Run("API", func(t1 *testing.T) {
 		t1.Parallel()
+		env.Wg.Add(1)
 		APIs(t1, env)
+		env.Wg.Done()
 	})
 
 	t.Run(name, func(t1 *testing.T) {
