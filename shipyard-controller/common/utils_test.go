@@ -1,6 +1,7 @@
 package common
 
 import (
+	"github.com/stretchr/testify/require"
 	"reflect"
 	"testing"
 	"time"
@@ -77,6 +78,20 @@ func TestMerge(t *testing.T) {
 			},
 		},
 		{
+			name: "merge map - string property of in2 should override property with same name in in1",
+			args: args{
+				in1: map[string]interface{}{
+					"foo": "bar",
+				},
+				in2: map[string]interface{}{
+					"foo": "foo",
+				},
+			},
+			want: map[string]interface{}{
+				"foo": "foo",
+			},
+		},
+		{
 			name: "merge different structures",
 			args: args{
 				in1: map[string]interface{}{
@@ -101,14 +116,90 @@ func TestMerge(t *testing.T) {
 				in1: []interface{}{"item1", "item2"},
 				in2: []interface{}{"item3"},
 			},
-			want: []interface{}{"item1", "item2", "item3"},
+			want: []interface{}{"item3", "item1", "item2"},
+		},
+		{
+			name: "merge different structures 3",
+			args: args{
+				in1: []interface{}{"item1", map[string]interface{}{"x": "y", "b": []interface{}{1, "b", []string{"hello"}}}},
+				in2: []interface{}{"item3"},
+			},
+			want: []interface{}{"item3", "item1", map[string]interface{}{"x": "y", "b": []interface{}{1, "b", []string{"hello"}}}},
+		},
+		{
+			name: "merge structures with different types for same property names: map vs string",
+			args: args{
+				in1: map[string]interface{}{
+					"foo": map[string]interface{}{
+						"bar": "xyz",
+					},
+				},
+				in2: map[string]interface{}{
+					"foo": "bar",
+				},
+			},
+			want: map[string]interface{}{
+				"foo": "bar",
+			},
+		},
+		{
+			name: "merge structures with different types for same property names: slice vs string",
+			args: args{
+				in1: map[string]interface{}{
+					"foo": []interface{}{"bar"},
+				},
+				in2: map[string]interface{}{
+					"foo": "bar",
+				},
+			},
+			want: map[string]interface{}{
+				"foo": "bar",
+			},
+		},
+		{
+			name: "merge structures with different types for same property names: string vs slice",
+			args: args{
+				in1: map[string]interface{}{
+					"foo": "bar",
+				},
+				in2: map[string]interface{}{
+					"foo": []interface{}{"bar"},
+				},
+			},
+			want: map[string]interface{}{
+				"foo": []interface{}{"bar"},
+			},
+		},
+		{
+			name: "merge structures with different types: nil vs map",
+			args: args{
+				in1: nil,
+				in2: map[string]interface{}{
+					"foo": map[string]interface{}{
+						"bar": "xyz",
+					},
+				},
+			},
+			want: map[string]interface{}{
+				"foo": map[string]interface{}{
+					"bar": "xyz",
+				},
+			},
+		},
+		{
+			name: "merge structures with different types: nil vs string",
+			args: args{
+				in1: nil,
+				in2: "foo",
+			},
+			want: "foo",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := Merge(tt.args.in1, tt.args.in2); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Merge() = %v, want %v", got, tt.want)
-			}
+			got := Merge(tt.args.in1, tt.args.in2)
+
+			require.Equal(t, tt.want, got)
 		})
 	}
 }
