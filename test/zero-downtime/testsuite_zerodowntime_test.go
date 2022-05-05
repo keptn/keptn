@@ -117,9 +117,9 @@ func (suite *TestSuiteDowntime) TestSequences() {
 	ZDTestTemplate(suite.T(), Sequences, "Sequences")
 }
 
-//func (suite *TestSuiteDowntime) TestWebhook() {
-//	ZDTestTemplate(suite.T(), Webhook, "Webhook")
-//}
+func (suite *TestSuiteDowntime) TestWebhook() {
+	ZDTestTemplate(suite.T(), Webhook, "Webhook")
+}
 
 func (suite *TestSuiteDowntime) TearDownSuite() {
 }
