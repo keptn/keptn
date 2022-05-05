@@ -8,12 +8,8 @@ describe('KtbTestHeatmapComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ KtbTestHeatmapComponent ]
-    })
-    .compileComponents();
-  });
-
-  beforeEach(() => {
+      declarations: [KtbTestHeatmapComponent],
+    }).compileComponents();
     fixture = TestBed.createComponent(KtbTestHeatmapComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

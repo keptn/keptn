@@ -24,6 +24,7 @@ import {
   IDataPoint,
   IHeatmapTooltipType,
 } from '../../_interfaces/heatmap';
+import moment from 'moment';
 
 type SVGGSelection = Selection<SVGGElement, unknown, HTMLElement, unknown>;
 type HighlightSelection = Selection<SVGRectElement, unknown, HTMLElement, unknown>;
@@ -64,8 +65,8 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   private readonly showMoreButtonHeight = 32 + this.showMoreButtonPadding;
   private readonly mouseMoveListener: (this: Document, _evt: MouseEvent) => void;
   private readonly minWidthPerXAxisElement = 25;
-  private xAxis?: ScaleBand<string>;
-  private yAxis?: ScaleBand<string>;
+  private xAxis: ScaleBand<string> = d3.scaleBand();
+  private yAxis: ScaleBand<string> = d3.scaleBand();
   private dataPointContentWidth = 0;
   private height = 0;
   private _selectedDataPoint?: IDataPoint;
@@ -269,9 +270,6 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   }
 
   private resizeXAxis(): void {
-    if (!this.xAxis) {
-      return;
-    }
     this.xAxis = this.xAxis.range([0, this.dataPointContentWidth]);
     const xAxisContainer = this.xAxisContainer;
 
@@ -280,9 +278,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   }
 
   private resizeDataPoints(): void {
-    if (this.xAxis && this.yAxis) {
-      this.setDataPointCoordinates(this.dataPointElements, this.xAxis, this.yAxis);
-    }
+    this.setDataPointCoordinates(this.dataPointElements);
   }
 
   private resizeHighlights(): void {
@@ -349,11 +345,11 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     const heatmap = this.heatmapInstance;
     this.xAxis = this.addXAxis(heatmap, xAxisElements);
     this.yAxis = this.addYAxis(heatmap, yAxisElements);
-    this.generateHeatmapTiles(data, this.xAxis, this.yAxis);
+    this.generateHeatmapTiles(data);
   }
 
   private addXAxis(heatmap: SVGGSelection, xElements: string[]): ScaleBand<string> {
-    const x = d3.scaleBand().range([0, this.dataPointContentWidth]).domain(xElements);
+    const x = this.xAxis.range([0, this.dataPointContentWidth]).domain(xElements);
     const xAxisContainer = heatmap.append('g').attr('class', 'x-axis-container');
 
     this.setXAxisCoordinates(xAxisContainer);
@@ -397,7 +393,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   }
 
   private addYAxis(heatmap: SVGGSelection, yElements: string[]): ScaleBand<string> {
-    const y = d3.scaleBand().range([this.height, 0]).domain(yElements);
+    const y = this.yAxis.range([this.height, 0]).domain(yElements);
     const yAxisContainer = heatmap.append('g').attr('class', 'y-axis-container');
     this.attachYAxis(yAxisContainer, y);
     return y;
@@ -500,7 +496,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     this.removeHighlights();
     const heatmap = this.heatmapInstance;
 
-    if (!this.xAxis || !dataPoint) {
+    if (!dataPoint) {
       this._selectedDataPoint = undefined;
       return;
     }
@@ -547,18 +543,11 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   }
 
   private getHighlightWidth(): number {
-    if (!this.xAxis) {
-      return 0;
-    }
     const xAxisElements = this.xAxis.domain();
     return this.dataPointContentWidth / xAxisElements.length;
   }
 
   private setHighlightCoordinates(identifier: string): void {
-    if (!this.xAxis) {
-      return;
-    }
-
     this.highlight
       .attr('x', this.xAxis(identifier) ?? null)
       .attr('y', 0)
@@ -567,18 +556,13 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   }
 
   private setSecondaryHighlightCoordinates(identifiers: string[]): void {
-    if (!this.xAxis) {
-      return;
-    }
-    const xAxis = this.xAxis;
-
     this.secondaryHighlights
       .attr('x', (_dt, index) => {
         const xElement = this.findXElementThroughIdentifier(identifiers[index]);
         if (!xElement) {
           return null;
         }
-        return xAxis(xElement) ?? null;
+        return this.xAxis(xElement) ?? null;
       })
       .attr('y', 0)
       .attr('height', this.height)
@@ -595,12 +579,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     return undefined;
   }
 
-  private generateHeatmapTiles(
-    data: GroupedDataPoints,
-    x: ScaleBand<string>,
-    y: ScaleBand<string>,
-    yAxisElements = y.domain()
-  ): void {
+  private generateHeatmapTiles(data: GroupedDataPoints, yAxisElements = this.yAxis.domain()): void {
     const _this = this;
     let container = this.dataPointContainer;
 
@@ -637,28 +616,28 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
       .on('mousemove', (event: MouseEvent, dataPoint: IDataPoint) => this.mouseMove(event, dataPoint))
       .on('mouseleave', () => this.mouseLeave());
 
-    this.setDataPointCoordinates(dataPoints, x, y);
+    this.setDataPointCoordinates(dataPoints);
   }
 
   private resizeDataPointContainerRect(): void {
     this.dataPointContainerRect.attr('width', this.dataPointContentWidth).attr('height', this.height);
   }
 
-  private setDataPointCoordinates(dataPoints: HeatmapTiles, x: ScaleBand<string>, y: ScaleBand<string>): void {
-    const yAxisElements = y.domain();
+  private setDataPointCoordinates(dataPoints: HeatmapTiles): void {
+    const yAxisElements = this.yAxis.domain();
     const firstYElement = yAxisElements[yAxisElements.length - 1];
     dataPoints
-      .attr('x', (dataPoint) => x(dataPoint.xElement) ?? null)
+      .attr('x', (dataPoint) => this.xAxis(dataPoint.xElement) ?? null)
       .attr('y', (dataPoint) => {
-        const yCoordinate = y(dataPoint.yElement);
+        const yCoordinate = this.yAxis(dataPoint.yElement);
         if (yCoordinate !== undefined && dataPoint.yElement === firstYElement) {
           return yCoordinate + this.firstYElementPadding / 2;
         }
         return yCoordinate ?? null;
       })
-      .attr('width', x.bandwidth())
+      .attr('width', this.xAxis.bandwidth())
       .attr('height', (dataPoint) => {
-        const height = y.bandwidth();
+        const height = this.yAxis.bandwidth();
         if (dataPoint.yElement === firstYElement) {
           return height - this.firstYElementPadding;
         }
@@ -718,14 +697,11 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   }
 
   private expandHeatmap(): void {
-    if (!this.xAxis || !this.yAxis) {
-      return;
-    }
     const yElements = Object.keys(this.groupedData);
     this.setHeight(yElements.length);
     this.updateYAxis(yElements);
 
-    this.generateHeatmapTiles(this.groupedData, this.xAxis, this.yAxis, this.getHiddenYElements(yElements));
+    this.generateHeatmapTiles(this.groupedData, this.getHiddenYElements(yElements));
   }
 
   private getHiddenYElements(yElements: string[]): string[] {
@@ -737,9 +713,6 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   }
 
   private updateYAxis(yElements: string[]): void {
-    if (!this.yAxis) {
-      return;
-    }
     this.yAxis = this.yAxis.range([this.height, 0]).domain(yElements);
     this.attachYAxis(this.yAxisContainer, this.yAxis);
   }
@@ -772,16 +745,17 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
 
   private generateTestData(sliCounter: number, counter: number): IDataPoint[] {
     const categories = [];
-    for (let i = 0; i < sliCounter; ++i) {
+    for (let i = 0; i < sliCounter - 1; ++i) {
       categories.push(`response time p${i}`);
     }
+    categories.push(`response time p${sliCounter - 1} very long SLI name here`);
     const data: IDataPoint[] = [];
     const dateMillis = new Date().getTime();
 
     // adding one duplicate (two evaluations have the same time)
     for (const category of [...categories, 'score']) {
       data.push({
-        xElement: new Date(dateMillis).toISOString(),
+        xElement: moment(new Date(dateMillis)).format('YYYY-MM-DD HH:mm'),
         yElement: category,
         color: this.getColor(Math.floor(Math.random() * 4)),
         tooltip: {
@@ -813,7 +787,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     for (const category of categories) {
       for (let i = 0; i < counter - 1; ++i) {
         data.push({
-          xElement: new Date(dateMillis + i).toISOString(),
+          xElement: moment(new Date(dateMillis + i * 1000 * 60)).format('YYYY-MM-DD HH:mm'),
           yElement: category,
           color: this.getColor(Math.floor(Math.random() * 4)),
           tooltip: {
@@ -844,7 +818,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     categories.push('score');
     for (let i = 0; i < counter; ++i) {
       data.push({
-        xElement: new Date(dateMillis + i).toISOString(),
+        xElement: moment(new Date(dateMillis + i * 1000 * 60)).format('YYYY-MM-DD HH:mm'),
         yElement: 'score',
         color: this.getColor(Math.floor(Math.random() * 4)),
         tooltip: {
