@@ -5,7 +5,6 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/types"
-	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
 	keptn "github.com/keptn/go-utils/pkg/lib"
@@ -14,7 +13,6 @@ import (
 
 	"github.com/keptn/go-utils/pkg/common/strutils"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 type getSLOTestObject struct {
@@ -436,69 +434,5 @@ func getStartEventWithCommitId(id string) cloudevents.Event {
     "result": "pass"
   }`),
 		DataBase64: false,
-	}
-}
-
-func TestBuildSubscriptions(t *testing.T) {
-	tests := []struct {
-		name  string
-		input string
-		want  []models.EventSubscription
-	}{
-		{
-			name:  "valid subscriptions",
-			input: "sh.keptn.event.evaluation.triggered,sh.keptn.event.get-sli.finished,sh.keptn.event.monitoring.configure",
-			want: []models.EventSubscription{
-				{
-					Event:  "sh.keptn.event.evaluation.triggered",
-					Filter: models.EventSubscriptionFilter{},
-				},
-				{
-					Event:  "sh.keptn.event.get-sli.finished",
-					Filter: models.EventSubscriptionFilter{},
-				},
-				{
-					Event:  "sh.keptn.event.monitoring.configure",
-					Filter: models.EventSubscriptionFilter{},
-				},
-			},
-		},
-		{
-			name:  "invalid subscriptions #1",
-			input: "sh.keptn.event.evaluation.triggered.sh.keptn.event.get-sli.finished.sh.keptn.event.monitoring.configure",
-			want: []models.EventSubscription{
-				{
-					Event:  "sh.keptn.event.evaluation.triggered.sh.keptn.event.get-sli.finished.sh.keptn.event.monitoring.configure",
-					Filter: models.EventSubscriptionFilter{},
-				},
-			},
-		},
-		{
-			name:  "valid subscriptions #2",
-			input: "sh.keptn.event.evaluation.triggered;sh.keptn.event.get-sli.finished;sh.keptn.event.monitoring.configure",
-			want: []models.EventSubscription{
-				{
-					Event:  "sh.keptn.event.evaluation.triggered;sh.keptn.event.get-sli.finished;sh.keptn.event.monitoring.configure",
-					Filter: models.EventSubscriptionFilter{},
-				},
-			},
-		},
-		{
-			name:  "no subscriptions #1",
-			input: "",
-			want:  []models.EventSubscription{},
-		},
-		{
-			name:  "no subscriptions #2",
-			input: ",",
-			want:  []models.EventSubscription{},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := BuildSubscriptions(tt.input)
-			require.Equal(t, tt.want, got)
-		})
 	}
 }

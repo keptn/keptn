@@ -10,7 +10,6 @@ import (
 	"sync"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/keptn/go-utils/pkg/api/models"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	logger "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
@@ -273,19 +272,4 @@ func getInClusterKubeClient() (kubernetes.Interface, error) {
 		return nil, err
 	}
 	return kubeAPI, nil
-}
-
-func BuildSubscriptions(sub string) []models.EventSubscription {
-	eventSubscriptions := []models.EventSubscription{}
-	subSlice := strings.Split(sub, ",")
-	for _, subscription := range subSlice {
-		if subscription != "" {
-			eventSubscription := models.EventSubscription{
-				Event:  subscription,
-				Filter: models.EventSubscriptionFilter{},
-			}
-			eventSubscriptions = append(eventSubscriptions, eventSubscription)
-		}
-	}
-	return eventSubscriptions
 }

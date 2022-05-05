@@ -76,10 +76,6 @@ func (l LighthouseService) OnEvent(ctx context.Context, event models.KeptnContex
 }
 
 func (l LighthouseService) RegistrationData() controlplane.RegistrationData {
-	eventSubscriptions := []models.EventSubscription{}
-	if l.env.EventSubscriptionTopics != "" {
-		eventSubscriptions = event_handler.BuildSubscriptions(l.env.EventSubscriptionTopics)
-	}
 	return controlplane.RegistrationData{
 		Name: l.env.K8SPodName,
 		MetaData: models.MetaData{
@@ -92,21 +88,20 @@ func (l LighthouseService) RegistrationData() controlplane.RegistrationData {
 				DeploymentName: l.env.K8SDeploymentName,
 			},
 		},
-		Subscriptions: eventSubscriptions,
-		// Subscriptions: []models.EventSubscription{
-		// 	{
-		// 		Event:  "sh.keptn.event.evaluation.triggered",
-		// 		Filter: models.EventSubscriptionFilter{},
-		// 	},
-		// 	{
-		// 		Event:  "sh.keptn.event.get-sli.finished",
-		// 		Filter: models.EventSubscriptionFilter{},
-		// 	},
-		// 	{
-		// 		Event:  "sh.keptn.event.monitoring.configure",
-		// 		Filter: models.EventSubscriptionFilter{},
-		// 	},
-		// },
+		Subscriptions: []models.EventSubscription{
+			{
+				Event:  "sh.keptn.event.evaluation.triggered",
+				Filter: models.EventSubscriptionFilter{},
+			},
+			{
+				Event:  "sh.keptn.event.get-sli.finished",
+				Filter: models.EventSubscriptionFilter{},
+			},
+			{
+				Event:  "sh.keptn.event.monitoring.configure",
+				Filter: models.EventSubscriptionFilter{},
+			},
+		},
 	}
 }
 
