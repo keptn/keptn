@@ -7,7 +7,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/imroc/req v0.3.2
 	github.com/keptn/go-utils v0.14.1-0.20220505070234-5672c074a6de
-	github.com/keptn/kubernetes-utils v0.13.1-0.20220503135705-31953b55954c
+	github.com/keptn/kubernetes-utils v0.13.1-0.20220505114113-51ba4a1ed523
 	github.com/mholt/archiver/v3 v3.5.1
 	github.com/stretchr/testify v1.7.1
 	k8s.io/api v0.22.8
