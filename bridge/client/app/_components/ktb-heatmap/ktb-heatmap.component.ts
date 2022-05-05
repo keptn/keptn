@@ -2,7 +2,6 @@
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   ElementRef,
   EventEmitter,
@@ -43,12 +42,14 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   private readonly chartSelector = `#${this.uniqueId}`;
   private readonly heatmapSelector = `${this.chartSelector} .heatmap-container`;
   private readonly svgSelector = `${this.chartSelector}>svg`;
+  private readonly mouseMoveListener: (this: Document, _evt: MouseEvent) => void;
   private readonly firstYElementPadding = 6; // "score" will then be 6px smaller than the rest.
-  private readonly yAxisLabelWidth = 150;
-  private readonly xAxisLabelWidth = 150;
+  private readonly legendPadding = 10; // padding between xAxis and legend
+  private readonly maxYAxisLabelWidth = 150;
   private readonly heightPerYElement = 30;
-  private readonly legendHeight = 50;
   private readonly limitYElementCount = 10;
+  private readonly minWidthPerXAxisElement = 25;
+  private readonly showMoreButtonPadding = 6;
   private readonly legendItems: EvaluationResultType[] = [
     ResultTypes.PASSED,
     ResultTypes.WARNING,
@@ -61,10 +62,6 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     [ResultTypes.FAILED]: false,
     [EvaluationResultTypeExtension.INFO]: false,
   };
-  private readonly showMoreButtonPadding = 6;
-  private readonly showMoreButtonHeight = 32 + this.showMoreButtonPadding;
-  private readonly mouseMoveListener: (this: Document, _evt: MouseEvent) => void;
-  private readonly minWidthPerXAxisElement = 25;
   private xAxis: ScaleBand<string> = d3.scaleBand();
   private yAxis: ScaleBand<string> = d3.scaleBand();
   private dataPointContentWidth = 0;
@@ -105,6 +102,11 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     return this._selectedDataPoint;
   }
 
+  private get showMoreButtonHeight(): number {
+    const element: HTMLElement = this.showMoreButton._elementRef.nativeElement;
+    return element.getBoundingClientRect().height + this.showMoreButtonPadding;
+  }
+
   private get heatmapInstance(): SVGGSelection {
     return d3.select(this.heatmapSelector);
   }
@@ -141,7 +143,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     return this.heatmapInstance.select('.data-point-container-rect');
   }
 
-  constructor(private elementRef: ElementRef, private _changeDetectorRef: ChangeDetectorRef) {
+  constructor(private elementRef: ElementRef) {
     // has to be globally instead of component bound, else scrolling into it will not have any mouse coordinates
     this.mouseMoveListener = (event: MouseEvent): void => this.onMouseMove(event);
     document.addEventListener('mousemove', this.mouseMoveListener);
@@ -229,7 +231,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     const svg = d3.select(this.chartSelector).append('svg').attr('preserveAspectRatio', 'xMinYMin meet');
     this.resizeSvg(availableSpace.width, availableSpace.height);
 
-    svg.append('g').classed('heatmap-container', true).attr('transform', `translate(${this.yAxisLabelWidth}, 0)`);
+    svg.append('g').classed('heatmap-container', true).attr('transform', `translate(${this.maxYAxisLabelWidth}, 0)`);
 
     this.setData(data, xElements, yElements);
     this.createLegend();
@@ -255,9 +257,16 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     const parentElement: HTMLElement = this.elementRef.nativeElement.parentNode;
     const availableSpace = parentElement.getBoundingClientRect();
     const width = availableSpace.width * window.devicePixelRatio; // adjust to zoom-level
+    const xAxisHeight = this.xAxisContainer.node()?.getBoundingClientRect().height ?? 0;
+    const legendHeight = this.legendContainer.node()?.getBoundingClientRect().height ?? 0;
     const height =
-      this.height + this.xAxisLabelWidth + this.legendHeight + (this.showMoreVisible ? this.showMoreButtonHeight : 0);
-    this.dataPointContentWidth = width - this.yAxisLabelWidth;
+      this.height +
+      xAxisHeight +
+      legendHeight +
+      this.legendPadding +
+      (this.showMoreVisible ? this.showMoreButtonHeight : 0) +
+      10; //padding-bottom
+    this.dataPointContentWidth = width - this.maxYAxisLabelWidth;
 
     return {
       height,
@@ -295,7 +304,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
       const htmlElement: HTMLElement = this.showMoreButton._elementRef.nativeElement;
 
       htmlElement.style.top = `${this.height + this.showMoreButtonPadding / 2}px`;
-      htmlElement.style.left = `${this.yAxisLabelWidth}px`;
+      htmlElement.style.left = `${this.maxYAxisLabelWidth}px`;
       htmlElement.style.width = `${this.dataPointContentWidth}px`;
     }
   }
@@ -304,7 +313,9 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     const legend = this.legendContainer;
     const fullLength = legend.node()?.getBoundingClientRect().width ?? 0;
     const centerXPosition = (this.dataPointContentWidth - fullLength) / 2;
-    const yPosition = this.height + this.xAxisLabelWidth + 10 + (this.showMoreVisible ? this.showMoreButtonHeight : 0);
+    const xAxisHeight = this.xAxisContainer.node()?.getBoundingClientRect().height ?? 0;
+    const yPosition =
+      this.height + this.legendPadding + xAxisHeight + (this.showMoreVisible ? this.showMoreButtonHeight : 0);
     legend.attr('transform', `translate(${centerXPosition}, ${yPosition})`);
   }
 
@@ -315,7 +326,6 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     key: 'yElement' | 'xElement',
     compare: 'xElement' | 'yElement'
   ): void {
-    // TODO: change the first found duplicate to (1)?
     const duplicatesDict: { [key: string]: { [compare: string]: number } } = {};
     dataPoints.forEach((dataPoint, index) => {
       let uniqueHeader = dataPoint[key];
@@ -407,7 +417,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
    */
   private attachYAxis(yAxisContainer: SVGGSelection, y: ScaleBand<string>): void {
     const yAxis = yAxisContainer.call(d3.axisLeft(y).tickSize(0));
-    yAxis.selectAll('.tick').each(this.setEllipsisStyle(this.yAxisLabelWidth));
+    yAxis.selectAll('.tick').each(this.setEllipsisStyle(this.maxYAxisLabelWidth));
     yAxis.select('.domain').remove();
   }
 
@@ -597,7 +607,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
       .data(yAxisElements)
       .enter()
       .append('g')
-      .attr('uitestid', (yElement) => yElement.replace(/ /g, '-')) // TODO: do we need this?
+      .attr('uitestid', (yElement) => yElement.replace(/ /g, '-'))
       .selectAll()
       .data((key) => data[key])
       .join('rect')
@@ -605,7 +615,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
       .classed('data-point', true)
       // set all new dataPoints (show all yElements) to disabled if needed
       .classed('disabled', (dataPoint: IDataPoint) => this.legendDisabledStatus[dataPoint.color])
-      .attr('uitestid', (dataPoint) => `ktb-heatmap-tile-${dataPoint.xElement.replace(/ /g, '-')}`) // TODO: do we need this?
+      .attr('uitestid', (dataPoint) => `ktb-heatmap-tile-${dataPoint.xElement.replace(/ /g, '-')}`)
       .on('click', (_event: PointerEvent, dataPoint: IDataPoint) => this.click(dataPoint))
       .on('mouseover', function (this: SVGGElement | null) {
         if (!this) {
