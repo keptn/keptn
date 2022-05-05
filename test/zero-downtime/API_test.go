@@ -49,7 +49,6 @@ Loop:
 		case <-env.quit:
 			break Loop
 		case <-apiTicker.C:
-			fmt.Println("ADDING one API test")
 			wgAPI.Add(1)
 			apisuite := &TestSuiteAPI{
 				env: env,
@@ -176,6 +175,7 @@ func (suite *TestSuiteAPI) logResult(res *http.Response, apiTest *apitest.APITes
 	censoredReq := strings.Split(strings.Split(fmt.Sprintf("%+v", *apiTest.Request()), "{interceptor:<nil>")[1], "headers:")[0]
 
 	suite.T().Log("\n", "Test API configuration: ", censoredReq)
+	suite.T().Log("Current time ", time.Now())
 	suite.T().Logf("Response Body: %v", res.Body)
 	suite.T().Logf("Duration: %s", finished.Sub(started))
 	if res.StatusCode != expected {

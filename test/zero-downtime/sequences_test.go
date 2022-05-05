@@ -56,6 +56,7 @@ func (suite *TestSuiteSequences) createNew() {
 
 func (suite *TestSuiteSequences) BeforeTest(suiteName, testName string) {
 	atomic.AddUint64(&suite.env.FiredSequences, 1)
+	suite.T().Log("Current time ", time.Now())
 	suite.T().Log("Running one more test, total tests: ", suite.env.FiredSequences)
 }
 
