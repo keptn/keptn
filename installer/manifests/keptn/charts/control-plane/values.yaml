@@ -15,27 +15,6 @@ mongo:
     rootUser: 'admin'
     rootPassword: null
     bridgeAuthDatabase: 'keptn'
-  readinessProbe:
-    enabled: false
-  customReadinessProbe:
-    # custom readiness probe was introduced because the default one had issues
-    # reference: https://github.com/bitnami/charts/pull/9916
-    exec:
-      command:
-        - bash
-        - -ec
-        - |
-          # Run the proper check depending on the version
-          [[ $(mongosh --version) =~ ([0-9]+\.[0-9]+\.[0-9]+) ]] && VERSION=${BASH_REMATCH[1]}
-          . /opt/bitnami/scripts/libversion.sh
-          VERSION_MAJOR="$(get_sematic_version "$VERSION" 1)"
-          VERSION_MINOR="$(get_sematic_version "$VERSION" 2)"
-          VERSION_PATCH="$(get_sematic_version "$VERSION" 3)"
-          if [[ "$VERSION_MAJOR" -ge 4 ]] && [[ "$VERSION_MINOR" -ge 4 ]] && [[ "$VERSION_PATCH" -ge 2 ]]; then
-              mongosh  $TLS_OPTIONS --eval 'db.hello().isWritablePrimary' | grep -q 'true'
-          else
-              mongosh  $TLS_OPTIONS --eval 'db.isMaster().ismaster' | grep -q 'true'
-          fi
   external:
     connectionString:
 
