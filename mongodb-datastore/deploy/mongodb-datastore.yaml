@@ -10,7 +10,7 @@ metadata:
     app.kubernetes.io/name: mongodb-datastore
     app.kubernetes.io/instance: keptn
     app.kubernetes.io/part-of: keptn-keptn
-    app.kubernetes.io/component: control-plane
+    app.kubernetes.io/component: keptn
     app.kubernetes.io/version: develop
 spec:
   selector:
@@ -24,7 +24,7 @@ spec:
         app.kubernetes.io/name: mongodb-datastore
         app.kubernetes.io/instance: keptn
         app.kubernetes.io/part-of: keptn-keptn
-        app.kubernetes.io/component: control-plane
+        app.kubernetes.io/component: keptn
         app.kubernetes.io/version: develop
     spec:
       serviceAccountName: keptn-default
@@ -80,7 +80,7 @@ metadata:
     app.kubernetes.io/name: mongodb-datastore
     app.kubernetes.io/instance: keptn
     app.kubernetes.io/part-of: keptn-keptn
-    app.kubernetes.io/component: control-plane
+    app.kubernetes.io/component: keptn
 spec:
   ports:
   - port: 8080

@@ -1,4 +1,3 @@
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -8,9 +7,9 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    app.kubernetes.io/component: {{ include "keptn.name" . }}
     app.kubernetes.io/version: {{ .Values.shipyardController.image.tag | default .Chart.AppVersion }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
+    helm.sh/chart: {{ include "keptn.chart" . }}
 spec:
   selector:
     matchLabels:
@@ -21,7 +20,7 @@ spec:
   {{- else }}
   replicas: {{ .Values.shipyardController.config.replicas | default 3 }}
   {{- end }}
-  {{- include "control-plane.common.update-strategy" . | nindent 2 }}
+  {{- include "keptn.common.update-strategy" . | nindent 2 }}
   template:
     metadata:
       labels:
@@ -29,11 +28,11 @@ spec:
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-        app.kubernetes.io/component: {{ include "control-plane.name" . }}
+        app.kubernetes.io/component: {{ include "keptn.name" . }}
         app.kubernetes.io/version: {{ .Values.shipyardController.image.tag | default .Chart.AppVersion }}
-        helm.sh/chart: {{ include "control-plane.chart" . }}
+        helm.sh/chart: {{ include "keptn.chart" . }}
     spec:
-      {{- include "control-plane.common.pod-security-context" . | nindent 6 }}
+      {{- include "keptn.common.pod-security-context" . | nindent 6 }}
       serviceAccountName: keptn-shipyard-controller
       containers:
         - name: shipyard-controller
@@ -110,15 +109,21 @@ spec:
           ports:
             - containerPort: 8080
           resources:
-            requests:
-              memory: "32Mi"
-              cpu: "50m"
-            limits:
-              memory: "128Mi"
-              cpu: "100m"
-          {{- include "control-plane.common.container-security-context" . | nindent 10 }}
+            {{- toYaml .Values.shipyardController.resources | nindent 12 }}
+          {{- include "keptn.common.container-security-context" . | nindent 10 }}
+          {{- if .Values.shipyardController.extraVolumeMounts }}
+          volumeMounts:
+          {{- include "keptn.tpl-value" ( dict "value" .Values.shipyardController.extraVolumeMounts "context" $) | nindent 12 }}
+          {{- end }}
+        {{- with .Values.shipyardController.sidecars }}
+        {{- include "keptn.tpl-value" ( dict "value" . "context" $ ) | nindent 8 }}
+        {{- end }}
       terminationGracePeriodSeconds: {{ .Values.shipyardController.gracePeriod | default 120 }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.shipyardController.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
+      {{- if .Values.shipyardController.extraVolumes }}
+      volumes:
+      {{- include "keptn.tpl-value" ( dict "value" .Values.shipyardController.extraVolumes "context" $) | nindent 8 }}
+      {{- end }}
 ---
 apiVersion: v1
 kind: Service
@@ -129,8 +134,8 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
+    app.kubernetes.io/component: {{ include "keptn.name" . }}
+    helm.sh/chart: {{ include "keptn.chart" . }}
 spec:
   ports:
     - port: 8080

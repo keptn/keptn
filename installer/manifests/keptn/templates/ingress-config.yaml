@@ -1,7 +1,8 @@
-{{- $ingressHostnameSuffix := .Values.ingressConfig.ingress_hostname_suffix  }}
-{{- $ingressProtocol := .Values.ingressConfig.ingress_protocol }}
-{{- $ingressPort := .Values.ingressConfig.ingress_port }}
-{{- $istioGateway := .Values.ingressConfig.istio_gateway }}
+{{- if .Values.continuousDelivery.enabled }}
+{{- $ingressHostnameSuffix := .Values.continuousDelivery.ingressConfig.ingress_hostname_suffix  }}
+{{- $ingressProtocol := .Values.continuousDelivery.ingressConfig.ingress_protocol }}
+{{- $ingressPort := .Values.continuousDelivery.ingressConfig.ingress_port }}
+{{- $istioGateway := .Values.continuousDelivery.ingressConfig.istio_gateway }}
 {{- $ingressConfigCM := (lookup "v1" "ConfigMap" .Release.Namespace "ingress-config") }}
 {{- if $ingressConfigCM }}
 {{- $ingressHostnameSuffix = index $ingressConfigCM.data "ingress_hostname_suffix" }}
@@ -16,14 +17,15 @@ kind: ConfigMap
 metadata:
   name: ingress-config
   labels:
-    app.kubernetes.io/name: {{ include "continuous-delivery.name" . }}-cm
+    app.kubernetes.io/name: {{ include "keptn.name" . }}-cm
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "continuous-delivery.name" . }}
-    helm.sh/chart: {{ include "continuous-delivery.chart" . }}
+    app.kubernetes.io/component: {{ include "keptn.name" . }}
+    helm.sh/chart: {{ include "keptn.chart" . }}
 data:
   ingress_hostname_suffix: "{{ $ingressHostnameSuffix }}"
   ingress_protocol: "{{ $ingressProtocol }}"
   ingress_port: "{{ $ingressPort }}"
   istio_gateway: "{{ $istioGateway }}"
+{{- end -}}

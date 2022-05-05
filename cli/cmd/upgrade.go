@@ -373,7 +373,7 @@ func doUpgrade() error {
 }
 
 func isContinuousDeliveryEnabled(configValues map[string]interface{}) bool {
-	if continuousDeliveryConfig, ok := configValues["continuous-delivery"].(map[string]interface{}); ok {
+	if continuousDeliveryConfig, ok := configValues["continuousDelivery"].(map[string]interface{}); ok {
 		if isEnabled, ok := continuousDeliveryConfig["enabled"].(bool); ok {
 			return isEnabled
 		} else if isEnabled, ok := continuousDeliveryConfig["enabled"].(string); ok {
