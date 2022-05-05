@@ -22,7 +22,7 @@ require (
 	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/benbjohnson/clock v1.3.0 // indirect
 	github.com/cloudevents/sdk-go/observability/opentelemetry/v2 v2.0.0-20211001212819-74757a691209 // indirect
-	github.com/cloudevents/sdk-go/v2 v2.8.0 // indirect
+	github.com/cloudevents/sdk-go/v2 v2.9.0 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dsnet/compress v0.0.2-0.20210315054119-f66993602bf5 // indirect
@@ -41,7 +41,7 @@ require (
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/imroc/req v0.3.2 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/keptn/go-utils v0.14.1-0.20220414081235-2e23eb712e3d // indirect
+	github.com/keptn/go-utils v0.14.1-0.20220505070234-5672c074a6de // indirect
 	github.com/keptn/kubernetes-utils v0.13.1-0.20220309123424-6e3f2bcaf831 // indirect
 	github.com/klauspost/compress v1.11.4 // indirect
 	github.com/klauspost/pgzip v1.2.5 // indirect
