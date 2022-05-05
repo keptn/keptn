@@ -221,14 +221,8 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	require.Nil(t, err)
 
 	t.Logf("Execute MongoDb database dump")
-	mongoDbRootUser, err := ExecuteCommandf("kubectl get secret mongodb-credentials -n %s -ojsonpath={.data.mongodb-root-user}", keptnNamespace)
-	require.Nil(t, err)
-	mongoDbRootUser, err = decodeBase64(removeQuotes(mongoDbRootUser))
-	require.Nil(t, err)
+	mongoDbRootUser, mongoDbRootPassword, err := GetMongoDBCredentials()
 
-	mongoDbRootPassword, err := ExecuteCommandf("kubectl get secret mongodb-credentials -n %s -ojsonpath={.data.mongodb-root-password}", keptnNamespace)
-	require.Nil(t, err)
-	mongoDbRootPassword, err = decodeBase64(removeQuotes(mongoDbRootPassword))
 	require.Nil(t, err)
 
 	_, err = ExecuteCommandf("kubectl exec svc/keptn-mongo -n %s -- mongodump --authenticationDatabase admin --username %s --password %s -d keptn -h localhost --out=/tmp/dump", keptnNamespace, mongoDbRootUser, mongoDbRootPassword)

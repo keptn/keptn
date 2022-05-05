@@ -888,6 +888,31 @@ func GetGiteaToken() (string, error) {
 	return token, nil
 }
 
+// GetMongoDBCredentials retrieves the credentials of the mongodb user from the mongodb credentials secret
+func GetMongoDBCredentials() (string, string, error) {
+	clientset, err := keptnkubeutils.GetClientset(false)
+	if err != nil {
+		return "", "", err
+	}
+
+	mongoDBSecret, err := clientset.CoreV1().Secrets(GetKeptnNameSpaceFromEnv()).Get(context.TODO(), "mongodb-credentials", v1.GetOptions{})
+	if err != nil {
+		return "", "", err
+	}
+
+	user := string(mongoDBSecret.Data["mongodb-root-user"])
+	if user == "" {
+		return "", "", errors.New("no mongodb user found")
+	}
+
+	password := string(mongoDBSecret.Data["mongodb-root-password"])
+	if password == "" {
+		return "", "", errors.New("no mongodb password found")
+	}
+
+	return user, password, nil
+}
+
 func GetGiteaUser() string {
 	if os.Getenv("GITEA_ADMIN_USER") != "" {
 		return os.Getenv("GITEA_ADMIN_USER")
