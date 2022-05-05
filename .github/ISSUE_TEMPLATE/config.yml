@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: "🔌 New integration"
+    url: "https://github.com/keptn/integrations/issues/new?assignees=&labels=integrations&template=new-integration.md&title="
+    about: "Suggest an idea for a new integration: creating a new service, webhook or job executor service configuration"
+  - name: Keptn Slack
+    url: https://keptn.sh/community/#slack
+    about: Please ask and answer questions here
