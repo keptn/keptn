@@ -13,11 +13,17 @@
   display: inline-block;
 }
 
-::ng-deep {
+:host ::ng-deep {
   $axis-identifier-size: 12px;
 
   .x-axis-container, .y-axis-container, .legend-text {
     font-size: $axis-identifier-size;
+  }
+
+  .data-point-container-rect {
+    cursor: pointer;
+    fill: transparent;
+    z-index: 1000;
   }
 
   .legend-text {
@@ -35,6 +41,10 @@
 
   .legend-item {
     cursor: pointer;
+  }
+
+  .data-point{
+    z-index: 1001;
   }
 
   .data-point, .legend-circle {
