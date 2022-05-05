@@ -343,7 +343,7 @@ jobs:
           GOMAXPROCS: 10
           KEPTN_ENDPOINT: ${{ steps.determine_keptn_endpoint.outputs.KEPTN_ENDPOINT }}
         run: |
-          set -euo pipefail      
+          set -euo pipefail
           go test -json -v -run Test_ZeroDowntime -v -timeout 90m 2>&1 | tee /tmp/gotest.log
 
       - name: Format log output
