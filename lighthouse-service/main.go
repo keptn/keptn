@@ -23,6 +23,8 @@ type envConfig struct {
 	Path                    string `envconfig:"RCV_PATH" default:"/"`
 	ConfigurationServiceURL string `envconfig:"CONFIGURATION_SERVICE" default:"http://configuration-service:8080"`
 	K8SDeploymentName       string `envconfig:"K8S_DEPLOYMENT_NAME" default:""`
+	K8SDeploymentVersion    string `envconfig:"K8S_DEPLOYMENT_VERSION" default:""`
+	K8SDeploymentComponent  string `envconfig:"K8S_DEPLOYMENT_COMPONENT" default:""`
 	K8SPodName              string `envconfig:"K8S_POD_NAME" default:""`
 	K8SNamespace            string `envconfig:"K8S_NAMESPACE" default:""`
 	K8SNodeName             string `envconfig:"K8S_NODE_NAME" default:""`
@@ -79,12 +81,11 @@ func (l LighthouseService) RegistrationData() controlplane.RegistrationData {
 		eventSubscriptions = event_handler.BuildSubscriptions(l.env.EventSubscriptionTopics)
 	}
 	return controlplane.RegistrationData{
-		Name: "lighthouse-service-2",
+		Name: l.env.K8SPodName,
 		MetaData: models.MetaData{
 			Hostname:           l.env.K8SNodeName,
-			IntegrationVersion: "dev",
-			DistributorVersion: "0.15.0",
-			Location:           "control-plane",
+			IntegrationVersion: l.env.K8SDeploymentVersion,
+			Location:           l.env.K8SDeploymentComponent,
 			KubernetesMetaData: models.KubernetesMetaData{
 				Namespace:      l.env.K8SNamespace,
 				PodName:        l.env.K8SPodName,
