@@ -94,9 +94,21 @@ func TestControlPlaneInboundEventIsForwardedToIntegration(t *testing.T) {
 	eventChan <- eventUpdate
 
 	require.Eventually(t, func() bool {
+		eventUpdate.KeptnEvent.Data = integrationReceivedEvent.Data
 		return reflect.DeepEqual(eventUpdate.KeptnEvent, integrationReceivedEvent)
-	},
-		time.Second, time.Millisecond*100)
+	}, time.Second, time.Millisecond*100)
+
+	eventData := map[string]interface{}{}
+	err := integrationReceivedEvent.DataAs(&eventData)
+	require.Nil(t, err)
+
+	require.Equal(t, map[string]interface{}{
+		"temporaryData": map[string]interface{}{
+			"distributor": map[string]interface{}{
+				"subscriptionID": "some-id",
+			},
+		},
+	}, eventData)
 }
 
 func TestControlPlaneIntegrationOnEventThrowsIgnoreableError(t *testing.T) {
