@@ -164,28 +164,28 @@ func RollingUpgrade(t *testing.T, env *ZeroDowntimeEnv) {
 		env.Wg.Wait()
 	}()
 	time.Sleep(30 * time.Second)
-	//chartPreviousVersion, chartLatestVersion := GetCharts(t)
-	//
+	chartPreviousVersion, chartLatestVersion := GetCharts(t)
+
 	t.Log("Upgrade in progress")
-	//
-	//for i := 0; i < env.NrOfUpgrades; i++ {
-	//	chartPath := ""
-	//	var err error
-	//	if i%2 == 0 {
-	//		chartPath = chartLatestVersion
-	//	} else {
-	//		chartPath = chartPreviousVersion
-	//	}
-	//	chartPath = "C:/Users/anna.reale/keptn-0.15.0-dev.tgz"
-	//	t.Logf("Upgrading Keptn to %s", chartPath)
-	//	_, err = testutils.ExecuteCommand(
-	//		fmt.Sprintf(
-	//			"helm upgrade keptn -n %s %s --wait --values=%s", testutils.GetKeptnNameSpaceFromEnv(), chartPath, valuesFile))
-	//	if err != nil {
-	//		t.Logf("Encountered error when upgrading keptn: %v", err)
-	//
-	//	}
-	//}
+
+	for i := 0; i < env.NrOfUpgrades; i++ {
+		chartPath := ""
+		var err error
+		if i%2 == 0 {
+			chartPath = chartLatestVersion
+		} else {
+			chartPath = chartPreviousVersion
+		}
+		chartPath = "C:/Users/anna.reale/keptn-0.15.0-dev.tgz"
+		t.Logf("Upgrading Keptn to %s", chartPath)
+		_, err = testutils.ExecuteCommand(
+			fmt.Sprintf(
+				"helm upgrade keptn -n %s %s --wait --values=%s", testutils.GetKeptnNameSpaceFromEnv(), chartPath, valuesFile))
+		if err != nil {
+			t.Logf("Encountered error when upgrading keptn: %v", err)
+
+		}
+	}
 }
 
 func PrintSequencesResults(env *ZeroDowntimeEnv) {
