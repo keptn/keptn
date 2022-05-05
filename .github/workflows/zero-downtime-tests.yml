@@ -246,7 +246,7 @@ jobs:
           # Use Keptn helm chart to be able to customize the values
           helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} \
             --create-namespace \
-            --values=./test/zero-downtime/test-values.yml 
+            --values=./test/zero-downtime/assets/test-values.yml 
           
           echo "::endgroup::"
 
@@ -301,7 +301,6 @@ jobs:
           KEPTN_ENDPOINT=http://$(kubectl -n ${KEPTN_NAMESPACE} get service api-gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')/api
  
           KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n ${KEPTN_NAMESPACE} -ojsonpath={.data.keptn-api-token} | base64 --decode)
-
           echo "KEPTN_ENDPOINT=${KEPTN_ENDPOINT}"
           echo "##[set-output name=KEPTN_ENDPOINT;]$(echo ${KEPTN_ENDPOINT})"
 
@@ -320,16 +319,17 @@ jobs:
           helm test jmeter-service -n ${{ env.KEPTN_NAMESPACE }}
           helm test helm-service -n ${{ env.KEPTN_NAMESPACE }}
 
+      - name: Set up gotestfmt
+        uses: haveyoudebuggedit/gotestfmt-action@v2.0.0
+        with:
+          # Optional: pass GITHUB_TOKEN to avoid rate limiting.
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Prepare test run
         id: prepare_test_run
+        working-directory: test/zero-downtime
         run: |
-          go install gotest.tools/gotestsum@v1.7.0
-          cd test/zero-downtime
           go get ./...
-
-      - name: "------- TESTS START -------"
-        run: echo "------- TESTS START -------"
 
       #######################################################################
       # TESTS
@@ -338,16 +338,19 @@ jobs:
       - name: Zero Downtime Tests
         id: test_zero_downtime
         timeout-minutes: 90
+        working-directory: test/zero-downtime
         env:
+          GOMAXPROCS: 10
           KEPTN_ENDPOINT: ${{ steps.determine_keptn_endpoint.outputs.KEPTN_ENDPOINT }}
-          DO_AUTH: "true"
-          GOTESTSUM_FORMAT: "testname"
         run: |
-          cd test/zero-downtime          
-          gotestsum --no-color=false -- -run Test_ZeroDowntime -v -timeout 90m
+          set -euo pipefail
+          go test -json -v -run Test_ZeroDowntime -v -timeout 90m 2>&1 | tee /tmp/gotest.log
 
-      - name: "------- TESTS END -------"
-        run: echo "------- TESTS END -------"
+      - name: Format log output
+        if: always()
+        run: |
+          set -euo pipefail
+          cat /tmp/gotest.log | gotestfmt
 
       #######################################################################
       # TEARDOWN
@@ -421,6 +424,15 @@ jobs:
         with:
           name: support-archive
           path: support-archive/*.zip
+
+        # Upload the original go test log as an artifact for later review.
+      - name: Upload test log
+        uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: test-log
+          path: /tmp/gotest.log
+          if-no-files-found: error
 
   calculate-total-runtime:
     name: End-of-Pipeline Metrics

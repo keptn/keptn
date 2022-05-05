@@ -479,6 +479,7 @@ func Test_Webhook(t *testing.T, webhookYaml string, projectName, serviceName str
 		if err != nil {
 			t.Logf("Could not delete tmp file: %s", err.Error())
 		}
+
 	}()
 
 	t.Log("Adding webhook.yaml to our service")
