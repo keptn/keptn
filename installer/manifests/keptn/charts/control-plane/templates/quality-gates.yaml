@@ -84,6 +84,8 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: metadata.labels['app.kubernetes.io/name']
+            - name: PUBSUB_TOPIC
+              value: 'sh.keptn.event.evaluation.triggered,sh.keptn.event.get-sli.finished,sh.keptn.event.monitoring.configure'
             - name: LOG_LEVEL
               value: {{ .Values.logLevel | default "info" }}
           {{- include "control-plane.common.container-security-context" . | nindent 10 }}

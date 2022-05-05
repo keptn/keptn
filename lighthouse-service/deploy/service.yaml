@@ -80,6 +80,8 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: metadata.labels['app.kubernetes.io/name']
+            - name: PUBSUB_TOPIC
+              value: 'sh.keptn.event.evaluation.triggered,sh.keptn.event.get-sli.finished,sh.keptn.event.monitoring.configure'
 ---
 apiVersion: v1
 kind: Service

@@ -26,6 +26,7 @@ type envConfig struct {
 	K8SPodName              string `envconfig:"K8S_POD_NAME" default:""`
 	K8SNamespace            string `envconfig:"K8S_NAMESPACE" default:""`
 	K8SNodeName             string `envconfig:"K8S_NODE_NAME" default:""`
+	EventSubscriptionTopics string `envconfig:"PUBSUB_TOPIC" default:""`
 }
 
 func main() {
@@ -73,6 +74,10 @@ func (l LighthouseService) OnEvent(ctx context.Context, event models.KeptnContex
 }
 
 func (l LighthouseService) RegistrationData() controlplane.RegistrationData {
+	eventSubscriptions := []models.EventSubscription{}
+	if l.env.EventSubscriptionTopics != "" {
+		eventSubscriptions = event_handler.BuildSubscriptions(l.env.EventSubscriptionTopics)
+	}
 	return controlplane.RegistrationData{
 		Name: "lighthouse-service-2",
 		MetaData: models.MetaData{
@@ -86,21 +91,21 @@ func (l LighthouseService) RegistrationData() controlplane.RegistrationData {
 				DeploymentName: l.env.K8SDeploymentName,
 			},
 		},
-		//TODO: read initial event subscription data from env
-		Subscriptions: []models.EventSubscription{
-			{
-				Event:  "sh.keptn.event.evaluation.triggered",
-				Filter: models.EventSubscriptionFilter{},
-			},
-			{
-				Event:  "sh.keptn.event.get-sli.finished",
-				Filter: models.EventSubscriptionFilter{},
-			},
-			{
-				Event:  "sh.keptn.event.monitoring.configure",
-				Filter: models.EventSubscriptionFilter{},
-			},
-		},
+		Subscriptions: eventSubscriptions,
+		// Subscriptions: []models.EventSubscription{
+		// 	{
+		// 		Event:  "sh.keptn.event.evaluation.triggered",
+		// 		Filter: models.EventSubscriptionFilter{},
+		// 	},
+		// 	{
+		// 		Event:  "sh.keptn.event.get-sli.finished",
+		// 		Filter: models.EventSubscriptionFilter{},
+		// 	},
+		// 	{
+		// 		Event:  "sh.keptn.event.monitoring.configure",
+		// 		Filter: models.EventSubscriptionFilter{},
+		// 	},
+		// },
 	}
 }
 
