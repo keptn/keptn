@@ -1,14 +1,23 @@
 /// <reference types="cypress" />
 
-import { interceptMain, interceptMainResourceEnabled, interceptProjectBoard } from '../intercept';
+import {
+  interceptMain,
+  interceptMainResourceApEnabled,
+  interceptMainResourceEnabled,
+  interceptProjectBoard,
+} from '../intercept';
 
 class NewProjectCreatePage {
   private validCertificateInput = '-----BEGIN CERTIFICATE-----\nmyCertificate\n-----END CERTIFICATE-----';
   private validPrivateKeyInput = '-----BEGIN OPENSSH PRIVATE KEY-----\nmyPrivateKey\n-----END OPENSSH PRIVATE KEY-----';
 
-  public intercept(resourceServiceEnabled = false): this {
+  public intercept(resourceServiceEnabled = false, automaticProvisioningEnabled = false): this {
     if (resourceServiceEnabled) {
-      interceptMainResourceEnabled();
+      if (!automaticProvisioningEnabled) {
+        interceptMainResourceEnabled();
+      } else {
+        interceptMainResourceApEnabled();
+      }
     } else {
       interceptMain();
     }
@@ -92,6 +101,11 @@ class NewProjectCreatePage {
 
   public assertGitToken(token: string): this {
     cy.byTestId('ktb-git-token-input').should('have.value', token);
+    return this;
+  }
+
+  public clearGitToken(): this {
+    cy.byTestId('ktb-git-token-input').clear();
     return this;
   }
 
@@ -183,6 +197,11 @@ class NewProjectCreatePage {
     return this;
   }
 
+  public clearSshPrivateKey(): this {
+    cy.byTestId('ktb-ssh-private-key-input').clear();
+    return this;
+  }
+
   public typeSshPrivateKeyPassphrase(passphrase: string): this {
     cy.byTestId('ktb-ssh-private-key-passphrase-input').type(passphrase);
     return this;
@@ -258,6 +277,10 @@ class NewProjectCreatePage {
       .find('input')
       .should(status ? 'be.checked' : 'not.be.checked');
     return this;
+  }
+
+  public enterBasicValidProjectWithoutGitUpstream(): this {
+    return this.typeProjectName('my-project').setShipyardFile();
   }
 
   public enterBasicValidProjectSsh(fillPrivateKey = true): this {
@@ -351,6 +374,11 @@ class NewProjectCreatePage {
     return this;
   }
 
+  public assertNoUpstreamSelected(status: boolean): this {
+    cy.byTestId('ktb-no-upstream-form-button').should(status ? 'have.class' : 'not.have.class', 'dt-radio-checked');
+    return this;
+  }
+
   public selectHttpsForm(): this {
     cy.byTestId('ktb-https-form-button').click();
     return this;
@@ -358,6 +386,11 @@ class NewProjectCreatePage {
 
   public selectSshForm(): this {
     cy.byTestId('ktb-ssh-form-button').click();
+    return this;
+  }
+
+  public selectNoUpstreamForm(): this {
+    cy.byTestId('ktb-no-upstream-form-button').click();
     return this;
   }
 
