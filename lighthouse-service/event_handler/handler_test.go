@@ -9,11 +9,11 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/go-test/deep"
+	"github.com/keptn/go-utils/pkg/api/models"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
-	natseventsource "github.com/keptn/keptn/cp-connector/pkg/nats"
 	"github.com/sirupsen/logrus"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
@@ -92,21 +92,18 @@ func TestNewEventHandler(t *testing.T) {
 			GetConfig().GetKubeAPI = func() (kubernetes.Interface, error) {
 				return fake.NewSimpleClientset(), nil
 			}
-			// natsConnectorMock := &controlplane.NATSConnectorMock{
-			// 	QueueSubscribeMultipleFn: func(subjects []string, queueGroup string, fn nats2.ProcessEventFn) error { return nil },
-			// 	UnsubscribeAllFn:         func() error { return nil },
-			// }
 			tt.args.event.SetType(tt.eventType)
 			os.Setenv("CONFIGURATION_SERVICE", configurationServiceURL)
-			//eventSourceMock := controlplane.EventSourceMock{}
-			ctx2, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-			ctx := context.WithValue(ctx2, controlplane.EventSenderKey, natseventsource.NATS.Publish)
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			fakeSender := func(ce models.KeptnContextExtendedCE) error { return nil }
+			ctx = context.WithValue(ctx, controlplane.EventSenderKey, controlplane.EventSender(fakeSender))
 			defer cancel()
 			got, err := NewEventHandler(ctx, tt.args.event)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewEventHandler() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+			deep.MaxDepth = 5
 			if len(deep.Equal(got, tt.want)) > 0 {
 				t.Errorf("NewEventHandler() got = %v, want %v", got, tt.want)
 			}
