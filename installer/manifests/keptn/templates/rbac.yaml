@@ -173,7 +173,6 @@ metadata:
   name: keptn-get-webhook-config
   labels:
     {{ include "keptn.labels" . | nindent 4 }}
-    app.kubernetes.io/name: keptn-get-webhook-config
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "keptn.name" . }}
 rules:
@@ -248,7 +247,6 @@ metadata:
   name: keptn-webhook-service
   labels:
     {{ include "keptn.labels" . | nindent 4 }}
-    app.kubernetes.io/name: keptn-webhook-service
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "keptn.name" . }}
 roleRef:

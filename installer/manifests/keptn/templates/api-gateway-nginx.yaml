@@ -355,7 +355,6 @@ metadata:
   labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "keptn.name" . }}
-    app.kubernetes.io/version: {{ .Values.apiGatewayNginx.image.tag }}
 spec:
   selector:
     matchLabels:
