@@ -28,18 +28,6 @@ spec:
       containers:
         - name: lighthouse-service
           image: keptndev/lighthouse-service:latest
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 8080
-            initialDelaySeconds: 0
-            periodSeconds: 5
-          readinessProbe:
-              httpGet:
-                path: /health
-                port: 8080
-              initialDelaySeconds: 5
-              periodSeconds: 5
           ports:
             - containerPort: 8080
           resources:
@@ -60,22 +48,38 @@ spec:
               value: 'mongodb-datastore:8080'
             - name: ENVIRONMENT
               value: 'production'
-        - name: distributor
-          image: docker.io/keptndev/distributor:0.14.0-dev
-          ports:
-            - containerPort: 8080
-          resources:
-            requests:
-              memory: "16Mi"
-              cpu: "25m"
-            limits:
-              memory: "32Mi"
-              cpu: "100m"
-          env:
-            - name: PUBSUB_URL
-              value: 'nats://keptn-nats'
-            - name: PUBSUB_TOPIC
-              value: 'sh.keptn.event.evaluation.triggered,sh.keptn.event.get-sli.finished,sh.keptn.event.monitoring.configure'
+            - name: LOG_LEVEL
+              value: info
+            - name: K8S_DEPLOYMENT_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: 'metadata.labels[''app.kubernetes.io/name'']'
+            - name: K8S_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+            - name: K8S_POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: PUBSUB_GROUP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.labels['app.kubernetes.io/name']
 ---
 apiVersion: v1
 kind: Service

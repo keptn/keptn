@@ -3,12 +3,13 @@ package controlplane
 import (
 	"context"
 	"fmt"
-	"github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/go-utils/pkg/common/strutils"
-	"github.com/stretchr/testify/require"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/common/strutils"
+	"github.com/stretchr/testify/require"
 )
 
 type ExampleIntegration struct {
