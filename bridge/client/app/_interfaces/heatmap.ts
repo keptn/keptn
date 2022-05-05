@@ -38,11 +38,11 @@ export interface IDataPoint {
   /**
    * Identifier for xAxis. If there are duplicates, " ${number}" will be attached
    */
-  date: string;
+  xElement: string;
   /**
    * Identifier for yAxis. If there are duplicates, " ${number}" will be attached
    */
-  sli: string;
+  yElement: string;
   tooltip: IHeatmapTooltip;
   color: EvaluationResultType;
   comparedIdentifier: string[];

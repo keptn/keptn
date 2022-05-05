@@ -29,7 +29,7 @@ type SVGGSelection = Selection<SVGGElement, unknown, HTMLElement, unknown>;
 type HighlightSelection = Selection<SVGRectElement, unknown, HTMLElement, unknown>;
 type SecondaryHighlightSelections = Selection<SVGRectElement, unknown, SVGGElement, unknown>;
 type HeatmapTiles = Selection<SVGRectElement | null, IDataPoint, SVGGElement, unknown>;
-type GroupedDataPoints = { [sli: string]: IDataPoint[] };
+type GroupedDataPoints = { [yElement: string]: IDataPoint[] };
 
 @Component({
   selector: 'ktb-heatmap',
@@ -42,12 +42,12 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   private readonly chartSelector = `#${this.uniqueId}`;
   private readonly heatmapSelector = `${this.chartSelector} .heatmap-container`;
   private readonly svgSelector = `${this.chartSelector}>svg`;
-  private readonly firstSliPadding = 6; // "score" will then be 6px smaller than the rest.
+  private readonly firstYElementPadding = 6; // "score" will then be 6px smaller than the rest.
   private readonly yAxisLabelWidth = 150;
   private readonly xAxisLabelWidth = 150;
-  private readonly heightPerSli = 30;
+  private readonly heightPerYElement = 30;
   private readonly legendHeight = 50;
-  private readonly limitSliCount = 10;
+  private readonly limitYElementCount = 10;
   private readonly legendItems: EvaluationResultType[] = [
     ResultTypes.PASSED,
     ResultTypes.WARNING,
@@ -84,11 +84,11 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   @Input()
   set dataPoints(data: IDataPoint[]) {
     this.removeHeatmap();
-    this.setUniqueHeaders(data, 'date', 'sli');
-    this.setUniqueHeaders(data, 'sli', 'date');
+    this.setUniqueHeaders(data, 'xElement', 'yElement');
+    this.setUniqueHeaders(data, 'yElement', 'xElement');
     this.groupedData = data.reduce((groupedData: GroupedDataPoints, dataPoint) => {
-      groupedData[dataPoint.sli] ||= [];
-      groupedData[dataPoint.sli].push(dataPoint);
+      groupedData[dataPoint.yElement] ||= [];
+      groupedData[dataPoint.yElement].push(dataPoint);
       return groupedData;
     }, {});
     this.createHeatmap(this.groupedData);
@@ -220,9 +220,9 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   }
 
   private createHeatmap(data: GroupedDataPoints): void {
-    const { slis, dates } = this.getAxisElements(data);
+    const { yElements, xElements } = this.getAxisElements(data);
 
-    this.setHeight(slis.length);
+    this.setHeight(yElements.length);
     const availableSpace = this.setAndGetAvailableSpace();
 
     const svg = d3.select(this.chartSelector).append('svg').attr('preserveAspectRatio', 'xMinYMin meet');
@@ -230,23 +230,23 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
 
     svg.append('g').classed('heatmap-container', true).attr('transform', `translate(${this.yAxisLabelWidth}, 0)`);
 
-    this.setData(data, dates, slis);
+    this.setData(data, xElements, yElements);
     this.createLegend();
     this.resizeDataPointContainerRect();
   }
 
-  private getAxisElements(data: GroupedDataPoints): { slis: string[]; dates: string[] } {
-    let slis = Object.keys(data);
-    this.showMoreVisible = slis.length > this.limitSliCount;
+  private getAxisElements(data: GroupedDataPoints): { yElements: string[]; xElements: string[] } {
+    let yElements = Object.keys(data);
+    this.showMoreVisible = yElements.length > this.limitYElementCount;
     if (this.showMoreVisible) {
-      slis = this.getLimitedSLIs(slis);
+      yElements = this.getLimitedYElements(yElements);
     }
-    const allDates = slis.reduce((dates: string[], sli: string) => {
-      return [...dates, ...data[sli].map((dataPoint) => dataPoint.date)];
+    const allXElements = yElements.reduce((xElements: string[], yElement: string) => {
+      return [...xElements, ...data[yElement].map((dataPoint) => dataPoint.xElement)];
     }, []);
     return {
-      slis,
-      dates: Array.from(new Set(allDates)),
+      yElements,
+      xElements: Array.from(new Set(allXElements)),
     };
   }
 
@@ -290,7 +290,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
       return;
     }
 
-    this.setHighlightCoordinates(this.selectedDataPoint.date);
+    this.setHighlightCoordinates(this.selectedDataPoint.xElement);
     this.setSecondaryHighlightCoordinates(this.selectedDataPoint.comparedIdentifier);
   }
 
@@ -312,9 +312,13 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     legend.attr('transform', `translate(${centerXPosition}, ${yPosition})`);
   }
 
-  private setUniqueHeaders(dataPoints: IDataPoint[], key: 'date', compare: 'sli'): void;
-  private setUniqueHeaders(dataPoints: IDataPoint[], key: 'sli', compare: 'date'): void;
-  private setUniqueHeaders(dataPoints: IDataPoint[], key: 'sli' | 'date', compare: 'date' | 'sli'): void {
+  private setUniqueHeaders(dataPoints: IDataPoint[], key: 'xElement', compare: 'yElement'): void;
+  private setUniqueHeaders(dataPoints: IDataPoint[], key: 'yElement', compare: 'xElement'): void;
+  private setUniqueHeaders(
+    dataPoints: IDataPoint[],
+    key: 'yElement' | 'xElement',
+    compare: 'xElement' | 'yElement'
+  ): void {
     // TODO: change the first found duplicate to (1)?
     const duplicatesDict: { [key: string]: { [compare: string]: number } } = {};
     dataPoints.forEach((dataPoint, index) => {
@@ -348,8 +352,8 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     this.generateHeatmapTiles(data, this.xAxis, this.yAxis);
   }
 
-  private addXAxis(heatmap: SVGGSelection, dates: string[]): ScaleBand<string> {
-    const x = d3.scaleBand().range([0, this.dataPointContentWidth]).domain(dates);
+  private addXAxis(heatmap: SVGGSelection, xElements: string[]): ScaleBand<string> {
+    const x = d3.scaleBand().range([0, this.dataPointContentWidth]).domain(xElements);
     const xAxisContainer = heatmap.append('g').attr('class', 'x-axis-container');
 
     this.setXAxisCoordinates(xAxisContainer);
@@ -381,19 +385,19 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   }
 
   private getXAxisReducedElements(elements: string[]): string[] {
-    const widthPerDatePoint = this.dataPointContentWidth / elements.length;
+    const widthPerDataPoint = this.dataPointContentWidth / elements.length;
 
-    if (widthPerDatePoint < this.minWidthPerXAxisElement) {
+    if (widthPerDataPoint < this.minWidthPerXAxisElement) {
       const rest = elements.length % 2;
       // the latest one is the most important one. If even then the latest element is even, if not even then the latest element is not even
       // index starts with 0, that's why we use !== rest instead of === rest
-      return elements.filter((_date, index) => index % 2 !== rest);
+      return elements.filter((_xElement, index) => index % 2 !== rest);
     }
     return elements;
   }
 
-  private addYAxis(heatmap: SVGGSelection, slis: string[]): ScaleBand<string> {
-    const y = d3.scaleBand().range([this.height, 0]).domain(slis);
+  private addYAxis(heatmap: SVGGSelection, yElements: string[]): ScaleBand<string> {
+    const y = d3.scaleBand().range([this.height, 0]).domain(yElements);
     const yAxisContainer = heatmap.append('g').attr('class', 'y-axis-container');
     this.attachYAxis(yAxisContainer, y);
     return y;
@@ -462,11 +466,11 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   ): { top: number; left: number } {
     const offset = 5; // tooltip should not exactly appear next to the cursor
     const endOfWidth = (x + tooltipWidth) * window.devicePixelRatio + scrollbarWidth + offset;
-    let left;
+    let left = x;
     if (endOfWidth > window.outerWidth) {
-      left = x - tooltipWidth - offset;
+      left -= tooltipWidth - offset;
     } else {
-      left = x + offset;
+      left += offset;
     }
     return {
       top: y + offset,
@@ -477,11 +481,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   private isScrollbarVisible(): boolean {
     // we only care about the scrollbar of the window (root element) not of a component
     const element = document.querySelector('body')?.firstElementChild;
-    if (!element) {
-      return false;
-    }
-
-    return element.scrollHeight > element.clientHeight;
+    return !!element && element.scrollHeight > element.clientHeight;
   }
 
   private removeHighlights(): void {
@@ -506,13 +506,13 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     }
     this._selectedDataPoint = dataPoint;
 
-    if (preSelectDataPoint && !this.findDateThroughIdentifier(dataPoint.identifier)) {
+    if (preSelectDataPoint && !this.findXElementThroughIdentifier(dataPoint.identifier)) {
       this._selectedDataPoint = undefined;
       return;
     }
 
     heatmap.append('rect').attr('class', 'highlight-primary');
-    this.setHighlightCoordinates(dataPoint.date);
+    this.setHighlightCoordinates(dataPoint.xElement);
 
     const foundIdentifiers = this.getAvailableIdentifiers(dataPoint.comparedIdentifier);
     heatmap.selectAll().data(foundIdentifiers).join('rect').attr('class', 'highlight-secondary');
@@ -524,7 +524,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   }
 
   /**
-   * For the special case that the user clicks on an SLI dataPoint that does not exist (another SLI dataPoint in the column exists)
+   * For the special case that the user clicks on an dataPoint that does not exist (another dataPoint in the column exists)
    * @param event$
    * @param element
    */
@@ -543,7 +543,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
    * @private
    */
   private getAvailableIdentifiers(identifiers: string[]): string[] {
-    return identifiers.filter((identifier) => !!this.findDateThroughIdentifier(identifier));
+    return identifiers.filter((identifier) => !!this.findXElementThroughIdentifier(identifier));
   }
 
   private getHighlightWidth(): number {
@@ -574,22 +574,22 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
 
     this.secondaryHighlights
       .attr('x', (_dt, index) => {
-        const date = this.findDateThroughIdentifier(identifiers[index]);
-        if (!date) {
+        const xElement = this.findXElementThroughIdentifier(identifiers[index]);
+        if (!xElement) {
           return null;
         }
-        return xAxis(date) ?? null;
+        return xAxis(xElement) ?? null;
       })
       .attr('y', 0)
       .attr('height', this.height)
       .attr('width', this.getHighlightWidth());
   }
 
-  private findDateThroughIdentifier(identifier: string): string | undefined {
+  private findXElementThroughIdentifier(identifier: string): string | undefined {
     for (const key of Object.keys(this.groupedData)) {
       const dataPoint = this.groupedData[key].find((dt) => dt.identifier === identifier);
       if (dataPoint) {
-        return dataPoint.date;
+        return dataPoint.xElement;
       }
     }
     return undefined;
@@ -618,15 +618,15 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
       .data(yAxisElements)
       .enter()
       .append('g')
-      .attr('uitestid', (sli) => sli.replace(/ /g, '-')) // TODO: do we need this?
+      .attr('uitestid', (yElement) => yElement.replace(/ /g, '-')) // TODO: do we need this?
       .selectAll()
       .data((key) => data[key])
       .join('rect')
       .attr('class', (dataPoint) => dataPoint.color)
       .classed('data-point', true)
-      // set all new dataPoints (show all SLIs) to disabled if needed
+      // set all new dataPoints (show all yElements) to disabled if needed
       .classed('disabled', (dataPoint: IDataPoint) => this.legendDisabledStatus[dataPoint.color])
-      .attr('uitestid', (dataPoint) => `ktb-heatmap-tile-${dataPoint.date.replace(/ /g, '-')}`) // TODO: do we need this?
+      .attr('uitestid', (dataPoint) => `ktb-heatmap-tile-${dataPoint.xElement.replace(/ /g, '-')}`) // TODO: do we need this?
       .on('click', (_event: PointerEvent, dataPoint: IDataPoint) => this.click(dataPoint))
       .on('mouseover', function (this: SVGGElement | null) {
         if (!this) {
@@ -641,30 +641,26 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   }
 
   private resizeDataPointContainerRect(): void {
-    const coordinates = this.dataPointContainer.node()?.getBoundingClientRect();
-    if (!coordinates) {
-      return;
-    }
-    this.dataPointContainerRect.attr('width', this.dataPointContentWidth).attr('height', coordinates.height);
+    this.dataPointContainerRect.attr('width', this.dataPointContentWidth).attr('height', this.height);
   }
 
   private setDataPointCoordinates(dataPoints: HeatmapTiles, x: ScaleBand<string>, y: ScaleBand<string>): void {
     const yAxisElements = y.domain();
-    const firstSli = yAxisElements[yAxisElements.length - 1];
+    const firstYElement = yAxisElements[yAxisElements.length - 1];
     dataPoints
-      .attr('x', (dataPoint) => x(dataPoint.date) ?? null)
+      .attr('x', (dataPoint) => x(dataPoint.xElement) ?? null)
       .attr('y', (dataPoint) => {
-        const yCoordinate = y(dataPoint.sli);
-        if (yCoordinate !== undefined && dataPoint.sli === firstSli) {
-          return yCoordinate + this.firstSliPadding / 2;
+        const yCoordinate = y(dataPoint.yElement);
+        if (yCoordinate !== undefined && dataPoint.yElement === firstYElement) {
+          return yCoordinate + this.firstYElementPadding / 2;
         }
         return yCoordinate ?? null;
       })
       .attr('width', x.bandwidth())
       .attr('height', (dataPoint) => {
         const height = y.bandwidth();
-        if (dataPoint.sli === firstSli) {
-          return height - this.firstSliPadding;
+        if (dataPoint.yElement === firstYElement) {
+          return height - this.firstYElementPadding;
         }
         return height;
       });
@@ -725,42 +721,42 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     if (!this.xAxis || !this.yAxis) {
       return;
     }
-    const slis = Object.keys(this.groupedData);
-    this.setHeight(slis.length);
-    this.updateYAxis(slis);
+    const yElements = Object.keys(this.groupedData);
+    this.setHeight(yElements.length);
+    this.updateYAxis(yElements);
 
-    this.generateHeatmapTiles(this.groupedData, this.xAxis, this.yAxis, this.getHiddenSLIs(slis));
+    this.generateHeatmapTiles(this.groupedData, this.xAxis, this.yAxis, this.getHiddenYElements(yElements));
   }
 
-  private getHiddenSLIs(slis: string[]): string[] {
-    return slis.slice(0, slis.length - this.limitSliCount);
+  private getHiddenYElements(yElements: string[]): string[] {
+    return yElements.slice(0, yElements.length - this.limitYElementCount);
   }
 
-  private getLimitedSLIs(slis: string[]): string[] {
-    return slis.slice(slis.length - this.limitSliCount, slis.length);
+  private getLimitedYElements(yElements: string[]): string[] {
+    return yElements.slice(yElements.length - this.limitYElementCount, yElements.length);
   }
 
-  private updateYAxis(slis: string[]): void {
+  private updateYAxis(yElements: string[]): void {
     if (!this.yAxis) {
       return;
     }
-    this.yAxis = this.yAxis.range([this.height, 0]).domain(slis);
+    this.yAxis = this.yAxis.range([this.height, 0]).domain(yElements);
     this.attachYAxis(this.yAxisContainer, this.yAxis);
   }
 
   private collapseHeatmap(): void {
-    this.setHeight(this.limitSliCount);
+    this.setHeight(this.limitYElementCount);
     this.dataPointContainer
       .selectAll('g')
-      .filter((_element, index) => index >= this.limitSliCount)
+      .filter((_element, index) => index >= this.limitYElementCount)
       .remove();
 
-    const slis = Object.keys(this.groupedData);
-    this.updateYAxis(this.getLimitedSLIs(slis));
+    const yElements = Object.keys(this.groupedData);
+    this.updateYAxis(this.getLimitedYElements(yElements));
   }
 
   private setHeight(elementCount: number): void {
-    this.height = elementCount * this.heightPerSli;
+    this.height = elementCount * this.heightPerYElement;
   }
 
   public ngOnDestroy(): void {
@@ -785,8 +781,8 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     // adding one duplicate (two evaluations have the same time)
     for (const category of [...categories, 'score']) {
       data.push({
-        date: new Date(dateMillis).toISOString(),
-        sli: category,
+        xElement: new Date(dateMillis).toISOString(),
+        yElement: category,
         color: this.getColor(Math.floor(Math.random() * 4)),
         tooltip: {
           type: IHeatmapTooltipType.SLI,
@@ -817,8 +813,8 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     for (const category of categories) {
       for (let i = 0; i < counter - 1; ++i) {
         data.push({
-          date: new Date(dateMillis + i).toISOString(),
-          sli: category,
+          xElement: new Date(dateMillis + i).toISOString(),
+          yElement: category,
           color: this.getColor(Math.floor(Math.random() * 4)),
           tooltip: {
             type: IHeatmapTooltipType.SLI,
@@ -848,8 +844,8 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     categories.push('score');
     for (let i = 0; i < counter; ++i) {
       data.push({
-        date: new Date(dateMillis + i).toISOString(),
-        sli: 'score',
+        xElement: new Date(dateMillis + i).toISOString(),
+        yElement: 'score',
         color: this.getColor(Math.floor(Math.random() * 4)),
         tooltip: {
           type: IHeatmapTooltipType.SCORE,
