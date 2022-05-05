@@ -176,7 +176,6 @@ func RollingUpgrade(t *testing.T, env *ZeroDowntimeEnv) {
 		} else {
 			chartPath = chartPreviousVersion
 		}
-		chartPath = "C:/Users/anna.reale/keptn-0.15.0-dev.tgz"
 		t.Logf("Upgrading Keptn to %s", chartPath)
 		_, err = testutils.ExecuteCommand(
 			fmt.Sprintf(
