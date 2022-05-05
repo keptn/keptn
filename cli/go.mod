@@ -10,7 +10,7 @@ require (
 	github.com/hashicorp/go-version v1.4.0
 	github.com/invopop/jsonschema v0.4.0
 	github.com/keptn/go-utils v0.14.1-0.20220505070234-5672c074a6de
-	github.com/keptn/kubernetes-utils v0.13.1-0.20220503135705-31953b55954c
+	github.com/keptn/kubernetes-utils v0.13.1-0.20220505114113-51ba4a1ed523
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/spf13/cobra v1.4.0
