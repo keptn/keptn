@@ -319,12 +319,16 @@ jobs:
           helm test jmeter-service -n ${{ env.KEPTN_NAMESPACE }}
           helm test helm-service -n ${{ env.KEPTN_NAMESPACE }}
 
+      - name: Set up gotestfmt
+        uses: haveyoudebuggedit/gotestfmt-action@v2.0.0
+        with:
+          # Optional: pass GITHUB_TOKEN to avoid rate limiting.
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Prepare test run
         id: prepare_test_run
         working-directory: test/zero-downtime
         run: |
-          go install github.com/haveyoudebuggedit/gotestfmt/v2/cmd/gotestfmt@v2.3.1
           go get ./...
 
       #######################################################################
