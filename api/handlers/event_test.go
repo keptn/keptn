@@ -1,19 +1,15 @@
 package handlers
 
 import (
-	"encoding/json"
+	"github.com/go-openapi/strfmt"
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/require"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
-	"time"
 
-	"github.com/go-openapi/strfmt"
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/require"
-
-	datastoremodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/event"
@@ -160,71 +156,6 @@ func (m *mockProducer) Produce(io.Writer, interface{}) error {
 
 func stringp(s string) *string {
 	return &s
-}
-
-func TestGetEventHandlerFunc(t *testing.T) {
-	ts := httptest.NewServer(
-		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Add("Content-Type", "application/json")
-			w.WriteHeader(200)
-
-			e := &datastoremodels.Events{
-				Events: []*datastoremodels.KeptnContextExtendedCE{
-					{
-						Contenttype:    "",
-						Data:           nil,
-						Extensions:     nil,
-						ID:             "",
-						Source:         stringp(""),
-						Specversion:    "",
-						Time:           time.Time{},
-						Type:           stringp(""),
-						Shkeptncontext: "",
-					},
-				},
-				NextPageKey: "",
-				PageSize:    0,
-				TotalCount:  0,
-			}
-
-			marshal, _ := json.Marshal(e)
-			w.Write(marshal)
-		}),
-	)
-	defer ts.Close()
-
-	err := os.Setenv("DATASTORE_URI", ts.URL)
-	require.NoError(t, err)
-
-	type args struct {
-		params    event.GetEventParams
-		principal *models.Principal
-	}
-	tests := []struct {
-		name       string
-		args       args
-		wantStatus int
-	}{
-		{
-			name: "Get events",
-			args: args{
-				params: event.GetEventParams{
-					HTTPRequest:  nil,
-					KeptnContext: "",
-					Type:         keptnevents.ConfigureMonitoringEventType,
-				},
-				principal: nil,
-			},
-			wantStatus: 200,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := GetEventHandlerFunc(tt.args.params, tt.args.principal)
-
-			verifyHTTPResponse(got, tt.wantStatus, t)
-		})
-	}
 }
 
 func Test_getDatastoreURL(t *testing.T) {

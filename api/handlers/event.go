@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -19,10 +18,8 @@ import (
 	"github.com/google/uuid"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/event"
-	"github.com/keptn/keptn/api/utils"
 )
 
 type IEventPublisher interface {
@@ -115,52 +112,7 @@ func createOrApplyKeptnContext(eventKeptnContext string) string {
 	return keptnContext
 }
 
-// GetEventHandlerFunc returns an event specified by keptnContext and eventType
-func GetEventHandlerFunc(params event.GetEventParams, principal *models.Principal) middleware.Responder {
-	logger.Info("API received a GET keptn event")
-
-	eventHandler := keptnapi.NewEventHandler(utils.GetDatastoreURL())
-	ef := keptnapi.EventFilter{
-		EventType:    params.Type,
-		KeptnContext: params.KeptnContext,
-	}
-	cloudEvent, errObj := eventHandler.GetEvents(&ef)
-	if errObj != nil {
-		if errObj.Code == 404 {
-			return sendNotFoundErrorForGet(fmt.Errorf("No " + params.Type + " event found for Keptn context: " + params.KeptnContext))
-		}
-		return sendInternalErrorForGet(fmt.Errorf("%s", *errObj.Message))
-	}
-
-	if cloudEvent == nil || len(cloudEvent) == 0 {
-		return sendNotFoundErrorForGet(fmt.Errorf("No " + params.Type + " event found for Keptn context: " + params.KeptnContext))
-	}
-
-	eventByte, err := json.Marshal(cloudEvent[0])
-	if err != nil {
-		return sendInternalErrorForGet(err)
-	}
-
-	apiEvent := &models.KeptnContextExtendedCE{}
-	err = json.Unmarshal(eventByte, apiEvent)
-	if err != nil {
-		return sendInternalErrorForGet(err)
-	}
-
-	return event.NewGetEventOK().WithPayload(apiEvent)
-}
-
 func sendInternalErrorForPost(err error) *event.PostEventDefault {
 	logger.Error(err.Error())
 	return event.NewPostEventDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
-}
-
-func sendInternalErrorForGet(err error) *event.GetEventDefault {
-	logger.Error(err.Error())
-	return event.NewGetEventDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
-}
-
-func sendNotFoundErrorForGet(err error) *event.GetEventDefault {
-	logger.Error(err.Error())
-	return event.NewGetEventDefault(404).WithPayload(&models.Error{Code: 404, Message: swag.String(err.Error())})
 }
