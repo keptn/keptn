@@ -533,6 +533,9 @@ func storeWithCommit(t *testing.T, projectName, stage, serviceName, content, uri
 			},
 		},
 	}, 3)
+	if err != nil {
+		t.Log(err.Error())
+	}
 	require.Nil(t, err)
 
 	t.Logf("Received response %s", resp.String())

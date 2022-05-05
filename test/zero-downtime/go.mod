@@ -3,7 +3,11 @@ module github.com/keptn/keptn/test/zero_downtime
 go 1.17
 
 require (
-	github.com/keptn/keptn/test/go-tests v0.0.0-20220502114155-a99e8890095b
+	github.com/benbjohnson/clock v1.3.0
+	github.com/keptn/go-utils v0.14.1-0.20220503160417-a0381c53c6d8
+	github.com/keptn/keptn/test/go-tests v0.0.0-20220504093323-b5454bf37c78
+	github.com/steinfletcher/apitest v1.5.11
+	github.com/steinfletcher/apitest-jsonpath v1.7.1
 	github.com/stretchr/testify v1.7.1
 )
 
@@ -19,8 +23,9 @@ require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.1.1 // indirect
 	github.com/Masterminds/sprig/v3 v3.2.2 // indirect
-	github.com/andybalholm/brotli v1.0.4 // indirect
-	github.com/benbjohnson/clock v1.3.0 // indirect
+	github.com/PaesslerAG/gval v1.0.0 // indirect
+	github.com/PaesslerAG/jsonpath v0.1.1 // indirect
+	github.com/andybalholm/brotli v1.0.1 // indirect
 	github.com/cloudevents/sdk-go/observability/opentelemetry/v2 v2.0.0-20211001212819-74757a691209 // indirect
 	github.com/cloudevents/sdk-go/v2 v2.9.0 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.2 // indirect
