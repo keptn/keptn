@@ -10,16 +10,16 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    app.kubernetes.io/component: {{ include "keptn.name" . }}
     app.kubernetes.io/version: {{ .Values.mongodbDatastore.image.tag | default .Chart.AppVersion }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
+    helm.sh/chart: {{ include "keptn.chart" . }}
 spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: mongodb-datastore
       app.kubernetes.io/instance: {{ .Release.Name }}
   replicas: 1
-  {{- include "control-plane.common.update-strategy" . | nindent 2 }}
+  {{- include "keptn.common.update-strategy" . | nindent 2 }}
   template:
     metadata:
       labels:
@@ -27,18 +27,18 @@ spec:
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-        app.kubernetes.io/component: {{ include "control-plane.name" . }}
+        app.kubernetes.io/component: {{ include "keptn.name" . }}
         app.kubernetes.io/version: {{ .Values.mongodbDatastore.image.tag | default .Chart.AppVersion }}
-        helm.sh/chart: {{ include "control-plane.chart" . }}
+        helm.sh/chart: {{ include "keptn.chart" . }}
     spec:
-      {{- include "control-plane.common.pod-security-context" . | nindent 6 }}
+      {{- include "keptn.common.pod-security-context" . | nindent 6 }}
       serviceAccountName: keptn-default
       terminationGracePeriodSeconds: {{ .Values.mongodbDatastore.gracePeriod | default 60 }}
       containers:
       - name: mongodb-datastore
         image: {{ .Values.mongodbDatastore.image.repository }}:{{ .Values.mongodbDatastore.image.tag | default .Chart.AppVersion }}
         {{- $prestop := .Values.mongodbDatastore.preStopHookTime | default 20 | quote -}}
-        {{- include "control-plane.prestop" $prestop | nindent 8 }}
+        {{- include "keptn.prestop" $prestop | nindent 8 }}
         livenessProbe:
           httpGet:
             path: /health
@@ -88,8 +88,8 @@ spec:
           value: {{ .Values.logLevel | default "info" }}
         - name: NATS_URL
           value: 'nats://keptn-nats'
-        {{- include "control-plane.common.env.vars" . | nindent 8 }}
-        {{- include "control-plane.common.container-security-context" . | nindent 8 }}
+        {{- include "keptn.common.env.vars" . | nindent 8 }}
+        {{- include "keptn.common.container-security-context" . | nindent 8 }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.mongodbDatastore.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
 ---
 apiVersion: v1
@@ -101,8 +101,8 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
+    app.kubernetes.io/component: {{ include "keptn.name" . }}
+    helm.sh/chart: {{ include "keptn.chart" . }}
 spec:
   ports:
   - port: 8080

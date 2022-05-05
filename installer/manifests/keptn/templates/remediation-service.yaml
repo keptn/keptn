@@ -9,16 +9,16 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    app.kubernetes.io/component: {{ include "keptn.name" . }}
     app.kubernetes.io/version: {{ .Values.remediationService.image.tag | default .Chart.AppVersion }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
+    helm.sh/chart: {{ include "keptn.chart" . }}
 spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: remediation-service
       app.kubernetes.io/instance: {{ .Release.Name }}
   replicas: 1
-  {{- include "control-plane.common.update-strategy" . | nindent 2 }}
+  {{- include "keptn.common.update-strategy" . | nindent 2 }}
   template:
     metadata:
       labels:
@@ -26,16 +26,16 @@ spec:
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-        app.kubernetes.io/component: {{ include "control-plane.name" . }}
+        app.kubernetes.io/component: {{ include "keptn.name" . }}
         app.kubernetes.io/version: {{ .Values.remediationService.image.tag | default .Chart.AppVersion }}
-        helm.sh/chart: {{ include "control-plane.chart" . }}
+        helm.sh/chart: {{ include "keptn.chart" . }}
     spec:
-      {{- include "control-plane.common.pod-security-context" . | nindent 6 }}
+      {{- include "keptn.common.pod-security-context" . | nindent 6 }}
       containers:
       - name: remediation-service
         image: {{ .Values.remediationService.image.repository }}:{{ .Values.remediationService.image.tag | default .Chart.AppVersion }}
         {{- $prestop := .Values.remediationService.preStopHookTime | default 5 | quote -}}
-        {{- include "control-plane.prestop" $prestop | nindent 8 }}
+        {{- include "keptn.prestop" $prestop | nindent 8 }}
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -65,8 +65,8 @@ spec:
             value: {{ .Values.logLevel | default "info" }}
           - name: PUBSUB_TOPIC
             value: 'sh.keptn.event.get-action.triggered'
-          {{- include "control-plane.common.env.vars" . | nindent 10 }}
-        {{- include "control-plane.common.container-security-context" . | nindent 8 }}
+          {{- include "keptn.common.env.vars" . | nindent 10 }}
+        {{- include "keptn.common.container-security-context" . | nindent 8 }}
       serviceAccountName: keptn-default
       terminationGracePeriodSeconds: {{ .Values.remediationService.gracePeriod | default 60 }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.remediationService.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
@@ -80,8 +80,8 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
+    app.kubernetes.io/component: {{ include "keptn.name" . }}
+    helm.sh/chart: {{ include "keptn.chart" . }}
 spec:
   ports:
   - port: 8080

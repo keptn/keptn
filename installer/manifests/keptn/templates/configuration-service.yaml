@@ -7,8 +7,8 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
+    app.kubernetes.io/component: {{ include "keptn.name" . }}
+    helm.sh/chart: {{ include "keptn.chart" . }}
 spec:
   ports:
     - port: 8080
@@ -33,16 +33,16 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    app.kubernetes.io/component: {{ include "keptn.name" . }}
     app.kubernetes.io/version: {{ .Values.resourceService.image.tag | default .Chart.AppVersion }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
+    helm.sh/chart: {{ include "keptn.chart" . }}
 spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: resource-service
       app.kubernetes.io/instance: {{ .Release.Name }}
   replicas: {{ .Values.resourceService.replicas }}
-  {{- include "control-plane.common.update-strategy" . | nindent 2 }}
+  {{- include "keptn.common.update-strategy" . | nindent 2 }}
   template:
     metadata:
       labels:
@@ -50,9 +50,9 @@ spec:
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-        app.kubernetes.io/component: {{ include "control-plane.name" . }}
+        app.kubernetes.io/component: {{ include "keptn.name" . }}
         app.kubernetes.io/version: {{ .Values.resourceService.image.tag | default .Chart.AppVersion }}
-        helm.sh/chart: {{ include "control-plane.chart" . }}
+        helm.sh/chart: {{ include "keptn.chart" . }}
     spec:
       securityContext:
         fsGroup: {{ .Values.configurationService.fsGroup | default 1001 }}
@@ -65,7 +65,7 @@ spec:
         - name: resource-service
           image: {{ .Values.resourceService.image.repository }}:{{ .Values.resourceService.image.tag | default .Chart.AppVersion }}
           {{- $prestop := .Values.resourceService.preStopHookTime | default 20 | quote -}}
-          {{- include "control-plane.prestop" $prestop | nindent 10 }}
+          {{- include "keptn.prestop" $prestop | nindent 10 }}
           livenessProbe:
             httpGet:
               path: /health
@@ -123,8 +123,8 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
+    app.kubernetes.io/component: {{ include "keptn.name" . }}
+    helm.sh/chart: {{ include "keptn.chart" . }}
 spec:
   accessModes:
     - ReadWriteOnce
@@ -144,9 +144,9 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    app.kubernetes.io/component: {{ include "keptn.name" . }}
     app.kubernetes.io/version: {{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
+    helm.sh/chart: {{ include "keptn.chart" . }}
 spec:
   selector:
     matchLabels:
@@ -162,9 +162,9 @@ spec:
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-        app.kubernetes.io/component: {{ include "control-plane.name" . }}
+        app.kubernetes.io/component: {{ include "keptn.name" . }}
         app.kubernetes.io/version: {{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
-        helm.sh/chart: {{ include "control-plane.chart" . }}
+        helm.sh/chart: {{ include "keptn.chart" . }}
     spec:
       securityContext:
         fsGroup: {{ .Values.configurationService.fsGroup | default 1001 }}
@@ -191,7 +191,7 @@ spec:
         - name: configuration-service
           image: {{ .Values.configurationService.image.repository }}:{{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
           {{- $prestop := .Values.configurationService.preStopHookTime | default 20 | quote -}}
-          {{- include "control-plane.prestop" $prestop | nindent 10 }}
+          {{- include "keptn.prestop" $prestop | nindent 10 }}
           livenessProbe:
             httpGet:
               path: /health

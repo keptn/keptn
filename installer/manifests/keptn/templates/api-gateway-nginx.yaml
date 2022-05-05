@@ -9,8 +9,8 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
+    app.kubernetes.io/component: {{ include "keptn.name" . }}
+    helm.sh/chart: {{ include "keptn.chart" . }}
 data:
   nginx.conf: |
     worker_processes  3;
@@ -365,16 +365,16 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    app.kubernetes.io/component: {{ include "keptn.name" . }}
     app.kubernetes.io/version: {{ .Values.apiGatewayNginx.image.tag }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
+    helm.sh/chart: {{ include "keptn.chart" . }}
 spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: api-gateway-nginx
       app.kubernetes.io/instance: {{ .Release.Name }}
   replicas: 1
-  {{- include "control-plane.common.update-strategy" . | nindent 2 }}
+  {{- include "keptn.common.update-strategy" . | nindent 2 }}
   template:
     metadata:
       labels:
@@ -382,13 +382,13 @@ spec:
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-        app.kubernetes.io/component: {{ include "control-plane.name" . }}
+        app.kubernetes.io/component: {{ include "keptn.name" . }}
         app.kubernetes.io/version: {{ .Values.apiGatewayNginx.image.tag }}
-        helm.sh/chart: {{ include "control-plane.chart" . }}
+        helm.sh/chart: {{ include "keptn.chart" . }}
       annotations: # add randomizer to restart the deployment if anything changes - see https://github.com/keptn/keptn/issues/3320
         rollme: {{ randAlphaNum 5 | quote }}
     spec:
-      {{- include "control-plane.apiGatewayNginx.pod-security-context" . | nindent 6 }}
+      {{- include "keptn.apiGatewayNginx.pod-security-context" . | nindent 6 }}
       terminationGracePeriodSeconds: {{ .Values.apiGatewayNginx.gracePeriod | default 60 }}
       containers:
         - name: api-gateway-nginx
@@ -435,7 +435,7 @@ spec:
             limits:
               memory: "128Mi"
               cpu: "100m"
-        {{- include "control-plane.apiGatewayNginx.container-security-context" . | nindent 10 }}
+        {{- include "keptn.apiGatewayNginx.container-security-context" . | nindent 10 }}
       volumes:
         - name: api-nginx-config
           configMap:
@@ -452,8 +452,8 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
+    app.kubernetes.io/component: {{ include "keptn.name" . }}
+    helm.sh/chart: {{ include "keptn.chart" . }}
 spec:
   type: {{ .Values.apiGatewayNginx.type }}
   ports:
