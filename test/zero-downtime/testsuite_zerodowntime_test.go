@@ -147,8 +147,8 @@ func ZDTestTemplate(t *testing.T, F func(t2 *testing.T, e *ZeroDowntimeEnv), nam
 		F(t1, env)
 		// The test summary should be printed after the tests have finished and before the test suite returns
 		// to avoid failure due to test context expired
-		t1.Run("Summary", func(t *testing.T) {
-			t1.Log("Test results for ", name)
+		t.Run("Summary", func(t *testing.T) {
+			t.Log("Test results for ", name)
 			PrintSequencesResults(env)
 			PrintAPIresults(env)
 			env.Wg.Done()
@@ -163,10 +163,9 @@ func RollingUpgrade(t *testing.T, env *ZeroDowntimeEnv) {
 		t.Log("Rolling upgrade terminated")
 		env.Wg.Wait()
 	}()
-	time.Sleep(30 * time.Second)
-	chartPreviousVersion, chartLatestVersion := GetCharts(t)
 
 	t.Log("Upgrade in progress")
+	chartPreviousVersion, chartLatestVersion := GetCharts(t)
 
 	for i := 0; i < env.NrOfUpgrades; i++ {
 		chartPath := ""
