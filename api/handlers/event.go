@@ -22,15 +22,18 @@ import (
 	"github.com/keptn/keptn/api/restapi/operations/event"
 )
 
-type IEventPublisher interface {
+//go:generate moq -pkg handlers_mock --skip-ensure -out ./fake/eventpublisher_mock.go . eventPublisher
+type eventPublisher interface {
 	Publish(event apimodels.KeptnContextExtendedCE) error
 }
+
+const defaultEventSource = "https://github.com/keptn/keptn/api"
 
 var eventHandlerInstance *EventHandler
 var instanceOnce = sync.Once{}
 
 type EventHandler struct {
-	EventPublisher IEventPublisher
+	EventPublisher eventPublisher
 }
 
 func GetEventHandlerInstance() *EventHandler {
@@ -53,9 +56,9 @@ func (eh *EventHandler) PostEvent(params event.PostEventParams) (*models.EventCo
 	if params.Body.Source != nil && len(*params.Body.Source) > 0 {
 		sourceURL, err := url.Parse(*params.Body.Source)
 		if err != nil {
-			logger.Info("Unable to parse source from the received CloudEvent")
+			logger.Warnf("Could not parse source from the received CloudEvent: %v", err)
 			// use a fallback value for the source
-			source = "https://github.com/keptn/keptn/api"
+			source = defaultEventSource
 		} else {
 			source = sourceURL.String()
 		}
