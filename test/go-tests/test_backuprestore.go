@@ -182,9 +182,11 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	backupGit := serviceUnderTestName == "configuration-service"
 
 	t.Logf("Extracting name of service %s", serviceUnderTestName)
-	serviceUnderTestPod, err := ExecuteCommandf("kubectl get pods -n %s -lapp.kubernetes.io/name=%s -ojsonpath='{.items[0].metadata.name}'", keptnNamespace, serviceUnderTestName)
+
+	serviceUnderTestPods, err := GetPodNamesOfDeployment("app.kubernetes.io/name=" + serviceUnderTestName)
 	require.Nil(t, err)
-	serviceUnderTestPod = removeQuotes(serviceUnderTestPod)
+	require.NotEmpty(t, serviceUnderTestPods)
+	serviceUnderTestPod := serviceUnderTestPods[0]
 
 	//backup Configuration Service data
 
@@ -233,9 +235,12 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	require.Nil(t, err)
 
 	t.Logf("Executing backup of MongoDB database")
-	mongoDbPod, err := ExecuteCommandf("kubectl get pods -n %s -lapp.kubernetes.io/name=mongo -ojsonpath='{.items[0].metadata.name}'", keptnNamespace)
+
+	mongoDbPods, err := GetPodNamesOfDeployment("app.kubernetes.io/name=mongo")
 	require.Nil(t, err)
-	mongoDbPod = removeQuotes(mongoDbPod)
+	require.NotEmpty(t, mongoDbPods)
+	mongoDbPod := mongoDbPods[0]
+
 	_, err = ExecuteCommandf("kubectl cp %s/%s:/tmp/dump ./%s/ -c mongodb", keptnNamespace, mongoDbPod, mongoDBBackupFolder)
 
 	if backupGit {
@@ -275,9 +280,10 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	//restore Configuration/Resource Service data
 
 	t.Logf("Restoring %s data", serviceUnderTestName)
-	serviceUnderTestPod, err = ExecuteCommandf("kubectl get pods -n %s -lapp.kubernetes.io/name=%s -ojsonpath='{.items[0].metadata.name}'", keptnNamespace, serviceUnderTestName)
+	serviceUnderTestPods, err = GetPodNamesOfDeployment("app.kubernetes.io/name=" + serviceUnderTestName)
 	require.Nil(t, err)
-	serviceUnderTestPod = removeQuotes(serviceUnderTestPod)
+	require.NotEmpty(t, serviceUnderTestPods)
+	serviceUnderTestPod = serviceUnderTestPods[0]
 	_, err = ExecuteCommandf("kubectl cp ./%s/config/ %s/%s:/data -c %s", serviceBackupFolder, keptnNamespace, serviceUnderTestPod, serviceUnderTestName)
 	require.Nil(t, err)
 

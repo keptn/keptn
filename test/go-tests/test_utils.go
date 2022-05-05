@@ -793,6 +793,25 @@ func SetShipyardControllerEnvVar(t *testing.T, envVarName, envVarValue string) e
 	return nil
 }
 
+func GetPodNamesOfDeployment(labelSelector string) ([]string, error) {
+	k8sClient, err := keptnkubeutils.GetClientset(false)
+	if err != nil {
+		return nil, err
+	}
+
+	get, err := k8sClient.CoreV1().Pods(GetKeptnNameSpaceFromEnv()).List(context.TODO(), v1.ListOptions{LabelSelector: labelSelector})
+	if err != nil {
+		return nil, nil
+	}
+
+	podNames := []string{}
+
+	for _, pod := range get.Items {
+		podNames = append(podNames, pod.Name)
+	}
+	return podNames, nil
+}
+
 // SetRecreateUpgradeStrategyForDeployment sets the upgrade strategy of a deployment to "Recreate".
 // Needed for our minishift tests right now, as there are problems with the RollingUpdate strategy of the shipyard-controller
 // Should become obsolete when we switch to testing on an OpenShift 4.x cluster instead.
