@@ -67,7 +67,6 @@ Loop:
 //to generate html report we can add 	.Report(apitest.SequenceDiagram())
 
 func (suite *TestSuiteAPI) Test_API_Service() {
-	suite.T().Log("API SERVICE ")
 	started := time.Now()
 	apiURL := suite.keptnAPIURL + "/v1"
 
@@ -85,7 +84,6 @@ func (suite *TestSuiteAPI) Test_API_Service() {
 }
 
 func (suite *TestSuiteAPI) Test_Statistic_Service() {
-	suite.T().Log("STATISTIC SERVICE ")
 	started := time.Now()
 	apiURL := suite.keptnAPIURL + "/statistics/v1"
 
