@@ -1,8 +1,7 @@
-package main
+package api
 
 import (
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	dapi "github.com/keptn/keptn/distributor/pkg/api"
 	"github.com/keptn/keptn/distributor/pkg/config"
 	"net/http"
 	"reflect"
@@ -11,9 +10,9 @@ import (
 
 func Test_createAPI(t *testing.T) {
 
-	api := dapi.Initializer{
-		Internal: func(client *http.Client, apiMappings ...dapi.InClusterAPIMappings) (*dapi.InternalAPISet, error) {
-			return &dapi.InternalAPISet{}, nil
+	api := Initializer{
+		Internal: func(client *http.Client, apiMappings ...InClusterAPIMappings) (*InternalAPISet, error) {
+			return &InternalAPISet{}, nil
 		},
 		Remote: func(baseURL string, options ...func(*keptnapi.APISet)) (*keptnapi.APISet, error) {
 			return &keptnapi.APISet{}, nil
@@ -64,7 +63,7 @@ func Test_createAPI(t *testing.T) {
 				t.Errorf("createAPI() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if err == nil && tt.wantInternal && !reflect.DeepEqual(got, &dapi.InternalAPISet{}) {
+			if err == nil && tt.wantInternal && !reflect.DeepEqual(got, &InternalAPISet{}) {
 				t.Errorf("createAPI() got = %v, wanted internal API", got)
 			} else if err == nil && !tt.wantInternal && !reflect.DeepEqual(got, &keptnapi.APISet{}) {
 				t.Errorf("createAPI() got = %v, want remote execution plane", got)

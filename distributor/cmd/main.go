@@ -18,8 +18,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/kelseyhightower/envconfig"
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/distributor/pkg/api"
 	"github.com/keptn/keptn/distributor/pkg/clientget"
 	"github.com/keptn/keptn/distributor/pkg/config"
@@ -31,12 +29,9 @@ import (
 	"github.com/keptn/keptn/distributor/pkg/uniform/watch"
 	"github.com/keptn/keptn/distributor/pkg/utils"
 	logger "github.com/sirupsen/logrus"
-	"net/http"
-	"net/url"
 	"os"
 	"os/signal"
 	"strconv"
-	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -55,7 +50,7 @@ func main() {
 	bark(env)
 
 	executionContext := createExecutionContext()
-	eventSender, err := createEventSender(env)
+	eventSender, err := poller.CreateEventSender(env)
 	if err != nil {
 		logger.WithError(err).Fatal("Could not initialize event sender.")
 	}
@@ -65,7 +60,7 @@ func main() {
 		logger.WithError(err).Fatal("Could not initialize http client.")
 	}
 
-	apiset, err := createKeptnAPI(httpClient, env)
+	apiset, err := api.CreateKeptnAPI(httpClient, env)
 	if err != nil {
 		logger.WithError(err).Fatal("Could not initialize API set.")
 	}
@@ -166,42 +161,4 @@ func createExecutionContext() *utils.ExecutionContext {
 		CancelFn: cancel,
 	}
 	return &executionContext
-}
-
-func createKeptnAPI(httpClient *http.Client, env config.EnvConfig) (keptnapi.KeptnInterface, error) {
-	return createAPI(httpClient, env, api.Initializer{keptnapi.New, api.NewInternal})
-}
-
-func createAPI(httpClient *http.Client, env config.EnvConfig, api api.Initializer) (keptnapi.KeptnInterface, error) {
-	if httpClient == nil {
-		httpClient = &http.Client{}
-	}
-	if env.PubSubConnectionType() == config.ConnectionTypeHTTP {
-		scheme := "http"
-		parsed, err := url.ParseRequestURI(env.KeptnAPIEndpoint)
-		if err != nil {
-			return nil, err
-		}
-
-		// accepts either "" or http
-		if env.KeptnAPIEndpoint != "" && (parsed.Scheme == "" || !strings.HasPrefix(parsed.Scheme, "http")) {
-			return nil, fmt.Errorf("invalid scheme for keptn endpoint, %s is not http or https", env.KeptnAPIEndpoint)
-		}
-
-		if strings.HasPrefix(parsed.Scheme, "http") {
-			// if no value is assigned to the endpoint than we keep the default scheme
-			scheme = parsed.Scheme
-		}
-		return api.Remote(env.KeptnAPIEndpoint, keptnapi.WithScheme(scheme), keptnapi.WithHTTPClient(httpClient), keptnapi.WithAuthToken(env.KeptnAPIToken))
-	}
-
-	return api.Internal(httpClient)
-}
-
-func createEventSender(env config.EnvConfig) (poller.EventSender, error) {
-	eventSender, err := keptnv2.NewHTTPEventSender(env.PubSubRecipientURL())
-	if err != nil {
-		return nil, err
-	}
-	return eventSender, nil
 }
