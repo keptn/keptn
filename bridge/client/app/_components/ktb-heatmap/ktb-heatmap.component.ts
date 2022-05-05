@@ -6,13 +6,13 @@ import {
   ElementRef,
   EventEmitter,
   HostListener,
+  Inject,
   Input,
   OnDestroy,
   Output,
   ViewChild,
 } from '@angular/core';
-import * as d3 from 'd3';
-import { BaseType, ScaleBand, Selection, ValueFn } from 'd3';
+import { axisBottom, axisLeft, BaseType, ScaleBand, scaleBand, select, Selection, ValueFn } from 'd3';
 import { ResultTypes } from '../../../../shared/models/result-types';
 import { DtButton } from '@dynatrace/barista-components/button';
 import { v4 as uuid } from 'uuid';
@@ -24,6 +24,7 @@ import {
   IHeatmapTooltipType,
 } from '../../_interfaces/heatmap';
 import moment from 'moment';
+import { DOCUMENT } from '@angular/common';
 
 type SVGGSelection = Selection<SVGGElement, unknown, HTMLElement, unknown>;
 type HighlightSelection = Selection<SVGRectElement, unknown, HTMLElement, unknown>;
@@ -62,8 +63,8 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     [ResultTypes.FAILED]: false,
     [EvaluationResultTypeExtension.INFO]: false,
   };
-  private xAxis: ScaleBand<string> = d3.scaleBand();
-  private yAxis: ScaleBand<string> = d3.scaleBand();
+  private xAxis: ScaleBand<string> = scaleBand();
+  private yAxis: ScaleBand<string> = scaleBand();
   private dataPointContentWidth = 0;
   private height = 0;
   private _selectedDataPoint?: IDataPoint;
@@ -108,7 +109,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   }
 
   private get heatmapInstance(): SVGGSelection {
-    return d3.select(this.heatmapSelector);
+    return select(this.heatmapSelector);
   }
 
   private get dataPointContainer(): SVGGSelection {
@@ -143,10 +144,10 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     return this.heatmapInstance.select('.data-point-container-rect');
   }
 
-  constructor(private elementRef: ElementRef) {
+  constructor(private elementRef: ElementRef, @Inject(DOCUMENT) private document: Document) {
     // has to be globally instead of component bound, else scrolling into it will not have any mouse coordinates
     this.mouseMoveListener = (event: MouseEvent): void => this.onMouseMove(event);
-    document.addEventListener('mousemove', this.mouseMoveListener);
+    this.document.addEventListener('mousemove', this.mouseMoveListener);
   }
 
   private onMouseMove(event: MouseEvent): void {
@@ -191,7 +192,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   }
 
   private getDataPointElement(x: number, y: number): SVGRectElement | undefined {
-    const element = document.elementFromPoint(x, y);
+    const element = this.document.elementFromPoint(x, y);
 
     if (!element || !(element instanceof SVGRectElement)) {
       return undefined;
@@ -206,11 +207,11 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
       return;
     }
 
-    return d3.select(element)?.datum() as IDataPoint | undefined;
+    return select(element)?.datum() as IDataPoint | undefined;
   }
 
   private removeHeatmap(): void {
-    d3.select(this.svgSelector).remove();
+    select(this.svgSelector).remove();
   }
 
   private setTooltipVisibility(visible: boolean): void {
@@ -228,7 +229,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
     this.setHeight(yElements.length);
     const availableSpace = this.setAndGetAvailableSpace();
 
-    const svg = d3.select(this.chartSelector).append('svg').attr('preserveAspectRatio', 'xMinYMin meet');
+    const svg = select(this.chartSelector).append('svg').attr('preserveAspectRatio', 'xMinYMin meet');
     this.resizeSvg(availableSpace.width, availableSpace.height);
 
     svg.append('g').classed('heatmap-container', true).attr('transform', `translate(${this.maxYAxisLabelWidth}, 0)`);
@@ -275,7 +276,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   }
 
   private resizeSvg(width: number, height: number): void {
-    d3.select(this.svgSelector).attr('viewBox', `0 0 ${width} ${height}`).attr('width', width).attr('height', height);
+    select(this.svgSelector).attr('viewBox', `0 0 ${width} ${height}`).attr('width', width).attr('height', height);
   }
 
   private resizeXAxis(): void {
@@ -383,7 +384,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
    */
   private attachXAxis(xAxisContainer: SVGGSelection, x: ScaleBand<string>): void {
     xAxisContainer
-      .call(d3.axisBottom(x).tickSize(5).tickValues(this.getXAxisReducedElements(x.domain())))
+      .call(axisBottom(x).tickSize(5).tickValues(this.getXAxisReducedElements(x.domain())))
       .selectAll('text')
       .attr('class', 'x-axis-identifier')
       .attr('dx', '-.8em')
@@ -416,14 +417,14 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
    * @private
    */
   private attachYAxis(yAxisContainer: SVGGSelection, y: ScaleBand<string>): void {
-    const yAxis = yAxisContainer.call(d3.axisLeft(y).tickSize(0));
+    const yAxis = yAxisContainer.call(axisLeft(y).tickSize(0));
     yAxis.selectAll('.tick').each(this.setEllipsisStyle(this.maxYAxisLabelWidth));
     yAxis.select('.domain').remove();
   }
 
   private setEllipsisStyle(labelWidth: number): ValueFn<BaseType, unknown, void> {
     return function (this: BaseType): void {
-      const self = d3.select(this as SVGGElement);
+      const self = select(this as SVGGElement);
       if (self.empty()) {
         return;
       }
@@ -486,7 +487,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
 
   private isScrollbarVisible(): boolean {
     // we only care about the scrollbar of the window (root element) not of a component
-    const element = document.querySelector('body')?.firstElementChild;
+    const element = this.document.querySelector('body')?.firstElementChild;
     return !!element && element.scrollHeight > element.clientHeight;
   }
 
@@ -690,7 +691,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   private setDataPointsDisabled(category: EvaluationResultType, isDisabled: boolean): void {
     this.dataPointElements.each(function (this: SVGGElement | null, dataPoint: IDataPoint) {
       if (this && dataPoint.color === category) {
-        d3.select(this).classed('disabled', isDisabled);
+        select(this).classed('disabled', isDisabled);
       }
     });
   }
@@ -743,7 +744,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   }
 
   public ngOnDestroy(): void {
-    document.removeEventListener('mousemove', this.mouseMoveListener);
+    this.document.removeEventListener('mousemove', this.mouseMoveListener);
   }
 
   //<editor-fold desc="test data">
