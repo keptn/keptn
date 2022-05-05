@@ -47,7 +47,6 @@ jobs:
       KUBECONFIG: ${{ matrix.KUBECONFIG }}
       KEPTN_NAMESPACE: "keptn-zd-test-${{ github.run_number }}-${{ github.run_attempt }}"
       GO_VERSION: 1.17
-      GOMAXPROCS: 10
     outputs:
       BRANCH: ${{ steps.determine_branch.outputs.BRANCH }}
       ARTIFACT_RUN_ID: ${{ steps.last_run_id.outputs.RUN_ID }}
@@ -323,9 +322,9 @@ jobs:
 
       - name: Prepare test run
         id: prepare_test_run
+        working-directory: test/zero-downtime
         run: |
-          go install github.com/haveyoudebuggedit/gotestfmt/v2/cmd/gotestfmt@latest
-          cd test/zero-downtime
+          go install github.com/haveyoudebuggedit/gotestfmt/v2/cmd/gotestfmt@v2.3.1
           go get ./...
 
       #######################################################################
@@ -337,6 +336,7 @@ jobs:
         timeout-minutes: 90
         working-directory: test/zero-downtime
         env:
+          GOMAXPROCS: 10
           KEPTN_ENDPOINT: ${{ steps.determine_keptn_endpoint.outputs.KEPTN_ENDPOINT }}
         run: |
           set -euo pipefail      
