@@ -39,9 +39,11 @@ keywords:
   - keptn
 
 dependencies:
-  - name: control-plane
-    version: 0.1.0
-    condition: control-plane.enabled
-  - name: continuous-delivery
-    version: 0.1.0
-    condition: continuous-delivery.enabled
+  - name: mongodb
+    version: 11.2.0
+    repository: https://charts.bitnami.com/bitnami
+    condition: mongo.enabled
+    alias: mongo
+  - name: nats
+    version: 0.13.2
+    repository: https://nats-io.github.io/k8s/helm/charts/

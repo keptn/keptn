@@ -1,4 +1,4 @@
 .DS_Store
 # ignore generated files
-manifests/keptn/charts/control-plane/Chart.lock
-manifests/keptn/charts/control-plane/charts/nats-*.tgz
+manifests/keptn/Chart.lock
+manifests/keptn/charts/nats-*.tgz

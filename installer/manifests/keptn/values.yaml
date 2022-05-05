@@ -1,8 +1,299 @@
-control-plane:
-  enabled: true
-  apiGatewayNginx:
-    type: ClusterIP
-    port: 80
-
-continuous-delivery:
+continuousDelivery:
   enabled: false
+  ingressConfig:
+    ingress_hostname_suffix: "svc.cluster.local"
+    ingress_protocol: "http"
+    ingress_port: "80"
+    istio_gateway: "public-gateway.istio-system"
+
+mongo:
+  enabled: true
+  host: mongodb:27017
+  architecture: standalone
+  service:
+    nameOverride: 'mongo'
+    port: 27017
+  auth:
+    enabled: true
+    databases:
+      - 'keptn'
+    existingSecret: 'mongodb-credentials' # If the password and rootPassword values below are used, remove this field.
+    usernames:
+      - 'keptn'
+    password: null
+    rootUser: 'admin'
+    rootPassword: null
+    bridgeAuthDatabase: 'keptn'
+  external:
+    connectionString:
+
+prefixPath: ""
+
+keptnSpecVersion: latest
+
+features:
+  automaticProvisioningURL: ""
+
+nats:
+  nameOverride: keptn-nats
+  fullnameOverride: keptn-nats
+  cluster:
+    replicas: 3
+    name: nats
+  nats:
+    healthcheck:
+      startup:
+        enabled: false
+    jetstream:
+      enabled: true
+
+      memStorage:
+        enabled: true
+        size: 2Gi
+
+      fileStorage:
+        enabled: true
+        size: 5Gi
+        storageDirectory: /data/
+        storageClassName: ""
+
+  natsbox:
+    enabled: false
+  reloader:
+    enabled: false
+
+apiGatewayNginx:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+  nodePort: 31090
+  podSecurityContext:
+    enabled: true
+    defaultSeccompProfile: true
+    fsGroup: 101
+  containerSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    runAsUser: 101
+    readOnlyRootFilesystem: false
+    allowPrivilegeEscalation: false
+    privileged: false
+  image:
+    repository: docker.io/nginxinc/nginx-unprivileged
+    tag: 1.21.6-alpine
+  nodeSelector: {}
+  gracePeriod: 120     # gracePeriod set to preStop hook time +30s
+  preStopHookTime: 90
+
+remediationService:
+  image:
+    repository: docker.io/keptn/remediation-service
+    tag: ""
+  nodeSelector: {}
+  gracePeriod: 120     # gracePeriod set to preStop hook time +30s
+  preStopHookTime: 90
+
+apiService:
+  tokenSecretName:
+  image:
+    repository: docker.io/keptn/api
+    tag: ""
+  maxAuth:
+    enabled: true
+    requestsPerSecond: "1.0"
+    requestBurst: "2"
+  nodeSelector: {}
+  gracePeriod: 120     # gracePeriod set to preStop hook time +30s
+  preStopHookTime: 90
+
+bridge:
+  image:
+    repository: docker.io/keptn/bridge2
+    tag: ""
+  cliDownloadLink: null
+  integrationsPageLink: null
+  secret:
+    enabled: true
+  versionCheck:
+    enabled: true
+  showApiToken:
+    enabled: true
+  installationType: null
+  lookAndFeelUrl: null
+  podSecurityContext:
+    enabled: true
+    defaultSeccompProfile: true
+    fsGroup: 65532
+  containerSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    runAsUser: 65532
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+    privileged: false
+  oauth:
+    enabled: false
+    discovery: ""
+    secureCookie: false
+    trustProxy: ""
+    sessionTimeoutMin: ""
+    sessionValidatingTimeoutMin: ""
+    baseUrl: ""
+    clientID: ""
+    clientSecret: ""
+    IDTokenAlg: ""
+    scope: ""
+    userIdentifier: ""
+    mongoConnectionString: ""
+  nodeSelector: {}
+
+distributor:
+  metadata:
+    hostname:
+    namespace:
+  image:
+    repository: docker.io/keptn/distributor
+    tag: ""
+  config:
+    queueGroup:
+      enabled: true
+    oauth:
+      clientID: ""
+      clientSecret: ""
+      discovery: ""
+      tokenURL: ""
+      scopes: ""
+
+shipyardController:
+  image:
+    repository: docker.io/keptn/shipyard-controller
+    tag: ""
+  config:
+    taskStartedWaitDuration: "10m"
+    uniformIntegrationTTL: "48h"
+    disableLeaderElection: true
+    replicas: 1
+    validation:
+      # On Database level, Keptn creates collections that are named like <PROJECTNAME>-<suffix>
+      # Keep in mind that "suffix" can occupy up to 20 characters so that you will eventually
+      # hit the database limit for max collection name size when your project name is too long.
+      # projectNameMaxSize can be used to forbid project names longer than a certain size in Keptn
+      projectNameMaxSize: 200
+      # The limit of 43 characters for a service's name is currently imposed by the helm-service,
+      # which, if being used for the CD use case with blue/green deployments generates a helm release called <serviceName>-generated,
+      # and helm releases have a maximum length of 53 characters. Therefore, we use this value as a default.
+      # If the helm chart generation for blue/green deployments is not needed, and this value is too small, it can be adapted here
+      serviceNameMaxSize: 43
+  nodeSelector: {}
+  gracePeriod: 120     # gracePeriod set to preStop hook time +30s
+  preStopHookTime: 90
+
+secretService:
+  image:
+    repository: docker.io/keptn/secret-service
+    tag: ""
+  nodeSelector: {}
+  gracePeriod: 120     # gracePeriod set to preStop hook time +30s
+  preStopHookTime: 90
+
+configurationService:
+  image:
+    repository: docker.io/keptn/configuration-service
+    tag: ""
+  # storage and storageClass are the settings for the PVC used by the configuration-storage
+  storage: 100Mi
+  storageClass: null
+  fsGroup: 1001
+  initContainer: true
+  env:
+    GIT_KEPTN_USER: "keptn"
+    GIT_KEPTN_EMAIL: "keptn@keptn.sh"
+  nodeSelector: {}
+  gracePeriod: 120     # gracePeriod set to preStop hook time +30s
+  preStopHookTime: 90
+
+resourceService:
+  enabled: false
+  replicas: 1
+  image:
+    repository: docker.io/keptn/resource-service
+    tag: ""
+  env:
+    GIT_KEPTN_USER: "keptn"
+    GIT_KEPTN_EMAIL: "keptn@keptn.sh"
+    DIRECTORY_STAGE_STRUCTURE: "false"
+  nodeSelector: {}
+  gracePeriod: 120     # gracePeriod set to preStop hook time +30s
+  preStopHookTime: 90
+
+mongodbDatastore:
+  image:
+    repository: docker.io/keptn/mongodb-datastore
+    tag: ""
+  nodeSelector: {}
+  gracePeriod: 120     # gracePeriod set to preStop hook time +30s
+  preStopHookTime: 90
+
+lighthouseService:
+  image:
+    repository: docker.io/keptn/lighthouse-service
+    tag: ""
+  nodeSelector: {}
+  gracePeriod: 120     # gracePeriod set to preStop hook time +30s
+  preStopHookTime: 90
+
+statisticsService:
+  image:
+    repository: docker.io/keptn/statistics-service
+    tag: ""
+  nodeSelector: {}
+  gracePeriod: 120     # gracePeriod set to preStop hook time +30s
+  preStopHookTime: 90
+
+approvalService:
+  image:
+    repository: docker.io/keptn/approval-service
+    tag: ""
+  nodeSelector: {}
+  gracePeriod: 120     # gracePeriod set to preStop hook time +30s
+  preStopHookTime: 90
+
+webhookService:
+  enabled: true
+  image:
+    repository: docker.io/keptn/webhook-service
+    tag: ""
+  nodeSelector: {}
+  gracePeriod: 120     # gracePeriod set to preStop hook time +30s
+  preStopHookTime: 90
+
+ingress:
+  enabled: false
+  annotations: {}
+  host: {}
+  path: /
+  pathType: Prefix
+  className: ""
+  tls:
+    []
+
+logLevel: "info"
+
+common:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  podSecurityContext:
+    enabled: true
+    defaultSeccompProfile: true
+    fsGroup: 65532
+  containerSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    runAsUser: 65532
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+    privileged: false
+  nodeSelector: {}

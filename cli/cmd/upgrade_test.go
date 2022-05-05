@@ -79,7 +79,7 @@ func Test_isContinuousDeliveryEnable(t *testing.T) {
 			name: "continuous delivery enabled - return true",
 			args: args{
 				configValues: map[string]interface{}{
-					"continuous-delivery": map[string]interface{}{
+					"continuousDelivery": map[string]interface{}{
 						"enabled": true,
 					},
 				},
@@ -90,7 +90,7 @@ func Test_isContinuousDeliveryEnable(t *testing.T) {
 			name: "continuous delivery enabled (string value) - return true",
 			args: args{
 				configValues: map[string]interface{}{
-					"continuous-delivery": map[string]interface{}{
+					"continuousDelivery": map[string]interface{}{
 						"enabled": "true",
 					},
 				},
@@ -101,7 +101,7 @@ func Test_isContinuousDeliveryEnable(t *testing.T) {
 			name: "continuous delivery not enabled - return false",
 			args: args{
 				configValues: map[string]interface{}{
-					"continuous-delivery": map[string]interface{}{
+					"continuousDelivery": map[string]interface{}{
 						"enabled": false,
 					},
 				},
@@ -112,7 +112,7 @@ func Test_isContinuousDeliveryEnable(t *testing.T) {
 			name: "continuous delivery not enabled (string value) - return false",
 			args: args{
 				configValues: map[string]interface{}{
-					"continuous-delivery": map[string]interface{}{
+					"continuousDelivery": map[string]interface{}{
 						"enabled": "false",
 					},
 				},

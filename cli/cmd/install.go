@@ -268,17 +268,14 @@ func (i *InstallCmdHandler) doInstallation(installParams installCmdParams) error
 	}
 
 	values := map[string]interface{}{
-		"continuous-delivery": map[string]interface{}{
+		"continuousDelivery": map[string]interface{}{
 			"enabled": installParams.UseCase == ContinuousDelivery,
 		},
-		"control-plane": map[string]interface{}{
-			"enabled": true,
-			"apiGatewayNginx": map[string]interface{}{
-				"type": installParams.EndPointServiceType.String(),
-			},
-			"bridge": map[string]interface{}{
-				"installationType": getInstallationTypeEnvVar(*installParams.UseCaseInput),
-			},
+		"apiGatewayNginx": map[string]interface{}{
+			"type": installParams.EndPointServiceType.String(),
+		},
+		"bridge": map[string]interface{}{
+			"installationType": getInstallationTypeEnvVar(*installParams.UseCaseInput),
 		},
 	}
 
