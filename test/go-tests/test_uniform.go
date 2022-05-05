@@ -52,7 +52,7 @@ spec:
         app.kubernetes.io/name: echo-service
         app.kubernetes.io/instance: keptn
         app.kubernetes.io/part-of: keptn-keptn
-        app.kubernetes.io/component: control-plane
+        app.kubernetes.io/component: keptn
         app.kubernetes.io/version: develop
     spec:
       containers:
@@ -476,7 +476,7 @@ func testUniformIntegration(t *testing.T, configureIntegrationFunc func(), clean
 	require.Equal(t, echoServiceName, fetchedEchoIntegration.Name)
 	require.Equal(t, echoServiceName, fetchedEchoIntegration.MetaData.KubernetesMetaData.DeploymentName)
 	require.Equal(t, GetKeptnNameSpaceFromEnv(), fetchedEchoIntegration.MetaData.KubernetesMetaData.Namespace)
-	require.Equal(t, "control-plane", fetchedEchoIntegration.MetaData.Location)
+	require.Equal(t, "keptn", fetchedEchoIntegration.MetaData.Location)
 	require.Equal(t, "develop", fetchedEchoIntegration.MetaData.DistributorVersion)
 	require.Equal(t, "develop", fetchedEchoIntegration.MetaData.IntegrationVersion)
 

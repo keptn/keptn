@@ -92,7 +92,7 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 5
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+            {{- toYaml .Values.helmservice.resources | nindent 12 }}
         - name: distributor
           image: "{{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}"
           {{- include "helm-service.prestop" . | nindent 10 }}
@@ -112,12 +112,7 @@ spec:
           ports:
             - containerPort: 8080
           resources:
-            requests:
-              memory: "16Mi"
-              cpu: "25m"
-            limits:
-              memory: "32Mi"
-              cpu: "100m"
+            {{- toYaml .Values.distributor.resources | nindent 12 }}
           env:
             - name: PUBSUB_TOPIC
               value: 'sh.keptn.event.deployment.triggered,sh.keptn.event.rollback.triggered,sh.keptn.event.release.triggered,sh.keptn.event.action.triggered,sh.keptn.event.service.delete.finished'

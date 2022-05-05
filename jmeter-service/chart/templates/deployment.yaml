@@ -58,7 +58,7 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 5
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+            {{- toYaml .Values.jmeterservice.resources | nindent 12 }}
         - name: distributor
           image: "{{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}"
           {{- include "jmeter-service.prestop" . | nindent 10 }}
@@ -78,12 +78,7 @@ spec:
           ports:
             - containerPort: 8080
           resources:
-            requests:
-              memory: "16Mi"
-              cpu: "25m"
-            limits:
-              memory: "32Mi"
-              cpu: "100m"
+            {{- toYaml .Values.distributor.resources | nindent 12 }}
           env:
             - name: PUBSUB_TOPIC
               value: 'sh.keptn.event.test.triggered'
