@@ -129,7 +129,8 @@ func (e *SequenceExecution) GetNextTriggeredEventData() map[string]interface{} {
 	eventPayload := map[string]interface{}{}
 
 	if e.InputProperties != nil {
-		eventPayload = common.CopyMap(e.InputProperties)
+		inputProperties := common.CopyMap(e.InputProperties)
+		eventPayload = common.Merge(eventPayload, inputProperties).(map[string]interface{})
 	}
 
 	eventPayload["project"] = e.Scope.Project
@@ -148,6 +149,11 @@ func (e *SequenceExecution) GetNextTriggeredEventData() map[string]interface{} {
 	nextTask := e.GetNextTaskOfSequence()
 	if nextTask != nil && nextTask.Properties != nil {
 		eventPayload[nextTask.Name] = common.Merge(eventPayload[nextTask.Name], nextTask.Properties)
+	}
+
+	// remove any messages set by previous task executors
+	if eventPayload["message"] != nil {
+		eventPayload["message"] = ""
 	}
 
 	return eventPayload
