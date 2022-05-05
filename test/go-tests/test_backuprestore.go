@@ -238,11 +238,9 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	_, err = ExecuteCommandf("kubectl cp %s/%s:/tmp/dump ./%s/ -c mongodb", keptnNamespace, mongoDbPod, mongoDBBackupFolder)
 
 	if backupGit {
-
 		//backup git-credentials
-
 		t.Logf("Executing backup of git-credentials")
-		secret, err := ExecuteCommandf("kubectl get secret -n %s git-credentials-%s -oyaml", keptnNamespace, projectName)
+		secret, err := ExecuteCommandf("kubectl get secret -n %s git-credentials-%s -oyaml 2>/dev/null", keptnNamespace, projectName)
 		require.Nil(t, err)
 		err = os.WriteFile(secretFileName, []byte(secret), 0644)
 		require.Nil(t, err)
