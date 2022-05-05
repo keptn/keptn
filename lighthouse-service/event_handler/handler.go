@@ -23,7 +23,7 @@ func NewEventHandler(ctx context.Context, event cloudevents.Event) (EvaluationEv
 	logger.Debug("Received event: " + event.Type())
 
 	eventSender := ctx.Value(controlplane.EventSenderKey).(controlplane.EventSender)
-	keptnHandler, err := keptnv2.NewKeptn(&event, keptncommon.KeptnOpts{EventSender: &CPEventSender{eventSender}})
+	keptnHandler, err := keptnv2.NewKeptn(&event, keptncommon.KeptnOpts{EventSender: &controlplane.CPEventSender{eventSender}})
 	if err != nil {
 		return nil, err
 	}
