@@ -11,11 +11,11 @@ import (
 
 func Test_createAPI(t *testing.T) {
 
-	api := APIInitializer{
-		internal: func(client *http.Client, apiMappings ...dapi.InClusterAPIMappings) (*dapi.InternalAPISet, error) {
+	api := dapi.Initializer{
+		Internal: func(client *http.Client, apiMappings ...dapi.InClusterAPIMappings) (*dapi.InternalAPISet, error) {
 			return &dapi.InternalAPISet{}, nil
 		},
-		external: func(baseURL string, options ...func(*keptnapi.APISet)) (*keptnapi.APISet, error) {
+		Remote: func(baseURL string, options ...func(*keptnapi.APISet)) (*keptnapi.APISet, error) {
 			return &keptnapi.APISet{}, nil
 		},
 	}

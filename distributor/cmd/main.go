@@ -45,12 +45,6 @@ import (
 var gitCommit string
 var buildTime string
 
-// APIInitializer implements both methods of creating a new keptn API with internal or remote control plane
-type APIInitializer struct {
-	external func(baseURL string, options ...func(*keptnapi.APISet)) (*keptnapi.APISet, error)
-	internal func(client *http.Client, apiMappings ...api.InClusterAPIMappings) (*api.InternalAPISet, error)
-}
-
 func main() {
 	env := config.EnvConfig{}
 	if err := envconfig.Process("", &env); err != nil {
@@ -175,10 +169,10 @@ func createExecutionContext() *utils.ExecutionContext {
 }
 
 func createKeptnAPI(httpClient *http.Client, env config.EnvConfig) (keptnapi.KeptnInterface, error) {
-	return createAPI(httpClient, env, APIInitializer{keptnapi.New, api.NewInternal})
+	return createAPI(httpClient, env, api.Initializer{keptnapi.New, api.NewInternal})
 }
 
-func createAPI(httpClient *http.Client, env config.EnvConfig, api APIInitializer) (keptnapi.KeptnInterface, error) {
+func createAPI(httpClient *http.Client, env config.EnvConfig, api api.Initializer) (keptnapi.KeptnInterface, error) {
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
@@ -198,10 +192,10 @@ func createAPI(httpClient *http.Client, env config.EnvConfig, api APIInitializer
 			// if no value is assigned to the endpoint than we keep the default scheme
 			scheme = parsed.Scheme
 		}
-		return api.external(env.KeptnAPIEndpoint, keptnapi.WithScheme(scheme), keptnapi.WithHTTPClient(httpClient), keptnapi.WithAuthToken(env.KeptnAPIToken))
+		return api.Remote(env.KeptnAPIEndpoint, keptnapi.WithScheme(scheme), keptnapi.WithHTTPClient(httpClient), keptnapi.WithAuthToken(env.KeptnAPIToken))
 	}
 
-	return api.internal(httpClient)
+	return api.Internal(httpClient)
 }
 
 func createEventSender(env config.EnvConfig) (poller.EventSender, error) {
