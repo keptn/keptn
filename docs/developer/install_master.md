@@ -18,7 +18,7 @@ helm repo add keptn-dev https://charts-dev.keptn.sh
 7. For current master use `<current_version>-dev` images, for images built in a PR add `-PR-<PR_#>` to the tag,
 8. To install version 0.13.0-dev-PR-1234 
 ``` 
-helm upgrade --install keptn keptn-dev/keptn -n keptn --create-namespace --set=continuous-delivery.enabled=true --wait --version 0.13.0-dev-PR-1234
+helm upgrade --install keptn keptn-dev/keptn -n keptn --create-namespace --set=continuousDelivery.enabled=true --wait --version 0.13.0-dev-PR-1234
 helm upgrade --install jmeter-service keptn-dev/jmeter-service -n keptn --wait --version 0.13.0-dev-PR-1234
 helm upgrade --install helm-service keptn-dev/helm-service -n keptn --wait --version 0.13.0-dev-PR-1234
 

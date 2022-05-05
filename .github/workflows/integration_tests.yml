@@ -379,23 +379,14 @@ jobs:
               "$HELM_CHART_NAME" \
               "$HELM_SERVICE_HELM_CHART_NAME" \
               "$JMETER_SERVICE_HELM_CHART_NAME"
-          elif [[ "$USE_RESOURCE_SERVICE" == "true" ]]; then
-            # Use Keptn helm chart to be able to customize the values
-            helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} \
-              --create-namespace \
-              --set control-plane.apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
-              --set control-plane.resourceService.enabled=true \
-              --set control-plane.resourceService.replicas=1 \
-              --set control-plane.shipyardController.gracePeriod=10 \
-              --set control-plane.shipyardController.preStopHookTime=5 \
-              --set continuous-delivery.enabled=${RUN_CONTINUOUS_DELIVERY_TEST}
           else
             helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} \
               --create-namespace \
-              --set control-plane.apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
-              --set control-plane.shipyardController.gracePeriod=10 \
-              --set control-plane.shipyardController.preStopHookTime=5 \
-              --set continuous-delivery.enabled=${RUN_CONTINUOUS_DELIVERY_TEST}
+              --set apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
+              --set resourceService.enabled=${USE_RESOURCE_SERVICE} \
+              --set shipyardController.gracePeriod=10 \
+              --set shipyardController.preStopHookTime=5 \
+              --set continuousDelivery.enabled=${RUN_CONTINUOUS_DELIVERY_TEST}
           fi
           echo "::endgroup::"
 
@@ -403,6 +394,9 @@ jobs:
         id: install_gitea
         if: env.RUN_AIRGAPPED_TEST != 'true'
         timeout-minutes: 5
+        env:
+          GITEA_PORT_HTTP: 3000
+          GITEA_PORT_SSH: 3001
         run: |
           helm repo add gitea-charts https://dl.gitea.io/charts/
           helm install --values test/assets/gitea/values.yaml gitea gitea-charts/gitea -n ${KEPTN_NAMESPACE} --wait --version v5.0.0
@@ -410,17 +404,30 @@ jobs:
           GITEA_ADMIN_PASSWORD=$(kubectl get pod -n ${KEPTN_NAMESPACE} gitea-0 -ojsonpath='{@.spec.initContainers[?(@.name=="configure-gitea")].env[?(@.name=="GITEA_ADMIN_PASSWORD")].value}')
           kubectl create configmap squid.conf --from-file=test/assets/squid/squid.conf -n ${KEPTN_NAMESPACE}
           kubectl apply -f test/assets/squid/squid.yaml -n ${KEPTN_NAMESPACE}
-          sleep 30 # TODO
+          kubectl rollout status deployments squid -n ${KEPTN_NAMESPACE}
+
           ssh-keygen -t rsa -C "gitea-http" -f "rsa_gitea" -P "myGiteaPassPhrase"
           GITEA_PRIVATE_KEY=$(cat rsa_gitea)
           GITEA_PUBLIC_KEY=$(cat rsa_gitea.pub)
           GITEA_PRIVATE_KEY_PASSPHRASE=myGiteaPassPhrase
-          sleep 30 # TODO
-          kubectl port-forward -n ${KEPTN_NAMESPACE} svc/gitea-http 3000:3000 &
-          kubectl port-forward -n ${KEPTN_NAMESPACE} svc/gitea-ssh 3001:22 &
-          sleep 30 # TODO
-          curl -vkL --silent --user ${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASSWORD} -X POST "http://localhost:3000/api/v1/users/${GITEA_ADMIN_USER}/tokens" -H "accept: application/json" -H "Content-Type: application/json; charset=utf-8" -d "{ \"name\": \"my-token\" }" -o gitea-token.txt
-          curl -vkL --silent --user ${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASSWORD} -X POST "http://localhost:3000/api/v1/user/keys" -H "accept: application/json" -H "Content-Type: application/json; charset=utf-8" -d "{ \"key\": \"$GITEA_PUBLIC_KEY\",  \"title\": \"public-key-gitea\"}"
+
+          kubectl port-forward -n ${KEPTN_NAMESPACE} svc/gitea-http $GITEA_PORT_HTTP:3000 &
+          kubectl port-forward -n ${KEPTN_NAMESPACE} svc/gitea-ssh $GITEA_PORT_SSH:22 &
+
+          # wait for port $GITEA_PORT_HTTP to become available
+          while ! nc -vz localhost $GITEA_PORT_HTTP > /dev/null 2>&1 ; do
+            echo "Sleeping until port-forward for Gitea at port $GITEA_PORT_HTTP is ready..."
+            sleep 0.1
+          done
+          
+          # wait for port $GITEA_PORT_SSH to become available
+          while ! nc -vz localhost $GITEA_PORT_SSH > /dev/null 2>&1 ; do
+            echo "Sleeping until port-forward for Gitea at port $GITEA_PORT_SSH is ready..."
+            sleep 0.1
+          done
+
+          curl -vkL --silent --user ${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASSWORD} -X POST "http://localhost:$GITEA_PORT_HTTP/api/v1/users/${GITEA_ADMIN_USER}/tokens" -H "accept: application/json" -H "Content-Type: application/json; charset=utf-8" -d "{ \"name\": \"my-token\" }" -o gitea-token.txt
+          curl -vkL --silent --user ${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASSWORD} -X POST "http://localhost:$GITEA_PORT_HTTP/api/v1/user/keys" -H "accept: application/json" -H "Content-Type: application/json; charset=utf-8" -d "{ \"key\": \"$GITEA_PUBLIC_KEY\",  \"title\": \"public-key-gitea\"}"
           GITEA_TOKEN=$(cat gitea-token.txt | jq -r .sha1)
           kubectl create secret generic gitea-access -n ${KEPTN_NAMESPACE} --from-literal=username=${GITEA_ADMIN_USER} --from-literal=password=${GITEA_TOKEN} --from-literal=private-key="${GITEA_PRIVATE_KEY}" --from-literal=private-key-pass=${GITEA_PRIVATE_KEY_PASSPHRASE}
           rm gitea-token.txt
@@ -449,9 +456,6 @@ jobs:
             --from-literal=ingress_protocol=http \
             --from-literal=ingress_gateway=public-gateway.istio-system \
             -oyaml --dry-run=client | kubectl replace -f -
-          # restart helm-service
-          kubectl delete pod -n ${KEPTN_NAMESPACE} -lapp.kubernetes.io/name=helm-service
-          sleep 15
 
       - name: Determine Keptn Endpoint
         id: determine_keptn_endpoint
