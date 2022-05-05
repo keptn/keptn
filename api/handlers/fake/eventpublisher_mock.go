@@ -8,12 +8,12 @@ import (
 	"sync"
 )
 
-// eventPublisherMock is a mock implementation of handlers.eventPublisher.
+// EventPublisherMock is a mock implementation of handlers.eventPublisher.
 //
 // 	func TestSomethingThatUseseventPublisher(t *testing.T) {
 //
 // 		// make and configure a mocked handlers.eventPublisher
-// 		mockedeventPublisher := &eventPublisherMock{
+// 		mockedeventPublisher := &EventPublisherMock{
 // 			PublishFunc: func(event apimodels.KeptnContextExtendedCE) error {
 // 				panic("mock out the Publish method")
 // 			},
@@ -23,7 +23,7 @@ import (
 // 		// and then make assertions.
 //
 // 	}
-type eventPublisherMock struct {
+type EventPublisherMock struct {
 	// PublishFunc mocks the Publish method.
 	PublishFunc func(event apimodels.KeptnContextExtendedCE) error
 
@@ -39,9 +39,9 @@ type eventPublisherMock struct {
 }
 
 // Publish calls PublishFunc.
-func (mock *eventPublisherMock) Publish(event apimodels.KeptnContextExtendedCE) error {
+func (mock *EventPublisherMock) Publish(event apimodels.KeptnContextExtendedCE) error {
 	if mock.PublishFunc == nil {
-		panic("eventPublisherMock.PublishFunc: method is nil but eventPublisher.Publish was just called")
+		panic("EventPublisherMock.PublishFunc: method is nil but eventPublisher.Publish was just called")
 	}
 	callInfo := struct {
 		Event apimodels.KeptnContextExtendedCE
@@ -57,7 +57,7 @@ func (mock *eventPublisherMock) Publish(event apimodels.KeptnContextExtendedCE) 
 // PublishCalls gets all the calls that were made to Publish.
 // Check the length with:
 //     len(mockedeventPublisher.PublishCalls())
-func (mock *eventPublisherMock) PublishCalls() []struct {
+func (mock *EventPublisherMock) PublishCalls() []struct {
 	Event apimodels.KeptnContextExtendedCE
 } {
 	var calls []struct {

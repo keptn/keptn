@@ -5,7 +5,6 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/cp-connector/pkg/nats"
-	"log"
 	"net/url"
 	"strings"
 	"sync"
@@ -22,7 +21,7 @@ import (
 	"github.com/keptn/keptn/api/restapi/operations/event"
 )
 
-//go:generate moq -pkg handlers_mock --skip-ensure -out ./fake/eventpublisher_mock.go . eventPublisher
+//go:generate moq -pkg handlers_mock --skip-ensure -out ./fake/eventpublisher_mock.go . eventPublisher:EventPublisherMock
 type eventPublisher interface {
 	Publish(event apimodels.KeptnContextExtendedCE) error
 }
@@ -36,25 +35,25 @@ type EventHandler struct {
 	EventPublisher eventPublisher
 }
 
-func GetEventHandlerInstance() *EventHandler {
-	instanceOnce.Do(func() {
+func GetEventHandlerInstance() (*EventHandler, error) {
+	if eventHandlerInstance == nil {
 		conn, err := nats.ConnectFromEnv()
 		if err != nil {
-			log.Fatalf("cannot connect to nats server: %v", err)
+			return nil, fmt.Errorf("cannot connect to nats server: %w", err)
 		}
 		eventHandlerInstance = &EventHandler{EventPublisher: conn}
-	})
-	return eventHandlerInstance
+	}
+	return eventHandlerInstance, nil
 }
 
-func (eh *EventHandler) PostEvent(params event.PostEventParams) (*models.EventContext, error) {
-	keptnContext := createOrApplyKeptnContext(params.Body.Shkeptncontext)
+func (eh *EventHandler) PostEvent(event models.KeptnContextExtendedCE) (*models.EventContext, error) {
+	keptnContext := createOrApplyKeptnContext(event.Shkeptncontext)
 
 	logger.Info("API received a keptn event")
 
 	var source string
-	if params.Body.Source != nil && len(*params.Body.Source) > 0 {
-		sourceURL, err := url.Parse(*params.Body.Source)
+	if event.Source != nil && len(*event.Source) > 0 {
+		sourceURL, err := url.Parse(*event.Source)
 		if err != nil {
 			logger.Warnf("Could not parse source from the received CloudEvent: %v", err)
 			// use a fallback value for the source
@@ -65,7 +64,7 @@ func (eh *EventHandler) PostEvent(params event.PostEventParams) (*models.EventCo
 	}
 
 	outEvent := &apimodels.KeptnContextExtendedCE{}
-	if err := keptnv2.Decode(params.Body, outEvent); err != nil {
+	if err := keptnv2.Decode(event, outEvent); err != nil {
 		return nil, err
 	}
 
@@ -85,8 +84,11 @@ func (eh *EventHandler) PostEvent(params event.PostEventParams) (*models.EventCo
 
 // PostEventHandlerFunc forwards an event to the event broker
 func PostEventHandlerFunc(params event.PostEventParams, principal *models.Principal) middleware.Responder {
-	eh := GetEventHandlerInstance()
-	keptnContext, err := eh.PostEvent(params)
+	eh, err := GetEventHandlerInstance()
+	if err != nil {
+		return sendInternalErrorForPost(err)
+	}
+	keptnContext, err := eh.PostEvent(*params.Body)
 	if err != nil {
 		return sendInternalErrorForPost(err)
 	}
