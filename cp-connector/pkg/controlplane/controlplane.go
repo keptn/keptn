@@ -7,6 +7,8 @@ import (
 	"github.com/keptn/keptn/cp-connector/pkg/logger"
 )
 
+const tmpDataDistributorKey = "distributor"
+
 var ErrEventHandleFatal = errors.New("fatal event handling error")
 
 type RegistrationData models.Integration
@@ -71,29 +73,37 @@ func (cp *ControlPlane) handle(ctx context.Context, eventUpdate EventUpdate, int
 		if subscription.Event == eventUpdate.MetaData.Subject {
 			matcher := NewEventMatcherFromSubscription(subscription)
 			if matcher.Matches(eventUpdate.KeptnEvent) {
-				err := eventUpdate.KeptnEvent.AddTemporaryData(
-					"distributor",
-					AdditionalSubscriptionData{
-						SubscriptionID: subscription.ID,
-					},
-					models.AddTemporaryDataOptions{
-						OverwriteIfExisting: true,
-					},
-				)
-				if err != nil {
-					cp.logger.Warnf("Could not append subscription data to event: %v", err)
-				}
-				if err := integration.OnEvent(context.WithValue(ctx, EventSenderKey, cp.eventSource.Sender()), eventUpdate.KeptnEvent); err != nil {
-					if errors.Is(err, ErrEventHandleFatal) {
-						cp.logger.Errorf("Fatal error during handling of event: %v", err)
-						return err
-					}
-					cp.logger.Warnf("Error during handling of event: %v", err)
+				err2, done := cp.forwardMatchedEvent(ctx, eventUpdate, integration, subscription)
+				if done {
+					return err2
 				}
 			}
 		}
 	}
 	return nil
+}
+
+func (cp *ControlPlane) forwardMatchedEvent(ctx context.Context, eventUpdate EventUpdate, integration Integration, subscription models.EventSubscription) (error, bool) {
+	err := eventUpdate.KeptnEvent.AddTemporaryData(
+		tmpDataDistributorKey,
+		AdditionalSubscriptionData{
+			SubscriptionID: subscription.ID,
+		},
+		models.AddTemporaryDataOptions{
+			OverwriteIfExisting: true,
+		},
+	)
+	if err != nil {
+		cp.logger.Warnf("Could not append subscription data to event: %v", err)
+	}
+	if err := integration.OnEvent(context.WithValue(ctx, EventSenderKey, cp.eventSource.Sender()), eventUpdate.KeptnEvent); err != nil {
+		if errors.Is(err, ErrEventHandleFatal) {
+			cp.logger.Errorf("Fatal error during handling of event: %v", err)
+			return err, true
+		}
+		cp.logger.Warnf("Error during handling of event: %v", err)
+	}
+	return nil, false
 }
 
 func subjects(subscriptions []models.EventSubscription) []string {
