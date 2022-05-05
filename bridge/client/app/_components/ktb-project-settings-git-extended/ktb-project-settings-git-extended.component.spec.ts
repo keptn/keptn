@@ -45,9 +45,8 @@ describe('KtbProjectSettingsGitExtendedComponent', () => {
   });
 
   it('should default select NO_UPSTREAM if git upstream is not required', () => {
-    fixture = TestBed.createComponent(KtbProjectSettingsGitExtendedComponent);
-    component = fixture.componentInstance;
     component.required = false;
+    component.ngOnInit();
     expect(component.selectedForm).toBe(GitFormType.NO_UPSTREAM);
   });
 
@@ -66,9 +65,8 @@ describe('KtbProjectSettingsGitExtendedComponent', () => {
 
   it('should update selected form to SSH and back to NO_UPSTREAM if git upstream is not required', () => {
     // given
-    fixture = TestBed.createComponent(KtbProjectSettingsGitExtendedComponent);
-    component = fixture.componentInstance;
     component.required = false;
+    component.ngOnInit();
     component.gitInputData = getDefaultSshData();
     // then
     expect(component.selectedForm).toBe(GitFormType.SSH);
