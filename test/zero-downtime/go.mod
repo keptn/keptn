@@ -46,7 +46,7 @@ require (
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/imroc/req v0.3.2 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/keptn/kubernetes-utils v0.13.1-0.20220505114113-51ba4a1ed523 // indirect
+	github.com/keptn/kubernetes-utils v0.14.0 // indirect
 	github.com/klauspost/compress v1.11.4 // indirect
 	github.com/klauspost/pgzip v1.2.5 // indirect
 	github.com/mholt/archiver/v3 v3.5.1 // indirect
