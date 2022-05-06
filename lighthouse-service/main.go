@@ -28,7 +28,6 @@ type envConfig struct {
 	K8SPodName              string `envconfig:"K8S_POD_NAME" default:""`
 	K8SNamespace            string `envconfig:"K8S_NAMESPACE" default:""`
 	K8SNodeName             string `envconfig:"K8S_NODE_NAME" default:""`
-	EventSubscriptionTopics string `envconfig:"PUBSUB_TOPIC" default:""`
 }
 
 func main() {
