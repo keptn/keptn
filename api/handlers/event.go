@@ -51,13 +51,11 @@ func (eh *EventHandler) PostEvent(event models.KeptnContextExtendedCE) (*models.
 
 	logger.Info("API received a keptn event")
 
-	var source string
+	source := defaultEventSource
 	if event.Source != nil && len(*event.Source) > 0 {
 		sourceURL, err := url.Parse(*event.Source)
 		if err != nil {
 			logger.Warnf("Could not parse source from the received CloudEvent: %v", err)
-			// use a fallback value for the source
-			source = defaultEventSource
 		} else {
 			source = sourceURL.String()
 		}
