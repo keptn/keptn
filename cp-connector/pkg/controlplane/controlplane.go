@@ -3,6 +3,7 @@ package controlplane
 import (
 	"context"
 	"errors"
+
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/cp-connector/pkg/logger"
 )
