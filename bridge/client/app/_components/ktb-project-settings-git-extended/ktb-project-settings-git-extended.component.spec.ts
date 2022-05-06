@@ -50,30 +50,26 @@ describe('KtbProjectSettingsGitExtendedComponent', () => {
     expect(component.selectedForm).toBe(GitFormType.NO_UPSTREAM);
   });
 
-  it('should update selected form to SSH and back to HTTPS', () => {
+  it('should select HTTPS form on init with https data given', () => {
     // given
-    component.gitInputData = getDefaultSshData();
-    // then
-    expect(component.selectedForm).toBe(GitFormType.SSH);
-
-    // when
-    component.gitInputData = undefined;
-
+    component.gitInputData = getDefaultHttpsData();
+    component.ngOnInit();
     // then
     expect(component.selectedForm).toBe(GitFormType.HTTPS);
   });
 
-  it('should update selected form to SSH and back to NO_UPSTREAM if git upstream is not required', () => {
+  it('should select SSH form on init with ssh data given', () => {
+    // given
+    component.gitInputData = getDefaultSshData();
+    component.ngOnInit();
+    // then
+    expect(component.selectedForm).toBe(GitFormType.SSH);
+  });
+
+  it('should select NO_UPSTREAM form on init if not data given and git upstream is not required', () => {
     // given
     component.required = false;
     component.ngOnInit();
-    component.gitInputData = getDefaultSshData();
-    // then
-    expect(component.selectedForm).toBe(GitFormType.SSH);
-
-    // when
-    component.gitInputData = undefined;
-
     // then
     expect(component.selectedForm).toBe(GitFormType.NO_UPSTREAM);
   });
@@ -162,6 +158,7 @@ describe('KtbProjectSettingsGitExtendedComponent', () => {
 
   it('should correctly return data if input is HTTPS', () => {
     component.gitInputData = getDefaultHttpsData();
+    component.ngOnInit();
     expect(component.gitInputDataHttps).toEqual(getDefaultHttpsData());
 
     expect(component.gitInputDataSsh).toBe(undefined);
@@ -169,6 +166,7 @@ describe('KtbProjectSettingsGitExtendedComponent', () => {
 
   it('should correctly return data if input is SSH', () => {
     component.gitInputData = getDefaultSshData();
+    component.ngOnInit();
     expect(component.gitInputDataSsh).toEqual(getDefaultSshData());
     expect(component.gitInputDataHttps).toBe(undefined);
   });
@@ -229,7 +227,7 @@ describe('KtbProjectSettingsGitExtendedComponent', () => {
       ssh: {
         gitPrivateKeyPass: '',
         gitPrivateKey: '',
-        gitRemoteURL: '',
+        gitRemoteURL: 'ssh://git@github.com/keptn/keptn',
       },
     };
   }
