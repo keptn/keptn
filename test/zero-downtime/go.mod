@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/benbjohnson/clock v1.3.0
-	github.com/keptn/go-utils v0.14.1-0.20220503160417-a0381c53c6d8
+	github.com/keptn/go-utils v0.15.0
 	github.com/keptn/keptn/test/go-tests v0.0.0-20220504093323-b5454bf37c78
 	github.com/steinfletcher/apitest v1.5.11
 	github.com/steinfletcher/apitest-jsonpath v1.7.1
@@ -46,8 +46,7 @@ require (
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/imroc/req v0.3.2 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/keptn/go-utils v0.14.1-0.20220505114036-8e87fd80b9b0 // indirect
-	github.com/keptn/kubernetes-utils v0.13.1-0.20220505114113-51ba4a1ed523 // indirect
+	github.com/keptn/kubernetes-utils v0.14.0 // indirect
 	github.com/klauspost/compress v1.11.4 // indirect
 	github.com/klauspost/pgzip v1.2.5 // indirect
 	github.com/mholt/archiver/v3 v3.5.1 // indirect
