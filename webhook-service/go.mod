@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/cloudevents/sdk-go/v2 v2.9.0
-	github.com/keptn/go-utils v0.14.1-0.20220505114036-8e87fd80b9b0
+	github.com/keptn/go-utils v0.15.0
 	github.com/keptn/keptn/go-sdk v0.0.0-20220207111546-fac316c656d7
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/sirupsen/logrus v1.8.1
