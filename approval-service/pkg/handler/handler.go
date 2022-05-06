@@ -1,9 +1,10 @@
 package handler
 
 import (
-	logger "github.com/sirupsen/logrus"
 	"net/url"
 	"time"
+
+	logger "github.com/sirupsen/logrus"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"

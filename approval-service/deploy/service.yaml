@@ -44,24 +44,36 @@ spec:
           value: 'http://event-broker/keptn'
         - name: DATASTORE
           value: 'http://mongodb-datastore:8080'
-      - name: distributor
-        image: keptndev/distributor:0.8.4
-        ports:
-          - containerPort: 8081
-        resources:
-          requests:
-            memory: "16Mi"
-            cpu: "25m"
-          limits:
-            memory: "32Mi"
-            cpu: "100m"
-        env:
-          - name: PUBSUB_URL
-            value: 'nats://keptn-nats'
-          - name: PUBSUB_TOPIC
-            value: 'sh.keptn.event.approval.>'
-          - name: PUBSUB_RECIPIENT
-            value: '127.0.0.1'
+        - name: K8S_DEPLOYMENT_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: 'metadata.labels[''app.kubernetes.io/name'']'
+        - name: K8S_DEPLOYMENT_VERSION
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: 'metadata.labels[''app.kubernetes.io/version'']'
+        - name: K8S_DEPLOYMENT_COMPONENT
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: 'metadata.labels[''app.kubernetes.io/component'']'
+        - name: K8S_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: K8S_NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+        - name: K8S_POD_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
 ---
 apiVersion: v1
 kind: Service
