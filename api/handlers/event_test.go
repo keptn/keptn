@@ -1,20 +1,21 @@
 package handlers
 
 import (
-	"encoding/json"
+	"errors"
+	"github.com/go-openapi/strfmt"
+	"github.com/google/uuid"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	handlers_mock "github.com/keptn/keptn/api/handlers/fake"
+	"github.com/nats-io/nats-server/v2/server"
+	natstest "github.com/nats-io/nats-server/v2/test"
+	nats2 "github.com/nats-io/nats.go"
+	"github.com/stretchr/testify/require"
 	"io"
 	"net/http"
-	"net/http/httptest"
 	"os"
 	"testing"
 	"time"
 
-	"github.com/go-openapi/strfmt"
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/require"
-
-	datastoremodels "github.com/keptn/go-utils/pkg/api/models"
-	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/event"
 	"github.com/keptn/keptn/api/utils"
@@ -91,64 +92,73 @@ func Test_createOrApplyKeptnContext(t *testing.T) {
 }
 
 func TestPostEventHandlerFunc(t *testing.T) {
-	err := os.Setenv("SECRET_TOKEN", "testtesttesttesttest")
+
+	topicName := "my-topic"
+	natsServer, shutdown := runNATSServer()
+
+	defer shutdown()
+
+	err := os.Setenv("NATS_URL", natsServer.ClientURL())
 	require.NoError(t, err)
 
-	returnedStatus := 200
+	natsClient, err := nats2.Connect(natsServer.ClientURL())
+	require.Nil(t, err)
 
-	ts := httptest.NewServer(
-		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Add("Content-Type", "application/json")
-			w.WriteHeader(returnedStatus)
-			w.Write([]byte(`{}`))
-		}),
-	)
-	defer ts.Close()
+	receivedMessage := false
 
-	err = os.Setenv("EVENTBROKER_URI", ts.URL)
-	require.NoError(t, err)
+	_, err = natsClient.Subscribe(topicName, func(msg *nats2.Msg) {
+		receivedMessage = true
+	})
 
-	type args struct {
-		params    event.PostEventParams
-		principal *models.Principal
-	}
-	tests := []struct {
-		name                  string
-		args                  args
-		wantStatus            int
-		statusFromEventBroker int
-	}{
-		{
-			name: "Send event",
-			args: args{
-				params: event.PostEventParams{
-					HTTPRequest: nil,
-					Body: &models.KeptnContextExtendedCE{
-						Contenttype:    "application/json",
-						Data:           map[string]interface{}{},
-						Extensions:     nil,
-						ID:             "",
-						Shkeptncontext: "",
-						Source:         stringp("test-source"),
-						Specversion:    "1.0",
-						Time:           strfmt.DateTime{},
-						Type:           stringp(keptnevents.ConfigureMonitoringEventType),
-					},
-				},
-				principal: nil,
-			},
-			wantStatus:            200,
-			statusFromEventBroker: 200,
+	require.Nil(t, err)
+
+	params := event.PostEventParams{
+		HTTPRequest: nil,
+		Body: &models.KeptnContextExtendedCE{
+			Contenttype:    "application/json",
+			Data:           map[string]interface{}{},
+			Extensions:     nil,
+			ID:             "",
+			Shkeptncontext: "",
+			Source:         stringp("test-source"),
+			Specversion:    "1.0",
+			Time:           strfmt.DateTime{},
+			Type:           &topicName,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			returnedStatus = tt.statusFromEventBroker
-			got := PostEventHandlerFunc(tt.args.params, tt.args.principal)
 
-			verifyHTTPResponse(got, tt.wantStatus, t)
-		})
+	got := PostEventHandlerFunc(params, nil)
+
+	verifyHTTPResponse(got, http.StatusOK, t)
+
+	require.Eventually(t, func() bool {
+		return receivedMessage
+	}, 1*time.Second, 10*time.Millisecond)
+}
+
+func TestPostEventHandlerFunc_NoNatsConnection(t *testing.T) {
+
+	eventHandlerInstance = nil
+	topicName := "my-topic"
+
+	params := event.PostEventParams{
+		HTTPRequest: nil,
+		Body: &models.KeptnContextExtendedCE{
+			Contenttype:    "application/json",
+			Data:           map[string]interface{}{},
+			Extensions:     nil,
+			ID:             "",
+			Shkeptncontext: "",
+			Source:         stringp("test-source"),
+			Specversion:    "1.0",
+			Time:           strfmt.DateTime{},
+			Type:           &topicName,
+		},
 	}
+
+	got := PostEventHandlerFunc(params, nil)
+
+	verifyHTTPResponse(got, http.StatusInternalServerError, t)
 }
 
 type mockProducer struct {
@@ -160,71 +170,6 @@ func (m *mockProducer) Produce(io.Writer, interface{}) error {
 
 func stringp(s string) *string {
 	return &s
-}
-
-func TestGetEventHandlerFunc(t *testing.T) {
-	ts := httptest.NewServer(
-		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Add("Content-Type", "application/json")
-			w.WriteHeader(200)
-
-			e := &datastoremodels.Events{
-				Events: []*datastoremodels.KeptnContextExtendedCE{
-					{
-						Contenttype:    "",
-						Data:           nil,
-						Extensions:     nil,
-						ID:             "",
-						Source:         stringp(""),
-						Specversion:    "",
-						Time:           time.Time{},
-						Type:           stringp(""),
-						Shkeptncontext: "",
-					},
-				},
-				NextPageKey: "",
-				PageSize:    0,
-				TotalCount:  0,
-			}
-
-			marshal, _ := json.Marshal(e)
-			w.Write(marshal)
-		}),
-	)
-	defer ts.Close()
-
-	err := os.Setenv("DATASTORE_URI", ts.URL)
-	require.NoError(t, err)
-
-	type args struct {
-		params    event.GetEventParams
-		principal *models.Principal
-	}
-	tests := []struct {
-		name       string
-		args       args
-		wantStatus int
-	}{
-		{
-			name: "Get events",
-			args: args{
-				params: event.GetEventParams{
-					HTTPRequest:  nil,
-					KeptnContext: "",
-					Type:         keptnevents.ConfigureMonitoringEventType,
-				},
-				principal: nil,
-			},
-			wantStatus: 200,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := GetEventHandlerFunc(tt.args.params, tt.args.principal)
-
-			verifyHTTPResponse(got, tt.wantStatus, t)
-		})
-	}
 }
 
 func Test_getDatastoreURL(t *testing.T) {
@@ -257,4 +202,78 @@ func Test_getDatastoreURL(t *testing.T) {
 			require.Equal(t, tt.want, utils.GetDatastoreURL())
 		})
 	}
+}
+
+func runNATSServer() (*server.Server, func()) {
+	svr := natstest.RunRandClientPortServer()
+	return svr, func() { svr.Shutdown() }
+}
+
+func TestEventHandler_PostEvent(t *testing.T) {
+	mockPublisher := &handlers_mock.EventPublisherMock{
+		PublishFunc: func(event apimodels.KeptnContextExtendedCE) error {
+			return nil
+		},
+	}
+	eh := &EventHandler{
+		EventPublisher: mockPublisher,
+	}
+
+	topicName := "my-topic"
+
+	testEvent := models.KeptnContextExtendedCE{
+		Contenttype:    "application/json",
+		Data:           map[string]interface{}{},
+		Extensions:     nil,
+		ID:             "",
+		Shkeptncontext: "",
+		Source:         stringp("test-source"),
+		Specversion:    "1.0",
+		Time:           strfmt.DateTime{},
+		Type:           &topicName,
+	}
+
+	got, err := eh.PostEvent(testEvent)
+
+	require.Nil(t, err)
+	require.NotNil(t, got)
+
+	require.Len(t, mockPublisher.PublishCalls(), 1)
+	require.Equal(t, *got.KeptnContext, mockPublisher.PublishCalls()[0].Event.Shkeptncontext)
+	require.NotEmpty(t, mockPublisher.PublishCalls()[0].Event.ID)
+	require.Equal(t, testEvent.Source, mockPublisher.PublishCalls()[0].Event.Source)
+	require.Equal(t, testEvent.Data, mockPublisher.PublishCalls()[0].Event.Data)
+	require.Equal(t, testEvent.Type, mockPublisher.PublishCalls()[0].Event.Type)
+}
+
+func TestEventHandler_PostEvent_SendFails(t *testing.T) {
+	mockPublisher := &handlers_mock.EventPublisherMock{
+		PublishFunc: func(event apimodels.KeptnContextExtendedCE) error {
+			return errors.New("oops")
+		},
+	}
+	eh := &EventHandler{
+		EventPublisher: mockPublisher,
+	}
+
+	topicName := "my-topic"
+
+	testEvent := models.KeptnContextExtendedCE{
+		Contenttype:    "application/json",
+		Data:           map[string]interface{}{},
+		Extensions:     nil,
+		ID:             "",
+		Shkeptncontext: "",
+		Source:         stringp("test-source"),
+		Specversion:    "1.0",
+		Time:           strfmt.DateTime{},
+		Type:           &topicName,
+	}
+
+	got, err := eh.PostEvent(testEvent)
+
+	require.NotNil(t, err)
+	require.Nil(t, got)
+
+	require.Len(t, mockPublisher.PublishCalls(), 1)
 }
