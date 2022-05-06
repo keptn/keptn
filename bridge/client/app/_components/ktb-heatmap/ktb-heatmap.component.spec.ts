@@ -430,7 +430,7 @@ describe('KtbHeatmapComponent', () => {
    * <br/>- document.elementFromPoint()
    * <br/>- Width of parentNode
    * <br/>- Ratio of window
-   * <br/>- width of window
+   * <br/>- Width of window
    */
   function mockUIElements(): void {
     const document = TestBed.inject(DOCUMENT);

@@ -751,8 +751,8 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   //<editor-fold desc="test data">
   //TODO: remove
   public ngAfterViewInit(): void {
-    this.dataPoints = this.generateTestData(12, 50);
-    this.click(this.groupedData.score[1]);
+    // this.dataPoints = this.generateTestData(12, 50);
+    // this.click(this.groupedData.score[1]);
   }
 
   private generateTestData(sliCounter: number, counter: number): IDataPoint[] {
