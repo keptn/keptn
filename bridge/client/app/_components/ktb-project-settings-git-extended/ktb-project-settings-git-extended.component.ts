@@ -28,9 +28,6 @@ export class KtbProjectSettingsGitExtendedComponent implements OnInit {
   public upstreamConfigured = false;
 
   @Input()
-  public isLoading = false;
-
-  @Input()
   public isCreateMode = false;
 
   @Input()
@@ -40,25 +37,7 @@ export class KtbProjectSettingsGitExtendedComponent implements OnInit {
   public required = true;
 
   @Input()
-  public set gitInputData(gitData: IGitDataExtended | undefined) {
-    if (gitData) {
-      if (isGitHTTPS(gitData) && gitData.https.gitRemoteURL) {
-        this.gitInputDataHttps = gitData;
-        this.selectedForm = GitFormType.HTTPS;
-        this.upstreamConfigured = true;
-      } else if (isGitSSH(gitData)) {
-        this.gitInputDataSsh = gitData;
-        this.selectedForm = GitFormType.SSH;
-        this.upstreamConfigured = true;
-      } else {
-        this.selectedForm = this.required ? GitFormType.HTTPS : GitFormType.NO_UPSTREAM;
-        this.upstreamConfigured = false;
-      }
-    } else {
-      this.selectedForm = this.required ? GitFormType.HTTPS : GitFormType.NO_UPSTREAM;
-      this.upstreamConfigured = false;
-    }
-  }
+  public gitInputData: IGitDataExtended | undefined;
 
   @Output()
   public gitDataChange = new EventEmitter<IGitDataExtended | undefined>();
@@ -74,11 +53,28 @@ export class KtbProjectSettingsGitExtendedComponent implements OnInit {
         return this.gitDataSsh;
       case GitFormType.NO_UPSTREAM:
         return { noupstream: '' };
+      default:
+        return undefined;
     }
   }
 
   public ngOnInit(): void {
-    this.selectedForm = this.required ? GitFormType.HTTPS : GitFormType.NO_UPSTREAM;
+    if (this.gitInputData) {
+      if (isGitHTTPS(this.gitInputData) && this.gitInputData.https.gitRemoteURL) {
+        this.gitInputDataHttps = this.gitInputData;
+        this.selectedForm = GitFormType.HTTPS;
+        this.upstreamConfigured = true;
+      } else if (isGitSSH(this.gitInputData) && this.gitInputData.ssh.gitRemoteURL) {
+        this.gitInputDataSsh = this.gitInputData;
+        this.selectedForm = GitFormType.SSH;
+        this.upstreamConfigured = true;
+      } else {
+        this.selectedForm = this.required ? GitFormType.HTTPS : GitFormType.NO_UPSTREAM;
+      }
+    } else {
+      this.selectedForm = this.required ? GitFormType.HTTPS : GitFormType.NO_UPSTREAM;
+    }
+
     if (this.selectedForm === GitFormType.NO_UPSTREAM) {
       this.dataChanged(this.selectedForm, this.gitData);
     }

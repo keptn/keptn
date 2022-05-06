@@ -1,73 +1,57 @@
-<h2 [class.required]="required" class="required">Git upstream repository</h2>
-<p class="mt-0 mb-3" *ngIf="required">
-  A Git upstream repository has to be set. You can connect your Git repository with HTTPS or SSH. Instructions, on how
-  to set up your Git provider can be found in the
-  <a [href]="'/manage/git_upstream/' | keptnUrl" target="_blank">Git-based upstream documentation</a>.
-</p>
-<p class="mt-0 mb-3" *ngIf="!required">
-  It is recommended to set a Git upstream repository. You can connect your Git repository with HTTPS or SSH.
-  Instructions, on how to set up your Git provider can be found in the
-  <a [href]="'/manage/git_upstream/' | keptnUrl" target="_blank">Git-based upstream documentation</a>.
-</p>
-
-<ktb-loading-distractor *ngIf="isLoading">Loading ...</ktb-loading-distractor>
-
-<ng-container *ngIf="!isLoading">
-  <dt-label [class.required]="required" class="dt-form-field-label">Connect via</dt-label>
-  <dt-radio-group (change)="setSelectedForm($event)" fxLayout="row">
-    <div [dtOverlay]="noUpstreamOverlay" [disabled]="isCreateMode || (!required && !upstreamConfigured)">
-      <dt-radio-button
-        *ngIf="!required"
-        [value]="FormType.NO_UPSTREAM"
-        [checked]="selectedForm === FormType.NO_UPSTREAM"
-        [disabled]="!isCreateMode && !required && upstreamConfigured"
-        class="mr-2"
-        uitestid="ktb-no-upstream-form-button"
-      >
-        No Upstream
-      </dt-radio-button>
-    </div>
-    <ng-template #noUpstreamOverlay
-      >This project has already an upstream configured. If an upstream is already configured, it can not be unset.
-    </ng-template>
+<dt-label [class.required]="required" class="dt-form-field-label">Connect via</dt-label>
+<dt-radio-group (change)="setSelectedForm($event)" fxLayout="row">
+  <div [dtOverlay]="noUpstreamOverlay" [disabled]="isCreateMode || (!required && !upstreamConfigured)">
     <dt-radio-button
-      [value]="FormType.HTTPS"
-      [checked]="selectedForm === FormType.HTTPS"
+      *ngIf="!required"
+      [value]="FormType.NO_UPSTREAM"
+      [checked]="selectedForm === FormType.NO_UPSTREAM"
+      [disabled]="!isCreateMode && !required && upstreamConfigured"
       class="mr-2"
-      uitestid="ktb-https-form-button"
+      uitestid="ktb-no-upstream-form-button"
     >
-      HTTPS
+      No Upstream
     </dt-radio-button>
-    <dt-radio-button [value]="FormType.SSH" [checked]="selectedForm === FormType.SSH" uitestid="ktb-ssh-form-button">
-      SSH
-    </dt-radio-button>
-  </dt-radio-group>
-  <div class="mt-3">
-    <!-- hidden instead of switch to keep the component instance and related data  -->
-    <ktb-project-settings-git-https
-      [hidden]="selectedForm !== FormType.HTTPS"
-      (dataChange)="dataChanged(FormType.HTTPS, $event)"
-      [gitInputData]="gitInputDataHttps"
-    ></ktb-project-settings-git-https>
-    <ktb-project-settings-git-ssh
-      [hidden]="selectedForm !== FormType.SSH"
-      (sshChange)="dataChanged(FormType.SSH, $event)"
-      [gitInputSshData]="gitInputDataSsh"
-    ></ktb-project-settings-git-ssh>
-    <div *ngIf="!isCreateMode && FormType.NO_UPSTREAM">
-      Currently there is no Git upstream configured. You can connect your Git repository with HTTPS or SSH.
-    </div>
   </div>
+  <ng-template #noUpstreamOverlay
+    >This project has already an upstream configured. If an upstream is already configured, it can not be unset.
+  </ng-template>
+  <dt-radio-button
+    [value]="FormType.HTTPS"
+    [checked]="selectedForm === FormType.HTTPS"
+    class="mr-2"
+    uitestid="ktb-https-form-button"
+  >
+    HTTPS
+  </dt-radio-button>
+  <dt-radio-button [value]="FormType.SSH" [checked]="selectedForm === FormType.SSH" uitestid="ktb-ssh-form-button">
+    SSH
+  </dt-radio-button>
+</dt-radio-group>
+<div class="mt-3">
+  <!-- hidden instead of switch to keep the component instance and related data  -->
+  <ktb-project-settings-git-https
+    [hidden]="selectedForm !== FormType.HTTPS"
+    (dataChange)="dataChanged(FormType.HTTPS, $event)"
+    [gitInputData]="gitInputDataHttps"
+  ></ktb-project-settings-git-https>
+  <ktb-project-settings-git-ssh
+    [hidden]="selectedForm !== FormType.SSH"
+    (sshChange)="dataChanged(FormType.SSH, $event)"
+    [gitInputSshData]="gitInputDataSsh"
+  ></ktb-project-settings-git-ssh>
+  <div *ngIf="!isCreateMode && selectedForm === FormType.NO_UPSTREAM">
+    Currently there is no Git upstream configured. You can connect your Git repository with HTTPS or SSH.
+  </div>
+</div>
 
-  <div class="mt-3" *ngIf="!isCreateMode">
-    <button
-      [disabled]="!gitData || (!isCreateMode && selectedForm === FormType.NO_UPSTREAM) || isGitUpstreamInProgress"
-      (click)="updateUpstream()"
-      dt-button
-      uitestid="ktb-project-update-button"
-    >
-      <dt-loading-spinner *ngIf="isGitUpstreamInProgress" aria-label="Saving Git upstream URL"></dt-loading-spinner>
-      Save Git upstream
-    </button>
-  </div>
-</ng-container>
+<div class="mt-3" *ngIf="!isCreateMode">
+  <button
+    [disabled]="!gitData || (!isCreateMode && selectedForm === FormType.NO_UPSTREAM) || isGitUpstreamInProgress"
+    (click)="updateUpstream()"
+    dt-button
+    uitestid="ktb-project-update-button"
+  >
+    <dt-loading-spinner *ngIf="isGitUpstreamInProgress" aria-label="Saving Git upstream URL"></dt-loading-spinner>
+    Save Git upstream
+  </button>
+</div>

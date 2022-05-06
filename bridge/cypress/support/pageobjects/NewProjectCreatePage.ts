@@ -24,10 +24,14 @@ class NewProjectCreatePage {
     return this;
   }
 
-  public interceptSettings(resourceServiceEnabled = false): this {
+  public interceptSettings(resourceServiceEnabled = false, automaticProvisioningEnabled = false): this {
     interceptProjectBoard();
     if (resourceServiceEnabled) {
-      interceptMainResourceEnabled();
+      if (!automaticProvisioningEnabled) {
+        interceptMainResourceEnabled();
+      } else {
+        interceptMainResourceApEnabled();
+      }
     } else {
       interceptMain();
     }
@@ -283,6 +287,10 @@ class NewProjectCreatePage {
     return this.typeProjectName('my-project').setShipyardFile();
   }
 
+  public enterBasicSsh(): this {
+    return this.typeGitUrlSsh('ssh://example.com').typeValidSshPrivateKey();
+  }
+
   public enterBasicValidProjectSsh(fillPrivateKey = true): this {
     this.typeProjectName('my-project').setShipyardFile().typeGitUrlSsh('ssh://example.com');
     if (fillPrivateKey) {
@@ -305,11 +313,12 @@ class NewProjectCreatePage {
       .assertSshPrivateKeyPassphrase('myPassphrase');
   }
 
+  public enterBasicHttps(): this {
+    return this.typeGitUrl('https://example.com').typeGitToken('myToken');
+  }
+
   public enterBasicValidProjectHttps(): this {
-    return this.typeProjectName('my-project')
-      .setShipyardFile()
-      .typeGitUrl('https://example.com')
-      .typeGitToken('myToken');
+    return this.typeProjectName('my-project').setShipyardFile().enterBasicHttps();
   }
 
   public enterFullValidProjectHttps(): this {
@@ -379,6 +388,13 @@ class NewProjectCreatePage {
     return this;
   }
 
+  public assertNoUpstreamEnabled(status: boolean): this {
+    cy.byTestId('ktb-no-upstream-form-button')
+      .get('input')
+      .should(status ? 'be.enabled' : 'be.disabled');
+    return this;
+  }
+
   public selectHttpsForm(): this {
     cy.byTestId('ktb-https-form-button').click();
     return this;
@@ -401,6 +417,11 @@ class NewProjectCreatePage {
 
   public assertUpdateButtonExists(status: boolean): this {
     cy.byTestId('ktb-project-update-button').should(status ? 'exist' : 'not.exist');
+    return this;
+  }
+
+  public assertUpdateButtonEnabled(status: boolean): this {
+    cy.byTestId('ktb-project-update-button').should(status ? 'be.enabled' : 'be.disabled');
     return this;
   }
 }

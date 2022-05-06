@@ -28,16 +28,32 @@
         </dt-form-field>
       </div>
       <div class="mb-3 settings-section" *ngIf="resourceServiceEnabled !== undefined">
-        <ktb-project-settings-git-extended
-          *ngIf="resourceServiceEnabled; else defaultGit"
-          [isLoading]="!!isProjectLoading"
-          [isCreateMode]="isCreateMode"
-          [isGitUpstreamInProgress]="isGitUpstreamInProgress"
-          [gitInputData]="gitInputDataExtended"
-          [required]="gitUpstreamRequired"
-          (resetTouched)="isProjectFormTouched = false"
-          (gitDataChange)="updateGitDataExtended($event)"
-        ></ktb-project-settings-git-extended>
+        <ng-container *ngIf="resourceServiceEnabled; else defaultGit">
+          <h2 [class.required]="gitUpstreamRequired" class="required">Git upstream repository</h2>
+          <p class="mt-0 mb-3" *ngIf="gitUpstreamRequired">
+            A Git upstream repository has to be set. You can connect your Git repository with HTTPS or SSH.
+            Instructions, on how to set up your Git provider can be found in the
+            <a [href]="'/manage/git_upstream/' | keptnUrl" target="_blank">Git-based upstream documentation</a>.
+          </p>
+          <p class="mt-0 mb-3" *ngIf="!gitUpstreamRequired">
+            It is recommended to set a Git upstream repository. You can connect your Git repository with HTTPS or SSH.
+            Instructions, on how to set up your Git provider can be found in the
+            <a [href]="'/manage/git_upstream/' | keptnUrl" target="_blank">Git-based upstream documentation</a>.
+          </p>
+
+          <ktb-project-settings-git-extended
+            *ngIf="!isProjectLoading; else loading"
+            [isCreateMode]="isCreateMode"
+            [isGitUpstreamInProgress]="isGitUpstreamInProgress"
+            [gitInputData]="gitInputDataExtended"
+            [required]="gitUpstreamRequired"
+            (resetTouched)="isProjectFormTouched = false"
+            (gitDataChange)="updateGitDataExtended($event)"
+          ></ktb-project-settings-git-extended>
+        </ng-container>
+        <ng-template #loading>
+          <ktb-loading-distractor>Loading ...</ktb-loading-distractor>
+        </ng-template>
         <ng-template #defaultGit>
           <ktb-project-settings-git
             [isLoading]="isProjectLoading"

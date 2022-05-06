@@ -1,5 +1,5 @@
 import { Component, HostListener, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
-import { Observable, of, Subject } from 'rxjs';
+import { combineLatest, Observable, of, Subject } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { KtbProjectSettingsGitComponent } from '../ktb-project-settings-git/ktb-project-settings-git.component';
 import { DeleteData, DeleteResult, DeleteType } from '../../_interfaces/delete';
@@ -61,6 +61,11 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
   public unsavedDialogState: DialogState = null;
   public resourceServiceEnabled?: boolean;
 
+  readonly keptnInfo$ = this.dataService.keptnInfo.pipe(
+    filter((keptnInfo: KeptnInfo | undefined): keptnInfo is KeptnInfo => !!keptnInfo),
+    takeUntil(this.unsubscribe$)
+  );
+
   constructor(
     private route: ActivatedRoute,
     private dataService: DataService,
@@ -74,16 +79,6 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((featureFlags: IClientFeatureFlags) => {
         this.resourceServiceEnabled = featureFlags.RESOURCE_SERVICE_ENABLED;
-      });
-
-    this.dataService.keptnInfo
-      .pipe(
-        filter((keptnInfo: KeptnInfo | undefined): keptnInfo is KeptnInfo => !!keptnInfo),
-        takeUntil(this.unsubscribe$)
-      )
-      .subscribe((keptnInfo) => {
-        // if automaticprovisioning is false or undefined, git is required
-        this.gitUpstreamRequired = !keptnInfo.metadata.automaticprovisioning;
       });
   }
 
@@ -120,25 +115,33 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
     });
   }
 
+  private setGitUpstreamRequired(keptnInfo: KeptnInfo): void {
+    //if automaticprovisioning is false or undefined, git is required
+    this.gitUpstreamRequired = !keptnInfo.metadata.automaticprovisioning;
+  }
+
   private loadProjectsAndSetValidator(): void {
-    this.dataService
-      .loadProjects()
-      .pipe(
-        takeUntil(this.unsubscribe$),
-        filter((projects: Project[] | undefined): projects is Project[] => !!projects),
-        map((projects: Project[]) => projects.map((project) => project.projectName))
-      )
-      .subscribe((projectNames) => {
-        this.projectNameControl.setValidators([
-          Validators.required,
-          FormUtils.nameExistsValidator(projectNames),
-          Validators.pattern('[a-z]([a-z]|[0-9]|-)*'),
-        ]);
-      });
+    const loadProjects$ = this.dataService.loadProjects().pipe(
+      takeUntil(this.unsubscribe$),
+      filter((projects: Project[] | undefined): projects is Project[] => !!projects),
+      map((projects: Project[]) => projects.map((project) => project.projectName))
+    );
+
+    combineLatest([loadProjects$, this.keptnInfo$]).subscribe(([projectNames, keptnInfo]) => {
+      this.projectNameControl.setValidators([
+        Validators.required,
+        FormUtils.nameExistsValidator(projectNames),
+        Validators.pattern('[a-z]([a-z]|[0-9]|-)*'),
+      ]);
+
+      this.setGitUpstreamRequired(keptnInfo);
+    });
   }
 
   private loadProject(projectName: string): void {
-    this.dataService.loadPlainProject(projectName).subscribe((project: Project) => {
+    const loadProject$ = this.dataService.loadPlainProject(projectName);
+
+    combineLatest([loadProject$, this.keptnInfo$]).subscribe(([project, keptnInfo]) => {
       this.gitData = {
         gitRemoteURL: project.gitRemoteURI,
         gitUser: project.gitUser,
@@ -146,6 +149,8 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
       this.gitInputDataExtendedDefault = project.gitUpstream;
       this.gitInputDataExtended = AppUtils.copyObject(project.gitUpstream); // there should not be a reference. Could
       // lead to problems when the form is reset
+
+      this.setGitUpstreamRequired(keptnInfo);
 
       this.isProjectLoading = false;
     });
