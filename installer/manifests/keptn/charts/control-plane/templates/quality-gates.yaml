@@ -36,6 +36,18 @@ spec:
           image: {{ .Values.lighthouseService.image.repository }}:{{ .Values.lighthouseService.image.tag | default .Chart.AppVersion }}
           {{- $prestop := .Values.lighthouseService.preStopHookTime | default 90 | quote -}}
           {{- include "control-plane.prestop" $prestop | nindent 10 }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
