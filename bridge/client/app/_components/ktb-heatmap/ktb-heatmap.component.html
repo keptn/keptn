@@ -1,15 +1,10 @@
-<button
-  dt-button
-  variant="secondary"
-  [class.hidden]="!showMoreVisible"
-  class="show-more-button"
-  (click)="showMoreToggle()"
-  #showMoreButton
->
-  <!--  ng-container with switch or if/else does not work. Icon is not placed inside the icon-label -->
-  <dt-icon [name]="showMoreExpanded ? 'sorter2-up' : 'sorter2-down'"></dt-icon>
-  <span [textContent]="showMoreExpanded ? 'Collapse all SLIs' : 'Show all SLIs'"></span>
-</button>
-<ktb-heatmap-tooltip #tooltip class="tooltip"></ktb-heatmap-tooltip>
+<div class="relative" [class.hidden]="!showMoreVisible">
+  <button dt-button variant="secondary" class="show-more-button" (click)="showMoreToggle()" #showMoreButton>
+    <!--  ng-container with switch or if/else does not work. Icon is not placed inside the icon-label -->
+    <dt-icon [name]="showMoreExpanded ? 'sorter2-up' : 'sorter2-down'"></dt-icon>
+    <span [textContent]="showMoreExpanded ? 'Collapse all SLIs' : 'Show all SLIs'"></span>
+  </button>
+</div>
+<ktb-heatmap-tooltip #tooltip class="tooltip hidden"></ktb-heatmap-tooltip>
 
-<div [id]="uniqueId" class="heatmap"></div>
+<div [id]="uniqueId"></div>

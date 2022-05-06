@@ -70,7 +70,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   private _selectedDataPoint?: IDataPoint;
   private mouseCoordinates = { x: 0, y: 0 };
   private groupedData: GroupedDataPoints = {};
-  public showMoreVisible = true;
+  public showMoreVisible = false;
   public showMoreExpanded = false;
 
   @ViewChild('showMoreButton', { static: false }) showMoreButton!: DtButton;
@@ -81,7 +81,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   // - Remove testing data afterwards
 
   @Input()
-  set dataPoints(data: IDataPoint[]) {
+  public set dataPoints(data: IDataPoint[]) {
     this.removeHeatmap();
     this.setUniqueHeaders(data, 'xElement', 'yElement');
     this.setUniqueHeaders(data, 'yElement', 'xElement');
@@ -158,7 +158,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   }
 
   @HostListener('window:resize', ['$event'])
-  public onResize(): void {
+  private onResize(): void {
     const { width, height } = this.setAndGetAvailableSpace();
 
     this.resizeSvg(width, height);
@@ -242,9 +242,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   private getAxisElements(data: GroupedDataPoints): { yElements: string[]; xElements: string[] } {
     let yElements = Object.keys(data);
     this.showMoreVisible = yElements.length > this.limitYElementCount;
-    if (this.showMoreVisible) {
-      yElements = this.getLimitedYElements(yElements);
-    }
+    yElements = this.getLimitedYElements(yElements);
     const allXElements = yElements.reduce((xElements: string[], yElement: string) => {
       return [...xElements, ...data[yElement].map((dataPoint) => dataPoint.xElement)];
     }, []);
@@ -535,7 +533,7 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
    * @param event$
    * @param element
    */
-  public contentClick(event$: MouseEvent, element: SVGRectElement): void {
+  private contentClick(event$: MouseEvent, element: SVGRectElement): void {
     const containerY = element.getBoundingClientRect().top;
     const dataPoint = this.getDataPointThroughCoordinates(event$.x, containerY + 5); // offset to make sure to click on the tile
     if (!dataPoint) {
@@ -720,6 +718,9 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   }
 
   private getLimitedYElements(yElements: string[]): string[] {
+    if (yElements.length <= this.limitYElementCount) {
+      return yElements;
+    }
     return yElements.slice(yElements.length - this.limitYElementCount, yElements.length);
   }
 

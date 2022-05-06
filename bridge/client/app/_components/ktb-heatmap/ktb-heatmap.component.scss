@@ -1,9 +1,5 @@
 .show-more-button {
-  position: relative;
-}
-
-.heatmap {
-  margin-top: -32px; // remove show-more button height
+  position: absolute;
 }
 
 .tooltip {
@@ -36,7 +32,7 @@
   }
 
   .hidden {
-    opacity: 0;
+    visibility: hidden;
   }
 
   .legend-item {

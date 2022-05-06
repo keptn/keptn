@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbHeatmapTooltipComponent } from './ktb-heatmap-tooltip.component';
+import { AppModule } from '../../app.module';
 
 describe('KtbHeatmapTooltipComponent', () => {
   let component: KtbHeatmapTooltipComponent;
@@ -7,7 +8,7 @@ describe('KtbHeatmapTooltipComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [KtbHeatmapTooltipComponent],
+      imports: [AppModule],
     }).compileComponents();
     fixture = TestBed.createComponent(KtbHeatmapTooltipComponent);
     component = fixture.componentInstance;

@@ -4,6 +4,7 @@ import { ApiService } from '../_services/api.service';
 import { BridgeInfoResponseMock } from '../_services/_mockData/api-responses/bridgeInfo-response.mock';
 import { of } from 'rxjs';
 import { DataService } from '../_services/data.service';
+import Mock = jest.Mock;
 
 export class TestUtils {
   public static createNewDropEventWithFiles(files: File[]): DragEvent {
@@ -109,6 +110,33 @@ export class TestUtils {
         }
       }
     });
+  }
+
+  public static overrideProperty<Element, Key extends (string | number) & keyof Element>(
+    element: Element,
+    key: Key,
+    getValue: Required<Element>[Key]
+  ): void {
+    Object.defineProperty(element, key, {
+      get: jest.fn(() => getValue),
+    });
+  }
+
+  public static overridePropertyWithSpy<Element, Key extends (string | number) & keyof Element>(
+    element: Element,
+    key: Key,
+    getSpy: Mock<Required<Element>[Key], [void]>
+  ): void {
+    Object.defineProperty(element, key, {
+      get: getSpy,
+    });
+  }
+
+  public static createMouseMoveEvent(x: number, y: number): MouseEvent {
+    const mouseEvent = new MouseEvent('move'); // x and y are not set in Jest
+    TestUtils.overrideProperty(mouseEvent, 'x', x);
+    TestUtils.overrideProperty(mouseEvent, 'y', y);
+    return mouseEvent;
   }
 }
 
