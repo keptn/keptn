@@ -18,8 +18,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/kelseyhightower/envconfig"
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/distributor/pkg/api"
 	"github.com/keptn/keptn/distributor/pkg/clientget"
 	"github.com/keptn/keptn/distributor/pkg/config"
@@ -31,8 +29,6 @@ import (
 	"github.com/keptn/keptn/distributor/pkg/uniform/watch"
 	"github.com/keptn/keptn/distributor/pkg/utils"
 	logger "github.com/sirupsen/logrus"
-	"net/http"
-	"net/url"
 	"os"
 	"os/signal"
 	"strconv"
@@ -54,7 +50,7 @@ func main() {
 	bark(env)
 
 	executionContext := createExecutionContext()
-	eventSender, err := createEventSender(env)
+	eventSender, err := poller.CreateEventSender(env)
 	if err != nil {
 		logger.WithError(err).Fatal("Could not initialize event sender.")
 	}
@@ -64,7 +60,7 @@ func main() {
 		logger.WithError(err).Fatal("Could not initialize http client.")
 	}
 
-	apiset, err := createKeptnAPI(httpClient, env)
+	apiset, err := api.CreateKeptnAPI(httpClient, env)
 	if err != nil {
 		logger.WithError(err).Fatal("Could not initialize API set.")
 	}
@@ -165,28 +161,4 @@ func createExecutionContext() *utils.ExecutionContext {
 		CancelFn: cancel,
 	}
 	return &executionContext
-}
-
-func createKeptnAPI(httpClient *http.Client, env config.EnvConfig) (keptnapi.KeptnInterface, error) {
-	if httpClient == nil {
-		httpClient = &http.Client{}
-	}
-	if env.PubSubConnectionType() == config.ConnectionTypeHTTP {
-		scheme := "http"
-		parsed, _ := url.Parse(env.KeptnAPIEndpoint)
-		if parsed.Scheme != "" {
-			scheme = parsed.Scheme
-		}
-		return keptnapi.New(env.KeptnAPIEndpoint, keptnapi.WithScheme(scheme), keptnapi.WithHTTPClient(httpClient), keptnapi.WithAuthToken(env.KeptnAPIToken))
-	}
-
-	return api.NewInternal(httpClient)
-}
-
-func createEventSender(env config.EnvConfig) (poller.EventSender, error) {
-	eventSender, err := keptnv2.NewHTTPEventSender(env.PubSubRecipientURL())
-	if err != nil {
-		return nil, err
-	}
-	return eventSender, nil
 }
