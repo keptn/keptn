@@ -2,13 +2,11 @@ package main
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"log"
-	"net/http"
 
 	"github.com/kelseyhightower/envconfig"
 	"github.com/keptn/go-utils/pkg/api/models"
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/cp-connector/pkg/api"
 	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
@@ -35,6 +33,10 @@ func main() {
 	if err := envconfig.Process("", &env); err != nil {
 		log.Fatalf("Failed to process env var: %s", err)
 	}
+
+	go func() {
+		keptnapi.RunHealthEndpoint("8080")
+	}()
 
 	api, err := api.NewInternal(nil)
 	if err != nil {
@@ -102,38 +104,4 @@ func (l LighthouseService) RegistrationData() controlplane.RegistrationData {
 			},
 		},
 	}
-}
-
-func RunHealthEndpoint(port string) {
-
-	http.HandleFunc("/health", healthHandler)
-	err := http.ListenAndServe(fmt.Sprintf(":%s", port), nil)
-	if err != nil {
-		log.Println(err)
-	}
-}
-
-func healthHandler(w http.ResponseWriter, r *http.Request) {
-	status := StatusBody{Status: "OK"}
-
-	body, err := status.ToJSON()
-	if err != nil {
-		log.Println(err)
-	}
-
-	w.Header().Set("content-type", "application/json")
-
-	_, err = w.Write(body)
-	if err != nil {
-		log.Println(err)
-	}
-}
-
-type StatusBody struct {
-	Status string `json:"status"`
-}
-
-// ToJSON converts object to JSON string
-func (s *StatusBody) ToJSON() ([]byte, error) {
-	return json.Marshal(s)
 }

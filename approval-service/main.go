@@ -11,6 +11,7 @@ import (
 	logger "github.com/sirupsen/logrus"
 
 	"github.com/keptn/go-utils/pkg/api/models"
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/cp-connector/pkg/api"
 	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
@@ -41,6 +42,10 @@ func main() {
 	if err := envconfig.Process("", &env); err != nil {
 		log.Fatalf("Failed to process env var: %s", err)
 	}
+
+	go func() {
+		keptnapi.RunHealthEndpoint("8080")
+	}()
 
 	api, err := api.NewInternal(nil)
 	if err != nil {
