@@ -101,14 +101,26 @@ func startControlPlane(ctx context.Context, api *operations.MongodbDatastoreAPI,
 	ctx, cancel := context.WithCancel(ctx)
 
 	// 4. Propagate graceful shutdown
+	setPreShutDown(api, cancel)
+	// 5. Start control plane
+	log.Info("Registering control plane")
+	return controlPlane.Register(ctx, eventRequestHandler)
+}
+
+func setPreShutDown(api *operations.MongodbDatastoreAPI, cancel context.CancelFunc) {
+	mutex.Lock()
 	api.PreServerShutdown = func() {
 		log.Info("Shutting down control plane")
 		cancel()
 	}
+	mutex.Unlock()
+}
 
-	// 5. Start control plane
-	log.Info("Registering control plane")
-	return controlPlane.Register(ctx, eventRequestHandler)
+func returnPreShutDown(api *operations.MongodbDatastoreAPI) func() {
+	mutex.Lock()
+	f := api.PreServerShutdown
+	mutex.Unlock()
+	return f
 }
 
 // The TLS configuration before HTTPS server starts.

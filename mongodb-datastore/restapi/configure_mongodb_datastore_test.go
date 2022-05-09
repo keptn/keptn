@@ -19,8 +19,9 @@ func Test_startControlPlaneSuccess(t *testing.T) {
 		svr := natstest.RunRandClientPortServer()
 		return svr, func() { svr.Shutdown() }
 	}()
-
-	defer shutdown()
+	defer func() {
+		shutdown()
+	}()
 	err := os.Setenv("NATS_URL", natsServer.ClientURL())
 	require.NoError(t, err)
 
@@ -33,16 +34,10 @@ func Test_startControlPlaneSuccess(t *testing.T) {
 		t.Log("control plane terminated")
 	}()
 	// test propagate shutdown
-
 	require.Eventually(t, func() bool {
-		mutex.Lock()
-		result := api.PreServerShutdown != nil
-		mutex.Unlock()
-		return result
+		return returnPreShutDown(api) != nil
 	}, 10*time.Second, 1*time.Second)
-	mutex.Lock()
-	api.PreServerShutdown()
-	mutex.Unlock()
+
 }
 
 func Test_startControlPlaneFailNoNATS(t *testing.T) {
