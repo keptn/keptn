@@ -52,12 +52,7 @@ spec:
           ports:
             - containerPort: 8080
           resources:
-            requests:
-              memory: "128Mi"
-              cpu: "50m"
-            limits:
-              memory: "1Gi"
-              cpu: "200m"
+            {{- toYaml .Values.lighthouseService.resources | nindent 12 }}
           env:
             - name: EVENTBROKER
               value: 'http://localhost:8081/event'
@@ -81,7 +76,8 @@ spec:
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
-          {{- include "keptn.distributor.resources" . | nindent 10 }}
+          resources:
+            {{- toYaml .Values.distributor.resources | nindent 12 }}
           env:
             - name: PUBSUB_TOPIC
               value: 'sh.keptn.event.evaluation.triggered,sh.keptn.event.get-sli.finished,sh.keptn.event.monitoring.configure'
