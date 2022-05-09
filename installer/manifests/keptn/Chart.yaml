@@ -40,7 +40,7 @@ keywords:
 
 dependencies:
   - name: mongodb
-    version: 11.2.0
+    version: 11.1.10
     repository: https://charts.bitnami.com/bitnami
     condition: mongo.enabled
     alias: mongo
