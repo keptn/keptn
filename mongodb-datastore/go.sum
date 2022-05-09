@@ -144,8 +144,9 @@ github.com/karrick/godirwalk v1.8.0/go.mod h1:H5KPZjojv4lE+QYImBI8xVtrBRgYrIVsaR
 github.com/karrick/godirwalk v1.10.3/go.mod h1:RoGL9dQei4vP9ilrpETWE8CLOZ1kiN0LhBygSwrAsHA=
 github.com/kelseyhightower/envconfig v1.4.0 h1:Im6hONhd3pLkfDFsbRgu68RDNkGF1r3dvMUtDTo2cv8=
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
-github.com/keptn/go-utils v0.14.1-0.20220505114036-8e87fd80b9b0 h1:wqT26FFFZoQcHcqyH1HZrnbQSW48PfUXt/zWvF/SwUg=
 github.com/keptn/go-utils v0.14.1-0.20220505114036-8e87fd80b9b0/go.mod h1:oxLLKz2u9KId2HgLH63+T0pUbcgiDd2GDkRrRKwxGUU=
+github.com/keptn/go-utils v0.15.0 h1:zOEJ0DBQAdt/CHO3HANWFGG8+Es5SyZNQi2MvI7agKI=
+github.com/keptn/go-utils v0.15.0/go.mod h1:oxLLKz2u9KId2HgLH63+T0pUbcgiDd2GDkRrRKwxGUU=
 github.com/keptn/keptn/cp-connector v0.0.0-20220506053355-bfcb3524d5d0 h1:8FlOoCOPin8qy4OUDp7p15FSw6lDLEVlz/k5M8MjDkg=
 github.com/keptn/keptn/cp-connector v0.0.0-20220506053355-bfcb3524d5d0/go.mod h1:UxgJWPxagY55m7Vh+U/TY/k7KIbq3fkahIw3tmTGzks=
 github.com/klauspost/compress v1.9.5/go.mod h1:RyIbtBH6LamlWaDj8nUwkbUhJ87Yi3uG0guNDohfE1A=
