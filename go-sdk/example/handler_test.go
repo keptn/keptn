@@ -5,7 +5,6 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/go-sdk/pkg/sdk"
-	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"log"
 	"testing"
@@ -15,26 +14,29 @@ import (
 func Test_Handler(t *testing.T) {
 	fakeKeptn := sdk.NewFakeKeptn("test-greeting-svc")
 	fakeKeptn.AddTaskHandler(greetingsTriggeredEventType, NewGreetingsHandler())
+
+	//TODO: make starting fake keptn in bg and waiting for it to be started
+	// transparent to the user
 	go fakeKeptn.Start()
 	<-fakeKeptn.TestEventSource.Started
+
 	fakeKeptn.NewEvent(newNewGreetingTriggeredEvent("test-assets/events/greeting.triggered-0.json"))
 
-	require.Eventuallyf(t, func() bool {
-		return len(fakeKeptn.GetEventSource().SentEvents) == 2
-	}, time.Second, 10*time.Millisecond, "error message %s", "formatted")
+	fakeKeptn.AssertNumberOfEventSent(t, 2, time.Second)
 
-	require.Eventuallyf(t, func() bool {
-		return (keptnv2.GetStartedEventType("greeting") == *fakeKeptn.GetEventSource().SentEvents[0].Type)
-	}, time.Second, 10*time.Millisecond, "error message %s", "formatted")
+	fakeKeptn.AssertSentEvent(t, 0, func(e models.KeptnContextExtendedCE) bool {
+		return keptnv2.GetStartedEventType("greeting") == *e.Type
+	}, time.Second)
 
-	require.Eventuallyf(t, func() bool {
-		return (keptnv2.GetFinishedEventType("greeting") == *fakeKeptn.GetEventSource().SentEvents[1].Type)
-	}, time.Second, 10*time.Millisecond, "error message %s", "formatted")
+	fakeKeptn.AssertSentEvent(t, 1, func(e models.KeptnContextExtendedCE) bool {
+		return keptnv2.GetFinishedEventType("greeting") == *e.Type
+	}, time.Second)
 
-	finishedEvent := fakeKeptn.GetEventSource().SentEvents[1]
-	greetingFinishedData := GreetingFinishedData{}
-	finishedEvent.DataAs(&greetingFinishedData)
-	require.Equal(t, "Hi, my name is Keptn", greetingFinishedData.GreetMessage)
+	fakeKeptn.AssertSentEvent(t, 1, func(e models.KeptnContextExtendedCE) bool {
+		greetingFinishedData := GreetingFinishedData{}
+		e.DataAs(&greetingFinishedData)
+		return "Hi, my name is Keptn" == greetingFinishedData.GreetMessage
+	}, time.Second)
 }
 
 func newNewGreetingTriggeredEvent(filename string) models.KeptnContextExtendedCE {
