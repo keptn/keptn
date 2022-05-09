@@ -40,8 +40,9 @@ func Test_startControlPlaneSuccess(t *testing.T) {
 		mutex.Unlock()
 		return result
 	}, 10*time.Second, 1*time.Second)
-
+	mutex.Lock()
 	api.PreServerShutdown()
+	mutex.Unlock()
 }
 
 func Test_startControlPlaneFailNoNATS(t *testing.T) {
