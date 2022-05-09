@@ -1,11 +1,12 @@
 package sdk
 
 import (
-	"context"
-	"fmt"
-	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/google/uuid"
+	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/common/strutils"
+	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
@@ -13,156 +14,137 @@ import (
 
 func Test_WhenReceivingAnEvent_StartedEventAndFinishedEventsAreSent(t *testing.T) {
 	taskHandler := &TaskHandlerMock{}
-	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) {
-		return FakeTaskData{}, nil
-	}
-
-	taskEntry := TaskEntry{
-		TaskHandler: taskHandler,
-	}
-
+	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) { return FakeTaskData{}, nil }
+	taskEntry := TaskEntry{TaskHandler: taskHandler}
 	taskEntries := map[string]TaskEntry{"sh.keptn.event.faketask.triggered": taskEntry}
-
-	eventReceiver := &TestReceiver{}
 	eventSender := &EventSenderMock{}
+	eventSender.SendEventFunc = func(eventMoqParam event.Event) error { return nil }
+	taskRegistry := &TaskRegistry{Entries: taskEntries}
 
-	eventSender.SendEventFunc = func(eventMoqParam event.Event) error {
-		return nil
-	}
-
-	taskRegistry := &TaskRegistry{
-		Entries: taskEntries,
-	}
+	testSubscriptionSource := controlplane.NewFixedSubscriptionSource(controlplane.WithFixedSubscriptions(models.EventSubscription{Event: "sh.keptn.event.faketask.triggered"}))
+	testEventSource := NewTestEventSource()
+	cp := controlplane.New(testSubscriptionSource, testEventSource)
 
 	keptn := Keptn{
-		eventSender:            eventSender,
-		eventReceiver:          eventReceiver,
+		controlPlane:           cp,
 		taskRegistry:           taskRegistry,
 		automaticEventResponse: true,
 		logger:                 NewDefaultLogger(),
 	}
 
-	keptn.Start()
-	eventReceiver.NewEvent(context.Background(), newTestTaskTriggeredEvent())
+	go keptn.Start()
+	<-testEventSource.Started
+
+	testEventSource.NewEvent(controlplane.EventUpdate{
+		KeptnEvent: models.KeptnContextExtendedCE{
+			Data:           v0_2_0.EventData{Project: "prj", Stage: "stg", Service: "svc"},
+			ID:             "id",
+			Shkeptncontext: "context",
+			Source:         strutils.Stringp("source"),
+			Type:           strutils.Stringp("sh.keptn.event.faketask.triggered"),
+		},
+		MetaData: controlplane.EventUpdateMetaData{Subject: "sh.keptn.event.faketask.triggered"},
+	})
 
 	require.Eventuallyf(t, func() bool {
-		return len(eventSender.SendEventCalls()) == 2
+		return len(testEventSource.SentEvents) == 2
 	}, time.Second, 10*time.Millisecond, "error message %s", "formatted")
 
 	require.Eventuallyf(t, func() bool {
-		return eventSender.SendEventCalls()[0].EventMoqParam.Type() == "sh.keptn.event.faketask.started"
+		return *testEventSource.SentEvents[0].Type == "sh.keptn.event.faketask.started"
 	}, time.Second, 10*time.Millisecond, "error message %s", "formatted")
 
 	require.Eventuallyf(t, func() bool {
-		return eventSender.SendEventCalls()[1].EventMoqParam.Type() == "sh.keptn.event.faketask.finished"
+		return *testEventSource.SentEvents[1].Type == "sh.keptn.event.faketask.finished"
 	}, time.Second, 10*time.Millisecond, "error message %s", "formatted")
 
 }
 
 func Test_WhenReceivingEvent_OnlyStartedEventIsSent(t *testing.T) {
 	taskHandler := &TaskHandlerMock{}
-	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) {
-		return FakeTaskData{}, nil
-	}
-
-	taskEntry := TaskEntry{
-		TaskHandler: taskHandler,
-	}
-
+	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) { return FakeTaskData{}, nil }
+	taskEntry := TaskEntry{TaskHandler: taskHandler}
 	taskEntries := map[string]TaskEntry{"sh.keptn.event.faketask.triggered": taskEntry}
-
-	eventReceiver := &TestReceiver{}
-	eventSender := &EventSenderMock{}
-
-	eventSender.SendEventFunc = func(eventMoqParam event.Event) error {
-		return nil
-	}
-
-	taskRegistry := &TaskRegistry{
-		Entries: taskEntries,
-	}
+	taskRegistry := &TaskRegistry{Entries: taskEntries}
+	testSubscriptionSource := controlplane.NewFixedSubscriptionSource(controlplane.WithFixedSubscriptions(models.EventSubscription{Event: "sh.keptn.event.faketask.triggered"}))
+	testEventSource := NewTestEventSource()
+	cp := controlplane.New(testSubscriptionSource, testEventSource)
 
 	keptn := Keptn{
-		eventSender:            eventSender,
-		eventReceiver:          eventReceiver,
+		controlPlane:           cp,
 		taskRegistry:           taskRegistry,
-		automaticEventResponse: false,
+		automaticEventResponse: true,
 		logger:                 NewDefaultLogger(),
 	}
 
-	keptn.Start()
-	eventReceiver.NewEvent(context.Background(), newTestTaskTriggeredEvent())
+	go keptn.Start()
+	<-testEventSource.Started
+
+	testEventSource.NewEvent(controlplane.EventUpdate{
+		KeptnEvent: newTestTaskTriggeredEvent(),
+		MetaData:   controlplane.EventUpdateMetaData{Subject: "sh.keptn.event.faketask.triggered"},
+	})
 
 	require.Eventuallyf(t, func() bool {
-		fmt.Println(len(eventSender.SendEventCalls()))
-		return len(eventSender.SendEventCalls()) == 0
+		return len(testEventSource.SentEvents) == 0
 	}, time.Second, 10*time.Millisecond, "error message %s", "formatted")
 
 }
 
 func Test_WhenReceivingBadEvent_NoEventIsSent(t *testing.T) {
 	taskHandler := &TaskHandlerMock{}
-	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) {
-		return FakeTaskData{}, nil
-	}
-
-	taskEntry := TaskEntry{
-		TaskHandler: taskHandler,
-	}
-
+	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) { return FakeTaskData{}, nil }
+	taskEntry := TaskEntry{TaskHandler: taskHandler}
 	taskEntries := map[string]TaskEntry{"sh.keptn.event.faketask.triggered": taskEntry}
-
-	eventReceiver := &TestReceiver{}
-	eventSender := &EventSenderMock{}
-
-	eventSender.SendEventFunc = func(eventMoqParam event.Event) error {
-		return nil
-	}
-
-	taskRegistry := &TaskRegistry{
-		Entries: taskEntries,
-	}
+	taskRegistry := &TaskRegistry{Entries: taskEntries}
+	testSubscriptionSource := controlplane.NewFixedSubscriptionSource(controlplane.WithFixedSubscriptions(models.EventSubscription{Event: "sh.keptn.event.faketask.triggered"}))
+	testEventSource := NewTestEventSource()
+	cp := controlplane.New(testSubscriptionSource, testEventSource)
 
 	keptn := Keptn{
-		eventSender:            eventSender,
-		eventReceiver:          eventReceiver,
+		controlPlane:           cp,
 		taskRegistry:           taskRegistry,
 		automaticEventResponse: true,
 		logger:                 NewDefaultLogger(),
 	}
 
-	keptn.Start()
-	eventReceiver.NewEvent(context.Background(), newTestTaskBadTriggeredEvent())
+	go keptn.Start()
+	<-testEventSource.Started
+
+	testEventSource.NewEvent(controlplane.EventUpdate{
+		KeptnEvent: newTestTaskBadTriggeredEvent(),
+		MetaData:   controlplane.EventUpdateMetaData{Subject: "sh.keptn.event.faketask.finished.triggered"},
+	})
 
 	require.Eventuallyf(t, func() bool {
-		fmt.Println(len(eventSender.SendEventCalls()))
-		return len(eventSender.SendEventCalls()) == 0
+		return len(testEventSource.SentEvents) == 0
 	}, time.Second, 10*time.Millisecond, "error message %s", "formatted")
 }
 
-func newTestTaskTriggeredEvent() cloudevents.Event {
-	c := cloudevents.NewEvent()
-	c.SetID(uuid.New().String())
-	c.SetType("sh.keptn.event.faketask.triggered")
-	c.SetDataContentType(cloudevents.ApplicationJSON)
-	c.SetExtension(KeptnContextCEExtension, "keptncontext")
-	c.SetExtension(TriggeredIDCEExtension, "ID")
-	c.SetExtension(GitCommitIDCEExtension, "mycommitid")
-	c.SetSource("unittest")
-	c.SetData(cloudevents.ApplicationJSON, FakeTaskData{})
-	return c
+func newTestTaskTriggeredEvent() models.KeptnContextExtendedCE {
+	return models.KeptnContextExtendedCE{
+		Contenttype:    "application/json",
+		Data:           FakeTaskData{},
+		ID:             uuid.New().String(),
+		Shkeptncontext: "keptncontext",
+		Triggeredid:    "ID",
+		GitCommitID:    "mycommitid",
+		Source:         strutils.Stringp("unittest"),
+		Type:           strutils.Stringp("sh.keptn.event.faketask.triggered"),
+	}
 }
 
-func newTestTaskBadTriggeredEvent() cloudevents.Event {
-	c := cloudevents.NewEvent()
-	c.SetID(uuid.New().String())
-	c.SetType("sh.keptn.event.faketask.finished.triggered")
-	c.SetDataContentType(cloudevents.ApplicationJSON)
-	c.SetExtension(KeptnContextCEExtension, "keptncontext")
-	c.SetExtension(TriggeredIDCEExtension, "ID")
-	c.SetSource("unittest")
-	c.SetData(cloudevents.ApplicationJSON, FakeTaskData{})
-	return c
+func newTestTaskBadTriggeredEvent() models.KeptnContextExtendedCE {
+	return models.KeptnContextExtendedCE{
+		Contenttype:    "application/json",
+		Data:           FakeTaskData{},
+		ID:             uuid.New().String(),
+		Shkeptncontext: "keptncontext",
+		Triggeredid:    "ID",
+		GitCommitID:    "mycommitid",
+		Source:         strutils.Stringp("unittest"),
+		Type:           strutils.Stringp("sh.keptn.event.faketask.finished.triggered"),
+	}
 }
 
 type FakeTaskData struct {

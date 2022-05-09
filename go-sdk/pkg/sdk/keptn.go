@@ -2,12 +2,14 @@ package sdk
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/go-utils/pkg/common/strutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
 	"os"
 	"os/signal"
 	"sync"
@@ -132,27 +134,110 @@ func WithLogger(logger Logger) KeptnOption {
 
 // Keptn is the default implementation of IKeptn
 type Keptn struct {
-	eventSender            EventSender
-	eventReceiver          EventReceiver
+	controlPlane           *controlplane.ControlPlane
 	resourceHandler        ResourceHandler
 	source                 string
 	taskRegistry           *TaskRegistry
 	syncProcessing         bool
 	automaticEventResponse bool
 	gracefulShutdown       bool
-	receivingEvent         interface{}
 	logger                 Logger
+}
+
+func (k *Keptn) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE) error {
+	eventSender := ctx.Value(controlplane.EventSenderKey).(controlplane.EventSender)
+	if !keptnv2.IsTaskEventType(*event.Type) {
+		k.logger.Errorf("event with event type %s is no valid keptn task event type", event.Type)
+		return nil
+	}
+	ctx.Value(gracefulShutdownKey).(wgInterface).Add(1)
+	k.runEventTaskAction(func() {
+		{
+			defer ctx.Value(gracefulShutdownKey).(wgInterface).Done()
+			if handler, ok := k.taskRegistry.Contains(*event.Type); ok {
+				keptnEvent := &KeptnEvent{}
+				if err := keptnv2.Decode(&event, keptnEvent); err != nil {
+					errorLogEvent, err := k.createErrorLogEventForTriggeredEvent(event, nil, &Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed})
+					if err != nil {
+						k.logger.Errorf("unable to create '.error.log' event from '.triggered' event: %v", err)
+						return
+					}
+					// no started event sent yet, so it only makes sense to Send an error log event at this point
+					if err := eventSender(*errorLogEvent); err != nil {
+						k.logger.Errorf("unable to send '.finished' event: %v", err)
+						return
+					}
+				}
+
+				// execute the filtering functions of the task handler to determine whether the incoming event should be handled
+				// only if all functions return true, the event will be handled
+				for _, filterFn := range handler.EventFilters {
+					if !filterFn(k, *keptnEvent) {
+						k.logger.Infof("Will not handle incoming %s event", *event.Type)
+						return
+					}
+				}
+
+				// only respond with .started event if the incoming event is a task.triggered event
+				if keptnv2.IsTaskEventType(*event.Type) && keptnv2.IsTriggeredEventType(*event.Type) && k.automaticEventResponse {
+					startedEvent, err := k.createStartedEventForTriggeredEvent(event)
+					if err != nil {
+						k.logger.Errorf("unable to create '.started' event from '.triggered' event: %v", err)
+						return
+					}
+					if err := eventSender(*startedEvent); err != nil {
+						k.logger.Errorf("unable to send '.started' event: %v", err)
+						return
+					}
+				}
+
+				result, err := handler.TaskHandler.Execute(k, *keptnEvent)
+				if err != nil {
+					k.logger.Errorf("error during task execution %v", err.Err)
+					if k.automaticEventResponse {
+						errorEvent, err := k.createErrorEvent(event, result, err)
+						if err != nil {
+							k.logger.Errorf("unable to create '.error' event: %v", err)
+							return
+						}
+						if err := eventSender(*errorEvent); err != nil {
+							k.logger.Errorf("unable to send '.error' event: %v", err)
+							return
+						}
+					}
+					return
+				}
+				if result == nil {
+					k.logger.Infof("no finished data set by task executor for event %s. Skipping sending finished event", *event.Type)
+				} else if keptnv2.IsTaskEventType(*event.Type) && keptnv2.IsTriggeredEventType(*event.Type) && k.automaticEventResponse {
+					finishedEvent, err := k.createFinishedEventForReceivedEvent(event, result)
+					if err != nil {
+						k.logger.Errorf("unable to create '.finished' event: %v", err)
+						return
+					}
+					if err := eventSender(*finishedEvent); err != nil {
+						k.logger.Errorf("unable to send '.finished' event: %v", err)
+						return
+					}
+				}
+			}
+		}
+	})
+	return nil
+}
+
+func (k *Keptn) RegistrationData() controlplane.RegistrationData {
+	return controlplane.RegistrationData{}
 }
 
 // NewKeptn creates a new Keptn
 func NewKeptn(source string, opts ...KeptnOption) *Keptn {
-	client := NewHTTPClientFromEnv()
+	controlplane, _ := NewCPFromEnv()
 	resourceHandler := NewResourceHandlerFromEnv()
 	taskRegistry := NewTasksMap()
 	logger := NewDefaultLogger()
 	keptn := &Keptn{
-		eventSender:            &keptnv2.HTTPEventSender{EventsEndpoint: DefaultHTTPEventEndpoint, Client: client},
-		eventReceiver:          client,
+		controlPlane:           controlplane,
 		source:                 source,
 		taskRegistry:           taskRegistry,
 		resourceHandler:        resourceHandler,
@@ -169,7 +254,7 @@ func NewKeptn(source string, opts ...KeptnOption) *Keptn {
 
 func (k *Keptn) Start() error {
 	ctx := getContext(k.gracefulShutdown)
-	err := k.eventReceiver.StartReceiver(ctx, k.gotEvent)
+	err := k.controlPlane.Register(ctx, k)
 	ctx.Value(gracefulShutdownKey).(wgInterface).Wait()
 	return err
 }
@@ -179,113 +264,35 @@ func (k *Keptn) GetResourceHandler() ResourceHandler {
 }
 
 func (k *Keptn) SendStartedEvent(event KeptnEvent) error {
-	inputCE := cloudevents.Event{}
-	err := keptnv2.Decode(event, &inputCE)
-	if err != nil {
-		return err
-	}
-	startedEvent, err := k.createStartedEventForTriggeredEvent(inputCE)
-	if err != nil {
-		return err
-	}
-	return k.send(*startedEvent)
+	panic("not implemented")
+	//inputCE := cloudevents.Event{}
+	//err := keptnv2.Decode(event, &inputCE)
+	//if err != nil {
+	//	return err
+	//}
+	//startedEvent, err := k.createStartedEventForTriggeredEvent(models.KeptnContextExtendedCE(event))
+	//if err != nil {
+	//	return err
+	//}
+	//return k.send(*startedEvent)
 }
 
 func (k *Keptn) SendFinishedEvent(event KeptnEvent, result interface{}) error {
-	inputCE := cloudevents.Event{}
-	err := keptnv2.Decode(event, &inputCE)
-	if err != nil {
-		return err
-	}
-	finishedEvent, err := k.createFinishedEventForReceivedEvent(inputCE, result)
-	if err != nil {
-		return err
-	}
-	return k.send(*finishedEvent)
+	panic("not implemented")
+	//inputCE := cloudevents.Event{}
+	//err := keptnv2.Decode(event, &inputCE)
+	//if err != nil {
+	//	return err
+	//}
+	//finishedEvent, err := k.createFinishedEventForReceivedEvent(inputCE, result)
+	//if err != nil {
+	//	return err
+	//}
+	//return k.send(*finishedEvent)
 }
 
 func (k *Keptn) Logger() Logger {
 	return k.logger
-}
-
-func (k *Keptn) gotEvent(ctx context.Context, event cloudevents.Event) {
-	if !keptnv2.IsTaskEventType(event.Type()) {
-		k.logger.Errorf("event with event type %s is no valid keptn task event type", event.Type())
-		return
-	}
-	ctx.Value(gracefulShutdownKey).(wgInterface).Add(1)
-	k.runEventTaskAction(func() {
-		{
-			defer ctx.Value(gracefulShutdownKey).(wgInterface).Done()
-			if handler, ok := k.taskRegistry.Contains(event.Type()); ok {
-				keptnEvent := &KeptnEvent{}
-				if err := keptnv2.Decode(&event, keptnEvent); err != nil {
-					errorLogEvent, err := k.createErrorLogEventForTriggeredEvent(event, nil, &Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed})
-					if err != nil {
-						k.logger.Errorf("unable to create '.error.log' event from '.triggered' event: %v", err)
-						return
-					}
-					// no started event sent yet, so it only makes sense to Send an error log event at this point
-					if err := k.send(*errorLogEvent); err != nil {
-						k.logger.Errorf("unable to send '.finished' event: %v", err)
-						return
-					}
-				}
-
-				// execute the filtering functions of the task handler to determine whether the incoming event should be handled
-				// only if all functions return true, the event will be handled
-				for _, filterFn := range handler.EventFilters {
-					if !filterFn(k, *keptnEvent) {
-						k.logger.Infof("Will not handle incoming %s event", event.Type())
-						return
-					}
-				}
-
-				// only respond with .started event if the incoming event is a task.triggered event
-				if keptnv2.IsTaskEventType(event.Type()) && keptnv2.IsTriggeredEventType(event.Type()) && k.automaticEventResponse {
-					startedEvent, err := k.createStartedEventForTriggeredEvent(event)
-					if err != nil {
-						k.logger.Errorf("unable to create '.started' event from '.triggered' event: %v", err)
-						return
-					}
-					if err := k.send(*startedEvent); err != nil {
-						k.logger.Errorf("unable to send '.started' event: %v", err)
-						return
-					}
-				}
-
-				result, err := handler.TaskHandler.Execute(k, *keptnEvent)
-				if err != nil {
-					k.logger.Errorf("error during task execution %v", err.Err)
-					if k.automaticEventResponse {
-						errorEvent, err := k.createErrorEvent(event, result, err)
-						if err != nil {
-							k.logger.Errorf("unable to create '.error' event: %v", err)
-							return
-						}
-						if err := k.send(*errorEvent); err != nil {
-							k.logger.Errorf("unable to send '.error' event: %v", err)
-							return
-						}
-					}
-					return
-				}
-				if result == nil {
-					k.logger.Infof("no finished data set by task executor for event %s. Skipping sending finished event", event.Type())
-				} else if keptnv2.IsTaskEventType(event.Type()) && keptnv2.IsTriggeredEventType(event.Type()) && k.automaticEventResponse {
-					finishedEvent, err := k.createFinishedEventForReceivedEvent(event, result)
-					if err != nil {
-						k.logger.Errorf("unable to create '.finished' event: %v", err)
-						return
-					}
-					if err := k.send(*finishedEvent); err != nil {
-						k.logger.Errorf("unable to send '.finished' event: %v", err)
-						return
-					}
-				}
-			}
-		}
-	})
 }
 
 func (k *Keptn) runEventTaskAction(fn func()) {
@@ -296,37 +303,24 @@ func (k *Keptn) runEventTaskAction(fn func()) {
 	}
 }
 
-func (k *Keptn) send(event cloudevents.Event) error {
-	k.logger.Infof("Sending %s event", event.Type())
-	if err := k.eventSender.SendEvent(event); err != nil {
-		k.logger.Error("Error sending .started event")
-	}
-	return nil
-}
-
-func (k *Keptn) createStartedEventForTriggeredEvent(triggeredEvent cloudevents.Event) (*cloudevents.Event, error) {
-	startedEventType, err := keptnv2.ReplaceEventTypeKind(triggeredEvent.Type(), "started")
+func (k *Keptn) createStartedEventForTriggeredEvent(triggeredEvent models.KeptnContextExtendedCE) (*models.KeptnContextExtendedCE, error) {
+	startedEventType, err := keptnv2.ReplaceEventTypeKind(*triggeredEvent.Type, "started")
 	if err != nil {
-		return nil, fmt.Errorf("unable to create '.finished' event: %v from %s", err, triggeredEvent.Type())
+		return nil, fmt.Errorf("unable to create '.finished' event: %v from %s", err, *triggeredEvent.Type)
 	}
-	keptnContext, err := triggeredEvent.Context.GetExtension(KeptnContextCEExtension)
-	if err != nil {
-		return nil, fmt.Errorf("unable to get keptn context from '.triggered' event: %v", err)
+	if triggeredEvent.Shkeptncontext == "" {
+		return nil, errors.New("unable to get keptn context from '.triggered' event")
 	}
 	eventData := keptnv2.EventData{}
 	triggeredEvent.DataAs(&eventData)
-	c := cloudevents.NewEvent()
-	c.SetID(uuid.New().String())
-	c.SetType(startedEventType)
-	c.SetDataContentType(cloudevents.ApplicationJSON)
-	c.SetExtension(KeptnContextCEExtension, keptnContext)
-	c.SetExtension(TriggeredIDCEExtension, triggeredEvent.ID())
-	c.SetSource(k.source)
-	c.SetData(cloudevents.ApplicationJSON, eventData)
-	return &c, nil
+	event, err := keptnv2.KeptnEvent(startedEventType, k.source, eventData).WithKeptnContext(triggeredEvent.Shkeptncontext).WithTriggeredID(triggeredEvent.ID).Build()
+	if err != nil {
+		return nil, fmt.Errorf("could not create error event: %v", err)
+	}
+	return &event, nil
 }
 
-func (k *Keptn) createFinishedEventForReceivedEvent(receivedEvent cloudevents.Event, eventData interface{}) (*cloudevents.Event, error) {
+func (k *Keptn) createFinishedEventForReceivedEvent(receivedEvent models.KeptnContextExtendedCE, eventData interface{}) (*models.KeptnContextExtendedCE, error) {
 	var genericEvent map[string]interface{}
 	keptnv2.Decode(eventData, &genericEvent)
 	if genericEvent["status"] == nil || genericEvent["status"] == "" {
@@ -337,27 +331,45 @@ func (k *Keptn) createFinishedEventForReceivedEvent(receivedEvent cloudevents.Ev
 		genericEvent["result"] = "pass"
 	}
 
-	finishedEventType, err := keptnv2.ReplaceEventTypeKind(receivedEvent.Type(), "finished")
+	finishedEventType, err := keptnv2.ReplaceEventTypeKind(*receivedEvent.Type, "finished")
 	if err != nil {
-		return nil, fmt.Errorf("unable to create '.finished' event: %v from %s", err, receivedEvent.Type())
+		return nil, fmt.Errorf("unable to create '.finished' event: %v from %s", err, *receivedEvent.Type)
 	}
-	keptnContext, err := receivedEvent.Context.GetExtension(KeptnContextCEExtension)
-	if err != nil {
-		return nil, fmt.Errorf("unable to get keptn context from event %s: %v", receivedEvent.Type(), err)
+	if receivedEvent.Shkeptncontext == "" {
+		return nil, fmt.Errorf("unable to get keptn context from event %s", *receivedEvent.Type)
 	}
-	c := cloudevents.NewEvent()
-	c.SetID(uuid.New().String())
-	c.SetType(finishedEventType)
-	c.SetDataContentType(cloudevents.ApplicationJSON)
-	c.SetExtension(KeptnContextCEExtension, keptnContext)
-	c.SetExtension(TriggeredIDCEExtension, receivedEvent.ID())
-	c.SetSource(k.source)
-	c.SetData(cloudevents.ApplicationJSON, genericEvent)
-	return &c, nil
+
+	//event, err := keptnv2.KeptnEvent(finishedEventType, k.source, genericEvent).WithTriggeredID(receivedEvent.ID).WithKeptnContext(receivedEvent.Shkeptncontext).Build()
+	//if err != nil {
+	//	return nil, err
+	//}
+
+	event := models.KeptnContextExtendedCE{
+		Contenttype:        cloudevents.ApplicationJSON,
+		Data:               genericEvent,
+		Source:             strutils.Stringp(k.source),
+		Shkeptnspecversion: "1.0",
+		Specversion:        "0.2.4",
+		Type:               strutils.Stringp(finishedEventType),
+		Triggeredid:        receivedEvent.ID,
+		Shkeptncontext:     receivedEvent.Shkeptncontext,
+	}
+
+	return &event, nil
+	/*
+		c := cloudevents.NewEvent()
+		c.SetID(uuid.New().String())
+		c.SetType(finishedEventType)
+		c.SetDataContentType(cloudevents.ApplicationJSON)
+		c.SetExtension(KeptnContextCEExtension, keptnContext)
+		c.SetExtension(TriggeredIDCEExtension, receivedEvent.ID())
+		c.SetSource(k.source)
+		c.SetData(cloudevents.ApplicationJSON, genericEvent)
+	*/
 }
 
-func (k *Keptn) createErrorEvent(event cloudevents.Event, eventData interface{}, err *Error) (*cloudevents.Event, error) {
-	if keptnv2.IsTaskEventType(event.Type()) && keptnv2.IsTriggeredEventType(event.Type()) {
+func (k *Keptn) createErrorEvent(event models.KeptnContextExtendedCE, eventData interface{}, err *Error) (*models.KeptnContextExtendedCE, error) {
+	if keptnv2.IsTaskEventType(*event.Type) && keptnv2.IsTriggeredEventType(*event.Type) {
 		errorFinishedEvent, err2 := k.createErrorFinishedEventForTriggeredEvent(event, eventData, err)
 		if err2 != nil {
 			return nil, err2
@@ -371,14 +383,14 @@ func (k *Keptn) createErrorEvent(event cloudevents.Event, eventData interface{},
 	return errorLogEvent, nil
 }
 
-func (k *Keptn) createErrorLogEventForTriggeredEvent(triggeredEvent cloudevents.Event, eventData interface{}, err *Error) (*cloudevents.Event, error) {
+func (k *Keptn) createErrorLogEventForTriggeredEvent(triggeredEvent models.KeptnContextExtendedCE, eventData interface{}, err *Error) (*models.KeptnContextExtendedCE, error) {
 	errorEventData := keptnv2.ErrorLogEvent{}
 	if eventData == nil {
 		triggeredEvent.DataAs(&errorEventData)
 	}
 
-	if keptnv2.IsTaskEventType(triggeredEvent.Type()) {
-		taskName, _, err2 := keptnv2.ParseTaskEventType(triggeredEvent.Type())
+	if keptnv2.IsTaskEventType(*triggeredEvent.Type) {
+		taskName, _, err2 := keptnv2.ParseTaskEventType(*triggeredEvent.Type)
 		if err2 == nil && taskName != "" {
 			errorEventData.Task = taskName
 		}
@@ -386,22 +398,19 @@ func (k *Keptn) createErrorLogEventForTriggeredEvent(triggeredEvent cloudevents.
 
 	errorEventData.Message = err.Message
 
-	keptnContext, err2 := triggeredEvent.Context.GetExtension(KeptnContextCEExtension)
-	if err2 != nil {
-		return nil, fmt.Errorf("unable to get keptn context from '.triggered' event: %v", err2)
+	if triggeredEvent.Shkeptncontext == "" {
+		return nil, errors.New("unable to get keptn context from '.triggered' event")
 	}
-	c := cloudevents.NewEvent()
-	c.SetID(uuid.New().String())
-	c.SetType(keptnv2.ErrorLogEventName)
-	c.SetDataContentType(cloudevents.ApplicationJSON)
-	c.SetExtension(KeptnContextCEExtension, keptnContext)
-	c.SetExtension(TriggeredIDCEExtension, triggeredEvent.ID())
-	c.SetSource(k.source)
-	c.SetData(cloudevents.ApplicationJSON, errorEventData)
-	return &c, nil
+
+	errEvent, err2 := keptnv2.KeptnEvent(keptnv2.ErrorLogEventName, k.source, errorEventData).WithKeptnContext(triggeredEvent.Shkeptncontext).WithTriggeredID(triggeredEvent.ID).Build()
+	if err2 != nil {
+		return nil, fmt.Errorf("could not create error event: %v", err2)
+	}
+
+	return &errEvent, nil
 }
 
-func (k *Keptn) createErrorFinishedEventForTriggeredEvent(event cloudevents.Event, eventData interface{}, err *Error) (*cloudevents.Event, error) {
+func (k *Keptn) createErrorFinishedEventForTriggeredEvent(event models.KeptnContextExtendedCE, eventData interface{}, err *Error) (*models.KeptnContextExtendedCE, error) {
 	commonEventData := keptnv2.EventData{}
 	if eventData == nil {
 		event.DataAs(&commonEventData)
@@ -411,23 +420,20 @@ func (k *Keptn) createErrorFinishedEventForTriggeredEvent(event cloudevents.Even
 	commonEventData.Status = err.StatusType
 	commonEventData.Message = err.Message
 
-	finishedEventType, err2 := keptnv2.ReplaceEventTypeKind(event.Type(), "finished")
+	finishedEventType, err2 := keptnv2.ReplaceEventTypeKind(*event.Type, "finished")
 	if err2 != nil {
-		return nil, fmt.Errorf("unable to create '.finished' event: %v from %s", err2, event.Type())
+		return nil, fmt.Errorf("unable to create '.finished' event: %v from %s", err2, *event.Type)
 	}
-	keptnContext, err2 := event.Context.GetExtension(KeptnContextCEExtension)
-	if err2 != nil {
-		return nil, fmt.Errorf("unable to get keptn context from '.triggered' event: %v", err2)
+	if event.Shkeptncontext == "" {
+		return nil, fmt.Errorf("unable to get keptn context from '.triggered' event")
 	}
-	c := cloudevents.NewEvent()
-	c.SetID(uuid.New().String())
-	c.SetType(finishedEventType)
-	c.SetDataContentType(cloudevents.ApplicationJSON)
-	c.SetExtension(KeptnContextCEExtension, keptnContext)
-	c.SetExtension(TriggeredIDCEExtension, event.ID())
-	c.SetSource(k.source)
-	c.SetData(cloudevents.ApplicationJSON, commonEventData)
-	return &c, nil
+
+	finEvent, err3 := keptnv2.KeptnEvent(finishedEventType, k.source, commonEventData).WithTriggeredID(event.ID).WithKeptnContext(event.Shkeptncontext).Build()
+	if err3 != nil {
+		return nil, err3
+	}
+
+	return &finEvent, nil
 }
 
 func getContext(graceful bool) context.Context {
