@@ -54,9 +54,6 @@ func NewMongodbDatastoreAPI(spec *loads.Document) *MongodbDatastoreAPI {
 		HealthGetHealthHandler: health.GetHealthHandlerFunc(func(params health.GetHealthParams) middleware.Responder {
 			return middleware.NotImplemented("operation health.GetHealth has not yet been implemented")
 		}),
-		EventSaveEventHandler: event.SaveEventHandlerFunc(func(params event.SaveEventParams) middleware.Responder {
-			return middleware.NotImplemented("operation event.SaveEvent has not yet been implemented")
-		}),
 	}
 }
 
@@ -100,8 +97,6 @@ type MongodbDatastoreAPI struct {
 	EventGetEventsByTypeHandler event.GetEventsByTypeHandler
 	// HealthGetHealthHandler sets the operation handler for the get health operation
 	HealthGetHealthHandler health.GetHealthHandler
-	// EventSaveEventHandler sets the operation handler for the save event operation
-	EventSaveEventHandler event.SaveEventHandler
 
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
@@ -187,9 +182,6 @@ func (o *MongodbDatastoreAPI) Validate() error {
 	}
 	if o.HealthGetHealthHandler == nil {
 		unregistered = append(unregistered, "health.GetHealthHandler")
-	}
-	if o.EventSaveEventHandler == nil {
-		unregistered = append(unregistered, "event.SaveEventHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -293,10 +285,6 @@ func (o *MongodbDatastoreAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/health"] = health.NewGetHealth(o.context, o.HealthGetHealthHandler)
-	if o.handlers["POST"] == nil {
-		o.handlers["POST"] = make(map[string]http.Handler)
-	}
-	o.handlers["POST"]["/event"] = event.NewSaveEvent(o.context, o.EventSaveEventHandler)
 }
 
 // Serve creates a http handler to serve the API over HTTP
