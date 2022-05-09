@@ -33,11 +33,14 @@ func Test_startControlPlaneSuccess(t *testing.T) {
 		t.Log("control plane terminated")
 	}()
 	// test propagate shutdown
+
 	require.Eventually(t, func() bool {
 		mutex.Lock()
-		defer mutex.Unlock()
-		return api.PreServerShutdown != nil
+		result := api.PreServerShutdown != nil
+		mutex.Unlock()
+		return result
 	}, 10*time.Second, 1*time.Second)
+
 	api.PreServerShutdown()
 }
 
