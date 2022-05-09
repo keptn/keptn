@@ -302,13 +302,36 @@ func main() {
 		go LeaderElection(kubeAPI.CoordinationV1(), ctx, shipyardController.StartDispatchers, shipyardController.StopDispatchers)
 	}
 
+	operationsEngine := gin.New()
+
+	operationsV1 := operationsEngine.Group("/operations/v1")
+
+	operationsV1.GET("/pre-stop", func(c *gin.Context) {
+		log.Debug("PreStop hook has been called.")
+		cancel()
+		log.Debugf("PreStop: Sleeping for %d seconds", env.PreStopHookTime)
+		<-time.After(time.Duration(env.PreStopHookTime) * time.Second)
+		log.Debug("PreStop hook has been finished")
+		c.Status(http.StatusOK)
+	})
+
+	operationsSrv := &http.Server{
+		Addr:    ":8081",
+		Handler: operationsEngine,
+	}
+
+	go func() {
+		if err := operationsSrv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.WithError(err).Error("could not start API server")
+		}
+	}()
+
 	GracefulShutdown(wg, srv, func() {
 		// invoke the cancel() function to shut down the periodically executed
 		// tasks such as nats subscription, sequence watcher, sequence dispatcher, event dispatcher
 		// this should ensure that no iteration of either of these tasks is attempted to be started right before the termination of the pod
-		cancel()
+		//cancel()
 	})
-
 }
 
 func LeaderElection(client v1.CoordinationV1Interface, ctx context.Context, start func(ctx context.Context, mode common.SDMode), stop func()) {

@@ -16,4 +16,7 @@ type EnvConfig struct {
 	// AutomaticProvisioningURL is a URL to a REST API to provision
 	// git credentials if they are not set by the user
 	AutomaticProvisioningURL string `envconfig:"AUTOMATIC_PROVISIONING_URL" default:""`
+	// PreStopHookTime is the duration of the preStop hook. The duration defined via this value will be the duration between signaling the
+	// termination of the shipyard-controller's pod and the reception of the SIGTERM signal
+	PreStopHookTime int `envconfig:"PRE_STOP_HOOK_TIME" default:"5"`
 }
