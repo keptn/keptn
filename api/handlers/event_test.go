@@ -239,6 +239,47 @@ func TestEventHandler_PostEvent(t *testing.T) {
 	require.NotNil(t, got)
 
 	require.Len(t, mockPublisher.PublishCalls(), 1)
+	// check if a keptn context ID has been generated
+	require.Equal(t, *got.KeptnContext, mockPublisher.PublishCalls()[0].Event.Shkeptncontext)
+	require.NotEmpty(t, mockPublisher.PublishCalls()[0].Event.ID)
+	require.Equal(t, testEvent.Source, mockPublisher.PublishCalls()[0].Event.Source)
+	require.Equal(t, testEvent.Data, mockPublisher.PublishCalls()[0].Event.Data)
+	require.Equal(t, testEvent.Type, mockPublisher.PublishCalls()[0].Event.Type)
+}
+
+func TestEventHandler_PostEvent_UseAvailableKeptnContext(t *testing.T) {
+	mockPublisher := &handlers_mock.EventPublisherMock{
+		PublishFunc: func(event apimodels.KeptnContextExtendedCE) error {
+			return nil
+		},
+	}
+	eh := &EventHandler{
+		EventPublisher: mockPublisher,
+	}
+
+	topicName := "my-topic"
+
+	keptnContext := uuid.New().String()
+	testEvent := models.KeptnContextExtendedCE{
+		Contenttype:    "application/json",
+		Data:           map[string]interface{}{},
+		Extensions:     nil,
+		ID:             "",
+		Shkeptncontext: keptnContext,
+		Source:         stringp("test-source"),
+		Specversion:    "1.0",
+		Time:           strfmt.DateTime{},
+		Type:           &topicName,
+	}
+
+	got, err := eh.PostEvent(testEvent)
+
+	require.Nil(t, err)
+	require.NotNil(t, got)
+
+	require.Len(t, mockPublisher.PublishCalls(), 1)
+	// check if a keptn context ID has been generated
+	require.Equal(t, keptnContext, *got.KeptnContext)
 	require.Equal(t, *got.KeptnContext, mockPublisher.PublishCalls()[0].Event.Shkeptncontext)
 	require.NotEmpty(t, mockPublisher.PublishCalls()[0].Event.ID)
 	require.Equal(t, testEvent.Source, mockPublisher.PublishCalls()[0].Event.Source)
