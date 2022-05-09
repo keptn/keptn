@@ -3,6 +3,13 @@ package main
 import (
 	"context"
 	"log"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
+
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+	logger "github.com/sirupsen/logrus"
 
 	"github.com/kelseyhightower/envconfig"
 	"github.com/keptn/go-utils/pkg/api/models"
@@ -51,9 +58,17 @@ func main() {
 	eventSource := controlplane.NewNATSEventSource(natsConnector)
 
 	controlPlane := controlplane.New(subscriptionSource, eventSource)
-	err = controlPlane.Register(context.TODO(), LighthouseService{env})
+	ctx := getGracefulContext()
+	err = controlPlane.Register(ctx, LighthouseService{env})
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	val := ctx.Value(event_handler.GracefulShutdownKey)
+	if val != nil {
+		if wg, ok := val.(*sync.WaitGroup); ok {
+			wg.Wait()
+		}
 	}
 }
 
@@ -104,4 +119,21 @@ func (l LighthouseService) RegistrationData() controlplane.RegistrationData {
 			},
 		},
 	}
+}
+
+func getGracefulContext() context.Context {
+
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+	wg := &sync.WaitGroup{}
+	ctx, cancel := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), event_handler.GracefulShutdownKey, wg)))
+
+	go func() {
+		<-ch
+		logger.Fatal("Container termination triggered, waiting for graceful shutdown")
+		wg.Wait()
+		cancel()
+	}()
+
+	return ctx
 }
