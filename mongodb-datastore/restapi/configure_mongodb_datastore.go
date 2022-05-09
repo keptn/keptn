@@ -116,7 +116,7 @@ func setPreShutDown(api *operations.MongodbDatastoreAPI, cancel context.CancelFu
 	mutex.Unlock()
 }
 
-func returnPreShutDown(api *operations.MongodbDatastoreAPI) func() {
+func getPreShutDown(api *operations.MongodbDatastoreAPI) func() {
 	mutex.Lock()
 	f := api.PreServerShutdown
 	mutex.Unlock()

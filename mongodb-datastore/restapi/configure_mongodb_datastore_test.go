@@ -35,7 +35,7 @@ func Test_startControlPlaneSuccess(t *testing.T) {
 	}()
 	// test propagate shutdown
 	require.Eventually(t, func() bool {
-		return returnPreShutDown(api) != nil
+		return getPreShutDown(api) != nil
 	}, 10*time.Second, 1*time.Second)
 
 }
