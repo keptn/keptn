@@ -86,6 +86,13 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
     this.route.params.subscribe((params) => {
       if (!params.projectName) {
         this.isCreateMode = true;
+        this.isProjectLoading = true;
+
+        this.keptnInfo$.pipe(takeUntil(this.unsubscribe$)).subscribe((keptnInfo) => {
+          this.setGitUpstreamRequired(keptnInfo);
+          this.isProjectLoading = false;
+        });
+
         this.loadProjectsAndSetValidator();
       } else {
         this.isProjectLoading = true;
@@ -121,39 +128,40 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
   }
 
   private loadProjectsAndSetValidator(): void {
-    const loadProjects$ = this.dataService.loadProjects().pipe(
-      takeUntil(this.unsubscribe$),
-      filter((projects: Project[] | undefined): projects is Project[] => !!projects),
-      map((projects: Project[]) => projects.map((project) => project.projectName))
-    );
-
-    combineLatest([loadProjects$, this.keptnInfo$]).subscribe(([projectNames, keptnInfo]) => {
-      this.projectNameControl.setValidators([
-        Validators.required,
-        FormUtils.nameExistsValidator(projectNames),
-        Validators.pattern('[a-z]([a-z]|[0-9]|-)*'),
-      ]);
-
-      this.setGitUpstreamRequired(keptnInfo);
-    });
+    this.dataService
+      .loadProjects()
+      .pipe(
+        takeUntil(this.unsubscribe$),
+        filter((projects: Project[] | undefined): projects is Project[] => !!projects),
+        map((projects: Project[]) => projects.map((project) => project.projectName))
+      )
+      .subscribe((projectNames) => {
+        this.projectNameControl.setValidators([
+          Validators.required,
+          FormUtils.nameExistsValidator(projectNames),
+          Validators.pattern('[a-z]([a-z]|[0-9]|-)*'),
+        ]);
+      });
   }
 
   private loadProject(projectName: string): void {
     const loadProject$ = this.dataService.loadPlainProject(projectName);
 
-    combineLatest([loadProject$, this.keptnInfo$]).subscribe(([project, keptnInfo]) => {
-      this.gitData = {
-        gitRemoteURL: project.gitRemoteURI,
-        gitUser: project.gitUser,
-      };
-      this.gitInputDataExtendedDefault = project.gitUpstream;
-      this.gitInputDataExtended = AppUtils.copyObject(project.gitUpstream); // there should not be a reference. Could
-      // lead to problems when the form is reset
+    combineLatest([loadProject$, this.keptnInfo$])
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(([project, keptnInfo]) => {
+        this.gitData = {
+          gitRemoteURL: project.gitRemoteURI,
+          gitUser: project.gitUser,
+        };
+        this.gitInputDataExtendedDefault = project.gitUpstream;
+        this.gitInputDataExtended = AppUtils.copyObject(project.gitUpstream); // there should not be a reference. Could
+        // lead to problems when the form is reset
 
-      this.setGitUpstreamRequired(keptnInfo);
+        this.setGitUpstreamRequired(keptnInfo);
 
-      this.isProjectLoading = false;
-    });
+        this.isProjectLoading = false;
+      });
   }
 
   private showCreateNotificationAndRedirect(): void {

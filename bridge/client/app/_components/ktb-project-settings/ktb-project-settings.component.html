@@ -27,9 +27,12 @@
           </dt-error>
         </dt-form-field>
       </div>
-      <div class="mb-3 settings-section" *ngIf="resourceServiceEnabled !== undefined">
+      <h2 [class.required]="gitUpstreamRequired">Git upstream repository</h2>
+      <ng-template #loading>
+        <ktb-loading-distractor>Loading ...</ktb-loading-distractor>
+      </ng-template>
+      <div class="mb-3 settings-section" *ngIf="resourceServiceEnabled !== undefined; else loading">
         <ng-container *ngIf="resourceServiceEnabled; else defaultGit">
-          <h2 [class.required]="gitUpstreamRequired" class="required">Git upstream repository</h2>
           <p class="mt-0 mb-3" *ngIf="gitUpstreamRequired">
             A Git upstream repository has to be set. You can connect your Git repository with HTTPS or SSH.
             Instructions, on how to set up your Git provider can be found in the
@@ -51,9 +54,7 @@
             (gitDataChange)="updateGitDataExtended($event)"
           ></ktb-project-settings-git-extended>
         </ng-container>
-        <ng-template #loading>
-          <ktb-loading-distractor>Loading ...</ktb-loading-distractor>
-        </ng-template>
+
         <ng-template #defaultGit>
           <ktb-project-settings-git
             [isLoading]="isProjectLoading"
