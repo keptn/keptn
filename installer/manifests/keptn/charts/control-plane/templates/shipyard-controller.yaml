@@ -37,7 +37,6 @@ spec:
       containers:
         - name: shipyard-controller
           image: {{ .Values.shipyardController.image.repository }}:{{ .Values.shipyardController.image.tag | default .Chart.AppVersion }}
-          {{- $prestop := .Values.shipyardController.preStopHookTime | default 90 | quote -}}
           lifecycle:
             preStop:
               httpGet:
