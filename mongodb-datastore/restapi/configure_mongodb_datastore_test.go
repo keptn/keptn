@@ -8,7 +8,6 @@ import (
 	natstest "github.com/nats-io/nats-server/v2/test"
 	"github.com/stretchr/testify/require"
 	"os"
-	"sync"
 	"testing"
 	"time"
 )
@@ -16,7 +15,6 @@ import (
 // Test_startControlPlane verifies whether the api pre server shutdown is initialized
 // and that the control plane terminates after calling it
 func Test_startControlPlaneSuccess(t *testing.T) {
-	mutex := &sync.Mutex{}
 	natsServer, shutdown := func() (*server.Server, func()) {
 		svr := natstest.RunRandClientPortServer()
 		return svr, func() { svr.Shutdown() }

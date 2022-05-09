@@ -25,19 +25,16 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 )
 
 //go:generate swagger generate server --target ../../mongodb-datastore --name mongodb-datastore --spec ../swagger.yaml
 
-type EmptySource struct{}
-
-func (e EmptySource) Start(context.Context, controlplane.RegistrationData, chan []keptnapi.EventSubscription) error {
-	return nil
-}
-
 func configureFlags(api *operations.MongodbDatastoreAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 }
+
+var mutex = &sync.Mutex{}
 
 func configureAPI(api *operations.MongodbDatastoreAPI) http.Handler {
 	// configure the api here
