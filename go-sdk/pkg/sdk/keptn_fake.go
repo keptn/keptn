@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	api "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
 	"io/ioutil"
 	"path/filepath"
 
@@ -15,6 +16,7 @@ import (
 
 type FakeKeptn struct {
 	TestResourceHandler ResourceHandler
+	TestEventSource     *TestEventSource
 	Keptn               *Keptn
 }
 
@@ -41,14 +43,25 @@ func (f *FakeKeptn) GetResourceHandler() ResourceHandler {
 	return f.TestResourceHandler
 }
 
-func (f *FakeKeptn) NewEvent(event cloudevents.Event) {
-	testReceiver := f.Keptn.eventReceiver.(*TestReceiver)
-	testReceiver.NewEvent(context.WithValue(context.Background(), gracefulShutdownKey, &nopWG{}), event)
+func (f *FakeKeptn) NewEvent(event models.KeptnContextExtendedCE) {
+	f.TestEventSource.NewEvent(controlplane.EventUpdate{
+		KeptnEvent: event,
+		MetaData:   controlplane.EventUpdateMetaData{Subject: "sh.keptn.event.faketask.triggered"},
+	})
 }
 
-func (f *FakeKeptn) GetEventSender() *TestSender {
-	return f.Keptn.eventSender.(*TestSender)
+//func (f *FakeKeptn) NewEvent(event cloudevents.Event) {
+//	testReceiver := f.Keptn.eventReceiver.(*TestReceiver)
+//	testReceiver.NewEvent(context.WithValue(context.Background(), gracefulShutdownKey, &nopWG{}), event)
+//}
+
+func (f *FakeKeptn) GetEventSource() *TestEventSource {
+	return f.TestEventSource
 }
+
+//func (f *FakeKeptn) GetEventSender() *TestSender {
+//	return f.Keptn.eventSender.(*TestSender)
+//}
 
 func (f *FakeKeptn) SetAutomaticResponse(autoResponse bool) {
 	f.Keptn.automaticEventResponse = autoResponse
@@ -64,15 +77,16 @@ func (f *FakeKeptn) AddTaskHandler(eventType string, handler TaskHandler, filter
 }
 
 func NewFakeKeptn(source string) *FakeKeptn {
-	eventReceiver := &TestReceiver{}
-	eventSender := &TestSender{}
+	testSubscriptionSource := controlplane.NewFixedSubscriptionSource(controlplane.WithFixedSubscriptions(models.EventSubscription{Event: "sh.keptn.event.faketask.triggered"}))
+	testEventSource := NewTestEventSource()
+	cp := controlplane.New(testSubscriptionSource, testEventSource)
 	resourceHandler := &TestResourceHandler{}
 	logger := NewDefaultLogger()
 	var fakeKeptn = &FakeKeptn{
 		TestResourceHandler: resourceHandler,
+		TestEventSource:     testEventSource,
 		Keptn: &Keptn{
-			eventSender:            eventSender,
-			eventReceiver:          eventReceiver,
+			controlPlane:           cp,
 			resourceHandler:        resourceHandler,
 			source:                 source,
 			taskRegistry:           NewTasksMap(),

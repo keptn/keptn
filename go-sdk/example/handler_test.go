@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/go-sdk/pkg/sdk"
@@ -10,25 +9,35 @@ import (
 	"io/ioutil"
 	"log"
 	"testing"
+	"time"
 )
 
 func Test_Handler(t *testing.T) {
 	fakeKeptn := sdk.NewFakeKeptn("test-greeting-svc")
 	fakeKeptn.AddTaskHandler(greetingsTriggeredEventType, NewGreetingsHandler())
-	fakeKeptn.Start()
+	go fakeKeptn.Start()
+	<-fakeKeptn.TestEventSource.Started
 	fakeKeptn.NewEvent(newNewGreetingTriggeredEvent("test-assets/events/greeting.triggered-0.json"))
 
-	require.Equal(t, 2, len(fakeKeptn.GetEventSender().SentEvents))
-	require.Equal(t, keptnv2.GetStartedEventType("greeting"), fakeKeptn.GetEventSender().SentEvents[0].Type())
-	require.Equal(t, keptnv2.GetFinishedEventType("greeting"), fakeKeptn.GetEventSender().SentEvents[1].Type())
+	require.Eventuallyf(t, func() bool {
+		return len(fakeKeptn.GetEventSource().SentEvents) == 2
+	}, time.Second, 10*time.Millisecond, "error message %s", "formatted")
 
-	finishedEvent, _ := keptnv2.ToKeptnEvent(fakeKeptn.GetEventSender().SentEvents[1])
+	require.Eventuallyf(t, func() bool {
+		return (keptnv2.GetStartedEventType("greeting") == *fakeKeptn.GetEventSource().SentEvents[0].Type)
+	}, time.Second, 10*time.Millisecond, "error message %s", "formatted")
+
+	require.Eventuallyf(t, func() bool {
+		return (keptnv2.GetFinishedEventType("greeting") == *fakeKeptn.GetEventSource().SentEvents[1].Type)
+	}, time.Second, 10*time.Millisecond, "error message %s", "formatted")
+
+	finishedEvent := fakeKeptn.GetEventSource().SentEvents[1]
 	greetingFinishedData := GreetingFinishedData{}
 	finishedEvent.DataAs(&greetingFinishedData)
 	require.Equal(t, "Hi, my name is Keptn", greetingFinishedData.GreetMessage)
 }
 
-func newNewGreetingTriggeredEvent(filename string) cloudevents.Event {
+func newNewGreetingTriggeredEvent(filename string) models.KeptnContextExtendedCE {
 	content, err := ioutil.ReadFile(filename)
 	if err != nil {
 		log.Fatal(err)
@@ -36,5 +45,5 @@ func newNewGreetingTriggeredEvent(filename string) cloudevents.Event {
 	event := models.KeptnContextExtendedCE{}
 	err = json.Unmarshal(content, &event)
 	_ = err
-	return keptnv2.ToCloudEvent(event)
+	return event
 }
