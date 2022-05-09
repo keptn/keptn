@@ -5,8 +5,15 @@ helmservice:
     tag: ""                                  # Container Tag
   service:
     enabled: true                            # Creates a Kubernetes Service for the helm-service
-  gracePeriod: 60
+  gracePeriod: 60                            # PreStop hook time +30s
   preStopHookTime: 5
+  resources:                                 # Resource limits and requests
+    limits:
+      cpu: "1000m"
+      memory: "512Mi"
+    requests:
+      cpu: "50m"
+      memory: "128Mi"
 
 distributor:
   stageFilter: ""                            # Stage to which this helm service belongs; default=all; comma-separated list to filter for set of stages
@@ -25,6 +32,13 @@ distributor:
       discovery: ""
       tokenURL: ""
       scopes: ""
+  resources:
+    requests:
+      memory: "16Mi"
+      cpu: "25m"
+    limits:
+      memory: "32Mi"
+      cpu: "100m"
 
 remoteControlPlane:
   enabled: false                             # Enables remote execution plane mode
@@ -51,14 +65,6 @@ securityContext: {}                          # Set the security context (e.g. ru
 #  readOnlyRootFilesystem: true
 #  runAsNonRoot: true
 #  runAsUser: 1000
-
-resources:                                  # Resource limits and requests
-  limits:
-    cpu: 1000m
-    memory: 512Mi
-  requests:
-    cpu: 50m
-    memory: 128Mi
 
 nodeSelector: {}                             # Node selector configuration
 

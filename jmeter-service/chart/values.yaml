@@ -5,8 +5,19 @@ jmeterservice:
     tag: ""                                    # Container Tag
   service:
     enabled: true                              # Creates a Kubernetes Service for the jmeter-service
-  gracePeriod: 60
+  gracePeriod: 60                              # PreStop hook time +30s
   preStopHookTime: 5
+  resources:                                   # Resource limits and requests
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+# We usually recommend not to specify default resources and to leave this as a conscious
+# choice for the user. This also increases chances charts run on environments with little
+# resources, such as Minikube. If you want to limit the resources, you can uncomment the following lines
+# but be aware that JMeter needs  lots of resources while running load tests.
+#    limits:
+#      cpu: "2"
+#      memory: "2Gi"
 
 distributor:
   stageFilter: ""                            # Sets the stage this helm service belongs to
@@ -25,6 +36,13 @@ distributor:
       discovery: ""
       tokenURL: ""
       scopes: ""
+  resources:                                 # Resource limits and requests
+    requests:
+      memory: "16Mi"
+      cpu: "25m"
+    limits:
+      memory: "32Mi"
+      cpu: "100m"
 
 remoteControlPlane:
   enabled: false                             # Enables remote execution plane mode
@@ -51,18 +69,6 @@ securityContext: {}                          # Set the security context (e.g. ru
 #  readOnlyRootFilesystem: true
 #  runAsNonRoot: true
 #  runAsUser: 1000
-
-resources:                                 # Resource limits and requests
-# We usually recommend not to specify default resources and to leave this as a conscious
-# choice for the user. This also increases chances charts run on environments with little
-# resources, such as Minikube. If you want to limit the resources, you can uncomment the following lines
-# but be aware that JMeter needs  lots of resources while running load tests.
-#  limits:
-#    cpu: 2
-#    memory: 2Gi
-  requests:
-    cpu: 100m
-    memory: 128Mi
 
 nodeSelector: {}                                # Node selector configuration
 

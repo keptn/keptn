@@ -109,12 +109,7 @@ spec:
           ports:
             - containerPort: 8080
           resources:
-            requests:
-              memory: "32Mi"
-              cpu: "50m"
-            limits:
-              memory: "128Mi"
-              cpu: "100m"
+            {{- toYaml .Values.shipyardController.resources | nindent 12 }}
           {{- include "keptn.common.container-security-context" . | nindent 10 }}
       terminationGracePeriodSeconds: {{ .Values.shipyardController.gracePeriod | default 60 }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.shipyardController.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}

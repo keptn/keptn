@@ -55,12 +55,7 @@ spec:
         ports:
         - containerPort: 8080
         resources:
-          requests:
-            memory: "32Mi"
-            cpu: "50m"
-          limits:
-            memory: "512Mi"
-            cpu: "300m"
+          {{- toYaml .Values.mongodbDatastore.resources | nindent 10 }}
         env:
         - name: PREFIX_PATH
           value: "{{ .Values.prefixPath }}"

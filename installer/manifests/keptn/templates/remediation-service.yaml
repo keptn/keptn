@@ -52,12 +52,7 @@ spec:
         ports:
         - containerPort: 8080
         resources:
-          requests:
-            memory: "64Mi"
-            cpu: "50m"
-          limits:
-            memory: "1Gi"
-            cpu: "200m"
+          {{- toYaml .Values.remediationService.resources | nindent 10 }}
         env:
           - name: ENVIRONMENT
             value: 'production'

@@ -52,12 +52,7 @@ spec:
           ports:
             - containerPort: 8080
           resources:
-            requests:
-              memory: "32Mi"
-              cpu: "25m"
-            limits:
-              memory: "128Mi"
-              cpu: "100m"
+            {{- toYaml .Values.approvalService.resources | nindent 12 }}
           env:
             - name: CONFIGURATION_SERVICE
               value: 'http://configuration-service:8080'

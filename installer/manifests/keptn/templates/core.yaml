@@ -220,12 +220,7 @@ spec:
           ports:
             - containerPort: 3000
           resources:
-            requests:
-              memory: "64Mi"
-              cpu: "25m"
-            limits:
-              memory: "256Mi"
-              cpu: "200m"
+            {{- toYaml .Values.bridge.resources | nindent 12 }}
           volumeMounts:
             - name: assets
               mountPath: /usr/src/app/dist/assets/branding

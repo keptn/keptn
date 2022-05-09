@@ -429,12 +429,7 @@ spec:
               readOnly: true
               name: api-nginx-config
           resources:
-            requests:
-              memory: "64Mi"
-              cpu: "50m"
-            limits:
-              memory: "128Mi"
-              cpu: "100m"
+            {{- toYaml .Values.apiGatewayNginx.resources | nindent 12 }}
         {{- include "keptn.apiGatewayNginx.container-security-context" . | nindent 10 }}
       volumes:
         - name: api-nginx-config
