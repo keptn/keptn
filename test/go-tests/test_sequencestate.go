@@ -88,18 +88,24 @@ func Test_SequenceState(t *testing.T) {
 
 	// scale down the services that are usually involved in the sequence defined in the shipyard above.
 	// this way we can control the events sent during this sequence and check whether the state is updated appropriately
+	t.Logf("Scalling down lighthouse-service....")
 	if err := ScaleDownUniform(uniform); err != nil {
 		t.Errorf("scaling down uniform failed: %s", err.Error())
 	}
 
 	defer func() {
+		t.Logf("Scalling up lighthouse-service....")
 		if err := ScaleUpUniform(uniform, 1); err != nil {
 			t.Errorf("could not scale up uniform: " + err.Error())
 		}
 	}()
 
+	err = WaitForDeploymentToBeScaledDown("lighthouse-service")
+	require.Nil(t, err)
+
 	// check if the project 'state' is already available - if not, delete it before creating it again
 	// check if the project is already available - if not, delete it before creating it again
+	t.Logf("Creating project...")
 	projectName, err = CreateProject(projectName, sequenceStateShipyardFilePath)
 	require.Nil(t, err)
 

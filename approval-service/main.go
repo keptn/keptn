@@ -4,8 +4,12 @@ import (
 	"context"
 	"keptn/approval-service/pkg/handler"
 	"log"
+	"os"
+	"os/signal"
 	"sync"
+	"syscall"
 
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/pkg/errors"
 	logger "github.com/sirupsen/logrus"
@@ -60,7 +64,8 @@ func main() {
 	eventSource := controlplane.NewNATSEventSource(natsConnector)
 
 	controlPlane := controlplane.New(subscriptionSource, eventSource)
-	err = controlPlane.Register(context.TODO(), ApprovalService{env})
+	ctx := getGracefulContext()
+	err = controlPlane.Register(ctx, ApprovalService{env})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -98,11 +103,11 @@ func (as ApprovalService) OnEvent(ctx context.Context, event models.KeptnContext
 		log.Println(err.Error())
 		return errors.Wrap(controlplane.ErrEventHandleFatal, err.Error())
 	}
-	if approvalHandler != nil {
-		return approvalHandler.Handle(ce)
-	}
 
-	if approvalHandler.IsTypeHandled(ce) {
+	if approvalHandler != nil {
+		if approvalHandler.IsTypeHandled(ce) {
+			return approvalHandler.Handle(ce)
+		}
 		logger.Debugf("Received unexpected keptn event type %s", ce.Type())
 	}
 
@@ -129,4 +134,21 @@ func (l ApprovalService) RegistrationData() controlplane.RegistrationData {
 			},
 		},
 	}
+}
+
+func getGracefulContext() context.Context {
+
+	ch := make(chan os.Signal)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+	wg := &sync.WaitGroup{}
+	ctx, cancel := context.WithCancel(context.WithValue(context.Background(), gracefulShutdownKey, wg))
+	ctx = cloudevents.WithEncodingStructured(ctx)
+	go func() {
+		<-ch
+		logger.Fatal("Container termination triggered, starting graceful shutdown")
+		wg.Wait()
+		logger.Fatal("cancelling context")
+		cancel()
+	}()
+	return ctx
 }

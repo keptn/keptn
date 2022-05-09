@@ -332,8 +332,9 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 // registered/unregistered to/from the Keptn control plane
 func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 	// make sure the echo-service uses the same distributor as Keptn core
-	distributorImage, err := GetImageOfDeploymentContainer("lighthouse-service", "distributor")
+	imageName, err := GetImageOfDeploymentContainer("lighthouse-service", "lighthouse-service")
 	require.Nil(t, err)
+	distributorImage := CreateDistributorImage(imageName, "lighthouse-service")
 
 	echoServiceManifestContent := strings.ReplaceAll(echoServiceK8sManifest, "${distributor-image}", distributorImage)
 	echoServiceManifestContent = strings.ReplaceAll(echoServiceManifestContent, "${queue-group}", "")
@@ -364,8 +365,9 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 // registered/unregistered to/from the Keptn control plane
 func Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods(t *testing.T) {
 	// make sure the echo-service uses the same distributor as Keptn core
-	distributorImage, err := GetImageOfDeploymentContainer("lighthouse-service", "distributor")
+	imageName, err := GetImageOfDeploymentContainer("lighthouse-service", "lighthouse-service")
 	require.Nil(t, err)
+	distributorImage := CreateDistributorImage(imageName, "lighthouse-service")
 
 	echoServiceManifestContent := strings.ReplaceAll(echoServiceK8sManifest, "${distributor-image}", distributorImage)
 	echoServiceManifestContent = strings.ReplaceAll(echoServiceManifestContent, "replicas: 1", "replicas: 3")
@@ -398,8 +400,9 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods(t *test
 func Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane(t *testing.T) {
 	// install echo integration
 	// make sure the echo-service uses the same distributor as Keptn core
-	distributorImage, err := GetImageOfDeploymentContainer("lighthouse-service", "distributor")
+	imageName, err := GetImageOfDeploymentContainer("lighthouse-service", "lighthouse-service")
 	require.Nil(t, err)
+	distributorImage := CreateDistributorImage(imageName, "lighthouse-service")
 
 	apiToken, apiEndpoint, err := GetApiCredentials()
 	require.Nil(t, err)
