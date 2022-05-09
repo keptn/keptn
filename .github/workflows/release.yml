@@ -227,7 +227,7 @@ jobs:
 
       - id: docker_build_image
         name: "Docker Build keptn/${{ matrix.config.artifact }}"
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           context: ${{ matrix.config.working-dir }}
           tags: |

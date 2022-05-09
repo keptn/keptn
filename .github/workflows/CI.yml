@@ -268,7 +268,7 @@ jobs:
 
       - name: Build ${{ matrix.config.artifact }} test image
         if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           context: ${{ matrix.config.working-dir }}
           tags: ${{ matrix.config.artifact }}-test-${{ github.sha }}
@@ -448,7 +448,7 @@ jobs:
       - id: docker_build_image
         name: "Docker Build keptn/${{ matrix.config.artifact }}"
         if: matrix.config.should-push-image == 'true' && ( matrix.config.should-run == 'true' || needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' )
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           context: ${{ matrix.config.working-dir }}
           tags: |
