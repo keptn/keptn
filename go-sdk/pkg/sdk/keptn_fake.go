@@ -6,8 +6,11 @@ import (
 	"fmt"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
+	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"path/filepath"
+	"testing"
+	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/event"
@@ -50,18 +53,20 @@ func (f *FakeKeptn) NewEvent(event models.KeptnContextExtendedCE) {
 	})
 }
 
-//func (f *FakeKeptn) NewEvent(event cloudevents.Event) {
-//	testReceiver := f.Keptn.eventReceiver.(*TestReceiver)
-//	testReceiver.NewEvent(context.WithValue(context.Background(), gracefulShutdownKey, &nopWG{}), event)
-//}
-
-func (f *FakeKeptn) GetEventSource() *TestEventSource {
-	return f.TestEventSource
+func (f *FakeKeptn) AssertNumberOfEventSent(t *testing.T, numOfEvents int, timeout time.Duration) {
+	require.Eventuallyf(t, func() bool {
+		return len(f.TestEventSource.SentEvents) == numOfEvents
+	}, timeout, 10*time.Millisecond, "error message %s", "formatted")
 }
 
-//func (f *FakeKeptn) GetEventSender() *TestSender {
-//	return f.Keptn.eventSender.(*TestSender)
-//}
+func (f *FakeKeptn) AssertSentEvent(t *testing.T, eventIndex int, assertFn func(ce models.KeptnContextExtendedCE) bool, timeout time.Duration) {
+	if eventIndex >= len(f.TestEventSource.SentEvents) {
+		t.Fatalf("unable to assert sent event with index %d: too less events sent", eventIndex)
+	}
+	require.Eventuallyf(t, func() bool {
+		return assertFn(f.TestEventSource.SentEvents[eventIndex])
+	}, timeout, 10*time.Millisecond, "error message %s", "formatted")
+}
 
 func (f *FakeKeptn) SetAutomaticResponse(autoResponse bool) {
 	f.Keptn.automaticEventResponse = autoResponse
