@@ -82,3 +82,4 @@ For a realtime overview of current contributors to the Keptn project, we refer t
 * [Eric Y. Kim](https://github.com/eyskim)
 * [Markus Lackner](https://github.com/markuslackner)
 * [René Panzar](https://github.com/renepanzar)
+* [Alberto Gil de Dios](https://github.com/albertogdd)

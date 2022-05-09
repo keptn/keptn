@@ -79,16 +79,6 @@ readinessProbe:
   periodSeconds: 5
 {{- end }}
 
-{{- define "keptn.distributor.resources" -}}
-resources:
-  requests:
-    memory: "16Mi"
-    cpu: "25m"
-  limits:
-    memory: "32Mi"
-    cpu: "100m"
-{{- end }}
-
 {{/*
 preStop hook for keptn deployments
 */}}

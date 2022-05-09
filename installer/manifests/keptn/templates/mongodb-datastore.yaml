@@ -55,12 +55,7 @@ spec:
         ports:
         - containerPort: 8080
         resources:
-          requests:
-            memory: "32Mi"
-            cpu: "50m"
-          limits:
-            memory: "512Mi"
-            cpu: "300m"
+          {{- toYaml .Values.mongodbDatastore.resources | nindent 10 }}
         env:
         - name: PREFIX_PATH
           value: "{{ .Values.prefixPath }}"
@@ -94,7 +89,8 @@ spec:
         imagePullPolicy: IfNotPresent
         ports:
           - containerPort: 8080
-        {{- include "keptn.distributor.resources" . | nindent 8 }}
+        resources:
+            {{- toYaml .Values.distributor.resources | nindent 12 }}
         env:
           - name: PUBSUB_IMPL
             value: nats
