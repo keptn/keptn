@@ -77,37 +77,12 @@ func GetReleaseName(project string, stage string, service string, generated bool
 	if generated {
 		suffix = "-generated"
 	}
-
-	proposedReleaseName := project + "-" + stage + "-" + service + suffix
-
-	// check if it fits
-	if len(proposedReleaseName) < serviceNameMaxLen {
-		return proposedReleaseName
+	fullRelease := strings.Split(project+"-"+stage+"-"+service+suffix, "-")
+	var release string
+	for _, i := range fullRelease {
+		release += string(i[0])
 	}
-
-	// alternative 1: remove project name
-	proposedReleaseName = stage + "-" + service + suffix
-
-	// check if it fits
-	if len(proposedReleaseName) < serviceNameMaxLen {
-		return proposedReleaseName
-	}
-
-	// alternative 2: also remove the stage name
-	proposedReleaseName = service + suffix
-
-	// check if it fits
-	if len(proposedReleaseName) < serviceNameMaxLen {
-		return proposedReleaseName
-	}
-
-	// It still doesn't fit ... We should really not get here, but it's an edge case.
-	// Our last chance is to remove characters from right side of service name
-	// Note: this can lead to ambiguous release names
-
-	proposedReleaseName = service[:serviceNameMaxLen-len(suffix)-1] + suffix
-
-	return proposedReleaseName
+	return release
 }
 
 // DoesChartExist checks if the GIT repo contains the specified chart
