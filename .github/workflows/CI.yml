@@ -436,7 +436,7 @@ jobs:
         uses: docker/setup-buildx-action@v1
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         # only run docker login on pushes; also for PRs, but only if this is not a fork
         if: ( github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' ) && (matrix.config.should-push-image == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository))
         # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
