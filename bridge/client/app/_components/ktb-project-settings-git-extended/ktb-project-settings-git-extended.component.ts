@@ -59,24 +59,27 @@ export class KtbProjectSettingsGitExtendedComponent implements OnInit {
   }
 
   public ngOnInit(): void {
-    if (this.gitInputData) {
-      if (isGitHTTPS(this.gitInputData) && this.gitInputData.https.gitRemoteURL) {
-        this.gitInputDataHttps = this.gitInputData;
-        this.selectedForm = GitFormType.HTTPS;
-        this.upstreamConfigured = true;
-      } else if (isGitSSH(this.gitInputData) && this.gitInputData.ssh.gitRemoteURL) {
-        this.gitInputDataSsh = this.gitInputData;
-        this.selectedForm = GitFormType.SSH;
-        this.upstreamConfigured = true;
-      } else {
-        this.selectedForm = this.required ? GitFormType.HTTPS : GitFormType.NO_UPSTREAM;
-      }
-    } else {
+    if (!this.gitInputData || this.isRemoteUrlEmpty()) {
       this.selectedForm = this.required ? GitFormType.HTTPS : GitFormType.NO_UPSTREAM;
+
+      if (this.selectedForm === GitFormType.NO_UPSTREAM) {
+        this.dataChanged(this.selectedForm, this.gitData);
+      }
+
+      return;
     }
 
-    if (this.selectedForm === GitFormType.NO_UPSTREAM) {
-      this.dataChanged(this.selectedForm, this.gitData);
+    if (isGitHTTPS(this.gitInputData)) {
+      this.gitInputDataHttps = this.gitInputData;
+      this.selectedForm = GitFormType.HTTPS;
+      this.upstreamConfigured = true;
+      return;
+    }
+
+    if (isGitSSH(this.gitInputData)) {
+      this.gitInputDataSsh = this.gitInputData;
+      this.selectedForm = GitFormType.SSH;
+      this.upstreamConfigured = true;
     }
   }
 
@@ -89,6 +92,16 @@ export class KtbProjectSettingsGitExtendedComponent implements OnInit {
       .subscribe((projectName: string) => {
         this.projectName = projectName;
       });
+  }
+
+  private isRemoteUrlEmpty(): boolean {
+    if (!this.gitInputData) {
+      return true;
+    }
+    return (
+      (isGitHTTPS(this.gitInputData) && !this.gitInputData.https.gitRemoteURL) ||
+      (isGitSSH(this.gitInputData) && !this.gitInputData.ssh.gitRemoteURL)
+    );
   }
 
   public setSelectedForm($event: DtRadioChange<GitFormType>): void {
