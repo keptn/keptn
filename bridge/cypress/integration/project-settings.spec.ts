@@ -70,7 +70,6 @@ describe('Git upstream extended settings project https test', () => {
     });
     projectSettingsPage.interceptSettings(true).visitSettings('sockshop');
 
-    cy.wait(200);
     projectSettingsPage.assertSshFormVisible(true).assertGitUsernameSsh('myGitUser');
   });
 
