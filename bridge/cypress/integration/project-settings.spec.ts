@@ -122,11 +122,7 @@ describe('Automatic provisioning enabled test', () => {
       body: project,
     }).as('project');
 
-    // eslint-disable-next-line promise/catch-or-return
-    cy.wait('@metadata').then(() => {
-      cy.wait('@project');
-      return;
-    });
+    cy.wait('@metadata').wait('@project');
 
     projectSettingsPage.assertHttpsFormVisible(true).assertNoUpstreamSelected(false).assertNoUpstreamEnabled(false);
 
@@ -150,11 +146,7 @@ describe('Automatic provisioning enabled test', () => {
       body: project,
     }).as('project');
 
-    // eslint-disable-next-line promise/catch-or-return
-    cy.wait('@metadata').then(() => {
-      cy.wait('@project');
-      return;
-    });
+    cy.wait('@metadata').wait('@project');
 
     projectSettingsPage.assertSshFormVisible(true).assertNoUpstreamSelected(false).assertNoUpstreamEnabled(false);
 

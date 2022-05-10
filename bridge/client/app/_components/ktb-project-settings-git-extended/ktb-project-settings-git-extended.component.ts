@@ -59,7 +59,7 @@ export class KtbProjectSettingsGitExtendedComponent implements OnInit {
   }
 
   public ngOnInit(): void {
-    if (!this.gitInputData || this.isRemoteUrlEmpty()) {
+    if (!this.gitInputData || this.isRemoteUrlEmpty(this.gitInputData)) {
       this.selectedForm = this.required ? GitFormType.HTTPS : GitFormType.NO_UPSTREAM;
 
       if (this.selectedForm === GitFormType.NO_UPSTREAM) {
@@ -94,19 +94,16 @@ export class KtbProjectSettingsGitExtendedComponent implements OnInit {
       });
   }
 
-  private isRemoteUrlEmpty(): boolean {
-    if (!this.gitInputData) {
-      return true;
-    }
+  private isRemoteUrlEmpty(gitInputData: IGitDataExtended): boolean {
     return (
-      (isGitHTTPS(this.gitInputData) && !this.gitInputData.https.gitRemoteURL) ||
-      (isGitSSH(this.gitInputData) && !this.gitInputData.ssh.gitRemoteURL)
+      (isGitHTTPS(gitInputData) && !gitInputData.https.gitRemoteURL) ||
+      (isGitSSH(gitInputData) && !gitInputData.ssh.gitRemoteURL)
     );
   }
 
   public setSelectedForm($event: DtRadioChange<GitFormType>): void {
     this.selectedForm = $event.value ?? GitFormType.HTTPS;
-    this.dataChanged($event.value ?? GitFormType.HTTPS, this.gitData);
+    this.dataChanged(this.selectedForm, this.gitData);
   }
 
   public updateUpstream(): void {

@@ -83,7 +83,6 @@ describe('Create extended project https test', () => {
 
   it('should have enabled create button if invalid proxy form is disabled', () => {
     createProjectPage.enterBasicValidProjectHttps().setEnableProxy(true).assertCreateButtonEnabled(false);
-    cy.wait(200);
     createProjectPage.setEnableProxy(false).assertCreateButtonEnabled(true);
   });
 
@@ -275,7 +274,7 @@ describe('Create extended project test ssh and https', () => {
   });
 });
 
-describe('Create extended project with and with automatic provisioned git upstream', () => {
+describe('Create extended project with automatic provisioned git upstream', () => {
   const createProjectPage = new NewProjectCreatePage();
 
   beforeEach(() => {
