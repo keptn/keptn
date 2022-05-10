@@ -142,8 +142,8 @@ export class KtbHeatmapComponent implements OnDestroy {
 
   private onMouseMove(event: MouseEvent): void {
     this.mouseCoordinates = {
-      x: event.x * window.devicePixelRatio, // coordinates may stay and zoom-level could change. Normalize the coordinates.
-      y: event.y * window.devicePixelRatio,
+      x: event.clientX * window.devicePixelRatio, // coordinates may stay and zoom-level could change. Normalize the coordinates.
+      y: event.clientY * window.devicePixelRatio,
     };
   }
 

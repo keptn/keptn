@@ -131,13 +131,6 @@ export class TestUtils {
       get: getSpy,
     });
   }
-
-  public static createMouseMoveEvent(x: number, y: number): MouseEvent {
-    const mouseEvent = new MouseEvent('move'); // x and y are not set in Jest
-    TestUtils.overrideProperty(mouseEvent, 'x', x);
-    TestUtils.overrideProperty(mouseEvent, 'y', y);
-    return mouseEvent;
-  }
 }
 
 function MockDataTransfer(files: File[]): DataTransfer {

@@ -101,13 +101,17 @@ describe('KtbHeatmapComponent', () => {
     devicePixelRatioSpy.mockReturnValue(2);
 
     // when
-    const mouseEvent = TestUtils.createMouseMoveEvent(2, 2);
-    component['onMouseMove'](mouseEvent);
+    component['onMouseMove'](
+      new MouseEvent('move', {
+        clientX: 2,
+        clientY: 4,
+      })
+    );
 
     // then
     expect(component['mouseCoordinates']).toEqual({
       x: 4,
-      y: 4,
+      y: 8,
     });
   });
 
