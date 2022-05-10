@@ -8,6 +8,7 @@ import (
 	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
+	"log"
 	"path/filepath"
 	"testing"
 	"time"
@@ -18,13 +19,28 @@ import (
 )
 
 type FakeKeptn struct {
-	TestResourceHandler ResourceHandler
-	TestEventSource     *TestEventSource
-	Keptn               *Keptn
+	TestResourceHandler    ResourceHandler
+	TestEventSource        *TestEventSource
+	TestSubscriptionSource *TestSubscriptionSource
+	Keptn                  *Keptn
+}
+
+func (f *FakeKeptn) StartAsync() error {
+	return f.Keptn.Start()
 }
 
 func (f *FakeKeptn) Start() error {
-	return f.Keptn.Start()
+	go func() {
+		log.Fatal(f.Keptn.Start())
+	}()
+
+	select {
+	case <-f.TestEventSource.Started:
+		return nil
+	case <-time.After(5 * time.Second):
+		log.Fatal("Timed out waiting for FakeKeptn to be started")
+	}
+	return nil
 }
 
 func (f *FakeKeptn) SendStartedEvent(event KeptnEvent) error {
@@ -49,23 +65,32 @@ func (f *FakeKeptn) GetResourceHandler() ResourceHandler {
 func (f *FakeKeptn) NewEvent(event models.KeptnContextExtendedCE) {
 	f.TestEventSource.NewEvent(controlplane.EventUpdate{
 		KeptnEvent: event,
-		MetaData:   controlplane.EventUpdateMetaData{Subject: "sh.keptn.event.faketask.triggered"},
+		MetaData:   controlplane.EventUpdateMetaData{Subject: *event.Type},
 	})
 }
 
-func (f *FakeKeptn) AssertNumberOfEventSent(t *testing.T, numOfEvents int, timeout time.Duration) {
+func (f *FakeKeptn) AssertNumberOfEventSent(t *testing.T, numOfEvents int) {
 	require.Eventuallyf(t, func() bool {
+		fmt.Println(len(f.TestEventSource.SentEvents))
 		return len(f.TestEventSource.SentEvents) == numOfEvents
-	}, timeout, 10*time.Millisecond, "error message %s", "formatted")
+	}, time.Second, 10*time.Millisecond, "error message %s", "formatted")
 }
 
-func (f *FakeKeptn) AssertSentEvent(t *testing.T, eventIndex int, assertFn func(ce models.KeptnContextExtendedCE) bool, timeout time.Duration) {
+func (f *FakeKeptn) AssertSentEvent(t *testing.T, eventIndex int, assertFn func(ce models.KeptnContextExtendedCE) bool) {
 	if eventIndex >= len(f.TestEventSource.SentEvents) {
 		t.Fatalf("unable to assert sent event with index %d: too less events sent", eventIndex)
 	}
+
 	require.Eventuallyf(t, func() bool {
 		return assertFn(f.TestEventSource.SentEvents[eventIndex])
-	}, timeout, 10*time.Millisecond, "error message %s", "formatted")
+	}, time.Second, 10*time.Millisecond, "error message %s", "formatted")
+}
+
+func (f *FakeKeptn) AssertSentEventType(t *testing.T, eventIndex int, eventType string) {
+	if eventIndex >= len(f.TestEventSource.SentEvents) {
+		t.Fatalf("unable to assert sent event with index %d: too less events sent", eventIndex)
+	}
+	require.Equal(t, eventType, *f.TestEventSource.SentEvents[eventIndex].Type)
 }
 
 func (f *FakeKeptn) SetAutomaticResponse(autoResponse bool) {
@@ -78,20 +103,27 @@ func (f *FakeKeptn) SetResourceHandler(handler ResourceHandler) {
 }
 
 func (f *FakeKeptn) AddTaskHandler(eventType string, handler TaskHandler, filters ...func(keptnHandle IKeptn, event KeptnEvent) bool) {
+	f.AddTaskHandlerWithSubscriptionID(eventType, handler, "", filters...)
+}
+
+func (f *FakeKeptn) AddTaskHandlerWithSubscriptionID(eventType string, handler TaskHandler, subscriptionID string, filters ...func(keptnHandle IKeptn, event KeptnEvent) bool) {
+	f.TestSubscriptionSource.fixedSubscriptions = append(f.TestSubscriptionSource.fixedSubscriptions, models.EventSubscription{ID: subscriptionID, Event: eventType})
 	f.Keptn.taskRegistry.Add(eventType, TaskEntry{TaskHandler: handler, EventFilters: filters})
 }
 
 func NewFakeKeptn(source string) *FakeKeptn {
-	testSubscriptionSource := controlplane.NewFixedSubscriptionSource(controlplane.WithFixedSubscriptions(models.EventSubscription{Event: "sh.keptn.event.faketask.triggered"}))
+	testSubscriptionSource := NewTestSubscriptionSource()
 	testEventSource := NewTestEventSource()
 	cp := controlplane.New(testSubscriptionSource, testEventSource)
 	resourceHandler := &TestResourceHandler{}
 	logger := NewDefaultLogger()
 	var fakeKeptn = &FakeKeptn{
-		TestResourceHandler: resourceHandler,
-		TestEventSource:     testEventSource,
+		TestResourceHandler:    resourceHandler,
+		TestEventSource:        testEventSource,
+		TestSubscriptionSource: testSubscriptionSource,
 		Keptn: &Keptn{
 			controlPlane:           cp,
+			eventSender:            testEventSource.Sender(),
 			resourceHandler:        resourceHandler,
 			source:                 source,
 			taskRegistry:           NewTasksMap(),

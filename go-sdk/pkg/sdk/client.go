@@ -35,7 +35,7 @@ func NewResourceHandlerFromEnv() *api.ResourceHandler {
 	return api.NewResourceHandler(env.ConfigurationServiceURL)
 }
 
-func NewCPFromEnv() (*controlplane.ControlPlane, error) {
+func NewCPFromEnv() (*controlplane.ControlPlane, controlplane.EventSender, error) {
 	var env envConfig
 	if err := envconfig.Process("", &env); err != nil {
 		log.Fatalf("failed to process env var: %s", err)
@@ -46,8 +46,9 @@ func NewCPFromEnv() (*controlplane.ControlPlane, error) {
 		log.Fatal(err)
 	}
 	eventSource := controlplane.NewNATSEventSource(natsConnector)
+	eventSender := eventSource.Sender()
 	controlPlane := controlplane.New(controlplane.NewFixedSubscriptionSource(controlplane.WithFixedSubscriptions(models.EventSubscription{Event: "sh.keptn.>"})), eventSource)
-	return controlPlane, nil
+	return controlPlane, eventSender, nil
 }
 
 func NewRegistrationDataFromEnv() controlplane.RegistrationData {
