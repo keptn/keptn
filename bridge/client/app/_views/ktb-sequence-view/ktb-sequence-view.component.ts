@@ -17,14 +17,29 @@ import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 import { ISequencesMetadata } from '../../../../shared/interfaces/sequencesMetadata';
 import { ApiService } from '../../_services/api.service';
 
+enum FilterName {
+  SERVICE = 'Service',
+  STAGE = 'Stage',
+  SEQUENCE = 'Sequence',
+  STATUS = 'Status',
+}
+
 export type FilterType = [
   {
-    name: 'Service' | 'Stage' | 'Sequence' | 'Status';
+    name: FilterName;
     autocomplete: { name: string; value: string }[];
     showInSidebar: boolean;
   },
   ...{ name: string; value: string }[]
 ];
+
+const SEQUENCE_STATUS = {
+  started: 'Active',
+  waiting: 'Waiting',
+  failed: 'Failed',
+  aborted: 'Aborted',
+  succeeded: 'Succeeded',
+} as { [key: string]: string };
 
 @Component({
   selector: 'ktb-sequence-view',
@@ -57,13 +72,10 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
       {
         name: 'Status',
         showInSidebar: true,
-        autocomplete: [
-          { name: 'Active', value: 'started' },
-          { name: 'Waiting', value: 'waiting' },
-          { name: 'Failed', value: 'failed' },
-          { name: 'Aborted', value: 'aborted' },
-          { name: 'Succeeded', value: 'succeeded' },
-        ],
+        autocomplete: Object.entries(SEQUENCE_STATUS).map(([value, name]) => ({
+          name: name.toString(),
+          value: value.toString().toLowerCase(),
+        })),
       },
     ],
   };
@@ -295,6 +307,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   filtersClicked(event: DtQuickFilterChangeEvent<any> | { filters: any[] }): void {
     this._seqFilters = event.filters as FilterType[];
+    console.log('_seqFilters', this._seqFilters);
     const sequenceFilters: { [key: string]: string[] } = this._seqFilters.reduce(
       (
         filters: { [key: string]: string[] },
@@ -450,10 +463,22 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
 
   public setSequenceFilters(sequenceFilters: { [p: string]: string[] }): void {
     this.apiService.sequenceFilters = sequenceFilters;
-    this._seqFilters = Object.keys(sequenceFilters).reduce((_seqFilters, name) => {
-      sequenceFilters[name].forEach((value) => {
-        // @ts-ignore
-        _seqFilters.push([{ name }, { name: value, value }]);
+    this._seqFilters = Object.keys(sequenceFilters).reduce((_seqFilters: FilterType[], name: string) => {
+      sequenceFilters[name].forEach((value: string) => {
+        if (name === 'Status') {
+          const status = SEQUENCE_STATUS[value];
+          if (status) {
+            _seqFilters.push([
+              { name: name as FilterName, autocomplete: [], showInSidebar: true },
+              { name: status.toString(), value },
+            ]);
+          }
+        } else {
+          _seqFilters.push([
+            { name: name as FilterName, autocomplete: [], showInSidebar: false },
+            { name: value, value },
+          ]);
+        }
       });
       return _seqFilters;
     }, []);
