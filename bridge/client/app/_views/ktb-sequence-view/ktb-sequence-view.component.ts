@@ -307,7 +307,6 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   filtersClicked(event: DtQuickFilterChangeEvent<any> | { filters: any[] }): void {
     this._seqFilters = event.filters as FilterType[];
-    console.log('_seqFilters', this._seqFilters);
     const sequenceFilters: { [key: string]: string[] } = this._seqFilters.reduce(
       (
         filters: { [key: string]: string[] },
