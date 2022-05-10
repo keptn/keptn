@@ -14,7 +14,7 @@ var (
 
 const (
 	// DefaultKubeServerVersionConstraints is used when no version is passed by ldflags
-	DefaultKubeServerVersionConstraints = ">= 1.14, <= 1.21"
+	DefaultKubeServerVersionConstraints = ">= 1.14, <= 1.22"
 )
 
 func init() {
