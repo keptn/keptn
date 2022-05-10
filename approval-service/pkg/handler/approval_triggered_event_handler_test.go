@@ -16,6 +16,11 @@ import (
 )
 
 func TestHandleApprovalTriggeredEvent(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	fakeSender := func(ce models.KeptnContextExtendedCE) error { return nil }
+	ctx = context.WithValue(ctx, controlplane.EventSenderKey, controlplane.EventSender(fakeSender))
+	defer cancel()
+
 	var approvalTriggeredTests = []struct {
 		name        string
 		image       string
@@ -163,11 +168,6 @@ func TestHandleApprovalTriggeredEvent(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ce := cloudevents.NewEvent()
 			ce.SetData(cloudevents.ApplicationJSON, tt.inputEvent)
-
-			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-			fakeSender := func(ce models.KeptnContextExtendedCE) error { return nil }
-			ctx = context.WithValue(ctx, controlplane.EventSenderKey, controlplane.EventSender(fakeSender))
-			defer cancel()
 
 			e, err := NewApprovalTriggeredEventHandler(ctx, ce)
 			require.Nil(t, err)

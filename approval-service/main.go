@@ -25,9 +25,6 @@ import (
 const envVarLogLevel = "LOG_LEVEL"
 
 type envConfig struct {
-	// Port on which to listen for cloudevents
-	Port                   int    `envconfig:"RCV_PORT" default:"8080"`
-	Path                   string `envconfig:"RCV_PATH" default:"/"`
 	K8SDeploymentName      string `envconfig:"K8S_DEPLOYMENT_NAME" default:""`
 	K8SDeploymentVersion   string `envconfig:"K8S_DEPLOYMENT_VERSION" default:""`
 	K8SDeploymentComponent string `envconfig:"K8S_DEPLOYMENT_COMPONENT" default:""`
