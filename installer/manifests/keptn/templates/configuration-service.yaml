@@ -34,7 +34,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "keptn.name" . }}
-    app.kubernetes.io/version: {{ .Values.resourceService.image.tag | default .Chart.AppVersion }}
+    app.kubernetes.io/version: {{ include "service.tag" ( dict "imageRoot" .Values.resourceService.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
     helm.sh/chart: {{ include "keptn.chart" . }}
 spec:
   selector:
@@ -51,7 +51,7 @@ spec:
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "keptn.name" . }}
-        app.kubernetes.io/version: {{ .Values.resourceService.image.tag | default .Chart.AppVersion }}
+        app.kubernetes.io/version: {{ include "service.tag" ( dict "imageRoot" .Values.resourceService.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
         helm.sh/chart: {{ include "keptn.chart" . }}
     spec:
       securityContext:
@@ -63,9 +63,10 @@ spec:
       terminationGracePeriodSeconds: {{ .Values.resourceService.gracePeriod | default 120 }}
       containers:
         - name: resource-service
-          image: {{ .Values.resourceService.image.repository }}:{{ .Values.resourceService.image.tag | default .Chart.AppVersion }}
+          image: {{ include "service.image" ( dict "imageRoot" .Values.resourceService.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
           {{- $prestop := .Values.resourceService.preStopHookTime | default 90 | quote -}}
           {{- include "keptn.prestop" $prestop | nindent 10 }}
+          imagePullPolicy: {{ .Values.resourceService.imagePullPolicy }}
           livenessProbe:
             httpGet:
               path: /health
@@ -76,7 +77,6 @@ spec:
             httpGet:
               path: /health
               port: 8080
-          imagePullPolicy: IfNotPresent
           env:
             - name: PREFIX_PATH
               value: "{{ .Values.prefixPath }}"
@@ -140,7 +140,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "keptn.name" . }}
-    app.kubernetes.io/version: {{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
+    app.kubernetes.io/version: {{ include "service.tag" ( dict "imageRoot" .Values.configurationService.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
     helm.sh/chart: {{ include "keptn.chart" . }}
 spec:
   selector:
@@ -158,7 +158,7 @@ spec:
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "keptn.name" . }}
-        app.kubernetes.io/version: {{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
+        app.kubernetes.io/version: {{ include "service.tag" ( dict "imageRoot" .Values.configurationService.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
         helm.sh/chart: {{ include "keptn.chart" . }}
     spec:
       securityContext:
@@ -170,7 +170,7 @@ spec:
 {{- if .Values.configurationService.initContainer }}
       initContainers:
         - name: change-user-init
-          image: {{ .Values.configurationService.image.repository }}:{{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
+          image: {{ include "service.image" ( dict "imageRoot" .Values.configurationService.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
           securityContext:
             runAsUser: 0
           volumeMounts:
@@ -184,9 +184,10 @@ spec:
       terminationGracePeriodSeconds: {{ .Values.configurationService.gracePeriod | default 120 }}
       containers:
         - name: configuration-service
-          image: {{ .Values.configurationService.image.repository }}:{{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
+          image: {{ include "service.image" ( dict "imageRoot" .Values.configurationService.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
           {{- $prestop := .Values.configurationService.preStopHookTime | default 90 | quote -}}
           {{- include "keptn.prestop" $prestop | nindent 10 }}
+          imagePullPolicy: {{ .Values.configurationService.imagePullPolicy }}
           livenessProbe:
             httpGet:
               path: /health
@@ -197,7 +198,6 @@ spec:
             httpGet:
               path: /health
               port: 8080
-          imagePullPolicy: IfNotPresent
           env:
             - name: PREFIX_PATH
               value: "{{ .Values.prefixPath }}"

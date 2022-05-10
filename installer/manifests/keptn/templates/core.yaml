@@ -108,7 +108,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "keptn.name" . }}
-    app.kubernetes.io/version: {{ .Values.bridge.image.tag | default .Chart.AppVersion }}
+    app.kubernetes.io/version: {{ include "service.tag" ( dict "imageRoot" .Values.bridge.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
     helm.sh/chart: {{ include "keptn.chart" . }}
 spec:
   selector:
@@ -124,14 +124,14 @@ spec:
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "keptn.name" . }}
-        app.kubernetes.io/version: {{ .Values.bridge.image.tag | default .Chart.AppVersion }}
+        app.kubernetes.io/version: {{ include "service.tag" ( dict "imageRoot" .Values.bridge.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
         helm.sh/chart: {{ include "keptn.chart" . }}
     spec:
       {{- include "keptn.bridge.pod-security-context" . | nindent 6 }}
       containers:
         - name: bridge
-          image: {{ .Values.bridge.image.repository }}:{{ .Values.bridge.image.tag | default .Chart.AppVersion }}
-          imagePullPolicy: IfNotPresent
+          image: {{ include "service.image" ( dict "imageRoot" .Values.bridge.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
+          imagePullPolicy: {{ .Values.bridge.imagePullPolicy }}
           env:
             - name: API_URL
               value: "http://api-gateway-nginx{{ .Values.prefixPath }}/api"

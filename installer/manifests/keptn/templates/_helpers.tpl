@@ -38,7 +38,7 @@ Common labels
 helm.sh/chart: {{ include "keptn.chart" . }}
 {{ include "keptn.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+app.kubernetes.io/version: {{ .Values.global.keptn.appVersion | default .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
@@ -303,6 +303,61 @@ Usage:
     {{- printf "\n%snodeSelector:" (repeat .indent " ") }}{{- include "keptn.tpl-value-or-default" ( dict "value" .value "default" .default "context" .context  ) | nindent ( int ( add .indent 2 ) ) }}
   {{- end }}
 {{- end -}}
+
+{{- define "control-plane.dist.common.env.vars" -}}
+- name: PUBSUB_URL
+  value: 'nats://keptn-nats'
+- name: VERSION
+  valueFrom:
+    fieldRef:
+      fieldPath: metadata.labels['app.kubernetes.io/version']
+- name: DISTRIBUTOR_VERSION
+  value: {{ include "service.tag" ( dict "imageRoot" .Values.distributor.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote}}
+- name: LOCATION
+  valueFrom:
+   fieldRef:
+      fieldPath: metadata.labels['app.kubernetes.io/component']
+- name: K8S_DEPLOYMENT_NAME
+  valueFrom:
+    fieldRef:
+      fieldPath: metadata.labels['app.kubernetes.io/name']
+- name: K8S_POD_NAME
+  valueFrom:
+    fieldRef:
+     fieldPath: metadata.name
+- name: K8S_NAMESPACE
+{{- if .Values.distributor.metadata.namespace }}
+  value: {{ .Values.distributor.metadata.namespace }}
+{{- else }}
+  valueFrom:
+    fieldRef:
+      fieldPath: metadata.namespace
+{{- end }}
+- name: K8S_NODE_NAME
+{{- if .Values.distributor.metadata.hostname }}
+  value: {{ .Values.distributor.metadata.hostname }}
+{{- else }}
+  valueFrom:
+    fieldRef:
+      fieldPath: spec.nodeName
+{{- end }}
+{{- if .Values.distributor.config.queueGroup.enabled }}
+- name: PUBSUB_GROUP
+  valueFrom:
+    fieldRef:
+      fieldPath: metadata.labels['app.kubernetes.io/name']
+{{- end }}
+- name: OAUTH_CLIENT_ID
+  value: "{{ (((.Values.distributor).config).oauth).clientID }}"
+- name: OAUTH_CLIENT_SECRET
+  value: "{{ (((.Values.distributor).config).oauth).clientSecret }}"
+- name: OAUTH_DISCOVERY
+  value: "{{ (((.Values.distributor).config).oauth).discovery }}"
+- name: OAUTH_TOKEN_URL
+  value: "{{ (((.Values.distributor).config).oauth).tokenURL }}"
+- name: OAUTH_SCOPES
+  value: "{{ (((.Values.distributor).config).oauth).scopes }}"
+{{- end }}
 
 {{/*
 Renders a optional value that contains a template. if the given value is empty default is used

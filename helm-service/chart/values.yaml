@@ -1,8 +1,14 @@
+global:
+  keptn:                                     # This values will be automatically templated to all keptn services
+    registry: docker.io/keptn                # Registry/Repository where the image is located. The Image Name will be templated automatically. Example: <this-property>/distributor
+    tag: ""                                  # Container Tag globally for all keptn services
+
 helmservice:
   image:
-    repository: docker.io/keptn/helm-service # Container Image Name
-    pullPolicy: IfNotPresent                 # Kubernetes Image Pull Policy
+    registry: ""                             # Container Registry
+    repository: "helm-service"               # Container Image Name
     tag: ""                                  # Container Tag
+    pullPolicy: IfNotPresent                 # Kubernetes Image Pull Policy
   service:
     enabled: true                            # Creates a Kubernetes Service for the helm-service
   gracePeriod: 90                            # PreStop hook time +30s
@@ -20,9 +26,10 @@ distributor:
   serviceFilter: ""                          # Service to which this helm service belongs; default=all; comma-separated list to filter for set of services
   projectFilter: ""                          # Project to which this helm service belongs; default=all; comma-separated list to filter for set of projects
   image:
-    repository: docker.io/keptn/distributor  # Container Image Name
-    pullPolicy: IfNotPresent                 # Kubernetes Image Pull Policy
+    registry: ""                             # Container Registry
+    repository: "distributor"                # Container Image Name
     tag: ""                                  # Container Tag
+    pullPolicy: IfNotPresent                 # Kubernetes Image Pull Policy
   config:
     queueGroup:
       enabled: true                          # Enable connection via Nats queue group to support exactly-once message processing
