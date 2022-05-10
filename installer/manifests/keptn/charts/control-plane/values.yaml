@@ -184,7 +184,7 @@ secretService:
     repository: docker.io/keptn/secret-service
     tag: ""
   nodeSelector: {}
-  gracePeriod: 60     # gracePeriod set to preStop hook time +30s
+  gracePeriod: 60
   preStopHookTime: 5
 
 configurationService:
