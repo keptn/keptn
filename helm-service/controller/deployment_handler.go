@@ -155,7 +155,7 @@ func (h *DeploymentHandler) catchupGeneratedChartOnboarding(deploymentStrategy k
 
 	// Chart does not exist yet, onboard it now
 	userChartManifest, err := h.getHelmExecutor().GetManifest(helm.GetReleaseName(event.Project, event.Stage, event.Service, false),
-		event.Project+"-"+event.Stage)
+		event.Service)
 	if err != nil {
 		return nil, err
 	}
@@ -165,7 +165,7 @@ func (h *DeploymentHandler) catchupGeneratedChartOnboarding(deploymentStrategy k
 
 func (h *DeploymentHandler) getDeploymentURIs(e keptnv2.EventData) ([]string, []string, error) {
 	userChartManifest, err := h.getHelmExecutor().GetManifest(helm.GetReleaseName(e.Project, e.Stage, e.Service, false),
-		e.Project+"-"+e.Stage)
+		e.Service)
 
 	if err != nil {
 		return nil, nil, err
