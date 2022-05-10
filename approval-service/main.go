@@ -49,8 +49,9 @@ func main() {
 	if err != nil {
 		logger.WithError(err).Error("could not parse log level provided by 'LOG_LEVEL' env var")
 		logger.SetLevel(logger.InfoLevel)
+	} else {
+		logger.SetLevel(logLevel)
 	}
-	logger.SetLevel(logLevel)
 
 	go func() {
 		keptnapi.RunHealthEndpoint("8080")
