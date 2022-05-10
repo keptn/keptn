@@ -80,6 +80,10 @@ export function interceptMain(): void {
   cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
 }
 
+export function interceptCreateProject(): void {
+  cy.intercept('/api/project/sockshop', { fixture: 'project.mock' });
+}
+
 export function interceptDashboard(): void {
   interceptMain();
   cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=5', { fixture: 'sequences.sockshop' }).as('sequences');
