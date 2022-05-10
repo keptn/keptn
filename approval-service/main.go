@@ -135,7 +135,7 @@ func (l ApprovalService) RegistrationData() controlplane.RegistrationData {
 		},
 		Subscriptions: []models.EventSubscription{
 			{
-				Event:  "sh.keptn.event.approval.>",
+				Event:  "sh.keptn.event.approval.triggered",
 				Filter: models.EventSubscriptionFilter{},
 			},
 		},
