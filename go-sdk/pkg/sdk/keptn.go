@@ -135,6 +135,7 @@ func WithLogger(logger Logger) KeptnOption {
 // Keptn is the default implementation of IKeptn
 type Keptn struct {
 	controlPlane           *controlplane.ControlPlane
+	eventSender            controlplane.EventSender
 	resourceHandler        ResourceHandler
 	source                 string
 	taskRegistry           *TaskRegistry
@@ -232,12 +233,13 @@ func (k *Keptn) RegistrationData() controlplane.RegistrationData {
 
 // NewKeptn creates a new Keptn
 func NewKeptn(source string, opts ...KeptnOption) *Keptn {
-	controlplane, _ := NewCPFromEnv()
+	controlplane, eventSender, _ := NewCPFromEnv()
 	resourceHandler := NewResourceHandlerFromEnv()
 	taskRegistry := NewTasksMap()
 	logger := NewDefaultLogger()
 	keptn := &Keptn{
 		controlPlane:           controlplane,
+		eventSender:            eventSender,
 		source:                 source,
 		taskRegistry:           taskRegistry,
 		resourceHandler:        resourceHandler,
@@ -264,7 +266,6 @@ func (k *Keptn) GetResourceHandler() ResourceHandler {
 }
 
 func (k *Keptn) SendStartedEvent(event KeptnEvent) error {
-	panic("not implemented")
 	//inputCE := cloudevents.Event{}
 	//err := keptnv2.Decode(event, &inputCE)
 	//if err != nil {
@@ -275,20 +276,24 @@ func (k *Keptn) SendStartedEvent(event KeptnEvent) error {
 	//	return err
 	//}
 	//return k.send(*startedEvent)
+	finishedEvent, err := k.createStartedEventForTriggeredEvent(models.KeptnContextExtendedCE(event))
+	if err != nil {
+		return err
+	}
+	return k.eventSender(*finishedEvent)
 }
 
 func (k *Keptn) SendFinishedEvent(event KeptnEvent, result interface{}) error {
-	panic("not implemented")
 	//inputCE := cloudevents.Event{}
 	//err := keptnv2.Decode(event, &inputCE)
 	//if err != nil {
 	//	return err
 	//}
-	//finishedEvent, err := k.createFinishedEventForReceivedEvent(inputCE, result)
-	//if err != nil {
-	//	return err
-	//}
-	//return k.send(*finishedEvent)
+	finishedEvent, err := k.createFinishedEventForReceivedEvent(models.KeptnContextExtendedCE(event), result)
+	if err != nil {
+		return err
+	}
+	return k.eventSender(*finishedEvent)
 }
 
 func (k *Keptn) Logger() Logger {
