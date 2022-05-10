@@ -26,6 +26,11 @@ func TestNewEventHandler(t *testing.T) {
 	incomingEvent.SetID("my-id")
 	incomingEvent.SetSource("my-source")
 
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	fakeSender := func(ce models.KeptnContextExtendedCE) error { return nil }
+	ctx = context.WithValue(ctx, controlplane.EventSenderKey, controlplane.EventSender(fakeSender))
+	defer cancel()
+
 	keptnHandler, _ := keptnv2.NewKeptn(&incomingEvent, keptncommon.KeptnOpts{})
 
 	type args struct {
@@ -96,11 +101,6 @@ func TestNewEventHandler(t *testing.T) {
 			}
 			tt.args.event.SetType(tt.eventType)
 			os.Setenv("CONFIGURATION_SERVICE", configurationServiceURL)
-
-			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-			fakeSender := func(ce models.KeptnContextExtendedCE) error { return nil }
-			ctx = context.WithValue(ctx, controlplane.EventSenderKey, controlplane.EventSender(fakeSender))
-			defer cancel()
 
 			got, err := NewEventHandler(ctx, tt.args.event)
 			if (err != nil) != tt.wantErr {
