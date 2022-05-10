@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-this-alias */
 import {
-  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   ElementRef,
@@ -17,13 +16,7 @@ import { ResultTypes } from '../../../../shared/models/result-types';
 import { DtButton } from '@dynatrace/barista-components/button';
 import { v4 as uuid } from 'uuid';
 import { KtbHeatmapTooltipComponent } from '../ktb-heatmap-tooltip/ktb-heatmap-tooltip.component';
-import {
-  EvaluationResultType,
-  EvaluationResultTypeExtension,
-  IDataPoint,
-  IHeatmapTooltipType,
-} from '../../_interfaces/heatmap';
-import moment from 'moment';
+import { EvaluationResultType, EvaluationResultTypeExtension, IDataPoint } from '../../_interfaces/heatmap';
 import { DOCUMENT } from '@angular/common';
 
 type SVGGSelection = Selection<SVGGElement, unknown, HTMLElement, unknown>;
@@ -38,7 +31,7 @@ type GroupedDataPoints = { [yElement: string]: IDataPoint[] };
   styleUrls: ['./ktb-heatmap.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
+export class KtbHeatmapComponent implements OnDestroy {
   public readonly uniqueId = `heatmap-${uuid()}`;
   private readonly chartSelector = `#${this.uniqueId}`;
   private readonly heatmapSelector = `${this.chartSelector} .heatmap-container`;
@@ -747,123 +740,5 @@ export class KtbHeatmapComponent implements OnDestroy, AfterViewInit {
   public ngOnDestroy(): void {
     this.document.removeEventListener('mousemove', this.mouseMoveListener);
   }
-
-  //<editor-fold desc="test data">
-  //TODO: remove
-  public ngAfterViewInit(): void {
-    // this.dataPoints = this.generateTestData(12, 50);
-    // this.click(this.groupedData.score[1]);
-  }
-
-  private generateTestData(sliCounter: number, counter: number): IDataPoint[] {
-    const categories = [];
-    for (let i = 0; i < sliCounter - 1; ++i) {
-      categories.push(`response time p${i}`);
-    }
-    categories.push(`response time p${sliCounter - 1} very long SLI name here`);
-    const data: IDataPoint[] = [];
-    const dateMillis = new Date().getTime();
-
-    // adding one duplicate (two evaluations have the same time)
-    for (const category of [...categories, 'score']) {
-      data.push({
-        xElement: moment(new Date(dateMillis)).format('YYYY-MM-DD HH:mm'),
-        yElement: category,
-        color: this.getColor(Math.floor(Math.random() * 4)),
-        tooltip: {
-          type: IHeatmapTooltipType.SLI,
-          value: Math.random(),
-          keySli: Math.floor(Math.random() * 2) === 1,
-          score: Math.floor(Math.random() * 100),
-          passTargets: [
-            {
-              targetValue: 0,
-              criteria: '<=1',
-              violated: true,
-            },
-          ],
-          warningTargets: [
-            {
-              targetValue: 0,
-              violated: false,
-              criteria: '<=10',
-            },
-          ],
-        },
-        identifier: `keptnContext_${-1}`,
-        comparedIdentifier: [],
-      });
-    }
-
-    // fill SLIs with random data (-1 to have an evaluation with "missing" data)
-    for (const category of categories) {
-      for (let i = 0; i < counter - 1; ++i) {
-        data.push({
-          xElement: moment(new Date(dateMillis + i * 1000 * 60)).format('YYYY-MM-DD HH:mm'),
-          yElement: category,
-          color: this.getColor(Math.floor(Math.random() * 4)),
-          tooltip: {
-            type: IHeatmapTooltipType.SLI,
-            value: Math.random(),
-            keySli: Math.floor(Math.random() * 2) === 1,
-            score: Math.floor(Math.random() * 100),
-            passTargets: [
-              {
-                targetValue: 0,
-                criteria: '<=1',
-                violated: true,
-              },
-            ],
-            warningTargets: [
-              {
-                targetValue: 0,
-                violated: false,
-                criteria: '<=10',
-              },
-            ],
-          },
-          identifier: `keptnContext_${i}`,
-          comparedIdentifier: [`keptnContext_${i - 1}`, `keptnContext_${i - 2}`],
-        });
-      }
-    }
-    categories.push('score');
-    for (let i = 0; i < counter; ++i) {
-      data.push({
-        xElement: moment(new Date(dateMillis + i * 1000 * 60)).format('YYYY-MM-DD HH:mm'),
-        yElement: 'score',
-        color: this.getColor(Math.floor(Math.random() * 4)),
-        tooltip: {
-          type: IHeatmapTooltipType.SCORE,
-          value: Math.random(),
-          fail: Math.floor(Math.random() * 2) === 1,
-          failedCount: Math.random(),
-          warn: Math.floor(Math.random() * 2) === 1,
-          passCount: Math.random(),
-          thresholdPass: Math.random(),
-          thresholdWarn: Math.random(),
-          warningCount: Math.random(),
-        },
-        identifier: `keptnContext_${i}`,
-        comparedIdentifier: [`keptnContext_${i - 1}`, `keptnContext_${i - 2}`],
-      });
-    }
-    return data;
-  }
-
-  private getColor(value: number): EvaluationResultType {
-    if (value === 0) {
-      return ResultTypes.FAILED;
-    }
-    if (value === 1) {
-      return ResultTypes.WARNING;
-    }
-    if (value === 2) {
-      return ResultTypes.PASSED;
-    }
-    return EvaluationResultTypeExtension.INFO;
-  }
-
-  //</editor-fold>
 }
 /* eslint-enable @typescript-eslint/no-this-alias */
