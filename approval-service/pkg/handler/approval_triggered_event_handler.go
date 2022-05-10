@@ -1,11 +1,15 @@
 package handler
 
 import (
+	"context"
 	"fmt"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	logger "github.com/sirupsen/logrus"
 
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
 )
 
 type ApprovalTriggeredEventHandler struct {
@@ -13,8 +17,14 @@ type ApprovalTriggeredEventHandler struct {
 }
 
 // NewApprovalTriggeredEventHandler returns a new approval.triggered event handler
-func NewApprovalTriggeredEventHandler(keptn *keptnv2.Keptn) *ApprovalTriggeredEventHandler {
-	return &ApprovalTriggeredEventHandler{keptn: keptn}
+func NewApprovalTriggeredEventHandler(ctx context.Context, event cloudevents.Event) (*ApprovalTriggeredEventHandler, error) {
+	eventSender := ctx.Value(controlplane.EventSenderKey).(controlplane.EventSender)
+	keptnHandlerV2, err := keptnv2.NewKeptn(&event, keptncommon.KeptnOpts{EventSender: &CPEventSender{Sender: eventSender}})
+	if err != nil {
+		logger.WithError(err).Error("Failed to initialize Keptn handler")
+		return nil, err
+	}
+	return &ApprovalTriggeredEventHandler{keptn: keptnHandlerV2}, nil
 }
 
 // IsTypeHandled godoc
@@ -40,18 +50,20 @@ func getResult(data keptnv2.ApprovalTriggeredEventData, event cloudevents.Event)
 }
 
 // Handle godoc
-func (a *ApprovalTriggeredEventHandler) Handle(event cloudevents.Event, keptnHandler *keptnv2.Keptn) {
+func (a *ApprovalTriggeredEventHandler) Handle(event cloudevents.Event) error {
 	data := &keptnv2.ApprovalTriggeredEventData{}
 	if err := event.DataAs(data); err != nil {
 		logger.WithError(err).Error("failed to parse ApprovalTriggeredEventData")
-		return
+		return err
 	}
 
 	// handle the case of no result being present (see https://github.com/keptn/keptn/issues/4391)
 	data.Result = getResult(*data, event)
 
-	outgoingEvents := a.handleApprovalTriggeredEvent(*data, event.Context.GetID(), keptnHandler.KeptnContext)
-	sendEvents(keptnHandler, outgoingEvents)
+	outgoingEvents := a.handleApprovalTriggeredEvent(*data, event.Context.GetID(), a.keptn.KeptnContext)
+	sendEvents(a.keptn, outgoingEvents)
+
+	return nil
 }
 
 func (a *ApprovalTriggeredEventHandler) handleApprovalTriggeredEvent(inputEvent keptnv2.ApprovalTriggeredEventData,

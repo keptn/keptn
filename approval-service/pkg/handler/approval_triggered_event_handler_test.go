@@ -1,14 +1,18 @@
 package handler
 
 import (
+	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/stretchr/testify/require"
 
+	"github.com/keptn/go-utils/pkg/api/models"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
-	"github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
 )
 
 func TestHandleApprovalTriggeredEvent(t *testing.T) {
@@ -159,8 +163,14 @@ func TestHandleApprovalTriggeredEvent(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ce := cloudevents.NewEvent()
 			ce.SetData(cloudevents.ApplicationJSON, tt.inputEvent)
-			keptnHandler, _ := keptnv2.NewKeptn(&ce, keptn.KeptnOpts{})
-			e := NewApprovalTriggeredEventHandler(keptnHandler)
+
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			fakeSender := func(ce models.KeptnContextExtendedCE) error { return nil }
+			ctx = context.WithValue(ctx, controlplane.EventSenderKey, controlplane.EventSender(fakeSender))
+			defer cancel()
+
+			e, err := NewApprovalTriggeredEventHandler(ctx, ce)
+			require.Nil(t, err)
 			res := e.handleApprovalTriggeredEvent(tt.inputEvent, eventID, shkeptncontext)
 			if len(res) != len(tt.outputEvent) {
 				t.Errorf("got %d output event, want %v output events for %s",
