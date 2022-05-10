@@ -12,11 +12,13 @@ export class AppInitService {
       this.apiService.getLookAndFeelConfig().subscribe(
         (config) => {
           if (!config) {
+            resolve(null);
             return;
           }
           environment.config = config;
 
           if (!config.stylesheetUrl) {
+            resolve(config);
             return;
           }
           const body = document.getElementsByTagName('body')[0];
@@ -27,7 +29,7 @@ export class AppInitService {
           link.setAttribute('media', 'all');
           body.appendChild(link);
 
-          return resolve(config);
+          resolve(config);
         },
         (err) => {
           console.error('Error loading app-config.json.', err);
