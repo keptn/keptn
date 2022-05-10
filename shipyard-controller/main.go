@@ -308,6 +308,9 @@ func main() {
 
 	operationsV1.GET("/pre-stop", func(c *gin.Context) {
 		log.Debug("PreStop hook has been called.")
+		// invoke the cancel() function to shut down the periodically executed
+		// tasks such as nats subscription, sequence watcher, sequence dispatcher, event dispatcher
+		// this should ensure that no iteration of either of these tasks is attempted to be started right before the termination of the pod
 		cancel()
 		log.Debugf("PreStop: Sleeping for %d seconds", env.PreStopHookTime)
 		<-time.After(time.Duration(env.PreStopHookTime) * time.Second)
@@ -326,12 +329,7 @@ func main() {
 		}
 	}()
 
-	GracefulShutdown(wg, srv, func() {
-		// invoke the cancel() function to shut down the periodically executed
-		// tasks such as nats subscription, sequence watcher, sequence dispatcher, event dispatcher
-		// this should ensure that no iteration of either of these tasks is attempted to be started right before the termination of the pod
-		//cancel()
-	})
+	GracefulShutdown(wg, srv, func() {})
 }
 
 func LeaderElection(client v1.CoordinationV1Interface, ctx context.Context, start func(ctx context.Context, mode common.SDMode), stop func()) {
