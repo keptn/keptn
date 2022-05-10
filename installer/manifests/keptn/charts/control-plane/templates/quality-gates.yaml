@@ -67,28 +67,48 @@ spec:
               value: 'mongodb-datastore:8080'
             - name: ENVIRONMENT
               value: 'production'
+            - name: K8S_DEPLOYMENT_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: 'metadata.labels[''app.kubernetes.io/name'']'
+            - name: K8S_DEPLOYMENT_VERSION
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: 'metadata.labels[''app.kubernetes.io/version'']'
+            - name: K8S_DEPLOYMENT_COMPONENT
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: 'metadata.labels[''app.kubernetes.io/component'']'
+            - name: K8S_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+            - name: K8S_POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
             - name: POD_NAMESPACE
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+            - name: PUBSUB_GROUP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.labels['app.kubernetes.io/name']
             - name: LOG_LEVEL
               value: {{ .Values.logLevel | default "info" }}
           {{- include "control-plane.common.container-security-context" . | nindent 10 }}
-        - name: distributor
-          image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
-          {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
-          {{- include "control-plane.dist.readinessProbe" . | nindent 10 }}
-          imagePullPolicy: IfNotPresent
-          ports:
-            - containerPort: 8080
-          {{- include "keptn.distributor.resources" . | nindent 10 }}
-          env:
-            - name: PUBSUB_TOPIC
-              value: 'sh.keptn.event.evaluation.triggered,sh.keptn.event.get-sli.finished,sh.keptn.event.monitoring.configure'
-            - name: PUBSUB_RECIPIENT
-              value: '127.0.0.1'
-          {{- include "control-plane.dist.common.env.vars" . | nindent 12 }}
-        {{- include "control-plane.common.container-security-context" . | nindent 10 }}
       serviceAccountName: keptn-lighthouse-service
       terminationGracePeriodSeconds: {{ .Values.lighthouseService.gracePeriod | default 120 }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.lighthouseService.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}

@@ -6,14 +6,15 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	v12 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
 	"net/http"
 	"os"
 	"reflect"
 	"strings"
 	"testing"
 	"time"
+
+	v12 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 
 	"github.com/keptn/go-utils/pkg/common/strutils"
 
@@ -1014,4 +1015,8 @@ func checkResourceInResponse(resources models.Resources, resourceName string) er
 func resetTestPath(t *testing.T, path string) {
 	err := os.Chdir(path)
 	require.Nil(t, err)
+}
+
+func CreateDistributorImage(imageName string, serviceName string) string {
+	return strings.Replace(imageName, serviceName, "distributor", 1)
 }
