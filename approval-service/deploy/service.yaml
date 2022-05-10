@@ -56,6 +56,8 @@ spec:
           value: 'http://event-broker/keptn'
         - name: DATASTORE
           value: 'http://mongodb-datastore:8080'
+        - name: LOG_LEVEL
+          value: "info"
         - name: K8S_DEPLOYMENT_NAME
           valueFrom:
             fieldRef:
