@@ -81,7 +81,10 @@ export function interceptMain(): void {
 }
 
 export function interceptCreateProject(): void {
-  cy.intercept('/api/project/sockshop', { fixture: 'project.mock' });
+  cy.intercept('POST', 'api/controlPlane/v1/project', {
+    statusCode: 200,
+    body: {},
+  });
 }
 
 export function interceptDashboard(): void {
