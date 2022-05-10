@@ -6,13 +6,15 @@ The *jmeter-service* has been updated with the implementation from the Keptn-Con
 
 The *jmeter-service* is part of the *Execution Plane for Continuous Delivery*.
 
-You can find installation instructions [here](https://keptn.sh/docs/0.8.x/operate/install/#install-keptn).
+You can find installation instructions [here](https://keptn.sh/docs/0.15.x/operate/install/#install-keptn).
 
 To install it next to your Keptn installation, you can use the following command:
 
 ```console
-helm install jmeter-service https://github.com/keptn/keptn/releases/download/0.8.4/jmeter-service-0.8.4.tgz -n keptn
+helm install jmeter-service https://github.com/keptn/keptn/releases/download/<latest>/jmeter-service-<latest>.tgz -n keptn
 ```
+
+Replace `<latest>` with a Keptn version available from the [release list](https://github.com/keptn/keptn/tags).
 
 ## Development
 
