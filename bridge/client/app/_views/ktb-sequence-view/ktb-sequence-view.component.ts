@@ -71,7 +71,6 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     // Method to decide if a node should be displayed in the quick filter
     showInSidebar: (node) => isObject(node) && node.showInSidebar,
   };
-  private sequenceFilters: { [key: string]: string[] } = {};
   private project?: Project;
   private unfinishedSequences: Sequence[] = [];
   private _tracesTimerInterval = 10_000;
@@ -93,6 +92,8 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
       services: [],
     },
   };
+
+  public filteredSequences: Sequence[] = [];
 
   constructor(
     private dataService: DataService,
@@ -126,11 +127,11 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
           (project: Project | undefined): project is Project => !!project && !!project.getServices() && !!project.stages
         )
       )
-      .subscribe((project) => {
-        if (project.projectName !== this.project?.projectName) {
+      .subscribe((project: Project) => {
+        const currentProjectName = this.project?.projectName;
+        if (project.projectName !== currentProjectName) {
           this.currentSequence = undefined;
           this.selectedStage = undefined;
-          this.filtersChanged({ filters: [] });
         }
         this.project = project;
       });
@@ -179,7 +180,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
       )
       .subscribe(([params]: [Params, void]) => {
         if (params.shkeptncontext && this.project?.sequences) {
-          const sequence = this.project.sequences.find((s) => s.shkeptncontext === params.shkeptncontext);
+          const sequence = this.project?.sequences.find((s) => s.shkeptncontext === params.shkeptncontext);
           const stage = params.eventId ? undefined : params.stage;
           const eventId = params.eventId;
 
@@ -198,14 +199,29 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
         }
       });
 
-    this.sequencesUpdated$.subscribe(() => {
-      if (this.project?.sequences) {
-        this.updateFilterSequence(this.project.sequences);
+    this.sequencesUpdated$.pipe(takeUntil(this.unsubscribe$)).subscribe(() => {
+      const sequences = this.project?.sequences;
+      if (sequences != undefined) {
+        this.updateFilterSequence(sequences);
         this.refreshFilterDataSource();
+        // Update filteredSequences based on current filters
+        this.filteredSequences = this.getFilteredSequences(sequences, this.apiService.sequenceFilters);
         // Set unfinished sequences so that the state updates can be loaded
-        this.unfinishedSequences = this.project.sequences.filter((sequence) => !sequence.isFinished());
+        this.unfinishedSequences = sequences.filter((sequence: Sequence) => !sequence.isFinished());
         // Needed for the updates to work properly
         this.changeDetectorRef_.detectChanges();
+      }
+    });
+
+    this.route.queryParams.pipe(takeUntil(this.unsubscribe$)).subscribe((queryParams) => {
+      if (Object.keys(queryParams).length === 0) {
+        this.loadSequenceFilters();
+      } else {
+        const sequenceFilters = Object.keys(queryParams).reduce((params: { [p: string]: string[] }, param) => {
+          params[param] = Array.isArray(queryParams[param]) ? queryParams[param] : [queryParams[param]];
+          return params;
+        }, {});
+        this.setSequenceFilters(sequenceFilters);
       }
     });
   }
@@ -277,9 +293,9 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  filtersChanged(event: DtQuickFilterChangeEvent<any> | { filters: any[] }): void {
+  filtersClicked(event: DtQuickFilterChangeEvent<any> | { filters: any[] }): void {
     this._seqFilters = event.filters as FilterType[];
-    this.sequenceFilters = this._seqFilters.reduce(
+    const sequenceFilters: { [key: string]: string[] } = this._seqFilters.reduce(
       (
         filters: { [key: string]: string[] },
         currentFilter: [
@@ -296,7 +312,10 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
       },
       {}
     );
-    this.saveFilters(this.sequenceFilters);
+    this.saveSequenceFilters(sequenceFilters);
+    if (this.project) {
+      this.dataService.loadSequences(this.project);
+    }
   }
 
   updateFilterSequence(sequences?: Sequence[]): void {
@@ -365,22 +384,22 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     this._filterDataSource = new DtQuickFilterDefaultDataSource(this.filterFieldData, this._config);
   }
 
-  getFilteredSequences(sequences: Sequence[]): Sequence[] {
+  getFilteredSequences(sequences: Sequence[], filters: { [key: string]: string[] }): Sequence[] {
     return sequences.filter((s) => {
       let res = true;
-      Object.keys(this.sequenceFilters).forEach((key) => {
+      Object.keys(filters).forEach((key) => {
         switch (key) {
           case 'Service':
-            res = res && this.sequenceFilters[key].includes(s.service);
+            res = res && filters[key].includes(s.service);
             break;
           case 'Stage':
-            res = res && this.sequenceFilters[key].every((f) => s.getStages().includes(f));
+            res = res && filters[key].every((f) => s.getStages().includes(f));
             break;
           case 'Sequence':
-            res = res && this.sequenceFilters[key].includes(s.name);
+            res = res && filters[key].includes(s.name);
             break;
           case 'Status':
-            res = res && this.sequenceFilters[key].includes(s.getStatus());
+            res = res && filters[key].includes(s.getStatus());
             break;
           default:
             break;
@@ -414,15 +433,31 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     this.router.navigate(['/project/' + this.project?.projectName]);
   }
 
-  public saveFilters(sequenceFilters: { [p: string]: string[] }): void {
-    this.apiService.sequenceFilters = this.sequenceFilters;
+  public saveSequenceFilters(sequenceFilters: { [p: string]: string[] }): void {
+    this.apiService.sequenceFilters = sequenceFilters;
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: sequenceFilters,
     });
   }
 
-  public loadFilters(): void {}
+  public loadSequenceFilters(): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: this.apiService.sequenceFilters,
+    });
+  }
+
+  public setSequenceFilters(sequenceFilters: { [p: string]: string[] }): void {
+    this.apiService.sequenceFilters = sequenceFilters;
+    this._seqFilters = Object.keys(sequenceFilters).reduce((_seqFilters, name) => {
+      sequenceFilters[name].forEach((value) => {
+        // @ts-ignore
+        _seqFilters.push([{ name }, { name: value, value }]);
+      });
+      return _seqFilters;
+    }, []);
+  }
 
   ngOnDestroy(): void {
     this._tracesTimer.unsubscribe();

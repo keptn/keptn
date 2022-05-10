@@ -1,10 +1,11 @@
 <ng-template #triggerSequenceButton>
   <div>
-    <a (click)="navigateToTriggerSequence()"
-      ><button dt-button class="mb-3" uitestid="keptn-trigger-button-open">
-        <dt-icon name="flash"></dt-icon>Trigger a new sequence
-      </button></a
-    >
+    <a (click)="navigateToTriggerSequence()">
+      <button dt-button class="mb-3" uitestid="keptn-trigger-button-open">
+        <dt-icon name="flash"></dt-icon>
+        Trigger a new sequence
+      </button>
+    </a>
   </div>
 </ng-template>
 
@@ -14,7 +15,7 @@
       <dt-quick-filter
         [dataSource]="_filterDataSource"
         [filters]="_seqFilters"
-        (filterChanges)="filtersChanged($event)"
+        (filterChanges)="filtersClicked($event)"
         aria-label="Filter By Input value"
         label="Filter by"
         clearAllLabel="Clear all"
@@ -42,15 +43,15 @@
             fxLayout="row"
             fxLayoutAlign="start"
             uitestid="keptn-noSequencesFiltered"
-            *ngIf="getFilteredSequences(project.sequences).length === 0 && project.sequences.length !== 0"
+            *ngIf="filteredSequences.length === 0 && project.sequences.length !== 0"
           >
             <dt-icon fxFlex="20px" class="icon" name="information"></dt-icon>
             <p class="m-0 ml-2">No sequences found that match your filter criteria.</p>
           </div>
           <ktb-root-events-list
-            *ngIf="getFilteredSequences(project.sequences).length !== 0"
+            *ngIf="filteredSequences.length !== 0"
             uitestid="keptn-sequence-view-roots"
-            [events]="getFilteredSequences(project.sequences)"
+            [events]="filteredSequences"
             [selectedEvent]="currentSequence"
             (selectedEventChange)="selectSequence($event)"
             fxFlex
