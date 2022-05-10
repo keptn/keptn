@@ -70,9 +70,6 @@ export class KtbHeatmapComponent implements OnDestroy {
   @ViewChild('tooltip', { static: false }) tooltip!: KtbHeatmapTooltipComponent;
   @Output() selectedDataPointChange = new EventEmitter<IDataPoint>();
 
-  //TODO:
-  // - Remove testing data afterwards
-
   @Input()
   public set dataPoints(data: IDataPoint[]) {
     this.removeHeatmap();
