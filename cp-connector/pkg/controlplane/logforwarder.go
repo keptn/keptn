@@ -7,7 +7,7 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/sirupsen/logrus"
+	"github.com/keptn/keptn/cp-connector/pkg/logger"
 )
 
 type LogForwarder interface {
@@ -16,11 +16,13 @@ type LogForwarder interface {
 
 type LogForwardingHandler struct {
 	logApi api.LogsV1Interface
+	logger logger.Logger
 }
 
 func NewLogForwarder(logApi api.LogsV1Interface) *LogForwardingHandler {
 	return &LogForwardingHandler{
 		logApi: logApi,
+		logger: logger.NewDefaultLogger(),
 	}
 }
 
@@ -34,7 +36,7 @@ func (l LogForwardingHandler) Forward(keptnEvent models.KeptnContextExtendedCE, 
 		taskName, _, _ := keptnv2.ParseTaskEventType(*keptnEvent.Type)
 
 		if eventData.Status == keptnv2.StatusErrored {
-			logrus.Info("Received '.finished' event with status 'errored'. Forwarding log message to log ingestion API")
+			l.logger.Info("Received '.finished' event with status 'errored'. Forwarding log message to log ingestion API")
 			l.logApi.Log([]models.LogEntry{{
 				IntegrationID: integrationID,
 				Message:       eventData.Message,
@@ -45,7 +47,7 @@ func (l LogForwardingHandler) Forward(keptnEvent models.KeptnContextExtendedCE, 
 		}
 		return nil
 	} else if *keptnEvent.Type == keptnv2.ErrorLogEventName {
-		logrus.Info("Received 'log.error' event. Forwarding log message to log ingestion API")
+		l.logger.Info("Received 'log.error' event. Forwarding log message to log ingestion API")
 
 		eventData := &keptnv2.ErrorLogEvent{}
 		if err := keptnv2.EventDataAs(keptnEvent, eventData); err != nil {
