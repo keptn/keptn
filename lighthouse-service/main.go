@@ -30,12 +30,21 @@ type envConfig struct {
 	K8SPodName              string `envconfig:"K8S_POD_NAME" default:""`
 	K8SNamespace            string `envconfig:"K8S_NAMESPACE" default:""`
 	K8SNodeName             string `envconfig:"K8S_NODE_NAME" default:""`
+	LogLevel                string `envconfig:"LOG_LEVEL" default:"info"`
 }
 
 func main() {
 	var env envConfig
 	if err := envconfig.Process("", &env); err != nil {
 		log.Fatalf("Failed to process env var: %s", err)
+	}
+
+	logLevel, err := logger.ParseLevel(env.LogLevel)
+	if err != nil {
+		logger.WithError(err).Error("could not parse log level provided by 'LOG_LEVEL' env var")
+		logger.SetLevel(logger.InfoLevel)
+	} else {
+		logger.SetLevel(logLevel)
 	}
 
 	go func() {
