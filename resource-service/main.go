@@ -4,8 +4,6 @@ import (
 	"context"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/keptn/keptn/resource-service/common"
-	nats2 "github.com/keptn/keptn/resource-service/handler/nats"
-	"github.com/keptn/keptn/resource-service/pkg/nats/subscriber"
 	"io/ioutil"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -40,7 +38,6 @@ import (
 // @BasePath /v1
 
 const envVarLogLevel = "LOG_LEVEL"
-const eventProjectDeleteFinished = "sh.keptn.event.project.delete.finished"
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
@@ -126,15 +123,6 @@ func main() {
 	srv := &http.Server{
 		Addr:    ":8080",
 		Handler: engine,
-	}
-
-	sub, err := subscriber.ConnectFromEnv()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if err := sub.Subscribe(eventProjectDeleteFinished, nats2.EventHandler(projectManager).Process); err != nil {
-		log.Fatal(err)
 	}
 
 	// Initializing the server in a goroutine so that

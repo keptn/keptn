@@ -58,7 +58,7 @@ spec:
           valueFrom:
               secretKeyRef:
                 name: mongodb-credentials
-                key: mongodb-password
+                key: mongodb-passwords
       - name: distributor
         image: docker.io/keptn/distributor:0.13.0-dev
         imagePullPolicy: Always
