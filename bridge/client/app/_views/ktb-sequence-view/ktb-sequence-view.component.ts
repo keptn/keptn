@@ -464,6 +464,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: this.apiService.sequenceFilters,
+      replaceUrl: true,
     });
   }
 
