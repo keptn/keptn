@@ -10,7 +10,7 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.15.0
 	github.com/mholt/archiver/v3 v3.5.1
-	github.com/nats-io/nats-server/v2 v2.8.1
+	github.com/nats-io/nats-server/v2 v2.8.2
 	github.com/nats-io/nats.go v1.14.0
 	github.com/otiai10/copy v1.7.0
 	github.com/sirupsen/logrus v1.8.1
