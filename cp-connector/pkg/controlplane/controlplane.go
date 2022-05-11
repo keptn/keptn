@@ -28,6 +28,7 @@ type ControlPlane struct {
 	eventSource          EventSource
 	currentSubscriptions []models.EventSubscription
 	logger               logger.Logger
+	registered           bool
 }
 
 // New creates a new ControlPlane
@@ -39,6 +40,7 @@ func New(subscriptionSource SubscriptionSource, eventSource EventSource) *Contro
 		eventSource:          eventSource,
 		currentSubscriptions: []models.EventSubscription{},
 		logger:               logger.NewDefaultLogger(),
+		registered:           false,
 	}
 }
 
@@ -52,6 +54,7 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 	if err := cp.subscriptionSource.Start(ctx, integration.RegistrationData(), subscriptionUpdates); err != nil {
 		return err
 	}
+	cp.registered = true
 	for {
 		select {
 		case event := <-eventUpdates:
@@ -63,9 +66,15 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 			cp.currentSubscriptions = subscriptions
 			cp.eventSource.OnSubscriptionUpdate(subjects(subscriptions))
 		case <-ctx.Done():
+			cp.registered = false
 			return nil
 		}
 	}
+}
+
+// IsRegistered can be called to detect whether the controlPlane is registered and ready to receive events
+func (cp *ControlPlane) IsRegistered() bool {
+	return cp.registered
 }
 
 func (cp *ControlPlane) handle(ctx context.Context, eventUpdate EventUpdate, integration Integration) error {

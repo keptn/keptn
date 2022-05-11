@@ -196,3 +196,48 @@ func TestControlPlaneIntegrationOnEventThrowsFatalError(t *testing.T) {
 	require.Eventually(t, func() bool { return integrationReceivedEvent }, time.Second, time.Millisecond*100)
 	require.Eventually(t, func() bool { return controlPlaneErr != nil }, time.Second, time.Millisecond*100)
 }
+
+func TestControlPlane_IsRegistered(t *testing.T) {
+	var eventChan chan EventUpdate
+	var subsChan chan []models.EventSubscription
+
+	callBackSender := func(ce models.KeptnContextExtendedCE) error { return nil }
+
+	ssm := &SubscriptionSourceMock{
+		StartFn: func(ctx context.Context, data RegistrationData, c chan []models.EventSubscription) error {
+			subsChan = c
+			return nil
+		},
+	}
+	esm := &EventSourceMock{
+		StartFn: func(ctx context.Context, data RegistrationData, ces chan EventUpdate) error {
+			eventChan = ces
+			return nil
+		},
+		OnSubscriptionUpdateFn: func(strings []string) {},
+		SenderFn:               func() EventSender { return callBackSender },
+	}
+
+	controlPlane := New(ssm, esm)
+
+	integration := ExampleIntegration{
+		RegistrationDataFn: func() RegistrationData { return RegistrationData{} },
+		OnEventFn: func(ctx context.Context, ce models.KeptnContextExtendedCE) error {
+			return nil
+		},
+	}
+	ctx, cancel := context.WithCancel(context.TODO())
+
+	require.False(t, controlPlane.IsRegistered())
+
+	go func() { _ = controlPlane.Register(ctx, integration) }()
+	require.Eventually(t, func() bool { return subsChan != nil }, time.Second, time.Millisecond*100)
+	require.Eventually(t, func() bool { return eventChan != nil }, time.Second, time.Millisecond*100)
+	require.True(t, controlPlane.IsRegistered())
+
+	cancel()
+
+	require.Eventually(t, func() bool {
+		return !controlPlane.IsRegistered()
+	}, time.Second, 100*time.Millisecond)
+}

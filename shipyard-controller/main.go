@@ -302,13 +302,34 @@ func main() {
 		go LeaderElection(kubeAPI.CoordinationV1(), ctx, shipyardController.StartDispatchers, shipyardController.StopDispatchers)
 	}
 
-	GracefulShutdown(wg, srv, func() {
+	operationsEngine := gin.New()
+
+	operationsV1 := operationsEngine.Group("/operations/v1")
+
+	operationsV1.GET("/pre-stop", func(c *gin.Context) {
+		log.Debug("PreStop hook has been called.")
 		// invoke the cancel() function to shut down the periodically executed
 		// tasks such as nats subscription, sequence watcher, sequence dispatcher, event dispatcher
 		// this should ensure that no iteration of either of these tasks is attempted to be started right before the termination of the pod
 		cancel()
+		log.Debugf("PreStop: Sleeping for %d seconds", env.PreStopHookTime)
+		<-time.After(time.Duration(env.PreStopHookTime) * time.Second)
+		log.Debug("PreStop hook has been finished")
+		c.Status(http.StatusOK)
 	})
 
+	operationsSrv := &http.Server{
+		Addr:    ":8081",
+		Handler: operationsEngine,
+	}
+
+	go func() {
+		if err := operationsSrv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.WithError(err).Error("could not start API server")
+		}
+	}()
+
+	GracefulShutdown(wg, srv)
 }
 
 func LeaderElection(client v1.CoordinationV1Interface, ctx context.Context, start func(ctx context.Context, mode common.SDMode), stop func()) {
@@ -363,15 +384,13 @@ func LeaderElection(client v1.CoordinationV1Interface, ctx context.Context, star
 	})
 }
 
-func GracefulShutdown(wg *sync.WaitGroup, srv *http.Server, onSigTerm func()) {
+func GracefulShutdown(wg *sync.WaitGroup, srv *http.Server) {
 	// Wait for interrupt signal to gracefully shut down the server
 	quit := make(chan os.Signal, 1)
 
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	log.Println("Shutting down server...")
-
-	go onSigTerm()
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
