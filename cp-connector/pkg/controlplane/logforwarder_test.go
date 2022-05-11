@@ -11,7 +11,7 @@ import (
 )
 
 func TestLogForwarderNoForward(t *testing.T) {
-	logHandler := &fake.LogInterfaceMock{}
+	logHandler := &fake.LogAPIMock{}
 	logForwarder := NewLogForwarder(logHandler)
 	keptnEvent := models.KeptnContextExtendedCE{ID: "some-id", Type: strutils.Stringp("sh.keptn.event.echo.triggered")}
 	err := logForwarder.Forward(keptnEvent, "some-other-id")
@@ -35,13 +35,15 @@ func TestLogForwarderFinishedInvalidEventType(t *testing.T) {
 }
 
 func TestLogForwarderFinishedForward(t *testing.T) {
-	logHandler := &fake.LogInterfaceMock{
-		LogFn: func(logs []models.LogEntry) {},
+	logHandler := &fake.LogAPIMock{
+		LogFunc: func(logs []models.LogEntry) {},
 	}
 	logForwarder := NewLogForwarder(logHandler)
 	keptnEvent := models.KeptnContextExtendedCE{ID: "some-id", Type: strutils.Stringp("sh.keptn.event.echo.finished"), Data: keptnv2.EventData{Status: keptnv2.StatusErrored}}
 	err := logForwarder.Forward(keptnEvent, "some-other-id")
 	require.Nil(t, err)
+
+	require.Len(t, logHandler.LogCalls(), 1)
 }
 
 func TestLogForwarderErrorInvalidEventType(t *testing.T) {

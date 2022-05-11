@@ -10,6 +10,9 @@ import (
 	"github.com/keptn/keptn/cp-connector/pkg/logger"
 )
 
+//go:generate moq -pkg fake -skip-ensure -out ./fake/logapi.go . logAPI:LogAPIMock
+type logAPI api.LogsV1Interface
+
 type LogForwarder interface {
 	Forward(keptnEvent models.KeptnContextExtendedCE, integrationID string) error
 }
