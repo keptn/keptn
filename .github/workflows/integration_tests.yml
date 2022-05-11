@@ -457,7 +457,7 @@ jobs:
             --from-literal=ingress_protocol=http \
             --from-literal=ingress_gateway=public-gateway.istio-system \
             -oyaml --dry-run=client | kubectl replace -f -
-
+          sleep 15
       - name: Determine Keptn Endpoint
         id: determine_keptn_endpoint
         timeout-minutes: 5
