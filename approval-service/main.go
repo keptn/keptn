@@ -9,18 +9,16 @@ import (
 	"sync"
 	"syscall"
 
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
-	"github.com/pkg/errors"
-	logger "github.com/sirupsen/logrus"
-
 	"github.com/keptn/go-utils/pkg/api/models"
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/cp-connector/pkg/api"
 	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
 	"github.com/keptn/keptn/cp-connector/pkg/nats"
+	"github.com/pkg/errors"
+	logger "github.com/sirupsen/logrus"
 )
 
 type envConfig struct {
@@ -85,7 +83,6 @@ type ApprovalService struct {
 }
 
 func (as ApprovalService) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE) error {
-	ctx.Value(gracefulShutdownKey).(*sync.WaitGroup).Add(1)
 	val := ctx.Value(gracefulShutdownKey)
 	if val != nil {
 		if wg, ok := val.(*sync.WaitGroup); ok {
@@ -154,10 +151,13 @@ func getGracefulContext() context.Context {
 	ctx = cloudevents.WithEncodingStructured(ctx)
 	go func() {
 		<-ch
-		logger.Fatal("Container termination triggered, starting graceful shutdown")
-		wg.Wait()
-		logger.Fatal("cancelling context")
+		logger.Info("Container termination triggered, starting graceful shutdown")
+		logger.Info("cancelling context")
 		cancel()
+		logger.Info("waiting for event handlers to finish")
+		wg.Wait()
+		logger.Info("all handlers finished - ready to shut down")
+
 	}()
 	return ctx
 }
