@@ -2,29 +2,26 @@ package handler_test
 
 import (
 	"encoding/json"
-	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/ghodss/yaml"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/lib/v0_1_4"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/go-sdk/pkg/sdk"
 	"github.com/keptn/keptn/remediation-service/handler"
-	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"log"
 	"reflect"
 	"testing"
 )
 
-func newGetActionTriggeredEvent(filename string) cloudevents.Event {
+func newGetActionTriggeredEvent(filename string) models.KeptnContextExtendedCE {
 	content, err := ioutil.ReadFile(filename)
 	if err != nil {
 		log.Fatal(err)
 	}
 	event := models.KeptnContextExtendedCE{}
-	err = json.Unmarshal(content, &event)
-	_ = err
-	return keptnv2.ToCloudEvent(event)
+	json.Unmarshal(content, &event)
+	return event
 }
 
 func Test_Receiving_GetActionTriggeredEvent_RemediationFromServiceLevel(t *testing.T) {
@@ -35,34 +32,27 @@ func Test_Receiving_GetActionTriggeredEvent_RemediationFromServiceLevel(t *testi
 	fakeKeptn.NewEvent(newGetActionTriggeredEvent("test/events/get-action.triggered-1.json"))
 	fakeKeptn.NewEvent(newGetActionTriggeredEvent("test/events/get-action.triggered-2.json"))
 
-	require.Equal(t, 6, len(fakeKeptn.GetEventSender().SentEvents))
+	fakeKeptn.AssertNumberOfEventSent(t, 6)
+	fakeKeptn.AssertSentEventType(t, 0, keptnv2.GetStartedEventType("get-action"))
+	fakeKeptn.AssertSentEventType(t, 1, keptnv2.GetFinishedEventType("get-action"))
+	fakeKeptn.AssertSentEventType(t, 2, keptnv2.GetStartedEventType("get-action"))
+	fakeKeptn.AssertSentEventType(t, 3, keptnv2.GetFinishedEventType("get-action"))
+	fakeKeptn.AssertSentEventType(t, 4, keptnv2.GetStartedEventType("get-action"))
+	fakeKeptn.AssertSentEventType(t, 5, keptnv2.GetFinishedEventType("get-action"))
 
-	require.Equal(t, keptnv2.GetStartedEventType("get-action"), fakeKeptn.GetEventSender().SentEvents[0].Type())
-	require.Equal(t, keptnv2.GetFinishedEventType("get-action"), fakeKeptn.GetEventSender().SentEvents[1].Type())
-	require.Equal(t, keptnv2.GetStartedEventType("get-action"), fakeKeptn.GetEventSender().SentEvents[2].Type())
-	require.Equal(t, keptnv2.GetFinishedEventType("get-action"), fakeKeptn.GetEventSender().SentEvents[3].Type())
-	require.Equal(t, keptnv2.GetStartedEventType("get-action"), fakeKeptn.GetEventSender().SentEvents[4].Type())
-	require.Equal(t, keptnv2.GetFinishedEventType("get-action"), fakeKeptn.GetEventSender().SentEvents[5].Type())
+	fakeKeptn.AssertSentEventStatus(t, 1, keptnv2.StatusSucceeded)
+	fakeKeptn.AssertSentEventResult(t, 1, keptnv2.ResultPass)
 
-	finishedEvent, _ := keptnv2.ToKeptnEvent(fakeKeptn.GetEventSender().SentEvents[1])
-	getActionFinishedData := keptnv2.GetActionFinishedEventData{}
-	finishedEvent.DataAs(&getActionFinishedData)
-	require.Equal(t, 1, getActionFinishedData.GetAction.ActionIndex)
-	require.Equal(t, keptnv2.StatusSucceeded, getActionFinishedData.Status)
-	require.Equal(t, keptnv2.ResultPass, getActionFinishedData.Result)
-
-	finishedEvent, _ = keptnv2.ToKeptnEvent(fakeKeptn.GetEventSender().SentEvents[3])
-	getActionFinishedData = keptnv2.GetActionFinishedEventData{}
-	finishedEvent.DataAs(&getActionFinishedData)
-	require.Equal(t, 2, getActionFinishedData.GetAction.ActionIndex)
-	require.Equal(t, keptnv2.StatusSucceeded, getActionFinishedData.Status)
-	require.Equal(t, keptnv2.ResultPass, getActionFinishedData.Result)
-
-	finishedEvent, _ = keptnv2.ToKeptnEvent(fakeKeptn.GetEventSender().SentEvents[5])
-	getActionFinishedData = keptnv2.GetActionFinishedEventData{}
-	finishedEvent.DataAs(&getActionFinishedData)
-	require.Equal(t, keptnv2.StatusSucceeded, getActionFinishedData.Status)
-	require.Equal(t, keptnv2.ResultFailed, getActionFinishedData.Result)
+	fakeKeptn.AssertSentEvent(t, 1, func(ce models.KeptnContextExtendedCE) bool {
+		getActionFinishedData := keptnv2.GetActionFinishedEventData{}
+		ce.DataAs(&getActionFinishedData)
+		return getActionFinishedData.GetAction.ActionIndex == 1
+	})
+	fakeKeptn.AssertSentEvent(t, 3, func(ce models.KeptnContextExtendedCE) bool {
+		getActionFinishedData := keptnv2.GetActionFinishedEventData{}
+		ce.DataAs(&getActionFinishedData)
+		return getActionFinishedData.GetAction.ActionIndex == 2
+	})
 }
 
 func newRemediation(fileName string) *v0_1_4.Remediation {
