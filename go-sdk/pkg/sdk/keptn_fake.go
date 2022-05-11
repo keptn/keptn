@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	api "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
@@ -71,9 +72,8 @@ func (f *FakeKeptn) NewEvent(event models.KeptnContextExtendedCE) {
 
 func (f *FakeKeptn) AssertNumberOfEventSent(t *testing.T, numOfEvents int) {
 	require.Eventuallyf(t, func() bool {
-		fmt.Println(len(f.TestEventSource.SentEvents))
 		return len(f.TestEventSource.SentEvents) == numOfEvents
-	}, time.Second, 10*time.Millisecond, "error message %s", "formatted")
+	}, time.Second, 10*time.Millisecond, "number of events expected: %d got: %d", numOfEvents, len(f.TestEventSource.SentEvents))
 }
 
 func (f *FakeKeptn) AssertSentEvent(t *testing.T, eventIndex int, assertFn func(ce models.KeptnContextExtendedCE) bool) {
@@ -81,16 +81,34 @@ func (f *FakeKeptn) AssertSentEvent(t *testing.T, eventIndex int, assertFn func(
 		t.Fatalf("unable to assert sent event with index %d: too less events sent", eventIndex)
 	}
 
-	require.Eventuallyf(t, func() bool {
+	require.Eventually(t, func() bool {
 		return assertFn(f.TestEventSource.SentEvents[eventIndex])
-	}, time.Second, 10*time.Millisecond, "error message %s", "formatted")
+	}, time.Second, 10*time.Millisecond)
 }
 
 func (f *FakeKeptn) AssertSentEventType(t *testing.T, eventIndex int, eventType string) {
 	if eventIndex >= len(f.TestEventSource.SentEvents) {
 		t.Fatalf("unable to assert sent event with index %d: too less events sent", eventIndex)
 	}
-	require.Equal(t, eventType, *f.TestEventSource.SentEvents[eventIndex].Type)
+	require.Equalf(t, eventType, *f.TestEventSource.SentEvents[eventIndex].Type, "event type expected: %s got %s", eventType, *f.TestEventSource.SentEvents[eventIndex].Type)
+}
+
+func (f *FakeKeptn) AssertSentEventStatus(t *testing.T, eventIndex int, status v0_2_0.StatusType) {
+	if eventIndex >= len(f.TestEventSource.SentEvents) {
+		t.Fatalf("unable to assert sent event with index %d: too less events sent", eventIndex)
+	}
+	eventData := v0_2_0.EventData{}
+	v0_2_0.EventDataAs(f.TestEventSource.SentEvents[eventIndex], &eventData)
+	require.Equal(t, status, eventData.Status)
+}
+
+func (f *FakeKeptn) AssertSentEventResult(t *testing.T, eventIndex int, result v0_2_0.ResultType) {
+	if eventIndex >= len(f.TestEventSource.SentEvents) {
+		t.Fatalf("unable to assert sent event with index %d: too less events sent", eventIndex)
+	}
+	eventData := v0_2_0.EventData{}
+	v0_2_0.EventDataAs(f.TestEventSource.SentEvents[eventIndex], &eventData)
+	require.Equal(t, result, eventData.Result)
 }
 
 func (f *FakeKeptn) SetAutomaticResponse(autoResponse bool) {
