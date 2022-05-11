@@ -147,16 +147,18 @@ type Keptn struct {
 	automaticEventResponse bool
 	gracefulShutdown       bool
 	logger                 Logger
+	env                    envConfig
 }
 
 // NewKeptn creates a new Keptn
 func NewKeptn(source string, opts ...KeptnOption) *Keptn {
-	controlplane, eventSender := newControlPlane()
+	env := newEnvConfig()
+	controlPlane, eventSender := newControlPlane()
 	resourceHandler := newResourceHandlerFromEnv()
-	taskRegistry := NewTasksMap()
-	logger := NewDefaultLogger()
+	taskRegistry := newTaskMap()
+	logger := newDefaultLogger()
 	keptn := &Keptn{
-		controlPlane:           controlplane,
+		controlPlane:           controlPlane,
 		eventSender:            eventSender,
 		source:                 source,
 		taskRegistry:           taskRegistry,
@@ -165,6 +167,7 @@ func NewKeptn(source string, opts ...KeptnOption) *Keptn {
 		gracefulShutdown:       true,
 		syncProcessing:         false,
 		logger:                 logger,
+		env:                    env,
 	}
 	for _, opt := range opts {
 		opt(keptn)
@@ -255,7 +258,20 @@ func (k *Keptn) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE
 }
 
 func (k *Keptn) RegistrationData() controlplane.RegistrationData {
-	return controlplane.RegistrationData{}
+	return controlplane.RegistrationData{
+		Name: "local-service",
+		MetaData: models.MetaData{
+			Hostname:           "localhost",
+			IntegrationVersion: k.env.Version,
+			Location:           k.env.Location,
+			KubernetesMetaData: models.KubernetesMetaData{
+				Namespace:      k.env.K8sNamespace,
+				PodName:        k.env.K8sPodName,
+				DeploymentName: k.env.K8sDeploymentName,
+			},
+		},
+		Subscriptions: []models.EventSubscription{},
+	}
 }
 
 func (k *Keptn) Start() error {
