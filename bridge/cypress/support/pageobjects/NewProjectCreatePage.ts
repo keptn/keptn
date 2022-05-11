@@ -1,6 +1,11 @@
 /// <reference types="cypress" />
 
-import { interceptMain, interceptMainResourceEnabled, interceptProjectBoard } from '../intercept';
+import {
+  interceptCreateProject,
+  interceptMain,
+  interceptMainResourceEnabled,
+  interceptProjectBoard,
+} from '../intercept';
 
 class NewProjectCreatePage {
   private validCertificateInput = '-----BEGIN CERTIFICATE-----\nmyCertificate\n-----END CERTIFICATE-----';
@@ -12,6 +17,7 @@ class NewProjectCreatePage {
     } else {
       interceptMain();
     }
+    interceptCreateProject();
     return this;
   }
 
