@@ -42,6 +42,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	//NOTE: if log forwarding is not needed in your service, pass `nil` instead of `keptnAPI.LogsV1()`
 	eventSource := controlplane.NewNATSEventSource(natsConnector, keptnAPI.LogsV1())
 
 	// 4. create control plane object and register yourself as an "integration"

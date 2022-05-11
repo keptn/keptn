@@ -30,6 +30,10 @@ func NewLogForwarder(logApi api.LogsV1Interface) *LogForwardingHandler {
 }
 
 func (l LogForwardingHandler) Forward(keptnEvent models.KeptnContextExtendedCE, integrationID string) error {
+	if l.logApi == nil {
+		return nil
+	}
+
 	if strings.HasSuffix(*keptnEvent.Type, ".finished") {
 		eventData := &keptnv2.EventData{}
 		if err := keptnv2.EventDataAs(keptnEvent, eventData); err != nil {
