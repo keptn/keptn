@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/keptn/go-utils v0.15.1-0.20220512082458-c5e1b7519bec
-	github.com/keptn/keptn/go-sdk v0.0.0-20220207111546-fac316c656d7
+	github.com/keptn/keptn/go-sdk v0.0.0-20220511065013-3e585ee78be0
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
@@ -70,5 +70,3 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
-
-replace github.com/keptn/keptn/go-sdk => ../go-sdk
