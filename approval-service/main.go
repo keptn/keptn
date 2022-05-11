@@ -9,13 +9,14 @@ import (
 	"sync"
 	"syscall"
 
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/pkg/errors"
 	logger "github.com/sirupsen/logrus"
 
 	"github.com/keptn/go-utils/pkg/api/models"
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/cp-connector/pkg/api"
 	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
@@ -51,10 +52,6 @@ func main() {
 		logger.SetLevel(logLevel)
 	}
 
-	go func() {
-		keptnapi.RunHealthEndpoint("8080")
-	}()
-
 	api, err := api.NewInternal(nil)
 	if err != nil {
 		log.Fatal(err)
@@ -69,6 +66,13 @@ func main() {
 	logForwarder := controlplane.NewLogForwarder(api.LogsV1())
 
 	controlPlane := controlplane.New(subscriptionSource, eventSource, logForwarder)
+
+	go func() {
+		keptnapi.RunHealthEndpoint("8080", keptnapi.WithReadinessConditionFunc(func() bool {
+			return controlPlane.IsRegistered()
+		}))
+	}()
+
 	ctx := getGracefulContext()
 	err = controlPlane.Register(ctx, ApprovalService{env})
 	if err != nil {
@@ -90,7 +94,7 @@ func (as ApprovalService) OnEvent(ctx context.Context, event models.KeptnContext
 	}
 
 	defer func() {
-		logger.Info("Terminating Evaluate-SLI handler")
+		logger.Info("Terminating approval handler")
 		val := ctx.Value(gracefulShutdownKey)
 		if val == nil {
 			return
