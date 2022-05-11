@@ -329,7 +329,7 @@ func main() {
 		}
 	}()
 
-	GracefulShutdown(wg, srv, func() {})
+	GracefulShutdown(wg, srv)
 }
 
 func LeaderElection(client v1.CoordinationV1Interface, ctx context.Context, start func(ctx context.Context, mode common.SDMode), stop func()) {
@@ -384,15 +384,13 @@ func LeaderElection(client v1.CoordinationV1Interface, ctx context.Context, star
 	})
 }
 
-func GracefulShutdown(wg *sync.WaitGroup, srv *http.Server, onSigTerm func()) {
+func GracefulShutdown(wg *sync.WaitGroup, srv *http.Server) {
 	// Wait for interrupt signal to gracefully shut down the server
 	quit := make(chan os.Signal, 1)
 
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	log.Println("Shutting down server...")
-
-	go onSigTerm()
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
