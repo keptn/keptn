@@ -1,4 +1,5 @@
 import { ChangeDetectorRef, Component, HostBinding, Inject, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
+import { Location } from '@angular/common';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import {
   DtQuickFilterChangeEvent,
@@ -113,6 +114,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     public dateUtil: DateUtil,
     private router: Router,
+    private location: Location,
     private changeDetectorRef_: ChangeDetectorRef,
     @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number
   ) {
@@ -248,13 +250,14 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
 
   public selectSequence(event: { sequence: Sequence; stage?: string; eventId?: string }, loadTraces = true): void {
     if (event.eventId) {
-      this.router.navigate(
+      const routeUrl = this.router.createUrlTree(
         ['/project', event.sequence.project, 'sequence', event.sequence.shkeptncontext, 'event', event.eventId],
         { queryParamsHandling: 'preserve' }
       );
+      this.location.go(routeUrl.toString());
     } else {
       const stage = event.stage || event.sequence.getStages().pop();
-      this.router.navigate(
+      const routeUrl = this.router.createUrlTree(
         [
           '/project',
           event.sequence.project,
@@ -264,6 +267,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
         ],
         { queryParamsHandling: 'preserve' }
       );
+      this.location.go(routeUrl.toString());
     }
 
     this.currentSequence = event.sequence;
@@ -431,10 +435,12 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
 
   selectStage(stageName: string): void {
     if (this.currentSequence) {
-      this.router.navigate(
+      const routeUrl = this.router.createUrlTree(
         ['/project', this.currentSequence.project, 'sequence', this.currentSequence.shkeptncontext, 'stage', stageName],
         { queryParamsHandling: 'preserve' }
       );
+      this.location.go(routeUrl.toString());
+
       this.selectedStage = stageName;
       this.updateLatestDeployedImage();
     }
@@ -447,10 +453,11 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
 
   public saveSequenceFilters(sequenceFilters: { [p: string]: string[] }): void {
     this.apiService.sequenceFilters = sequenceFilters;
-    this.router.navigate([], {
+    const routeUrl = this.router.createUrlTree([], {
       relativeTo: this.route,
       queryParams: sequenceFilters,
     });
+    this.location.go(routeUrl.toString());
   }
 
   public loadSequenceFilters(): void {

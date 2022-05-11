@@ -1,5 +1,6 @@
 import { Component, HostBinding, Input, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Location } from '@angular/common';
 import { Trace } from '../../_models/trace';
 import { DateUtil } from '../../_utils/date.utils';
 import { takeUntil } from 'rxjs/operators';
@@ -57,7 +58,12 @@ export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
 
   @Input() latestDeployment: string | undefined;
 
-  constructor(private router: Router, public dateUtil: DateUtil, private route: ActivatedRoute) {}
+  constructor(
+    private router: Router,
+    private location: Location,
+    public dateUtil: DateUtil,
+    private route: ActivatedRoute
+  ) {}
 
   ngOnInit(): void {
     this.route.params.pipe(takeUntil(this.unsubscribe$)).subscribe((params) => {
@@ -85,9 +91,11 @@ export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
 
   focusEvent(event: Trace): void {
     if (event.project) {
-      this.router.navigate(['/project', event.project, 'sequence', event.shkeptncontext, 'event', event.id], {
-        queryParamsHandling: 'preserve',
-      });
+      const routeUrl = this.router.createUrlTree(
+        ['/project', event.project, 'sequence', event.shkeptncontext, 'event', event.id],
+        { queryParamsHandling: 'preserve' }
+      );
+      this.location.go(routeUrl.toString());
     }
   }
 
