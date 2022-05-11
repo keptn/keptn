@@ -83,7 +83,6 @@ describe('Automatic provisioning enabled test', () => {
 
   beforeEach(() => {
     projectSettingsPage.interceptSettings(true, true);
-    projectSettingsPage.visitSettings('sockshop');
   });
 
   it('should select no upstream radio button as default when no upstream was configured for a project', () => {
@@ -101,6 +100,7 @@ describe('Automatic provisioning enabled test', () => {
       body: project,
     }).as('project');
 
+    projectSettingsPage.visitSettings('sockshop');
     cy.wait('@metadata').wait('@project');
 
     projectSettingsPage.assertNoUpstreamSelected(true);
@@ -121,6 +121,7 @@ describe('Automatic provisioning enabled test', () => {
       body: project,
     }).as('project');
 
+    projectSettingsPage.visitSettings('sockshop');
     cy.wait('@metadata').wait('@project');
 
     projectSettingsPage.assertHttpsFormVisible(true).assertNoUpstreamSelected(false).assertNoUpstreamEnabled(false);
@@ -145,6 +146,7 @@ describe('Automatic provisioning enabled test', () => {
       body: project,
     }).as('project');
 
+    projectSettingsPage.visitSettings('sockshop');
     cy.wait('@metadata').wait('@project');
 
     projectSettingsPage.assertSshFormVisible(true).assertNoUpstreamSelected(false).assertNoUpstreamEnabled(false);

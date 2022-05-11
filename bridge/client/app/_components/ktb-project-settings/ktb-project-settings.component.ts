@@ -9,7 +9,7 @@ import { DataService } from '../../_services/data.service';
 import { DtToast } from '@dynatrace/barista-components/toast';
 import { NotificationsService } from '../../_services/notifications.service';
 import { EventService } from '../../_services/event.service';
-import { filter, map, takeUntil } from 'rxjs/operators';
+import { filter, map, startWith, takeUntil } from 'rxjs/operators';
 import { Project } from '../../_models/project';
 import { FormUtils } from '../../_utils/form.utils';
 import { KtbProjectCreateMessageComponent } from '../_status-messages/ktb-project-create-message/ktb-project-create-message.component';
@@ -22,6 +22,10 @@ import { FeatureFlagsService } from '../../_services/feature-flags.service';
 import { KeptnInfo } from '../../_models/keptn-info';
 
 type DialogState = null | 'unsaved';
+
+interface ProjectSettingsState {
+  gitUpstreamRequired: boolean;
+}
 
 @Component({
   selector: 'ktb-project-settings',
@@ -51,7 +55,6 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
     gitFormValid: true,
   };
   private gitDataExtended?: IGitDataExtended;
-  public gitUpstreamRequired = true;
   public projectNameControl = new FormControl('');
   public projectNameForm = new FormGroup({
     projectName: this.projectNameControl,
@@ -61,9 +64,10 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
   public unsavedDialogState: DialogState = null;
   public resourceServiceEnabled?: boolean;
 
-  readonly keptnInfo$ = this.dataService.keptnInfo.pipe(
+  readonly state$: Observable<ProjectSettingsState> = this.dataService.keptnInfo.pipe(
     filter((keptnInfo: KeptnInfo | undefined): keptnInfo is KeptnInfo => !!keptnInfo),
-    takeUntil(this.unsubscribe$)
+    map((keptnInfo: KeptnInfo) => ({ gitUpstreamRequired: !keptnInfo.metadata.automaticprovisioning })),
+    startWith({ gitUpstreamRequired: true })
   );
 
   constructor(
@@ -80,10 +84,6 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
       .subscribe((featureFlags: IClientFeatureFlags) => {
         this.resourceServiceEnabled = featureFlags.RESOURCE_SERVICE_ENABLED;
       });
-
-    this.keptnInfo$.pipe(takeUntil(this.unsubscribe$)).subscribe((keptnInfo) => {
-      this.setGitUpstreamRequired(keptnInfo);
-    });
   }
 
   public ngOnInit(): void {
@@ -119,11 +119,6 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
         this.deleteProject(data.name);
       }
     });
-  }
-
-  private setGitUpstreamRequired(keptnInfo: KeptnInfo): void {
-    //if automaticprovisioning is false or undefined, git is required
-    this.gitUpstreamRequired = !keptnInfo.metadata.automaticprovisioning;
   }
 
   private loadProjectsAndSetValidator(): void {

@@ -82,8 +82,12 @@ describe('Create extended project https test', () => {
   });
 
   it('should have enabled create button if invalid proxy form is disabled', () => {
-    createProjectPage.enterBasicValidProjectHttps().setEnableProxy(true).assertCreateButtonEnabled(false);
-    createProjectPage.setEnableProxy(false).assertCreateButtonEnabled(true);
+    createProjectPage
+      .enterBasicValidProjectHttps()
+      .setEnableProxy(true)
+      .assertCreateButtonEnabled(false)
+      .setEnableProxy(false)
+      .assertCreateButtonEnabled(true);
   });
 
   it('should not change validity to false of proxy form if username or password is entered', () => {

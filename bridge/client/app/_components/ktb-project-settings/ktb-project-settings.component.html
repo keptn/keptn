@@ -1,4 +1,4 @@
-<div class="container" fxFlexFill>
+<div class="container" fxFlexFill *ngIf="state$ | async as state">
   <div fxLayout="column" fxFlexFill fxLayoutAlign="space-between" class="pb-3">
     <div>
       <div [formGroup]="projectNameForm" *ngIf="isCreateMode" class="mb-3 settings-section">
@@ -27,18 +27,18 @@
           </dt-error>
         </dt-form-field>
       </div>
-      <h2 [class.required]="gitUpstreamRequired">Git upstream repository</h2>
+      <h2 [class.required]="state.gitUpstreamRequired">Git upstream repository</h2>
       <ng-template #loading>
         <ktb-loading-distractor>Loading ...</ktb-loading-distractor>
       </ng-template>
       <div class="mb-3 settings-section" *ngIf="resourceServiceEnabled !== undefined; else loading">
         <ng-container *ngIf="resourceServiceEnabled; else defaultGit">
-          <p class="mt-0 mb-3" *ngIf="gitUpstreamRequired">
+          <p class="mt-0 mb-3" *ngIf="state.gitUpstreamRequired">
             A Git upstream repository has to be set. You can connect your Git repository with HTTPS or SSH.
             Instructions, on how to set up your Git provider can be found in the
             <a [href]="'/manage/git_upstream/' | keptnUrl" target="_blank">Git-based upstream documentation</a>.
           </p>
-          <p class="mt-0 mb-3" *ngIf="!gitUpstreamRequired">
+          <p class="mt-0 mb-3" *ngIf="!state.gitUpstreamRequired">
             It is recommended to set a Git upstream repository. You can connect your Git repository with HTTPS or SSH.
             Instructions, on how to set up your Git provider can be found in the
             <a [href]="'/manage/git_upstream/' | keptnUrl" target="_blank">Git-based upstream documentation</a>.
@@ -49,7 +49,7 @@
             [isCreateMode]="isCreateMode"
             [isGitUpstreamInProgress]="isGitUpstreamInProgress"
             [gitInputData]="gitInputDataExtended"
-            [required]="gitUpstreamRequired"
+            [required]="state.gitUpstreamRequired"
             (resetTouched)="isProjectFormTouched = false"
             (gitDataChange)="updateGitDataExtended($event)"
           ></ktb-project-settings-git-extended>

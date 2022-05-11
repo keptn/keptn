@@ -4,7 +4,7 @@ import { IGitDataExtended, IGitHttps, IGitSsh } from '../../_interfaces/git-upst
 import { DataService } from '../../_services/data.service';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { filter, map } from 'rxjs/operators';
-import { isGitHTTPS, isGitSSH } from '../../_utils/git-upstream.utils';
+import { isGitHTTPS, isGitSSH, isRemoteUrlEmpty } from '../../_utils/git-upstream.utils';
 
 export enum GitFormType {
   SSH,
@@ -59,7 +59,7 @@ export class KtbProjectSettingsGitExtendedComponent implements OnInit {
   }
 
   public ngOnInit(): void {
-    if (!this.gitInputData || this.isRemoteUrlEmpty(this.gitInputData)) {
+    if (!this.gitInputData || isRemoteUrlEmpty(this.gitInputData)) {
       this.selectedForm = this.required ? GitFormType.HTTPS : GitFormType.NO_UPSTREAM;
 
       if (this.selectedForm === GitFormType.NO_UPSTREAM) {
@@ -92,13 +92,6 @@ export class KtbProjectSettingsGitExtendedComponent implements OnInit {
       .subscribe((projectName: string) => {
         this.projectName = projectName;
       });
-  }
-
-  private isRemoteUrlEmpty(gitInputData: IGitDataExtended): boolean {
-    return (
-      (isGitHTTPS(gitInputData) && !gitInputData.https.gitRemoteURL) ||
-      (isGitSSH(gitInputData) && !gitInputData.ssh.gitRemoteURL)
-    );
   }
 
   public setSelectedForm($event: DtRadioChange<GitFormType>): void {
