@@ -1,6 +1,7 @@
 package lib
 
 import (
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"os"
 	"strings"
 )
@@ -40,6 +41,13 @@ func GetDeniedAlphaURLs(env map[string]string) []string {
 		"127.0.0.1",
 		"::1",
 	}
+
+	// try to get kubernetes default service
+	if kubeAPIHostIP == "" {
+		kubeAPIHostIP = GetDefaultHost()
+	}
+
+	// try to add new host and port if existing
 	if kubeAPIHostIP != "" {
 		urls = append(urls, kubeAPIHostIP)
 	}
@@ -53,4 +61,9 @@ func GetDeniedAlphaURLs(env map[string]string) []string {
 		urls = append(urls, kubeAPIHostIP+":"+kubeAPIPort)
 	}
 	return urls
+}
+
+func GetDefaultHost() string {
+	res, _ := keptnutils.ExecuteCommand("kubectl", []string{"get", "svc", "kubernetes", "-o", "jsonpath='{.spec.clusterIP}'"})
+	return strings.Trim(res, `'"`)
 }

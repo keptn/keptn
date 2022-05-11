@@ -16,3 +16,10 @@ func TestDeniedAlphaURLS(t *testing.T) {
 	require.Equal(t, 13, len(urls))
 	require.Equal(t, expected, urls)
 }
+
+func TestDeniedAlphaURLSNoEnvSet(t *testing.T) {
+	kubeEnvs := map[string]string{}
+	urls := lib.GetDeniedAlphaURLs(kubeEnvs)
+	t.Logf("Current denylist: %s", urls)
+	require.Equal(t, 8, len(urls))
+}

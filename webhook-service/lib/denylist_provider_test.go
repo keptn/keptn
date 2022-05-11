@@ -23,6 +23,13 @@ func TestDeniedURLS(t *testing.T) {
 	require.Equal(t, expected, urls)
 }
 
+func TestDeniedURLSNoEnv(t *testing.T) {
+	kubeEnvs := map[string]string{}
+	urls := GetDeniedURLs(kubeEnvs)
+	t.Logf("Current denylist: %s", urls)
+	require.Equal(t, 1, len(urls))
+}
+
 func TestCannotGetConfigMap(t *testing.T) {
 	client := fake.NewSimpleClientset()
 	client.PrependReactor("get", "configmap", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {

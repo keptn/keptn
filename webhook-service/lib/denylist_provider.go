@@ -45,6 +45,11 @@ func GetDeniedURLs(env map[string]string) []string {
 	kubeAPIHostIP := env[KubernetesSvcHostEnvVar]
 	kubeAPIPort := env[KubernetesAPIPortEnvVar]
 
+	// try to get kubernetes default service
+	if kubeAPIHostIP == "" {
+		kubeAPIHostIP = GetDefaultHost()
+	}
+
 	urls := make([]string, 0)
 	if kubeAPIHostIP != "" {
 		urls = append(urls, kubeAPIHostIP)
