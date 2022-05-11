@@ -15,7 +15,7 @@ type TaskEntry struct {
 	EventFilters []func(keptnHandle IKeptn, event KeptnEvent) bool
 }
 
-func NewTasksMap() *TaskRegistry {
+func newTaskMap() *TaskRegistry {
 	return &TaskRegistry{
 		Entries: make(map[string]TaskEntry),
 	}

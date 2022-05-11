@@ -29,7 +29,7 @@ func Test_WhenReceivingAnEvent_StartedEventAndFinishedEventsAreSent(t *testing.T
 		controlPlane:           cp,
 		taskRegistry:           taskRegistry,
 		automaticEventResponse: true,
-		logger:                 NewDefaultLogger(),
+		logger:                 newDefaultLogger(),
 	}
 
 	go keptn.Start()
@@ -74,7 +74,7 @@ func Test_WhenReceivingEvent_OnlyStartedEventIsSent(t *testing.T) {
 		controlPlane:           cp,
 		taskRegistry:           taskRegistry,
 		automaticEventResponse: true,
-		logger:                 NewDefaultLogger(),
+		logger:                 newDefaultLogger(),
 	}
 
 	go keptn.Start()
@@ -105,7 +105,7 @@ func Test_WhenReceivingBadEvent_NoEventIsSent(t *testing.T) {
 		controlPlane:           cp,
 		taskRegistry:           taskRegistry,
 		automaticEventResponse: true,
-		logger:                 NewDefaultLogger(),
+		logger:                 newDefaultLogger(),
 	}
 
 	go keptn.Start()

@@ -134,7 +134,7 @@ func NewFakeKeptn(source string) *FakeKeptn {
 	testEventSource := NewTestEventSource()
 	cp := controlplane.New(testSubscriptionSource, testEventSource)
 	resourceHandler := &TestResourceHandler{}
-	logger := NewDefaultLogger()
+	logger := newDefaultLogger()
 	var fakeKeptn = &FakeKeptn{
 		TestResourceHandler:    resourceHandler,
 		TestEventSource:        testEventSource,
@@ -144,7 +144,7 @@ func NewFakeKeptn(source string) *FakeKeptn {
 			eventSender:            testEventSource.Sender(),
 			resourceHandler:        resourceHandler,
 			source:                 source,
-			taskRegistry:           NewTasksMap(),
+			taskRegistry:           newTaskMap(),
 			syncProcessing:         true,
 			automaticEventResponse: true,
 			gracefulShutdown:       false,
