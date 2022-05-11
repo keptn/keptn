@@ -22,8 +22,6 @@ import (
 	"github.com/keptn/keptn/cp-connector/pkg/nats"
 )
 
-const envVarLogLevel = "LOG_LEVEL"
-
 type envConfig struct {
 	K8SDeploymentName      string `envconfig:"K8S_DEPLOYMENT_NAME" default:""`
 	K8SDeploymentVersion   string `envconfig:"K8S_DEPLOYMENT_VERSION" default:""`
