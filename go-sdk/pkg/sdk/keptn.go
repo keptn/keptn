@@ -16,11 +16,6 @@ import (
 	"syscall"
 )
 
-const DefaultHTTPEventEndpoint = "http://localhost:8081/event"
-const KeptnContextCEExtension = "shkeptncontext"
-const TriggeredIDCEExtension = "triggeredid"
-const GitCommitIDCEExtension = "gitcommitid"
-
 //go:generate moq  -out ./resourcehandler_mock.go . ResourceHandler
 type ResourceHandler interface {
 	GetResource(scope api.ResourceScope, options ...api.URIOption) (*models.Resource, error)
@@ -367,57 +362,56 @@ func (k *Keptn) createErrorEvent(event models.KeptnContextExtendedCE, eventData 
 	return errorLogEvent, nil
 }
 
-func (k *Keptn) createErrorLogEventForTriggeredEvent(triggeredEvent models.KeptnContextExtendedCE, eventData interface{}, err *Error) (*models.KeptnContextExtendedCE, error) {
+func (k *Keptn) createErrorLogEventForTriggeredEvent(triggeredEvent models.KeptnContextExtendedCE, eventData interface{}, errVal *Error) (*models.KeptnContextExtendedCE, error) {
 	errorEventData := keptnv2.ErrorLogEvent{}
 	if eventData == nil {
 		triggeredEvent.DataAs(&errorEventData)
 	}
 
 	if keptnv2.IsTaskEventType(*triggeredEvent.Type) {
-		taskName, _, err2 := keptnv2.ParseTaskEventType(*triggeredEvent.Type)
-		if err2 == nil && taskName != "" {
+		taskName, _, err := keptnv2.ParseTaskEventType(*triggeredEvent.Type)
+		if err == nil && taskName != "" {
 			errorEventData.Task = taskName
 		}
 	}
 
-	errorEventData.Message = err.Message
+	errorEventData.Message = errVal.Message
 
 	if triggeredEvent.Shkeptncontext == "" {
 		return nil, errors.New("unable to get keptn context from '.triggered' event")
 	}
 
-	errEvent, err2 := keptnv2.KeptnEvent(keptnv2.ErrorLogEventName, k.source, errorEventData).WithKeptnContext(triggeredEvent.Shkeptncontext).WithTriggeredID(triggeredEvent.ID).Build()
-	if err2 != nil {
-		return nil, fmt.Errorf("could not create error event: %v", err2)
+	errEvent, err := keptnv2.KeptnEvent(keptnv2.ErrorLogEventName, k.source, errorEventData).WithKeptnContext(triggeredEvent.Shkeptncontext).WithTriggeredID(triggeredEvent.ID).Build()
+	if err != nil {
+		return nil, fmt.Errorf("could not create error event: %v", err)
 	}
 
 	return &errEvent, nil
 }
 
-func (k *Keptn) createErrorFinishedEventForTriggeredEvent(event models.KeptnContextExtendedCE, eventData interface{}, err *Error) (*models.KeptnContextExtendedCE, error) {
+func (k *Keptn) createErrorFinishedEventForTriggeredEvent(triggeredEvent models.KeptnContextExtendedCE, eventData interface{}, errVal *Error) (*models.KeptnContextExtendedCE, error) {
 	commonEventData := keptnv2.EventData{}
 	if eventData == nil {
-		event.DataAs(&commonEventData)
+		triggeredEvent.DataAs(&commonEventData)
 	}
 
-	commonEventData.Result = err.ResultType
-	commonEventData.Status = err.StatusType
-	commonEventData.Message = err.Message
+	commonEventData.Result = errVal.ResultType
+	commonEventData.Status = errVal.StatusType
+	commonEventData.Message = errVal.Message
 
-	finishedEventType, err2 := keptnv2.ReplaceEventTypeKind(*event.Type, "finished")
-	if err2 != nil {
-		return nil, fmt.Errorf("unable to create '.finished' event: %v from %s", err2, *event.Type)
+	finishedEventType, err := keptnv2.ReplaceEventTypeKind(*triggeredEvent.Type, "finished")
+	if err != nil {
+		return nil, fmt.Errorf("unable to create '.finished' event: %v from %s", err, *triggeredEvent.Type)
 	}
-	if event.Shkeptncontext == "" {
+	if triggeredEvent.Shkeptncontext == "" {
 		return nil, fmt.Errorf("unable to get keptn context from '.triggered' event")
 	}
 
-	finEvent, err3 := keptnv2.KeptnEvent(finishedEventType, k.source, commonEventData).WithTriggeredID(event.ID).WithKeptnContext(event.Shkeptncontext).Build()
-	if err3 != nil {
-		return nil, err3
+	finishedEvent, errCreateEvent := keptnv2.KeptnEvent(finishedEventType, k.source, commonEventData).WithTriggeredID(triggeredEvent.ID).WithKeptnContext(triggeredEvent.Shkeptncontext).Build()
+	if errCreateEvent != nil {
+		return nil, errCreateEvent
 	}
-
-	return &finEvent, nil
+	return &finishedEvent, nil
 }
 
 func getContext(graceful bool) context.Context {
