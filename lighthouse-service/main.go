@@ -61,9 +61,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	eventSource := controlplane.NewNATSEventSource(natsConnector)
+	eventSource := controlplane.NewNATSEventSource(natsConnector, api.LogsV1())
 
-	controlPlane := controlplane.New(subscriptionSource, eventSource)
+	controlPlane := controlplane.New(subscriptionSource, eventSource, api.UniformV1())
 	ctx := getGracefulContext()
 	err = controlPlane.Register(ctx, LighthouseService{env})
 	if err != nil {
@@ -99,7 +99,7 @@ func (l LighthouseService) OnEvent(ctx context.Context, event models.KeptnContex
 
 func (l LighthouseService) RegistrationData() controlplane.RegistrationData {
 	return controlplane.RegistrationData{
-		Name: l.env.K8SPodName,
+		Name: l.env.K8SDeploymentName,
 		MetaData: models.MetaData{
 			Hostname:           l.env.K8SNodeName,
 			IntegrationVersion: l.env.K8SDeploymentVersion,
