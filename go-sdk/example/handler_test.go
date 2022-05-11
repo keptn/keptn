@@ -16,15 +16,8 @@ func Test_Handler(t *testing.T) {
 	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newNewGreetingTriggeredEvent("test-assets/events/greeting.triggered-0.json"))
 	fakeKeptn.AssertNumberOfEventSent(t, 2)
-
-	fakeKeptn.AssertSentEvent(t, 0, func(e models.KeptnContextExtendedCE) bool {
-		return keptnv2.GetStartedEventType("greeting") == *e.Type
-	})
-
-	fakeKeptn.AssertSentEvent(t, 1, func(e models.KeptnContextExtendedCE) bool {
-		return keptnv2.GetFinishedEventType("greeting") == *e.Type
-	})
-
+	fakeKeptn.AssertSentEventType(t, 0, keptnv2.GetStartedEventType("greeting"))
+	fakeKeptn.AssertSentEventType(t, 1, keptnv2.GetFinishedEventType("greeting"))
 	fakeKeptn.AssertSentEvent(t, 1, func(e models.KeptnContextExtendedCE) bool {
 		greetingFinishedData := GreetingFinishedData{}
 		e.DataAs(&greetingFinishedData)

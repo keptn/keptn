@@ -132,6 +132,15 @@ func WithLogger(logger Logger) KeptnOption {
 	}
 }
 
+func WithControlPlaneFromEnv(env envConfig) KeptnOption {
+	return func(k *Keptn) {
+		if env.Location == "remote-execution-plane" {
+			panic("go-sdk remote-execution-plane mode not yet supported...")
+		}
+		k.controlPlane, k.eventSender = newControlPlaneFromEnv(env)
+	}
+}
+
 // Keptn is the default implementation of IKeptn
 type Keptn struct {
 	controlPlane           *controlplane.ControlPlane
@@ -143,6 +152,29 @@ type Keptn struct {
 	automaticEventResponse bool
 	gracefulShutdown       bool
 	logger                 Logger
+}
+
+// NewKeptn creates a new Keptn
+func NewKeptn(source string, opts ...KeptnOption) *Keptn {
+	controlplane, eventSender := newControlPlane()
+	resourceHandler := newResourceHandlerFromEnv()
+	taskRegistry := NewTasksMap()
+	logger := NewDefaultLogger()
+	keptn := &Keptn{
+		controlPlane:           controlplane,
+		eventSender:            eventSender,
+		source:                 source,
+		taskRegistry:           taskRegistry,
+		resourceHandler:        resourceHandler,
+		automaticEventResponse: true,
+		gracefulShutdown:       true,
+		syncProcessing:         false,
+		logger:                 logger,
+	}
+	for _, opt := range opts {
+		opt(keptn)
+	}
+	return keptn
 }
 
 func (k *Keptn) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE) error {
@@ -231,29 +263,6 @@ func (k *Keptn) RegistrationData() controlplane.RegistrationData {
 	return controlplane.RegistrationData{}
 }
 
-// NewKeptn creates a new Keptn
-func NewKeptn(source string, opts ...KeptnOption) *Keptn {
-	controlplane, eventSender, _ := NewCPFromEnv()
-	resourceHandler := NewResourceHandlerFromEnv()
-	taskRegistry := NewTasksMap()
-	logger := NewDefaultLogger()
-	keptn := &Keptn{
-		controlPlane:           controlplane,
-		eventSender:            eventSender,
-		source:                 source,
-		taskRegistry:           taskRegistry,
-		resourceHandler:        resourceHandler,
-		automaticEventResponse: true,
-		gracefulShutdown:       true,
-		syncProcessing:         false,
-		logger:                 logger,
-	}
-	for _, opt := range opts {
-		opt(keptn)
-	}
-	return keptn
-}
-
 func (k *Keptn) Start() error {
 	ctx := getContext(k.gracefulShutdown)
 	err := k.controlPlane.Register(ctx, k)
@@ -266,16 +275,6 @@ func (k *Keptn) GetResourceHandler() ResourceHandler {
 }
 
 func (k *Keptn) SendStartedEvent(event KeptnEvent) error {
-	//inputCE := cloudevents.Event{}
-	//err := keptnv2.Decode(event, &inputCE)
-	//if err != nil {
-	//	return err
-	//}
-	//startedEvent, err := k.createStartedEventForTriggeredEvent(models.KeptnContextExtendedCE(event))
-	//if err != nil {
-	//	return err
-	//}
-	//return k.send(*startedEvent)
 	finishedEvent, err := k.createStartedEventForTriggeredEvent(models.KeptnContextExtendedCE(event))
 	if err != nil {
 		return err
@@ -284,11 +283,6 @@ func (k *Keptn) SendStartedEvent(event KeptnEvent) error {
 }
 
 func (k *Keptn) SendFinishedEvent(event KeptnEvent, result interface{}) error {
-	//inputCE := cloudevents.Event{}
-	//err := keptnv2.Decode(event, &inputCE)
-	//if err != nil {
-	//	return err
-	//}
 	finishedEvent, err := k.createFinishedEventForReceivedEvent(models.KeptnContextExtendedCE(event), result)
 	if err != nil {
 		return err
@@ -344,11 +338,6 @@ func (k *Keptn) createFinishedEventForReceivedEvent(receivedEvent models.KeptnCo
 		return nil, fmt.Errorf("unable to get keptn context from event %s", *receivedEvent.Type)
 	}
 
-	//event, err := keptnv2.KeptnEvent(finishedEventType, k.source, genericEvent).WithTriggeredID(receivedEvent.ID).WithKeptnContext(receivedEvent.Shkeptncontext).Build()
-	//if err != nil {
-	//	return nil, err
-	//}
-
 	event := models.KeptnContextExtendedCE{
 		Contenttype:        cloudevents.ApplicationJSON,
 		Data:               genericEvent,
@@ -361,16 +350,6 @@ func (k *Keptn) createFinishedEventForReceivedEvent(receivedEvent models.KeptnCo
 	}
 
 	return &event, nil
-	/*
-		c := cloudevents.NewEvent()
-		c.SetID(uuid.New().String())
-		c.SetType(finishedEventType)
-		c.SetDataContentType(cloudevents.ApplicationJSON)
-		c.SetExtension(KeptnContextCEExtension, keptnContext)
-		c.SetExtension(TriggeredIDCEExtension, receivedEvent.ID())
-		c.SetSource(k.source)
-		c.SetData(cloudevents.ApplicationJSON, genericEvent)
-	*/
 }
 
 func (k *Keptn) createErrorEvent(event models.KeptnContextExtendedCE, eventData interface{}, err *Error) (*models.KeptnContextExtendedCE, error) {
