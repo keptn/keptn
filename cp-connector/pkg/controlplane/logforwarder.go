@@ -30,7 +30,7 @@ func NewLogForwarder(logApi api.LogsV1Interface) *LogForwardingHandler {
 }
 
 func (l LogForwardingHandler) Forward(keptnEvent models.KeptnContextExtendedCE, integrationID string) error {
-	l.logger.Info("Forwarding logs for service with integrationID `%s`", integrationID)
+	l.logger.Infof("Forwarding logs for service with integrationID `%s`", integrationID)
 	if l.logApi == nil {
 		return nil
 	}
@@ -52,6 +52,7 @@ func (l LogForwardingHandler) Forward(keptnEvent models.KeptnContextExtendedCE, 
 				Task:          taskName,
 				TriggeredID:   keptnEvent.Triggeredid,
 			}})
+			l.logApi.Flush()
 		}
 		return nil
 	} else if *keptnEvent.Type == keptnv2.ErrorLogEventName {
@@ -74,6 +75,7 @@ func (l LogForwardingHandler) Forward(keptnEvent models.KeptnContextExtendedCE, 
 			Task:          eventData.Task,
 			TriggeredID:   keptnEvent.Triggeredid,
 		}})
+		l.logApi.Flush()
 	}
 	return nil
 }
