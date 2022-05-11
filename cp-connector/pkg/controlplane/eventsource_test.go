@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/common/strutils"
 	"github.com/keptn/keptn/cp-connector/pkg/controlplane/fake"
 	nats2 "github.com/keptn/keptn/cp-connector/pkg/nats"
 	"github.com/nats-io/nats.go"
@@ -233,8 +234,7 @@ func TestEventSourceOnSubscriptionUpdateQueueSubscribeMultipleFails(t *testing.T
 }
 
 func TestEventSourceGetSender(t *testing.T) {
-	s := "something"
-	event := models.KeptnContextExtendedCE{ID: "id", Type: &s}
+	event := models.KeptnContextExtendedCE{ID: "id", Type: strutils.Stringp("something")}
 	natsConnectorMock := &NATSConnectorMock{
 		PublishFn: func(ce models.KeptnContextExtendedCE) error {
 			require.Equal(t, event, ce)
@@ -252,8 +252,7 @@ func TestEventSourceGetSender(t *testing.T) {
 }
 
 func TestEventSourceSenderFails(t *testing.T) {
-	s := "something"
-	event := models.KeptnContextExtendedCE{ID: "id", Type: &s}
+	event := models.KeptnContextExtendedCE{ID: "id", Type: strutils.Stringp("something")}
 	natsConnectorMock := &NATSConnectorMock{
 		PublishFn: func(ce models.KeptnContextExtendedCE) error {
 			require.Equal(t, event, ce)
