@@ -67,9 +67,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	eventSource := controlplane.NewNATSEventSource(natsConnector)
+	eventSource := controlplane.NewNATSEventSource(natsConnector, api.LogsV1())
 
-	controlPlane := controlplane.New(subscriptionSource, eventSource)
+	controlPlane := controlplane.New(subscriptionSource, eventSource, api.UniformV1())
 	ctx := getGracefulContext()
 	err = controlPlane.Register(ctx, ApprovalService{env})
 	if err != nil {

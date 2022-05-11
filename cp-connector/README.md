@@ -42,10 +42,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	eventSource := controlplane.NewNATSEventSource(natsConnector)
+	eventSource := controlplane.NewNATSEventSource(natsConnector, keptnAPI.LogsV1())
 
 	// 4. create control plane object and register yourself as an "integration"
-	controlPlane := controlplane.New(subscriptionSource, eventSource)
+	controlPlane := controlplane.New(subscriptionSource, eventSource, keptnAPI.UniformV1())
 	err = controlPlane.Register(context.TODO(), LocalService{})
 	if err != nil {
 		log.Fatal(err)
