@@ -22,8 +22,6 @@ import (
 	"github.com/keptn/keptn/cp-connector/pkg/nats"
 )
 
-const envVarLogLevel = "LOG_LEVEL"
-
 type envConfig struct {
 	K8SDeploymentName      string `envconfig:"K8S_DEPLOYMENT_NAME" default:""`
 	K8SDeploymentVersion   string `envconfig:"K8S_DEPLOYMENT_VERSION" default:""`
@@ -122,7 +120,7 @@ func (as ApprovalService) OnEvent(ctx context.Context, event models.KeptnContext
 
 func (l ApprovalService) RegistrationData() controlplane.RegistrationData {
 	return controlplane.RegistrationData{
-		Name: l.env.K8SPodName,
+		Name: l.env.K8SDeploymentName,
 		MetaData: models.MetaData{
 			Hostname:           l.env.K8SNodeName,
 			IntegrationVersion: l.env.K8SDeploymentVersion,
