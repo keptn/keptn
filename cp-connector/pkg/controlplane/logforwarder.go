@@ -30,6 +30,7 @@ func NewLogForwarder(logApi api.LogsV1Interface) *LogForwardingHandler {
 }
 
 func (l LogForwardingHandler) Forward(keptnEvent models.KeptnContextExtendedCE, integrationID string) error {
+	l.logger.Info("Forwarding logs for service with integrationID `%s`", integrationID)
 	if l.logApi == nil {
 		return nil
 	}
