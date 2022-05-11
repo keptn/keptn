@@ -15,7 +15,11 @@ const (
 	EnvVarNatsURLDefault = "nats://keptn-nats"
 )
 
-type NATS interface {
+type Connector interface {
+	Connect() Connection
+}
+
+type Connection interface {
 	Subscribe(subject string, fn ProcessEventFn) error
 	QueueSubscribe(queueGroup string, subject string, fn ProcessEventFn) error
 	SubscribeMultiple(subjects []string, fn ProcessEventFn) error
@@ -36,20 +40,20 @@ var (
 type ProcessEventFn func(msg *nats.Msg) error
 
 // NatsConnector can be used to subscribe to certain events
-// on the NATS event system
+// on the Connection event system
 type NatsConnector struct {
 	conn          *nats.Conn
 	subscriptions map[string]*nats.Subscription
 	logger        logger.Logger
 }
 
-// Connect connects a NatsConnector to NATS.
+// Connect connects a NatsConnector to Connection.
 // Note that this will automatically and indefinitely try to reconnect
 // as soon as it looses connection
 func Connect(connectURL string) (*NatsConnector, error) {
 	conn, err := nats.Connect(connectURL, nats.MaxReconnects(-1))
 	if err != nil {
-		return nil, fmt.Errorf("could not connect to NATS: %w", err)
+		return nil, fmt.Errorf("could not connect to Connection: %w", err)
 	}
 	return &NatsConnector{
 		conn:          conn,
@@ -58,7 +62,7 @@ func Connect(connectURL string) (*NatsConnector, error) {
 	}, nil
 }
 
-// ConnectFromEnv connects a NatsConnector to NATS.
+// ConnectFromEnv connects a NatsConnector to Connection.
 // The URL is read from the environment variable "NATS_URL"
 // If the URL is not set via the environment variable "NATS_URL",
 // it falls back to the default URL "nats://keptn-nats"
@@ -130,7 +134,7 @@ func (nc *NatsConnector) Publish(event models.KeptnContextExtendedCE) error {
 	return nc.conn.Publish(*event.Type, serializedEvent)
 }
 
-// Disconnect disconnects/closes the connection to NATS
+// Disconnect disconnects/closes the connection to Connection
 func (nc *NatsConnector) Disconnect() error {
 	nc.conn.Close()
 	return nil

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/cp-connector/pkg/logger"
-	natseventsource "github.com/keptn/keptn/cp-connector/pkg/nats"
+	nats2 "github.com/keptn/keptn/cp-connector/pkg/nats"
 	"github.com/nats-io/nats.go"
 	"reflect"
 	"sort"
@@ -53,17 +53,17 @@ type EventSource interface {
 }
 
 // NATSEventSource is an implementation of EventSource
-// that is using the NATS event broker internally
+// that is using the Connection event broker internally
 type NATSEventSource struct {
 	currentSubjects []string
-	connector       natseventsource.NATS
-	eventProcessFn  natseventsource.ProcessEventFn
+	connector       nats2.Connector
+	eventProcessFn  nats2.ProcessEventFn
 	queueGroup      string
 	logger          logger.Logger
 }
 
 // NewNATSEventSource creates a new NATSEventSource
-func NewNATSEventSource(natsConnector natseventsource.NATS) *NATSEventSource {
+func NewNATSEventSource(natsConnector nats2.Connector) *NATSEventSource {
 	return &NATSEventSource{
 		currentSubjects: []string{},
 		connector:       natsConnector,
@@ -85,13 +85,13 @@ func (n *NATSEventSource) Start(ctx context.Context, registrationData Registrati
 		}
 		return nil
 	}
-	if err := n.connector.QueueSubscribeMultiple(n.currentSubjects, n.queueGroup, n.eventProcessFn); err != nil {
-		return fmt.Errorf("could not start NATS event source: %w", err)
+	if err := n.connector.Connect().QueueSubscribeMultiple(n.currentSubjects, n.queueGroup, n.eventProcessFn); err != nil {
+		return fmt.Errorf("could not start Connection event source: %w", err)
 	}
 	go func() {
 		<-ctx.Done()
-		if err := n.connector.Disconnect(); err != nil {
-			n.logger.Errorf("Unable to disconnect from NATS: %v", err)
+		if err := n.connector.Connect().Disconnect(); err != nil {
+			n.logger.Errorf("Unable to disconnect from Connection: %v", err)
 			return
 		}
 	}()
@@ -101,12 +101,12 @@ func (n *NATSEventSource) Start(ctx context.Context, registrationData Registrati
 func (n *NATSEventSource) OnSubscriptionUpdate(subjects []string) {
 	s := dedup(subjects)
 	if !isEqual(n.currentSubjects, s) {
-		err := n.connector.UnsubscribeAll()
+		err := n.connector.Connect().UnsubscribeAll()
 		if err != nil {
 			n.logger.Errorf("Could not handle subscription update: %v", err)
 			return
 		}
-		if err := n.connector.QueueSubscribeMultiple(subjects, n.queueGroup, n.eventProcessFn); err != nil {
+		if err := n.connector.Connect().QueueSubscribeMultiple(subjects, n.queueGroup, n.eventProcessFn); err != nil {
 			n.logger.Errorf("Could not handle subscription update: %v", err)
 			return
 		}
@@ -115,11 +115,11 @@ func (n *NATSEventSource) OnSubscriptionUpdate(subjects []string) {
 }
 
 func (n *NATSEventSource) Sender() EventSender {
-	return n.connector.Publish
+	return n.connector.Connect().Publish
 }
 
 func (n *NATSEventSource) Stop() error {
-	return n.connector.Disconnect()
+	return n.connector.Connect().Disconnect()
 }
 
 func isEqual(a1 []string, a2 []string) bool {
