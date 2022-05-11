@@ -151,27 +151,37 @@ export class DataService {
   ): Promise<Sequence[]> {
     const sequences: Sequence[] = [];
 
-    for (let i = 0; i < services.length; ) {
-      const keptnContexts: string[] = [];
-      const maxLength = Math.min(i + this.MAX_PAGE_SIZE, services.length);
-      // fill array till 100 elements or max
-      for (i; i < services.length && keptnContexts.length < maxLength; ++i) {
-        const latestServiceEvent = services[i].getLatestEvent();
-        if (latestServiceEvent) {
-          // string concatenation is expensive; that's why we use an array here
-          keptnContexts.push(latestServiceEvent.keptnContext);
-        }
+    let keptnContexts: string[] = [];
+    for (const service of services) {
+      const latestServiceEvent = service.getLatestEvent();
+      if (latestServiceEvent) {
+        // string concatenation is expensive; that's why we use an array here
+        keptnContexts.push(latestServiceEvent.keptnContext);
       }
-      if (keptnContexts.length) {
-        const response = await this.apiService.getSequences(accessToken, projectName, {
-          pageSize: this.MAX_PAGE_SIZE.toString(),
-          keptnContext: keptnContexts.join(','),
-        });
-        const newSequences = response.data.states.map((seq) => Sequence.fromJSON(seq));
-        sequences.push(...newSequences);
+
+      if (keptnContexts.length === this.MAX_PAGE_SIZE) {
+        sequences.push(...(await this.getSequencesWithContexts(accessToken, projectName, keptnContexts)));
+        keptnContexts = [];
       }
     }
+    // get remaining sequences (mod 100)
+    if (keptnContexts.length) {
+      sequences.push(...(await this.getSequencesWithContexts(accessToken, projectName, keptnContexts)));
+    }
+
     return sequences;
+  }
+
+  private async getSequencesWithContexts(
+    accessToken: string | undefined,
+    projectName: string,
+    keptnContexts: string[]
+  ): Promise<Sequence[]> {
+    const response = await this.apiService.getSequences(accessToken, projectName, {
+      pageSize: this.MAX_PAGE_SIZE.toString(),
+      keptnContext: keptnContexts.join(','),
+    });
+    return response.data.states.map((seq) => Sequence.fromJSON(seq));
   }
 
   private async getLatestDeploymentFinishedForServices(
