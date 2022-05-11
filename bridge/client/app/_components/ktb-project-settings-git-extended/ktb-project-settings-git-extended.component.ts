@@ -7,9 +7,9 @@ import { filter, map } from 'rxjs/operators';
 import { isGitHTTPS, isGitSSH } from '../../_utils/git-upstream.utils';
 
 export enum GitFormType {
-  SSH = 'SSH',
-  HTTPS = 'HTTPS',
-  NO_UPSTREAM = 'NO_UPSTREAM',
+  SSH,
+  HTTPS,
+  NO_UPSTREAM,
 }
 
 @Component({

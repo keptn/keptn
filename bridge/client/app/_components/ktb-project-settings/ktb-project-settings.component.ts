@@ -1,5 +1,5 @@
 import { Component, HostListener, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
-import { combineLatest, Observable, of, Subject } from 'rxjs';
+import { Observable, of, Subject } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { KtbProjectSettingsGitComponent } from '../ktb-project-settings-git/ktb-project-settings-git.component';
 import { DeleteData, DeleteResult, DeleteType } from '../../_interfaces/delete';
@@ -80,6 +80,10 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
       .subscribe((featureFlags: IClientFeatureFlags) => {
         this.resourceServiceEnabled = featureFlags.RESOURCE_SERVICE_ENABLED;
       });
+
+    this.keptnInfo$.pipe(takeUntil(this.unsubscribe$)).subscribe((keptnInfo) => {
+      this.setGitUpstreamRequired(keptnInfo);
+    });
   }
 
   public ngOnInit(): void {
@@ -87,11 +91,6 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
       if (!params.projectName) {
         this.isCreateMode = true;
         this.isProjectLoading = true;
-
-        this.keptnInfo$.pipe(takeUntil(this.unsubscribe$)).subscribe((keptnInfo) => {
-          this.setGitUpstreamRequired(keptnInfo);
-          this.isProjectLoading = false;
-        });
 
         this.loadProjectsAndSetValidator();
       } else {
@@ -141,27 +140,22 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
           FormUtils.nameExistsValidator(projectNames),
           Validators.pattern('[a-z]([a-z]|[0-9]|-)*'),
         ]);
+        this.isProjectLoading = false;
       });
   }
 
   private loadProject(projectName: string): void {
-    const loadProject$ = this.dataService.loadPlainProject(projectName);
+    this.dataService.loadPlainProject(projectName).subscribe((project) => {
+      this.gitData = {
+        gitRemoteURL: project.gitRemoteURI,
+        gitUser: project.gitUser,
+      };
+      this.gitInputDataExtendedDefault = project.gitUpstream;
+      this.gitInputDataExtended = AppUtils.copyObject(project.gitUpstream); // there should not be a reference. Could
+      // lead to problems when the form is reset
 
-    combineLatest([loadProject$, this.keptnInfo$])
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(([project, keptnInfo]) => {
-        this.gitData = {
-          gitRemoteURL: project.gitRemoteURI,
-          gitUser: project.gitUser,
-        };
-        this.gitInputDataExtendedDefault = project.gitUpstream;
-        this.gitInputDataExtended = AppUtils.copyObject(project.gitUpstream); // there should not be a reference. Could
-        // lead to problems when the form is reset
-
-        this.setGitUpstreamRequired(keptnInfo);
-
-        this.isProjectLoading = false;
-      });
+      this.isProjectLoading = false;
+    });
   }
 
   private showCreateNotificationAndRedirect(): void {
