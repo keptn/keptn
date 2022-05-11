@@ -11,7 +11,7 @@ export class DynamicEnvironment {
   public baseUrl: string;
   public pollingIntervalMillis?: number;
   public config: WindowConfig = {
-    appTitle: 'keptn',
+    appTitle: 'Keptn',
     logoUrl: 'assets/default-branding/logo.png',
     logoInvertedUrl: 'assets/default-branding/logo_inverted.png',
   };
