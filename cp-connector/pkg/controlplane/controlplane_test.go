@@ -330,7 +330,13 @@ func TestControlPlane_IsRegistered(t *testing.T) {
 		SenderFn:               func() EventSender { return callBackSender },
 	}
 
-	controlPlane := New(ssm, esm)
+	um := &fake.UniformInterfaceMock{
+		RegisterIntegrationFn: func(integration models.Integration) (string, error) {
+			return "some-id", nil
+		},
+	}
+
+	controlPlane := New(ssm, esm, um)
 
 	integration := ExampleIntegration{
 		RegistrationDataFn: func() RegistrationData { return RegistrationData{} },
