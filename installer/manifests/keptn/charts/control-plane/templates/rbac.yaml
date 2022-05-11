@@ -212,6 +212,7 @@ rules:
       - delete
       - deletecollection
 
+{{- if ge .Capabilities.KubeVersion.Minor "14"}}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -235,7 +236,7 @@ rules:
       - get
       - update
       - create
-
+{{- end}}
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -362,6 +363,7 @@ subjects:
   - kind: ServiceAccount
     name: keptn-secret-service
 
+{{- if ge .Capabilities.KubeVersion.Minor "14"}}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -381,3 +383,4 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: keptn-shipyard-controller
+{{- end}}
