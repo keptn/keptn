@@ -90,6 +90,7 @@ spec:
           value: nats
         - name: NATS_URL
           value: 'nats://keptn-nats'
+        {{- include "control-plane.common.env.vars" . | nindent 12 }}
         {{- include "control-plane.common.container-security-context" . | nindent 8 }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.mongodbDatastore.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
 ---
