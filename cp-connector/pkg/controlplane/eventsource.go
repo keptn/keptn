@@ -4,12 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
+	"sort"
+
 	"github.com/keptn/go-utils/pkg/api/models"
+	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cp-connector/pkg/logger"
 	natseventsource "github.com/keptn/keptn/cp-connector/pkg/nats"
 	"github.com/nats-io/nats.go"
-	"reflect"
-	"sort"
 )
 
 type EventSenderKeyType struct{}
@@ -60,19 +62,23 @@ type NATSEventSource struct {
 	eventProcessFn  natseventsource.ProcessEventFn
 	queueGroup      string
 	logger          logger.Logger
+	integrationID   string
+	logForwarder    LogForwarder
 }
 
 // NewNATSEventSource creates a new NATSEventSource
-func NewNATSEventSource(natsConnector natseventsource.NATS) *NATSEventSource {
+func NewNATSEventSource(natsConnector natseventsource.NATS, logApi api.LogsV1Interface) *NATSEventSource {
 	return &NATSEventSource{
 		currentSubjects: []string{},
 		connector:       natsConnector,
 		eventProcessFn:  func(event *nats.Msg) error { return nil },
 		logger:          logger.NewDefaultLogger(),
+		logForwarder:    NewLogForwarder(logApi),
 	}
 }
 
 func (n *NATSEventSource) Start(ctx context.Context, registrationData RegistrationData, eventChannel chan EventUpdate) error {
+	n.integrationID = registrationData.ID
 	n.queueGroup = registrationData.Name
 	n.eventProcessFn = func(event *nats.Msg) error {
 		keptnEvent := models.KeptnContextExtendedCE{}
@@ -115,7 +121,16 @@ func (n *NATSEventSource) OnSubscriptionUpdate(subjects []string) {
 }
 
 func (n *NATSEventSource) Sender() EventSender {
-	return n.connector.Publish
+	return n.sendMessages
+}
+
+func (n *NATSEventSource) sendMessages(keptnEvent models.KeptnContextExtendedCE) error {
+	if n.integrationID != "" {
+		if err := n.logForwarder.Forward(keptnEvent, n.integrationID); err != nil {
+			n.logger.Errorf("Could not forward logs: %v", err)
+		}
+	}
+	return n.connector.Publish(keptnEvent)
 }
 
 func (n *NATSEventSource) Stop() error {

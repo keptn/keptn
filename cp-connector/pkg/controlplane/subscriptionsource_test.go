@@ -3,11 +3,13 @@ package controlplane
 import (
 	"context"
 	"fmt"
-	"github.com/benbjohnson/clock"
-	"github.com/keptn/go-utils/pkg/api/models"
-	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
+
+	"github.com/benbjohnson/clock"
+	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/keptn/cp-connector/pkg/controlplane/fake"
+	"github.com/stretchr/testify/require"
 )
 
 type SubscriptionSourceMock struct {
@@ -21,52 +23,10 @@ func (u *SubscriptionSourceMock) Start(ctx context.Context, data RegistrationDat
 	panic("implement me")
 }
 
-type UniformInterfaceMock struct {
-	RegisterIntegrationFn func(models.Integration) (string, error)
-	PingFn                func(string) (*models.Integration, error)
-}
-
-func (m *UniformInterfaceMock) Ping(integrationID string) (*models.Integration, error) {
-	if m.PingFn != nil {
-		return m.PingFn(integrationID)
-	}
-	panic("Ping() not implemented")
-}
-func (m *UniformInterfaceMock) RegisterIntegration(integration models.Integration) (string, error) {
-	if m.RegisterIntegrationFn != nil {
-		return m.RegisterIntegrationFn(integration)
-	}
-	panic("RegisterIntegraiton not imiplemented")
-}
-
-func (m *UniformInterfaceMock) CreateSubscription(integrationID string, subscription models.EventSubscription) (string, error) {
-	panic("implement me")
-}
-
-func (m *UniformInterfaceMock) UnregisterIntegration(integrationID string) error {
-	panic("implement me")
-}
-
-func (m *UniformInterfaceMock) GetRegistrations() ([]*models.Integration, error) {
-	panic("implement me")
-}
-
-func TestSubscriptionSourceInitialRegistrationFails(t *testing.T) {
-	initialRegistrationData := RegistrationData{}
-
-	uniformInterface := &UniformInterfaceMock{
-		RegisterIntegrationFn: func(integration models.Integration) (string, error) { return "", fmt.Errorf("error occured") },
-	}
-	subscriptionSource := NewUniformSubscriptionSource(uniformInterface)
-	err := subscriptionSource.Start(context.Background(), initialRegistrationData, nil)
-	require.Error(t, err)
-}
-
 func TestSubscriptionSourceCPPingFails(t *testing.T) {
 	initialRegistrationData := RegistrationData{}
 
-	uniformInterface := &UniformInterfaceMock{
-		RegisterIntegrationFn: func(integration models.Integration) (string, error) { return "id", nil },
+	uniformInterface := &fake.UniformInterfaceMock{
 		PingFn: func(s string) (*models.Integration, error) {
 			return nil, fmt.Errorf("error occured")
 		}}
@@ -93,10 +53,10 @@ func TestSubscriptionSourceWithFetchInterval(t *testing.T) {
 		Name:          integrationName,
 		MetaData:      models.MetaData{},
 		Subscriptions: []models.EventSubscription{{Event: "keptn.event", Filter: models.EventSubscriptionFilter{}}},
+		ID:            integrationID,
 	}
 
-	uniformInterface := &UniformInterfaceMock{
-		RegisterIntegrationFn: func(integration models.Integration) (string, error) { return integrationID, nil },
+	uniformInterface := &fake.UniformInterfaceMock{
 		PingFn: func(id string) (*models.Integration, error) {
 			pingCount++
 			require.Equal(t, id, integrationID)
@@ -133,10 +93,10 @@ func TestSubscriptionSourceCancel(t *testing.T) {
 		Name:          integrationName,
 		MetaData:      models.MetaData{},
 		Subscriptions: []models.EventSubscription{{Event: "keptn.event", Filter: models.EventSubscriptionFilter{}}},
+		ID:            integrationID,
 	}
 
-	uniformInterface := &UniformInterfaceMock{
-		RegisterIntegrationFn: func(integration models.Integration) (string, error) { return integrationID, nil },
+	uniformInterface := &fake.UniformInterfaceMock{
 		PingFn: func(id string) (*models.Integration, error) {
 			pingCount++
 			require.Equal(t, id, integrationID)
@@ -175,13 +135,10 @@ func TestSubscriptionSource(t *testing.T) {
 		Name:          integrationName,
 		MetaData:      models.MetaData{},
 		Subscriptions: []models.EventSubscription{{Event: "keptn.event", Filter: models.EventSubscriptionFilter{}}},
+		ID:            integrationID,
 	}
 
-	uniformInterface := &UniformInterfaceMock{
-		RegisterIntegrationFn: func(integration models.Integration) (string, error) {
-			require.Equal(t, initialRegistrationData, initialRegistrationData)
-			return integrationID, nil
-		},
+	uniformInterface := &fake.UniformInterfaceMock{
 		PingFn: func(id string) (*models.Integration, error) {
 			require.Equal(t, id, integrationID)
 			return &models.Integration{

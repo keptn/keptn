@@ -3,7 +3,10 @@ package controlplane
 import (
 	"context"
 	"errors"
+	"fmt"
+
 	"github.com/keptn/go-utils/pkg/api/models"
+	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cp-connector/pkg/logger"
 )
 
@@ -24,6 +27,7 @@ type Integration interface {
 
 // ControlPlane can be used to connect to the Keptn Control Plane
 type ControlPlane struct {
+	uniformApi           api.UniformV1Interface
 	subscriptionSource   SubscriptionSource
 	eventSource          EventSource
 	currentSubscriptions []models.EventSubscription
@@ -34,10 +38,11 @@ type ControlPlane struct {
 // New creates a new ControlPlane
 // It is using a SubscriptionSource source to get information about current uniform subscriptions
 // as well as an EventSource to actually receive events from Keptn
-func New(subscriptionSource SubscriptionSource, eventSource EventSource) *ControlPlane {
+func New(subscriptionSource SubscriptionSource, eventSource EventSource, uniformApi api.UniformV1Interface) *ControlPlane {
 	return &ControlPlane{
 		subscriptionSource:   subscriptionSource,
 		eventSource:          eventSource,
+		uniformApi:           uniformApi,
 		currentSubscriptions: []models.EventSubscription{},
 		logger:               logger.NewDefaultLogger(),
 		registered:           false,
@@ -48,10 +53,18 @@ func New(subscriptionSource SubscriptionSource, eventSource EventSource) *Contro
 func (cp *ControlPlane) Register(ctx context.Context, integration Integration) error {
 	eventUpdates := make(chan EventUpdate)
 	subscriptionUpdates := make(chan []models.EventSubscription)
-	if err := cp.eventSource.Start(ctx, integration.RegistrationData(), eventUpdates); err != nil {
+
+	registrationData := integration.RegistrationData()
+	integrationID, err := cp.uniformApi.RegisterIntegration(models.Integration(registrationData))
+	if err != nil {
+		return fmt.Errorf("could not start subscription source: %w", err)
+	}
+	registrationData.ID = integrationID
+
+	if err := cp.eventSource.Start(ctx, registrationData, eventUpdates); err != nil {
 		return err
 	}
-	if err := cp.subscriptionSource.Start(ctx, integration.RegistrationData(), subscriptionUpdates); err != nil {
+	if err := cp.subscriptionSource.Start(ctx, registrationData, subscriptionUpdates); err != nil {
 		return err
 	}
 	cp.registered = true
