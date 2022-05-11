@@ -86,8 +86,6 @@ spec:
               optional: true
         - name: LOG_LEVEL
           value: {{ .Values.logLevel | default "info" }}
-        - name: PUBSUB_IMPL
-          value: nats
         - name: NATS_URL
           value: 'nats://keptn-nats'
         {{- include "control-plane.common.env.vars" . | nindent 12 }}
