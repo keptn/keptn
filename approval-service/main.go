@@ -11,19 +11,27 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
+	"github.com/pkg/errors"
 	logger "github.com/sirupsen/logrus"
 
+	"github.com/keptn/go-utils/pkg/api/models"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/cp-connector/pkg/api"
+	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
+	"github.com/keptn/keptn/cp-connector/pkg/nats"
 )
 
 const envVarLogLevel = "LOG_LEVEL"
 
 type envConfig struct {
-	// Port on which to listen for cloudevents
-	Port int    `envconfig:"RCV_PORT" default:"8080"`
-	Path string `envconfig:"RCV_PATH" default:"/"`
+	K8SDeploymentName      string `envconfig:"K8S_DEPLOYMENT_NAME" default:""`
+	K8SDeploymentVersion   string `envconfig:"K8S_DEPLOYMENT_VERSION" default:""`
+	K8SDeploymentComponent string `envconfig:"K8S_DEPLOYMENT_COMPONENT" default:""`
+	K8SPodName             string `envconfig:"K8S_POD_NAME" default:""`
+	K8SNamespace           string `envconfig:"K8S_NAMESPACE" default:""`
+	K8SNodeName            string `envconfig:"K8S_NODE_NAME" default:""`
+	LogLevel               string `envconfig:"LOG_LEVEL" default:"info"`
 }
 
 // Opaque key type used for graceful shutdown context value
@@ -32,42 +40,48 @@ type gracefulShutdownKeyType struct{}
 var gracefulShutdownKey = gracefulShutdownKeyType{}
 
 func main() {
-	logger.SetLevel(logger.InfoLevel)
-
-	if os.Getenv(envVarLogLevel) != "" {
-		logLevel, err := logger.ParseLevel(os.Getenv(envVarLogLevel))
-		if err != nil {
-			logger.WithError(err).Error("could not parse log level provided by 'LOG_LEVEL' env var")
-		} else {
-			logger.SetLevel(logLevel)
-		}
-	}
-
 	var env envConfig
 	if err := envconfig.Process("", &env); err != nil {
 		log.Fatalf("Failed to process env var: %s", err)
 	}
 
-	os.Exit(_main(os.Args[1:], env))
-}
+	logLevel, err := logger.ParseLevel(env.LogLevel)
+	if err != nil {
+		logger.WithError(err).Error("could not parse log level provided by 'LOG_LEVEL' env var")
+		logger.SetLevel(logger.InfoLevel)
+	} else {
+		logger.SetLevel(logLevel)
+	}
 
-func _main(args []string, env envConfig) int {
+	go func() {
+		keptnapi.RunHealthEndpoint("8080")
+	}()
+
+	api, err := api.NewInternal(nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	subscriptionSource := controlplane.NewUniformSubscriptionSource(api.UniformV1())
+	natsConnector, err := nats.ConnectFromEnv()
+	if err != nil {
+		log.Fatal(err)
+	}
+	eventSource := controlplane.NewNATSEventSource(natsConnector)
+
+	controlPlane := controlplane.New(subscriptionSource, eventSource)
 	ctx := getGracefulContext()
-
-	p, err := cloudevents.NewHTTP(cloudevents.WithPath(env.Path), cloudevents.WithPort(env.Port), cloudevents.WithGetHandlerFunc(keptnapi.HealthEndpointHandler))
+	err = controlPlane.Register(ctx, ApprovalService{env})
 	if err != nil {
-		log.Fatalf("failed to create client, %v", err)
+		log.Fatal(err)
 	}
-	c, err := cloudevents.NewClient(p)
-	if err != nil {
-		log.Fatalf("failed to create client, %v", err)
-	}
-	log.Fatal(c.StartReceiver(ctx, gotEvent))
-
-	return 0
 }
 
-func gotEvent(ctx context.Context, event cloudevents.Event) error {
+type ApprovalService struct {
+	env envConfig
+}
+
+func (as ApprovalService) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE) error {
 	ctx.Value(gracefulShutdownKey).(*sync.WaitGroup).Add(1)
 	val := ctx.Value(gracefulShutdownKey)
 	if val != nil {
@@ -75,11 +89,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 			wg.Add(1)
 		}
 	}
-	go switchEvent(ctx, event)
-	return nil
-}
 
-func switchEvent(ctx context.Context, event cloudevents.Event) {
 	defer func() {
 		logger.Info("Terminating Evaluate-SLI handler")
 		val := ctx.Value(gracefulShutdownKey)
@@ -90,27 +100,45 @@ func switchEvent(ctx context.Context, event cloudevents.Event) {
 			wg.Done()
 		}
 	}()
-	keptnHandlerV2, err := keptnv2.NewKeptn(&event, keptncommon.KeptnOpts{})
+
+	ce := v0_2_0.ToCloudEvent(event)
+
+	approvalHandler, err := handler.NewApprovalTriggeredEventHandler(ctx, ce)
 
 	if err != nil {
-		logger.WithError(err).Error("failed to initialize Keptn handler")
-		return
+		log.Println(err.Error())
+		return errors.Wrap(controlplane.ErrEventHandleFatal, err.Error())
 	}
 
-	handlers := []handler.Handler{
-		handler.NewApprovalTriggeredEventHandler(keptnHandlerV2),
-	}
-
-	unhandled := true
-	for _, currHandler := range handlers {
-		if currHandler.IsTypeHandled(event) {
-			unhandled = false
-			currHandler.Handle(event, keptnHandlerV2)
+	if approvalHandler != nil {
+		if approvalHandler.IsTypeHandled(ce) {
+			return approvalHandler.Handle(ce)
 		}
+		logger.Debugf("Received unexpected keptn event type %s", ce.Type())
 	}
 
-	if unhandled {
-		logger.Debugf("Received unexpected keptn event type %s", event.Type())
+	return nil
+}
+
+func (l ApprovalService) RegistrationData() controlplane.RegistrationData {
+	return controlplane.RegistrationData{
+		Name: l.env.K8SPodName,
+		MetaData: models.MetaData{
+			Hostname:           l.env.K8SNodeName,
+			IntegrationVersion: l.env.K8SDeploymentVersion,
+			Location:           l.env.K8SDeploymentComponent,
+			KubernetesMetaData: models.KubernetesMetaData{
+				Namespace:      l.env.K8SNamespace,
+				PodName:        l.env.K8SPodName,
+				DeploymentName: l.env.K8SDeploymentName,
+			},
+		},
+		Subscriptions: []models.EventSubscription{
+			{
+				Event:  "sh.keptn.event.approval.triggered",
+				Filter: models.EventSubscriptionFilter{},
+			},
+		},
 	}
 }
 
