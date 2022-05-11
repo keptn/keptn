@@ -17,7 +17,7 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.15.0
 	github.com/keptn/keptn/cp-connector v0.0.0-20220506085349-7ae76b09032a
-	github.com/nats-io/nats-server/v2 v2.8.1
+	github.com/nats-io/nats-server/v2 v2.8.2
 	github.com/nats-io/nats.go v1.14.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
