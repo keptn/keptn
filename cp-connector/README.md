@@ -43,11 +43,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	//NOTE: if log forwarding is not needed in your service, pass `nil` instead of `keptnAPI.LogsV1()`
-	eventSource := controlplane.NewNATSEventSource(natsConnector, keptnAPI.LogsV1())
+	eventSource := controlplane.NewNATSEventSource(natsConnector)
 
 	// 4. create control plane object and register yourself as an "integration"
-	controlPlane := controlplane.New(subscriptionSource, eventSource, keptnAPI.UniformV1())
+	//NOTE: if log forwarding is not needed in your service, pass `nil` instead of `keptnAPI.LogsV1()`
+	controlPlane := controlplane.New(subscriptionSource, eventSource, keptnAPI.LogsV1())
 	err = controlPlane.Register(context.TODO(), LocalService{})
 	if err != nil {
 		log.Fatal(err)

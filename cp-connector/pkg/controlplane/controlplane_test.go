@@ -33,30 +33,37 @@ func (e ExampleIntegration) RegistrationData() RegistrationData {
 }
 
 func TestControlPlaneInitialRegistrationFails(t *testing.T) {
-	ssm := &SubscriptionSourceMock{}
-	esm := &EventSourceMock{}
-	um := &fake.UniformInterfaceMock{
-		RegisterIntegrationFn: func(integration models.Integration) (string, error) {
-			return "", fmt.Errorf("error occured")
+	ssm := &SubscriptionSourceMock{
+		RegisterFn: func(integration models.Integration) (string, error) {
+			return "", fmt.Errorf("some err")
 		},
 	}
+	esm := &EventSourceMock{}
+	lm := &fake.LogAPIMock{
+		LogFunc:   func(logs []models.LogEntry) { return },
+		FlushFunc: func() error { return nil },
+	}
 	integration := ExampleIntegration{RegistrationDataFn: func() RegistrationData { return RegistrationData{} }}
-	err := New(ssm, esm, um).Register(context.TODO(), integration)
+	err := New(ssm, esm, lm).Register(context.TODO(), integration)
 	require.Error(t, err)
 }
 
 func TestControlPlaneEventSourceFailsToStart(t *testing.T) {
-	ssm := &SubscriptionSourceMock{}
-	esm := &EventSourceMock{StartFn: func(ctx context.Context, data RegistrationData, ces chan EventUpdate) error {
-		return fmt.Errorf("error occured")
-	}}
-	um := &fake.UniformInterfaceMock{
-		RegisterIntegrationFn: func(integration models.Integration) (string, error) {
+	ssm := &SubscriptionSourceMock{
+		RegisterFn: func(integration models.Integration) (string, error) {
 			return "some-id", nil
 		},
 	}
+	esm := &EventSourceMock{
+		StartFn: func(ctx context.Context, data RegistrationData, ces chan EventUpdate) error {
+			return fmt.Errorf("error occured")
+		}}
+	lm := &fake.LogAPIMock{
+		LogFunc:   func(logs []models.LogEntry) { return },
+		FlushFunc: func() error { return nil },
+	}
 	integration := ExampleIntegration{RegistrationDataFn: func() RegistrationData { return RegistrationData{} }}
-	err := New(ssm, esm, um).Register(context.TODO(), integration)
+	err := New(ssm, esm, lm).Register(context.TODO(), integration)
 	require.Error(t, err)
 }
 
@@ -65,17 +72,19 @@ func TestControlPlaneSubscriptionSourceFailsToStart(t *testing.T) {
 		StartFn: func(ctx context.Context, data RegistrationData, c chan []models.EventSubscription) error {
 			return fmt.Errorf("error occured")
 		},
+		RegisterFn: func(integration models.Integration) (string, error) {
+			return "some-id", nil
+		},
 	}
 	esm := &EventSourceMock{StartFn: func(ctx context.Context, data RegistrationData, ces chan EventUpdate) error {
 		return nil
 	}}
-	um := &fake.UniformInterfaceMock{
-		RegisterIntegrationFn: func(integration models.Integration) (string, error) {
-			return "some-id", nil
-		},
+	lm := &fake.LogAPIMock{
+		LogFunc:   func(logs []models.LogEntry) { return },
+		FlushFunc: func() error { return nil },
 	}
 	integration := ExampleIntegration{RegistrationDataFn: func() RegistrationData { return RegistrationData{} }}
-	err := New(ssm, esm, um).Register(context.TODO(), integration)
+	err := New(ssm, esm, lm).Register(context.TODO(), integration)
 	require.Error(t, err)
 }
 
@@ -92,92 +101,24 @@ func TestControlPlaneInboundEventIsForwardedToIntegration(t *testing.T) {
 			subsChan = c
 			return nil
 		},
-	}
-	esm := &EventSourceMock{
-		StartFn: func(ctx context.Context, data RegistrationData, ces chan EventUpdate) error {
-			eventChan = ces
-			return nil
-		},
-		OnSubscriptionUpdateFn: func(strings []string) {},
-		SenderFn:               func() EventSender { return callBackSender },
-	}
-
-	um := &fake.UniformInterfaceMock{
-		RegisterIntegrationFn: func(integration models.Integration) (string, error) {
+		RegisterFn: func(integration models.Integration) (string, error) {
 			return "some-id", nil
 		},
 	}
-
-	controlPlane := New(ssm, esm, um)
-
-	integration := ExampleIntegration{
-		RegistrationDataFn: func() RegistrationData { return RegistrationData{} },
-		OnEventFn: func(ctx context.Context, ce models.KeptnContextExtendedCE) error {
-			integrationReceivedEvent = ce
-			return nil
-		},
-	}
-	go controlPlane.Register(context.TODO(), integration)
-	require.Eventually(t, func() bool { return subsChan != nil }, time.Second, time.Millisecond*100)
-	require.Eventually(t, func() bool { return eventChan != nil }, time.Second, time.Millisecond*100)
-
-	subsChan <- []models.EventSubscription{{ID: "some-id", Event: "sh.keptn.event.echo.triggered", Filter: models.EventSubscriptionFilter{}}}
-	eventChan <- eventUpdate
-
-	require.Eventually(t, func() bool {
-		eventUpdate.KeptnEvent.Data = integrationReceivedEvent.Data
-		return reflect.DeepEqual(eventUpdate.KeptnEvent, integrationReceivedEvent)
-	}, time.Second, time.Millisecond*100)
-
-	eventData := map[string]interface{}{}
-	err := integrationReceivedEvent.DataAs(&eventData)
-	require.Nil(t, err)
-
-	require.Equal(t, map[string]interface{}{
-		"temporaryData": map[string]interface{}{
-			"distributor": map[string]interface{}{
-				"subscriptionID": "some-id",
-			},
-		},
-	}, eventData)
-}
-
-func TestControlPlaneIntegrationIDIsForwarded(t *testing.T) {
-	var eventChan chan EventUpdate
-	var subsChan chan []models.EventSubscription
-	var integrationReceivedEvent models.KeptnContextExtendedCE
-	eventUpdate := EventUpdate{KeptnEvent: models.KeptnContextExtendedCE{ID: "some-id", Type: strutils.Stringp("sh.keptn.event.echo.triggered")}, MetaData: EventUpdateMetaData{Subject: "sh.keptn.event.echo.triggered"}}
-
-	callBackSender := func(ce models.KeptnContextExtendedCE) error { return nil }
-
-	ssm := &SubscriptionSourceMock{
-		StartFn: func(ctx context.Context, data RegistrationData, c chan []models.EventSubscription) error {
-			if data.ID != "some-other-id" {
-				return fmt.Errorf("error occured")
-			}
-			subsChan = c
-			return nil
-		},
-	}
 	esm := &EventSourceMock{
 		StartFn: func(ctx context.Context, data RegistrationData, ces chan EventUpdate) error {
-			if data.ID != "some-other-id" {
-				return fmt.Errorf("error occured")
-			}
 			eventChan = ces
 			return nil
 		},
 		OnSubscriptionUpdateFn: func(strings []string) {},
 		SenderFn:               func() EventSender { return callBackSender },
 	}
-
-	um := &fake.UniformInterfaceMock{
-		RegisterIntegrationFn: func(integration models.Integration) (string, error) {
-			return "some-other-id", nil
-		},
+	lm := &fake.LogAPIMock{
+		LogFunc:   func(logs []models.LogEntry) { return },
+		FlushFunc: func() error { return nil },
 	}
 
-	controlPlane := New(ssm, esm, um)
+	controlPlane := New(ssm, esm, lm)
 
 	integration := ExampleIntegration{
 		RegistrationDataFn: func() RegistrationData { return RegistrationData{} },
@@ -223,6 +164,9 @@ func TestControlPlaneIntegrationOnEventThrowsIgnoreableError(t *testing.T) {
 			subsChan = c
 			return nil
 		},
+		RegisterFn: func(integration models.Integration) (string, error) {
+			return "some-id", nil
+		},
 	}
 	esm := &EventSourceMock{
 		StartFn: func(ctx context.Context, data RegistrationData, ces chan EventUpdate) error {
@@ -232,14 +176,12 @@ func TestControlPlaneIntegrationOnEventThrowsIgnoreableError(t *testing.T) {
 		OnSubscriptionUpdateFn: func(strings []string) {},
 		SenderFn:               func() EventSender { return callBackSender },
 	}
-
-	um := &fake.UniformInterfaceMock{
-		RegisterIntegrationFn: func(integration models.Integration) (string, error) {
-			return "some-id", nil
-		},
+	lm := &fake.LogAPIMock{
+		LogFunc:   func(logs []models.LogEntry) { return },
+		FlushFunc: func() error { return nil },
 	}
 
-	controlPlane := New(ssm, esm, um)
+	controlPlane := New(ssm, esm, lm)
 
 	integration := ExampleIntegration{
 		RegistrationDataFn: func() RegistrationData { return RegistrationData{} },
@@ -272,6 +214,9 @@ func TestControlPlaneIntegrationOnEventThrowsFatalError(t *testing.T) {
 			subsChan = c
 			return nil
 		},
+		RegisterFn: func(integration models.Integration) (string, error) {
+			return "some-id", nil
+		},
 	}
 	esm := &EventSourceMock{
 		StartFn: func(ctx context.Context, data RegistrationData, ces chan EventUpdate) error {
@@ -281,14 +226,12 @@ func TestControlPlaneIntegrationOnEventThrowsFatalError(t *testing.T) {
 		OnSubscriptionUpdateFn: func(strings []string) {},
 		SenderFn:               func() EventSender { return callBackSender },
 	}
-
-	um := &fake.UniformInterfaceMock{
-		RegisterIntegrationFn: func(integration models.Integration) (string, error) {
-			return "some-id", nil
-		},
+	lm := &fake.LogAPIMock{
+		LogFunc:   func(logs []models.LogEntry) { return },
+		FlushFunc: func() error { return nil },
 	}
 
-	controlPlane := New(ssm, esm, um)
+	controlPlane := New(ssm, esm, lm)
 
 	integration := ExampleIntegration{
 		RegistrationDataFn: func() RegistrationData { return RegistrationData{} },
@@ -320,6 +263,9 @@ func TestControlPlane_IsRegistered(t *testing.T) {
 			subsChan = c
 			return nil
 		},
+		RegisterFn: func(integration models.Integration) (string, error) {
+			return "some-id", nil
+		},
 	}
 	esm := &EventSourceMock{
 		StartFn: func(ctx context.Context, data RegistrationData, ces chan EventUpdate) error {
@@ -329,14 +275,12 @@ func TestControlPlane_IsRegistered(t *testing.T) {
 		OnSubscriptionUpdateFn: func(strings []string) {},
 		SenderFn:               func() EventSender { return callBackSender },
 	}
-
-	um := &fake.UniformInterfaceMock{
-		RegisterIntegrationFn: func(integration models.Integration) (string, error) {
-			return "some-id", nil
-		},
+	lm := &fake.LogAPIMock{
+		LogFunc:   func(logs []models.LogEntry) { return },
+		FlushFunc: func() error { return nil },
 	}
 
-	controlPlane := New(ssm, esm, um)
+	controlPlane := New(ssm, esm, lm)
 
 	integration := ExampleIntegration{
 		RegistrationDataFn: func() RegistrationData { return RegistrationData{} },

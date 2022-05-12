@@ -63,7 +63,6 @@ func (l LogForwardingHandler) Forward(keptnEvent models.KeptnContextExtendedCE, 
 			return fmt.Errorf("unable decode Keptn event data: %w", err)
 		}
 
-		integrationID := integrationID
 		if eventData.IntegrationID != "" {
 			// overwrite default integrationID if it has been set in the event
 			integrationID = eventData.IntegrationID

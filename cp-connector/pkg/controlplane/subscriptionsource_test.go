@@ -13,12 +13,20 @@ import (
 )
 
 type SubscriptionSourceMock struct {
-	StartFn func(ctx context.Context, data RegistrationData, c chan []models.EventSubscription) error
+	StartFn    func(ctx context.Context, data RegistrationData, c chan []models.EventSubscription) error
+	RegisterFn func(integration models.Integration) (string, error)
 }
 
 func (u *SubscriptionSourceMock) Start(ctx context.Context, data RegistrationData, c chan []models.EventSubscription) error {
 	if u.StartFn != nil {
 		return u.StartFn(ctx, data, c)
+	}
+	panic("implement me")
+}
+
+func (u *SubscriptionSourceMock) Register(integration models.Integration) (string, error) {
+	if u.RegisterFn != nil {
+		return u.RegisterFn(integration)
 	}
 	panic("implement me")
 }
@@ -183,4 +191,32 @@ func TestFixedSubscriptionSourcer_WithNoSubscriptions(t *testing.T) {
 	require.NoError(t, err)
 	updates := <-subchan
 	require.Equal(t, 0, len(updates))
+}
+
+func TestSubscriptionRegistrationSucceeds(t *testing.T) {
+	initialRegistrationData := RegistrationData{}
+	uniformInterface := &fake.UniformInterfaceMock{
+		RegisterIntegrationFn: func(i models.Integration) (string, error) {
+			return "some-id", nil
+		},
+	}
+
+	subscriptionSource := NewUniformSubscriptionSource(uniformInterface)
+	id, err := subscriptionSource.Register(models.Integration(initialRegistrationData))
+	require.NoError(t, err)
+	require.Equal(t, id, "some-id")
+}
+
+func TestSubscriptionRegistrationFails(t *testing.T) {
+	initialRegistrationData := RegistrationData{}
+	uniformInterface := &fake.UniformInterfaceMock{
+		RegisterIntegrationFn: func(i models.Integration) (string, error) {
+			return "", fmt.Errorf("some error")
+		},
+	}
+
+	subscriptionSource := NewUniformSubscriptionSource(uniformInterface)
+	id, err := subscriptionSource.Register(models.Integration(initialRegistrationData))
+	require.Error(t, err)
+	require.Equal(t, id, "")
 }

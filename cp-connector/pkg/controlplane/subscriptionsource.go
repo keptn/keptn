@@ -12,6 +12,7 @@ import (
 
 type SubscriptionSource interface {
 	Start(context.Context, RegistrationData, chan []models.EventSubscription) error
+	Register(integration models.Integration) (string, error)
 }
 
 // UniformSubscriptionSource represents a source for uniform subscriptions
@@ -20,6 +21,14 @@ type UniformSubscriptionSource struct {
 	clock         clock.Clock
 	fetchInterval time.Duration
 	logger        logger.Logger
+}
+
+func (s *UniformSubscriptionSource) Register(integration models.Integration) (string, error) {
+	integrationID, err := s.uniformAPI.RegisterIntegration(integration)
+	if err != nil {
+		return "", err
+	}
+	return integrationID, nil
 }
 
 // WithFetchInterval specifies the interval the subscription source should

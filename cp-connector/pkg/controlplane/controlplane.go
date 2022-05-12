@@ -27,24 +27,25 @@ type Integration interface {
 
 // ControlPlane can be used to connect to the Keptn Control Plane
 type ControlPlane struct {
-	uniformApi           api.UniformV1Interface
 	subscriptionSource   SubscriptionSource
 	eventSource          EventSource
 	currentSubscriptions []models.EventSubscription
 	logger               logger.Logger
 	registered           bool
+	integrationID        string
+	logForwarder         LogForwarder
 }
 
 // New creates a new ControlPlane
 // It is using a SubscriptionSource source to get information about current uniform subscriptions
 // as well as an EventSource to actually receive events from Keptn
-func New(subscriptionSource SubscriptionSource, eventSource EventSource, uniformApi api.UniformV1Interface) *ControlPlane {
+func New(subscriptionSource SubscriptionSource, eventSource EventSource, logApiHandler api.LogsV1Interface) *ControlPlane {
 	return &ControlPlane{
 		subscriptionSource:   subscriptionSource,
 		eventSource:          eventSource,
-		uniformApi:           uniformApi,
 		currentSubscriptions: []models.EventSubscription{},
 		logger:               logger.NewDefaultLogger(),
+		logForwarder:         NewLogForwarder(logApiHandler),
 		registered:           false,
 	}
 }
@@ -54,12 +55,12 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 	eventUpdates := make(chan EventUpdate)
 	subscriptionUpdates := make(chan []models.EventSubscription)
 
+	var err error
 	registrationData := integration.RegistrationData()
-	integrationID, err := cp.uniformApi.RegisterIntegration(models.Integration(registrationData))
+	cp.integrationID, err = cp.subscriptionSource.Register(models.Integration(registrationData))
 	if err != nil {
-		return fmt.Errorf("could not start subscription source: %w", err)
+		return fmt.Errorf("could not register integration: %w", err)
 	}
-	registrationData.ID = integrationID
 
 	if err := cp.eventSource.Start(ctx, registrationData, eventUpdates); err != nil {
 		return err
@@ -104,6 +105,20 @@ func (cp *ControlPlane) handle(ctx context.Context, eventUpdate EventUpdate, int
 	return nil
 }
 
+func (cp *ControlPlane) getSender(sender EventSender) EventSender {
+	if cp.integrationID != "" {
+		return func(ce models.KeptnContextExtendedCE) error {
+			err := cp.logForwarder.Forward(ce, cp.integrationID)
+			if err != nil {
+				cp.logger.Warnf("could not forward event")
+			}
+			return sender(ce)
+		}
+	} else {
+		return sender
+	}
+}
+
 func (cp *ControlPlane) forwardMatchedEvent(ctx context.Context, eventUpdate EventUpdate, integration Integration, subscription models.EventSubscription) error {
 	err := eventUpdate.KeptnEvent.AddTemporaryData(
 		tmpDataDistributorKey,
@@ -117,7 +132,7 @@ func (cp *ControlPlane) forwardMatchedEvent(ctx context.Context, eventUpdate Eve
 	if err != nil {
 		cp.logger.Warnf("Could not append subscription data to event: %v", err)
 	}
-	if err := integration.OnEvent(context.WithValue(ctx, EventSenderKey, cp.eventSource.Sender()), eventUpdate.KeptnEvent); err != nil {
+	if err := integration.OnEvent(context.WithValue(ctx, EventSenderKey, cp.getSender(cp.eventSource.Sender())), eventUpdate.KeptnEvent); err != nil {
 		if errors.Is(err, ErrEventHandleFatal) {
 			cp.logger.Errorf("Fatal error during handling of event: %v", err)
 			return err
