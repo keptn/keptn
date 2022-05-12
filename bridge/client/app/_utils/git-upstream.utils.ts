@@ -41,6 +41,7 @@ export function getGitData(data: IGitDataExtended): IGitHttps['https'] | IGitSsh
 export function isRemoteUrlEmpty(gitInputData: IGitDataExtended): boolean {
   return (
     (isGitHTTPS(gitInputData) && !gitInputData.https.gitRemoteURL) ||
-    (isGitSSH(gitInputData) && !gitInputData.ssh.gitRemoteURL)
+    (isGitSSH(gitInputData) && !gitInputData.ssh.gitRemoteURL) ||
+    (!isGitHTTPS(gitInputData) && !isGitSSH(gitInputData))
   );
 }
