@@ -51,7 +51,7 @@
     <dt-chart
       class="mr-2"
       #heatmapChart
-      *ngIf="showChart && _comparisonView == 'heatmap'"
+      *ngIf="showChart && _comparisonView === 'heatmap'"
       uitestid="keptn-evaluation-details-chartHeatmap"
       [options]="_heatmapOptions"
       [series]="heatmapSeries"
@@ -155,7 +155,7 @@
     </dt-chart>
 
     <dt-chart
-      *ngIf="showChart && _comparisonView == 'chart'"
+      *ngIf="showChart && _comparisonView === 'chart'"
       uitestid="keptn-evaluation-details-chartSeries"
       [options]="_chartOptions"
       [series]="_chartSeries"
@@ -287,13 +287,13 @@
           >
             Compared with last
             <span
-              *ngIf="evaluation.compare_with == 'several_results'"
+              *ngIf="evaluation.compare_with === 'several_results'"
               [textContent]="evaluation.comparedEvents?.length + ' '"
             ></span>
-            <span *ngIf="evaluation.include_result_with_score == 'pass'">passed</span>
-            <span *ngIf="evaluation.include_result_with_score == 'pass_or_warn'">passed or warned</span>
-            evaluation<span *ngIf="evaluation.compare_with == 'several_results'">s</span>.
-            <span *ngIf="evaluation.number_of_missing_comparison_results == 1">
+            <span *ngIf="evaluation.include_result_with_score === 'pass'">passed</span>
+            <span *ngIf="evaluation.include_result_with_score === 'pass_or_warn'">passed or warned</span>
+            evaluation<span *ngIf="evaluation.compare_with === 'several_results'">s</span>.
+            <span *ngIf="evaluation.number_of_missing_comparison_results === 1">
               <span [textContent]="evaluation.number_of_missing_comparison_results"></span>
               result is not showing up in the Heatmap, because it has been either invalidated or is older.
             </span>

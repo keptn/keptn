@@ -5,7 +5,6 @@ import { Notification, NotificationType } from '../../_models/notification';
 import { DtIconModule } from '@dynatrace/barista-components/icon';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { AppModule } from '../../app.module';
-import { take } from 'rxjs/operators';
 import { firstValueFrom } from 'rxjs';
 
 describe('KtbNotificationBarComponent', () => {

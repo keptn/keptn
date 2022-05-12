@@ -7,7 +7,6 @@ import { ActivatedRoute } from '@angular/router';
 import { firstValueFrom, of } from 'rxjs';
 import { Project } from '../../_models/project';
 import { By } from '@angular/platform-browser';
-import { take } from 'rxjs/operators';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 

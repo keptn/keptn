@@ -4,7 +4,6 @@ import { AppModule } from '../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { Notification, NotificationType } from '../_models/notification';
 import { KtbProjectCreateMessageComponent } from '../_components/_status-messages/ktb-project-create-message/ktb-project-create-message.component';
-import { take } from 'rxjs/operators';
 import { firstValueFrom } from 'rxjs';
 
 describe('NotificationsService', () => {

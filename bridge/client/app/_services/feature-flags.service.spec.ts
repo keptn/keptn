@@ -5,7 +5,6 @@ import { FeatureFlagsService } from './feature-flags.service';
 import { ApiService } from './api.service';
 import { ApiServiceMock } from './api.service.mock';
 import { DataService } from './data.service';
-import { take } from 'rxjs/operators';
 import { firstValueFrom } from 'rxjs';
 
 describe('FeatureFlagsService', () => {

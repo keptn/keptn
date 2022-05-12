@@ -4,7 +4,7 @@ import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { DataService } from '../../_services/data.service';
 import { Project } from '../../_models/project';
-import { filter, take } from 'rxjs/operators';
+import { filter } from 'rxjs/operators';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 import { firstValueFrom } from 'rxjs';
