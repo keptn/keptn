@@ -1,7 +1,6 @@
 package sdk
 
 import (
-	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/strutils"
@@ -17,8 +16,6 @@ func Test_WhenReceivingAnEvent_StartedEventAndFinishedEventsAreSent(t *testing.T
 	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) { return FakeTaskData{}, nil }
 	taskEntry := TaskEntry{TaskHandler: taskHandler}
 	taskEntries := map[string]TaskEntry{"sh.keptn.event.faketask.triggered": taskEntry}
-	eventSender := &EventSenderMock{}
-	eventSender.SendEventFunc = func(eventMoqParam event.Event) error { return nil }
 	taskRegistry := &TaskRegistry{Entries: taskEntries}
 
 	testSubscriptionSource := controlplane.NewFixedSubscriptionSource(controlplane.WithFixedSubscriptions(models.EventSubscription{Event: "sh.keptn.event.faketask.triggered"}))
