@@ -27,15 +27,15 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
   public projects: Observable<Project[] | undefined>;
   public selectedProject: string | undefined;
   public projectBoardView = '';
-  public appTitle = environment?.config?.appTitle;
-  public logoUrl = environment?.config?.logoUrl;
-  public logoInvertedUrl = environment?.config?.logoInvertedUrl;
+  public appTitle = environment.config.appTitle;
+  public logoUrl = environment.config.logoUrl;
+  public logoInvertedUrl = environment.config.logoInvertedUrl;
   public keptnInfo?: KeptnInfo;
   public versionCheckDialogState: string | null = null;
   public versionCheckReference = '/reference/version_check/';
 
   constructor(
-    @Inject(DOCUMENT) private _document: HTMLDocument,
+    @Inject(DOCUMENT) private _document: Document,
     private router: Router,
     private dataService: DataService,
     private notificationsService: NotificationsService,
