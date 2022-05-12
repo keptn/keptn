@@ -2,25 +2,27 @@
 
 The *helm-service* allows deploying services to a Kubernetes cluster and releasing them to user traffic.
 Therefore, these services have to be packed as [Helm charts](https://helm.sh/docs/topics/charts/).
-For details about the Helm chart and how to onboard a service, please checkout the [docs](https://keptn.sh/docs/0.7.x/manage/service/#onboard-a-service).
+For details about the Helm chart and how to onboard a service, please checkout the [docs](https://keptn.sh/docs/0.15.x/manage/service/#onboard-a-service).
 
 In order to deploy and release services to user-traffic, the *helm-service* implements two tasks:
-1. Deployment task: Here, the `helm-service` executes a 
-Helm upgrade on the Helm chart provided by the user. Furthermore, the `helm-service` routes traffic to this new version. 
-1. Release task: Here, the `helm-service` 
-either promotes or rolls back the new version depending on the (evaluation) result.  
+1. Deployment task: Here, the `helm-service` executes a
+Helm upgrade on the Helm chart provided by the user. Furthermore, the `helm-service` routes traffic to this new version.
+1. Release task: Here, the `helm-service`
+either promotes or rolls back the new version depending on the (evaluation) result.
 
 ## Installation
 
 The *helm-service* is part of the *Execution Plane for Continuous Delivery*.
 
-You can find installation instructions [here](https://keptn.sh/docs/0.8.x/operate/install/#install-keptn).
+You can find installation instructions [here](https://keptn.sh/docs/0.15.x/operate/install/#install-keptn).
 
 To install it next to your Keptn installation, you can use the following command:
 
 ```console
-helm install helm-service https://github.com/keptn/keptn/releases/download/0.8.4/helm-service-0.8.4.tgz -n keptn
+helm install helm-service https://github.com/keptn/keptn/releases/download/<latest>/helm-service-<latest>.tgz -n keptn
 ```
+
+Replace `<latest>` with a Keptn version available from the [release list](https://github.com/keptn/keptn/tags).
 
 ## Development
 
@@ -46,7 +48,7 @@ and routes traffic to this new version.
 ### Handling of `sh.keptn.event.release.triggered` events
 The `sh.keptn.event.release.triggered` event states that a release has been triggered.
 
-For a direct deployment, the `helm-service` does not have to apply anything. 
+For a direct deployment, the `helm-service` does not have to apply anything.
 
 ![](./sequence_diagrams/release-triggered-direct.png)
 

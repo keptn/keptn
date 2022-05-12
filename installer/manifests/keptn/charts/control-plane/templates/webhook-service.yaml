@@ -106,3 +106,24 @@ spec:
     app.kubernetes.io/name: webhook-service
     app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keptn-webhook-config
+  labels:
+    app.kubernetes.io/name: webhook-service-config
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}
+data:
+  denyList: |-
+    kubernetes
+    kubernetes.default
+    kubernetes.default.svc
+    kubernetes.default.svc.cluster.local
+    localhost
+    127.0.0.1
+    ::1

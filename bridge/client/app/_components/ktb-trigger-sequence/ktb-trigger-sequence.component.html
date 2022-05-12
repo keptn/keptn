@@ -54,8 +54,8 @@
             Delivery
           </dt-radio-button>
           <dt-radio-button [value]="TRIGGER_SEQUENCE.EVALUATION" uitestid="ktb-trigger-sequence-evaluation-radio"
-            >Evaluation</dt-radio-button
-          >
+            >Evaluation
+          </dt-radio-button>
           <div
             *ngIf="customSequencesOfStage?.length === 0; else customSequencesSelect"
             [dtOverlay]="noCustomSequencesOverlay"
@@ -87,10 +87,9 @@
               </dt-select>
             </dt-radio-button>
           </ng-template>
-          <div *ngIf="!customSequences">
-            <dt-loading-spinner></dt-loading-spinner>
-            <span>Loading custom sequences ...</span>
-          </div>
+          <ktb-loading-distractor *ngIf="!customSequences" class="smaller"
+            >Loading custom sequences ...
+          </ktb-loading-distractor>
 
           <ng-template #noCustomSequencesOverlay>
             There are no custom sequences available for this stage in the shipyard.yaml file
@@ -146,9 +145,9 @@
           uitestid="keptn-trigger-delivery-labels"
           [(ngModel)]="deliveryFormData.labels"
           dtInput
-          placeholder="e.g. key1=value1,key2=value2"
+          placeholder="key1=value1,key2=value2"
         />
-        <dt-hint>Comma separated. Allowed: key=value</dt-hint>
+        <dt-hint>Comma-separated list of key-value pairs.</dt-hint>
       </dt-form-field>
 
       <dt-form-field class="mb-3">
@@ -157,11 +156,11 @@
           [errorStateMatcher]="jsonErrorStateMatcher"
           [(ngModel)]="deliveryFormData.values"
           dtInput
-          placeholder='e.g.: {"key1": "stringVal", "key2": {"key3": true}'
+          placeholder='{"key1": "stringVal", "key2": {"key3": true}}'
           style="resize: vertical"
           uitestid="keptn-trigger-delivery-values"
         ></textarea>
-        <dt-hint>JSON object</dt-hint>
+        <dt-hint>The values of a Helm Chart represented by a JSON object.</dt-hint>
         <dt-error uitestid="keptn-trigger-delivery-values-error">Must be valid JSON</dt-error>
       </dt-form-field>
 
@@ -202,8 +201,13 @@
         <dt-form-field class="overlay-origin">
           <dt-label>Start at</dt-label>
           <div class="input-overlay" (click)="timeframeStartButton?._elementRef?.nativeElement.click()"></div>
-          <input readonly dtInput [(ngModel)]="evaluationFormData.timeframeStart" />
-          <dt-hint>Defaults to now if not filled in</dt-hint>
+          <input
+            uitestid="keptn-trigger-evaluation-start-date"
+            readonly
+            dtInput
+            [ngModel]="evaluationFormData.timeframeStart | date: DATE_FORMAT"
+          />
+          <dt-hint>The start date and time of an evaluation that defaults to now if not specified.</dt-hint>
           <button
             dt-icon-button
             dtSuffix
@@ -229,8 +233,8 @@
 
         <ktb-time-input
           [label]="'Timeframe'"
-          [hint]="'Min. 1m, defaults to 5m if not filled in'"
-          [error]="isValidTimeframe ? '' : 'Timeframe has to be minimum 1 minute'"
+          [hint]="'The time frame to evaluate that must be at least 1 minute but defaults to 5 if not specified.'"
+          [error]="isValidTimeframe ? '' : 'Timeframe must be minimum 1 minute'"
           [timeframe]="evaluationFormData.timeframe"
           (timeChanged)="setTimeframe($event)"
         ></ktb-time-input>
@@ -246,9 +250,10 @@
           <dt-label class="required">Start at</dt-label>
           <div class="input-overlay" (click)="startDateButton?._elementRef?.nativeElement.click()"></div>
           <input
+            uitestid="keptn-trigger-evaluation-start-date"
             readonly
             dtInput
-            [(ngModel)]="evaluationFormData.startDatetime"
+            [ngModel]="evaluationFormData.startDatetime | date: DATE_FORMAT"
             [errorStateMatcher]="showErrorStateMatcher"
           />
           <button
@@ -272,15 +277,16 @@
           >
             <dt-icon name="calendar"></dt-icon>
           </button>
-          <dt-hint>Has to be before end date</dt-hint>
+          <dt-hint>The start date and time of an evaluation that defaults to now if not specified.</dt-hint>
         </dt-form-field>
         <dt-form-field class="overlay-origin full-width-error">
           <dt-label class="required">End at</dt-label>
           <div class="input-overlay" (click)="endDateButton?._elementRef?.nativeElement.click()"></div>
           <input
+            uitestid="keptn-trigger-evaluation-end-date"
             readonly
             dtInput
-            [(ngModel)]="evaluationFormData.endDatetime"
+            [ngModel]="evaluationFormData.endDatetime | date: DATE_FORMAT"
             [errorStateMatcher]="showErrorStateMatcher"
           />
           <button
@@ -304,14 +310,14 @@
           >
             <dt-icon name="calendar"></dt-icon>
           </button>
-          <dt-hint>Has to be after start date</dt-hint>
+          <dt-hint>The end date and time of an evaluation that must be after the start date and time.</dt-hint>
           <dt-error
             *ngIf="!isValidStartBeforeEnd || !isValidStartEndDuration"
             uitestid="keptn-trigger-evaluation-date-error"
           >
             <ng-container *ngIf="!isValidStartBeforeEnd">Start date must be before end date</ng-container>
             <ng-container *ngIf="isValidStartBeforeEnd && !isValidStartEndDuration"
-              >The duration has to be minimum 1 minute
+              >The duration must be minimum 1 minute
             </ng-container>
           </dt-error>
         </dt-form-field>
@@ -323,10 +329,10 @@
           <input
             [(ngModel)]="evaluationFormData.labels"
             dtInput
-            placeholder="e.g. key1=value1,key2=value2"
+            placeholder="key1=value1,key2=value2"
             uitestid="keptn-trigger-evaluation-labels"
           />
-          <dt-hint>Comma separated. Allowed: key=value</dt-hint>
+          <dt-hint>Comma-separated list of key-value pairs.</dt-hint>
         </dt-form-field>
       </div>
 
@@ -350,10 +356,10 @@
         <input
           [(ngModel)]="customFormData.labels"
           dtInput
-          placeholder="e.g. key1=value1,key2=value2"
+          placeholder="key1=value1,key2=value2"
           uitestid="keptn-trigger-custom-labels"
         />
-        <dt-hint>Comma separated. Allowed: key=value</dt-hint>
+        <dt-hint>Comma-separated list of key-value pairs.</dt-hint>
       </dt-form-field>
 
       <ng-container
@@ -382,7 +388,7 @@
       (click)="triggerSequence()"
     >
       <dt-icon name="flash" *ngIf="!isLoading"></dt-icon>
-      <dt-loading-spinner *ngIf="isLoading"></dt-loading-spinner>
+      <ktb-loading-spinner *ngIf="isLoading"></ktb-loading-spinner>
       Trigger sequence
     </button>
   </div>

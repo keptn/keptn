@@ -3,9 +3,9 @@ module github.com/keptn/keptn/remediation-service
 go 1.17
 
 require (
-	github.com/cloudevents/sdk-go/v2 v2.8.0
+	github.com/cloudevents/sdk-go/v2 v2.9.0
 	github.com/ghodss/yaml v1.0.0
-	github.com/keptn/go-utils v0.14.1-0.20220414081235-2e23eb712e3d
+	github.com/keptn/go-utils v0.15.1-0.20220512082458-c5e1b7519bec
 	github.com/keptn/keptn/go-sdk v0.0.0-20220207111546-fac316c656d7
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1

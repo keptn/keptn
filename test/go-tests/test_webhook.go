@@ -116,7 +116,7 @@ spec:
         - "curl --header 'x-token: {{.env.secretKey}}' http://shipyard-controller:8080/v1/project/{{.data.project}}"
         - "curl http://shipyard-controller:8080/v1/project/{{.data.project}}/stage/{{.data.stage}}"`
 
-const webhookYamlBeta = `apiVersion: webhookconfig.keptn.sh/v1beta1
+const WebhookYamlBeta = `apiVersion: webhookconfig.keptn.sh/v1beta1
 kind: WebhookConfig
 metadata:
   name: webhook-configuration
@@ -404,28 +404,10 @@ spec:
         - url: http://shipyard-controller:8080/v1/project/{{.data.project}}/stage/{{.data.stage}}
           method: GET`
 
-func Test_Webhook_Alpha(t *testing.T) {
-	Test_Webhook(t, webhookYamlAlpha)
-}
-
-func Test_Webhook_Beta(t *testing.T) {
-	Test_Webhook(t, webhookYamlBeta)
-}
-
-func Test_Webhook(t *testing.T, webhookYaml string) {
-	projectName := "webhooks"
-	serviceName := "myservice"
-	stageName := "dev"
-	sequencename := "mysequence"
+func CreateWebhookProject(t *testing.T, projectName, serviceName string) (string, string) {
 
 	shipyardFilePath, err := CreateTmpShipyardFile(webhookShipyard)
 	require.Nil(t, err)
-	defer func() {
-		err := os.Remove(shipyardFilePath)
-		if err != nil {
-			t.Logf("Could not delete tmp file: %s", err.Error())
-		}
-	}()
 
 	t.Logf("creating project %s", projectName)
 	projectName, err = CreateProject(projectName, shipyardFilePath)
@@ -446,14 +428,45 @@ func Test_Webhook(t *testing.T, webhookYaml string) {
 		},
 	}, 3)
 	require.Nil(t, err)
+	return projectName, shipyardFilePath
+}
+
+func Test_Webhook_Alpha(t *testing.T) {
+	projectName := "webhooks"
+	serviceName := "myservice"
+	projectName, shipyardFilePath := CreateWebhookProject(t, projectName, serviceName)
+	defer func() {
+		err := os.Remove(shipyardFilePath)
+		if err != nil {
+			t.Logf("Could not delete tmp file: %s", err.Error())
+		}
+	}()
+	Test_Webhook(t, webhookYamlAlpha, projectName, serviceName)
+}
+
+func Test_Webhook_Beta(t *testing.T) {
+	projectName := "webhooks"
+	serviceName := "myservice"
+	projectName, shipyardFilePath := CreateWebhookProject(t, projectName, serviceName)
+	defer func() {
+		err := os.Remove(shipyardFilePath)
+		if err != nil {
+			t.Logf("Could not delete tmp file: %s", err.Error())
+		}
+	}()
+	Test_Webhook(t, WebhookYamlBeta, projectName, serviceName)
+}
+
+func Test_Webhook(t *testing.T, webhookYaml string, projectName, serviceName string) {
+
+	stageName := "dev"
+	sequencename := "mysequence"
 
 	// create subscriptions for the webhook-service
 	taskTypes := []string{"mytask", "mytask-finished", "othertask", "unallowedtask", "unknowntask", "failedtask", "loopback", "loopback2", "loopback3"}
 
 	webhookYamlWithSubscriptionIDs := webhookYaml
 	webhookYamlWithSubscriptionIDs = getWebhookYamlWithSubscriptionIDs(t, taskTypes, projectName, webhookYamlWithSubscriptionIDs)
-
-	require.Nil(t, err)
 
 	// wait some time to make sure the webhook service has pulled the updated subscription
 	<-time.After(20 * time.Second) // sorry :(
@@ -466,6 +479,7 @@ func Test_Webhook(t *testing.T, webhookYaml string) {
 		if err != nil {
 			t.Logf("Could not delete tmp file: %s", err.Error())
 		}
+
 	}()
 
 	t.Log("Adding webhook.yaml to our service")
@@ -570,48 +584,36 @@ func Test_Webhook(t *testing.T, webhookYaml string) {
 }
 
 func Test_Webhook_OverlappingSubscriptions_Alpha(t *testing.T) {
-	Test_Webhook_OverlappingSubscriptions(t, webhookWithOverlappingSubscriptionsYamlAlpha)
-}
-
-func Test_Webhook_OverlappingSubscriptions_Beta(t *testing.T) {
-	Test_Webhook_OverlappingSubscriptions(t, webhookWithOverlappingSubscriptionsYamlBeta)
-}
-
-func Test_Webhook_OverlappingSubscriptions(t *testing.T, webhookWithOverlappingSubscriptionsYaml string) {
 	projectName := "webhooks-subscription-overlap"
 	serviceName := "myservice"
-	stageName := "dev"
-	sequencename := "mysequence"
-	taskName := "mytask"
-
-	shipyardFilePath, err := CreateTmpShipyardFile(webhookShipyard)
-	require.Nil(t, err)
+	projectName, shipyardFilePath := CreateWebhookProject(t, projectName, serviceName)
 	defer func() {
 		err := os.Remove(shipyardFilePath)
 		if err != nil {
 			t.Logf("Could not delete tmp file: %s", err.Error())
 		}
 	}()
+	Test_Webhook_OverlappingSubscriptions(t, webhookWithOverlappingSubscriptionsYamlAlpha, projectName, serviceName)
+}
 
-	t.Logf("creating project %s", projectName)
-	projectName, err = CreateProject(projectName, shipyardFilePath)
-	require.Nil(t, err)
+func Test_Webhook_OverlappingSubscriptions_Beta(t *testing.T) {
+	projectName := "webhooks-subscription-overlap"
+	serviceName := "myservice"
+	projectName, shipyardFilePath := CreateWebhookProject(t, projectName, serviceName)
+	defer func() {
+		err := os.Remove(shipyardFilePath)
+		if err != nil {
+			t.Logf("Could not delete tmp file: %s", err.Error())
+		}
+	}()
+	Test_Webhook_OverlappingSubscriptions(t, webhookWithOverlappingSubscriptionsYamlBeta, projectName, serviceName)
+}
 
-	t.Logf("creating service %s", serviceName)
-	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
+func Test_Webhook_OverlappingSubscriptions(t *testing.T, webhookWithOverlappingSubscriptionsYaml string, projectName, serviceName string) {
 
-	require.Nil(t, err)
-	require.Contains(t, output, "created successfully")
-
-	// create a secret that should be referenced in the webhook
-	_, err = ApiPOSTRequest("/secrets/v1/secret", map[string]interface{}{
-		"name":  "my-webhook-k8s-secret",
-		"scope": "keptn-webhook-service",
-		"data": map[string]string{
-			"my-key": "my-value",
-		},
-	}, 3)
-	require.Nil(t, err)
+	stageName := "dev"
+	sequencename := "mysequence"
+	taskName := "mytask"
 
 	// create subscriptions for the webhook-service
 	webhookYamlWithSubscriptionIDs := webhookWithOverlappingSubscriptionsYaml
@@ -671,16 +673,33 @@ func Test_Webhook_OverlappingSubscriptions(t *testing.T, webhookWithOverlappingS
 }
 
 func Test_WebhookConfigAtProjectLevel_Alpha(t *testing.T) {
-	Test_WebhookConfigAtProjectLevel(t, webhookSimpleYamlAlpha)
+	projectName := "webhooks-config-project"
+	serviceName := "myservice"
+	projectName, shipyardFilePath := CreateWebhookProject(t, projectName, serviceName)
+	defer func() {
+		err := os.Remove(shipyardFilePath)
+		if err != nil {
+			t.Logf("Could not delete tmp file: %s", err.Error())
+		}
+	}()
+	Test_WebhookConfigAtProjectLevel(t, webhookSimpleYamlAlpha, projectName, serviceName)
 }
 
 func Test_WebhookConfigAtProjectLevel_Beta(t *testing.T) {
-	Test_WebhookConfigAtProjectLevel(t, webhookSimpleYamlBeta)
-}
-
-func Test_WebhookConfigAtProjectLevel(t *testing.T, webhookSimpleYaml string) {
 	projectName := "webhooks-config-project"
 	serviceName := "myservice"
+	projectName, shipyardFilePath := CreateWebhookProject(t, projectName, serviceName)
+	defer func() {
+		err := os.Remove(shipyardFilePath)
+		if err != nil {
+			t.Logf("Could not delete tmp file: %s", err.Error())
+		}
+	}()
+	Test_WebhookConfigAtProjectLevel(t, webhookSimpleYamlBeta, projectName, serviceName)
+}
+
+func Test_WebhookConfigAtProjectLevel(t *testing.T, webhookSimpleYaml string, projectName, serviceName string) {
+
 	stageName := "dev"
 	sequencename := "mysequence"
 
@@ -995,55 +1014,41 @@ func Test_WebhookWithDisabledFinishedEvents(t *testing.T, webhookWithDisabledFin
 }
 
 func Test_WebhookWithDisabledStartedEvents_Alpha(t *testing.T) {
-	Test_WebhookWithDisabledStartedEvents(t, webhookWithDisabledStartedEventsYamlAlpha)
-}
-
-func Test_WebhookWithDisabledStartedEvents_Beta(t *testing.T) {
-	Test_WebhookWithDisabledStartedEvents(t, webhookWithDisabledStartedEventsYamlBeta)
-}
-
-func Test_WebhookWithDisabledStartedEvents(t *testing.T, webhookWithDisabledStartedEventsYaml string) {
 	projectName := "webhooks-no-started"
 	serviceName := "myservice"
-	stageName := "dev"
-	sequencename := "mysequence"
-
-	shipyardFilePath, err := CreateTmpShipyardFile(webhookShipyard)
-	require.Nil(t, err)
+	projectName, shipyardFilePath := CreateWebhookProject(t, projectName, serviceName)
 	defer func() {
 		err := os.Remove(shipyardFilePath)
 		if err != nil {
 			t.Logf("Could not delete tmp file: %s", err.Error())
 		}
 	}()
+	Test_WebhookWithDisabledStartedEvents(t, webhookWithDisabledStartedEventsYamlAlpha, projectName, serviceName)
+}
 
-	t.Logf("creating project %s", projectName)
-	projectName, err = CreateProject(projectName, shipyardFilePath)
-	require.Nil(t, err)
+func Test_WebhookWithDisabledStartedEvents_Beta(t *testing.T) {
+	projectName := "webhooks-no-started"
+	serviceName := "myservice"
+	projectName, shipyardFilePath := CreateWebhookProject(t, projectName, serviceName)
+	defer func() {
+		err := os.Remove(shipyardFilePath)
+		if err != nil {
+			t.Logf("Could not delete tmp file: %s", err.Error())
+		}
+	}()
+	Test_WebhookWithDisabledStartedEvents(t, webhookWithDisabledStartedEventsYamlBeta, projectName, serviceName)
+}
 
-	t.Logf("creating service %s", serviceName)
-	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
+func Test_WebhookWithDisabledStartedEvents(t *testing.T, webhookWithDisabledStartedEventsYaml string, projectName, serviceName string) {
 
-	require.Nil(t, err)
-	require.Contains(t, output, "created successfully")
-
-	// create a secret that should be referenced in the webhook
-	_, err = ApiPOSTRequest("/secrets/v1/secret", map[string]interface{}{
-		"name":  "my-webhook-k8s-secret",
-		"scope": "keptn-webhook-service",
-		"data": map[string]string{
-			"my-key": "my-value",
-		},
-	}, 3)
-	require.Nil(t, err)
+	stageName := "dev"
+	sequencename := "mysequence"
 
 	// create subscriptions for the webhook-service
 	taskTypes := []string{"mytask"}
 
 	webhookYamlWithSubscriptionIDs := webhookWithDisabledStartedEventsYaml
 	webhookYamlWithSubscriptionIDs = getWebhookYamlWithSubscriptionIDs(t, taskTypes, projectName, webhookYamlWithSubscriptionIDs)
-
-	require.Nil(t, err)
 
 	// wait some time to make sure the webhook service has pulled the updated subscription
 	<-time.After(20 * time.Second) // sorry :(

@@ -65,21 +65,7 @@ spec:
               value: 'http://localhost:8081/event'
             - name: LOG_LEVEL
               value: {{ .Values.logLevel | default "info" }}
-          {{- include "control-plane.common.container-security-context" . | nindent 10 }}
-        - name: distributor
-          image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
-          {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
-          {{- include "control-plane.dist.readinessProbe" . | nindent 10 }}
-          imagePullPolicy: IfNotPresent
-          ports:
-            - containerPort: 8080
-          {{- include "keptn.distributor.resources" . | nindent 10 }}
-          env:
-            - name: PUBSUB_TOPIC
-              value: 'sh.keptn.event.approval.>'
-            - name: PUBSUB_RECIPIENT
-              value: '127.0.0.1'
-          {{- include "control-plane.dist.common.env.vars" . | nindent 12 }}
+            {{- include "control-plane.common.env.vars" . | nindent 12 }}
           {{- include "control-plane.common.container-security-context" . | nindent 10 }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.approvalService.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
 ---

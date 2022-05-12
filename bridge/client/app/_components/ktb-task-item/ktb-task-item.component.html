@@ -24,7 +24,7 @@
             disabled
             variant="nested"
           >
-            <dt-loading-spinner aria-label="Task is running..."></dt-loading-spinner>
+            <ktb-loading-spinner aria-label="Task is running..."></ktb-loading-spinner>
           </button>
           <dt-icon
             *ngIf="!task.isLoading() || task.isApproval() || task.getLastTrace().isApproval()"
@@ -77,6 +77,7 @@
               *ngFor="let deploymentURIPublic of finishedEvent.data?.deployment?.deploymentURIsPublic"
               [href]="deploymentURIPublic"
               target="_blank"
+              (click)="$event.stopPropagation()"
             >
               <button dt-icon-button variant="nested" [title]="'View ' + task.service + ' in ' + task.stage">
                 <dt-icon name="externallink"></dt-icon>

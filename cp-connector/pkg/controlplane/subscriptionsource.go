@@ -2,17 +2,21 @@ package controlplane
 
 import (
 	"context"
-	"fmt"
+	"time"
+
 	"github.com/benbjohnson/clock"
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cp-connector/pkg/logger"
-	"time"
 )
 
 type SubscriptionSource interface {
 	Start(context.Context, RegistrationData, chan []models.EventSubscription) error
+	Register(integration models.Integration) (string, error)
 }
+
+var _ SubscriptionSource = FixedSubscriptionSource{}
+var _ SubscriptionSource = (*UniformSubscriptionSource)(nil)
 
 // UniformSubscriptionSource represents a source for uniform subscriptions
 type UniformSubscriptionSource struct {
@@ -20,6 +24,14 @@ type UniformSubscriptionSource struct {
 	clock         clock.Clock
 	fetchInterval time.Duration
 	logger        logger.Logger
+}
+
+func (s *UniformSubscriptionSource) Register(integration models.Integration) (string, error) {
+	integrationID, err := s.uniformAPI.RegisterIntegration(integration)
+	if err != nil {
+		return "", err
+	}
+	return integrationID, nil
 }
 
 // WithFetchInterval specifies the interval the subscription source should
@@ -41,10 +53,6 @@ func NewUniformSubscriptionSource(uniformAPI api.UniformV1Interface, options ...
 
 // Start triggers the execution of the UniformSubscriptionSource
 func (s *UniformSubscriptionSource) Start(ctx context.Context, registrationData RegistrationData, subscriptionChannel chan []models.EventSubscription) error {
-	integrationID, err := s.uniformAPI.RegisterIntegration(models.Integration(registrationData))
-	if err != nil {
-		return fmt.Errorf("could not start subscription source: %w", err)
-	}
 	ticker := s.clock.Ticker(s.fetchInterval)
 	go func() {
 		for {
@@ -52,7 +60,7 @@ func (s *UniformSubscriptionSource) Start(ctx context.Context, registrationData 
 			case <-ctx.Done():
 				return
 			case <-ticker.C:
-				updatedIntegrationData, err := s.uniformAPI.Ping(integrationID)
+				updatedIntegrationData, err := s.uniformAPI.Ping(registrationData.ID)
 				if err != nil {
 					s.logger.Errorf("Unable to ping control plane: %v", err)
 					continue
@@ -91,4 +99,8 @@ func NewFixedSubscriptionSource(options ...func(source *FixedSubscriptionSource)
 func (s FixedSubscriptionSource) Start(ctx context.Context, data RegistrationData, c chan []models.EventSubscription) error {
 	go func() { c <- s.fixedSubscriptions }()
 	return nil
+}
+
+func (s FixedSubscriptionSource) Register(integration models.Integration) (string, error) {
+	return "", nil
 }

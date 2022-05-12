@@ -24,7 +24,7 @@
         placeholder="https://git-repo.com/repo.git"
         uitestid="ktb-git-url-input"
       />
-      <dt-loading-spinner *ngIf="isLoading" dtPrefix aria-label="Loading data"></dt-loading-spinner>
+      <ktb-loading-spinner *ngIf="isLoading" dtPrefix aria-label="Loading data"></ktb-loading-spinner>
       <dt-error *ngIf="gitUrlControl.hasError('required')">Must not be empty</dt-error>
       <dt-error *ngIf="gitUrlControl.hasError('url')">Must start with http(s)://</dt-error>
       <dt-error *ngIf="gitUrlControl.hasError('space')">Must not contain spaces</dt-error>
@@ -33,7 +33,7 @@
       <dt-form-field class="mr-3">
         <dt-label>Git user</dt-label>
         <input formControlName="gitUser" type="text" dtInput placeholder="Username" uitestid="ktb-git-username-input" />
-        <dt-loading-spinner *ngIf="isLoading" dtPrefix aria-label="Loading data"></dt-loading-spinner>
+        <ktb-loading-spinner *ngIf="isLoading" dtPrefix aria-label="Loading data"></ktb-loading-spinner>
       </dt-form-field>
       <dt-form-field>
         <dt-label [class.required]="required">Token</dt-label>
@@ -51,7 +51,7 @@
   </div>
   <div class="ml-3" *ngIf="!isCreateMode && !isInGitExtended">
     <button [disabled]="isButtonDisabled()" (click)="setGitUpstream()" dt-button uitestid="ktb-project-update-button">
-      <dt-loading-spinner *ngIf="isGitUpstreamInProgress" aria-label="Setting Git upstream URL"></dt-loading-spinner>
+      <ktb-loading-spinner *ngIf="isGitUpstreamInProgress" aria-label="Setting Git upstream URL"></ktb-loading-spinner>
       Set Git upstream
     </button>
   </div>

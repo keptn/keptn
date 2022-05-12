@@ -2,13 +2,12 @@ package go_tests
 
 import (
 	"fmt"
-	"os"
-	"testing"
-	"time"
-
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/stretchr/testify/require"
+	"os"
+	"testing"
+	"time"
 )
 
 const zeroDownTimeShipyard = `apiVersion: "spec.keptn.sh/0.2.0"
@@ -53,6 +52,14 @@ func Test_ZeroDownTimeTriggerSequence(t *testing.T) {
 
 	// scale down the shipyard controller
 	err = ScaleDownUniform([]string{"shipyard-controller"})
+
+	defer func() {
+		// make sure the shipyard-controller deployment is scaled back up in any case, even when there is an unexpected error during the test
+		if err := ScaleUpUniform([]string{"shipyard-controller"}, 1); err != nil {
+			t.Errorf("could not scale up shipyard-controller: %v", err)
+		}
+
+	}()
 
 	require.Nil(t, err)
 

@@ -4,11 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
+
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/cp-connector/pkg/logger"
 	"github.com/nats-io/nats.go"
-	"os"
 )
+
+var _ NATS = (*NatsConnector)(nil)
 
 const (
 	EnvVarNatsURL        = "NATS_URL"

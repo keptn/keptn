@@ -30,6 +30,8 @@ import { IScopesResult } from '../_interfaces/scopes-result';
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
 import { IGitHttps, IGitSsh } from '../_interfaces/git-upstream';
 import { ICustomSequences } from '../../../shared/interfaces/custom-sequences';
+import { environment } from '../../environments/environment';
+import { WindowConfig } from '../../environments/environment.dynamic';
 
 @Injectable({
   providedIn: 'root',
@@ -533,5 +535,9 @@ export class ApiService {
 
   public getSecretScopes(): Observable<IScopesResult> {
     return this.http.get<IScopesResult>(`${this._baseUrl}/secrets/v1/scope`);
+  }
+
+  public getLookAndFeelConfig(): Observable<WindowConfig | undefined> {
+    return this.http.get<WindowConfig | undefined>(environment.appConfigUrl);
   }
 }

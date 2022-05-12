@@ -12,6 +12,8 @@ import (
 // Also, for multiple iterations of a sequence, each iteration will get a new instance.
 type SequenceExecution struct {
 	ID string `json:"_id" bson:"_id"`
+	// SchemaVersion indicates the scheme that is used for the internal representation of the sequence execution
+	SchemaVersion string `json:"schemaVersion" bson:"schemaVersion"`
 	// Sequence contains the complete sequence definition
 	Sequence keptnv2.Sequence        `json:"sequence" bson:"sequence"`
 	Status   SequenceExecutionStatus `json:"status" bson:"status"`
@@ -127,7 +129,8 @@ func (e *SequenceExecution) GetNextTriggeredEventData() map[string]interface{} {
 	eventPayload := map[string]interface{}{}
 
 	if e.InputProperties != nil {
-		eventPayload = common.CopyMap(e.InputProperties)
+		inputProperties := common.CopyMap(e.InputProperties)
+		eventPayload = common.Merge(eventPayload, inputProperties).(map[string]interface{})
 	}
 
 	eventPayload["project"] = e.Scope.Project
@@ -146,6 +149,11 @@ func (e *SequenceExecution) GetNextTriggeredEventData() map[string]interface{} {
 	nextTask := e.GetNextTaskOfSequence()
 	if nextTask != nil && nextTask.Properties != nil {
 		eventPayload[nextTask.Name] = common.Merge(eventPayload[nextTask.Name], nextTask.Properties)
+	}
+
+	// remove any messages set by previous task executors
+	if eventPayload["message"] != nil {
+		eventPayload["message"] = ""
 	}
 
 	return eventPayload
@@ -262,4 +270,5 @@ type SequenceExecutionFilter struct {
 
 type SequenceExecutionUpsertOptions struct {
 	CheckUniqueTriggeredID bool
+	Replace                bool
 }

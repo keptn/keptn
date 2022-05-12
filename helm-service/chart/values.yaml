@@ -5,8 +5,8 @@ helmservice:
     tag: ""                                  # Container Tag
   service:
     enabled: true                            # Creates a Kubernetes Service for the helm-service
-  gracePeriod: 90                            # PreStop hook time +30s
-  preStopHookTime: 60
+  gracePeriod: 60
+  preStopHookTime: 5
 
 distributor:
   stageFilter: ""                            # Stage to which this helm service belongs; default=all; comma-separated list to filter for set of stages

@@ -85,7 +85,7 @@
   stroke: var(--dt-theme-main-active-color) !important;
 }
 
-.dt-button.dt-button-nested .dt-loading-spinner-svg {
+.dt-button.dt-button-nested .ktb-loading-spinner-svg {
   stroke: var(--dt-neutral-active-color) !important;
 }
 

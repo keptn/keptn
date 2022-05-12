@@ -2,15 +2,16 @@ package middleware
 
 import (
 	"errors"
-	"github.com/benbjohnson/clock"
-	middleware_mock "github.com/keptn/keptn/api/middleware/fake"
-	"github.com/keptn/keptn/api/models"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/benbjohnson/clock"
+	middleware_mock "github.com/keptn/keptn/api/middleware/fake"
+	"github.com/keptn/keptn/api/models"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_extractIPFromRemoteAddress(t *testing.T) {

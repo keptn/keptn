@@ -43,14 +43,13 @@ keptn [command] [entity] [name] [flags]
 
 where **command**, **entity**, **name**, and **flags** are:
 
-- **command**: Specifies the operation that you want to perform, for example, install, create, onboard, send.
+- **command**: Specifies the operation that you want to perform, such as, install, create, send.
 
-- **entity**: Specifies the entity type. For example, the following commands run a create, onboard, and update operation on the project, service, and domain entity:
+- **entity**: Specifies the entity type. For example, the following commands run a create operation on the project and service entities:
 
     ```console
     keptn create project 
-    keptn onboard service
-    keptn configure domain
+    keptn create service
     ```
 
 - **name**: Specifies the name of the entity. Names are case-sensitive. 
@@ -65,19 +64,30 @@ The following table includes short descriptions and the general syntax for all o
 
 | Command  | Description  |
 |:---:|---|
-| `add-resource`  | Adds a resource to a service within your project in the specified stage |
-| `auth`  | Authenticate the Keptn CLI against a Keptn installation  |
-| `create`  | Create currently allows to create a project |
+| `abort`  | Aborts the execution of a sequence |
+| `add-resource`  | Adds a local resource to a service within your project in the specified stage |
+| `auth`  | Authenticates the Keptn CLI against a Keptn installation  |
+| `completion`  | Generate completion script  |
+| `configure`  | Configures one of the specified parts of Keptn  |
+| `create`  | Creates a new project, service or secret |
+| `delete`  | Deletes a project |
+| `generate`  | Generates the markdown CLI documentation or a support archive |
+| `get`  | Displays an event or Keptn entities such as project, stage, or service |
 | `help`  | Help about any command |
-| `install`  | Install Keptn on your Kubernetes cluster |
-| `onboard`  | Onboard allows to onboard a new service |
-| `send`  | Send a Keptn event in combination with the subcommand *event* |
+| `install`  | Installs Keptn on a Kubernetes cluster |
+| `pause`  | Pauses the execution of a sequence |
+| `resume`  | Resumes the execution of a sequence |
+| `send`  | Sends an event to Keptn |
+| `set`  | Sets flags of the CLI configuration |
 | `status`  | Checks the status of the CLI |
-| `uninstall`  | Uninstalls Keptn on your Kubernetes cluster |
-| `version`  | Prints the CLI version for the current context |
+| `trigger`  | Triggers the execution of an action in keptn |
+| `uninstall`  | Uninstalls Keptn from a Kubernetes cluster |
+| `update`  | Updates an existing Keptn project |
+| `upgrade`  | Upgrades Keptn on a Kubernetes cluster |
+| `version`  | Shows the version of Keptn and Keptn CLI |
 
 ## Examples: Common operations
-Use the following set of examples to help you familiarize yourself with running the commonly used `keptn` operations:
+Use the following set of examples to familiarize yourself with running the commonly used `keptn` operations:
 
 - Install Keptn on a plain Kubernetes cluster
   ```console
@@ -86,15 +96,15 @@ Use the following set of examples to help you familiarize yourself with running 
 
 - Create a project using the definition in a shipyard.yaml
   ```console
-  keptn create project my-first-project shipyard.yaml
+  keptn create project my-first-project --shipyard=shipyard.yaml
   ```
 
-- Onboard a (micro)service to the created project
+- Create a service for the new project
   ```console
-  keptn onboard service my-service values.yaml
+  keptn create service my-first-service --project=my-first-project
   ```
 
-- Send a new artifact event for the onboarded service
+- Trigger the delivery of a new artifact for the project's new service
   ```console
-  keptn trigger delivery --project=my-first-project --service=my-service --image=docker.io/keptnexamples/my-service:0.1.0
+  keptn trigger delivery --project=my-first-project --service=my-first-service --image=docker.io/keptnexamples/my-service:0.1.0
   ```

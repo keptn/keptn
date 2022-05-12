@@ -30,8 +30,8 @@
     (click)="deleteConfirm()"
     [disabled]="deletionConfirmationForm.invalid || (isDeleteProjectInProgress$ | async)"
   >
+    <ktb-loading-spinner *ngIf="isDeleteProjectInProgress$ | async"></ktb-loading-spinner>
     I understand the consequences, delete this {{ data.type }}
-    <dt-loading-spinner *ngIf="isDeleteProjectInProgress$ | async"></dt-loading-spinner>
   </button>
   <div class="mt-3" *ngIf="deletionError$ | async as error">
     <span class="error">{{ error }}</span>

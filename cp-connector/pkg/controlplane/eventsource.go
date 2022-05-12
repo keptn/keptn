@@ -4,17 +4,20 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
+	"sort"
+
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/cp-connector/pkg/logger"
 	natseventsource "github.com/keptn/keptn/cp-connector/pkg/nats"
 	"github.com/nats-io/nats.go"
-	"reflect"
-	"sort"
 )
 
 type EventSenderKeyType struct{}
 
 var EventSenderKey = EventSenderKeyType{}
+
+var _ EventSource = (*NATSEventSource)(nil)
 
 type EventSender func(ce models.KeptnContextExtendedCE) error
 
@@ -28,6 +31,13 @@ type EventUpdate struct {
 // event received from the event source
 type EventUpdateMetaData struct {
 	Subject string
+}
+
+// AdditionalSubscriptionData is the data the cp-connector
+// will add as temporary data to the keptn events forwarded
+// to the keptn integration
+type AdditionalSubscriptionData struct {
+	SubscriptionID string `json:"subscriptionID"`
 }
 
 // EventSource is anything that can be used

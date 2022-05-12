@@ -1,22 +1,13 @@
-<div class="container" uitestid="keptn-dashboard-projectList">
-  <ng-container *ngIf="projects$ | async as projects">
-    <div
-      *ngIf="!projects"
-      fxLayout="row"
-      fxLayoutAlign="start center"
-      fxLayoutGap="15px"
-      uitestid="keptn-dashboard-loading"
-    >
-      <dt-loading-spinner></dt-loading-spinner>
-      <p>Loading ...</p>
-    </div>
-
+<div class="container" fxFlexFill uitestid="keptn-dashboard-projectList">
+  <ng-container *ngIf="projects$ | async as projects; else loading">
     <div fxLayout="row" fxLayoutAlign="start" class="p-3 project-dashboard-actions">
-      <a [routerLink]="'/create/project'"><button dt-button>Create a new project</button></a>
+      <a [routerLink]="'/create/project'">
+        <button dt-button>Create a new project</button>
+      </a>
       <div class="new-project-overlay p-3 animation-pulse" *ngIf="projects?.length === 0">
         <div fxLayout="row">
-          <dt-icon name="information" class="event-icon mr-2"></dt-icon
-          ><span>Ready for your automation journey?<br />Start here by creating your first project.</span>
+          <dt-icon name="information" class="event-icon mr-2"></dt-icon>
+          <span>Ready for your automation journey?<br />Start here by creating your first project.</span>
         </div>
       </div>
     </div>
@@ -26,7 +17,7 @@
         <dt-empty-state-item-img>
           <img alt="Logo" class="mt-2" [src]="logoInvertedUrl" />
         </dt-empty-state-item-img>
-        <dt-empty-state-item-title class="mt-2" aria-level="2"> No projects existing </dt-empty-state-item-title>
+        <dt-empty-state-item-title class="mt-2" aria-level="2"> No projects existing</dt-empty-state-item-title>
         <p>
           There are no projects available.<br />
           Create a new project by using the "Create a new project" button or check out the
@@ -55,4 +46,10 @@
       <ktb-project-list [projects]="projects"></ktb-project-list>
     </div>
   </ng-container>
+
+  <ng-template #loading>
+    <div fxFlexFill fxLayoutAlign="center center">
+      <ktb-loading-distractor>Loading ...</ktb-loading-distractor>
+    </div>
+  </ng-template>
 </div>
