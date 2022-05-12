@@ -96,7 +96,7 @@ func startControlPlane(ctx context.Context, api *operations.MongodbDatastoreAPI,
 	subSource := controlplane.NewFixedSubscriptionSource(controlplane.WithFixedSubscriptions(keptnapi.EventSubscription{Event: "sh.keptn.event.>"}))
 
 	// 3. Create control plane
-	controlPlane := controlplane.New(subSource, eventSource)
+	controlPlane := controlplane.New(subSource, eventSource, nil)
 
 	ctx, cancel := context.WithCancel(ctx)
 
