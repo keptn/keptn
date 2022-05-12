@@ -25,7 +25,7 @@ export class FormUtils {
     control: AbstractControl
   ): { urlOrSecret: { value: boolean } } | { space: { value: boolean } } | null {
     if (control.value) {
-      if ((control.value.search(/^http(s?):\/\//) === -1) && (control.value.search(/^{{(.+)}}/) === -1)) {
+      if (control.value.search(/^http(s?):\/\//) === -1 && control.value.search(/^{{(\..+)}}/) === -1) {
         return { urlOrSecret: { value: true } };
       } else if (control.value.includes(' ')) {
         return { space: { value: true } };
