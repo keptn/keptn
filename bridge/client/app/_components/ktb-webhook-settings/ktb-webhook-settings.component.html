@@ -28,7 +28,7 @@
         class="resize-vertical url-input"
       ></textarea>
       <dt-error *ngIf="getFormControl('url').errors?.required">URL must not be empty</dt-error>
-      <dt-error *ngIf="getFormControl('url').errors?.url"> URL must start with http(s):// </dt-error>
+      <dt-error *ngIf="getFormControl('url').errors?.urlOrSecret"> URL must start with http(s):// or be a secret </dt-error>
       <dt-error *ngIf="getFormControl('url').errors?.space"> URL must not contain spaces </dt-error>
       <div dtSuffix uitestid="event-url">
         <ng-container
