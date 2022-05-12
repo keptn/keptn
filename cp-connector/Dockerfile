@@ -21,6 +21,7 @@ RUN go mod download
 # Copy local code to the container image.
 COPY . .
 
+
 FROM builder-base as builder-test
 ENV GOTESTSUM_FORMAT=testname
 
