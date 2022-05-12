@@ -143,7 +143,6 @@ func (l ApprovalService) RegistrationData() controlplane.RegistrationData {
 }
 
 func getGracefulContext() context.Context {
-
 	ch := make(chan os.Signal)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
 	wg := &sync.WaitGroup{}
@@ -151,13 +150,11 @@ func getGracefulContext() context.Context {
 	ctx = cloudevents.WithEncodingStructured(ctx)
 	go func() {
 		<-ch
-		logger.Info("Container termination triggered, starting graceful shutdown")
-		logger.Info("Cancelling context")
+		logger.Info("Container termination triggered, starting graceful shutdown and cancelling context")
 		cancel()
 		logger.Info("Waiting for event handlers to finish")
 		wg.Wait()
 		logger.Info("All handlers finished - ready to shut down")
-
 	}()
 	return ctx
 }
