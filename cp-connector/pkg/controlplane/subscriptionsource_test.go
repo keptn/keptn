@@ -198,7 +198,7 @@ func TestFixedSubscriptionSourcer_Register(t *testing.T) {
 	initialRegistrationData := RegistrationData{}
 	s, err := fss.Register(models.Integration(initialRegistrationData))
 	require.NoError(t, err)
-	require.Equal(t, s, "")
+	require.Equal(t, "", s)
 }
 
 func TestSubscriptionRegistrationSucceeds(t *testing.T) {
