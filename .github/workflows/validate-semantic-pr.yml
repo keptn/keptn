@@ -43,6 +43,7 @@ jobs:
             deps-dev
             distributor
             docs
+            go-sdk
             helm-service
             installer
             jmeter-service
