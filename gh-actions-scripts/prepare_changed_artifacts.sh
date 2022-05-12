@@ -50,6 +50,7 @@ if [ "$RELEASE_BUILD" != 'true' ] && [ "$PRERELEASE_BUILD" != 'true' ]; then
     "$MONGODB_DS_ARTIFACT_PREFIX"
     "$STATISTICS_SVC_ARTIFACT_PREFIX"
     "$WEBHOOK_SVC_ARTIFACT_PREFIX"
+    "$SDK_ARTIFACT_PREFIX"
   )
 else
   artifacts=(

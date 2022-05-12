@@ -91,7 +91,6 @@ type Error struct {
 	ResultType keptnv2.ResultType
 	Message    string
 	Err        error
-	Change     string
 }
 
 func (e Error) Error() string {
