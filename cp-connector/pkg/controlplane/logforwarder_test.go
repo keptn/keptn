@@ -19,13 +19,6 @@ func TestLogForwarderNoForward(t *testing.T) {
 	require.Len(t, logHandler.LogCalls(), 0)
 }
 
-func TestLogForwarderNilLogHandler(t *testing.T) {
-	logForwarder := NewLogForwarder(nil)
-	keptnEvent := models.KeptnContextExtendedCE{ID: "some-id", Type: strutils.Stringp("sh.keptn.event.echo.triggered")}
-	err := logForwarder.Forward(keptnEvent, "some-other-id")
-	require.Nil(t, err)
-}
-
 func TestLogForwarderFinishedNoForward(t *testing.T) {
 	logHandler := &fake.LogAPIMock{}
 	logForwarder := NewLogForwarder(logHandler)

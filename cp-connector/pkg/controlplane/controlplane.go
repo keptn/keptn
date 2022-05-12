@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/keptn/go-utils/pkg/api/models"
-	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cp-connector/pkg/logger"
 )
 
@@ -39,13 +38,13 @@ type ControlPlane struct {
 // New creates a new ControlPlane
 // It is using a SubscriptionSource source to get information about current uniform subscriptions
 // as well as an EventSource to actually receive events from Keptn
-func New(subscriptionSource SubscriptionSource, eventSource EventSource, logApiHandler api.LogsV1Interface) *ControlPlane {
+func New(subscriptionSource SubscriptionSource, eventSource EventSource, logForwarder LogForwarder) *ControlPlane {
 	return &ControlPlane{
 		subscriptionSource:   subscriptionSource,
 		eventSource:          eventSource,
 		currentSubscriptions: []models.EventSubscription{},
 		logger:               logger.NewDefaultLogger(),
-		logForwarder:         NewLogForwarder(logApiHandler),
+		logForwarder:         logForwarder,
 		registered:           false,
 	}
 }
@@ -107,7 +106,7 @@ func (cp *ControlPlane) handle(ctx context.Context, eventUpdate EventUpdate, int
 }
 
 func (cp *ControlPlane) getSender(sender EventSender) EventSender {
-	if cp.integrationID != "" {
+	if cp.integrationID != "" && cp.logForwarder != nil {
 		return func(ce models.KeptnContextExtendedCE) error {
 			err := cp.logForwarder.Forward(ce, cp.integrationID)
 			if err != nil {

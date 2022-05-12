@@ -9,7 +9,6 @@ import (
 
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/strutils"
-	"github.com/keptn/keptn/cp-connector/pkg/controlplane/fake"
 	"github.com/stretchr/testify/require"
 )
 
@@ -32,6 +31,17 @@ func (e ExampleIntegration) RegistrationData() RegistrationData {
 	panic("implement me")
 }
 
+type LogForwarderMock struct {
+	ForwardFn func(keptnEvent models.KeptnContextExtendedCE, integrationID string) error
+}
+
+func (l LogForwarderMock) Forward(keptnEvent models.KeptnContextExtendedCE, integrationID string) error {
+	if l.ForwardFn != nil {
+		return l.ForwardFn(keptnEvent, integrationID)
+	}
+	panic("implement me")
+}
+
 func TestControlPlaneInitialRegistrationFails(t *testing.T) {
 	ssm := &SubscriptionSourceMock{
 		RegisterFn: func(integration models.Integration) (string, error) {
@@ -39,12 +49,13 @@ func TestControlPlaneInitialRegistrationFails(t *testing.T) {
 		},
 	}
 	esm := &EventSourceMock{}
-	lm := &fake.LogAPIMock{
-		LogFunc:   func(logs []models.LogEntry) { return },
-		FlushFunc: func() error { return nil },
+	fm := &LogForwarderMock{
+		ForwardFn: func(keptnEvent models.KeptnContextExtendedCE, integrationID string) error {
+			return nil
+		},
 	}
 	integration := ExampleIntegration{RegistrationDataFn: func() RegistrationData { return RegistrationData{} }}
-	err := New(ssm, esm, lm).Register(context.TODO(), integration)
+	err := New(ssm, esm, fm).Register(context.TODO(), integration)
 	require.Error(t, err)
 }
 
@@ -58,12 +69,13 @@ func TestControlPlaneEventSourceFailsToStart(t *testing.T) {
 		StartFn: func(ctx context.Context, data RegistrationData, ces chan EventUpdate) error {
 			return fmt.Errorf("error occured")
 		}}
-	lm := &fake.LogAPIMock{
-		LogFunc:   func(logs []models.LogEntry) { return },
-		FlushFunc: func() error { return nil },
+	fm := &LogForwarderMock{
+		ForwardFn: func(keptnEvent models.KeptnContextExtendedCE, integrationID string) error {
+			return nil
+		},
 	}
 	integration := ExampleIntegration{RegistrationDataFn: func() RegistrationData { return RegistrationData{} }}
-	err := New(ssm, esm, lm).Register(context.TODO(), integration)
+	err := New(ssm, esm, fm).Register(context.TODO(), integration)
 	require.Error(t, err)
 }
 
@@ -79,12 +91,13 @@ func TestControlPlaneSubscriptionSourceFailsToStart(t *testing.T) {
 	esm := &EventSourceMock{StartFn: func(ctx context.Context, data RegistrationData, ces chan EventUpdate) error {
 		return nil
 	}}
-	lm := &fake.LogAPIMock{
-		LogFunc:   func(logs []models.LogEntry) { return },
-		FlushFunc: func() error { return nil },
+	fm := &LogForwarderMock{
+		ForwardFn: func(keptnEvent models.KeptnContextExtendedCE, integrationID string) error {
+			return nil
+		},
 	}
 	integration := ExampleIntegration{RegistrationDataFn: func() RegistrationData { return RegistrationData{} }}
-	err := New(ssm, esm, lm).Register(context.TODO(), integration)
+	err := New(ssm, esm, fm).Register(context.TODO(), integration)
 	require.Error(t, err)
 }
 
@@ -113,12 +126,13 @@ func TestControlPlaneInboundEventIsForwardedToIntegration(t *testing.T) {
 		OnSubscriptionUpdateFn: func(strings []string) {},
 		SenderFn:               func() EventSender { return callBackSender },
 	}
-	lm := &fake.LogAPIMock{
-		LogFunc:   func(logs []models.LogEntry) { return },
-		FlushFunc: func() error { return nil },
+	fm := &LogForwarderMock{
+		ForwardFn: func(keptnEvent models.KeptnContextExtendedCE, integrationID string) error {
+			return nil
+		},
 	}
 
-	controlPlane := New(ssm, esm, lm)
+	controlPlane := New(ssm, esm, fm)
 
 	integration := ExampleIntegration{
 		RegistrationDataFn: func() RegistrationData { return RegistrationData{} },
@@ -183,12 +197,13 @@ func TestControlPlaneIntegrationIDIsForwarded(t *testing.T) {
 		OnSubscriptionUpdateFn: func(strings []string) {},
 		SenderFn:               func() EventSender { return callBackSender },
 	}
-	lm := &fake.LogAPIMock{
-		LogFunc:   func(logs []models.LogEntry) { return },
-		FlushFunc: func() error { return nil },
+	fm := &LogForwarderMock{
+		ForwardFn: func(keptnEvent models.KeptnContextExtendedCE, integrationID string) error {
+			return nil
+		},
 	}
 
-	controlPlane := New(ssm, esm, lm)
+	controlPlane := New(ssm, esm, fm)
 
 	integration := ExampleIntegration{
 		RegistrationDataFn: func() RegistrationData { return RegistrationData{} },
@@ -246,12 +261,13 @@ func TestControlPlaneIntegrationOnEventThrowsIgnoreableError(t *testing.T) {
 		OnSubscriptionUpdateFn: func(strings []string) {},
 		SenderFn:               func() EventSender { return callBackSender },
 	}
-	lm := &fake.LogAPIMock{
-		LogFunc:   func(logs []models.LogEntry) { return },
-		FlushFunc: func() error { return nil },
+	fm := &LogForwarderMock{
+		ForwardFn: func(keptnEvent models.KeptnContextExtendedCE, integrationID string) error {
+			return nil
+		},
 	}
 
-	controlPlane := New(ssm, esm, lm)
+	controlPlane := New(ssm, esm, fm)
 
 	integration := ExampleIntegration{
 		RegistrationDataFn: func() RegistrationData { return RegistrationData{} },
@@ -296,12 +312,13 @@ func TestControlPlaneIntegrationOnEventThrowsFatalError(t *testing.T) {
 		OnSubscriptionUpdateFn: func(strings []string) {},
 		SenderFn:               func() EventSender { return callBackSender },
 	}
-	lm := &fake.LogAPIMock{
-		LogFunc:   func(logs []models.LogEntry) { return },
-		FlushFunc: func() error { return nil },
+	fm := &LogForwarderMock{
+		ForwardFn: func(keptnEvent models.KeptnContextExtendedCE, integrationID string) error {
+			return nil
+		},
 	}
 
-	controlPlane := New(ssm, esm, lm)
+	controlPlane := New(ssm, esm, fm)
 
 	integration := ExampleIntegration{
 		RegistrationDataFn: func() RegistrationData { return RegistrationData{} },
@@ -345,12 +362,13 @@ func TestControlPlane_IsRegistered(t *testing.T) {
 		OnSubscriptionUpdateFn: func(strings []string) {},
 		SenderFn:               func() EventSender { return callBackSender },
 	}
-	lm := &fake.LogAPIMock{
-		LogFunc:   func(logs []models.LogEntry) { return },
-		FlushFunc: func() error { return nil },
+	fm := &LogForwarderMock{
+		ForwardFn: func(keptnEvent models.KeptnContextExtendedCE, integrationID string) error {
+			return nil
+		},
 	}
 
-	controlPlane := New(ssm, esm, lm)
+	controlPlane := New(ssm, esm, fm)
 
 	integration := ExampleIntegration{
 		RegistrationDataFn: func() RegistrationData { return RegistrationData{} },
