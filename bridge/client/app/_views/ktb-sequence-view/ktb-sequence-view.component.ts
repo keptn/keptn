@@ -8,14 +8,14 @@ import {
 } from '@dynatrace/barista-components/quick-filter';
 import { isObject } from '@dynatrace/barista-components/core';
 import { combineLatest, Observable, Subject, Subscription } from 'rxjs';
-import { filter, map, switchMap, takeUntil, takeWhile } from 'rxjs/operators';
+import { filter, map, switchMap, takeUntil, takeWhile, tap } from 'rxjs/operators';
 import moment from 'moment';
 import { Project } from '../../_models/project';
 import { DataService } from '../../_services/data.service';
 import { DateUtil } from '../../_utils/date.utils';
 import { Sequence } from '../../_models/sequence';
 import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
-import { ISequencesMetadata, SequenceMetadataDeployment } from '../../../../shared/interfaces/sequencesMetadata';
+import { ISequencesMetadata } from '../../../../shared/interfaces/sequencesMetadata';
 
 export type FilterType = [
   {
@@ -86,7 +86,13 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   public selectedStage?: string;
   public _filterDataSource = new DtQuickFilterDefaultDataSource(this.filterFieldData, this._config);
   public _seqFilters: FilterType[] = [];
-  private latestDeployments: SequenceMetadataDeployment[] = [];
+  public metadata: ISequencesMetadata = {
+    deployments: [],
+    filter: {
+      stages: [],
+      services: [],
+    },
+  };
 
   constructor(
     private dataService: DataService,
@@ -104,7 +110,12 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
 
     this.projectName$ = this.route.params.pipe(map((params) => params.projectName));
 
-    this.sequencesUpdated$ = this.dataService.sequencesUpdated.pipe(takeUntil(this.unsubscribe$));
+    this.sequencesUpdated$ = this.dataService.sequencesUpdated.pipe(
+      takeUntil(this.unsubscribe$),
+      tap(() => {
+        this.updateFilterDataSource(this.metadata);
+      })
+    );
 
     this.project$ = this.projectName$.pipe(switchMap((projectName) => this.dataService.getProject(projectName)));
 
@@ -201,7 +212,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
 
   public loadSequenceMetadata(projectName: string): void {
     this.dataService.getSequenceMetadata(projectName).subscribe((metadata) => {
-      this.latestDeployments = metadata.deployments;
+      this.metadata = metadata;
       this.updateLatestDeployedImage();
       this.updateFilterDataSource(metadata);
     });
@@ -263,7 +274,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   }
 
   private updateLatestDeployedImage(): void {
-    const deployedStage = this.latestDeployments.find((depl) => depl.stage.name === this.selectedStage);
+    const deployedStage = this.metadata.deployments.find((depl) => depl.stage.name === this.selectedStage);
     const deployedService = deployedStage?.stage.services.find((svc) => svc.name === this.currentSequence?.service);
     this.currentLatestDeployedImage = deployedService?.image ?? '';
   }
