@@ -16,7 +16,7 @@ import { WebhookConfig, WebhookConfigFilter, WebhookSecret } from '../../shared/
 import { UniformRegistrationInfo } from '../../shared/interfaces/uniform-registration-info';
 import { WebhookConfigYaml } from '../models/webhook-config-yaml';
 import { UniformSubscription, UniformSubscriptionFilter } from '../../shared/interfaces/uniform-subscription';
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 import { Resource } from '../../shared/interfaces/resource';
 import { FileTree, TreeEntry } from '../../shared/interfaces/resourceFileTree';
 import { EventResult } from '../interfaces/event-result';
@@ -36,7 +36,6 @@ import { ISequencesMetadata, SequenceMetadataDeployment } from '../../shared/int
 import { SecretScope, SecretScopeDefault } from '../../shared/interfaces/secret-scope';
 import { generateWebhookConfigCurl } from '../utils/curl.utils';
 import { ICustomSequences } from '../../shared/interfaces/custom-sequences';
-import { printError } from '../utils/print-utils';
 
 type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
 type FlatSecret = { path: string; name: string; key: string; parsedPath: string };
@@ -113,8 +112,7 @@ export class DataService {
       ResultTypes.PASSED
     );
     const latestEvaluations = await this.getLatestEvaluationResultsForServices(accessToken, projectName, allServices);
-    // for sequence adjustment: const latestSequences = await this.getLatestSequenceForServices(projectName, allServices);
-    const cachedSequences: { [keptnContext: string]: Sequence | undefined } = {};
+    const latestSequences = await this.getLatestSequenceForServices(accessToken, projectName, allServices);
 
     if (includeRemediation) {
       openRemediations = await this.getOpenRemediations(accessToken, projectName, true);
@@ -138,21 +136,8 @@ export class DataService {
       for (const service of stage.services) {
         const latestEvent = service.getLatestEvent();
         if (latestEvent) {
-          const latestSequence = await this.setServiceDetails(
-            accessToken,
-            service,
-            {
-              stageName: stage.stageName,
-              keptnContext: latestEvent.keptnContext,
-              projectName,
-            },
-            stageInformation,
-            stageDeployments,
-            cachedSequences[latestEvent.keptnContext]
-          );
-          if (latestSequence) {
-            cachedSequences[latestEvent.keptnContext] = latestSequence;
-          }
+          const latestSequence = latestSequences.find((seq) => seq.shkeptncontext === latestEvent.keptnContext);
+          this.setServiceDetails(service, stage.stageName, stageInformation, stageDeployments, latestSequence);
         }
       }
     }
@@ -164,28 +149,39 @@ export class DataService {
     projectName: string,
     services: Service[]
   ): Promise<Sequence[]> {
-    let sequences: Sequence[] = [];
+    const sequences: Sequence[] = [];
 
-    for (let i = 0; i < services.length; i += this.MAX_PAGE_SIZE) {
-      const keptnContexts: string[] = [];
-      const maxLength = Math.min(i + this.MAX_PAGE_SIZE, services.length);
-
-      for (let y = i; y < maxLength; ++y) {
-        const latestServiceEvent = services[y].getLatestEvent();
-        if (latestServiceEvent) {
-          // string concatenation is expensive; that's why we use an array here
-          keptnContexts.push(latestServiceEvent.keptnContext);
-        }
+    let keptnContexts: string[] = [];
+    for (const service of services) {
+      const latestServiceEvent = service.getLatestEvent();
+      if (latestServiceEvent) {
+        // string concatenation is expensive; that's why we use an array here
+        keptnContexts.push(latestServiceEvent.keptnContext);
       }
-      if (keptnContexts.length) {
-        const response = await this.apiService.getSequences(accessToken, projectName, {
-          pageSize: this.MAX_PAGE_SIZE.toString(),
-          keptnContext: keptnContexts.join(','),
-        });
-        sequences = [...sequences, ...response.data.states];
+
+      if (keptnContexts.length === this.MAX_PAGE_SIZE) {
+        sequences.push(...(await this.getSequencesWithContexts(accessToken, projectName, keptnContexts)));
+        keptnContexts = [];
       }
     }
+    // get remaining sequences (mod 100)
+    if (keptnContexts.length) {
+      sequences.push(...(await this.getSequencesWithContexts(accessToken, projectName, keptnContexts)));
+    }
+
     return sequences;
+  }
+
+  private async getSequencesWithContexts(
+    accessToken: string | undefined,
+    projectName: string,
+    keptnContexts: string[]
+  ): Promise<Sequence[]> {
+    const response = await this.apiService.getSequences(accessToken, projectName, {
+      pageSize: this.MAX_PAGE_SIZE.toString(),
+      keptnContext: keptnContexts.join(','),
+    });
+    return response.data.states.map((seq) => Sequence.fromJSON(seq));
   }
 
   private async getLatestDeploymentFinishedForServices(
@@ -301,27 +297,18 @@ export class DataService {
     }
   }
 
-  private async setServiceDetails(
-    accessToken: string | undefined,
+  private setServiceDetails(
     service: Service,
-    options: ServiceDetailsOptions,
+    stageName: string,
     stageInformation: StageOpenInformation,
     stageDeployments: Trace[],
-    cachedSequence: Sequence | undefined
-  ): Promise<Sequence | undefined> {
-    let latestSequence;
-    try {
-      latestSequence =
-        cachedSequence ??
-        (await this.getSequence(accessToken, options.projectName, options.stageName, options.keptnContext));
-    } catch (error) {
-      printError(error as AxiosError | Error);
-      return;
-    }
-    service.latestSequence = latestSequence ? Sequence.fromJSON(latestSequence) : undefined;
-    service.latestSequence?.reduceToStage(options.stageName);
+    latestSequence?: Sequence
+  ): void {
+    // remove reference. reduceToStage then does not affect other sequences
+    service.latestSequence = Sequence.fromJSON(latestSequence);
+    service.latestSequence?.reduceToStage(stageName);
 
-    const stage = service.latestSequence?.stages.find((seq) => seq.name === options.stageName);
+    const stage = service.latestSequence?.stages.find((seq) => seq.name === stageName);
     if (stage && !stage.latestEvaluationTrace) {
       stage.latestEvaluationTrace = stageInformation.evaluations.find(
         (t) => t.data.service === service.latestSequence?.service
@@ -340,30 +327,12 @@ export class DataService {
       (remediation) => remediation.service === service.serviceName
     );
     for (const remediation of serviceRemediations) {
-      remediation.reduceToStage(options.stageName);
+      remediation.reduceToStage(stageName);
     }
     service.openRemediations = serviceRemediations;
     service.openApprovals = stageInformation.openApprovals.filter(
       (approval) => approval.trace.data.service === service.serviceName
     );
-    return latestSequence;
-  }
-
-  public async getSequence(
-    accessToken: string | undefined,
-    projectName: string,
-    stageName?: string,
-    keptnContext?: string
-  ): Promise<Sequence | undefined> {
-    const response = await this.apiService.getSequences(accessToken, projectName, {
-      pageSize: '1',
-      ...(keptnContext && { keptnContext }),
-    });
-    let sequence = response.data.states[0];
-    if (sequence) {
-      sequence = Sequence.fromJSON(sequence);
-    }
-    return sequence;
   }
 
   public async getSequences(
