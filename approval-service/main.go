@@ -152,11 +152,11 @@ func getGracefulContext() context.Context {
 	go func() {
 		<-ch
 		logger.Info("Container termination triggered, starting graceful shutdown")
-		logger.Info("cancelling context")
+		logger.Info("Cancelling context")
 		cancel()
-		logger.Info("waiting for event handlers to finish")
+		logger.Info("Waiting for event handlers to finish")
 		wg.Wait()
-		logger.Info("all handlers finished - ready to shut down")
+		logger.Info("All handlers finished - ready to shut down")
 
 	}()
 	return ctx
