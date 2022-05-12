@@ -3,8 +3,8 @@ module github.com/keptn/keptn/webhook-service
 go 1.17
 
 require (
-	github.com/keptn/go-utils v0.15.0
-	github.com/keptn/keptn/go-sdk v0.0.0-20220512075918-02388ec27a6d
+	github.com/keptn/go-utils v0.15.1-0.20220512082458-c5e1b7519bec
+	github.com/keptn/keptn/go-sdk v0.0.0-20220512123640-f97a1d8a9f5b
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
@@ -31,7 +31,7 @@ require (
 	github.com/googleapis/gnostic v0.5.5 // indirect
 	github.com/json-iterator/go v1.1.11 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0 // indirect
-	github.com/keptn/keptn/cp-connector v0.0.0-20220505121558-8e49b205a426 // indirect
+	github.com/keptn/keptn/cp-connector v0.0.0-20220512122245-d9e05a908f02 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/nats-io/nats.go v1.14.0 // indirect
