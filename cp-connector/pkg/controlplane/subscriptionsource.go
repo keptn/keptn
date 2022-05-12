@@ -15,6 +15,9 @@ type SubscriptionSource interface {
 	Register(integration models.Integration) (string, error)
 }
 
+var _ SubscriptionSource = FixedSubscriptionSource{}
+var _ SubscriptionSource = (*UniformSubscriptionSource)(nil)
+
 // UniformSubscriptionSource represents a source for uniform subscriptions
 type UniformSubscriptionSource struct {
 	uniformAPI    api.UniformV1Interface

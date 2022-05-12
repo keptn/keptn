@@ -17,6 +17,8 @@ type LogForwarder interface {
 	Forward(keptnEvent models.KeptnContextExtendedCE, integrationID string) error
 }
 
+var _ LogForwarder = LogForwardingHandler{}
+
 type LogForwardingHandler struct {
 	logApi api.LogsV1Interface
 	logger logger.Logger

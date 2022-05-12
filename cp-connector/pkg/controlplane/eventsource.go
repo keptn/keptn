@@ -17,6 +17,8 @@ type EventSenderKeyType struct{}
 
 var EventSenderKey = EventSenderKeyType{}
 
+var _ EventSource = (*NATSEventSource)(nil)
+
 type EventSender func(ce models.KeptnContextExtendedCE) error
 
 // EventUpdate wraps a new Keptn event received from the Event source
