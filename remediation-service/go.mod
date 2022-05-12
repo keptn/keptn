@@ -3,17 +3,16 @@ module github.com/keptn/keptn/remediation-service
 go 1.17
 
 require (
-	github.com/cloudevents/sdk-go/v2 v2.9.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/keptn/go-utils v0.15.0
-	github.com/keptn/keptn/go-sdk v0.0.0-20220511065013-3e585ee78be0
+	github.com/keptn/keptn/go-sdk v0.0.0-20220512073320-643cef9667cf
 	github.com/sirupsen/logrus v1.8.1
-	github.com/stretchr/testify v1.7.1
 )
 
 require (
 	github.com/benbjohnson/clock v1.3.0 // indirect
 	github.com/cloudevents/sdk-go/observability/opentelemetry/v2 v2.0.0-20211001212819-74757a691209 // indirect
+	github.com/cloudevents/sdk-go/v2 v2.9.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/felixge/httpsnoop v1.0.2 // indirect
 	github.com/google/uuid v1.3.0 // indirect
@@ -26,6 +25,7 @@ require (
 	github.com/nats-io/nkeys v0.3.0 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/stretchr/testify v1.7.1 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.27.0 // indirect
 	go.opentelemetry.io/otel v1.2.0 // indirect
 	go.opentelemetry.io/otel/internal/metric v0.25.0 // indirect

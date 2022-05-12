@@ -167,8 +167,8 @@ github.com/keptn/go-utils v0.15.0 h1:zOEJ0DBQAdt/CHO3HANWFGG8+Es5SyZNQi2MvI7agKI
 github.com/keptn/go-utils v0.15.0/go.mod h1:oxLLKz2u9KId2HgLH63+T0pUbcgiDd2GDkRrRKwxGUU=
 github.com/keptn/keptn/cp-connector v0.0.0-20220505121558-8e49b205a426 h1:8+m574VWadec+8b0qEIchyn+WReDyhVwVxYmyze0cYk=
 github.com/keptn/keptn/cp-connector v0.0.0-20220505121558-8e49b205a426/go.mod h1:pRd33N0wYRfqKS3XQYt3AtlGL8zCRFYLQuQLOEH4P5s=
-github.com/keptn/keptn/go-sdk v0.0.0-20220512060505-fb434b26a83b h1:67RxT0/RZCKogg3Cbh4afgWNnHGR0/CRC/vm7HxHV9A=
-github.com/keptn/keptn/go-sdk v0.0.0-20220512060505-fb434b26a83b/go.mod h1:UesbBFinE4PoJAuL5BkOJugoG+1ark3qS9g1MQhfS10=
+github.com/keptn/keptn/go-sdk v0.0.0-20220512073320-643cef9667cf h1:EumIHTYsLVmcHO2stP8EZJ1eGv2CbD8qUdGxHz4jkks=
+github.com/keptn/keptn/go-sdk v0.0.0-20220512073320-643cef9667cf/go.mod h1:UesbBFinE4PoJAuL5BkOJugoG+1ark3qS9g1MQhfS10=
 github.com/kisielk/errcheck v1.5.0/go.mod h1:pFxgyoBC7bSaBwPgfKdkLd5X25qrDl4LWUI2bnpBCr8=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/klauspost/compress v1.14.4 h1:eijASRJcobkVtSt81Olfh7JX43osYLwy5krOJo6YEu4=
