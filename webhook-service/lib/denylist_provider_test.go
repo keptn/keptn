@@ -27,7 +27,8 @@ func TestDeniedURLSNoEnv(t *testing.T) {
 	kubeEnvs := map[string]string{}
 	urls := GetDeniedURLs(kubeEnvs)
 	t.Logf("Current denylist: %s", urls)
-	require.Equal(t, 1, len(urls))
+	expected := 0
+	require.Equal(t, expected, len(urls))
 }
 
 func TestCannotGetConfigMap(t *testing.T) {

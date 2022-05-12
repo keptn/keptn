@@ -2,11 +2,10 @@ package lib_test
 
 import (
 	"fmt"
-	"testing"
-
 	"github.com/keptn/keptn/webhook-service/lib"
 	"github.com/keptn/keptn/webhook-service/lib/fake"
 	"github.com/stretchr/testify/require"
+	"testing"
 )
 
 func TestRequestValidator_Validate(t *testing.T) {
@@ -33,8 +32,10 @@ func TestRequestValidator_Validate(t *testing.T) {
 				URL:     "http://some-valid-url",
 			},
 			ipResolver: fake.IPResolverMock{
-				ResolveIPAdressesFunc: func(curlURL string) []string {
-					return []string{"1.1.1.1"}
+				ResolveIPAdressesFunc: func(curlURL string) lib.AdrDomainNameMapping {
+					res := make(lib.AdrDomainNameMapping)
+					res["1.1.1.1"] = []string{}
+					return res
 				},
 			},
 			denyListProvider: fake.DenyListProviderMock{
@@ -60,8 +61,10 @@ func TestRequestValidator_Validate(t *testing.T) {
 				URL:     "",
 			},
 			ipResolver: fake.IPResolverMock{
-				ResolveIPAdressesFunc: func(curlURL string) []string {
-					return []string{"1.1.1.1"}
+				ResolveIPAdressesFunc: func(curlURL string) lib.AdrDomainNameMapping {
+					res := make(lib.AdrDomainNameMapping)
+					res["1.1.1.1"] = []string{}
+					return res
 				},
 			},
 			denyListProvider: fake.DenyListProviderMock{
@@ -87,8 +90,10 @@ func TestRequestValidator_Validate(t *testing.T) {
 				URL:     "http://some-denied-url",
 			},
 			ipResolver: fake.IPResolverMock{
-				ResolveIPAdressesFunc: func(curlURL string) []string {
-					return []string{"1.1.1.1"}
+				ResolveIPAdressesFunc: func(curlURL string) lib.AdrDomainNameMapping {
+					res := make(lib.AdrDomainNameMapping)
+					res["1.1.1.1"] = []string{}
+					return res
 				},
 			},
 			denyListProvider: fake.DenyListProviderMock{
@@ -114,8 +119,10 @@ func TestRequestValidator_Validate(t *testing.T) {
 				URL:     "http://som-url",
 			},
 			ipResolver: fake.IPResolverMock{
-				ResolveIPAdressesFunc: func(curlURL string) []string {
-					return []string{"1.1.1.1"}
+				ResolveIPAdressesFunc: func(curlURL string) lib.AdrDomainNameMapping {
+					res := make(lib.AdrDomainNameMapping)
+					res["1.1.1.1"] = []string{}
+					return res
 				},
 			},
 			denyListProvider: fake.DenyListProviderMock{
@@ -126,12 +133,42 @@ func TestRequestValidator_Validate(t *testing.T) {
 			want:    fmt.Errorf("curl command contains denied IP address '1.1.1.1'"),
 			wantErr: true,
 		},
+		{
+			name: "denied shippy input",
+			data: lib.Request{
+				Headers: []lib.Header{
+					{
+						Key:   "key",
+						Value: "value",
+					},
+				},
+				Method:  "GET",
+				Options: "--some-options",
+				Payload: "some payload",
+				URL:     "http://shipyard-controller:8080/v1/project/",
+			},
+			ipResolver: fake.IPResolverMock{
+				ResolveIPAdressesFunc: func(curlURL string) lib.AdrDomainNameMapping {
+					res := make(lib.AdrDomainNameMapping)
+					res["1.1.1.1"] = []string{"shipyard-controller.svc.cluster.local."}
+					return res
+				},
+			},
+			denyListProvider: fake.DenyListProviderMock{
+				GetDenyListFunc: func() []string {
+					return []string{"svc.cluster.local"}
+				},
+			},
+			want:    fmt.Errorf("curl command url resolves to denied host 'svc.cluster.local'"),
+			wantErr: true,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			requestValidator := lib.NewRequestValidator(tt.denyListProvider, tt.ipResolver)
 			err := requestValidator.Validate(tt.data)
+			t.Log(err)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
 				return
