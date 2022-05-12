@@ -97,3 +97,7 @@ func (s FixedSubscriptionSource) Start(ctx context.Context, data RegistrationDat
 	go func() { c <- s.fixedSubscriptions }()
 	return nil
 }
+
+func (s FixedSubscriptionSource) Register(integration models.Integration) (string, error) {
+	return "", nil
+}

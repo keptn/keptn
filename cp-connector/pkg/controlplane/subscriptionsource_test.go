@@ -193,6 +193,14 @@ func TestFixedSubscriptionSourcer_WithNoSubscriptions(t *testing.T) {
 	require.Equal(t, 0, len(updates))
 }
 
+func TestFixedSubscriptionSourcer_Register(t *testing.T) {
+	fss := NewFixedSubscriptionSource()
+	initialRegistrationData := RegistrationData{}
+	s, err := fss.Register(models.Integration(initialRegistrationData))
+	require.NoError(t, err)
+	require.Equal(t, s, "")
+}
+
 func TestSubscriptionRegistrationSucceeds(t *testing.T) {
 	initialRegistrationData := RegistrationData{}
 	uniformInterface := &fake.UniformAPIMock{
