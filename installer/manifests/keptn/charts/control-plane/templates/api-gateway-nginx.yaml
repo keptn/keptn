@@ -77,7 +77,7 @@ data:
       proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location ~* {{ .Values.prefixPath }}/bridge {
+    location {{ .Values.prefixPath }}/bridge {
       rewrite {{ .Values.prefixPath }}/bridge(/.*) $1 break;
       proxy_pass http://bridge:8080;
       proxy_http_version 1.1;
