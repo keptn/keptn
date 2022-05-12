@@ -109,6 +109,11 @@ env:
   WEBHOOK_SVC_FOLDER: "webhook-service/"
   WEBHOOK_SVC_DOCKER_TEST_TARGET: "builder-test"
 
+  SDK_TEST_ARTIFACT: "go-sdk"
+  SDK_TEST_FOLDER: "go-sdk/"
+  SDK_TEST_DOCKER_TEST_TARGET: "builder-test"
+  SDK_TEST_SHOULD_PUSH_IMAGE: "false"
+
 defaults:
   run:
     shell: bash
