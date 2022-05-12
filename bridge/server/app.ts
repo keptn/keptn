@@ -257,15 +257,19 @@ function setupLookAndFeel(url: string): void {
         response.pipe(file);
         file.on('finish', () => {
           file.end();
-          const zip = new AdmZip(destFile);
-          zip.extractAllToAsync(destDir, true, false, (error?: Error) => {
-            unlinkSync(destFile);
-            if (error) {
-              console.error(`[ERROR] Error while extracting custom Look-and-Feel file. ${error}`);
-              return;
-            }
-            console.log('Custom Look-and-Feel downloaded and extracted successfully');
-          });
+          try {
+            const zip = new AdmZip(destFile); // throws an error if unsupported format
+            zip.extractAllToAsync(destDir, true, false, (error?: Error) => {
+              unlinkSync(destFile);
+              if (error) {
+                console.error(`[ERROR] Error while extracting custom Look-and-Feel file. ${error}`);
+                return;
+              }
+              console.log('Custom Look-and-Feel downloaded and extracted successfully');
+            });
+          } catch (error) {
+            console.error(`[ERROR] Error while extracting custom Look-and-Feel file. ${error}`);
+          }
         });
         file.on('error', async (err) => {
           file.end();

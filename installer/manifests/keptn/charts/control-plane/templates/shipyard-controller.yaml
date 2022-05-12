@@ -37,8 +37,12 @@ spec:
       containers:
         - name: shipyard-controller
           image: {{ .Values.shipyardController.image.repository }}:{{ .Values.shipyardController.image.tag | default .Chart.AppVersion }}
-          {{- $prestop := .Values.shipyardController.preStopHookTime | default 90 | quote -}}
-          {{- include "control-plane.prestop" $prestop | nindent 10 }}
+          lifecycle:
+            preStop:
+              httpGet:
+                port: 8081
+                path: /operations/v1/pre-stop
+                host: localhost
           livenessProbe:
             httpGet:
               path: /health
@@ -85,6 +89,8 @@ spec:
               value: {{ .Values.shipyardController.config.taskStartedWaitDuration | default "10m"}}
             - name: UNIFORM_INTEGRATION_TTL
               value: {{ .Values.shipyardController.config.uniformIntegrationTTL | default "2m" }}
+            - name: PRE_STOP_HOOK_TIME
+              value: {{ .Values.shipyardController.preStopHookTime | default 5 | quote }}
             - name: LOG_LEVEL
               value: {{ .Values.logLevel | default "info" }}
             - name: AUTOMATIC_PROVISIONING_URL

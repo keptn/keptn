@@ -86,17 +86,6 @@ spec:
             - name: LOG_LEVEL
               value: {{ .Values.logLevel | default "info" }}
           {{- include "control-plane.common.container-security-context" . | nindent 10 }}
-        - name: distributor
-          image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
-          {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
-          {{- include "control-plane.dist.readinessProbe" . | nindent 10 }}
-          imagePullPolicy: IfNotPresent
-          ports:
-            - containerPort: 8080
-          {{- include "keptn.distributor.resources" . | nindent 10 }}
-          env:
-          {{- include "control-plane.dist.common.env.vars" . | nindent 12 }}
-          {{- include "control-plane.common.container-security-context" . | nindent 10 }}
       serviceAccountName: keptn-api-service
       {{- include "keptn.nodeSelector" (dict "value" .Values.apiService.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
 ---

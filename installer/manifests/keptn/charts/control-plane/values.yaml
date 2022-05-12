@@ -73,16 +73,16 @@ apiGatewayNginx:
     repository: docker.io/nginxinc/nginx-unprivileged
     tag: 1.21.6-alpine
   nodeSelector: {}
-  gracePeriod: 120     # gracePeriod set to preStop hook time +30s
-  preStopHookTime: 90
+  gracePeriod: 60
+  preStopHookTime: 5
 
 remediationService:
   image:
     repository: docker.io/keptn/remediation-service
     tag: ""
   nodeSelector: {}
-  gracePeriod: 120     # gracePeriod set to preStop hook time +30s
-  preStopHookTime: 90
+  gracePeriod: 60
+  preStopHookTime: 5
 
 apiService:
   tokenSecretName:
@@ -94,8 +94,8 @@ apiService:
     requestsPerSecond: "1.0"
     requestBurst: "2"
   nodeSelector: {}
-  gracePeriod: 120     # gracePeriod set to preStop hook time +30s
-  preStopHookTime: 90
+  gracePeriod: 60
+  preStopHookTime: 5
 
 bridge:
   image:
@@ -176,16 +176,16 @@ shipyardController:
       # If the helm chart generation for blue/green deployments is not needed, and this value is too small, it can be adapted here
       serviceNameMaxSize: 43
   nodeSelector: {}
-  gracePeriod: 120     # gracePeriod set to preStop hook time +30s
-  preStopHookTime: 90
+  gracePeriod: 60
+  preStopHookTime: 15 # 15s instead of 5s to give background jobs such as sequence dispatcher or jetstream client enough time to complete their tasks
 
 secretService:
   image:
     repository: docker.io/keptn/secret-service
     tag: ""
   nodeSelector: {}
-  gracePeriod: 120     # gracePeriod set to preStop hook time +30s
-  preStopHookTime: 90
+  gracePeriod: 60
+  preStopHookTime: 5
 
 configurationService:
   image:
@@ -200,8 +200,8 @@ configurationService:
     GIT_KEPTN_USER: "keptn"
     GIT_KEPTN_EMAIL: "keptn@keptn.sh"
   nodeSelector: {}
-  gracePeriod: 120     # gracePeriod set to preStop hook time +30s
-  preStopHookTime: 90
+  gracePeriod: 60
+  preStopHookTime: 5
 
 resourceService:
   enabled: false
@@ -214,40 +214,40 @@ resourceService:
     GIT_KEPTN_EMAIL: "keptn@keptn.sh"
     DIRECTORY_STAGE_STRUCTURE: "false"
   nodeSelector: {}
-  gracePeriod: 120     # gracePeriod set to preStop hook time +30s
-  preStopHookTime: 90
+  gracePeriod: 60
+  preStopHookTime: 5
 
 mongodbDatastore:
   image:
     repository: docker.io/keptn/mongodb-datastore
     tag: ""
   nodeSelector: {}
-  gracePeriod: 120     # gracePeriod set to preStop hook time +30s
-  preStopHookTime: 90
+  gracePeriod: 60
+  preStopHookTime: 5
 
 lighthouseService:
   image:
     repository: docker.io/keptn/lighthouse-service
     tag: ""
   nodeSelector: {}
-  gracePeriod: 120     # gracePeriod set to preStop hook time +30s
-  preStopHookTime: 90
+  gracePeriod: 60
+  preStopHookTime: 5
 
 statisticsService:
   image:
     repository: docker.io/keptn/statistics-service
     tag: ""
   nodeSelector: {}
-  gracePeriod: 120     # gracePeriod set to preStop hook time +30s
-  preStopHookTime: 90
+  gracePeriod: 60
+  preStopHookTime: 5
 
 approvalService:
   image:
     repository: docker.io/keptn/approval-service
     tag: ""
   nodeSelector: {}
-  gracePeriod: 120     # gracePeriod set to preStop hook time +30s
-  preStopHookTime: 90
+  gracePeriod: 60
+  preStopHookTime: 5
 
 webhookService:
   enabled: true
@@ -255,8 +255,8 @@ webhookService:
     repository: docker.io/keptn/webhook-service
     tag: ""
   nodeSelector: {}
-  gracePeriod: 120     # gracePeriod set to preStop hook time +30s
-  preStopHookTime: 90
+  gracePeriod: 60
+  preStopHookTime: 5
 
 ingress:
   enabled: false

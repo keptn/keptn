@@ -5,8 +5,8 @@ jmeterservice:
     tag: ""                                    # Container Tag
   service:
     enabled: true                              # Creates a Kubernetes Service for the jmeter-service
-  gracePeriod: 120                             # PreStop hook time +30s
-  preStopHookTime: 90
+  gracePeriod: 60
+  preStopHookTime: 5
 
 distributor:
   stageFilter: ""                            # Sets the stage this helm service belongs to
