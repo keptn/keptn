@@ -12,7 +12,7 @@ require (
 	github.com/go-openapi/validate v0.21.0
 	github.com/jeremywohl/flatten v1.0.1
 	github.com/jessevdk/go-flags v1.5.0
-	github.com/keptn/go-utils v0.15.0
+	github.com/keptn/go-utils v0.15.1-0.20220512082458-c5e1b7519bec
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
 	github.com/tryvium-travels/memongo v0.5.0

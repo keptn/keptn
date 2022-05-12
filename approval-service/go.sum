@@ -69,8 +69,9 @@ github.com/json-iterator/go v1.1.11 h1:uVUAXhF2To8cbw/3xN3pxj6kk7TYKs98NIrTqPlMW
 github.com/json-iterator/go v1.1.11/go.mod h1:KdQUCv79m/52Kvf8AW2vK1V8akMuk1QjK/uOdHXbAo4=
 github.com/kelseyhightower/envconfig v1.4.0 h1:Im6hONhd3pLkfDFsbRgu68RDNkGF1r3dvMUtDTo2cv8=
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
-github.com/keptn/go-utils v0.15.0 h1:zOEJ0DBQAdt/CHO3HANWFGG8+Es5SyZNQi2MvI7agKI=
 github.com/keptn/go-utils v0.15.0/go.mod h1:oxLLKz2u9KId2HgLH63+T0pUbcgiDd2GDkRrRKwxGUU=
+github.com/keptn/go-utils v0.15.1-0.20220512082458-c5e1b7519bec h1:ctvu8/NL/mutxHa4bEXL9XsqMC/fmt6+iO4n7k2+wqI=
+github.com/keptn/go-utils v0.15.1-0.20220512082458-c5e1b7519bec/go.mod h1:oxLLKz2u9KId2HgLH63+T0pUbcgiDd2GDkRrRKwxGUU=
 github.com/keptn/keptn/cp-connector v0.0.0-20220509104843-d040776782e2 h1:cNysxwhf5oObTUlTAwHJg2OT7pp+I2Ww2jRVIqw+S8k=
 github.com/keptn/keptn/cp-connector v0.0.0-20220509104843-d040776782e2/go.mod h1:2kp4fcqFBzKIAL8VuNNcBpyGR/A76LKY/TZO/uxX6Iw=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
