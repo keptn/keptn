@@ -30,6 +30,9 @@ func NewLogForwarder(logApi api.LogsV1Interface) *LogForwardingHandler {
 }
 
 func (l LogForwardingHandler) Forward(keptnEvent models.KeptnContextExtendedCE, integrationID string) error {
+	if integrationID == "" {
+		return nil
+	}
 	l.logger.Infof("Forwarding logs for service with integrationID `%s`", integrationID)
 	if strings.HasSuffix(*keptnEvent.Type, ".finished") {
 		eventData := &keptnv2.EventData{}
@@ -37,7 +40,10 @@ func (l LogForwardingHandler) Forward(keptnEvent models.KeptnContextExtendedCE, 
 			return fmt.Errorf("could not decode Keptn event data: %w", err)
 		}
 
-		taskName, _, _ := keptnv2.ParseTaskEventType(*keptnEvent.Type)
+		taskName, _, err := keptnv2.ParseTaskEventType(*keptnEvent.Type)
+		if err != nil {
+			return fmt.Errorf("could not parse Keptn event type: %w", err)
+		}
 
 		if eventData.Status == keptnv2.StatusErrored {
 			l.logger.Info("Received '.finished' event with status 'errored'. Forwarding log message to log ingestion API")

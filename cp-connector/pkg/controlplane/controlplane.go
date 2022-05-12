@@ -38,6 +38,7 @@ type ControlPlane struct {
 // New creates a new ControlPlane
 // It is using a SubscriptionSource source to get information about current uniform subscriptions
 // as well as an EventSource to actually receive events from Keptn
+// and a LogForwarder to forward error logs
 func New(subscriptionSource SubscriptionSource, eventSource EventSource, logForwarder LogForwarder) *ControlPlane {
 	return &ControlPlane{
 		subscriptionSource:   subscriptionSource,
@@ -106,7 +107,7 @@ func (cp *ControlPlane) handle(ctx context.Context, eventUpdate EventUpdate, int
 }
 
 func (cp *ControlPlane) getSender(sender EventSender) EventSender {
-	if cp.integrationID != "" && cp.logForwarder != nil {
+	if cp.logForwarder != nil {
 		return func(ce models.KeptnContextExtendedCE) error {
 			err := cp.logForwarder.Forward(ce, cp.integrationID)
 			if err != nil {

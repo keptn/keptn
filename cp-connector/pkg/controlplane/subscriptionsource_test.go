@@ -34,7 +34,7 @@ func (u *SubscriptionSourceMock) Register(integration models.Integration) (strin
 func TestSubscriptionSourceCPPingFails(t *testing.T) {
 	initialRegistrationData := RegistrationData{}
 
-	uniformInterface := &fake.UniformInterfaceMock{
+	uniformInterface := &fake.UniformAPIMock{
 		PingFn: func(s string) (*models.Integration, error) {
 			return nil, fmt.Errorf("error occured")
 		}}
@@ -64,7 +64,7 @@ func TestSubscriptionSourceWithFetchInterval(t *testing.T) {
 		ID:            integrationID,
 	}
 
-	uniformInterface := &fake.UniformInterfaceMock{
+	uniformInterface := &fake.UniformAPIMock{
 		PingFn: func(id string) (*models.Integration, error) {
 			pingCount++
 			require.Equal(t, id, integrationID)
@@ -104,7 +104,7 @@ func TestSubscriptionSourceCancel(t *testing.T) {
 		ID:            integrationID,
 	}
 
-	uniformInterface := &fake.UniformInterfaceMock{
+	uniformInterface := &fake.UniformAPIMock{
 		PingFn: func(id string) (*models.Integration, error) {
 			pingCount++
 			require.Equal(t, id, integrationID)
@@ -146,7 +146,7 @@ func TestSubscriptionSource(t *testing.T) {
 		ID:            integrationID,
 	}
 
-	uniformInterface := &fake.UniformInterfaceMock{
+	uniformInterface := &fake.UniformAPIMock{
 		PingFn: func(id string) (*models.Integration, error) {
 			require.Equal(t, id, integrationID)
 			return &models.Integration{
@@ -195,7 +195,7 @@ func TestFixedSubscriptionSourcer_WithNoSubscriptions(t *testing.T) {
 
 func TestSubscriptionRegistrationSucceeds(t *testing.T) {
 	initialRegistrationData := RegistrationData{}
-	uniformInterface := &fake.UniformInterfaceMock{
+	uniformInterface := &fake.UniformAPIMock{
 		RegisterIntegrationFn: func(i models.Integration) (string, error) {
 			return "some-id", nil
 		},
@@ -209,7 +209,7 @@ func TestSubscriptionRegistrationSucceeds(t *testing.T) {
 
 func TestSubscriptionRegistrationFails(t *testing.T) {
 	initialRegistrationData := RegistrationData{}
-	uniformInterface := &fake.UniformInterfaceMock{
+	uniformInterface := &fake.UniformAPIMock{
 		RegisterIntegrationFn: func(i models.Integration) (string, error) {
 			return "", fmt.Errorf("some error")
 		},
