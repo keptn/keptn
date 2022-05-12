@@ -7,6 +7,7 @@ import { Project } from '../../_models/project';
 import { filter, take } from 'rxjs/operators';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
+import { firstValueFrom } from 'rxjs';
 
 describe('KtbSequenceStateInfoComponent', () => {
   let component: KtbSequenceStateInfoComponent;
@@ -31,13 +32,9 @@ describe('KtbSequenceStateInfoComponent', () => {
     component = fixture.componentInstance;
     dataService = TestBed.inject(DataService);
     dataService.loadProjects();
-    project = await dataService
-      .getProject(projectName)
-      .pipe(
-        filter((p: Project | undefined): p is Project => !!p),
-        take(1)
-      )
-      .toPromise();
+    project = await firstValueFrom(
+      dataService.getProject(projectName).pipe(filter((p: Project | undefined): p is Project => !!p))
+    );
 
     fixture.detectChanges();
   });

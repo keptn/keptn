@@ -1,5 +1,6 @@
 import 'jest-preset-angular';
 import 'jest-preset-angular/setup-jest';
+import '@angular/localize/init';
 import fetchMock from 'jest-fetch-mock';
 import { TestUtils } from './client/app/_utils/test.utils';
 

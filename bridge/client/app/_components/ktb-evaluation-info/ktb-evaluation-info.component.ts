@@ -1,15 +1,12 @@
 import { Component, Inject, Input, NgZone, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
 import { DtOverlay, DtOverlayConfig, DtOverlayRef } from '@dynatrace/barista-components/overlay';
-
 import { Trace } from '../../_models/trace';
 import { ResultTypes } from '../../../../shared/models/result-types';
 import { EvaluationResult } from '../../../../shared/interfaces/evaluation-result';
 import { DataService } from '../../_services/data.service';
-import { Subject } from 'rxjs/internal/Subject';
-import { takeUntil } from 'rxjs/internal/operators/takeUntil';
 import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
-import { Subscription } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { Subject, Subscription } from 'rxjs';
+import { switchMap, takeUntil } from 'rxjs/operators';
 import { DateUtil } from '../../_utils/date.utils';
 
 export interface EventData {
