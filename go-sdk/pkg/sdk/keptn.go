@@ -16,18 +16,8 @@ import (
 	"syscall"
 )
 
-//go:generate moq  -out ./resourcehandler_mock.go . ResourceHandler
 type ResourceHandler interface {
 	GetResource(scope api.ResourceScope, options ...api.URIOption) (*models.Resource, error)
-}
-
-//go:generate moq  -out ./eventsender_mock.go . EventSender
-type EventSender interface {
-	SendEvent(event cloudevents.Event) error
-}
-
-type EventReceiver interface {
-	StartReceiver(ctx context.Context, fn interface{}) error
 }
 
 type IKeptn interface {
@@ -46,7 +36,7 @@ type IKeptn interface {
 	Logger() Logger
 }
 
-//go:generate moq -out ./taskhandler_mock.go . TaskHandler
+//go:generate moq -out ./mock_taskhandler.go . TaskHandler
 type TaskHandler interface {
 	// Execute is called whenever the actual business-logic of the service shall be executed.
 	// Thus, the core logic of the service shall be triggered/implemented in this method.
