@@ -61,6 +61,7 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 	if err != nil {
 		return fmt.Errorf("could not register integration: %w", err)
 	}
+	registrationData.ID = cp.integrationID
 
 	if err := cp.eventSource.Start(ctx, registrationData, eventUpdates); err != nil {
 		return err
