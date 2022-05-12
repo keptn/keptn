@@ -132,7 +132,7 @@ func (f *FakeKeptn) AddTaskHandlerWithSubscriptionID(eventType string, handler T
 func NewFakeKeptn(source string) *FakeKeptn {
 	testSubscriptionSource := NewTestSubscriptionSource()
 	testEventSource := NewTestEventSource()
-	cp := controlplane.New(testSubscriptionSource, testEventSource)
+	cp := controlplane.New(testSubscriptionSource, testEventSource, nil)
 	resourceHandler := &TestResourceHandler{}
 	logger := newDefaultLogger()
 	var fakeKeptn = &FakeKeptn{

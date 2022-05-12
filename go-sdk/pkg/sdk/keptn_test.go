@@ -20,7 +20,7 @@ func Test_WhenReceivingAnEvent_StartedEventAndFinishedEventsAreSent(t *testing.T
 
 	testSubscriptionSource := controlplane.NewFixedSubscriptionSource(controlplane.WithFixedSubscriptions(models.EventSubscription{Event: "sh.keptn.event.faketask.triggered"}))
 	testEventSource := NewTestEventSource()
-	cp := controlplane.New(testSubscriptionSource, testEventSource)
+	cp := controlplane.New(testSubscriptionSource, testEventSource, nil)
 
 	keptn := Keptn{
 		controlPlane:           cp,
@@ -65,7 +65,7 @@ func Test_WhenReceivingEvent_OnlyStartedEventIsSent(t *testing.T) {
 	taskRegistry := &TaskRegistry{Entries: taskEntries}
 	testSubscriptionSource := controlplane.NewFixedSubscriptionSource(controlplane.WithFixedSubscriptions(models.EventSubscription{Event: "sh.keptn.event.faketask.triggered"}))
 	testEventSource := NewTestEventSource()
-	cp := controlplane.New(testSubscriptionSource, testEventSource)
+	cp := controlplane.New(testSubscriptionSource, testEventSource, nil)
 
 	keptn := Keptn{
 		controlPlane:           cp,
@@ -96,7 +96,7 @@ func Test_WhenReceivingBadEvent_NoEventIsSent(t *testing.T) {
 	taskRegistry := &TaskRegistry{Entries: taskEntries}
 	testSubscriptionSource := controlplane.NewFixedSubscriptionSource(controlplane.WithFixedSubscriptions(models.EventSubscription{Event: "sh.keptn.event.faketask.triggered"}))
 	testEventSource := NewTestEventSource()
-	cp := controlplane.New(testSubscriptionSource, testEventSource)
+	cp := controlplane.New(testSubscriptionSource, testEventSource, nil)
 
 	keptn := Keptn{
 		controlPlane:           cp,

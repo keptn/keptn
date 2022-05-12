@@ -16,6 +16,10 @@ type TestSubscriptionSource struct {
 	fixedSubscriptions []models.EventSubscription
 }
 
+func (t *TestSubscriptionSource) Register(integration models.Integration) (string, error) {
+	return "", nil
+}
+
 func (t *TestSubscriptionSource) Start(ctx context.Context, data controlplane.RegistrationData, c chan []models.EventSubscription) error {
 	go func() { c <- t.fixedSubscriptions }()
 	return nil
