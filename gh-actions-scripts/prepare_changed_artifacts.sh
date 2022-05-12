@@ -29,6 +29,7 @@ BUILD_MONGODB_DS=false
 BUILD_STATISTICS_SVC=false
 BUILD_WEBHOOK_SVC=false
 BUILD_SDK=false
+BUILD_CP_CONNECTOR=false
 
 if [ "$RELEASE_BUILD" != 'true' ] && [ "$PRERELEASE_BUILD" != 'true' ]; then
   artifacts=(
@@ -51,6 +52,7 @@ if [ "$RELEASE_BUILD" != 'true' ] && [ "$PRERELEASE_BUILD" != 'true' ]; then
     "$STATISTICS_SVC_ARTIFACT_PREFIX"
     "$WEBHOOK_SVC_ARTIFACT_PREFIX"
     "$SDK_ARTIFACT_PREFIX"
+    "$CP_CONNECTOR_ARTIFACT_PREFIX"
   )
 else
   artifacts=(
@@ -201,6 +203,7 @@ echo "BUILD_MONGODB_DS: $BUILD_MONGODB_DS"
 echo "BUILD_STATISTICS_SVC: $BUILD_STATISTICS_SVC"
 echo "BUILD_WEBHOOK_SVC: $BUILD_WEBHOOK_SVC"
 echo "BUILD_SDK: $BUILD_SDK"
+echo "BUILD_CP_CONNECTOR: $BUILD_CP_CONNECTOR"
 
 if [[ "$matrix_config" == '{"config":[]}' ]]; then
   echo "Build matrix is emtpy, setting output..."

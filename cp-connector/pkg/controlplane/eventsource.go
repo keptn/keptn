@@ -22,7 +22,6 @@ type EventSender func(ce models.KeptnContextExtendedCE) error
 type EventUpdate struct {
 	KeptnEvent models.KeptnContextExtendedCE
 	MetaData   EventUpdateMetaData
-	try        string
 }
 
 // EventUpdateMetaData is additional metadata for bound to the
