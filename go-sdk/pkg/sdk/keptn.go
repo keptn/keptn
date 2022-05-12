@@ -264,6 +264,7 @@ func (k *Keptn) RegistrationData() controlplane.RegistrationData {
 			Hostname:           k.env.K8sNodeName,
 			IntegrationVersion: k.env.Version,
 			Location:           k.env.Location,
+			DistributorVersion: "0.15.0", // note: to be deleted when bridge stops requiring this info
 			KubernetesMetaData: models.KubernetesMetaData{
 				Namespace:      k.env.K8sNamespace,
 				PodName:        k.env.K8sPodName,
