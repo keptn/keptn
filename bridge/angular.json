@@ -51,7 +51,14 @@
             "extractLicenses": false,
             "buildOptimizer": false,
             "sourceMap": true,
-            "optimization": true,
+            "optimization": {
+              "scripts": true,
+              "styles": {
+                "minify": true,
+                "inlineCritical": false
+              },
+              "fonts": true
+            },
             "namedChunks": true
           },
           "configurations": {
