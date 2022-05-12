@@ -62,8 +62,9 @@ func main() {
 		log.Fatal(err)
 	}
 	eventSource := controlplane.NewNATSEventSource(natsConnector)
+	logForwarder := controlplane.NewLogForwarder(api.LogsV1())
 
-	controlPlane := controlplane.New(subscriptionSource, eventSource, api.LogsV1())
+	controlPlane := controlplane.New(subscriptionSource, eventSource, logForwarder)
 	ctx := getGracefulContext()
 	err = controlPlane.Register(ctx, LighthouseService{env})
 	if err != nil {
