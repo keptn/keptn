@@ -113,12 +113,15 @@ describe('Test project resources', () => {
       })
       .reply(200, ApprovalEvaluationResponse);
 
-    axiosMock.onGet(`${global.baseUrl}/controlPlane/v1/sequence/${projectName}`).reply((config) => {
-      const context = config.params.keptnContext;
-      const sequence = SequencesResponses[context];
-      expect(sequence).not.toBeUndefined();
-      return [200, sequence];
-    });
+    axiosMock
+      .onGet(new RegExp(`${global.baseUrl}/controlPlane/v1/sequence/${projectName}`), {
+        params: {
+          pageSize: '100',
+          keptnContext:
+            '2e21574c-dcf7-4275-b677-6bc19214acd5,0cc574e9-3d47-4a29-81b7-84faf33bdc9c,29af69cc-ea85-4358-b169-ce29034d9c81,0cc574e9-3d47-4a29-81b7-84faf33bdc9c,35383737-3630-4639-b037-353138323631,0cc574e9-3d47-4a29-81b7-84faf33bdc9c',
+        },
+      })
+      .reply(200, SequencesResponses);
 
     const response = await request(app).get(`/api/project/${projectName}?approval=true&remediation=true`);
     expect(response.body).toEqual(ProjectDetailsResponse);

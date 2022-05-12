@@ -167,11 +167,12 @@ import { KtbCertificateInputComponent } from './_components/ktb-certificate-inpu
 import { KtbSshKeyInputComponent } from './_components/ktb-ssh-key-input/ktb-ssh-key-input.component';
 import { KtbProjectSettingsGitSshInputComponent } from './_components/ktb-project-settings-git-ssh-input/ktb-project-settings-git-ssh-input.component';
 import { SanitizeHtmlPipe } from './_pipes/sanitize-html.pipe';
+import { WindowConfig } from '../environments/environment.dynamic';
 
 registerLocaleData(localeEn, 'en');
 
 export function init_app(appLoadService: AppInitService): () => Promise<unknown> {
-  return (): Promise<string | null> => appLoadService.init();
+  return (): Promise<WindowConfig | null> => appLoadService.init();
 }
 
 @NgModule({
