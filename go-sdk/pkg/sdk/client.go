@@ -29,16 +29,14 @@ func newControlPlaneFromEnv(env envConfig) (*controlplane.ControlPlane, controlp
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	natsConnector, err := nats.Connect(env.EventBrokerURL)
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	eventSource := controlplane.NewNATSEventSource(natsConnector)
 	eventSender := eventSource.Sender()
-
 	subscriptionSource := controlplane.NewUniformSubscriptionSource(apiSet.UniformV1())
-	controlPlane := controlplane.New(subscriptionSource, eventSource)
+	logForwarder := controlplane.NewLogForwarder(apiSet.LogsV1())
+	controlPlane := controlplane.New(subscriptionSource, eventSource, logForwarder)
 	return controlPlane, eventSender
 }

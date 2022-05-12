@@ -6,8 +6,8 @@ require (
 	github.com/cloudevents/sdk-go/v2 v2.9.0
 	github.com/google/uuid v1.3.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.14.1-0.20220505070234-5672c074a6de
-	github.com/keptn/keptn/cp-connector v0.0.0-20220505121558-8e49b205a426
+	github.com/keptn/go-utils v0.15.1-0.20220512082458-c5e1b7519bec
+	github.com/keptn/keptn/cp-connector v0.0.0-20220512122245-d9e05a908f02
 	github.com/stretchr/testify v1.7.1
 )
 

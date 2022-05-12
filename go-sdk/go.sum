@@ -66,10 +66,10 @@ github.com/json-iterator/go v1.1.10 h1:Kz6Cvnvv2wGdaG/V8yMvfkmNiXq9Ya2KUv4rouJJr
 github.com/json-iterator/go v1.1.10/go.mod h1:KdQUCv79m/52Kvf8AW2vK1V8akMuk1QjK/uOdHXbAo4=
 github.com/kelseyhightower/envconfig v1.4.0 h1:Im6hONhd3pLkfDFsbRgu68RDNkGF1r3dvMUtDTo2cv8=
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
-github.com/keptn/go-utils v0.14.1-0.20220505070234-5672c074a6de h1:MoUHnIf9dUlAirz5omG2l5uarfld/UIl0Xt7lxILf4w=
-github.com/keptn/go-utils v0.14.1-0.20220505070234-5672c074a6de/go.mod h1:oxLLKz2u9KId2HgLH63+T0pUbcgiDd2GDkRrRKwxGUU=
-github.com/keptn/keptn/cp-connector v0.0.0-20220505121558-8e49b205a426 h1:8+m574VWadec+8b0qEIchyn+WReDyhVwVxYmyze0cYk=
-github.com/keptn/keptn/cp-connector v0.0.0-20220505121558-8e49b205a426/go.mod h1:pRd33N0wYRfqKS3XQYt3AtlGL8zCRFYLQuQLOEH4P5s=
+github.com/keptn/go-utils v0.15.1-0.20220512082458-c5e1b7519bec h1:ctvu8/NL/mutxHa4bEXL9XsqMC/fmt6+iO4n7k2+wqI=
+github.com/keptn/go-utils v0.15.1-0.20220512082458-c5e1b7519bec/go.mod h1:oxLLKz2u9KId2HgLH63+T0pUbcgiDd2GDkRrRKwxGUU=
+github.com/keptn/keptn/cp-connector v0.0.0-20220512122245-d9e05a908f02 h1:eBRfRuRuXYCUWRE4E1j7xRL7VrrN2PaxgqD65Bt41D0=
+github.com/keptn/keptn/cp-connector v0.0.0-20220512122245-d9e05a908f02/go.mod h1:hBnlGKdA32QUkPITvDZrqN/J0TG/5eCp15CAtPrUmcM=
 github.com/klauspost/compress v1.14.4 h1:eijASRJcobkVtSt81Olfh7JX43osYLwy5krOJo6YEu4=
 github.com/klauspost/compress v1.14.4/go.mod h1:/3/Vjq9QcHkK5uEr5lBEmyoZ1iFhe47etQ6QUkpK6sk=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
@@ -84,8 +84,8 @@ github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742 h1:Esafd1046DLD
 github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742/go.mod h1:bx2lNnkwVCuqBIxFjflWJWanXIb3RllmbCylyMrvgv0=
 github.com/nats-io/jwt/v2 v2.2.1-0.20220330180145-442af02fd36a h1:lem6QCvxR0Y28gth9P+wV2K/zYUUAkJ+55U8cpS0p5I=
 github.com/nats-io/jwt/v2 v2.2.1-0.20220330180145-442af02fd36a/go.mod h1:0tqz9Hlu6bCBFLWAASKhE5vUA4c24L9KPUUgvwumE/k=
-github.com/nats-io/nats-server/v2 v2.8.1 h1:WZ9m/d8rklkWo6opo3X927vXnuaE00VEEl5zXcpL6qw=
-github.com/nats-io/nats-server/v2 v2.8.1/go.mod h1:vIdpKz3OG+DCg4q/xVPdXHoztEyKDWRtykQ4N7hd7C4=
+github.com/nats-io/nats-server/v2 v2.8.2 h1:5m1VytMEbZx0YINvKY+X2gXdLNwP43uLXnFRwz8j8KE=
+github.com/nats-io/nats-server/v2 v2.8.2/go.mod h1:vIdpKz3OG+DCg4q/xVPdXHoztEyKDWRtykQ4N7hd7C4=
 github.com/nats-io/nats.go v1.14.0 h1:/QLCss4vQ6wvDpbqXucsVRDi13tFIR6kTdau+nXzKJw=
 github.com/nats-io/nats.go v1.14.0/go.mod h1:BPko4oXsySz4aSWeFgOHLZs3G4Jq4ZAyE6/zMCxRT6w=
 github.com/nats-io/nkeys v0.3.0 h1:cgM5tL53EvYRU+2YLXIK0G2mJtK12Ft9oeooSZMA2G8=
