@@ -259,9 +259,9 @@ func (k *Keptn) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE
 
 func (k *Keptn) RegistrationData() controlplane.RegistrationData {
 	return controlplane.RegistrationData{
-		Name: "local-service",
+		Name: k.source,
 		MetaData: models.MetaData{
-			Hostname:           "localhost",
+			Hostname:           k.env.K8sNodeName,
 			IntegrationVersion: k.env.Version,
 			Location:           k.env.Location,
 			KubernetesMetaData: models.KubernetesMetaData{
