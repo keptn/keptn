@@ -203,6 +203,7 @@ describe('KtbEventsListComponent', () => {
     /* @ts-ignore */ // Ignore private property
     component.project = ProjectsMock[0];
     const spySaveSequenceFilters = jest.spyOn(component, 'saveSequenceFilters');
+    fixture.detectChanges();
 
     // when
     component.filtersClicked({
@@ -282,6 +283,7 @@ describe('KtbEventsListComponent', () => {
     /* @ts-ignore */ // Ignore private property
     component.project = ProjectsMock[0];
     const spySetSequenceFilters = jest.spyOn(component, 'setSequenceFilters');
+    fixture.detectChanges();
 
     // when
     queryParams.next({
