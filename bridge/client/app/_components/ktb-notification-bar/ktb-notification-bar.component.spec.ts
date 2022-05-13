@@ -5,7 +5,7 @@ import { Notification, NotificationType } from '../../_models/notification';
 import { DtIconModule } from '@dynatrace/barista-components/icon';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { AppModule } from '../../app.module';
-import { take } from 'rxjs/operators';
+import { firstValueFrom } from 'rxjs';
 
 describe('KtbNotificationBarComponent', () => {
   let service: NotificationsService;
@@ -41,6 +41,6 @@ describe('KtbNotificationBarComponent', () => {
   });
 
   function getNotifications(): Promise<Notification[]> {
-    return component.notifications$.pipe(take(1)).toPromise();
+    return firstValueFrom(component.notifications$);
   }
 });

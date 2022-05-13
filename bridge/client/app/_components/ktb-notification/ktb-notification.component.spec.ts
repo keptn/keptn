@@ -26,6 +26,7 @@ describe('KtbNotificationComponent', () => {
   });
 
   it('should create', () => {
+    setInputParameter(new Notification(NotificationType.ERROR, 'my message'));
     fixture.detectChanges();
     expect(component).toBeTruthy();
   });
