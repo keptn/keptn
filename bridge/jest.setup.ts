@@ -1,4 +1,3 @@
-import 'jest-preset-angular';
 import 'jest-preset-angular/setup-jest';
 import '@angular/localize/init';
 import { Injectable } from '@angular/core';
