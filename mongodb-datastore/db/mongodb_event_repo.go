@@ -4,10 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-
 	"github.com/jeremywohl/flatten"
+	keptnapi "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/mongodb-datastore/common"
-	"github.com/keptn/keptn/mongodb-datastore/models"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
 	logger "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
@@ -56,7 +55,7 @@ func NewMongoDBEventRepo(dbConnection *MongoDBConnection) *MongoDBEventRepo {
 	}
 }
 
-func (mr *MongoDBEventRepo) InsertEvent(event models.KeptnContextExtendedCE) error {
+func (mr *MongoDBEventRepo) InsertEvent(event keptnapi.KeptnContextExtendedCE) error {
 	projectName := getProjectOfEvent(event)
 	collection, ctx, cancel, err := mr.getCollectionAndContext(projectName)
 	if err != nil {
@@ -113,7 +112,7 @@ func (mr *MongoDBEventRepo) InsertEvent(event models.KeptnContextExtendedCE) err
 	return nil
 }
 
-func (mr *MongoDBEventRepo) DropProjectCollections(event models.KeptnContextExtendedCE) error {
+func (mr *MongoDBEventRepo) DropProjectCollections(event keptnapi.KeptnContextExtendedCE) error {
 	projectName := getProjectOfEvent(event)
 	if projectName == "" {
 		return nil
@@ -303,7 +302,7 @@ func (mr *MongoDBEventRepo) ensureIndexExistsOnCollection(ctx context.Context, c
 	logger.Debug("created index for " + collection.Name())
 }
 
-func (mr *MongoDBEventRepo) storeContextToProjectMapping(ctx context.Context, event models.KeptnContextExtendedCE, collectionName string) error {
+func (mr *MongoDBEventRepo) storeContextToProjectMapping(ctx context.Context, event keptnapi.KeptnContextExtendedCE, collectionName string) error {
 	if collectionName == unmappedEventsCollectionName {
 		logger.Debug("Will not store mapping between context and project because no project has been set in the event")
 		return nil
@@ -334,7 +333,7 @@ func (mr *MongoDBEventRepo) storeContextToProjectMapping(ctx context.Context, ev
 	return nil
 }
 
-func (mr *MongoDBEventRepo) storeRootEvent(ctx context.Context, collectionName string, event models.KeptnContextExtendedCE) error {
+func (mr *MongoDBEventRepo) storeRootEvent(ctx context.Context, collectionName string, event keptnapi.KeptnContextExtendedCE) error {
 	if collectionName == unmappedEventsCollectionName {
 		logger.Debug("Will not store root event because no project has been set in the event.")
 		return nil
@@ -375,8 +374,8 @@ func (mr *MongoDBEventRepo) storeRootEvent(ctx context.Context, collectionName s
 	return nil
 }
 
-func (mr *MongoDBEventRepo) overWriteExistingRootEvent(ctx context.Context, result *mongo.SingleResult, event models.KeptnContextExtendedCE, rootEventsForProjectCollection *mongo.Collection) error {
-	existingEvent := &models.KeptnContextExtendedCE{}
+func (mr *MongoDBEventRepo) overWriteExistingRootEvent(ctx context.Context, result *mongo.SingleResult, event keptnapi.KeptnContextExtendedCE, rootEventsForProjectCollection *mongo.Collection) error {
+	existingEvent := &keptnapi.KeptnContextExtendedCE{}
 
 	err := result.Decode(existingEvent)
 	if err != nil {
@@ -401,7 +400,7 @@ func (mr *MongoDBEventRepo) overWriteExistingRootEvent(ctx context.Context, resu
 	return nil
 }
 
-func (mr *MongoDBEventRepo) storeEventInCollection(ctx context.Context, event models.KeptnContextExtendedCE, collection *mongo.Collection) error {
+func (mr *MongoDBEventRepo) storeEventInCollection(ctx context.Context, event keptnapi.KeptnContextExtendedCE, collection *mongo.Collection) error {
 	eventInterface, err := transformEventToInterface(event)
 	if err != nil {
 		return err
@@ -469,7 +468,7 @@ func (mr *MongoDBEventRepo) aggregateFromDB(collectionName string, pipeline mong
 	collection := mdbClient.Database(getDatabaseName()).Collection(collectionName)
 
 	result := &EventsResult{
-		Events: []*models.KeptnContextExtendedCE{},
+		Events: []keptnapi.KeptnContextExtendedCE{},
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -578,7 +577,7 @@ func (mr *MongoDBEventRepo) invalidatedCollectionAvailable(collectionName string
 	return false
 }
 
-func getProjectOfEvent(event models.KeptnContextExtendedCE) string {
+func getProjectOfEvent(event keptnapi.KeptnContextExtendedCE) string {
 	collectionName := unmappedEventsCollectionName
 	// check if the data object contains the project name.
 	// if yes, store the event in the collection for the project, otherwise in /events
@@ -593,8 +592,8 @@ func getProjectOfEvent(event models.KeptnContextExtendedCE) string {
 	return collectionName
 }
 
-func formatEventResults(ctx context.Context, cur *mongo.Cursor) []*models.KeptnContextExtendedCE {
-	events := []*models.KeptnContextExtendedCE{}
+func formatEventResults(ctx context.Context, cur *mongo.Cursor) []keptnapi.KeptnContextExtendedCE {
+	var events []keptnapi.KeptnContextExtendedCE
 	for cur.Next(ctx) {
 		var outputEvent interface{}
 		err := cur.Decode(&outputEvent)
@@ -610,14 +609,14 @@ func formatEventResults(ctx context.Context, cur *mongo.Cursor) []*models.KeptnC
 
 		data, _ := json.Marshal(outputEvent)
 
-		var keptnEvent models.KeptnContextExtendedCE
-		err = keptnEvent.UnmarshalBinary(data)
+		var keptnEvent keptnapi.KeptnContextExtendedCE
+		err = keptnEvent.FromJSON(data)
 		if err != nil {
 			logger.WithError(err).Error("Could not unmarshal")
 			continue
 		}
 
-		events = append(events, &keptnEvent)
+		events = append(events, keptnEvent)
 	}
 	return events
 }

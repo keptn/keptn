@@ -91,3 +91,11 @@ flags:
     paths:
       - secret-service/
     carryforward: true
+  go-sdk:
+    paths:
+      - go-sdk/
+    carryforward: true
+  cp-connector:
+    paths:
+      - cp-connector/
+    carryforward: true

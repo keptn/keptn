@@ -15,6 +15,9 @@ type SubscriptionSource interface {
 	Register(integration models.Integration) (string, error)
 }
 
+var _ SubscriptionSource = FixedSubscriptionSource{}
+var _ SubscriptionSource = (*UniformSubscriptionSource)(nil)
+
 // UniformSubscriptionSource represents a source for uniform subscriptions
 type UniformSubscriptionSource struct {
 	uniformAPI    api.UniformV1Interface
@@ -96,4 +99,8 @@ func NewFixedSubscriptionSource(options ...func(source *FixedSubscriptionSource)
 func (s FixedSubscriptionSource) Start(ctx context.Context, data RegistrationData, c chan []models.EventSubscription) error {
 	go func() { c <- s.fixedSubscriptions }()
 	return nil
+}
+
+func (s FixedSubscriptionSource) Register(integration models.Integration) (string, error) {
+	return "", nil
 }

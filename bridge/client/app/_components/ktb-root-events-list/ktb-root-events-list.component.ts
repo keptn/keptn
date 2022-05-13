@@ -35,7 +35,6 @@ export class KtbRootEventsListComponent implements OnInit, OnDestroy {
   public loading = false;
 
   @Output() readonly selectedEventChange = new EventEmitter<{ sequence: Sequence; stage?: string }>();
-  @Output() readonly loadOldSequencesClicked = new EventEmitter<void>();
 
   @Input()
   get events(): Sequence[] {
@@ -81,7 +80,6 @@ export class KtbRootEventsListComponent implements OnInit, OnDestroy {
 
     this.dataService.sequencesUpdated.pipe(takeUntil(this.unsubscribe$)).subscribe(() => {
       this.loading = false;
-      this.loadOldSequencesClicked.emit();
       this._changeDetectorRef.markForCheck();
     });
   }

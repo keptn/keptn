@@ -8,14 +8,13 @@ package event
 import (
 	"context"
 	"net/http"
-	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
-	"github.com/keptn/keptn/mongodb-datastore/models"
+	keptnapi "github.com/keptn/go-utils/pkg/api/models"
 )
 
 // GetEventsByTypeHandlerFunc turns a function with the right signature into a get events by type handler
@@ -68,7 +67,7 @@ func (o *GetEventsByType) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 type GetEventsByTypeOKBody struct {
 
 	// events
-	Events []*models.KeptnContextExtendedCE `json:"events"`
+	Events []keptnapi.KeptnContextExtendedCE `json:"events"`
 }
 
 // Validate validates this get events by type o k body
@@ -90,58 +89,11 @@ func (o *GetEventsByTypeOKBody) validateEvents(formats strfmt.Registry) error {
 		return nil
 	}
 
-	for i := 0; i < len(o.Events); i++ {
-		if swag.IsZero(o.Events[i]) { // not required
-			continue
-		}
-
-		if o.Events[i] != nil {
-			if err := o.Events[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("getEventsByTypeOK" + "." + "events" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
-					return ce.ValidateName("getEventsByTypeOK" + "." + "events" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
 	return nil
 }
 
-// ContextValidate validate this get events by type o k body based on the context it is used
+// ContextValidate validates this get events by type o k body based on context it is used
 func (o *GetEventsByTypeOKBody) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := o.contextValidateEvents(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (o *GetEventsByTypeOKBody) contextValidateEvents(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(o.Events); i++ {
-
-		if o.Events[i] != nil {
-			if err := o.Events[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("getEventsByTypeOK" + "." + "events" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
-					return ce.ValidateName("getEventsByTypeOK" + "." + "events" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
 	return nil
 }
 
