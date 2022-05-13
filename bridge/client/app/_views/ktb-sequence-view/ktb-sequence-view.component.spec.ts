@@ -193,4 +193,82 @@ describe('KtbEventsListComponent', () => {
     // then
     expect(showButton).toEqual(false);
   });
+
+  it('should save filters on click, load sequences and filter properly', () => {
+    // given
+    /* eslint-disable @typescript-eslint/ban-ts-comment */
+    /* @ts-ignore */ // Ignore private property
+    component.project = ProjectsMock[0];
+    const spySaveSequenceFilters = jest.spyOn(component, 'saveSequenceFilters');
+
+    // when
+    component.filtersClicked({
+      filters: [
+        [
+          {
+            name: 'Stage',
+            autocomplete: [],
+            showInSidebar: false,
+          },
+          {
+            name: 'dev',
+            value: 'dev',
+          },
+        ],
+        [
+          {
+            name: 'Stage',
+            autocomplete: [],
+            showInSidebar: false,
+          },
+          {
+            name: 'production',
+            value: 'production',
+          },
+        ],
+        [
+          {
+            name: 'Service',
+            autocomplete: [],
+            showInSidebar: false,
+          },
+          {
+            name: 'carts',
+            value: 'carts',
+          },
+        ],
+        [
+          {
+            name: 'Sequence',
+            autocomplete: [],
+            showInSidebar: false,
+          },
+          {
+            name: 'delivery',
+            value: 'delivery',
+          },
+        ],
+        [
+          {
+            name: 'Status',
+            autocomplete: [],
+            showInSidebar: false,
+          },
+          {
+            name: 'Active',
+            value: 'started',
+          },
+        ],
+      ],
+    });
+
+    // then
+    expect(spySaveSequenceFilters).toHaveBeenCalledWith({
+      Stage: ['dev', 'production'],
+      Service: ['carts'],
+      Sequence: ['delivery'],
+      Status: ['started'],
+    });
+    expect(component.filteredSequences).toEqual([SequencesMock[0]]);
+  });
 });

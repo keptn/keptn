@@ -71,6 +71,53 @@ const sequencesData = [
     name: 'delivery',
     service: 'carts',
     project: 'sockshop',
+    time: '2022-04-11T11:17:43.292Z',
+    shkeptncontext: '99a20ef4-d822-4185-bbee-0d7a364c213a',
+    state: 'started',
+    stages: [
+      {
+        name: 'dev',
+        image: 'docker.io/keptnexamples/carts:0.13.1',
+        state: 'succeeded',
+        latestEvaluation: {
+          result: 'pass',
+          score: 0,
+        },
+        latestEvent: {
+          type: 'sh.keptn.event.dev.delivery.finished',
+          id: '0e1785ec-9282-4df7-a3f6-be70a2bdae65',
+          time: '2022-04-11T11:20:16.969Z',
+        },
+      },
+      {
+        name: 'staging',
+        image: 'docker.io/keptnexamples/carts:0.13.1',
+        state: 'succeeded',
+        latestEvaluation: {
+          result: 'pass',
+          score: 0,
+        },
+        latestEvent: {
+          type: 'sh.keptn.event.staging.delivery.finished',
+          id: '88a0c85d-b9b9-4b7f-8fba-45d7a1ab612f',
+          time: '2022-04-11T11:25:19.182Z',
+        },
+      },
+      {
+        name: 'production',
+        state: 'triggered',
+        latestEvent: {
+          type: 'sh.keptn.event.approval.started',
+          id: 'f4f767de-712c-4564-938e-eb6736e03cbf',
+          time: '2022-04-11T11:25:24.009Z',
+        },
+      },
+    ],
+  },
+  {
+    name: 'delivery',
+    service: 'carts',
+    project: 'sockshop',
     time: '2021-08-02T08:00:21.813Z',
     shkeptncontext: '80f87047-d5c2-4b3e-8aac-f376ff309ed5',
     state: 'finished',
