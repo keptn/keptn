@@ -130,6 +130,7 @@ bridge:
     userIdentifier: ""
     mongoConnectionString: ""
   nodeSelector: {}
+  automaticProvisioningMsg: ""
 
 distributor:
   metadata:
