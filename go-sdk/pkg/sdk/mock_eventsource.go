@@ -11,7 +11,7 @@ import (
 func NewTestEventSource() *TestEventSource {
 	tes := TestEventSource{}
 	tes.FakeSender = func(ce models.KeptnContextExtendedCE) error {
-		tes.SentEvents = append(tes.SentEvents, ce)
+		tes.AddSentEvent(ce)
 		return nil
 	}
 	tes.Started = make(chan struct{})
