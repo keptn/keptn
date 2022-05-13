@@ -2,59 +2,57 @@
 package restapi
 
 import (
+	"context"
 	"crypto/tls"
 	"errors"
 	"fmt"
+	apierrors "github.com/go-openapi/errors"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/swag"
+	keptnapi "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
+	"github.com/keptn/keptn/cp-connector/pkg/nats"
 	"github.com/keptn/keptn/mongodb-datastore/common"
+	"github.com/keptn/keptn/mongodb-datastore/db"
+	"github.com/keptn/keptn/mongodb-datastore/handlers"
+	"github.com/keptn/keptn/mongodb-datastore/models"
+	"github.com/keptn/keptn/mongodb-datastore/restapi/operations"
+	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/health"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
-
-	apierrors "github.com/go-openapi/errors"
-	runtime "github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
-	"github.com/go-openapi/swag"
-
-	"github.com/keptn/keptn/mongodb-datastore/db"
-	"github.com/keptn/keptn/mongodb-datastore/handlers"
-	"github.com/keptn/keptn/mongodb-datastore/models"
-	"github.com/keptn/keptn/mongodb-datastore/restapi/operations"
-	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
+	"sync"
 )
 
 //go:generate swagger generate server --target ../../mongodb-datastore --name mongodb-datastore --spec ../swagger.yaml
-
-const envVarLogLevel = "LOG_LEVEL"
 
 func configureFlags(api *operations.MongodbDatastoreAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 }
 
+var mutex = &sync.Mutex{}
+
 func configureAPI(api *operations.MongodbDatastoreAPI) http.Handler {
 	// configure the api here
 	api.ServeError = apierrors.ServeError
+	eventRequestHandler := handlers.NewEventRequestHandler(db.NewMongoDBEventRepo(db.GetMongoDBConnectionInstance()))
+	eventRequestHandler.Env.ConfigLog()
+	api.Logger = log.Infof
 
-	// Set your custom logger if needed. Default one is log.Printf
-	// Expected interface func(string, ...interface{})
-	//
-	// Example:
-	// api.Logger = log.Printf
+	// start NATS receiver
+	go func() {
+		err := startControlPlane(context.Background(), api, eventRequestHandler)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	api.JSONConsumer = runtime.JSONConsumer()
-
 	api.JSONProducer = runtime.JSONProducer()
-
-	eventRequestHandler := handlers.NewEventRequestHandler(db.NewMongoDBEventRepo(db.GetMongoDBConnectionInstance()))
-
-	api.EventSaveEventHandler = event.SaveEventHandlerFunc(func(params event.SaveEventParams) middleware.Responder {
-		if err := eventRequestHandler.ProcessEvent(params.Body); err != nil {
-			return event.NewSaveEventDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
-		}
-		return event.NewSaveEventCreated()
-	})
 
 	api.EventGetEventsHandler = event.GetEventsHandlerFunc(func(params event.GetEventsParams) middleware.Responder {
 		events, err := eventRequestHandler.GetEvents(params)
@@ -86,6 +84,45 @@ func configureAPI(api *operations.MongodbDatastoreAPI) http.Handler {
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))
 }
 
+func startControlPlane(ctx context.Context, api *operations.MongodbDatastoreAPI, eventRequestHandler controlplane.Integration) error {
+	// 1. create a subscription source
+	natsConnector, err := nats.ConnectFromEnv()
+	if err != nil {
+		return err
+	}
+	eventSource := controlplane.NewNATSEventSource(natsConnector)
+
+	// 2. Create a fixed event subscription with no uniform
+	subSource := controlplane.NewFixedSubscriptionSource(controlplane.WithFixedSubscriptions(keptnapi.EventSubscription{Event: "sh.keptn.event.>"}))
+
+	// 3. Create control plane
+	controlPlane := controlplane.New(subSource, eventSource, nil)
+
+	ctx, cancel := context.WithCancel(ctx)
+
+	// 4. Propagate graceful shutdown
+	setPreShutDown(api, cancel)
+	// 5. Start control plane
+	log.Info("Registering control plane")
+	return controlPlane.Register(ctx, eventRequestHandler)
+}
+
+func setPreShutDown(api *operations.MongodbDatastoreAPI, cancel context.CancelFunc) {
+	mutex.Lock()
+	api.PreServerShutdown = func() {
+		log.Info("Shutting down control plane")
+		cancel()
+	}
+	mutex.Unlock()
+}
+
+func getPreShutDown(api *operations.MongodbDatastoreAPI) func() {
+	mutex.Lock()
+	f := api.PreServerShutdown
+	mutex.Unlock()
+	return f
+}
+
 // The TLS configuration before HTTPS server starts.
 func configureTLS(tlsConfig *tls.Config) {
 	// Make all necessary changes to the TLS configuration here.
@@ -96,16 +133,7 @@ func configureTLS(tlsConfig *tls.Config) {
 // This function can be called multiple times, depending on the number of serving schemes.
 // scheme value will be set accordingly: "http", "https" or "unix"
 func configureServer(s *http.Server, scheme, addr string) {
-	log.SetLevel(log.InfoLevel)
-
-	if os.Getenv(envVarLogLevel) != "" {
-		logLevel, err := log.ParseLevel(os.Getenv(envVarLogLevel))
-		if err != nil {
-			log.WithError(err).Error("could not parse log level provided by 'LOG_LEVEL' env var")
-		} else {
-			log.SetLevel(logLevel)
-		}
-	}
+	// Make all necessary changes to the Server configuration here.
 }
 
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.

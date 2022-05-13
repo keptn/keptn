@@ -59,37 +59,17 @@ spec:
               secretKeyRef:
                 name: mongodb-credentials
                 key: mongodb-passwords
-      - name: distributor
-        image: docker.io/keptn/distributor:0.13.0-dev
-        imagePullPolicy: Always
-        ports:
-          - containerPort: 8080
-        resources:
-          requests:
-            memory: "16Mi"
-            cpu: "25m"
-          limits:
-            memory: "32Mi"
-            cpu: "100m"
-        env:
-          - name: PUBSUB_IMPL
-            value: nats
-          - name: PUBSUB_URL
-            value: 'nats://keptn-nats'
-          - name: PUBSUB_TOPIC
-            value: 'sh.keptn.>'
-          - name: PUBSUB_RECIPIENT
-            value: '127.0.0.1'
-          - name: PUBSUB_RECIPIENT_PATH
-            value: '/event'
-          - name: K8S_NAMESPACE
-            value: keptn
-          - name: K8S_DEPLOYMENT_NAME
-            value: mongodb-datastore
-          - name: K8S_NODE_NAME
-            valueFrom:
-                    fieldRef:
-                      fieldPath: spec.nodeName
+        - name: NATS_URL
+          value: 'nats://keptn-nats'
+        - name: K8S_NAMESPACE
+          value: keptn
+        - name: K8S_DEPLOYMENT_NAME
+          value: mongodb-datastore
+        - name: K8S_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+
 ---
 apiVersion: v1
 kind: Service
