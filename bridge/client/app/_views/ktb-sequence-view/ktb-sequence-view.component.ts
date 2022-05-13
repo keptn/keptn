@@ -489,6 +489,10 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
       });
       return _seqFilters;
     }, []);
+
+    if (this.project) {
+      this.dataService.loadSequences(this.project);
+    }
   }
 
   ngOnDestroy(): void {
