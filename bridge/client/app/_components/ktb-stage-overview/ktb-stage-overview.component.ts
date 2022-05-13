@@ -58,15 +58,14 @@ export class KtbStageOverviewComponent implements OnDestroy, OnInit, AfterConten
   }
 
   public ngAfterContentInit(): void {
-    this.route.queryParams.subscribe((params) => {
-      if (params['stage'] && this.project) {
-        let stage = this.project.getStage(params['stage']);
-        if (stage) {
-          this.selectedStage = stage;
-          this.selectedStageChange.emit({ stage: stage, filterType: undefined });
-        }
+    let stageName = this.route.snapshot.queryParamMap.get('stage');
+    if (stageName && this.project) {
+      let stage = this.project.getStage(stageName);
+      if (stage) {
+        this.selectedStage = stage;
+        this.selectedStageChange.emit({ stage: stage, filterType: undefined });
       }
-    });
+    }
   }
 
   private setFilter(projectChanged: boolean): void {
@@ -138,6 +137,7 @@ export class KtbStageOverviewComponent implements OnDestroy, OnInit, AfterConten
   }
 
   public selectStage($event: MouseEvent, stage: Stage, filterType: ServiceFilterType): void {
+    this.selectedStage = stage;
     this.router.navigate([], {
       queryParams: {
         stage: stage.stageName,
@@ -145,6 +145,7 @@ export class KtbStageOverviewComponent implements OnDestroy, OnInit, AfterConten
       queryParamsHandling: 'merge',
     });
     $event.stopPropagation();
+    this.selectedStageChange.emit({ stage, filterType });
   }
 
   public ngOnDestroy(): void {
