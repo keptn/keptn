@@ -11,15 +11,14 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
-	"github.com/pkg/errors"
-	logger "github.com/sirupsen/logrus"
-
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/cp-connector/pkg/api"
 	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
 	"github.com/keptn/keptn/cp-connector/pkg/nats"
+	"github.com/pkg/errors"
+	logger "github.com/sirupsen/logrus"
 )
 
 type envConfig struct {
@@ -51,10 +50,6 @@ func main() {
 		logger.SetLevel(logLevel)
 	}
 
-	go func() {
-		keptnapi.RunHealthEndpoint("8080")
-	}()
-
 	api, err := api.NewInternal(nil)
 	if err != nil {
 		log.Fatal(err)
@@ -69,6 +64,13 @@ func main() {
 	logForwarder := controlplane.NewLogForwarder(api.LogsV1())
 
 	controlPlane := controlplane.New(subscriptionSource, eventSource, logForwarder)
+
+	go func() {
+		keptnapi.RunHealthEndpoint("8080", keptnapi.WithReadinessConditionFunc(func() bool {
+			return controlPlane.IsRegistered()
+		}))
+	}()
+
 	ctx := getGracefulContext()
 	err = controlPlane.Register(ctx, ApprovalService{env})
 	if err != nil {
@@ -81,7 +83,6 @@ type ApprovalService struct {
 }
 
 func (as ApprovalService) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE) error {
-	ctx.Value(gracefulShutdownKey).(*sync.WaitGroup).Add(1)
 	val := ctx.Value(gracefulShutdownKey)
 	if val != nil {
 		if wg, ok := val.(*sync.WaitGroup); ok {
@@ -90,7 +91,7 @@ func (as ApprovalService) OnEvent(ctx context.Context, event models.KeptnContext
 	}
 
 	defer func() {
-		logger.Info("Terminating Evaluate-SLI handler")
+		logger.Info("Terminating approval handler")
 		val := ctx.Value(gracefulShutdownKey)
 		if val == nil {
 			return
@@ -142,7 +143,6 @@ func (l ApprovalService) RegistrationData() controlplane.RegistrationData {
 }
 
 func getGracefulContext() context.Context {
-
 	ch := make(chan os.Signal)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
 	wg := &sync.WaitGroup{}
@@ -150,10 +150,11 @@ func getGracefulContext() context.Context {
 	ctx = cloudevents.WithEncodingStructured(ctx)
 	go func() {
 		<-ch
-		logger.Fatal("Container termination triggered, starting graceful shutdown")
-		wg.Wait()
-		logger.Fatal("cancelling context")
+		logger.Info("Container termination triggered, starting graceful shutdown and cancelling context")
 		cancel()
+		logger.Info("Waiting for event handlers to finish")
+		wg.Wait()
+		logger.Info("All handlers finished - ready to shut down")
 	}()
 	return ctx
 }
