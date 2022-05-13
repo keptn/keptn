@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-this-alias */
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   EventEmitter,
@@ -134,7 +135,11 @@ export class KtbHeatmapComponent implements OnDestroy {
     return this.heatmapInstance.select('.data-point-container-rect');
   }
 
-  constructor(private elementRef: ElementRef, @Inject(DOCUMENT) private document: Document) {
+  constructor(
+    private elementRef: ElementRef,
+    @Inject(DOCUMENT) private document: Document,
+    private _changeDetectorRef: ChangeDetectorRef
+  ) {
     // has to be globally instead of component bound, else scrolling into it will not have any mouse coordinates
     this.mouseMoveListener = (event: MouseEvent): void => this.onMouseMove(event);
     this.document.addEventListener('mousemove', this.mouseMoveListener);
@@ -232,6 +237,7 @@ export class KtbHeatmapComponent implements OnDestroy {
   private getAxisElements(data: GroupedDataPoints): { yElements: string[]; xElements: string[] } {
     let yElements = Object.keys(data);
     this.showMoreVisible = yElements.length > this.limitYElementCount;
+    this._changeDetectorRef.detectChanges(); // update visibility of button
     yElements = this.getLimitedYElements(yElements);
     const allXElements = yElements.reduce((xElements: string[], yElement: string) => {
       return [...xElements, ...data[yElement].map((dataPoint) => dataPoint.xElement)];
