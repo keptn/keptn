@@ -277,3 +277,38 @@ describe('Create extended project test ssh and https', () => {
       .assertCreateButtonEnabled(true);
   });
 });
+
+describe('Create extended project with automatic provisioned git upstream', () => {
+  const createProjectPage = new NewProjectCreatePage();
+
+  beforeEach(() => {
+    createProjectPage.intercept(true, true).visit();
+  });
+
+  it('should show the no upstream option as default', () => {
+    createProjectPage.assertNoUpstreamSelected(true);
+  });
+
+  it('should enable the create button, if everything is filled and no upstream is selected', () => {
+    createProjectPage.enterBasicValidProjectWithoutGitUpstream().assertCreateButtonEnabled(true);
+  });
+
+  it('should disable the create button, if invalid https or ssh data is entered, and enable it again after no upstream is selected', () => {
+    createProjectPage
+      .assertNoUpstreamSelected(true)
+      .selectHttpsForm()
+      .enterBasicValidProjectHttps()
+      .assertCreateButtonEnabled(true)
+      .clearGitToken()
+      .assertCreateButtonEnabled(false);
+
+    createProjectPage
+      .selectSshForm()
+      .enterBasicValidProjectSsh()
+      .assertCreateButtonEnabled(true)
+      .clearSshPrivateKey()
+      .assertCreateButtonEnabled(false);
+
+    createProjectPage.selectNoUpstreamForm().assertCreateButtonEnabled(true);
+  });
+});

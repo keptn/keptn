@@ -32,7 +32,7 @@ import { TriggerResponse, TriggerSequenceData } from '../_models/trigger-sequenc
 import { EventData } from '../_components/ktb-evaluation-info/ktb-evaluation-info.component';
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
 import { IGitDataExtended } from '../_interfaces/git-upstream';
-import { isGitHTTPS } from '../_utils/git-upstream.utils';
+import { getGitData } from '../_utils/git-upstream.utils';
 
 @Injectable({
   providedIn: 'root',
@@ -132,7 +132,7 @@ export class DataService {
   }
 
   public createProjectExtended(projectName: string, shipyard: string, data: IGitDataExtended): Observable<unknown> {
-    return this.apiService.createProjectExtended(projectName, shipyard, isGitHTTPS(data) ? data.https : data.ssh);
+    return this.apiService.createProjectExtended(projectName, shipyard, getGitData(data));
   }
 
   public createService(projectName: string, serviceName: string): Observable<Record<string, unknown>> {
@@ -247,7 +247,7 @@ export class DataService {
   }
 
   public updateGitUpstream(projectName: string, data: IGitDataExtended): Observable<unknown> {
-    return this.apiService.updateGitUpstreamExtended(projectName, isGitHTTPS(data) ? data.https : data.ssh);
+    return this.apiService.updateGitUpstreamExtended(projectName, getGitData(data));
   }
 
   public loadKeptnInfo(): void {

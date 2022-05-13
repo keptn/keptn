@@ -138,7 +138,7 @@ export class ApiService {
   public createProjectExtended(
     projectName: string,
     shipyard: string,
-    data: IGitHttps['https'] | IGitSsh['ssh']
+    data?: IGitHttps['https'] | IGitSsh['ssh']
   ): Observable<unknown> {
     const url = `${this._baseUrl}/controlPlane/v1/project`;
     return this.http.post<unknown>(url, {
@@ -383,7 +383,7 @@ export class ApiService {
 
   public updateGitUpstreamExtended(
     projectName: string,
-    data: IGitHttps['https'] | IGitSsh['ssh']
+    data?: IGitHttps['https'] | IGitSsh['ssh']
   ): Observable<unknown> {
     const url = `${this._baseUrl}/controlPlane/v1/project`;
     return this.http.put<unknown>(url, {
