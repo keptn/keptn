@@ -424,6 +424,11 @@ class NewProjectCreatePage {
     cy.byTestId('ktb-project-update-button').should(status ? 'be.enabled' : 'be.disabled');
     return this;
   }
+
+  public assertGitUpstreamMessageContains(message: string): this {
+    cy.byTestId('ktb-settings-git-upstream-message').should('contain', message);
+    return this;
+  }
 }
 
 export default NewProjectCreatePage;
