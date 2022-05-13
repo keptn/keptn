@@ -1,6 +1,8 @@
 import { Target } from '../../../shared/interfaces/indicator-result';
 import { ResultTypes } from '../../../shared/models/result-types';
 
+export type GroupedDataPoints = { [yElement: string]: IDataPoint[] };
+
 export enum IHeatmapTooltipType {
   SCORE,
   SLI,

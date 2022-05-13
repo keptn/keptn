@@ -88,14 +88,6 @@ describe('KtbHeatmapComponent', () => {
     expect(dataPoints).toEqual(noRefDataPoints);
   });
 
-  it('should correctly return axis elements without duplicates', () => {
-    component.dataPoints = mockDataPoints(2, 1);
-    expect(component['getAxisElements'](component['groupedData'])).toEqual({
-      xElements: ['myDate0', 'myDate1'],
-      yElements: ['response_time_p0', 'score'],
-    });
-  });
-
   it('should correctly save mouse movement', () => {
     // given
     devicePixelRatioSpy.mockReturnValue(2);
@@ -113,42 +105,6 @@ describe('KtbHeatmapComponent', () => {
       x: 4,
       y: 8,
     });
-  });
-
-  it('should return a reduced set of elements (even index) for xAxis labels if the width is too small', () => {
-    // given
-    parentNodeBoundingClientRectSpy.mockReturnValue(getDomRect(200)); // (width -150) / elements < 25
-    component.dataPoints = mockDataPoints(2, 1);
-
-    // when
-    const reducedDates = component['getXAxisReducedElements'](generateArray(3));
-
-    // then
-    expect(reducedDates).toEqual(['0', '2']);
-  });
-
-  it('should return a reduced set of elements (odd index) for xAxis labels if the width is too small', () => {
-    // given
-    parentNodeBoundingClientRectSpy.mockReturnValue(getDomRect(200)); // (width -150) / elements < 25
-    component.dataPoints = mockDataPoints(2, 1);
-
-    // when
-    const reducedDates = component['getXAxisReducedElements'](generateArray(4));
-
-    // then
-    expect(reducedDates).toEqual(['1', '3']);
-  });
-
-  it('should not return all elements for xAxis if width is enough', () => {
-    // given
-    parentNodeBoundingClientRectSpy.mockReturnValue(getDomRect(300)); // (width -150) / elements > 25
-    component.dataPoints = mockDataPoints(2, 1);
-
-    // when
-    const reducedDates = component['getXAxisReducedElements'](generateArray(3));
-
-    // then
-    expect(reducedDates).toEqual(['0', '1', '2']);
   });
 
   it('should not select dataPoint if it is not in the dataSource', () => {
@@ -185,76 +141,6 @@ describe('KtbHeatmapComponent', () => {
     expect(emitSpy).toHaveBeenCalled();
   });
 
-  it('should return only available identifiers', () => {
-    // given
-    component.dataPoints = mockDataPoints(2, 1, '', '', true);
-
-    // when
-    const foundIdentifiers = component['getAvailableIdentifiers'](['myEvaluation-1', 'myEvaluation0']);
-
-    // then
-    expect(foundIdentifiers).toEqual(['myEvaluation0']);
-  });
-
-  it('should find xElement through identifier', () => {
-    // given
-    component.dataPoints = mockDataPoints(3, 1, '', '', true);
-
-    // when
-    const foundXElement = component['findXElementThroughIdentifier']('myEvaluation1');
-
-    // then
-    expect(foundXElement).toEqual('myDate1');
-  });
-
-  it('should not find xElement through identifier', () => {
-    // given
-    component.dataPoints = mockDataPoints(3, 1, '', '', true);
-
-    // when
-    const foundXElement = component['findXElementThroughIdentifier']('notFound');
-
-    // then
-    expect(foundXElement).toBeUndefined();
-  });
-
-  it('should return hidden yElements', () => {
-    // when
-    const hiddenElements = component['getHiddenYElements'](generateArray(12));
-
-    // then
-    expect(hiddenElements).toEqual(['0', '1']);
-  });
-
-  it('should not return hidden yElements', () => {
-    // when
-    const hiddenElements = component['getHiddenYElements'](generateArray(10));
-
-    // then
-    expect(hiddenElements).toEqual([]);
-  });
-
-  it('should return all yElements if yElements is <= 10', () => {
-    const myArray: string[] = [];
-    for (let i = 0; i < 10; ++i) {
-      myArray.push(i.toString());
-
-      // when
-      const yElements = component['getLimitedYElements'](myArray);
-
-      // then
-      expect(yElements).toEqual(myArray);
-    }
-  });
-
-  it('should return limited set of yElements', () => {
-    // when
-    const hiddenElements = component['getLimitedYElements'](generateArray(12));
-
-    // then
-    expect(hiddenElements).toEqual(generateArray(10, 2));
-  });
-
   it('should set correct height', () => {
     // when
     component['setHeight'](5);
@@ -272,36 +158,6 @@ describe('KtbHeatmapComponent', () => {
 
     // then
     expect(removeEventListenerSpy).toHaveBeenCalledWith('mousemove', listener);
-  });
-
-  it('should show tooltip on the left if scrollbar is visible', () => {
-    // given
-    devicePixelRatioSpy.mockReturnValue(2);
-    outerWidthSpy.mockReturnValue(1000);
-
-    // when
-    const coordinates = component['calculateTooltipPosition'](100, 20, 388, 250);
-
-    // then
-    expect(coordinates).toEqual({
-      top: 255,
-      left: 293,
-    });
-  });
-
-  it('should show tooltip on the right if scrollbar is not visible', () => {
-    // given
-    devicePixelRatioSpy.mockReturnValue(2);
-    outerWidthSpy.mockReturnValue(1000);
-
-    // when
-    const coordinates = component['calculateTooltipPosition'](100, 0, 388, 250);
-
-    // then
-    expect(coordinates).toEqual({
-      top: 255,
-      left: 393,
-    });
   });
 
   it('should correctly set showMoreButton-Style', () => {
@@ -352,82 +208,6 @@ describe('KtbHeatmapComponent', () => {
     }
   });
 
-  function mockDataPoints(
-    counter: number,
-    slis: number,
-    identifierSuffix = '',
-    dateSuffix = '',
-    mockIdentifiers = false
-  ): IDataPoint[] {
-    const dataPoints: IDataPoint[] = [];
-    for (let i = 0; i < counter; ++i) {
-      const identifier = `myEvaluation${i}${identifierSuffix}`;
-      const identifierBefore = mockIdentifiers ? `myEvaluation${i - 1}${identifierSuffix}` : undefined;
-      const xElement = `myDate${i}${dateSuffix}`;
-      for (let y = 0; y < slis; ++y) {
-        dataPoints.push(mockSliDataPoint(identifier, xElement, `response_time_p${y}`, identifierBefore));
-      }
-      dataPoints.push(mockScoreDataPoint(identifier, xElement, identifierBefore));
-    }
-    return dataPoints;
-  }
-
-  function mockDuplicateDataPoints(slis: number, duplicates: number, duplicatesPerDate: number): IDataPoint[] {
-    // duplicates: how many different (dates with) duplicates
-    const dataPoints: IDataPoint[] = [];
-    for (let i = 0; i < duplicates; ++i) {
-      for (let y = 0; y < duplicatesPerDate + 1; ++y) {
-        const duplicate = mockDataPoints(1, slis, `duplicate${i}${y}`, `duplicate${i}`);
-        dataPoints.push(...duplicate);
-      }
-    }
-    return dataPoints;
-  }
-
-  function mockScoreDataPoint(identifier: string, xElement: string, identifierBefore?: string): IDataPoint {
-    return {
-      comparedIdentifier: identifierBefore ? [identifierBefore] : [],
-      identifier,
-      tooltip: {
-        warningCount: 0,
-        thresholdWarn: 0,
-        thresholdPass: 0,
-        passCount: 0,
-        warn: false,
-        value: 0,
-        type: IHeatmapTooltipType.SCORE,
-        failedCount: 0,
-        fail: true,
-      },
-      color: EvaluationResultTypeExtension.INFO,
-      xElement,
-      yElement: 'score',
-    };
-  }
-
-  function mockSliDataPoint(
-    identifier: string,
-    xElement: string,
-    yElement: string,
-    identifierBefore?: string
-  ): IDataPoint {
-    return {
-      comparedIdentifier: identifierBefore ? [identifierBefore] : [],
-      identifier,
-      tooltip: {
-        type: IHeatmapTooltipType.SLI,
-        keySli: false,
-        score: 0,
-        warningTargets: [],
-        passTargets: [],
-        value: 0,
-      },
-      color: EvaluationResultTypeExtension.INFO,
-      xElement,
-      yElement,
-    };
-  }
-
   /**
    * Mocks and adds a spy to:
    * <br/>- SVGElement.getComputedTextLength()
@@ -456,14 +236,6 @@ describe('KtbHeatmapComponent', () => {
     TestUtils.overridePropertyWithSpy(window, 'outerWidth', outerWidthSpy);
   }
 
-  function generateArray(counter: number, offset = 0): string[] {
-    const array: string[] = [];
-    for (let i = 0; i < counter; ++i) {
-      array.push(`${i + offset}`);
-    }
-    return array;
-  }
-
   function getDomRect(width: number): DOMRect {
     return {
       width,
@@ -480,4 +252,80 @@ describe('KtbHeatmapComponent', () => {
     };
   }
 });
+
+export function mockDataPoints(
+  counter: number,
+  slis: number,
+  identifierSuffix = '',
+  dateSuffix = '',
+  mockIdentifiers = false
+): IDataPoint[] {
+  const dataPoints: IDataPoint[] = [];
+  for (let i = 0; i < counter; ++i) {
+    const identifier = `myEvaluation${i}${identifierSuffix}`;
+    const identifierBefore = mockIdentifiers ? `myEvaluation${i - 1}${identifierSuffix}` : undefined;
+    const xElement = `myDate${i}${dateSuffix}`;
+    for (let y = 0; y < slis; ++y) {
+      dataPoints.push(mockSliDataPoint(identifier, xElement, `response_time_p${y}`, identifierBefore));
+    }
+    dataPoints.push(mockScoreDataPoint(identifier, xElement, identifierBefore));
+  }
+  return dataPoints;
+}
+
+function mockDuplicateDataPoints(slis: number, duplicates: number, duplicatesPerDate: number): IDataPoint[] {
+  // duplicates: how many different (dates with) duplicates
+  const dataPoints: IDataPoint[] = [];
+  for (let i = 0; i < duplicates; ++i) {
+    for (let y = 0; y < duplicatesPerDate + 1; ++y) {
+      const duplicate = mockDataPoints(1, slis, `duplicate${i}${y}`, `duplicate${i}`);
+      dataPoints.push(...duplicate);
+    }
+  }
+  return dataPoints;
+}
+
+function mockScoreDataPoint(identifier: string, xElement: string, identifierBefore?: string): IDataPoint {
+  return {
+    comparedIdentifier: identifierBefore ? [identifierBefore] : [],
+    identifier,
+    tooltip: {
+      warningCount: 0,
+      thresholdWarn: 0,
+      thresholdPass: 0,
+      passCount: 0,
+      warn: false,
+      value: 0,
+      type: IHeatmapTooltipType.SCORE,
+      failedCount: 0,
+      fail: true,
+    },
+    color: EvaluationResultTypeExtension.INFO,
+    xElement,
+    yElement: 'score',
+  };
+}
+
+function mockSliDataPoint(
+  identifier: string,
+  xElement: string,
+  yElement: string,
+  identifierBefore?: string
+): IDataPoint {
+  return {
+    comparedIdentifier: identifierBefore ? [identifierBefore] : [],
+    identifier,
+    tooltip: {
+      type: IHeatmapTooltipType.SLI,
+      keySli: false,
+      score: 0,
+      warningTargets: [],
+      passTargets: [],
+      value: 0,
+    },
+    color: EvaluationResultTypeExtension.INFO,
+    xElement,
+    yElement,
+  };
+}
 /* eslint-enable @typescript-eslint/dot-notation */

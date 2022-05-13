@@ -139,7 +139,6 @@ import { ArrayToStringPipe } from './_pipes/array-to-string';
 import { KeptnUrlPipe } from './_pipes/keptn-url.pipe';
 import { ToDatePipe } from './_pipes/to-date.pipe';
 import { ToType } from './_pipes/to-type';
-import { TruncateNumberPipe } from './_pipes/truncate-number';
 import { AppInitService } from './_services/app.init';
 import { EventService } from './_services/event.service';
 import { POLLING_INTERVAL_MILLIS, RETRY_ON_HTTP_ERROR } from './_utils/app.utils';
@@ -167,9 +166,9 @@ import { KtbCertificateInputComponent } from './_components/ktb-certificate-inpu
 import { KtbSshKeyInputComponent } from './_components/ktb-ssh-key-input/ktb-ssh-key-input.component';
 import { KtbProjectSettingsGitSshInputComponent } from './_components/ktb-project-settings-git-ssh-input/ktb-project-settings-git-ssh-input.component';
 import { SanitizeHtmlPipe } from './_pipes/sanitize-html.pipe';
-import { KtbHeatmapComponent } from './_components/ktb-heatmap/ktb-heatmap.component';
-import { KtbHeatmapTooltipComponent } from './_components/ktb-heatmap-tooltip/ktb-heatmap-tooltip.component';
 import { WindowConfig } from '../environments/environment.dynamic';
+import { KtbHeatmapModule } from './_components/ktb-heatmap/ktb-heatmap.module';
+import { KtbPipeModule } from './_pipes/ktb-pipe.module';
 
 registerLocaleData(localeEn, 'en');
 
@@ -264,7 +263,6 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     KtbTimeInputComponent,
     KtbDatetimePickerComponent,
     KtbDatetimePickerDirective,
-    TruncateNumberPipe,
     KtbErrorViewComponent,
     KtbRootComponent,
     KtbLogoutViewComponent,
@@ -279,8 +277,6 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     KtbLoadingDistractorComponent,
     KtbLoadingSpinnerComponent,
     SanitizeHtmlPipe,
-    KtbHeatmapComponent,
-    KtbHeatmapTooltipComponent,
   ],
   imports: [
     BrowserModule,
@@ -335,6 +331,8 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     OverlayModule,
     DtDatepickerModule,
     CommonModule,
+    KtbHeatmapModule,
+    KtbPipeModule,
   ],
   entryComponents: [KtbDeletionDialogComponent, KtbConfirmationDialogComponent],
   providers: [

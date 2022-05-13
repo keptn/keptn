@@ -16,15 +16,31 @@ import { axisBottom, axisLeft, BaseType, ScaleBand, scaleBand, select, Selection
 import { ResultTypes } from '../../../../shared/models/result-types';
 import { DtButton } from '@dynatrace/barista-components/button';
 import { v4 as uuid } from 'uuid';
-import { KtbHeatmapTooltipComponent } from '../ktb-heatmap-tooltip/ktb-heatmap-tooltip.component';
-import { EvaluationResultType, EvaluationResultTypeExtension, IDataPoint } from '../../_interfaces/heatmap';
+import { KtbHeatmapTooltipComponent } from './ktb-heatmap-tooltip.component';
+import {
+  EvaluationResultType,
+  EvaluationResultTypeExtension,
+  GroupedDataPoints,
+  IDataPoint,
+} from '../../_interfaces/heatmap';
 import { DOCUMENT } from '@angular/common';
+import {
+  calculateTooltipPosition,
+  createGroupedDataPoints,
+  findXElementThroughIdentifier,
+  getAvailableIdentifiers,
+  getAxisElements,
+  getDataPointElement,
+  getHiddenYElements,
+  getLimitedYElements,
+  getXAxisReducedElements,
+  isScrollbarVisible,
+} from './ktb-heatmap-utils';
 
 type SVGGSelection = Selection<SVGGElement, unknown, HTMLElement, unknown>;
 type HighlightSelection = Selection<SVGRectElement, unknown, HTMLElement, unknown>;
 type SecondaryHighlightSelections = Selection<SVGRectElement, unknown, SVGGElement, unknown>;
 type HeatmapTiles = Selection<SVGRectElement | null, IDataPoint, SVGGElement, unknown>;
-type GroupedDataPoints = { [yElement: string]: IDataPoint[] };
 
 @Component({
   selector: 'ktb-heatmap',
@@ -74,13 +90,7 @@ export class KtbHeatmapComponent implements OnDestroy {
   @Input()
   public set dataPoints(data: IDataPoint[]) {
     this.removeHeatmap();
-    this.setUniqueHeaders(data, 'xElement', 'yElement');
-    this.setUniqueHeaders(data, 'yElement', 'xElement');
-    this.groupedData = data.reduce((groupedData: GroupedDataPoints, dataPoint) => {
-      groupedData[dataPoint.yElement] ||= [];
-      groupedData[dataPoint.yElement].push(dataPoint);
-      return groupedData;
-    }, {});
+    this.groupedData = createGroupedDataPoints(data);
     this.createHeatmap(this.groupedData);
     this.onResize(); // generating the heatmap may introduce a scrollbar
     this.click(this.selectedDataPoint, true); // restore previously selected dataPoint
@@ -170,7 +180,7 @@ export class KtbHeatmapComponent implements OnDestroy {
   private onScroll(): void {
     const x = this.mouseCoordinates.x / window.devicePixelRatio;
     const y = this.mouseCoordinates.y / window.devicePixelRatio;
-    const element = this.getDataPointElement(x, y);
+    const element = getDataPointElement(x, y);
     const dt = this.getDataPointThroughCoordinates(x, y);
 
     if (!element || !dt) {
@@ -186,17 +196,8 @@ export class KtbHeatmapComponent implements OnDestroy {
     this.mouseMove(mouseEvent, dt);
   }
 
-  private getDataPointElement(x: number, y: number): SVGRectElement | undefined {
-    const element = this.document.elementFromPoint(x, y);
-
-    if (!element || !(element instanceof SVGRectElement)) {
-      return undefined;
-    }
-    return element;
-  }
-
   private getDataPointThroughCoordinates(x: number, y: number): IDataPoint | undefined {
-    const element = this.getDataPointElement(x, y);
+    const element = getDataPointElement(x, y);
 
     if (!element || !this.heatmapInstance.node()?.contains(element)) {
       return;
@@ -219,7 +220,9 @@ export class KtbHeatmapComponent implements OnDestroy {
   }
 
   private createHeatmap(data: GroupedDataPoints): void {
-    const { yElements, xElements } = this.getAxisElements(data);
+    const { yElements, xElements, showMoreVisible } = getAxisElements(data, this.limitYElementCount);
+    this.showMoreVisible = showMoreVisible;
+    this._changeDetectorRef.detectChanges(); // update visibility of button
 
     this.setHeight(yElements.length);
     const availableSpace = this.setAndGetAvailableSpace();
@@ -232,20 +235,6 @@ export class KtbHeatmapComponent implements OnDestroy {
     this.setData(data, xElements, yElements);
     this.createLegend();
     this.resizeDataPointContainerRect();
-  }
-
-  private getAxisElements(data: GroupedDataPoints): { yElements: string[]; xElements: string[] } {
-    let yElements = Object.keys(data);
-    this.showMoreVisible = yElements.length > this.limitYElementCount;
-    this._changeDetectorRef.detectChanges(); // update visibility of button
-    yElements = this.getLimitedYElements(yElements);
-    const allXElements = yElements.reduce((xElements: string[], yElement: string) => {
-      return [...xElements, ...data[yElement].map((dataPoint) => dataPoint.xElement)];
-    }, []);
-    return {
-      yElements,
-      xElements: Array.from(new Set(allXElements)),
-    };
   }
 
   private setAndGetAvailableSpace(): { height: number; width: number } {
@@ -314,38 +303,6 @@ export class KtbHeatmapComponent implements OnDestroy {
     legend.attr('transform', `translate(${centerXPosition}, ${yPosition})`);
   }
 
-  private setUniqueHeaders(dataPoints: IDataPoint[], key: 'xElement', compare: 'yElement'): void;
-  private setUniqueHeaders(dataPoints: IDataPoint[], key: 'yElement', compare: 'xElement'): void;
-  private setUniqueHeaders(
-    dataPoints: IDataPoint[],
-    key: 'yElement' | 'xElement',
-    compare: 'xElement' | 'yElement'
-  ): void {
-    const duplicatesDict: { [key: string]: { [compare: string]: number } } = {};
-    dataPoints.forEach((dataPoint, index) => {
-      let uniqueHeader = dataPoint[key];
-      const compareWith = dataPoint[compare];
-      let foundIndex;
-      while (
-        (foundIndex = dataPoints.findIndex(
-          // eslint-disable-next-line @typescript-eslint/no-loop-func
-          (dt) => dt[key] === uniqueHeader && dt[compare] === compareWith
-        )) < index &&
-        foundIndex !== -1
-      ) {
-        if (duplicatesDict[uniqueHeader] === undefined) {
-          duplicatesDict[uniqueHeader] = {};
-        }
-        if (duplicatesDict[uniqueHeader][compareWith] === undefined) {
-          duplicatesDict[uniqueHeader][compareWith] = 0;
-        }
-        ++duplicatesDict[uniqueHeader][compareWith];
-        uniqueHeader = `${dataPoint[key]} (${duplicatesDict[uniqueHeader][compareWith]})`;
-      }
-      dataPoint[key] = uniqueHeader;
-    });
-  }
-
   private setData(data: GroupedDataPoints, xAxisElements: string[], yAxisElements: string[]): void {
     const heatmap = this.heatmapInstance;
     this.xAxis = this.addXAxis(heatmap, xAxisElements);
@@ -378,23 +335,15 @@ export class KtbHeatmapComponent implements OnDestroy {
    */
   private attachXAxis(xAxisContainer: SVGGSelection, x: ScaleBand<string>): void {
     xAxisContainer
-      .call(axisBottom(x).tickSize(5).tickValues(this.getXAxisReducedElements(x.domain())))
+      .call(
+        axisBottom(x)
+          .tickSize(5)
+          .tickValues(getXAxisReducedElements(x.domain(), this.dataPointContentWidth, this.minWidthPerXAxisElement))
+      )
       .selectAll('text')
       .attr('class', 'x-axis-identifier')
       .attr('dx', '-.8em')
       .attr('dy', '.15em');
-  }
-
-  private getXAxisReducedElements(elements: string[]): string[] {
-    const widthPerDataPoint = this.dataPointContentWidth / elements.length;
-
-    if (widthPerDataPoint < this.minWidthPerXAxisElement) {
-      const rest = elements.length % 2;
-      // the latest one is the most important one. If even then the latest element is even, if not even then the latest element is not even
-      // index starts with 0, that's why we use !== rest instead of === rest
-      return elements.filter((_xElement, index) => index % 2 !== rest);
-    }
-    return elements;
   }
 
   private addYAxis(heatmap: SVGGSelection, yElements: string[]): ScaleBand<string> {
@@ -452,37 +401,11 @@ export class KtbHeatmapComponent implements OnDestroy {
     this.tooltip.tooltip = dataPoint.tooltip;
     const htmlElement: HTMLElement = this.tooltip._elementRef.nativeElement;
     const tooltipWidth = htmlElement.getBoundingClientRect().width;
-    const scrollbarWidth = this.isScrollbarVisible() ? 18 : 0; // just assume a default scrollbar-width of 18px
-    const { top, left } = this.calculateTooltipPosition(tooltipWidth, scrollbarWidth, event.x, event.y);
+    const scrollbarWidth = isScrollbarVisible() ? 18 : 0; // just assume a default scrollbar-width of 18px
+    const { top, left } = calculateTooltipPosition(tooltipWidth, scrollbarWidth, event.x, event.y);
 
     htmlElement.style.top = `${top}px`;
     htmlElement.style.left = `${left}px`;
-  }
-
-  private calculateTooltipPosition(
-    tooltipWidth: number,
-    scrollbarWidth: number,
-    x: number,
-    y: number
-  ): { top: number; left: number } {
-    const offset = 5; // tooltip should not exactly appear next to the cursor
-    const endOfWidth = (x + tooltipWidth) * window.devicePixelRatio + scrollbarWidth + offset;
-    let left = x;
-    if (endOfWidth > window.outerWidth) {
-      left -= tooltipWidth - offset;
-    } else {
-      left += offset;
-    }
-    return {
-      top: y + offset,
-      left,
-    };
-  }
-
-  private isScrollbarVisible(): boolean {
-    // we only care about the scrollbar of the window (root element) not of a component
-    const element = this.document.querySelector('body')?.firstElementChild;
-    return !!element && element.scrollHeight > element.clientHeight;
   }
 
   private removeHighlights(): void {
@@ -505,17 +428,17 @@ export class KtbHeatmapComponent implements OnDestroy {
       this._selectedDataPoint = undefined;
       return;
     }
-    this._selectedDataPoint = dataPoint;
 
-    if (preSelectDataPoint && !this.findXElementThroughIdentifier(dataPoint.identifier)) {
+    if (preSelectDataPoint && !findXElementThroughIdentifier(dataPoint.identifier, this.groupedData)) {
       this._selectedDataPoint = undefined;
       return;
     }
+    this._selectedDataPoint = dataPoint;
 
     heatmap.append('rect').attr('class', 'highlight-primary');
     this.setHighlightCoordinates(dataPoint.xElement);
 
-    const foundIdentifiers = this.getAvailableIdentifiers(dataPoint.comparedIdentifier);
+    const foundIdentifiers = getAvailableIdentifiers(dataPoint.comparedIdentifier, this.groupedData);
     heatmap.selectAll().data(foundIdentifiers).join('rect').attr('class', 'highlight-secondary');
     this.setSecondaryHighlightCoordinates(foundIdentifiers);
 
@@ -538,15 +461,6 @@ export class KtbHeatmapComponent implements OnDestroy {
     this.click(dataPoint);
   }
 
-  /**
-   * Returns a subset of the given identifiers that are available in the given dataPoints
-   * @param identifiers
-   * @private
-   */
-  private getAvailableIdentifiers(identifiers: string[]): string[] {
-    return identifiers.filter((identifier) => !!this.findXElementThroughIdentifier(identifier));
-  }
-
   private getHighlightWidth(): number {
     const xAxisElements = this.xAxis.domain();
     return this.dataPointContentWidth / xAxisElements.length;
@@ -563,7 +477,7 @@ export class KtbHeatmapComponent implements OnDestroy {
   private setSecondaryHighlightCoordinates(identifiers: string[]): void {
     this.secondaryHighlights
       .attr('x', (_dt, index) => {
-        const xElement = this.findXElementThroughIdentifier(identifiers[index]);
+        const xElement = findXElementThroughIdentifier(identifiers[index], this.groupedData);
         if (!xElement) {
           return null;
         }
@@ -572,16 +486,6 @@ export class KtbHeatmapComponent implements OnDestroy {
       .attr('y', 0)
       .attr('height', this.height)
       .attr('width', this.getHighlightWidth());
-  }
-
-  private findXElementThroughIdentifier(identifier: string): string | undefined {
-    for (const key of Object.keys(this.groupedData)) {
-      const dataPoint = this.groupedData[key].find((dt) => dt.identifier === identifier);
-      if (dataPoint) {
-        return dataPoint.xElement;
-      }
-    }
-    return undefined;
   }
 
   private generateHeatmapTiles(data: GroupedDataPoints, yAxisElements = this.yAxis.domain()): void {
@@ -706,18 +610,7 @@ export class KtbHeatmapComponent implements OnDestroy {
     this.setHeight(yElements.length);
     this.updateYAxis(yElements);
 
-    this.generateHeatmapTiles(this.groupedData, this.getHiddenYElements(yElements));
-  }
-
-  private getHiddenYElements(yElements: string[]): string[] {
-    return yElements.slice(0, yElements.length - this.limitYElementCount);
-  }
-
-  private getLimitedYElements(yElements: string[]): string[] {
-    if (yElements.length <= this.limitYElementCount) {
-      return yElements;
-    }
-    return yElements.slice(yElements.length - this.limitYElementCount, yElements.length);
+    this.generateHeatmapTiles(this.groupedData, getHiddenYElements(yElements, this.limitYElementCount));
   }
 
   private updateYAxis(yElements: string[]): void {
@@ -733,7 +626,7 @@ export class KtbHeatmapComponent implements OnDestroy {
       .remove();
 
     const yElements = Object.keys(this.groupedData);
-    this.updateYAxis(this.getLimitedYElements(yElements));
+    this.updateYAxis(getLimitedYElements(yElements, this.limitYElementCount));
   }
 
   private setHeight(elementCount: number): void {
