@@ -30,7 +30,7 @@
       <dt-error *ngIf="getFormControl('url').errors?.required">URL must not be empty</dt-error>
       <dt-error *ngIf="getFormControl('url').errors?.urlOrSecret">
         Must either be a URL starting with http(s):// or a reference to a secret. A combination of both is possible too:
-        https://{{.secret.a.b}}
+        https://{{ '{{.secret.a.b}}' }}
       </dt-error>
       <dt-error *ngIf="getFormControl('url').errors?.space"> URL must not contain spaces </dt-error>
       <div dtSuffix uitestid="event-url">
