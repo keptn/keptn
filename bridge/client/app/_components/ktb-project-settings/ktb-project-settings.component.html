@@ -45,7 +45,7 @@
           </p>
 
           <ktb-project-settings-git-extended
-            *ngIf="!isProjectLoading; else loading"
+            *ngIf="!isProjectLoading && state.gitUpstreamRequired; else loading"
             [isCreateMode]="isCreateMode"
             [isGitUpstreamInProgress]="isGitUpstreamInProgress"
             [gitInputData]="gitInputDataExtended"

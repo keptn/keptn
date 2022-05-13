@@ -9,7 +9,7 @@ import { DataService } from '../../_services/data.service';
 import { DtToast } from '@dynatrace/barista-components/toast';
 import { NotificationsService } from '../../_services/notifications.service';
 import { EventService } from '../../_services/event.service';
-import { filter, map, startWith, takeUntil } from 'rxjs/operators';
+import { filter, map, takeUntil } from 'rxjs/operators';
 import { Project } from '../../_models/project';
 import { FormUtils } from '../../_utils/form.utils';
 import { KtbProjectCreateMessageComponent } from '../_status-messages/ktb-project-create-message/ktb-project-create-message.component';
@@ -66,8 +66,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
 
   readonly state$: Observable<ProjectSettingsState> = this.dataService.keptnInfo.pipe(
     filter((keptnInfo: KeptnInfo | undefined): keptnInfo is KeptnInfo => !!keptnInfo),
-    map((keptnInfo: KeptnInfo) => ({ gitUpstreamRequired: !keptnInfo.metadata.automaticprovisioning })),
-    startWith({ gitUpstreamRequired: true })
+    map((keptnInfo: KeptnInfo) => ({ gitUpstreamRequired: !keptnInfo.metadata.automaticprovisioning }))
   );
 
   constructor(
