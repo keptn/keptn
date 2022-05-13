@@ -166,10 +166,8 @@ github.com/keptn/go-utils v0.15.1-0.20220512082458-c5e1b7519bec h1:ctvu8/NL/mutx
 github.com/keptn/go-utils v0.15.1-0.20220512082458-c5e1b7519bec/go.mod h1:oxLLKz2u9KId2HgLH63+T0pUbcgiDd2GDkRrRKwxGUU=
 github.com/keptn/keptn/cp-connector v0.0.0-20220512122245-d9e05a908f02 h1:eBRfRuRuXYCUWRE4E1j7xRL7VrrN2PaxgqD65Bt41D0=
 github.com/keptn/keptn/cp-connector v0.0.0-20220512122245-d9e05a908f02/go.mod h1:hBnlGKdA32QUkPITvDZrqN/J0TG/5eCp15CAtPrUmcM=
-github.com/keptn/keptn/go-sdk v0.0.0-20220512123640-f97a1d8a9f5b h1:hMA4my+ndyXU120LLJhcgHBQn+iZCykyH3K5e5cYzvU=
-github.com/keptn/keptn/go-sdk v0.0.0-20220512123640-f97a1d8a9f5b/go.mod h1:H9NF2fdPyLnnQ1fVzwrKbEA+OV9yGfgrOmSi1rZ0aM4=
-github.com/keptn/keptn/go-sdk v0.0.0-20220513085941-dd181daba543 h1:uPeEHynAvTihKo0lukkoBmPEuujEGtWy69V8b25DejE=
-github.com/keptn/keptn/go-sdk v0.0.0-20220513085941-dd181daba543/go.mod h1:H9NF2fdPyLnnQ1fVzwrKbEA+OV9yGfgrOmSi1rZ0aM4=
+github.com/keptn/keptn/go-sdk v0.0.0-20220513103944-43b05801c208 h1:Ls4hwQh4kEaODZSgAxDBpGLbjiDRsKNKpmu+0n6xLpU=
+github.com/keptn/keptn/go-sdk v0.0.0-20220513103944-43b05801c208/go.mod h1:H9NF2fdPyLnnQ1fVzwrKbEA+OV9yGfgrOmSi1rZ0aM4=
 github.com/kisielk/errcheck v1.5.0/go.mod h1:pFxgyoBC7bSaBwPgfKdkLd5X25qrDl4LWUI2bnpBCr8=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/klauspost/compress v1.14.4 h1:eijASRJcobkVtSt81Olfh7JX43osYLwy5krOJo6YEu4=
