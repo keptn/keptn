@@ -9,6 +9,7 @@
 {{- $ingressProtocol = index $ingressConfigCM.data "ingress_protocol" }}
 {{- $ingressPort = index $ingressConfigCM.data "ingress_port" }}
 {{- $istioGateway = index $ingressConfigCM.data "istio_gateway" }}
+{{- $ingressConfigCM := (lookup "v1" "ConfigMap" .Release.Namespace "ingress-config") }}
 {{- end -}}
 
 ---
