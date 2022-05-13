@@ -8,6 +8,8 @@ import (
 type envConfig struct {
 	ConfigurationServiceURL string `envconfig:"CONFIGURATION_SERVICE" default:"configuration-service:8080"`
 	EventBrokerURL          string `envconfig:"EVENTBROKER" default:"nats://keptn-nats"`
+	HealthEndpointPort      string `envconfig:"HEALTH_ENDPOINT_PORT" default:"8080"`
+	HealthEndpointEnabled   bool   `envconfig:"HEALTH_ENDPOINT_ENABLED" default:"true"`
 	Location                string `envconfig:"LOCATION" default:"control-plane"`
 	Version                 string `envconfig:"VERSION" default:""`
 	K8sDeploymentName       string `envconfig:"K8S_DEPLOYMENT_NAME" default:""`

@@ -46,6 +46,8 @@ type TaskHandler interface {
 	Execute(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error)
 }
 
+type healthEndpointRunner func(port string, cp *controlplane.ControlPlane)
+
 type KeptnEvent models.KeptnContextExtendedCE
 
 // Opaque key type used for graceful shutdown context value
@@ -138,6 +140,7 @@ type Keptn struct {
 	gracefulShutdown       bool
 	logger                 Logger
 	env                    envConfig
+	healthEndpointRunner   healthEndpointRunner
 }
 
 // NewKeptn creates a new Keptn
@@ -158,6 +161,7 @@ func NewKeptn(source string, opts ...KeptnOption) *Keptn {
 		syncProcessing:         false,
 		logger:                 logger,
 		env:                    env,
+		healthEndpointRunner:   cpHealthEndpointRunner,
 	}
 	for _, opt := range opts {
 		opt(keptn)
@@ -266,7 +270,10 @@ func (k *Keptn) RegistrationData() controlplane.RegistrationData {
 }
 
 func (k *Keptn) Start() error {
-	ctx := getContext(k.gracefulShutdown)
+	if k.env.HealthEndpointEnabled {
+		k.healthEndpointRunner(k.env.HealthEndpointPort, k.controlPlane)
+	}
+	ctx := k.getContext(k.gracefulShutdown)
 	err := k.controlPlane.Register(ctx, k)
 	ctx.Value(gracefulShutdownKey).(wgInterface).Wait()
 	return err
@@ -421,7 +428,17 @@ func (k *Keptn) createErrorFinishedEventForTriggeredEvent(triggeredEvent models.
 	return &finishedEvent, nil
 }
 
-func getContext(graceful bool) context.Context {
+func cpHealthEndpointRunner(port string, cp *controlplane.ControlPlane) {
+	go func() {
+		api.RunHealthEndpoint(port, api.WithReadinessConditionFunc(func() bool {
+			return cp.IsRegistered()
+		}))
+	}()
+}
+
+func noOpHealthEndpointRunner(port string, cp *controlplane.ControlPlane) {}
+
+func (k *Keptn) getContext(graceful bool) context.Context {
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
 	var wg wgInterface
@@ -430,12 +447,10 @@ func getContext(graceful bool) context.Context {
 	} else {
 		wg = &nopWG{}
 	}
-	ctx, cancel := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), gracefulShutdownKey, wg)))
-
+	ctx, cancel := context.WithCancel(context.WithValue(context.Background(), gracefulShutdownKey, wg))
 	go func() {
 		<-ch
 		cancel()
 	}()
-
 	return ctx
 }

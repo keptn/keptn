@@ -27,6 +27,7 @@ func Test_WhenReceivingAnEvent_StartedEventAndFinishedEventsAreSent(t *testing.T
 		taskRegistry:           taskRegistry,
 		automaticEventResponse: true,
 		logger:                 newDefaultLogger(),
+		healthEndpointRunner:   noOpHealthEndpointRunner,
 	}
 
 	go keptn.Start()
@@ -72,6 +73,7 @@ func Test_WhenReceivingEvent_OnlyStartedEventIsSent(t *testing.T) {
 		taskRegistry:           taskRegistry,
 		automaticEventResponse: true,
 		logger:                 newDefaultLogger(),
+		healthEndpointRunner:   noOpHealthEndpointRunner,
 	}
 
 	go keptn.Start()
@@ -103,6 +105,7 @@ func Test_WhenReceivingBadEvent_NoEventIsSent(t *testing.T) {
 		taskRegistry:           taskRegistry,
 		automaticEventResponse: true,
 		logger:                 newDefaultLogger(),
+		healthEndpointRunner:   noOpHealthEndpointRunner,
 	}
 
 	go keptn.Start()

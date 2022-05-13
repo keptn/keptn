@@ -149,6 +149,7 @@ func NewFakeKeptn(source string) *FakeKeptn {
 			automaticEventResponse: true,
 			gracefulShutdown:       false,
 			logger:                 logger,
+			healthEndpointRunner:   noOpHealthEndpointRunner,
 		},
 	}
 	return fakeKeptn
