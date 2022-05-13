@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
+	"sync"
 )
 
 func NewTestEventSource() *TestEventSource {
@@ -15,6 +16,7 @@ func NewTestEventSource() *TestEventSource {
 	}
 	tes.Started = make(chan struct{})
 	tes.SentEvents = []models.KeptnContextExtendedCE{}
+	tes.mutex = &sync.Mutex{}
 
 	return &tes
 }
@@ -25,13 +27,27 @@ type TestEventSource struct {
 	FakeSender func(ce models.KeptnContextExtendedCE) error
 	SentEvents []models.KeptnContextExtendedCE
 	Started    chan struct{}
+	mutex      *sync.Mutex
+}
+
+func (t *TestEventSource) GetNumberOfSetEvents() int {
+	t.mutex.Lock()
+	res := len(t.SentEvents)
+	t.mutex.Unlock()
+	return res
+}
+
+func (t *TestEventSource) AddSentEvent(e models.KeptnContextExtendedCE) {
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
+	t.SentEvents = append(t.SentEvents, e)
 }
 
 func (t *TestEventSource) Start(ctx context.Context, data controlplane.RegistrationData, updates chan controlplane.EventUpdate) error {
 	t.Events = updates
 	if t.FakeSender == nil {
 		t.FakeSender = func(ce models.KeptnContextExtendedCE) error {
-			t.SentEvents = append(t.SentEvents, ce)
+			t.AddSentEvent(ce)
 			return nil
 		}
 	}

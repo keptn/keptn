@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"log"
 	"path/filepath"
+	"sync"
 	"testing"
 	"time"
 
@@ -72,12 +73,12 @@ func (f *FakeKeptn) NewEvent(event models.KeptnContextExtendedCE) {
 
 func (f *FakeKeptn) AssertNumberOfEventSent(t *testing.T, numOfEvents int) {
 	require.Eventuallyf(t, func() bool {
-		return len(f.TestEventSource.SentEvents) == numOfEvents
-	}, time.Second, 10*time.Millisecond, "number of events expected: %d got: %d", numOfEvents, len(f.TestEventSource.SentEvents))
+		return f.TestEventSource.GetNumberOfSetEvents() == numOfEvents
+	}, time.Second, 10*time.Millisecond, "number of events expected: %d got: %d", numOfEvents, f.TestEventSource.GetNumberOfSetEvents())
 }
 
 func (f *FakeKeptn) AssertSentEvent(t *testing.T, eventIndex int, assertFn func(ce models.KeptnContextExtendedCE) bool) {
-	if eventIndex >= len(f.TestEventSource.SentEvents) {
+	if eventIndex >= f.TestEventSource.GetNumberOfSetEvents() {
 		t.Fatalf("unable to assert sent event with index %d: too less events sent", eventIndex)
 	}
 
@@ -87,14 +88,14 @@ func (f *FakeKeptn) AssertSentEvent(t *testing.T, eventIndex int, assertFn func(
 }
 
 func (f *FakeKeptn) AssertSentEventType(t *testing.T, eventIndex int, eventType string) {
-	if eventIndex >= len(f.TestEventSource.SentEvents) {
+	if eventIndex >= f.TestEventSource.GetNumberOfSetEvents() {
 		t.Fatalf("unable to assert sent event with index %d: too less events sent", eventIndex)
 	}
 	require.Equalf(t, eventType, *f.TestEventSource.SentEvents[eventIndex].Type, "event type expected: %s got %s", eventType, *f.TestEventSource.SentEvents[eventIndex].Type)
 }
 
 func (f *FakeKeptn) AssertSentEventStatus(t *testing.T, eventIndex int, status v0_2_0.StatusType) {
-	if eventIndex >= len(f.TestEventSource.SentEvents) {
+	if eventIndex >= f.TestEventSource.GetNumberOfSetEvents() {
 		t.Fatalf("unable to assert sent event with index %d: too less events sent", eventIndex)
 	}
 	eventData := v0_2_0.EventData{}
@@ -103,7 +104,7 @@ func (f *FakeKeptn) AssertSentEventStatus(t *testing.T, eventIndex int, status v
 }
 
 func (f *FakeKeptn) AssertSentEventResult(t *testing.T, eventIndex int, result v0_2_0.ResultType) {
-	if eventIndex >= len(f.TestEventSource.SentEvents) {
+	if eventIndex >= f.TestEventSource.GetNumberOfSetEvents() {
 		t.Fatalf("unable to assert sent event with index %d: too less events sent", eventIndex)
 	}
 	eventData := v0_2_0.EventData{}
@@ -125,7 +126,7 @@ func (f *FakeKeptn) AddTaskHandler(eventType string, handler TaskHandler, filter
 }
 
 func (f *FakeKeptn) AddTaskHandlerWithSubscriptionID(eventType string, handler TaskHandler, subscriptionID string, filters ...func(keptnHandle IKeptn, event KeptnEvent) bool) {
-	f.TestSubscriptionSource.fixedSubscriptions = append(f.TestSubscriptionSource.fixedSubscriptions, models.EventSubscription{ID: subscriptionID, Event: eventType})
+	f.TestSubscriptionSource.AddSubscription(models.EventSubscription{ID: subscriptionID, Event: eventType})
 	f.Keptn.taskRegistry.Add(eventType, TaskEntry{TaskHandler: handler, EventFilters: filters})
 }
 
@@ -158,6 +159,7 @@ func NewFakeKeptn(source string) *FakeKeptn {
 // TestSender fakes the sending of CloudEvents
 type TestSender struct {
 	SentEvents []cloudevents.Event
+	mutex      sync.Mutex
 	Reactors   map[string]func(event cloudevents.Event) error
 }
 
@@ -172,18 +174,24 @@ func (s *TestSender) SendEvent(event cloudevents.Event) error {
 			}
 		}
 	}
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 	s.SentEvents = append(s.SentEvents, event)
 	return nil
 }
 
 // AssertSentEventTypes checks if the given event types have been passed to the SendEvent function
 func (s *TestSender) AssertSentEventTypes(eventTypes []string) error {
-	if len(s.SentEvents) != len(eventTypes) {
-		return fmt.Errorf("expected %d event, got %d", len(s.SentEvents), len(eventTypes))
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	sentTot := len(s.SentEvents)
+	typesTot := len(eventTypes)
+	if sentTot != typesTot {
+		return fmt.Errorf("expected %d event, got %d", sentTot, typesTot)
 	}
-	for index, event := range s.SentEvents {
-		if event.Type() != eventTypes[index] {
-			return fmt.Errorf("received event type '%s' != %s", event.Type(), eventTypes[index])
+	for index, sentEvent := range s.SentEvents {
+		if sentEvent.Type() != eventTypes[index] {
+			return fmt.Errorf("received event type '%s' != %s", sentEvent.Type(), eventTypes[index])
 		}
 	}
 	return nil
