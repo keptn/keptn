@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"log"
 	"os"
 	"os/signal"
@@ -13,7 +14,6 @@ import (
 
 	"github.com/kelseyhightower/envconfig"
 	"github.com/keptn/go-utils/pkg/api/models"
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/cp-connector/pkg/api"
 	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
@@ -47,10 +47,6 @@ func main() {
 		logger.SetLevel(logLevel)
 	}
 
-	go func() {
-		keptnapi.RunHealthEndpoint("8080")
-	}()
-
 	api, err := api.NewInternal(nil)
 	if err != nil {
 		log.Fatal(err)
@@ -65,17 +61,17 @@ func main() {
 	logForwarder := controlplane.NewLogForwarder(api.LogsV1())
 
 	controlPlane := controlplane.New(subscriptionSource, eventSource, logForwarder)
+
+	go func() {
+		keptnapi.RunHealthEndpoint("8080", keptnapi.WithReadinessConditionFunc(func() bool {
+			return controlPlane.IsRegistered()
+		}))
+	}()
+
 	ctx := getGracefulContext()
 	err = controlPlane.Register(ctx, LighthouseService{env})
 	if err != nil {
 		log.Fatal(err)
-	}
-
-	val := ctx.Value(event_handler.GracefulShutdownKey)
-	if val != nil {
-		if wg, ok := val.(*sync.WaitGroup); ok {
-			wg.Wait()
-		}
 	}
 }
 
@@ -137,9 +133,11 @@ func getGracefulContext() context.Context {
 
 	go func() {
 		<-ch
-		logger.Fatal("Container termination triggered, waiting for graceful shutdown")
-		wg.Wait()
+		logger.Info("Container termination triggered, starting graceful shutdown and cancelling context")
 		cancel()
+		logger.Info("Waiting for event handlers to finish")
+		wg.Wait()
+		logger.Info("All handlers finished - ready to shut down")
 	}()
 
 	return ctx
