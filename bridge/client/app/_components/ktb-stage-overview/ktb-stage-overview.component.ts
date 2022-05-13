@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, OnInit, AfterContentInit, Output } from '@angular/core';
 import { Project } from '../../_models/project';
 import { Stage } from '../../_models/stage';
 import { DataService } from '../../_services/data.service';
@@ -7,7 +7,7 @@ import { ApiService } from '../../_services/api.service';
 import { Service } from '../../_models/service';
 import { DtAutoComplete, DtFilter, DtFilterArray } from '../../_models/dt-filter';
 import { filter, map, switchMap, takeUntil, tap } from 'rxjs/operators';
-import { ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
 import { DtFilterFieldDefaultDataSourceAutocomplete } from '@dynatrace/barista-components/filter-field/src/filter-field-default-data-source';
 import { ServiceFilterType } from '../ktb-stage-details/ktb-stage-details.component';
@@ -17,7 +17,7 @@ import { ServiceFilterType } from '../ktb-stage-details/ktb-stage-details.compon
   templateUrl: './ktb-stage-overview.component.html',
   styleUrls: ['./ktb-stage-overview.component.scss'],
 })
-export class KtbStageOverviewComponent implements OnDestroy, OnInit {
+export class KtbStageOverviewComponent implements OnDestroy, OnInit, AfterContentInit {
   public project?: Project;
   public selectedStage?: Stage;
   public _dataSource = new DtFilterFieldDefaultDataSource();
@@ -30,7 +30,12 @@ export class KtbStageOverviewComponent implements OnDestroy, OnInit {
   @Output() selectedStageChange: EventEmitter<{ stage: Stage; filterType: ServiceFilterType }> = new EventEmitter();
   @Output() filteredServicesChange: EventEmitter<string[]> = new EventEmitter<string[]>();
 
-  constructor(private dataService: DataService, private apiService: ApiService, private route: ActivatedRoute) {}
+  constructor(
+    private dataService: DataService,
+    private apiService: ApiService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
 
   public ngOnInit(): void {
     // needs to be in init because of emitter
@@ -49,6 +54,18 @@ export class KtbStageOverviewComponent implements OnDestroy, OnInit {
       const differentProject = project?.projectName !== this.project?.projectName;
       this.project = project;
       this.setFilter(differentProject);
+    });
+  }
+
+  public ngAfterContentInit(): void {
+    this.route.queryParams.subscribe((params) => {
+      if (params['stage'] && this.project) {
+        let stage = this.project.getStage(params['stage']);
+        if (stage) {
+          this.selectedStage = stage;
+          this.selectedStageChange.emit({ stage: stage, filterType: undefined });
+        }
+      }
     });
   }
 
@@ -120,10 +137,14 @@ export class KtbStageOverviewComponent implements OnDestroy, OnInit {
     return stage?.toString();
   }
 
-  public selectStage($event: MouseEvent, stage: Stage, filterType: ServiceFilterType): void {
-    this.selectedStage = stage;
+  public selectStage($event: MouseEvent, stage: Stage): void {
+    this.router.navigate([], {
+      queryParams: {
+        stage: stage.stageName,
+      },
+      queryParamsHandling: 'merge',
+    });
     $event.stopPropagation();
-    this.selectedStageChange.emit({ stage, filterType });
   }
 
   public ngOnDestroy(): void {
