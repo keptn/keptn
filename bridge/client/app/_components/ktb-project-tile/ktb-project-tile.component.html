@@ -59,7 +59,9 @@
     </div>
   </dt-tile-subtitle>
   <dt-tag-list aria-label="stages" uitestid="keptn-project-tile-stagesTags">
-    <dt-tag *ngFor="let stage of project.stages" [textContent]="stage.stageName"></dt-tag>
+    <dt-tag *ngFor="let stage of project.stages">
+      <a [routerLink]="['/project', project.projectName]" [queryParams]="{'stage': stage.stageName}">{{ stage.stageName }}</a>
+    </dt-tag>
   </dt-tag-list>
   <p class="small">Recent sequences:</p>
   <ktb-sequence-state-list [project]="project"></ktb-sequence-state-list>

@@ -137,7 +137,7 @@ export class KtbStageOverviewComponent implements OnDestroy, OnInit, AfterConten
     return stage?.toString();
   }
 
-  public selectStage($event: MouseEvent, stage: Stage): void {
+  public selectStage($event: MouseEvent, stage: Stage, filterType: ServiceFilterType): void {
     this.router.navigate([], {
       queryParams: {
         stage: stage.stageName,
