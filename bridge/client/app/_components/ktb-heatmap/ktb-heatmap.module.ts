@@ -6,11 +6,10 @@ import { DtKeyValueListModule } from '@dynatrace/barista-components/key-value-li
 import { KtbPipeModule } from '../../_pipes/ktb-pipe.module';
 import { DtIconModule } from '@dynatrace/barista-components/icon';
 import { DtButtonModule } from '@dynatrace/barista-components/button';
-import { KtbTestHeatmapComponent } from './testing/ktb-test-heatmap.component';
 import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
-  declarations: [KtbHeatmapComponent, KtbHeatmapTooltipComponent, KtbTestHeatmapComponent], // add KtbTestHeatmapComponent for testing
+  declarations: [KtbHeatmapComponent, KtbHeatmapTooltipComponent], // add KtbTestHeatmapComponent for testing
   imports: [
     CommonModule,
     DtKeyValueListModule,
