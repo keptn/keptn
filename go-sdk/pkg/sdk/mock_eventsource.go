@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
-	"sync"
+	sync "github.com/sasha-s/go-deadlock"
 )
 
 func NewTestEventSource() *TestEventSource {

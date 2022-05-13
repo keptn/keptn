@@ -1,7 +1,7 @@
 package sdk
 
 import (
-	"sync"
+	sync "github.com/sasha-s/go-deadlock"
 )
 
 type TaskRegistry struct {
