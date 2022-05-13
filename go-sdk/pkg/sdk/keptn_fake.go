@@ -74,7 +74,7 @@ func (f *FakeKeptn) NewEvent(event models.KeptnContextExtendedCE) {
 func (f *FakeKeptn) AssertNumberOfEventSent(t *testing.T, numOfEvents int) {
 	require.Eventuallyf(t, func() bool {
 		return f.TestEventSource.GetNumberOfSetEvents() == numOfEvents
-	}, time.Second, 10*time.Millisecond, "number of events expected: %d got: %d", numOfEvents, f.TestEventSource.GetNumberOfSetEvents())
+	}, 10*time.Second, 10*time.Millisecond, "number of events expected: %d got: %d", numOfEvents, f.TestEventSource.GetNumberOfSetEvents())
 }
 
 func (f *FakeKeptn) AssertSentEvent(t *testing.T, eventIndex int, assertFn func(ce models.KeptnContextExtendedCE) bool) {
@@ -84,7 +84,7 @@ func (f *FakeKeptn) AssertSentEvent(t *testing.T, eventIndex int, assertFn func(
 
 	require.Eventually(t, func() bool {
 		return assertFn(f.TestEventSource.SentEvents[eventIndex])
-	}, time.Second, 10*time.Millisecond)
+	}, 10*time.Second, 10*time.Millisecond)
 }
 
 func (f *FakeKeptn) AssertSentEventType(t *testing.T, eventIndex int, eventType string) {
