@@ -1,4 +1,4 @@
-<div class="container" fxFlexFill>
+<div class="container" fxFlexFill *ngIf="state$ | async as state">
   <div fxLayout="column" fxFlexFill fxLayoutAlign="space-between" class="pb-3">
     <div>
       <div [formGroup]="projectNameForm" *ngIf="isCreateMode" class="mb-3 settings-section">
@@ -27,16 +27,34 @@
           </dt-error>
         </dt-form-field>
       </div>
-      <div class="mb-3 settings-section" *ngIf="resourceServiceEnabled !== undefined">
-        <ktb-project-settings-git-extended
-          *ngIf="resourceServiceEnabled; else defaultGit"
-          [isLoading]="!!isProjectLoading"
-          [isCreateMode]="isCreateMode"
-          [isGitUpstreamInProgress]="isGitUpstreamInProgress"
-          [gitInputData]="gitInputDataExtended"
-          (resetTouched)="isProjectFormTouched = false"
-          (gitDataChange)="updateGitDataExtended($event)"
-        ></ktb-project-settings-git-extended>
+      <h2 [class.required]="state.gitUpstreamRequired">Git upstream repository</h2>
+      <ng-template #loading>
+        <ktb-loading-distractor>Loading ...</ktb-loading-distractor>
+      </ng-template>
+      <div class="mb-3 settings-section" *ngIf="resourceServiceEnabled !== undefined; else loading">
+        <ng-container *ngIf="resourceServiceEnabled; else defaultGit">
+          <p class="mt-0 mb-3" *ngIf="state.gitUpstreamRequired">
+            A Git upstream repository has to be set. You can connect your Git repository with HTTPS or SSH.
+            Instructions, on how to set up your Git provider can be found in the
+            <a [href]="'/manage/git_upstream/' | keptnUrl" target="_blank">Git-based upstream documentation</a>.
+          </p>
+          <p class="mt-0 mb-3" *ngIf="!state.gitUpstreamRequired">
+            It is recommended to set a Git upstream repository. You can connect your Git repository with HTTPS or SSH.
+            Instructions, on how to set up your Git provider can be found in the
+            <a [href]="'/manage/git_upstream/' | keptnUrl" target="_blank">Git-based upstream documentation</a>.
+          </p>
+
+          <ktb-project-settings-git-extended
+            *ngIf="!isProjectLoading && state.gitUpstreamRequired !== undefined; else loading"
+            [isCreateMode]="isCreateMode"
+            [isGitUpstreamInProgress]="isGitUpstreamInProgress"
+            [gitInputData]="gitInputDataExtended"
+            [required]="state.gitUpstreamRequired"
+            (resetTouched)="isProjectFormTouched = false"
+            (gitDataChange)="updateGitDataExtended($event)"
+          ></ktb-project-settings-git-extended>
+        </ng-container>
+
         <ng-template #defaultGit>
           <ktb-project-settings-git
             [isLoading]="isProjectLoading"
