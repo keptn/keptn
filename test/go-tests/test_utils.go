@@ -6,14 +6,15 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	v12 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
 	"net/http"
 	"os"
 	"reflect"
 	"strings"
 	"testing"
 	"time"
+
+	v12 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 
 	"github.com/keptn/go-utils/pkg/common/strutils"
 
