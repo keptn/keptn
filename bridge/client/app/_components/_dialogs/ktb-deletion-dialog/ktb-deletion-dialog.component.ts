@@ -12,7 +12,7 @@ import { Subject } from 'rxjs';
   styleUrls: [],
 })
 export class KtbDeletionDialogComponent implements OnInit, OnDestroy {
-  private unsubscribe$ = new Subject();
+  private unsubscribe$ = new Subject<void>();
   public isDeleteProjectInProgress$ = this.eventService.deletionProgressEvent
     .asObservable()
     .pipe(map((evt) => evt.isInProgress));

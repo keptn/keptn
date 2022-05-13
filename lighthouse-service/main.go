@@ -2,56 +2,74 @@ package main
 
 import (
 	"context"
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+	"log"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/kelseyhightower/envconfig"
 	logger "github.com/sirupsen/logrus"
 
+	"github.com/kelseyhightower/envconfig"
+	"github.com/keptn/go-utils/pkg/api/models"
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/cp-connector/pkg/api"
+	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
+	"github.com/keptn/keptn/cp-connector/pkg/nats"
 	"github.com/keptn/keptn/lighthouse-service/event_handler"
+	"github.com/pkg/errors"
 )
 
-const envVarLogLevel = "LOG_LEVEL"
-
 type envConfig struct {
-	// Port on which to listen for cloudevents
-	Port int    `envconfig:"RCV_PORT" default:"8080"`
-	Path string `envconfig:"RCV_PATH" default:"/"`
+	ConfigurationServiceURL string `envconfig:"CONFIGURATION_SERVICE" default:"http://configuration-service:8080"`
+	K8SDeploymentName       string `envconfig:"K8S_DEPLOYMENT_NAME" default:""`
+	K8SDeploymentVersion    string `envconfig:"K8S_DEPLOYMENT_VERSION" default:""`
+	K8SDeploymentComponent  string `envconfig:"K8S_DEPLOYMENT_COMPONENT" default:""`
+	K8SPodName              string `envconfig:"K8S_POD_NAME" default:""`
+	K8SNamespace            string `envconfig:"K8S_NAMESPACE" default:""`
+	K8SNodeName             string `envconfig:"K8S_NODE_NAME" default:""`
+	LogLevel                string `envconfig:"LOG_LEVEL" default:"info"`
 }
 
 func main() {
-	if os.Getenv(envVarLogLevel) != "" {
-		logLevel, err := logger.ParseLevel(os.Getenv(envVarLogLevel))
-		if err != nil {
-			logger.WithError(err).Error("could not parse log level provided by 'LOG_LEVEL' env var")
-		} else {
-			logger.SetLevel(logLevel)
-		}
-	}
-
 	var env envConfig
 	if err := envconfig.Process("", &env); err != nil {
-		logger.Fatalf("Failed to process env var: %s", err)
+		log.Fatalf("Failed to process env var: %s", err)
 	}
-	os.Exit(_main(os.Args[1:], env))
-}
 
-func _main(args []string, env envConfig) int {
+	logLevel, err := logger.ParseLevel(env.LogLevel)
+	if err != nil {
+		logger.WithError(err).Error("could not parse log level provided by 'LOG_LEVEL' env var")
+		logger.SetLevel(logger.InfoLevel)
+	} else {
+		logger.SetLevel(logLevel)
+	}
+
+	go func() {
+		keptnapi.RunHealthEndpoint("8080")
+	}()
+
+	api, err := api.NewInternal(nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	subscriptionSource := controlplane.NewUniformSubscriptionSource(api.UniformV1())
+	natsConnector, err := nats.ConnectFromEnv()
+	if err != nil {
+		log.Fatal(err)
+	}
+	eventSource := controlplane.NewNATSEventSource(natsConnector)
+	logForwarder := controlplane.NewLogForwarder(api.LogsV1())
+
+	controlPlane := controlplane.New(subscriptionSource, eventSource, logForwarder)
 	ctx := getGracefulContext()
-
-	p, err := cloudevents.NewHTTP(cloudevents.WithPath(env.Path), cloudevents.WithPort(env.Port), cloudevents.WithGetHandlerFunc(keptnapi.HealthEndpointHandler))
+	err = controlPlane.Register(ctx, LighthouseService{env})
 	if err != nil {
-		logger.Fatalf("failed to create client, %v", err)
+		log.Fatal(err)
 	}
-	c, err := cloudevents.NewClient(p)
-	if err != nil {
-		logger.Fatalf("failed to create client, %v", err)
-	}
-	logger.Fatal(c.StartReceiver(ctx, gotEvent))
 
 	val := ctx.Value(event_handler.GracefulShutdownKey)
 	if val != nil {
@@ -59,16 +77,19 @@ func _main(args []string, env envConfig) int {
 			wg.Wait()
 		}
 	}
-	return 0
 }
 
-func gotEvent(ctx context.Context, event cloudevents.Event) error {
+type LighthouseService struct {
+	env envConfig
+}
 
-	handler, err := event_handler.NewEventHandler(event)
+func (l LighthouseService) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE) error {
+	ce := v0_2_0.ToCloudEvent(event)
+	handler, err := event_handler.NewEventHandler(ctx, ce)
 
 	if err != nil {
-		logger.Error("Received unknown event type: " + event.Type())
-		return err
+		log.Println(err.Error())
+		return errors.Wrap(controlplane.ErrEventHandleFatal, err.Error())
 	}
 	if handler != nil {
 		return handler.HandleEvent(ctx)
@@ -77,7 +98,36 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	return nil
 }
 
-// storing wait group into context to sync before shutdown
+func (l LighthouseService) RegistrationData() controlplane.RegistrationData {
+	return controlplane.RegistrationData{
+		Name: l.env.K8SDeploymentName,
+		MetaData: models.MetaData{
+			Hostname:           l.env.K8SNodeName,
+			IntegrationVersion: l.env.K8SDeploymentVersion,
+			Location:           l.env.K8SDeploymentComponent,
+			KubernetesMetaData: models.KubernetesMetaData{
+				Namespace:      l.env.K8SNamespace,
+				PodName:        l.env.K8SPodName,
+				DeploymentName: l.env.K8SDeploymentName,
+			},
+		},
+		Subscriptions: []models.EventSubscription{
+			{
+				Event:  "sh.keptn.event.evaluation.triggered",
+				Filter: models.EventSubscriptionFilter{},
+			},
+			{
+				Event:  "sh.keptn.event.get-sli.finished",
+				Filter: models.EventSubscriptionFilter{},
+			},
+			{
+				Event:  "sh.keptn.event.monitoring.configure",
+				Filter: models.EventSubscriptionFilter{},
+			},
+		},
+	}
+}
+
 func getGracefulContext() context.Context {
 
 	ch := make(chan os.Signal, 1)

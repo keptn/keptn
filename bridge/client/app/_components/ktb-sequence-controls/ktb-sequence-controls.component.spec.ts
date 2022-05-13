@@ -1,13 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { KtbSequenceControlsComponent } from './ktb-sequence-controls.component';
 import { AppModule } from '../../app.module';
 import { DataService } from '../../_services/data.service';
 import { Project } from '../../_models/project';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ActivatedRoute } from '@angular/router';
-import { of } from 'rxjs';
-import { take } from 'rxjs/operators';
+import { firstValueFrom, of } from 'rxjs';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 
@@ -42,7 +40,7 @@ describe('KtbSequenceControlsComponent', () => {
 
     dataService = fixture.debugElement.injector.get(DataService);
     dataService.loadProjects(); // reset project.sequences
-    project = (await dataService.getProject(projectName).pipe(take(1)).toPromise()) as Project;
+    project = (await firstValueFrom(dataService.getProject(projectName))) as Project;
     fixture.detectChanges();
   });
 

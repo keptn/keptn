@@ -111,6 +111,26 @@ describe('KtbWebhookSettingsComponent', () => {
     }
   });
 
+  it('should be invalid URL if the secret syntax is invalid', () => {
+    const urlControl: AbstractControl = component.webhookConfigForm.get('url') as AbstractControl;
+    const urls = ['{{secret.keptn.url}}', '{.secret.keptn.url}'];
+
+    for (const url of urls) {
+      urlControl.setValue(url);
+      expect(urlControl.valid).toEqual(false);
+    }
+  });
+
+  it('should be valid URL when it starts with a secret', () => {
+    const urlControl: AbstractControl = component.webhookConfigForm.get('url') as AbstractControl;
+    const urls = ['{{.secret.keptn.url}}'];
+
+    for (const url of urls) {
+      urlControl.setValue(url);
+      expect(urlControl.valid).toEqual(true);
+    }
+  });
+
   it('should add headers', () => {
     // given
     const addHeaderButton = getAddHeaderButton();

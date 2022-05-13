@@ -1,25 +1,36 @@
 package event_handler
 
 import (
-	"github.com/sirupsen/logrus"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/kubernetes/fake"
+	"context"
 	"net/http"
 	"os"
 	"testing"
+	"time"
+
+	"github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/require"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/fake"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/go-test/deep"
 
+	"github.com/keptn/go-utils/pkg/api/models"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
 )
 
 func TestNewEventHandler(t *testing.T) {
 	incomingEvent := cloudevents.NewEvent()
 	incomingEvent.SetID("my-id")
 	incomingEvent.SetSource("my-source")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	fakeSender := func(ce models.KeptnContextExtendedCE) error { return nil }
+	ctx = context.WithValue(ctx, controlplane.EventSenderKey, controlplane.EventSender(fakeSender))
+	defer cancel()
 
 	keptnHandler, _ := keptnv2.NewKeptn(&incomingEvent, keptncommon.KeptnOpts{})
 
@@ -91,14 +102,31 @@ func TestNewEventHandler(t *testing.T) {
 			}
 			tt.args.event.SetType(tt.eventType)
 			os.Setenv("CONFIGURATION_SERVICE", configurationServiceURL)
-			got, err := NewEventHandler(tt.args.event)
+
+			got, err := NewEventHandler(ctx, tt.args.event)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewEventHandler() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+			deep.MaxDepth = 5
 			if len(deep.Equal(got, tt.want)) > 0 {
 				t.Errorf("NewEventHandler() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
+}
+
+func TestEventSenderWithoutContext(t *testing.T) {
+	incomingEvent := cloudevents.NewEvent()
+	incomingEvent.SetID("my-id")
+	incomingEvent.SetSource("my-source")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx = context.WithValue(ctx, controlplane.EventSenderKey, nil)
+	defer cancel()
+
+	_, err := NewEventHandler(ctx, incomingEvent)
+	require.Error(t, err)
+	require.Equal(t, "could not get eventSender from context", err.Error())
+
 }

@@ -1,5 +1,5 @@
 <ktb-expandable-tile
-  [disabled]="task.traces.length == 0"
+  [disabled]="task.traces.length === 0"
   [expanded]="isExpanded"
   [error]="task.isFaulty()"
   [warning]="task.isWarning()"

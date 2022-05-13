@@ -1,5 +1,6 @@
 import 'jest-preset-angular';
 import 'jest-preset-angular/setup-jest';
+import '@angular/localize/init';
 import { Injectable } from '@angular/core';
 import { WindowConfig } from './client/environments/environment.dynamic';
 import { TestUtils } from './client/app/_utils/test.utils';

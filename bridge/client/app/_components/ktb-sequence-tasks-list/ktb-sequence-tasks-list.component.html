@@ -8,7 +8,7 @@
     <ktb-task-item
       [task]="task"
       [isExpanded]="isFocusedTask(task)"
-      [class.focused]="task.id == focusedEventId && scrollIntoView(taskRef)"
+      [class.focused]="task.id === focusedEventId && scrollIntoView(taskRef)"
       [latestDeployment]="latestDeployment"
       (itemClicked)="focusEvent($event)"
       (click)="focusEvent(task)"

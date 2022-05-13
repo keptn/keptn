@@ -138,17 +138,17 @@ describe('sli-breakdown', () => {
     // sort name asc
     servicesPage
       .clickSliBreakdownHeader('Name')
-      .verifySliBreakdownSorting(1, 'up', 'go_routines', 'http_response_time_seconds_main_page_sum');
+      .verifySliBreakdownSorting(1, 'ascending', 'go_routines', 'http_response_time_seconds_main_page_sum');
 
     // sort name desc
     servicesPage
       .clickSliBreakdownHeader('Name')
-      .verifySliBreakdownSorting(1, 'down', 'request_throughput', 'http_response_time_seconds_main_page_sum');
+      .verifySliBreakdownSorting(1, 'descending', 'request_throughput', 'http_response_time_seconds_main_page_sum');
 
     // sort score asc
-    servicesPage.clickSliBreakdownHeader('Score').verifySliBreakdownSorting(7, 'up', '0', '0');
+    servicesPage.clickSliBreakdownHeader('Score').verifySliBreakdownSorting(7, 'ascending', '0', '0');
 
     // sort score desc
-    servicesPage.clickSliBreakdownHeader('Score').verifySliBreakdownSorting(7, 'down', '33.99', '0');
+    servicesPage.clickSliBreakdownHeader('Score').verifySliBreakdownSorting(7, 'descending', '33.99', '0');
   });
 });

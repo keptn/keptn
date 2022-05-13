@@ -14,7 +14,7 @@ import { KeptnInfo } from '../../_models/keptn-info';
 export class KtbProjectTileComponent implements OnDestroy {
   public _project?: Project;
   public supportedShipyardVersion?: string;
-  private unsubscribe$ = new Subject();
+  private unsubscribe$ = new Subject<void>();
 
   @Input()
   get project(): Project | undefined {

@@ -21,6 +21,19 @@ export class FormUtils {
     return null;
   }
 
+  public static isUrlOrSecretValidator(
+    control: AbstractControl
+  ): { urlOrSecret: { value: boolean } } | { space: { value: boolean } } | null {
+    if (control.value) {
+      if (control.value.search(/^http(s?):\/\//) === -1 && control.value.search(/^{{(\..+)}}/) === -1) {
+        return { urlOrSecret: { value: true } };
+      } else if (control.value.includes(' ')) {
+        return { space: { value: true } };
+      }
+    }
+    return null;
+  }
+
   public static isSshValidator(control: AbstractControl): ValidationErrors | null {
     if (control.value && !control.value.startsWith('ssh://')) {
       return { ssh: true };

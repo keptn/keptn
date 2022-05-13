@@ -3,10 +3,9 @@ package db
 import (
 	"context"
 	"fmt"
-	"github.com/go-openapi/strfmt"
+	keptnapi "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/mongodb-datastore/common"
-	"github.com/keptn/keptn/mongodb-datastore/models"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -18,6 +17,7 @@ import (
 	"os"
 	"reflect"
 	"testing"
+	"time"
 )
 
 var mongoDbVersion = "4.4.9"
@@ -57,7 +57,7 @@ func setupLocalMongoDB() (*memongo.Server, error) {
 
 func TestMongoDBEventRepo_InsertAndRetrieve(t *testing.T) {
 	repo := NewMongoDBEventRepo(GetMongoDBConnectionInstance())
-
+	time := time.Time{}
 	filter := "data.project:my-project"
 	pageSize := int64(0)
 	events, err := repo.GetEventsByType(
@@ -73,13 +73,13 @@ func TestMongoDBEventRepo_InsertAndRetrieve(t *testing.T) {
 	evaluationEventType := keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName)
 
 	keptnContext := "my-context"
-	testEvent := models.KeptnContextExtendedCE{
+	testEvent := keptnapi.KeptnContextExtendedCE{
 		Contenttype:        "application/cloudevents+json",
 		Data:               map[string]interface{}{"project": "my-project", "service": "my-service", "stage": "my-stage"},
 		ID:                 "my-evaluation-id",
 		Source:             stringp("test-source"),
 		Specversion:        "1.0",
-		Time:               strfmt.DateTime{},
+		Time:               time,
 		Type:               stringp(evaluationEventType),
 		Shkeptncontext:     keptnContext,
 		Shkeptnspecversion: "0.2.3",
@@ -89,13 +89,13 @@ func TestMongoDBEventRepo_InsertAndRetrieve(t *testing.T) {
 	err = repo.InsertEvent(testEvent)
 	require.Nil(t, err)
 
-	invalidatedEvent := models.KeptnContextExtendedCE{
+	invalidatedEvent := keptnapi.KeptnContextExtendedCE{
 		Contenttype:        "application/cloudevents+json",
 		Data:               map[string]interface{}{"project": "my-project", "service": "my-service", "stage": "my-stage"},
 		ID:                 "my-invalidated-id",
 		Source:             stringp("test-source"),
 		Specversion:        "1.0",
-		Time:               strfmt.DateTime{},
+		Time:               time,
 		Type:               stringp(keptnv2.GetInvalidatedEventType(keptnv2.EvaluationTaskName)),
 		Shkeptncontext:     keptnContext,
 		Shkeptnspecversion: "0.2.3",
@@ -117,7 +117,7 @@ func TestMongoDBEventRepo_InsertAndRetrieve(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, events)
 	require.Len(t, events.Events, 1)
-	require.Equal(t, testEvent, *events.Events[0])
+	require.Equal(t, testEvent, events.Events[0])
 
 	filter = "data.project:my-project"
 	eventsByType, err := repo.GetEventsByType(
@@ -173,14 +173,14 @@ func TestMongoDBEventRepo_DropCollections(t *testing.T) {
 	evaluationEventType := keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName)
 
 	keptnContext := "my-context"
-	testEvent := models.KeptnContextExtendedCE{
+	testEvent := keptnapi.KeptnContextExtendedCE{
 
 		Contenttype:        "application/cloudevents+json",
 		Data:               map[string]interface{}{"project": "my-project", "service": "my-service", "stage": "my-stage"},
 		ID:                 "my-evaluation-id",
 		Source:             stringp("test-source"),
 		Specversion:        "1.0",
-		Time:               strfmt.DateTime{},
+		Time:               time.Time{},
 		Type:               stringp(evaluationEventType),
 		Shkeptncontext:     keptnContext,
 		Shkeptnspecversion: "0.2.3",
@@ -190,14 +190,14 @@ func TestMongoDBEventRepo_DropCollections(t *testing.T) {
 	err := repo.InsertEvent(testEvent)
 	require.Nil(t, err)
 
-	invalidatedEvent := models.KeptnContextExtendedCE{
+	invalidatedEvent := keptnapi.KeptnContextExtendedCE{
 
 		Contenttype:        "application/cloudevents+json",
 		Data:               map[string]interface{}{"project": "my-project", "service": "my-service", "stage": "my-stage"},
 		ID:                 "my-invalidated-id",
 		Source:             stringp("test-source"),
 		Specversion:        "1.0",
-		Time:               strfmt.DateTime{},
+		Time:               time.Time{},
 		Type:               stringp(keptnv2.GetInvalidatedEventType(keptnv2.EvaluationTaskName)),
 		Shkeptncontext:     keptnContext,
 		Shkeptnspecversion: "0.2.3",
@@ -264,7 +264,7 @@ func TestFlattenRecursivelyNestedDocumentsWithArray(t *testing.T) {
 
 func Test_getProjectOfEvent(t *testing.T) {
 	type args struct {
-		event models.KeptnContextExtendedCE
+		event keptnapi.KeptnContextExtendedCE
 	}
 	tests := []struct {
 		name string
@@ -274,7 +274,7 @@ func Test_getProjectOfEvent(t *testing.T) {
 		{
 			name: "Use project property in data object",
 			args: args{
-				event: models.KeptnContextExtendedCE{
+				event: keptnapi.KeptnContextExtendedCE{
 					Contenttype: "",
 					Data: map[string]interface{}{
 						"project": "sockshop",
@@ -283,7 +283,7 @@ func Test_getProjectOfEvent(t *testing.T) {
 					ID:             "",
 					Source:         nil,
 					Specversion:    "",
-					Time:           strfmt.DateTime{},
+					Time:           time.Time{},
 					Type:           nil,
 					Shkeptncontext: "",
 				},
@@ -293,7 +293,7 @@ func Test_getProjectOfEvent(t *testing.T) {
 		{
 			name: "Use generic events collection",
 			args: args{
-				event: models.KeptnContextExtendedCE{
+				event: keptnapi.KeptnContextExtendedCE{
 
 					Contenttype:    "",
 					Data:           nil,
@@ -301,7 +301,7 @@ func Test_getProjectOfEvent(t *testing.T) {
 					ID:             "",
 					Source:         nil,
 					Specversion:    "",
-					Time:           strfmt.DateTime{},
+					Time:           time.Time{},
 					Type:           nil,
 					Shkeptncontext: "",
 				},
@@ -402,8 +402,9 @@ func stringp(s string) *string {
 }
 
 func Test_transformEventToInterface(t *testing.T) {
+	time := time.Time{}
 	type args struct {
-		event *models.KeptnContextExtendedCE
+		event *keptnapi.KeptnContextExtendedCE
 	}
 	tests := []struct {
 		name    string
@@ -414,7 +415,7 @@ func Test_transformEventToInterface(t *testing.T) {
 		{
 			name: "transform event",
 			args: args{
-				event: &models.KeptnContextExtendedCE{
+				event: &keptnapi.KeptnContextExtendedCE{
 
 					Contenttype:    "application/json",
 					Data:           "test-content",
@@ -422,7 +423,7 @@ func Test_transformEventToInterface(t *testing.T) {
 					ID:             "1",
 					Source:         stringp("test-source"),
 					Specversion:    "0.2",
-					Time:           strfmt.DateTime{},
+					Time:           time,
 					Type:           stringp("test-type"),
 					Shkeptncontext: "123",
 				},
@@ -434,7 +435,7 @@ func Test_transformEventToInterface(t *testing.T) {
 				"shkeptncontext": "123",
 				"source":         "test-source",
 				"specversion":    "0.2",
-				"time":           "0001-01-01T00:00:00.000Z",
+				"time":           "0001-01-01T00:00:00Z",
 				"type":           "test-type",
 			},
 			wantErr: false,

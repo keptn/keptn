@@ -1,10 +1,14 @@
 package handlers
 
 import (
+	"context"
+	"github.com/kelseyhightower/envconfig"
+	keptnapi "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
 	"github.com/keptn/keptn/mongodb-datastore/db"
-	"github.com/keptn/keptn/mongodb-datastore/models"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
+	log "github.com/sirupsen/logrus"
 )
 
 type ProjectEventData struct {
@@ -13,18 +17,48 @@ type ProjectEventData struct {
 
 type EventRequestHandler struct {
 	eventRepo db.EventRepo
+	Env       envConfig
 }
 
+func (erh EventRequestHandler) OnEvent(ctx context.Context, event keptnapi.KeptnContextExtendedCE) error {
+	return erh.ProcessEvent(event)
+}
+
+func (erh EventRequestHandler) RegistrationData() controlplane.RegistrationData {
+	return controlplane.RegistrationData{
+		Name: erh.Env.K8SPodName,
+		MetaData: keptnapi.MetaData{
+			Hostname:           erh.Env.K8SNodeName,
+			IntegrationVersion: erh.Env.K8SDeploymentVersion,
+			Location:           erh.Env.K8SDeploymentComponent,
+			KubernetesMetaData: keptnapi.KubernetesMetaData{
+				Namespace:      erh.Env.K8SNamespace,
+				PodName:        erh.Env.K8SPodName,
+				DeploymentName: erh.Env.K8SDeploymentName,
+			},
+		},
+		Subscriptions: []keptnapi.EventSubscription{
+			{
+				Event:  "sh.keptn.event.>",
+				Filter: keptnapi.EventSubscriptionFilter{},
+			},
+		},
+	}
+}
 func NewEventRequestHandler(eventRepo db.EventRepo) *EventRequestHandler {
-	return &EventRequestHandler{eventRepo: eventRepo}
+	var env envConfig
+	if err := envconfig.Process("", &env); err != nil {
+		log.Fatalf("Failed to process env var: %s", err)
+	}
+	return &EventRequestHandler{eventRepo: eventRepo, Env: env}
 }
 
-func (erh *EventRequestHandler) ProcessEvent(event *models.KeptnContextExtendedCE) error {
-	if string(*event.Type) == keptnv2.GetFinishedEventType(keptnv2.ProjectDeleteTaskName) {
-		return erh.eventRepo.DropProjectCollections(*event)
+func (erh *EventRequestHandler) ProcessEvent(event keptnapi.KeptnContextExtendedCE) error {
+	if *event.Type == keptnv2.GetFinishedEventType(keptnv2.ProjectDeleteTaskName) {
+		return erh.eventRepo.DropProjectCollections(event)
 	}
 
-	return erh.eventRepo.InsertEvent(*event)
+	return erh.eventRepo.InsertEvent(event)
 }
 
 func (erh *EventRequestHandler) GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {

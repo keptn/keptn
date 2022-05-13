@@ -68,7 +68,12 @@ class ServicesPage {
     return this;
   }
 
-  verifySliBreakdownSorting(columnIndex: number, direction: string, firstElement: string, secondElement: string): this {
+  verifySliBreakdownSorting(
+    columnIndex: number,
+    direction: 'ascending' | 'descending',
+    firstElement: string,
+    secondElement: string
+  ): this {
     cy.byTestId('keptn-sli-breakdown')
       .find('dt-header-row')
       .first()
@@ -82,10 +87,7 @@ class ServicesPage {
       .first()
       .find('dt-header-cell')
       .eq(columnIndex)
-      .find('dt-icon')
-      .first()
-      .invoke('attr', 'ng-reflect-name')
-      .should('equal', `sorter2-${direction}`);
+      .should('have.attr', 'aria-sort', direction);
 
     cy.byTestId('keptn-sli-breakdown')
       .find('dt-row')

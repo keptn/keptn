@@ -141,34 +141,6 @@ func init() {
             }
           }
         }
-      },
-      "post": {
-        "tags": [
-          "event"
-        ],
-        "summary": "INTERNAL Endpoint: Saves an event to the datastore",
-        "operationId": "saveEvent",
-        "deprecated": true,
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/KeptnContextExtendedCE"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "created"
-          },
-          "default": {
-            "description": "error",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          }
-        }
       }
     },
     "/event/type/{eventType}": {
@@ -250,50 +222,15 @@ func init() {
   "definitions": {
     "KeptnContextExtendedCE": {
       "type": "object",
-      "required": [
-        "data",
-        "source",
-        "type"
-      ],
-      "properties": {
-        "contenttype": {
-          "type": "string"
+      "x-go-type": {
+        "hints": {
+          "noValidation": true
         },
-        "data": {
-          "type": "object"
+        "import": {
+          "alias": "keptnapi",
+          "package": "github.com/keptn/go-utils/pkg/api/models"
         },
-        "extensions": {
-          "type": "object"
-        },
-        "gitcommitid": {
-          "type": "string"
-        },
-        "id": {
-          "type": "string"
-        },
-        "shkeptncontext": {
-          "type": "string"
-        },
-        "shkeptnspecversion": {
-          "type": "string"
-        },
-        "source": {
-          "type": "string",
-          "format": "uri-reference"
-        },
-        "specversion": {
-          "type": "string"
-        },
-        "time": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "triggeredid": {
-          "type": "string"
-        },
-        "type": {
-          "type": "string"
-        }
+        "type": "KeptnContextExtendedCE"
       }
     },
     "error": {
@@ -478,34 +415,6 @@ func init() {
             }
           }
         }
-      },
-      "post": {
-        "tags": [
-          "event"
-        ],
-        "summary": "INTERNAL Endpoint: Saves an event to the datastore",
-        "operationId": "saveEvent",
-        "deprecated": true,
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/KeptnContextExtendedCE"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "created"
-          },
-          "default": {
-            "description": "error",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          }
-        }
       }
     },
     "/event/type/{eventType}": {
@@ -593,50 +502,15 @@ func init() {
   "definitions": {
     "KeptnContextExtendedCE": {
       "type": "object",
-      "required": [
-        "data",
-        "source",
-        "type"
-      ],
-      "properties": {
-        "contenttype": {
-          "type": "string"
+      "x-go-type": {
+        "hints": {
+          "noValidation": true
         },
-        "data": {
-          "type": "object"
+        "import": {
+          "alias": "keptnapi",
+          "package": "github.com/keptn/go-utils/pkg/api/models"
         },
-        "extensions": {
-          "type": "object"
-        },
-        "gitcommitid": {
-          "type": "string"
-        },
-        "id": {
-          "type": "string"
-        },
-        "shkeptncontext": {
-          "type": "string"
-        },
-        "shkeptnspecversion": {
-          "type": "string"
-        },
-        "source": {
-          "type": "string",
-          "format": "uri-reference"
-        },
-        "specversion": {
-          "type": "string"
-        },
-        "time": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "triggeredid": {
-          "type": "string"
-        },
-        "type": {
-          "type": "string"
-        }
+        "type": "KeptnContextExtendedCE"
       }
     },
     "error": {
