@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/require"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
 
@@ -113,4 +114,19 @@ func TestNewEventHandler(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestEventSenderWithoutContext(t *testing.T) {
+	incomingEvent := cloudevents.NewEvent()
+	incomingEvent.SetID("my-id")
+	incomingEvent.SetSource("my-source")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx = context.WithValue(ctx, controlplane.EventSenderKey, nil)
+	defer cancel()
+
+	_, err := NewEventHandler(ctx, incomingEvent)
+	require.Error(t, err)
+	require.Equal(t, "could not get eventSender from context", err.Error())
+
 }

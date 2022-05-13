@@ -335,7 +335,7 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 	// make sure the echo-service uses the same distributor as Keptn core
 	imageName, err := GetImageOfDeploymentContainer("lighthouse-service", "lighthouse-service")
 	require.Nil(t, err)
-	distributorImage := CreateDistributorImage(imageName, "lighthouse-service")
+	distributorImage := strings.Replace(imageName, "lighthouse-service", "distributor", 1)
 
 	echoServiceManifestContent := strings.ReplaceAll(echoServiceK8sManifest, "${distributor-image}", distributorImage)
 	echoServiceManifestContent = strings.ReplaceAll(echoServiceManifestContent, "${queue-group}", "")
@@ -368,7 +368,7 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods(t *test
 	// make sure the echo-service uses the same distributor as Keptn core
 	imageName, err := GetImageOfDeploymentContainer("lighthouse-service", "lighthouse-service")
 	require.Nil(t, err)
-	distributorImage := CreateDistributorImage(imageName, "lighthouse-service")
+	distributorImage := strings.Replace(imageName, "lighthouse-service", "distributor", 1)
 
 	echoServiceManifestContent := strings.ReplaceAll(echoServiceK8sManifest, "${distributor-image}", distributorImage)
 	echoServiceManifestContent = strings.ReplaceAll(echoServiceManifestContent, "replicas: 1", "replicas: 3")
@@ -403,7 +403,7 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane(t *t
 	// make sure the echo-service uses the same distributor as Keptn core
 	imageName, err := GetImageOfDeploymentContainer("lighthouse-service", "lighthouse-service")
 	require.Nil(t, err)
-	distributorImage := CreateDistributorImage(imageName, "lighthouse-service")
+	distributorImage := strings.Replace(imageName, "lighthouse-service", "distributor", 1)
 
 	apiToken, apiEndpoint, err := GetApiCredentials()
 	require.Nil(t, err)

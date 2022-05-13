@@ -187,7 +187,7 @@ func Test_SelfHealing(t *testing.T) {
 	t.Log("Installing unleash-service")
 	imageName, err := GetImageOfDeploymentContainer("lighthouse-service", "lighthouse-service")
 	require.Nil(t, err)
-	distributorImage := CreateDistributorImage(imageName, "lighthouse-service")
+	distributorImage := strings.Replace(imageName, "lighthouse-service", "distributor", 1)
 	unleashServiceManifestContent := strings.ReplaceAll(unleashServiceK8sManifest, "${distributor-image}", distributorImage)
 
 	tmpFile, err := CreateTmpFile("unleash-service-*.yaml", unleashServiceManifestContent)

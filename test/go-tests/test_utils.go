@@ -1016,7 +1016,3 @@ func resetTestPath(t *testing.T, path string) {
 	err := os.Chdir(path)
 	require.Nil(t, err)
 }
-
-func CreateDistributorImage(imageName string, serviceName string) string {
-	return strings.Replace(imageName, serviceName, "distributor", 1)
-}
