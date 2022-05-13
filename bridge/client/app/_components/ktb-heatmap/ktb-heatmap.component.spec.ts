@@ -4,8 +4,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbHeatmapComponent } from './ktb-heatmap.component';
 import { EvaluationResultTypeExtension, IDataPoint, IHeatmapTooltipType } from '../../_interfaces/heatmap';
 import { DOCUMENT } from '@angular/common';
-import { AppModule } from '../../app.module';
 import { TestUtils } from '../../_utils/test.utils';
+import { KtbHeatmapModule } from './ktb-heatmap.module';
 
 describe('KtbHeatmapComponent', () => {
   let component: KtbHeatmapComponent;
@@ -18,7 +18,7 @@ describe('KtbHeatmapComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule],
+      imports: [KtbHeatmapModule],
     }).compileComponents();
     fixture = TestBed.createComponent(KtbHeatmapComponent);
     component = fixture.componentInstance;

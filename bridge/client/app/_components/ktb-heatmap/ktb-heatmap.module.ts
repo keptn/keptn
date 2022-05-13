@@ -7,10 +7,20 @@ import { KtbPipeModule } from '../../_pipes/ktb-pipe.module';
 import { DtIconModule } from '@dynatrace/barista-components/icon';
 import { DtButtonModule } from '@dynatrace/barista-components/button';
 import { KtbTestHeatmapComponent } from './testing/ktb-test-heatmap.component';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
-  declarations: [KtbHeatmapComponent, KtbHeatmapTooltipComponent, KtbTestHeatmapComponent],
-  imports: [CommonModule, DtKeyValueListModule, KtbPipeModule, DtIconModule, DtButtonModule],
-  exports: [KtbHeatmapComponent, KtbHeatmapTooltipComponent, KtbTestHeatmapComponent],
+  declarations: [KtbHeatmapComponent, KtbHeatmapTooltipComponent, KtbTestHeatmapComponent], // add KtbTestHeatmapComponent for testing
+  imports: [
+    CommonModule,
+    DtKeyValueListModule,
+    KtbPipeModule,
+    DtIconModule.forRoot({
+      svgIconLocation: `assets/icons/{{name}}.svg`,
+    }),
+    HttpClientModule, // for icons
+    DtButtonModule,
+  ],
+  exports: [KtbHeatmapComponent, KtbHeatmapTooltipComponent], // add KtbTestHeatmapComponent for testing
 })
 export class KtbHeatmapModule {}
