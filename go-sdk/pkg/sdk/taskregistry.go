@@ -22,8 +22,8 @@ func newTaskMap() *TaskRegistry {
 }
 
 func (t *TaskRegistry) Contains(name string) (*TaskEntry, bool) {
-	t.Lock()
-	defer t.Unlock()
+	t.RLock()
+	defer t.RUnlock()
 	if e, ok := t.Entries[name]; ok {
 		return &e, true
 	} else if e, ok := t.Entries["*"]; ok { // check if we have registered a wildcard handler
@@ -39,8 +39,8 @@ func (t *TaskRegistry) Add(name string, entry TaskEntry) {
 }
 
 func (t *TaskRegistry) Get(name string) *TaskEntry {
-	t.Lock()
-	defer t.Unlock()
+	t.RLock()
+	defer t.RUnlock()
 	entry := t.Entries[name]
 	return &entry
 }

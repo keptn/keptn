@@ -16,7 +16,7 @@ func NewTestEventSource() *TestEventSource {
 	}
 	tes.Started = make(chan struct{})
 	tes.SentEvents = []models.KeptnContextExtendedCE{}
-	tes.mutex = &sync.Mutex{}
+	tes.mutex = &sync.RWMutex{}
 
 	return &tes
 }
@@ -27,13 +27,13 @@ type TestEventSource struct {
 	FakeSender func(ce models.KeptnContextExtendedCE) error
 	SentEvents []models.KeptnContextExtendedCE
 	Started    chan struct{}
-	mutex      *sync.Mutex
+	mutex      *sync.RWMutex
 }
 
 func (t *TestEventSource) GetNumberOfSetEvents() int {
-	t.mutex.Lock()
+	t.mutex.RLock()
+	defer t.mutex.RUnlock()
 	res := len(t.SentEvents)
-	t.mutex.Unlock()
 	return res
 }
 

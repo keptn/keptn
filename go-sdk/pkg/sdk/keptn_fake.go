@@ -159,7 +159,7 @@ func NewFakeKeptn(source string) *FakeKeptn {
 // TestSender fakes the sending of CloudEvents
 type TestSender struct {
 	SentEvents []cloudevents.Event
-	mutex      sync.Mutex
+	mutex      sync.RWMutex
 	Reactors   map[string]func(event cloudevents.Event) error
 }
 
@@ -182,8 +182,8 @@ func (s *TestSender) SendEvent(event cloudevents.Event) error {
 
 // AssertSentEventTypes checks if the given event types have been passed to the SendEvent function
 func (s *TestSender) AssertSentEventTypes(eventTypes []string) error {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
 	sentTot := len(s.SentEvents)
 	typesTot := len(eventTypes)
 	if sentTot != typesTot {
