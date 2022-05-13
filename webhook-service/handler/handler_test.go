@@ -206,10 +206,10 @@ func Test_HandleIncomingTriggeredEvent(t *testing.T) {
 	fakeKeptn.Start()
 
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
-	require.Eventually(t, func() bool { return len(curlExecutorMock.CurlCalls()) == 1 }, 10*time.Second, time.Millisecond*10)
+	require.Eventually(t, func() bool { return len(curlExecutorMock.CurlCalls()) == 1 }, 30*time.Second, time.Millisecond*10)
 	require.Eventually(t, func() bool {
 		return curlExecutorMock.CurlCalls()[0].CurlCmd == "curl http://local:8080 myproject my-secret-value"
-	}, 10*time.Second, time.Millisecond*10)
+	}, 30*time.Second, time.Millisecond*10)
 
 	//verify sent events
 	fakeKeptn.AssertNumberOfEventSent(t, 2)
@@ -248,10 +248,10 @@ func Test_HandleIncomingStartedEvent(t *testing.T) {
 		t.Fatal(err)
 	}
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.started.json"))
-	require.Eventually(t, func() bool { return len(curlExecutorMock.CurlCalls()) == 1 }, 10*time.Second, time.Millisecond*10)
+	require.Eventually(t, func() bool { return len(curlExecutorMock.CurlCalls()) == 1 }, 30*time.Second, time.Millisecond*10)
 	require.Eventually(t, func() bool {
 		return curlExecutorMock.CurlCalls()[0].CurlCmd == "curl http://local:8080 myproject my-secret-value"
-	}, 10*time.Second, time.Millisecond*10)
+	}, 30*time.Second, time.Millisecond*10)
 	fakeKeptn.AssertNumberOfEventSent(t, 0)
 }
 
@@ -283,7 +283,7 @@ func Test_HandleIncomingStartedEventWithResultingError(t *testing.T) {
 	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.started.json"))
 
-	require.Eventually(t, func() bool { return len(curlExecutorMock.CurlCalls()) == 1 }, 10*time.Second, time.Millisecond*10)
+	require.Eventually(t, func() bool { return len(curlExecutorMock.CurlCalls()) == 1 }, 30*time.Second, time.Millisecond*10)
 	require.Equal(t, "curl http://local:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
 
 	//verify sent events
@@ -318,7 +318,7 @@ func Test_HandleIncomingFinishedEvent(t *testing.T) {
 	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.finished.json"))
 
-	require.Eventually(t, func() bool { return len(curlExecutorMock.CurlCalls()) == 1 }, 10*time.Second, time.Millisecond*10)
+	require.Eventually(t, func() bool { return len(curlExecutorMock.CurlCalls()) == 1 }, 30*time.Second, time.Millisecond*10)
 	require.Equal(t, "curl http://local:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
 
 	//verify sent events
@@ -353,7 +353,7 @@ func Test_HandleIncomingFinishedEventWithResultingError(t *testing.T) {
 	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.finished.json"))
 
-	require.Eventually(t, func() bool { return len(curlExecutorMock.CurlCalls()) == 1 }, 10*time.Second, time.Millisecond*10)
+	require.Eventually(t, func() bool { return len(curlExecutorMock.CurlCalls()) == 1 }, 30*time.Second, time.Millisecond*10)
 	require.Equal(t, "curl http://local:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
 
 	//verify sent events
@@ -389,7 +389,7 @@ func Test_HandleIncomingTriggeredEvent_SendMultipleRequests(t *testing.T) {
 	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
 
-	require.Eventually(t, func() bool { return len(curlExecutorMock.CurlCalls()) == 2 }, 10*time.Second, time.Millisecond*10)
+	require.Eventually(t, func() bool { return len(curlExecutorMock.CurlCalls()) == 2 }, 30*time.Second, time.Millisecond*10)
 	require.Equal(t, "curl http://local:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
 	require.Equal(t, "curl http://local:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[1].CurlCmd)
 
@@ -430,7 +430,7 @@ func Test_HandleIncomingTriggeredEvent_SendMultipleRequestsDisableFinished(t *te
 	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
 
-	require.Eventually(t, func() bool { return len(curlExecutorMock.CurlCalls()) == 4 }, 10*time.Second, time.Millisecond*10)
+	require.Eventually(t, func() bool { return len(curlExecutorMock.CurlCalls()) == 4 }, 30*time.Second, time.Millisecond*10)
 	assert.Equal(t, "curl http://local:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
 	assert.Equal(t, "curl http://local:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[1].CurlCmd)
 	assert.Equal(t, "curl http://local:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[2].CurlCmd)
@@ -474,7 +474,7 @@ func Test_HandleIncomingTriggeredEvent_SendMultipleRequestsDisableStarted(t *tes
 	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
 
-	require.Eventually(t, func() bool { return len(curlExecutorMock.CurlCalls()) == 4 }, 10*time.Second, time.Millisecond*10)
+	require.Eventually(t, func() bool { return len(curlExecutorMock.CurlCalls()) == 4 }, 30*time.Second, time.Millisecond*10)
 	assert.Equal(t, "curl http://local:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
 	assert.Equal(t, "curl http://local:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[1].CurlCmd)
 	assert.Equal(t, "curl http://local:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[2].CurlCmd)
@@ -517,7 +517,7 @@ func Test_HandleIncomingTriggeredEvent_SendMultipleRequestsDisableFinishedOneReq
 	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
 
-	require.Eventually(t, func() bool { return len(curlExecutorMock.CurlCalls()) == 2 }, 10*time.Second, time.Millisecond*10)
+	require.Eventually(t, func() bool { return len(curlExecutorMock.CurlCalls()) == 2 }, 30*time.Second, time.Millisecond*10)
 	assert.Equal(t, "curl http://local:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
 	assert.Equal(t, "curl http://local:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[1].CurlCmd)
 
@@ -565,7 +565,7 @@ func Test_HandleIncomingTriggeredEvent_NoMatchingWebhookFound(t *testing.T) {
 	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
 
-	require.Eventually(t, func() bool { return len(curlExecutorMock.CurlCalls()) == 0 }, 10*time.Second, time.Millisecond*10)
+	require.Eventually(t, func() bool { return len(curlExecutorMock.CurlCalls()) == 0 }, 30*time.Second, time.Millisecond*10)
 
 	//verify sent events
 	fakeKeptn.AssertNumberOfEventSent(t, 2)
@@ -697,7 +697,7 @@ func TestTaskHandler_IncompleteDataForTemplate(t *testing.T) {
 
 	require.Eventually(t, func() bool {
 		return len(secretReaderMock.ReadSecretCalls()) > 0
-	}, 10*time.Second, 10*time.Millisecond)
+	}, 30*time.Second, 10*time.Millisecond)
 	require.NotEmpty(t, templateEngineMock.ParseTemplateCalls())
 	require.Empty(t, curlExecutorMock.CurlCalls())
 
@@ -736,7 +736,7 @@ func TestTaskHandler_CurlExecutorFails(t *testing.T) {
 
 	require.Eventually(t, func() bool {
 		return len(secretReaderMock.ReadSecretCalls()) > 0
-	}, 10*time.Second, 10*time.Millisecond)
+	}, 30*time.Second, 10*time.Millisecond)
 	require.NotEmpty(t, templateEngineMock.ParseTemplateCalls())
 	require.Equal(t, "curl http://local:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
 
@@ -779,7 +779,7 @@ func TestTaskHandler_RequestValidatorFails(t *testing.T) {
 
 	require.Eventually(t, func() bool {
 		return len(secretReaderMock.ReadSecretCalls()) == 0
-	}, 10*time.Second, 10*time.Millisecond)
+	}, 30*time.Second, 10*time.Millisecond)
 	require.Empty(t, templateEngineMock.ParseTemplateCalls())
 
 	//verify sent events
@@ -817,7 +817,7 @@ func TestTaskHandler_CurlExecutorFailsHideSecret(t *testing.T) {
 
 	require.Eventually(t, func() bool {
 		return len(secretReaderMock.ReadSecretCalls()) > 0
-	}, 10*time.Second, 10*time.Millisecond)
+	}, 30*time.Second, 10*time.Millisecond)
 	require.NotEmpty(t, templateEngineMock.ParseTemplateCalls())
 	require.Equal(t, "curl http://local:8080 myproject my-secret-value", curlExecutorMock.CurlCalls()[0].CurlCmd)
 
