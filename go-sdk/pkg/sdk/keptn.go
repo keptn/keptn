@@ -90,6 +90,14 @@ func (e Error) Error() string {
 // KeptnOption can be used to configure the keptn sdk
 type KeptnOption func(*Keptn)
 
+// WithEnvConfig overwrites the adaptation data which is per default read from
+// environment variables
+func WithEnvConfig(env EnvConfig) KeptnOption {
+	return func(k *Keptn) {
+		k.env = env
+	}
+}
+
 // WithTaskHandler registers a handler which is responsible for processing a .triggered event
 func WithTaskHandler(eventType string, handler TaskHandler, filters ...func(keptnHandle IKeptn, event KeptnEvent) bool) KeptnOption {
 	return func(k *Keptn) {
@@ -120,7 +128,7 @@ func WithLogger(logger Logger) KeptnOption {
 	}
 }
 
-func WithControlPlaneFromEnv(env envConfig) KeptnOption {
+func WithControlPlaneFromEnv(env EnvConfig) KeptnOption {
 	return func(k *Keptn) {
 		if env.Location == "remote-execution-plane" {
 			panic("go-sdk remote-execution-plane mode not yet supported...")
@@ -140,13 +148,13 @@ type Keptn struct {
 	automaticEventResponse bool
 	gracefulShutdown       bool
 	logger                 Logger
-	env                    envConfig
+	env                    EnvConfig
 	healthEndpointRunner   healthEndpointRunner
 }
 
 // NewKeptn creates a new Keptn
 func NewKeptn(source string, opts ...KeptnOption) *Keptn {
-	env := newEnvConfig()
+	env := NewEnvConfig()
 	controlPlane, eventSender := newControlPlane()
 	resourceHandler := newResourceHandlerFromEnv()
 	taskRegistry := newTaskMap()

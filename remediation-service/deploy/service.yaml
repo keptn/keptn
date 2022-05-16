@@ -28,7 +28,7 @@ spec:
       serviceAccountName: keptn-default
       containers:
       - name: remediation-service
-        image: docker.io/odubajdt/keptndev_remediation-service:0.15.0-20-g5c5424776-dirty
+        image: docker.io/keptndev/remediation-service
         imagePullPolicy: Always
         ports:
         - containerPort: 8080

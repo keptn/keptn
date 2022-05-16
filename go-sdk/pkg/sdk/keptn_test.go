@@ -5,6 +5,7 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/strutils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
@@ -43,6 +44,28 @@ func Test_WhenReceivingBadEvent_NoEventIsSent(t *testing.T) {
 	fakeKeptn.AddTaskHandler("sh.keptn.event.faketask.triggered", taskHandler)
 	fakeKeptn.NewEvent(newTestTaskBadTriggeredEvent())
 	fakeKeptn.AssertNumberOfEventSent(t, 0)
+}
+
+func Test_InitialRegistrationData(t *testing.T) {
+	keptn := Keptn{env: EnvConfig{
+		PubSubTopic:       "sh.keptn.event.task1.triggered,sh.keptn.event.task2.triggered",
+		Location:          "localhost",
+		Version:           "v1",
+		K8sDeploymentName: "k8s-deployment",
+		K8sNamespace:      "k8s-namespace",
+		K8sPodName:        "k8s-podname",
+		K8sNodeName:       "k8s-nodename",
+	}}
+
+	regData := keptn.RegistrationData()
+	require.Equal(t, "v1", regData.MetaData.IntegrationVersion)
+	require.Equal(t, "localhost", regData.MetaData.Location)
+	require.Equal(t, "k8s-deployment", regData.MetaData.KubernetesMetaData.DeploymentName)
+	require.Equal(t, "k8s-namespace", regData.MetaData.KubernetesMetaData.Namespace)
+	require.Equal(t, "k8s-podname", regData.MetaData.KubernetesMetaData.PodName)
+	require.Equal(t, "k8s-nodename", regData.MetaData.Hostname)
+	require.Equal(t, []models.EventSubscription{{Event: "sh.keptn.event.task1.triggered"}, {Event: "sh.keptn.event.task2.triggered"}}, regData.Subscriptions)
+
 }
 
 func newTestTaskTriggeredEvent() models.KeptnContextExtendedCE {

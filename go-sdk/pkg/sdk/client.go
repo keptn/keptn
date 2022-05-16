@@ -10,7 +10,7 @@ import (
 )
 
 func newResourceHandlerFromEnv() *apiutils.ResourceHandler {
-	var env envConfig
+	var env EnvConfig
 	if err := envconfig.Process("", &env); err != nil {
 		log.Fatalf("failed to process env var: %s", err)
 	}
@@ -18,13 +18,13 @@ func newResourceHandlerFromEnv() *apiutils.ResourceHandler {
 }
 
 func newControlPlane() (*controlplane.ControlPlane, controlplane.EventSender) {
-	var env envConfig
+	var env EnvConfig
 	if err := envconfig.Process("", &env); err != nil {
 		log.Fatalf("failed to process env var: %s", err)
 	}
 	return newControlPlaneFromEnv(env)
 }
-func newControlPlaneFromEnv(env envConfig) (*controlplane.ControlPlane, controlplane.EventSender) {
+func newControlPlaneFromEnv(env EnvConfig) (*controlplane.ControlPlane, controlplane.EventSender) {
 	apiSet, err := api.NewInternal(nil)
 	if err != nil {
 		log.Fatal(err)
