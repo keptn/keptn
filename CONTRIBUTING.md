@@ -135,7 +135,7 @@ These rules help us to keep the scope of issues and PRs assessable.
 
 Keptn currently has two types of tests:
 
-* *end-to-end tests* (integration tests) - run automatically once per day (see [test/](test/) for more details on the integration tests)
+* *end-to-end tests* (integration tests) - run automatically once per day (see [test/](test/) for details), to run them see [here]https://github.com/keptn/keptn/blob/master/docs/developer/integration_tests.md
 * *unit tests* - run for every Pull Request in every directory that contains Go code
 
 Before pushing your code to the repository, please run unit tests locally. When creating a new feature, please consider writing unit tests.
