@@ -87,6 +87,7 @@ export class SequencesPage {
 
   private setFilterForGroup(filterGroup: string, itemName: string, status: boolean): this {
     cy.byTestId('keptn-sequence-view-filter').find('dt-quick-filter').dtQuickFilterCheck(filterGroup, itemName, status);
+    cy.wait('@SequencesUpdate');
     return this;
   }
 

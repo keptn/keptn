@@ -135,7 +135,7 @@ export function interceptSequencesPage(): void {
     body: {
       states: [],
     },
-  });
+  }).as('SequencesUpdate');
 
   cy.intercept('/api/project/sockshop/sequences/metadata', { fixture: 'sequence.metadata.mock' }).as(
     'SequencesMetadata'
