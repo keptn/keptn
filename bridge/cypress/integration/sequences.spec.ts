@@ -1,8 +1,10 @@
 import { SequencesPage } from '../support/pageobjects/SequencesPage';
 import { interceptProjectBoard } from '../support/intercept';
+import EnvironmentPage from '../support/pageobjects/EnvironmentPage';
 
 describe('Sequences', () => {
   const sequencePage = new SequencesPage();
+  const environmentPage = new EnvironmentPage();
 
   beforeEach(() => {
     interceptProjectBoard();
@@ -31,68 +33,6 @@ describe('Sequences', () => {
 
   it('should show a list of sequences if everything is loaded', () => {
     sequencePage.visit('sockshop').assertSequenceCount(5);
-  });
-
-  it('should show a filtered list if filters are applied', () => {
-    sequencePage.visit('sockshop');
-    cy.wait('@Sequences');
-    cy.wait(500);
-
-    // Test single filters
-    sequencePage
-      .checkServiceFilter('carts')
-      .assertSequenceCount(3)
-      .assertServiceNameOfSequences('carts')
-
-      .clearFilter()
-      .checkServiceFilter('carts-db')
-      .assertSequenceCount(2)
-      .assertServiceNameOfSequences('carts-db')
-
-      .clearFilter()
-      .checkStageFilter('production')
-      .assertSequenceCount(2)
-      .assertStageNamesOfSequences(['dev', 'staging', 'production'])
-
-      .clearFilter()
-      .checkSequenceFilter('delivery')
-      .assertSequenceCount(3)
-      .assertSequenceNameOfSequences('delivery')
-
-      .clearFilter()
-      .checkSequenceFilter('delivery-direct')
-      .assertSequenceCount(2)
-      .assertSequenceNameOfSequences('delivery-direct')
-
-      .clearFilter()
-      .checkStatusFilter('Active')
-      .assertNoSequencesMessageExists(true)
-
-      .clearFilter()
-      .checkStatusFilter('Failed')
-      .assertSequenceCount(2)
-      .assertStatusOfSequences('failed')
-
-      .clearFilter()
-      .checkStatusFilter('Aborted')
-      .assertNoSequencesFilteredMessageExists(true)
-
-      .clearFilter()
-      .checkStatusFilter('Succeeded')
-      .assertSequenceCount(2)
-      .assertStatusOfSequences('succeeded')
-      .assertLoadingOldSequencesButtonExists(false)
-
-      // Test one combined filter
-      .clearFilter()
-      .checkServiceFilter('carts')
-      .checkStageFilter('production')
-      .checkSequenceFilter('delivery')
-      .checkStatusFilter('Succeeded')
-      .assertStageNameOfSequences('production')
-      .assertServiceNameOfSequences('carts')
-      .assertSequenceNameOfSequences('delivery')
-      .assertStatusOfSequences('succeeded');
   });
 
   it('should select sequence and show the right timestamps in the timeline', () => {
@@ -159,11 +99,147 @@ describe('Sequences', () => {
       .assertIsSelectedSequenceWaiting(true);
   });
 
-  it('should filter waiting sequences', () => {
-    sequencePage.visit('sockshop');
-    cy.wait('@Sequences');
-    cy.wait(500);
+  describe.only('filtering', () => {
+    it('should show a filtered list if filters are applied', () => {
+      sequencePage.visit('sockshop');
+      cy.wait('@Sequences');
+      cy.wait(500);
 
-    sequencePage.checkStatusFilter('Waiting').assertSequenceCount(1).assertStatusOfSequences('waiting');
+      // Test single filters
+      sequencePage
+        .checkServiceFilter('carts')
+        .assertSequenceCount(4)
+        .assertServiceNameOfSequences('carts')
+
+        .clearFilter()
+        .checkServiceFilter('carts-db')
+        .assertSequenceCount(2)
+        .assertServiceNameOfSequences('carts-db')
+
+        .clearFilter()
+        .checkStageFilter('production')
+        .assertSequenceCount(3)
+        .assertStageNamesOfSequences(['dev', 'staging', 'production'])
+
+        .clearFilter()
+        .checkSequenceFilter('delivery')
+        .assertSequenceCount(4)
+        .assertSequenceNameOfSequences('delivery')
+
+        .clearFilter()
+        .checkSequenceFilter('delivery-direct')
+        .assertSequenceCount(2)
+        .assertSequenceNameOfSequences('delivery-direct')
+
+        .clearFilter()
+        .checkStatusFilter('Active')
+        .assertSequenceCount(1)
+        .assertStatusOfSequences('started')
+
+        .clearFilter()
+        .checkStatusFilter('Failed')
+        .assertSequenceCount(2)
+        .assertStatusOfSequences('failed')
+
+        .clearFilter()
+        .checkStatusFilter('Aborted')
+        .assertNoSequencesFilteredMessageExists(true)
+
+        .clearFilter()
+        .checkStatusFilter('Succeeded')
+        .assertSequenceCount(2)
+        .assertStatusOfSequences('succeeded')
+        .assertLoadingOldSequencesButtonExists(false)
+
+        // Test one combined filter
+        .clearFilter()
+        .checkServiceFilter('carts')
+        .checkStageFilter('production')
+        .checkSequenceFilter('delivery')
+        .checkStatusFilter('Succeeded')
+        .assertStageNameOfSequences('production')
+        .assertServiceNameOfSequences('carts')
+        .assertSequenceNameOfSequences('delivery')
+        .assertStatusOfSequences('succeeded');
+    });
+
+    it('should filter waiting sequences', () => {
+      sequencePage.visit('sockshop');
+      cy.wait('@Sequences');
+      cy.wait(500);
+
+      sequencePage.checkStatusFilter('Waiting').assertSequenceCount(1).assertStatusOfSequences('waiting');
+    });
+
+    it('should save filters to query params', () => {
+      sequencePage.visit('sockshop');
+      cy.wait('@Sequences');
+      cy.wait(500);
+
+      sequencePage
+        .checkServiceFilter('carts')
+        .checkStageFilter('dev')
+        .checkStageFilter('production')
+        .checkSequenceFilter('delivery')
+        .checkStatusFilter('Active')
+
+        .assertQueryParams('?Service=carts&Stage=dev&Stage=production&Sequence=delivery&Status=started');
+    });
+
+    it('should load filters from query params', () => {
+      sequencePage.visit('sockshop', {
+        Stage: 'dev',
+        Service: 'carts',
+        Sequence: 'delivery',
+        Status: 'started',
+      });
+      cy.wait('@Sequences');
+      cy.wait(500);
+
+      sequencePage
+        .assertFilterIsChecked('Stage', 'dev', true)
+        .assertFilterIsChecked('Stage', 'staging', false)
+        .assertFilterIsChecked('Stage', 'production', false)
+        .assertFilterIsChecked('Service', 'carts', true)
+        .assertFilterIsChecked('Service', 'carts-db', false)
+        .assertFilterIsChecked('Sequence', 'delivery', true)
+        .assertFilterIsChecked('Sequence', 'delivery-direct', false)
+        .assertFilterIsChecked('Status', 'Active', true)
+        .assertFilterIsChecked('Status', 'Waiting', false)
+        .assertFilterIsChecked('Status', 'Failed', false)
+        .assertFilterIsChecked('Status', 'Aborted', false)
+        .assertFilterIsChecked('Status', 'Succeeded', false)
+        .assertSequenceCount(1)
+        .assertStatusOfSequences('started');
+    });
+
+    it('should load filters from local storage', () => {
+      sequencePage.visit('sockshop', {
+        Stage: 'staging',
+        Service: 'carts',
+        Sequence: 'delivery',
+        Status: 'started',
+      });
+      environmentPage.visit('sockshop');
+      sequencePage.visit('sockshop', {});
+      cy.wait('@Sequences');
+      cy.wait(500);
+
+      sequencePage
+        .assertFilterIsChecked('Stage', 'dev', false)
+        .assertFilterIsChecked('Stage', 'staging', true)
+        .assertFilterIsChecked('Stage', 'production', false)
+        .assertFilterIsChecked('Service', 'carts', true)
+        .assertFilterIsChecked('Service', 'carts-db', false)
+        .assertFilterIsChecked('Sequence', 'delivery', true)
+        .assertFilterIsChecked('Sequence', 'delivery-direct', false)
+        .assertFilterIsChecked('Status', 'Active', true)
+        .assertFilterIsChecked('Status', 'Waiting', false)
+        .assertFilterIsChecked('Status', 'Failed', false)
+        .assertFilterIsChecked('Status', 'Aborted', false)
+        .assertFilterIsChecked('Status', 'Succeeded', false)
+        .assertSequenceCount(1)
+        .assertStatusOfSequences('started');
+    });
   });
 });

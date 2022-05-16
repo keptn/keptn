@@ -9,8 +9,13 @@ export class SequencesPage {
     return this;
   }
 
-  public visit(projectName: string): this {
-    cy.visit(`/project/${projectName}/sequence`).wait('@metadata').wait('@SequencesMetadata');
+  public visit(projectName: string, queryParams?: { [p: string]: string | string[] }): this {
+    cy.visit({
+      url: `/project/${projectName}/sequence`,
+      qs: queryParams,
+    })
+      .wait('@metadata')
+      .wait('@SequencesMetadata');
     return this;
   }
 
@@ -82,6 +87,13 @@ export class SequencesPage {
 
   private setFilterForGroup(filterGroup: string, itemName: string, status: boolean): this {
     cy.byTestId('keptn-sequence-view-filter').find('dt-quick-filter').dtQuickFilterCheck(filterGroup, itemName, status);
+    return this;
+  }
+
+  public assertFilterIsChecked(filterGroup: string, itemName: string, status: boolean): this {
+    cy.byTestId('keptn-sequence-view-filter')
+      .find('dt-quick-filter')
+      .dtQuickFilterIsChecked(filterGroup, itemName, status);
     return this;
   }
 
@@ -230,6 +242,11 @@ export class SequencesPage {
   public assertServiceName(name: string, tag?: string): this {
     const serviceName = tag ? `${name}:${tag}` : name;
     cy.byTestId('keptn-sequence-view-serviceName').should('have.text', serviceName);
+    return this;
+  }
+
+  public assertQueryParams(query: string): this {
+    cy.location('search').should('eq', query);
     return this;
   }
 }
