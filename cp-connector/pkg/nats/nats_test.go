@@ -1,6 +1,7 @@
 package nats_test
 
 import (
+	"encoding/json"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/strutils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -191,6 +192,10 @@ func TestPublish(t *testing.T) {
 
 	err := nc.Subscribe("subj", func(e *nats.Msg) error {
 		received = true
+		ev := &models.KeptnContextExtendedCE{}
+		err := json.Unmarshal(e.Data, ev)
+		require.Nil(t, err)
+		require.NotEmpty(t, ev.Time)
 		return nil
 	})
 	require.Nil(t, err)
