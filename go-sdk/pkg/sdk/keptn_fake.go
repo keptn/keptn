@@ -4,57 +4,22 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/cloudevents/sdk-go/v2/event"
+	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
-	"log"
 	"path/filepath"
-	"sync"
 	"testing"
-	"time"
-
-	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/cloudevents/sdk-go/v2/event"
-	"github.com/keptn/go-utils/pkg/api/models"
 )
 
 type FakeKeptn struct {
-	TestResourceHandler    ResourceHandler
-	TestEventSource        *TestEventSource
-	TestSubscriptionSource *TestSubscriptionSource
-	Keptn                  *Keptn
-}
-
-func (f *FakeKeptn) StartAsync() error {
-	return f.Keptn.Start()
-}
-
-func (f *FakeKeptn) Start() error {
-	go func() {
-		log.Fatal(f.Keptn.Start())
-	}()
-
-	select {
-	case <-f.TestEventSource.Started:
-		return nil
-	case <-time.After(5 * time.Second):
-		log.Fatal("Timed out waiting for FakeKeptn to be started")
-	}
-	return nil
-}
-
-func (f *FakeKeptn) SendStartedEvent(event KeptnEvent) error {
-	return f.Keptn.SendStartedEvent(event)
-}
-
-func (f *FakeKeptn) SendFinishedEvent(event KeptnEvent, result interface{}) error {
-	return f.Keptn.SendFinishedEvent(event, result)
-}
-
-func (f *FakeKeptn) Logger() Logger {
-	return f.Keptn.Logger()
+	TestResourceHandler ResourceHandler
+	SentEvents          []models.KeptnContextExtendedCE
+	Keptn               *Keptn
 }
 
 func (f *FakeKeptn) GetResourceHandler() ResourceHandler {
@@ -65,50 +30,44 @@ func (f *FakeKeptn) GetResourceHandler() ResourceHandler {
 }
 
 func (f *FakeKeptn) NewEvent(event models.KeptnContextExtendedCE) {
-	f.TestEventSource.NewEvent(controlplane.EventUpdate{
-		KeptnEvent: event,
-		MetaData:   controlplane.EventUpdateMetaData{Subject: *event.Type},
-	})
+	ctx := context.WithValue(context.TODO(), controlplane.EventSenderKey, controlplane.EventSender(f.fakeSender))
+	ctx = context.WithValue(ctx, gracefulShutdownKey, &nopWG{})
+	f.Keptn.OnEvent(ctx, event)
 }
 
 func (f *FakeKeptn) AssertNumberOfEventSent(t *testing.T, numOfEvents int) {
-	require.Eventuallyf(t, func() bool {
-		return f.TestEventSource.GetNumberOfSetEvents() == numOfEvents
-	}, 60*time.Second, 10*time.Millisecond, "number of events expected: %d got: %d", numOfEvents, f.TestEventSource.GetNumberOfSetEvents())
+	require.Equalf(t, numOfEvents, len(f.SentEvents), "number of events expected: %d got: %d", numOfEvents, len(f.SentEvents))
 }
 
 func (f *FakeKeptn) AssertSentEvent(t *testing.T, eventIndex int, assertFn func(ce models.KeptnContextExtendedCE) bool) {
-	if eventIndex >= f.TestEventSource.GetNumberOfSetEvents() {
+	if eventIndex >= len(f.SentEvents) {
 		t.Fatalf("unable to assert sent event with index %d: too less events sent", eventIndex)
 	}
-
-	require.Eventually(t, func() bool {
-		return assertFn(f.TestEventSource.SentEvents[eventIndex])
-	}, 60*time.Second, 10*time.Millisecond)
+	require.True(t, assertFn(f.SentEvents[eventIndex]))
 }
 
 func (f *FakeKeptn) AssertSentEventType(t *testing.T, eventIndex int, eventType string) {
-	if eventIndex >= f.TestEventSource.GetNumberOfSetEvents() {
+	if eventIndex >= len(f.SentEvents) {
 		t.Fatalf("unable to assert sent event with index %d: too less events sent", eventIndex)
 	}
-	require.Equalf(t, eventType, *f.TestEventSource.SentEvents[eventIndex].Type, "event type expected: %s got %s", eventType, *f.TestEventSource.SentEvents[eventIndex].Type)
+	require.Equalf(t, eventType, *f.SentEvents[eventIndex].Type, "event type expected: %s got %s", eventType, *f.SentEvents[eventIndex].Type)
 }
 
 func (f *FakeKeptn) AssertSentEventStatus(t *testing.T, eventIndex int, status v0_2_0.StatusType) {
-	if eventIndex >= f.TestEventSource.GetNumberOfSetEvents() {
+	if eventIndex >= len(f.SentEvents) {
 		t.Fatalf("unable to assert sent event with index %d: too less events sent", eventIndex)
 	}
 	eventData := v0_2_0.EventData{}
-	v0_2_0.EventDataAs(f.TestEventSource.SentEvents[eventIndex], &eventData)
+	v0_2_0.EventDataAs(f.SentEvents[eventIndex], &eventData)
 	require.Equal(t, status, eventData.Status)
 }
 
 func (f *FakeKeptn) AssertSentEventResult(t *testing.T, eventIndex int, result v0_2_0.ResultType) {
-	if eventIndex >= f.TestEventSource.GetNumberOfSetEvents() {
+	if eventIndex >= len(f.SentEvents) {
 		t.Fatalf("unable to assert sent event with index %d: too less events sent", eventIndex)
 	}
 	eventData := v0_2_0.EventData{}
-	v0_2_0.EventDataAs(f.TestEventSource.SentEvents[eventIndex], &eventData)
+	v0_2_0.EventDataAs(f.SentEvents[eventIndex], &eventData)
 	require.Equal(t, result, eventData.Result)
 }
 
@@ -126,83 +85,31 @@ func (f *FakeKeptn) AddTaskHandler(eventType string, handler TaskHandler, filter
 }
 
 func (f *FakeKeptn) AddTaskHandlerWithSubscriptionID(eventType string, handler TaskHandler, subscriptionID string, filters ...func(keptnHandle IKeptn, event KeptnEvent) bool) {
-	f.TestSubscriptionSource.AddSubscription(models.EventSubscription{ID: subscriptionID, Event: eventType})
 	f.Keptn.taskRegistry.Add(eventType, TaskEntry{TaskHandler: handler, EventFilters: filters})
 }
 
+func (f *FakeKeptn) fakeSender(ce models.KeptnContextExtendedCE) error {
+	f.SentEvents = append(f.SentEvents, ce)
+	return nil
+}
+
 func NewFakeKeptn(source string) *FakeKeptn {
-	testSubscriptionSource := NewTestSubscriptionSource()
-	testEventSource := NewTestEventSource()
-	cp := controlplane.New(testSubscriptionSource, testEventSource, nil)
 	resourceHandler := &TestResourceHandler{}
-	logger := newDefaultLogger()
 	var fakeKeptn = &FakeKeptn{
-		TestResourceHandler:    resourceHandler,
-		TestEventSource:        testEventSource,
-		TestSubscriptionSource: testSubscriptionSource,
+		TestResourceHandler: resourceHandler,
 		Keptn: &Keptn{
-			controlPlane:           cp,
-			eventSender:            testEventSource.Sender(),
 			resourceHandler:        resourceHandler,
 			source:                 source,
 			taskRegistry:           newTaskMap(),
 			syncProcessing:         true,
 			automaticEventResponse: true,
 			gracefulShutdown:       false,
-			logger:                 logger,
+			logger:                 newDefaultLogger(),
 			healthEndpointRunner:   noOpHealthEndpointRunner,
 		},
 	}
+	fakeKeptn.Keptn.eventSender = fakeKeptn.fakeSender
 	return fakeKeptn
-}
-
-// TestSender fakes the sending of CloudEvents
-type TestSender struct {
-	SentEvents []cloudevents.Event
-	mutex      sync.RWMutex
-	Reactors   map[string]func(event cloudevents.Event) error
-}
-
-// SendEvent fakes the sending of CloudEvents
-func (s *TestSender) SendEvent(event cloudevents.Event) error {
-	if s.Reactors != nil {
-		for eventTypeSelector, reactor := range s.Reactors {
-			if eventTypeSelector == "*" || eventTypeSelector == event.Type() {
-				if err := reactor(event); err != nil {
-					return err
-				}
-			}
-		}
-	}
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-	s.SentEvents = append(s.SentEvents, event)
-	return nil
-}
-
-// AssertSentEventTypes checks if the given event types have been passed to the SendEvent function
-func (s *TestSender) AssertSentEventTypes(eventTypes []string) error {
-	s.mutex.RLock()
-	defer s.mutex.RUnlock()
-	sentTot := len(s.SentEvents)
-	typesTot := len(eventTypes)
-	if sentTot != typesTot {
-		return fmt.Errorf("expected %d event, got %d", sentTot, typesTot)
-	}
-	for index, sentEvent := range s.SentEvents {
-		if sentEvent.Type() != eventTypes[index] {
-			return fmt.Errorf("received event type '%s' != %s", sentEvent.Type(), eventTypes[index])
-		}
-	}
-	return nil
-}
-
-// AddReactor adds custom logic that should be applied when SendEvent is called for the given event type
-func (s *TestSender) AddReactor(eventTypeSelector string, reactor func(event cloudevents.Event) error) {
-	if s.Reactors == nil {
-		s.Reactors = map[string]func(event cloudevents.Event) error{}
-	}
-	s.Reactors[eventTypeSelector] = reactor
 }
 
 type TestReceiver struct {

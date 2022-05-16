@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
-	sync "github.com/sasha-s/go-deadlock"
+	"sync"
 )
 
 func NewTestEventSource() *TestEventSource {
@@ -16,7 +16,7 @@ func NewTestEventSource() *TestEventSource {
 	}
 	tes.Started = make(chan struct{})
 	tes.SentEvents = []models.KeptnContextExtendedCE{}
-	tes.mutex = &sync.RWMutex{}
+	tes.mutex = &sync.Mutex{}
 
 	return &tes
 }
@@ -27,14 +27,20 @@ type TestEventSource struct {
 	FakeSender func(ce models.KeptnContextExtendedCE) error
 	SentEvents []models.KeptnContextExtendedCE
 	Started    chan struct{}
-	mutex      *sync.RWMutex
+	mutex      *sync.Mutex
 }
 
 func (t *TestEventSource) GetNumberOfSetEvents() int {
-	t.mutex.RLock()
-	defer t.mutex.RUnlock()
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
 	res := len(t.SentEvents)
 	return res
+}
+
+func (t *TestEventSource) GetSentEvents() []models.KeptnContextExtendedCE {
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
+	return t.SentEvents
 }
 
 func (t *TestEventSource) AddSentEvent(e models.KeptnContextExtendedCE) {

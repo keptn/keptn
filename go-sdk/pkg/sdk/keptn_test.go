@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/strutils"
@@ -45,16 +46,17 @@ func Test_WhenReceivingAnEvent_StartedEventAndFinishedEventsAreSent(t *testing.T
 	})
 
 	require.Eventuallyf(t, func() bool {
-		return len(testEventSource.SentEvents) == 2
-	}, time.Second, 10*time.Millisecond, "error message %s", "formatted")
+		fmt.Println(testEventSource.GetNumberOfSetEvents())
+		return testEventSource.GetNumberOfSetEvents() == 2
+	}, time.Second*10, time.Second, "error message %s", "formatted")
 
 	require.Eventuallyf(t, func() bool {
-		return *testEventSource.SentEvents[0].Type == "sh.keptn.event.faketask.started"
-	}, time.Second, 10*time.Millisecond, "error message %s", "formatted")
+		return *testEventSource.GetSentEvents()[0].Type == "sh.keptn.event.faketask.started"
+	}, time.Second*10, time.Second, "error message %s", "formatted")
 
 	require.Eventuallyf(t, func() bool {
-		return *testEventSource.SentEvents[1].Type == "sh.keptn.event.faketask.finished"
-	}, time.Second, 10*time.Millisecond, "error message %s", "formatted")
+		return *testEventSource.GetSentEvents()[1].Type == "sh.keptn.event.faketask.finished"
+	}, time.Second*10, time.Second, "error message %s", "formatted")
 
 }
 
@@ -85,8 +87,8 @@ func Test_WhenReceivingEvent_OnlyStartedEventIsSent(t *testing.T) {
 	})
 
 	require.Eventuallyf(t, func() bool {
-		return len(testEventSource.SentEvents) == 0
-	}, time.Second, 10*time.Millisecond, "error message %s", "formatted")
+		return len(testEventSource.GetSentEvents()) == 0
+	}, time.Second*10, time.Second, "error message %s", "formatted")
 
 }
 
@@ -117,8 +119,8 @@ func Test_WhenReceivingBadEvent_NoEventIsSent(t *testing.T) {
 	})
 
 	require.Eventuallyf(t, func() bool {
-		return len(testEventSource.SentEvents) == 0
-	}, time.Second, 10*time.Millisecond, "error message %s", "formatted")
+		return len(testEventSource.GetSentEvents()) == 0
+	}, time.Second*10, time.Second, "error message %s", "formatted")
 }
 
 func newTestTaskTriggeredEvent() models.KeptnContextExtendedCE {

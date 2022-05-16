@@ -203,7 +203,6 @@ func Test_HandleIncomingTriggeredEvent(t *testing.T) {
 	fakeKeptn.SetResourceHandler(sdk.StringResourceHandler{ResourceContent: webHookContent})
 	fakeKeptn.AddTaskHandlerWithSubscriptionID("sh.keptn.event.webhook.triggered", taskHandler, "my-subscription-id")
 	fakeKeptn.SetAutomaticResponse(false)
-	fakeKeptn.Start()
 
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
 	require.Eventually(t, func() bool { return len(curlExecutorMock.CurlCalls()) == 1 }, 30*time.Second, time.Millisecond*10)
@@ -243,10 +242,6 @@ func Test_HandleIncomingStartedEvent(t *testing.T) {
 	fakeKeptn.SetResourceHandler(sdk.StringResourceHandler{ResourceContent: webHookContentWithStartedEvent})
 	fakeKeptn.AddTaskHandlerWithSubscriptionID("sh.keptn.event.webhook.started", taskHandler, "my-subscription-id")
 	fakeKeptn.SetAutomaticResponse(false)
-	err := fakeKeptn.Start()
-	if err != nil {
-		t.Fatal(err)
-	}
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.started.json"))
 	require.Eventually(t, func() bool { return len(curlExecutorMock.CurlCalls()) == 1 }, 30*time.Second, time.Millisecond*10)
 	require.Eventually(t, func() bool {
@@ -280,7 +275,6 @@ func Test_HandleIncomingStartedEventWithResultingError(t *testing.T) {
 	fakeKeptn.SetResourceHandler(sdk.StringResourceHandler{ResourceContent: webHookContentWithStartedEvent})
 	fakeKeptn.AddTaskHandlerWithSubscriptionID("sh.keptn.event.webhook.started", taskHandler, "my-subscription-id")
 	fakeKeptn.SetAutomaticResponse(false)
-	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.started.json"))
 
 	require.Eventually(t, func() bool { return len(curlExecutorMock.CurlCalls()) == 1 }, 30*time.Second, time.Millisecond*10)
@@ -315,7 +309,6 @@ func Test_HandleIncomingFinishedEvent(t *testing.T) {
 	fakeKeptn.SetResourceHandler(sdk.StringResourceHandler{ResourceContent: webHookContentWithFinishedEvent})
 	fakeKeptn.AddTaskHandlerWithSubscriptionID("sh.keptn.event.webhook.finished", taskHandler, "my-subscription-id")
 	fakeKeptn.SetAutomaticResponse(false)
-	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.finished.json"))
 
 	require.Eventually(t, func() bool { return len(curlExecutorMock.CurlCalls()) == 1 }, 30*time.Second, time.Millisecond*10)
@@ -350,7 +343,6 @@ func Test_HandleIncomingFinishedEventWithResultingError(t *testing.T) {
 	fakeKeptn.SetResourceHandler(sdk.StringResourceHandler{ResourceContent: webHookContentWithFinishedEvent})
 	fakeKeptn.AddTaskHandlerWithSubscriptionID("sh.keptn.event.webhook.finished", taskHandler, "my-subscription-id")
 	fakeKeptn.SetAutomaticResponse(false)
-	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.finished.json"))
 
 	require.Eventually(t, func() bool { return len(curlExecutorMock.CurlCalls()) == 1 }, 30*time.Second, time.Millisecond*10)
@@ -386,7 +378,6 @@ func Test_HandleIncomingTriggeredEvent_SendMultipleRequests(t *testing.T) {
 	fakeKeptn.AddTaskHandlerWithSubscriptionID("sh.keptn.event.webhook.triggered", taskHandler, "my-subscription-id")
 	fakeKeptn.SetAutomaticResponse(false)
 
-	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
 
 	require.Eventually(t, func() bool { return len(curlExecutorMock.CurlCalls()) == 2 }, 30*time.Second, time.Millisecond*10)
@@ -427,7 +418,6 @@ func Test_HandleIncomingTriggeredEvent_SendMultipleRequestsDisableFinished(t *te
 	fakeKeptn.AddTaskHandlerWithSubscriptionID("sh.keptn.event.webhook.triggered", taskHandler, "my-subscription-id")
 	fakeKeptn.SetAutomaticResponse(false)
 
-	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
 
 	require.Eventually(t, func() bool { return len(curlExecutorMock.CurlCalls()) == 4 }, 30*time.Second, time.Millisecond*10)
@@ -471,7 +461,6 @@ func Test_HandleIncomingTriggeredEvent_SendMultipleRequestsDisableStarted(t *tes
 	fakeKeptn.AddTaskHandlerWithSubscriptionID("sh.keptn.event.webhook.triggered", taskHandler, "my-subscription-id")
 	fakeKeptn.SetAutomaticResponse(false)
 
-	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
 
 	require.Eventually(t, func() bool { return len(curlExecutorMock.CurlCalls()) == 4 }, 30*time.Second, time.Millisecond*10)
@@ -514,7 +503,6 @@ func Test_HandleIncomingTriggeredEvent_SendMultipleRequestsDisableFinishedOneReq
 	fakeKeptn.AddTaskHandlerWithSubscriptionID("sh.keptn.event.webhook.triggered", taskHandler, "my-subscription-id")
 	fakeKeptn.SetAutomaticResponse(false)
 
-	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
 
 	require.Eventually(t, func() bool { return len(curlExecutorMock.CurlCalls()) == 2 }, 30*time.Second, time.Millisecond*10)
@@ -562,7 +550,6 @@ func Test_HandleIncomingTriggeredEvent_NoMatchingWebhookFound(t *testing.T) {
 	fakeKeptn.AddTaskHandlerWithSubscriptionID("sh.keptn.event.webhook.triggered", taskHandler, "my-subscription-id")
 	fakeKeptn.SetAutomaticResponse(false)
 
-	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
 
 	require.Eventually(t, func() bool { return len(curlExecutorMock.CurlCalls()) == 0 }, 30*time.Second, time.Millisecond*10)
@@ -589,7 +576,6 @@ func TestTaskHandler_Execute_WebhookCannotBeRetrieved(t *testing.T) {
 	fakeKeptn.AddTaskHandlerWithSubscriptionID("sh.keptn.event.webhook.triggered", taskHandler, "my-subscription-id")
 	fakeKeptn.SetAutomaticResponse(false)
 
-	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
 
 	//verify sent events
@@ -615,7 +601,6 @@ func TestTaskHandler_Execute_NoSubscriptionIDInEvent(t *testing.T) {
 	fakeKeptn.AddTaskHandler("sh.keptn.event.webhook.triggered", taskHandler)
 	fakeKeptn.SetAutomaticResponse(false)
 
-	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-no-subscription-id.json"))
 
 	fakeKeptn.AssertNumberOfEventSent(t, 0)
@@ -636,7 +621,6 @@ func TestTaskHandler_Execute_InvalidEvent(t *testing.T) {
 	fakeKeptn.AddTaskHandlerWithSubscriptionID("sh.keptn.event.webhook.triggered", taskHandler, "my-subscription-id")
 	fakeKeptn.SetAutomaticResponse(false)
 
-	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/invalid-event.json"))
 
 	//verify sent events
@@ -661,7 +645,6 @@ func TestTaskHandler_CannotReadSecret(t *testing.T) {
 	fakeKeptn.AddTaskHandlerWithSubscriptionID("sh.keptn.event.webhook.triggered", taskHandler, "my-subscription-id")
 	fakeKeptn.SetAutomaticResponse(false)
 
-	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
 
 	//verify sent events
@@ -692,7 +675,6 @@ func TestTaskHandler_IncompleteDataForTemplate(t *testing.T) {
 	fakeKeptn.AddTaskHandlerWithSubscriptionID("sh.keptn.event.webhook.triggered", taskHandler, "my-subscription-id")
 	fakeKeptn.SetAutomaticResponse(false)
 
-	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
 
 	require.Eventually(t, func() bool {
@@ -731,7 +713,6 @@ func TestTaskHandler_CurlExecutorFails(t *testing.T) {
 	fakeKeptn.AddTaskHandlerWithSubscriptionID("sh.keptn.event.webhook.triggered", taskHandler, "my-subscription-id")
 	fakeKeptn.SetAutomaticResponse(false)
 
-	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
 
 	require.Eventually(t, func() bool {
@@ -774,7 +755,6 @@ func TestTaskHandler_RequestValidatorFails(t *testing.T) {
 	fakeKeptn.AddTaskHandlerWithSubscriptionID("sh.keptn.event.webhook.triggered", taskHandler, "my-subscription-id")
 	fakeKeptn.SetAutomaticResponse(false)
 
-	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
 
 	require.Eventually(t, func() bool {
@@ -812,7 +792,6 @@ func TestTaskHandler_CurlExecutorFailsHideSecret(t *testing.T) {
 	fakeKeptn.AddTaskHandlerWithSubscriptionID("sh.keptn.event.webhook.triggered", taskHandler, "my-subscription-id")
 	fakeKeptn.SetAutomaticResponse(false)
 
-	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
 
 	require.Eventually(t, func() bool {
@@ -829,7 +808,7 @@ func TestTaskHandler_CurlExecutorFailsHideSecret(t *testing.T) {
 	fakeKeptn.AssertSentEventStatus(t, 1, keptnv2.StatusErrored)
 	fakeKeptn.AssertSentEventResult(t, 1, keptnv2.ResultFailed)
 	eventData := &keptnv2.EventData{}
-	keptnv2.EventDataAs(fakeKeptn.TestEventSource.SentEvents[1], eventData)
+	keptnv2.EventDataAs(fakeKeptn.SentEvents[1], eventData)
 	require.NotContains(t, eventData.Message, "my-secret-value")
 }
 
@@ -867,7 +846,6 @@ func TestTaskHandler_Execute_WebhookConfigInService(t *testing.T) {
 	fakeKeptn.AddTaskHandlerWithSubscriptionID("sh.keptn.event.webhook.triggered", taskHandler, "my-subscription-id")
 	fakeKeptn.SetAutomaticResponse(false)
 
-	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
 
 	//verify sent events
@@ -927,7 +905,6 @@ func TestTaskHandler_Execute_WebhookConfigInStage(t *testing.T) {
 	fakeKeptn.AddTaskHandlerWithSubscriptionID("sh.keptn.event.webhook.triggered", taskHandler, "my-subscription-id")
 	fakeKeptn.SetAutomaticResponse(false)
 
-	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
 
 	//verify sent events
@@ -993,7 +970,6 @@ func TestTaskHandler_Execute_WebhookConfigInProject(t *testing.T) {
 	fakeKeptn.AddTaskHandlerWithSubscriptionID("sh.keptn.event.webhook.triggered", taskHandler, "my-subscription-id")
 	fakeKeptn.SetAutomaticResponse(false)
 
-	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
 
 	//verify sent events

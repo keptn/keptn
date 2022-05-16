@@ -27,10 +27,6 @@ func newGetActionTriggeredEvent(filename string) models.KeptnContextExtendedCE {
 func Test_Receiving_GetActionTriggeredEvent_RemediationFromServiceLevel(t *testing.T) {
 	fakeKeptn := sdk.NewFakeKeptn("test-remediation-svc")
 	fakeKeptn.AddTaskHandler("sh.keptn.event.get-action.triggered", handler.NewGetActionEventHandler())
-	err := fakeKeptn.Start()
-	if err != nil {
-		t.Fatal(err)
-	}
 	fakeKeptn.NewEvent(newGetActionTriggeredEvent("test/events/get-action.triggered-0.json"))
 	fakeKeptn.NewEvent(newGetActionTriggeredEvent("test/events/get-action.triggered-1.json"))
 	fakeKeptn.NewEvent(newGetActionTriggeredEvent("test/events/get-action.triggered-2.json"))
