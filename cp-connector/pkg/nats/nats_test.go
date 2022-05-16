@@ -2,7 +2,6 @@ package nats_test
 
 import (
 	"encoding/json"
-	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/strutils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -198,7 +197,7 @@ func TestPublish(t *testing.T) {
 		require.Nil(t, err)
 		require.NotEmpty(t, ev.Time)
 		require.NotEmpty(t, ev.ID)
-		require.Equal(t, cloudevents.VersionV1, ev.Specversion)
+		require.Equal(t, nats2.CloudEventsVersionV1, ev.Specversion)
 		return nil
 	})
 	require.Nil(t, err)
@@ -235,7 +234,7 @@ func TestPublishWithID(t *testing.T) {
 		require.Nil(t, err)
 		require.NotEmpty(t, ev.Time)
 		require.Equal(t, "my-id", ev.ID)
-		require.Equal(t, cloudevents.VersionV1, ev.Specversion)
+		require.Equal(t, nats2.CloudEventsVersionV1, ev.Specversion)
 		return nil
 	})
 	require.Nil(t, err)
