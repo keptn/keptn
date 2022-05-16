@@ -164,10 +164,10 @@ github.com/kelseyhightower/envconfig v1.4.0 h1:Im6hONhd3pLkfDFsbRgu68RDNkGF1r3dv
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
 github.com/keptn/go-utils v0.15.1-0.20220512082458-c5e1b7519bec h1:ctvu8/NL/mutxHa4bEXL9XsqMC/fmt6+iO4n7k2+wqI=
 github.com/keptn/go-utils v0.15.1-0.20220512082458-c5e1b7519bec/go.mod h1:oxLLKz2u9KId2HgLH63+T0pUbcgiDd2GDkRrRKwxGUU=
-github.com/keptn/keptn/cp-connector v0.0.0-20220512122245-d9e05a908f02 h1:eBRfRuRuXYCUWRE4E1j7xRL7VrrN2PaxgqD65Bt41D0=
-github.com/keptn/keptn/cp-connector v0.0.0-20220512122245-d9e05a908f02/go.mod h1:hBnlGKdA32QUkPITvDZrqN/J0TG/5eCp15CAtPrUmcM=
-github.com/keptn/keptn/go-sdk v0.0.0-20220516045401-51a06a83c931 h1:2CbrWqzTlte6X3Cwj7jSduy4FEE5InOoETFc7/K6hhQ=
-github.com/keptn/keptn/go-sdk v0.0.0-20220516045401-51a06a83c931/go.mod h1:ieCMcsTdz6FODI1rmTYmvyQu/LiX3nINA8e7BNxLgC4=
+github.com/keptn/keptn/cp-connector v0.0.0-20220516054342-64731420f421 h1:rNY1zO2f3IxXWAFinkqvpX+or4zu37eJ+yBFzklSAzE=
+github.com/keptn/keptn/cp-connector v0.0.0-20220516054342-64731420f421/go.mod h1:hBnlGKdA32QUkPITvDZrqN/J0TG/5eCp15CAtPrUmcM=
+github.com/keptn/keptn/go-sdk v0.0.0-20220516065019-f4fcc70de969 h1:9jxTDlNnogxgQ/NX29tkImPrPZQFW8lWadGoSwuuTbY=
+github.com/keptn/keptn/go-sdk v0.0.0-20220516065019-f4fcc70de969/go.mod h1:LyCWMOidYJ4MwW/1xsMjbti1glFAMdNCJeFOiCaWLiI=
 github.com/kisielk/errcheck v1.5.0/go.mod h1:pFxgyoBC7bSaBwPgfKdkLd5X25qrDl4LWUI2bnpBCr8=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/klauspost/compress v1.14.4 h1:eijASRJcobkVtSt81Olfh7JX43osYLwy5krOJo6YEu4=
