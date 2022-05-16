@@ -25,6 +25,7 @@ type DialogState = null | 'unsaved';
 
 interface ProjectSettingsState {
   gitUpstreamRequired: boolean | undefined;
+  automaticProvisioningMessage: string | undefined;
 }
 
 @Component({
@@ -66,8 +67,11 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
 
   readonly state$: Observable<ProjectSettingsState> = this.dataService.keptnInfo.pipe(
     filter((keptnInfo: KeptnInfo | undefined): keptnInfo is KeptnInfo => !!keptnInfo),
-    map((keptnInfo: KeptnInfo) => ({ gitUpstreamRequired: !keptnInfo.metadata.automaticprovisioning })),
-    startWith({ gitUpstreamRequired: undefined })
+    map((keptnInfo: KeptnInfo) => ({
+      gitUpstreamRequired: !keptnInfo.metadata.automaticprovisioning,
+      automaticProvisioningMessage: keptnInfo.bridgeInfo.automaticProvisioningMsg,
+    })),
+    startWith({ gitUpstreamRequired: undefined, automaticProvisioningMessage: undefined })
   );
 
   constructor(

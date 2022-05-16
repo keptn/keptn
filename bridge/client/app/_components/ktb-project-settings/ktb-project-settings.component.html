@@ -33,15 +33,20 @@
       </ng-template>
       <div class="mb-3 settings-section" *ngIf="resourceServiceEnabled !== undefined; else loading">
         <ng-container *ngIf="resourceServiceEnabled; else defaultGit">
-          <p class="mt-0 mb-3" *ngIf="state.gitUpstreamRequired">
+          <p class="mt-0 mb-3" uitestid="ktb-settings-git-upstream-message" *ngIf="state.gitUpstreamRequired">
             A Git upstream repository has to be set. You can connect your Git repository with HTTPS or SSH.
             Instructions, on how to set up your Git provider can be found in the
             <a [href]="'/manage/git_upstream/' | keptnUrl" target="_blank">Git-based upstream documentation</a>.
           </p>
-          <p class="mt-0 mb-3" *ngIf="!state.gitUpstreamRequired">
-            It is recommended to set a Git upstream repository. You can connect your Git repository with HTTPS or SSH.
-            Instructions, on how to set up your Git provider can be found in the
-            <a [href]="'/manage/git_upstream/' | keptnUrl" target="_blank">Git-based upstream documentation</a>.
+          <p class="mt-0 mb-3" uitestid="ktb-settings-git-upstream-message" *ngIf="!state.gitUpstreamRequired">
+            <ng-container *ngIf="state.automaticProvisioningMessage; else defaultGitRequiredMessage">
+              {{ state.automaticProvisioningMessage }}
+            </ng-container>
+            <ng-template #defaultGitRequiredMessage>
+              It is recommended to set a Git upstream repository. You can connect your Git repository with HTTPS or SSH.
+              Instructions, on how to set up your Git provider can be found in the
+              <a [href]="'/manage/git_upstream/' | keptnUrl" target="_blank">Git-based upstream documentation</a>.
+            </ng-template>
           </p>
 
           <ktb-project-settings-git-extended
