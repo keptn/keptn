@@ -197,7 +197,7 @@ describe('KtbEventsListComponent', () => {
 
   it('should save filters on click, load sequences and filter properly', () => {
     // given
-    /* eslint-disable @typescript-eslint/ban-ts-comment */
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     /* @ts-ignore */ // Ignore private property
     component.project = ProjectsMock[0];
     const spySaveSequenceFilters = jest.spyOn(component, 'saveSequenceFilters');
@@ -277,7 +277,7 @@ describe('KtbEventsListComponent', () => {
 
   it('should set sequence filters from query params', () => {
     // given
-    /* eslint-disable @typescript-eslint/ban-ts-comment */
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     /* @ts-ignore */ // Ignore private property
     component.project = ProjectsMock[0];
     const spySetSequenceFilters = jest.spyOn(component, 'setSequenceFilters');
@@ -304,7 +304,7 @@ describe('KtbEventsListComponent', () => {
 
   it('should load sequence filters from local storage', () => {
     // given
-    /* eslint-disable @typescript-eslint/ban-ts-comment */
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     /* @ts-ignore */ // Ignore private property
     component.project = ProjectsMock[0];
     const spyLoadSequenceFilters = jest.spyOn(component, 'loadSequenceFilters');
