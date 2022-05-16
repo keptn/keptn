@@ -15,7 +15,6 @@ import moment from 'moment';
 describe('KtbEventsListComponent', () => {
   let component: KtbSequenceViewComponent;
   let fixture: ComponentFixture<KtbSequenceViewComponent>;
-  let activatedRoute: ActivatedRoute;
   const queryParams: Subject<{ [p: string]: string | string[] }> = new BehaviorSubject({});
 
   const projectName = 'sockshop';
@@ -38,7 +37,6 @@ describe('KtbEventsListComponent', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbSequenceViewComponent);
-    activatedRoute = TestBed.inject(ActivatedRoute);
     component = fixture.componentInstance;
   });
 
