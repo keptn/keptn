@@ -12,6 +12,7 @@ import (
 	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 )
@@ -252,6 +253,12 @@ func (k *Keptn) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE
 }
 
 func (k *Keptn) RegistrationData() controlplane.RegistrationData {
+	subscriptions := []models.EventSubscription{}
+	subscriptionsFromEnv := strings.Split(k.env.PubSubTopic, ",")
+
+	for _, s := range subscriptionsFromEnv {
+		subscriptions = append(subscriptions, models.EventSubscription{Event: s})
+	}
 	return controlplane.RegistrationData{
 		Name: k.source,
 		MetaData: models.MetaData{
@@ -265,7 +272,7 @@ func (k *Keptn) RegistrationData() controlplane.RegistrationData {
 				DeploymentName: k.env.K8sDeploymentName,
 			},
 		},
-		Subscriptions: []models.EventSubscription{},
+		Subscriptions: subscriptions,
 	}
 }
 
