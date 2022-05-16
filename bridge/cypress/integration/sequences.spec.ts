@@ -220,6 +220,7 @@ describe('Sequences', () => {
         Sequence: 'delivery',
         Status: 'started',
       });
+      environmentPage.intercept();
       environmentPage.visit('sockshop');
       sequencePage.visit('sockshop', {});
       cy.wait('@Sequences');
