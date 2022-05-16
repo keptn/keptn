@@ -15,6 +15,7 @@ import { Timeframe } from '../../_models/timeframe';
 import moment from 'moment';
 import { ErrorStateMatcher } from '@angular/material/core';
 import { FormControl, FormGroupDirective, NgForm } from '@angular/forms';
+import { FormUtils } from '../../_utils/form.utils';
 import {
   CustomSequenceFormData,
   DeliverySequenceFormData,
@@ -230,10 +231,6 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy, AfterView
     }
   }
 
-  private getImageString(image: string, tag: string): string {
-    return image.replace(/\s/g, '') + ':' + tag.replace(/\s/g, '');
-  }
-
   private parseTimeframe(timeframe: Timeframe): string {
     let timeframeString = '';
     timeframeString += timeframe.hours ? timeframe.hours + 'h' : '';
@@ -247,7 +244,7 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy, AfterView
 
   private parseLabels(labels: string): { [key: string]: string } {
     const labelObj: { [key: string]: string } = {};
-    const lbls = labels.replace(/\s/g, '').split(',');
+    const lbls = FormUtils.removeWhitespaces(labels).split(',');
     for (const label of lbls) {
       const parts = label.split('=');
       if (parts[1]) {
@@ -276,7 +273,7 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy, AfterView
     data.configurationChange = {
       values: {
         ...valuesObj,
-        image: this.getImageString(this.deliveryFormData.image || '', this.deliveryFormData.tag || ''),
+        image: FormUtils.removeWhitespaces(this.deliveryFormData.image || ''),
       },
     };
 

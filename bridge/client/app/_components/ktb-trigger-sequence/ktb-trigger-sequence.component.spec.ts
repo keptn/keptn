@@ -101,17 +101,6 @@ describe('KtbTriggerSequenceComponent', () => {
     expect(component.isValidStartEndTime()).toEqual(true);
   });
 
-  it('should return an combined and cleaned string for image and tag', () => {
-    // given
-    const image = '  docker  .io/keptn  ';
-    const tag = '  v0.1 . 2    ';
-
-    // when, then
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    expect(component.getImageString(image, tag)).toEqual('docker.io/keptn:v0.1.2');
-  });
-
   it('should parse a timeframe to a string in format 1h1m1s1ms1us', () => {
     // given
     const timeframe: Timeframe = {
@@ -239,8 +228,7 @@ describe('KtbTriggerSequenceComponent', () => {
     component.selectedStage = 'hardening';
     component.selectedService = 'helloservice';
     component.deliveryFormData = {
-      image: 'docker.io/keptn',
-      tag: 'v0.1.2',
+      image: ' docker.io/keptn: \t  v0.1.2 ',
       labels: 'key1=val1',
       values: '{"key2": "val2", "key3": {"key4": "val3"}}',
     };

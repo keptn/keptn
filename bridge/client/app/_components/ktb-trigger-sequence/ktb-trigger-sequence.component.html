@@ -119,26 +119,15 @@
 
     <div fxLayout="column" *ngIf="state === TRIGGER_SEQUENCE.DELIVERY">
       <h2 uitestid="ktb-trigger-headline">Trigger a delivery for {{ selectedService }} in {{ selectedStage }}</h2>
-      <div class="mb-3 mt-2" fxLayout="row" fxLayoutGap="15px">
-        <dt-form-field>
-          <dt-label class="required">Image</dt-label>
-          <input
-            uitestid="keptn-trigger-delivery-image"
-            [(ngModel)]="deliveryFormData.image"
-            dtInput
-            placeholder="docker.io/keptnexamples/carts"
-          />
-        </dt-form-field>
-        <dt-form-field>
-          <dt-label class="required">Tag</dt-label>
-          <input
-            uitestid="keptn-trigger-delivery-tag"
-            [(ngModel)]="deliveryFormData.tag"
-            dtInput
-            placeholder="0.12.3"
-          />
-        </dt-form-field>
-      </div>
+      <dt-form-field class="mb-3 mt-2">
+        <dt-label class="required">Image</dt-label>
+        <input
+          uitestid="keptn-trigger-delivery-image"
+          [(ngModel)]="deliveryFormData.image"
+          dtInput
+          placeholder="keptnexamples/simplenodeservice:5.0.4"
+        />
+      </dt-form-field>
       <dt-form-field class="mb-3">
         <dt-label>Labels</dt-label>
         <input
@@ -149,7 +138,6 @@
         />
         <dt-hint>Comma-separated list of key-value pairs.</dt-hint>
       </dt-form-field>
-
       <dt-form-field class="mb-3">
         <dt-label>Values</dt-label>
         <textarea
@@ -167,10 +155,7 @@
       <ng-container
         [ngTemplateOutlet]="triggerActions"
         [ngTemplateOutletContext]="{
-          isValid:
-            isValidString(deliveryFormData.image) &&
-            isValidString(deliveryFormData.tag) &&
-            isValidJSON(deliveryFormData.values)
+          isValid: isValidString(deliveryFormData.image) && isValidJSON(deliveryFormData.values)
         }"
       ></ng-container>
     </div>
