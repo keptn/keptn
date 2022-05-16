@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/cp-connector/pkg/logger"
 	"github.com/nats-io/nats.go"
@@ -16,6 +17,7 @@ var _ NATS = (*NatsConnector)(nil)
 const (
 	EnvVarNatsURL        = "NATS_URL"
 	EnvVarNatsURLDefault = "nats://keptn-nats"
+	CloudEventsVersionV1 = "1.0"
 )
 
 type NATS interface {
@@ -126,8 +128,12 @@ func (nc *NatsConnector) Publish(event models.KeptnContextExtendedCE) error {
 	if event.Type == nil || *event.Type == "" {
 		return ErrPubEventTypeMissing
 	}
-	// make sure the time stamp of the event is set to the current time
+	// ensure that the mandatory fields time, id and specversion are set in the CloudEvent
 	event.Time = time.Now().UTC()
+	event.Specversion = CloudEventsVersionV1
+	if event.ID == "" {
+		event.ID = uuid.New().String()
+	}
 	serializedEvent, err := json.Marshal(event)
 	if err != nil {
 		return fmt.Errorf("could not publish event: %w", err)
