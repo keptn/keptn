@@ -14,5 +14,6 @@ module.exports = {
   moduleNameMapper: {
     '^lodash-es$': 'lodash',
     d3: '<rootDir>/node_modules/d3/dist/d3.min.js',
+    '^yaml$': '<rootDir>/node_modules/yaml/dist/index.js',
   },
 };

@@ -1,6 +1,7 @@
 package nats_test
 
 import (
+	"encoding/json"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/strutils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -191,6 +192,49 @@ func TestPublish(t *testing.T) {
 
 	err := nc.Subscribe("subj", func(e *nats.Msg) error {
 		received = true
+		ev := &models.KeptnContextExtendedCE{}
+		err := json.Unmarshal(e.Data, ev)
+		require.Nil(t, err)
+		require.NotEmpty(t, ev.Time)
+		require.NotEmpty(t, ev.ID)
+		require.Equal(t, nats2.CloudEventsVersionV1, ev.Specversion)
+		return nil
+	})
+	require.Nil(t, err)
+
+	err = nc.Publish(msg)
+	require.NoError(t, err)
+
+	require.Eventually(t, func() bool {
+		return received
+	}, 10*time.Second, time.Second)
+}
+
+func TestPublishWithID(t *testing.T) {
+	received := false
+	msg := models.KeptnContextExtendedCE{
+		ID:   "my-id",
+		Type: strutils.Stringp("subj"),
+		Data: v0_2_0.EventData{
+			Project: "someProject",
+			Stage:   "someStage",
+			Service: "someService",
+		},
+	}
+
+	svr, shutdown := runNATSServer()
+	defer shutdown()
+	nc, _ := nats2.Connect(svr.ClientURL())
+	require.NotNil(t, nc)
+
+	err := nc.Subscribe("subj", func(e *nats.Msg) error {
+		received = true
+		ev := &models.KeptnContextExtendedCE{}
+		err := json.Unmarshal(e.Data, ev)
+		require.Nil(t, err)
+		require.NotEmpty(t, ev.Time)
+		require.Equal(t, "my-id", ev.ID)
+		require.Equal(t, nats2.CloudEventsVersionV1, ev.Specversion)
 		return nil
 	})
 	require.Nil(t, err)

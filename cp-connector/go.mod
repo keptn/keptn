@@ -6,6 +6,7 @@ require github.com/keptn/go-utils v0.15.1-0.20220512082458-c5e1b7519bec
 
 require (
 	github.com/benbjohnson/clock v1.3.0
+	github.com/google/uuid v1.3.0
 	github.com/nats-io/nats-server/v2 v2.8.2
 	github.com/nats-io/nats.go v1.14.0
 	github.com/stretchr/testify v1.7.1
@@ -17,7 +18,6 @@ require (
 	github.com/cloudevents/sdk-go/v2 v2.9.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/felixge/httpsnoop v1.0.2 // indirect
-	github.com/google/uuid v1.3.0 // indirect
 	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/klauspost/compress v1.14.4 // indirect
 	github.com/minio/highwayhash v1.0.2 // indirect
