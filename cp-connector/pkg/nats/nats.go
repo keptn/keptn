@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/cp-connector/pkg/logger"
@@ -126,6 +127,7 @@ func (nc *NatsConnector) Publish(event models.KeptnContextExtendedCE) error {
 	if event.Type == nil || *event.Type == "" {
 		return ErrPubEventTypeMissing
 	}
+	event.Time = time.Now().UTC()
 	serializedEvent, err := json.Marshal(event)
 	if err != nil {
 		return fmt.Errorf("could not publish event: %w", err)
