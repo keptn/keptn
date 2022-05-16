@@ -40,7 +40,7 @@ const SEQUENCE_STATUS = {
   failed: 'Failed',
   aborted: 'Aborted',
   succeeded: 'Succeeded',
-} as { [key: string]: string };
+} as Record<string, string>;
 
 @Component({
   selector: 'ktb-sequence-view',
@@ -311,9 +311,9 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   filtersClicked(event: DtQuickFilterChangeEvent<any> | { filters: any[] }): void {
     this._seqFilters = event.filters as FilterType[];
-    const sequenceFilters: { [key: string]: string[] } = this._seqFilters.reduce(
+    const sequenceFilters: Record<string, string[]> = this._seqFilters.reduce(
       (
-        filters: { [key: string]: string[] },
+        filters: Record<string, string[]>,
         currentFilter: [
           { name: string; autocomplete: { name: string; value: string }[] },
           ...{ name: string; value: string }[]
@@ -400,7 +400,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     this._filterDataSource = new DtQuickFilterDefaultDataSource(this.filterFieldData, this._config);
   }
 
-  getFilteredSequences(sequences: Sequence[], filters: { [key: string]: string[] }): Sequence[] {
+  getFilteredSequences(sequences: Sequence[], filters: Record<string, string[]>): Sequence[] {
     return sequences.filter((s) => {
       let res = true;
       Object.keys(filters).forEach((key) => {

@@ -15,7 +15,7 @@ import moment from 'moment';
 describe('KtbEventsListComponent', () => {
   let component: KtbSequenceViewComponent;
   let fixture: ComponentFixture<KtbSequenceViewComponent>;
-  const queryParams: Subject<{ [p: string]: string | string[] }> = new BehaviorSubject({});
+  const queryParams: Subject<Record<string, string | string[]>> = new BehaviorSubject({});
 
   const projectName = 'sockshop';
 

@@ -55,12 +55,12 @@ export class ApiService {
     return this._baseUrl;
   }
 
-  public get sequenceFilters(): { [key: string]: string[] } {
+  public get sequenceFilters(): Record<string, string[]> {
     const filters = localStorage.getItem(this.SEQUENCE_FILTERS_COOKIE);
     return filters ? JSON.parse(filters) : {};
   }
 
-  public set sequenceFilters(filters: { [key: string]: string[] }) {
+  public set sequenceFilters(filters: Record<string, string[]>) {
     localStorage.setItem(this.SEQUENCE_FILTERS_COOKIE, JSON.stringify(filters));
   }
 
