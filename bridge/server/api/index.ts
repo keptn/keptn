@@ -35,7 +35,7 @@ const apiRouter = (params: {
   const projectsPageSize = EnvironmentUtils.getNumber(process.env.PROJECTS_PAGE_SIZE);
   const servicesPageSize = EnvironmentUtils.getNumber(process.env.SERVICES_PAGE_SIZE);
   const keptnInstallationType = process.env.KEPTN_INSTALLATION_TYPE;
-  const automaticProvisioningMsg = process.env.AUTOMATIC_PROVISIONING_MSG;
+  const automaticProvisioningMsg = process.env.AUTOMATIC_PROVISIONING_MSG?.trim();
   const dataService = new DataService(apiUrl, apiToken);
 
   // bridgeInfo endpoint: Provide certain metadata for Bridge
