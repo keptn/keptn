@@ -4,10 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	"net/url"
 	"os"
 	"strings"
 	"sync"
+	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
@@ -164,6 +166,8 @@ func sendEvent(shkeptncontext string, triggeredID, eventType, commitID string, k
 	event.SetType(eventType)
 	event.SetSource(source.String())
 	event.SetDataContentType(cloudevents.ApplicationJSON)
+	event.SetTime(time.Now().UTC())
+	event.SetID(uuid.New().String())
 	event.SetExtension("shkeptncontext", shkeptncontext)
 	event.SetExtension("triggeredid", triggeredID)
 	event.SetExtension("gitcommitid", commitID)
