@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	logger "github.com/sirupsen/logrus"
 	"net/url"
@@ -226,6 +227,7 @@ func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string,
 	}
 
 	event := cloudevents.NewEvent()
+	event.SetID(uuid.New().String())
 	event.SetType(keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName))
 	event.SetSource(source.String())
 	event.SetDataContentType(cloudevents.ApplicationJSON)
