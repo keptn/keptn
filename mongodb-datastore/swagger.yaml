@@ -96,6 +96,8 @@ paths:
                 description: Size of the returned page
               events:
                 type: array
+                x-isnullable: true
+                x-nullable: true
                 items:
                   "$ref": "#/definitions/KeptnContextExtendedCE"
         default:
@@ -172,6 +174,7 @@ definitions:
 
   KeptnContextExtendedCE:
     type: object
+    x-nullable: true
     x-go-type:
       import:
         package: "github.com/keptn/go-utils/pkg/api/models"

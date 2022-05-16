@@ -117,7 +117,9 @@ func init() {
                   "type": "array",
                   "items": {
                     "$ref": "#/definitions/KeptnContextExtendedCE"
-                  }
+                  },
+                  "x-isnullable": true,
+                  "x-nullable": true
                 },
                 "nextPageKey": {
                   "description": "Pointer to the next page",
@@ -231,7 +233,8 @@ func init() {
           "package": "github.com/keptn/go-utils/pkg/api/models"
         },
         "type": "KeptnContextExtendedCE"
-      }
+      },
+      "x-nullable": true
     },
     "error": {
       "type": "object",
@@ -391,7 +394,9 @@ func init() {
                   "type": "array",
                   "items": {
                     "$ref": "#/definitions/KeptnContextExtendedCE"
-                  }
+                  },
+                  "x-isnullable": true,
+                  "x-nullable": true
                 },
                 "nextPageKey": {
                   "description": "Pointer to the next page",
@@ -511,7 +516,8 @@ func init() {
           "package": "github.com/keptn/go-utils/pkg/api/models"
         },
         "type": "KeptnContextExtendedCE"
-      }
+      },
+      "x-nullable": true
     },
     "error": {
       "type": "object",

@@ -7,7 +7,7 @@ import (
 
 type EventsResult struct {
 	// Events
-	Events []keptnapi.KeptnContextExtendedCE `json:"events"`
+	Events []*keptnapi.KeptnContextExtendedCE `json:"events"`
 	// Pointer to the next page
 	NextPageKey string `json:"nextPageKey,omitempty"`
 	// Size of the returned page
