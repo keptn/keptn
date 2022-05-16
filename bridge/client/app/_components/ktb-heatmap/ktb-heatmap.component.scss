@@ -1,0 +1,88 @@
+.show-more-button {
+  position: absolute;
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 1070;
+  pointer-events: none;
+  display: inline-block;
+}
+
+:host ::ng-deep {
+  $axis-identifier-size: 12px;
+
+  .x-axis-container, .y-axis-container, .legend-text {
+    font-size: $axis-identifier-size;
+  }
+
+  .data-point-container-rect {
+    cursor: pointer;
+    fill: transparent;
+    z-index: 1000;
+  }
+
+  .legend-text {
+    alignment-baseline: middle;
+  }
+
+  .x-axis-identifier {
+    text-anchor: end;
+    transform: rotate(-45deg);
+  }
+
+  .hidden {
+    visibility: hidden;
+  }
+
+  .legend-item {
+    cursor: pointer;
+  }
+
+  .data-point{
+    z-index: 1001;
+  }
+
+  .data-point, .legend-circle {
+    cursor: pointer;
+
+    &:hover:not(.disabled) {
+      opacity: 0.5;
+    }
+
+    &.pass {
+      fill: #7dc540
+    }
+
+    &.warning {
+      fill: #e6be00;
+    }
+
+    &.fail {
+      fill: #dc172a;
+    }
+
+    &.info {
+      fill: #ddf4ff;
+    }
+
+    &.disabled {
+      fill: #cccccc;
+    }
+  }
+
+  .highlight-primary {
+    stroke-width: 2;
+    stroke: #6d6d6d;
+    fill: hsla(0,0%,43%,.4);
+    pointer-events: none;
+  }
+
+  .highlight-secondary {
+    stroke-width: 1;
+    stroke-dasharray: 5,5;
+    stroke: #898989;
+    fill: hsla(0,0%,54%,.3);
+    pointer-events: none;
+  }
+}
