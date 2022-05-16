@@ -69,12 +69,6 @@ export interface TraceOptions {
   source?: KeptnService;
 }
 
-interface ServiceDetailsOptions {
-  stageName: string;
-  keptnContext: string;
-  projectName: string;
-}
-
 export class DataService {
   private apiService: ApiService;
   private readonly MAX_SEQUENCE_PAGE_SIZE = 100;

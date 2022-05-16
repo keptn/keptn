@@ -5,7 +5,7 @@ import { FeatureFlagsService } from './feature-flags.service';
 import { ApiService } from './api.service';
 import { ApiServiceMock } from './api.service.mock';
 import { DataService } from './data.service';
-import { take } from 'rxjs/operators';
+import { firstValueFrom } from 'rxjs';
 
 describe('FeatureFlagsService', () => {
   let service: FeatureFlagsService;
@@ -27,7 +27,7 @@ describe('FeatureFlagsService', () => {
   it('should set feature flags', async () => {
     const dataService = TestBed.inject(DataService);
     dataService.loadKeptnInfo();
-    const flags = await service.featureFlags$.pipe(take(1)).toPromise();
+    const flags = await firstValueFrom(service.featureFlags$);
     expect(flags).toEqual({
       RESOURCE_SERVICE_ENABLED: false,
     });
