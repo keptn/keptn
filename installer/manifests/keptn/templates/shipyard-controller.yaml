@@ -39,7 +39,7 @@ spec:
           image: {{ include "service.image" ( dict "imageRoot" .Values.shipyardController.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
           {{- $prestop := .Values.shipyardController.preStopHookTime | default 90 | quote -}}
           {{- include "keptn.prestop" $prestop | nindent 10 }}
-          imagePullPolicy: {{ .Values.shipyardController.imagePullPolicy }}
+          imagePullPolicy: {{ .Values.shipyardController.imagePullPolicy | default "IfNotPresent" }}
           livenessProbe:
             httpGet:
               path: /health

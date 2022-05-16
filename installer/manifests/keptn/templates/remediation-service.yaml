@@ -34,7 +34,7 @@ spec:
       containers:
         - name: remediation-service
           image: {{ include "service.image" ( dict "imageRoot" .Values.remediationService.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
-          imagePullPolicy: {{ .Values.remediationService.imagePullPolicy }}
+          imagePullPolicy: {{ .Values.remediationService.imagePullPolicy | default "IfNotPresent" }}
           {{- $prestop := .Values.remediationService.preStopHookTime | default 90 | quote -}}
           {{- include "keptn.prestop" $prestop | nindent 10 }}
           livenessProbe:
@@ -63,7 +63,7 @@ spec:
           {{- include "keptn.common.container-security-context" . | nindent 10 }}
         - name: distributor
           image: {{ include "service.image" ( dict "imageRoot" .Values.distributor.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
-          imagePullPolicy: {{ .Values.distributor.imagePullPolicy }}
+          imagePullPolicy: {{ .Values.distributor.imagePullPolicy | default "IfNotPresent" }}
           {{- include "keptn.dist.livenessProbe" . | nindent 10 }}
           {{- include "keptn.dist.readinessProbe" . | nindent 10 }}
           ports:

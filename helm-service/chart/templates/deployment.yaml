@@ -31,7 +31,7 @@ spec:
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: {{ include "service.image" ( dict "imageRoot" .Values.helmservice.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
-          imagePullPolicy: {{ .Values.helmservice.image.pullPolicy }}
+          imagePullPolicy: {{ .Values.helmservice.image.pullPolicy | default "IfNotPresent" }}
           ports:
             - containerPort: 80
           env:
@@ -92,6 +92,7 @@ spec:
         - name: distributor
           image: {{ include "service.image" ( dict "imageRoot" .Values.distributor.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
           {{- include "helm-service.prestop" . | nindent 10 }}
+          imagePullPolicy: {{ .Values.distributor.imagePullPolicy | default "IfNotPresent" }}
           livenessProbe:
             httpGet:
               path: /health
@@ -104,7 +105,6 @@ spec:
               port: 8080
             initialDelaySeconds: 5
             periodSeconds: 5
-          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           resources:

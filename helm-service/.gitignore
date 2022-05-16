@@ -19,3 +19,7 @@ vendor/*
 
 #binary - go build
 helm-service
+
+# helm
+chart/Chart.lock
+chart/charts/*.tgz

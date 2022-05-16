@@ -37,7 +37,7 @@ spec:
           image: {{ include "service.image" ( dict "imageRoot" .Values.webhookService.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
           {{- $prestop := .Values.webhookService.preStopHookTime | default 90 | quote -}}
           {{- include "keptn.prestop" $prestop | nindent 10 }}
-          imagePullPolicy: {{ .Values.webhookService.imagePullPolicy }}
+          imagePullPolicy: {{ .Values.webhookService.imagePullPolicy | default "IfNotPresent" }}
           livenessProbe:
             httpGet:
               path: /health
@@ -66,7 +66,7 @@ spec:
           image: {{ include "service.image" ( dict "imageRoot" .Values.distributor.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
           {{- include "keptn.dist.livenessProbe" . | nindent 10 }}
           {{- include "keptn.dist.readinessProbe" . | nindent 10 }}
-          imagePullPolicy: {{ .Values.distributor.imagePullPolicy }}
+          imagePullPolicy: {{ .Values.distributor.imagePullPolicy | default "IfNotPresent" }}
           ports:
             - containerPort: 8080
           resources:

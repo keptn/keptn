@@ -131,7 +131,7 @@ spec:
       containers:
         - name: bridge
           image: {{ include "service.image" ( dict "imageRoot" .Values.bridge.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
-          imagePullPolicy: {{ .Values.bridge.imagePullPolicy }}
+          imagePullPolicy: {{ .Values.bridge.imagePullPolicy | default "IfNotPresent" }}
           env:
             - name: API_URL
               value: "http://api-gateway-nginx{{ .Values.prefixPath }}/api"

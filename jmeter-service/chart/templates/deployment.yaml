@@ -35,7 +35,7 @@ spec:
           {{- else }}
           image: {{ include "service.image" ( dict "imageRoot" .Values.jmeterservice.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
           {{- end }}
-          imagePullPolicy: {{ .Values.jmeterservice.image.pullPolicy }}
+          imagePullPolicy: {{ .Values.jmeterservice.imagePullPolicy| default "IfNotPresent" }}
           ports:
             - containerPort: 80
           env:
@@ -62,6 +62,7 @@ spec:
         - name: distributor
           image: {{ include "service.image" ( dict "imageRoot" .Values.distributor.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
           {{- include "jmeter-service.prestop" . | nindent 10 }}
+          imagePullPolicy: {{ .Values.distributor.imagePullPolicy | default "IfNotPresent" }}
           livenessProbe:
             httpGet:
               path: /health
@@ -74,7 +75,6 @@ spec:
               port: 8080
             initialDelaySeconds: 5
             periodSeconds: 5
-          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           resources:
@@ -91,7 +91,7 @@ spec:
             - name: SERVICE_FILTER
               value: "{{ .Values.distributor.serviceFilter }}"
             - name: DISTRIBUTOR_VERSION
-              value: {{ include "service.tag" ( dict "imageRoot" .Values.distributor.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote}}
+              value: {{ include "service.tag" ( dict "imageRoot" .Values.distributor.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote }}
             - name: VERSION
               valueFrom:
                 fieldRef:

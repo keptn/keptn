@@ -39,19 +39,3 @@ The following table lists the configurable parameters of the Helm-service chart 
 | `nodeSelector` | Node selector configuration | `{}` |
 | `tolerations` | Tolerations for the pods | `[]` |
 | `affinity` | Affinity rules | `{}` |
-
-## Customise Charts with own values.yaml for local testing
-Create `helm-service/chart/values-local.yaml` file for your local values to be stored. The file should look like this:
-For local templating use `helm template . -f values-local.yaml --name-template test-helm-service --output-dir ../../temp`
-
-```
-global:
-  keptn:
-    registry: "testregistry/keptn"      # keptn registry/image name
-    tag: "0.0.1"                        # keptn version/tag
-```
-
-
-
-
-

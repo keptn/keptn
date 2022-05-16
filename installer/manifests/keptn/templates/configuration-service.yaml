@@ -66,7 +66,7 @@ spec:
           image: {{ include "service.image" ( dict "imageRoot" .Values.resourceService.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
           {{- $prestop := .Values.resourceService.preStopHookTime | default 90 | quote -}}
           {{- include "keptn.prestop" $prestop | nindent 10 }}
-          imagePullPolicy: {{ .Values.resourceService.imagePullPolicy }}
+          imagePullPolicy: {{ .Values.resourceService.imagePullPolicy | default "IfNotPresent" }}
           livenessProbe:
             httpGet:
               path: /health
@@ -187,7 +187,7 @@ spec:
           image: {{ include "service.image" ( dict "imageRoot" .Values.configurationService.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
           {{- $prestop := .Values.configurationService.preStopHookTime | default 90 | quote -}}
           {{- include "keptn.prestop" $prestop | nindent 10 }}
-          imagePullPolicy: {{ .Values.configurationService.imagePullPolicy }}
+          imagePullPolicy: {{ .Values.configurationService.imagePullPolicy | default "IfNotPresent" }}
           livenessProbe:
             httpGet:
               path: /health
