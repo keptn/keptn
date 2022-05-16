@@ -99,7 +99,7 @@ describe('Sequences', () => {
       .assertIsSelectedSequenceWaiting(true);
   });
 
-  describe.only('filtering', () => {
+  describe('filtering', () => {
     it('should show a filtered list if filters are applied', () => {
       sequencePage.visit('sockshop');
       cy.wait('@Sequences');
