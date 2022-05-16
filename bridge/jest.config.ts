@@ -13,5 +13,6 @@ module.exports = {
   coverageDirectory: '<rootDir>/coverage',
   moduleNameMapper: {
     '^lodash-es$': 'lodash',
+    '^yaml$': '<rootDir>/node_modules/yaml/dist/index.js',
   },
 };

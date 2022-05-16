@@ -3,7 +3,7 @@ import { BaseClient, errors, Issuer, TokenSet } from 'openid-client';
 import { SessionService } from './session';
 import { getBuildableRootLocation, getRootLocation, oauthRouter, reduceRefreshDateBy } from './oauth-routes';
 import { defaultContentSecurityPolicyOptions } from '../app';
-import helmet from 'helmet';
+import { contentSecurityPolicy } from 'helmet';
 
 const refreshPromises: { [sessionId: string]: Promise<TokenSet> } = {};
 const reduceRefreshDateSeconds = 10;
@@ -68,7 +68,7 @@ function setEndSessionPolicy(app: Express, client: BaseClient): void {
       client.issuer.metadata.end_session_endpoint,
       process.env.OAUTH_ALLOWED_LOGOUT_URLS || '',
     ];
-    app.use(helmet.contentSecurityPolicy(defaultContentSecurityPolicyOptions));
+    app.use(contentSecurityPolicy(defaultContentSecurityPolicyOptions));
   }
 }
 
