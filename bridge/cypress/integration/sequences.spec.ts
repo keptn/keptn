@@ -32,7 +32,7 @@ describe('Sequences', () => {
   });
 
   it('should show a list of sequences if everything is loaded', () => {
-    sequencePage.visit('sockshop').assertSequenceCount(5);
+    sequencePage.visit('sockshop').assertSequenceCount(6);
   });
 
   it('should select sequence and show the right timestamps in the timeline', () => {
