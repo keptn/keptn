@@ -67,7 +67,7 @@ func (o *GetEventsByType) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 type GetEventsByTypeOKBody struct {
 
 	// events
-	Events []keptnapi.KeptnContextExtendedCE `json:"events"`
+	Events []*keptnapi.KeptnContextExtendedCE `json:"events"`
 }
 
 // Validate validates this get events by type o k body

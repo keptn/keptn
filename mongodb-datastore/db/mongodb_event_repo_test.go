@@ -117,7 +117,7 @@ func TestMongoDBEventRepo_InsertAndRetrieve(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, events)
 	require.Len(t, events.Events, 1)
-	require.Equal(t, testEvent, events.Events[0])
+	require.Equal(t, testEvent, *events.Events[0])
 
 	filter = "data.project:my-project"
 	eventsByType, err := repo.GetEventsByType(

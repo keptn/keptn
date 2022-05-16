@@ -468,7 +468,7 @@ func (mr *MongoDBEventRepo) aggregateFromDB(collectionName string, pipeline mong
 	collection := mdbClient.Database(getDatabaseName()).Collection(collectionName)
 
 	result := &EventsResult{
-		Events: []keptnapi.KeptnContextExtendedCE{},
+		Events: []*keptnapi.KeptnContextExtendedCE{},
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -592,8 +592,8 @@ func getProjectOfEvent(event keptnapi.KeptnContextExtendedCE) string {
 	return collectionName
 }
 
-func formatEventResults(ctx context.Context, cur *mongo.Cursor) []keptnapi.KeptnContextExtendedCE {
-	var events []keptnapi.KeptnContextExtendedCE
+func formatEventResults(ctx context.Context, cur *mongo.Cursor) []*keptnapi.KeptnContextExtendedCE {
+	var events []*keptnapi.KeptnContextExtendedCE
 	for cur.Next(ctx) {
 		var outputEvent interface{}
 		err := cur.Decode(&outputEvent)
@@ -616,7 +616,7 @@ func formatEventResults(ctx context.Context, cur *mongo.Cursor) []keptnapi.Keptn
 			continue
 		}
 
-		events = append(events, keptnEvent)
+		events = append(events, &keptnEvent)
 	}
 	return events
 }

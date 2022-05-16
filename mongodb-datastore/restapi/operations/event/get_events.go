@@ -67,7 +67,7 @@ func (o *GetEvents) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 type GetEventsOKBody struct {
 
 	// events
-	Events []keptnapi.KeptnContextExtendedCE `json:"events"`
+	Events []*keptnapi.KeptnContextExtendedCE `json:"events"`
 
 	// Pointer to the next page
 	NextPageKey string `json:"nextPageKey,omitempty"`
