@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
-	sync "github.com/sasha-s/go-deadlock"
+	"sync"
 )
 
 func NewTestSubscriptionSource() *TestSubscriptionSource {

@@ -4,7 +4,7 @@
 package sdk
 
 import (
-	sync "github.com/sasha-s/go-deadlock"
+	"sync"
 )
 
 // Ensure, that TaskHandlerMock does implement TaskHandler.
