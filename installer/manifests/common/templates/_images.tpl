@@ -1,6 +1,6 @@
 {{/*Return the proper serivce image name*/}}
 {{- define "service.image" -}}
-{{/*{{- include "common.images.image" ( dict "imageRoot" .Values.helmservice.image "global" .Values.global.keptn "defaultTag" .Chart.appVersion) -}}*/}}
+{{/*{{- include "service.image" ( dict "imageRoot" .Values.lighthouseService.image "global" .Values.global.keptn "defaultTag" .Chart.appVersion) -}}*/}}
 {{- $registryName := "" -}}
 {{- $repositoryName := .imageRoot.repository -}}
 {{- $tag := include "service.tag" (dict "imageRoot" .imageRoot "global" .global "defaultTag" .defaultTag) -}}
@@ -19,9 +19,9 @@
 {{- end -}}
 {{- end -}}
 
-{{/*Return the proper serivce image tag*/}}
+{{/*Return the proper service image tag*/}}
 {{- define "service.tag" -}}
-{{/*{{- include "common.images.image" ( dict "imageRoot" .Values.helmservice.image "global" .Values.global.keptn "defaultTag" .Chart.appVersion) -}}*/}}
+{{/*{{- include "service.tag" ( dict "imageRoot" .Values.lighthouseService.image "global" .Values.global.keptn "defaultTag" .Chart.appVersion) -}}*/}}
 {{- $tag := "" -}}
 {{/*    Set Image Tag: if globally set or at service level set or use default from Chart.yaml*/}}
 {{- if .global -}}
