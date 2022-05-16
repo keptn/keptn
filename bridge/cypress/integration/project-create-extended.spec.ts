@@ -367,7 +367,7 @@ describe('Automatic provisioning message', () => {
 
   it('should show the default git message if automatic provisioning message consists of empty chars', () => {
     const info = { ...bridgeInfo };
-    info.automaticProvisioningMsg = '      ';
+    info.automaticProvisioningMsg = '';
     cy.intercept('/api/v1/metadata', { fixture: 'metadata.ap-enabled.mock' }).as('metadata');
     cy.intercept('/api/bridgeInfo', info);
     createProjectPage.visit();

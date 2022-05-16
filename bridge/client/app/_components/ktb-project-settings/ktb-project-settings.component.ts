@@ -69,7 +69,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
     filter((keptnInfo: KeptnInfo | undefined): keptnInfo is KeptnInfo => !!keptnInfo),
     map((keptnInfo: KeptnInfo) => ({
       gitUpstreamRequired: !keptnInfo.metadata.automaticprovisioning,
-      automaticProvisioningMessage: keptnInfo.bridgeInfo.automaticProvisioningMsg?.trim(),
+      automaticProvisioningMessage: keptnInfo.bridgeInfo.automaticProvisioningMsg,
     })),
     startWith({ gitUpstreamRequired: undefined, automaticProvisioningMessage: undefined })
   );
