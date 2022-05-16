@@ -43,6 +43,6 @@
     "nodemon": "2.0.16",
     "supertest": "6.2.3",
     "ts-jest": "28.0.2",
-    "typescript": "4.4.4"
+    "typescript": "4.6.4"
   }
 }
