@@ -126,7 +126,7 @@ func Test_QualityGates(t *testing.T) {
 	require.Contains(t, cliResp, "service not found")
 
 	t.Log("triggering evaluation for existing project/stage/service with no SLO file and no SLI provider")
-	keptnContext, err := triggerEvaluation(projectName, "hardening", serviceName)
+	keptnContext, err := TriggerEvaluation(projectName, "hardening", serviceName)
 
 	require.Nil(t, err)
 	require.NotEmpty(t, keptnContext)
@@ -182,7 +182,7 @@ func Test_QualityGates(t *testing.T) {
 	}
 
 	t.Log("triggering the evaluation again")
-	keptnContext, err = triggerEvaluation(projectName, "hardening", serviceName)
+	keptnContext, err = TriggerEvaluation(projectName, "hardening", serviceName)
 	require.Nil(t, err)
 	require.NotEmpty(t, keptnContext)
 
@@ -227,7 +227,7 @@ func Test_QualityGates(t *testing.T) {
 	require.Nil(t, err)
 
 	t.Log("triggering the evaluation again (this time valid)")
-	keptnContext, evaluationFinishedEvent = performResourceServiceTest(t, projectName, serviceName, checkCommit)
+	keptnContext, evaluationFinishedEvent = PerformResourceServiceTest(t, projectName, serviceName, checkCommit)
 
 	t.Log("got hardening.evaluation.finished event")
 	err = keptnv2.Decode(evaluationFinishedEvent.Data, evaluationFinishedPayload)
@@ -348,7 +348,7 @@ func Test_QualityGates(t *testing.T) {
 
 	t.Log("triggering the evaluation again (this time valid)")
 	// do another evaluation - the resulting .finished event should not contain the first .finished event (which has been invalidated) in the list of compared evaluation results
-	keptnContext, evaluationFinishedEvent = performResourceServiceTest(t, projectName, serviceName, checkCommit)
+	keptnContext, evaluationFinishedEvent = PerformResourceServiceTest(t, projectName, serviceName, checkCommit)
 	t.Log("got hardening.evaluation.finished event")
 
 	err = keptnv2.Decode(evaluationFinishedEvent.Data, evaluationFinishedPayload)
@@ -451,7 +451,7 @@ func Test_QualityGates(t *testing.T) {
 
 	// do another evaluation - the resulting .finished event should contain the second .finished event in the list of compared evaluation results
 	t.Log("triggering the evaluation again (this time it will be compared with the second evaluation)")
-	keptnContext, evaluationFinishedEvent = performResourceServiceTest(t, projectName, serviceName, checkCommit)
+	keptnContext, evaluationFinishedEvent = PerformResourceServiceTest(t, projectName, serviceName, checkCommit)
 	t.Log("got hardening.evaluation.finished event")
 
 	err = keptnv2.Decode(evaluationFinishedEvent.Data, evaluationFinishedPayload)
@@ -1042,7 +1042,7 @@ func qualityGatesGenericTestStart(t *testing.T, projectName string, serviceName 
 	return projectName, keptnContext, getSLITriggeredEvent.ID
 }
 
-func performResourceServiceTest(t *testing.T, projectName string, serviceName string, checkCommit bool) (string, *models.KeptnContextExtendedCE) {
+func PerformResourceServiceTest(t *testing.T, projectName string, serviceName string, checkCommit bool) (string, *models.KeptnContextExtendedCE) {
 	commitID := ""
 	commitID1 := ""
 	if checkCommit {
@@ -1287,7 +1287,7 @@ func performResourceServiceTest(t *testing.T, projectName string, serviceName st
 	return keptnContext, evaluationFinishedEvent
 }
 
-func triggerEvaluation(projectName, stageName, serviceName string) (string, error) {
+func TriggerEvaluation(projectName, stageName, serviceName string) (string, error) {
 	cliResp, err := ExecuteCommand(fmt.Sprintf("keptn trigger evaluation --project=%s --stage=%s --service=%s --timeframe=5m", projectName, stageName, serviceName))
 
 	if err != nil {

@@ -17,12 +17,10 @@ spec:
       app.kubernetes.io/instance: {{ .Release.Name }}
   {{- if or (lt .Capabilities.KubeVersion.Minor "14") (.Values.shipyardController.config.disableLeaderElection) }}
   replicas : 1
-  {{ else }}
+  {{- else }}
   replicas: {{ .Values.shipyardController.config.replicas | default 3 }}
   {{- end }}
-  # recreate the deployment if anything changes (we can not do a rolling upgrade of this deployment as we use a volume)
-  strategy:
-    type: Recreate
+  {{- include "control-plane.common.update-strategy" . | nindent 2 }}
   template:
     metadata:
       labels:
@@ -39,6 +37,12 @@ spec:
       containers:
         - name: shipyard-controller
           image: {{ .Values.shipyardController.image.repository }}:{{ .Values.shipyardController.image.tag | default .Chart.AppVersion }}
+          lifecycle:
+            preStop:
+              httpGet:
+                port: 8081
+                path: /operations/v1/pre-stop
+                host: localhost
           livenessProbe:
             httpGet:
               path: /health
@@ -85,6 +89,8 @@ spec:
               value: {{ .Values.shipyardController.config.taskStartedWaitDuration | default "10m"}}
             - name: UNIFORM_INTEGRATION_TTL
               value: {{ .Values.shipyardController.config.uniformIntegrationTTL | default "2m" }}
+            - name: PRE_STOP_HOOK_TIME
+              value: {{ .Values.shipyardController.preStopHookTime | default 5 | quote }}
             - name: LOG_LEVEL
               value: {{ .Values.logLevel | default "info" }}
             - name: AUTOMATIC_PROVISIONING_URL
@@ -97,6 +103,8 @@ spec:
               {{- end}}
             - name: PROJECT_NAME_MAX_SIZE
               value: {{ .Values.shipyardController.config.validation.projectNameMaxSize | default 200 | quote }}
+            - name: SERVICE_NAME_MAX_SIZE
+              value: {{ .Values.shipyardController.config.validation.serviceNameMaxSize | default 43 | quote }}
           ports:
             - containerPort: 8080
           resources:
@@ -107,7 +115,7 @@ spec:
               memory: "128Mi"
               cpu: "100m"
           {{- include "control-plane.common.container-security-context" . | nindent 10 }}
-      terminationGracePeriodSeconds: {{ .Values.gracePeriod | default 30 }}
+      terminationGracePeriodSeconds: {{ .Values.shipyardController.gracePeriod | default 120 }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.shipyardController.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
 ---
 apiVersion: v1

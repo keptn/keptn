@@ -33,6 +33,8 @@ import { EventData } from '../_components/ktb-evaluation-info/ktb-evaluation-inf
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
 import { IGitDataExtended } from '../_interfaces/git-upstream';
 import { getGitData } from '../_utils/git-upstream.utils';
+import { isGitHTTPS } from '../_utils/git-upstream.utils';
+import { ICustomSequences } from '../../../shared/interfaces/custom-sequences';
 
 @Injectable({
   providedIn: 'root',
@@ -675,8 +677,8 @@ export class DataService {
       .pipe(map((serviceNames) => serviceNames.sort((serviceA, serviceB) => serviceA.localeCompare(serviceB))));
   }
 
-  public getCustomSequenceNames(projectName: string): Observable<string[]> {
-    return this.apiService.getCustomSequenceNames(projectName);
+  public getCustomSequences(projectName: string): Observable<ICustomSequences> {
+    return this.apiService.getCustomSequences(projectName);
   }
 
   public getWebhookConfig(

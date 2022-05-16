@@ -1,13 +1,13 @@
 package db
 
 import (
-	"github.com/keptn/keptn/mongodb-datastore/models"
+	keptnapi "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
 )
 
 type EventsResult struct {
 	// Events
-	Events []*models.KeptnContextExtendedCE `json:"events"`
+	Events []keptnapi.KeptnContextExtendedCE `json:"events"`
 	// Pointer to the next page
 	NextPageKey string `json:"nextPageKey,omitempty"`
 	// Size of the returned page
@@ -17,8 +17,8 @@ type EventsResult struct {
 }
 
 type EventRepo interface {
-	InsertEvent(event models.KeptnContextExtendedCE) error
-	DropProjectCollections(event models.KeptnContextExtendedCE) error
+	InsertEvent(event keptnapi.KeptnContextExtendedCE) error
+	DropProjectCollections(event keptnapi.KeptnContextExtendedCE) error
 	GetEvents(params event.GetEventsParams) (*EventsResult, error)
 	GetEventsByType(params event.GetEventsByTypeParams) (*EventsResult, error)
 }

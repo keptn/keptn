@@ -22,7 +22,7 @@
       placeholder="Begins with -----BEGIN CERTIFICATE-----"
       uitestid="ktb-certificate-input"
     ></textarea>
-    <dt-loading-spinner *ngIf="isLoading" dtPrefix aria-label="Loading data"></dt-loading-spinner>
+    <ktb-loading-spinner *ngIf="isLoading" dtPrefix aria-label="Loading data"></ktb-loading-spinner>
     <dt-error>
       The certificate must start with "-----BEGIN CERTIFICATE-----" and end with "-----END CERTIFICATE-----"
     </dt-error>

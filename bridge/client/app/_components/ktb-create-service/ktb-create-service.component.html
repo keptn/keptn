@@ -1,7 +1,7 @@
 <div fxLayout="column">
   <div class="container settings-section">
     <h2>Create service</h2>
-    <dt-loading-spinner *ngIf="isLoading"></dt-loading-spinner>
+    <ktb-loading-distractor *ngIf="isLoading">Loading ...</ktb-loading-distractor>
     <form [formGroup]="formGroup" class="mb-3" *ngIf="projectName && !isLoading">
       <div fxLayout="column" fxLayoutGap="10px">
         <dt-form-field>
@@ -29,7 +29,7 @@
             [disabled]="!formGroup.valid || isCreating"
             (click)="createService(projectName)"
           >
-            <dt-loading-spinner *ngIf="isCreating" aria-label="Creating service"></dt-loading-spinner>
+            <ktb-loading-spinner *ngIf="isCreating" aria-label="Creating service"></ktb-loading-spinner>
             Create service
           </button>
           <button dt-button variant="secondary" type="reset" (click)="cancel()">Cancel</button>

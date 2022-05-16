@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Validate Pull Request
-        uses: amannn/action-semantic-pull-request@b4011711b945563fe63ffa9654c38d1782532528
+        uses: amannn/action-semantic-pull-request@348e2e6922130ee27d6d6a0a3b284890776d1f80
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -43,6 +43,7 @@ jobs:
             deps-dev
             distributor
             docs
+            go-sdk
             helm-service
             installer
             jmeter-service

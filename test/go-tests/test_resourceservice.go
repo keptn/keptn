@@ -3,9 +3,6 @@ package go_tests
 import (
 	"context"
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/keptn/go-utils/pkg/common/strutils"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"os"
 	"testing"
 
@@ -94,23 +91,7 @@ func Test_ResourceServiceBasic(t *testing.T) {
 	///////////////////////////////////////
 	// Creation of objects
 	///////////////////////////////////////
-
-	t.Logf("Deleting project from previous test run %s", projectName)
-	_, err = ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
-		Contenttype: "application/json",
-		Data: keptnv2.ProjectDeleteFinishedEventData{
-			EventData: keptnv2.EventData{
-				Project: projectName,
-				Status:  keptnv2.StatusSucceeded,
-				Result:  keptnv2.ResultPass,
-			},
-		},
-		ID:                 uuid.NewString(),
-		Shkeptnspecversion: KeptnSpecVersion,
-		Source:             strutils.Stringp("shipyard-controller"),
-		Specversion:        "1.0",
-		Type:               strutils.Stringp(keptnv2.GetFinishedEventType(keptnv2.ProjectDeleteTaskName)),
-	}, 0)
+	_, err = internalKeptnAPI.Delete(basePath+"/"+projectName, 3)
 	require.Nil(t, err)
 
 	t.Logf("Creating a new upstream repository for project %s", projectName)

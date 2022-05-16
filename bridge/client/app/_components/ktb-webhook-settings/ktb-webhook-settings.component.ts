@@ -18,7 +18,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
   private _webhook: WebhookConfig = new WebhookConfig();
   public webhookConfigForm = new FormGroup({
     method: new FormControl('', [Validators.required]),
-    url: new FormControl('', [Validators.required, FormUtils.isUrlValidator]),
+    url: new FormControl('', [Validators.required, FormUtils.isUrlOrSecretValidator]),
     payload: new FormControl('', [FormUtils.payloadSpecialCharValidator]),
     header: new FormArray([]),
     proxy: new FormControl('', [FormUtils.isUrlValidator]),

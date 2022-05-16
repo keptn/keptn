@@ -16,6 +16,7 @@ spec:
       app.kubernetes.io/name: api-service
       app.kubernetes.io/instance: {{ .Release.Name }}
   replicas: 1
+  {{- include "control-plane.common.update-strategy" . | nindent 2 }}
   template:
     metadata:
       labels:
@@ -28,9 +29,12 @@ spec:
         helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
       {{- include "control-plane.common.pod-security-context" . | nindent 6 }}
+      terminationGracePeriodSeconds: {{ .Values.apiService.gracePeriod | default 120 }}
       containers:
         - name: api-service
           image: {{ .Values.apiService.image.repository }}:{{ .Values.apiService.image.tag | default .Chart.AppVersion }}
+          {{- $prestop := .Values.apiService.preStopHookTime | default 90 | quote -}}
+          {{- include "control-plane.prestop" $prestop | nindent 10 }}
           livenessProbe:
             httpGet:
               path: /health
@@ -71,25 +75,16 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-            - name: AUTOMATIC_PROVISIONING_URL 
+            - name: AUTOMATIC_PROVISIONING_URL
               value: {{ (.Values.features).automaticProvisioningURL | default "" }}
+            - name: MAX_AUTH_ENABLED
+              value: {{ (.Values.apiService.maxAuth).enabled | default true | quote }}
             - name: MAX_AUTH_REQUESTS_PER_SECOND
-              value: '{{ .Values.apiService.config.maxAuthRequestsPerSecond | default "1.0"}}'
+              value: '{{ (.Values.apiService.maxAuth).requestsPerSecond | default "1.0"}}'
             - name: MAX_AUTH_REQUESTS_BURST
-              value: '{{ .Values.apiService.config.maxAuthRequestBurst | default "2"}}'
+              value: '{{ (.Values.apiService.maxAuth).requestBurst | default "2"}}'
             - name: LOG_LEVEL
               value: {{ .Values.logLevel | default "info" }}
-          {{- include "control-plane.common.container-security-context" . | nindent 10 }}
-        - name: distributor
-          image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
-          {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
-          {{- include "control-plane.dist.readinessProbe" . | nindent 10 }}
-          imagePullPolicy: IfNotPresent
-          ports:
-            - containerPort: 8080
-          {{- include "keptn.distributor.resources" . | nindent 10 }}
-          env:
-          {{- include "control-plane.dist.common.env.vars" . | nindent 12 }}
           {{- include "control-plane.common.container-security-context" . | nindent 10 }}
       serviceAccountName: keptn-api-service
       {{- include "keptn.nodeSelector" (dict "value" .Values.apiService.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}

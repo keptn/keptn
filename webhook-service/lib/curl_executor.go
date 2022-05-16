@@ -14,10 +14,6 @@ const (
 	DeniedURLError
 	RequestError
 )
-const (
-	KubernetesSvcHostEnvVar = "KUBERNETES_SERVICE_HOST"
-	KubernetesAPIPortEnvVar = "KUBERNETES_SERVICE_PORT"
-)
 
 type CurlError struct {
 	err    error
@@ -73,7 +69,6 @@ type ICurlExecutor interface {
 }
 
 type CmdCurlExecutor struct {
-	deniedURLs       []string
 	deniedCharacters []string
 	deniedOptions    []string
 	requiredOptions  []string
@@ -81,12 +76,6 @@ type CmdCurlExecutor struct {
 }
 
 type CmdCurlExecutorOption func(executor *CmdCurlExecutor)
-
-func WithDeniedURLs(urls []string) CmdCurlExecutorOption {
-	return func(executor *CmdCurlExecutor) {
-		executor.deniedURLs = urls
-	}
-}
 
 func NewCmdCurlExecutor(cmdExecutor ICommandExecutor, opts ...CmdCurlExecutorOption) *CmdCurlExecutor {
 	executor := &CmdCurlExecutor{
@@ -139,25 +128,9 @@ func (ce *CmdCurlExecutor) parseArgs(curlCmd string) ([]string, error) {
 		return nil, &CurlError{err: err, reason: InvalidCommandError}
 	}
 
-	// check if the curl command contains any of the disallowed URLs
-	// TODO: this should only validate the URL and NOT the whole curl cmd
-	if err := ce.validateURL(curlCmd); err != nil {
-		return nil, &CurlError{err: err, reason: DeniedURLError}
-	}
-
 	args = ce.appendOptions(args)
 
 	return args, nil
-}
-
-func (ce *CmdCurlExecutor) validateURL(curlCmd string) error {
-	sanitizedCurlCmd := strings.ReplaceAll(curlCmd, "\\", "")
-	for _, url := range ce.deniedURLs {
-		if strings.Contains(sanitizedCurlCmd, url) {
-			return fmt.Errorf("curl command contains invalid URL %s", url)
-		}
-	}
-	return nil
 }
 
 func (ce *CmdCurlExecutor) validateCurlOptions(args []string) error {
@@ -260,36 +233,6 @@ func parseCommandLine(command string) ([]string, error) {
 	}
 
 	return deleteEmpty(args), nil
-}
-
-func DeniedURLs(env map[string]string) []string {
-	kubeAPIHostIP := env[KubernetesSvcHostEnvVar]
-	kubeAPIPort := env[KubernetesAPIPortEnvVar]
-
-	urls := []string{
-		// Block access to Kubernetes API
-		"kubernetes",
-		"kubernetes.default",
-		"kubernetes.default.svc",
-		"kubernetes.default.svc.cluster.local",
-		// Block access to localhost
-		"localhost",
-		"127.0.0.1",
-		"::1",
-	}
-	if kubeAPIHostIP != "" {
-		urls = append(urls, kubeAPIHostIP)
-	}
-	if kubeAPIPort != "" {
-		urls = append(urls, "kubernetes"+":"+kubeAPIPort)
-		urls = append(urls, "kubernetes.default"+":"+kubeAPIPort)
-		urls = append(urls, "kubernetes.default.svc"+":"+kubeAPIPort)
-		urls = append(urls, "kubernetes.default.svc.cluster.local"+":"+kubeAPIPort)
-	}
-	if kubeAPIHostIP != "" && kubeAPIPort != "" {
-		urls = append(urls, kubeAPIHostIP+":"+kubeAPIPort)
-	}
-	return urls
 }
 
 func deleteEmpty(s []string) []string {

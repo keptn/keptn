@@ -23,8 +23,8 @@
   [checked]="proxyEnabled"
   uitestid="ktb-enable-git-proxy"
   >Use proxy
+  <ktb-loading-spinner *ngIf="isLoading" class="smaller" aria-label="Loading data"></ktb-loading-spinner>
 </dt-switch>
-<dt-loading-spinner *ngIf="isLoading" class="gray-loading" aria-label="Loading data"></dt-loading-spinner>
 <ktb-proxy-input
   [hidden]="!proxyEnabled"
   [proxy]="proxyInput"

@@ -8,9 +8,11 @@ module.exports = {
   ],
   preset: 'jest-preset-angular',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
+  globalSetup: 'jest-preset-angular/global-setup',
   collectCoverage: true,
   coverageDirectory: '<rootDir>/coverage',
   moduleNameMapper: {
     '^lodash-es$': 'lodash',
+    '^yaml$': '<rootDir>/node_modules/yaml/dist/index.js',
   },
 };

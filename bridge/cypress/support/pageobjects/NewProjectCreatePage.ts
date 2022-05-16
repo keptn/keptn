@@ -2,6 +2,7 @@
 
 import {
   interceptMain,
+  interceptCreateProject,
   interceptMainResourceApEnabled,
   interceptMainResourceEnabled,
   interceptProjectBoard,
@@ -21,6 +22,7 @@ class NewProjectCreatePage {
     } else {
       interceptMain();
     }
+    interceptCreateProject();
     return this;
   }
 

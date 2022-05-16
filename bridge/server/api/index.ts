@@ -190,11 +190,11 @@ const apiRouter = (params: {
 
   router.get('/project/:projectName/customSequences', async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const services = await dataService.getCustomSequenceNames(
+      const customSequences = await dataService.getCustomSequenceNames(
         req.session?.tokenSet?.access_token,
         req.params.projectName
       );
-      return res.json(services);
+      return res.json(customSequences);
     } catch (error) {
       return next(error);
     }

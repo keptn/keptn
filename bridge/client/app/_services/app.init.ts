@@ -1,46 +1,41 @@
 import { Injectable } from '@angular/core';
-import { environment } from '../../environments/environment';
 import { WindowConfig } from '../../environments/environment.dynamic';
-
-declare global {
-  interface Window {
-    config: WindowConfig;
-  }
-}
+import { ApiService } from './api.service';
+import { environment } from '../../environments/environment';
 
 @Injectable()
 export class AppInitService {
-  public init(): Promise<null | string> {
+  constructor(private apiService: ApiService) {}
+
+  public init(): Promise<null | WindowConfig> {
     return new Promise((resolve) => {
-      fetch(environment.appConfigUrl)
-        .then((response) => response.text())
-        .then((config) => {
-          try {
-            if (config) {
-              Object.defineProperty(window, 'config', {
-                value: JSON.parse(config),
-              });
-
-              if (window.config?.stylesheetUrl) {
-                const body = document.getElementsByTagName('body')[0];
-                const link = document.createElement('link');
-                link.setAttribute('rel', 'stylesheet');
-                link.setAttribute('type', 'text/css');
-                link.setAttribute('href', window.config.stylesheetUrl);
-                link.setAttribute('media', 'all');
-                body.appendChild(link);
-              }
-            }
-          } catch (err) {
-            console.error('Error parsing app-config.json:', err);
+      this.apiService.getLookAndFeelConfig().subscribe(
+        (config) => {
+          if (!config) {
+            resolve(null);
+            return;
           }
+          environment.config = config;
 
-          return resolve(config);
-        })
-        .catch((err) => {
+          if (!config.stylesheetUrl) {
+            resolve(config);
+            return;
+          }
+          const body = document.getElementsByTagName('body')[0];
+          const link = document.createElement('link');
+          link.setAttribute('rel', 'stylesheet');
+          link.setAttribute('type', 'text/css');
+          link.setAttribute('href', config.stylesheetUrl);
+          link.setAttribute('media', 'all');
+          body.appendChild(link);
+
+          resolve(config);
+        },
+        (err) => {
           console.error('Error loading app-config.json.', err);
-          return resolve(null);
-        });
+          resolve(null);
+        }
+      );
     });
   }
 }

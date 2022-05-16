@@ -13,6 +13,9 @@ import (
 	"testing"
 	"time"
 
+	v12 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+
 	"github.com/keptn/go-utils/pkg/common/strutils"
 
 	"github.com/keptn/go-utils/pkg/common/retry"
@@ -66,6 +69,7 @@ func NewAPICaller() (*APICaller, error) {
 
 func (a *APICaller) Get(path string, retries int) (*req.Resp, error) {
 	return a.doHTTPRequestWithRetry(func() (*req.Resp, error) {
+		req.SetTimeout(10 * time.Second)
 		return req.Get(a.baseURL+path, a.getAuthHeader())
 	}, retries)
 }
@@ -530,6 +534,9 @@ func storeWithCommit(t *testing.T, projectName, stage, serviceName, content, uri
 			},
 		},
 	}, 3)
+	if err != nil {
+		t.Log(err.Error())
+	}
 	require.Nil(t, err)
 
 	t.Logf("Received response %s", resp.String())
@@ -702,25 +709,72 @@ func GetPublicURLOfService(serviceName, projectName, stageName string) (string, 
 
 }
 
-func SetShipyardControllerEnvVar(t *testing.T, envVar, timeoutValue string) error {
-	_, err := ExecuteCommand(fmt.Sprintf("kubectl -n %s set env deployment shipyard-controller %s=%s", GetKeptnNameSpaceFromEnv(), envVar, timeoutValue))
+// SetShipyardControllerEnvVar sets the provided value of the shipyard-controller deployment.
+// This function is specific to the shipyard-controller, and eventually we should avoid setting env vars of deployments in general, as this
+// leads to the respective pod being restarted, which increases the duration of the integration tests and prevents us from executing tests in parallel
+func SetShipyardControllerEnvVar(t *testing.T, envVarName, envVarValue string) error {
+
+	k8sClient, err := keptnkubeutils.GetClientset(false)
 	if err != nil {
 		return err
 	}
 
-	t.Log("restarting shipyard controller pod")
-	err = RestartPod("shipyard-controller")
+	shipyardDeployment, err := k8sClient.AppsV1().Deployments(GetKeptnNameSpaceFromEnv()).Get(context.TODO(), "shipyard-controller", v1.GetOptions{})
 	if err != nil {
 		return err
 	}
 
-	// wait 10s to make sure we wait for the updated pod to be ready
-	<-time.After(10 * time.Second)
-	t.Log("waiting for shipyard controller pod to be ready again")
-	err = WaitForPodOfDeployment("shipyard-controller")
+	if len(shipyardDeployment.Spec.Template.Spec.Containers) == 0 {
+		return errors.New("shipyard deployment does not contain any container")
+	}
+	envVarFound := false
+	for index, ev := range shipyardDeployment.Spec.Template.Spec.Containers[0].Env {
+		if ev.Name == envVarName {
+			envVarFound = true
+			shipyardDeployment.Spec.Template.Spec.Containers[0].Env[index].Value = envVarValue
+		}
+	}
+
+	if !envVarFound {
+		shipyardDeployment.Spec.Template.Spec.Containers[0].Env = append(shipyardDeployment.Spec.Template.Spec.Containers[0].Env, corev1.EnvVar{
+			Name:  envVarName,
+			Value: envVarValue,
+		})
+	}
+
+	_, err = k8sClient.AppsV1().Deployments(GetKeptnNameSpaceFromEnv()).Update(context.TODO(), shipyardDeployment, v1.UpdateOptions{})
 	if err != nil {
 		return err
 	}
+
+	require.Eventually(t, func() bool {
+		get, err := k8sClient.CoreV1().Pods(GetKeptnNameSpaceFromEnv()).List(context.TODO(), v1.ListOptions{LabelSelector: "app.kubernetes.io/name=shipyard-controller"})
+		if err != nil {
+			return false
+		}
+
+		if *shipyardDeployment.Spec.Replicas != int32(len(get.Items)) {
+			// make sure only one pod is running
+			return false
+		}
+
+		for _, item := range get.Items {
+			if len(item.Spec.Containers) == 0 {
+				continue
+			}
+			for _, env := range item.Spec.Containers[0].Env {
+				if env.Name == envVarName && env.Value == envVarValue {
+					if len(item.Status.ContainerStatuses) == 0 {
+						return false
+					}
+					if item.Status.ContainerStatuses[0].State.Running != nil {
+						return true
+					}
+				}
+			}
+		}
+		return false
+	}, 3*time.Minute, 10*time.Second)
 
 	// check whether the API is reachable again
 	require.Eventually(t, func() bool {
@@ -739,6 +793,56 @@ func SetShipyardControllerEnvVar(t *testing.T, envVar, timeoutValue string) erro
 
 		return true
 	}, 30*time.Second, 5*time.Second)
+
+	return nil
+}
+
+func GetPodNamesOfDeployment(labelSelector string) ([]string, error) {
+	k8sClient, err := keptnkubeutils.GetClientset(false)
+	if err != nil {
+		return nil, err
+	}
+
+	get, err := k8sClient.CoreV1().Pods(GetKeptnNameSpaceFromEnv()).List(context.TODO(), v1.ListOptions{LabelSelector: labelSelector})
+	if err != nil {
+		return nil, nil
+	}
+
+	podNames := []string{}
+
+	for _, pod := range get.Items {
+		podNames = append(podNames, pod.Name)
+	}
+	return podNames, nil
+}
+
+// SetRecreateUpgradeStrategyForDeployment sets the upgrade strategy of a deployment to "Recreate".
+// Needed for our minishift tests right now, as there are problems with the RollingUpdate strategy of the shipyard-controller
+// Should become obsolete when we switch to testing on an OpenShift 4.x cluster instead.
+func SetRecreateUpgradeStrategyForDeployment(deploymentName string) error {
+	clientset, err := keptnkubeutils.GetClientset(false)
+	if err != nil {
+		return err
+	}
+
+	deployment, err := clientset.AppsV1().Deployments(GetKeptnNameSpaceFromEnv()).Get(context.TODO(), deploymentName, v1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	deployment.Spec.Strategy.Type = v12.RecreateDeploymentStrategyType
+	deployment.Spec.Strategy.RollingUpdate = nil
+
+	_, err = clientset.AppsV1().Deployments(GetKeptnNameSpaceFromEnv()).Update(context.TODO(), deployment, v1.UpdateOptions{})
+	if err != nil {
+		return nil
+	}
+
+	<-time.After(30 * time.Second)
+
+	if err := WaitForDeploymentInNamespace(deploymentName, GetKeptnNameSpaceFromEnv()); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -786,6 +890,31 @@ func GetGiteaToken() (string, error) {
 	}
 
 	return token, nil
+}
+
+// GetMongoDBCredentials retrieves the credentials of the mongodb user from the mongodb credentials secret
+func GetMongoDBCredentials() (string, string, error) {
+	clientset, err := keptnkubeutils.GetClientset(false)
+	if err != nil {
+		return "", "", err
+	}
+
+	mongoDBSecret, err := clientset.CoreV1().Secrets(GetKeptnNameSpaceFromEnv()).Get(context.TODO(), "mongodb-credentials", v1.GetOptions{})
+	if err != nil {
+		return "", "", err
+	}
+
+	user := string(mongoDBSecret.Data["mongodb-root-user"])
+	if user == "" {
+		return "", "", errors.New("no mongodb user found")
+	}
+
+	password := string(mongoDBSecret.Data["mongodb-root-password"])
+	if password == "" {
+		return "", "", errors.New("no mongodb password found")
+	}
+
+	return user, password, nil
 }
 
 func GetGiteaUser() string {
@@ -868,7 +997,7 @@ func WaitForDeploymentToBeScaledDown(deploymentName string) error {
 			}
 		}
 		return nil
-	})
+	}, retry.NumberOfRetries(40))
 
 	return err
 }

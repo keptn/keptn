@@ -17,7 +17,7 @@
         </dt-info-group>
       </div>
 
-      <ng-container *ngIf="serviceStates.length == 0">
+      <ng-container *ngIf="serviceStates.length === 0">
         <ktb-no-service-info></ktb-no-service-info>
       </ng-container>
 
@@ -93,6 +93,6 @@
 </div>
 <ng-template #loading>
   <div fxFlexFill fxLayout="row" fxLayoutAlign="center center">
-    <dt-loading-distractor>Loading …</dt-loading-distractor>
+    <ktb-loading-distractor>Loading …</ktb-loading-distractor>
   </div>
 </ng-template>

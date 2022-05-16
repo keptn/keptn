@@ -54,10 +54,6 @@ Create the name of the service account to use
 {{- end }}
 {{- end }}
 
-{{- define "control-plane.gracePeriod" -}}
-      terminationGracePeriodSeconds: 50
-{{- end }}
-
 {{- define "control-plane.dist.livenessProbe" -}}
 livenessProbe:
   httpGet:
@@ -76,11 +72,48 @@ readinessProbe:
   periodSeconds: 5
 {{- end }}
 
-{{- define "control-plane.dist.prestop" -}}
+{{/*
+preStop hook for control-plane deployments
+*/}}
+{{- define "control-plane.prestop" -}}
 lifecycle:
-   preStop:
-      exec:
-       command: ["/bin/sleep", "20"]
+  preStop:
+    exec:
+      # using 90s of sleeping to be on the safe side before terminating the pod
+      command: ["/bin/sleep", {{ . }} ]
+{{- end }}
+
+{{- define "control-plane.common.env.vars" -}}
+- name: K8S_DEPLOYMENT_NAME
+  valueFrom:
+    fieldRef:
+      apiVersion: v1
+      fieldPath: 'metadata.labels[''app.kubernetes.io/name'']'
+- name: K8S_DEPLOYMENT_VERSION
+  valueFrom:
+    fieldRef:
+      apiVersion: v1
+      fieldPath: 'metadata.labels[''app.kubernetes.io/version'']'
+- name: K8S_DEPLOYMENT_COMPONENT
+  valueFrom:
+    fieldRef:
+      apiVersion: v1
+      fieldPath: 'metadata.labels[''app.kubernetes.io/component'']'
+- name: K8S_NAMESPACE
+  valueFrom:
+    fieldRef:
+      apiVersion: v1
+      fieldPath: metadata.namespace
+- name: K8S_NODE_NAME
+  valueFrom:
+    fieldRef:
+      apiVersion: v1
+      fieldPath: spec.nodeName
+- name: K8S_POD_NAME
+  valueFrom:
+    fieldRef:
+      apiVersion: v1
+      fieldPath: metadata.name
 {{- end }}
 
 {{- define "control-plane.dist.common.env.vars" -}}
@@ -260,6 +293,22 @@ securityContext:
   readOnlyRootFilesystem: false
   allowPrivilegeEscalation: false
   privileged: false
+{{- end -}}
+{{- end -}}
+
+{{/*
+rollingUpdate upgrade strategy for control plane deployments
+*/}}
+{{- define "control-plane.common.update-strategy" -}}
+{{- if (.Values.common).strategy -}}
+strategy:
+{{- toYaml .Values.common.strategy | nindent 2 -}}
+{{- else -}}
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
 {{- end -}}
 {{- end -}}
 

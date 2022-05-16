@@ -3,7 +3,7 @@ import { dirname, join } from 'path';
 import { unlink } from 'fs/promises';
 import * as https from 'https';
 import * as http from 'http';
-import helmet from 'helmet';
+import { contentSecurityPolicy, frameguard, noSniff, permittedCrossDomainPolicies, xssFilter } from 'helmet';
 import express, { Express, NextFunction, Request, Response } from 'express';
 import { fileURLToPath, URL } from 'url';
 import logger from 'morgan';
@@ -17,6 +17,7 @@ import { ClientFeatureFlags, ServerFeatureFlags } from './feature-flags';
 import { setupOAuth } from './user/oauth';
 import { SessionService } from './user/session';
 import { ContentSecurityPolicyOptions } from 'helmet/dist/types/middlewares/content-security-policy';
+import { printError } from './utils/print-utils';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -101,12 +102,12 @@ async function init(): Promise<Express> {
   app.use(cookieParser());
   // will be set later
   if (!serverFeatureFlags.OAUTH_ENABLED) {
-    app.use(helmet.contentSecurityPolicy(defaultContentSecurityPolicyOptions));
+    app.use(contentSecurityPolicy(defaultContentSecurityPolicyOptions));
   }
-  app.use(helmet.noSniff());
-  app.use(helmet.permittedCrossDomainPolicies());
-  app.use(helmet.frameguard());
-  app.use(helmet.xssFilter());
+  app.use(noSniff());
+  app.use(permittedCrossDomainPolicies());
+  app.use(frameguard());
+  app.use(xssFilter());
   // Remove the X-Powered-By headers, has to be done via express and not helmet
   app.disable('x-powered-by');
 
@@ -256,15 +257,19 @@ function setupLookAndFeel(url: string): void {
         response.pipe(file);
         file.on('finish', () => {
           file.end();
-          const zip = new AdmZip(destFile);
-          zip.extractAllToAsync(destDir, true, false, (error?: Error) => {
-            unlinkSync(destFile);
-            if (error) {
-              console.error(`[ERROR] Error while extracting custom Look-and-Feel file. ${error}`);
-              return;
-            }
-            console.log('Custom Look-and-Feel downloaded and extracted successfully');
-          });
+          try {
+            const zip = new AdmZip(destFile); // throws an error if unsupported format
+            zip.extractAllToAsync(destDir, true, false, (error?: Error) => {
+              unlinkSync(destFile);
+              if (error) {
+                console.error(`[ERROR] Error while extracting custom Look-and-Feel file. ${error}`);
+                return;
+              }
+              console.log('Custom Look-and-Feel downloaded and extracted successfully');
+            });
+          } catch (error) {
+            console.error(`[ERROR] Error while extracting custom Look-and-Feel file. ${error}`);
+          }
         });
         file.on('error', async (err) => {
           file.end();
@@ -324,10 +329,6 @@ function cleanIpBuckets(): void {
   }
 }
 
-function isAxiosError(err: Error | AxiosError): err is AxiosError {
-  return err.hasOwnProperty('isAxiosError');
-}
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function handleError(err: any, req: Request, res: Response, authType: string): number {
   // set locals, only providing error in development
@@ -342,13 +343,7 @@ function handleError(err: any, req: Request, res: Response, authType: string): n
     res.setHeader('keptn-auth-type', authType);
   }
 
-  if (isAxiosError(err)) {
-    const method = (err.request || err.config).method;
-    const url = err.request?.path ?? err.config.url;
-    console.error(`Error for ${method} ${url}: ${err.message}`);
-  } else {
-    console.error(err);
-  }
+  printError(err);
 
   return err.response?.status || 500;
 }

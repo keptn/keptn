@@ -21,24 +21,6 @@ paths:
         200:
           description: healthy
   /event:
-    post:
-      deprecated: true
-      tags:
-        - event
-      operationId: saveEvent
-      summary: 'INTERNAL Endpoint: Saves an event to the datastore'
-      parameters:
-        - name: body
-          in: body
-          schema:
-            "$ref": "#/definitions/KeptnContextExtendedCE"
-      responses:
-        201:
-          description: created
-        default:
-          description: error
-          schema:
-            "$ref": "#/definitions/error"
     get:
       tags:
         - event
@@ -190,37 +172,13 @@ definitions:
 
   KeptnContextExtendedCE:
     type: object
-    properties: # CloudEvents v1.0 properties (https://raw.githubusercontent.com/cloudevents/spec/v1.0/spec.json#/definitions/event)
-      shkeptncontext:
-        type: string
-      triggeredid:
-        type: string
-      gitcommitid:
-        type: string
-      shkeptnspecversion:
-        type: string
-      specversion:
-        type: string
-      contenttype:
-        type: string
-      data:
-        type: object
-      id:
-        type: string
-      time:
-        type: string
-        format: date-time
-      type:
-        type: string
-      extensions:
-        type: object
-      source:
-        format: uri-reference
-        type: string
-    required:
-      - data
-      - source
-      - type
+    x-go-type:
+      import:
+        package: "github.com/keptn/go-utils/pkg/api/models"
+        alias: "keptnapi"
+      type: "KeptnContextExtendedCE"
+      hints:
+        noValidation: true
   error:
     type: object
     required:

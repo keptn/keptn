@@ -58,6 +58,7 @@ func (ps *PullSubscription) pullMessages() {
 	for {
 		select {
 		case <-ps.ctx.Done():
+			logger.Info("Shutting down pull subscription")
 			ps.isActive = false
 			return
 		default:

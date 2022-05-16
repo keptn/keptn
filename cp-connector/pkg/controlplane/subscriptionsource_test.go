@@ -3,15 +3,18 @@ package controlplane
 import (
 	"context"
 	"fmt"
-	"github.com/benbjohnson/clock"
-	"github.com/keptn/go-utils/pkg/api/models"
-	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
+
+	"github.com/benbjohnson/clock"
+	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/keptn/cp-connector/pkg/controlplane/fake"
+	"github.com/stretchr/testify/require"
 )
 
 type SubscriptionSourceMock struct {
-	StartFn func(ctx context.Context, data RegistrationData, c chan []models.EventSubscription) error
+	StartFn    func(ctx context.Context, data RegistrationData, c chan []models.EventSubscription) error
+	RegisterFn func(integration models.Integration) (string, error)
 }
 
 func (u *SubscriptionSourceMock) Start(ctx context.Context, data RegistrationData, c chan []models.EventSubscription) error {
@@ -21,52 +24,17 @@ func (u *SubscriptionSourceMock) Start(ctx context.Context, data RegistrationDat
 	panic("implement me")
 }
 
-type UniformInterfaceMock struct {
-	RegisterIntegrationFn func(models.Integration) (string, error)
-	PingFn                func(string) (*models.Integration, error)
-}
-
-func (m *UniformInterfaceMock) Ping(integrationID string) (*models.Integration, error) {
-	if m.PingFn != nil {
-		return m.PingFn(integrationID)
+func (u *SubscriptionSourceMock) Register(integration models.Integration) (string, error) {
+	if u.RegisterFn != nil {
+		return u.RegisterFn(integration)
 	}
-	panic("Ping() not implemented")
-}
-func (m *UniformInterfaceMock) RegisterIntegration(integration models.Integration) (string, error) {
-	if m.RegisterIntegrationFn != nil {
-		return m.RegisterIntegrationFn(integration)
-	}
-	panic("RegisterIntegraiton not imiplemented")
-}
-
-func (m *UniformInterfaceMock) CreateSubscription(integrationID string, subscription models.EventSubscription) (string, error) {
 	panic("implement me")
-}
-
-func (m *UniformInterfaceMock) UnregisterIntegration(integrationID string) error {
-	panic("implement me")
-}
-
-func (m *UniformInterfaceMock) GetRegistrations() ([]*models.Integration, error) {
-	panic("implement me")
-}
-
-func TestSubscriptionSourceInitialRegistrationFails(t *testing.T) {
-	initialRegistrationData := RegistrationData{}
-
-	uniformInterface := &UniformInterfaceMock{
-		RegisterIntegrationFn: func(integration models.Integration) (string, error) { return "", fmt.Errorf("error occured") },
-	}
-	subscriptionSource := NewUniformSubscriptionSource(uniformInterface)
-	err := subscriptionSource.Start(context.Background(), initialRegistrationData, nil)
-	require.Error(t, err)
 }
 
 func TestSubscriptionSourceCPPingFails(t *testing.T) {
 	initialRegistrationData := RegistrationData{}
 
-	uniformInterface := &UniformInterfaceMock{
-		RegisterIntegrationFn: func(integration models.Integration) (string, error) { return "id", nil },
+	uniformInterface := &fake.UniformAPIMock{
 		PingFn: func(s string) (*models.Integration, error) {
 			return nil, fmt.Errorf("error occured")
 		}}
@@ -93,10 +61,10 @@ func TestSubscriptionSourceWithFetchInterval(t *testing.T) {
 		Name:          integrationName,
 		MetaData:      models.MetaData{},
 		Subscriptions: []models.EventSubscription{{Event: "keptn.event", Filter: models.EventSubscriptionFilter{}}},
+		ID:            integrationID,
 	}
 
-	uniformInterface := &UniformInterfaceMock{
-		RegisterIntegrationFn: func(integration models.Integration) (string, error) { return integrationID, nil },
+	uniformInterface := &fake.UniformAPIMock{
 		PingFn: func(id string) (*models.Integration, error) {
 			pingCount++
 			require.Equal(t, id, integrationID)
@@ -133,10 +101,10 @@ func TestSubscriptionSourceCancel(t *testing.T) {
 		Name:          integrationName,
 		MetaData:      models.MetaData{},
 		Subscriptions: []models.EventSubscription{{Event: "keptn.event", Filter: models.EventSubscriptionFilter{}}},
+		ID:            integrationID,
 	}
 
-	uniformInterface := &UniformInterfaceMock{
-		RegisterIntegrationFn: func(integration models.Integration) (string, error) { return integrationID, nil },
+	uniformInterface := &fake.UniformAPIMock{
 		PingFn: func(id string) (*models.Integration, error) {
 			pingCount++
 			require.Equal(t, id, integrationID)
@@ -175,13 +143,10 @@ func TestSubscriptionSource(t *testing.T) {
 		Name:          integrationName,
 		MetaData:      models.MetaData{},
 		Subscriptions: []models.EventSubscription{{Event: "keptn.event", Filter: models.EventSubscriptionFilter{}}},
+		ID:            integrationID,
 	}
 
-	uniformInterface := &UniformInterfaceMock{
-		RegisterIntegrationFn: func(integration models.Integration) (string, error) {
-			require.Equal(t, initialRegistrationData, initialRegistrationData)
-			return integrationID, nil
-		},
+	uniformInterface := &fake.UniformAPIMock{
 		PingFn: func(id string) (*models.Integration, error) {
 			require.Equal(t, id, integrationID)
 			return &models.Integration{
@@ -207,4 +172,59 @@ func TestSubscriptionSource(t *testing.T) {
 	clock.Add(5 * time.Second)
 	subs = <-subscriptionUpdates
 	require.Equal(t, 1, len(subs))
+}
+
+func TestFixedSubscriptionSource_WithSubscriptions(t *testing.T) {
+	fss := NewFixedSubscriptionSource(WithFixedSubscriptions(models.EventSubscription{Event: "some.event"}))
+	subchan := make(chan []models.EventSubscription)
+	err := fss.Start(context.TODO(), RegistrationData{}, subchan)
+	require.NoError(t, err)
+	updates := <-subchan
+	require.Equal(t, 1, len(updates))
+	require.Equal(t, []models.EventSubscription{{Event: "some.event"}}, updates)
+}
+
+func TestFixedSubscriptionSourcer_WithNoSubscriptions(t *testing.T) {
+	fss := NewFixedSubscriptionSource()
+	subchan := make(chan []models.EventSubscription)
+	err := fss.Start(context.TODO(), RegistrationData{}, subchan)
+	require.NoError(t, err)
+	updates := <-subchan
+	require.Equal(t, 0, len(updates))
+}
+
+func TestFixedSubscriptionSourcer_Register(t *testing.T) {
+	fss := NewFixedSubscriptionSource()
+	initialRegistrationData := RegistrationData{}
+	s, err := fss.Register(models.Integration(initialRegistrationData))
+	require.NoError(t, err)
+	require.Equal(t, "", s)
+}
+
+func TestSubscriptionRegistrationSucceeds(t *testing.T) {
+	initialRegistrationData := RegistrationData{}
+	uniformInterface := &fake.UniformAPIMock{
+		RegisterIntegrationFn: func(i models.Integration) (string, error) {
+			return "some-id", nil
+		},
+	}
+
+	subscriptionSource := NewUniformSubscriptionSource(uniformInterface)
+	id, err := subscriptionSource.Register(models.Integration(initialRegistrationData))
+	require.NoError(t, err)
+	require.Equal(t, id, "some-id")
+}
+
+func TestSubscriptionRegistrationFails(t *testing.T) {
+	initialRegistrationData := RegistrationData{}
+	uniformInterface := &fake.UniformAPIMock{
+		RegisterIntegrationFn: func(i models.Integration) (string, error) {
+			return "", fmt.Errorf("some error")
+		},
+	}
+
+	subscriptionSource := NewUniformSubscriptionSource(uniformInterface)
+	id, err := subscriptionSource.Register(models.Integration(initialRegistrationData))
+	require.Error(t, err)
+	require.Equal(t, id, "")
 }

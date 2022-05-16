@@ -21,6 +21,14 @@ type EventSender interface {
 	Send(ctx context.Context, event cloudevents.Event) error
 }
 
+func CreateEventSender(env config.EnvConfig) (EventSender, error) {
+	eventSender, err := v0_2_0.NewHTTPEventSender(env.PubSubRecipientURL())
+	if err != nil {
+		return nil, err
+	}
+	return eventSender, nil
+}
+
 // Poller polls events from the Keptn API and sends the events directly to the Keptn Service
 type Poller struct {
 	shipyardControlAPI   api.ShipyardControlV1Interface

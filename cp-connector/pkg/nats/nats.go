@@ -4,15 +4,20 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/cp-connector/pkg/logger"
 	"github.com/nats-io/nats.go"
 	"os"
+	"time"
 )
+
+var _ NATS = (*NatsConnector)(nil)
 
 const (
 	EnvVarNatsURL        = "NATS_URL"
 	EnvVarNatsURLDefault = "nats://keptn-nats"
+	CloudEventsVersionV1 = "1.0"
 )
 
 type NATS interface {
@@ -122,6 +127,12 @@ func (nc *NatsConnector) QueueSubscribeMultiple(subjects []string, queueGroup st
 func (nc *NatsConnector) Publish(event models.KeptnContextExtendedCE) error {
 	if event.Type == nil || *event.Type == "" {
 		return ErrPubEventTypeMissing
+	}
+	// ensure that the mandatory fields time, id and specversion are set in the CloudEvent
+	event.Time = time.Now().UTC()
+	event.Specversion = CloudEventsVersionV1
+	if event.ID == "" {
+		event.ID = uuid.New().String()
 	}
 	serializedEvent, err := json.Marshal(event)
 	if err != nil {
