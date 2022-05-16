@@ -75,6 +75,7 @@ apiGatewayNginx:
   nodeSelector: {}
   gracePeriod: 60
   preStopHookTime: 5
+  clientMaxBodySize: "5m"
 
 remediationService:
   image:

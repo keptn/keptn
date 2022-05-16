@@ -55,6 +55,10 @@ data:
           listen       8080;
           server_name  _;
 
+          {{- if .Values.apiGatewayNginx.clientMaxBodySize }}
+            client_max_body_size {{ .Values.apiGatewayNginx.clientMaxBodySize }};
+          {{- end }}
+
           include /etc/nginx/keptn-endpoints-pre-0-7.conf;
           include /etc/nginx/keptn-endpoints.conf;
       }
