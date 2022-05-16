@@ -3,7 +3,7 @@
     <dt-key-value-list-item>
       <dt-key-value-list-key> Value </dt-key-value-list-key>
       <dt-key-value-list-value>
-        {{ tooltip.value | truncateNumber: 2 }}
+        {{ formatNumber(tooltip.value) }}
       </dt-key-value-list-value>
     </dt-key-value-list-item>
     <ng-container *ngIf="tooltip.type === IHeatmapTooltipType.SCORE">
