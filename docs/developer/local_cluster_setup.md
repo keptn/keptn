@@ -10,7 +10,7 @@
       ```shell
       VERSION=local-snapshot ; for d in $(find . -name "Dockerfile" | sed -e "s/\.\/\(.*\)\/Dockerfile$/\1/g") ; do echo "building dir $d" ; cd $d ; docker build . -t "$AIRGAPPED_REGISTRY_URL/keptndev/$d:$VERSION" ; cd .. ; done
       ```
-    - Just only the one you want to test (go to the service folder where the Dockerfile is located)
+    - Build just one artefact/keptn-service (go to the service folder where the Dockerfile is located)
       ```shell
       docker build . -t $AIRGAPPED_REGISTRY_URL/keptndev/api:local-snapshot
       ```
