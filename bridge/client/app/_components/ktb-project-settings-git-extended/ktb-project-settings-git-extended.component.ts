@@ -5,6 +5,8 @@ import { DataService } from '../../_services/data.service';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { filter, map } from 'rxjs/operators';
 import { isGitHTTPS } from '../../_utils/git-upstream.utils';
+import { NotificationType } from '../../_models/notification';
+import { NotificationsService } from '../../_services/notifications.service';
 
 export enum GitFormType {
   SSH,
@@ -59,7 +61,11 @@ export class KtbProjectSettingsGitExtendedComponent {
     return this.selectedForm === GitFormType.HTTPS ? this.gitDataHttps : this.gitDataSsh;
   }
 
-  constructor(private readonly dataService: DataService, readonly routes: ActivatedRoute) {
+  constructor(
+    private readonly dataService: DataService,
+    readonly routes: ActivatedRoute,
+    private notificationsService: NotificationsService
+  ) {
     this.routes.paramMap
       .pipe(
         map((params: ParamMap) => params.get('projectName')),
@@ -81,6 +87,10 @@ export class KtbProjectSettingsGitExtendedComponent {
       this.dataService.updateGitUpstream(this.projectName, this.gitData).subscribe(
         () => {
           this.isGitUpstreamInProgress = false;
+          this.notificationsService.addNotification(
+            NotificationType.SUCCESS,
+            'The Git upstream was changed successfully.'
+          );
           this.resetTouched.emit();
         },
         () => {

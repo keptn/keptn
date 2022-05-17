@@ -87,6 +87,13 @@ export function interceptCreateProject(): void {
   });
 }
 
+export function interceptProjectSettings(): void {
+  cy.intercept('PUT', 'api/controlPlane/v1/project', {
+    statusCode: 200,
+    body: {},
+  });
+}
+
 export function interceptDashboard(): void {
   interceptMain();
   cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=5', { fixture: 'sequences.sockshop' }).as('sequences');
