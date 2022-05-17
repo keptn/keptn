@@ -134,6 +134,12 @@ func init() {
               }
             }
           },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
           "500": {
             "description": "error",
             "schema": {
@@ -406,6 +412,12 @@ func init() {
                   "type": "integer"
                 }
               }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/error"
             }
           },
           "500": {
