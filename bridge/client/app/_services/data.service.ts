@@ -33,7 +33,6 @@ import { EventData } from '../_components/ktb-evaluation-info/ktb-evaluation-inf
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
 import { IGitDataExtended } from '../_interfaces/git-upstream';
 import { getGitData } from '../_utils/git-upstream.utils';
-import { isGitHTTPS } from '../_utils/git-upstream.utils';
 import { ICustomSequences } from '../../../shared/interfaces/custom-sequences';
 
 @Injectable({
