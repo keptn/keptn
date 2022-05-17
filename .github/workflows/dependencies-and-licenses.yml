@@ -37,7 +37,7 @@ jobs:
           go get go.elastic.co/go-licence-detector
 
       - name: Set up Node
-        uses: actions/setup-node@v3.1.1
+        uses: actions/setup-node@v3.2.0
         with:
           node-version: 16
 
