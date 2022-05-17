@@ -789,6 +789,171 @@ func Test_SequenceStateParallelStages(t *testing.T) {
 	}, 30*time.Second, 2*time.Second)
 }
 
+func Test_SequenceStateParallelServices(t *testing.T) {
+	projectName := "state-parallel-service"
+	serviceName := "my-service"
+	serviceName2 := "my-service2"
+	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(sequenceStateParallelStagesShipyard)
+	require.Nil(t, err)
+	defer func() {
+		err := os.Remove(sequenceStateShipyardFilePath)
+		if err != nil {
+			t.Logf("Could not delete file: %s: %v", sequenceStateShipyardFilePath, err)
+		}
+	}()
+
+	source := "golang-test"
+
+	// check if the project 'state' is already available - if not, delete it before creating it again
+	// check if the project is already available - if not, delete it before creating it again
+	projectName, err = CreateProject(projectName, sequenceStateShipyardFilePath)
+	require.Nil(t, err)
+
+	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
+
+	require.Nil(t, err)
+	require.Contains(t, output, "created successfully")
+
+	output, err = ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName2, projectName))
+
+	require.Nil(t, err)
+	require.Contains(t, output, "created successfully")
+
+	states, resp, err := GetState(projectName)
+
+	// send a delivery.triggered event
+	eventType := keptnv2.GetTriggeredEventType("dev.delivery")
+
+	resp, err = ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
+		Contenttype: "application/json",
+		Data: keptnv2.DeploymentTriggeredEventData{
+			EventData: keptnv2.EventData{
+				Project: projectName,
+				Stage:   "dev",
+				Service: serviceName,
+			},
+			ConfigurationChange: keptnv2.ConfigurationChange{
+				Values: map[string]interface{}{"image": "carts:test"},
+			},
+		},
+		ID:                 uuid.NewString(),
+		Shkeptnspecversion: KeptnSpecVersion,
+		Source:             &source,
+		Specversion:        "1.0",
+		Type:               &eventType,
+	}, 3)
+	require.Nil(t, err)
+	body := resp.String()
+	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
+	require.NotEmpty(t, body)
+
+	context := &models.EventContext{}
+	err = resp.ToJSON(context)
+	require.Nil(t, err)
+	require.NotNil(t, context.KeptnContext)
+
+	resp, err = ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
+		Contenttype: "application/json",
+		Data: keptnv2.DeploymentTriggeredEventData{
+			EventData: keptnv2.EventData{
+				Project: projectName,
+				Stage:   "dev",
+				Service: serviceName2,
+			},
+			ConfigurationChange: keptnv2.ConfigurationChange{
+				Values: map[string]interface{}{"image": "carts:test"},
+			},
+		},
+		ID:                 uuid.NewString(),
+		Shkeptnspecversion: KeptnSpecVersion,
+		Source:             &source,
+		Specversion:        "1.0",
+		Type:               &eventType,
+	}, 3)
+	require.Nil(t, err)
+	body2 := resp.String()
+	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
+	require.NotEmpty(t, body2)
+
+	context2 := &models.EventContext{}
+	err = resp.ToJSON(context2)
+	require.Nil(t, err)
+	require.NotNil(t, context2.KeptnContext)
+
+	// verify state
+	require.Eventually(t, func() bool {
+		states, resp, err = GetState(projectName)
+		if err != nil {
+			return false
+		}
+		if !IsEqual(t, http.StatusOK, resp.Response().StatusCode, "resp.Response().StatusCode") {
+			return false
+		}
+		if !IsEqual(t, int64(2), states.TotalCount, "states.TotalCount") {
+			return false
+		}
+		if !IsEqual(t, 2, len(states.States), "len(states.States)") {
+			return false
+		}
+
+		state1 := states.States[0]
+		if !IsEqual(t, projectName, state1.Project, "state.Project") {
+			return false
+		}
+		if !IsEqual(t, *context.KeptnContext, state1.Shkeptncontext, "state.Shkeptncontext") {
+			return false
+		}
+		if !IsEqual(t, models.SequenceStartedState, state1.State, "state.State") {
+			return false
+		}
+
+		if !IsEqual(t, 1, len(state1.Stages), "len(state.Stages)") {
+			return false
+		}
+
+		state2 := states.States[1]
+		if !IsEqual(t, projectName, state2.Project, "state.Project") {
+			return false
+		}
+		if !IsEqual(t, *context.KeptnContext, state2.Shkeptncontext, "state.Shkeptncontext") {
+			return false
+		}
+		if !IsEqual(t, models.SequenceStartedState, state2.State, "state.State") {
+			return false
+		}
+
+		if !IsEqual(t, 1, len(state2.Stages), "len(state.Stages)") {
+			return false
+		}
+
+		stage := state1.Stages[0]
+
+		if !IsEqual(t, "dev", stage.Name, "stage.Name") {
+			return false
+		}
+		if !IsEqual(t, keptnv2.GetTriggeredEventType("delivery"), stage.LatestEvent.Type, "stage.LatestEvent.Type") {
+			return false
+		}
+		if !IsEqual(t, projectName, state1.Project, "state.Project") {
+			return false
+		}
+
+		stage = state2.Stages[0]
+
+		if !IsEqual(t, "dev", stage.Name, "stage.Name") {
+			return false
+		}
+		if !IsEqual(t, keptnv2.GetTriggeredEventType("delivery"), stage.LatestEvent.Type, "stage.LatestEvent.Type") {
+			return false
+		}
+		if !IsEqual(t, projectName, state2.Project, "state.Project") {
+			return false
+		}
+		return true
+	}, 10*time.Second, 2*time.Second)
+
+}
+
 func GetStageOfState(state models.SequenceState, stageName string) *models.SequenceStateStage {
 	for index, stage := range state.Stages {
 		if stage.Name == stageName {

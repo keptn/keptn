@@ -31,7 +31,7 @@ spec:
       serviceAccountName: keptn-shipyard-controller
       containers:
       - name: shipyard-controller
-        image: keptndev/shipyard-controller:latest
+        image: keptndev/shipyard-controller:0.15.1-dev #changed from latest due to skaffold error "keptndev/shipyard-controller:latest can't be pulled"
         env:
           - name: CONFIGURATION_SERVICE
             value: "http://configuration-service:8080"
@@ -52,7 +52,7 @@ spec:
             valueFrom:
               secretKeyRef:
                 name: mongodb-credentials
-                key: mongodb-password
+                key: mongodb-passwords
           - name: MONGODB_DATABASE
             value: "keptn"
           - name: MONGODB_EXTERNAL_CONNECTION_STRING
