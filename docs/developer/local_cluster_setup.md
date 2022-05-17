@@ -27,7 +27,7 @@
      kubectl config use-context k3d-mykeptn
     ```
     - Verify that everything has worked using `kubectl get nodes`
-6. (optional) Load locally build images in k3d cluster (if no local registry is used)
+6. (optional) Load locally built images in k3d cluster (if no local registry is used)
     - If you want to load all keptn images `for i in $(docker images "keptn/*" --format "{{.Repository}}"); do k3d image load $i\:local-snapshot -c mykeptn ; done`
     - If you want to load only single images e.g. `k3d image load keptn/bridge-service:local-snapshot -c mykeptn`
     - For further information see [k3d image import](https://k3d.io/v5.2.0/usage/commands/k3d_image_import/)
