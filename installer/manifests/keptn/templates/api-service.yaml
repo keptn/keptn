@@ -81,6 +81,17 @@ spec:
             - name: LOG_LEVEL
               value: {{ .Values.logLevel | default "info" }}
           {{- include "keptn.common.container-security-context" . | nindent 10 }}
+          {{- if .Values.apiService.extraVolumeMounts }}
+          volumeMounts:
+          {{- include "keptn.tpl-value" ( dict "value" .Values.apiService.extraVolumeMounts "context" $) | nindent 12 }}
+          {{- end }}
+        {{- with .Values.apiService.sidecars }}
+        {{- include "keptn.tpl-value" ( dict "value" . "context" $ ) | nindent 8 }}
+        {{- end }}
+      {{- if .Values.apiService.extraVolumes }}
+      volumes:
+      {{- include "keptn.tpl-value" ( dict "value" .Values.apiService.extraVolumes "context" $) | nindent 8 }}
+      {{- end }}
       serviceAccountName: keptn-api-service
       {{- include "keptn.nodeSelector" (dict "value" .Values.apiService.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
 ---

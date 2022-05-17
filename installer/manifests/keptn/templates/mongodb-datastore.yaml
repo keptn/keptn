@@ -81,10 +81,21 @@ spec:
                   optional: true
             - name: LOG_LEVEL
               value: {{ .Values.logLevel | default "info" }}
-          - name: NATS_URL
-            value: 'nats://keptn-nats'
-          {{- include "keptn.common.env.vars" . | nindent 8 }}
+            - name: NATS_URL
+              value: 'nats://keptn-nats'
+            {{- include "keptn.common.env.vars" . | nindent 12 }}
           {{- include "keptn.common.container-security-context" . | nindent 10 }}
+          {{- if .Values.mongodbDatastore.extraVolumeMounts }}
+          volumeMounts:
+            {{- include "keptn.tpl-value" ( dict "value" .Values.mongodbDatastore.extraVolumeMounts "context" $) | nindent 12 }}
+          {{- end }}
+        {{- with .Values.mongodbDatastore.sidecars }}
+        {{- include "keptn.tpl-value" ( dict "value" . "context" $ ) | nindent 8 }}
+        {{- end }}
+      {{- if .Values.mongodbDatastore.extraVolumes }}
+      volumes:
+      {{- include "keptn.tpl-value" ( dict "value" .Values.mongodbDatastore.extraVolumes "context" $) | nindent 8 }}
+      {{- end }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.mongodbDatastore.nodeSelector "default" .Values.common.nodeSelector "indent" 8 "context" . )}}
 ---
 apiVersion: v1

@@ -70,6 +70,17 @@ spec:
               value: {{ .Values.logLevel | default "info" }}
             {{- include "keptn.common.env.vars" . | nindent 12 }}
           {{- include "keptn.common.container-security-context" . | nindent 10 }}
+          {{- if .Values.lighthouseService.extraVolumeMounts }}
+          volumeMounts:
+          {{- include "keptn.tpl-value" ( dict "value" .Values.lighthouseService.extraVolumeMounts "context" $) | nindent 12 }}
+          {{- end }}
+        {{- with .Values.lighthouseService.sidecars }}
+        {{- include "keptn.tpl-value" ( dict "value" . "context" $ ) | nindent 8 }}
+        {{- end }}
+      {{- if .Values.lighthouseService.extraVolumes }}
+      volumes:
+      {{- include "keptn.tpl-value" ( dict "value" .Values.lighthouseService.extraVolumes "context" $) | nindent 8 }}
+      {{- end }}
       serviceAccountName: keptn-lighthouse-service
       terminationGracePeriodSeconds: {{ .Values.lighthouseService.gracePeriod | default 60 }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.lighthouseService.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}

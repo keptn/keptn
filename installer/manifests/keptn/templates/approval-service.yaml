@@ -62,6 +62,17 @@ spec:
               value: {{ .Values.logLevel | default "info" }}
             {{- include "keptn.common.env.vars" . | nindent 12 }}
           {{- include "keptn.common.container-security-context" . | nindent 10 }}
+          {{- if .Values.approvalService.extraVolumeMounts }}
+          volumeMounts:
+          {{- include "keptn.tpl-value" ( dict "value" .Values.approvalService.extraVolumeMounts "context" $) | nindent 12 }}
+          {{- end }}
+        {{- with .Values.approvalService.sidecars }}
+        {{- include "keptn.tpl-value" ( dict "value" . "context" $ ) | nindent 8 }}
+        {{- end }}
+      {{- if .Values.approvalService.extraVolumes }}
+      volumes:
+      {{- include "keptn.tpl-value" ( dict "value" .Values.approvalService.extraVolumes "context" $) | nindent 8 }}
+      {{- end }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.approvalService.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
 ---
 apiVersion: v1

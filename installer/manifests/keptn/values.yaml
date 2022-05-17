@@ -84,6 +84,9 @@ apiGatewayNginx:
   nodeSelector: {}
   gracePeriod: 120     # gracePeriod set to preStop hook time +30s
   preStopHookTime: 90
+  sidecars: []
+  extraVolumeMounts: []
+  extraVolumes: []
   resources:
     requests:
       memory: "64Mi"
@@ -99,6 +102,9 @@ remediationService:
   nodeSelector: {}
   gracePeriod: 120     # gracePeriod set to preStop hook time +30s
   preStopHookTime: 90
+  sidecars: []
+  extraVolumeMounts: []
+  extraVolumes: []
   resources:
     requests:
       memory: "64Mi"
@@ -119,6 +125,9 @@ apiService:
   nodeSelector: {}
   gracePeriod: 120     # gracePeriod set to preStop hook time +30s
   preStopHookTime: 90
+  sidecars: []
+  extraVolumeMounts: []
+  extraVolumes: []
   resources:
     requests:
       memory: "32Mi"
@@ -167,6 +176,9 @@ bridge:
     userIdentifier: ""
     mongoConnectionString: ""
   nodeSelector: {}
+  sidecars: []
+  extraVolumeMounts: []
+  extraVolumes: []
   resources:
     requests:
       memory: "64Mi"
@@ -222,6 +234,9 @@ shipyardController:
   nodeSelector: {}
   gracePeriod: 120     # gracePeriod set to preStop hook time +30s
   preStopHookTime: 90
+  sidecars: []
+  extraVolumeMounts: []
+  extraVolumes: []
   resources:
     requests:
       memory: "32Mi"
@@ -237,6 +252,9 @@ secretService:
   nodeSelector: {}
   gracePeriod: 120     # gracePeriod set to preStop hook time +30s
   preStopHookTime: 90
+  sidecars: []
+  extraVolumeMounts: []
+  extraVolumes: []
   resources:
     requests:
       memory: "32Mi"
@@ -260,6 +278,9 @@ configurationService:
   nodeSelector: {}
   gracePeriod: 120     # gracePeriod set to preStop hook time +30s
   preStopHookTime: 90
+  sidecars: []
+  extraVolumeMounts: []
+  extraVolumes: []
   resources:
     requests:
       memory: "32Mi"
@@ -281,6 +302,9 @@ resourceService:
   nodeSelector: {}
   gracePeriod: 120     # gracePeriod set to preStop hook time +30s
   preStopHookTime: 90
+  sidecars: []
+  extraVolumeMounts: []
+  extraVolumes: []
   resources:
     requests:
       memory: "32Mi"
@@ -296,6 +320,9 @@ mongodbDatastore:
   nodeSelector: {}
   gracePeriod: 120     # gracePeriod set to preStop hook time +30s
   preStopHookTime: 90
+  sidecars: []
+  extraVolumeMounts: []
+  extraVolumes: []
   resources:
     requests:
       memory: "32Mi"
@@ -311,6 +338,9 @@ lighthouseService:
   nodeSelector: {}
   gracePeriod: 120     # gracePeriod set to preStop hook time +30s
   preStopHookTime: 90
+  sidecars: []
+  extraVolumeMounts: []
+  extraVolumes: []
   resources:
     requests:
       memory: "128Mi"
@@ -326,6 +356,9 @@ statisticsService:
   nodeSelector: {}
   gracePeriod: 120     # gracePeriod set to preStop hook time +30s
   preStopHookTime: 90
+  sidecars: []
+  extraVolumeMounts: []
+  extraVolumes: []
   resources:
     requests:
       memory: "32Mi"
@@ -341,6 +374,9 @@ approvalService:
   nodeSelector: {}
   gracePeriod: 120     # gracePeriod set to preStop hook time +30s
   preStopHookTime: 90
+  sidecars: []
+  extraVolumeMounts: []
+  extraVolumes: []
   resources:
     requests:
       memory: "32Mi"
@@ -357,6 +393,9 @@ webhookService:
   nodeSelector: {}
   gracePeriod: 120     # gracePeriod set to preStop hook time +30s
   preStopHookTime: 90
+  sidecars: []
+  extraVolumeMounts: []
+  extraVolumes: []
   resources:
     requests:
       memory: "32Mi"

@@ -229,7 +229,13 @@ spec:
               readOnly: true
             - name: bridge-oauth-mongodb-credentials
               mountPath: /config/oauth_mongodb
-        {{- include "keptn.bridge.container-security-context" . | nindent 10 }}
+            {{- if .Values.bridge.extraVolumeMounts }}
+            {{- include "keptn.tpl-value" ( dict "value" .Values.bridge.extraVolumeMounts "context" $) | nindent 12 }}
+            {{- end }}
+          {{- include "keptn.bridge.container-security-context" . | nindent 10 }}
+          {{- with .Values.bridge.sidecars }}
+          {{- include "keptn.tpl-value" ( dict "value" . "context" $ ) | nindent 8 }}
+          {{- end }}
       serviceAccountName: keptn-default
       volumes:
         - emptyDir: {}
@@ -242,4 +248,7 @@ spec:
           secret:
             secretName: bridge-oauth-mongodb-credentials
             defaultMode: 0400
+        {{- if .Values.bridge.extraVolumes }}
+        {{- include "keptn.tpl-value" ( dict "value" .Values.bridge.extraVolumes "context" $) | nindent 8 }}
+        {{- end }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.bridge.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}

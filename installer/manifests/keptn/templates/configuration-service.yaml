@@ -103,9 +103,19 @@ spec:
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
             privileged: false
+          {{- if .Values.resourceService.extraVolumeMounts }}
+          volumeMounts:
+          {{- include "keptn.tpl-value" ( dict "value" .Values.resourceService.extraVolumeMounts "context" $) | nindent 12 }}
+          {{- end }}
+        {{- with .Values.resourceService.sidecars }}
+        {{- include "keptn.tpl-value" ( dict "value" . "context" $ ) | nindent 8 }}
+        {{- end }}
       volumes:
         - name: resource-volume
           emptyDir: {}
+        {{- if .Values.resourceService.extraVolumes }}
+        {{- include "keptn.tpl-value" ( dict "value" .Values.resourceService.extraVolumes "context" $) | nindent 8 }}
+        {{- end }}
       serviceAccountName: keptn-configuration-service
       {{- include "keptn.nodeSelector" (dict "value" .Values.resourceService.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
 {{- else }}
@@ -220,16 +230,25 @@ spec:
           volumeMounts:
             - mountPath: /data/config
               name: configuration-volume
+            {{- if .Values.configurationService.extraVolumeMounts }}
+            {{- include "keptn.tpl-value" ( dict "value" .Values.configurationService.extraVolumeMounts "context" $) | nindent 12 }}
+            {{- end }}
           securityContext:
             runAsNonRoot: true
             runAsUser: {{ .Values.configurationService.fsGroup | default 1001 }}
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
             privileged: false
+        {{- with .Values.configurationService.sidecars }}
+        {{- include "keptn.tpl-value" ( dict "value" . "context" $ ) | nindent 8 }}
+        {{- end }}
       volumes:
         - name: configuration-volume
           persistentVolumeClaim:
             claimName: configuration-volume
+        {{- if .Values.configurationService.extraVolumes }}
+        {{- include "keptn.tpl-value" ( dict "value" .Values.configurationService.extraVolumes "context" $) | nindent 8 }}
+        {{- end }}
       serviceAccountName: keptn-configuration-service
       {{- include "keptn.nodeSelector" (dict "value" .Values.configurationService.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
 {{- end }}

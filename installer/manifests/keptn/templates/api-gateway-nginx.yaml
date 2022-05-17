@@ -428,13 +428,22 @@ spec:
               subPath: keptn-endpoints-pre-1-0.conf
               readOnly: true
               name: api-nginx-config
+            {{- if .Values.apiGatewayNginx.extraVolumeMounts }}
+            {{- include "keptn.tpl-value" ( dict "value" .Values.apiGatewayNginx.extraVolumeMounts "context" $) | nindent 12 }}
+            {{- end }}
           resources:
             {{- toYaml .Values.apiGatewayNginx.resources | nindent 12 }}
-        {{- include "keptn.apiGatewayNginx.container-security-context" . | nindent 10 }}
+          {{- include "keptn.apiGatewayNginx.container-security-context" . | nindent 10 }}
+        {{- with .Values.apiGatewayNginx.sidecars }}
+        {{- include "keptn.tpl-value" ( dict "value" . "context" $ ) | nindent 8 }}
+        {{- end }}
       volumes:
         - name: api-nginx-config
           configMap:
             name: api-nginx-config # place ConfigMap `api-nginx-config` on /etc/nginx
+        {{- if .Values.apiGatewayNginx.extraVolumes }}
+        {{- include "keptn.tpl-value" ( dict "value" .Values.apiGatewayNginx.extraVolumes "context" $) | nindent 8 }}
+        {{- end }}
       serviceAccountName: keptn-default
       {{- include "keptn.nodeSelector" (dict "value" .Values.apiGatewayNginx.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
 ---

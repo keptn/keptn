@@ -78,6 +78,10 @@ spec:
           resources:
             {{- toYaml .Values.statisticsService.resources | nindent 12 }}
           {{- include "keptn.common.container-security-context" . | nindent 10 }}
+          {{- if .Values.statisticsService.extraVolumeMounts }}
+          volumeMounts:
+          {{- include "keptn.tpl-value" ( dict "value" .Values.statisticsService.extraVolumeMounts "context" $) | nindent 12 }}
+          {{- end }}
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "keptn.dist.livenessProbe" . | nindent 10 }}
@@ -95,7 +99,14 @@ spec:
             - name: PUBSUB_RECIPIENT_PATH
               value: '/v1/event'
           {{- include "keptn.dist.common.env.vars" . | nindent 12 }}
-        {{- include "keptn.common.container-security-context" . | nindent 10 }}
+          {{- include "keptn.common.container-security-context" . | nindent 10 }}
+        {{- with .Values.statisticsService.sidecars }}
+        {{- include "keptn.tpl-value" ( dict "value" . "context" $ ) | nindent 8 }}
+        {{- end }}
+      {{- if .Values.statisticsService.extraVolumes }}
+      volumes:
+      {{- include "keptn.tpl-value" ( dict "value" .Values.statisticsService.extraVolumes "context" $) | nindent 8 }}
+      {{- end }}
       terminationGracePeriodSeconds: {{ .Values.statisticsService.gracePeriod | default 60 }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.statisticsService.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
 ---
