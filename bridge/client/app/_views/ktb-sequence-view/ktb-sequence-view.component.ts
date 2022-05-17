@@ -219,7 +219,10 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
         this.updateFilterSequence(sequences);
         this.refreshFilterDataSource();
         // Update filteredSequences based on current filters
-        this.filteredSequences = this.getFilteredSequences(sequences, this.apiService.sequenceFilters);
+        this.filteredSequences = this.getFilteredSequences(
+          sequences,
+          this.apiService.getSequenceFilters(this.project?.projectName)
+        );
         // Set unfinished sequences so that the state updates can be loaded
         this.unfinishedSequences = sequences.filter((sequence: Sequence) => !sequence.isFinished());
         // Needed for the updates to work properly
@@ -452,7 +455,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   }
 
   public saveSequenceFilters(sequenceFilters: { [p: string]: string[] }): void {
-    this.apiService.sequenceFilters = sequenceFilters;
+    this.apiService.setSequenceFilters(sequenceFilters, this.project?.projectName);
     const routeUrl = this.router.createUrlTree([], {
       relativeTo: this.route,
       queryParams: sequenceFilters,
@@ -463,29 +466,25 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   public loadSequenceFilters(): void {
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: this.apiService.sequenceFilters,
+      queryParams: this.apiService.getSequenceFilters(this.project?.projectName),
       replaceUrl: true,
     });
   }
 
   public setSequenceFilters(sequenceFilters: { [p: string]: string[] }): void {
-    this.apiService.sequenceFilters = sequenceFilters;
-    this._seqFilters = Object.keys(sequenceFilters).reduce((_seqFilters: FilterType[], name: string) => {
-      sequenceFilters[name].forEach((value: string) => {
-        if (name === 'Status') {
-          const status = SEQUENCE_STATUS[value];
-          if (status) {
-            _seqFilters.push([
-              { name: name as FilterName, autocomplete: [], showInSidebar: true },
-              { name: status.toString(), value },
-            ]);
-          }
-        } else {
-          _seqFilters.push([
-            { name: name as FilterName, autocomplete: [], showInSidebar: false },
-            { name: value, value },
-          ]);
+    this.apiService.setSequenceFilters(sequenceFilters, this.project?.projectName);
+    this._seqFilters = Object.keys(sequenceFilters).reduce((_seqFilters: FilterType[], filterName: string) => {
+      sequenceFilters[filterName].forEach((value: string) => {
+        const name = filterName === 'Status' ? SEQUENCE_STATUS[value] : value;
+
+        if (!name) {
+          return;
         }
+
+        _seqFilters.push([
+          { name: filterName as FilterName, autocomplete: [], showInSidebar: false },
+          { name, value },
+        ]);
       });
       return _seqFilters;
     }, []);

@@ -55,13 +55,19 @@ export class ApiService {
     return this._baseUrl;
   }
 
-  public get sequenceFilters(): Record<string, string[]> {
-    const filters = localStorage.getItem(this.SEQUENCE_FILTERS_COOKIE);
+  public getSequenceFilters(projectName?: string): Record<string, string[]> {
+    if (!projectName) return {};
+    const filters = localStorage.getItem(this.getSequenceFiltersKey(projectName));
     return filters ? JSON.parse(filters) : {};
   }
 
-  public set sequenceFilters(filters: Record<string, string[]>) {
-    localStorage.setItem(this.SEQUENCE_FILTERS_COOKIE, JSON.stringify(filters));
+  public setSequenceFilters(filters: Record<string, string[]>, projectName?: string): void {
+    if (!projectName) return;
+    localStorage.setItem(this.getSequenceFiltersKey(projectName), JSON.stringify(filters));
+  }
+
+  public getSequenceFiltersKey(projectName?: string): string {
+    return `${this.SEQUENCE_FILTERS_COOKIE}-${projectName}`;
   }
 
   public get environmentFilter(): { [projectName: string]: { services: string[] } } {
