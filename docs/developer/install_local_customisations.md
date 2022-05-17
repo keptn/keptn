@@ -5,7 +5,7 @@
 * As a developer I want to build and deploy my customized keptn fork at my kubernetes cluster environment.
 * As a keptn contributor I want to fork keptn, build, deploy and test my enhancements locally in my kubernetes cluster before I open a Pull Request.
 * As a Macbook Pro M1 (arm64) user, I want to build keptn locally and deploy it to my kubernetes cluster.
-* As a developer I want to set the repository and image tag at one point for all keptn artefacts.
+* As a developer I want to set the repository and image tag globally for all keptn artefacts.
 * ...
 
 ## Customise Charts/Docker images and install with own values-local.yaml for local testing
