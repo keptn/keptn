@@ -11,39 +11,59 @@
 ## Customise Charts/Docker images and install with own values-local.yaml for local testing
 
 1. Prerequisites
-   - Install Cluster
+   - [Install Cluster](local_cluster_setup.md)
 2. Create `installer/manifests/keptn/values-local.yaml` file for your local values to be stored. The file should look like this:
    - global keptn configuration: Set `global.keptn.registry` and `global.keptn.tag` if you did a local full build of keptn artefacts
    - service configuration: If you only want to install one single artefact from your local build (e.g. apiService)
-
 ```yaml
-#  # set global keptn registry and tag for completely overriding the keptn default config
+# set global keptn registry and tag for completely overriding the keptn default config
 global:
   keptn:
-    registry: "testregistry/keptn"      # keptn registry/image name
-    tag: "0.0.1"                        # keptn version/tag
-
-#control-plane:
-#  # service config: only set individual values if global.keptn.registry/tag are not satisfiying
-#  apiService:
-#    image:
-#      registry: "my-local-api-reg"                             # Container Registry
-#      tag: "my-local-api-tag"                                  # Container Tag
-#
-#  # only change if version at ./charts/control-plane/values.yaml --> apiGatewayNginx.registry/tag is not satisfying
-#  apiGatewayNginx:
-#    registry: this.is.a.test           # nginx registry/image name
-#    tag: 10.0.0                        # ngnix version/tag
-#
+    registry: "k3d-container-registry.127.0.0.1.nip.io:12345/keptn"      # keptn registry/image name
+    tag: "local-snapshot"                                                # keptn version/tag
 ```
-7. Create Namespace `kubectl create ns keptn`
-8. Download Helm Dependencies `helm dependency update`
-   - `installer/manifests/keptn/control-plane`
-   - `helm-service/charts`
-   - `jmeter-service/charts`
-9. Install keptn in local cluster 
-   - `installer/manifests/keptn` --> `helm upgrade --install -f values-local.yaml keptn . -n keptn`
+3. Test helm charts locally 
+   - For local templating of helm charts to take a look about the changes use:
+   ```shell
+   helm template . -f values-local.yaml --name-template test-control-plane --output-dir ../../temp+
+   ```
+4. Create Namespace
+   ```shell
+   kubectl create ns keptn
+   ```
+5. Download Helm Dependencies `helm dependency update`
+   - `installer/manifests/keptn`
+   - `helm-service/chart`
+   - `jmeter-service/chart`
+6. Install keptn in local cluster
+   Go to `installer/manifests/keptn`
+   ```shell
+   helm upgrade --install -f values-local.yaml keptn . -n keptn
+   ```
+7. Open a new terminal and type:
+   ```shell
+   kubectl -n keptn port-forward service/api-gateway-nginx 8080:80
+   ```
+8. Authenticate Keptn:
+   ```shell
+   keptn auth --endpoint=http://127.0.0.1:8080/api --api-token=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
+   ```
+9. Verify the installation has worked
+   ```shell
+   keptn status
+   ```
+10. Verify which images have been deployed
+    ```shell
+    kubectl -n keptn get deployments
+    ```
+11. Run tests (e.g., UniformRegistration):
+   ```shell
+   cd test/go-tests && KEPTN_ENDPOINT="http://127.0.0.1:8080/api" go test ./...
+   ```
+   **Note**: If you want to run a single test, (e.g. BackupTestore_Test), please add `_test` suffix to the test file name, so it becomes executable. Otherwise, you cano run only `testsuite_*_test.go` files. For running a single test use:
+   ```shell
+   cd test/go-tests && KEPTN_ENDPOINT="http://127.0.0.1:8080/api" go test ./... -v -run <NameOfTheTest>
+   ```
+
    
-## How to test helm charts locally
-For local templating of helm charts to take a look about the changes use:
-`helm template . -f values-local.yaml --name-template test-control-plane --output-dir ../../temp`
+
