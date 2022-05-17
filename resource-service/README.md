@@ -31,7 +31,7 @@ These changes allow the service implementation to be more flexible and faster in
 The *resource-service* replaces the *configuration-service*, hence only one of the two can be run at the same time.
 The *resource-service* can be enabled during the installation of Keptn setting the Helm value `control-plane.resourceService.enabled` to `true`.
 This flag changes the *configuration-service* `Service` to point towards the *resource-service* `Pod`.
-When the resource-service is enabled by default, the Kubernetes `Service` changes name to `resource-service`.
+In the future, the *resource-service* will be enabled by default. With this, we will remove the `configuration-service` Kubernetes `Service` in favor of a `resource-service` Kubernetes `Service`.
 
 ### Deploy it directly into your Kubernetes cluster
 
