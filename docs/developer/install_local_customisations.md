@@ -13,15 +13,21 @@
 1. Prerequisites
    - [Install Cluster](local_cluster_setup.md)
 2. Create `installer/manifests/keptn/values-local.yaml` file for your local values to be stored. The file should look like this:
-   - global keptn configuration: Set `global.keptn.registry` and `global.keptn.tag` if you did a local full build of all keptn artefacts
-   - service configuration: If you only want to install one single artefact from your local build (e.g. apiService)
-```yaml
-# set global keptn registry and tag for completely overriding the keptn default config
-global:
-  keptn:
-    registry: "k3d-container-registry.127.0.0.1.nip.io:12345/keptn"      # keptn registry/image name
-    tag: "local-snapshot"                                                # keptn version/tag
-```
+   - global keptn configuration: Set `global.keptn.registry` and `global.keptn.tag` if you did a local full build of keptn artefacts
+   ```yaml
+   # set global keptn registry and tag for completely overriding the keptn default config
+   global:
+     keptn:
+       registry: "k3d-container-registry.127.0.0.1.nip.io:12345/keptn"      # keptn registry/image name
+       tag: "local-snapshot"                                                # keptn version/tag
+   ```
+   - (and/or) service configuration: If you only want to install one single artefact from your local build (e.g. apiService)
+   ```yaml
+   # set global keptn registry and tag for completely overriding the keptn default config
+   lighthouseService:
+     registry: "k3d-container-registry.127.0.0.1.nip.io:12345/keptn"      # keptn registry/image name
+     tag: "local-snapshot"                                                # keptn version/tag
+   ```
 3. Test helm charts locally 
    - For local templating of helm charts to take a look about the changes use:
    ```shell
