@@ -7,7 +7,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.15.1-0.20220512082458-c5e1b7519bec
-	github.com/keptn/keptn/cp-connector v0.0.0-20220516075809-becb01f3a1b6
+	github.com/keptn/keptn/cp-connector v0.0.0-20220517055828-76c71aaf4d6b
 	github.com/stretchr/testify v1.7.1
 )
 
