@@ -55,7 +55,7 @@ paths:
           description: Forwarded
           schema:
             $ref: "#/definitions/eventContext"
-        default:
+        500:
           description: Error
           schema:
             $ref: "#/definitions/error"
