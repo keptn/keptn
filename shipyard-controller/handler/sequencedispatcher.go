@@ -169,6 +169,7 @@ func (sd *SequenceDispatcher) dispatchSequence(queueItem models.QueueItem) error
 			EventData: keptnv2.EventData{
 				Project: queueItem.Scope.Project,
 				Stage:   queueItem.Scope.Stage,
+				Service: queueItem.Scope.Service,
 			},
 		},
 		Status: []string{apimodels.SequenceStartedState},

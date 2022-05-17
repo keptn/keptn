@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/cloudevents/sdk-go/v2/event"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"testing"
 	"time"
@@ -214,16 +213,13 @@ func Test_EventIsSentImmediatelyButOtherSequenceIsRunning(t *testing.T) {
 	require.Len(t, eventQueueRepo.QueueEventCalls(), 1)
 }
 
-func Test_EventIsSentImmediatelyButOtherSequenceIsRunningDifferentService(t *testing.T) {
+func Test_EventIsQueuedOtherSequenceIsRunningSameService(t *testing.T) {
 
 	timeAfter := time.Date(2021, 4, 21, 15, 00, 00, 1, time.UTC)
-	eventSender := &fake.EventSender{
-		SentEvents: []event.Event{},
-	}
+	eventSender := &fake.EventSender{}
 	eventRepo := &dbmock.EventRepoMock{}
 	eventQueueRepo := &dbmock.EventQueueRepoMock{
 		QueueEventFunc: func(item models.QueueItem) error {
-			eventSender.SentEvents = append(eventSender.SentEvents, event.Event{})
 			return nil
 		},
 		GetQueuedEventsFunc: func(timestamp time.Time) ([]models.QueueItem, error) {
@@ -236,7 +232,46 @@ func Test_EventIsSentImmediatelyButOtherSequenceIsRunningDifferentService(t *tes
 
 	sequenceExecutionRepo := &dbmock.SequenceExecutionRepoMock{
 		GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
-			return []models.SequenceExecution{}, nil
+			return []models.SequenceExecution{
+				{
+					ID:       "1",
+					Sequence: keptnv2.Sequence{},
+					Status: models.SequenceExecutionStatus{
+						State:         apimodels.SequenceStartedState,
+						PreviousTasks: nil,
+						CurrentTask: models.TaskExecutionState{
+							TriggeredID: "mytrigger",
+						},
+					},
+					Scope: models.EventScope{
+						EventData: keptnv2.EventData{
+							Project: "my-project",
+							Stage:   "my-stage",
+							Service: "my-service",
+						},
+						KeptnContext: "my-context-id",
+					},
+				},
+				{
+					ID:       "2",
+					Sequence: keptnv2.Sequence{},
+					Status: models.SequenceExecutionStatus{
+						State:         apimodels.SequenceStartedState,
+						PreviousTasks: nil,
+						CurrentTask: models.TaskExecutionState{
+							TriggeredID: "my-task-execution-id",
+						},
+					},
+					Scope: models.EventScope{
+						EventData: keptnv2.EventData{
+							Project: "my-project",
+							Stage:   "my-stage",
+							Service: "my-service",
+						},
+						KeptnContext: "my-other-context-id",
+					},
+				},
+			}, nil
 		},
 		IsContextPausedFunc: func(eventScope models.EventScope) bool {
 			return false
@@ -258,17 +293,14 @@ func Test_EventIsSentImmediatelyButOtherSequenceIsRunningDifferentService(t *tes
 	data := keptnv2.EventData{
 		Project: "my-project",
 		Stage:   "my-stage",
-		Service: "my-otherservice",
+		Service: "my-service",
 	}
 	event, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task"), "source", data).Build()
-	event.Shkeptncontext = "my-context-id"
-	event.Triggeredid = "my-otherid"
 	dispatcherEvent := models.DispatcherEvent{Event: keptnv2.ToCloudEvent(event), TimeStamp: timeAfter}
 
 	err := dispatcher.Add(dispatcherEvent, false)
 
 	require.Nil(t, err)
-	require.Equal(t, 1, len(eventSender.SentEvents))
 	require.Len(t, eventQueueRepo.QueueEventCalls(), 1)
 }
 
