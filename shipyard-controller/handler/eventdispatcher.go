@@ -76,7 +76,7 @@ func (e *EventDispatcher) Add(event models.DispatcherEvent, skipQueue bool) erro
 		if err := e.tryToSendEvent(*eventScope, event); err != nil {
 			// if the event cannot be sent because it is blocked by other sequences,
 			// we'll add it to the queue and try to send it again later
-			if strings.Contains(err.Error(), OtherActiveSequencesRunning) && err != ErrSequencePaused {
+			if !strings.Contains(err.Error(), OtherActiveSequencesRunning) && err != ErrSequencePaused {
 				// in all other cases, return the error
 				return err
 			}
