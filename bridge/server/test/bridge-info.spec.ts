@@ -4,9 +4,18 @@ import { Express } from 'express';
 
 describe('Test /bridgeInfo', () => {
   let app: Express;
+  const originalEnv = process.env;
 
   beforeAll(async () => {
+    process.env = {
+      ...originalEnv,
+      AUTOMATIC_PROVISIONING_MSG: '  message   ',
+    };
     app = await setupServer();
+  });
+
+  afterAll(() => {
+    process.env = originalEnv;
   });
 
   it('should return bridgeInfo', async () => {
@@ -22,6 +31,7 @@ describe('Test /bridgeInfo', () => {
         RESOURCE_SERVICE_ENABLED: false,
       },
       authType: 'NONE',
+      automaticProvisioningMsg: 'message',
     });
     expect(response.statusCode).toBe(200);
   });

@@ -1,4 +1,5 @@
 import NewProjectCreatePage from '../support/pageobjects/NewProjectCreatePage';
+import { KeptnInfoResult } from '../../shared/interfaces/keptn-info-result';
 
 describe('Create extended project https test', () => {
   const createProjectPage = new NewProjectCreatePage();
@@ -275,5 +276,102 @@ describe('Create extended project test ssh and https', () => {
       .selectHttpsForm()
       .selectSshForm()
       .assertCreateButtonEnabled(true);
+  });
+});
+
+describe('Create extended project with automatic provisioned git upstream', () => {
+  const createProjectPage = new NewProjectCreatePage();
+
+  beforeEach(() => {
+    createProjectPage.intercept(true, true).visit();
+  });
+
+  it('should show the no upstream option as default', () => {
+    createProjectPage.assertNoUpstreamSelected(true);
+  });
+
+  it('should enable the create button, if everything is filled and no upstream is selected', () => {
+    createProjectPage.enterBasicValidProjectWithoutGitUpstream().assertCreateButtonEnabled(true);
+  });
+
+  it('should disable the create button, if invalid https or ssh data is entered, and enable it again after no upstream is selected', () => {
+    createProjectPage
+      .assertNoUpstreamSelected(true)
+      .selectHttpsForm()
+      .enterBasicValidProjectHttps()
+      .assertCreateButtonEnabled(true)
+      .clearGitToken()
+      .assertCreateButtonEnabled(false);
+
+    createProjectPage
+      .selectSshForm()
+      .enterBasicValidProjectSsh()
+      .assertCreateButtonEnabled(true)
+      .clearSshPrivateKey()
+      .assertCreateButtonEnabled(false);
+
+    createProjectPage.selectNoUpstreamForm().assertCreateButtonEnabled(true);
+  });
+});
+
+describe('Automatic provisioning message', () => {
+  const createProjectPage = new NewProjectCreatePage();
+
+  const bridgeInfo: KeptnInfoResult = {
+    bridgeVersion: '0.10.0-next.1',
+    keptnInstallationType: 'QUALITY_GATES',
+    apiUrl: '',
+    apiToken: '',
+    cliDownloadLink: 'https://github.com/keptn/keptn/releases/tag/0.10.0-next.1',
+    enableVersionCheckFeature: false,
+    showApiToken: true,
+    authType: 'OAUTH',
+    user: 'claus.keptn-dev@ruxitlabs.com',
+    featureFlags: {
+      RESOURCE_SERVICE_ENABLED: true,
+    },
+  };
+
+  beforeEach(() => {
+    cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
+  });
+
+  it('should show the default git message when ap is disabled and the ap message is set', () => {
+    const info = { ...bridgeInfo };
+    info.automaticProvisioningMsg = 'This is a test message';
+    cy.intercept('/api/v1/metadata', { fixture: 'metadata.ap-disabled.mock' }).as('metadata');
+    cy.intercept('/api/bridgeInfo', info);
+    createProjectPage.visit();
+
+    createProjectPage.assertGitUpstreamMessageContains('A Git upstream repository has to be set.');
+  });
+
+  it('should show the default git message if automatic provisioning message is not set', () => {
+    const info = { ...bridgeInfo };
+    cy.intercept('/api/v1/metadata', { fixture: 'metadata.ap-enabled.mock' }).as('metadata');
+    cy.intercept('/api/bridgeInfo', info);
+    createProjectPage.visit();
+
+    createProjectPage.assertGitUpstreamMessageContains('It is recommended to set a Git upstream repository.');
+  });
+
+  it('should show the git automatic provisioning message if set', () => {
+    const info = { ...bridgeInfo };
+    info.automaticProvisioningMsg = 'This is a test message';
+    cy.intercept('/api/v1/metadata', { fixture: 'metadata.ap-enabled.mock' }).as('metadata');
+    cy.intercept('/api/bridgeInfo', info);
+    createProjectPage.visit();
+
+    createProjectPage.assertGitUpstreamMessageContains('This is a test message');
+  });
+
+  it('should show the default git message if automatic provisioning message consists of empty chars', () => {
+    const info = { ...bridgeInfo };
+    info.automaticProvisioningMsg = '';
+    cy.intercept('/api/v1/metadata', { fixture: 'metadata.ap-enabled.mock' }).as('metadata');
+    cy.intercept('/api/bridgeInfo', info);
+    createProjectPage.visit();
+
+    createProjectPage.assertGitUpstreamMessageContains('It is recommended to set a Git upstream repository.');
   });
 });
