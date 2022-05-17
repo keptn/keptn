@@ -1,4 +1,4 @@
-# Setup local cluster for testing
+# Set up a local cluster for testing
 
 1. Set ENV Vars
    ````
