@@ -15,7 +15,7 @@
       docker build . -t $AIRGAPPED_REGISTRY_URL/keptndev/api:local-snapshot
       ```
 3. Build Keptn CLI:
-    - go to `/keptn/cli` and run `go build -o keptn main.go`
+    - go to `./keptn/cli` and run `go build -o keptn main.go`
 4. Create new Registry and push images
    ```shell
    k3d registry create container-registry.127.0.0.1.nip.io --port 12345`
