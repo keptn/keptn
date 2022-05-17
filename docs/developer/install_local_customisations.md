@@ -13,7 +13,7 @@
 1. Prerequisites
    - [Install Cluster](local_cluster_setup.md)
 2. Create `installer/manifests/keptn/values-local.yaml` file for your local values to be stored. The file should look like this:
-   - global keptn configuration: Set `global.keptn.registry` and `global.keptn.tag` if you did a local full build of keptn artefacts
+   - global keptn configuration: Set `global.keptn.registry` and `global.keptn.tag` if you did a local full build of all keptn artefacts
    - service configuration: If you only want to install one single artefact from your local build (e.g. apiService)
 ```yaml
 # set global keptn registry and tag for completely overriding the keptn default config
