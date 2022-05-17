@@ -215,7 +215,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
 
     this.sequencesUpdated$.pipe(takeUntil(this.unsubscribe$)).subscribe(() => {
       const sequences = this.project?.sequences;
-      if (sequences != undefined) {
+      if (sequences !== undefined) {
         this.updateFilterSequence(sequences);
         this.refreshFilterDataSource();
         // Update filteredSequences based on current filters
