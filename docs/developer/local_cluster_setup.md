@@ -18,7 +18,7 @@
     - go to `./keptn/cli` and run `go build -o keptn main.go`
 4. Create new Registry and push images
    ```shell
-   k3d registry create container-registry.127.0.0.1.nip.io --port 12345`
+   k3d registry create container-registry.127.0.0.1.nip.io --port 12345
    for d in $(docker images "keptn/*:local-snapshot" --format "{{.Repository}}:{{.Tag}}"); do docker push $AIRGAPPED_REGISTRY_URL/$d ; done
    ```
 5. Create a new cluster (e.g., using k3d)
@@ -31,7 +31,9 @@
     - If you want to load all keptn images `for i in $(docker images "keptn/*" --format "{{.Repository}}"); do k3d image load $i\:local-snapshot -c mykeptn ; done`
     - If you want to load only a single image e.g. `k3d image load keptn/bridge-service:local-snapshot -c mykeptn`
     - For further information see [k3d image import](https://k3d.io/v5.2.0/usage/commands/k3d_image_import/)
-7. Install Gitea
-    - `.github/workflows/integration_tests.yaml#Install Gitea`
-8. Install Mockserver
-    - `.github/workflows/integration_tests.yaml#Install Mockserver`
+7. Create Namespace
+   ```shell
+   kubectl create ns keptn
+   ```
+8. [Install Gitea](./.github/workflows/integration_tests.yml#Install Gitea)
+9. [Install Mockserver](./.github/workflows/integration_tests.yaml#Install Mockserver)

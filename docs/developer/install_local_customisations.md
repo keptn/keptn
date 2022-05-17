@@ -28,41 +28,37 @@
      registry: "k3d-container-registry.127.0.0.1.nip.io:12345/keptn"      # keptn registry/image name
      tag: "local-snapshot"                                                # keptn version/tag
    ```
-3. Test helm charts locally 
-   - For local templating of helm charts to take a look about the changes use:
-   ```shell
-   helm template . -f values-local.yaml --name-template test-control-plane --output-dir ../../temp+
-   ```
-4. Create Namespace
-   ```shell
-   kubectl create ns keptn
-   ```
-5. Download Helm Dependencies `helm dependency update`
+3. Download Helm Dependencies `helm dependency update`
    - `installer/manifests/keptn`
    - `helm-service/chart`
    - `jmeter-service/chart`
-6. Install keptn in local cluster
+4. Test helm charts locally 
+   - For local templating of helm charts to take a look about the changes use:
+   ```shell
+   helm template . -f values-local.yaml --name-template test-control-plane --output-dir ../../temp
+   ```
+5. Install keptn in local cluster
    Go to `installer/manifests/keptn`
    ```shell
    helm upgrade --install -f values-local.yaml keptn . -n keptn
    ```
-7. Open a new terminal and type:
+6. Open a new terminal and type:
    ```shell
    kubectl -n keptn port-forward service/api-gateway-nginx 8080:80
    ```
-8. Authenticate Keptn:
+7. Authenticate Keptn:
    ```shell
    keptn auth --endpoint=http://127.0.0.1:8080/api --api-token=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
    ```
-9. Verify the installation has worked
+8. Verify the installation has worked
    ```shell
    keptn status
    ```
-10. Verify which images have been deployed
-    ```shell
-    kubectl -n keptn get deployments
-    ```
-11. Run tests (e.g., UniformRegistration):
+9. Verify which images have been deployed
+   ```shell
+   kubectl -n keptn get deployments
+   ```
+10. Run tests (e.g., UniformRegistration):
    ```shell
    cd test/go-tests && KEPTN_ENDPOINT="http://127.0.0.1:8080/api" go test ./...
    ```
