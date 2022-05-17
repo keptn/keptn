@@ -2,7 +2,10 @@ package handler
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	"strings"
 	"time"
 
 	"github.com/benbjohnson/clock"
@@ -73,7 +76,7 @@ func (e *EventDispatcher) Add(event models.DispatcherEvent, skipQueue bool) erro
 		if err := e.tryToSendEvent(*eventScope, event); err != nil {
 			// if the event cannot be sent because it is blocked by other sequences,
 			// we'll add it to the queue and try to send it again later
-			if err != ErrOtherActiveSequencesRunning && err != ErrSequencePaused {
+			if strings.Contains(err.Error(), OtherActiveSequencesRunning) && err != ErrSequencePaused {
 				// in all other cases, return the error
 				return err
 			}
@@ -198,6 +201,7 @@ func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event mod
 			EventData: keptnv2.EventData{
 				Project: eventScope.Project,
 				Stage:   eventScope.Stage,
+				Service: eventScope.Service,
 			},
 		},
 		Status: []string{apimodels.SequenceStartedState},
@@ -211,7 +215,7 @@ func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event mod
 		for _, otherSequence := range startedSequenceExecutions {
 			if otherSequence.Status.CurrentTask.TriggeredID != event.Event.ID() {
 				if !e.isCurrentEventOverrulingOtherEvent(otherSequence, event) {
-					return ErrOtherActiveSequencesRunning
+					return errors.New(fmt.Sprint(OtherActiveSequencesRunning, otherSequence.Scope.KeptnContext))
 				}
 			}
 		}

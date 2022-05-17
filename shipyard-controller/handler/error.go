@@ -19,8 +19,6 @@ var ErrStageNotFound = errors.New("stage not found")
 
 var ErrChangesRollback = errors.New("failed to rollback changes")
 
-var ErrOtherActiveSequencesRunning = errors.New("other sequences are currently running in the same stage for the same service")
-
 var ErrSequencePaused = errors.New("sequence is paused")
 
 var ErrSequenceBlocked = errors.New("sequence is currently blocked")
@@ -70,3 +68,5 @@ var UnableProvisionDeleteGeneric = fmt.Sprintf(UnableProvisionDelete, "unable to
 var UnableProvisionDeleteReq = "Error creating delete provision request: %s"
 
 var UnableProvisionPostReq = "Error creating post provision request: %s"
+
+var OtherActiveSequencesRunning = "Other sequences are currently running in the same stage for the same service with context id: "

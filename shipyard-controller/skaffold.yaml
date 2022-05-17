@@ -1,10 +1,10 @@
-apiVersion: skaffold/v2beta22
+apiVersion: skaffold/v2beta28
 kind: Config
 build:
   local:
     useBuildkit: true
   artifacts:
-    - image: keptndev/shipyard-controller
+    - image: docker.io/keptndev/shipyard-controller
       docker:
         dockerfile: Dockerfile
         target: production
