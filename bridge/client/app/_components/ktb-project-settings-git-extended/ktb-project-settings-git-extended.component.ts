@@ -4,6 +4,8 @@ import { IGitDataExtended, IGitHttps, IGitSsh } from '../../_interfaces/git-upst
 import { DataService } from '../../_services/data.service';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { filter, map } from 'rxjs/operators';
+import { NotificationType } from '../../_models/notification';
+import { NotificationsService } from '../../_services/notifications.service';
 import { isGitHTTPS, isGitSSH, isRemoteUrlEmpty } from '../../_utils/git-upstream.utils';
 
 export enum GitFormType {
@@ -83,7 +85,11 @@ export class KtbProjectSettingsGitExtendedComponent implements OnInit {
     }
   }
 
-  constructor(private readonly dataService: DataService, readonly routes: ActivatedRoute) {
+  constructor(
+    private readonly dataService: DataService,
+    readonly routes: ActivatedRoute,
+    private notificationsService: NotificationsService
+  ) {
     this.routes.paramMap
       .pipe(
         map((params: ParamMap) => params.get('projectName')),
@@ -105,6 +111,10 @@ export class KtbProjectSettingsGitExtendedComponent implements OnInit {
       this.dataService.updateGitUpstream(this.projectName, this.gitData).subscribe(
         () => {
           this.isGitUpstreamInProgress = false;
+          this.notificationsService.addNotification(
+            NotificationType.SUCCESS,
+            'The Git upstream was changed successfully.'
+          );
           this.resetTouched.emit();
         },
         () => {

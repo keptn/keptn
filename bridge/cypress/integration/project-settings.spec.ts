@@ -1,5 +1,6 @@
 import NewProjectCreatePage from '../support/pageobjects/NewProjectCreatePage';
 import { Project } from '../../shared/models/project';
+import BasePage from '../support/pageobjects/BasePage';
 
 describe('Git upstream extended settings project https test', () => {
   const projectSettingsPage = new NewProjectCreatePage();
@@ -54,6 +55,40 @@ describe('Git upstream extended settings project https test', () => {
       .assertProxyUsername('myProxyUser')
       .assertProxyUrl('myProxyUrl')
       .assertProxyPort(5000);
+  });
+
+  it('should submit https form and show notification', () => {
+    const basePage = new BasePage();
+    const project: Project = {
+      projectName: 'sockshop',
+      stages: [],
+      gitUser: 'myGitUser',
+      gitRemoteURI: 'https://myGitURL.com',
+      gitProxyInsecure: false,
+      shipyardVersion: '0.14',
+    };
+    cy.intercept('/api/project/sockshop', {
+      body: project,
+    });
+    projectSettingsPage.interceptSettings(true).visitSettings('sockshop').typeGitToken('myToken').updateProject();
+    basePage.notificationSuccessVisible('The Git upstream was changed successfully.');
+  });
+
+  it('should submit ssh form and show notification', () => {
+    const basePage = new BasePage();
+    const project: Project = {
+      projectName: 'sockshop',
+      stages: [],
+      gitProxyInsecure: false,
+      gitUser: 'myGitUser',
+      gitRemoteURI: 'ssh://myGitURL.com',
+      shipyardVersion: '0.14',
+    };
+    cy.intercept('/api/project/sockshop', {
+      body: project,
+    });
+    projectSettingsPage.interceptSettings(true).visitSettings('sockshop').typeValidSshPrivateKey().updateProject();
+    basePage.notificationSuccessVisible('The Git upstream was changed successfully.');
   });
 
   it('should select SSH', () => {

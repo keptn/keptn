@@ -6,6 +6,7 @@ import {
   interceptMainResourceApEnabled,
   interceptMainResourceEnabled,
   interceptProjectBoard,
+  interceptProjectSettings,
 } from '../intercept';
 
 class NewProjectCreatePage {
@@ -37,6 +38,7 @@ class NewProjectCreatePage {
     } else {
       interceptMain();
     }
+    interceptProjectSettings();
     return this;
   }
 
@@ -419,6 +421,11 @@ class NewProjectCreatePage {
 
   public assertUpdateButtonExists(status: boolean): this {
     cy.byTestId('ktb-project-update-button').should(status ? 'exist' : 'not.exist');
+    return this;
+  }
+
+  public updateProject(): this {
+    cy.byTestId('ktb-project-update-button').click();
     return this;
   }
 
