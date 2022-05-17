@@ -404,28 +404,26 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   }
 
   getFilteredSequences(sequences: Sequence[], filters: Record<string, string[]>): Sequence[] {
-    return sequences.filter((s) => {
-      let res = true;
-      Object.keys(filters).forEach((key) => {
+    const filterSequence = (s: Sequence) => {
+      const mapFilter = (key: string): boolean => {
         switch (key) {
           case 'Service':
-            res = res && filters[key].includes(s.service);
-            break;
+            return filters[key].includes(s.service);
           case 'Stage':
-            res = res && filters[key].every((f) => s.getStages().includes(f));
-            break;
+            return filters[key].every((f) => s.getStages().includes(f));
           case 'Sequence':
-            res = res && filters[key].includes(s.name);
-            break;
+            return filters[key].includes(s.name);
           case 'Status':
-            res = res && filters[key].includes(s.getStatus());
-            break;
+            filters[key].includes(s.getStatus());
           default:
-            break;
+            return true;
         }
-      });
-      return res;
-    });
+      };
+      const reduceFilter = (prior: boolean, current: boolean): boolean => prior && current;
+      return Object.keys(filters).map(mapFilter).reduce(reduceFilter, true);
+    };
+
+    return sequences.filter(filterSequence);
   }
 
   public getTracesLastUpdated(sequence: Sequence): Date | undefined {
