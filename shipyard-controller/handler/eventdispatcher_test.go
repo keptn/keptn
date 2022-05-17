@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/cloudevents/sdk-go/v2/event"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"testing"
 	"time"
@@ -210,6 +211,64 @@ func Test_EventIsSentImmediatelyButOtherSequenceIsRunning(t *testing.T) {
 
 	require.Nil(t, err)
 	require.Equal(t, 0, len(eventSender.SentEvents))
+	require.Len(t, eventQueueRepo.QueueEventCalls(), 1)
+}
+
+func Test_EventIsSentImmediatelyButOtherSequenceIsRunningDifferentService(t *testing.T) {
+
+	timeAfter := time.Date(2021, 4, 21, 15, 00, 00, 1, time.UTC)
+	eventSender := &fake.EventSender{
+		SentEvents: []event.Event{},
+	}
+	eventRepo := &dbmock.EventRepoMock{}
+	eventQueueRepo := &dbmock.EventQueueRepoMock{
+		QueueEventFunc: func(item models.QueueItem) error {
+			eventSender.SentEvents = append(eventSender.SentEvents, event.Event{})
+			return nil
+		},
+		GetQueuedEventsFunc: func(timestamp time.Time) ([]models.QueueItem, error) {
+			return nil, nil
+		},
+		GetEventQueueSequenceStatesFunc: func(filter models.EventQueueSequenceState) ([]models.EventQueueSequenceState, error) {
+			return nil, nil
+		},
+	}
+
+	sequenceExecutionRepo := &dbmock.SequenceExecutionRepoMock{
+		GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
+			return []models.SequenceExecution{}, nil
+		},
+		IsContextPausedFunc: func(eventScope models.EventScope) bool {
+			return false
+		},
+	}
+
+	mockClock := clock.NewMock()
+
+	mockClock.Set(timeAfter)
+
+	dispatcher := EventDispatcher{
+		eventRepo:             eventRepo,
+		eventQueueRepo:        eventQueueRepo,
+		eventSender:           eventSender,
+		theClock:              mockClock,
+		syncInterval:          15 * time.Second,
+		sequenceExecutionRepo: sequenceExecutionRepo,
+	}
+	data := keptnv2.EventData{
+		Project: "my-project",
+		Stage:   "my-stage",
+		Service: "my-otherservice",
+	}
+	event, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task"), "source", data).Build()
+	event.Shkeptncontext = "my-context-id"
+	event.Triggeredid = "my-otherid"
+	dispatcherEvent := models.DispatcherEvent{Event: keptnv2.ToCloudEvent(event), TimeStamp: timeAfter}
+
+	err := dispatcher.Add(dispatcherEvent, false)
+
+	require.Nil(t, err)
+	require.Equal(t, 1, len(eventSender.SentEvents))
 	require.Len(t, eventQueueRepo.QueueEventCalls(), 1)
 }
 
