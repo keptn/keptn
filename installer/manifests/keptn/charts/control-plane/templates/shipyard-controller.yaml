@@ -1,3 +1,4 @@
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -39,10 +40,11 @@ spec:
           image: {{ .Values.shipyardController.image.repository }}:{{ .Values.shipyardController.image.tag | default .Chart.AppVersion }}
           lifecycle:
             preStop:
-              httpGet:
-                port: 8081
-                path: /operations/v1/pre-stop
-                host: localhost
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - wget http://localhost:8081/operations/v1/pre-stop
           livenessProbe:
             httpGet:
               path: /health

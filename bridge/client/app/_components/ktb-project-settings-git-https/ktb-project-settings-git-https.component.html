@@ -5,7 +5,7 @@
   [isLoading]="isLoading"
   (gitDataChanged)="gitUpstreamChanged($event); inputChanged()"
 ></ktb-project-settings-git>
-<h2>Certificate</h2>
+<h3>Certificate</h3>
 <p class="mt-0">
   If a certificate is needed for the Git repository connection, upload the certificate file or add it directly as text.
 </p>
@@ -17,7 +17,7 @@
     certificate = $event; isCertificateValid = certificateInputElement.certificateForm.valid; inputChanged()
   "
 ></ktb-certificate-input>
-<h2 class="mt-3">Proxy</h2>
+<h3 class="mt-3">Proxy</h3>
 <dt-switch
   (change)="proxyEnabled = $event.checked; inputChanged()"
   [checked]="proxyEnabled"

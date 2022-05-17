@@ -69,7 +69,13 @@ function getEvaluationUrls(project: string, service: string): string[] {
 }
 
 export function interceptMainResourceEnabled(): void {
-  cy.intercept('/api/v1/metadata', { fixture: 'metadata.mock' }).as('metadata');
+  cy.intercept('/api/v1/metadata', { fixture: 'metadata.ap-disabled.mock' }).as('metadata');
+  cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfoEnableResourceService.mock' });
+  cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
+}
+
+export function interceptMainResourceApEnabled(): void {
+  cy.intercept('/api/v1/metadata', { fixture: 'metadata.ap-enabled.mock' }).as('metadata');
   cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfoEnableResourceService.mock' });
   cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
 }
