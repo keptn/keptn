@@ -65,7 +65,11 @@ func Test_InitialRegistrationData(t *testing.T) {
 	require.Equal(t, "k8s-podname", regData.MetaData.KubernetesMetaData.PodName)
 	require.Equal(t, "k8s-nodename", regData.MetaData.Hostname)
 	require.Equal(t, []models.EventSubscription{{Event: "sh.keptn.event.task1.triggered"}, {Event: "sh.keptn.event.task2.triggered"}}, regData.Subscriptions)
-
+}
+func Test_InitialRegistrationData_EmptyPubSubTopics(t *testing.T) {
+	keptn := Keptn{env: EnvConfig{PubSubTopic: ""}}
+	regData := keptn.RegistrationData()
+	require.Equal(t, 0, len(regData.Subscriptions))
 }
 
 func newTestTaskTriggeredEvent() models.KeptnContextExtendedCE {

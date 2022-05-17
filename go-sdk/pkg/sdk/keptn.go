@@ -262,9 +262,12 @@ func (k *Keptn) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE
 
 func (k *Keptn) RegistrationData() controlplane.RegistrationData {
 	subscriptions := []models.EventSubscription{}
-	subscriptionsFromEnv := strings.Split(k.env.PubSubTopic, ",")
+	subjects := []string{}
+	if k.env.PubSubTopic != "" {
+		subjects = strings.Split(k.env.PubSubTopic, ",")
+	}
 
-	for _, s := range subscriptionsFromEnv {
+	for _, s := range subjects {
 		subscriptions = append(subscriptions, models.EventSubscription{Event: s})
 	}
 	return controlplane.RegistrationData{
