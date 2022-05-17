@@ -208,7 +208,7 @@ Pre-requisites:
    KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n $KEPTN_NAMESPACE -ojsonpath='{.data.keptn-api-token}' | base64 --decode)
    KEPTN_BRIDGE_URL=http://$(kubectl -n $KEPTN_NAMESPACE get ingress api-keptn-ingress -ojsonpath='{.spec.rules[0].host}')/bridge
    ```
-11. Authenticate Keptn:
+10. Authenticate Keptn:
    ```console
    keptn auth --endpoint=$KEPTN_ENDPOINT --api-token=$KEPTN_API_TOKEN
    ```
@@ -216,11 +216,11 @@ Pre-requisites:
    ```console
    keptn status
    ```
-11. Verify which images have been deployed
+12. Verify which images have been deployed
    ```console
    kubectl -n $KEPTN_NAMESPACE get deployments
    ```
-11. Run tests (e.g., UniformRegistration):
+13. Run tests (e.g., UniformRegistration):
    ```console
    cd test/go-tests && go test ./...
    ```
