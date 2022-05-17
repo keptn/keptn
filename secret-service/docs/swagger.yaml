@@ -96,6 +96,10 @@ paths:
       responses:
         "200":
           description: ""
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Error'
         "404":
           description: Not Found
           schema:
@@ -139,12 +143,16 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "201":
+          description: Created
           schema:
             $ref: '#/definitions/model.Secret'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "409":
+          description: Conflict
           schema:
             $ref: '#/definitions/model.Error'
         "500":
@@ -176,6 +184,10 @@ paths:
             $ref: '#/definitions/model.Secret'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "404":
+          description: Not Found
           schema:
             $ref: '#/definitions/model.Error'
         "500":

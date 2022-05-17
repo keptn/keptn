@@ -35,8 +35,9 @@ type SecretHandler struct {
 // @Accept json
 // @Produce json
 // @Param secret body model.Secret true "The new secret to be created"
-// @Success 200 {object} model.Secret
+// @Success 201 {object} model.Secret
 // @Failure 400 {object} model.Error
+// @Failure 409 {object} model.Error
 // @Failure 500 {object} model.Error
 // @Router /secret [post]
 func (s SecretHandler) CreateSecret(c *gin.Context) {
@@ -77,6 +78,7 @@ func (s SecretHandler) CreateSecret(c *gin.Context) {
 // @Param secret body model.Secret true "The updated Secret"
 // @Success 200 {object} model.Secret
 // @Failure 400 {object} model.Error
+// @Failure 404 {object} model.Error
 // @Failure 500 {object} model.Error
 // @Router /secret [put]
 func (s SecretHandler) UpdateSecret(c *gin.Context) {
@@ -111,6 +113,7 @@ func (s SecretHandler) UpdateSecret(c *gin.Context) {
 // @Param name query string true "The name of the secret"
 // @Param scope query string true "The scope of the secret"
 // @Success 200
+// @Failure 400 {object} model.Error
 // @Failure 404 {object} model.Error
 // @Failure 500 {object} model.Error
 // @Router /secret [delete]
