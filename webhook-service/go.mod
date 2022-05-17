@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/keptn/go-utils v0.15.1-0.20220512082458-c5e1b7519bec
-	github.com/keptn/keptn/go-sdk v0.0.0-20220517055932-c03ab1670864
+	github.com/keptn/keptn/go-sdk v0.0.0-20220517083148-9eb47707fcd9
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
@@ -31,7 +31,7 @@ require (
 	github.com/googleapis/gnostic v0.5.5 // indirect
 	github.com/json-iterator/go v1.1.11 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0 // indirect
-	github.com/keptn/keptn/cp-connector v0.0.0-20220517055828-76c71aaf4d6b // indirect
+	github.com/keptn/keptn/cp-connector v0.0.0-20220517082204-0b627bdccec3 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/nats-io/nats.go v1.14.0 // indirect
