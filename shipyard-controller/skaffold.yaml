@@ -8,6 +8,8 @@ build:
       docker:
         dockerfile: Dockerfile
         target: production
+        buildArgs:
+          debugBuild: true
 deploy:
   kubectl:
     defaultNamespace: keptn

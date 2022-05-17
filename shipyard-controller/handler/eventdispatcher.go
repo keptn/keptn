@@ -196,16 +196,12 @@ func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event mod
 		return ErrSequenceNotFound
 	}
 
-	startedSequenceExecutions, err := e.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
-		Scope: models.EventScope{
-			EventData: keptnv2.EventData{
-				Project: eventScope.Project,
-				Stage:   eventScope.Stage,
-				Service: eventScope.Service,
-			},
-		},
+	filter := models.SequenceExecutionFilter{
+		Scope:  eventScope,
 		Status: []string{apimodels.SequenceStartedState},
-	})
+	}
+
+	startedSequenceExecutions, err := e.sequenceExecutionRepo.Get(filter)
 	if err != nil {
 		return err
 	}
@@ -213,7 +209,8 @@ func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event mod
 	if startedSequenceExecutions != nil && len(startedSequenceExecutions) > 0 {
 		// if there is another sequence with the state 'started'
 		for _, otherSequence := range startedSequenceExecutions {
-			if otherSequence.Status.CurrentTask.TriggeredID != event.Event.ID() {
+			// the service check was needed since get returns all events due to the or on the filter :(
+			if otherSequence.Status.CurrentTask.TriggeredID != event.Event.ID() && otherSequence.Scope.EventData.Service == eventScope.EventData.Service {
 				if !e.isCurrentEventOverrulingOtherEvent(otherSequence, event) {
 					return errors.New(fmt.Sprint(OtherActiveSequencesRunning, otherSequence.Scope.KeptnContext))
 				}

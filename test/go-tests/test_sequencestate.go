@@ -783,7 +783,7 @@ func Test_SequenceStateParallelStages(t *testing.T) {
 }
 
 func Test_SequenceStateParallelServices(t *testing.T) {
-	projectName := "state-parallel-service"
+	projectName := "state-parallel-services11"
 	serviceName := "my-service"
 	serviceName2 := "my-service2"
 	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(sequenceStateParallelStagesShipyard)
@@ -893,7 +893,7 @@ func Test_SequenceStateParallelServices(t *testing.T) {
 		if !IsEqual(t, projectName, state1.Project, "state.Project") {
 			return false
 		}
-		if !IsEqual(t, *context.KeptnContext, state1.Shkeptncontext, "state.Shkeptncontext") {
+		if !IsEqual(t, *context2.KeptnContext, state1.Shkeptncontext, "state.Shkeptncontext") {
 			return false
 		}
 		if !IsEqual(t, models.SequenceStartedState, state1.State, "state.State") {
