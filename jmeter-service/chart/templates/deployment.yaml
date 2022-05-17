@@ -35,7 +35,7 @@ spec:
           {{- else }}
           image: {{ include "service.image" ( dict "imageRoot" .Values.jmeterservice.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
           {{- end }}
-          imagePullPolicy: {{ .Values.jmeterservice.imagePullPolicy| default "IfNotPresent" }}
+          imagePullPolicy: {{ .Values.jmeterservice.imagePullPolicy | default "IfNotPresent" }}
           ports:
             - containerPort: 80
           env:
