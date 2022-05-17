@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
+	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	logger "github.com/sirupsen/logrus"
@@ -138,6 +139,7 @@ func getGracefulContext() context.Context {
 		logger.Info("Waiting for event handlers to finish")
 		wg.Wait()
 		logger.Info("All handlers finished - ready to shut down")
+		<-time.After(10 * time.Second)
 	}()
 
 	return ctx
