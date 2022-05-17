@@ -49,9 +49,6 @@ definitions:
       gitPrivateKeyPass:
         description: git private key passphrase
         type: string
-      gitProxyInsecure:
-        description: git proxy insecure
-        type: boolean
       gitProxyPassword:
         description: git proxy password
         type: string
@@ -73,6 +70,13 @@ definitions:
       gitUser:
         description: git user
         type: string
+      insecureSkipTLS:
+        description: |-
+          insecure skip tls
+          omitempty property is missing due to fallback of this
+          parameter to "undefined" when marshalling/unmarshalling data
+          when "false" value is present
+        type: boolean
       name:
         description: name
         type: string
@@ -154,12 +158,24 @@ definitions:
       creationDate:
         description: Creation date of the project
         type: string
+      gitProxyScheme:
+        description: git proxy scheme
+        type: string
+      gitProxyUrl:
+        description: git proxy URL
+        type: string
+      gitProxyUser:
+        description: git proxy user
+        type: string
       gitRemoteURI:
         description: Git remote URI
         type: string
       gitUser:
         description: Git User
         type: string
+      insecureSkipTLS:
+        description: insecure skip tls
+        type: boolean
       lastEventContext:
         $ref: '#/definitions/models.EventContextInfo'
         description: last event context
@@ -524,9 +540,6 @@ definitions:
       gitPrivateKeyPass:
         description: git private key passphrase
         type: string
-      gitProxyInsecure:
-        description: git proxy insecure
-        type: boolean
       gitProxyPassword:
         description: git proxy password
         type: string
@@ -548,6 +561,13 @@ definitions:
       gitUser:
         description: git user
         type: string
+      insecureSkipTLS:
+        description: |-
+          insecure skip tls
+          omitempty property is missing due to fallback of this
+          parameter to "undefined" when marshalling/unmarshalling data
+          when "false" value is present
+        type: boolean
       name:
         description: name
         type: string
@@ -604,6 +624,10 @@ paths:
             $ref: '#/definitions/models.KeptnContextExtendedCE'
         "400":
           description: Invalid payload
+          schema:
+            $ref: '#/definitions/models.Error'
+        "404":
+          description: Not found
           schema:
             $ref: '#/definitions/models.Error'
         "500":
@@ -690,8 +714,8 @@ paths:
           description: Invalid payload
           schema:
             $ref: '#/definitions/models.Error'
-        "500":
-          description: Internal error
+        "404":
+          description: Not found
           schema:
             $ref: '#/definitions/models.Error'
       security:
@@ -753,6 +777,10 @@ paths:
           description: ok
           schema:
             $ref: '#/definitions/models.ExpandedProjects'
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/models.Error'
         "500":
           description: Internal error
           schema:
@@ -815,7 +843,7 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
+        "201":
           description: ok
           schema:
             $ref: '#/definitions/models.UpdateProjectResponse'
@@ -863,7 +891,7 @@ paths:
           schema:
             $ref: '#/definitions/models.Error'
         "424":
-          description: Failed dependency
+          description: Failed Dependency
           schema:
             $ref: '#/definitions/models.Error'
         "500":
@@ -931,6 +959,10 @@ paths:
             $ref: '#/definitions/models.CreateServiceResponse'
         "400":
           description: Invalid payload
+          schema:
+            $ref: '#/definitions/models.Error'
+        "409":
+          description: Conflict
           schema:
             $ref: '#/definitions/models.Error'
         "500":
@@ -1008,6 +1040,10 @@ paths:
           description: ok
           schema:
             $ref: '#/definitions/models.ExpandedStages'
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/models.Error'
         "404":
           description: Not found
           schema:
@@ -1092,6 +1128,10 @@ paths:
           description: Invalid payload
           schema:
             $ref: '#/definitions/models.Error'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/models.Error'
         "500":
           description: Internal error
           schema:
@@ -1129,8 +1169,8 @@ paths:
           description: ok
           schema:
             $ref: '#/definitions/models.ExpandedService'
-        "400":
-          description: Invalid payload
+        "404":
+          description: Not found
           schema:
             $ref: '#/definitions/models.Error'
         "500":
@@ -1283,6 +1323,10 @@ paths:
           description: Invalid payload
           schema:
             $ref: '#/definitions/models.Error'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/models.Error'
         "500":
           description: Internal error
           schema:
@@ -1391,10 +1435,6 @@ paths:
       responses:
         "200":
           description: ""
-        "400":
-          description: Invalid payload
-          schema:
-            $ref: '#/definitions/models.Error'
         "500":
           description: Internal error
           schema:
@@ -1457,10 +1497,6 @@ paths:
             items:
               $ref: '#/definitions/models.EventSubscription'
             type: array
-        "400":
-          description: Invalid payload
-          schema:
-            $ref: '#/definitions/models.Error'
         "404":
           description: Not found
           schema:
@@ -1533,14 +1569,6 @@ paths:
       responses:
         "200":
           description: ""
-        "400":
-          description: Invalid payload
-          schema:
-            $ref: '#/definitions/models.Error'
-        "404":
-          description: Not found
-          schema:
-            $ref: '#/definitions/models.Error'
         "500":
           description: Internal error
           schema:
@@ -1572,10 +1600,6 @@ paths:
           description: ok
           schema:
             $ref: '#/definitions/models.EventSubscription'
-        "400":
-          description: Invalid payload
-          schema:
-            $ref: '#/definitions/models.Error'
         "404":
           description: Not found
           schema:
@@ -1617,10 +1641,6 @@ paths:
           description: ""
         "400":
           description: Invalid payload
-          schema:
-            $ref: '#/definitions/models.Error'
-        "404":
-          description: Not found
           schema:
             $ref: '#/definitions/models.Error'
         "500":
