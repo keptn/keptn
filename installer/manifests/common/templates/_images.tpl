@@ -1,4 +1,4 @@
-{{/*Return the proper serivce image name*/}}
+{{/*Return the proper service image name*/}}
 {{- define "service.image" -}}
 {{/*{{- include "service.image" ( dict "imageRoot" .Values.lighthouseService.image "global" .Values.global.keptn "defaultTag" .Chart.appVersion) -}}*/}}
 {{- $registryName := "" -}}
