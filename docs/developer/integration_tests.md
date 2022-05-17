@@ -228,3 +228,7 @@ Pre-requisites:
    ```console
    cd test/go-tests && go test ./... -v -run <NameOfTheTest>
    ```
+   **Note**: To access Keptn instalce via web UI, use the address stored in `KEPTN_BRIDGE_URL`. To display it, type:
+   ```console
+   echo $KEPTN_BRIDGE_URL
+   ```
