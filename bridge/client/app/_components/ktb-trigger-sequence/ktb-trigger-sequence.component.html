@@ -235,6 +235,8 @@
           [label]="'Timeframe'"
           [hint]="'The time frame to evaluate that must be at least 1 minute but defaults to 5 if not specified.'"
           [error]="isValidTimeframe ? '' : 'Timeframe must be minimum 1 minute'"
+          [millisEnabled]="false"
+          [microsEnabled]="false"
           [timeframe]="evaluationFormData.timeframe"
           (timeChanged)="setTimeframe($event)"
         ></ktb-time-input>

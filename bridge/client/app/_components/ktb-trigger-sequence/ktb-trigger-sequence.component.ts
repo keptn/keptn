@@ -199,18 +199,14 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy, AfterView
   }
 
   public setTimeframe(timeframe: Timeframe): void {
-    if (!this.isTimeframeEmpty(timeframe)) {
-      this.isValidTimeframe =
-        (timeframe.hours ?? 0) * 60 +
+    this.isValidTimeframe = this.isTimeframeEmpty(timeframe)
+      ? true
+      : (timeframe.hours ?? 0) * 60 +
           (timeframe.minutes ?? 0) +
           (timeframe.seconds ?? 0) / 60 +
           (timeframe.millis ?? 0) / 60_000 +
           (timeframe.micros ?? 0) / 60_000_000 >=
         1;
-    } else {
-      this.isValidTimeframe = true;
-    }
-
     this.evaluationFormData.timeframe = timeframe;
   }
 
