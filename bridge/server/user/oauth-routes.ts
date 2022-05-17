@@ -1,9 +1,8 @@
 import { Request, Response, Router } from 'express';
-import oClient, { BaseClient, errors, TokenSet } from 'openid-client';
+import { BaseClient, errors, generators, TokenSet } from 'openid-client';
 import { EndSessionData } from '../../shared/interfaces/end-session-data';
 import { SessionService } from './session';
 
-const generators = oClient.generators; // else jest isn't working
 const prefixPath = process.env.PREFIX_PATH;
 
 /**

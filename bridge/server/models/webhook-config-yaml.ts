@@ -166,7 +166,7 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
   private setCurlToBlockFolded(yamlDoc: Document): void {
     const yamlSeq = yamlDoc.getIn(['spec', 'webhooks'], true) as YAMLSeq;
     for (const webhookYaml of yamlSeq.items) {
-      const requests = (webhookYaml as YAMLMap).get('requests', true) as YAMLSeq;
+      const requests = (webhookYaml as YAMLMap).get('requests', true) as unknown as YAMLSeq;
       for (const curl of requests.items) {
         (curl as Scalar).type = 'BLOCK_FOLDED';
       }

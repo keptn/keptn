@@ -1,0 +1,89 @@
+<div class="tooltip-container" *ngIf="tooltip">
+  <dt-key-value-list>
+    <dt-key-value-list-item>
+      <dt-key-value-list-key> Value </dt-key-value-list-key>
+      <dt-key-value-list-value>
+        {{ formatNumber(tooltip.value) }}
+      </dt-key-value-list-value>
+    </dt-key-value-list-item>
+    <ng-container *ngIf="tooltip.type === IHeatmapTooltipType.SCORE">
+      <dt-key-value-list-item>
+        <dt-key-value-list-key> Total passed SLIs </dt-key-value-list-key>
+        <dt-key-value-list-value>
+          {{ tooltip.passCount }}
+        </dt-key-value-list-value>
+      </dt-key-value-list-item>
+
+      <dt-key-value-list-item>
+        <dt-key-value-list-key> Total warning SLIs </dt-key-value-list-key>
+        <dt-key-value-list-value>
+          {{ tooltip.warningCount }}
+        </dt-key-value-list-value>
+      </dt-key-value-list-item>
+
+      <dt-key-value-list-item>
+        <dt-key-value-list-key> Total failed SLIs </dt-key-value-list-key>
+        <dt-key-value-list-value>
+          {{ tooltip.failedCount }}
+        </dt-key-value-list-value>
+      </dt-key-value-list-item>
+
+      <span class="key-value-parent"> Threshold </span>
+      <div class="ml-2">
+        <dt-key-value-list-item>
+          <dt-key-value-list-key>pass</dt-key-value-list-key>
+          <dt-key-value-list-value>
+            <span [class.error]="tooltip.fail" [textContent]="tooltip.thresholdPass"></span>
+          </dt-key-value-list-value>
+        </dt-key-value-list-item>
+
+        <dt-key-value-list-item>
+          <dt-key-value-list-key>warning</dt-key-value-list-key>
+          <dt-key-value-list-value>
+            <span
+              [class.warning]="tooltip.warn && !tooltip.fail"
+              [class.error]="tooltip.fail"
+              [textContent]="tooltip.thresholdWarn"
+            ></span>
+          </dt-key-value-list-value>
+        </dt-key-value-list-item>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="tooltip.type === IHeatmapTooltipType.SLI">
+      <dt-key-value-list-item>
+        <dt-key-value-list-key> Score </dt-key-value-list-key>
+        <dt-key-value-list-value>
+          {{ tooltip.score | truncateNumber: 2 }}
+        </dt-key-value-list-value>
+      </dt-key-value-list-item>
+
+      <dt-key-value-list-item>
+        <dt-key-value-list-key> Key SLI </dt-key-value-list-key>
+        <dt-key-value-list-value>
+          {{ tooltip.keySli ? 'true' : 'false' }}
+        </dt-key-value-list-value>
+      </dt-key-value-list-item>
+
+      <span class="key-value-parent">Pass Criteria</span>
+      <div class="ml-2">
+        <dt-key-value-list-item *ngFor="let target of tooltip.passTargets">
+          <dt-key-value-list-key> {{ target.criteria }} </dt-key-value-list-key>
+          <dt-key-value-list-value>
+            <span [class.error]="target.violated"> {{ formatNumber(target.targetValue) }} </span>
+          </dt-key-value-list-value>
+        </dt-key-value-list-item>
+      </div>
+
+      <span class="key-value-parent"> Warning Criteria </span>
+      <div class="ml-2">
+        <dt-key-value-list-item *ngFor="let target of tooltip.warningTargets">
+          <dt-key-value-list-key> {{ target.criteria }} </dt-key-value-list-key>
+          <dt-key-value-list-value>
+            <span [class.error]="target.violated"> {{ formatNumber(target.targetValue) }} </span>
+          </dt-key-value-list-value>
+        </dt-key-value-list-item>
+      </div>
+    </ng-container>
+  </dt-key-value-list>
+</div>
