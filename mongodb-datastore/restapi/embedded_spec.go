@@ -134,7 +134,7 @@ func init() {
               }
             }
           },
-          "default": {
+          "500": {
             "description": "error",
             "schema": {
               "$ref": "#/definitions/error"
@@ -186,7 +186,7 @@ func init() {
               }
             }
           },
-          "default": {
+          "500": {
             "description": "error",
             "schema": {
               "$ref": "#/definitions/error"
@@ -408,7 +408,7 @@ func init() {
               }
             }
           },
-          "default": {
+          "500": {
             "description": "error",
             "schema": {
               "$ref": "#/definitions/error"
@@ -466,7 +466,7 @@ func init() {
               }
             }
           },
-          "default": {
+          "500": {
             "description": "error",
             "schema": {
               "$ref": "#/definitions/error"

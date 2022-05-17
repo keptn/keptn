@@ -98,7 +98,7 @@ paths:
                 type: array
                 items:
                   "$ref": "#/definitions/KeptnContextExtendedCE"
-        default:
+        500:
           description: error
           schema:
             "$ref": "#/definitions/error"
@@ -137,7 +137,7 @@ paths:
                 type: array
                 items:
                   "$ref": "#/definitions/KeptnContextExtendedCE"
-        default:
+        500:
           description: error
           schema:
             "$ref": "#/definitions/error"
