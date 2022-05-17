@@ -5,15 +5,16 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"net/http"
+	"strings"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"go.mongodb.org/mongo-driver/mongo"
-	"net/http"
-	"strings"
-	"time"
 )
 
 type IUniformIntegrationHandler interface {
@@ -238,7 +239,6 @@ func (rh *UniformIntegrationHandler) updateExistingIntegration(integration *apim
 // @Produce json
 // @Param integrationID path string true "integrationID"
 // @Success 200
-// @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /uniform/registration/{integrationID} [delete]
 func (rh *UniformIntegrationHandler) Unregister(c *gin.Context) {
@@ -322,8 +322,8 @@ func (rh *UniformIntegrationHandler) KeepAlive(c *gin.Context) {
 // @Param subscription body apimodels.EventSubscription true "Subscription"
 // @Success 201
 // @Failure 400 {object} models.Error "Invalid payload"
-// @Failure 500 {object} models.Error "Internal error"
 // @Failure 404 {object} models.Error "Not found"
+// @Failure 500 {object} models.Error "Internal error"
 // @Router /uniform/registration/{integrationID}/subscription [post]
 func (rh *UniformIntegrationHandler) CreateSubscription(c *gin.Context) {
 
@@ -371,7 +371,6 @@ func (rh *UniformIntegrationHandler) CreateSubscription(c *gin.Context) {
 // @Success 201
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
-// @Failure 404 {object} models.Error "Not found"
 // @Router /uniform/registration/{integrationID}/subscription/{subscriptionID} [put]
 func (rh *UniformIntegrationHandler) UpdateSubscription(c *gin.Context) {
 
@@ -425,9 +424,7 @@ func (rh *UniformIntegrationHandler) UpdateSubscription(c *gin.Context) {
 // @Param integrationID path string true "integrationID"
 // @Param subscriptionID path string true "subscriptionID"
 // @Success 200
-// @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
-// @Failure 404 {object} models.Error "Not found"
 // @Router /uniform/registration/{integrationID}/subscription/{subscriptionID} [delete]
 func (rh *UniformIntegrationHandler) DeleteSubscription(c *gin.Context) {
 	integrationID := c.Param("integrationID")
@@ -452,9 +449,8 @@ func (rh *UniformIntegrationHandler) DeleteSubscription(c *gin.Context) {
 // @Param integrationID path string true "integrationID"
 // @Param subscriptionID path string true "subscriptionID"
 // @Success 200 {object} apimodels.EventSubscription "ok"
-// @Failure 400 {object} models.Error "Invalid payload"
-// @Failure 500 {object} models.Error "Internal error"
 // @Failure 404 {object} models.Error "Not found"
+// @Failure 500 {object} models.Error "Internal error"
 // @Router /uniform/registration/{integrationID}/subscription/{subscriptionID} [get]
 func (rh *UniformIntegrationHandler) GetSubscription(c *gin.Context) {
 	integrationID := c.Param("integrationID")
@@ -482,9 +478,8 @@ func (rh *UniformIntegrationHandler) GetSubscription(c *gin.Context) {
 // @Produce json
 // @Param integrationID path string true "integrationID"
 // @Success 200 {object} []apimodels.EventSubscription "ok"
-// @Failure 400 {object} models.Error "Invalid payload"
-// @Failure 500 {object} models.Error "Internal error"
 // @Failure 404 {object} models.Error "Not found"
+// @Failure 500 {object} models.Error "Internal error"
 // @Router /uniform/registration/{integrationID}/subscription [get]
 func (rh *UniformIntegrationHandler) GetSubscriptions(c *gin.Context) {
 	integrationID := c.Param("integrationID")

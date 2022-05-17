@@ -3,6 +3,9 @@ package handler
 import (
 	"errors"
 	"fmt"
+	"net/http"
+	"sort"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
@@ -12,8 +15,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/config"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
-	"net/http"
-	"sort"
 )
 
 type ServiceParamsValidator struct {
@@ -76,6 +77,7 @@ func NewServiceHandler(serviceManager IServiceManager, eventSender common.EventS
 // @Param   service     body    models.CreateServiceParams     true        "Project"
 // @Success 200 {object} models.CreateServiceResponse	"ok"
 // @Failure 400 {object} models.Error "Invalid payload"
+// @Failure 409 {object} models.Error "Conflict"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/{project}/service [post]
 func (sh *ServiceHandler) CreateService(c *gin.Context) {
@@ -185,7 +187,7 @@ func (sh *ServiceHandler) DeleteService(c *gin.Context) {
 // @Param   stage     path    string     true        "Stage"
 // @Param   service     path    string     true        "Service"
 // @Success 200 {object} apimodels.ExpandedService	"ok"
-// @Failure 400 {object} models.Error "Invalid payload"
+// @Failure 404 {object} models.Error "Not found"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/{project}/stage/{stage}/service/{service} [get]
 func (sh *ServiceHandler) GetService(c *gin.Context) {
@@ -219,6 +221,7 @@ func (sh *ServiceHandler) GetService(c *gin.Context) {
 // @Param   nextPageKey     	query    	string     	false	"Pointer to the next set of items"
 // @Success 200 {object} apimodels.ExpandedServices	"ok"
 // @Failure 400 {object} models.Error "Invalid payload"
+// @Failure 404 {object} models.Error "Not found"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/{project}/stage/{stage}/service [get]
 func (sh *ServiceHandler) GetServices(c *gin.Context) {

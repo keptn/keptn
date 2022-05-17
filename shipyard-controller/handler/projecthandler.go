@@ -198,6 +198,7 @@ func NewProjectHandler(projectManager IProjectManager, eventSender common.EventS
 // @Param   nextPageKey     	query    	string     	false	"Pointer to the next set of items"
 // @Param   disableUpstreamSync	query		boolean		false	"Disable sync of upstream repo before reading content"
 // @Success 200 {object} apimodels.ExpandedProjects	"ok"
+// @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project [get]
 func (ph *ProjectHandler) GetAllProjects(c *gin.Context) {
@@ -275,6 +276,8 @@ func (ph *ProjectHandler) GetProjectByName(c *gin.Context) {
 // @Param   project     body    models.CreateProjectParams     true        "Project"
 // @Success 201 {object} models.CreateProjectResponse	"ok"
 // @Failure 400 {object} models.Error "Invalid payload"
+// @Failure 409 {object} models.Error "Conflict"
+// @Failure 424 {object} models.Error "Failed dependency"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project [post]
 func (ph *ProjectHandler) CreateProject(c *gin.Context) {
@@ -347,10 +350,10 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Param   project     body    models.UpdateProjectParams     true        "Project"
-// @Success 200 {object} models.UpdateProjectResponse	"ok"
+// @Success 201 {object} models.UpdateProjectResponse	"ok"
 // @Failure 400 {object} models.Error "Bad Request"
-// @Failure 424 {object} models.Error "Failed Dependency"
 // @Failure 404 {object} models.Error "Not Found"
+// @Failure 424 {object} models.Error "Failed Dependency"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project [put]
 func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
@@ -404,6 +407,7 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 // @Param   project     path    string     true        "Project name"
 // @Success 200 {object} models.DeleteProjectResponse	"ok"
 // @Failure 400 {object} models.Error "Invalid payload"
+// @Failure 424 {object} models.Error "Failed Dependency"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/{project} [delete]
 func (ph *ProjectHandler) DeleteProject(c *gin.Context) {
