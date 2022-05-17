@@ -25,11 +25,11 @@ kubectl port-forward -n keptn svc/gitea-ssh 3001:22 &
 
 sleep 30
 
-curl -vkL --silent --user ${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASSWORD} -X POST "http://localhost:3000/api/v1/users/${GITEA_ADMIN_USER}/tokens" -H "accept: application/json" -H "Content-Type: application/json; charset=utf-8" -d "{ \"name\": \"my-token\" }" -o gitea-token.txt
-curl -vkL --silent --user ${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASSWORD} -X POST "http://localhost:3000/api/v1/user/keys" -H "accept: application/json" -H "Content-Type: application/json; charset=utf-8" -d "{ \"key\": \"$GITEA_PUBLIC_KEY\",  \"title\": \"public-key-gitea\"}"
+curl -vkL --silent --user $GITEA_ADMIN_USER:$GITEA_ADMIN_PASSWORD -X POST "http://localhost:3000/api/v1/users/${GITEA_ADMIN_USER}/tokens" -H "accept: application/json" -H "Content-Type: application/json; charset=utf-8" -d "{ \"name\": \"my-token\" }" -o gitea-token.txt
+curl -vkL --silent --user $GITEA_ADMIN_USER:$GITEA_ADMIN_PASSWORD -X POST "http://localhost:3000/api/v1/user/keys" -H "accept: application/json" -H "Content-Type: application/json; charset=utf-8" -d "{ \"key\": \"$GITEA_PUBLIC_KEY\",  \"title\": \"public-key-gitea\"}"
 
 GITEA_TOKEN=$(cat gitea-token.txt | jq -r .sha1)
 
-kubectl create secret generic gitea-access -n keptn --from-literal=username=${GITEA_ADMIN_USER} --from-literal=password=${GITEA_TOKEN} --from-literal=private-key="${GITEA_PRIVATE_KEY}" --from-literal=private-key-pass=${GITEA_PRIVATE_KEY_PASSPHRASE}
+kubectl create secret generic gitea-access -n keptn --from-literal=username="${GITEA_ADMIN_USER}" --from-literal=password="${GITEA_TOKEN}" --from-literal=private-key="${GITEA_PRIVATE_KEY}" --from-literal=private-key-pass="${GITEA_PRIVATE_KEY_PASSPHRASE}"
 
 rm gitea-token.txt squid.conf squid.yaml
