@@ -1,8 +1,8 @@
 # Resource Service :: The New Configuration Service
 
 The *resource-service* is a Keptn core component used to manage resources for Keptn project-related entities,
-i.e., project, stage, and service. The entity model is shown below. To store the resources with version control, a git
-repository is used that is mounted as emptyDir volume.  Besides, this service has functionality to upload the git repository
+i.e., project, stage, and service. The entity model is shown below. To store the resources with version control, a Git
+repository is used that is mounted as emptyDir volume.  Besides, this service has functionality to upload the Git repository
 to any Git-based service such as GitLab, GitHub, Bitbucket, etc.
 
 The *resource-service* has been designed from the ground up to work with a remote upstream.
@@ -57,7 +57,11 @@ Before migrating from the *configuration-service* to the *resource-service* it i
 
 Suppose you need the additional features provided by the *resource-service*,  such as HTTPS/SSH or Proxy, to configure your Keptn project with an upstream. In that case,
 you can also deploy the *resource-service* and configure the Git repositories later. For this, a backup is necessary.
-In the backup data, you will find a folder for each Keptn project. For each project, open a shell in that directory and make sure the `Git` CLI is available.
-Attach your upstream to the Keptn project via the Git CLI with `git remote add origin <remoteURL>`, where `<remoteURL>` is your Git upstream.
-Afterward, run `git push --all` to synchronize your backup with your Git repository.
-Finally, you can navigate to your Bridge installation and configure the upstream to your project.
+
+1. Do a backup of the [configuration-service](https://keptn.sh/docs/0.15.x/operate/backup_and_restore/#back-up-configuration-service).
+2. For each Keptn project in the backup data open a shell in that directory and make sure the `Git` CLI is available.
+3. Attach your upstream to the Keptn project via the Git CLI with `git remote add origin <remoteURL>`, where `<remoteURL>` is your Git upstream.
+4. Run `git push --all` to synchronize your backup with your Git repository.
+5. Install Keptn with the *resource-service* enabled
+6. Navigate to your Bridge installation and configure an upstream to the Keptn projects.
+
