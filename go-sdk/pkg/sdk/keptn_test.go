@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/strutils"
@@ -25,16 +26,33 @@ func Test_WhenReceivingAnEvent_StartedEventAndFinishedEventsAreSent(t *testing.T
 	fakeKeptn.AssertNumberOfEventSent(t, 2)
 	fakeKeptn.AssertSentEventType(t, 0, "sh.keptn.event.faketask.started")
 	fakeKeptn.AssertSentEventType(t, 1, "sh.keptn.event.faketask.finished")
-
 }
 
-func Test_WhenReceivingEvent_OnlyStartedEventIsSent(t *testing.T) {
+func Test_WhenReceivingAnEvent_TaskHandlerFails(t *testing.T) {
 	taskHandler := &TaskHandlerMock{}
-	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) { return FakeTaskData{}, nil }
+	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) {
+		return nil, &Error{
+			StatusType: v0_2_0.StatusErrored,
+			ResultType: v0_2_0.ResultFailed,
+			Message:    "something went wrong",
+			Err:        fmt.Errorf("something went wrong"),
+		}
+	}
 	fakeKeptn := NewFakeKeptn("fake")
 	fakeKeptn.AddTaskHandler("sh.keptn.event.faketask.triggered", taskHandler)
-	fakeKeptn.NewEvent(newTestTaskTriggeredEvent())
-	fakeKeptn.AssertNumberOfEventSent(t, 0)
+	fakeKeptn.NewEvent(models.KeptnContextExtendedCE{
+		Data:           v0_2_0.EventData{Project: "prj", Stage: "stg", Service: "svc"},
+		ID:             "id",
+		Shkeptncontext: "context",
+		Source:         strutils.Stringp("source"),
+		Type:           strutils.Stringp("sh.keptn.event.faketask.triggered"),
+	})
+
+	fakeKeptn.AssertNumberOfEventSent(t, 2)
+	fakeKeptn.AssertSentEventType(t, 0, "sh.keptn.event.faketask.started")
+	fakeKeptn.AssertSentEventType(t, 1, "sh.keptn.event.faketask.finished")
+	fakeKeptn.AssertSentEventStatus(t, 1, v0_2_0.StatusErrored)
+	fakeKeptn.AssertSentEventResult(t, 1, v0_2_0.ResultFailed)
 }
 
 func Test_WhenReceivingBadEvent_NoEventIsSent(t *testing.T) {
@@ -44,6 +62,41 @@ func Test_WhenReceivingBadEvent_NoEventIsSent(t *testing.T) {
 	fakeKeptn.AddTaskHandler("sh.keptn.event.faketask.triggered", taskHandler)
 	fakeKeptn.NewEvent(newTestTaskBadTriggeredEvent())
 	fakeKeptn.AssertNumberOfEventSent(t, 0)
+}
+
+func Test_WhenReceivingAnEvent_AndNoFilterMatches_NoEventIsSent(t *testing.T) {
+	taskHandler := &TaskHandlerMock{}
+	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) { return FakeTaskData{}, nil }
+	fakeKeptn := NewFakeKeptn("fake")
+	fakeKeptn.AddTaskHandler("sh.keptn.event.faketask.triggered", taskHandler, func(keptnHandle IKeptn, event KeptnEvent) bool { return false })
+	fakeKeptn.NewEvent(models.KeptnContextExtendedCE{
+		Data:           v0_2_0.EventData{Project: "prj", Stage: "stg", Service: "svc"},
+		ID:             "id",
+		Shkeptncontext: "context",
+		Source:         strutils.Stringp("source"),
+		Type:           strutils.Stringp("sh.keptn.event.faketask.triggered"),
+	})
+
+	fakeKeptn.AssertNumberOfEventSent(t, 0)
+}
+
+func Test_NoFinishedEventDataProvided(t *testing.T) {
+	taskHandler := &TaskHandlerMock{}
+	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) {
+		return nil, nil
+	}
+	fakeKeptn := NewFakeKeptn("fake")
+	fakeKeptn.AddTaskHandler("sh.keptn.event.faketask.triggered", taskHandler)
+	fakeKeptn.NewEvent(models.KeptnContextExtendedCE{
+		Data:           v0_2_0.EventData{Project: "prj", Stage: "stg", Service: "svc"},
+		ID:             "id",
+		Shkeptncontext: "context",
+		Source:         strutils.Stringp("source"),
+		Type:           strutils.Stringp("sh.keptn.event.faketask.triggered"),
+	})
+
+	fakeKeptn.AssertNumberOfEventSent(t, 1)
+	fakeKeptn.AssertSentEventType(t, 0, "sh.keptn.event.faketask.started")
 }
 
 func Test_InitialRegistrationData(t *testing.T) {
@@ -66,6 +119,7 @@ func Test_InitialRegistrationData(t *testing.T) {
 	require.Equal(t, "k8s-nodename", regData.MetaData.Hostname)
 	require.Equal(t, []models.EventSubscription{{Event: "sh.keptn.event.task1.triggered"}, {Event: "sh.keptn.event.task2.triggered"}}, regData.Subscriptions)
 }
+
 func Test_InitialRegistrationData_EmptyPubSubTopics(t *testing.T) {
 	keptn := Keptn{env: EnvConfig{PubSubTopic: ""}}
 	regData := keptn.RegistrationData()

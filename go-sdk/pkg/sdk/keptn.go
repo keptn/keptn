@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/common/strutils"
@@ -15,6 +16,12 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+	"time"
+)
+
+const (
+	shkeptnspecversion = "0.2.4"
+	cloudeventsversion = "1.0"
 )
 
 type ResourceHandler interface {
@@ -90,14 +97,6 @@ func (e Error) Error() string {
 // KeptnOption can be used to configure the keptn sdk
 type KeptnOption func(*Keptn)
 
-// WithEnvConfig overwrites the adaptation data which is per default read from
-// environment variables
-func WithEnvConfig(env EnvConfig) KeptnOption {
-	return func(k *Keptn) {
-		k.env = env
-	}
-}
-
 // WithTaskHandler registers a handler which is responsible for processing a .triggered event
 func WithTaskHandler(eventType string, handler TaskHandler, filters ...func(keptnHandle IKeptn, event KeptnEvent) bool) KeptnOption {
 	return func(k *Keptn) {
@@ -125,15 +124,6 @@ func WithGracefulShutdown(gracefulShutdown bool) KeptnOption {
 func WithLogger(logger Logger) KeptnOption {
 	return func(k *Keptn) {
 		k.logger = logger
-	}
-}
-
-func WithControlPlaneFromEnv(env EnvConfig) KeptnOption {
-	return func(k *Keptn) {
-		if env.Location == "remote-execution-plane" {
-			panic("go-sdk remote-execution-plane mode not yet supported...")
-		}
-		k.controlPlane, k.eventSender = newControlPlaneFromEnv(env)
 	}
 }
 
@@ -339,11 +329,20 @@ func (k *Keptn) createStartedEventForTriggeredEvent(triggeredEvent models.KeptnC
 	}
 	eventData := keptnv2.EventData{}
 	triggeredEvent.DataAs(&eventData)
-	event, err := keptnv2.KeptnEvent(startedEventType, k.source, eventData).WithKeptnContext(triggeredEvent.Shkeptncontext).WithTriggeredID(triggeredEvent.ID).Build()
-	if err != nil {
-		return nil, fmt.Errorf("could not create error event: %v", err)
+	startedEvent := models.KeptnContextExtendedCE{
+		ID:                 uuid.NewString(),
+		Triggeredid:        triggeredEvent.ID,
+		Shkeptncontext:     triggeredEvent.Shkeptncontext,
+		Contenttype:        cloudevents.ApplicationJSON,
+		Data:               eventData,
+		Source:             strutils.Stringp(k.source),
+		Shkeptnspecversion: shkeptnspecversion,
+		Specversion:        cloudeventsversion,
+		Time:               time.Now().UTC(),
+		Type:               strutils.Stringp(startedEventType),
 	}
-	return &event, nil
+
+	return &startedEvent, nil
 }
 
 func (k *Keptn) createFinishedEventForReceivedEvent(receivedEvent models.KeptnContextExtendedCE, eventData interface{}) (*models.KeptnContextExtendedCE, error) {
@@ -356,7 +355,6 @@ func (k *Keptn) createFinishedEventForReceivedEvent(receivedEvent models.KeptnCo
 	if genericEvent["result"] == nil || genericEvent["result"] == "" {
 		genericEvent["result"] = "pass"
 	}
-
 	finishedEventType, err := keptnv2.ReplaceEventTypeKind(*receivedEvent.Type, "finished")
 	if err != nil {
 		return nil, fmt.Errorf("unable to create '.finished' event: %v from %s", err, *receivedEvent.Type)
@@ -364,19 +362,16 @@ func (k *Keptn) createFinishedEventForReceivedEvent(receivedEvent models.KeptnCo
 	if receivedEvent.Shkeptncontext == "" {
 		return nil, fmt.Errorf("unable to get keptn context from event %s", *receivedEvent.Type)
 	}
-
-	event := models.KeptnContextExtendedCE{
+	return &models.KeptnContextExtendedCE{
 		Contenttype:        cloudevents.ApplicationJSON,
 		Data:               genericEvent,
 		Source:             strutils.Stringp(k.source),
-		Shkeptnspecversion: "1.0",
-		Specversion:        "0.2.4",
+		Shkeptnspecversion: shkeptnspecversion,
+		Specversion:        cloudeventsversion,
 		Type:               strutils.Stringp(finishedEventType),
 		Triggeredid:        receivedEvent.ID,
 		Shkeptncontext:     receivedEvent.Shkeptncontext,
-	}
-
-	return &event, nil
+	}, nil
 }
 
 func (k *Keptn) createErrorEvent(event models.KeptnContextExtendedCE, eventData interface{}, err *Error) (*models.KeptnContextExtendedCE, error) {
@@ -399,26 +394,29 @@ func (k *Keptn) createErrorLogEventForTriggeredEvent(triggeredEvent models.Keptn
 	if eventData == nil {
 		triggeredEvent.DataAs(&errorEventData)
 	}
-
 	if keptnv2.IsTaskEventType(*triggeredEvent.Type) {
 		taskName, _, err := keptnv2.ParseTaskEventType(*triggeredEvent.Type)
 		if err == nil && taskName != "" {
 			errorEventData.Task = taskName
 		}
 	}
-
 	errorEventData.Message = errVal.Message
-
 	if triggeredEvent.Shkeptncontext == "" {
 		return nil, errors.New("unable to get keptn context from '.triggered' event")
 	}
 
-	errEvent, err := keptnv2.KeptnEvent(keptnv2.ErrorLogEventName, k.source, errorEventData).WithKeptnContext(triggeredEvent.Shkeptncontext).WithTriggeredID(triggeredEvent.ID).Build()
-	if err != nil {
-		return nil, fmt.Errorf("could not create error event: %v", err)
-	}
-
-	return &errEvent, nil
+	return &models.KeptnContextExtendedCE{
+		ID:                 uuid.NewString(),
+		Triggeredid:        triggeredEvent.ID,
+		Shkeptncontext:     triggeredEvent.Shkeptncontext,
+		Contenttype:        cloudevents.ApplicationJSON,
+		Data:               errorEventData,
+		Source:             strutils.Stringp(k.source),
+		Shkeptnspecversion: shkeptnspecversion,
+		Specversion:        cloudeventsversion,
+		Time:               time.Now().UTC(),
+		Type:               strutils.Stringp(keptnv2.ErrorLogEventName),
+	}, nil
 }
 
 func (k *Keptn) createErrorFinishedEventForTriggeredEvent(triggeredEvent models.KeptnContextExtendedCE, eventData interface{}, errVal *Error) (*models.KeptnContextExtendedCE, error) {
@@ -426,7 +424,6 @@ func (k *Keptn) createErrorFinishedEventForTriggeredEvent(triggeredEvent models.
 	if eventData == nil {
 		triggeredEvent.DataAs(&commonEventData)
 	}
-
 	commonEventData.Result = errVal.ResultType
 	commonEventData.Status = errVal.StatusType
 	commonEventData.Message = errVal.Message
@@ -439,11 +436,18 @@ func (k *Keptn) createErrorFinishedEventForTriggeredEvent(triggeredEvent models.
 		return nil, fmt.Errorf("unable to get keptn context from '.triggered' event")
 	}
 
-	finishedEvent, errCreateEvent := keptnv2.KeptnEvent(finishedEventType, k.source, commonEventData).WithTriggeredID(triggeredEvent.ID).WithKeptnContext(triggeredEvent.Shkeptncontext).Build()
-	if errCreateEvent != nil {
-		return nil, errCreateEvent
-	}
-	return &finishedEvent, nil
+	return &models.KeptnContextExtendedCE{
+		ID:                 uuid.NewString(),
+		Triggeredid:        triggeredEvent.ID,
+		Shkeptncontext:     triggeredEvent.Shkeptncontext,
+		Contenttype:        cloudevents.ApplicationJSON,
+		Data:               commonEventData,
+		Source:             strutils.Stringp(k.source),
+		Shkeptnspecversion: shkeptnspecversion,
+		Specversion:        cloudeventsversion,
+		Time:               time.Now().UTC(),
+		Type:               strutils.Stringp(finishedEventType),
+	}, nil
 }
 
 func cpHealthEndpointRunner(port string, cp *controlplane.ControlPlane) {
