@@ -19,6 +19,64 @@ describe('KtbEventsListComponent', () => {
 
   const projectName = 'sockshop';
 
+  const sequenceFilters = [
+    [
+      {
+        name: 'Stage',
+        autocomplete: [],
+        showInSidebar: false,
+      },
+      {
+        name: 'dev',
+        value: 'dev',
+      },
+    ],
+    [
+      {
+        name: 'Stage',
+        autocomplete: [],
+        showInSidebar: false,
+      },
+      {
+        name: 'production',
+        value: 'production',
+      },
+    ],
+    [
+      {
+        name: 'Service',
+        autocomplete: [],
+        showInSidebar: false,
+      },
+      {
+        name: 'carts',
+        value: 'carts',
+      },
+    ],
+    [
+      {
+        name: 'Sequence',
+        autocomplete: [],
+        showInSidebar: false,
+      },
+      {
+        name: 'delivery',
+        value: 'delivery',
+      },
+    ],
+    [
+      {
+        name: 'Status',
+        autocomplete: [],
+        showInSidebar: false,
+      },
+      {
+        name: 'Active',
+        value: 'started',
+      },
+    ],
+  ];
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AppModule, HttpClientTestingModule],
@@ -205,63 +263,7 @@ describe('KtbEventsListComponent', () => {
 
     // when
     component.filtersClicked({
-      filters: [
-        [
-          {
-            name: 'Stage',
-            autocomplete: [],
-            showInSidebar: false,
-          },
-          {
-            name: 'dev',
-            value: 'dev',
-          },
-        ],
-        [
-          {
-            name: 'Stage',
-            autocomplete: [],
-            showInSidebar: false,
-          },
-          {
-            name: 'production',
-            value: 'production',
-          },
-        ],
-        [
-          {
-            name: 'Service',
-            autocomplete: [],
-            showInSidebar: false,
-          },
-          {
-            name: 'carts',
-            value: 'carts',
-          },
-        ],
-        [
-          {
-            name: 'Sequence',
-            autocomplete: [],
-            showInSidebar: false,
-          },
-          {
-            name: 'delivery',
-            value: 'delivery',
-          },
-        ],
-        [
-          {
-            name: 'Status',
-            autocomplete: [],
-            showInSidebar: false,
-          },
-          {
-            name: 'Active',
-            value: 'started',
-          },
-        ],
-      ],
+      filters: sequenceFilters,
     });
     fixture.detectChanges();
 
