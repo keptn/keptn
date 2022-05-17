@@ -31,7 +31,7 @@ These changes allow the service implementation to be more flexible and faster in
 The *resource-service* replaces the *configuration-service*, hence only one of the two can be run at the same time.
 The *resource-service* can be enabled during the installation of Keptn setting the Helm value `control-plane.resourceService.enabled` to `true`.
 This flag changes the *configuration-service* `Service` to point towards the *resource-service* `Pod`.
-When the resource-service is enabled by default, the Kubernetes `Service` will change name to `resource-service`.
+When the resource-service is enabled by default, the Kubernetes `Service` changes name to `resource-service`.
 
 ### Deploy it directly into your Kubernetes cluster
 
@@ -58,7 +58,7 @@ Before migrating from the *configuration-service* to the *resource-service* it i
 Suppose you need the additional features provided by the *resource-service*,  such as HTTPS/SSH or Proxy, to configure your Keptn project with an upstream. In that case,
 you can also deploy the *resource-service* and configure the Git repositories later. For this, a backup is necessary.
 
-1. Do a backup of the [configuration-service](https://keptn.sh/docs/0.15.x/operate/backup_and_restore/#back-up-configuration-service).
+1. Back up of the [configuration-service](https://keptn.sh/docs/0.15.x/operate/backup_and_restore/#back-up-configuration-service).
 2. For each Keptn project in the backup data open a shell in that directory and make sure the `Git` CLI is available.
 3. Attach your upstream to the Keptn project via the Git CLI with `git remote add origin <remoteURL>`, where `<remoteURL>` is your Git upstream.
 4. Run `git push --all` to synchronize your backup with your Git repository.
