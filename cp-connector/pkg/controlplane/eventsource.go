@@ -103,6 +103,8 @@ func (n *NATSEventSource) Start(ctx context.Context, registrationData Registrati
 
 func (n *NATSEventSource) OnSubscriptionUpdate(subjects []string) {
 	s := dedup(subjects)
+	n.logger.Infof("Current subscriptions: %v", n.currentSubjects)
+	n.logger.Infof("Trying to subscribe to: %v", s)
 	if !isEqual(n.currentSubjects, s) {
 		err := n.connector.UnsubscribeAll()
 		if err != nil {
