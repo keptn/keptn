@@ -404,7 +404,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   }
 
   getFilteredSequences(sequences: Sequence[], filters: Record<string, string[]>): Sequence[] {
-    const filterSequence = (s: Sequence) => {
+    const filterSequence = (s: Sequence): boolean => {
       const mapFilter = (key: string): boolean => {
         switch (key) {
           case 'Service':
@@ -414,7 +414,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
           case 'Sequence':
             return filters[key].includes(s.name);
           case 'Status':
-            filters[key].includes(s.getStatus());
+            return filters[key].includes(s.getStatus());
           default:
             return true;
         }
