@@ -155,10 +155,7 @@
           },
           "configurations": {
             "production": {
-              "devServerTarget": "bridge:serve-test",
-              "env": {
-                "TZ": "America/New_York"
-              }
+              "devServerTarget": "bridge:serve-test"
             }
           }
         },
@@ -172,10 +169,7 @@
           },
           "configurations": {
             "production": {
-              "devServerTarget": "bridge:serve-test",
-              "env": {
-                "TZ": "America/New_York"
-              }
+              "devServerTarget": "bridge:serve-test"
             }
           }
         }

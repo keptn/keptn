@@ -16,8 +16,10 @@
     "lint:fix": "eslint --fix ./",
     "prettier:check": "prettier --check ./**/*.{js,ts,json,html}",
     "prettier:fix": "prettier --write ./**/*.{js,ts,json,html}",
-    "cypress:open": "ng run bridge:cypress-open",
-    "test:ui": "ng run bridge:cypress-run"
+    "cypress:open": "TZ=Europe/Berlin ng run bridge:cypress-open",
+    "cypress:open:win32": "set TZ=Europe/Berlin && ng run bridge:cypress-open",
+    "test:ui": "TZ=Europe/Berlin ng run bridge:cypress-run",
+    "test:ui:win32": "set TZ=Europe/Berlin && ng run bridge:cypress-run"
   },
   "license": "Apache-2.0",
   "author": "Ermin Muratovic <ermin.muratovic@dynatrace.com>",
