@@ -100,9 +100,10 @@ describe('Sequences', () => {
   });
 
   it('should load older sequences', () => {
-    sequencePage
-      .visit('sockshop')
+    sequencePage.visit('sockshop');
+    cy.wait('@Sequences');
 
+    sequencePage
       .assertSequenceCount(25)
       .assertLoadOlderSequencesButtonExists(true)
 
@@ -117,9 +118,10 @@ describe('Sequences', () => {
 
   describe('filtering', () => {
     it('should show a filtered list if filters are applied for Service', () => {
-      sequencePage
-        .visit('sockshop')
+      sequencePage.visit('sockshop');
+      cy.wait('@Sequences');
 
+      sequencePage
         .checkServiceFilter('carts')
         .assertSequenceCount(22)
         .assertServiceNameOfSequences('carts')
@@ -131,9 +133,10 @@ describe('Sequences', () => {
     });
 
     it('should show a filtered list if filters are applied for Stage', () => {
-      sequencePage
-        .visit('sockshop')
+      sequencePage.visit('sockshop');
+      cy.wait('@Sequences');
 
+      sequencePage
         .checkStageFilter('production')
         .assertSequenceCount(7)
         .assertStageNamesOfSequences(['production'], false)
@@ -148,9 +151,10 @@ describe('Sequences', () => {
     });
 
     it('should show a filtered list if filters are applied for Sequence', () => {
-      sequencePage
-        .visit('sockshop')
+      sequencePage.visit('sockshop');
+      cy.wait('@Sequences');
 
+      sequencePage
         .checkSequenceFilter('delivery')
         .assertSequenceCount(16)
         .assertSequenceNameOfSequences('delivery')
@@ -162,9 +166,10 @@ describe('Sequences', () => {
     });
 
     it('should show a filtered list if filters are applied for Status', () => {
-      sequencePage
-        .visit('sockshop')
+      sequencePage.visit('sockshop');
+      cy.wait('@Sequences');
 
+      sequencePage
         .checkStatusFilter('Active')
         .assertSequenceCount(2)
         .assertStatusOfSequences('started')
@@ -186,9 +191,10 @@ describe('Sequences', () => {
     });
 
     it('should show a filtered list if combined filters are applied', () => {
-      sequencePage
-        .visit('sockshop')
+      sequencePage.visit('sockshop');
+      cy.wait('@Sequences');
 
+      sequencePage
         .checkServiceFilter('carts')
         .checkStageFilter('production')
         .checkSequenceFilter('delivery')
@@ -202,9 +208,10 @@ describe('Sequences', () => {
     });
 
     it('should filter waiting sequences', () => {
-      sequencePage
-        .visit('sockshop')
+      sequencePage.visit('sockshop');
+      cy.wait('@Sequences');
 
+      sequencePage
         .checkStatusFilter('Waiting')
 
         .assertSequenceCount(1)
@@ -212,9 +219,10 @@ describe('Sequences', () => {
     });
 
     it('should save filters to query params', () => {
-      sequencePage
-        .visit('sockshop')
+      sequencePage.visit('sockshop');
+      cy.wait('@Sequences');
 
+      sequencePage
         .checkServiceFilter('carts')
         .checkStageFilter('dev')
         .checkStageFilter('production')
@@ -225,14 +233,15 @@ describe('Sequences', () => {
     });
 
     it('should load filters from query params', () => {
-      sequencePage
-        .visit('sockshop', {
-          Stage: 'dev',
-          Service: 'carts',
-          Sequence: 'delivery',
-          Status: 'started',
-        })
+      sequencePage.visit('sockshop', {
+        Stage: 'dev',
+        Service: 'carts',
+        Sequence: 'delivery',
+        Status: 'started',
+      });
+      cy.wait('@Sequences');
 
+      sequencePage
         .assertFilterIsChecked('Stage', 'dev', true)
         .assertFilterIsChecked('Stage', 'staging', false)
         .assertFilterIsChecked('Stage', 'production', false)
@@ -258,9 +267,10 @@ describe('Sequences', () => {
       });
       environmentPage.intercept().visit('sockshop');
 
-      sequencePage
-        .visit('sockshop', {})
+      sequencePage.visit('sockshop', {});
+      cy.wait('@Sequences');
 
+      sequencePage
         .assertFilterIsChecked('Stage', 'dev', false)
         .assertFilterIsChecked('Stage', 'staging', true)
         .assertFilterIsChecked('Stage', 'production', false)
@@ -278,13 +288,14 @@ describe('Sequences', () => {
     });
 
     it('should apply filters also when loading more sequences', () => {
-      sequencePage
-        .visit('sockshop', {
-          Stage: 'staging',
-          Sequence: 'evaluation',
-          Service: 'carts',
-        })
+      sequencePage.visit('sockshop', {
+        Stage: 'staging',
+        Sequence: 'evaluation',
+        Service: 'carts',
+      });
+      cy.wait('@Sequences');
 
+      sequencePage
         .assertSequenceCount(3)
         .assertLoadOlderSequencesButtonExists(true)
 

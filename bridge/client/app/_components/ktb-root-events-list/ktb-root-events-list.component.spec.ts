@@ -57,9 +57,7 @@ describe('KtbRootEventsListComponent', () => {
 
     // then
     const sequences = fixture.nativeElement.querySelectorAll('ktb-selectable-tile');
-    const showMoreButton = fixture.nativeElement.querySelector('button[dt-show-more]');
     expect(sequences.length).toEqual(25);
-    expect(showMoreButton).toBeTruthy();
     expect(component.events).toEqual(project.sequences);
   });
 
