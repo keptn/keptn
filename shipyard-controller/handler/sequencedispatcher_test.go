@@ -3,6 +3,9 @@ package handler_test
 import (
 	"context"
 	"errors"
+	"testing"
+	"time"
+
 	"github.com/benbjohnson/clock"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -11,8 +14,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/handler"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
-	"testing"
-	"time"
 )
 
 func TestSequenceDispatcher(t *testing.T) {
@@ -340,7 +341,7 @@ func TestSequenceDispatcher_AddError(t *testing.T) {
 	theClock.Add(11 * time.Second)
 
 	// queue repo should have been queried
-	require.Len(t, mockSequenceQueueRepo.GetQueuedSequencesCalls(), 1)
+	require.Len(t, mockSequenceQueueRepo.GetQueuedSequencesCalls(), 2)
 	require.Len(t, mockSequenceExecutionRepo.GetCalls(), 1)
 	require.Empty(t, mockSequenceQueueRepo.DeleteQueuedSequencesCalls())
 
@@ -351,7 +352,7 @@ func TestSequenceDispatcher_AddError(t *testing.T) {
 	require.Error(t, err2, "could not append item!")
 	theClock.Add(11 * time.Second)
 	// queue repo should have been queried
-	require.Len(t, mockSequenceQueueRepo.GetQueuedSequencesCalls(), 2)
+	require.Len(t, mockSequenceQueueRepo.GetQueuedSequencesCalls(), 4)
 	require.Len(t, mockSequenceExecutionRepo.GetCalls(), 1)
 	require.Empty(t, mockSequenceQueueRepo.DeleteQueuedSequencesCalls())
 

@@ -4,8 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"time"
+
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
@@ -60,22 +61,41 @@ func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
 
 	if sd.mode == common.SDModeRW {
 		//if there is only one shipyard we can both read and write,
-		//so we try to dispatch the sequence immediately
-		if err := sd.dispatchSequence(queueItem); err != nil {
-			if errors.Is(err, ErrSequenceBlocked) {
-				//if the sequence is currently blocked, insert it into the queue
-				return sd.add(queueItem)
-			} else if errors.Is(err, ErrSequenceBlockedWaiting) {
-				//if the sequence is currently blocked and should wait, insert it into the queue
+		//so we try to dispatch the sequence immediately if the sequence queue is empty
+		queuedSequences, err := sd.sequenceQueue.GetQueuedSequences()
+		if err != nil {
+			if !errors.Is(err, db.ErrNoEventFound) {
 				if err2 := sd.add(queueItem); err2 != nil {
 					return err2
 				}
 				return ErrSequenceBlockedWaiting
-			} else {
-				return err
 			}
 		}
-		return nil
+		if errors.Is(err, db.ErrNoEventFound) || len(queuedSequences) == 0 {
+			log.Infof("!!!!not blocked item: %+v", queueItem)
+			if err := sd.dispatchSequence(queueItem); err != nil {
+				if errors.Is(err, ErrSequenceBlocked) {
+					//if the sequence is currently blocked, insert it into the queue
+					return sd.add(queueItem)
+				} else if errors.Is(err, ErrSequenceBlockedWaiting) {
+					//if the sequence is currently blocked and should wait, insert it into the queue
+					if err2 := sd.add(queueItem); err2 != nil {
+						return err2
+					}
+					return ErrSequenceBlockedWaiting
+				} else {
+					return err
+				}
+			}
+			return nil
+		} else {
+			//if there are sequences in queue, insert into queue
+			log.Infof("!!!!blocked item: %+v", queueItem)
+			if err2 := sd.add(queueItem); err2 != nil {
+				return err2
+			}
+			return ErrSequenceBlockedWaiting
+		}
 	} else {
 		//if there are multiple shipyard we should only write
 		return sd.add(queueItem)
@@ -136,6 +156,10 @@ func (sd *SequenceDispatcher) dispatchSequences() {
 		return
 	}
 
+	// for _, queuedSequence := range queuedSequences {
+	// 	log.Infof("????item: %+v", queuedSequence)
+	// }
+
 	for _, queuedSequence := range queuedSequences {
 		if err := sd.dispatchSequence(queuedSequence); err != nil {
 			if errors.Is(err, ErrSequenceBlocked) || errors.Is(err, ErrSequenceBlockedWaiting) {
@@ -145,6 +169,31 @@ func (sd *SequenceDispatcher) dispatchSequences() {
 			}
 		}
 	}
+}
+
+func (sd *SequenceDispatcher) isSequenceBlocked(queueItem models.QueueItem) (bool, error) {
+	startedSequenceExecutions, err := sd.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
+		Scope: models.EventScope{
+			EventData: keptnv2.EventData{
+				Project: queueItem.Scope.Project,
+				Stage:   queueItem.Scope.Stage,
+			},
+		},
+		Status: []string{apimodels.SequenceStartedState},
+	})
+
+	// log.Infof("item: %+v", queueItem)
+	// log.Infof("!!!!!number of items in queue: %d, waiting: %d, err: %s", len(startedSequenceExecutions), err.Error())
+
+	if err != nil {
+		return false, err
+	}
+
+	if len(startedSequenceExecutions) > 0 {
+		return false, nil
+	}
+
+	return true, nil
 }
 
 func (sd *SequenceDispatcher) dispatchSequence(queueItem models.QueueItem) error {
@@ -163,23 +212,12 @@ func (sd *SequenceDispatcher) dispatchSequence(queueItem models.QueueItem) error
 		return ErrSequenceBlocked
 	}
 
-	// get other sequence executions that might block the current sequence
-	startedSequenceExecutions, err := sd.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
-		Scope: models.EventScope{
-			EventData: keptnv2.EventData{
-				Project: queueItem.Scope.Project,
-				Stage:   queueItem.Scope.Stage,
-				Service: queueItem.Scope.Service,
-			},
-		},
-		Status: []string{apimodels.SequenceStartedState},
-	})
-
+	sequenceBlocked, err := sd.isSequenceBlocked(queueItem)
 	if err != nil {
 		return err
 	}
 
-	if len(startedSequenceExecutions) > 0 {
+	if !sequenceBlocked {
 		log.Infof("Sequence %s cannot be started yet because sequences are still running in stage %s", queueItem.Scope.KeptnContext, queueItem.Scope.Stage)
 		return ErrSequenceBlockedWaiting
 	}
