@@ -86,7 +86,7 @@ spec:
       {{- end }}
       serviceAccountName: keptn-lighthouse-service
       terminationGracePeriodSeconds: {{ .Values.lighthouseService.gracePeriod | default 120 }}
-      {{- include "keptn.nodeSelector" (dict "value" .Values.lighthouseService.nodeSelector "default" .Values..nodeSelector "indent" 6 "context" . )}}
+      {{- include "keptn.nodeSelector" (dict "value" .Values.lighthouseService.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
 ---
 apiVersion: v1
 kind: Service

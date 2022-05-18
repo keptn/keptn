@@ -101,7 +101,7 @@ spec:
       volumes:
       {{- include "keptn.tpl-value" ( dict "value" .Values.mongodbDatastore.extraVolumes "context" $) | nindent 8 }}
       {{- end }}
-      {{- include "keptn.nodeSelector" (dict "value" .Values.mongodbDatastore.nodeSelector "default" .Values..nodeSelector "indent" 8 "context" . )}}
+      {{- include "keptn.nodeSelector" (dict "value" .Values.mongodbDatastore.nodeSelector "default" .Values.nodeSelector "indent" 8 "context" . )}}
 ---
 apiVersion: v1
 kind: Service

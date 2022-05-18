@@ -78,7 +78,7 @@ spec:
       {{- end }}
       serviceAccountName: keptn-default
       terminationGracePeriodSeconds: {{ .Values.remediationService.gracePeriod | default 120 }}
-      {{- include "keptn.nodeSelector" (dict "value" .Values.remediationService.nodeSelector "default" .Values..nodeSelector "indent" 6 "context" . )}}
+      {{- include "keptn.nodeSelector" (dict "value" .Values.remediationService.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
 ---
 apiVersion: v1
 kind: Service
