@@ -201,12 +201,7 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy, AfterView
   public setTimeframe(timeframe: Timeframe): void {
     this.isValidTimeframe = this.isTimeframeEmpty(timeframe)
       ? true
-      : (timeframe.hours ?? 0) * 60 +
-          (timeframe.minutes ?? 0) +
-          (timeframe.seconds ?? 0) / 60 +
-          (timeframe.millis ?? 0) / 60_000 +
-          (timeframe.micros ?? 0) / 60_000_000 >=
-        1;
+      : (timeframe.hours ?? 0) * 60 + (timeframe.minutes ?? 0) + (timeframe.seconds ?? 0) / 60 >= 1;
     this.evaluationFormData.timeframe = timeframe;
   }
 
@@ -231,14 +226,10 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy, AfterView
   }
 
   private parseTimeframe(timeframe: Timeframe): string {
-    let timeframeString = '';
-    timeframeString += timeframe.hours ? timeframe.hours + 'h' : '';
-    timeframeString += timeframe.minutes ? timeframe.minutes + 'm' : '';
-    timeframeString += timeframe.seconds ? timeframe.seconds + 's' : '';
-    timeframeString += timeframe.millis ? timeframe.millis + 'ms' : '';
-    timeframeString += timeframe.micros ? timeframe.micros + 'us' : '';
-
-    return timeframeString;
+    const hours = timeframe.hours ? timeframe.hours + 'h' : '';
+    const minutes = timeframe.minutes ? timeframe.minutes + 'm' : '';
+    const seconds = timeframe.seconds ? timeframe.seconds + 's' : '';
+    return hours + minutes + seconds;
   }
 
   private parseLabels(labels: string): { [key: string]: string } {
@@ -371,13 +362,7 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy, AfterView
   }
 
   private isTimeframeEmpty(timeframe: Timeframe): boolean {
-    return (
-      timeframe.hours === undefined &&
-      timeframe.minutes === undefined &&
-      timeframe.seconds === undefined &&
-      timeframe.millis === undefined &&
-      timeframe.micros === undefined
-    );
+    return timeframe.hours === undefined && timeframe.minutes === undefined && timeframe.seconds === undefined;
   }
 
   private navigateToSequences(keptnContext: string | undefined): void {

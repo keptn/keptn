@@ -137,18 +137,18 @@ describe('KtbTriggerSequenceComponent', () => {
     timeframe.seconds = undefined;
     timeframe.millis = 1;
     // @ts-ignore
-    expect(component.parseTimeframe(timeframe)).toEqual('1ms');
+    expect(component.parseTimeframe(timeframe)).toEqual('');
     timeframe.millis = undefined;
     timeframe.micros = 1;
     // @ts-ignore
-    expect(component.parseTimeframe(timeframe)).toEqual('1us');
+    expect(component.parseTimeframe(timeframe)).toEqual('');
     timeframe.hours = 1;
     timeframe.minutes = 1;
     timeframe.seconds = 1;
     timeframe.millis = 1;
     timeframe.micros = 1;
     // @ts-ignore
-    expect(component.parseTimeframe(timeframe)).toEqual('1h1m1s1ms1us');
+    expect(component.parseTimeframe(timeframe)).toEqual('1h1m1s');
     /* eslint-enable */
   });
 
@@ -202,14 +202,6 @@ describe('KtbTriggerSequenceComponent', () => {
 
     timeframe.minutes = undefined;
     timeframe.seconds = 59;
-    assertTimeframeValid(timeframe, false);
-
-    timeframe.seconds = undefined;
-    timeframe.millis = 59_999;
-    assertTimeframeValid(timeframe, false);
-
-    timeframe.millis = undefined;
-    timeframe.micros = 59_999_999;
     assertTimeframeValid(timeframe, false);
   });
 
