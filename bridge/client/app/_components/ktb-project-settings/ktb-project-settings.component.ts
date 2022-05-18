@@ -20,14 +20,21 @@ import { IGitData, IGitDataExtended } from '../../_interfaces/git-upstream';
 import { AppUtils } from '../../_utils/app.utils';
 import { FeatureFlagsService } from '../../_services/feature-flags.service';
 import { KeptnInfo } from '../../_models/keptn-info';
-import { IMetadata } from '../../_models/IMetadata';
+import { IMetadata } from '../../_interfaces/metadata';
 import { ServerErrors } from '../../_models/server-error';
 
 type DialogState = null | 'unsaved';
 
+enum ProjectSettingsStatus {
+  ERROR,
+  INIT,
+  LOADED,
+}
+
 interface ProjectSettingsState {
   gitUpstreamRequired: boolean | undefined;
   automaticProvisioningMessage: string | undefined;
+  state: ProjectSettingsStatus;
 }
 
 @Component({
@@ -38,6 +45,7 @@ interface ProjectSettingsState {
 export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingChangesComponent {
   private readonly unsubscribe$ = new Subject<void>();
   public ServerErrors = ServerErrors;
+  public ProjectSettingsStatus = ProjectSettingsStatus;
 
   @ViewChild('deleteProjectDialog')
   private deleteProjectDialog?: TemplateRef<MatDialog>;
@@ -69,28 +77,24 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
   public unsavedDialogState: DialogState = null;
   public resourceServiceEnabled?: boolean;
 
-  readonly state$: Observable<ProjectSettingsState | undefined> = combineLatest([
+  readonly state$: Observable<ProjectSettingsState> = combineLatest([
     this.dataService.keptnInfo,
     this.dataService.keptnMetadata,
   ]).pipe(
     filter((info): info is [KeptnInfo, IMetadata | undefined | null] => !!info[0]),
     map(([keptnInfo, metadata]) => {
-      if (metadata === null) {
-        this._metadataError$.next(true);
-        return;
-      }
-      this._metadataError$.next(false);
       return {
         gitUpstreamRequired: !metadata?.automaticprovisioning,
         automaticProvisioningMessage: keptnInfo.bridgeInfo.automaticProvisioningMsg,
+        state: metadata === null ? ProjectSettingsStatus.ERROR : ProjectSettingsStatus.LOADED,
       };
     }),
-    startWith({ gitUpstreamRequired: undefined, automaticProvisioningMessage: undefined })
+    startWith({
+      gitUpstreamRequired: undefined,
+      automaticProvisioningMessage: undefined,
+      state: ProjectSettingsStatus.INIT,
+    })
   );
-
-  get metadataError$(): Observable<boolean> {
-    return this._metadataError$.asObservable();
-  }
 
   constructor(
     private route: ActivatedRoute,

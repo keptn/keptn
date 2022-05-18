@@ -4,7 +4,7 @@ import { Observable, of } from 'rxjs';
 import { Trace } from '../_models/trace';
 import { ApprovalStates } from '../../../shared/models/approval-states';
 import { EventTypes } from '../../../shared/interfaces/event-types';
-import { IMetadata } from '../_models/IMetadata';
+import { IMetadata } from '../_interfaces/metadata';
 import moment from 'moment';
 import { SequenceResult } from '../_models/sequence-result';
 import { Project } from '../_models/project';

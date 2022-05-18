@@ -2,7 +2,7 @@ import { Component, Input, OnDestroy } from '@angular/core';
 import { Project } from '../../_models/project';
 import { filter, takeUntil } from 'rxjs/operators';
 import { DataService } from '../../_services/data.service';
-import { IMetadata } from '../../_models/IMetadata';
+import { IMetadata } from '../../_interfaces/metadata';
 import { Subject } from 'rxjs';
 
 @Component({
