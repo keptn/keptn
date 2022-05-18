@@ -78,7 +78,6 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 				return err
 			}
 		case subscriptions := <-subscriptionUpdates:
-			cp.logger.Infof("Got subscription update: %v", subscriptions)
 			cp.currentSubscriptions = subscriptions
 			cp.eventSource.OnSubscriptionUpdate(subjects(subscriptions))
 		case <-ctx.Done():
