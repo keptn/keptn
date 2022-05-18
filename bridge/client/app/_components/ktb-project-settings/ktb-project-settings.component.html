@@ -118,3 +118,7 @@
     </dt-confirmation-dialog-actions>
   </dt-confirmation-dialog-state>
 </dt-confirmation-dialog>
+
+<ng-container *ngIf="metadataError$ | async">
+  <ktb-error-view [error]="ServerErrors.NOT_ALLOWED"></ktb-error-view>
+</ng-container>

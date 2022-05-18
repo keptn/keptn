@@ -1,6 +1,7 @@
 import NewProjectCreatePage from '../support/pageobjects/NewProjectCreatePage';
 import { Project } from '../../shared/models/project';
 import BasePage from '../support/pageobjects/BasePage';
+import { interceptFailedMetadata } from '../support/intercept';
 
 describe('Git upstream extended settings project https test', () => {
   const projectSettingsPage = new NewProjectCreatePage();
@@ -136,7 +137,7 @@ describe('Automatic provisioning enabled test', () => {
     }).as('project');
 
     projectSettingsPage.visitSettings('sockshop');
-    cy.wait('@metadata').wait('@project');
+    cy.wait('@project');
 
     projectSettingsPage.assertNoUpstreamSelected(true);
   });
@@ -157,7 +158,7 @@ describe('Automatic provisioning enabled test', () => {
     }).as('project');
 
     projectSettingsPage.visitSettings('sockshop');
-    cy.wait('@metadata').wait('@project');
+    cy.wait('@project');
 
     projectSettingsPage.assertHttpsFormVisible(true).assertNoUpstreamSelected(false).assertNoUpstreamEnabled(false);
 
@@ -182,7 +183,7 @@ describe('Automatic provisioning enabled test', () => {
     }).as('project');
 
     projectSettingsPage.visitSettings('sockshop');
-    cy.wait('@metadata').wait('@project');
+    cy.wait('@project');
 
     projectSettingsPage.assertSshFormVisible(true).assertNoUpstreamSelected(false).assertNoUpstreamEnabled(false);
 
@@ -191,5 +192,25 @@ describe('Automatic provisioning enabled test', () => {
       .assertUpdateButtonEnabled(true)
       .clearSshPrivateKey()
       .assertUpdateButtonEnabled(false);
+  });
+});
+
+describe('Project settings with invalid metadata', () => {
+  const projectSettingsPage = new NewProjectCreatePage();
+  it('should show error if metadata endpoint does not return data', () => {
+    const project: Project = {
+      projectName: 'sockshop',
+      stages: [],
+      gitProxyInsecure: false,
+      gitUser: 'myGitUser',
+      gitRemoteURI: 'ssh://myGitURL.com',
+      shipyardVersion: '0.14',
+    };
+    cy.intercept('/api/project/sockshop', {
+      body: project,
+    });
+    projectSettingsPage.interceptSettings(true);
+    interceptFailedMetadata();
+    projectSettingsPage.visitSettings('sockshop').assertErrorVisible(true);
   });
 });

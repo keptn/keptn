@@ -1,5 +1,5 @@
 import { Component, HostListener, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
-import { Observable, of, Subject } from 'rxjs';
+import { BehaviorSubject, combineLatest, Observable, of, Subject } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { KtbProjectSettingsGitComponent } from '../ktb-project-settings-git/ktb-project-settings-git.component';
 import { DeleteData, DeleteResult, DeleteType } from '../../_interfaces/delete';
@@ -20,6 +20,8 @@ import { IGitData, IGitDataExtended } from '../../_interfaces/git-upstream';
 import { AppUtils } from '../../_utils/app.utils';
 import { FeatureFlagsService } from '../../_services/feature-flags.service';
 import { KeptnInfo } from '../../_models/keptn-info';
+import { IMetadata } from '../../_models/IMetadata';
+import { ServerErrors } from '../../_models/server-error';
 
 type DialogState = null | 'unsaved';
 
@@ -35,6 +37,7 @@ interface ProjectSettingsState {
 })
 export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingChangesComponent {
   private readonly unsubscribe$ = new Subject<void>();
+  public ServerErrors = ServerErrors;
 
   @ViewChild('deleteProjectDialog')
   private deleteProjectDialog?: TemplateRef<MatDialog>;
@@ -60,19 +63,34 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
   public projectNameForm = new FormGroup({
     projectName: this.projectNameControl,
   });
+  public readonly _metadataError$ = new BehaviorSubject<boolean>(false);
 
   public message = 'You have pending changes. Make sure to save your data before you continue.';
   public unsavedDialogState: DialogState = null;
   public resourceServiceEnabled?: boolean;
 
-  readonly state$: Observable<ProjectSettingsState> = this.dataService.keptnInfo.pipe(
-    filter((keptnInfo: KeptnInfo | undefined): keptnInfo is KeptnInfo => !!keptnInfo),
-    map((keptnInfo: KeptnInfo) => ({
-      gitUpstreamRequired: !keptnInfo.metadata.automaticprovisioning,
-      automaticProvisioningMessage: keptnInfo.bridgeInfo.automaticProvisioningMsg,
-    })),
+  readonly state$: Observable<ProjectSettingsState | undefined> = combineLatest([
+    this.dataService.keptnInfo,
+    this.dataService.keptnMetadata,
+  ]).pipe(
+    filter((info): info is [KeptnInfo, IMetadata | undefined | null] => !!info[0]),
+    map(([keptnInfo, metadata]) => {
+      if (metadata === null) {
+        this._metadataError$.next(true);
+        return;
+      }
+      this._metadataError$.next(false);
+      return {
+        gitUpstreamRequired: !metadata?.automaticprovisioning,
+        automaticProvisioningMessage: keptnInfo.bridgeInfo.automaticProvisioningMsg,
+      };
+    }),
     startWith({ gitUpstreamRequired: undefined, automaticProvisioningMessage: undefined })
   );
+
+  get metadataError$(): Observable<boolean> {
+    return this._metadataError$.asObservable();
+  }
 
   constructor(
     private route: ActivatedRoute,

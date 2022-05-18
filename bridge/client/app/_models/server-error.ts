@@ -1,0 +1,5 @@
+export enum ServerErrors {
+  INTERNAL = 500,
+  INSUFFICIENT_PERMISSION = 403,
+  NOT_ALLOWED = 405,
+}

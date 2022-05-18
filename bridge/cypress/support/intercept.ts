@@ -86,6 +86,10 @@ export function interceptMain(): void {
   cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
 }
 
+export function interceptFailedMetadata(): void {
+  cy.intercept('/api/v1/metadata', { forceNetworkError: true }).as('metadata');
+}
+
 export function interceptCreateProject(): void {
   cy.intercept('POST', 'api/controlPlane/v1/project', {
     statusCode: 200,

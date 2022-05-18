@@ -14,7 +14,6 @@ import { HttpResponse } from '@angular/common/http';
 import { SequenceResult } from '../_models/sequence-result';
 import { EventResult } from '../../../shared/interfaces/event-result';
 import { KeptnInfo } from '../_models/keptn-info';
-import { KeptnInfoResult } from '../../../shared/interfaces/keptn-info-result';
 import { UniformRegistration } from '../_models/uniform-registration';
 import { UniformSubscription } from '../_models/uniform-subscription';
 import { SequenceState } from '../../../shared/models/sequence';
@@ -34,28 +33,27 @@ import { SecretScope } from '../../../shared/interfaces/secret-scope';
 import { IGitDataExtended } from '../_interfaces/git-upstream';
 import { getGitData } from '../_utils/git-upstream.utils';
 import { ICustomSequences } from '../../../shared/interfaces/custom-sequences';
+import { IMetadata } from '../_models/IMetadata';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DataService {
-  protected _projects = new BehaviorSubject<Project[] | undefined>(undefined);
-  protected _sequencesUpdated = new Subject<void>();
-  protected _traces = new BehaviorSubject<Trace[] | undefined>(undefined);
-  protected _openApprovals = new BehaviorSubject<Trace[]>([]);
-  protected _keptnInfo = new BehaviorSubject<KeptnInfo | undefined>(undefined);
-  protected _rootsLastUpdated: { [key: string]: Date } = {};
-  protected _sequencesLastUpdated: { [key: string]: Date } = {};
-  protected _tracesLastUpdated: { [key: string]: Date } = {};
-  protected _rootTracesLastUpdated: { [key: string]: Date } = {};
-  protected _projectName: BehaviorSubject<string> = new BehaviorSubject<string>('');
-  protected _uniformDates: { [key: string]: string } = this.apiService.uniformLogDates;
-  protected _hasUnreadUniformRegistrationLogs = new BehaviorSubject<boolean>(false);
-  protected readonly DEFAULT_SEQUENCE_PAGE_SIZE = 25;
-  protected readonly DEFAULT_NEXT_SEQUENCE_PAGE_SIZE = 10;
-
-  protected _isQualityGatesOnly = new BehaviorSubject<boolean>(false);
-  protected _evaluationResults = new Subject<EvaluationHistory>();
+  private _projects = new BehaviorSubject<Project[] | undefined>(undefined);
+  private _sequencesUpdated = new Subject<void>();
+  private _traces = new BehaviorSubject<Trace[] | undefined>(undefined);
+  private _openApprovals = new BehaviorSubject<Trace[]>([]);
+  private _keptnInfo = new BehaviorSubject<KeptnInfo | undefined>(undefined);
+  private _keptnMetadata = new BehaviorSubject<IMetadata | undefined | null>(undefined); // fetched | not fetched | not existing
+  private _sequencesLastUpdated: { [key: string]: Date } = {};
+  private _tracesLastUpdated: { [key: string]: Date } = {};
+  private _projectName: BehaviorSubject<string> = new BehaviorSubject<string>('');
+  private _uniformDates: { [key: string]: string } = this.apiService.uniformLogDates;
+  private _hasUnreadUniformRegistrationLogs = new BehaviorSubject<boolean>(false);
+  private readonly DEFAULT_SEQUENCE_PAGE_SIZE = 25;
+  private readonly DEFAULT_NEXT_SEQUENCE_PAGE_SIZE = 10;
+  private _isQualityGatesOnly = new BehaviorSubject<boolean>(false);
+  private _evaluationResults = new Subject<EvaluationHistory>();
 
   public isTriggerSequenceOpen = false;
 
@@ -79,6 +77,10 @@ export class DataService {
 
   get keptnInfo(): Observable<KeptnInfo | undefined> {
     return this._keptnInfo.asObservable();
+  }
+
+  get keptnMetadata(): Observable<IMetadata | undefined | null> {
+    return this._keptnMetadata.asObservable();
   }
 
   get evaluationResults(): Observable<EvaluationHistory> {
@@ -226,10 +228,6 @@ export class DataService {
     return this.apiService.deleteSubscription(integrationId, id, isWebhookService);
   }
 
-  public getRootsLastUpdated(project: Project): Date {
-    return this._rootsLastUpdated[project.projectName];
-  }
-
   public getTracesLastUpdated(sequence: Sequence): Date | undefined {
     return this._tracesLastUpdated[sequence.shkeptncontext];
   }
@@ -254,40 +252,40 @@ export class DataService {
   public loadKeptnInfo(): void {
     // #4165 Get bridge info first to get info if versions.json should be loaded or not
     // Versions should not be loaded if enableVersionCheckFeature is set to false (when ENABLE_VERSION_CHECK is set to false in env)
-    this.apiService.getKeptnInfo().subscribe((bridgeInfo: KeptnInfoResult) => {
-      forkJoin({
-        availableVersions: bridgeInfo.enableVersionCheckFeature
-          ? this.apiService.getAvailableVersions().pipe(catchError(() => of(undefined)))
-          : of(undefined),
-        versionCheckEnabled: of(this.apiService.isVersionCheckEnabled()),
-        metadata: this.apiService.getMetadata(),
-      }).subscribe(
-        (result) => {
-          const keptnInfo: KeptnInfo = { ...result, bridgeInfo: { ...bridgeInfo } };
-          if (keptnInfo.bridgeInfo.showApiToken) {
-            if (window.location.href.indexOf('bridge') !== -1) {
-              keptnInfo.bridgeInfo.apiUrl = `${window.location.href.substring(
-                0,
-                window.location.href.indexOf('/bridge')
-              )}/api`;
-            } else {
-              keptnInfo.bridgeInfo.apiUrl = `${window.location.href.substring(
-                0,
-                window.location.href.indexOf(window.location.pathname)
-              )}/api`;
-            }
+    this.apiService
+      .getKeptnInfo()
+      .pipe(
+        mergeMap((bridgeInfo) => {
+          return forkJoin([
+            of(bridgeInfo),
+            bridgeInfo.enableVersionCheckFeature
+              ? this.apiService.getAvailableVersions().pipe(catchError(() => of(undefined)))
+              : of(undefined),
+            of(this.apiService.isVersionCheckEnabled()),
+            this.apiService.getMetadata().pipe(catchError(() => of(null))),
+          ]);
+        })
+      )
+      .subscribe(([bridgeInfo, availableVersions, versionCheckEnabled, metadata]) => {
+        const keptnInfo: KeptnInfo = {
+          bridgeInfo,
+          availableVersions,
+          versionCheckEnabled,
+        };
 
-            keptnInfo.authCommand = `keptn auth --endpoint=${keptnInfo.bridgeInfo.apiUrl} --api-token=${keptnInfo.bridgeInfo.apiToken}`;
+        if (keptnInfo.bridgeInfo.showApiToken) {
+          keptnInfo.bridgeInfo.apiUrl = `${window.location.href.substring(
+            0,
+            window.location.href.indexOf(window.location.href.includes('bridge') ? '/bridge' : window.location.pathname)
+          )}/api`;
 
-            this._isQualityGatesOnly.next(!keptnInfo.bridgeInfo.keptnInstallationType?.includes('CONTINUOUS_DELIVERY'));
-          }
-          this._keptnInfo.next(keptnInfo);
-        },
-        (err) => {
-          this._keptnInfo.error(err);
+          keptnInfo.authCommand = `keptn auth --endpoint=${keptnInfo.bridgeInfo.apiUrl} --api-token=${keptnInfo.bridgeInfo.apiToken}`;
+
+          this._isQualityGatesOnly.next(!keptnInfo.bridgeInfo.keptnInstallationType?.includes('CONTINUOUS_DELIVERY'));
         }
-      );
-    });
+        this._keptnInfo.next(keptnInfo);
+        this._keptnMetadata.next(metadata);
+      });
   }
 
   public setVersionCheck(enabled: boolean): void {
