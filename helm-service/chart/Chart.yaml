@@ -24,5 +24,5 @@ appVersion: latest
 
 dependencies:
   - name: common
-    repository: https://charts-dev.keptn.sh
-    version: 0.15.0-dev
+    repository: "file://../../installer/manifests/common"
+    version: 0.1.0
