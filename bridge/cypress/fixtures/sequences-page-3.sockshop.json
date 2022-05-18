@@ -1,0 +1,158 @@
+{
+  "states": [
+    {
+      "name": "delivery",
+      "service": "carts",
+      "project": "sockshop",
+      "time": "2021-07-06T08:04:16.338Z",
+      "shkeptncontext": "26d6fbd3-42e5-4ec7-9f22-4fd102a2e414",
+      "state": "finished",
+      "stages": [
+        {
+          "name": "dev",
+          "image": "docker.io/keptnexamples/carts:0.12.1",
+          "latestEvaluation": {
+            "result": "pass",
+            "score": 0
+          },
+          "latestEvent": {
+            "type": "sh.keptn.event.dev.delivery.finished",
+            "id": "a3ba36e1-2edb-419f-8a24-d624e2100d43",
+            "time": "2021-07-06T08:07:55.662Z"
+          }
+        },
+        {
+          "name": "staging",
+          "image": "docker.io/keptnexamples/carts:0.12.1",
+          "latestEvaluation": {
+            "result": "fail",
+            "score": 33.33333333333333
+          },
+          "latestEvent": {
+            "type": "sh.keptn.event.staging.rollback.finished",
+            "id": "9892abf9-0528-4108-834c-47f98dc6caa2",
+            "time": "2021-07-06T08:12:57.479Z"
+          },
+          "latestFailedEvent": {
+            "type": "sh.keptn.event.staging.delivery.finished",
+            "id": "9693825e-b6d7-43a3-97ee-d136ed3f03c3",
+            "time": "2021-07-06T08:12:47.145Z"
+          }
+        }
+      ]
+    },
+    {
+      "name": "delivery",
+      "service": "carts",
+      "project": "sockshop",
+      "time": "2021-07-06T07:50:28.004Z",
+      "shkeptncontext": "29761b1a-374f-4bb1-b5ab-3e9d809b6108",
+      "state": "finished",
+      "stages": [
+        {
+          "name": "dev",
+          "image": "docker.io/keptnexamples/carts:0.12.3",
+          "latestEvaluation": {
+            "result": "pass",
+            "score": 0
+          },
+          "latestEvent": {
+            "type": "sh.keptn.event.dev.delivery.finished",
+            "id": "fbb56094-9ef7-45df-bc4e-525202e4c302",
+            "time": "2021-07-06T07:54:21.353Z"
+          }
+        },
+        {
+          "name": "staging",
+          "image": "docker.io/keptnexamples/carts:0.12.3",
+          "latestEvaluation": {
+            "result": "fail",
+            "score": 33.33333333333333
+          },
+          "latestEvent": {
+            "type": "sh.keptn.event.staging.rollback.finished",
+            "id": "c5f88cd1-7efb-4f24-b0b3-eb5998a9d00d",
+            "time": "2021-07-06T07:59:12.673Z"
+          },
+          "latestFailedEvent": {
+            "type": "sh.keptn.event.staging.delivery.finished",
+            "id": "40dc9d08-f87a-4785-a037-7d76a9745a0c",
+            "time": "2021-07-06T07:58:58.241Z"
+          }
+        }
+      ]
+    },
+    {
+      "name": "evaluation",
+      "service": "carts",
+      "project": "sockshop",
+      "time": "2021-07-05T14:12:15.566Z",
+      "shkeptncontext": "dda949d7-81e8-43db-a002-b736c2d27843",
+      "state": "finished",
+      "stages": [
+        {
+          "name": "testing",
+          "latestEvaluation": {
+            "result": "pass",
+            "score": 100
+          },
+          "latestEvent": {
+            "type": "sh.keptn.event.staging.evaluation.finished",
+            "id": "4b7e9733-46d2-44a5-aadc-709e881d6403",
+            "time": "2021-07-05T14:12:25.169Z"
+          }
+        }
+      ]
+    },
+    {
+      "name": "evaluation",
+      "service": "carts",
+      "project": "sockshop",
+      "time": "2021-07-05T13:47:23.145Z",
+      "shkeptncontext": "23e404ee-e9ab-4e06-a97f-6408854e6553",
+      "state": "finished",
+      "stages": [
+        {
+          "name": "staging",
+          "latestEvaluation": {
+            "result": "pass",
+            "score": 100
+          },
+          "latestEvent": {
+            "type": "sh.keptn.event.staging.evaluation.finished",
+            "id": "bbed850c-8c43-431e-86b0-0cffbc0f938f",
+            "time": "2021-07-05T13:47:32.749Z"
+          }
+        }
+      ]
+    },
+    {
+      "name": "evaluation",
+      "service": "carts",
+      "project": "sockshop",
+      "time": "2021-07-05T13:35:36.482Z",
+      "shkeptncontext": "7a5127e2-8dc0-4d85-9046-450ef054484b",
+      "state": "finished",
+      "stages": [
+        {
+          "name": "staging",
+          "latestEvaluation": {
+            "result": "fail",
+            "score": 66.66666666666666
+          },
+          "latestEvent": {
+            "type": "sh.keptn.event.staging.evaluation.finished",
+            "id": "074fe4e5-af9d-41fb-ac7e-92e7e8c4e0a3",
+            "time": "2021-07-05T13:35:45.947Z"
+          },
+          "latestFailedEvent": {
+            "type": "sh.keptn.event.staging.evaluation.finished",
+            "id": "074fe4e5-af9d-41fb-ac7e-92e7e8c4e0a3",
+            "time": "2021-07-05T13:35:45.947Z"
+          }
+        }
+      ]
+    }
+  ],
+  "totalCount": 5
+}

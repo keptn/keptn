@@ -131,6 +131,12 @@ export function interceptServicesPage(): void {
 
 export function interceptSequencesPage(): void {
   cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=25', { fixture: 'sequences.sockshop' }).as('Sequences');
+  cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=10&beforeTime=2021-07-06T09:22:56.433Z', {
+    fixture: 'sequences-page-2.sockshop',
+  }).as('SequencesPage2');
+  cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=10&beforeTime=2021-07-06T08:13:53.766Z', {
+    fixture: 'sequences-page-3.sockshop',
+  }).as('SequencesPage3');
   cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=25&fromTime=*', {
     body: {
       states: [],

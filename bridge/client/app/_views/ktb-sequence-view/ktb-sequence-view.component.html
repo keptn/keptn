@@ -1,7 +1,7 @@
 <ng-template #triggerSequenceButton>
   <div>
     <a (click)="navigateToTriggerSequence()">
-      <button dt-button class="mb-3" uitestid="keptn-trigger-button-open">
+      <button dt-button uitestid="keptn-trigger-button-open">
         <dt-icon name="flash"></dt-icon>
         Trigger a new sequence
       </button>
@@ -21,42 +21,47 @@
         clearAllLabel="Clear all"
         fxFlex
       >
-        <div class="p-3 trigger-sequence-button" *ngIf="project.sequences && project.sequences.length !== 0">
-          <ng-container [ngTemplateOutlet]="triggerSequenceButton"></ng-container>
-        </div>
-        <div
-          class="container"
-          [ngClass]="{ 'has-sequences': project.sequences.length !== 0 }"
-          fxFlex
-          fxLayout="column"
-          *ngIf="project.sequences; else loadingSequences"
-        >
-          <div uitestid="keptn-noSequences" *ngIf="project.sequences.length === 0">
-            <div fxLayout="row" fxLayoutAlign="start">
-              <dt-icon fxFlex="20px" class="icon" name="information"></dt-icon>
-              <p class="m-0 ml-2 mb-2">No sequences triggered yet.<br /></p>
-            </div>
+        <div fxFlex fxLayout="column">
+          <div class="container trigger-sequence-button">
             <ng-container [ngTemplateOutlet]="triggerSequenceButton"></ng-container>
           </div>
-
-          <div
-            fxLayout="row"
-            fxLayoutAlign="start"
-            uitestid="keptn-noSequencesFiltered"
-            *ngIf="filteredSequences.length === 0 && project.sequences.length !== 0"
-          >
-            <dt-icon fxFlex="20px" class="icon" name="information"></dt-icon>
-            <p class="m-0 ml-2">No sequences found that match your filter criteria.</p>
+          <div class="container" fxFlex fxLayout="column" *ngIf="project.sequences; else loadingSequences">
+            <div uitestid="keptn-noSequences" *ngIf="project.sequences.length === 0">
+              <div fxLayout="row" fxLayoutAlign="start">
+                <dt-icon fxFlex="20px" class="icon" name="information"></dt-icon>
+                <p class="m-0 ml-2 mb-2">No sequences triggered yet.<br /></p>
+              </div>
+              <ng-container [ngTemplateOutlet]="triggerSequenceButton"></ng-container>
+            </div>
+            <div
+              uitestid="keptn-noSequencesFiltered"
+              *ngIf="filteredSequences.length === 0 && project.sequences.length !== 0"
+            >
+              <dt-icon fxFlex="20px" class="icon" name="information"></dt-icon>
+              <p class="m-0 ml-2">No sequences found that match your filter criteria.</p>
+            </div>
+            <ktb-root-events-list
+              *ngIf="filteredSequences.length !== 0"
+              uitestid="keptn-sequence-view-roots"
+              [events]="filteredSequences"
+              [selectedEvent]="currentSequence"
+              (selectedEventChange)="selectSequence($event)"
+            ></ktb-root-events-list>
+            <div fxLayout="row" fxLayoutAlign="center">
+              <ktb-loading-distractor *ngIf="loading" uitestid="keptn-loadingOldSequences"
+                >Loading …</ktb-loading-distractor
+              >
+              <button
+                dt-show-more
+                *ngIf="!loading && !project?.allSequencesLoaded"
+                (click)="loadOldSequences()"
+                uitestid="keptn-show-older-sequences-button"
+              >
+                Show older sequences
+              </button>
+            </div>
+            <div class="mb-3"></div>
           </div>
-          <ktb-root-events-list
-            *ngIf="filteredSequences.length !== 0"
-            uitestid="keptn-sequence-view-roots"
-            [events]="filteredSequences"
-            [selectedEvent]="currentSequence"
-            (selectedEventChange)="selectSequence($event)"
-            fxFlex
-          ></ktb-root-events-list>
-          <div class="mb-3"></div>
         </div>
         <ng-template #loadingSequences>
           <div fxFlexFill fxLayout="row" fxLayoutAlign="center center" uitestid="keptn-loadingSequences">

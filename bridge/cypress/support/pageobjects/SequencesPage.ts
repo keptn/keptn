@@ -87,7 +87,6 @@ export class SequencesPage {
 
   private setFilterForGroup(filterGroup: string, itemName: string, status: boolean): this {
     cy.byTestId('keptn-sequence-view-filter').find('dt-quick-filter').dtQuickFilterCheck(filterGroup, itemName, status);
-    cy.wait('@SequencesUpdate');
     return this;
   }
 
@@ -119,8 +118,22 @@ export class SequencesPage {
     return this;
   }
 
+  public clickLoadOlderSequences(): this {
+    cy.byTestId('keptn-show-older-sequences-button').click();
+    return this;
+  }
+
+  public assertLoadOlderSequencesButtonExists(exists: boolean): this {
+    cy.byTestId('keptn-show-older-sequences-button').should(exists ? 'exist' : 'not.exist');
+    return this;
+  }
+
   public assertSequenceCount(count: number): this {
-    cy.byTestId('keptn-sequence-view-roots').get('ktb-selectable-tile').should('have.length', count);
+    if (count === 0) {
+      cy.byTestId('keptn-sequence-view-roots').should('not.exist');
+    } else {
+      cy.byTestId('keptn-sequence-view-roots').get('ktb-selectable-tile').should('have.length', count);
+    }
     return this;
   }
 
