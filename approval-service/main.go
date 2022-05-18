@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
+	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
@@ -71,11 +72,18 @@ func main() {
 		}))
 	}()
 
-	ctx := getGracefulContext()
+	ctx, wg := getGracefulContext()
 	err = controlPlane.Register(ctx, ApprovalService{env})
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// this segment will be reached once the context has been cancelled - i.e. due to receiving the SIGTERM signal
+	logger.Info("Waiting for event handlers to finish")
+	// add additional waiting time to ensure the waitGroup has been increased for all events that have been received between receiving SIGTERM and this point
+	<-time.After(5 * time.Second)
+	wg.Wait()
+	logger.Info("All handlers finished - exiting")
 }
 
 type ApprovalService struct {
@@ -142,7 +150,7 @@ func (l ApprovalService) RegistrationData() controlplane.RegistrationData {
 	}
 }
 
-func getGracefulContext() context.Context {
+func getGracefulContext() (context.Context, *sync.WaitGroup) {
 	ch := make(chan os.Signal)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
 	wg := &sync.WaitGroup{}
@@ -152,9 +160,6 @@ func getGracefulContext() context.Context {
 		<-ch
 		logger.Info("Container termination triggered, starting graceful shutdown and cancelling context")
 		cancel()
-		logger.Info("Waiting for event handlers to finish")
-		wg.Wait()
-		logger.Info("All handlers finished - ready to shut down")
 	}()
-	return ctx
+	return ctx, wg
 }
