@@ -100,7 +100,7 @@ spec:
         {{- include "keptn.tpl-value" ( dict "value" . "context" $ ) | nindent 8 }}
         {{- end }}
       terminationGracePeriodSeconds: {{ .Values.shipyardController.gracePeriod | default 120 }}
-      {{- include "keptn.nodeSelector" (dict "value" .Values.shipyardController.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
+      {{- include "keptn.nodeSelector" (dict "value" .Values.shipyardController.nodeSelector "default" .Values..nodeSelector "indent" 6 "context" . )}}
       {{- if .Values.shipyardController.extraVolumes }}
       volumes:
       {{- include "keptn.tpl-value" ( dict "value" .Values.shipyardController.extraVolumes "context" $) | nindent 8 }}

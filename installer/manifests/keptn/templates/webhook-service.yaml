@@ -80,7 +80,7 @@ spec:
       {{- include "keptn.tpl-value" ( dict "value" .Values.webhookService.extraVolumes "context" $) | nindent 8 }}
       {{- end }}
       terminationGracePeriodSeconds: {{ .Values.webhookService.gracePeriod | default 120 }}
-      {{- include "keptn.nodeSelector" (dict "value" .Values.webhookService.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
+      {{- include "keptn.nodeSelector" (dict "value" .Values.webhookService.nodeSelector "default" .Values..nodeSelector "indent" 6 "context" . )}}
 ---
 apiVersion: v1
 kind: Service

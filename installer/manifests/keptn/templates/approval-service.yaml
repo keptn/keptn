@@ -76,7 +76,7 @@ spec:
       volumes:
       {{- include "keptn.tpl-value" ( dict "value" .Values.approvalService.extraVolumes "context" $) | nindent 8 }}
       {{- end }}
-      {{- include "keptn.nodeSelector" (dict "value" .Values.approvalService.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
+      {{- include "keptn.nodeSelector" (dict "value" .Values.approvalService.nodeSelector "default" .Values..nodeSelector "indent" 6 "context" . )}}
 ---
 apiVersion: v1
 kind: Service

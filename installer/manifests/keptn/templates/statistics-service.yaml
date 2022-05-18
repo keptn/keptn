@@ -96,7 +96,7 @@ spec:
       {{- include "keptn.tpl-value" ( dict "value" .Values.statisticsService.extraVolumes "context" $) | nindent 8 }}
       {{- end }}
       terminationGracePeriodSeconds: {{ .Values.statisticsService.gracePeriod | default 120 }}
-      {{- include "keptn.nodeSelector" (dict "value" .Values.statisticsService.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
+      {{- include "keptn.nodeSelector" (dict "value" .Values.statisticsService.nodeSelector "default" .Values..nodeSelector "indent" 6 "context" . )}}
 ---
 apiVersion: v1
 kind: Service

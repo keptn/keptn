@@ -23,78 +23,85 @@ spec:
       serviceAccountName: keptn-default
       terminationGracePeriodSeconds: {{ .Values.mongodbDatastore.gracePeriod | default 120 }}
       containers:
-      - name: mongodb-datastore
-        image: {{ .Values.mongodbDatastore.image.repository }}:{{ .Values.mongodbDatastore.image.tag | default .Chart.AppVersion }}
-        {{- $prestop := .Values.mongodbDatastore.preStopHookTime | default 90 | quote -}}
-        {{- include "keptn.prestop" $prestop | nindent 8 }}
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 10
-          periodSeconds: 5
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 10
-          periodSeconds: 5
-        imagePullPolicy: IfNotPresent
-        ports:
-        - containerPort: 8080
-        resources:
-          requests:
-            memory: "32Mi"
-            cpu: "50m"
-          limits:
-            memory: "512Mi"
-            cpu: "300m"
-        env:
-        - name: PREFIX_PATH
-          value: "{{ .Values.prefixPath }}"
-        - name: MONGODB_HOST
-          value: '{{ .Release.Name }}-{{ .Values.mongo.service.nameOverride }}:{{ .Values.mongo.service.port }}'
-        - name: MONGODB_DATABASE
-          value: {{ .Values.mongo.auth.database | default "keptn" }}
-        - name: MONGODB_USER
-          valueFrom:
-            secretKeyRef:
-              name: mongodb-credentials
-              key: mongodb-user
-        - name: MONGODB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: mongodb-credentials
-              key: mongodb-passwords
-        - name: MONGODB_EXTERNAL_CONNECTION_STRING
-          valueFrom:
-            secretKeyRef:
-              name: mongodb-credentials
-              key: external_connection_string
-              optional: true
-        - name: LOG_LEVEL
-          value: {{ .Values.logLevel | default "info" }}
-        {{- include "keptn.common.container-security-context" . | nindent 8 }}
-      - name: distributor
-        image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
-        {{- include "keptn.dist.livenessProbe" . | nindent 8 }}
-        {{- include "keptn.dist.readinessProbe" . | nindent 8 }}
-        imagePullPolicy: IfNotPresent
-        ports:
-          - containerPort: 8080
-        {{- include "keptn.distributor.resources" . | nindent 8 }}
-        env:
-          - name: PUBSUB_IMPL
-            value: nats
-          - name: PUBSUB_TOPIC
-            value: 'sh.keptn.>'
-          - name: PUBSUB_RECIPIENT
-            value: '127.0.0.1'
-          - name: PUBSUB_RECIPIENT_PATH
-            value: '/event'
-          {{- include "keptn.dist.common.env.vars" . | nindent 10 }}
-        {{- include "keptn.common.container-security-context" . | nindent 8 }}
-      {{- include "keptn.nodeSelector" (dict "value" .Values.mongodbDatastore.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
+        - name: mongodb-datastore
+          image: {{ .Values.mongodbDatastore.image.repository }}:{{ .Values.mongodbDatastore.image.tag | default .Chart.AppVersion }}
+          {{- $prestop := .Values.mongodbDatastore.preStopHookTime | default 90 | quote -}}
+          {{- include "keptn.prestop" $prestop | nindent 10 }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          resources:
+            {{- toYaml .Values.mongodbDatastore.resources | nindent 12 }}
+          env:
+            - name: PREFIX_PATH
+              value: "{{ .Values.prefixPath }}"
+            - name: MONGODB_HOST
+              value: '{{ .Release.Name }}-{{ .Values.mongo.service.nameOverride }}:{{ .Values.mongo.service.port }}'
+            - name: MONGODB_DATABASE
+              value: {{ .Values.mongo.auth.database | default "keptn" }}
+            - name: MONGODB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-credentials
+                  key: mongodb-user
+            - name: MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-credentials
+                  key: mongodb-passwords
+            - name: MONGODB_EXTERNAL_CONNECTION_STRING
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-credentials
+                  key: external_connection_string
+                  optional: true
+            - name: LOG_LEVEL
+              value: {{ .Values.logLevel | default "info" }}
+          {{- include "keptn.common.container-security-context" . | nindent 10 }}
+          {{- if .Values.mongodbDatastore.extraVolumeMounts }}
+          volumeMounts:
+          {{- include "keptn.tpl-value" ( dict "value" .Values.mongodbDatastore.extraVolumeMounts "context" $) | nindent 12 }}
+          {{- end }}
+        - name: distributor
+          image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
+          {{- include "keptn.dist.livenessProbe" . | nindent 10 }}
+          {{- include "keptn.dist.readinessProbe" . | nindent 10 }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          resources:
+            {{- toYaml .Values.distributor.resources | nindent 12 }}
+          env:
+            - name: PUBSUB_IMPL
+              value: nats
+            - name: PUBSUB_TOPIC
+              value: 'sh.keptn.>'
+            - name: PUBSUB_RECIPIENT
+              value: '127.0.0.1'
+            - name: PUBSUB_RECIPIENT_PATH
+              value: '/event'
+            {{- include "keptn.dist.common.env.vars" . | nindent 12 }}
+          {{- include "keptn.common.container-security-context" . | nindent 10 }}
+        {{- with .Values.mongodbDatastore.sidecars }}
+        {{- include "keptn.tpl-value" ( dict "value" . "context" $ ) | nindent 8 }}
+        {{- end }}
+      {{- if .Values.mongodbDatastore.extraVolumes }}
+      volumes:
+      {{- include "keptn.tpl-value" ( dict "value" .Values.mongodbDatastore.extraVolumes "context" $) | nindent 8 }}
+      {{- end }}
+      {{- include "keptn.nodeSelector" (dict "value" .Values.mongodbDatastore.nodeSelector "default" .Values..nodeSelector "indent" 8 "context" . )}}
 ---
 apiVersion: v1
 kind: Service

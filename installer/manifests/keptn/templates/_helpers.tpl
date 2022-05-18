@@ -225,13 +225,13 @@ securityContext:
 {{- end -}}
 
 {{- define "keptn.common.pod-security-context" -}}
-{{- if (.Values.common).podSecurityContext -}}
-{{- if .Values.common.podSecurityContext.enabled -}}
+{{- if (.Values.).podSecurityContext -}}
+{{- if .Values..podSecurityContext.enabled -}}
 securityContext:
-{{- range $key, $value := omit .Values.common.podSecurityContext "enabled" "defaultSeccompProfile" }}
+{{- range $key, $value := omit .Values..podSecurityContext "enabled" "defaultSeccompProfile" }}
   {{ $key }}: {{- toYaml $value | nindent 4 }}
 {{- end -}}
-{{- if not .Values.common.podSecurityContext.seccompProfile -}}
+{{- if not .Values..podSecurityContext.seccompProfile -}}
 {{- if .Values.apiGatewayNginx.podSecurityContext.defaultSeccompProfile -}}
 {{- include "keptn.common.security-context-seccomp" . -}}
 {{- end -}}
@@ -245,10 +245,10 @@ securityContext:
 {{- end -}}
 
 {{- define "keptn.common.container-security-context" -}}
-{{- if (.Values.common).containerSecurityContext -}}
-{{- if .Values.common.containerSecurityContext.enabled -}}
+{{- if (.Values.).containerSecurityContext -}}
+{{- if .Values..containerSecurityContext.enabled -}}
 securityContext:
-{{- range $key, $value := omit .Values.common.containerSecurityContext "enabled" }}
+{{- range $key, $value := omit .Values..containerSecurityContext "enabled" }}
   {{ $key }}: {{- toYaml $value | nindent 4 }}
 {{- end -}}
 {{- end -}}
@@ -266,9 +266,9 @@ securityContext:
 rollingUpdate upgrade strategy for control plane deployments
 */}}
 {{- define "keptn.common.update-strategy" -}}
-{{- if (.Values.common).strategy -}}
+{{- if (.Values.).strategy -}}
 strategy:
-{{- toYaml .Values.common.strategy | nindent 2 -}}
+{{- toYaml .Values..strategy | nindent 2 -}}
 {{- else -}}
 strategy:
   type: RollingUpdate
