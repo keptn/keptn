@@ -28,19 +28,22 @@
      registry: "k3d-container-registry.127.0.0.1.nip.io:12345/keptn"      # keptn registry/image name
      tag: "local-snapshot"                                                # keptn version/tag
    ```
-3. Download Helm Dependencies `helm dependency update`
-   - `installer/manifests/keptn`
-   - `helm-service/chart`
-   - `jmeter-service/chart`
-4. Test helm charts locally 
+3. Test helm charts locally 
    - For local templating of helm charts to take a look about the changes use:
    ```shell
    helm template . -f values-local.yaml --name-template test-control-plane --output-dir ../../temp
    ```
-5. Install keptn in local cluster
+4. Install keptn in local cluster
    Go to `installer/manifests/keptn`
    ```shell
+   helm dependency update
    helm upgrade --install -f values-local.yaml keptn . -n keptn
+   ```
+5. Install Helm-Service
+   - Go to `/helm-service/chart`
+   ```shell
+   helm dependency update
+   helm upgrade --install . -n keptn
    ```
 6. Open a new terminal and type:
    ```shell

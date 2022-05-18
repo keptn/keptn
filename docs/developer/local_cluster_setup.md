@@ -12,7 +12,7 @@
       ```
     - Build just one artefact/keptn-service (go to the service folder where the Dockerfile is located)
       ```shell
-      docker build . -t $AIRGAPPED_REGISTRY_URL/keptndev/api:local-snapshot
+      docker build . -t $AIRGAPPED_REGISTRY_URL/keptn/api:local-snapshot
       ```
 3. Build Keptn CLI:
     - go to `./keptn/cli` and run `go build -o keptn main.go`
