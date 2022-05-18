@@ -2,16 +2,15 @@ package main
 
 import (
 	"context"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+	logger "github.com/sirupsen/logrus"
 	"log"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 	"time"
-
-	cloudevents "github.com/cloudevents/sdk-go/v2"
-	logger "github.com/sirupsen/logrus"
 
 	"github.com/kelseyhightower/envconfig"
 	"github.com/keptn/go-utils/pkg/api/models"
@@ -69,11 +68,18 @@ func main() {
 		}))
 	}()
 
-	ctx := getGracefulContext()
+	ctx, wg := getGracefulContext()
 	err = controlPlane.Register(ctx, LighthouseService{env})
 	if err != nil {
 		log.Fatal(err)
 	}
+	logger.Info("Waiting for event handlers to finish")
+	t1 := time.Now().UTC()
+	<-time.After(5 * time.Second) // give some additional time for handover: potentially, the waitgroup counter for an event might not have been increased at this point
+	wg.Wait()
+	t2 := time.Now().UTC()
+	wgDuration := t2.Sub(t1)
+	logger.Infof("All handlers finished after %s - ready to shut down", wgDuration.String())
 }
 
 type LighthouseService struct {
@@ -125,7 +131,7 @@ func (l LighthouseService) RegistrationData() controlplane.RegistrationData {
 	}
 }
 
-func getGracefulContext() context.Context {
+func getGracefulContext() (context.Context, *sync.WaitGroup) {
 
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
@@ -136,11 +142,7 @@ func getGracefulContext() context.Context {
 		<-ch
 		logger.Info("Container termination triggered, starting graceful shutdown and cancelling context")
 		cancel()
-		logger.Info("Waiting for event handlers to finish")
-		wg.Wait()
-		logger.Info("All handlers finished - ready to shut down")
-		<-time.After(10 * time.Second)
 	}()
 
-	return ctx
+	return ctx, wg
 }

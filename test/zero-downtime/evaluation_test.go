@@ -15,8 +15,8 @@ import (
 
 func TestEvaluationsWithApproval(t *testing.T) {
 	images := []string{"0.15.1-dev.202205161008", "0.15.1-dev.202205161146"}
-	lhImages := []string{"ready1", "ready2"}
-	services := []string{"api-service", "shipyard-controller", "resource-service", "lighthouse-service", "approval-service", "mongodb-datastore"}
+	lhImages := []string{"ready3", "ready4"}
+	services := []string{"api-service", "shipyard-controller", "resource-service", "lighthouse-service", "approval-service"}
 	//services := []string{"shipyard-controller"}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -49,7 +49,7 @@ func doEvaluations() {
 			}
 		}()
 
-		<-time.After(3 * time.Second)
+		<-time.After(2 * time.Second)
 	}
 }
 
