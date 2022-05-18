@@ -120,7 +120,7 @@
     "@angular-devkit/architect" "0.1202.17"
     rxjs "6.6.7"
 
-"@angular-devkit/core@12.2.17", "@angular-devkit/core@^12.2.10":
+"@angular-devkit/core@12.2.17", "@angular-devkit/core@^12.2.17":
   version "12.2.17"
   resolved "https://registry.yarnpkg.com/@angular-devkit/core/-/core-12.2.17.tgz#0bef00636efe624163486265e05c508587cb57f1"
   integrity sha512-PyOY7LGUPPd6rakxUYbfQN6zAdOCMCouVp5tERY1WTdMdEiuULOtHsPee8kNbh75pD59KbJNU+fwozPRMuIm5g==
@@ -132,7 +132,7 @@
     rxjs "6.6.7"
     source-map "0.7.3"
 
-"@angular-devkit/schematics@12.2.17", "@angular-devkit/schematics@^12.2.10":
+"@angular-devkit/schematics@12.2.17", "@angular-devkit/schematics@^12.2.17":
   version "12.2.17"
   resolved "https://registry.yarnpkg.com/@angular-devkit/schematics/-/schematics-12.2.17.tgz#e3c217465d04837f0589d6dfc286056be1b7c68f"
   integrity sha512-c0eNu/nx1Mnu7KcZgYTYHP736H4Y9pSyLBSmLAHYZv3t3m0dIPbhifRcLQX7hHQ8fGT2ZFxmOpaQG5/DcIghSw==
@@ -1402,15 +1402,15 @@
     tunnel-agent "^0.6.0"
     uuid "^8.3.2"
 
-"@cypress/schematic@1.6.0":
-  version "1.6.0"
-  resolved "https://registry.yarnpkg.com/@cypress/schematic/-/schematic-1.6.0.tgz#7178702e94ec717b7ffc6b18b4d9ff7cd8a48d44"
-  integrity sha512-ENHceK21AANBCthaiQ4gJGEvHsqJ9wS3b9PjnlD4MKOMzqwU/WMrJAs/Xnxa6PGh3btB2w0xNN+0beeaf0KiCA==
+"@cypress/schematic@1.7.0":
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/@cypress/schematic/-/schematic-1.7.0.tgz#66343138f7f94843fa24f0c492a5a83408a7a047"
+  integrity sha512-CouQrVlZ+uHVVBQtmNoMYU9LyoSAmQTOLDpVjrdTdMPpJH1mWnHCL5OCMt+FZLR+43KRiWEvDUjNqSza11oGsQ==
   dependencies:
     "@angular-devkit/architect" "^0.1202.10"
-    "@angular-devkit/core" "^12.2.10"
-    "@angular-devkit/schematics" "^12.2.10"
-    "@schematics/angular" "^12.2.10"
+    "@angular-devkit/core" "^12.2.17"
+    "@angular-devkit/schematics" "^12.2.17"
+    "@schematics/angular" "^12.2.17"
     jsonc-parser "^3.0.0"
     rxjs "~6.6.0"
 
@@ -1864,7 +1864,7 @@
     tslib "^2.0.0"
     yargs-parser "20.0.0"
 
-"@schematics/angular@12.2.17", "@schematics/angular@^12.2.10":
+"@schematics/angular@12.2.17", "@schematics/angular@^12.2.17":
   version "12.2.17"
   resolved "https://registry.yarnpkg.com/@schematics/angular/-/angular-12.2.17.tgz#37628479650bfe6fe269905b7ca29f9e5baec7a6"
   integrity sha512-HM/4KkQu944KL5ebhIyy1Ot5OV6prHNW7kmGeMVeQefLSbbfMQCHLa1psB9UU9BoahwGhUBvleLylNSitOBCgg==
