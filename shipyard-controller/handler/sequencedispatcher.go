@@ -72,7 +72,6 @@ func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
 			}
 		}
 		if errors.Is(err, db.ErrNoEventFound) || len(queuedSequences) == 0 {
-			log.Infof("!!!!not blocked item: %+v", queueItem)
 			if err := sd.dispatchSequence(queueItem); err != nil {
 				if errors.Is(err, ErrSequenceBlocked) {
 					//if the sequence is currently blocked, insert it into the queue
@@ -90,7 +89,6 @@ func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
 			return nil
 		} else {
 			//if there are sequences in queue, insert into queue
-			log.Infof("!!!!blocked item: %+v", queueItem)
 			if err2 := sd.add(queueItem); err2 != nil {
 				return err2
 			}
@@ -156,10 +154,6 @@ func (sd *SequenceDispatcher) dispatchSequences() {
 		return
 	}
 
-	// for _, queuedSequence := range queuedSequences {
-	// 	log.Infof("????item: %+v", queuedSequence)
-	// }
-
 	for _, queuedSequence := range queuedSequences {
 		if err := sd.dispatchSequence(queuedSequence); err != nil {
 			if errors.Is(err, ErrSequenceBlocked) || errors.Is(err, ErrSequenceBlockedWaiting) {
@@ -182,18 +176,15 @@ func (sd *SequenceDispatcher) isSequenceBlocked(queueItem models.QueueItem) (boo
 		Status: []string{apimodels.SequenceStartedState},
 	})
 
-	// log.Infof("item: %+v", queueItem)
-	// log.Infof("!!!!!number of items in queue: %d, waiting: %d, err: %s", len(startedSequenceExecutions), err.Error())
-
 	if err != nil {
-		return false, err
+		return true, err
 	}
 
 	if len(startedSequenceExecutions) > 0 {
-		return false, nil
+		return true, nil
 	}
 
-	return true, nil
+	return false, nil
 }
 
 func (sd *SequenceDispatcher) dispatchSequence(queueItem models.QueueItem) error {
@@ -217,7 +208,7 @@ func (sd *SequenceDispatcher) dispatchSequence(queueItem models.QueueItem) error
 		return err
 	}
 
-	if !sequenceBlocked {
+	if sequenceBlocked {
 		log.Infof("Sequence %s cannot be started yet because sequences are still running in stage %s", queueItem.Scope.KeptnContext, queueItem.Scope.Stage)
 		return ErrSequenceBlockedWaiting
 	}
