@@ -197,7 +197,12 @@ func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event mod
 	}
 
 	filter := models.SequenceExecutionFilter{
-		Scope:  eventScope,
+		Scope: models.EventScope{
+			EventData: keptnv2.EventData{
+				Project: eventScope.Project,
+				Stage:   eventScope.Stage,
+			},
+		},
 		Status: []string{apimodels.SequenceStartedState},
 	}
 
