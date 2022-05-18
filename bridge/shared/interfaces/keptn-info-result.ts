@@ -13,4 +13,5 @@ export interface KeptnInfoResult {
   servicesPageSize?: number;
   authType: string;
   user?: string;
+  automaticProvisioningMsg?: string;
 }

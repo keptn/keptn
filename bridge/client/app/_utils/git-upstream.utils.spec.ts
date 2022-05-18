@@ -130,4 +130,52 @@ describe('GitUpstreamUtils', () => {
       } as Project)
     ).toBe(false);
   });
+
+  it('should return true if the https git remote url is empty', () => {
+    expect(
+      gitUtils.isRemoteUrlEmpty({
+        https: {
+          gitToken: '',
+          gitRemoteURL: '',
+        },
+      })
+    ).toBe(true);
+  });
+
+  it('should return false if the https git remote url is not empty', () => {
+    expect(
+      gitUtils.isRemoteUrlEmpty({
+        https: {
+          gitToken: '',
+          gitRemoteURL: 'https://myGitUrl',
+        },
+      })
+    ).toBe(false);
+  });
+
+  it('should return true if the ssh git remote url is empty', () => {
+    expect(
+      gitUtils.isRemoteUrlEmpty({
+        ssh: {
+          gitRemoteURL: '',
+          gitPrivateKey: '',
+        },
+      })
+    ).toBe(true);
+  });
+
+  it('should return false if the ssh git remote url is not empty', () => {
+    expect(
+      gitUtils.isRemoteUrlEmpty({
+        ssh: {
+          gitRemoteURL: 'ssh://myGitUrl',
+          gitPrivateKey: '',
+        },
+      })
+    ).toBe(false);
+  });
+
+  it('should return true if it is not a https or an ssh configuration', () => {
+    expect(gitUtils.isRemoteUrlEmpty({ noupstream: '' })).toBe(true);
+  });
 });

@@ -1,19 +1,25 @@
 /// <reference types="cypress" />
 
 import {
-  interceptCreateProject,
   interceptMain,
+  interceptCreateProject,
+  interceptMainResourceApEnabled,
   interceptMainResourceEnabled,
   interceptProjectBoard,
+  interceptProjectSettings,
 } from '../intercept';
 
 class NewProjectCreatePage {
   private validCertificateInput = '-----BEGIN CERTIFICATE-----\nmyCertificate\n-----END CERTIFICATE-----';
   private validPrivateKeyInput = '-----BEGIN OPENSSH PRIVATE KEY-----\nmyPrivateKey\n-----END OPENSSH PRIVATE KEY-----';
 
-  public intercept(resourceServiceEnabled = false): this {
+  public intercept(resourceServiceEnabled = false, automaticProvisioningEnabled = false): this {
     if (resourceServiceEnabled) {
-      interceptMainResourceEnabled();
+      if (!automaticProvisioningEnabled) {
+        interceptMainResourceEnabled();
+      } else {
+        interceptMainResourceApEnabled();
+      }
     } else {
       interceptMain();
     }
@@ -21,13 +27,18 @@ class NewProjectCreatePage {
     return this;
   }
 
-  public interceptSettings(resourceServiceEnabled = false): this {
+  public interceptSettings(resourceServiceEnabled = false, automaticProvisioningEnabled = false): this {
     interceptProjectBoard();
     if (resourceServiceEnabled) {
-      interceptMainResourceEnabled();
+      if (!automaticProvisioningEnabled) {
+        interceptMainResourceEnabled();
+      } else {
+        interceptMainResourceApEnabled();
+      }
     } else {
       interceptMain();
     }
+    interceptProjectSettings();
     return this;
   }
 
@@ -98,6 +109,11 @@ class NewProjectCreatePage {
 
   public assertGitToken(token: string): this {
     cy.byTestId('ktb-git-token-input').should('have.value', token);
+    return this;
+  }
+
+  public clearGitToken(): this {
+    cy.byTestId('ktb-git-token-input').clear();
     return this;
   }
 
@@ -189,6 +205,11 @@ class NewProjectCreatePage {
     return this;
   }
 
+  public clearSshPrivateKey(): this {
+    cy.byTestId('ktb-ssh-private-key-input').clear();
+    return this;
+  }
+
   public typeSshPrivateKeyPassphrase(passphrase: string): this {
     cy.byTestId('ktb-ssh-private-key-passphrase-input').type(passphrase);
     return this;
@@ -266,6 +287,14 @@ class NewProjectCreatePage {
     return this;
   }
 
+  public enterBasicValidProjectWithoutGitUpstream(): this {
+    return this.typeProjectName('my-project').setShipyardFile();
+  }
+
+  public enterBasicSsh(): this {
+    return this.typeGitUrlSsh('ssh://example.com').typeValidSshPrivateKey();
+  }
+
   public enterBasicValidProjectSsh(fillPrivateKey = true): this {
     this.typeProjectName('my-project').setShipyardFile().typeGitUrlSsh('ssh://example.com');
     if (fillPrivateKey) {
@@ -288,11 +317,12 @@ class NewProjectCreatePage {
       .assertSshPrivateKeyPassphrase('myPassphrase');
   }
 
+  public enterBasicHttps(): this {
+    return this.typeGitUrl('https://example.com').typeGitToken('myToken');
+  }
+
   public enterBasicValidProjectHttps(): this {
-    return this.typeProjectName('my-project')
-      .setShipyardFile()
-      .typeGitUrl('https://example.com')
-      .typeGitToken('myToken');
+    return this.typeProjectName('my-project').setShipyardFile().enterBasicHttps();
   }
 
   public enterFullValidProjectHttps(): this {
@@ -357,6 +387,18 @@ class NewProjectCreatePage {
     return this;
   }
 
+  public assertNoUpstreamSelected(status: boolean): this {
+    cy.byTestId('ktb-no-upstream-form-button').should(status ? 'have.class' : 'not.have.class', 'dt-radio-checked');
+    return this;
+  }
+
+  public assertNoUpstreamEnabled(status: boolean): this {
+    cy.byTestId('ktb-no-upstream-form-button')
+      .get('input')
+      .should(status ? 'be.enabled' : 'be.disabled');
+    return this;
+  }
+
   public selectHttpsForm(): this {
     cy.byTestId('ktb-https-form-button').click();
     return this;
@@ -367,6 +409,11 @@ class NewProjectCreatePage {
     return this;
   }
 
+  public selectNoUpstreamForm(): this {
+    cy.byTestId('ktb-no-upstream-form-button').click();
+    return this;
+  }
+
   public clickCreateProject(): this {
     cy.byTestId('ktb-create-project').click();
     return this;
@@ -374,6 +421,21 @@ class NewProjectCreatePage {
 
   public assertUpdateButtonExists(status: boolean): this {
     cy.byTestId('ktb-project-update-button').should(status ? 'exist' : 'not.exist');
+    return this;
+  }
+
+  public updateProject(): this {
+    cy.byTestId('ktb-project-update-button').click();
+    return this;
+  }
+
+  public assertUpdateButtonEnabled(status: boolean): this {
+    cy.byTestId('ktb-project-update-button').should(status ? 'be.enabled' : 'be.disabled');
+    return this;
+  }
+
+  public assertGitUpstreamMessageContains(message: string): this {
+    cy.byTestId('ktb-settings-git-upstream-message').should('contain', message);
     return this;
   }
 }
