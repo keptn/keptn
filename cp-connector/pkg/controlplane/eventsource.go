@@ -93,8 +93,8 @@ func (n *NATSEventSource) Start(ctx context.Context, registrationData Registrati
 	}
 	go func() {
 		<-ctx.Done()
-		if err := n.connector.Disconnect(); err != nil {
-			n.logger.Errorf("Unable to disconnect from NATS: %v", err)
+		if err := n.connector.UnsubscribeAll(); err != nil {
+			n.logger.Errorf("Unable to unsubscribe from NATS: %v", err)
 			return
 		}
 	}()
