@@ -114,6 +114,13 @@
             }
           }
         },
+        "serve-test": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "browserTarget": "bridge:build:test",
+            "port": 5000
+          }
+        },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
@@ -130,7 +137,6 @@
           "builder": "@cypress/schematic:cypress",
           "options": {
             "devServerTarget": "bridge:serve",
-            "watch": true,
             "headless": false,
             "browser": "chrome"
           },
@@ -143,22 +149,28 @@
         "cypress-run": {
           "builder": "@cypress/schematic:cypress",
           "options": {
-            "devServerTarget": "start:dev",
+            "devServerTarget": "bridge:serve-test",
             "headless": true,
             "browser": "chrome"
           },
           "configurations": {
             "production": {
-              "devServerTarget": "bridge:serve:production"
+              "devServerTarget": "bridge:serve-test"
             }
           }
         },
         "cypress-open": {
           "builder": "@cypress/schematic:cypress",
           "options": {
+            "devServerTarget": "bridge:serve-test",
             "watch": true,
             "headless": false,
             "browser": "chrome"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "bridge:serve-test"
+            }
           }
         }
       }

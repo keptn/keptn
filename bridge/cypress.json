@@ -5,7 +5,6 @@
   "screenshotsFolder": "dist/cypress/screenshots",
   "pluginsFile": "cypress/plugins/index.ts",
   "fixturesFolder": "cypress/fixtures",
-  "baseUrl": "http://localhost:5000",
   "video": false,
   "screenshotOnRunFailure": true,
   "viewportHeight": 1080,
