@@ -182,7 +182,7 @@ Pre-requisites:
    **Note**: If you want to upgrade to the latest developer version, please use `helm upgrade` with `--reuse-values` option after installation.
 4. Store Keptn namespace to env variable
    ```console
-   KEPTN_NAMESPACE=keptn
+   export KEPTN_NAMESPACE=keptn
    ```
 5. Install Mockserver
    ```console
@@ -191,7 +191,7 @@ Pre-requisites:
    ```
 6. Install Gitea
    ```console
-   curl -SL https://raw.githubusercontent.com/keptn/keptn/master/docs/developer/install_gitea.sh | bash
+   curl -SL https://raw.githubusercontent.com/keptn/keptn/master/docs/developer/install_gitea.sh | sh
    ```
 7. Expose Keptn
    ```console
@@ -204,9 +204,9 @@ Pre-requisites:
    After executing, return back to the original terminal.
 9.  Set Up env variables
    ```console
-   KEPTN_ENDPOINT=http://$(kubectl -n $KEPTN_NAMESPACE get ingress api-keptn-ingress -ojsonpath='{.spec.rules[0].host}')/api
-   KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n $KEPTN_NAMESPACE -ojsonpath='{.data.keptn-api-token}' | base64 --decode)
-   KEPTN_BRIDGE_URL=http://$(kubectl -n $KEPTN_NAMESPACE get ingress api-keptn-ingress -ojsonpath='{.spec.rules[0].host}')/bridge
+   export KEPTN_ENDPOINT=http://$(kubectl -n $KEPTN_NAMESPACE get ingress api-keptn-ingress -ojsonpath='{.spec.rules[0].host}')/api
+   export KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n $KEPTN_NAMESPACE -ojsonpath='{.data.keptn-api-token}' | base64 --decode)
+   export KEPTN_BRIDGE_URL=http://$(kubectl -n $KEPTN_NAMESPACE get ingress api-keptn-ingress -ojsonpath='{.spec.rules[0].host}')/bridge
    ```
 10. Authenticate Keptn:
    ```console
@@ -228,7 +228,7 @@ Pre-requisites:
    ```console
    cd test/go-tests && go test ./... -v -run <NameOfTheTest>
    ```
-   **Note**: To access Keptn instalce via web UI, use the address stored in `KEPTN_BRIDGE_URL`. To display it, type:
+   **Note**: To access the Keptn instance via web UI, use the address stored in `KEPTN_BRIDGE_URL`. To display it, type:
    ```console
    echo $KEPTN_BRIDGE_URL
    ```

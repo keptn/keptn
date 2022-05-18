@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 helm repo add gitea-charts https://dl.gitea.io/charts/
 helm install --values test/assets/gitea/values.yaml gitea gitea-charts/gitea -n keptn --wait --version v5.0.0

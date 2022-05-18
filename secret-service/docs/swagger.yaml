@@ -67,11 +67,11 @@ paths:
       description: Get scopes
       responses:
         "200":
-          description: OK
+          description: ok
           schema:
             $ref: '#/definitions/model.GetScopesResponse'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
             $ref: '#/definitions/model.Error'
       security:
@@ -95,17 +95,17 @@ paths:
         type: string
       responses:
         "200":
-          description: ""
+          description: ok
         "400":
-          description: Bad Request
+          description: Invalid payload
           schema:
             $ref: '#/definitions/model.Error'
         "404":
-          description: Not Found
+          description: Not found
           schema:
             $ref: '#/definitions/model.Error'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
             $ref: '#/definitions/model.Error'
       security:
@@ -117,11 +117,11 @@ paths:
       description: Get secrets
       responses:
         "200":
-          description: OK
+          description: ok
           schema:
             $ref: '#/definitions/model.GetSecretsResponse'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
             $ref: '#/definitions/model.Error'
       security:
@@ -148,7 +148,7 @@ paths:
           schema:
             $ref: '#/definitions/model.Secret'
         "400":
-          description: Bad Request
+          description: Invalid payload
           schema:
             $ref: '#/definitions/model.Error'
         "409":
@@ -156,7 +156,7 @@ paths:
           schema:
             $ref: '#/definitions/model.Error'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
             $ref: '#/definitions/model.Error'
       security:
@@ -179,19 +179,19 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: ok
           schema:
             $ref: '#/definitions/model.Secret'
         "400":
-          description: Bad Request
+          description: Invalid payload
           schema:
             $ref: '#/definitions/model.Error'
         "404":
-          description: Not Found
+          description: Not found
           schema:
             $ref: '#/definitions/model.Error'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
             $ref: '#/definitions/model.Error'
       security:

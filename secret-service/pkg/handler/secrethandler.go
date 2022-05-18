@@ -35,10 +35,10 @@ type SecretHandler struct {
 // @Accept json
 // @Produce json
 // @Param secret body model.Secret true "The new secret to be created"
-// @Success 201 {object} model.Secret
-// @Failure 400 {object} model.Error
-// @Failure 409 {object} model.Error
-// @Failure 500 {object} model.Error
+// @Success 201 {object} model.Secret "Created"
+// @Failure 400 {object} model.Error "Invalid payload"
+// @Failure 409 {object} model.Error "Conflict"
+// @Failure 500 {object} model.Error "Internal server error"
 // @Router /secret [post]
 func (s SecretHandler) CreateSecret(c *gin.Context) {
 	secret := model.Secret{}
@@ -76,10 +76,10 @@ func (s SecretHandler) CreateSecret(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param secret body model.Secret true "The updated Secret"
-// @Success 200 {object} model.Secret
-// @Failure 400 {object} model.Error
-// @Failure 404 {object} model.Error
-// @Failure 500 {object} model.Error
+// @Success 200 {object} model.Secret "ok"
+// @Failure 400 {object} model.Error "Invalid payload"
+// @Failure 404 {object} model.Error "Not found"
+// @Failure 500 {object} model.Error "Internal server error"
 // @Router /secret [put]
 func (s SecretHandler) UpdateSecret(c *gin.Context) {
 	secret := model.Secret{}
@@ -112,10 +112,10 @@ func (s SecretHandler) UpdateSecret(c *gin.Context) {
 // @Security ApiKeyAuth
 // @Param name query string true "The name of the secret"
 // @Param scope query string true "The scope of the secret"
-// @Success 200
-// @Failure 400 {object} model.Error
-// @Failure 404 {object} model.Error
-// @Failure 500 {object} model.Error
+// @Success 200 "ok"
+// @Failure 400 {object} model.Error "Invalid payload"
+// @Failure 404 {object} model.Error "Not found"
+// @Failure 500 {object} model.Error "Internal server error"
 // @Router /secret [delete]
 func (s SecretHandler) DeleteSecret(c *gin.Context) {
 	params := &DeleteSecretQueryParams{}
@@ -154,8 +154,8 @@ func (s SecretHandler) DeleteSecret(c *gin.Context) {
 // @Description Get secrets
 // @Tags Secrets
 // @Security ApiKeyAuth
-// @Success 200 {object} model.GetSecretsResponse
-// @Failure 500 {object} model.Error
+// @Success 200 {object} model.GetSecretsResponse "ok"
+// @Failure 500 {object} model.Error "Internal server error"
 // @Router /secret [get]
 func (s SecretHandler) GetSecrets(c *gin.Context) {
 	secrets, err := s.SecretManager.GetSecrets()

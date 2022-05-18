@@ -37,13 +37,13 @@ const docTemplate = `{
                 "summary": "Get scopes",
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "ok",
                         "schema": {
                             "$ref": "#/definitions/model.GetScopesResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
                         }
@@ -65,13 +65,13 @@ const docTemplate = `{
                 "summary": "Get secrets",
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "ok",
                         "schema": {
                             "$ref": "#/definitions/model.GetSecretsResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
                         }
@@ -108,25 +108,25 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "ok",
                         "schema": {
                             "$ref": "#/definitions/model.Secret"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid payload",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "Not found",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
                         }
@@ -169,7 +169,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid payload",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
                         }
@@ -181,7 +181,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
                         }
@@ -217,22 +217,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": ""
+                        "description": "ok"
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid payload",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "Not found",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
                         }

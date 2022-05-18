@@ -41,41 +41,38 @@ definitions:
   models.CreateProjectParams:
     properties:
       gitPemCertificate:
-        description: git PEM Certificate
+        description: Git PEM Certificate
         type: string
       gitPrivateKey:
-        description: git private key
+        description: Git private key
         type: string
       gitPrivateKeyPass:
-        description: git private key passphrase
+        description: Git private key passphrase
         type: string
       gitProxyPassword:
-        description: git proxy password
+        description: Git proxy password
         type: string
       gitProxyScheme:
-        description: git proxy scheme
+        description: Git proxy scheme
         type: string
       gitProxyUrl:
-        description: git proxy URL
+        description: Git proxy URL
         type: string
       gitProxyUser:
-        description: git proxy user
+        description: Git proxy user
         type: string
       gitRemoteURL:
-        description: git remote URL
+        description: Git remote URL
         type: string
       gitToken:
-        description: git token
+        description: Git token
         type: string
       gitUser:
-        description: git user
+        description: Git user
         type: string
       insecureSkipTLS:
         description: |-
-          insecure skip tls
-          omitempty property is missing due to fallback of this
-          parameter to "undefined" when marshalling/unmarshalling data
-          when "false" value is present
+          When true, it does not validate TLS certificates.
         type: boolean
       name:
         description: name
@@ -159,13 +156,13 @@ definitions:
         description: Creation date of the project
         type: string
       gitProxyScheme:
-        description: git proxy scheme
+        description: Git proxy scheme
         type: string
       gitProxyUrl:
-        description: git proxy URL
+        description: Git proxy URL
         type: string
       gitProxyUser:
-        description: git proxy user
+        description: Git proxy user
         type: string
       gitRemoteURI:
         description: Git remote URI
@@ -174,7 +171,8 @@ definitions:
         description: Git User
         type: string
       insecureSkipTLS:
-        description: insecure skip tls
+        description: |-
+          When true, it does not validate TLS certificates.
         type: boolean
       lastEventContext:
         $ref: '#/definitions/models.EventContextInfo'
@@ -532,41 +530,38 @@ definitions:
   models.UpdateProjectParams:
     properties:
       gitPemCertificate:
-        description: git PEM Certificate
+        description: Git PEM Certificate
         type: string
       gitPrivateKey:
-        description: git private key
+        description: Git private key
         type: string
       gitPrivateKeyPass:
-        description: git private key passphrase
+        description: Git private key passphrase
         type: string
       gitProxyPassword:
-        description: git proxy password
+        description: Git proxy password
         type: string
       gitProxyScheme:
-        description: git proxy scheme
+        description: Git proxy scheme
         type: string
       gitProxyUrl:
-        description: git proxy URL
+        description: Git proxy URL
         type: string
       gitProxyUser:
-        description: git proxy user
+        description: Git proxy user
         type: string
       gitRemoteURL:
-        description: git remote URL
+        description: Git remote URL
         type: string
       gitToken:
-        description: git token
+        description: Git token
         type: string
       gitUser:
-        description: git user
+        description: Git user
         type: string
       insecureSkipTLS:
         description: |-
-          insecure skip tls
-          omitempty property is missing due to fallback of this
-          parameter to "undefined" when marshalling/unmarshalling data
-          when "false" value is present
+          When true, it does not validate TLS certificates.
         type: boolean
       name:
         description: name

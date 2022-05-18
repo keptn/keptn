@@ -28,8 +28,8 @@ func NewScopeHandler(backend backend.ScopeManager) *ScopeHandler {
 // @Description Get scopes
 // @Tags Scopes
 // @Security ApiKeyAuth
-// @Success 200 {object} model.GetScopesResponse
-// @Failure 500 {object} model.Error
+// @Success 200 {object} model.GetScopesResponse "ok"
+// @Failure 500 {object} model.Error "Internal server error"
 // @Router /scope [get]
 func (s ScopeHandler) GetScopes(c *gin.Context) {
 	scopes, err := s.ScopeBackend.GetScopes()
