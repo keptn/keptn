@@ -36,7 +36,7 @@ type SecretHandler struct {
 // @Produce json
 // @Param secret body model.Secret true "The new secret to be created"
 // @Success 201 {object} model.Secret "Created"
-// @Failure 400 {object} model.Error "Invalid payload"
+// @Failure 400 {object} model.Error "Invalid Payload"
 // @Failure 409 {object} model.Error "Conflict"
 // @Failure 500 {object} model.Error "Internal Server Error"
 // @Router /secret [post]
@@ -78,7 +78,7 @@ func (s SecretHandler) CreateSecret(c *gin.Context) {
 // @Param secret body model.Secret true "The updated Secret"
 // @Success 200 {object} model.Secret "OK"
 // @Failure 400 {object} model.Error "Invalid payload"
-// @Failure 404 {object} model.Error "Not found"
+// @Failure 404 {object} model.Error "Not Found"
 // @Failure 500 {object} model.Error "Internal Server Error"
 // @Router /secret [put]
 func (s SecretHandler) UpdateSecret(c *gin.Context) {
@@ -114,7 +114,7 @@ func (s SecretHandler) UpdateSecret(c *gin.Context) {
 // @Param scope query string true "The scope of the secret"
 // @Success 200 "OK"
 // @Failure 400 {object} model.Error "Invalid payload"
-// @Failure 404 {object} model.Error "Not found"
+// @Failure 404 {object} model.Error "Not Found"
 // @Failure 500 {object} model.Error "Internal Server Error"
 // @Router /secret [delete]
 func (s SecretHandler) DeleteSecret(c *gin.Context) {

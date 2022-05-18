@@ -120,7 +120,7 @@ const docTemplate = `{
                         }
                     },
                     "404": {
-                        "description": "Not found",
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
                         }
@@ -169,7 +169,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid payload",
+                        "description": "Invalid Payload",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
                         }
@@ -226,7 +226,7 @@ const docTemplate = `{
                         }
                     },
                     "404": {
-                        "description": "Not found",
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
                         }

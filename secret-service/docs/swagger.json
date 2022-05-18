@@ -112,7 +112,7 @@
                         }
                     },
                     "404": {
-                        "description": "Not found",
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
                         }
@@ -161,7 +161,7 @@
                         }
                     },
                     "400": {
-                        "description": "Invalid payload",
+                        "description": "Invalid Payload",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
                         }
@@ -218,7 +218,7 @@
                         }
                     },
                     "404": {
-                        "description": "Not found",
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
                         }
