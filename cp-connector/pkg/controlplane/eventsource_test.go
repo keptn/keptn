@@ -180,6 +180,25 @@ func TestEventSourceOnSubscriptionUpdate(t *testing.T) {
 	require.Equal(t, 2, natsConnectorMock.QueueSubscribeMultipleCalls)
 }
 
+func TestEventSourceOnSubscriptionupdateWithDuplicatedSubjects(t *testing.T) {
+	var receivedSubjects []string
+	natsConnectorMock := &NATSConnectorMock{
+		QueueSubscribeMultipleFn: func(subjects []string, queueGroup string, fn nats2.ProcessEventFn) error {
+			receivedSubjects = subjects
+			return nil
+		},
+		UnsubscribeAllFn: func() error { return nil },
+	}
+	eventSource := NewNATSEventSource(natsConnectorMock)
+	err := eventSource.Start(context.TODO(), RegistrationData{}, make(chan EventUpdate))
+	require.NoError(t, err)
+	require.Equal(t, 1, natsConnectorMock.QueueSubscribeMultipleCalls)
+	eventSource.OnSubscriptionUpdate([]string{"a", "a"})
+	require.Equal(t, 1, natsConnectorMock.UnsubscribeAllCalls)
+	require.Equal(t, 2, natsConnectorMock.QueueSubscribeMultipleCalls)
+	require.Equal(t, 1, len(receivedSubjects))
+}
+
 func TestEventSourceOnSubscriptiOnUpdateUnsubscribeAllFails(t *testing.T) {
 	natsConnectorMock := &NATSConnectorMock{
 		QueueSubscribeMultipleFn: func(subjects []string, queueGroup string, fn nats2.ProcessEventFn) error { return nil },
