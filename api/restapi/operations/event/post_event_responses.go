@@ -57,12 +57,14 @@ func (o *PostEventOK) WriteResponse(rw http.ResponseWriter, producer runtime.Pro
 	}
 }
 
-/*PostEventDefault Error
+// PostEventInternalServerErrorCode is the HTTP code returned for type PostEventInternalServerError
+const PostEventInternalServerErrorCode int = 500
 
-swagger:response postEventDefault
+/*PostEventInternalServerError Error
+
+swagger:response postEventInternalServerError
 */
-type PostEventDefault struct {
-	_statusCode int
+type PostEventInternalServerError struct {
 
 	/*
 	  In: Body
@@ -70,43 +72,27 @@ type PostEventDefault struct {
 	Payload *models.Error `json:"body,omitempty"`
 }
 
-// NewPostEventDefault creates PostEventDefault with default headers values
-func NewPostEventDefault(code int) *PostEventDefault {
-	if code <= 0 {
-		code = 500
-	}
+// NewPostEventInternalServerError creates PostEventInternalServerError with default headers values
+func NewPostEventInternalServerError() *PostEventInternalServerError {
 
-	return &PostEventDefault{
-		_statusCode: code,
-	}
+	return &PostEventInternalServerError{}
 }
 
-// WithStatusCode adds the status to the post event default response
-func (o *PostEventDefault) WithStatusCode(code int) *PostEventDefault {
-	o._statusCode = code
-	return o
-}
-
-// SetStatusCode sets the status to the post event default response
-func (o *PostEventDefault) SetStatusCode(code int) {
-	o._statusCode = code
-}
-
-// WithPayload adds the payload to the post event default response
-func (o *PostEventDefault) WithPayload(payload *models.Error) *PostEventDefault {
+// WithPayload adds the payload to the post event internal server error response
+func (o *PostEventInternalServerError) WithPayload(payload *models.Error) *PostEventInternalServerError {
 	o.Payload = payload
 	return o
 }
 
-// SetPayload sets the payload to the post event default response
-func (o *PostEventDefault) SetPayload(payload *models.Error) {
+// SetPayload sets the payload to the post event internal server error response
+func (o *PostEventInternalServerError) SetPayload(payload *models.Error) {
 	o.Payload = payload
 }
 
 // WriteResponse to the client
-func (o *PostEventDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+func (o *PostEventInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.WriteHeader(o._statusCode)
+	rw.WriteHeader(500)
 	if o.Payload != nil {
 		payload := o.Payload
 		if err := producer.Produce(rw, payload); err != nil {

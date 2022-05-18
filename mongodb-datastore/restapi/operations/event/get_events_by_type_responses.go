@@ -57,12 +57,14 @@ func (o *GetEventsByTypeOK) WriteResponse(rw http.ResponseWriter, producer runti
 	}
 }
 
-/*GetEventsByTypeDefault error
+// GetEventsByTypeInternalServerErrorCode is the HTTP code returned for type GetEventsByTypeInternalServerError
+const GetEventsByTypeInternalServerErrorCode int = 500
 
-swagger:response getEventsByTypeDefault
+/*GetEventsByTypeInternalServerError error
+
+swagger:response getEventsByTypeInternalServerError
 */
-type GetEventsByTypeDefault struct {
-	_statusCode int
+type GetEventsByTypeInternalServerError struct {
 
 	/*
 	  In: Body
@@ -70,43 +72,27 @@ type GetEventsByTypeDefault struct {
 	Payload *models.Error `json:"body,omitempty"`
 }
 
-// NewGetEventsByTypeDefault creates GetEventsByTypeDefault with default headers values
-func NewGetEventsByTypeDefault(code int) *GetEventsByTypeDefault {
-	if code <= 0 {
-		code = 500
-	}
+// NewGetEventsByTypeInternalServerError creates GetEventsByTypeInternalServerError with default headers values
+func NewGetEventsByTypeInternalServerError() *GetEventsByTypeInternalServerError {
 
-	return &GetEventsByTypeDefault{
-		_statusCode: code,
-	}
+	return &GetEventsByTypeInternalServerError{}
 }
 
-// WithStatusCode adds the status to the get events by type default response
-func (o *GetEventsByTypeDefault) WithStatusCode(code int) *GetEventsByTypeDefault {
-	o._statusCode = code
-	return o
-}
-
-// SetStatusCode sets the status to the get events by type default response
-func (o *GetEventsByTypeDefault) SetStatusCode(code int) {
-	o._statusCode = code
-}
-
-// WithPayload adds the payload to the get events by type default response
-func (o *GetEventsByTypeDefault) WithPayload(payload *models.Error) *GetEventsByTypeDefault {
+// WithPayload adds the payload to the get events by type internal server error response
+func (o *GetEventsByTypeInternalServerError) WithPayload(payload *models.Error) *GetEventsByTypeInternalServerError {
 	o.Payload = payload
 	return o
 }
 
-// SetPayload sets the payload to the get events by type default response
-func (o *GetEventsByTypeDefault) SetPayload(payload *models.Error) {
+// SetPayload sets the payload to the get events by type internal server error response
+func (o *GetEventsByTypeInternalServerError) SetPayload(payload *models.Error) {
 	o.Payload = payload
 }
 
 // WriteResponse to the client
-func (o *GetEventsByTypeDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+func (o *GetEventsByTypeInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.WriteHeader(o._statusCode)
+	rw.WriteHeader(500)
 	if o.Payload != nil {
 		payload := o.Payload
 		if err := producer.Produce(rw, payload); err != nil {

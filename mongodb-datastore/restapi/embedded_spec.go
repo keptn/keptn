@@ -134,7 +134,13 @@ func init() {
               }
             }
           },
-          "default": {
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "500": {
             "description": "error",
             "schema": {
               "$ref": "#/definitions/error"
@@ -186,7 +192,7 @@ func init() {
               }
             }
           },
-          "default": {
+          "500": {
             "description": "error",
             "schema": {
               "$ref": "#/definitions/error"
@@ -408,7 +414,13 @@ func init() {
               }
             }
           },
-          "default": {
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "500": {
             "description": "error",
             "schema": {
               "$ref": "#/definitions/error"
@@ -466,7 +478,7 @@ func init() {
               }
             }
           },
-          "default": {
+          "500": {
             "description": "error",
             "schema": {
               "$ref": "#/definitions/error"

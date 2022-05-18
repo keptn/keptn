@@ -62,7 +62,7 @@ func (lh *LogHandler) CreateLogEntries(context *gin.Context) {
 // @Param   nextPageKey     	query   string  false	"Pointer to the next set of items"
 // @Success 200 {object} models.GetLogsResponse "ok"
 // @Failure 400 {object} models.Error "Invalid payload"
-// @Failure 500 {object} models.Error "Internal error"
+// @Failure 404 {object} models.Error "Not found"
 // @Router /log [get]
 func (lh *LogHandler) GetLogEntries(context *gin.Context) {
 	params := &models.GetLogParams{}

@@ -6,15 +6,16 @@
 
 <!-- toc -->
 
-- [Structure of Integration Tests](#structure-of-integration-tests)
-  * [Adding a new Integration Test](#adding-a-new-integration-test)
-- [Running Integration Tests](#running-integration-tests)
-- [Run Integration Tests remotely on Github](#run-integration-tests-remotely-on-github)
-- [Run Integration Tests locally](#run-integration-tests-locally)
-  * [Prepare your local environment to run integration tests](#prepare-your-local-environment-to-run-integration-tests)
-    + [**Setup steps for K3d (recommended on Linux)**](#setup-steps-for-k3d-recommended-on-linux)
-    + [**Setup steps for Minishift (not recommended)**](#setup-steps-for-minishift-not-recommended)
-  * [Run the full installation of Integration Tests locally](#run-the-full-installation-of-integration-tests-locally)
+- [Integration Tests](#integration-tests)
+  - [Structure of Integration Tests](#structure-of-integration-tests)
+    - [Adding a new Integration Test](#adding-a-new-integration-test)
+  - [Running Integration Tests](#running-integration-tests)
+  - [Run Integration Tests remotely on Github](#run-integration-tests-remotely-on-github)
+  - [Run Integration Tests locally](#run-integration-tests-locally)
+    - [Prepare your local environment to run integration tests](#prepare-your-local-environment-to-run-integration-tests)
+      - [**Setup steps for K3d (recommended on Linux)**](#setup-steps-for-k3d-recommended-on-linux)
+      - [**Setup steps for Minishift (not recommended)**](#setup-steps-for-minishift-not-recommended)
+    - [Run the full installation of Integration Tests locally](#run-the-full-installation-of-integration-tests-locally)
 
 <!-- tocstop -->
 </details>
@@ -179,32 +180,55 @@ Pre-requisites:
       keptn install --use-case=continuous-delivery --platform=openshift --verbose
       ```
    **Note**: If you want to upgrade to the latest developer version, please use `helm upgrade` with `--reuse-values` option after installation.
-4. Expose Keptn
+4. Store Keptn namespace to env variable
+   ```console
+   export KEPTN_NAMESPACE=keptn
+   ```
+5. Install Mockserver
+   ```console
+   helm repo add mockserver https://www.mock-server.com
+   helm upgrade --install --namespace $KEPTN_NAMESPACE --version 5.13.0 mockserver mockserver/mockserver --set service.type=ClusterIP
+   ```
+6. Install Gitea
+   ```console
+   curl -SL https://raw.githubusercontent.com/keptn/keptn/master/docs/developer/install_gitea.sh | sh
+   ```
+7. Expose Keptn
    ```console
    curl -SL https://raw.githubusercontent.com/keptn/examples/master/quickstart/expose-keptn.sh | bash
    ```
-5. Open a new terminal and type:
+8. Open a new terminal and type:
    ```console
-   kubectl -n keptn port-forward service/api-gateway-nginx 8080:80
+   kubectl -n $KEPTN_NAMESPACE port-forward service/api-gateway-nginx 8080:80
    ```
    After executing, return back to the original terminal.
-6. Authenticate Keptn:
+9.  Set Up env variables
    ```console
-   keptn auth --endpoint=http://127.0.0.1:8080/api --api-token=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
+   export KEPTN_ENDPOINT=http://$(kubectl -n $KEPTN_NAMESPACE get ingress api-keptn-ingress -ojsonpath='{.spec.rules[0].host}')/api
+   export KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n $KEPTN_NAMESPACE -ojsonpath='{.data.keptn-api-token}' | base64 --decode)
+   export KEPTN_BRIDGE_URL=http://$(kubectl -n $KEPTN_NAMESPACE get ingress api-keptn-ingress -ojsonpath='{.spec.rules[0].host}')/bridge
    ```
-7. Verify the installation has worked
+10. Authenticate Keptn:
+   ```console
+   keptn auth --endpoint=$KEPTN_ENDPOINT --api-token=$KEPTN_API_TOKEN
+   ```
+11. Verify the installation has worked
    ```console
    keptn status
    ```
-8. Verify which images have been deployed
+12. Verify which images have been deployed
    ```console
-   kubectl -n keptn get deployments
+   kubectl -n $KEPTN_NAMESPACE get deployments
    ```
-9.  Run tests (e.g., UniformRegistration):
+13. Run tests (e.g., UniformRegistration):
    ```console
-   cd test/go-tests && KEPTN_ENDPOINT="http://127.0.0.1:8080/api" go test ./...
+   cd test/go-tests && go test ./...
    ```
    **Note**: If you want to run a single test, (e.g. BackupTestore_Test), please add `_test` suffix to the test file name, so it becomes executable. Otherwise, you cano run only `testsuite_*_test.go` files. For running a single test use:
    ```console
-   cd test/go-tests && KEPTN_ENDPOINT="http://127.0.0.1:8080/api" go test ./... -v -run <NameOfTheTest>
+   cd test/go-tests && go test ./... -v -run <NameOfTheTest>
+   ```
+   **Note**: To access the Keptn instance via web UI, use the address stored in `KEPTN_BRIDGE_URL`. To display it, type:
+   ```console
+   echo $KEPTN_BRIDGE_URL
    ```

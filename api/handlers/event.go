@@ -2,13 +2,14 @@ package handlers
 
 import (
 	"fmt"
-	cloudevents "github.com/cloudevents/sdk-go/v2"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/cp-connector/pkg/nats"
 	"net/url"
 	"strings"
 	"sync"
 	"time"
+
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/cp-connector/pkg/nats"
 
 	logger "github.com/sirupsen/logrus"
 
@@ -115,7 +116,7 @@ func createOrApplyKeptnContext(eventKeptnContext string) string {
 	return keptnContext
 }
 
-func sendInternalErrorForPost(err error) *event.PostEventDefault {
+func sendInternalErrorForPost(err error) *event.PostEventInternalServerError {
 	logger.Error(err.Error())
-	return event.NewPostEventDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+	return event.NewPostEventInternalServerError().WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 }

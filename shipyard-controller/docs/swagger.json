@@ -79,6 +79,12 @@
                             "$ref": "#/definitions/models.Error"
                         }
                     },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
                     "500": {
                         "description": "Internal error",
                         "schema": {
@@ -151,8 +157,8 @@
                             "$ref": "#/definitions/models.Error"
                         }
                     },
-                    "500": {
-                        "description": "Internal error",
+                    "404": {
+                        "description": "Not found",
                         "schema": {
                             "$ref": "#/definitions/models.Error"
                         }
@@ -310,6 +316,12 @@
                             "$ref": "#/definitions/models.ExpandedProjects"
                         }
                     },
+                    "400": {
+                        "description": "Invalid payload",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
                     "500": {
                         "description": "Internal error",
                         "schema": {
@@ -347,7 +359,7 @@
                     }
                 ],
                 "responses": {
-                    "200": {
+                    "201": {
                         "description": "ok",
                         "schema": {
                             "$ref": "#/definitions/models.UpdateProjectResponse"
@@ -416,6 +428,18 @@
                     },
                     "400": {
                         "description": "Invalid payload",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "424": {
+                        "description": "Failed dependency",
                         "schema": {
                             "$ref": "#/definitions/models.Error"
                         }
@@ -516,6 +540,12 @@
                             "$ref": "#/definitions/models.Error"
                         }
                     },
+                    "424": {
+                        "description": "Failed Dependency",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
                     "500": {
                         "description": "Internal error",
                         "schema": {
@@ -570,6 +600,12 @@
                     },
                     "400": {
                         "description": "Invalid payload",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
                         "schema": {
                             "$ref": "#/definitions/models.Error"
                         }
@@ -689,6 +725,12 @@
                         "description": "ok",
                         "schema": {
                             "$ref": "#/definitions/models.ExpandedStages"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid payload",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
                         }
                     },
                     "404": {
@@ -821,6 +863,12 @@
                             "$ref": "#/definitions/models.Error"
                         }
                     },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
                     "500": {
                         "description": "Internal error",
                         "schema": {
@@ -878,8 +926,8 @@
                             "$ref": "#/definitions/models.ExpandedService"
                         }
                     },
-                    "400": {
-                        "description": "Invalid payload",
+                    "404": {
+                        "description": "Not found",
                         "schema": {
                             "$ref": "#/definitions/models.Error"
                         }
@@ -1111,6 +1159,12 @@
                             "$ref": "#/definitions/models.Error"
                         }
                     },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
                     "500": {
                         "description": "Internal error",
                         "schema": {
@@ -1281,12 +1335,6 @@
                     "200": {
                         "description": ""
                     },
-                    "400": {
-                        "description": "Invalid payload",
-                        "schema": {
-                            "$ref": "#/definitions/models.Error"
-                        }
-                    },
                     "500": {
                         "description": "Internal error",
                         "schema": {
@@ -1380,12 +1428,6 @@
                             "items": {
                                 "$ref": "#/definitions/models.EventSubscription"
                             }
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid payload",
-                        "schema": {
-                            "$ref": "#/definitions/models.Error"
                         }
                     },
                     "404": {
@@ -1503,12 +1545,6 @@
                             "$ref": "#/definitions/models.EventSubscription"
                         }
                     },
-                    "400": {
-                        "description": "Invalid payload",
-                        "schema": {
-                            "$ref": "#/definitions/models.Error"
-                        }
-                    },
                     "404": {
                         "description": "Not found",
                         "schema": {
@@ -1575,12 +1611,6 @@
                             "$ref": "#/definitions/models.Error"
                         }
                     },
-                    "404": {
-                        "description": "Not found",
-                        "schema": {
-                            "$ref": "#/definitions/models.Error"
-                        }
-                    },
                     "500": {
                         "description": "Internal error",
                         "schema": {
@@ -1625,18 +1655,6 @@
                 "responses": {
                     "200": {
                         "description": ""
-                    },
-                    "400": {
-                        "description": "Invalid payload",
-                        "schema": {
-                            "$ref": "#/definitions/models.Error"
-                        }
-                    },
-                    "404": {
-                        "description": "Not found",
-                        "schema": {
-                            "$ref": "#/definitions/models.Error"
-                        }
                     },
                     "500": {
                         "description": "Internal error",
@@ -1717,10 +1735,6 @@
                     "description": "git private key passphrase",
                     "type": "string"
                 },
-                "gitProxyInsecure": {
-                    "description": "git proxy insecure",
-                    "type": "boolean"
-                },
                 "gitProxyPassword": {
                     "description": "git proxy password",
                     "type": "string"
@@ -1748,6 +1762,10 @@
                 "gitUser": {
                     "description": "git user",
                     "type": "string"
+                },
+                "insecureSkipTLS": {
+                    "description": "When true, it does not validate TLS certificates.",
+                    "type": "boolean"
                 },
                 "name": {
                     "description": "name",
@@ -1867,6 +1885,18 @@
                     "description": "Creation date of the project",
                     "type": "string"
                 },
+                "gitProxyScheme": {
+                    "description": "git proxy scheme",
+                    "type": "string"
+                },
+                "gitProxyUrl": {
+                    "description": "git proxy URL",
+                    "type": "string"
+                },
+                "gitProxyUser": {
+                    "description": "git proxy user",
+                    "type": "string"
+                },
                 "gitRemoteURI": {
                     "description": "Git remote URI",
                     "type": "string"
@@ -1874,6 +1904,10 @@
                 "gitUser": {
                     "description": "Git User",
                     "type": "string"
+                },
+                "insecureSkipTLS": {
+                    "description": "When true, it does not validate TLS certificates.",
+                    "type": "boolean"
                 },
                 "lastEventContext": {
                     "description": "last event context",
@@ -2391,10 +2425,6 @@
                     "description": "git private key passphrase",
                     "type": "string"
                 },
-                "gitProxyInsecure": {
-                    "description": "git proxy insecure",
-                    "type": "boolean"
-                },
                 "gitProxyPassword": {
                     "description": "git proxy password",
                     "type": "string"
@@ -2422,6 +2452,10 @@
                 "gitUser": {
                     "description": "git user",
                     "type": "string"
+                },
+                "insecureSkipTLS": {
+                    "description": "When true, it does not validate TLS certificates.",
+                    "type": "boolean"
                 },
                 "name": {
                     "description": "name",

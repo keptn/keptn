@@ -6,6 +6,12 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"strings"
+	"sync"
+
 	apierrors "github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
@@ -21,11 +27,6 @@ import (
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/health"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
-	"net/http"
-	"os"
-	"strings"
-	"sync"
 )
 
 //go:generate swagger generate server --target ../../mongodb-datastore --name mongodb-datastore --spec ../swagger.yaml
@@ -58,9 +59,9 @@ func configureAPI(api *operations.MongodbDatastoreAPI) http.Handler {
 		events, err := eventRequestHandler.GetEvents(params)
 		if err != nil {
 			if errors.Is(err, common.ErrInvalidEventFilter) {
-				return event.NewGetEventsDefault(http.StatusBadRequest).WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String(err.Error())})
+				return event.NewGetEventsBadRequest().WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String(err.Error())})
 			}
-			return event.NewGetEventsDefault(http.StatusInternalServerError).WithPayload(&models.Error{Code: http.StatusInternalServerError, Message: swag.String(err.Error())})
+			return event.NewGetEventsInternalServerError().WithPayload(&models.Error{Code: http.StatusInternalServerError, Message: swag.String(err.Error())})
 		}
 		return event.NewGetEventsOK().WithPayload(events)
 	})
@@ -69,9 +70,9 @@ func configureAPI(api *operations.MongodbDatastoreAPI) http.Handler {
 		events, err := eventRequestHandler.GetEventsByType(params)
 		if err != nil {
 			if errors.Is(err, common.ErrInvalidEventFilter) {
-				return event.NewGetEventsDefault(http.StatusBadRequest).WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String(err.Error())})
+				return event.NewGetEventsBadRequest().WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String(err.Error())})
 			}
-			return event.NewGetEventsDefault(http.StatusInternalServerError).WithPayload(&models.Error{Code: http.StatusInternalServerError, Message: swag.String(err.Error())})
+			return event.NewGetEventsInternalServerError().WithPayload(&models.Error{Code: http.StatusInternalServerError, Message: swag.String(err.Error())})
 		}
 		return event.NewGetEventsByTypeOK().WithPayload(events)
 	})

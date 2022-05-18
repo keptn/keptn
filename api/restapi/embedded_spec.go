@@ -68,7 +68,7 @@ func init() {
               "$ref": "#/definitions/eventContext"
             }
           },
-          "default": {
+          "500": {
             "description": "Error",
             "schema": {
               "$ref": "#/definitions/error"
@@ -175,6 +175,9 @@ func init() {
     },
     "metadata": {
       "type": "object",
+      "required": [
+        "automaticprovisioning"
+      ],
       "properties": {
         "automaticprovisioning": {
           "type": "boolean"
@@ -264,7 +267,7 @@ func init() {
               "$ref": "#/definitions/eventContext"
             }
           },
-          "default": {
+          "500": {
             "description": "Error",
             "schema": {
               "$ref": "#/definitions/error"
@@ -371,6 +374,9 @@ func init() {
     },
     "metadata": {
       "type": "object",
+      "required": [
+        "automaticprovisioning"
+      ],
       "properties": {
         "automaticprovisioning": {
           "type": "boolean"
