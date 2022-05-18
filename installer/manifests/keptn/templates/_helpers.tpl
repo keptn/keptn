@@ -58,7 +58,7 @@ livenessProbe:
   httpGet:
     path: /health
     port: {{.port | default 8080}}
-  initialDelaySeconds: {{.initialDelaySeconds | default 10}}
+  initialDelaySeconds: {{ .initialDelaySeconds | default 10}}
   periodSeconds: 5
 {{- end }}
 
@@ -67,7 +67,7 @@ readinessProbe:
   httpGet:
     path: /health
     port: {{.port | default 8080}}
-  initialDelaySeconds: {{.initialDelaySeconds | default 5}}
+  initialDelaySeconds: {{ .initialDelaySeconds | default 5}}
   periodSeconds: 5
 {{- end }}
 
@@ -155,7 +155,7 @@ securityContext:
 {{- range $key, $value := omit .Values.bridge.podSecurityContext "enabled" "defaultSeccompProfile" }}
   {{ $key }}: {{- toYaml $value | nindent 4 }}
 {{- end -}}
-{{- if not .Values.bridge.podSecurityContext.seccompProfile }}
+{{- if not .Values.bridge.podSecurityContext.defaultSeccompProfile }}
 {{- if .Values.bridge.podSecurityContext.defaultSeccompProfile -}}
 {{- include "keptn.common.security-context-seccomp" . }}
 {{- end -}}
@@ -193,7 +193,7 @@ securityContext:
 {{- range $key, $value := omit .Values.apiGatewayNginx.podSecurityContext "enabled" "defaultSeccompProfile" }}
   {{ $key }}: {{- toYaml $value | nindent 4 }}
 {{- end -}}
-{{- if not .Values.apiGatewayNginx.podSecurityContext.seccompProfile -}}
+{{- if not .Values.apiGatewayNginx.podSecurityContext.defaultSeccompProfile -}}
 {{- if .Values.apiGatewayNginx.podSecurityContext.defaultSeccompProfile -}}
 {{- include "keptn.common.security-context-seccomp" . }}
 {{- end -}}
@@ -225,13 +225,13 @@ securityContext:
 {{- end -}}
 
 {{- define "keptn.common.pod-security-context" -}}
-{{- if (.Values.).podSecurityContext -}}
-{{- if .Values..podSecurityContext.enabled -}}
+{{- if .Values.podSecurityContext -}}
+{{- if .Values.podSecurityContext.enabled -}}
 securityContext:
-{{- range $key, $value := omit .Values..podSecurityContext "enabled" "defaultSeccompProfile" }}
+{{- range $key, $value := omit .Values.podSecurityContext "enabled" "defaultSeccompProfile" }}
   {{ $key }}: {{- toYaml $value | nindent 4 }}
 {{- end -}}
-{{- if not .Values..podSecurityContext.seccompProfile -}}
+{{- if not .Values.podSecurityContext.defaultSeccompProfile -}}
 {{- if .Values.apiGatewayNginx.podSecurityContext.defaultSeccompProfile -}}
 {{- include "keptn.common.security-context-seccomp" . -}}
 {{- end -}}
@@ -245,10 +245,10 @@ securityContext:
 {{- end -}}
 
 {{- define "keptn.common.container-security-context" -}}
-{{- if (.Values.).containerSecurityContext -}}
-{{- if .Values..containerSecurityContext.enabled -}}
+{{- if .Values.containerSecurityContext -}}
+{{- if .Values.containerSecurityContext.enabled -}}
 securityContext:
-{{- range $key, $value := omit .Values..containerSecurityContext "enabled" }}
+{{- range $key, $value := omit .Values.containerSecurityContext "enabled" }}
   {{ $key }}: {{- toYaml $value | nindent 4 }}
 {{- end -}}
 {{- end -}}
@@ -266,9 +266,9 @@ securityContext:
 rollingUpdate upgrade strategy for control plane deployments
 */}}
 {{- define "keptn.common.update-strategy" -}}
-{{- if (.Values.).strategy -}}
+{{- if .Values.strategy -}}
 strategy:
-{{- toYaml .Values..strategy | nindent 2 -}}
+{{- toYaml .Values.strategy | nindent 2 -}}
 {{- else -}}
 strategy:
   type: RollingUpdate
