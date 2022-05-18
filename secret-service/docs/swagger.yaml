@@ -67,11 +67,11 @@ paths:
       description: Get scopes
       responses:
         "200":
-          description: ok
+          description: OK
           schema:
             $ref: '#/definitions/model.GetScopesResponse'
         "500":
-          description: Internal server error
+          description: Internal Server Error
           schema:
             $ref: '#/definitions/model.Error'
       security:
@@ -95,7 +95,7 @@ paths:
         type: string
       responses:
         "200":
-          description: ok
+          description: OK
         "400":
           description: Invalid payload
           schema:
@@ -105,7 +105,7 @@ paths:
           schema:
             $ref: '#/definitions/model.Error'
         "500":
-          description: Internal server error
+          description: Internal Server Error
           schema:
             $ref: '#/definitions/model.Error'
       security:
@@ -117,11 +117,11 @@ paths:
       description: Get secrets
       responses:
         "200":
-          description: ok
+          description: OK
           schema:
             $ref: '#/definitions/model.GetSecretsResponse'
         "500":
-          description: Internal server error
+          description: Internal Server Error
           schema:
             $ref: '#/definitions/model.Error'
       security:
@@ -156,7 +156,7 @@ paths:
           schema:
             $ref: '#/definitions/model.Error'
         "500":
-          description: Internal server error
+          description: Internal Server Error
           schema:
             $ref: '#/definitions/model.Error'
       security:
@@ -179,7 +179,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: ok
+          description: OK
           schema:
             $ref: '#/definitions/model.Secret'
         "400":
@@ -191,7 +191,7 @@ paths:
           schema:
             $ref: '#/definitions/model.Error'
         "500":
-          description: Internal server error
+          description: Internal Server Error
           schema:
             $ref: '#/definitions/model.Error'
       security:

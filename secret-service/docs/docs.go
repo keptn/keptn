@@ -37,13 +37,13 @@ const docTemplate = `{
                 "summary": "Get scopes",
                 "responses": {
                     "200": {
-                        "description": "ok",
+                        "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/model.GetScopesResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
                         }
@@ -65,13 +65,13 @@ const docTemplate = `{
                 "summary": "Get secrets",
                 "responses": {
                     "200": {
-                        "description": "ok",
+                        "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/model.GetSecretsResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
                         }
@@ -108,7 +108,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "ok",
+                        "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/model.Secret"
                         }
@@ -126,7 +126,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
                         }
@@ -181,7 +181,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
                         }
@@ -217,7 +217,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "ok"
+                        "description": "OK"
                     },
                     "400": {
                         "description": "Invalid payload",
@@ -232,7 +232,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
                         }

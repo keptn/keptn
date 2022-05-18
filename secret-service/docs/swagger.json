@@ -29,13 +29,13 @@
                 "summary": "Get scopes",
                 "responses": {
                     "200": {
-                        "description": "ok",
+                        "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/model.GetScopesResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
                         }
@@ -57,13 +57,13 @@
                 "summary": "Get secrets",
                 "responses": {
                     "200": {
-                        "description": "ok",
+                        "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/model.GetSecretsResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
                         }
@@ -100,7 +100,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "ok",
+                        "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/model.Secret"
                         }
@@ -118,7 +118,7 @@
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
                         }
@@ -173,7 +173,7 @@
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
                         }
@@ -209,7 +209,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "ok"
+                        "description": "OK"
                     },
                     "400": {
                         "description": "Invalid payload",
@@ -224,7 +224,7 @@
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
                         }
