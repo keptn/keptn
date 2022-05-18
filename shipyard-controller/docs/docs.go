@@ -1772,7 +1772,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "insecureSkipTLS": {
-                    "description": "insecure skip tls\nomitempty property is missing due to fallback of this\nparameter to \"undefined\" when marshalling/unmarshalling data\nwhen \"false\" value is present",
+                    "description": "When true, it does not validate TLS certificates.",
                     "type": "boolean"
                 },
                 "name": {
@@ -1914,7 +1914,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "insecureSkipTLS": {
-                    "description": "insecure skip tls",
+                    "description": "When true, it does not validate TLS certificates.",
                     "type": "boolean"
                 },
                 "lastEventContext": {
@@ -2462,7 +2462,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "insecureSkipTLS": {
-                    "description": "insecure skip tls\nomitempty property is missing due to fallback of this\nparameter to \"undefined\" when marshalling/unmarshalling data\nwhen \"false\" value is present",
+                    "description": "When true, it does not validate TLS certificates.",
                     "type": "boolean"
                 },
                 "name": {
