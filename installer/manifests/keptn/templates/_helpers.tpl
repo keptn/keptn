@@ -58,7 +58,7 @@ livenessProbe:
   httpGet:
     path: /health
     port: {{.port | default 8080}}
-  initialDelaySeconds: {{ .initialDelaySeconds | default 10}}
+  initialDelaySeconds: {{ .initialDelaySeconds | default 10 }}
   periodSeconds: 5
 {{- end }}
 
@@ -67,7 +67,7 @@ readinessProbe:
   httpGet:
     path: /health
     port: {{.port | default 8080}}
-  initialDelaySeconds: {{ .initialDelaySeconds | default 5}}
+  initialDelaySeconds: {{ .initialDelaySeconds | default 5 }}
   periodSeconds: 5
 {{- end }}
 
