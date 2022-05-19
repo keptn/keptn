@@ -10,6 +10,21 @@ import (
 	"testing"
 )
 
+func Test_ReceivingEventWithMissingType(t *testing.T) {
+	taskHandler := &TaskHandlerMock{}
+	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) { return FakeTaskData{}, nil }
+	fakeKeptn := NewFakeKeptn("fake")
+	fakeKeptn.AddTaskHandler("sh.keptn.event.faketask.triggered", taskHandler)
+	fakeKeptn.NewEvent(models.KeptnContextExtendedCE{
+		Data:           v0_2_0.EventData{Project: "prj", Stage: "stg", Service: "svc"},
+		ID:             "id",
+		Shkeptncontext: "context",
+		Source:         strutils.Stringp("source"),
+	})
+
+	fakeKeptn.AssertNumberOfEventSent(t, 0)
+}
+
 func Test_WhenReceivingAnEvent_StartedEventAndFinishedEventsAreSent(t *testing.T) {
 	taskHandler := &TaskHandlerMock{}
 	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) { return FakeTaskData{}, nil }

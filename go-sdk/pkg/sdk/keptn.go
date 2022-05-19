@@ -167,8 +167,13 @@ func NewKeptn(source string, opts ...KeptnOption) *Keptn {
 
 func (k *Keptn) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE) error {
 	eventSender := ctx.Value(controlplane.EventSenderKey).(controlplane.EventSender)
+	if event.Type == nil {
+		k.logger.Errorf("Received invalid event %s: missing event type", event.ID)
+		return nil
+	}
+
 	if !keptnv2.IsTaskEventType(*event.Type) {
-		k.logger.Errorf("event with event type %s is no valid keptn task event type", event.Type)
+		k.logger.Errorf("Event with event type %s is no valid keptn task event type", event.Type)
 		return nil
 	}
 	ctx.Value(gracefulShutdownKey).(wgInterface).Add(1)
@@ -180,12 +185,12 @@ func (k *Keptn) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE
 				if err := keptnv2.Decode(&event, keptnEvent); err != nil {
 					errorLogEvent, err := createErrorLogEvent(k.source, event, nil, &Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed})
 					if err != nil {
-						k.logger.Errorf("unable to create '.error.log' event from '.triggered' event: %v", err)
+						k.logger.Errorf("Unable to create '.error.log' event from '.triggered' event: %v", err)
 						return
 					}
 					// no started event sent yet, so it only makes sense to Send an error log event at this point
 					if err := eventSender(*errorLogEvent); err != nil {
-						k.logger.Errorf("unable to send '.finished' event: %v", err)
+						k.logger.Errorf("Unable to send '.finished' event: %v", err)
 						return
 					}
 				}
@@ -203,26 +208,26 @@ func (k *Keptn) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE
 				if keptnv2.IsTaskEventType(*event.Type) && keptnv2.IsTriggeredEventType(*event.Type) && k.automaticEventResponse {
 					startedEvent, err := createStartedEvent(k.source, event)
 					if err != nil {
-						k.logger.Errorf("unable to create '.started' event from '.triggered' event: %v", err)
+						k.logger.Errorf("Unable to create '.started' event from '.triggered' event: %v", err)
 						return
 					}
 					if err := eventSender(*startedEvent); err != nil {
-						k.logger.Errorf("unable to send '.started' event: %v", err)
+						k.logger.Errorf("Unable to send '.started' event: %v", err)
 						return
 					}
 				}
 
 				result, err := handler.taskHandler.Execute(k, *keptnEvent)
 				if err != nil {
-					k.logger.Errorf("error during task execution %v", err.Err)
+					k.logger.Errorf("Error during task execution %v", err.Err)
 					if k.automaticEventResponse {
 						errorEvent, err := createErrorEvent(k.source, event, result, err)
 						if err != nil {
-							k.logger.Errorf("unable to create '.error' event: %v", err)
+							k.logger.Errorf("Unable to create '.error' event: %v", err)
 							return
 						}
 						if err := eventSender(*errorEvent); err != nil {
-							k.logger.Errorf("unable to send '.error' event: %v", err)
+							k.logger.Errorf("Unable to send '.error' event: %v", err)
 							return
 						}
 					}
@@ -233,11 +238,11 @@ func (k *Keptn) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE
 				} else if keptnv2.IsTaskEventType(*event.Type) && keptnv2.IsTriggeredEventType(*event.Type) && k.automaticEventResponse {
 					finishedEvent, err := createFinishedEvent(k.source, event, result)
 					if err != nil {
-						k.logger.Errorf("unable to create '.finished' event: %v", err)
+						k.logger.Errorf("Unable to create '.finished' event: %v", err)
 						return
 					}
 					if err := eventSender(*finishedEvent); err != nil {
-						k.logger.Errorf("unable to send '.finished' event: %v", err)
+						k.logger.Errorf("Unable to send '.finished' event: %v", err)
 						return
 					}
 				}
