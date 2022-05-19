@@ -79,11 +79,11 @@ func main() {
 	}
 
 	// this segment will be reached once the context has been cancelled - i.e. due to receiving the SIGTERM signal
-	logger.Info("Waiting for event handlers to finish")
+	logger.Info("Waiting for approval event handlers to finish")
 	// add additional waiting time to ensure the waitGroup has been increased for all events that have been received between receiving SIGTERM and this point
 	<-time.After(5 * time.Second)
 	wg.Wait()
-	logger.Info("All handlers finished - exiting")
+	logger.Info("All approval handlers finished - exiting")
 }
 
 type ApprovalService struct {
