@@ -215,7 +215,7 @@ func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event mod
 		// if there is another sequence with the state 'started'
 		for _, otherSequence := range startedSequenceExecutions {
 			// the service check was needed since get returns all events due to the or on the filter :(
-			if otherSequence.Status.CurrentTask.TriggeredID != event.Event.ID() && otherSequence.Scope.EventData.Service == eventScope.EventData.Service {
+			if otherSequence.Status.CurrentTask.TriggeredID != event.Event.ID() {
 				if !e.isCurrentEventOverrulingOtherEvent(otherSequence, event) {
 					return errors.New(fmt.Sprint(OtherActiveSequencesRunning, otherSequence.Scope.KeptnContext))
 				}
