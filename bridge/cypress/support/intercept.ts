@@ -27,7 +27,7 @@ export function interceptEnvironmentScreen(): void {
     fixture: 'eventByContext.mock',
   }).as('triggeredSequence');
   cy.intercept(
-    '/api/controlPlane/v1/sequence/sockshop?pageSize=10&fromTime=2022-02-23T14:28:50.504Z&beforeTime=2022-01-09T15:04:09.199Z',
+    '/api/controlPlane/v1/sequence/sockshop?pageSize=10&fromTime=2022-02-23T14:28:50.504Z&beforeTime=2021-07-06T09:22:56.433Z',
     {
       body: {
         states: [],
