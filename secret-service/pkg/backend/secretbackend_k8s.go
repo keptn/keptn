@@ -130,7 +130,7 @@ func (k K8sSecretBackend) DeleteSecret(secret model.Secret) error {
 	}
 
 	// if it is the last secret with that scope
-	// we can wipe all associated roles and rolebinding
+	// we can wipe all associated roles and rolebindings
 	if len(secretsWithScope.Items) == 1 {
 		log.Infof("No more secret with scope: %s. Deleting associated roles and role bindings", secret.Scope)
 		if err := k.KubeAPI.RbacV1().Roles(namespace).DeleteCollection(context.TODO(), metav1.DeleteOptions{}, metav1.ListOptions{LabelSelector: "app.kubernetes.io/scope=" + secret.Scope}); err != nil {
@@ -142,7 +142,7 @@ func (k K8sSecretBackend) DeleteSecret(secret model.Secret) error {
 	}
 
 	// if there are still more secrets associated to that scope
-	// we need to update the refs in the roles and the role bindings
+	// we need to update the refs in the roles and the rolebindings
 	if len(secretsWithScope.Items) > 1 {
 		// update the role resources, otherwise
 		roles := k.createK8sRoleObj(secret, scopes, namespace)
