@@ -212,6 +212,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     this.sequencesUpdated$.pipe(takeUntil(this.unsubscribe$)).subscribe(() => {
       this.loading = false;
       this.updateSequenceView();
+      this.updateSequencesData();
     });
 
     this.route.queryParams.pipe(takeUntil(this.unsubscribe$)).subscribe((queryParams) => {
@@ -270,6 +271,12 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     if (sequences !== undefined) {
       this.updateFilterSequence(sequences);
       this.refreshFilterDataSource();
+    }
+  }
+
+  public updateSequencesData(): void {
+    const sequences = this.project?.sequences;
+    if (sequences !== undefined) {
       // Update filteredSequences based on current filters
       this.filteredSequences = this.getFilteredSequences(
         sequences,
@@ -277,8 +284,6 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
       );
       // Set unfinished sequences so that the state updates can be loaded
       this.unfinishedSequences = sequences.filter((sequence: Sequence) => !sequence.isFinished());
-      // Needed for the updates to work properly
-      this.changeDetectorRef_.detectChanges();
     }
   }
 
@@ -333,7 +338,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
       {}
     );
     this.saveSequenceFilters(sequenceFilters);
-    this.updateSequenceView();
+    this.updateSequencesData();
   }
 
   updateFilterSequence(sequences?: Sequence[]): void {
@@ -486,7 +491,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
       return _seqFilters;
     }, []);
 
-    this.updateSequenceView();
+    this.updateSequencesData();
   }
 
   loadOldSequences(): void {

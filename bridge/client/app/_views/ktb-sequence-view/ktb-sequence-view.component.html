@@ -21,7 +21,7 @@
         clearAllLabel="Clear all"
         fxFlex
       >
-        <div fxFlex fxLayout="column">
+        <div fxFlexFill fxLayout="column">
           <div class="container trigger-sequence-button">
             <ng-container [ngTemplateOutlet]="triggerSequenceButton"></ng-container>
           </div>
@@ -60,11 +60,10 @@
                 Show older sequences
               </button>
             </div>
-            <div class="mb-3"></div>
           </div>
         </div>
         <ng-template #loadingSequences>
-          <div fxFlexFill fxLayout="row" fxLayoutAlign="center center" uitestid="keptn-loadingSequences">
+          <div fxFlex fxLayout="row" fxLayoutAlign="center center" uitestid="keptn-loadingSequences">
             <ktb-loading-distractor>Loading …</ktb-loading-distractor>
           </div>
         </ng-template>
