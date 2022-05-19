@@ -211,10 +211,18 @@ func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event mod
 		return err
 	}
 
+	err2 := checkStarted(startedSequenceExecutions, event, e)
+	if err2 != nil {
+		return err2
+	}
+
+	return e.eventSender.Send(context.TODO(), event.Event)
+}
+
+func checkStarted(startedSequenceExecutions []models.SequenceExecution, event models.DispatcherEvent, e *EventDispatcher) error {
 	if startedSequenceExecutions != nil && len(startedSequenceExecutions) > 0 {
 		// if there is another sequence with the state 'started'
 		for _, otherSequence := range startedSequenceExecutions {
-			// the service check was needed since get returns all events due to the or on the filter :(
 			if otherSequence.Status.CurrentTask.TriggeredID != event.Event.ID() {
 				if !e.isCurrentEventOverrulingOtherEvent(otherSequence, event) {
 					return errors.New(fmt.Sprint(OtherActiveSequencesRunning, otherSequence.Scope.KeptnContext))
@@ -222,8 +230,7 @@ func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event mod
 			}
 		}
 	}
-
-	return e.eventSender.Send(context.TODO(), event.Event)
+	return nil
 }
 
 func (e *EventDispatcher) isCurrentEventOverrulingOtherEvent(otherSequence models.SequenceExecution, queuedEvent models.DispatcherEvent) bool {
