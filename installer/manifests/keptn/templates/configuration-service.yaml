@@ -9,7 +9,6 @@ metadata:
     {{- else }}
     app.kubernetes.io/component: configuration-service
     {{- end }}
-
 spec:
   ports:
     - port: 8080
