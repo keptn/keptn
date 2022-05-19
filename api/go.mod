@@ -16,7 +16,7 @@ require (
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.15.1-0.20220517082831-2052e1404e4c
-	github.com/keptn/keptn/cp-connector v0.0.0-20220512144544-dd236ef4fa97
+	github.com/keptn/keptn/cp-connector v0.0.0-20220519141909-916ac2a8e982
 	github.com/nats-io/nats-server/v2 v2.8.2
 	github.com/nats-io/nats.go v1.14.0
 	github.com/sirupsen/logrus v1.8.1
