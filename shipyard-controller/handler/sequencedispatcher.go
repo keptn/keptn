@@ -62,26 +62,21 @@ func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
 		//if there is only one shipyard we can both read and write,
 		//so we try to dispatch the sequence immediately if the sequence queue is empty
 		queueEmpty, err := sd.isQueueEmpty(queueItem)
-		if err != nil {
-			return err
-		}
-		if queueEmpty {
-			if err := sd.dispatchSequence(queueItem); err != nil {
-				if errors.Is(err, ErrSequenceBlocked) {
-					//if the sequence is currently blocked, insert it into the queue
-					return sd.add(queueItem)
-				} else if errors.Is(err, ErrSequenceBlockedWaiting) {
-					//if the sequence is currently blocked and should wait, insert it into the queue
-					return sd.addItemToQueue(queueItem)
-				} else {
-					return err
-				}
-			}
-			return nil
-		} else {
-			//if there are sequences in queue, insert into queue
+		if (err != nil && !errors.Is(err, db.ErrNoEventFound)) || !queueEmpty {
 			return sd.addItemToQueue(queueItem)
 		}
+		if err := sd.dispatchSequence(queueItem); err != nil {
+			if errors.Is(err, ErrSequenceBlocked) {
+				//if the sequence is currently blocked, insert it into the queue
+				return sd.add(queueItem)
+			} else if errors.Is(err, ErrSequenceBlockedWaiting) {
+				//if the sequence is currently blocked and should wait, insert it into the queue
+				return sd.addItemToQueue(queueItem)
+			} else {
+				return err
+			}
+		}
+		return nil
 	} else {
 		//if there are multiple shipyard we should only write
 		return sd.add(queueItem)
@@ -99,7 +94,7 @@ func (sd *SequenceDispatcher) isQueueEmpty(queueItem models.QueueItem) (bool, er
 	queuedSequences, err := sd.sequenceQueue.GetQueuedSequences()
 	if err != nil {
 		if !errors.Is(err, db.ErrNoEventFound) {
-			return false, sd.addItemToQueue(queueItem)
+			return false, err
 		}
 	}
 
