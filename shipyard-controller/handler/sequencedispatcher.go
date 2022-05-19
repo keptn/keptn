@@ -61,8 +61,9 @@ func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
 	if sd.mode == common.SDModeRW {
 		//if there is only one shipyard we can both read and write,
 		//so we try to dispatch the sequence immediately if the sequence queue is empty
-		queueEmpty, err := sd.isQueueEmpty(queueItem)
-		if (err != nil && !errors.Is(err, db.ErrNoEventFound)) || !queueEmpty {
+		sequenceBlocked, err := sd.areSequencesInState(queueItem, []string{apimodels.SequenceTriggeredState, apimodels.SequenceStartedState})
+		if err != nil || sequenceBlocked {
+			log.Infof("!!!!!SHIt: sequence blocked")
 			return sd.addItemToQueue(queueItem)
 		}
 		if err := sd.dispatchSequence(queueItem); err != nil {
@@ -169,22 +170,23 @@ func (sd *SequenceDispatcher) dispatchSequences() {
 	}
 }
 
-func (sd *SequenceDispatcher) isSequenceBlocked(queueItem models.QueueItem) (bool, error) {
-	startedSequenceExecutions, err := sd.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
+func (sd *SequenceDispatcher) areSequencesInState(queueItem models.QueueItem, status []string) (bool, error) {
+	sequenceExecutions, err := sd.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
 		Scope: models.EventScope{
 			EventData: keptnv2.EventData{
 				Project: queueItem.Scope.Project,
 				Stage:   queueItem.Scope.Stage,
+				Service: queueItem.Scope.Service,
 			},
 		},
-		Status: []string{apimodels.SequenceStartedState},
+		Status: status,
 	})
 
 	if err != nil {
 		return true, err
 	}
 
-	if len(startedSequenceExecutions) > 0 {
+	if len(sequenceExecutions) > 0 {
 		return true, nil
 	}
 
@@ -207,7 +209,7 @@ func (sd *SequenceDispatcher) dispatchSequence(queueItem models.QueueItem) error
 		return ErrSequenceBlocked
 	}
 
-	sequenceBlocked, err := sd.isSequenceBlocked(queueItem)
+	sequenceBlocked, err := sd.areSequencesInState(queueItem, []string{apimodels.SequenceStartedState})
 	if err != nil {
 		return err
 	}
