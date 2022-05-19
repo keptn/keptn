@@ -38,7 +38,6 @@ type IKeptn interface {
 	Logger() Logger
 }
 
-//go:generate moq -out ./mock_taskhandler.go . TaskHandler
 type TaskHandler interface {
 	// Execute is called whenever the actual business-logic of the service shall be executed.
 	// Thus, the core logic of the service shall be triggered/implemented in this method.
