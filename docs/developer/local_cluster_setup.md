@@ -8,7 +8,7 @@
 2. Build keptn artefacts
     - Build all (call from keptn root folder)
       ```shell
-      VERSION=local-snapshot ; for d in $(find . -name "Dockerfile" | sed -e "s/\.\/\(.*\)\/Dockerfile$/\1/g") ; do echo "building dir $d" ; cd $d ; docker build . -t "$AIRGAPPED_REGISTRY_URL/keptndev/$d:$VERSION" ; cd .. ; done
+      VERSION=local-snapshot ; for d in $(find . -name "Dockerfile" | sed -e "s/\.\/\(.*\)\/Dockerfile$/\1/g") ; do echo "building dir $d" ; cd $d ; docker build . -t "$AIRGAPPED_REGISTRY_URL/keptn/$d:$VERSION" ; cd .. ; done
       ```
     - Build just one artefact/keptn-service (go to the service folder where the Dockerfile is located)
       ```shell
@@ -19,7 +19,7 @@
 4. Create new Registry and push images
    ```shell
    k3d registry create container-registry.127.0.0.1.nip.io --port 12345
-   for d in $(docker images "keptn/*:local-snapshot" --format "{{.Repository}}:{{.Tag}}"); do docker push $AIRGAPPED_REGISTRY_URL/$d ; done
+   for d in $(docker images "$AIRGAPPED_REGISTRY_URL/*:local-snapshot" --format "{{.Repository}}:{{.Tag}}"); do docker push $AIRGAPPED_REGISTRY_URL/$d ; done
    ```
 5. Create a new cluster (e.g., using k3d)
     ```shell
