@@ -3,10 +3,12 @@ kind: Deployment
 metadata:
   name: {{ include "helm-service.fullname" . }}
   labels: {{- include "common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: helm-service
 spec:
   replicas: 1
   selector:
     matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: helm-service
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -14,6 +16,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels: {{- include "common.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/component: helm-service
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
