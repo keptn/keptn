@@ -52,7 +52,7 @@ spec:
           {{- include "keptn.common.container-security-context" . | nindent 10 }}
           {{- if .Values.remediationService.extraVolumeMounts }}
           volumeMounts:
-          {{- include "keptn.tpl-value" ( dict "value" .Values.remediationService.extraVolumeMounts "context" $) | nindent 12 }}
+          {{- include "common.tplvalues.render" ( dict "value" .Values.remediationService.extraVolumeMounts "context" $) | nindent 12 }}
           {{- end }}
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
@@ -71,11 +71,11 @@ spec:
           {{- include "keptn.dist.common.env.vars" . | nindent 12 }}
           {{- include "keptn.common.container-security-context" . | nindent 10 }}
         {{- with .Values.remediationService.sidecars }}
-        {{- include "keptn.tpl-value" ( dict "value" . "context" $ ) | nindent 8 }}
+        {{- include "common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
         {{- end }}
       {{- if .Values.remediationService.extraVolumes }}
       volumes:
-      {{- include "keptn.tpl-value" ( dict "value" .Values.remediationService.extraVolumes "context" $) | nindent 8 }}
+      {{- include "common.tplvalues.render" ( dict "value" .Values.remediationService.extraVolumes "context" $) | nindent 8 }}
       {{- end }}
       serviceAccountName: keptn-default
       terminationGracePeriodSeconds: {{ .Values.remediationService.gracePeriod | default 120 }}

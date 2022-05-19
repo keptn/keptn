@@ -71,7 +71,7 @@ spec:
           {{- include "keptn.common.container-security-context" . | nindent 10 }}
           {{- if .Values.mongodbDatastore.extraVolumeMounts }}
           volumeMounts:
-          {{- include "keptn.tpl-value" ( dict "value" .Values.mongodbDatastore.extraVolumeMounts "context" $) | nindent 12 }}
+          {{- include "common.tplvalues.render" ( dict "value" .Values.mongodbDatastore.extraVolumeMounts "context" $) | nindent 12 }}
           {{- end }}
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
@@ -94,11 +94,11 @@ spec:
             {{- include "keptn.dist.common.env.vars" . | nindent 12 }}
           {{- include "keptn.common.container-security-context" . | nindent 10 }}
         {{- with .Values.mongodbDatastore.sidecars }}
-        {{- include "keptn.tpl-value" ( dict "value" . "context" $ ) | nindent 8 }}
+        {{- include "common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
         {{- end }}
       {{- if .Values.mongodbDatastore.extraVolumes }}
       volumes:
-      {{- include "keptn.tpl-value" ( dict "value" .Values.mongodbDatastore.extraVolumes "context" $) | nindent 8 }}
+      {{- include "common.tplvalues.render" ( dict "value" .Values.mongodbDatastore.extraVolumes "context" $) | nindent 8 }}
       {{- end }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.mongodbDatastore.nodeSelector "default" .Values.nodeSelector "indent" 8 "context" . )}}
 ---

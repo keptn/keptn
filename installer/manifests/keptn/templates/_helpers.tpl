@@ -22,37 +22,6 @@ Create chart name and version as used by the chart label.
 {{- include "common.names.chart" . -}}
 {{- end }}
 
-{{/*
-Common labels
-*/}}
-{{- define "keptn.labels" -}}
-helm.sh/chart: {{ include "keptn.chart" . }}
-{{ include "keptn.selectorLabels" . }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
-{{- end }}
-
-{{/*
-Selector labels
-*/}}
-{{- define "keptn.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "keptn.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
-{{- end }}
-
-{{/*
-Create the name of the service account to use
-*/}}
-{{- define "keptn.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create }}
-{{- default (include "keptn.fullname" .) .Values.serviceAccount.name }}
-{{- else }}
-{{- default "default" .Values.serviceAccount.name }}
-{{- end }}
-{{- end }}
-
 {{- define "keptn.dist.livenessProbe" -}}
 livenessProbe:
   httpGet:
@@ -303,21 +272,9 @@ Usage:
 */}}
 {{- define "keptn.tpl-value-or-default" -}}
   {{- if .value }}
-    {{- include "keptn.tpl-value" ( dict "value" .value "context" .context ) }}
+    {{- include "common.tplvalues.render" ( dict "value" .value "context" .context ) }}
   {{- else }}
-    {{- include "keptn.tpl-value" ( dict "value" .default "context" .context ) }}
+    {{- include "common.tplvalues.render" ( dict "value" .default "context" .context ) }}
   {{- end }}
 {{- end -}}
 
-{{/*
-Renders a value that contains a template. value can be a string, map or array
-Usage:
-{{ include "keptn.tpl-value" ( dict "value" .my-value.to-template "context" $ ) }}
-*/}}
-{{- define "keptn.tpl-value" -}}
-  {{- if typeIs "string" .value }}
-    {{- tpl .value .context }}
-  {{- else }}
-    {{- tpl (.value | toYaml) .context }}
-  {{- end }}
-{{- end -}}

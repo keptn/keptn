@@ -53,7 +53,7 @@ spec:
           {{- include "keptn.common.container-security-context" . | nindent 10 }}
           {{- if .Values.webhookService.extraVolumeMounts }}
           volumeMounts:
-          {{- include "keptn.tpl-value" ( dict "value" .Values.webhookService.extraVolumeMounts "context" $) | nindent 12 }}
+          {{- include "common.tplvalues.render" ( dict "value" .Values.webhookService.extraVolumeMounts "context" $) | nindent 12 }}
           {{- end }}
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
@@ -74,11 +74,11 @@ spec:
           {{- include "keptn.dist.common.env.vars" . | nindent 12 }}
           {{- include "keptn.common.container-security-context" . | nindent 10 }}
         {{- with .Values.webhookService.sidecars }}
-        {{- include "keptn.tpl-value" ( dict "value" . "context" $ ) | nindent 8 }}
+        {{- include "common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
         {{- end }}
       {{- if .Values.webhookService.extraVolumes }}
       volumes:
-      {{- include "keptn.tpl-value" ( dict "value" .Values.webhookService.extraVolumes "context" $) | nindent 8 }}
+      {{- include "common.tplvalues.render" ( dict "value" .Values.webhookService.extraVolumes "context" $) | nindent 8 }}
       {{- end }}
       terminationGracePeriodSeconds: {{ .Values.webhookService.gracePeriod | default 120 }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.webhookService.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
