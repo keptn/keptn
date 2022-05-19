@@ -20,7 +20,7 @@ require (
 	github.com/stretchr/testify v1.7.1
 	github.com/tryvium-travels/memongo v0.5.0
 	go.mongodb.org/mongo-driver v1.9.1
-	golang.org/x/net v0.0.0-20220425223048-2871e0cb64e4
+	golang.org/x/net v0.0.0-20220517181318-183a9ca12b87
 )
 
 require (
