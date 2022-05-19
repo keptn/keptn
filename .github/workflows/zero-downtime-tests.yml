@@ -46,7 +46,7 @@ jobs:
       PLATFORM_VERSION: ${{ matrix.PLATFORM_VERSION }}
       KUBECONFIG: ${{ matrix.KUBECONFIG }}
       KEPTN_NAMESPACE: "keptn-zd-test-${{ github.run_number }}-${{ github.run_attempt }}"
-      GO_VERSION: 1.17
+      GO_VERSION: "~1.18"
     outputs:
       BRANCH: ${{ steps.determine_branch.outputs.BRANCH }}
       ARTIFACT_RUN_ID: ${{ steps.last_run_id.outputs.RUN_ID }}
