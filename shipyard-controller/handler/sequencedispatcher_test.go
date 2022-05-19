@@ -358,6 +358,118 @@ func TestSequenceDispatcher_AddError(t *testing.T) {
 
 }
 
+func TestSequenceDispatcher_QueueIsNotEmpty(t *testing.T) {
+	theClock := clock.NewMock()
+
+	startSequenceCalls := []apimodels.KeptnContextExtendedCE{}
+	triggeredEvents := []apimodels.KeptnContextExtendedCE{
+		{
+			Data: keptnv2.EventData{
+				Project: "my-project",
+				Stage:   "my-stage",
+				Service: "my-service",
+			},
+			ID:             "my-event-id",
+			Shkeptncontext: "my-context-id",
+			Type:           common.Stringp(keptnv2.GetTriggeredEventType("dev.delivery")),
+		},
+	}
+
+	mockQueue := []models.QueueItem{}
+
+	mockEventRepo := &dbmock.EventRepoMock{
+		GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]apimodels.KeptnContextExtendedCE, error) {
+			return triggeredEvents, nil
+		},
+	}
+
+	currentSequenceExecutions := []models.SequenceExecution{}
+
+	mockSequenceQueueRepo := &dbmock.SequenceQueueRepoMock{
+		QueueSequenceFunc: func(item models.QueueItem) error {
+			mockQueue = append(mockQueue, item)
+			return nil
+		},
+		GetQueuedSequencesFunc: func() ([]models.QueueItem, error) {
+			return mockQueue, nil
+		},
+		DeleteQueuedSequencesFunc: func(itemFilter models.QueueItem) error {
+			for index := range mockQueue {
+				if mockQueue[index].EventID == itemFilter.EventID {
+					mockQueue = append(mockQueue[:index], mockQueue[index+1:]...)
+				}
+			}
+			return nil
+		},
+	}
+
+	mockSequenceExecutionRepo := &dbmock.SequenceExecutionRepoMock{
+		GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
+			return currentSequenceExecutions, nil
+		},
+		GetByTriggeredIDFunc: func(project string, triggeredID string) (*models.SequenceExecution, error) {
+			return &models.SequenceExecution{
+				ID: "my-id",
+				Status: models.SequenceExecutionStatus{
+					State: apimodels.SequenceTriggeredState,
+				},
+			}, nil
+		},
+		IsContextPausedFunc: func(eventScope models.EventScope) bool {
+			return false
+		},
+	}
+
+	sequenceDispatcher := handler.NewSequenceDispatcher(mockEventRepo, mockSequenceQueueRepo, mockSequenceExecutionRepo, 10*time.Second, theClock, common.SDModeRW)
+
+	sequenceDispatcher.Run(context.Background(), common.SDModeRW, func(event apimodels.KeptnContextExtendedCE) error {
+		startSequenceCalls = append(startSequenceCalls, event)
+		return nil
+	})
+
+	// check if repos are queried
+	theClock.Add(11 * time.Second)
+	// queue repo should have been queried
+	require.Len(t, mockSequenceQueueRepo.GetQueuedSequencesCalls(), 1)
+	// since no elements have been added to the queue yet, the other repos should not have been queried at this point// since one element has been added to the queue, the other sequence previously in the queue was dispatched
+	require.Len(t, mockSequenceQueueRepo.DeleteQueuedSequencesCalls(), 0)
+
+	mockQueue = append(mockQueue, models.QueueItem{
+		Scope: models.EventScope{
+			EventData: keptnv2.EventData{
+				Project: "my-project",
+				Stage:   "my-stage",
+				Service: "my-service",
+			},
+			KeptnContext: "my-context-id2",
+			EventType:    keptnv2.GetTriggeredEventType("dev.delivery"),
+		},
+		EventID: "my-event-id2",
+	})
+
+	// now, let's add a sequence to the queue - should not be started immediately since there is another queued sequence
+	queueItem := models.QueueItem{
+		Scope: models.EventScope{
+			EventData: keptnv2.EventData{
+				Project: "my-project",
+				Stage:   "my-stage",
+				Service: "my-service",
+			},
+			KeptnContext: "my-context-id2",
+			EventType:    keptnv2.GetTriggeredEventType("dev.delivery"),
+		},
+		EventID: "my-event-id2",
+	}
+	err := sequenceDispatcher.Add(queueItem)
+	require.Equal(t, err.Error(), "sequence is currently blocked by waiting for another sequence to end")
+	require.Len(t, mockSequenceExecutionRepo.GetCalls(), 0)
+
+	require.Len(t, mockEventRepo.GetEventsCalls(), 0)
+
+	// the sequence should be inserted into the queue
+	require.Len(t, mockSequenceQueueRepo.QueueSequenceCalls(), 1)
+}
+
 func getQueueItem(id string) models.QueueItem {
 	return models.QueueItem{
 		Scope: models.EventScope{
