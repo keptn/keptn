@@ -11,5 +11,5 @@ spec:
     - port: 8080
       protocol: TCP
   selector: {{- include "common.labels.selectorLabels" . | nindent 4 }}
-      app.kubernetes.io/component: jmeter-service
+    app.kubernetes.io/component: jmeter-service
   {{- end }}
