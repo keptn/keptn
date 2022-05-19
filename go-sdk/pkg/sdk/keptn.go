@@ -283,9 +283,9 @@ func (k *Keptn) Start() error {
 	if k.env.HealthEndpointEnabled {
 		k.healthEndpointRunner(k.env.HealthEndpointPort, k.controlPlane)
 	}
-	ctx := k.getContext(k.gracefulShutdown)
+	ctx, wg := k.getContext(k.gracefulShutdown)
 	err := k.controlPlane.Register(ctx, k)
-	ctx.Value(gracefulShutdownKey).(wgInterface).Wait()
+	wg.Wait()
 	return err
 }
 
@@ -321,7 +321,7 @@ func (k *Keptn) runEventTaskAction(fn func()) {
 	}
 }
 
-func (k *Keptn) getContext(graceful bool) context.Context {
+func (k *Keptn) getContext(graceful bool) (context.Context, wgInterface) {
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
 	var wg wgInterface
@@ -335,7 +335,7 @@ func (k *Keptn) getContext(graceful bool) context.Context {
 		<-ch
 		cancel()
 	}()
-	return ctx
+	return ctx, wg
 }
 
 func noOpHealthEndpointRunner(port string, cp *controlplane.ControlPlane) {}
