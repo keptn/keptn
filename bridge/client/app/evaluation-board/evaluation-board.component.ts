@@ -70,6 +70,7 @@ export class EvaluationBoardComponent {
           return of({ state: EvaluationBoardStatus.ERROR, kind: 'trace', keptnContext: data.keptnContext });
         }
 
+        this.dataService.setProjectName(projectName);
         // Get the latest deployment context that matches with the deployment contexts in the service screen
         // An evaluation can be triggered without a deployment,
         //   so there is the case that the evaluation keptnContext does not match with any deployment keptnContext
