@@ -58,30 +58,21 @@ func NewSequenceDispatcher(
 }
 
 func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
-
 	if sd.mode == common.SDModeRW {
 		//if there is only one shipyard we can both read and write,
 		//so we try to dispatch the sequence immediately if the sequence queue is empty
-		queuedSequences, err := sd.sequenceQueue.GetQueuedSequences()
+		queueEmpty, err := sd.isQueueEmpty(queueItem)
 		if err != nil {
-			if !errors.Is(err, db.ErrNoEventFound) {
-				if err2 := sd.add(queueItem); err2 != nil {
-					return err2
-				}
-				return ErrSequenceBlockedWaiting
-			}
+			return err
 		}
-		if errors.Is(err, db.ErrNoEventFound) || len(queuedSequences) == 0 {
+		if queueEmpty {
 			if err := sd.dispatchSequence(queueItem); err != nil {
 				if errors.Is(err, ErrSequenceBlocked) {
 					//if the sequence is currently blocked, insert it into the queue
 					return sd.add(queueItem)
 				} else if errors.Is(err, ErrSequenceBlockedWaiting) {
 					//if the sequence is currently blocked and should wait, insert it into the queue
-					if err2 := sd.add(queueItem); err2 != nil {
-						return err2
-					}
-					return ErrSequenceBlockedWaiting
+					return sd.addItemToQueue(queueItem)
 				} else {
 					return err
 				}
@@ -89,16 +80,34 @@ func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
 			return nil
 		} else {
 			//if there are sequences in queue, insert into queue
-			if err2 := sd.add(queueItem); err2 != nil {
-				return err2
-			}
-			return ErrSequenceBlockedWaiting
+			return sd.addItemToQueue(queueItem)
 		}
 	} else {
 		//if there are multiple shipyard we should only write
 		return sd.add(queueItem)
 	}
+}
 
+func (sd *SequenceDispatcher) addItemToQueue(queueItem models.QueueItem) error {
+	if err2 := sd.add(queueItem); err2 != nil {
+		return err2
+	}
+	return ErrSequenceBlockedWaiting
+}
+
+func (sd *SequenceDispatcher) isQueueEmpty(queueItem models.QueueItem) (bool, error) {
+	queuedSequences, err := sd.sequenceQueue.GetQueuedSequences()
+	if err != nil {
+		if !errors.Is(err, db.ErrNoEventFound) {
+			return false, sd.addItemToQueue(queueItem)
+		}
+	}
+
+	if errors.Is(err, db.ErrNoEventFound) || len(queuedSequences) == 0 {
+		return true, nil
+	} else {
+		return false, nil
+	}
 }
 
 func (sd *SequenceDispatcher) add(queueItem models.QueueItem) error {
