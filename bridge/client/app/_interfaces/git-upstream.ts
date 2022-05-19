@@ -45,6 +45,10 @@ export interface IGitSsh {
   ssh: IGitSshData & ISshKeyData;
 }
 
+export interface IGitNoUpstream {
+  noupstream: string;
+}
+
 export type IGitHttps = IGitHttpsWithoutProxy | IGitHTTPSProxy;
 
-export type IGitDataExtended = IGitHttps | IGitSsh;
+export type IGitDataExtended = IGitHttps | IGitSsh | IGitNoUpstream;

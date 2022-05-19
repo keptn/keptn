@@ -17,7 +17,7 @@ require (
 	github.com/otiai10/copy v1.7.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
-	golang.org/x/net v0.0.0-20220425223048-2871e0cb64e4
+	golang.org/x/net v0.0.0-20220517181318-183a9ca12b87
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	k8s.io/apimachinery v0.22.9
 	k8s.io/client-go v0.22.9
@@ -61,7 +61,7 @@ require (
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.11 // indirect
-	github.com/keptn/go-utils v0.15.1-0.20220512082458-c5e1b7519bec // indirect
+	github.com/keptn/go-utils v0.15.1-0.20220517082831-2052e1404e4c // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/klauspost/pgzip v1.2.5 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect

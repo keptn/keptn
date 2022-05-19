@@ -3,11 +3,12 @@ package handler
 import (
 	"errors"
 	"fmt"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	_ "github.com/keptn/keptn/shipyard-controller/models"
-	"net/http"
 )
 
 type IStateHandler interface {
@@ -78,6 +79,7 @@ func (sh *StateHandler) GetSequenceState(c *gin.Context) {
 // @Param   sequenceControl     body    apimodels.SequenceControlCommand true "Sequence Control Command"
 // @Success 200 {object} apimodels.SequenceControlResponse	"ok"
 // @Failure 400 {object} models.Error "Invalid payload"
+// @Failure 404 {object} models.Error "Not found"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /sequence/{project}/{keptnContext}/control [post]
 func (sh *StateHandler) ControlSequenceState(c *gin.Context) {

@@ -1,14 +1,17 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { DtRadioChange } from '@dynatrace/barista-components/radio';
 import { IGitDataExtended, IGitHttps, IGitSsh } from '../../_interfaces/git-upstream';
 import { DataService } from '../../_services/data.service';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { filter, map } from 'rxjs/operators';
-import { isGitHTTPS } from '../../_utils/git-upstream.utils';
+import { NotificationType } from '../../_models/notification';
+import { NotificationsService } from '../../_services/notifications.service';
+import { isGitHTTPS, isGitSSH, isRemoteUrlEmpty } from '../../_utils/git-upstream.utils';
 
 export enum GitFormType {
   SSH,
   HTTPS,
+  NO_UPSTREAM,
 }
 
 @Component({
@@ -16,17 +19,15 @@ export enum GitFormType {
   templateUrl: './ktb-project-settings-git-extended.component.html',
   styleUrls: [],
 })
-export class KtbProjectSettingsGitExtendedComponent {
+export class KtbProjectSettingsGitExtendedComponent implements OnInit {
   private projectName?: string;
+  public selectedForm: GitFormType = GitFormType.NO_UPSTREAM;
   public gitInputDataHttps?: IGitHttps;
   public gitInputDataSsh?: IGitSsh;
   public FormType = GitFormType;
-  public selectedForm: GitFormType = GitFormType.HTTPS;
-  public gitDataHttps?: IGitHttps;
-  public gitDataSsh?: IGitSsh;
-
-  @Input()
-  public isLoading = false;
+  public gitDataHttps?: IGitDataExtended;
+  public gitDataSsh?: IGitDataExtended;
+  public upstreamConfigured = false;
 
   @Input()
   public isCreateMode = false;
@@ -35,19 +36,10 @@ export class KtbProjectSettingsGitExtendedComponent {
   public isGitUpstreamInProgress = false;
 
   @Input()
-  public set gitInputData(gitData: IGitDataExtended | undefined) {
-    if (gitData) {
-      if (isGitHTTPS(gitData)) {
-        this.gitInputDataHttps = gitData;
-        this.selectedForm = GitFormType.HTTPS;
-      } else {
-        this.gitInputDataSsh = gitData;
-        this.selectedForm = GitFormType.SSH;
-      }
-    } else {
-      this.selectedForm = GitFormType.HTTPS;
-    }
-  }
+  public required = true;
+
+  @Input()
+  public gitInputData: IGitDataExtended | undefined;
 
   @Output()
   public gitDataChange = new EventEmitter<IGitDataExtended | undefined>();
@@ -56,10 +48,48 @@ export class KtbProjectSettingsGitExtendedComponent {
   public resetTouched = new EventEmitter<void>();
 
   public get gitData(): IGitDataExtended | undefined {
-    return this.selectedForm === GitFormType.HTTPS ? this.gitDataHttps : this.gitDataSsh;
+    switch (this.selectedForm) {
+      case GitFormType.HTTPS:
+        return this.gitDataHttps;
+      case GitFormType.SSH:
+        return this.gitDataSsh;
+      case GitFormType.NO_UPSTREAM:
+        return { noupstream: '' };
+      default:
+        return undefined;
+    }
   }
 
-  constructor(private readonly dataService: DataService, readonly routes: ActivatedRoute) {
+  public ngOnInit(): void {
+    if (!this.gitInputData || isRemoteUrlEmpty(this.gitInputData)) {
+      this.selectedForm = this.required ? GitFormType.HTTPS : GitFormType.NO_UPSTREAM;
+
+      if (this.selectedForm === GitFormType.NO_UPSTREAM) {
+        this.dataChanged(this.selectedForm, this.gitData);
+      }
+
+      return;
+    }
+
+    if (isGitHTTPS(this.gitInputData)) {
+      this.gitInputDataHttps = this.gitInputData;
+      this.selectedForm = GitFormType.HTTPS;
+      this.upstreamConfigured = true;
+      return;
+    }
+
+    if (isGitSSH(this.gitInputData)) {
+      this.gitInputDataSsh = this.gitInputData;
+      this.selectedForm = GitFormType.SSH;
+      this.upstreamConfigured = true;
+    }
+  }
+
+  constructor(
+    private readonly dataService: DataService,
+    readonly routes: ActivatedRoute,
+    private notificationsService: NotificationsService
+  ) {
     this.routes.paramMap
       .pipe(
         map((params: ParamMap) => params.get('projectName')),
@@ -72,7 +102,7 @@ export class KtbProjectSettingsGitExtendedComponent {
 
   public setSelectedForm($event: DtRadioChange<GitFormType>): void {
     this.selectedForm = $event.value ?? GitFormType.HTTPS;
-    this.dataChanged(this.gitData);
+    this.dataChanged(this.selectedForm, this.gitData);
   }
 
   public updateUpstream(): void {
@@ -81,6 +111,10 @@ export class KtbProjectSettingsGitExtendedComponent {
       this.dataService.updateGitUpstream(this.projectName, this.gitData).subscribe(
         () => {
           this.isGitUpstreamInProgress = false;
+          this.notificationsService.addNotification(
+            NotificationType.SUCCESS,
+            'The Git upstream was changed successfully.'
+          );
           this.resetTouched.emit();
         },
         () => {
@@ -90,19 +124,22 @@ export class KtbProjectSettingsGitExtendedComponent {
     }
   }
 
-  public dataChanged(data?: IGitDataExtended): void {
+  public dataChanged(type: GitFormType, data?: IGitDataExtended): void {
     // the data should be split into two in order to update the parent form correctly if the selected form is switched.
     // On switch the child component does not emit new data and therefore the selected data is not updated
     if (data) {
-      if (isGitHTTPS(data)) {
-        this.gitDataHttps = data;
-      } else {
-        this.gitDataSsh = data;
+      switch (type) {
+        case GitFormType.HTTPS:
+          this.gitDataHttps = data;
+          break;
+        case GitFormType.SSH:
+          this.gitDataSsh = data;
+          break;
       }
     } else {
       if (this.selectedForm === GitFormType.HTTPS) {
         this.gitDataHttps = undefined;
-      } else {
+      } else if (this.selectedForm === GitFormType.SSH) {
         this.gitDataSsh = undefined;
       }
     }

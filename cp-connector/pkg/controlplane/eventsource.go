@@ -93,8 +93,8 @@ func (n *NATSEventSource) Start(ctx context.Context, registrationData Registrati
 	}
 	go func() {
 		<-ctx.Done()
-		if err := n.connector.Disconnect(); err != nil {
-			n.logger.Errorf("Unable to disconnect from NATS: %v", err)
+		if err := n.connector.UnsubscribeAll(); err != nil {
+			n.logger.Errorf("Unable to unsubscribe from NATS: %v", err)
 			return
 		}
 	}()
@@ -109,7 +109,7 @@ func (n *NATSEventSource) OnSubscriptionUpdate(subjects []string) {
 			n.logger.Errorf("Could not handle subscription update: %v", err)
 			return
 		}
-		if err := n.connector.QueueSubscribeMultiple(subjects, n.queueGroup, n.eventProcessFn); err != nil {
+		if err := n.connector.QueueSubscribeMultiple(s, n.queueGroup, n.eventProcessFn); err != nil {
 			n.logger.Errorf("Could not handle subscription update: %v", err)
 			return
 		}

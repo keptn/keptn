@@ -11,7 +11,7 @@
             "name": "Apache 2.0",
             "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
         },
-        "version": "1.0"
+        "version": "develop"
     },
     "basePath": "/v1",
     "paths": {
@@ -109,6 +109,12 @@
                             "$ref": "#/definitions/operations.Error"
                         }
                     },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/operations.Error"
+                        }
+                    },
                     "500": {
                         "description": "Internal error",
                         "schema": {
@@ -140,9 +146,7 @@
                 "data": {
                     "$ref": "#/definitions/operations.KeptnBase"
                 },
-                "extensions": {
-                    "type": "object"
-                },
+                "extensions": {},
                 "id": {
                     "type": "string"
                 },
