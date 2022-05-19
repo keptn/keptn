@@ -71,8 +71,8 @@ github.com/keptn/go-utils v0.15.1-0.20220517082831-2052e1404e4c h1:Y3z1aDzmYrSJb
 github.com/keptn/go-utils v0.15.1-0.20220517082831-2052e1404e4c/go.mod h1:oxLLKz2u9KId2HgLH63+T0pUbcgiDd2GDkRrRKwxGUU=
 github.com/keptn/keptn/cp-connector v0.0.0-20220519092125-885433905cc0 h1:pmbwyHQRO74dt3W24jCDyfUovDT89zsVXmC15UrAmn4=
 github.com/keptn/keptn/cp-connector v0.0.0-20220519092125-885433905cc0/go.mod h1:3fvunuLSccjS/4cIeNqYVr3eCZKznfgnpqDnE7WCqos=
-github.com/keptn/keptn/go-sdk v0.0.0-20220519105332-ac489b12ef00 h1:HYWEE2EuyWNLSiSbhQUv09gzWNOMsqhKxdp5Zd7aRrY=
-github.com/keptn/keptn/go-sdk v0.0.0-20220519105332-ac489b12ef00/go.mod h1:/qeqv6bPV/CqeruldCf/lzrXZZ2aDd2vO+d5Kw9tPPo=
+github.com/keptn/keptn/go-sdk v0.0.0-20220519111925-7a27bb921aeb h1:wvLuloQQbd1CRwdshRK9usszk0lKaKcaN/vfULIFFQ0=
+github.com/keptn/keptn/go-sdk v0.0.0-20220519111925-7a27bb921aeb/go.mod h1:/qeqv6bPV/CqeruldCf/lzrXZZ2aDd2vO+d5Kw9tPPo=
 github.com/klauspost/compress v1.14.4 h1:eijASRJcobkVtSt81Olfh7JX43osYLwy5krOJo6YEu4=
 github.com/klauspost/compress v1.14.4/go.mod h1:/3/Vjq9QcHkK5uEr5lBEmyoZ1iFhe47etQ6QUkpK6sk=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
