@@ -6,7 +6,7 @@ metadata:
   name: api-nginx-config
   labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "keptn.name" . }}
+    app.kubernetes.io/component: api-gateway-nginx
 data:
   nginx.conf: |
     worker_processes  3;
@@ -354,19 +354,18 @@ metadata:
   name: api-gateway-nginx
   labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "keptn.name" . }}
+    app.kubernetes.io/component: api-gateway-nginx
 spec:
   selector:
-    matchLabels:
-      app.kubernetes.io/name: api-gateway-nginx
-      app.kubernetes.io/instance: {{ .Release.Name }}
+    matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: api-gateway-nginx
   replicas: 1
   {{- include "keptn.common.update-strategy" . | nindent 2 }}
   template:
     metadata:
       labels: {{- include "common.labels.standard" . | nindent 8 }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-        app.kubernetes.io/component: {{ include "keptn.name" . }}
+        app.kubernetes.io/component: api-gateway-nginx
       annotations: # add randomizer to restart the deployment if anything changes - see https://github.com/keptn/keptn/issues/3320
         rollme: {{ randAlphaNum 5 | quote }}
     spec:
@@ -433,7 +432,7 @@ metadata:
   name: api-gateway-nginx
   labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "keptn.name" . }}
+    app.kubernetes.io/component: api-gateway-nginx
 spec:
   type: {{ .Values.apiGatewayNginx.type }}
   ports:
@@ -445,3 +444,4 @@ spec:
       {{- end }}
       protocol: TCP
   selector: {{- include "common.labels.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: api-gateway-nginx

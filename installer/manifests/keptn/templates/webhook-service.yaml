@@ -6,17 +6,18 @@ metadata:
   name: webhook-service
   labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "keptn.name" . }}
+    app.kubernetes.io/component: webhook-service
 spec:
   selector:
     matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: webhook-service
   replicas: 1
   {{- include "keptn.common.update-strategy" . | nindent 2 }}
   template:
     metadata:
       labels: {{- include "common.labels.standard" . | nindent 8 }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-        app.kubernetes.io/component: {{ include "keptn.name" . }}
+        app.kubernetes.io/component: webhook-service
     spec:
       {{- include "keptn.common.pod-security-context" . | nindent 6 }}
       serviceAccountName: keptn-webhook-service
@@ -88,12 +89,13 @@ metadata:
   name: webhook-service
   labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "keptn.name" . }}
+    app.kubernetes.io/component: webhook-service
 spec:
   ports:
     - port: 8080
       protocol: TCP
   selector: {{- include "common.labels.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: webhook-service
 {{- end }}
 ---
 apiVersion: v1
@@ -105,7 +107,7 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "keptn.name" . }}
+    app.kubernetes.io/component: webhook-service
     helm.sh/chart: {{ include "keptn.chart" . }}
 data:
   denyList: |-

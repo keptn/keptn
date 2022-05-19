@@ -4,10 +4,11 @@ metadata:
   name: bridge
   labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "keptn.name" . }}
+    app.kubernetes.io/component: bridge
 spec:
   ports:
     - port: 8080
       targetPort: 3000
       protocol: TCP
   selector: {{- include "common.labels.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: bridge

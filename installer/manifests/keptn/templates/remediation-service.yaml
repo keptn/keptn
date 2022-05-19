@@ -6,17 +6,18 @@ metadata:
   name: remediation-service
   labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "keptn.name" . }}
+    app.kubernetes.io/component: remediation-service
 spec:
   selector:
     matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: remediation-service
   replicas: 1
   {{- include "keptn.common.update-strategy" . | nindent 2 }}
   template:
     metadata:
       labels: {{- include "common.labels.standard" . | nindent 8 }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-        app.kubernetes.io/component: {{ include "keptn.name" . }}
+        app.kubernetes.io/component: remediation-service
     spec:
       {{- include "keptn.common.pod-security-context" . | nindent 6 }}
       containers:
@@ -86,11 +87,12 @@ metadata:
   name: remediation-service
   labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "keptn.name" . }}
+    app.kubernetes.io/component: remediation-service
 spec:
   ports:
   - port: 8080
     targetPort: 8080
     protocol: TCP
   selector: {{- include "common.labels.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: remediation-service
 

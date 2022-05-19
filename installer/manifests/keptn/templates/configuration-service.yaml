@@ -4,7 +4,12 @@ metadata:
   name: configuration-service
   labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "keptn.name" . }}
+    {{- if .Values.resourceService.enabled }}
+    app.kubernetes.io/component: resource-service
+    {{- else }}
+    app.kubernetes.io/component: configuration-service
+    {{- end }}
+
 spec:
   ports:
     - port: 8080
@@ -20,17 +25,18 @@ metadata:
   name: resource-service
   labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "keptn.name" . }}
+    app.kubernetes.io/component: resource-service
 spec:
   selector:
     matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: resource-service
   replicas: {{ .Values.resourceService.replicas }}
   {{- include "keptn.common.update-strategy" . | nindent 2 }}
   template:
     metadata:
       labels: {{- include "common.labels.standard" . | nindent 8 }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-        app.kubernetes.io/component: {{ include "keptn.name" . }}
+        app.kubernetes.io/component: resource-service
     spec:
       securityContext:
         fsGroup: {{ .Values.configurationService.fsGroup | default 1001 }}
@@ -97,13 +103,18 @@ spec:
       serviceAccountName: keptn-configuration-service
       {{- include "keptn.nodeSelector" (dict "value" .Values.resourceService.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
 {{- else }}
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: configuration-volume
   labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "keptn.name" . }}
+    {{- if .Values.resourceService.enabled }}
+    app.kubernetes.io/component: resource-service
+    {{- else }}
+    app.kubernetes.io/component: configuration-service
+    {{- end }}
 spec:
   accessModes:
     - ReadWriteOnce
@@ -120,10 +131,11 @@ metadata:
   name: configuration-service
   labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "keptn.name" . }}
+    app.kubernetes.io/component: configuration-service
 spec:
   selector:
     matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: configuration-service
   replicas: 1
   strategy:
     type: Recreate
@@ -131,7 +143,7 @@ spec:
     metadata:
       labels: {{- include "common.labels.standard" . | nindent 8 }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-        app.kubernetes.io/component: {{ include "keptn.name" . }}
+        app.kubernetes.io/component: configuration-service
     spec:
       securityContext:
         fsGroup: {{ .Values.configurationService.fsGroup | default 1001 }}
