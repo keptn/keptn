@@ -16,6 +16,11 @@ spec:
       targetPort: 8080
       protocol: TCP
   selector: {{- include "common.labels.selectorLabels" . | nindent 4 }}
+    {{- if .Values.resourceService.enabled }}
+    app.kubernetes.io/component: resource-service
+    {{- else }}
+    app.kubernetes.io/component: configuration-service
+    {{- end }}
 ---
 # resource-service
 {{- if .Values.resourceService.enabled }}
