@@ -271,6 +271,8 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     if (sequences !== undefined) {
       this.updateFilterSequence(sequences);
       this.refreshFilterDataSource();
+      // Needed for the updates to work properly
+      this.changeDetectorRef_.detectChanges();
     }
   }
 
