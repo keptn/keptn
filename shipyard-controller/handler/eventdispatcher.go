@@ -2,7 +2,10 @@ package handler
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	"strings"
 	"time"
 
 	"github.com/benbjohnson/clock"
@@ -73,7 +76,7 @@ func (e *EventDispatcher) Add(event models.DispatcherEvent, skipQueue bool) erro
 		if err := e.tryToSendEvent(*eventScope, event); err != nil {
 			// if the event cannot be sent because it is blocked by other sequences,
 			// we'll add it to the queue and try to send it again later
-			if err != ErrOtherActiveSequencesRunning && err != ErrSequencePaused {
+			if !strings.Contains(err.Error(), OtherActiveSequencesRunning) && err != ErrSequencePaused {
 				// in all other cases, return the error
 				return err
 			}
@@ -193,7 +196,7 @@ func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event mod
 		return ErrSequenceNotFound
 	}
 
-	startedSequenceExecutions, err := e.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
+	filter := models.SequenceExecutionFilter{
 		Scope: models.EventScope{
 			EventData: keptnv2.EventData{
 				Project: eventScope.Project,
@@ -201,23 +204,33 @@ func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event mod
 			},
 		},
 		Status: []string{apimodels.SequenceStartedState},
-	})
+	}
+
+	startedSequenceExecutions, err := e.sequenceExecutionRepo.Get(filter)
 	if err != nil {
 		return err
 	}
 
+	err2 := checkStarted(startedSequenceExecutions, event, e)
+	if err2 != nil {
+		return err2
+	}
+
+	return e.eventSender.Send(context.TODO(), event.Event)
+}
+
+func checkStarted(startedSequenceExecutions []models.SequenceExecution, event models.DispatcherEvent, e *EventDispatcher) error {
 	if startedSequenceExecutions != nil && len(startedSequenceExecutions) > 0 {
 		// if there is another sequence with the state 'started'
 		for _, otherSequence := range startedSequenceExecutions {
 			if otherSequence.Status.CurrentTask.TriggeredID != event.Event.ID() {
 				if !e.isCurrentEventOverrulingOtherEvent(otherSequence, event) {
-					return ErrOtherActiveSequencesRunning
+					return errors.New(fmt.Sprint(OtherActiveSequencesRunning, otherSequence.Scope.KeptnContext))
 				}
 			}
 		}
 	}
-
-	return e.eventSender.Send(context.TODO(), event.Event)
+	return nil
 }
 
 func (e *EventDispatcher) isCurrentEventOverrulingOtherEvent(otherSequence models.SequenceExecution, queuedEvent models.DispatcherEvent) bool {
