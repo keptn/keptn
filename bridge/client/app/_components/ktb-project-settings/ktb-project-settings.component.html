@@ -1,6 +1,6 @@
 <div class="container" fxFlexFill *ngIf="state$ | async as state">
   <div
-    *ngIf="state.state === ProjectSettingsStatus.LOADED"
+    *ngIf="state.state !== ProjectSettingsStatus.ERROR"
     fxLayout="column"
     fxFlexFill
     fxLayoutAlign="space-between"

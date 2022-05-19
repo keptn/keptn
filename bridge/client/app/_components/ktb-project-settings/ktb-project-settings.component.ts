@@ -1,5 +1,5 @@
 import { Component, HostListener, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
-import { BehaviorSubject, combineLatest, Observable, of, Subject } from 'rxjs';
+import { combineLatest, Observable, of, Subject } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { KtbProjectSettingsGitComponent } from '../ktb-project-settings-git/ktb-project-settings-git.component';
 import { DeleteData, DeleteResult, DeleteType } from '../../_interfaces/delete';
@@ -71,7 +71,6 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
   public projectNameForm = new FormGroup({
     projectName: this.projectNameControl,
   });
-  public readonly _metadataError$ = new BehaviorSubject<boolean>(false);
 
   public message = 'You have pending changes. Make sure to save your data before you continue.';
   public unsavedDialogState: DialogState = null;
