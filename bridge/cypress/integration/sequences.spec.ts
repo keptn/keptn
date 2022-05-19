@@ -102,6 +102,7 @@ describe('Sequences', () => {
   it('should load older sequences', () => {
     sequencePage.visit('sockshop');
     cy.wait('@Sequences');
+    cy.wait(500);
 
     sequencePage
       .assertSequenceCount(25)
@@ -120,6 +121,7 @@ describe('Sequences', () => {
     it('should show a filtered list if filters are applied for Service', () => {
       sequencePage.visit('sockshop');
       cy.wait('@Sequences');
+      cy.wait(500);
 
       sequencePage
         .checkServiceFilter('carts')
@@ -135,6 +137,7 @@ describe('Sequences', () => {
     it('should show a filtered list if filters are applied for Stage', () => {
       sequencePage.visit('sockshop');
       cy.wait('@Sequences');
+      cy.wait(500);
 
       sequencePage
         .checkStageFilter('production')
@@ -153,6 +156,7 @@ describe('Sequences', () => {
     it('should show a filtered list if filters are applied for Sequence', () => {
       sequencePage.visit('sockshop');
       cy.wait('@Sequences');
+      cy.wait(500);
 
       sequencePage
         .checkSequenceFilter('delivery')
@@ -168,6 +172,7 @@ describe('Sequences', () => {
     it('should show a filtered list if filters are applied for Status', () => {
       sequencePage.visit('sockshop');
       cy.wait('@Sequences');
+      cy.wait(500);
 
       sequencePage
         .checkStatusFilter('Active')
@@ -193,6 +198,7 @@ describe('Sequences', () => {
     it('should show a filtered list if combined filters are applied', () => {
       sequencePage.visit('sockshop');
       cy.wait('@Sequences');
+      cy.wait(500);
 
       sequencePage
         .checkServiceFilter('carts')
@@ -210,6 +216,7 @@ describe('Sequences', () => {
     it('should filter waiting sequences', () => {
       sequencePage.visit('sockshop');
       cy.wait('@Sequences');
+      cy.wait(500);
 
       sequencePage
         .checkStatusFilter('Waiting')
@@ -221,6 +228,7 @@ describe('Sequences', () => {
     it('should save filters to query params', () => {
       sequencePage.visit('sockshop');
       cy.wait('@Sequences');
+      cy.wait(500);
 
       sequencePage
         .checkServiceFilter('carts')
@@ -240,6 +248,7 @@ describe('Sequences', () => {
         Status: 'started',
       });
       cy.wait('@Sequences');
+      cy.wait(500);
 
       sequencePage
         .assertFilterIsChecked('Stage', 'dev', true)
@@ -269,6 +278,7 @@ describe('Sequences', () => {
 
       sequencePage.visit('sockshop', {});
       cy.wait('@Sequences');
+      cy.wait(500);
 
       sequencePage
         .assertFilterIsChecked('Stage', 'dev', false)
@@ -294,6 +304,7 @@ describe('Sequences', () => {
         Service: 'carts',
       });
       cy.wait('@Sequences');
+      cy.wait(500);
 
       sequencePage
         .assertSequenceCount(3)
