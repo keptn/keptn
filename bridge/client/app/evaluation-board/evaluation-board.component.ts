@@ -85,6 +85,7 @@ export class EvaluationBoardComponent {
           }))
         );
       }),
+      catchError((): Observable<EvaluationBoardState> => of({ state: EvaluationBoardStatus.ERROR, kind: 'default' })),
       startWith({ state: EvaluationBoardStatus.LOADING } as EvaluationBoardStateLoading)
     );
   }
