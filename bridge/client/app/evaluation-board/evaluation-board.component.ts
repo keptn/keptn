@@ -1,17 +1,19 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
-import { filter, map, takeUntil } from 'rxjs/operators';
-import { Subject } from 'rxjs';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { catchError, filter, map, startWith, switchMap } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
-import { Root } from '../_models/root';
-import { Trace } from '../_models/trace';
-import { ApiService } from '../_services/api.service';
 import { EventTypes } from '../../../shared/interfaces/event-types';
 import { DataService } from '../_services/data.service';
 import { environment } from '../../environments/environment';
-import { DateUtil } from '../_utils/date.utils';
-import { Project } from '../_models/project';
 import { KeptnService } from '../../../shared/models/keptn-service';
+import {
+  EvaluationBoardParams,
+  EvaluationBoardState,
+  EvaluationBoardStateLoading,
+  EvaluationBoardStatus,
+} from './evaluation-board-state';
+import { DateUtil } from '../_utils/date.utils';
 
 @Component({
   selector: 'ktb-evaluation-board',
@@ -19,103 +21,74 @@ import { KeptnService } from '../../../shared/models/keptn-service';
   styleUrls: ['./evaluation-board.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EvaluationBoardComponent implements OnInit, OnDestroy {
-  private unsubscribe$ = new Subject<void>();
-  public serviceKeptnContext?: string;
+export class EvaluationBoardComponent {
   public logoInvertedUrl = environment?.config?.logoInvertedUrl;
-  public error?: string;
-  public contextId?: string;
-  public root?: Root;
-  public evaluations?: Trace[];
   public hasHistory: boolean;
+  public EvaluationBoardState = EvaluationBoardStatus;
+  public state$: Observable<EvaluationBoardState>;
 
-  constructor(
-    private _changeDetectorRef: ChangeDetectorRef,
-    private location: Location,
-    private route: ActivatedRoute,
-    private apiService: ApiService,
-    private dataService: DataService
-  ) {
+  constructor(private location: Location, private route: ActivatedRoute, private dataService: DataService) {
     this.hasHistory = window.history.length > 1;
     this.dataService.setProjectName(''); // else in the app-header the latest projectName will be shown until the traces are loaded
-  }
 
-  ngOnInit(): void {
-    this.route.params
-      .pipe(
-        takeUntil(this.unsubscribe$),
-        filter(
-          (params: {
-            [key: string]: string | undefined;
-          }): params is { shkeptncontext: string; eventselector: string | undefined } => !!params.shkeptncontext
-        )
-      )
-      .subscribe((params) => {
-        this.contextId = params.shkeptncontext;
-        this.apiService
-          .getTraces(this.contextId)
+    this.state$ = this.route.paramMap.pipe(
+      map((params) => ({ keptnContext: params.get('shkeptncontext'), eventSelector: params.get('eventselector') })),
+      filter((params): params is EvaluationBoardParams => !!params.keptnContext),
+      switchMap((params) =>
+        // Get evaluations for the given keptnContext
+        this.dataService
+          .getTracesByContext(params.keptnContext, EventTypes.EVALUATION_FINISHED, KeptnService.LIGHTHOUSE_SERVICE)
           .pipe(
-            map((response) => response.body?.events || []),
-            map((traces) => traces.map((trace) => Trace.fromJSON(trace)).sort(DateUtil.compareTraceTimesDesc)),
-            takeUntil(this.unsubscribe$)
+            map((evaluations) =>
+              params.eventSelector
+                ? evaluations.filter((t) => t.id === params.eventSelector || t.data.stage === params.eventSelector)
+                : evaluations
+            ),
+            map((evaluations) => evaluations.sort(DateUtil.compareTraceTimesDesc)),
+            map((evaluations) => ({ evaluations, keptnContext: params.keptnContext })),
+            catchError(() => of({ keptnContext: params.keptnContext }))
           )
-          .subscribe(
-            (traces: Trace[]) => {
-              if (traces.length > 0) {
-                this.root = Root.fromJSON(traces[0]);
-                this.root.traces = traces;
-                this.evaluations = traces.filter(
-                  (t) =>
-                    t.type === EventTypes.EVALUATION_FINISHED &&
-                    t.source === KeptnService.LIGHTHOUSE_SERVICE &&
-                    (!params.eventselector || t.id === params.eventselector || t.data.stage === params.eventselector)
-                );
-                if (this.root.project) {
-                  this.dataService.setProjectName(this.root.project);
-                  if (this.root.service && this.root.stage) {
-                    this.setServiceKeptnContext(this.root.project, this.root.service, this.root.stage);
-                  }
-                }
-              } else {
-                this.error = 'contextError';
-                this._changeDetectorRef.markForCheck();
-              }
-            },
-            () => {
-              this.error = 'error';
-              this._changeDetectorRef.markForCheck();
-            }
-          );
-      });
+      ),
+      switchMap((data) =>
+        // Only the triggered events have the previous data => configurationChange.values.image does not exist on finished events
+        this.dataService.getTracesByContext(data.keptnContext, EventTypes.EVALUATION_TRIGGERED, undefined, 1).pipe(
+          map((root) => {
+            return {
+              ...data,
+              artifact: root[0].getConfigurationChangeImage(),
+              deploymentName: root[0].getShortImageName() || root[0].service || '',
+            };
+          })
+        )
+      ),
+      switchMap((data): Observable<EvaluationBoardState> => {
+        if (!('evaluations' in data)) {
+          return of({ state: EvaluationBoardStatus.ERROR, kind: 'trace', keptnContext: data.keptnContext });
+        }
+        const { project: projectName, stage: stageName, service: serviceName } = data.evaluations[0];
+        if (!projectName || !stageName || !serviceName) {
+          return of({ state: EvaluationBoardStatus.ERROR, kind: 'trace', keptnContext: data.keptnContext });
+        }
+
+        // Get the latest deployment context that matches with the deployment contexts in the service screen
+        // An evaluation can be triggered without a deployment,
+        //   so there is the case that the evaluation keptnContext does not match with any deployment keptnContext
+        return this.dataService.getService(projectName, stageName, serviceName).pipe(
+          map((service) => service.deploymentContext),
+          map((serviceKeptnContext) => ({
+            evaluations: data.evaluations,
+            deploymentName: data.deploymentName,
+            artifact: data.artifact,
+            serviceKeptnContext,
+            state: EvaluationBoardStatus.LOADED,
+          }))
+        );
+      }),
+      startWith({ state: EvaluationBoardStatus.LOADING } as EvaluationBoardStateLoading)
+    );
   }
 
-  private setServiceKeptnContext(projectName: string, serviceName: string, stageName: string): void {
-    this.dataService
-      .getProject(projectName)
-      .pipe(
-        takeUntil(this.unsubscribe$),
-        filter((project: Project | undefined): project is Project => !!project)
-      )
-      .subscribe((project) => {
-        this.serviceKeptnContext = project
-          .getServices(stageName)
-          .find((service) => service.serviceName === serviceName)?.deploymentContext;
-        this._changeDetectorRef.markForCheck();
-      });
-  }
-
-  public getServiceDetailsLink(shkeptncontext: string, stage: string | undefined): string[] {
-    return this.root?.project && this.root?.service && stage
-      ? ['/project', this.root.project, 'service', this.root.service, 'context', shkeptncontext, 'stage', stage]
-      : [];
-  }
-
-  goBack(): void {
+  public goBack(): void {
     this.location.back();
-  }
-
-  ngOnDestroy(): void {
-    this.unsubscribe$.next();
-    this.unsubscribe$.complete();
   }
 }

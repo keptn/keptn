@@ -42,13 +42,6 @@ export class Service extends sv {
     return this.lastEventTypes?.[EventTypes.DEPLOYMENT_FINISHED]?.keptnContext ?? this.evaluationContext;
   }
 
-  get deploymentTime(): string | undefined {
-    return (
-      this.lastEventTypes?.[EventTypes.DEPLOYMENT_FINISHED]?.time ||
-      this.lastEventTypes?.[EventTypes.EVALUATION_FINISHED]?.time
-    );
-  }
-
   get evaluationContext(): string | undefined {
     return this.lastEventTypes?.[EventTypes.EVALUATION_FINISHED]?.keptnContext;
   }

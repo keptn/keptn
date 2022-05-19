@@ -1,69 +1,81 @@
-<div class="pr-4 pl-4">
-  <button class="mt-2" dt-button variant="secondary" *ngIf="hasHistory" (click)="goBack()">
-    <dt-icon name="left"></dt-icon>
-    Go back
-  </button>
-  <div *ngIf="evaluations && root" class="evaluation-board" fxLayout="column">
-    <dt-info-group>
-      <dt-info-group-title>
-        <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="15px">
-          <div fxLayout="row" fxLayoutAlign="start center">
-            <button dt-icon-button disabled variant="nested" *ngIf="root.isFaulty()">
-              <dt-icon name="criticalevent"></dt-icon>
-            </button>
-            <p [textContent]="root.getShortImageName() || root.service"></p>
+<ng-container *ngIf="state$ | async as state">
+  <div class="pr-4 pl-4">
+    <button class="mt-2" dt-button variant="secondary" *ngIf="hasHistory" (click)="goBack()">
+      <dt-icon name="left"></dt-icon>
+      Go back
+    </button>
+    <div *ngIf="state.state === EvaluationBoardState.LOADED" class="evaluation-board" fxLayout="column">
+      <dt-info-group *ngIf="state.evaluations[0] as root">
+        <dt-info-group-title>
+          <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="15px">
+            <div fxLayout="row" fxLayoutAlign="start center">
+              <p [textContent]="state.deploymentName"></p>
+            </div>
           </div>
+        </dt-info-group-title>
+        <p class="m-0" *ngIf="state.artifact as artifact">
+          <span class="bold">Artifact: </span><span [textContent]="artifact"></span>
+        </p>
+        <p class="m-0 mb-3"><span class="bold">Context: </span><span [textContent]="root.shkeptncontext"></span></p>
+      </dt-info-group>
+      <div *ngFor="let evaluation of state.evaluations">
+        <p>
+          <span class="bold">Stage: </span>
+          <span [textContent]="evaluation.data.stage"></span>
+        </p>
+        <div class="mb-2">
+          <button
+            dt-button
+            variant="secondary"
+            [routerLink]="[
+              '/project',
+              evaluation.project,
+              'service',
+              evaluation.service,
+              'context',
+              state.serviceKeptnContext,
+              'stage',
+              evaluation.stage
+            ]"
+          >
+            View service details
+          </button>
+          <button
+            class="ml-3"
+            dt-button
+            variant="secondary"
+            [routerLink]="[
+              '/project',
+              evaluation.project,
+              'sequence',
+              evaluation.shkeptncontext,
+              'stage',
+              evaluation.data.stage
+            ]"
+          >
+            View sequence details
+          </button>
         </div>
-      </dt-info-group-title>
-      <p class="m-0" *ngIf="root.data.configurationChange?.values">
-        <span class="bold">Artifact: </span><span [textContent]="root.getConfigurationChangeImage()"></span>
-      </p>
-      <p class="m-0 mb-3"><span class="bold">Context: </span><span [textContent]="root.shkeptncontext"></span></p>
-    </dt-info-group>
-    <div *ngFor="let evaluation of evaluations">
-      <p>
-        <span class="bold">Stage: </span>
-        <span [textContent]="evaluation.data.stage"></span>
-      </p>
-      <div class="mb-2">
-        <button
-          *ngIf="serviceKeptnContext as shkeptncontext"
-          dt-button
-          variant="secondary"
-          [routerLink]="getServiceDetailsLink(shkeptncontext, evaluation.data.stage)"
-        >
-          View service details
-        </button>
-        <button
-          class="ml-3"
-          dt-button
-          variant="secondary"
-          [routerLink]="['/project', root.project, 'sequence', root.shkeptncontext, 'stage', evaluation.data.stage]"
-        >
-          View sequence details
-        </button>
+        <ktb-event-item [event]="evaluation">
+          <ktb-event-item-detail>
+            <ktb-evaluation-details
+              *ngIf="evaluation.data.evaluation"
+              [evaluationData]="evaluation"
+            ></ktb-evaluation-details>
+          </ktb-event-item-detail>
+        </ktb-event-item>
       </div>
-      <ktb-event-item [event]="evaluation">
-        <ktb-event-item-detail>
-          <ktb-evaluation-details
-            *ngIf="evaluation.data.evaluation"
-            [evaluationData]="evaluation"
-          ></ktb-evaluation-details>
-        </ktb-event-item-detail>
-      </ktb-event-item>
     </div>
   </div>
-</div>
-<div class="container" *ngIf="error">
-  <dt-empty-state>
-    <dt-empty-state-item>
-      <dt-empty-state-item-img>
-        <img class="mt-2" [src]="logoInvertedUrl" />
-      </dt-empty-state-item-img>
-      <ng-container [ngSwitch]="error">
-        <ng-container *ngSwitchCase="'contextError'">
+  <div class="container" *ngIf="state.state === EvaluationBoardState.ERROR">
+    <dt-empty-state>
+      <dt-empty-state-item>
+        <dt-empty-state-item-img>
+          <img class="mt-2" [src]="logoInvertedUrl" alt="logo" />
+        </dt-empty-state-item-img>
+        <ng-container *ngIf="state.kind === 'trace'; else defaultError">
           <dt-empty-state-item-title class="mt-2" aria-level="2"
-            >Traces for <span class="italic" [textContent]="contextId"></span> not found
+            >Traces for <span class="italic" [textContent]="state.keptnContext"></span> not found
           </dt-empty-state-item-title>
           <p>
             Sorry, traces with this shkeptncontext could not be loaded. Check out the
@@ -72,7 +84,7 @@
             <a [routerLink]="['/dashboard']">your dashboard</a>.
           </p>
         </ng-container>
-        <ng-container *ngSwitchDefault>
+        <ng-template #defaultError>
           <dt-empty-state-item-title class="mt-2" aria-level="2">Some error occurred</dt-empty-state-item-title>
           <p>
             Sorry, some error occurred. Check out the
@@ -80,13 +92,13 @@
             how to <a [href]="'/manage/project/' | keptnUrl" target="_blank">create a project</a> or go back to
             <a [routerLink]="['/dashboard']">your dashboard</a>.
           </p>
-        </ng-container>
-      </ng-container>
-    </dt-empty-state-item>
-  </dt-empty-state>
-</div>
-<div class="container" *ngIf="!error && !evaluations">
-  <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
-    <ktb-loading-distractor>Loading ...</ktb-loading-distractor>
+        </ng-template>
+      </dt-empty-state-item>
+    </dt-empty-state>
   </div>
-</div>
+  <div class="container" *ngIf="state.state === EvaluationBoardState.LOADING">
+    <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
+      <ktb-loading-distractor>Loading ...</ktb-loading-distractor>
+    </div>
+  </div>
+</ng-container>
