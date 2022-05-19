@@ -155,7 +155,7 @@ securityContext:
 {{- range $key, $value := omit .Values.bridge.podSecurityContext "enabled" "defaultSeccompProfile" }}
   {{ $key }}: {{- toYaml $value | nindent 4 }}
 {{- end -}}
-{{- if not .Values.bridge.podSecurityContext.defaultSeccompProfile }}
+{{- if not .Values.bridge.podSecurityContext.seccompProfile }}
 {{- if .Values.bridge.podSecurityContext.defaultSeccompProfile -}}
 {{- include "keptn.common.security-context-seccomp" . }}
 {{- end -}}
@@ -193,7 +193,7 @@ securityContext:
 {{- range $key, $value := omit .Values.apiGatewayNginx.podSecurityContext "enabled" "defaultSeccompProfile" }}
   {{ $key }}: {{- toYaml $value | nindent 4 }}
 {{- end -}}
-{{- if not .Values.apiGatewayNginx.podSecurityContext.defaultSeccompProfile -}}
+{{- if not .Values.apiGatewayNginx.podSecurityContext.seccompProfile -}}
 {{- if .Values.apiGatewayNginx.podSecurityContext.defaultSeccompProfile -}}
 {{- include "keptn.common.security-context-seccomp" . }}
 {{- end -}}
@@ -231,7 +231,7 @@ securityContext:
 {{- range $key, $value := omit .Values.podSecurityContext "enabled" "defaultSeccompProfile" }}
   {{ $key }}: {{- toYaml $value | nindent 4 }}
 {{- end -}}
-{{- if not .Values.podSecurityContext.defaultSeccompProfile -}}
+{{- if not .Values.podSecurityContext.seccompProfile -}}
 {{- if .Values.apiGatewayNginx.podSecurityContext.defaultSeccompProfile -}}
 {{- include "keptn.common.security-context-seccomp" . -}}
 {{- end -}}
