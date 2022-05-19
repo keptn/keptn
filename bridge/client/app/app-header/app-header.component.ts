@@ -206,7 +206,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
   }
 
   setProject(): void {
-    const urlPieces = this.router.url.split('/');
+    const urlPieces = this.router.url.split('?')[0].split('/');
     if (urlPieces[1] === 'project') {
       this.selectedProject = urlPieces[2];
 
