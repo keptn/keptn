@@ -4,43 +4,43 @@ import (
 	"sync"
 )
 
-type TaskRegistry struct {
+type taskRegistry struct {
 	sync.RWMutex
-	Entries map[string]TaskEntry
+	entries map[string]taskEntry
 }
 
-type TaskEntry struct {
-	TaskHandler TaskHandler
-	// EventFilters is a list of functions that are executed before a task is handled by the TaskHandler. Only if all functions return 'true', the task will be handled
-	EventFilters []func(keptnHandle IKeptn, event KeptnEvent) bool
+type taskEntry struct {
+	taskHandler TaskHandler
+	// eventFilters is a list of functions that are executed before a task is handled by the taskHandler. Only if all functions return 'true', the task will be handled
+	eventFilters []func(keptnHandle IKeptn, event KeptnEvent) bool
 }
 
-func newTaskMap() *TaskRegistry {
-	return &TaskRegistry{
-		Entries: make(map[string]TaskEntry),
+func newTaskMap() *taskRegistry {
+	return &taskRegistry{
+		entries: make(map[string]taskEntry),
 	}
 }
 
-func (t *TaskRegistry) Contains(name string) (*TaskEntry, bool) {
+func (t *taskRegistry) Contains(name string) (*taskEntry, bool) {
 	t.RLock()
 	defer t.RUnlock()
-	if e, ok := t.Entries[name]; ok {
+	if e, ok := t.entries[name]; ok {
 		return &e, true
-	} else if e, ok := t.Entries["*"]; ok { // check if we have registered a wildcard handler
+	} else if e, ok := t.entries["*"]; ok { // check if we have registered a wildcard handler
 		return &e, true
 	}
 	return nil, false
 }
 
-func (t *TaskRegistry) Add(name string, entry TaskEntry) {
+func (t *taskRegistry) Add(name string, entry taskEntry) {
 	t.Lock()
 	defer t.Unlock()
-	t.Entries[name] = entry
+	t.entries[name] = entry
 }
 
-func (t *TaskRegistry) Get(name string) *TaskEntry {
+func (t *taskRegistry) Get(name string) *taskEntry {
 	t.RLock()
 	defer t.RUnlock()
-	entry := t.Entries[name]
+	entry := t.entries[name]
 	return &entry
 }

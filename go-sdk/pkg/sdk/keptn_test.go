@@ -100,7 +100,7 @@ func Test_NoFinishedEventDataProvided(t *testing.T) {
 }
 
 func Test_InitialRegistrationData(t *testing.T) {
-	keptn := Keptn{env: EnvConfig{
+	keptn := Keptn{env: envConfig{
 		PubSubTopic:       "sh.keptn.event.task1.triggered,sh.keptn.event.task2.triggered",
 		Location:          "localhost",
 		Version:           "v1",
@@ -121,7 +121,7 @@ func Test_InitialRegistrationData(t *testing.T) {
 }
 
 func Test_InitialRegistrationData_EmptyPubSubTopics(t *testing.T) {
-	keptn := Keptn{env: EnvConfig{PubSubTopic: ""}}
+	keptn := Keptn{env: envConfig{PubSubTopic: ""}}
 	regData := keptn.RegistrationData()
 	require.Equal(t, 0, len(regData.Subscriptions))
 }
@@ -153,4 +153,15 @@ func newTestTaskBadTriggeredEvent() models.KeptnContextExtendedCE {
 }
 
 type FakeTaskData struct {
+}
+type TaskHandlerMock struct {
+	// ExecuteFunc mocks the Execute method.
+	ExecuteFunc func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error)
+}
+
+func (mock *TaskHandlerMock) Execute(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) {
+	if mock.ExecuteFunc == nil {
+		panic("TaskHandlerMock.ExecuteFunc: method is nil but taskHandler.Execute was just called")
+	}
+	return mock.ExecuteFunc(keptnHandle, event)
 }

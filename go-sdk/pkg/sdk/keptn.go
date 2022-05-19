@@ -2,10 +2,14 @@ package sdk
 
 import (
 	"context"
+	"github.com/kelseyhightower/envconfig"
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	api2 "github.com/keptn/keptn/cp-connector/pkg/api"
 	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
+	"github.com/keptn/keptn/cp-connector/pkg/nats"
+	"log"
 	"os"
 	"os/signal"
 	"strings"
@@ -17,10 +21,6 @@ const (
 	shkeptnspecversion = "0.2.4"
 	cloudeventsversion = "1.0"
 )
-
-type ResourceHandler interface {
-	GetResource(scope api.ResourceScope, options ...api.URIOption) (*models.Resource, error)
-}
 
 type IKeptn interface {
 	// Start starts the internal event handling logic and needs to be called by the user
@@ -48,9 +48,27 @@ type TaskHandler interface {
 	Execute(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error)
 }
 
-type healthEndpointRunner func(port string, cp *controlplane.ControlPlane)
-
 type KeptnEvent models.KeptnContextExtendedCE
+
+type Error struct {
+	StatusType keptnv2.StatusType
+	ResultType keptnv2.ResultType
+	Message    string
+	Err        error
+}
+
+func (e Error) Error() string {
+	return e.Message
+}
+
+// KeptnOption can be used to configure the keptn sdk
+type KeptnOption func(*Keptn)
+
+type ResourceHandler interface {
+	GetResource(scope api.ResourceScope, options ...api.URIOption) (*models.Resource, error)
+}
+
+type healthEndpointRunner func(port string, cp *controlplane.ControlPlane)
 
 // Opaque key type used for graceful shutdown context value
 type gracefulShutdownKeyType struct{}
@@ -77,24 +95,10 @@ func (w *nopWG) Wait() {
 	// --
 }
 
-type Error struct {
-	StatusType keptnv2.StatusType
-	ResultType keptnv2.ResultType
-	Message    string
-	Err        error
-}
-
-func (e Error) Error() string {
-	return e.Message
-}
-
-// KeptnOption can be used to configure the keptn sdk
-type KeptnOption func(*Keptn)
-
 // WithTaskHandler registers a handler which is responsible for processing a .triggered event
 func WithTaskHandler(eventType string, handler TaskHandler, filters ...func(keptnHandle IKeptn, event KeptnEvent) bool) KeptnOption {
 	return func(k *Keptn) {
-		k.taskRegistry.Add(eventType, TaskEntry{TaskHandler: handler, EventFilters: filters})
+		k.taskRegistry.Add(eventType, taskEntry{taskHandler: handler, eventFilters: filters})
 	}
 }
 
@@ -127,19 +131,19 @@ type Keptn struct {
 	eventSender            controlplane.EventSender
 	resourceHandler        ResourceHandler
 	source                 string
-	taskRegistry           *TaskRegistry
+	taskRegistry           *taskRegistry
 	syncProcessing         bool
 	automaticEventResponse bool
 	gracefulShutdown       bool
 	logger                 Logger
-	env                    EnvConfig
+	env                    envConfig
 	healthEndpointRunner   healthEndpointRunner
 }
 
 // NewKeptn creates a new Keptn
 func NewKeptn(source string, opts ...KeptnOption) *Keptn {
-	env := NewEnvConfig()
-	controlPlane, eventSender := newControlPlane()
+	env := newEnvConfig()
+	controlPlane, eventSender := newControlPlaneFromEnv()
 	resourceHandler := newResourceHandlerFromEnv()
 	taskRegistry := newTaskMap()
 	logger := newDefaultLogger()
@@ -154,7 +158,7 @@ func NewKeptn(source string, opts ...KeptnOption) *Keptn {
 		syncProcessing:         false,
 		logger:                 logger,
 		env:                    env,
-		healthEndpointRunner:   cpHealthEndpointRunner,
+		healthEndpointRunner:   newHealthEndpointRunner,
 	}
 	for _, opt := range opts {
 		opt(keptn)
@@ -189,7 +193,7 @@ func (k *Keptn) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE
 
 				// execute the filtering functions of the task handler to determine whether the incoming event should be handled
 				// only if all functions return true, the event will be handled
-				for _, filterFn := range handler.EventFilters {
+				for _, filterFn := range handler.eventFilters {
 					if !filterFn(k, *keptnEvent) {
 						k.logger.Infof("Will not handle incoming %s event", *event.Type)
 						return
@@ -209,7 +213,7 @@ func (k *Keptn) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE
 					}
 				}
 
-				result, err := handler.TaskHandler.Execute(k, *keptnEvent)
+				result, err := handler.taskHandler.Execute(k, *keptnEvent)
 				if err != nil {
 					k.logger.Errorf("error during task execution %v", err.Err)
 					if k.automaticEventResponse {
@@ -313,16 +317,6 @@ func (k *Keptn) runEventTaskAction(fn func()) {
 	}
 }
 
-func cpHealthEndpointRunner(port string, cp *controlplane.ControlPlane) {
-	go func() {
-		api.RunHealthEndpoint(port, api.WithReadinessConditionFunc(func() bool {
-			return cp.IsRegistered()
-		}))
-	}()
-}
-
-func noOpHealthEndpointRunner(port string, cp *controlplane.ControlPlane) {}
-
 func (k *Keptn) getContext(graceful bool) context.Context {
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
@@ -338,4 +332,43 @@ func (k *Keptn) getContext(graceful bool) context.Context {
 		cancel()
 	}()
 	return ctx
+}
+
+func noOpHealthEndpointRunner(port string, cp *controlplane.ControlPlane) {}
+
+func newHealthEndpointRunner(port string, cp *controlplane.ControlPlane) {
+	go func() {
+		api.RunHealthEndpoint(port, api.WithReadinessConditionFunc(func() bool {
+			return cp.IsRegistered()
+		}))
+	}()
+}
+
+func newResourceHandlerFromEnv() *api.ResourceHandler {
+	var env envConfig
+	if err := envconfig.Process("", &env); err != nil {
+		log.Fatalf("failed to process env var: %s", err)
+	}
+	return api.NewResourceHandler(env.ConfigurationServiceURL)
+}
+
+func newControlPlaneFromEnv() (*controlplane.ControlPlane, controlplane.EventSender) {
+	var env envConfig
+	if err := envconfig.Process("", &env); err != nil {
+		log.Fatalf("failed to process env var: %s", err)
+	}
+	apiSet, err := api2.NewInternal(nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	natsConnector, err := nats.Connect(env.EventBrokerURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+	eventSource := controlplane.NewNATSEventSource(natsConnector)
+	eventSender := eventSource.Sender()
+	subscriptionSource := controlplane.NewUniformSubscriptionSource(apiSet.UniformV1())
+	logForwarder := controlplane.NewLogForwarder(apiSet.LogsV1())
+	controlPlane := controlplane.New(subscriptionSource, eventSource, logForwarder)
+	return controlPlane, eventSender
 }

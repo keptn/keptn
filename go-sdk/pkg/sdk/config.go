@@ -5,7 +5,7 @@ import (
 	"log"
 )
 
-type EnvConfig struct {
+type envConfig struct {
 	ConfigurationServiceURL string `envconfig:"CONFIGURATION_SERVICE" default:"configuration-service:8080"`
 	EventBrokerURL          string `envconfig:"EVENTBROKER" default:"nats://keptn-nats"`
 	PubSubTopic             string `envconfig:"PUBSUB_TOPIC" default:""`
@@ -19,8 +19,8 @@ type EnvConfig struct {
 	K8sNodeName             string `envconfig:"K8S_NODE_NAME" default:""`
 }
 
-func NewEnvConfig() EnvConfig {
-	var env EnvConfig
+func newEnvConfig() envConfig {
+	var env envConfig
 	if err := envconfig.Process("", &env); err != nil {
 		log.Fatalf("failed to process env var: %s", err)
 	}

@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -85,7 +83,7 @@ func (f *FakeKeptn) AddTaskHandler(eventType string, handler TaskHandler, filter
 }
 
 func (f *FakeKeptn) AddTaskHandlerWithSubscriptionID(eventType string, handler TaskHandler, subscriptionID string, filters ...func(keptnHandle IKeptn, event KeptnEvent) bool) {
-	f.Keptn.taskRegistry.Add(eventType, TaskEntry{TaskHandler: handler, EventFilters: filters})
+	f.Keptn.taskRegistry.Add(eventType, taskEntry{taskHandler: handler, eventFilters: filters})
 }
 
 func (f *FakeKeptn) fakeSender(ce models.KeptnContextExtendedCE) error {
@@ -110,22 +108,6 @@ func NewFakeKeptn(source string) *FakeKeptn {
 	}
 	fakeKeptn.Keptn.eventSender = fakeKeptn.fakeSender
 	return fakeKeptn
-}
-
-type TestReceiver struct {
-	receiverFn interface{}
-}
-
-func (t *TestReceiver) StartReceiver(ctx context.Context, fn interface{}) error {
-	t.receiverFn = fn
-	return nil
-}
-
-func (t *TestReceiver) NewEvent(ctx context.Context, e cloudevents.Event) {
-	if ctx.Value(gracefulShutdownKey) == nil {
-		ctx = context.WithValue(ctx, gracefulShutdownKey, &nopWG{})
-	}
-	t.receiverFn.(func(context.Context, event.Event))(ctx, e)
 }
 
 type TestResourceHandler struct {
