@@ -173,6 +173,8 @@ github.com/keptn/keptn/cp-connector v0.0.0-20220518131442-3123a6b01acc h1:9UW+vc
 github.com/keptn/keptn/cp-connector v0.0.0-20220518131442-3123a6b01acc/go.mod h1:MtOEyaQbjsu9bl1cr1YB520T74kgSC3OviilXxIFrow=
 github.com/keptn/keptn/cp-connector v0.0.0-20220518133209-b678edc376ca h1:uv95KlLjXUds1Vtwy8cmjbp/J8ghyFiJX7eqC9CF07A=
 github.com/keptn/keptn/cp-connector v0.0.0-20220518133209-b678edc376ca/go.mod h1:MtOEyaQbjsu9bl1cr1YB520T74kgSC3OviilXxIFrow=
+github.com/keptn/keptn/cp-connector v0.0.0-20220519050956-8877a6071a22 h1:CkUTX6UPkmc9p+QR63w/WTGU8SeSzapnVJd2h6nWSbY=
+github.com/keptn/keptn/cp-connector v0.0.0-20220519050956-8877a6071a22/go.mod h1:MtOEyaQbjsu9bl1cr1YB520T74kgSC3OviilXxIFrow=
 github.com/kisielk/errcheck v1.5.0/go.mod h1:pFxgyoBC7bSaBwPgfKdkLd5X25qrDl4LWUI2bnpBCr8=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/klauspost/compress v1.14.4 h1:eijASRJcobkVtSt81Olfh7JX43osYLwy5krOJo6YEu4=
