@@ -63,7 +63,6 @@ func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
 		//so we try to dispatch the sequence immediately if the sequence queue is empty
 		sequenceBlocked, err := sd.areSequencesInState(queueItem, []string{apimodels.SequenceTriggeredState, apimodels.SequenceStartedState})
 		if err != nil || sequenceBlocked {
-			log.Infof("!!!!!SHIt: sequence blocked")
 			return sd.addItemToQueue(queueItem)
 		}
 		if err := sd.dispatchSequence(queueItem); err != nil {
@@ -89,21 +88,6 @@ func (sd *SequenceDispatcher) addItemToQueue(queueItem models.QueueItem) error {
 		return err2
 	}
 	return ErrSequenceBlockedWaiting
-}
-
-func (sd *SequenceDispatcher) isQueueEmpty(queueItem models.QueueItem) (bool, error) {
-	queuedSequences, err := sd.sequenceQueue.GetQueuedSequences()
-	if err != nil {
-		if !errors.Is(err, db.ErrNoEventFound) {
-			return false, err
-		}
-	}
-
-	if errors.Is(err, db.ErrNoEventFound) || len(queuedSequences) == 0 {
-		return true, nil
-	} else {
-		return false, nil
-	}
 }
 
 func (sd *SequenceDispatcher) add(queueItem models.QueueItem) error {
@@ -186,7 +170,13 @@ func (sd *SequenceDispatcher) areSequencesInState(queueItem models.QueueItem, st
 		return true, err
 	}
 
-	if len(sequenceExecutions) > 0 {
+	if len(sequenceExecutions) == 1 {
+		if sequenceExecutions[0].Scope.KeptnContext != queueItem.Scope.KeptnContext {
+			return true, nil
+		}
+	}
+
+	if len(sequenceExecutions) > 1 {
 		return true, nil
 	}
 
