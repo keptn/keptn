@@ -107,8 +107,8 @@ spec:
         {{- end }}
       serviceAccountName: keptn-configuration-service
       {{- include "keptn.nodeSelector" (dict "value" .Values.resourceService.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
-{{- else }}
 ---
+{{- else }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
