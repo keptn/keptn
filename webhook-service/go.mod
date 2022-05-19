@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/keptn/go-utils v0.15.1-0.20220517082831-2052e1404e4c
-	github.com/keptn/keptn/go-sdk v0.0.0-20220519111925-7a27bb921aeb
+	github.com/keptn/keptn/go-sdk v0.0.0-20220519112941-8bc668d7f9ea
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
