@@ -10,6 +10,10 @@
       ```shell
       VERSION=local-snapshot ; for d in $(find . -name "Dockerfile" | sed -e "s/\.\/\(.*\)\/Dockerfile$/\1/g") ; do echo "building dir $d" ; cd $d ; docker build . -t "$AIRGAPPED_REGISTRY_URL/keptn/$d:$VERSION" ; cd .. ; done
       ```
+      Retag Bridge Image
+      ```shell
+      docker tag $AIRGAPPED_REGISTRY_URL/keptn/bridge:local-snapshot $AIRGAPPED_REGISTRY_URL/keptn/bridge2:local-snapshot
+      ```
     - Build just one artefact/keptn-service (go to the service folder where the Dockerfile is located)
       ```shell
       docker build . -t $AIRGAPPED_REGISTRY_URL/keptn/api:local-snapshot
