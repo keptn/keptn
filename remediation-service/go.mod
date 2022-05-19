@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/keptn/go-utils v0.15.1-0.20220517082831-2052e1404e4c
-	github.com/keptn/keptn/go-sdk v0.0.0-20220519082601-87c41cf37ae0
+	github.com/keptn/keptn/go-sdk v0.0.0-20220519105332-ac489b12ef00
 	github.com/sirupsen/logrus v1.8.1
 )
 
@@ -18,7 +18,7 @@ require (
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0 // indirect
-	github.com/keptn/keptn/cp-connector v0.0.0-20220518083739-39124e19d65f // indirect
+	github.com/keptn/keptn/cp-connector v0.0.0-20220519092125-885433905cc0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 // indirect
 	github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742 // indirect
 	github.com/nats-io/nats.go v1.14.0 // indirect
