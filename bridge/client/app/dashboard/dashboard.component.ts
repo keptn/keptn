@@ -23,8 +23,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.dataService.isQualityGatesOnly.pipe(takeUntil(this.unsubscribe$)).subscribe((isQualityGatesOnly) => {
       this.isQualityGatesOnly = isQualityGatesOnly;
     });
-
-    this.loadProjects();
   }
 
   public loadProjects(): void {
