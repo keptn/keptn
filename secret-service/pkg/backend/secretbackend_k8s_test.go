@@ -299,12 +299,72 @@ func TestDeleteK8sSecret(t *testing.T) {
 	})
 
 	assert.Nil(t, err)
-	assert.True(t, kubernetes.Fake.Actions()[0].Matches("delete", "secrets"))
-	assert.True(t, kubernetes.Fake.Actions()[1].Matches("list", "secrets"))
-	assert.True(t, kubernetes.Fake.Actions()[2].Matches("get", "roles"))
-	assert.True(t, kubernetes.Fake.Actions()[3].Matches("update", "roles"))
-	assert.True(t, kubernetes.Fake.Actions()[4].Matches("get", "roles"))
-	assert.True(t, kubernetes.Fake.Actions()[5].Matches("update", "roles"))
+	assert.True(t, kubernetes.Fake.Actions()[0].Matches("list", "secrets"))
+	assert.True(t, kubernetes.Fake.Actions()[1].Matches("get", "roles"))
+	assert.True(t, kubernetes.Fake.Actions()[2].Matches("update", "roles"))
+	assert.True(t, kubernetes.Fake.Actions()[3].Matches("get", "roles"))
+	assert.True(t, kubernetes.Fake.Actions()[4].Matches("update", "roles"))
+	assert.True(t, kubernetes.Fake.Actions()[5].Matches("delete", "secrets"))
+}
+
+func TestDeleteK8sSecretWithWrongScope(t *testing.T) {
+	kubernetes := k8sfake.NewSimpleClientset(&corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "my-secret",
+			Namespace: "keptn_namespace",
+			Labels:    map[string]string{"app.kubernetes.io/scope": "my-scope"},
+		},
+	},
+		&corev1.Secret{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "my-other-secret",
+				Namespace: "keptn_namespace",
+				Labels:    map[string]string{"app.kubernetes.io/scope": "my-scope"},
+			},
+		},
+		&rbacv1.Role{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "my-scope-read-secrets",
+				Namespace: "keptn_namespace",
+			},
+			Rules: []rbacv1.PolicyRule{
+				{
+					Resources:     []string{"secrets"},
+					ResourceNames: []string{"my-other-secret", "my-secret"},
+				},
+			},
+		},
+		&rbacv1.Role{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "my-scope-manage-secrets",
+				Namespace: "keptn_namespace",
+			},
+			Rules: []rbacv1.PolicyRule{
+				{
+					Resources:     []string{"secrets"},
+					ResourceNames: []string{"my-other-secret", "my-secret"},
+				},
+			},
+		})
+	scopesRepository := &fake.ScopesRepositoryMock{}
+	scopesRepository.ReadFunc = func() (model.Scopes, error) { return createTestScopes(), nil }
+
+	backend := K8sSecretBackend{
+		KubeAPI:                kubernetes,
+		KeptnNamespaceProvider: FakeNamespaceProvider(),
+		ScopesRepository:       scopesRepository,
+	}
+
+	err := backend.DeleteSecret(model.Secret{
+		SecretMetadata: model.SecretMetadata{
+			Name:  "my-secret",
+			Scope: "keptn-default",
+		},
+	})
+
+	assert.NotNil(t, err)
+	assert.True(t, kubernetes.Fake.Actions()[0].Matches("list", "secrets"))
+	assert.Equal(t, 1, len(kubernetes.Fake.Actions()))
 }
 
 func TestDeleteLastK8sSecret(t *testing.T) {
@@ -358,10 +418,11 @@ func TestDeleteLastK8sSecret(t *testing.T) {
 	appliedActions := kubernetes.Fake.Actions()
 	_ = appliedActions
 	assert.Nil(t, err)
-	assert.True(t, kubernetes.Fake.Actions()[0].Matches("delete", "secrets"))
-	assert.True(t, kubernetes.Fake.Actions()[1].Matches("list", "secrets"))
-	assert.True(t, kubernetes.Fake.Actions()[2].Matches("delete-collection", "roles"))
-	assert.True(t, kubernetes.Fake.Actions()[3].Matches("delete-collection", "rolebindings"))
+
+	assert.True(t, kubernetes.Fake.Actions()[0].Matches("list", "secrets"))
+	assert.True(t, kubernetes.Fake.Actions()[1].Matches("delete-collection", "roles"))
+	assert.True(t, kubernetes.Fake.Actions()[2].Matches("delete-collection", "rolebindings"))
+	assert.True(t, kubernetes.Fake.Actions()[3].Matches("delete", "secrets"))
 
 }
 
@@ -384,7 +445,7 @@ func TestDeleteK8sSecret_SecretNotFound(t *testing.T) {
 	})
 
 	assert.NotNil(t, err)
-	assert.Equal(t, ErrSecretNotFound, err)
+	assert.ErrorIs(t, err, ErrSecretNotFound)
 }
 
 func TestDeleteK8sSecret_ScopeNotFound(t *testing.T) {
@@ -481,7 +542,7 @@ func TestGetScopes(t *testing.T) {
 	scopes, err := backend.GetScopes()
 	require.Nil(t, err)
 
-	require.Equal(t, []string{"my-scope"}, scopes)
+	require.Equal(t, []string{"keptn-default", "my-scope"}, scopes)
 }
 
 func TestGetScopes_Fails(t *testing.T) {
@@ -521,6 +582,16 @@ func createTestScopes() model.Scopes {
 						Permissions: []string{"read"},
 					},
 					"my-scope-manage-secrets": {
+						Permissions: []string{"create", "read", "update"},
+					},
+				},
+			},
+			"keptn-default": {
+				Capabilities: map[string]model.Capability{
+					"keptn-default-read-secrets": {
+						Permissions: []string{"read"},
+					},
+					"keptn-default-manage-secrets": {
 						Permissions: []string{"create", "read", "update"},
 					},
 				},
