@@ -353,7 +353,7 @@ func TestSequenceDispatcher_AddError(t *testing.T) {
 	theClock.Add(11 * time.Second)
 	// queue repo should have been queried
 	require.Len(t, mockSequenceQueueRepo.GetQueuedSequencesCalls(), 2)
-	require.Len(t, mockSequenceExecutionRepo.GetCalls(), 2)
+	require.Len(t, mockSequenceExecutionRepo.GetCalls(), 1)
 	require.Empty(t, mockSequenceQueueRepo.DeleteQueuedSequencesCalls())
 
 }
@@ -453,9 +453,10 @@ func TestSequenceDispatcher_QueueIsNotEmpty(t *testing.T) {
 
 	require.Len(t, mockEventRepo.GetEventsCalls(), 1)
 
-	// the sequence should be inserted into the queue
+	// the sequence should not be inserted into the queue
 	require.Len(t, mockSequenceQueueRepo.QueueSequenceCalls(), 0)
 
+	// let's add some running sequences
 	currentSequenceExecutions = []models.SequenceExecution{{
 		ID: "my-id",
 		Sequence: keptnv2.Sequence{

@@ -1,15 +1,17 @@
 package db
 
 import (
+	"sync"
+
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"sync"
 
-	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestMongoDBTaskSequenceV2Repo_InsertAndRetrieve(t *testing.T) {
@@ -273,7 +275,8 @@ func getTestSequenceExecution() (models.EventScope, models.SequenceExecution) {
 				},
 			},
 		},
-		Scope: scope,
+		Scope:       scope,
+		TriggeredAt: time.Date(2021, 4, 21, 17, 00, 00, 0, time.Local),
 	}
 	return scope, sequence
 }
