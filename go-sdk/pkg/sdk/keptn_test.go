@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"context"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/api/models"
@@ -20,6 +21,22 @@ func Test_ReceivingEventWithMissingType(t *testing.T) {
 		ID:             "id",
 		Shkeptncontext: "context",
 		Source:         strutils.Stringp("source"),
+	})
+
+	fakeKeptn.AssertNumberOfEventSent(t, 0)
+}
+
+func Test_CannotGetEventSenderFromContext(t *testing.T) {
+	taskHandler := &TaskHandlerMock{}
+	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) { return FakeTaskData{}, nil }
+	fakeKeptn := NewFakeKeptn("fake")
+	fakeKeptn.AddTaskHandler("sh.keptn.event.faketask.triggered", taskHandler)
+	fakeKeptn.Keptn.OnEvent(context.TODO(), models.KeptnContextExtendedCE{
+		Data:           v0_2_0.EventData{Project: "prj", Stage: "stg", Service: "svc"},
+		ID:             "id",
+		Shkeptncontext: "context",
+		Source:         strutils.Stringp("source"),
+		Type:           strutils.Stringp("sh.keptn.event.faketask.triggered"),
 	})
 
 	fakeKeptn.AssertNumberOfEventSent(t, 0)

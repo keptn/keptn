@@ -166,20 +166,29 @@ func NewKeptn(source string, opts ...KeptnOption) *Keptn {
 }
 
 func (k *Keptn) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE) error {
-	eventSender := ctx.Value(controlplane.EventSenderKey).(controlplane.EventSender)
+	eventSender, ok := ctx.Value(controlplane.EventSenderKey).(controlplane.EventSender)
+	if !ok {
+		k.logger.Errorf("Unable to get event sender. Skip processing of event %s", event.ID)
+		return nil
+	}
+
 	if event.Type == nil {
-		k.logger.Errorf("Received invalid event %s: missing event type", event.ID)
+		k.logger.Errorf("Unable to get event type. Skip processing of event %s", event.ID)
 		return nil
 	}
 
 	if !keptnv2.IsTaskEventType(*event.Type) {
-		k.logger.Errorf("Event with event type %s is no valid keptn task event type", event.Type)
+		k.logger.Errorf("Event type %s does not match format for task events. Skip Processing of event %s", *event.Type, event.ID)
 		return nil
 	}
-	ctx.Value(gracefulShutdownKey).(wgInterface).Add(1)
+	wg, ok := ctx.Value(gracefulShutdownKey).(wgInterface)
+	if !ok {
+		k.logger.Errorf("Unable to get graceful shutdown wait group. Skip processing of event %s", event.ID)
+	}
+	wg.Add(1)
 	k.runEventTaskAction(func() {
 		{
-			defer ctx.Value(gracefulShutdownKey).(wgInterface).Done()
+			defer wg.Done()
 			if handler, ok := k.taskRegistry.Contains(*event.Type); ok {
 				keptnEvent := &KeptnEvent{}
 				if err := keptnv2.Decode(&event, keptnEvent); err != nil {

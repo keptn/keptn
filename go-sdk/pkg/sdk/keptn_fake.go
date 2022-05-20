@@ -27,10 +27,10 @@ func (f *FakeKeptn) GetResourceHandler() ResourceHandler {
 	return f.TestResourceHandler
 }
 
-func (f *FakeKeptn) NewEvent(event models.KeptnContextExtendedCE) {
+func (f *FakeKeptn) NewEvent(event models.KeptnContextExtendedCE) error {
 	ctx := context.WithValue(context.TODO(), controlplane.EventSenderKey, controlplane.EventSender(f.fakeSender))
 	ctx = context.WithValue(ctx, gracefulShutdownKey, &nopWG{})
-	f.Keptn.OnEvent(ctx, event)
+	return f.Keptn.OnEvent(ctx, event)
 }
 
 func (f *FakeKeptn) AssertNumberOfEventSent(t *testing.T, numOfEvents int) {
