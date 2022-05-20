@@ -342,8 +342,6 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) getCollection(collectionName string
 func (mdbrepo *MongoDBSequenceExecutionRepo) getSearchOptions(filter models.SequenceExecutionFilter) bson.M {
 	searchOptions := bson.M{}
 
-	log.Infof("filer je %+v", filter)
-
 	searchOptions = appendFilterAs(searchOptions, filter.Name, "sequence.name")
 	searchOptions = appendFilterAs(searchOptions, filter.Scope.TriggeredID, "scope.triggeredId")
 	searchOptions = appendFilterAs(searchOptions, filter.Scope.KeptnContext, "scope.keptnContext")
