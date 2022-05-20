@@ -4,8 +4,8 @@ go 1.17
 
 require (
 	github.com/benbjohnson/clock v1.3.0
-	github.com/cloudevents/sdk-go/protocol/nats/v2 v2.9.0
-	github.com/cloudevents/sdk-go/v2 v2.9.0
+	github.com/cloudevents/sdk-go/protocol/nats/v2 v2.10.0
+	github.com/cloudevents/sdk-go/v2 v2.10.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.15.1-0.20220517082831-2052e1404e4c
 	github.com/nats-io/nats-server/v2 v2.8.2
