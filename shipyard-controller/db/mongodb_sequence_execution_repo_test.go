@@ -73,6 +73,27 @@ func TestMongoDBTaskSequenceV2Repo_GetByTriggeredID(t *testing.T) {
 	require.NotNil(t, sequenceByTriggeredID)
 }
 
+func TestMongoDBTaskSequenceV2Repo_InsertAndRetrieveSameStage(t *testing.T) {
+	scope, sequence := getTestSequenceExecution()
+	scope2 := scope
+	scope2.TriggeredID = "diff"
+	scope2.Service = "other"
+	mdbrepo := NewMongoDBSequenceExecutionRepo(GetMongoDBConnectionInstance())
+
+	err := mdbrepo.Upsert(sequence, nil)
+
+	require.Nil(t, err)
+
+	get, err := mdbrepo.Get(models.SequenceExecutionFilter{
+		Scope:  scope2,
+		Name:   "delivery",
+		Status: []string{"triggered"},
+	})
+
+	require.Nil(t, err)
+	require.Empty(t, get)
+}
+
 func TestMongoDBTaskSequenceV2Repo_InsertTwice(t *testing.T) {
 	_, sequence := getTestSequenceExecution()
 
