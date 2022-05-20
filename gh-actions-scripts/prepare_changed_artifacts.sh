@@ -206,7 +206,7 @@ echo "BUILD_STATISTICS_SVC: $BUILD_STATISTICS_SVC"
 echo "BUILD_WEBHOOK_SVC: $BUILD_WEBHOOK_SVC"
 echo "BUILD_SDK: $BUILD_SDK"
 echo "BUILD_CP_CONNECTOR: $BUILD_CP_CONNECTOR"
-echo "BUILD_CP_COMMON: $BUILD_CP_CONNECTOR"
+echo "BUILD_CP_COMMON: $BUILD_CP_COMMON"
 
 if [[ "$matrix_config" == '{"config":[]}' ]]; then
   echo "Build matrix is emtpy, setting output..."
