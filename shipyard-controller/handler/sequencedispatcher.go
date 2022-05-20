@@ -182,7 +182,13 @@ func (sd *SequenceDispatcher) areSequencesInState(queueItem models.QueueItem) (b
 		return true, err
 	}
 
-	if len(triggeredSequenceExecutions) > 0 {
+	if len(triggeredSequenceExecutions) == 1 {
+		if triggeredSequenceExecutions[0].Scope.KeptnContext != queueItem.Scope.KeptnContext {
+			return true, nil
+		}
+	}
+
+	if len(triggeredSequenceExecutions) > 1 {
 		return true, nil
 	}
 
