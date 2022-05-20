@@ -28,6 +28,10 @@ import { EvaluationHistory } from '../../_interfaces/evaluation-history';
 import { AppUtils } from '../../_utils/app.utils';
 import { parse as parseYaml } from 'yaml';
 import { SloConfig } from '../../../../shared/interfaces/slo-config';
+import { IDataPoint } from '../../_interfaces/heatmap';
+import { createDataPoints, getSliResultInfo, SliInfo } from './ktb-evalution-details-utils';
+import { FeatureFlagsService } from '../../_services/feature-flags.service';
+import { IClientFeatureFlags } from '../../../../shared/interfaces/feature-flags';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare let require: any;
@@ -48,13 +52,6 @@ _more(Highcharts);
 _noData(Highcharts);
 _heatmap(Highcharts);
 _treemap(Highcharts);
-
-type SliInfo = {
-  score: number;
-  warningCount: number;
-  failedCount: number;
-  passCount: number;
-};
 
 type SliInfoDictionary = { [evaluationId: string]: SliInfo | undefined };
 
@@ -151,6 +148,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   ]);
 
   public _evaluationData?: Trace;
+  public _evaluationDatas: Trace[] = [];
   public _selectedEvaluationData?: Trace;
   public _comparisonView: string | null = 'heatmap';
   private _metrics: string[] = [];
@@ -272,6 +270,8 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   private _heatmapCategoriesReduced: string[] = [];
   private _shouldSelectEvaluation = true;
   public updateResults?: EvaluationHistory;
+  public dataPoints: IDataPoint[] = [];
+  public d3HeatmapEnabled = false;
 
   @Input()
   get evaluationData(): Trace | undefined {
@@ -320,10 +320,17 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     private dialog: MatDialog,
     private clipboard: ClipboardService,
     public dateUtil: DateUtil,
-    private zone: NgZone
+    private zone: NgZone,
+    private featureFlagService: FeatureFlagsService
   ) {}
 
   public ngOnInit(): void {
+    this.featureFlagService.featureFlags$
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((featureFlags: IClientFeatureFlags) => {
+        this.d3HeatmapEnabled = featureFlags.D3_HEATMAP_ENABLED;
+      });
+
     this.dataService.evaluationResults.pipe(takeUntil(this.unsubscribe$)).subscribe((results) => {
       if (this.evaluationData && results.traces?.length) {
         this.parseSloFile(results.traces);
@@ -441,10 +448,20 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       } else {
         this._heatmapSeries = this._heatmapSeriesFull;
       }
+
+      this.dataPoints = createDataPoints(evaluationHistory);
+      this._evaluationDatas = evaluationHistory;
     }
 
     this.highlightHeatmap();
     this._changeDetectorRef.detectChanges();
+  }
+
+  dataPointChanged(dataPoint: IDataPoint): void {
+    this.selectEvaluationData(
+      this._evaluationDatas.find((value) => value.id === dataPoint.identifier),
+      true
+    );
   }
 
   private sortChartSeries(chartSeries: EvaluationChartItem[]): void {
@@ -494,32 +511,11 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       for (const item of chartItem.data) {
         if (item.evaluationData?.data.evaluation?.indicatorResults && !sliResultInfos[item.evaluationData.id]) {
           const indicatorResults = item.evaluationData.data.evaluation.indicatorResults;
-          sliResultInfos[item.evaluationData.id] = this.getSliResultInfo(indicatorResults);
+          sliResultInfos[item.evaluationData.id] = getSliResultInfo(indicatorResults);
         }
       }
     }
     return sliResultInfos;
-  }
-
-  private getSliResultInfo(indicatorResults: IndicatorResult[]): {
-    score: number;
-    warningCount: number;
-    failedCount: number;
-    passCount: number;
-  } {
-    return indicatorResults.reduce(
-      (acc, result) => {
-        const warning = result.status === ResultTypes.WARNING ? 1 : 0;
-        const failed = result.status === ResultTypes.FAILED ? 1 : 0;
-        return {
-          score: acc.score + result.score,
-          warningCount: acc.warningCount + warning,
-          failedCount: acc.failedCount + failed,
-          passCount: acc.passCount + 1 - warning - failed,
-        };
-      },
-      { score: 0, warningCount: 0, failedCount: 0, passCount: 0 } as SliInfo
-    );
   }
 
   private setHeatmapData(chartSeries: EvaluationChartItem[]): void {
