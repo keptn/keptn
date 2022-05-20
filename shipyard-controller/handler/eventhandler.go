@@ -3,12 +3,13 @@ package handler
 import (
 	"errors"
 	"fmt"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"net/http"
 )
 
 type IEventHandler interface {
@@ -39,6 +40,7 @@ type NextTaskSequence struct {
 // @Param   service     query    string     false        "Service"
 // @Success 200 {object} apimodels.KeptnContextExtendedCE	"ok"
 // @Failure 400 {object} models.Error "Invalid payload"
+// @Failure 404 {object} models.Error "Not found"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /event/triggered/{eventType} [get]
 func (eh *EventHandler) GetTriggeredEvents(c *gin.Context) {

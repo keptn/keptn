@@ -59,27 +59,13 @@ spec:
             memory: "1Gi"
             cpu: "200m"
         env:
-          - name: EVENTBROKER
-            value: 'http://localhost:8081/event'
-          - name: CONFIGURATION_SERVICE
-            value: 'http://configuration-service:8080'
           - name: ENVIRONMENT
             value: 'production'
-        {{- include "control-plane.common.container-security-context" . | nindent 8 }}
-      - name: distributor
-        image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
-        imagePullPolicy: IfNotPresent
-        {{- include "control-plane.dist.livenessProbe" . | nindent 8 }}
-        {{- include "control-plane.dist.readinessProbe" . | nindent 8 }}
-        ports:
-          - containerPort: 8080
-        {{- include "keptn.distributor.resources" . | nindent 8 }}
-        env:
+          - name: LOG_LEVEL
+            value: {{ .Values.logLevel | default "info" }}
           - name: PUBSUB_TOPIC
             value: 'sh.keptn.event.get-action.triggered'
-          - name: PUBSUB_RECIPIENT
-            value: '127.0.0.1'
-        {{- include "control-plane.dist.common.env.vars" . | nindent 10 }}
+          {{- include "control-plane.common.env.vars" . | nindent 10 }}
         {{- include "control-plane.common.container-security-context" . | nindent 8 }}
       serviceAccountName: keptn-default
       terminationGracePeriodSeconds: {{ .Values.remediationService.gracePeriod | default 120 }}

@@ -128,6 +128,33 @@ func TestSequenceDispatcher(t *testing.T) {
 
 	require.Equal(t, triggeredEvents[0], startSequenceCalls[0])
 
+	// dispatch another task sequence - this one should start since the service is different
+	queueItemPar := models.QueueItem{
+		Scope: models.EventScope{
+			EventData: keptnv2.EventData{
+				Project: "my-project",
+				Stage:   "my-stage",
+				Service: "my-other-service",
+			},
+			KeptnContext: "my-other-context-id",
+			EventType:    keptnv2.GetTriggeredEventType("dev.delivery"),
+			WrappedEvent: apimodels.KeptnContextExtendedCE{
+				Type: common.Stringp(keptnv2.GetTriggeredEventType("dev.delivery")),
+			},
+		},
+		EventID: "my-event-other-id",
+	}
+	err = sequenceDispatcher.Add(queueItemPar)
+
+	require.Len(t, mockSequenceExecutionRepo.GetCalls(), 2)
+
+	// GetEvents and DeleteQueuedSequences should have been called again at this point
+	require.Len(t, mockEventRepo.GetEventsCalls(), 2)
+	require.Len(t, mockSequenceQueueRepo.DeleteQueuedSequencesCalls(), 2)
+
+	// item should not have been added to queue
+	require.Len(t, mockSequenceQueueRepo.QueueSequenceCalls(), 0)
+
 	// now we have a sequence running
 	currentSequenceExecutions = append(currentSequenceExecutions, models.SequenceExecution{
 		ID: "my-id",
@@ -165,11 +192,11 @@ func TestSequenceDispatcher(t *testing.T) {
 	}
 	err = sequenceDispatcher.Add(queueItem2)
 
-	require.Len(t, mockSequenceExecutionRepo.GetCalls(), 2)
+	require.Len(t, mockSequenceExecutionRepo.GetCalls(), 3)
 
 	// GetEvents and DeleteQueuedSequences should not have been called again at this point
-	require.Len(t, mockEventRepo.GetEventsCalls(), 1)
-	require.Len(t, mockSequenceQueueRepo.DeleteQueuedSequencesCalls(), 1)
+	require.Len(t, mockEventRepo.GetEventsCalls(), 2)
+	require.Len(t, mockSequenceQueueRepo.DeleteQueuedSequencesCalls(), 2)
 
 	// item should have been added to queue
 	require.Len(t, mockSequenceQueueRepo.QueueSequenceCalls(), 1)
@@ -195,7 +222,7 @@ func TestSequenceDispatcher(t *testing.T) {
 	}
 	err = sequenceDispatcher.Add(queueItem3)
 	// no new call to check sequences because Read disabled
-	require.Len(t, mockSequenceExecutionRepo.GetCalls(), 2)
+	require.Len(t, mockSequenceExecutionRepo.GetCalls(), 3)
 	//new item should have been added to queue
 	require.Len(t, mockSequenceQueueRepo.QueueSequenceCalls(), 2)
 

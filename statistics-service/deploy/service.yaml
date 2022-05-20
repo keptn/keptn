@@ -46,7 +46,7 @@ spec:
             - name: MONGODB_DATABASE
               value: 'keptn'
         - name: distributor
-          image: keptndev/distributor:latest
+          image: docker.io/keptndev/distributor:0.15.1-dev
           ports:
             - containerPort: 8080
           livenessProbe:

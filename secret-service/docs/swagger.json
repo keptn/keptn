@@ -106,7 +106,13 @@
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid payload",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
                         }
@@ -148,14 +154,20 @@
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/model.Secret"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid Payload",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
                         }
@@ -197,7 +209,13 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": ""
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Invalid payload",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
                     },
                     "404": {
                         "description": "Not Found",

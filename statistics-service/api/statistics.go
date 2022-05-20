@@ -1,8 +1,9 @@
 package api
 
 import (
-	logger "github.com/sirupsen/logrus"
 	"net/http"
+
+	logger "github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
 
@@ -23,6 +24,7 @@ import (
 // @Param   to     query    string     false        "To (Unix timestamp - see https://www.unixtimestamp.com/)"
 // @Success 200 {object} operations.Statistics	"ok"
 // @Failure 400 {object} operations.Error "Invalid payload"
+// @Failure 404 {object} operations.Error "Not found"
 // @Failure 500 {object} operations.Error "Internal error"
 // @Router /statistics [get]
 func GetStatistics(c *gin.Context) {

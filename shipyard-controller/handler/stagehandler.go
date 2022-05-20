@@ -3,12 +3,13 @@ package handler
 import (
 	"errors"
 	"fmt"
+	"net/http"
+	"sort"
+
 	"github.com/gin-gonic/gin"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"net/http"
-	"sort"
 )
 
 type IStageHandler interface {
@@ -38,6 +39,7 @@ func NewStageHandler(stageManager IStageManager) *StageHandler {
 // @Param   nextPageKey     	query    	string     	false	"Pointer to the next set of items"
 // @Param   disableUpstreamSync	query		boolean		false	"Disable sync of upstream repo before reading content"
 // @Success 200 {object} apimodels.ExpandedStages	"ok"
+// @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 404 {object} models.Error "Not found"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/{project}/stage [get]

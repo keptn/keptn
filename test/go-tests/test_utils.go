@@ -383,7 +383,7 @@ func CreateSubscription(t *testing.T, serviceName string, subscription models.Ev
 	require.Eventually(t, func() bool {
 		fetchedIntegration, err = GetIntegrationWithName(serviceName)
 		return err == nil
-	}, time.Second*20, time.Second*3)
+	}, time.Minute, time.Second*3)
 
 	// Integration exists - fine
 	require.Nil(t, err)

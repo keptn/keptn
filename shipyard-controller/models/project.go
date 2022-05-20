@@ -5,28 +5,28 @@ import (
 )
 
 type UpdateProjectParams struct {
-	// git remote URL
+	// Git remote URL
 	GitRemoteURL string `json:"gitRemoteURL,omitempty"`
 
-	// git token
+	// Git token
 	GitToken string `json:"gitToken,omitempty"`
 
-	// git user
+	// Git user
 	GitUser string `json:"gitUser,omitempty"`
 
-	// git private key
+	// Git private key
 	GitPrivateKey string `json:"gitPrivateKey,omitempty"`
 
-	// git private key passphrase
+	// Git private key passphrase
 	GitPrivateKeyPass string `json:"gitPrivateKeyPass,omitempty"`
 
-	// git proxy URL
+	// Git proxy URL
 	GitProxyURL string `json:"gitProxyUrl,omitempty"`
 
-	// git proxy scheme
+	// Git proxy scheme
 	GitProxyScheme string `json:"gitProxyScheme,omitempty"`
 
-	// git proxy user
+	// Git proxy user
 	GitProxyUser string `json:"gitProxyUser,omitempty"`
 
 	// insecure skip tls
@@ -35,10 +35,10 @@ type UpdateProjectParams struct {
 	// when "false" value is present
 	InsecureSkipTLS bool `json:"insecureSkipTLS"`
 
-	// git proxy password
+	// Git proxy password
 	GitProxyPassword string `json:"gitProxyPassword,omitempty"`
 
-	//git PEM Certificate
+	//Git PEM Certificate
 	GitPemCertificate string `json:"gitPemCertificate,omitempty"`
 
 	// name
@@ -50,28 +50,28 @@ type UpdateProjectParams struct {
 
 type CreateProjectParams struct {
 
-	// git remote URL
+	// Git remote URL
 	GitRemoteURL string `json:"gitRemoteURL,omitempty"`
 
-	// git token
+	// Git token
 	GitToken string `json:"gitToken,omitempty"`
 
-	// git user
+	// Git user
 	GitUser string `json:"gitUser,omitempty"`
 
-	// git private key
+	// Git private key
 	GitPrivateKey string `json:"gitPrivateKey,omitempty"`
 
-	// git private key passphrase
+	// Git private key passphrase
 	GitPrivateKeyPass string `json:"gitPrivateKeyPass,omitempty"`
 
-	// git proxy URL
+	// Git proxy URL
 	GitProxyURL string `json:"gitProxyUrl,omitempty"`
 
-	// git proxy scheme
+	// Git proxy scheme
 	GitProxyScheme string `json:"gitProxyScheme,omitempty"`
 
-	// git proxy user
+	// Git proxy user
 	GitProxyUser string `json:"gitProxyUser,omitempty"`
 
 	// insecure skip tls
@@ -80,10 +80,10 @@ type CreateProjectParams struct {
 	// when "false" value is present
 	InsecureSkipTLS bool `json:"insecureSkipTLS"`
 
-	// git proxy password
+	// Git proxy password
 	GitProxyPassword string `json:"gitProxyPassword,omitempty"`
 
-	//git PEM Certificate
+	//Git PEM Certificate
 	GitPemCertificate string `json:"gitPemCertificate,omitempty"`
 
 	// name

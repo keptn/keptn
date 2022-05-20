@@ -57,12 +57,14 @@ func (o *GetEventsOK) WriteResponse(rw http.ResponseWriter, producer runtime.Pro
 	}
 }
 
-/*GetEventsDefault error
+// GetEventsBadRequestCode is the HTTP code returned for type GetEventsBadRequest
+const GetEventsBadRequestCode int = 400
 
-swagger:response getEventsDefault
+/*GetEventsBadRequest Bad Request
+
+swagger:response getEventsBadRequest
 */
-type GetEventsDefault struct {
-	_statusCode int
+type GetEventsBadRequest struct {
 
 	/*
 	  In: Body
@@ -70,43 +72,71 @@ type GetEventsDefault struct {
 	Payload *models.Error `json:"body,omitempty"`
 }
 
-// NewGetEventsDefault creates GetEventsDefault with default headers values
-func NewGetEventsDefault(code int) *GetEventsDefault {
-	if code <= 0 {
-		code = 500
-	}
+// NewGetEventsBadRequest creates GetEventsBadRequest with default headers values
+func NewGetEventsBadRequest() *GetEventsBadRequest {
 
-	return &GetEventsDefault{
-		_statusCode: code,
-	}
+	return &GetEventsBadRequest{}
 }
 
-// WithStatusCode adds the status to the get events default response
-func (o *GetEventsDefault) WithStatusCode(code int) *GetEventsDefault {
-	o._statusCode = code
-	return o
-}
-
-// SetStatusCode sets the status to the get events default response
-func (o *GetEventsDefault) SetStatusCode(code int) {
-	o._statusCode = code
-}
-
-// WithPayload adds the payload to the get events default response
-func (o *GetEventsDefault) WithPayload(payload *models.Error) *GetEventsDefault {
+// WithPayload adds the payload to the get events bad request response
+func (o *GetEventsBadRequest) WithPayload(payload *models.Error) *GetEventsBadRequest {
 	o.Payload = payload
 	return o
 }
 
-// SetPayload sets the payload to the get events default response
-func (o *GetEventsDefault) SetPayload(payload *models.Error) {
+// SetPayload sets the payload to the get events bad request response
+func (o *GetEventsBadRequest) SetPayload(payload *models.Error) {
 	o.Payload = payload
 }
 
 // WriteResponse to the client
-func (o *GetEventsDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+func (o *GetEventsBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.WriteHeader(o._statusCode)
+	rw.WriteHeader(400)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
+// GetEventsInternalServerErrorCode is the HTTP code returned for type GetEventsInternalServerError
+const GetEventsInternalServerErrorCode int = 500
+
+/*GetEventsInternalServerError error
+
+swagger:response getEventsInternalServerError
+*/
+type GetEventsInternalServerError struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewGetEventsInternalServerError creates GetEventsInternalServerError with default headers values
+func NewGetEventsInternalServerError() *GetEventsInternalServerError {
+
+	return &GetEventsInternalServerError{}
+}
+
+// WithPayload adds the payload to the get events internal server error response
+func (o *GetEventsInternalServerError) WithPayload(payload *models.Error) *GetEventsInternalServerError {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the get events internal server error response
+func (o *GetEventsInternalServerError) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *GetEventsInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(500)
 	if o.Payload != nil {
 		payload := o.Payload
 		if err := producer.Produce(rw, payload); err != nil {

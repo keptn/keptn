@@ -2,15 +2,16 @@ package main
 
 import (
 	"context"
-	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	logger "github.com/sirupsen/logrus"
 	"log"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 	"time"
+
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+	logger "github.com/sirupsen/logrus"
 
 	"github.com/kelseyhightower/envconfig"
 	"github.com/keptn/go-utils/pkg/api/models"
@@ -73,13 +74,13 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	logger.Info("Waiting for event handlers to finish")
-	t1 := time.Now().UTC()
-	<-time.After(5 * time.Second) // give some additional time for handover: potentially, the waitgroup counter for an event might not have been increased at this point
+
+	// this segment will be reached once the context has been cancelled - i.e. due to receiving the SIGTERM signal
+	logger.Info("Waiting for evaluation event handlers to finish")
+	// add additional waiting time to ensure the waitGroup has been increased for all events that have been received between receiving SIGTERM and this point
+	<-time.After(5 * time.Second)
 	wg.Wait()
-	t2 := time.Now().UTC()
-	wgDuration := t2.Sub(t1)
-	logger.Infof("All handlers finished after %s - ready to shut down", wgDuration.String())
+	logger.Info("All evaluation handlers finished - exiting")
 }
 
 type LighthouseService struct {

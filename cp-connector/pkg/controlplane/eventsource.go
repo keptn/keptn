@@ -109,7 +109,7 @@ func (n *NATSEventSource) OnSubscriptionUpdate(subjects []string) {
 			n.logger.Errorf("Could not handle subscription update: %v", err)
 			return
 		}
-		if err := n.connector.QueueSubscribeMultiple(subjects, n.queueGroup, n.eventProcessFn); err != nil {
+		if err := n.connector.QueueSubscribeMultiple(s, n.queueGroup, n.eventProcessFn); err != nil {
 			n.logger.Errorf("Could not handle subscription update: %v", err)
 			return
 		}

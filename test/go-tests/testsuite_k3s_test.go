@@ -10,6 +10,7 @@ func Test_K3S(t *testing.T) {
 	t.Run("Test_LogForwarding", Test_LogForwarding)
 	t.Run("Test_SequenceState", Test_SequenceState)
 	t.Run("Test_SequenceStateParallelStages", Test_SequenceStateParallelStages)
+	t.Run("Test_SequenceStateParallelServices", Test_SequenceStateParallelServices)
 	t.Run("Test_SequenceState_RetrieveMultipleSequence", Test_SequenceState_RetrieveMultipleSequence)
 	t.Run("Test_SequenceState_SequenceNotFound", Test_SequenceState_SequenceNotFound)
 	t.Run("Test_SequenceState_InvalidShipyard", Test_SequenceState_InvalidShipyard)
