@@ -153,6 +153,23 @@ func GetFromConfigMap(namespace string, configMapName string, getDataByKeyFn fun
 	return getDataByKeyFn(cm.Data), nil
 }
 
+func UpdateConfigMap(namespace string, configMapName string, replaceConfig func(cm *v1.ConfigMap)) error {
+	client, _ := keptnkubeutils.GetClientset(false)
+	cm, err := client.CoreV1().ConfigMaps(namespace).Get(context.TODO(), configMapName, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+	replaceConfig(cm)
+	_, err = client.CoreV1().ConfigMaps(namespace).Update(context.TODO(), cm, metav1.UpdateOptions{})
+	return err
+}
+
+func PutConfigMapDataVal(namespace string, configMapName string, key string, val string) error {
+	return UpdateConfigMap(namespace, configMapName, func(cm *v1.ConfigMap) {
+		cm.Data[key] = val
+	})
+}
+
 // WaitForDeploymentInNamespace
 // deprecated, use WaitAndCheckDeployment
 func WaitForDeploymentInNamespace(deploymentName, namespace string) error {
