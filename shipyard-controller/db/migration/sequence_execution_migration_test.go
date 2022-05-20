@@ -2,6 +2,9 @@ package migration
 
 import (
 	"errors"
+	"testing"
+	"time"
+
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/db"
@@ -9,7 +12,6 @@ import (
 	v1 "github.com/keptn/keptn/shipyard-controller/db/models/sequence_execution/v1"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 var testSequenceExecution = models.SequenceExecution{
@@ -82,6 +84,7 @@ var testSequenceExecution = models.SequenceExecution{
 		},
 		KeptnContext: "ctx1",
 	},
+	TriggeredAt: time.Date(2021, 4, 21, 17, 00, 00, 0, time.Local),
 	InputProperties: map[string]interface{}{
 		"foo.bar": "xyz",
 	},
