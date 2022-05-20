@@ -4,34 +4,20 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
+	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"path/filepath"
-
-	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/cloudevents/sdk-go/v2/event"
-	"github.com/keptn/go-utils/pkg/api/models"
+	"testing"
 )
 
 type FakeKeptn struct {
 	TestResourceHandler ResourceHandler
+	SentEvents          []models.KeptnContextExtendedCE
 	Keptn               *Keptn
-}
-
-func (f *FakeKeptn) Start() error {
-	return f.Keptn.Start()
-}
-
-func (f *FakeKeptn) SendStartedEvent(event KeptnEvent) error {
-	return f.Keptn.SendStartedEvent(event)
-}
-
-func (f *FakeKeptn) SendFinishedEvent(event KeptnEvent, result interface{}) error {
-	return f.Keptn.SendFinishedEvent(event, result)
-}
-
-func (f *FakeKeptn) Logger() Logger {
-	return f.Keptn.Logger()
 }
 
 func (f *FakeKeptn) GetResourceHandler() ResourceHandler {
@@ -41,13 +27,46 @@ func (f *FakeKeptn) GetResourceHandler() ResourceHandler {
 	return f.TestResourceHandler
 }
 
-func (f *FakeKeptn) NewEvent(event cloudevents.Event) {
-	testReceiver := f.Keptn.eventReceiver.(*TestReceiver)
-	testReceiver.NewEvent(context.WithValue(context.Background(), gracefulShutdownKey, &nopWG{}), event)
+func (f *FakeKeptn) NewEvent(event models.KeptnContextExtendedCE) error {
+	ctx := context.WithValue(context.TODO(), controlplane.EventSenderKey, controlplane.EventSender(f.fakeSender))
+	ctx = context.WithValue(ctx, gracefulShutdownKey, &nopWG{})
+	return f.Keptn.OnEvent(ctx, event)
 }
 
-func (f *FakeKeptn) GetEventSender() *TestSender {
-	return f.Keptn.eventSender.(*TestSender)
+func (f *FakeKeptn) AssertNumberOfEventSent(t *testing.T, numOfEvents int) {
+	require.Equalf(t, numOfEvents, len(f.SentEvents), "number of events expected: %d got: %d", numOfEvents, len(f.SentEvents))
+}
+
+func (f *FakeKeptn) AssertSentEvent(t *testing.T, eventIndex int, assertFn func(ce models.KeptnContextExtendedCE) bool) {
+	if eventIndex >= len(f.SentEvents) {
+		t.Fatalf("unable to assert sent event with index %d: too less events sent", eventIndex)
+	}
+	require.True(t, assertFn(f.SentEvents[eventIndex]))
+}
+
+func (f *FakeKeptn) AssertSentEventType(t *testing.T, eventIndex int, eventType string) {
+	if eventIndex >= len(f.SentEvents) {
+		t.Fatalf("unable to assert sent event with index %d: too less events sent", eventIndex)
+	}
+	require.Equalf(t, eventType, *f.SentEvents[eventIndex].Type, "event type expected: %s got %s", eventType, *f.SentEvents[eventIndex].Type)
+}
+
+func (f *FakeKeptn) AssertSentEventStatus(t *testing.T, eventIndex int, status v0_2_0.StatusType) {
+	if eventIndex >= len(f.SentEvents) {
+		t.Fatalf("unable to assert sent event with index %d: too less events sent", eventIndex)
+	}
+	eventData := v0_2_0.EventData{}
+	v0_2_0.EventDataAs(f.SentEvents[eventIndex], &eventData)
+	require.Equal(t, status, eventData.Status)
+}
+
+func (f *FakeKeptn) AssertSentEventResult(t *testing.T, eventIndex int, result v0_2_0.ResultType) {
+	if eventIndex >= len(f.SentEvents) {
+		t.Fatalf("unable to assert sent event with index %d: too less events sent", eventIndex)
+	}
+	eventData := v0_2_0.EventData{}
+	v0_2_0.EventDataAs(f.SentEvents[eventIndex], &eventData)
+	require.Equal(t, result, eventData.Result)
 }
 
 func (f *FakeKeptn) SetAutomaticResponse(autoResponse bool) {
@@ -60,87 +79,35 @@ func (f *FakeKeptn) SetResourceHandler(handler ResourceHandler) {
 }
 
 func (f *FakeKeptn) AddTaskHandler(eventType string, handler TaskHandler, filters ...func(keptnHandle IKeptn, event KeptnEvent) bool) {
-	f.Keptn.taskRegistry.Add(eventType, TaskEntry{TaskHandler: handler, EventFilters: filters})
+	f.AddTaskHandlerWithSubscriptionID(eventType, handler, "", filters...)
+}
+
+func (f *FakeKeptn) AddTaskHandlerWithSubscriptionID(eventType string, handler TaskHandler, subscriptionID string, filters ...func(keptnHandle IKeptn, event KeptnEvent) bool) {
+	f.Keptn.taskRegistry.Add(eventType, taskEntry{taskHandler: handler, eventFilters: filters})
+}
+
+func (f *FakeKeptn) fakeSender(ce models.KeptnContextExtendedCE) error {
+	f.SentEvents = append(f.SentEvents, ce)
+	return nil
 }
 
 func NewFakeKeptn(source string) *FakeKeptn {
-	eventReceiver := &TestReceiver{}
-	eventSender := &TestSender{}
 	resourceHandler := &TestResourceHandler{}
-	logger := NewDefaultLogger()
 	var fakeKeptn = &FakeKeptn{
 		TestResourceHandler: resourceHandler,
 		Keptn: &Keptn{
-			eventSender:            eventSender,
-			eventReceiver:          eventReceiver,
 			resourceHandler:        resourceHandler,
 			source:                 source,
-			taskRegistry:           NewTasksMap(),
+			taskRegistry:           newTaskMap(),
 			syncProcessing:         true,
 			automaticEventResponse: true,
 			gracefulShutdown:       false,
-			logger:                 logger,
+			logger:                 newDefaultLogger(),
+			healthEndpointRunner:   noOpHealthEndpointRunner,
 		},
 	}
+	fakeKeptn.Keptn.eventSender = fakeKeptn.fakeSender
 	return fakeKeptn
-}
-
-// TestSender fakes the sending of CloudEvents
-type TestSender struct {
-	SentEvents []cloudevents.Event
-	Reactors   map[string]func(event cloudevents.Event) error
-}
-
-// SendEvent fakes the sending of CloudEvents
-func (s *TestSender) SendEvent(event cloudevents.Event) error {
-	if s.Reactors != nil {
-		for eventTypeSelector, reactor := range s.Reactors {
-			if eventTypeSelector == "*" || eventTypeSelector == event.Type() {
-				if err := reactor(event); err != nil {
-					return err
-				}
-			}
-		}
-	}
-	s.SentEvents = append(s.SentEvents, event)
-	return nil
-}
-
-// AssertSentEventTypes checks if the given event types have been passed to the SendEvent function
-func (s *TestSender) AssertSentEventTypes(eventTypes []string) error {
-	if len(s.SentEvents) != len(eventTypes) {
-		return fmt.Errorf("expected %d event, got %d", len(s.SentEvents), len(eventTypes))
-	}
-	for index, event := range s.SentEvents {
-		if event.Type() != eventTypes[index] {
-			return fmt.Errorf("received event type '%s' != %s", event.Type(), eventTypes[index])
-		}
-	}
-	return nil
-}
-
-// AddReactor adds custom logic that should be applied when SendEvent is called for the given event type
-func (s *TestSender) AddReactor(eventTypeSelector string, reactor func(event cloudevents.Event) error) {
-	if s.Reactors == nil {
-		s.Reactors = map[string]func(event cloudevents.Event) error{}
-	}
-	s.Reactors[eventTypeSelector] = reactor
-}
-
-type TestReceiver struct {
-	receiverFn interface{}
-}
-
-func (t *TestReceiver) StartReceiver(ctx context.Context, fn interface{}) error {
-	t.receiverFn = fn
-	return nil
-}
-
-func (t *TestReceiver) NewEvent(ctx context.Context, e cloudevents.Event) {
-	if ctx.Value(gracefulShutdownKey) == nil {
-		ctx = context.WithValue(ctx, gracefulShutdownKey, &nopWG{})
-	}
-	t.receiverFn.(func(context.Context, event.Event))(ctx, e)
 }
 
 type TestResourceHandler struct {

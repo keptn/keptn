@@ -19,18 +19,16 @@ spec:
   template:
     metadata:
       labels:
-        app.kubernetes.io/component: control-plane
+
         app.kubernetes.io/instance: keptn
-        app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: webhook-service
         app.kubernetes.io/part-of: keptn-keptn
-        app.kubernetes.io/version: 0.15.0-dev-PR-7329.202204070716
-        helm.sh/chart: control-plane-0.1.0
-        skaffold.dev/run-id: 94978bca-1961-4450-bee9-e74a290e7555
+        app.kubernetes.io/component: control-plane
+        app.kubernetes.io/version: develop
     spec:
       containers:
         - name: webhook-service
-          image: 'docker.io/keptndev/webhook-service:0.15.0-dev'
+          image: 'docker.io/keptndev/webhook-service'
           ports:
             - containerPort: 8080
               protocol: TCP
@@ -42,77 +40,21 @@ spec:
                   fieldPath: metadata.namespace
             - name: LOG_LEVEL
               value: info
-          resources:
-            limits:
-              cpu: 500m
-              memory: 512Mi
-            requests:
-              cpu: 50m
-              memory: 64Mi
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 8080
-              scheme: HTTP
-            initialDelaySeconds: 10
-            timeoutSeconds: 1
-            periodSeconds: 5
-            successThreshold: 1
-            failureThreshold: 3
-          readinessProbe:
-            httpGet:
-              path: /health
-              port: 8080
-              scheme: HTTP
-            initialDelaySeconds: 10
-            timeoutSeconds: 1
-            periodSeconds: 5
-            successThreshold: 1
-            failureThreshold: 3
-          terminationMessagePath: /dev/termination-log
-          terminationMessagePolicy: File
-          imagePullPolicy: Always
-          securityContext:
-            privileged: false
-            runAsUser: 65532
-            runAsNonRoot: true
-            readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false
-        - name: distributor
-          image: 'docker.io/keptndev/distributor:0.15.0-dev'
-          ports:
-            - containerPort: 8080
-              protocol: TCP
-          env:
-            - name: PUBSUB_TOPIC
-            - name: PUBSUB_RECIPIENT
-              value: 127.0.0.1
-            - name: PUBSUB_RECIPIENT_PATH
-              value: /v1/event
-            - name: PUBSUB_URL
-              value: 'nats://keptn-nats'
-            - name: VERSION
-              valueFrom:
-                fieldRef:
-                  apiVersion: v1
-                  fieldPath: 'metadata.labels[''app.kubernetes.io/version'']'
-            - name: DISTRIBUTOR_VERSION
-              value: 0.15.0-dev-PR-7329.202204070716
-            - name: LOCATION
-              valueFrom:
-                fieldRef:
-                  apiVersion: v1
-                  fieldPath: 'metadata.labels[''app.kubernetes.io/component'']'
             - name: K8S_DEPLOYMENT_NAME
               valueFrom:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: 'metadata.labels[''app.kubernetes.io/name'']'
-            - name: K8S_POD_NAME
+            - name: K8S_DEPLOYMENT_VERSION
               valueFrom:
                 fieldRef:
                   apiVersion: v1
-                  fieldPath: metadata.name
+                  fieldPath: 'metadata.labels[''app.kubernetes.io/version'']'
+            - name: K8S_DEPLOYMENT_COMPONENT
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: 'metadata.labels[''app.kubernetes.io/component'']'
             - name: K8S_NAMESPACE
               valueFrom:
                 fieldRef:
@@ -123,73 +65,20 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: spec.nodeName
-            - name: PUBSUB_GROUP
+            - name: K8S_POD_NAME
               valueFrom:
                 fieldRef:
                   apiVersion: v1
-                  fieldPath: 'metadata.labels[''app.kubernetes.io/name'']'
-            - name: OAUTH_CLIENT_ID
-            - name: OAUTH_CLIENT_SECRET
-            - name: OAUTH_DISCOVERY
-            - name: OAUTH_TOKEN_URL
-            - name: OAUTH_SCOPES
+                  fieldPath: metadata.name
           resources:
             limits:
-              cpu: 100m
-              memory: 32Mi
+              cpu: 500m
+              memory: 512Mi
             requests:
-              cpu: 25m
-              memory: 16Mi
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 8080
-              scheme: HTTP
-            initialDelaySeconds: 10
-            timeoutSeconds: 1
-            periodSeconds: 5
-            successThreshold: 1
-            failureThreshold: 3
-          readinessProbe:
-            httpGet:
-              path: /health
-              port: 8080
-              scheme: HTTP
-            initialDelaySeconds: 5
-            timeoutSeconds: 1
-            periodSeconds: 5
-            successThreshold: 1
-            failureThreshold: 3
-          lifecycle:
-            preStop:
-              exec:
-                command:
-                  - /bin/sleep
-                  - '20'
-          terminationMessagePath: /dev/termination-log
-          terminationMessagePolicy: File
-          imagePullPolicy: IfNotPresent
-          securityContext:
-            privileged: false
-            runAsUser: 65532
-            runAsNonRoot: true
-            readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false
-      restartPolicy: Always
-      terminationGracePeriodSeconds: 40
-      dnsPolicy: ClusterFirst
-      serviceAccountName: keptn-webhook-service
-      serviceAccount: keptn-webhook-service
-      securityContext:
-        fsGroup: 65532
-        seccompProfile:
-          type: RuntimeDefault
-      schedulerName: default-scheduler
-  strategy:
-    type: Recreate
-  revisionHistoryLimit: 10
-  progressDeadlineSeconds: 600
+              cpu: 50m
+              memory: 64Mi
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
