@@ -60,7 +60,7 @@ func NewSequenceDispatcher(
 func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
 	if sd.mode == common.SDModeRW {
 		//if there is only one shipyard we can both read and write,
-		//so we try to dispatch the sequence immediately if the sequence queue is empty
+		//so we try to dispatch the sequence immediately
 		if err := sd.dispatchSequence(queueItem); err != nil {
 			if errors.Is(err, ErrSequenceBlocked) {
 				//if the sequence is currently blocked, insert it into the queue
@@ -146,7 +146,7 @@ func (sd *SequenceDispatcher) dispatchSequences() {
 	}
 }
 
-func (sd *SequenceDispatcher) areSequencesInState(queueItem models.QueueItem) (bool, error) {
+func (sd *SequenceDispatcher) isSequenceBlocked(queueItem models.QueueItem) (bool, error) {
 	// searching for running sequences
 	startedSequenceExecutions, err := sd.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
 		Scope: models.EventScope{
@@ -166,7 +166,7 @@ func (sd *SequenceDispatcher) areSequencesInState(queueItem models.QueueItem) (b
 		return true, nil
 	}
 
-	//searching for triggered sequences wicht were triggered sooner
+	//searching for triggered sequences which were triggered before the actual sequence
 	triggeredSequenceExecutions, err := sd.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
 		Scope: models.EventScope{
 			EventData: keptnv2.EventData{
@@ -211,7 +211,7 @@ func (sd *SequenceDispatcher) dispatchSequence(queueItem models.QueueItem) error
 		return ErrSequenceBlocked
 	}
 
-	sequenceBlocked, err := sd.areSequencesInState(queueItem)
+	sequenceBlocked, err := sd.isSequenceBlocked(queueItem)
 	if err != nil {
 		return err
 	}
