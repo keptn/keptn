@@ -111,7 +111,7 @@ metadata:
     app.kubernetes.io/component: mongodb-datastore
 spec:
   ports:
-  - port: 8080
-    protocol: TCP
+    - port: 8080
+      protocol: TCP
   selector: {{- include "common.labels.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: mongodb-datastore

@@ -90,9 +90,9 @@ metadata:
     app.kubernetes.io/component: remediation-service
 spec:
   ports:
-  - port: 8080
-    targetPort: 8080
-    protocol: TCP
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
   selector: {{- include "common.labels.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: remediation-service
 
