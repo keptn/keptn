@@ -109,7 +109,7 @@ describe('KtbHeatmapComponent', () => {
 
   it('should not select dataPoint if it is not in the dataSource', () => {
     component.dataPoints = [];
-    component.selectedDataPoint = mockScoreDataPoint('myIdentifier', 'myDate');
+    component.selectDataPoint = 'myIdentifier';
     expect(component.selectedDataPoint).toBeUndefined();
   });
 
@@ -120,7 +120,7 @@ describe('KtbHeatmapComponent', () => {
     component.dataPoints = dataPoints;
 
     // when
-    component.selectedDataPoint = dataPoints[0];
+    component.selectDataPoint = dataPoints[0].identifier;
 
     // then
     expect(component.selectedDataPoint).toEqual(dataPoints[0]);

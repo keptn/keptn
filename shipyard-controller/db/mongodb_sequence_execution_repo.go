@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
+
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/db/models/sequence_execution"
 	v02 "github.com/keptn/keptn/shipyard-controller/db/models/sequence_execution/v1"
@@ -13,7 +15,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"time"
 )
 
 const sequenceExecutionCollectionNameSuffix = "sequence-execution"
@@ -348,6 +349,11 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) getSearchOptions(filter models.Sequ
 	searchOptions = appendFilterAs(searchOptions, filter.Scope.Stage, "scope.stage")
 	searchOptions = appendFilterAs(searchOptions, filter.Scope.Service, "scope.service")
 	searchOptions = appendFilterAs(searchOptions, filter.CurrentTriggeredID, "status.currentTask.triggeredID")
+	if !filter.TriggeredAt.IsZero() {
+		searchOptions["triggeredAt"] = bson.M{
+			"$lt": filter.TriggeredAt,
+		}
+	}
 
 	if filter.Status != nil && len(filter.Status) > 0 {
 		matchStates := []bson.M{}
