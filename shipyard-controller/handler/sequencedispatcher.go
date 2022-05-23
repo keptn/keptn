@@ -159,7 +159,7 @@ func (sd *SequenceDispatcher) isSequenceBlocked(queueItem models.QueueItem) (boo
 		Status: []string{apimodels.SequenceStartedState},
 	})
 	if err != nil {
-		log.Errorf("Could not load started sequences: %w", err)
+		log.Errorf("Could not load started sequences: %v", err)
 		return true, err
 	}
 
@@ -181,7 +181,7 @@ func (sd *SequenceDispatcher) isSequenceBlocked(queueItem models.QueueItem) (boo
 		TriggeredAt: queueItem.Timestamp,
 	})
 	if err != nil {
-		log.Errorf("Could not load triggered sequences: %w", err)
+		log.Errorf("Could not load triggered sequences: %v", err)
 		return true, err
 	}
 
