@@ -18,6 +18,7 @@ import { setupOAuth } from './user/oauth';
 import { SessionService } from './user/session';
 import { ContentSecurityPolicyOptions } from 'helmet/dist/types/middlewares/content-security-policy';
 import { printError } from './utils/print-utils';
+import { AuthType } from '../shared/models/auth-type';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -193,17 +194,17 @@ async function setBasicAUTH(app: Express): Promise<void> {
   });
 }
 
-async function setAuth(app: Express, oAuthEnabled: boolean): Promise<{ authType: string; session?: SessionService }> {
-  let authType;
+async function setAuth(app: Express, oAuthEnabled: boolean): Promise<{ authType: AuthType; session?: SessionService }> {
+  let authType: AuthType;
   let session: SessionService | undefined;
   if (oAuthEnabled) {
     session = await setOAUTH(app);
-    authType = 'OAUTH';
+    authType = AuthType.OAUTH;
   } else if (process.env.BASIC_AUTH_USERNAME && process.env.BASIC_AUTH_PASSWORD) {
-    authType = 'BASIC';
+    authType = AuthType.BASIC;
     await setBasicAUTH(app);
   } else {
-    authType = 'NONE';
+    authType = AuthType.NONE;
     console.log('Not installing authentication middleware');
   }
 
@@ -330,7 +331,7 @@ function cleanIpBuckets(): void {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function handleError(err: any, req: Request, res: Response, authType: string): number {
+function handleError(err: any, req: Request, res: Response, authType: AuthType): number {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};

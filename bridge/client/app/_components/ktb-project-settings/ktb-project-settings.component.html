@@ -1,6 +1,9 @@
 <div class="container" fxFlexFill *ngIf="state$ | async as state">
+  <div *ngIf="state.state === ProjectSettingsStatus.INIT" fxFlexFill fxLayoutAlign="center center">
+    <ktb-loading-distractor>Loading ...</ktb-loading-distractor>
+  </div>
   <div
-    *ngIf="state.state !== ProjectSettingsStatus.ERROR"
+    *ngIf="state.state === ProjectSettingsStatus.LOADED"
     fxLayout="column"
     fxFlexFill
     fxLayoutAlign="space-between"
