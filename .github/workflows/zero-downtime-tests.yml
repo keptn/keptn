@@ -328,8 +328,7 @@ jobs:
       - name: Install npm
         id: install_npm
         working-directory: bridge
-        run: |
-          yarn install --frozen-lockfile
+        run: yarn install --frozen-lockfile
 
       - name: Prepare test run
         id: prepare_test_run
@@ -361,8 +360,7 @@ jobs:
       - name: Format cypress log output
         if: always()
         working-directory: bridge
-        run: |
-          cat uitest.log    
+        run: cat uitest.log
 
       #######################################################################
       # TEARDOWN
@@ -450,10 +448,9 @@ jobs:
       - name: Upload test log
         uses: actions/upload-artifact@v2
         if: always()
-        working-directory: bridge
         with:
           name: ui-test-log
-          path:  uitest.log
+          path:  ../bridge/uitest.log
           if-no-files-found: error
 
   calculate-total-runtime:
