@@ -115,7 +115,7 @@ jobs:
               -H "Authorization: token $GITHUB_TOKEN" \
               "api.github.com/repos/$REPO_SLUG/actions/workflows/CI.yml/runs?branch=$BRANCH" | \
             jq '[.workflow_runs[] | select(
-              (.head_commit != null) and (.head_commit.author.name | endswith("[bot]") | not ) and ( .conclusion == "success" ) 
+              (.head_commit != null) and (.head_commit.author.name | endswith("[bot]") | not ) and ( .conclusion == "success" )
             )][0] | .id')
           echo "Run ID that will be used to download artifacts from: $RUN_ID"
           echo "::set-output name=RUN_ID::$RUN_ID"
@@ -177,18 +177,18 @@ jobs:
           HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_CHART_NAME }}
         run: |
           CHART_REPO="https://charts.keptn.sh"
-          if [[ ${{ github.event.inputs.upgradeTo }} == *"-dev"* ]]; then 
-            CHART_REPO="https://charts-dev.keptn.sh" 
+          if [[ ${{ github.event.inputs.upgradeTo }} == *"-dev"* ]]; then
+            CHART_REPO="https://charts-dev.keptn.sh"
           fi
           helm repo add keptndev $CHART_REPO
           helm repo update
           helm pull keptndev/keptn --version ${{ github.event.inputs.upgradeTo }} --destination test/zero-downtime
-          echo "copying helm chart in zero downtime folder" 
+          echo "copying helm chart in zero downtime folder"
           cp ${HELM_CHART_NAME} test/zero-downtime/keptn-installed.tgz
           cd test/zero-downtime
           echo "Downloaded files:"
           ls -la ./keptn*.tgz
-          echo "UPGRADE_HELM_CHART=$(ls './keptn-${{ github.event.inputs.upgradeTo }}.tgz')" >> $GITHUB_ENV      
+          echo "UPGRADE_HELM_CHART=$(ls './keptn-${{ github.event.inputs.upgradeTo }}.tgz')" >> $GITHUB_ENV
           echo "INSTALL_HELM_CHART=$(ls ./keptn-installed.tgz)" >> $GITHUB_ENV
 
       - name: Install and start GKE cluster
@@ -206,30 +206,30 @@ jobs:
           export CLUSTER_NAME_NIGHTLY=${{ matrix.CLUSTER_NAME }}
           echo "Setting up GCloud CLI"
           export OS_TYPE="linux"
-          
+
           echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
           export GOOGLE_APPLICATION_CREDENTIALS=~/gcloud-service-key.json
           export CLOUDSDK_CORE_DISABLE_PROMPTS=1;
-          
+
           gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
           gcloud --quiet config set project "$GCLOUD_PROJECT_NAME"
           gcloud --quiet config set container/cluster "$CLUSTER_NAME_NIGHTLY"
           gcloud --quiet config set compute/zone "${CLOUDSDK_COMPUTE_ZONE}"
-          
+
           echo "GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}" >> $GITHUB_ENV
-          
+
           echo "Setting up kubectl"
           echo "Setting KUBECONFIG to $PWD/.kubeconfig"
-          
+
           echo "$GKE_KUBECONFIG" >> "$PWD/.kubeconfig"
           chmod 600 "$PWD/.kubeconfig"
           export KUBECONFIG="$PWD/.kubeconfig"
-          
+
           echo "KUBECONFIG=${KUBECONFIG}" >> $GITHUB_ENV
-          
+
           echo "Setting kube context..."
           kubectl config use-context "$CLUSTER_NAME_NIGHTLY"
-          
+
           echo "##[set-output name=CLUSTER_NAME_NIGHTLY;]$(echo ${CLUSTER_NAME_NIGHTLY})"
 
       - name: Install Keptn
@@ -240,14 +240,14 @@ jobs:
         run: |
           echo "Installing Keptn on cluster"
           echo "{}" > creds.json # empty credentials file
-          
+
           echo "::group::Keptn Installation Log"
-          
+
           # Use Keptn helm chart to be able to customize the values
           helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} \
             --create-namespace \
-            --values=./test/zero-downtime/assets/test-values.yml 
-          
+            --values=./test/zero-downtime/assets/test-values.yml
+
           echo "::endgroup::"
 
       - name: Install Gitea
@@ -297,9 +297,9 @@ jobs:
           source test/utils.sh
 
           # authenticate at Keptn API
-          
+
           KEPTN_ENDPOINT=http://$(kubectl -n ${KEPTN_NAMESPACE} get service api-gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')/api
- 
+
           KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n ${KEPTN_NAMESPACE} -ojsonpath={.data.keptn-api-token} | base64 --decode)
           echo "KEPTN_ENDPOINT=${KEPTN_ENDPOINT}"
           echo "##[set-output name=KEPTN_ENDPOINT;]$(echo ${KEPTN_ENDPOINT})"
@@ -311,11 +311,11 @@ jobs:
           HELM_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_SERVICE_HELM_CHART_NAME }}
           JMETER_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.JMETER_SERVICE_HELM_CHART_NAME }}
         run: |
-          
+
           # In-cluster execution plane
           helm install helm-service "${HELM_SERVICE_HELM_CHART_NAME}" -n ${{ env.KEPTN_NAMESPACE }}
           helm install jmeter-service "${JMETER_SERVICE_HELM_CHART_NAME}" -n ${{ env.KEPTN_NAMESPACE }}
-          
+
           helm test jmeter-service -n ${{ env.KEPTN_NAMESPACE }}
           helm test helm-service -n ${{ env.KEPTN_NAMESPACE }}
 
@@ -325,11 +325,17 @@ jobs:
           # Optional: pass GITHUB_TOKEN to avoid rate limiting.
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Install npm
+        id: install_npm
+        working-directory: bridge
+        run: |
+          cp package.json yarn.lock
+          yarn install --frozen-lockfile
+
       - name: Prepare test run
         id: prepare_test_run
         working-directory: test/zero-downtime
-        run: |
-          go get ./...
+        run: go get ./...
 
       #######################################################################
       # TESTS
@@ -343,9 +349,8 @@ jobs:
           GOMAXPROCS: 10
           KEPTN_ENDPOINT: ${{ steps.determine_keptn_endpoint.outputs.KEPTN_ENDPOINT }}
         run: |
-          set -euo pipefail
-          npm ci   
-          npm test:ui &
+          set -euo pipefail 
+          npm run test:ui &
           cd ../test/zero-downtime && go test -json -v -run Test_ZeroDowntime -v -timeout 90m 2>&1 | tee /tmp/gotest.log 
 
       - name: Format log output
