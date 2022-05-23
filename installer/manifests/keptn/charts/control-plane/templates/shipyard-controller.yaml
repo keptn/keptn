@@ -44,7 +44,7 @@ spec:
                 command:
                   - /bin/sh
                   - -c
-                  - wget http://localhost:8081/operations/v1/pre-stop
+                  - wget -qO- http://localhost:8081/operations/v1/pre-stop &> /dev/null
           livenessProbe:
             httpGet:
               path: /health
