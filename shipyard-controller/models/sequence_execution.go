@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
@@ -20,6 +22,7 @@ type SequenceExecution struct {
 	Scope    EventScope              `json:"scope" bson:"scope"`
 	// InputProperties contains properties of the event which triggered the task sequence
 	InputProperties map[string]interface{} `json:"inputProperties" bson:"inputProperties"`
+	TriggeredAt     time.Time              `json:"triggeredAt" bson:"triggeredAt"`
 }
 
 type SequenceExecutionStatus struct {
@@ -266,6 +269,7 @@ type SequenceExecutionFilter struct {
 	Status             []string
 	Name               string
 	CurrentTriggeredID string
+	TriggeredAt        time.Time
 }
 
 type SequenceExecutionUpsertOptions struct {

@@ -2,6 +2,7 @@ package v1
 
 import (
 	"encoding/json"
+
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/models"
 )
@@ -54,6 +55,7 @@ func fromSequenceExecution(se models.SequenceExecution) JsonStringEncodedSequenc
 		Status:        transformStatus(se.Status),
 		Scope:         se.Scope,
 		SchemaVersion: SchemaVersion{SchemaVersion: SchemaVersionV1},
+		TriggeredAt:   se.TriggeredAt,
 	}
 	if se.InputProperties != nil {
 		inputPropertiesJsonString, err := json.Marshal(se.InputProperties)

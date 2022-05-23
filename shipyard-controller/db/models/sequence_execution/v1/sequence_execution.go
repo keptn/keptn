@@ -2,6 +2,8 @@ package v1
 
 import (
 	"encoding/json"
+	"time"
+
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/models"
 )
@@ -20,7 +22,8 @@ type JsonStringEncodedSequenceExecution struct {
 	Status   SequenceExecutionStatus `json:"status" bson:"status"`
 	Scope    models.EventScope       `json:"scope" bson:"scope"`
 	// EncodedInputProperties contains properties of the event which triggered the task sequence
-	EncodedInputProperties string `json:"encodedInputProperties" bson:"encodedInputProperties"`
+	EncodedInputProperties string    `json:"encodedInputProperties" bson:"encodedInputProperties"`
+	TriggeredAt            time.Time `json:"triggeredAt" bson:"triggeredAt"`
 }
 
 type Sequence struct {
@@ -150,7 +153,8 @@ func (e JsonStringEncodedSequenceExecution) ToSequenceExecution() models.Sequenc
 				Events:      e.Status.CurrentTask.DecodeEvents(),
 			},
 		},
-		Scope: e.Scope,
+		Scope:       e.Scope,
+		TriggeredAt: e.TriggeredAt,
 	}
 	inputProperties := map[string]interface{}{}
 	err := json.Unmarshal([]byte(e.EncodedInputProperties), &inputProperties)
