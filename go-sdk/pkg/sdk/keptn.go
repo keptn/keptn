@@ -6,7 +6,7 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	api2 "github.com/keptn/keptn/cp-connector/pkg/api"
+	api2 "github.com/keptn/keptn/cp-common/api"
 	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
 	"github.com/keptn/keptn/cp-connector/pkg/nats"
 	"log"

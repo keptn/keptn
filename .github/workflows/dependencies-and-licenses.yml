@@ -54,6 +54,7 @@ jobs:
             cli
             configuration-service
             cp-connector
+            cp-common
             distributor
             go-sdk
             helm-service
