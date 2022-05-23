@@ -2,7 +2,7 @@ import { mockDataPoints } from './ktb-heatmap.component.spec';
 import {
   calculateTooltipPosition,
   createGroupedDataPoints,
-  findXElementThroughIdentifier,
+  findDataPointThroughIdentifier,
   getAvailableIdentifiers,
   getAxisElements,
   getHiddenYElements,
@@ -40,7 +40,7 @@ describe('KtbHeatmapUtils', () => {
     const groupedData = mockGroupedData(2, 1);
     expect(getAxisElements(groupedData, 10)).toEqual({
       xElements: ['myDate0', 'myDate1'],
-      yElements: ['response_time_p0', 'score'],
+      yElements: ['score', 'response_time_p0'],
       showMoreVisible: false,
     });
   });
@@ -80,26 +80,26 @@ describe('KtbHeatmapUtils', () => {
     expect(foundIdentifiers).toEqual(['myEvaluation0']);
   });
 
-  it('should find xElement through identifier', () => {
+  it('should find dataPoint through identifier', () => {
     // given
     const groupedData = mockGroupedData(3, 1, '', '', true);
 
     // when
-    const foundXElement = findXElementThroughIdentifier('myEvaluation1', groupedData);
+    const foundDataPoint = findDataPointThroughIdentifier('myEvaluation1', groupedData);
 
     // then
-    expect(foundXElement).toEqual('myDate1');
+    expect(foundDataPoint?.xElement).toEqual('myDate1');
   });
 
-  it('should not find xElement through identifier', () => {
+  it('should not find dataPoint through identifier', () => {
     // given
     const groupedData = mockGroupedData(3, 1, '', '', true);
 
     // when
-    const foundXElement = findXElementThroughIdentifier('notFound', groupedData);
+    const foundDataPoint = findDataPointThroughIdentifier('notFound', groupedData);
 
     // then
-    expect(foundXElement).toBeUndefined();
+    expect(foundDataPoint).toBeUndefined();
   });
 
   it('should return hidden yElements', () => {
