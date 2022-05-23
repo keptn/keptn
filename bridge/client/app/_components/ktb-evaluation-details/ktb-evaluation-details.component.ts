@@ -14,7 +14,7 @@ import {
   DtChartSeriesVisibilityChangeEvent,
 } from '@dynatrace/barista-components/chart';
 import { Subject } from 'rxjs';
-import { take, takeUntil } from 'rxjs/operators';
+import { map, take, takeUntil } from 'rxjs/operators';
 import { ClipboardService } from '../../_services/clipboard.service';
 import { DataService } from '../../_services/data.service';
 import { DateUtil } from '../../_utils/date.utils';
@@ -29,7 +29,7 @@ import { AppUtils } from '../../_utils/app.utils';
 import { parse as parseYaml } from 'yaml';
 import { SloConfig } from '../../../../shared/interfaces/slo-config';
 import { IDataPoint } from '../../_interfaces/heatmap';
-import { createDataPoints, getSliResultInfo, SliInfo } from './ktb-evalution-details-utils';
+import { createDataPoints, getSliResultInfo, SliInfo } from './ktb-evaluation-details-utils';
 import { FeatureFlagsService } from '../../_services/feature-flags.service';
 import { IClientFeatureFlags } from '../../../../shared/interfaces/feature-flags';
 
@@ -271,7 +271,9 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   private _shouldSelectEvaluation = true;
   public updateResults?: EvaluationHistory;
   public dataPoints: IDataPoint[] = [];
-  public d3HeatmapEnabled = false;
+  public d3HeatmapEnabled$ = this.featureFlagService.featureFlags$.pipe(
+    map((featureFlags: IClientFeatureFlags) => featureFlags.D3_HEATMAP_ENABLED)
+  );
 
   @Input()
   get evaluationData(): Trace | undefined {
@@ -325,12 +327,6 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   ) {}
 
   public ngOnInit(): void {
-    this.featureFlagService.featureFlags$
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((featureFlags: IClientFeatureFlags) => {
-        this.d3HeatmapEnabled = featureFlags.D3_HEATMAP_ENABLED;
-      });
-
     this.dataService.evaluationResults.pipe(takeUntil(this.unsubscribe$)).subscribe((results) => {
       if (this.evaluationData && results.traces?.length) {
         this.parseSloFile(results.traces);

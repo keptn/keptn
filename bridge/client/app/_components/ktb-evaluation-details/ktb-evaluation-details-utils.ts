@@ -1,9 +1,4 @@
-import {
-  EvaluationResultType,
-  EvaluationResultTypeExtension,
-  IDataPoint,
-  IHeatmapTooltipType,
-} from '../../_interfaces/heatmap';
+import { EvaluationResultTypeExtension, IDataPoint, IHeatmapTooltipType } from '../../_interfaces/heatmap';
 import { ResultTypes } from '../../../../shared/models/result-types';
 import { Trace } from '../../_models/trace';
 import { IndicatorResult } from '../../../../shared/interfaces/indicator-result';
@@ -13,14 +8,6 @@ export type SliInfo = {
   warningCount: number;
   failedCount: number;
   passCount: number;
-};
-
-const _resultType: { [key: string]: EvaluationResultType } = {
-  pass: ResultTypes.PASSED,
-  warning: ResultTypes.WARNING,
-  fail: ResultTypes.FAILED,
-  failed: ResultTypes.FAILED,
-  info: EvaluationResultTypeExtension.INFO,
 };
 
 export function getSliResultInfo(indicatorResults: IndicatorResult[]): {
@@ -44,22 +31,25 @@ export function getSliResultInfo(indicatorResults: IndicatorResult[]): {
   );
 }
 
-const getSlisAndScore = (points: IDataPoint[], evaluation: Trace): IDataPoint[] => {
-  const totalScore: number = evaluation.data.evaluation?.indicatorResults
+function getTotalScore(evaluation: Trace): number {
+  return evaluation.data.evaluation?.indicatorResults
     ? evaluation.data.evaluation?.indicatorResults.reduce((total: number, ir: IndicatorResult) => total + ir.score, 0)
     : 1;
-  const scoreValue = evaluation.data.evaluation?.score ?? 0;
+}
 
-  const indicatorResultToDataPoint = (indicatorResult: IndicatorResult): IDataPoint => {
-    const color = indicatorResult.value.success
-      ? _resultType[indicatorResult.status]
-      : EvaluationResultTypeExtension.INFO;
+function indicatorResultToDataPoint(
+  evaluation: Trace,
+  scoreValue: number
+): (indicatorResult: IndicatorResult) => IDataPoint {
+  return (indicatorResult: IndicatorResult): IDataPoint => {
+    const totalScore: number = getTotalScore(evaluation);
+    const color = indicatorResult.value.success ? indicatorResult.status : EvaluationResultTypeExtension.INFO;
     return {
       xElement: evaluation.getHeatmapLabel(),
-      yElement: indicatorResult.value.metric,
+      yElement: indicatorResult.displayName || indicatorResult.value.metric,
       color,
       identifier: evaluation.id,
-      comparedIdentifier: [],
+      comparedIdentifier: evaluation.data.evaluation?.comparedEvents ?? [],
       tooltip: {
         type: IHeatmapTooltipType.SLI,
         value: indicatorResult.value.value,
@@ -70,17 +60,14 @@ const getSlisAndScore = (points: IDataPoint[], evaluation: Trace): IDataPoint[] 
       },
     };
   };
+}
 
-  const slis: IDataPoint[] = evaluation.data.evaluation?.indicatorResults
-    ? evaluation.data.evaluation?.indicatorResults
-        .map(indicatorResultToDataPoint)
-        .sort((a, b) => b.yElement.localeCompare(a.yElement))
-    : [];
+function evaluationToDataPoint(evaluation: Trace, scoreValue: number): IDataPoint {
   const resultInfo = getSliResultInfo(evaluation.data.evaluation?.indicatorResults ?? []);
-  const score: IDataPoint = {
+  return {
     xElement: evaluation.getHeatmapLabel(),
     yElement: 'Score',
-    color: _resultType[evaluation.data.evaluation?.result ?? EvaluationResultTypeExtension.INFO],
+    color: evaluation.data.evaluation?.result ?? EvaluationResultTypeExtension.INFO,
     identifier: evaluation.id,
     comparedIdentifier: evaluation.data.evaluation?.comparedEvents ?? [],
     tooltip: {
@@ -95,15 +82,19 @@ const getSlisAndScore = (points: IDataPoint[], evaluation: Trace): IDataPoint[] 
       warn: evaluation.isWarning(),
     },
   };
+}
 
-  return [...points, ...slis, score];
+const evaluationToDataPoints = (points: IDataPoint[], evaluation: Trace): IDataPoint[] => {
+  const scoreValue = evaluation.data.evaluation?.score ?? 0;
+  const results: IDataPoint[] = evaluation.data.evaluation?.indicatorResults
+    ? evaluation.data.evaluation?.indicatorResults
+        .map(indicatorResultToDataPoint(evaluation, scoreValue))
+        .sort((a, b) => b.yElement.localeCompare(a.yElement))
+    : [];
+  const score: IDataPoint = evaluationToDataPoint(evaluation, scoreValue);
+  return [...points, ...results, score];
 };
 
 export function createDataPoints(evaluationHistory: Trace[]): IDataPoint[] {
-  const slisAndScores = evaluationHistory.reduce(getSlisAndScore, []);
-  const scores = slisAndScores
-    .filter((v) => v.tooltip.type === IHeatmapTooltipType.SCORE)
-    .sort((a, b) => a.xElement.localeCompare(b.xElement));
-  const slis = slisAndScores.filter((v) => v.tooltip.type === IHeatmapTooltipType.SLI);
-  return [...slis, ...scores];
+  return evaluationHistory.reduce(evaluationToDataPoints, []);
 }

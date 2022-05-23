@@ -2,7 +2,7 @@ import { IClientFeatureFlags, IServerFeatureFlags } from '../shared/interfaces/f
 
 export class ClientFeatureFlags implements IClientFeatureFlags {
   RESOURCE_SERVICE_ENABLED = false;
-  D3_HEATMAP_ENABLED = false;
+  D3_HEATMAP_ENABLED = true;
 }
 
 export class ServerFeatureFlags implements IServerFeatureFlags {

@@ -139,6 +139,7 @@ bridge:
     mongoConnectionString: ""
   nodeSelector: {}
   automaticProvisioningMsg: ""
+  d3heatmap: false
 
 distributor:
   metadata:
