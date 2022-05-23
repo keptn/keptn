@@ -446,6 +446,16 @@ jobs:
           path: /tmp/gotest.log
           if-no-files-found: error
 
+      # Upload the original cypress test log as an artifact for later review.
+      - name: Upload test log
+        uses: actions/upload-artifact@v2
+        if: always()
+        working-directory: bridge
+        with:
+          name: ui-test-log
+          path:  uitest.log
+          if-no-files-found: error
+
   calculate-total-runtime:
     name: End-of-Pipeline Metrics
     if: always()
