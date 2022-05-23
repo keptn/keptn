@@ -3,6 +3,9 @@ package zero_downtime
 import (
 	"context"
 	"fmt"
+	"github.com/google/uuid"
+	"github.com/keptn/go-utils/pkg/api/models"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"strings"
@@ -43,7 +46,8 @@ func doEvaluations() {
 	for i := 0; i < 100; i++ {
 		nrEvaluations := 0
 		go func() {
-			_, err := triggerEvaluation("podtatohead", "hardening", "helloservice")
+			//_, err := triggerEvaluation("podtatohead", "hardening", "helloservice")
+			_, err := triggerRemediation("podtatohead", "hardening", "helloservice")
 			if err != nil {
 				nrEvaluations++
 			}
@@ -70,6 +74,32 @@ func triggerEvaluation(projectName, stageName, serviceName string) (string, erro
 		}
 	}
 	return keptnContext, err
+}
+
+func triggerRemediation(projectName, stageName, serviceName string) (string, error) {
+	source := "golang-test"
+	eventData := keptnv2.EventData{}
+	eventType := keptnv2.GetTriggeredEventType(stageName + ".remediation")
+	eventData.SetProject(projectName)
+	eventData.SetService(serviceName)
+	eventData.SetStage(stageName)
+
+	resp, err := testutils.ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
+		Contenttype:        "application/json",
+		Data:               eventData,
+		ID:                 uuid.NewString(),
+		Shkeptnspecversion: "0.2.0",
+		Source:             &source,
+		Specversion:        "1.0",
+		Type:               &eventType,
+	}, 0)
+
+	eventContext := &models.EventContext{}
+	err = resp.ToJSON(eventContext)
+	if err != nil {
+		return "", err
+	}
+	return *eventContext.KeptnContext, nil
 }
 
 func updateImageOfService(ctx context.Context, t *testing.T, service string, images []string) error {
