@@ -48,6 +48,38 @@ func TestMongoDBTaskSequenceV2Repo_InsertAndRetrieve(t *testing.T) {
 	require.Empty(t, get)
 }
 
+func TestMongoDBTaskSequenceV2Repo_InsertAndRetrieveByTime(t *testing.T) {
+	scope, sequence := getTestSequenceExecution()
+
+	mdbrepo := NewMongoDBSequenceExecutionRepo(GetMongoDBConnectionInstance())
+
+	err := mdbrepo.Upsert(sequence, nil)
+
+	require.Nil(t, err)
+
+	get, err := mdbrepo.Get(models.SequenceExecutionFilter{
+		Scope:  scope,
+		Name:   "delivery",
+		Status: []string{"triggered"},
+	})
+
+	require.Nil(t, err)
+
+	require.Len(t, get, 1)
+	get[0].SchemaVersion = ""
+	require.Equal(t, sequence, get[0])
+
+	get, err = mdbrepo.Get(models.SequenceExecutionFilter{
+		Scope:       scope,
+		Name:        "delivery",
+		TriggeredAt: time.Date(2021, 3, 21, 17, 00, 00, 0, time.UTC),
+	})
+
+	require.Nil(t, err)
+
+	require.Empty(t, get)
+}
+
 func TestMongoDBTaskSequenceV2Repo_GetByTriggeredID(t *testing.T) {
 	scope, sequence := getTestSequenceExecution()
 
