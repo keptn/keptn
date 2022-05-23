@@ -197,7 +197,6 @@ func (sd *SequenceDispatcher) isSequenceBlocked(queueItem models.QueueItem) (boo
 		return true, nil
 	}
 
-	log.Infof("Sequence with KeptnContext %s is not blocked by any other sequence in stage %s", queueItem.Scope.KeptnContext, queueItem.Scope.Stage)
 	return false, nil
 }
 
