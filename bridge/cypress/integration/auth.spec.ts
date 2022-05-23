@@ -13,6 +13,7 @@ describe('Test auth errors', () => {
       statusCode: 401,
     });
 
+    cy.task('setExpectedErrorCount', 1);
     cy.visit('/');
     basePage.notificationErrorVisible('Could not authorize.');
   });
@@ -26,6 +27,7 @@ describe('Test auth errors', () => {
       statusCode: 401,
       body: 'incorrect api key auth',
     });
+    cy.task('setExpectedErrorCount', 1);
 
     cy.visit('/');
     basePage.notificationErrorVisible('Could not authorize API token. Please check the configured API token.');
@@ -45,6 +47,7 @@ describe('Test BASIC auth', () => {
       statusCode: 401,
       headers: { 'keptn-auth-type': 'BASIC' },
     });
+    cy.task('setExpectedErrorCount', 1);
 
     cy.visit('/');
     basePage.notificationErrorVisible('Login credentials invalid. Please check your provided username and password.');
@@ -74,6 +77,7 @@ describe('Test OAuth', () => {
   it('should show a message for 403 response', () => {
     cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfo.mock' });
     cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { statusCode: 403 });
+    cy.task('setExpectedErrorCount', 1);
 
     cy.visit('/');
     basePage.notificationErrorVisible('You do not have the permissions to perform this action.');

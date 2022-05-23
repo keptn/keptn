@@ -5,6 +5,7 @@ import './intercept';
 
 let errorLogs: (string | undefined | Error)[][] = [];
 let warningLogs: string[] = [];
+
 Cypress.on('window:before:load', (window) => {
   cy.stub(window.console, `error`).callsFake((...args: (string | undefined | Error)[]) => {
     errorLogs.push(
@@ -21,19 +22,20 @@ Cypress.on('window:before:load', (window) => {
   });
 });
 
+beforeEach(() => {
+  errorLogs = [];
+  warningLogs = [];
+});
+
 afterEach(() => {
   /*eslint-disable promise/catch-or-return, promise/always-return*/
-  if (errorLogs.length) {
-    cy.task('log', errorLogs).then(() => {
-      expect(errorLogs.length).to.eq(0); // this should be inside then, else log will be aborted
-      errorLogs = [];
+  cy.task('logError', errorLogs)
+    .then((expectedErrors) => {
+      expect(errorLogs.length).to.eq(expectedErrors);
+    })
+    .task('logWarning', warningLogs)
+    .then((expectedWarnings) => {
+      expect(warningLogs.length).to.eq(expectedWarnings);
     });
-  }
-  if (warningLogs.length) {
-    cy.task('log', warningLogs).then(() => {
-      expect(warningLogs.length).to.eq(0); // this should be inside then, else log will be aborted
-      warningLogs = [];
-    });
-  }
   /*eslint-enable promise/catch-or-return, promise/always-return*/
 });
