@@ -329,7 +329,6 @@ jobs:
         id: install_npm
         working-directory: bridge
         run: |
-          cp package.json yarn.lock
           yarn install --frozen-lockfile
 
       - name: Prepare test run
