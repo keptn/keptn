@@ -368,7 +368,7 @@ jobs:
           cat /tmp/gotest.log | gotestfmt
 
       - name: Format cypress log output
-        if: ${{ github.event_name }} == 'workflow_dispatch' && ${{ event.inputs.testUI == 'true' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && event.inputs.testUI == 'true' }}
         working-directory: bridge
         run: cat uitest.log
 
