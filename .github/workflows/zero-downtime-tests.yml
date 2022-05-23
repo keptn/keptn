@@ -9,6 +9,11 @@ on:
       upgradeTo:
         description: 'The helm upgrade command will run with this version (e.g. 0.15.0-dev-PR-7504)'
         required: true
+      testUI:
+        type: boolean
+        description: 'Cypress tests for Bridge will be run in parallel to the zero downtime tests'
+        required: true
+        default: true
       deleteOnFinish:
         type: boolean
         required: false
@@ -350,9 +355,11 @@ jobs:
           set -euo pipefail 
           
           cd ../test/zero-downtime && go test -json -v -run Test_ZeroDowntime -v -timeout 90m 2>&1 | tee /tmp/gotest.log &
-          while [[ $(jobs -pr) ]]; do
-            npm run test:ui >> /tmp/uitest.log 2>&1 
-          done
+          if "${{ github.event.inputs.testUI }}" == 'true'
+            while [[ $(jobs -pr) ]]; do
+              npm run test:ui >> /tmp/uitest.log 2>&1 
+            done
+          fi
 
       - name: Format go test log output
         if: always()
@@ -361,7 +368,7 @@ jobs:
           cat /tmp/gotest.log | gotestfmt
 
       - name: Format cypress log output
-        if: always()
+        if: "${{ github.event.inputs.testUI }}" == 'true'
         working-directory: bridge
         run: cat uitest.log
 
