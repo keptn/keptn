@@ -31,13 +31,13 @@ export function getSliResultInfo(indicatorResults: IndicatorResult[]): {
   );
 }
 
-function getTotalScore(evaluation: Trace): number {
+export function getTotalScore(evaluation: Trace): number {
   return evaluation.data.evaluation?.indicatorResults
     ? evaluation.data.evaluation?.indicatorResults.reduce((total: number, ir: IndicatorResult) => total + ir.score, 0)
     : 1;
 }
 
-function indicatorResultToDataPoint(
+export function indicatorResultToDataPoint(
   evaluation: Trace,
   scoreValue: number
 ): (indicatorResult: IndicatorResult) => IDataPoint {
@@ -62,7 +62,7 @@ function indicatorResultToDataPoint(
   };
 }
 
-function evaluationToDataPoint(evaluation: Trace, scoreValue: number): IDataPoint {
+export function evaluationToDataPoint(evaluation: Trace, scoreValue: number): IDataPoint {
   const resultInfo = getSliResultInfo(evaluation.data.evaluation?.indicatorResults ?? []);
   return {
     xElement: evaluation.getHeatmapLabel(),
@@ -87,14 +87,17 @@ function evaluationToDataPoint(evaluation: Trace, scoreValue: number): IDataPoin
 const evaluationToDataPoints = (points: IDataPoint[], evaluation: Trace): IDataPoint[] => {
   const scoreValue = evaluation.data.evaluation?.score ?? 0;
   const results: IDataPoint[] = evaluation.data.evaluation?.indicatorResults
-    ? evaluation.data.evaluation?.indicatorResults
-        .map(indicatorResultToDataPoint(evaluation, scoreValue))
-        .sort((a, b) => b.yElement.localeCompare(a.yElement))
+    ? evaluation.data.evaluation?.indicatorResults.map(indicatorResultToDataPoint(evaluation, scoreValue))
     : [];
   const score: IDataPoint = evaluationToDataPoint(evaluation, scoreValue);
   return [...points, ...results, score];
 };
 
 export function createDataPoints(evaluationHistory: Trace[]): IDataPoint[] {
-  return evaluationHistory.reduce(evaluationToDataPoints, []);
+  const dataPoints = evaluationHistory.reduce(evaluationToDataPoints, []);
+  const scores = dataPoints.filter((dp) => dp.tooltip.type === IHeatmapTooltipType.SCORE);
+  const sortedResults = dataPoints
+    .filter((dp) => dp.tooltip.type == IHeatmapTooltipType.SLI)
+    .sort((a, b) => a.yElement.localeCompare(b.yElement));
+  return [...scores, ...sortedResults];
 }

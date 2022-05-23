@@ -26,7 +26,12 @@
     </div>
   </div>
   <div *ngIf="(d3HeatmapEnabled$ | async) && showChart && !isInvalidated">
-    <ktb-heatmap [dataPoints]="dataPoints" (selectedDataPointChange)="dataPointChanged($event)"> </ktb-heatmap>
+    <ktb-heatmap
+      [dataPoints]="dataPoints"
+      [selectDataPoint]="selectedIdentifier"
+      (selectedDataPointChange)="dataPointChanged($event)"
+    >
+    </ktb-heatmap>
   </div>
   <div
     class="chart-container m-0"

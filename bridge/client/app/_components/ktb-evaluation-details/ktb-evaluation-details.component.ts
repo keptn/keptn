@@ -274,6 +274,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   public d3HeatmapEnabled$ = this.featureFlagService.featureFlags$.pipe(
     map((featureFlags: IClientFeatureFlags) => featureFlags.D3_HEATMAP_ENABLED)
   );
+  public selectedIdentifier = '';
 
   @Input()
   get evaluationData(): Trace | undefined {
@@ -299,6 +300,9 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       this._heatmapOptions.yAxis[0].categories = ['Score'];
       this._shouldSelectEvaluation = evaluationInfo.shouldSelect;
       this.evaluationDataChanged();
+      if (evaluationInfo.shouldSelect) {
+        this.selectedIdentifier = evaluationInfo.evaluation?.id ?? '';
+      }
     } else if (this._evaluationData) {
       this.dataService.loadEvaluationResults(this._evaluationData);
     }
