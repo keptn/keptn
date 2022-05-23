@@ -142,6 +142,8 @@ github.com/kelseyhightower/envconfig v1.4.0 h1:Im6hONhd3pLkfDFsbRgu68RDNkGF1r3dv
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
 github.com/keptn/go-utils v0.15.1-0.20220517082831-2052e1404e4c h1:Y3z1aDzmYrSJbtKggjKKzGmYrZ2bxwCPbENq/YqV6/o=
 github.com/keptn/go-utils v0.15.1-0.20220517082831-2052e1404e4c/go.mod h1:oxLLKz2u9KId2HgLH63+T0pUbcgiDd2GDkRrRKwxGUU=
+github.com/keptn/keptn/cp-common v0.0.0-20220523070440-9a1e3bffda90 h1:2bztZKSPJwiv3yYhGK/CbtAzhMvAn9hJDvxxce9R3j8=
+github.com/keptn/keptn/cp-common v0.0.0-20220523070440-9a1e3bffda90/go.mod h1:psPxY7jbD8Uj84PM/vv3Tj41DHbSPKVZZ1KF6eH9wKw=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/klauspost/compress v1.11.12/go.mod h1:aoV0uJVorq1K+umq18yTdKaF57EivdYsUV+/s2qKfXs=
 github.com/klauspost/compress v1.14.4 h1:eijASRJcobkVtSt81Olfh7JX43osYLwy5krOJo6YEu4=
