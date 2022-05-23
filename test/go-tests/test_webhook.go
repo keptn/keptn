@@ -491,7 +491,7 @@ func Test_Webhook_Beta_API(t *testing.T) {
 	require.Nil(t, err)
 
 	//temporary enabling all communication
-	PutConfigMapDataVal(GetKeptnNameSpaceFromEnv(), lib.WebhookConfigMap, "denyList", "kubernetes\nkubernetes.default\nkubernetes.default.svc\nkubernetes.default.svc.cluster.local\n::")
+	PutConfigMapDataVal(GetKeptnNameSpaceFromEnv(), lib.WebhookConfigMap, "denyList", "kubernetes")
 	defer PutConfigMapDataVal(GetKeptnNameSpaceFromEnv(), lib.WebhookConfigMap, "denyList", oldConfig)
 
 	api, err := NewAPICaller()
