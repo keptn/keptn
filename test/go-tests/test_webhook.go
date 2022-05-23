@@ -434,7 +434,7 @@ spec:
             name: "my-webhook-k8s-secret-token"
             key: "x-token"
       requests:
-        - url: %s
+        - url: http://shipyard-controller:8080/v1/project
           method: GET
           headers:
             - key: x-token
@@ -507,8 +507,7 @@ func Test_Webhook_Beta_API(t *testing.T) {
 	}, 3)
 	require.Nil(t, err)
 
-	url := api.baseURL + "/v1/metadata"
-	Test_WebhookConfigAtStageLevel(t, fmt.Sprintf(webhookSimpleYamlBetaAPI, url), projectName)
+	Test_WebhookConfigAtStageLevel(t, webhookSimpleYamlBetaAPI, projectName)
 }
 
 func Test_Webhook(t *testing.T, webhookYaml string, projectName, serviceName string) {
