@@ -794,16 +794,7 @@ func (sc *shipyardController) triggerTask(eventScope models.EventScope, sequence
 
 	sc.onSequenceTaskTriggered(*storeEvent)
 
-	sequenceExecution.Status.CurrentTask = models.TaskExecutionState{
-		Name:        task.Name,
-		TriggeredID: storeEvent.ID,
-		Events:      []models.TaskEvent{},
-	}
-
-	// special handling for approval events
-	if task.Name == "approval" {
-		sequenceExecution.Status.State = apimodels.SequenceWaitingForApprovalState
-	}
+	sequenceExecution.SetNextCurrentTask(task.Name, storeEvent.ID)
 
 	if err := sc.sequenceExecutionRepo.Upsert(sequenceExecution, nil); err != nil {
 		return err
