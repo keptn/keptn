@@ -58,6 +58,7 @@ type WebHookSecretRef struct {
 
 const webhookConfInvalid = "Webhook configuration invalid: "
 const betaApiVersion = "webhookconfig.keptn.sh/v1beta1"
+const alphaApiVersion = "webhookconfig.keptn.sh/v1alpha1"
 
 var supportedCurlMethods = [4]string{"POST", "PUT", "GET", "HEAD"}
 
@@ -68,6 +69,10 @@ func DecodeWebHookConfigYAML(webhookConfigYaml []byte) (*WebHookConfig, error) {
 
 	if err := yaml.Unmarshal(webhookConfigYaml, webHookConfig); err != nil {
 		return nil, err
+	}
+
+	if webHookConfig.ApiVersion != alphaApiVersion && webHookConfig.ApiVersion != betaApiVersion {
+		return nil, errors.New(fmt.Sprintf(webhookConfInvalid+"unsupported webhook configuration version '%s'", webHookConfig.ApiVersion))
 	}
 
 	if len(webHookConfig.Spec.Webhooks) == 0 {
