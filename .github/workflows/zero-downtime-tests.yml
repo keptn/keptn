@@ -348,8 +348,11 @@ jobs:
           KEPTN_ENDPOINT: ${{ steps.determine_keptn_endpoint.outputs.KEPTN_ENDPOINT }}
         run: |
           set -euo pipefail 
-          npm run test:ui > uitest.log 2>&1 &
-          cd ../test/zero-downtime && go test -json -v -run Test_ZeroDowntime -v -timeout 90m 2>&1 | tee /tmp/gotest.log 
+          
+          cd ../test/zero-downtime && go test -json -v -run Test_ZeroDowntime -v -timeout 90m 2>&1 | tee /tmp/gotest.log &
+          while [[ $(jobs -pr) ]]; do
+            npm run test:ui >> uitest.log 2>&1 
+          done
 
       - name: Format go test log output
         if: always()
