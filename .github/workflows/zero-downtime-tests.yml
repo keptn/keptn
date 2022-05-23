@@ -368,7 +368,7 @@ jobs:
           cat /tmp/gotest.log | gotestfmt
 
       - name: Format cypress log output
-        if: event.inputs.testUI == 'true'
+        if: ${{ github.event_name }} == 'workflow_dispatch' && ${{ event.inputs.testUI == 'true' }}
         working-directory: bridge
         run: cat uitest.log
 
@@ -457,7 +457,7 @@ jobs:
       # Upload the original cypress test log as an artifact for later review.
       - name: Upload cypress test log
         uses: actions/upload-artifact@v2
-        if: event.inputs.testUI == 'true'
+        if: ${{ github.event.inputs.testUI == 'true' }}
         with:
           name: ui-test-log
           path:  /tmp/uitest.log
