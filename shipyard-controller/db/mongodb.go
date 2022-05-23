@@ -16,6 +16,7 @@ func SetupTTLIndex(ctx context.Context, propertyName string, duration time.Durat
 	if err != nil {
 		return fmt.Errorf("could not load list of indexes of collection %s: %w", collection.Name(), err)
 	}
+	defer cur.Close(ctx)
 
 	// get all indexes
 	var ixs []bson.M

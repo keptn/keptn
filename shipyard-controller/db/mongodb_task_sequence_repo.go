@@ -35,6 +35,7 @@ func (mdbrepo *TaskSequenceMongoDBRepo) GetTaskExecutions(project string, filter
 	if err != nil && err != mongo.ErrNoDocuments {
 		return nil, err
 	}
+	defer cur.Close(ctx)
 
 	result := []models.TaskExecution{}
 

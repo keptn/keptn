@@ -86,6 +86,7 @@ func (mdbrepo *MongoDBStateRepo) FindSequenceStates(filter models.StateFilter) (
 	if err != nil && err != mongo.ErrNoDocuments {
 		return nil, err
 	}
+	defer cur.Close(ctx)
 
 	result := &models.SequenceStates{
 		States:      []models.SequenceState{},

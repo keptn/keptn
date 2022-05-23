@@ -332,6 +332,8 @@ func (mdbrepo *MongoDBUniformRepo) findIntegrations(searchParams models.GetUnifo
 		return nil, err
 	}
 
+	defer cur.Close(ctx)
+
 	result := []models.Integration{}
 
 	for cur.Next(ctx) {
@@ -365,6 +367,7 @@ func (mdbrepo *MongoDBUniformRepo) DeleteServiceFromSubscriptions(subscriptionNa
 	if err != nil && err != mongo.ErrNoDocuments {
 		return err
 	}
+	defer cur.Close(ctx)
 
 	for cur.Next(ctx) {
 		integration := &models.Integration{}

@@ -188,13 +188,14 @@ func (m *MongoDBEventQueueRepo) GetEventQueueSequenceStates(filter models.EventQ
 		return nil, ErrNoEventFound
 	} else if err != nil {
 		return nil, err
-	} else if cur.RemainingBatchLength() == 0 {
+	}
+	defer cur.Close(ctx)
+	if cur.RemainingBatchLength() == 0 {
 		return nil, ErrNoEventFound
 	}
 
 	stateItems := []models.EventQueueSequenceState{}
 
-	defer cur.Close(ctx)
 	for cur.Next(ctx) {
 		stateItem := models.EventQueueSequenceState{}
 		err := cur.Decode(&stateItem)
@@ -253,13 +254,14 @@ func getQueueItemsFromCollection(collection *mongo.Collection, ctx context.Conte
 		return nil, ErrNoEventFound
 	} else if err != nil {
 		return nil, err
-	} else if cur.RemainingBatchLength() == 0 {
+	}
+	defer cur.Close(ctx)
+	if cur.RemainingBatchLength() == 0 {
 		return nil, ErrNoEventFound
 	}
 
 	queuedItems := []models.QueueItem{}
 
-	defer cur.Close(ctx)
 	for cur.Next(ctx) {
 		queueItem := models.QueueItem{}
 		err := cur.Decode(&queueItem)

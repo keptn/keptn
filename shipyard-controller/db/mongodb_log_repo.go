@@ -84,6 +84,8 @@ func (mdbrepo *MongoDBLogRepo) GetLogEntries(params models.GetLogParams) (*model
 		return nil, err
 	}
 
+	defer cur.Close(ctx)
+
 	result := &models.GetLogsResponse{
 		Logs:        []models.LogEntry{},
 		NextPageKey: 0,

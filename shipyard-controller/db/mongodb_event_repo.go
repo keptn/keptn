@@ -55,13 +55,14 @@ func (mdbrepo *MongoDBEventsRepo) GetEvents(project string, filter common.EventF
 		return nil, ErrNoEventFound
 	} else if err != nil {
 		return nil, err
-	} else if cur.RemainingBatchLength() == 0 {
+	}
+	defer cur.Close(ctx)
+	if cur.RemainingBatchLength() == 0 {
 		return nil, ErrNoEventFound
 	}
 
 	events := []models.Event{}
 
-	defer cur.Close(ctx)
 	for cur.Next(ctx) {
 		event, err := decodeKeptnEvent(cur)
 		if err != nil {
@@ -117,6 +118,7 @@ func (mdbrepo *MongoDBEventsRepo) GetRootEvents(getRootParams models.GetRootEven
 	if err != nil && err != mongo.ErrNoDocuments {
 		return nil, err
 	}
+	defer cur.Close(ctx)
 
 	result := &models.GetEventsResult{
 		Events:      []models.Event{},
