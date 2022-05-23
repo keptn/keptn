@@ -84,7 +84,7 @@ var testSequenceExecution = models.SequenceExecution{
 		},
 		KeptnContext: "ctx1",
 	},
-	TriggeredAt: time.Date(2021, 4, 21, 17, 00, 00, 0, time.Local),
+	TriggeredAt: time.Date(2021, 4, 21, 17, 00, 00, 0, time.UTC),
 	InputProperties: map[string]interface{}{
 		"foo.bar": "xyz",
 	},

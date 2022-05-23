@@ -276,7 +276,7 @@ func getTestSequenceExecution() (models.EventScope, models.SequenceExecution) {
 			},
 		},
 		Scope:       scope,
-		TriggeredAt: time.Date(2021, 4, 21, 17, 00, 00, 0, time.Local),
+		TriggeredAt: time.Date(2021, 4, 21, 17, 00, 00, 0, time.UTC),
 	}
 	return scope, sequence
 }
