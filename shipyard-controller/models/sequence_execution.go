@@ -187,6 +187,27 @@ func (e *SequenceExecution) Resume() bool {
 	return true
 }
 
+// SetNextCurrentTask updates the Current task of the sequence and sets the current state appropriately, considering the special logic that should be applied for approval tasks
+func (e *SequenceExecution) SetNextCurrentTask(taskName, triggeredEventID string) {
+	e.Status.CurrentTask = TaskExecutionState{
+		Name:        taskName,
+		TriggeredID: triggeredEventID,
+		Events:      []TaskEvent{},
+	}
+
+	// special handling for approval events
+	nextState := models.SequenceStartedState
+	if taskName == keptnv2.ApprovalTaskName {
+		nextState = models.SequenceWaitingForApprovalState
+	}
+
+	if e.IsPaused() {
+		e.Status.StateBeforePause = nextState
+	} else {
+		e.Status.State = nextState
+	}
+}
+
 // IsFinished indicates if a task is finished, i.e. the number of task.started and task.finished events line up
 func (e *TaskExecutionState) IsFinished() bool {
 	if len(e.Events) == 0 {
