@@ -159,12 +159,12 @@ func (sd *SequenceDispatcher) isSequenceBlocked(queueItem models.QueueItem) (boo
 		Status: []string{apimodels.SequenceStartedState},
 	})
 	if err != nil {
-		log.Errorf("Could not load started sequences: %v", err)
+		log.Errorf("Could not load started sequences for project %s, service %s, stage %s: %v", queueItem.Scope.Project, queueItem.Scope.Service, queueItem.Scope.Stage, err)
 		return true, err
 	}
 
 	if len(startedSequenceExecutions) > 0 {
-		log.Infof("Sequence with KeptnContext %s blocked due to started sequences", queueItem.Scope.KeptnContext)
+		log.Infof("Sequence with KeptnContext %s blocked due to started sequence with KeptnContext %s in stage %s", queueItem.Scope.KeptnContext, startedSequenceExecutions[0].Scope.KeptnContext, queueItem.Scope.Stage)
 		return true, nil
 	}
 
@@ -181,23 +181,23 @@ func (sd *SequenceDispatcher) isSequenceBlocked(queueItem models.QueueItem) (boo
 		TriggeredAt: queueItem.Timestamp,
 	})
 	if err != nil {
-		log.Errorf("Could not load triggered sequences: %v", err)
+		log.Errorf("Could not load triggered sequences for project %s, service %s, stage %s: %v", queueItem.Scope.Project, queueItem.Scope.Service, queueItem.Scope.Stage, err)
 		return true, err
 	}
 
 	if len(triggeredSequenceExecutions) == 1 {
 		if triggeredSequenceExecutions[0].Scope.KeptnContext != queueItem.Scope.KeptnContext {
-			log.Infof("Sequence with KeptnContext %s blocked due to triggered sequence", queueItem.Scope.KeptnContext)
+			log.Infof("Sequence with KeptnContext %s is blocked due to triggered sequence with KeptnContext %s in stage %s", queueItem.Scope.KeptnContext, triggeredSequenceExecutions[0].Scope.KeptnContext, queueItem.Scope.Stage)
 			return true, nil
 		}
 	}
 
 	if len(triggeredSequenceExecutions) > 1 {
-		log.Infof("Sequence with KeptnContext %s blocked due to triggered sequences", queueItem.Scope.KeptnContext)
+		log.Infof("Sequence with KeptnContext %s is blocked due to triggered sequences in stage %s", queueItem.Scope.KeptnContext, queueItem.Scope.Stage)
 		return true, nil
 	}
 
-	log.Infof("Sequence with KeptnContext %s not blocked by any other sequence", queueItem.Scope.KeptnContext)
+	log.Infof("Sequence with KeptnContext %s is not blocked by any other sequence in stage %s", queueItem.Scope.KeptnContext, queueItem.Scope.Stage)
 	return false, nil
 }
 
@@ -223,7 +223,6 @@ func (sd *SequenceDispatcher) dispatchSequence(queueItem models.QueueItem) error
 	}
 
 	if sequenceBlocked {
-		log.Infof("Sequence %s cannot be started yet because sequences are still running in stage %s", queueItem.Scope.KeptnContext, queueItem.Scope.Stage)
 		return ErrSequenceBlockedWaiting
 	}
 
