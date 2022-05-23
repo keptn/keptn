@@ -1,5 +1,9 @@
 name: ZeroDowntime Tests
 on:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron: '0 1 * * 1' # run zd tests at 1 AM (UTC), monday(1)
+
   workflow_dispatch: # run zero downtime tests selecting the installation branch and the upgrade chart
     inputs:
       branch:
@@ -368,7 +372,7 @@ jobs:
           cat /tmp/gotest.log | gotestfmt
 
       - name: Format cypress log output
-        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.testUI == 'true' }}
+        if: github.event.inputs.testUI == 'true'
         working-directory: bridge
         run: cat uitest.log
 
@@ -457,7 +461,7 @@ jobs:
       # Upload the original cypress test log as an artifact for later review.
       - name: Upload cypress test log
         uses: actions/upload-artifact@v2
-        if: ${{ github.event.inputs.testUI == 'true' }}
+        if: github.event.inputs.testUI == 'true'
         with:
           name: ui-test-log
           path:  /tmp/uitest.log
