@@ -80,7 +80,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
       this.notificationService.addNotification(NotificationType.INFO, 'Login required. Redirecting to login.');
       // Wait for few moments to let user see the toast message and navigate to external login route
       setTimeout(() => (window.location.href = this.location.prepareExternalUrl('/oauth/login')), 1000);
-      return throwError(() => error);
+      return NEVER;
     }
 
     if (authType === AuthType.BASIC) {
