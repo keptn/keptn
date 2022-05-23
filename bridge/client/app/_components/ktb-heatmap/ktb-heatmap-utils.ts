@@ -92,14 +92,17 @@ export function calculateTooltipPosition(
  * @private
  */
 export function getAvailableIdentifiers(identifiers: string[], groupedData: GroupedDataPoints): string[] {
-  return identifiers.filter((identifier) => !!findXElementThroughIdentifier(identifier, groupedData));
+  return identifiers.filter((identifier) => !!findDataPointThroughIdentifier(identifier, groupedData));
 }
 
-export function findXElementThroughIdentifier(identifier: string, groupedData: GroupedDataPoints): string | undefined {
+export function findDataPointThroughIdentifier(
+  identifier: string,
+  groupedData: GroupedDataPoints
+): IDataPoint | undefined {
   for (const key of Object.keys(groupedData)) {
     const dataPoint = groupedData[key].find((dt) => dt.identifier === identifier);
     if (dataPoint) {
-      return dataPoint.xElement;
+      return dataPoint;
     }
   }
   return undefined;
@@ -118,14 +121,18 @@ export function getDataPointElement(x: number, y: number): SVGRectElement | unde
   return element;
 }
 
+export function getYAxisElements(data: GroupedDataPoints): string[] {
+  return Object.keys(data).reverse();
+}
+
 export function getAxisElements(
   data: GroupedDataPoints,
   limitYElementCount: number
 ): { yElements: string[]; xElements: string[]; showMoreVisible: boolean } {
-  let yElements = Object.keys(data);
+  let yElements = getYAxisElements(data);
   const showMoreVisible = yElements.length > limitYElementCount;
   yElements = getLimitedYElements(yElements, limitYElementCount);
-  const allXElements = yElements.reduce((xElements: string[], yElement: string) => {
+  const allXElements = [...yElements].reverse().reduce((xElements: string[], yElement: string) => {
     return [...xElements, ...data[yElement].map((dataPoint) => dataPoint.xElement)];
   }, []);
   return {

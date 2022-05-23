@@ -27,18 +27,38 @@ export class KtbTestHeatmapComponent implements OnInit {
   }
 
   private generateTestData(sliCounter: number, counter: number): IDataPoint[] {
-    const categories = [];
+    const categories = ['score'];
+    const slis = [];
     for (let i = 0; i < sliCounter - 1; ++i) {
-      categories.push(`response time p${i}`);
+      slis.push(`response time p${i}`);
     }
-    categories.push(`response time p${sliCounter - 1} very long SLI name here`);
+    slis.push(`response time p${sliCounter - 1} very long SLI name here`);
+    categories.push(...slis);
     const data: IDataPoint[] = [];
     const dateMillis = new Date().getTime();
-    let y = 0;
+
+    data.push({
+      xElement: moment(new Date(dateMillis - 1000 * 60)).format('YYYY-MM-DD HH:mm'),
+      yElement: 'score',
+      color: this.getColor(-1 % 4),
+      tooltip: {
+        type: IHeatmapTooltipType.SCORE,
+        value: -1,
+        fail: -1 % 2 === 1,
+        failedCount: -1 + 4,
+        warn: -1 % 2 === 0,
+        passCount: -1,
+        thresholdPass: -1 + 1,
+        thresholdWarn: -1 + 2,
+        warningCount: -1 + 3,
+      },
+      identifier: `keptnContext_${-1}`,
+      comparedIdentifier: [],
+    });
 
     // adding one duplicate (two evaluations have the same time)
-    for (const category of [...categories, 'score']) {
-      ++y;
+    let y = -1;
+    for (const category of categories) {
       data.push({
         xElement: moment(new Date(dateMillis)).format('YYYY-MM-DD HH:mm'),
         yElement: category,
@@ -66,12 +86,32 @@ export class KtbTestHeatmapComponent implements OnInit {
         identifier: `keptnContext_${-1}`,
         comparedIdentifier: [],
       });
+      ++y;
     }
 
     // fill SLIs with random data (-1 to have an evaluation with "missing" data)
     let offset = 0;
-    for (const category of categories) {
-      for (let i = 0; i < counter - 1; ++i) {
+    for (let i = 0; i < counter - 1; ++i) {
+      data.push({
+        xElement: moment(new Date(dateMillis + i * 1000 * 60)).format('YYYY-MM-DD HH:mm'),
+        yElement: 'score',
+        color: this.getColor(i % 4),
+        tooltip: {
+          type: IHeatmapTooltipType.SCORE,
+          value: i,
+          fail: i % 2 === 1,
+          failedCount: i + 4,
+          warn: i % 2 === 0,
+          passCount: i,
+          thresholdPass: i + 1,
+          thresholdWarn: i + 2,
+          warningCount: i + 3,
+        },
+        identifier: `keptnContext_${i}`,
+        comparedIdentifier: [`keptnContext_${i - 1}`, `keptnContext_${i - 2}`],
+      });
+      offset++;
+      for (const category of slis) {
         data.push({
           xElement: moment(new Date(dateMillis + i * 1000 * 60)).format('YYYY-MM-DD HH:mm'),
           yElement: category,
@@ -99,29 +139,9 @@ export class KtbTestHeatmapComponent implements OnInit {
           identifier: `keptnContext_${i}`,
           comparedIdentifier: [`keptnContext_${i - 1}`, `keptnContext_${i - 2}`],
         });
+        ++offset;
       }
-      ++offset;
-    }
-    categories.push('score');
-    for (let i = 0; i < counter; ++i) {
-      data.push({
-        xElement: moment(new Date(dateMillis + i * 1000 * 60)).format('YYYY-MM-DD HH:mm'),
-        yElement: 'score',
-        color: this.getColor(i % 4),
-        tooltip: {
-          type: IHeatmapTooltipType.SCORE,
-          value: i,
-          fail: i % 2 === 1,
-          failedCount: i + 4,
-          warn: i % 2 === 0,
-          passCount: i,
-          thresholdPass: i + 1,
-          thresholdWarn: i + 2,
-          warningCount: i + 3,
-        },
-        identifier: `keptnContext_${i}`,
-        comparedIdentifier: [`keptnContext_${i - 1}`, `keptnContext_${i - 2}`],
-      });
+      offset = 0;
     }
     return data;
   }
