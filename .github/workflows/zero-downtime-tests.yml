@@ -351,7 +351,7 @@ jobs:
           
           cd ../test/zero-downtime && go test -json -v -run Test_ZeroDowntime -v -timeout 90m 2>&1 | tee /tmp/gotest.log &
           while [[ $(jobs -pr) ]]; do
-            npm run test:ui >> uitest.log 2>&1 
+            npm run test:ui >> /tmp/uitest.log 2>&1 
           done
 
       - name: Format go test log output
@@ -453,7 +453,7 @@ jobs:
         if: always()
         with:
           name: ui-test-log
-          path:  ../bridge/uitest.log
+          path:  /tmp/uitest.log
           if-no-files-found: error
 
   calculate-total-runtime:
