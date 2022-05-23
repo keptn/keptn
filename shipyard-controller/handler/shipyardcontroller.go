@@ -799,8 +799,10 @@ func (sc *shipyardController) triggerTask(eventScope models.EventScope, sequence
 	}
 
 	// special handling for approval events
-	if task.Name == "approval" {
+	if task.Name == keptnv2.ApprovalTaskName {
 		sequenceExecution.Status.State = apimodels.SequenceWaitingForApprovalState
+	} else if !sequenceExecution.IsPaused() {
+		sequenceExecution.Status.State = apimodels.SequenceStartedState
 	}
 
 	if err := sc.sequenceExecutionRepo.Upsert(sequenceExecution, nil); err != nil {
