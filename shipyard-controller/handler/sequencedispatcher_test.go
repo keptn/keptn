@@ -383,7 +383,8 @@ func TestSequenceDispatcher_QueueIsNotEmpty(t *testing.T) {
 		},
 	}
 
-	currentSequenceExecutions := []models.SequenceExecution{}
+	startedSequenceExecutions := []models.SequenceExecution{}
+	triggeredSequenceExecutions := []models.SequenceExecution{}
 
 	mockSequenceQueueRepo := &dbmock.SequenceQueueRepoMock{
 		QueueSequenceFunc: func(item models.QueueItem) error {
@@ -394,18 +395,18 @@ func TestSequenceDispatcher_QueueIsNotEmpty(t *testing.T) {
 			return mockQueue, nil
 		},
 		DeleteQueuedSequencesFunc: func(itemFilter models.QueueItem) error {
-			for index := range mockQueue {
-				if mockQueue[index].EventID == itemFilter.EventID {
-					mockQueue = append(mockQueue[:index], mockQueue[index+1:]...)
-				}
-			}
 			return nil
 		},
 	}
 
 	mockSequenceExecutionRepo := &dbmock.SequenceExecutionRepoMock{
 		GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
-			return currentSequenceExecutions, nil
+			if filter.Status[0] == apimodels.SequenceStartedState {
+				return startedSequenceExecutions, nil
+			} else {
+				return triggeredSequenceExecutions, nil
+			}
+
 		},
 		GetByTriggeredIDFunc: func(project string, triggeredID string) (*models.SequenceExecution, error) {
 			return &models.SequenceExecution{
@@ -457,7 +458,7 @@ func TestSequenceDispatcher_QueueIsNotEmpty(t *testing.T) {
 	require.Len(t, mockSequenceQueueRepo.QueueSequenceCalls(), 0)
 
 	// let's add some running sequences
-	currentSequenceExecutions = []models.SequenceExecution{{
+	startedSequenceExecutions = []models.SequenceExecution{{
 		ID: "my-id",
 		Sequence: keptnv2.Sequence{
 			Name: "delivery",
@@ -496,6 +497,110 @@ func TestSequenceDispatcher_QueueIsNotEmpty(t *testing.T) {
 
 	// the sequence should be inserted into the queue
 	require.Len(t, mockSequenceQueueRepo.QueueSequenceCalls(), 1)
+
+	// let's add some waiting sequences
+	startedSequenceExecutions = []models.SequenceExecution{}
+	triggeredSequenceExecutions = []models.SequenceExecution{
+		{
+			ID: "my-id",
+			Sequence: keptnv2.Sequence{
+				Name: "delivery",
+			},
+			Status: models.SequenceExecutionStatus{
+				State: apimodels.SequenceTriggeredState,
+			},
+			Scope: models.EventScope{
+				EventData: keptnv2.EventData{
+					Project: "my-project",
+					Stage:   "my-stage",
+					Service: "my-service",
+				},
+				KeptnContext: "my-context-id22",
+			},
+		},
+		{
+			ID: "my-id",
+			Sequence: keptnv2.Sequence{
+				Name: "delivery",
+			},
+			Status: models.SequenceExecutionStatus{
+				State: apimodels.SequenceTriggeredState,
+			},
+			Scope: models.EventScope{
+				EventData: keptnv2.EventData{
+					Project: "my-project",
+					Stage:   "my-stage",
+					Service: "my-service",
+				},
+				KeptnContext: "my-context-id4",
+			},
+		},
+	}
+
+	// now, let's add a sequence - should not be started immediately since there is another sequence in execution in the same stage
+	queueItem = models.QueueItem{
+		Scope: models.EventScope{
+			EventData: keptnv2.EventData{
+				Project: "my-project",
+				Stage:   "my-stage",
+				Service: "my-service",
+			},
+			KeptnContext: "my-context-id4",
+			EventType:    keptnv2.GetTriggeredEventType("dev.delivery"),
+		},
+		EventID: "my-event-id2",
+	}
+	err = sequenceDispatcher.Add(queueItem)
+	require.Equal(t, err.Error(), "sequence is currently blocked by waiting for another sequence to end")
+	require.Len(t, mockSequenceExecutionRepo.GetCalls(), 5)
+
+	require.Len(t, mockEventRepo.GetEventsCalls(), 1)
+
+	// the sequence should be inserted into the queue
+	require.Len(t, mockSequenceQueueRepo.QueueSequenceCalls(), 2)
+
+	// let's add some waiting sequences
+	triggeredSequenceExecutions = []models.SequenceExecution{
+		{
+			ID: "my-id",
+			Sequence: keptnv2.Sequence{
+				Name: "delivery",
+			},
+			Status: models.SequenceExecutionStatus{
+				State: apimodels.SequenceTriggeredState,
+			},
+			Scope: models.EventScope{
+				EventData: keptnv2.EventData{
+					Project: "my-project",
+					Stage:   "my-stage",
+					Service: "my-service",
+				},
+				KeptnContext: "my-context-id5",
+			},
+		},
+	}
+
+	// now, let's add a sequence - should be started immediately since there is no other sequence in execution in the same stage
+	queueItem = models.QueueItem{
+		Scope: models.EventScope{
+			EventData: keptnv2.EventData{
+				Project: "my-project",
+				Stage:   "my-stage",
+				Service: "my-service",
+			},
+			KeptnContext: "my-context-id5",
+			EventType:    keptnv2.GetTriggeredEventType("dev.delivery"),
+		},
+		EventID: "my-event-id2",
+	}
+	err = sequenceDispatcher.Add(queueItem)
+	require.Nil(t, err)
+	require.Len(t, mockSequenceExecutionRepo.GetCalls(), 7)
+
+	require.Len(t, mockEventRepo.GetEventsCalls(), 2)
+
+	// the sequence should be inserted into the queue
+	require.Len(t, mockSequenceQueueRepo.QueueSequenceCalls(), 2)
 }
 
 func getQueueItem(id string) models.QueueItem {
