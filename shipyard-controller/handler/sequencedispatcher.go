@@ -159,10 +159,12 @@ func (sd *SequenceDispatcher) isSequenceBlocked(queueItem models.QueueItem) (boo
 		Status: []string{apimodels.SequenceStartedState},
 	})
 	if err != nil {
+		log.Errorf("Could not load started sequences: %w", err)
 		return true, err
 	}
 
 	if len(startedSequenceExecutions) > 0 {
+		log.Infof("Sequence with KeptnContext %s blocked due to started sequences", queueItem.Scope.KeptnContext)
 		return true, nil
 	}
 
@@ -179,19 +181,23 @@ func (sd *SequenceDispatcher) isSequenceBlocked(queueItem models.QueueItem) (boo
 		TriggeredAt: queueItem.Timestamp,
 	})
 	if err != nil {
+		log.Errorf("Could not load triggered sequences: %w", err)
 		return true, err
 	}
 
 	if len(triggeredSequenceExecutions) == 1 {
 		if triggeredSequenceExecutions[0].Scope.KeptnContext != queueItem.Scope.KeptnContext {
+			log.Infof("Sequence with KeptnContext %s blocked due to triggered sequence", queueItem.Scope.KeptnContext)
 			return true, nil
 		}
 	}
 
 	if len(triggeredSequenceExecutions) > 1 {
+		log.Infof("Sequence with KeptnContext %s blocked due to triggered sequences", queueItem.Scope.KeptnContext)
 		return true, nil
 	}
 
+	log.Infof("Sequence with KeptnContext %s not blocked by any other sequence", queueItem.Scope.KeptnContext)
 	return false, nil
 }
 
