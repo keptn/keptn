@@ -457,9 +457,9 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     this._changeDetectorRef.detectChanges();
   }
 
-  dataPointChanged(dataPoint: IDataPoint): void {
+  dataPointChanged(identifier: string): void {
     this.selectEvaluationData(
-      this._evaluationDatas.find((value) => value.id === dataPoint.identifier),
+      this._evaluationDatas.find((value) => value.id === identifier),
       true
     );
   }
