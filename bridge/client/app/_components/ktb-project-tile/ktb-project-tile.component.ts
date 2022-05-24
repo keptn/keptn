@@ -2,9 +2,8 @@ import { Component, Input, OnDestroy } from '@angular/core';
 import { Project } from '../../_models/project';
 import { filter, takeUntil } from 'rxjs/operators';
 import { DataService } from '../../_services/data.service';
-import { Metadata } from '../../_models/metadata';
+import { IMetadata } from '../../_interfaces/metadata';
 import { Subject } from 'rxjs';
-import { KeptnInfo } from '../../_models/keptn-info';
 
 @Component({
   selector: 'ktb-project-tile',
@@ -13,7 +12,7 @@ import { KeptnInfo } from '../../_models/keptn-info';
 })
 export class KtbProjectTileComponent implements OnDestroy {
   public _project?: Project;
-  public supportedShipyardVersion?: string;
+  public supportedShipyardVersion?: string | null;
   private unsubscribe$ = new Subject<void>();
 
   @Input()
@@ -28,13 +27,13 @@ export class KtbProjectTileComponent implements OnDestroy {
   }
 
   constructor(private dataService: DataService) {
-    this.dataService.keptnInfo
+    this.dataService.keptnMetadata
       .pipe(
         takeUntil(this.unsubscribe$),
-        filter((keptnInfo: KeptnInfo | undefined): keptnInfo is KeptnInfo => !!keptnInfo)
+        filter((metadata): metadata is IMetadata | null => metadata !== undefined)
       )
-      .subscribe((keptnInfo) => {
-        this.supportedShipyardVersion = (keptnInfo.metadata as Metadata)?.shipyardversion;
+      .subscribe((metadata) => {
+        this.supportedShipyardVersion = metadata === null ? null : metadata.shipyardversion;
       });
   }
 

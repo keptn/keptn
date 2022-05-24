@@ -7,6 +7,7 @@ import { Location } from '@angular/common';
 import { RETRY_ON_HTTP_ERROR } from '../_utils/app.utils';
 import { NotificationsService } from '../_services/notifications.service';
 import { NotificationType } from '../_models/notification';
+import { AuthType } from '../../../shared/models/auth-type';
 
 @Injectable({
   providedIn: 'root',
@@ -33,7 +34,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
     );
   }
 
-  handleError(response: HttpErrorResponse): Observable<HttpEvent<unknown>> {
+  private handleError(response: HttpErrorResponse): Observable<HttpEvent<unknown>> {
     if (response.status === 401) {
       return this.handleUnauthorizedError(response);
     }
@@ -43,28 +44,28 @@ export class HttpErrorInterceptor implements HttpInterceptor {
         NotificationType.ERROR,
         'You do not have the permissions to perform this action.'
       );
-      return EMPTY;
+      return throwError(() => response);
     }
 
     if (response.status === 409 && response.url?.endsWith('/api/secrets/v1/secret')) {
       // Special case for already existing secrets - for unit test has to be before instanceof ErrorEvent
-      return throwError(response);
+      return throwError(() => response);
     }
 
     if (typeof response.error === 'string') {
       // The backend returned an unsuccessful response code.
       // The response body may contain clues as to what went wrong,
       this.notificationService.addNotification(NotificationType.ERROR, response.error);
-      return throwError(response);
+      return throwError(() => response);
     }
 
     // A client-side or network error occurred. Handle it accordingly.
     this.notificationService.addNotification(NotificationType.ERROR, response.message);
-    return throwError(response);
+    return throwError(() => response);
   }
 
-  handleUnauthorizedError(error: HttpErrorResponse): Observable<HttpEvent<unknown>> {
-    const authType = error.headers.get('keptn-auth-type');
+  private handleUnauthorizedError(error: HttpErrorResponse): Observable<HttpEvent<unknown>> {
+    const authType = error.headers.get('keptn-auth-type') as AuthType | null;
 
     if (this.isAuthorizedErrorShown) {
       return EMPTY;
@@ -74,7 +75,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
       return NEVER;
     }
 
-    if (authType === 'OAUTH') {
+    if (authType === AuthType.OAUTH) {
       this.isReloading = true;
       this.notificationService.addNotification(NotificationType.INFO, 'Login required. Redirecting to login.');
       // Wait for few moments to let user see the toast message and navigate to external login route
@@ -82,13 +83,13 @@ export class HttpErrorInterceptor implements HttpInterceptor {
       return NEVER;
     }
 
-    if (authType === 'BASIC') {
+    if (authType === AuthType.BASIC) {
       this.isAuthorizedErrorShown = true;
       this.notificationService.addNotification(
         NotificationType.ERROR,
         'Login credentials invalid. Please check your provided username and password.'
       );
-      return EMPTY;
+      return throwError(() => error);
     }
 
     let errorInfo;
@@ -100,6 +101,6 @@ export class HttpErrorInterceptor implements HttpInterceptor {
     this.isAuthorizedErrorShown = true;
     this.notificationService.addNotification(NotificationType.ERROR, errorInfo);
 
-    return EMPTY;
+    return throwError(() => error);
   }
 }

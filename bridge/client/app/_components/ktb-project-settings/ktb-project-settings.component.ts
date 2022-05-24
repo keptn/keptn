@@ -1,5 +1,5 @@
 import { Component, HostListener, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
-import { Observable, of, Subject } from 'rxjs';
+import { combineLatest, Observable, of, Subject } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { KtbProjectSettingsGitComponent } from '../ktb-project-settings-git/ktb-project-settings-git.component';
 import { DeleteData, DeleteResult, DeleteType } from '../../_interfaces/delete';
@@ -20,12 +20,21 @@ import { IGitData, IGitDataExtended } from '../../_interfaces/git-upstream';
 import { AppUtils } from '../../_utils/app.utils';
 import { FeatureFlagsService } from '../../_services/feature-flags.service';
 import { KeptnInfo } from '../../_models/keptn-info';
+import { IMetadata } from '../../_interfaces/metadata';
+import { ServerErrors } from '../../_models/server-error';
 
 type DialogState = null | 'unsaved';
+
+enum ProjectSettingsStatus {
+  ERROR,
+  INIT,
+  LOADED,
+}
 
 interface ProjectSettingsState {
   gitUpstreamRequired: boolean | undefined;
   automaticProvisioningMessage: string | undefined;
+  state: ProjectSettingsStatus;
 }
 
 @Component({
@@ -35,6 +44,8 @@ interface ProjectSettingsState {
 })
 export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingChangesComponent {
   private readonly unsubscribe$ = new Subject<void>();
+  public ServerErrors = ServerErrors;
+  public ProjectSettingsStatus = ProjectSettingsStatus;
 
   @ViewChild('deleteProjectDialog')
   private deleteProjectDialog?: TemplateRef<MatDialog>;
@@ -65,13 +76,23 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
   public unsavedDialogState: DialogState = null;
   public resourceServiceEnabled?: boolean;
 
-  readonly state$: Observable<ProjectSettingsState> = this.dataService.keptnInfo.pipe(
-    filter((keptnInfo: KeptnInfo | undefined): keptnInfo is KeptnInfo => !!keptnInfo),
-    map((keptnInfo: KeptnInfo) => ({
-      gitUpstreamRequired: !keptnInfo.metadata.automaticprovisioning,
-      automaticProvisioningMessage: keptnInfo.bridgeInfo.automaticProvisioningMsg,
-    })),
-    startWith({ gitUpstreamRequired: undefined, automaticProvisioningMessage: undefined })
+  readonly state$: Observable<ProjectSettingsState> = combineLatest([
+    this.dataService.keptnInfo,
+    this.dataService.keptnMetadata,
+  ]).pipe(
+    filter((info): info is [KeptnInfo, IMetadata | undefined | null] => !!info[0]),
+    map(([keptnInfo, metadata]) => {
+      return {
+        gitUpstreamRequired: !metadata?.automaticprovisioning,
+        automaticProvisioningMessage: keptnInfo.bridgeInfo.automaticProvisioningMsg,
+        state: metadata === null ? ProjectSettingsStatus.ERROR : ProjectSettingsStatus.LOADED,
+      };
+    }),
+    startWith({
+      gitUpstreamRequired: undefined,
+      automaticProvisioningMessage: undefined,
+      state: ProjectSettingsStatus.INIT,
+    })
   );
 
   constructor(

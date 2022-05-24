@@ -1,4 +1,4 @@
-export interface Metadata {
+export interface IMetadata {
   namespace: string;
   keptnversion: string;
   keptnlabel: string;

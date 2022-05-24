@@ -10,18 +10,21 @@ import { KeptnInfo } from '../_models/keptn-info';
 })
 export class KeptnUrlPipe implements PipeTransform {
   private static _version: Observable<KeptnInfo | undefined>;
-  private static version: string;
+  private static version = '';
 
   constructor(dataService: DataService) {
     if (!KeptnUrlPipe._version) {
       KeptnUrlPipe._version = dataService.keptnInfo;
       KeptnUrlPipe._version
         .pipe(
-          filter((info: KeptnInfo | undefined): info is KeptnInfo => !!info?.metadata),
+          filter((info: KeptnInfo | undefined): info is KeptnInfo => !!info),
           take(1)
         )
         .subscribe((info) => {
-          const version = info.metadata.keptnversion;
+          const version = info.bridgeInfo.bridgeVersion;
+          if (!version) {
+            return;
+          }
           KeptnUrlPipe.version = `${semver.major(version)}.${semver.minor(version)}.x`;
         });
     }

@@ -3,8 +3,8 @@ import { DOCUMENT } from '@angular/common';
 import { Component, Inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { NavigationEnd, NavigationStart, Router } from '@angular/router';
 import { Title } from '@angular/platform-browser';
-import { Observable, Subject } from 'rxjs';
-import { filter, takeUntil } from 'rxjs/operators';
+import { combineLatest, Observable, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { Project } from '../_models/project';
 import { DataService } from '../_services/data.service';
 import { NotificationsService } from '../_services/notifications.service';
@@ -14,6 +14,7 @@ import { KeptnInfo } from '../_models/keptn-info';
 import { DtSwitchChange } from '@dynatrace/barista-components/switch';
 import { VersionInfo } from '../_models/keptn-versions';
 import { DtSelect } from '@dynatrace/barista-components/select';
+import { IMetadata } from '../_interfaces/metadata';
 
 @Component({
   selector: 'ktb-header',
@@ -33,6 +34,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
   public keptnInfo?: KeptnInfo;
   public versionCheckDialogState: string | null = null;
   public versionCheckReference = '/reference/version_check/';
+  public metadata?: IMetadata;
 
   constructor(
     @Inject(DOCUMENT) private _document: Document,
@@ -53,25 +55,27 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
     this.titleService.setTitle(this.appTitle);
     this.setAppFavicon(this.logoInvertedUrl);
 
-    this.dataService.keptnInfo
-      .pipe(
-        filter((keptnInfo: KeptnInfo | undefined): keptnInfo is KeptnInfo => !!keptnInfo),
-        takeUntil(this.unsubscribe$)
-      )
-      .subscribe((keptnInfo) => {
+    combineLatest([this.dataService.keptnInfo, this.dataService.keptnMetadata])
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(([keptnInfo, metadata]) => {
         this.keptnInfo = keptnInfo;
+        this.metadata = metadata ?? undefined;
+        if (!keptnInfo) {
+          return;
+        }
         if (keptnInfo.versionCheckEnabled === undefined) {
           this.showVersionCheckInfoDialog();
         } else if (
+          metadata &&
           keptnInfo.bridgeInfo.enableVersionCheckFeature &&
           keptnInfo.versionCheckEnabled &&
           keptnInfo.availableVersions
         ) {
-          keptnInfo.keptnVersionInvalid = !semver.valid(keptnInfo.metadata.keptnversion);
+          keptnInfo.keptnVersionInvalid = !semver.valid(metadata.keptnversion);
           keptnInfo.bridgeVersionInvalid = !semver.valid(keptnInfo.bridgeInfo.bridgeVersion);
           this.doVersionCheck(
             keptnInfo.bridgeInfo.bridgeVersion,
-            keptnInfo.metadata.keptnversion,
+            metadata.keptnversion,
             keptnInfo.availableVersions.bridge,
             keptnInfo.availableVersions.cli
           );

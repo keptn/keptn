@@ -1,9 +1,10 @@
 <dt-tile [id]="project.projectName" [routerLink]="['/project', project.projectName]" *ngIf="project" fxFlexFill>
-  <dt-tile-title
-    [class.error]="project.isShipyardNotSupported(supportedShipyardVersion)"
-    uitestid="keptn-project-tile-title"
-  >
-    <a [routerLink]="['/project', project.projectName]">{{ project.projectName }}</a>
+  <dt-tile-title uitestid="keptn-project-tile-title">
+    <a
+      [routerLink]="['/project', project.projectName]"
+      [class.error]="project.isShipyardNotSupported(supportedShipyardVersion)"
+      >{{ project.projectName }}</a
+    >
   </dt-tile-title>
   <dt-tile-subtitle>
     <p class="mt-0 mb-2" *ngIf="project.stages" uitestid="keptn-project-tile-numStagesServices">

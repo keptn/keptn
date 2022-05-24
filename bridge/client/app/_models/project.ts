@@ -105,9 +105,9 @@ export class Project extends pj {
     return this.shipyardVersion?.split('/').pop() ?? '';
   }
 
-  isShipyardNotSupported(supportedVersion: string | undefined): boolean {
+  isShipyardNotSupported(supportedVersion: string | undefined | null): boolean {
     const version = this.getShipyardVersion();
-    return !version || !supportedVersion || semver.lt(version, supportedVersion);
+    return supportedVersion !== null && (!version || !supportedVersion || semver.lt(version, supportedVersion));
   }
 
   getService(serviceName: string): Service | undefined {
