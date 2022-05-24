@@ -198,7 +198,7 @@ func RecreateProjectUpstream(newProjectName string) error {
 
 func CreateProject(projectName string, shipyardFilePath string) (string, error) {
 	// The project name is prefixed with the keptn test namespace to avoid name collisions during parallel integration test runs on CI
-	newProjectName := osutils.GetOSEnvOrDefault(KeptnNamespaceEnvVar, DefaultKeptnNamespace) + "-" + projectName
+	newProjectName := AddNamespaceToName(projectName)
 
 	err := retry.Retry(func() error {
 		if err := RecreateProjectUpstream(newProjectName); err != nil {
@@ -225,6 +225,10 @@ func CreateProject(projectName string, shipyardFilePath string) (string, error) 
 	}
 
 	return newProjectName, nil
+}
+
+func AddNamespaceToName(projectName string) string {
+	return osutils.GetOSEnvOrDefault(KeptnNamespaceEnvVar, DefaultKeptnNamespace) + "-" + projectName
 }
 
 func CreateProjectWithSSH(projectName string, shipyardFilePath string) (string, error) {
