@@ -2,7 +2,7 @@ name: ZeroDowntime Tests
 on:
   schedule:
     # * is a special character in YAML so you have to quote this string
-    - cron: '0 1 * * 1-5' # run zero downtime tests at 1 AM (UTC), monday to friday (1-5)
+    - cron: '0 1 * * 1' # run zero downtime tests at 1 AM (UTC), every monday (1)
   workflow_dispatch: # run zero downtime tests selecting the installation branch and the upgrade chart
     inputs:
       branch:
