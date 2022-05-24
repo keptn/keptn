@@ -1,5 +1,9 @@
 name: ZeroDowntime Tests
 on:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron: '0 1 * * 1' # run zero downtime tests at 1 AM (UTC), every monday(1)
+  
   workflow_dispatch: # run zero downtime tests selecting the installation branch and the upgrade chart
     inputs:
       branch:
@@ -9,6 +13,7 @@ on:
       upgradeTo:
         description: 'The helm upgrade command will run with this version (e.g. 0.15.0-dev-PR-7504)'
         required: true
+        default: 'https://github.com/keptn/helm-charts-dev/raw/69eea439a26a99ecc163e296860dbb5d43e41600/packages/keptn-0.15.1-dev.tgz'
       testUI:
         type: boolean
         description: 'Cypress tests for Bridge will be run in parallel to the zero downtime tests'
@@ -42,7 +47,7 @@ jobs:
         include:
           - CLOUD_PROVIDER: "GKE"
             PLATFORM_VERSION: "1.22"
-            CLUSTER_NAME: "keptn-integration-test-2"
+            CLUSTER_NAME: "keptn-ZD-test-2"
             KUBECONFIG: ""
             PLATFORM: "kubernetes"
     env:
@@ -79,13 +84,13 @@ jobs:
           key: ${{ runner.os }}-${{ matrix.CLOUD_PROVIDER }}-downloads
 
       # This step is supposed to determine the target branch where to download the build-artifacts from
-      - name: Determine Target Branch for Integration Tests
+      - name: Determine Target Branch for ZD Tests
         id: determine_branch
         run: |
           if [[ "${{ github.event.inputs.branch }}" != "" ]]; then
             # branch was manually set by user -> probably a workflow_dispatch action
             BRANCH=${{ github.event.inputs.branch }}
-            echo "Using $BRANCH as target branch for integration tests"
+            echo "Using $BRANCH as target branch for ZD tests"
           else
             echo "Determining branch based on what triggered this workflow"
 
@@ -204,7 +209,7 @@ jobs:
           GCLOUD_PROJECT_NAME: ${{ secrets.GCLOUD_PROJECT_NAME }}
           CLOUDSDK_COMPUTE_ZONE: "us-east1-b"
           CLOUDSDK_REGION: "us-east1"
-          GKE_KUBECONFIG: ${{ secrets.INTEGRATION_TEST_KUBECONFIG }}
+          GKE_KUBECONFIG: ${{ secrets.ZD_TEST_KUBECONFIG }}
           BRANCH: ${{ steps.determine_branch.outputs.BRANCH}}
         id: install_gke
         run: |
