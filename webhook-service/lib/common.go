@@ -27,7 +27,7 @@ func GetEnv() map[string]string {
 	return envMap
 }
 
-func GetDeniedAlphaURLs(env map[string]string) []string {
+func CreateListOfDeniedURLs(env map[string]string) []string {
 	kubeAPIHostIP := env[KubernetesSvcHostEnvVar]
 	kubeAPIPort := env[KubernetesAPIPortEnvVar]
 
