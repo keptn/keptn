@@ -277,15 +277,17 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   }
 
   public updateSequencesData(): void {
-    const sequences = this.project?.sequences;
-    if (sequences !== undefined) {
-      // Update filteredSequences based on current filters
-      this.filteredSequences = this.getFilteredSequences(
-        sequences,
-        this.apiService.getSequenceFilters(this.project?.projectName)
-      );
-      // Set unfinished sequences so that the state updates can be loaded
-      this.unfinishedSequences = sequences.filter((sequence: Sequence) => !sequence.isFinished());
+    if (this.project) {
+      const sequences = this.project.sequences;
+      if (sequences !== undefined) {
+        // Update filteredSequences based on current filters
+        this.filteredSequences = this.getFilteredSequences(
+          sequences,
+          this.apiService.getSequenceFilters(this.project.projectName)
+        );
+        // Set unfinished sequences so that the state updates can be loaded
+        this.unfinishedSequences = sequences.filter((sequence: Sequence) => !sequence.isFinished());
+      }
     }
   }
 
@@ -459,7 +461,9 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   }
 
   public saveSequenceFilters(sequenceFilters: { [p: string]: string[] }): void {
-    this.apiService.setSequenceFilters(sequenceFilters, this.project?.projectName);
+    if (this.project) {
+      this.apiService.setSequenceFilters(sequenceFilters, this.project.projectName);
+    }
     const routeUrl = this.router.createUrlTree([], {
       relativeTo: this.route,
       queryParams: sequenceFilters,
@@ -468,15 +472,19 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   }
 
   public loadSequenceFilters(): void {
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: this.apiService.getSequenceFilters(this.project?.projectName),
-      replaceUrl: true,
-    });
+    if (this.project) {
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: this.apiService.getSequenceFilters(this.project.projectName),
+        replaceUrl: true,
+      });
+    }
   }
 
   public setSequenceFilters(sequenceFilters: { [p: string]: string[] }): void {
-    this.apiService.setSequenceFilters(sequenceFilters, this.project?.projectName);
+    if (this.project) {
+      this.apiService.setSequenceFilters(sequenceFilters, this.project.projectName);
+    }
     this._seqFilters = Object.keys(sequenceFilters).reduce((_seqFilters: FilterType[], filterName: string) => {
       sequenceFilters[filterName].forEach((value: string) => {
         const name = filterName === 'Status' ? SEQUENCE_STATUS[value] : value;
