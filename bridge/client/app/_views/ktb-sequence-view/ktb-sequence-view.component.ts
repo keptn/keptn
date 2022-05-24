@@ -325,13 +325,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   filtersClicked(event: DtQuickFilterChangeEvent<any> | { filters: any[] }): void {
     this._seqFilters = event.filters as FilterType[];
     const sequenceFilters: Record<string, string[]> = this._seqFilters.reduce(
-      (
-        filters: Record<string, string[]>,
-        currentFilter: [
-          { name: string; autocomplete: { name: string; value: string }[] },
-          ...{ name: string; value: string }[]
-        ]
-      ) => {
+      (filters: Record<string, string[]>, currentFilter: FilterType) => {
         if (!filters[currentFilter[0].name]) {
           // Stage | Service | Sequence | Status
           filters[currentFilter[0].name] = [];
