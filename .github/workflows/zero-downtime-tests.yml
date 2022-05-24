@@ -334,8 +334,7 @@ jobs:
           # Optional: pass GITHUB_TOKEN to avoid rate limiting.
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install npm
-        id: install_npm
+      - name: Install Node Dependencies
         working-directory: bridge
         run: yarn install --frozen-lockfile
 
@@ -454,7 +453,7 @@ jobs:
         uses: actions/upload-artifact@v2
         if: always()
         with:
-          name: test-log
+          name: go-test-log
           path: /tmp/gotest.log
           if-no-files-found: error
 
