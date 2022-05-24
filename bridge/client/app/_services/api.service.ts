@@ -55,18 +55,16 @@ export class ApiService {
     return this._baseUrl;
   }
 
-  public getSequenceFilters(projectName?: string): Record<string, string[]> {
-    if (!projectName) return {};
+  public getSequenceFilters(projectName: string): Record<string, string[]> {
     const filters = localStorage.getItem(this.getSequenceFiltersKey(projectName));
     return filters ? JSON.parse(filters) : {};
   }
 
-  public setSequenceFilters(filters: Record<string, string[]>, projectName?: string): void {
-    if (!projectName) return;
+  public setSequenceFilters(filters: Record<string, string[]>, projectName: string): void {
     localStorage.setItem(this.getSequenceFiltersKey(projectName), JSON.stringify(filters));
   }
 
-  private getSequenceFiltersKey(projectName?: string): string {
+  private getSequenceFiltersKey(projectName: string): string {
     return `${this.SEQUENCE_FILTERS_COOKIE}-${projectName}`;
   }
 
