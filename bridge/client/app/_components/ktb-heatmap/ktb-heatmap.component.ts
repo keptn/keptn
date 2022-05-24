@@ -79,6 +79,8 @@ export class KtbHeatmapComponent implements OnDestroy {
   private dataPointContentWidth = 0;
   private height = 0;
   private _selectedDataPoint?: IDataPoint;
+  // selectedIdentifier may be an invalid one, but must still be set because it could be set before the dataSource is set
+  private _selectedIdentifier?: string;
   private mouseCoordinates = { x: 0, y: 0 };
   private groupedData: GroupedDataPoints = {};
   private yElements: string[] = [];
@@ -87,7 +89,7 @@ export class KtbHeatmapComponent implements OnDestroy {
 
   @ViewChild('showMoreButton', { static: false }) showMoreButton!: DtButton;
   @ViewChild('tooltip', { static: false }) tooltip!: KtbHeatmapTooltipComponent;
-  @Output() selectedDataPointChange = new EventEmitter<IDataPoint>();
+  @Output() selectedIdentifierChange = new EventEmitter<string>();
 
   @Input()
   public set dataPoints(data: IDataPoint[]) {
@@ -96,17 +98,17 @@ export class KtbHeatmapComponent implements OnDestroy {
     this.yElements = getYAxisElements(this.groupedData);
     this.createHeatmap(this.groupedData);
     this.onResize(); // generating the heatmap may introduce a scrollbar
-    this.click(this.selectedDataPoint, true); // restore previously selected dataPoint
+    this.selectedIdentifier = this._selectedIdentifier; // restore previously selected dataPoint
   }
 
   @Input()
-  public set selectDataPoint(identifier: string | undefined) {
+  public set selectedIdentifier(identifier: string | undefined) {
+    this._selectedIdentifier = identifier;
     const dataPoint = identifier ? findDataPointThroughIdentifier(identifier, this.groupedData) : undefined;
     this.click(dataPoint, true);
   }
-
-  public get selectedDataPoint(): IDataPoint | undefined {
-    return this._selectedDataPoint;
+  public get selectedIdentifier(): string | undefined {
+    return this._selectedIdentifier;
   }
 
   private get showMoreButtonHeight(): number {
@@ -280,12 +282,12 @@ export class KtbHeatmapComponent implements OnDestroy {
   }
 
   private resizeHighlights(): void {
-    if (!this.selectedDataPoint) {
+    if (!this._selectedDataPoint) {
       return;
     }
 
-    this.setHighlightCoordinates(this.selectedDataPoint.xElement);
-    this.setSecondaryHighlightCoordinates(this.selectedDataPoint.comparedIdentifier);
+    this.setHighlightCoordinates(this._selectedDataPoint.xElement);
+    this.setSecondaryHighlightCoordinates(this._selectedDataPoint.comparedIdentifier);
   }
 
   private resizeShowMoreButton(): void {
@@ -434,11 +436,8 @@ export class KtbHeatmapComponent implements OnDestroy {
       return;
     }
 
-    if (preSelectDataPoint && !findDataPointThroughIdentifier(dataPoint.identifier, this.groupedData)) {
-      this._selectedDataPoint = undefined;
-      return;
-    }
     this._selectedDataPoint = dataPoint;
+    this._selectedIdentifier = dataPoint.identifier;
 
     heatmap.append('rect').attr('class', 'highlight-primary');
     this.setHighlightCoordinates(dataPoint.xElement);
@@ -448,7 +447,7 @@ export class KtbHeatmapComponent implements OnDestroy {
     this.setSecondaryHighlightCoordinates(foundIdentifiers);
 
     if (!preSelectDataPoint) {
-      this.selectedDataPointChange.emit(dataPoint);
+      this.selectedIdentifierChange.emit(dataPoint.identifier);
     }
   }
 
