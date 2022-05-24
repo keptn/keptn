@@ -2,31 +2,20 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: statistics-service
-  labels:
-    app.kubernetes.io/name: statistics-service
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "keptn.name" . }}
-    app.kubernetes.io/version: {{ .Values.statisticsService.image.tag | default .Chart.AppVersion }}
-    helm.sh/chart: {{ include "keptn.chart" . }}
+    app.kubernetes.io/component: statistics-service
 spec:
   selector:
-    matchLabels:
-      app.kubernetes.io/name: statistics-service
-      app.kubernetes.io/instance: {{ .Release.Name }}
+    matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: statistics-service
   replicas: 1
   {{- include "keptn.common.update-strategy" . | nindent 2 }}
   template:
     metadata:
-      labels:
-        app.kubernetes.io/name: statistics-service
-        app.kubernetes.io/instance: {{ .Release.Name }}
-        app.kubernetes.io/managed-by: {{ .Release.Service }}
+      labels: {{- include "common.labels.standard" . | nindent 8 }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-        app.kubernetes.io/component: {{ include "keptn.name" . }}
-        app.kubernetes.io/version: {{ .Values.statisticsService.image.tag | default .Chart.AppVersion }}
-        helm.sh/chart: {{ include "keptn.chart" . }}
+        app.kubernetes.io/component: statistics-service
     spec:
       {{- include "keptn.common.pod-security-context" . | nindent 6 }}
       serviceAccountName: keptn-default
@@ -80,7 +69,7 @@ spec:
           {{- include "keptn.common.container-security-context" . | nindent 10 }}
           {{- if .Values.statisticsService.extraVolumeMounts }}
           volumeMounts:
-          {{- include "keptn.tpl-value" ( dict "value" .Values.statisticsService.extraVolumeMounts "context" $) | nindent 12 }}
+          {{- include "common.tplvalues.render" ( dict "value" .Values.statisticsService.extraVolumeMounts "context" $) | nindent 12 }}
           {{- end }}
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
@@ -101,31 +90,26 @@ spec:
           {{- include "keptn.dist.common.env.vars" . | nindent 12 }}
           {{- include "keptn.common.container-security-context" . | nindent 10 }}
         {{- with .Values.statisticsService.sidecars }}
-        {{- include "keptn.tpl-value" ( dict "value" . "context" $ ) | nindent 8 }}
+        {{- include "common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
         {{- end }}
       {{- if .Values.statisticsService.extraVolumes }}
       volumes:
-      {{- include "keptn.tpl-value" ( dict "value" .Values.statisticsService.extraVolumes "context" $) | nindent 8 }}
+      {{- include "common.tplvalues.render" ( dict "value" .Values.statisticsService.extraVolumes "context" $) | nindent 8 }}
       {{- end }}
       terminationGracePeriodSeconds: {{ .Values.statisticsService.gracePeriod | default 60 }}
-      {{- include "keptn.nodeSelector" (dict "value" .Values.statisticsService.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
+      {{- include "keptn.nodeSelector" (dict "value" .Values.statisticsService.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: statistics-service
-  labels:
-    app.kubernetes.io/name: statistics-service
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "keptn.name" . }}
-    helm.sh/chart: {{ include "keptn.chart" . }}
+    app.kubernetes.io/component: statistics-service
 spec:
   ports:
     - port: 8080
       targetPort: 8080
       protocol: TCP
-  selector:
-    app.kubernetes.io/name: statistics-service
-    app.kubernetes.io/instance: {{ .Release.Name }}
+  selector: {{- include "common.labels.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: statistics-service

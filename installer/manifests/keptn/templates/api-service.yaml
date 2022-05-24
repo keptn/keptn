@@ -2,31 +2,20 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: api-service
-  labels:
-    app.kubernetes.io/name: api-service
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "keptn.name" . }}
-    app.kubernetes.io/version: {{ .Values.apiService.image.tag | default .Chart.AppVersion }}
-    helm.sh/chart: {{ include "keptn.chart" . }}
+    app.kubernetes.io/component: api-service
 spec:
   selector:
-    matchLabels:
-      app.kubernetes.io/name: api-service
-      app.kubernetes.io/instance: {{ .Release.Name }}
+    matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: api-service
   replicas: 1
   {{- include "keptn.common.update-strategy" . | nindent 2 }}
   template:
     metadata:
-      labels:
-        app.kubernetes.io/name: api-service
-        app.kubernetes.io/instance: {{ .Release.Name }}
-        app.kubernetes.io/managed-by: {{ .Release.Service }}
+      labels: {{- include "common.labels.standard" . | nindent 8 }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-        app.kubernetes.io/component: {{ include "keptn.name" . }}
-        app.kubernetes.io/version: {{ .Values.apiService.image.tag | default .Chart.AppVersion }}
-        helm.sh/chart: {{ include "keptn.chart" . }}
+        app.kubernetes.io/component: api-service
     spec:
       {{- include "keptn.common.pod-security-context" . | nindent 6 }}
       terminationGracePeriodSeconds: {{ .Values.apiService.gracePeriod | default 60 }}
@@ -71,7 +60,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
             - name: AUTOMATIC_PROVISIONING_URL
-              value: {{ (.Values.features).automaticProvisioningURL | default "" }}
+              value: {{ (.Values.features).automaticProvisioningURL | default "" | quote }}
             - name: MAX_AUTH_ENABLED
               value: {{ (.Values.apiService.maxAuth).enabled | default true | quote }}
             - name: MAX_AUTH_REQUESTS_PER_SECOND
@@ -83,35 +72,30 @@ spec:
           {{- include "keptn.common.container-security-context" . | nindent 10 }}
           {{- if .Values.apiService.extraVolumeMounts }}
           volumeMounts:
-          {{- include "keptn.tpl-value" ( dict "value" .Values.apiService.extraVolumeMounts "context" $) | nindent 12 }}
+          {{- include "common.tplvalues.render" ( dict "value" .Values.apiService.extraVolumeMounts "context" $) | nindent 12 }}
           {{- end }}
         {{- with .Values.apiService.sidecars }}
-        {{- include "keptn.tpl-value" ( dict "value" . "context" $ ) | nindent 8 }}
+        {{- include "common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
         {{- end }}
       {{- if .Values.apiService.extraVolumes }}
       volumes:
-      {{- include "keptn.tpl-value" ( dict "value" .Values.apiService.extraVolumes "context" $) | nindent 8 }}
+      {{- include "common.tplvalues.render" ( dict "value" .Values.apiService.extraVolumes "context" $) | nindent 8 }}
       {{- end }}
       serviceAccountName: keptn-api-service
-      {{- include "keptn.nodeSelector" (dict "value" .Values.apiService.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
+      {{- include "keptn.nodeSelector" (dict "value" .Values.apiService.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: api-service
-  labels:
-    app.kubernetes.io/name: api-service
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "keptn.name" . }}
-    helm.sh/chart: {{ include "keptn.chart" . }}
+    app.kubernetes.io/component: api-service
 spec:
   ports:
     - port: 8080
       name: http
       targetPort: 8080
       protocol: TCP
-  selector:
-    app.kubernetes.io/name: api-service
-    app.kubernetes.io/instance: {{ .Release.Name }}
+  selector: {{- include "common.labels.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: api-service

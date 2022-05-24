@@ -47,3 +47,6 @@ dependencies:
   - name: nats
     version: 0.13.2
     repository: https://nats-io.github.io/k8s/helm/charts/
+  - name: common
+    repository: "file://../common"
+    version: 0.1.0

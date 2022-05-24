@@ -416,21 +416,20 @@ ingress:
 
 logLevel: "info"
 
-common:
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
-  podSecurityContext:
-    enabled: true
-    defaultSeccompProfile: true
-    fsGroup: 65532
-  containerSecurityContext:
-    enabled: true
-    runAsNonRoot: true
-    runAsUser: 65532
-    readOnlyRootFilesystem: true
-    allowPrivilegeEscalation: false
-    privileged: false
-  nodeSelector: {}
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+podSecurityContext:
+  enabled: true
+  defaultSeccompProfile: true
+  fsGroup: 65532
+containerSecurityContext:
+  enabled: true
+  runAsNonRoot: true
+  runAsUser: 65532
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  privileged: false
+nodeSelector: {}

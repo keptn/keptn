@@ -2,19 +2,13 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: shipyard-controller
-  labels:
-    app.kubernetes.io/name: shipyard-controller
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "keptn.name" . }}
-    app.kubernetes.io/version: {{ .Values.shipyardController.image.tag | default .Chart.AppVersion }}
-    helm.sh/chart: {{ include "keptn.chart" . }}
+    app.kubernetes.io/component: shipyard-controller
 spec:
   selector:
-    matchLabels:
-      app.kubernetes.io/name: shipyard-controller
-      app.kubernetes.io/instance: {{ .Release.Name }}
+    matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: shipyard-controller
   {{- if or (lt .Capabilities.KubeVersion.Minor "14") (.Values.shipyardController.config.disableLeaderElection) }}
   replicas : 1
   {{- else }}
@@ -23,14 +17,9 @@ spec:
   {{- include "keptn.common.update-strategy" . | nindent 2 }}
   template:
     metadata:
-      labels:
-        app.kubernetes.io/name: shipyard-controller
-        app.kubernetes.io/instance: {{ .Release.Name }}
-        app.kubernetes.io/managed-by: {{ .Release.Service }}
+      labels: {{- include "common.labels.standard" . | nindent 8 }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-        app.kubernetes.io/component: {{ include "keptn.name" . }}
-        app.kubernetes.io/version: {{ .Values.shipyardController.image.tag | default .Chart.AppVersion }}
-        helm.sh/chart: {{ include "keptn.chart" . }}
+        app.kubernetes.io/component: shipyard-controller
     spec:
       {{- include "keptn.common.pod-security-context" . | nindent 6 }}
       serviceAccountName: keptn-shipyard-controller
@@ -95,7 +84,7 @@ spec:
             - name: LOG_LEVEL
               value: {{ .Values.logLevel | default "info" }}
             - name: AUTOMATIC_PROVISIONING_URL
-              value: {{ (.Values.features).automaticProvisioningURL | default "" }}
+              value: {{ (.Values.features).automaticProvisioningURL | default "" | quote }}
             - name: DISABLE_LEADER_ELECTION
               {{- if  lt .Capabilities.KubeVersion.Minor "14"}}
               value: {{ true | quote }}
@@ -113,34 +102,29 @@ spec:
           {{- include "keptn.common.container-security-context" . | nindent 10 }}
           {{- if .Values.shipyardController.extraVolumeMounts }}
           volumeMounts:
-          {{- include "keptn.tpl-value" ( dict "value" .Values.shipyardController.extraVolumeMounts "context" $) | nindent 12 }}
+          {{- include "common.tplvalues.render" ( dict "value" .Values.shipyardController.extraVolumeMounts "context" $) | nindent 12 }}
           {{- end }}
         {{- with .Values.shipyardController.sidecars }}
-        {{- include "keptn.tpl-value" ( dict "value" . "context" $ ) | nindent 8 }}
+        {{- include "common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
         {{- end }}
       terminationGracePeriodSeconds: {{ .Values.shipyardController.gracePeriod | default 60 }}
-      {{- include "keptn.nodeSelector" (dict "value" .Values.shipyardController.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
+      {{- include "keptn.nodeSelector" (dict "value" .Values.shipyardController.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
       {{- if .Values.shipyardController.extraVolumes }}
       volumes:
-      {{- include "keptn.tpl-value" ( dict "value" .Values.shipyardController.extraVolumes "context" $) | nindent 8 }}
+      {{- include "common.tplvalues.render" ( dict "value" .Values.shipyardController.extraVolumes "context" $) | nindent 8 }}
       {{- end }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: shipyard-controller
-  labels:
-    app.kubernetes.io/name: shipyard-controller
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "keptn.name" . }}
-    helm.sh/chart: {{ include "keptn.chart" . }}
+    app.kubernetes.io/component: shipyard-controller
 spec:
   ports:
     - port: 8080
       targetPort: 8080
       protocol: TCP
-  selector:
-    app.kubernetes.io/name: shipyard-controller
-    app.kubernetes.io/instance: {{ .Release.Name }}
+  selector: {{- include "common.labels.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: shipyard-controller

@@ -2,22 +2,21 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "jmeter-service.fullname" . }}
-  labels:
-    {{- include "jmeter-service.labels" . | nindent 4 }}
-
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: jmeter-service
 spec:
   replicas: 1
   selector:
-    matchLabels:
-      {{- include "jmeter-service.selectorLabels" . | nindent 6 }}
+    matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: jmeter-service
   template:
     metadata:
       {{- with .Values.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      labels:
-        {{- include "jmeter-service.labels" . | nindent 8 }}
+      labels: {{- include "common.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/component: jmeter-service
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:

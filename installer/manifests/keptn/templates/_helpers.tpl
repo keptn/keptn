@@ -3,7 +3,7 @@
 Expand the name of the chart.
 */}}
 {{- define "keptn.name" -}}
-{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- include "common.names.name" . -}}
 {{- end }}
 
 {{/*
@@ -12,53 +12,14 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 If release name contains chart name it will be used as a full name.
 */}}
 {{- define "keptn.fullname" -}}
-{{- if .Values.fullnameOverride }}
-{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
-{{- else }}
-{{- $name := default .Chart.Name .Values.nameOverride }}
-{{- if contains $name .Release.Name }}
-{{- .Release.Name | trunc 63 | trimSuffix "-" }}
-{{- else }}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
-{{- end }}
-{{- end }}
+{{- include "common.names.fullname" . -}}
 {{- end }}
 
 {{/*
 Create chart name and version as used by the chart label.
 */}}
 {{- define "keptn.chart" -}}
-{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
-{{- end }}
-
-{{/*
-Common labels
-*/}}
-{{- define "keptn.labels" -}}
-helm.sh/chart: {{ include "keptn.chart" . }}
-{{ include "keptn.selectorLabels" . }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
-{{- end }}
-
-{{/*
-Selector labels
-*/}}
-{{- define "keptn.selectorLabels" -}}
-app.kubernetes.io/instance: {{ .Release.Name }}
-{{- end }}
-
-{{/*
-Create the name of the service account to use
-*/}}
-{{- define "keptn.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create }}
-{{- default (include "keptn.fullname" .) .Values.serviceAccount.name }}
-{{- else }}
-{{- default "default" .Values.serviceAccount.name }}
-{{- end }}
+{{- include "common.names.chart" . -}}
 {{- end }}
 
 {{- define "keptn.dist.livenessProbe" -}}
@@ -66,7 +27,7 @@ livenessProbe:
   httpGet:
     path: /health
     port: {{.port | default 8080}}
-  initialDelaySeconds: {{.initialDelaySeconds | default 10}}
+  initialDelaySeconds: {{ .initialDelaySeconds | default 10 }}
   periodSeconds: 5
 {{- end }}
 
@@ -75,7 +36,7 @@ readinessProbe:
   httpGet:
     path: /health
     port: {{.port | default 8080}}
-  initialDelaySeconds: {{.initialDelaySeconds | default 5}}
+  initialDelaySeconds: {{ .initialDelaySeconds | default 5 }}
   periodSeconds: 5
 {{- end }}
 
@@ -233,13 +194,13 @@ securityContext:
 {{- end -}}
 
 {{- define "keptn.common.pod-security-context" -}}
-{{- if (.Values.common).podSecurityContext -}}
-{{- if .Values.common.podSecurityContext.enabled -}}
+{{- if .Values.podSecurityContext -}}
+{{- if .Values.podSecurityContext.enabled -}}
 securityContext:
-{{- range $key, $value := omit .Values.common.podSecurityContext "enabled" "defaultSeccompProfile" }}
+{{- range $key, $value := omit .Values.podSecurityContext "enabled" "defaultSeccompProfile" }}
   {{ $key }}: {{- toYaml $value | nindent 4 }}
 {{- end -}}
-{{- if not .Values.common.podSecurityContext.seccompProfile -}}
+{{- if not .Values.podSecurityContext.seccompProfile -}}
 {{- if .Values.apiGatewayNginx.podSecurityContext.defaultSeccompProfile -}}
 {{- include "keptn.common.security-context-seccomp" . -}}
 {{- end -}}
@@ -253,10 +214,10 @@ securityContext:
 {{- end -}}
 
 {{- define "keptn.common.container-security-context" -}}
-{{- if (.Values.common).containerSecurityContext -}}
-{{- if .Values.common.containerSecurityContext.enabled -}}
+{{- if .Values.containerSecurityContext -}}
+{{- if .Values.containerSecurityContext.enabled -}}
 securityContext:
-{{- range $key, $value := omit .Values.common.containerSecurityContext "enabled" }}
+{{- range $key, $value := omit .Values.containerSecurityContext "enabled" }}
   {{ $key }}: {{- toYaml $value | nindent 4 }}
 {{- end -}}
 {{- end -}}
@@ -274,9 +235,9 @@ securityContext:
 rollingUpdate upgrade strategy for control plane deployments
 */}}
 {{- define "keptn.common.update-strategy" -}}
-{{- if (.Values.common).strategy -}}
+{{- if .Values.strategy -}}
 strategy:
-{{- toYaml .Values.common.strategy | nindent 2 -}}
+{{- toYaml .Values.strategy | nindent 2 -}}
 {{- else -}}
 strategy:
   type: RollingUpdate
@@ -311,21 +272,9 @@ Usage:
 */}}
 {{- define "keptn.tpl-value-or-default" -}}
   {{- if .value }}
-    {{- include "keptn.tpl-value" ( dict "value" .value "context" .context ) }}
+    {{- include "common.tplvalues.render" ( dict "value" .value "context" .context ) }}
   {{- else }}
-    {{- include "keptn.tpl-value" ( dict "value" .default "context" .context ) }}
+    {{- include "common.tplvalues.render" ( dict "value" .default "context" .context ) }}
   {{- end }}
 {{- end -}}
 
-{{/*
-Renders a value that contains a template. value can be a string, map or array
-Usage:
-{{ include "keptn.tpl-value" ( dict "value" .my-value.to-template "context" $ ) }}
-*/}}
-{{- define "keptn.tpl-value" -}}
-  {{- if typeIs "string" .value }}
-    {{- tpl .value .context }}
-  {{- else }}
-    {{- tpl (.value | toYaml) .context }}
-  {{- end }}
-{{- end -}}
