@@ -96,6 +96,8 @@ func TestEvaluationsWithApproval(t *testing.T) {
 	stage := "hardening"
 	service := "myservice"
 
+	nrSequences := 30
+
 	shipyardFile, err := testutils.CreateTmpShipyardFile(zdShipyard)
 	require.Nil(t, err)
 	defer os.Remove(shipyardFile)
@@ -160,59 +162,39 @@ func TestEvaluationsWithApproval(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 	go startSLIRetrieval(t, project, stage, service)
-	doEvaluations(project, stage, service)
+	executeSequences(nrSequences, project, stage, service)
+
+	t.Log("Checking if all sequences are finished")
+	require.Eventually(t, func() bool {
+		states := &models.SequenceStates{}
+		resp, err := testutils.ApiGETRequest("/controlPlane/v1/sequence/"+project+"?state=finished", 3)
+		if err != nil {
+			return false
+		}
+		err = resp.ToJSON(states)
+		if err != nil {
+			return false
+		}
+
+		if states.TotalCount != int64(nrSequences) {
+			t.Logf("Finished %d/%d triggered sequences", states.TotalCount, nrSequences)
+			return false
+		}
+		t.Logf("All sequences completed!")
+		return true
+	}, 10*time.Minute, 10*time.Second)
 
 	cancel()
-
-	t.Log("Checking if sequences are still in queue")
-	require.Eventually(t, func() bool {
-		states := &models.SequenceStates{}
-		resp, err := testutils.ApiGETRequest("/controlPlane/v1/sequence/"+project+"?state=waiting", 3)
-		if err != nil {
-			return false
-		}
-		err = resp.ToJSON(states)
-		if err != nil {
-			return false
-		}
-
-		if states.TotalCount != 0 {
-			t.Logf("Currently there are still %d triggered sequences", states.TotalCount)
-			return false
-		}
-		t.Logf("All sequences completed!")
-		return true
-	}, 10*time.Minute, 10*time.Second)
-
-	require.Eventually(t, func() bool {
-		states := &models.SequenceStates{}
-		t.Log("Checking if all sequences are completed")
-		resp, err := testutils.ApiGETRequest("/controlPlane/v1/sequence/"+project+"?state=started", 3)
-		if err != nil {
-			return false
-		}
-		err = resp.ToJSON(states)
-		if err != nil {
-			return false
-		}
-
-		if states.TotalCount != 0 {
-			t.Logf("Currently there are still %d sequences in progress", states.TotalCount)
-			return false
-		}
-		t.Logf("All sequences completed!")
-		return true
-	}, 10*time.Minute, 10*time.Second)
 }
 
-func doEvaluations(project, stage, service string) {
-	for i := 0; i < 30; i++ {
-		nrEvaluations := 0
+func executeSequences(nrSequences int, project, stage, service string) {
+	for i := 0; i < nrSequences; i++ {
+		nrTriggered := 0
 		go func() {
 			//_, err := triggerEvaluation("podtatohead", "hardening", "helloservice")
 			_, err := triggerRemediation(project, stage, service)
 			if err != nil {
-				nrEvaluations++
+				nrTriggered++
 			}
 		}()
 
