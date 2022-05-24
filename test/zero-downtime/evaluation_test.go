@@ -159,7 +159,7 @@ func TestEvaluationsWithApproval(t *testing.T) {
 
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
-	go startSLIRetrieval(ctx, t, project, stage, service)
+	go startSLIRetrieval(t, project, stage, service)
 	doEvaluations(project, stage, service)
 
 	cancel()
@@ -303,15 +303,11 @@ func updateImageOfService(ctx context.Context, t *testing.T, service string, ima
 	}
 }
 
-func startSLIRetrieval(ctx context.Context, t *testing.T, project, stage, service string) {
+func startSLIRetrieval(t *testing.T, project, stage, service string) {
 	for {
-		select {
-		case <-ctx.Done():
-			return
-		case <-time.After(3 * time.Second):
-			if err := reportSLIValues(project, stage, service); err != nil {
-				t.Logf("Error while SLI retrieval: %v", err)
-			}
+		<-time.After(3 * time.Second)
+		if err := reportSLIValues(project, stage, service); err != nil {
+			t.Logf("Error while SLI retrieval: %v", err)
 		}
 	}
 }
