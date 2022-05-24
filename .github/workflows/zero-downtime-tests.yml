@@ -371,7 +371,7 @@ jobs:
           cat /tmp/gotest.log | gotestfmt
 
       - name: Format cypress log output
-        if: github.event.inputs.testUI == true
+        if: always() && github.event.inputs.testUI == 'true'
         working-directory: bridge
         run: cat uitest.log
 
@@ -460,7 +460,7 @@ jobs:
       # Upload the original cypress test log as an artifact for later review.
       - name: Upload cypress test log
         uses: actions/upload-artifact@v2
-        if: github.event.inputs.testUI == true
+        if: always() && github.event.inputs.testUI == 'true'
         with:
           name: ui-test-log
           path:  /tmp/uitest.log
