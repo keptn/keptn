@@ -358,7 +358,7 @@ jobs:
           set -euo pipefail 
           
           cd ../test/zero-downtime && go test -json -v -run Test_ZeroDowntime -v -timeout 90m 2>&1 | tee /tmp/gotest.log &
-          if [[ "${{ github.event.inputs.testUI }}" == 'true' ]]; then
+          if [[ "${{ github.event.inputs.testUI }}" == true ]]; then
             while [[ $(jobs -pr) ]]; do
               npm run test:ui >> /tmp/uitest.log 2>&1 
             done
@@ -371,7 +371,7 @@ jobs:
           cat /tmp/gotest.log | gotestfmt
 
       - name: Format cypress log output
-        if: github.event.inputs.testUI == 'true'
+        if: github.event.inputs.testUI == true
         working-directory: bridge
         run: cat uitest.log
 
@@ -460,7 +460,7 @@ jobs:
       # Upload the original cypress test log as an artifact for later review.
       - name: Upload cypress test log
         uses: actions/upload-artifact@v2
-        if: github.event.inputs.testUI == 'true'
+        if: github.event.inputs.testUI == true
         with:
           name: ui-test-log
           path:  /tmp/uitest.log
