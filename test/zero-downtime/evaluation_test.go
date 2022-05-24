@@ -12,6 +12,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"os"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 )
@@ -156,11 +157,32 @@ func TestEvaluationsWithApproval(t *testing.T) {
 		}(svc)
 	}
 
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
 	go startSLIRetrieval(ctx, t, project, stage, service)
 	doEvaluations(project, stage, service)
 
-	//<-time.After(2 * time.Minute)
 	cancel()
+
+	require.Eventually(t, func() bool {
+		states := &models.SequenceStates{}
+		t.Log("Checking if all sequences are completed")
+		resp, err := testutils.ApiGETRequest("/controlPlane/v1/sequence/"+project+"?state=started", 3)
+		if err != nil {
+			return false
+		}
+		err = resp.ToJSON(states)
+		if err != nil {
+			return false
+		}
+
+		if states.TotalCount != 0 {
+			t.Logf("Currently there are still %d open sequences", states.TotalCount)
+			return false
+		}
+		t.Logf("All sequences completed!")
+		return true
+	}, 10*time.Minute, 10*time.Second)
 }
 
 func doEvaluations(project, stage, service string) {
