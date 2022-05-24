@@ -66,7 +66,7 @@ export class ApiService {
     localStorage.setItem(this.getSequenceFiltersKey(projectName), JSON.stringify(filters));
   }
 
-  public getSequenceFiltersKey(projectName?: string): string {
+  private getSequenceFiltersKey(projectName?: string): string {
     return `${this.SEQUENCE_FILTERS_COOKIE}-${projectName}`;
   }
 
