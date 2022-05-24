@@ -164,6 +164,26 @@ func TestEvaluationsWithApproval(t *testing.T) {
 
 	cancel()
 
+	t.Log("Checking if sequences are still in queue")
+	require.Eventually(t, func() bool {
+		states := &models.SequenceStates{}
+		resp, err := testutils.ApiGETRequest("/controlPlane/v1/sequence/"+project+"?state=waiting", 3)
+		if err != nil {
+			return false
+		}
+		err = resp.ToJSON(states)
+		if err != nil {
+			return false
+		}
+
+		if states.TotalCount != 0 {
+			t.Logf("Currently there are still %d triggered sequences", states.TotalCount)
+			return false
+		}
+		t.Logf("All sequences completed!")
+		return true
+	}, 10*time.Minute, 10*time.Second)
+
 	require.Eventually(t, func() bool {
 		states := &models.SequenceStates{}
 		t.Log("Checking if all sequences are completed")
@@ -177,7 +197,7 @@ func TestEvaluationsWithApproval(t *testing.T) {
 		}
 
 		if states.TotalCount != 0 {
-			t.Logf("Currently there are still %d open sequences", states.TotalCount)
+			t.Logf("Currently there are still %d sequences in progress", states.TotalCount)
 			return false
 		}
 		t.Logf("All sequences completed!")
@@ -186,7 +206,7 @@ func TestEvaluationsWithApproval(t *testing.T) {
 }
 
 func doEvaluations(project, stage, service string) {
-	for i := 0; i < 3; i++ {
+	for i := 0; i < 30; i++ {
 		nrEvaluations := 0
 		go func() {
 			//_, err := triggerEvaluation("podtatohead", "hardening", "helloservice")
@@ -196,7 +216,7 @@ func doEvaluations(project, stage, service string) {
 			}
 		}()
 
-		<-time.After(5 * time.Second)
+		<-time.After(3 * time.Second)
 	}
 }
 
@@ -236,6 +256,10 @@ func triggerRemediation(projectName, stageName, serviceName string) (string, err
 		Specversion:        "1.0",
 		Type:               &eventType,
 	}, 0)
+
+	if err != nil {
+		return "", err
+	}
 
 	eventContext := &models.EventContext{}
 	err = resp.ToJSON(eventContext)
@@ -304,31 +328,39 @@ func updateImageOfService(ctx context.Context, t *testing.T, service string, ima
 }
 
 func startSLIRetrieval(t *testing.T, project, stage, service string) {
+	retrievedSLIs := map[string]bool{}
+	var err error
 	for {
 		<-time.After(3 * time.Second)
-		if err := reportSLIValues(project, stage, service); err != nil {
+		retrievedSLIs, err = reportSLIValues(retrievedSLIs, project, stage, service)
+		if err != nil {
 			t.Logf("Error while SLI retrieval: %v", err)
 		}
+
 	}
 }
 
-func reportSLIValues(project string, stage string, service string) error {
+func reportSLIValues(retrievedSLIs map[string]bool, project string, stage string, service string) (map[string]bool, error) {
 	resp, err := testutils.ApiGETRequest(fmt.Sprintf("/mongodb-datastore/event?project=%s&stage=%s&service=%s&type=sh.keptn.event.get-sli.triggered", project, stage, service), 3)
 	if err != nil {
-		return err
+		return retrievedSLIs, err
 	}
 	events := &models.Events{}
 	if err := resp.ToJSON(events); err != nil {
-		return err
+		return retrievedSLIs, err
 	}
 
 	if len(events.Events) == 0 {
-		return nil
+		return retrievedSLIs, nil
 	}
 
 	sliFinishedEventType := keptnv2.GetFinishedEventType(keptnv2.GetSLITaskName)
 	source := "golang-test"
 	for _, sliTriggeredEvent := range events.Events {
+		if retrievedSLIs[sliTriggeredEvent.Shkeptncontext] {
+			continue
+		}
+		retrievedSLIs[sliTriggeredEvent.Shkeptncontext] = true
 		_, err := testutils.ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
 			Contenttype: "application/json",
 			Data: keptnv2.GetSLIFinishedEventData{
@@ -362,7 +394,7 @@ func reportSLIValues(project string, stage string, service string) error {
 			continue
 		}
 	}
-	return nil
+	return retrievedSLIs, nil
 }
 
 func getWebhookYamlWithSubscriptionIDs(t *testing.T, taskTypes []string, projectName string, webhookYamlWithSubscriptionIDs string) string {
