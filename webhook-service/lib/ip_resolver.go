@@ -7,7 +7,7 @@ import (
 )
 
 type IPResolver interface {
-	Resolve(url string) AdrDomainNameMapping
+	Resolve(url string) (AdrDomainNameMapping, error)
 }
 
 type LookupFunc func(host string) ([]net.IP, error)
@@ -28,18 +28,18 @@ func NewIPResolver() IPResolver {
 	}
 }
 
-func (i ipResolver) Resolve(url string) AdrDomainNameMapping {
+func (i ipResolver) Resolve(url string) (AdrDomainNameMapping, error) {
 	ipAddresses := make(AdrDomainNameMapping, 0)
 	parsedURL, err := i.parse(url)
 	if err != nil {
 		logger.Errorf("Unable to parse URL: %s", url)
-		return ipAddresses
+		return ipAddresses, err
 	}
 
 	ips, err := i.lookupIP(parsedURL.Hostname())
 	if err != nil {
 		logger.Errorf("Unable to look up IP for URL: %s", url)
-		return ipAddresses
+		return ipAddresses, err
 	}
 	for _, ip := range ips {
 
@@ -50,6 +50,5 @@ func (i ipResolver) Resolve(url string) AdrDomainNameMapping {
 		}
 		ipAddresses[ip.String()] = hosts
 	}
-
-	return ipAddresses
+	return ipAddresses, nil
 }

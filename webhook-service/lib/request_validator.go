@@ -27,8 +27,10 @@ func (c requestValidator) Validate(request Request) error {
 		return fmt.Errorf("curl command contains empty URL")
 	}
 	denyList := c.denyListProvider.Get()
-	ipAddresses := c.ipResolver.Resolve(request.URL)
-
+	ipAddresses, err := c.ipResolver.Resolve(request.URL)
+	if err != nil {
+		return err
+	}
 	for _, url := range denyList {
 		if strings.Contains(request.URL, url) {
 			return fmt.Errorf("curl command contains denied URL '%s'", url)

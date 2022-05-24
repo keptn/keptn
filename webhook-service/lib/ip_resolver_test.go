@@ -15,6 +15,7 @@ func TestCurlValidator_ResolveIPAddresses(t *testing.T) {
 		url        string
 		ipResolver ipResolver
 		want       AdrDomainNameMapping
+		wanterr    error
 	}{
 		{
 			name: "unparsable address",
@@ -24,7 +25,8 @@ func TestCurlValidator_ResolveIPAddresses(t *testing.T) {
 					return nil, fmt.Errorf("some error")
 				},
 			},
-			want: make(AdrDomainNameMapping, 0),
+			want:    make(AdrDomainNameMapping, 0),
+			wanterr: fmt.Errorf("some error"),
 		},
 		{
 			name: "lookupIP failed",
@@ -39,7 +41,8 @@ func TestCurlValidator_ResolveIPAddresses(t *testing.T) {
 					return make([]net.IP, 0), fmt.Errorf("some lookupIP error")
 				},
 			},
-			want: make(AdrDomainNameMapping, 0),
+			want:    make(AdrDomainNameMapping, 0),
+			wanterr: fmt.Errorf("some lookupIP error"),
 		},
 		{
 			name: "no existing address",
@@ -102,8 +105,9 @@ func TestCurlValidator_ResolveIPAddresses(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.ipResolver.Resolve(tt.url)
+			got, err := tt.ipResolver.Resolve(tt.url)
 			require.Equal(t, tt.want, got)
+			require.Equal(t, tt.wanterr, err)
 		})
 	}
 }
