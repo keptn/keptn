@@ -86,7 +86,7 @@ func (suite *TestSuiteAPI) Test_Statistic_Service() {
 	started := time.Now()
 	apiURL := suite.keptnAPIURL + "/statistics/v1"
 
-	api := apitest.New("Test statistics-service").EnableNetworking(getClient(1)).
+	api := apitest.New("Test statistics-service").EnableNetworking(getClient(3)).
 		Observe(func(res *http.Response, req *http.Request, apiTest *apitest.APITest) {
 			suite.logResult(res, apiTest, http.StatusNotFound, started)
 		})
@@ -104,7 +104,7 @@ func (suite *TestSuiteAPI) Test_Secret_Service() {
 	started := time.Now()
 	apiURL := suite.keptnAPIURL + "/secrets/v1"
 
-	api := apitest.New("Test secret-service").EnableNetworking(getClient(1)).
+	api := apitest.New("Test secret-service").EnableNetworking(getClient(5)).
 		Observe(func(res *http.Response, req *http.Request, apiTest *apitest.APITest) {
 			suite.logResult(res, apiTest, http.StatusOK, started)
 		})
@@ -162,9 +162,9 @@ func (suite *TestSuiteAPI) Test_MongoDB() {
 			suite.logResult(res, apiTest, http.StatusOK, started)
 		})
 
-	api.Get(apiURL+"/event").Query("project", "keptn").Query("pageSize", "20").
+	api.Get(apiURL+"/event").Query("project", "some-random").Query("pageSize", "20").
 		Headers(map[string]string{"x-token": suite.token}).
-		Expect(suite.T()).Status(http.StatusOK).Assert(jsonpath.Equal(`$pageSize`, "20")).End()
+		Expect(suite.T()).Status(http.StatusOK).Body(`{"events":null, "pageSize":20}`).End()
 
 }
 
