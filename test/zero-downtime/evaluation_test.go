@@ -6,54 +6,167 @@ import (
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/stretchr/testify/require"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"strings"
-	"time"
-
 	testutils "github.com/keptn/keptn/test/go-tests"
 	keptnkubeutils "github.com/keptn/kubernetes-utils/pkg"
+	"github.com/stretchr/testify/require"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"os"
+	"strings"
 	"testing"
+	"time"
 )
+
+const zdShipyard = `apiVersion: "spec.keptn.sh/0.2.0"
+kind: "Shipyard"
+metadata:
+  name: "shipyard-sockshop"
+spec:
+  stages:
+    - name: "hardening"
+      sequences:
+        - name: "remediation"
+          tasks:
+            - name: "get-action"
+            - name: "action"
+            - name: "approval"
+              properties:
+                pass: "automatic"
+                warning: "automatic"
+            - name: "evaluation"
+              properties:
+                timeframe: "5m"
+        - name: "evaluation"
+          tasks:
+            - name: "evaluation"
+            - name: "approval"
+              properties:
+                pass: "automatic"
+                warning: "automatic"`
+
+const webhookYaml = `apiVersion: webhookconfig.keptn.sh/v1alpha1
+kind: WebhookConfig
+metadata:
+  name: webhook-configuration
+spec:
+  webhooks:
+    - type: sh.keptn.event.action.triggered
+      requests:
+        - >-
+          curl --request GET http://shipyard-controller:8080/v1/project
+      subscriptionID: ${action-sub-id}
+      sendFinished: true
+      sendStarted: true`
+
+const remediationYaml = `apiVersion: spec.keptn.sh/0.1.4
+kind: Remediation
+metadata:
+  name: remediation-configuration
+spec:
+  remediations: 
+  - problemType: "default"
+    actionsOnOpen:
+    - name: Execute webhook
+      action: webhook
+      description: Execute a nice webhook`
+
+const sloYaml = `---
+spec_version: '0.1.0'
+comparison:
+  compare_with: "single_result"
+  include_result_with_score: "pass"
+  aggregate_function: avg
+objectives:
+  - sli: test-metric
+    pass:
+      - criteria:
+          - "<=4"
+    warning:
+      - criteria:
+          - "<=5"
+total_score:
+  pass: "51"
+  warning: "20"`
 
 func TestEvaluationsWithApproval(t *testing.T) {
 	images := []string{"0.15.1-dev.202205180838", "0.15.1-dev.202205171306"}
-	lhImages := []string{"ready3", "ready4"}
 	services := []string{"api-service", "shipyard-controller", "resource-service", "lighthouse-service", "approval-service", "webhook-service", "remediation-service", "mongodb-datastore"}
 	//services := []string{"mongodb-datastore"}
+
+	project := "a-zd-test"
+	stage := "hardening"
+	service := "myservice"
+
+	shipyardFile, err := testutils.CreateTmpShipyardFile(zdShipyard)
+	require.Nil(t, err)
+	defer os.Remove(shipyardFile)
+
+	t.Logf("Creating project %s", project)
+	project, err = testutils.CreateProject(project, shipyardFile)
+	require.Nil(t, err)
+
+	t.Logf("creating service %s", service)
+	_, err = testutils.ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", service, project))
+
+	taskTypes := []string{"action"}
+
+	t.Logf("Setting up subscription")
+	webhookYamlWithSubscriptionIDs := webhookYaml
+	webhookYamlWithSubscriptionIDs = getWebhookYamlWithSubscriptionIDs(t, taskTypes, project, webhookYamlWithSubscriptionIDs)
+
+	// wait some time to make sure the webhook service has pulled the updated subscription
+	<-time.After(20 * time.Second) // sorry :(
+
+	t.Logf("Adding webhook")
+	// now, let's add an webhook.yaml file to our service
+	webhookFilePath, err := testutils.CreateTmpFile("webhook.yaml", webhookYamlWithSubscriptionIDs)
+	require.Nil(t, err)
+	defer func() {
+		err := os.Remove(webhookFilePath)
+		if err != nil {
+			t.Logf("Could not delete tmp file: %s", err.Error())
+		}
+
+	}()
+
+	t.Log("Adding webhook.yaml to our service")
+	_, err = testutils.ExecuteCommand(fmt.Sprintf("keptn add-resource --project=%s --service=%s --resource=%s --resourceUri=webhook/webhook.yaml --all-stages", project, service, webhookFilePath))
+
+	remediationFilePath, err := testutils.CreateTmpFile("remediation.yaml", remediationYaml)
+	t.Log("Adding remediation.yaml to our service")
+	_, err = testutils.ExecuteCommand(fmt.Sprintf("keptn add-resource --project=%s --service=%s --resource=%s --resourceUri=remediation.yaml --all-stages", project, service, remediationFilePath))
+
+	sloFilePath, err := testutils.CreateTmpFile("slo.yaml", sloYaml)
+	t.Log("Adding slo.yaml to our service")
+	_, err = testutils.ExecuteCommand(fmt.Sprintf("keptn add-resource --project=%s --service=%s --resource=%s --resourceUri=slo.yaml --all-stages", project, service, sloFilePath))
 
 	ctx, cancel := context.WithCancel(context.Background())
 
 	for _, svc := range services {
 		go func(service string) {
-			imgArr := images
-			if service == "lighthouse-service" {
-				imgArr = lhImages
-			}
-			err := updateImageOfService(ctx, t, service, imgArr)
+			err := updateImageOfService(ctx, t, service, images)
 			if err != nil {
 				t.Logf("%v", err)
 			}
 		}(svc)
 	}
 
-	doEvaluations()
+	doEvaluations(project, stage, service)
 	//<-time.After(2 * time.Minute)
 	cancel()
 }
 
-func doEvaluations() {
-	for i := 0; i < 100; i++ {
+func doEvaluations(project, stage, service string) {
+	for i := 0; i < 3; i++ {
 		nrEvaluations := 0
 		go func() {
 			//_, err := triggerEvaluation("podtatohead", "hardening", "helloservice")
-			_, err := triggerRemediation("podtatohead", "hardening", "helloservice")
+			_, err := triggerRemediation(project, stage, service)
 			if err != nil {
 				nrEvaluations++
 			}
 		}()
 
-		<-time.After(2 * time.Second)
+		<-time.After(5 * time.Second)
 	}
 }
 
@@ -224,4 +337,24 @@ func reportSLIValues(project string, stage string, service string) error {
 		}
 	}
 	return nil
+}
+
+func getWebhookYamlWithSubscriptionIDs(t *testing.T, taskTypes []string, projectName string, webhookYamlWithSubscriptionIDs string) string {
+	for _, taskType := range taskTypes {
+		eventType := keptnv2.GetTriggeredEventType(taskType)
+		if strings.HasSuffix(taskType, "-finished") {
+			eventType = keptnv2.GetFinishedEventType(strings.TrimSuffix(taskType, "-finished"))
+		}
+		subscriptionID, err := testutils.CreateSubscription(t, "webhook-service", models.EventSubscription{
+			Event: eventType,
+			Filter: models.EventSubscriptionFilter{
+				Projects: []string{projectName},
+			},
+		})
+		require.Nil(t, err)
+
+		subscriptionPlaceholder := fmt.Sprintf("${%s-sub-id}", taskType)
+		webhookYamlWithSubscriptionIDs = strings.Replace(webhookYamlWithSubscriptionIDs, subscriptionPlaceholder, subscriptionID, -1)
+	}
+	return webhookYamlWithSubscriptionIDs
 }
