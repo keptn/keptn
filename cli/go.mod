@@ -1,6 +1,6 @@
 module github.com/keptn/keptn/cli
 
-go 1.17
+go 1.18
 
 require (
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869

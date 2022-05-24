@@ -1,6 +1,6 @@
 module github.com/keptn/keptn/mongodb-datastore
 
-go 1.17
+go 1.18
 
 require (
 	github.com/go-openapi/errors v0.20.2

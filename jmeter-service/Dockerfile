@@ -1,7 +1,7 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
 # https://hub.docker.com/_/golang
-FROM golang:1.17.10-alpine as builder-base
+FROM golang:1.18.1-alpine as builder-base
 
 WORKDIR /go/src/github.com/keptn/keptn/jmeter-service
 
@@ -25,7 +25,7 @@ COPY . .
 FROM builder-base as builder-test
 ENV GOTESTSUM_FORMAT=testname
 
-RUN go get gotest.tools/gotestsum@v1.7.0
+RUN go install gotest.tools/gotestsum@v1.7.0
 CMD gotestsum --no-color=false -- -race -coverprofile=coverage.txt -covermode=atomic -v ./... && mv ./coverage.txt /shared/coverage.txt
 
 FROM builder-base as builder
