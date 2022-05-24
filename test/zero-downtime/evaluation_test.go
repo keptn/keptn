@@ -159,3 +159,69 @@ func updateImageOfService(ctx context.Context, t *testing.T, service string, ima
 		}
 	}
 }
+
+func startSLIRetrieval(ctx context.Context, t *testing.T, project, stage, service string) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(3 * time.Second):
+			if err := reportSLIValues(project, stage, service); err != nil {
+				t.Logf("Error while SLI retrieval: %v", err)
+			}
+		}
+	}
+}
+
+func reportSLIValues(project string, stage string, service string) error {
+	resp, err := testutils.ApiGETRequest(fmt.Sprintf("/mongodb-datastore/event?project=%s&stage=%s&service=%s&type=sh.keptn.event.get-sli.triggered", project, stage, service), 3)
+	if err != nil {
+		return err
+	}
+	events := &models.Events{}
+	if err := resp.ToJSON(events); err != nil {
+		return err
+	}
+
+	if len(events.Events) == 0 {
+		return nil
+	}
+
+	sliFinishedEventType := keptnv2.GetFinishedEventType(keptnv2.GetSLITaskName)
+	source := "golang-test"
+	for _, sliTriggeredEvent := range events.Events {
+		_, err := testutils.ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
+			Contenttype: "application/json",
+			Data: keptnv2.GetSLIFinishedEventData{
+				EventData: keptnv2.EventData{
+					Project: project,
+					Stage:   stage,
+					Service: service,
+					Status:  keptnv2.StatusSucceeded,
+					Result:  keptnv2.ResultPass,
+				},
+				GetSLI: keptnv2.GetSLIFinished{
+					IndicatorValues: []*keptnv2.SLIResult{
+						{
+							Metric:  "test-metric",
+							Value:   1,
+							Success: true,
+						},
+					},
+				},
+			},
+			ID:                 uuid.NewString(),
+			Shkeptnspecversion: "0.2.0",
+			Source:             &source,
+			Specversion:        "1.0",
+			Shkeptncontext:     sliTriggeredEvent.Shkeptncontext,
+			Triggeredid:        sliTriggeredEvent.ID,
+			Type:               &sliFinishedEventType,
+		}, 0)
+
+		if err != nil {
+			continue
+		}
+	}
+	return nil
+}
