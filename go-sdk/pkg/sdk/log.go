@@ -24,8 +24,8 @@ type DefaultLogger struct {
 	logger *log.Logger
 }
 
-// NewDefaultLogger creates a new Default Logger
-func NewDefaultLogger() *DefaultLogger {
+// newDefaultLogger creates a new Default Logger
+func newDefaultLogger() *DefaultLogger {
 	return &DefaultLogger{logger: log.New(os.Stdout, "", 5)}
 }
 

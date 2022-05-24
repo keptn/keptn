@@ -1,6 +1,6 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
-FROM golang:1.17.10 as builder-base
+FROM golang:1.18.1 as builder-base
 
 # install additional dependencies
 RUN apt-get install -y gcc libc-dev git
@@ -11,7 +11,7 @@ ENV BUILDFLAGS=""
 ENV GOPROXY=https://proxy.golang.org
 
 # Pre-Req for gin-gonic/go-swagger: Install swag cli to generate swagger.yaml and swagger.json
-RUN go get -u github.com/swaggo/swag/cmd/swag@v1.7.0
+RUN go install github.com/swaggo/swag/cmd/swag@v1.7.0
 
 WORKDIR /go/src/github.com/keptn/keptn/shipyard-controller
 
@@ -28,7 +28,7 @@ COPY . .
 FROM builder-base as builder-test
 ENV GOTESTSUM_FORMAT=testname
 
-RUN go get gotest.tools/gotestsum@v1.7.0
+RUN go install gotest.tools/gotestsum@v1.7.0
 CMD gotestsum --no-color=false -- -coverprofile=coverage.txt -covermode=atomic -v ./... && mv ./coverage.txt /shared/coverage.txt
 
 FROM builder-base as builder

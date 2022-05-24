@@ -4,7 +4,7 @@ import { Observable, of } from 'rxjs';
 import { Trace } from '../_models/trace';
 import { ApprovalStates } from '../../../shared/models/approval-states';
 import { EventTypes } from '../../../shared/interfaces/event-types';
-import { Metadata } from '../_models/metadata';
+import { IMetadata } from '../_interfaces/metadata';
 import moment from 'moment';
 import { SequenceResult } from '../_models/sequence-result';
 import { Project } from '../_models/project';
@@ -276,8 +276,8 @@ export class ApiService {
     });
   }
 
-  public getMetadata(): Observable<Metadata> {
-    return this.http.get<Metadata>(`${this._baseUrl}/v1/metadata`);
+  public getMetadata(): Observable<IMetadata> {
+    return this.http.get<IMetadata>(`${this._baseUrl}/v1/metadata`);
   }
 
   public getFileTreeForService(projectName: string, serviceName: string): Observable<FileTree[]> {

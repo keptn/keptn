@@ -4,8 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"time"
+
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
@@ -57,7 +58,6 @@ func NewSequenceDispatcher(
 }
 
 func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
-
 	if sd.mode == common.SDModeRW {
 		//if there is only one shipyard we can both read and write,
 		//so we try to dispatch the sequence immediately
@@ -80,7 +80,6 @@ func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
 		//if there are multiple shipyard we should only write
 		return sd.add(queueItem)
 	}
-
 }
 
 func (sd *SequenceDispatcher) add(queueItem models.QueueItem) error {
@@ -147,6 +146,60 @@ func (sd *SequenceDispatcher) dispatchSequences() {
 	}
 }
 
+func (sd *SequenceDispatcher) isSequenceBlocked(queueItem models.QueueItem) (bool, error) {
+	// searching for running sequences
+	startedSequenceExecutions, err := sd.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
+		Scope: models.EventScope{
+			EventData: keptnv2.EventData{
+				Project: queueItem.Scope.Project,
+				Stage:   queueItem.Scope.Stage,
+				Service: queueItem.Scope.Service,
+			},
+		},
+		Status: []string{apimodels.SequenceStartedState},
+	})
+	if err != nil {
+		log.Errorf("Could not load started sequences for project %s, service %s, stage %s: %v", queueItem.Scope.Project, queueItem.Scope.Service, queueItem.Scope.Stage, err)
+		return true, err
+	}
+
+	if len(startedSequenceExecutions) > 0 {
+		log.Infof("Sequence with KeptnContext %s blocked due to started sequence with KeptnContext %s in stage %s", queueItem.Scope.KeptnContext, startedSequenceExecutions[0].Scope.KeptnContext, queueItem.Scope.Stage)
+		return true, nil
+	}
+
+	//searching for triggered sequences which were triggered before the actual sequence
+	triggeredSequenceExecutions, err := sd.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
+		Scope: models.EventScope{
+			EventData: keptnv2.EventData{
+				Project: queueItem.Scope.Project,
+				Stage:   queueItem.Scope.Stage,
+				Service: queueItem.Scope.Service,
+			},
+		},
+		Status:      []string{apimodels.SequenceTriggeredState},
+		TriggeredAt: queueItem.Timestamp,
+	})
+	if err != nil {
+		log.Errorf("Could not load triggered sequences for project %s, service %s, stage %s: %v", queueItem.Scope.Project, queueItem.Scope.Service, queueItem.Scope.Stage, err)
+		return true, err
+	}
+
+	if len(triggeredSequenceExecutions) == 1 {
+		if triggeredSequenceExecutions[0].Scope.KeptnContext != queueItem.Scope.KeptnContext {
+			log.Infof("Sequence with KeptnContext %s is blocked due to triggered sequence with KeptnContext %s in stage %s", queueItem.Scope.KeptnContext, triggeredSequenceExecutions[0].Scope.KeptnContext, queueItem.Scope.Stage)
+			return true, nil
+		}
+	}
+
+	if len(triggeredSequenceExecutions) > 1 {
+		log.Infof("Sequence with KeptnContext %s is blocked due to triggered sequences in stage %s", queueItem.Scope.KeptnContext, queueItem.Scope.Stage)
+		return true, nil
+	}
+
+	return false, nil
+}
+
 func (sd *SequenceDispatcher) dispatchSequence(queueItem models.QueueItem) error {
 	// first, check if the sequence is currently paused
 	sequenceExecution, err := sd.sequenceExecutionRepo.GetByTriggeredID(queueItem.Scope.Project, queueItem.EventID)
@@ -163,24 +216,12 @@ func (sd *SequenceDispatcher) dispatchSequence(queueItem models.QueueItem) error
 		return ErrSequenceBlocked
 	}
 
-	// get other sequence executions that might block the current sequence
-	startedSequenceExecutions, err := sd.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
-		Scope: models.EventScope{
-			EventData: keptnv2.EventData{
-				Project: queueItem.Scope.Project,
-				Stage:   queueItem.Scope.Stage,
-				Service: queueItem.Scope.Service,
-			},
-		},
-		Status: []string{apimodels.SequenceStartedState},
-	})
-
+	sequenceBlocked, err := sd.isSequenceBlocked(queueItem)
 	if err != nil {
 		return err
 	}
 
-	if len(startedSequenceExecutions) > 0 {
-		log.Infof("Sequence %s cannot be started yet because sequences are still running in stage %s", queueItem.Scope.KeptnContext, queueItem.Scope.Stage)
+	if sequenceBlocked {
 		return ErrSequenceBlockedWaiting
 	}
 

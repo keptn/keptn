@@ -54,8 +54,7 @@ or (only for resource-service)
 
 keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE_URL --git-token=GIT_TOKEN --git-proxy-url=PROXY_IP --git-proxy-scheme=SCHEME --git-proxy-user=PROXY_USER --git-proxy-password=PROXY_PASS --insecure-skip-tls
 
-Please be aware that authentication with public/private key and via proxy is supported only when using resource-service.
-`
+Please be aware that authentication with public/private key and via proxy is supported only when using resource-service.`
 
 // crProjectCmd represents the project command
 var crProjectCmd = &cobra.Command{

@@ -99,3 +99,7 @@ flags:
     paths:
       - cp-connector/
     carryforward: true
+  cp-common:
+    paths:
+      - cp-common/
+    carryforward: true

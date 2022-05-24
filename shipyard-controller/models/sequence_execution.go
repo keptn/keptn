@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
@@ -20,6 +22,7 @@ type SequenceExecution struct {
 	Scope    EventScope              `json:"scope" bson:"scope"`
 	// InputProperties contains properties of the event which triggered the task sequence
 	InputProperties map[string]interface{} `json:"inputProperties" bson:"inputProperties"`
+	TriggeredAt     time.Time              `json:"triggeredAt" bson:"triggeredAt"`
 }
 
 type SequenceExecutionStatus struct {
@@ -187,6 +190,27 @@ func (e *SequenceExecution) Resume() bool {
 	return true
 }
 
+// SetNextCurrentTask updates the Current task of the sequence and sets the current state appropriately, considering the special logic that should be applied for approval tasks
+func (e *SequenceExecution) SetNextCurrentTask(taskName, triggeredEventID string) {
+	e.Status.CurrentTask = TaskExecutionState{
+		Name:        taskName,
+		TriggeredID: triggeredEventID,
+		Events:      []TaskEvent{},
+	}
+
+	// special handling for approval events
+	nextState := models.SequenceStartedState
+	if taskName == keptnv2.ApprovalTaskName {
+		nextState = models.SequenceWaitingForApprovalState
+	}
+
+	if e.IsPaused() {
+		e.Status.StateBeforePause = nextState
+	} else {
+		e.Status.State = nextState
+	}
+}
+
 // IsFinished indicates if a task is finished, i.e. the number of task.started and task.finished events line up
 func (e *TaskExecutionState) IsFinished() bool {
 	if len(e.Events) == 0 {
@@ -266,6 +290,7 @@ type SequenceExecutionFilter struct {
 	Status             []string
 	Name               string
 	CurrentTriggeredID string
+	TriggeredAt        time.Time
 }
 
 type SequenceExecutionUpsertOptions struct {

@@ -1,15 +1,17 @@
 package db
 
 import (
+	"sync"
+
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"sync"
 
-	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestMongoDBTaskSequenceV2Repo_InsertAndRetrieve(t *testing.T) {
@@ -39,6 +41,38 @@ func TestMongoDBTaskSequenceV2Repo_InsertAndRetrieve(t *testing.T) {
 	get, err = mdbrepo.Get(models.SequenceExecutionFilter{
 		Scope: scope,
 		Name:  "delivery",
+	})
+
+	require.Nil(t, err)
+
+	require.Empty(t, get)
+}
+
+func TestMongoDBTaskSequenceV2Repo_InsertAndRetrieveByTime(t *testing.T) {
+	scope, sequence := getTestSequenceExecution()
+
+	mdbrepo := NewMongoDBSequenceExecutionRepo(GetMongoDBConnectionInstance())
+
+	err := mdbrepo.Upsert(sequence, nil)
+
+	require.Nil(t, err)
+
+	get, err := mdbrepo.Get(models.SequenceExecutionFilter{
+		Scope:  scope,
+		Name:   "delivery",
+		Status: []string{"triggered"},
+	})
+
+	require.Nil(t, err)
+
+	require.Len(t, get, 1)
+	get[0].SchemaVersion = ""
+	require.Equal(t, sequence, get[0])
+
+	get, err = mdbrepo.Get(models.SequenceExecutionFilter{
+		Scope:       scope,
+		Name:        "delivery",
+		TriggeredAt: time.Date(2021, 3, 21, 17, 00, 00, 0, time.UTC),
 	})
 
 	require.Nil(t, err)
@@ -273,7 +307,8 @@ func getTestSequenceExecution() (models.EventScope, models.SequenceExecution) {
 				},
 			},
 		},
-		Scope: scope,
+		Scope:       scope,
+		TriggeredAt: time.Date(2021, 4, 21, 17, 00, 00, 0, time.UTC),
 	}
 	return scope, sequence
 }

@@ -1,10 +1,10 @@
 module github.com/keptn/keptn/api
 
-go 1.17
+go 1.18
 
 require (
 	github.com/benbjohnson/clock v1.3.0
-	github.com/cloudevents/sdk-go/v2 v2.9.0
+	github.com/cloudevents/sdk-go/v2 v2.10.0
 	github.com/go-openapi/errors v0.20.2
 	github.com/go-openapi/loads v0.21.1
 	github.com/go-openapi/runtime v0.23.3
@@ -16,12 +16,12 @@ require (
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.15.1-0.20220517082831-2052e1404e4c
-	github.com/keptn/keptn/cp-connector v0.0.0-20220512144544-dd236ef4fa97
+	github.com/keptn/keptn/cp-connector v0.0.0-20220519141909-916ac2a8e982
 	github.com/nats-io/nats-server/v2 v2.8.2
 	github.com/nats-io/nats.go v1.14.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
-	golang.org/x/net v0.0.0-20220517181318-183a9ca12b87
+	golang.org/x/net v0.0.0-20220520000938-2e3eb7b945c2
 	golang.org/x/time v0.0.0-20220411224347-583f2d630306
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.22.9

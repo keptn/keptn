@@ -8,6 +8,7 @@ import { ClientFeatureFlags } from '../feature-flags';
 import { EventTypes } from '../../shared/interfaces/event-types';
 import { SessionService } from '../user/session';
 import { KeptnService } from '../../shared/models/keptn-service';
+import { AuthType } from '../../shared/models/auth-type';
 
 const router = Router();
 
@@ -16,7 +17,7 @@ const apiRouter = (params: {
   apiToken: string | undefined;
   cliDownloadLink: string;
   integrationsPageLink: string;
-  authType: string;
+  authType: AuthType;
   clientFeatureFlags: ClientFeatureFlags;
   session: SessionService | undefined;
 }): Router => {

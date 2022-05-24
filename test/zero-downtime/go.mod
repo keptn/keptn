@@ -1,6 +1,6 @@
 module github.com/keptn/keptn/test/zero_downtime
 
-go 1.17
+go 1.18
 
 require (
 	github.com/benbjohnson/clock v1.3.0

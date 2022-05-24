@@ -7,9 +7,9 @@ This service provides usage statistics about a Keptn installation.
 First, the following go modules have to be installed:
 
 ```
-go get -u github.com/swaggo/swag/cmd/swag
-go get -u github.com/swaggo/gin-swagger
-go get -u github.com/swaggo/files
+go install github.com/swaggo/swag/cmd/swag
+go install github.com/swaggo/gin-swagger
+go install github.com/swaggo/files
 ```
 
 If the `swagger.yaml` should be updated with new endpoints or models, generate the new source by executing:

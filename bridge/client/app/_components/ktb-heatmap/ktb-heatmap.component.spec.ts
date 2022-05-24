@@ -109,35 +109,51 @@ describe('KtbHeatmapComponent', () => {
 
   it('should not select dataPoint if it is not in the dataSource', () => {
     component.dataPoints = [];
-    component.selectedDataPoint = mockScoreDataPoint('myIdentifier', 'myDate');
-    expect(component.selectedDataPoint).toBeUndefined();
+    component.selectedIdentifier = 'myIdentifier';
+    expect(component.selectedIdentifier).toBe('myIdentifier');
+    expect(component['_selectedDataPoint']).toBeUndefined();
   });
 
   it('should select dataPoint and not emit it if it is preselected', () => {
     // given
     const dataPoints = mockDataPoints(1, 0);
-    const emitSpy = jest.spyOn(component.selectedDataPointChange, 'emit');
+    const emitSpy = jest.spyOn(component.selectedIdentifierChange, 'emit');
     component.dataPoints = dataPoints;
 
     // when
-    component.selectedDataPoint = dataPoints[0];
+    component.selectedIdentifier = dataPoints[0].identifier;
 
     // then
-    expect(component.selectedDataPoint).toEqual(dataPoints[0]);
+    expect(component.selectedIdentifier).toEqual(dataPoints[0].identifier);
+    expect(emitSpy).not.toHaveBeenCalled();
+  });
+
+  it('should select dataPoint with previously set identifier that was not found', () => {
+    // given
+    const emitSpy = jest.spyOn(component.selectedIdentifierChange, 'emit');
+
+    // when
+    component.selectedIdentifier = 'myEvaluation0';
+    const dataPoints = mockDataPoints(1, 0);
+    component.dataPoints = dataPoints;
+
+    // then
+    expect(component.selectedIdentifier).toEqual(dataPoints[0].identifier);
+    expect(component['_selectedDataPoint']).toEqual(dataPoints[0]);
     expect(emitSpy).not.toHaveBeenCalled();
   });
 
   it('should select dataPoint and emit it if it is preselected', () => {
     // given
     const dataPoints = mockDataPoints(1, 0);
-    const emitSpy = jest.spyOn(component.selectedDataPointChange, 'emit');
+    const emitSpy = jest.spyOn(component.selectedIdentifierChange, 'emit');
     component.dataPoints = dataPoints;
 
     // when
     component['click'](dataPoints[0], false);
 
     // then
-    expect(component.selectedDataPoint).toEqual(dataPoints[0]);
+    expect(component.selectedIdentifier).toEqual(dataPoints[0].identifier);
     expect(emitSpy).toHaveBeenCalled();
   });
 
