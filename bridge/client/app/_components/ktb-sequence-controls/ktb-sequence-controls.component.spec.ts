@@ -51,7 +51,7 @@ describe('KtbSequenceControlsComponent', () => {
   it('should show pause and abort for started sequence', () => {
     // given
     dataService.loadSequences(project);
-    component.sequence = project.sequences?.[6];
+    component.sequence = project.sequences?.[7];
     fixture.detectChanges();
 
     const sequencePauseButton = fixture.nativeElement.querySelector('button[uitestid=sequencePauseButton]');
@@ -73,7 +73,7 @@ describe('KtbSequenceControlsComponent', () => {
   it('should pause sequence on click', () => {
     // given
     dataService.loadSequences(project);
-    component.sequence = project.sequences?.[6];
+    component.sequence = project.sequences?.[7];
     fixture.detectChanges();
 
     const sequencePauseButton = fixture.nativeElement.querySelector('button[uitestid=sequencePauseButton]');
@@ -89,7 +89,7 @@ describe('KtbSequenceControlsComponent', () => {
   it('should abort sequence on click', () => {
     // given
     dataService.loadSequences(project);
-    component.sequence = project.sequences?.[6];
+    component.sequence = project.sequences?.[7];
     fixture.detectChanges();
 
     const sequenceAbortButton = fixture.nativeElement.querySelector('button[uitestid=sequenceAbortButton]');
@@ -105,7 +105,7 @@ describe('KtbSequenceControlsComponent', () => {
   it('should show resume and abort for paused sequence', () => {
     // given
     dataService.loadSequences(project);
-    component.sequence = project.sequences?.[3];
+    component.sequence = project.sequences?.[4];
     fixture.detectChanges();
 
     const sequencePauseButton = fixture.nativeElement.querySelector('button[uitestid=sequencePauseButton]');
@@ -127,7 +127,7 @@ describe('KtbSequenceControlsComponent', () => {
   it('should resume sequence on click', () => {
     // given
     dataService.loadSequences(project);
-    component.sequence = project.sequences?.[3];
+    component.sequence = project.sequences?.[4];
     fixture.detectChanges();
 
     const sequenceResumeButton = fixture.nativeElement.querySelector('button[uitestid=sequenceResumeButton]');
@@ -143,7 +143,7 @@ describe('KtbSequenceControlsComponent', () => {
   it('buttons should be disabled for finished sequence', () => {
     // given
     dataService.loadSequences(project);
-    component.sequence = project.sequences?.[0];
+    component.sequence = project.sequences?.[1];
     fixture.detectChanges();
 
     const sequencePauseButton = fixture.nativeElement.querySelector('button[uitestid=sequencePauseButton]');

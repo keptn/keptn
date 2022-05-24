@@ -5,16 +5,10 @@ import {
   EventEmitter,
   HostBinding,
   Input,
-  OnDestroy,
-  OnInit,
   Output,
   ViewEncapsulation,
 } from '@angular/core';
 import { DateUtil } from '../../_utils/date.utils';
-import { map, switchMap, takeUntil } from 'rxjs/operators';
-import { ActivatedRoute } from '@angular/router';
-import { DataService } from '../../_services/data.service';
-import { Subject } from 'rxjs';
 import { Project } from '../../_models/project';
 import { Sequence } from '../../_models/sequence';
 
@@ -26,13 +20,11 @@ import { Sequence } from '../../_models/sequence';
   preserveWhitespaces: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KtbRootEventsListComponent implements OnInit, OnDestroy {
+export class KtbRootEventsListComponent {
   @HostBinding('class') cls = 'ktb-root-events-list';
-  private readonly unsubscribe$ = new Subject<void>();
   public project?: Project;
   public _events: Sequence[] = [];
   public _selectedEvent?: Sequence;
-  public loading = false;
 
   @Output() readonly selectedEventChange = new EventEmitter<{ sequence: Sequence; stage?: string }>();
 
@@ -60,29 +52,7 @@ export class KtbRootEventsListComponent implements OnInit, OnDestroy {
     }
   }
 
-  constructor(
-    private _changeDetectorRef: ChangeDetectorRef,
-    public dateUtil: DateUtil,
-    private route: ActivatedRoute,
-    private dataService: DataService
-  ) {}
-
-  ngOnInit(): void {
-    this.route.params
-      .pipe(
-        map((params) => params.projectName),
-        switchMap((projectName) => this.dataService.getProject(projectName)),
-        takeUntil(this.unsubscribe$)
-      )
-      .subscribe((project) => {
-        this.project = project;
-      });
-
-    this.dataService.sequencesUpdated.pipe(takeUntil(this.unsubscribe$)).subscribe(() => {
-      this.loading = false;
-      this._changeDetectorRef.markForCheck();
-    });
-  }
+  constructor(private _changeDetectorRef: ChangeDetectorRef, public dateUtil: DateUtil) {}
 
   selectEvent(sequence: Sequence, stage?: string): void {
     this.selectedEvent = sequence;
@@ -91,19 +61,6 @@ export class KtbRootEventsListComponent implements OnInit, OnDestroy {
 
   identifyEvent(index: number, item: Sequence): string | undefined {
     return item?.time;
-  }
-
-  loadOldSequences(): void {
-    if (this.project) {
-      this.loading = true;
-      this._changeDetectorRef.markForCheck();
-      this.dataService.loadOldSequences(this.project);
-    }
-  }
-
-  ngOnDestroy(): void {
-    this.unsubscribe$.next();
-    this.unsubscribe$.complete();
   }
 
   public getShortType(type: string | undefined): string | undefined {

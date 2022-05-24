@@ -519,7 +519,7 @@ describe('Sequence', () => {
   });
 
   function getDefaultSequence(): Sequence {
-    return Sequence.fromJSON(AppUtils.copyObject(SequenceResponseMock[0]));
+    return Sequence.fromJSON(AppUtils.copyObject(SequenceResponseMock[1]));
   }
 
   function getSequenceWithTwoStages(): Sequence {

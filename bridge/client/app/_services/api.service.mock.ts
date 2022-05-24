@@ -250,14 +250,14 @@ export class ApiServiceMock extends ApiService {
     keptnContext?: string
   ): Observable<HttpResponse<SequenceResult>> {
     let data = SequencesMock;
-    let totalCount = 34;
+    let totalCount = data.length;
 
     if (pageSize) {
       data = SequencesMock.slice(0, pageSize);
     }
 
     if (beforeTime) {
-      data = SequencesMock.slice(25, 34);
+      data = SequencesMock.slice(totalCount - 9);
       totalCount = 9;
     }
 

@@ -57,27 +57,8 @@ describe('KtbRootEventsListComponent', () => {
 
     // then
     const sequences = fixture.nativeElement.querySelectorAll('ktb-selectable-tile');
-    const showMoreButton = fixture.nativeElement.querySelector('button[dt-show-more]');
     expect(sequences.length).toEqual(25);
-    expect(showMoreButton).toBeTruthy();
     expect(component.events).toEqual(project.sequences);
-  });
-
-  it('should load old sequences and not show "show older sequences" when all loaded', () => {
-    // given
-    dataService.loadSequences(project);
-    component.events = project.sequences || [];
-
-    // when
-    component.loadOldSequences();
-    component.events = project.sequences || [];
-    fixture.detectChanges();
-
-    // then
-    const sequences = fixture.nativeElement.querySelectorAll('ktb-selectable-tile');
-    const showMoreButton = fixture.nativeElement.querySelector('button[dt-show-more]');
-    expect(sequences.length).toEqual(34);
-    expect(showMoreButton).toBeFalsy();
   });
 
   it('should select provided sequence', () => {
