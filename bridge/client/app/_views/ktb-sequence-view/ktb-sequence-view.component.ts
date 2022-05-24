@@ -190,7 +190,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
       )
       .subscribe(([params]: [Params, void]) => {
         if (params.shkeptncontext && this.project?.sequences) {
-          const sequence = this.project?.sequences.find((s) => s.shkeptncontext === params.shkeptncontext);
+          const sequence = this.project.sequences.find((s) => s.shkeptncontext === params.shkeptncontext);
           const stage = params.eventId ? undefined : params.stage;
           const eventId = params.eventId;
 
