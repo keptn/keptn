@@ -91,9 +91,7 @@ describe('Trigger a sequence', () => {
       .typeDeliveryValues('": "val2"}')
       .assertDeliveryValuesErrorExists(false)
       .assertTriggerSequenceEnabled(false)
-      .typeDeliveryImage('docker.io/keptn')
-      .assertTriggerSequenceEnabled(false)
-      .typeDeliveryTag('v0.1.2')
+      .typeDeliveryImage('docker.io/keptn:v0.1.2')
       .assertTriggerSequenceEnabled(true)
       .clickTriggerSequence();
     cy.wait('@triggeredSequence')

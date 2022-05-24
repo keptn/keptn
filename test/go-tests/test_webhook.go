@@ -390,7 +390,7 @@ spec:
       requests:
         - "curl http://shipyard-controller:8080/v1/project/{{.data.project}}/stage/{{.data.stage}}"`
 
-const webhookSimpleYamlBeta = `apiVersion: webhookconfig.keptn.sh/v1beta11
+const webhookSimpleYamlBeta = `apiVersion: webhookconfig.keptn.sh/v1beta1
 kind: WebhookConfig
 metadata:
   name: webhook-configuration

@@ -49,3 +49,5 @@ vendor/
 bin/
 
 test/assets/podtato-head/keptn-backup
+
+.env

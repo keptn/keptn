@@ -15,6 +15,7 @@ import { ResultTypes } from '../../../../../shared/models/result-types';
 })
 export class KtbTestHeatmapComponent implements OnInit {
   public dataPoints: IDataPoint[] = [];
+  public selectedIdentifier?: string;
   private sliCount = 12;
   private evaluationCount = 50;
 
@@ -23,6 +24,7 @@ export class KtbTestHeatmapComponent implements OnInit {
   }
 
   public setDataPoints(): void {
+    this.selectedIdentifier = 'keptnContext_2';
     this.dataPoints = this.generateTestData(this.sliCount, this.evaluationCount);
   }
 

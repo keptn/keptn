@@ -110,4 +110,8 @@ export class FormUtils {
       reader.readAsText(file);
     });
   }
+
+  public static removeWhitespaces(value: string): string {
+    return value.replace(/\s/g, '');
+  }
 }
