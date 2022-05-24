@@ -354,9 +354,9 @@ jobs:
           set -euo pipefail 
           
           cd ../test/zero-downtime && go test -json -v -run Test_ZeroDowntime -v -timeout 90m 2>&1 | tee /tmp/gotest.log &
-          if [[ "${{ github.event.inputs.testUI }}" == 'true' ]]; then
-            echo "New Run: "  >> /tmp/uitest.log 
+          if [[ "${{ github.event.inputs.testUI }}" == 'true' ]]; then   
             while [[ $(jobs -pr) ]]; do
+              echo "New Run: "  >> /tmp/uitest.log 
               npm run test:ui >> /tmp/uitest.log 2>&1 
             done
           fi
