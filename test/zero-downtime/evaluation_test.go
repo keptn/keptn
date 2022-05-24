@@ -26,7 +26,6 @@ spec:
       sequences:
         - name: "remediation"
           tasks:
-            - name: "get-action"
             - name: "action"
             - name: "approval"
               properties:
@@ -88,7 +87,7 @@ total_score:
   warning: "20"`
 
 func TestEvaluationsWithApproval(t *testing.T) {
-	images := []string{"0.15.1-dev.202205180838", "0.15.1-dev.202205171306"}
+	images := []string{"0.15.1-dev.202205240824", "0.15.1-dev.202205240902"}
 	services := []string{"api-service", "shipyard-controller", "resource-service", "lighthouse-service", "approval-service", "webhook-service", "remediation-service", "mongodb-datastore"}
 	//services := []string{"mongodb-datastore"}
 
@@ -135,6 +134,13 @@ func TestEvaluationsWithApproval(t *testing.T) {
 	t.Log("Adding remediation.yaml to our service")
 	_, err = testutils.ExecuteCommand(fmt.Sprintf("keptn add-resource --project=%s --service=%s --resource=%s --resourceUri=remediation.yaml --all-stages", project, service, remediationFilePath))
 
+	t.Log("deleting lighthouse configmap from previous test run")
+	testutils.ExecuteCommandf("kubectl delete configmap -n %s lighthouse-config-%s", testutils.GetKeptnNameSpaceFromEnv(), project)
+
+	t.Log("adding SLI provider")
+	_, err = testutils.ExecuteCommand(fmt.Sprintf("kubectl create configmap -n %s lighthouse-config-%s --from-literal=sli-provider=my-sli-provider", testutils.GetKeptnNameSpaceFromEnv(), project))
+	require.Nil(t, err)
+
 	sloFilePath, err := testutils.CreateTmpFile("slo.yaml", sloYaml)
 	t.Log("Adding slo.yaml to our service")
 	_, err = testutils.ExecuteCommand(fmt.Sprintf("keptn add-resource --project=%s --service=%s --resource=%s --resourceUri=slo.yaml --all-stages", project, service, sloFilePath))
@@ -150,7 +156,9 @@ func TestEvaluationsWithApproval(t *testing.T) {
 		}(svc)
 	}
 
+	go startSLIRetrieval(ctx, t, project, stage, service)
 	doEvaluations(project, stage, service)
+
 	//<-time.After(2 * time.Minute)
 	cancel()
 }
