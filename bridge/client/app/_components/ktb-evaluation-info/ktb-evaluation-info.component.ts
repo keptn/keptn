@@ -39,7 +39,6 @@ export class KtbEvaluationInfoComponent implements OnDestroy {
   public overlayConfig: DtOverlayConfig = {
     pinnable: true,
   };
-  public historyPolling$: Subscription = Subscription.EMPTY;
   public evaluationsLoaded = false;
   private overlayRef?: DtOverlayRef<unknown>;
   private updateOverlayPositionSubscription = Subscription.EMPTY;
@@ -87,7 +86,6 @@ export class KtbEvaluationInfoComponent implements OnDestroy {
   constructor(private dataService: DataService, private ngZone: NgZone, private _dtOverlay: DtOverlay) {}
 
   private fetchEvaluationHistory(): void {
-    this.historyPolling$.unsubscribe();
     const evaluation = this.evaluation;
     let _eventData = this.eventData;
     if (this.evaluation && this.evaluation.data.project && this.evaluation.data.stage && this.evaluation.data.service) {
