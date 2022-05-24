@@ -22,7 +22,7 @@
         fxFlex
       >
         <div fxFlexFill fxLayout="column">
-          <div class="container trigger-sequence-button">
+          <div class="container" *ngIf="project.sequences && project.sequences.length !== 0">
             <ng-container [ngTemplateOutlet]="triggerSequenceButton"></ng-container>
           </div>
           <div class="container" fxFlex fxLayout="column" *ngIf="project.sequences; else loadingSequences">
