@@ -76,10 +76,12 @@ describe('Test OAuth', () => {
 
   it('should show a message for 403 response', () => {
     cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfo.mock' });
-    cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { statusCode: 403 });
-    cy.task('setExpectedErrorCount', 1);
+    cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { statusCode: 403 }).as(
+      'projects'
+    );
+    cy.task('setExpectedErrorCount', 2);
 
-    cy.visit('/');
+    cy.visit('/').wait('@projects').wait('@projects'); // triggered by app.component and dashboard
     basePage.notificationErrorVisible('You do not have the permissions to perform this action.');
   });
 });
