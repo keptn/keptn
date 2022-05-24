@@ -184,12 +184,17 @@ func (m *MongoDBEventQueueRepo) GetEventQueueSequenceStates(filter models.EventQ
 		searchOptions[stageScope] = filter.Scope.Stage
 	}
 	cur, err := collection.Find(ctx, searchOptions)
+	defer func() {
+		if cur == nil {
+			return
+		}
+		cur.Close(ctx)
+	}()
 	if err != nil && err == mongo.ErrNoDocuments {
 		return nil, ErrNoEventFound
 	} else if err != nil {
 		return nil, err
 	}
-	defer cur.Close(ctx)
 	if cur.RemainingBatchLength() == 0 {
 		return nil, ErrNoEventFound
 	}
@@ -250,12 +255,17 @@ func insertQueueItemIntoCollection(ctx context.Context, collection *mongo.Collec
 
 func getQueueItemsFromCollection(collection *mongo.Collection, ctx context.Context, searchOptions bson.M, opts ...*options.FindOptions) ([]models.QueueItem, error) {
 	cur, err := collection.Find(ctx, searchOptions, opts...)
+	defer func() {
+		if cur == nil {
+			return
+		}
+		cur.Close(ctx)
+	}()
 	if err != nil && err == mongo.ErrNoDocuments {
 		return nil, ErrNoEventFound
 	} else if err != nil {
 		return nil, err
 	}
-	defer cur.Close(ctx)
 	if cur.RemainingBatchLength() == 0 {
 		return nil, ErrNoEventFound
 	}
