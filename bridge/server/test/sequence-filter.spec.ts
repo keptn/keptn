@@ -23,7 +23,7 @@ describe('Test /project/:projectName/sequences/filter', () => {
     axiosMock.onGet(`${global.baseUrl}/controlPlane/v1/project/${projectName}/stage`).reply(200, StagesResponse);
     const response = await request(app).get(`/api/project/${projectName}/sequences/filter`);
     expect(response.body).toEqual({
-      services: ['cars', 'carts-db'],
+      services: ['carts', 'carts-db'],
       stages: ['dev', 'production', 'staging'],
     });
     expect(response.statusCode).toBe(200);

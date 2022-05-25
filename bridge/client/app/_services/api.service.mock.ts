@@ -43,6 +43,7 @@ import { ISequencesFilter } from '../../../shared/interfaces/sequencesFilter';
 import { SequenceMetadataMock } from './_mockData/sequence-metadata.mock';
 import { TriggerResponse, TriggerSequenceData } from '../_models/trigger-sequence';
 import { IGitHttps, IGitSsh } from '../_interfaces/git-upstream';
+import { IService } from '../../../shared/interfaces/service';
 
 @Injectable({
   providedIn: null,
@@ -133,6 +134,10 @@ export class ApiServiceMock extends ApiService {
   public getProject(projectName: string): Observable<Project> {
     const projects = [...ProjectsMock];
     return of(projects[0]);
+  }
+
+  public getService(projectName: string, stageName: string, serviceName: string): Observable<IService> {
+    return of(ProjectsMock[0].stages[0].services[0]);
   }
 
   public getPlainProject(projectName: string): Observable<Project> {

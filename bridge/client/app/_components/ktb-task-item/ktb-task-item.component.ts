@@ -59,11 +59,11 @@ export class KtbTaskItemComponent implements OnInit, OnDestroy {
     return this._task;
   }
 
-  set task(value: Trace | undefined) {
-    if (this._task !== value) {
-      this._task = value;
+  set task(trace: Trace | undefined) {
+    if (this._task !== trace) {
+      this._task = trace;
       this.latestDeployment = undefined;
-      if (value?.isApproval()) {
+      if (trace?.isApproval()) {
         this.setLatestDeployment();
       }
     }
