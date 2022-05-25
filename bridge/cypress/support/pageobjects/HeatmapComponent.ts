@@ -14,13 +14,21 @@ export class HeatmapComponent {
     return this;
   }
 
+  interceptWith10Metrics(): this {
+    cy.intercept('GET', 'api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?*', {
+      statusCode: 200,
+      fixture: 'get.sockshop.service.carts.evaluations.heatmap.10metrics.mock.json',
+    });
+    return this;
+  }
+
   visitPageWithHeatmapComponent(): this {
     cy.visit('/project/sockshop/service/carts/context/da740469-9920-4e0c-b304-0fd4b18d17c2/stage/staging');
     return this;
   }
 
   clickExpandButton(): this {
-    cy.get('ktb-heatmap button').click();
+    cy.get('ktb-heatmap button.show-more-button').click();
     return this;
   }
 
@@ -112,6 +120,11 @@ export class HeatmapComponent {
           .sort(sorter)
       )
       .should('deep.equal', sortedLabels);
+    return this;
+  }
+
+  assertExpandExists(exists: boolean): this {
+    cy.get('ktb-heatmap button.show-more-button').should(!exists ? 'not.exist' : 'exist');
     return this;
   }
 }

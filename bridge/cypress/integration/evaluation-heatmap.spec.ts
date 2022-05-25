@@ -11,10 +11,13 @@ describe('evaluation-heatmap', () => {
   it('should be expandable and collapsable', () => {
     heatmap
       .assertNumberOfRows(10)
+      .assertExpandExists(true)
       .clickExpandButton()
       .assertNumberOfRows(13)
+      .assertExpandExists(true)
       .clickExpandButton()
-      .assertNumberOfRows(10);
+      .assertNumberOfRows(10)
+      .assertExpandExists(true);
   });
   it('should set correct color classes', () => {
     heatmap
@@ -56,5 +59,8 @@ describe('evaluation-heatmap', () => {
   it('should show every second evaluation', () => {
     const labels = range(1, 44, 2).map((value) => `2022-02-01 03:46 (${value})`);
     heatmap.interceptWithManyEvaluations().assertXAxisTickLength(22).assertXAxisTickLabels(labels);
+  });
+  it('should not show expand button if indicator results with score are less than 10', () => {
+    heatmap.interceptWith10Metrics().assertExpandExists(false);
   });
 });
