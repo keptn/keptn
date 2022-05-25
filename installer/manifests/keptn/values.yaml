@@ -292,7 +292,7 @@ configurationService:
       cpu: "100m"
 
 resourceService:
-  enabled: false
+  enabled: true
   replicas: 1
   image:
     repository: docker.io/keptn/resource-service
