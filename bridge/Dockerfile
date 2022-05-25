@@ -1,4 +1,4 @@
-FROM cypress/browsers:node14.17.0-chrome91-ff89 as builder-test-ui
+FROM cypress/browsers:node14.17.6-chrome100-ff98 as builder-test-ui
 WORKDIR /usr/src/app
 COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile
