@@ -26,7 +26,7 @@ import { Deployment } from '../_models/deployment';
 import { ServiceState } from '../_models/service-state';
 import { ServiceRemediationInformation } from '../_models/service-remediation-information';
 import { EndSessionData } from '../../../shared/interfaces/end-session-data';
-import { ISequencesMetadata } from '../../../shared/interfaces/sequencesMetadata';
+import { ISequencesFilter } from '../../../shared/interfaces/sequencesFilter';
 import { TriggerResponse, TriggerSequenceData } from '../_models/trigger-sequence';
 import { EventData } from '../_components/ktb-evaluation-info/ktb-evaluation-info.component';
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
@@ -118,6 +118,12 @@ export class DataService {
 
   public getProject(projectName: string): Observable<Project | undefined> {
     return this.projects.pipe(map((projects) => projects?.find((project) => project.projectName === projectName)));
+  }
+
+  public getService(projectName: string, stageName: string, serviceName: string): Observable<Service> {
+    return this.apiService
+      .getService(projectName, stageName, serviceName)
+      .pipe(map((service) => Service.fromJSON(service)));
   }
 
   public projectExists(projectName: string): Observable<boolean | undefined> {
@@ -416,7 +422,7 @@ export class DataService {
     );
   }
 
-  public getSequenceMetadata(projectName: string): Observable<ISequencesMetadata> {
+  public getSequenceMetadata(projectName: string): Observable<ISequencesFilter> {
     return this.apiService.getSequencesMetadata(projectName);
   }
 

@@ -56,8 +56,6 @@ export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
     }
   }
 
-  @Input() latestDeployment: string | undefined;
-
   constructor(
     private router: Router,
     private location: Location,

@@ -9,7 +9,6 @@
       [task]="task"
       [isExpanded]="isFocusedTask(task)"
       [class.focused]="task.id === focusedEventId && scrollIntoView(taskRef)"
-      [latestDeployment]="latestDeployment"
       (itemClicked)="focusEvent($event)"
       (click)="focusEvent(task)"
       [attr.uitestid]="'keptn-task-item-' + task.getShortType()"

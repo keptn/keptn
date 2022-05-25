@@ -201,9 +201,9 @@ const apiRouter = (params: {
     }
   });
 
-  router.get('/project/:projectName/sequences/metadata', async (req: Request, res: Response, next: NextFunction) => {
+  router.get('/project/:projectName/sequences/filter', async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const data = await dataService.getSequencesMetadata(req.session?.tokenSet?.access_token, req.params.projectName);
+      const data = await dataService.getSequencesFilter(req.session?.tokenSet?.access_token, req.params.projectName);
       return res.json(data);
     } catch (error) {
       return next(error);

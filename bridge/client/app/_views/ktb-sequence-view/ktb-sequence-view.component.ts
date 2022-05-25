@@ -15,7 +15,7 @@ import { DataService } from '../../_services/data.service';
 import { DateUtil } from '../../_utils/date.utils';
 import { Sequence } from '../../_models/sequence';
 import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
-import { ISequencesMetadata } from '../../../../shared/interfaces/sequencesMetadata';
+import { ISequencesFilter } from '../../../../shared/interfaces/sequencesFilter';
 import { ApiService } from '../../_services/api.service';
 
 enum FilterName {
@@ -94,16 +94,12 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   public project$: Observable<Project | undefined>;
   private projectName$: Observable<string>;
   public currentSequence?: Sequence;
-  public currentLatestDeployedImage?: string;
   public selectedStage?: string;
   public _filterDataSource = new DtQuickFilterDefaultDataSource(this.filterFieldData, this._config);
   public _seqFilters: FilterType[] = [];
-  public metadata: ISequencesMetadata = {
-    deployments: [],
-    filter: {
-      stages: [],
-      services: [],
-    },
+  public metadata: ISequencesFilter = {
+    stages: [],
+    services: [],
   };
 
   public filteredSequences: Sequence[] = [];
@@ -172,14 +168,9 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
         }
       });
 
-    AppUtils.createTimer(0, this._sequenceTimerInterval)
-      .pipe(
-        switchMap(() => this.projectName$),
-        takeUntil(this.unsubscribe$)
-      )
-      .subscribe((projectName) => {
-        this.loadSequenceMetadata(projectName);
-      });
+    this.projectName$.pipe(takeUntil(this.unsubscribe$)).subscribe((projectName) => {
+      this.loadSequenceMetadata(projectName);
+    });
 
     // init; set parameters
     combineLatest([this.route.params, this.sequencesUpdated$])
@@ -231,7 +222,6 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   public loadSequenceMetadata(projectName: string): void {
     this.dataService.getSequenceMetadata(projectName).subscribe((metadata) => {
       this.metadata = metadata;
-      this.updateLatestDeployedImage();
       this.updateFilterDataSource(metadata);
     });
   }
@@ -260,7 +250,6 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
 
     this.currentSequence = event.sequence;
     this.selectedStage = event.stage || event.sequence.getStages().pop();
-    this.updateLatestDeployedImage();
     if (loadTraces) {
       this.loadTraces(this.currentSequence);
     }
@@ -315,12 +304,6 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     });
   }
 
-  private updateLatestDeployedImage(): void {
-    const deployedStage = this.metadata.deployments.find((depl) => depl.stage.name === this.selectedStage);
-    const deployedService = deployedStage?.stage.services.find((svc) => svc.name === this.currentSequence?.service);
-    this.currentLatestDeployedImage = deployedService?.image ?? '';
-  }
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   filtersClicked(event: DtQuickFilterChangeEvent<any> | { filters: any[] }): void {
     this._seqFilters = event.filters as FilterType[];
@@ -359,12 +342,12 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     }
   }
 
-  private mapServiceFilters(metadata: ISequencesMetadata): void {
+  private mapServiceFilters(metadata: ISequencesFilter): void {
     const filterItem = this.filterFieldData.autocomplete.find((f) => f.name === 'Service');
     if (filterItem) {
       // Take basis from metadatadata ...
       const serviceFilters: { name: string; value: string }[] = [];
-      for (const svc of metadata.filter.services) {
+      for (const svc of metadata.services) {
         serviceFilters.push({ name: svc, value: svc });
       }
 
@@ -389,12 +372,12 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     }
   }
 
-  updateFilterDataSource(metadata: ISequencesMetadata): void {
+  updateFilterDataSource(metadata: ISequencesFilter): void {
     this.mapServiceFilters(metadata);
 
     const filterItem = this.filterFieldData.autocomplete.find((f) => f.name === 'Stage');
     if (filterItem) {
-      filterItem.autocomplete = metadata.filter.stages.map((s) => {
+      filterItem.autocomplete = metadata.stages.map((s) => {
         return { name: s, value: s };
       });
     }
@@ -445,7 +428,6 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
       this.location.go(routeUrl.toString());
 
       this.selectedStage = stageName;
-      this.updateLatestDeployedImage();
     }
   }
 
