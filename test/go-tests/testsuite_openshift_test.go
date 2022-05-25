@@ -29,20 +29,18 @@ func Test_Openshift(t *testing.T) {
 	t.Run("Test_SelfHealing", Test_SelfHealing)
 	t.Run("Test_ResourceServiceBasic", Test_ResourceServiceBasic)
 	t.Run("Test_ManageSecrets_CreateUpdateAndDeleteSecret", Test_ManageSecrets_CreateUpdateAndDeleteSecret)
+
+	// Removed tests of webhook failing due to minishift not having connection to the outside word
 	t.Run("Test_Webhook_Alpha", Test_Webhook_Alpha)
-	t.Run("Test_Webhook_Beta", Test_Webhook_Beta)
-	t.Run("Test_Webhook_OverlappingSubscriptions_Alpha", Test_Webhook_OverlappingSubscriptions_Alpha)
 	t.Run("Test_Webhook_OverlappingSubscriptions_Beta", Test_Webhook_OverlappingSubscriptions_Beta)
+	t.Run("Test_Webhook_OverlappingSubscriptions_Alpha", Test_Webhook_OverlappingSubscriptions_Alpha)
 	t.Run("Test_WebhookWithDisabledFinishedEvents_Alpha", Test_WebhookWithDisabledFinishedEvents_Alpha)
-	t.Run("Test_WebhookWithDisabledFinishedEvents_Beta", Test_WebhookWithDisabledFinishedEvents_Beta)
-	t.Run("Test_WebhookWithDisabledStartedEvents_Alpha", Test_WebhookWithDisabledStartedEvents_Alpha)
 	t.Run("Test_WebhookWithDisabledStartedEvents_Beta", Test_WebhookWithDisabledStartedEvents_Beta)
-	t.Run("Test_WebhookConfigAtProjectLevel_Alpha", Test_WebhookConfigAtProjectLevel_Alpha)
-	t.Run("Test_WebhookConfigAtProjectLevel_Beta", Test_WebhookConfigAtProjectLevel_Beta)
-	t.Run("Test_WebhookConfigAtStageLevel_Alpha", Test_WebhookConfigAtStageLevel_Alpha)
-	t.Run("Test_WebhookConfigAtStageLevel_Beta", Test_WebhookConfigAtStageLevel_Beta)
-	t.Run("Test_WebhookConfigAtServiceLevel_Alpha", Test_WebhookConfigAtServiceLevel_Alpha)
-	t.Run("Test_WebhookConfigAtServiceLevel_Beta", Test_WebhookConfigAtServiceLevel_Beta)
+	t.Run("Test_WebhookWithDisabledStartedEvents_Alpha", Test_WebhookWithDisabledStartedEvents_Alpha)
+	t.Run("TTest_WebhookFailInternalAddress_Beta", Test_WebhookFailInternalAddress_Beta)
+	// Added a test using the API as outside address
+	t.Run("Test_Webhook_Beta_API", Test_Webhook_Beta_API)
+
 	t.Run("Test_SequenceTimeout", Test_SequenceTimeout)
 	t.Run("Test_SequenceTimeoutDelayedTask", Test_SequenceTimeoutDelayedTask)
 	t.Run("Test_SequenceControl_Abort", Test_SequenceControl_Abort)

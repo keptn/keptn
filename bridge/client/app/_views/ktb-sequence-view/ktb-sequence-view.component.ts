@@ -8,7 +8,7 @@ import {
 } from '@dynatrace/barista-components/quick-filter';
 import { isObject } from '@dynatrace/barista-components/core';
 import { combineLatest, Observable, Subject, Subscription } from 'rxjs';
-import { filter, map, switchMap, takeUntil, takeWhile, tap } from 'rxjs/operators';
+import { filter, map, switchMap, takeUntil, takeWhile } from 'rxjs/operators';
 import moment from 'moment';
 import { Project } from '../../_models/project';
 import { DataService } from '../../_services/data.service';
@@ -16,15 +16,31 @@ import { DateUtil } from '../../_utils/date.utils';
 import { Sequence } from '../../_models/sequence';
 import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 import { ISequencesMetadata } from '../../../../shared/interfaces/sequencesMetadata';
+import { ApiService } from '../../_services/api.service';
+
+enum FilterName {
+  SERVICE = 'Service',
+  STAGE = 'Stage',
+  SEQUENCE = 'Sequence',
+  STATUS = 'Status',
+}
 
 export type FilterType = [
   {
-    name: 'Service' | 'Stage' | 'Sequence' | 'Status';
+    name: FilterName;
     autocomplete: { name: string; value: string }[];
     showInSidebar: boolean;
   },
   ...{ name: string; value: string }[]
 ];
+
+const SEQUENCE_STATUS = {
+  started: 'Active',
+  waiting: 'Waiting',
+  failed: 'Failed',
+  aborted: 'Aborted',
+  succeeded: 'Succeeded',
+} as Record<string, string>;
 
 @Component({
   selector: 'ktb-sequence-view',
@@ -57,13 +73,10 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
       {
         name: 'Status',
         showInSidebar: true,
-        autocomplete: [
-          { name: 'Active', value: 'started' },
-          { name: 'Waiting', value: 'waiting' },
-          { name: 'Failed', value: 'failed' },
-          { name: 'Aborted', value: 'aborted' },
-          { name: 'Succeeded', value: 'succeeded' },
-        ],
+        autocomplete: Object.entries(SEQUENCE_STATUS).map(([value, name]) => ({
+          name: name.toString(),
+          value: value.toString().toLowerCase(),
+        })),
       },
     ],
   };
@@ -71,7 +84,6 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     // Method to decide if a node should be displayed in the quick filter
     showInSidebar: (node) => isObject(node) && node.showInSidebar,
   };
-  private sequenceFilters: { [key: string]: string[] } = {};
   private project?: Project;
   private unfinishedSequences: Sequence[] = [];
   private _tracesTimerInterval = 10_000;
@@ -94,8 +106,12 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     },
   };
 
+  public filteredSequences: Sequence[] = [];
+  public loading = false;
+
   constructor(
     private dataService: DataService,
+    private apiService: ApiService,
     private route: ActivatedRoute,
     public dateUtil: DateUtil,
     private router: Router,
@@ -110,12 +126,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
 
     this.projectName$ = this.route.params.pipe(map((params) => params.projectName));
 
-    this.sequencesUpdated$ = this.dataService.sequencesUpdated.pipe(
-      takeUntil(this.unsubscribe$),
-      tap(() => {
-        this.updateFilterDataSource(this.metadata);
-      })
-    );
+    this.sequencesUpdated$ = this.dataService.sequencesUpdated;
 
     this.project$ = this.projectName$.pipe(switchMap((projectName) => this.dataService.getProject(projectName)));
 
@@ -126,11 +137,11 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
           (project: Project | undefined): project is Project => !!project && !!project.getServices() && !!project.stages
         )
       )
-      .subscribe((project) => {
-        if (project.projectName !== this.project?.projectName) {
+      .subscribe((project: Project) => {
+        const currentProjectName = this.project?.projectName;
+        if (project.projectName !== currentProjectName) {
           this.currentSequence = undefined;
           this.selectedStage = undefined;
-          this.filtersChanged({ filters: [] });
         }
         this.project = project;
       });
@@ -198,14 +209,21 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
         }
       });
 
-    this.sequencesUpdated$.subscribe(() => {
-      if (this.project?.sequences) {
-        this.updateFilterSequence(this.project.sequences);
-        this.refreshFilterDataSource();
-        // Set unfinished sequences so that the state updates can be loaded
-        this.unfinishedSequences = this.project.sequences.filter((sequence) => !sequence.isFinished());
-        // Needed for the updates to work properly
-        this.changeDetectorRef_.detectChanges();
+    this.sequencesUpdated$.pipe(takeUntil(this.unsubscribe$)).subscribe(() => {
+      this.loading = false;
+      this.updateSequenceView();
+      this.updateSequencesData();
+    });
+
+    this.route.queryParams.pipe(takeUntil(this.unsubscribe$)).subscribe((queryParams) => {
+      if (Object.keys(queryParams).length === 0) {
+        this.loadSequenceFilters();
+      } else {
+        const sequenceFilters = Object.keys(queryParams).reduce((params: { [p: string]: string[] }, param) => {
+          params[param] = Array.isArray(queryParams[param]) ? queryParams[param] : [queryParams[param]];
+          return params;
+        }, {});
+        this.setSequenceFilters(sequenceFilters);
       }
     });
   }
@@ -220,24 +238,23 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
 
   public selectSequence(event: { sequence: Sequence; stage?: string; eventId?: string }, loadTraces = true): void {
     if (event.eventId) {
-      const routeUrl = this.router.createUrlTree([
-        '/project',
-        event.sequence.project,
-        'sequence',
-        event.sequence.shkeptncontext,
-        'event',
-        event.eventId,
-      ]);
+      const routeUrl = this.router.createUrlTree(
+        ['/project', event.sequence.project, 'sequence', event.sequence.shkeptncontext, 'event', event.eventId],
+        { queryParamsHandling: 'preserve' }
+      );
       this.location.go(routeUrl.toString());
     } else {
       const stage = event.stage || event.sequence.getStages().pop();
-      const routeUrl = this.router.createUrlTree([
-        '/project',
-        event.sequence.project,
-        'sequence',
-        event.sequence.shkeptncontext,
-        ...(stage ? ['stage', stage] : []),
-      ]);
+      const routeUrl = this.router.createUrlTree(
+        [
+          '/project',
+          event.sequence.project,
+          'sequence',
+          event.sequence.shkeptncontext,
+          ...(stage ? ['stage', stage] : []),
+        ],
+        { queryParamsHandling: 'preserve' }
+      );
       this.location.go(routeUrl.toString());
     }
 
@@ -246,6 +263,31 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     this.updateLatestDeployedImage();
     if (loadTraces) {
       this.loadTraces(this.currentSequence);
+    }
+  }
+
+  public updateSequenceView(): void {
+    const sequences = this.project?.sequences;
+    if (sequences !== undefined) {
+      this.updateFilterSequence(sequences);
+      this.refreshFilterDataSource();
+      // Needed for the updates to work properly
+      this.changeDetectorRef_.detectChanges();
+    }
+  }
+
+  public updateSequencesData(): void {
+    if (this.project) {
+      const sequences = this.project.sequences;
+      if (sequences !== undefined) {
+        // Update filteredSequences based on current filters
+        this.filteredSequences = this.getFilteredSequences(
+          sequences,
+          this.apiService.getSequenceFilters(this.project.projectName)
+        );
+        // Set unfinished sequences so that the state updates can be loaded
+        this.unfinishedSequences = sequences.filter((sequence: Sequence) => !sequence.isFinished());
+      }
     }
   }
 
@@ -280,16 +322,10 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  filtersChanged(event: DtQuickFilterChangeEvent<any> | { filters: any[] }): void {
+  filtersClicked(event: DtQuickFilterChangeEvent<any> | { filters: any[] }): void {
     this._seqFilters = event.filters as FilterType[];
-    this.sequenceFilters = this._seqFilters.reduce(
-      (
-        filters: { [key: string]: string[] },
-        currentFilter: [
-          { name: string; autocomplete: { name: string; value: string }[] },
-          ...{ name: string; value: string }[]
-        ]
-      ) => {
+    const sequenceFilters: Record<string, string[]> = this._seqFilters.reduce(
+      (filters: Record<string, string[]>, currentFilter: FilterType) => {
         if (!filters[currentFilter[0].name]) {
           // Stage | Service | Sequence | Status
           filters[currentFilter[0].name] = [];
@@ -299,6 +335,8 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
       },
       {}
     );
+    this.saveSequenceFilters(sequenceFilters);
+    this.updateSequencesData();
   }
 
   updateFilterSequence(sequences?: Sequence[]): void {
@@ -367,29 +405,27 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     this._filterDataSource = new DtQuickFilterDefaultDataSource(this.filterFieldData, this._config);
   }
 
-  getFilteredSequences(sequences: Sequence[]): Sequence[] {
-    return sequences.filter((s) => {
-      let res = true;
-      Object.keys(this.sequenceFilters).forEach((key) => {
+  getFilteredSequences(sequences: Sequence[], filters: Record<string, string[]>): Sequence[] {
+    const filterSequence = (s: Sequence): boolean => {
+      const mapFilter = (key: string): boolean => {
         switch (key) {
           case 'Service':
-            res = res && this.sequenceFilters[key].includes(s.service);
-            break;
+            return filters[key].includes(s.service);
           case 'Stage':
-            res = res && this.sequenceFilters[key].every((f) => s.getStages().includes(f));
-            break;
+            return filters[key].every((f) => s.getStages().includes(f));
           case 'Sequence':
-            res = res && this.sequenceFilters[key].includes(s.name);
-            break;
+            return filters[key].includes(s.name);
           case 'Status':
-            res = res && this.sequenceFilters[key].includes(s.getStatus());
-            break;
+            return filters[key].includes(s.getStatus());
           default:
-            break;
+            return true;
         }
-      });
-      return res;
-    });
+      };
+      const reduceFilter = (prior: boolean, current: boolean): boolean => prior && current;
+      return Object.keys(filters).map(mapFilter).reduce(reduceFilter, true);
+    };
+
+    return sequences.filter(filterSequence);
   }
 
   public getTracesLastUpdated(sequence: Sequence): Date | undefined {
@@ -402,14 +438,10 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
 
   selectStage(stageName: string): void {
     if (this.currentSequence) {
-      const routeUrl = this.router.createUrlTree([
-        '/project',
-        this.currentSequence.project,
-        'sequence',
-        this.currentSequence.shkeptncontext,
-        'stage',
-        stageName,
-      ]);
+      const routeUrl = this.router.createUrlTree(
+        ['/project', this.currentSequence.project, 'sequence', this.currentSequence.shkeptncontext, 'stage', stageName],
+        { queryParamsHandling: 'preserve' }
+      );
       this.location.go(routeUrl.toString());
 
       this.selectedStage = stageName;
@@ -420,6 +452,57 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   public navigateToTriggerSequence(): void {
     this.dataService.isTriggerSequenceOpen = true;
     this.router.navigate(['/project/' + this.project?.projectName]);
+  }
+
+  public saveSequenceFilters(sequenceFilters: { [p: string]: string[] }): void {
+    if (this.project) {
+      this.apiService.setSequenceFilters(sequenceFilters, this.project.projectName);
+    }
+    const routeUrl = this.router.createUrlTree([], {
+      relativeTo: this.route,
+      queryParams: sequenceFilters,
+    });
+    this.location.go(routeUrl.toString());
+  }
+
+  public loadSequenceFilters(): void {
+    if (this.project) {
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: this.apiService.getSequenceFilters(this.project.projectName),
+        replaceUrl: true,
+      });
+    }
+  }
+
+  public setSequenceFilters(sequenceFilters: { [p: string]: string[] }): void {
+    if (this.project) {
+      this.apiService.setSequenceFilters(sequenceFilters, this.project.projectName);
+    }
+    this._seqFilters = Object.keys(sequenceFilters).reduce((_seqFilters: FilterType[], filterName: string) => {
+      sequenceFilters[filterName].forEach((value: string) => {
+        const name = filterName === 'Status' ? SEQUENCE_STATUS[value] : value;
+
+        if (!name) {
+          return;
+        }
+
+        _seqFilters.push([
+          { name: filterName as FilterName, autocomplete: [], showInSidebar: false },
+          { name, value },
+        ]);
+      });
+      return _seqFilters;
+    }, []);
+
+    this.updateSequencesData();
+  }
+
+  loadOldSequences(): void {
+    if (this.project) {
+      this.loading = true;
+      this.dataService.loadOldSequences(this.project);
+    }
   }
 
   ngOnDestroy(): void {

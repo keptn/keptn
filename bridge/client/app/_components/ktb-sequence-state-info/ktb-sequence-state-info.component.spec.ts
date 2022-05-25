@@ -46,7 +46,7 @@ describe('KtbSequenceStateInfoComponent', () => {
   it('should show sequence info', () => {
     // given
     dataService.loadSequences(project);
-    component.sequence = project.sequences?.[11];
+    component.sequence = project.sequences?.[12];
     fixture.detectChanges();
 
     // then
@@ -62,7 +62,7 @@ describe('KtbSequenceStateInfoComponent', () => {
   it('should show sequence info with 3 stages', () => {
     // given
     dataService.loadSequences(project);
-    component.sequence = project.sequences?.[11];
+    component.sequence = project.sequences?.[12];
     fixture.detectChanges();
 
     // then
@@ -82,7 +82,7 @@ describe('KtbSequenceStateInfoComponent', () => {
   it('should show sequence info without stages if showStages is false', () => {
     // given
     dataService.loadSequences(project);
-    component.sequence = project.sequences?.[11];
+    component.sequence = project.sequences?.[12];
     component.showStages = false;
     fixture.detectChanges();
 
@@ -96,7 +96,7 @@ describe('KtbSequenceStateInfoComponent', () => {
   it('should trigger click callback on stage', () => {
     // given
     dataService.loadSequences(project);
-    const sequence = project.sequences?.[11];
+    const sequence = project.sequences?.[12];
     component.sequence = sequence;
     const spy = jest.spyOn(component, 'stageClick');
     fixture.detectChanges();

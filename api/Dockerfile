@@ -1,6 +1,6 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
-FROM golang:1.18.1-alpine as builder-base
+FROM golang:1.18.2-alpine as builder-base
 
 WORKDIR /go/src/github.com/keptn/keptn/api
 

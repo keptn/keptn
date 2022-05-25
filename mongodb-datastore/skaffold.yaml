@@ -1,10 +1,10 @@
-apiVersion: skaffold/v2beta22
+apiVersion: skaffold/v2beta28
 kind: Config
 build:
   local:
     useBuildkit: true
   artifacts:
-    - image: keptndev/mongodb-datastore
+    - image: docker.io/keptndev/mongodb-datastore
       docker:    # 	beta describes an artifact built from a Dockerfile.
         dockerfile: Dockerfile
         target: production

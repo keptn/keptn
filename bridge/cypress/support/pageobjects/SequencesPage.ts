@@ -9,8 +9,13 @@ export class SequencesPage {
     return this;
   }
 
-  public visit(projectName: string): this {
-    cy.visit(`/project/${projectName}/sequence`).wait('@metadata').wait('@SequencesMetadata');
+  public visit(projectName: string, queryParams?: { [p: string]: string | string[] }): this {
+    cy.visit({
+      url: `/project/${projectName}/sequence`,
+      qs: queryParams,
+    })
+      .wait('@metadata')
+      .wait('@SequencesMetadata');
     return this;
   }
 
@@ -85,6 +90,13 @@ export class SequencesPage {
     return this;
   }
 
+  public assertFilterIsChecked(filterGroup: string, itemName: string, status: boolean): this {
+    cy.byTestId('keptn-sequence-view-filter')
+      .find('dt-quick-filter')
+      .dtQuickFilterIsChecked(filterGroup, itemName, status);
+    return this;
+  }
+
   public checkServiceFilter(serviceName: string, status = true): this {
     return this.setFilterForGroup('Service', serviceName, status);
   }
@@ -106,8 +118,22 @@ export class SequencesPage {
     return this;
   }
 
+  public clickLoadOlderSequences(): this {
+    cy.byTestId('keptn-show-older-sequences-button').click();
+    return this;
+  }
+
+  public assertLoadOlderSequencesButtonExists(exists: boolean): this {
+    cy.byTestId('keptn-show-older-sequences-button').should(exists ? 'exist' : 'not.exist');
+    return this;
+  }
+
   public assertSequenceCount(count: number): this {
-    cy.byTestId('keptn-sequence-view-roots').get('ktb-selectable-tile').should('have.length', count);
+    if (count === 0) {
+      cy.byTestId('keptn-sequence-view-roots').should('not.exist');
+    } else {
+      cy.byTestId('keptn-sequence-view-roots').get('ktb-selectable-tile').should('have.length', count);
+    }
     return this;
   }
 
@@ -230,6 +256,11 @@ export class SequencesPage {
   public assertServiceName(name: string, tag?: string): this {
     const serviceName = tag ? `${name}:${tag}` : name;
     cy.byTestId('keptn-sequence-view-serviceName').should('have.text', serviceName);
+    return this;
+  }
+
+  public assertQueryParams(query: string): this {
+    cy.location('search').should('eq', query);
     return this;
   }
 }

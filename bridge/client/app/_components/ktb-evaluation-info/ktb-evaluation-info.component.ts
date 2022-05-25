@@ -1,12 +1,11 @@
-import { Component, Inject, Input, NgZone, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
+import { Component, Input, NgZone, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
 import { DtOverlay, DtOverlayConfig, DtOverlayRef } from '@dynatrace/barista-components/overlay';
 import { Trace } from '../../_models/trace';
 import { ResultTypes } from '../../../../shared/models/result-types';
 import { EvaluationResult } from '../../../../shared/interfaces/evaluation-result';
 import { DataService } from '../../_services/data.service';
-import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 import { Subject, Subscription } from 'rxjs';
-import { switchMap, takeUntil } from 'rxjs/operators';
+import { takeUntil } from 'rxjs/operators';
 import { DateUtil } from '../../_utils/date.utils';
 
 export interface EventData {
@@ -40,7 +39,6 @@ export class KtbEvaluationInfoComponent implements OnDestroy {
   public overlayConfig: DtOverlayConfig = {
     pinnable: true,
   };
-  public historyPolling$: Subscription = Subscription.EMPTY;
   public evaluationsLoaded = false;
   private overlayRef?: DtOverlayRef<unknown>;
   private updateOverlayPositionSubscription = Subscription.EMPTY;
@@ -85,15 +83,9 @@ export class KtbEvaluationInfoComponent implements OnDestroy {
     );
   }
 
-  constructor(
-    private dataService: DataService,
-    @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number,
-    private ngZone: NgZone,
-    private _dtOverlay: DtOverlay
-  ) {}
+  constructor(private dataService: DataService, private ngZone: NgZone, private _dtOverlay: DtOverlay) {}
 
   private fetchEvaluationHistory(): void {
-    this.historyPolling$.unsubscribe();
     const evaluation = this.evaluation;
     let _eventData = this.eventData;
     if (this.evaluation && this.evaluation.data.project && this.evaluation.data.stage && this.evaluation.data.service) {
@@ -105,21 +97,11 @@ export class KtbEvaluationInfoComponent implements OnDestroy {
     }
 
     if (this.showHistory && _eventData) {
-      const eventData = _eventData;
-      this.historyPolling$ = AppUtils.createTimer(0, this.initialDelayMillis)
-        .pipe(
-          takeUntil(this.unsubscribe$),
-          switchMap(() => {
-            // currently the event endpoint does not support skipping entries
-            // the other endpoint we have does not support excluding invalidated evaluations
-            // we can't use fromTime here if we have a limit. 10 new evaluations and limit to 5 would not pull the new ones
-            return this.dataService.getEvaluationResults(
-              eventData,
-              this.evaluationHistoryCount + (this.evaluation ? 1 : 0),
-              false
-            );
-          })
-        )
+      // currently the event endpoint does not support skipping entries
+      // the other endpoint we have does not support excluding invalidated evaluations
+      // we can't use fromTime here if we have a limit. 10 new evaluations and limit to 5 would not pull the new ones
+      this.dataService
+        .getEvaluationResults(_eventData, this.evaluationHistoryCount + (this.evaluation ? 1 : 0), false)
         .subscribe((traces: Trace[]) => {
           traces.sort((a, b) => DateUtil.compareTraceTimesDesc(a, b));
           this.evaluationsLoaded = true;

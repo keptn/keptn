@@ -39,7 +39,7 @@ From a technical perspective, the file provided via the *--resource* flag is sto
 
 **The target location of the resource:**
 
-- *--project* - is mandatory. The resource will be added to the root folder in the master branch. 
+- *--project* - is mandatory. The resource will be added to the root folder in the master branch. Do not use this command alone but add --all-stages if you are using resource service in branch mode.
 - *--stage* - is optional (when the *--service* flag is not used). The resource will be added to the root folder in the stage branch.
 - *--service* - is optional. The resource will be added to the service folder in the stage branch.
 `,

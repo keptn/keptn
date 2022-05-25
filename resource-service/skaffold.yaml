@@ -1,10 +1,10 @@
-apiVersion: skaffold/v2beta25
+apiVersion: skaffold/v2beta28
 kind: Config
 build:
   local:
     useBuildkit: true
   artifacts:
-    - image: keptndev/resource-service
+    - image: docker.io/keptndev/resource-service
       docker:
         dockerfile: Dockerfile
         target: production

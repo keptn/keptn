@@ -108,6 +108,8 @@ data:
     kubernetes.default
     kubernetes.default.svc
     kubernetes.default.svc.cluster.local
+    svc.cluster.local
+    cluster.local
     localhost
     127.0.0.1
     ::1
