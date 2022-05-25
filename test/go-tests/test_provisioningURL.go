@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/common/retry"
 	"github.com/stretchr/testify/require"
 	"os"
 	"testing"
@@ -126,7 +127,12 @@ func Test_ProvisioningURL(t *testing.T) {
 	require.Nil(t, err)
 
 	t.Logf("Creating a new upstream repository for project %s", projectName)
-	err = RecreateProjectUpstream(projectName)
+	err = retry.Retry(func() error {
+		if err := RecreateProjectUpstream(projectName); err != nil {
+			return err
+		}
+		return nil
+	})
 	require.Nil(t, err)
 
 	t.Logf("Creating a new project %s with a provisioned Gitea Upstream", projectName)

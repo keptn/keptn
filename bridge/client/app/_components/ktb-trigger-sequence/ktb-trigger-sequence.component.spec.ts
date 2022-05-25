@@ -101,17 +101,6 @@ describe('KtbTriggerSequenceComponent', () => {
     expect(component.isValidStartEndTime()).toEqual(true);
   });
 
-  it('should return an combined and cleaned string for image and tag', () => {
-    // given
-    const image = '  docker  .io/keptn  ';
-    const tag = '  v0.1 . 2    ';
-
-    // when, then
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    expect(component.getImageString(image, tag)).toEqual('docker.io/keptn:v0.1.2');
-  });
-
   it('should parse a timeframe to a string in format 1h1m1s1ms1us', () => {
     // given
     const timeframe: Timeframe = {
@@ -137,18 +126,18 @@ describe('KtbTriggerSequenceComponent', () => {
     timeframe.seconds = undefined;
     timeframe.millis = 1;
     // @ts-ignore
-    expect(component.parseTimeframe(timeframe)).toEqual('1ms');
+    expect(component.parseTimeframe(timeframe)).toEqual('');
     timeframe.millis = undefined;
     timeframe.micros = 1;
     // @ts-ignore
-    expect(component.parseTimeframe(timeframe)).toEqual('1us');
+    expect(component.parseTimeframe(timeframe)).toEqual('');
     timeframe.hours = 1;
     timeframe.minutes = 1;
     timeframe.seconds = 1;
     timeframe.millis = 1;
     timeframe.micros = 1;
     // @ts-ignore
-    expect(component.parseTimeframe(timeframe)).toEqual('1h1m1s1ms1us');
+    expect(component.parseTimeframe(timeframe)).toEqual('1h1m1s');
     /* eslint-enable */
   });
 
@@ -203,14 +192,6 @@ describe('KtbTriggerSequenceComponent', () => {
     timeframe.minutes = undefined;
     timeframe.seconds = 59;
     assertTimeframeValid(timeframe, false);
-
-    timeframe.seconds = undefined;
-    timeframe.millis = 59_999;
-    assertTimeframeValid(timeframe, false);
-
-    timeframe.millis = undefined;
-    timeframe.micros = 59_999_999;
-    assertTimeframeValid(timeframe, false);
   });
 
   it('should parse labels to an object', () => {
@@ -239,8 +220,7 @@ describe('KtbTriggerSequenceComponent', () => {
     component.selectedStage = 'hardening';
     component.selectedService = 'helloservice';
     component.deliveryFormData = {
-      image: 'docker.io/keptn',
-      tag: 'v0.1.2',
+      image: ' docker.io/keptn: \t  v0.1.2 ',
       labels: 'key1=val1',
       values: '{"key2": "val2", "key3": {"key4": "val3"}}',
     };

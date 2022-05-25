@@ -152,11 +152,6 @@ export class TriggerSequenceSubPage {
     return this;
   }
 
-  public typeDeliveryTag(value: string): this {
-    cy.byTestId('keptn-trigger-delivery-tag').type(value);
-    return this;
-  }
-
   public typeEvaluationLabels(value: string): this {
     cy.byTestId('keptn-trigger-evaluation-labels').type(value);
     return this;

@@ -6,7 +6,7 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	api2 "github.com/keptn/keptn/cp-connector/pkg/api"
+	api2 "github.com/keptn/keptn/cp-common/api"
 	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
 	"github.com/keptn/keptn/cp-connector/pkg/nats"
 	"log"
@@ -184,6 +184,7 @@ func (k *Keptn) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE
 	wg, ok := ctx.Value(gracefulShutdownKey).(wgInterface)
 	if !ok {
 		k.logger.Errorf("Unable to get graceful shutdown wait group. Skip processing of event %s", event.ID)
+		return nil
 	}
 	wg.Add(1)
 	k.runEventTaskAction(func() {

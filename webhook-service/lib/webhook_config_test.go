@@ -376,6 +376,47 @@ spec:
 			want:    nil,
 			wantErr: true,
 		},
+		{
+			name: "unsupported alpha version",
+			args: args{
+				webhookConfigYaml: []byte(`apiVersion: webhookconfig.keptn.sh/v1alpha11
+kind: WebhookConfig
+metadata:
+  name: webhook-configuration
+spec:
+  webhooks:
+    - type: "sh.keptn.event.webhook.triggered"
+      subscriptionID: "my-subscription-id"
+      envFrom:
+        - secretRef:
+          name: mysecret
+      requests:
+        - "curl http://localhost:8080 {{.data.project}} {{.env.mysecret}}"`),
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "unsupported beta version",
+			args: args{
+				webhookConfigYaml: []byte(`apiVersion: webhookconfig.keptn.sh/v1beta11
+kind: WebhookConfig
+metadata:
+  name: webhook-configuration
+spec:
+  webhooks:
+    - type: "sh.keptn.event.webhook.triggered"
+      subscriptionID: "my-subscription-id"
+      envFrom:
+        - secretRef:
+          name: mysecret
+      requests:
+        - url: http://localhost:8080
+          method: POST`),
+			},
+			want:    nil,
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

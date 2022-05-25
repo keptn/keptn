@@ -39,6 +39,7 @@ jobs:
             cli
             configuration-service
             cp-connector
+            cp-common
             deps
             deps-dev
             distributor

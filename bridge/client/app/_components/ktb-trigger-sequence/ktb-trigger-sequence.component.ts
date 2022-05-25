@@ -15,6 +15,7 @@ import { Timeframe } from '../../_models/timeframe';
 import moment from 'moment';
 import { ErrorStateMatcher } from '@angular/material/core';
 import { FormControl, FormGroupDirective, NgForm } from '@angular/forms';
+import { FormUtils } from '../../_utils/form.utils';
 import {
   CustomSequenceFormData,
   DeliverySequenceFormData,
@@ -199,18 +200,9 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy, AfterView
   }
 
   public setTimeframe(timeframe: Timeframe): void {
-    if (!this.isTimeframeEmpty(timeframe)) {
-      this.isValidTimeframe =
-        (timeframe.hours ?? 0) * 60 +
-          (timeframe.minutes ?? 0) +
-          (timeframe.seconds ?? 0) / 60 +
-          (timeframe.millis ?? 0) / 60_000 +
-          (timeframe.micros ?? 0) / 60_000_000 >=
-        1;
-    } else {
-      this.isValidTimeframe = true;
-    }
-
+    this.isValidTimeframe = this.isTimeframeEmpty(timeframe)
+      ? true
+      : (timeframe.hours ?? 0) * 60 + (timeframe.minutes ?? 0) + (timeframe.seconds ?? 0) / 60 >= 1;
     this.evaluationFormData.timeframe = timeframe;
   }
 
@@ -230,24 +222,16 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy, AfterView
     }
   }
 
-  private getImageString(image: string, tag: string): string {
-    return image.replace(/\s/g, '') + ':' + tag.replace(/\s/g, '');
-  }
-
   private parseTimeframe(timeframe: Timeframe): string {
-    let timeframeString = '';
-    timeframeString += timeframe.hours ? timeframe.hours + 'h' : '';
-    timeframeString += timeframe.minutes ? timeframe.minutes + 'm' : '';
-    timeframeString += timeframe.seconds ? timeframe.seconds + 's' : '';
-    timeframeString += timeframe.millis ? timeframe.millis + 'ms' : '';
-    timeframeString += timeframe.micros ? timeframe.micros + 'us' : '';
-
-    return timeframeString;
+    const hours = timeframe.hours ? timeframe.hours + 'h' : '';
+    const minutes = timeframe.minutes ? timeframe.minutes + 'm' : '';
+    const seconds = timeframe.seconds ? timeframe.seconds + 's' : '';
+    return hours + minutes + seconds;
   }
 
   private parseLabels(labels: string): { [key: string]: string } {
     const labelObj: { [key: string]: string } = {};
-    const lbls = labels.replace(/\s/g, '').split(',');
+    const lbls = FormUtils.removeWhitespaces(labels).split(',');
     for (const label of lbls) {
       const parts = label.split('=');
       if (parts[1]) {
@@ -276,7 +260,7 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy, AfterView
     data.configurationChange = {
       values: {
         ...valuesObj,
-        image: this.getImageString(this.deliveryFormData.image || '', this.deliveryFormData.tag || ''),
+        image: FormUtils.removeWhitespaces(this.deliveryFormData.image || ''),
       },
     };
 
@@ -375,13 +359,7 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy, AfterView
   }
 
   private isTimeframeEmpty(timeframe: Timeframe): boolean {
-    return (
-      timeframe.hours === undefined &&
-      timeframe.minutes === undefined &&
-      timeframe.seconds === undefined &&
-      timeframe.millis === undefined &&
-      timeframe.micros === undefined
-    );
+    return timeframe.hours === undefined && timeframe.minutes === undefined && timeframe.seconds === undefined;
   }
 
   private navigateToSequences(keptnContext: string | undefined): void {

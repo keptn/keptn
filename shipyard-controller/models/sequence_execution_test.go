@@ -1144,3 +1144,95 @@ func TestTaskExecutionState_IsPassed(t *testing.T) {
 		})
 	}
 }
+
+func TestSequenceExecution_SetNextCurrentTask(t *testing.T) {
+	type fields struct {
+		currentState     string
+		stateBeforePause string
+	}
+	type args struct {
+		taskName         string
+		triggeredEventID string
+	}
+	tests := []struct {
+		name                 string
+		fields               fields
+		args                 args
+		wantCurrentState     string
+		wantStateBeforePause string
+	}{
+		{
+			name: "currently paused, next task = approval",
+			fields: fields{
+				stateBeforePause: models.SequenceStartedState,
+				currentState:     models.SequencePaused,
+			},
+			args: args{
+				taskName:         keptnv2.ApprovalTaskName,
+				triggeredEventID: "1",
+			},
+			wantStateBeforePause: models.SequenceWaitingForApprovalState,
+			wantCurrentState:     models.SequencePaused,
+		},
+		{
+			name: "currently paused, next task = anything",
+			fields: fields{
+				stateBeforePause: models.SequenceStartedState,
+				currentState:     models.SequencePaused,
+			},
+			args: args{
+				taskName:         "anything",
+				triggeredEventID: "1",
+			},
+			wantStateBeforePause: models.SequenceStartedState,
+			wantCurrentState:     models.SequencePaused,
+		},
+		{
+			name: "currently not paused, next task = approval",
+			fields: fields{
+				currentState: models.SequenceStartedState,
+			},
+			args: args{
+				taskName:         keptnv2.ApprovalTaskName,
+				triggeredEventID: "1",
+			},
+			wantCurrentState: models.SequenceWaitingForApprovalState,
+		},
+		{
+			name: "currently not paused, next task = anything",
+			fields: fields{
+				currentState: models.SequenceStartedState,
+			},
+			args: args{
+				taskName:         "anything",
+				triggeredEventID: "1",
+			},
+			wantCurrentState: models.SequenceStartedState,
+		},
+		{
+			name: "currently waiting for approval, next task = anything",
+			fields: fields{
+				currentState: models.SequenceWaitingForApprovalState,
+			},
+			args: args{
+				taskName:         "anything",
+				triggeredEventID: "1",
+			},
+			wantCurrentState: models.SequenceStartedState,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := &SequenceExecution{
+				Status: SequenceExecutionStatus{
+					State:            tt.fields.currentState,
+					StateBeforePause: tt.fields.stateBeforePause,
+				},
+			}
+			e.SetNextCurrentTask(tt.args.taskName, tt.args.triggeredEventID)
+
+			require.Equal(t, tt.wantCurrentState, e.Status.State)
+			require.Equal(t, tt.wantStateBeforePause, e.Status.StateBeforePause)
+		})
+	}
+}

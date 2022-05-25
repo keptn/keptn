@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/google/uuid"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
@@ -14,7 +16,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/handler/sequencehooks"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
-	"time"
 )
 
 const maxRepoReadRetries = 5
@@ -249,6 +250,7 @@ func (sc *shipyardController) handleSequenceTriggered(event apimodels.KeptnConte
 		},
 		InputProperties: inputProperties,
 		Scope:           *eventScope,
+		TriggeredAt:     time.Now().UTC(),
 	}
 	sequenceExecution.Scope.TriggeredID = event.ID
 	sequenceExecution.Scope.GitCommitID = eventScope.WrappedEvent.GitCommitID
@@ -792,16 +794,7 @@ func (sc *shipyardController) triggerTask(eventScope models.EventScope, sequence
 
 	sc.onSequenceTaskTriggered(*storeEvent)
 
-	sequenceExecution.Status.CurrentTask = models.TaskExecutionState{
-		Name:        task.Name,
-		TriggeredID: storeEvent.ID,
-		Events:      []models.TaskEvent{},
-	}
-
-	// special handling for approval events
-	if task.Name == "approval" {
-		sequenceExecution.Status.State = apimodels.SequenceWaitingForApprovalState
-	}
+	sequenceExecution.SetNextCurrentTask(task.Name, storeEvent.ID)
 
 	if err := sc.sequenceExecutionRepo.Upsert(sequenceExecution, nil); err != nil {
 		return err
