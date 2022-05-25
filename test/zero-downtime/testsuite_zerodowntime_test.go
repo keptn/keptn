@@ -28,8 +28,8 @@ spec:
     - 
       name: hardening`
 
-const apiProbeInterval = 5 * time.Second
-const sequencesInterval = 15 * time.Second
+const apiProbeInterval = 5 * time.Second //doubling the values is solving the problem with retrieving credentials via K8s API
+const sequencesInterval = 15 * time.Second //doubling the values is solving the problem with retrieving credentials via K8s API
 
 type ZeroDowntimeEnv struct {
 	quit         chan struct{}
@@ -54,7 +54,7 @@ func SetupZD() *ZeroDowntimeEnv {
 
 	zd := ZeroDowntimeEnv{}
 	zd.quit = make(chan struct{})
-	zd.NrOfUpgrades = 2
+	zd.NrOfUpgrades = 3
 	zd.Wg = &sync.WaitGroup{}
 	zd.ShipyardFile, _ = GetShipyard()
 	zd.TotalAPICalls = 0
@@ -183,6 +183,7 @@ func RollingUpgrade(t *testing.T, env *ZeroDowntimeEnv) {
 			t.Logf("Encountered error when upgrading keptn: %v", err)
 
 		}
+		time.Sleep(60*time.Second)
 	}
 }
 
@@ -208,8 +209,8 @@ func GetCharts(t *testing.T) (string, string) {
 	if upgrade = os.Getenv(EnvUpgradeVersion); upgrade == "" {
 		t.Errorf("Helm chart unavailable, please set env variable %s", EnvUpgradeVersion)
 	}
-
 	return install, upgrade
+	//return "./keptn-installed-false.tgz", "./keptn-0.15.1-dev-PR-7832-false.tgz"
 }
 
 func GetShipyard() (string, error) {

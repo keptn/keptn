@@ -74,7 +74,7 @@ apiGatewayNginx:
     tag: 1.21.6-alpine
   nodeSelector: {}
   gracePeriod: 60
-  preStopHookTime: 5
+  preStopHookTime: 20
   clientMaxBodySize: "5m"
 
 remediationService:
@@ -83,7 +83,7 @@ remediationService:
     tag: ""
   nodeSelector: {}
   gracePeriod: 60
-  preStopHookTime: 5
+  preStopHookTime: 20
 
 apiService:
   tokenSecretName:
@@ -96,7 +96,7 @@ apiService:
     requestBurst: "2"
   nodeSelector: {}
   gracePeriod: 60
-  preStopHookTime: 5
+  preStopHookTime: 20
 
 bridge:
   image:
@@ -187,7 +187,7 @@ secretService:
     tag: ""
   nodeSelector: {}
   gracePeriod: 60
-  preStopHookTime: 5
+  preStopHookTime: 20
 
 configurationService:
   image:
@@ -233,7 +233,7 @@ lighthouseService:
     tag: ""
   nodeSelector: {}
   gracePeriod: 60
-  preStopHookTime: 5
+  preStopHookTime: 20
 
 statisticsService:
   image:
@@ -249,7 +249,7 @@ approvalService:
     tag: ""
   nodeSelector: {}
   gracePeriod: 60
-  preStopHookTime: 5
+  preStopHookTime: 20
 
 webhookService:
   enabled: true
@@ -258,7 +258,7 @@ webhookService:
     tag: ""
   nodeSelector: {}
   gracePeriod: 60
-  preStopHookTime: 5
+  preStopHookTime: 20
 
 ingress:
   enabled: false
