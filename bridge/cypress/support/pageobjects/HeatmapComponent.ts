@@ -103,6 +103,7 @@ export class HeatmapComponent {
 
   assertXAxisTickLabels(labels: string[]): this {
     const sorter = (a: string, b: string): number => a.localeCompare(b);
+    const sortedLabels = [...labels].sort(sorter);
     // eslint-disable-next-line promise/catch-or-return
     cy.get('ktb-heatmap .x-axis-container g.tick')
       .then(($els) =>
@@ -110,7 +111,7 @@ export class HeatmapComponent {
           .map((el) => el.textContent ?? '')
           .sort(sorter)
       )
-      .should('deep.equal', labels.sort(sorter));
+      .should('deep.equal', sortedLabels);
     return this;
   }
 }
