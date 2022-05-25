@@ -4,6 +4,7 @@ kind: Pod
 metadata:
   name: "{{ include "helm-service.fullname" . }}-test-api-connection"
   labels: {{- include "common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: helm-service
   annotations:
     "helm.sh/hook": test
 spec:
