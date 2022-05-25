@@ -42,7 +42,7 @@ func Test_API(t *testing.T) {
 // APIs is called in the zero downtime test suite
 func APIs(t *testing.T, env *ZeroDowntimeEnv) {
 	wgAPI := sync.WaitGroup{}
-	apiTicker := clock.New().Ticker(apiProbeInterval)
+	apiTicker := clock.New().Ticker(env.ApiProbeInterval)
 Loop:
 	for {
 		select {

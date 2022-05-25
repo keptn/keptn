@@ -38,7 +38,7 @@ func Test_Webhook(t *testing.T) {
 func Webhook(t *testing.T, env *ZeroDowntimeEnv) {
 	var s *TestSuiteWebhook
 	wgSequences := &sync.WaitGroup{}
-	seqTicker := clock.New().Ticker(sequencesInterval)
+	seqTicker := clock.New().Ticker(env.SequencesInterval)
 Loop:
 	for {
 		select {

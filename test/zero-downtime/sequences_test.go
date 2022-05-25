@@ -84,7 +84,7 @@ func setSequencesEnv(t *testing.T) *ZeroDowntimeEnv {
 func Sequences(t *testing.T, env *ZeroDowntimeEnv) {
 	var s *TestSuiteSequences
 	wgSequences := &sync.WaitGroup{}
-	seqTicker := clock.New().Ticker(sequencesInterval)
+	seqTicker := clock.New().Ticker(env.SequencesInterval)
 
 Loop:
 	for {
