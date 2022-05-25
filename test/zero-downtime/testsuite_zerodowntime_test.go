@@ -31,8 +31,8 @@ type ZeroDowntimeEnv struct {
 	quit              chan struct{}
 	NrOfUpgrades      int           `envconfig:"NUMBER_OF_UPGRADES" default:"2"`
 	EnvInstallVersion string        `envconfig:"INSTALL_HELM_CHART" default:"https://github.com/keptn/helm-charts-dev/raw/69eea439a26a99ecc163e296860dbb5d43e41600/packages/keptn-0.15.1-dev.tgz"`
-	EnvUpgradeVersion string        `envconfig:"UPGRADE_HELM_CHART" default:"https://github.com/keptn/helm-charts-dev/blob/gh-pages/packages/keptn-0.15.1-dev.tgz"`
-	ApiProbeInterval  time.Duration `envconfig:"API_PROBES_INTERVAL" default:"1s"`
+	EnvUpgradeVersion string        `envconfig:"UPGRADE_HELM_CHART" default:"https://github.com/keptn/helm-charts-dev/raw/gh-pages/packages/keptn-0.15.1-dev.tgz"`
+	ApiProbeInterval  time.Duration `envconfig:"API_PROBES_INTERVAL" default:"5s"`
 	SequencesInterval time.Duration `envconfig:"SEQUENCES_INTERVAL" default:"15s"`
 	Wg                *sync.WaitGroup
 
