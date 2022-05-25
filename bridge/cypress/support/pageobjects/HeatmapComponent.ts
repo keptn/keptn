@@ -6,6 +6,14 @@ export class HeatmapComponent {
     return this;
   }
 
+  interceptWithManyEvaluations(): this {
+    cy.intercept('GET', 'api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?*', {
+      statusCode: 200,
+      fixture: 'get.sockshop.service.carts.evaluations.heatmap.manyscores.mock.json',
+    });
+    return this;
+  }
+
   visitPageWithHeatmapComponent(): this {
     cy.visit('/project/sockshop/service/carts/context/da740469-9920-4e0c-b304-0fd4b18d17c2/stage/staging');
     return this;
@@ -41,7 +49,7 @@ export class HeatmapComponent {
     return this;
   }
 
-  assertTileColor(tileId: string, color: 'pass' | 'warning' | 'fail'): this {
+  assertTileColor(tileId: string, color: 'pass' | 'warning' | 'fail' | 'info'): this {
     cy.byTestId(tileId).should('have.class', color).and('have.class', 'data-point');
     return this;
   }
@@ -92,4 +100,20 @@ export class HeatmapComponent {
     cy.get('ktb-heatmap .x-axis-container g.tick').should('have.length', length);
     return this;
   }
+
+  assertXAxisTickLabels(labels: string[]): this {
+    const sorter = (a: string, b: string): number => a.localeCompare(b);
+    // eslint-disable-next-line promise/catch-or-return
+    cy.get('ktb-heatmap .x-axis-container g.tick')
+      .then(($els) =>
+        Cypress.$.makeArray($els)
+          .map((el) => el.textContent ?? '')
+          .sort(sorter)
+      )
+      .should('deep.equal', labels.sort(sorter));
+    return this;
+  }
 }
+
+export const range = (start: number, stop: number, step: number): number[] =>
+  Array.from({ length: (stop - start) / step + 1 }, (_, i) => start + i * step);

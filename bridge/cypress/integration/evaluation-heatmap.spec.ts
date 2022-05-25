@@ -1,4 +1,4 @@
-import { HeatmapComponent } from '../support/pageobjects/HeatmapComponent';
+import { HeatmapComponent, range } from '../support/pageobjects/HeatmapComponent';
 
 describe('evaluation-heatmap', () => {
   const heatmap = new HeatmapComponent();
@@ -20,7 +20,9 @@ describe('evaluation-heatmap', () => {
     heatmap
       .assertTileColor('ktb-heatmap-tile-182d10b8-b68d-49d4-86cd-5521352d7a42', 'pass')
       .assertTileColor('ktb-heatmap-tile-182d10b8-b68d-49d4-86cd-5521352d7a42', 'warning')
-      .assertTileColor('ktb-heatmap-tile-52b4b2c7-fa49-41f3-9b5c-b9aea2370bb4', 'fail');
+      .assertTileColor('ktb-heatmap-tile-52b4b2c7-fa49-41f3-9b5c-b9aea2370bb4', 'fail')
+      .clickExpandButton()
+      .assertTileColor('ktb-heatmap-tile-e074893e-a7f9-4fa8-9e7e-898937a3d2b6', 'info');
   });
   it('should have a primary and secondary highlight', () => {
     heatmap.assertPrimaryHighlightExists().assertSecondaryHighlightExists();
@@ -50,5 +52,9 @@ describe('evaluation-heatmap', () => {
       .clickScore('ktb-heatmap-tile-25ab0f26-e6d8-48d5-a08f-08c8a136a688')
       .assertPrimaryHighlightExists()
       .assertSecondaryHighlightDoesNotExist();
+  });
+  it('should show every second evaluation', () => {
+    const labels = range(1, 44, 2).map((value) => `2022-02-01 03:46 (${value})`);
+    heatmap.interceptWithManyEvaluations().assertXAxisTickLength(22).assertXAxisTickLabels(labels);
   });
 });
