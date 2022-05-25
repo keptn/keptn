@@ -1,6 +1,6 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
-FROM golang:1.17.10-alpine as builder-base
+FROM golang:1.18.2-alpine as builder-base
 
 WORKDIR /go/src/github.com/keptn/keptn/configuration-service
 
@@ -25,7 +25,7 @@ FROM builder-base as builder-test
 ARG version=develop
 ENV GOTESTSUM_FORMAT=testname
 
-RUN go get gotest.tools/gotestsum@v1.7.0
+RUN go install gotest.tools/gotestsum@v1.7.0
 CMD gotestsum --no-color=false -- -coverprofile=coverage.txt -covermode=atomic -v ./... && mv ./coverage.txt /shared/coverage.txt
 
 FROM builder-base as builder

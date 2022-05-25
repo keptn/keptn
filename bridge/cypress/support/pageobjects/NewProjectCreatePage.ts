@@ -1,8 +1,8 @@
 /// <reference types="cypress" />
 
 import {
-  interceptMain,
   interceptCreateProject,
+  interceptMain,
   interceptMainResourceApEnabled,
   interceptMainResourceEnabled,
   interceptProjectBoard,
@@ -48,7 +48,7 @@ class NewProjectCreatePage {
   }
 
   public visitSettings(project: string): this {
-    cy.visit(`/project/${project}/settings/project`);
+    cy.visit(`/project/${project}/settings/project`).wait('@metadata');
     return this;
   }
 
@@ -436,6 +436,11 @@ class NewProjectCreatePage {
 
   public assertGitUpstreamMessageContains(message: string): this {
     cy.byTestId('ktb-settings-git-upstream-message').should('contain', message);
+    return this;
+  }
+
+  public assertErrorVisible(status: boolean): this {
+    cy.get('ktb-error-view').should(status ? 'be.visible' : 'not.be.visible');
     return this;
   }
 }

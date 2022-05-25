@@ -1,10 +1,10 @@
-apiVersion: skaffold/v2beta22
+apiVersion: skaffold/v2beta28
 kind: Config
 build:
   local:
     useBuildkit: true
   artifacts:
-    - image: keptndev/statistics-service
+    - image: docker.io/keptndev/statistics-service
       docker:
         dockerfile: Dockerfile
         target: production

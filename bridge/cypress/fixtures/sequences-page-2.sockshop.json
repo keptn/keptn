@@ -1,0 +1,274 @@
+{
+  "states": [
+    {
+      "name": "evaluation",
+      "service": "carts",
+      "project": "sockshop",
+      "time": "2021-07-06T09:21:43.659Z",
+      "shkeptncontext": "88d5f9c0-1e2c-474b-af27-13fe12e038a7",
+      "state": "finished",
+      "stages": [
+        {
+          "name": "staging",
+          "latestEvaluation": {
+            "result": "fail",
+            "score": 66.66666666666666
+          },
+          "latestEvent": {
+            "type": "sh.keptn.event.staging.evaluation.finished",
+            "id": "16614663-aea7-4420-bafe-41f480b572d8",
+            "time": "2021-07-06T09:21:53.145Z"
+          },
+          "latestFailedEvent": {
+            "type": "sh.keptn.event.staging.evaluation.finished",
+            "id": "16614663-aea7-4420-bafe-41f480b572d8",
+            "time": "2021-07-06T09:21:53.145Z"
+          }
+        }
+      ]
+    },
+    {
+      "name": "evaluation",
+      "service": "carts",
+      "project": "sockshop",
+      "time": "2021-07-06T09:13:00.939Z",
+      "shkeptncontext": "f83f1f12-4601-4fbd-a6f7-304458e5442c",
+      "state": "finished",
+      "stages": [
+        {
+          "name": "staging",
+          "latestEvaluation": {
+            "result": "fail",
+            "score": 66.66666666666666
+          },
+          "latestEvent": {
+            "type": "sh.keptn.event.staging.evaluation.finished",
+            "id": "10643917-00cc-46da-873b-5254626663cd",
+            "time": "2021-07-06T09:13:13.942Z"
+          },
+          "latestFailedEvent": {
+            "type": "sh.keptn.event.staging.evaluation.finished",
+            "id": "10643917-00cc-46da-873b-5254626663cd",
+            "time": "2021-07-06T09:13:13.942Z"
+          }
+        }
+      ]
+    },
+    {
+      "name": "evaluation",
+      "service": "carts",
+      "project": "sockshop",
+      "time": "2021-07-06T09:10:45.712Z",
+      "shkeptncontext": "714397cc-e648-474f-bd6e-fa79463691d3",
+      "state": "finished",
+      "stages": [
+        {
+          "name": "staging",
+          "latestEvaluation": {
+            "result": "fail",
+            "score": 66.66666666666666
+          },
+          "latestEvent": {
+            "type": "sh.keptn.event.staging.evaluation.finished",
+            "id": "e5cf45e4-b8f0-48a9-8cdb-ec0ee3ea0219",
+            "time": "2021-07-06T09:10:55.248Z"
+          },
+          "latestFailedEvent": {
+            "type": "sh.keptn.event.staging.evaluation.finished",
+            "id": "e5cf45e4-b8f0-48a9-8cdb-ec0ee3ea0219",
+            "time": "2021-07-06T09:10:55.248Z"
+          }
+        }
+      ]
+    },
+    {
+      "name": "evaluation",
+      "service": "carts",
+      "project": "sockshop",
+      "time": "2021-07-06T09:02:09.612Z",
+      "shkeptncontext": "5b8d8f9c-faba-43f2-9c87-fc0b69d6fc3e",
+      "state": "finished",
+      "stages": [
+        {
+          "name": "staging",
+          "latestEvaluation": {
+            "result": "pass",
+            "score": 100
+          },
+          "latestEvent": {
+            "type": "sh.keptn.event.staging.evaluation.finished",
+            "id": "ec195981-f095-4f7b-9568-be9ca0fe18c5",
+            "time": "2021-07-06T09:02:26.842Z"
+          }
+        }
+      ]
+    },
+    {
+      "name": "evaluation",
+      "service": "carts",
+      "project": "sockshop",
+      "time": "2021-07-06T09:02:06.635Z",
+      "shkeptncontext": "d229e6f9-573b-4d07-8d08-b2502cb8c320",
+      "state": "finished",
+      "stages": [
+        {
+          "name": "staging",
+          "latestEvaluation": {
+            "result": "pass",
+            "score": 100
+          },
+          "latestEvent": {
+            "type": "sh.keptn.event.staging.evaluation.finished",
+            "id": "4a3bd7d7-a786-4e36-a781-a1b22e06b556",
+            "time": "2021-07-06T09:02:23.043Z"
+          }
+        }
+      ]
+    },
+    {
+      "name": "evaluation",
+      "service": "carts",
+      "project": "sockshop",
+      "time": "2021-07-06T09:01:40.989Z",
+      "shkeptncontext": "450e8156-ac3e-4e76-89f9-364a92faef3a",
+      "state": "finished",
+      "stages": [
+        {
+          "name": "staging",
+          "latestEvaluation": {
+            "result": "fail",
+            "score": 66.66666666666666
+          },
+          "latestEvent": {
+            "type": "sh.keptn.event.staging.evaluation.finished",
+            "id": "46fc0a0d-739e-4101-b043-bad09399bf70",
+            "time": "2021-07-06T09:01:50.662Z"
+          },
+          "latestFailedEvent": {
+            "type": "sh.keptn.event.staging.evaluation.finished",
+            "id": "46fc0a0d-739e-4101-b043-bad09399bf70",
+            "time": "2021-07-06T09:01:50.662Z"
+          }
+        }
+      ]
+    },
+    {
+      "name": "evaluation",
+      "service": "carts",
+      "project": "sockshop",
+      "time": "2021-07-06T08:59:04.719Z",
+      "shkeptncontext": "bd41e3fe-edbd-4245-8d18-93433143ac7f",
+      "state": "finished",
+      "stages": [
+        {
+          "name": "staging",
+          "latestEvaluation": {
+            "result": "pass",
+            "score": 100
+          },
+          "latestEvent": {
+            "type": "sh.keptn.event.staging.evaluation.finished",
+            "id": "31d7a31f-acb7-4f2b-820f-ee387d4f187d",
+            "time": "2021-07-06T08:59:14.340Z"
+          }
+        }
+      ]
+    },
+    {
+      "name": "evaluation",
+      "service": "carts",
+      "project": "sockshop",
+      "time": "2021-07-06T08:58:36.662Z",
+      "shkeptncontext": "9a7eaa00-1019-41e5-be3a-441738338cf4",
+      "state": "finished",
+      "stages": [
+        {
+          "name": "staging",
+          "latestEvaluation": {
+            "result": "fail",
+            "score": 66.66666666666666
+          },
+          "latestEvent": {
+            "type": "sh.keptn.event.staging.evaluation.finished",
+            "id": "993ec5e5-c3e2-4515-8bf0-f9be93f77125",
+            "time": "2021-07-06T08:58:45.965Z"
+          },
+          "latestFailedEvent": {
+            "type": "sh.keptn.event.staging.evaluation.finished",
+            "id": "993ec5e5-c3e2-4515-8bf0-f9be93f77125",
+            "time": "2021-07-06T08:58:45.965Z"
+          }
+        }
+      ]
+    },
+    {
+      "name": "evaluation",
+      "service": "carts",
+      "project": "sockshop",
+      "time": "2021-07-06T08:57:38.264Z",
+      "shkeptncontext": "238e1c43-501a-4a7f-a725-802cf36e16f5",
+      "state": "finished",
+      "stages": [
+        {
+          "name": "staging",
+          "latestEvaluation": {
+            "result": "fail",
+            "score": 66.66666666666666
+          },
+          "latestEvent": {
+            "type": "sh.keptn.event.staging.evaluation.finished",
+            "id": "a6222bca-2619-48ea-933e-d4f2fbf97937",
+            "time": "2021-07-06T08:57:48.047Z"
+          },
+          "latestFailedEvent": {
+            "type": "sh.keptn.event.staging.evaluation.finished",
+            "id": "a6222bca-2619-48ea-933e-d4f2fbf97937",
+            "time": "2021-07-06T08:57:48.047Z"
+          }
+        }
+      ]
+    },
+    {
+      "name": "delivery",
+      "service": "carts",
+      "project": "sockshop",
+      "time": "2021-07-06T08:13:53.766Z",
+      "shkeptncontext": "1663de8a-a414-47ba-9566-10a9730f406f",
+      "state": "finished",
+      "stages": [
+        {
+          "name": "dev",
+          "image": "docker.io/keptnexamples/carts:0.12.3",
+          "latestEvaluation": {
+            "result": "pass",
+            "score": 0
+          },
+          "latestEvent": {
+            "type": "sh.keptn.event.dev.delivery.finished",
+            "id": "92207803-7d49-4081-ad0a-897e3f4229d2",
+            "time": "2021-07-06T08:17:42.285Z"
+          }
+        },
+        {
+          "name": "staging",
+          "image": "docker.io/keptnexamples/carts:0.12.3",
+          "latestEvaluation": {
+            "result": "fail",
+            "score": 33.33333333333333
+          },
+          "latestEvent": {
+            "type": "sh.keptn.event.staging.rollback.finished",
+            "id": "d23e5ed6-0025-4273-bc7f-09ff94eab160",
+            "time": "2021-07-06T08:22:47.310Z"
+          },
+          "latestFailedEvent": {
+            "type": "sh.keptn.event.staging.delivery.finished",
+            "id": "26d927cd-274e-406d-bb40-d7a47a553632",
+            "time": "2021-07-06T08:22:36.842Z"
+          }
+        }
+      ]
+    }
+  ],
+  "totalCount": 15
+}

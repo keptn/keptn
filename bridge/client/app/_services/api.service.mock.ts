@@ -14,7 +14,7 @@ import { WebhookConfig, WebhookConfigMethod } from '../../../shared/interfaces/w
 import { UniformRegistrationLogResponse } from '../../../shared/interfaces/uniform-registration-log';
 import { Secret } from '../_models/secret';
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
-import { Metadata } from '../_models/metadata';
+import { IMetadata } from '../_interfaces/metadata';
 import { FileTree } from '../../../shared/interfaces/resourceFileTree';
 import { HttpResponse } from '@angular/common/http';
 import { SequenceResult } from '../_models/sequence-result';
@@ -224,7 +224,7 @@ export class ApiServiceMock extends ApiService {
     return of({});
   }
 
-  public getMetadata(): Observable<Metadata> {
+  public getMetadata(): Observable<IMetadata> {
     return of(MetadataResponseMock);
   }
 
@@ -250,14 +250,14 @@ export class ApiServiceMock extends ApiService {
     keptnContext?: string
   ): Observable<HttpResponse<SequenceResult>> {
     let data = SequencesMock;
-    let totalCount = 34;
+    let totalCount = data.length;
 
     if (pageSize) {
       data = SequencesMock.slice(0, pageSize);
     }
 
     if (beforeTime) {
-      data = SequencesMock.slice(25, 34);
+      data = SequencesMock.slice(totalCount - 9);
       totalCount = 9;
     }
 

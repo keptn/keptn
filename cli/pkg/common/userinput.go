@@ -31,7 +31,7 @@ func NewUserInput() *UserInput {
 }
 
 func (ui *UserInput) AskBool(question string, opts *UserInputOptions) bool {
-	fmt.Fprintf(ui.Writer, "%s (y/n)", question)
+	fmt.Fprintf(ui.Writer, "%s (y/n)\n", question)
 
 	if opts.AssumeYes {
 		return true

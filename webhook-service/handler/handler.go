@@ -258,10 +258,10 @@ func (th *TaskHandler) CreateRequest(request interface{}) (string, error) {
 
 func (th *TaskHandler) validateAlphaCurlRequest(curlCmd string) error {
 	sanitizedCurlCmd := strings.ReplaceAll(curlCmd, "\\", "")
-	denyList := lib.GetDeniedAlphaURLs(lib.GetEnv())
-	for _, url := range denyList {
-		if strings.Contains(sanitizedCurlCmd, url) {
-			return fmt.Errorf("curl command contains denied URL '%s'", url)
+	denyList := lib.CreateListOfDeniedURLs(lib.GetEnv())
+	for _, durl := range denyList {
+		if strings.Contains(sanitizedCurlCmd, durl) {
+			return fmt.Errorf("curl command contains denied URL '%s'", durl)
 		}
 	}
 	return nil

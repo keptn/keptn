@@ -3,7 +3,7 @@ import { KtbSequenceViewComponent } from './ktb-sequence-view.component';
 import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ActivatedRoute } from '@angular/router';
-import { of } from 'rxjs';
+import { of, Subject, BehaviorSubject } from 'rxjs';
 import { POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
@@ -15,8 +15,67 @@ import moment from 'moment';
 describe('KtbEventsListComponent', () => {
   let component: KtbSequenceViewComponent;
   let fixture: ComponentFixture<KtbSequenceViewComponent>;
+  const queryParams: Subject<Record<string, string | string[]>> = new BehaviorSubject({});
 
   const projectName = 'sockshop';
+
+  const sequenceFilters = [
+    [
+      {
+        name: 'Stage',
+        autocomplete: [],
+        showInSidebar: false,
+      },
+      {
+        name: 'dev',
+        value: 'dev',
+      },
+    ],
+    [
+      {
+        name: 'Stage',
+        autocomplete: [],
+        showInSidebar: false,
+      },
+      {
+        name: 'production',
+        value: 'production',
+      },
+    ],
+    [
+      {
+        name: 'Service',
+        autocomplete: [],
+        showInSidebar: false,
+      },
+      {
+        name: 'carts',
+        value: 'carts',
+      },
+    ],
+    [
+      {
+        name: 'Sequence',
+        autocomplete: [],
+        showInSidebar: false,
+      },
+      {
+        name: 'delivery',
+        value: 'delivery',
+      },
+    ],
+    [
+      {
+        name: 'Status',
+        autocomplete: [],
+        showInSidebar: false,
+      },
+      {
+        name: 'Active',
+        value: 'started',
+      },
+    ],
+  ];
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -27,7 +86,7 @@ describe('KtbEventsListComponent', () => {
           useValue: {
             data: of({}),
             params: of({ projectName }),
-            queryParams: of({}),
+            queryParams,
           },
         },
         { provide: POLLING_INTERVAL_MILLIS, useValue: 0 },
@@ -37,7 +96,6 @@ describe('KtbEventsListComponent', () => {
 
     fixture = TestBed.createComponent(KtbSequenceViewComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {
@@ -50,7 +108,8 @@ describe('KtbEventsListComponent', () => {
     // @ts-ignore // Ignore private property
     component.latestDeployments = SequenceMetadataMock.deployments;
     component.selectedStage = 'staging';
-    component.currentSequence = SequencesMock[0];
+    component.currentSequence = SequencesMock[1];
+    fixture.detectChanges();
 
     // when
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -192,5 +251,86 @@ describe('KtbEventsListComponent', () => {
 
     // then
     expect(showButton).toEqual(false);
+  });
+
+  it('should save filters on click, load sequences and filter properly', () => {
+    // given
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    /* @ts-ignore */ // Ignore private property
+    component.project = ProjectsMock[0];
+    const spySaveSequenceFilters = jest.spyOn(component, 'saveSequenceFilters');
+    fixture.detectChanges();
+
+    // when
+    component.filtersClicked({
+      filters: sequenceFilters,
+    });
+    fixture.detectChanges();
+
+    // then
+    expect(spySaveSequenceFilters).toHaveBeenCalledWith({
+      Stage: ['dev', 'production'],
+      Service: ['carts'],
+      Sequence: ['delivery'],
+      Status: ['started'],
+    });
+    expect(component.filteredSequences).toEqual([SequencesMock[0]]);
+  });
+
+  it('should set sequence filters from query params', () => {
+    // given
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    /* @ts-ignore */ // Ignore private property
+    component.project = ProjectsMock[0];
+    const spySetSequenceFilters = jest.spyOn(component, 'setSequenceFilters');
+    fixture.detectChanges();
+
+    // when
+    queryParams.next({
+      Stage: ['dev', 'production'],
+      Service: 'carts',
+      Sequence: 'delivery',
+      Status: 'started',
+    });
+    fixture.detectChanges();
+
+    // then
+    expect(spySetSequenceFilters).toHaveBeenCalledWith({
+      Stage: ['dev', 'production'],
+      Service: ['carts'],
+      Sequence: ['delivery'],
+      Status: ['started'],
+    });
+    expect(component.filteredSequences).toEqual([SequencesMock[0]]);
+  });
+
+  it('should load sequence filters from local storage', () => {
+    // given
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    /* @ts-ignore */ // Ignore private property
+    component.project = ProjectsMock[0];
+    const spyLoadSequenceFilters = jest.spyOn(component, 'loadSequenceFilters');
+    const spySetSequenceFilters = jest.spyOn(component, 'setSequenceFilters');
+    queryParams.next({
+      Stage: ['dev', 'production'],
+      Service: 'carts',
+      Sequence: 'delivery',
+      Status: 'started',
+    });
+    fixture.detectChanges();
+
+    // when
+    queryParams.next({});
+    fixture.detectChanges();
+
+    // then
+    expect(spyLoadSequenceFilters).toHaveBeenCalled();
+    expect(spySetSequenceFilters).toHaveBeenCalledWith({
+      Stage: ['dev', 'production'],
+      Service: ['carts'],
+      Sequence: ['delivery'],
+      Status: ['started'],
+    });
+    expect(component.filteredSequences).toEqual([SequencesMock[0]]);
   });
 });

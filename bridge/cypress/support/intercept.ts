@@ -27,7 +27,7 @@ export function interceptEnvironmentScreen(): void {
     fixture: 'eventByContext.mock',
   }).as('triggeredSequence');
   cy.intercept(
-    '/api/controlPlane/v1/sequence/sockshop?pageSize=10&fromTime=2022-02-23T14:28:50.504Z&beforeTime=2022-01-09T15:04:09.199Z',
+    '/api/controlPlane/v1/sequence/sockshop?pageSize=10&fromTime=2022-02-23T14:28:50.504Z&beforeTime=2021-07-06T09:22:56.433Z',
     {
       body: {
         states: [],
@@ -86,6 +86,10 @@ export function interceptMain(): void {
   cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
 }
 
+export function interceptFailedMetadata(): void {
+  cy.intercept('/api/v1/metadata', { forceNetworkError: true }).as('metadata');
+}
+
 export function interceptCreateProject(): void {
   cy.intercept('POST', 'api/controlPlane/v1/project', {
     statusCode: 200,
@@ -131,11 +135,17 @@ export function interceptServicesPage(): void {
 
 export function interceptSequencesPage(): void {
   cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=25', { fixture: 'sequences.sockshop' }).as('Sequences');
+  cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=10&beforeTime=2021-07-06T09:22:56.433Z', {
+    fixture: 'sequences-page-2.sockshop',
+  }).as('SequencesPage2');
+  cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=10&beforeTime=2021-07-06T08:13:53.766Z', {
+    fixture: 'sequences-page-3.sockshop',
+  }).as('SequencesPage3');
   cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=25&fromTime=*', {
     body: {
       states: [],
     },
-  });
+  }).as('SequencesUpdate');
 
   cy.intercept('/api/project/sockshop/sequences/metadata', { fixture: 'sequence.metadata.mock' }).as(
     'SequencesMetadata'

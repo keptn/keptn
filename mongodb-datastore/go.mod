@@ -1,6 +1,6 @@
 module github.com/keptn/keptn/mongodb-datastore
 
-go 1.17
+go 1.18
 
 require (
 	github.com/go-openapi/errors v0.20.2
@@ -20,7 +20,7 @@ require (
 	github.com/stretchr/testify v1.7.1
 	github.com/tryvium-travels/memongo v0.5.0
 	go.mongodb.org/mongo-driver v1.9.1
-	golang.org/x/net v0.0.0-20220520000938-2e3eb7b945c2
+	golang.org/x/net v0.0.0-20220524220425-1d687d428aca
 )
 
 require (

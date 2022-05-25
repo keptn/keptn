@@ -90,7 +90,7 @@
   </div>
   <div class="mt-3 mb-2" fxLayout="column" fxLayoutAlign="flex-end end" uitestid="keptn-nav-versionInfo">
     <p class="small m-0">
-      Keptn version: <span [textContent]="keptnInfo?.metadata?.keptnversion"></span
+      Keptn version: <span [textContent]="metadata?.keptnversion ?? 'N/A'"></span
       ><span *ngIf="keptnInfo?.keptnVersionInvalid">*</span>
     </p>
     <p class="small m-0">

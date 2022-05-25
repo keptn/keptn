@@ -1,5 +1,14 @@
 <div class="container" fxFlexFill *ngIf="state$ | async as state">
-  <div fxLayout="column" fxFlexFill fxLayoutAlign="space-between" class="pb-3">
+  <div *ngIf="state.state === ProjectSettingsStatus.INIT" fxFlexFill fxLayoutAlign="center center">
+    <ktb-loading-distractor>Loading ...</ktb-loading-distractor>
+  </div>
+  <div
+    *ngIf="state.state === ProjectSettingsStatus.LOADED"
+    fxLayout="column"
+    fxFlexFill
+    fxLayoutAlign="space-between"
+    class="pb-3"
+  >
     <div>
       <div [formGroup]="projectNameForm" *ngIf="isCreateMode" class="mb-3 settings-section">
         <h2 class="required">Project name</h2>
@@ -102,6 +111,9 @@
       <ktb-danger-zone [data]="projectDeletionData"></ktb-danger-zone>
     </div>
   </div>
+  <ng-container *ngIf="state.state === ProjectSettingsStatus.ERROR">
+    <ktb-error-view [error]="ServerErrors.NOT_ALLOWED"></ktb-error-view>
+  </ng-container>
 </div>
 
 <dt-confirmation-dialog

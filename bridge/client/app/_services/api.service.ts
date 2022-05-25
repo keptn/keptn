@@ -4,7 +4,7 @@ import { Observable, of } from 'rxjs';
 import { Trace } from '../_models/trace';
 import { ApprovalStates } from '../../../shared/models/approval-states';
 import { EventTypes } from '../../../shared/interfaces/event-types';
-import { Metadata } from '../_models/metadata';
+import { IMetadata } from '../_interfaces/metadata';
 import moment from 'moment';
 import { SequenceResult } from '../_models/sequence-result';
 import { Project } from '../_models/project';
@@ -41,6 +41,7 @@ export class ApiService {
   protected readonly VERSION_CHECK_COOKIE = 'keptn_versioncheck';
   protected readonly ENVIRONMENT_FILTER_COOKIE = 'keptn_environment_filter';
   protected readonly INTEGRATION_DATES = 'keptn_integration_dates';
+  protected readonly SEQUENCE_FILTERS_COOKIE = 'keptn_sequence_filters';
 
   constructor(protected http: HttpClient) {
     this._baseUrl = `./api`;
@@ -52,6 +53,19 @@ export class ApiService {
 
   public get baseUrl(): string {
     return this._baseUrl;
+  }
+
+  public getSequenceFilters(projectName: string): Record<string, string[]> {
+    const filters = localStorage.getItem(this.getSequenceFiltersKey(projectName));
+    return filters ? JSON.parse(filters) : {};
+  }
+
+  public setSequenceFilters(filters: Record<string, string[]>, projectName: string): void {
+    localStorage.setItem(this.getSequenceFiltersKey(projectName), JSON.stringify(filters));
+  }
+
+  private getSequenceFiltersKey(projectName: string): string {
+    return `${this.SEQUENCE_FILTERS_COOKIE}-${projectName}`;
   }
 
   public get environmentFilter(): { [projectName: string]: { services: string[] } } {
@@ -269,8 +283,8 @@ export class ApiService {
     });
   }
 
-  public getMetadata(): Observable<Metadata> {
-    return this.http.get<Metadata>(`${this._baseUrl}/v1/metadata`);
+  public getMetadata(): Observable<IMetadata> {
+    return this.http.get<IMetadata>(`${this._baseUrl}/v1/metadata`);
   }
 
   public getFileTreeForService(projectName: string, serviceName: string): Observable<FileTree[]> {

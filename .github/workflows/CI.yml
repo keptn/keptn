@@ -11,7 +11,7 @@ on:
       - 'master'
       - '[0-9]+.[1-9][0-9]*.x'
 env:
-  GO_VERSION: "~1.17"
+  GO_VERSION: "~1.18"
   CLI_FOLDER: "cli/"
   INSTALLER_FOLDER: "installer/"
   
@@ -348,7 +348,7 @@ jobs:
       - name: Test CLI
         working-directory: cli
         run: |
-          go get gotest.tools/gotestsum@v1.7.0
+          go install gotest.tools/gotestsum@v1.7.0
           gotestsum --no-color=false --format=testname -- -race -v  -coverprofile=coverage.txt -covermode=atomic ./...
 
       - name: Report test coverage for CLI

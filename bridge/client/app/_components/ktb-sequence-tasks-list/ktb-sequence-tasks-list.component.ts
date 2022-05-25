@@ -25,6 +25,7 @@ export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
   get tasks(): Trace[] {
     return this._tasks;
   }
+
   set tasks(value: Trace[]) {
     if (this._tasks !== value) {
       this._tasks = value;
@@ -36,6 +37,7 @@ export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
   get stage(): string | undefined {
     return this._stage;
   }
+
   set stage(value: string | undefined) {
     if (this._stage !== value) {
       this._stage = value;
@@ -47,6 +49,7 @@ export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
   get focusedEventId(): string | undefined {
     return this._focusedEventId;
   }
+
   set focusedEventId(value: string | undefined) {
     if (this._focusedEventId !== value) {
       this._focusedEventId = value;
@@ -88,14 +91,10 @@ export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
 
   focusEvent(event: Trace): void {
     if (event.project) {
-      const routeUrl = this.router.createUrlTree([
-        '/project',
-        event.project,
-        'sequence',
-        event.shkeptncontext,
-        'event',
-        event.id,
-      ]);
+      const routeUrl = this.router.createUrlTree(
+        ['/project', event.project, 'sequence', event.shkeptncontext, 'event', event.id],
+        { queryParamsHandling: 'preserve' }
+      );
       this.location.go(routeUrl.toString());
     }
   }
