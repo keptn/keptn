@@ -51,6 +51,39 @@ lifecycle:
       command: ["/bin/sleep", {{ . }} ]
 {{- end }}
 
+{{- define "keptn.common.env.vars" -}}
+- name: K8S_DEPLOYMENT_NAME
+  valueFrom:
+    fieldRef:
+      apiVersion: v1
+      fieldPath: 'metadata.labels[''app.kubernetes.io/name'']'
+- name: K8S_DEPLOYMENT_VERSION
+  valueFrom:
+    fieldRef:
+      apiVersion: v1
+      fieldPath: 'metadata.labels[''app.kubernetes.io/version'']'
+- name: K8S_DEPLOYMENT_COMPONENT
+  valueFrom:
+    fieldRef:
+      apiVersion: v1
+      fieldPath: 'metadata.labels[''app.kubernetes.io/component'']'
+- name: K8S_NAMESPACE
+  valueFrom:
+    fieldRef:
+      apiVersion: v1
+      fieldPath: metadata.namespace
+- name: K8S_NODE_NAME
+  valueFrom:
+    fieldRef:
+      apiVersion: v1
+      fieldPath: spec.nodeName
+- name: K8S_POD_NAME
+  valueFrom:
+    fieldRef:
+      apiVersion: v1
+      fieldPath: metadata.name
+{{- end }}
+
 {{- define "keptn.dist.common.env.vars" -}}
 - name: PUBSUB_URL
   value: 'nats://keptn-nats'
