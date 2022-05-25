@@ -204,9 +204,9 @@ spec:
             - name: AUTOMATIC_PROVISIONING_MSG
               value: {{ .Values.bridge.automaticProvisioningMsg }}
             - name: RESOURCE_SERVICE_ENABLED
-              value: {{.Values.resourceService.enabled | quote}}
+              value: {{ .Values.resourceService.enabled | quote }}
             - name: D3_HEATMAP_ENABLED
-              value: {{.Values.bridge.d3heatmap.enabled | quote}}
+              value: {{ .Values.bridge.d3heatmap.enabled | default false | quote }}
             {{- range $key, $value := .Values.bridge.env }}
             - name: {{ $key }}
               value: {{ $value | quote }}
