@@ -29,24 +29,24 @@ func NewStateHandler(stateRepo db.SequenceStateRepo, shipyardController IShipyar
 }
 
 // GetSequenceState godoc
-// @Summary Get task sequence execution states
-// @Description Get task sequence execution states
-// @Tags Sequence
-// @Security ApiKeyAuth
-// @Accept  json
-// @Produce  json
-// @Param   project     		path    string  false   "The project name"
-// @Param   name				query	string	false	"The name of the sequence"
-// @Param	state				query 	string 	false	"The state of the sequence (e.g., triggered, finished,...)"
-// @Param	fromTime			query	string	false	"The from time stamp for fetching sequence states (in ISO8601 time format, e.g.: 2021-05-10T09:51:00.000Z)"
-// @Param 	beforeTime			query	string	false	"The before time stamp for fetching sequence states (in ISO8601 time format, e.g.: 2021-05-10T09:51:00.000Z)"
-// @Param	pageSize			query	int		false	"The number of items to return"
-// @Param   nextPageKey     	query   string  false	"Pointer to the next set of items"
-// @Param   keptnContext		query	string	false	"Comma separated list of keptnContext IDs"
-// @Success 200 {object} apimodels.SequenceStates	"ok"
-// @Failure 400 {object} models.Error "Invalid payload"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /sequence/{project} [get]
+// @Summary      Get task sequence execution states
+// @Description  Get task sequence execution states
+// @Tags         Sequence
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        project       path      string                    false  "The project name"
+// @Param        name          query     string                    false  "The name of the sequence"
+// @Param        state         query     string                    false  "The state of the sequence (e.g., triggered, finished,...)"
+// @Param        fromTime      query     string                    false  "The from time stamp for fetching sequence states (in ISO8601 time format, e.g.: 2021-05-10T09:51:00.000Z)"
+// @Param        beforeTime    query     string                    false  "The before time stamp for fetching sequence states (in ISO8601 time format, e.g.: 2021-05-10T09:51:00.000Z)"
+// @Param        pageSize      query     int                       false  "The number of items to return"
+// @Param        nextPageKey   query     string                    false  "Pointer to the next set of items"
+// @Param        keptnContext  query     string                    false  "Comma separated list of keptnContext IDs"
+// @Success      200           {object}  apimodels.SequenceStates  "ok"
+// @Failure      400           {object}  models.Error              "Invalid payload"
+// @Failure      500           {object}  models.Error              "Internal error"
+// @Router       /sequence/{project} [get]
 func (sh *StateHandler) GetSequenceState(c *gin.Context) {
 	projectName := c.Param("project")
 	params := &apimodels.GetSequenceStateParams{}
@@ -68,20 +68,20 @@ func (sh *StateHandler) GetSequenceState(c *gin.Context) {
 }
 
 // ControlSequenceState godoc
-// @Summary Pause/Resume/Abort a task sequence
-// @Description Pause/Resume/Abort a task sequence, either for a specific stage, or for all stages involved in the sequence
-// @Tags Sequence
-// @Security ApiKeyAuth
-// @Accept  json
-// @Produce  json
-// @Param   project     		path    string  true   "The project name"
-// @Param   keptnContext		path	string	true	"The keptnContext ID of the sequence"
-// @Param   sequenceControl     body    apimodels.SequenceControlCommand true "Sequence Control Command"
-// @Success 200 {object} apimodels.SequenceControlResponse	"ok"
-// @Failure 400 {object} models.Error "Invalid payload"
-// @Failure 404 {object} models.Error "Not found"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /sequence/{project}/{keptnContext}/control [post]
+// @Summary      Pause/Resume/Abort a task sequence
+// @Description  Pause/Resume/Abort a task sequence, either for a specific stage, or for all stages involved in the sequence
+// @Tags         Sequence
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        project          path      string                             true  "The project name"
+// @Param        keptnContext     path      string                             true  "The keptnContext ID of the sequence"
+// @Param        sequenceControl  body      apimodels.SequenceControlCommand   true  "Sequence Control Command"
+// @Success      200              {object}  apimodels.SequenceControlResponse  "ok"
+// @Failure      400              {object}  models.Error                       "Invalid payload"
+// @Failure      404              {object}  models.Error                       "Not found"
+// @Failure      500              {object}  models.Error                       "Internal error"
+// @Router       /sequence/{project}/{keptnContext}/control [post]
 func (sh *StateHandler) ControlSequenceState(c *gin.Context) {
 	keptnContext := c.Param("keptnContext")
 	project := c.Param("project")
