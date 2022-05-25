@@ -43,6 +43,7 @@ export function indicatorResultToDataPoint(
 ): (indicatorResult: IndicatorResult) => IDataPoint {
   return (indicatorResult: IndicatorResult): IDataPoint => {
     const totalScore: number = getTotalScore(evaluation);
+    const metricScore = totalScore === 0 ? 0 : (indicatorResult.score / totalScore) * (scoreValue ?? 1);
     const color = indicatorResult.value.success ? indicatorResult.status : EvaluationResultTypeExtension.INFO;
     return {
       xElement: evaluation.getHeatmapLabel(),
@@ -53,7 +54,7 @@ export function indicatorResultToDataPoint(
       tooltip: {
         type: IHeatmapTooltipType.SLI,
         value: indicatorResult.value.value,
-        score: (indicatorResult.score / totalScore) * (scoreValue ?? 1),
+        score: metricScore,
         keySli: indicatorResult.keySli,
         passTargets: indicatorResult.passTargets ?? [],
         warningTargets: indicatorResult.warningTargets ?? [],
