@@ -377,7 +377,7 @@ spec:
         - url: http://shipyard-controller:8080/v1/project/{{.data.project}}/stage/{{.data.stage}}
           method: GET`
 
-const failwebhookSimpleYamlBeta = `apiVersion: webhookconfig.keptn.sh/v1beta11
+const failwebhookSimpleYamlBeta = `apiVersion: webhookconfig.keptn.sh/v1beta1
 kind: WebhookConfig
 metadata:
   name: webhook-configuration
@@ -418,7 +418,7 @@ spec:
         - url: http://keptn.sh
           method: GET`
 
-const webhookSimpleYamlBetaAPI = `apiVersion: webhookconfig.keptn.sh/v1beta11
+const webhookSimpleYamlBetaAPI = `apiVersion: webhookconfig.keptn.sh/v1beta1
 kind: WebhookConfig
 metadata:
   name: webhook-configuration
