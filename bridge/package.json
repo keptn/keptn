@@ -80,7 +80,7 @@
     "@angular/compiler-cli": "12.2.16",
     "@angular/language-service": "12.2.16",
     "@cypress/schematic": "1.6.0",
-    "@types/d3": "7.1.0",
+    "@types/d3": "7.4.0",
     "@types/dompurify": "2.3.3",
     "@types/jest": "27.5.1",
     "@types/lodash": "4.14.182",
