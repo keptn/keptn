@@ -16,6 +16,11 @@ export class HeatmapComponent {
     return this;
   }
 
+  clickScore(scoreTestId: string): this {
+    cy.get(`ktb-heatmap .data-point-container g[uitestid="Score"] rect[uitestid="${scoreTestId}"]`).click();
+    return this;
+  }
+
   mouseOverOnTile(tileId: string): this {
     cy.byTestId(tileId).first().trigger('mouseover');
     return this;
@@ -54,6 +59,11 @@ export class HeatmapComponent {
     return this.assertHighlight('.highlight-secondary');
   }
 
+  assertSecondaryHighlightDoesNotExist(): this {
+    cy.get(`ktb-heatmap .highlight-secondary`).should('not.exist');
+    return this;
+  }
+
   assertMetricIsTruncated(longName: string, truncatedName: string): this {
     cy.contains('ktb-heatmap title', longName)
       .parent()
@@ -70,6 +80,16 @@ export class HeatmapComponent {
 
   assertTooltipIsHidden(): this {
     cy.get('ktb-heatmap ktb-heatmap-tooltip').should('have.class', 'hidden');
+    return this;
+  }
+
+  assertXAxisLabelExistsOnce(labelText: string): this {
+    cy.contains('ktb-heatmap .x-axis-container g.tick text', labelText).should('have.length', 1);
+    return this;
+  }
+
+  assertXAxisTickLength(length: number): this {
+    cy.get('ktb-heatmap .x-axis-container g.tick').should('have.length', length);
     return this;
   }
 }

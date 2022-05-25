@@ -39,4 +39,16 @@ describe('evaluation-heatmap', () => {
       .mouseLeaveOnTile(tileId)
       .assertTooltipIsHidden();
   });
+  it('should enumerate duplicate dates', () => {
+    heatmap.assertXAxisLabelExistsOnce('2022-02-08 12:56 (1)').assertXAxisLabelExistsOnce('2022-02-08 12:56 (2)');
+  });
+  it('should show all dates', () => {
+    heatmap.assertXAxisTickLength(10);
+  });
+  it('should not show secondary highlight if clicked evaluation has no other to compare', () => {
+    heatmap
+      .clickScore('ktb-heatmap-tile-25ab0f26-e6d8-48d5-a08f-08c8a136a688')
+      .assertPrimaryHighlightExists()
+      .assertSecondaryHighlightDoesNotExist();
+  });
 });

@@ -835,7 +835,7 @@
       "id": "0c275de6-fbde-457e-b2f2-60f32a6acf54",
       "source": "lighthouse-service",
       "specversion": "1.0",
-      "time": "2022-02-08T12:04:10.458Z",
+      "time": "2022-02-08T11:56:58.953Z",
       "type": "sh.keptn.event.evaluation.finished",
       "shkeptncontext": "6305ad09-6a69-4b4f-8a6e-0b98f332cec3",
       "shkeptnspecversion": "0.2.3",
