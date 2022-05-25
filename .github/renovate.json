@@ -10,6 +10,7 @@
   ],
   "addLabels": ["dependencies"],
   "cloneSubmodules": true,
+  "prConcurrentLimit": 15,
   "stabilityDays": 3,
   "timezone": "Europe/Vienna",
   "ignoreDeps": [
