@@ -122,7 +122,7 @@ func (n *NATSEventSource) Sender() EventSender {
 }
 
 func (n *NATSEventSource) Stop() error {
-	return n.connector.UnsubscribeAll()
+	return n.connector.Disconnect()
 }
 
 func isEqual(a1 []string, a2 []string) bool {

@@ -6,8 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/cloudevents/sdk-go/v2/types"
-	logger "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"math"
 	"net/http"
@@ -16,6 +14,9 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/cloudevents/sdk-go/v2/types"
+	logger "github.com/sirupsen/logrus"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
