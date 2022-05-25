@@ -21,7 +21,7 @@
     "crypto-random-string": "5.0.0",
     "express": "4.18.1",
     "express-session": "1.17.3",
-    "helmet": "5.0.2",
+    "helmet": "5.1.0",
     "mongodb": "4.6.0",
     "morgan": "1.10.0",
     "openid-client": "5.1.6",
@@ -43,6 +43,6 @@
     "nodemon": "2.0.16",
     "supertest": "6.2.3",
     "ts-jest": "28.0.2",
-    "typescript": "4.4.4"
+    "typescript": "4.7.2"
   }
 }

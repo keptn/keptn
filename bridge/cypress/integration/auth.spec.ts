@@ -79,9 +79,9 @@ describe('Test OAuth', () => {
     cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { statusCode: 403 }).as(
       'projects'
     );
-    cy.task('setExpectedErrorCount', 2);
+    cy.task('setExpectedErrorCount', 1);
 
-    cy.visit('/').wait('@projects').wait('@projects'); // triggered by app.component and dashboard
+    cy.visit('/').wait('@projects');
     basePage.notificationErrorVisible('You do not have the permissions to perform this action.');
   });
 });
