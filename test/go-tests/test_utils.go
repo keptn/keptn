@@ -530,7 +530,7 @@ func storeWithCommit(t *testing.T, projectName, stage, serviceName, content, uri
 	internalKeptnAPI, err := GetInternalKeptnAPI(ctx, "service/configuration-service", "8889", "8080")
 	require.Nil(t, err)
 	t.Log("Storing new slo file")
-	resp, err := internalKeptnAPI.Post(basePath+"/"+projectName+"/stage/"+stage+"/service/"+serviceName+"/resource", models.Resources{
+	resp, err := internalKeptnAPI.Put(basePath+"/"+projectName+"/stage/"+stage+"/service/"+serviceName+"/resource", models.Resources{
 		Resources: []*models.Resource{
 			{
 				ResourceContent: b64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s", content))),

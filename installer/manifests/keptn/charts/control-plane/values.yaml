@@ -74,7 +74,7 @@ apiGatewayNginx:
     tag: 1.21.6-alpine
   nodeSelector: {}
   gracePeriod: 60
-  preStopHookTime: 20
+  preStopHookTime: 5
   clientMaxBodySize: "5m"
 
 remediationService:
@@ -83,7 +83,7 @@ remediationService:
     tag: ""
   nodeSelector: {}
   gracePeriod: 60
-  preStopHookTime: 20
+  preStopHookTime: 5
 
 apiService:
   tokenSecretName:
@@ -96,7 +96,7 @@ apiService:
     requestBurst: "2"
   nodeSelector: {}
   gracePeriod: 60
-  preStopHookTime: 20
+  preStopHookTime: 5
 
 bridge:
   image:
@@ -179,7 +179,7 @@ shipyardController:
       serviceNameMaxSize: 43
   nodeSelector: {}
   gracePeriod: 60
-  preStopHookTime: 20 # 15s instead of 5s to give background jobs such as sequence dispatcher or jetstream client enough time to complete their tasks
+  preStopHookTime: 15 # 15s instead of 5s to give background jobs such as sequence dispatcher or jetstream client enough time to complete their tasks
 
 secretService:
   image:
@@ -187,7 +187,7 @@ secretService:
     tag: ""
   nodeSelector: {}
   gracePeriod: 60
-  preStopHookTime: 20
+  preStopHookTime: 5
 
 configurationService:
   image:
@@ -233,7 +233,7 @@ lighthouseService:
     tag: ""
   nodeSelector: {}
   gracePeriod: 60
-  preStopHookTime: 20
+  preStopHookTime: 5
 
 statisticsService:
   image:
@@ -249,7 +249,7 @@ approvalService:
     tag: ""
   nodeSelector: {}
   gracePeriod: 60
-  preStopHookTime: 20
+  preStopHookTime: 5
 
 webhookService:
   enabled: true
@@ -258,7 +258,7 @@ webhookService:
     tag: ""
   nodeSelector: {}
   gracePeriod: 60
-  preStopHookTime: 20
+  preStopHookTime: 5
 
 ingress:
   enabled: false
