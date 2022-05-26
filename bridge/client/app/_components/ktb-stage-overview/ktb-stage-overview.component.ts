@@ -60,9 +60,9 @@ export class KtbStageOverviewComponent implements OnDestroy, OnInit, AfterConten
   }
 
   public ngAfterContentInit(): void {
-    let stageName = this.route.snapshot.paramMap.get('stageName');
+    const stageName = this.route.snapshot.paramMap.get('stageName');
     if (stageName && this.project) {
-      let stage = this.project.getStage(stageName);
+      const stage = this.project.getStage(stageName);
       if (stage) {
         this.selectedStage = stage;
         this.selectedStageChange.emit({ stage: stage, filterType: undefined });
