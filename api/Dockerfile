@@ -41,7 +41,7 @@ RUN sed -i "s/version: develop/version: ${version}/g" /go/src/github.com/keptn/k
 RUN GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -v cmd/api-server/main.go
 
 
-FROM alpine:3.15 as production
+FROM alpine:3.16 as production
 ARG version=develop
 LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
     org.opencontainers.image.url="https://keptn.sh" \
