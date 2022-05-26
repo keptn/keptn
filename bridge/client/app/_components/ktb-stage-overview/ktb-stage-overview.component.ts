@@ -7,6 +7,7 @@ import { ApiService } from '../../_services/api.service';
 import { Service } from '../../_models/service';
 import { DtAutoComplete, DtFilter, DtFilterArray } from '../../_models/dt-filter';
 import { filter, map, switchMap, takeUntil, tap } from 'rxjs/operators';
+import { Location } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
 import { DtFilterFieldDefaultDataSourceAutocomplete } from '@dynatrace/barista-components/filter-field/src/filter-field-default-data-source';
@@ -34,7 +35,8 @@ export class KtbStageOverviewComponent implements OnDestroy, OnInit, AfterConten
     private dataService: DataService,
     private apiService: ApiService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private location: Location
   ) {}
 
   public ngOnInit(): void {
@@ -58,7 +60,7 @@ export class KtbStageOverviewComponent implements OnDestroy, OnInit, AfterConten
   }
 
   public ngAfterContentInit(): void {
-    let stageName = this.route.snapshot.queryParamMap.get('stage');
+    let stageName = this.route.snapshot.paramMap.get('stageName');
     if (stageName && this.project) {
       let stage = this.project.getStage(stageName);
       if (stage) {
@@ -138,12 +140,18 @@ export class KtbStageOverviewComponent implements OnDestroy, OnInit, AfterConten
 
   public selectStage($event: MouseEvent, stage: Stage, filterType: ServiceFilterType): void {
     this.selectedStage = stage;
-    this.router.navigate([], {
-      queryParams: {
-        stage: stage.stageName,
-      },
-      queryParamsHandling: 'merge',
-    });
+    if (this.project) {
+      const routeUrl = this.router.createUrlTree([
+        'project',
+        this.project.projectName,
+        'environment',
+        'stage',
+        stage.stageName,
+      ]);
+
+      this.location.go(routeUrl.toString());
+    }
+
     $event.stopPropagation();
     this.selectedStageChange.emit({ stage, filterType });
   }
