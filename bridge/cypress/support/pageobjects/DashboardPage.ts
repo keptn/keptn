@@ -7,6 +7,7 @@ import NewProjectCreatePage from './NewProjectCreatePage';
 
 class DashboardPage {
   private PROJECT_TILE_LOCATOR = 'dt-tile[id="proj_pattern"]';
+  private STAGE_TAG_LOCATOR = 'dt';
 
   public intercept(): this {
     interceptDashboard();
@@ -44,6 +45,15 @@ class DashboardPage {
   public clickCreateNewProjectButton(): NewProjectCreatePage {
     cy.get('.dt-button-primary > span.dt-button-label').contains('Create a new project').click();
     return new NewProjectCreatePage();
+  }
+
+  public clickStageTag(stage: string): EnvironmentPage {
+    cy.wait(500)
+      .get('dt-tag')
+      .within(() => {
+        cy.get(`a:contains("${stage}")`).click();
+      });
+    return new EnvironmentPage();
   }
 }
 

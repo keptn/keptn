@@ -37,6 +37,12 @@ describe('Environment Screen default requests', () => {
   it('should not show evaluation', () => {
     environmentPage.selectStage(stage).assertEvaluationInDetails('carts-db', '-');
   });
+
+  it('should redirect to stage', () => {
+    environmentPage.visit(project).selectStage(stage);
+
+    cy.location('pathname').should('eq', `/project/${project}/environment/stage/${stage}`);
+  });
 });
 
 describe('Environment Screen dynamic requests', () => {
