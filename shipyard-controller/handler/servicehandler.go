@@ -67,19 +67,19 @@ func NewServiceHandler(serviceManager IServiceManager, eventSender common.EventS
 }
 
 // CreateService godoc
-// @Summary Create a new service
-// @Description Create a new service
-// @Tags Services
-// @Security ApiKeyAuth
-// @Accept  json
-// @Produce  json
-// @Param   project     path    string     true        "Project"
-// @Param   service     body    models.CreateServiceParams     true        "Project"
-// @Success 200 {object} models.CreateServiceResponse	"ok"
-// @Failure 400 {object} models.Error "Invalid payload"
-// @Failure 409 {object} models.Error "Conflict"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /project/{project}/service [post]
+// @Summary      Create a new service
+// @Description  Create a new service
+// @Tags         Services
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        project  path      string                        true  "Project"
+// @Param        service  body      models.CreateServiceParams    true  "Project"
+// @Success      200      {object}  models.CreateServiceResponse  "ok"
+// @Failure      400      {object}  models.Error                  "Invalid payload"
+// @Failure      409      {object}  models.Error                  "Conflict"
+// @Failure      500      {object}  models.Error                  "Internal error"
+// @Router       /project/{project}/service [post]
 func (sh *ServiceHandler) CreateService(c *gin.Context) {
 	keptnContext := uuid.New().String()
 	projectName := c.Param("project")
@@ -129,18 +129,18 @@ func (sh *ServiceHandler) CreateService(c *gin.Context) {
 }
 
 // DeleteService godoc
-// @Summary Delete a service
-// @Description Delete a service
-// @Tags Services
-// @Security ApiKeyAuth
-// @Accept  json
-// @Produce  json
-// @Param   project     path    string     true        "Project"
-// @Param   service     path    string     true        "Service"
-// @Success 200 {object} models.DeleteServiceResponse	"ok"
-// @Failure 400 {object} models.Error "Invalid payload"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /project/{project}/service/{service} [delete]
+// @Summary      Delete a service
+// @Description  Delete a service
+// @Tags         Services
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        project  path      string                        true  "Project"
+// @Param        service  path      string                        true  "Service"
+// @Success      200      {object}  models.DeleteServiceResponse  "ok"
+// @Failure      400      {object}  models.Error                  "Invalid payload"
+// @Failure      500      {object}  models.Error                  "Internal error"
+// @Router       /project/{project}/service/{service} [delete]
 func (sh *ServiceHandler) DeleteService(c *gin.Context) {
 	keptnContext := uuid.New().String()
 	projectName := c.Param("project")
@@ -177,19 +177,19 @@ func (sh *ServiceHandler) DeleteService(c *gin.Context) {
 }
 
 // GetService godoc
-// @Summary Gets a service by its name
-// @Description Gets a service by its name
-// @Tags Services
-// @Security ApiKeyAuth
-// @Accept  json
-// @Produce  json
-// @Param   project     path    string     true        "Project"
-// @Param   stage     path    string     true        "Stage"
-// @Param   service     path    string     true        "Service"
-// @Success 200 {object} apimodels.ExpandedService	"ok"
-// @Failure 404 {object} models.Error "Not found"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /project/{project}/stage/{stage}/service/{service} [get]
+// @Summary      Gets a service by its name
+// @Description  Gets a service by its name
+// @Tags         Services
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        project  path      string                     true  "Project"
+// @Param        stage    path      string                     true  "Stage"
+// @Param        service  path      string                     true  "Service"
+// @Success      200      {object}  apimodels.ExpandedService  "ok"
+// @Failure      404      {object}  models.Error               "Not found"
+// @Failure      500      {object}  models.Error               "Internal error"
+// @Router       /project/{project}/stage/{stage}/service/{service} [get]
 func (sh *ServiceHandler) GetService(c *gin.Context) {
 	projectName := c.Param("project")
 	stageName := c.Param("stage")
@@ -209,21 +209,21 @@ func (sh *ServiceHandler) GetService(c *gin.Context) {
 }
 
 // GetServices godoc
-// @Summary Gets all services of a stage in a project
-// @Description Gets all services of a stage in a project
-// @Tags Services
-// @Security ApiKeyAuth
-// @Accept  json
-// @Produce  json
-// @Param   project     path    string     true        "Project"
-// @Param   stage     path    string     true        "Stage"
-// @Param	pageSize			query		int			false	"The number of items to return"
-// @Param   nextPageKey     	query    	string     	false	"Pointer to the next set of items"
-// @Success 200 {object} apimodels.ExpandedServices	"ok"
-// @Failure 400 {object} models.Error "Invalid payload"
-// @Failure 404 {object} models.Error "Not found"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /project/{project}/stage/{stage}/service [get]
+// @Summary      Gets all services of a stage in a project
+// @Description  Gets all services of a stage in a project
+// @Tags         Services
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        project      path      string                      true   "Project"
+// @Param        stage        path      string                      true   "Stage"
+// @Param        pageSize     query     int                         false  "The number of items to return"
+// @Param        nextPageKey  query     string                      false  "Pointer to the next set of items"
+// @Success      200          {object}  apimodels.ExpandedServices  "ok"
+// @Failure      400          {object}  models.Error                "Invalid payload"
+// @Failure      404          {object}  models.Error                "Not found"
+// @Failure      500          {object}  models.Error                "Internal error"
+// @Router       /project/{project}/stage/{stage}/service [get]
 func (sh *ServiceHandler) GetServices(c *gin.Context) {
 	projectName := c.Param("project")
 	stageName := c.Param("stage")

@@ -48,20 +48,20 @@ func NewEvaluationHandler(evaluationManager IEvaluationManager) *EvaluationHandl
 }
 
 // CreateEvaluation triggers a new evaluation
-// @Summary Trigger a new evaluation
-// @Description Trigger a new evaluation for a service within a project
-// @Tags Evaluation
-// @Security ApiKeyAuth
-// @Accept json
-// @Produce json
-// @Param project path string true "Project"
-// @Param stage path string true "Stage"
-// @Param service path string true "Service"
-// @Param evaluation body models.CreateEvaluationParams true "Evaluation"
-// @Success 200 {object} models.CreateEvaluationResponse "ok"
-// @Failure 400 {object} models.Error "Invalid payload"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /project/{project}/stage/{stage}/service/{service}/evaluation [post]
+// @Summary      Trigger a new evaluation
+// @Description  Trigger a new evaluation for a service within a project
+// @Tags         Evaluation
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        project     path      string                           true  "Project"
+// @Param        stage       path      string                           true  "Stage"
+// @Param        service     path      string                           true  "Service"
+// @Param        evaluation  body      models.CreateEvaluationParams    true  "Evaluation"
+// @Success      200         {object}  models.CreateEvaluationResponse  "ok"
+// @Failure      400         {object}  models.Error                     "Invalid payload"
+// @Failure      500         {object}  models.Error                     "Internal error"
+// @Router       /project/{project}/stage/{stage}/service/{service}/evaluation [post]
 func (eh *EvaluationHandler) CreateEvaluation(c *gin.Context) {
 	project := c.Param("project")
 	stage := c.Param("stage")

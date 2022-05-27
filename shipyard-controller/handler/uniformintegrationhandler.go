@@ -100,18 +100,18 @@ func (u UniformParamsValidator) validateFilterParams(params apimodels.EventSubsc
 }
 
 // Register creates or updates a uniform integration
-// @Summary BETA: Register a uniform integration
-// @Description Register a uniform integration
-// @Tags Uniform
-// @Security ApiKeyAuth
-// @Accept json
-// @Produce json
-// @Param integration body apimodels.Integration true "Integration"
-// @Success 200 {object} models.RegisterResponse "ok: registration already exists"
-// @Success 201 {object} models.RegisterResponse "ok: a new registration has been created"
-// @Failure 400 {object} models.Error "Invalid payload"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /uniform/registration [post]
+// @Summary      BETA: Register a uniform integration
+// @Description  Register a uniform integration
+// @Tags         Uniform
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        integration  body      apimodels.Integration    true  "Integration"
+// @Success      200          {object}  models.RegisterResponse  "ok: registration already exists"
+// @Success      201          {object}  models.RegisterResponse  "ok: a new registration has been created"
+// @Failure      400          {object}  models.Error             "Invalid payload"
+// @Failure      500          {object}  models.Error             "Internal error"
+// @Router       /uniform/registration [post]
 func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 	integration := &apimodels.Integration{}
 
@@ -231,16 +231,16 @@ func (rh *UniformIntegrationHandler) updateExistingIntegration(integration *apim
 }
 
 // Unregister deletes a uniform integration
-// @Summary BETA: Unregister a uniform integration
-// @Description Unregister a uniform integration
-// @Tags Uniform
-// @Security ApiKeyAuth
-// @Accept json
-// @Produce json
-// @Param integrationID path string true "integrationID"
-// @Success 200
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /uniform/registration/{integrationID} [delete]
+// @Summary      BETA: Unregister a uniform integration
+// @Description  Unregister a uniform integration
+// @Tags         Uniform
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        integrationID  path  string  true  "integrationID"
+// @Success      200
+// @Failure      500  {object}  models.Error  "Internal error"
+// @Router       /uniform/registration/{integrationID} [delete]
 func (rh *UniformIntegrationHandler) Unregister(c *gin.Context) {
 	integrationID := c.Param("integrationID")
 
@@ -252,21 +252,21 @@ func (rh *UniformIntegrationHandler) Unregister(c *gin.Context) {
 }
 
 // GetRegistrations Retrieve uniform integrations matching the provided filter
-// @Summary BETA: Retrieve uniform integrations matching the provided filter
-// @Description Retrieve uniform integrations matching the provided filter
-// @Tags Uniform
-// @Security ApiKeyAuth
-// @Accept json
-// @Produce json
-// @Param id query string false "id"
-// @Param name query string false "name"
-// @Param project query string false "project"
-// @Param stage query string false "stage"
-// @Param service query string false "service"
-// @Success 200 {object} []apimodels.Integration "ok"
-// @Failure 400 {object} models.Error "Invalid payload"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /uniform/registration [get]
+// @Summary      BETA: Retrieve uniform integrations matching the provided filter
+// @Description  Retrieve uniform integrations matching the provided filter
+// @Tags         Uniform
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        id       query     string                   false  "id"
+// @Param        name     query     string                   false  "name"
+// @Param        project  query     string                   false  "project"
+// @Param        stage    query     string                   false  "stage"
+// @Param        service  query     string                   false  "service"
+// @Success      200      {object}  []apimodels.Integration  "ok"
+// @Failure      400      {object}  models.Error             "Invalid payload"
+// @Failure      500      {object}  models.Error             "Internal error"
+// @Router       /uniform/registration [get]
 func (rh *UniformIntegrationHandler) GetRegistrations(c *gin.Context) {
 	params := &models.GetUniformIntegrationsParams{}
 	if err := c.ShouldBindQuery(params); err != nil {
@@ -283,17 +283,17 @@ func (rh *UniformIntegrationHandler) GetRegistrations(c *gin.Context) {
 }
 
 // KeepAlive returns current registration data of an integration
-// @Summary BETA: Endpoint for sending heartbeat messages sent from Keptn integrations to the control plane
-// @Description Endpoint for sending heartbeat messages sent from Keptn integrations to the control plane
-// @Tags Uniform
-// @Security ApiKeyAuth
-// @Accept json
-// @Produce json
-// @Param integrationID path string true "integrationID"
-// @Success 200 {object} apimodels.Integration "ok"
-// @Failure 404 {object} models.Error "Not found"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /uniform/registration/{integrationID}/ping [PUT]
+// @Summary      BETA: Endpoint for sending heartbeat messages sent from Keptn integrations to the control plane
+// @Description  Endpoint for sending heartbeat messages sent from Keptn integrations to the control plane
+// @Tags         Uniform
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        integrationID  path      string                 true  "integrationID"
+// @Success      200            {object}  apimodels.Integration  "ok"
+// @Failure      404            {object}  models.Error           "Not found"
+// @Failure      500            {object}  models.Error           "Internal error"
+// @Router       /uniform/registration/{integrationID}/ping [PUT]
 func (rh *UniformIntegrationHandler) KeepAlive(c *gin.Context) {
 	integrationID := c.Param("integrationID")
 
@@ -312,19 +312,19 @@ func (rh *UniformIntegrationHandler) KeepAlive(c *gin.Context) {
 }
 
 // CreateSubscription creates a new subscription
-// @Summary BETA: Create a new subscription
+// @Summary      BETA: Create a new subscription
 // @Description  Create a new subscription
-// @Tags Uniform
-// @Security ApiKeyAuth
-// @Accept json
-// @Produce json
-// @Param integrationID path string true "integrationID"
-// @Param subscription body apimodels.EventSubscription true "Subscription"
-// @Success 201
-// @Failure 400 {object} models.Error "Invalid payload"
-// @Failure 404 {object} models.Error "Not found"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /uniform/registration/{integrationID}/subscription [post]
+// @Tags         Uniform
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        integrationID  path  string                       true  "integrationID"
+// @Param        subscription   body  apimodels.EventSubscription  true  "Subscription"
+// @Success      201
+// @Failure      400  {object}  models.Error  "Invalid payload"
+// @Failure      404  {object}  models.Error  "Not found"
+// @Failure      500  {object}  models.Error  "Internal error"
+// @Router       /uniform/registration/{integrationID}/subscription [post]
 func (rh *UniformIntegrationHandler) CreateSubscription(c *gin.Context) {
 
 	integrationID := c.Param("integrationID")
@@ -359,19 +359,19 @@ func (rh *UniformIntegrationHandler) CreateSubscription(c *gin.Context) {
 }
 
 // UpdateSubscription updates or creates a subscription
-// @Summary BETA: Update or create a subscription
-// @Description Update or create a subscription
-// @Tags Uniform
-// @Security ApiKeyAuth
-// @Accept json
-// @Produce json
-// @Param integrationID path string true "integrationID"
-// @Param subscriptionID path string true "subscriptionID"
-// @Param subscription body apimodels.EventSubscription true "Subscription"
-// @Success 201
-// @Failure 400 {object} models.Error "Invalid payload"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /uniform/registration/{integrationID}/subscription/{subscriptionID} [put]
+// @Summary      BETA: Update or create a subscription
+// @Description  Update or create a subscription
+// @Tags         Uniform
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        integrationID   path  string                       true  "integrationID"
+// @Param        subscriptionID  path  string                       true  "subscriptionID"
+// @Param        subscription    body  apimodels.EventSubscription  true  "Subscription"
+// @Success      201
+// @Failure      400  {object}  models.Error  "Invalid payload"
+// @Failure      500  {object}  models.Error  "Internal error"
+// @Router       /uniform/registration/{integrationID}/subscription/{subscriptionID} [put]
 func (rh *UniformIntegrationHandler) UpdateSubscription(c *gin.Context) {
 
 	integrationID := c.Param("integrationID")
@@ -415,17 +415,17 @@ func (rh *UniformIntegrationHandler) UpdateSubscription(c *gin.Context) {
 }
 
 // DeleteSubscription deletes a new subscription
-// @Summary BETA: Delete a subscription
+// @Summary      BETA: Delete a subscription
 // @Description  Delete a subscription
-// @Tags Uniform
-// @Security ApiKeyAuth
-// @Accept json
-// @Produce json
-// @Param integrationID path string true "integrationID"
-// @Param subscriptionID path string true "subscriptionID"
-// @Success 200
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /uniform/registration/{integrationID}/subscription/{subscriptionID} [delete]
+// @Tags         Uniform
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        integrationID   path  string  true  "integrationID"
+// @Param        subscriptionID  path  string  true  "subscriptionID"
+// @Success      200
+// @Failure      500  {object}  models.Error  "Internal error"
+// @Router       /uniform/registration/{integrationID}/subscription/{subscriptionID} [delete]
 func (rh *UniformIntegrationHandler) DeleteSubscription(c *gin.Context) {
 	integrationID := c.Param("integrationID")
 	subscriptionID := c.Param("subscriptionID")
@@ -440,18 +440,18 @@ func (rh *UniformIntegrationHandler) DeleteSubscription(c *gin.Context) {
 }
 
 // GetSubscription retrieves an already existing subscription
-// @Summary BETA: Retrieve an already existing subscription
+// @Summary      BETA: Retrieve an already existing subscription
 // @Description  Retrieve an already existing subscription
-// @Tags Uniform
-// @Security ApiKeyAuth
-// @Accept json
-// @Produce json
-// @Param integrationID path string true "integrationID"
-// @Param subscriptionID path string true "subscriptionID"
-// @Success 200 {object} apimodels.EventSubscription "ok"
-// @Failure 404 {object} models.Error "Not found"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /uniform/registration/{integrationID}/subscription/{subscriptionID} [get]
+// @Tags         Uniform
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        integrationID   path      string                       true  "integrationID"
+// @Param        subscriptionID  path      string                       true  "subscriptionID"
+// @Success      200             {object}  apimodels.EventSubscription  "ok"
+// @Failure      404             {object}  models.Error                 "Not found"
+// @Failure      500             {object}  models.Error                 "Internal error"
+// @Router       /uniform/registration/{integrationID}/subscription/{subscriptionID} [get]
 func (rh *UniformIntegrationHandler) GetSubscription(c *gin.Context) {
 	integrationID := c.Param("integrationID")
 	subscriptionID := c.Param("subscriptionID")
@@ -470,17 +470,17 @@ func (rh *UniformIntegrationHandler) GetSubscription(c *gin.Context) {
 }
 
 // GetSubscriptions retrieves all subscriptions of a uniform integration
-// @Summary BETA: Retrieve all subscriptions of a uniform integration
+// @Summary      BETA: Retrieve all subscriptions of a uniform integration
 // @Description  Retrieve all subscriptions of a uniform integration
-// @Tags Uniform
-// @Security ApiKeyAuth
-// @Accept json
-// @Produce json
-// @Param integrationID path string true "integrationID"
-// @Success 200 {object} []apimodels.EventSubscription "ok"
-// @Failure 404 {object} models.Error "Not found"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /uniform/registration/{integrationID}/subscription [get]
+// @Tags         Uniform
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        integrationID  path      string                         true  "integrationID"
+// @Success      200            {object}  []apimodels.EventSubscription  "ok"
+// @Failure      404            {object}  models.Error                   "Not found"
+// @Failure      500            {object}  models.Error                   "Internal error"
+// @Router       /uniform/registration/{integrationID}/subscription [get]
 func (rh *UniformIntegrationHandler) GetSubscriptions(c *gin.Context) {
 	integrationID := c.Param("integrationID")
 

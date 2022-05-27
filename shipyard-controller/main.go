@@ -37,21 +37,21 @@ import (
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 )
 
-// @title Control Plane API
-// @version develop
-// @description This is the API documentation of the Shipyard Controller.
+// @title        Control Plane API
+// @version      develop
+// @description  This is the API documentation of the Shipyard Controller.
 
-// @securityDefinitions.apiKey ApiKeyAuth
-// @in header
-// @name x-token
+// @securityDefinitions.apiKey  ApiKeyAuth
+// @in                          header
+// @name                        x-token
 
-// @contact.name Keptn Team
-// @contact.url http://www.keptn.sh
+// @contact.name  Keptn Team
+// @contact.url   http://www.keptn.sh
 
-// @license.name Apache 2.0
-// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+// @license.name  Apache 2.0
+// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @BasePath /v1
+// @BasePath  /v1
 
 const envVarConfigurationSvcEndpoint = "CONFIGURATION_SERVICE"
 const envVarEventDispatchIntervalSec = "EVENT_DISPATCH_INTERVAL_SEC"
