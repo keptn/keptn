@@ -8,8 +8,8 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.15.1-0.20220517082831-2052e1404e4c
 	github.com/keptn/keptn/cp-common v0.0.0-20220523070440-9a1e3bffda90
-	github.com/nats-io/nats-server/v2 v2.8.2
-	github.com/nats-io/nats.go v1.14.0
+	github.com/nats-io/nats-server/v2 v2.8.4
+	github.com/nats-io/nats.go v1.15.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
 	golang.org/x/oauth2 v0.0.0-20220524215830-622c5d57e401
