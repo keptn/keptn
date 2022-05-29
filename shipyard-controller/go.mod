@@ -12,8 +12,8 @@ require (
 	github.com/jeremywohl/flatten v1.0.1
 	github.com/keptn/go-utils v0.15.1-0.20220517082831-2052e1404e4c
 	github.com/mitchellh/copystructure v1.2.0
-	github.com/nats-io/nats-server/v2 v2.8.2
-	github.com/nats-io/nats.go v1.14.0
+	github.com/nats-io/nats-server/v2 v2.8.4
+	github.com/nats-io/nats.go v1.15.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
 	github.com/swaggo/swag v1.8.2
