@@ -19,8 +19,8 @@ require (
 	github.com/stretchr/testify v1.7.1
 	golang.org/x/net v0.0.0-20220524220425-1d687d428aca
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
-	k8s.io/apimachinery v0.22.9
-	k8s.io/client-go v0.22.9
+	k8s.io/apimachinery v0.22.10
+	k8s.io/client-go v0.22.10
 )
 
 require (
@@ -100,7 +100,7 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	helm.sh/helm/v3 v3.6.1 // indirect
-	k8s.io/api v0.22.9 // indirect
+	k8s.io/api v0.22.10 // indirect
 	k8s.io/apiextensions-apiserver v0.21.0 // indirect
 	k8s.io/klog/v2 v2.9.0 // indirect
 	k8s.io/utils v0.0.0-20211116205334-6203023598ed // indirect
