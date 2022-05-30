@@ -60,6 +60,7 @@ func Test_LogForwarding(t *testing.T) {
 			t.Logf("lighthouse service registration not available yet. Last seen %.2f seconds ago", lastSeenDiff)
 			return false
 		}
+		t.Logf("Found lighthouse service integration. Last seen: %.2f seconds ago", lastSeenDiff)
 		return true
 	}, 1*time.Minute, 10*time.Second)
 
