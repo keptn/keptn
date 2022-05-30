@@ -2,16 +2,17 @@ package main
 
 import (
 	"context"
-	"github.com/kelseyhightower/envconfig"
-	"github.com/keptn/keptn/resource-service/common"
 	"io/ioutil"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 	"net/http"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
+
+	"github.com/kelseyhightower/envconfig"
+	"github.com/keptn/keptn/resource-service/common"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/go-utils/pkg/common/osutils"
@@ -80,37 +81,38 @@ func main() {
 	}
 
 	credentialReader := common.NewK8sCredentialReader(kubeAPI)
+	credentialsCacher := common.NewCredentialsCacher(credentialReader)
 	fileSystem := common.NewFileSystem(common.GetConfigDir())
 
 	git := common.NewGit(&common.GogitReal{})
 	configurationContext := createConfigurationContext(git, fileSystem)
 
-	projectManager := handler.NewProjectManager(git, credentialReader, fileSystem)
+	projectManager := handler.NewProjectManager(git, credentialsCacher, fileSystem)
 	projectHandler := handler.NewProjectHandler(projectManager)
 	projectController := controller.NewProjectController(projectHandler)
 	projectController.Inject(apiV1)
 
-	stageManager := createStageManager(configurationContext, git, fileSystem, credentialReader)
+	stageManager := createStageManager(configurationContext, git, fileSystem, credentialsCacher)
 	stageHandler := handler.NewStageHandler(stageManager)
 	stageController := controller.NewStageController(stageHandler)
 	stageController.Inject(apiV1)
 
-	serviceManager := handler.NewServiceManager(git, credentialReader, fileSystem, configurationContext)
+	serviceManager := handler.NewServiceManager(git, credentialsCacher, fileSystem, configurationContext)
 	serviceHandler := handler.NewServiceHandler(serviceManager)
 	serviceController := controller.NewServiceController(serviceHandler)
 	serviceController.Inject(apiV1)
 
-	projectResourceManager := handler.NewResourceManager(git, credentialReader, fileSystem, configurationContext)
+	projectResourceManager := handler.NewResourceManager(git, credentialsCacher, fileSystem, configurationContext)
 	projectResourceHandler := handler.NewProjectResourceHandler(projectResourceManager)
 	projectResourceController := controller.NewProjectResourceController(projectResourceHandler)
 	projectResourceController.Inject(apiV1)
 
-	stageResourceManager := handler.NewResourceManager(git, credentialReader, fileSystem, configurationContext)
+	stageResourceManager := handler.NewResourceManager(git, credentialsCacher, fileSystem, configurationContext)
 	stageResourceHandler := handler.NewStageResourceHandler(stageResourceManager)
 	stageResourceController := controller.NewStageResourceController(stageResourceHandler)
 	stageResourceController.Inject(apiV1)
 
-	serviceResourceManager := handler.NewResourceManager(git, credentialReader, fileSystem, configurationContext)
+	serviceResourceManager := handler.NewResourceManager(git, credentialsCacher, fileSystem, configurationContext)
 	serviceResourceHandler := handler.NewServiceResourceHandler(serviceResourceManager)
 	serviceResourceController := controller.NewServiceResourceController(serviceResourceHandler)
 	serviceResourceController.Inject(apiV1)
