@@ -930,6 +930,19 @@ func Test_shipyardController_TimeoutSequence(t *testing.T) {
 
 	require.Nil(t, err)
 	require.Len(t, fakeTimeoutHook.OnSequenceTimeoutCalls(), 1)
+
+	eventDispatcherMock := sc.eventDispatcher.(*fake.IEventDispatcherMock)
+
+	require.Len(t, eventDispatcherMock.AddCalls(), 1)
+
+	sentEvent := eventDispatcherMock.AddCalls()[0]
+
+	eventData := &keptnv2.EventData{}
+	err = sentEvent.Event.Event.DataAs(eventData)
+
+	require.Nil(t, err)
+	require.Equal(t, keptnv2.ResultFailed, eventData.Result)
+	require.Equal(t, keptnv2.StatusErrored, eventData.Status)
 }
 
 func Test_shipyardController_CancelSequence(t *testing.T) {
