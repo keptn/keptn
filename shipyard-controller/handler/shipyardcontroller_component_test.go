@@ -945,6 +945,96 @@ func Test_shipyardController_TimeoutSequence(t *testing.T) {
 	require.Equal(t, keptnv2.StatusErrored, eventData.Status)
 }
 
+func Test_shipyardController_TimeoutSequence_ErrorWhenSendingEvent(t *testing.T) {
+	defer setupLocalMongoDB()()
+
+	sc, cancel := getTestShipyardController("")
+	defer cancel()
+	fakeTimeoutHook := &fakehooks.ISequenceTimeoutHookMock{OnSequenceTimeoutFunc: func(event apimodels.KeptnContextExtendedCE) {}}
+	sc.AddSequenceTimeoutHook(fakeTimeoutHook)
+
+	// insert the test data
+	_ = sc.eventRepo.InsertEvent("my-project", apimodels.KeptnContextExtendedCE{
+		Data: keptnv2.EventData{
+			Project: "my-project",
+			Stage:   "my-stage",
+			Service: "my-service",
+		},
+		ID:             "my-sequence-triggered-id",
+		Shkeptncontext: "my-keptn-context-id",
+		Type:           common.Stringp(keptnv2.GetTriggeredEventType("my-stage.delivery")),
+	}, common.TriggeredEvent)
+
+	_ = sc.eventRepo.InsertEvent("my-project", apimodels.KeptnContextExtendedCE{
+		Data: keptnv2.EventData{
+			Project: "my-project",
+			Stage:   "my-stage",
+			Service: "my-service",
+		},
+		ID:             "my-deployment-triggered-id",
+		Shkeptncontext: "my-keptn-context-id",
+		Type:           common.Stringp(keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName)),
+	}, common.TriggeredEvent)
+
+	err := sc.sequenceExecutionRepo.Upsert(models.SequenceExecution{
+		ID: "sequence-execution-id",
+		Sequence: keptnv2.Sequence{
+			Name: "delivery",
+		},
+		Status: models.SequenceExecutionStatus{
+			State: apimodels.SequenceStartedState,
+			CurrentTask: models.TaskExecutionState{
+				Name:        "deployment",
+				TriggeredID: "my-deployment-triggered-id",
+			},
+		},
+		Scope: models.EventScope{
+			KeptnContext: "my-keptn-context-id",
+			EventData: keptnv2.EventData{
+				Project: "my-project",
+				Stage:   "my-stage",
+				Service: "my-service",
+			},
+		},
+	}, nil)
+
+	require.Nil(t, err)
+
+	eventDispatcherMock := sc.eventDispatcher.(*fake.IEventDispatcherMock)
+	eventDispatcherMock.AddFunc = func(event models.DispatcherEvent, skipQueue bool) error {
+		return errors.New("oops")
+	}
+
+	// invoke the CancelSequence function
+	err = sc.timeoutSequence(apimodels.SequenceTimeout{
+		KeptnContext: "my-keptn-context-id",
+		LastEvent: apimodels.KeptnContextExtendedCE{
+			Data: keptnv2.EventData{
+				Project: "my-project",
+				Stage:   "my-stage",
+				Service: "my-service",
+			},
+			Type:           common.Stringp(keptnv2.GetTriggeredEventType("my-task")),
+			ID:             "my-deployment-triggered-id",
+			Shkeptncontext: "my-keptn-context-id",
+		},
+	})
+
+	require.NotNil(t, err)
+	require.Len(t, fakeTimeoutHook.OnSequenceTimeoutCalls(), 1)
+
+	require.Len(t, eventDispatcherMock.AddCalls(), 1)
+
+	sentEvent := eventDispatcherMock.AddCalls()[0]
+
+	eventData := &keptnv2.EventData{}
+	err = sentEvent.Event.Event.DataAs(eventData)
+
+	require.Nil(t, err)
+	require.Equal(t, keptnv2.ResultFailed, eventData.Result)
+	require.Equal(t, keptnv2.StatusErrored, eventData.Status)
+}
+
 func Test_shipyardController_CancelSequence(t *testing.T) {
 	defer setupLocalMongoDB()()
 	sc, cancel := getTestShipyardController("")
