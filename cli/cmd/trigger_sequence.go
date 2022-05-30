@@ -63,6 +63,9 @@ The name of the sequence has to be provided as an argument to the command. The s
 	Example:      `keptn trigger sequence <sequence-name> --project=<project> --service=<service> --stage=<stage>`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
+		if len(args) != 1 {
+			return errors.New("required argument sequence-name not set")
+		}
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {

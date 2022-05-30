@@ -231,3 +231,7 @@ func TestTriggerSequenceNonExistingService(t *testing.T) {
 func TestTriggerSequenceFlag(t *testing.T) {
 	testInvalidInputHelper("trigger sequence seq2 --sequence=seq --project=proj --service=serv --stage=dev --mock", "unknown flag: --sequence", t)
 }
+
+func TestTriggerSequenceMissing(t *testing.T) {
+	testInvalidInputHelper("trigger sequence --project=proj --service=serv --stage=dev --mock", "required argument sequence-name not set", t)
+}
