@@ -220,7 +220,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   }
 
   public loadSequenceMetadata(projectName: string): void {
-    this.dataService.getSequenceMetadata(projectName).subscribe((metadata) => {
+    this.dataService.getSequenceFilter(projectName).subscribe((metadata) => {
       this.metadata = metadata;
       this.updateFilterDataSource(metadata);
     });

@@ -540,7 +540,7 @@ export class ApiService {
     return this.http.post<EndSessionData | null>(`./oauth/logout`, {});
   }
 
-  public getSequencesMetadata(projectName: string): Observable<ISequencesFilter> {
+  public getSequencesFilter(projectName: string): Observable<ISequencesFilter> {
     return this.http.get<ISequencesFilter>(`${this._baseUrl}/project/${projectName}/sequences/filter`);
   }
 

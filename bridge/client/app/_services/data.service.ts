@@ -422,8 +422,8 @@ export class DataService {
     );
   }
 
-  public getSequenceMetadata(projectName: string): Observable<ISequencesFilter> {
-    return this.apiService.getSequencesMetadata(projectName);
+  public getSequenceFilter(projectName: string): Observable<ISequencesFilter> {
+    return this.apiService.getSequencesFilter(projectName);
   }
 
   protected addNewSequences(
