@@ -1,38 +1,20 @@
-package controlplane
+package subscriptionsource
 
 import (
 	"context"
 	"fmt"
+	"github.com/keptn/keptn/cp-connector/pkg/fake"
+	"github.com/keptn/keptn/cp-connector/pkg/types"
 	"testing"
 	"time"
 
 	"github.com/benbjohnson/clock"
 	"github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/keptn/cp-connector/pkg/controlplane/fake"
 	"github.com/stretchr/testify/require"
 )
 
-type SubscriptionSourceMock struct {
-	StartFn    func(ctx context.Context, data RegistrationData, c chan []models.EventSubscription) error
-	RegisterFn func(integration models.Integration) (string, error)
-}
-
-func (u *SubscriptionSourceMock) Start(ctx context.Context, data RegistrationData, c chan []models.EventSubscription) error {
-	if u.StartFn != nil {
-		return u.StartFn(ctx, data, c)
-	}
-	panic("implement me")
-}
-
-func (u *SubscriptionSourceMock) Register(integration models.Integration) (string, error) {
-	if u.RegisterFn != nil {
-		return u.RegisterFn(integration)
-	}
-	panic("implement me")
-}
-
 func TestSubscriptionSourceCPPingFails(t *testing.T) {
-	initialRegistrationData := RegistrationData{}
+	initialRegistrationData := types.RegistrationData{}
 
 	uniformInterface := &fake.UniformAPIMock{
 		PingFn: func(s string) (*models.Integration, error) {
@@ -57,7 +39,7 @@ func TestSubscriptionSourceWithFetchInterval(t *testing.T) {
 	integrationName := "integrationName"
 	pingCount := 0
 
-	initialRegistrationData := RegistrationData{
+	initialRegistrationData := types.RegistrationData{
 		Name:          integrationName,
 		MetaData:      models.MetaData{},
 		Subscriptions: []models.EventSubscription{{Event: "keptn.event", Filter: models.EventSubscriptionFilter{}}},
@@ -97,7 +79,7 @@ func TestSubscriptionSourceCancel(t *testing.T) {
 	integrationName := "integrationName"
 	pingCount := 0
 
-	initialRegistrationData := RegistrationData{
+	initialRegistrationData := types.RegistrationData{
 		Name:          integrationName,
 		MetaData:      models.MetaData{},
 		Subscriptions: []models.EventSubscription{{Event: "keptn.event", Filter: models.EventSubscriptionFilter{}}},
@@ -139,7 +121,7 @@ func TestSubscriptionSource(t *testing.T) {
 	integrationName := "integrationName"
 	subscriptionID := "sID"
 
-	initialRegistrationData := RegistrationData{
+	initialRegistrationData := types.RegistrationData{
 		Name:          integrationName,
 		MetaData:      models.MetaData{},
 		Subscriptions: []models.EventSubscription{{Event: "keptn.event", Filter: models.EventSubscriptionFilter{}}},
@@ -177,7 +159,7 @@ func TestSubscriptionSource(t *testing.T) {
 func TestFixedSubscriptionSource_WithSubscriptions(t *testing.T) {
 	fss := NewFixedSubscriptionSource(WithFixedSubscriptions(models.EventSubscription{Event: "some.event"}))
 	subchan := make(chan []models.EventSubscription)
-	err := fss.Start(context.TODO(), RegistrationData{}, subchan)
+	err := fss.Start(context.TODO(), types.RegistrationData{}, subchan)
 	require.NoError(t, err)
 	updates := <-subchan
 	require.Equal(t, 1, len(updates))
@@ -187,7 +169,7 @@ func TestFixedSubscriptionSource_WithSubscriptions(t *testing.T) {
 func TestFixedSubscriptionSourcer_WithNoSubscriptions(t *testing.T) {
 	fss := NewFixedSubscriptionSource()
 	subchan := make(chan []models.EventSubscription)
-	err := fss.Start(context.TODO(), RegistrationData{}, subchan)
+	err := fss.Start(context.TODO(), types.RegistrationData{}, subchan)
 	require.NoError(t, err)
 	updates := <-subchan
 	require.Equal(t, 0, len(updates))
@@ -195,14 +177,14 @@ func TestFixedSubscriptionSourcer_WithNoSubscriptions(t *testing.T) {
 
 func TestFixedSubscriptionSourcer_Register(t *testing.T) {
 	fss := NewFixedSubscriptionSource()
-	initialRegistrationData := RegistrationData{}
+	initialRegistrationData := types.RegistrationData{}
 	s, err := fss.Register(models.Integration(initialRegistrationData))
 	require.NoError(t, err)
 	require.Equal(t, "", s)
 }
 
 func TestSubscriptionRegistrationSucceeds(t *testing.T) {
-	initialRegistrationData := RegistrationData{}
+	initialRegistrationData := types.RegistrationData{}
 	uniformInterface := &fake.UniformAPIMock{
 		RegisterIntegrationFn: func(i models.Integration) (string, error) {
 			return "some-id", nil
@@ -216,7 +198,7 @@ func TestSubscriptionRegistrationSucceeds(t *testing.T) {
 }
 
 func TestSubscriptionRegistrationFails(t *testing.T) {
-	initialRegistrationData := RegistrationData{}
+	initialRegistrationData := types.RegistrationData{}
 	uniformInterface := &fake.UniformAPIMock{
 		RegisterIntegrationFn: func(i models.Integration) (string, error) {
 			return "", fmt.Errorf("some error")

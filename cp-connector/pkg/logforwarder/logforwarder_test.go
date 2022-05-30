@@ -1,12 +1,12 @@
-package controlplane
+package logforwarder
 
 import (
+	"github.com/keptn/keptn/cp-connector/pkg/fake"
 	"testing"
 
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/strutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/cp-connector/pkg/controlplane/fake"
 	"github.com/stretchr/testify/require"
 )
 
