@@ -2,6 +2,7 @@ package event_handler
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
@@ -180,6 +181,7 @@ func sendEvent(shkeptncontext string, triggeredID, eventType, commitID string, k
 }
 
 func sendErroredFinishedEventWithMessage(shkeptncontext, triggeredID, commitID, message, sloFileContent string, keptnHandler *keptnv2.Keptn, incoming *keptnv2.GetSLIFinishedEventData) error {
+	encodedSLOFileContent := base64.StdEncoding.EncodeToString([]byte(sloFileContent))
 	data := keptnv2.EvaluationFinishedEventData{
 		EventData: keptnv2.EventData{
 			Project: incoming.Project,
@@ -195,7 +197,7 @@ func sendErroredFinishedEventWithMessage(shkeptncontext, triggeredID, commitID, 
 			TimeEnd:          incoming.GetSLI.End,
 			Result:           string(keptnv2.ResultFailed),
 			Score:            0,
-			SLOFileContent:   sloFileContent,
+			SLOFileContent:   encodedSLOFileContent,
 			IndicatorResults: nil,
 		},
 	}
