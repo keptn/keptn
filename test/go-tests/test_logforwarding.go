@@ -57,7 +57,7 @@ func Test_LogForwarding(t *testing.T) {
 		lastSeenDiff := now.Sub(lighthouseSvcIntegration.MetaData.LastSeen).Seconds()
 
 		if lastSeenDiff > 20 {
-			t.Logf("lighthouse service registratin not available yet. Last seen %.2f seconds ago", lastSeenDiff)
+			t.Logf("lighthouse service registration not available yet. Last seen %.2f seconds ago", lastSeenDiff)
 			return false
 		}
 		return true
