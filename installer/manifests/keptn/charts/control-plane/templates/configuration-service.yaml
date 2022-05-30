@@ -97,7 +97,7 @@ spec:
               memory: "32Mi"
               cpu: "25m"
             limits:
-              memory: "64Mi"
+              memory: "256Mi"
               cpu: "100m"
           volumeMounts:
             - mountPath: /data/config

@@ -187,7 +187,7 @@ secretService:
     tag: ""
   nodeSelector: {}
   gracePeriod: 60
-  preStopHookTime: 5
+  preStopHookTime: 20
 
 configurationService:
   image:
@@ -203,7 +203,7 @@ configurationService:
     GIT_KEPTN_EMAIL: "keptn@keptn.sh"
   nodeSelector: {}
   gracePeriod: 60
-  preStopHookTime: 5
+  preStopHookTime: 20
 
 resourceService:
   enabled: true
@@ -217,7 +217,7 @@ resourceService:
     DIRECTORY_STAGE_STRUCTURE: "false"
   nodeSelector: {}
   gracePeriod: 60
-  preStopHookTime: 5
+  preStopHookTime: 20
 
 mongodbDatastore:
   image:
@@ -225,7 +225,7 @@ mongodbDatastore:
     tag: ""
   nodeSelector: {}
   gracePeriod: 60
-  preStopHookTime: 5
+  preStopHookTime: 20
 
 lighthouseService:
   image:
