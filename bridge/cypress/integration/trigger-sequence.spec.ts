@@ -11,10 +11,10 @@ const project = 'sockshop';
 describe('Trigger a sequence', () => {
   beforeEach(() => {
     interceptEnvironmentScreen();
-    cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfoCD.mock' });
 
     // Sequence screen
     sequencePage.intercept();
+    cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfoCD.mock' });
     triggerSequencePage.visit(project);
   });
 
