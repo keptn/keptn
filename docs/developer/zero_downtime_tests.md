@@ -24,23 +24,23 @@ The Zero Downtime Tests and their resources are located under the `/test` direct
 * `/test/zero-downtime/assets` -> directory containing resources and scripts, which are used during the run of the Zero Downtime Tests 
 * `/test/zero-downtime` -> Zero Downtime Tests and testsuites
 
-Zero Downtime Tests are organized into testsuites, a main suite to run all tests, andd a separate file for each specific scenario:
-* testsuite_zerodowntime_test contains the Test_ZeroDowntime function that runs all test suites, each test is based on the ZDTestTemplate that runs a test function in parallel to rolling upgrade and api probing
+Zero Downtime Tests are organized into testsuites, a main suite to run all tests, and a separate file for each specific scenario:
+* testsuite_zerodowntime_test contains the Test_ZeroDowntime function that runs all test suites, each test is based on the ZDTestTemplate that runs a test function in parallel to rolling upgrade and API probing
 * sequence_test contains test for default sequences: evaluation and deployment 
 * API_test contains API probes of "indempotent" endpoints to be run nonstop to verify keptn API availability during upgrades 
 * webhook_test contains tests for sequences calling webhooks
 
-The api tests are run in parallel during pipeline execution on Github, webhook and sequences are passed to the  ZDTemplate and are run sequentially.
+API tests are run in parallel during pipeline execution on Github, webhook and sequences are passed to the  ZDTemplate and are run sequentially.
 
-### Adding a new Zero DowntimeTest
+### Adding a new Zero Downtime Test
 
 Adding a new Zero DowntimeTest consists of two steps:
-1. Copy the webhook test suite file in `/test/zero-downtime` directory as a reference. Each Test_ function will be run sequentially, SetupSuite will run once at suite creation, to decide the behaviour of the test suite during upgrades edit
+1. Copy the webhook test suite file in `/test/zero-downtime` directory as a reference. Each `Test_` function will be run sequentially, `SetupSuite` will run once at suite creation. To change the behavior of the test suite during upgrades edit
     ```
     func Webhook(t *testing.T, env *ZeroDowntimeEnv) 
     ```
-   This is currently set to run continuously a new suite until the upgrades are terminated
-4. Add the new created function to the testsuite_zerodowntime_test like so 
+   This is currently set to run a new suite continuously until the upgrades are terminated
+2. Add the new created function to the `testsuite_zerodowntime_test` like so 
    ```
    func (suite *TestSuiteDowntime) TestWebhook() {
    ZDTestTemplate(suite.T(), Webhook, "Webhook")
@@ -68,7 +68,7 @@ These two options can be also combined and currently, only executions of all Zer
    Secondly, you choose a branch, from which the CI build artifacts (docker images) should be used.
    Here, you mostly use the branch of the code you are currently working on and want to run Zero Downtime Tests for your code changes. Please be aware, that you need to wait for the docker images to be built before you can execute the Integartion Tests.
    You have then to pass the image tag for the upgrade command e.g. 0.15.1-dev or a PR one like 0.15.0-PR-6897.
-   If you want to perform ui test thick the first box, if you prefer to delete the generated cluster immediately tick the second box.
+   If you want to perform UI test tick the first box. If you prefer to delete the generated cluster immediately tick the second box.
 
 ## Run Zero Downtime Tests locally
 
