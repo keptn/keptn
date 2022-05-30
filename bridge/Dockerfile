@@ -5,7 +5,7 @@ RUN yarn install --frozen-lockfile
 COPY ./ ./
 CMD ./cypress/run-tests.sh
 
-FROM node:14-alpine3.14 as builder-test-base
+FROM node:14-alpine3.15 as builder-test-base
 WORKDIR /usr/src/app
 COPY package.json yarn.lock /usr/src/app/
 RUN yarn install --frozen-lockfile
@@ -17,7 +17,7 @@ CMD yarn prettier:check && yarn lint:check
 FROM builder-test-base as builder-test-unit
 CMD yarn test && mv ./coverage/ /shared/coverage
 
-FROM node:14-alpine3.14 as builder-base
+FROM node:14-alpine3.15 as builder-base
 
 ARG version=develop
 ENV VERSION="${version}"
@@ -33,7 +33,7 @@ COPY . /usr/src/app
 FROM builder-base as bridge-builder
 RUN yarn build
 
-FROM node:14-alpine3.14 as bridge-server-builder-base
+FROM node:14-alpine3.15 as bridge-server-builder-base
 
 ARG version=develop
 ENV VERSION="${version}"
@@ -57,7 +57,7 @@ RUN yarn build && \
 
 # Use a Docker multi-stage build to create a lean production image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
-FROM node:14-alpine3.14 as production
+FROM node:14-alpine3.15 as production
 ARG version=develop
 LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
     org.opencontainers.image.url="https://keptn.sh" \
