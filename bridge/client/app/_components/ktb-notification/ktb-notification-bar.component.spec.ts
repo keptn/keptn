@@ -2,10 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbNotificationBarComponent } from './ktb-notification-bar.component';
 import { NotificationsService } from '../../_services/notifications.service';
 import { Notification, NotificationType } from '../../_models/notification';
-import { DtIconModule } from '@dynatrace/barista-components/icon';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { AppModule } from '../../app.module';
 import { firstValueFrom } from 'rxjs';
+import { KtbNotificationModule } from './ktb-notification.module';
 
 describe('KtbNotificationBarComponent', () => {
   let service: NotificationsService;
@@ -14,15 +12,7 @@ describe('KtbNotificationBarComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        AppModule,
-        HttpClientTestingModule,
-        DtIconModule,
-        DtIconModule.forRoot({
-          svgIconLocation: `/assets/icons/{{name}}.svg`,
-        }),
-      ],
-      providers: [NotificationsService],
+      imports: [KtbNotificationModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbNotificationBarComponent);

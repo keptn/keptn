@@ -5,16 +5,20 @@ import { KtbNotificationBarComponent } from './ktb-notification-bar.component';
 import { DtAlertModule } from '@dynatrace/barista-components/alert';
 import { DtIconModule } from '@dynatrace/barista-components/icon';
 import { KtbPipeModule } from '../../_pipes/ktb-pipe.module';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [KtbNotificationComponent, KtbNotificationBarComponent],
   imports: [
     CommonModule,
+    BrowserAnimationsModule,
     DtAlertModule,
     DtIconModule.forRoot({
       svgIconLocation: `assets/icons/{{name}}.svg`,
     }),
     KtbPipeModule,
+    HttpClientModule,
   ],
   exports: [KtbNotificationBarComponent],
 })
