@@ -51,12 +51,8 @@ func (mdbrepo *MongoDBEventsRepo) GetEvents(project string, filter common.EventF
 	sortOptions := options.Find().SetSort(bson.D{{Key: "time", Value: -1}})
 
 	cur, err := collection.Find(ctx, searchOptions, sortOptions)
-	defer func() {
-		if cur == nil {
-			return
-		}
-		cur.Close(ctx)
-	}()
+	defer closeCursor(ctx, cur)
+
 	if err != nil && errors.Is(err, mongo.ErrNoDocuments) {
 		return nil, ErrNoEventFound
 	} else if err != nil {
@@ -119,12 +115,8 @@ func (mdbrepo *MongoDBEventsRepo) GetRootEvents(getRootParams models.GetRootEven
 	}
 
 	cur, err := collection.Find(ctx, searchOptions, sortOptions)
-	defer func() {
-		if cur == nil {
-			return
-		}
-		cur.Close(ctx)
-	}()
+	defer closeCursor(ctx, cur)
+
 	if err != nil && err != mongo.ErrNoDocuments {
 		return nil, err
 	}

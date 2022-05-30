@@ -81,12 +81,8 @@ func (mdbrepo *MongoDBLogRepo) GetLogEntries(params models.GetLogParams) (*model
 	}
 
 	cur, err := collection.Find(ctx, searchOptions, sortOptions)
-	defer func() {
-		if cur == nil {
-			return
-		}
-		cur.Close(ctx)
-	}()
+	defer closeCursor(ctx, cur)
+
 	if err != nil && err != mongo.ErrNoDocuments {
 		return nil, err
 	}

@@ -13,12 +13,8 @@ func SetupTTLIndex(ctx context.Context, propertyName string, duration time.Durat
 	ttlInSeconds := int32(duration.Seconds())
 	indexName := propertyName + "_1"
 	cur, err := collection.Indexes().List(ctx)
-	defer func() {
-		if cur == nil {
-			return
-		}
-		cur.Close(ctx)
-	}()
+	defer closeCursor(ctx, cur)
+
 	if err != nil {
 		return fmt.Errorf("could not load list of indexes of collection %s: %w", collection.Name(), err)
 	}

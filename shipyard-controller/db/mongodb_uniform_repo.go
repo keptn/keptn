@@ -328,14 +328,8 @@ func (mdbrepo *MongoDBUniformRepo) getCollectionAndContext() (*mongo.Collection,
 func (mdbrepo *MongoDBUniformRepo) findIntegrations(searchParams models.GetUniformIntegrationsParams, collection *mongo.Collection, ctx context.Context) ([]apimodels.Integration, error) {
 	searchOptions := mdbrepo.getSearchOptions(searchParams)
 	cur, err := collection.Find(ctx, searchOptions)
-	defer func() {
-		if cur == nil {
-			return
-		}
-		if err := cur.Close(ctx); err != nil {
-			logger.Errorf("could not close cursor: %v", err)
-		}
-	}()
+	defer closeCursor(ctx, cur)
+
 	if err != nil && err != mongo.ErrNoDocuments {
 		return nil, err
 	}
@@ -369,14 +363,8 @@ func (mdbrepo *MongoDBUniformRepo) DeleteServiceFromSubscriptions(subscriptionNa
 	}
 
 	cur, err := collection.Find(ctx, filter)
-	defer func() {
-		if cur == nil {
-			return
-		}
-		if err := cur.Close(ctx); err != nil {
-			logger.Errorf("could not close cursor: %v", err)
-		}
-	}()
+	defer closeCursor(ctx, cur)
+
 	if err != nil && err != mongo.ErrNoDocuments {
 		return err
 	}
