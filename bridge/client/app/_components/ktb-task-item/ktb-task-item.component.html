@@ -182,9 +182,10 @@
           <ktb-loading-spinner
             *ngIf="latestDeployment === undefined; else showDeployment"
             class="smaller"
+            uitestid="ktb-approval-loading"
           ></ktb-loading-spinner>
           <ng-template #showDeployment>
-            <p class="m-0" *ngIf="task.data.stage && task.data.service" [textContent]="latestDeployment || 'N/A'"></p>
+            <p class="m-0" uitestid="ktb-approval-deployed-image" [textContent]="latestDeployment || 'N/A'"></p>
           </ng-template>
         </td>
       </tr>

@@ -4,7 +4,7 @@
       "data": {
         "project": "sockshop",
         "service": "carts",
-        "stage": "dev"
+        "stage": "production"
       },
       "id": "97b4a9a3-610a-4697-b37b-cec522a6b42f",
       "shkeptncontext": "51b96d8c-ff67-4a75-859b-124bcdbb04ff",
@@ -12,7 +12,7 @@
       "source": "bridge",
       "specversion": "1.0",
       "time": "2022-05-25T12:50:44.580Z",
-      "type": "sh.keptn.event.dev.delivery.triggered"
+      "type": "sh.keptn.event.production.delivery.triggered"
     },
     {
       "data": {
@@ -22,7 +22,7 @@
         },
         "project": "sockshop",
         "service": "carts",
-        "stage": "dev"
+        "stage": "production"
       },
       "gitcommitid": "05f241d1c1f022d65ab6af60bd2ef1272c1fbfbb",
       "id": "c0275a97-fc4f-4279-bc3e-c892482c8dbd",
@@ -38,8 +38,8 @@
         "message": "Approval strategy for result '': manual",
         "project": "sockshop",
         "service": "carts",
-        "stage": "dev",
-        "status": "succeeded",
+        "stage": "production",
+        "status": "succeeded"
       },
       "id": "1ade2f8f-8bcd-4afc-a89f-c5f5fc6eaeca",
       "shkeptncontext": "99a20ef4-d822-4185-bbee-0d7a364c213b",

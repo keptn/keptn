@@ -3,51 +3,6 @@ import { KtbTaskItemComponent } from './ktb-task-item.component';
 import { AppModule } from '../../app.module';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { Trace } from '../../_models/trace';
-import { AppUtils } from '../../_utils/app.utils';
-
-const approvalTrace = Trace.fromJSON({
-  data: {
-    approval: {
-      pass: 'manual',
-      warning: 'manual',
-    },
-    project: 'socksohp',
-    service: 'carts',
-    stage: 'dev',
-  },
-  gitcommitid: '05f241d1c1f022d65ab6af60bd2ef1272c1fbfbb',
-  id: 'c0275a97-fc4f-4279-bc3e-c892482c8dbd',
-  shkeptncontext: '51b96d8c-ff67-4a75-859b-124bcdbb04ff',
-  shkeptnspecversion: '0.2.3',
-  source: 'shipyard-controller',
-  specversion: '1.0',
-  time: '2022-05-25T12:50:52.560Z',
-  type: 'sh.keptn.event.approval.triggered',
-  finished: false,
-  started: true,
-  label: 'approval',
-  traces: [
-    {
-      traces: [],
-      data: {
-        message: "Approval strategy for result '': manual",
-        project: 'socksohp',
-        service: 'helloservice',
-        stage: 'dev',
-        status: 'succeeded',
-      },
-      id: '1ade2f8f-8bcd-4afc-a89f-c5f5fc6eaeca',
-      shkeptncontext: '51b96d8c-ff67-4a75-859b-124bcdbb04ff',
-      shkeptnspecversion: '0.2.4',
-      source: 'approval-service',
-      specversion: '1.0',
-      time: '2022-05-25T12:50:52.763Z',
-      triggeredid: 'c0275a97-fc4f-4279-bc3e-c892482c8dbd',
-      type: 'sh.keptn.event.approval.started',
-      icon: 'unknown',
-    },
-  ],
-});
 
 describe('KtbEventItemComponent', () => {
   let component: KtbTaskItemComponent;
@@ -70,9 +25,11 @@ describe('KtbEventItemComponent', () => {
   });
 
   it('should set latestDeployment if task is an approval', () => {
+    // given, when
     component.isExpanded = true;
-    component.task = approvalTrace;
+    component.task = getApprovalTrace();
 
+    // then
     httpMock.expectOne('./api/controlPlane/v1/project/socksohp/stage/dev/service/carts').flush({
       deployedImage: 'docker.io/mongo:4.2.2',
     });
@@ -80,21 +37,27 @@ describe('KtbEventItemComponent', () => {
   });
 
   it('should not set latestDeployment if task is not an approval', () => {
+    // given, when
     component.isExpanded = true;
     component.task = Trace.fromJSON({});
 
+    // then
     expect(component.latestDeployment).toBeUndefined();
   });
 
   it('should revert the latestDeployment if task is changed', () => {
+    // given
     component.isExpanded = true;
-    component.task = approvalTrace;
+    component.task = getApprovalTrace();
 
     httpMock.expectOne('./api/controlPlane/v1/project/socksohp/stage/dev/service/carts').flush({
       deployedImage: 'docker.io/mongo:4.2.2',
     });
 
-    component.task = Trace.fromJSON(AppUtils.copyObject(approvalTrace));
+    // when
+    component.task = getApprovalTrace();
+
+    // then
     httpMock.expectOne('./api/controlPlane/v1/project/socksohp/stage/dev/service/carts').flush({
       deployedImage: 'docker.io/mongo:4.2.3',
     });
@@ -102,20 +65,73 @@ describe('KtbEventItemComponent', () => {
   });
 
   it('should not fetch the latestDeployment if it is not expanded', () => {
-    component.task = approvalTrace;
+    // given, when
+    component.task = getApprovalTrace();
+
+    // then
     httpMock.expectNone('./api/controlPlane/v1/project/socksohp/stage/dev/service/carts');
   });
 
   it('should not fetch the latestDeployment if it is already fetched', () => {
+    // given
     component.isExpanded = true;
-    component.task = approvalTrace;
+    component.task = getApprovalTrace();
 
     httpMock.expectOne('./api/controlPlane/v1/project/socksohp/stage/dev/service/carts').flush({
       deployedImage: 'docker.io/mongo:4.2.2',
     });
 
+    // when
     component.isExpanded = false;
     component.isExpanded = true;
+
+    // then
     httpMock.expectNone('./api/controlPlane/v1/project/socksohp/stage/dev/service/carts');
   });
+
+  function getApprovalTrace(): Trace {
+    return Trace.fromJSON({
+      data: {
+        approval: {
+          pass: 'manual',
+          warning: 'manual',
+        },
+        project: 'socksohp',
+        service: 'carts',
+        stage: 'dev',
+      },
+      gitcommitid: '05f241d1c1f022d65ab6af60bd2ef1272c1fbfbb',
+      id: 'c0275a97-fc4f-4279-bc3e-c892482c8dbd',
+      shkeptncontext: '51b96d8c-ff67-4a75-859b-124bcdbb04ff',
+      shkeptnspecversion: '0.2.3',
+      source: 'shipyard-controller',
+      specversion: '1.0',
+      time: '2022-05-25T12:50:52.560Z',
+      type: 'sh.keptn.event.approval.triggered',
+      finished: false,
+      started: true,
+      label: 'approval',
+      traces: [
+        {
+          traces: [],
+          data: {
+            message: "Approval strategy for result '': manual",
+            project: 'socksohp',
+            service: 'helloservice',
+            stage: 'dev',
+            status: 'succeeded',
+          },
+          id: '1ade2f8f-8bcd-4afc-a89f-c5f5fc6eaeca',
+          shkeptncontext: '51b96d8c-ff67-4a75-859b-124bcdbb04ff',
+          shkeptnspecversion: '0.2.4',
+          source: 'approval-service',
+          specversion: '1.0',
+          time: '2022-05-25T12:50:52.763Z',
+          triggeredid: 'c0275a97-fc4f-4279-bc3e-c892482c8dbd',
+          type: 'sh.keptn.event.approval.started',
+          icon: 'unknown',
+        },
+      ],
+    });
+  }
 });

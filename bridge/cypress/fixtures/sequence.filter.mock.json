@@ -1,0 +1,4 @@
+{
+  "services": ["carts", "carts-db"],
+  "stages": ["dev", "production", "staging"]
+}

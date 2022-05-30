@@ -263,4 +263,19 @@ export class SequencesPage {
     cy.location('search').should('eq', query);
     return this;
   }
+
+  public clickEvent(id: string): this {
+    cy.byTestId(`ktb-task-${id}`).click();
+    return this;
+  }
+
+  public assertIsApprovalLoading(status: boolean): this {
+    cy.byTestId('ktb-approval-loading').should(status ? 'exist' : 'not.exist');
+    return this;
+  }
+
+  public assertApprovalDeployedImage(image: string): this {
+    cy.byTestId('ktb-approval-deployed-image').should('have.text', image);
+    return this;
+  }
 }

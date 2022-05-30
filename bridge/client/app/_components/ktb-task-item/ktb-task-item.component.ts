@@ -63,9 +63,7 @@ export class KtbTaskItemComponent implements OnInit, OnDestroy {
     if (this._task !== trace) {
       this._task = trace;
       this.latestDeployment = undefined;
-      if (trace?.isApproval()) {
-        this.setLatestDeployment();
-      }
+      this.setLatestDeployment();
     }
   }
 
@@ -78,7 +76,7 @@ export class KtbTaskItemComponent implements OnInit, OnDestroy {
   ) {}
 
   private setLatestDeployment(): void {
-    if (!this.isExpanded || !this.task || this.latestDeployment !== undefined) {
+    if (!this.isExpanded || !this.task || this.latestDeployment !== undefined || !this.task.isApproval()) {
       return;
     }
 
