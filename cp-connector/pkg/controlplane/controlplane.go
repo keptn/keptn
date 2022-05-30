@@ -97,7 +97,7 @@ func (cp *ControlPlane) IsRegistered() bool {
 func (cp *ControlPlane) handle(ctx context.Context, eventUpdate types.EventUpdate, integration Integration) error {
 	for _, subscription := range cp.currentSubscriptions {
 		if subscription.Event == eventUpdate.MetaData.Subject {
-			matcher := eventmatcher.NewEventMatcherFromSubscription(subscription)
+			matcher := eventmatcher.New(subscription)
 			if matcher.Matches(eventUpdate.KeptnEvent) {
 				if err := cp.forwardMatchedEvent(ctx, eventUpdate, integration, subscription); err != nil {
 					return err

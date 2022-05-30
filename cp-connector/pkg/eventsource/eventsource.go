@@ -39,8 +39,8 @@ type NATSEventSource struct {
 	logger          logger.Logger
 }
 
-// NewNATSEventSource creates a new NATSEventSource
-func NewNATSEventSource(natsConnector natseventsource.NATS) *NATSEventSource {
+// New creates a new NATSEventSource
+func New(natsConnector natseventsource.NATS) *NATSEventSource {
 	return &NATSEventSource{
 		currentSubjects: []string{},
 		connector:       natsConnector,

@@ -43,8 +43,8 @@ func WithFetchInterval(interval time.Duration) func(s *UniformSubscriptionSource
 	}
 }
 
-// NewUniformSubscriptionSource creates a new UniformSubscriptionSource
-func NewUniformSubscriptionSource(uniformAPI api.UniformV1Interface, options ...func(source *UniformSubscriptionSource)) *UniformSubscriptionSource {
+// New creates a new UniformSubscriptionSource
+func New(uniformAPI api.UniformV1Interface, options ...func(source *UniformSubscriptionSource)) *UniformSubscriptionSource {
 	subscriptionSource := &UniformSubscriptionSource{uniformAPI: uniformAPI, clock: clock.New(), fetchInterval: time.Second * 5, logger: logger.NewDefaultLogger()}
 	for _, o := range options {
 		o(subscriptionSource)

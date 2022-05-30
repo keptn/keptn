@@ -16,9 +16,9 @@ type EventMatcher struct {
 	Service string
 }
 
-// NewEventMatcherFromSubscription creates a new EventMatcher that is configured
+// New creates a new EventMatcher that is configured
 // with information about project, stage and service filter contained in an event subscription
-func NewEventMatcherFromSubscription(subscription models.EventSubscription) *EventMatcher {
+func New(subscription models.EventSubscription) *EventMatcher {
 	return &EventMatcher{
 		Project: strings.Join(subscription.Filter.Projects, ","),
 		Stage:   strings.Join(subscription.Filter.Stages, ","),

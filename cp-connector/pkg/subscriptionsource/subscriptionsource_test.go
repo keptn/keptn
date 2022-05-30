@@ -26,7 +26,7 @@ func TestSubscriptionSourceCPPingFails(t *testing.T) {
 		require.FailNow(t, "got subscription event via channel")
 	}()
 
-	subscriptionSource := NewUniformSubscriptionSource(uniformInterface)
+	subscriptionSource := New(uniformInterface)
 	clock := clock.NewMock()
 	subscriptionSource.clock = clock
 	err := subscriptionSource.Start(context.TODO(), initialRegistrationData, subscriptionUpdates)
@@ -59,7 +59,7 @@ func TestSubscriptionSourceWithFetchInterval(t *testing.T) {
 		},
 	}
 
-	subscriptionSource := NewUniformSubscriptionSource(uniformInterface, WithFetchInterval(10*time.Second))
+	subscriptionSource := New(uniformInterface, WithFetchInterval(10*time.Second))
 	clock := clock.NewMock()
 	subscriptionSource.clock = clock
 
@@ -99,7 +99,7 @@ func TestSubscriptionSourceCancel(t *testing.T) {
 		},
 	}
 
-	subscriptionSource := NewUniformSubscriptionSource(uniformInterface, WithFetchInterval(10*time.Second))
+	subscriptionSource := New(uniformInterface, WithFetchInterval(10*time.Second))
 	clock := clock.NewMock()
 	subscriptionSource.clock = clock
 
@@ -140,7 +140,7 @@ func TestSubscriptionSource(t *testing.T) {
 		},
 	}
 
-	subscriptionSource := NewUniformSubscriptionSource(uniformInterface)
+	subscriptionSource := New(uniformInterface)
 	clock := clock.NewMock()
 	subscriptionSource.clock = clock
 
@@ -191,7 +191,7 @@ func TestSubscriptionRegistrationSucceeds(t *testing.T) {
 		},
 	}
 
-	subscriptionSource := NewUniformSubscriptionSource(uniformInterface)
+	subscriptionSource := New(uniformInterface)
 	id, err := subscriptionSource.Register(models.Integration(initialRegistrationData))
 	require.NoError(t, err)
 	require.Equal(t, id, "some-id")
@@ -205,7 +205,7 @@ func TestSubscriptionRegistrationFails(t *testing.T) {
 		},
 	}
 
-	subscriptionSource := NewUniformSubscriptionSource(uniformInterface)
+	subscriptionSource := New(uniformInterface)
 	id, err := subscriptionSource.Register(models.Integration(initialRegistrationData))
 	require.Error(t, err)
 	require.Equal(t, id, "")

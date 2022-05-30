@@ -24,7 +24,7 @@ type LogForwardingHandler struct {
 	logger logger.Logger
 }
 
-func NewLogForwarder(logApi api.LogsV1Interface) *LogForwardingHandler {
+func New(logApi api.LogsV1Interface) *LogForwardingHandler {
 	return &LogForwardingHandler{
 		logApi: logApi,
 		logger: logger.NewDefaultLogger(),
