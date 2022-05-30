@@ -10,7 +10,6 @@ control-plane:
     enabled: "true"
     env:
       DIRECTORY_STAGE_STRUCTURE: "false"
-      LOG_LEVEL: "debug"
 
 continuous-delivery:
   enabled: true
