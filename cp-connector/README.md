@@ -13,7 +13,11 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
+	"github.com/keptn/keptn/cp-connector/pkg/eventsource"
+	"github.com/keptn/keptn/cp-connector/pkg/logforwarder"
 	"github.com/keptn/keptn/cp-connector/pkg/nats"
+	"github.com/keptn/keptn/cp-connector/pkg/subscriptionsource"
+	"github.com/keptn/keptn/cp-connector/pkg/types"
 	"log"
 )
 
@@ -35,7 +39,7 @@ func main() {
 	}
 
 	// 2. create a subscription source
-	subscriptionSource := controlplane.NewUniformSubscriptionSource(keptnAPI.UniformV1())
+	subscriptionSource := subscriptionsource.New(keptnAPI.UniformV1())
 
 	// 3. create an event source (either NATS of HTTP,...)
 	natsConnector, err := nats.Connect("nats://localhost:4222")
@@ -43,8 +47,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	eventSource := controlplane.NewNATSEventSource(natsConnector)
-	logForwarder := controlplane.NewLogForwarder(keptnAPI.LogsV1())
+	eventSource := eventsource.New(natsConnector)
+	logForwarder := logforwarder.New(keptnAPI.LogsV1())
 
 	// 4. create control plane object and register yourself as an "integration"
 	//NOTE: if log forwarding is not needed in your service, pass `nil` instead of the `logForwarder`
@@ -64,8 +68,8 @@ func (e LocalService) OnEvent(ctx context.Context, event models.KeptnContextExte
 	return nil
 }
 
-func (e LocalService) RegistrationData() controlplane.RegistrationData {
-	return controlplane.RegistrationData{
+func (e LocalService) RegistrationData() types.RegistrationData {
+	return types.RegistrationData{
 		Name: "local-service",
 		MetaData: models.MetaData{
 			Hostname:           "localhost",
