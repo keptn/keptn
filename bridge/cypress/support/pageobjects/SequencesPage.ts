@@ -63,9 +63,7 @@ export class SequencesPage {
         states: [],
       },
     });
-    cy.intercept('/api/project/sockshop/sequences/metadata', { fixture: 'sequence.metadata.mock' }).as(
-      'SequencesMetadata'
-    );
+    cy.intercept('/api/project/sockshop/sequences/filter', { fixture: 'sequence.filter.mock' }).as('SequencesMetadata');
 
     cy.intercept('/api/mongodb-datastore/event?keptnContext=cfaadbb1-3c47-46e5-a230-2e312cf1828a&project=sockshop', {
       fixture: 'get.events.cfaadbb1-3c47-46e5-a230-2e312cf1828a.mock.json',

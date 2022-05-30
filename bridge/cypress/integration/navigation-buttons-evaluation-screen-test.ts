@@ -79,8 +79,8 @@ describe('Test Navigation Buttons In Evaluation Screen', () => {
       fixture: 'get.service.deployment.mock.json',
     });
 
-    cy.intercept('GET', '/api/project/dynatrace/sequences/metadata', {
-      body: { deployments: [], filter: { stages: [], services: [] } },
+    cy.intercept('GET', '/api/project/dynatrace/sequences/filter', {
+      body: { stages: [], services: [] },
     });
 
     cy.visit('/').wait('@initProjects');
