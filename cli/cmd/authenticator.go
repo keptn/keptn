@@ -2,11 +2,12 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/keptn/keptn/cli/internal"
-	"github.com/keptn/keptn/cli/internal/auth"
 	"net"
 	"net/url"
 	"time"
+
+	"github.com/keptn/keptn/cli/internal"
+	"github.com/keptn/keptn/cli/internal/auth"
 )
 
 type MockedCredentialGetSetter struct {
@@ -83,7 +84,7 @@ func (a *Authenticator) Auth(authenticatorOptions AuthenticatorOptions) error {
 
 	// Skip usual auth call if we use OAuth
 	if a.OauthStore.Created() {
-		fmt.Printf("Successfully authenticated against the Keptn cluster %s\n", endpoint.String())
+		fmt.Printf("Successfully authenticated against %s\n", endpoint.String())
 		fmt.Printf("Bridge URL: %s\n", getBridgeURLFromAPIURL(endpoint))
 		return a.CredentialManager.SetCreds(endpoint, apiToken, namespace)
 	}
@@ -108,7 +109,7 @@ func (a *Authenticator) Auth(authenticatorOptions AuthenticatorOptions) error {
 	}
 
 	// Authentication succeeded
-	fmt.Println("Successfully authenticated against the Keptn cluster " + endpoint.String())
+	fmt.Println("Successfully authenticated against " + endpoint.String())
 	fmt.Println("Bridge URL: " + getBridgeURLFromAPIURL(endpoint))
 	return a.CredentialManager.SetCreds(endpoint, apiToken, namespace)
 }
