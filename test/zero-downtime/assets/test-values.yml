@@ -9,7 +9,8 @@ control-plane:
   resourceService:
     enabled: "true"
     env:
-      DIRECTORY_STAGE_STRUCTURE: "true"
+      DIRECTORY_STAGE_STRUCTURE: "false"
+      LOG_LEVEL: "debug"
 
 continuous-delivery:
   enabled: true

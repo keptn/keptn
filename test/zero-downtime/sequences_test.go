@@ -38,8 +38,10 @@ func NewTriggeredSequence(keptnContext string, projectName string, seqName strin
 func (suite *TestSuiteSequences) SetupSuite() {
 
 	suite.T().Log("Starting test for sequences")
+
 	// if needed the following line can setup a project eat very clock tick
 	suite.createNew()
+	suite.Assert().Contains(suite.project, "zd-sequence")
 }
 
 func (suite *TestSuiteSequences) createNew() {
@@ -82,22 +84,20 @@ func setSequencesEnv(t *testing.T) *ZeroDowntimeEnv {
 
 // Sequences is used to perform tests sequentially inside the zerodowntime suite
 func Sequences(t *testing.T, env *ZeroDowntimeEnv) {
-	var s *TestSuiteSequences
 	wgSequences := &sync.WaitGroup{}
 	seqTicker := clock.New().Ticker(env.SequencesInterval)
-
+	t.Logf("started Sequence tests")
 Loop:
 	for {
 		select {
 		case <-env.quit:
 			break Loop
 		case <-seqTicker.C:
-			s = &TestSuiteSequences{
-				env: env,
-			}
 			wgSequences.Add(1)
 			go func() {
-				suite.Run(t, s)
+				suite.Run(t, &TestSuiteSequences{
+					env: env,
+				})
 				wgSequences.Done()
 			}()
 

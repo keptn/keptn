@@ -29,9 +29,9 @@ spec:
 
 type ZeroDowntimeEnv struct {
 	quit              chan struct{}
-	NrOfUpgrades      int           `envconfig:"NUMBER_OF_UPGRADES" default:"2"`
-	EnvInstallVersion string        `envconfig:"INSTALL_HELM_CHART" default:"https://github.com/keptn/helm-charts-dev/raw/69eea439a26a99ecc163e296860dbb5d43e41600/packages/keptn-0.15.1-dev.tgz"`
-	EnvUpgradeVersion string        `envconfig:"UPGRADE_HELM_CHART" default:"https://github.com/keptn/helm-charts-dev/raw/gh-pages/packages/keptn-0.15.1-dev.tgz"`
+	NrOfUpgrades      int           `envconfig:"NUMBER_OF_UPGRADES" default:"3"`
+	EnvInstallVersion string        `envconfig:"INSTALL_HELM_CHART"` //for local run you can add a default ref to this string here e.g. default:"https://github.com/keptn/helm-charts-dev/raw/69eea439a26a99ecc163e296860dbb5d43e41600/packages/keptn-0.15.1-dev.tgz"`
+	EnvUpgradeVersion string        `envconfig:"UPGRADE_HELM_CHART"` //for local run you can add a default ref to this string here e.g. default:"https://github.com/keptn/helm-charts-dev/raw/gh-pages/packages/keptn-0.15.0-dev.tgz"
 	ApiProbeInterval  time.Duration `envconfig:"API_PROBES_INTERVAL" default:"5s"`
 	SequencesInterval time.Duration `envconfig:"SEQUENCES_INTERVAL" default:"15s"`
 	Wg                *sync.WaitGroup
@@ -132,19 +132,16 @@ func (suite *TestSuiteDowntime) TearDownSuite() {
 func ZDTestTemplate(t *testing.T, F func(t2 *testing.T, e *ZeroDowntimeEnv), name string) {
 
 	env := SetupZD()
-	t.Log(env)
+	env.Wg.Add(2)
 	t.Run("Rolling Upgrade", func(t1 *testing.T) {
 		t1.Parallel()
 		RollingUpgrade(t1, env)
 	})
-	env.Wg.Add(1)
 	t.Run("API", func(t1 *testing.T) {
 		t1.Parallel()
-
 		APIs(t1, env)
 		env.Wg.Done()
 	})
-	env.Wg.Add(1)
 	t.Run(name, func(t1 *testing.T) {
 		t1.Parallel()
 		F(t1, env)
@@ -166,10 +163,13 @@ func RollingUpgrade(t *testing.T, env *ZeroDowntimeEnv) {
 		t.Log("Rolling upgrade terminated")
 		env.Wg.Wait()
 	}()
-
+	if env.EnvUpgradeVersion == "" || env.EnvInstallVersion == "" {
+		t.Fatal("Test cannot run without setting INSTALL_HELM_CHART and UPGRADE_HELM_CHART")
+	}
 	t.Log("Upgrade in progress")
 
 	for i := 0; i < env.NrOfUpgrades; i++ {
+		time.Sleep(60 * time.Second)
 		chartPath := ""
 		var err error
 		if i%2 == 0 {
