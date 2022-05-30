@@ -46,6 +46,23 @@ func Test_LogForwarding(t *testing.T) {
 	require.Nil(t, err)
 	require.Contains(t, output, "created successfully")
 
+	// verify that the lighthouse service is ready
+	require.Eventually(t, func() bool {
+		lighthouseSvcIntegration, err := GetIntegrationWithName("lighthouse-service")
+		if err != nil {
+			t.Logf("Error while retrieving lighthouse service integration: %v", err)
+			return false
+		}
+		now := time.Now().UTC()
+		lastSeenDiff := now.Sub(lighthouseSvcIntegration.MetaData.LastSeen).Seconds()
+
+		if lastSeenDiff > 20 {
+			t.Logf("lighthouse service registratin not available yet. Last seen %d seconds ago", lastSeenDiff)
+			return false
+		}
+		return true
+	}, 1*time.Minute, 10*time.Second)
+
 	keptnContextID, err := TriggerSequence(projectName, serviceName, stageName, sequenceName, nil)
 	require.Nil(t, err)
 	require.NotEmpty(t, keptnContextID)
