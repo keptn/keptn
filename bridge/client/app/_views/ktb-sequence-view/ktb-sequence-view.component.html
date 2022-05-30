@@ -120,7 +120,10 @@
         [selectedStage]="selectedStage"
         (selectedStageChange)="selectStage($event)"
       ></ktb-sequence-timeline>
-      <ktb-sequence-tasks-list [tasks]="currentSequence.traces" [stage]="selectedStage"></ktb-sequence-tasks-list>
+      <ktb-sequence-tasks-list
+        [tasks]="selectedStage ? currentSequence.getTraces(selectedStage) : currentSequence.traces"
+        [focusedEventId]="selectedEventId"
+      ></ktb-sequence-tasks-list>
       <div class="mb-3" fxLayout="row" fxLayoutAlign="end center">
         <dt-tag
           >Last time fetched:

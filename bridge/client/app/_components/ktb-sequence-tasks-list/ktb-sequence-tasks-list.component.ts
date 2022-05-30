@@ -1,24 +1,19 @@
-import { Component, HostBinding, Input, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostBinding, Input } from '@angular/core';
+import { Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { Trace } from '../../_models/trace';
 import { DateUtil } from '../../_utils/date.utils';
-import { takeUntil } from 'rxjs/operators';
-import { Subject } from 'rxjs';
 
 @Component({
-  selector: 'ktb-sequence-tasks-list[tasks][stage]',
+  selector: 'ktb-sequence-tasks-list[tasks][focusedEventId]',
   templateUrl: './ktb-sequence-tasks-list.component.html',
   styleUrls: ['./ktb-sequence-tasks-list.component.scss'],
-  encapsulation: ViewEncapsulation.None,
-  preserveWhitespaces: false,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
+export class KtbSequenceTasksListComponent {
   @HostBinding('class') cls = 'ktb-sequence-tasks-list';
-  public _tasks: Trace[] = [];
-  public _stage?: string;
-  public _focusedEventId?: string;
-  private readonly unsubscribe$ = new Subject<void>();
+  private _tasks: Trace[] = [];
+  private _focusedEventId?: string;
   private currentScrollElement?: HTMLDivElement;
 
   @Input()
@@ -30,18 +25,7 @@ export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
     if (this._tasks !== value) {
       this._tasks = value;
       this.focusLastSequence();
-    }
-  }
-
-  @Input()
-  get stage(): string | undefined {
-    return this._stage;
-  }
-
-  set stage(value: string | undefined) {
-    if (this._stage !== value) {
-      this._stage = value;
-      this.focusLastSequence();
+      this._changeDetectorRef.markForCheck();
     }
   }
 
@@ -49,31 +33,24 @@ export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
   get focusedEventId(): string | undefined {
     return this._focusedEventId;
   }
-
   set focusedEventId(value: string | undefined) {
     if (this._focusedEventId !== value) {
       this._focusedEventId = value;
     }
+    if (!value) {
+      this.focusLastSequence();
+    }
+    this._changeDetectorRef.markForCheck();
   }
 
   constructor(
     private router: Router,
     private location: Location,
     public dateUtil: DateUtil,
-    private route: ActivatedRoute
+    private _changeDetectorRef: ChangeDetectorRef
   ) {}
 
-  ngOnInit(): void {
-    this.route.params.pipe(takeUntil(this.unsubscribe$)).subscribe((params) => {
-      if (params.eventId) {
-        this.focusedEventId = params.eventId;
-      } else {
-        this.focusLastSequence();
-      }
-    });
-  }
-
-  identifyEvent(index: number, item: Trace): string {
+  identifyEvent(_index: number, item: Trace): string {
     return item.id;
   }
 
@@ -93,38 +70,21 @@ export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
         ['/project', event.project, 'sequence', event.shkeptncontext, 'event', event.id],
         { queryParamsHandling: 'preserve' }
       );
+      this._focusedEventId = event.id;
       this.location.go(routeUrl.toString());
     }
   }
 
   focusLastSequence(): void {
     if (
-      this.stage &&
-      !this.getTasksByStage(this.tasks, this.stage).some(
-        (seq) => seq.id === this.focusedEventId || seq.findTrace((t) => t.id === this.focusedEventId)
-      )
+      this.tasks.length &&
+      (!this.focusedEventId || !this.tasks.some((seq) => seq.findTrace((t) => t.id === this.focusedEventId)))
     ) {
-      this.focusedEventId = this.tasks
-        .slice()
-        .reverse()
-        .find((t) => t.stage === this.stage)?.id;
+      this._focusedEventId = this.tasks[this.tasks.length - 1].id;
     }
   }
 
-  getTasksByStage(tasks: Trace[], stage: string): Trace[] {
-    return tasks.filter((t) => t.data?.stage === stage);
-  }
-
-  isInvalidated(event: Trace): boolean {
-    return !!this.tasks.find((e) => e.isEvaluationInvalidation() && e.triggeredid === event.id);
-  }
-
   isFocusedTask(task: Trace): boolean {
-    return task.id === this.focusedEventId || !!task.findTrace((t) => t.id === this.focusedEventId);
-  }
-
-  ngOnDestroy(): void {
-    this.unsubscribe$.next();
-    this.unsubscribe$.complete();
+    return !!task.findTrace((t) => t.id === this.focusedEventId);
   }
 }

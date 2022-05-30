@@ -104,6 +104,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
 
   public filteredSequences: Sequence[] = [];
   public loading = false;
+  public selectedEventId?: string;
 
   constructor(
     private dataService: DataService,
@@ -183,7 +184,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
         if (params.shkeptncontext && this.project?.sequences) {
           const sequence = this.project.sequences.find((s) => s.shkeptncontext === params.shkeptncontext);
           const stage = params.eventId ? undefined : params.stage;
-          const eventId = params.eventId;
+          this.selectedEventId = params.eventId;
 
           if (sequence) {
             if (params.eventId && !sequence.traces.length) {
@@ -191,7 +192,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
               initParametersHandled = true;
               this.loadTraces(sequence, params.eventId);
             } else {
-              this.selectSequence({ sequence, stage, eventId });
+              this.selectSequence({ sequence, stage, eventId: this.selectedEventId });
             }
           } else if (params.shkeptncontext && this.project) {
             // is running twice because project is changed on start before the first call finishes
