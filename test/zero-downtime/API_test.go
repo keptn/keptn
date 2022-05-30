@@ -41,6 +41,7 @@ func Test_API(t *testing.T) {
 
 // APIs is called in the zero downtime test suite
 func APIs(t *testing.T, env *ZeroDowntimeEnv) {
+	t.Logf("started API tests")
 	wgAPI := sync.WaitGroup{}
 	apiTicker := clock.New().Ticker(env.ApiProbeInterval)
 Loop:
@@ -50,11 +51,10 @@ Loop:
 			break Loop
 		case <-apiTicker.C:
 			wgAPI.Add(1)
-			apisuite := &TestSuiteAPI{
-				env: env,
-			}
 			go func() {
-				suite.Run(t, apisuite)
+				suite.Run(t, &TestSuiteAPI{
+					env: env,
+				})
 				wgAPI.Done()
 			}()
 
@@ -164,7 +164,7 @@ func (suite *TestSuiteAPI) Test_MongoDB() {
 
 	api.Get(apiURL+"/event").Query("project", "keptn").Query("pageSize", "20").
 		Headers(map[string]string{"x-token": suite.token}).
-		Expect(suite.T()).Status(http.StatusOK).Body(`{"events":[], "pageSize":20}`).End()
+		Expect(suite.T()).Status(http.StatusOK).Assert(jsonpath.Equal(`$pageSize`, "20")).End()
 
 }
 
