@@ -134,6 +134,78 @@ func TestTriggerDelivery(t *testing.T) {
 		require.Equal(t, "sockshop", deplyomentTriggeredData.Project)
 		require.Equal(t, "carts", deplyomentTriggeredData.Service)
 		require.Equal(t, "dev", deplyomentTriggeredData.Stage)
+		require.Equal(t, "sh.keptn.event.dev.artifact-delivery.triggered", *event.Type)
+		break
+	case <-time.After(5 * time.Second):
+		t.Error("event was not sent")
+	}
+}
+
+// TestTriggerDelivery tests the trigger delivery command.
+func TestTriggerDeliveryNoSequence(t *testing.T) {
+
+	credentialmanager.MockAuthCreds = true
+
+	receivedEvent := make(chan *apimodels.KeptnContextExtendedCE)
+	ts := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Add("Content-Type", "application/json")
+			w.WriteHeader(200)
+			if strings.Contains(r.RequestURI, "v1/event") {
+				defer r.Body.Close()
+				bytes, err := ioutil.ReadAll(r.Body)
+				if err != nil {
+					t.Errorf("could not read received event payload: %s", err.Error())
+				}
+				event := &apimodels.KeptnContextExtendedCE{}
+				if err := json.Unmarshal(bytes, event); err != nil {
+					t.Errorf("could not decode received event: %s", err.Error())
+				}
+				if *event.Type != keptnv2.GetTriggeredEventType("dev.delivery") {
+					t.Errorf("did not receive correct event: %s", err.Error())
+				}
+				go func() {
+					receivedEvent <- event
+				}()
+			} else if strings.Contains(r.RequestURI, "/v1/metadata") {
+				defer r.Body.Close()
+				w.Write([]byte(metadataMockResponse))
+				return
+			} else if strings.Contains(r.RequestURI, "service") {
+				res := fmt.Sprintf(getSvcMockResponse, "carts")
+				w.Write([]byte(res))
+				return
+			} else if strings.Contains(r.RequestURI, "/controlPlane/v1/project/") {
+				res := fmt.Sprintf(getProjectMockResponse, "sockshop", "carts", "dev")
+				w.Write([]byte(res))
+				return
+			}
+		}),
+	)
+	defer ts.Close()
+
+	os.Setenv("MOCK_SERVER", ts.URL)
+
+	cmd := fmt.Sprintf("trigger delivery --project=%s --service=%s --stage=%s "+
+		"--image=%s --values=a.b.c=d --mock --values=c.d=e", "sockshop", "carts", "dev", "docker-registry:5000/keptnexamples/carts:0.9.1")
+	_, err := executeActionCommandC(cmd)
+
+	if err != nil {
+		t.Errorf(unexpectedErrMsg, err)
+	}
+
+	select {
+	case event := <-receivedEvent:
+		data, err := json.Marshal(event.Data)
+		require.Nil(t, err)
+		deplyomentTriggeredData := &keptnv2.DeploymentTriggeredEventData{}
+		require.Nil(t, json.Unmarshal(data, deplyomentTriggeredData))
+
+		require.Equal(t, "docker-registry:5000/keptnexamples/carts:0.9.1", deplyomentTriggeredData.ConfigurationChange.Values["image"])
+		require.Equal(t, "sockshop", deplyomentTriggeredData.Project)
+		require.Equal(t, "carts", deplyomentTriggeredData.Service)
+		require.Equal(t, "dev", deplyomentTriggeredData.Stage)
+		require.Equal(t, "sh.keptn.event.dev.delivery.triggered", *event.Type)
 		break
 	case <-time.After(5 * time.Second):
 		t.Error("event was not sent")

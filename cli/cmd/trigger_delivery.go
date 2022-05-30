@@ -129,9 +129,14 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 		ConfigurationChange: keptnv2.ConfigurationChange{Values: valuesJson},
 	}
 
+	sequenceName := "delivery"
+	if deliveryInputData.Sequence != nil && *deliveryInputData.Sequence != "" {
+		sequenceName = *deliveryInputData.Sequence
+	}
+
 	sdkEvent := cloudevents.NewEvent()
 	sdkEvent.SetID(uuid.New().String())
-	sdkEvent.SetType(keptnv2.GetTriggeredEventType(*deliveryInputData.Stage + "." + *deliveryInputData.Sequence))
+	sdkEvent.SetType(keptnv2.GetTriggeredEventType(*deliveryInputData.Stage + "." + sequenceName))
 	sdkEvent.SetSource("https://github.com/keptn/keptn/cli#configuration-change")
 	sdkEvent.SetDataContentType(cloudevents.ApplicationJSON)
 	if err := sdkEvent.SetData(cloudevents.ApplicationJSON, deploymentEvent); err != nil {
