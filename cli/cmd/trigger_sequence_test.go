@@ -105,7 +105,7 @@ func TestTriggerSequence(t *testing.T) {
 
 	os.Setenv("MOCK_SERVER", ts.URL)
 
-	cmd := fmt.Sprintf("trigger sequence --sequence=%s --project=%s --service=%s --stage=%s --mock", "hello", "hello-world", "demo", "dev")
+	cmd := fmt.Sprintf("trigger sequence %s --project=%s --service=%s --stage=%s --mock", "hello", "hello-world", "demo", "dev")
 	_, err := executeActionCommandC(cmd)
 
 	if err != nil {
@@ -151,7 +151,7 @@ func TestTriggerSequenceNonExistingProject(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run("", func(t *testing.T) {
-			cmd := fmt.Sprintf("trigger sequence --sequence=%s --project=%s --service=mysvc --stage=%s --mock",
+			cmd := fmt.Sprintf("trigger sequence %s --project=%s --service=mysvc --stage=%s --mock",
 				tt.project,
 				"hello",
 				"dev")
@@ -213,10 +213,11 @@ func TestTriggerSequenceNonExistingService(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run("", func(t *testing.T) {
-			cmd := fmt.Sprintf("trigger sequence --sequence=%s --project=%s --service=%s --mock",
+			cmd := fmt.Sprintf("trigger sequence %s --project=%s --service=%s --stage=%s --mock",
 				sequenceName,
 				projectName,
 				tt.service,
+				"dev",
 			)
 			_, err := executeActionCommandC(cmd)
 
@@ -225,4 +226,12 @@ func TestTriggerSequenceNonExistingService(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestTriggerSequenceFlag(t *testing.T) {
+	testInvalidInputHelper("trigger sequence seq2 --sequence=seq --project=proj --service=serv --stage=dev --mock", "unknown flag: --sequence", t)
+}
+
+func TestTriggerSequenceMissing(t *testing.T) {
+	testInvalidInputHelper("trigger sequence --project=proj --service=serv --stage=dev --mock", "required argument sequence-name not set", t)
 }
