@@ -62,7 +62,7 @@ func Test_LogForwarding(t *testing.T) {
 		}
 		t.Logf("Found lighthouse service integration. Last seen: %.2f seconds ago", lastSeenDiff)
 		return true
-	}, 1*time.Minute, 10*time.Second)
+	}, 3*time.Minute, 10*time.Second)
 
 	keptnContextID, err := TriggerSequence(projectName, serviceName, stageName, sequenceName, nil)
 	require.Nil(t, err)
