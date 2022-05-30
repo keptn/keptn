@@ -69,7 +69,7 @@ func (suite *TestSuiteAPI) Test_API_Service() {
 	started := time.Now()
 	apiURL := suite.keptnAPIURL + "/v1"
 
-	api := apitest.New("Test api-service auth").EnableNetworking(getClient(1)).
+	api := apitest.New("Test api-service auth").EnableNetworking(getClient(5)).
 		Observe(func(res *http.Response, req *http.Request, apiTest *apitest.APITest) {
 			suite.logResult(res, apiTest, http.StatusOK, started)
 		})
@@ -86,7 +86,7 @@ func (suite *TestSuiteAPI) Test_Statistic_Service() {
 	started := time.Now()
 	apiURL := suite.keptnAPIURL + "/statistics/v1"
 
-	api := apitest.New("Test statistics-service").EnableNetworking(getClient(3)).
+	api := apitest.New("Test statistics-service").EnableNetworking(getClient(5)).
 		Observe(func(res *http.Response, req *http.Request, apiTest *apitest.APITest) {
 			suite.logResult(res, apiTest, http.StatusNotFound, started)
 		})
@@ -142,7 +142,7 @@ func (suite *TestSuiteAPI) Test_ControlPlane() {
 	started := time.Now()
 	apiURL := suite.keptnAPIURL + "/controlPlane/v1"
 
-	api := apitest.New("Test control-plane: check uniform").EnableNetworking(getClient(1)).
+	api := apitest.New("Test control-plane: check uniform").EnableNetworking(getClient(5)).
 		Observe(func(res *http.Response, req *http.Request, apiTest *apitest.APITest) {
 			suite.logResult(res, apiTest, http.StatusOK, started)
 		})
@@ -157,7 +157,7 @@ func (suite *TestSuiteAPI) Test_MongoDB() {
 	started := time.Now()
 	apiURL := suite.keptnAPIURL + "/mongodb-datastore"
 
-	api := apitest.New("Test mongo-datastore: not existing project").EnableNetworking(getClient(1)).
+	api := apitest.New("Test mongo-datastore: not existing project").EnableNetworking(getClient(5)).
 		Observe(func(res *http.Response, req *http.Request, apiTest *apitest.APITest) {
 			suite.logResult(res, apiTest, http.StatusOK, started)
 		})
