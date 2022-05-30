@@ -79,7 +79,7 @@ func (a *Authenticator) Auth(authenticatorOptions AuthenticatorOptions) error {
 	}
 
 	if !LookupHostname(endpoint.Hostname(), net.LookupHost, time.Sleep) {
-		return fmt.Errorf("Authentication was unsuccessful - could not resolve hostname.")
+		return fmt.Errorf("authentication was not successful - could not resolve hostname: %s", endpoint.Hostname())
 	}
 
 	// Skip usual auth call if we use OAuth
@@ -95,7 +95,7 @@ func (a *Authenticator) Auth(authenticatorOptions AuthenticatorOptions) error {
 	for retries := 0; retries < 3; time.Sleep(5 * time.Second) {
 		_, err := api.AuthV1().Authenticate()
 		if err != nil {
-			errMsg = fmt.Sprintf("Authentication was unsuccessful. %s", *err.Message)
+			errMsg = fmt.Sprintf("authentication was not successful: %s", *err.Message)
 			retries++
 		} else {
 			authenticated = true
