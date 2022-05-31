@@ -6,7 +6,7 @@ require (
 	github.com/benbjohnson/clock v1.3.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.16.1-0.20220603062304-a3c50ce6446d
-	github.com/keptn/keptn/test/go-tests v0.0.0-20220530120140-b252b6d70ec7
+	github.com/keptn/keptn/test/go-tests v0.0.0-20220531134056-295099dc4de8
 	github.com/steinfletcher/apitest v1.5.11
 	github.com/steinfletcher/apitest-jsonpath v1.7.1
 	github.com/stretchr/testify v1.7.1
