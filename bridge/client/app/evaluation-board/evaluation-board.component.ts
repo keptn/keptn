@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { catchError, filter, map, startWith, switchMap } from 'rxjs/operators';
-import { Observable, of } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 import { EventTypes } from '../../../shared/interfaces/event-types';
@@ -14,6 +14,7 @@ import {
   EvaluationBoardStatus,
 } from './evaluation-board-state';
 import { DateUtil } from '../_utils/date.utils';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'ktb-evaluation-board',
@@ -46,7 +47,7 @@ export class EvaluationBoardComponent {
             ),
             map((evaluations) => evaluations.sort(DateUtil.compareTraceTimesDesc)),
             map((evaluations) => ({ evaluations, keptnContext: params.keptnContext })),
-            catchError(() => of({ keptnContext: params.keptnContext }))
+            catchError(() => throwError(() => ({ keptnContext: params.keptnContext })))
           )
       ),
       switchMap((data) =>
@@ -62,9 +63,6 @@ export class EvaluationBoardComponent {
         )
       ),
       switchMap((data): Observable<EvaluationBoardState> => {
-        if (!('evaluations' in data)) {
-          return of({ state: EvaluationBoardStatus.ERROR, kind: 'trace', keptnContext: data.keptnContext });
-        }
         const { project: projectName, stage: stageName, service: serviceName } = data.evaluations[0];
         if (!projectName || !stageName || !serviceName) {
           return of({ state: EvaluationBoardStatus.ERROR, kind: 'trace', keptnContext: data.keptnContext });
@@ -85,7 +83,12 @@ export class EvaluationBoardComponent {
           }))
         );
       }),
-      catchError((): Observable<EvaluationBoardState> => of({ state: EvaluationBoardStatus.ERROR, kind: 'default' })),
+      catchError((error: HttpErrorResponse | { keptnContext: string }): Observable<EvaluationBoardState> => {
+        if ('keptnContext' in error) {
+          return of({ state: EvaluationBoardStatus.ERROR, kind: 'trace', keptnContext: error.keptnContext });
+        }
+        return of({ state: EvaluationBoardStatus.ERROR, kind: 'default' });
+      }),
       startWith({ state: EvaluationBoardStatus.LOADING } as EvaluationBoardStateLoading)
     );
   }
