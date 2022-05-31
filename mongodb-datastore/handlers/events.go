@@ -66,6 +66,9 @@ func (erh *EventRequestHandler) GetEvents(params event.GetEventsParams) (*event.
 	if err != nil {
 		return nil, err
 	}
+	if events.Events == nil {
+		events.Events = []keptnapi.KeptnContextExtendedCE{}
+	}
 	return (*event.GetEventsOKBody)(events), nil
 }
 
@@ -73,6 +76,9 @@ func (erh *EventRequestHandler) GetEventsByType(params event.GetEventsByTypePara
 	events, err := erh.eventRepo.GetEventsByType(params)
 	if err != nil {
 		return nil, err
+	}
+	if events.Events == nil {
+		events.Events = []keptnapi.KeptnContextExtendedCE{}
 	}
 	return &event.GetEventsByTypeOKBody{Events: events.Events}, nil
 }
