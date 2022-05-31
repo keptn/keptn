@@ -45,6 +45,7 @@ func (erh EventRequestHandler) RegistrationData() controlplane.RegistrationData 
 		},
 	}
 }
+
 func NewEventRequestHandler(eventRepo db.EventRepo) *EventRequestHandler {
 	var env envConfig
 	if err := envconfig.Process("", &env); err != nil {
@@ -57,7 +58,7 @@ func (erh *EventRequestHandler) ProcessEvent(event keptnapi.KeptnContextExtended
 	if *event.Type == keptnv2.GetFinishedEventType(keptnv2.ProjectDeleteTaskName) {
 		return erh.eventRepo.DropProjectCollections(event)
 	}
-
+	//test
 	return erh.eventRepo.InsertEvent(event)
 }
 
