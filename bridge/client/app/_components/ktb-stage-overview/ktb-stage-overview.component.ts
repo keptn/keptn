@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, EventEmitter, OnDestroy, Output } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { DtFilterFieldChangeEvent, DtFilterFieldDefaultDataSource } from '@dynatrace/barista-components/filter-field';
 import { DtFilterFieldDefaultDataSourceAutocomplete } from '@dynatrace/barista-components/filter-field/src/filter-field-default-data-source';
 import { combineLatest, Subject } from 'rxjs';
@@ -72,12 +72,7 @@ export class KtbStageOverviewComponent implements AfterViewInit, OnDestroy {
   @Output() selectedStageChange: EventEmitter<{ stage: Stage; filterType: ServiceFilterType }> = new EventEmitter();
   @Output() filteredServicesChange: EventEmitter<string[]> = new EventEmitter<string[]>();
 
-  constructor(
-    private dataService: DataService,
-    private apiService: ApiService,
-    private router: Router,
-    private route: ActivatedRoute
-  ) {}
+  constructor(private dataService: DataService, private apiService: ApiService, private route: ActivatedRoute) {}
 
   ngAfterViewInit(): void {
     this.params$.subscribe();

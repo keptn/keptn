@@ -23,7 +23,7 @@ class DashboardPage {
   }
 
   public clickProjectTile(projectName: string): EnvironmentPage {
-    cy.wait(500).get(this.PROJECT_TILE_LOCATOR.replace('proj_pattern', projectName)).click();
+    cy.wait('@projects').get(this.PROJECT_TILE_LOCATOR.replace('proj_pattern', projectName)).click();
     return new EnvironmentPage();
   }
 
@@ -47,12 +47,8 @@ class DashboardPage {
     return new NewProjectCreatePage();
   }
 
-  public clickStageTag(stage: string): EnvironmentPage {
-    cy.wait(500)
-      .get('dt-tag')
-      .within(() => {
-        cy.get(`a:contains("${stage}")`).click();
-      });
+  public clickStageTag(projectName: string, stageName: string): EnvironmentPage {
+    cy.byTestId(`ktb-project-${projectName}`).find('dt-tag a').contains(stageName).click();
     return new EnvironmentPage();
   }
 }
