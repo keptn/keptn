@@ -13,6 +13,10 @@ import (
 	"github.com/keptn/keptn/cp-connector/pkg/types"
 )
 
+type EventSender = types.EventSender
+type EventSenderKeyType = types.EventSenderKeyType
+type RegistrationData = types.RegistrationData
+
 const tmpDataDistributorKey = "distributor"
 
 var ErrEventHandleFatal = errors.New("fatal event handling error")

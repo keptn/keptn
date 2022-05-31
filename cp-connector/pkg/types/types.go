@@ -15,12 +15,12 @@ type EventUpdate struct {
 	MetaData   EventUpdateMetaData
 }
 
+type EventUpdateMetaData struct {
+	Subject string
+}
+
 type EventSenderKeyType struct{}
 
 var EventSenderKey = EventSenderKeyType{}
 
 type EventSender func(ce models.KeptnContextExtendedCE) error
-
-type EventUpdateMetaData struct {
-	Subject string
-}
