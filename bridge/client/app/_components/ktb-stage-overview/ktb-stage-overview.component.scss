@@ -8,6 +8,10 @@
   }
 }
 
+a.no-underline {
+  text-decoration: none;
+}
+
 .stage-list {
   &.scrollable {
     .stage-group {

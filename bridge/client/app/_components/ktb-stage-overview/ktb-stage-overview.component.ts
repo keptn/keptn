@@ -1,16 +1,24 @@
-import { Component, EventEmitter, OnDestroy, OnInit, AfterContentInit, Output } from '@angular/core';
-import { Project } from '../../_models/project';
-import { Stage } from '../../_models/stage';
-import { DataService } from '../../_services/data.service';
+import { AfterViewInit, Component, EventEmitter, OnDestroy, Output } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { DtFilterFieldChangeEvent, DtFilterFieldDefaultDataSource } from '@dynatrace/barista-components/filter-field';
-import { ApiService } from '../../_services/api.service';
-import { Service } from '../../_models/service';
-import { DtAutoComplete, DtFilter, DtFilterArray } from '../../_models/dt-filter';
-import { filter, map, switchMap, takeUntil, tap } from 'rxjs/operators';
-import { Location } from '@angular/common';
-import { Router, ActivatedRoute } from '@angular/router';
-import { Subject } from 'rxjs';
 import { DtFilterFieldDefaultDataSourceAutocomplete } from '@dynatrace/barista-components/filter-field/src/filter-field-default-data-source';
+import { combineLatest, Subject } from 'rxjs';
+import {
+  distinctUntilChanged,
+  filter,
+  map,
+  shareReplay,
+  switchMap,
+  takeUntil,
+  tap,
+  withLatestFrom,
+} from 'rxjs/operators';
+import { DtAutoComplete, DtFilter, DtFilterArray } from '../../_models/dt-filter';
+import { Project } from '../../_models/project';
+import { Service } from '../../_models/service';
+import { Stage } from '../../_models/stage';
+import { ApiService } from '../../_services/api.service';
+import { DataService } from '../../_services/data.service';
 import { ServiceFilterType } from '../ktb-stage-details/ktb-stage-details.component';
 
 @Component({
@@ -18,15 +26,48 @@ import { ServiceFilterType } from '../ktb-stage-details/ktb-stage-details.compon
   templateUrl: './ktb-stage-overview.component.html',
   styleUrls: ['./ktb-stage-overview.component.scss'],
 })
-export class KtbStageOverviewComponent implements OnDestroy, OnInit, AfterContentInit {
-  public project?: Project;
-  public selectedStage?: Stage;
+export class KtbStageOverviewComponent implements AfterViewInit, OnDestroy {
   public _dataSource = new DtFilterFieldDefaultDataSource();
   public filter: DtFilterArray[] = [];
   public isTriggerSequenceOpen = false;
   private filteredServices: string[] = [];
   private globalFilter: { [projectName: string]: { services: string[] } } = {};
   private unsubscribe$: Subject<void> = new Subject<void>();
+
+  public project$ = this.route.params.pipe(
+    map((params) => params.projectName),
+    filter((projectName) => !!projectName),
+    distinctUntilChanged(),
+    tap(() => {
+      // TODO: kept for the moment
+      this.isTriggerSequenceOpen = this.dataService.isTriggerSequenceOpen;
+      this.dataService.isTriggerSequenceOpen = false;
+    }),
+    switchMap((projectName) => this.dataService.getProject(projectName)),
+    tap((project) => {
+      this.setFilter(project, true);
+    })
+  );
+
+  public readonly selectedStageName$ = this.route.paramMap.pipe(
+    map((params) => params.get('stageName')),
+    withLatestFrom(this.project$),
+    filter(([stageName, project]) => Boolean(stageName && project)),
+    map(([stageName]) => stageName)
+  );
+
+  private readonly paramFilterType$ = this.route.queryParamMap.pipe(map((params) => params.get('filterType')));
+
+  public params$ = combineLatest([this.selectedStageName$, this.paramFilterType$, this.project$]).pipe(
+    tap(([stageName, filterType, project]) => {
+      const stage = project!.getStage(stageName!);
+      if (stage) {
+        this.selectedStageChange.emit({ stage: stage!, filterType: (filterType as ServiceFilterType) ?? undefined });
+      }
+    }),
+    takeUntil(this.unsubscribe$),
+    shareReplay(1)
+  );
 
   @Output() selectedStageChange: EventEmitter<{ stage: Stage; filterType: ServiceFilterType }> = new EventEmitter();
   @Output() filteredServicesChange: EventEmitter<string[]> = new EventEmitter<string[]>();
@@ -35,48 +76,20 @@ export class KtbStageOverviewComponent implements OnDestroy, OnInit, AfterConten
     private dataService: DataService,
     private apiService: ApiService,
     private router: Router,
-    private route: ActivatedRoute,
-    private location: Location
+    private route: ActivatedRoute
   ) {}
 
-  public ngOnInit(): void {
-    // needs to be in init because of emitter
-    const project$ = this.route.params.pipe(
-      map((params) => params.projectName),
-      filter((projectName) => !!projectName),
-      tap(() => {
-        this.isTriggerSequenceOpen = this.dataService.isTriggerSequenceOpen;
-        this.dataService.isTriggerSequenceOpen = false;
-      }),
-      switchMap((projectName) => this.dataService.getProject(projectName)),
-      takeUntil(this.unsubscribe$)
-    );
-
-    project$.subscribe((project) => {
-      const differentProject = project?.projectName !== this.project?.projectName;
-      this.project = project;
-      this.setFilter(differentProject);
-    });
+  ngAfterViewInit(): void {
+    this.params$.subscribe();
   }
 
-  public ngAfterContentInit(): void {
-    const stageName = this.route.snapshot.paramMap.get('stageName');
-    if (stageName && this.project) {
-      const stage = this.project.getStage(stageName);
-      if (stage) {
-        this.selectedStage = stage;
-        this.selectedStageChange.emit({ stage: stage, filterType: undefined });
-      }
-    }
-  }
-
-  private setFilter(projectChanged: boolean): void {
+  private setFilter(project: Project | undefined, projectChanged: boolean): void {
     this._dataSource.data = {
       autocomplete: [
         {
           name: 'Services',
           autocomplete:
-            this.project?.getServices().map((service) => ({
+            project?.getServices().map((service) => ({
               name: service.serviceName,
             })) ?? [],
         } as DtAutoComplete,
@@ -84,12 +97,12 @@ export class KtbStageOverviewComponent implements OnDestroy, OnInit, AfterConten
     };
     this.globalFilter = this.apiService.environmentFilter;
     let newFilter: string[];
-    if (this.project) {
+    if (project) {
       // services can be deleted or added; adjust filter
-      const services = this.globalFilter[this.project.projectName]?.services || [];
+      const services = this.globalFilter[project.projectName]?.services || [];
       newFilter = services.filter((service) =>
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        this.project!.getServices().some((pService) => pService.serviceName === service)
+        project!.getServices().some((pService) => pService.serviceName === service)
       );
     } else {
       newFilter = [];
@@ -110,11 +123,11 @@ export class KtbStageOverviewComponent implements OnDestroy, OnInit, AfterConten
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public filterChanged(event: DtFilterFieldChangeEvent<any>): void {
+  public filterChanged(project: Project, event: DtFilterFieldChangeEvent<any>): void {
     // can't set another type because of "is not assignable to..."
     this.filteredServices = this.getServicesOfFilter(event);
-    if (this.project) {
-      this.globalFilter[this.project.projectName] = { services: this.filteredServices };
+    if (project) {
+      this.globalFilter[project.projectName] = { services: this.filteredServices };
     }
     this.apiService.environmentFilter = this.globalFilter;
     this.filteredServicesChange.emit(this.filteredServices);
@@ -138,22 +151,8 @@ export class KtbStageOverviewComponent implements OnDestroy, OnInit, AfterConten
     return stage?.toString();
   }
 
-  public selectStage($event: MouseEvent, stage: Stage, filterType: ServiceFilterType): void {
-    this.selectedStage = stage;
-    if (this.project) {
-      const routeUrl = this.router.createUrlTree([
-        'project',
-        this.project.projectName,
-        'environment',
-        'stage',
-        stage.stageName,
-      ]);
-
-      this.location.go(routeUrl.toString());
-    }
-
-    $event.stopPropagation();
-    this.selectedStageChange.emit({ stage, filterType });
+  public linkToStage(project: Project, stage: Stage): string[] {
+    return ['/project', project.projectName, 'environment', 'stage', stage.stageName];
   }
 
   public ngOnDestroy(): void {
