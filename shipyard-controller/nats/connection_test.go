@@ -66,7 +66,7 @@ func TestNatsConnectionHandler(t *testing.T) {
 
 	require.Eventually(t, func() bool {
 		return len(mockNatsEventHandler.ProcessCalls()) == 2
-	}, 15*time.Second, 5*time.Second)
+	}, 15*time.Second, 1*time.Second)
 
 	// call cancel() and wait for the consumer to shut down
 	// this is to ensure that the pull subscription created during this test does not interfere with the other tests
@@ -74,7 +74,7 @@ func TestNatsConnectionHandler(t *testing.T) {
 
 	require.Eventually(t, func() bool {
 		return nh.subscriptions[0].isActive == false
-	}, 15*time.Second, 5*time.Second)
+	}, 15*time.Second, 1*time.Second)
 }
 
 func TestNatsConnectionHandler_ShutdownSubscriber(t *testing.T) {
@@ -111,7 +111,7 @@ func TestNatsConnectionHandler_ShutdownSubscriber(t *testing.T) {
 
 	require.Eventually(t, func() bool {
 		return len(mockNatsEventHandler.ProcessCalls()) == 2
-	}, 15*time.Second, 5*time.Second)
+	}, 15*time.Second, 1*time.Second)
 
 	// call cancel() and wait for the consumer to shut down
 	// this is to ensure that the pull subscription created during this test does not interfere with the other tests
@@ -168,7 +168,7 @@ func TestNatsConnectionHandler_SendBeforeSubscribing(t *testing.T) {
 
 	require.Eventually(t, func() bool {
 		return len(mockNatsEventHandler.ProcessCalls()) > 0
-	}, 15*time.Second, 5*time.Second)
+	}, 15*time.Second, 1*time.Second)
 
 	// call cancel() and wait for the consumer to shut down
 	// this is to ensure that the pull subscription created during this test does not interfere with the other tests
@@ -176,7 +176,7 @@ func TestNatsConnectionHandler_SendBeforeSubscribing(t *testing.T) {
 	// wait for the consumer to shut down
 	require.Eventually(t, func() bool {
 		return nh.subscriptions[0].isActive == false
-	}, 15*time.Second, 5*time.Second)
+	}, 15*time.Second, 1*time.Second)
 }
 
 func TestNatsConnectionHandler_MisconfiguredStreamIsUpdated(t *testing.T) {
@@ -222,7 +222,7 @@ func TestNatsConnectionHandler_MisconfiguredStreamIsUpdated(t *testing.T) {
 
 	require.Eventually(t, func() bool {
 		return len(mockNatsEventHandler.ProcessCalls()) > 0
-	}, 15*time.Second, 5*time.Second)
+	}, 15*time.Second, 1*time.Second)
 
 	// call cancel() and wait for the consumer to shut down
 	// this is to ensure that the pull subscription created during this test does not interfere with the other tests
@@ -230,7 +230,7 @@ func TestNatsConnectionHandler_MisconfiguredStreamIsUpdated(t *testing.T) {
 	// wait for the consumer to shut down
 	require.Eventually(t, func() bool {
 		return nh.subscriptions[0].isActive == false
-	}, 15*time.Second, 5*time.Second)
+	}, 15*time.Second, 1*time.Second)
 }
 
 func TestNatsConnectionHandler_MultipleSubscribers(t *testing.T) {
@@ -263,7 +263,7 @@ func TestNatsConnectionHandler_MultipleSubscribers(t *testing.T) {
 
 	require.Eventually(t, func() bool {
 		return len(mockNatsEventHandler.ProcessCalls()) > 0
-	}, 15*time.Second, 5*time.Second)
+	}, 15*time.Second, 1*time.Second)
 
 	require.Len(t, mockNatsEventHandler.ProcessCalls(), 1)
 
@@ -273,7 +273,7 @@ func TestNatsConnectionHandler_MultipleSubscribers(t *testing.T) {
 	// wait for the consumers to shut down
 	require.Eventually(t, func() bool {
 		return nh1.subscriptions[0].isActive == false && nh2.subscriptions[0].isActive == false
-	}, 15*time.Second, 5*time.Second)
+	}, 15*time.Second, 1*time.Second)
 }
 
 func TestNatsConnectionHandler_ErrorWhenHandlingEvent(t *testing.T) {
@@ -310,7 +310,7 @@ func TestNatsConnectionHandler_ErrorWhenHandlingEvent(t *testing.T) {
 	// verify that the event after the bad one was still handled
 	require.Eventually(t, func() bool {
 		return len(mockNatsEventHandler.ProcessCalls()) == 1
-	}, 15*time.Second, 5*time.Second)
+	}, 15*time.Second, 1*time.Second)
 
 	// call cancel() and wait for the consumer to shut down
 	// this is to ensure that the pull subscription created during this test does not interfere with the other tests
@@ -318,7 +318,7 @@ func TestNatsConnectionHandler_ErrorWhenHandlingEvent(t *testing.T) {
 
 	require.Eventually(t, func() bool {
 		return nh.subscriptions[0].isActive == false
-	}, 15*time.Second, 5*time.Second)
+	}, 15*time.Second, 1*time.Second)
 }
 
 func TestNatsConnectionHandler_NatsServerDown(t *testing.T) {
