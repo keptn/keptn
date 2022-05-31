@@ -1,6 +1,6 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
-FROM golang:1.18.2-alpine as builder-base
+FROM golang:1.18.2-alpine3.16 as builder-base
 
 # install additional dependencies
 RUN apk add --no-cache gcc libc-dev git
@@ -51,7 +51,7 @@ RUN sed -i "s/version: develop/version: ${version}/g" docs/swagger.yaml
 RUN GOOS=linux go build -ldflags '-linkmode=external' -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v main.go
 
 # Use a Docker multi-stage build to create a lean production image.
-FROM alpine:3.15 as production
+FROM alpine:3.16 as production
 ARG version=develop
 LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
     org.opencontainers.image.url="https://keptn.sh" \

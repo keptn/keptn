@@ -71,10 +71,10 @@ apiGatewayNginx:
     privileged: false
   image:
     repository: docker.io/nginxinc/nginx-unprivileged
-    tag: 1.21.6-alpine
+    tag: 1.22.0-alpine
   nodeSelector: {}
   gracePeriod: 60
-  preStopHookTime: 5
+  preStopHookTime: 20
   clientMaxBodySize: "5m"
 
 remediationService:
@@ -189,7 +189,7 @@ secretService:
     tag: ""
   nodeSelector: {}
   gracePeriod: 60
-  preStopHookTime: 5
+  preStopHookTime: 20
 
 configurationService:
   image:
@@ -205,7 +205,7 @@ configurationService:
     GIT_KEPTN_EMAIL: "keptn@keptn.sh"
   nodeSelector: {}
   gracePeriod: 60
-  preStopHookTime: 5
+  preStopHookTime: 20
 
 resourceService:
   enabled: true
@@ -219,7 +219,7 @@ resourceService:
     DIRECTORY_STAGE_STRUCTURE: "false"
   nodeSelector: {}
   gracePeriod: 60
-  preStopHookTime: 5
+  preStopHookTime: 20
 
 mongodbDatastore:
   image:
@@ -227,7 +227,7 @@ mongodbDatastore:
     tag: ""
   nodeSelector: {}
   gracePeriod: 60
-  preStopHookTime: 5
+  preStopHookTime: 20
 
 lighthouseService:
   image:

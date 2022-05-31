@@ -40,7 +40,7 @@ RUN sed -i "s/version: develop/version: ${version}/g" /go/src/github.com/keptn/k
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
 RUN cd cmd/mongodb-datastore-server && GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -v -o mongodb-datastore
 
-FROM alpine:3.15 as production
+FROM alpine:3.16 as production
 ARG version=develop
 LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
     org.opencontainers.image.url="https://keptn.sh" \

@@ -27,22 +27,22 @@ type NextTaskSequence struct {
 }
 
 // GetTriggeredEvents godoc
-// @Summary Get triggered events
-// @Description get triggered events by their type
-// @Tags Events
-// @Security ApiKeyAuth
-// @Accept  json
-// @Produce  json
-// @Param   eventType     path    string     true        "Event type"
-// @Param   eventID     query    string     false        "Event ID"
-// @Param   project     query    string     false        "Project"
-// @Param   stage     query    string     false        "Stage"
-// @Param   service     query    string     false        "Service"
-// @Success 200 {object} apimodels.KeptnContextExtendedCE	"ok"
-// @Failure 400 {object} models.Error "Invalid payload"
-// @Failure 404 {object} models.Error "Not found"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /event/triggered/{eventType} [get]
+// @Summary      Get triggered events
+// @Description  get triggered events by their type
+// @Tags         Events
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        eventType  path      string                            true   "Event type"
+// @Param        eventID    query     string                            false  "Event ID"
+// @Param        project    query     string                            false  "Project"
+// @Param        stage      query     string                            false  "Stage"
+// @Param        service    query     string                            false  "Service"
+// @Success      200        {object}  apimodels.KeptnContextExtendedCE  "ok"
+// @Failure      400        {object}  models.Error                      "Invalid payload"
+// @Failure      404        {object}  models.Error                      "Not found"
+// @Failure      500        {object}  models.Error                      "Internal error"
+// @Router       /event/triggered/{eventType} [get]
 func (eh *EventHandler) GetTriggeredEvents(c *gin.Context) {
 	eventType := c.Param("eventType")
 	params := &models.GetTriggeredEventsParams{}

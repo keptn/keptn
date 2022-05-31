@@ -24,13 +24,13 @@ func NewScopeHandler(backend backend.ScopeManager) *ScopeHandler {
 }
 
 // GetScopes godoc
-// @Summary Get scopes
-// @Description Get scopes
-// @Tags Scopes
-// @Security ApiKeyAuth
-// @Success 200 {object} model.GetScopesResponse "OK"
-// @Failure 500 {object} model.Error "Internal Server Error"
-// @Router /scope [get]
+// @Summary      Get scopes
+// @Description  Get scopes
+// @Tags         Scopes
+// @Security     ApiKeyAuth
+// @Success      200  {object}  model.GetScopesResponse  "OK"
+// @Failure      500  {object}  model.Error              "Internal Server Error"
+// @Router       /scope [get]
 func (s ScopeHandler) GetScopes(c *gin.Context) {
 	scopes, err := s.ScopeBackend.GetScopes()
 	if err != nil {

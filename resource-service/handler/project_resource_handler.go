@@ -27,18 +27,18 @@ func NewProjectResourceHandler(projectResourceManager IResourceManager) *Project
 }
 
 // CreateProjectResources godoc
-// @Summary Creates project resources
-// @Description Create list of new resources for the project
-// @Tags Project Resource
-// @Security ApiKeyAuth
-// @Accept  json
-// @Produce  json
-// @Param	projectName				path	string	true	"The name of the project"
-// @Param   resources     body    models.CreateResourcesPayload     true        "List of resources"
-// @Success 201 {string} models.WriteResourceResponse
-// @Failure 400 {object} models.Error "Invalid payload"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /project/{projectName}/resource [post]
+// @Summary      Creates project resources
+// @Description  Create list of new resources for the project
+// @Tags         Project Resource
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        projectName                                                 path  string  true  "The name of the project"
+// @Param        resources    body      models.CreateResourcesPayload  true  "List of resources"
+// @Success      201          {string}  models.WriteResourceResponse
+// @Failure      400          {object}  models.Error  "Invalid payload"
+// @Failure      500          {object}  models.Error  "Internal error"
+// @Router       /project/{projectName}/resource [post]
 func (ph *ProjectResourceHandler) CreateProjectResources(c *gin.Context) {
 	params := &models.CreateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -69,19 +69,19 @@ func (ph *ProjectResourceHandler) CreateProjectResources(c *gin.Context) {
 }
 
 // GetProjectResources godoc
-// @Summary Get list of project resources
-// @Description Get list of project resources
-// @Tags Project Resource
-// @Security ApiKeyAuth
-// @Accept  json
-// @Produce  json
-// @Param	projectName			path	string	true	"The name of the project"
-// @Param pageSize              query int false "The number of items to return"
-// @Param nextPageKey              query string false "Pointer to the next set of items"
-// @Success 200 {object} models.GetResourcesResponse
-// @Failure 400 {object} models.Error "Invalid payload"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /project/{projectName}/resource [get]
+// @Summary      Get list of project resources
+// @Description  Get list of project resources
+// @Tags         Project Resource
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        projectName                    path   string  true  "The name of the project"
+// @Param        pageSize     query     int     false  "The number of items to return"
+// @Param        nextPageKey  query     string  false  "Pointer to the next set of items"
+// @Success      200          {object}  models.GetResourcesResponse
+// @Failure      400          {object}  models.Error  "Invalid payload"
+// @Failure      500          {object}  models.Error  "Internal error"
+// @Router       /project/{projectName}/resource [get]
 func (ph *ProjectResourceHandler) GetProjectResources(c *gin.Context) {
 	params := &models.GetResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -112,18 +112,18 @@ func (ph *ProjectResourceHandler) GetProjectResources(c *gin.Context) {
 }
 
 // UpdateProjectResources godoc
-// @Summary Updates project resources
-// @Description Update list of new resources for the project
-// @Tags Project Resource
-// @Security ApiKeyAuth
-// @Accept  json
-// @Produce  json
-// @Param	projectName				path	string	true	"The name of the project"
-// @Param   resources     body    models.UpdateResourcesPayload     true        "List of resources"
-// @Success 200 {string} models.WriteResourceResponse
-// @Failure 400 {object} models.Error "Invalid payload"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /project/{projectName}/resource [put]
+// @Summary      Updates project resources
+// @Description  Update list of new resources for the project
+// @Tags         Project Resource
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        projectName                                                 path  string  true  "The name of the project"
+// @Param        resources    body      models.UpdateResourcesPayload  true  "List of resources"
+// @Success      200          {string}  models.WriteResourceResponse
+// @Failure      400          {object}  models.Error  "Invalid payload"
+// @Failure      500          {object}  models.Error  "Internal error"
+// @Router       /project/{projectName}/resource [put]
 func (ph *ProjectResourceHandler) UpdateProjectResources(c *gin.Context) {
 	params := &models.UpdateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -154,19 +154,19 @@ func (ph *ProjectResourceHandler) UpdateProjectResources(c *gin.Context) {
 }
 
 // GetProjectResource godoc
-// @Summary Get project resource
-// @Description Get project resource
-// @Tags Project Resource
-// @Security ApiKeyAuth
-// @Accept  json
-// @Produce  json
-// @Param	projectName					path	string	true	"The name of the project"
-// @Param	resourceURI				path	string	true	"The path of the resource file"
-// @Param gitCommitID              query string false "The commit ID to be checked out"
-// @Success 200 {object} models.GetResourceResponse
-// @Failure 400 {object} models.Error "Invalid payload"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /project/{projectName}/resource/{resourceURI} [get]
+// @Summary      Get project resource
+// @Description  Get project resource
+// @Tags         Project Resource
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        projectName                                 path    string  true  "The name of the project"
+// @Param        resourceURI                           path  string  true    "The path of the resource file"
+// @Param        gitCommitID  query     string  false  "The commit ID to be checked out"
+// @Success      200          {object}  models.GetResourceResponse
+// @Failure      400          {object}  models.Error  "Invalid payload"
+// @Failure      500          {object}  models.Error  "Internal error"
+// @Router       /project/{projectName}/resource/{resourceURI} [get]
 func (ph *ProjectResourceHandler) GetProjectResource(c *gin.Context) {
 	params := &models.GetResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -197,19 +197,19 @@ func (ph *ProjectResourceHandler) GetProjectResource(c *gin.Context) {
 }
 
 // UpdateProjectResource godoc
-// @Summary Updates a project resource
-// @Description Updates a resource for the project
-// @Tags Project Resource
-// @Security ApiKeyAuth
-// @Accept  json
-// @Produce  json
-// @Param	projectName					path	string	true	"The name of the project"
-// @Param	resourceURI				path	string	true	"The path of the resource file"
-// @Param   resources     body    models.UpdateResourcePayload     true        "resource"
-// @Success 200 {string} models.WriteResourceResponse
-// @Failure 400 {object} models.Error "Invalid payload"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /project/{projectName}/resource/{resourceURI} [put]
+// @Summary      Updates a project resource
+// @Description  Updates a resource for the project
+// @Tags         Project Resource
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        projectName                                                      path    string  true  "The name of the project"
+// @Param        resourceURI                                                path  string  true    "The path of the resource file"
+// @Param        resources    body      models.UpdateResourcePayload  true  "resource"
+// @Success      200          {string}  models.WriteResourceResponse
+// @Failure      400          {object}  models.Error  "Invalid payload"
+// @Failure      500          {object}  models.Error  "Internal error"
+// @Router       /project/{projectName}/resource/{resourceURI} [put]
 func (ph *ProjectResourceHandler) UpdateProjectResource(c *gin.Context) {
 	params := &models.UpdateResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -240,18 +240,18 @@ func (ph *ProjectResourceHandler) UpdateProjectResource(c *gin.Context) {
 }
 
 // DeleteProjectResource godoc
-// @Summary Deletes a project resource
-// @Description Deletes a project resource
-// @Tags Project Resource
-// @Security ApiKeyAuth
-// @Accept  json
-// @Produce  json
-// @Param	projectName					path	string	true	"The name of the project"
-// @Param	resourceURI				path	string	true	"The path of the resource file"
-// @Success 200 {string} models.WriteResourceResponse
-// @Failure 400 {object} models.Error "Invalid payload"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /project/{projectName}/resource/{resourceURI} [delete]
+// @Summary      Deletes a project resource
+// @Description  Deletes a project resource
+// @Tags         Project Resource
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        projectName                      path    string  true  "The name of the project"
+// @Param        resourceURI                path  string  true    "The path of the resource file"
+// @Success      200          {string}  models.WriteResourceResponse
+// @Failure      400          {object}  models.Error  "Invalid payload"
+// @Failure      500          {object}  models.Error  "Internal error"
+// @Router       /project/{projectName}/resource/{resourceURI} [delete]
 func (ph *ProjectResourceHandler) DeleteProjectResource(c *gin.Context) {
 	params := &models.DeleteResourceParams{
 		ResourceContext: models.ResourceContext{
