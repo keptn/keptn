@@ -109,8 +109,8 @@ func (a *Authenticator) Auth(authenticatorOptions AuthenticatorOptions) error {
 	}
 
 	// Authentication succeeded
-	fmt.Println("Successfully authenticated against " + endpoint.String())
-	fmt.Println("Bridge URL: " + getBridgeURLFromAPIURL(endpoint))
+	fmt.Printf("Successfully authenticated against %s\n", endpoint.String())
+	fmt.Printf("Bridge URL: %s\n", getBridgeURLFromAPIURL(endpoint))
 	return a.CredentialManager.SetCreds(endpoint, apiToken, namespace)
 }
 
