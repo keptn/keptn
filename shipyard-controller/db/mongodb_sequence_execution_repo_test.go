@@ -252,6 +252,8 @@ func TestMongoDBTaskSequenceV2Repo_UpdateStatus(t *testing.T) {
 
 	require.Len(t, get, 1)
 	get[0].SchemaVersion = ""
+	t.Logf("%d", sequence.TriggeredAt.Unix())
+	t.Logf("%d", get[0].TriggeredAt.Unix())
 	require.Equal(t, sequence, get[0])
 	require.Nil(t, err)
 
@@ -308,7 +310,7 @@ func getTestSequenceExecution() (models.EventScope, models.SequenceExecution) {
 			},
 		},
 		Scope:       scope,
-		TriggeredAt: time.Date(2021, 4, 21, 17, 00, 00, 0, time.UTC),
+		TriggeredAt: time.Date(2021, 4, 21, 17, 00, 00, 0, time.UTC).UTC(),
 	}
 	return scope, sequence
 }
