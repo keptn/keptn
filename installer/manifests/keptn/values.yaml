@@ -80,10 +80,10 @@ apiGatewayNginx:
     privileged: false
   image:
     repository: docker.io/nginxinc/nginx-unprivileged
-    tag: 1.21.6-alpine
+    tag: 1.22.0-alpine
   nodeSelector: {}
   gracePeriod: 60     # gracePeriod set to preStop hook time +30s
-  preStopHookTime: 5
+  preStopHookTime: 20
   clientMaxBodySize: "5m"
   sidecars: []
   extraVolumeMounts: []
@@ -253,7 +253,7 @@ secretService:
     tag: ""
   nodeSelector: {}
   gracePeriod: 60     # gracePeriod set to preStop hook time +30s
-  preStopHookTime: 5
+  preStopHookTime: 20
   sidecars: []
   extraVolumeMounts: []
   extraVolumes: []
@@ -279,7 +279,7 @@ configurationService:
     GIT_KEPTN_EMAIL: "keptn@keptn.sh"
   nodeSelector: {}
   gracePeriod: 60     # gracePeriod set to preStop hook time +30s
-  preStopHookTime: 5
+  preStopHookTime: 20
   sidecars: []
   extraVolumeMounts: []
   extraVolumes: []
@@ -288,7 +288,7 @@ configurationService:
       memory: "32Mi"
       cpu: "25m"
     limits:
-      memory: "64Mi"
+      memory: "256Mi"
       cpu: "100m"
 
 resourceService:
@@ -303,7 +303,7 @@ resourceService:
     DIRECTORY_STAGE_STRUCTURE: "false"
   nodeSelector: {}
   gracePeriod: 60     # gracePeriod set to preStop hook time +30s
-  preStopHookTime: 5
+  preStopHookTime: 20
   sidecars: []
   extraVolumeMounts: []
   extraVolumes: []
@@ -321,7 +321,7 @@ mongodbDatastore:
     tag: ""
   nodeSelector: {}
   gracePeriod: 60     # gracePeriod set to preStop hook time +30s
-  preStopHookTime: 5
+  preStopHookTime: 20
   sidecars: []
   extraVolumeMounts: []
   extraVolumes: []
