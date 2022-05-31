@@ -6,6 +6,7 @@ import (
 	"github.com/kelseyhightower/envconfig"
 	"github.com/keptn/go-utils/pkg/common/retry"
 	testutils "github.com/keptn/keptn/test/go-tests"
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"os"
 	"strings"
@@ -181,10 +182,7 @@ func RollingUpgrade(t *testing.T, env *ZeroDowntimeEnv) {
 		_, err = testutils.ExecuteCommand(
 			fmt.Sprintf(
 				"helm upgrade keptn -n %s %s --wait --values=%s", testutils.GetKeptnNameSpaceFromEnv(), chartPath, valuesFile))
-		if err != nil {
-			t.Logf("Encountered error when upgrading keptn: %v", err)
-
-		}
+		require.Nil(t, err)
 	}
 }
 
