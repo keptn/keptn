@@ -2,11 +2,12 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/keptn/keptn/cli/internal"
-	"github.com/keptn/keptn/cli/internal/auth"
 	"net"
 	"net/url"
 	"time"
+
+	"github.com/keptn/keptn/cli/internal"
+	"github.com/keptn/keptn/cli/internal/auth"
 )
 
 type MockedCredentialGetSetter struct {
@@ -78,12 +79,12 @@ func (a *Authenticator) Auth(authenticatorOptions AuthenticatorOptions) error {
 	}
 
 	if !LookupHostname(endpoint.Hostname(), net.LookupHost, time.Sleep) {
-		return fmt.Errorf("Authentication was unsuccessful - could not resolve hostname.")
+		return fmt.Errorf("authentication was not successful - could not resolve hostname: %s", endpoint.Hostname())
 	}
 
 	// Skip usual auth call if we use OAuth
 	if a.OauthStore.Created() {
-		fmt.Printf("Successfully authenticated against the Keptn cluster %s\n", endpoint.String())
+		fmt.Printf("Successfully authenticated against %s\n", endpoint.String())
 		fmt.Printf("Bridge URL: %s\n", getBridgeURLFromAPIURL(endpoint))
 		return a.CredentialManager.SetCreds(endpoint, apiToken, namespace)
 	}
@@ -94,7 +95,7 @@ func (a *Authenticator) Auth(authenticatorOptions AuthenticatorOptions) error {
 	for retries := 0; retries < 3; time.Sleep(5 * time.Second) {
 		_, err := api.AuthV1().Authenticate()
 		if err != nil {
-			errMsg = fmt.Sprintf("Authentication was unsuccessful. %s", *err.Message)
+			errMsg = fmt.Sprintf("authentication was not successful: %s", *err.Message)
 			retries++
 		} else {
 			authenticated = true
@@ -108,8 +109,8 @@ func (a *Authenticator) Auth(authenticatorOptions AuthenticatorOptions) error {
 	}
 
 	// Authentication succeeded
-	fmt.Println("Successfully authenticated against the Keptn cluster " + endpoint.String())
-	fmt.Println("Bridge URL: " + getBridgeURLFromAPIURL(endpoint))
+	fmt.Printf("Successfully authenticated against %s\n", endpoint.String())
+	fmt.Printf("Bridge URL: %s\n", getBridgeURLFromAPIURL(endpoint))
 	return a.CredentialManager.SetCreds(endpoint, apiToken, namespace)
 }
 
