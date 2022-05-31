@@ -33,11 +33,11 @@ spec:
     spec:
       {{- include "control-plane.common.pod-security-context" . | nindent 6 }}
       serviceAccountName: keptn-default
-      terminationGracePeriodSeconds: {{ .Values.mongodbDatastore.gracePeriod | default 120 }}
+      terminationGracePeriodSeconds: {{ .Values.mongodbDatastore.gracePeriod | default 60 }}
       containers:
       - name: mongodb-datastore
         image: {{ .Values.mongodbDatastore.image.repository }}:{{ .Values.mongodbDatastore.image.tag | default .Chart.AppVersion }}
-        {{- $prestop := .Values.mongodbDatastore.preStopHookTime | default 90 | quote -}}
+        {{- $prestop := .Values.mongodbDatastore.preStopHookTime | default 20 | quote -}}
         {{- include "control-plane.prestop" $prestop | nindent 8 }}
         livenessProbe:
           httpGet:

@@ -389,12 +389,14 @@ spec:
         rollme: {{ randAlphaNum 5 | quote }}
     spec:
       {{- include "control-plane.apiGatewayNginx.pod-security-context" . | nindent 6 }}
-      terminationGracePeriodSeconds: {{ .Values.apiGatewayNginx.gracePeriod | default 120 }}
+      terminationGracePeriodSeconds: {{ .Values.apiGatewayNginx.gracePeriod | default 60 }}
       containers:
         - name: api-gateway-nginx
           image: {{ .Values.apiGatewayNginx.image.repository }}:{{ .Values.apiGatewayNginx.image.tag }}
-          {{- $prestop := .Values.apiGatewayNginx.preStopHookTime | default 90 | quote -}}
-          {{- include "control-plane.prestop" $prestop | nindent 10 }}
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 20; /usr/local/openresty/nginx/sbin/nginx -c /etc/nginx/nginx.conf -s quit; while pgrep -x nginx; do sleep 1; done"]
           ports:
             - containerPort: 8080
           livenessProbe:

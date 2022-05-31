@@ -29,12 +29,12 @@ spec:
         helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
       {{- include "control-plane.common.pod-security-context" . | nindent 6 }}
-      terminationGracePeriodSeconds: {{ .Values.approvalService.gracePeriod | default 120 }}
+      terminationGracePeriodSeconds: {{ .Values.approvalService.gracePeriod | default 60 }}
       serviceAccountName: keptn-default
       containers:
         - name: approval-service
           image: {{ .Values.approvalService.image.repository }}:{{ .Values.approvalService.image.tag | default .Chart.AppVersion }}
-          {{- $prestop := .Values.approvalService.preStopHookTime | default 90 | quote -}}
+          {{- $prestop := .Values.approvalService.preStopHookTime | default 5 | quote -}}
           {{- include "control-plane.prestop" $prestop | nindent 10 }}
           livenessProbe:
             httpGet:

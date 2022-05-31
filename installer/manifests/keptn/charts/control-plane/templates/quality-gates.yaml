@@ -34,7 +34,7 @@ spec:
       containers:
         - name: lighthouse-service
           image: {{ .Values.lighthouseService.image.repository }}:{{ .Values.lighthouseService.image.tag | default .Chart.AppVersion }}
-          {{- $prestop := .Values.lighthouseService.preStopHookTime | default 90 | quote -}}
+          {{- $prestop := .Values.lighthouseService.preStopHookTime | default 5 | quote -}}
           {{- include "control-plane.prestop" $prestop | nindent 10 }}
           livenessProbe:
             httpGet:
@@ -76,7 +76,7 @@ spec:
             {{- include "control-plane.common.env.vars" . | nindent 12 }}
           {{- include "control-plane.common.container-security-context" . | nindent 10 }}
       serviceAccountName: keptn-lighthouse-service
-      terminationGracePeriodSeconds: {{ .Values.lighthouseService.gracePeriod | default 120 }}
+      terminationGracePeriodSeconds: {{ .Values.lighthouseService.gracePeriod | default 60 }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.lighthouseService.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
 ---
 apiVersion: v1
