@@ -188,19 +188,19 @@ func NewProjectHandler(projectManager IProjectManager, eventSender common.EventS
 }
 
 // GetAllProjects godoc
-// @Summary Get all projects
-// @Description Get the list of all projects
-// @Tags Projects
-// @Security ApiKeyAuth
-// @Accept	json
-// @Produce  json
-// @Param	pageSize			query		int			false	"The number of items to return"
-// @Param   nextPageKey     	query    	string     	false	"Pointer to the next set of items"
-// @Param   disableUpstreamSync	query		boolean		false	"Disable sync of upstream repo before reading content"
-// @Success 200 {object} apimodels.ExpandedProjects	"ok"
-// @Failure 400 {object} models.Error "Invalid payload"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /project [get]
+// @Summary      Get all projects
+// @Description  Get the list of all projects
+// @Tags         Projects
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        pageSize             query     int                         false  "The number of items to return"
+// @Param        nextPageKey          query     string                      false  "Pointer to the next set of items"
+// @Param        disableUpstreamSync  query     boolean                     false  "Disable sync of upstream repo before reading content"
+// @Success      200                  {object}  apimodels.ExpandedProjects  "ok"
+// @Failure      400                  {object}  models.Error                "Invalid payload"
+// @Failure      500                  {object}  models.Error                "Internal error"
+// @Router       /project [get]
 func (ph *ProjectHandler) GetAllProjects(c *gin.Context) {
 	params := &models.GetProjectParams{}
 	if err := c.ShouldBindQuery(params); err != nil {
@@ -237,17 +237,17 @@ func (ph *ProjectHandler) GetAllProjects(c *gin.Context) {
 }
 
 // GetProjectByName godoc
-// @Summary Get a project by name
-// @Description Get a project by its name
-// @Tags Projects
-// @Security ApiKeyAuth
-// @Accept	json
-// @Produce  json
-// @Param	project		path	string	true	"The name of the project"
-// @Success 200 {object} apimodels.ExpandedProject	"ok"
-// @Failure 404 {object} models.Error "Not found"
-// @Failure 500 {object} models.Error "Internal Error)
-// @Router /project/{project} [get]
+// @Summary      Get a project by name
+// @Description  Get a project by its name
+// @Tags         Projects
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        project  path      string                     true  "The name of the project"
+// @Success      200      {object}  apimodels.ExpandedProject  "ok"
+// @Failure      404      {object}  models.Error               "Not found"
+// @Failure      500      {object}  models.Error               "Internal Error)
+// @Router       /project/{project} [get]
 func (ph *ProjectHandler) GetProjectByName(c *gin.Context) {
 	projectName := c.Param("project")
 
@@ -267,19 +267,19 @@ func (ph *ProjectHandler) GetProjectByName(c *gin.Context) {
 }
 
 // CreateProject godoc
-// @Summary Create a new project
-// @Description Create a new project
-// @Tags Projects
-// @Security ApiKeyAuth
-// @Accept  json
-// @Produce  json
-// @Param   project     body    models.CreateProjectParams     true        "Project"
-// @Success 201 {object} models.CreateProjectResponse	"ok"
-// @Failure 400 {object} models.Error "Invalid payload"
-// @Failure 409 {object} models.Error "Conflict"
-// @Failure 424 {object} models.Error "Failed dependency"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /project [post]
+// @Summary      Create a new project
+// @Description  Create a new project
+// @Tags         Projects
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        project  body      models.CreateProjectParams    true  "Project"
+// @Success      201      {object}  models.CreateProjectResponse  "ok"
+// @Failure      400      {object}  models.Error                  "Invalid payload"
+// @Failure      409      {object}  models.Error                  "Conflict"
+// @Failure      424      {object}  models.Error                  "Failed dependency"
+// @Failure      500      {object}  models.Error                  "Internal error"
+// @Router       /project [post]
 func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 	keptnContext := uuid.New().String()
 
@@ -343,19 +343,19 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 }
 
 // UpdateProject godoc
-// @Summary Updates a project
-// @Description Updates project
-// @Tags Projects
-// @Security ApiKeyAuth
-// @Accept  json
-// @Produce  json
-// @Param   project     body    models.UpdateProjectParams     true        "Project"
-// @Success 201 {object} models.UpdateProjectResponse	"ok"
-// @Failure 400 {object} models.Error "Bad Request"
-// @Failure 404 {object} models.Error "Not Found"
-// @Failure 424 {object} models.Error "Failed Dependency"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /project [put]
+// @Summary      Updates a project
+// @Description  Updates project
+// @Tags         Projects
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        project  body      models.UpdateProjectParams    true  "Project"
+// @Success      201      {object}  models.UpdateProjectResponse  "ok"
+// @Failure      400      {object}  models.Error                  "Bad Request"
+// @Failure      404      {object}  models.Error                  "Not Found"
+// @Failure      424      {object}  models.Error                  "Failed Dependency"
+// @Failure      500      {object}  models.Error                  "Internal error"
+// @Router       /project [put]
 func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 	// validate the input
 	params := &models.UpdateProjectParams{}
@@ -398,18 +398,18 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 }
 
 // DeleteProject godoc
-// @Summary Delete a project
-// @Description Delete a project
-// @Tags Projects
-// @Security ApiKeyAuth
-// @Accept  json
-// @Produce  json
-// @Param   project     path    string     true        "Project name"
-// @Success 200 {object} models.DeleteProjectResponse	"ok"
-// @Failure 400 {object} models.Error "Invalid payload"
-// @Failure 424 {object} models.Error "Failed Dependency"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /project/{project} [delete]
+// @Summary      Delete a project
+// @Description  Delete a project
+// @Tags         Projects
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        project  path      string                        true  "Project name"
+// @Success      200      {object}  models.DeleteProjectResponse  "ok"
+// @Failure      400      {object}  models.Error                  "Invalid payload"
+// @Failure      424      {object}  models.Error                  "Failed Dependency"
+// @Failure      500      {object}  models.Error                  "Internal error"
+// @Router       /project/{project} [delete]
 func (ph *ProjectHandler) DeleteProject(c *gin.Context) {
 	keptnContext := uuid.New().String()
 	projectName := c.Param("project")

@@ -28,21 +28,21 @@ func NewStageHandler(stageManager IStageManager) *StageHandler {
 }
 
 // GetAllStages godoc
-// @Summary Get all stages of a project
-// @Description Get the list of stages of a project
-// @Tags Stage
-// @Security ApiKeyAuth
-// @Accept	json
-// @Produce  json
-// @Param	project				path	string	true	"The name of the project"
-// @Param	pageSize			query		int			false	"The number of items to return"
-// @Param   nextPageKey     	query    	string     	false	"Pointer to the next set of items"
-// @Param   disableUpstreamSync	query		boolean		false	"Disable sync of upstream repo before reading content"
-// @Success 200 {object} apimodels.ExpandedStages	"ok"
-// @Failure 400 {object} models.Error "Invalid payload"
-// @Failure 404 {object} models.Error "Not found"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /project/{project}/stage [get]
+// @Summary      Get all stages of a project
+// @Description  Get the list of stages of a project
+// @Tags         Stage
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        project              path      string                    true   "The name of the project"
+// @Param        pageSize             query     int                       false  "The number of items to return"
+// @Param        nextPageKey          query     string                    false  "Pointer to the next set of items"
+// @Param        disableUpstreamSync  query     boolean                   false  "Disable sync of upstream repo before reading content"
+// @Success      200                  {object}  apimodels.ExpandedStages  "ok"
+// @Failure      400                  {object}  models.Error              "Invalid payload"
+// @Failure      404                  {object}  models.Error              "Not found"
+// @Failure      500                  {object}  models.Error              "Internal error"
+// @Router       /project/{project}/stage [get]
 func (sh *StageHandler) GetAllStages(c *gin.Context) {
 	project := c.Param("project")
 
@@ -87,18 +87,18 @@ func (sh *StageHandler) GetAllStages(c *gin.Context) {
 }
 
 // GetStage godoc
-// @Summary Get a stage
-// @Description Get a stage of a project
-// @Tags Stage
-// @Security ApiKeyAuth
-// @Accept	json
-// @Produce  json
-// @Param	project		path	string	true	"The name of the project"
-// @Param	stage		path	string	true	"The name of the stage"
-// @Success 200 {object} apimodels.ExpandedStage	"ok"
-// @Failure 404 {object} models.Error "Not found"
-// @Failure 500 {object} models.Error "Internal Error"
-// @Router /project/{project}/stage/{stage} [get]
+// @Summary      Get a stage
+// @Description  Get a stage of a project
+// @Tags         Stage
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        project  path      string                   true  "The name of the project"
+// @Param        stage    path      string                   true  "The name of the stage"
+// @Success      200      {object}  apimodels.ExpandedStage  "ok"
+// @Failure      404      {object}  models.Error             "Not found"
+// @Failure      500      {object}  models.Error             "Internal Error"
+// @Router       /project/{project}/stage/{stage} [get]
 func (sh *StageHandler) GetStage(c *gin.Context) {
 	projectName := c.Param("project")
 	stageName := c.Param("stage")

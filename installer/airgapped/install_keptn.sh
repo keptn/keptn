@@ -35,6 +35,7 @@ control-plane.bridge.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER
 control-plane.distributor.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG}/distributor,\
 control-plane.shipyardController.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG}/shipyard-controller,\
 control-plane.configurationService.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG}/configuration-service,\
+control-plane.resourceService.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG}/resource-service,\
 control-plane.mongodbDatastore.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG}/mongodb-datastore,\
 control-plane.statisticsService.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG}/statistics-service,\
 control-plane.lighthouseService.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG}/lighthouse-service,\

@@ -118,7 +118,8 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
             "browserTarget": "bridge:build:test",
-            "port": 5000
+            "port": 5000,
+            "liveReload": false
           }
         },
         "extract-i18n": {

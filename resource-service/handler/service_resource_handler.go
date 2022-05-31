@@ -28,20 +28,20 @@ func NewServiceResourceHandler(serviceResourceManager IResourceManager) *Service
 }
 
 // CreateServiceResources godoc
-// @Summary Creates service resources
-// @Description Create list of new resources for the service in the given stage of a project
-// @Tags Service Resource
-// @Security ApiKeyAuth
-// @Accept  json
-// @Produce  json
-// @Param	projectName					path	string	true	"The name of the project"
-// @Param	stageName					path	string	true	"The name of the stage"
-// @Param	serviceName					path	string	true	"The name of the service"
-// @Param   resources     body    models.CreateResourcesPayload     true        "List of resources"
-// @Success 201 {string} models.WriteResourceResponse
-// @Failure 400 {object} models.Error "Invalid payload"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /project/{projectName}/stage/{stageName}/service/{serviceName}/resource [post]
+// @Summary      Creates service resources
+// @Description  Create list of new resources for the service in the given stage of a project
+// @Tags         Service Resource
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        projectName                                                   path  string  true  "The name of the project"
+// @Param        stageName                                                     path  string  true  "The name of the stage"
+// @Param        serviceName                                                   path  string  true  "The name of the service"
+// @Param        resources    body      models.CreateResourcesPayload  true  "List of resources"
+// @Success      201          {string}  models.WriteResourceResponse
+// @Failure      400          {object}  models.Error  "Invalid payload"
+// @Failure      500          {object}  models.Error  "Internal error"
+// @Router       /project/{projectName}/stage/{stageName}/service/{serviceName}/resource [post]
 func (ph *ServiceResourceHandler) CreateServiceResources(c *gin.Context) {
 	params := &models.CreateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -74,21 +74,21 @@ func (ph *ServiceResourceHandler) CreateServiceResources(c *gin.Context) {
 }
 
 // GetServiceResources godoc
-// @Summary Get list of project resources
-// @Description Get list of resources for the service in the given stage of a project
-// @Tags Service Resource
-// @Security ApiKeyAuth
-// @Accept  json
-// @Produce  json
-// @Param	projectName					path	string	true	"The name of the project"
-// @Param	stageName					path	string	true	"The name of the stage"
-// @Param	serviceName					path	string	true	"The name of the service"
-// @Param pageSize              query int false "The number of items to return"
-// @Param nextPageKey              query string false "Pointer to the next set of items"
-// @Success 200 {object} models.GetResourcesResponse
-// @Failure 400 {object} models.Error "Invalid payload"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /project/{projectName}/stage/{stageName}/service/{serviceName}/resource [get]
+// @Summary      Get list of project resources
+// @Description  Get list of resources for the service in the given stage of a project
+// @Tags         Service Resource
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        projectName                             path  string  true  "The name of the project"
+// @Param        stageName                               path  string  true  "The name of the stage"
+// @Param        serviceName                             path  string  true  "The name of the service"
+// @Param        pageSize     query     int     false  "The number of items to return"
+// @Param        nextPageKey  query     string  false  "Pointer to the next set of items"
+// @Success      200          {object}  models.GetResourcesResponse
+// @Failure      400          {object}  models.Error  "Invalid payload"
+// @Failure      500          {object}  models.Error  "Internal error"
+// @Router       /project/{projectName}/stage/{stageName}/service/{serviceName}/resource [get]
 func (ph *ServiceResourceHandler) GetServiceResources(c *gin.Context) {
 	params := &models.GetResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -121,20 +121,20 @@ func (ph *ServiceResourceHandler) GetServiceResources(c *gin.Context) {
 }
 
 // UpdateServiceResources godoc
-// @Summary Updates service resources
-// @Description Update list of new resources for the service in the given stage of a project
-// @Tags Service Resource
-// @Security ApiKeyAuth
-// @Accept  json
-// @Produce  json
-// @Param	projectName					path	string	true	"The name of the project"
-// @Param	stageName					path	string	true	"The name of the stage"
-// @Param	serviceName					path	string	true	"The name of the service"
-// @Param   resources     body    models.UpdateResourcesPayload     true        "List of resources"
-// @Success 200 {string} models.WriteResourceResponse
-// @Failure 400 {object} models.Error "Invalid payload"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /project/{projectName}/stage/{stageName}/service/{serviceName}/resource [put]
+// @Summary      Updates service resources
+// @Description  Update list of new resources for the service in the given stage of a project
+// @Tags         Service Resource
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        projectName                                                   path  string  true  "The name of the project"
+// @Param        stageName                                                     path  string  true  "The name of the stage"
+// @Param        serviceName                                                   path  string  true  "The name of the service"
+// @Param        resources    body      models.UpdateResourcesPayload  true  "List of resources"
+// @Success      200          {string}  models.WriteResourceResponse
+// @Failure      400          {object}  models.Error  "Invalid payload"
+// @Failure      500          {object}  models.Error  "Internal error"
+// @Router       /project/{projectName}/stage/{stageName}/service/{serviceName}/resource [put]
 func (ph *ServiceResourceHandler) UpdateServiceResources(c *gin.Context) {
 	params := &models.UpdateResourcesParams{
 		ResourceContext: models.ResourceContext{
@@ -167,21 +167,21 @@ func (ph *ServiceResourceHandler) UpdateServiceResources(c *gin.Context) {
 }
 
 // GetServiceResource godoc
-// @Summary Get service resource
-// @Description Get resource for the service in the given stage of a project
-// @Tags Service Resource
-// @Security ApiKeyAuth
-// @Accept  json
-// @Produce  json
-// @Param	projectName					path	string	true	"The name of the project"
-// @Param	stageName					path	string	true	"The name of the stage"
-// @Param	serviceName					path	string	true	"The name of the service"
-// @Param	resourceURI				path	string	true	"The path of the resource file"
-// @Param gitCommitID              query string false "The commit ID to be checked out"
-// @Success 200 {object} models.GetResourceResponse
-// @Failure 400 {object} models.Error "Invalid payload"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /project/{projectName}/stage/{stageName}/service/{serviceName}/resource/{resourceURI} [get]
+// @Summary      Get service resource
+// @Description  Get resource for the service in the given stage of a project
+// @Tags         Service Resource
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        projectName                                 path    string  true  "The name of the project"
+// @Param        stageName                                   path    string  true  "The name of the stage"
+// @Param        serviceName                                 path    string  true  "The name of the service"
+// @Param        resourceURI                           path  string  true    "The path of the resource file"
+// @Param        gitCommitID  query     string  false  "The commit ID to be checked out"
+// @Success      200          {object}  models.GetResourceResponse
+// @Failure      400          {object}  models.Error  "Invalid payload"
+// @Failure      500          {object}  models.Error  "Internal error"
+// @Router       /project/{projectName}/stage/{stageName}/service/{serviceName}/resource/{resourceURI} [get]
 func (ph *ServiceResourceHandler) GetServiceResource(c *gin.Context) {
 	params := &models.GetResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -213,21 +213,21 @@ func (ph *ServiceResourceHandler) GetServiceResource(c *gin.Context) {
 }
 
 // UpdateServiceResource godoc
-// @Summary Updates a service resource
-// @Description Updates a resource for the service in the given stage of a project
-// @Tags Service Resource
-// @Security ApiKeyAuth
-// @Accept  json
-// @Produce  json
-// @Param	projectName					path	string	true	"The name of the project"
-// @Param	stageName					path	string	true	"The name of the stage"
-// @Param	serviceName					path	string	true	"The name of the service"
-// @Param	resourceURI				path	string	true	"The path of the resource file"
-// @Param   resources     body    models.UpdateResourcePayload     true        "resource"
-// @Success 200 {string} models.WriteResourceResponse
-// @Failure 400 {object} models.Error "Invalid payload"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /project/{projectName}/stage/{stageName}/service/{serviceName}/resource/{resourceURI} [put]
+// @Summary      Updates a service resource
+// @Description  Updates a resource for the service in the given stage of a project
+// @Tags         Service Resource
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        projectName                                                      path    string  true  "The name of the project"
+// @Param        stageName                                                        path    string  true  "The name of the stage"
+// @Param        serviceName                                                      path    string  true  "The name of the service"
+// @Param        resourceURI                                                path  string  true    "The path of the resource file"
+// @Param        resources    body      models.UpdateResourcePayload  true  "resource"
+// @Success      200          {string}  models.WriteResourceResponse
+// @Failure      400          {object}  models.Error  "Invalid payload"
+// @Failure      500          {object}  models.Error  "Internal error"
+// @Router       /project/{projectName}/stage/{stageName}/service/{serviceName}/resource/{resourceURI} [put]
 func (ph *ServiceResourceHandler) UpdateServiceResource(c *gin.Context) {
 	params := &models.UpdateResourceParams{
 		ResourceContext: models.ResourceContext{
@@ -260,20 +260,20 @@ func (ph *ServiceResourceHandler) UpdateServiceResource(c *gin.Context) {
 }
 
 // DeleteServiceResource godoc
-// @Summary Deletes a service resource
-// @Description Deletes a resource for the service in the given stage of a project
-// @Tags Service Resource
-// @Security ApiKeyAuth
-// @Accept  json
-// @Produce  json
-// @Param	projectName					path	string	true	"The name of the project"
-// @Param	stageName					path	string	true	"The name of the stage"
-// @Param	serviceName					path	string	true	"The name of the service"
-// @Param	resourceURI				path	string	true	"The path of the resource file"
-// @Success 200 {string} models.WriteResourceResponse
-// @Failure 400 {object} models.Error "Invalid payload"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /project/{projectName}/stage/{stageName}/service/{serviceName}/resource/{resourceURI} [delete]
+// @Summary      Deletes a service resource
+// @Description  Deletes a resource for the service in the given stage of a project
+// @Tags         Service Resource
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        projectName                      path    string  true  "The name of the project"
+// @Param        stageName                        path    string  true  "The name of the stage"
+// @Param        serviceName                      path    string  true  "The name of the service"
+// @Param        resourceURI                path  string  true    "The path of the resource file"
+// @Success      200          {string}  models.WriteResourceResponse
+// @Failure      400          {object}  models.Error  "Invalid payload"
+// @Failure      500          {object}  models.Error  "Internal error"
+// @Router       /project/{projectName}/stage/{stageName}/service/{serviceName}/resource/{resourceURI} [delete]
 func (ph *ServiceResourceHandler) DeleteServiceResource(c *gin.Context) {
 	params := &models.DeleteResourceParams{
 		ResourceContext: models.ResourceContext{

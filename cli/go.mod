@@ -7,7 +7,7 @@ require (
 	github.com/cloudevents/sdk-go/v2 v2.10.0
 	github.com/docker/docker-credential-helpers v0.6.4
 	github.com/google/uuid v1.3.0
-	github.com/hashicorp/go-version v1.4.0
+	github.com/hashicorp/go-version v1.5.0
 	github.com/invopop/jsonschema v0.4.0
 	github.com/keptn/go-utils v0.15.1-0.20220517082831-2052e1404e4c
 	github.com/keptn/kubernetes-utils v0.14.0
@@ -20,11 +20,11 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	gotest.tools v2.2.0+incompatible
 	helm.sh/helm/v3 v3.7.2
-	k8s.io/api v0.22.9
-	k8s.io/apimachinery v0.22.9
-	k8s.io/cli-runtime v0.22.9
-	k8s.io/client-go v0.22.9
-	k8s.io/kubectl v0.22.9
+	k8s.io/api v0.22.10
+	k8s.io/apimachinery v0.22.10
+	k8s.io/cli-runtime v0.22.10
+	k8s.io/client-go v0.22.10
+	k8s.io/kubectl v0.22.10
 )
 
 require (
@@ -168,7 +168,7 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	k8s.io/apiextensions-apiserver v0.22.4 // indirect
 	k8s.io/apiserver v0.22.4 // indirect
-	k8s.io/component-base v0.22.9 // indirect
+	k8s.io/component-base v0.22.10 // indirect
 	k8s.io/klog/v2 v2.9.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20211109043538-20434351676c // indirect
 	k8s.io/utils v0.0.0-20211116205334-6203023598ed // indirect

@@ -1,6 +1,6 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
-FROM golang:1.18.2-alpine as builder-base
+FROM golang:1.18.2-alpine3.16 as builder-base
 
 WORKDIR /go/src/github.com/keptn/keptn/api
 
@@ -41,7 +41,7 @@ RUN sed -i "s/version: develop/version: ${version}/g" /go/src/github.com/keptn/k
 RUN GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -v cmd/api-server/main.go
 
 
-FROM alpine:3.15 as production
+FROM alpine:3.16 as production
 ARG version=develop
 LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
     org.opencontainers.image.url="https://keptn.sh" \

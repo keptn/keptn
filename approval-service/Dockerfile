@@ -1,6 +1,6 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
-FROM golang:1.18.2-alpine as builder-base
+FROM golang:1.18.2-alpine3.16 as builder-base
 
 WORKDIR /go/src/github.com/keptn/keptn/approval-service
 
@@ -38,7 +38,7 @@ RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
 RUN GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -v -o approval-service
 
-FROM alpine:3.15 as production
+FROM alpine:3.16 as production
 ARG version=develop
 LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
     org.opencontainers.image.url="https://keptn.sh" \
