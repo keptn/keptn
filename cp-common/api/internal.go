@@ -15,7 +15,7 @@ import (
 type InternalAPISet struct {
 	apimap                 InClusterAPIMappings
 	httpClient             *http.Client
-	apiHandler             *api.APIHandler
+	apiHandler             *InternalAPIHandler
 	authHandler            *api.AuthHandler
 	eventHandler           *api.EventHandler
 	logHandler             *api.LogHandler
@@ -68,10 +68,17 @@ func NewInternal(client *http.Client, apiMappings ...InClusterAPIMappings) (*Int
 	as := &InternalAPISet{}
 	as.httpClient = client
 
-	as.apiHandler = &api.APIHandler{
-		BaseURL:    apimap[ShipyardController],
-		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))},
-		Scheme:     "http",
+	as.apiHandler = &InternalAPIHandler{
+		shippyApiHandler: &api.APIHandler{
+			BaseURL:    apimap[ShipyardController],
+			HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))},
+			Scheme:     "http",
+		},
+		apiServiceApiHandler: &api.APIHandler{
+			BaseURL:    apimap[ApiService],
+			HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))},
+			Scheme:     "http",
+		},
 	}
 
 	as.authHandler = &api.AuthHandler{
@@ -217,4 +224,41 @@ func getClientTransport(rt http.RoundTripper) http.RoundTripper {
 	}
 	return rt
 
+}
+
+type InternalAPIHandler struct {
+	shippyApiHandler     *api.APIHandler
+	apiServiceApiHandler *api.APIHandler
+}
+
+func (i *InternalAPIHandler) SendEvent(event models.KeptnContextExtendedCE) (*models.EventContext, *models.Error) {
+	return i.apiServiceApiHandler.SendEvent(event)
+}
+
+func (i *InternalAPIHandler) TriggerEvaluation(project string, stage string, service string, evaluation models.Evaluation) (*models.EventContext, *models.Error) {
+	return i.shippyApiHandler.TriggerEvaluation(project, stage, service, evaluation)
+}
+
+func (i *InternalAPIHandler) CreateProject(project models.CreateProject) (string, *models.Error) {
+	return i.shippyApiHandler.CreateProject(project)
+}
+
+func (i *InternalAPIHandler) UpdateProject(project models.CreateProject) (string, *models.Error) {
+	return i.shippyApiHandler.UpdateProject(project)
+}
+
+func (i *InternalAPIHandler) DeleteProject(project models.Project) (*models.DeleteProjectResponse, *models.Error) {
+	return i.shippyApiHandler.DeleteProject(project)
+}
+
+func (i *InternalAPIHandler) CreateService(project string, service models.CreateService) (string, *models.Error) {
+	return i.shippyApiHandler.CreateService(project, service)
+}
+
+func (i *InternalAPIHandler) DeleteService(project string, service string) (*models.DeleteServiceResponse, *models.Error) {
+	return i.DeleteService(project, service)
+}
+
+func (i *InternalAPIHandler) GetMetadata() (*models.Metadata, *models.Error) {
+	return i.apiServiceApiHandler.GetMetadata()
 }
