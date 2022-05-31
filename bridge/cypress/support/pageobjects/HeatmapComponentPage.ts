@@ -1,6 +1,8 @@
 import { interceptHeatmapComponent } from '../intercept';
 
-export class HeatmapComponent {
+export type ResultState = 'pass' | 'warning' | 'fail' | 'info';
+
+export class HeatmapComponentPage {
   public intercept(): this {
     interceptHeatmapComponent();
     return this;
@@ -22,6 +24,14 @@ export class HeatmapComponent {
     return this;
   }
 
+  interceptWithTwoHighlights(): this {
+    cy.intercept('GET', 'api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?*', {
+      statusCode: 200,
+      fixture: 'get.sockshop.service.carts.evaluations.heatmap.twohighlights.mock.json',
+    });
+    return this;
+  }
+
   visitPageWithHeatmapComponent(): this {
     cy.visit('/project/sockshop/service/carts/context/da740469-9920-4e0c-b304-0fd4b18d17c2/stage/staging');
     return this;
@@ -34,6 +44,18 @@ export class HeatmapComponent {
 
   clickScore(scoreTestId: string): this {
     cy.get(`ktb-heatmap .data-point-container g[uitestid="Score"] rect[uitestid="${scoreTestId}"]`).click();
+    return this;
+  }
+
+  clickMetric(metricName: string, metricTestId: string): this {
+    cy.get(`ktb-heatmap .data-point-container g[uitestid="${metricName}"] rect[uitestid="${metricTestId}"]`).click();
+    return this;
+  }
+
+  clickLegendCircle(circle: ResultState): this {
+    // Wait, because element changes after being clicked
+    cy.wait(1000);
+    cy.contains(`ktb-heatmap .legend-container .legend-item text`, circle).click();
     return this;
   }
 
@@ -57,27 +79,29 @@ export class HeatmapComponent {
     return this;
   }
 
-  assertTileColor(tileId: string, color: 'pass' | 'warning' | 'fail' | 'info'): this {
-    cy.byTestId(tileId).should('have.class', color).and('have.class', 'data-point');
+  assertTileColor(tileId: string, color: ResultState, disabled = false): this {
+    cy.byTestId(tileId)
+      .should('have.class', color)
+      .and('have.class', 'data-point')
+      .and(disabled ? 'have.class' : 'not.have.class', 'disabled');
     return this;
   }
 
-  private assertHighlight(name: '.highlight-primary' | '.highlight-secondary'): this {
-    cy.get(`ktb-heatmap ${name}`).should('have.length', 1);
+  private assertHighlight(name: '.highlight-primary' | '.highlight-secondary', amount: number): this {
+    if (amount <= 0) {
+      cy.get(`ktb-heatmap ${name}`).should('not.exist');
+      return this;
+    }
+    cy.get(`ktb-heatmap ${name}`).should('have.length', amount);
     return this;
   }
 
-  assertPrimaryHighlightExists(): this {
-    return this.assertHighlight('.highlight-primary');
+  assertPrimaryHighlight(amountOfExistence: number): this {
+    return this.assertHighlight('.highlight-primary', amountOfExistence);
   }
 
-  assertSecondaryHighlightExists(): this {
-    return this.assertHighlight('.highlight-secondary');
-  }
-
-  assertSecondaryHighlightDoesNotExist(): this {
-    cy.get(`ktb-heatmap .highlight-secondary`).should('not.exist');
-    return this;
+  assertSecondaryHighlight(amountOfExistence: number): this {
+    return this.assertHighlight('.highlight-secondary', amountOfExistence);
   }
 
   assertMetricIsTruncated(longName: string, truncatedName: string): this {
@@ -89,13 +113,23 @@ export class HeatmapComponent {
     return this;
   }
 
-  assertTooltipIsVisible(): this {
-    cy.get('ktb-heatmap ktb-heatmap-tooltip').should('not.have.class', 'hidden');
+  assertTooltipIsVisible(visible: boolean): this {
+    const should = visible ? 'not.have.class' : 'have.class';
+    cy.get('ktb-heatmap ktb-heatmap-tooltip').should(should, 'hidden');
     return this;
   }
 
-  assertTooltipIsHidden(): this {
-    cy.get('ktb-heatmap ktb-heatmap-tooltip').should('have.class', 'hidden');
+  assertTooltipIs(type: 'score' | 'metric'): this {
+    const selector = 'ktb-heatmap ktb-heatmap-tooltip dt-key-value-list-item dt-key-value-list-key';
+    cy.contains(selector, 'Value').should('exist');
+    if (type === 'score') {
+      cy.contains(selector, 'Total passed SLIs').should('exist');
+      cy.contains(selector, 'Total warning SLIs').should('exist');
+      cy.contains(selector, 'Total failed SLIs').should('exist');
+    } else if (type === 'metric') {
+      cy.contains(selector, 'Score').should('exist');
+      cy.contains(selector, 'Key SLI').should('exist');
+    }
     return this;
   }
 

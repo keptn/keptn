@@ -85,7 +85,7 @@ export function evaluationToDataPoint(evaluation: Trace, scoreValue: number): ID
   };
 }
 
-const evaluationToDataPoints = (points: IDataPoint[], evaluation: Trace): IDataPoint[] => {
+const addEvaluationToDataPoints = (points: IDataPoint[], evaluation: Trace): IDataPoint[] => {
   const scoreValue = evaluation.data.evaluation?.score ?? 0;
   const results: IDataPoint[] = evaluation.data.evaluation?.indicatorResults
     ? evaluation.data.evaluation?.indicatorResults.map(indicatorResultToDataPoint(evaluation, scoreValue))
@@ -95,7 +95,7 @@ const evaluationToDataPoints = (points: IDataPoint[], evaluation: Trace): IDataP
 };
 
 export function createDataPoints(evaluationHistory: Trace[]): IDataPoint[] {
-  const dataPoints = evaluationHistory.reduce(evaluationToDataPoints, []);
+  const dataPoints = evaluationHistory.reduce(addEvaluationToDataPoints, []);
   const scores = dataPoints.filter((dp) => dp.tooltip.type === IHeatmapTooltipType.SCORE);
   const sortedResults = dataPoints
     .filter((dp) => dp.tooltip.type == IHeatmapTooltipType.SLI)
