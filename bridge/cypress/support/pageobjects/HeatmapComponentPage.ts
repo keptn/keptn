@@ -3,6 +3,8 @@ import { interceptHeatmapComponent } from '../intercept';
 export type ResultState = 'pass' | 'warning' | 'fail' | 'info';
 
 export class HeatmapComponentPage {
+  private readonly tilePrefix = 'ktb-heatmap-tile-';
+
   public intercept(): this {
     interceptHeatmapComponent();
     return this;
@@ -43,12 +45,16 @@ export class HeatmapComponentPage {
   }
 
   clickScore(scoreTestId: string): this {
-    cy.get(`ktb-heatmap .data-point-container g[uitestid="Score"] rect[uitestid="${scoreTestId}"]`).click();
+    cy.get(
+      `ktb-heatmap .data-point-container g[uitestid="Score"] rect[uitestid="${this.tilePrefix + scoreTestId}"]`
+    ).click();
     return this;
   }
 
   clickMetric(metricName: string, metricTestId: string): this {
-    cy.get(`ktb-heatmap .data-point-container g[uitestid="${metricName}"] rect[uitestid="${metricTestId}"]`).click();
+    cy.get(
+      `ktb-heatmap .data-point-container g[uitestid="${metricName}"] rect[uitestid="${this.tilePrefix + metricTestId}"]`
+    ).click();
     return this;
   }
 
@@ -60,12 +66,16 @@ export class HeatmapComponentPage {
   }
 
   mouseOverOnTile(tileId: string): this {
-    cy.byTestId(tileId).first().trigger('mouseover');
+    cy.byTestId(this.tilePrefix + tileId)
+      .first()
+      .trigger('mouseover');
     return this;
   }
 
   mouseLeaveOnTile(tileId: string): this {
-    cy.byTestId(tileId).first().trigger('mouseleave');
+    cy.byTestId(this.tilePrefix + tileId)
+      .first()
+      .trigger('mouseleave');
     return this;
   }
 
@@ -80,7 +90,7 @@ export class HeatmapComponentPage {
   }
 
   assertTileColor(tileId: string, color: ResultState, disabled = false): this {
-    cy.byTestId(tileId)
+    cy.byTestId(this.tilePrefix + tileId)
       .should('have.class', color)
       .and('have.class', 'data-point')
       .and(disabled ? 'have.class' : 'not.have.class', 'disabled');

@@ -21,11 +21,11 @@ describe('evaluation-heatmap', () => {
   });
   it('should set correct color classes', () => {
     heatmap
-      .assertTileColor('ktb-heatmap-tile-182d10b8-b68d-49d4-86cd-5521352d7a42', 'pass')
-      .assertTileColor('ktb-heatmap-tile-182d10b8-b68d-49d4-86cd-5521352d7a42', 'warning')
-      .assertTileColor('ktb-heatmap-tile-52b4b2c7-fa49-41f3-9b5c-b9aea2370bb4', 'fail')
+      .assertTileColor('182d10b8-b68d-49d4-86cd-5521352d7a42', 'pass')
+      .assertTileColor('182d10b8-b68d-49d4-86cd-5521352d7a42', 'warning')
+      .assertTileColor('52b4b2c7-fa49-41f3-9b5c-b9aea2370bb4', 'fail')
       .clickExpandButton()
-      .assertTileColor('ktb-heatmap-tile-e074893e-a7f9-4fa8-9e7e-898937a3d2b6', 'info');
+      .assertTileColor('e074893e-a7f9-4fa8-9e7e-898937a3d2b6', 'info');
   });
   it('should have a primary and one secondary highlight', () => {
     heatmap.assertPrimaryHighlight(1).assertSecondaryHighlight(1);
@@ -39,7 +39,7 @@ describe('evaluation-heatmap', () => {
     heatmap.assertMetricIsTruncated(longName, shortName);
   });
   it('should show and hide tooltips', () => {
-    const tileId = 'ktb-heatmap-tile-182d10b8-b68d-49d4-86cd-5521352d7a42';
+    const tileId = '182d10b8-b68d-49d4-86cd-5521352d7a42';
     heatmap
       .assertTooltipIsVisible(false)
       .mouseOverOnTile(tileId)
@@ -54,10 +54,7 @@ describe('evaluation-heatmap', () => {
     heatmap.assertXAxisTickLength(10);
   });
   it('should not show secondary highlight if clicked evaluation has no other to compare', () => {
-    heatmap
-      .clickScore('ktb-heatmap-tile-25ab0f26-e6d8-48d5-a08f-08c8a136a688')
-      .assertPrimaryHighlight(1)
-      .assertSecondaryHighlight(0);
+    heatmap.clickScore('25ab0f26-e6d8-48d5-a08f-08c8a136a688').assertPrimaryHighlight(1).assertSecondaryHighlight(0);
   });
   it('should reduce X elements on many evaluations', () => {
     const labels = range(1, 44, 2).map((value) => `2022-02-01 03:46 (${value})`);
@@ -69,38 +66,38 @@ describe('evaluation-heatmap', () => {
   it('should set tiles disabled/enabled via legend', () => {
     heatmap
       .clickLegendCircle('pass')
-      .assertTileColor('ktb-heatmap-tile-182d10b8-b68d-49d4-86cd-5521352d7a42', 'pass', true)
+      .assertTileColor('182d10b8-b68d-49d4-86cd-5521352d7a42', 'pass', true)
       .clickLegendCircle('pass')
-      .assertTileColor('ktb-heatmap-tile-182d10b8-b68d-49d4-86cd-5521352d7a42', 'pass', false)
+      .assertTileColor('182d10b8-b68d-49d4-86cd-5521352d7a42', 'pass', false)
       .clickLegendCircle('warning')
-      .assertTileColor('ktb-heatmap-tile-182d10b8-b68d-49d4-86cd-5521352d7a42', 'warning', true)
+      .assertTileColor('182d10b8-b68d-49d4-86cd-5521352d7a42', 'warning', true)
       .clickLegendCircle('warning')
-      .assertTileColor('ktb-heatmap-tile-182d10b8-b68d-49d4-86cd-5521352d7a42', 'warning', false)
+      .assertTileColor('182d10b8-b68d-49d4-86cd-5521352d7a42', 'warning', false)
       .clickLegendCircle('info')
       .clickExpandButton()
-      .assertTileColor('ktb-heatmap-tile-e074893e-a7f9-4fa8-9e7e-898937a3d2b6', 'info', true)
+      .assertTileColor('e074893e-a7f9-4fa8-9e7e-898937a3d2b6', 'info', true)
       .clickLegendCircle('info')
-      .assertTileColor('ktb-heatmap-tile-e074893e-a7f9-4fa8-9e7e-898937a3d2b6', 'info', false)
+      .assertTileColor('e074893e-a7f9-4fa8-9e7e-898937a3d2b6', 'info', false)
       .clickLegendCircle('fail')
-      .assertTileColor('ktb-heatmap-tile-52b4b2c7-fa49-41f3-9b5c-b9aea2370bb4', 'fail', true)
+      .assertTileColor('52b4b2c7-fa49-41f3-9b5c-b9aea2370bb4', 'fail', true)
       .clickLegendCircle('fail')
-      .assertTileColor('ktb-heatmap-tile-52b4b2c7-fa49-41f3-9b5c-b9aea2370bb4', 'fail', false);
+      .assertTileColor('52b4b2c7-fa49-41f3-9b5c-b9aea2370bb4', 'fail', false);
   });
   it('should not show tooltip if tile is disabled', () => {
     heatmap
       .clickLegendCircle('pass')
-      .clickScore('ktb-heatmap-tile-182d10b8-b68d-49d4-86cd-5521352d7a42')
+      .clickScore('182d10b8-b68d-49d4-86cd-5521352d7a42')
       .assertTooltipIsVisible(false)
       .clickLegendCircle('warning')
-      .clickMetric('go_routines3a', 'ktb-heatmap-tile-182d10b8-b68d-49d4-86cd-5521352d7a42')
+      .clickMetric('go_routines3a', '182d10b8-b68d-49d4-86cd-5521352d7a42')
       .assertTooltipIsVisible(false);
   });
   it('should show score/metric tooltip accordingly', () => {
     heatmap
-      .clickScore('ktb-heatmap-tile-182d10b8-b68d-49d4-86cd-5521352d7a42')
+      .clickScore('182d10b8-b68d-49d4-86cd-5521352d7a42')
       .assertTooltipIsVisible(true)
       .assertTooltipIs('score')
-      .clickMetric('go_routines3a', 'ktb-heatmap-tile-182d10b8-b68d-49d4-86cd-5521352d7a42')
+      .clickMetric('go_routines3a', '182d10b8-b68d-49d4-86cd-5521352d7a42')
       .assertTooltipIsVisible(true)
       .assertTooltipIs('metric');
   });
