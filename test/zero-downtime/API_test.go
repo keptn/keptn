@@ -164,7 +164,7 @@ func (suite *TestSuiteAPI) Test_MongoDB() {
 
 	api.Get(apiURL+"/event").Query("project", "some-random").Query("pageSize", "20").
 		Headers(map[string]string{"x-token": suite.token}).
-		Expect(suite.T()).Status(http.StatusOK).Body(`{"events":null, "pageSize":20}`).End()
+		Expect(suite.T()).Status(http.StatusOK).Body(`{"events":[], "pageSize":20}`).End()
 
 }
 
