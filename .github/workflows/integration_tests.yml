@@ -124,7 +124,7 @@ jobs:
         run: mkdir ~/downloads
 
       - name: Cache downloads paths
-        uses: actions/cache@v3.0.2
+        uses: actions/cache@v3.0.3
         with:
           path: |
             ~/downloads
@@ -1046,7 +1046,7 @@ jobs:
 
       - name: Cache Keptn CLI
         id: keptn-cli-cache
-        uses: actions/cache@v3.0.2
+        uses: actions/cache@v3.0.3
         with:
           path: ~/downloads
           key: ${{ env.META_KEPTN_VERSION }}-cli
