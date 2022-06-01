@@ -74,11 +74,6 @@ func NewInternal(client *http.Client, apiMappings ...InClusterAPIMappings) (*Int
 			HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))},
 			Scheme:     "http",
 		},
-		apiServiceApiHandler: &api.APIHandler{
-			BaseURL:    apimap[ApiService],
-			HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))},
-			Scheme:     "http",
-		},
 	}
 
 	as.authHandler = &api.AuthHandler{
@@ -226,17 +221,15 @@ func getClientTransport(rt http.RoundTripper) http.RoundTripper {
 
 }
 
-// InternalAPIHandler is used instead of APIHandler directly because we need to make
-// some API calls to different locations, e.g. Some of the APIs provided by the APIHandler are hosted
-// by shipyard controller, others are hosted by the api-service. This implementation simply delegates
-// the calls to the correctly configured APIHandler internally
+// InternalAPIHandler is used instead of APIHandler from go-utils because we cannot support
+// (unauthenticated) internal calls to the api-service at the moment. So this implementation
+// will panic as soon as a client wants to call these methods
 type InternalAPIHandler struct {
 	shipyardControllerApiHandler *api.APIHandler
-	apiServiceApiHandler         *api.APIHandler
 }
 
 func (i *InternalAPIHandler) SendEvent(event models.KeptnContextExtendedCE) (*models.EventContext, *models.Error) {
-	return i.apiServiceApiHandler.SendEvent(event)
+	panic("SendEvent() is not not supported for internal usage")
 }
 
 func (i *InternalAPIHandler) TriggerEvaluation(project string, stage string, service string, evaluation models.Evaluation) (*models.EventContext, *models.Error) {
@@ -264,5 +257,5 @@ func (i *InternalAPIHandler) DeleteService(project string, service string) (*mod
 }
 
 func (i *InternalAPIHandler) GetMetadata() (*models.Metadata, *models.Error) {
-	return i.apiServiceApiHandler.GetMetadata()
+	panic("GetMetadata() is not not supported for internal usage")
 }
