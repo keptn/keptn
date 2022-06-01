@@ -69,7 +69,7 @@ func NewInternal(client *http.Client, apiMappings ...InClusterAPIMappings) (*Int
 	as.httpClient = client
 
 	as.apiHandler = &InternalAPIHandler{
-		shippyApiHandler: &api.APIHandler{
+		shipyardControllerApiHandler: &api.APIHandler{
 			BaseURL:    apimap[ShipyardController],
 			HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))},
 			Scheme:     "http",
@@ -226,9 +226,13 @@ func getClientTransport(rt http.RoundTripper) http.RoundTripper {
 
 }
 
+// InternalAPIHandler is used instead of APIHandler directly because we need to make
+// some API calls to different locations, e.g. Some of the APIs provided by the APIHandler are hosted
+// by shipyard controller, others are hosted by the api-service. This implementation simply delegates
+// the calls to the correctly configured APIHandler internally
 type InternalAPIHandler struct {
-	shippyApiHandler     *api.APIHandler
-	apiServiceApiHandler *api.APIHandler
+	shipyardControllerApiHandler *api.APIHandler
+	apiServiceApiHandler         *api.APIHandler
 }
 
 func (i *InternalAPIHandler) SendEvent(event models.KeptnContextExtendedCE) (*models.EventContext, *models.Error) {
@@ -236,27 +240,27 @@ func (i *InternalAPIHandler) SendEvent(event models.KeptnContextExtendedCE) (*mo
 }
 
 func (i *InternalAPIHandler) TriggerEvaluation(project string, stage string, service string, evaluation models.Evaluation) (*models.EventContext, *models.Error) {
-	return i.shippyApiHandler.TriggerEvaluation(project, stage, service, evaluation)
+	return i.shipyardControllerApiHandler.TriggerEvaluation(project, stage, service, evaluation)
 }
 
 func (i *InternalAPIHandler) CreateProject(project models.CreateProject) (string, *models.Error) {
-	return i.shippyApiHandler.CreateProject(project)
+	return i.shipyardControllerApiHandler.CreateProject(project)
 }
 
 func (i *InternalAPIHandler) UpdateProject(project models.CreateProject) (string, *models.Error) {
-	return i.shippyApiHandler.UpdateProject(project)
+	return i.shipyardControllerApiHandler.UpdateProject(project)
 }
 
 func (i *InternalAPIHandler) DeleteProject(project models.Project) (*models.DeleteProjectResponse, *models.Error) {
-	return i.shippyApiHandler.DeleteProject(project)
+	return i.shipyardControllerApiHandler.DeleteProject(project)
 }
 
 func (i *InternalAPIHandler) CreateService(project string, service models.CreateService) (string, *models.Error) {
-	return i.shippyApiHandler.CreateService(project, service)
+	return i.shipyardControllerApiHandler.CreateService(project, service)
 }
 
 func (i *InternalAPIHandler) DeleteService(project string, service string) (*models.DeleteServiceResponse, *models.Error) {
-	return i.DeleteService(project, service)
+	return i.shipyardControllerApiHandler.DeleteService(project, service)
 }
 
 func (i *InternalAPIHandler) GetMetadata() (*models.Metadata, *models.Error) {
