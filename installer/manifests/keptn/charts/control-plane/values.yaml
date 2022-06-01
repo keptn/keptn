@@ -235,7 +235,7 @@ lighthouseService:
     tag: ""
   nodeSelector: {}
   gracePeriod: 60
-  preStopHookTime: 5
+  preStopHookTime: 20
 
 statisticsService:
   image:
@@ -243,7 +243,7 @@ statisticsService:
     tag: ""
   nodeSelector: {}
   gracePeriod: 60
-  preStopHookTime: 5
+  preStopHookTime: 20
 
 approvalService:
   image:
@@ -260,7 +260,7 @@ webhookService:
     tag: ""
   nodeSelector: {}
   gracePeriod: 60
-  preStopHookTime: 5
+  preStopHookTime: 20
 
 ingress:
   enabled: false
