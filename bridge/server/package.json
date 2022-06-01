@@ -26,7 +26,7 @@
     "morgan": "1.10.0",
     "openid-client": "5.1.6",
     "semver": "7.3.7",
-    "yaml": "2.1.0"
+    "yaml": "2.1.1"
   },
   "devDependencies": {
     "@types/adm-zip": "0.5.0",
