@@ -193,7 +193,7 @@ func (sd *SequenceDispatcher) isSequenceBlocked(queueItem models.QueueItem) (boo
 	}
 
 	if len(triggeredSequenceExecutions) > 1 {
-		log.Infof("Sequence with KeptnContext %s is blocked due to triggered sequences in stage %s", queueItem.Scope.KeptnContext, queueItem.Scope.Stage)
+		log.Infof("Sequence with KeptnContext %s is blocked due to triggered sequences in stage %s with KeptnContext %s", queueItem.Scope.KeptnContext, queueItem.Scope.Stage, triggeredSequenceExecutions[0].Scope.KeptnContext)
 		return true, nil
 	}
 
