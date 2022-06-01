@@ -337,3 +337,23 @@ export function interceptEvaluationBoardWithoutDeployment(): void {
     fixture: 'service/get.evaluation.triggered.mock.json',
   });
 }
+
+export function interceptHeatmapComponent(): void {
+  cy.intercept('/api/v1/metadata', { fixture: 'metadata.mock' });
+  cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfoEnableD3Heatmap.mock.json' });
+  cy.intercept('/api/project/sockshop?approval=true&remediation=true', { fixture: 'project.mock' });
+  cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: false });
+  cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
+  cy.intercept('GET', '/api/project/sockshop/serviceStates', {
+    statusCode: 200,
+    fixture: 'get.sockshop.service.states.mock.json',
+  });
+  cy.intercept('GET', '/api/project/sockshop/deployment/da740469-9920-4e0c-b304-0fd4b18d17c2', {
+    statusCode: 200,
+    fixture: 'get.sockshop.service.carts.deployment.mock.json',
+  });
+  cy.intercept('GET', 'api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?*', {
+    statusCode: 200,
+    fixture: 'get.sockshop.service.carts.evaluations.heatmap.mock.json',
+  });
+}

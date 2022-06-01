@@ -91,7 +91,6 @@ var testSequenceExecution = models.SequenceExecution{
 }
 
 func TestSequenceExecutionMigrator_MigrateSequenceExecutions(t *testing.T) {
-	defer setupLocalMongoDB()()
 
 	dbConnection := db.GetMongoDBConnectionInstance()
 	projectRepo := db.NewMongoDBKeyEncodingProjectsRepo(dbConnection)
@@ -143,7 +142,6 @@ func TestSequenceExecutionMigrator_MigrateSequenceExecutions(t *testing.T) {
 }
 
 func TestSequenceExecutionMigrator_MigrateSequenceExecutions_MixedOldAndNew(t *testing.T) {
-	defer setupLocalMongoDB()()
 
 	dbConnection := db.GetMongoDBConnectionInstance()
 	projectRepo := db.NewMongoDBKeyEncodingProjectsRepo(dbConnection)
@@ -195,7 +193,6 @@ func TestSequenceExecutionMigrator_MigrateSequenceExecutions_MixedOldAndNew(t *t
 }
 
 func TestSequenceExecutionMigrator_MigrateMultipleTimes(t *testing.T) {
-	defer setupLocalMongoDB()()
 
 	dbConnection := db.GetMongoDBConnectionInstance()
 	projectRepo := db.NewMongoDBKeyEncodingProjectsRepo(dbConnection)

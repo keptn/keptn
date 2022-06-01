@@ -33,7 +33,7 @@ spec:
       containers:
         - name: statistics-service
           image: {{ .Values.statisticsService.image.repository }}:{{ .Values.statisticsService.image.tag | default .Chart.AppVersion }}
-          {{- $prestop := .Values.statisticsService.preStopHookTime | default 90 | quote -}}
+          {{- $prestop := .Values.statisticsService.preStopHookTime | default 20 | quote -}}
           {{- include "control-plane.prestop" $prestop | nindent 10 }}
           livenessProbe:
             httpGet:
@@ -100,7 +100,7 @@ spec:
               value: '/v1/event'
           {{- include "control-plane.dist.common.env.vars" . | nindent 12 }}
         {{- include "control-plane.common.container-security-context" . | nindent 10 }}
-      terminationGracePeriodSeconds: {{ .Values.statisticsService.gracePeriod | default 120 }}
+      terminationGracePeriodSeconds: {{ .Values.statisticsService.gracePeriod | default 60 }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.statisticsService.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
 ---
 apiVersion: v1

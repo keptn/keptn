@@ -154,7 +154,7 @@ func (e JsonStringEncodedSequenceExecution) ToSequenceExecution() models.Sequenc
 			},
 		},
 		Scope:       e.Scope,
-		TriggeredAt: e.TriggeredAt,
+		TriggeredAt: e.TriggeredAt.UTC(),
 	}
 	inputProperties := map[string]interface{}{}
 	err := json.Unmarshal([]byte(e.EncodedInputProperties), &inputProperties)

@@ -69,25 +69,28 @@ func NewAPICaller() (*APICaller, error) {
 
 func (a *APICaller) Get(path string, retries int) (*req.Resp, error) {
 	return a.doHTTPRequestWithRetry(func() (*req.Resp, error) {
-		req.SetTimeout(10 * time.Second)
+		req.SetTimeout(15 * time.Second)
 		return req.Get(a.baseURL+path, a.getAuthHeader())
 	}, retries)
 }
 
 func (a *APICaller) Delete(path string, retries int) (*req.Resp, error) {
 	return a.doHTTPRequestWithRetry(func() (*req.Resp, error) {
+		req.SetTimeout(15 * time.Second)
 		return req.Delete(a.baseURL+path, a.getAuthHeader())
 	}, retries)
 }
 
 func (a *APICaller) Put(path string, payload interface{}, retries int) (*req.Resp, error) {
 	return a.doHTTPRequestWithRetry(func() (*req.Resp, error) {
+		req.SetTimeout(15 * time.Second)
 		return req.Put(a.baseURL+path, a.getAuthHeader(), req.BodyJSON(payload))
 	}, retries)
 }
 
 func (a *APICaller) Post(path string, payload interface{}, retries int) (*req.Resp, error) {
 	return a.doHTTPRequestWithRetry(func() (*req.Resp, error) {
+		req.SetTimeout(15 * time.Second)
 		return req.Post(a.baseURL+path, a.getAuthHeader(), req.BodyJSON(payload))
 	}, retries)
 }
@@ -612,6 +615,9 @@ func GetState(projectName string) (*models.SequenceStates, *req.Resp, error) {
 	states := &models.SequenceStates{}
 
 	resp, err := ApiGETRequest("/controlPlane/v1/sequence/"+projectName, 3)
+	if err != nil {
+		return nil, nil, err
+	}
 	err = resp.ToJSON(states)
 
 	return states, resp, err
@@ -621,6 +627,9 @@ func GetStateByContext(projectName, keptnContext string) (*models.SequenceStates
 	states := &models.SequenceStates{}
 
 	resp, err := ApiGETRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s?keptnContext=%s", projectName, keptnContext), 3)
+	if err != nil {
+		return nil, nil, err
+	}
 	err = resp.ToJSON(states)
 
 	return states, resp, err

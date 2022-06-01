@@ -266,9 +266,9 @@ describe('Trigger an evaluation sequence', () => {
   it('should have disabled trigger button if end date is before start date', () => {
     triggerSequencePage
       .selectEvaluationEndDate()
-      .setStartDate(1, '1', '15', '0')
+      .setStartDate(0, '1', '15', '0')
       .assertTriggerSequenceEnabled(false)
-      .setEndDate(0, '1', '15', '0')
+      .setEndDate(0, '1', '15', '0', 1)
       .assertEvaluationDateErrorExists(true)
       .assertTriggerSequenceEnabled(false);
   });
@@ -319,8 +319,8 @@ describe('Trigger an evaluation sequence', () => {
     triggerSequencePage
       .assertTriggerSequenceEnabled(true)
       .selectEvaluationEndDate()
-      .setStartDate(1, '1', '1', '1')
-      .setEndDate(0, '1', '1', '1')
+      .setStartDate(0, '1', '1', '1')
+      .setEndDate(0, '1', '1', '1', 1)
       .assertEvaluationDateErrorExists(true)
       .assertTriggerSequenceEnabled(false)
 
@@ -340,8 +340,8 @@ describe('Trigger an evaluation sequence', () => {
       .assertEvaluationTimeframeErrorExists(true)
 
       .selectEvaluationEndDate()
-      .setStartDate(0, '1', '1', '1')
-      .setEndDate(1, '1', '1', '1')
+      .setStartDate(0, '1', '1', '1', 1)
+      .setEndDate(0, '1', '1', '1')
       .assertEvaluationDateErrorExists(false)
       .assertTriggerSequenceEnabled(true)
       .assertEvaluationTimeframeErrorExists(false)
