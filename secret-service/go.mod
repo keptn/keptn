@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/gin-gonic/gin v1.7.7
-	github.com/keptn/go-utils v0.15.1-0.20220517082831-2052e1404e4c
+	github.com/keptn/go-utils v0.15.1-0.20220601124329-623e06c0a2f6
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
 	github.com/swaggo/swag v1.8.2

@@ -25,8 +25,8 @@ github.com/json-iterator/go v1.1.10 h1:Kz6Cvnvv2wGdaG/V8yMvfkmNiXq9Ya2KUv4rouJJr
 github.com/json-iterator/go v1.1.10/go.mod h1:KdQUCv79m/52Kvf8AW2vK1V8akMuk1QjK/uOdHXbAo4=
 github.com/kelseyhightower/envconfig v1.4.0 h1:Im6hONhd3pLkfDFsbRgu68RDNkGF1r3dvMUtDTo2cv8=
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
-github.com/keptn/go-utils v0.15.1-0.20220517082831-2052e1404e4c h1:Y3z1aDzmYrSJbtKggjKKzGmYrZ2bxwCPbENq/YqV6/o=
-github.com/keptn/go-utils v0.15.1-0.20220517082831-2052e1404e4c/go.mod h1:oxLLKz2u9KId2HgLH63+T0pUbcgiDd2GDkRrRKwxGUU=
+github.com/keptn/go-utils v0.15.1-0.20220601124329-623e06c0a2f6 h1:RhaKOvRvjx/IOlyyDAKQzTFBujyDRfjs3CA0Kh7fdcQ=
+github.com/keptn/go-utils v0.15.1-0.20220601124329-623e06c0a2f6/go.mod h1:oxLLKz2u9KId2HgLH63+T0pUbcgiDd2GDkRrRKwxGUU=
 github.com/keptn/keptn/cp-common v0.0.0-20220523070105-05ef470de884 h1:BmqPIrMFFXuSoBLCB8B0a9t8B8NIYghX+vFIChFuVbU=
 github.com/keptn/keptn/cp-common v0.0.0-20220523070105-05ef470de884/go.mod h1:psPxY7jbD8Uj84PM/vv3Tj41DHbSPKVZZ1KF6eH9wKw=
 github.com/keptn/keptn/cp-connector v0.0.0-20220519092125-885433905cc0 h1:pmbwyHQRO74dt3W24jCDyfUovDT89zsVXmC15UrAmn4=

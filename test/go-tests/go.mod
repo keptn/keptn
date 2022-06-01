@@ -6,7 +6,7 @@ require (
 	github.com/cloudevents/sdk-go/v2 v2.9.0
 	github.com/google/uuid v1.3.0
 	github.com/imroc/req v0.3.2
-	github.com/keptn/go-utils v0.15.1-0.20220517082831-2052e1404e4c
+	github.com/keptn/go-utils v0.15.1-0.20220601124329-623e06c0a2f6
 	github.com/keptn/keptn/webhook-service v0.0.0-20220520070822-56786b8b1aef
 	github.com/keptn/kubernetes-utils v0.14.0
 	github.com/mholt/archiver/v3 v3.5.1
