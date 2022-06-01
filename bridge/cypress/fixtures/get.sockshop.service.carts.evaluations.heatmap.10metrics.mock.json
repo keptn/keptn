@@ -1,0 +1,315 @@
+{
+  "events": [
+    {
+      "data": {
+        "evaluation": {
+          "comparedEvents": [],
+          "gitCommit": "",
+          "indicatorResults": [
+            {
+              "displayName": "R1",
+              "keySli": false,
+              "passTargets": [
+                {
+                  "criteria": "<=+10%",
+                  "targetValue": 0,
+                  "violated": true
+                },
+                {
+                  "criteria": "<600",
+                  "targetValue": 0,
+                  "violated": true
+                }
+              ],
+              "score": 0,
+              "status": "fail",
+              "value": {
+                "message": "Dynatrace Metrics API returned zero data points",
+                "metric": "r1",
+                "success": false,
+                "value": 0
+              },
+              "warningTargets": [
+                {
+                  "criteria": "<=800",
+                  "targetValue": 0,
+                  "violated": true
+                }
+              ]
+            },
+            {
+              "displayName": "R2",
+              "keySli": false,
+              "passTargets": [
+                {
+                  "criteria": "<=+10%",
+                  "targetValue": 0,
+                  "violated": true
+                },
+                {
+                  "criteria": "<600",
+                  "targetValue": 0,
+                  "violated": true
+                }
+              ],
+              "score": 0,
+              "status": "fail",
+              "value": {
+                "message": "Dynatrace Metrics API returned zero data points",
+                "metric": "r2",
+                "success": false,
+                "value": 0
+              },
+              "warningTargets": [
+                {
+                  "criteria": "<=800",
+                  "targetValue": 0,
+                  "violated": true
+                }
+              ]
+            },
+            {
+              "displayName": "R3",
+              "keySli": false,
+              "passTargets": [
+                {
+                  "criteria": "<=+10%",
+                  "targetValue": 0,
+                  "violated": true
+                },
+                {
+                  "criteria": "<600",
+                  "targetValue": 0,
+                  "violated": true
+                }
+              ],
+              "score": 0,
+              "status": "fail",
+              "value": {
+                "message": "Dynatrace Metrics API returned zero data points",
+                "metric": "r3",
+                "success": false,
+                "value": 0
+              },
+              "warningTargets": [
+                {
+                  "criteria": "<=800",
+                  "targetValue": 0,
+                  "violated": true
+                }
+              ]
+            },
+            {
+              "displayName": "R4",
+              "keySli": false,
+              "passTargets": [
+                {
+                  "criteria": "<=+10%",
+                  "targetValue": 0,
+                  "violated": true
+                },
+                {
+                  "criteria": "<600",
+                  "targetValue": 0,
+                  "violated": true
+                }
+              ],
+              "score": 0,
+              "status": "fail",
+              "value": {
+                "message": "Dynatrace Metrics API returned zero data points",
+                "metric": "r4",
+                "success": false,
+                "value": 0
+              },
+              "warningTargets": [
+                {
+                  "criteria": "<=800",
+                  "targetValue": 0,
+                  "violated": true
+                }
+              ]
+            },
+            {
+              "displayName": "R5",
+              "keySli": false,
+              "passTargets": [
+                {
+                  "criteria": "<=+10%",
+                  "targetValue": 0,
+                  "violated": true
+                },
+                {
+                  "criteria": "<600",
+                  "targetValue": 0,
+                  "violated": true
+                }
+              ],
+              "score": 0,
+              "status": "fail",
+              "value": {
+                "message": "Dynatrace Metrics API returned zero data points",
+                "metric": "r5",
+                "success": false,
+                "value": 0
+              },
+              "warningTargets": [
+                {
+                  "criteria": "<=800",
+                  "targetValue": 0,
+                  "violated": true
+                }
+              ]
+            },
+            {
+              "displayName": "R6",
+              "keySli": false,
+              "passTargets": [
+                {
+                  "criteria": "<=+10%",
+                  "targetValue": 0,
+                  "violated": true
+                },
+                {
+                  "criteria": "<600",
+                  "targetValue": 0,
+                  "violated": true
+                }
+              ],
+              "score": 0,
+              "status": "fail",
+              "value": {
+                "message": "Dynatrace Metrics API returned zero data points",
+                "metric": "r6",
+                "success": false,
+                "value": 0
+              },
+              "warningTargets": [
+                {
+                  "criteria": "<=800",
+                  "targetValue": 0,
+                  "violated": true
+                }
+              ]
+            },
+            {
+              "displayName": "R7",
+              "keySli": false,
+              "passTargets": [
+                {
+                  "criteria": "<=+10%",
+                  "targetValue": 0,
+                  "violated": true
+                },
+                {
+                  "criteria": "<600",
+                  "targetValue": 0,
+                  "violated": true
+                }
+              ],
+              "score": 0,
+              "status": "fail",
+              "value": {
+                "message": "Dynatrace Metrics API returned zero data points",
+                "metric": "r7",
+                "success": false,
+                "value": 0
+              },
+              "warningTargets": [
+                {
+                  "criteria": "<=800",
+                  "targetValue": 0,
+                  "violated": true
+                }
+              ]
+            },
+            {
+              "displayName": "R8",
+              "keySli": false,
+              "passTargets": [
+                {
+                  "criteria": "<=+10%",
+                  "targetValue": 0,
+                  "violated": true
+                },
+                {
+                  "criteria": "<600",
+                  "targetValue": 0,
+                  "violated": true
+                }
+              ],
+              "score": 0,
+              "status": "fail",
+              "value": {
+                "message": "Dynatrace Metrics API returned zero data points",
+                "metric": "r8",
+                "success": false,
+                "value": 0
+              },
+              "warningTargets": [
+                {
+                  "criteria": "<=800",
+                  "targetValue": 0,
+                  "violated": true
+                }
+              ]
+            },
+            {
+              "displayName": "R9",
+              "keySli": false,
+              "passTargets": [
+                {
+                  "criteria": "<=+10%",
+                  "targetValue": 0,
+                  "violated": true
+                },
+                {
+                  "criteria": "<600",
+                  "targetValue": 0,
+                  "violated": true
+                }
+              ],
+              "score": 0,
+              "status": "fail",
+              "value": {
+                "message": "Dynatrace Metrics API returned zero data points",
+                "metric": "r9",
+                "success": false,
+                "value": 0
+              },
+              "warningTargets": [
+                {
+                  "criteria": "<=800",
+                  "targetValue": 0,
+                  "violated": true
+                }
+              ]
+            }
+          ],
+          "result": "fail",
+          "score": 0,
+          "sloFileContent": "LS0tCnNwZWNfdmVyc2lvbjogIjEuMCIKY29tcGFyaXNvbjoKICBhZ2dyZWdhdGVfZnVuY3Rpb246ICJhdmciCiAgY29tcGFyZV93aXRoOiAic2luZ2xlX3Jlc3VsdCIKICBpbmNsdWRlX3Jlc3VsdF93aXRoX3Njb3JlOiAicGFzcyIKICBudW1iZXJfb2ZfY29tcGFyaXNvbl9yZXN1bHRzOiAxCmZpbHRlcjoKb2JqZWN0aXZlczoKICAtIHNsaTogInJlc3BvbnNlX3RpbWVfcDk1IgogICAgZGlzcGxheU5hbWU6ICJSZXNwb25zZSB0aW1lIFA5NSIKICAgIGtleV9zbGk6IGZhbHNlCiAgICBwYXNzOiAgICAgICAgICAgICAjIHBhc3MgaWYgKHJlbGF0aXZlIGNoYW5nZSA8PSAxMCUgQU5EIGFic29sdXRlIHZhbHVlIGlzIDwgNjAwbXMpCiAgICAgIC0gY3JpdGVyaWE6CiAgICAgICAgICAtICI8PSsxMCUiICAjIHJlbGF0aXZlIHZhbHVlcyByZXF1aXJlIGEgcHJlZml4ZWQgc2lnbiAocGx1cyBvciBtaW51cykKICAgICAgICAgIC0gIjw2MDAiICAgICMgYWJzb2x1dGUgdmFsdWVzIG9ubHkgcmVxdWlyZSBhIGxvZ2ljYWwgb3BlcmF0b3IKICAgIHdhcm5pbmc6ICAgICAgICAgICMgaWYgdGhlIHJlc3BvbnNlIHRpbWUgaXMgYmVsb3cgODAwbXMsIHRoZSByZXN1bHQgc2hvdWxkIGJlIGEgd2FybmluZwogICAgICAtIGNyaXRlcmlhOgogICAgICAgICAgLSAiPD04MDAiCiAgICB3ZWlnaHQ6IDEKdG90YWxfc2NvcmU6CiAgcGFzczogIjkwJSIKICB3YXJuaW5nOiAiNzUlIg==",
+          "timeEnd": "2022-02-08T12:15:02.695Z",
+          "timeStart": "2022-02-08T12:14:34.757Z"
+        },
+        "labels": {
+          "DtCreds": "dynatrace"
+        },
+        "message": "Evaluation failed since the calculated score of 0 is below the warning value of 75",
+        "project": "sockshop",
+        "result": "fail",
+        "service": "carts",
+        "stage": "staging",
+        "status": "succeeded"
+      },
+      "id": "e074893e-a7f9-4fa8-9e7e-898937a3d2b6",
+      "source": "lighthouse-service",
+      "specversion": "1.0",
+      "time": "2022-02-08T12:17:18.553Z",
+      "type": "sh.keptn.event.evaluation.finished",
+      "shkeptncontext": "9c5065bb-7ad5-4d02-b976-f75ec13ac0d1",
+      "shkeptnspecversion": "0.2.3",
+      "triggeredid": "5203cda7-7aad-43af-bba1-96844b8acb07"
+    }
+  ]
+}

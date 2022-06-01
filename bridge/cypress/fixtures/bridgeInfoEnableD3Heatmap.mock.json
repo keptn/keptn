@@ -9,7 +9,7 @@
   "authType": "OAUTH",
   "user": "claus.keptn-dev@ruxitlabs.com",
   "featureFlags": {
-    "RESOURCE_SERVICE_ENABLED": true,
-    "D3_HEATMAP_ENABLED": false
+    "RESOURCE_SERVICE_ENABLED": false,
+    "D3_HEATMAP_ENABLED": true
   }
 }
