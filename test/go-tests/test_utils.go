@@ -111,7 +111,7 @@ func (a *APICaller) doHTTPRequestWithRetry(httpFunc func() (*req.Resp, error), r
 		if reqErr == nil {
 			return r, nil
 		}
-		<-time.After(10 * time.Second)
+		<-time.After(5 * time.Second)
 	}
 	return r, reqErr
 }
