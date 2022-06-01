@@ -2,6 +2,9 @@ package event_handler
 
 import (
 	"errors"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	"github.com/keptn/go-utils/pkg/lib/v0_2_0/fake"
+	"github.com/stretchr/testify/require"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/types"
@@ -435,4 +438,36 @@ func getStartEventWithCommitId(id string) cloudevents.Event {
   }`),
 		DataBase64: false,
 	}
+}
+
+func Test_sendErroredFinishedEventWithMessage(t *testing.T) {
+
+	inEvent := getStartEventWithCommitId("my-commit-id")
+	fakeEventSender := &fake.EventSender{}
+	k, _ := keptnv2.NewKeptn(&inEvent, keptncommon.KeptnOpts{
+		EventSender: fakeEventSender,
+	})
+
+	err := sendErroredFinishedEventWithMessage("my-context", "my-triggered-id", "my-commit-id", "my-message", "slo-file-content", k, &keptnv2.GetSLIFinishedEventData{
+		GetSLI: keptnv2.GetSLIFinished{
+			Start: "start",
+			End:   "end",
+		},
+	})
+
+	require.Nil(t, err)
+
+	require.Len(t, fakeEventSender.SentEvents, 1)
+	ev := fakeEventSender.SentEvents[0]
+
+	evalFinishedData := &keptnv2.EvaluationFinishedEventData{}
+	err = ev.DataAs(evalFinishedData)
+	require.Nil(t, err)
+
+	// SLOFileContent should be base64 encoded
+	require.Equal(t, "c2xvLWZpbGUtY29udGVudA==", evalFinishedData.Evaluation.SLOFileContent)
+	require.Equal(t, "start", evalFinishedData.Evaluation.TimeStart)
+	require.Equal(t, "end", evalFinishedData.Evaluation.TimeEnd)
+	require.Equal(t, "my-message", evalFinishedData.Message)
+
 }

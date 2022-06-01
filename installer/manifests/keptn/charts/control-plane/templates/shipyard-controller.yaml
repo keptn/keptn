@@ -92,7 +92,7 @@ spec:
             - name: UNIFORM_INTEGRATION_TTL
               value: {{ .Values.shipyardController.config.uniformIntegrationTTL | default "2m" }}
             - name: PRE_STOP_HOOK_TIME
-              value: {{ .Values.shipyardController.preStopHookTime | default 5 | quote }}
+              value: {{ .Values.shipyardController.preStopHookTime | default 15 | quote }}
             - name: LOG_LEVEL
               value: {{ .Values.logLevel | default "info" }}
             - name: AUTOMATIC_PROVISIONING_URL
@@ -117,7 +117,7 @@ spec:
               memory: "128Mi"
               cpu: "100m"
           {{- include "control-plane.common.container-security-context" . | nindent 10 }}
-      terminationGracePeriodSeconds: {{ .Values.shipyardController.gracePeriod | default 120 }}
+      terminationGracePeriodSeconds: {{ .Values.shipyardController.gracePeriod | default 60 }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.shipyardController.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
 ---
 apiVersion: v1

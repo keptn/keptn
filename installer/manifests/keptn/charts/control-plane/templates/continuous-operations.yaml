@@ -34,7 +34,7 @@ spec:
       containers:
       - name: remediation-service
         image: {{ .Values.remediationService.image.repository }}:{{ .Values.remediationService.image.tag | default .Chart.AppVersion }}
-        {{- $prestop := .Values.remediationService.preStopHookTime | default 90 | quote -}}
+        {{- $prestop := .Values.remediationService.preStopHookTime | default 5 | quote -}}
         {{- include "control-plane.prestop" $prestop | nindent 8 }}
         imagePullPolicy: IfNotPresent
         livenessProbe:
@@ -68,7 +68,7 @@ spec:
           {{- include "control-plane.common.env.vars" . | nindent 10 }}
         {{- include "control-plane.common.container-security-context" . | nindent 8 }}
       serviceAccountName: keptn-default
-      terminationGracePeriodSeconds: {{ .Values.remediationService.gracePeriod | default 120 }}
+      terminationGracePeriodSeconds: {{ .Values.remediationService.gracePeriod | default 60 }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.remediationService.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
 ---
 apiVersion: v1

@@ -18,6 +18,11 @@ import (
 
 var mongoDbVersion = "4.4.9"
 
+func TestMain(m *testing.M) {
+	defer setupLocalMongoDB()()
+	m.Run()
+}
+
 func setupLocalMongoDB() func() {
 	mongoServer, err := memongo.Start(mongoDbVersion)
 	randomDbName := memongo.RandomDatabase()
@@ -41,8 +46,6 @@ func setupLocalMongoDB() func() {
 }
 
 func Test_MigratorRunsOnOldData(t *testing.T) {
-	defer setupLocalMongoDB()()
-
 	project := &apimodels.ExpandedProject{
 		ProjectName: "test-project",
 		Stages: []*apimodels.ExpandedStage{
@@ -95,8 +98,6 @@ func Test_MigratorRunsOnOldData(t *testing.T) {
 }
 
 func Test_MigratorRunsOnAlreadyMigratedData(t *testing.T) {
-	defer setupLocalMongoDB()()
-
 	project := &apimodels.ExpandedProject{
 		ProjectName: "test-project",
 		Stages: []*apimodels.ExpandedStage{
@@ -130,5 +131,4 @@ func Test_MigratorRunsOnAlreadyMigratedData(t *testing.T) {
 
 	assert.Contains(t, insertedProject.Stages[0].Services[0].LastEventTypes, "sh.keptn.event.get-sli.start")
 	assert.Contains(t, insertedProject.Stages[0].Services[0].LastEventTypes, `sh.keptn.event.get-sli~.started`)
-
 }

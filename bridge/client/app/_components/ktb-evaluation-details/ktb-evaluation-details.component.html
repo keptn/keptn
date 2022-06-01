@@ -25,7 +25,19 @@
       </div>
     </div>
   </div>
-  <div class="chart-container m-0" *ngIf="showChart && !isInvalidated" (click)="$event.stopPropagation()">
+  <div *ngIf="(d3HeatmapEnabled$ | async) && showChart && !isInvalidated">
+    <ktb-heatmap
+      [dataPoints]="dataPoints"
+      [selectedIdentifier]="selectedIdentifier"
+      (selectedIdentifierChange)="dataPointChanged($event)"
+    >
+    </ktb-heatmap>
+  </div>
+  <div
+    class="chart-container m-0"
+    *ngIf="(d3HeatmapEnabled$ | async) === false && showChart && !isInvalidated"
+    (click)="$event.stopPropagation()"
+  >
     <button
       dt-button
       variant="secondary"

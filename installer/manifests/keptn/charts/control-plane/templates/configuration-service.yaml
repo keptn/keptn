@@ -60,11 +60,11 @@ spec:
         seccompProfile:
           type: RuntimeDefault
         {{- end }}
-      terminationGracePeriodSeconds: {{ .Values.resourceService.gracePeriod | default 120 }}
+      terminationGracePeriodSeconds: {{ .Values.resourceService.gracePeriod | default 60 }}
       containers:
         - name: resource-service
           image: {{ .Values.resourceService.image.repository }}:{{ .Values.resourceService.image.tag | default .Chart.AppVersion }}
-          {{- $prestop := .Values.resourceService.preStopHookTime | default 90 | quote -}}
+          {{- $prestop := .Values.resourceService.preStopHookTime | default 20 | quote -}}
           {{- include "control-plane.prestop" $prestop | nindent 10 }}
           livenessProbe:
             httpGet:
@@ -97,7 +97,7 @@ spec:
               memory: "32Mi"
               cpu: "25m"
             limits:
-              memory: "64Mi"
+              memory: "256Mi"
               cpu: "100m"
           volumeMounts:
             - mountPath: /data/config
@@ -186,11 +186,11 @@ spec:
             - -c
             - chown -R {{ .Values.configurationService.fsGroup | default 1001 }} /data/config
 {{- end }}
-      terminationGracePeriodSeconds: {{ .Values.configurationService.gracePeriod | default 120 }}
+      terminationGracePeriodSeconds: {{ .Values.configurationService.gracePeriod | default 60 }}
       containers:
         - name: configuration-service
           image: {{ .Values.configurationService.image.repository }}:{{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
-          {{- $prestop := .Values.configurationService.preStopHookTime | default 90 | quote -}}
+          {{- $prestop := .Values.configurationService.preStopHookTime | default 20 | quote -}}
           {{- include "control-plane.prestop" $prestop | nindent 10 }}
           livenessProbe:
             httpGet:

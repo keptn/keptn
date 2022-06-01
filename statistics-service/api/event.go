@@ -10,18 +10,18 @@ import (
 )
 
 // HandleEvent godoc
-// @Deprecated true
-// @Summary INTERNAL Endpoint: Handle event
-// @Description Handle incoming cloud event
-// @Tags Events
-// @Security ApiKeyAuth
-// @Accept  json
-// @Produce  json
-// @Param   event     body    operations.Event     true        "Event type"
-// @Success 200 "ok"
-// @Failure 400 {object} operations.Error "Invalid payload"
-// @Failure 500 {object} operations.Error "Internal error"
-// @Router /event [post]
+// @Deprecated   true
+// @Summary      INTERNAL Endpoint: Handle event
+// @Description  Handle incoming cloud event
+// @Tags         Events
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        event  body  operations.Event  true  "Event type"
+// @Success      200    "ok"
+// @Failure      400    {object}  operations.Error  "Invalid payload"
+// @Failure      500    {object}  operations.Error  "Internal error"
+// @Router       /event [post]
 func HandleEvent(c *gin.Context) {
 	event := &operations.Event{}
 	if err := c.ShouldBindJSON(event); err != nil {

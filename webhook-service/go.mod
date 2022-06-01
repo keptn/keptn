@@ -4,20 +4,20 @@ go 1.18
 
 require (
 	github.com/keptn/go-utils v0.15.1-0.20220517082831-2052e1404e4c
-	github.com/keptn/keptn/go-sdk v0.0.0-20220520064641-2c2ed2c2c496
+	github.com/keptn/keptn/go-sdk v0.0.0-20220531141752-cd130b7b8291
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
-	k8s.io/api v0.23.5
-	k8s.io/apimachinery v0.23.5
-	k8s.io/client-go v0.23.5
+	gopkg.in/yaml.v3 v3.0.1
+	k8s.io/api v0.23.7
+	k8s.io/apimachinery v0.23.7
+	k8s.io/client-go v0.23.7
 )
 
 require (
 	github.com/benbjohnson/clock v1.3.0 // indirect
 	github.com/cloudevents/sdk-go/observability/opentelemetry/v2 v2.0.0-20211001212819-74757a691209 // indirect
-	github.com/cloudevents/sdk-go/v2 v2.9.0 // indirect
+	github.com/cloudevents/sdk-go/v2 v2.10.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/evanphx/json-patch v4.12.0+incompatible // indirect
 	github.com/felixge/httpsnoop v1.0.2 // indirect
@@ -31,6 +31,7 @@ require (
 	github.com/googleapis/gnostic v0.5.5 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0 // indirect
+	github.com/keptn/keptn/cp-common v0.0.0-20220523070105-05ef470de884 // indirect
 	github.com/keptn/keptn/cp-connector v0.0.0-20220519092125-885433905cc0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect

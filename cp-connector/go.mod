@@ -7,10 +7,9 @@ require github.com/keptn/go-utils v0.15.1-0.20220517082831-2052e1404e4c
 require (
 	github.com/benbjohnson/clock v1.3.0
 	github.com/google/uuid v1.3.0
-	github.com/nats-io/nats-server/v2 v2.8.2
-	github.com/nats-io/nats.go v1.14.0
+	github.com/nats-io/nats-server/v2 v2.8.4
+	github.com/nats-io/nats.go v1.15.0
 	github.com/stretchr/testify v1.7.1
-	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.27.0
 )
 
 require (
@@ -27,6 +26,7 @@ require (
 	github.com/nats-io/nkeys v0.3.0 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.27.0 // indirect
 	go.opentelemetry.io/otel v1.2.0 // indirect
 	go.opentelemetry.io/otel/internal/metric v0.25.0 // indirect
 	go.opentelemetry.io/otel/metric v0.25.0 // indirect

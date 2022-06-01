@@ -22,7 +22,6 @@ type sequenceStruct struct {
 	Project  *string `json:"project"`
 	Service  *string `json:"service"`
 	Stage    *string `json:"stage"`
-	Sequence *string `json:"sequence"`
 }
 
 var sequence = sequenceStruct{}
@@ -64,14 +63,17 @@ The name of the sequence has to be provided as an argument to the command. The s
 	Example:      `keptn trigger sequence <sequence-name> --project=<project> --service=<service> --stage=<stage>`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
+		if len(args) != 1 {
+			return errors.New("required argument sequence-name not set")
+		}
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return doTriggerSequence(sequence)
+		return doTriggerSequence(sequence, args[0])
 	},
 }
 
-func doTriggerSequence(sequenceInputData sequenceStruct) error {
+func doTriggerSequence(sequenceInputData sequenceStruct, sequenceName string) error {
 	var endPoint url.URL
 	var apiToken string
 	var err error
@@ -86,7 +88,7 @@ func doTriggerSequence(sequenceInputData sequenceStruct) error {
 		return errors.New(authErrorMsg)
 	}
 
-	logging.PrintLog("Triggering sequence "+*sequenceInputData.Sequence+" in project "+*sequenceInputData.Project+" in stage "+*sequenceInputData.Stage+" service "+*sequenceInputData.Service, logging.InfoLevel)
+	logging.PrintLog("Triggering sequence "+sequenceName+" in project "+*sequenceInputData.Project+" in stage "+*sequenceInputData.Stage+" service "+*sequenceInputData.Service, logging.InfoLevel)
 
 	api, err := internal.APIProvider(endPoint.String(), apiToken)
 	if err != nil {
@@ -112,7 +114,7 @@ func doTriggerSequence(sequenceInputData sequenceStruct) error {
 
 	sdkEvent := cloudevents.NewEvent()
 	sdkEvent.SetID(uuid.New().String())
-	sdkEvent.SetType(keptnv2.GetTriggeredEventType(*sequenceInputData.Stage + "." + *sequenceInputData.Sequence))
+	sdkEvent.SetType(keptnv2.GetTriggeredEventType(*sequenceInputData.Stage + "." + sequenceName))
 	sdkEvent.SetSource("https://github.com/keptn/keptn/cli#configuration-change")
 	sdkEvent.SetDataContentType(cloudevents.ApplicationJSON)
 	sdkEvent.SetData(cloudevents.ApplicationJSON, triggeredEvent)
@@ -153,10 +155,6 @@ func doTriggerSequencePreRunCheck(sequenceInputData sequenceStruct) error {
 		return fmt.Errorf("Stage has to be provided")
 	}
 
-	if sequenceInputData.Sequence == nil {
-		return fmt.Errorf("Sequence has to be provided")
-	}
-
 	return nil
 }
 
@@ -173,9 +171,5 @@ func init() {
 	sequence.Stage = triggerSequenceCmd.Flags().StringP("stage", "", "",
 		"The stage in which the new artifact will be triggered")
 	triggerSequenceCmd.MarkFlagRequired("stage")
-
-	sequence.Sequence = triggerSequenceCmd.Flags().StringP("sequence", "", "",
-		"The sequence for which the new artifact will be triggered")
-	triggerSequenceCmd.MarkFlagRequired("sequence")
 
 }

@@ -17,21 +17,21 @@ import (
 	"syscall"
 )
 
-// @title Secret Service API
-// @version develop
-// @description This is the API documentation of the Secret Service.
+// @title        Secret Service API
+// @version      develop
+// @description  This is the API documentation of the Secret Service.
 
-// @securityDefinitions.apiKey ApiKeyAuth
-// @in header
-// @name x-token
+// @securityDefinitions.apiKey  ApiKeyAuth
+// @in                          header
+// @name                        x-token
 
-// @contact.name Keptn Team
-// @contact.url http://www.keptn.sh
+// @contact.name  Keptn Team
+// @contact.url   http://www.keptn.sh
 
-// @license.name Apache 2.0
-// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+// @license.name  Apache 2.0
+// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @BasePath /v1
+// @BasePath  /v1
 
 const envVarLogLevel = "LOG_LEVEL"
 

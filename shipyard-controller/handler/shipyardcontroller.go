@@ -542,7 +542,7 @@ func (sc *shipyardController) timeoutSequence(timeout apimodels.SequenceTimeout)
 	sequenceExecution := sequenceExecutions[0]
 	sc.onSequenceTimeout(timeout.LastEvent)
 
-	if err := sc.completeTaskSequence(sequenceExecution.Scope, sequenceExecution, apimodels.TimedOut); err != nil {
+	if err := sc.completeTaskSequence(*eventScope, sequenceExecution, apimodels.TimedOut); err != nil {
 		return err
 	}
 	return nil

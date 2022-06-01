@@ -2,6 +2,13 @@ package sdk
 
 import (
 	"context"
+	"log"
+	"os"
+	"os/signal"
+	"strings"
+	"sync"
+	"syscall"
+
 	"github.com/kelseyhightower/envconfig"
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
@@ -9,12 +16,6 @@ import (
 	api2 "github.com/keptn/keptn/cp-common/api"
 	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
 	"github.com/keptn/keptn/cp-connector/pkg/nats"
-	"log"
-	"os"
-	"os/signal"
-	"strings"
-	"sync"
-	"syscall"
 )
 
 const (
@@ -276,7 +277,7 @@ func (k *Keptn) RegistrationData() controlplane.RegistrationData {
 		Name: k.source,
 		MetaData: models.MetaData{
 			Hostname:           k.env.K8sNodeName,
-			IntegrationVersion: k.env.Version,
+			IntegrationVersion: k.env.K8sDeploymentVersion,
 			Location:           k.env.Location,
 			DistributorVersion: "0.15.0", // note: to be deleted when bridge stops requiring this info
 			KubernetesMetaData: models.KubernetesMetaData{

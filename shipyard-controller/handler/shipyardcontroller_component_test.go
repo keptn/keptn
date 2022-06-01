@@ -102,6 +102,11 @@ spec:
 
 const mongoDBVersion = "4.4.9"
 
+func TestMain(m *testing.M) {
+	defer setupLocalMongoDB()()
+	m.Run()
+}
+
 func setupLocalMongoDB() func() {
 	mongoServer, err := memongo.Start(mongoDBVersion)
 	randomDbName := memongo.RandomDatabase()
@@ -125,12 +130,11 @@ func setupLocalMongoDB() func() {
 //Scenario 1: Complete task sequence execution + triggering of next task sequence. Events are received in order
 func Test_shipyardController_Scenario1(t *testing.T) {
 
-	defer setupLocalMongoDB()()
-
 	t.Logf("Executing Shipyard Controller Scenario 1 with shipyard file %s", testShipyardFile)
 	sc, cancel := getTestShipyardController("")
 	defer sc.StopDispatchers()
 	defer cancel()
+	defer sc.sequenceExecutionRepo.Clear("test-project")
 
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
 
@@ -332,12 +336,11 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 
 //Scenario 2: Partial task sequence execution + triggering of next task sequence. Events are received out of order
 func Test_shipyardController_Scenario2(t *testing.T) {
-	defer setupLocalMongoDB()()
-
 	t.Logf("Executing Shipyard Controller Scenario 2 with shipyard file %s", testShipyardFile)
 	sc, cancel := getTestShipyardController("")
 
 	defer cancel()
+	defer sc.sequenceExecutionRepo.Clear("test-project")
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
 
 	done := false
@@ -399,11 +402,9 @@ func Test_shipyardController_Scenario2(t *testing.T) {
 
 //Scenario 3: Received .finished event with status "errored" should abort task sequence and send .finished event with status "errored"
 func Test_shipyardController_Scenario3(t *testing.T) {
-	defer setupLocalMongoDB()()
-
 	t.Logf("Executing Shipyard Controller Scenario 1 with shipyard file %s", testShipyardFile)
 	sc, cancel := getTestShipyardController("")
-
+	defer sc.sequenceExecutionRepo.Clear("test-project")
 	defer cancel()
 	done := false
 
@@ -476,12 +477,11 @@ func Test_shipyardController_Scenario3(t *testing.T) {
 
 //Scenario 4: Received .finished event with result "fail" - stop task sequence
 func Test_shipyardController_Scenario4(t *testing.T) {
-	defer setupLocalMongoDB()()
-
 	t.Logf("Executing Shipyard Controller Scenario 1 with shipyard file %s", testShipyardFile)
 	sc, cancel := getTestShipyardController("")
 
 	defer cancel()
+	defer sc.sequenceExecutionRepo.Clear("test-project")
 	done := false
 
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
@@ -588,12 +588,12 @@ func Test_shipyardController_Scenario4(t *testing.T) {
 
 //Scenario 4a: Handling multiple finished events, one has result==failed, ==> task sequence is stopped
 func Test_shipyardController_Scenario4a(t *testing.T) {
-	defer setupLocalMongoDB()()
 
 	t.Logf("Executing Shipyard Controller Scenario 1 with shipyard file %s", testShipyardFile)
 	sc, cancel := getTestShipyardController("")
 
 	defer cancel()
+	defer sc.sequenceExecutionRepo.Clear("test-project")
 	done := false
 
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
@@ -660,12 +660,12 @@ func Test_shipyardController_Scenario4a(t *testing.T) {
 
 //Scenario 4b: Received .finished event with result "fail" - stop task sequence and trigger next sequence based on result filter
 func Test_shipyardController_TriggerOnFail(t *testing.T) {
-	defer setupLocalMongoDB()()
 
 	t.Logf("Executing Shipyard Controller with shipyard file %s", testShipyardFile)
 	sc, cancel := getTestShipyardController("")
 
 	defer cancel()
+	defer sc.sequenceExecutionRepo.Clear("test-project")
 	done := false
 
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
@@ -740,12 +740,11 @@ func Test_shipyardController_TriggerOnFail(t *testing.T) {
 
 //Scenario 5: Received .triggered event for project with invalid shipyard version -> send .finished event with result = fail
 func Test_shipyardController_Scenario5(t *testing.T) {
-	defer setupLocalMongoDB()()
-
 	t.Logf("Executing Shipyard Controller Scenario 5 with shipyard file %s", testShipyardFileWithInvalidVersion)
 	sc, cancel := getTestShipyardController(testShipyardFileWithInvalidVersion)
 
 	defer cancel()
+	defer sc.sequenceExecutionRepo.Clear("test-project")
 
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
 
@@ -765,12 +764,11 @@ func Test_shipyardController_Scenario5(t *testing.T) {
 
 //Scenario 6: Received .finished event for a task where no sequence is available
 func Test_shipyardController_Scenario6(t *testing.T) {
-	defer setupLocalMongoDB()()
-
 	t.Logf("Executing Shipyard Controller Scenario 6 with shipyard file %s", testShipyardFileWithInvalidVersion)
 	sc, cancel := getTestShipyardController(testShipyardFileWithInvalidVersion)
 
 	defer cancel()
+	defer sc.sequenceExecutionRepo.Clear("test-project")
 
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
 
@@ -785,12 +783,11 @@ func Test_shipyardController_Scenario6(t *testing.T) {
 
 //Scenario 7: Received .finished event with missing stage
 func Test_shipyardController_Scenario7(t *testing.T) {
-	defer setupLocalMongoDB()()
-
 	t.Logf("Executing Shipyard Controller Scenario 7 with shipyard file %s", testShipyardFileWithInvalidVersion)
 	sc, cancel := getTestShipyardController(testShipyardFileWithInvalidVersion)
 
 	defer cancel()
+	defer sc.sequenceExecutionRepo.Clear("test-project")
 
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
 
@@ -804,8 +801,6 @@ func Test_shipyardController_Scenario7(t *testing.T) {
 }
 
 func Test_shipyardController_DuplicateTask(t *testing.T) {
-	defer setupLocalMongoDB()()
-
 	t.Logf("Executing Shipyard Controller Scenario 6 (duplicate tasks) with shipyard file %s", testShipyardFileWithDuplicateTasks)
 	sc, cancel := getTestShipyardController(testShipyardFileWithDuplicateTasks)
 	defer cancel()
@@ -859,8 +854,6 @@ func Test_shipyardController_DuplicateTask(t *testing.T) {
 }
 
 func Test_shipyardController_TimeoutSequence(t *testing.T) {
-	defer setupLocalMongoDB()()
-
 	sc, cancel := getTestShipyardController("")
 	defer cancel()
 	fakeTimeoutHook := &fakehooks.ISequenceTimeoutHookMock{OnSequenceTimeoutFunc: func(event apimodels.KeptnContextExtendedCE) {}}
@@ -930,10 +923,110 @@ func Test_shipyardController_TimeoutSequence(t *testing.T) {
 
 	require.Nil(t, err)
 	require.Len(t, fakeTimeoutHook.OnSequenceTimeoutCalls(), 1)
+
+	eventDispatcherMock := sc.eventDispatcher.(*fake.IEventDispatcherMock)
+
+	require.Len(t, eventDispatcherMock.AddCalls(), 1)
+
+	sentEvent := eventDispatcherMock.AddCalls()[0]
+
+	eventData := &keptnv2.EventData{}
+	err = sentEvent.Event.Event.DataAs(eventData)
+
+	require.Nil(t, err)
+	require.Equal(t, keptnv2.ResultFailed, eventData.Result)
+	require.Equal(t, keptnv2.StatusErrored, eventData.Status)
+}
+
+func Test_shipyardController_TimeoutSequence_ErrorWhenSendingEvent(t *testing.T) {
+	sc, cancel := getTestShipyardController("")
+	defer cancel()
+	fakeTimeoutHook := &fakehooks.ISequenceTimeoutHookMock{OnSequenceTimeoutFunc: func(event apimodels.KeptnContextExtendedCE) {}}
+	sc.AddSequenceTimeoutHook(fakeTimeoutHook)
+
+	// insert the test data
+	_ = sc.eventRepo.InsertEvent("my-project", apimodels.KeptnContextExtendedCE{
+		Data: keptnv2.EventData{
+			Project: "my-project",
+			Stage:   "my-stage",
+			Service: "my-service",
+		},
+		ID:             "my-sequence-triggered-id",
+		Shkeptncontext: "my-keptn-context-id",
+		Type:           common.Stringp(keptnv2.GetTriggeredEventType("my-stage.delivery")),
+	}, common.TriggeredEvent)
+
+	_ = sc.eventRepo.InsertEvent("my-project", apimodels.KeptnContextExtendedCE{
+		Data: keptnv2.EventData{
+			Project: "my-project",
+			Stage:   "my-stage",
+			Service: "my-service",
+		},
+		ID:             "my-deployment-triggered-id",
+		Shkeptncontext: "my-keptn-context-id",
+		Type:           common.Stringp(keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName)),
+	}, common.TriggeredEvent)
+
+	err := sc.sequenceExecutionRepo.Upsert(models.SequenceExecution{
+		ID: "sequence-execution-id",
+		Sequence: keptnv2.Sequence{
+			Name: "delivery",
+		},
+		Status: models.SequenceExecutionStatus{
+			State: apimodels.SequenceStartedState,
+			CurrentTask: models.TaskExecutionState{
+				Name:        "deployment",
+				TriggeredID: "my-deployment-triggered-id",
+			},
+		},
+		Scope: models.EventScope{
+			KeptnContext: "my-keptn-context-id",
+			EventData: keptnv2.EventData{
+				Project: "my-project",
+				Stage:   "my-stage",
+				Service: "my-service",
+			},
+		},
+	}, nil)
+
+	require.Nil(t, err)
+
+	eventDispatcherMock := sc.eventDispatcher.(*fake.IEventDispatcherMock)
+	eventDispatcherMock.AddFunc = func(event models.DispatcherEvent, skipQueue bool) error {
+		return errors.New("oops")
+	}
+
+	// invoke the CancelSequence function
+	err = sc.timeoutSequence(apimodels.SequenceTimeout{
+		KeptnContext: "my-keptn-context-id",
+		LastEvent: apimodels.KeptnContextExtendedCE{
+			Data: keptnv2.EventData{
+				Project: "my-project",
+				Stage:   "my-stage",
+				Service: "my-service",
+			},
+			Type:           common.Stringp(keptnv2.GetTriggeredEventType("my-task")),
+			ID:             "my-deployment-triggered-id",
+			Shkeptncontext: "my-keptn-context-id",
+		},
+	})
+
+	require.NotNil(t, err)
+	require.Len(t, fakeTimeoutHook.OnSequenceTimeoutCalls(), 1)
+
+	require.Len(t, eventDispatcherMock.AddCalls(), 1)
+
+	sentEvent := eventDispatcherMock.AddCalls()[0]
+
+	eventData := &keptnv2.EventData{}
+	err = sentEvent.Event.Event.DataAs(eventData)
+
+	require.Nil(t, err)
+	require.Equal(t, keptnv2.ResultFailed, eventData.Result)
+	require.Equal(t, keptnv2.StatusErrored, eventData.Status)
 }
 
 func Test_shipyardController_CancelSequence(t *testing.T) {
-	defer setupLocalMongoDB()()
 	sc, cancel := getTestShipyardController("")
 	defer cancel()
 	fakeSequenceFinishedHook := &fakehooks.ISequenceFinishedHookMock{OnSequenceFinishedFunc: func(event apimodels.KeptnContextExtendedCE) {}}
@@ -1002,8 +1095,6 @@ func Test_shipyardController_CancelSequence(t *testing.T) {
 }
 
 func Test_shipyardController_CancelQueuedSequence(t *testing.T) {
-	defer setupLocalMongoDB()()
-
 	sc, cancel := getTestShipyardController("")
 	defer cancel()
 	sequenceDispatcherMock := &fake.ISequenceDispatcherMock{}
@@ -1064,8 +1155,6 @@ func Test_shipyardController_CancelQueuedSequence(t *testing.T) {
 }
 
 func Test_shipyardController_CancelQueuedSequence_RemoveFromQueueFails(t *testing.T) {
-	defer setupLocalMongoDB()()
-
 	sc, cancel := getTestShipyardController("")
 	defer cancel()
 	sequenceDispatcherMock := &fake.ISequenceDispatcherMock{}
@@ -1124,8 +1213,6 @@ func Test_shipyardController_CancelQueuedSequence_RemoveFromQueueFails(t *testin
 }
 
 func Test_shipyardController_CancelQueuedSequence_NoTriggeredEventAvailable(t *testing.T) {
-	defer setupLocalMongoDB()()
-
 	sc, cancel := getTestShipyardController("")
 	defer cancel()
 	sequenceDispatcherMock := &fake.ISequenceDispatcherMock{}
@@ -1154,8 +1241,6 @@ func Test_shipyardController_CancelQueuedSequence_NoTriggeredEventAvailable(t *t
 }
 
 func Test_SequenceForUnavailableStage(t *testing.T) {
-	defer setupLocalMongoDB()()
-
 	t.Logf("Executing Shipyard Controller with shipyard file %s", testShipyardFile)
 	sc, cancel := getTestShipyardController("")
 	defer cancel()
@@ -1180,8 +1265,6 @@ func Test_SequenceForUnavailableStage(t *testing.T) {
 
 // Updating event of service fails -> event handling should still happen
 func Test_UpdateEventOfServiceFailsFails(t *testing.T) {
-	defer setupLocalMongoDB()()
-
 	t.Logf("Executing Shipyard Controller with shipyard file %s", testShipyardFileWithInvalidVersion)
 	sc, cancel := getTestShipyardController(testShipyardFileWithInvalidVersion)
 	defer cancel()
@@ -1205,8 +1288,6 @@ func Test_UpdateEventOfServiceFailsFails(t *testing.T) {
 
 // Scenario 5: Received .triggered event for project with invalid shipyard version -> send .finished event with result = fail
 func Test_UpdateServiceShouldNotBeCalledForEmptyService(t *testing.T) {
-	defer setupLocalMongoDB()()
-
 	t.Logf("Executing Shipyard Controller with shipyard file %s", testShipyardFileWithInvalidVersion)
 	sc, cancel := getTestShipyardController("")
 
