@@ -10,7 +10,7 @@ on:
         required: true
         default: 'master'
       upgradeTo:
-        description: 'The helm upgrade command will run with this version (e.g. 0.15.0-dev-PR-7504)'
+        description: 'The helm upgrade command will run with this version (e.g. 0.15.0-dev-PR-7504 or a full address like in the default value )'
         required: true
         default: 'https://github.com/keptn/helm-charts-dev/raw/1d63e5d3c3f409279a4157d5ad537413abade2e5/packages/keptn-0.16.0-dev.tgz'
       testUI:
@@ -195,14 +195,15 @@ jobs:
             echo "UPGRADE_HELM_CHART=${{ github.event.inputs.upgradeTo }}" >> $GITHUB_ENV
           else         
             echo  'retrieving  ./keptn-${{ github.event.inputs.upgradeTo }}.tgz'
-          
-            CHART_REPO="https://charts.keptn.sh"
-            if [[ ${{ github.event.inputs.upgradeTo }} == *"-dev"* ]]; then
-              CHART_REPO="https://charts-dev.keptn.sh"
-            fi
-            helm repo add keptndev $CHART_REPO
+            helm repo add keptn "https://charts.keptn.sh"
+            helm repo add keptndev "https://charts-dev.keptn.sh"
             helm repo update
-            helm pull keptndev/keptn --version ${{ github.event.inputs.upgradeTo }}
+           
+            if [[ ${{ github.event.inputs.upgradeTo }} == *"-dev"* ]]; then
+               helm pull keptndev/keptn --version ${{ github.event.inputs.upgradeTo }}
+            else
+               helm pull keptn/keptn --version ${{ github.event.inputs.upgradeTo }}
+            fi
             echo "UPGRADE_HELM_CHART=$(ls './keptn-${{ github.event.inputs.upgradeTo }}.tgz')" >> $GITHUB_ENV  
           fi 
           
