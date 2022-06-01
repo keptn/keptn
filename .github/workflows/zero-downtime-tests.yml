@@ -198,7 +198,7 @@ jobs:
             helm repo add keptn "https://charts.keptn.sh"
             helm repo add keptndev "https://charts-dev.keptn.sh"
             helm repo update
-           
+          
             if [[ ${{ github.event.inputs.upgradeTo }} == *"-dev"* ]]; then
                helm pull keptndev/keptn --version ${{ github.event.inputs.upgradeTo }}
             else
@@ -377,7 +377,7 @@ jobs:
           else
             echo "UI test wont run"
           fi 
-         
+
 
       - name: Format go test log output
         if: always()
@@ -477,7 +477,7 @@ jobs:
         if: always() && github.event.inputs.testUI == 'true'
         with:
           name: ui-test-log
-          path:  /tmp/uitest.log
+          path: /tmp/uitest.log
           if-no-files-found: error
 
   calculate-total-runtime:
