@@ -192,19 +192,20 @@ jobs:
           helm repo add keptndev $CHART_REPO
           helm repo update
           
-          if [[ "${{ github.event_name }}" == 'schedule' || ${{ github.event.inputs.upgradeTo }} == "http"*  ]]; then
+          echo "copying helm chart in zero downtime folder"
+          cp ${HELM_CHART_NAME} test/zero-downtime/keptn-installed.tgz
+          cd test/zero-downtime
+          echo "INSTALL_HELM_CHART=$(ls ./keptn-installed.tgz)" >> $GITHUB_ENV
+          
+          if [[ "${{ github.event_name }}" == 'schedule' || ${{ github.event.inputs.upgradeTo }} == "http"* ]]; then
             echo "UPGRADE_HELM_CHART=${{ github.event.inputs.upgradeTo }}" >> $GITHUB_ENV
           else         
             helm pull keptndev/keptn --version ${{ github.event.inputs.upgradeTo }} --destination test/zero-downtime
             echo "UPGRADE_HELM_CHART=$(ls './keptn-${{ github.event.inputs.upgradeTo }}.tgz')" >> $GITHUB_ENV  
           fi 
-          echo "copying helm chart in zero downtime folder"
-          cp ${HELM_CHART_NAME} test/zero-downtime/keptn-installed.tgz
-          cd test/zero-downtime
+          
           echo "Downloaded files:"
           ls -la ./keptn*.tgz
-          
-          echo "INSTALL_HELM_CHART=$(ls ./keptn-installed.tgz)" >> $GITHUB_ENV
 
       - name: Install and start GKE cluster
         if: env.CLOUD_PROVIDER == 'GKE'
