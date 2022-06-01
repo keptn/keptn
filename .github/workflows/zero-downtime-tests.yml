@@ -365,11 +365,12 @@ jobs:
           
            if [[ "${{ github.event.inputs.testUI }}" == 'true' ]]; then   
             while [[ $(jobs -pr) ]]; do
-              echo "New Run: "  >> /tmp/uitest.log 
+              echo "New Run: " >> /tmp/uitest.log 
               npm run test:ui >> /tmp/uitest.log 2>&1 
-            done
-          fi &
-          cd ../test/zero-downtime && go test -json -v -run Test_ZeroDowntime -v -timeout 90m 2>&1 | tee /tmp/gotest.log
+            done &
+            cd ../test/zero-downtime go test -json -v -run Test_ZeroDowntime -v -timeout 90m 2>&1 | tee /tmp/gotest.log
+          fi
+          cd ../test/zero-downtime go test -json -v -run Test_ZeroDowntime -v -timeout 90m 2>&1 | tee /tmp/gotest.log
          
 
       - name: Format go test log output
@@ -380,7 +381,6 @@ jobs:
 
       - name: Format cypress log output
         if: always() && github.event.inputs.testUI == 'true'
-        working-directory: bridge
         run: cat /tmp/uitest.log
 
       #######################################################################
