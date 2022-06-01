@@ -193,7 +193,7 @@ jobs:
           
           if [[ "${{ github.event_name }}" == 'schedule' || ${{ github.event.inputs.upgradeTo }} == "http"* ]]; then
             echo "UPGRADE_HELM_CHART=${{ github.event.inputs.upgradeTo }}" >> $GITHUB_ENV
-          else         
+          else
             echo  'retrieving  ./keptn-${{ github.event.inputs.upgradeTo }}.tgz'
             helm repo add keptn "https://charts.keptn.sh"
             helm repo add keptndev "https://charts-dev.keptn.sh"
@@ -204,8 +204,8 @@ jobs:
             else
                helm pull keptn/keptn --version ${{ github.event.inputs.upgradeTo }}
             fi
-            echo "UPGRADE_HELM_CHART=$(ls './keptn-${{ github.event.inputs.upgradeTo }}.tgz')" >> $GITHUB_ENV  
-          fi 
+            echo "UPGRADE_HELM_CHART=$(ls './keptn-${{ github.event.inputs.upgradeTo }}.tgz')" >> $GITHUB_ENV
+          fi
           
           echo "Downloaded files:"
           ls -la ./keptn*.tgz
@@ -368,14 +368,14 @@ jobs:
           set -euo pipefail 
           
            go test -json -v -run Test_ZeroDowntime -v -timeout 90m 2>&1 | tee /tmp/gotest.log &
-           cd ../../bridge && 
+           cd ../../bridge &&
            if [[ "${{ github.event.inputs.testUI }}" == 'true' ]]; then   
             while [[ $(jobs -pr) ]]; do
               echo "New Run: "  >> /tmp/uitest.log 
               npm run test:ui >> /tmp/uitest.log 2>&1 
             done
           else
-            echo "UI test wont run"
+            echo "UI tests will not run"
           fi 
 
 
