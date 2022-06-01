@@ -38,7 +38,7 @@ func NewTaskHandler(templateEngine lib.ITemplateEngine, curlExecutor lib.ICurlEx
 }
 
 func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (interface{}, *sdk.Error) {
-	logger.Infof("Received event %s", event)
+	logger.Infof("Received event %+v", event)
 	eventAdapter, err := lib.NewEventDataAdapter(event)
 	if err != nil {
 		return nil, sdkError("could not parse incoming event", err)
