@@ -97,6 +97,7 @@ func (cp *ControlPlane) handle(ctx context.Context, eventUpdate EventUpdate, int
 		if subscription.Event == eventUpdate.MetaData.Subject {
 			matcher := NewEventMatcherFromSubscription(subscription)
 			if matcher.Matches(eventUpdate.KeptnEvent) {
+				cp.logger.Info("Forwarding matched event update: ", eventUpdate.KeptnEvent)
 				if err := cp.forwardMatchedEvent(ctx, eventUpdate, integration, subscription); err != nil {
 					return err
 				}
