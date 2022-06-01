@@ -1,5 +1,8 @@
 name: ZeroDowntime Tests
 on:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron: '0 1 * * 1' # run zero downtime tests at 1 AM (UTC), every monday (1)
   workflow_dispatch: # run zero downtime tests selecting the installation branch and the upgrade chart
     inputs:
       branch:
@@ -7,8 +10,9 @@ on:
         required: true
         default: 'master'
       upgradeTo:
-        description: 'The helm upgrade command will run with this version (e.g. 0.15.0-dev-PR-7504)'
+        description: 'The helm upgrade command will run with this version (e.g. 0.15.0-dev-PR-7504 or a full address like in the default value )'
         required: true
+        default: 'https://github.com/keptn/helm-charts-dev/raw/1d63e5d3c3f409279a4157d5ad537413abade2e5/packages/keptn-0.16.0-dev.tgz'
       testUI:
         type: boolean
         description: 'Cypress tests for Bridge will be run in parallel to the zero downtime tests'
@@ -181,20 +185,30 @@ jobs:
         env:
           HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_CHART_NAME }}
         run: |
-          CHART_REPO="https://charts.keptn.sh"
-          if [[ ${{ github.event.inputs.upgradeTo }} == *"-dev"* ]]; then
-            CHART_REPO="https://charts-dev.keptn.sh"
-          fi
-          helm repo add keptndev $CHART_REPO
-          helm repo update
-          helm pull keptndev/keptn --version ${{ github.event.inputs.upgradeTo }} --destination test/zero-downtime
+          
           echo "copying helm chart in zero downtime folder"
           cp ${HELM_CHART_NAME} test/zero-downtime/keptn-installed.tgz
           cd test/zero-downtime
+          echo "INSTALL_HELM_CHART=$(ls ./keptn-installed.tgz)" >> $GITHUB_ENV
+          
+          if [[ "${{ github.event_name }}" == 'schedule' || ${{ github.event.inputs.upgradeTo }} == "http"* ]]; then
+            echo "UPGRADE_HELM_CHART=${{ github.event.inputs.upgradeTo }}" >> $GITHUB_ENV
+          else
+            echo  'retrieving  ./keptn-${{ github.event.inputs.upgradeTo }}.tgz'
+            helm repo add keptn "https://charts.keptn.sh"
+            helm repo add keptndev "https://charts-dev.keptn.sh"
+            helm repo update
+          
+            if [[ ${{ github.event.inputs.upgradeTo }} == *"-dev"* ]]; then
+               helm pull keptndev/keptn --version ${{ github.event.inputs.upgradeTo }}
+            else
+               helm pull keptn/keptn --version ${{ github.event.inputs.upgradeTo }}
+            fi
+            echo "UPGRADE_HELM_CHART=$(ls './keptn-${{ github.event.inputs.upgradeTo }}.tgz')" >> $GITHUB_ENV
+          fi
+          
           echo "Downloaded files:"
           ls -la ./keptn*.tgz
-          echo "UPGRADE_HELM_CHART=$(ls './keptn-${{ github.event.inputs.upgradeTo }}.tgz')" >> $GITHUB_ENV
-          echo "INSTALL_HELM_CHART=$(ls ./keptn-installed.tgz)" >> $GITHUB_ENV
 
       - name: Install and start GKE cluster
         if: env.CLOUD_PROVIDER == 'GKE'
@@ -346,21 +360,24 @@ jobs:
       - name: Zero Downtime Tests
         id: test_zero_downtime
         timeout-minutes: 90
-        working-directory: bridge
+        working-directory: test/zero-downtime
         env:
           GOMAXPROCS: 10
           KEPTN_ENDPOINT: ${{ steps.determine_keptn_endpoint.outputs.KEPTN_ENDPOINT }}
         run: |
           set -euo pipefail 
           
+           go test -json -v -run Test_ZeroDowntime -v -timeout 90m 2>&1 | tee /tmp/gotest.log &
+           cd ../../bridge &&
            if [[ "${{ github.event.inputs.testUI }}" == 'true' ]]; then   
             while [[ $(jobs -pr) ]]; do
               echo "New Run: "  >> /tmp/uitest.log 
               npm run test:ui >> /tmp/uitest.log 2>&1 
             done
-          fi &
-          cd ../test/zero-downtime && go test -json -v -run Test_ZeroDowntime -v -timeout 90m 2>&1 | tee /tmp/gotest.log
-         
+          else
+            echo "UI tests will not run"
+          fi 
+
 
       - name: Format go test log output
         if: always()
@@ -370,7 +387,6 @@ jobs:
 
       - name: Format cypress log output
         if: always() && github.event.inputs.testUI == 'true'
-        working-directory: bridge
         run: cat /tmp/uitest.log
 
       #######################################################################
@@ -461,7 +477,7 @@ jobs:
         if: always() && github.event.inputs.testUI == 'true'
         with:
           name: ui-test-log
-          path:  /tmp/uitest.log
+          path: /tmp/uitest.log
           if-no-files-found: error
 
   calculate-total-runtime:
