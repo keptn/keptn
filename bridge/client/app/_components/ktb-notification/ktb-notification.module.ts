@@ -16,7 +16,9 @@ import { DtButtonModule } from '@dynatrace/barista-components/button';
     CommonModule,
     BrowserAnimationsModule,
     DtAlertModule,
-    DtIconModule,
+    DtIconModule.forRoot({
+      svgIconLocation: `assets/icons/{{name}}.svg`,
+    }),
     KtbPipeModule,
     HttpClientModule,
     FlexLayoutModule,
