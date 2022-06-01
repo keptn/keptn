@@ -192,7 +192,7 @@ jobs:
           helm repo add keptndev $CHART_REPO
           helm repo update
           
-          if [[ "${{ github.event_name }}" == 'schedule' || true ]]; then
+          if [[ "${{ github.event_name }}" == 'schedule' ]]; then
             echo "UPGRADE_HELM_CHART=${{ github.event.inputs.upgradeTo }}" >> $GITHUB_ENV
           else         
             helm pull keptndev/keptn --version ${{ github.event.inputs.upgradeTo }} --destination test/zero-downtime
