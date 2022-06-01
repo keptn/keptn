@@ -185,12 +185,6 @@ jobs:
         env:
           HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_CHART_NAME }}
         run: |
-          CHART_REPO="https://charts.keptn.sh"
-          if [[ ${{ github.event.inputs.upgradeTo }} == *"-dev"* ]]; then
-            CHART_REPO="https://charts-dev.keptn.sh"
-          fi
-          helm repo add keptndev $CHART_REPO
-          helm repo update
           
           echo "copying helm chart in zero downtime folder"
           cp ${HELM_CHART_NAME} test/zero-downtime/keptn-installed.tgz
@@ -201,6 +195,13 @@ jobs:
             echo "UPGRADE_HELM_CHART=${{ github.event.inputs.upgradeTo }}" >> $GITHUB_ENV
           else         
             echo  'retrieving  ./keptn-${{ github.event.inputs.upgradeTo }}.tgz'
+          
+            CHART_REPO="https://charts.keptn.sh"
+            if [[ ${{ github.event.inputs.upgradeTo }} == *"-dev"* ]]; then
+              CHART_REPO="https://charts-dev.keptn.sh"
+            fi
+            helm repo add keptndev $CHART_REPO
+            helm repo update
             helm pull keptndev/keptn --version ${{ github.event.inputs.upgradeTo }}
             echo "UPGRADE_HELM_CHART=$(ls './keptn-${{ github.event.inputs.upgradeTo }}.tgz')" >> $GITHUB_ENV  
           fi 
