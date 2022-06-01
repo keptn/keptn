@@ -5,12 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"github.com/keptn/go-utils/pkg/api/models"
-	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cp-connector/pkg/eventmatcher"
 	"github.com/keptn/keptn/cp-connector/pkg/eventsource"
 	"github.com/keptn/keptn/cp-connector/pkg/logforwarder"
 	"github.com/keptn/keptn/cp-connector/pkg/logger"
-	natseventsource "github.com/keptn/keptn/cp-connector/pkg/nats"
 	"github.com/keptn/keptn/cp-connector/pkg/subscriptionsource"
 	"github.com/keptn/keptn/cp-connector/pkg/types"
 )
@@ -161,22 +159,4 @@ func subjects(subscriptions []models.EventSubscription) []string {
 		ret = append(ret, s.Event)
 	}
 	return ret
-}
-
-// NewNATSEventSource creates a new NATSEventSource
-// Deprecated: use eventsource.New
-func NewNATSEventSource(natsConnector natseventsource.NATS) *eventsource.NATSEventSource {
-	return eventsource.New(natsConnector)
-}
-
-// NewLogForwarder creates a new logging forwarder
-// Deprecated: use logforwarder.New
-func NewLogForwarder(logApi api.LogsV1Interface) *logforwarder.LogForwardingHandler {
-	return logforwarder.New(logApi)
-}
-
-// NewUniformSubscriptionSource creates a new subscription source
-// Deprecated: use subscriptionsource.New
-func NewUniformSubscriptionSource(uniformAPI api.UniformV1Interface, options ...func(source *subscriptionsource.UniformSubscriptionSource)) *subscriptionsource.UniformSubscriptionSource {
-	return subscriptionsource.New(uniformAPI, options...)
 }
