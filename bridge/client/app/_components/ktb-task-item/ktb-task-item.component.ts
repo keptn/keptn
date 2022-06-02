@@ -34,7 +34,16 @@ export class KtbTaskItemComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
   public project$: Observable<Project | undefined> = of(undefined);
   public _task?: Trace;
-  @Input() public isExpanded = false;
+  public latestDeployment?: string;
+  private _expanded = false;
+  @Input()
+  public set isExpanded(isExpanded: boolean) {
+    this._expanded = isExpanded;
+    this.setLatestDeployment();
+  }
+  public get isExpanded(): boolean {
+    return this._expanded;
+  }
   @Input() public isSubtask = false;
 
   @ViewChild('taskPayloadDialog')
@@ -50,13 +59,13 @@ export class KtbTaskItemComponent implements OnInit, OnDestroy {
     return this._task;
   }
 
-  set task(value: Trace | undefined) {
-    if (this._task !== value) {
-      this._task = value;
+  set task(trace: Trace | undefined) {
+    if (this._task !== trace) {
+      this._task = trace;
+      this.latestDeployment = undefined;
+      this.setLatestDeployment();
     }
   }
-
-  @Input() latestDeployment: string | undefined;
 
   constructor(
     private dataService: DataService,
@@ -65,6 +74,22 @@ export class KtbTaskItemComponent implements OnInit, OnDestroy {
     public dateUtil: DateUtil,
     private route: ActivatedRoute
   ) {}
+
+  private setLatestDeployment(): void {
+    if (!this.isExpanded || !this.task || this.latestDeployment !== undefined || !this.task.isApproval()) {
+      return;
+    }
+
+    const { project, stage, service } = this.task;
+    if (!project || !stage || !service) {
+      this.latestDeployment = '';
+      return;
+    }
+
+    this.dataService.getService(project, stage, service).subscribe((svc) => {
+      this.latestDeployment = svc.deployedImage ?? '';
+    });
+  }
 
   showEventPayloadDialog(event: MouseEvent, task: Trace): void {
     event.stopPropagation();
@@ -99,7 +124,7 @@ export class KtbTaskItemComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     if (this.task?.project) {
-      this.project$ = this.dataService.getProject(this.task?.project);
+      this.project$ = this.dataService.getProject(this.task.project);
     }
     this.route.params.pipe(takeUntil(this.unsubscribe$)).subscribe((params) => {
       if (params.eventId === this.task?.id) {

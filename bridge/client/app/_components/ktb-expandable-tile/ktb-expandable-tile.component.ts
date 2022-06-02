@@ -3,8 +3,10 @@ import {
   ChangeDetectorRef,
   Component,
   Directive,
+  EventEmitter,
   HostBinding,
   Input,
+  Output,
   ViewEncapsulation,
 } from '@angular/core';
 
@@ -32,6 +34,9 @@ export class KtbExpandableTileComponent {
   private _warning = false;
   private _highlight = false;
   private _alignment: alignmentType = 'right';
+
+  @Output()
+  public expandedChange = new EventEmitter<boolean>();
 
   @Input()
   get alignment(): alignmentType {
@@ -122,5 +127,6 @@ export class KtbExpandableTileComponent {
 
   toggle(): void {
     this.expanded = !this.expanded;
+    this.expandedChange.emit(this.expanded);
   }
 }

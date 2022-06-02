@@ -25,7 +25,7 @@ import { Deployment } from '../_models/deployment';
 import { ServiceState } from '../_models/service-state';
 import { ServiceRemediationInformation } from '../_models/service-remediation-information';
 import { EndSessionData } from '../../../shared/interfaces/end-session-data';
-import { ISequencesMetadata } from '../../../shared/interfaces/sequencesMetadata';
+import { ISequencesFilter } from '../../../shared/interfaces/sequencesFilter';
 import { TriggerResponse, TriggerSequenceData } from '../_models/trigger-sequence';
 import { EventData } from '../_components/ktb-evaluation-info/ktb-evaluation-info.component';
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
@@ -422,8 +422,8 @@ export class DataService {
     );
   }
 
-  public getSequenceMetadata(projectName: string): Observable<ISequencesMetadata> {
-    return this.apiService.getSequencesMetadata(projectName);
+  public getSequenceFilter(projectName: string): Observable<ISequencesFilter> {
+    return this.apiService.getSequencesFilter(projectName);
   }
 
   protected addNewSequences(

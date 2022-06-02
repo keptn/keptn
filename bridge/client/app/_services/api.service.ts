@@ -24,7 +24,7 @@ import { ServiceState } from '../../../shared/models/service-state';
 import { Deployment } from '../../../shared/interfaces/deployment';
 import { IServiceRemediationInformation } from '../_interfaces/service-remediation-information';
 import { EndSessionData } from '../../../shared/interfaces/end-session-data';
-import { ISequencesMetadata } from '../../../shared/interfaces/sequencesMetadata';
+import { ISequencesFilter } from '../../../shared/interfaces/sequencesFilter';
 import { TriggerResponse, TriggerSequenceData } from '../_models/trigger-sequence';
 import { IScopesResult } from '../_interfaces/scopes-result';
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
@@ -546,8 +546,8 @@ export class ApiService {
     return this.http.post<EndSessionData | null>(`./oauth/logout`, {});
   }
 
-  public getSequencesMetadata(projectName: string): Observable<ISequencesMetadata> {
-    return this.http.get<ISequencesMetadata>(`${this._baseUrl}/project/${projectName}/sequences/metadata`);
+  public getSequencesFilter(projectName: string): Observable<ISequencesFilter> {
+    return this.http.get<ISequencesFilter>(`${this._baseUrl}/project/${projectName}/sequences/filter`);
   }
 
   public triggerSequence(type: string, data: TriggerSequenceData): Observable<TriggerResponse> {

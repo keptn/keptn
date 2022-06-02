@@ -63,9 +63,7 @@ export class SequencesPage {
         states: [],
       },
     });
-    cy.intercept('/api/project/sockshop/sequences/metadata', { fixture: 'sequence.metadata.mock' }).as(
-      'SequencesMetadata'
-    );
+    cy.intercept('/api/project/sockshop/sequences/filter', { fixture: 'sequence.filter.mock' }).as('SequencesMetadata');
 
     cy.intercept('/api/mongodb-datastore/event?keptnContext=cfaadbb1-3c47-46e5-a230-2e312cf1828a&project=sockshop', {
       fixture: 'get.events.cfaadbb1-3c47-46e5-a230-2e312cf1828a.mock.json',
@@ -261,6 +259,21 @@ export class SequencesPage {
 
   public assertQueryParams(query: string): this {
     cy.location('search').should('eq', query);
+    return this;
+  }
+
+  public clickEvent(id: string): this {
+    cy.byTestId(`ktb-task-${id}`).click();
+    return this;
+  }
+
+  public assertIsApprovalLoading(status: boolean): this {
+    cy.byTestId('ktb-approval-loading').should(status ? 'exist' : 'not.exist');
+    return this;
+  }
+
+  public assertApprovalDeployedImage(image: string): this {
+    cy.byTestId('ktb-approval-deployed-image').should('have.text', image);
     return this;
   }
 }

@@ -3,11 +3,11 @@ import { KtbSequenceViewComponent } from './ktb-sequence-view.component';
 import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ActivatedRoute } from '@angular/router';
-import { of, Subject, BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, of, Subject } from 'rxjs';
 import { POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
-import { SequenceMetadataMock } from '../../_services/_mockData/sequence-metadata.mock';
+import { SequenceFilterMock } from '../../_services/_mockData/sequence-filter.mock';
 import { SequencesMock } from '../../_services/_mockData/sequences.mock';
 import { ProjectsMock } from '../../_services/_mockData/projects.mock';
 import moment from 'moment';
@@ -102,24 +102,6 @@ describe('KtbEventsListComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should update the latest deployed image', () => {
-    // given
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore // Ignore private property
-    component.latestDeployments = SequenceMetadataMock.deployments;
-    component.selectedStage = 'staging';
-    component.currentSequence = SequencesMock[1];
-    fixture.detectChanges();
-
-    // when
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore // Ignore private property
-    component.updateLatestDeployedImage();
-
-    // then
-    expect(component.currentLatestDeployedImage).toEqual('carts:0.12.3');
-  });
-
   it('should not alter service filters if metadata and sequences match', () => {
     // given
     /* eslint-disable @typescript-eslint/ban-ts-comment */
@@ -132,7 +114,7 @@ describe('KtbEventsListComponent', () => {
     // when
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore // Ignore private property
-    component.mapServiceFilters(SequenceMetadataMock);
+    component.mapServiceFilters(SequenceFilterMock);
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore // Ignore private property
@@ -144,8 +126,8 @@ describe('KtbEventsListComponent', () => {
 
   it('should add a service if it is in a sequence but not in metadata', () => {
     // given
-    const metadata = SequenceMetadataMock;
-    metadata.filter.services = metadata.filter.services.splice(1, 1); // remove carts-db
+    const metadata = SequenceFilterMock;
+    metadata.services = metadata.services.splice(1, 1); // remove carts-db
     /* eslint-disable @typescript-eslint/ban-ts-comment */
     /* @ts-ignore */ // Ignore private property
     component.project = ProjectsMock[0];
@@ -171,8 +153,8 @@ describe('KtbEventsListComponent', () => {
 
   it('should remove a service from filters if not available in metadata anymore', () => {
     // given
-    const metadata = SequenceMetadataMock;
-    metadata.filter.services.push('helloservice');
+    const metadata = SequenceFilterMock;
+    metadata.services.push('helloservice');
     /* eslint-disable @typescript-eslint/ban-ts-comment */
     /* @ts-ignore */ // Ignore private property
     component.project = ProjectsMock[0];
@@ -209,7 +191,7 @@ describe('KtbEventsListComponent', () => {
     /* eslint-enable @typescript-eslint/ban-ts-comment */
 
     // when
-    metadata.filter.services.pop();
+    metadata.services.pop();
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore // Ignore private property
     component.mapServiceFilters(metadata);

@@ -1,6 +1,6 @@
 <ktb-expandable-tile
   [disabled]="task.traces.length === 0"
-  [expanded]="isExpanded"
+  [(expanded)]="isExpanded"
   [error]="task.isFaulty()"
   [warning]="task.isWarning()"
   [success]="task.isSuccessful()"
@@ -134,7 +134,6 @@
     <ktb-task-item
       *ngIf="subTask.isTriggered(); else taskLine"
       [task]="subTask"
-      [latestDeployment]="latestDeployment"
       [isSubtask]="true"
       (itemClicked)="onClick($event)"
       (click)="$event.stopPropagation(); onClick(subTask)"
@@ -180,7 +179,14 @@
       <tr>
         <td><p class="m-0">Currently deployed artifact:</p></td>
         <td>
-          <p class="m-0" *ngIf="task.data.stage && task.data.service" [textContent]="latestDeployment || 'N/A'"></p>
+          <ktb-loading-spinner
+            *ngIf="latestDeployment === undefined; else showDeployment"
+            class="smaller"
+            uitestid="ktb-approval-loading"
+          ></ktb-loading-spinner>
+          <ng-template #showDeployment>
+            <p class="m-0" uitestid="ktb-approval-deployed-image" [textContent]="latestDeployment || 'N/A'"></p>
+          </ng-template>
         </td>
       </tr>
       <tr>
