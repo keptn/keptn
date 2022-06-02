@@ -1,0 +1,35 @@
+{
+  "events": [
+    {
+      "data": {
+        "configurationChange": {
+          "values": {
+            "image": "docker.io/keptnexamples/items:0.10.2"
+          }
+        },
+        "evaluation": {
+          "end": "2021-10-06T09:11:53.345Z",
+          "start": "2021-10-06T09:06:53.345Z",
+          "timeframe": ""
+        },
+        "message": "",
+        "project": "dynatrace",
+        "result": "",
+        "service": "items",
+        "stage": "quality-gate",
+        "status": "",
+        "test": {
+          "end": "",
+          "start": ""
+        }
+      },
+      "id": "e2b2192d-7440-4010-88f6-147049d13c27",
+      "source": "shipyard-controller",
+      "specversion": "1.0",
+      "time": "2021-10-06T09:11:54.404Z",
+      "type": "sh.keptn.event.evaluation.triggered",
+      "shkeptncontext": "9b1929ac-8fda-476c-8cea-8135cb428484",
+      "shkeptnspecversion": "0.2.3"
+    }
+  ]
+}

@@ -33,7 +33,6 @@ import { BridgeInfoResponseMock } from './_mockData/api-responses/bridgeInfo-res
 import { MetadataResponseMock } from './_mockData/api-responses/metadata-response.mock';
 import { FileTreeMock } from './_mockData/fileTree.mock';
 import { SequencesMock } from './_mockData/sequences.mock';
-import { RootResultResponseMock } from './_mockData/api-responses/root-result-response.mock';
 import { TracesResponseMock } from './_mockData/api-responses/traces-response.mock';
 import { EvaluationResultsResponseDataMock } from './_mockData/api-responses/evaluation-results-response.mock';
 import { EventResultResponseMock } from './_mockData/api-responses/event-result-response.mock';
@@ -267,24 +266,6 @@ export class ApiServiceMock extends ApiService {
     };
 
     const res = new HttpResponse<SequenceResult>({ body });
-    return of(res);
-  }
-
-  public getRoots(
-    projectName: string,
-    pageSize: number,
-    serviceName?: string,
-    fromTime?: string,
-    beforeTime?: string,
-    keptnContext?: string
-  ): Observable<HttpResponse<EventResult>> {
-    const body = {
-      pageSize: 20,
-      totalCount: 1,
-      nextPageKey: 0,
-      events: RootResultResponseMock,
-    };
-    const res = new HttpResponse<EventResult>({ body });
     return of(res);
   }
 

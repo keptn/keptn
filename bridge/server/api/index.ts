@@ -7,6 +7,7 @@ import { EnvironmentUtils } from '../utils/environment.utils';
 import { ClientFeatureFlags } from '../feature-flags';
 import { EventTypes } from '../../shared/interfaces/event-types';
 import { SessionService } from '../user/session';
+import { KeptnService } from '../../shared/models/keptn-service';
 import { AuthType } from '../../shared/models/auth-type';
 
 const router = Router();
@@ -388,7 +389,9 @@ const apiRouter = (params: {
           req.session?.tokenSet?.access_token,
           req.query.keptnContext.toString(),
           req.query.project?.toString(),
-          req.query.fromTime?.toString()
+          req.query.fromTime?.toString(),
+          req.query.type?.toString() as EventTypes | undefined,
+          req.query.source?.toString() as KeptnService | undefined
         );
         return res.json(response);
       } else {
@@ -399,6 +402,7 @@ const apiRouter = (params: {
           req.query.stage?.toString(),
           req.query.service?.toString(),
           req.query.type?.toString() as EventTypes | undefined,
+          req.query.source?.toString() as KeptnService | undefined,
           req.query.pageSize ? parseInt(req.query.pageSize.toString(), 10) : undefined
         );
         return res.json(response);

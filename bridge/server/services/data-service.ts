@@ -635,7 +635,9 @@ export class DataService {
     accessToken: string | undefined,
     keptnContext: string | undefined,
     projectName?: string | undefined,
-    fromTime?: string | undefined
+    fromTime?: string | undefined,
+    type?: EventTypes,
+    source?: KeptnService
   ): Promise<EventResult> {
     let result: EventResult = {
       events: [],
@@ -650,7 +652,9 @@ export class DataService {
         keptnContext,
         projectName,
         fromTime,
-        nextPage.toString()
+        nextPage.toString(),
+        type,
+        source
       );
       nextPage = response.data.nextPageKey || 0;
       result = {
@@ -671,6 +675,7 @@ export class DataService {
     stageName?: string,
     serviceName?: string,
     eventType?: EventTypes,
+    source?: KeptnService,
     pageSize?: number
   ): Promise<EventResult> {
     const response = await this.apiService.getTraces(accessToken, {
@@ -680,6 +685,7 @@ export class DataService {
       ...(stageName && { stage: stageName }),
       ...(serviceName && { service: serviceName }),
       ...(keptnContext && { keptnContext }),
+      ...(source && { source }),
     });
     return response.data;
   }

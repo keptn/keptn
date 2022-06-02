@@ -294,6 +294,50 @@ export function interceptSecrets(): void {
   });
 }
 
+export function interceptEvaluationBoardDynatrace(): void {
+  cy.intercept('api/mongodb-datastore/event?keptnContext=*&type=sh.keptn.event.evaluation.triggered&pageSize=1', {
+    fixture: 'service/get.evaluation.triggered.mock.json',
+  });
+
+  cy.intercept(
+    'api/mongodb-datastore/event?keptnContext=*&type=sh.keptn.event.evaluation.finished&source=lighthouse-service',
+    {
+      fixture: 'service/get.event2.data.json',
+    }
+  );
+  cy.intercept('api/controlPlane/v1/project/dynatrace/stage/quality-gate/service/items', {
+    fixture: 'get.service.items.mock.json',
+  });
+}
+
+export function interceptEvaluationBoard(): void {
+  interceptMain();
+  cy.intercept('api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?*', {
+    fixture: 'service/get.eval.data.json',
+  });
+
+  cy.intercept('api/mongodb-datastore/event?keptnContext=*&type=sh.keptn.event.evaluation.triggered&pageSize=1', {
+    fixture: 'service/get.evaluation.triggered-with-deployment.mock.json',
+  });
+
+  cy.intercept(
+    'api/mongodb-datastore/event?keptnContext=*&type=sh.keptn.event.evaluation.finished&source=lighthouse-service',
+    {
+      fixture: 'service/get.event2.data.json',
+    }
+  );
+  cy.intercept('api/controlPlane/v1/project/dynatrace/stage/quality-gate/service/items', {
+    fixture: 'get.service.items.mock.json',
+  });
+}
+
+export function interceptEvaluationBoardWithoutDeployment(): void {
+  interceptEvaluationBoard();
+  cy.intercept('api/mongodb-datastore/event?keptnContext=*&type=sh.keptn.event.evaluation.triggered&pageSize=1', {
+    fixture: 'service/get.evaluation.triggered.mock.json',
+  });
+}
+
 export function interceptHeatmapComponent(): void {
   cy.intercept('/api/v1/metadata', { fixture: 'metadata.mock' });
   cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfoEnableD3Heatmap.mock.json' });

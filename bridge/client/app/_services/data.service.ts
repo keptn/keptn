@@ -9,7 +9,6 @@ import moment from 'moment';
 import { Sequence } from '../_models/sequence';
 import { UniformRegistrationLog } from '../../../shared/interfaces/uniform-registration-log';
 import { Secret } from '../_models/secret';
-import { Root } from '../_models/root';
 import { HttpResponse } from '@angular/common/http';
 import { SequenceResult } from '../_models/sequence-result';
 import { EventResult } from '../../../shared/interfaces/event-result';
@@ -33,6 +32,7 @@ import { SecretScope } from '../../../shared/interfaces/secret-scope';
 import { IGitDataExtended } from '../_interfaces/git-upstream';
 import { getGitData } from '../_utils/git-upstream.utils';
 import { ICustomSequences } from '../../../shared/interfaces/custom-sequences';
+import { KeptnService } from '../../../shared/models/keptn-service';
 import { IMetadata } from '../_interfaces/metadata';
 
 @Injectable({
@@ -118,6 +118,12 @@ export class DataService {
 
   public getProject(projectName: string): Observable<Project | undefined> {
     return this.projects.pipe(map((projects) => projects?.find((project) => project.projectName === projectName)));
+  }
+
+  public getService(projectName: string, stageName: string, serviceName: string): Observable<Service> {
+    return this.apiService
+      .getService(projectName, stageName, serviceName)
+      .pipe(map((service) => Service.fromJSON(service)));
   }
 
   public projectExists(projectName: string): Observable<boolean | undefined> {
@@ -460,13 +466,6 @@ export class DataService {
     );
   }
 
-  public getRoot(projectName: string, shkeptncontext: string): Observable<Root | undefined> {
-    return this.apiService.getRoots(projectName, 1, undefined, undefined, undefined, shkeptncontext).pipe(
-      map((response) => response.body?.events || []),
-      switchMap((roots) => this.rootMapper(roots).pipe(map((sequences) => sequences.pop())))
-    );
-  }
-
   public loadOldSequences(project: Project, fromTime?: Date, oldSequence?: Sequence): void {
     if (project.sequences) {
       this.loadSequences(
@@ -522,17 +521,22 @@ export class DataService {
     );
   }
 
-  public loadTracesByContext(shkeptncontext: string): void {
-    this.apiService
-      .getTraces(shkeptncontext)
-      .pipe(
-        map((response) => response.body),
-        map((result) => result?.events || []),
-        map((traces) => traces.map((trace) => Trace.fromJSON(trace)))
-      )
-      .subscribe((traces: Trace[]) => {
-        this._traces.next(traces);
-      });
+  public getTracesByContext(
+    keptnContext: string,
+    type?: EventTypes,
+    source?: KeptnService,
+    pageSize?: number
+  ): Observable<Trace[]> {
+    return this.apiService.getTraces(keptnContext, undefined, undefined, type, source, pageSize).pipe(
+      map((response) => response.body?.events || []),
+      map((traces) => traces.map((trace) => Trace.fromJSON(trace)))
+    );
+  }
+
+  public loadTracesByContext(keptnContext: string): void {
+    this.getTracesByContext(keptnContext).subscribe((traces: Trace[]) => {
+      this._traces.next(traces);
+    });
   }
 
   public getEvent(type?: string, project?: string, stage?: string, service?: string): Observable<Trace | undefined> {
@@ -708,20 +712,6 @@ export class DataService {
         )
       ),
       toArray()
-    );
-  }
-
-  private rootMapper(roots: Trace[]): Observable<Root[]> {
-    return from(roots).pipe(
-      mergeMap((root) =>
-        this.apiService.getTraces(root.shkeptncontext, root.data.project).pipe(
-          map((result) => result.body?.events || []),
-          map(Trace.traceMapper),
-          map((traces) => ({ ...root, traces }))
-        )
-      ),
-      toArray(),
-      map((rs) => rs.map((root) => Root.fromJSON(root)))
     );
   }
 

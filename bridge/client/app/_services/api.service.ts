@@ -32,6 +32,7 @@ import { IGitHttps, IGitSsh } from '../_interfaces/git-upstream';
 import { ICustomSequences } from '../../../shared/interfaces/custom-sequences';
 import { environment } from '../../environments/environment';
 import { WindowConfig } from '../../environments/environment.dynamic';
+import { IService } from '../../../shared/interfaces/service';
 
 @Injectable({
   providedIn: 'root',
@@ -184,6 +185,12 @@ export class ApiService {
       remediation: 'true',
     };
     return this.http.get<Project>(url, { params });
+  }
+
+  public getService(projectName: string, stageName: string, serviceName: string): Observable<IService> {
+    return this.http.get<IService>(
+      `${this._baseUrl}/controlPlane/v1/project/${projectName}/stage/${stageName}/service/${serviceName}`
+    );
   }
 
   public getPlainProject(projectName: string): Observable<Project> {
@@ -354,13 +361,19 @@ export class ApiService {
   public getTraces(
     keptnContext: string,
     projectName?: string,
-    fromTime?: string
+    fromTime?: string,
+    type?: EventTypes,
+    source?: KeptnService,
+    pageSize?: number
   ): Observable<HttpResponse<EventResult>> {
     const url = `${this._baseUrl}/mongodb-datastore/event`;
     const params = {
       keptnContext,
       ...(projectName && { project: projectName }),
       ...(fromTime && { fromTime }),
+      ...(type && { type }),
+      ...(source && { source }),
+      ...(pageSize && { pageSize }),
     };
 
     return this.http.get<EventResult>(url, { params, observe: 'response' });

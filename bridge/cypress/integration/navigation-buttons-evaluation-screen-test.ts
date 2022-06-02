@@ -3,6 +3,7 @@
 import { ProjectBoardPage } from '../support/pageobjects/ProjectBoardPage';
 import DashboardPage from '../support/pageobjects/DashboardPage';
 import BasePage from '../support/pageobjects/BasePage';
+import { interceptEvaluationBoardDynatrace } from '../support/intercept';
 
 describe('Test Navigation Buttons In Evaluation Screen', () => {
   const projectBoardPage = new ProjectBoardPage();
@@ -41,16 +42,6 @@ describe('Test Navigation Buttons In Evaluation Screen', () => {
       fixture: 'sequence.dynatrace.json',
     });
 
-    cy.intercept('GET', 'api/mongodb-datastore/event?root=true&pageSize=1&project=dynatrace&*', {
-      statusCode: 200,
-      fixture: 'service/get.eval.data.json',
-    }).as('getEventRoot');
-
-    cy.intercept('GET', 'api/mongodb-datastore/event?keptnContext=*&project=dynatrace', {
-      statusCode: 200,
-      fixture: 'service/get.event2.data.json',
-    }).as('getEventKeptnContextWithProject');
-
     cy.intercept('GET', 'api/mongodb-datastore/event?keptnContext=*', {
       statusCode: 200,
       fixture: 'service/get.event.keptn.context.json',
@@ -82,6 +73,8 @@ describe('Test Navigation Buttons In Evaluation Screen', () => {
     cy.intercept('GET', '/api/project/dynatrace/sequences/metadata', {
       body: { deployments: [], filter: { stages: [], services: [] } },
     });
+
+    interceptEvaluationBoardDynatrace();
 
     cy.visit('/').wait('@initProjects');
     dashboardPage.clickProjectTile('dynatrace');
