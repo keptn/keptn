@@ -215,7 +215,11 @@
           fxLayoutGap="10px"
           uitestid="keptn-evaluation-details-selected-contextButtons"
         >
-          <div [disabled]="!!evaluation.sloFileContentParsed" [dtOverlay]="invalidSLO">
+          <div
+            [disabled]="!!evaluation.sloFileContentParsed"
+            *ngIf="evaluation.sloFileContent"
+            [dtOverlay]="invalidSLO"
+          >
             <button
               dt-button
               variant="secondary"
