@@ -298,6 +298,7 @@ func (k *Keptn) Start() error {
 	}
 	ctx, wg := k.getContext(k.gracefulShutdown)
 	err := k.controlPlane.Register(ctx, k)
+	// add additional waiting time to ensure the waitGroup has been increased for all events that have been received between receiving SIGTERM and this point
 	<-time.After(5 * time.Second)
 	wg.Wait()
 	return err
