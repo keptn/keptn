@@ -1,6 +1,6 @@
 {
   "preMajor": true,
-  "releaseCommitMessageFormat": "build(release): {{currentTag}}",
+  "releaseCommitMessageFormat": "build(release): {{currentTag}} [skip ci]",
   "bumpFiles": [
     {
       "filename": "VERSION.txt",
