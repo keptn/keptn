@@ -509,7 +509,7 @@ func TestMongoDBUniformRepo_ConcurrentlyUpdateSubscription(t *testing.T) {
 	integrations, err := mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{ID: "i1"})
 	require.Nil(t, err)
 	require.Len(t, integrations, 1)
-	require.Equal(t, integrations[0].Subscriptions, 1)
+	require.Len(t, integrations[0].Subscriptions, 1)
 }
 
 func TestMongoDBUniformRepo_RemoveByServiceName(t *testing.T) {
