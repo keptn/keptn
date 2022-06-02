@@ -167,6 +167,7 @@ func NewKeptn(source string, opts ...KeptnOption) *Keptn {
 }
 
 func (k *Keptn) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE) error {
+	k.logger.Debug("Handling event ", event)
 	eventSender, ok := ctx.Value(controlplane.EventSenderKey).(controlplane.EventSender)
 	if !ok {
 		k.logger.Errorf("Unable to get event sender. Skip processing of event %s", event.ID)
@@ -296,6 +297,7 @@ func (k *Keptn) Start() error {
 	}
 	ctx, wg := k.getContext(k.gracefulShutdown)
 	err := k.controlPlane.Register(ctx, k)
+	<-time.After(5 * time.Second)
 	wg.Wait()
 	return err
 }
