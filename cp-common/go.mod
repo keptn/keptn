@@ -2,7 +2,7 @@ module github.com/keptn/keptn/cp-common
 
 go 1.18
 
-require github.com/keptn/go-utils v0.15.1-0.20220601115436-d550c7009733
+require github.com/keptn/go-utils v0.15.1
 
 require (
 	github.com/benbjohnson/clock v1.3.0
