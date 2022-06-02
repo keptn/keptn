@@ -13,10 +13,6 @@ import (
 	"github.com/keptn/keptn/cp-connector/pkg/types"
 )
 
-// EventSenderKey can be used to get the event sender from the context
-// Deprecated: use own value of EventSenderKeyType
-var EventSenderKey = EventSenderKeyType{}
-
 type EventSender = types.EventSender
 type EventSenderKeyType = types.EventSenderKeyType
 type RegistrationData = types.RegistrationData
