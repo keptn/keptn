@@ -456,7 +456,7 @@ func TestMongoDBUniformRepo_ConcurrentlyAddSubscriptions(t *testing.T) {
 	require.Nil(t, err)
 	require.Len(t, integrations, 1)
 	// verify that no subscription has been lost
-	require.Equal(t, integrations[0].Subscriptions, nrRoutines)
+	require.Len(t, integrations[0].Subscriptions, nrRoutines)
 }
 
 func TestMongoDBUniformRepo_ConcurrentlyUpdateSubscription(t *testing.T) {
