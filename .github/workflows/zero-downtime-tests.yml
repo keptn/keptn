@@ -377,15 +377,10 @@ jobs:
             done
           else
             echo "UI tests will not run" 
-          fi  & UIT=$!
-          
-          wait $UIT
-          rc1=$?
-          
-          wait $GT
-          rc2=$?
+          fi
         
-          if [[ $rc1 -ne 0 ]] || [[ $rc2 -ne 0  ]]; then
+          wait $GT 
+          if [[ $? -ne 0 ]]; then
             exit 1
           fi
 
