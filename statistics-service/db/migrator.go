@@ -63,10 +63,17 @@ func (m *Migrator) migrateBatch(ctx context.Context) (bool, error) {
 		Limit: crateInt64P(m.batchSize),
 		Skip:  crateInt64P(skips),
 	})
+	defer func() {
+		if cur == nil {
+			return
+		}
+		if err := cur.Close(ctx); err != nil {
+			log.Errorf("could not close cursor: %v", err)
+		}
+	}()
 	if err != nil {
 		return false, err
 	}
-	defer cur.Close(ctx)
 
 	currBatchSize := 0
 	for cur.Next(ctx) {

@@ -1,0 +1,12 @@
+{
+  "creationDate": "1647251307549433666",
+  "deployedImage": "",
+  "lastEventTypes": {
+    "sh.keptn.event.evaluation.finished": {
+      "eventId": "e2b2192d-7440-4010-88f6-147049d13c27",
+      "keptnContext": "9b1929ac-8fda-476c-8cea-8135cb428484",
+      "time": "1633339399913172646"
+    }
+  },
+  "serviceName": "items"
+}

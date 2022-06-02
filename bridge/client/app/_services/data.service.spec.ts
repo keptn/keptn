@@ -5,6 +5,12 @@ import { AppModule } from '../app.module';
 import { ApiService } from './api.service';
 import { TriggerSequenceData } from '../_models/trigger-sequence';
 import moment from 'moment';
+import { firstValueFrom, of } from 'rxjs';
+import { Service } from '../_models/service';
+import { IService } from '../../../shared/interfaces/service';
+import { Trace } from '../_models/trace';
+import { HttpResponse } from '@angular/common/http';
+import { EventTypes } from '../../../shared/interfaces/event-types';
 
 describe('DataService', () => {
   let dataService: DataService;
@@ -83,4 +89,49 @@ describe('DataService', () => {
     // then
     expect(spy).toHaveBeenCalledWith('sh.keptn.event.hardening.testsequence.triggered', data);
   });
+
+  it('should map response to service', async () => {
+    const iService: IService = {
+      serviceName: 'carts',
+      creationDate: '0123456789',
+      lastEventTypes: {},
+    };
+    jest.spyOn(apiService, 'getService').mockReturnValue(of(iService));
+    const service = await firstValueFrom(dataService.getService('sockshop', 'dev', 'carts'));
+    expect(service).toBeInstanceOf(Service);
+  });
+
+  it('should get traces by context', async () => {
+    setGetTracesResponse([getDefaultTrace() as Trace]);
+    const traces = await firstValueFrom(dataService.getTracesByContext('abc'));
+    for (const trace of traces) {
+      expect(trace).toBeInstanceOf(Trace);
+    }
+  });
+
+  it('should get traces by context and cache it', async () => {
+    setGetTracesResponse([getDefaultTrace() as Trace]);
+    dataService.loadTracesByContext('keptnContext');
+    const cachedTraces = await firstValueFrom(dataService.traces);
+    expect(cachedTraces).toEqual([Trace.fromJSON(getDefaultTrace())]);
+  });
+
+  function setGetTracesResponse(traces: Trace[]): void {
+    const response = new HttpResponse({ body: { events: traces, totalCount: 0, pageSize: 1, nextPageKey: 1 } });
+    jest.spyOn(apiService, 'getTraces').mockReturnValue(of(response));
+  }
+
+  function getDefaultTrace(): unknown {
+    return {
+      id: 'myId',
+      shkeptncontext: 'myContext',
+      time: '123456789',
+      type: EventTypes.EVALUATION_TRIGGERED,
+      data: {
+        stage: 'myStage',
+        project: 'myProject',
+        service: 'myService',
+      },
+    };
+  }
 });

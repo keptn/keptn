@@ -15,7 +15,7 @@ import (
 type InternalAPISet struct {
 	apimap                 InClusterAPIMappings
 	httpClient             *http.Client
-	apiHandler             *api.APIHandler
+	apiHandler             *InternalAPIHandler
 	authHandler            *api.AuthHandler
 	eventHandler           *api.EventHandler
 	logHandler             *api.LogHandler
@@ -68,10 +68,12 @@ func NewInternal(client *http.Client, apiMappings ...InClusterAPIMappings) (*Int
 	as := &InternalAPISet{}
 	as.httpClient = client
 
-	as.apiHandler = &api.APIHandler{
-		BaseURL:    apimap[ShipyardController],
-		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))},
-		Scheme:     "http",
+	as.apiHandler = &InternalAPIHandler{
+		shipyardControllerApiHandler: &api.APIHandler{
+			BaseURL:    apimap[ShipyardController],
+			HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))},
+			Scheme:     "http",
+		},
 	}
 
 	as.authHandler = &api.AuthHandler{
@@ -217,4 +219,43 @@ func getClientTransport(rt http.RoundTripper) http.RoundTripper {
 	}
 	return rt
 
+}
+
+// InternalAPIHandler is used instead of APIHandler from go-utils because we cannot support
+// (unauthenticated) internal calls to the api-service at the moment. So this implementation
+// will panic as soon as a client wants to call these methods
+type InternalAPIHandler struct {
+	shipyardControllerApiHandler *api.APIHandler
+}
+
+func (i *InternalAPIHandler) SendEvent(event models.KeptnContextExtendedCE) (*models.EventContext, *models.Error) {
+	panic("SendEvent() is not not supported for internal usage")
+}
+
+func (i *InternalAPIHandler) TriggerEvaluation(project string, stage string, service string, evaluation models.Evaluation) (*models.EventContext, *models.Error) {
+	return i.shipyardControllerApiHandler.TriggerEvaluation(project, stage, service, evaluation)
+}
+
+func (i *InternalAPIHandler) CreateProject(project models.CreateProject) (string, *models.Error) {
+	return i.shipyardControllerApiHandler.CreateProject(project)
+}
+
+func (i *InternalAPIHandler) UpdateProject(project models.CreateProject) (string, *models.Error) {
+	return i.shipyardControllerApiHandler.UpdateProject(project)
+}
+
+func (i *InternalAPIHandler) DeleteProject(project models.Project) (*models.DeleteProjectResponse, *models.Error) {
+	return i.shipyardControllerApiHandler.DeleteProject(project)
+}
+
+func (i *InternalAPIHandler) CreateService(project string, service models.CreateService) (string, *models.Error) {
+	return i.shipyardControllerApiHandler.CreateService(project, service)
+}
+
+func (i *InternalAPIHandler) DeleteService(project string, service string) (*models.DeleteServiceResponse, *models.Error) {
+	return i.shipyardControllerApiHandler.DeleteService(project, service)
+}
+
+func (i *InternalAPIHandler) GetMetadata() (*models.Metadata, *models.Error) {
+	panic("GetMetadata() is not not supported for internal usage")
 }

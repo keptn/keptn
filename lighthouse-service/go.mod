@@ -7,14 +7,14 @@ require (
 	github.com/go-test/deep v1.0.8
 	github.com/google/uuid v1.3.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.15.1-0.20220517082831-2052e1404e4c
-	github.com/keptn/keptn/cp-common v0.0.0-20220523070105-05ef470de884
-	github.com/keptn/keptn/cp-connector v0.0.0-20220519141909-916ac2a8e982
+	github.com/keptn/go-utils v0.15.1-0.20220601115436-d550c7009733
+	github.com/keptn/keptn/cp-common v0.0.0-20220602101520-ccc4f2648267
+	github.com/keptn/keptn/cp-connector v0.0.0-20220602101520-ccc4f2648267
 	github.com/nats-io/nats-server/v2 v2.8.4
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
+	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.22.10
 	k8s.io/apimachinery v0.22.10
 	k8s.io/client-go v0.22.10

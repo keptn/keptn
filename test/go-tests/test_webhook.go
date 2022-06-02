@@ -551,7 +551,7 @@ func Test_Webhook(t *testing.T, webhookYaml string, projectName, serviceName str
 				return false
 			}
 			return true
-		}, 30*time.Second, 3*time.Second)
+		}, 60*time.Second, 5*time.Second)
 
 		require.NotNil(t, taskFinishedEvent)
 

@@ -3,12 +3,13 @@ package sdk
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/strutils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func Test_ReceivingEventWithMissingType(t *testing.T) {
@@ -133,13 +134,13 @@ func Test_NoFinishedEventDataProvided(t *testing.T) {
 
 func Test_InitialRegistrationData(t *testing.T) {
 	keptn := Keptn{env: envConfig{
-		PubSubTopic:       "sh.keptn.event.task1.triggered,sh.keptn.event.task2.triggered",
-		Location:          "localhost",
-		Version:           "v1",
-		K8sDeploymentName: "k8s-deployment",
-		K8sNamespace:      "k8s-namespace",
-		K8sPodName:        "k8s-podname",
-		K8sNodeName:       "k8s-nodename",
+		PubSubTopic:          "sh.keptn.event.task1.triggered,sh.keptn.event.task2.triggered",
+		Location:             "localhost",
+		K8sDeploymentVersion: "v1",
+		K8sDeploymentName:    "k8s-deployment",
+		K8sNamespace:         "k8s-namespace",
+		K8sPodName:           "k8s-podname",
+		K8sNodeName:          "k8s-nodename",
 	}}
 
 	regData := keptn.RegistrationData()

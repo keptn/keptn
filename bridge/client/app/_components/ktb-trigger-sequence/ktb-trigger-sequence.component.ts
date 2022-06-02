@@ -3,19 +3,19 @@ import {
   ChangeDetectorRef,
   Component,
   EventEmitter,
-  Inject,
   Input,
   OnDestroy,
   OnInit,
   Output,
 } from '@angular/core';
-import { DataService } from '../../_services/data.service';
-import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
-import { Timeframe } from '../../_models/timeframe';
-import moment from 'moment';
-import { ErrorStateMatcher } from '@angular/material/core';
 import { FormControl, FormGroupDirective, NgForm } from '@angular/forms';
-import { FormUtils } from '../../_utils/form.utils';
+import { ErrorStateMatcher } from '@angular/material/core';
+import { Router } from '@angular/router';
+import moment from 'moment';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { ICustomSequences } from '../../../../shared/interfaces/custom-sequences';
+import { Timeframe } from '../../_models/timeframe';
 import {
   CustomSequenceFormData,
   DeliverySequenceFormData,
@@ -25,10 +25,9 @@ import {
   TriggerResponse,
   TriggerSequenceData,
 } from '../../_models/trigger-sequence';
-import { Router } from '@angular/router';
-import { takeUntil } from 'rxjs/operators';
-import { Subject } from 'rxjs';
-import { ICustomSequences } from '../../../../shared/interfaces/custom-sequences';
+import { DataService } from '../../_services/data.service';
+import { AppUtils } from '../../_utils/app.utils';
+import { FormUtils } from '../../_utils/form.utils';
 
 export class ShowErrorStateMatcher implements ErrorStateMatcher {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -102,7 +101,6 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy, AfterView
 
   constructor(
     private dataService: DataService,
-    @Inject(POLLING_INTERVAL_MILLIS) private pollingInterval: number,
     private router: Router,
     private _changeDetectorRef: ChangeDetectorRef
   ) {}
@@ -141,15 +139,11 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy, AfterView
       this.isQualityGatesOnly = isQualityGatesOnly;
     });
 
-    AppUtils.createTimer(0, this.pollingInterval)
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(() => {
-        if (this.projectName) {
-          this.dataService.getCustomSequences(this.projectName).subscribe((customSequences) => {
-            this.customSequences = customSequences;
-          });
-        }
+    if (this.projectName) {
+      this.dataService.getCustomSequences(this.projectName).subscribe((customSequences) => {
+        this.customSequences = customSequences;
       });
+    }
   }
 
   public setFormState(): void {

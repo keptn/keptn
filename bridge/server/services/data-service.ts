@@ -32,7 +32,7 @@ import { Stage } from '../models/stage';
 import { IServiceEvent } from '../../shared/interfaces/service';
 import { Remediation } from '../models/remediation';
 import { IStage } from '../../shared/interfaces/stage';
-import { ISequencesMetadata, SequenceMetadataDeployment } from '../../shared/interfaces/sequencesMetadata';
+import { ISequencesFilter } from '../../shared/interfaces/sequencesFilter';
 import { SecretScope, SecretScopeDefault } from '../../shared/interfaces/secret-scope';
 import { generateWebhookConfigCurl } from '../utils/curl.utils';
 import { ICustomSequences } from '../../shared/interfaces/custom-sequences';
@@ -635,7 +635,9 @@ export class DataService {
     accessToken: string | undefined,
     keptnContext: string | undefined,
     projectName?: string | undefined,
-    fromTime?: string | undefined
+    fromTime?: string | undefined,
+    type?: EventTypes,
+    source?: KeptnService
   ): Promise<EventResult> {
     let result: EventResult = {
       events: [],
@@ -650,7 +652,9 @@ export class DataService {
         keptnContext,
         projectName,
         fromTime,
-        nextPage.toString()
+        nextPage.toString(),
+        type,
+        source
       );
       nextPage = response.data.nextPageKey || 0;
       result = {
@@ -671,6 +675,7 @@ export class DataService {
     stageName?: string,
     serviceName?: string,
     eventType?: EventTypes,
+    source?: KeptnService,
     pageSize?: number
   ): Promise<EventResult> {
     const response = await this.apiService.getTraces(accessToken, {
@@ -680,6 +685,7 @@ export class DataService {
       ...(stageName && { stage: stageName }),
       ...(serviceName && { service: serviceName }),
       ...(keptnContext && { keptnContext }),
+      ...(source && { source }),
     });
     return response.data;
   }
@@ -1348,31 +1354,22 @@ export class DataService {
     return serviceRemediationInformation;
   }
 
-  public async getSequencesMetadata(accessToken: string | undefined, projectName: string): Promise<ISequencesMetadata> {
+  public async getSequencesFilter(accessToken: string | undefined, projectName: string): Promise<ISequencesFilter> {
     const res = await this.apiService.getStages(accessToken, projectName);
     const stages = res.data.stages;
     const stageNames: string[] = [];
     const serviceSet: Set<string> = new Set();
-    const deployments: SequenceMetadataDeployment[] = [];
 
-    for (const stg of stages) {
-      // stage names are used for filters
-      stageNames.push(stg.stageName);
-      const svcs = stg.services.map((svc) => {
-        // service names are used for filters
-        serviceSet.add(svc.serviceName);
-        const image = svc.deployedImage?.split('/').pop() ?? '';
-        return { name: svc.serviceName, image };
-      });
-      deployments.push({ stage: { name: stg.stageName, services: svcs } });
+    for (const stage of stages) {
+      for (const service of stage.services) {
+        serviceSet.add(service.serviceName);
+      }
+      stageNames.push(stage.stageName);
     }
 
     return {
-      deployments,
-      filter: {
-        stages: stageNames,
-        services: Array.from(serviceSet),
-      },
+      stages: stageNames,
+      services: Array.from(serviceSet),
     };
   }
 

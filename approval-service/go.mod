@@ -6,9 +6,9 @@ require (
 	github.com/cloudevents/sdk-go/v2 v2.10.0
 	github.com/google/uuid v1.3.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.15.1-0.20220517082831-2052e1404e4c
-	github.com/keptn/keptn/cp-common v0.0.0-20220523070105-05ef470de884
-	github.com/keptn/keptn/cp-connector v0.0.0-20220519141909-916ac2a8e982
+	github.com/keptn/go-utils v0.15.1-0.20220601115436-d550c7009733
+	github.com/keptn/keptn/cp-common v0.0.0-20220602101520-ccc4f2648267
+	github.com/keptn/keptn/cp-connector v0.0.0-20220602101520-ccc4f2648267
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
@@ -23,7 +23,7 @@ require (
 	github.com/json-iterator/go v1.1.11 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
-	github.com/nats-io/nats.go v1.14.0 // indirect
+	github.com/nats-io/nats.go v1.15.0 // indirect
 	github.com/nats-io/nkeys v0.3.0 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect

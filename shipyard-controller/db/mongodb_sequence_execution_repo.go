@@ -64,6 +64,8 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) Get(filter models.SequenceExecution
 	searchOptions := mdbrepo.getSearchOptions(filter)
 
 	cur, err := collection.Find(ctx, searchOptions)
+	defer closeCursor(ctx, cur)
+
 	if err != nil && err != mongo.ErrNoDocuments {
 		return nil, err
 	}
@@ -285,6 +287,8 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) IsContextPaused(eventScope models.E
 		searchOptions[keptnContextScope] = eventScope.KeptnContext
 	}
 	cur, err := collection.Find(ctx, searchOptions)
+	defer closeCursor(ctx, cur)
+
 	if err != nil {
 		log.Errorf("Could not retrieve sequence context: %v", err)
 		return false
@@ -294,12 +298,6 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) IsContextPaused(eventScope models.E
 
 	stateItems := []models.EventQueueSequenceState{}
 
-	defer func() {
-		err := cur.Close(ctx)
-		if err != nil {
-			log.Errorf("could not close cursor: %v", err)
-		}
-	}()
 	for cur.Next(ctx) {
 		stateItem := models.EventQueueSequenceState{}
 		err := cur.Decode(&stateItem)

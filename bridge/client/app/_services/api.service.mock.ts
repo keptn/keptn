@@ -33,16 +33,16 @@ import { BridgeInfoResponseMock } from './_mockData/api-responses/bridgeInfo-res
 import { MetadataResponseMock } from './_mockData/api-responses/metadata-response.mock';
 import { FileTreeMock } from './_mockData/fileTree.mock';
 import { SequencesMock } from './_mockData/sequences.mock';
-import { RootResultResponseMock } from './_mockData/api-responses/root-result-response.mock';
 import { TracesResponseMock } from './_mockData/api-responses/traces-response.mock';
 import { EvaluationResultsResponseDataMock } from './_mockData/api-responses/evaluation-results-response.mock';
 import { EventResultResponseMock } from './_mockData/api-responses/event-result-response.mock';
 import { ServiceStatesResultResponseMock } from './_mockData/api-responses/service-states-results-response.mock';
 import { DeploymentResponseMock } from './_mockData/api-responses/deployment-response.mock';
-import { ISequencesMetadata } from '../../../shared/interfaces/sequencesMetadata';
-import { SequenceMetadataMock } from './_mockData/sequence-metadata.mock';
+import { ISequencesFilter } from '../../../shared/interfaces/sequencesFilter';
+import { SequenceFilterMock } from './_mockData/sequence-filter.mock';
 import { TriggerResponse, TriggerSequenceData } from '../_models/trigger-sequence';
 import { IGitHttps, IGitSsh } from '../_interfaces/git-upstream';
+import { IService } from '../../../shared/interfaces/service';
 
 @Injectable({
   providedIn: null,
@@ -133,6 +133,10 @@ export class ApiServiceMock extends ApiService {
   public getProject(projectName: string): Observable<Project> {
     const projects = [...ProjectsMock];
     return of(projects[0]);
+  }
+
+  public getService(projectName: string, stageName: string, serviceName: string): Observable<IService> {
+    return of(ProjectsMock[0].stages[0].services[0]);
   }
 
   public getPlainProject(projectName: string): Observable<Project> {
@@ -270,24 +274,6 @@ export class ApiServiceMock extends ApiService {
     return of(res);
   }
 
-  public getRoots(
-    projectName: string,
-    pageSize: number,
-    serviceName?: string,
-    fromTime?: string,
-    beforeTime?: string,
-    keptnContext?: string
-  ): Observable<HttpResponse<EventResult>> {
-    const body = {
-      pageSize: 20,
-      totalCount: 1,
-      nextPageKey: 0,
-      events: RootResultResponseMock,
-    };
-    const res = new HttpResponse<EventResult>({ body });
-    return of(res);
-  }
-
   public getTraces(
     keptnContext: string,
     projectName?: string,
@@ -415,8 +401,8 @@ export class ApiServiceMock extends ApiService {
     });
   }
 
-  public getSequencesMetadata(projectName: string): Observable<ISequencesMetadata> {
-    return of(SequenceMetadataMock);
+  public getSequencesFilter(projectName: string): Observable<ISequencesFilter> {
+    return of(SequenceFilterMock);
   }
 
   public triggerSequence(type: string, data: TriggerSequenceData): Observable<TriggerResponse> {

@@ -1,8 +1,9 @@
 package sdk
 
 import (
-	"github.com/kelseyhightower/envconfig"
 	"log"
+
+	"github.com/kelseyhightower/envconfig"
 )
 
 type envConfig struct {
@@ -12,7 +13,7 @@ type envConfig struct {
 	HealthEndpointPort      string `envconfig:"HEALTH_ENDPOINT_PORT" default:"8080"`
 	HealthEndpointEnabled   bool   `envconfig:"HEALTH_ENDPOINT_ENABLED" default:"true"`
 	Location                string `envconfig:"LOCATION" default:"control-plane"`
-	Version                 string `envconfig:"VERSION" default:""`
+	K8sDeploymentVersion    string `envconfig:"K8S_DEPLOYMENT_VERSION" default:""`
 	K8sDeploymentName       string `envconfig:"K8S_DEPLOYMENT_NAME" default:""`
 	K8sNamespace            string `envconfig:"K8S_NAMESPACE" default:""`
 	K8sPodName              string `envconfig:"K8S_POD_NAME" default:""`

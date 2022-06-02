@@ -475,17 +475,20 @@ func (mr *MongoDBEventRepo) aggregateFromDB(collectionName string, pipeline mong
 	defer cancel()
 
 	cur, err := collection.Aggregate(ctx, pipeline)
-
-	if err != nil {
-		logger.WithError(err).Error("Could not retrieve events from collectiong elements in events collection")
-		return nil, err
-	}
 	// close the cursor after the function has completed to avoid memory leaks
 	defer func() {
+		if cur == nil {
+			return
+		}
 		if err := cur.Close(ctx); err != nil {
 			logger.WithError(err).Error("Could not close cursor")
 		}
 	}()
+	if err != nil {
+		logger.WithError(err).Error("Could not retrieve events from collectiong elements in events collection")
+		return nil, err
+	}
+
 	result.Events = formatEventResults(ctx, cur)
 
 	return result, nil
@@ -531,17 +534,20 @@ func (mr *MongoDBEventRepo) findInDB(collectionName string, pageSize int64, next
 	}
 
 	cur, err := collection.Find(ctx, searchOptions, sortOptions)
-
-	if err != nil {
-		logger.WithError(err).Error("Could not retrieve elements from events collection")
-		return nil, err
-	}
 	// close the cursor after the function has completed to avoid memory leaks
 	defer func() {
+		if cur == nil {
+			return
+		}
 		if err := cur.Close(ctx); err != nil {
 			logger.WithError(err).Error("Could not close cursor.")
 		}
 	}()
+	if err != nil {
+		logger.WithError(err).Error("Could not retrieve elements from events collection")
+		return nil, err
+	}
+
 	result.Events = formatEventResults(ctx, cur)
 
 	result.PageSize = pageSize

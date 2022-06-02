@@ -134,6 +134,7 @@ export function interceptServicesPage(): void {
 }
 
 export function interceptSequencesPage(): void {
+  interceptProjectBoard();
   cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=25', { fixture: 'sequences.sockshop' }).as('Sequences');
   cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=10&beforeTime=2021-07-06T09:22:56.433Z', {
     fixture: 'sequences-page-2.sockshop',
@@ -147,12 +148,19 @@ export function interceptSequencesPage(): void {
     },
   }).as('SequencesUpdate');
 
-  cy.intercept('/api/project/sockshop/sequences/metadata', { fixture: 'sequence.metadata.mock' }).as(
-    'SequencesMetadata'
-  );
+  cy.intercept('/api/project/sockshop/sequences/filter', { fixture: 'sequence.filter.mock' }).as('SequencesMetadata');
   cy.intercept('/api/mongodb-datastore/event?keptnContext=62cca6f3-dc54-4df6-a04c-6ffc894a4b5e&project=sockshop', {
     fixture: 'sequence.traces.mock.json',
   });
+
+  cy.intercept('/api/mongodb-datastore/event?keptnContext=99a20ef4-d822-4185-bbee-0d7a364c213b&project=sockshop', {
+    fixture: 'sequence-traces/approval.mock.json',
+  });
+
+  cy.intercept('/api/controlPlane/v1/project/sockshop/stage/production/service/carts', {
+    deployedImage: 'myImage:0.0.1',
+  }).as('approvalImage');
+
   cy.intercept(
     '/api/mongodb-datastore/event?keptnContext=62cca6f3-dc54-4df6-a04c-6ffc894a4b5e&project=sockshop&fromTime=*',
     {
@@ -291,5 +299,69 @@ export function interceptSecrets(): void {
     body: {
       scopes: ['dynatrace-service'],
     },
+  });
+}
+
+export function interceptEvaluationBoardDynatrace(): void {
+  cy.intercept('api/mongodb-datastore/event?keptnContext=*&type=sh.keptn.event.evaluation.triggered&pageSize=1', {
+    fixture: 'service/get.evaluation.triggered.mock.json',
+  });
+
+  cy.intercept(
+    'api/mongodb-datastore/event?keptnContext=*&type=sh.keptn.event.evaluation.finished&source=lighthouse-service',
+    {
+      fixture: 'service/get.event2.data.json',
+    }
+  );
+  cy.intercept('api/controlPlane/v1/project/dynatrace/stage/quality-gate/service/items', {
+    fixture: 'get.service.items.mock.json',
+  });
+}
+
+export function interceptEvaluationBoard(): void {
+  interceptMain();
+  cy.intercept('api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?*', {
+    fixture: 'service/get.eval.data.json',
+  });
+
+  cy.intercept('api/mongodb-datastore/event?keptnContext=*&type=sh.keptn.event.evaluation.triggered&pageSize=1', {
+    fixture: 'service/get.evaluation.triggered-with-deployment.mock.json',
+  });
+
+  cy.intercept(
+    'api/mongodb-datastore/event?keptnContext=*&type=sh.keptn.event.evaluation.finished&source=lighthouse-service',
+    {
+      fixture: 'service/get.event2.data.json',
+    }
+  );
+  cy.intercept('api/controlPlane/v1/project/dynatrace/stage/quality-gate/service/items', {
+    fixture: 'get.service.items.mock.json',
+  });
+}
+
+export function interceptEvaluationBoardWithoutDeployment(): void {
+  interceptEvaluationBoard();
+  cy.intercept('api/mongodb-datastore/event?keptnContext=*&type=sh.keptn.event.evaluation.triggered&pageSize=1', {
+    fixture: 'service/get.evaluation.triggered.mock.json',
+  });
+}
+
+export function interceptHeatmapComponent(): void {
+  cy.intercept('/api/v1/metadata', { fixture: 'metadata.mock' });
+  cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfoEnableD3Heatmap.mock.json' });
+  cy.intercept('/api/project/sockshop?approval=true&remediation=true', { fixture: 'project.mock' });
+  cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: false });
+  cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
+  cy.intercept('GET', '/api/project/sockshop/serviceStates', {
+    statusCode: 200,
+    fixture: 'get.sockshop.service.states.mock.json',
+  });
+  cy.intercept('GET', '/api/project/sockshop/deployment/da740469-9920-4e0c-b304-0fd4b18d17c2', {
+    statusCode: 200,
+    fixture: 'get.sockshop.service.carts.deployment.mock.json',
+  });
+  cy.intercept('GET', 'api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?*', {
+    statusCode: 200,
+    fixture: 'get.sockshop.service.carts.evaluations.heatmap.mock.json',
   });
 }

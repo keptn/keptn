@@ -2,6 +2,14 @@ package sdk
 
 import (
 	"context"
+	"log"
+	"os"
+	"os/signal"
+	"strings"
+	"sync"
+	"syscall"
+	"time"
+
 	"github.com/kelseyhightower/envconfig"
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
@@ -9,12 +17,6 @@ import (
 	api2 "github.com/keptn/keptn/cp-common/api"
 	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
 	"github.com/keptn/keptn/cp-connector/pkg/nats"
-	"log"
-	"os"
-	"os/signal"
-	"strings"
-	"sync"
-	"syscall"
 )
 
 const (
@@ -166,6 +168,7 @@ func NewKeptn(source string, opts ...KeptnOption) *Keptn {
 }
 
 func (k *Keptn) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE) error {
+	k.logger.Debug("Handling event ", event)
 	eventSender, ok := ctx.Value(controlplane.EventSenderKey).(controlplane.EventSender)
 	if !ok {
 		k.logger.Errorf("Unable to get event sender. Skip processing of event %s", event.ID)
@@ -276,7 +279,7 @@ func (k *Keptn) RegistrationData() controlplane.RegistrationData {
 		Name: k.source,
 		MetaData: models.MetaData{
 			Hostname:           k.env.K8sNodeName,
-			IntegrationVersion: k.env.Version,
+			IntegrationVersion: k.env.K8sDeploymentVersion,
 			Location:           k.env.Location,
 			DistributorVersion: "0.15.0", // note: to be deleted when bridge stops requiring this info
 			KubernetesMetaData: models.KubernetesMetaData{
@@ -295,6 +298,8 @@ func (k *Keptn) Start() error {
 	}
 	ctx, wg := k.getContext(k.gracefulShutdown)
 	err := k.controlPlane.Register(ctx, k)
+	// add additional waiting time to ensure the waitGroup has been increased for all events that have been received between receiving SIGTERM and this point
+	<-time.After(5 * time.Second)
 	wg.Wait()
 	return err
 }

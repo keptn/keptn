@@ -151,7 +151,10 @@ func (sc *shipyardController) HandleIncomingEvent(event apimodels.KeptnContextEx
 		done = make(chan error)
 	}
 
-	log.Infof("Received event of type %s from %s", *event.Type, *event.Source)
+	eventData := keptnv2.EventData{}
+	keptnv2.Decode(event.Data, &eventData)
+
+	log.Infof("Received event of type %s from %s for project %s", *event.Type, *event.Source, eventData.Project)
 	log.Debugf("Context of event %s, sent by %s: %s", *event.Type, *event.Source, ObjToJSON(event))
 	cb := getCompletionCallback(waitForCompletion, done)
 
@@ -542,7 +545,7 @@ func (sc *shipyardController) timeoutSequence(timeout apimodels.SequenceTimeout)
 	sequenceExecution := sequenceExecutions[0]
 	sc.onSequenceTimeout(timeout.LastEvent)
 
-	if err := sc.completeTaskSequence(sequenceExecution.Scope, sequenceExecution, apimodels.TimedOut); err != nil {
+	if err := sc.completeTaskSequence(*eventScope, sequenceExecution, apimodels.TimedOut); err != nil {
 		return err
 	}
 	return nil

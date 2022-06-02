@@ -67,12 +67,12 @@ export class TriggerSequenceSubPage {
     return this;
   }
 
-  public setStartDate(calElement: number, hours: string, minutes: string, seconds: string): this {
-    return this.clickStartTime().selectDateTime(calElement, hours, minutes, seconds);
+  public setStartDate(calElement: number, hours: string, minutes: string, seconds: string, goBackMonths = 0): this {
+    return this.clickStartTime().selectDateTime(calElement, hours, minutes, seconds, goBackMonths);
   }
 
-  public setEndDate(calElement: number, hours: string, minutes: string, seconds: string): this {
-    return this.clickEndTime().selectDateTime(calElement, hours, minutes, seconds);
+  public setEndDate(calElement: number, hours: string, minutes: string, seconds: string, goBackMonths = 0): this {
+    return this.clickEndTime().selectDateTime(calElement, hours, minutes, seconds, goBackMonths);
   }
 
   public assertStartDateDisplayValue(value: string): this {
@@ -85,7 +85,16 @@ export class TriggerSequenceSubPage {
     return this;
   }
 
-  public selectDateTime(calElement: number, hours: string, minutes: string, seconds: string): this {
+  public selectDateTime(
+    calElement: number,
+    hours: string,
+    minutes: string,
+    seconds: string,
+    goBackMonths: number
+  ): this {
+    for (let i = 0; i < goBackMonths; ++i) {
+      cy.get('.dt-calendar-header-button-prev-month').click();
+    }
     cy.get('.dt-calendar-table-cell').eq(calElement).click();
     cy.byTestId('keptn-datetime-picker-submit').should('be.enabled');
     cy.byTestId('keptn-datetime-picker-time').byTestId('keptn-time-input-hours').type(hours);

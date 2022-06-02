@@ -85,8 +85,6 @@ import { KtbLoadingSpinnerComponent } from './_components/ktb-loading-spinner/kt
 import { KtbMarkdownComponent } from './_components/ktb-markdown/ktb-markdown.component';
 import { KtbModifyUniformSubscriptionComponent } from './_components/ktb-modify-uniform-subscription/ktb-modify-uniform-subscription.component';
 import { KtbNoServiceInfoComponent } from './_components/ktb-no-service-info/ktb-no-service-info.component';
-import { KtbNotificationBarComponent } from './_components/ktb-notification-bar/ktb-notification-bar.component';
-import { KtbNotificationComponent } from './_components/ktb-notification/ktb-notification.component';
 import { KtbPayloadViewerComponent } from './_components/ktb-payload-viewer/ktb-payload-viewer.component';
 import { KtbProjectListComponent } from './_components/ktb-project-list/ktb-project-list.component';
 import { KtbProjectSettingsGitComponent } from './_components/ktb-project-settings-git/ktb-project-settings-git.component';
@@ -165,10 +163,10 @@ import { KtbIntegerInputDirective } from './_directives/ktb-integer-input/ktb-in
 import { KtbCertificateInputComponent } from './_components/ktb-certificate-input/ktb-certificate-input.component';
 import { KtbSshKeyInputComponent } from './_components/ktb-ssh-key-input/ktb-ssh-key-input.component';
 import { KtbProjectSettingsGitSshInputComponent } from './_components/ktb-project-settings-git-ssh-input/ktb-project-settings-git-ssh-input.component';
-import { SanitizeHtmlPipe } from './_pipes/sanitize-html.pipe';
 import { WindowConfig } from '../environments/environment.dynamic';
 import { KtbHeatmapModule } from './_components/ktb-heatmap/ktb-heatmap.module';
 import { KtbPipeModule } from './_pipes/ktb-pipe.module';
+import { KtbNotificationModule } from './_components/ktb-notification/ktb-notification.module';
 
 registerLocaleData(localeEn, 'en');
 
@@ -206,7 +204,6 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     KtbEvaluationInfoComponent,
     KtbStageBadgeComponent,
     KtbSliBreakdownComponent,
-    KtbNotificationBarComponent,
     KtbApprovalItemComponent,
     KtbCopyToClipboardComponent,
     KtbMarkdownComponent,
@@ -257,7 +254,6 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     KtbPayloadViewerComponent,
     KtbVariableSelectorComponent,
     ArrayToStringPipe,
-    KtbNotificationComponent,
     KtbProjectCreateMessageComponent,
     KtbTriggerSequenceComponent,
     KtbTimeInputComponent,
@@ -276,7 +272,6 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     KtbProjectSettingsGitSshInputComponent,
     KtbLoadingDistractorComponent,
     KtbLoadingSpinnerComponent,
-    SanitizeHtmlPipe,
   ],
   imports: [
     BrowserModule,
@@ -333,6 +328,7 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     CommonModule,
     KtbHeatmapModule,
     KtbPipeModule,
+    KtbNotificationModule,
   ],
   entryComponents: [KtbDeletionDialogComponent, KtbConfirmationDialogComponent],
   providers: [

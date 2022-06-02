@@ -312,10 +312,8 @@ export class Trace {
     }
   }
 
-  public isApproval(): string | undefined {
-    return this.type === EventTypes.APPROVAL_TRIGGERED || this.type === EventTypes.APPROVAL_STARTED
-      ? this.data.stage
-      : undefined;
+  public isApproval(): boolean {
+    return this.type === EventTypes.APPROVAL_TRIGGERED || this.type === EventTypes.APPROVAL_STARTED;
   }
 
   public isApprovalPending(): boolean {

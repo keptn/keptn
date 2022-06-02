@@ -137,7 +137,7 @@ data:
       deny all;
     }
 
-    location  {{ .Values.prefixPath }}/api/mongodb-datastore {
+    location {{ .Values.prefixPath }}/api/mongodb-datastore {
       # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
       # the access is denied) before we store the file
       # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
@@ -169,7 +169,7 @@ data:
     }
 
     # block DELETE calls to /api/controlplane/v1/log
-    location ~* {{ .Values.prefixPath }}/api/controlPlane/v1/log {
+    location {{ .Values.prefixPath }}/api/controlPlane/v1/log {
       limit_except GET POST PUT PATCH OPTIONS HEAD {
         deny all;
       }
@@ -389,12 +389,14 @@ spec:
         rollme: {{ randAlphaNum 5 | quote }}
     spec:
       {{- include "control-plane.apiGatewayNginx.pod-security-context" . | nindent 6 }}
-      terminationGracePeriodSeconds: {{ .Values.apiGatewayNginx.gracePeriod | default 120 }}
+      terminationGracePeriodSeconds: {{ .Values.apiGatewayNginx.gracePeriod | default 60 }}
       containers:
         - name: api-gateway-nginx
           image: {{ .Values.apiGatewayNginx.image.repository }}:{{ .Values.apiGatewayNginx.image.tag }}
-          {{- $prestop := .Values.apiGatewayNginx.preStopHookTime | default 90 | quote -}}
-          {{- include "control-plane.prestop" $prestop | nindent 10 }}
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 20; /usr/local/openresty/nginx/sbin/nginx -c /etc/nginx/nginx.conf -s quit; while pgrep -x nginx; do sleep 1; done"]
           ports:
             - containerPort: 8080
           livenessProbe:

@@ -72,7 +72,9 @@ export class ApiService {
     keptnContext: string | undefined,
     projectName?: string | undefined,
     fromTime?: string | undefined,
-    nextPageKey?: string | undefined
+    nextPageKey?: string | undefined,
+    type?: EventTypes,
+    source?: KeptnService
   ): Promise<AxiosResponse<EventResult>> {
     const params = {
       keptnContext,
@@ -80,6 +82,8 @@ export class ApiService {
       ...(nextPageKey && { nextPageKey }),
       ...(projectName && { project: projectName }),
       ...(fromTime && { fromTime }),
+      ...(type && { type }),
+      ...(source && { source }),
     };
     return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event`, {
       params,

@@ -56,21 +56,27 @@ func New(uniformAPI api.UniformV1Interface, options ...func(source *UniformSubsc
 func (s *UniformSubscriptionSource) Start(ctx context.Context, registrationData types.RegistrationData, subscriptionChannel chan []models.EventSubscription) error {
 	ticker := s.clock.Ticker(s.fetchInterval)
 	go func() {
+		s.ping(registrationData.ID, subscriptionChannel)
 		for {
 			select {
 			case <-ctx.Done():
 				return
 			case <-ticker.C:
-				updatedIntegrationData, err := s.uniformAPI.Ping(registrationData.ID)
-				if err != nil {
-					s.logger.Errorf("Unable to ping control plane: %v", err)
-					continue
-				}
-				subscriptionChannel <- updatedIntegrationData.Subscriptions
+				s.ping(registrationData.ID, subscriptionChannel)
 			}
 		}
 	}()
 	return nil
+}
+
+func (s *UniformSubscriptionSource) ping(registrationId string, subscriptionChannel chan []models.EventSubscription) {
+	s.logger.Info("Pulling subscriptions for registrationID: ", registrationId)
+	updatedIntegrationData, err := s.uniformAPI.Ping(registrationId)
+	if err != nil {
+		s.logger.Errorf("Unable to ping control plane: %v", err)
+		return
+	}
+	subscriptionChannel <- updatedIntegrationData.Subscriptions
 }
 
 // FixedSubscriptionSource can be used to use a fixed list of subscriptions rather than

@@ -42,12 +42,17 @@ func (s *StatisticsMongoDBRepo) GetStatistics(from, to time.Time) ([]operations.
 	}
 
 	cur, err := s.statsCollection.Find(ctx, searchOptions)
+	defer func() {
+		if cur == nil {
+			return
+		}
+		cur.Close(ctx)
+	}()
 	if err != nil {
 		return nil, err
 	}
 
 	result := []operations.Statistics{}
-	defer cur.Close(ctx)
 	if cur.RemainingBatchLength() == 0 {
 		return nil, ErrNoStatisticsFound
 	}
