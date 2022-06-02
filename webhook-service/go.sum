@@ -201,8 +201,8 @@ github.com/keptn/keptn/cp-common v0.0.0-20220602110035-92d59919c878 h1:fb8wJ1K4H
 github.com/keptn/keptn/cp-common v0.0.0-20220602110035-92d59919c878/go.mod h1:eedRxxVKjFunx2S2PvOv/NgsePWrahMB0RlrzrosytE=
 github.com/keptn/keptn/cp-connector v0.0.0-20220602110035-92d59919c878 h1:/dDytrAheWjYmXllEwwf1M2ks1hOHAdqHJ9RYcUJyr4=
 github.com/keptn/keptn/cp-connector v0.0.0-20220602110035-92d59919c878/go.mod h1:DF+p0baJXl8AcDkkxOsqph0PEHrgIjlnPKaFufKbPzM=
-github.com/keptn/keptn/go-sdk v0.0.0-20220531141752-cd130b7b8291 h1:zR7bQIMCMjVEPJU+CgmZoUD8MxYVdjrRNRUTyjZ3KlQ=
-github.com/keptn/keptn/go-sdk v0.0.0-20220531141752-cd130b7b8291/go.mod h1:bRBjxhvqd4zd5+tBSJkx78Q/s5L2YDzHe4vVTgVBMLE=
+github.com/keptn/keptn/go-sdk v0.0.0-20220602113135-7b4cb80889ea h1:NwSVKhq0n+EMmVJpsWxrb9nTImRBt8RkH91wA/estps=
+github.com/keptn/keptn/go-sdk v0.0.0-20220602113135-7b4cb80889ea/go.mod h1:ZVf5BMzGGiznYpiiFlotFVkGpSnR5mvOyrbghiHN4Yc=
 github.com/kisielk/errcheck v1.5.0/go.mod h1:pFxgyoBC7bSaBwPgfKdkLd5X25qrDl4LWUI2bnpBCr8=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/klauspost/compress v1.14.4 h1:eijASRJcobkVtSt81Olfh7JX43osYLwy5krOJo6YEu4=
