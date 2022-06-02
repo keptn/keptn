@@ -360,13 +360,15 @@ jobs:
       - name: Zero Downtime Tests
         timeout-minutes: 90
         working-directory: test/zero-downtime
+        id: test_zero_downtime
         env:
           GOMAXPROCS: 10
           KEPTN_ENDPOINT: ${{ steps.determine_keptn_endpoint.outputs.KEPTN_ENDPOINT }}
         run: |
           set -euo pipefail 
           
-          go test -json -v -run Test_ZeroDowntime -v -timeout 90m 2>&1 | tee /tmp/gotest.log &
+          go test -json -v -run Test_ZeroDowntime -v -timeout 90m 2>&1 | tee /tmp/gotest.log & GT=$!
+
           cd ../../bridge &&
           if [[ "${{ github.event.inputs.testUI }}" == 'true' ]]; then   
             while [[ $(jobs -pr) ]]; do
@@ -374,19 +376,19 @@ jobs:
               npm run test:ui >> /tmp/uitest.log 2>&1 
             done
           else
-            echo "UI tests will not run"
-          fi 
-
+            echo "UI tests will not run" 
+          fi  & UIT=$!
+          
+          wait $UIT || exit 1
+          wait $GT  || exit 1
 
       - name: Format go test log output
-        id: test_zero_downtime
         if: always()
         run: |
           set -euo pipefail
           cat /tmp/gotest.log | gotestfmt
 
       - name: Format cypress log output
-        id: test_cypress
         if: always() && github.event.inputs.testUI == 'true'
         run: cat /tmp/uitest.log
 
@@ -412,7 +414,7 @@ jobs:
           readarray -t namespaces <<< "$(kubectl get namespaces | awk '{ print $1 }' | grep ${{ env.KEPTN_NAMESPACE }})"
           readarray -t clusterrolebindings <<< "$(kubectl get clusterrolebindings | awk '{ print $1 }' | grep ${{ env.KEPTN_NAMESPACE }})"
 
-          if [[ "${{ github.event_name }}" == 'schedule' && "${{ steps.test_zero_downtime.outcome }}" != 'success' || "${{ steps.test_cypress.outcome }}" != 'success' ]]; then
+          if [[ "${{ github.event_name }}" == 'schedule' && "${{ steps.test_zero_downtime.outcome }}" != 'success' ]]; then
             for namespace in "${namespaces[@]}"; do
               if [[ ! -z "${namespace// }" ]]; then
                 echo "Annotating namespace $namespace with Janitor TTL of 3 days..."
@@ -426,7 +428,7 @@ jobs:
                 kubectl annotate clusterrolebinding "$crb" janitor/ttl=3d
               fi
             done
-          elif [[ "${{ github.event_name }}" == 'workflow_dispatch' && ("${{ steps.test_zero_downtime.outcome }}" != 'success' || "${{ steps.test_cypress.outcome }}" != 'success') && "${{ github.event.inputs.deleteOnFinish }}" == 'false' ]]; then
+          elif [[ "${{ github.event_name }}" == 'workflow_dispatch' && ("${{ steps.test_zero_downtime.outcome }}" != 'success' && "${{ github.event.inputs.deleteOnFinish }}" == 'false' ]]; then
             for namespace in "${namespaces[@]}"; do
               if [[ ! -z "${namespace// }" ]]; then
                 echo "Annotating namespace $namespace with Janitor TTL of 3 hours..."
