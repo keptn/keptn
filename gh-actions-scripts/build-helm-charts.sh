@@ -78,7 +78,7 @@ echo "::endgroup::"
 
 # verify the chart with install
 echo "::group::Dry run install of keptn"
-helm install --dryrun "keptn-charts/keptn-${VERSION}.tgz"
+helm install --dry-run "keptn-charts/keptn-${VERSION}.tgz"
 
 if [ $? -ne 0 ]; then
   echo "::error::Helm Chart for installer has runtime errors - exiting"
@@ -116,7 +116,7 @@ echo "::endgroup::"
 
 # verify the chart with install
 echo "::group::Dry run install of helm-service"
-helm install --dryrun "keptn-charts/helm-service-${VERSION}.tgz" > out.yml
+helm install --dry-run "keptn-charts/helm-service-${VERSION}.tgz" > out.yml
 
 if [ $? -ne 0 ]; then
   echo "::error::Helm Chart for installer has runtime errors - exiting"
@@ -154,7 +154,7 @@ echo "::endgroup::"
 
 # verify the chart with install
 echo "::group::Dry run install of jmeter-service"
-helm install --dryrun "keptn-charts/jmeter-service-${VERSION}.tgz"
+helm install --dry-run "keptn-charts/jmeter-service-${VERSION}.tgz"
 
 if [ $? -ne 0 ]; then
   echo "::error::Helm Chart for installer has runtime errors - exiting"
