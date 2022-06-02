@@ -328,6 +328,7 @@ func (mdbrepo *MongoDBUniformRepo) getCollectionAndContext() (*mongo.Collection,
 func (mdbrepo *MongoDBUniformRepo) findIntegrations(searchParams models.GetUniformIntegrationsParams, collection *mongo.Collection, ctx context.Context) ([]models.Integration, error) {
 	searchOptions := mdbrepo.getSearchOptions(searchParams)
 	cur, err := collection.Find(ctx, searchOptions)
+	defer closeCursor(ctx, cur)
 	if err != nil && err != mongo.ErrNoDocuments {
 		return nil, err
 	}
@@ -361,7 +362,7 @@ func (mdbrepo *MongoDBUniformRepo) DeleteServiceFromSubscriptions(subscriptionNa
 	}
 
 	cur, err := collection.Find(ctx, filter)
-
+	defer closeCursor(ctx, cur)
 	if err != nil && err != mongo.ErrNoDocuments {
 		return err
 	}

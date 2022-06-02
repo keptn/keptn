@@ -32,6 +32,7 @@ func (mdbrepo *TaskSequenceMongoDBRepo) GetTaskExecutions(project string, filter
 
 	collection := mdbrepo.getTaskSequenceCollection(project)
 	cur, err := collection.Find(ctx, mdbrepo.getTaskSequenceMappingSearchOptions(filter))
+	defer closeCursor(ctx, cur)
 	if err != nil && err != mongo.ErrNoDocuments {
 		return nil, err
 	}
