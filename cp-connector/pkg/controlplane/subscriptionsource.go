@@ -53,7 +53,9 @@ func NewUniformSubscriptionSource(uniformAPI api.UniformV1Interface, options ...
 
 // Start triggers the execution of the UniformSubscriptionSource
 func (s *UniformSubscriptionSource) Start(ctx context.Context, registrationData RegistrationData, subscriptionChannel chan []models.EventSubscription) error {
-	s.ping(registrationData.ID, subscriptionChannel)
+	go func() {
+		s.ping(registrationData.ID, subscriptionChannel)
+	}()
 	ticker := s.clock.Ticker(s.fetchInterval)
 	go func() {
 		for {
@@ -75,9 +77,7 @@ func (s *UniformSubscriptionSource) ping(registrationId string, subscriptionChan
 		s.logger.Errorf("Unable to ping control plane: %v", err)
 		return
 	}
-	go func() {
-		subscriptionChannel <- updatedIntegrationData.Subscriptions
-	}()
+	subscriptionChannel <- updatedIntegrationData.Subscriptions
 }
 
 // FixedSubscriptionSource can be used to use a fixed list of subscriptions rather than

@@ -89,7 +89,7 @@ func TestSubscriptionSourceWithFetchInterval(t *testing.T) {
 		clock.Add(10 * time.Second)
 		<-subscriptionUpdates
 	}
-	require.Equal(t, 101, pingCount)
+	require.Equal(t, 100, pingCount)
 }
 
 func TestSubscriptionSourceCancel(t *testing.T) {
