@@ -82,7 +82,7 @@
     "@cypress/schematic": "1.6.0",
     "@types/d3": "7.4.0",
     "@types/dompurify": "2.3.3",
-    "@types/jest": "27.5.1",
+    "@types/jest": "27.5.2",
     "@types/lodash": "4.14.182",
     "@types/lodash-es": "4.17.6",
     "@types/marked": "4.0.3",
