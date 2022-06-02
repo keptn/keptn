@@ -358,7 +358,6 @@ jobs:
       #######################################################################
 
       - name: Zero Downtime Tests
-        id: test_zero_downtime
         timeout-minutes: 90
         working-directory: test/zero-downtime
         env:
@@ -380,12 +379,14 @@ jobs:
 
 
       - name: Format go test log output
+        id: test_zero_downtime
         if: always()
         run: |
           set -euo pipefail
           cat /tmp/gotest.log | gotestfmt
 
       - name: Format cypress log output
+        id: test_cypress
         if: always() && github.event.inputs.testUI == 'true'
         run: cat /tmp/uitest.log
 
@@ -411,7 +412,7 @@ jobs:
           readarray -t namespaces <<< "$(kubectl get namespaces | awk '{ print $1 }' | grep ${{ env.KEPTN_NAMESPACE }})"
           readarray -t clusterrolebindings <<< "$(kubectl get clusterrolebindings | awk '{ print $1 }' | grep ${{ env.KEPTN_NAMESPACE }})"
 
-          if [[ "${{ github.event_name }}" == 'schedule' && "${{ steps.test_zero_downtime.outcome }}" != 'success' ]]; then
+          if [[ "${{ github.event_name }}" == 'schedule' && "${{ steps.test_zero_downtime.outcome }}" != 'success' || "${{ steps.test_cypress.outcome }}" != 'success' ]]; then
             for namespace in "${namespaces[@]}"; do
               if [[ ! -z "${namespace// }" ]]; then
                 echo "Annotating namespace $namespace with Janitor TTL of 3 days..."
@@ -425,7 +426,7 @@ jobs:
                 kubectl annotate clusterrolebinding "$crb" janitor/ttl=3d
               fi
             done
-          elif [[ "${{ github.event_name }}" == 'workflow_dispatch' && "${{ steps.test_zero_downtime.outcome }}" != 'success' && "${{ github.event.inputs.deleteOnFinish }}" == 'false' ]]; then
+          elif [[ "${{ github.event_name }}" == 'workflow_dispatch' && ("${{ steps.test_zero_downtime.outcome }}" != 'success' || "${{ steps.test_cypress.outcome }}" != 'success') && "${{ github.event.inputs.deleteOnFinish }}" == 'false' ]]; then
             for namespace in "${namespaces[@]}"; do
               if [[ ! -z "${namespace// }" ]]; then
                 echo "Annotating namespace $namespace with Janitor TTL of 3 hours..."
