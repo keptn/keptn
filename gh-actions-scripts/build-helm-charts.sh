@@ -72,6 +72,14 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
+# verify the chart with install
+helm install --dryrun "keptn-charts/keptn-${VERSION}.tgz"
+
+if [ $? -ne 0 ]; then
+  echo "::error Helm Chart for installer has templating errors - exiting"
+  exit 1
+fi
+
 # ####################
 # HELM-SVC HELM CHART
 # ####################
