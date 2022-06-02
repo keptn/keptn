@@ -209,10 +209,23 @@
     >
       <div fxLayout="row">
         <div fxFlex></div>
-        <div fxLayout="row" fxLayoutAlign="start end" uitestid="keptn-evaluation-details-selected-contextButtons">
-          <button dt-button variant="secondary" (click)="showSloDialog()" *ngIf="evaluation.sloFileContentParsed">
-            <dt-icon name="services"></dt-icon> Show SLO
-          </button>
+        <div
+          fxLayout="row"
+          fxLayoutAlign="start end"
+          fxLayoutGap="10px"
+          uitestid="keptn-evaluation-details-selected-contextButtons"
+        >
+          <div [disabled]="!!evaluation.sloFileContentParsed" [dtOverlay]="invalidSLO">
+            <button
+              dt-button
+              variant="secondary"
+              (click)="showSloDialog()"
+              [disabled]="!evaluation.sloFileContentParsed"
+            >
+              <dt-icon name="services"></dt-icon> Show SLO
+            </button>
+          </div>
+          <ng-template #invalidSLO> Invalid or incorrectly encoded SLO file </ng-template>
           <button dt-button variant="secondary" (click)="invalidateEvaluationTrigger()" *ngIf="!isInvalidated">
             Ignore for comparison
           </button>

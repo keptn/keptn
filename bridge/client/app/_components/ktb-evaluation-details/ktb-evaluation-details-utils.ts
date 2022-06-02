@@ -2,6 +2,8 @@ import { EvaluationResultTypeExtension, IDataPoint, IHeatmapTooltipType } from '
 import { ResultTypes } from '../../../../shared/models/result-types';
 import { Trace } from '../../_models/trace';
 import { IndicatorResult } from '../../../../shared/interfaces/indicator-result';
+import { parse as parseYaml } from 'yaml';
+import { SloConfig } from '../../../../shared/interfaces/slo-config';
 
 export type SliInfo = {
   score: number;
@@ -101,4 +103,30 @@ export function createDataPoints(evaluationHistory: Trace[]): IDataPoint[] {
     .filter((dp) => dp.tooltip.type == IHeatmapTooltipType.SLI)
     .sort((a, b) => a.yElement.localeCompare(b.yElement));
   return [...scores, ...sortedResults];
+}
+
+export function parseSloFile(evaluationTraces: Trace[]): void {
+  for (const evaluationData of evaluationTraces) {
+    if (evaluationData?.data?.evaluation?.sloFileContent && !evaluationData.data.evaluation.sloFileContentParsed) {
+      try {
+        evaluationData.data.evaluation.sloFileContentParsed = parseYaml(
+          atob(evaluationData.data.evaluation.sloFileContent)
+        ) as SloConfig;
+        evaluationData.data.evaluation.score_pass =
+          evaluationData.data.evaluation.sloFileContentParsed.total_score?.pass?.split('%')[0] ?? '';
+        evaluationData.data.evaluation.score_warning =
+          evaluationData.data.evaluation.sloFileContentParsed.total_score?.warning?.split('%')[0] ?? '';
+        evaluationData.data.evaluation.compare_with =
+          evaluationData.data.evaluation.sloFileContentParsed.comparison.compare_with ?? '';
+        evaluationData.data.evaluation.include_result_with_score =
+          evaluationData.data.evaluation.sloFileContentParsed.comparison.include_result_with_score;
+        if (evaluationData.data.evaluation.comparedEvents) {
+          evaluationData.data.evaluation.number_of_comparison_results =
+            evaluationData.data.evaluation.comparedEvents?.length;
+        } else {
+          evaluationData.data.evaluation.number_of_comparison_results = 0;
+        }
+      } catch {}
+    }
+  }
 }
