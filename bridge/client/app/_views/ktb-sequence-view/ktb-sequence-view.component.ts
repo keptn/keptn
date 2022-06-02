@@ -193,7 +193,9 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
               this.loadTraces(sequence, params.eventId);
             } else {
               initParametersHandled = true;
-              this.selectSequence({ sequence, stage, eventId: this.selectedEventId });
+              // while traces are loading we can already show the sequence and the timeline
+              this.selectSequence({ sequence, eventId: this.selectedEventId, stage });
+              this.loadTraces(sequence, this.selectedEventId, stage);
             }
           } else if (params.shkeptncontext && this.project) {
             // is running twice because project is changed on start before the first call finishes
@@ -228,7 +230,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     });
   }
 
-  public selectSequence(event: { sequence: Sequence; stage?: string; eventId?: string }, loadTraces = true): void {
+  public selectSequence(event: { sequence: Sequence; stage?: string; eventId?: string }): void {
     if (event.eventId) {
       event.stage = event.sequence.findTrace((t) => t.id === event.eventId)?.stage;
       const routeUrl = this.router.createUrlTree(
@@ -253,9 +255,6 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
 
     this.currentSequence = event.sequence;
     this.selectedStage = event.stage || event.sequence.getStages().pop();
-    if (loadTraces) {
-      this.loadTraces(this.currentSequence, event.eventId);
-    }
   }
 
   public updateSequenceView(): void {
@@ -283,24 +282,24 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     }
   }
 
-  public loadTraces(sequence: Sequence, eventId?: string): void {
+  public loadTraces(sequence: Sequence, eventId?: string, stage?: string): void {
     this._tracesTimer.unsubscribe();
     if (moment().subtract(1, 'day').isBefore(sequence.time)) {
       this._tracesTimer = AppUtils.createTimer(0, this._tracesTimerInterval)
         .pipe(takeUntil(this.unsubscribe$))
         .subscribe(() => {
-          this.setTraces(sequence, eventId);
+          this.setTraces(sequence, eventId, stage);
         });
     } else {
-      this.setTraces(sequence, eventId);
+      this.setTraces(sequence, eventId, stage);
       this._tracesTimer = Subscription.EMPTY;
     }
   }
 
-  private setTraces(sequence: Sequence, eventId?: string): void {
+  private setTraces(sequence: Sequence, eventId?: string, stage?: string): void {
     this.dataService.getTracesOfSequence(sequence).subscribe((traces) => {
       sequence.traces = traces;
-      this.selectSequence({ sequence, stage: undefined, eventId }, false);
+      this.selectSequence({ sequence, stage, eventId });
     });
   }
 
