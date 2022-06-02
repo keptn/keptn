@@ -82,7 +82,7 @@ apiGatewayNginx:
     repository: docker.io/nginxinc/nginx-unprivileged
     tag: 1.22.0-alpine
   nodeSelector: {}
-  gracePeriod: 60     # gracePeriod set to preStop hook time +30s
+  gracePeriod: 60
   preStopHookTime: 20
   clientMaxBodySize: "5m"
   sidecars: []
@@ -101,7 +101,7 @@ remediationService:
     repository: docker.io/keptn/remediation-service
     tag: ""
   nodeSelector: {}
-  gracePeriod: 60     # gracePeriod set to preStop hook time +30s
+  gracePeriod: 60
   preStopHookTime: 5
   sidecars: []
   extraVolumeMounts: []
@@ -124,7 +124,7 @@ apiService:
     requestsPerSecond: "1.0"
     requestBurst: "2"
   nodeSelector: {}
-  gracePeriod: 60     # gracePeriod set to preStop hook time +30s
+  gracePeriod: 60
   preStopHookTime: 5
   sidecars: []
   extraVolumeMounts: []
@@ -177,6 +177,8 @@ bridge:
     userIdentifier: ""
     mongoConnectionString: ""
   automaticProvisioningMsg: ""
+  d3heatmap:
+    enabled: false
   nodeSelector: {}
   sidecars: []
   extraVolumeMounts: []
@@ -234,7 +236,7 @@ shipyardController:
       # If the helm chart generation for blue/green deployments is not needed, and this value is too small, it can be adapted here
       serviceNameMaxSize: 43
   nodeSelector: {}
-  gracePeriod: 60     # gracePeriod set to preStop hook time +30s
+  gracePeriod: 60
   preStopHookTime: 15
   sidecars: []
   extraVolumeMounts: []
@@ -252,7 +254,7 @@ secretService:
     repository: docker.io/keptn/secret-service
     tag: ""
   nodeSelector: {}
-  gracePeriod: 60     # gracePeriod set to preStop hook time +30s
+  gracePeriod: 60
   preStopHookTime: 20
   sidecars: []
   extraVolumeMounts: []
@@ -278,7 +280,7 @@ configurationService:
     GIT_KEPTN_USER: "keptn"
     GIT_KEPTN_EMAIL: "keptn@keptn.sh"
   nodeSelector: {}
-  gracePeriod: 60     # gracePeriod set to preStop hook time +30s
+  gracePeriod: 60
   preStopHookTime: 20
   sidecars: []
   extraVolumeMounts: []
@@ -302,7 +304,7 @@ resourceService:
     GIT_KEPTN_EMAIL: "keptn@keptn.sh"
     DIRECTORY_STAGE_STRUCTURE: "false"
   nodeSelector: {}
-  gracePeriod: 60     # gracePeriod set to preStop hook time +30s
+  gracePeriod: 60
   preStopHookTime: 20
   sidecars: []
   extraVolumeMounts: []
@@ -320,7 +322,7 @@ mongodbDatastore:
     repository: docker.io/keptn/mongodb-datastore
     tag: ""
   nodeSelector: {}
-  gracePeriod: 60     # gracePeriod set to preStop hook time +30s
+  gracePeriod: 60
   preStopHookTime: 20
   sidecars: []
   extraVolumeMounts: []
@@ -338,8 +340,8 @@ lighthouseService:
     repository: docker.io/keptn/lighthouse-service
     tag: ""
   nodeSelector: {}
-  gracePeriod: 60     # gracePeriod set to preStop hook time +30s
-  preStopHookTime: 5
+  gracePeriod: 60
+  preStopHookTime: 20
   sidecars: []
   extraVolumeMounts: []
   extraVolumes: []
@@ -356,8 +358,8 @@ statisticsService:
     repository: docker.io/keptn/statistics-service
     tag: ""
   nodeSelector: {}
-  gracePeriod: 60     # gracePeriod set to preStop hook time +30s
-  preStopHookTime: 5
+  gracePeriod: 60
+  preStopHookTime: 20
   sidecars: []
   extraVolumeMounts: []
   extraVolumes: []
@@ -374,7 +376,7 @@ approvalService:
     repository: docker.io/keptn/approval-service
     tag: ""
   nodeSelector: {}
-  gracePeriod: 60     # gracePeriod set to preStop hook time +30s
+  gracePeriod: 60
   preStopHookTime: 5
   sidecars: []
   extraVolumeMounts: []
@@ -393,8 +395,8 @@ webhookService:
     repository: docker.io/keptn/webhook-service
     tag: ""
   nodeSelector: {}
-  gracePeriod: 60     # gracePeriod set to preStop hook time +30s
-  preStopHookTime: 5
+  gracePeriod: 60
+  preStopHookTime: 20
   sidecars: []
   extraVolumeMounts: []
   extraVolumes: []
