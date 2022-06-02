@@ -53,15 +53,7 @@ func NewUniformSubscriptionSource(uniformAPI api.UniformV1Interface, options ...
 
 // Start triggers the execution of the UniformSubscriptionSource
 func (s *UniformSubscriptionSource) Start(ctx context.Context, registrationData RegistrationData, subscriptionChannel chan []models.EventSubscription) error {
-	s.logger.Info("Pulling subscriptions for registrationID: ", registrationData.ID)
-	updatedIntegrationData, err := s.uniformAPI.Ping(registrationData.ID)
-	if err != nil {
-		s.logger.Errorf("Unable to ping control plane: %v", err)
-	} else {
-		go func() {
-			subscriptionChannel <- updatedIntegrationData.Subscriptions
-		}()
-	}
+	s.ping(registrationData.ID, subscriptionChannel)
 	ticker := s.clock.Ticker(s.fetchInterval)
 	go func() {
 		for {
@@ -69,17 +61,23 @@ func (s *UniformSubscriptionSource) Start(ctx context.Context, registrationData 
 			case <-ctx.Done():
 				return
 			case <-ticker.C:
-				s.logger.Info("Pulling subscriptions for registrationID: ", registrationData.ID)
-				updatedIntegrationData, err := s.uniformAPI.Ping(registrationData.ID)
-				if err != nil {
-					s.logger.Errorf("Unable to ping control plane: %v", err)
-					continue
-				}
-				subscriptionChannel <- updatedIntegrationData.Subscriptions
+				s.ping(registrationData.ID, subscriptionChannel)
 			}
 		}
 	}()
 	return nil
+}
+
+func (s *UniformSubscriptionSource) ping(registrationId string, subscriptionChannel chan []models.EventSubscription) {
+	s.logger.Info("Pulling subscriptions for registrationID: ", registrationId)
+	updatedIntegrationData, err := s.uniformAPI.Ping(registrationId)
+	if err != nil {
+		s.logger.Errorf("Unable to ping control plane: %v", err)
+		return
+	}
+	go func() {
+		subscriptionChannel <- updatedIntegrationData.Subscriptions
+	}()
 }
 
 // FixedSubscriptionSource can be used to use a fixed list of subscriptions rather than
