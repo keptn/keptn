@@ -379,6 +379,8 @@ jobs:
             echo "UI tests will not run" 
           fi  & UIT=$?
           
+          wait
+        
           if [[ $UIT-ne 0 ]] || [[ $GT -ne 0  ]]; then
             exit 1
           fi
