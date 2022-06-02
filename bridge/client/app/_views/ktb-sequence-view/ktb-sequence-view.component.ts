@@ -192,6 +192,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
               initParametersHandled = true;
               this.loadTraces(sequence, params.eventId);
             } else {
+              initParametersHandled = true;
               this.selectSequence({ sequence, stage, eventId: this.selectedEventId });
             }
           } else if (params.shkeptncontext && this.project) {
@@ -229,6 +230,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
 
   public selectSequence(event: { sequence: Sequence; stage?: string; eventId?: string }, loadTraces = true): void {
     if (event.eventId) {
+      event.stage = event.sequence.findTrace((t) => t.id === event.eventId)?.stage;
       const routeUrl = this.router.createUrlTree(
         ['/project', event.sequence.project, 'sequence', event.sequence.shkeptncontext, 'event', event.eventId],
         { queryParamsHandling: 'preserve' }
@@ -252,7 +254,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     this.currentSequence = event.sequence;
     this.selectedStage = event.stage || event.sequence.getStages().pop();
     if (loadTraces) {
-      this.loadTraces(this.currentSequence);
+      this.loadTraces(this.currentSequence, event.eventId);
     }
   }
 
@@ -298,10 +300,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   private setTraces(sequence: Sequence, eventId?: string): void {
     this.dataService.getTracesOfSequence(sequence).subscribe((traces) => {
       sequence.traces = traces;
-      if (eventId) {
-        const stage = sequence.findTrace((t) => t.id === eventId)?.stage;
-        this.selectSequence({ sequence, stage, eventId }, false);
-      }
+      this.selectSequence({ sequence, stage: undefined, eventId }, false);
     });
   }
 
