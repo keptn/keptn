@@ -223,13 +223,16 @@
             <button
               dt-button
               variant="secondary"
+              uitestid="ktb-show-slo-button"
               (click)="showSloDialog()"
               [disabled]="!evaluation.sloFileContentParsed"
             >
               <dt-icon name="services"></dt-icon> Show SLO
             </button>
           </div>
-          <ng-template #invalidSLO> Invalid or incorrectly encoded SLO file </ng-template>
+          <ng-template #invalidSLO>
+            <div uitestid="ktb-invalid-slo-overlay">Invalid or incorrectly encoded SLO file</div>
+          </ng-template>
           <button dt-button variant="secondary" (click)="invalidateEvaluationTrigger()" *ngIf="!isInvalidated">
             Ignore for comparison
           </button>
