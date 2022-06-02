@@ -297,7 +297,6 @@ func (k *Keptn) Start() error {
 	}
 	ctx, wg := k.getContext(k.gracefulShutdown)
 	err := k.controlPlane.Register(ctx, k)
-	<-time.After(5 * time.Second)
 	wg.Wait()
 	return err
 }
