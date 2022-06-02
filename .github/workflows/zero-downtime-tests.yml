@@ -379,8 +379,7 @@ jobs:
             echo "UI tests will not run" 
           fi  & UIT=$!
           
-          wait $UIT || exit 1
-          wait $GT  || exit 1
+          wait 
 
       - name: Format go test log output
         if: always()
