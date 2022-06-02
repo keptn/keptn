@@ -8,6 +8,7 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/kelseyhightower/envconfig"
 	"github.com/keptn/go-utils/pkg/api/models"
