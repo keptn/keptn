@@ -131,7 +131,7 @@ func TestSubscriptionSourceCancel(t *testing.T) {
 	cancel()
 	clock.Add(9 * time.Second)
 	clock.Add(1 * time.Second)
-	require.Equal(t, 2, pingCount)
+	require.Equal(t, 1, pingCount)
 }
 
 func TestSubscriptionSource(t *testing.T) {
