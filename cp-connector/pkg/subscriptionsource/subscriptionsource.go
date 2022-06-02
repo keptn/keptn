@@ -70,7 +70,6 @@ func (s *UniformSubscriptionSource) Start(ctx context.Context, registrationData 
 }
 
 func (s *UniformSubscriptionSource) ping(registrationId string, subscriptionChannel chan []models.EventSubscription) {
-	s.logger.Info("Pulling subscriptions for registrationID: ", registrationId)
 	updatedIntegrationData, err := s.uniformAPI.Ping(registrationId)
 	if err != nil {
 		s.logger.Errorf("Unable to ping control plane: %v", err)
