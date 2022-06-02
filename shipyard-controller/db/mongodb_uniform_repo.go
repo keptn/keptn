@@ -69,6 +69,10 @@ func (mdbrepo *MongoDBUniformRepo) CreateUniformIntegration(integration apimodel
 	}
 	defer cancel()
 
+	// ensure that we have an empty array of subscriptions if it was nil before, to be able to use $push later
+	if integration.Subscriptions == nil {
+		integration.Subscriptions = []apimodels.EventSubscription{}
+	}
 	_, err = collection.InsertOne(ctx, integration)
 	if mongo.IsDuplicateKeyError(err) {
 		return ErrUniformRegistrationAlreadyExists
@@ -82,6 +86,11 @@ func (mdbrepo *MongoDBUniformRepo) CreateOrUpdateUniformIntegration(integration 
 		return err
 	}
 	defer cancel()
+
+	// ensure that we have an empty array of subscriptions if it was nil before, to be able to use $push later
+	if integration.Subscriptions == nil {
+		integration.Subscriptions = []apimodels.EventSubscription{}
+	}
 
 	opts := options.Update().SetUpsert(true)
 	filter := bson.D{{"_id", integration.ID}}
@@ -101,9 +110,6 @@ func (mdbrepo *MongoDBUniformRepo) CreateOrUpdateSubscription(integrationID stri
 		return err
 	}
 	defer cancel()
-	//params := models.GetUniformIntegrationsParams{
-	//	ID: integrationID,
-	//}
 
 	integrations, err := mdbrepo.findIntegrations(models.GetUniformIntegrationsParams{ID: integrationID}, collection, ctx)
 	if err != nil {
@@ -114,19 +120,25 @@ func (mdbrepo *MongoDBUniformRepo) CreateOrUpdateSubscription(integrationID stri
 	}
 
 	integration := integrations[0]
-	var keepSubscriptions []apimodels.EventSubscription
+
+	// check if the subscription ID is already present
+	updateExisting := false
 	subscriptions := integration.Subscriptions
 	for _, s := range subscriptions {
-		if s.ID != subscription.ID {
-			keepSubscriptions = append(keepSubscriptions, s)
+		if s.ID == subscription.ID {
+			updateExisting = true
+			break
 		}
 	}
-	keepSubscriptions = append(keepSubscriptions, apimodels.EventSubscription(subscription))
-	integration.Subscriptions = keepSubscriptions
 
 	opts := options.Update().SetUpsert(true)
 	filter := bson.D{{"_id", integration.ID}}
-	update := bson.D{{"$set", integration}}
+	update := bson.M{"$push": bson.M{"subscriptions": subscription}}
+
+	if updateExisting {
+		filter = bson.D{{"_id", integration.ID}, {"subscriptions.id", subscription.ID}}
+		update = bson.M{"$set": bson.M{"subscriptions.$": subscription}}
+	}
 
 	_, err = collection.UpdateOne(ctx, filter, update, opts)
 
@@ -140,28 +152,10 @@ func (mdbrepo *MongoDBUniformRepo) DeleteSubscription(integrationID, subscriptio
 	}
 	defer cancel()
 
-	integrations, err := mdbrepo.findIntegrations(models.GetUniformIntegrationsParams{ID: integrationID}, collection, ctx)
-	if err != nil {
-		return err
-	}
-
-	if len(integrations) == 0 {
-		return mongo.ErrNoDocuments
-	}
-	integration := integrations[0]
-
-	var keepSubscriptions []apimodels.EventSubscription
-	subscriptions := integration.Subscriptions
-	for _, s := range subscriptions {
-		if s.ID != subscriptionID {
-			keepSubscriptions = append(keepSubscriptions, s)
-		}
-	}
-	integration.Subscriptions = keepSubscriptions
+	filter := bson.D{{"_id", integrationID}}
+	update := bson.M{"$pull": bson.M{"subscriptions": bson.M{"id": subscriptionID}}}
 
 	opts := options.Update().SetUpsert(true)
-	filter := bson.D{{"_id", integration.ID}}
-	update := bson.D{{"$set", integration}}
 
 	_, err = collection.UpdateOne(ctx, filter, update, opts)
 

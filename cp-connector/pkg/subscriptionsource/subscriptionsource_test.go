@@ -105,15 +105,21 @@ func TestSubscriptionSourceCancel(t *testing.T) {
 
 	subscriptionUpdates := make(chan []models.EventSubscription)
 
+	go func() {
+		for {
+			<-subscriptionUpdates
+		}
+	}()
+
 	ctx, cancel := context.WithCancel(context.TODO())
 	err := subscriptionSource.Start(ctx, initialRegistrationData, subscriptionUpdates)
+	require.Eventually(t, func() bool { return pingCount == 1 }, 3*time.Second, time.Millisecond*100)
 	require.NoError(t, err)
 	clock.Add(10 * time.Second)
-	<-subscriptionUpdates
+	require.Equal(t, 2, pingCount)
 	cancel()
-	clock.Add(9 * time.Second)
-	clock.Add(1 * time.Second)
-	require.Equal(t, 1, pingCount)
+	clock.Add(10 * time.Second)
+	require.Equal(t, 2, pingCount)
 }
 
 func TestSubscriptionSource(t *testing.T) {
