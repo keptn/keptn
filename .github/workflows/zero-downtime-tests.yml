@@ -367,7 +367,7 @@ jobs:
         run: |
           set -euo pipefail 
           
-          go test -json -v -run Test_ZeroDowntime -v -timeout 90m 2>&1 | tee /tmp/gotest.log & GT=$!
+          go test -json -v -run Test_ZeroDowntime -v -timeout 90m 2>&1 | tee /tmp/gotest.log &
 
           cd ../../bridge &&
           if [[ "${{ github.event.inputs.testUI }}" == 'true' ]]; then   
@@ -377,8 +377,7 @@ jobs:
             done
           else
             echo "UI tests will not run" 
-          fi  & UIT=$!
-          
+          fi   
           wait 
 
       - name: Format go test log output
