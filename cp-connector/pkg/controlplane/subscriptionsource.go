@@ -53,11 +53,9 @@ func NewUniformSubscriptionSource(uniformAPI api.UniformV1Interface, options ...
 
 // Start triggers the execution of the UniformSubscriptionSource
 func (s *UniformSubscriptionSource) Start(ctx context.Context, registrationData RegistrationData, subscriptionChannel chan []models.EventSubscription) error {
-	go func() {
-		s.ping(registrationData.ID, subscriptionChannel)
-	}()
 	ticker := s.clock.Ticker(s.fetchInterval)
 	go func() {
+		s.ping(registrationData.ID, subscriptionChannel)
 		for {
 			select {
 			case <-ctx.Done():
