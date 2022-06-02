@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.13.6](https://github.com/keptn/keptn/compare/0.13.5...0.13.6) (2022-06-02)
+
+
+### Bug Fixes
+
+* Ensure all MongoDB cursors are being closed ([#7940](https://github.com/keptn/keptn/issues/7940)) ([ac11530](https://github.com/keptn/keptn/commit/ac11530d0eb82bdc5f66a94c2c8bd0171e53dc5c))
+
 ### [0.13.5](https://github.com/keptn/keptn/compare/0.13.4...0.13.5) (2022-04-29)
 
 
