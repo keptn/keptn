@@ -18,8 +18,8 @@ require (
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0 // indirect
-	github.com/keptn/keptn/cp-common v0.0.0-20220602101520-ccc4f2648267 // indirect
-	github.com/keptn/keptn/cp-connector v0.0.0-20220602101520-ccc4f2648267 // indirect
+	github.com/keptn/keptn/cp-common v0.0.0-20220602110035-92d59919c878 // indirect
+	github.com/keptn/keptn/cp-connector v0.0.0-20220602110035-92d59919c878 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 // indirect
 	github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742 // indirect
 	github.com/nats-io/nats.go v1.15.0 // indirect
