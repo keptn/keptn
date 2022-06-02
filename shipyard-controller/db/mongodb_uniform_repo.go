@@ -152,28 +152,10 @@ func (mdbrepo *MongoDBUniformRepo) DeleteSubscription(integrationID, subscriptio
 	}
 	defer cancel()
 
-	integrations, err := mdbrepo.findIntegrations(models.GetUniformIntegrationsParams{ID: integrationID}, collection, ctx)
-	if err != nil {
-		return err
-	}
-
-	if len(integrations) == 0 {
-		return mongo.ErrNoDocuments
-	}
-	integration := integrations[0]
-
-	var keepSubscriptions []apimodels.EventSubscription
-	subscriptions := integration.Subscriptions
-	for _, s := range subscriptions {
-		if s.ID != subscriptionID {
-			keepSubscriptions = append(keepSubscriptions, s)
-		}
-	}
-	integration.Subscriptions = keepSubscriptions
+	filter := bson.D{{"_id", integrationID}}
+	update := bson.M{"$pull": bson.M{"subscriptions": bson.M{"id": subscriptionID}}}
 
 	opts := options.Update().SetUpsert(true)
-	filter := bson.D{{"_id", integration.ID}}
-	update := bson.D{{"$set", integration}}
 
 	_, err = collection.UpdateOne(ctx, filter, update, opts)
 

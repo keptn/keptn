@@ -414,6 +414,48 @@ func TestMongoDBUniformRepo_UpdateSubscription(t *testing.T) {
 	require.Equal(t, updatedSubscription, integrations[0].Subscriptions[0])
 }
 
+func TestMongoDBUniformRepo_DeleteSubscription(t *testing.T) {
+	testIntegration := generateIntegrations()[0]
+
+	testIntegration.Subscriptions = []apimodels.EventSubscription{}
+
+	mdbrepo := NewMongoDBUniformRepo(GetMongoDBConnectionInstance())
+
+	err := mdbrepo.SetupTTLIndex(1 * time.Minute)
+	require.Nil(t, err)
+
+	// insert our integration entities
+	err = mdbrepo.CreateOrUpdateUniformIntegration(testIntegration)
+	require.Nil(t, err)
+
+	subscription := apimodels.EventSubscription{
+		ID:    "sub-id",
+		Event: "a-topic",
+		Filter: apimodels.EventSubscriptionFilter{
+			Projects: []string{"project"},
+			Stages:   []string{"a-stage"},
+			Services: []string{"a-service"},
+		},
+	}
+
+	err = mdbrepo.CreateOrUpdateSubscription("i1", subscription)
+	require.Nil(t, err)
+
+	integrations, err := mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{ID: "i1"})
+	require.Nil(t, err)
+	require.Len(t, integrations, 1)
+	require.Len(t, integrations[0].Subscriptions, 1)
+	require.Equal(t, subscription, integrations[0].Subscriptions[0])
+
+	err = mdbrepo.DeleteSubscription("i1", "sub-id")
+	require.Nil(t, err)
+
+	integrations, err = mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{ID: "i1"})
+	require.Nil(t, err)
+	require.Len(t, integrations, 1)
+	require.Empty(t, integrations[0].Subscriptions)
+}
+
 func TestMongoDBUniformRepo_ConcurrentlyAddSubscriptions(t *testing.T) {
 	nrRoutines := 100
 	testIntegration := generateIntegrations()[0]
@@ -457,6 +499,25 @@ func TestMongoDBUniformRepo_ConcurrentlyAddSubscriptions(t *testing.T) {
 	require.Len(t, integrations, 1)
 	// verify that no subscription has been lost
 	require.Len(t, integrations[0].Subscriptions, nrRoutines)
+
+	wg.Add(nrRoutines)
+	// now, let's delete them again
+	for i := 0; i < nrRoutines; i++ {
+		go func(idx int) {
+			subID := fmt.Sprintf("id-%d", idx)
+			err = mdbrepo.DeleteSubscription("i1", subID)
+			require.Nil(t, err)
+			wg.Done()
+		}(i)
+	}
+
+	wg.Wait()
+
+	integrations, err = mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{ID: "i1"})
+	require.Nil(t, err)
+	require.Len(t, integrations, 1)
+	// verify that no subscription has been lost
+	require.Empty(t, integrations[0].Subscriptions)
 }
 
 func TestMongoDBUniformRepo_ConcurrentlyUpdateSubscription(t *testing.T) {
