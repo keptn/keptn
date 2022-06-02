@@ -25,10 +25,10 @@ github.com/kelseyhightower/envconfig v1.4.0 h1:Im6hONhd3pLkfDFsbRgu68RDNkGF1r3dv
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
 github.com/keptn/go-utils v0.15.1-0.20220601115436-d550c7009733 h1:ZZR3p/6R2OTmXa1AQ3wm8jYXekW4WZMXqRndPXHQU1o=
 github.com/keptn/go-utils v0.15.1-0.20220601115436-d550c7009733/go.mod h1:oxLLKz2u9KId2HgLH63+T0pUbcgiDd2GDkRrRKwxGUU=
-github.com/keptn/keptn/cp-common v0.0.0-20220602101520-ccc4f2648267 h1:PITkMQE29p9u3fg/AZLkhi+/lGkKFFvsIXdtzA+s1nI=
-github.com/keptn/keptn/cp-common v0.0.0-20220602101520-ccc4f2648267/go.mod h1:eedRxxVKjFunx2S2PvOv/NgsePWrahMB0RlrzrosytE=
-github.com/keptn/keptn/cp-connector v0.0.0-20220602101520-ccc4f2648267 h1:nn3QZ0D5M/WpOxZGWlzcpVNAOpMzGt2rhvF0U8kz0Z4=
-github.com/keptn/keptn/cp-connector v0.0.0-20220602101520-ccc4f2648267/go.mod h1:DF+p0baJXl8AcDkkxOsqph0PEHrgIjlnPKaFufKbPzM=
+github.com/keptn/keptn/cp-common v0.0.0-20220602110035-92d59919c878 h1:fb8wJ1K4Hbo8NeSIxEToLqWJmZia4yPP5ZdxbZR4F2w=
+github.com/keptn/keptn/cp-common v0.0.0-20220602110035-92d59919c878/go.mod h1:eedRxxVKjFunx2S2PvOv/NgsePWrahMB0RlrzrosytE=
+github.com/keptn/keptn/cp-connector v0.0.0-20220602110035-92d59919c878 h1:/dDytrAheWjYmXllEwwf1M2ks1hOHAdqHJ9RYcUJyr4=
+github.com/keptn/keptn/cp-connector v0.0.0-20220602110035-92d59919c878/go.mod h1:DF+p0baJXl8AcDkkxOsqph0PEHrgIjlnPKaFufKbPzM=
 github.com/klauspost/compress v1.14.4 h1:eijASRJcobkVtSt81Olfh7JX43osYLwy5krOJo6YEu4=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
 github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=
