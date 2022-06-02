@@ -463,7 +463,7 @@ func TestMongoDBUniformRepo_ConcurrentlyUpdateSubscription(t *testing.T) {
 	nrRoutines := 100
 	testIntegration := generateIntegrations()[0]
 
-	testIntegration.Subscriptions = []apimodels.EventSubscription{}
+	testIntegration.Subscriptions = nil
 
 	mdbrepo := NewMongoDBUniformRepo(GetMongoDBConnectionInstance())
 

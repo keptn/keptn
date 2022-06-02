@@ -69,6 +69,10 @@ func (mdbrepo *MongoDBUniformRepo) CreateUniformIntegration(integration apimodel
 	}
 	defer cancel()
 
+	// ensure that we have an empty array of subscriptions if it was nil before, to be able to use $push later
+	if integration.Subscriptions == nil {
+		integration.Subscriptions = []apimodels.EventSubscription{}
+	}
 	_, err = collection.InsertOne(ctx, integration)
 	if mongo.IsDuplicateKeyError(err) {
 		return ErrUniformRegistrationAlreadyExists
@@ -82,6 +86,11 @@ func (mdbrepo *MongoDBUniformRepo) CreateOrUpdateUniformIntegration(integration 
 		return err
 	}
 	defer cancel()
+
+	// ensure that we have an empty array of subscriptions if it was nil before, to be able to use $push later
+	if integration.Subscriptions == nil {
+		integration.Subscriptions = []apimodels.EventSubscription{}
+	}
 
 	opts := options.Update().SetUpsert(true)
 	filter := bson.D{{"_id", integration.ID}}
