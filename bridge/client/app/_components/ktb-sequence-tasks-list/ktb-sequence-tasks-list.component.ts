@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostBinding, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostBinding, Input } from '@angular/core';
 import { Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { Trace } from '../../_models/trace';
@@ -25,7 +25,6 @@ export class KtbSequenceTasksListComponent {
     if (this._tasks !== value) {
       this._tasks = value;
       this.focusLastSequence();
-      this._changeDetectorRef.markForCheck();
     }
   }
 
@@ -40,15 +39,9 @@ export class KtbSequenceTasksListComponent {
     if (!value) {
       this.focusLastSequence();
     }
-    this._changeDetectorRef.markForCheck();
   }
 
-  constructor(
-    private router: Router,
-    private location: Location,
-    public dateUtil: DateUtil,
-    private _changeDetectorRef: ChangeDetectorRef
-  ) {}
+  constructor(private router: Router, private location: Location, public dateUtil: DateUtil) {}
 
   identifyEvent(_index: number, item: Trace): string {
     return item.id;
