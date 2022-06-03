@@ -19,7 +19,7 @@ describe('Create new project test', () => {
       body: {
         projects: [],
       },
-    });
+    }).as('projects');
 
     // eslint-disable-next-line promise/catch-or-return,promise/always-return
     cy.fixture('create.project.request.body').then((reqBody) => {

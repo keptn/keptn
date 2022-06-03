@@ -28,8 +28,12 @@ describe('Bridge Dashboard', () => {
     // versioncheck was accepted by user
     localStorage.setItem('keptn_versioncheck', JSON.stringify({ enabled: true, time: 1647880061049 }));
 
-    dashboardPage.visit();
-    cy.wait('@sequences', { timeout: 15000 });
+    dashboardPage.visit(false);
+    // wait for all retries
+    for (let i = 0; i < 4; ++i) {
+      cy.wait('@version.json');
+    }
+    cy.wait('@projects').wait('@sequences');
     dashboardPage.assertProjects(projectsResponse.projects);
   });
 });
