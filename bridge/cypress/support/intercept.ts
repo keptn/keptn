@@ -363,5 +363,5 @@ export function interceptHeatmapComponent(): void {
   cy.intercept('GET', 'api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?*', {
     statusCode: 200,
     fixture: 'get.sockshop.service.carts.evaluations.heatmap.mock.json',
-  });
+  }).as('heatmapEvaluations');
 }
