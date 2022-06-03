@@ -72,7 +72,9 @@ func (suite *TestSuiteAPI) Test_API_Service() {
 	api := apitest.New("Test api-service auth").EnableNetworking(getClient(5)).
 		Observe(func(res *http.Response, req *http.Request, apiTest *apitest.APITest) {
 			suite.logResult(res, apiTest, http.StatusOK, started)
-		})
+		}).Intercept(func(r *http.Request) {
+		r.Close = true
+	})
 
 	api.Post(apiURL + "/auth").Headers(map[string]string{"x-token": suite.token}).
 		Expect(suite.T()).Status(http.StatusOK).End()
@@ -89,7 +91,9 @@ func (suite *TestSuiteAPI) Test_Statistic_Service() {
 	api := apitest.New("Test statistics-service").EnableNetworking(getClient(5)).
 		Observe(func(res *http.Response, req *http.Request, apiTest *apitest.APITest) {
 			suite.logResult(res, apiTest, http.StatusNotFound, started)
-		})
+		}).Intercept(func(r *http.Request) {
+		r.Close = true
+	})
 
 	api.Get(apiURL+"/statistics").
 		Query("from", "1648190000").Query("to", "1648195292").
@@ -107,7 +111,9 @@ func (suite *TestSuiteAPI) Test_Secret_Service() {
 	api := apitest.New("Test secret-service").EnableNetworking(getClient(5)).
 		Observe(func(res *http.Response, req *http.Request, apiTest *apitest.APITest) {
 			suite.logResult(res, apiTest, http.StatusOK, started)
-		})
+		}).Intercept(func(r *http.Request) {
+		r.Close = true
+	})
 
 	api.Get(apiURL + "/scope").
 		Headers(map[string]string{"x-token": suite.token}).
@@ -123,7 +129,9 @@ func (suite *TestSuiteAPI) Test_Configuration_Service() {
 	api := apitest.New("Test configuration-service: not existing project").
 		Observe(func(res *http.Response, req *http.Request, apiTest *apitest.APITest) {
 			suite.logResult(res, apiTest, http.StatusNotFound, started)
-		}).EnableNetworking(getClient(1))
+		}).EnableNetworking(getClient(1)).Intercept(func(r *http.Request) {
+		r.Close = true
+	})
 
 	req := api.Get(apiURL + "/project/unexisting-project/resource").
 		Headers(map[string]string{"x-token": suite.token}).
@@ -145,12 +153,15 @@ func (suite *TestSuiteAPI) Test_ControlPlane() {
 	api := apitest.New("Test control-plane: check uniform").EnableNetworking(getClient(5)).
 		Observe(func(res *http.Response, req *http.Request, apiTest *apitest.APITest) {
 			suite.logResult(res, apiTest, http.StatusOK, started)
-		})
+		}).Intercept(func(r *http.Request) {
+		r.Close = true
+	})
 
 	api.Get(apiURL+"/uniform/registration").Query("name", "lighthouse-service").
 		Headers(map[string]string{"x-token": suite.token}).
 		Expect(suite.T()).Status(http.StatusOK).Assert(jsonpath.Equal(`$[0].name`, "lighthouse-service")).End()
 	suite.T().Log("Done with control plane")
+
 }
 
 func (suite *TestSuiteAPI) Test_MongoDB() {
