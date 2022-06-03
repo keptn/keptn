@@ -1434,10 +1434,10 @@
   resolved "https://registry.yarnpkg.com/@dynatrace/barista-fonts/-/barista-fonts-1.0.1.tgz#a930cadd6ad2e2a653bf31fa1ef650c56abe3ab8"
   integrity sha512-Bt8wSfDvn97UDvTJFVv3t/LU2KS7rLejaAQkjwKHkTT/UFSrapXf9vIklLXtNlvGPcOrxVCLTCemOkw9oQLocA==
 
-"@dynatrace/barista-icons@7.21.0":
-  version "7.21.0"
-  resolved "https://registry.yarnpkg.com/@dynatrace/barista-icons/-/barista-icons-7.21.0.tgz#ec0ca7803071f548940c487643f0cf2fc7632de2"
-  integrity sha512-GhbPukpyggX4MXA9RQgUUeKNOn9Su6+PcXKAOFTGZ0caw93S3/dEl2wKBadB5ggpvGarkPvLMT0o6hxmcauRyg==
+"@dynatrace/barista-icons@7.21.1":
+  version "7.21.1"
+  resolved "https://registry.yarnpkg.com/@dynatrace/barista-icons/-/barista-icons-7.21.1.tgz#0ed4dc73babd460c30d44e1ddd5dc4f066b8a845"
+  integrity sha512-1OjlV6uVLGDpQ1Ni/QRpdQjqFo1Mwqd+IgRKH3S5k/RdrtBwE1DWaktz0VHeAnqeU/rXfEhuRml6XqTI3Qz2hg==
 
 "@es-joy/jsdoccomment@~0.31.0":
   version "0.31.0"
