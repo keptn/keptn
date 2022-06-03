@@ -169,6 +169,7 @@ func (suite *TestSuiteAPI) Test_MongoDB() {
 }
 
 func (suite *TestSuiteAPI) logResult(res *http.Response, apiTest *apitest.APITest, expected int, started time.Time) {
+	res.Close = true
 	atomic.AddUint64(&(suite.env.TotalAPICalls), 1)
 	finished := time.Now()
 	//remove headers cookies and auth from request
@@ -183,7 +184,7 @@ func (suite *TestSuiteAPI) logResult(res *http.Response, apiTest *apitest.APITes
 	} else {
 		atomic.AddUint64(&suite.env.PassedAPICalls, 1)
 	}
-	res.Close = true
+
 }
 
 func getClient(sec time.Duration) *http.Client {
