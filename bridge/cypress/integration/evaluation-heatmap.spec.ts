@@ -1,7 +1,8 @@
 import { HeatmapComponentPage, range } from '../support/pageobjects/HeatmapComponentPage';
 
-describe('evaluation-heatmap', () => {
-  const heatmap = new HeatmapComponentPage();
+const heatmap = new HeatmapComponentPage();
+
+describe('evaluation-heatmap intercept default', () => {
   beforeEach(() => {
     heatmap.intercept().visitPageWithHeatmapComponent();
   });
@@ -11,13 +12,13 @@ describe('evaluation-heatmap', () => {
   it('should be expandable and collapsable', () => {
     heatmap
       .assertNumberOfRows(10)
-      .assertExpandExists(true)
+      .assertExpandVisible(true)
       .clickExpandButton()
       .assertNumberOfRows(13)
-      .assertExpandExists(true)
+      .assertExpandVisible(true)
       .clickExpandButton()
       .assertNumberOfRows(10)
-      .assertExpandExists(true);
+      .assertExpandVisible(true);
   });
   it('should set correct color classes', () => {
     heatmap
@@ -30,9 +31,7 @@ describe('evaluation-heatmap', () => {
   it('should have a primary and one secondary highlight', () => {
     heatmap.assertPrimaryHighlight(1).assertSecondaryHighlight(1);
   });
-  it('should have a primary and two secondary highlights', () => {
-    heatmap.interceptWithTwoHighlights().assertPrimaryHighlight(1).assertSecondaryHighlight(2);
-  });
+
   it('should truncate long metric names', () => {
     const longName = 'A very long metric name so long it gets cut somewhere along the way';
     const shortName = 'A very long metric name ...';
@@ -56,13 +55,7 @@ describe('evaluation-heatmap', () => {
   it('should not show secondary highlight if clicked evaluation has no other to compare', () => {
     heatmap.clickScore('25ab0f26-e6d8-48d5-a08f-08c8a136a688').assertPrimaryHighlight(1).assertSecondaryHighlight(0);
   });
-  it('should reduce X elements on many evaluations', () => {
-    const labels = range(1, 44, 2).map((value) => `2022-02-01 03:46 (${value})`);
-    heatmap.interceptWithManyEvaluations().assertXAxisTickLength(22).assertXAxisTickLabels(labels);
-  });
-  it('should not show expand button if indicator results with score are less than 10', () => {
-    heatmap.interceptWith10Metrics().assertExpandExists(false);
-  });
+
   it('should set tiles disabled/enabled via legend', () => {
     heatmap
       .clickLegendCircle('pass')
@@ -100,5 +93,32 @@ describe('evaluation-heatmap', () => {
       .clickMetric('go_routines3a', '182d10b8-b68d-49d4-86cd-5521352d7a42')
       .assertTooltipIsVisible(true)
       .assertTooltipIs('metric');
+  });
+});
+
+describe('evaluation-heatmap intercept dynamic', () => {
+  beforeEach(() => {
+    heatmap.intercept();
+  });
+
+  it('should have a primary and two secondary highlights', () => {
+    heatmap
+      .interceptWithTwoHighlights()
+      .visitPageWithHeatmapComponent()
+      .assertPrimaryHighlight(1)
+      .assertSecondaryHighlight(2);
+  });
+
+  it('should reduce X elements on many evaluations', () => {
+    const labels = range(1, 44, 2).map((value) => `2022-02-01 03:46 (${value})`);
+    heatmap
+      .interceptWithManyEvaluations()
+      .visitPageWithHeatmapComponent()
+      .assertXAxisTickLength(22)
+      .assertXAxisTickLabels(labels);
+  });
+
+  it('should not show expand button if indicator results with score are less than 10', () => {
+    heatmap.interceptWith10Metrics().visitPageWithHeatmapComponent().assertExpandVisible(false);
   });
 });
