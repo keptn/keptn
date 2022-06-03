@@ -188,6 +188,7 @@ func RollingUpgrade(t *testing.T, env *ZeroDowntimeEnv) {
 
 func PrintSequencesResults(env *ZeroDowntimeEnv) {
 	// print so that the log is shown even in case the test passes with gotestsum
+
 	fmt.Println("-----------------------------------------------")
 	fmt.Println("TOTAL SEQUENCES: ", env.FiredSequences)
 	fmt.Println("TOTAL SUCCESS ", env.PassedSequences)
