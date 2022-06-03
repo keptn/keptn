@@ -228,10 +228,12 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   }
 
   public selectSequence(event: { sequence: Sequence; stage?: string; eventId?: string }, loadTraces = true): void {
+    const sequenceFilters = this.apiService.getSequenceFilters(event.sequence.project);
+
     if (event.eventId) {
       const routeUrl = this.router.createUrlTree(
         ['/project', event.sequence.project, 'sequence', event.sequence.shkeptncontext, 'event', event.eventId],
-        { queryParamsHandling: 'preserve' }
+        { queryParams: sequenceFilters }
       );
       this.location.go(routeUrl.toString());
     } else {
@@ -244,7 +246,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
           event.sequence.shkeptncontext,
           ...(stage ? ['stage', stage] : []),
         ],
-        { queryParamsHandling: 'preserve' }
+        { queryParams: sequenceFilters }
       );
       this.location.go(routeUrl.toString());
     }
