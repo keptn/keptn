@@ -479,8 +479,8 @@ github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024/go.mod h1
 github.com/jstemmer/go-junit-report v0.9.1/go.mod h1:Brl9GWCQeLvo8nXZwPNNblvFj/XSXhF0NWZEnDohbsk=
 github.com/jtolds/gls v4.20.0+incompatible/go.mod h1:QJZ7F/aHp+rZTRtaJ1ow/lLfFfVYBRgL+9YlvaHOwJU=
 github.com/julienschmidt/httprouter v1.2.0/go.mod h1:SYymIcj16QtmaHHD7aYtjjsJG7VTCxuUUipMqKk8s4w=
-github.com/keptn/go-utils v0.16.1-0.20220603062304-a3c50ce6446d h1:tF5xU6611N1gXwa0AP0BksxrnquA4NEQPXlR3OQuoSk=
-github.com/keptn/go-utils v0.16.1-0.20220603062304-a3c50ce6446d/go.mod h1:oxLLKz2u9KId2HgLH63+T0pUbcgiDd2GDkRrRKwxGUU=
+github.com/keptn/go-utils v0.16.1 h1:P0BJuGeBfEN0I9Np0LMF7M3Kz/YVNt7I5q1maJeBPnc=
+github.com/keptn/go-utils v0.16.1/go.mod h1:oxLLKz2u9KId2HgLH63+T0pUbcgiDd2GDkRrRKwxGUU=
 github.com/keptn/keptn/test/go-tests v0.0.0-20220504093323-b5454bf37c78 h1:KT4V/Pp91gG1bxMiiQNa68vNowfu0lcmb9oNG2SiYkc=
 github.com/keptn/keptn/test/go-tests v0.0.0-20220504093323-b5454bf37c78/go.mod h1:2bhoVasxU/A0zj+pZ+uX0TOSTGLr8s6PGtyqmrVxJEs=
 github.com/keptn/kubernetes-utils v0.14.0 h1:dB4FmUXfYNiYg/oxk7AxtybrqOHUgvPtuzMpICw5zt4=
