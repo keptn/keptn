@@ -1,0 +1,64 @@
+{{- /*gotype: github.com/haveyoudebuggedit/gotestfmt/v2/renderer.Package*/ -}}
+{{- /*
+This template contains the format for an individual package.
+*/ -}}
+{{- $settings := .Settings -}}
+{{- if and (or (not $settings.HideSuccessfulPackages) (ne .Result "PASS")) (or (not $settings.HideEmptyPackages) (ne .Result "SKIP") (ne (len .TestCases) 0)) -}}
+    {{- if eq .Result "PASS" -}}
+        {{ "\033" }}[0;32m
+    {{- else if eq .Result "SKIP" -}}
+        {{ "\033" }}[0;33m
+    {{- else -}}
+        {{ "\033" }}[0;31m
+    {{- end -}}
+    📦 {{ .Name -}}{{- "\033" }}[0m
+    {{- with .Coverage -}}
+        {{- "\033" -}}[0;37m ({{ . }}% coverage){{- "\033" -}}[0m
+    {{- end -}}
+    {{- "\n" -}}
+    {{- with .Reason -}}
+        {{- "  " -}}🛑 {{ . -}}{{- "\n" -}}
+    {{- end -}}
+    {{- with .Output -}}
+        {{- . -}}{{- "\n" -}}
+    {{- end -}}
+    {{- with .TestCases -}}
+            {{- range . -}}
+                {{- if contains .Name "Summary" -}}
+                    {{- if eq .Result "PASS" -}}
+                        {{ "  \033" }}[0;32m✅
+                    {{- else if eq .Result "SKIP" -}}
+                        {{ "  \033" }}[0;33m🚧
+                    {{- else -}}
+                        {{ "  \033" }}[0;31m❌
+                    {{- end -}}
+                    {{ " " }}{{- .Name -}}
+                    {{- "\033" -}}[0;37m ({{if $settings.ShowTestStatus}}{{.Result}}; {{end}}{{ .Duration -}}){{- "\033" -}}[0m{{- "\n" -}}
+                    {{- with .Output -}}
+                        {{- formatTestOutput . $settings -}}
+                        {{- "\n" -}}
+                    {{- end -}}
+                {{- end -}}
+            {{- end -}}
+        {{- end -}}
+    {{- with .TestCases -}}
+        {{- range . -}}
+            {{- if and (or (not $settings.HideSuccessfulTests) (ne .Result "PASS") (not (contains .Name "Summary")))-}}
+                {{- if eq .Result "PASS" -}}
+                    {{ "  \033" }}[0;32m✅
+                {{- else if eq .Result "SKIP" -}}
+                    {{ "  \033" }}[0;33m🚧
+                {{- else -}}
+                    {{ "  \033" }}[0;31m❌
+                {{- end -}}
+                {{ " " }}{{- .Name -}}
+                {{- "\033" -}}[0;37m ({{if $settings.ShowTestStatus}}{{.Result}}; {{end}}{{ .Duration -}}){{- "\033" -}}[0m{{- "\n" -}}
+                {{- with .Output -}}
+                    {{- formatTestOutput . $settings -}}
+                    {{- "\n" -}}
+                {{- end -}}
+            {{- end -}}
+        {{- end -}}
+    {{- end -}}
+    {{- "\n" -}}
+{{- end -}}
