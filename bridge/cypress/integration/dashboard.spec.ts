@@ -1,6 +1,7 @@
 import DashboardPage from '../support/pageobjects/DashboardPage';
 
 import * as projectsResponse from '../fixtures/projects.mock.json';
+import BasePage from '../support/pageobjects/BasePage';
 
 describe('Bridge Dashboard', () => {
   const dashboardPage = new DashboardPage();
@@ -13,6 +14,13 @@ describe('Bridge Dashboard', () => {
     dashboardPage.visit().assertProjects(projectsResponse.projects);
   });
 
+  it('should trigger loadProjects once per dashboard visit', () => {
+    dashboardPage.visit().clickCreateNewProjectButton(); // 1 call
+    const basePage = new BasePage();
+    basePage.clickMainHeaderKeptn(); // 1 call
+    cy.wait('@projects').get('@projects.all').should('have.length', 2);
+  });
+
   it('should load also if version.json is not available', () => {
     cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfoVersionCheck.mock' }).as('bridgeInfo');
     cy.intercept('/api/version.json', { statusCode: 500 }).as('version.json');
@@ -21,7 +29,6 @@ describe('Bridge Dashboard', () => {
     localStorage.setItem('keptn_versioncheck', JSON.stringify({ enabled: true, time: 1647880061049 }));
 
     dashboardPage.visit();
-    cy.wait('@projects', { timeout: 15000 });
     cy.wait('@sequences', { timeout: 15000 });
     dashboardPage.assertProjects(projectsResponse.projects);
   });

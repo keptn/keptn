@@ -14,7 +14,7 @@ class DashboardPage {
   }
 
   public visit(): this {
-    cy.visit(`/`).wait('@metadata');
+    cy.visit(`/`).wait('@metadata').wait('@projects');
     return this;
   }
 
