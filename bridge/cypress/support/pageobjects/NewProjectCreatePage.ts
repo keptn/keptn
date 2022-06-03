@@ -362,6 +362,11 @@ class NewProjectCreatePage {
     return this;
   }
 
+  public assertGitUpstreamHeadlineExistsOnce(): this {
+    cy.get('ktb-project-settings').find('h2').filter(':contains("Git upstream repository")').should('have.length', 1);
+    return this;
+  }
+
   public assertSshFormExists(status: boolean): this {
     cy.get('ktb-project-settings-git-ssh').should(status ? 'exist' : 'not.exist');
     return this;
