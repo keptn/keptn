@@ -339,7 +339,7 @@ describe('Sequences', () => {
         .assertLoadOlderSequencesButtonExists(false);
     });
 
-    it.only('should not add the filter to the URL after it was cleared and the page was reloaded', () => {
+    it('should not add the filter to the URL after it was cleared and the page was reloaded', () => {
       sequencePage.visit('sockshop', {
         Stage: 'staging',
         Sequence: 'evaluation',
