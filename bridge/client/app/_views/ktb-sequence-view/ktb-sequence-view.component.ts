@@ -17,6 +17,7 @@ import { Sequence } from '../../_models/sequence';
 import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 import { ISequencesFilter } from '../../../../shared/interfaces/sequencesFilter';
 import { ApiService } from '../../_services/api.service';
+import { isEqual } from 'lodash-es';
 
 enum FilterName {
   SERVICE = 'Service',
@@ -154,7 +155,9 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
       )
       .subscribe((project) => {
         this.dataService.loadSequences(project);
-        this.updateFilterSequence(project.sequences);
+        if (project.sequences) {
+          this.updateFilterSequence(project.sequences);
+        }
         this.changeDetectorRef_.detectChanges();
       });
 
@@ -258,12 +261,12 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
 
   public updateSequenceView(): void {
     const sequences = this.project?.sequences;
-    if (sequences !== undefined) {
-      this.updateFilterSequence(sequences);
-      this.refreshFilterDataSource();
-      // Needed for the updates to work properly
-      this.changeDetectorRef_.detectChanges();
+    if (!sequences) {
+      return;
     }
+    this.updateFilterSequence(sequences);
+    // Needed for the updates to work properly
+    this.changeDetectorRef_.detectChanges();
   }
 
   public updateSequencesData(): void {
@@ -323,24 +326,25 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     this.updateSequencesData();
   }
 
-  updateFilterSequence(sequences?: Sequence[]): void {
-    if (sequences) {
-      const filterItem = this.filterFieldData.autocomplete.find((f) => f.name === 'Sequence');
-      if (filterItem) {
-        filterItem.autocomplete = sequences
-          .map((s) => s.name)
-          .filter((v, i, a) => a.indexOf(v) === i)
-          .map((seqName) =>
-            Object.assign(
-              {},
-              {
-                name: seqName,
-                value: seqName,
-              }
-            )
-          );
-      }
+  updateFilterSequence(sequences: Sequence[]): void {
+    const filterItem = this.filterFieldData.autocomplete.find((f) => f.name === 'Sequence');
+    if (!filterItem) {
+      return;
     }
+    const newFilter = sequences
+      .map((s) => s.name)
+      .filter((v, i, a) => a.indexOf(v) === i)
+      .map((seqName) => ({
+        name: seqName,
+        value: seqName,
+      }));
+    if (isEqual(newFilter, filterItem.autocomplete)) {
+      return;
+    }
+
+    // only update the filter and refresh it if there are changes
+    filterItem.autocomplete = newFilter;
+    this.refreshFilterDataSource();
   }
 
   private mapServiceFilters(metadata: ISequencesFilter): void {
