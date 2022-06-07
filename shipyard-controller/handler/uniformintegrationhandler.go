@@ -125,7 +125,7 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 
 	integrationInfo := fmt.Sprintf("name=%s, namespace=%s, hostname=%s", integration.Name, integration.MetaData.KubernetesMetaData.Namespace, integration.MetaData.Hostname)
 	logger.Debugf("Uniform:Register(): Checking for existing integration for %s", integrationInfo)
-	if err == nil && existingIntegrations != nil && len(existingIntegrations) > 0 {
+	if err == nil && len(existingIntegrations) > 0 {
 		logger.Debugf("Uniform:Register(): Found existing integration for %s with id %s", integrationInfo, existingIntegrations[0].ID)
 		integration.ID = existingIntegrations[0].ID
 
