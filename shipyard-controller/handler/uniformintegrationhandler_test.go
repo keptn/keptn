@@ -437,9 +437,6 @@ func TestUniformParamsValidator_Validate(t *testing.T) {
 				ID:       "an-id",
 				Name:     "webhook-service",
 				MetaData: apimodels.MetaData{},
-				Subscription: apimodels.Subscription{
-					Topics: []string{"mytopic"},
-				},
 				Subscriptions: []apimodels.EventSubscription{
 					{
 						ID:    "",
@@ -459,7 +456,6 @@ func TestUniformParamsValidator_Validate(t *testing.T) {
 				ID:            "an-id",
 				Name:          "we-service",
 				MetaData:      apimodels.MetaData{},
-				Subscription:  apimodels.Subscription{},
 				Subscriptions: []apimodels.EventSubscription{},
 			},
 			wantErr:      nil,
@@ -468,10 +464,9 @@ func TestUniformParamsValidator_Validate(t *testing.T) {
 		{
 			name: "test error webhook subscription - no projects",
 			params: apimodels.Integration{
-				ID:           "an-id",
-				Name:         "webhook-service",
-				MetaData:     apimodels.MetaData{},
-				Subscription: apimodels.Subscription{},
+				ID:       "an-id",
+				Name:     "webhook-service",
+				MetaData: apimodels.MetaData{},
 				Subscriptions: []apimodels.EventSubscription{
 					{
 						ID:     "",
@@ -489,9 +484,6 @@ func TestUniformParamsValidator_Validate(t *testing.T) {
 				ID:       "an-id",
 				Name:     "any-service",
 				MetaData: apimodels.MetaData{},
-				Subscription: apimodels.Subscription{
-					Topics: []string{"mytopic"},
-				},
 				Subscriptions: []apimodels.EventSubscription{
 					{
 						ID:     "",
@@ -510,9 +502,6 @@ func TestUniformParamsValidator_Validate(t *testing.T) {
 				ID:       "an-id",
 				Name:     "webhook-service",
 				MetaData: apimodels.MetaData{},
-				Subscription: apimodels.Subscription{
-					Topics: []string{"mytopic"},
-				},
 				Subscriptions: []apimodels.EventSubscription{
 					{
 						ID:    "",

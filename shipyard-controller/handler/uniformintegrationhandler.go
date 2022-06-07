@@ -1,10 +1,12 @@
 package handler
 
 import (
+	"crypto/sha1"
+	"encoding/hex"
 	"errors"
 	"fmt"
-	logger "github.com/sirupsen/logrus"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
