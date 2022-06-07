@@ -145,7 +145,7 @@ echo "::group::Template of jmeter-service"
 helm template --debug "keptn-charts/jmeter-service-${VERSION}.tgz"
 
 if [ $? -ne 0 ]; then
-  echo "::error::Helm Chart for jmeter-svc has templating errors - exiting"
+  echo "::error::Helm Chart for jmeter-service has templating errors - exiting"
   echo "::endgroup::"
   exit 1
 fi
