@@ -128,7 +128,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   }
 
   public loadProjects(): void {
-    this.dataService.loadProjects();
+    this.dataService.loadProjects().subscribe();
   }
 
   ngOnDestroy(): void {

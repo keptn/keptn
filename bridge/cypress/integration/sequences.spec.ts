@@ -13,7 +13,7 @@ describe('Sequences', () => {
 
   it('should show a loading indicator when sequences are not loaded', () => {
     cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=25', {
-      delay: 2000,
+      delay: 10_000,
       fixture: 'sequences.sockshop',
     }).as('Sequences');
 

@@ -147,8 +147,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
   }
 
   private loadProjectsAndSetValidator(): void {
-    this.dataService
-      .loadProjects()
+    this.dataService.projects
       .pipe(
         takeUntil(this.unsubscribe$),
         filter((projects: Project[] | undefined): projects is Project[] => !!projects),

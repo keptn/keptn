@@ -349,7 +349,7 @@ export class DataService {
   }
 
   public loadProjects(): Observable<Project[]> {
-    const projects$ = this.apiService.getProjects(this._keptnInfo.getValue()?.bridgeInfo.projectsPageSize || 50).pipe(
+    return this.apiService.getProjects(this._keptnInfo.getValue()?.bridgeInfo.projectsPageSize || 50).pipe(
       map((result) => (result ? result.projects : [])),
       map((projects) => projects.map((project) => Project.fromJSON(project))),
       map(
@@ -369,14 +369,11 @@ export class DataService {
         () => {
           return of([]);
         }
-      )
+      ),
+      tap((projects) => {
+        this._projects.next(projects);
+      })
     );
-
-    projects$.subscribe((projects) => {
-      this._projects.next(projects);
-    });
-
-    return projects$;
   }
 
   public loadSequences(project: Project, fromTime?: Date, beforeTime?: Date, oldSequence?: Sequence): void {
