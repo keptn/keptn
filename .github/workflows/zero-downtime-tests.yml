@@ -367,7 +367,7 @@ jobs:
         run: |
           set -euo pipefail 
           
-          go test -json -v -run Test_ZeroDowntime -v -timeout 90m 2>&1 | tee /tmp/gotest.log & GoTest=$!
+          go test -json -v -run Test_ZeroDowntime -v -timeout 90m 2>&1 | tee /tmp/gotest.log & GOTEST=$!
 
           cd ../../bridge &&
           if [[ "${{ github.event.inputs.testUI }}" == 'true' ]]; then
@@ -379,7 +379,7 @@ jobs:
             echo "UI tests will not run"
           fi
         
-          wait $GoTest 
+          wait $GOTEST
           if [[ $? -ne 0 ]]; then
             echo "::error::Zero Downtime go test failed - exiting"
             exit 1
