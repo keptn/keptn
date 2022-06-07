@@ -88,7 +88,7 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 				return err
 			}
 		case subscriptions := <-subscriptionUpdates:
-			cp.logger.Debugf("Updating subscriptions to %s", subscriptions)
+			cp.logger.Debugf("Updating subscriptions  %s to %s", cp.currentSubscriptions, subscriptions)
 			cp.currentSubscriptions = subscriptions
 			cp.eventSource.OnSubscriptionUpdate(subjects(subscriptions))
 			cp.logger.Debug("Update successful")
