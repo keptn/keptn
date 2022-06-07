@@ -514,10 +514,7 @@ export class DataService {
       }),
       map((result) => result?.events || []),
       map((traces) => traces.map((trace) => Trace.fromJSON(trace))),
-      map((traces) => Trace.traceMapper([...(traces || []), ...(sequence.traces || [])])),
-      tap(() => {
-        this._sequencesUpdated.next();
-      })
+      map((traces) => Trace.traceMapper([...(traces || []), ...(sequence.traces || [])]))
     );
   }
 
