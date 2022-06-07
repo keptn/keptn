@@ -71,6 +71,7 @@ func (n *NATSEventSource) Start(ctx context.Context, registrationData types.Regi
 			n.logger.Errorf("Unable to unsubscribe from NATS: %v", err)
 			return
 		}
+		n.logger.Debug("Unsubscribed from NATS")
 	}()
 	return nil
 }

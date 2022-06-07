@@ -67,26 +67,33 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 	if err != nil {
 		return fmt.Errorf("could not register integration: %w", err)
 	}
+	cp.logger.Debug("registered with integration ID %s", cp.integrationID)
 	registrationData.ID = cp.integrationID
 
 	if err := cp.eventSource.Start(ctx, registrationData, eventUpdates); err != nil {
 		return err
 	}
+	cp.logger.Debug("Event source started with data: %+v", registrationData)
 	if err := cp.subscriptionSource.Start(ctx, registrationData, subscriptionUpdates); err != nil {
 		return err
 	}
+	cp.logger.Debug("Subscription source started")
 	cp.registered = true
 	for {
 		select {
 		case event := <-eventUpdates:
+			cp.logger.Debug("New updates event")
 			err := cp.handle(ctx, event, integration)
 			if errors.Is(err, ErrEventHandleFatal) {
 				return err
 			}
 		case subscriptions := <-subscriptionUpdates:
+			cp.logger.Debugf("Updating subscriptions  %s to %s", cp.currentSubscriptions, subscriptions)
 			cp.currentSubscriptions = subscriptions
 			cp.eventSource.OnSubscriptionUpdate(subjects(subscriptions))
+			cp.logger.Debug("Update successful")
 		case <-ctx.Done():
+			cp.logger.Debug("Unregistering")
 			cp.registered = false
 			return nil
 		}
