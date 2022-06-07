@@ -131,7 +131,7 @@ jobs:
 
       # download artifacts from the specified branch with event type push (e.g., push to master/release branch)
       - name: Download all artifacts from last successful build of specified branch
-        uses: dawidd6/action-download-artifact@v2.20.0
+        uses: dawidd6/action-download-artifact@v2.21.0
         id: download_artifacts_push
         with:
           # Download last successful artifact from a CI build
