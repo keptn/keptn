@@ -108,7 +108,7 @@ echo "::group::Template of helm-service"
 helm template --debug "keptn-charts/helm-service-${VERSION}.tgz"
 
 if [ $? -ne 0 ]; then
-  echo "::error::Helm Chart for helm-svc has templating errors -exiting"
+  echo "::error::Helm Chart for helm-service has templating errors - exiting"
   echo "::endgroup::"
   exit 1
 fi
