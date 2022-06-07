@@ -73,9 +73,11 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 	if err := cp.eventSource.Start(ctx, registrationData, eventUpdates); err != nil {
 		return err
 	}
+	cp.logger.Debug("Event source started with data: %+v", registrationData)
 	if err := cp.subscriptionSource.Start(ctx, registrationData, subscriptionUpdates); err != nil {
 		return err
 	}
+	cp.logger.Debug("Subscription source started")
 	cp.registered = true
 	for {
 		select {
