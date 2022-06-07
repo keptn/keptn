@@ -39,7 +39,7 @@ describe('KtbSequenceControlsComponent', () => {
     component = fixture.componentInstance;
 
     dataService = fixture.debugElement.injector.get(DataService);
-    dataService.loadProjects(); // reset project.sequences
+    dataService.loadProjects().subscribe(); // reset project.sequences
     project = (await firstValueFrom(dataService.getProject(projectName))) as Project;
     fixture.detectChanges();
   });

@@ -1,6 +1,6 @@
 import { Component, OnDestroy } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
-import { filter, take } from 'rxjs/operators';
+import { filter, mergeMap, take } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { Project } from '../_models/project';
 import { DataService } from '../_services/data.service';
@@ -22,15 +22,14 @@ export class DashboardComponent implements OnDestroy {
     this.dataService.keptnInfo
       .pipe(
         filter((keptnInfo) => !!keptnInfo),
-        take(1)
+        take(1),
+        mergeMap(() => this.dataService.loadProjects())
       )
-      .subscribe(() => {
-        this.loadProjects();
-      });
+      .subscribe();
   }
 
   public loadProjects(): void {
-    this.dataService.loadProjects();
+    this.dataService.loadProjects().subscribe();
   }
 
   public ngOnDestroy(): void {
