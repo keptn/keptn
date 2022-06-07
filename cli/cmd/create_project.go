@@ -127,9 +127,9 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-r
 				return errors.New("Access token or private key must be set")
 			}
 
-			project.GitUser = *createProjectParams.GitUser
-			project.GitToken = *createProjectParams.GitToken
-			project.GitRemoteURL = *createProjectParams.RemoteURL
+			if *createProjectParams.GitToken != "" && *createProjectParams.GitPrivateKey != "" {
+				return errors.New("Access token and private key cannot be set together")
+			}
 
 			if *createProjectParams.GitProxyURL != "" && strings.HasPrefix(*createProjectParams.RemoteURL, "ssh://") {
 				return errors.New("Proxy cannot be set with SSH")
@@ -139,11 +139,8 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-r
 				return errors.New("Proxy cannot be set without scheme")
 			}
 
-			project.GitProxyURL = *createProjectParams.GitProxyURL
-			project.GitProxyScheme = *createProjectParams.GitProxyScheme
-			project.GitProxyUser = *createProjectParams.GitProxyUser
-			project.GitProxyPassword = *createProjectParams.GitProxyPassword
-			project.InsecureSkipTLS = *createProjectParams.InsecureSkipTLS
+			project.GitCredentials.User = *createProjectParams.GitUser
+			project.GitCredentials.RemoteURL = *createProjectParams.RemoteURL
 
 			if strings.HasPrefix(*createProjectParams.RemoteURL, "ssh://") {
 				content, err := ioutil.ReadFile(*createProjectParams.GitPrivateKey)
@@ -151,17 +148,37 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-r
 					return fmt.Errorf("unable to read privateKey file: %s\n", err.Error())
 				}
 
-				project.GitPrivateKey = string(base64.StdEncoding.EncodeToString(content))
-				project.GitPrivateKeyPass = *createProjectParams.GitPrivateKeyPass
-			}
-
-			if *createProjectParams.GitPemCertificate != "" {
-				content, err := ioutil.ReadFile(*createProjectParams.GitPemCertificate)
-				if err != nil {
-					return fmt.Errorf("unable to read PEM Certificate file: %s\n", err.Error())
+				sshCredentials := apimodels.SshGitAuth{
+					PrivateKey:     string(base64.StdEncoding.EncodeToString(content)),
+					PrivateKeyPass: *createProjectParams.GitPrivateKeyPass,
 				}
 
-				project.GitPemCertificate = string(base64.StdEncoding.EncodeToString(content))
+				project.GitCredentials.SshAuth = &sshCredentials
+			} else if strings.HasPrefix(*createProjectParams.RemoteURL, "http") {
+				httpCredentials := apimodels.HttpsGitAuth{
+					Token:           *createProjectParams.GitToken,
+					InsecureSkipTLS: *createProjectParams.InsecureSkipTLS,
+				}
+
+				if createProjectParams.GitProxyURL != nil && *createProjectParams.GitProxyURL != "" {
+					proxyCredentials := apimodels.ProxyGitAuth{
+						URL:      *createProjectParams.GitProxyURL,
+						Scheme:   *createProjectParams.GitProxyScheme,
+						User:     *createProjectParams.GitProxyUser,
+						Password: *createProjectParams.GitProxyPassword,
+					}
+					httpCredentials.Proxy = &proxyCredentials
+				}
+
+				if createProjectParams.GitPemCertificate != nil && *createProjectParams.GitPemCertificate != "" {
+					content, err := ioutil.ReadFile(*createProjectParams.GitPemCertificate)
+					if err != nil {
+						return fmt.Errorf("unable to read PEM Certificate file: %s\n", err.Error())
+					}
+
+					httpCredentials.Certificate = string(base64.StdEncoding.EncodeToString(content))
+				}
+				project.GitCredentials.HttpsAuth = &httpCredentials
 			}
 		}
 
