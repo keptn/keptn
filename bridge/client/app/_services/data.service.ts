@@ -595,33 +595,27 @@ export class DataService {
   }
 
   public sendApprovalEvent(approval: Trace, approve: boolean): Observable<unknown> {
-    const approval$ = this.apiService.sendApprovalEvent(
-      approval,
-      approve,
-      EventTypes.APPROVAL_FINISHED,
-      'approval.finished'
+    return this.apiService.sendApprovalEvent(approval, approve, EventTypes.APPROVAL_FINISHED, 'approval.finished').pipe(
+      tap(() => {
+        const project = this._projects.getValue()?.find((p) => p.projectName === approval.data.project);
+        if (project?.projectName) {
+          const stage = project.stages.find((st) => st.stageName === approval.data.stage);
+          const service = stage?.services.find((sv) => sv.serviceName === approval.data.service);
+          const sequence = project.sequences?.find((seq) => seq.shkeptncontext === approval.shkeptncontext);
+
+          if (sequence) {
+            // update data of sequence screen
+            this.getTracesOfSequence(sequence).subscribe((traces) => {
+              sequence.traces = traces;
+            });
+          }
+          if (service) {
+            // update data of environment screen
+            this.updateServiceApproval(service, approval);
+          }
+        }
+      })
     );
-
-    approval$.subscribe(() => {
-      const project = this._projects.getValue()?.find((p) => p.projectName === approval.data.project);
-      if (project?.projectName) {
-        const stage = project.stages.find((st) => st.stageName === approval.data.stage);
-        const service = stage?.services.find((sv) => sv.serviceName === approval.data.service);
-        const sequence = project.sequences?.find((seq) => seq.shkeptncontext === approval.shkeptncontext);
-
-        if (sequence) {
-          // update data of sequence screen
-          this.getTracesOfSequence(sequence).subscribe((traces) => {
-            sequence.traces = traces;
-          });
-        }
-        if (service) {
-          // update data of environment screen
-          this.updateServiceApproval(service, approval);
-        }
-      }
-    });
-    return approval$;
   }
 
   private updateServiceApproval(service: Service, approval: Trace): void {
