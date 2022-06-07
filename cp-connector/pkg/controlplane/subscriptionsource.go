@@ -53,6 +53,7 @@ func NewUniformSubscriptionSource(uniformAPI api.UniformV1Interface, options ...
 
 // Start triggers the execution of the UniformSubscriptionSource
 func (s *UniformSubscriptionSource) Start(ctx context.Context, registrationData RegistrationData, subscriptionChannel chan []models.EventSubscription) error {
+	s.logger.Debugf("UniformSubscriptionSource: Starting to fetch subscriptions for Integration ID %s", registrationData.ID)
 	ticker := s.clock.Ticker(s.fetchInterval)
 	go func() {
 		s.ping(registrationData.ID, subscriptionChannel)
@@ -69,11 +70,13 @@ func (s *UniformSubscriptionSource) Start(ctx context.Context, registrationData 
 }
 
 func (s *UniformSubscriptionSource) ping(registrationId string, subscriptionChannel chan []models.EventSubscription) {
+	s.logger.Debugf("UniformSubscriptionSource: Renewing Integration ID %s", registrationId)
 	updatedIntegrationData, err := s.uniformAPI.Ping(registrationId)
 	if err != nil {
 		s.logger.Errorf("Unable to ping control plane: %v", err)
 		return
 	}
+	s.logger.Debugf("UniformSubscriptionSource: Ping successful, got %d subscriptions for %s", len(updatedIntegrationData.Subscriptions), registrationId)
 	subscriptionChannel <- updatedIntegrationData.Subscriptions
 }
 

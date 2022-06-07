@@ -57,15 +57,19 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 
 	var err error
 	registrationData := integration.RegistrationData()
+	cp.logger.Debugf("Registering integration %s", integration.RegistrationData().Name)
 	cp.integrationID, err = cp.subscriptionSource.Register(models.Integration(registrationData))
 	if err != nil {
 		return fmt.Errorf("could not register integration: %w", err)
 	}
+	cp.logger.Debugf("Successfully registered %s with integration ID %s", integration.RegistrationData().Name, cp.integrationID)
 	registrationData.ID = cp.integrationID
 
+	cp.logger.Debugf("Starting event source for integration ID %s", cp.integrationID)
 	if err := cp.eventSource.Start(ctx, registrationData, eventUpdates); err != nil {
 		return err
 	}
+	cp.logger.Debugf("Starting subscription source for integration ID %s", cp.integrationID)
 	if err := cp.subscriptionSource.Start(ctx, registrationData, subscriptionUpdates); err != nil {
 		return err
 	}
@@ -78,6 +82,7 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 				return err
 			}
 		case subscriptions := <-subscriptionUpdates:
+			cp.logger.Debugf("ControlPlane: Got a subscription update with %d subscriptions", subscriptions)
 			cp.currentSubscriptions = subscriptions
 			cp.eventSource.OnSubscriptionUpdate(subjects(subscriptions))
 		case <-ctx.Done():
@@ -93,14 +98,18 @@ func (cp *ControlPlane) IsRegistered() bool {
 }
 
 func (cp *ControlPlane) handle(ctx context.Context, eventUpdate EventUpdate, integration Integration) error {
+	cp.logger.Debugf("ControlPlane: received an event of type: %s", eventUpdate.KeptnEvent.Type)
 	for _, subscription := range cp.currentSubscriptions {
 		if subscription.Event == eventUpdate.MetaData.Subject {
+			cp.logger.Debugf("ControlPlane: Check if event matches subscription %s", subscription.ID)
 			matcher := NewEventMatcherFromSubscription(subscription)
 			if matcher.Matches(eventUpdate.KeptnEvent) {
 				cp.logger.Info("Forwarding matched event update: ", eventUpdate.KeptnEvent.ID)
 				if err := cp.forwardMatchedEvent(ctx, eventUpdate, integration, subscription); err != nil {
 					return err
 				}
+			} else {
+				cp.logger.Debugf("ControlPlane: Event does not match subscription %s", subscription.ID)
 			}
 		}
 	}
