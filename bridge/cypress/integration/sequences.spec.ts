@@ -338,5 +338,22 @@ describe('Sequences', () => {
         .assertSequenceCount(1)
         .assertLoadOlderSequencesButtonExists(false);
     });
+
+    it('should not add the filter to the URL after it was cleared and the page was reloaded', () => {
+      sequencePage.visit('sockshop', {
+        Stage: 'staging',
+        Sequence: 'evaluation',
+        Service: 'carts',
+      });
+      cy.wait('@Sequences');
+      cy.wait(500);
+
+      sequencePage
+        .assertAmountOfQueryParameters(3)
+        .reload()
+        .clearFilter()
+        .selectSequence('62cca6f3-dc54-4df6-a04c-6ffc894a4b5e')
+        .assertAmountOfQueryParameters(0);
+    });
   });
 });
