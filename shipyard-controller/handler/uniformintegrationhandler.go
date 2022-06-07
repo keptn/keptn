@@ -1,12 +1,10 @@
 package handler
 
 import (
-	"crypto/sha1"
-	"encoding/hex"
 	"errors"
 	"fmt"
+	logger "github.com/sirupsen/logrus"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -120,6 +118,28 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 		return
 	}
 
+	existingIntegrations, err := rh.uniformRepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{
+		Name:      integration.Name,
+		Namespace: integration.MetaData.KubernetesMetaData.Namespace,
+	})
+
+	integrationInfo := fmt.Sprintf("name=%s, namespace=%s, hostname=%s", integration.Name, integration.MetaData.KubernetesMetaData.Namespace, integration.MetaData.Hostname)
+	logger.Debugf("Uniform:Register(): Checking for existing integration for %s", integrationInfo)
+	if err == nil && existingIntegrations != nil && len(existingIntegrations) > 0 {
+		logger.Debugf("Uniform:Register(): Found existing integration for %s with id %s", integrationInfo, existingIntegrations[0].ID)
+		integration.ID = existingIntegrations[0].ID
+
+		err2 := rh.updateExistingIntegration(integration)
+		if err2 != nil {
+			SetInternalServerErrorResponse(c, err2.Error())
+			return
+		}
+		c.JSON(http.StatusOK, &models.RegisterResponse{
+			ID: integration.ID,
+		})
+		return
+	}
+
 	integrationID := apimodels.IntegrationID{
 		Name:      integration.Name,
 		Namespace: integration.MetaData.KubernetesMetaData.Namespace,
@@ -140,46 +160,7 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 		s.ID = uuid.New().String()
 	}
 
-	// for backwards compatibility, we check if there is a Subscriptions field set
-	// if not, we are taking the old Subscription field and map it to the new Subscriptions field
-	// Note: "old" registrations will NOT get subscription IDs
-	// This code block can be deleted with later versions of Keptn
-	if integration.Subscriptions == nil {
-		var projectFilter []string
-		var stageFilter []string
-		var serviceFilter []string
-		if integration.Subscription.Filter.Project != "" {
-			projectFilter = strings.Split(integration.Subscription.Filter.Project, ",")
-		}
-		if integration.Subscription.Filter.Stage != "" {
-			stageFilter = strings.Split(integration.Subscription.Filter.Stage, ",")
-		}
-		if integration.Subscription.Filter.Service != "" {
-			serviceFilter = strings.Split(integration.Subscription.Filter.Service, ",")
-		}
-
-		for _, t := range integration.Subscription.Topics {
-			ts := apimodels.EventSubscription{
-				Event: t,
-				Filter: apimodels.EventSubscriptionFilter{
-					Projects: projectFilter,
-					Stages:   stageFilter,
-					Services: serviceFilter,
-				},
-			}
-			integration.Subscriptions = append(integration.Subscriptions, ts)
-		}
-
-		raw := fmt.Sprintf("%s-%s-%s-%s-%s", integration.Name, integration.MetaData.KubernetesMetaData.Namespace, integration.Subscription.Filter.Project, integration.Subscription.Filter.Stage, integration.Subscription.Filter.Service)
-		hasher := sha1.New() //nolint:gosec
-		_, err = hasher.Write([]byte(raw))
-		if err != nil {
-			SetInternalServerErrorResponse(c, err.Error())
-		}
-		hash = hex.EncodeToString(hasher.Sum(nil))
-		integration.ID = hash
-	}
-
+	logger.Debugf("Uniform:Register(): No existing integration found for %s. Creating a new one with ID %s", integrationInfo, integration.ID)
 	// we validate integrations here to make sure to verify both subscription and subscriptions
 
 	validator := UniformParamsValidator{false}

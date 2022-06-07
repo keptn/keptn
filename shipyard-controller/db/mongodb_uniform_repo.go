@@ -305,6 +305,14 @@ func (mdbrepo *MongoDBUniformRepo) getSearchOptions(params models.GetUniformInte
 		searchOptions["subscriptions.filter.services"] = params.Service
 	}
 
+	if params.Namespace != "" {
+		searchOptions["metadata.kubernetesmetadata.namespace"] = params.Namespace
+	}
+
+	if params.HostName != "" {
+		searchOptions["metadata.hostname"] = params.HostName
+	}
+
 	return searchOptions
 }
 

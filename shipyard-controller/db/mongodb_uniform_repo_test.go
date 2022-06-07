@@ -21,6 +21,12 @@ func generateIntegrations() []apimodels.Integration {
 	integration1 := apimodels.Integration{
 		ID:   "i1",
 		Name: "integration1",
+		MetaData: apimodels.MetaData{
+			Hostname: "hostname1",
+			KubernetesMetaData: apimodels.KubernetesMetaData{
+				Namespace: "namespace1",
+			},
+		},
 		Subscription: apimodels.Subscription{
 			Topics: []string{"sh.keptn.event.test.triggered"},
 			Status: "active",
@@ -359,6 +365,42 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 	require.Equal(t, integrationBeforeUpdate.MetaData.IntegrationVersion, fetchedIntegrationAfterUpdate.MetaData.IntegrationVersion)
 	require.Equal(t, integrationBeforeUpdate.MetaData.DistributorVersion, fetchedIntegrationAfterUpdate.MetaData.DistributorVersion)
 
+}
+
+func TestMongoDBUniformRepo_FindIntegrations(t *testing.T) {
+	testIntegrations := generateIntegrations()
+
+	mdbrepo := NewMongoDBUniformRepo(GetMongoDBConnectionInstance())
+
+	err := mdbrepo.SetupTTLIndex(1 * time.Minute)
+	require.Nil(t, err)
+
+	// insert our integration entities
+	err = mdbrepo.CreateOrUpdateUniformIntegration(testIntegrations[0])
+	require.Nil(t, err)
+
+	err = mdbrepo.CreateOrUpdateUniformIntegration(testIntegrations[1])
+	require.Nil(t, err)
+
+	err = mdbrepo.CreateOrUpdateUniformIntegration(testIntegrations[2])
+	require.Nil(t, err)
+
+	err = mdbrepo.CreateOrUpdateUniformIntegration(testIntegrations[3])
+	require.Nil(t, err)
+
+	err = mdbrepo.CreateOrUpdateUniformIntegration(testIntegrations[4])
+	require.Nil(t, err)
+
+	integrations, err := mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{Name: "integration1", Namespace: "namespace1", HostName: "hostname1"})
+
+	require.Nil(t, err)
+	require.Len(t, integrations, 1)
+	require.Equal(t, testIntegrations[0], integrations[0])
+
+	integrations, err = mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{Name: "integration1", Namespace: "namespace2", HostName: "hostname1"})
+
+	require.Nil(t, err)
+	require.Empty(t, integrations)
 }
 
 func TestMongoDBUniformRepo_UpdateSubscription(t *testing.T) {

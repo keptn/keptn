@@ -131,6 +131,9 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 			fields: fields{
 				integrationManager: &db_mock.UniformRepoMock{
 					CreateUniformIntegrationFunc: func(integration apimodels.Integration) error { return nil },
+					GetUniformIntegrationsFunc: func(filter models.GetUniformIntegrationsParams) ([]apimodels.Integration, error) {
+						return nil, nil
+					},
 				},
 			},
 			request:         httptest.NewRequest("POST", "/uniform/registration", bytes.NewBuffer(validPayload)),
@@ -152,7 +155,7 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 			},
 			request:         httptest.NewRequest("POST", "/uniform/registration", bytes.NewBuffer(validPayload)),
 			wantStatus:      http.StatusOK,
-			wantIntegration: myValidIntegration,
+			wantIntegration: nil,
 			wantFuncs:       []string{"GetUniformIntegrationsCalls", "UpdateLastSeenCalls"},
 		},
 		{
@@ -170,7 +173,7 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 			},
 			request:         httptest.NewRequest("POST", "/uniform/registration", bytes.NewBuffer(validPayloadUpdated)),
 			wantStatus:      http.StatusOK,
-			wantIntegration: myValidIntegrationUpdated,
+			wantIntegration: nil,
 			wantFuncs:       []string{"GetUniformIntegrationsCalls", "CreateOrUpdateUniformIntegrationCalls"},
 		},
 		{
@@ -188,7 +191,7 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 			},
 			request:         httptest.NewRequest("POST", "/uniform/registration", bytes.NewBuffer(validPayloadUpdated)),
 			wantStatus:      http.StatusInternalServerError,
-			wantIntegration: myValidIntegrationUpdated,
+			wantIntegration: nil,
 			wantFuncs:       []string{"GetUniformIntegrationsCalls", "CreateOrUpdateUniformIntegrationCalls"},
 		},
 		{
@@ -219,6 +222,9 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 				integrationManager: &db_mock.UniformRepoMock{
 					CreateUniformIntegrationFunc: func(integration apimodels.Integration) error {
 						return errors.New("oops")
+					},
+					GetUniformIntegrationsFunc: func(filter models.GetUniformIntegrationsParams) ([]apimodels.Integration, error) {
+						return nil, nil
 					},
 				},
 			},
