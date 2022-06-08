@@ -120,7 +120,7 @@ export class ApiService {
     traceOptions: TraceOptions
   ): Promise<AxiosResponse<EventResult>> {
     const resultString = traceOptions.result ? ` AND data.result:${traceOptions.result}` : '';
-    const sourceString = traceOptions.source ? ` AND data.source:${traceOptions.source}` : '';
+    const sourceString = traceOptions.source ? ` AND source:${traceOptions.source}` : '';
     const params = {
       filter: `data.project:${traceOptions.project} AND data.service:${traceOptions.service} AND data.stage:${traceOptions.stage}${sourceString}${resultString}`,
       excludeInvalidated: 'true',
