@@ -125,10 +125,10 @@ func Test_ProxyAuth(t *testing.T) {
 	project := models.ExpandedProject{}
 	err = resp.ToJSON(&project)
 	require.Nil(t, err)
-	require.Equal(t, "squid:3128", project.GitProxyURL)
-	require.Equal(t, "http", project.GitProxyScheme)
-	require.Equal(t, "", project.GitProxyUser)
-	require.Equal(t, true, project.InsecureSkipTLS)
+	require.Equal(t, "squid:3128", project.GitCredentials.HttpsAuth.Proxy.URL)
+	require.Equal(t, "http", project.GitCredentials.HttpsAuth.Proxy.Scheme)
+	require.Equal(t, "", project.GitCredentials.HttpsAuth.Proxy.User)
+	require.Equal(t, true, project.GitCredentials.HttpsAuth.InsecureSkipTLS)
 	require.Equal(t, projectName, project.ProjectName)
 
 	t.Logf("Updating project credentials")

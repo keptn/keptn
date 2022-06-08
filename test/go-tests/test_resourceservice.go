@@ -78,9 +78,13 @@ func Test_ResourceServiceBasic(t *testing.T) {
 		},
 	}
 
+	gitCredentials := models.GitAuthCredentials{
+		User: "some_random_git_user",
+	}
+
 	updateProjectRequest := models.Project{
-		ProjectName: projectName,
-		GitUser:     "some_random_git_user",
+		ProjectName:    projectName,
+		GitCredentials: gitCredentials,
 	}
 
 	ctx, closeInternalKeptnAPI := context.WithCancel(context.Background())
