@@ -126,6 +126,11 @@ export class SequencesPage {
     return this;
   }
 
+  public reload(): this {
+    cy.reload();
+    return this;
+  }
+
   public assertLoadOlderSequencesButtonExists(exists: boolean): this {
     cy.byTestId('keptn-show-older-sequences-button').should(exists ? 'exist' : 'not.exist');
     return this;
@@ -279,6 +284,17 @@ export class SequencesPage {
 
   public assertApprovalDeployedImage(image: string): this {
     cy.byTestId('ktb-approval-deployed-image').should('have.text', image);
+    return this;
+  }
+
+  public assertAmountOfQueryParameters(amount: number): this {
+    // eslint-disable-next-line promise/catch-or-return
+    cy.url()
+      .then((url) => {
+        const splitUrl = url.split('?');
+        return splitUrl.length <= 1 ? [] : splitUrl[1].split('&');
+      })
+      .should('have.length', amount);
     return this;
   }
 }

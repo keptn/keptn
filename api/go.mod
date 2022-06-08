@@ -15,13 +15,13 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.16.0
+	github.com/keptn/go-utils v0.16.1
 	github.com/keptn/keptn/cp-connector v0.0.0-20220602110035-92d59919c878
 	github.com/nats-io/nats-server/v2 v2.8.4
 	github.com/nats-io/nats.go v1.15.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
-	golang.org/x/net v0.0.0-20220526153639-5463443f8c37
+	golang.org/x/net v0.0.0-20220607020251-c690dde0001d
 	golang.org/x/time v0.0.0-20220411224347-583f2d630306
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.22.10

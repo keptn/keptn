@@ -3,7 +3,7 @@ export function interceptEmptyEnvironmentScreen(): void {
   cy.intercept('/api/project/dynatrace?approval=true&remediation=true', { fixture: 'project.empty.mock' });
   cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', {
     fixture: 'get.projects.empty.mock',
-  });
+  }).as('projects');
   cy.intercept('GET', '/api/project/dynatrace/services', {
     statusCode: 200,
     body: [],
@@ -71,19 +71,25 @@ function getEvaluationUrls(project: string, service: string): string[] {
 export function interceptMainResourceEnabled(): void {
   cy.intercept('/api/v1/metadata', { fixture: 'metadata.ap-disabled.mock' }).as('metadata');
   cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfoEnableResourceService.mock' });
-  cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
+  cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' }).as(
+    'projects'
+  );
 }
 
 export function interceptMainResourceApEnabled(): void {
   cy.intercept('/api/v1/metadata', { fixture: 'metadata.ap-enabled.mock' }).as('metadata');
   cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfoEnableResourceService.mock' });
-  cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
+  cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' }).as(
+    'projects'
+  );
 }
 
 export function interceptMain(): void {
   cy.intercept('/api/v1/metadata', { fixture: 'metadata.mock' }).as('metadata');
   cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfo.mock' });
-  cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
+  cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' }).as(
+    'projects'
+  );
 }
 
 export function interceptFailedMetadata(): void {
@@ -205,7 +211,9 @@ export function interceptIntegrations(): void {
   interceptMain();
   cy.intercept('/api/project/sockshop?approval=true&remediation=true', { fixture: 'project.mock' });
   cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: false });
-  cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
+  cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' }).as(
+    'projects'
+  );
   cy.intercept('/api/uniform/registration', { fixture: 'registration.mock' });
   // jmeter-service
   cy.intercept('/api/controlPlane/v1/log?integrationId=355311a7bec3f35bf3abc2484ab09bcba8e2b297&pageSize=100', {
@@ -395,5 +403,5 @@ export function interceptHeatmapComponent(): void {
   cy.intercept('GET', 'api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?*', {
     statusCode: 200,
     fixture: 'get.sockshop.service.carts.evaluations.heatmap.mock.json',
-  });
+  }).as('heatmapEvaluations');
 }

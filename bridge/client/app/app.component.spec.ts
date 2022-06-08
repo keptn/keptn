@@ -1,40 +1,33 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 import { AppComponent } from './app.component';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { Router } from '@angular/router';
-import { AppModule } from './app.module';
-import { RouterTestingModule } from '@angular/router/testing';
-import { routes } from './app.routing';
 import { ApiService } from './_services/api.service';
 import { ApiServiceMock } from './_services/api.service.mock';
 import { DataService } from './_services/data.service';
+import { HttpClient } from '@angular/common/http';
+import { ActivatedRoute } from '@angular/router';
+import { of } from 'rxjs';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('AppComponent', () => {
-  let router: Router;
-  let comp: AppComponent;
-  let fixture: ComponentFixture<AppComponent>;
+  let component: AppComponent;
+  let dataService: DataService;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [],
-      imports: [AppModule, HttpClientTestingModule, RouterTestingModule.withRoutes(routes)],
+      imports: [HttpClientTestingModule],
       providers: [{ provide: ApiService, useClass: ApiServiceMock }],
     }).compileComponents();
 
-    router = TestBed.inject(Router);
-    fixture = TestBed.createComponent(AppComponent);
-    comp = fixture.componentInstance;
-
-    router.initialNavigation();
+    dataService = TestBed.inject(DataService);
   });
 
   it('should create the app', () => {
-    expect(comp).toBeTruthy();
+    createComponent();
+    expect(component).toBeTruthy();
   });
 
   it('should set base href correctly', () => {
-    fixture.detectChanges();
-
     // NOTE: function used in index.html, this is a duplicate only for testing
     function getBridgeBaseHref(origin: string, path: string): string {
       if (path.indexOf('/bridge') !== -1) {
@@ -80,10 +73,28 @@ describe('AppComponent', () => {
   });
 
   it('should load projects after info is loaded', () => {
-    const dataService = TestBed.inject(DataService);
+    // given, when
     const loadSpy = jest.spyOn(dataService, 'loadProjects');
-    fixture.detectChanges();
+    createComponent();
 
+    // then
     expect(loadSpy).toHaveBeenCalled();
   });
+
+  it('should not load projects if child component handles it', () => {
+    // given, when
+    const loadSpy = jest.spyOn(dataService, 'loadProjects');
+    createComponent(true);
+
+    // then
+    expect(loadSpy).not.toHaveBeenCalled();
+  });
+
+  function createComponent(handlyByComponent = false): void {
+    component = new AppComponent(TestBed.inject(HttpClient), dataService, {
+      firstChild: {
+        data: of({ projectsHandledByComponent: handlyByComponent }),
+      },
+    } as unknown as ActivatedRoute);
+  }
 });

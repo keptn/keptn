@@ -1,4 +1,4 @@
-package controlplane
+package eventmatcher
 
 import (
 	"github.com/keptn/go-utils/pkg/api/models"

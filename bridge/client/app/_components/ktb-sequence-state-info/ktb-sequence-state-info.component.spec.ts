@@ -31,7 +31,7 @@ describe('KtbSequenceStateInfoComponent', () => {
     fixture = TestBed.createComponent(KtbSequenceStateInfoComponent);
     component = fixture.componentInstance;
     dataService = TestBed.inject(DataService);
-    dataService.loadProjects();
+    dataService.loadProjects().subscribe();
     project = await firstValueFrom(
       dataService.getProject(projectName).pipe(filter((p: Project | undefined): p is Project => !!p))
     );
