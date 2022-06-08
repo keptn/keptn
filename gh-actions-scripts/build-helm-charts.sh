@@ -76,18 +76,6 @@ fi
 
 echo "::endgroup::"
 
-# verify the chart with install
-echo "::group::Dry run install of keptn"
-helm install --dry-run --debug "keptn-charts/keptn-${VERSION}.tgz" --generate-name
-
-if [ $? -ne 0 ]; then
-  echo "::error::Helm Chart for keptn has runtime errors - exiting"
-  echo "::endgroup::"
-  exit 1
-fi
-echo "::endgroup::"
-
-
 # ####################
 # HELM-SVC HELM CHART
 # ####################
@@ -114,17 +102,6 @@ if [ $? -ne 0 ]; then
 fi
 echo "::endgroup::"
 
-# verify the chart with install
-echo "::group::Dry run install of helm-service"
-helm install --dry-run --debug "keptn-charts/helm-service-${VERSION}.tgz" --generate-name
-
-if [ $? -ne 0 ]; then
-  echo "::error::Helm Chart for helm-service has runtime errors - exiting"
-  echo "::endgroup::"
-  exit 1
-fi
-echo "::endgroup::"
-
 # ####################
 # JMETER-SVC HELM CHART
 # ####################
@@ -146,17 +123,6 @@ helm template --debug "keptn-charts/jmeter-service-${VERSION}.tgz"
 
 if [ $? -ne 0 ]; then
   echo "::error::Helm Chart for jmeter-service has templating errors - exiting"
-  echo "::endgroup::"
-  exit 1
-fi
-echo "::endgroup::"
-
-
-# verify the chart with install
-echo "::group::Dry run install of jmeter-service"
-helm install --dry-run --debug "keptn-charts/jmeter-service-${VERSION}.tgz" --generate-name
-if [ $? -ne 0 ]; then
-  echo "::error::Helm Chart for jmeter-service has runtime errors - exiting"
   echo "::endgroup::"
   exit 1
 fi
