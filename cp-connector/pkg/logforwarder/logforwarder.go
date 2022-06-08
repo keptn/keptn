@@ -24,10 +24,21 @@ type LogForwardingHandler struct {
 	logger logger.Logger
 }
 
-func New(logApi api.LogsV1Interface) *LogForwardingHandler {
-	return &LogForwardingHandler{
+func New(logApi api.LogsV1Interface, opts ...func(handler *LogForwardingHandler)) *LogForwardingHandler {
+	l := &LogForwardingHandler{
 		logApi: logApi,
 		logger: logger.NewDefaultLogger(),
+	}
+	for _, o := range opts {
+		o(l)
+	}
+	return l
+}
+
+// WithLogger sets the logger to use
+func WithLogger(logger logger.Logger) func(*LogForwardingHandler) {
+	return func(lfh *LogForwardingHandler) {
+		lfh.logger = logger
 	}
 }
 

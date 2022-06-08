@@ -43,13 +43,20 @@ func WithFetchInterval(interval time.Duration) func(s *UniformSubscriptionSource
 	}
 }
 
+// WithLogger sets the logger to use
+func WithLogger(logger logger.Logger) func(s *UniformSubscriptionSource) {
+	return func(s *UniformSubscriptionSource) {
+		s.logger = logger
+	}
+}
+
 // New creates a new UniformSubscriptionSource
 func New(uniformAPI api.UniformV1Interface, options ...func(source *UniformSubscriptionSource)) *UniformSubscriptionSource {
-	subscriptionSource := &UniformSubscriptionSource{uniformAPI: uniformAPI, clock: clock.New(), fetchInterval: time.Second * 5, logger: logger.NewDefaultLogger()}
+	s := &UniformSubscriptionSource{uniformAPI: uniformAPI, clock: clock.New(), fetchInterval: time.Second * 5, logger: logger.NewDefaultLogger()}
 	for _, o := range options {
-		o(subscriptionSource)
+		o(s)
 	}
-	return subscriptionSource
+	return s
 }
 
 // Start triggers the execution of the UniformSubscriptionSource
