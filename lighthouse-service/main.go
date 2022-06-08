@@ -3,6 +3,9 @@ package main
 import (
 	"context"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/keptn/cp-connector/pkg/eventsource"
+	"github.com/keptn/keptn/cp-connector/pkg/logforwarder"
+	"github.com/keptn/keptn/cp-connector/pkg/subscriptionsource"
 	"log"
 	"os"
 	"os/signal"
@@ -53,13 +56,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	subscriptionSource := controlplane.NewUniformSubscriptionSource(api.UniformV1())
+	subscriptionSource := subscriptionsource.New(api.UniformV1())
 	natsConnector, err := nats.ConnectFromEnv()
 	if err != nil {
 		log.Fatal(err)
 	}
-	eventSource := controlplane.NewNATSEventSource(natsConnector)
-	logForwarder := controlplane.NewLogForwarder(api.LogsV1())
+	eventSource := eventsource.New(natsConnector)
+	logForwarder := logforwarder.New(api.LogsV1())
 
 	controlPlane := controlplane.New(subscriptionSource, eventSource, logForwarder)
 
