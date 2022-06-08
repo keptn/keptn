@@ -63,17 +63,20 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 
 	var err error
 	registrationData := integration.RegistrationData()
+	cp.logger.Debugf("Registering integration %s", integration.RegistrationData().Name)
 	cp.integrationID, err = cp.subscriptionSource.Register(models.Integration(registrationData))
 	if err != nil {
 		return fmt.Errorf("could not register integration: %w", err)
 	}
-	cp.logger.Debug("registered with integration ID %s", cp.integrationID)
+	cp.logger.Debugf("Registered with integration ID %s", cp.integrationID)
 	registrationData.ID = cp.integrationID
 
+	cp.logger.Debugf("Starting event source for integration ID %s", cp.integrationID)
 	if err := cp.eventSource.Start(ctx, registrationData, eventUpdates); err != nil {
 		return err
 	}
-	cp.logger.Debug("Event source started with data: %+v", registrationData)
+	cp.logger.Debugf("Event source started with data: %+v", registrationData)
+	cp.logger.Debugf("Starting subscription source for integration ID %s", cp.integrationID)
 	if err := cp.subscriptionSource.Start(ctx, registrationData, subscriptionUpdates); err != nil {
 		return err
 	}
@@ -88,7 +91,7 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 				return err
 			}
 		case subscriptions := <-subscriptionUpdates:
-			cp.logger.Debugf("Updating subscriptions  %s to %s", cp.currentSubscriptions, subscriptions)
+			cp.logger.Debugf("ControlPlane: Got a subscription update with %d subscriptions", len(subscriptions))
 			cp.currentSubscriptions = subscriptions
 			cp.eventSource.OnSubscriptionUpdate(subjects(subscriptions))
 			cp.logger.Debug("Update successful")
@@ -106,8 +109,10 @@ func (cp *ControlPlane) IsRegistered() bool {
 }
 
 func (cp *ControlPlane) handle(ctx context.Context, eventUpdate types.EventUpdate, integration Integration) error {
+	cp.logger.Debugf("Received an event of type: %s", eventUpdate.KeptnEvent.Type)
 	for _, subscription := range cp.currentSubscriptions {
 		if subscription.Event == eventUpdate.MetaData.Subject {
+			cp.logger.Debugf("Check if event matches subscription %s", subscription.ID)
 			matcher := eventmatcher.New(subscription)
 			if matcher.Matches(eventUpdate.KeptnEvent) {
 				cp.logger.Info("Forwarding matched event update: ", eventUpdate.KeptnEvent.ID)
