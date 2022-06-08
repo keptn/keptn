@@ -498,14 +498,13 @@ func Test_Webhook_Beta_API(t *testing.T) {
 	require.Nil(t, err)
 
 	// create a secret that should be referenced in the webhook yaml
-	_, err = ApiPOSTRequest("/secrets/v1/secret", map[string]interface{}{
+	_, _ = ApiPOSTRequest("/secrets/v1/secret", map[string]interface{}{
 		"name":  "my-webhook-k8s-secret-token",
 		"scope": "keptn-webhook-service",
 		"data": map[string]string{
 			"x-token": api.token,
 		},
 	}, 3)
-	require.Nil(t, err)
 
 	Test_WebhookConfigAtStageLevel(t, webhookSimpleYamlBetaAPI, projectName)
 }
