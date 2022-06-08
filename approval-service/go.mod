@@ -8,7 +8,7 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.16.1
 	github.com/keptn/keptn/cp-common v0.0.0-20220602110035-92d59919c878
-	github.com/keptn/keptn/cp-connector v0.0.0-20220602110035-92d59919c878
+	github.com/keptn/keptn/cp-connector v0.0.0-20220608060450-36261c888f84
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
@@ -21,6 +21,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/felixge/httpsnoop v1.0.2 // indirect
 	github.com/json-iterator/go v1.1.11 // indirect
+	github.com/keptn/keptn/go-sdk v0.0.0-20220608071003-6edd402d3253 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/nats-io/nats.go v1.15.0 // indirect
