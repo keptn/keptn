@@ -4,6 +4,7 @@ import (
 	"errors"
 	"testing"
 
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	common_mock "github.com/keptn/keptn/resource-service/common/fake"
 	"github.com/keptn/keptn/resource-service/common_models"
 	errors2 "github.com/keptn/keptn/resource-service/errors"
@@ -35,7 +36,7 @@ func TestStageManager_CreateStage(t *testing.T) {
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
 			User: "my-user",
-			HttpsAuth: &common_models.HttpsGitAuth{
+			HttpsAuth: &apimodels.HttpsGitAuth{
 				Token: "my-token",
 			},
 			RemoteURL: "my-remote-uri",
@@ -96,7 +97,7 @@ func TestStageManager_CreateStage_ProjectDoesNotExist(t *testing.T) {
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
 			User: "my-user",
-			HttpsAuth: &common_models.HttpsGitAuth{
+			HttpsAuth: &apimodels.HttpsGitAuth{
 				Token: "my-token",
 			},
 			RemoteURL: "my-remote-uri",
@@ -134,7 +135,7 @@ func TestStageManager_CreateStage_CannotGetDefaultBranch(t *testing.T) {
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
 			User: "my-user",
-			HttpsAuth: &common_models.HttpsGitAuth{
+			HttpsAuth: &apimodels.HttpsGitAuth{
 				Token: "my-token",
 			},
 			RemoteURL: "my-remote-uri",
@@ -172,7 +173,7 @@ func TestStageManager_CreateStage_CannotCreateBranch(t *testing.T) {
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
 			User: "my-user",
-			HttpsAuth: &common_models.HttpsGitAuth{
+			HttpsAuth: &apimodels.HttpsGitAuth{
 				Token: "my-token",
 			},
 			RemoteURL: "my-remote-uri",
@@ -213,7 +214,7 @@ func TestStageManager_CreateStage_CannotPushBranch(t *testing.T) {
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
 			User: "my-user",
-			HttpsAuth: &common_models.HttpsGitAuth{
+			HttpsAuth: &apimodels.HttpsGitAuth{
 				Token: "my-token",
 			},
 			RemoteURL: "my-remote-uri",
@@ -269,7 +270,7 @@ func getTestStageManagerFields() stageManagerTestFields {
 			GetCredentialsFunc: func(project string) (*common_models.GitCredentials, error) {
 				return &common_models.GitCredentials{
 					User: "my-user",
-					HttpsAuth: &common_models.HttpsGitAuth{
+					HttpsAuth: &apimodels.HttpsGitAuth{
 						Token: "my-token",
 					},
 					RemoteURL: "my-remote-uri",

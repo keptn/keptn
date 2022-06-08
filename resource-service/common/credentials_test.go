@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/resource-service/common_models"
 	"github.com/keptn/keptn/resource-service/errors"
 	"github.com/stretchr/testify/require"
@@ -26,7 +27,7 @@ func TestK8sCredentialReader_ReadSecret(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, &common_models.GitCredentials{
 		User: "user",
-		HttpsAuth: &common_models.HttpsGitAuth{
+		HttpsAuth: &apimodels.HttpsGitAuth{
 			Token: "token",
 		},
 		RemoteURL: "https://my-repo",

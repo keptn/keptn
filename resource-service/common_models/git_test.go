@@ -1,6 +1,10 @@
 package common_models
 
-import "testing"
+import (
+	"testing"
+
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
+)
 
 func TestGitCredentials_Validate(t *testing.T) {
 	tests := []struct {
@@ -13,7 +17,7 @@ func TestGitCredentials_Validate(t *testing.T) {
 			gitCredentials: GitCredentials{
 				User:      "my-user",
 				RemoteURL: "https://my-repo",
-				HttpsAuth: &HttpsGitAuth{
+				HttpsAuth: &apimodels.HttpsGitAuth{
 					Token: "my-token",
 				},
 			},
@@ -24,7 +28,7 @@ func TestGitCredentials_Validate(t *testing.T) {
 			gitCredentials: GitCredentials{
 				User:      "my-user",
 				RemoteURL: "https://my-repo",
-				HttpsAuth: &HttpsGitAuth{
+				HttpsAuth: &apimodels.HttpsGitAuth{
 					Token: "",
 				},
 			},
@@ -35,7 +39,7 @@ func TestGitCredentials_Validate(t *testing.T) {
 			gitCredentials: GitCredentials{
 				User:      "my-user",
 				RemoteURL: "https://my:repo",
-				HttpsAuth: &HttpsGitAuth{
+				HttpsAuth: &apimodels.HttpsGitAuth{
 					Token: "my-token",
 				},
 			},
@@ -46,7 +50,7 @@ func TestGitCredentials_Validate(t *testing.T) {
 			gitCredentials: GitCredentials{
 				User:      "my-user",
 				RemoteURL: "ssh://my-repo",
-				SshAuth: &SshGitAuth{
+				SshAuth: &apimodels.SshGitAuth{
 					PrivateKey: "",
 				},
 			},
@@ -57,7 +61,7 @@ func TestGitCredentials_Validate(t *testing.T) {
 			gitCredentials: GitCredentials{
 				User:      "my-user",
 				RemoteURL: "ssh://my-repo",
-				SshAuth: &SshGitAuth{
+				SshAuth: &apimodels.SshGitAuth{
 					PrivateKey: "privatekey",
 				},
 			},
@@ -68,7 +72,7 @@ func TestGitCredentials_Validate(t *testing.T) {
 			gitCredentials: GitCredentials{
 				User:      "my-user",
 				RemoteURL: "https://my-repo",
-				SshAuth: &SshGitAuth{
+				SshAuth: &apimodels.SshGitAuth{
 					PrivateKey: "",
 				},
 			},
@@ -79,7 +83,7 @@ func TestGitCredentials_Validate(t *testing.T) {
 			gitCredentials: GitCredentials{
 				User:      "my-user",
 				RemoteURL: "ssh://my-repo",
-				HttpsAuth: &HttpsGitAuth{
+				HttpsAuth: &apimodels.HttpsGitAuth{
 					Token: "",
 				},
 			},
@@ -90,9 +94,9 @@ func TestGitCredentials_Validate(t *testing.T) {
 			gitCredentials: GitCredentials{
 				User:      "my-user",
 				RemoteURL: "https://my-repo",
-				HttpsAuth: &HttpsGitAuth{
+				HttpsAuth: &apimodels.HttpsGitAuth{
 					Token: "token",
-					Proxy: &ProxyGitAuth{
+					Proxy: &apimodels.ProxyGitAuth{
 						URL:    "1.1.1.1:12",
 						Scheme: "http",
 					},
@@ -105,9 +109,9 @@ func TestGitCredentials_Validate(t *testing.T) {
 			gitCredentials: GitCredentials{
 				User:      "my-user",
 				RemoteURL: "https://my-repo",
-				HttpsAuth: &HttpsGitAuth{
+				HttpsAuth: &apimodels.HttpsGitAuth{
 					Token: "token",
-					Proxy: &ProxyGitAuth{
+					Proxy: &apimodels.ProxyGitAuth{
 						URL:    "1.1.1.1:12",
 						Scheme: "https",
 					},
@@ -120,9 +124,9 @@ func TestGitCredentials_Validate(t *testing.T) {
 			gitCredentials: GitCredentials{
 				User:      "my-user",
 				RemoteURL: "https://my-repo",
-				HttpsAuth: &HttpsGitAuth{
+				HttpsAuth: &apimodels.HttpsGitAuth{
 					Token: "token",
-					Proxy: &ProxyGitAuth{
+					Proxy: &apimodels.ProxyGitAuth{
 						URL:    "1.1.1.1:12",
 						Scheme: "fddd",
 					},
@@ -135,9 +139,9 @@ func TestGitCredentials_Validate(t *testing.T) {
 			gitCredentials: GitCredentials{
 				User:      "my-user",
 				RemoteURL: "https://my-repo",
-				HttpsAuth: &HttpsGitAuth{
+				HttpsAuth: &apimodels.HttpsGitAuth{
 					Token: "token",
-					Proxy: &ProxyGitAuth{
+					Proxy: &apimodels.ProxyGitAuth{
 						URL:    "1.1.1.1",
 						Scheme: "https",
 					},

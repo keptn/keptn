@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/resource-service/common"
 	common_mock "github.com/keptn/keptn/resource-service/common/fake"
 	"github.com/keptn/keptn/resource-service/common_models"
@@ -1279,7 +1280,7 @@ func getTestResourceManagerFields() testResourceManagerFields {
 			GetCredentialsFunc: func(project string) (*common_models.GitCredentials, error) {
 				return &common_models.GitCredentials{
 					User: "user",
-					HttpsAuth: &common_models.HttpsGitAuth{
+					HttpsAuth: &apimodels.HttpsGitAuth{
 						Token: "token",
 					},
 					RemoteURL: "remote-url",

@@ -5,8 +5,10 @@ import (
 	"strings"
 	"testing"
 
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/resource-service/common"
 	common_mock "github.com/keptn/keptn/resource-service/common/fake"
+
 	"github.com/keptn/keptn/resource-service/common_models"
 	errors2 "github.com/keptn/keptn/resource-service/errors"
 	handler_mock "github.com/keptn/keptn/resource-service/handler/fake"
@@ -37,7 +39,7 @@ func TestServiceManager_CreateService(t *testing.T) {
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
 			User: "my-user",
-			HttpsAuth: &common_models.HttpsGitAuth{
+			HttpsAuth: &apimodels.HttpsGitAuth{
 				Token: "my-token",
 			},
 			RemoteURL: "my-remote-uri",
@@ -104,7 +106,7 @@ func TestServiceManager_CreateService_ProjectNotFound(t *testing.T) {
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
 			User: "my-user",
-			HttpsAuth: &common_models.HttpsGitAuth{
+			HttpsAuth: &apimodels.HttpsGitAuth{
 				Token: "my-token",
 			},
 			RemoteURL: "my-remote-uri",
@@ -144,7 +146,7 @@ func TestServiceManager_CreateService_StageNotFound(t *testing.T) {
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
 			User: "my-user",
-			HttpsAuth: &common_models.HttpsGitAuth{
+			HttpsAuth: &apimodels.HttpsGitAuth{
 				Token: "my-token",
 			},
 			RemoteURL: "my-remote-uri",
@@ -186,7 +188,7 @@ func TestServiceManager_CreateService_ServiceAlreadyExists(t *testing.T) {
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
 			User: "my-user",
-			HttpsAuth: &common_models.HttpsGitAuth{
+			HttpsAuth: &apimodels.HttpsGitAuth{
 				Token: "my-token",
 			},
 			RemoteURL: "my-remote-uri",
@@ -227,7 +229,7 @@ func TestServiceManager_CreateService_CannotCreateDirectory(t *testing.T) {
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
 			User: "my-user",
-			HttpsAuth: &common_models.HttpsGitAuth{
+			HttpsAuth: &apimodels.HttpsGitAuth{
 				Token: "my-token",
 			},
 			RemoteURL: "my-remote-uri",
@@ -268,7 +270,7 @@ func TestServiceManager_CreateService_CannotCreateMetadata(t *testing.T) {
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
 			User: "my-user",
-			HttpsAuth: &common_models.HttpsGitAuth{
+			HttpsAuth: &apimodels.HttpsGitAuth{
 				Token: "my-token",
 			},
 			RemoteURL: "my-remote-uri",
@@ -310,7 +312,7 @@ func TestServiceManager_CreateService_CannotCommit(t *testing.T) {
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
 			User: "my-user",
-			HttpsAuth: &common_models.HttpsGitAuth{
+			HttpsAuth: &apimodels.HttpsGitAuth{
 				Token: "my-token",
 			},
 			RemoteURL: "my-remote-uri",
@@ -347,7 +349,7 @@ func TestServiceManager_DeleteService(t *testing.T) {
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
 			User: "my-user",
-			HttpsAuth: &common_models.HttpsGitAuth{
+			HttpsAuth: &apimodels.HttpsGitAuth{
 				Token: "my-token",
 			},
 			RemoteURL: "my-remote-uri",
@@ -387,7 +389,7 @@ func TestServiceManager_DeleteService_ProjectDoesNotExist(t *testing.T) {
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
 			User: "my-user",
-			HttpsAuth: &common_models.HttpsGitAuth{
+			HttpsAuth: &apimodels.HttpsGitAuth{
 				Token: "my-token",
 			},
 			RemoteURL: "my-remote-uri",
@@ -430,7 +432,7 @@ func TestServiceManager_DeleteService_ServiceDoesNotExist(t *testing.T) {
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
 			User: "my-user",
-			HttpsAuth: &common_models.HttpsGitAuth{
+			HttpsAuth: &apimodels.HttpsGitAuth{
 				Token: "my-token",
 			},
 			RemoteURL: "my-remote-uri",
@@ -467,7 +469,7 @@ func TestServiceManager_DeleteService_DeleteDirectoryFails(t *testing.T) {
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
 			User: "my-user",
-			HttpsAuth: &common_models.HttpsGitAuth{
+			HttpsAuth: &apimodels.HttpsGitAuth{
 				Token: "my-token",
 			},
 			RemoteURL: "my-remote-uri",
@@ -510,7 +512,7 @@ func TestServiceManager_DeleteService_CannotCommit(t *testing.T) {
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
 			User: "my-user",
-			HttpsAuth: &common_models.HttpsGitAuth{
+			HttpsAuth: &apimodels.HttpsGitAuth{
 				Token: "my-token",
 			},
 			RemoteURL: "my-remote-uri",
@@ -558,7 +560,7 @@ func getTestServiceManagerFields() serviceManagerTestFields {
 			GetCredentialsFunc: func(project string) (*common_models.GitCredentials, error) {
 				return &common_models.GitCredentials{
 					User: "my-user",
-					HttpsAuth: &common_models.HttpsGitAuth{
+					HttpsAuth: &apimodels.HttpsGitAuth{
 						Token: "my-token",
 					},
 					RemoteURL: "my-remote-uri",
