@@ -2,6 +2,7 @@ control-plane:
   enabled: true
   apiGatewayNginx:
     type: LoadBalancer
+  logLevel: "debug"
   common:
     strategy:
       rollingUpdate:
