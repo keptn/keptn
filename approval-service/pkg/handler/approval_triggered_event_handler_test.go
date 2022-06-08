@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
-	"github.com/keptn/keptn/cp-connector/pkg/types"
 	"testing"
 	"time"
 
@@ -19,7 +18,7 @@ import (
 func TestHandleApprovalTriggeredEvent(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	fakeSender := func(ce models.KeptnContextExtendedCE) error { return nil }
-	ctx = context.WithValue(ctx, types.EventSenderKey, controlplane.EventSender(fakeSender))
+	ctx = context.WithValue(ctx, controlplane.EventSenderKeyType{}, controlplane.EventSender(fakeSender))
 	defer cancel()
 
 	var approvalTriggeredTests = []struct {
