@@ -5,7 +5,6 @@ import (
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
-	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -25,15 +24,6 @@ func generateIntegrations() []apimodels.Integration {
 			Hostname: "hostname1",
 			KubernetesMetaData: apimodels.KubernetesMetaData{
 				Namespace: "namespace1",
-			},
-		},
-		Subscription: apimodels.Subscription{
-			Topics: []string{"sh.keptn.event.test.triggered"},
-			Status: "active",
-			Filter: apimodels.SubscriptionFilter{
-				Project: "pr1",
-				Stage:   "st1,st2",
-				Service: "sv2,sv3",
 			},
 		},
 		Subscriptions: []apimodels.EventSubscription{
@@ -67,15 +57,6 @@ func generateIntegrations() []apimodels.Integration {
 	integration2 := apimodels.Integration{
 		ID:   "i2",
 		Name: "integration2",
-		Subscription: apimodels.Subscription{
-			Topics: []string{"sh.keptn.event.deployment.triggered"},
-			Status: "active",
-			Filter: apimodels.SubscriptionFilter{
-				Project: "pr1",
-				Stage:   "st1,st2",
-				Service: "sv0,sv2,sv1",
-			},
-		},
 		Subscriptions: []apimodels.EventSubscription{
 			{
 				Event: "sh.keptn.event.deployment.triggered",
@@ -91,15 +72,6 @@ func generateIntegrations() []apimodels.Integration {
 	integration3 := apimodels.Integration{
 		ID:   "i3",
 		Name: "integration3",
-		Subscription: apimodels.Subscription{
-			Topics: []string{"sh.keptn.event.deployment.triggered"},
-			Status: "active",
-			Filter: apimodels.SubscriptionFilter{
-				Project: "pr1",
-				Stage:   "st1",
-				Service: "sv1,sv2",
-			},
-		},
 		Subscriptions: []apimodels.EventSubscription{
 			{
 				Event: "sh.keptn.event.deployment.triggered",
@@ -131,15 +103,6 @@ func generateIntegrations() []apimodels.Integration {
 	integration4 := apimodels.Integration{
 		ID:   "i4",
 		Name: "integraiton4",
-		Subscription: apimodels.Subscription{
-			Topics: []string{"sh.keptn.event.deployment.triggered"},
-			Status: "active",
-			Filter: apimodels.SubscriptionFilter{
-				Project: "pr1",
-				Stage:   "st1",
-				Service: "sv1",
-			},
-		},
 		Subscriptions: []apimodels.EventSubscription{
 			{
 				Event: "sh.keptn.event.deployment.triggered",
@@ -153,13 +116,8 @@ func generateIntegrations() []apimodels.Integration {
 	}
 
 	integration5 := apimodels.Integration{
-		ID:   "i5",
-		Name: "integraiton5",
-		Subscription: apimodels.Subscription{
-			Topics: []string{"sh.keptn.event.deployment.triggered"},
-			Status: "active",
-			Filter: apimodels.SubscriptionFilter{},
-		},
+		ID:            "i5",
+		Name:          "integraiton5",
 		Subscriptions: []apimodels.EventSubscription{},
 	}
 	return []apimodels.Integration{integration1, integration2, integration3, integration4, integration5}
@@ -640,11 +598,6 @@ func TestMongoDBUniformRepo_RemoveByServiceName(t *testing.T) {
 	for i, ti := range testIntegrations {
 		fetchedIntegration, _ := mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{ID: ti.ID})
 		require.Equal(t, ti.Name, fetchedIntegration[0].Name)
-
-		services := strings.ReplaceAll(ti.Subscription.Filter.Service, "sv1,", "")
-		services = strings.ReplaceAll(services, "sv1", "")
-
-		require.Equal(t, services, fetchedIntegration[0].Subscription.Filter.Service)
 		require.Equal(t, wantedSubscriptions[i], len(fetchedIntegration[0].Subscriptions))
 	}
 

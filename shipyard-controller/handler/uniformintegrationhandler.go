@@ -161,8 +161,6 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 	}
 
 	logger.Debugf("Uniform:Register(): No existing integration found for %s. Creating a new one with ID %s", integrationInfo, integration.ID)
-	// we validate integrations here to make sure to verify both subscription and subscriptions
-
 	validator := UniformParamsValidator{false}
 
 	if err := validator.Validate(integration); err != nil {
