@@ -243,17 +243,33 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 		ProjectName: *params.Name,
 	}
 
+	gitCredentialsRollback := apimodels.GitAuthCredentials{
+		RemoteURL: oldProject.GitCredentials.RemoteURL,
+		User:      oldProject.GitCredentials.User,
+	}
+
+	if oldProject.GitCredentials.HttpsAuth != nil {
+		httpsCredentials := apimodels.HttpsGitAuth{
+			InsecureSkipTLS: oldProject.GitCredentials.HttpsAuth.InsecureSkipTLS,
+		}
+
+		if oldProject.GitCredentials.HttpsAuth.Proxy != nil {
+			proxyCredentials := apimodels.ProxyGitAuth{
+				URL:    oldProject.GitCredentials.HttpsAuth.Proxy.URL,
+				Scheme: oldProject.GitCredentials.HttpsAuth.Proxy.Scheme,
+				User:   oldProject.GitCredentials.HttpsAuth.Proxy.User,
+			}
+			httpsCredentials.Proxy = &proxyCredentials
+		}
+		gitCredentialsRollback.HttpsAuth = &httpsCredentials
+	}
+
 	// project content in configuration service to rollback
 	projectToRollback := apimodels.Project{
 		CreationDate:    oldProject.CreationDate,
-		GitRemoteURI:    oldProject.GitRemoteURI,
-		GitUser:         oldProject.GitUser,
 		ProjectName:     oldProject.ProjectName,
-		GitProxyURL:     oldProject.GitProxyURL,
-		GitProxyScheme:  oldProject.GitProxyScheme,
-		GitProxyUser:    oldProject.GitProxyUser,
-		InsecureSkipTLS: oldProject.InsecureSkipTLS,
 		ShipyardVersion: oldProject.ShipyardVersion,
+		GitCredentials:  gitCredentialsRollback,
 	}
 
 	// try to update the project information in configuration service
@@ -298,13 +314,22 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 	}
 
 	// copy by value
+
+	proxyCredentials := apimodels.ProxyGitAuthSecure{
+		URL:    params.GitProxyURL,
+		Scheme: params.GitProxyScheme,
+		User:   params.GitProxyUser,
+	}
+
+	httpsCredentials := apimodels.HttpsGitAuthSecure{
+		InsecureSkipTLS: params.InsecureSkipTLS,
+		Proxy:           &proxyCredentials,
+	}
+
 	updateProject := *oldProject
-	updateProject.GitUser = params.GitUser
-	updateProject.GitRemoteURI = params.GitRemoteURL
-	updateProject.GitProxyURL = params.GitProxyURL
-	updateProject.GitProxyScheme = params.GitProxyScheme
-	updateProject.GitProxyUser = params.GitProxyUser
-	updateProject.InsecureSkipTLS = params.InsecureSkipTLS
+	updateProject.GitCredentials.User = params.GitUser
+	updateProject.GitCredentials.RemoteURL = params.GitRemoteURL
+	updateProject.GitCredentials.HttpsAuth = &httpsCredentials
 	if isShipyardPresent {
 		updateProject.Shipyard = *params.Shipyard
 	}
@@ -341,8 +366,8 @@ func (pm *ProjectManager) Delete(projectName string) (string, error) {
 	project, err := pm.ProjectMaterializedView.GetProject(projectName)
 	if err != nil {
 		resultMessage.WriteString(fmt.Sprintf("Project %s cannot be retrieved anymore. Any Git upstream of the project will not be deleted.\n", projectName))
-	} else if project != nil && project.GitRemoteURI != "" {
-		resultMessage.WriteString(fmt.Sprintf("The Git upstream of the project will not be deleted: %s\n", project.GitRemoteURI))
+	} else if project != nil && project.GitCredentials.RemoteURL != "" {
+		resultMessage.WriteString(fmt.Sprintf("The Git upstream of the project will not be deleted: %s\n", project.GitCredentials.RemoteURL))
 	}
 
 	secret, err := pm.SecretStore.GetSecret("git-credentials-" + projectName)
@@ -410,17 +435,29 @@ func (pm *ProjectManager) createProjectInRepository(params *models.CreateProject
 		expandedStages = append(expandedStages, es)
 	}
 
+	proxyCredentials := apimodels.ProxyGitAuthSecure{
+		URL:    params.GitProxyURL,
+		Scheme: params.GitProxyScheme,
+		User:   params.GitProxyUser,
+	}
+
+	httpsCredentials := apimodels.HttpsGitAuthSecure{
+		InsecureSkipTLS: params.InsecureSkipTLS,
+		Proxy:           &proxyCredentials,
+	}
+
+	gitCredentialsRollback := apimodels.GitAuthCredentialsSecure{
+		RemoteURL: params.GitRemoteURL,
+		User:      params.GitUser,
+		HttpsAuth: &httpsCredentials,
+	}
+
 	p := &apimodels.ExpandedProject{
 		CreationDate:    strconv.FormatInt(time.Now().UnixNano(), 10),
-		GitRemoteURI:    params.GitRemoteURL,
-		GitUser:         params.GitUser,
 		ProjectName:     *params.Name,
 		Shipyard:        string(decodedShipyard),
 		ShipyardVersion: shipyardVersion,
-		GitProxyURL:     params.GitProxyURL,
-		GitProxyScheme:  params.GitProxyScheme,
-		GitProxyUser:    params.GitProxyUser,
-		InsecureSkipTLS: params.InsecureSkipTLS,
+		GitCredentials:  gitCredentialsRollback,
 		Stages:          expandedStages,
 	}
 
@@ -509,11 +546,13 @@ func getShipyardNotAvailableError(project string) string {
 }
 
 func toModelProject(project apimodels.ExpandedProject) apimodels.Project {
+	gitCredentials := apimodels.GitAuthCredentials{
+		RemoteURL: project.GitCredentials.RemoteURL,
+		User:      project.GitCredentials.User,
+	}
 	return apimodels.Project{
-
 		CreationDate:    project.CreationDate,
-		GitRemoteURI:    project.GitRemoteURI,
-		GitUser:         project.GitUser,
+		GitCredentials:  gitCredentials,
 		ProjectName:     project.ProjectName,
 		ShipyardVersion: project.ShipyardVersion,
 	}
@@ -569,17 +608,29 @@ func validateShipyardUpdate(params *models.UpdateProjectParams, oldProject *apim
 		expandedStages = append(expandedStages, es)
 	}
 
+	proxyCredentials := apimodels.ProxyGitAuthSecure{
+		URL:    params.GitProxyURL,
+		Scheme: params.GitProxyScheme,
+		User:   params.GitProxyUser,
+	}
+
+	httpCredentials := apimodels.HttpsGitAuthSecure{
+		InsecureSkipTLS: params.InsecureSkipTLS,
+		Proxy:           &proxyCredentials,
+	}
+
+	gitCredentials := apimodels.GitAuthCredentialsSecure{
+		RemoteURL: params.GitRemoteURL,
+		User:      params.GitUser,
+		HttpsAuth: &httpCredentials,
+	}
+
 	newProject := &apimodels.ExpandedProject{
 		CreationDate:    strconv.FormatInt(time.Now().UnixNano(), 10),
-		GitRemoteURI:    params.GitRemoteURL,
-		GitUser:         params.GitUser,
+		GitCredentials:  gitCredentials,
 		ProjectName:     *params.Name,
 		Shipyard:        string(decodedShipyard),
 		ShipyardVersion: shipyardVersion,
-		GitProxyURL:     params.GitProxyURL,
-		GitProxyScheme:  params.GitProxyScheme,
-		GitProxyUser:    params.GitProxyUser,
-		InsecureSkipTLS: params.InsecureSkipTLS,
 		Stages:          expandedStages,
 	}
 

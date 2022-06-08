@@ -3,6 +3,10 @@ package db
 import (
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
+	"time"
+
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	goutilsmodels "github.com/keptn/go-utils/pkg/api/models"
 	goutils "github.com/keptn/go-utils/pkg/api/utils"
@@ -10,9 +14,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/common"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
-	"strconv"
-	"strings"
-	"time"
 )
 
 var instance *MongoDBProjectMVRepo
@@ -174,9 +175,9 @@ func (mv *MongoDBProjectMVRepo) UpdateUpstreamInfo(projectName string, uri, user
 	if existingProject == nil {
 		return nil
 	}
-	if existingProject.GitRemoteURI != uri || existingProject.GitUser != user {
-		existingProject.GitRemoteURI = uri
-		existingProject.GitUser = user
+	if existingProject.GitCredentials.RemoteURL != uri || existingProject.GitCredentials.User != user {
+		existingProject.GitCredentials.RemoteURL = uri
+		existingProject.GitCredentials.User = user
 		if err := mv.projectRepo.UpdateProject(existingProject); err != nil {
 			log.Errorf("could not update upstream credentials of project %s: %s", projectName, err.Error())
 			return err
@@ -218,8 +219,8 @@ func (mv *MongoDBProjectMVRepo) DeleteUpstreamInfo(projectName string) error {
 	if existingProject == nil {
 		return nil
 	}
-	existingProject.GitUser = ""
-	existingProject.GitRemoteURI = ""
+	existingProject.GitCredentials.User = ""
+	existingProject.GitCredentials.RemoteURL = ""
 	if err := mv.projectRepo.UpdateProject(existingProject); err != nil {
 		log.Errorf("could not delete upstream credentials of project %s: %s", projectName, err.Error())
 		return err

@@ -443,12 +443,12 @@ func TestCreate(t *testing.T) {
 	assert.Equal(t, "hardening", configStore.CreateStageCalls()[1].Stage)
 	assert.Equal(t, "my-project", configStore.CreateStageCalls()[2].ProjectName)
 	assert.Equal(t, "production", configStore.CreateStageCalls()[2].Stage)
-	assert.Equal(t, "git-url", projectMVRepo.CreateProjectCalls()[0].Prj.GitRemoteURI)
-	assert.Equal(t, "git-user", projectMVRepo.CreateProjectCalls()[0].Prj.GitUser)
-	assert.Equal(t, "some-url", projectMVRepo.CreateProjectCalls()[0].Prj.GitProxyURL)
-	assert.Equal(t, "http", projectMVRepo.CreateProjectCalls()[0].Prj.GitProxyScheme)
-	assert.Equal(t, "proxy-user", projectMVRepo.CreateProjectCalls()[0].Prj.GitProxyUser)
-	assert.Equal(t, false, projectMVRepo.CreateProjectCalls()[0].Prj.InsecureSkipTLS)
+	assert.Equal(t, "git-url", projectMVRepo.CreateProjectCalls()[0].Prj.GitCredentials.RemoteURL)
+	assert.Equal(t, "git-user", projectMVRepo.CreateProjectCalls()[0].Prj.GitCredentials.User)
+	assert.Equal(t, "some-url", projectMVRepo.CreateProjectCalls()[0].Prj.GitCredentials.HttpsAuth.Proxy.URL)
+	assert.Equal(t, "http", projectMVRepo.CreateProjectCalls()[0].Prj.GitCredentials.HttpsAuth.Proxy.Scheme)
+	assert.Equal(t, "proxy-user", projectMVRepo.CreateProjectCalls()[0].Prj.GitCredentials.HttpsAuth.Proxy.User)
+	assert.Equal(t, false, projectMVRepo.CreateProjectCalls()[0].Prj.GitCredentials.HttpsAuth.InsecureSkipTLS)
 	assert.Equal(t, "my-project", projectMVRepo.CreateProjectCalls()[0].Prj.ProjectName)
 }
 
@@ -635,10 +635,14 @@ func TestUpdate_UpdateProjectInConfigurationStoreFails(t *testing.T) {
 		InsecureSkipTLS: false,
 	})
 
+	gitCredentials := apimodels.GitAuthCredentialsSecure{
+		RemoteURL: "http://my-old-remote.uri",
+		User:      "my-old-user",
+	}
+
 	rollbackProjectData := &apimodels.ExpandedProject{
 		CreationDate:    "old-creationdate",
-		GitRemoteURI:    "http://my-old-remote.uri",
-		GitUser:         "my-old-user",
+		GitCredentials:  gitCredentials,
 		ProjectName:     "my-project",
 		Shipyard:        "",
 		ShipyardVersion: "v1",
@@ -685,7 +689,7 @@ func TestUpdate_UpdateProjectInConfigurationStoreFails(t *testing.T) {
 	// rollbacks
 	assert.Equal(t, "git-credentials-my-project", secretStore.UpdateSecretCalls()[1].Name)
 	assert.Equal(t, rollbackSecretsData, secretStore.UpdateSecretCalls()[1].Content["git-credentials"])
-	assert.Equal(t, rollbackProjectData.GitRemoteURI, configStore.UpdateProjectCalls()[1].Project.GitRemoteURI)
+	assert.Equal(t, rollbackProjectData.GitCredentials.RemoteURL, configStore.UpdateProjectCalls()[1].Project.GitCredentials.RemoteURL)
 }
 
 func TestUpdate_UpdateProjectShipyardResourceFails(t *testing.T) {
@@ -714,10 +718,14 @@ func TestUpdate_UpdateProjectShipyardResourceFails(t *testing.T) {
 		InsecureSkipTLS: false,
 	})
 
+	gitCredentials := apimodels.GitAuthCredentialsSecure{
+		RemoteURL: "http://my-old-remote.uri",
+		User:      "my-old-user",
+	}
+
 	oldProject := &apimodels.ExpandedProject{
 		CreationDate:    "old-creationdate",
-		GitRemoteURI:    "http://my-old-remote.uri",
-		GitUser:         "my-old-user",
+		GitCredentials:  gitCredentials,
 		ProjectName:     "my-project",
 		Shipyard:        "",
 		ShipyardVersion: "v1",
@@ -764,10 +772,14 @@ func TestUpdate_UpdateProjectShipyardResourceFails(t *testing.T) {
 		ProjectName: *params.Name,
 	}
 
+	gitCredentials2 := apimodels.GitAuthCredentials{
+		RemoteURL: oldProject.GitCredentials.RemoteURL,
+		User:      oldProject.GitCredentials.User,
+	}
+
 	rollbackProjectData := apimodels.Project{
 		CreationDate:    oldProject.CreationDate,
-		GitRemoteURI:    oldProject.GitRemoteURI,
-		GitUser:         oldProject.GitUser,
+		GitCredentials:  gitCredentials2,
 		ProjectName:     oldProject.ProjectName,
 		ShipyardVersion: oldProject.ShipyardVersion,
 	}
@@ -809,10 +821,14 @@ func TestUpdate_UpdateProjectInRepositoryFails(t *testing.T) {
 		InsecureSkipTLS: false,
 	})
 
+	gitCredentials := apimodels.GitAuthCredentialsSecure{
+		RemoteURL: "http://my-old-remote.uri",
+		User:      "my-old-user",
+	}
+
 	oldProject := &apimodels.ExpandedProject{
 		CreationDate:    "old-creationdate",
-		GitRemoteURI:    "http://my-old-remote.uri",
-		GitUser:         "my-old-user",
+		GitCredentials:  gitCredentials,
 		ProjectName:     "my-project",
 		Shipyard:        "my-old-shipyard",
 		ShipyardVersion: "v1",
@@ -863,15 +879,27 @@ func TestUpdate_UpdateProjectInRepositoryFails(t *testing.T) {
 		ProjectName: *params.Name,
 	}
 
+	proxyCredentials := apimodels.ProxyGitAuthSecure{
+		URL:    "some-url",
+		Scheme: "http",
+		User:   "proxy-user",
+	}
+
+	httpCredentials := apimodels.HttpsGitAuthSecure{
+		InsecureSkipTLS: false,
+		Proxy:           &proxyCredentials,
+	}
+
+	gitCredentials2 := apimodels.GitAuthCredentialsSecure{
+		RemoteURL: "git-url",
+		User:      "git-user",
+		HttpsAuth: &httpCredentials,
+	}
+
 	projectDBUpdateData := &apimodels.ExpandedProject{
 		CreationDate:    "old-creationdate",
-		GitRemoteURI:    "git-url",
-		GitUser:         "git-user",
+		GitCredentials:  gitCredentials2,
 		ProjectName:     "my-project",
-		GitProxyURL:     "some-url",
-		GitProxyScheme:  "http",
-		GitProxyUser:    "proxy-user",
-		InsecureSkipTLS: false,
 		Shipyard:        myShipyard,
 		ShipyardVersion: "v1",
 	}
@@ -924,10 +952,14 @@ func TestUpdate(t *testing.T) {
 		InsecureSkipTLS: false,
 	})
 
+	gitCredentials := apimodels.GitAuthCredentialsSecure{
+		RemoteURL: "http://my-old-remote.uri",
+		User:      "my-old-user",
+	}
+
 	oldProjectData := &apimodels.ExpandedProject{
 		CreationDate:    "old-creationdate",
-		GitRemoteURI:    "http://my-old-remote.uri",
-		GitUser:         "my-old-user",
+		GitCredentials:  gitCredentials,
 		ProjectName:     "my-project",
 		Shipyard:        "",
 		ShipyardVersion: "v1",
@@ -978,16 +1010,28 @@ func TestUpdate(t *testing.T) {
 		ProjectName: *params.Name,
 	}
 
+	proxyCredentials := apimodels.ProxyGitAuthSecure{
+		URL:    "some-url",
+		Scheme: "http",
+		User:   "proxy-user",
+	}
+
+	httpCredentials := apimodels.HttpsGitAuthSecure{
+		InsecureSkipTLS: false,
+		Proxy:           &proxyCredentials,
+	}
+
+	gitCredentials2 := apimodels.GitAuthCredentialsSecure{
+		RemoteURL: "git-url",
+		User:      "git-user",
+		HttpsAuth: &httpCredentials,
+	}
+
 	projectDBUpdateData := &apimodels.ExpandedProject{
 		CreationDate:    "old-creationdate",
-		GitRemoteURI:    "git-url",
-		GitUser:         "git-user",
+		GitCredentials:  gitCredentials2,
 		ProjectName:     "my-project",
 		Shipyard:        "my-shipyard",
-		GitProxyURL:     "some-url",
-		GitProxyScheme:  "http",
-		GitProxyUser:    "proxy-user",
-		InsecureSkipTLS: false,
 		ShipyardVersion: "v1",
 	}
 
@@ -1028,10 +1072,14 @@ func TestUpdate_ShouldWorkWithEmptyGitUser(t *testing.T) {
 		InsecureSkipTLS: false,
 	})
 
+	gitCredentials := apimodels.GitAuthCredentialsSecure{
+		RemoteURL: "http://my-old-remote.uri",
+		User:      "my-old-user",
+	}
+
 	oldProjectData := &apimodels.ExpandedProject{
 		CreationDate:    "old-creationdate",
-		GitRemoteURI:    "http://my-old-remote.uri",
-		GitUser:         "my-old-user",
+		GitCredentials:  gitCredentials,
 		ProjectName:     "my-project",
 		Shipyard:        "",
 		ShipyardVersion: "v1",
@@ -1082,16 +1130,28 @@ func TestUpdate_ShouldWorkWithEmptyGitUser(t *testing.T) {
 		ProjectName: *params.Name,
 	}
 
+	proxyCredentials := apimodels.ProxyGitAuthSecure{
+		URL:    "some-url",
+		Scheme: "http",
+		User:   "proxy-user",
+	}
+
+	httpCredentials := apimodels.HttpsGitAuthSecure{
+		InsecureSkipTLS: false,
+		Proxy:           &proxyCredentials,
+	}
+
+	gitCredentials2 := apimodels.GitAuthCredentialsSecure{
+		RemoteURL: "git-url",
+		User:      "",
+		HttpsAuth: &httpCredentials,
+	}
+
 	projectDBUpdateData := &apimodels.ExpandedProject{
 		CreationDate:    "old-creationdate",
-		GitRemoteURI:    "git-url",
-		GitUser:         "",
+		GitCredentials:  gitCredentials2,
 		ProjectName:     "my-project",
 		Shipyard:        "my-shipyard",
-		GitProxyURL:     "some-url",
-		GitProxyScheme:  "http",
-		GitProxyUser:    "proxy-user",
-		InsecureSkipTLS: false,
 		ShipyardVersion: "v1",
 	}
 
@@ -1131,10 +1191,14 @@ func TestUpdateNoInsecureParameter(t *testing.T) {
 		GitProxyUser:   "proxy-user",
 	})
 
+	gitCredentials := apimodels.GitAuthCredentialsSecure{
+		RemoteURL: "http://my-old-remote.uri",
+		User:      "my-old-user",
+	}
+
 	oldProjectData := &apimodels.ExpandedProject{
 		CreationDate:    "old-creationdate",
-		GitRemoteURI:    "http://my-old-remote.uri",
-		GitUser:         "my-old-user",
+		GitCredentials:  gitCredentials,
 		ProjectName:     "my-project",
 		Shipyard:        "",
 		ShipyardVersion: "v1",
@@ -1184,16 +1248,28 @@ func TestUpdateNoInsecureParameter(t *testing.T) {
 		ProjectName: *params.Name,
 	}
 
+	proxyCredentials := apimodels.ProxyGitAuthSecure{
+		URL:    "some-url",
+		Scheme: "http",
+		User:   "proxy-user",
+	}
+
+	httpCredentials := apimodels.HttpsGitAuthSecure{
+		InsecureSkipTLS: false,
+		Proxy:           &proxyCredentials,
+	}
+
+	gitCredentials2 := apimodels.GitAuthCredentialsSecure{
+		RemoteURL: "git-url",
+		User:      "git-user",
+		HttpsAuth: &httpCredentials,
+	}
+
 	projectDBUpdateData := &apimodels.ExpandedProject{
 		CreationDate:    "old-creationdate",
-		GitRemoteURI:    "git-url",
-		GitUser:         "git-user",
+		GitCredentials:  gitCredentials2,
 		ProjectName:     "my-project",
 		Shipyard:        "my-shipyard",
-		GitProxyURL:     "some-url",
-		GitProxyScheme:  "http",
-		GitProxyUser:    "proxy-user",
-		InsecureSkipTLS: false,
 		ShipyardVersion: "v1",
 	}
 
@@ -1224,10 +1300,14 @@ func TestUpdate_WithEmptyShipyard_ShallNotUpdateResource(t *testing.T) {
 		RemoteURI: "http://my-old-remote.uri",
 	})
 
+	gitCredentials := apimodels.GitAuthCredentialsSecure{
+		RemoteURL: "http://my-old-remote.uri",
+		User:      "my-old-user",
+	}
+
 	oldProjectData := &apimodels.ExpandedProject{
 		CreationDate:    "old-creationdate",
-		GitRemoteURI:    "http://my-old-remote.uri",
-		GitUser:         "my-old-user",
+		GitCredentials:  gitCredentials,
 		ProjectName:     "my-project",
 		Shipyard:        "my-old-shipyard",
 		ShipyardVersion: "v1",
@@ -1290,10 +1370,14 @@ func TestUpdate_WithEmptyGitCredentials_ShallNotUpdateResource(t *testing.T) {
 		RemoteURI: "http://my-old-remote.uri",
 	})
 
+	gitCredentials := apimodels.GitAuthCredentialsSecure{
+		RemoteURL: "http://my-old-remote.uri",
+		User:      "my-old-user",
+	}
+
 	oldProjectData := &apimodels.ExpandedProject{
 		CreationDate:    "old-creationdate",
-		GitRemoteURI:    "http://my-old-remote.uri",
-		GitUser:         "my-old-user",
+		GitCredentials:  gitCredentials,
 		ProjectName:     "my-project",
 		Shipyard:        "my-old-shipyard",
 		ShipyardVersion: "v1",
@@ -1351,10 +1435,14 @@ func TestDelete(t *testing.T) {
 
 	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
 
+		gitCredentials := apimodels.GitAuthCredentialsSecure{
+			RemoteURL: "http://my-remote.uri",
+			User:      "my-user",
+		}
+
 		p := &apimodels.ExpandedProject{
 			CreationDate:    "creationdate",
-			GitRemoteURI:    "http://my-remote.uri",
-			GitUser:         "my-user",
+			GitCredentials:  gitCredentials,
 			ProjectName:     "my-project",
 			Shipyard:        "",
 			ShipyardVersion: "v1",
@@ -1419,10 +1507,14 @@ func TestValidateShipyardStagesUnchaged(t *testing.T) {
 		{{StageName: "dev"}, {StageName: "staging"}, {StageName: "prod-a"}, {StageName: "prod-b"}, {StageName: "prod-c"}},
 		{{StageName: "staging"}, {StageName: "dev"}, {StageName: "prod-b"}, {StageName: "prod-a"}},
 	}
+
+	gitCredentials := apimodels.GitAuthCredentialsSecure{
+		RemoteURL: "http://my-remote.uri",
+		User:      "my-user",
+	}
 	oldProject := &apimodels.ExpandedProject{
 		CreationDate:    "creationdate",
-		GitRemoteURI:    "http://my-remote.uri",
-		GitUser:         "my-user",
+		GitCredentials:  gitCredentials,
 		ProjectName:     "my-project",
 		Shipyard:        "",
 		ShipyardVersion: "v2",
@@ -1438,8 +1530,7 @@ func TestValidateShipyardStagesUnchaged(t *testing.T) {
 			oldProject: oldProject,
 			newProject: &apimodels.ExpandedProject{
 				CreationDate:    "creationdate",
-				GitRemoteURI:    "http://my-remote.uri",
-				GitUser:         "my-user",
+				GitCredentials:  gitCredentials,
 				ProjectName:     "my-project",
 				Shipyard:        "",
 				ShipyardVersion: "v2",
@@ -1451,8 +1542,7 @@ func TestValidateShipyardStagesUnchaged(t *testing.T) {
 			oldProject: oldProject,
 			newProject: &apimodels.ExpandedProject{
 				CreationDate:    "creationdate",
-				GitRemoteURI:    "http://my-remote.uri",
-				GitUser:         "my-user",
+				GitCredentials:  gitCredentials,
 				ProjectName:     "my-project",
 				Shipyard:        "",
 				ShipyardVersion: "v2",
@@ -1464,8 +1554,7 @@ func TestValidateShipyardStagesUnchaged(t *testing.T) {
 			oldProject: oldProject,
 			newProject: &apimodels.ExpandedProject{
 				CreationDate:    "creationdate",
-				GitRemoteURI:    "http://my-remote.uri",
-				GitUser:         "my-user",
+				GitCredentials:  gitCredentials,
 				ProjectName:     "my-project",
 				Shipyard:        "",
 				ShipyardVersion: "v2",
@@ -1477,8 +1566,7 @@ func TestValidateShipyardStagesUnchaged(t *testing.T) {
 			oldProject: oldProject,
 			newProject: &apimodels.ExpandedProject{
 				CreationDate:    "creationdate",
-				GitRemoteURI:    "http://my-remote.uri",
-				GitUser:         "my-user",
+				GitCredentials:  gitCredentials,
 				ProjectName:     "my-project",
 				Shipyard:        "",
 				ShipyardVersion: "v2",
@@ -1490,8 +1578,7 @@ func TestValidateShipyardStagesUnchaged(t *testing.T) {
 			oldProject: oldProject,
 			newProject: &apimodels.ExpandedProject{
 				CreationDate:    "creationdate",
-				GitRemoteURI:    "http://my-remote.uri",
-				GitUser:         "my-user",
+				GitCredentials:  gitCredentials,
 				ProjectName:     "my-project",
 				Shipyard:        "",
 				ShipyardVersion: "v2",
