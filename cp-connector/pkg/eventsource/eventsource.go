@@ -78,17 +78,22 @@ func (n *NATSEventSource) Start(ctx context.Context, registrationData types.Regi
 
 func (n *NATSEventSource) OnSubscriptionUpdate(subjects []string) {
 	s := dedup(subjects)
+	n.logger.Debugf("Updating subscriptions")
 	if !isEqual(n.currentSubjects, s) {
+		n.logger.Debugf("Cleaning up %d old subscriptions", len(n.currentSubjects))
 		err := n.connector.UnsubscribeAll()
+		n.logger.Debug("Unsubscribed from previous subscriptions")
 		if err != nil {
 			n.logger.Errorf("Could not handle subscription update: %v", err)
 			return
 		}
+		n.logger.Debugf("Subscribing to %d topics", len(s))
 		if err := n.connector.QueueSubscribeMultiple(s, n.queueGroup, n.eventProcessFn); err != nil {
 			n.logger.Errorf("Could not handle subscription update: %v", err)
 			return
 		}
 		n.currentSubjects = s
+		n.logger.Debugf("Subscription to %d topics successful", len(s))
 	}
 }
 

@@ -116,9 +116,11 @@ func (nc *NatsConnector) QueueSubscribeMultiple(subjects []string, queueGroup st
 	}
 
 	for _, sub := range subjects {
+		nc.logger.Debug("Subscribing to topic %s", sub)
 		if err := nc.queueSubscribe(sub, queueGroup, fn); err != nil {
 			return fmt.Errorf("could not subscribe to subject %s: %w", sub, err)
 		}
+		nc.logger.Debug("Successfully subscribed to topic %s", sub)
 	}
 	return nil
 }
