@@ -3,13 +3,12 @@ package handler
 import (
 	"context"
 	"fmt"
-
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
 	logger "github.com/sirupsen/logrus"
 
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
 )
 
 type ApprovalTriggeredEventHandler struct {
@@ -18,7 +17,7 @@ type ApprovalTriggeredEventHandler struct {
 
 // NewApprovalTriggeredEventHandler returns a new approval.triggered event handler
 func NewApprovalTriggeredEventHandler(ctx context.Context, event cloudevents.Event) (*ApprovalTriggeredEventHandler, error) {
-	eventSender := ctx.Value(controlplane.EventSenderKey).(controlplane.EventSender)
+	eventSender := ctx.Value(controlplane.EventSenderKeyType{}).(controlplane.EventSender)
 	keptnHandlerV2, err := keptnv2.NewKeptn(&event, keptncommon.KeptnOpts{EventSender: &CPEventSender{Sender: eventSender}})
 	if err != nil {
 		logger.WithError(err).Error("Failed to initialize Keptn handler")

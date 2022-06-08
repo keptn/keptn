@@ -2,6 +2,9 @@ package main
 
 import (
 	"context"
+	"github.com/keptn/keptn/cp-connector/pkg/eventsource"
+	"github.com/keptn/keptn/cp-connector/pkg/logforwarder"
+	"github.com/keptn/keptn/cp-connector/pkg/subscriptionsource"
 	"keptn/approval-service/pkg/handler"
 	"log"
 	"os"
@@ -56,13 +59,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	subscriptionSource := controlplane.NewUniformSubscriptionSource(api.UniformV1())
+	subscriptionSource := subscriptionsource.New(api.UniformV1())
 	natsConnector, err := nats.ConnectFromEnv()
 	if err != nil {
 		log.Fatal(err)
 	}
-	eventSource := controlplane.NewNATSEventSource(natsConnector)
-	logForwarder := controlplane.NewLogForwarder(api.LogsV1())
+	eventSource := eventsource.New(natsConnector)
+	logForwarder := logforwarder.New(api.LogsV1())
 
 	controlPlane := controlplane.New(subscriptionSource, eventSource, logForwarder)
 
