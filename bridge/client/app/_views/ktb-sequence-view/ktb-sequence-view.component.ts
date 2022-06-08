@@ -231,27 +231,19 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   }
 
   public selectSequence(event: { sequence: Sequence; stage?: string; eventId?: string }, loadTraces = true): void {
+    const sequenceFilters = this.apiService.getSequenceFilters(event.sequence.project);
+    const stage = event.stage || event.sequence.getStages().pop();
+    const additionalCommands = [];
     if (event.eventId) {
-      const routeUrl = this.router.createUrlTree(
-        ['/project', event.sequence.project, 'sequence', event.sequence.shkeptncontext, 'event', event.eventId],
-        { queryParamsHandling: 'preserve' }
-      );
-      this.location.go(routeUrl.toString());
-    } else {
-      const stage = event.stage || event.sequence.getStages().pop();
-      const routeUrl = this.router.createUrlTree(
-        [
-          '/project',
-          event.sequence.project,
-          'sequence',
-          event.sequence.shkeptncontext,
-          ...(stage ? ['stage', stage] : []),
-        ],
-        { queryParamsHandling: 'preserve' }
-      );
-      this.location.go(routeUrl.toString());
+      additionalCommands.push('event', event.eventId);
+    } else if (stage) {
+      additionalCommands.push('stage', stage);
     }
-
+    const routeUrl = this.router.createUrlTree(
+      ['/project', event.sequence.project, 'sequence', event.sequence.shkeptncontext, ...additionalCommands],
+      { queryParams: sequenceFilters }
+    );
+    this.location.go(routeUrl.toString());
     this.currentSequence = event.sequence;
     this.selectedStage = event.stage || event.sequence.getStages().pop();
     if (loadTraces) {
@@ -425,15 +417,16 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   }
 
   selectStage(stageName: string): void {
-    if (this.currentSequence) {
-      const routeUrl = this.router.createUrlTree(
-        ['/project', this.currentSequence.project, 'sequence', this.currentSequence.shkeptncontext, 'stage', stageName],
-        { queryParamsHandling: 'preserve' }
-      );
-      this.location.go(routeUrl.toString());
-
-      this.selectedStage = stageName;
+    if (!this.currentSequence) {
+      return;
     }
+    const sequenceFilters = this.apiService.getSequenceFilters(this.currentSequence.project);
+    const routeUrl = this.router.createUrlTree(
+      ['/project', this.currentSequence.project, 'sequence', this.currentSequence.shkeptncontext, 'stage', stageName],
+      { queryParams: sequenceFilters }
+    );
+    this.location.go(routeUrl.toString());
+    this.selectedStage = stageName;
   }
 
   public navigateToTriggerSequence(): void {

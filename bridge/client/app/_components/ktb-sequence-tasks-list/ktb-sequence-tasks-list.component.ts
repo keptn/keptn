@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { Trace } from '../../_models/trace';
 import { DateUtil } from '../../_utils/date.utils';
+import { ApiService } from '../../_services/api.service';
 
 @Component({
   selector: 'ktb-sequence-tasks-list[tasks][focusedEventId]',
@@ -41,7 +42,12 @@ export class KtbSequenceTasksListComponent {
     }
   }
 
-  constructor(private router: Router, private location: Location, public dateUtil: DateUtil) {}
+  constructor(
+    private router: Router,
+    private location: Location,
+    public dateUtil: DateUtil,
+    private apiService: ApiService
+  ) {}
 
   identifyEvent(_index: number, item: Trace): string {
     return item.id;
@@ -58,14 +64,16 @@ export class KtbSequenceTasksListComponent {
   }
 
   focusEvent(event: Trace): void {
-    if (event.project) {
-      const routeUrl = this.router.createUrlTree(
-        ['/project', event.project, 'sequence', event.shkeptncontext, 'event', event.id],
-        { queryParamsHandling: 'preserve' }
-      );
-      this._focusedEventId = event.id;
-      this.location.go(routeUrl.toString());
+    if (!event.project) {
+      return;
     }
+    const sequenceFilters = this.apiService.getSequenceFilters(event.project);
+    const routeUrl = this.router.createUrlTree(
+      ['/project', event.project, 'sequence', event.shkeptncontext, 'event', event.id],
+      { queryParams: sequenceFilters }
+    );
+    this._focusedEventId = event.id;
+    this.location.go(routeUrl.toString());
   }
 
   focusLastSequence(): void {

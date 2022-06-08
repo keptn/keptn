@@ -1,7 +1,9 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { filter, take } from 'rxjs/operators';
 import { DataService } from './_services/data.service';
+import { ActivatedRoute } from '@angular/router';
+import { combineLatest, of } from 'rxjs';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/naming-convention
 declare let dT_: any;
@@ -11,20 +13,20 @@ declare let dT_: any;
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
-export class AppComponent implements OnInit {
-  constructor(private http: HttpClient, private dataService: DataService) {
+export class AppComponent {
+  constructor(private http: HttpClient, private dataService: DataService, private route: ActivatedRoute) {
     if (typeof dT_ !== 'undefined' && dT_.initAngularNg) {
       dT_.initAngularNg(http, HttpHeaders);
     }
-  }
-
-  public ngOnInit(): void {
     this.dataService.loadKeptnInfo();
-    this.dataService.keptnInfo
-      .pipe(filter((keptnInfo) => !!keptnInfo))
+    const keptnInfo$ = this.dataService.keptnInfo.pipe(filter((keptnInfo) => !!keptnInfo));
+
+    combineLatest([this.route.firstChild?.data ?? of({}), keptnInfo$])
       .pipe(take(1))
-      .subscribe(() => {
-        this.dataService.loadProjects();
+      .subscribe(([data]) => {
+        if (!data.projectsHandledByComponent) {
+          this.dataService.loadProjects().subscribe();
+        }
       });
   }
 }
