@@ -1,20 +1,17 @@
 package handler
 
 import (
-	"crypto/sha1"
-	"encoding/hex"
 	"errors"
 	"fmt"
-	"net/http"
-	"strings"
-	"time"
-
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
+	logger "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
+	"net/http"
+	"time"
 )
 
 type IUniformIntegrationHandler interface {
@@ -125,9 +122,9 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 		Namespace: integration.MetaData.KubernetesMetaData.Namespace,
 	})
 
-	integrationInfo := fmt.Sprintf("name=%s, namespace=%s", integration.Name, integration.MetaData.KubernetesMetaData.Namespace)
+	integrationInfo := fmt.Sprintf("name=%s, namespace=%s, hostname=%s", integration.Name, integration.MetaData.KubernetesMetaData.Namespace, integration.MetaData.Hostname)
 	logger.Debugf("Uniform:Register(): Checking for existing integration for %s", integrationInfo)
-	if err == nil && len(existingIntegrations) > 0 {
+	if err == nil && existingIntegrations != nil && len(existingIntegrations) > 0 {
 		logger.Debugf("Uniform:Register(): Found existing integration for %s with id %s", integrationInfo, existingIntegrations[0].ID)
 		integration.ID = existingIntegrations[0].ID
 
@@ -161,9 +158,6 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 		s := &integration.Subscriptions[i]
 		s.ID = uuid.New().String()
 	}
-
-	logger.Debugf("Uniform:Register(): No existing integration found for %s. Creating a new one with ID %s", integrationInfo, integration.ID)
-	// we validate integrations here to make sure to verify both subscription and subscriptions
 
 	validator := UniformParamsValidator{false}
 
