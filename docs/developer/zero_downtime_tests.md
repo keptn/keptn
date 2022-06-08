@@ -108,9 +108,9 @@ Mandatory variables:
 
 A few variables allows to setup the behaviour of the test locally, those can also be edited in the default field of the ZeroDowntimeEnv struct or by setting up local env variables.
 
-* `NUMBER_OF_UPGRADES` default:3 specifies the amount of times we upgrade back and forth from the original installed version to the upgrade version
+* `NUMBER_OF_UPGRADES` default:2 specifies the amount of times we upgrade back and forth from the original installed version to the upgrade version
 * `API_PROBES_INTERVAL` default:5s  sets frequencies between API tests runs
-* `SEQUENCES_INTERVAL` default:15s  sets frequences between sequences/webhook tests suite runs
+* `SEQUENCES_INTERVAL` default:30s  sets frequences between sequences/webhook tests suite runs
 
 
 Run a single test ex. an API probe or a single run of Test_Sequences
