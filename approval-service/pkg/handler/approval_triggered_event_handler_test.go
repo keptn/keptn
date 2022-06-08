@@ -3,6 +3,8 @@ package handler
 import (
 	"context"
 	"fmt"
+	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
+	"github.com/keptn/keptn/cp-connector/pkg/types"
 	"testing"
 	"time"
 
@@ -12,13 +14,12 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
 )
 
 func TestHandleApprovalTriggeredEvent(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	fakeSender := func(ce models.KeptnContextExtendedCE) error { return nil }
-	ctx = context.WithValue(ctx, controlplane.EventSenderKey, controlplane.EventSender(fakeSender))
+	ctx = context.WithValue(ctx, types.EventSenderKey, controlplane.EventSender(fakeSender))
 	defer cancel()
 
 	var approvalTriggeredTests = []struct {
