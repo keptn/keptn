@@ -103,7 +103,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     services: [],
   };
 
-  public filteredSequences: Sequence[] = [];
+  public filteredSequences?: Sequence[];
   public loading = false;
   public selectedEventId?: string;
 

@@ -25,7 +25,12 @@
           <div class="container" *ngIf="project.sequences && project.sequences.length !== 0">
             <ng-container [ngTemplateOutlet]="triggerSequenceButton"></ng-container>
           </div>
-          <div class="container" fxFlex fxLayout="column" *ngIf="project.sequences; else loadingSequences">
+          <div
+            class="container"
+            fxFlex
+            fxLayout="column"
+            *ngIf="project.sequences && filteredSequences; else loadingSequences"
+          >
             <div uitestid="keptn-noSequences" *ngIf="project.sequences.length === 0">
               <div fxLayout="row" fxLayoutAlign="start">
                 <dt-icon fxFlex="20px" class="icon" name="information"></dt-icon>
