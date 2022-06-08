@@ -131,12 +131,16 @@ func (s *BaseSuite) TestGit_ComponentTest(c *C) {
 	id := h.String()
 	push(repo1, c)
 
+	httpCredentials := common_models.HttpsGitAuth{
+		Token: "mytoken",
+	}
+
 	// check changes to repo
 	repo1context := common_models.GitContext{Project: "repo1",
 		Credentials: &common_models.GitCredentials{
 			User:      "u2",
-			Token:     "mytoken",
-			RemoteURI: emptyUrl,
+			HttpsAuth: &httpCredentials,
+			RemoteURL: emptyUrl,
 		}}
 	b, err := g.GetFileRevision(repo1context, id, "try.txt")
 	c.Assert(err, IsNil)
@@ -157,8 +161,8 @@ func (s *BaseSuite) TestGit_ComponentTest(c *C) {
 	repo2context := common_models.GitContext{Project: "repo2",
 		Credentials: &common_models.GitCredentials{
 			User:      "u2",
-			Token:     "mytoken",
-			RemoteURI: emptyUrl,
+			HttpsAuth: &httpCredentials,
+			RemoteURL: emptyUrl,
 		}}
 
 	// check new changes are forced
@@ -211,9 +215,11 @@ func (s *BaseSuite) TestGit_GetCurrentRevision(c *C) {
 			gitContext: common_models.GitContext{
 				Project: "nope",
 				Credentials: &common_models.GitCredentials{
-					User:      "ssss",
-					Token:     "bjh",
-					RemoteURI: "an url that doesnot exists"},
+					User: "ssss",
+					HttpsAuth: &common_models.HttpsGitAuth{
+						Token: "bjh",
+					},
+					RemoteURL: "an url that doesnot exists"},
 			},
 			branch:   "master",
 			want:     "",
@@ -391,9 +397,11 @@ func (s *BaseSuite) TestGit_Push(c *C) {
 			gitContext: common_models.GitContext{
 				Project: "sockshop",
 				Credentials: &common_models.GitCredentials{
-					User:      "ssss",
-					Token:     "bjh",
-					RemoteURI: "https://github.com/git-fixtures/basic.git"},
+					User: "ssss",
+					HttpsAuth: &common_models.HttpsGitAuth{
+						Token: "bjh",
+					},
+					RemoteURL: "https://github.com/git-fixtures/basic.git"},
 			},
 			err:  kerrors.ErrAuthenticationRequired,
 			push: false,
@@ -488,9 +496,11 @@ func (s *BaseSuite) TestGit_Pull(c *C) {
 			gitContext: common_models.GitContext{
 				Project: "mine",
 				Credentials: &common_models.GitCredentials{
-					User:      "ssss",
-					Token:     "bjh",
-					RemoteURI: s.url},
+					User: "ssss",
+					HttpsAuth: &common_models.HttpsGitAuth{
+						Token: "bjh",
+					},
+					RemoteURL: s.url},
 			},
 			expected: []string{"[core]\n" +
 				"\tbare = false\n",
@@ -508,9 +518,11 @@ func (s *BaseSuite) TestGit_Pull(c *C) {
 			gitContext: common_models.GitContext{
 				Project: "mine",
 				Credentials: &common_models.GitCredentials{
-					User:      "ssss",
-					Token:     "bjh",
-					RemoteURI: "jibberish"},
+					User: "ssss",
+					HttpsAuth: &common_models.HttpsGitAuth{
+						Token: "bjh",
+					},
+					RemoteURL: "jibberish"},
 			},
 			err: kerrors.ErrRepositoryNotFound,
 		},
@@ -579,9 +591,11 @@ func (s *BaseSuite) TestGit_CloneRepo(c *C) {
 			gitContext: common_models.GitContext{
 				Project: "mysockshop",
 				Credentials: &common_models.GitCredentials{
-					User:      "Me",
-					Token:     "blabla",
-					RemoteURI: emptyUrl},
+					User: "Me",
+					HttpsAuth: &common_models.HttpsGitAuth{
+						Token: "blabla",
+					},
+					RemoteURL: emptyUrl},
 			},
 
 			wantErr: false,
@@ -610,9 +624,11 @@ func (s *BaseSuite) TestGit_CloneRepo(c *C) {
 			gitContext: common_models.GitContext{
 				Project: "sockshop",
 				Credentials: &common_models.GitCredentials{
-					User:      "Me",
-					Token:     "blabla",
-					RemoteURI: "http//wrongurl"},
+					User: "Me",
+					HttpsAuth: &common_models.HttpsGitAuth{
+						Token: "blabla",
+					},
+					RemoteURL: "http//wrongurl"},
 			},
 			git: &common_mock.GogitMock{
 				PlainCloneFunc: func(path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
@@ -633,9 +649,11 @@ func (s *BaseSuite) TestGit_CloneRepo(c *C) {
 			gitContext: common_models.GitContext{
 				Project: "so",
 				Credentials: &common_models.GitCredentials{
-					User:      "ssss",
-					Token:     "bjh",
-					RemoteURI: "https://github.com/git-fixtures/basic.git"},
+					User: "ssss",
+					HttpsAuth: &common_models.HttpsGitAuth{
+						Token: "bjh",
+					},
+					RemoteURL: "https://github.com/git-fixtures/basic.git"},
 			},
 			git: &common_mock.GogitMock{
 				PlainCloneFunc: func(path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
@@ -913,9 +931,11 @@ func (s *BaseSuite) TestGit_ProjectExists(c *C) {
 			gitContext: common_models.GitContext{
 				Project: "nonexisting",
 				Credentials: &common_models.GitCredentials{
-					User:      "ssss",
-					Token:     "bjh",
-					RemoteURI: "an url that doesnot exists"},
+					User: "ssss",
+					HttpsAuth: &common_models.HttpsGitAuth{
+						Token: "bjh",
+					},
+					RemoteURL: "an url that doesnot exists"},
 			},
 			exists: false,
 			git:    GogitReal{},
@@ -925,9 +945,11 @@ func (s *BaseSuite) TestGit_ProjectExists(c *C) {
 			gitContext: common_models.GitContext{
 				Project: "podtato",
 				Credentials: &common_models.GitCredentials{
-					User:      "ssss",
-					Token:     "bjh",
-					RemoteURI: buildEmptyRemote()},
+					User: "ssss",
+					HttpsAuth: &common_models.HttpsGitAuth{
+						Token: "bjh",
+					},
+					RemoteURL: buildEmptyRemote()},
 			},
 			exists: true,
 			git:    GogitReal{},
@@ -1005,16 +1027,12 @@ func Test_getAuthMethod(t *testing.T) {
 			name: "valid credentials",
 			gitContext: common_models.GitContext{
 				Credentials: &common_models.GitCredentials{
-					RemoteURI:         "https://some.url",
-					Token:             "some-token",
-					User:              "user",
-					GitPrivateKey:     "",
-					GitPrivateKeyPass: "",
-					GitProxyURL:       "",
-					InsecureSkipTLS:   false,
-					GitProxyScheme:    "",
-					GitProxyUser:      "",
-					GitProxyPassword:  "",
+					RemoteURL: "https://some.url",
+					HttpsAuth: &common_models.HttpsGitAuth{
+						Token:           "some-token",
+						InsecureSkipTLS: false,
+					},
+					User: "user",
 				},
 				Project: "my-proj",
 			},
@@ -1028,16 +1046,12 @@ func Test_getAuthMethod(t *testing.T) {
 			name: "valid credentials no user",
 			gitContext: common_models.GitContext{
 				Credentials: &common_models.GitCredentials{
-					RemoteURI:         "https://some.url",
-					Token:             "some-token",
-					User:              "",
-					GitPrivateKey:     "",
-					GitPrivateKeyPass: "",
-					GitProxyURL:       "",
-					InsecureSkipTLS:   false,
-					GitProxyScheme:    "",
-					GitProxyUser:      "",
-					GitProxyPassword:  "",
+					RemoteURL: "https://some.url",
+					HttpsAuth: &common_models.HttpsGitAuth{
+						Token:           "some-token",
+						InsecureSkipTLS: false,
+					},
+					User: "",
 				},
 				Project: "my-proj",
 			},
@@ -1051,16 +1065,11 @@ func Test_getAuthMethod(t *testing.T) {
 			name: "invalid credentials",
 			gitContext: common_models.GitContext{
 				Credentials: &common_models.GitCredentials{
-					RemoteURI:         "https://some.url",
-					Token:             "",
-					User:              "user",
-					GitPrivateKey:     "",
-					GitPrivateKeyPass: "",
-					GitProxyURL:       "",
-					InsecureSkipTLS:   false,
-					GitProxyScheme:    "",
-					GitProxyUser:      "",
-					GitProxyPassword:  "",
+					RemoteURL: "https://some.url",
+					HttpsAuth: &common_models.HttpsGitAuth{
+						InsecureSkipTLS: false,
+					},
+					User: "user",
 				},
 				Project: "my-proj",
 			},
@@ -1071,16 +1080,12 @@ func Test_getAuthMethod(t *testing.T) {
 			name: "invalid ssh credentials",
 			gitContext: common_models.GitContext{
 				Credentials: &common_models.GitCredentials{
-					RemoteURI:         "ssh://some.url",
-					Token:             "",
-					User:              "user",
-					GitPrivateKey:     "private-key",
-					GitPrivateKeyPass: "password",
-					GitProxyURL:       "",
-					InsecureSkipTLS:   false,
-					GitProxyScheme:    "",
-					GitProxyUser:      "",
-					GitProxyPassword:  "",
+					RemoteURL: "ssh://some.url",
+					SshAuth: &common_models.SshGitAuth{
+						PrivateKey:     "private-key",
+						PrivateKeyPass: "password",
+					},
+					User: "user",
 				},
 				Project: "my-proj",
 			},
@@ -1091,20 +1096,26 @@ func Test_getAuthMethod(t *testing.T) {
 			name: "dumb credentials",
 			gitContext: common_models.GitContext{
 				Credentials: &common_models.GitCredentials{
-					RemoteURI:         "ssh://some.url",
-					Token:             "some",
-					User:              "user",
-					GitPrivateKey:     "",
-					GitPrivateKeyPass: "password",
-					GitProxyURL:       "",
-					InsecureSkipTLS:   false,
-					GitProxyScheme:    "",
-					GitProxyUser:      "hate",
-					GitProxyPassword:  "",
+					RemoteURL: "ssh://some.url",
+					HttpsAuth: &common_models.HttpsGitAuth{
+						Token:           "some",
+						InsecureSkipTLS: false,
+						Proxy: &common_models.ProxyGitAuth{
+							URL:      "",
+							Scheme:   "",
+							User:     "hate",
+							Password: "",
+						},
+					},
+					SshAuth: &common_models.SshGitAuth{
+						PrivateKey:     "",
+						PrivateKeyPass: "password",
+					},
+					User: "user",
 				},
 				Project: "my-proj",
 			},
-			wantErr:        false,
+			wantErr:        true,
 			expectedOutput: nil,
 		},
 	}
@@ -1125,9 +1136,11 @@ func (s *BaseSuite) NewGitContext() common_models.GitContext {
 	return common_models.GitContext{
 		Project: "sockshop",
 		Credentials: &common_models.GitCredentials{
-			User:      "Me",
-			Token:     "blabla",
-			RemoteURI: s.url,
+			User: "Me",
+			HttpsAuth: &common_models.HttpsGitAuth{
+				Token: "blabla",
+			},
+			RemoteURL: s.url,
 		},
 	}
 }

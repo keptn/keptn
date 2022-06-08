@@ -25,9 +25,11 @@ func TestK8sCredentialReader_ReadSecret(t *testing.T) {
 
 	require.Nil(t, err)
 	require.Equal(t, &common_models.GitCredentials{
-		User:      "user",
-		Token:     "token",
-		RemoteURI: "https://my-repo",
+		User: "user",
+		HttpsAuth: &common_models.HttpsGitAuth{
+			Token: "token",
+		},
+		RemoteURL: "https://my-repo",
 	}, secret)
 }
 
@@ -70,7 +72,7 @@ func TestK8sCredentialReader_ReadSecretNoToken(t *testing.T) {
 				Namespace: "keptn",
 			},
 			Data: map[string][]byte{
-				"git-credentials": []byte(`{"user":"user","token":"","remoteURI":"https://some.url"}`)},
+				"git-credentials": []byte(`{"user":"user","remoteURL":"https://some.url","https":{"token":""}}`)},
 			Type: corev1.SecretTypeOpaque,
 		},
 	))
@@ -90,7 +92,7 @@ func TestK8sCredentialReader_ReadSecretNoPrivateKey(t *testing.T) {
 				Namespace: "keptn",
 			},
 			Data: map[string][]byte{
-				"git-credentials": []byte(`{"user":"user","privateKey":"","remoteURI":"ssh://some.url"}`)},
+				"git-credentials": []byte(`{"user":"user","remoteURI":"ssh://some.url", "ssh":{"privateKey":""}}`)},
 			Type: corev1.SecretTypeOpaque,
 		},
 	))
@@ -124,7 +126,7 @@ func getK8sSecret() *corev1.Secret {
 			Namespace: "keptn",
 		},
 		Data: map[string][]byte{
-			"git-credentials": []byte(`{"user":"user","token":"token","remoteURI":"https://my-repo"}`)},
+			"git-credentials": []byte(`{"user":"user","remoteURL":"https://my-repo","https":{"token":"token"}}`)},
 		Type: corev1.SecretTypeOpaque,
 	}
 }

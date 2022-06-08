@@ -2,6 +2,13 @@ package handler
 
 import (
 	"errors"
+	"io/fs"
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+	"time"
+
 	"github.com/keptn/keptn/resource-service/common"
 	common_mock "github.com/keptn/keptn/resource-service/common/fake"
 	"github.com/keptn/keptn/resource-service/common_models"
@@ -9,12 +16,6 @@ import (
 	handler_mock "github.com/keptn/keptn/resource-service/handler/fake"
 	"github.com/keptn/keptn/resource-service/models"
 	"github.com/stretchr/testify/require"
-	"io/fs"
-	"os"
-	"path/filepath"
-	"strings"
-	"testing"
-	"time"
 )
 
 const testConfigDir = "/data/config/my-project"
@@ -1277,9 +1278,11 @@ func getTestResourceManagerFields() testResourceManagerFields {
 		credentialReader: &common_mock.CredentialReaderMock{
 			GetCredentialsFunc: func(project string) (*common_models.GitCredentials, error) {
 				return &common_models.GitCredentials{
-					User:      "user",
-					Token:     "token",
-					RemoteURI: "remote-url",
+					User: "user",
+					HttpsAuth: &common_models.HttpsGitAuth{
+						Token: "token",
+					},
+					RemoteURL: "remote-url",
 				}, nil
 			},
 		},

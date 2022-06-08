@@ -80,23 +80,23 @@ func getGitKeptnEmail() string {
 }
 
 func getAuthMethod(gitContext common_models.GitContext) (transport.AuthMethod, error) {
-	if gitContext.Credentials.GitPrivateKey != "" && strings.HasPrefix(gitContext.Credentials.RemoteURI, "ssh://") {
-		publicKey, err := ssh.NewPublicKeys("git", []byte(gitContext.Credentials.GitPrivateKey), gitContext.Credentials.GitPrivateKeyPass)
+	if gitContext.Credentials.SshAuth != nil {
+		publicKey, err := ssh.NewPublicKeys("git", []byte(gitContext.Credentials.SshAuth.PrivateKey), gitContext.Credentials.SshAuth.PrivateKeyPass)
 		if err != nil {
 			return nil, err
 		}
 		publicKey.HostKeyCallback = ssh2.InsecureIgnoreHostKey()
 		return publicKey, nil
 
-	} else if gitContext.Credentials.Token != "" && strings.HasPrefix(gitContext.Credentials.RemoteURI, "http") {
-		if gitContext.Credentials.GitProxyURL != "" {
+	} else if gitContext.Credentials.HttpsAuth != nil {
+		if gitContext.Credentials.HttpsAuth.Proxy != nil {
 			customClient := &nethttp.Client{
 				Transport: &nethttp.Transport{
-					TLSClientConfig: &tls.Config{InsecureSkipVerify: gitContext.Credentials.InsecureSkipTLS},
+					TLSClientConfig: &tls.Config{InsecureSkipVerify: gitContext.Credentials.HttpsAuth.InsecureSkipTLS},
 					Proxy: nethttp.ProxyURL(&url.URL{
-						Scheme: gitContext.Credentials.GitProxyScheme,
-						User:   url.UserPassword(gitContext.Credentials.GitProxyUser, gitContext.Credentials.GitProxyPassword),
-						Host:   gitContext.Credentials.GitProxyURL,
+						Scheme: gitContext.Credentials.HttpsAuth.Proxy.Scheme,
+						User:   url.UserPassword(gitContext.Credentials.HttpsAuth.Proxy.User, gitContext.Credentials.HttpsAuth.Proxy.Password),
+						Host:   gitContext.Credentials.HttpsAuth.Proxy.URL,
 					}),
 				},
 
@@ -122,7 +122,7 @@ func getAuthMethod(gitContext common_models.GitContext) (transport.AuthMethod, e
 		}
 		return &http.BasicAuth{
 			Username: gitContext.Credentials.User,
-			Password: gitContext.Credentials.Token,
+			Password: gitContext.Credentials.HttpsAuth.Token,
 		}, nil
 	}
 	return nil, nil
@@ -148,9 +148,9 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 	}
 	clone, err := g.git.PlainClone(projectPath, false,
 		&git.CloneOptions{
-			URL:             gitContext.Credentials.RemoteURI,
+			URL:             gitContext.Credentials.RemoteURL,
 			Auth:            auth,
-			InsecureSkipTLS: gitContext.Credentials.InsecureSkipTLS,
+			InsecureSkipTLS: gitContext.Credentials.HttpsAuth.InsecureSkipTLS,
 		},
 	)
 
@@ -185,7 +185,7 @@ func (g Git) init(gitContext common_models.GitContext, projectPath string) (*git
 
 	_, err = init.CreateRemote(&config.RemoteConfig{
 		Name: "origin",
-		URLs: []string{gitContext.Credentials.RemoteURI},
+		URLs: []string{gitContext.Credentials.RemoteURL},
 	})
 	if err != nil {
 		return nil, err
@@ -301,7 +301,7 @@ func (g Git) Push(gitContext common_models.GitContext) error {
 	err = repo.Push(&git.PushOptions{
 		RemoteName:      "origin",
 		Auth:            auth,
-		InsecureSkipTLS: gitContext.Credentials.InsecureSkipTLS,
+		InsecureSkipTLS: gitContext.Credentials.HttpsAuth.InsecureSkipTLS,
 	})
 	if err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
 		if errors.Is(err, git.ErrForceNeeded) {
@@ -332,11 +332,11 @@ func (g *Git) Pull(gitContext common_models.GitContext) error {
 			Force:           true,
 			ReferenceName:   head.Name(),
 			Auth:            auth,
-			InsecureSkipTLS: gitContext.Credentials.InsecureSkipTLS,
+			InsecureSkipTLS: gitContext.Credentials.HttpsAuth.InsecureSkipTLS,
 		})
 		if err != nil && errors.Is(err, plumbing.ErrReferenceNotFound) {
 			// reference not there yet
-			err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true, Auth: auth, InsecureSkipTLS: gitContext.Credentials.InsecureSkipTLS})
+			err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true, Auth: auth, InsecureSkipTLS: gitContext.Credentials.HttpsAuth.InsecureSkipTLS})
 		}
 		if err != nil && errors.Is(err, git.ErrNonFastForwardUpdate) {
 			return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, err)
@@ -485,7 +485,7 @@ func (g *Git) fetch(gitContext common_models.GitContext, r *git.Repository) erro
 		//RefSpecs: []config.RefSpec{"+refs/heads/*:refs/remotes/origin/*", "+refs/heads/*:refs/heads/*"},
 		Force:           true,
 		Auth:            auth,
-		InsecureSkipTLS: gitContext.Credentials.InsecureSkipTLS,
+		InsecureSkipTLS: gitContext.Credentials.HttpsAuth.InsecureSkipTLS,
 	}); err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
 		return err
 	}
@@ -714,14 +714,14 @@ func ensureRemoteMatchesCredentials(repo *git.Repository, gitContext common_mode
 	if err != nil {
 		return err
 	}
-	if remote.Config().URLs[0] != gitContext.Credentials.RemoteURI {
+	if remote.Config().URLs[0] != gitContext.Credentials.RemoteURL {
 		err := repo.DeleteRemote("origin")
 		if err != nil {
 			return err
 		}
 		_, err = repo.CreateRemote(&config.RemoteConfig{
 			Name: "origin",
-			URLs: []string{gitContext.Credentials.RemoteURI},
+			URLs: []string{gitContext.Credentials.RemoteURL},
 		})
 		if err != nil {
 			return err
