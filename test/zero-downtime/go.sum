@@ -495,8 +495,8 @@ github.com/keptn/keptn/cp-connector v0.0.0-20220602110035-92d59919c878 h1:/dDytr
 github.com/keptn/keptn/cp-connector v0.0.0-20220602110035-92d59919c878/go.mod h1:DF+p0baJXl8AcDkkxOsqph0PEHrgIjlnPKaFufKbPzM=
 github.com/keptn/keptn/go-sdk v0.0.0-20220602113135-7b4cb80889ea h1:NwSVKhq0n+EMmVJpsWxrb9nTImRBt8RkH91wA/estps=
 github.com/keptn/keptn/go-sdk v0.0.0-20220602113135-7b4cb80889ea/go.mod h1:ZVf5BMzGGiznYpiiFlotFVkGpSnR5mvOyrbghiHN4Yc=
-github.com/keptn/keptn/test/go-tests v0.0.0-20220609080438-b4be4cac68f3 h1:iZmQ9E2JaPS/jbWcX80BiuCsl0RTHjvv5Xi7ORG4i2k=
-github.com/keptn/keptn/test/go-tests v0.0.0-20220609080438-b4be4cac68f3/go.mod h1:bQCBO81qeuxfBfBGEAmZ8Vv8HT233J95LclFim46Cp0=
+github.com/keptn/keptn/test/go-tests v0.0.0-20220609104320-18afeb45fb41 h1:cYQ4oi8r8DJeXvCAmH0siCLB4a9NROsHuwqXiO9T+Yk=
+github.com/keptn/keptn/test/go-tests v0.0.0-20220609104320-18afeb45fb41/go.mod h1:bQCBO81qeuxfBfBGEAmZ8Vv8HT233J95LclFim46Cp0=
 github.com/keptn/keptn/webhook-service v0.0.0-20220603070303-72c9e665e2ef h1:KN9aTA6pxEf/l+UCp96evGvKOKjMGevW0x+jich9+cc=
 github.com/keptn/keptn/webhook-service v0.0.0-20220603070303-72c9e665e2ef/go.mod h1:A5GjZaWgoHiy3wPBDcZ5CEg1lHU8pg+Bd/ENwtzPq2k=
 github.com/keptn/kubernetes-utils v0.14.0 h1:dB4FmUXfYNiYg/oxk7AxtybrqOHUgvPtuzMpICw5zt4=
