@@ -155,6 +155,21 @@ describe('Test deep links', () => {
       .assertTaskExpanded(eventId, true);
   });
 
+  it('deepLink project/:projectName/sequence/:shkeptncontext/event/:eventId with sequence that is not initially loaded', () => {
+    const eventId = 'ffd870da-bca7-49a1-bafd-726c234bfd3b';
+    const keptnContext = '1663de8a-a414-47ba-9566-10a9730f40ff';
+    sequencePage.interceptSequencesPageWithSequenceThatIsNotLoaded().visitEvent(mockedProject, keptnContext, eventId);
+
+    cy.wait('@sequenceTraces')
+      .location('pathname')
+      .should('eq', `/project/${mockedProject}/sequence/${keptnContext}/event/${eventId}`);
+
+    sequencePage
+      .assertTimelineStageSelected('dev', true)
+      .assertTimelineStageSelected('staging', false)
+      .assertTaskExpanded(eventId, true);
+  });
+
   it('deepLink trace/:shkeptncontext', () => {
     sequencePage.visitByContext(mockedKeptnContext);
 

@@ -175,6 +175,38 @@ export function interceptSequencesPage(): void {
   );
 }
 
+export function interceptSequencesPageWithSequenceThatIsNotLoaded(): void {
+  interceptSequencesPage();
+  const keptnContext = '1663de8a-a414-47ba-9566-10a9730f40ff';
+  cy.intercept(`/api/mongodb-datastore/event?keptnContext=${keptnContext}&project=sockshop`, {
+    fixture: 'sequence.traces.mock.json',
+  }).as('sequenceTraces');
+
+  cy.intercept(`/api/controlPlane/v1/sequence/sockshop?pageSize=1&keptnContext=${keptnContext}`, {
+    fixture: 'get.sequence.mock.json',
+  });
+
+  cy.intercept(
+    '/api/controlPlane/v1/sequence/sockshop?pageSize=10&fromTime=2021-07-06T08:13:53.766Z&beforeTime=2021-07-06T09:22:56.433Z',
+    {
+      fixture: 'get.sequence.mock.json',
+    }
+  );
+
+  cy.intercept(
+    '/api/controlPlane/v1/sequence/sockshop?pageSize=10&fromTime=2021-07-06T08:13:53.766Z&beforeTime=2021-07-06T08:13:53.766Z',
+    {
+      fixture: 'get.sequence.mock.json',
+    }
+  );
+  // TODO: the intercept above is a workaround. For some weird reason loadUntilRoot is triggered twice.
+  //  Probably related to our data model. Remove this workaround after the data model for the sequence view is adapted
+
+  cy.intercept(`/api/mongodb-datastore/event?keptnContext=${keptnContext}&project=sockshop&fromTime=*`, {
+    body: [],
+  });
+}
+
 export function interceptIntegrations(): void {
   interceptMain();
   cy.intercept('/api/project/sockshop?approval=true&remediation=true', { fixture: 'project.mock' });

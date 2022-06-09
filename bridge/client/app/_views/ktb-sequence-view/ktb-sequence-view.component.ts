@@ -7,7 +7,7 @@ import {
   DtQuickFilterDefaultDataSourceConfig,
 } from '@dynatrace/barista-components/quick-filter';
 import { isObject } from '@dynatrace/barista-components/core';
-import { combineLatest, Observable, Subject, Subscription } from 'rxjs';
+import { combineLatest, Observable, of, Subject, Subscription } from 'rxjs';
 import { filter, map, switchMap, takeUntil, takeWhile } from 'rxjs/operators';
 import moment from 'moment';
 import { Project } from '../../_models/project';
@@ -195,7 +195,10 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
               initParametersHandled = true;
               this.loadTraces(sequence, params.eventId);
             } else {
-              this.selectSequence({ sequence, stage, eventId: this.selectedEventId });
+              initParametersHandled = true;
+              // while traces are loading we can already show the sequence and the timeline
+              this.selectSequence({ sequence, eventId: this.selectedEventId, stage });
+              this.loadTraces(sequence, this.selectedEventId, stage);
             }
           } else if (params.shkeptncontext && this.project) {
             // is running twice because project is changed on start before the first call finishes
@@ -230,11 +233,12 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     });
   }
 
-  public selectSequence(event: { sequence: Sequence; stage?: string; eventId?: string }, loadTraces = true): void {
+  public selectSequence(event: { sequence: Sequence; stage?: string; eventId?: string }): void {
     const sequenceFilters = this.apiService.getSequenceFilters(event.sequence.project);
-    const stage = event.stage || event.sequence.getStages().pop();
+    let stage = event.stage || event.sequence.getStages().pop();
     const additionalCommands = [];
     if (event.eventId) {
+      stage = event.sequence.findTrace((t) => t.id === event.eventId)?.stage;
       additionalCommands.push('event', event.eventId);
     } else if (stage) {
       additionalCommands.push('stage', stage);
@@ -245,10 +249,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     );
     this.location.go(routeUrl.toString());
     this.currentSequence = event.sequence;
-    this.selectedStage = event.stage || event.sequence.getStages().pop();
-    if (loadTraces) {
-      this.loadTraces(this.currentSequence);
-    }
+    this.selectedStage = stage;
   }
 
   public updateSequenceView(): void {
@@ -276,27 +277,23 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     }
   }
 
-  public loadTraces(sequence: Sequence, eventId?: string): void {
+  public loadTraces(sequence: Sequence, eventId?: string, stage?: string): void {
     this._tracesTimer.unsubscribe();
+    let setTraces$;
     if (moment().subtract(1, 'day').isBefore(sequence.time)) {
-      this._tracesTimer = AppUtils.createTimer(0, this._tracesTimerInterval)
-        .pipe(takeUntil(this.unsubscribe$))
-        .subscribe(() => {
-          this.setTraces(sequence, eventId);
-        });
+      setTraces$ = AppUtils.createTimer(0, this._tracesTimerInterval);
     } else {
-      this.setTraces(sequence, eventId);
-      this._tracesTimer = Subscription.EMPTY;
+      setTraces$ = of(null);
     }
+    this._tracesTimer = setTraces$.pipe(takeUntil(this.unsubscribe$)).subscribe(() => {
+      this.setTraces(sequence, eventId, stage);
+    });
   }
 
-  private setTraces(sequence: Sequence, eventId?: string): void {
+  private setTraces(sequence: Sequence, eventId?: string, stage?: string): void {
     this.dataService.getTracesOfSequence(sequence).subscribe((traces) => {
       sequence.traces = traces;
-      if (eventId) {
-        const stage = sequence.findTrace((t) => t.id === eventId)?.stage;
-        this.selectSequence({ sequence, stage, eventId }, false);
-      }
+      this.selectSequence({ sequence, stage, eventId });
     });
   }
 

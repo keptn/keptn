@@ -283,7 +283,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 
 	automaticProvisioningURL := ph.Env.AutomaticProvisioningURL
 	if automaticProvisioningURL != "" && params.GitCredentials == nil {
-		provisioningData, err := ph.RepositoryProvisioner.ProvideRepository(*params.Name)
+		provisioningData, err := ph.RepositoryProvisioner.ProvideRepository(*params.Name, common.GetKeptnNamespace())
 		if err != nil {
 			log.Errorf(err.Error())
 			SetFailedDependencyErrorResponse(c, UnableProvisionInstanceGeneric)

@@ -1,11 +1,16 @@
 import { EventTypes } from '../../../shared/interfaces/event-types';
-import { interceptMain, interceptSequencesPage } from '../intercept';
+import { interceptMain, interceptSequencesPage, interceptSequencesPageWithSequenceThatIsNotLoaded } from '../intercept';
 
 export class SequencesPage {
   private readonly sequenceWaitingMessage = ' Sequence is waiting for previous sequences to finish. ';
 
   public intercept(): this {
     interceptSequencesPage();
+    return this;
+  }
+
+  public interceptSequencesPageWithSequenceThatIsNotLoaded(): this {
+    interceptSequencesPageWithSequenceThatIsNotLoaded();
     return this;
   }
 
