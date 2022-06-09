@@ -84,7 +84,7 @@ func Test_ResourceServiceBasic(t *testing.T) {
 
 	updateProjectRequest := models.Project{
 		ProjectName:    projectName,
-		GitCredentials: gitCredentials,
+		GitCredentials: &gitCredentials,
 	}
 
 	ctx, closeInternalKeptnAPI := context.WithCancel(context.Background())
