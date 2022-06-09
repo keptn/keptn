@@ -4,6 +4,7 @@ import { Trace } from '../../_models/trace';
 import { IndicatorResult } from '../../../../shared/interfaces/indicator-result';
 import { parse as parseYaml } from 'yaml';
 import { SloConfig } from '../../../../shared/interfaces/slo-config';
+import { IEvaluationData } from '../../../../shared/models/trace';
 
 export type SliInfo = {
   score: number;
@@ -105,28 +106,22 @@ export function createDataPoints(evaluationHistory: Trace[]): IDataPoint[] {
   return [...scores, ...sortedResults];
 }
 
-export function parseSloFile(evaluationTraces: Trace[]): void {
-  for (const evaluationData of evaluationTraces) {
-    if (evaluationData?.data?.evaluation?.sloFileContent && !evaluationData.data.evaluation.sloFileContentParsed) {
-      try {
-        evaluationData.data.evaluation.sloFileContentParsed = parseYaml(
-          atob(evaluationData.data.evaluation.sloFileContent)
-        ) as SloConfig;
-        evaluationData.data.evaluation.score_pass =
-          evaluationData.data.evaluation.sloFileContentParsed.total_score?.pass?.split('%')[0] ?? '';
-        evaluationData.data.evaluation.score_warning =
-          evaluationData.data.evaluation.sloFileContentParsed.total_score?.warning?.split('%')[0] ?? '';
-        evaluationData.data.evaluation.compare_with =
-          evaluationData.data.evaluation.sloFileContentParsed.comparison.compare_with ?? '';
-        evaluationData.data.evaluation.include_result_with_score =
-          evaluationData.data.evaluation.sloFileContentParsed.comparison.include_result_with_score;
-        if (evaluationData.data.evaluation.comparedEvents) {
-          evaluationData.data.evaluation.number_of_comparison_results =
-            evaluationData.data.evaluation.comparedEvents?.length;
-        } else {
-          evaluationData.data.evaluation.number_of_comparison_results = 0;
-        }
-      } catch {}
-    }
+export function parseSloOfEvaluations(evaluationTraces: Trace[]): void {
+  const unparsedEvaluations = (trace: Trace): trace is Trace & { data: { evaluation: IEvaluationData } } =>
+    !!trace?.data?.evaluation?.sloFileContent && !trace.data.evaluation.sloFileContentParsed;
+
+  for (const evaluationTrace of evaluationTraces.filter(unparsedEvaluations)) {
+    parseSloFile(evaluationTrace.data.evaluation);
   }
+}
+
+export function parseSloFile(evaluation: IEvaluationData): void {
+  try {
+    evaluation.sloFileContentParsed = parseYaml(atob(evaluation.sloFileContent)) as SloConfig;
+    evaluation.score_pass = evaluation.sloFileContentParsed.total_score?.pass?.split('%')[0] ?? '';
+    evaluation.score_warning = evaluation.sloFileContentParsed.total_score?.warning?.split('%')[0] ?? '';
+    evaluation.compare_with = evaluation.sloFileContentParsed.comparison.compare_with ?? '';
+    evaluation.include_result_with_score = evaluation.sloFileContentParsed.comparison.include_result_with_score;
+    evaluation.number_of_comparison_results = evaluation.comparedEvents?.length ?? 0;
+  } catch {}
 }

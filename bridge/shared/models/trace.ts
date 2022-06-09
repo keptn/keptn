@@ -7,6 +7,25 @@ import { KeptnService } from './keptn-service';
 import { DateUtil } from '../utils/date.utils';
 import { SloConfig } from '../interfaces/slo-config';
 
+/* eslint-disable @typescript-eslint/naming-convention */
+export interface IEvaluationData {
+  comparedEvents?: string[];
+  indicatorResults: IndicatorResult[];
+  result: ResultTypes;
+  score: number;
+  sloFileContent: string;
+  timeEnd: Date;
+  timeStart: Date;
+  score_pass: string;
+  score_warning: string;
+  compare_with: string;
+  include_result_with_score: string;
+  number_of_comparison_results: number;
+  number_of_missing_comparison_results: number;
+  sloFileContentParsed?: SloConfig;
+}
+/* eslint-enable @typescript-eslint/naming-convention */
+
 export interface TraceData {
   project?: string;
   service?: string;
@@ -49,28 +68,7 @@ export interface TraceData {
     };
   };
 
-  evaluation?: {
-    comparedEvents?: string[];
-    indicatorResults: IndicatorResult[];
-    result: ResultTypes;
-    score: number;
-    sloFileContent: string;
-    timeEnd: Date;
-    timeStart: Date;
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    score_pass: string;
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    score_warning: string;
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    compare_with: string;
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    include_result_with_score: string;
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    number_of_comparison_results: number;
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    number_of_missing_comparison_results: number;
-    sloFileContentParsed?: SloConfig;
-  };
+  evaluation?: IEvaluationData;
 
   evaluationHistory?: Trace[];
 

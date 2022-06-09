@@ -4,7 +4,7 @@ import {
   evaluationToDataPoint,
   getTotalScore,
   indicatorResultToDataPoint,
-  parseSloFile,
+  parseSloOfEvaluations,
 } from './ktb-evaluation-details-utils';
 import { EvaluationsMock } from '../../_services/_mockData/evaluations.mock';
 import { IDataPoint, IHeatmapScoreTooltip, IHeatmapSliTooltip, IHeatmapTooltipType } from '../../_interfaces/heatmap';
@@ -111,7 +111,7 @@ describe('KtbEvaluationDetailsUtils', () => {
     const trace3 = getTraceWithSloContent(undefined);
 
     // when
-    parseSloFile([trace, trace2, trace3]);
+    parseSloOfEvaluations([trace, trace2, trace3]);
 
     // then
     expect(trace.data.evaluation?.sloFileContentParsed).toBeUndefined();
@@ -156,7 +156,7 @@ describe('KtbEvaluationDetailsUtils', () => {
     const trace = getTraceWithSloContent(validSLOFile, true);
 
     // when
-    parseSloFile([trace]);
+    parseSloOfEvaluations([trace]);
 
     // then
     expect(trace.data.evaluation?.score_pass).toBe('90');
