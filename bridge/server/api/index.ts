@@ -11,8 +11,10 @@ import { KeptnService } from '../../shared/models/keptn-service';
 import { AuthType } from '../../shared/models/auth-type';
 import { KeptnVersions } from '../../shared/interfaces/keptn-versions';
 import { printError } from '../utils/print-utils';
+import { ComponentLogger } from '../utils/logger';
 
 const router = Router();
+const log = new ComponentLogger("API");
 
 const apiRouter = (params: {
   apiUrl: string;

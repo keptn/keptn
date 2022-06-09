@@ -19,7 +19,7 @@ class LoggerImpl {
 		if (this._log == null) {
 			return;
 		}
-		// Print debug levels only if the component is enabled
+		// Print debug level messages only if the component is enabled
 		if(level === Level.Debug && this._components != null && this._components[component] !== true) {
 			return;
 		}

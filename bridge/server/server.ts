@@ -4,6 +4,7 @@ import { logger } from './utils/logger';
 const PORT = normalizePort(process.env.PORT || '3000');
 const HOST = process.env.HOST || '0.0.0.0';
 
+// init log level and debug flags
 logger.configure(console.log, {})
 
 if (typeof PORT === 'number') {
