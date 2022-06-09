@@ -93,7 +93,7 @@ func TestK8sCredentialReader_ReadSecretNoPrivateKey(t *testing.T) {
 				Namespace: "keptn",
 			},
 			Data: map[string][]byte{
-				"git-credentials": []byte(`{"user":"user","remoteURI":"ssh://some.url", "ssh":{"privateKey":""}}`)},
+				"git-credentials": []byte(`{"user":"user","remoteURL":"ssh://some.url", "ssh":{"privateKey":""}}`)},
 			Type: corev1.SecretTypeOpaque,
 		},
 	))

@@ -22,7 +22,7 @@ func (g GitCredentials) Validate() error {
 		return kerrors.ErrInvalidRemoteURL
 	}
 	if g.HttpsAuth != nil {
-		if err := g.validateRemoteURIAndToken(); err != nil {
+		if err := g.validateRemoteURLAndToken(); err != nil {
 			return err
 		}
 		if err := g.validateProxy(); err != nil {
@@ -50,7 +50,7 @@ func (g GitCredentials) validateProxy() error {
 	return nil
 }
 
-func (g GitCredentials) validateRemoteURIAndToken() error {
+func (g GitCredentials) validateRemoteURLAndToken() error {
 	_, err := url.Parse(g.RemoteURL)
 	if err != nil {
 		return kerrors.ErrCredentialsInvalidRemoteURL
