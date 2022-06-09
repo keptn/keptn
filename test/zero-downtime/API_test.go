@@ -41,8 +41,9 @@ func Test_API(t *testing.T) {
 
 // APIs is called in the zero downtime test suite
 func APIs(t *testing.T, env *ZeroDowntimeEnv) {
+	t.Logf("started API tests")
 	wgAPI := sync.WaitGroup{}
-	apiTicker := clock.New().Ticker(apiProbeInterval)
+	apiTicker := clock.New().Ticker(env.ApiProbeInterval)
 Loop:
 	for {
 		select {
@@ -50,11 +51,10 @@ Loop:
 			break Loop
 		case <-apiTicker.C:
 			wgAPI.Add(1)
-			apisuite := &TestSuiteAPI{
-				env: env,
-			}
 			go func() {
-				suite.Run(t, apisuite)
+				suite.Run(t, &TestSuiteAPI{
+					env: env,
+				})
 				wgAPI.Done()
 			}()
 
@@ -69,7 +69,7 @@ func (suite *TestSuiteAPI) Test_API_Service() {
 	started := time.Now()
 	apiURL := suite.keptnAPIURL + "/v1"
 
-	api := apitest.New("Test api-service auth").EnableNetworking(getClient(1)).
+	api := apitest.New("Test api-service auth").EnableNetworking(getClient(5)).
 		Observe(func(res *http.Response, req *http.Request, apiTest *apitest.APITest) {
 			suite.logResult(res, apiTest, http.StatusOK, started)
 		})
@@ -86,7 +86,7 @@ func (suite *TestSuiteAPI) Test_Statistic_Service() {
 	started := time.Now()
 	apiURL := suite.keptnAPIURL + "/statistics/v1"
 
-	api := apitest.New("Test statistics-service").EnableNetworking(getClient(1)).
+	api := apitest.New("Test statistics-service").EnableNetworking(getClient(5)).
 		Observe(func(res *http.Response, req *http.Request, apiTest *apitest.APITest) {
 			suite.logResult(res, apiTest, http.StatusNotFound, started)
 		})
@@ -104,7 +104,7 @@ func (suite *TestSuiteAPI) Test_Secret_Service() {
 	started := time.Now()
 	apiURL := suite.keptnAPIURL + "/secrets/v1"
 
-	api := apitest.New("Test secret-service").EnableNetworking(getClient(1)).
+	api := apitest.New("Test secret-service").EnableNetworking(getClient(5)).
 		Observe(func(res *http.Response, req *http.Request, apiTest *apitest.APITest) {
 			suite.logResult(res, apiTest, http.StatusOK, started)
 		})
@@ -142,7 +142,7 @@ func (suite *TestSuiteAPI) Test_ControlPlane() {
 	started := time.Now()
 	apiURL := suite.keptnAPIURL + "/controlPlane/v1"
 
-	api := apitest.New("Test control-plane: check uniform").EnableNetworking(getClient(1)).
+	api := apitest.New("Test control-plane: check uniform").EnableNetworking(getClient(5)).
 		Observe(func(res *http.Response, req *http.Request, apiTest *apitest.APITest) {
 			suite.logResult(res, apiTest, http.StatusOK, started)
 		})
@@ -151,24 +151,25 @@ func (suite *TestSuiteAPI) Test_ControlPlane() {
 		Headers(map[string]string{"x-token": suite.token}).
 		Expect(suite.T()).Status(http.StatusOK).Assert(jsonpath.Equal(`$[0].name`, "lighthouse-service")).End()
 	suite.T().Log("Done with control plane")
+
 }
 
 func (suite *TestSuiteAPI) Test_MongoDB() {
 	started := time.Now()
 	apiURL := suite.keptnAPIURL + "/mongodb-datastore"
 
-	api := apitest.New("Test mongo-datastore: not existing project").EnableNetworking(getClient(1)).
+	api := apitest.New("Test mongo-datastore: not existing project").EnableNetworking(getClient(5)).
 		Observe(func(res *http.Response, req *http.Request, apiTest *apitest.APITest) {
 			suite.logResult(res, apiTest, http.StatusOK, started)
 		})
-
-	api.Get(apiURL+"/event").Query("project", "keptn").Query("pageSize", "20").
+	api.Get(apiURL+"/event").Query("project", "some-random").Query("pageSize", "20").
 		Headers(map[string]string{"x-token": suite.token}).
 		Expect(suite.T()).Status(http.StatusOK).Body(`{"events":[], "pageSize":20}`).End()
 
 }
 
 func (suite *TestSuiteAPI) logResult(res *http.Response, apiTest *apitest.APITest, expected int, started time.Time) {
+	res.Close = true
 	atomic.AddUint64(&(suite.env.TotalAPICalls), 1)
 	finished := time.Now()
 	//remove headers cookies and auth from request
@@ -183,6 +184,7 @@ func (suite *TestSuiteAPI) logResult(res *http.Response, apiTest *apitest.APITes
 	} else {
 		atomic.AddUint64(&suite.env.PassedAPICalls, 1)
 	}
+
 }
 
 func getClient(sec time.Duration) *http.Client {

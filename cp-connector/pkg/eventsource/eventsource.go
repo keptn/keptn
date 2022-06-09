@@ -40,12 +40,23 @@ type NATSEventSource struct {
 }
 
 // New creates a new NATSEventSource
-func New(natsConnector natseventsource.NATS) *NATSEventSource {
-	return &NATSEventSource{
+func New(natsConnector natseventsource.NATS, opts ...func(source *NATSEventSource)) *NATSEventSource {
+	e := &NATSEventSource{
 		currentSubjects: []string{},
 		connector:       natsConnector,
 		eventProcessFn:  func(event *nats.Msg) error { return nil },
 		logger:          logger.NewDefaultLogger(),
+	}
+	for _, o := range opts {
+		o(e)
+	}
+	return e
+}
+
+// WithLogger sets the logger to use
+func WithLogger(logger logger.Logger) func(*NATSEventSource) {
+	return func(ns *NATSEventSource) {
+		ns.logger = logger
 	}
 }
 

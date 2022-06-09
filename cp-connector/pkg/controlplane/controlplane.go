@@ -41,12 +41,19 @@ type ControlPlane struct {
 	logForwarder         logforwarder.LogForwarder
 }
 
+// WithLogger sets the logger to use
+func WithLogger(logger logger.Logger) func(plane *ControlPlane) {
+	return func(ns *ControlPlane) {
+		ns.logger = logger
+	}
+}
+
 // New creates a new ControlPlane
 // It is using a SubscriptionSource source to get information about current uniform subscriptions
 // as well as an EventSource to actually receive events from Keptn
 // and a LogForwarder to forward error logs
-func New(subscriptionSource subscriptionsource.SubscriptionSource, eventSource eventsource.EventSource, logForwarder logforwarder.LogForwarder) *ControlPlane {
-	return &ControlPlane{
+func New(subscriptionSource subscriptionsource.SubscriptionSource, eventSource eventsource.EventSource, logForwarder logforwarder.LogForwarder, opts ...func(plane *ControlPlane)) *ControlPlane {
+	cp := &ControlPlane{
 		subscriptionSource:   subscriptionSource,
 		eventSource:          eventSource,
 		currentSubscriptions: []models.EventSubscription{},
@@ -54,6 +61,10 @@ func New(subscriptionSource subscriptionsource.SubscriptionSource, eventSource e
 		logForwarder:         logForwarder,
 		registered:           false,
 	}
+	for _, o := range opts {
+		o(cp)
+	}
+	return cp
 }
 
 // Register is initially used to register the Keptn integration to the Control Plane
