@@ -10,12 +10,7 @@ import (
 )
 
 // GitCredentials contains git credentials info
-type GitCredentials struct {
-	User      string                  `json:"user,omitempty"`
-	RemoteURL string                  `json:"remoteURL,omitempty"`
-	HttpsAuth *apimodels.HttpsGitAuth `json:"https,omitempty"`
-	SshAuth   *apimodels.SshGitAuth   `json:"ssh,omitempty"`
-}
+type GitCredentials apimodels.GitAuthCredentials
 
 type GitContext struct {
 	Project     string
