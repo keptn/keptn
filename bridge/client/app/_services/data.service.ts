@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, forkJoin, from, Observable, of, Subject } from 'rxjs';
-import { catchError, map, mergeMap, switchMap, take, tap, toArray } from 'rxjs/operators';
+import { BehaviorSubject, forkJoin, Observable, of, Subject } from 'rxjs';
+import { catchError, map, mergeMap, take, tap } from 'rxjs/operators';
 import { Trace } from '../_models/trace';
 import { Project } from '../_models/project';
 import { EventTypes } from '../../../shared/interfaces/event-types';
@@ -474,13 +474,6 @@ export class DataService {
     }
   }
 
-  public getSequenceWithTraces(projectName: string, keptnContext: string): Observable<Sequence | undefined> {
-    return this.getSequenceByContext(projectName, keptnContext).pipe(
-      switchMap((sequence) => (sequence ? this.sequenceMapper([sequence]) : [])),
-      map((sequences) => sequences.shift())
-    );
-  }
-
   public updateSequence(projectName: string, keptnContext: string): void {
     this.getSequenceByContext(projectName, keptnContext).subscribe((sequence) => {
       const project = this._projects.getValue()?.find((p) => p.projectName === projectName);
@@ -495,7 +488,7 @@ export class DataService {
   }
 
   public loadUntilRoot(project: Project, shkeptncontext: string): void {
-    this.getSequenceWithTraces(project.projectName, shkeptncontext).subscribe((sequence) => {
+    this.getSequenceByContext(project.projectName, shkeptncontext).subscribe((sequence) => {
       if (sequence) {
         this.loadOldSequences(project, new Date(sequence.time), sequence);
       }
@@ -682,26 +675,6 @@ export class DataService {
 
   public getFileTreeForService(projectName: string, serviceName: string): Observable<FileTree[]> {
     return this.apiService.getFileTreeForService(projectName, serviceName);
-  }
-
-  private sequenceMapper(sequences: Sequence[]): Observable<Sequence[]> {
-    return from(sequences).pipe(
-      mergeMap((sequence) =>
-        this.apiService.getTraces(sequence.shkeptncontext, sequence.project).pipe(
-          map((response) => {
-            this.updateTracesUpdated(response, sequence.shkeptncontext);
-            return response.body;
-          }),
-          map((result) => result?.events || []),
-          map(Trace.traceMapper),
-          map((traces) => {
-            sequence.traces = traces;
-            return sequence;
-          })
-        )
-      ),
-      toArray()
-    );
   }
 
   public getServiceStates(projectName: string): Observable<ServiceState[]> {
