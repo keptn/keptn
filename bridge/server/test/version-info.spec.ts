@@ -40,11 +40,10 @@ describe('Test /version.json', () => {
     const response = await request(app).get(`/api/version.json`);
     const keptnVersions = response.body as KeptnVersions;
     expect(keptnVersions).toBeDefined();
-    expect(keptnVersions.keptn.stable.length).toEqual(0);
-    expect(keptnVersions.bridge.prerelease.length).toEqual(0);
-    expect(keptnVersions.bridge.stable.length).toEqual(0);
-    expect(keptnVersions.cli.prerelease.length).toEqual(0);
-    expect(keptnVersions.cli.stable.length).toEqual(0);
-    expect(response.statusCode).toBe(200);
+    expect(keptnVersions).toEqual({
+      cli: { stable: [], prerelease: [] },
+      bridge: { stable: [], prerelease: [] },
+      keptn: { stable: [] },
+    });
   });
 });
