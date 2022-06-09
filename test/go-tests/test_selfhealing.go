@@ -26,7 +26,8 @@ spec:
     metadata:
       labels:
         run: unleash-service
-        app.kubernetes.io/name: unleash-service
+        app.kubernetes.io/name: keptn
+        app.kubernetes.io/component: unleash-service
         app.kubernetes.io/version: 0.3.2
     spec:
       serviceAccountName: keptn-default

@@ -66,7 +66,7 @@ func (c *ControlPlane) createRegistrationData() models.Integration {
 	if c.env.Location == "" {
 		location = config.ConnectionTypeToLocation[c.connectionType]
 	} else {
-		location = c.env.Location
+		location = c.env.K8sDeploymentComponent
 	}
 
 	var stageFilter []string
