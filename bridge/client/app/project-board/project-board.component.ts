@@ -22,6 +22,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   public error$: Observable<string | undefined> = this._errorSubject.asObservable();
   public isCreateMode$: Observable<boolean>;
   public hasUnreadLogs$: Observable<boolean>;
+  private readonly uniformLogPollingInterval = 2 * 60_000;
 
   constructor(
     private router: Router,
@@ -29,25 +30,35 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
     private dataService: DataService,
     @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number
   ) {
+    this.hasUnreadLogs$ = this.dataService.hasUnreadUniformRegistrationLogs;
+    if (initialDelayMillis === 0) {
+      // disable log-polling
+      this.uniformLogPollingInterval = 0;
+    }
     const projectName$ = this.route.paramMap.pipe(
       map((params) => params.get('projectName')),
       filter((projectName: string | null): projectName is string => !!projectName)
     );
 
-    const timer$ = projectName$.pipe(
-      takeUntil(this.unsubscribe$),
+    const projectTimer$ = projectName$.pipe(
       switchMap((projectName) => AppUtils.createTimer(0, initialDelayMillis).pipe(map(() => projectName))),
       takeUntil(this.unsubscribe$)
     );
-    this.hasUnreadLogs$ = this.dataService.hasUnreadUniformRegistrationLogs;
 
-    timer$.subscribe((projectName) => {
+    const uniformLogTimer$ = projectName$.pipe(
+      switchMap(() => AppUtils.createTimer(0, this.uniformLogPollingInterval)),
+      takeUntil(this.unsubscribe$)
+    );
+
+    projectTimer$.subscribe((projectName) => {
       // this is on project-board level because we need the project in environment, service, sequence and settings screen
       // sequence screen because there is a check for the latest deployment context (lastEventTypes)
       this.dataService.loadProject(projectName);
-      this.dataService.loadUnreadUniformRegistrationLogs();
     });
 
+    uniformLogTimer$.subscribe(() => {
+      this.dataService.loadUnreadUniformRegistrationLogs();
+    });
     this.hasProject$ = projectName$.pipe(switchMap((projectName) => this.dataService.projectExists(projectName)));
 
     this.isCreateMode$ = this.route.url.pipe(map((urlSegment) => urlSegment[0].path === 'create'));
