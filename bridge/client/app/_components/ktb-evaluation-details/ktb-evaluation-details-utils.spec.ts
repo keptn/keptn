@@ -147,8 +147,7 @@ describe('KtbEvaluationDetailsUtils', () => {
         warning: '75%',
       },
     });
-    expect(trace2.data.evaluation?.number_of_comparison_results).toBe(0);
-    expect(trace3.data.evaluation?.sloFileContentParsed).toBeUndefined();
+    expect(trace3.data.evaluation?.sloFileContentParsed).toBe(false);
   });
 
   it('should correctly set values after parsing the SLO file', () => {
@@ -163,7 +162,25 @@ describe('KtbEvaluationDetailsUtils', () => {
     expect(trace.data.evaluation?.score_warning).toBe('75');
     expect(trace.data.evaluation?.compare_with).toBe('single_result');
     expect(trace.data.evaluation?.include_result_with_score).toBe('pass');
-    expect(trace.data.evaluation?.number_of_comparison_results).toBe(1);
+    expect(trace.data.evaluation?.sloFileContentParsed).toBe(true);
+    expect(trace.data.evaluation?.sloObjectives).toEqual([
+      {
+        displayName: 'Response time P95',
+        key_sli: false,
+        pass: [
+          {
+            criteria: ['<=+10%', '<600'],
+          },
+        ],
+        sli: 'response_time_p95',
+        warning: [
+          {
+            criteria: ['<=800'],
+          },
+        ],
+        weight: 1,
+      },
+    ]);
   });
 
   function getTraceWithSloContent(sloContent: string | undefined, comparedEvents = false): Trace {

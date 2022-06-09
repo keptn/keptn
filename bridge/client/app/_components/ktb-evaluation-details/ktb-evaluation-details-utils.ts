@@ -117,11 +117,12 @@ export function parseSloOfEvaluations(evaluationTraces: Trace[]): void {
 
 function parseSloFile(evaluation: IEvaluationData): void {
   try {
-    evaluation.sloFileContentParsed = parseYaml(atob(evaluation.sloFileContent)) as SloConfig;
-    evaluation.score_pass = evaluation.sloFileContentParsed.total_score?.pass?.split('%')[0] ?? '';
-    evaluation.score_warning = evaluation.sloFileContentParsed.total_score?.warning?.split('%')[0] ?? '';
-    evaluation.compare_with = evaluation.sloFileContentParsed.comparison.compare_with ?? '';
-    evaluation.include_result_with_score = evaluation.sloFileContentParsed.comparison.include_result_with_score;
-    evaluation.number_of_comparison_results = evaluation.comparedEvents?.length ?? 0;
+    const sloFileContentParsed: SloConfig = parseYaml(atob(evaluation.sloFileContent));
+    evaluation.score_pass = sloFileContentParsed.total_score?.pass?.split('%')[0];
+    evaluation.score_warning = sloFileContentParsed.total_score?.warning?.split('%')[0] ?? '';
+    evaluation.compare_with = sloFileContentParsed.comparison.compare_with ?? '';
+    evaluation.include_result_with_score = sloFileContentParsed.comparison.include_result_with_score;
+    evaluation.sloObjectives = sloFileContentParsed.objectives;
+    evaluation.sloFileContentParsed = true;
   } catch {}
 }

@@ -5,7 +5,7 @@ import { ProblemStates } from './problem-states';
 import { ApprovalStates } from './approval-states';
 import { KeptnService } from './keptn-service';
 import { DateUtil } from '../utils/date.utils';
-import { SloConfig } from '../interfaces/slo-config';
+import { ISloObjectives } from '../interfaces/slo-config';
 
 /* eslint-disable @typescript-eslint/naming-convention */
 export interface IEvaluationData {
@@ -16,13 +16,13 @@ export interface IEvaluationData {
   sloFileContent: string;
   timeEnd: Date;
   timeStart: Date;
-  score_pass: string;
-  score_warning: string;
-  compare_with: string;
-  include_result_with_score: string;
-  number_of_comparison_results: number;
-  number_of_missing_comparison_results: number;
-  sloFileContentParsed?: SloConfig;
+  score_pass?: string;
+  score_warning?: string;
+  compare_with?: string;
+  include_result_with_score?: string;
+  number_of_missing_comparison_results?: number;
+  sloFileContentParsed?: boolean;
+  sloObjectives?: ISloObjectives[];
 }
 /* eslint-enable @typescript-eslint/naming-convention */
 
