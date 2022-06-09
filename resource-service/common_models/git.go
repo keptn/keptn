@@ -18,6 +18,9 @@ type GitContext struct {
 }
 
 func (g GitCredentials) Validate() error {
+	if !strings.HasPrefix(g.RemoteURL, "http://") && !strings.HasPrefix(g.RemoteURL, "ssh://") && !strings.HasPrefix(g.RemoteURL, "https://") {
+		return kerrors.ErrInvalidRemoteURL
+	}
 	if g.HttpsAuth != nil {
 		if err := g.validateRemoteURIAndToken(); err != nil {
 			return err

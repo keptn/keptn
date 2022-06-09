@@ -149,6 +149,14 @@ func TestGitCredentials_Validate(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "proxy URL without port",
+			gitCredentials: GitCredentials{
+				User:      "my-user",
+				RemoteURL: "httpg://my-repo",
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
