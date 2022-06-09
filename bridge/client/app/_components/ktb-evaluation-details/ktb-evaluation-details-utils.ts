@@ -115,7 +115,7 @@ export function parseSloOfEvaluations(evaluationTraces: Trace[]): void {
   }
 }
 
-export function parseSloFile(evaluation: IEvaluationData): void {
+function parseSloFile(evaluation: IEvaluationData): void {
   try {
     evaluation.sloFileContentParsed = parseYaml(atob(evaluation.sloFileContent)) as SloConfig;
     evaluation.score_pass = evaluation.sloFileContentParsed.total_score?.pass?.split('%')[0] ?? '';
