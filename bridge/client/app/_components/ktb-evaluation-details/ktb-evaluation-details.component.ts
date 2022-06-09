@@ -330,13 +330,14 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
 
   public ngOnInit(): void {
     this.dataService.evaluationResults.pipe(takeUntil(this.unsubscribe$)).subscribe((results) => {
-      if (this.evaluationData && results.traces?.length) {
-        parseSloFile(results.traces);
-        if (this.evaluationData.data.evaluationHistory?.length) {
-          this.updateResults = results;
-        } else {
-          this.refreshEvaluationBoard(results);
-        }
+      if (!this.evaluationData || !results.traces?.length) {
+        return;
+      }
+      parseSloFile(results.traces);
+      if (this.evaluationData.data.evaluationHistory?.length) {
+        this.updateResults = results;
+      } else {
+        this.refreshEvaluationBoard(results);
       }
     });
   }
