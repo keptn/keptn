@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response, Router } from 'express';
-import { Method } from 'axios';
+import { AxiosError, Method } from 'axios';
 import { axios } from '../services/axios-instance';
 import { DataService } from '../services/data-service';
 import { KeptnInfoResult } from '../../shared/interfaces/keptn-info-result';
@@ -9,6 +9,8 @@ import { EventTypes } from '../../shared/interfaces/event-types';
 import { SessionService } from '../user/session';
 import { KeptnService } from '../../shared/models/keptn-service';
 import { AuthType } from '../../shared/models/auth-type';
+import { KeptnVersions } from '../../shared/interfaces/keptn-versions';
+import { printError } from '../utils/print-utils';
 
 const router = Router();
 
@@ -93,7 +95,7 @@ const apiRouter = (params: {
     }
   });
 
-  router.get('/version.json', async (req, res, next) => {
+  router.get('/version.json', async (req, res) => {
     try {
       const result = await axios({
         method: req.method as Method,
@@ -105,7 +107,13 @@ const apiRouter = (params: {
       });
       return res.json(result.data);
     } catch (err) {
-      return next(err);
+      const defaultVersions: KeptnVersions = {
+        cli: { stable: [], prerelease: [] },
+        bridge: { stable: [], prerelease: [] },
+        keptn: { stable: [] },
+      };
+      printError(err as AxiosError);
+      return res.json(defaultVersions);
     }
   });
 

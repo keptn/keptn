@@ -52,6 +52,7 @@ func setupLocalMongoDB() (*memongo.Server, error) {
 		return nil, err
 	}
 
+	fmt.Println("Started mongodb server: ", mongoServer.URI())
 	return mongoServer, err
 }
 

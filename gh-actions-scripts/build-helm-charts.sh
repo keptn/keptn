@@ -65,12 +65,16 @@ fi
 mv "keptn-${VERSION}.tgz" "keptn-charts/keptn-${VERSION}.tgz"
 
 # verify the chart
+echo "::group::Template install of keptn"
 helm template --debug "keptn-charts/keptn-${VERSION}.tgz"
 
 if [ $? -ne 0 ]; then
-  echo "::error Helm Chart for installer has templating errors - exiting"
+  echo "::error::Helm Chart for installer has templating errors - exiting"
+  echo "::endgroup::"
   exit 1
 fi
+
+echo "::endgroup::"
 
 # ####################
 # HELM-SVC HELM CHART
@@ -88,12 +92,15 @@ fi
 mv "helm-service-${VERSION}.tgz" "keptn-charts/helm-service-${VERSION}.tgz"
 
 #verify the chart
+echo "::group::Template of helm-service"
 helm template --debug "keptn-charts/helm-service-${VERSION}.tgz"
 
 if [ $? -ne 0 ]; then
-  echo "::error Helm Chart for helm-svc has templating errors -exiting"
+  echo "::error::Helm Chart for helm-service has templating errors - exiting"
+  echo "::endgroup::"
   exit 1
 fi
+echo "::endgroup::"
 
 # ####################
 # JMETER-SVC HELM CHART
@@ -110,14 +117,16 @@ fi
 
 mv "jmeter-service-${VERSION}.tgz" "keptn-charts/jmeter-service-${VERSION}.tgz"
 
+echo "::group::Template of jmeter-service"
 #verify the chart
 helm template --debug "keptn-charts/jmeter-service-${VERSION}.tgz"
 
 if [ $? -ne 0 ]; then
-  echo "::error Helm Chart for jmeter-svc has templating errors -exiting"
+  echo "::error::Helm Chart for jmeter-service has templating errors - exiting"
+  echo "::endgroup::"
   exit 1
 fi
-
+echo "::endgroup::"
 
 echo "Generated files:"
 echo " - keptn-charts/keptn-${VERSION}.tgz"

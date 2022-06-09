@@ -2,6 +2,7 @@ package event_handler
 
 import (
 	"context"
+	"github.com/keptn/keptn/cp-connector/pkg/types"
 	"net/http"
 	"os"
 	"testing"
@@ -29,7 +30,7 @@ func TestNewEventHandler(t *testing.T) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	fakeSender := func(ce models.KeptnContextExtendedCE) error { return nil }
-	ctx = context.WithValue(ctx, controlplane.EventSenderKey, controlplane.EventSender(fakeSender))
+	ctx = context.WithValue(ctx, types.EventSenderKey, controlplane.EventSender(fakeSender))
 	defer cancel()
 
 	keptnHandler, _ := keptnv2.NewKeptn(&incomingEvent, keptncommon.KeptnOpts{})
@@ -122,7 +123,7 @@ func TestEventSenderWithoutContext(t *testing.T) {
 	incomingEvent.SetSource("my-source")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	ctx = context.WithValue(ctx, controlplane.EventSenderKey, nil)
+	ctx = context.WithValue(ctx, types.EventSenderKey, nil)
 	defer cancel()
 
 	_, err := NewEventHandler(ctx, incomingEvent)

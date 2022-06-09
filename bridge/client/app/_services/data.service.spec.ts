@@ -1,7 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { DataService } from './data.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { AppModule } from '../app.module';
 import { ApiService } from './api.service';
 import { TriggerSequenceData } from '../_models/trigger-sequence';
 import moment from 'moment';
@@ -19,7 +18,7 @@ describe('DataService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       declarations: [],
-      imports: [AppModule, HttpClientTestingModule],
+      imports: [HttpClientTestingModule],
     });
     dataService = TestBed.inject(DataService);
     apiService = TestBed.inject(ApiService);
@@ -114,6 +113,13 @@ describe('DataService', () => {
     dataService.loadTracesByContext('keptnContext');
     const cachedTraces = await firstValueFrom(dataService.traces);
     expect(cachedTraces).toEqual([Trace.fromJSON(getDefaultTrace())]);
+  });
+
+  it('should send an approval once', () => {
+    const sendApprovalSpy = jest.spyOn(apiService, 'sendApprovalEvent');
+    sendApprovalSpy.mockReturnValue(of({}));
+    dataService.sendApprovalEvent(Trace.fromJSON({}), true).subscribe();
+    expect(sendApprovalSpy).toHaveBeenCalledTimes(1);
   });
 
   function setGetTracesResponse(traces: Trace[]): void {

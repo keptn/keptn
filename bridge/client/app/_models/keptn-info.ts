@@ -1,5 +1,5 @@
 import { KeptnInfoResult } from '../../../shared/interfaces/keptn-info-result';
-import { KeptnVersions } from './keptn-versions';
+import { KeptnVersions } from '../../../shared/interfaces/keptn-versions';
 
 export interface KeptnInfo {
   bridgeInfo: KeptnInfoResult;

@@ -349,7 +349,7 @@ export class DataService {
   }
 
   public loadProjects(): Observable<Project[]> {
-    const projects$ = this.apiService.getProjects(this._keptnInfo.getValue()?.bridgeInfo.projectsPageSize || 50).pipe(
+    return this.apiService.getProjects(this._keptnInfo.getValue()?.bridgeInfo.projectsPageSize || 50).pipe(
       map((result) => (result ? result.projects : [])),
       map((projects) => projects.map((project) => Project.fromJSON(project))),
       map(
@@ -369,14 +369,11 @@ export class DataService {
         () => {
           return of([]);
         }
-      )
+      ),
+      tap((projects) => {
+        this._projects.next(projects);
+      })
     );
-
-    projects$.subscribe((projects) => {
-      this._projects.next(projects);
-    });
-
-    return projects$;
   }
 
   public loadSequences(project: Project, fromTime?: Date, beforeTime?: Date, oldSequence?: Sequence): void {
@@ -514,10 +511,7 @@ export class DataService {
       }),
       map((result) => result?.events || []),
       map((traces) => traces.map((trace) => Trace.fromJSON(trace))),
-      map((traces) => Trace.traceMapper([...(traces || []), ...(sequence.traces || [])])),
-      tap(() => {
-        this._sequencesUpdated.next();
-      })
+      map((traces) => Trace.traceMapper([...(traces || []), ...(sequence.traces || [])]))
     );
   }
 
@@ -595,16 +589,12 @@ export class DataService {
   }
 
   public sendApprovalEvent(approval: Trace, approve: boolean): Observable<unknown> {
-    const approval$ = this.apiService.sendApprovalEvent(
-      approval,
-      approve,
-      EventTypes.APPROVAL_FINISHED,
-      'approval.finished'
-    );
-
-    approval$.subscribe(() => {
-      const project = this._projects.getValue()?.find((p) => p.projectName === approval.data.project);
-      if (project?.projectName) {
+    return this.apiService.sendApprovalEvent(approval, approve, EventTypes.APPROVAL_FINISHED, 'approval.finished').pipe(
+      tap(() => {
+        const project = this._projects.getValue()?.find((p) => p.projectName === approval.data.project);
+        if (!project?.projectName) {
+          return;
+        }
         const stage = project.stages.find((st) => st.stageName === approval.data.stage);
         const service = stage?.services.find((sv) => sv.serviceName === approval.data.service);
         const sequence = project.sequences?.find((seq) => seq.shkeptncontext === approval.shkeptncontext);
@@ -619,9 +609,8 @@ export class DataService {
           // update data of environment screen
           this.updateServiceApproval(service, approval);
         }
-      }
-    });
-    return approval$;
+      })
+    );
   }
 
   private updateServiceApproval(service: Service, approval: Trace): void {

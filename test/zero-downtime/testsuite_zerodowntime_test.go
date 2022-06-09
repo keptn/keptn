@@ -3,8 +3,10 @@ package zero_downtime
 import (
 	"errors"
 	"fmt"
+	"github.com/kelseyhightower/envconfig"
 	"github.com/keptn/go-utils/pkg/common/retry"
 	testutils "github.com/keptn/keptn/test/go-tests"
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"os"
 	"strings"
@@ -14,8 +16,6 @@ import (
 	"time"
 )
 
-const EnvInstallVersion = "INSTALL_HELM_CHART"
-const EnvUpgradeVersion = "UPGRADE_HELM_CHART"
 const valuesFile = "./assets/test-values.yml"
 
 const shipyard = `--- 
@@ -28,13 +28,14 @@ spec:
     - 
       name: hardening`
 
-const apiProbeInterval = 5 * time.Second
-const sequencesInterval = 15 * time.Second
-
 type ZeroDowntimeEnv struct {
-	quit         chan struct{}
-	NrOfUpgrades int
-	Wg           *sync.WaitGroup
+	quit              chan struct{}
+	NrOfUpgrades      int           `envconfig:"NUMBER_OF_UPGRADES" default:"2"`
+	EnvInstallVersion string        `envconfig:"INSTALL_HELM_CHART"` //for local run you can add a default ref to this string here e.g. default:"https://github.com/keptn/helm-charts-dev/raw/69eea439a26a99ecc163e296860dbb5d43e41600/packages/keptn-0.15.1-dev.tgz"`
+	EnvUpgradeVersion string        `envconfig:"UPGRADE_HELM_CHART"` //for local run you can add a default ref to this string here e.g. default:"https://github.com/keptn/helm-charts-dev/raw/gh-pages/packages/keptn-0.15.0-dev.tgz"
+	ApiProbeInterval  time.Duration `envconfig:"API_PROBES_INTERVAL" default:"15s"`
+	SequencesInterval time.Duration `envconfig:"SEQUENCES_INTERVAL" default:"30s"`
+	Wg                *sync.WaitGroup
 
 	//api test fields
 	TotalAPICalls  uint64
@@ -53,8 +54,11 @@ type ZeroDowntimeEnv struct {
 func SetupZD() *ZeroDowntimeEnv {
 
 	zd := ZeroDowntimeEnv{}
+	if err := envconfig.Process("", &zd); err != nil {
+		os.Exit(1)
+	}
+
 	zd.quit = make(chan struct{})
-	zd.NrOfUpgrades = 2
 	zd.Wg = &sync.WaitGroup{}
 	zd.ShipyardFile, _ = GetShipyard()
 	zd.TotalAPICalls = 0
@@ -129,19 +133,16 @@ func (suite *TestSuiteDowntime) TearDownSuite() {
 func ZDTestTemplate(t *testing.T, F func(t2 *testing.T, e *ZeroDowntimeEnv), name string) {
 
 	env := SetupZD()
-
+	env.Wg.Add(2)
 	t.Run("Rolling Upgrade", func(t1 *testing.T) {
 		t1.Parallel()
 		RollingUpgrade(t1, env)
 	})
-	env.Wg.Add(1)
 	t.Run("API", func(t1 *testing.T) {
 		t1.Parallel()
-
 		APIs(t1, env)
 		env.Wg.Done()
 	})
-	env.Wg.Add(1)
 	t.Run(name, func(t1 *testing.T) {
 		t1.Parallel()
 		F(t1, env)
@@ -163,53 +164,37 @@ func RollingUpgrade(t *testing.T, env *ZeroDowntimeEnv) {
 		t.Log("Rolling upgrade terminated")
 		env.Wg.Wait()
 	}()
-
+	if env.EnvUpgradeVersion == "" || env.EnvInstallVersion == "" {
+		t.Fatal("Test cannot run without setting INSTALL_HELM_CHART and UPGRADE_HELM_CHART")
+	}
 	t.Log("Upgrade in progress")
-	chartPreviousVersion, chartLatestVersion := GetCharts(t)
 
 	for i := 0; i < env.NrOfUpgrades; i++ {
+		time.Sleep(60 * time.Second)
 		chartPath := ""
 		var err error
 		if i%2 == 0 {
-			chartPath = chartLatestVersion
+			chartPath = env.EnvUpgradeVersion
 		} else {
-			chartPath = chartPreviousVersion
+			chartPath = env.EnvInstallVersion
 		}
 		t.Logf("Upgrading Keptn to %s", chartPath)
 		_, err = testutils.ExecuteCommand(
 			fmt.Sprintf(
 				"helm upgrade keptn -n %s %s --wait --values=%s", testutils.GetKeptnNameSpaceFromEnv(), chartPath, valuesFile))
-		if err != nil {
-			t.Logf("Encountered error when upgrading keptn: %v", err)
-
-		}
+		require.Nil(t, err)
 	}
 }
 
 func PrintSequencesResults(env *ZeroDowntimeEnv) {
 	// print so that the log is shown even in case the test passes with gotestsum
+
 	fmt.Println("-----------------------------------------------")
 	fmt.Println("TOTAL SEQUENCES: ", env.FiredSequences)
 	fmt.Println("TOTAL SUCCESS ", env.PassedSequences)
 	fmt.Println("TOTAL FAILURES ", env.FailedSequences)
 	fmt.Println("-----------------------------------------------")
 
-}
-
-// GetCharts returns the versions of helm charts for the rolling upgrade
-// these can be set by two environment variables:
-// "INSTALL_HELM_CHART" and "UPGRADE_HELM_CHART"
-func GetCharts(t *testing.T) (string, string) {
-	var install, upgrade string
-
-	if install = os.Getenv(EnvInstallVersion); install == "" {
-		t.Errorf("Helm chart unavailable, please set env variable %s", EnvInstallVersion)
-	}
-	if upgrade = os.Getenv(EnvUpgradeVersion); upgrade == "" {
-		t.Errorf("Helm chart unavailable, please set env variable %s", EnvUpgradeVersion)
-	}
-
-	return install, upgrade
 }
 
 func GetShipyard() (string, error) {

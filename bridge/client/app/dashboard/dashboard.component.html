@@ -23,12 +23,12 @@
           Create a new project by using the "Create a new project" button or check out the
           <a href="https://keptn.sh/docs/quickstart/" target="_blank" rel="noopener noreferrer"> Quick Start</a>
           instructions on how to <a [href]="'/manage/project/' | keptnUrl" target="_blank">create a project</a>
-          <ng-container *ngIf="!isQualityGatesOnly">
-            and to <a [href]="'/manage/service/#onboard-a-service' | keptnUrl" target="_blank">onboard a service</a>.
-          </ng-container>
-          <ng-container *ngIf="isQualityGatesOnly">
+          <ng-container *ngIf="isQualityGatesOnly$ | async; else delivery">
             and to <a [href]="'/manage/service/#create-a-service' | keptnUrl" target="_blank">create a service</a>.
           </ng-container>
+          <ng-template #delivery>
+            and to <a [href]="'/manage/service/#onboard-a-service' | keptnUrl" target="_blank">onboard a service</a>.
+          </ng-template>
         </p>
         <button dt-button (click)="loadProjects()">
           <dt-icon name="refresh"></dt-icon>

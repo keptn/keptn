@@ -6,6 +6,8 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/cp-connector/pkg/eventsource"
+	"github.com/keptn/keptn/cp-connector/pkg/subscriptionsource"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -91,10 +93,10 @@ func startControlPlane(ctx context.Context, api *operations.MongodbDatastoreAPI,
 	if err != nil {
 		return err
 	}
-	eventSource := controlplane.NewNATSEventSource(natsConnector)
+	eventSource := eventsource.New(natsConnector)
 
 	// 2. Create a fixed event subscription with no uniform
-	subSource := controlplane.NewFixedSubscriptionSource(controlplane.WithFixedSubscriptions(keptnapi.EventSubscription{Event: "sh.keptn.event.>"}))
+	subSource := subscriptionsource.NewFixedSubscriptionSource(subscriptionsource.WithFixedSubscriptions(keptnapi.EventSubscription{Event: "sh.keptn.event.>"}))
 
 	// 3. Create control plane
 	controlPlane := controlplane.New(subSource, eventSource, nil)

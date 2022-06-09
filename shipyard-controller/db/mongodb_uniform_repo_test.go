@@ -6,6 +6,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 )
@@ -20,6 +21,12 @@ func generateIntegrations() []apimodels.Integration {
 	integration1 := apimodels.Integration{
 		ID:   "i1",
 		Name: "integration1",
+		MetaData: apimodels.MetaData{
+			Hostname: "hostname1",
+			KubernetesMetaData: apimodels.KubernetesMetaData{
+				Namespace: "namespace1",
+			},
+		},
 		Subscription: apimodels.Subscription{
 			Topics: []string{"sh.keptn.event.test.triggered"},
 			Status: "active",
@@ -358,6 +365,254 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 	require.Equal(t, integrationBeforeUpdate.MetaData.IntegrationVersion, fetchedIntegrationAfterUpdate.MetaData.IntegrationVersion)
 	require.Equal(t, integrationBeforeUpdate.MetaData.DistributorVersion, fetchedIntegrationAfterUpdate.MetaData.DistributorVersion)
 
+}
+
+func TestMongoDBUniformRepo_FindIntegrations(t *testing.T) {
+	testIntegrations := generateIntegrations()
+
+	mdbrepo := NewMongoDBUniformRepo(GetMongoDBConnectionInstance())
+
+	err := mdbrepo.SetupTTLIndex(1 * time.Minute)
+	require.Nil(t, err)
+
+	// insert our integration entities
+	err = mdbrepo.CreateOrUpdateUniformIntegration(testIntegrations[0])
+	require.Nil(t, err)
+
+	err = mdbrepo.CreateOrUpdateUniformIntegration(testIntegrations[1])
+	require.Nil(t, err)
+
+	err = mdbrepo.CreateOrUpdateUniformIntegration(testIntegrations[2])
+	require.Nil(t, err)
+
+	err = mdbrepo.CreateOrUpdateUniformIntegration(testIntegrations[3])
+	require.Nil(t, err)
+
+	err = mdbrepo.CreateOrUpdateUniformIntegration(testIntegrations[4])
+	require.Nil(t, err)
+
+	integrations, err := mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{Name: "integration1", Namespace: "namespace1", HostName: "hostname1"})
+
+	require.Nil(t, err)
+	require.Len(t, integrations, 1)
+	require.Equal(t, testIntegrations[0], integrations[0])
+
+	integrations, err = mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{Name: "integration1", Namespace: "namespace2", HostName: "hostname1"})
+
+	require.Nil(t, err)
+	require.Empty(t, integrations)
+}
+
+func TestMongoDBUniformRepo_UpdateSubscription(t *testing.T) {
+	testIntegration := generateIntegrations()[0]
+
+	testIntegration.Subscriptions = []apimodels.EventSubscription{}
+
+	mdbrepo := NewMongoDBUniformRepo(GetMongoDBConnectionInstance())
+
+	err := mdbrepo.SetupTTLIndex(1 * time.Minute)
+	require.Nil(t, err)
+
+	// insert our integration entities
+	err = mdbrepo.CreateOrUpdateUniformIntegration(testIntegration)
+	require.Nil(t, err)
+
+	subscription := apimodels.EventSubscription{
+		ID:    "sub-id",
+		Event: "a-topic",
+		Filter: apimodels.EventSubscriptionFilter{
+			Projects: []string{"project"},
+			Stages:   []string{"a-stage"},
+			Services: []string{"a-service"},
+		},
+	}
+
+	err = mdbrepo.CreateOrUpdateSubscription("i1", subscription)
+	require.Nil(t, err)
+
+	integrations, err := mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{ID: "i1"})
+	require.Nil(t, err)
+	require.Len(t, integrations, 1)
+	require.Len(t, integrations[0].Subscriptions, 1)
+	require.Equal(t, subscription, integrations[0].Subscriptions[0])
+
+	updatedSubscription := apimodels.EventSubscription{
+		ID:    "sub-id",
+		Event: "a-new-topic",
+		Filter: apimodels.EventSubscriptionFilter{
+			Projects: []string{"new-project"},
+			Stages:   []string{"a-new-stage"},
+			Services: []string{"a-new-service"},
+		},
+	}
+
+	err = mdbrepo.CreateOrUpdateSubscription("i1", updatedSubscription)
+	require.Nil(t, err)
+
+	integrations, err = mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{ID: "i1"})
+	require.Nil(t, err)
+	require.Len(t, integrations, 1)
+	require.Len(t, integrations[0].Subscriptions, 1)
+	require.Equal(t, updatedSubscription, integrations[0].Subscriptions[0])
+}
+
+func TestMongoDBUniformRepo_DeleteSubscription(t *testing.T) {
+	testIntegration := generateIntegrations()[0]
+
+	testIntegration.Subscriptions = []apimodels.EventSubscription{}
+
+	mdbrepo := NewMongoDBUniformRepo(GetMongoDBConnectionInstance())
+
+	err := mdbrepo.SetupTTLIndex(1 * time.Minute)
+	require.Nil(t, err)
+
+	// insert our integration entities
+	err = mdbrepo.CreateOrUpdateUniformIntegration(testIntegration)
+	require.Nil(t, err)
+
+	subscription := apimodels.EventSubscription{
+		ID:    "sub-id",
+		Event: "a-topic",
+		Filter: apimodels.EventSubscriptionFilter{
+			Projects: []string{"project"},
+			Stages:   []string{"a-stage"},
+			Services: []string{"a-service"},
+		},
+	}
+
+	err = mdbrepo.CreateOrUpdateSubscription("i1", subscription)
+	require.Nil(t, err)
+
+	integrations, err := mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{ID: "i1"})
+	require.Nil(t, err)
+	require.Len(t, integrations, 1)
+	require.Len(t, integrations[0].Subscriptions, 1)
+	require.Equal(t, subscription, integrations[0].Subscriptions[0])
+
+	err = mdbrepo.DeleteSubscription("i1", "sub-id")
+	require.Nil(t, err)
+
+	integrations, err = mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{ID: "i1"})
+	require.Nil(t, err)
+	require.Len(t, integrations, 1)
+	require.Empty(t, integrations[0].Subscriptions)
+}
+
+func TestMongoDBUniformRepo_ConcurrentlyAddSubscriptions(t *testing.T) {
+	nrRoutines := 100
+	testIntegration := generateIntegrations()[0]
+
+	testIntegration.Subscriptions = []apimodels.EventSubscription{}
+
+	mdbrepo := NewMongoDBUniformRepo(GetMongoDBConnectionInstance())
+
+	err := mdbrepo.SetupTTLIndex(1 * time.Minute)
+	require.Nil(t, err)
+
+	// insert our integration entities
+	err = mdbrepo.CreateOrUpdateUniformIntegration(testIntegration)
+	require.Nil(t, err)
+
+	wg := &sync.WaitGroup{}
+	wg.Add(nrRoutines)
+
+	// concurrently add different subscriptions
+	for i := 0; i < nrRoutines; i++ {
+		go func(idx int) {
+			newID := fmt.Sprintf("id-%d", idx)
+			projectName := fmt.Sprintf("project-%d", idx)
+			err = mdbrepo.CreateOrUpdateSubscription("i1", apimodels.EventSubscription{
+				ID:    newID,
+				Event: "a-topic",
+				Filter: apimodels.EventSubscriptionFilter{
+					Projects: []string{projectName},
+					Stages:   []string{"a-stage"},
+					Services: []string{"a-service"},
+				},
+			})
+			require.Nil(t, err)
+			wg.Done()
+		}(i)
+	}
+
+	wg.Wait()
+	integrations, err := mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{ID: "i1"})
+	require.Nil(t, err)
+	require.Len(t, integrations, 1)
+	// verify that no subscription has been lost
+	require.Len(t, integrations[0].Subscriptions, nrRoutines)
+
+	wg.Add(nrRoutines)
+	// now, let's delete them again
+	for i := 0; i < nrRoutines; i++ {
+		go func(idx int) {
+			subID := fmt.Sprintf("id-%d", idx)
+			err = mdbrepo.DeleteSubscription("i1", subID)
+			require.Nil(t, err)
+			wg.Done()
+		}(i)
+	}
+
+	wg.Wait()
+
+	integrations, err = mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{ID: "i1"})
+	require.Nil(t, err)
+	require.Len(t, integrations, 1)
+	// verify that no subscription has been lost
+	require.Empty(t, integrations[0].Subscriptions)
+}
+
+func TestMongoDBUniformRepo_ConcurrentlyUpdateSubscription(t *testing.T) {
+	nrRoutines := 100
+	testIntegration := generateIntegrations()[0]
+
+	testIntegration.Subscriptions = nil
+
+	mdbrepo := NewMongoDBUniformRepo(GetMongoDBConnectionInstance())
+
+	err := mdbrepo.SetupTTLIndex(1 * time.Minute)
+	require.Nil(t, err)
+
+	// insert our integration entities
+	err = mdbrepo.CreateOrUpdateUniformIntegration(testIntegration)
+	require.Nil(t, err)
+
+	err = mdbrepo.CreateOrUpdateSubscription("i1", apimodels.EventSubscription{
+		ID:    "sub-id",
+		Event: "a-topic",
+		Filter: apimodels.EventSubscriptionFilter{
+			Projects: []string{"project"},
+			Stages:   []string{"a-stage"},
+			Services: []string{"a-service"},
+		},
+	})
+	require.Nil(t, err)
+
+	wg := &sync.WaitGroup{}
+	wg.Add(nrRoutines)
+
+	// concurrently add the same subscription -> in this case the number of subscriptions should stay the same
+	for i := 0; i < nrRoutines; i++ {
+		go func() {
+			err = mdbrepo.CreateOrUpdateSubscription("i1", apimodels.EventSubscription{
+				ID:    "sub-id",
+				Event: "a-topic",
+				Filter: apimodels.EventSubscriptionFilter{
+					Projects: []string{"project"},
+					Stages:   []string{"a-stage"},
+					Services: []string{"a-service"},
+				},
+			})
+			require.Nil(t, err)
+			wg.Done()
+		}()
+	}
+
+	wg.Wait()
+	integrations, err := mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{ID: "i1"})
+	require.Nil(t, err)
+	require.Len(t, integrations, 1)
+	require.Len(t, integrations[0].Subscriptions, 1)
 }
 
 func TestMongoDBUniformRepo_RemoveByServiceName(t *testing.T) {

@@ -8,6 +8,7 @@ import (
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
+	"github.com/keptn/keptn/cp-connector/pkg/types"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"path/filepath"
@@ -28,7 +29,7 @@ func (f *FakeKeptn) GetResourceHandler() ResourceHandler {
 }
 
 func (f *FakeKeptn) NewEvent(event models.KeptnContextExtendedCE) error {
-	ctx := context.WithValue(context.TODO(), controlplane.EventSenderKey, controlplane.EventSender(f.fakeSender))
+	ctx := context.WithValue(context.TODO(), types.EventSenderKey, controlplane.EventSender(f.fakeSender))
 	ctx = context.WithValue(ctx, gracefulShutdownKey, &nopWG{})
 	return f.Keptn.OnEvent(ctx, event)
 }

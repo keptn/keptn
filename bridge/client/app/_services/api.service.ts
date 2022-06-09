@@ -11,7 +11,7 @@ import { Project } from '../_models/project';
 import { UniformRegistrationLogResponse } from '../../../shared/interfaces/uniform-registration-log';
 import { Secret } from '../_models/secret';
 import { KeptnInfoResult } from '../../../shared/interfaces/keptn-info-result';
-import { KeptnVersions } from '../_models/keptn-versions';
+import { KeptnVersions } from '../../../shared/interfaces/keptn-versions';
 import { EventResult } from '../_interfaces/event-result';
 import { ProjectResult } from '../_interfaces/project-result';
 import { UniformSubscription } from '../_models/uniform-subscription';

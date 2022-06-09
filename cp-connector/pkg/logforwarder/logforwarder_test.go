@@ -1,18 +1,18 @@
-package controlplane
+package logforwarder
 
 import (
+	"github.com/keptn/keptn/cp-connector/pkg/fake"
 	"testing"
 
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/strutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/cp-connector/pkg/controlplane/fake"
 	"github.com/stretchr/testify/require"
 )
 
 func TestLogForwarderNoForward(t *testing.T) {
 	logHandler := &fake.LogAPIMock{}
-	logForwarder := NewLogForwarder(logHandler)
+	logForwarder := New(logHandler)
 	keptnEvent := models.KeptnContextExtendedCE{ID: "some-id", Type: strutils.Stringp("sh.keptn.event.echo.triggered")}
 	err := logForwarder.Forward(keptnEvent, "some-other-id")
 	require.Nil(t, err)
@@ -21,7 +21,7 @@ func TestLogForwarderNoForward(t *testing.T) {
 
 func TestLogForwarderNoIntegrationID(t *testing.T) {
 	logHandler := &fake.LogAPIMock{}
-	logForwarder := NewLogForwarder(logHandler)
+	logForwarder := New(logHandler)
 	keptnEvent := models.KeptnContextExtendedCE{ID: "some-id", Type: strutils.Stringp("sh.keptn.event.echo.finished")}
 	err := logForwarder.Forward(keptnEvent, "")
 	require.Nil(t, err)
@@ -30,7 +30,7 @@ func TestLogForwarderNoIntegrationID(t *testing.T) {
 
 func TestLogForwarderFinishedNoForward(t *testing.T) {
 	logHandler := &fake.LogAPIMock{}
-	logForwarder := NewLogForwarder(logHandler)
+	logForwarder := New(logHandler)
 	keptnEvent := models.KeptnContextExtendedCE{ID: "some-id", Type: strutils.Stringp("sh.keptn.event.echo.finished"), Data: keptnv2.EventData{Status: keptnv2.StatusSucceeded}}
 	err := logForwarder.Forward(keptnEvent, "some-other-id")
 	require.Nil(t, err)
@@ -39,7 +39,7 @@ func TestLogForwarderFinishedNoForward(t *testing.T) {
 
 func TestLogForwarderFinishedInvalidEventType(t *testing.T) {
 	logHandler := &fake.LogAPIMock{}
-	logForwarder := NewLogForwarder(logHandler)
+	logForwarder := New(logHandler)
 	keptnEvent := models.KeptnContextExtendedCE{ID: "some-id", Type: strutils.Stringp("sh.keptn.event.echo.finished"), Data: "some invalid data"}
 	err := logForwarder.Forward(keptnEvent, "some-other-id")
 	require.NotNil(t, err)
@@ -51,7 +51,7 @@ func TestLogForwarderFinishedForward(t *testing.T) {
 		LogFunc:   func(logs []models.LogEntry) {},
 		FlushFunc: func() error { return nil },
 	}
-	logForwarder := NewLogForwarder(logHandler)
+	logForwarder := New(logHandler)
 	keptnEvent := models.KeptnContextExtendedCE{ID: "some-id", Type: strutils.Stringp("sh.keptn.event.echo.finished"), Data: keptnv2.EventData{Status: keptnv2.StatusErrored}}
 	err := logForwarder.Forward(keptnEvent, "some-other-id")
 	require.Nil(t, err)
@@ -60,7 +60,7 @@ func TestLogForwarderFinishedForward(t *testing.T) {
 
 func TestLogForwarderErrorInvalidEventType(t *testing.T) {
 	logHandler := &fake.LogAPIMock{}
-	logForwarder := NewLogForwarder(logHandler)
+	logForwarder := New(logHandler)
 	keptnEvent := models.KeptnContextExtendedCE{ID: "some-id", Type: strutils.Stringp("sh.keptn.log.error"), Data: "some invalid data"}
 	err := logForwarder.Forward(keptnEvent, "some-other-id")
 	require.NotNil(t, err)
@@ -72,7 +72,7 @@ func TestLogForwarderErrorForward(t *testing.T) {
 		LogFunc:   func(logs []models.LogEntry) {},
 		FlushFunc: func() error { return nil },
 	}
-	logForwarder := NewLogForwarder(logHandler)
+	logForwarder := New(logHandler)
 	keptnEvent := models.KeptnContextExtendedCE{ID: "some-id", Type: strutils.Stringp("sh.keptn.log.error")}
 	err := logForwarder.Forward(keptnEvent, "some-other-id")
 	require.Nil(t, err)
@@ -84,7 +84,7 @@ func TestLogForwarderErrorEventIntegrationID(t *testing.T) {
 		LogFunc:   func(logs []models.LogEntry) {},
 		FlushFunc: func() error { return nil },
 	}
-	logForwarder := NewLogForwarder(logHandler)
+	logForwarder := New(logHandler)
 	keptnEvent := models.KeptnContextExtendedCE{ID: "some-id", Type: strutils.Stringp("sh.keptn.log.error"), Data: keptnv2.ErrorLogEvent{IntegrationID: "some-new-id"}}
 	err := logForwarder.Forward(keptnEvent, "some-other-id")
 	require.Nil(t, err)

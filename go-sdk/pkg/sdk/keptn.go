@@ -2,12 +2,17 @@ package sdk
 
 import (
 	"context"
+	"github.com/keptn/keptn/cp-connector/pkg/eventsource"
+	"github.com/keptn/keptn/cp-connector/pkg/logforwarder"
+	"github.com/keptn/keptn/cp-connector/pkg/subscriptionsource"
+	"github.com/keptn/keptn/cp-connector/pkg/types"
 	"log"
 	"os"
 	"os/signal"
 	"strings"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/kelseyhightower/envconfig"
 	"github.com/keptn/go-utils/pkg/api/models"
@@ -167,7 +172,8 @@ func NewKeptn(source string, opts ...KeptnOption) *Keptn {
 }
 
 func (k *Keptn) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE) error {
-	eventSender, ok := ctx.Value(controlplane.EventSenderKey).(controlplane.EventSender)
+	k.logger.Debug("Handling event ", event)
+	eventSender, ok := ctx.Value(types.EventSenderKey).(controlplane.EventSender)
 	if !ok {
 		k.logger.Errorf("Unable to get event sender. Skip processing of event %s", event.ID)
 		return nil
@@ -296,6 +302,8 @@ func (k *Keptn) Start() error {
 	}
 	ctx, wg := k.getContext(k.gracefulShutdown)
 	err := k.controlPlane.Register(ctx, k)
+	// add additional waiting time to ensure the waitGroup has been increased for all events that have been received between receiving SIGTERM and this point
+	<-time.After(5 * time.Second)
 	wg.Wait()
 	return err
 }
@@ -380,10 +388,10 @@ func newControlPlaneFromEnv() (*controlplane.ControlPlane, controlplane.EventSen
 	if err != nil {
 		log.Fatal(err)
 	}
-	eventSource := controlplane.NewNATSEventSource(natsConnector)
+	eventSource := eventsource.New(natsConnector)
 	eventSender := eventSource.Sender()
-	subscriptionSource := controlplane.NewUniformSubscriptionSource(apiSet.UniformV1())
-	logForwarder := controlplane.NewLogForwarder(apiSet.LogsV1())
+	subscriptionSource := subscriptionsource.New(apiSet.UniformV1())
+	logForwarder := logforwarder.New(apiSet.LogsV1())
 	controlPlane := controlplane.New(subscriptionSource, eventSource, logForwarder)
 	return controlPlane, eventSender
 }

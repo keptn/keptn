@@ -30,7 +30,7 @@ describe('KtbSubscriptionItemComponent', () => {
 
     fixture = TestBed.createComponent(KtbSubscriptionItemComponent);
     component = fixture.componentInstance;
-    TestBed.inject(DataService).loadProjects();
+    TestBed.inject(DataService).loadProjects().subscribe();
     fixture.detectChanges();
 
     subscription = new UniformSubscription('sockshop');

@@ -48,19 +48,30 @@ type NatsConnector struct {
 	logger        logger.Logger
 }
 
+// WithLogger sets the logger to use
+func WithLogger(logger logger.Logger) func(*NatsConnector) {
+	return func(n *NatsConnector) {
+		n.logger = logger
+	}
+}
+
 // Connect connects a NatsConnector to NATS.
 // Note that this will automatically and indefinitely try to reconnect
 // as soon as it looses connection
-func Connect(connectURL string) (*NatsConnector, error) {
+func Connect(connectURL string, opts ...func(connector *NatsConnector)) (*NatsConnector, error) {
 	conn, err := nats.Connect(connectURL, nats.MaxReconnects(-1))
 	if err != nil {
 		return nil, fmt.Errorf("could not connect to NATS: %w", err)
 	}
-	return &NatsConnector{
+	n := &NatsConnector{
 		conn:          conn,
 		subscriptions: make(map[string]*nats.Subscription),
 		logger:        logger.NewDefaultLogger(),
-	}, nil
+	}
+	for _, o := range opts {
+		o(n)
+	}
+	return n, nil
 }
 
 // ConnectFromEnv connects a NatsConnector to NATS.
@@ -116,9 +127,11 @@ func (nc *NatsConnector) QueueSubscribeMultiple(subjects []string, queueGroup st
 	}
 
 	for _, sub := range subjects {
+		nc.logger.Debug("Subscribing to topic %s", sub)
 		if err := nc.queueSubscribe(sub, queueGroup, fn); err != nil {
 			return fmt.Errorf("could not subscribe to subject %s: %w", sub, err)
 		}
+		nc.logger.Debug("Successfully subscribed to topic %s", sub)
 	}
 	return nil
 }

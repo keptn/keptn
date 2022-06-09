@@ -13,7 +13,7 @@ describe('Sequences', () => {
 
   it('should show a loading indicator when sequences are not loaded', () => {
     cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=25', {
-      delay: 2000,
+      delay: 10_000,
       fixture: 'sequences.sockshop',
     }).as('Sequences');
 
@@ -337,6 +337,23 @@ describe('Sequences', () => {
         .clickLoadOlderSequences()
         .assertSequenceCount(1)
         .assertLoadOlderSequencesButtonExists(false);
+    });
+
+    it('should not add the filter to the URL after it was cleared and the page was reloaded', () => {
+      sequencePage.visit('sockshop', {
+        Stage: 'staging',
+        Sequence: 'evaluation',
+        Service: 'carts',
+      });
+      cy.wait('@Sequences');
+      cy.wait(500);
+
+      sequencePage
+        .assertAmountOfQueryParameters(3)
+        .reload()
+        .clearFilter()
+        .selectSequence('62cca6f3-dc54-4df6-a04c-6ffc894a4b5e')
+        .assertAmountOfQueryParameters(0);
     });
   });
 });

@@ -19,7 +19,7 @@ export class HeatmapComponentPage {
     cy.intercept('GET', 'api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?*', {
       statusCode: 200,
       fixture: 'get.sockshop.service.carts.evaluations.heatmap.manyscores.mock.json',
-    });
+    }).as('heatmapEvaluations');
     return this;
   }
 
@@ -27,7 +27,7 @@ export class HeatmapComponentPage {
     cy.intercept('GET', 'api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?*', {
       statusCode: 200,
       fixture: 'get.sockshop.service.carts.evaluations.heatmap.10metrics.mock.json',
-    });
+    }).as('heatmapEvaluations');
     return this;
   }
 
@@ -35,12 +35,14 @@ export class HeatmapComponentPage {
     cy.intercept('GET', 'api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?*', {
       statusCode: 200,
       fixture: 'get.sockshop.service.carts.evaluations.heatmap.twohighlights.mock.json',
-    });
+    }).as('heatmapEvaluations');
     return this;
   }
 
   visitPageWithHeatmapComponent(): this {
-    cy.visit('/project/sockshop/service/carts/context/da740469-9920-4e0c-b304-0fd4b18d17c2/stage/staging');
+    cy.visit('/project/sockshop/service/carts/context/da740469-9920-4e0c-b304-0fd4b18d17c2/stage/staging').wait(
+      '@heatmapEvaluations'
+    );
     return this;
   }
 
@@ -172,8 +174,8 @@ export class HeatmapComponentPage {
     return this;
   }
 
-  assertExpandExists(exists: boolean): this {
-    cy.get('ktb-heatmap button.show-more-button').should(!exists ? 'not.exist' : 'exist');
+  assertExpandVisible(visible: boolean): this {
+    cy.get('ktb-heatmap button.show-more-button').should(visible ? 'be.visible' : 'not.be.visible');
     return this;
   }
 }
