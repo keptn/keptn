@@ -114,8 +114,10 @@ keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE
 				return errors.New("Proxy cannot be set without scheme")
 			}
 
-			project.GitCredentials.User = *updateProjectParams.GitUser
-			project.GitCredentials.RemoteURL = *updateProjectParams.RemoteURL
+			project.GitCredentials = &apimodels.GitAuthCredentials{
+				User:      *updateProjectParams.GitUser,
+				RemoteURL: *updateProjectParams.RemoteURL,
+			}
 
 			if strings.HasPrefix(*updateProjectParams.RemoteURL, "ssh://") {
 				content, err := ioutil.ReadFile(*updateProjectParams.GitPrivateKey)

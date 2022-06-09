@@ -269,7 +269,7 @@ func addWarningNonExistingProjectUpstream() error {
 
 	missingUpstreamProjects := make([]string, 0)
 	for _, project := range projects {
-		if project.GitCredentials.RemoteURL == "" {
+		if project.GitCredentials == nil {
 			missingUpstreamProjects = append(missingUpstreamProjects, project.ProjectName)
 		}
 	}

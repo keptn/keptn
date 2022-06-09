@@ -139,8 +139,10 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-r
 				return errors.New("Proxy cannot be set without scheme")
 			}
 
-			project.GitCredentials.User = *createProjectParams.GitUser
-			project.GitCredentials.RemoteURL = *createProjectParams.RemoteURL
+			project.GitCredentials = &apimodels.GitAuthCredentials{
+				User:      *createProjectParams.GitUser,
+				RemoteURL: *createProjectParams.RemoteURL,
+			}
 
 			if strings.HasPrefix(*createProjectParams.RemoteURL, "ssh://") {
 				content, err := ioutil.ReadFile(*createProjectParams.GitPrivateKey)
