@@ -115,39 +115,8 @@ describe('KtbEvaluationDetailsUtils', () => {
 
     // then
     expect(trace.data.evaluation?.sloFileContentParsed).toBeUndefined();
-    expect(trace2.data.evaluation?.sloFileContentParsed).toEqual({
-      comparison: {
-        aggregate_function: 'avg',
-        compare_with: 'single_result',
-        include_result_with_score: 'pass',
-        number_of_comparison_results: 1,
-      },
-      filter: null,
-      objectives: [
-        {
-          displayName: 'Response time P95',
-          key_sli: false,
-          pass: [
-            {
-              criteria: ['<=+10%', '<600'],
-            },
-          ],
-          sli: 'response_time_p95',
-          warning: [
-            {
-              criteria: ['<=800'],
-            },
-          ],
-          weight: 1,
-        },
-      ],
-      spec_version: '1.0',
-      total_score: {
-        pass: '90%',
-        warning: '75%',
-      },
-    });
-    expect(trace3.data.evaluation?.sloFileContentParsed).toBe(false);
+    expect(trace2.data.evaluation?.sloFileContentParsed).toBe(true);
+    expect(trace3.data.evaluation?.sloFileContentParsed).toBeUndefined();
   });
 
   it('should correctly set values after parsing the SLO file', () => {
