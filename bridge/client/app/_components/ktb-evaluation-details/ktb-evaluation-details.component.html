@@ -329,7 +329,12 @@
               <span [textContent]="evaluation.number_of_missing_comparison_results"></span>
               result is not showing up in the Heatmap, because it has been either invalidated or is older.
             </span>
-            <span *ngIf="evaluation.number_of_missing_comparison_results > 1">
+            <span
+              *ngIf="
+                evaluation.number_of_missing_comparison_results !== undefined &&
+                evaluation.number_of_missing_comparison_results > 1
+              "
+            >
               <span [textContent]="evaluation.number_of_missing_comparison_results"></span>
               results are not showing up in the Heatmap, because they have been either invalidated or are older results.
             </span>
