@@ -45,7 +45,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: keptn
       app.kubernetes.io/instance: keptn
-			app.kubernetes.io/component: echo-service
+      app.kubernetes.io/component: echo-service
   replicas: 1
   template:
     metadata:
