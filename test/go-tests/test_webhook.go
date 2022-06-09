@@ -2,15 +2,15 @@ package go_tests
 
 import (
 	"fmt"
-	"github.com/keptn/go-utils/pkg/api/models"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/webhook-service/lib"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"os"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/keptn/go-utils/pkg/api/models"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/stretchr/testify/require"
 )
 
 const webhookShipyard = `--- 
@@ -440,6 +440,8 @@ spec:
             - key: x-token
               value: "{{.env.tokensecretKey}}"`
 
+const WebhookConfigMap = "keptn-webhook-config"
+
 func CreateWebhookProject(t *testing.T, projectName, serviceName string) (string, string) {
 
 	shipyardFilePath, err := CreateTmpShipyardFile(webhookShipyard)
@@ -485,14 +487,14 @@ func Test_Webhook_Alpha(t *testing.T) {
 
 func Test_Webhook_Beta_API(t *testing.T) {
 	projectName := "webhooks-b-api"
-	oldConfig, err := GetFromConfigMap(GetKeptnNameSpaceFromEnv(), lib.WebhookConfigMap, func(data map[string]string) string {
+	oldConfig, err := GetFromConfigMap(GetKeptnNameSpaceFromEnv(), WebhookConfigMap, func(data map[string]string) string {
 		return data["denyList"]
 	})
 	require.Nil(t, err)
 
 	//temporary enabling all communication
-	PutConfigMapDataVal(GetKeptnNameSpaceFromEnv(), lib.WebhookConfigMap, "denyList", "kubernetes")
-	defer PutConfigMapDataVal(GetKeptnNameSpaceFromEnv(), lib.WebhookConfigMap, "denyList", oldConfig)
+	PutConfigMapDataVal(GetKeptnNameSpaceFromEnv(), WebhookConfigMap, "denyList", "kubernetes")
+	defer PutConfigMapDataVal(GetKeptnNameSpaceFromEnv(), WebhookConfigMap, "denyList", oldConfig)
 
 	api, err := NewAPICaller()
 	require.Nil(t, err)
