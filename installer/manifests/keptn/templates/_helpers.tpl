@@ -105,6 +105,10 @@ lifecycle:
   valueFrom:
     fieldRef:
       fieldPath: metadata.labels['app.kubernetes.io/name']
+- name: K8S_DEPLOYMENT_COMPONENT
+  valueFrom:
+    fieldRef:
+      fieldPath: metadata.labels['app.kubernetes.io/component']
 - name: K8S_POD_NAME
   valueFrom:
     fieldRef:
