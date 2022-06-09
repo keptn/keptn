@@ -1,7 +1,10 @@
 import { init as initApp } from './app';
+import { logger } from './utils/logger';
 
 const PORT = normalizePort(process.env.PORT || '3000');
 const HOST = process.env.HOST || '0.0.0.0';
+
+logger.configure(console.log, {})
 
 if (typeof PORT === 'number') {
   (async (): Promise<void> => {
