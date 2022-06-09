@@ -13,8 +13,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+//go:generate moq -pkg fake -skip-ensure -out ./fake/repository_provisioner.go . IRepositoryProvisioner
 type IRepositoryProvisioner interface {
-	ProvideRepository(projectName string) (*models.ProvisioningData, error)
+	ProvideRepository(projectName, namespace string) (*models.ProvisioningData, error)
 	DeleteRepository(projectName string, namespace string) error
 }
 
@@ -30,8 +31,8 @@ func NewRepositoryProvisioner(provisioningURL string, client oauthutils.HTTPClie
 	}
 }
 
-func (rp *RepositoryProvisioner) ProvideRepository(projectName string) (*models.ProvisioningData, error) {
-	values := map[string]string{"project": projectName}
+func (rp *RepositoryProvisioner) ProvideRepository(projectName, namespace string) (*models.ProvisioningData, error) {
+	values := map[string]string{"project": projectName, "namespace": namespace}
 	jsonRequestData, err := json.Marshal(values)
 	log.Infof("Creating project %s with provisioned gitRemoteURL", projectName)
 	if err != nil {

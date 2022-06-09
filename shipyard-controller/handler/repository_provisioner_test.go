@@ -1,11 +1,15 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/stretchr/testify/require"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/keptn/go-utils/pkg/common/testutils"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -13,15 +17,27 @@ import (
 )
 
 func TestProvideRepository(t *testing.T) {
+
+	type args struct {
+		project   string
+		namespace string
+	}
+
 	client := &testutils.HTTPClientMock{}
 	provisioner := NewRepositoryProvisioner("som-url", client)
 	tt := []struct {
-		Body       string
-		StatusCode int
-		expResult  *models.ProvisioningData
-		expErr     error
+		args          args
+		Body          string
+		StatusCode    int
+		expResult     *models.ProvisioningData
+		expReqPayload map[string]interface{}
+		expErr        error
 	}{
 		{
+			args: args{
+				project:   "project",
+				namespace: "keptn",
+			},
 			Body:       `{"gitRemoteURL":"http://some-url.com","gitToken":"token","gitUser":"user"}`,
 			StatusCode: http.StatusCreated,
 			expResult: &models.ProvisioningData{
@@ -30,13 +46,25 @@ func TestProvideRepository(t *testing.T) {
 				GitUser:      "user",
 			},
 			expErr: nil,
+			expReqPayload: map[string]interface{}{
+				"project":   "project",
+				"namespace": "keptn",
+			},
 		}, {
+			args: args{
+				project:   "project",
+				namespace: "keptn",
+			},
 			Body:       "",
 			StatusCode: http.StatusConflict,
 			expResult:  nil,
 			expErr:     fmt.Errorf(UnableProvisionInstance, http.StatusText(http.StatusConflict)),
 		},
 		{
+			args: args{
+				project:   "project",
+				namespace: "keptn",
+			},
 			Body:       `invalid body`,
 			StatusCode: http.StatusCreated,
 			expResult:  nil,
@@ -45,16 +73,31 @@ func TestProvideRepository(t *testing.T) {
 	}
 
 	for _, test := range tt {
+		var receivedPayload map[string]interface{}
 		client.DoFunc = func(r *http.Request) (*http.Response, error) {
+			payloadBytes, err := ioutil.ReadAll(r.Body)
+			require.Nil(t, err)
+
+			err = json.Unmarshal(payloadBytes, &receivedPayload)
+			require.Nil(t, err)
+
 			return &http.Response{
 				Body:       io.NopCloser(strings.NewReader(test.Body)),
 				StatusCode: test.StatusCode,
 			}, nil
 		}
-		r, err := provisioner.ProvideRepository("project")
+		r, err := provisioner.ProvideRepository(test.args.project, test.args.namespace)
 
 		assert.Equal(t, test.expErr, err)
 		assert.Equal(t, test.expResult, r)
+
+		if test.expReqPayload != nil {
+			require.Eventually(t, func() bool {
+				return receivedPayload != nil
+			}, 1*time.Second, 10*time.Millisecond)
+
+			require.Equal(t, test.expReqPayload, receivedPayload)
+		}
 	}
 }
 
