@@ -12,7 +12,7 @@ import { NotificationType } from '../_models/notification';
 import { environment } from '../../environments/environment';
 import { KeptnInfo } from '../_models/keptn-info';
 import { DtSwitchChange } from '@dynatrace/barista-components/switch';
-import { VersionInfo } from '../_models/keptn-versions';
+import { VersionInfo } from '../../../shared/interfaces/keptn-versions';
 import { DtSelect } from '@dynatrace/barista-components/select';
 import { IMetadata } from '../_interfaces/metadata';
 
