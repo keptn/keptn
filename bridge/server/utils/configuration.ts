@@ -30,7 +30,7 @@ interface LogConfiguration {
  */
 export function getConfiguration(options?: BridgeOption): BridgeConfiguration {
     const logDestination = options?.logging?.destination ?? LogDestination.StdOut;
-    const loggingComponents = Object.create(null) as EnabledComponents;
+    const loggingComponents = Object.create({}) as EnabledComponents;
     const loggingComponentsString = options?.logging?.enabledComponents
 		?? process.env.LOGGING_COMPONENTS
         ?? "";

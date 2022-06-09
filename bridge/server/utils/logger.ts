@@ -18,7 +18,7 @@ export interface EnabledComponents {
 
 class LoggerImpl {
 	public configure(destination: LogDestination = LogDestination.StdOut, enabledComponents: EnabledComponents = Object.create(null)): void {
-		this._log = (destination != LogDestination.StdOut) ? console.log : this.fileLog;
+		this._log = (destination == LogDestination.StdOut) ? console.log : this.fileLog;
 		this._components = enabledComponents;
 	}
 

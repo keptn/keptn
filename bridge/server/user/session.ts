@@ -219,8 +219,9 @@ export class SessionService {
             creationDate: data.value.creationDate,
           }
         : undefined;
-    } catch (e) {
-      this.log.error('Error wile decrypting validation data. Cause:', e);
+    } catch (err) {
+      const msg = (err instanceof Error) ? `${err.name}: ${err.message}` : `${err}`;
+      this.log.error(`Error wile decrypting validation data. Cause: ${msg}`);
     }
   }
 

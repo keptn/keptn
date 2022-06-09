@@ -1,9 +1,11 @@
-import { EnvironmentUtils } from './environment.utils';
-import { ServerFeatureFlags } from '../feature-flags';
+import { getConfiguration } from './configuration';
+import { LogDestination } from './logger';
 
 describe('Configuration', () => {
   it('Default values', () => {
-
+    const result = getConfiguration();
+    expect(result.logging.destination).toBe(LogDestination.StdOut);
+    expect(result.logging.enabledComponents).toStrictEqual({});
   });
 
   it('set values using options object', () => {
