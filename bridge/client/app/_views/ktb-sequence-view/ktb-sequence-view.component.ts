@@ -233,7 +233,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     });
   }
 
-  public selectSequence(event: { sequence: Sequence; stage?: string; eventId?: string }, loadTraces = true): void {
+  public selectSequence(event: { sequence: Sequence; stage?: string; eventId?: string }): void {
     const sequenceFilters = this.apiService.getSequenceFilters(event.sequence.project);
     let stage = event.stage || event.sequence.getStages().pop();
     const additionalCommands = [];
