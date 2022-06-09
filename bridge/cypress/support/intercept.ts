@@ -481,5 +481,5 @@ export function interceptHeatmapComponentWithSLO(slo?: string): void {
         },
       ],
     },
-  });
+  }).as('heatmapEvaluations');
 }
