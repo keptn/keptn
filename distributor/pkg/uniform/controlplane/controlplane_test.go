@@ -23,7 +23,7 @@ func TestControlPlaneRegister(t *testing.T) {
 				Hostname:           "k8s-nodename",
 				IntegrationVersion: "2.0",
 				DistributorVersion: "1.0",
-				Location:           "location",
+				Location:           "k8s-component",
 				KubernetesMetaData: models.KubernetesMetaData{
 					Namespace:      "k8s-namespace",
 					PodName:        "k8s-podname",
