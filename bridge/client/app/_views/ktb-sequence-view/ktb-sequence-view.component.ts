@@ -7,7 +7,7 @@ import {
   DtQuickFilterDefaultDataSourceConfig,
 } from '@dynatrace/barista-components/quick-filter';
 import { isObject } from '@dynatrace/barista-components/core';
-import { combineLatest, Observable, Subject, Subscription } from 'rxjs';
+import { combineLatest, Observable, of, Subject, Subscription } from 'rxjs';
 import { filter, map, switchMap, takeUntil, takeWhile } from 'rxjs/operators';
 import moment from 'moment';
 import { Project } from '../../_models/project';
@@ -279,16 +279,15 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
 
   public loadTraces(sequence: Sequence, eventId?: string, stage?: string): void {
     this._tracesTimer.unsubscribe();
+    let setTraces$;
     if (moment().subtract(1, 'day').isBefore(sequence.time)) {
-      this._tracesTimer = AppUtils.createTimer(0, this._tracesTimerInterval)
-        .pipe(takeUntil(this.unsubscribe$))
-        .subscribe(() => {
-          this.setTraces(sequence, eventId, stage);
-        });
+      setTraces$ = AppUtils.createTimer(0, this._tracesTimerInterval);
     } else {
-      this.setTraces(sequence, eventId, stage);
-      this._tracesTimer = Subscription.EMPTY;
+      setTraces$ = of(null);
     }
+    this._tracesTimer = setTraces$.pipe(takeUntil(this.unsubscribe$)).subscribe(() => {
+      this.setTraces(sequence, eventId, stage);
+    });
   }
 
   private setTraces(sequence: Sequence, eventId?: string, stage?: string): void {
