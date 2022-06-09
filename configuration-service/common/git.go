@@ -4,14 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	logger "github.com/sirupsen/logrus"
 	"net/url"
 	"os"
 	"strings"
 	"time"
 
-	"github.com/keptn/keptn/configuration-service/common_models"
+	logger "github.com/sirupsen/logrus"
 
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
 	utils "github.com/keptn/kubernetes-utils/pkg"
@@ -38,7 +38,7 @@ type CommandExecutor interface {
 
 //go:generate moq -pkg common_mock -skip-ensure -out ./fake/credential_reader_mock.go . CredentialReader
 type CredentialReader interface {
-	GetCredentials(project string) (*common_models.GitCredentials, error)
+	GetCredentials(project string) (*apimodels.GitAuthCredentials, error)
 }
 
 type KeptnUtilsCommandExecutor struct{}
@@ -49,7 +49,7 @@ func (KeptnUtilsCommandExecutor) ExecuteCommand(command string, args []string, d
 
 type K8sCredentialReader struct{}
 
-func (K8sCredentialReader) GetCredentials(project string) (*common_models.GitCredentials, error) {
+func (K8sCredentialReader) GetCredentials(project string) (*apimodels.GitAuthCredentials, error) {
 	clientSet, err := getK8sClient()
 	if err != nil {
 		return nil, fmt.Errorf(gitCredentialsFail)
@@ -70,12 +70,12 @@ func (K8sCredentialReader) GetCredentials(project string) (*common_models.GitCre
 	return unmarshalGitCredentials(secret.Data["git-credentials"])
 }
 
-func unmarshalGitCredentials(data []byte) (*common_models.GitCredentials, error) {
-	var credentials common_models.GitCredentials
+func unmarshalGitCredentials(data []byte) (*apimodels.GitAuthCredentials, error) {
+	var credentials apimodels.GitAuthCredentials
 	if err := json.Unmarshal(data, &credentials); err != nil {
-		return nil, fmt.Errorf(unmarshalGitCredentialsFail)
+		return nil, err
 	}
-	if credentials.Token != "" && credentials.RemoteURI != "" {
+	if credentials.HttpsAuth.Token != "" && credentials.RemoteURL != "" {
 		return &credentials, nil
 	}
 	return nil, nil
@@ -95,8 +95,14 @@ func NewGit(e CommandExecutor, c CredentialReader) Git {
 
 // CloneRepo clones an upstream repository into a local folder "project" and returns
 // whether the Git repo is already initialized.
-func (g *Git) CloneRepo(project string, credentials common_models.GitCredentials) (bool, error) {
-	uri := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
+func (g *Git) CloneRepo(project string, credentials *apimodels.GitAuthCredentials) (bool, error) {
+	if credentials == nil {
+		return false, fmt.Errorf("failed to reach git upstream - credentials not provided")
+	}
+	if credentials.HttpsAuth == nil {
+		return false, fmt.Errorf("failed to reach git upstream - token not provided")
+	}
+	uri := getRepoURI(credentials.RemoteURL, credentials.User, credentials.HttpsAuth.Token)
 
 	msg, err := g.Executor.ExecuteCommand("git", []string{"clone", uri, project}, config.ConfigDir)
 	const emptyRepoWarning = "warning: You appear to have cloned an empty repository."
@@ -126,7 +132,7 @@ func (g *Git) CheckoutBranch(project string, branch string, disableUpstreamSync 
 	}
 	credentials, err := g.CredentialReader.GetCredentials(project)
 	if err == nil && credentials != nil {
-		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
+		repoURI := getRepoURI(credentials.RemoteURL, credentials.User, credentials.HttpsAuth.Token)
 		err = g.pullUpstreamChanges(err, repoURI, projectConfigPath, credentials)
 		if err != nil {
 			return fmt.Errorf("failed to pull upstream changes in project '%s'", project)
@@ -150,7 +156,7 @@ func (g *Git) CreateBranch(project string, branch string, sourceBranch string) e
 	// if an upstream has been defined, push the new branch
 	credentials, err := g.CredentialReader.GetCredentials(project)
 	if err == nil && credentials != nil {
-		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
+		repoURI := getRepoURI(credentials.RemoteURL, credentials.User, credentials.HttpsAuth.Token)
 		_, err = utils.ExecuteCommandInDirectory("git", []string{"push", "--set-upstream", repoURI, branch}, projectConfigPath)
 		if err != nil {
 			return fmt.Errorf("failed to set git upstream for project '%s'", project)
@@ -168,7 +174,7 @@ func (g *Git) UpdateOrCreateOrigin(project string) error {
 	credentials, err := g.CredentialReader.GetCredentials(project)
 
 	if err == nil && credentials != nil {
-		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
+		repoURI := getRepoURI(credentials.RemoteURL, credentials.User, credentials.HttpsAuth.Token)
 
 		// try to update existing remote origin
 		_, err := g.Executor.ExecuteCommand("git", []string{"remote", "set-url", "origin", repoURI}, projectConfigPath)
@@ -204,7 +210,7 @@ func (g *Git) removeRemoteOrigin(project string) error {
 	return nil
 }
 
-func (g *Git) setUpstreamsAndPush(project string, credentials *common_models.GitCredentials, repoURI string) error {
+func (g *Git) setUpstreamsAndPush(project string, credentials *apimodels.GitAuthCredentials, repoURI string) error {
 	projectConfigPath := config.ConfigDir + "/" + project
 	branches, err := g.GetBranches(project)
 	if err != nil {
@@ -259,7 +265,7 @@ func (g *Git) setUpstreamsAndPush(project string, credentials *common_models.Git
 	return nil
 }
 
-func (g *Git) pullUpstreamChanges(err error, repoURI string, projectConfigPath string, credentials *common_models.GitCredentials) error {
+func (g *Git) pullUpstreamChanges(err error, repoURI string, projectConfigPath string, credentials *apimodels.GitAuthCredentials) error {
 	_, err = g.Executor.ExecuteCommand("git", []string{"pull", "-s", "recursive", "-X", "theirs", repoURI}, projectConfigPath)
 	return err
 }
@@ -280,7 +286,7 @@ func (g *Git) StageAndCommitAll(project string, message string, withPull bool) e
 	// in this case, ignore errors since the only instance when this can occur at this stage is when there is nothing to commit (no delta)
 	credentials, err := g.CredentialReader.GetCredentials(project)
 	if err == nil && credentials != nil {
-		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
+		repoURI := getRepoURI(credentials.RemoteURL, credentials.User, credentials.HttpsAuth.Token)
 		if withPull {
 			_, err = g.Executor.ExecuteCommand("git", []string{"pull", "-s", "recursive", "-X", "theirs", repoURI}, projectConfigPath)
 			if err != nil {
@@ -390,9 +396,9 @@ func (g *Git) ConfigureGitUser(project string) error {
 
 // CloneRepo clones an upstream repository into a local folder "project" and returns
 // whether the Git repo is already initialized.
-func CloneRepo(project string, credentials common_models.GitCredentials) (bool, error) {
+func CloneRepo(project string, credentials apimodels.GitAuthCredentials) (bool, error) {
 	g := NewGit(&KeptnUtilsCommandExecutor{}, &K8sCredentialReader{})
-	return g.CloneRepo(project, credentials)
+	return g.CloneRepo(project, &credentials)
 }
 
 func isNoRemoteHeadFoundError(err error) bool {
@@ -450,7 +456,7 @@ func removeRemoteOrigin(project string) error {
 	return g.removeRemoteOrigin(project)
 }
 
-func setUpstreamsAndPush(project string, credentials *common_models.GitCredentials, repoURI string) error {
+func setUpstreamsAndPush(project string, credentials *apimodels.GitAuthCredentials, repoURI string) error {
 	g := NewGit(&KeptnUtilsCommandExecutor{}, &K8sCredentialReader{})
 	return g.setUpstreamsAndPush(project, credentials, repoURI)
 }
@@ -524,7 +530,7 @@ func ServiceExists(project string, stage string, service string, disableUpstream
 }
 
 // GetCredentials returns the git upstream credentials for a given project (stored as a secret), if available
-func GetCredentials(project string) (*common_models.GitCredentials, error) {
+func GetCredentials(project string) (*apimodels.GitAuthCredentials, error) {
 	credentialsReader := &K8sCredentialReader{}
 	return credentialsReader.GetCredentials(project)
 }
@@ -563,11 +569,11 @@ func ConfigureGitUser(project string) error {
 	return g.ConfigureGitUser(project)
 }
 
-func addRepoURIToMetadata(credentials *common_models.GitCredentials, metadata *models.Version) {
+func addRepoURIToMetadata(credentials *apimodels.GitAuthCredentials, metadata *models.Version) {
 	// the git token should not be included in the repo URI in the first place, but let's make sure it's hidden in any case
-	remoteURI := credentials.RemoteURI
-	remoteURI = strings.Replace(remoteURI, credentials.Token, "********", -1)
-	metadata.UpstreamURL = remoteURI
+	remoteURL := credentials.RemoteURL
+	remoteURL = strings.Replace(remoteURL, credentials.HttpsAuth.Token, "********", -1)
+	metadata.UpstreamURL = remoteURL
 }
 
 func addVersionToMetadata(project string, metadata *models.Version) {

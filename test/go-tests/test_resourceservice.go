@@ -708,7 +708,7 @@ func createConfigServiceUpstreamRepo(projectName string) (string, string, error)
 		}
 	}
 
-	secretData := fmt.Sprintf(`{"user":"%s","token":"%s","remoteURI":"http://gitea-http:3000/%s/%s"}`, user, token, user, projectName)
+	secretData := fmt.Sprintf(`{"user":"%s","remoteURL":"http://gitea-http:3000/%s/%s","https":{"token":"%s"}}`, user, user, projectName, token)
 
 	_, err = client.CoreV1().Secrets(GetKeptnNameSpaceFromEnv()).Create(context.TODO(), &corev1.Secret{
 		TypeMeta: v1.TypeMeta{},
