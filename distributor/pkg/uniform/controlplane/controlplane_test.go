@@ -18,7 +18,7 @@ func TestControlPlaneRegister(t *testing.T) {
 		data := models.Integration{}
 		data.FromJSON(reqBody)
 		assert.Equal(t, models.Integration{
-			Name: "k8s-deployment",
+			Name: "k8s-component",
 			MetaData: models.MetaData{
 				Hostname:           "k8s-nodename",
 				IntegrationVersion: "2.0",
