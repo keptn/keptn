@@ -2,12 +2,11 @@ package api
 
 import (
 	"crypto/tls"
-	"github.com/benbjohnson/clock"
+	"net/http"
+
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
-	"net/http"
-	"time"
 )
 
 // InternalAPISet is an implementation of APISet
@@ -69,74 +68,55 @@ func NewInternal(client *http.Client, apiMappings ...InClusterAPIMappings) (*Int
 	as.httpClient = client
 
 	as.apiHandler = &InternalAPIHandler{
-		shipyardControllerApiHandler: &api.APIHandler{
-			BaseURL:    apimap[ShipyardController],
-			HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))},
-			Scheme:     "http",
-		},
+		shipyardControllerApiHandler: api.NewAPIHandlerWithHTTPClient(
+			apimap[ShipyardController],
+			&http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))}),
 	}
 
-	as.authHandler = &api.AuthHandler{
-		BaseURL:    apimap[ApiService],
-		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))},
-		Scheme:     "http",
-	}
-	as.logHandler = &api.LogHandler{
-		BaseURL:      apimap[ShipyardController],
-		HTTPClient:   &http.Client{Transport: getClientTransport(as.httpClient.Transport)},
-		Scheme:       "http",
-		LogCache:     []models.LogEntry{},
-		TheClock:     clock.New(),
-		SyncInterval: 1 * time.Minute,
-	}
+	as.authHandler = api.NewAuthHandlerWithHTTPClient(
+		apimap[ApiService],
+		&http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))})
 
-	as.eventHandler = &api.EventHandler{
-		BaseURL:    apimap[MongoDBDatastore],
-		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))},
-		Scheme:     "http",
-	}
+	as.logHandler = api.NewLogHandlerWithHTTPClient(
+		apimap[ShipyardController],
+		&http.Client{Transport: getClientTransport(as.httpClient.Transport)})
 
-	as.projectHandler = &api.ProjectHandler{
-		BaseURL:    apimap[ShipyardController],
-		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))},
-		Scheme:     "http",
-	}
+	as.eventHandler = api.NewEventHandlerWithHTTPClient(
+		apimap[MongoDBDatastore],
+		&http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))})
 
-	as.resourceHandler = &api.ResourceHandler{
-		BaseURL:    apimap[ConfigurationService],
-		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))},
-		Scheme:     "http",
-	}
-	as.secretHandler = &api.SecretHandler{
-		BaseURL:    apimap[SecretService],
-		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))},
-		Scheme:     "http",
-	}
-	as.sequenceControlHandler = &api.SequenceControlHandler{
-		BaseURL:    apimap[ShipyardController],
-		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))},
-		Scheme:     "http",
-	}
-	as.serviceHandler = &api.ServiceHandler{
-		BaseURL:    apimap[ShipyardController],
-		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))},
-		Scheme:     "http",
-	}
-	as.shipyardControlHandler = &api.ShipyardControllerHandler{
-		BaseURL:    apimap[ShipyardController],
-		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))},
-		Scheme:     "http",
-	}
-	as.stageHandler = &api.StageHandler{
-		BaseURL:    apimap[ShipyardController],
-		HTTPClient: &http.Client{Transport: otelhttp.NewTransport(as.httpClient.Transport)},
-		Scheme:     "http",
-	}
-	as.uniformHandler = &api.UniformHandler{
-		BaseURL:    apimap[ShipyardController],
-		HTTPClient: &http.Client{Transport: getClientTransport(as.httpClient.Transport)},
-		Scheme:     "http",
-	}
+	as.projectHandler = api.NewProjectHandlerWithHTTPClient(
+		apimap[ShipyardController],
+		&http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))})
+
+	as.resourceHandler = api.NewResourceHandlerWithHTTPClient(
+		apimap[ConfigurationService],
+		&http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))})
+
+	as.secretHandler = api.NewSecretHandlerWithHTTPClient(
+		apimap[SecretService],
+		&http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))})
+
+	as.sequenceControlHandler = api.NewSequenceControlHandlerWithHTTPClient(
+		apimap[ShipyardController],
+		&http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))})
+
+	as.serviceHandler = api.NewServiceHandlerWithHTTPClient(
+		apimap[ShipyardController],
+		&http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))})
+
+	as.shipyardControlHandler = api.NewShipyardControllerHandlerWithHTTPClient(
+		apimap[ShipyardController],
+		&http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))})
+
+	as.stageHandler = api.NewStageHandlerWithHTTPClient(
+		apimap[ShipyardController],
+		&http.Client{Transport: otelhttp.NewTransport(as.httpClient.Transport)})
+
+	as.uniformHandler = api.NewUniformHandlerWithHTTPClient(
+		apimap[ShipyardController],
+		&http.Client{Transport: getClientTransport(as.httpClient.Transport)})
+
 	return as, nil
 }
 
