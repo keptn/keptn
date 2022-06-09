@@ -14,7 +14,7 @@ import { printError } from '../utils/print-utils';
 import { ComponentLogger } from '../utils/logger';
 
 const router = Router();
-const log = new ComponentLogger("API");
+const log = new ComponentLogger("APIService");
 
 const apiRouter = (params: {
   apiUrl: string;
@@ -133,6 +133,7 @@ const apiRouter = (params: {
         );
         return res.json(result);
       } else {
+        log.error(`There has been a problem with /intersetEvents. Got body: ${req.body}`);
         return res.status(400).json('incorrect data');
       }
     } catch (error) {
@@ -271,6 +272,8 @@ const apiRouter = (params: {
             subscriptionId,
             deleteWebhook
           );
+        } else {
+          log.info("No available subscription or integration ID.");
         }
         return res.json();
       } catch (error) {
@@ -292,6 +295,8 @@ const apiRouter = (params: {
             subscription,
             req.body.webhookConfig
           );
+        } else {
+          log.info("No available subscription or integration ID.");
         }
         return res.json();
       } catch (error) {
@@ -314,6 +319,8 @@ const apiRouter = (params: {
             req.body.subscription,
             req.body.webhookConfig
           );
+        } else {
+          log.info("No available subscription or integration ID.");
         }
         return res.json();
       } catch (error) {
