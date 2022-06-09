@@ -66,9 +66,9 @@ func TestGitCredentials_Validate(t *testing.T) {
 			fields: fields{
 				User:       "my-user",
 				PrivateKey: "",
-				RemoteURI:  "https://my.repo",
+				RemoteURI:  "https://my:repo",
 			},
-			wantErr: false,
+			wantErr: true,
 		},
 		{
 			name: "token with ssh",
