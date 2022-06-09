@@ -4,7 +4,7 @@ import { ApiService } from './api.service';
 import { Observable, of } from 'rxjs';
 import { KeptnInfoResult } from '../../../shared/interfaces/keptn-info-result';
 import moment from 'moment';
-import { KeptnVersions } from '../_models/keptn-versions';
+import { KeptnVersions } from '../../../shared/interfaces/keptn-versions';
 import { Project } from '../_models/project';
 import { ProjectResult } from '../_interfaces/project-result';
 import { UniformRegistrationResult } from '../../../shared/interfaces/uniform-registration-result';
