@@ -124,9 +124,6 @@ func Test_ProxyAuth(t *testing.T) {
 	serviceJmeterDir := path.Join(repoLocalDir, "jmeter")
 
 	mockServerIP := "mockserver:1080"
-	user := GetGiteaUser()
-	token, _ := GetGiteaToken()
-
 	// Delete chart archive at the end of the test
 	defer func(path string) {
 		err := os.RemoveAll(path)
@@ -181,8 +178,8 @@ func Test_ProxyAuth(t *testing.T) {
 	require.Equal(t, projectName, project.ProjectName)
 
 	t.Logf("Updating project credentials")
-	user = GetGiteaUser()
-	token, err = GetGiteaToken()
+	user := GetGiteaUser()
+	token, err := GetGiteaToken()
 	require.Nil(t, err)
 
 	// apply the k8s job for creating the git upstream
