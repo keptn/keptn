@@ -2,12 +2,15 @@ package go_tests
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/common/osutils"
 	"github.com/mholt/archiver/v3"
 	"github.com/stretchr/testify/require"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"testing"
@@ -70,33 +73,63 @@ spec:
                 deploymentstrategy: "direct"
             - name: "release"
 `
-const baseProxyProjectPath = "/controlPlane/v1/project"
+const baseProxyProjectPath = "/api/controlPlane/v1/project"
 
 type Payload struct {
-	HTTPRequest HTTPRequest `json:"httpRequest"`
-	HTTPForward HTTPForward `json:"httpForward"`
-}
-type HTTPRequest struct {
-	Path string `json:"path"`
-}
-type HTTPForward struct {
-	Host   string `json:"host"`
-	Port   int    `json:"port"`
-	Scheme string `json:"scheme"`
+	HTTPRequest                  HTTPRequest                  `json:"httpRequest,omitempty"`
+	HTTPOverrideForwardedRequest HTTPOverrideForwardedRequest `json:"httpOverrideForwardedRequest,omitempty"`
 }
 
-// UpdateMockserverConfig execute a call to the mockserver API to add a new configuration as proxy, it is equivalent to the following curl command:
-// curl -X PUT http://localhost:1080/mockserver/expectation -H 'accept: application/json' -H 'Content-Type: application/json'
-// -d '{"httpRequest": {"path": "/"}, "httpForward": {"host": "gitea-http", "port": 3000,"scheme": "HTTP"}}'
-func UpdateMockserverConfig(t *testing.T) {
+type Headers struct {
+	Name   string   `json:"name,omitempty"`
+	Values []string `json:"values,omitempty"`
+}
+
+type HTTPRequest struct {
+	Method  string    `json:"method,omitempty"`
+	Path    string    `json:"path,omitempty"`
+	Headers []Headers `json:"headers,omitempty"`
+}
+
+type RequestOverride struct {
+	Method  string    `json:"method,omitempty"`
+	Path    string    `json:"path,omitempty"`
+	Headers []Headers `json:"headers,omitempty"`
+}
+
+type HTTPOverrideForwardedRequest struct {
+	RequestOverride RequestOverride `json:"requestOverride,omitempty"`
+}
+
+// UpdateMockserverConfig execute a call to the mockserver API to add a new configuration as proxy, it is equivalent to a curl command
+
+func UpdateMockserverConfig(t *testing.T, project string) {
+	namespace := osutils.GetOSEnvOrDefault(KeptnNamespaceEnvVar, DefaultKeptnNamespace)
+	pods, err := GetPodNamesOfDeployment("app=mockserver")
+	require.Nil(t, err)
+	require.NotZero(t, len(pods))
+	err = KubeCtlPortForwardSvc(context.Background(), pods[0], "1080", "1080", namespace)
+	require.Nil(t, err)
+	token, baseURL, err := GetApiCredentials()
+	require.Nil(t, err)
+	apiurl, err := url.Parse(baseURL)
+	require.Nil(t, err)
 	data := Payload{
-		HTTPRequest{
-			Path: "/",
+		HTTPRequest: HTTPRequest{
+			Path: baseProxyProjectPath + "/" + project,
 		},
-		HTTPForward{
-			Host:   "gitea-http",
-			Port:   3002,
-			Scheme: "HTTP",
+		HTTPOverrideForwardedRequest: HTTPOverrideForwardedRequest{
+			RequestOverride: RequestOverride{
+				Path: baseProxyProjectPath + "/" + project,
+				Headers: []Headers{
+					{Name: "Host",
+						Values: []string{apiurl.Host},
+					},
+					{Name: "X-Token",
+						Values: []string{token},
+					},
+				},
+			},
 		},
 	}
 	payloadBytes, err := json.Marshal(data)
@@ -123,7 +156,7 @@ func Test_ProxyAuth(t *testing.T) {
 	serviceChartArchivePath := path.Join(repoLocalDir, "helm-charts", chartFileName)
 	serviceJmeterDir := path.Join(repoLocalDir, "jmeter")
 
-	mockServerIP := "mockserver:1080"
+	mockServerIP := "localhost:1080"
 	// Delete chart archive at the end of the test
 	defer func(path string) {
 		err := os.RemoveAll(path)
@@ -133,14 +166,14 @@ func Test_ProxyAuth(t *testing.T) {
 	err := archiver.Archive([]string{serviceChartSrcPath}, serviceChartArchivePath)
 	require.Nil(t, err)
 
-	t.Log("Adding new config to mockserver")
-	UpdateMockserverConfig(t)
-
 	t.Logf("Creating a new project %s with Gitea Upstream", projectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(testingProxyShipyard)
 	require.Nil(t, err)
 	projectName, err = CreateProjectWithProxy(projectName, shipyardFilePath, mockServerIP)
 	require.Nil(t, err)
+
+	t.Log("Adding new config to mockserver")
+	UpdateMockserverConfig(t, projectName)
 
 	t.Logf("Creating service %s in project %s", serviceName, projectName)
 	_, err = ExecuteCommandf("keptn create service %s --project %s", serviceName, projectName)
@@ -163,7 +196,9 @@ func Test_ProxyAuth(t *testing.T) {
 	require.Nil(t, err)
 
 	t.Logf("Getting project %s with a proxy", projectName)
-	resp, err := ApiGETRequest(baseProxyProjectPath+"/"+projectName, 3)
+
+	ApiCaller, err := NewAPICallerWithBaseURL("http://" + mockServerIP)
+	resp, err := ApiCaller.Get(baseProxyProjectPath+"/"+projectName, 3)
 	require.Nil(t, err)
 	require.Equal(t, 200, resp.Response().StatusCode)
 
