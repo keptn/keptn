@@ -94,8 +94,8 @@ func UpdateMockserverConfig(t *testing.T) {
 			Path: "/",
 		},
 		HTTPForward{
-			Host:   "mockserver",
-			Port:   1080,
+			Host:   "gitea-http",
+			Port:   3002,
 			Scheme: "HTTP",
 		},
 	}
