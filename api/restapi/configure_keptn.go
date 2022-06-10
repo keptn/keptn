@@ -36,11 +36,14 @@ const envVarLogLevel = "LOG_LEVEL"
 const controlPlaneServiceEnvVar = "CONTROLPLANE_URI"
 
 type EnvConfig struct {
+	HideDeprecated           bool    `envconfig:"HIDE_DEPRECATED" default:"false"`
+	ImportBasePath            string  `envconfig:"IMPORT_BASE_PATH"`
 	MaxAuthEnabled            bool    `envconfig:"MAX_AUTH_ENABLED" default:"true"`
 	MaxAuthRequestsPerSecond  float64 `envconfig:"MAX_AUTH_REQUESTS_PER_SECOND" default:"1"`
 	MaxAuthRequestBurst       int     `envconfig:"MAX_AUTH_REQUESTS_BURST" default:"2"`
 	MaxImportUncompressedSize uint64  `envconfig:"MAX_IMPORT_UNCOMPRESSED_SIZE" default:"52428800"` // 50MB default value
-	ImportBasePath            string  `envconfig:"IMPORT_BASE_PATH"`
+	OAuthEnabled             bool    `envconfig:"OAUTH_ENABLED" default:"false"`
+	OAuthPrefix              string  `envconfig:"OAUTH_PREFIX" default:"keptn:"`
 }
 
 func configureFlags(api *operations.KeptnAPI) {
@@ -116,7 +119,7 @@ func configureAPI(api *operations.KeptnAPI) http.Handler {
 
 	api.ServerShutdown = func() {}
 
-	return setupGlobalMiddleware(api.Serve(setupMiddlewares))
+	return setupGlobalMiddleware(api.Serve(setupMiddlewares), env)
 }
 
 // The TLS configuration before HTTPS server starts.
@@ -149,52 +152,36 @@ func setupMiddlewares(handler http.Handler) http.Handler {
 
 // The middleware configuration happens before anything, this middleware also applies to serving the swagger.yaml document.
 // So this is a good place to plug in a panic handling middleware, logging and metrics
-func setupGlobalMiddleware(handler http.Handler) http.Handler {
-
-	prefixPath := os.Getenv("PREFIX_PATH")
-	if len(prefixPath) > 0 {
-		// Set the prefix-path in the swagger.yaml
-		input, err := ioutil.ReadFile("swagger-ui/swagger.yaml")
-		if err == nil {
-			editedSwagger := strings.Replace(
-				string(input), "basePath: /api/v1",
-				"basePath: "+prefixPath+"/api/v1", -1,
-			)
-			err = ioutil.WriteFile("swagger-ui/swagger.yaml", []byte(editedSwagger), 0644)
-			if err != nil {
-				fmt.Println("Failed to write edited swagger.yaml")
-			}
-		} else {
-			fmt.Println("Failed to set basePath in swagger.yaml")
-		}
-
-		// Set the prefix-path in the index.html
-		input, err = ioutil.ReadFile("swagger-ui/index.html")
-		if err == nil {
-			editedSwagger := strings.Replace(
-				string(input), "const prefixPath = \"\"",
-				"const prefixPath = \""+prefixPath+"\"", -1,
-			)
-			err = ioutil.WriteFile("swagger-ui/index.html", []byte(editedSwagger), 0644)
-			if err != nil {
-				fmt.Println("Failed to write edited index.html")
-			}
-		} else {
-			fmt.Println("Failed to set basePath in index.html")
-		}
+func setupGlobalMiddleware(handler http.Handler, env *EnvConfig) http.Handler {
+	inMemoryIndex := ""
+	b, err := ioutil.ReadFile("swagger-ui/index.html")
+	if err != nil {
+		fmt.Printf("Failed to set conf in index.html %v\n", err)
+	} else {
+		inMemoryIndex = string(b)
 	}
 
-	return http.HandlerFunc(
-		func(w http.ResponseWriter, r *http.Request) {
-			if strings.Index(r.URL.Path, "/swagger-ui/") == 0 {
-				http.StripPrefix("/swagger-ui/", http.FileServer(http.Dir("swagger-ui"))).ServeHTTP(w, r)
+	if env.OAuthEnabled {
+		inMemoryIndex = strings.Replace(inMemoryIndex, "const oauth_prefix = \"\";", "const oauth_prefix = \""+env.OAuthPrefix+"\";", -1)
+		inMemoryIndex = strings.Replace(inMemoryIndex, "const oauth_enabled = false;", "const oauth_enabled = true;", -1)
+	}
+	if env.HideDeprecated {
+		inMemoryIndex = strings.Replace(inMemoryIndex, "const hide_deprecated = false;", "const hide_deprecated = true;", -1)
+	}
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.Index(r.URL.Path, "/swagger-ui/") == 0 {
+			if (strings.HasSuffix(r.URL.Path, "/swagger-ui/") || strings.HasSuffix(r.URL.Path, "/swagger-ui/index.html")) && inMemoryIndex != "" {
+				w.Write([]byte(inMemoryIndex))
 				return
 			}
-			if strings.Index(r.URL.Path, "/health") == 0 {
-				w.WriteHeader(http.StatusOK)
-				return
-			}
-			handler.ServeHTTP(w, r)
-		},
-	)
+			http.StripPrefix("/swagger-ui/", http.FileServer(http.Dir("swagger-ui"))).ServeHTTP(w, r)
+			return
+		}
+		if strings.Index(r.URL.Path, "/health") == 0 {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+		handler.ServeHTTP(w, r)
+	})
 }

@@ -26,6 +26,8 @@ paths:
         - event
       operationId: getEvents
       summary: Gets events from the data store, either keptnContext or project must be specified
+      description: >
+        <span class="oauth-scopes">Required OAuth scopes: ${prefix}events:read</span>
       parameters:
         - name: keptnContext
           in: query
@@ -118,6 +120,8 @@ paths:
         - event
       operationId: getEventsByType
       summary: Gets events by their type from the mongodb, required filter are either 'data.project:<project-name>' or 'shkeptncontext:<keptn-context-id>'
+      description: >
+        <span class="oauth-scopes">Required OAuth scopes: ${prefix}events:read</span>
       parameters:
         - name: filter
           in: query

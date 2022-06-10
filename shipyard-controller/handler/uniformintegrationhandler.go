@@ -3,9 +3,10 @@ package handler
 import (
 	"errors"
 	"fmt"
-	logger "github.com/sirupsen/logrus"
 	"net/http"
 	"time"
+
+	logger "github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -100,6 +101,7 @@ func (u UniformParamsValidator) validateFilterParams(params apimodels.EventSubsc
 // Register creates or updates a uniform integration
 // @Summary      Register a uniform integration
 // @Description  Register a uniform integration
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}integrations:write</span>
 // @Tags         Uniform
 // @Security     ApiKeyAuth
 // @Accept       json
@@ -212,6 +214,7 @@ func (rh *UniformIntegrationHandler) updateExistingIntegration(integration *apim
 // Unregister deletes a uniform integration
 // @Summary      Unregister a uniform integration
 // @Description  Unregister a uniform integration
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}integrations:delete</span>
 // @Tags         Uniform
 // @Security     ApiKeyAuth
 // @Accept       json
@@ -233,6 +236,7 @@ func (rh *UniformIntegrationHandler) Unregister(c *gin.Context) {
 // GetRegistrations Retrieve uniform integrations matching the provided filter
 // @Summary      Retrieve uniform integrations matching the provided filter
 // @Description  Retrieve uniform integrations matching the provided filter
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}integrations:read</span>
 // @Tags         Uniform
 // @Security     ApiKeyAuth
 // @Accept       json
@@ -264,6 +268,7 @@ func (rh *UniformIntegrationHandler) GetRegistrations(c *gin.Context) {
 // KeepAlive returns current registration data of an integration
 // @Summary      Endpoint for sending heartbeat messages sent from Keptn integrations to the control plane
 // @Description  Endpoint for sending heartbeat messages sent from Keptn integrations to the control plane
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}integrations:write</span>
 // @Tags         Uniform
 // @Security     ApiKeyAuth
 // @Accept       json
@@ -293,6 +298,7 @@ func (rh *UniformIntegrationHandler) KeepAlive(c *gin.Context) {
 // CreateSubscription creates a new subscription
 // @Summary      Create a new subscription
 // @Description  Create a new subscription
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}integrations:write</span>
 // @Tags         Uniform
 // @Security     ApiKeyAuth
 // @Accept       json
@@ -340,6 +346,7 @@ func (rh *UniformIntegrationHandler) CreateSubscription(c *gin.Context) {
 // UpdateSubscription updates or creates a subscription
 // @Summary      Update or create a subscription
 // @Description  Update or create a subscription
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}integrations:write</span>
 // @Tags         Uniform
 // @Security     ApiKeyAuth
 // @Accept       json
@@ -396,6 +403,7 @@ func (rh *UniformIntegrationHandler) UpdateSubscription(c *gin.Context) {
 // DeleteSubscription deletes a new subscription
 // @Summary      Delete a subscription
 // @Description  Delete a subscription
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}integrations:delete</span>
 // @Tags         Uniform
 // @Security     ApiKeyAuth
 // @Accept       json
@@ -421,6 +429,7 @@ func (rh *UniformIntegrationHandler) DeleteSubscription(c *gin.Context) {
 // GetSubscription retrieves an already existing subscription
 // @Summary      Retrieve an already existing subscription
 // @Description  Retrieve an already existing subscription
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}integrations:read</span>
 // @Tags         Uniform
 // @Security     ApiKeyAuth
 // @Accept       json
@@ -451,6 +460,7 @@ func (rh *UniformIntegrationHandler) GetSubscription(c *gin.Context) {
 // GetSubscriptions retrieves all subscriptions of a uniform integration
 // @Summary      Retrieve all subscriptions of a uniform integration
 // @Description  Retrieve all subscriptions of a uniform integration
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}integrations:read</span>
 // @Tags         Uniform
 // @Security     ApiKeyAuth
 // @Accept       json

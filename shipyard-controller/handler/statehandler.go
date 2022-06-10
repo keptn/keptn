@@ -31,6 +31,7 @@ func NewStateHandler(stateRepo db.SequenceStateRepo, shipyardController IShipyar
 // GetSequenceState godoc
 // @Summary      Get task sequence execution states
 // @Description  Get task sequence execution states
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}projects:read</span>
 // @Tags         Sequence
 // @Security     ApiKeyAuth
 // @Accept       json
@@ -70,6 +71,7 @@ func (sh *StateHandler) GetSequenceState(c *gin.Context) {
 // ControlSequenceState godoc
 // @Summary      Pause/Resume/Abort a task sequence
 // @Description  Pause/Resume/Abort a task sequence, either for a specific stage, or for all stages involved in the sequence
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}projects:write</span>
 // @Tags         Sequence
 // @Security     ApiKeyAuth
 // @Accept       json
