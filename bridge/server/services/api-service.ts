@@ -18,7 +18,7 @@ import { ComponentLogger } from '../utils/logger';
 export class ApiService {
   private readonly axios: AxiosInstance;
   private readonly escapeSlash = '%252F';
-  private readonly log = new ComponentLogger("API");
+  private readonly log = new ComponentLogger('API');
 
   constructor(private readonly baseUrl: string, readonly apiToken: string | undefined) {
     if (process.env.NODE_ENV === 'test' && global.axiosInstance) {
@@ -35,11 +35,11 @@ export class ApiService {
         },
       });
       // log request using the same format of morgan but without response time
-      this.axios.interceptors.response.use(response => {
+      this.axios.interceptors.response.use((response) => {
         //Example: GET /api/project/podtato 200
-        this.log.info(`${response.config.method} ${response.config.url} ${response.status}`)
-        return response
-      })
+        this.log.info(`${response.config.method} ${response.config.url} ${response.status}`);
+        return response;
+      });
     }
   }
 

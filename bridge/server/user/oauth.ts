@@ -9,7 +9,7 @@ import { ComponentLogger } from '../utils/logger';
 const refreshPromises: { [sessionId: string]: Promise<TokenSet> } = {};
 const reduceRefreshDateSeconds = 10;
 
-const log = new ComponentLogger("OAuth");
+const log = new ComponentLogger('OAuth');
 
 async function setupOAuth(
   app: Express,

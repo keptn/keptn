@@ -14,7 +14,7 @@ import { printError } from '../utils/print-utils';
 import { ComponentLogger } from '../utils/logger';
 
 const router = Router();
-const log = new ComponentLogger("APIService");
+const log = new ComponentLogger('APIService');
 
 const apiRouter = (params: {
   apiUrl: string;
@@ -273,7 +273,7 @@ const apiRouter = (params: {
             deleteWebhook
           );
         } else {
-          log.info("No available subscription or integration ID.");
+          log.info('No available subscription or integration ID.');
         }
         return res.json();
       } catch (error) {
@@ -296,7 +296,7 @@ const apiRouter = (params: {
             req.body.webhookConfig
           );
         } else {
-          log.info("No available subscription or integration ID.");
+          log.info('No available subscription or integration ID.');
         }
         return res.json();
       } catch (error) {
@@ -320,7 +320,7 @@ const apiRouter = (params: {
             req.body.webhookConfig
           );
         } else {
-          log.info("No available subscription or integration ID.");
+          log.info('No available subscription or integration ID.');
         }
         return res.json();
       } catch (error) {

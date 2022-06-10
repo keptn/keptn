@@ -43,7 +43,7 @@ export class SessionService {
   private readonly databaseSecret: string;
   private readonly validationCollectionName = 'validation';
   private readonly sessionCollectionName = 'sessions';
-  private readonly log = new ComponentLogger("OAuth");
+  private readonly log = new ComponentLogger('OAuth');
 
   constructor() {
     this.SESSION_TIME_SECONDS = this.getOrDefaultSessionTimeout(60); // session timeout, default to 60 minutes
@@ -220,7 +220,7 @@ export class SessionService {
           }
         : undefined;
     } catch (err) {
-      const msg = (err instanceof Error) ? `${err.name}: ${err.message}` : `${err}`;
+      const msg = err instanceof Error ? `${err.name}: ${err.message}` : `${err}`;
       this.log.error(`Error wile decrypting validation data. Cause: ${msg}`);
     }
   }

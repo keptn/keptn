@@ -5,10 +5,9 @@ import { printError } from './print-utils';
 import { LogDestination, logger } from './logger';
 
 describe('Test print-utils', () => {
-
   beforeAll(() => {
-    logger.configure(LogDestination.StdOut);
-  })
+    logger.configure(LogDestination.STDOUT);
+  });
 
   afterEach(() => {
     jest.clearAllMocks();
@@ -51,7 +50,7 @@ describe('Test print-utils', () => {
 
   it('should not print as axiosError', () => {
     const consoleSpy = jest.spyOn(logger, 'error');
-    const msg = "myError";
+    const msg = 'myError';
     const error = new Error(msg);
     printError(error);
     expect(consoleSpy).toBeCalledTimes(1);

@@ -6,7 +6,7 @@ import { ComponentLogger } from '../utils/logger';
 
 const prefixPath = process.env.PREFIX_PATH;
 
-const log = new ComponentLogger("OAuth");
+const log = new ComponentLogger('OAuth');
 
 /**
  * Build the root path. The exact path depends on the deployment & PREFIX_PATH value
@@ -63,7 +63,7 @@ function oauthRouter(
       });
       res.redirect(authorizationUrl);
     } catch (e) {
-      const msg = (e instanceof Error) ? `${e.name}: ${e.message}` : `${e}`;
+      const msg = e instanceof Error ? `${e.name}: ${e.message}` : `${e}`;
       log.error(msg);
     }
     return res;

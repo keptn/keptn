@@ -47,7 +47,7 @@ const defaultContentSecurityPolicyOptions: Readonly<ContentSecurityPolicyOptions
   },
 };
 
-const log = new ComponentLogger("App");
+const log = new ComponentLogger('App');
 
 async function init(): Promise<Express> {
   const app = express();
