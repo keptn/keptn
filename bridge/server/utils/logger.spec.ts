@@ -4,6 +4,7 @@ import { ComponentLogger, Level, LogDestination, logger as logimpl, LoggerImpl }
 
 describe('Logger', () => {
   let logger: LoggerImpl;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let spyLog: any;
 
   beforeEach(() => {
