@@ -7,13 +7,13 @@ describe('Configuration', () => {
     envToClear.forEach((name) => delete process.env[name]);
   });
 
-  it('Default values', () => {
+  it('should use default values', () => {
     const result = getConfiguration();
     expect(result.logging.destination).toBe(LogDestination.STDOUT);
     expect(result.logging.enabledComponents).toStrictEqual({});
   });
 
-  it('set values using options object', () => {
+  it('should set values using options object', () => {
     let result = getConfiguration({
       logging: {
         enabledComponents: 'a=true,b=false,c=true',
@@ -38,7 +38,7 @@ describe('Configuration', () => {
     });
   });
 
-  it('set values using env var', () => {
+  it('should set values using env var', () => {
     process.env.LOGGING_COMPONENTS = 'a=true,b=false,c=true';
     const result = getConfiguration();
     expect(result.logging.destination).toBe(LogDestination.STDOUT);
@@ -49,7 +49,7 @@ describe('Configuration', () => {
     });
   });
 
-  it('option object wins over env var', () => {
+  it('option object should win over env var', () => {
     process.env.LOGGING_COMPONENTS = 'a=false,b=true,c=false';
     const result = getConfiguration({
       logging: {
@@ -64,7 +64,7 @@ describe('Configuration', () => {
     });
   });
 
-  it('eval booleans', () => {
+  it('should correctly eval booleans', () => {
     const result = getConfiguration({
       logging: {
         enabledComponents: 'a=tRue,b=FaLsE,c=0,d=1,e=enabled',

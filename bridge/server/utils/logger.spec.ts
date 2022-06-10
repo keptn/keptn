@@ -16,7 +16,7 @@ describe('Logger', () => {
     jest.clearAllMocks();
   });
 
-  it('Default values', () => {
+  it('should use default values', () => {
     // do not log without conf
     logger.error('component', 'message');
     expect(spyLog).toBeCalledTimes(0);
@@ -26,7 +26,7 @@ describe('Logger', () => {
     expect(spyLog).toBeCalledTimes(1);
   });
 
-  it('log destination', () => {
+  it('should select the correct log destination', () => {
     logger.configure(LogDestination.STDOUT);
     logger.error('component', 'message');
     expect(spyLog).toBeCalledTimes(1);
@@ -39,7 +39,7 @@ describe('Logger', () => {
     expect(fsSpy).toBeCalledTimes(1);
   });
 
-  it('correct format', () => {
+  it('should format correctly the messages', () => {
     logger.configure(LogDestination.STDOUT);
     logger.error('Test1', 'error msg');
     logger.warning('Test2', 'warning msg');
@@ -57,7 +57,7 @@ describe('Logger', () => {
     expect(msg3).toMatch(new RegExp(`^\\[Keptn] ${timestamp} info    \\[Test3] info msg`));
   });
 
-  it('do not log debug level by default', () => {
+  it('should not log debug level by default', () => {
     logger.configure(LogDestination.STDOUT);
     logger.debug('Test', 'debug msg'); //debug disabled
     expect(spyLog).toBeCalledTimes(0);
@@ -70,7 +70,7 @@ describe('Logger', () => {
   describe('ComponentLogger', () => {
     const logimplSpy = jest.spyOn(logimpl, 'log');
 
-    it('Uses Logger implementation', () => {
+    it('should uses Logger implementation', () => {
       const name = 'Component';
       const msg = 'myError';
       const l = new ComponentLogger(name);
@@ -84,7 +84,7 @@ describe('Logger', () => {
       expect(logimplSpy).toHaveBeenCalledWith(Level.DEBUG, name, msg);
     });
 
-    it('Pretty print values', () => {
+    it('should pretty print values', () => {
       const obj = {
         key: 'value',
         array: [
