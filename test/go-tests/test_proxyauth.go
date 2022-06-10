@@ -1,15 +1,16 @@
 package go_tests
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/mholt/archiver/v3"
+	"github.com/stretchr/testify/require"
+	"net/http"
 	"os"
 	"path"
 	"testing"
-
-	"github.com/keptn/go-utils/pkg/api/models"
-	"github.com/mholt/archiver/v3"
-
-	"github.com/stretchr/testify/require"
 )
 
 const testingProxyShipyard = `apiVersion: "spec.keptn.sh/0.2.3"
@@ -71,6 +72,47 @@ spec:
 `
 const baseProxyProjectPath = "/controlPlane/v1/project"
 
+type Payload struct {
+	HTTPRequest HTTPRequest `json:"httpRequest"`
+	HTTPForward HTTPForward `json:"httpForward"`
+}
+type HTTPRequest struct {
+	Path string `json:"path"`
+}
+type HTTPForward struct {
+	Host   string `json:"host"`
+	Port   int    `json:"port"`
+	Scheme string `json:"scheme"`
+}
+
+// UpdateMockserverConfig execute a call to the mockserver API to add a new configuration as proxy, it is equivalent to the following curl command:
+// curl -X PUT http://localhost:1080/mockserver/expectation -H 'accept: application/json' -H 'Content-Type: application/json'
+// -d '{"httpRequest": {"path": "/"}, "httpForward": {"host": "gitea-http", "port": 3000,"scheme": "HTTP"}}'
+func UpdateMockserverConfig(t *testing.T) {
+	data := Payload{
+		HTTPRequest{
+			Path: "/",
+		},
+		HTTPForward{
+			Host:   "gitea-http",
+			Port:   3002,
+			Scheme: "HTTP",
+		},
+	}
+	payloadBytes, err := json.Marshal(data)
+	require.Nil(t, err)
+	body := bytes.NewReader(payloadBytes)
+
+	req, err := http.NewRequest("PUT", "http://localhost:1080/mockserver/expectation", body)
+	require.Nil(t, err)
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	require.Nil(t, err)
+	defer resp.Body.Close()
+}
+
 func Test_ProxyAuth(t *testing.T) {
 	repoLocalDir := "../assets/podtato-head"
 	projectName := "proxy-auth"
@@ -81,6 +123,7 @@ func Test_ProxyAuth(t *testing.T) {
 	serviceChartArchivePath := path.Join(repoLocalDir, "helm-charts", chartFileName)
 	serviceJmeterDir := path.Join(repoLocalDir, "jmeter")
 
+	mockServerIP := "mockserver:1080"
 	// Delete chart archive at the end of the test
 	defer func(path string) {
 		err := os.RemoveAll(path)
@@ -90,10 +133,13 @@ func Test_ProxyAuth(t *testing.T) {
 	err := archiver.Archive([]string{serviceChartSrcPath}, serviceChartArchivePath)
 	require.Nil(t, err)
 
+	t.Log("Adding new config to mockserver")
+	UpdateMockserverConfig(t)
+
 	t.Logf("Creating a new project %s with Gitea Upstream", projectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(testingProxyShipyard)
 	require.Nil(t, err)
-	projectName, err = CreateProjectWithProxy(projectName, shipyardFilePath)
+	projectName, err = CreateProjectWithProxy(projectName, shipyardFilePath, mockServerIP)
 	require.Nil(t, err)
 
 	t.Logf("Creating service %s in project %s", serviceName, projectName)
@@ -125,7 +171,7 @@ func Test_ProxyAuth(t *testing.T) {
 	project := models.ExpandedProject{}
 	err = resp.ToJSON(&project)
 	require.Nil(t, err)
-	require.Equal(t, "squid:3128", project.GitProxyURL)
+	require.Equal(t, mockServerIP, project.GitProxyURL)
 	require.Equal(t, "http", project.GitProxyScheme)
 	require.Equal(t, "", project.GitProxyUser)
 	require.Equal(t, true, project.InsecureSkipTLS)
@@ -137,7 +183,7 @@ func Test_ProxyAuth(t *testing.T) {
 	require.Nil(t, err)
 
 	// apply the k8s job for creating the git upstream
-	_, err = ExecuteCommand(fmt.Sprintf("keptn update project %s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s --git-proxy-url=squid:3128 --git-proxy-scheme=http --insecure-skip-tls", projectName, user, projectName, user, token))
+	_, err = ExecuteCommand(fmt.Sprintf("keptn update project %s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s --git-proxy-url=%s --git-proxy-scheme=http --insecure-skip-tls", projectName, user, projectName, user, token, mockServerIP))
 	require.Nil(t, err)
 
 	t.Logf("Creating service %s in project %s", secondServiceName, projectName)
@@ -149,6 +195,6 @@ func Test_ProxyAuth(t *testing.T) {
 	require.Nil(t, err)
 
 	//Modify the proxy settings to be certain that no other project use the proxy
-	_, err = ExecuteCommand(fmt.Sprintf("keptn update project %s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s --git-proxy-url=squid:3124 --git-proxy-scheme=http --insecure-skip-tls", projectName, user, projectName, user, token))
+	_, err = ExecuteCommand(fmt.Sprintf("keptn update project %s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s --git-proxy-url=%s --git-proxy-scheme=http --insecure-skip-tls", projectName, user, projectName, user, token, mockServerIP))
 	require.Nil(t, err)
 }
