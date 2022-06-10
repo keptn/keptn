@@ -219,8 +219,7 @@ func (mv *MongoDBProjectMVRepo) DeleteUpstreamInfo(projectName string) error {
 	if existingProject == nil {
 		return nil
 	}
-	existingProject.GitCredentials.User = ""
-	existingProject.GitCredentials.RemoteURL = ""
+	existingProject.GitCredentials = nil
 	if err := mv.projectRepo.UpdateProject(existingProject); err != nil {
 		log.Errorf("could not delete upstream credentials of project %s: %s", projectName, err.Error())
 		return err

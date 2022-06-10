@@ -288,7 +288,7 @@ func (pm *ProjectManager) Delete(projectName string) (string, error) {
 	project, err := pm.ProjectMaterializedView.GetProject(projectName)
 	if err != nil {
 		resultMessage.WriteString(fmt.Sprintf("Project %s cannot be retrieved anymore. Any Git upstream of the project will not be deleted.\n", projectName))
-	} else if project != nil && project.GitCredentials.RemoteURL != "" {
+	} else if project != nil && project.GitCredentials != nil {
 		resultMessage.WriteString(fmt.Sprintf("The Git upstream of the project will not be deleted: %s\n", project.GitCredentials.RemoteURL))
 	}
 
@@ -451,13 +451,9 @@ func getShipyardNotAvailableError(project string) string {
 }
 
 func toModelProject(project apimodels.ExpandedProject) apimodels.Project {
-	gitCredentials := apimodels.GitAuthCredentials{
-		RemoteURL: project.GitCredentials.RemoteURL,
-		User:      project.GitCredentials.User,
-	}
 	return apimodels.Project{
 		CreationDate:    project.CreationDate,
-		GitCredentials:  &gitCredentials,
+		GitCredentials:  toInsecureCredentials(project.GitCredentials),
 		ProjectName:     project.ProjectName,
 		ShipyardVersion: project.ShipyardVersion,
 	}
