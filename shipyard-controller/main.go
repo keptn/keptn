@@ -70,7 +70,14 @@ const envVarNatsURLDefault = "nats://keptn-nats"
 const envVarDisableLeaderElection = "DISABLE_LEADER_ELECTION"
 
 func main() {
+	kubeAPI, err := createKubeAPI()
+	if err != nil {
+		log.Fatalf("could not create kubernetes client: %s", err.Error())
+	}
+	_main(kubeAPI)
+}
 
+func _main(kubeAPI kubernetes.Interface) {
 	log.SetLevel(log.InfoLevel)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -104,11 +111,6 @@ func main() {
 	csEndpoint, err := keptncommon.GetServiceEndpoint(envVarConfigurationSvcEndpoint)
 	if err != nil {
 		log.Fatalf("could not get configuration-service URL: %s", err.Error())
-	}
-
-	kubeAPI, err := createKubeAPI()
-	if err != nil {
-		log.Fatalf("could not create kubernetes client: %s", err.Error())
 	}
 
 	connectionHandler := nats.NewNatsConnectionHandler(
@@ -434,7 +436,7 @@ func createEventQueueRepo() *db.MongoDBEventQueueRepo {
 	return db.NewMongoDBEventQueueRepo(db.GetMongoDBConnectionInstance())
 }
 
-func createSecretStore(kubeAPI *kubernetes.Clientset) *common.K8sSecretStore {
+func createSecretStore(kubeAPI kubernetes.Interface) *common.K8sSecretStore {
 	return common.NewK8sSecretStore(kubeAPI)
 }
 
