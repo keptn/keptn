@@ -1,0 +1,45 @@
+{
+  "states": [
+    {
+      "name": "delivery",
+      "service": "carts",
+      "project": "sockshop",
+      "time": "2021-07-06T08:13:53.766Z",
+      "shkeptncontext": "1663de8a-a414-47ba-9566-10a9730f40ff",
+      "state": "finished",
+      "stages": [
+        {
+          "name": "dev",
+          "image": "docker.io/keptnexamples/carts:0.12.3",
+          "latestEvaluation": {
+            "result": "pass",
+            "score": 0
+          },
+          "latestEvent": {
+            "type": "sh.keptn.event.dev.delivery.finished",
+            "id": "92207803-7d49-4081-ad0a-897e3f4229d2",
+            "time": "2021-07-06T08:17:42.285Z"
+          }
+        },
+        {
+          "name": "staging",
+          "image": "docker.io/keptnexamples/carts:0.12.3",
+          "latestEvaluation": {
+            "result": "fail",
+            "score": 33.33333333333333
+          },
+          "latestEvent": {
+            "type": "sh.keptn.event.staging.rollback.finished",
+            "id": "d23e5ed6-0025-4273-bc7f-09ff94eab160",
+            "time": "2021-07-06T08:22:47.310Z"
+          },
+          "latestFailedEvent": {
+            "type": "sh.keptn.event.staging.delivery.finished",
+            "id": "26d927cd-274e-406d-bb40-d7a47a553632",
+            "time": "2021-07-06T08:22:36.842Z"
+          }
+        }
+      ]
+    }
+  ]
+}
