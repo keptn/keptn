@@ -260,82 +260,14 @@ func Test_LeaderElection(t *testing.T) {
 
 }
 
-func Test__main(t *testing.T) {
-	fakeClient := fakek8s.NewSimpleClientset()
-
-	// TODO set up fake http server for configuration service - for retrieving shipyard.yaml
-
-	fakeCS, closeFunc := setupFakeConfigurationService()
-	defer closeFunc()
-
-	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", natsTestPort)
-	// TODO set up env vars
-	os.Setenv(envVarConfigurationSvcEndpoint, fakeCS.URL)
-	os.Setenv(envVarNatsURL, natsURL)
-	os.Setenv("LOG_LEVEL", "debug")
-	os.Setenv(envVarEventDispatchIntervalSec, "1")
-	os.Setenv(envVarSequenceDispatchIntervalSec, "1s")
-
-	natsClient, err := newTestNatsClient(natsURL, t)
-
-	require.Nil(t, err)
-
-	// TODO insert a project into the MV
-
-	go _main(fakeClient)
-
+func Test__main_SequenceQueue(t *testing.T) {
 	projectName := "my-project"
 	serviceName := "my-service"
-	shipyardContent := base64.StdEncoding.EncodeToString([]byte(testShipyardFile))
 
-	createProject := models.CreateProjectParams{
-		Name:     &projectName,
-		Shipyard: &shipyardContent,
-	}
+	natsClient, tearDown, err := setupTestProject(t, projectName, serviceName, testShipyardFile)
 
-	marshal, err := json.Marshal(createProject)
+	defer tearDown()
 
-	require.Nil(t, err)
-
-	c := http.Client{
-		Timeout: 2 * time.Second,
-	}
-
-	require.Eventually(t, func() bool {
-		req, err := http.NewRequest(http.MethodPost, "http://localhost:8080/v1/project", bytes.NewBuffer(marshal))
-		if err != nil {
-			return false
-		}
-
-		resp, err := c.Do(req)
-
-		if err != nil {
-			return false
-		}
-
-		if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
-			return false
-		}
-		return true
-	}, 10*time.Second, 100*time.Millisecond)
-
-	service := models.CreateServiceParams{
-		ServiceName: &serviceName,
-	}
-
-	marshal, err = json.Marshal(service)
-	require.Nil(t, err)
-
-	req, err := http.NewRequest(http.MethodPost, "http://localhost:8080/v1/project/"+projectName+"/service", bytes.NewBuffer(marshal))
-	require.Nil(t, err)
-
-	resp, err := c.Do(req)
-
-	require.Nil(t, err)
-
-	require.Equal(t, http.StatusOK, resp.StatusCode)
-
-	// TODO now we should be able to trigger sequences
 	source := "golang-test"
 
 	context := natsClient.triggerSequence(projectName, serviceName, "dev", "delivery")
@@ -389,13 +321,143 @@ func Test__main(t *testing.T) {
 
 }
 
-func setupFakeConfigurationService() (*httptest.Server, func()) {
+func Test__main_SequenceQueueTriggerMultiple(t *testing.T) {
+	projectName := "my-project-2"
+	stageName := "dev"
+	serviceName := "my-service"
+	sequencename := "delivery"
+	numSequences := 50
+
+	natsClient, tearDown, err := setupTestProject(t, projectName, serviceName, testShipyardFile)
+
+	defer tearDown()
+
+	sequenceContexts := []apimodels.EventContext{}
+	for i := 0; i < numSequences; i++ {
+		context := natsClient.triggerSequence(projectName, serviceName, stageName, sequencename)
+		t.Logf("triggered sequence %s with context %s", sequencename, *context.KeptnContext)
+		sequenceContexts = append(sequenceContexts, *context)
+		<-time.After(10 * time.Millisecond)
+	}
+	//verifyNumberOfOpenTriggeredEvents(t, projectName, 1)
+
+	var currentActiveSequence apimodels.SequenceState
+	for i := 0; i < numSequences; i++ {
+		require.Eventually(t, func() bool {
+			states, err := getStates(projectName, &sequenceContexts[i])
+			if err != nil {
+				return false
+			}
+			for _, state := range states.States {
+				if state.State == apimodels.SequenceStartedState {
+					// make sure the sequences are started in the chronologically correct order
+					if *sequenceContexts[i].KeptnContext != state.Shkeptncontext {
+						return false
+					}
+					currentActiveSequence = state
+					t.Logf("received expected active sequence: %s", state.Shkeptncontext)
+					return true
+				}
+			}
+			return false
+		}, 15*time.Second, 100*time.Millisecond)
+
+		abortCmd := apimodels.SequenceControlCommand{
+			State: apimodels.AbortSequence,
+			Stage: "",
+		}
+
+		mCmd, _ := json.Marshal(abortCmd)
+
+		c := http.Client{}
+		_, err = c.Post(fmt.Sprintf("http://localhost:8080/v1/sequence/%s/%s/control", projectName, currentActiveSequence.Shkeptncontext), "application/json", bytes.NewBuffer(mCmd))
+		require.Nil(t, err)
+	}
+
+	require.Nil(t, err)
+
+}
+
+func setupTestProject(t *testing.T, projectName, serviceName, shipyardContent string) (*testNatsClient, func(), error) {
+	fakeClient := fakek8s.NewSimpleClientset()
+
+	fakeCS, closeCS := setupFakeConfigurationService(shipyardContent)
+
+	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", natsTestPort)
+
+	os.Setenv(envVarConfigurationSvcEndpoint, fakeCS.URL)
+	os.Setenv(envVarNatsURL, natsURL)
+	os.Setenv("LOG_LEVEL", "debug")
+	os.Setenv(envVarEventDispatchIntervalSec, "1")
+	os.Setenv(envVarSequenceDispatchIntervalSec, "1s")
+
+	natsClient, err := newTestNatsClient(natsURL, t)
+
+	require.Nil(t, err)
+
+	go _main(fakeClient)
+
+	encodedShipyardContent := base64.StdEncoding.EncodeToString([]byte(shipyardContent))
+	createProject := models.CreateProjectParams{
+		Name:     &projectName,
+		Shipyard: &encodedShipyardContent,
+	}
+
+	marshal, err := json.Marshal(createProject)
+
+	require.Nil(t, err)
+
+	c := http.Client{
+		Timeout: 2 * time.Second,
+	}
+
+	require.Eventually(t, func() bool {
+		req, err := http.NewRequest(http.MethodPost, "http://localhost:8080/v1/project", bytes.NewBuffer(marshal))
+		if err != nil {
+			return false
+		}
+
+		resp, err := c.Do(req)
+
+		if err != nil {
+			return false
+		}
+
+		if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
+			return false
+		}
+		return true
+	}, 10*time.Second, 100*time.Millisecond)
+
+	service := models.CreateServiceParams{
+		ServiceName: &serviceName,
+	}
+
+	marshal, err = json.Marshal(service)
+	require.Nil(t, err)
+
+	req, err := http.NewRequest(http.MethodPost, "http://localhost:8080/v1/project/"+projectName+"/service", bytes.NewBuffer(marshal))
+	require.Nil(t, err)
+
+	resp, err := c.Do(req)
+
+	require.Nil(t, err)
+
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	tearDown := func() {
+		closeCS()
+	}
+	return natsClient, tearDown, err
+}
+
+func setupFakeConfigurationService(shipyardContent string) (*httptest.Server, func()) {
 	ts := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 
 		if strings.Contains(r.RequestURI, "/shipyard.yaml") {
 			w.WriteHeader(200)
-			encodedShipyard := base64.StdEncoding.EncodeToString([]byte(testShipyardFile))
+			encodedShipyard := base64.StdEncoding.EncodeToString([]byte(shipyardContent))
 			res := apimodels.Resource{
 				ResourceContent: encodedShipyard,
 			}
@@ -527,28 +589,9 @@ func (n *testNatsClient) getLatestEventOfType(keptnContext, projectName, stage, 
 
 func verifySequenceEndsUpInState(t *testing.T, projectName string, context *apimodels.EventContext, timeout time.Duration, desiredStates []string) {
 	t.Logf("waiting for state with keptnContext %s to have the status %s", *context.KeptnContext, desiredStates)
-	c := http.Client{}
 
 	require.Eventually(t, func() bool {
-		req, err := http.NewRequest(http.MethodGet, "http://localhost:8080/v1/sequence/"+projectName+"?keptnContext="+*context.KeptnContext, nil)
-		if err != nil {
-			return false
-		}
-
-		resp, err := c.Do(req)
-		if err != nil {
-			return false
-		}
-
-		respBytes, err := ioutil.ReadAll(resp.Body)
-
-		if err != nil {
-			return false
-		}
-
-		states := &apimodels.SequenceStates{}
-
-		err = json.Unmarshal(respBytes, states)
+		states, err := getStates(projectName, context)
 		if err != nil {
 			return false
 		}
@@ -560,6 +603,33 @@ func verifySequenceEndsUpInState(t *testing.T, projectName string, context *apim
 		}
 		return false
 	}, timeout, 100*time.Millisecond)
+}
+
+func getStates(projectName string, context *apimodels.EventContext) (*apimodels.SequenceStates, error) {
+	c := http.Client{}
+	req, err := http.NewRequest(http.MethodGet, "http://localhost:8080/v1/sequence/"+projectName+"?keptnContext="+*context.KeptnContext, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	respBytes, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	states := &apimodels.SequenceStates{}
+
+	err = json.Unmarshal(respBytes, states)
+	if err != nil {
+		return nil, err
+	}
+	return states, nil
 }
 
 func doesSequenceHaveOneOfTheDesiredStates(state apimodels.SequenceState, context *apimodels.EventContext, desiredStates []string) bool {
