@@ -408,8 +408,6 @@ jobs:
           helm install --values test/assets/gitea/values.yaml gitea gitea-charts/gitea -n ${KEPTN_NAMESPACE} --wait --version v5.0.0
           GITEA_ADMIN_USER=$(kubectl get pod -n ${KEPTN_NAMESPACE} gitea-0 -ojsonpath='{@.spec.initContainers[?(@.name=="configure-gitea")].env[?(@.name=="GITEA_ADMIN_USERNAME")].value}')
           GITEA_ADMIN_PASSWORD=$(kubectl get pod -n ${KEPTN_NAMESPACE} gitea-0 -ojsonpath='{@.spec.initContainers[?(@.name=="configure-gitea")].env[?(@.name=="GITEA_ADMIN_PASSWORD")].value}')
-          kubectl create configmap squid.conf --from-file=test/assets/squid/squid.conf -n ${KEPTN_NAMESPACE}
-          kubectl apply -f test/assets/squid/squid.yaml -n ${KEPTN_NAMESPACE}
           sleep 30 # TODO
           ssh-keygen -t rsa -C "gitea-http" -f "rsa_gitea" -P "myGiteaPassPhrase"
           GITEA_PRIVATE_KEY=$(cat rsa_gitea)
