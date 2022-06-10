@@ -234,9 +234,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
   }
 
   getKeptnAuthCommand(keptnInfo: KeptnInfo): string {
-    const authMsg = keptnInfo.bridgeInfo.authMsg ?? '';
-    const authCommand = keptnInfo.authCommand ?? '';
-    return authMsg.length === 0 ? authCommand : authMsg;
+    return (keptnInfo.bridgeInfo.authMsg || keptnInfo.authCommand) ?? '';
   }
 
   ngOnDestroy(): void {
