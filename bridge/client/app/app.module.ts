@@ -80,8 +80,6 @@ import {
   KtbHorizontalSeparatorTitleDirective,
 } from './_components/ktb-horizontal-separator/ktb-horizontal-separator.component';
 import { KtbKeptnServicesListComponent } from './_components/ktb-keptn-services-list/ktb-keptn-services-list.component';
-import { KtbLoadingDistractorComponent } from './_components/ktb-loading-distractor/ktb-loading-distractor.component';
-import { KtbLoadingSpinnerComponent } from './_components/ktb-loading-spinner/ktb-loading-spinner.component';
 import { KtbMarkdownComponent } from './_components/ktb-markdown/ktb-markdown.component';
 import { KtbModifyUniformSubscriptionComponent } from './_components/ktb-modify-uniform-subscription/ktb-modify-uniform-subscription.component';
 import { KtbNoServiceInfoComponent } from './_components/ktb-no-service-info/ktb-no-service-info.component';
@@ -167,6 +165,7 @@ import { WindowConfig } from '../environments/environment.dynamic';
 import { KtbHeatmapModule } from './_components/ktb-heatmap/ktb-heatmap.module';
 import { KtbPipeModule } from './_pipes/ktb-pipe.module';
 import { KtbNotificationModule } from './_components/ktb-notification/ktb-notification.module';
+import { KtbLoadingModule } from './_components/ktb-loading/ktb-loading.module';
 
 registerLocaleData(localeEn, 'en');
 
@@ -270,8 +269,6 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     KtbCertificateInputComponent,
     KtbSshKeyInputComponent,
     KtbProjectSettingsGitSshInputComponent,
-    KtbLoadingDistractorComponent,
-    KtbLoadingSpinnerComponent,
   ],
   imports: [
     BrowserModule,
@@ -328,6 +325,7 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     CommonModule,
     KtbHeatmapModule,
     KtbPipeModule,
+    KtbLoadingModule,
     KtbNotificationModule,
   ],
   entryComponents: [KtbDeletionDialogComponent, KtbConfirmationDialogComponent],
