@@ -142,8 +142,6 @@ spec:
                   key: keptn-api-token
             - name: CLI_DOWNLOAD_LINK
               value: "{{ .Values.bridge.cliDownloadLink | default (print "https://github.com/keptn/keptn/releases/tag/" .Chart.AppVersion) }}"
-            - name: INTEGRATIONS_PAGE_LINK
-              value: "{{ .Values.bridge.integrationsPageLink | default (print "https://get.keptn.sh/integrations.html") }}"
             - name: ENABLE_VERSION_CHECK
               value: "{{ .Values.bridge.versionCheck.enabled }}"
             - name: SHOW_API_TOKEN
