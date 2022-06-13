@@ -272,6 +272,14 @@ func main() {
 	}
 	log.Info("Finished migrating sequence execution format")
 
+	// log.Info("Migrating project git credentials")
+	// projectCredentialsMigrator := migration.NewProjectCredentialsMigrator(db.GetMongoDBConnectionInstance())
+	// err = projectCredentialsMigrator.Transform()
+	// if err != nil {
+	// 	log.Errorf("Unable to transform project git credentials: %v", err)
+	// }
+	// log.Info("Finished migrating project git credentials")
+
 	healthHandler := handler.NewHealthHandler()
 	healthController := controller.NewHealthController(healthHandler)
 	healthController.Inject(apiHealth)
