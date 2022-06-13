@@ -104,8 +104,6 @@ import { KtbServiceSettingsListComponent } from './_components/ktb-service-setti
 import { KtbServiceSettingsOverviewComponent } from './_components/ktb-service-settings-overview/ktb-service-settings-overview.component';
 import { KtbServiceSettingsComponent } from './_components/ktb-service-settings/ktb-service-settings.component';
 import { KtbServicesListComponent } from './_components/ktb-services-list/ktb-services-list.component';
-import { KtbSliBreakdownCriteriaItemComponent } from './_components/ktb-sli-breakdown-criteria-item/ktb-sli-breakdown-criteria-item.component';
-import { KtbSliBreakdownComponent } from './_components/ktb-sli-breakdown/ktb-sli-breakdown.component';
 import { KtbStageBadgeComponent } from './_components/ktb-stage-badge/ktb-stage-badge.component';
 import { KtbStageDetailsComponent } from './_components/ktb-stage-details/ktb-stage-details.component';
 import { KtbStageOverviewComponent } from './_components/ktb-stage-overview/ktb-stage-overview.component';
@@ -132,7 +130,6 @@ import { HttpLoadingInterceptor } from './_interceptors/http-loading-interceptor
 import { ArrayToStringPipe } from './_pipes/array-to-string';
 import { KeptnUrlPipe } from './_pipes/keptn-url.pipe';
 import { ToDatePipe } from './_pipes/to-date.pipe';
-import { ToType } from './_pipes/to-type';
 import { AppInitService } from './_services/app.init';
 import { EventService } from './_services/event.service';
 import { POLLING_INTERVAL_MILLIS, RETRY_ON_HTTP_ERROR } from './_utils/app.utils';
@@ -166,6 +163,7 @@ import { KtbNotificationModule } from './_components/ktb-notification/ktb-notifi
 import { KtbLoadingModule } from './_components/ktb-loading/ktb-loading.module';
 import { KtbConfirmationDialogModule } from './_components/_dialogs/ktb-confirmation-dialog/ktb-confirmation-dialog.module';
 import { KtbDeletionDialogModule } from './_components/_dialogs/ktb-deletion-dialog/ktb-deletion-dialog.module';
+import { KtbSliBreakdownModule } from './_components/ktb-sli-breakdown/ktb-sli-breakdown.module';
 
 registerLocaleData(localeEn, 'en');
 
@@ -236,6 +234,7 @@ const ktbModules = [
   KtbLoadingModule,
   KtbNotificationModule,
   KtbPipeModule,
+  KtbSliBreakdownModule,
 ];
 
 @NgModule({
@@ -267,7 +266,6 @@ const ktbModules = [
     KtbEvaluationDetailsComponent,
     KtbEvaluationInfoComponent,
     KtbStageBadgeComponent,
-    KtbSliBreakdownComponent,
     KtbApprovalItemComponent,
     KtbCopyToClipboardComponent,
     KtbMarkdownComponent,
@@ -277,7 +275,6 @@ const ktbModules = [
     KtbIntegrationViewComponent,
     KtbStageDetailsComponent,
     KeptnUrlPipe,
-    KtbSliBreakdownCriteriaItemComponent,
     KtbServicesListComponent,
     KtbSequenceStateListComponent,
     KtbUserComponent,
@@ -297,7 +294,6 @@ const ktbModules = [
     KtbDragAndDropDirective,
     KtbDangerZoneComponent,
     KtbSequenceControlsComponent,
-    ToType,
     KtbUniformSubscriptionsComponent,
     ToDatePipe,
     KtbProjectSettingsComponent,
