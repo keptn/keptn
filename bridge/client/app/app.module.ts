@@ -48,7 +48,6 @@ import { DtTopBarNavigationModule } from '@dynatrace/barista-components/top-bar-
 import { DtTreeTableModule } from '@dynatrace/barista-components/tree-table';
 import { MomentModule } from 'ngx-moment';
 import { environment } from '../environments/environment';
-import { KtbConfirmationDialogComponent } from './_components/_dialogs/ktb-confirmation-dialog/ktb-confirmation-dialog.component';
 import { KtbDeleteConfirmationComponent } from './_components/_dialogs/ktb-delete-confirmation/ktb-delete-confirmation.component';
 import { KtbProjectCreateMessageComponent } from './_components/_status-messages/ktb-project-create-message/ktb-project-create-message.component';
 import { KtbApprovalItemComponent } from './_components/ktb-approval-item/ktb-approval-item.component';
@@ -165,6 +164,7 @@ import { KtbHeatmapModule } from './_components/ktb-heatmap/ktb-heatmap.module';
 import { KtbPipeModule } from './_pipes/ktb-pipe.module';
 import { KtbNotificationModule } from './_components/ktb-notification/ktb-notification.module';
 import { KtbLoadingModule } from './_components/ktb-loading/ktb-loading.module';
+import { KtbConfirmationDialogModule } from './_components/_dialogs/ktb-confirmation-dialog/ktb-confirmation-dialog.module';
 import { KtbDeletionDialogModule } from './_components/_dialogs/ktb-deletion-dialog/ktb-deletion-dialog.module';
 
 registerLocaleData(localeEn, 'en');
@@ -229,7 +229,14 @@ const dtModules = [
   DtRadioModule,
 ];
 
-const ktbModules = [KtbDeletionDialogModule, KtbHeatmapModule, KtbLoadingModule, KtbNotificationModule, KtbPipeModule];
+const ktbModules = [
+  KtbConfirmationDialogModule,
+  KtbDeletionDialogModule,
+  KtbHeatmapModule,
+  KtbLoadingModule,
+  KtbNotificationModule,
+  KtbPipeModule,
+];
 
 @NgModule({
   declarations: [
@@ -289,7 +296,6 @@ const ktbModules = [KtbDeletionDialogModule, KtbHeatmapModule, KtbLoadingModule,
     KtbProjectSettingsShipyardComponent,
     KtbDragAndDropDirective,
     KtbDangerZoneComponent,
-    KtbConfirmationDialogComponent,
     KtbSequenceControlsComponent,
     ToType,
     KtbUniformSubscriptionsComponent,
@@ -328,7 +334,7 @@ const ktbModules = [KtbDeletionDialogModule, KtbHeatmapModule, KtbLoadingModule,
     KtbProjectSettingsGitSshInputComponent,
   ],
   imports: [...angularModules, ...dtModules, ...ktbModules, AppRouting, MomentModule],
-  entryComponents: [KtbConfirmationDialogComponent],
+  entryComponents: [],
   providers: [
     EventService,
     AppInitService,
