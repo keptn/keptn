@@ -20,6 +20,6 @@ import { DtOverlayModule } from '@dynatrace/barista-components/overlay';
     FlexModule,
     DtOverlayModule,
   ],
-  exports: [KtbSliBreakdownComponent, KtbSliBreakdownCriteriaItemComponent],
+  exports: [KtbSliBreakdownComponent],
 })
 export class KtbSliBreakdownModule {}
