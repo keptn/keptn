@@ -536,6 +536,93 @@ func Test__main_SequenceQueueTriggerMultiple(t *testing.T) {
 
 }
 
+func Test__main_TriggerAndDeleteProject(t *testing.T) {
+	projectName := "my-project-queue-trigger-and-delete"
+	stageName := "dev"
+	serviceName := "my-service"
+	sequencename := "delivery"
+
+	numServices := 50
+	numSequencesPerService := 1
+
+	natsClient, tearDown, err := setupTestProject(t, projectName, serviceName, testShipyardFile)
+
+	defer tearDown()
+
+	triggerSequence := func(serviceName string, wg *sync.WaitGroup) {
+		natsClient.triggerSequence(projectName, serviceName, stageName, sequencename)
+		wg.Done()
+	}
+
+	var wg sync.WaitGroup
+	wg.Add(numServices * numSequencesPerService)
+
+	for i := 0; i < numServices; i++ {
+		for j := 0; j < numSequencesPerService; j++ {
+			serviceName := fmt.Sprintf("service-%d", i)
+			go triggerSequence(serviceName, &wg)
+		}
+	}
+	wg.Wait()
+
+	require.Eventually(t, func() bool {
+		states, err := getStates(projectName, nil)
+		if err != nil {
+			return false
+		}
+
+		if states.TotalCount != int64(numServices*numSequencesPerService) {
+			return false
+		}
+		return true
+	}, 5*time.Second, 100*time.Millisecond)
+
+	require.Eventually(t, func() bool {
+		openTriggeredEvents := getOpenTriggeredEvents(t, projectName, "mytask")
+
+		return openTriggeredEvents.TotalCount > 0
+	}, 5*time.Second, 100*time.Millisecond)
+
+	c := http.Client{}
+
+	req, err := http.NewRequest(http.MethodDelete, "http://localhost:8080/v1/project/"+projectName, nil)
+	require.Nil(t, err)
+
+	resp, err := c.Do(req)
+	require.Nil(t, err)
+
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	// recreate the project again
+	t.Logf("recreating project %s", projectName)
+
+	createProject(t, c, projectName, testShipyardFile)
+
+	require.Nil(t, err)
+
+	// check if there are any open .triggered events for the project
+	openTriggeredEvents := getOpenTriggeredEvents(t, projectName, "")
+
+	require.Empty(t, openTriggeredEvents.Events)
+}
+
+func getOpenTriggeredEvents(t *testing.T, projectName string, taskName string) *apimodels.Events {
+	c := http.Client{}
+	openTriggeredEvents := &apimodels.Events{}
+
+	req, err := http.NewRequest(http.MethodGet, "http://localhost:8080/v1/event/triggered/"+keptnv2.GetTriggeredEventType(taskName)+"?project="+projectName, nil)
+	require.Nil(t, err)
+
+	resp, err := c.Do(req)
+	require.Nil(t, err)
+
+	respBytes, err := ioutil.ReadAll(resp.Body)
+	require.Nil(t, err)
+	err = json.Unmarshal(respBytes, openTriggeredEvents)
+	require.Nil(t, err)
+	return openTriggeredEvents
+}
+
 func setupTestProject(t *testing.T, projectName, serviceName, shipyardContent string) (*testNatsClient, func(), error) {
 	setupFakeConfigurationService(shipyardContent)
 
@@ -543,19 +630,44 @@ func setupTestProject(t *testing.T, projectName, serviceName, shipyardContent st
 	natsClient, err := newTestNatsClient(natsURL, t)
 	require.Nil(t, err)
 
+	c := http.Client{
+		Timeout: 2 * time.Second,
+	}
+
+	createProject(t, c, projectName, shipyardContent)
+
+	service := models.CreateServiceParams{
+		ServiceName: &serviceName,
+	}
+
+	marshal, err := json.Marshal(service)
+	require.Nil(t, err)
+
+	req, err := http.NewRequest(http.MethodPost, "http://localhost:8080/v1/project/"+projectName+"/service", bytes.NewBuffer(marshal))
+	require.Nil(t, err)
+
+	resp, err := c.Do(req)
+
+	require.Nil(t, err)
+
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	tearDown := func() {
+		natsClient.Close()
+	}
+	return natsClient, tearDown, err
+}
+
+func createProject(t *testing.T, c http.Client, projectName string, shipyardContent string) {
 	encodedShipyardContent := base64.StdEncoding.EncodeToString([]byte(shipyardContent))
-	createProject := models.CreateProjectParams{
+	createProjectObj := models.CreateProjectParams{
 		Name:     &projectName,
 		Shipyard: &encodedShipyardContent,
 	}
 
-	marshal, err := json.Marshal(createProject)
+	marshal, err := json.Marshal(createProjectObj)
 
 	require.Nil(t, err)
-
-	c := http.Client{
-		Timeout: 2 * time.Second,
-	}
 
 	require.Eventually(t, func() bool {
 		req, err := http.NewRequest(http.MethodPost, "http://localhost:8080/v1/project", bytes.NewBuffer(marshal))
@@ -574,27 +686,6 @@ func setupTestProject(t *testing.T, projectName, serviceName, shipyardContent st
 		}
 		return true
 	}, 10*time.Second, 100*time.Millisecond)
-
-	service := models.CreateServiceParams{
-		ServiceName: &serviceName,
-	}
-
-	marshal, err = json.Marshal(service)
-	require.Nil(t, err)
-
-	req, err := http.NewRequest(http.MethodPost, "http://localhost:8080/v1/project/"+projectName+"/service", bytes.NewBuffer(marshal))
-	require.Nil(t, err)
-
-	resp, err := c.Do(req)
-
-	require.Nil(t, err)
-
-	require.Equal(t, http.StatusOK, resp.StatusCode)
-
-	tearDown := func() {
-		natsClient.Close()
-	}
-	return natsClient, tearDown, err
 }
 
 func setupFakeConfigurationService(shipyardContent string) {
@@ -748,7 +839,14 @@ func verifySequenceEndsUpInState(t *testing.T, projectName string, context *apim
 
 func getStates(projectName string, context *apimodels.EventContext) (*apimodels.SequenceStates, error) {
 	c := http.Client{}
-	req, err := http.NewRequest(http.MethodGet, "http://localhost:8080/v1/sequence/"+projectName+"?keptnContext="+*context.KeptnContext, nil)
+
+	var reqURL string
+	if context != nil {
+		reqURL = "http://localhost:8080/v1/sequence/" + projectName + "?keptnContext=" + *context.KeptnContext
+	} else {
+		reqURL = "http://localhost:8080/v1/sequence/" + projectName
+	}
+	req, err := http.NewRequest(http.MethodGet, reqURL, nil)
 	if err != nil {
 		return nil, err
 	}
