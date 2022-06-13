@@ -127,6 +127,7 @@ func TestSubscriptionSourceCancel(t *testing.T) {
 	cancel()
 	clock.Add(10 * time.Second)
 	require.Equal(t, 2, pingCount)
+	wg.Wait()
 }
 
 func TestSubscriptionSource(t *testing.T) {
@@ -188,6 +189,19 @@ func TestFixedSubscriptionSourcer_WithNoSubscriptions(t *testing.T) {
 	require.NoError(t, err)
 	updates := <-subchan
 	require.Equal(t, 0, len(updates))
+}
+
+func TestFixedSubscriptionSource_CallsWaitGroup(t *testing.T) {
+	fss := NewFixedSubscriptionSource()
+	subchan := make(chan []models.EventSubscription)
+
+	ctx, cancel := context.WithCancel(context.TODO())
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	fss.Start(ctx, types.RegistrationData{}, subchan, wg)
+	<-subchan
+	cancel()
+	wg.Wait()
 }
 
 func TestFixedSubscriptionSourcer_Register(t *testing.T) {

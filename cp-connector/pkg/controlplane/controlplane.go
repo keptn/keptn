@@ -83,8 +83,11 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 	cp.logger.Debugf("Registered with integration ID %s", cp.integrationID)
 	registrationData.ID = cp.integrationID
 
+	// WaitGroup used for synchronized shutdown of eventsource and subscription source
+	// during cancellation of the context
 	wg := &sync.WaitGroup{}
 	wg.Add(2)
+
 	cp.logger.Debugf("Starting event source for integration ID %s", cp.integrationID)
 	if err := cp.eventSource.Start(ctx, registrationData, eventUpdates, wg); err != nil {
 		return err

@@ -118,6 +118,8 @@ func TestEventSourceCancelDisconnectsFromBroker(t *testing.T) {
 	New(natsConnectorMock).Start(ctx, types.RegistrationData{}, make(chan types.EventUpdate), wg)
 	cancel()
 	require.Eventually(t, func() bool { return natsConnectorMock.UnsubscribeAllCalls == 1 }, 2*time.Second, 100*time.Millisecond)
+
+	wg.Wait()
 }
 
 func TestEventSourceCancelDisconnectFromBrokerFails(t *testing.T) {

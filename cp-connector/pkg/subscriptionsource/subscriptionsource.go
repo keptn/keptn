@@ -115,7 +115,11 @@ func NewFixedSubscriptionSource(options ...func(source *FixedSubscriptionSource)
 }
 
 func (s FixedSubscriptionSource) Start(ctx context.Context, data types.RegistrationData, c chan []models.EventSubscription, wg *sync.WaitGroup) error {
-	go func() { c <- s.fixedSubscriptions }()
+	go func() {
+		c <- s.fixedSubscriptions
+		<-ctx.Done()
+		wg.Done()
+	}()
 	return nil
 }
 
