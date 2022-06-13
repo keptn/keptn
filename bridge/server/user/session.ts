@@ -7,6 +7,7 @@ import { Collection, Db, MongoClient } from 'mongodb';
 import { Crypto } from './crypto';
 import { getRootLocation } from './oauth-routes';
 import { getOAuthMongoExternalConnectionString, getOAuthSecrets } from './secrets';
+import { ComponentLogger } from '../utils/logger';
 
 declare module 'express-session' {
   export interface SessionData {
@@ -42,6 +43,7 @@ export class SessionService {
   private readonly databaseSecret: string;
   private readonly validationCollectionName = 'validation';
   private readonly sessionCollectionName = 'sessions';
+  private readonly log = new ComponentLogger('OAuth');
 
   constructor() {
     this.SESSION_TIME_SECONDS = this.getOrDefaultSessionTimeout(60); // session timeout, default to 60 minutes
@@ -104,7 +106,7 @@ export class SessionService {
     const externalConnectionString = getOAuthMongoExternalConnectionString();
 
     if (!externalConnectionString && !mongoCredentials.user && !mongoCredentials.password && !mongoCredentials.host) {
-      console.error(
+      this.log.error(
         'could not construct mongodb connection string: env vars "MONGODB_HOST", "MONGODB_USER" and "MONGODB_PASSWORD" have to be set'
       );
       process.exit(1);
@@ -120,7 +122,7 @@ export class SessionService {
 
     this.validationCollection = db.collection(this.validationCollectionName);
     await this.initValidationTTLIndex(this.validationCollection);
-    console.log('Successfully connected to database');
+    this.log.info('Successfully connected to database');
 
     return MongoStore.create({
       client: mongoClient,
@@ -217,8 +219,9 @@ export class SessionService {
             creationDate: data.value.creationDate,
           }
         : undefined;
-    } catch (e) {
-      console.error('Error wile decrypting validation data. Cause:', e);
+    } catch (err) {
+      const msg = err instanceof Error ? `${err.name}: ${err.message}` : `${err}`;
+      this.log.error(`Error wile decrypting validation data. Cause: ${msg}`);
     }
   }
 
@@ -268,7 +271,7 @@ export class SessionService {
   public removeSession(req: Request): void {
     req.session.destroy((error) => {
       if (error) {
-        console.error(error);
+        this.log.error(error);
       }
     });
   }
@@ -278,10 +281,10 @@ export class SessionService {
       throw Error('Session store is not initialized! Did you forget to call init()?');
     }
     const router = Router();
-    console.log(`Enabling sessions for bridge with session timeout ${this.SESSION_TIME_SECONDS} seconds.`);
+    this.log.info(`Enabling sessions for bridge with session timeout ${this.SESSION_TIME_SECONDS} seconds.`);
 
     if (process.env.SECURE_COOKIE === 'true') {
-      console.log(
+      this.log.info(
         'Setting secure cookies. Make sure SSL is enabled for deployment & correct trust proxy value is used.'
       );
       this.sessionConfig.cookie.secure = true;
@@ -289,10 +292,10 @@ export class SessionService {
       const trustProxy = process.env.TRUST_PROXY;
 
       if (trustProxy) {
-        console.log('Using trust proxy hops value : ' + trustProxy);
+        this.log.info('Using trust proxy hops value : ' + trustProxy);
         app.set('trust proxy', +trustProxy);
       } else {
-        console.log('Using default trust proxy hops value : ' + this.DEFAULT_TRUST_PROXY);
+        this.log.info('Using default trust proxy hops value : ' + this.DEFAULT_TRUST_PROXY);
         app.set('trust proxy', this.DEFAULT_TRUST_PROXY);
       }
     }
