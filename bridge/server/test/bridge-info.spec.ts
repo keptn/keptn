@@ -1,30 +1,42 @@
 import request from 'supertest';
-import { setupServer } from '../.jest/setupServer';
+import { baseOptions, setupServer } from '../.jest/setupServer';
 import { Express } from 'express';
+import { getConfiguration } from '../utils/configuration';
 
 describe('Test /bridgeInfo', () => {
   let app: Express;
-  const originalEnv = process.env;
+
+  const apiUrl = 'http://localhost:8090/api';
+  const apiToken = 'abcdefg';
+  const provMsg = '  message   ';
+  const authMsg = 'a string';
+  const version = 'testVersion';
 
   beforeAll(async () => {
-    process.env = {
-      ...originalEnv,
-      AUTOMATIC_PROVISIONING_MSG: '  message   ',
-      AUTH_MSG: 'a string',
-    };
-    app = await setupServer();
-  });
-
-  afterAll(() => {
-    process.env = originalEnv;
+    const conf = getConfiguration({
+      ...baseOptions,
+      api: {
+        url: apiUrl,
+        token: apiToken,
+        showToken: true,
+      },
+      auth: {
+        authMessage: authMsg,
+      },
+      feature: {
+        automaticProvisioningMessage: provMsg,
+      },
+      version: version,
+    });
+    app = await setupServer(conf);
   });
 
   it('should return bridgeInfo', async () => {
     const response = await request(app).get('/api/bridgeInfo');
     expect(response.body).toEqual({
-      bridgeVersion: 'develop',
-      apiUrl: global.baseUrl,
-      apiToken: 'apiToken',
+      bridgeVersion: version,
+      apiUrl: apiUrl,
+      apiToken: apiToken,
       cliDownloadLink: 'https://github.com/keptn/keptn/releases',
       enableVersionCheckFeature: true,
       showApiToken: true,
@@ -33,8 +45,11 @@ describe('Test /bridgeInfo', () => {
         D3_HEATMAP_ENABLED: false,
       },
       authType: 'NONE',
-      automaticProvisioningMsg: 'message',
-      authMsg: 'a string',
+      automaticProvisioningMsg: provMsg.trim(),
+      authMsg: authMsg,
+      keptnInstallationType: 'QUALITY_GATES,CONTINUOUS_OPERATIONS,CONTINUOUS_DELIVERY',
+      projectsPageSize: 50,
+      servicesPageSize: 50,
     });
     expect(response.statusCode).toBe(200);
   });

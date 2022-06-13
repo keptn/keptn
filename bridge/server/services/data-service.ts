@@ -35,6 +35,7 @@ import { ISequencesFilter } from '../../shared/interfaces/sequencesFilter';
 import { SecretScope, SecretScopeDefault } from '../../shared/interfaces/secret-scope';
 import { generateWebhookConfigCurl } from '../utils/curl.utils';
 import { ICustomSequences } from '../../shared/interfaces/custom-sequences';
+import { EnvType } from '../interfaces/configuration';
 
 type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
 type FlatSecret = { path: string; name: string; key: string; parsedPath: string };
@@ -74,8 +75,8 @@ export class DataService {
   private readonly MAX_TRACE_PAGE_SIZE = 50;
   private readonly MAX_PAGE_SIZE = 100;
 
-  constructor(apiUrl: string, apiToken: string | undefined) {
-    this.apiService = new ApiService(apiUrl, apiToken);
+  constructor(apiUrl: string, apiToken: string | undefined, mode: EnvType) {
+    this.apiService = new ApiService(apiUrl, apiToken, mode);
   }
 
   public async getProjects(accessToken: string | undefined): Promise<Project[]> {

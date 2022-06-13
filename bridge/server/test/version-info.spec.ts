@@ -13,13 +13,14 @@ jest.unstable_mockModule('../services/axios-instance', () => {
 });
 
 const { init } = await import('../app');
+const { baseConfig } = await import('../.jest/setupServer');
 
 describe('Test /version.json', () => {
   let app: Express;
   let axiosMock: MockAdapter;
 
   beforeAll(async () => {
-    app = await init();
+    app = await init(baseConfig);
     axiosMock = new MockAdapter(mockInstance);
   });
 
