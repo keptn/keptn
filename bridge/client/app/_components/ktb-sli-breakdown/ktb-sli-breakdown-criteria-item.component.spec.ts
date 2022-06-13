@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbSliBreakdownCriteriaItemComponent } from './ktb-sli-breakdown-criteria-item.component';
-import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { KtbSliBreakdownModule } from './ktb-sli-breakdown.module';
 
 describe('KtbSliBreakdownCriteriaItemComponent', () => {
   let component: KtbSliBreakdownCriteriaItemComponent;
@@ -9,7 +9,7 @@ describe('KtbSliBreakdownCriteriaItemComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule, HttpClientTestingModule],
+      imports: [KtbSliBreakdownModule, HttpClientTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbSliBreakdownCriteriaItemComponent);
