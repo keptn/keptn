@@ -18,7 +18,8 @@ import (
 func TestConnect(t *testing.T) {
 	svr, shutdown := runNATSServer()
 	defer shutdown()
-	sub, err := nats2.Connect(svr.ClientURL())
+	sub := nats2.New(svr.ClientURL())
+	err := sub.Connect()
 	require.NotNil(t, sub)
 	require.Nil(t, err)
 }
@@ -28,21 +29,22 @@ func TestConnectFromEnv(t *testing.T) {
 	defer shutdown()
 	os.Setenv(nats2.EnvVarNatsURL, svr.ClientURL())
 	defer os.Unsetenv(nats2.EnvVarNatsURL)
-	sub, err := nats2.ConnectFromEnv()
+	sub := nats2.ConnectFromEnv()
 	require.NotNil(t, sub)
-	require.Nil(t, err)
 }
 
 func TestConnectFails(t *testing.T) {
-	nc, err := nats2.Connect("nats://something:3456")
-	require.Nil(t, nc)
+	nc := nats2.New("nats://something:3456")
+	err := nc.Connect()
+	require.NotNil(t, nc)
 	require.NotNil(t, err)
 }
 
 func TestDisconnect(t *testing.T) {
 	svr, shutdown := runNATSServer()
 	defer shutdown()
-	nc, err := nats2.Connect(svr.ClientURL())
+	nc := nats2.New(svr.ClientURL())
+	err := nc.Connect()
 	require.NotNil(t, nc)
 	require.Nil(t, err)
 	err = nc.Disconnect()
@@ -63,10 +65,11 @@ func TestSubscribe(t *testing.T) {
 
 	svr, shutdown := runNATSServer()
 	defer shutdown()
-	nc, _ := nats2.Connect(svr.ClientURL())
+	nc := nats2.New(svr.ClientURL())
 	require.NotNil(t, nc)
-
-	err := nc.Subscribe("subj", func(msg *nats.Msg) error {
+	err := nc.Connect()
+	require.Nil(t, err)
+	err = nc.Subscribe("subj", func(msg *nats.Msg) error {
 		received = true
 		return nil
 	})
@@ -83,8 +86,10 @@ func TestSubscribe(t *testing.T) {
 func TestSubscribeTwice(t *testing.T) {
 	svr, shutdown := runNATSServer()
 	defer shutdown()
-	nc, _ := nats2.Connect(svr.ClientURL())
-	err := nc.Subscribe("subj", func(msg *nats.Msg) error { return nil })
+	nc := nats2.New(svr.ClientURL())
+	err := nc.Connect()
+	require.Nil(t, err)
+	err = nc.Subscribe("subj", func(msg *nats.Msg) error { return nil })
 	require.Nil(t, err)
 	err = nc.Subscribe("subj", func(msg *nats.Msg) error { return nil })
 	require.ErrorIs(t, err, nats2.ErrSubAlreadySubscribed)
@@ -93,16 +98,20 @@ func TestSubscribeTwice(t *testing.T) {
 func TestSubscribeEmptySubject(t *testing.T) {
 	svr, shutdown := runNATSServer()
 	defer shutdown()
-	nc, _ := nats2.Connect(svr.ClientURL())
-	err := nc.Subscribe("", func(msg *nats.Msg) error { return nil })
+	nc := nats2.New(svr.ClientURL())
+	err := nc.Connect()
+	require.Nil(t, err)
+	err = nc.Subscribe("", func(msg *nats.Msg) error { return nil })
 	require.ErrorIs(t, err, nats2.ErrSubEmptySubject)
 }
 
 func TestSubscribeWithEmptyProcessFn(t *testing.T) {
 	svr, shutdown := runNATSServer()
 	defer shutdown()
-	nc, _ := nats2.Connect(svr.ClientURL())
-	err := nc.Subscribe("subj", nil)
+	nc := nats2.New(svr.ClientURL())
+	err := nc.Connect()
+	require.Nil(t, err)
+	err = nc.Subscribe("subj", nil)
 	require.ErrorIs(t, err, nats2.ErrSubNilMessageProcessor)
 }
 
@@ -112,12 +121,14 @@ func TestSubscribeMultiple(t *testing.T) {
 
 	svr, shutdown := runNATSServer()
 	defer shutdown()
-	nc, _ := nats2.Connect(svr.ClientURL())
+	nc := nats2.New(svr.ClientURL())
+	err := nc.Connect()
+	require.Nil(t, err)
 	require.NotNil(t, nc)
 
 	subjects := []string{"subj1", "subj2"}
 
-	err := nc.SubscribeMultiple(subjects, func(msg *nats.Msg) error {
+	err = nc.SubscribeMultiple(subjects, func(msg *nats.Msg) error {
 		numberReceived++
 		return nil
 	})
@@ -136,10 +147,12 @@ func TestSubscribeMultiple(t *testing.T) {
 func TestSubscribeMultipleFails(t *testing.T) {
 	svr, shutdown := runNATSServer()
 	defer shutdown()
-	nc, _ := nats2.Connect(svr.ClientURL())
+	nc := nats2.New(svr.ClientURL())
+	err := nc.Connect()
+	require.Nil(t, err)
 	require.NotNil(t, nc)
 
-	err := nc.SubscribeMultiple([]string{}, nil)
+	err = nc.SubscribeMultiple([]string{}, nil)
 	require.ErrorIs(t, err, nats2.ErrSubNilMessageProcessor)
 }
 
@@ -152,7 +165,9 @@ func TestUnsubscribeAll(t *testing.T) {
 	receivedBeforeUnsubscribeAll := false
 	receivedAfterUnsubscribeAll := false
 
-	nc, err := nats2.Connect(svr.ClientURL())
+	nc := nats2.New(svr.ClientURL())
+	err := nc.Connect()
+
 	require.NoError(t, err)
 
 	err = nc.Subscribe("subj", func(msg *nats.Msg) error {
@@ -187,10 +202,12 @@ func TestPublish(t *testing.T) {
 
 	svr, shutdown := runNATSServer()
 	defer shutdown()
-	nc, _ := nats2.Connect(svr.ClientURL())
+	nc := nats2.New(svr.ClientURL())
+	err := nc.Connect()
+	require.Nil(t, err)
 	require.NotNil(t, nc)
 
-	err := nc.Subscribe("subj", func(e *nats.Msg) error {
+	err = nc.Subscribe("subj", func(e *nats.Msg) error {
 		received = true
 		ev := &models.KeptnContextExtendedCE{}
 		err := json.Unmarshal(e.Data, ev)
@@ -224,10 +241,12 @@ func TestPublishWithID(t *testing.T) {
 
 	svr, shutdown := runNATSServer()
 	defer shutdown()
-	nc, _ := nats2.Connect(svr.ClientURL())
+	nc := nats2.New(svr.ClientURL())
+	err := nc.Connect()
+	require.Nil(t, err)
 	require.NotNil(t, nc)
 
-	err := nc.Subscribe("subj", func(e *nats.Msg) error {
+	err = nc.Subscribe("subj", func(e *nats.Msg) error {
 		received = true
 		ev := &models.KeptnContextExtendedCE{}
 		err := json.Unmarshal(e.Data, ev)
@@ -251,9 +270,11 @@ func TestPublishEventMissingType(t *testing.T) {
 	msg := models.KeptnContextExtendedCE{}
 	svr, shutdown := runNATSServer()
 	defer shutdown()
-	nc, _ := nats2.Connect(svr.ClientURL())
+	nc := nats2.New(svr.ClientURL())
+	err := nc.Connect()
+	require.Nil(t, err)
 	require.NotNil(t, nc)
-	err := nc.Publish(msg)
+	err = nc.Publish(msg)
 	require.ErrorIs(t, err, nats2.ErrPubEventTypeMissing)
 
 }

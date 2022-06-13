@@ -73,6 +73,10 @@ func (n *NATSEventSource) Start(ctx context.Context, registrationData types.Regi
 		}
 		return nil
 	}
+	if err := n.connector.Connect(); err != nil {
+		return fmt.Errorf("could not connect event source to NATS: %w", err)
+	}
+
 	if err := n.connector.QueueSubscribeMultiple(n.currentSubjects, n.queueGroup, n.eventProcessFn); err != nil {
 		return fmt.Errorf("could not start NATS event source: %w", err)
 	}

@@ -27,6 +27,7 @@ type NATS interface {
 	QueueSubscribeMultiple(subjects []string, queueGroup string, fn ProcessEventFn) error
 	Publish(event models.KeptnContextExtendedCE) error
 	Disconnect() error
+	Connect() error
 	UnsubscribeAll() error
 }
 
@@ -44,6 +45,7 @@ type ProcessEventFn func(msg *nats.Msg) error
 // on the NATS event system
 type NatsConnector struct {
 	conn          *nats.Conn
+	connectURL    string
 	subscriptions map[string]*nats.Subscription
 	logger        logger.Logger
 }
@@ -55,35 +57,42 @@ func WithLogger(logger logger.Logger) func(*NatsConnector) {
 	}
 }
 
-// Connect connects a NatsConnector to NATS.
-// Note that this will automatically and indefinitely try to reconnect
-// as soon as it looses connection
-func Connect(connectURL string, opts ...func(connector *NatsConnector)) (*NatsConnector, error) {
-	conn, err := nats.Connect(connectURL, nats.MaxReconnects(-1))
-	if err != nil {
-		return nil, fmt.Errorf("could not connect to NATS: %w", err)
-	}
-	n := &NatsConnector{
-		conn:          conn,
+// New returns an initialised NatsConnector with a nil connection
+func New(connectURL string, opts ...func(connector *NatsConnector)) *NatsConnector {
+	nc := &NatsConnector{
+		connectURL:    connectURL,
+		conn:          nil,
 		subscriptions: make(map[string]*nats.Subscription),
 		logger:        logger.NewDefaultLogger(),
 	}
 	for _, o := range opts {
-		o(n)
+		o(nc)
 	}
-	return n, nil
+	return nc
+}
+
+// Connect connects a NatsConnector to NATS.
+// Note that this will automatically and indefinitely try to reconnect
+// as soon as it looses connection
+func (nc *NatsConnector) Connect() error {
+	conn, err := nats.Connect(nc.connectURL, nats.MaxReconnects(-1))
+	if err != nil {
+		return fmt.Errorf("could not connect to NATS: %w", err)
+	}
+	nc.conn = conn
+	return nil
 }
 
 // ConnectFromEnv connects a NatsConnector to NATS.
 // The URL is read from the environment variable "NATS_URL"
 // If the URL is not set via the environment variable "NATS_URL",
 // it falls back to the default URL "nats://keptn-nats"
-func ConnectFromEnv() (*NatsConnector, error) {
+func ConnectFromEnv() *NatsConnector {
 	natsURL := os.Getenv(EnvVarNatsURL)
 	if natsURL == "" {
 		natsURL = EnvVarNatsURLDefault
 	}
-	return Connect(natsURL)
+	return New(natsURL)
 }
 
 // UnsubscribeAll deletes all current subscriptions
