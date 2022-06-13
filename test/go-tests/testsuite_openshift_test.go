@@ -54,7 +54,6 @@ func Test_Openshift(t *testing.T) {
 		t.Run("Test_ResourceServiceGETCommitID", Test_ResourceServiceGETCommitID)
 		t.Run("Test_EvaluationGitCommitID", Test_EvaluationGitCommitID)
 		t.Run("Test_SSHPublicKeyAuth", Test_SSHPublicKeyAuth)
-		t.Run("Test_ProxyAuth", Test_ProxyAuth)
 	}
 	t.Run("Test_ZeroDownTimeTriggerSequence", Test_ZeroDownTimeTriggerSequence)
 	t.Run("Test_ProvisioningURL", Test_ProvisioningURL)
