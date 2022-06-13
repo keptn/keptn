@@ -23,7 +23,7 @@ require (
 	k8s.io/client-go v0.22.10
 )
 
-require github.com/keptn/go-utils v0.16.1-0.20220613073843-6eccc1389053
+require github.com/keptn/go-utils v0.16.1-0.20220613085653-778123f3b3ce
 
 require (
 	cloud.google.com/go v0.54.0 // indirect
