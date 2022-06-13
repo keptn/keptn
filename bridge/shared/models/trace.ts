@@ -21,7 +21,7 @@ export interface IEvaluationData {
   compare_with?: string;
   include_result_with_score?: string;
   number_of_missing_comparison_results?: number;
-  sloFileContentParsed?: boolean;
+  sloFileContentParsed?: true; // can be undefined (default) or true
   sloObjectives?: ISloObjectives[];
 }
 /* eslint-enable @typescript-eslint/naming-convention */

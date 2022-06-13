@@ -13,6 +13,9 @@ export type SliInfo = {
   passCount: number;
 };
 
+export const filterUnparsedEvaluations = (trace: Trace): trace is Trace & { data: { evaluation: IEvaluationData } } =>
+  !!trace?.data?.evaluation?.sloFileContent && !trace.data.evaluation.sloFileContentParsed;
+
 export function getSliResultInfo(indicatorResults: IndicatorResult[]): {
   score: number;
   warningCount: number;
@@ -107,12 +110,7 @@ export function createDataPoints(evaluationHistory: Trace[]): IDataPoint[] {
 }
 
 export function parseSloOfEvaluations(evaluationTraces: Trace[]): void {
-  const unparsedEvaluations = (trace: Trace): trace is Trace & { data: { evaluation: IEvaluationData } } =>
-    !!trace?.data?.evaluation?.sloFileContent && !trace.data.evaluation.sloFileContentParsed;
-
-  for (const evaluationTrace of evaluationTraces.filter(unparsedEvaluations)) {
-    parseSloFile(evaluationTrace.data.evaluation);
-  }
+  evaluationTraces.filter(filterUnparsedEvaluations).forEach((e) => parseSloFile(e.data.evaluation));
 }
 
 function parseSloFile(evaluation: IEvaluationData): void {

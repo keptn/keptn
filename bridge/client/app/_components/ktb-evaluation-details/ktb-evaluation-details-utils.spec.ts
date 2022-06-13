@@ -2,6 +2,7 @@ import { Trace } from '../../_models/trace';
 import {
   createDataPoints,
   evaluationToDataPoint,
+  filterUnparsedEvaluations,
   getTotalScore,
   indicatorResultToDataPoint,
   parseSloOfEvaluations,
@@ -104,6 +105,21 @@ describe('KtbEvaluationDetailsUtils', () => {
     }
   });
 
+  it('should filter unparsed evaluations', () => {
+    // given
+    const traces = [
+      getTraceWithSloContent('mySLO'),
+      getTraceWithSloContent(undefined),
+      getTraceWithSloContent('mySLO', false, true),
+    ];
+
+    // when
+    const filteredTraces = traces.filter(filterUnparsedEvaluations);
+
+    // then
+    expect(filteredTraces).toEqual([getTraceWithSloContent('mySLO')]);
+  });
+
   it('should parse all SLO files even if there is an invalid one', () => {
     // given
     const trace = getTraceWithSloContent('_myInvalidSLOFile_');
@@ -152,12 +168,17 @@ describe('KtbEvaluationDetailsUtils', () => {
     ]);
   });
 
-  function getTraceWithSloContent(sloContent: string | undefined, comparedEvents = false): Trace {
+  function getTraceWithSloContent(
+    sloContent: string | undefined,
+    comparedEvents = false,
+    contentParsed?: boolean
+  ): Trace {
     return Trace.fromJSON({
       data: {
         evaluation: {
           sloFileContent: sloContent,
           ...(comparedEvents && { comparedEvents: ['myOtherId'] }),
+          ...(contentParsed !== undefined && { sloFileContentParsed: contentParsed }),
         },
       },
       id: 'myId',
