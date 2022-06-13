@@ -649,8 +649,8 @@ github.com/julienschmidt/httprouter v1.2.0/go.mod h1:SYymIcj16QtmaHHD7aYtjjsJG7V
 github.com/julienschmidt/httprouter v1.3.0/go.mod h1:JR6WtHb+2LUe8TCKY3cZOxFyyO8IZAc4RVcycCCAKdM=
 github.com/karrick/godirwalk v1.15.8 h1:7+rWAZPn9zuRxaIqqT8Ohs2Q2Ac0msBqwRdxNCr2VVs=
 github.com/karrick/godirwalk v1.15.8/go.mod h1:j4mkqPuvaLI8mp1DroR3P6ad7cyYd4c1qeJ3RV7ULlk=
-github.com/keptn/go-utils v0.16.1-0.20220609100816-ea3f2d0d9ab3 h1:klp7m4fMUWl9HF0eWUwlpsdx8Amr+UQxU0+Fd1afVc4=
-github.com/keptn/go-utils v0.16.1-0.20220609100816-ea3f2d0d9ab3/go.mod h1:oxLLKz2u9KId2HgLH63+T0pUbcgiDd2GDkRrRKwxGUU=
+github.com/keptn/go-utils v0.16.1-0.20220613073843-6eccc1389053 h1:o4zVBJvu+gvFNHCp22AOeFuHm2BoZMX9KK8ttqn9j/c=
+github.com/keptn/go-utils v0.16.1-0.20220613073843-6eccc1389053/go.mod h1:oxLLKz2u9KId2HgLH63+T0pUbcgiDd2GDkRrRKwxGUU=
 github.com/keptn/kubernetes-utils v0.14.0 h1:dB4FmUXfYNiYg/oxk7AxtybrqOHUgvPtuzMpICw5zt4=
 github.com/keptn/kubernetes-utils v0.14.0/go.mod h1:cu8MTtcyy0QPyM+xbFISx76DMkrNkeHWNBXTzxDkUn4=
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=
