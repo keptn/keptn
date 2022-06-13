@@ -341,8 +341,6 @@ export class DataService {
               projects?.splice(projectIdx, 1);
               this._projects.next(projects);
             }
-          } else {
-            this._projects.error(err);
           }
         }
       );

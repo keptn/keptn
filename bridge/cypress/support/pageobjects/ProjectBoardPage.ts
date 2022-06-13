@@ -2,6 +2,7 @@
 
 import SettingsPage from './SettingsPage';
 import ServicesPage from './ServicesPage';
+import { interceptProjectBoard } from '../intercept';
 
 enum View {
   SERVICE_VIEW = 'service-view',
@@ -18,6 +19,14 @@ export class ProjectBoardPage {
     cy.intercept(`/api/mongodb-datastore/event?keptnContext=${mockedKeptnContext}`, {
       fixture: 'sequence.traces.mock.json',
     });
+    return this;
+  }
+
+  public interceptError(projectName: string): this {
+    interceptProjectBoard();
+    cy.intercept(`/api/project/${projectName}?approval=true&remediation=true`, { forceNetworkError: true }).as(
+      'project'
+    );
     return this;
   }
 
