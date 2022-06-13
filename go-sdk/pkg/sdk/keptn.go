@@ -32,6 +32,8 @@ type IKeptn interface {
 	// Start starts the internal event handling logic and needs to be called by the user
 	// after creating value of IKeptn
 	Start() error
+	// GetResourceHandler returns a handler to fetch data from the configuration service
+	GetResourceHandler() ResourceHandler
 	// SendStartedEvent sends a started event for the given input event to the Keptn API
 	SendStartedEvent(event KeptnEvent) error
 	// SendFinishedEvent sends a finished event for the given input event to the Keptn API
@@ -40,6 +42,7 @@ type IKeptn interface {
 	// Per default DefaultLogger is used which internally just uses the go logging package
 	// Another logger can be configured using the sdk.WithLogger function
 	Logger() Logger
+	// APIV1 returns API utils for all Keptn APIs
 	APIV1() api.KeptnInterface
 }
 
@@ -67,6 +70,10 @@ func (e Error) Error() string {
 
 // KeptnOption can be used to configure the keptn sdk
 type KeptnOption func(*Keptn)
+
+type ResourceHandler interface {
+	GetResource(scope api.ResourceScope, options ...api.URIOption) (*models.Resource, error)
+}
 
 type healthEndpointRunner func(port string, cp *controlplane.ControlPlane)
 
@@ -129,6 +136,7 @@ func WithLogger(logger Logger) KeptnOption {
 type Keptn struct {
 	controlPlane           *controlplane.ControlPlane
 	eventSender            controlplane.EventSender
+	resourceHandler        ResourceHandler
 	api                    api.KeptnInterface
 	source                 string
 	taskRegistry           *taskRegistry
@@ -144,6 +152,7 @@ type Keptn struct {
 func NewKeptn(source string, opts ...KeptnOption) *Keptn {
 	env := newEnvConfig()
 	apiSet, controlPlane, eventSender := newControlPlaneFromEnv()
+	resourceHandler := newResourceHandlerFromEnv()
 	taskRegistry := newTaskMap()
 	logger := newDefaultLogger()
 	keptn := &Keptn{
@@ -151,6 +160,7 @@ func NewKeptn(source string, opts ...KeptnOption) *Keptn {
 		eventSender:            eventSender,
 		source:                 source,
 		taskRegistry:           taskRegistry,
+		resourceHandler:        resourceHandler,
 		api:                    apiSet,
 		automaticEventResponse: true,
 		gracefulShutdown:       true,
@@ -300,6 +310,10 @@ func (k *Keptn) Start() error {
 	<-time.After(5 * time.Second)
 	wg.Wait()
 	return err
+}
+
+func (k *Keptn) GetResourceHandler() ResourceHandler {
+	return k.resourceHandler
 }
 
 func (k *Keptn) SendStartedEvent(event KeptnEvent) error {
