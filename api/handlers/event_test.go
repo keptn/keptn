@@ -100,7 +100,6 @@ func TestPostEventHandlerFunc(t *testing.T) {
 
 	err := os.Setenv("NATS_URL", natsServer.ClientURL())
 	require.NoError(t, err)
-
 	natsClient, err := nats2.Connect(natsServer.ClientURL())
 	require.Nil(t, err)
 
