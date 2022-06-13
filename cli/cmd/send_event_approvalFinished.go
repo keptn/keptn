@@ -43,7 +43,7 @@ var approvalFinishedCmd = &cobra.Command{
 
 * This command takes the project (*--project*) and stage (*--stage*). 
 * It is optional to specify the ID (*--id*) of the corresponding approval.triggered event. If the ID is not provided, the command asks the user which open approval should be accepted or declined.
-* The open approval.triggered events and their ID can be retrieved using the "keptn get event approval.triggered --project=<project> --stage=<stage>" command.
+* The open approval.triggered events and their IDs can be retrieved using the "keptn get event approval.triggered --project=<project> --stage=<stage>" command.
 `,
 	Example: `keptn send event approval.finished --project=sockshop --stage=hardening --id=1234-5678-9123`,
 	RunE: func(cmd *cobra.Command, args []string) error {
