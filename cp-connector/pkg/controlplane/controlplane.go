@@ -11,6 +11,7 @@ import (
 	"github.com/keptn/keptn/cp-connector/pkg/logger"
 	"github.com/keptn/keptn/cp-connector/pkg/subscriptionsource"
 	"github.com/keptn/keptn/cp-connector/pkg/types"
+	"sync"
 )
 
 type EventSender = types.EventSender
@@ -82,13 +83,15 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 	cp.logger.Debugf("Registered with integration ID %s", cp.integrationID)
 	registrationData.ID = cp.integrationID
 
+	wg := &sync.WaitGroup{}
+	wg.Add(2)
 	cp.logger.Debugf("Starting event source for integration ID %s", cp.integrationID)
-	if err := cp.eventSource.Start(ctx, registrationData, eventUpdates); err != nil {
+	if err := cp.eventSource.Start(ctx, registrationData, eventUpdates, wg); err != nil {
 		return err
 	}
 	cp.logger.Debugf("Event source started with data: %+v", registrationData)
 	cp.logger.Debugf("Starting subscription source for integration ID %s", cp.integrationID)
-	if err := cp.subscriptionSource.Start(ctx, registrationData, subscriptionUpdates); err != nil {
+	if err := cp.subscriptionSource.Start(ctx, registrationData, subscriptionUpdates, wg); err != nil {
 		return err
 	}
 	cp.logger.Debug("Subscription source started")
@@ -108,6 +111,7 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 			cp.logger.Debug("Update successful")
 		case <-ctx.Done():
 			cp.logger.Debug("Unregistering")
+			wg.Wait()
 			cp.registered = false
 			return nil
 		}

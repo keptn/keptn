@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/keptn/keptn/cp-connector/pkg/fake"
 	"github.com/keptn/keptn/cp-connector/pkg/types"
+	"sync"
 	"testing"
 	"time"
 
@@ -29,7 +30,9 @@ func TestSubscriptionSourceCPPingFails(t *testing.T) {
 	subscriptionSource := New(uniformInterface)
 	clock := clock.NewMock()
 	subscriptionSource.clock = clock
-	err := subscriptionSource.Start(context.TODO(), initialRegistrationData, subscriptionUpdates)
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	err := subscriptionSource.Start(context.TODO(), initialRegistrationData, subscriptionUpdates, wg)
 	require.NoError(t, err)
 	clock.Add(5 * time.Second)
 }
@@ -64,8 +67,10 @@ func TestSubscriptionSourceWithFetchInterval(t *testing.T) {
 	subscriptionSource.clock = clock
 
 	subscriptionUpdates := make(chan []models.EventSubscription)
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
 
-	err := subscriptionSource.Start(context.TODO(), initialRegistrationData, subscriptionUpdates)
+	err := subscriptionSource.Start(context.TODO(), initialRegistrationData, subscriptionUpdates, wg)
 	require.NoError(t, err)
 	for i := 0; i < 100; i++ {
 		clock.Add(10 * time.Second)
@@ -112,7 +117,9 @@ func TestSubscriptionSourceCancel(t *testing.T) {
 	}()
 
 	ctx, cancel := context.WithCancel(context.TODO())
-	err := subscriptionSource.Start(ctx, initialRegistrationData, subscriptionUpdates)
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	err := subscriptionSource.Start(ctx, initialRegistrationData, subscriptionUpdates, wg)
 	require.Eventually(t, func() bool { return pingCount == 1 }, 3*time.Second, time.Millisecond*100)
 	require.NoError(t, err)
 	clock.Add(10 * time.Second)
@@ -151,8 +158,10 @@ func TestSubscriptionSource(t *testing.T) {
 	subscriptionSource.clock = clock
 
 	subscriptionUpdates := make(chan []models.EventSubscription)
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
 
-	err := subscriptionSource.Start(context.TODO(), initialRegistrationData, subscriptionUpdates)
+	err := subscriptionSource.Start(context.TODO(), initialRegistrationData, subscriptionUpdates, wg)
 	require.NoError(t, err)
 	clock.Add(5 * time.Second)
 	subs := <-subscriptionUpdates
@@ -165,7 +174,7 @@ func TestSubscriptionSource(t *testing.T) {
 func TestFixedSubscriptionSource_WithSubscriptions(t *testing.T) {
 	fss := NewFixedSubscriptionSource(WithFixedSubscriptions(models.EventSubscription{Event: "some.event"}))
 	subchan := make(chan []models.EventSubscription)
-	err := fss.Start(context.TODO(), types.RegistrationData{}, subchan)
+	err := fss.Start(context.TODO(), types.RegistrationData{}, subchan, &sync.WaitGroup{})
 	require.NoError(t, err)
 	updates := <-subchan
 	require.Equal(t, 1, len(updates))
@@ -175,7 +184,7 @@ func TestFixedSubscriptionSource_WithSubscriptions(t *testing.T) {
 func TestFixedSubscriptionSourcer_WithNoSubscriptions(t *testing.T) {
 	fss := NewFixedSubscriptionSource()
 	subchan := make(chan []models.EventSubscription)
-	err := fss.Start(context.TODO(), types.RegistrationData{}, subchan)
+	err := fss.Start(context.TODO(), types.RegistrationData{}, subchan, &sync.WaitGroup{})
 	require.NoError(t, err)
 	updates := <-subchan
 	require.Equal(t, 0, len(updates))
