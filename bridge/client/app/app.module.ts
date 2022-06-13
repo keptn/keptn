@@ -159,7 +159,6 @@ import { KtbNotificationModule } from './_components/ktb-notification/ktb-notifi
 import { KtbLoadingModule } from './_components/ktb-loading/ktb-loading.module';
 import { KtbConfirmationDialogModule } from './_components/_dialogs/ktb-confirmation-dialog/ktb-confirmation-dialog.module';
 import { KtbDeletionDialogModule } from './_components/_dialogs/ktb-deletion-dialog/ktb-deletion-dialog.module';
-import { KtbSliBreakdownModule } from './_components/ktb-sli-breakdown/ktb-sli-breakdown.module';
 import { KtbEvaluationDetailsModule } from './_components/ktb-evaluation-details/ktb-evaluation-details.module';
 
 registerLocaleData(localeEn, 'en');
@@ -229,7 +228,6 @@ const ktbModules = [
   KtbLoadingModule,
   KtbNotificationModule,
   KtbPipeModule,
-  KtbSliBreakdownModule,
 ];
 
 @NgModule({
