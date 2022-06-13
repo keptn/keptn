@@ -229,7 +229,13 @@ const dtModules = [
   DtRadioModule,
 ];
 
-const ktbModules = [KtbConfirmationDialogModule, KtbHeatmapModule, KtbLoadingModule, KtbNotificationModule, KtbPipeModule];
+const ktbModules = [
+  KtbConfirmationDialogModule,
+  KtbHeatmapModule,
+  KtbLoadingModule,
+  KtbNotificationModule,
+  KtbPipeModule,
+];
 
 @NgModule({
   declarations: [
