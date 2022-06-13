@@ -7,6 +7,7 @@ import { contentSecurityPolicy, frameguard, noSniff, permittedCrossDomainPolicie
 import express, { Express, NextFunction, Request, Response } from 'express';
 import { fileURLToPath, URL } from 'url';
 import logger from 'morgan';
+import { ComponentLogger } from './utils/logger';
 import cookieParser from 'cookie-parser';
 import AdmZip from 'adm-zip';
 import { apiRouter } from './api';
@@ -46,6 +47,8 @@ const defaultContentSecurityPolicyOptions: Readonly<ContentSecurityPolicyOptions
   },
 };
 
+const log = new ComponentLogger('App');
+
 async function init(): Promise<Express> {
   const app = express();
   const serverFeatureFlags = new ServerFeatureFlags();
@@ -63,7 +66,7 @@ async function init(): Promise<Express> {
     throw Error('API_URL is not provided');
   }
   if (!apiToken) {
-    console.log('API_TOKEN was not provided. Fetching from kubectl.');
+    log.warning('API_TOKEN was not provided. Fetching from kubectl.');
     apiToken =
       Buffer.from(
         execSync('kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token}').toString(),
@@ -72,12 +75,12 @@ async function init(): Promise<Express> {
   }
 
   if (!cliDownloadLink) {
-    console.log('CLI Download Link was not provided, defaulting to github.com/keptn/keptn releases');
+    log.warning('CLI Download Link was not provided, defaulting to github.com/keptn/keptn releases');
     cliDownloadLink = 'https://github.com/keptn/keptn/releases';
   }
 
   if (!integrationsPageLink) {
-    console.log('Integrations page Link was not provided, defaulting to get.keptn.sh/integrations.html');
+    log.warning('Integrations page Link was not provided, defaulting to get.keptn.sh/integrations.html');
     integrationsPageLink = 'https://get.keptn.sh/integrations.html';
   }
 
@@ -101,7 +104,7 @@ async function init(): Promise<Express> {
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
   app.use(cookieParser());
-  // will be set later
+  // OAUTH requires special security policies which are set later in ./user/oauth.ts
   if (!serverFeatureFlags.OAUTH_ENABLED) {
     app.use(contentSecurityPolicy(defaultContentSecurityPolicyOptions));
   }
@@ -130,7 +133,7 @@ async function init(): Promise<Express> {
 
   // fallback: go to index.html
   app.use((req, res) => {
-    console.error('Not found: ' + req.url);
+    log.error('Not found: ' + req.url);
     res.sendFile(join(rootFolder, 'dist/index.html'), { maxAge: 0 });
   });
 
@@ -163,7 +166,7 @@ async function setOAUTH(app: Express): Promise<SessionService> {
 }
 
 async function setBasicAUTH(app: Express): Promise<void> {
-  console.error('Installing Basic authentication - please check environment variables!');
+  log.error('Installing Basic authentication - please check environment variables!');
 
   setInterval(cleanIpBuckets, cleanBucketsInterval);
 
@@ -175,15 +178,16 @@ async function setBasicAUTH(app: Express): Promise<void> {
     userIP = userIP instanceof Array ? userIP[0] : userIP;
 
     if (userIP && isIPThrottled(userIP)) {
-      console.error('Request limit reached');
+      log.error('Request limit reached');
       res.status(429).send('Reached request limit');
       return;
     } else if (
+      // if username and password are not set or wrong
       !(login && password && login === process.env.BASIC_AUTH_USERNAME && password === process.env.BASIC_AUTH_PASSWORD)
     ) {
       updateBucket(!!(login || password), userIP);
 
-      console.error('Access denied');
+      log.error('Access denied');
       res.set('WWW-Authenticate', 'Basic realm="Keptn"');
       next({ response: { status: 401 } });
       return;
@@ -205,7 +209,7 @@ async function setAuth(app: Express, oAuthEnabled: boolean): Promise<{ authType:
     await setBasicAUTH(app);
   } else {
     authType = AuthType.NONE;
-    console.log('Not installing authentication middleware');
+    log.info('Not installing authentication middleware');
   }
 
   return { authType, session };
@@ -213,7 +217,7 @@ async function setAuth(app: Express, oAuthEnabled: boolean): Promise<{ authType:
 
 function setupDefaultLookAndFeel(): void {
   try {
-    console.log('Installing default Look-and-Feel');
+    log.info('Installing default Look-and-Feel');
 
     const destDir = join(rootFolder, 'dist/assets/branding');
     const srcDir = join(
@@ -230,7 +234,7 @@ function setupDefaultLookAndFeel(): void {
       copyFileSync(join(srcDir, file), join(destDir, file));
     });
   } catch (e) {
-    console.error(`Error while downloading custom Look-and-Feel file. Cause : ${e}`);
+    log.error(`Error while downloading custom Look-and-Feel file. Cause : ${e}`);
     process.exit(1);
   }
 }
@@ -239,7 +243,7 @@ function setupLookAndFeel(url: string): void {
   let fl: WriteStream | undefined;
 
   try {
-    console.log('Downloading custom Look-and-Feel file from', lookAndFeelUrl);
+    log.info(`Downloading custom Look-and-Feel file from ${lookAndFeelUrl}`);
 
     const destDir = join(rootFolder, 'dist/assets/branding');
     const destFile = join(destDir, '/lookandfeel.zip');
@@ -263,13 +267,13 @@ function setupLookAndFeel(url: string): void {
             zip.extractAllToAsync(destDir, true, false, (error?: Error) => {
               unlinkSync(destFile);
               if (error) {
-                console.error(`[ERROR] Error while extracting custom Look-and-Feel file. ${error}`);
+                log.error(`[ERROR] Error while extracting custom Look-and-Feel file. ${error}`);
                 return;
               }
-              console.log('Custom Look-and-Feel downloaded and extracted successfully');
+              log.info('Custom Look-and-Feel downloaded and extracted successfully');
             });
           } catch (error) {
-            console.error(`[ERROR] Error while extracting custom Look-and-Feel file. ${error}`);
+            log.error(`[ERROR] Error while extracting custom Look-and-Feel file. ${error}`);
           }
         });
         file.on('error', async (err) => {
@@ -277,18 +281,18 @@ function setupLookAndFeel(url: string): void {
           try {
             await unlink(destFile);
           } catch (error) {
-            console.error(`[ERROR] Error while saving custom Look-and-Feel file. ${error}`);
+            log.error(`[ERROR] Error while saving custom Look-and-Feel file. ${error}`);
           }
-          console.error(`[ERROR] Error while saving custom Look-and-Feel file. ${err}`);
+          log.error(`[ERROR] Error while saving custom Look-and-Feel file. ${err}`);
         });
       })
       .on('error', (err) => {
         file.end();
-        console.error(`[ERROR] Error while downloading custom Look-and-Feel file. ${err}`);
+        log.error(`[ERROR] Error while downloading custom Look-and-Feel file. ${err}`);
       });
   } catch (err) {
     fl?.end();
-    console.error(`[ERROR] Error while downloading custom Look-and-Feel file. ${err}`);
+    log.error(`[ERROR] Error while downloading custom Look-and-Feel file. ${err}`);
   }
 }
 

@@ -122,6 +122,29 @@ describe('DataService', () => {
     expect(sendApprovalSpy).toHaveBeenCalledTimes(1);
   });
 
+  it('should load uniform log status', async () => {
+    // given
+    jest.spyOn(apiService, 'hasUnreadUniformRegistrationLogs').mockReturnValue(of(true));
+
+    // when
+    dataService.loadUnreadUniformRegistrationLogs();
+
+    // then
+    expect(await firstValueFrom(dataService.hasUnreadUniformRegistrationLogs)).toBe(true);
+  });
+
+  it('should not load uniform log status', () => {
+    // given
+    const loadLogSpy = jest.spyOn(apiService, 'hasUnreadUniformRegistrationLogs');
+    dataService.setHasUnreadUniformRegistrationLogs(true);
+
+    // when
+    dataService.loadUnreadUniformRegistrationLogs();
+
+    // then
+    expect(loadLogSpy).not.toHaveBeenCalled();
+  });
+
   function setGetTracesResponse(traces: Trace[]): void {
     const response = new HttpResponse({ body: { events: traces, totalCount: 0, pageSize: 1, nextPageKey: 1 } });
     jest.spyOn(apiService, 'getTraces').mockReturnValue(of(response));

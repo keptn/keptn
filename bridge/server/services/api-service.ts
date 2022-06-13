@@ -13,10 +13,12 @@ import { Secret } from '../../shared/interfaces/secret';
 import { KeptnService } from '../../shared/models/keptn-service';
 import { IStage } from '../../shared/interfaces/stage';
 import { SequenceOptions, TraceOptions } from './data-service';
+import { ComponentLogger } from '../utils/logger';
 
 export class ApiService {
   private readonly axios: AxiosInstance;
   private readonly escapeSlash = '%252F';
+  private readonly log = new ComponentLogger('API');
 
   constructor(private readonly baseUrl: string, readonly apiToken: string | undefined) {
     if (process.env.NODE_ENV === 'test' && global.axiosInstance) {
@@ -31,6 +33,12 @@ export class ApiService {
           ...(apiToken && { 'x-token': apiToken }),
           'Content-Type': 'application/json',
         },
+      });
+      // log request using the same format of morgan but without response time
+      this.axios.interceptors.response.use((response) => {
+        //Example: GET /api/project/podtato 200
+        this.log.info(`${response.config.method} ${response.config.url} ${response.status}`);
+        return response;
       });
     }
   }
@@ -51,6 +59,7 @@ export class ApiService {
     projectName: string,
     sequenceOptions: SequenceOptions
   ): Promise<AxiosResponse<SequenceResult>> {
+    this.log.debug(`Sequence options: ${this.log.prettyPrint(sequenceOptions)}`);
     return this.axios.get<SequenceResult>(`${this.baseUrl}/controlPlane/v1/sequence/${projectName}`, {
       params: sequenceOptions,
       ...this.getAuthHeaders(accessToken),
@@ -61,6 +70,7 @@ export class ApiService {
     accessToken: string | undefined,
     traceOptions: Partial<TraceOptions>
   ): Promise<AxiosResponse<EventResult>> {
+    this.log.debug(`Trace options: ${this.log.prettyPrint(traceOptions)}`);
     return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event`, {
       params: traceOptions,
       ...this.getAuthHeaders(accessToken),
@@ -126,6 +136,7 @@ export class ApiService {
       excludeInvalidated: 'true',
       limit: traceOptions.pageSize,
     };
+    this.log.debug(`getTracesWithResultAndSource options: ${this.log.prettyPrint(params)}`);
     return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event/type/${traceOptions.type}`, {
       params,
       ...this.getAuthHeaders(accessToken),
@@ -146,6 +157,7 @@ export class ApiService {
       excludeInvalidated: 'true',
       limit: pageSize.toString(),
     };
+    this.log.debug(`getEvaluationResults options: ${this.log.prettyPrint(params)}`);
     return this.axios.get<EventResult>(
       `${this.baseUrl}/mongodb-datastore/event/type/${EventTypes.EVALUATION_FINISHED}`,
       { params, ...this.getAuthHeaders(accessToken) }
@@ -161,6 +173,7 @@ export class ApiService {
       filter: `shkeptncontext:${keptnContext} AND source:${KeptnService.LIGHTHOUSE_SERVICE}`,
       limit: '1',
     };
+    this.log.debug(`getEvaluationResult options: ${this.log.prettyPrint(params)}`);
     return this.axios.get<EventResult>(url, { params, ...this.getAuthHeaders(accessToken) });
   }
 
@@ -176,6 +189,7 @@ export class ApiService {
       filter: `data.project:${projectName} ${sourceString}AND id:${eventIds}`,
       excludeInvalidated: 'true',
     };
+    this.log.debug(`getTracesOfMultipleServices options: ${this.log.prettyPrint(params)}`);
     return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event/type/${eventType}`, {
       params,
       ...this.getAuthHeaders(accessToken),
@@ -275,7 +289,7 @@ export class ApiService {
       url += `/service/${serviceName}`;
     }
     url += `/resource/webhook${this.escapeSlash}webhook.yaml`;
-
+    this.log.debug(`getWebhookConfig webhook path: ${url}`);
     return this.axios.get<Resource>(url, this.getAuthHeaders(accessToken));
   }
 
@@ -293,7 +307,7 @@ export class ApiService {
       url += `/service/${serviceName}`;
     }
     url += `/resource/webhook${this.escapeSlash}webhook.yaml`;
-
+    this.log.debug(`deleteWebhookConfig webhook path: ${url}`);
     return this.axios.delete<Resource>(url, this.getAuthHeaders(accessToken));
   }
 
@@ -312,7 +326,7 @@ export class ApiService {
       url += `/service/${serviceName}`;
     }
     url += `/resource`; // /resource/resourceURI does not overwrite, fallback to this endpoint
-
+    this.log.debug(`saveWebhookConfig webhook path: ${url}`);
     return this.axios.put<Resource>(
       url,
       {
