@@ -17,8 +17,16 @@ import (
 )
 
 type FakeKeptn struct {
-	SentEvents []models.KeptnContextExtendedCE
-	Keptn      *Keptn
+	TestResourceHandler ResourceHandler
+	SentEvents          []models.KeptnContextExtendedCE
+	Keptn               *Keptn
+}
+
+func (f *FakeKeptn) GetResourceHandler() ResourceHandler {
+	if f.TestResourceHandler == nil {
+		return &TestResourceHandler{}
+	}
+	return f.TestResourceHandler
 }
 
 func (f *FakeKeptn) NewEvent(event models.KeptnContextExtendedCE) error {
@@ -66,6 +74,10 @@ func (f *FakeKeptn) AssertSentEventResult(t *testing.T, eventIndex int, result v
 func (f *FakeKeptn) SetAutomaticResponse(autoResponse bool) {
 	f.Keptn.automaticEventResponse = autoResponse
 }
+func (f *FakeKeptn) SetResourceHandler(handler ResourceHandler) {
+	f.TestResourceHandler = handler
+	f.Keptn.resourceHandler = handler
+}
 
 func (f *FakeKeptn) AddTaskHandler(eventType string, handler TaskHandler, filters ...func(keptnHandle IKeptn, event KeptnEvent) bool) {
 	f.AddTaskHandlerWithSubscriptionID(eventType, handler, "", filters...)
@@ -82,11 +94,13 @@ func (f *FakeKeptn) fakeSender(ce models.KeptnContextExtendedCE) error {
 
 func NewFakeKeptn(source string) *FakeKeptn {
 	internal, _ := api2.NewInternal(nil)
+	resourceHandler := &TestResourceHandler{}
 	var fakeKeptn = &FakeKeptn{
 
 		Keptn: &Keptn{
 			source:                 source,
 			api:                    internal,
+			resourceHandler:        resourceHandler,
 			taskRegistry:           newTaskMap(),
 			syncProcessing:         true,
 			automaticEventResponse: true,
