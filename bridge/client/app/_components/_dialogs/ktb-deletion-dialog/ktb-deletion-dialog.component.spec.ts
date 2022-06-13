@@ -1,10 +1,10 @@
 import { KtbDeletionDialogComponent } from './ktb-deletion-dialog.component';
-import { AppModule } from '../../../app.module';
 import { DeleteResult, DeleteType } from '../../../_interfaces/delete';
 import { EventService } from '../../../_services/event.service';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { KtbDeletionDialogModule } from './ktb-deletion-dialog.module';
 
 describe('KtbDeletionDialogComponent', () => {
   let component: KtbDeletionDialogComponent;
@@ -17,7 +17,7 @@ describe('KtbDeletionDialogComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule, MatDialogModule, HttpClientTestingModule],
+      imports: [KtbDeletionDialogModule, MatDialogModule, HttpClientTestingModule],
       providers: [
         EventService,
         { provide: MAT_DIALOG_DATA, useValue: dialogData },

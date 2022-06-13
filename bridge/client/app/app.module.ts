@@ -49,7 +49,6 @@ import { DtTreeTableModule } from '@dynatrace/barista-components/tree-table';
 import { MomentModule } from 'ngx-moment';
 import { environment } from '../environments/environment';
 import { KtbDeleteConfirmationComponent } from './_components/_dialogs/ktb-delete-confirmation/ktb-delete-confirmation.component';
-import { KtbDeletionDialogComponent } from './_components/_dialogs/ktb-deletion-dialog/ktb-deletion-dialog.component';
 import { KtbProjectCreateMessageComponent } from './_components/_status-messages/ktb-project-create-message/ktb-project-create-message.component';
 import { KtbApprovalItemComponent } from './_components/ktb-approval-item/ktb-approval-item.component';
 import { KtbCopyToClipboardComponent } from './_components/ktb-copy-to-clipboard/ktb-copy-to-clipboard.component';
@@ -166,6 +165,7 @@ import { KtbPipeModule } from './_pipes/ktb-pipe.module';
 import { KtbNotificationModule } from './_components/ktb-notification/ktb-notification.module';
 import { KtbLoadingModule } from './_components/ktb-loading/ktb-loading.module';
 import { KtbConfirmationDialogModule } from './_components/_dialogs/ktb-confirmation-dialog/ktb-confirmation-dialog.module';
+import { KtbDeletionDialogModule } from './_components/_dialogs/ktb-deletion-dialog/ktb-deletion-dialog.module';
 
 registerLocaleData(localeEn, 'en');
 
@@ -231,6 +231,7 @@ const dtModules = [
 
 const ktbModules = [
   KtbConfirmationDialogModule,
+  KtbDeletionDialogModule,
   KtbHeatmapModule,
   KtbLoadingModule,
   KtbNotificationModule,
@@ -295,7 +296,6 @@ const ktbModules = [
     KtbProjectSettingsShipyardComponent,
     KtbDragAndDropDirective,
     KtbDangerZoneComponent,
-    KtbDeletionDialogComponent,
     KtbSequenceControlsComponent,
     ToType,
     KtbUniformSubscriptionsComponent,
@@ -334,7 +334,7 @@ const ktbModules = [
     KtbProjectSettingsGitSshInputComponent,
   ],
   imports: [...angularModules, ...dtModules, ...ktbModules, AppRouting, MomentModule],
-  entryComponents: [KtbDeletionDialogComponent],
+  entryComponents: [],
   providers: [
     EventService,
     AppInitService,
