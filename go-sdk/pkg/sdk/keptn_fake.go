@@ -7,6 +7,7 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	api2 "github.com/keptn/keptn/cp-common/api"
 	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
 	"github.com/keptn/keptn/cp-connector/pkg/types"
 	"github.com/stretchr/testify/require"
@@ -16,16 +17,8 @@ import (
 )
 
 type FakeKeptn struct {
-	TestResourceHandler ResourceHandler
-	SentEvents          []models.KeptnContextExtendedCE
-	Keptn               *Keptn
-}
-
-func (f *FakeKeptn) GetResourceHandler() ResourceHandler {
-	if f.TestResourceHandler == nil {
-		return &TestResourceHandler{}
-	}
-	return f.TestResourceHandler
+	SentEvents []models.KeptnContextExtendedCE
+	Keptn      *Keptn
 }
 
 func (f *FakeKeptn) NewEvent(event models.KeptnContextExtendedCE) error {
@@ -74,11 +67,6 @@ func (f *FakeKeptn) SetAutomaticResponse(autoResponse bool) {
 	f.Keptn.automaticEventResponse = autoResponse
 }
 
-func (f *FakeKeptn) SetResourceHandler(handler ResourceHandler) {
-	f.TestResourceHandler = handler
-	f.Keptn.resourceHandler = handler
-}
-
 func (f *FakeKeptn) AddTaskHandler(eventType string, handler TaskHandler, filters ...func(keptnHandle IKeptn, event KeptnEvent) bool) {
 	f.AddTaskHandlerWithSubscriptionID(eventType, handler, "", filters...)
 }
@@ -93,12 +81,12 @@ func (f *FakeKeptn) fakeSender(ce models.KeptnContextExtendedCE) error {
 }
 
 func NewFakeKeptn(source string) *FakeKeptn {
-	resourceHandler := &TestResourceHandler{}
+	internal, _ := api2.NewInternal(nil)
 	var fakeKeptn = &FakeKeptn{
-		TestResourceHandler: resourceHandler,
+
 		Keptn: &Keptn{
-			resourceHandler:        resourceHandler,
 			source:                 source,
+			api:                    internal,
 			taskRegistry:           newTaskMap(),
 			syncProcessing:         true,
 			automaticEventResponse: true,
