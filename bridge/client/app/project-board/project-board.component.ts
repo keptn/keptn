@@ -22,7 +22,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   public error$: Observable<string | undefined> = this._errorSubject.asObservable();
   public isCreateMode$: Observable<boolean>;
   public hasUnreadLogs$: Observable<boolean>;
-  private readonly uniformLogPollingInterval = 2 * 60_000;
+  private static readonly uniformLogPollingInterval = 2 * 60_000;
 
   constructor(
     private router: Router,
@@ -31,10 +31,8 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
     @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number
   ) {
     this.hasUnreadLogs$ = this.dataService.hasUnreadUniformRegistrationLogs;
-    if (initialDelayMillis === 0) {
-      // disable log-polling
-      this.uniformLogPollingInterval = 0;
-    }
+    // disable log-polling
+    const uniformLogInterval = initialDelayMillis === 0 ? 0 : ProjectBoardComponent.uniformLogPollingInterval;
     const projectName$ = this.route.paramMap.pipe(
       map((params) => params.get('projectName')),
       filter((projectName: string | null): projectName is string => !!projectName)
@@ -46,7 +44,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
     );
 
     const uniformLogTimer$ = projectName$.pipe(
-      switchMap(() => AppUtils.createTimer(0, this.uniformLogPollingInterval)),
+      switchMap(() => AppUtils.createTimer(0, uniformLogInterval)),
       takeUntil(this.unsubscribe$)
     );
 
