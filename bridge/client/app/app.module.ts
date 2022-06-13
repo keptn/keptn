@@ -50,7 +50,6 @@ import { MomentModule } from 'ngx-moment';
 import { environment } from '../environments/environment';
 import { KtbConfirmationDialogComponent } from './_components/_dialogs/ktb-confirmation-dialog/ktb-confirmation-dialog.component';
 import { KtbDeleteConfirmationComponent } from './_components/_dialogs/ktb-delete-confirmation/ktb-delete-confirmation.component';
-import { KtbDeletionDialogComponent } from './_components/_dialogs/ktb-deletion-dialog/ktb-deletion-dialog.component';
 import { KtbProjectCreateMessageComponent } from './_components/_status-messages/ktb-project-create-message/ktb-project-create-message.component';
 import { KtbApprovalItemComponent } from './_components/ktb-approval-item/ktb-approval-item.component';
 import { KtbCopyToClipboardComponent } from './_components/ktb-copy-to-clipboard/ktb-copy-to-clipboard.component';
@@ -166,6 +165,7 @@ import { KtbHeatmapModule } from './_components/ktb-heatmap/ktb-heatmap.module';
 import { KtbPipeModule } from './_pipes/ktb-pipe.module';
 import { KtbNotificationModule } from './_components/ktb-notification/ktb-notification.module';
 import { KtbLoadingModule } from './_components/ktb-loading/ktb-loading.module';
+import { KtbDeletionDialogModule } from './_components/_dialogs/ktb-deletion-dialog/ktb-deletion-dialog.module';
 
 registerLocaleData(localeEn, 'en');
 
@@ -229,7 +229,7 @@ const dtModules = [
   DtRadioModule,
 ];
 
-const ktbModules = [KtbHeatmapModule, KtbLoadingModule, KtbNotificationModule, KtbPipeModule];
+const ktbModules = [KtbDeletionDialogModule, KtbHeatmapModule, KtbLoadingModule, KtbNotificationModule, KtbPipeModule];
 
 @NgModule({
   declarations: [
@@ -289,7 +289,6 @@ const ktbModules = [KtbHeatmapModule, KtbLoadingModule, KtbNotificationModule, K
     KtbProjectSettingsShipyardComponent,
     KtbDragAndDropDirective,
     KtbDangerZoneComponent,
-    KtbDeletionDialogComponent,
     KtbConfirmationDialogComponent,
     KtbSequenceControlsComponent,
     ToType,
@@ -329,7 +328,7 @@ const ktbModules = [KtbHeatmapModule, KtbLoadingModule, KtbNotificationModule, K
     KtbProjectSettingsGitSshInputComponent,
   ],
   imports: [...angularModules, ...dtModules, ...ktbModules, AppRouting, MomentModule],
-  entryComponents: [KtbDeletionDialogComponent, KtbConfirmationDialogComponent],
+  entryComponents: [KtbConfirmationDialogComponent],
   providers: [
     EventService,
     AppInitService,
