@@ -15,7 +15,6 @@ type envConfig struct {
 	PubSubTopic             string   `envconfig:"PUBSUB_TOPIC" default:""`
 	HealthEndpointPort      string   `envconfig:"HEALTH_ENDPOINT_PORT" default:"8080"`
 	HealthEndpointEnabled   bool     `envconfig:"HEALTH_ENDPOINT_ENABLED" default:"true"`
-	InternalAPIEnabled      bool     `envconfig:"INTERNAL_API_ENABLED" default:"true"`
 	KeptnAPIEndpoint        string   `envconfig:"KEPTN_API_ENDPOINT" default:""`
 	KeptnAPIToken           string   `envconfig:"KEPTN_API_TOKEN" default:""`
 	Location                string   `envconfig:"LOCATION" default:"control-plane"`
@@ -32,8 +31,12 @@ type envConfig struct {
 	VerifySSL               bool     `envconfig:"HTTP_SSL_VERIFY" default:"true"`
 }
 
+type ConnectionType string
+
 const (
-	DefaultAPIProxyHTTPTimeout = 30
+	DefaultAPIProxyHTTPTimeout                = 30
+	ConnectionTypeNATS         ConnectionType = "nats"
+	ConnectionTypeHTTP         ConnectionType = "http"
 )
 
 func newEnvConfig() envConfig {
@@ -57,4 +60,13 @@ func (env *envConfig) GetAPIProxyHTTPTimeout() time.Duration {
 		timeout = DefaultAPIProxyHTTPTimeout
 	}
 	return time.Duration(timeout) * time.Second
+}
+
+func (env *envConfig) PubSubConnectionType() ConnectionType {
+	if env.KeptnAPIEndpoint == "" {
+		// if no Keptn API URL has been defined, this means that run inside the Keptn cluster -> we can subscribe to events directly via NATS
+		return ConnectionTypeNATS
+	}
+	// if a Keptn API URL has been defined, this means that the distributor runs outside of the Keptn cluster -> therefore no NATS connection is possible
+	return ConnectionTypeHTTP
 }
