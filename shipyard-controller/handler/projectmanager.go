@@ -552,6 +552,10 @@ func stageInArrayOfStages(comparedStage string, stages []*apimodels.ExpandedStag
 }
 
 func decodeGitCredentials(oldCredentials *apimodels.GitAuthCredentials) *apimodels.GitAuthCredentials {
+	if oldCredentials == nil {
+		return nil
+	}
+
 	credentials := oldCredentials
 	if oldCredentials.HttpsAuth != nil && oldCredentials.HttpsAuth.Certificate != "" {
 		decodedPemCertificate, _ := base64.StdEncoding.DecodeString(oldCredentials.HttpsAuth.Certificate)
