@@ -118,8 +118,33 @@ func TestEventSourceCancelDisconnectsFromBroker(t *testing.T) {
 	New(natsConnectorMock).Start(ctx, types.RegistrationData{}, make(chan types.EventUpdate), wg)
 	cancel()
 	require.Eventually(t, func() bool { return natsConnectorMock.UnsubscribeAllCalls == 1 }, 2*time.Second, 100*time.Millisecond)
+}
 
-	wg.Wait()
+func TestEventSourceCallsWaitGroupDuringCancellation(t *testing.T) {
+	t.Run("WaitGroup called", func(t *testing.T) {
+		natsConnectorMock := &NATSConnectorMock{
+			QueueSubscribeMultipleFn: func(subjects []string, queueGroup string, fn nats2.ProcessEventFn) error { return nil },
+			UnsubscribeAllFn:         func() error { return nil },
+		}
+		ctx, cancel := context.WithCancel(context.TODO())
+		wg := &sync.WaitGroup{}
+		wg.Add(1)
+		New(natsConnectorMock).Start(ctx, types.RegistrationData{}, make(chan types.EventUpdate), wg)
+		cancel()
+		wg.Wait()
+	})
+	t.Run("WaitGroup called - error in shutdown logic", func(t *testing.T) {
+		natsConnectorMock := &NATSConnectorMock{
+			QueueSubscribeMultipleFn: func(subjects []string, queueGroup string, fn nats2.ProcessEventFn) error { return nil },
+			UnsubscribeAllFn:         func() error { return fmt.Errorf("ohoh") },
+		}
+		ctx, cancel := context.WithCancel(context.TODO())
+		wg := &sync.WaitGroup{}
+		wg.Add(1)
+		New(natsConnectorMock).Start(ctx, types.RegistrationData{}, make(chan types.EventUpdate), wg)
+		cancel()
+		wg.Wait()
+	})
 }
 
 func TestEventSourceCancelDisconnectFromBrokerFails(t *testing.T) {

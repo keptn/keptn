@@ -78,13 +78,13 @@ func (n *NATSEventSource) Start(ctx context.Context, registrationData types.Regi
 		return fmt.Errorf("could not start NATS event source: %w", err)
 	}
 	go func() {
+		defer wg.Done()
 		<-ctx.Done()
 		if err := n.connector.UnsubscribeAll(); err != nil {
 			n.logger.Errorf("Unable to unsubscribe from NATS: %v", err)
 			return
 		}
 		n.logger.Debug("Unsubscribed from NATS")
-		wg.Done()
 	}()
 	return nil
 }
