@@ -13,7 +13,7 @@ import { MomentModule } from 'ngx-moment';
 import { DtFormFieldModule } from '@dynatrace/barista-components/form-field';
 import { MatDialogModule } from '@angular/material/dialog';
 import { KtbPipeModule } from '../../_pipes/ktb-pipe.module';
-import { AppModule } from '../../app.module';
+import { KtbSliBreakdownModule } from '../ktb-sli-breakdown/ktb-sli-breakdown.module';
 
 @NgModule({
   declarations: [KtbEvaluationDetailsComponent],
@@ -31,9 +31,9 @@ import { AppModule } from '../../app.module';
     FlexLayoutModule,
     KtbHeatmapModule,
     KtbPipeModule,
+    KtbSliBreakdownModule,
     MatDialogModule,
     MomentModule,
-    AppModule,
   ],
   exports: [KtbEvaluationDetailsComponent],
 })
