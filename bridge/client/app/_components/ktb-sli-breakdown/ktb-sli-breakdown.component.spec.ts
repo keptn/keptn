@@ -1,12 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbSliBreakdownComponent } from './ktb-sli-breakdown.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { AppModule } from '../../app.module';
 import { EvaluationsMock } from '../../_services/_mockData/evaluations.mock';
 import { Trace } from '../../_models/trace';
 import { IndicatorResult } from '../../../../shared/interfaces/indicator-result';
 import { SloConfig } from '../../../../shared/interfaces/slo-config';
 import { parse as parseYaml } from 'yaml';
+import { KtbSliBreakdownModule } from './ktb-sli-breakdown.module';
 
 describe('KtbSliBreakdownComponent', () => {
   let component: KtbSliBreakdownComponent;
@@ -14,7 +14,7 @@ describe('KtbSliBreakdownComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule, HttpClientTestingModule],
+      imports: [KtbSliBreakdownModule, HttpClientTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbSliBreakdownComponent);
