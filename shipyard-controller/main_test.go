@@ -189,8 +189,7 @@ func TestMain(m *testing.M) {
 	os.Setenv(envVarSequenceDispatchIntervalSec, "1s")
 	os.Setenv(envVarTaskStartedWaitDuration, "10s")
 
-	ctx, cancel := context.WithCancel(context.TODO())
-	go _main(ctx, cancel, fakeClient)
+	go _main(fakeClient)
 	m.Run()
 }
 
@@ -397,7 +396,7 @@ func Test__main_SequenceQueueWithTimeout(t *testing.T) {
 	t.Logf("trigger the first task sequence - this should time out")
 	firstSequenceContext := natsClient.triggerSequence(projectName, serviceName, stageName, sequencename)
 
-	verifySequenceEndsUpInState(t, projectName, firstSequenceContext, 15*time.Second, []string{apimodels.TimedOut})
+	verifySequenceEndsUpInState(t, projectName, firstSequenceContext, 20*time.Second, []string{apimodels.TimedOut})
 	t.Log("received the expected state!")
 
 	t.Logf("now trigger the second sequence - this should start and a .triggered event for mytask should be sent")

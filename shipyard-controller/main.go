@@ -74,15 +74,13 @@ func main() {
 	if err != nil {
 		log.Fatalf("could not create kubernetes client: %s", err.Error())
 	}
-	ctx, cancel := context.WithCancel(context.Background())
-	_main(ctx, cancel, kubeAPI)
+	_main(kubeAPI)
 }
 
-func _main(ctx context.Context, cancel context.CancelFunc, kubeAPI kubernetes.Interface) {
+func _main(kubeAPI kubernetes.Interface) {
 	log.SetLevel(log.InfoLevel)
-	if ctx == nil {
-		ctx, cancel = context.WithCancel(context.Background())
-	}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	if os.Getenv(envVarLogLevel) != "" {
 		logLevel, err := log.ParseLevel(os.Getenv(envVarLogLevel))
@@ -241,7 +239,7 @@ func _main(ctx context.Context, cancel context.CancelFunc, kubeAPI kubernetes.In
 		createEventQueueRepo(),
 		createProjectRepo(),
 		taskStartedWaitDuration,
-		5*time.Second,
+		1*time.Minute, // TODO make configurable
 		clock.New(),
 	)
 
@@ -333,7 +331,7 @@ func _main(ctx context.Context, cancel context.CancelFunc, kubeAPI kubernetes.In
 		}
 	}()
 
-	GracefulShutdown(ctx, wg, srv)
+	GracefulShutdown(wg, srv)
 }
 
 func LeaderElection(client v1.CoordinationV1Interface, ctx context.Context, start func(ctx context.Context, mode common.SDMode), stop func()) {
@@ -388,23 +386,18 @@ func LeaderElection(client v1.CoordinationV1Interface, ctx context.Context, star
 	})
 }
 
-func GracefulShutdown(ctx context.Context, wg *sync.WaitGroup, srv *http.Server) {
+func GracefulShutdown(wg *sync.WaitGroup, srv *http.Server) {
 	// Wait for interrupt signal to gracefully shut down the server
 	quit := make(chan os.Signal, 1)
 
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	select {
-	case <-quit:
-		log.Info("Received SIGTERM signal")
-	case <-ctx.Done():
-		log.Info("Received ctx.Done()")
-	}
+	<-quit
 	log.Println("Shutting down server...")
 
-	ctx2, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	wg.Wait()
-	if err := srv.Shutdown(ctx2); err != nil {
+	if err := srv.Shutdown(ctx); err != nil {
 		log.Fatal("Server forced to shutdown: ", err)
 	}
 
