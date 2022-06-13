@@ -150,7 +150,7 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 		&git.CloneOptions{
 			URL:             gitContext.Credentials.RemoteURL,
 			Auth:            auth,
-			InsecureSkipTLS: gitContext.Credentials.HttpsAuth.InsecureSkipTLS,
+			InsecureSkipTLS: retrieveInsecureSkipTLS(gitContext.Credentials),
 		},
 	)
 
@@ -301,7 +301,7 @@ func (g Git) Push(gitContext common_models.GitContext) error {
 	err = repo.Push(&git.PushOptions{
 		RemoteName:      "origin",
 		Auth:            auth,
-		InsecureSkipTLS: gitContext.Credentials.HttpsAuth.InsecureSkipTLS,
+		InsecureSkipTLS: retrieveInsecureSkipTLS(gitContext.Credentials),
 	})
 	if err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
 		if errors.Is(err, git.ErrForceNeeded) {
@@ -332,11 +332,11 @@ func (g *Git) Pull(gitContext common_models.GitContext) error {
 			Force:           true,
 			ReferenceName:   head.Name(),
 			Auth:            auth,
-			InsecureSkipTLS: gitContext.Credentials.HttpsAuth.InsecureSkipTLS,
+			InsecureSkipTLS: retrieveInsecureSkipTLS(gitContext.Credentials),
 		})
 		if err != nil && errors.Is(err, plumbing.ErrReferenceNotFound) {
 			// reference not there yet
-			err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true, Auth: auth, InsecureSkipTLS: gitContext.Credentials.HttpsAuth.InsecureSkipTLS})
+			err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true, Auth: auth, InsecureSkipTLS: retrieveInsecureSkipTLS(gitContext.Credentials)})
 		}
 		if err != nil && errors.Is(err, git.ErrNonFastForwardUpdate) {
 			return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, err)
@@ -397,6 +397,13 @@ func (g *Git) getCurrentRemoteRevision(gitContext common_models.GitContext) (str
 		return "", false, fmt.Errorf(kerrors.ErrMsgCouldNotGetRevision, gitContext.Project, err)
 	}
 	return revHash.String(), isAncestor, nil
+}
+
+func retrieveInsecureSkipTLS(credentials *common_models.GitCredentials) bool {
+	if credentials.HttpsAuth != nil {
+		return credentials.HttpsAuth.InsecureSkipTLS
+	}
+	return false
 }
 
 func (g *Git) CreateBranch(gitContext common_models.GitContext, branch string, sourceBranch string) error {
@@ -485,7 +492,7 @@ func (g *Git) fetch(gitContext common_models.GitContext, r *git.Repository) erro
 		//RefSpecs: []config.RefSpec{"+refs/heads/*:refs/remotes/origin/*", "+refs/heads/*:refs/heads/*"},
 		Force:           true,
 		Auth:            auth,
-		InsecureSkipTLS: gitContext.Credentials.HttpsAuth.InsecureSkipTLS,
+		InsecureSkipTLS: retrieveInsecureSkipTLS(gitContext.Credentials),
 	}); err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
 		return err
 	}

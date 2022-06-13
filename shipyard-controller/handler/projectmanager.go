@@ -94,7 +94,7 @@ func (pm *ProjectManager) Create(params *models.CreateProjectParams) (error, com
 		return ErrProjectAlreadyExists, nilRollback
 	}
 
-	err = pm.updateGITRepositorySecret(*params.Name, params.GitCredentials)
+	err = pm.updateGITRepositorySecret(*params.Name, decodeGitCredentials(params.GitCredentials))
 	if err != nil {
 		return err, nilRollback
 	}
@@ -186,7 +186,7 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 
 	if params.GitCredentials != nil {
 		// try to update git repository secret
-		err = pm.updateGITRepositorySecret(*params.Name, params.GitCredentials)
+		err = pm.updateGITRepositorySecret(*params.Name, decodeGitCredentials(params.GitCredentials))
 
 		// no roll back needed since updating the git repository secret was the first operation
 		if err != nil {
@@ -549,6 +549,21 @@ func stageInArrayOfStages(comparedStage string, stages []*apimodels.ExpandedStag
 		}
 	}
 	return false
+}
+
+func decodeGitCredentials(oldCredentials *apimodels.GitAuthCredentials) *apimodels.GitAuthCredentials {
+	credentials := oldCredentials
+	if oldCredentials.HttpsAuth != nil && oldCredentials.HttpsAuth.Certificate != "" {
+		decodedPemCertificate, _ := base64.StdEncoding.DecodeString(oldCredentials.HttpsAuth.Certificate)
+		credentials.HttpsAuth.Certificate = string(decodedPemCertificate)
+	}
+
+	if oldCredentials.SshAuth != nil && oldCredentials.SshAuth.PrivateKey != "" {
+		decodedPrivateKey, _ := base64.StdEncoding.DecodeString(oldCredentials.SshAuth.PrivateKey)
+		credentials.SshAuth.PrivateKey = string(decodedPrivateKey)
+	}
+
+	return credentials
 }
 
 func validateShipyardUpdate(params *models.UpdateProjectParams, oldProject *apimodels.ExpandedProject) error {
