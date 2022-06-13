@@ -96,7 +96,7 @@ func NewFakeKeptn(source string) *FakeKeptn {
 	internal, _ := api2.NewInternal(nil)
 	resourceHandler := &TestResourceHandler{}
 	var fakeKeptn = &FakeKeptn{
-
+		TestResourceHandler: resourceHandler,
 		Keptn: &Keptn{
 			source:                 source,
 			api:                    internal,
