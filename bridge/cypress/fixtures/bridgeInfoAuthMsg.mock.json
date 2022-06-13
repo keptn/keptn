@@ -1,0 +1,16 @@
+{
+  "bridgeVersion": "0.10.0-next.1",
+  "keptnInstallationType": "QUALITY_GATES",
+  "apiUrl": "/api",
+  "apiToken": "xxx",
+  "cliDownloadLink": "https://github.com/keptn/keptn/releases/tag/0.10.0-next.1",
+  "enableVersionCheckFeature": false,
+  "showApiToken": true,
+  "authType": "OAUTH",
+  "user": "claus.keptn-dev@ruxitlabs.com",
+  "authMsg": "Hello handsome",
+  "featureFlags": {
+    "RESOURCE_SERVICE_ENABLED": false,
+    "D3_HEATMAP_ENABLED": false
+  }
+}
