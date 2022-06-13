@@ -23,7 +23,7 @@ func createAPI(httpClient *http.Client, env envConfig, apiInit Initializer) (kep
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
-	if !env.InternalAPIEnabled {
+	if env.PubSubConnectionType() == ConnectionTypeHTTP {
 		scheme := "http"
 		parsed, err := url.ParseRequestURI(env.KeptnAPIEndpoint)
 		if err != nil {
@@ -31,7 +31,7 @@ func createAPI(httpClient *http.Client, env envConfig, apiInit Initializer) (kep
 		}
 
 		// accepts either "" or http
-		if env.KeptnAPIEndpoint != "" && (parsed.Scheme == "" || !strings.HasPrefix(parsed.Scheme, "http")) {
+		if parsed.Scheme == "" || !strings.HasPrefix(parsed.Scheme, "http") {
 			return nil, fmt.Errorf("invalid scheme for keptn endpoint, %s is not http or https", env.KeptnAPIEndpoint)
 		}
 
