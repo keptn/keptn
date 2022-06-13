@@ -74,13 +74,15 @@ func main() {
 	if err != nil {
 		log.Fatalf("could not create kubernetes client: %s", err.Error())
 	}
-	_main(kubeAPI)
+	ctx, cancel := context.WithCancel(context.Background())
+	_main(ctx, cancel, kubeAPI)
 }
 
-func _main(kubeAPI kubernetes.Interface) {
+func _main(ctx context.Context, cancel context.CancelFunc, kubeAPI kubernetes.Interface) {
 	log.SetLevel(log.InfoLevel)
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	if ctx == nil {
+		ctx, cancel = context.WithCancel(context.Background())
+	}
 
 	if os.Getenv(envVarLogLevel) != "" {
 		logLevel, err := log.ParseLevel(os.Getenv(envVarLogLevel))
@@ -239,7 +241,7 @@ func _main(kubeAPI kubernetes.Interface) {
 		createEventQueueRepo(),
 		createProjectRepo(),
 		taskStartedWaitDuration,
-		1*time.Minute,
+		5*time.Second,
 		clock.New(),
 	)
 
@@ -331,7 +333,7 @@ func _main(kubeAPI kubernetes.Interface) {
 		}
 	}()
 
-	GracefulShutdown(wg, srv)
+	GracefulShutdown(ctx, wg, srv)
 }
 
 func LeaderElection(client v1.CoordinationV1Interface, ctx context.Context, start func(ctx context.Context, mode common.SDMode), stop func()) {
@@ -386,18 +388,23 @@ func LeaderElection(client v1.CoordinationV1Interface, ctx context.Context, star
 	})
 }
 
-func GracefulShutdown(wg *sync.WaitGroup, srv *http.Server) {
+func GracefulShutdown(ctx context.Context, wg *sync.WaitGroup, srv *http.Server) {
 	// Wait for interrupt signal to gracefully shut down the server
 	quit := make(chan os.Signal, 1)
 
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
+	select {
+	case <-quit:
+		log.Info("Received SIGTERM signal")
+	case <-ctx.Done():
+		log.Info("Received ctx.Done()")
+	}
 	log.Println("Shutting down server...")
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx2, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	wg.Wait()
-	if err := srv.Shutdown(ctx); err != nil {
+	if err := srv.Shutdown(ctx2); err != nil {
 		log.Fatal("Server forced to shutdown: ", err)
 	}
 

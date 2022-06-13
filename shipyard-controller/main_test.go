@@ -36,7 +36,7 @@ import (
 	"time"
 )
 
-const natsTestPort = 8369
+const natsTestPort = 8370
 const mongoDBVersion = "4.4.9"
 
 const testShipyardFile = `apiVersion: spec.keptn.sh/0.2.0
@@ -65,6 +65,14 @@ spec:
           selector:
             match:
               result: fail
+    - name: delivery-with-approval
+      tasks:
+      - name: approval
+        properties:
+          pass: manual
+          warning: manual
+      - name: mytask
+    
   - name: hardening
     sequences:
     - name: artifact-delivery
@@ -96,11 +104,40 @@ spec:
       - name: remediation
       - name: evaluation`
 
+const testShipyardFileWithApprovalSequence = `apiVersion: spec.keptn.sh/0.2.0
+kind: Shipyard
+metadata:
+  name: test-shipyard
+spec:
+  stages:
+  - name: dev
+    sequences:
+    - name: delivery
+      tasks:
+      - name: mytask
+
+    - name: delivery-with-approval
+      tasks:
+      - name: approval
+        properties:
+          pass: manual
+          warning: manual
+      - name: mytask`
+
+var configurationService *httptest.Server
+
 func setupNatsServer(port int) *server.Server {
 	opts := natsserver.DefaultTestOptions
 	opts.Port = port
 	opts.JetStream = true
 	svr := natsserver.RunServer(&opts)
+
+	connect, _ := nats.Connect(svr.ClientURL())
+
+	js, _ := connect.JetStream()
+
+	js.DeleteStream("keptn")
+
 	return svr
 }
 
@@ -121,13 +158,39 @@ func setupLocalMongoDB() func() {
 		log.Fatalf("Mongo Server setup failed: %s", err)
 	}
 
+	fmt.Println(fmt.Sprintf("MongoDB Server: %s", mongoServer.URI()))
+
 	return func() { mongoServer.Stop() }
+}
+
+func startFakeConfigurationService() func() {
+	configurationService = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{}`))
+	}))
+
+	return configurationService.Close
 }
 
 func TestMain(m *testing.M) {
 	natsServer := setupNatsServer(natsTestPort)
+	defer startFakeConfigurationService()()
 	defer natsServer.Shutdown()
 	defer setupLocalMongoDB()()
+	fakeClient := fakek8s.NewSimpleClientset()
+
+	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", natsTestPort)
+	os.Setenv(envVarDisableLeaderElection, "true")
+	os.Setenv(envVarConfigurationSvcEndpoint, configurationService.URL)
+	os.Setenv(envVarNatsURL, natsURL)
+	os.Setenv("LOG_LEVEL", "debug")
+	os.Setenv(envVarEventDispatchIntervalSec, "1")
+	os.Setenv(envVarSequenceDispatchIntervalSec, "1s")
+	os.Setenv(envVarTaskStartedWaitDuration, "10s")
+
+	ctx, cancel := context.WithCancel(context.TODO())
+	go _main(ctx, cancel, fakeClient)
 	m.Run()
 }
 
@@ -178,7 +241,7 @@ func Test_getDurationFromEnvVar(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			os.Setenv("LOG_TTL", tt.args.envVarValue)
+			t.Setenv("LOG_TTL", tt.args.envVarValue)
 			if got := getDurationFromEnvVar("LOG_TTL", envVarLogsTTLDefault); got != tt.want {
 				t.Errorf("getLogTTLDurationInSeconds() = %v, want %v", got, tt.want)
 			}
@@ -257,11 +320,11 @@ func Test_LeaderElection(t *testing.T) {
 	case <-time.After(10 * time.Second):
 		t.Fatal("failed to become the leader")
 	}
-
+	cancel()
 }
 
 func Test__main_SequenceQueue(t *testing.T) {
-	projectName := "my-project"
+	projectName := "my-project-queue"
 	serviceName := "my-service"
 
 	natsClient, tearDown, err := setupTestProject(t, projectName, serviceName, testShipyardFile)
@@ -321,12 +384,106 @@ func Test__main_SequenceQueue(t *testing.T) {
 
 }
 
-func Test__main_SequenceQueueTriggerMultiple(t *testing.T) {
-	projectName := "my-project-2"
+func Test__main_SequenceQueueWithTimeout(t *testing.T) {
+	projectName := "my-project-timeout"
 	stageName := "dev"
 	serviceName := "my-service"
 	sequencename := "delivery"
-	numSequences := 50
+
+	natsClient, tearDown, err := setupTestProject(t, projectName, serviceName, testShipyardFile)
+
+	defer tearDown()
+
+	t.Logf("trigger the first task sequence - this should time out")
+	firstSequenceContext := natsClient.triggerSequence(projectName, serviceName, stageName, sequencename)
+
+	verifySequenceEndsUpInState(t, projectName, firstSequenceContext, 15*time.Second, []string{apimodels.TimedOut})
+	t.Log("received the expected state!")
+
+	t.Logf("now trigger the second sequence - this should start and a .triggered event for mytask should be sent")
+	secondContext := natsClient.triggerSequence(projectName, serviceName, stageName, sequencename)
+	t.Logf("waiting for state with keptnContext %s to have the status %s", *secondContext.KeptnContext, apimodels.SequenceStartedState)
+	verifySequenceEndsUpInState(t, projectName, secondContext, 10*time.Second, []string{apimodels.SequenceStartedState})
+	triggeredEventOfSecondSequence := natsClient.getLatestEventOfType(*secondContext.KeptnContext, projectName, stageName, keptnv2.GetTriggeredEventType("mytask"))
+	require.Nil(t, err)
+	require.NotNil(t, triggeredEventOfSecondSequence)
+}
+
+func Test__main_SequenceQueueApproval(t *testing.T) {
+	projectName := "my-project-queue-with-approval"
+	stageName := "dev"
+	serviceName := "my-service"
+
+	source := "shippy-test"
+
+	natsClient, tearDown, err := setupTestProject(t, projectName, serviceName, testShipyardFileWithApprovalSequence)
+
+	defer tearDown()
+
+	context := natsClient.triggerSequence(projectName, serviceName, stageName, "delivery-with-approval")
+	verifySequenceEndsUpInState(t, projectName, context, 10*time.Second, []string{apimodels.SequenceStartedState})
+
+	t.Logf("check if approval.triggered has been sent for sequence - now it should be available")
+	approvalTriggeredEvent := natsClient.getLatestEventOfType(*context.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType(keptnv2.ApprovalTaskName))
+	require.NotNil(t, approvalTriggeredEvent)
+
+	t.Logf("send the approval.started event to make sure the sequence will not be cancelled due to a timeout")
+	approvalTriggeredCE := keptnv2.ToCloudEvent(*approvalTriggeredEvent)
+	keptnHandler, err := keptnv2.NewKeptn(&approvalTriggeredCE, keptncommon.KeptnOpts{EventSender: natsClient})
+	require.Nil(t, err)
+
+	_, err = keptnHandler.SendTaskStartedEvent(nil, source)
+	require.Nil(t, err)
+
+	t.Logf("now let's trigger the other sequence")
+	secondContext := natsClient.triggerSequence(projectName, serviceName, stageName, "delivery")
+	verifySequenceEndsUpInState(t, projectName, secondContext, 10*time.Second, []string{apimodels.SequenceStartedState})
+
+	t.Logf("check if approval.triggered has been sent for sequence - now it should be available")
+	myTaskTriggeredEvent := natsClient.getLatestEventOfType(*secondContext.KeptnContext, projectName, stageName, keptnv2.GetTriggeredEventType("mytask"))
+	require.Nil(t, err)
+	require.NotNil(t, myTaskTriggeredEvent)
+
+	myTaskCE := keptnv2.ToCloudEvent(*myTaskTriggeredEvent)
+	secondKeptnHandler, err := keptnv2.NewKeptn(&myTaskCE, keptncommon.KeptnOpts{EventSender: natsClient})
+	require.Nil(t, err)
+
+	t.Logf("send the mytask.started event")
+	_, err = secondKeptnHandler.SendTaskStartedEvent(nil, source)
+	require.Nil(t, err)
+
+	t.Logf("now let's send the approval.finished event - the next task should now be queued until the other sequence has been finished")
+	_, err = keptnHandler.SendTaskFinishedEvent(&keptnv2.EventData{Result: keptnv2.ResultPass, Status: keptnv2.StatusSucceeded}, source)
+	require.Nil(t, err)
+
+	t.Logf("wait a bit to make sure mytask.triggered of first sequence is not sent")
+	<-time.After(3 * time.Second)
+	myTaskTriggeredEventOfFirstSequence := natsClient.getLatestEventOfType(*context.KeptnContext, projectName, stageName, keptnv2.GetTriggeredEventType("mytask"))
+	require.Nil(t, myTaskTriggeredEventOfFirstSequence)
+
+	t.Logf("now let's finish mytask of the second sequence")
+	_, err = secondKeptnHandler.SendTaskFinishedEvent(&keptnv2.EventData{Status: keptnv2.StatusSucceeded, Result: keptnv2.ResultPass}, source)
+	require.Nil(t, err)
+
+	t.Logf("this should have completed the task sequence")
+	verifySequenceEndsUpInState(t, projectName, secondContext, 10*time.Second, []string{apimodels.SequenceFinished})
+
+	t.Logf("now the mytask.triggered event for the second sequence should eventually become available")
+	require.Eventually(t, func() bool {
+		event := natsClient.getLatestEventOfType(*context.KeptnContext, projectName, stageName, keptnv2.GetTriggeredEventType("mytask"))
+		if event == nil {
+			return false
+		}
+		return true
+	}, 1*time.Minute, 100*time.Millisecond)
+}
+
+func Test__main_SequenceQueueTriggerMultiple(t *testing.T) {
+	projectName := "my-project-queue2"
+	stageName := "dev"
+	serviceName := "my-service"
+	sequencename := "delivery"
+	numSequences := 10
 
 	natsClient, tearDown, err := setupTestProject(t, projectName, serviceName, testShipyardFile)
 
@@ -357,6 +514,8 @@ func Test__main_SequenceQueueTriggerMultiple(t *testing.T) {
 					currentActiveSequence = state
 					t.Logf("received expected active sequence: %s", state.Shkeptncontext)
 					return true
+				} else {
+					t.Logf("sequence does not have expected state: %s", state.State)
 				}
 			}
 			return false
@@ -379,23 +538,11 @@ func Test__main_SequenceQueueTriggerMultiple(t *testing.T) {
 }
 
 func setupTestProject(t *testing.T, projectName, serviceName, shipyardContent string) (*testNatsClient, func(), error) {
-	fakeClient := fakek8s.NewSimpleClientset()
-
-	fakeCS, closeCS := setupFakeConfigurationService(shipyardContent)
+	setupFakeConfigurationService(shipyardContent)
 
 	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", natsTestPort)
-
-	os.Setenv(envVarConfigurationSvcEndpoint, fakeCS.URL)
-	os.Setenv(envVarNatsURL, natsURL)
-	os.Setenv("LOG_LEVEL", "debug")
-	os.Setenv(envVarEventDispatchIntervalSec, "1")
-	os.Setenv(envVarSequenceDispatchIntervalSec, "1s")
-
 	natsClient, err := newTestNatsClient(natsURL, t)
-
 	require.Nil(t, err)
-
-	go _main(fakeClient)
 
 	encodedShipyardContent := base64.StdEncoding.EncodeToString([]byte(shipyardContent))
 	createProject := models.CreateProjectParams{
@@ -446,13 +593,13 @@ func setupTestProject(t *testing.T, projectName, serviceName, shipyardContent st
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
 	tearDown := func() {
-		closeCS()
+		natsClient.Close()
 	}
 	return natsClient, tearDown, err
 }
 
-func setupFakeConfigurationService(shipyardContent string) (*httptest.Server, func()) {
-	ts := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func setupFakeConfigurationService(shipyardContent string) {
+	configurationService.Config.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 
 		if strings.Contains(r.RequestURI, "/shipyard.yaml") {
@@ -481,12 +628,7 @@ func setupFakeConfigurationService(shipyardContent string) (*httptest.Server, fu
 
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{}`))
-	}))
-
-	ts.Config.Addr = "127.0.0.1"
-	ts.Start()
-
-	return ts, ts.Close
+	})
 }
 
 type testNatsClient struct {
