@@ -56,7 +56,7 @@ export class SequencesPage {
     interceptMain();
     cy.intercept('/api/project/sockshop?approval=true&remediation=true', {
       fixture: 'get.project.sockshop.remediation.mock',
-    });
+    }).as('project');
     cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: false });
 
     cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
