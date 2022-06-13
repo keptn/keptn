@@ -198,6 +198,9 @@ export class DataService {
   }
 
   public loadUnreadUniformRegistrationLogs(): void {
+    if (this._hasUnreadUniformRegistrationLogs.getValue()) {
+      return;
+    }
     this.apiService.hasUnreadUniformRegistrationLogs(this._uniformDates).subscribe((status) => {
       this.setHasUnreadUniformRegistrationLogs(status);
     });
