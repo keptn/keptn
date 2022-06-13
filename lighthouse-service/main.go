@@ -57,10 +57,7 @@ func main() {
 	}
 
 	subscriptionSource := subscriptionsource.New(api.UniformV1())
-	natsConnector, err := nats.ConnectFromEnv()
-	if err != nil {
-		log.Fatal(err)
-	}
+	natsConnector := nats.ConnectFromEnv()
 	eventSource := eventsource.New(natsConnector)
 	logForwarder := logforwarder.New(api.LogsV1())
 

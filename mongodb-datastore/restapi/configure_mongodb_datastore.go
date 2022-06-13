@@ -89,10 +89,7 @@ func configureAPI(api *operations.MongodbDatastoreAPI) http.Handler {
 
 func startControlPlane(ctx context.Context, api *operations.MongodbDatastoreAPI, eventRequestHandler controlplane.Integration) error {
 	// 1. create a subscription source
-	natsConnector, err := nats.ConnectFromEnv()
-	if err != nil {
-		return err
-	}
+	natsConnector := nats.ConnectFromEnv()
 	eventSource := eventsource.New(natsConnector)
 
 	// 2. Create a fixed event subscription with no uniform
