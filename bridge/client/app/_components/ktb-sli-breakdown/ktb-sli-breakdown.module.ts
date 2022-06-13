@@ -7,6 +7,7 @@ import { DtIconModule } from '@dynatrace/barista-components/icon';
 import { KtbPipeModule } from '../../_pipes/ktb-pipe.module';
 import { FlexModule } from '@angular/flex-layout';
 import { DtOverlayModule } from '@dynatrace/barista-components/overlay';
+import { DtButtonModule } from '@dynatrace/barista-components/button';
 
 @NgModule({
   declarations: [KtbSliBreakdownComponent, KtbSliBreakdownCriteriaItemComponent],
@@ -19,6 +20,7 @@ import { DtOverlayModule } from '@dynatrace/barista-components/overlay';
     KtbPipeModule,
     FlexModule,
     DtOverlayModule,
+    DtButtonModule,
   ],
   exports: [KtbSliBreakdownComponent],
 })
