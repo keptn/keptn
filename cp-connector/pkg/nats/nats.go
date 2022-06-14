@@ -27,7 +27,7 @@ type NATS interface {
 	QueueSubscribeMultiple(subjects []string, queueGroup string, fn ProcessEventFn) error
 	Publish(event models.KeptnContextExtendedCE) error
 	Disconnect() error
-	Connect() error
+	GetOrCreateConnection() (*nats.Conn, error)
 	UnsubscribeAll() error
 }
 
@@ -44,7 +44,7 @@ type ProcessEventFn func(msg *nats.Msg) error
 // NatsConnector can be used to subscribe to certain events
 // on the NATS event system
 type NatsConnector struct {
-	conn          *nats.Conn
+	connection    *nats.Conn
 	connectURL    string
 	subscriptions map[string]*nats.Subscription
 	logger        logger.Logger
@@ -60,8 +60,8 @@ func WithLogger(logger logger.Logger) func(*NatsConnector) {
 // New returns an initialised NatsConnector with a nil connection
 func New(connectURL string, opts ...func(connector *NatsConnector)) *NatsConnector {
 	nc := &NatsConnector{
+		connection:    &nats.Conn{},
 		connectURL:    connectURL,
-		conn:          nil,
 		subscriptions: make(map[string]*nats.Subscription),
 		logger:        logger.NewDefaultLogger(),
 	}
@@ -69,18 +69,6 @@ func New(connectURL string, opts ...func(connector *NatsConnector)) *NatsConnect
 		o(nc)
 	}
 	return nc
-}
-
-// Connect connects a NatsConnector to NATS with a nil connection.
-// Note that this will automatically and indefinitely try to reconnect
-// as soon as it looses connection
-func (nc *NatsConnector) Connect() error {
-	conn, err := nats.Connect(nc.connectURL, nats.MaxReconnects(-1))
-	if err != nil {
-		return fmt.Errorf("could not connect to NATS: %w", err)
-	}
-	nc.conn = conn
-	return nil
 }
 
 // NewFromEnv returns a NatsConnector to NATS.
@@ -93,6 +81,23 @@ func NewFromEnv() *NatsConnector {
 		natsURL = EnvVarNatsURLDefault
 	}
 	return New(natsURL)
+}
+
+// GetOrCreateConnection connects a NatsConnector or returns the existing connection to NATS
+// Note that this will automatically and indefinitely try to reconnect
+// as soon as it looses connection
+func (nc *NatsConnector) GetOrCreateConnection() (*nats.Conn, error) {
+
+	if !nc.connection.IsConnected() {
+		var err error
+		nc.connection, err = nats.Connect(nc.connectURL, nats.MaxReconnects(-1))
+
+		if err != nil {
+			return nil, fmt.Errorf("could not connect to NATS: %w", err)
+		}
+	}
+
+	return nc.connection, nil
 }
 
 // UnsubscribeAll deletes all current subscriptions
@@ -160,17 +165,26 @@ func (nc *NatsConnector) Publish(event models.KeptnContextExtendedCE) error {
 	if err != nil {
 		return fmt.Errorf("could not publish event: %w", err)
 	}
-	return nc.conn.Publish(*event.Type, serializedEvent)
+	conn, err := nc.GetOrCreateConnection()
+	if err != nil {
+		return fmt.Errorf("could not connect to NATS to publish event: %w", err)
+	}
+	return conn.Publish(*event.Type, serializedEvent)
 }
 
 // Disconnect disconnects/closes the connection to NATS
 func (nc *NatsConnector) Disconnect() error {
-	nc.conn.Close()
+	connection, err := nc.GetOrCreateConnection()
+	if err != nil {
+		return fmt.Errorf("could not disconnect from NATS: %w", err)
+	}
+	connection.Close()
 	return nil
 }
 
 func (nc *NatsConnector) queueSubscribe(subject string, queueGroup string, fn ProcessEventFn) error {
-	sub, err := nc.conn.QueueSubscribe(subject, queueGroup, func(m *nats.Msg) {
+	conn, err := nc.GetOrCreateConnection()
+	sub, err := conn.QueueSubscribe(subject, queueGroup, func(m *nats.Msg) {
 		err := fn(m)
 		if err != nil {
 			nc.logger.Errorf("Could not process message %s: %v\n", string(m.Data), err)
