@@ -1749,3 +1749,292 @@ func TestValidateShipyardStagesUnchaged(t *testing.T) {
 		})
 	}
 }
+
+func TestToSecureGitCredentials(t *testing.T) {
+	tests := []struct {
+		oldProject *apimodels.GitAuthCredentials
+		newProject *apimodels.GitAuthCredentialsSecure
+	}{
+		{
+			oldProject: &apimodels.GitAuthCredentials{
+				RemoteURL: "git-url",
+				User:      "git-user",
+				HttpsAuth: &apimodels.HttpsGitAuth{
+					Token: "git-token",
+					Proxy: &apimodels.ProxyGitAuth{
+						URL:      "some-url",
+						Scheme:   "http",
+						User:     "proxy-user",
+						Password: "pass",
+					},
+				},
+			},
+			newProject: &apimodels.GitAuthCredentialsSecure{
+				RemoteURL: "git-url",
+				User:      "git-user",
+				HttpsAuth: &apimodels.HttpsGitAuthSecure{
+					Proxy: &apimodels.ProxyGitAuthSecure{
+						URL:    "some-url",
+						Scheme: "http",
+						User:   "proxy-user",
+					},
+				},
+			},
+		},
+		{
+			oldProject: &apimodels.GitAuthCredentials{
+				RemoteURL: "git-url",
+				User:      "git-user",
+				HttpsAuth: &apimodels.HttpsGitAuth{
+					Token:           "git-token",
+					InsecureSkipTLS: true,
+				},
+			},
+			newProject: &apimodels.GitAuthCredentialsSecure{
+				RemoteURL: "git-url",
+				User:      "git-user",
+				HttpsAuth: &apimodels.HttpsGitAuthSecure{
+					InsecureSkipTLS: true,
+				},
+			},
+		},
+		{
+			oldProject: &apimodels.GitAuthCredentials{
+				RemoteURL: "git-url",
+				User:      "git-user",
+				SshAuth: &apimodels.SshGitAuth{
+					PrivateKey: "key",
+				},
+			},
+			newProject: &apimodels.GitAuthCredentialsSecure{
+				RemoteURL: "git-url",
+				User:      "git-user",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run("", func(t *testing.T) {
+			newProject := toSecureGitCredentials(tt.oldProject)
+			require.Equal(t, tt.newProject, newProject)
+		})
+	}
+}
+
+func TestToInsecureGitCredentials(t *testing.T) {
+	tests := []struct {
+		oldProject *apimodels.GitAuthCredentialsSecure
+		newProject *apimodels.GitAuthCredentials
+	}{
+		{
+			oldProject: &apimodels.GitAuthCredentialsSecure{
+				RemoteURL: "git-url",
+				User:      "git-user",
+				HttpsAuth: &apimodels.HttpsGitAuthSecure{
+					Proxy: &apimodels.ProxyGitAuthSecure{
+						URL:    "some-url",
+						Scheme: "http",
+						User:   "proxy-user",
+					},
+				},
+			},
+			newProject: &apimodels.GitAuthCredentials{
+				RemoteURL: "git-url",
+				User:      "git-user",
+				HttpsAuth: &apimodels.HttpsGitAuth{
+					Proxy: &apimodels.ProxyGitAuth{
+						URL:    "some-url",
+						Scheme: "http",
+						User:   "proxy-user",
+					},
+				},
+			},
+		},
+		{
+			oldProject: &apimodels.GitAuthCredentialsSecure{
+				RemoteURL: "git-url",
+				User:      "git-user",
+				HttpsAuth: &apimodels.HttpsGitAuthSecure{
+					InsecureSkipTLS: true,
+				},
+			},
+			newProject: &apimodels.GitAuthCredentials{
+				RemoteURL: "git-url",
+				User:      "git-user",
+				HttpsAuth: &apimodels.HttpsGitAuth{
+					InsecureSkipTLS: true,
+				},
+			},
+		},
+		{
+			oldProject: &apimodels.GitAuthCredentialsSecure{
+				RemoteURL: "git-url",
+				User:      "git-user",
+			},
+			newProject: &apimodels.GitAuthCredentials{
+				RemoteURL: "git-url",
+				User:      "git-user",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run("", func(t *testing.T) {
+			newProject := toInsecureGitCredentials(tt.oldProject)
+			require.Equal(t, tt.newProject, newProject)
+		})
+	}
+}
+
+func TestDecodeGitCredentials(t *testing.T) {
+	tests := []struct {
+		oldProject *apimodels.GitAuthCredentials
+		newProject *apimodels.GitAuthCredentials
+	}{
+		{
+			oldProject: &apimodels.GitAuthCredentials{
+				RemoteURL: "git-url",
+				User:      "git-user",
+				HttpsAuth: &apimodels.HttpsGitAuth{
+					Token: "git-token",
+					Proxy: &apimodels.ProxyGitAuth{
+						URL:      "some-url",
+						Scheme:   "http",
+						User:     "proxy-user",
+						Password: "pass",
+					},
+				},
+			},
+			newProject: &apimodels.GitAuthCredentials{
+				RemoteURL: "git-url",
+				User:      "git-user",
+				HttpsAuth: &apimodels.HttpsGitAuth{
+					Token: "git-token",
+					Proxy: &apimodels.ProxyGitAuth{
+						URL:      "some-url",
+						Scheme:   "http",
+						User:     "proxy-user",
+						Password: "pass",
+					},
+				},
+			},
+		},
+		{
+			oldProject: &apimodels.GitAuthCredentials{
+				RemoteURL: "git-url",
+				User:      "git-user",
+				HttpsAuth: &apimodels.HttpsGitAuth{
+					Token:           "git-token",
+					InsecureSkipTLS: true,
+				},
+			},
+			newProject: &apimodels.GitAuthCredentials{
+				RemoteURL: "git-url",
+				User:      "git-user",
+				HttpsAuth: &apimodels.HttpsGitAuth{
+					Token:           "git-token",
+					InsecureSkipTLS: true,
+				},
+			},
+		},
+		{
+			oldProject: &apimodels.GitAuthCredentials{
+				RemoteURL: "git-url",
+				User:      "git-user",
+				HttpsAuth: &apimodels.HttpsGitAuth{
+					Token:           "git-token",
+					InsecureSkipTLS: true,
+					Certificate:     "ZW5jb2RlZC1jZXJ0",
+				},
+			},
+			newProject: &apimodels.GitAuthCredentials{
+				RemoteURL: "git-url",
+				User:      "git-user",
+				HttpsAuth: &apimodels.HttpsGitAuth{
+					Token:           "git-token",
+					InsecureSkipTLS: true,
+					Certificate:     "encoded-cert",
+				},
+			},
+		},
+		{
+			oldProject: &apimodels.GitAuthCredentials{
+				RemoteURL: "git-url",
+				User:      "git-user",
+				HttpsAuth: &apimodels.HttpsGitAuth{
+					Token:           "git-token",
+					InsecureSkipTLS: true,
+					Certificate:     "",
+				},
+			},
+			newProject: &apimodels.GitAuthCredentials{
+				RemoteURL: "git-url",
+				User:      "git-user",
+				HttpsAuth: &apimodels.HttpsGitAuth{
+					Token:           "git-token",
+					InsecureSkipTLS: true,
+					Certificate:     "",
+				},
+			},
+		},
+		{
+			oldProject: &apimodels.GitAuthCredentials{
+				RemoteURL: "git-url",
+				User:      "git-user",
+				SshAuth: &apimodels.SshGitAuth{
+					PrivateKey:     "ZW5jb2RlZC1rZXk=",
+					PrivateKeyPass: "pass",
+				},
+			},
+			newProject: &apimodels.GitAuthCredentials{
+				RemoteURL: "git-url",
+				User:      "git-user",
+				SshAuth: &apimodels.SshGitAuth{
+					PrivateKey:     "encoded-key",
+					PrivateKeyPass: "pass",
+				},
+			},
+		},
+		{
+			oldProject: &apimodels.GitAuthCredentials{
+				RemoteURL: "git-url",
+				User:      "git-user",
+				SshAuth: &apimodels.SshGitAuth{
+					PrivateKey:     "",
+					PrivateKeyPass: "",
+				},
+			},
+			newProject: &apimodels.GitAuthCredentials{
+				RemoteURL: "git-url",
+				User:      "git-user",
+				SshAuth: &apimodels.SshGitAuth{
+					PrivateKey:     "",
+					PrivateKeyPass: "",
+				},
+			},
+		},
+		{
+			oldProject: &apimodels.GitAuthCredentials{
+				RemoteURL: "git-url",
+				User:      "git-user",
+				SshAuth: &apimodels.SshGitAuth{
+					PrivateKeyPass: "",
+				},
+			},
+			newProject: &apimodels.GitAuthCredentials{
+				RemoteURL: "git-url",
+				User:      "git-user",
+				SshAuth: &apimodels.SshGitAuth{
+					PrivateKeyPass: "",
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run("", func(t *testing.T) {
+			newProject := decodeGitCredentials(tt.oldProject)
+			require.Equal(t, tt.newProject, newProject)
+		})
+	}
+}

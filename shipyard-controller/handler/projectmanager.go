@@ -204,7 +204,7 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 		CreationDate:    oldProject.CreationDate,
 		ProjectName:     oldProject.ProjectName,
 		ShipyardVersion: oldProject.ShipyardVersion,
-		GitCredentials:  toInsecureCredentials(oldProject.GitCredentials),
+		GitCredentials:  toInsecureGitCredentials(oldProject.GitCredentials),
 	}
 
 	// try to update the project information in configuration service
@@ -453,7 +453,7 @@ func getShipyardNotAvailableError(project string) string {
 func toModelProject(project apimodels.ExpandedProject) apimodels.Project {
 	return apimodels.Project{
 		CreationDate:    project.CreationDate,
-		GitCredentials:  toInsecureCredentials(project.GitCredentials),
+		GitCredentials:  toInsecureGitCredentials(project.GitCredentials),
 		ProjectName:     project.ProjectName,
 		ShipyardVersion: project.ShipyardVersion,
 	}
@@ -486,7 +486,7 @@ func toSecureGitCredentials(credentials *apimodels.GitAuthCredentials) *apimodel
 	return &secureCredentials
 }
 
-func toInsecureCredentials(credentials *apimodels.GitAuthCredentialsSecure) *apimodels.GitAuthCredentials {
+func toInsecureGitCredentials(credentials *apimodels.GitAuthCredentialsSecure) *apimodels.GitAuthCredentials {
 	if credentials == nil {
 		return nil
 	}

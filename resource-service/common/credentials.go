@@ -46,7 +46,7 @@ func (kr K8sCredentialReader) GetCredentials(project string) (*common_models.Git
 		return nil, errors2.ErrMalformedCredentials
 	}
 	if err := credentials.Validate(); err != nil {
-		logger.Info("Issue with credentials : ", err)
+		logger.Error("Issue with credentials : ", err)
 		return nil, err
 	}
 	return credentials, nil
