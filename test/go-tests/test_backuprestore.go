@@ -228,7 +228,7 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 
 	t.Logf("Executing backup of MongoDB database")
 
-	mongoDbPods, err := GetPodNamesOfDeployment("app.kubernetes.io/component=mongo")
+	mongoDbPods, err := GetPodNamesOfDeployment("app.kubernetes.io/name=mongo")
 	require.Nil(t, err)
 	require.NotEmpty(t, mongoDbPods)
 	mongoDbPod := mongoDbPods[0]
