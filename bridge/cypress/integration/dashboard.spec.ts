@@ -36,4 +36,11 @@ describe('Bridge Dashboard', () => {
     cy.wait('@projects').wait('@sequences');
     dashboardPage.assertProjects(projectsResponse.projects);
   });
+
+  it('should use the AUTH_MSG as auth command when provided', () => {
+    cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfoAuthMsg.mock' }).as('bridgeInfo');
+    dashboardPage.visit();
+    const basePage = new BasePage();
+    basePage.clickOpenUserMenu().assertAuthCommandCopyToClipboardValue('Hello handsome');
+  });
 });

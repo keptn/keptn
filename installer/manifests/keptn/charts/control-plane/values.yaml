@@ -139,6 +139,7 @@ bridge:
     mongoConnectionString: ""
   nodeSelector: {}
   automaticProvisioningMsg: ""
+  authMsg: ""
   d3heatmap:
     enabled: false
 

@@ -1,11 +1,16 @@
 import { EventTypes } from '../../../shared/interfaces/event-types';
-import { interceptMain, interceptSequencesPage } from '../intercept';
+import { interceptMain, interceptSequencesPage, interceptSequencesPageWithSequenceThatIsNotLoaded } from '../intercept';
 
 export class SequencesPage {
   private readonly sequenceWaitingMessage = ' Sequence is waiting for previous sequences to finish. ';
 
   public intercept(): this {
     interceptSequencesPage();
+    return this;
+  }
+
+  public interceptSequencesPageWithSequenceThatIsNotLoaded(): this {
+    interceptSequencesPageWithSequenceThatIsNotLoaded();
     return this;
   }
 
@@ -51,7 +56,7 @@ export class SequencesPage {
     interceptMain();
     cy.intercept('/api/project/sockshop?approval=true&remediation=true', {
       fixture: 'get.project.sockshop.remediation.mock',
-    });
+    }).as('project');
     cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: false });
 
     cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });

@@ -33,7 +33,10 @@ class DashboardPage {
       cy.get('ktb-project-tile')
         .eq(index)
         .byTestId('keptn-project-tile-numStagesServices')
-        .should('contain.text', `${project.stages.length} Stages, ${project.stages[0].services.length} Services `);
+        .should(
+          'contain.text',
+          `${project.stages.length} Stages, ${project.stages[0]?.services.length ?? 0} Services `
+        );
     });
     return this;
   }

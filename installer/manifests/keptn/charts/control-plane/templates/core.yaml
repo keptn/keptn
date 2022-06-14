@@ -203,6 +203,8 @@ spec:
               value: "/config"
             - name: AUTOMATIC_PROVISIONING_MSG
               value: {{ .Values.bridge.automaticProvisioningMsg }}
+            - name: AUTH_MSG
+              value: {{ .Values.bridge.authMsg | default "" }}
             - name: RESOURCE_SERVICE_ENABLED
               value: {{ .Values.resourceService.enabled | quote }}
             - name: D3_HEATMAP_ENABLED

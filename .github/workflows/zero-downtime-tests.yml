@@ -191,7 +191,7 @@ jobs:
           cd test/zero-downtime
           echo "INSTALL_HELM_CHART=$(ls ./keptn-installed.tgz)" >> $GITHUB_ENV
           
-          if [[ "${{ github.event_name }}" == 'schedule' || ${{ github.event.inputs.upgradeTo }} == "http"* ]]; then
+          if [[ "${{ github.event_name }}" == 'schedule' || "${{ github.event.inputs.upgradeTo }}" == "http"* ]]; then
             echo "UPGRADE_HELM_CHART=${{ github.event.inputs.upgradeTo }}" >> $GITHUB_ENV
           else
             echo  'retrieving  ./keptn-${{ github.event.inputs.upgradeTo }}.tgz'

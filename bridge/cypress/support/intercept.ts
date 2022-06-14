@@ -2,7 +2,9 @@ import { EvaluationFinishedMock } from '../fixtures/typed/evaluationFinished.moc
 
 export function interceptEmptyEnvironmentScreen(): void {
   interceptProjectBoard();
-  cy.intercept('/api/project/dynatrace?approval=true&remediation=true', { fixture: 'project.empty.mock' });
+  cy.intercept('/api/project/dynatrace?approval=true&remediation=true', { fixture: 'project.empty.mock' }).as(
+    'project'
+  );
   cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', {
     fixture: 'get.projects.empty.mock',
   }).as('projects');
@@ -115,6 +117,7 @@ export function interceptProjectSettings(): void {
 export function interceptDashboard(): void {
   interceptMain();
   cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=5', { fixture: 'sequences.sockshop' }).as('sequences');
+  cy.intercept('/api/controlPlane/v1/sequence/my-error-project?pageSize=5', { body: { states: [] } });
   cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' }).as(
     'projects'
   );
@@ -122,7 +125,7 @@ export function interceptDashboard(): void {
 
 export function interceptProjectBoard(): void {
   interceptMain();
-  cy.intercept('/api/project/sockshop?approval=true&remediation=true', { fixture: 'project.mock' });
+  cy.intercept('/api/project/sockshop?approval=true&remediation=true', { fixture: 'project.mock' }).as('project');
   cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: false });
 }
 
@@ -177,9 +180,41 @@ export function interceptSequencesPage(): void {
   );
 }
 
+export function interceptSequencesPageWithSequenceThatIsNotLoaded(): void {
+  interceptSequencesPage();
+  const keptnContext = '1663de8a-a414-47ba-9566-10a9730f40ff';
+  cy.intercept(`/api/mongodb-datastore/event?keptnContext=${keptnContext}&project=sockshop`, {
+    fixture: 'sequence.traces.mock.json',
+  }).as('sequenceTraces');
+
+  cy.intercept(`/api/controlPlane/v1/sequence/sockshop?pageSize=1&keptnContext=${keptnContext}`, {
+    fixture: 'get.sequence.mock.json',
+  });
+
+  cy.intercept(
+    '/api/controlPlane/v1/sequence/sockshop?pageSize=10&fromTime=2021-07-06T08:13:53.766Z&beforeTime=2021-07-06T09:22:56.433Z',
+    {
+      fixture: 'get.sequence.mock.json',
+    }
+  );
+
+  cy.intercept(
+    '/api/controlPlane/v1/sequence/sockshop?pageSize=10&fromTime=2021-07-06T08:13:53.766Z&beforeTime=2021-07-06T08:13:53.766Z',
+    {
+      fixture: 'get.sequence.mock.json',
+    }
+  );
+  // TODO: the intercept above is a workaround. For some weird reason loadUntilRoot is triggered twice.
+  //  Probably related to our data model. Remove this workaround after the data model for the sequence view is adapted
+
+  cy.intercept(`/api/mongodb-datastore/event?keptnContext=${keptnContext}&project=sockshop&fromTime=*`, {
+    body: [],
+  });
+}
+
 export function interceptIntegrations(): void {
   interceptMain();
-  cy.intercept('/api/project/sockshop?approval=true&remediation=true', { fixture: 'project.mock' });
+  cy.intercept('/api/project/sockshop?approval=true&remediation=true', { fixture: 'project.mock' }).as('project');
   cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: false });
   cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' }).as(
     'projects'
@@ -359,7 +394,7 @@ export function interceptEvaluationBoardWithoutDeployment(): void {
 export function interceptHeatmapComponent(): void {
   cy.intercept('/api/v1/metadata', { fixture: 'metadata.mock' });
   cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfoEnableD3Heatmap.mock.json' });
-  cy.intercept('/api/project/sockshop?approval=true&remediation=true', { fixture: 'project.mock' });
+  cy.intercept('/api/project/sockshop?approval=true&remediation=true', { fixture: 'project.mock' }).as('project');
   cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: false });
   cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
   cy.intercept('GET', '/api/project/sockshop/serviceStates', {

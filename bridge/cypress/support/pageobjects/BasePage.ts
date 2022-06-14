@@ -62,6 +62,19 @@ class BasePage {
     }
     return element.should('be.visible');
   }
+
+  public clickOpenUserMenu(): this {
+    cy.byTestId('keptn-user-menu-button').click();
+    return this;
+  }
+
+  public assertAuthCommandCopyToClipboardValue(value: string): this {
+    cy.byTestId('keptn-auth-command-ctc')
+      .find('div.dt-copy-to-clipboard-input-wrap input')
+      .invoke('val')
+      .should('eq', value);
+    return this;
+  }
 }
 
 export default BasePage;
