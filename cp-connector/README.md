@@ -40,9 +40,12 @@ func main() {
 
 	// 2. create a subscription source
 	subscriptionSource := subscriptionsource.New(keptnAPI.UniformV1())
-
+	
+	// 2.i inject your favourite logger as follows
+    //subscriptionsource.WithLogger(mylogger)
+	
 	// 3. create an event source (either NATS of HTTP,...)
-	natsConnector, err := nats.Connect("nats://localhost:4222")
+	natsConnector:= nats.New("nats://localhost:4222")
 	if err != nil {
 		log.Fatal(err)
 	}
