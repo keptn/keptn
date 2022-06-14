@@ -24,12 +24,12 @@ func TestConnect(t *testing.T) {
 	require.Nil(t, err)
 }
 
-func TestConnectFromEnv(t *testing.T) {
+func TestNewFromEnv(t *testing.T) {
 	svr, shutdown := runNATSServer()
 	defer shutdown()
 	os.Setenv(nats2.EnvVarNatsURL, svr.ClientURL())
 	defer os.Unsetenv(nats2.EnvVarNatsURL)
-	sub := nats2.ConnectFromEnv()
+	sub := nats2.NewFromEnv()
 	require.NotNil(t, sub)
 }
 

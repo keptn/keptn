@@ -71,7 +71,7 @@ func New(connectURL string, opts ...func(connector *NatsConnector)) *NatsConnect
 	return nc
 }
 
-// Connect connects a NatsConnector to NATS.
+// Connect connects a NatsConnector to NATS with a nil connection.
 // Note that this will automatically and indefinitely try to reconnect
 // as soon as it looses connection
 func (nc *NatsConnector) Connect() error {
@@ -83,11 +83,11 @@ func (nc *NatsConnector) Connect() error {
 	return nil
 }
 
-// ConnectFromEnv connects a NatsConnector to NATS.
+// NewFromEnv returns a NatsConnector to NATS.
 // The URL is read from the environment variable "NATS_URL"
 // If the URL is not set via the environment variable "NATS_URL",
 // it falls back to the default URL "nats://keptn-nats"
-func ConnectFromEnv() *NatsConnector {
+func NewFromEnv() *NatsConnector {
 	natsURL := os.Getenv(EnvVarNatsURL)
 	if natsURL == "" {
 		natsURL = EnvVarNatsURLDefault
