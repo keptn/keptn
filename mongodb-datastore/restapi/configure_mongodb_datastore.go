@@ -91,14 +91,13 @@ func startControlPlane(ctx context.Context, api *operations.MongodbDatastoreAPI,
 	// 1. create a subscription source
 	natsConnector := nats.ConnectFromEnv()
 	nats.WithLogger(log)
-	eventSource := eventsource.New(natsConnector)
-	eventsource.WithLogger(log)
+	eventSource := eventsource.New(natsConnector, eventsource.WithLogger(log))
+
 	// 2. Create a fixed event subscription with no uniform
 	subSource := subscriptionsource.NewFixedSubscriptionSource(subscriptionsource.WithFixedSubscriptions(keptnapi.EventSubscription{Event: "sh.keptn.event.>"}))
 	subscriptionsource.WithLogger(log)
 	// 3. Create control plane
-	controlPlane := controlplane.New(subSource, eventSource, nil)
-	controlplane.WithLogger(log)
+	controlPlane := controlplane.New(subSource, eventSource, nil, controlplane.WithLogger(log))
 	ctx, cancel := context.WithCancel(ctx)
 
 	// 4. Propagate graceful shutdown
