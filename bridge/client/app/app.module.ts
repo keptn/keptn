@@ -47,7 +47,6 @@ import { MomentModule } from 'ngx-moment';
 import { environment } from '../environments/environment';
 import { KtbDeleteConfirmationComponent } from './_components/_dialogs/ktb-delete-confirmation/ktb-delete-confirmation.component';
 import { KtbProjectCreateMessageComponent } from './_components/_status-messages/ktb-project-create-message/ktb-project-create-message.component';
-import { KtbCopyToClipboardComponent } from './_components/ktb-copy-to-clipboard/ktb-copy-to-clipboard.component';
 import { KtbCreateSecretFormComponent } from './_components/ktb-create-secret-form/ktb-create-secret-form.component';
 import { KtbCreateServiceComponent } from './_components/ktb-create-service/ktb-create-service.component';
 import { KtbDangerZoneComponent } from './_components/ktb-danger-zone/ktb-danger-zone.component';
@@ -160,6 +159,7 @@ import { KtbEvaluationDetailsModule } from './_components/ktb-evaluation-details
 import { KtbApprovalItemModule } from './_components/ktb-approval-item/ktb-approval-item.module';
 import { KtbCertificateInputModule } from './_components/ktb-certificate-input/ktb-certificate-input.module';
 import { KtbDragAndDropModule } from './_directives/ktb-drag-and-drop/ktb-drag-and-drop.module';
+import { KtbCopyToClipboardModule } from './_components/ktb-copy-to-clipboard/ktb-copy-to-clipboard.module';
 
 registerLocaleData(localeEn, 'en');
 
@@ -224,6 +224,7 @@ const ktbModules = [
   KtbApprovalItemModule,
   KtbCertificateInputModule,
   KtbConfirmationDialogModule,
+  KtbCopyToClipboardModule,
   KtbDeletionDialogModule,
   KtbDragAndDropModule,
   KtbEvaluationDetailsModule,
@@ -261,7 +262,6 @@ const ktbModules = [
     KtbTaskItemDetailDirective,
     KtbEvaluationInfoComponent,
     KtbStageBadgeComponent,
-    KtbCopyToClipboardComponent,
     KtbMarkdownComponent,
     KtbSequenceTimelineComponent,
     KtbEnvironmentViewComponent,
