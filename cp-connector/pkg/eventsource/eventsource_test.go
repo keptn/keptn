@@ -24,8 +24,6 @@ type NATSConnectorMock struct {
 	PublishCalls                int
 	DisconnectFn                func() error
 	DisconnectCalls             int
-	GetOrCreateConnectionFn     func() (*nats.Conn, error)
-	GetOrCreateConnectionCalls  int
 	UnsubscribeAllFn            func() error
 	UnsubscribeAllCalls         int
 	QueueGroup                  string
@@ -75,14 +73,6 @@ func (ncm *NATSConnectorMock) Disconnect() error {
 	ncm.DisconnectCalls++
 	if ncm.DisconnectFn != nil {
 		return ncm.DisconnectFn()
-	}
-	panic("implement me")
-}
-
-func (ncm *NATSConnectorMock) GetOrCreateConnection() (*nats.Conn, error) {
-	ncm.GetOrCreateConnectionCalls++
-	if ncm.GetOrCreateConnectionFn != nil {
-		return ncm.GetOrCreateConnectionFn()
 	}
 	panic("implement me")
 }
