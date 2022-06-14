@@ -1,20 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbSequenceControlsComponent } from './ktb-sequence-controls.component';
 import { AppModule } from '../../app.module';
-import { DataService } from '../../_services/data.service';
-import { Project } from '../../_models/project';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ActivatedRoute } from '@angular/router';
-import { firstValueFrom, of } from 'rxjs';
+import { of } from 'rxjs';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
+import { SequencesMock } from '../../_services/_mockData/sequences.mock';
 
 describe('KtbSequenceControlsComponent', () => {
   let component: KtbSequenceControlsComponent;
   let fixture: ComponentFixture<KtbSequenceControlsComponent>;
-  let dataService: DataService;
   const projectName = 'sockshop';
-  let project: Project;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -37,10 +34,6 @@ describe('KtbSequenceControlsComponent', () => {
 
     fixture = TestBed.createComponent(KtbSequenceControlsComponent);
     component = fixture.componentInstance;
-
-    dataService = fixture.debugElement.injector.get(DataService);
-    dataService.loadProjects().subscribe(); // reset project.sequences
-    project = (await firstValueFrom(dataService.getProject(projectName))) as Project;
     fixture.detectChanges();
   });
 
@@ -50,8 +43,7 @@ describe('KtbSequenceControlsComponent', () => {
 
   it('should show pause and abort for started sequence', () => {
     // given
-    dataService.loadSequences(project);
-    component.sequence = project.sequences?.[7];
+    component.sequence = SequencesMock[7];
     fixture.detectChanges();
 
     const sequencePauseButton = fixture.nativeElement.querySelector('button[uitestid=sequencePauseButton]');
@@ -72,8 +64,7 @@ describe('KtbSequenceControlsComponent', () => {
 
   it('should pause sequence on click', () => {
     // given
-    dataService.loadSequences(project);
-    component.sequence = project.sequences?.[7];
+    component.sequence = SequencesMock[7];
     fixture.detectChanges();
 
     const sequencePauseButton = fixture.nativeElement.querySelector('button[uitestid=sequencePauseButton]');
@@ -88,8 +79,7 @@ describe('KtbSequenceControlsComponent', () => {
 
   it('should abort sequence on click', () => {
     // given
-    dataService.loadSequences(project);
-    component.sequence = project.sequences?.[7];
+    component.sequence = SequencesMock[7];
     fixture.detectChanges();
 
     const sequenceAbortButton = fixture.nativeElement.querySelector('button[uitestid=sequenceAbortButton]');
@@ -104,8 +94,7 @@ describe('KtbSequenceControlsComponent', () => {
 
   it('should show resume and abort for paused sequence', () => {
     // given
-    dataService.loadSequences(project);
-    component.sequence = project.sequences?.[4];
+    component.sequence = SequencesMock[4];
     fixture.detectChanges();
 
     const sequencePauseButton = fixture.nativeElement.querySelector('button[uitestid=sequencePauseButton]');
@@ -126,8 +115,7 @@ describe('KtbSequenceControlsComponent', () => {
 
   it('should resume sequence on click', () => {
     // given
-    dataService.loadSequences(project);
-    component.sequence = project.sequences?.[4];
+    component.sequence = SequencesMock[4];
     fixture.detectChanges();
 
     const sequenceResumeButton = fixture.nativeElement.querySelector('button[uitestid=sequenceResumeButton]');
@@ -142,8 +130,7 @@ describe('KtbSequenceControlsComponent', () => {
 
   it('buttons should be disabled for finished sequence', () => {
     // given
-    dataService.loadSequences(project);
-    component.sequence = project.sequences?.[1];
+    component.sequence = SequencesMock[1];
     fixture.detectChanges();
 
     const sequencePauseButton = fixture.nativeElement.querySelector('button[uitestid=sequencePauseButton]');

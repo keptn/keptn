@@ -2,19 +2,13 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbSequenceStateInfoComponent } from './ktb-sequence-state-info.component';
 import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { DataService } from '../../_services/data.service';
-import { Project } from '../../_models/project';
-import { filter } from 'rxjs/operators';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
-import { firstValueFrom } from 'rxjs';
+import { SequencesMock } from '../../_services/_mockData/sequences.mock';
 
 describe('KtbSequenceStateInfoComponent', () => {
   let component: KtbSequenceStateInfoComponent;
   let fixture: ComponentFixture<KtbSequenceStateInfoComponent>;
-  let dataService: DataService;
-  const projectName = 'sockshop';
-  let project: Project;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -30,11 +24,6 @@ describe('KtbSequenceStateInfoComponent', () => {
 
     fixture = TestBed.createComponent(KtbSequenceStateInfoComponent);
     component = fixture.componentInstance;
-    dataService = TestBed.inject(DataService);
-    dataService.loadProjects().subscribe();
-    project = await firstValueFrom(
-      dataService.getProject(projectName).pipe(filter((p: Project | undefined): p is Project => !!p))
-    );
 
     fixture.detectChanges();
   });
@@ -45,8 +34,7 @@ describe('KtbSequenceStateInfoComponent', () => {
 
   it('should show sequence info', () => {
     // given
-    dataService.loadSequences(project);
-    component.sequence = project.sequences?.[12];
+    component.sequence = SequencesMock[12];
     fixture.detectChanges();
 
     // then
@@ -61,8 +49,7 @@ describe('KtbSequenceStateInfoComponent', () => {
 
   it('should show sequence info with 3 stages', () => {
     // given
-    dataService.loadSequences(project);
-    component.sequence = project.sequences?.[12];
+    component.sequence = SequencesMock[12];
     fixture.detectChanges();
 
     // then
@@ -81,8 +68,7 @@ describe('KtbSequenceStateInfoComponent', () => {
 
   it('should show sequence info without stages if showStages is false', () => {
     // given
-    dataService.loadSequences(project);
-    component.sequence = project.sequences?.[12];
+    component.sequence = SequencesMock[12];
     component.showStages = false;
     fixture.detectChanges();
 
@@ -95,8 +81,7 @@ describe('KtbSequenceStateInfoComponent', () => {
 
   it('should trigger click callback on stage', () => {
     // given
-    dataService.loadSequences(project);
-    const sequence = project.sequences?.[12];
+    const sequence = SequencesMock[12];
     component.sequence = sequence;
     const spy = jest.spyOn(component, 'stageClick');
     fixture.detectChanges();
