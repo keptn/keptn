@@ -115,7 +115,6 @@ import { KtbUniformSubscriptionsComponent } from './_components/ktb-uniform-subs
 import { KtbUserComponent } from './_components/ktb-user/ktb-user.component';
 import { KtbVariableSelectorComponent } from './_components/ktb-variable-selector/ktb-variable-selector.component';
 import { KtbWebhookSettingsComponent } from './_components/ktb-webhook-settings/ktb-webhook-settings.component';
-import { KtbDragAndDropDirective } from './_directives/ktb-drag-and-drop/ktb-drag-and-drop.directive';
 import { KtbHideHttpLoadingDirective } from './_directives/ktb-hide-http-loading/ktb-hide-http-loading.directive';
 import { KtbShowHttpLoadingDirective } from './_directives/ktb-show-http-loading/ktb-show-http-loading.directive';
 import { PendingChangesGuard } from './_guards/pending-changes.guard';
@@ -148,7 +147,6 @@ import { KtbProjectSettingsGitHttpsComponent } from './_components/ktb-project-s
 import { KtbProjectSettingsGitSshComponent } from './_components/ktb-project-settings-git-ssh/ktb-project-settings-git-ssh.component';
 import { KtbProxyInputComponent } from './_components/ktb-proxy-input/ktb-proxy-input.component';
 import { KtbIntegerInputDirective } from './_directives/ktb-integer-input/ktb-integer-input.directive';
-import { KtbCertificateInputComponent } from './_components/ktb-certificate-input/ktb-certificate-input.component';
 import { KtbSshKeyInputComponent } from './_components/ktb-ssh-key-input/ktb-ssh-key-input.component';
 import { KtbProjectSettingsGitSshInputComponent } from './_components/ktb-project-settings-git-ssh-input/ktb-project-settings-git-ssh-input.component';
 import { WindowConfig } from '../environments/environment.dynamic';
@@ -160,6 +158,8 @@ import { KtbConfirmationDialogModule } from './_components/_dialogs/ktb-confirma
 import { KtbDeletionDialogModule } from './_components/_dialogs/ktb-deletion-dialog/ktb-deletion-dialog.module';
 import { KtbEvaluationDetailsModule } from './_components/ktb-evaluation-details/ktb-evaluation-details.module';
 import { KtbApprovalItemModule } from './_components/ktb-approval-item/ktb-approval-item.module';
+import { KtbCertificateInputModule } from './_components/ktb-certificate-input/ktb-certificate-input.module';
+import { KtbDragAndDropModule } from './_directives/ktb-drag-and-drop/ktb-drag-and-drop.module';
 
 registerLocaleData(localeEn, 'en');
 
@@ -222,8 +222,10 @@ const dtModules = [
 
 const ktbModules = [
   KtbApprovalItemModule,
+  KtbCertificateInputModule,
   KtbConfirmationDialogModule,
   KtbDeletionDialogModule,
+  KtbDragAndDropModule,
   KtbEvaluationDetailsModule,
   KtbHeatmapModule,
   KtbLoadingModule,
@@ -283,7 +285,6 @@ const ktbModules = [
     KtbNoServiceInfoComponent,
     KtbProjectSettingsGitComponent,
     KtbProjectSettingsShipyardComponent,
-    KtbDragAndDropDirective,
     KtbDangerZoneComponent,
     KtbSequenceControlsComponent,
     KtbUniformSubscriptionsComponent,
@@ -317,7 +318,6 @@ const ktbModules = [
     KtbProjectSettingsGitSshComponent,
     KtbProxyInputComponent,
     KtbIntegerInputDirective,
-    KtbCertificateInputComponent,
     KtbSshKeyInputComponent,
     KtbProjectSettingsGitSshInputComponent,
   ],
