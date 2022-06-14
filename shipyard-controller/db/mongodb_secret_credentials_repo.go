@@ -26,12 +26,6 @@ func (s *MongoDBSecretCredentialsRepo) UpdateSecret(project *ExpandedProjectOld)
 	}
 	if secret != nil {
 		if marshalledSecret, ok := secret["git-credentials"]; ok {
-			//try to unmarshall to new format
-			newSecretObj := &apimodels.GitAuthCredentials{}
-			if err := json.Unmarshal(marshalledSecret, newSecretObj); err == nil && newSecretObj != nil {
-				return nil
-			}
-
 			//try to unmarshall to old format
 			secretObj := &GitOldCredentials{}
 			if err := json.Unmarshal(marshalledSecret, secretObj); err != nil {
@@ -39,6 +33,9 @@ func (s *MongoDBSecretCredentialsRepo) UpdateSecret(project *ExpandedProjectOld)
 			}
 
 			newSecret := transformSecret(secretObj)
+			if newSecret == nil {
+				return nil
+			}
 
 			credsEncoded, err := json.Marshal(newSecret)
 			if err != nil {
@@ -57,6 +54,11 @@ func (s *MongoDBSecretCredentialsRepo) UpdateSecret(project *ExpandedProjectOld)
 }
 
 func transformSecret(oldSecret *GitOldCredentials) *apimodels.GitAuthCredentials {
+	//if project has credentials in the newest format
+	if oldSecret.RemoteURI == "" {
+		return nil
+	}
+
 	newSecret := apimodels.GitAuthCredentials{
 		RemoteURL: oldSecret.RemoteURI,
 		User:      oldSecret.User,
