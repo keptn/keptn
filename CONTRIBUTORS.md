@@ -84,3 +84,4 @@ For a realtime overview of current contributors to the Keptn project, we refer t
 * [René Panzar](https://github.com/renepanzar)
 * [Giovanni Liva](https://github.com/thisthat)
 * [Heinz Burgstaller](https://github.com/heinzburgstaller)
+* [Simon Schrottner](https://github.com/aepfli)
