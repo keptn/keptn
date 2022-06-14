@@ -27,6 +27,9 @@ func (s *ProjectCredentialsMigrator) Transform() error {
 	if err != nil {
 		return fmt.Errorf("could not transform git credentials to new format: %w", err)
 	}
+	if err := s.updateSecrets(projects); err != nil {
+		return err
+	}
 	return s.updateProjects(projects)
 
 }
@@ -68,13 +71,13 @@ func (s *ProjectCredentialsMigrator) updateSecrets(projects []*db.ExpandedProjec
 
 				credsEncoded, err := json.Marshal(newSecret)
 				if err != nil {
-					return fmt.Errorf("could not store git credentials: %s", err.Error())
+					return fmt.Errorf("could not store git credentials during migration for project %s: %s", project.ProjectName, err.Error())
 				}
 
 				if err := s.SecretStore.UpdateSecret("git-credentials-"+project.ProjectName, map[string][]byte{
 					"git-credentials": credsEncoded,
 				}); err != nil {
-					return fmt.Errorf("could not store git credentials: %s", err.Error())
+					return fmt.Errorf("could not store git credentials during migration for project %s: %s", project.ProjectName, err.Error())
 				}
 			}
 		}
