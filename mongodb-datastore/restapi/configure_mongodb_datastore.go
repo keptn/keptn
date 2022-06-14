@@ -48,7 +48,7 @@ func configureAPI(api *operations.MongodbDatastoreAPI) http.Handler {
 
 	// start NATS receiver
 	go func() {
-		err := startControlPlane(context.Background(), api, eventRequestHandler)
+		err := startControlPlane(context.Background(), api, eventRequestHandler, log.New())
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -87,17 +87,18 @@ func configureAPI(api *operations.MongodbDatastoreAPI) http.Handler {
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))
 }
 
-func startControlPlane(ctx context.Context, api *operations.MongodbDatastoreAPI, eventRequestHandler controlplane.Integration) error {
+func startControlPlane(ctx context.Context, api *operations.MongodbDatastoreAPI, eventRequestHandler controlplane.Integration, log *log.Logger) error {
 	// 1. create a subscription source
 	natsConnector := nats.ConnectFromEnv()
+	nats.WithLogger(log)
 	eventSource := eventsource.New(natsConnector)
-
+	eventsource.WithLogger(log)
 	// 2. Create a fixed event subscription with no uniform
 	subSource := subscriptionsource.NewFixedSubscriptionSource(subscriptionsource.WithFixedSubscriptions(keptnapi.EventSubscription{Event: "sh.keptn.event.>"}))
-
+	subscriptionsource.WithLogger(log)
 	// 3. Create control plane
 	controlPlane := controlplane.New(subSource, eventSource, nil)
-
+	controlplane.WithLogger(log)
 	ctx, cancel := context.WithCancel(ctx)
 
 	// 4. Propagate graceful shutdown
