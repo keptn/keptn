@@ -146,6 +146,23 @@ spec:
           tasks:
             - name: delivery`
 
+const sequenceTimeoutWithTriggeredAfterShipyard = `--- 
+apiVersion: spec.keptn.sh/0.2.0
+kind: Shipyard
+metadata: 
+  name: shipyard-sockshop
+spec: 
+  stages: 
+    - 
+      name: dev
+      sequences: 
+        - 
+          name: delivery
+          tasks: 
+            - 
+              triggeredAfter: "10s"
+              name: unknown`
+
 var configurationService *httptest.Server
 
 func setupNatsServer(port int) *server.Server {
@@ -472,16 +489,7 @@ func Test__main_SequenceQueueTriggerMultiple(t *testing.T) {
 			return false
 		}, 15*time.Second, 100*time.Millisecond)
 
-		abortCmd := apimodels.SequenceControlCommand{
-			State: apimodels.AbortSequence,
-			Stage: "",
-		}
-
-		mCmd, _ := json.Marshal(abortCmd)
-
-		c := http.Client{}
-		_, err = c.Post(fmt.Sprintf("http://localhost:8080/v1/sequence/%s/%s/control", projectName, currentActiveSequence.Shkeptncontext), "application/json", bytes.NewBuffer(mCmd))
-		require.Nil(t, err)
+		abortSequence(t, projectName, currentActiveSequence.Shkeptncontext)
 	}
 
 	require.Nil(t, err)
@@ -824,7 +832,7 @@ func Test__main_SequenceState_SequenceNotFound(t *testing.T) {
 }
 
 func Test__main_SequenceState_InvalidShipyard(t *testing.T) {
-	projectName := "state-shipyard-unknown-sequence"
+	projectName := "state-invalid-shipyard"
 	stageName := "dev"
 	serviceName := "my-service"
 	sequencename := "unknown"
@@ -868,6 +876,44 @@ func Test__main_SequenceState_InvalidShipyard(t *testing.T) {
 
 	require.Equal(t, keptnv2.StatusErrored, eventData.Status)
 	require.Equal(t, keptnv2.ResultFailed, eventData.Result)
+}
+
+func Test__main_SequenceTimeoutDelayedTask(t *testing.T) {
+	projectName := "my-project-delayed-task"
+	stageName := "dev"
+	serviceName := "my-service"
+	sequencename := "delivery"
+
+	natsClient, tearDown, err := setupTestProject(t, projectName, serviceName, sequenceTimeoutWithTriggeredAfterShipyard)
+
+	defer tearDown()
+
+	require.Nil(t, err)
+
+	// trigger the task sequence
+	t.Log("starting task sequence")
+	keptnContext := natsClient.triggerSequence(projectName, serviceName, stageName, sequencename)
+	require.NotNil(t, keptnContext)
+
+	// wait 5s and make verify that the sequence has not been timed out
+	<-time.After(5 * time.Second)
+
+	// also, the unknown.triggered event should not have been sent yet
+	triggeredEvent := natsClient.getLatestEventOfType(*keptnContext.KeptnContext, projectName, stageName, keptnv2.GetTriggeredEventType("unknown"))
+	require.Nil(t, err)
+	require.Nil(t, triggeredEvent)
+
+	// after some time, the unknown.triggered event should be available
+	require.Eventually(t, func() bool {
+		triggeredEvent = natsClient.getLatestEventOfType(*keptnContext.KeptnContext, projectName, stageName, keptnv2.GetTriggeredEventType("unknown"))
+		if err != nil {
+			return false
+		}
+		if triggeredEvent == nil {
+			return false
+		}
+		return true
+	}, 6*time.Second, 100*time.Millisecond)
 }
 
 func Test__main_TriggerAndDeleteProject(t *testing.T) {
@@ -939,6 +985,53 @@ func Test__main_TriggerAndDeleteProject(t *testing.T) {
 	openTriggeredEvents := getOpenTriggeredEvents(t, projectName, "")
 
 	require.Empty(t, openTriggeredEvents.Events)
+}
+
+func Test__main_SequenceControl_Abort(t *testing.T) {
+	projectName := "my-project-abort-sequence"
+	stageName := "dev"
+	serviceName := "my-service"
+	sequencename := "delivery"
+
+	source := "shipyard-test"
+
+	natsClient, tearDown, err := setupTestProject(t, projectName, serviceName, testShipyardFile)
+
+	defer tearDown()
+	require.Nil(t, err)
+
+	// trigger the task sequence
+	t.Log("starting task sequence")
+	keptnContext := natsClient.triggerSequence(projectName, serviceName, stageName, sequencename)
+	require.NotNil(t, keptnContext)
+
+	// verify state
+	verifySequenceEndsUpInState(t, projectName, keptnContext, 3*time.Second, []string{apimodels.SequenceStartedState})
+
+	var taskTriggeredEvent *apimodels.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		taskTriggeredEvent = natsClient.getLatestEventOfType(*keptnContext.KeptnContext, projectName, stageName, keptnv2.GetTriggeredEventType("mytask"))
+		return taskTriggeredEvent != nil
+	}, 1*time.Second, 100*time.Millisecond)
+
+	cloudEvent := keptnv2.ToCloudEvent(*taskTriggeredEvent)
+
+	keptn, err := keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: natsClient})
+	require.Nil(t, err)
+	require.NotNil(t, keptn)
+
+	t.Log("sending task started event")
+	_, err = keptn.SendTaskStartedEvent(nil, source)
+
+	//abort the sequence
+	abortSequence(t, projectName, *keptnContext.KeptnContext)
+
+	verifySequenceEndsUpInState(t, projectName, keptnContext, 3*time.Second, []string{apimodels.SequenceAborted})
+
+	openTriggeredEvents := getOpenTriggeredEvents(t, projectName, "mytask")
+
+	require.Empty(t, openTriggeredEvents.Events)
+	require.Zero(t, openTriggeredEvents.TotalCount)
 }
 
 func getOpenTriggeredEvents(t *testing.T, projectName string, taskName string) *apimodels.Events {
@@ -1222,4 +1315,17 @@ func getStageOfState(state apimodels.SequenceState, stageName string) *apimodels
 		}
 	}
 	return nil
+}
+
+func abortSequence(t *testing.T, projectName, keptnContextID string) {
+	abortCmd := apimodels.SequenceControlCommand{
+		State: apimodels.AbortSequence,
+		Stage: "",
+	}
+
+	mCmd, _ := json.Marshal(abortCmd)
+
+	c := http.Client{}
+	_, err := c.Post(fmt.Sprintf("http://localhost:8080/v1/sequence/%s/%s/control", projectName, keptnContextID), "application/json", bytes.NewBuffer(mCmd))
+	require.Nil(t, err)
 }
