@@ -89,6 +89,7 @@ func (m *MongoDBProjectCredentialsRepo) GetOldCredentialsProjects() ([]*Expanded
 }
 
 func TransformGitCredentials(project *ExpandedProjectOld) *apimodels.ExpandedProject {
+	//if project has no credentials, or has credentials in the newest format
 	if project.GitRemoteURI == "" {
 		return nil
 	}
@@ -101,31 +102,37 @@ func TransformGitCredentials(project *ExpandedProjectOld) *apimodels.ExpandedPro
 	newProject.ShipyardVersion = project.ShipyardVersion
 	newProject.Stages = project.Stages
 
+	//project has credentials in old format
 	credentials := apimodels.GitAuthCredentialsSecure{
 		RemoteURL: project.GitRemoteURI,
 		User:      project.GitUser,
 	}
 	newProject.GitCredentials = &credentials
 
+	//if project is using ssh auth, no other parameters are stored
 	if strings.HasPrefix(project.GitRemoteURI, "ssh://") {
 		return &newProject
 	}
 
+	//project is using https auth, InsecureSkipTLS needs to be set
 	httpCredentials := apimodels.HttpsGitAuthSecure{
 		InsecureSkipTLS: project.InsecureSkipTLS,
 	}
 	newProject.GitCredentials.HttpsAuth = &httpCredentials
 
+	//project is not using proxy, no additional parameters need to be stored
 	if project.GitProxyURL == "" {
 		return &newProject
 	}
 
+	//project is using proxy
 	proxyCredentials := apimodels.ProxyGitAuthSecure{
 		Scheme: project.GitProxyScheme,
 		URL:    project.GitProxyURL,
 	}
 	newProject.GitCredentials.HttpsAuth.Proxy = &proxyCredentials
 
+	//project is using proxy with a user
 	if project.GitProxyUser != "" {
 		newProject.GitCredentials.HttpsAuth.Proxy.User = project.GitProxyUser
 	}
