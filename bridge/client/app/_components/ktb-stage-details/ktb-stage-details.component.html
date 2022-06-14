@@ -234,8 +234,7 @@
                 <ktb-approval-item
                   class="mt-1"
                   *ngFor="let approval of service.getOpenApprovals()"
-                  [event]="approval.trace"
-                  [evaluation]="approval.evaluationTrace"
+                  [event]="approval"
                 ></ktb-approval-item>
               </div>
               <ng-template #noOutOfSyncDeployments>

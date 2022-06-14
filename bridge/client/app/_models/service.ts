@@ -2,14 +2,13 @@ import { EventTypes } from '../../../shared/interfaces/event-types';
 import { Sequence } from './sequence';
 import { Trace } from './trace';
 import { Service as sv } from '../../../shared/models/service';
-import { Approval } from '../_interfaces/approval';
 import { ResultTypes } from '../../../shared/models/result-types';
 
 export type DeploymentInformation = { deploymentUrl?: string; image?: string };
 
 export class Service extends sv {
   stage!: string;
-  openApprovals: Approval[] = [];
+  openApprovals: Trace[] = [];
   openRemediations: Sequence[] = [];
   latestSequence?: Sequence;
 
@@ -28,13 +27,7 @@ export class Service extends sv {
       service.openRemediations = [];
     }
     service.openRemediations = service.openRemediations?.map((remediation) => Sequence.fromJSON(remediation)) ?? [];
-    service.openApprovals = service.openApprovals.map((approval) => {
-      approval.trace = Trace.fromJSON(approval.trace);
-      if (approval.evaluationTrace) {
-        approval.evaluationTrace = Trace.fromJSON(approval.evaluationTrace);
-      }
-      return approval;
-    });
+    service.openApprovals = service.openApprovals.map((approval) => Trace.fromJSON(approval));
     return service;
   }
 
@@ -50,7 +43,7 @@ export class Service extends sv {
     return this.deployedImage?.split('/').pop();
   }
 
-  getOpenApprovals(): Approval[] {
+  getOpenApprovals(): Trace[] {
     return this.openApprovals;
   }
 

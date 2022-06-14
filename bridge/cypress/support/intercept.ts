@@ -144,7 +144,9 @@ export function interceptServicesPage(): void {
 
 export function interceptSequencesPage(): void {
   interceptProjectBoard();
-  cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=25', { fixture: 'sequences.sockshop' }).as('Sequences');
+  cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=25', { fixture: 'sequences.sockshop', delay: 1000 }).as(
+    'Sequences'
+  );
   cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=10&beforeTime=2021-07-06T09:22:56.433Z', {
     fixture: 'sequences-page-2.sockshop',
   }).as('SequencesPage2');
@@ -174,6 +176,24 @@ export function interceptSequencesPage(): void {
     '/api/mongodb-datastore/event?keptnContext=62cca6f3-dc54-4df6-a04c-6ffc894a4b5e&project=sockshop&fromTime=*',
     {
       body: [],
+    }
+  );
+  interceptEvaluationOfApproval();
+}
+
+export function interceptEvaluationOfApproval(includeData = false, delay = 0): void {
+  const data = includeData
+    ? { fixture: 'get.approval-evaluation.mock.json' }
+    : {
+        body: {
+          events: [],
+        },
+      };
+  cy.intercept(
+    '/api/mongodb-datastore/event?keptnContext=99a20ef4-d822-4185-bbee-0d7a364c213b&type=sh.keptn.event.evaluation.finished&source=lighthouse-service&stage=production&pageSize=1',
+    {
+      ...data,
+      delay,
     }
   );
 }

@@ -1,21 +1,15 @@
 import semver from 'semver';
 import { Stage } from './stage';
 import { DeploymentInformation, Service } from './service';
-import { Trace } from './trace';
-import { EventTypes } from '../../../shared/interfaces/event-types';
-import { Sequence } from './sequence';
 import { Project as pj } from '../../../shared/models/project';
-import { Approval } from '../_interfaces/approval';
 import { IGitDataExtended } from '../_interfaces/git-upstream';
 import { isGitInputWithHTTPS } from '../_utils/git-upstream.utils';
 
 export class Project extends pj {
   private _gitUpstream?: IGitDataExtended;
-  public allSequencesLoaded = false;
   public projectDetailsLoaded = false; // true if project was fetched via project endpoint of bridge server
   public stages: Stage[] = [];
   public services?: Service[];
-  public sequences?: Sequence[];
 
   static fromJSON(data: unknown): Project {
     const project: Project = Object.assign(new this(), data);
@@ -25,7 +19,7 @@ export class Project extends pj {
 
   // returns a project without default values
   get reduced(): Partial<Project> {
-    const { sequences, allSequencesLoaded, projectDetailsLoaded, ...copyProject } = this;
+    const { projectDetailsLoaded, ...copyProject } = this;
     return copyProject;
   }
 
@@ -128,29 +122,6 @@ export class Project extends pj {
       }
     }
     return currentService?.deploymentInformation;
-  }
-
-  getLatestDeploymentTraceOfSequence(service: Service | undefined, stage?: Stage): Trace | undefined {
-    const currentService = service ? this.getService(service.serviceName) : undefined;
-
-    return this.sequences
-      ?.find((r) => r.shkeptncontext === currentService?.lastEventTypes?.[EventTypes.DEPLOYMENT_FINISHED]?.keptnContext)
-      ?.findTrace((trace) => (stage ? trace.isDeployment() === stage.stageName : !!trace.isDeployment()));
-  }
-
-  getApprovalEvaluation(trace: Trace): Trace | undefined {
-    let evaluation: Approval | undefined;
-    if (trace.stage) {
-      const stage = this.getStage(trace.stage);
-      if (stage) {
-        evaluation = stage.services.reduce(
-          (foundApproval: Approval | undefined, service: Service) =>
-            foundApproval || service.openApprovals.find((a) => a.trace.shkeptncontext === trace.shkeptncontext),
-          undefined
-        );
-      }
-    }
-    return evaluation?.evaluationTrace;
   }
 
   public getStageNames(): string[] {

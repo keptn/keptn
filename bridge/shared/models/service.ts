@@ -1,6 +1,6 @@
 import { Sequence } from './sequence';
-import { Approval } from '../interfaces/approval';
 import { IService, IServiceEvent } from '../interfaces/service';
+import { Trace } from './trace';
 
 export type DeploymentInformation = { deploymentUrl?: string; image?: string };
 
@@ -11,7 +11,7 @@ export class Service implements IService {
   lastEventTypes: { [event: string]: IServiceEvent | undefined } = {};
   latestSequence?: Sequence;
   openRemediations: Sequence[] = [];
-  openApprovals?: Approval[] = [];
+  openApprovals?: Trace[] = [];
   deploymentInformation?: DeploymentInformation;
 
   public static fromJSON(data: IService): Service {

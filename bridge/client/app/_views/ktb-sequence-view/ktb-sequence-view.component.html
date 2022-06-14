@@ -1,37 +1,36 @@
-<ng-template #triggerSequenceButton>
-  <div>
-    <a (click)="navigateToTriggerSequence()">
-      <button dt-button uitestid="keptn-trigger-button-open">
-        <dt-icon name="flash"></dt-icon>
-        Trigger a new sequence
-      </button>
-    </a>
-  </div>
-</ng-template>
-
-<div fxFlexFill>
-  <div class="container p-0" fxFlex="40" fxLayout="column" fxLayoutGap="15px" *ngIf="project$ | async as project">
+<div fxFlexFill *ngIf="state$ | async as state">
+  <div class="container p-0" fxFlex="40" fxLayout="column" fxLayoutGap="15px">
+    <ng-template #triggerSequenceButton>
+      <div>
+        <a (click)="navigateToTriggerSequence(state.projectName)">
+          <button dt-button uitestid="keptn-trigger-button-open">
+            <dt-icon name="flash"></dt-icon>
+            Trigger a new sequence
+          </button>
+        </a>
+      </div>
+    </ng-template>
     <div fxFlex fxLayout="column" fxLayoutGap="15px" uitestid="keptn-sequence-view-filter">
       <dt-quick-filter
         [dataSource]="_filterDataSource"
         [filters]="_seqFilters"
-        (filterChanges)="filtersClicked($event)"
+        (filterChanges)="filtersClicked($event, state.sequenceInfo?.sequences ?? [], state.projectName)"
         aria-label="Filter By Input value"
         label="Filter by"
         clearAllLabel="Clear all"
         fxFlex
       >
         <div fxFlexFill fxLayout="column">
-          <div class="container" *ngIf="project.sequences && project.sequences.length !== 0">
+          <div class="container" *ngIf="state.sequenceInfo?.sequences?.length !== 0">
             <ng-container [ngTemplateOutlet]="triggerSequenceButton"></ng-container>
           </div>
           <div
             class="container"
             fxFlex
             fxLayout="column"
-            *ngIf="project.sequences && filteredSequences; else loadingSequences"
+            *ngIf="state.sequenceInfo?.sequences && filteredSequences; else loadingSequences"
           >
-            <div uitestid="keptn-noSequences" *ngIf="project.sequences.length === 0">
+            <div uitestid="keptn-noSequences" *ngIf="state.sequenceInfo?.sequences?.length === 0">
               <div fxLayout="row" fxLayoutAlign="start">
                 <dt-icon fxFlex="20px" class="icon" name="information"></dt-icon>
                 <p class="m-0 ml-2 mb-2">No sequences triggered yet.<br /></p>
@@ -40,7 +39,7 @@
             </div>
             <div
               uitestid="keptn-noSequencesFiltered"
-              *ngIf="filteredSequences.length === 0 && project.sequences.length !== 0"
+              *ngIf="filteredSequences.length === 0 && state.sequenceInfo?.sequences?.length !== 0"
             >
               <dt-icon fxFlex="20px" class="icon" name="information"></dt-icon>
               <p class="m-0 ml-2">No sequences found that match your filter criteria.</p>
@@ -53,13 +52,13 @@
               (selectedEventChange)="selectSequence($event); loadTraces($event.sequence)"
             ></ktb-root-events-list>
             <div fxLayout="row" fxLayoutAlign="center">
-              <ktb-loading-distractor *ngIf="loading" uitestid="keptn-loadingOldSequences"
-                >Loading …</ktb-loading-distractor
-              >
+              <ktb-loading-distractor *ngIf="loading" uitestid="keptn-loadingOldSequences">
+                Loading …
+              </ktb-loading-distractor>
               <button
                 dt-show-more
-                *ngIf="!loading && !project?.allSequencesLoaded"
-                (click)="loadOldSequences()"
+                *ngIf="!loading && !state.sequenceInfo?.allSequencesLoaded"
+                (click)="loadOldSequences(state.projectName)"
                 uitestid="keptn-show-older-sequences-button"
               >
                 Show older sequences
@@ -127,7 +126,7 @@
       ></ktb-sequence-timeline>
       <ktb-sequence-tasks-list
         [tasks]="selectedStage ? currentSequence.getTraces(selectedStage) : currentSequence.traces"
-        [focusedEventId]="selectedEventId"
+        [focusedEventId]="state.eventId"
       ></ktb-sequence-tasks-list>
       <div class="mb-3" fxLayout="row" fxLayoutAlign="end center">
         <dt-tag

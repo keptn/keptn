@@ -15,7 +15,6 @@ import {
   RemediationTracesResponse,
 } from '../../shared/fixtures/open-remediations-response.mock';
 import {
-  ApprovalEvaluationResponse,
   DefaultDeploymentData,
   DefaultDeploymentFinishedTrace,
   DefaultEvaluationFinishedTrace,
@@ -100,18 +99,6 @@ describe('Test project resources', () => {
         },
       })
       .reply(200, RemediationTracesResponse);
-
-    axiosMock
-      .onGet(`${global.baseUrl}/mongodb-datastore/event`, {
-        params: {
-          project: 'sockshop',
-          type: EventTypes.EVALUATION_FINISHED,
-          pageSize: '1',
-          keptnContext: OpenApprovalsResponse.events[0].shkeptncontext,
-          source: KeptnService.LIGHTHOUSE_SERVICE,
-        },
-      })
-      .reply(200, ApprovalEvaluationResponse);
 
     axiosMock
       .onGet(new RegExp(`${global.baseUrl}/controlPlane/v1/sequence/${projectName}`), {
