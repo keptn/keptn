@@ -368,7 +368,7 @@ jobs:
           fi
 
       - name: Temporarily disable "include administrators" branch protection
-        uses: benjefferies/branch-protection-bot@76b8a9d745a68c6a6e9b4bf745d4b32ad805e9a1
+        uses: benjefferies/branch-protection-bot@b6a1ef57a47860aa483bf6048c1e888018a15f9c
         with:
           access_token: ${{ secrets.KEPTN_BOT_TOKEN }}
           branch: ${{ needs.prepare.outputs.branch }}
@@ -402,7 +402,7 @@ jobs:
           git push --follow-tags
 
       - name: Enable "include administrators" branch protection
-        uses: benjefferies/branch-protection-bot@76b8a9d745a68c6a6e9b4bf745d4b32ad805e9a1
+        uses: benjefferies/branch-protection-bot@b6a1ef57a47860aa483bf6048c1e888018a15f9c
         if: always() # Force to always run this step to ensure "include administrators" is always turned back on
         with:
           access_token: ${{ secrets.KEPTN_BOT_TOKEN }}
