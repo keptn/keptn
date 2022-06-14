@@ -4,7 +4,6 @@ kind: ServiceAccount
 metadata:
   name: keptn-default
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "keptn.name" . }}
 ---
 apiVersion: v1
@@ -12,7 +11,6 @@ kind: ServiceAccount
 metadata:
   name: keptn-configuration-service
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     {{- if .Values.resourceService.enabled }}
     app.kubernetes.io/component: resource-service
     {{- else }}
@@ -24,7 +22,6 @@ kind: ServiceAccount
 metadata:
   name: keptn-shipyard-controller
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: shipyard-controller
 ---
 apiVersion: v1
@@ -32,7 +29,6 @@ kind: ServiceAccount
 metadata:
   name: keptn-secret-service
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: secret-service
 ---
 apiVersion: v1
@@ -40,7 +36,6 @@ kind: ServiceAccount
 metadata:
   name: keptn-lighthouse-service
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: lighthouse-service
 ---
 apiVersion: v1
@@ -48,7 +43,6 @@ kind: ServiceAccount
 metadata:
   name: keptn-api-service
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: api-service
 ---
 {{- if .Values.webhookService.enabled }}
@@ -57,7 +51,6 @@ kind: ServiceAccount
 metadata:
   name: keptn-webhook-service
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: webhook-service
 ---
 {{- end }}
@@ -66,7 +59,6 @@ kind: Role
 metadata:
   name: keptn-manage-secrets
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "keptn.name" . }}
 rules:
   - apiGroups:
@@ -86,7 +78,6 @@ kind: Role
 metadata:
   name: keptn-get-secrets
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     {{- if .Values.resourceService.enabled }}
     app.kubernetes.io/component: resource-service
     {{- else }}
@@ -106,7 +97,6 @@ kind: Role
 metadata:
   name: keptn-manage-roles
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: secret-service
 rules:
   - apiGroups:
@@ -125,7 +115,6 @@ kind: Role
 metadata:
   name: keptn-manage-rolebindings
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: secret-service
 rules:
   - apiGroups:
@@ -145,7 +134,6 @@ kind: Role
 metadata:
   name: keptn-read-metadata
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: api-service
 rules:
   - apiGroups:
@@ -163,7 +151,6 @@ kind: Role
 metadata:
   name: keptn-manage-configmaps
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: lighthouse-service
 rules:
   - apiGroups:
@@ -181,7 +168,6 @@ kind: Role
 metadata:
   name: keptn-get-webhook-config
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: webhook-service
 rules:
   - apiGroups:
@@ -199,7 +185,6 @@ kind: Role
 metadata:
   name: keptn-acquire-lease
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: shipyard-controller
 rules:
   - apiGroups:
@@ -220,7 +205,6 @@ kind: RoleBinding
 metadata:
   name: keptn-lighthouse-service
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: lighthouse-service
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -236,7 +220,6 @@ kind: RoleBinding
 metadata:
   name: keptn-webhook-service
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: webhook-service
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -252,7 +235,6 @@ kind: RoleBinding
 metadata:
   name: keptn-api-service-metadata
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: api-service
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -268,7 +250,6 @@ kind: RoleBinding
 metadata:
   name: keptn-configuration-service-get-secrets
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     {{- if .Values.resourceService.enabled }}
     app.kubernetes.io/component: resource-service
     {{- else }}
@@ -288,7 +269,6 @@ kind: RoleBinding
 metadata:
   name: keptn-shipyard-controller-manage-secrets
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: shipyard-controller
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -304,7 +284,6 @@ kind: RoleBinding
 metadata:
   name: keptn-secret-service-manage-secrets
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: secret-service
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -320,7 +299,6 @@ kind: RoleBinding
 metadata:
   name: keptn-secret-service-manage-roles
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: secret-service
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -335,7 +313,6 @@ kind: RoleBinding
 metadata:
   name: keptn-secret-service-manage-rolebindings
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: secret-service
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -351,7 +328,6 @@ kind: RoleBinding
 metadata:
   name: keptn-shipyard-controller-acquire-lease
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: shipyard-controller
 roleRef:
   apiGroup: rbac.authorization.k8s.io

@@ -3,7 +3,6 @@ kind: Deployment
 metadata:
   name: api-service
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: api-service
 spec:
   selector:
@@ -14,7 +13,6 @@ spec:
   template:
     metadata:
       labels: {{- include "common.labels.standard" . | nindent 8 }}
-        app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: api-service
     spec:
       {{- include "keptn.common.pod-security-context" . | nindent 6 }}
@@ -89,7 +87,6 @@ kind: Service
 metadata:
   name: api-service
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: api-service
 spec:
   ports:

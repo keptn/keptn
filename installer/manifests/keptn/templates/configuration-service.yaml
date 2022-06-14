@@ -3,7 +3,6 @@ kind: Service
 metadata:
   name: configuration-service
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     {{- if .Values.resourceService.enabled }}
     app.kubernetes.io/component: resource-service
     {{- else }}
@@ -28,7 +27,6 @@ kind: Deployment
 metadata:
   name: resource-service
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: resource-service
 spec:
   selector:
@@ -39,7 +37,6 @@ spec:
   template:
     metadata:
       labels: {{- include "common.labels.standard" . | nindent 8 }}
-        app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: resource-service
     spec:
       securityContext:
@@ -113,7 +110,6 @@ kind: PersistentVolumeClaim
 metadata:
   name: configuration-volume
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     {{- if .Values.resourceService.enabled }}
     app.kubernetes.io/component: resource-service
     {{- else }}
@@ -134,7 +130,6 @@ kind: Deployment
 metadata:
   name: configuration-service
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: configuration-service
 spec:
   selector:
@@ -146,7 +141,6 @@ spec:
   template:
     metadata:
       labels: {{- include "common.labels.standard" . | nindent 8 }}
-        app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: configuration-service
     spec:
       securityContext:

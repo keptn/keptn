@@ -37,7 +37,6 @@ kind: Secret
 metadata:
   name: keptn-api-token
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "keptn.name" . }}
 type: Opaque
 data:
@@ -50,7 +49,6 @@ kind: Secret
 metadata:
   name: bridge-credentials
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: bridge
 type: Opaque
 data:
@@ -63,7 +61,6 @@ kind: Secret
 metadata:
   name: bridge-oauth
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: bridge
 type: Opaque
 data:
@@ -75,7 +72,6 @@ kind: Secret
 metadata:
   name: bridge-oauth-mongodb-credentials
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: bridge
 type: Opaque
 data:
@@ -87,7 +83,6 @@ kind: Deployment
 metadata:
   name: bridge
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: bridge
 spec:
   selector:
@@ -97,7 +92,6 @@ spec:
   template:
     metadata:
       labels: {{- include "common.labels.standard" . | nindent 8 }}
-        app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: bridge
     spec:
       {{- include "keptn.bridge.pod-security-context" . | nindent 6 }}

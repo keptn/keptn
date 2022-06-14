@@ -3,7 +3,6 @@ kind: Deployment
 metadata:
   name: statistics-service
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: statistics-service
 spec:
   selector:
@@ -14,7 +13,6 @@ spec:
   template:
     metadata:
       labels: {{- include "common.labels.standard" . | nindent 8 }}
-        app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: statistics-service
     spec:
       {{- include "keptn.common.pod-security-context" . | nindent 6 }}
@@ -104,7 +102,6 @@ kind: Service
 metadata:
   name: statistics-service
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: statistics-service
 spec:
   ports:

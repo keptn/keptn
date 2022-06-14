@@ -5,7 +5,6 @@ kind: ConfigMap
 metadata:
   name: api-nginx-config
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: api-gateway-nginx
 data:
   nginx.conf: |
@@ -357,7 +356,6 @@ kind: Deployment
 metadata:
   name: api-gateway-nginx
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: api-gateway-nginx
 spec:
   selector:
@@ -368,7 +366,6 @@ spec:
   template:
     metadata:
       labels: {{- include "common.labels.standard" . | nindent 8 }}
-        app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: api-gateway-nginx
       annotations: # add randomizer to restart the deployment if anything changes - see https://github.com/keptn/keptn/issues/3320
         rollme: {{ randAlphaNum 5 | quote }}
@@ -437,7 +434,6 @@ kind: Service
 metadata:
   name: api-gateway-nginx
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: api-gateway-nginx
 spec:
   type: {{ .Values.apiGatewayNginx.type }}
