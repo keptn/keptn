@@ -116,8 +116,17 @@ func init() {
               "$ref": "#/definitions/error"
             }
           },
-          "500": {
-            "description": "Internal Server Error"
+          "404": {
+            "description": "Project not found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "415": {
+            "description": "Unsupported media type",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
           }
         }
       }
@@ -360,8 +369,17 @@ func init() {
               "$ref": "#/definitions/error"
             }
           },
-          "500": {
-            "description": "Internal Server Error"
+          "404": {
+            "description": "Project not found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "415": {
+            "description": "Unsupported media type",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
           }
         }
       }

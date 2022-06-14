@@ -81,26 +81,90 @@ func (o *ImportBadRequest) WriteResponse(rw http.ResponseWriter, producer runtim
 	}
 }
 
-// ImportInternalServerErrorCode is the HTTP code returned for type ImportInternalServerError
-const ImportInternalServerErrorCode int = 500
+// ImportNotFoundCode is the HTTP code returned for type ImportNotFound
+const ImportNotFoundCode int = 404
 
-/*ImportInternalServerError Internal Server Error
+/*ImportNotFound Project not found
 
-swagger:response importInternalServerError
+swagger:response importNotFound
 */
-type ImportInternalServerError struct {
+type ImportNotFound struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
 }
 
-// NewImportInternalServerError creates ImportInternalServerError with default headers values
-func NewImportInternalServerError() *ImportInternalServerError {
+// NewImportNotFound creates ImportNotFound with default headers values
+func NewImportNotFound() *ImportNotFound {
 
-	return &ImportInternalServerError{}
+	return &ImportNotFound{}
+}
+
+// WithPayload adds the payload to the import not found response
+func (o *ImportNotFound) WithPayload(payload *models.Error) *ImportNotFound {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the import not found response
+func (o *ImportNotFound) SetPayload(payload *models.Error) {
+	o.Payload = payload
 }
 
 // WriteResponse to the client
-func (o *ImportInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+func (o *ImportNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+	rw.WriteHeader(404)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
 
-	rw.WriteHeader(500)
+// ImportUnsupportedMediaTypeCode is the HTTP code returned for type ImportUnsupportedMediaType
+const ImportUnsupportedMediaTypeCode int = 415
+
+/*ImportUnsupportedMediaType Unsupported media type
+
+swagger:response importUnsupportedMediaType
+*/
+type ImportUnsupportedMediaType struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewImportUnsupportedMediaType creates ImportUnsupportedMediaType with default headers values
+func NewImportUnsupportedMediaType() *ImportUnsupportedMediaType {
+
+	return &ImportUnsupportedMediaType{}
+}
+
+// WithPayload adds the payload to the import unsupported media type response
+func (o *ImportUnsupportedMediaType) WithPayload(payload *models.Error) *ImportUnsupportedMediaType {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the import unsupported media type response
+func (o *ImportUnsupportedMediaType) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *ImportUnsupportedMediaType) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(415)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
 }

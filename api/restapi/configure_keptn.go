@@ -24,6 +24,7 @@ import (
 	"github.com/keptn/keptn/api/restapi/operations"
 	"github.com/keptn/keptn/api/restapi/operations/auth"
 	"github.com/keptn/keptn/api/restapi/operations/event"
+	"github.com/keptn/keptn/api/restapi/operations/import_operations"
 	"github.com/keptn/keptn/api/restapi/operations/metadata"
 )
 
@@ -89,6 +90,9 @@ func configureAPI(api *operations.KeptnAPI) http.Handler {
 	api.MetadataMetadataHandler = metadata.MetadataHandlerFunc(handlers.GetMetadataHandlerFunc)
 
 	//api.EvaluationTriggerEvaluationHandler = evaluation.TriggerEvaluationHandlerFunc(handlers.TriggerEvaluationHandlerFunc)
+
+	// Import endpoint
+	api.ImportOperationsImportHandler = import_operations.ImportHandlerFunc(handlers.GetImportHandlerFunc())
 
 	if env.MaxAuthEnabled {
 		rateLimiter := custommiddleware.NewRateLimiter(env.MaxAuthRequestsPerSecond, env.MaxAuthRequestBurst, tokenValidator, clock.New())
