@@ -1,13 +1,15 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { KtbDatetimePickerComponent, KtbDatetimePickerDirective } from './ktb-datetime-picker.component';
-import { AppModule } from '../../app.module';
 import { ElementRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { BrowserDynamicTestingModule } from '@angular/platform-browser-dynamic/testing';
 import moment, { Moment } from 'moment';
 import { Timeframe } from '../../_models/timeframe';
 import { OverlayService } from '../../_directives/overlay-service/overlay.service';
+import { KtbDateInputModule } from './ktb-date-input.module';
+import { RouterTestingModule } from '@angular/router/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 export class MockElementRef extends ElementRef {
   nativeElement = {};
@@ -24,7 +26,7 @@ describe('KtbDatetimePickerComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule],
+      imports: [KtbDateInputModule, RouterTestingModule, HttpClientTestingModule],
       providers: [{ provide: ElementRef, useClass: MockElementRef }],
     })
       .overrideModule(BrowserDynamicTestingModule, { set: { entryComponents: [KtbDatetimePickerComponent] } })
