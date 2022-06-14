@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbCertificateInputComponent } from './ktb-certificate-input.component';
-import { AppModule } from '../../app.module';
 import { TestUtils } from '../../_utils/test.utils';
+import { KtbCertificateInputModule } from './ktb-certificate-input.module';
 
 describe('KtbCertificateInputComponent', () => {
   let component: KtbCertificateInputComponent;
@@ -10,7 +10,7 @@ describe('KtbCertificateInputComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule],
+      imports: [KtbCertificateInputModule],
     }).compileComponents();
     fixture = TestBed.createComponent(KtbCertificateInputComponent);
     component = fixture.componentInstance;
