@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { KtbCopyToClipboardComponent } from './ktb-copy-to-clipboard.component';
-import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { KtbCopyToClipboardModule } from './ktb-copy-to-clipboard.module';
 
 describe('KtbExpandableTileComponent', () => {
   let component: KtbCopyToClipboardComponent;
@@ -10,7 +10,7 @@ describe('KtbExpandableTileComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule, HttpClientTestingModule],
+      imports: [KtbCopyToClipboardModule, HttpClientTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbCopyToClipboardComponent);
