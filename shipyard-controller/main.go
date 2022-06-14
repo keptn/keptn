@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/keptn/keptn/shipyard-controller/leaderelection"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -13,7 +14,6 @@ import (
 
 	"github.com/benbjohnson/clock"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/kelseyhightower/envconfig"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/osutils"
@@ -29,12 +29,8 @@ import (
 	_ "github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/nats"
 	log "github.com/sirupsen/logrus"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	v1 "k8s.io/client-go/kubernetes/typed/coordination/v1"
 	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/leaderelection"
-	"k8s.io/client-go/tools/leaderelection/resourcelock"
 )
 
 // @title        Control Plane API
@@ -239,7 +235,7 @@ func _main(kubeAPI kubernetes.Interface) {
 		createEventQueueRepo(),
 		createProjectRepo(),
 		taskStartedWaitDuration,
-		1*time.Minute, // TODO make configurable
+		3*time.Second, // TODO make configurable
 		clock.New(),
 	)
 
@@ -301,7 +297,7 @@ func _main(kubeAPI kubernetes.Interface) {
 		shipyardController.StartDispatchers(ctx, common.SDModeRW)
 	} else {
 		// multiple shipyards
-		go LeaderElection(kubeAPI.CoordinationV1(), ctx, shipyardController.StartDispatchers, shipyardController.StopDispatchers)
+		go leaderelection.LeaderElection(kubeAPI.CoordinationV1(), ctx, shipyardController.StartDispatchers, shipyardController.StopDispatchers)
 	}
 
 	operationsEngine := gin.New()
@@ -332,58 +328,6 @@ func _main(kubeAPI kubernetes.Interface) {
 	}()
 
 	GracefulShutdown(wg, srv)
-}
-
-func LeaderElection(client v1.CoordinationV1Interface, ctx context.Context, start func(ctx context.Context, mode common.SDMode), stop func()) {
-	myID := uuid.New().String()
-	// we use the Lease lock type since edits to Leases are less common
-	// and fewer objects in the cluster watch "all Leases".
-	lock := &resourcelock.LeaseLock{
-		LeaseMeta: metav1.ObjectMeta{
-			Name:      "shipyard-controller-dispatcher",
-			Namespace: common.GetKeptnNamespace(),
-		},
-		Client: client,
-		LockConfig: resourcelock.ResourceLockConfig{
-			Identity: myID,
-		},
-	}
-
-	// start the leader election code loop
-	leaderelection.RunOrDie(ctx, leaderelection.LeaderElectionConfig{
-		Lock: lock,
-		// IMPORTANT: you MUST ensure that any code you have that
-		// is protected by the lease must terminate **before**
-		// you call cancel. Otherwise, you could have a background
-		// loop still running and another process could
-		// get elected before your background loop finished, violating
-		// the stated goal of the lease.
-		ReleaseOnCancel: true,
-		LeaseDuration:   60 * time.Second,
-		RenewDeadline:   15 * time.Second,
-		RetryPeriod:     5 * time.Second,
-		Callbacks: leaderelection.LeaderCallbacks{
-			OnStartedLeading: func(ctx context.Context) {
-				// we're notified when we start - this is where you would
-				// usually put your code
-				start(ctx, common.SDModeRW)
-			},
-			OnStoppedLeading: func() {
-				// we can do cleanup here
-				log.Infof("leader lost: %s", myID)
-				stop()
-			},
-			OnNewLeader: func(identity string) {
-				// we're notified when a new leader is elected
-				if identity == myID {
-					// I just got the lock
-					return
-				}
-				log.Infof("new leader elected: %s", identity)
-				stop()
-			},
-		},
-	})
 }
 
 func GracefulShutdown(wg *sync.WaitGroup, srv *http.Server) {

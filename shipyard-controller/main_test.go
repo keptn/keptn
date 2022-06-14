@@ -11,8 +11,6 @@ import (
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/shipyard-controller/common"
-	"github.com/keptn/keptn/shipyard-controller/handler/fake"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/nats-io/nats-server/v2/server"
 	natsserver "github.com/nats-io/nats-server/v2/test"
@@ -22,10 +20,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"io/ioutil"
-	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/runtime"
 	fakek8s "k8s.io/client-go/kubernetes/fake"
-	fakeclient "k8s.io/client-go/testing"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -123,6 +118,32 @@ spec:
           pass: manual
           warning: manual
       - name: mytask`
+
+const sequenceStateParallelStagesShipyard = `apiVersion: spec.keptn.sh/0.2.0
+kind: Shipyard
+metadata:
+  name: shipyard-parallel-stages
+spec:
+  stages:
+    - name: dev
+      sequences:
+        - name: delivery
+          tasks:
+            - name: delivery
+    - name: staging-2
+      sequences:
+        - name: delivery
+          triggeredOn:
+            - event: "dev.delivery.finished"
+          tasks:
+            - name: delivery
+    - name: staging-1
+      sequences:
+        - name: delivery
+          triggeredOn:
+            - event: "dev.delivery.finished"
+          tasks:
+            - name: delivery`
 
 var configurationService *httptest.Server
 
@@ -246,80 +267,6 @@ func Test_getDurationFromEnvVar(t *testing.T) {
 			}
 		})
 	}
-}
-
-func Test_LeaderElection(t *testing.T) {
-	var (
-		onNewLeader = make(chan struct{})
-		onRelease   = make(chan struct{})
-		lockObj     runtime.Object
-	)
-	c := &fakek8s.Clientset{}
-
-	shipyard := &fake.IShipyardControllerMock{
-		StartDispatchersFunc: func(ctx context.Context, mode common.SDMode) {
-			time.After(5 * time.Second)
-			close(onNewLeader)
-		},
-		StopDispatchersFunc: func() {
-			onNewLeader = make(chan struct{})
-			close(onRelease)
-		},
-	}
-
-	ctx, cancel := context.WithCancel(context.Background())
-
-	// create lock
-	c.AddReactor("create", "leases", func(action fakeclient.Action) (handled bool, ret runtime.Object, err error) {
-		lockObj = action.(fakeclient.CreateAction).GetObject()
-		return true, lockObj, nil
-	})
-
-	//fail with no lock
-	c.AddReactor("get", "leases", func(action fakeclient.Action) (handled bool, ret runtime.Object, err error) {
-		if lockObj != nil {
-			return true, lockObj, nil
-		}
-		return true, nil, errors.NewNotFound(action.(fakeclient.GetAction).GetResource().GroupResource(), action.(fakeclient.GetAction).GetName())
-	})
-
-	c.AddReactor("update", "leases", func(action fakeclient.Action) (handled bool, ret runtime.Object, err error) {
-		// Second update (first renew) should return our canceled error
-		// FakeClient doesn't do anything with the context so we're doing this ourselves
-
-		lockObj = action.(fakeclient.UpdateAction).GetObject()
-		return true, lockObj, nil
-
-	})
-
-	c.AddReactor("*", "*", func(action fakeclient.Action) (bool, runtime.Object, error) {
-		t.Errorf("unreachable action. testclient called too many times: %+v", action)
-		return true, nil, fmt.Errorf("unreachable action")
-	})
-
-	newReplica := func() {
-		LeaderElection(c.CoordinationV1(), ctx, shipyard.StartDispatchersFunc, shipyard.StopDispatchers)
-	}
-	go newReplica()
-
-	// Wait for one replica to become the leader
-	select {
-	case <-onNewLeader:
-		// stopping the leader
-
-		go newReplica() // leader already there one of the two may fail but not panic
-		cancel()
-		select {
-		case <-onRelease:
-			//reset chan for next leader
-			onRelease = make(chan struct{})
-		case <-time.After(10 * time.Second):
-			t.Fatal("failed to release lock")
-		}
-	case <-time.After(10 * time.Second):
-		t.Fatal("failed to become the leader")
-	}
-	cancel()
 }
 
 func Test__main_SequenceQueue(t *testing.T) {
@@ -495,7 +442,6 @@ func Test__main_SequenceQueueTriggerMultiple(t *testing.T) {
 		sequenceContexts = append(sequenceContexts, *context)
 		<-time.After(10 * time.Millisecond)
 	}
-	//verifyNumberOfOpenTriggeredEvents(t, projectName, 1)
 
 	var currentActiveSequence apimodels.SequenceState
 	for i := 0; i < numSequences; i++ {
@@ -536,6 +482,257 @@ func Test__main_SequenceQueueTriggerMultiple(t *testing.T) {
 
 }
 
+func Test__main_SequenceStateParallelStages(t *testing.T) {
+	projectName := "state-parallel-stages"
+	serviceName := "my-service"
+
+	source := "golang-test"
+
+	natsClient, tearDown, err := setupTestProject(t, projectName, serviceName, sequenceStateParallelStagesShipyard)
+
+	defer tearDown()
+	require.Nil(t, err)
+
+	keptnContext := natsClient.triggerSequence(projectName, serviceName, "dev", "delivery")
+
+	require.NotNil(t, keptnContext)
+
+	// verify state
+	var states *apimodels.SequenceStates
+
+	require.Eventually(t, func() bool {
+		states, err = getStates(projectName, keptnContext)
+		if err != nil {
+			return false
+		}
+		if states == nil || len(states.States) == 0 {
+			return false
+		}
+		return true
+	}, 1*time.Second, 100*time.Millisecond)
+
+	require.Equal(t, int64(1), states.TotalCount)
+	require.Len(t, states.States, 1)
+	state := states.States[0]
+
+	require.Equal(t, apimodels.SequenceStartedState, state.State)
+
+	require.Len(t, state.Stages, 1)
+	stage := state.Stages[0]
+	require.Equal(t, "dev", stage.Name)
+	require.Equal(t, keptnv2.GetTriggeredEventType("delivery"), stage.LatestEvent.Type)
+
+	// get delivery.triggered event
+	deliveryTriggeredEvent := natsClient.getLatestEventOfType(*keptnContext.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType("delivery"))
+	require.NotNil(t, deliveryTriggeredEvent)
+
+	cloudEvent := keptnv2.ToCloudEvent(*deliveryTriggeredEvent)
+
+	keptn, err := keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: natsClient})
+
+	_, err = keptn.SendTaskStartedEvent(nil, source)
+	require.Nil(t, err)
+
+	require.Eventually(t, func() bool {
+		states, err = getStates(projectName, keptnContext)
+		if err != nil {
+			return false
+		}
+		if states == nil || len(states.States) == 0 {
+			return false
+		}
+		return states.States[0].Stages[0].LatestEvent.Type == keptnv2.GetStartedEventType("delivery")
+	}, 1*time.Second, 100*time.Millisecond)
+
+	_, err = keptn.SendTaskFinishedEvent(&keptnv2.EventData{Result: keptnv2.ResultPass, Status: keptnv2.StatusSucceeded}, source)
+	require.Nil(t, err)
+
+	// now the sequences in staging-1 and staging-2 should have been triggered
+
+	require.Eventually(t, func() bool {
+		states, err = getStates(projectName, keptnContext)
+		if err != nil {
+			return false
+		}
+
+		state := states.States[0]
+		if state.Project != projectName {
+			return false
+		}
+
+		if len(state.Stages) != 3 {
+			return false
+		}
+
+		staging1 := getStageOfState(state, "staging-1")
+		staging2 := getStageOfState(state, "staging-2")
+
+		if staging1.LatestEvent.Type != keptnv2.GetTriggeredEventType("delivery") {
+			return false
+		}
+		if staging2.LatestEvent.Type != keptnv2.GetTriggeredEventType("delivery") {
+			return false
+		}
+		return true
+	}, 3*time.Second, 100*time.Millisecond)
+
+	var staging1TriggeredEvent *apimodels.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		staging1TriggeredEvent = natsClient.getLatestEventOfType(*keptnContext.KeptnContext, projectName, "staging-1", keptnv2.GetTriggeredEventType("delivery"))
+		if staging1TriggeredEvent == nil {
+			return false
+		}
+		return true
+	}, 30*time.Second, 5*time.Second)
+
+	cloudEvent = keptnv2.ToCloudEvent(*staging1TriggeredEvent)
+
+	keptn, err = keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: natsClient})
+	require.Nil(t, err)
+
+	// send started event
+	_, err = keptn.SendTaskStartedEvent(nil, source)
+	require.Nil(t, err)
+
+	require.Eventually(t, func() bool {
+		states, err = getStates(projectName, keptnContext)
+		if err != nil {
+			return false
+		}
+
+		state := states.States[0]
+		if state.Project != projectName {
+			return false
+		}
+
+		if len(state.Stages) != 3 {
+			return false
+		}
+
+		staging1 := getStageOfState(state, "staging-1")
+		staging2 := getStageOfState(state, "staging-2")
+
+		if staging1.LatestEvent.Type != keptnv2.GetStartedEventType("delivery") {
+			return false
+		}
+		if staging2.LatestEvent.Type != keptnv2.GetTriggeredEventType("delivery") {
+			return false
+		}
+		return true
+	}, 3*time.Second, 100*time.Millisecond)
+
+	// send finished event
+	_, err = keptn.SendTaskFinishedEvent(&keptnv2.EventData{
+		Status: keptnv2.StatusSucceeded,
+		Result: keptnv2.ResultPass,
+	}, source)
+	require.Nil(t, err)
+
+	require.Eventually(t, func() bool {
+		states, err = getStates(projectName, keptnContext)
+		if err != nil {
+			return false
+		}
+
+		state := states.States[0]
+		if state.Project != projectName {
+			return false
+		}
+
+		if len(state.Stages) != 3 {
+			return false
+		}
+
+		staging1 := getStageOfState(state, "staging-1")
+		staging2 := getStageOfState(state, "staging-2")
+
+		if staging1.LatestEvent.Type != keptnv2.GetFinishedEventType("staging-1.delivery") {
+			return false
+		}
+		if staging2.LatestEvent.Type != keptnv2.GetTriggeredEventType("delivery") {
+			return false
+		}
+		return true
+	}, 5*time.Second, 100*time.Millisecond)
+
+	staging2TriggeredEvent := natsClient.getLatestEventOfType(*keptnContext.KeptnContext, projectName, "staging-2", keptnv2.GetTriggeredEventType("delivery"))
+	require.NotNil(t, staging1TriggeredEvent)
+
+	cloudEvent = keptnv2.ToCloudEvent(*staging2TriggeredEvent)
+
+	keptn, err = keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: natsClient})
+	require.Nil(t, err)
+
+	// send started event
+	_, err = keptn.SendTaskStartedEvent(nil, source)
+	require.Nil(t, err)
+
+	require.Eventually(t, func() bool {
+		states, err = getStates(projectName, keptnContext)
+		if err != nil {
+			return false
+		}
+
+		state := states.States[0]
+		if state.Project != projectName {
+			return false
+		}
+
+		if len(state.Stages) != 3 {
+			return false
+		}
+
+		staging1 := getStageOfState(state, "staging-1")
+		staging2 := getStageOfState(state, "staging-2")
+
+		if staging1.LatestEvent.Type != keptnv2.GetFinishedEventType("staging-1.delivery") {
+			return false
+		}
+		if staging2.LatestEvent.Type != keptnv2.GetStartedEventType("delivery") {
+			return false
+		}
+		return true
+	}, 3*time.Second, 100*time.Millisecond)
+
+	// now finish the sequence in staging-2
+	_, err = keptn.SendTaskFinishedEvent(&keptnv2.EventData{
+		Status: keptnv2.StatusSucceeded,
+		Result: keptnv2.ResultPass,
+	}, source)
+	require.Nil(t, err)
+
+	require.Eventually(t, func() bool {
+		states, err = getStates(projectName, keptnContext)
+		if err != nil {
+			return false
+		}
+
+		state := states.States[0]
+		if state.Project != projectName {
+			return false
+		}
+
+		if state.State != apimodels.SequenceFinished {
+			return false
+		}
+
+		if len(state.Stages) != 3 {
+			return false
+		}
+
+		staging1 := getStageOfState(state, "staging-1")
+		staging2 := getStageOfState(state, "staging-2")
+
+		if staging1.LatestEvent.Type != keptnv2.GetFinishedEventType("staging-1.delivery") {
+			return false
+		}
+		if staging2.LatestEvent.Type != keptnv2.GetFinishedEventType("staging-2.delivery") {
+			return false
+		}
+		return true
+	}, 3*time.Second, 100*time.Millisecond)
+}
+
 func Test__main_TriggerAndDeleteProject(t *testing.T) {
 	projectName := "my-project-queue-trigger-and-delete"
 	stageName := "dev"
@@ -548,6 +745,7 @@ func Test__main_TriggerAndDeleteProject(t *testing.T) {
 	natsClient, tearDown, err := setupTestProject(t, projectName, serviceName, testShipyardFile)
 
 	defer tearDown()
+	require.Nil(t, err)
 
 	triggerSequence := func(serviceName string, wg *sync.WaitGroup) {
 		natsClient.triggerSequence(projectName, serviceName, stageName, sequencename)
@@ -770,13 +968,11 @@ func (n *testNatsClient) triggerSequence(projectName, serviceName, stageName, se
 
 	eventPayload := apimodels.KeptnContextExtendedCE{
 		Contenttype: "application/json",
-		Data: keptnv2.DeploymentTriggeredEventData{
-			EventData: keptnv2.EventData{
-				Project: projectName,
-				Stage:   stageName,
-				Service: serviceName,
-				Result:  keptnv2.ResultPass,
-			},
+		Data: keptnv2.EventData{
+			Project: projectName,
+			Stage:   stageName,
+			Service: serviceName,
+			Result:  keptnv2.ResultPass,
 		},
 		ID:                 uuid.NewString(),
 		Shkeptncontext:     keptnContext,
@@ -880,4 +1076,13 @@ func doesSequenceHaveOneOfTheDesiredStates(state apimodels.SequenceState, contex
 		}
 	}
 	return false
+}
+
+func getStageOfState(state apimodels.SequenceState, stageName string) *apimodels.SequenceStateStage {
+	for index, stage := range state.Stages {
+		if stage.Name == stageName {
+			return &state.Stages[index]
+		}
+	}
+	return nil
 }
