@@ -49,7 +49,6 @@ import { KtbDeleteConfirmationComponent } from './_components/_dialogs/ktb-delet
 import { KtbProjectCreateMessageComponent } from './_components/_status-messages/ktb-project-create-message/ktb-project-create-message.component';
 import { KtbCopyToClipboardComponent } from './_components/ktb-copy-to-clipboard/ktb-copy-to-clipboard.component';
 import { KtbCreateSecretFormComponent } from './_components/ktb-create-secret-form/ktb-create-secret-form.component';
-import { KtbCreateServiceComponent } from './_components/ktb-create-service/ktb-create-service.component';
 import { KtbDangerZoneComponent } from './_components/ktb-danger-zone/ktb-danger-zone.component';
 import {
   KtbDatetimePickerComponent,
@@ -160,6 +159,7 @@ import { KtbConfirmationDialogModule } from './_components/_dialogs/ktb-confirma
 import { KtbDeletionDialogModule } from './_components/_dialogs/ktb-deletion-dialog/ktb-deletion-dialog.module';
 import { KtbEvaluationDetailsModule } from './_components/ktb-evaluation-details/ktb-evaluation-details.module';
 import { KtbApprovalItemModule } from './_components/ktb-approval-item/ktb-approval-item.module';
+import { KtbCreateServiceModule } from './_components/ktb-create-service/ktb-create-service.module';
 
 registerLocaleData(localeEn, 'en');
 
@@ -223,6 +223,7 @@ const dtModules = [
 const ktbModules = [
   KtbApprovalItemModule,
   KtbConfirmationDialogModule,
+  KtbCreateServiceModule,
   KtbDeletionDialogModule,
   KtbEvaluationDetailsModule,
   KtbHeatmapModule,
@@ -293,7 +294,6 @@ const ktbModules = [
     KtbModifyUniformSubscriptionComponent,
     KtbWebhookSettingsComponent,
     KtbServiceSettingsComponent,
-    KtbCreateServiceComponent,
     KtbServiceSettingsOverviewComponent,
     KtbServiceSettingsListComponent,
     KtbEditServiceComponent,
