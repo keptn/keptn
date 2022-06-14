@@ -66,7 +66,7 @@ func NewInstallCmd(helmHelper helm.IHelper, namespaceHandler kube.IKeptnNamespac
 		Use:   "install",
 		Args:  cobra.NoArgs,
 		Short: "Installs Keptn on a Kubernetes cluster",
-		Long: `The Keptn CLI allows installing Keptn on any Kubernetes derivative to which your kube config is pointing to, and on OpenShift.
+		Long: `The Keptn CLI allows installing Keptn on any Kubernetes derivative to which your kube config is pointing, and on OpenShift.
 
 For more information, please follow the installation guide [Install Keptn](https://keptn.sh/docs/` + getReleaseDocsURL() + `/operate/install/#install-keptn)
 `,
