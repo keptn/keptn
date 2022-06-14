@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"flag"
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
@@ -195,6 +196,11 @@ func startFakeConfigurationService() func() {
 }
 
 func TestMain(m *testing.M) {
+
+	flag.Parse()
+	if testing.Short() {
+		return
+	}
 	natsServer := setupNatsServer(natsTestPort)
 	defer startFakeConfigurationService()()
 	defer natsServer.Shutdown()
@@ -731,6 +737,44 @@ func Test__main_SequenceStateParallelStages(t *testing.T) {
 		}
 		return true
 	}, 3*time.Second, 100*time.Millisecond)
+}
+
+func Test__main_SequenceState_RetrieveMultiple(t *testing.T) {
+	projectName := "my-project-queue-trigger-and-delete"
+	stageName := "dev"
+	serviceName := "my-service"
+	sequencename := "delivery"
+
+	natsClient, tearDown, err := setupTestProject(t, projectName, serviceName, testShipyardFile)
+
+	defer tearDown()
+	require.Nil(t, err)
+
+	context1 := natsClient.triggerSequence(projectName, serviceName, stageName, sequencename)
+	require.NotNil(t, context1)
+
+	context2 := natsClient.triggerSequence(projectName, serviceName, stageName, sequencename)
+	require.NotNil(t, context2)
+
+	verifyContextReturnsStates := func(c *apimodels.EventContext, numResults int) {
+		require.Eventually(t, func() bool {
+			states, err := getStates(projectName, c)
+			if err != nil {
+				return false
+			}
+			if states == nil || len(states.States) != numResults {
+				return false
+			}
+			return true
+		}, 1*time.Second, 100*time.Millisecond)
+	}
+
+	verifyContextReturnsStates(context1, 1)
+	verifyContextReturnsStates(context2, 1)
+
+	// filter by providing two contexts
+	combinedContext := fmt.Sprintf("%s,%s", *context1.KeptnContext, *context2.KeptnContext)
+	verifyContextReturnsStates(&apimodels.EventContext{KeptnContext: &combinedContext}, 2)
 }
 
 func Test__main_TriggerAndDeleteProject(t *testing.T) {
