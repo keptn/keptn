@@ -48,7 +48,6 @@ import { environment } from '../environments/environment';
 import { KtbDeleteConfirmationComponent } from './_components/_dialogs/ktb-delete-confirmation/ktb-delete-confirmation.component';
 import { KtbProjectCreateMessageComponent } from './_components/_status-messages/ktb-project-create-message/ktb-project-create-message.component';
 import { KtbCreateSecretFormComponent } from './_components/ktb-create-secret-form/ktb-create-secret-form.component';
-import { KtbCreateServiceComponent } from './_components/ktb-create-service/ktb-create-service.component';
 import { KtbDangerZoneComponent } from './_components/ktb-danger-zone/ktb-danger-zone.component';
 import {
   KtbDatetimePickerComponent,
@@ -159,6 +158,7 @@ import { KtbEvaluationDetailsModule } from './_components/ktb-evaluation-details
 import { KtbApprovalItemModule } from './_components/ktb-approval-item/ktb-approval-item.module';
 import { KtbCertificateInputModule } from './_components/ktb-certificate-input/ktb-certificate-input.module';
 import { KtbDragAndDropModule } from './_directives/ktb-drag-and-drop/ktb-drag-and-drop.module';
+import { KtbCreateServiceModule } from './_components/ktb-create-service/ktb-create-service.module';
 import { KtbCopyToClipboardModule } from './_components/ktb-copy-to-clipboard/ktb-copy-to-clipboard.module';
 
 registerLocaleData(localeEn, 'en');
@@ -224,6 +224,7 @@ const ktbModules = [
   KtbApprovalItemModule,
   KtbCertificateInputModule,
   KtbConfirmationDialogModule,
+  KtbCreateServiceModule,
   KtbCopyToClipboardModule,
   KtbDeletionDialogModule,
   KtbDragAndDropModule,
@@ -294,7 +295,6 @@ const ktbModules = [
     KtbModifyUniformSubscriptionComponent,
     KtbWebhookSettingsComponent,
     KtbServiceSettingsComponent,
-    KtbCreateServiceComponent,
     KtbServiceSettingsOverviewComponent,
     KtbServiceSettingsListComponent,
     KtbEditServiceComponent,
