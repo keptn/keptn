@@ -123,10 +123,12 @@ func main() {
 
 	sequenceExecutionRepo := createSequenceExecutionRepo()
 
+	secretStore := createSecretStore(kubeAPI)
+
 	projectMVRepo := createProjectMVRepo()
 	projectManager := handler.NewProjectManager(
 		common.NewGitConfigurationStore(csEndpoint.String()),
-		createSecretStore(kubeAPI),
+		secretStore,
 		projectMVRepo,
 		sequenceExecutionRepo,
 		createEventsRepo(),
@@ -257,7 +259,7 @@ func main() {
 	logController.Inject(apiV1)
 
 	log.Info("Migrating project git credentials")
-	projectCredentialsMigrator := migration.NewProjectCredentialsMigrator(db.GetMongoDBConnectionInstance())
+	projectCredentialsMigrator := migration.NewProjectCredentialsMigrator(db.GetMongoDBConnectionInstance(), secretStore)
 	err = projectCredentialsMigrator.Transform()
 	if err != nil {
 		log.Errorf("Unable to transform project git credentials: %v", err)
