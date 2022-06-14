@@ -77,6 +77,51 @@ func init() {
         }
       }
     },
+    "/import": {
+      "post": {
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Import"
+        ],
+        "summary": "Imports configuration ZIP package",
+        "operationId": "import",
+        "parameters": [
+          {
+            "type": "file",
+            "description": "The ZIP configuration package.",
+            "name": "configPackage",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The project on which the configuration should be applied",
+            "name": "project",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/metadata": {
       "get": {
         "tags": [
@@ -272,6 +317,51 @@ func init() {
             "schema": {
               "$ref": "#/definitions/error"
             }
+          }
+        }
+      }
+    },
+    "/import": {
+      "post": {
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Import"
+        ],
+        "summary": "Imports configuration ZIP package",
+        "operationId": "import",
+        "parameters": [
+          {
+            "type": "file",
+            "description": "The ZIP configuration package.",
+            "name": "configPackage",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The project on which the configuration should be applied",
+            "name": "project",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
           }
         }
       }
