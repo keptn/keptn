@@ -25,6 +25,7 @@ import (
 	common_mock "github.com/keptn/keptn/resource-service/common/fake"
 	"github.com/keptn/keptn/resource-service/common_models"
 	kerrors "github.com/keptn/keptn/resource-service/errors"
+	"github.com/stretchr/testify/require"
 	. "gopkg.in/check.v1"
 )
 
@@ -1226,4 +1227,50 @@ func checkout(c *C, g *Git, gitContext common_models.GitContext, branch string) 
 		c.Assert(err, IsNil)
 	}
 	return err
+}
+
+func TestRetrieveInsecureFlag(t *testing.T) {
+	tests := []struct {
+		name        string
+		credentials *common_models.GitCredentials
+		want        bool
+	}{
+		{
+			name:        "no credentials",
+			credentials: nil,
+			want:        false,
+		},
+		{
+			name: "false",
+			credentials: &common_models.GitCredentials{
+				HttpsAuth: &apimodels.HttpsGitAuth{
+					InsecureSkipTLS: false,
+				},
+			},
+			want: false,
+		},
+		{
+			name: "true",
+			credentials: &common_models.GitCredentials{
+				HttpsAuth: &apimodels.HttpsGitAuth{
+					InsecureSkipTLS: true,
+				},
+			},
+			want: true,
+		},
+		{
+			name: "not set",
+			credentials: &common_models.GitCredentials{
+				HttpsAuth: &apimodels.HttpsGitAuth{},
+			},
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := retrieveInsecureSkipTLS(tt.credentials)
+			require.Equal(t, tt.want, got)
+		})
+	}
 }

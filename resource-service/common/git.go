@@ -400,7 +400,7 @@ func (g *Git) getCurrentRemoteRevision(gitContext common_models.GitContext) (str
 }
 
 func retrieveInsecureSkipTLS(credentials *common_models.GitCredentials) bool {
-	if credentials.HttpsAuth != nil {
+	if credentials != nil && credentials.HttpsAuth != nil {
 		return credentials.HttpsAuth.InsecureSkipTLS
 	}
 	return false
