@@ -12,10 +12,8 @@ import { DtAlertModule } from '@dynatrace/barista-components/alert';
 import { DtButtonModule } from '@dynatrace/barista-components/button';
 import { DtButtonGroupModule } from '@dynatrace/barista-components/button-group';
 import { DtCardModule } from '@dynatrace/barista-components/card';
-import { DtChartModule } from '@dynatrace/barista-components/chart';
 import { DtCheckboxModule } from '@dynatrace/barista-components/checkbox';
 import { DtConfirmationDialogModule } from '@dynatrace/barista-components/confirmation-dialog';
-import { DtConsumptionModule } from '@dynatrace/barista-components/consumption';
 import { DtContextDialogModule } from '@dynatrace/barista-components/context-dialog';
 import { DtCopyToClipboardModule } from '@dynatrace/barista-components/copy-to-clipboard';
 import { DtDrawerModule } from '@dynatrace/barista-components/drawer';
@@ -29,7 +27,6 @@ import { DtIconModule } from '@dynatrace/barista-components/icon';
 import { DtIndicatorModule } from '@dynatrace/barista-components/indicator';
 import { DtInfoGroupModule } from '@dynatrace/barista-components/info-group';
 import { DtInputModule } from '@dynatrace/barista-components/input';
-import { DtKeyValueListModule } from '@dynatrace/barista-components/key-value-list';
 import { DtMenuModule } from '@dynatrace/barista-components/menu';
 import { DtOverlayModule } from '@dynatrace/barista-components/overlay';
 import { DtProgressBarModule } from '@dynatrace/barista-components/progress-bar';
@@ -63,7 +60,6 @@ import { KtbDeploymentListComponent } from './_components/ktb-deployment-list/kt
 import { KtbDeploymentStageTimelineComponent } from './_components/ktb-deployment-stage-timeline/ktb-deployment-stage-timeline.component';
 import { KtbEditServiceFileListComponent } from './_components/ktb-edit-service-file-list/ktb-edit-service-file-list.component';
 import { KtbEditServiceComponent } from './_components/ktb-edit-service/ktb-edit-service.component';
-import { KtbEvaluationDetailsComponent } from './_components/ktb-evaluation-details/ktb-evaluation-details.component';
 import { KtbEvaluationInfoComponent } from './_components/ktb-evaluation-info/ktb-evaluation-info.component';
 import {
   KtbEventItemComponent,
@@ -163,7 +159,7 @@ import { KtbNotificationModule } from './_components/ktb-notification/ktb-notifi
 import { KtbLoadingModule } from './_components/ktb-loading/ktb-loading.module';
 import { KtbConfirmationDialogModule } from './_components/_dialogs/ktb-confirmation-dialog/ktb-confirmation-dialog.module';
 import { KtbDeletionDialogModule } from './_components/_dialogs/ktb-deletion-dialog/ktb-deletion-dialog.module';
-import { KtbSliBreakdownModule } from './_components/ktb-sli-breakdown/ktb-sli-breakdown.module';
+import { KtbEvaluationDetailsModule } from './_components/ktb-evaluation-details/ktb-evaluation-details.module';
 
 registerLocaleData(localeEn, 'en');
 
@@ -213,9 +209,6 @@ const dtModules = [
   DtShowMoreModule,
   DtIndicatorModule,
   DtProgressCircleModule,
-  DtConsumptionModule,
-  DtKeyValueListModule,
-  DtChartModule,
   DtOverlayModule,
   DtCheckboxModule,
   DtSwitchModule,
@@ -230,11 +223,11 @@ const dtModules = [
 const ktbModules = [
   KtbConfirmationDialogModule,
   KtbDeletionDialogModule,
+  KtbEvaluationDetailsModule,
   KtbHeatmapModule,
   KtbLoadingModule,
   KtbNotificationModule,
   KtbPipeModule,
-  KtbSliBreakdownModule,
 ];
 
 @NgModule({
@@ -263,7 +256,6 @@ const ktbModules = [
     KtbSequenceTasksListComponent,
     KtbTaskItemComponent,
     KtbTaskItemDetailDirective,
-    KtbEvaluationDetailsComponent,
     KtbEvaluationInfoComponent,
     KtbStageBadgeComponent,
     KtbApprovalItemComponent,
