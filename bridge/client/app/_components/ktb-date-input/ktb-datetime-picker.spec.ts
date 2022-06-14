@@ -2,7 +2,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { KtbDatetimePickerComponent, KtbDatetimePickerDirective } from './ktb-datetime-picker.component';
 import { ElementRef } from '@angular/core';
-import { Router } from '@angular/router';
 import { BrowserDynamicTestingModule } from '@angular/platform-browser-dynamic/testing';
 import moment, { Moment } from 'moment';
 import { Timeframe } from '../../_models/timeframe';
@@ -34,11 +33,7 @@ describe('KtbDatetimePickerComponent', () => {
 
     fixture = TestBed.createComponent(KtbDatetimePickerComponent);
     component = fixture.componentInstance;
-    directive = new KtbDatetimePickerDirective(
-      TestBed.inject(ElementRef),
-      TestBed.inject(Router),
-      TestBed.inject(OverlayService)
-    );
+    directive = new KtbDatetimePickerDirective(TestBed.inject(ElementRef), TestBed.inject(OverlayService));
     directive.ngOnInit();
     fixture.detectChanges();
   });

@@ -6,17 +6,13 @@ import {
   EventEmitter,
   HostListener,
   Input,
-  OnDestroy,
-  OnInit,
   Output,
 } from '@angular/core';
 import { DtTreeControl, DtTreeDataSource, DtTreeFlattener } from '@dynatrace/barista-components/core';
 import { FlatTreeControl } from '@angular/cdk/tree';
-import { OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
-import { Router } from '@angular/router';
 import { OverlayService } from '../../_directives/overlay-service/overlay.service';
-import { Subject } from 'rxjs';
+import { KtbOverlayComponent } from '../_abstract/ktb-overlay.component';
 
 export interface SelectTreeNode {
   name: string;
@@ -41,14 +37,16 @@ export type TreeListSelectOptions = {
 @Directive({
   selector: '[ktbTreeListSelect]',
 })
-export class KtbTreeListSelectDirective implements OnInit, OnDestroy {
-  private overlayRef?: OverlayRef;
+export class KtbTreeListSelectDirective extends KtbOverlayComponent {
   private contentRef: ComponentRef<KtbTreeListSelectComponent> | undefined;
-  private unsubscribe$: Subject<void> = new Subject();
 
   @Input() data: SelectTreeNode[] = [];
   @Input() options: TreeListSelectOptions = { headerText: '', emptyText: '', hintText: '' };
   @Output() selected: EventEmitter<string> = new EventEmitter<string>();
+
+  constructor(protected elementRef: ElementRef, protected overlayService: OverlayService) {
+    super(elementRef, overlayService, '400px', '200px');
+  }
 
   @HostListener('click')
   show(): void {
@@ -72,23 +70,6 @@ export class KtbTreeListSelectDirective implements OnInit, OnDestroy {
         this.close();
       });
     }
-  }
-
-  constructor(private elementRef: ElementRef, private router: Router, private overlayService: OverlayService) {
-    overlayService.registerNavigationEvent(this.unsubscribe$, this.close.bind(this));
-  }
-
-  public ngOnInit(): void {
-    this.overlayRef = this.overlayService.initOverlay('400px', '200px', true, this.elementRef, this.close.bind(this));
-  }
-
-  public ngOnDestroy(): void {
-    this.unsubscribe$.next();
-    this.unsubscribe$.complete();
-  }
-
-  public close(): void {
-    this.overlayService.closeOverlay(this.overlayRef, this.elementRef);
   }
 }
 

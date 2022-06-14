@@ -6,29 +6,27 @@ import {
   EventEmitter,
   HostListener,
   Input,
-  OnDestroy,
-  OnInit,
   Output,
 } from '@angular/core';
-import { OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
-import { Router } from '@angular/router';
 import moment from 'moment';
 import { Timeframe } from '../../_models/timeframe';
 import { OverlayService } from '../../_directives/overlay-service/overlay.service';
-import { Subject } from 'rxjs';
+import { KtbOverlayComponent } from '../_abstract/ktb-overlay.component';
 
 @Directive({
   selector: '[ktbDatetimePicker]',
 })
-export class KtbDatetimePickerDirective implements OnInit, OnDestroy {
-  private overlayRef?: OverlayRef;
+export class KtbDatetimePickerDirective extends KtbOverlayComponent {
   private contentRef: ComponentRef<KtbDatetimePickerComponent> | undefined;
-  private unsubscribe$: Subject<void> = new Subject();
 
   @Input() timeEnabled = false;
   @Input() secondsEnabled = false;
   @Output() selectedDateTime: EventEmitter<string> = new EventEmitter<string>();
+
+  constructor(protected elementRef: ElementRef, protected overlayService: OverlayService) {
+    super(elementRef, overlayService, '350px', '400px');
+  }
 
   @HostListener('click')
   show(): void {
@@ -52,24 +50,6 @@ export class KtbDatetimePickerDirective implements OnInit, OnDestroy {
         this.close();
       });
     }
-  }
-
-  constructor(private elementRef: ElementRef, private router: Router, private overlayService: OverlayService) {
-    // Close when navigation happens - to keep the overlay on the UI
-    this.overlayService.registerNavigationEvent(this.unsubscribe$, this.close.bind(this));
-  }
-
-  public ngOnInit(): void {
-    this.overlayRef = this.overlayService.initOverlay('350px', '400px', true, this.elementRef, this.close.bind(this));
-  }
-
-  public ngOnDestroy(): void {
-    this.unsubscribe$.next();
-    this.unsubscribe$.complete();
-  }
-
-  public close(): void {
-    this.overlayService.closeOverlay(this.overlayRef, this.elementRef);
   }
 }
 
