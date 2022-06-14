@@ -14,7 +14,6 @@
         [fill]="!!stage.deploymentURL"
         (click)="$event.stopPropagation(); selectStage(stage.name)"
       ></ktb-stage-badge>
-
       <dt-icon
         *ngIf="stage.openRemediations.length"
         name="criticalevent"
