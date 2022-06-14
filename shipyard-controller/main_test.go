@@ -446,7 +446,7 @@ func Test__main_SequenceQueueTriggerMultiple(t *testing.T) {
 		context := natsClient.triggerSequence(projectName, serviceName, stageName, sequencename)
 		t.Logf("triggered sequence %s with context %s", sequencename, *context.KeptnContext)
 		sequenceContexts = append(sequenceContexts, *context)
-		<-time.After(10 * time.Millisecond)
+		<-time.After(100 * time.Millisecond)
 	}
 
 	var currentActiveSequence apimodels.SequenceState
@@ -740,7 +740,7 @@ func Test__main_SequenceStateParallelStages(t *testing.T) {
 }
 
 func Test__main_SequenceState_RetrieveMultiple(t *testing.T) {
-	projectName := "my-project-queue-trigger-and-delete"
+	projectName := "my-project-retrieve-multiple"
 	stageName := "dev"
 	serviceName := "my-service"
 	sequencename := "delivery"
@@ -775,6 +775,99 @@ func Test__main_SequenceState_RetrieveMultiple(t *testing.T) {
 	// filter by providing two contexts
 	combinedContext := fmt.Sprintf("%s,%s", *context1.KeptnContext, *context2.KeptnContext)
 	verifyContextReturnsStates(&apimodels.EventContext{KeptnContext: &combinedContext}, 2)
+}
+
+func Test__main_SequenceState_SequenceNotFound(t *testing.T) {
+	projectName := "state-shipyard-unknown-sequence"
+	stageName := "dev"
+	serviceName := "my-service"
+	sequencename := "unknown"
+
+	natsClient, tearDown, err := setupTestProject(t, projectName, serviceName, testShipyardFile)
+
+	defer tearDown()
+	require.Nil(t, err)
+
+	context := natsClient.triggerSequence(projectName, serviceName, stageName, sequencename)
+	require.NotNil(t, context)
+
+	var state apimodels.SequenceState
+	require.Eventually(t, func() bool {
+		states, err := getStates(projectName, context)
+		if err != nil {
+			return false
+		}
+		if states == nil || len(states.States) != 1 {
+			return false
+		}
+		state = states.States[0]
+		return true
+	}, 1*time.Second, 100*time.Millisecond)
+
+	require.Equal(t, apimodels.SequenceFinished, state.State)
+
+	var finishedEvent *apimodels.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		finishedEvent = natsClient.getLatestEventOfType(*context.KeptnContext, projectName, stageName, keptnv2.GetFinishedEventType("dev.unknown"))
+		if finishedEvent == nil {
+			return false
+		}
+		return true
+	}, 1*time.Second, 100*time.Millisecond)
+
+	eventData := &keptnv2.EventData{}
+	err = keptnv2.Decode(finishedEvent.Data, eventData)
+	require.Nil(t, err)
+
+	require.Equal(t, keptnv2.StatusErrored, eventData.Status)
+	require.Equal(t, keptnv2.ResultFailed, eventData.Result)
+}
+
+func Test__main_SequenceState_InvalidShipyard(t *testing.T) {
+	projectName := "state-shipyard-unknown-sequence"
+	stageName := "dev"
+	serviceName := "my-service"
+	sequencename := "unknown"
+
+	shipyardWithInvalidVersion := strings.Replace(testShipyardFile, "spec.keptn.sh/0.2.2", "0.1.7", 1)
+	natsClient, tearDown, err := setupTestProject(t, projectName, serviceName, shipyardWithInvalidVersion)
+
+	defer tearDown()
+	require.Nil(t, err)
+
+	context := natsClient.triggerSequence(projectName, serviceName, stageName, sequencename)
+	require.NotNil(t, context)
+
+	var state apimodels.SequenceState
+	require.Eventually(t, func() bool {
+		states, err := getStates(projectName, context)
+		if err != nil {
+			return false
+		}
+		if states == nil || len(states.States) != 1 {
+			return false
+		}
+		state = states.States[0]
+		return true
+	}, 1*time.Second, 100*time.Millisecond)
+
+	require.Equal(t, apimodels.SequenceFinished, state.State)
+
+	var finishedEvent *apimodels.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		finishedEvent = natsClient.getLatestEventOfType(*context.KeptnContext, projectName, stageName, keptnv2.GetFinishedEventType("dev.unknown"))
+		if finishedEvent == nil {
+			return false
+		}
+		return true
+	}, 1*time.Second, 100*time.Millisecond)
+
+	eventData := &keptnv2.EventData{}
+	err = keptnv2.Decode(finishedEvent.Data, eventData)
+	require.Nil(t, err)
+
+	require.Equal(t, keptnv2.StatusErrored, eventData.Status)
+	require.Equal(t, keptnv2.ResultFailed, eventData.Result)
 }
 
 func Test__main_TriggerAndDeleteProject(t *testing.T) {
