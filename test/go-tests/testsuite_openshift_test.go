@@ -1,8 +1,9 @@
 package go_tests
 
 import (
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func Test_Openshift(t *testing.T) {
@@ -50,13 +51,13 @@ func Test_Openshift(t *testing.T) {
 	t.Run("Test_SequenceControl_AbortPausedSequenceMultipleStages", Test_SequenceControl_AbortPausedSequenceMultipleStages)
 	t.Run("Test_SequenceControl_PauseAndResume", Test_SequenceControl_PauseAndResume)
 	t.Run("Test_SequenceControl_PauseAndResume_2", Test_SequenceControl_PauseAndResume_2)
+	t.Run("Test_ProvisioningURL", Test_ProvisioningURL)
 	if res, err := CompareServiceNameWithDeploymentName("configuration-service", "resource-service"); err == nil && res {
 		t.Run("Test_ResourceServiceGETCommitID", Test_ResourceServiceGETCommitID)
 		t.Run("Test_EvaluationGitCommitID", Test_EvaluationGitCommitID)
 		t.Run("Test_SSHPublicKeyAuth", Test_SSHPublicKeyAuth)
 	}
 	t.Run("Test_ZeroDownTimeTriggerSequence", Test_ZeroDownTimeTriggerSequence)
-	t.Run("Test_ProvisioningURL", Test_ProvisioningURL)
 
 	// Platform-specific Tests
 }

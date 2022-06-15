@@ -4,9 +4,12 @@ import { SessionService } from './session';
 import { getBuildableRootLocation, getRootLocation, oauthRouter, reduceRefreshDateBy } from './oauth-routes';
 import { defaultContentSecurityPolicyOptions } from '../app';
 import { contentSecurityPolicy } from 'helmet';
+import { ComponentLogger } from '../utils/logger';
 
 const refreshPromises: { [sessionId: string]: Promise<TokenSet> } = {};
 const reduceRefreshDateSeconds = 10;
+
+const log = new ComponentLogger('OAuth');
 
 async function setupOAuth(
   app: Express,
@@ -42,11 +45,11 @@ async function setupClient(discoveryEndpoint: string, clientId: string, redirect
     throw Error('OAuth service discovery must contain the token_decision endpoint.');
   }
 
-  console.log(`Using authorization endpoint : ${ssoIssuer.metadata.authorization_endpoint}.`);
-  console.log(`Using token decision endpoint : ${ssoIssuer.metadata.token_endpoint}.`);
+  log.info(`Using authorization endpoint : ${ssoIssuer.metadata.authorization_endpoint}.`);
+  log.info(`Using token decision endpoint : ${ssoIssuer.metadata.token_endpoint}.`);
 
   if (ssoIssuer.metadata.end_session_endpoint) {
-    console.log(
+    log.info(
       `RP logout is supported by OAuth service. Using logout endpoint : ${ssoIssuer.metadata.end_session_endpoint}.`
     );
   }
@@ -96,14 +99,14 @@ function setRoutes(
           req.session.tokenSet = await refreshPromises[req.session.id];
           req.session.save((error) => {
             if (error) {
-              console.log(`Error while saving tokenSet. Cause: ${error?.message}`);
+              log.error(`Error while saving tokenSet. Cause: ${error?.message}`);
             }
             delete refreshPromises[req.session.id];
             next();
           });
         } catch (error) {
           const err = error as errors.OPError | errors.RPError;
-          console.error(`Renewal of access_token did not work. Cause ${err.message}`);
+          log.error(`Renewal of access_token did not work. Cause ${err.message}`);
 
           delete refreshPromises[req.session.id];
           session.removeSession(req);

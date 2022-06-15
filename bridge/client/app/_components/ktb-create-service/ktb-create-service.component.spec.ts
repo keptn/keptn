@@ -3,12 +3,13 @@ import { KtbCreateServiceComponent } from './ktb-create-service.component';
 import { DataService } from '../../_services/data.service';
 import { ActivatedRoute, convertToParamMap, ParamMap, Router } from '@angular/router';
 import { BehaviorSubject, of, throwError } from 'rxjs';
-import { AppModule } from '../../app.module';
 import { NotificationsService } from '../../_services/notifications.service';
 import { NotificationType } from '../../_models/notification';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
+import { KtbCreateServiceModule } from './ktb-create-service.module';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('KtbCreateServiceComponent', () => {
   let component: KtbCreateServiceComponent;
@@ -19,7 +20,7 @@ describe('KtbCreateServiceComponent', () => {
   beforeEach(async () => {
     queryParams = new BehaviorSubject<ParamMap>(convertToParamMap({}));
     await TestBed.configureTestingModule({
-      imports: [AppModule],
+      imports: [KtbCreateServiceModule, RouterTestingModule],
       providers: [
         { provide: ApiService, useClass: ApiServiceMock },
         {

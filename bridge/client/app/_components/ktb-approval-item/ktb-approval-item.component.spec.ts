@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbApprovalItemComponent } from './ktb-approval-item.component';
-import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { KtbApprovalItemModule } from './ktb-approval-item.module';
 
 describe('KtbEventItemComponent', () => {
   let component: KtbApprovalItemComponent;
@@ -9,7 +9,7 @@ describe('KtbEventItemComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule, HttpClientTestingModule],
+      imports: [KtbApprovalItemModule, HttpClientTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbApprovalItemComponent);

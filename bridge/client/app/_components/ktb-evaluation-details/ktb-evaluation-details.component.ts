@@ -26,10 +26,8 @@ import { IndicatorResult, Target } from '../../../../shared/interfaces/indicator
 import { ResultTypes } from '../../../../shared/models/result-types';
 import { EvaluationHistory } from '../../_interfaces/evaluation-history';
 import { AppUtils } from '../../_utils/app.utils';
-import { parse as parseYaml } from 'yaml';
-import { SloConfig } from '../../../../shared/interfaces/slo-config';
 import { IDataPoint } from '../../_interfaces/heatmap';
-import { createDataPoints, getSliResultInfo, SliInfo } from './ktb-evaluation-details-utils';
+import { createDataPoints, getSliResultInfo, parseSloOfEvaluations, SliInfo } from './ktb-evaluation-details-utils';
 import { FeatureFlagsService } from '../../_services/feature-flags.service';
 import { IClientFeatureFlags } from '../../../../shared/interfaces/feature-flags';
 
@@ -332,13 +330,14 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
 
   public ngOnInit(): void {
     this.dataService.evaluationResults.pipe(takeUntil(this.unsubscribe$)).subscribe((results) => {
-      if (this.evaluationData && results.traces?.length) {
-        this.parseSloFile(results.traces);
-        if (this.evaluationData.data.evaluationHistory?.length) {
-          this.updateResults = results;
-        } else {
-          this.refreshEvaluationBoard(results);
-        }
+      if (!this.evaluationData || !results.traces?.length) {
+        return;
+      }
+      parseSloOfEvaluations(results.traces);
+      if (this.evaluationData.data.evaluationHistory?.length) {
+        this.updateResults = results;
+      } else {
+        this.refreshEvaluationBoard(results);
       }
     });
   }
@@ -395,30 +394,6 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       }
     }
     this.updateResults = undefined;
-  }
-
-  private parseSloFile(evaluationTraces: Trace[]): void {
-    for (const evaluationData of evaluationTraces) {
-      if (evaluationData?.data?.evaluation?.sloFileContent && !evaluationData.data.evaluation.sloFileContentParsed) {
-        evaluationData.data.evaluation.sloFileContentParsed = parseYaml(
-          atob(evaluationData.data.evaluation.sloFileContent)
-        ) as SloConfig;
-        evaluationData.data.evaluation.score_pass =
-          evaluationData.data.evaluation.sloFileContentParsed.total_score?.pass?.split('%')[0] ?? '';
-        evaluationData.data.evaluation.score_warning =
-          evaluationData.data.evaluation.sloFileContentParsed.total_score?.warning?.split('%')[0] ?? '';
-        evaluationData.data.evaluation.compare_with =
-          evaluationData.data.evaluation.sloFileContentParsed.comparison.compare_with ?? '';
-        evaluationData.data.evaluation.include_result_with_score =
-          evaluationData.data.evaluation.sloFileContentParsed.comparison.include_result_with_score;
-        if (evaluationData.data.evaluation.comparedEvents) {
-          evaluationData.data.evaluation.number_of_comparison_results =
-            evaluationData.data.evaluation.comparedEvents?.length;
-        } else {
-          evaluationData.data.evaluation.number_of_comparison_results = 0;
-        }
-      }
-    }
   }
 
   updateChartData(evaluationHistory: Trace[]): void {

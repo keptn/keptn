@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { KtbEditServiceFileListComponent } from './ktb-edit-service-file-list.component';
-import { AppModule } from '../../app.module';
 import { By } from '@angular/platform-browser';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { KtbEditServiceModule } from './ktb-edit-service.module';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('KtbEditServiceFileListComponent', () => {
   let component: KtbEditServiceFileListComponent;
@@ -11,7 +11,7 @@ describe('KtbEditServiceFileListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule, HttpClientTestingModule],
+      imports: [KtbEditServiceModule, HttpClientTestingModule, RouterTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbEditServiceFileListComponent);

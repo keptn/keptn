@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { KtbTimeInputComponent } from './ktb-time-input.component';
-import { AppModule } from '../../app.module';
+import { KtbDateInputModule } from './ktb-date-input.module';
 
 describe('KtbTimeInputComponent', () => {
   let component: KtbTimeInputComponent;
@@ -11,7 +11,7 @@ describe('KtbTimeInputComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule],
+      imports: [KtbDateInputModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbTimeInputComponent);

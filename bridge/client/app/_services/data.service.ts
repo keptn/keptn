@@ -198,6 +198,9 @@ export class DataService {
   }
 
   public loadUnreadUniformRegistrationLogs(): void {
+    if (this._hasUnreadUniformRegistrationLogs.getValue()) {
+      return;
+    }
     this.apiService.hasUnreadUniformRegistrationLogs(this._uniformDates).subscribe((status) => {
       this.setHasUnreadUniformRegistrationLogs(status);
     });
@@ -341,8 +344,6 @@ export class DataService {
               projects?.splice(projectIdx, 1);
               this._projects.next(projects);
             }
-          } else {
-            this._projects.error(err);
           }
         }
       );

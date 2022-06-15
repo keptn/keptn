@@ -4,17 +4,18 @@ import (
 	"context"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/cp-connector/pkg/types"
+	"sync"
 )
 
 type SubscriptionSourceMock struct {
-	StartFn    func(ctx context.Context, data types.RegistrationData, c chan []models.EventSubscription, errC chan error) error
+	StartFn    func(context.Context, types.RegistrationData, chan []models.EventSubscription, chan error, *sync.WaitGroup) error
 	RegisterFn func(integration models.Integration) (string, error)
 	StopFn     func() error
 }
 
-func (u *SubscriptionSourceMock) Start(ctx context.Context, data types.RegistrationData, c chan []models.EventSubscription, errC chan error) error {
+func (u *SubscriptionSourceMock) Start(ctx context.Context, data types.RegistrationData, c chan []models.EventSubscription, errC chan error, wg *sync.WaitGroup) error {
 	if u.StartFn != nil {
-		return u.StartFn(ctx, data, c, errC)
+		return u.StartFn(ctx, data, c, errC, wg)
 	}
 	panic("Start() not set")
 }
