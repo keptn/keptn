@@ -125,7 +125,11 @@ func TestEventSourceCancelDisconnectFromBrokerFails(t *testing.T) {
 }
 
 func TestEventSourceQueueSubscribeFails(t *testing.T) {
-	natsConnectorMock := &NATSConnectorMock{QueueSubscribeMultipleFn: func(strings []string, s string, fn nats2.ProcessEventFn) error { return fmt.Errorf("error occured") }}
+	natsConnectorMock := &NATSConnectorMock{
+		QueueSubscribeMultipleFn: func(strings []string, s string, fn nats2.ProcessEventFn) error {
+			return fmt.Errorf("error occured")
+		},
+	}
 	eventSource := New(natsConnectorMock)
 	err := eventSource.Start(context.TODO(), types.RegistrationData{}, make(chan types.EventUpdate))
 	require.Error(t, err)
