@@ -1,12 +1,12 @@
 import { TestBed } from '@angular/core/testing';
-import { DashboardComponent } from './dashboard.component';
+import { DashboardLegacyComponent } from './dashboard-legacy.component';
 import { DataService } from '../_services/data.service';
 import { of } from 'rxjs';
 import { KeptnInfo } from '../_models/keptn-info';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('DashboardComponent', () => {
-  let component: DashboardComponent;
+  let component: DashboardLegacyComponent;
   let dataService: DataService;
 
   beforeEach(async () => {
@@ -50,6 +50,6 @@ describe('DashboardComponent', () => {
   });
 
   function createComponent(): void {
-    component = new DashboardComponent(dataService);
+    component = new DashboardLegacyComponent(dataService);
   }
 });

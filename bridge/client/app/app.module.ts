@@ -122,7 +122,7 @@ import { KtbSettingsViewComponent } from './_views/ktb-settings-view/ktb-setting
 import { AppHeaderComponent } from './app-header/app-header.component';
 import { AppComponent } from './app.component';
 import { AppRouting } from './app.routing';
-import { DashboardComponent } from './dashboard/dashboard.component';
+import { DashboardLegacyComponent } from './dashboard-legacy/dashboard-legacy.component';
 import { EvaluationBoardComponent } from './evaluation-board/evaluation-board.component';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { ProjectBoardComponent } from './project-board/project-board.component';
@@ -241,7 +241,7 @@ const ktbModules = [
 @NgModule({
   declarations: [
     AppComponent,
-    DashboardComponent,
+    DashboardLegacyComponent,
     NotFoundComponent,
     AppHeaderComponent,
     ProjectBoardComponent,

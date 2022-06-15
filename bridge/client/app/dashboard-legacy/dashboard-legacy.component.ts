@@ -6,11 +6,11 @@ import { Project } from '../_models/project';
 import { DataService } from '../_services/data.service';
 
 @Component({
-  selector: 'ktb-dashboard',
-  templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss'],
+  selector: 'ktb-dashboard-legacy',
+  templateUrl: './dashboard-legacy.component.html',
+  styleUrls: ['./dashboard-legacy.component.scss'],
 })
-export class DashboardComponent implements OnDestroy {
+export class DashboardLegacyComponent implements OnDestroy {
   public readonly projects$: Observable<Project[] | undefined> = this.dataService.projects;
   public logoInvertedUrl = environment?.config?.logoInvertedUrl;
   public isQualityGatesOnly$: Observable<boolean>;
