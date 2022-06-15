@@ -32,7 +32,7 @@ RUN go install gotest.tools/gotestsum@v1.7.0
 
 #CMD gotestsum --no-color=false -- -v .
 
-CMD gotestsum --no-color=false -- -coverprofile=coverage.txt -covermode=atomic -v -p 1 ./... && mv ./coverage.txt /shared/coverage.txt
+CMD gotestsum --no-color=false -- -coverprofile=coverage.txt -covermode=atomic -v ./... && mv ./coverage.txt /shared/coverage.txt
 
 FROM builder-base as builder
 ARG version=develop
