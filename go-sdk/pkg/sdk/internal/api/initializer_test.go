@@ -1,8 +1,9 @@
-package sdk
+package api
 
 import (
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cp-common/api"
+	"github.com/keptn/keptn/go-sdk/pkg/sdk/internal/config"
 	"net/http"
 	"reflect"
 	"testing"
@@ -21,19 +22,19 @@ func Test_createAPI(t *testing.T) {
 
 	tests := []struct {
 		name         string
-		env          envConfig
+		env          config.EnvConfig
 		wantInternal bool
 		wantErr      bool
 	}{
 		{
 			name:         "test no env internal NATS ",
-			env:          envConfig{},
+			env:          config.EnvConfig{},
 			wantInternal: true,
 			wantErr:      false,
 		},
 		{
 			name: "test FAIL for no http address",
-			env: envConfig{
+			env: config.EnvConfig{
 				KeptnAPIEndpoint: "ssh://mynotsogoodendpoint",
 			},
 			wantErr:      true,
@@ -41,7 +42,7 @@ func Test_createAPI(t *testing.T) {
 		},
 		{
 			name: "test FAIL for no good address",
-			env: envConfig{
+			env: config.EnvConfig{
 				KeptnAPIEndpoint: ":///MALFORMEDendpoint",
 			},
 			wantErr:      true,
@@ -49,7 +50,7 @@ func Test_createAPI(t *testing.T) {
 		},
 		{
 			name: "test PASS for http address",
-			env: envConfig{
+			env: config.EnvConfig{
 				KeptnAPIEndpoint: "http://endpoint",
 			},
 			wantErr:      false,

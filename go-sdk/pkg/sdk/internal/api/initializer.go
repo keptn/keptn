@@ -1,9 +1,10 @@
-package sdk
+package api
 
 import (
 	"fmt"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cp-common/api"
+	"github.com/keptn/keptn/go-sdk/pkg/sdk/internal/config"
 	"net/http"
 	"net/url"
 	"strings"
@@ -15,15 +16,15 @@ type Initializer struct {
 	Internal func(client *http.Client, apiMappings ...api.InClusterAPIMappings) (*api.InternalAPISet, error)
 }
 
-func CreateKeptnAPI(httpClient *http.Client, env envConfig) (keptnapi.KeptnInterface, error) {
+func CreateKeptnAPI(httpClient *http.Client, env config.EnvConfig) (keptnapi.KeptnInterface, error) {
 	return createAPI(httpClient, env, Initializer{keptnapi.New, api.NewInternal})
 }
 
-func createAPI(httpClient *http.Client, env envConfig, apiInit Initializer) (keptnapi.KeptnInterface, error) {
+func createAPI(httpClient *http.Client, env config.EnvConfig, apiInit Initializer) (keptnapi.KeptnInterface, error) {
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
-	if env.PubSubConnectionType() == ConnectionTypeHTTP {
+	if env.PubSubConnectionType() == config.ConnectionTypeHTTP {
 		scheme := "http"
 		parsed, err := url.ParseRequestURI(env.KeptnAPIEndpoint)
 		if err != nil {

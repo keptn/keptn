@@ -6,6 +6,8 @@ import (
 	"github.com/keptn/keptn/cp-connector/pkg/logforwarder"
 	"github.com/keptn/keptn/cp-connector/pkg/subscriptionsource"
 	"github.com/keptn/keptn/cp-connector/pkg/types"
+	api2 "github.com/keptn/keptn/go-sdk/pkg/sdk/internal/api"
+	"github.com/keptn/keptn/go-sdk/pkg/sdk/internal/config"
 	logger "github.com/sirupsen/logrus"
 	"log"
 	"os"
@@ -144,13 +146,13 @@ type Keptn struct {
 	automaticEventResponse bool
 	gracefulShutdown       bool
 	logger                 Logger
-	env                    envConfig
+	env                    config.EnvConfig
 	healthEndpointRunner   healthEndpointRunner
 }
 
 // NewKeptn creates a new Keptn
 func NewKeptn(source string, opts ...KeptnOption) *Keptn {
-	env := newEnvConfig()
+	env := config.NewEnvConfig()
 	apiSet, controlPlane, eventSender := newControlPlaneFromEnv()
 	resourceHandler := newResourceHandlerFromEnv()
 	taskRegistry := newTaskMap()
@@ -376,7 +378,7 @@ func newHealthEndpointRunner(port string, cp *controlplane.ControlPlane) {
 }
 
 func newResourceHandlerFromEnv() *api.ResourceHandler {
-	var env envConfig
+	var env config.EnvConfig
 	if err := envconfig.Process("", &env); err != nil {
 		log.Fatalf("failed to process env var: %s", err)
 	}
@@ -384,17 +386,17 @@ func newResourceHandlerFromEnv() *api.ResourceHandler {
 }
 
 func newControlPlaneFromEnv() (api.KeptnInterface, *controlplane.ControlPlane, controlplane.EventSender) {
-	var env envConfig
+	var env config.EnvConfig
 	if err := envconfig.Process("", &env); err != nil {
 		log.Fatalf("failed to process env var: %s", err)
 	}
 
-	httpClient, err := CreateClientGetter(env).Get()
+	httpClient, err := api2.CreateClientGetter(env).Get()
 	if err != nil {
 		logger.WithError(err).Fatal("Could not initialize http client.")
 	}
 
-	apiSet, err := CreateKeptnAPI(httpClient, env)
+	apiSet, err := api2.CreateKeptnAPI(httpClient, env)
 	if err != nil {
 		log.Fatal(err)
 	}

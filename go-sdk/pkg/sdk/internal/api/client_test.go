@@ -1,8 +1,9 @@
-package sdk
+package api
 
 import (
 	"fmt"
 	oauthutils "github.com/keptn/go-utils/pkg/common/oauth2"
+	"github.com/keptn/keptn/go-sdk/pkg/sdk/internal/config"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -11,7 +12,7 @@ import (
 )
 
 func TestSimpleClientGetter_Get(t *testing.T) {
-	cfg := envConfig{}
+	cfg := config.EnvConfig{}
 	getter := New(cfg)
 	c, err := getter.Get()
 	assert.NotNil(t, c)
@@ -20,7 +21,7 @@ func TestSimpleClientGetter_Get(t *testing.T) {
 
 func TestOAuthClientGetter_Get(t *testing.T) {
 	t.Run("Get - No Discovery, nor Token URL given", func(t *testing.T) {
-		cfg := envConfig{
+		cfg := config.EnvConfig{
 			OAuthClientID:     "client-id",
 			OAuthClientSecret: "client-secret",
 			OAuthScopes:       []string{"scope"},
@@ -32,7 +33,7 @@ func TestOAuthClientGetter_Get(t *testing.T) {
 		assert.NotNil(t, err)
 	})
 	t.Run("Get - With Discovery URL", func(t *testing.T) {
-		cfg := envConfig{
+		cfg := config.EnvConfig{
 			OAuthClientID:     "client-id",
 			OAuthClientSecret: "client-secret",
 			OAuthScopes:       []string{"scope"},
@@ -45,7 +46,7 @@ func TestOAuthClientGetter_Get(t *testing.T) {
 		assert.Nil(t, err)
 	})
 	t.Run("Get - With Token URL", func(t *testing.T) {
-		cfg := envConfig{
+		cfg := config.EnvConfig{
 			OAuthClientID:     "client-id",
 			OAuthClientSecret: "client-secret",
 			OAuthScopes:       []string{"scope"},
@@ -58,7 +59,7 @@ func TestOAuthClientGetter_Get(t *testing.T) {
 		assert.Nil(t, err)
 	})
 	t.Run("Get - missing scopes", func(t *testing.T) {
-		cfg := envConfig{
+		cfg := config.EnvConfig{
 			OAuthClientID:     "client-id",
 			OAuthClientSecret: "client-secret",
 			OAuthDiscovery:    "http://some-url.com",
@@ -70,7 +71,7 @@ func TestOAuthClientGetter_Get(t *testing.T) {
 		assert.NotNil(t, err)
 	})
 	t.Run("Get - missing client id", func(t *testing.T) {
-		cfg := envConfig{
+		cfg := config.EnvConfig{
 			OAuthClientSecret: "client-secret",
 			OAuthScopes:       []string{"scope"},
 			OAuthDiscovery:    "http://some-url.com",
@@ -82,7 +83,7 @@ func TestOAuthClientGetter_Get(t *testing.T) {
 		assert.NotNil(t, err)
 	})
 	t.Run("Get - missing client secret", func(t *testing.T) {
-		cfg := envConfig{
+		cfg := config.EnvConfig{
 			OAuthClientID:  "client-id",
 			OAuthScopes:    []string{"scope"},
 			OAuthDiscovery: "http://some-url.com",
@@ -103,7 +104,7 @@ func TestOAuthClientGetter_Get_TokenEndpointIsCalled(t *testing.T) {
 	}))
 	defer tokenURLSrv.Close()
 
-	cfg := envConfig{
+	cfg := config.EnvConfig{
 		OAuthClientID:     "client-id",
 		OAuthClientSecret: "client-secret",
 		OAuthScopes:       []string{"scope"},
