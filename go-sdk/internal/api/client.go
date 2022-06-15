@@ -5,7 +5,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	oauthutils "github.com/keptn/go-utils/pkg/common/oauth2"
-	"github.com/keptn/keptn/go-sdk/pkg/sdk/internal/config"
+	"github.com/keptn/keptn/go-sdk/internal/config"
 	logger "github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/clientcredentials"
