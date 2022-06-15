@@ -38,11 +38,7 @@ type EventHandler struct {
 
 func GetEventHandlerInstance() (*EventHandler, error) {
 	if eventHandlerInstance == nil {
-		conn := nats.ConnectFromEnv()
-		err := conn.Connect()
-		if err != nil {
-			return nil, fmt.Errorf("cannot connect to nats server: %w", err)
-		}
+		conn := nats.NewFromEnv()
 		eventHandlerInstance = &EventHandler{EventPublisher: conn}
 	}
 	return eventHandlerInstance, nil

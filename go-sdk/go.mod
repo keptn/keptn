@@ -8,7 +8,7 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.16.1
 	github.com/keptn/keptn/cp-common v0.0.0-20220602110035-92d59919c878
-	github.com/keptn/keptn/cp-connector v0.0.0-20220613133146-405b2cc6aaec
+	github.com/keptn/keptn/cp-connector v0.0.0-20220615071618-eeef82726001
 	github.com/stretchr/testify v1.7.1
 )
 
