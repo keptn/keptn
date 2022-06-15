@@ -14,7 +14,7 @@ require (
 
 require (
 	github.com/cloudevents/sdk-go/observability/opentelemetry/v2 v2.0.0-20211001212819-74757a691209 // indirect
-	github.com/cloudevents/sdk-go/v2 v2.9.0 // indirect
+	github.com/cloudevents/sdk-go/v2 v2.10.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/felixge/httpsnoop v1.0.2 // indirect
 	github.com/json-iterator/go v1.1.10 // indirect

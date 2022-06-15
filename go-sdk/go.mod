@@ -9,7 +9,6 @@ require (
 	github.com/keptn/go-utils v0.16.1
 	github.com/keptn/keptn/cp-common v0.0.0-20220602110035-92d59919c878
 	github.com/keptn/keptn/cp-connector v0.0.0-20220608060450-36261c888f84
-	github.com/keptn/keptn/distributor v0.0.0-20220613062751-52509d6a1ed4
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
 	golang.org/x/oauth2 v0.0.0-20220608161450-d0670ef3b1eb

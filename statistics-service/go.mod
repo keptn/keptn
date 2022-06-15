@@ -20,7 +20,7 @@ require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/acobaugh/osrelease v0.0.0-20181218015638-a93a0a55a249 // indirect
 	github.com/benbjohnson/clock v1.3.0 // indirect
-	github.com/cloudevents/sdk-go/v2 v2.9.0 // indirect
+	github.com/cloudevents/sdk-go/v2 v2.10.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/felixge/httpsnoop v1.0.2 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect

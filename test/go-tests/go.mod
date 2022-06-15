@@ -49,8 +49,8 @@ require (
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0 // indirect
 	github.com/keptn/keptn/cp-common v0.0.0-20220602110035-92d59919c878 // indirect
-	github.com/keptn/keptn/cp-connector v0.0.0-20220602110035-92d59919c878 // indirect
-	github.com/keptn/keptn/go-sdk v0.0.0-20220602113135-7b4cb80889ea // indirect
+	github.com/keptn/keptn/cp-connector v0.0.0-20220608060450-36261c888f84 // indirect
+	github.com/keptn/keptn/go-sdk v0.0.0-20220615092623-24dd4e7bf1b7 // indirect
 	github.com/klauspost/compress v1.14.4 // indirect
 	github.com/klauspost/pgzip v1.2.5 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
@@ -83,10 +83,10 @@ require (
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.19.1 // indirect
 	golang.org/x/crypto v0.0.0-20220315160706-3147a52a75dd // indirect
-	golang.org/x/net v0.0.0-20220111093109-d55c255bac03 // indirect
-	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f // indirect
+	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
+	golang.org/x/oauth2 v0.0.0-20220608161450-d0670ef3b1eb // indirect
 	golang.org/x/sys v0.0.0-20220111092808-5a964db01320 // indirect
-	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b // indirect
+	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20211116232009-f0f3c7e86c11 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
