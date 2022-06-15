@@ -5,7 +5,7 @@ jmeterservice:
     tag: ""                                    # Container Tag
   service:
     enabled: true                              # Creates a Kubernetes Service for the jmeter-service
-  gracePeriod: 60                              # PreStop hook time +30s
+  gracePeriod: 60
   preStopHookTime: 5
   resources:                                   # Resource limits and requests
     requests:
