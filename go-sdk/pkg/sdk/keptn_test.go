@@ -3,6 +3,7 @@ package sdk
 import (
 	"context"
 	"fmt"
+	"github.com/keptn/keptn/go-sdk/pkg/sdk/internal/config"
 	"testing"
 
 	"github.com/google/uuid"
@@ -133,7 +134,7 @@ func Test_NoFinishedEventDataProvided(t *testing.T) {
 }
 
 func Test_InitialRegistrationData(t *testing.T) {
-	keptn := Keptn{env: envConfig{
+	keptn := Keptn{env: config.EnvConfig{
 		PubSubTopic:          "sh.keptn.event.task1.triggered,sh.keptn.event.task2.triggered",
 		Location:             "localhost",
 		K8sDeploymentVersion: "v1",
@@ -154,7 +155,7 @@ func Test_InitialRegistrationData(t *testing.T) {
 }
 
 func Test_InitialRegistrationData_EmptyPubSubTopics(t *testing.T) {
-	keptn := Keptn{env: envConfig{PubSubTopic: ""}}
+	keptn := Keptn{env: config.EnvConfig{PubSubTopic: ""}}
 	regData := keptn.RegistrationData()
 	require.Equal(t, 0, len(regData.Subscriptions))
 }

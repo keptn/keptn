@@ -1,10 +1,11 @@
-package sdk
+package api
 
 import (
 	"context"
 	"crypto/tls"
 	"fmt"
 	oauthutils "github.com/keptn/go-utils/pkg/common/oauth2"
+	"github.com/keptn/keptn/go-sdk/pkg/sdk/internal/config"
 	logger "github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/clientcredentials"
@@ -14,7 +15,7 @@ import (
 
 // CreateClientGetter returns a HTTPClientGetter implementation based on the values certain properties
 // inside the given env configuration
-func CreateClientGetter(envConfig envConfig) HTTPClientGetter {
+func CreateClientGetter(envConfig config.EnvConfig) HTTPClientGetter {
 	if envConfig.OAuthEnabled() {
 		logger.Infof("Using Oauth to connect to Keptn wth client ID %s and scopes %v", envConfig.OAuthClientID, envConfig.OAuthScopes)
 		return NewOauthClientGetter(envConfig, oauthutils.NewOauthDiscovery(&http.Client{}))
@@ -31,12 +32,12 @@ type HTTPClientGetter interface {
 // OAuthClientGetter creates an HTTP client configured for use with SSO/Oauth
 type OAuthClientGetter struct {
 	*SimpleClientGetter
-	envConfig      envConfig
+	envConfig      config.EnvConfig
 	oauthDiscovery oauthutils.OauthLocationGetter
 }
 
 // NewOauthClientGetter creates a new instance of a OAuthClientGetter
-func NewOauthClientGetter(envConfig envConfig, oauthDiscovery oauthutils.OauthLocationGetter) *OAuthClientGetter {
+func NewOauthClientGetter(envConfig config.EnvConfig, oauthDiscovery oauthutils.OauthLocationGetter) *OAuthClientGetter {
 	return &OAuthClientGetter{
 		SimpleClientGetter: &SimpleClientGetter{envConfig: envConfig},
 		envConfig:          envConfig,
@@ -86,11 +87,11 @@ func (g *OAuthClientGetter) Get() (*http.Client, error) {
 
 // SimpleClientGetter creates a basic HTTP client
 type SimpleClientGetter struct {
-	envConfig envConfig
+	envConfig config.EnvConfig
 }
 
 // New Creates a new instance of a SimpleClientGetter
-func New(envConfig envConfig) *SimpleClientGetter {
+func New(envConfig config.EnvConfig) *SimpleClientGetter {
 	return &SimpleClientGetter{envConfig: envConfig}
 }
 
