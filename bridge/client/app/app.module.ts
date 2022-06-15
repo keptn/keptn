@@ -45,20 +45,10 @@ import { DtTopBarNavigationModule } from '@dynatrace/barista-components/top-bar-
 import { DtTreeTableModule } from '@dynatrace/barista-components/tree-table';
 import { MomentModule } from 'ngx-moment';
 import { environment } from '../environments/environment';
-import { KtbDeleteConfirmationComponent } from './_components/_dialogs/ktb-delete-confirmation/ktb-delete-confirmation.component';
 import { KtbProjectCreateMessageComponent } from './_components/_status-messages/ktb-project-create-message/ktb-project-create-message.component';
-import { KtbCreateSecretFormComponent } from './_components/ktb-create-secret-form/ktb-create-secret-form.component';
-import { KtbCreateServiceComponent } from './_components/ktb-create-service/ktb-create-service.component';
-import { KtbDangerZoneComponent } from './_components/ktb-danger-zone/ktb-danger-zone.component';
-import {
-  KtbDatetimePickerComponent,
-  KtbDatetimePickerDirective,
-} from './_components/ktb-datetime-picker/ktb-datetime-picker.component';
-import { KtbDeploymentListComponent } from './_components/ktb-deployment-list/ktb-deployment-list.component';
 import { KtbDeploymentStageTimelineComponent } from './_components/ktb-deployment-stage-timeline/ktb-deployment-stage-timeline.component';
 import { KtbEditServiceFileListComponent } from './_components/ktb-edit-service-file-list/ktb-edit-service-file-list.component';
 import { KtbEditServiceComponent } from './_components/ktb-edit-service/ktb-edit-service.component';
-import { KtbEvaluationInfoComponent } from './_components/ktb-evaluation-info/ktb-evaluation-info.component';
 import {
   KtbEventItemComponent,
   KtbEventItemDetailDirective,
@@ -98,7 +88,7 @@ import { KtbServiceSettingsListComponent } from './_components/ktb-service-setti
 import { KtbServiceSettingsOverviewComponent } from './_components/ktb-service-settings-overview/ktb-service-settings-overview.component';
 import { KtbServiceSettingsComponent } from './_components/ktb-service-settings/ktb-service-settings.component';
 import { KtbServicesListComponent } from './_components/ktb-services-list/ktb-services-list.component';
-import { KtbStageBadgeComponent } from './_components/ktb-stage-badge/ktb-stage-badge.component';
+
 import { KtbStageDetailsComponent } from './_components/ktb-stage-details/ktb-stage-details.component';
 import { KtbStageOverviewComponent } from './_components/ktb-stage-overview/ktb-stage-overview.component';
 import { KtbSubscriptionItemComponent } from './_components/ktb-subscription-item/ktb-subscription-item.component';
@@ -159,8 +149,15 @@ import { KtbEvaluationDetailsModule } from './_components/ktb-evaluation-details
 import { KtbApprovalItemModule } from './_components/ktb-approval-item/ktb-approval-item.module';
 import { KtbCertificateInputModule } from './_components/ktb-certificate-input/ktb-certificate-input.module';
 import { KtbDragAndDropModule } from './_directives/ktb-drag-and-drop/ktb-drag-and-drop.module';
+import { KtbCreateServiceModule } from './_components/ktb-create-service/ktb-create-service.module';
 import { KtbCopyToClipboardModule } from './_components/ktb-copy-to-clipboard/ktb-copy-to-clipboard.module';
-
+import { KtbCreateSecretFormModule } from './_components/ktb-create-secret-form/ktb-create-secret-form.module';
+import { KtbDangerZoneModule } from './_components/ktb-danger-zone/ktb-danger-zone.module';
+import { KtbDateInputModule } from './_components/ktb-date-input/ktb-date-input.module';
+import { KtbDeploymentListModule } from './_components/ktb-deployment-list/ktb-deployment-list.module';
+import { KtbEvaluationInfoModule } from './_components/ktb-evaluation-info/ktb-evaluation-info.module';
+import { KtbStageBadgeModule } from './_components/ktb-stage-badge/ktb-stage-badge.module';
+import { KtbDeleteConfirmationModule } from './_components/_dialogs/ktb-delete-confirmation/ktb-delete-confirmation.module';
 registerLocaleData(localeEn, 'en');
 
 export function init_app(appLoadService: AppInitService): () => Promise<unknown> {
@@ -225,13 +222,21 @@ const ktbModules = [
   KtbCertificateInputModule,
   KtbConfirmationDialogModule,
   KtbCopyToClipboardModule,
+  KtbCreateSecretFormModule,
+  KtbCreateServiceModule,
+  KtbDangerZoneModule,
+  KtbDateInputModule,
+  KtbDeleteConfirmationModule,
   KtbDeletionDialogModule,
+  KtbDeploymentListModule,
   KtbDragAndDropModule,
   KtbEvaluationDetailsModule,
+  KtbEvaluationInfoModule,
   KtbHeatmapModule,
   KtbLoadingModule,
   KtbNotificationModule,
   KtbPipeModule,
+  KtbStageBadgeModule,
 ];
 
 @NgModule({
@@ -260,8 +265,6 @@ const ktbModules = [
     KtbSequenceTasksListComponent,
     KtbTaskItemComponent,
     KtbTaskItemDetailDirective,
-    KtbEvaluationInfoComponent,
-    KtbStageBadgeComponent,
     KtbMarkdownComponent,
     KtbSequenceTimelineComponent,
     KtbEnvironmentViewComponent,
@@ -285,7 +288,6 @@ const ktbModules = [
     KtbNoServiceInfoComponent,
     KtbProjectSettingsGitComponent,
     KtbProjectSettingsShipyardComponent,
-    KtbDangerZoneComponent,
     KtbSequenceControlsComponent,
     KtbUniformSubscriptionsComponent,
     ToDatePipe,
