@@ -8,26 +8,26 @@ import (
 )
 
 type EnvConfig struct {
-	APIProxyHTTPTimeout     string   `EnvConfig:"API_PROXY_HTTP_TIMEOUT" default:"30"`
-	ConfigurationServiceURL string   `EnvConfig:"CONFIGURATION_SERVICE" default:"configuration-service:8080"`
-	EventBrokerURL          string   `EnvConfig:"EVENTBROKER" default:"nats://keptn-nats"`
-	PubSubTopic             string   `EnvConfig:"PUBSUB_TOPIC" default:""`
-	HealthEndpointPort      string   `EnvConfig:"HEALTH_ENDPOINT_PORT" default:"8080"`
-	HealthEndpointEnabled   bool     `EnvConfig:"HEALTH_ENDPOINT_ENABLED" default:"true"`
-	KeptnAPIEndpoint        string   `EnvConfig:"KEPTN_API_ENDPOINT" default:""`
-	KeptnAPIToken           string   `EnvConfig:"KEPTN_API_TOKEN" default:""`
-	Location                string   `EnvConfig:"LOCATION" default:"control-plane"`
-	K8sDeploymentVersion    string   `EnvConfig:"K8S_DEPLOYMENT_VERSION" default:""`
-	K8sDeploymentName       string   `EnvConfig:"K8S_DEPLOYMENT_NAME" default:""`
-	K8sNamespace            string   `EnvConfig:"K8S_NAMESPACE" default:""`
-	K8sPodName              string   `EnvConfig:"K8S_POD_NAME" default:""`
-	K8sNodeName             string   `EnvConfig:"K8S_NODE_NAME" default:""`
-	OAuthClientID           string   `EnvConfig:"OAUTH_CLIENT_ID" default:""`
-	OAuthClientSecret       string   `EnvConfig:"OAUTH_CLIENT_SECRET" default:""`
-	OAuthScopes             []string `EnvConfig:"OAUTH_SCOPES" default:""`
-	OAuthDiscovery          string   `EnvConfig:"OAUTH_DISCOVERY" default:""`
-	OauthTokenURL           string   `EnvConfig:"OAUTH_TOKEN_URL" default:""`
-	VerifySSL               bool     `EnvConfig:"HTTP_SSL_VERIFY" default:"true"`
+	APIProxyHTTPTimeout     string   `envConfig:"API_PROXY_HTTP_TIMEOUT" default:"30"`
+	ConfigurationServiceURL string   `envConfig:"CONFIGURATION_SERVICE" default:"configuration-service:8080"`
+	EventBrokerURL          string   `envConfig:"EVENTBROKER" default:"nats://keptn-nats"`
+	PubSubTopic             string   `envConfig:"PUBSUB_TOPIC" default:""`
+	HealthEndpointPort      string   `envConfig:"HEALTH_ENDPOINT_PORT" default:"8080"`
+	HealthEndpointEnabled   bool     `envConfig:"HEALTH_ENDPOINT_ENABLED" default:"true"`
+	KeptnAPIEndpoint        string   `envConfig:"KEPTN_API_ENDPOINT" default:""`
+	KeptnAPIToken           string   `envConfig:"KEPTN_API_TOKEN" default:""`
+	Location                string   `envConfig:"LOCATION" default:"control-plane"`
+	K8sDeploymentVersion    string   `envConfig:"K8S_DEPLOYMENT_VERSION" default:""`
+	K8sDeploymentName       string   `envConfig:"K8S_DEPLOYMENT_NAME" default:""`
+	K8sNamespace            string   `envConfig:"K8S_NAMESPACE" default:""`
+	K8sPodName              string   `envConfig:"K8S_POD_NAME" default:""`
+	K8sNodeName             string   `envConfig:"K8S_NODE_NAME" default:""`
+	OAuthClientID           string   `envConfig:"OAUTH_CLIENT_ID" default:""`
+	OAuthClientSecret       string   `envConfig:"OAUTH_CLIENT_SECRET" default:""`
+	OAuthScopes             []string `envConfig:"OAUTH_SCOPES" default:""`
+	OAuthDiscovery          string   `envConfig:"OAUTH_DISCOVERY" default:""`
+	OauthTokenURL           string   `envConfig:"OAUTH_TOKEN_URL" default:""`
+	VerifySSL               bool     `envConfig:"HTTP_SSL_VERIFY" default:"true"`
 }
 
 type ConnectionType string
