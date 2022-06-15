@@ -2,6 +2,7 @@ package subscriptionsource
 
 import (
 	"context"
+	"fmt"
 	"github.com/keptn/keptn/cp-connector/pkg/types"
 	"time"
 
@@ -12,8 +13,9 @@ import (
 )
 
 type SubscriptionSource interface {
-	Start(context.Context, types.RegistrationData, chan []models.EventSubscription) error
+	Start(context.Context, types.RegistrationData, chan []models.EventSubscription, chan error) error
 	Register(integration models.Integration) (string, error)
+	Stop() error
 }
 
 var _ SubscriptionSource = FixedSubscriptionSource{}
@@ -25,6 +27,7 @@ type UniformSubscriptionSource struct {
 	clock         clock.Clock
 	fetchInterval time.Duration
 	logger        logger.Logger
+	quitC         chan struct{}
 }
 
 func (s *UniformSubscriptionSource) Register(integration models.Integration) (string, error) {
@@ -60,7 +63,7 @@ func New(uniformAPI api.UniformV1Interface, options ...func(source *UniformSubsc
 }
 
 // Start triggers the execution of the UniformSubscriptionSource
-func (s *UniformSubscriptionSource) Start(ctx context.Context, registrationData types.RegistrationData, subscriptionChannel chan []models.EventSubscription) error {
+func (s *UniformSubscriptionSource) Start(ctx context.Context, registrationData types.RegistrationData, subscriptionChannel chan []models.EventSubscription, errC chan error) error {
 	s.logger.Debugf("UniformSubscriptionSource: Starting to fetch subscriptions for Integration ID %s", registrationData.ID)
 	ticker := s.clock.Ticker(s.fetchInterval)
 	go func() {
@@ -71,9 +74,17 @@ func (s *UniformSubscriptionSource) Start(ctx context.Context, registrationData 
 				return
 			case <-ticker.C:
 				s.ping(registrationData.ID, subscriptionChannel)
+			case <-s.quitC:
+				fmt.Println("quitting event source")
+				return
 			}
 		}
 	}()
+	return nil
+}
+
+func (s *UniformSubscriptionSource) Stop() error {
+	s.quitC <- struct{}{}
 	return nil
 }
 
@@ -112,11 +123,15 @@ func NewFixedSubscriptionSource(options ...func(source *FixedSubscriptionSource)
 	return fss
 }
 
-func (s FixedSubscriptionSource) Start(ctx context.Context, data types.RegistrationData, c chan []models.EventSubscription) error {
+func (s FixedSubscriptionSource) Start(ctx context.Context, data types.RegistrationData, c chan []models.EventSubscription, errC chan error) error {
 	go func() { c <- s.fixedSubscriptions }()
 	return nil
 }
 
 func (s FixedSubscriptionSource) Register(integration models.Integration) (string, error) {
 	return "", nil
+}
+
+func (s FixedSubscriptionSource) Stop() error {
+	return nil
 }

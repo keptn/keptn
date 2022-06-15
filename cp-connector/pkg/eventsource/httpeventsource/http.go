@@ -18,6 +18,7 @@ func New(controlPlaneAPI api.ShipyardControlV1Interface) *HTTPEventSource {
 		controlPlaneAPI:      controlPlaneAPI,
 		currentSubscriptions: []string{},
 		pollInterval:         time.Second,
+		maxAttempts:          10,
 		logger:               logger.NewDefaultLogger(),
 	}
 }
@@ -27,16 +28,26 @@ type HTTPEventSource struct {
 	controlPlaneAPI      api.ShipyardControlV1Interface
 	currentSubscriptions []string
 	pollInterval         time.Duration
+	maxAttempts          int
 	logger               logger.Logger
 }
 
 func (hes *HTTPEventSource) Start(ctx context.Context, data types.RegistrationData, updates chan types.EventUpdate) error {
 	go func() {
+		failedPolls := 1
 		for {
 			select {
 			case <-time.After(time.Second):
-				hes.doPoll(updates)
+				if err := hes.doPoll(updates); err != nil {
+					failedPolls++
+					if failedPolls > hes.maxAttempts {
+						hes.logger.Errorf("Reached max number of attempts to poll for new events")
+						close(updates)
+						return
+					}
+				}
 			case <-ctx.Done():
+				close(updates)
 				return
 			}
 		}
@@ -58,7 +69,7 @@ func (hes *HTTPEventSource) Stop() error {
 	return nil
 }
 
-func (hes *HTTPEventSource) doPoll(eventUpdates chan types.EventUpdate) {
+func (hes *HTTPEventSource) doPoll(eventUpdates chan types.EventUpdate) error {
 	hes.mutex.Lock()
 	subscriptions := hes.currentSubscriptions
 	hes.mutex.Unlock()
@@ -68,7 +79,7 @@ func (hes *HTTPEventSource) doPoll(eventUpdates chan types.EventUpdate) {
 		})
 		if err != nil {
 			hes.logger.Warnf("Could not retrieve events of type %s: %s", sub, err)
-			return
+			return err
 		}
 		for _, e := range events {
 			eventUpdates <- types.EventUpdate{
@@ -76,6 +87,7 @@ func (hes *HTTPEventSource) doPoll(eventUpdates chan types.EventUpdate) {
 			}
 		}
 	}
+	return nil
 }
 
 func (hes *HTTPEventSource) pollEventsForSubscription(subscription string) {

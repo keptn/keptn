@@ -68,7 +68,7 @@ func TestControlPlaneEventSourceFailsToStart(t *testing.T) {
 		},
 	}
 	esm := &fake2.EventSourceMock{
-		StartFn: func(ctx context.Context, data types.RegistrationData, ces chan types.EventUpdate) error {
+		StartFn: func(ctx context.Context, data types.RegistrationData, ces chan types.EventUpdate, errC chan error) error {
 			return fmt.Errorf("error occured")
 		}}
 	fm := &LogForwarderMock{
@@ -83,14 +83,14 @@ func TestControlPlaneEventSourceFailsToStart(t *testing.T) {
 
 func TestControlPlaneSubscriptionSourceFailsToStart(t *testing.T) {
 	ssm := &fake2.SubscriptionSourceMock{
-		StartFn: func(ctx context.Context, data types.RegistrationData, c chan []models.EventSubscription) error {
+		StartFn: func(ctx context.Context, data types.RegistrationData, c chan []models.EventSubscription, errC chan error) error {
 			return fmt.Errorf("error occured")
 		},
 		RegisterFn: func(integration models.Integration) (string, error) {
 			return "some-id", nil
 		},
 	}
-	esm := &fake2.EventSourceMock{StartFn: func(ctx context.Context, data types.RegistrationData, ces chan types.EventUpdate) error {
+	esm := &fake2.EventSourceMock{StartFn: func(ctx context.Context, data types.RegistrationData, ces chan types.EventUpdate, errC chan error) error {
 		return nil
 	}}
 	fm := &LogForwarderMock{
@@ -112,7 +112,7 @@ func TestControlPlaneInboundEventIsForwardedToIntegration(t *testing.T) {
 	callBackSender := func(ce models.KeptnContextExtendedCE) error { return nil }
 
 	ssm := &fake2.SubscriptionSourceMock{
-		StartFn: func(ctx context.Context, data types.RegistrationData, c chan []models.EventSubscription) error {
+		StartFn: func(ctx context.Context, data types.RegistrationData, c chan []models.EventSubscription, errC chan error) error {
 			subsChan = c
 			return nil
 		},
@@ -121,7 +121,7 @@ func TestControlPlaneInboundEventIsForwardedToIntegration(t *testing.T) {
 		},
 	}
 	esm := &fake2.EventSourceMock{
-		StartFn: func(ctx context.Context, data types.RegistrationData, ces chan types.EventUpdate) error {
+		StartFn: func(ctx context.Context, data types.RegistrationData, ces chan types.EventUpdate, errC chan error) error {
 			eventChan = ces
 			return nil
 		},
@@ -177,7 +177,7 @@ func TestControlPlaneInboundEventIsForwardedToIntegrationWithoutLogForwarder(t *
 	callBackSender := func(ce models.KeptnContextExtendedCE) error { return nil }
 
 	ssm := &fake2.SubscriptionSourceMock{
-		StartFn: func(ctx context.Context, data types.RegistrationData, c chan []models.EventSubscription) error {
+		StartFn: func(ctx context.Context, data types.RegistrationData, c chan []models.EventSubscription, errC chan error) error {
 			subsChan = c
 			return nil
 		},
@@ -186,7 +186,7 @@ func TestControlPlaneInboundEventIsForwardedToIntegrationWithoutLogForwarder(t *
 		},
 	}
 	esm := &fake2.EventSourceMock{
-		StartFn: func(ctx context.Context, data types.RegistrationData, ces chan types.EventUpdate) error {
+		StartFn: func(ctx context.Context, data types.RegistrationData, ces chan types.EventUpdate, errC chan error) error {
 			eventChan = ces
 			return nil
 		},
@@ -237,7 +237,7 @@ func TestControlPlaneIntegrationIDIsForwarded(t *testing.T) {
 	callBackSender := func(ce models.KeptnContextExtendedCE) error { return nil }
 
 	ssm := &fake2.SubscriptionSourceMock{
-		StartFn: func(ctx context.Context, data types.RegistrationData, c chan []models.EventSubscription) error {
+		StartFn: func(ctx context.Context, data types.RegistrationData, c chan []models.EventSubscription, errC chan error) error {
 			if data.ID != "some-other-id" {
 				return fmt.Errorf("error occured")
 			}
@@ -249,7 +249,7 @@ func TestControlPlaneIntegrationIDIsForwarded(t *testing.T) {
 		},
 	}
 	esm := &fake2.EventSourceMock{
-		StartFn: func(ctx context.Context, data types.RegistrationData, ces chan types.EventUpdate) error {
+		StartFn: func(ctx context.Context, data types.RegistrationData, ces chan types.EventUpdate, errC chan error) error {
 			if data.ID != "some-other-id" {
 				return fmt.Errorf("error occured")
 			}
@@ -307,7 +307,7 @@ func TestControlPlaneIntegrationOnEventThrowsIgnoreableError(t *testing.T) {
 	callBackSender := func(ce models.KeptnContextExtendedCE) error { return nil }
 
 	ssm := &fake2.SubscriptionSourceMock{
-		StartFn: func(ctx context.Context, data types.RegistrationData, c chan []models.EventSubscription) error {
+		StartFn: func(ctx context.Context, data types.RegistrationData, c chan []models.EventSubscription, errC chan error) error {
 			subsChan = c
 			return nil
 		},
@@ -316,7 +316,7 @@ func TestControlPlaneIntegrationOnEventThrowsIgnoreableError(t *testing.T) {
 		},
 	}
 	esm := &fake2.EventSourceMock{
-		StartFn: func(ctx context.Context, data types.RegistrationData, ces chan types.EventUpdate) error {
+		StartFn: func(ctx context.Context, data types.RegistrationData, ces chan types.EventUpdate, errC chan error) error {
 			eventChan = ces
 			return nil
 		},
@@ -358,7 +358,7 @@ func TestControlPlaneIntegrationOnEventThrowsFatalError(t *testing.T) {
 	callBackSender := func(ce models.KeptnContextExtendedCE) error { return nil }
 
 	ssm := &fake2.SubscriptionSourceMock{
-		StartFn: func(ctx context.Context, data types.RegistrationData, c chan []models.EventSubscription) error {
+		StartFn: func(ctx context.Context, data types.RegistrationData, c chan []models.EventSubscription, errC chan error) error {
 			subsChan = c
 			return nil
 		},
@@ -367,7 +367,7 @@ func TestControlPlaneIntegrationOnEventThrowsFatalError(t *testing.T) {
 		},
 	}
 	esm := &fake2.EventSourceMock{
-		StartFn: func(ctx context.Context, data types.RegistrationData, ces chan types.EventUpdate) error {
+		StartFn: func(ctx context.Context, data types.RegistrationData, ces chan types.EventUpdate, errC chan error) error {
 			eventChan = ces
 			return nil
 		},
@@ -408,7 +408,7 @@ func TestControlPlane_IsRegistered(t *testing.T) {
 	callBackSender := func(ce models.KeptnContextExtendedCE) error { return nil }
 
 	ssm := &fake2.SubscriptionSourceMock{
-		StartFn: func(ctx context.Context, data types.RegistrationData, c chan []models.EventSubscription) error {
+		StartFn: func(ctx context.Context, data types.RegistrationData, c chan []models.EventSubscription, errC chan error) error {
 			subsChan = c
 			return nil
 		},
@@ -417,7 +417,7 @@ func TestControlPlane_IsRegistered(t *testing.T) {
 		},
 	}
 	esm := &fake2.EventSourceMock{
-		StartFn: func(ctx context.Context, data types.RegistrationData, ces chan types.EventUpdate) error {
+		StartFn: func(ctx context.Context, data types.RegistrationData, ces chan types.EventUpdate, errC chan error) error {
 			eventChan = ces
 			return nil
 		},
@@ -449,7 +449,79 @@ func TestControlPlane_IsRegistered(t *testing.T) {
 
 	cancel()
 
+	time.Sleep(10 * time.Second)
 	require.Eventually(t, func() bool {
 		return !controlPlane.IsRegistered()
+	}, time.Second, 100*time.Millisecond)
+}
+
+func TestControlPlane_StoppedByReceivingErrEvent(t *testing.T) {
+	var eventChan chan types.EventUpdate
+	var subsChan chan []models.EventSubscription
+	var errorC chan error
+	var eventSourceStopCalled bool
+	var subscriptionSourceStopCalled bool
+	//var integrationReceivedEvent models.KeptnContextExtendedCE
+	//eventUpdate := types.EventUpdate{KeptnEvent: models.KeptnContextExtendedCE{ID: "some-id", Type: strutils.Stringp("sh.keptn.event.echo.triggered")}, MetaData: types.EventUpdateMetaData{Subject: "sh.keptn.event.echo.triggered"}}
+	callBackSender := func(ce models.KeptnContextExtendedCE) error { return nil }
+
+	ssm := &fake2.SubscriptionSourceMock{
+		StartFn: func(ctx context.Context, data types.RegistrationData, subC chan []models.EventSubscription, errC chan error) error {
+			subsChan = subC
+			errorC = errC
+			return nil
+		},
+		RegisterFn: func(integration models.Integration) (string, error) {
+			return "some-other-id", nil
+		},
+		StopFn: func() error {
+			subscriptionSourceStopCalled = true
+			return nil
+		},
+	}
+	esm := &fake2.EventSourceMock{
+		StartFn: func(ctx context.Context, data types.RegistrationData, evC chan types.EventUpdate, errC chan error) error {
+			eventChan = evC
+			errorC = errC
+			go func() {
+				errorC <- fmt.Errorf("LKJ") //SOMETHING WENT WRONG
+			}()
+			return nil
+		},
+		OnSubscriptionUpdateFn: func(strings []string) {},
+		SenderFn:               func() types.EventSender { return callBackSender },
+		StopFn: func() error {
+			eventSourceStopCalled = true
+			return nil
+		},
+	}
+	fm := &LogForwarderMock{
+		ForwardFn: func(keptnEvent models.KeptnContextExtendedCE, integrationID string) error {
+			return nil
+		},
+	}
+
+	controlPlane := New(ssm, esm, fm)
+
+	integration := ExampleIntegration{
+		RegistrationDataFn: func() types.RegistrationData { return types.RegistrationData{} },
+		OnEventFn:          func(ctx context.Context, ce models.KeptnContextExtendedCE) error { return nil },
+	}
+
+	go controlPlane.Register(context.TODO(), integration)
+	require.Eventually(t, func() bool { return subsChan != nil }, time.Second, time.Millisecond*100)
+	require.Eventually(t, func() bool { return eventChan != nil }, time.Second, time.Millisecond*100)
+
+	go func() {
+		fmt.Println("printing to channel")
+		fmt.Println(errorC)
+		errorC <- fmt.Errorf("some-error")
+	}()
+
+	fmt.Println("waiting for err on channel")
+	<-errorC
+
+	require.Eventually(t, func() bool {
+		return subscriptionSourceStopCalled && eventSourceStopCalled
 	}, time.Second, 100*time.Millisecond)
 }

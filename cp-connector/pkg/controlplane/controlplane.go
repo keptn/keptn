@@ -71,6 +71,7 @@ func New(subscriptionSource subscriptionsource.SubscriptionSource, eventSource e
 func (cp *ControlPlane) Register(ctx context.Context, integration Integration) error {
 	eventUpdates := make(chan types.EventUpdate)
 	subscriptionUpdates := make(chan []models.EventSubscription)
+	errC := make(chan error)
 
 	var err error
 	registrationData := integration.RegistrationData()
@@ -83,12 +84,12 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 	registrationData.ID = cp.integrationID
 
 	cp.logger.Debugf("Starting event source for integration ID %s", cp.integrationID)
-	if err := cp.eventSource.Start(ctx, registrationData, eventUpdates); err != nil {
+	if err := cp.eventSource.Start(ctx, registrationData, eventUpdates, errC); err != nil {
 		return err
 	}
 	cp.logger.Debugf("Event source started with data: %+v", registrationData)
 	cp.logger.Debugf("Starting subscription source for integration ID %s", cp.integrationID)
-	if err := cp.subscriptionSource.Start(ctx, registrationData, subscriptionUpdates); err != nil {
+	if err := cp.subscriptionSource.Start(ctx, registrationData, subscriptionUpdates, errC); err != nil {
 		return err
 	}
 	cp.logger.Debug("Subscription source started")
@@ -109,6 +110,9 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 		case <-ctx.Done():
 			cp.logger.Debug("Unregistering")
 			cp.registered = false
+			return nil
+		case <-errC:
+			cp.cleanup()
 			return nil
 		}
 	}
@@ -171,6 +175,11 @@ func (cp *ControlPlane) forwardMatchedEvent(ctx context.Context, eventUpdate typ
 		cp.logger.Warnf("Error during handling of event: %v", err)
 	}
 	return nil
+}
+
+func (cp *ControlPlane) cleanup() {
+	cp.subscriptionSource.Stop()
+	cp.eventSource.Stop()
 }
 
 func subjects(subscriptions []models.EventSubscription) []string {
