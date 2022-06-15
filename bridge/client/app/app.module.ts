@@ -46,17 +46,6 @@ import { DtTreeTableModule } from '@dynatrace/barista-components/tree-table';
 import { MomentModule } from 'ngx-moment';
 import { environment } from '../environments/environment';
 import { KtbProjectCreateMessageComponent } from './_components/_status-messages/ktb-project-create-message/ktb-project-create-message.component';
-import { KtbDeploymentStageTimelineComponent } from './_components/ktb-deployment-stage-timeline/ktb-deployment-stage-timeline.component';
-import { KtbEditServiceFileListComponent } from './_components/ktb-edit-service-file-list/ktb-edit-service-file-list.component';
-import { KtbEditServiceComponent } from './_components/ktb-edit-service/ktb-edit-service.component';
-import {
-  KtbEventItemComponent,
-  KtbEventItemDetailDirective,
-} from './_components/ktb-event-item/ktb-event-item.component';
-import {
-  KtbExpandableTileComponent,
-  KtbExpandableTileHeaderDirective,
-} from './_components/ktb-expandable-tile/ktb-expandable-tile.component';
 import {
   KtbHorizontalSeparatorComponent,
   KtbHorizontalSeparatorTitleDirective,
@@ -73,10 +62,6 @@ import { KtbProjectSettingsComponent } from './_components/ktb-project-settings/
 import { KtbProjectTileComponent } from './_components/ktb-project-tile/ktb-project-tile.component';
 import { KtbRootEventsListComponent } from './_components/ktb-root-events-list/ktb-root-events-list.component';
 import { KtbSecretsListComponent } from './_components/ktb-secrets-list/ktb-secrets-list.component';
-import {
-  KtbSelectableTileComponent,
-  KtbSelectableTileHeaderDirective,
-} from './_components/ktb-selectable-tile/ktb-selectable-tile.component';
 import { KtbSequenceControlsComponent } from './_components/ktb-sequence-controls/ktb-sequence-controls.component';
 import { KtbSequenceListComponent } from './_components/ktb-sequence-list/ktb-sequence-list.component';
 import { KtbSequenceStateInfoComponent } from './_components/ktb-sequence-state-info/ktb-sequence-state-info.component';
@@ -156,6 +141,11 @@ import { KtbDeploymentListModule } from './_components/ktb-deployment-list/ktb-d
 import { KtbEvaluationInfoModule } from './_components/ktb-evaluation-info/ktb-evaluation-info.module';
 import { KtbStageBadgeModule } from './_components/ktb-stage-badge/ktb-stage-badge.module';
 import { KtbDeleteConfirmationModule } from './_components/_dialogs/ktb-delete-confirmation/ktb-delete-confirmation.module';
+import { KtbDeploymentStageTimelineModule } from './_components/ktb-deployment-stage-timeline/ktb-deployment-stage-timeline.module';
+import { KtbEditServiceModule } from './_components/ktb-edit-service/ktb-edit-service.module';
+import { KtbExpandableTileModule } from './_components/ktb-expandable-tile/ktb-expandable-tile.module';
+import { KtbSelectableTileModule } from './_components/ktb-selectable-tile/ktb-selectable-tile.module';
+import { KtbEventItemModule } from './_components/ktb-event-item/ktb-event-item.module';
 
 registerLocaleData(localeEn, 'en');
 
@@ -228,13 +218,18 @@ const ktbModules = [
   KtbDeleteConfirmationModule,
   KtbDeletionDialogModule,
   KtbDeploymentListModule,
+  KtbDeploymentStageTimelineModule,
   KtbDragAndDropModule,
+  KtbEditServiceModule,
   KtbEvaluationDetailsModule,
   KtbEvaluationInfoModule,
+  KtbEventItemModule,
+  KtbExpandableTileModule,
   KtbHeatmapModule,
   KtbLoadingModule,
   KtbNotificationModule,
   KtbPipeModule,
+  KtbSelectableTileModule,
   KtbStageBadgeModule,
 ];
 
@@ -250,17 +245,11 @@ const ktbModules = [
     KtbServiceViewComponent,
     KtbShowHttpLoadingDirective,
     KtbHideHttpLoadingDirective,
-    KtbExpandableTileComponent,
-    KtbExpandableTileHeaderDirective,
-    KtbSelectableTileComponent,
-    KtbSelectableTileHeaderDirective,
     KtbHorizontalSeparatorComponent,
     KtbHorizontalSeparatorTitleDirective,
     KtbRootEventsListComponent,
     KtbProjectTileComponent,
     KtbProjectListComponent,
-    KtbEventItemComponent,
-    KtbEventItemDetailDirective,
     KtbSequenceTasksListComponent,
     KtbTaskItemComponent,
     KtbTaskItemDetailDirective,
@@ -278,7 +267,6 @@ const ktbModules = [
     KtbSubscriptionItemComponent,
     KtbServiceDetailsComponent,
     KtbSettingsViewComponent,
-    KtbDeploymentStageTimelineComponent,
     KtbSequenceListComponent,
     KtbUniformRegistrationLogsComponent,
     KtbSecretsListComponent,
@@ -294,8 +282,6 @@ const ktbModules = [
     KtbServiceSettingsComponent,
     KtbServiceSettingsOverviewComponent,
     KtbServiceSettingsListComponent,
-    KtbEditServiceComponent,
-    KtbEditServiceFileListComponent,
     KtbTreeListSelectComponent,
     KtbTreeListSelectDirective,
     KtbSequenceStateInfoComponent,
