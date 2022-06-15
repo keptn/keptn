@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbDeploymentStageTimelineComponent } from './ktb-deployment-stage-timeline.component';
-import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { KtbDeploymentStageTimelineModule } from './ktb-deployment-stage-timeline.module';
 
 describe('KtbDeploymentTimelineComponent', () => {
   let component: KtbDeploymentStageTimelineComponent;
@@ -9,7 +9,7 @@ describe('KtbDeploymentTimelineComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule, HttpClientTestingModule],
+      imports: [KtbDeploymentStageTimelineModule, HttpClientTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbDeploymentStageTimelineComponent);

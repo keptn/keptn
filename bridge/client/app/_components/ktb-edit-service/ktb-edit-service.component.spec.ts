@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbEditServiceComponent } from './ktb-edit-service.component';
-import { AppModule } from '../../app.module';
 import { DataService } from '../../_services/data.service';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { BehaviorSubject, of, throwError } from 'rxjs';
@@ -13,6 +12,7 @@ import { FileTreeMock } from '../../_services/_mockData/fileTree.mock';
 import { By } from '@angular/platform-browser';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
+import { KtbEditServiceModule } from './ktb-edit-service.module';
 
 const paramMapSubject = new BehaviorSubject(
   convertToParamMap({
@@ -27,7 +27,7 @@ describe('KtbEditServiceComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule, HttpClientTestingModule],
+      imports: [KtbEditServiceModule, HttpClientTestingModule],
       providers: [
         { provide: ApiService, useClass: ApiServiceMock },
         {
