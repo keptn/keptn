@@ -88,7 +88,6 @@ import { KtbServiceSettingsListComponent } from './_components/ktb-service-setti
 import { KtbServiceSettingsOverviewComponent } from './_components/ktb-service-settings-overview/ktb-service-settings-overview.component';
 import { KtbServiceSettingsComponent } from './_components/ktb-service-settings/ktb-service-settings.component';
 import { KtbServicesListComponent } from './_components/ktb-services-list/ktb-services-list.component';
-
 import { KtbStageDetailsComponent } from './_components/ktb-stage-details/ktb-stage-details.component';
 import { KtbStageOverviewComponent } from './_components/ktb-stage-overview/ktb-stage-overview.component';
 import { KtbSubscriptionItemComponent } from './_components/ktb-subscription-item/ktb-subscription-item.component';
@@ -158,6 +157,7 @@ import { KtbDeploymentListModule } from './_components/ktb-deployment-list/ktb-d
 import { KtbEvaluationInfoModule } from './_components/ktb-evaluation-info/ktb-evaluation-info.module';
 import { KtbStageBadgeModule } from './_components/ktb-stage-badge/ktb-stage-badge.module';
 import { KtbDeleteConfirmationModule } from './_components/_dialogs/ktb-delete-confirmation/ktb-delete-confirmation.module';
+
 registerLocaleData(localeEn, 'en');
 
 export function init_app(appLoadService: AppInitService): () => Promise<unknown> {
