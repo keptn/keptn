@@ -77,6 +77,10 @@ async function init(): Promise<Express> {
     log.warning('CLI Download Link was not provided, defaulting to github.com/keptn/keptn releases');
     cliDownloadLink = 'https://github.com/keptn/keptn/releases';
   }
+  if (!integrationsPageLink) {
+    log.warning('Integrations page Link was not provided, defaulting to get.keptn.sh/integrations.html');
+    integrationsPageLink = 'https://get.keptn.sh/integrations.html';
+  }
 
   
 
