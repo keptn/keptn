@@ -60,7 +60,7 @@ func main() {
 	}
 
 	subscriptionSource := subscriptionsource.New(api.UniformV1())
-	natsConnector := nats.ConnectFromEnv()
+	natsConnector := nats.NewFromEnv()
 
 	eventSource := eventsource.New(natsConnector)
 	logForwarder := logforwarder.New(api.LogsV1())
