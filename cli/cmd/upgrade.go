@@ -34,8 +34,6 @@ import (
 	"github.com/keptn/keptn/cli/pkg/version"
 
 	"github.com/keptn/keptn/cli/pkg/helm"
-	"github.com/keptn/keptn/cli/pkg/platform"
-
 	"github.com/keptn/keptn/cli/pkg/kube"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"helm.sh/helm/v3/pkg/chart"
@@ -46,7 +44,6 @@ import (
 
 const keptnReleaseName = "keptn"
 
-var upgradeParams installUpgradeParams
 var keptnUpgradeChart *chart.Chart
 
 // installCmd represents the version command
@@ -73,9 +70,6 @@ keptn upgrade --platform=kubernetes # upgrades Keptn on the Kubernetes cluster
 				return err
 			}
 			if !mocking {
-				if *upgradeParams.PatchNamespace {
-					return patchNamespace()
-				}
 				return doUpgrade()
 			}
 			fmt.Println("Skipping upgrade due to mocking flag")
@@ -87,100 +81,6 @@ keptn upgrade --platform=kubernetes # upgrades Keptn on the Kubernetes cluster
 }
 
 func doUpgradePreRunCheck(vChecker *version.KeptnVersionChecker) error {
-	if *upgradeParams.PatchNamespace {
-		return nil
-	}
-	var chartRepoURL string
-
-	if !isStringFlagSet(upgradeParams.ChartRepoURL) {
-		chartRepoURL = getKeptnHelmChartRepoURL()
-	} else {
-		chartRepoURL = *upgradeParams.ChartRepoURL
-	}
-
-	var err error
-	if keptnUpgradeChart, err = helm.NewHelper().DownloadChart(chartRepoURL); err != nil {
-		return err
-	}
-
-	if !*upgradeParams.SkipUpgradeCheck {
-		res, err := isUpgradeCompatible(vChecker)
-		if err != nil {
-			return internal.OnAPIError(err)
-		}
-		if !res {
-			installedKeptnVersion, err := getInstalledKeptnVersion()
-			if err != nil {
-				return err
-			}
-			if installedKeptnVersion == getAppVersion(keptnUpgradeChart) {
-				vChecker := version.NewVersionChecker()
-				cliVersionCheck, _ := vChecker.CheckCLIVersion(Version, false)
-				if cliVersionCheck {
-					return fmt.Errorf("Please upgrade Keptn CLI to upgrade your Keptn Cluster!")
-				}
-				return fmt.Errorf("Unable to upgrade due to the aforementioned error")
-			}
-			return fmt.Errorf("No upgrade path exists from Keptn version %s to %s",
-				installedKeptnVersion, getAppVersion(keptnUpgradeChart))
-		}
-	} else {
-		logging.PrintLog("Skipping upgrade compatibility check!", logging.InfoLevel)
-	}
-
-	logging.PrintLog(fmt.Sprintf("Helm Chart used for Keptn upgrade: %s", chartRepoURL), logging.InfoLevel)
-
-	cm := credentialmanager.NewCredentialManager(assumeYes)
-	currentKeptnCLIContext := cm.GetCurrentKeptnCLIConfig().CurrentContext
-	currentKubernetesContext := cm.GetCurrentKubeConfig().CurrentContext
-
-	if currentKeptnCLIContext != currentKubernetesContext {
-		return fmt.Errorf("your current Keptn CLI context '%s' does not match current Kubeconfig '%s'. Please ensure your kubectl CLI is connected to '%s' before upgrading your Keptn cluster", currentKeptnCLIContext, currentKubernetesContext, currentKubernetesContext)
-	}
-
-	platformManager, err := platform.NewPlatformManager(*upgradeParams.PlatformIdentifier, cm)
-	if err != nil {
-		return err
-	}
-
-	if !mocking {
-		if err := platformManager.CheckRequirements(); err != nil {
-			return err
-		}
-	}
-
-	if upgradeParams.ConfigFilePath != nil && *upgradeParams.ConfigFilePath != "" {
-		// Config was provided in form of a file
-		if err := platformManager.ParseConfig(*upgradeParams.ConfigFilePath); err != nil {
-			return err
-		}
-
-		// Check whether the authentication at the cluster is valid
-		if err := platformManager.CheckCreds(); err != nil {
-			return err
-		}
-	} else {
-		err = platformManager.ReadCreds(assumeYes)
-		if err != nil {
-			return internal.OnAPIError(err)
-		}
-	}
-
-	// check if Kubernetes server version is compatible (except OpenShift)
-	if *upgradeParams.PlatformIdentifier != platform.OpenShiftIdentifier {
-		if isNewerVersion, err := kube.CheckKubeServerVersion(KubeServerVersionConstraints); err != nil {
-			logging.PrintLog(err.Error(), logging.VerboseLevel)
-			logging.PrintLog("See https://keptn.sh/docs/"+getReleaseDocsURL()+"/operate/k8s_support/ for details.", logging.VerboseLevel)
-			return fmt.Errorf("Failed to check kubernetes server version: %w", err)
-		} else if isNewerVersion {
-			logging.PrintLog("The Kubernetes server version is higher than the one officially supported. This is not recommended and could have negative impacts on the stability of Keptn - use at your own risk.", logging.InfoLevel)
-			userConfirmation := common.NewUserInput().AskBool("Do you want to continue?", &common.UserInputOptions{AssumeYes: assumeYes})
-
-			if !userConfirmation {
-				return fmt.Errorf("Stopping upgrade.")
-			}
-		}
-	}
 
 	// Check if statistics service is already running and NOT deployed by helm (https://github.com/keptn/keptn/issues/3399)
 	statisticsDeploymentAvailable, err := kube.CheckDeploymentAvailable("statistics-service", namespace)
@@ -288,15 +188,6 @@ func addWarningNonExistingProjectUpstream() error {
 
 func init() {
 	rootCmd.AddCommand(upgraderCmd)
-	upgradeParams = installUpgradeParams{}
-	upgradeParams.PlatformIdentifier = upgraderCmd.Flags().StringP("platform", "p", "kubernetes",
-		"The platform to run Keptn on ["+platform.KubernetesIdentifier+","+platform.OpenShiftIdentifier+"]")
-
-	upgradeParams.ChartRepoURL = upgraderCmd.Flags().StringP("chart-repo", "",
-		"", "URL of the Keptn Helm Chart repository")
-	upgraderCmd.Flags().MarkHidden("chart-repo")
-	upgradeParams.PatchNamespace = upgraderCmd.Flags().BoolP("patch-namespace", "", false, "Patch the namespace with the annotation & label 'keptn.sh/managed-by: keptn'")
-	upgradeParams.SkipUpgradeCheck = upgraderCmd.Flags().BoolP("skip-upgrade-check", "", false, "Skip upgrade compatibility check, useful for nightly version upgrades or upgrades to preview versions")
 }
 
 func doUpgrade() error {
@@ -344,27 +235,6 @@ func doUpgrade() error {
 	if err := helmHelper.UpgradeChart(keptnUpgradeChart, keptnReleaseName, keptnNamespace, previousValues); err != nil {
 		msg := fmt.Sprintf("Could not complete Keptn upgrade: %s \nFor troubleshooting, please check the status of the keptn deployment by executing the following command: \n\nkubectl get pods -n %s\n", err.Error(), keptnNamespace)
 		return errors.New(msg)
-	}
-
-	logging.PrintLog("Upgrading of Keptn control plane has been successful.", logging.InfoLevel)
-
-	values, err := helmHelper.GetValues(keptnReleaseName, keptnNamespace)
-	if err != nil {
-		return fmt.Errorf("Could not determine configuration of current Keptn installation: %s", err.Error())
-	}
-	if isContinuousDeliveryEnabled(values) {
-		logging.PrintLog("Upgrading execution plane services for continuous-delivery use case.", logging.InfoLevel)
-		continuousDeliveryServiceCharts, err := fetchContinuousDeliveryCharts(*helmHelper, upgradeParams.ChartRepoURL)
-		if err != nil {
-			return fmt.Errorf("Could not fetch continuous delivery execution service charts: %s \n", err.Error())
-		}
-
-		for _, serviceChart := range continuousDeliveryServiceCharts {
-			if err := helmHelper.UpgradeChart(serviceChart, serviceChart.Name(), keptnNamespace, values); err != nil {
-				msg := fmt.Sprintf("Could not complete upgrade of Keptn execution plane services: %s \nFor troubleshooting, please check the status of the keptn deployment by executing the following command: \n\nkubectl get pods -n %s\n", err.Error(), keptnNamespace)
-				return errors.New(msg)
-			}
-		}
 	}
 
 	logging.PrintLog("Keptn has been successfully upgraded on your cluster.", logging.InfoLevel)

@@ -1,5 +1,7 @@
 package cmd
 
+const MsgDeprecatedUseHelm = "Please, use instead the Helm CLI. For further information, refer to the documentation https://keptn.sh/docs/%s/operate/install/#install-keptn"
+
 func areStringFlagsSet(el ...*string) bool {
 	for _, e := range el {
 		if !isStringFlagSet(e) {
