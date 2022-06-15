@@ -9,6 +9,7 @@ import { RouterModule } from '@angular/router';
 import { KtbSelectableTileModule } from '../ktb-selectable-tile/ktb-selectable-tile.module';
 import { KtbApprovalItemModule } from '../ktb-approval-item/ktb-approval-item.module';
 import { MatDialogModule } from '@angular/material/dialog';
+import { DtTagModule } from '@dynatrace/barista-components/tag';
 
 @NgModule({
   declarations: [KtbEventItemComponent, KtbEventItemDetailDirective],
@@ -24,6 +25,7 @@ import { MatDialogModule } from '@angular/material/dialog';
     MatDialogModule,
     MomentModule,
     RouterModule,
+    DtTagModule,
   ],
   exports: [KtbEventItemComponent, KtbEventItemDetailDirective],
 })

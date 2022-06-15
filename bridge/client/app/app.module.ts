@@ -144,6 +144,8 @@ import { KtbDeleteConfirmationModule } from './_components/_dialogs/ktb-delete-c
 import { KtbDeploymentStageTimelineModule } from './_components/ktb-deployment-stage-timeline/ktb-deployment-stage-timeline.module';
 import { KtbEditServiceModule } from './_components/ktb-edit-service/ktb-edit-service.module';
 import { KtbExpandableTileModule } from './_components/ktb-expandable-tile/ktb-expandable-tile.module';
+import { KtbSelectableTileModule } from './_components/ktb-selectable-tile/ktb-selectable-tile.module';
+import { KtbEventItemModule } from './_components/ktb-event-item/ktb-event-item.module';
 
 registerLocaleData(localeEn, 'en');
 
@@ -221,11 +223,13 @@ const ktbModules = [
   KtbEditServiceModule,
   KtbEvaluationDetailsModule,
   KtbEvaluationInfoModule,
+  KtbEventItemModule,
   KtbExpandableTileModule,
   KtbHeatmapModule,
   KtbLoadingModule,
   KtbNotificationModule,
   KtbPipeModule,
+  KtbSelectableTileModule,
   KtbStageBadgeModule,
 ];
 
