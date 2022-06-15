@@ -133,7 +133,6 @@ export class ApiService {
     const sourceString = traceOptions.source ? ` AND source:${traceOptions.source}` : '';
     const params = {
       filter: `data.project:${traceOptions.project} AND data.service:${traceOptions.service} AND data.stage:${traceOptions.stage}${sourceString}${resultString}`,
-      excludeInvalidated: 'true',
       limit: traceOptions.pageSize,
     };
     this.log.debug(`getTracesWithResultAndSource options: ${this.log.prettyPrint(params)}`);
@@ -164,19 +163,6 @@ export class ApiService {
     );
   }
 
-  public getEvaluationResult(
-    accessToken: string | undefined,
-    keptnContext: string
-  ): Promise<AxiosResponse<EventResult>> {
-    const url = `${this.baseUrl}/mongodb-datastore/event/type/${EventTypes.EVALUATION_FINISHED}`;
-    const params = {
-      filter: `shkeptncontext:${keptnContext} AND source:${KeptnService.LIGHTHOUSE_SERVICE}`,
-      limit: '1',
-    };
-    this.log.debug(`getEvaluationResult options: ${this.log.prettyPrint(params)}`);
-    return this.axios.get<EventResult>(url, { params, ...this.getAuthHeaders(accessToken) });
-  }
-
   public getTracesOfMultipleServices(
     accessToken: string | undefined,
     projectName: string,
@@ -187,7 +173,7 @@ export class ApiService {
     const sourceString = source ? `AND source:${source} ` : '';
     const params = {
       filter: `data.project:${projectName} ${sourceString}AND id:${eventIds}`,
-      limit: 100,
+      limit: '100',
     };
     this.log.debug(`getTracesOfMultipleServices options: ${this.log.prettyPrint(params)}`);
     return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event/type/${eventType}`, {
