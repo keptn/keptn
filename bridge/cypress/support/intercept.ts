@@ -1,3 +1,5 @@
+import { EvaluationFinishedMock } from '../fixtures/typed/evaluationFinished.mock';
+
 export function interceptEmptyEnvironmentScreen(): void {
   interceptProjectBoard();
   cy.intercept('/api/project/dynatrace?approval=true&remediation=true', { fixture: 'project.empty.mock' }).as(
@@ -406,5 +408,13 @@ export function interceptHeatmapComponent(): void {
   cy.intercept('GET', 'api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?*', {
     statusCode: 200,
     fixture: 'get.sockshop.service.carts.evaluations.heatmap.mock.json',
+  }).as('heatmapEvaluations');
+}
+
+export function interceptHeatmapComponentWithSLO(slo?: string): void {
+  interceptHeatmapComponent();
+  cy.intercept('GET', 'api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?*', {
+    statusCode: 200,
+    body: EvaluationFinishedMock(slo),
   }).as('heatmapEvaluations');
 }
