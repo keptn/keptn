@@ -30,10 +30,8 @@ ENV GOTESTSUM_FORMAT=testname
 
 RUN go install gotest.tools/gotestsum@v1.7.0
 
-CMD echo "Executing component tests"
-CMD gotestsum --no-color=false .
+CMD gotestsum --no-color=false main
 
-CMD echo "Executing unit tests"
 CMD gotestsum --no-color=false -- -coverprofile=coverage.txt -covermode=atomic -v -short ./... && mv ./coverage.txt /shared/coverage.txt
 
 FROM builder-base as builder
