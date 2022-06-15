@@ -4,6 +4,7 @@ import { KtbDeploymentStageTimelineComponent } from './ktb-deployment-stage-time
 import { DtButtonModule } from '@dynatrace/barista-components/button';
 import { DtIconModule } from '@dynatrace/barista-components/icon';
 import { FlexLayoutModule } from '@angular/flex-layout';
+import { KtbStageBadgeModule } from '../ktb-stage-badge/ktb-stage-badge.module';
 
 @NgModule({
   declarations: [KtbDeploymentStageTimelineComponent],
@@ -14,6 +15,7 @@ import { FlexLayoutModule } from '@angular/flex-layout';
       svgIconLocation: `assets/icons/{{name}}.svg`,
     }),
     FlexLayoutModule,
+    KtbStageBadgeModule,
   ],
   exports: [KtbDeploymentStageTimelineComponent],
 })

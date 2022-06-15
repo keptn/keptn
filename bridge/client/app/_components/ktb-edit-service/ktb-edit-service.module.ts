@@ -5,10 +5,23 @@ import { KtbEditServiceFileListComponent } from './ktb-edit-service-file-list.co
 import { KtbLoadingModule } from '../ktb-loading/ktb-loading.module';
 import { RouterModule } from '@angular/router';
 import { FlexLayoutModule } from '@angular/flex-layout';
+import { KtbDangerZoneModule } from '../ktb-danger-zone/ktb-danger-zone.module';
+import { DtTreeTableModule } from '@dynatrace/barista-components/tree-table';
+import { DtIconModule } from '@dynatrace/barista-components/icon';
 
 @NgModule({
   declarations: [KtbEditServiceComponent, KtbEditServiceFileListComponent],
-  imports: [CommonModule, KtbLoadingModule, RouterModule, FlexLayoutModule],
+  imports: [
+    CommonModule,
+    DtTreeTableModule,
+    DtIconModule.forRoot({
+      svgIconLocation: `assets/icons/{{name}}.svg`,
+    }),
+    FlexLayoutModule,
+    KtbDangerZoneModule,
+    KtbLoadingModule,
+    RouterModule,
+  ],
   exports: [KtbEditServiceComponent],
 })
 export class KtbEditServiceModule {}
