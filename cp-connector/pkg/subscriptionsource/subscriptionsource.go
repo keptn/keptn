@@ -3,6 +3,7 @@ package subscriptionsource
 import (
 	"context"
 	"github.com/keptn/keptn/cp-connector/pkg/types"
+	"sync"
 	"time"
 
 	"github.com/benbjohnson/clock"
@@ -12,7 +13,7 @@ import (
 )
 
 type SubscriptionSource interface {
-	Start(context.Context, types.RegistrationData, chan []models.EventSubscription) error
+	Start(context.Context, types.RegistrationData, chan []models.EventSubscription, *sync.WaitGroup) error
 	Register(integration models.Integration) (string, error)
 }
 
@@ -60,7 +61,7 @@ func New(uniformAPI api.UniformV1Interface, options ...func(source *UniformSubsc
 }
 
 // Start triggers the execution of the UniformSubscriptionSource
-func (s *UniformSubscriptionSource) Start(ctx context.Context, registrationData types.RegistrationData, subscriptionChannel chan []models.EventSubscription) error {
+func (s *UniformSubscriptionSource) Start(ctx context.Context, registrationData types.RegistrationData, subscriptionChannel chan []models.EventSubscription, wg *sync.WaitGroup) error {
 	s.logger.Debugf("UniformSubscriptionSource: Starting to fetch subscriptions for Integration ID %s", registrationData.ID)
 	ticker := s.clock.Ticker(s.fetchInterval)
 	go func() {
@@ -68,6 +69,7 @@ func (s *UniformSubscriptionSource) Start(ctx context.Context, registrationData 
 		for {
 			select {
 			case <-ctx.Done():
+				wg.Done()
 				return
 			case <-ticker.C:
 				s.ping(registrationData.ID, subscriptionChannel)
@@ -112,8 +114,12 @@ func NewFixedSubscriptionSource(options ...func(source *FixedSubscriptionSource)
 	return fss
 }
 
-func (s FixedSubscriptionSource) Start(ctx context.Context, data types.RegistrationData, c chan []models.EventSubscription) error {
-	go func() { c <- s.fixedSubscriptions }()
+func (s FixedSubscriptionSource) Start(ctx context.Context, data types.RegistrationData, c chan []models.EventSubscription, wg *sync.WaitGroup) error {
+	go func() {
+		c <- s.fixedSubscriptions
+		<-ctx.Done()
+		wg.Done()
+	}()
 	return nil
 }
 
