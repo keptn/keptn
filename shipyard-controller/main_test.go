@@ -523,7 +523,7 @@ func Test__main_SequenceStateParallelStages(t *testing.T) {
 			return false
 		}
 		return true
-	}, 1*time.Second, 100*time.Millisecond)
+	}, 5*time.Second, 100*time.Millisecond)
 
 	require.Equal(t, int64(1), states.TotalCount)
 	require.Len(t, states.States, 1)
@@ -556,7 +556,7 @@ func Test__main_SequenceStateParallelStages(t *testing.T) {
 			return false
 		}
 		return states.States[0].Stages[0].LatestEvent.Type == keptnv2.GetStartedEventType("delivery")
-	}, 1*time.Second, 100*time.Millisecond)
+	}, 5*time.Second, 100*time.Millisecond)
 
 	_, err = keptn.SendTaskFinishedEvent(&keptnv2.EventData{Result: keptnv2.ResultPass, Status: keptnv2.StatusSucceeded}, source)
 	require.Nil(t, err)
@@ -774,7 +774,7 @@ func Test__main_SequenceState_RetrieveMultiple(t *testing.T) {
 				return false
 			}
 			return true
-		}, 1*time.Second, 100*time.Millisecond)
+		}, 5*time.Second, 100*time.Millisecond)
 	}
 
 	verifyContextReturnsStates(context1, 1)
@@ -810,7 +810,7 @@ func Test__main_SequenceState_SequenceNotFound(t *testing.T) {
 		}
 		state = states.States[0]
 		return true
-	}, 1*time.Second, 100*time.Millisecond)
+	}, 5*time.Second, 100*time.Millisecond)
 
 	require.Equal(t, apimodels.SequenceFinished, state.State)
 
@@ -821,7 +821,7 @@ func Test__main_SequenceState_SequenceNotFound(t *testing.T) {
 			return false
 		}
 		return true
-	}, 1*time.Second, 100*time.Millisecond)
+	}, 5*time.Second, 100*time.Millisecond)
 
 	eventData := &keptnv2.EventData{}
 	err = keptnv2.Decode(finishedEvent.Data, eventData)
@@ -857,7 +857,7 @@ func Test__main_SequenceState_InvalidShipyard(t *testing.T) {
 		}
 		state = states.States[0]
 		return true
-	}, 1*time.Second, 100*time.Millisecond)
+	}, 5*time.Second, 100*time.Millisecond)
 
 	require.Equal(t, apimodels.SequenceFinished, state.State)
 
@@ -868,7 +868,7 @@ func Test__main_SequenceState_InvalidShipyard(t *testing.T) {
 			return false
 		}
 		return true
-	}, 1*time.Second, 100*time.Millisecond)
+	}, 5*time.Second, 100*time.Millisecond)
 
 	eventData := &keptnv2.EventData{}
 	err = keptnv2.Decode(finishedEvent.Data, eventData)
@@ -1012,7 +1012,7 @@ func Test__main_SequenceControl_Abort(t *testing.T) {
 	require.Eventually(t, func() bool {
 		taskTriggeredEvent = natsClient.getLatestEventOfType(*keptnContext.KeptnContext, projectName, stageName, keptnv2.GetTriggeredEventType("mytask"))
 		return taskTriggeredEvent != nil
-	}, 1*time.Second, 100*time.Millisecond)
+	}, 5*time.Second, 100*time.Millisecond)
 
 	cloudEvent := keptnv2.ToCloudEvent(*taskTriggeredEvent)
 
@@ -1059,7 +1059,7 @@ func Test__main_SequenceControl_AbortQueuedSequence(t *testing.T) {
 	require.Eventually(t, func() bool {
 		taskTriggeredEvent = natsClient.getLatestEventOfType(*keptnContext.KeptnContext, projectName, stageName, keptnv2.GetTriggeredEventType("mytask"))
 		return taskTriggeredEvent != nil
-	}, 1*time.Second, 100*time.Millisecond)
+	}, 5*time.Second, 100*time.Millisecond)
 
 	cloudEvent := keptnv2.ToCloudEvent(*taskTriggeredEvent)
 
