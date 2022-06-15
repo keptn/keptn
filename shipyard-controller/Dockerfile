@@ -30,7 +30,7 @@ ENV GOTESTSUM_FORMAT=testname
 
 RUN go install gotest.tools/gotestsum@v1.7.0
 
-CMD gotestsum --no-color=false main
+CMD gotestsum --no-color=false -- -v .
 
 CMD gotestsum --no-color=false -- -coverprofile=coverage.txt -covermode=atomic -v -short ./... && mv ./coverage.txt /shared/coverage.txt
 
