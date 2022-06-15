@@ -13,6 +13,7 @@ import { By } from '@angular/platform-browser';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 import { KtbEditServiceModule } from './ktb-edit-service.module';
+import { RouterTestingModule } from '@angular/router/testing';
 
 const paramMapSubject = new BehaviorSubject(
   convertToParamMap({
@@ -27,7 +28,7 @@ describe('KtbEditServiceComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [KtbEditServiceModule, HttpClientTestingModule],
+      imports: [KtbEditServiceModule, HttpClientTestingModule, RouterTestingModule],
       providers: [
         { provide: ApiService, useClass: ApiServiceMock },
         {
