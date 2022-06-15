@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
-	"flag"
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
@@ -214,12 +213,6 @@ func startFakeConfigurationService() func() {
 }
 
 func TestMain(m *testing.M) {
-
-	flag.Parse()
-	if testing.Short() {
-		return
-	}
-
 	test := testing.T{}
 
 	natsServer := setupNatsServer(natsTestPort, test.TempDir())
