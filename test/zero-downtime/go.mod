@@ -48,7 +48,7 @@ require (
 	github.com/imroc/req v0.3.2 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/keptn/keptn/cp-common v0.0.0-20220602110035-92d59919c878 // indirect
-	github.com/keptn/keptn/cp-connector v0.0.0-20220608071003-6edd402d3253 // indirect
+	github.com/keptn/keptn/cp-connector v0.0.0-20220621082647-d57cd8c91758 // indirect
 	github.com/keptn/keptn/go-sdk v0.0.0-20220608071003-6edd402d3253 // indirect
 	github.com/keptn/keptn/webhook-service v0.0.0-20220603070303-72c9e665e2ef // indirect
 	github.com/keptn/kubernetes-utils v0.14.0 // indirect
