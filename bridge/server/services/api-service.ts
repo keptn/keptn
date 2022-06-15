@@ -187,7 +187,7 @@ export class ApiService {
     const sourceString = source ? `AND source:${source} ` : '';
     const params = {
       filter: `data.project:${projectName} ${sourceString}AND id:${eventIds}`,
-      excludeInvalidated: 'true',
+      limit: 100,
     };
     this.log.debug(`getTracesOfMultipleServices options: ${this.log.prettyPrint(params)}`);
     return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event/type/${eventType}`, {
