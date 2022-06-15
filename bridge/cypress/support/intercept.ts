@@ -144,9 +144,7 @@ export function interceptServicesPage(): void {
 
 export function interceptSequencesPage(): void {
   interceptProjectBoard();
-  cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=25', { fixture: 'sequences.sockshop', delay: 1000 }).as(
-    'Sequences'
-  );
+  cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=25', { fixture: 'sequences.sockshop' }).as('Sequences');
   cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=10&beforeTime=2021-07-06T09:22:56.433Z', {
     fixture: 'sequences-page-2.sockshop',
   }).as('SequencesPage2');
