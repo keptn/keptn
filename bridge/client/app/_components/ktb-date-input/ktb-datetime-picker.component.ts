@@ -6,18 +6,20 @@ import {
   EventEmitter,
   HostListener,
   Input,
+  OnDestroy,
+  OnInit,
   Output,
 } from '@angular/core';
 import { ComponentPortal } from '@angular/cdk/portal';
 import moment from 'moment';
 import { Timeframe } from '../../_models/timeframe';
 import { OverlayService } from '../../_directives/overlay-service/overlay.service';
-import { KtbOverlayComponent } from '../_abstract/ktb-overlay.component';
+import { KtbOverlay } from '../_abstract/ktb-overlay';
 
 @Directive({
   selector: '[ktbDatetimePicker]',
 })
-export class KtbDatetimePickerDirective extends KtbOverlayComponent {
+export class KtbDatetimePickerDirective extends KtbOverlay implements OnInit, OnDestroy {
   private contentRef: ComponentRef<KtbDatetimePickerComponent> | undefined;
 
   @Input() timeEnabled = false;
@@ -26,6 +28,14 @@ export class KtbDatetimePickerDirective extends KtbOverlayComponent {
 
   constructor(protected elementRef: ElementRef, protected overlayService: OverlayService) {
     super(elementRef, overlayService, '350px', '400px');
+  }
+
+  ngOnInit(): void {
+    this.onInit();
+  }
+
+  ngOnDestroy(): void {
+    this.onDestroy();
   }
 
   @HostListener('click')

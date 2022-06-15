@@ -6,13 +6,15 @@ import {
   EventEmitter,
   HostListener,
   Input,
+  OnDestroy,
+  OnInit,
   Output,
 } from '@angular/core';
 import { DtTreeControl, DtTreeDataSource, DtTreeFlattener } from '@dynatrace/barista-components/core';
 import { FlatTreeControl } from '@angular/cdk/tree';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { OverlayService } from '../../_directives/overlay-service/overlay.service';
-import { KtbOverlayComponent } from '../_abstract/ktb-overlay.component';
+import { KtbOverlay } from '../_abstract/ktb-overlay';
 
 export interface SelectTreeNode {
   name: string;
@@ -37,7 +39,7 @@ export type TreeListSelectOptions = {
 @Directive({
   selector: '[ktbTreeListSelect]',
 })
-export class KtbTreeListSelectDirective extends KtbOverlayComponent {
+export class KtbTreeListSelectDirective extends KtbOverlay implements OnInit, OnDestroy {
   private contentRef: ComponentRef<KtbTreeListSelectComponent> | undefined;
 
   @Input() data: SelectTreeNode[] = [];
@@ -46,6 +48,14 @@ export class KtbTreeListSelectDirective extends KtbOverlayComponent {
 
   constructor(protected elementRef: ElementRef, protected overlayService: OverlayService) {
     super(elementRef, overlayService, '400px', '200px');
+  }
+
+  ngOnInit(): void {
+    this.onInit();
+  }
+
+  ngOnDestroy(): void {
+    this.onDestroy();
   }
 
   @HostListener('click')
