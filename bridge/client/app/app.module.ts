@@ -47,10 +47,6 @@ import { MomentModule } from 'ngx-moment';
 import { environment } from '../environments/environment';
 import { KtbProjectCreateMessageComponent } from './_components/_status-messages/ktb-project-create-message/ktb-project-create-message.component';
 import {
-  KtbExpandableTileComponent,
-  KtbExpandableTileHeaderDirective,
-} from './_components/ktb-expandable-tile/ktb-expandable-tile.component';
-import {
   KtbHorizontalSeparatorComponent,
   KtbHorizontalSeparatorTitleDirective,
 } from './_components/ktb-horizontal-separator/ktb-horizontal-separator.component';
@@ -147,6 +143,7 @@ import { KtbStageBadgeModule } from './_components/ktb-stage-badge/ktb-stage-bad
 import { KtbDeleteConfirmationModule } from './_components/_dialogs/ktb-delete-confirmation/ktb-delete-confirmation.module';
 import { KtbDeploymentStageTimelineModule } from './_components/ktb-deployment-stage-timeline/ktb-deployment-stage-timeline.module';
 import { KtbEditServiceModule } from './_components/ktb-edit-service/ktb-edit-service.module';
+import { KtbExpandableTileModule } from './_components/ktb-expandable-tile/ktb-expandable-tile.module';
 
 registerLocaleData(localeEn, 'en');
 
@@ -224,6 +221,7 @@ const ktbModules = [
   KtbEditServiceModule,
   KtbEvaluationDetailsModule,
   KtbEvaluationInfoModule,
+  KtbExpandableTileModule,
   KtbHeatmapModule,
   KtbLoadingModule,
   KtbNotificationModule,
@@ -243,8 +241,6 @@ const ktbModules = [
     KtbServiceViewComponent,
     KtbShowHttpLoadingDirective,
     KtbHideHttpLoadingDirective,
-    KtbExpandableTileComponent,
-    KtbExpandableTileHeaderDirective,
     KtbHorizontalSeparatorComponent,
     KtbHorizontalSeparatorTitleDirective,
     KtbRootEventsListComponent,
