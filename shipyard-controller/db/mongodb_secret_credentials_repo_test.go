@@ -6,25 +6,26 @@ import (
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	common_mock "github.com/keptn/keptn/shipyard-controller/common/fake"
+	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
 )
 
 func TestMongoDBSecretCredentialsRepo_Transform(t *testing.T) {
 	tests := []struct {
 		name string
-		in   *GitOldCredentials
+		in   *models.GitOldCredentials
 		out  *apimodels.GitAuthCredentials
 	}{
 		{
 			name: "project with new format credentials",
-			in: &GitOldCredentials{
+			in: &models.GitOldCredentials{
 				RemoteURI: "",
 			},
 			out: nil,
 		},
 		{
 			name: "project with ssh credentials",
-			in: &GitOldCredentials{
+			in: &models.GitOldCredentials{
 				RemoteURI:         "ssh://some-url",
 				User:              "user",
 				GitPrivateKey:     "key",
@@ -41,7 +42,7 @@ func TestMongoDBSecretCredentialsRepo_Transform(t *testing.T) {
 		},
 		{
 			name: "project with ssh credentials",
-			in: &GitOldCredentials{
+			in: &models.GitOldCredentials{
 				RemoteURI:         "ssh://some-url",
 				GitPrivateKey:     "key",
 				GitPrivateKeyPass: "pass",
@@ -56,7 +57,7 @@ func TestMongoDBSecretCredentialsRepo_Transform(t *testing.T) {
 		},
 		{
 			name: "project with ssh credentials",
-			in: &GitOldCredentials{
+			in: &models.GitOldCredentials{
 				RemoteURI:     "ssh://some-url",
 				User:          "user",
 				GitPrivateKey: "key",
@@ -71,7 +72,7 @@ func TestMongoDBSecretCredentialsRepo_Transform(t *testing.T) {
 		},
 		{
 			name: "project with https credentials",
-			in: &GitOldCredentials{
+			in: &models.GitOldCredentials{
 				RemoteURI:       "https://some-url",
 				User:            "user",
 				Token:           "token",
@@ -88,7 +89,7 @@ func TestMongoDBSecretCredentialsRepo_Transform(t *testing.T) {
 		},
 		{
 			name: "project with https credentials - certificate",
-			in: &GitOldCredentials{
+			in: &models.GitOldCredentials{
 				RemoteURI:         "https://some-url",
 				User:              "user",
 				Token:             "token",
@@ -105,7 +106,7 @@ func TestMongoDBSecretCredentialsRepo_Transform(t *testing.T) {
 		},
 		{
 			name: "project with https credentials",
-			in: &GitOldCredentials{
+			in: &models.GitOldCredentials{
 				RemoteURI: "https://some-url",
 				User:      "user",
 				Token:     "token",
@@ -120,7 +121,7 @@ func TestMongoDBSecretCredentialsRepo_Transform(t *testing.T) {
 		},
 		{
 			name: "project with https credentials - proxy",
-			in: &GitOldCredentials{
+			in: &models.GitOldCredentials{
 				RemoteURI:        "https://some-url",
 				User:             "user",
 				Token:            "token",
@@ -147,7 +148,7 @@ func TestMongoDBSecretCredentialsRepo_Transform(t *testing.T) {
 		},
 		{
 			name: "project with https credentials - proxy",
-			in: &GitOldCredentials{
+			in: &models.GitOldCredentials{
 				RemoteURI:       "https://some-url",
 				User:            "user",
 				Token:           "token",
@@ -170,7 +171,7 @@ func TestMongoDBSecretCredentialsRepo_Transform(t *testing.T) {
 		},
 		{
 			name: "project with https credentials - proxy",
-			in: &GitOldCredentials{
+			in: &models.GitOldCredentials{
 				RemoteURI:       "https://some-url",
 				User:            "user",
 				Token:           "token",
@@ -203,7 +204,7 @@ func TestMongoDBSecretCredentialsRepo_UpdateSecret(t *testing.T) {
 	tests := []struct {
 		name        string
 		secretStore common_mock.SecretStoreMock
-		in          *ExpandedProjectOld
+		in          *models.ExpandedProjectOld
 		err         error
 	}{
 		{
@@ -216,7 +217,7 @@ func TestMongoDBSecretCredentialsRepo_UpdateSecret(t *testing.T) {
 					return nil
 				},
 			},
-			in: &ExpandedProjectOld{
+			in: &models.ExpandedProjectOld{
 				ProjectName: "project",
 			},
 			err: nil,
@@ -231,7 +232,7 @@ func TestMongoDBSecretCredentialsRepo_UpdateSecret(t *testing.T) {
 					return nil
 				},
 			},
-			in: &ExpandedProjectOld{
+			in: &models.ExpandedProjectOld{
 				ProjectName: "project",
 			},
 			err: nil,
@@ -246,7 +247,7 @@ func TestMongoDBSecretCredentialsRepo_UpdateSecret(t *testing.T) {
 					return nil
 				},
 			},
-			in: &ExpandedProjectOld{
+			in: &models.ExpandedProjectOld{
 				ProjectName: "project",
 			},
 			err: nil,
@@ -261,7 +262,7 @@ func TestMongoDBSecretCredentialsRepo_UpdateSecret(t *testing.T) {
 					return nil
 				},
 			},
-			in: &ExpandedProjectOld{
+			in: &models.ExpandedProjectOld{
 				ProjectName: "project",
 			},
 			err: fmt.Errorf("failed to unmarshal git-credentials secret during migration for project project"),
@@ -276,7 +277,7 @@ func TestMongoDBSecretCredentialsRepo_UpdateSecret(t *testing.T) {
 					return nil
 				},
 			},
-			in: &ExpandedProjectOld{
+			in: &models.ExpandedProjectOld{
 				ProjectName: "project",
 			},
 			err: fmt.Errorf("failed to unmarshal git-credentials secret during migration for project project"),
@@ -288,7 +289,7 @@ func TestMongoDBSecretCredentialsRepo_UpdateSecret(t *testing.T) {
 					return nil, fmt.Errorf("some err")
 				},
 			},
-			in: &ExpandedProjectOld{
+			in: &models.ExpandedProjectOld{
 				ProjectName: "project",
 			},
 			err: fmt.Errorf("failed to get git-credentials secret during migration for project project"),
@@ -300,7 +301,7 @@ func TestMongoDBSecretCredentialsRepo_UpdateSecret(t *testing.T) {
 					return nil, nil
 				},
 			},
-			in: &ExpandedProjectOld{
+			in: &models.ExpandedProjectOld{
 				ProjectName: "project",
 			},
 			err: nil,
@@ -315,7 +316,7 @@ func TestMongoDBSecretCredentialsRepo_UpdateSecret(t *testing.T) {
 					return fmt.Errorf("some err")
 				},
 			},
-			in: &ExpandedProjectOld{
+			in: &models.ExpandedProjectOld{
 				ProjectName: "project",
 			},
 			err: fmt.Errorf("could not store git credentials during migration for project project: some err"),

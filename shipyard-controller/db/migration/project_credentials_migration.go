@@ -5,21 +5,26 @@ import (
 
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
+	"github.com/keptn/keptn/shipyard-controller/models"
 )
 
-func NewProjectCredentialsMigrator(dbConnection *db.MongoDBConnection, secretStore common.SecretStore) *ProjectCredentialsMigrator {
-	return &ProjectCredentialsMigrator{
+type ProjectCredentialsMigrator interface {
+	Transform() error
+}
+
+func NewProjectCredentialsMigrator(dbConnection *db.MongoDBConnection, secretStore common.SecretStore) *projectCredentialsMigrator {
+	return &projectCredentialsMigrator{
 		projectRepo: db.NewMongoDBProjectCredentialsRepo(dbConnection),
 		secretRepo:  db.NewMongoDBSecretCredentialsRepo(secretStore),
 	}
 }
 
-type ProjectCredentialsMigrator struct {
-	projectRepo *db.MongoDBProjectCredentialsRepo
-	secretRepo  *db.MongoDBSecretCredentialsRepo
+type projectCredentialsMigrator struct {
+	projectRepo db.MongoDBProjectCredentialsRepo
+	secretRepo  db.MongoDBSecretCredentialsRepo
 }
 
-func (s *ProjectCredentialsMigrator) Transform() error {
+func (s *projectCredentialsMigrator) Transform() error {
 	projects, err := s.projectRepo.GetOldCredentialsProjects()
 	if err != nil {
 		return fmt.Errorf("could not transform git credentials to new format: %w", err)
@@ -31,7 +36,7 @@ func (s *ProjectCredentialsMigrator) Transform() error {
 
 }
 
-func (s *ProjectCredentialsMigrator) updateProjects(projects []*db.ExpandedProjectOld) error {
+func (s *projectCredentialsMigrator) updateProjects(projects []*models.ExpandedProjectOld) error {
 	if projects == nil {
 		return nil
 	}
@@ -44,7 +49,7 @@ func (s *ProjectCredentialsMigrator) updateProjects(projects []*db.ExpandedProje
 	return nil
 }
 
-func (s *ProjectCredentialsMigrator) updateSecrets(projects []*db.ExpandedProjectOld) error {
+func (s *projectCredentialsMigrator) updateSecrets(projects []*models.ExpandedProjectOld) error {
 	if projects == nil {
 		return nil
 	}

@@ -7,61 +7,28 @@ import (
 	"time"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/keptn/shipyard-controller/models"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-type ExpandedProjectOld struct {
-
-	// Creation date of the project
-	CreationDate string `json:"creationDate,omitempty"`
-
-	// Git remote URI
-	GitRemoteURI string `json:"gitRemoteURI,omitempty"`
-
-	// Git User
-	GitUser string `json:"gitUser,omitempty"`
-
-	// last event context
-	LastEventContext *apimodels.EventContextInfo `json:"lastEventContext,omitempty"`
-
-	// Project name
-	ProjectName string `json:"projectName,omitempty"`
-
-	// Shipyard file content
-	Shipyard string `json:"shipyard,omitempty"`
-
-	// Version of the shipyard file
-	ShipyardVersion string `json:"shipyardVersion,omitempty"`
-
-	// git proxy URL
-	GitProxyURL string `json:"gitProxyUrl,omitempty"`
-
-	// git proxy scheme
-	GitProxyScheme string `json:"gitProxyScheme,omitempty"`
-
-	// git proxy user
-	GitProxyUser string `json:"gitProxyUser,omitempty"`
-
-	// insecure skip tls
-	InsecureSkipTLS bool `json:"insecureSkipTLS"`
-
-	// stages
-	Stages []*apimodels.ExpandedStage `json:"stages"`
+type MongoDBProjectCredentialsRepo interface {
+	UpdateProject(project *models.ExpandedProjectOld) error
+	GetOldCredentialsProjects() ([]*models.ExpandedProjectOld, error)
 }
 
-type MongoDBProjectCredentialsRepo struct {
+type mongoDBProjectCredentialsRepo struct {
 	ProjectRepo *MongoDBProjectsRepo
 }
 
-func NewMongoDBProjectCredentialsRepo(dbConnection *MongoDBConnection) *MongoDBProjectCredentialsRepo {
+func NewMongoDBProjectCredentialsRepo(dbConnection *MongoDBConnection) *mongoDBProjectCredentialsRepo {
 	projectsRepo := NewMongoDBProjectsRepo(dbConnection)
-	return &MongoDBProjectCredentialsRepo{
+	return &mongoDBProjectCredentialsRepo{
 		ProjectRepo: projectsRepo,
 	}
 }
 
-func (m *MongoDBProjectCredentialsRepo) GetOldCredentialsProjects() ([]*ExpandedProjectOld, error) {
-	result := []*ExpandedProjectOld{}
+func (m *mongoDBProjectCredentialsRepo) GetOldCredentialsProjects() ([]*models.ExpandedProjectOld, error) {
+	result := []*models.ExpandedProjectOld{}
 	err := m.ProjectRepo.DBConnection.EnsureDBConnection()
 	if err != nil {
 		return nil, err
@@ -77,7 +44,7 @@ func (m *MongoDBProjectCredentialsRepo) GetOldCredentialsProjects() ([]*Expanded
 	}
 	defer cursor.Close(ctx)
 	for cursor.Next(ctx) {
-		projectResult := &ExpandedProjectOld{}
+		projectResult := &models.ExpandedProjectOld{}
 		err := cursor.Decode(projectResult)
 		if err != nil {
 			fmt.Println("Could not cast to *models.Project")
@@ -88,7 +55,7 @@ func (m *MongoDBProjectCredentialsRepo) GetOldCredentialsProjects() ([]*Expanded
 	return result, nil
 }
 
-func TransformGitCredentials(project *ExpandedProjectOld) *apimodels.ExpandedProject {
+func TransformGitCredentials(project *models.ExpandedProjectOld) *apimodels.ExpandedProject {
 	//if project has no credentials, or has credentials in the newest format
 	if project.GitRemoteURI == "" {
 		return nil
@@ -124,7 +91,7 @@ func TransformGitCredentials(project *ExpandedProjectOld) *apimodels.ExpandedPro
 	return &newProject
 }
 
-func (m *MongoDBProjectCredentialsRepo) UpdateProject(project *ExpandedProjectOld) error {
+func (m *mongoDBProjectCredentialsRepo) UpdateProject(project *models.ExpandedProjectOld) error {
 	newProject := TransformGitCredentials(project)
 	if newProject == nil {
 		return nil

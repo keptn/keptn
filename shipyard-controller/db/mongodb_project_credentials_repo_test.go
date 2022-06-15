@@ -4,18 +4,19 @@ import (
 	"testing"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
 )
 
 func TestMongoDBProjectCredentialsRepo_Transform(t *testing.T) {
 	tests := []struct {
 		name string
-		in   *ExpandedProjectOld
+		in   *models.ExpandedProjectOld
 		out  *apimodels.ExpandedProject
 	}{
 		{
 			name: "project without credentials",
-			in: &ExpandedProjectOld{
+			in: &models.ExpandedProjectOld{
 				CreationDate:     "date",
 				LastEventContext: nil,
 				ProjectName:      "project",
@@ -27,7 +28,7 @@ func TestMongoDBProjectCredentialsRepo_Transform(t *testing.T) {
 		},
 		{
 			name: "project with empty credentials",
-			in: &ExpandedProjectOld{
+			in: &models.ExpandedProjectOld{
 				CreationDate:     "date",
 				LastEventContext: nil,
 				ProjectName:      "project",
@@ -41,7 +42,7 @@ func TestMongoDBProjectCredentialsRepo_Transform(t *testing.T) {
 		},
 		{
 			name: "project with ssh credentials - user",
-			in: &ExpandedProjectOld{
+			in: &models.ExpandedProjectOld{
 				CreationDate:     "date",
 				LastEventContext: nil,
 				ProjectName:      "project",
@@ -66,7 +67,7 @@ func TestMongoDBProjectCredentialsRepo_Transform(t *testing.T) {
 		},
 		{
 			name: "project with ssh credentials - no user",
-			in: &ExpandedProjectOld{
+			in: &models.ExpandedProjectOld{
 				CreationDate:     "date",
 				LastEventContext: nil,
 				ProjectName:      "project",
@@ -90,7 +91,7 @@ func TestMongoDBProjectCredentialsRepo_Transform(t *testing.T) {
 		},
 		{
 			name: "project with ssh credentials - nil user",
-			in: &ExpandedProjectOld{
+			in: &models.ExpandedProjectOld{
 				CreationDate:     "date",
 				LastEventContext: nil,
 				ProjectName:      "project",
@@ -113,7 +114,7 @@ func TestMongoDBProjectCredentialsRepo_Transform(t *testing.T) {
 		},
 		{
 			name: "project with http credentials - tls false",
-			in: &ExpandedProjectOld{
+			in: &models.ExpandedProjectOld{
 				CreationDate:     "date",
 				LastEventContext: nil,
 				ProjectName:      "project",
@@ -142,7 +143,7 @@ func TestMongoDBProjectCredentialsRepo_Transform(t *testing.T) {
 		},
 		{
 			name: "project with http credentials - tls true",
-			in: &ExpandedProjectOld{
+			in: &models.ExpandedProjectOld{
 				CreationDate:     "date",
 				LastEventContext: nil,
 				ProjectName:      "project",
@@ -171,7 +172,7 @@ func TestMongoDBProjectCredentialsRepo_Transform(t *testing.T) {
 		},
 		{
 			name: "project with http credentials - tls undefined",
-			in: &ExpandedProjectOld{
+			in: &models.ExpandedProjectOld{
 				CreationDate:     "date",
 				LastEventContext: nil,
 				ProjectName:      "project",
@@ -199,7 +200,7 @@ func TestMongoDBProjectCredentialsRepo_Transform(t *testing.T) {
 		},
 		{
 			name: "project with http credentials - nil user",
-			in: &ExpandedProjectOld{
+			in: &models.ExpandedProjectOld{
 				CreationDate:     "date",
 				LastEventContext: nil,
 				ProjectName:      "project",
@@ -225,7 +226,7 @@ func TestMongoDBProjectCredentialsRepo_Transform(t *testing.T) {
 		},
 		{
 			name: "project with http credentials - proxy",
-			in: &ExpandedProjectOld{
+			in: &models.ExpandedProjectOld{
 				CreationDate:     "date",
 				LastEventContext: nil,
 				ProjectName:      "project",
@@ -259,7 +260,7 @@ func TestMongoDBProjectCredentialsRepo_Transform(t *testing.T) {
 		},
 		{
 			name: "project with http credentials - proxy no user",
-			in: &ExpandedProjectOld{
+			in: &models.ExpandedProjectOld{
 				CreationDate:     "date",
 				LastEventContext: nil,
 				ProjectName:      "project",
@@ -291,7 +292,7 @@ func TestMongoDBProjectCredentialsRepo_Transform(t *testing.T) {
 		},
 		{
 			name: "project with http credentials - proxy empty",
-			in: &ExpandedProjectOld{
+			in: &models.ExpandedProjectOld{
 				CreationDate:     "date",
 				LastEventContext: nil,
 				ProjectName:      "project",

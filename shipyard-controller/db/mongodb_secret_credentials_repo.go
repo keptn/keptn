@@ -7,19 +7,24 @@ import (
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/common"
+	"github.com/keptn/keptn/shipyard-controller/models"
 )
 
-type MongoDBSecretCredentialsRepo struct {
+type MongoDBSecretCredentialsRepo interface {
+	UpdateSecret(project *models.ExpandedProjectOld) error
+}
+
+type mongoDBSecretCredentialsRepo struct {
 	SecretStore common.SecretStore
 }
 
-func NewMongoDBSecretCredentialsRepo(secretStore common.SecretStore) *MongoDBSecretCredentialsRepo {
-	return &MongoDBSecretCredentialsRepo{
+func NewMongoDBSecretCredentialsRepo(secretStore common.SecretStore) *mongoDBSecretCredentialsRepo {
+	return &mongoDBSecretCredentialsRepo{
 		SecretStore: secretStore,
 	}
 }
 
-func (s *MongoDBSecretCredentialsRepo) UpdateSecret(project *ExpandedProjectOld) error {
+func (s *mongoDBSecretCredentialsRepo) UpdateSecret(project *models.ExpandedProjectOld) error {
 	secret, err := s.SecretStore.GetSecret("git-credentials-" + project.ProjectName)
 	if err != nil {
 		return fmt.Errorf("failed to get git-credentials secret during migration for project %s", project.ProjectName)
@@ -27,7 +32,7 @@ func (s *MongoDBSecretCredentialsRepo) UpdateSecret(project *ExpandedProjectOld)
 	if secret != nil {
 		if marshalledSecret, ok := secret["git-credentials"]; ok {
 			//try to unmarshall to old format
-			secretObj := &GitOldCredentials{}
+			secretObj := &models.GitOldCredentials{}
 			if err := json.Unmarshal(marshalledSecret, secretObj); err != nil {
 				return fmt.Errorf("failed to unmarshal git-credentials secret during migration for project %s", project.ProjectName)
 			}
@@ -53,7 +58,7 @@ func (s *MongoDBSecretCredentialsRepo) UpdateSecret(project *ExpandedProjectOld)
 	return nil
 }
 
-func transformSecret(oldSecret *GitOldCredentials) *apimodels.GitAuthCredentials {
+func transformSecret(oldSecret *models.GitOldCredentials) *apimodels.GitAuthCredentials {
 	//if project has credentials in the newest format
 	if oldSecret.RemoteURI == "" {
 		return nil
@@ -88,18 +93,4 @@ func transformSecret(oldSecret *GitOldCredentials) *apimodels.GitAuthCredentials
 	}
 
 	return &newSecret
-}
-
-type GitOldCredentials struct {
-	User              string `json:"user,omitempty"`
-	Token             string `json:"token,omitempty"`
-	RemoteURI         string `json:"remoteURI,omitempty"`
-	GitPrivateKey     string `json:"privateKey,omitempty"`
-	GitPrivateKeyPass string `json:"privateKeyPass,omitempty"`
-	GitProxyURL       string `json:"gitProxyUrl,omitempty"`
-	GitProxyScheme    string `json:"gitProxyScheme,omitempty"`
-	GitProxyUser      string `json:"gitProxyUser,omitempty"`
-	GitProxyPassword  string `json:"gitProxyPassword,omitempty"`
-	GitPemCertificate string `json:"gitPemCertificate,omitempty"`
-	InsecureSkipTLS   bool   `json:"insecureSkipTLS,omitempty"`
 }
