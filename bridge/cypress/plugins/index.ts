@@ -18,7 +18,7 @@ export default (on: Cypress.PluginEvents, config: Cypress.PluginConfigOptions): 
     logError(logs: (string | undefined | Error)[][]): number {
       const expected = expectedErrorCount;
       if (logs.length !== expected) {
-        console.log(logs);
+        console.log('Received errors:', logs);
       }
       expectedErrorCount = 0;
       return expected;
@@ -26,7 +26,7 @@ export default (on: Cypress.PluginEvents, config: Cypress.PluginConfigOptions): 
     logWarning(logs: string[]): number {
       const expected = expectedWarningCount;
       if (logs.length !== expected) {
-        console.log(logs);
+        console.log('Received warnings:', logs);
       }
       expectedWarningCount = 0;
       return expected;
