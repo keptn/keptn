@@ -586,27 +586,6 @@ export class DataService {
     return Object.keys(services);
   }
 
-  public async getRoots(
-    accessToken: string | undefined,
-    projectName: string | undefined,
-    pageSize: string | undefined,
-    serviceName: string | undefined,
-    fromTime?: string | undefined,
-    beforeTime?: string | undefined,
-    keptnContext?: string | undefined
-  ): Promise<EventResult> {
-    const response = await this.apiService.getRoots(
-      accessToken,
-      projectName,
-      pageSize,
-      serviceName,
-      fromTime,
-      beforeTime,
-      keptnContext
-    );
-    return response.data;
-  }
-
   public async getTracesByContext(
     accessToken: string | undefined,
     keptnContext: string | undefined,

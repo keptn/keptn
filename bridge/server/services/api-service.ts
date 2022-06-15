@@ -101,30 +101,6 @@ export class ApiService {
     });
   }
 
-  public getRoots(
-    accessToken: string | undefined,
-    projectName: string | undefined,
-    pageSize: string | undefined,
-    serviceName: string | undefined,
-    fromTime?: string | undefined,
-    beforeTime?: string | undefined,
-    keptnContext?: string | undefined
-  ): Promise<AxiosResponse<EventResult>> {
-    const params = {
-      root: 'true',
-      project: projectName,
-      limit: pageSize,
-      ...(serviceName && { serviceName }),
-      ...(fromTime && { fromTime }),
-      ...(beforeTime && { beforeTime }),
-      ...(keptnContext && { keptnContext }),
-    };
-    return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event`, {
-      params,
-      ...this.getAuthHeaders(accessToken),
-    });
-  }
-
   public getTracesWithResultAndSource(
     accessToken: string | undefined,
     traceOptions: TraceOptions
