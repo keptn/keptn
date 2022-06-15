@@ -23,7 +23,6 @@ func main() {
 			logrus.SetLevel(logLevel)
 		}
 	}
-
 	log.Fatal(sdk.NewKeptn(
 		serviceName,
 		sdk.WithTaskHandler(
