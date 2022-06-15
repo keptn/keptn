@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/keptn/go-utils v0.16.1
-	github.com/keptn/keptn/go-sdk v0.0.0-20220615092623-24dd4e7bf1b7
+	github.com/keptn/keptn/go-sdk v0.0.0-20220615110453-1b6d1004105a
 	github.com/sirupsen/logrus v1.8.1
 )
 
