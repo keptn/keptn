@@ -67,7 +67,6 @@ export class KtbSequenceViewComponent implements OnDestroy {
     // Method to decide if a node should be displayed in the quick filter
     showInSidebar: (node) => isObject(node) && node.showInSidebar,
   };
-  // private project?: Project;
   private unfinishedSequences: Sequence[] = [];
   private readonly _tracesTimerInterval: number = 10_000;
   private readonly _sequenceTimerInterval: number = 30_000;
