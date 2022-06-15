@@ -487,7 +487,7 @@ func Test__main_SequenceQueueTriggerMultiple(t *testing.T) {
 				}
 			}
 			return false
-		}, 15*time.Second, 100*time.Millisecond)
+		}, 30*time.Second, 100*time.Millisecond)
 
 		controlSequence(t, projectName, currentActiveSequence.Shkeptncontext, apimodels.AbortSequence)
 	}
