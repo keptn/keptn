@@ -7,7 +7,7 @@ export abstract class KtbOverlay {
   protected elementRef: ElementRef;
   protected overlayRef?: OverlayRef;
   protected overlayService: OverlayService;
-  protected unsubscribe$: Subject<void> = new Subject();
+  private unsubscribe$: Subject<void> = new Subject();
   private readonly closeCallback = (): void => this.close();
   private readonly width: string;
   private readonly height: string;
