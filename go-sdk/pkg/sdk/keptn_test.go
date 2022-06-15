@@ -3,7 +3,7 @@ package sdk
 import (
 	"context"
 	"fmt"
-	"github.com/keptn/keptn/go-sdk/pkg/sdk/internal/config"
+	"github.com/keptn/keptn/go-sdk/internal/config"
 	"testing"
 
 	"github.com/google/uuid"
