@@ -58,7 +58,7 @@ func main() {
 
 	subscriptionSource := subscriptionsource.New(api.UniformV1(), subscriptionsource.WithLogger(log))
 
-	natsConnector := nats.ConnectFromEnv()
+	natsConnector := nats.NewFromEnv()
 	nats.WithLogger(log)
 
 	eventSource := eventsource.New(natsConnector, eventsource.WithLogger(log))

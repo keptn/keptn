@@ -89,7 +89,7 @@ func configureAPI(api *operations.MongodbDatastoreAPI) http.Handler {
 
 func startControlPlane(ctx context.Context, api *operations.MongodbDatastoreAPI, eventRequestHandler controlplane.Integration, log *log.Logger) error {
 	// 1. create a subscription source
-	natsConnector := nats.ConnectFromEnv()
+	natsConnector := nats.NewFromEnv()
 	nats.WithLogger(log)
 	eventSource := eventsource.New(natsConnector, eventsource.WithLogger(log))
 
