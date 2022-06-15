@@ -94,16 +94,17 @@ func TransformGitCredentials(project *ExpandedProjectOld) *apimodels.ExpandedPro
 		return nil
 	}
 
-	newProject := apimodels.ExpandedProject{}
-	newProject.CreationDate = project.CreationDate
-	newProject.LastEventContext = project.LastEventContext
-	newProject.ProjectName = project.ProjectName
-	newProject.Shipyard = project.Shipyard
-	newProject.ShipyardVersion = project.ShipyardVersion
-	newProject.Stages = project.Stages
-	newProject.GitCredentials = &apimodels.GitAuthCredentialsSecure{
-		RemoteURL: project.GitRemoteURI,
-		User:      project.GitUser,
+	newProject := apimodels.ExpandedProject{
+		CreationDate:     project.CreationDate,
+		LastEventContext: project.LastEventContext,
+		ProjectName:      project.ProjectName,
+		Shipyard:         project.Shipyard,
+		ShipyardVersion:  project.ShipyardVersion,
+		Stages:           project.Stages,
+		GitCredentials: &apimodels.GitAuthCredentialsSecure{
+			RemoteURL: project.GitRemoteURI,
+			User:      project.GitUser,
+		},
 	}
 
 	if strings.HasPrefix(project.GitRemoteURI, "http") {
