@@ -92,7 +92,6 @@ import { KtbStageDetailsComponent } from './_components/ktb-stage-details/ktb-st
 import { KtbStageOverviewComponent } from './_components/ktb-stage-overview/ktb-stage-overview.component';
 import { KtbSubscriptionItemComponent } from './_components/ktb-subscription-item/ktb-subscription-item.component';
 import { KtbTaskItemComponent, KtbTaskItemDetailDirective } from './_components/ktb-task-item/ktb-task-item.component';
-import { KtbTimeInputComponent } from './_components/ktb-time-input/ktb-time-input.component';
 import {
   KtbTreeListSelectComponent,
   KtbTreeListSelectDirective,
@@ -277,14 +276,12 @@ const ktbModules = [
     KtbUserComponent,
     KtbKeptnServicesListComponent,
     KtbSubscriptionItemComponent,
-    KtbDeploymentListComponent,
     KtbServiceDetailsComponent,
     KtbSettingsViewComponent,
     KtbDeploymentStageTimelineComponent,
     KtbSequenceListComponent,
     KtbUniformRegistrationLogsComponent,
     KtbSecretsListComponent,
-    KtbCreateSecretFormComponent,
     KtbNoServiceInfoComponent,
     KtbProjectSettingsGitComponent,
     KtbProjectSettingsShipyardComponent,
@@ -292,11 +289,9 @@ const ktbModules = [
     KtbUniformSubscriptionsComponent,
     ToDatePipe,
     KtbProjectSettingsComponent,
-    KtbDeleteConfirmationComponent,
     KtbModifyUniformSubscriptionComponent,
     KtbWebhookSettingsComponent,
     KtbServiceSettingsComponent,
-    KtbCreateServiceComponent,
     KtbServiceSettingsOverviewComponent,
     KtbServiceSettingsListComponent,
     KtbEditServiceComponent,
@@ -309,9 +304,6 @@ const ktbModules = [
     ArrayToStringPipe,
     KtbProjectCreateMessageComponent,
     KtbTriggerSequenceComponent,
-    KtbTimeInputComponent,
-    KtbDatetimePickerComponent,
-    KtbDatetimePickerDirective,
     KtbErrorViewComponent,
     KtbRootComponent,
     KtbLogoutViewComponent,

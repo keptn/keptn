@@ -4,7 +4,6 @@ import { KtbTreeListSelectComponent, KtbTreeListSelectDirective } from './ktb-tr
 import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ElementRef } from '@angular/core';
-import { Router } from '@angular/router';
 import { BrowserDynamicTestingModule } from '@angular/platform-browser-dynamic/testing';
 import { OverlayService } from '../../_directives/overlay-service/overlay.service';
 
@@ -39,11 +38,7 @@ describe('KtbTreeListSelectComponent', () => {
 
     fixture = TestBed.createComponent(KtbTreeListSelectComponent);
     component = fixture.componentInstance;
-    directive = new KtbTreeListSelectDirective(
-      TestBed.inject(ElementRef),
-      TestBed.inject(Router),
-      TestBed.inject(OverlayService)
-    );
+    directive = new KtbTreeListSelectDirective(TestBed.inject(ElementRef), TestBed.inject(OverlayService));
     directive.ngOnInit();
     fixture.detectChanges();
   });
