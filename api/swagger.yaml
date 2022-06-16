@@ -64,7 +64,7 @@ paths:
       tags:
         - Import
       operationId: import
-      summary: Imports configuration ZIP package
+      summary: "WIP/DO NOT USE: Import a zip package"
       parameters:         
         - in: formData
           name: configPackage

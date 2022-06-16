@@ -2,10 +2,13 @@ package handlers
 
 import (
 	"archive/zip"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path"
+	"strings"
 
 	"github.com/go-openapi/runtime/middleware"
 
@@ -15,26 +18,56 @@ import (
 	logger "github.com/sirupsen/logrus"
 )
 
+const defaultImportArchiveExtension = ".zip"
+
+// FIXME we specify package handlers_mock not to break existing mock files but given the directory structure it
+//  should be package fake instead
+//go:generate moq -pkg handlers_mock --skip-ensure -out ./fake/projectchecker_mock.go . projectChecker:ProjectCheckerMock
+
+type projectChecker interface {
+	ProjectExists(projectName string) (bool, error)
+}
+
 type ImportHandler struct {
+	checker        projectChecker
 	tempStorageDir string
 }
 
-func GetImportHandlerFunc() func(
+func GetImportHandlerFunc(storagePath string, checker projectChecker) func(
 	params import_operations.ImportParams, principal *models.Principal,
 ) middleware.Responder {
-	ih := getImportHandlerInstance()
+	ih := getImportHandlerInstance(storagePath, checker)
 	return ih.HandleImport
 }
 
-func getImportHandlerInstance() *ImportHandler {
-	return new(ImportHandler)
+func getImportHandlerInstance(storagePath string, checker projectChecker) *ImportHandler {
+	return &ImportHandler{
+		checker:        checker,
+		tempStorageDir: storagePath,
+	}
 }
 
 func (ih *ImportHandler) HandleImport(
 	params import_operations.ImportParams, principal *models.Principal,
 ) middleware.Responder {
-	// TODO verify the Content-type of the request ?
-	file, err := ioutil.TempFile(ih.tempStorageDir, "importConfig*.zip")
+
+	// Check if the project exists
+	projectExists, err := ih.checker.ProjectExists(params.Project)
+
+	if err != nil || !projectExists {
+		message := fmt.Sprintf("project %s does not exist", params.Project)
+		if err != nil {
+			message = fmt.Sprintf("error checking for project %s existence : %v", params.Project, err)
+		}
+
+		error := models.Error{
+			Code:    http.StatusNotFound,
+			Message: &message,
+		}
+		return import_operations.NewImportNotFound().WithPayload(&error)
+	}
+
+	file, err := ioutil.TempFile(ih.tempStorageDir, "importConfig*"+defaultImportArchiveExtension)
 	if err != nil {
 		return import_operations.NewImportBadRequest()
 	}
@@ -54,13 +87,18 @@ func (ih *ImportHandler) HandleImport(
 	tempFileSize, err := io.Copy(file, params.ConfigPackage)
 	if err != nil {
 		logger.Errorf("Error saving import archive: %v", err)
-		return import_operations.NewImportBadRequest()
+		message := fmt.Sprintf("Error reading import archive: %s", err)
+		error := models.Error{
+			Code:    http.StatusBadRequest,
+			Message: &message,
+		}
+		return import_operations.NewImportBadRequest().WithPayload(&error)
 	}
 
 	zipReader, err := zip.NewReader(file, tempFileSize)
 	if err != nil {
 		logger.Errorf("Error opening import archive %s: %v", file.Name(), err)
-		message := "Error opening import archive: " + err.Error()
+		message := fmt.Sprintf("Error opening import archive: %s", err)
 		error := models.Error{
 			Code:    http.StatusUnsupportedMediaType,
 			Message: &message,
@@ -68,13 +106,87 @@ func (ih *ImportHandler) HandleImport(
 		return import_operations.NewImportUnsupportedMediaType().WithPayload(&error)
 	}
 
-	var totalUncompressedSize uint64
-	for _, zippedFile := range zipReader.File {
-		logger.Debugf("Inspecting file %+v from import archive...", zippedFile)
-		totalUncompressedSize += zippedFile.UncompressedSize64
+	extractionDir := strings.TrimSuffix(file.Name(), defaultImportArchiveExtension)
+	err = os.Mkdir(extractionDir, os.ModeDir|os.ModePerm)
+	if err != nil {
+		logger.Errorf("Error creating folder %s for zip extraction: %v", extractionDir, err)
+		message := fmt.Sprintf("Error reading import archive: %s", err)
+		error := models.Error{
+			Code:    http.StatusBadRequest,
+			Message: &message,
+		}
+		return import_operations.NewImportBadRequest().WithPayload(&error)
 	}
 
-	logger.Infof("Total uncompressed size of import archive %d bytes", totalUncompressedSize)
+	defer func() {
+		errCleanup := os.RemoveAll(extractionDir)
+		if errCleanup != nil {
+			logger.Warnf("Error cleaning up extraction directory %s: %v", extractionDir, errCleanup)
+		}
+	}()
+
+	err = extractZipFile(zipReader, extractionDir)
+
+	if err != nil {
+		logger.Errorf("Error extracting zip %s: %v", file.Name(), err)
+		message := fmt.Sprintf("Error extracting archive: %s", err)
+		error := models.Error{
+			Code:    http.StatusBadRequest,
+			Message: &message,
+		}
+		// TODO check if we want to return something != 400
+		return import_operations.NewImportBadRequest().WithPayload(&error)
+	}
+
+	// TODO validate and start mainfest import
 
 	return import_operations.NewImportOK()
+}
+
+func extractZipFile(reader *zip.Reader, outputDir string) error {
+
+	// TODO add constraint on maximum extracted archive size
+
+	for _, zippedFile := range reader.File {
+		logger.Debugf("Extracting file %+v to %s...", reader, outputDir)
+
+		if zippedFile.FileInfo().IsDir() {
+			fullOuputDirectoryName := path.Join(outputDir, zippedFile.Name)
+			err := os.Mkdir(fullOuputDirectoryName, 0755)
+			if err != nil {
+				return fmt.Errorf("error creating directory %s: %w", fullOuputDirectoryName, err)
+			}
+		} else {
+			err := func() error {
+				src, err := zippedFile.Open()
+				if err != nil {
+					return fmt.Errorf("error reading %s from archive: %w", zippedFile.Name, err)
+				}
+				defer src.Close()
+
+				dst, err := os.Create(path.Join(outputDir, zippedFile.Name))
+				if err != nil {
+					return fmt.Errorf(
+						"error creating file %s in output directory %s: %w", zippedFile.Name, outputDir, err,
+					)
+				}
+				defer dst.Close()
+
+				// TODO add safety checks on the actual written file size
+				_, err = io.Copy(dst, src)
+
+				if err != nil {
+					return fmt.Errorf("error extracting %s from archive into %s: %w", zippedFile.Name, dst.Name(), err)
+				}
+
+				return nil
+			}()
+
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }

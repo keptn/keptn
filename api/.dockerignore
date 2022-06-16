@@ -3,3 +3,4 @@
 docs/
 deploy/
 Dockerfile
+test/

@@ -26,6 +26,7 @@ import (
 	"github.com/keptn/keptn/api/restapi/operations/event"
 	"github.com/keptn/keptn/api/restapi/operations/import_operations"
 	"github.com/keptn/keptn/api/restapi/operations/metadata"
+	"github.com/keptn/keptn/api/utils"
 )
 
 //go:generate swagger generate server --target ../../api --name Keptn --spec ../swagger.yaml --principal models.Principal
@@ -33,9 +34,11 @@ import (
 const envVarLogLevel = "LOG_LEVEL"
 
 type EnvConfig struct {
-	MaxAuthEnabled           bool    `envconfig:"MAX_AUTH_ENABLED" default:"true"`
-	MaxAuthRequestsPerSecond float64 `envconfig:"MAX_AUTH_REQUESTS_PER_SECOND" default:"1"`
-	MaxAuthRequestBurst      int     `envconfig:"MAX_AUTH_REQUESTS_BURST" default:"2"`
+	MaxAuthEnabled            bool    `envconfig:"MAX_AUTH_ENABLED" default:"true"`
+	MaxAuthRequestsPerSecond  float64 `envconfig:"MAX_AUTH_REQUESTS_PER_SECOND" default:"1"`
+	MaxAuthRequestBurst       int     `envconfig:"MAX_AUTH_REQUESTS_BURST" default:"2"`
+	MaxImportUncompressedSize uint64  `envconfig:"MAX_IMPORT_UNCOMPRESSED_SIZE" default:"52428800"` // 50MB default value
+	ImportBasePath            string  `envconfig:"IMPORT_BASE_PATH"`
 }
 
 func configureFlags(api *operations.KeptnAPI) {
@@ -92,7 +95,11 @@ func configureAPI(api *operations.KeptnAPI) http.Handler {
 	//api.EvaluationTriggerEvaluationHandler = evaluation.TriggerEvaluationHandlerFunc(handlers.TriggerEvaluationHandlerFunc)
 
 	// Import endpoint
-	api.ImportOperationsImportHandler = import_operations.ImportHandlerFunc(handlers.GetImportHandlerFunc())
+	api.ImportOperationsImportHandler = import_operations.ImportHandlerFunc(
+		handlers.GetImportHandlerFunc(
+			env.ImportBasePath, new(utils.ConfigurationServiceProjectChecker),
+		),
+	)
 
 	if env.MaxAuthEnabled {
 		rateLimiter := custommiddleware.NewRateLimiter(env.MaxAuthRequestsPerSecond, env.MaxAuthRequestBurst, tokenValidator, clock.New())
