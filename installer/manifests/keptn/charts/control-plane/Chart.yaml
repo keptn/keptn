@@ -24,7 +24,7 @@ appVersion: latest
 
 dependencies:
   - name: mongodb
-    version: 10.26.4
+    version: 11.1.5
     repository: https://charts.bitnami.com/bitnami
     condition: mongo.enabled
     alias: mongo
