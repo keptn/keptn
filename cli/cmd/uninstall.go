@@ -10,6 +10,7 @@ import (
 
 // uninstallCmd represents the uninstall command
 var uninstallCmd = &cobra.Command{
+	Deprecated:   fmt.Sprintf(MsgDeprecatedUseHelm, Version),
 	Use:          "uninstall",
 	Args:         cobra.NoArgs,
 	SilenceUsage: true,
