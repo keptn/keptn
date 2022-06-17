@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -12,4 +13,10 @@ func TestUninstallUnknownCommand(t *testing.T) {
 // TestUninstallUnknownParameter
 func TestUninstallUnknownParmeter(t *testing.T) {
 	testInvalidInputHelper("uninstall --project=sockshop", "unknown flag: --project", t)
+}
+
+// TestUninstallDeprecated
+func TestUninstallDeprecated(t *testing.T) {
+	Version = "0.16.0"
+	testInvalidInputHelper("uninstall", fmt.Sprintf("this command is deprecated! "+MsgDeprecatedUseHelm, Version), t)
 }

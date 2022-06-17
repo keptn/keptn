@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -10,11 +11,12 @@ func TestInstallUnknownCommand(t *testing.T) {
 }
 
 // TestInstallUnknownParameter
-func TestInstallUnknownParmeter(t *testing.T) {
+func TestInstallUnknownParameter(t *testing.T) {
 	testInvalidInputHelper("install --project=sockshop", "unknown flag: --project", t)
 }
 
-// TestInstallUnknownParameter
+// TestInstallDeprecated
 func TestInstallDeprecated(t *testing.T) {
-	testInvalidInputHelper("install --hide-sensitive-data ", MsgDeprecatedUseHelm, t)
+	Version = "0.16.0"
+	testInvalidInputHelper("install --hide-sensitive-data ", fmt.Sprintf("this command is deprecated! "+MsgDeprecatedUseHelm, Version), t)
 }

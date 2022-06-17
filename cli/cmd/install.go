@@ -49,12 +49,12 @@ var installCmd = NewInstallCmd()
 
 func NewInstallCmd() *cobra.Command {
 	return &cobra.Command{
-		Deprecated:   MsgDeprecatedUseHelm,
+		Deprecated:   fmt.Sprintf(MsgDeprecatedUseHelm, Version),
 		Use:          "install",
 		Args:         cobra.NoArgs,
 		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return fmt.Errorf(MsgDeprecatedUseHelm, Version)
+			return fmt.Errorf("this command is deprecated! "+MsgDeprecatedUseHelm, Version)
 		},
 	}
 }
