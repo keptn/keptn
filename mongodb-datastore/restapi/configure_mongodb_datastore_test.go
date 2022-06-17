@@ -28,7 +28,7 @@ func Test_startControlPlaneSuccess(t *testing.T) {
 
 	api := &operations.MongodbDatastoreAPI{}
 	eventRequestHandler := handlers.NewEventRequestHandler(nil)
-	ctx := context.TODO()
+	ctx, cancel := context.WithCancel(context.TODO())
 	go func() {
 		err := startControlPlane(ctx, api, eventRequestHandler, logger.New())
 		require.Nil(t, err)
@@ -38,12 +38,26 @@ func Test_startControlPlaneSuccess(t *testing.T) {
 	require.Eventually(t, func() bool {
 		return getPreShutDown(api) != nil
 	}, 10*time.Second, 1*time.Second)
+	cancel()
 
 }
 
 func Test_startControlPlaneFailNoNATS(t *testing.T) {
 	eventRequestHandler := handlers.NewEventRequestHandler(nil)
-	err := startControlPlane(context.TODO(), &operations.MongodbDatastoreAPI{}, eventRequestHandler, logger.New())
+
+	log := &logger.Logger{
+		Out:       os.Stderr,
+		Formatter: new(logger.TextFormatter),
+		Hooks:     make(logger.LevelHooks),
+		Level:     logger.DebugLevel,
+	}
+	ctx, cancel := context.WithCancel(context.TODO())
+	go func() {
+		time.Sleep(10 * time.Second)
+		cancel()
+	}()
+	err := startControlPlane(ctx, &operations.MongodbDatastoreAPI{}, eventRequestHandler, log)
 	require.Error(t, err)
-	require.Contains(t, err.Error(), "could not connect to NATS")
+	require.Contains(t, err.Error(), "Could not handle subscription update")
+
 }
