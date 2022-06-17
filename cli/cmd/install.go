@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"github.com/keptn/keptn/cli/pkg/platform"
 	"github.com/spf13/cobra"
-	"helm.sh/helm/v3/pkg/chart"
 )
 
 type installCmdParams struct {
@@ -34,15 +33,6 @@ type installCmdParams struct {
 }
 
 var installParams installCmdParams
-
-var keptnChart *chart.Chart
-
-var continuousDeliveryServiceCharts []*chart.Chart
-
-const helmServiceName = "helm-service"
-const jmeterServiceName = "jmeter-service"
-
-var continuousDeliveryServices = []string{helmServiceName, jmeterServiceName}
 
 // installCmd represents the version command
 var installCmd = NewInstallCmd()

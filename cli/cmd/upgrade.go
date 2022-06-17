@@ -19,14 +19,8 @@ package cmd
 
 import (
 	"fmt"
-	"helm.sh/helm/v3/pkg/chart"
-
 	"github.com/spf13/cobra"
 )
-
-const keptnReleaseName = "keptn"
-
-var keptnUpgradeChart *chart.Chart
 
 // installCmd represents the version command
 var upgraderCmd = NewUpgraderCommand()
