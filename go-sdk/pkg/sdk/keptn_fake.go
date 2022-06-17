@@ -7,7 +7,6 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	api2 "github.com/keptn/keptn/cp-common/api"
 	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
 	"github.com/keptn/keptn/cp-connector/pkg/types"
 	"github.com/stretchr/testify/require"
@@ -92,14 +91,13 @@ func (f *FakeKeptn) fakeSender(ce models.KeptnContextExtendedCE) error {
 	return nil
 }
 
-func NewFakeKeptn(source string) *FakeKeptn {
-	internal, _ := api2.NewInternal(nil)
+func NewFakeKeptn(source string, fakeAPI api.KeptnInterface) *FakeKeptn {
 	resourceHandler := &TestResourceHandler{}
 	var fakeKeptn = &FakeKeptn{
 		TestResourceHandler: resourceHandler,
 		Keptn: &Keptn{
 			source:                 source,
-			api:                    internal,
+			api:                    fakeAPI,
 			resourceHandler:        resourceHandler,
 			taskRegistry:           newTaskMap(),
 			syncProcessing:         true,

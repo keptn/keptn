@@ -3,6 +3,7 @@ package sdk
 import (
 	"context"
 	"fmt"
+	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/go-sdk/internal/config"
 	"testing"
 
@@ -16,7 +17,7 @@ import (
 func Test_ReceivingEventWithMissingType(t *testing.T) {
 	taskHandler := &TaskHandlerMock{}
 	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) { return FakeTaskData{}, nil }
-	fakeKeptn := NewFakeKeptn("fake")
+	fakeKeptn := NewFakeKeptn("fake", &api.APISet{})
 	fakeKeptn.AddTaskHandler("sh.keptn.event.faketask.triggered", taskHandler)
 	fakeKeptn.NewEvent(models.KeptnContextExtendedCE{
 		Data:           v0_2_0.EventData{Project: "prj", Stage: "stg", Service: "svc"},
@@ -31,7 +32,7 @@ func Test_ReceivingEventWithMissingType(t *testing.T) {
 func Test_CannotGetEventSenderFromContext(t *testing.T) {
 	taskHandler := &TaskHandlerMock{}
 	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) { return FakeTaskData{}, nil }
-	fakeKeptn := NewFakeKeptn("fake")
+	fakeKeptn := NewFakeKeptn("fake", &api.APISet{})
 	fakeKeptn.AddTaskHandler("sh.keptn.event.faketask.triggered", taskHandler)
 	fakeKeptn.Keptn.OnEvent(context.TODO(), models.KeptnContextExtendedCE{
 		Data:           v0_2_0.EventData{Project: "prj", Stage: "stg", Service: "svc"},
@@ -47,7 +48,7 @@ func Test_CannotGetEventSenderFromContext(t *testing.T) {
 func Test_WhenReceivingAnEvent_StartedEventAndFinishedEventsAreSent(t *testing.T) {
 	taskHandler := &TaskHandlerMock{}
 	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) { return FakeTaskData{}, nil }
-	fakeKeptn := NewFakeKeptn("fake")
+	fakeKeptn := NewFakeKeptn("fake", &api.APISet{})
 	fakeKeptn.AddTaskHandler("sh.keptn.event.faketask.triggered", taskHandler)
 	fakeKeptn.NewEvent(models.KeptnContextExtendedCE{
 		Data:           v0_2_0.EventData{Project: "prj", Stage: "stg", Service: "svc"},
@@ -72,7 +73,7 @@ func Test_WhenReceivingAnEvent_TaskHandlerFails(t *testing.T) {
 			Err:        fmt.Errorf("something went wrong"),
 		}
 	}
-	fakeKeptn := NewFakeKeptn("fake")
+	fakeKeptn := NewFakeKeptn("fake", &api.APISet{})
 	fakeKeptn.AddTaskHandler("sh.keptn.event.faketask.triggered", taskHandler)
 	fakeKeptn.NewEvent(models.KeptnContextExtendedCE{
 		Data:           v0_2_0.EventData{Project: "prj", Stage: "stg", Service: "svc"},
@@ -92,7 +93,7 @@ func Test_WhenReceivingAnEvent_TaskHandlerFails(t *testing.T) {
 func Test_WhenReceivingBadEvent_NoEventIsSent(t *testing.T) {
 	taskHandler := &TaskHandlerMock{}
 	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) { return FakeTaskData{}, nil }
-	fakeKeptn := NewFakeKeptn("fake")
+	fakeKeptn := NewFakeKeptn("fake", &api.APISet{})
 	fakeKeptn.AddTaskHandler("sh.keptn.event.faketask.triggered", taskHandler)
 	fakeKeptn.NewEvent(newTestTaskBadTriggeredEvent())
 	fakeKeptn.AssertNumberOfEventSent(t, 0)
@@ -101,7 +102,7 @@ func Test_WhenReceivingBadEvent_NoEventIsSent(t *testing.T) {
 func Test_WhenReceivingAnEvent_AndNoFilterMatches_NoEventIsSent(t *testing.T) {
 	taskHandler := &TaskHandlerMock{}
 	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) { return FakeTaskData{}, nil }
-	fakeKeptn := NewFakeKeptn("fake")
+	fakeKeptn := NewFakeKeptn("fake", &api.APISet{})
 	fakeKeptn.AddTaskHandler("sh.keptn.event.faketask.triggered", taskHandler, func(keptnHandle IKeptn, event KeptnEvent) bool { return false })
 	fakeKeptn.NewEvent(models.KeptnContextExtendedCE{
 		Data:           v0_2_0.EventData{Project: "prj", Stage: "stg", Service: "svc"},
@@ -119,7 +120,7 @@ func Test_NoFinishedEventDataProvided(t *testing.T) {
 	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) {
 		return nil, nil
 	}
-	fakeKeptn := NewFakeKeptn("fake")
+	fakeKeptn := NewFakeKeptn("fake", &api.APISet{})
 	fakeKeptn.AddTaskHandler("sh.keptn.event.faketask.triggered", taskHandler)
 	fakeKeptn.NewEvent(models.KeptnContextExtendedCE{
 		Data:           v0_2_0.EventData{Project: "prj", Stage: "stg", Service: "svc"},
