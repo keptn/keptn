@@ -15,7 +15,6 @@
 package cmd
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -31,6 +30,5 @@ func TestUpgradeUnknownParameter(t *testing.T) {
 
 // TestUpgradeDeprecated
 func TestUpgradeDeprecated(t *testing.T) {
-	Version = "0.16.0"
-	testInvalidInputHelper("upgrade", fmt.Sprintf("this command is deprecated, "+MsgDeprecatedUseHelm, Version), t)
+	testInvalidInputHelper("upgrade", "this command is deprecated", t)
 }

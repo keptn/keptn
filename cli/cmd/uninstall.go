@@ -14,7 +14,7 @@ var uninstallCmd = &cobra.Command{
 	Args:         cobra.NoArgs,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return fmt.Errorf("this command is deprecated, "+MsgDeprecatedUseHelm, Version)
+		return fmt.Errorf("this command is deprecated")
 	},
 }
 
