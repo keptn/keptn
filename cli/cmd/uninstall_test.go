@@ -18,5 +18,5 @@ func TestUninstallUnknownParmeter(t *testing.T) {
 // TestUninstallDeprecated
 func TestUninstallDeprecated(t *testing.T) {
 	Version = "0.16.0"
-	testInvalidInputHelper("uninstall", fmt.Sprintf("this command is deprecated! "+MsgDeprecatedUseHelm, Version), t)
+	testInvalidInputHelper("uninstall", fmt.Sprintf("this command is deprecated, "+MsgDeprecatedUseHelm, Version), t)
 }

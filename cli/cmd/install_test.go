@@ -18,5 +18,5 @@ func TestInstallUnknownParameter(t *testing.T) {
 // TestInstallDeprecated
 func TestInstallDeprecated(t *testing.T) {
 	Version = "0.16.0"
-	testInvalidInputHelper("install --hide-sensitive-data ", fmt.Sprintf("this command is deprecated! "+MsgDeprecatedUseHelm, Version), t)
+	testInvalidInputHelper("install --hide-sensitive-data ", fmt.Sprintf("this command is deprecated, "+MsgDeprecatedUseHelm, Version), t)
 }
