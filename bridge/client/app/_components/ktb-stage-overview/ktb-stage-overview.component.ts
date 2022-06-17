@@ -1,18 +1,9 @@
-import { AfterViewInit, Component, EventEmitter, OnDestroy, Output } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, Output, AfterContentInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { DtFilterFieldChangeEvent, DtFilterFieldDefaultDataSource } from '@dynatrace/barista-components/filter-field';
 import { DtFilterFieldDefaultDataSourceAutocomplete } from '@dynatrace/barista-components/filter-field/src/filter-field-default-data-source';
 import { combineLatest, Subject } from 'rxjs';
-import {
-  distinctUntilChanged,
-  filter,
-  map,
-  shareReplay,
-  switchMap,
-  takeUntil,
-  tap,
-  withLatestFrom,
-} from 'rxjs/operators';
+import { distinctUntilChanged, filter, map, switchMap, takeUntil, tap, withLatestFrom } from 'rxjs/operators';
 import { DtAutoComplete, DtFilter, DtFilterArray } from '../../_models/dt-filter';
 import { Project } from '../../_models/project';
 import { Service } from '../../_models/service';
@@ -26,7 +17,7 @@ import { ServiceFilterType } from '../ktb-stage-details/ktb-stage-details.compon
   templateUrl: './ktb-stage-overview.component.html',
   styleUrls: ['./ktb-stage-overview.component.scss'],
 })
-export class KtbStageOverviewComponent implements AfterViewInit, OnDestroy {
+export class KtbStageOverviewComponent implements AfterContentInit, OnDestroy {
   public _dataSource = new DtFilterFieldDefaultDataSource();
   public filter: DtFilterArray[] = [];
   public isTriggerSequenceOpen = false;
@@ -36,7 +27,7 @@ export class KtbStageOverviewComponent implements AfterViewInit, OnDestroy {
 
   public project$ = this.route.params.pipe(
     map((params) => params.projectName),
-    filter((projectName) => !!projectName),
+    filter((projectName): projectName is string => !!projectName),
     distinctUntilChanged(),
     tap(() => {
       // TODO: kept for the moment
@@ -58,24 +49,20 @@ export class KtbStageOverviewComponent implements AfterViewInit, OnDestroy {
 
   private readonly paramFilterType$ = this.route.queryParamMap.pipe(map((params) => params.get('filterType')));
 
-  public params$ = combineLatest([this.selectedStageName$, this.paramFilterType$, this.project$]).pipe(
-    tap(([stageName, filterType, project]) => {
-      const stage = project!.getStage(stageName!);
-      if (stage) {
-        this.selectedStageChange.emit({ stage: stage!, filterType: (filterType as ServiceFilterType) ?? undefined });
-      }
-    }),
-    takeUntil(this.unsubscribe$),
-    shareReplay(1)
-  );
-
   @Output() selectedStageChange: EventEmitter<{ stage: Stage; filterType: ServiceFilterType }> = new EventEmitter();
   @Output() filteredServicesChange: EventEmitter<string[]> = new EventEmitter<string[]>();
 
   constructor(private dataService: DataService, private apiService: ApiService, private route: ActivatedRoute) {}
 
-  ngAfterViewInit(): void {
-    this.params$.subscribe();
+  ngAfterContentInit(): void {
+    combineLatest([this.selectedStageName$, this.paramFilterType$, this.project$])
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(([stageName, filterType, project]) => {
+        const stage = project!.getStage(stageName!);
+        if (stage) {
+          this.selectedStageChange.emit({ stage: stage!, filterType: (filterType as ServiceFilterType) ?? undefined });
+        }
+      });
   }
 
   private setFilter(project: Project | undefined, projectChanged: boolean): void {
