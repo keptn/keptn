@@ -79,7 +79,7 @@ export class KtbTriggerSequenceComponent implements OnInit, OnDestroy, AfterView
   public customFormData: CustomSequenceFormData = {};
 
   @Input() public projectName!: string;
-  @Input() public stage: string | undefined;
+  @Input() public stage: string | undefined | null;
   @Input() public stages: string[] = [];
 
   @Input()

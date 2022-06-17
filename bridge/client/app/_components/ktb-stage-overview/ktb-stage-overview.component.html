@@ -10,21 +10,20 @@
       aria-label="Filter by service"
       clearAllLabel="Clear all"
     ></dt-filter-field>
-    <div *ngIf="!isTriggerSequenceOpen">
-      <button dt-button class="mb-3" (click)="isTriggerSequenceOpen = true" uitestid="keptn-trigger-button-open">
-        <dt-icon name="flash"></dt-icon>Trigger a new sequence
-      </button>
-    </div>
-    <div class="mb-3 pr-1" *ngIf="isTriggerSequenceOpen">
+    <div *ngIf="isTriggerSequenceOpen; else triggerSequenceClosed">
       <ktb-trigger-sequence
-        *ngIf="selectedStageName$ | async as selectedStageName"
         [projectName]="project.projectName"
-        [stage]="selectedStageName"
+        [stage]="selectedStageName$ | async"
         [stages]="project.getStageNames()"
         [services]="project.getServiceNames()"
-        (formClosed)="isTriggerSequenceOpen = false"
+        (formClosed)="changeIsTriggerSequence(false)"
       ></ktb-trigger-sequence>
     </div>
+    <ng-template class="mb-3 pr-1" #triggerSequenceClosed>
+      <button dt-button class="mb-3" (click)="changeIsTriggerSequence(true)" uitestid="keptn-trigger-button-open">
+        <dt-icon name="flash"></dt-icon>Trigger a new sequence
+      </button>
+    </ng-template>
   </div>
   <div
     [ngClass]="{ 'stage-list': true, scrollable: project.getParentStages().length > 3 }"

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, Output, AfterContentInit } from '@angular/core';
+import { AfterContentInit, Component, EventEmitter, OnDestroy, Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { DtFilterFieldChangeEvent, DtFilterFieldDefaultDataSource } from '@dynatrace/barista-components/filter-field';
 import { DtFilterFieldDefaultDataSourceAutocomplete } from '@dynatrace/barista-components/filter-field/src/filter-field-default-data-source';
@@ -20,7 +20,7 @@ import { ServiceFilterType } from '../ktb-stage-details/ktb-stage-details.compon
 export class KtbStageOverviewComponent implements AfterContentInit, OnDestroy {
   public _dataSource = new DtFilterFieldDefaultDataSource();
   public filter: DtFilterArray[] = [];
-  public isTriggerSequenceOpen = false;
+  public isTriggerSequenceOpen: boolean;
   private filteredServices: string[] = [];
   private globalFilter: { [projectName: string]: { services: string[] } } = {};
   private unsubscribe$: Subject<void> = new Subject<void>();
@@ -29,11 +29,6 @@ export class KtbStageOverviewComponent implements AfterContentInit, OnDestroy {
     map((params) => params.projectName),
     filter((projectName): projectName is string => !!projectName),
     distinctUntilChanged(),
-    tap(() => {
-      // TODO: kept for the moment
-      this.isTriggerSequenceOpen = this.dataService.isTriggerSequenceOpen;
-      this.dataService.isTriggerSequenceOpen = false;
-    }),
     switchMap((projectName) => this.dataService.getProject(projectName)),
     tap((project) => {
       this.setFilter(project, true);
@@ -52,7 +47,10 @@ export class KtbStageOverviewComponent implements AfterContentInit, OnDestroy {
   @Output() selectedStageChange: EventEmitter<{ stage: Stage; filterType: ServiceFilterType }> = new EventEmitter();
   @Output() filteredServicesChange: EventEmitter<string[]> = new EventEmitter<string[]>();
 
-  constructor(private dataService: DataService, private apiService: ApiService, private route: ActivatedRoute) {}
+  constructor(private dataService: DataService, private apiService: ApiService, private route: ActivatedRoute) {
+    this.isTriggerSequenceOpen = this.dataService.isTriggerSequenceOpen;
+    this.dataService.isTriggerSequenceOpen = false;
+  }
 
   ngAfterContentInit(): void {
     combineLatest([this.selectedStageName$, this.paramFilterType$, this.project$])
@@ -127,6 +125,10 @@ export class KtbStageOverviewComponent implements AfterContentInit, OnDestroy {
       services.push((currentFilter as DtFilterArray)[1].name);
     }
     return services;
+  }
+
+  public changeIsTriggerSequence(state: boolean): void {
+    this.isTriggerSequenceOpen = state;
   }
 
   public trackStage(index: number, stage: string[] | null): string | undefined {
