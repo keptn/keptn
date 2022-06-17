@@ -68,11 +68,18 @@ func init() {
 
 	installParams.ChartRepoURL = installCmd.Flags().StringP("chart-repo", "",
 		"", "URL of the Keptn Helm Chart repository")
-	installCmd.Flags().MarkHidden("chart-repo")
 
 	installCmd.PersistentFlags().BoolVarP(&insecureSkipTLSVerify, "insecure-skip-tls-verify", "s",
 		false, "Skip tls verification for kubectl commands")
 	installParams.HideSensitiveData = installCmd.Flags().BoolP("hide-sensitive-data", "", false,
 		"Hide the sensitive data like api-tokens and endpoints in post-installation output.")
+
+	installCmd.Flags().MarkHidden("platform")
+	installCmd.Flags().MarkHidden("creds")
+	installCmd.Flags().MarkHidden("use-case")
+	installCmd.Flags().MarkHidden("endpoint-service-type")
+	installCmd.Flags().MarkHidden("chart-repo")
+	installCmd.Flags().MarkHidden("hide-sensitive-data")
+	installCmd.PersistentFlags().MarkHidden("insecure-skip-tls-verify")
 
 }
