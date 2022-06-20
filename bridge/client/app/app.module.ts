@@ -117,7 +117,7 @@ import { KtbVariableSelectorComponent } from './_components/ktb-variable-selecto
 import { KtbWebhookSettingsComponent } from './_components/ktb-webhook-settings/ktb-webhook-settings.component';
 import { KtbDragAndDropModule } from './_directives/ktb-drag-and-drop/ktb-drag-and-drop.module';
 import { KtbHideHttpLoadingDirective } from './_directives/ktb-hide-http-loading/ktb-hide-http-loading.directive';
-import { KtbIntegerInputDirective } from './_directives/ktb-integer-input/ktb-integer-input.directive';
+import { KtbIntegerInputModule } from './_directives/ktb-integer-input/ktb-integer-input.module';
 import { KtbShowHttpLoadingDirective } from './_directives/ktb-show-http-loading/ktb-show-http-loading.directive';
 import { PendingChangesGuard } from './_guards/pending-changes.guard';
 import { HttpDefaultInterceptor } from './_interceptors/http-default-interceptor';
@@ -224,6 +224,7 @@ const ktbModules = [
   KtbEventItemModule,
   KtbExpandableTileModule,
   KtbHeatmapModule,
+  KtbIntegerInputModule,
   KtbLoadingModule,
   KtbNotificationModule,
   KtbPipeModule,
@@ -291,7 +292,6 @@ const ktbModules = [
     KtbProjectSettingsGitHttpsComponent,
     KtbProjectSettingsGitSshComponent,
     KtbProxyInputComponent,
-    KtbIntegerInputDirective,
     KtbSshKeyInputComponent,
     KtbProjectSettingsGitSshInputComponent,
   ],
