@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"github.com/keptn/go-utils/pkg/api/models"
-	api "github.com/keptn/go-utils/pkg/api/utils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/go-sdk/pkg/sdk"
 	"io/ioutil"
@@ -12,7 +11,7 @@ import (
 )
 
 func Test_Handler(t *testing.T) {
-	fakeKeptn := sdk.NewFakeKeptn("test-greeting-svc", &api.APISet{})
+	fakeKeptn := sdk.NewFakeKeptn("test-greeting-svc", nil)
 	fakeKeptn.AddTaskHandler(greetingsTriggeredEventType, NewGreetingsHandler())
 	fakeKeptn.NewEvent(newNewGreetingTriggeredEvent("test-assets/events/greeting.triggered-0.json"))
 	fakeKeptn.AssertNumberOfEventSent(t, 2)
