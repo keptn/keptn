@@ -224,7 +224,6 @@ const ktbModules = [
   KtbSelectableTileModule,
   KtbSequenceStateInfoModule,
   KtbSequenceStateListModule,
-  KtbSequenceStateListModule,
   KtbSshKeyInputModule,
   KtbStageBadgeModule,
   KtbSubscriptionItemModule,
