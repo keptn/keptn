@@ -8,6 +8,7 @@ import { DtRadioModule } from '@dynatrace/barista-components/radio';
 import { DtOverlayModule } from '@dynatrace/barista-components/overlay';
 import { DtIconModule } from '@dynatrace/barista-components/icon';
 import { KtbVariableSelectorModule } from '../ktb-variable-selector/ktb-variable-selector.module';
+import { DtInputModule } from '@dynatrace/barista-components/input';
 
 @NgModule({
   declarations: [KtbWebhookSettingsComponent],
@@ -22,6 +23,7 @@ import { KtbVariableSelectorModule } from '../ktb-variable-selector/ktb-variable
     FlexLayoutModule,
     ReactiveFormsModule,
     KtbVariableSelectorModule,
+    DtInputModule,
   ],
   exports: [KtbWebhookSettingsComponent],
 })

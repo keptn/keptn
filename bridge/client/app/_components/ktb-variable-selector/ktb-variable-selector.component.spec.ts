@@ -5,6 +5,7 @@ import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 import { KtbVariableSelectorModule } from './ktb-variable-selector.module';
 import { KtbVariableSelectorComponent } from './ktb-variable-selector.component';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('KtbSecretSelectorComponent', () => {
   const variablePath = '.secret.SecretA.key1';
@@ -13,7 +14,7 @@ describe('KtbSecretSelectorComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [KtbVariableSelectorModule, HttpClientTestingModule],
+      imports: [KtbVariableSelectorModule, HttpClientTestingModule, RouterTestingModule],
       providers: [{ provide: ApiService, useClass: ApiServiceMock }],
     }).compileComponents();
 

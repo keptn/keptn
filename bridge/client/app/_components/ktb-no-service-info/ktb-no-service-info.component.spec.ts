@@ -4,6 +4,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
 import { KtbNoServiceInfoModule } from './ktb-no-service-info.module';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('KtbNoServiceInfoComponent', () => {
   let component: KtbNoServiceInfoComponent;
@@ -11,7 +12,7 @@ describe('KtbNoServiceInfoComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [KtbNoServiceInfoModule, HttpClientTestingModule],
+      imports: [KtbNoServiceInfoModule, HttpClientTestingModule, RouterTestingModule],
       providers: [
         {
           provide: ActivatedRoute,

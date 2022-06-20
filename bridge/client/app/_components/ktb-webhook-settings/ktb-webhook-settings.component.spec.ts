@@ -8,6 +8,7 @@ import { SecretScopeDefault } from '../../../../shared/interfaces/secret-scope';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 import { KtbWebhookSettingsModule } from './ktb-webhook-settings.module';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('KtbWebhookSettingsComponent', () => {
   let component: KtbWebhookSettingsComponent;
@@ -53,7 +54,7 @@ describe('KtbWebhookSettingsComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [],
-      imports: [KtbWebhookSettingsModule, HttpClientTestingModule],
+      imports: [KtbWebhookSettingsModule, HttpClientTestingModule, RouterTestingModule],
       providers: [{ provide: ApiService, useClass: ApiServiceMock }],
     }).compileComponents();
 

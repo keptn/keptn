@@ -6,6 +6,7 @@ import { of } from 'rxjs';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 import { KtbKeptnServicesListModule } from './ktb-keptn-services-list.module';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('KtbKeptnServicesListComponent', () => {
   let component: KtbKeptnServicesListComponent;
@@ -14,7 +15,7 @@ describe('KtbKeptnServicesListComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [],
-      imports: [KtbKeptnServicesListModule, HttpClientTestingModule],
+      imports: [KtbKeptnServicesListModule, HttpClientTestingModule, RouterTestingModule],
       providers: [
         { provide: ApiService, useClass: ApiServiceMock },
         {

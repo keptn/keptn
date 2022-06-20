@@ -8,6 +8,7 @@ import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 import { DataService } from '../../_services/data.service';
 import { KtbSubscriptionItemModule } from './ktb-subscription-item.module';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('KtbSubscriptionItemComponent', () => {
   let component: KtbSubscriptionItemComponent;
@@ -16,7 +17,7 @@ describe('KtbSubscriptionItemComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [KtbSubscriptionItemModule, HttpClientTestingModule],
+      imports: [KtbSubscriptionItemModule, HttpClientTestingModule, RouterTestingModule],
       providers: [
         { provide: ApiService, useClass: ApiServiceMock },
         {
