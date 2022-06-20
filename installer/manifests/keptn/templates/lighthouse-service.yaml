@@ -6,6 +6,7 @@ metadata:
   name: lighthouse-service
   labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/component: lighthouse-service
+    keptn.sh/integration-name: {{ (.Values.lighthouseService).nameOverride | default "lighthouse-service" }}
 spec:
   selector:
     matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
@@ -16,6 +17,7 @@ spec:
     metadata:
       labels: {{- include "common.labels.standard" . | nindent 8 }}
         app.kubernetes.io/component: lighthouse-service
+        keptn.sh/integration-name: {{ (.Values.lighthouseService).nameOverride | default "lighthouse-service" }}
     spec:
       {{- include "keptn.common.pod-security-context" . | nindent 6 }}
       containers:

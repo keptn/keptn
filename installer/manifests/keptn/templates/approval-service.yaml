@@ -4,6 +4,7 @@ metadata:
   name: approval-service
   labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/component: approval-service
+    keptn.sh/integration-name: {{ (.Values.approvalService).nameOverride | default "approval-service" }}
 spec:
   selector:
     matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
@@ -14,6 +15,7 @@ spec:
     metadata:
       labels: {{- include "common.labels.standard" . | nindent 8 }}
         app.kubernetes.io/component: approval-service
+        keptn.sh/integration-name: {{ (.Values.approvalService).nameOverride | default "approval-service" }}
     spec:
       {{- include "keptn.common.pod-security-context" . | nindent 6 }}
       terminationGracePeriodSeconds: {{ .Values.approvalService.gracePeriod | default 60 }}

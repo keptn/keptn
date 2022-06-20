@@ -15,6 +15,7 @@ spec:
     metadata:
       labels: {{- include "common.labels.standard" . | nindent 8 }}
         app.kubernetes.io/component: statistics-service
+        keptn.sh/integration-name: {{ (.Values.statisticsService).nameOverride | default "statistics-service" }}
     spec:
       {{- include "keptn.common.pod-security-context" . | nindent 6 }}
       serviceAccountName: keptn-default

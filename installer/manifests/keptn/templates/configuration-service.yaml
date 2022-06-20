@@ -28,6 +28,7 @@ metadata:
   name: resource-service
   labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/component: resource-service
+    keptn.sh/integration-name: {{ (.Values.resourceService).nameOverride | default "resource-service" }}
 spec:
   selector:
     matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
@@ -38,6 +39,7 @@ spec:
     metadata:
       labels: {{- include "common.labels.standard" . | nindent 8 }}
         app.kubernetes.io/component: resource-service
+        keptn.sh/integration-name: {{ (.Values.resourceService).nameOverride | default "resource-service" }}
     spec:
       securityContext:
         fsGroup: {{ .Values.configurationService.fsGroup | default 1001 }}
@@ -131,6 +133,7 @@ metadata:
   name: configuration-service
   labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/component: configuration-service
+    keptn.sh/integration-name: {{ (.Values.configurationService).nameOverride | default "configuration-service" }}
 spec:
   selector:
     matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
@@ -142,6 +145,7 @@ spec:
     metadata:
       labels: {{- include "common.labels.standard" . | nindent 8 }}
         app.kubernetes.io/component: configuration-service
+        keptn.sh/integration-name: {{ (.Values.configurationService).nameOverride | default "configuration-service" }}
     spec:
       securityContext:
         fsGroup: {{ .Values.configurationService.fsGroup | default 1001 }}

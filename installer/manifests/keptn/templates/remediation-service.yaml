@@ -17,6 +17,7 @@ spec:
     metadata:
       labels: {{- include "common.labels.standard" . | nindent 8 }}
         app.kubernetes.io/component: remediation-service
+        keptn.sh/integration-name: {{ (.Values.remediationService).nameOverride | default "remediation-service" }}
     spec:
       {{- include "keptn.common.pod-security-context" . | nindent 6 }}
       containers:

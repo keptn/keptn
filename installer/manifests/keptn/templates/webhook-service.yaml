@@ -17,6 +17,7 @@ spec:
     metadata:
       labels: {{- include "common.labels.standard" . | nindent 8 }}
         app.kubernetes.io/component: webhook-service
+        keptn.sh/integration-name: {{ (.Values.webhookService).nameOverride | default "webhook-service" }}
     spec:
       {{- include "keptn.common.pod-security-context" . | nindent 6 }}
       serviceAccountName: keptn-webhook-service
