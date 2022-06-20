@@ -386,12 +386,15 @@ func Test__main_SequenceQueueApproval(t *testing.T) {
 
 	defer tearDown()
 
-	context := natsClient.triggerSequence(projectName, serviceName, stageName, "delivery-with-approval")
-	verifySequenceEndsUpInState(t, projectName, context, 10*time.Second, []string{apimodels.SequenceStartedState})
+	keptnContext := natsClient.triggerSequence(projectName, serviceName, stageName, "delivery-with-approval")
+	verifySequenceEndsUpInState(t, projectName, keptnContext, 10*time.Second, []string{apimodels.SequenceStartedState})
 
 	t.Logf("check if approval.triggered has been sent for sequence - now it should be available")
-	approvalTriggeredEvent := natsClient.getLatestEventOfType(*context.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType(keptnv2.ApprovalTaskName))
-	require.NotNil(t, approvalTriggeredEvent)
+	var approvalTriggeredEvent *apimodels.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		approvalTriggeredEvent = natsClient.getLatestEventOfType(*keptnContext.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType(keptnv2.ApprovalTaskName))
+		return approvalTriggeredEvent != nil
+	}, 5*time.Second, 100*time.Millisecond)
 
 	t.Logf("send the approval.started event to make sure the sequence will not be cancelled due to a timeout")
 	approvalTriggeredCE := keptnv2.ToCloudEvent(*approvalTriggeredEvent)
@@ -424,7 +427,7 @@ func Test__main_SequenceQueueApproval(t *testing.T) {
 
 	t.Logf("wait a bit to make sure mytask.triggered of first sequence is not sent")
 	<-time.After(3 * time.Second)
-	myTaskTriggeredEventOfFirstSequence := natsClient.getLatestEventOfType(*context.KeptnContext, projectName, stageName, keptnv2.GetTriggeredEventType("mytask"))
+	myTaskTriggeredEventOfFirstSequence := natsClient.getLatestEventOfType(*keptnContext.KeptnContext, projectName, stageName, keptnv2.GetTriggeredEventType("mytask"))
 	require.Nil(t, myTaskTriggeredEventOfFirstSequence)
 
 	t.Logf("now let's finish mytask of the second sequence")
@@ -436,7 +439,7 @@ func Test__main_SequenceQueueApproval(t *testing.T) {
 
 	t.Logf("now the mytask.triggered event for the second sequence should eventually become available")
 	require.Eventually(t, func() bool {
-		event := natsClient.getLatestEventOfType(*context.KeptnContext, projectName, stageName, keptnv2.GetTriggeredEventType("mytask"))
+		event := natsClient.getLatestEventOfType(*keptnContext.KeptnContext, projectName, stageName, keptnv2.GetTriggeredEventType("mytask"))
 		if event == nil {
 			return false
 		}
