@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	logger "github.com/sirupsen/logrus"
 	"time"
 
 	"github.com/keptn/go-utils/pkg/common/retry"
@@ -9,7 +10,6 @@ import (
 	"github.com/keptn/keptn/resource-service/common_models"
 	"github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
-	logger "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 )
 
@@ -51,20 +51,24 @@ func (p ProjectManager) CreateProject(project models.CreateProjectParams) error 
 		Credentials: credentials,
 	}
 
+	rollbackFunc := func() {
+		if p.fileSystem.FileExists(projectDirectory) {
+			logger.Infof("Rollback: try to delete created directory for project %s", project.ProjectName)
+			if err := p.fileSystem.DeleteFile(projectDirectory); err != nil {
+				logger.Errorf("Rollback failed: could not delete created directory for project %s: %s", project.ProjectName, err.Error())
+			}
+		}
+	}
+
 	if p.git.ProjectExists(gitContext) && p.isProjectInitialized(project.ProjectName) {
+		rollbackFunc()
 		return errors.ErrProjectAlreadyExists
 	}
 
 	// check if the repository directory is here - this should be the case, as the upstream clone needs to be available at this point
 	if !p.git.ProjectRepoExists(project.ProjectName) {
+		rollbackFunc()
 		return errors.ErrRepositoryNotFound
-	}
-
-	rollbackFunc := func() {
-		logger.Infof("Rollback: try to delete created directory for project %s", project.ProjectName)
-		if err := p.fileSystem.DeleteFile(projectDirectory); err != nil {
-			logger.Errorf("Rollback failed: could not delete created directory for project %s: %s", project.ProjectName, err.Error())
-		}
 	}
 
 	newProjectMetadata := &common.ProjectMetadata{
