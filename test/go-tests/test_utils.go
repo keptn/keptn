@@ -762,7 +762,7 @@ func SetShipyardControllerEnvVar(t *testing.T, envVarName, envVarValue string) e
 	}
 
 	require.Eventually(t, func() bool {
-		get, err := k8sClient.CoreV1().Pods(GetKeptnNameSpaceFromEnv()).List(context.TODO(), v1.ListOptions{LabelSelector: "app.kubernetes.io/name=shipyard-controller"})
+		get, err := k8sClient.CoreV1().Pods(GetKeptnNameSpaceFromEnv()).List(context.TODO(), v1.ListOptions{LabelSelector: "app.kubernetes.io/component=shipyard-controller"})
 		if err != nil {
 			return false
 		}

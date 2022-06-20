@@ -2,25 +2,23 @@ apiVersion: v1
 kind: Service
 metadata:
   name: configuration-service
-  labels:
-    app.kubernetes.io/name: configuration-service
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    {{- if .Values.resourceService.enabled }}
+    app.kubernetes.io/component: resource-service
+    {{- else }}
+    app.kubernetes.io/component: configuration-service
+    {{- end }}
 spec:
   ports:
     - port: 8080
       targetPort: 8080
       protocol: TCP
-  selector:
+  selector: {{- include "common.labels.selectorLabels" . | nindent 4 }}
     {{- if .Values.resourceService.enabled }}
-    app.kubernetes.io/name: resource-service
+    app.kubernetes.io/component: resource-service
     {{- else }}
-    app.kubernetes.io/name: configuration-service
+    app.kubernetes.io/component: configuration-service
     {{- end }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
 ---
 # resource-service
 {{- if .Values.resourceService.enabled }}
@@ -28,31 +26,18 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: resource-service
-  labels:
-    app.kubernetes.io/name: resource-service
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    app.kubernetes.io/version: {{ .Values.resourceService.image.tag | default .Chart.AppVersion }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: resource-service
 spec:
   selector:
-    matchLabels:
-      app.kubernetes.io/name: resource-service
-      app.kubernetes.io/instance: {{ .Release.Name }}
+    matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: resource-service
   replicas: {{ .Values.resourceService.replicas }}
-  {{- include "control-plane.common.update-strategy" . | nindent 2 }}
+  {{- include "keptn.common.update-strategy" . | nindent 2 }}
   template:
     metadata:
-      labels:
-        app.kubernetes.io/name: resource-service
-        app.kubernetes.io/instance: {{ .Release.Name }}
-        app.kubernetes.io/managed-by: {{ .Release.Service }}
-        app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-        app.kubernetes.io/component: {{ include "control-plane.name" . }}
-        app.kubernetes.io/version: {{ .Values.resourceService.image.tag | default .Chart.AppVersion }}
-        helm.sh/chart: {{ include "control-plane.chart" . }}
+      labels: {{- include "common.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/component: resource-service
     spec:
       securityContext:
         fsGroup: {{ .Values.configurationService.fsGroup | default 1001 }}
@@ -65,7 +50,7 @@ spec:
         - name: resource-service
           image: {{ .Values.resourceService.image.repository }}:{{ .Values.resourceService.image.tag | default .Chart.AppVersion }}
           {{- $prestop := .Values.resourceService.preStopHookTime | default 20 | quote -}}
-          {{- include "control-plane.prestop" $prestop | nindent 10 }}
+          {{- include "keptn.prestop" $prestop | nindent 10 }}
           livenessProbe:
             httpGet:
               path: /health
@@ -93,12 +78,7 @@ spec:
           ports:
             - containerPort: 8080
           resources:
-            requests:
-              memory: "32Mi"
-              cpu: "25m"
-            limits:
-              memory: "256Mi"
-              cpu: "100m"
+            {{- toYaml .Values.resourceService.resources | nindent 12 }}
           volumeMounts:
             - mountPath: /data/config
               name: resource-volume
@@ -108,23 +88,33 @@ spec:
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
             privileged: false
+          {{- if .Values.resourceService.extraVolumeMounts }}
+          volumeMounts:
+          {{- include "common.tplvalues.render" ( dict "value" .Values.resourceService.extraVolumeMounts "context" $) | nindent 12 }}
+          {{- end }}
+        {{- with .Values.resourceService.sidecars }}
+        {{- include "common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
+        {{- end }}
       volumes:
         - name: resource-volume
           emptyDir: {}
+        {{- if .Values.resourceService.extraVolumes }}
+        {{- include "common.tplvalues.render" ( dict "value" .Values.resourceService.extraVolumes "context" $) | nindent 8 }}
+        {{- end }}
       serviceAccountName: keptn-configuration-service
-      {{- include "keptn.nodeSelector" (dict "value" .Values.resourceService.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
+      {{- include "keptn.nodeSelector" (dict "value" .Values.resourceService.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
+---
 {{- else }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: configuration-volume
-  labels:
-    app.kubernetes.io/name: configuration-volume
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    {{- if .Values.resourceService.enabled }}
+    app.kubernetes.io/component: resource-service
+    {{- else }}
+    app.kubernetes.io/component: configuration-service
+    {{- end }}
 spec:
   accessModes:
     - ReadWriteOnce
@@ -139,32 +129,19 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: configuration-service
-  labels:
-    app.kubernetes.io/name: configuration-service
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    app.kubernetes.io/version: {{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: configuration-service
 spec:
   selector:
-    matchLabels:
-      app.kubernetes.io/name: configuration-service
-      app.kubernetes.io/instance: {{ .Release.Name }}
+    matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: configuration-service
   replicas: 1
   strategy:
     type: Recreate
   template:
     metadata:
-      labels:
-        app.kubernetes.io/name: configuration-service
-        app.kubernetes.io/instance: {{ .Release.Name }}
-        app.kubernetes.io/managed-by: {{ .Release.Service }}
-        app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-        app.kubernetes.io/component: {{ include "control-plane.name" . }}
-        app.kubernetes.io/version: {{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
-        helm.sh/chart: {{ include "control-plane.chart" . }}
+      labels: {{- include "common.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/component: configuration-service
     spec:
       securityContext:
         fsGroup: {{ .Values.configurationService.fsGroup | default 1001 }}
@@ -191,7 +168,7 @@ spec:
         - name: configuration-service
           image: {{ .Values.configurationService.image.repository }}:{{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
           {{- $prestop := .Values.configurationService.preStopHookTime | default 20 | quote -}}
-          {{- include "control-plane.prestop" $prestop | nindent 10 }}
+          {{- include "keptn.prestop" $prestop | nindent 10 }}
           livenessProbe:
             httpGet:
               path: /health
@@ -221,25 +198,29 @@ spec:
           ports:
             - containerPort: 8080
           resources:
-            requests:
-              memory: "32Mi"
-              cpu: "25m"
-            limits:
-              memory: "64Mi"
-              cpu: "100m"
+            {{- toYaml .Values.configurationService.resources | nindent 12 }}
           volumeMounts:
             - mountPath: /data/config
               name: configuration-volume
+            {{- if .Values.configurationService.extraVolumeMounts }}
+            {{- include "common.tplvalues.render" ( dict "value" .Values.configurationService.extraVolumeMounts "context" $) | nindent 12 }}
+            {{- end }}
           securityContext:
             runAsNonRoot: true
             runAsUser: {{ .Values.configurationService.fsGroup | default 1001 }}
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
             privileged: false
+        {{- with .Values.configurationService.sidecars }}
+        {{- include "common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
+        {{- end }}
       volumes:
         - name: configuration-volume
           persistentVolumeClaim:
             claimName: configuration-volume
+        {{- if .Values.configurationService.extraVolumes }}
+        {{- include "common.tplvalues.render" ( dict "value" .Values.configurationService.extraVolumes "context" $) | nindent 8 }}
+        {{- end }}
       serviceAccountName: keptn-configuration-service
-      {{- include "keptn.nodeSelector" (dict "value" .Values.configurationService.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
+      {{- include "keptn.nodeSelector" (dict "value" .Values.configurationService.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
 {{- end }}

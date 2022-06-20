@@ -1,8 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { KtbErrorViewComponent } from './ktb-error-view.component';
-import { AppModule } from '../../app.module';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
+import { KtbErrorViewComponent } from './ktb-error-view.component';
+import { KtbErrorViewModule } from './ktb-error-view.module';
 
 describe('KtbErrorViewComponent', () => {
   let component: KtbErrorViewComponent;
@@ -17,7 +18,7 @@ describe('KtbErrorViewComponent', () => {
     setStatus();
     await TestBed.configureTestingModule({
       declarations: [],
-      imports: [AppModule],
+      imports: [KtbErrorViewModule, RouterTestingModule],
       providers: [
         {
           provide: ActivatedRoute,
