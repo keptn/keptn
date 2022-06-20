@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strconv"
 	"sync"
 	"syscall"
 	"time"
@@ -49,37 +48,32 @@ import (
 
 // @BasePath  /v1
 
-const envVarConfigurationSvcEndpoint = "CONFIGURATION_SERVICE"
-const envVarEventDispatchIntervalSec = "EVENT_DISPATCH_INTERVAL_SEC"
-const envVarSequenceDispatchIntervalSec = "SEQUENCE_DISPATCH_INTERVAL_SEC"
-const envVarTaskStartedWaitDuration = "TASK_STARTED_WAIT_DURATION"
-const envVarUniformIntegrationTTL = "UNIFORM_INTEGRATION_TTL"
-const envVarNatsURL = "NATS_URL"
-const envVarLogTTL = "LOG_TTL"
-const envVarLogLevel = "LOG_LEVEL"
-const envVarEventDispatchIntervalSecDefault = "10"
 const envVarSequenceDispatchIntervalSecDefault = "10s"
 const envVarLogsTTLDefault = "120h" // 5 days
 const envVarUniformTTLDefault = "1m"
+const envVarSequenceWatcherIntervalDefault = "1m"
 const envVarTaskStartedWaitDurationDefault = "10m"
-const envVarNatsURLDefault = "nats://keptn-nats"
-const envVarDisableLeaderElection = "DISABLE_LEADER_ELECTION"
 
 func main() {
 	kubeAPI, err := createKubeAPI()
 	if err != nil {
 		log.Fatalf("could not create kubernetes client: %s", err.Error())
 	}
-	_main(kubeAPI)
+	var env config.EnvConfig
+	if err := envconfig.Process("", &env); err != nil {
+		log.Fatalf("Failed to process env var: %v", err)
+	}
+
+	_main(env, kubeAPI)
 }
 
-func _main(kubeAPI kubernetes.Interface) {
+func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 	log.SetLevel(log.InfoLevel)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	if os.Getenv(envVarLogLevel) != "" {
-		logLevel, err := log.ParseLevel(os.Getenv(envVarLogLevel))
+	if env.LogLevel != "" {
+		logLevel, err := log.ParseLevel(env.LogLevel)
 		if err != nil {
 			log.WithError(err).Error("could not parse log level provided by 'LOG_LEVEL' env var")
 		} else {
@@ -93,25 +87,14 @@ func _main(kubeAPI kubernetes.Interface) {
 		gin.DefaultWriter = ioutil.Discard
 	}
 
-	// TODO: refactor shippy to use envconfig
-	var env config.EnvConfig
-	if err := envconfig.Process("", &env); err != nil {
-		log.Fatalf("Failed to process env var: %v", err)
-	}
-
-	eventDispatcherSyncInterval, err := strconv.Atoi(osutils.GetOSEnvOrDefault(envVarEventDispatchIntervalSec, envVarEventDispatchIntervalSecDefault))
-	if err != nil {
-		log.Fatalf("Unexpected value of EVENT_DISPATCH_INTERVAL_SEC environment variable. Need to be a number")
-	}
-
-	csEndpoint, err := keptncommon.GetServiceEndpoint(envVarConfigurationSvcEndpoint)
+	csEndpoint, err := keptncommon.GetServiceEndpoint(env.ConfigurationSvcEndpoint)
 	if err != nil {
 		log.Fatalf("could not get configuration-service URL: %s", err.Error())
 	}
 
 	connectionHandler := nats.NewNatsConnectionHandler(
 		ctx,
-		getNatsURLFromEnvVar(),
+		env.NatsURL,
 	)
 
 	eventSender, err := connectionHandler.GetPublisher()
@@ -134,7 +117,7 @@ func _main(kubeAPI kubernetes.Interface) {
 	repositoryProvisioner := handler.NewRepositoryProvisioner(env.AutomaticProvisioningURL, &http.Client{})
 
 	uniformRepo := createUniformRepo()
-	err = uniformRepo.SetupTTLIndex(getDurationFromEnvVar(envVarUniformIntegrationTTL, envVarUniformTTLDefault))
+	err = uniformRepo.SetupTTLIndex(getDurationFromEnvVar(env.UniformIntegrationTTL, envVarUniformTTLDefault))
 	if err != nil {
 		log.WithError(err).Error("could not setup TTL index for uniform repo entries")
 	}
@@ -147,12 +130,12 @@ func _main(kubeAPI kubernetes.Interface) {
 
 	stageManager := handler.NewStageManager(projectMVRepo)
 
-	eventDispatcher := handler.NewEventDispatcher(createEventsRepo(), createEventQueueRepo(), sequenceExecutionRepo, eventSender, time.Duration(eventDispatcherSyncInterval)*time.Second)
+	eventDispatcher := handler.NewEventDispatcher(createEventsRepo(), createEventQueueRepo(), sequenceExecutionRepo, eventSender, time.Duration(env.EventDispatchIntervalSec)*time.Second)
 	sequenceDispatcher := handler.NewSequenceDispatcher(
 		createEventsRepo(),
 		createSequenceQueueRepo(),
 		sequenceExecutionRepo,
-		getDurationFromEnvVar(envVarSequenceDispatchIntervalSec, envVarSequenceDispatchIntervalSecDefault),
+		getDurationFromEnvVar(env.SequenceDispatchIntervalSec, envVarSequenceDispatchIntervalSecDefault),
 		clock.New(),
 		common.SDModeRW,
 	)
@@ -227,7 +210,7 @@ func _main(kubeAPI kubernetes.Interface) {
 	shipyardController.AddSequencePausedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceResumedHook(sequenceStateMaterializedView)
 
-	taskStartedWaitDuration := getDurationFromEnvVar(envVarTaskStartedWaitDuration, envVarTaskStartedWaitDurationDefault)
+	taskStartedWaitDuration := getDurationFromEnvVar(env.TaskStartedWaitDuration, envVarTaskStartedWaitDurationDefault)
 
 	watcher := handler.NewSequenceWatcher(
 		sequenceTimeoutChannel,
@@ -235,7 +218,7 @@ func _main(kubeAPI kubernetes.Interface) {
 		createEventQueueRepo(),
 		createProjectRepo(),
 		taskStartedWaitDuration,
-		3*time.Second, // TODO make configurable
+		getDurationFromEnvVar(env.SequenceWatcherInterval, envVarSequenceWatcherIntervalDefault),
 		clock.New(),
 	)
 
@@ -246,7 +229,7 @@ func _main(kubeAPI kubernetes.Interface) {
 	uniformController.Inject(apiV1)
 
 	logRepo := createLogRepo()
-	err = logRepo.SetupTTLIndex(getDurationFromEnvVar(envVarLogTTL, envVarLogsTTLDefault))
+	err = logRepo.SetupTTLIndex(getDurationFromEnvVar(env.LogTTL, envVarLogsTTLDefault))
 	if err != nil {
 		log.WithError(err).Error("could not setup TTL index for log repo entries")
 	}
@@ -292,7 +275,7 @@ func _main(kubeAPI kubernetes.Interface) {
 		}
 	}()
 
-	if os.Getenv(envVarDisableLeaderElection) == "true" {
+	if env.DisableLeaderElection {
 		// single shipyard
 		shipyardController.StartDispatchers(ctx, common.SDModeRW)
 	} else {
@@ -404,28 +387,20 @@ func createKubeAPI() (*kubernetes.Clientset, error) {
 	return kubeAPI, nil
 }
 
-func getNatsURLFromEnvVar() string {
-	if natsURL, ok := os.LookupEnv(envVarNatsURL); ok && natsURL != "" {
-		return natsURL
-	}
-	return envVarNatsURLDefault
-}
-
-func getDurationFromEnvVar(envVar, fallbackValue string) time.Duration {
-	durationString := os.Getenv(envVar)
+func getDurationFromEnvVar(durationString, fallbackValue string) time.Duration {
 	var duration time.Duration
 	var err error
 	if durationString != "" {
 		duration, err = time.ParseDuration(durationString)
 		if err != nil {
-			log.Errorf("could not parse log %s env var %s: %s. Will use default value %s", envVar, duration, err.Error(), fallbackValue)
+			log.Errorf("could not parse log %s env var %s: %s. Will use default value %s", durationString, duration, err.Error(), fallbackValue)
 		}
 	}
 
 	if duration.Seconds() == 0 {
 		duration, err = time.ParseDuration(fallbackValue)
 		if err != nil {
-			log.Errorf("could not parse default duration string %s. %s will be set to 0", err.Error(), envVar)
+			log.Errorf("could not parse default duration string %s. %s will be set to 0", err.Error(), durationString)
 			return time.Duration(0)
 		}
 	}
