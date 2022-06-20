@@ -66,7 +66,6 @@ import { KtbExpandableTileModule } from './_components/ktb-expandable-tile/ktb-e
 import { KtbHeatmapModule } from './_components/ktb-heatmap/ktb-heatmap.module';
 import { KtbLoadingModule } from './_components/ktb-loading/ktb-loading.module';
 import { KtbMarkdownComponent } from './_components/ktb-markdown/ktb-markdown.component';
-import { KtbModifyUniformSubscriptionComponent } from './_components/ktb-modify-uniform-subscription/ktb-modify-uniform-subscription.component';
 import { KtbNoServiceInfoComponent } from './_components/ktb-no-service-info/ktb-no-service-info.component';
 import { KtbNotificationModule } from './_components/ktb-notification/ktb-notification.module';
 import { KtbProjectListModule } from './_components/ktb-project-list/ktb-project-list.module';
@@ -129,6 +128,7 @@ import { KtbPayloadViewerModule } from './_components/ktb-payload-viewer/ktb-pay
 import { KtbVariableSelectorModule } from './_components/ktb-variable-selector/ktb-variable-selector.module';
 import { KtbTreeListSelectModule } from './_components/ktb-tree-list-select/ktb-tree-list-select.module';
 import { KtbWebhookSettingsModule } from './_components/ktb-webhook-settings/ktb-webhook-settings.module';
+import { KtbModifyUniformSubscriptionModule } from './_components/ktb-modify-uniform-subscription/ktb-modify-uniform-subscription.module';
 
 registerLocaleData(localeEn, 'en');
 
@@ -213,6 +213,7 @@ const ktbModules = [
   KtbIntegerInputModule,
   KtbKeptnServicesListModule,
   KtbLoadingModule,
+  KtbModifyUniformSubscriptionModule,
   KtbNotificationModule,
   KtbPayloadViewerModule,
   KtbPipeModule,
@@ -262,7 +263,6 @@ const ktbModules = [
     KtbSecretsListComponent,
     KtbNoServiceInfoComponent,
     KtbSequenceControlsComponent,
-    KtbModifyUniformSubscriptionComponent,
     KtbServiceSettingsComponent,
     KtbServiceSettingsOverviewComponent,
     KtbServiceSettingsListComponent,
