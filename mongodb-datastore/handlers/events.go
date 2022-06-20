@@ -26,15 +26,13 @@ func (erh EventRequestHandler) OnEvent(ctx context.Context, event keptnapi.Keptn
 
 func (erh EventRequestHandler) RegistrationData() controlplane.RegistrationData {
 	return controlplane.RegistrationData{
-		Name: erh.Env.K8SDeploymentComponent,
+		Name: erh.Env.IntegrationName,
 		MetaData: keptnapi.MetaData{
 			Hostname:           erh.Env.K8SNodeName,
 			IntegrationVersion: erh.Env.K8SDeploymentVersion,
-			Location:           erh.Env.K8SDeploymentComponent,
 			KubernetesMetaData: keptnapi.KubernetesMetaData{
-				Namespace:      erh.Env.K8SNamespace,
-				PodName:        erh.Env.K8SPodName,
-				DeploymentName: erh.Env.K8SDeploymentName,
+				Namespace: erh.Env.K8SNamespace,
+				PodName:   erh.Env.K8SPodName,
 			},
 		},
 		Subscriptions: []keptnapi.EventSubscription{

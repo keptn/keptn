@@ -12,6 +12,7 @@ const (
 
 type envConfig struct {
 	// Port on which to listen for cloudevents
+	IntegrationName      string `envconfig:"INTEGRATION_NAME" default:""`
 	K8SDeploymentVersion string `envconfig:"K8S_DEPLOYMENT_VERSION" default:""`
 	K8SPodName           string `envconfig:"K8S_POD_NAME" default:""`
 	K8SNamespace         string `envconfig:"K8S_NAMESPACE" default:""`
