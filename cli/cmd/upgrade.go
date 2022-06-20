@@ -28,7 +28,7 @@ var upgraderCmd = NewUpgraderCommand()
 func NewUpgraderCommand() *cobra.Command {
 	upgradeCmd := &cobra.Command{
 		Use:          "upgrade",
-		Deprecated:   fmt.Sprintf(MsgDeprecatedUseHelm, Version),
+		Deprecated:   fmt.Sprintf(MsgDeprecatedUseHelm, Version, "upgrade"),
 		Args:         cobra.NoArgs,
 		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {

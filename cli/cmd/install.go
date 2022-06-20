@@ -39,7 +39,7 @@ var installCmd = NewInstallCmd()
 
 func NewInstallCmd() *cobra.Command {
 	return &cobra.Command{
-		Deprecated:   fmt.Sprintf(MsgDeprecatedUseHelm, Version),
+		Deprecated:   fmt.Sprintf(MsgDeprecatedUseHelm, Version, "install/#install-keptn"),
 		Use:          "install",
 		Args:         cobra.NoArgs,
 		SilenceUsage: true,
