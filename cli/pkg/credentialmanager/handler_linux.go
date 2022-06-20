@@ -12,8 +12,8 @@ import (
 	"io/ioutil"
 
 	"github.com/docker/docker-credential-helpers/pass"
+	"github.com/keptn/keptn/cli/pkg/common"
 	"github.com/keptn/keptn/cli/pkg/config"
-	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 )
 
 // For using pass.Pass{} the following commands need to executed:
@@ -38,7 +38,7 @@ type CredentialManager struct {
 // NewCredentialManager creates a new credential manager
 func NewCredentialManager(autoApplyNewContext bool) *CredentialManager {
 
-	dir, err := keptnutils.GetKeptnDirectory()
+	dir, err := common.GetKeptnDirectory()
 	if err != nil {
 		log.Fatal(err)
 	}

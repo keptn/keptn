@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"github.com/keptn/keptn/cli/internal"
 	"net/http"
 	"net/url"
 	"os"
@@ -12,9 +11,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/keptn/keptn/cli/internal"
+
 	"github.com/keptn/keptn/cli/internal/auth"
+	"github.com/keptn/keptn/cli/pkg/common"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
-	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 
 	"github.com/spf13/cobra"
 )
@@ -191,9 +192,9 @@ func smartFetchKeptnAuthParameters(authParams *authCmdParams, smartKeptnAuth sma
 	var err error
 
 	if authParams.endPoint == nil || *authParams.endPoint == "" {
-		*authParams.endPoint, err = keptnutils.GetKeptnEndpointFromIngress(false, namespace, smartKeptnAuth.ingressName)
+		*authParams.endPoint, err = common.GetKeptnEndpointFromIngress(false, namespace, smartKeptnAuth.ingressName)
 		if err != nil {
-			*authParams.endPoint, err = keptnutils.GetKeptnEndpointFromService(false, namespace, smartKeptnAuth.serviceName)
+			*authParams.endPoint, err = common.GetKeptnEndpointFromService(false, namespace, smartKeptnAuth.serviceName)
 			if err != nil {
 				return fmt.Errorf("Cannot automatically fetch the endpoint\n" + err.Error() + "\n\n")
 			}
@@ -204,7 +205,7 @@ func smartFetchKeptnAuthParameters(authParams *authCmdParams, smartKeptnAuth sma
 	*authParams.endPoint = addCorrectHttpPrefix(authParams)
 
 	if authParams.apiToken == nil || *authParams.apiToken == "" {
-		*authParams.apiToken, err = keptnutils.GetKeptnAPITokenFromSecret(false, namespace, smartKeptnAuth.secretName)
+		*authParams.apiToken, err = common.GetKeptnAPITokenFromSecret(false, namespace, smartKeptnAuth.secretName)
 		if err != nil {
 			return fmt.Errorf("Error in fetching the api-token\n" + err.Error() + "\nCLI is not authenticated")
 		}
@@ -214,7 +215,7 @@ func smartFetchKeptnAuthParameters(authParams *authCmdParams, smartKeptnAuth sma
 }
 
 func smartKeptnCLIAuth() (string, error) {
-	keptnInstallations, err := keptnutils.GetKeptnManagedNamespace(false)
+	keptnInstallations, err := common.GetKeptnManagedNamespace(false)
 	if err != nil {
 		return "", errors.New("Could not get current Kubernetes context from KUBECONFIG: " + err.Error())
 	}
