@@ -76,7 +76,7 @@ import { KtbModifyUniformSubscriptionComponent } from './_components/ktb-modify-
 import { KtbNoServiceInfoComponent } from './_components/ktb-no-service-info/ktb-no-service-info.component';
 import { KtbNotificationModule } from './_components/ktb-notification/ktb-notification.module';
 import { KtbPayloadViewerComponent } from './_components/ktb-payload-viewer/ktb-payload-viewer.component';
-import { KtbProjectListComponent } from './_components/ktb-project-list/ktb-project-list.component';
+import { KtbProjectListModule } from './_components/ktb-project-list/ktb-project-list.module';
 import { KtbProjectSettingsGitExtendedComponent } from './_components/ktb-project-settings-git-extended/ktb-project-settings-git-extended.component';
 import { KtbProjectSettingsGitHttpsComponent } from './_components/ktb-project-settings-git-https/ktb-project-settings-git-https.component';
 import { KtbProjectSettingsGitSshInputComponent } from './_components/ktb-project-settings-git-ssh-input/ktb-project-settings-git-ssh-input.component';
@@ -84,7 +84,6 @@ import { KtbProjectSettingsGitSshComponent } from './_components/ktb-project-set
 import { KtbProjectSettingsGitComponent } from './_components/ktb-project-settings-git/ktb-project-settings-git.component';
 import { KtbProjectSettingsShipyardComponent } from './_components/ktb-project-settings-shipyard/ktb-project-settings-shipyard.component';
 import { KtbProjectSettingsComponent } from './_components/ktb-project-settings/ktb-project-settings.component';
-import { KtbProjectTileComponent } from './_components/ktb-project-tile/ktb-project-tile.component';
 import { KtbProxyInputComponent } from './_components/ktb-proxy-input/ktb-proxy-input.component';
 import { KtbRootEventsListComponent } from './_components/ktb-root-events-list/ktb-root-events-list.component';
 import { KtbSecretsListComponent } from './_components/ktb-secrets-list/ktb-secrets-list.component';
@@ -125,7 +124,6 @@ import { HttpDefaultInterceptor } from './_interceptors/http-default-interceptor
 import { HttpErrorInterceptor } from './_interceptors/http-error-interceptor';
 import { HttpLoadingInterceptor } from './_interceptors/http-loading-interceptor';
 import { ArrayToStringPipe } from './_pipes/array-to-string';
-import { KeptnUrlPipe } from './_pipes/keptn-url.pipe';
 import { KtbPipeModule } from './_pipes/ktb-pipe.module';
 import { AppInitService } from './_services/app.init';
 import { EventService } from './_services/event.service';
@@ -228,6 +226,7 @@ const ktbModules = [
   KtbLoadingModule,
   KtbNotificationModule,
   KtbPipeModule,
+  KtbProjectListModule,
   KtbSelectableTileModule,
   KtbSequenceStateInfoModule,
   KtbSequenceStateListModule,
@@ -249,8 +248,6 @@ const ktbModules = [
     KtbHorizontalSeparatorComponent,
     KtbHorizontalSeparatorTitleDirective,
     KtbRootEventsListComponent,
-    KtbProjectTileComponent,
-    KtbProjectListComponent,
     KtbSequenceTasksListComponent,
     KtbTaskItemComponent,
     KtbTaskItemDetailDirective,
@@ -260,7 +257,6 @@ const ktbModules = [
     KtbStageOverviewComponent,
     KtbIntegrationViewComponent,
     KtbStageDetailsComponent,
-    KeptnUrlPipe,
     KtbServicesListComponent,
     KtbUserComponent,
     KtbKeptnServicesListComponent,
