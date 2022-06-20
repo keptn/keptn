@@ -4,17 +4,17 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	logger "github.com/sirupsen/logrus"
 	"net/url"
 	"os"
 	"strings"
 	"time"
 
+	logger "github.com/sirupsen/logrus"
+
 	"github.com/keptn/keptn/configuration-service/common_models"
 
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
-	utils "github.com/keptn/kubernetes-utils/pkg"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -44,7 +44,7 @@ type CredentialReader interface {
 type KeptnUtilsCommandExecutor struct{}
 
 func (KeptnUtilsCommandExecutor) ExecuteCommand(command string, args []string, directory string) (string, error) {
-	return utils.ExecuteCommandInDirectory(command, args, directory)
+	return ExecuteCommandInDirectory(command, args, directory)
 }
 
 type K8sCredentialReader struct{}
@@ -151,7 +151,7 @@ func (g *Git) CreateBranch(project string, branch string, sourceBranch string) e
 	credentials, err := g.CredentialReader.GetCredentials(project)
 	if err == nil && credentials != nil {
 		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
-		_, err = utils.ExecuteCommandInDirectory("git", []string{"push", "--set-upstream", repoURI, branch}, projectConfigPath)
+		_, err = ExecuteCommandInDirectory("git", []string{"push", "--set-upstream", repoURI, branch}, projectConfigPath)
 		if err != nil {
 			return fmt.Errorf("failed to set git upstream for project '%s'", project)
 		}
@@ -537,7 +537,7 @@ func getK8sClient() (*kubernetes.Clientset, error) {
 	} else {
 		useInClusterConfig = false
 	}
-	clientSet, err := utils.GetClientset(useInClusterConfig)
+	clientSet, err := GetClientset(useInClusterConfig)
 	if err != nil {
 		return nil, err
 	}
