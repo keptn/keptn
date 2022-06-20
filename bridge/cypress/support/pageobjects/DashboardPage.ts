@@ -23,7 +23,7 @@ class DashboardPage {
   }
 
   public clickProjectTile(projectName: string): EnvironmentPage {
-    cy.wait('@projects').get(this.PROJECT_TILE_LOCATOR.replace('proj_pattern', projectName)).click();
+    cy.get(this.PROJECT_TILE_LOCATOR.replace('proj_pattern', projectName)).click();
     return new EnvironmentPage();
   }
 

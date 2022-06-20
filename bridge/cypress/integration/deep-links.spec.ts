@@ -53,9 +53,7 @@ describe('Test deep links', () => {
   });
 
   it('should navigate to environment stage view through click on stage tag', () => {
-    dashboardPage.visit();
-    cy.wait('@projects');
-    dashboardPage.clickStageTag(mockedProject, mockedStage);
+    dashboardPage.visit().clickStageTag(mockedProject, mockedStage);
 
     cy.location('pathname').should('eq', `/project/${mockedProject}/environment/stage/${mockedStage}`);
   });
