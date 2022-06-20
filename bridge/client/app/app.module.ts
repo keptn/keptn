@@ -129,7 +129,7 @@ import { AppInitService } from './_services/app.init';
 import { EventService } from './_services/event.service';
 import { POLLING_INTERVAL_MILLIS, RETRY_ON_HTTP_ERROR } from './_utils/app.utils';
 import { KtbEnvironmentViewComponent } from './_views/ktb-environment-view/ktb-environment-view.component';
-import { KtbErrorViewComponent } from './_views/ktb-error-view/ktb-error-view.component';
+import { KtbErrorViewModule } from './_views/ktb-error-view/ktb-error-view.module';
 import { KtbIntegrationViewComponent } from './_views/ktb-integration-view/ktb-integration-view.component';
 import { KtbLogoutViewComponent } from './_views/ktb-logout-view/ktb-logout-view.component';
 import { KtbSequenceViewComponent } from './_views/ktb-sequence-view/ktb-sequence-view.component';
@@ -218,6 +218,7 @@ const ktbModules = [
   KtbDeploymentStageTimelineModule,
   KtbDragAndDropModule,
   KtbEditServiceModule,
+  KtbErrorViewModule,
   KtbEvaluationDetailsModule,
   KtbEvaluationInfoModule,
   KtbEventItemModule,
@@ -284,7 +285,6 @@ const ktbModules = [
     ArrayToStringPipe,
     KtbProjectCreateMessageComponent,
     KtbTriggerSequenceComponent,
-    KtbErrorViewComponent,
     KtbRootComponent,
     KtbLogoutViewComponent,
     KtbProjectSettingsGitExtendedComponent,
