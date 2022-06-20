@@ -92,7 +92,6 @@ import { KtbSshKeyInputModule } from './_components/ktb-ssh-key-input/ktb-ssh-ke
 import { KtbStageBadgeModule } from './_components/ktb-stage-badge/ktb-stage-badge.module';
 import { KtbStageDetailsComponent } from './_components/ktb-stage-details/ktb-stage-details.component';
 import { KtbStageOverviewComponent } from './_components/ktb-stage-overview/ktb-stage-overview.component';
-import { KtbSubscriptionItemComponent } from './_components/ktb-subscription-item/ktb-subscription-item.component';
 import { KtbTaskItemComponent, KtbTaskItemDetailDirective } from './_components/ktb-task-item/ktb-task-item.component';
 import {
   KtbTreeListSelectComponent,
@@ -132,6 +131,7 @@ import { EvaluationBoardComponent } from './evaluation-board/evaluation-board.co
 import { KtbRootComponent } from './ktb-root/ktb-root.component';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { ProjectBoardComponent } from './project-board/project-board.component';
+import { KtbSubscriptionItemModule } from './_components/ktb-subscription-item/ktb-subscription-item.module';
 
 registerLocaleData(localeEn, 'en');
 
@@ -225,6 +225,7 @@ const ktbModules = [
   KtbSequenceStateListModule,
   KtbSshKeyInputModule,
   KtbStageBadgeModule,
+  KtbSubscriptionItemModule,
 ];
 
 @NgModule({
@@ -252,7 +253,6 @@ const ktbModules = [
     KtbServicesListComponent,
     KtbUserComponent,
     KtbKeptnServicesListComponent,
-    KtbSubscriptionItemComponent,
     KtbServiceDetailsComponent,
     KtbSettingsViewComponent,
     KtbSequenceListComponent,
