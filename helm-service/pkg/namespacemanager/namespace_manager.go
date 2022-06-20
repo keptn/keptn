@@ -7,8 +7,8 @@ import (
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	kubeutils "github.com/keptn/go-utils/pkg/common/kubeutils"
 	keptn "github.com/keptn/go-utils/pkg/lib/keptn"
-	"github.com/keptn/keptn/helm-service/pkg/common"
 )
 
 // INamespaceManager defines operations for initializing and configuring namespaces
@@ -30,7 +30,7 @@ func NewNamespaceManager(logger keptn.LoggerInterface) *NamespaceManager {
 // InitNamespaces initializes namespaces if they do not exist yet
 func (p *NamespaceManager) CreateNamespaceIfNotExists(nsName string) error {
 
-	exists, err := common.ExistsNamespace(true, nsName)
+	exists, err := kubeutils.ExistsNamespace(true, nsName)
 	if err != nil {
 		return fmt.Errorf("error when checking availability of namespace: %v", err)
 	}
@@ -38,7 +38,7 @@ func (p *NamespaceManager) CreateNamespaceIfNotExists(nsName string) error {
 		p.logger.Debug(fmt.Sprintf("Reuse existing namespace %s", nsName))
 	} else {
 		p.logger.Debug(fmt.Sprintf("Create new namespace %s", nsName))
-		if err != common.CreateNamespace(true, nsName) {
+		if err != kubeutils.CreateNamespace(true, nsName) {
 			return fmt.Errorf("error when creating namespace %s: %v", nsName, err)
 		}
 	}
@@ -47,7 +47,7 @@ func (p *NamespaceManager) CreateNamespaceIfNotExists(nsName string) error {
 
 // InjectIstio injects Istio into the namespace used for the project and stage by adding the label istio-injection
 func (p *NamespaceManager) InjectIstio(project string, stage string) error {
-	kubeClient, err := common.GetKubeAPI(true)
+	kubeClient, err := kubeutils.GetKubeAPI(true)
 	if err != nil {
 		return fmt.Errorf("error when getting kube API: %v", err)
 	}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/keptn/keptn/helm-service/controller"
+	"github.com/keptn/keptn/helm-service/pkg/common"
 	"github.com/keptn/keptn/helm-service/pkg/configurationchanger"
 	"github.com/keptn/keptn/helm-service/pkg/helm"
 
@@ -19,7 +20,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/keptn/keptn/helm-service/pkg/common"
+	kubeutils "github.com/keptn/go-utils/pkg/common/kubeutils"
+
 	"github.com/keptn/keptn/helm-service/pkg/namespacemanager"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -206,7 +208,7 @@ func _main(args []string, env envConfig) int {
 
 // hasAdminRights checks if the current pod is assigned the Admin Role
 func hasAdminRights() (bool, error) {
-	clientset, err := common.GetClientset(true)
+	clientset, err := kubeutils.GetClientset(true)
 	if err != nil {
 		return false, err
 	}

@@ -8,7 +8,7 @@ import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
 	utils "github.com/keptn/go-utils/pkg/api/utils"
-	"github.com/keptn/keptn/helm-service/pkg/common"
+	kubeutils "github.com/keptn/go-utils/pkg/common/kubeutils"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	kyaml "k8s.io/apimachinery/pkg/util/yaml"
@@ -33,7 +33,7 @@ func GetServices(helmManifest string) []*corev1.Service {
 			continue
 		}
 
-		if common.IsService(&svc) {
+		if kubeutils.IsService(&svc) {
 			services = append(services, &svc)
 		}
 	}
@@ -56,7 +56,7 @@ func GetDeployments(helmManifest string) []*appsv1.Deployment {
 			continue
 		}
 
-		if common.IsDeployment(&dpl) {
+		if kubeutils.IsDeployment(&dpl) {
 			deployments = append(deployments, &dpl)
 		}
 	}

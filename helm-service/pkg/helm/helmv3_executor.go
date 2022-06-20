@@ -6,8 +6,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/keptn/keptn/helm-service/pkg/common"
-
 	"github.com/keptn/keptn/helm-service/pkg/namespacemanager"
 
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
@@ -17,6 +15,7 @@ import (
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
 
+	kubeutils "github.com/keptn/go-utils/pkg/common/kubeutils"
 	"helm.sh/helm/v3/pkg/kube"
 	"helm.sh/helm/v3/pkg/storage"
 	"helm.sh/helm/v3/pkg/storage/driver"
@@ -89,7 +88,7 @@ func (h *HelmV3Executor) getKubeRestConfig() (config *rest.Config, err error) {
 		config, err = rest.InClusterConfig()
 	} else {
 		kubeconfig := filepath.Join(
-			common.UserHomeDir(), ".kube", "config",
+			kubeutils.UserHomeDir(), ".kube", "config",
 		)
 		config, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
 	}
@@ -178,7 +177,7 @@ func (h *HelmV3Executor) UpgradeChart(ch *chart.Chart, releaseName, namespace st
 func (h *HelmV3Executor) waitForDeploymentsOfHelmRelease(helmManifest string) error {
 	depls := GetDeployments(helmManifest)
 	for _, depl := range depls {
-		if err := common.WaitForDeploymentToBeRolledOut(getInClusterConfig(), depl.Name, depl.Namespace); err != nil {
+		if err := kubeutils.WaitForDeploymentToBeRolledOut(getInClusterConfig(), depl.Name, depl.Namespace); err != nil {
 			return fmt.Errorf("Error when waiting for deployment %s in namespace %s: %s", depl.Name, depl.Namespace, err.Error())
 		}
 	}
