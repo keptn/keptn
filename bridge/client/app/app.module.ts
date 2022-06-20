@@ -92,7 +92,7 @@ import { KtbSelectableTileModule } from './_components/ktb-selectable-tile/ktb-s
 import { KtbSequenceControlsComponent } from './_components/ktb-sequence-controls/ktb-sequence-controls.component';
 import { KtbSequenceListComponent } from './_components/ktb-sequence-list/ktb-sequence-list.component';
 import { KtbSequenceStateInfoModule } from './_components/ktb-sequence-state-info/ktb-sequence-state-info.module';
-import { KtbSequenceStateListComponent } from './_components/ktb-sequence-state-list/ktb-sequence-state-list.component';
+import { KtbSequenceStateListModule } from './_components/ktb-sequence-state-list/ktb-sequence-state-list.module';
 import { KtbSequenceTasksListComponent } from './_components/ktb-sequence-tasks-list/ktb-sequence-tasks-list.component';
 import { KtbSequenceTimelineComponent } from './_components/ktb-sequence-timeline/ktb-sequence-timeline.component';
 import { KtbServiceDetailsComponent } from './_components/ktb-service-details/ktb-service-details.component';
@@ -127,7 +127,6 @@ import { HttpLoadingInterceptor } from './_interceptors/http-loading-interceptor
 import { ArrayToStringPipe } from './_pipes/array-to-string';
 import { KeptnUrlPipe } from './_pipes/keptn-url.pipe';
 import { KtbPipeModule } from './_pipes/ktb-pipe.module';
-import { ToDatePipe } from './_pipes/to-date.pipe';
 import { AppInitService } from './_services/app.init';
 import { EventService } from './_services/event.service';
 import { POLLING_INTERVAL_MILLIS, RETRY_ON_HTTP_ERROR } from './_utils/app.utils';
@@ -231,6 +230,7 @@ const ktbModules = [
   KtbPipeModule,
   KtbSelectableTileModule,
   KtbSequenceStateInfoModule,
+  KtbSequenceStateListModule,
   KtbStageBadgeModule,
 ];
 
@@ -262,7 +262,6 @@ const ktbModules = [
     KtbStageDetailsComponent,
     KeptnUrlPipe,
     KtbServicesListComponent,
-    KtbSequenceStateListComponent,
     KtbUserComponent,
     KtbKeptnServicesListComponent,
     KtbSubscriptionItemComponent,
@@ -276,7 +275,6 @@ const ktbModules = [
     KtbProjectSettingsShipyardComponent,
     KtbSequenceControlsComponent,
     KtbUniformSubscriptionsComponent,
-    ToDatePipe,
     KtbProjectSettingsComponent,
     KtbModifyUniformSubscriptionComponent,
     KtbWebhookSettingsComponent,
