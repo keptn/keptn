@@ -133,7 +133,7 @@ func TestSubscribeMultipleFails(t *testing.T) {
 		numberReceived++
 		return nil
 	})
-	require.ErrorContains(t, err, "could not connect to NATS: dial tcp: lookup myverywrongurl: i/o timeout")
+	require.ErrorContains(t, err, "could not connect to NATS: dial tcp: lookup myverywrongurl")
 }
 
 func TestUnsubscribeAll(t *testing.T) {
