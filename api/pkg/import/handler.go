@@ -1,4 +1,4 @@
-package handlers
+package _import
 
 import (
 	"archive/zip"
@@ -20,9 +20,7 @@ import (
 
 const defaultImportArchiveExtension = ".zip"
 
-// FIXME we specify package handlers_mock not to break existing mock files but given the directory structure it
-//  should be package fake instead
-//go:generate moq -pkg handlers_mock --skip-ensure -out ./fake/projectchecker_mock.go . projectChecker:ProjectCheckerMock
+//go:generate moq -pkg fake --skip-ensure -out ./fake/projectchecker_mock.go . projectChecker:ProjectCheckerMock
 
 type projectChecker interface {
 	ProjectExists(projectName string) (bool, error)

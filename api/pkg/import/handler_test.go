@@ -1,4 +1,4 @@
-package handlers
+package _import
 
 import (
 	"archive/zip"
@@ -19,8 +19,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	handlers_mock "github.com/keptn/keptn/api/handlers/fake"
 	"github.com/keptn/keptn/api/models"
+	"github.com/keptn/keptn/api/pkg/import/fake"
 	"github.com/keptn/keptn/api/restapi/operations/import_operations"
 )
 
@@ -58,7 +58,7 @@ func (tr *testReader) Read(p []byte) (n int, err error) {
 
 func TestErrorNonExistingProject(t *testing.T) {
 	var actualCheckedProject string
-	mockedprojectChecker := &handlers_mock.ProjectCheckerMock{
+	mockedprojectChecker := &fake.ProjectCheckerMock{
 		ProjectExistsFunc: func(projectName string) (bool, error) {
 			actualCheckedProject = projectName
 			return false, nil
@@ -85,7 +85,7 @@ func TestErrorNonExistingProject(t *testing.T) {
 func TestErrorUnableToCheckProject(t *testing.T) {
 	var actualCheckedProject string
 	prjCheckerErrDesc := "some obscure project checker error"
-	mockedprojectChecker := &handlers_mock.ProjectCheckerMock{
+	mockedprojectChecker := &fake.ProjectCheckerMock{
 		ProjectExistsFunc: func(projectName string) (bool, error) {
 			actualCheckedProject = projectName
 			return true, errors.New(prjCheckerErrDesc)
@@ -114,7 +114,7 @@ func TestErrorImportNoValidZip(t *testing.T) {
 	contentReader := io.NopCloser(bytes.NewReader([]byte("this is clearly not a zip file")))
 
 	var actualCheckedProject string
-	mockedprojectChecker := &handlers_mock.ProjectCheckerMock{
+	mockedprojectChecker := &fake.ProjectCheckerMock{
 		ProjectExistsFunc: func(projectName string) (bool, error) {
 			actualCheckedProject = projectName
 			return true, nil
@@ -151,7 +151,7 @@ func TestErrorImportBrokenReader(t *testing.T) {
 	)
 
 	var actualCheckedProject string
-	mockedprojectChecker := &handlers_mock.ProjectCheckerMock{
+	mockedprojectChecker := &fake.ProjectCheckerMock{
 		ProjectExistsFunc: func(projectName string) (bool, error) {
 			actualCheckedProject = projectName
 			return true, nil

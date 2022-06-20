@@ -21,12 +21,12 @@ import (
 	"github.com/keptn/keptn/api/handlers"
 	custommiddleware "github.com/keptn/keptn/api/middleware"
 	"github.com/keptn/keptn/api/models"
+	"github.com/keptn/keptn/api/pkg/import"
 	"github.com/keptn/keptn/api/restapi/operations"
 	"github.com/keptn/keptn/api/restapi/operations/auth"
 	"github.com/keptn/keptn/api/restapi/operations/event"
 	"github.com/keptn/keptn/api/restapi/operations/import_operations"
 	"github.com/keptn/keptn/api/restapi/operations/metadata"
-	"github.com/keptn/keptn/api/utils"
 )
 
 //go:generate swagger generate server --target ../../api --name Keptn --spec ../swagger.yaml --principal models.Principal
@@ -96,8 +96,8 @@ func configureAPI(api *operations.KeptnAPI) http.Handler {
 
 	// Import endpoint
 	api.ImportOperationsImportHandler = import_operations.ImportHandlerFunc(
-		handlers.GetImportHandlerFunc(
-			env.ImportBasePath, new(utils.ConfigurationServiceProjectChecker),
+		_import.GetImportHandlerFunc(
+			env.ImportBasePath, _import.NewControlPlaneProjectChecker(),
 		),
 	)
 
