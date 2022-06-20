@@ -35,6 +35,29 @@ import (
 const natsTestPort = 8370
 const mongoDBVersion = "4.4.9"
 
+const sequencePauseShipyard = `--- 
+apiVersion: "spec.keptn.sh/0.2.3"
+kind: Shipyard
+metadata:
+  name: "shipyard-echo-service"
+spec:
+  stages:
+    - name: "dev"
+      sequences:
+        - name: "mysequence"
+          tasks:
+            - name: "task1"
+            - name: "task2"
+            - name: "task3"
+    - name: "prod"
+      sequences:
+        - name: "mysequence"
+          triggeredOn:
+            - event: "dev.mysequence.finished"
+          tasks:
+            - name: "task4"
+            - name: "task5"`
+
 const testShipyardFile = `apiVersion: spec.keptn.sh/0.2.0
 kind: Shipyard
 metadata:
@@ -1390,6 +1413,67 @@ func Test__main_SequenceControl_AbortPausedSequenceMultipleStages(t *testing.T) 
 
 	// now that the first sequence is aborted, the other sequence should start in prod-a and prod-b
 	parallelStagesAreTriggered(*secondContext.KeptnContext)
+}
+
+func Test__main_SequenceControl_PauseAndResume(t *testing.T) {
+	projectName := "sequence-pause-and-resume"
+	serviceName := "myservice"
+	stageName := "dev"
+	sequencename := "mysequence"
+	source := "golang-test-1"
+
+	natsClient, tearDown, err := setupTestProject(t, projectName, serviceName, sequencePauseShipyard)
+
+	defer tearDown()
+	require.Nil(t, err)
+
+	t.Logf("triggering sequence %s in stage %s", sequencename, stageName)
+	keptnContext := natsClient.triggerSequence(projectName, serviceName, stageName, sequencename)
+
+	// verify state
+	verifySequenceEndsUpInState(t, projectName, keptnContext, 10*time.Second, []string{apimodels.SequenceStartedState})
+
+	var task1TriggeredEvent *apimodels.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		task1TriggeredEvent = natsClient.getLatestEventOfType(*keptnContext.KeptnContext, projectName, stageName, keptnv2.GetTriggeredEventType("task1"))
+		return task1TriggeredEvent != nil
+
+	}, 10*time.Second, 100*time.Millisecond)
+
+	require.NotNil(t, task1TriggeredEvent)
+
+	cloudEvent := keptnv2.ToCloudEvent(*task1TriggeredEvent)
+	keptn, err := keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: natsClient})
+	require.Nil(t, err)
+	require.NotNil(t, keptn)
+
+	t.Log("sending task1 started event")
+	_, err = keptn.SendTaskStartedEvent(nil, source)
+	require.Nil(t, err)
+
+	t.Log("pausing sequence")
+	controlSequence(t, projectName, *keptnContext.KeptnContext, apimodels.PauseSequence)
+
+	t.Log("sending task1 finished event")
+	_, err = keptn.SendTaskFinishedEvent(&keptnv2.EventData{
+		Result: keptnv2.ResultPass,
+	}, source)
+
+	verifySequenceEndsUpInState(t, projectName, keptnContext, 10*time.Second, []string{apimodels.SequencePaused})
+
+	t.Log("verifying that the next task has not being triggered")
+	var task2TriggeredEvent *apimodels.KeptnContextExtendedCE
+	task2TriggeredEvent = natsClient.getLatestEventOfType(*keptnContext.KeptnContext, projectName, stageName, keptnv2.GetTriggeredEventType("task2"))
+	require.Nil(t, task2TriggeredEvent)
+
+	t.Log("resuming sequence")
+	controlSequence(t, projectName, *keptnContext.KeptnContext, apimodels.ResumeSequence)
+
+	t.Log("verifying that the next task has being triggered")
+	require.Eventually(t, func() bool {
+		task2TriggeredEvent = natsClient.getLatestEventOfType(*keptnContext.KeptnContext, projectName, stageName, keptnv2.GetTriggeredEventType("task1"))
+		return task2TriggeredEvent != nil
+	}, 10*time.Second, 100*time.Millisecond)
 }
 
 func Test__main_SequenceLoop(t *testing.T) {

@@ -33,7 +33,6 @@ func Test_GKE(t *testing.T) {
 	t.Run("Test_WebhookConfigAtServiceLevel_Beta", Test_WebhookConfigAtServiceLevel_Beta)
 	t.Run("Test_WebhookConfigAtServiceLevel_Alpha", Test_WebhookConfigAtServiceLevel_Alpha)
 	t.Run("TTest_WebhookFailInternalAddress_Beta", Test_WebhookFailInternalAddress_Beta)
-	t.Run("Test_SequenceControl_PauseAndResume", Test_SequenceControl_PauseAndResume)
 	t.Run("Test_SequenceControl_PauseAndResume_2", Test_SequenceControl_PauseAndResume_2)
 	if res, err := CompareServiceNameWithDeploymentName("configuration-service", "resource-service"); err == nil && res {
 		t.Run("Test_ResourceServiceGETCommitID", Test_ResourceServiceGETCommitID)
