@@ -139,8 +139,7 @@ func bark(env config.EnvConfig) {
 	fmt.Printf(printFmtStr, padR("PubSub group"), strOrUnknown(env.PubSubGroup))
 	fmt.Printf(printFmtStr, padR("K8S node name"), strOrUnknown(env.K8sNodeName))
 	fmt.Printf(printFmtStr, padR("K8S namespace"), strOrUnknown(env.K8sNamespace))
-	fmt.Printf(printFmtStr, padR("K8S deployment name"), strOrUnknown(env.K8sDeploymentName))
-	fmt.Printf(printFmtStr, padR("K8S component name"), strOrUnknown(env.K8sDeploymentComponent))
+	fmt.Printf(printFmtStr, padR("Integration Name"), strOrUnknown(env.IntegrationName))
 	fmt.Printf(printFmtStr, padR("K8S pod name"), strOrUnknown(env.K8sPodName))
 }
 

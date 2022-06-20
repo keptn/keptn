@@ -110,16 +110,15 @@ func (c *ControlPlane) createRegistrationData() models.Integration {
 	}
 
 	return models.Integration{
-		Name: c.env.K8sDeploymentComponent,
+		Name: c.env.IntegrationName,
 		MetaData: models.MetaData{
 			Hostname:           c.env.K8sNodeName,
 			IntegrationVersion: c.env.Version,
 			DistributorVersion: c.env.DistributorVersion,
 			Location:           location,
 			KubernetesMetaData: models.KubernetesMetaData{
-				Namespace:      c.env.K8sNamespace,
-				PodName:        c.env.K8sPodName,
-				DeploymentName: c.env.K8sDeploymentName,
+				Namespace: c.env.K8sNamespace,
+				PodName:   c.env.K8sPodName,
 			},
 		},
 		Subscriptions: subscriptions,

@@ -4,6 +4,7 @@ metadata:
   name: {{ include "helm-service.fullname" . }}
   labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/component: helm-service
+    keptn.sh/integration-name: {{ include "helm-service.name" . }}
 spec:
   replicas: 1
   selector:
@@ -129,18 +130,10 @@ spec:
                   fieldPath: metadata.labels['app.kubernetes.io/version']
             - name: DISTRIBUTOR_VERSION
               value: {{ .Values.distributor.image.tag | default .Chart.AppVersion }}
-            - name: LOCATION
+            - name: INTEGRATION_NAME
               valueFrom:
                 fieldRef:
-                  fieldPath: metadata.labels['app.kubernetes.io/component']
-            - name: K8S_DEPLOYMENT_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.labels['app.kubernetes.io/name']
-            - name: K8S_DEPLOYMENT_COMPONENT
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.labels['app.kubernetes.io/component']
+                  fieldPath: metadata.labels['keptn.sh/integration-name']
             - name: K8S_POD_NAME
               valueFrom:
                 fieldRef:
