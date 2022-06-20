@@ -33,6 +33,8 @@ import (
 
 const envVarLogLevel = "LOG_LEVEL"
 
+const controlPlaneServiceEnvVar = "CONTROLPLANE_URI"
+
 type EnvConfig struct {
 	MaxAuthEnabled            bool    `envconfig:"MAX_AUTH_ENABLED" default:"true"`
 	MaxAuthRequestsPerSecond  float64 `envconfig:"MAX_AUTH_REQUESTS_PER_SECOND" default:"1"`
@@ -97,7 +99,7 @@ func configureAPI(api *operations.KeptnAPI) http.Handler {
 	// Import endpoint
 	api.ImportOperationsImportHandler = import_operations.ImportHandlerFunc(
 		_import.GetImportHandlerFunc(
-			env.ImportBasePath, _import.NewControlPlaneProjectChecker(),
+			env.ImportBasePath, _import.NewControlPlaneProjectChecker(os.Getenv(controlPlaneServiceEnvVar)),
 		),
 	)
 

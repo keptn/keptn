@@ -3,20 +3,20 @@ package _import
 import (
 	"fmt"
 	"net/http"
-	"os"
 
 	"github.com/keptn/keptn/api/utils"
 )
 
-const controlPlaneServiceEnvVar = "CONTROLPLANE_URI"
+const projectEndpoint = "/v1/project/"
 
 type ControlPlaneProjectChecker struct {
 	controlPlaneProjectBaseUri string
 }
 
-func NewControlPlaneProjectChecker() *ControlPlaneProjectChecker {
+func NewControlPlaneProjectChecker(controlPlaneURI string) *ControlPlaneProjectChecker {
+	controlPlaneURI = utils.SanitizeURL(controlPlaneURI)
 	c := new(ControlPlaneProjectChecker)
-	c.controlPlaneProjectBaseUri = utils.SanitizeURL(os.Getenv(controlPlaneServiceEnvVar)) + "/v1/project/"
+	c.controlPlaneProjectBaseUri = controlPlaneURI + projectEndpoint
 	return c
 }
 
