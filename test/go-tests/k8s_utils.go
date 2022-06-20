@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/keptn/go-utils/pkg/common/kubeutils"
+	keptn2 "github.com/keptn/go-utils/pkg/lib"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -192,7 +193,7 @@ type K8SEventArray struct {
 }
 
 func GetOOMEvents() (K8SEventArray, error) {
-	events, err := kubeutils.ExecuteCommand(kubectlExecutable, []string{"get", "events", "--sort-by=’.lastTimestamp’", "-n=default", "-o=json"})
+	events, err := keptn2.ExecuteCommand(kubectlExecutable, []string{"get", "events", "--sort-by=’.lastTimestamp’", "-n=default", "-o=json"})
 	TimeInterval := time.Now().Add(-1 * time.Hour)
 	if err != nil {
 		return K8SEventArray{}, err

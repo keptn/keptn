@@ -18,6 +18,7 @@ import (
 
 	"github.com/keptn/go-utils/pkg/common/kubeutils"
 	"github.com/keptn/go-utils/pkg/common/strutils"
+	keptn2 "github.com/keptn/go-utils/pkg/lib"
 
 	"github.com/keptn/go-utils/pkg/common/retry"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -484,7 +485,7 @@ func ExecuteCommand(cmd string) (string, error) {
 	if len(split) == 0 {
 		return "", errors.New("invalid command")
 	}
-	return kubeutils.ExecuteCommand(split[0], split[1:])
+	return keptn2.ExecuteCommand(split[0], split[1:])
 }
 
 func ExecuteCommandf(cmd string, a ...interface{}) (string, error) {

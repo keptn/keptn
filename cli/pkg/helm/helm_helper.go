@@ -40,6 +40,7 @@ import (
 	"k8s.io/client-go/rest"
 	cmdutil "k8s.io/kubectl/pkg/cmd/util"
 
+	"github.com/keptn/go-utils/pkg/common/fileutils"
 	"github.com/keptn/go-utils/pkg/common/kubeutils"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	helmcommon "github.com/keptn/keptn/helm-service/pkg/common"
@@ -231,10 +232,10 @@ func (c Helper) UpgradeChart(ch *chart.Chart, releaseName, namespace string, val
 
 func getKubeConfig() string {
 	if os.Getenv("KUBECONFIG") != "" {
-		return kubeutils.ExpandTilde(os.Getenv("KUBECONFIG"))
+		return fileutils.ExpandTilde(os.Getenv("KUBECONFIG"))
 	}
 	return filepath.Join(
-		kubeutils.UserHomeDir(), ".kube", "config",
+		fileutils.UserHomeDir(), ".kube", "config",
 	)
 
 }

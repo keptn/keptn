@@ -20,6 +20,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/keptn/go-utils/pkg/common/kubeutils"
+	keptn2 "github.com/keptn/go-utils/pkg/lib"
 )
 
 var namespace = os.Getenv("POD_NAMESPACE")
@@ -46,7 +47,7 @@ type CredentialReader interface {
 type KeptnUtilsCommandExecutor struct{}
 
 func (KeptnUtilsCommandExecutor) ExecuteCommand(command string, args []string, directory string) (string, error) {
-	return kubeutils.ExecuteCommandInDirectory(command, args, directory)
+	return keptn2.ExecuteCommandInDirectory(command, args, directory)
 }
 
 type K8sCredentialReader struct{}
@@ -153,7 +154,7 @@ func (g *Git) CreateBranch(project string, branch string, sourceBranch string) e
 	credentials, err := g.CredentialReader.GetCredentials(project)
 	if err == nil && credentials != nil {
 		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
-		_, err = kubeutils.ExecuteCommandInDirectory("git", []string{"push", "--set-upstream", repoURI, branch}, projectConfigPath)
+		_, err = keptn2.ExecuteCommandInDirectory("git", []string{"push", "--set-upstream", repoURI, branch}, projectConfigPath)
 		if err != nil {
 			return fmt.Errorf("failed to set git upstream for project '%s'", project)
 		}

@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	"github.com/keptn/go-utils/pkg/common/kubeutils"
+	keptn2 "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/configuration-service/common"
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
@@ -68,7 +68,7 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: http.StatusBadRequest, Message: swag.String("Could not create project")})
 		}
 
-		_, err = kubeutils.ExecuteCommandInDirectory("git", []string{"init"}, projectConfigPath)
+		_, err = keptn2.ExecuteCommandInDirectory("git", []string{"init"}, projectConfigPath)
 		if err != nil {
 			logger.WithError(err).Errorf("Could not initialize git repository during creating project %s", params.Project.ProjectName)
 			rollbackFunc()

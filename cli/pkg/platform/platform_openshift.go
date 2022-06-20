@@ -25,7 +25,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/keptn/go-utils/pkg/common/kubeutils"
+	keptn2 "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/cli/pkg/logging"
 )
 
@@ -133,7 +133,7 @@ func readUserInput(value *string, regex string, promptMessage string, regexViola
 
 func (p openShiftPlatform) authenticateAtCluster() (bool, error) {
 	logging.PrintLog("Authenticating at OpenShift cluster: oc login "+p.creds.OpenshiftURL, logging.VerboseLevel)
-	out, err := kubeutils.ExecuteCommand("oc", []string{
+	out, err := keptn2.ExecuteCommand("oc", []string{
 		"login",
 		p.creds.OpenshiftURL,
 		"-u=" + p.creds.OpenshiftUser,

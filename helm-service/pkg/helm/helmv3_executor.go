@@ -15,6 +15,7 @@ import (
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
 
+	"github.com/keptn/go-utils/pkg/common/fileutils"
 	"github.com/keptn/go-utils/pkg/common/kubeutils"
 	"helm.sh/helm/v3/pkg/kube"
 	"helm.sh/helm/v3/pkg/storage"
@@ -88,7 +89,7 @@ func (h *HelmV3Executor) getKubeRestConfig() (config *rest.Config, err error) {
 		config, err = rest.InClusterConfig()
 	} else {
 		kubeconfig := filepath.Join(
-			kubeutils.UserHomeDir(), ".kube", "config",
+			fileutils.UserHomeDir(), ".kube", "config",
 		)
 		config, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
 	}

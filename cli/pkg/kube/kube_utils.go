@@ -8,12 +8,13 @@ import (
 
 	"github.com/hashicorp/go-version"
 	"github.com/keptn/go-utils/pkg/common/kubeutils"
+	keptn2 "github.com/keptn/go-utils/pkg/lib"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var (
 	kubeServerVersion  = regexp.MustCompile(`Server Version: version\.Info{Major:"(\d+)", Minor:"(\d+.*?)\+{0,1}"`)
-	executeCommandFunc = kubeutils.ExecuteCommand
+	executeCommandFunc = keptn2.ExecuteCommand
 )
 
 //go:generate moq -pkg fake -skip-ensure -out ./fake/namespace_handler.go . IKeptnNamespaceHandler
