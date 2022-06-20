@@ -348,8 +348,7 @@ func Test_getDurationFromEnvVar(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Setenv("LOG_TTL", tt.args.envVarValue)
-			if got := getDurationFromEnvVar("LOG_TTL", envVarLogsTTLDefault); got != tt.want {
+			if got := getDurationFromEnvVar(tt.args.envVarValue, envVarLogsTTLDefault); got != tt.want {
 				t.Errorf("getLogTTLDurationInSeconds() = %v, want %v", got, tt.want)
 			}
 		})
@@ -737,8 +736,11 @@ func Test__main_SequenceStateParallelStages(t *testing.T) {
 		return true
 	}, 10*time.Second, 100*time.Millisecond)
 
-	staging2TriggeredEvent := natsClient.getLatestEventOfType(*keptnContext.KeptnContext, projectName, "staging-2", keptnv2.GetTriggeredEventType("delivery"))
-	require.NotNil(t, staging1TriggeredEvent)
+	var staging2TriggeredEvent *apimodels.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		staging2TriggeredEvent = natsClient.getLatestEventOfType(*keptnContext.KeptnContext, projectName, "staging-2", keptnv2.GetTriggeredEventType("delivery"))
+		return staging2TriggeredEvent != nil
+	}, 10*time.Second, 100*time.Millisecond)
 
 	cloudEvent = keptnv2.ToCloudEvent(*staging2TriggeredEvent)
 
