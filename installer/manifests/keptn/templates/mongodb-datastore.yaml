@@ -5,7 +5,6 @@ metadata:
   name: mongodb-datastore
   labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/component: mongodb-datastore
-    keptn.sh/integration-name: {{ (.Values.mongodbDatastore).nameOverride | default "mongodb-datastore" }}
 spec:
   selector:
     matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
@@ -16,7 +15,6 @@ spec:
     metadata:
       labels: {{- include "common.labels.standard" . | nindent 8 }}
         app.kubernetes.io/component: mongodb-datastore
-        keptn.sh/integration-name: {{ (.Values.mongodbDatastore).nameOverride | default "mongodb-datastore" }}
     spec:
       {{- include "keptn.common.pod-security-context" . | nindent 6 }}
       serviceAccountName: keptn-default

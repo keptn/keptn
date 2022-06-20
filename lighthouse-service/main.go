@@ -28,9 +28,8 @@ import (
 
 type envConfig struct {
 	ConfigurationServiceURL string `envconfig:"CONFIGURATION_SERVICE" default:"http://configuration-service:8080"`
-	K8SDeploymentName       string `envconfig:"K8S_DEPLOYMENT_NAME" default:""`
+	IntegrationName         string `envconfig:"INTEGRATION_NAME" default:""`
 	K8SDeploymentVersion    string `envconfig:"K8S_DEPLOYMENT_VERSION" default:""`
-	K8SDeploymentComponent  string `envconfig:"K8S_DEPLOYMENT_COMPONENT" default:""`
 	K8SPodName              string `envconfig:"K8S_POD_NAME" default:""`
 	K8SNamespace            string `envconfig:"K8S_NAMESPACE" default:""`
 	K8SNodeName             string `envconfig:"K8S_NODE_NAME" default:""`
@@ -107,15 +106,13 @@ func (l LighthouseService) OnEvent(ctx context.Context, event models.KeptnContex
 
 func (l LighthouseService) RegistrationData() controlplane.RegistrationData {
 	return controlplane.RegistrationData{
-		Name: l.env.K8SDeploymentComponent,
+		Name: l.env.IntegrationName,
 		MetaData: models.MetaData{
 			Hostname:           l.env.K8SNodeName,
 			IntegrationVersion: l.env.K8SDeploymentVersion,
-			Location:           l.env.K8SDeploymentComponent,
 			KubernetesMetaData: models.KubernetesMetaData{
-				Namespace:      l.env.K8SNamespace,
-				PodName:        l.env.K8SPodName,
-				DeploymentName: l.env.K8SDeploymentName,
+				Namespace: l.env.K8SNamespace,
+				PodName:   l.env.K8SPodName,
 			},
 		},
 		Subscriptions: []models.EventSubscription{
