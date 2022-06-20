@@ -5,6 +5,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/leaderelection"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
 	"sync"
@@ -16,7 +17,6 @@ import (
 	"github.com/kelseyhightower/envconfig"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/osutils"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/config"
 	"github.com/keptn/keptn/shipyard-controller/controller"
@@ -87,9 +87,9 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 		gin.DefaultWriter = ioutil.Discard
 	}
 
-	csEndpoint, err := keptncommon.GetServiceEndpoint(env.ConfigurationSvcEndpoint)
+	csEndpoint, err := url.Parse(env.ConfigurationSvcEndpoint)
 	if err != nil {
-		log.Fatalf("could not get configuration-service URL: %s", err.Error())
+		log.Fatal(err)
 	}
 
 	connectionHandler := nats.NewNatsConnectionHandler(
