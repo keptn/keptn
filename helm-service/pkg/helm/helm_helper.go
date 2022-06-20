@@ -8,7 +8,7 @@ import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
 	utils "github.com/keptn/go-utils/pkg/api/utils"
-	kubeutils "github.com/keptn/go-utils/pkg/common/kubeutils"
+	"github.com/keptn/go-utils/pkg/common/kubeutils"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	kyaml "k8s.io/apimachinery/pkg/util/yaml"

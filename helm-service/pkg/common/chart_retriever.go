@@ -5,7 +5,7 @@ import (
 	"net/url"
 
 	goutils "github.com/keptn/go-utils/pkg/api/utils"
-	kubeutils "github.com/keptn/go-utils/pkg/common/kubeutils"
+	"github.com/keptn/go-utils/pkg/common/kubeutils"
 	"helm.sh/helm/v3/pkg/chart"
 )
 

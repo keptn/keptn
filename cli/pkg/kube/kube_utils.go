@@ -7,7 +7,7 @@ import (
 	"regexp"
 
 	"github.com/hashicorp/go-version"
-	kubeutils "github.com/keptn/go-utils/pkg/common/kubeutils"
+	"github.com/keptn/go-utils/pkg/common/kubeutils"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 

@@ -9,7 +9,7 @@ import (
 
 	"github.com/keptn/go-utils/pkg/common/fileutils"
 
-	kubeutils "github.com/keptn/go-utils/pkg/common/kubeutils"
+	"github.com/keptn/go-utils/pkg/common/kubeutils"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"

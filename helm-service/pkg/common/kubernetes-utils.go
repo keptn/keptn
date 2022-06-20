@@ -6,7 +6,7 @@ import (
 	"io"
 	"strings"
 
-	kubeutils "github.com/keptn/go-utils/pkg/common/kubeutils"
+	"github.com/keptn/go-utils/pkg/common/kubeutils"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/chartutil"

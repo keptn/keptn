@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	kubeutils "github.com/keptn/go-utils/pkg/common/kubeutils"
+	"github.com/keptn/go-utils/pkg/common/kubeutils"
 	"github.com/keptn/keptn/cli/internal"
 
 	"github.com/keptn/keptn/cli/internal/auth"

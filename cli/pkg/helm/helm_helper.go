@@ -40,7 +40,7 @@ import (
 	"k8s.io/client-go/rest"
 	cmdutil "k8s.io/kubectl/pkg/cmd/util"
 
-	kubeutils "github.com/keptn/go-utils/pkg/common/kubeutils"
+	"github.com/keptn/go-utils/pkg/common/kubeutils"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	helmcommon "github.com/keptn/keptn/helm-service/pkg/common"
 	"k8s.io/client-go/tools/clientcmd"

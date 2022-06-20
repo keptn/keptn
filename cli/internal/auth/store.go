@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/keptn/go-utils/pkg/common/fileutils"
-	kubeutils "github.com/keptn/go-utils/pkg/common/kubeutils"
+	"github.com/keptn/go-utils/pkg/common/kubeutils"
 	"golang.org/x/oauth2"
 )
 

@@ -24,7 +24,7 @@ import (
 
 	"github.com/keptn/keptn/cli/pkg/common"
 
-	kubeutils "github.com/keptn/go-utils/pkg/common/kubeutils"
+	"github.com/keptn/go-utils/pkg/common/kubeutils"
 
 	"github.com/keptn/keptn/cli/pkg/platform"
 

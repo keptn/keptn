@@ -20,7 +20,7 @@ import (
 	"log"
 	"os"
 
-	kubeutils "github.com/keptn/go-utils/pkg/common/kubeutils"
+	"github.com/keptn/go-utils/pkg/common/kubeutils"
 
 	"github.com/keptn/keptn/helm-service/pkg/namespacemanager"
 
