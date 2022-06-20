@@ -1,12 +1,12 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { DtRadioChange } from '@dynatrace/barista-components/radio';
-import { IGitDataExtended, IGitHttps, IGitSsh } from '../../_interfaces/git-upstream';
-import { DataService } from '../../_services/data.service';
 import { ActivatedRoute, ParamMap } from '@angular/router';
+import { DtRadioChange } from '@dynatrace/barista-components/radio';
 import { filter, map } from 'rxjs/operators';
-import { NotificationType } from '../../_models/notification';
-import { NotificationsService } from '../../_services/notifications.service';
-import { isGitHTTPS, isGitSSH, isRemoteUrlEmpty } from '../../_utils/git-upstream.utils';
+import { IGitDataExtended, IGitHttps, IGitSsh } from '../../../_interfaces/git-upstream';
+import { NotificationType } from '../../../_models/notification';
+import { DataService } from '../../../_services/data.service';
+import { NotificationsService } from '../../../_services/notifications.service';
+import { isGitHTTPS, isGitSSH, isRemoteUrlEmpty } from '../../../_utils/git-upstream.utils';
 
 export enum GitFormType {
   SSH,

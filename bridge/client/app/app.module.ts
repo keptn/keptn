@@ -49,7 +49,6 @@ import { WindowConfig } from '../environments/environment.dynamic';
 import { KtbConfirmationDialogModule } from './_components/_dialogs/ktb-confirmation-dialog/ktb-confirmation-dialog.module';
 import { KtbDeleteConfirmationModule } from './_components/_dialogs/ktb-delete-confirmation/ktb-delete-confirmation.module';
 import { KtbDeletionDialogModule } from './_components/_dialogs/ktb-deletion-dialog/ktb-deletion-dialog.module';
-import { KtbProjectCreateMessageComponent } from './_components/_status-messages/ktb-project-create-message/ktb-project-create-message.component';
 import { KtbApprovalItemModule } from './_components/ktb-approval-item/ktb-approval-item.module';
 import { KtbCertificateInputModule } from './_components/ktb-certificate-input/ktb-certificate-input.module';
 import { KtbCopyToClipboardModule } from './_components/ktb-copy-to-clipboard/ktb-copy-to-clipboard.module';
@@ -77,13 +76,7 @@ import { KtbNoServiceInfoComponent } from './_components/ktb-no-service-info/ktb
 import { KtbNotificationModule } from './_components/ktb-notification/ktb-notification.module';
 import { KtbPayloadViewerComponent } from './_components/ktb-payload-viewer/ktb-payload-viewer.component';
 import { KtbProjectListModule } from './_components/ktb-project-list/ktb-project-list.module';
-import { KtbProjectSettingsGitExtendedComponent } from './_components/ktb-project-settings-git-extended/ktb-project-settings-git-extended.component';
-import { KtbProjectSettingsGitHttpsComponent } from './_components/ktb-project-settings-git-https/ktb-project-settings-git-https.component';
-import { KtbProjectSettingsGitSshInputComponent } from './_components/ktb-project-settings-git-ssh-input/ktb-project-settings-git-ssh-input.component';
-import { KtbProjectSettingsGitSshComponent } from './_components/ktb-project-settings-git-ssh/ktb-project-settings-git-ssh.component';
-import { KtbProjectSettingsGitComponent } from './_components/ktb-project-settings-git/ktb-project-settings-git.component';
-import { KtbProjectSettingsShipyardComponent } from './_components/ktb-project-settings-shipyard/ktb-project-settings-shipyard.component';
-import { KtbProjectSettingsComponent } from './_components/ktb-project-settings/ktb-project-settings.component';
+import { KtbProjectSettingsModule } from './_components/ktb-project-settings/ktb-project-settings.module';
 import { KtbProxyInputModule } from './_components/ktb-proxy-input/ktb-proxy-input.module';
 import { KtbRootEventsListComponent } from './_components/ktb-root-events-list/ktb-root-events-list.component';
 import { KtbSecretsListComponent } from './_components/ktb-secrets-list/ktb-secrets-list.component';
@@ -229,6 +222,7 @@ const ktbModules = [
   KtbNotificationModule,
   KtbPipeModule,
   KtbProjectListModule,
+  KtbProjectSettingsModule,
   KtbProxyInputModule,
   KtbSelectableTileModule,
   KtbSequenceStateInfoModule,
@@ -271,11 +265,8 @@ const ktbModules = [
     KtbUniformRegistrationLogsComponent,
     KtbSecretsListComponent,
     KtbNoServiceInfoComponent,
-    KtbProjectSettingsGitComponent,
-    KtbProjectSettingsShipyardComponent,
     KtbSequenceControlsComponent,
     KtbUniformSubscriptionsComponent,
-    KtbProjectSettingsComponent,
     KtbModifyUniformSubscriptionComponent,
     KtbWebhookSettingsComponent,
     KtbServiceSettingsComponent,
@@ -286,14 +277,9 @@ const ktbModules = [
     KtbPayloadViewerComponent,
     KtbVariableSelectorComponent,
     ArrayToStringPipe,
-    KtbProjectCreateMessageComponent,
     KtbTriggerSequenceComponent,
     KtbRootComponent,
     KtbLogoutViewComponent,
-    KtbProjectSettingsGitExtendedComponent,
-    KtbProjectSettingsGitHttpsComponent,
-    KtbProjectSettingsGitSshComponent,
-    KtbProjectSettingsGitSshInputComponent,
   ],
   imports: [...angularModules, ...dtModules, ...ktbModules, AppRouting, MomentModule],
   entryComponents: [],

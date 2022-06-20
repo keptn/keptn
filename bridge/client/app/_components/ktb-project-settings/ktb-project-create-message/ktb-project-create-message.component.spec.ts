@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { RouterTestingModule } from '@angular/router/testing';
+import { KtbProjectSettingsModule } from '../ktb-project-settings.module';
 import { KtbProjectCreateMessageComponent } from './ktb-project-create-message.component';
-import { AppModule } from '../../../app.module';
 
 describe('KtbProjectCreateMessageComponent', () => {
   let component: KtbProjectCreateMessageComponent;
@@ -8,7 +9,7 @@ describe('KtbProjectCreateMessageComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule],
+      imports: [KtbProjectSettingsModule, RouterTestingModule],
       declarations: [],
     }).compileComponents();
   });

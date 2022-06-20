@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { IGitData } from '../../_interfaces/git-upstream';
-import { FormUtils } from '../../_utils/form.utils';
+import { IGitData } from '../../../_interfaces/git-upstream';
+import { FormUtils } from '../../../_utils/form.utils';
 
 @Component({
   selector: 'ktb-project-settings-git',

@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { IGitData, IGitHttps, IProxy, IRequiredGitData } from '../../_interfaces/git-upstream';
-import { isGitUpstreamValidSet, isGitWithProxy } from '../../_utils/git-upstream.utils';
-import { AppUtils } from '../../_utils/app.utils';
+import { IGitData, IGitHttps, IProxy, IRequiredGitData } from '../../../_interfaces/git-upstream';
+import { AppUtils } from '../../../_utils/app.utils';
+import { isGitUpstreamValidSet, isGitWithProxy } from '../../../_utils/git-upstream.utils';
 
 @Component({
   selector: 'ktb-project-settings-git-https',
