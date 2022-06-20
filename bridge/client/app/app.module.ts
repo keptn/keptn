@@ -69,7 +69,6 @@ import { KtbMarkdownComponent } from './_components/ktb-markdown/ktb-markdown.co
 import { KtbModifyUniformSubscriptionComponent } from './_components/ktb-modify-uniform-subscription/ktb-modify-uniform-subscription.component';
 import { KtbNoServiceInfoComponent } from './_components/ktb-no-service-info/ktb-no-service-info.component';
 import { KtbNotificationModule } from './_components/ktb-notification/ktb-notification.module';
-import { KtbPayloadViewerComponent } from './_components/ktb-payload-viewer/ktb-payload-viewer.component';
 import { KtbProjectListModule } from './_components/ktb-project-list/ktb-project-list.module';
 import { KtbProjectSettingsModule } from './_components/ktb-project-settings/ktb-project-settings.module';
 import { KtbProxyInputModule } from './_components/ktb-proxy-input/ktb-proxy-input.module';
@@ -132,6 +131,7 @@ import { KtbSubscriptionItemModule } from './_components/ktb-subscription-item/k
 import { KtbUniformSubscriptionsModule } from './_components/ktb-uniform-subscriptions/ktb-uniform-subscriptions.module';
 import { KtbKeptnServicesListModule } from './_components/ktb-keptn-services-list/ktb-keptn-services-list.module';
 import { KtbUniformRegistrationLogsModule } from './_components/ktb-uniform-registration-logs/ktb-uniform-registration-logs.module';
+import { KtbPayloadViewerModule } from './_components/ktb-payload-viewer/ktb-payload-viewer.module';
 
 registerLocaleData(localeEn, 'en');
 
@@ -217,6 +217,7 @@ const ktbModules = [
   KtbKeptnServicesListModule,
   KtbLoadingModule,
   KtbNotificationModule,
+  KtbPayloadViewerModule,
   KtbPipeModule,
   KtbProjectListModule,
   KtbProjectSettingsModule,
@@ -268,7 +269,6 @@ const ktbModules = [
     KtbServiceSettingsListComponent,
     KtbTreeListSelectComponent,
     KtbTreeListSelectDirective,
-    KtbPayloadViewerComponent,
     KtbVariableSelectorComponent,
     ArrayToStringPipe,
     KtbTriggerSequenceComponent,
