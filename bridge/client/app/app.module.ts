@@ -64,7 +64,6 @@ import { KtbEvaluationInfoModule } from './_components/ktb-evaluation-info/ktb-e
 import { KtbEventItemModule } from './_components/ktb-event-item/ktb-event-item.module';
 import { KtbExpandableTileModule } from './_components/ktb-expandable-tile/ktb-expandable-tile.module';
 import { KtbHeatmapModule } from './_components/ktb-heatmap/ktb-heatmap.module';
-import { KtbKeptnServicesListComponent } from './_components/ktb-keptn-services-list/ktb-keptn-services-list.component';
 import { KtbLoadingModule } from './_components/ktb-loading/ktb-loading.module';
 import { KtbMarkdownComponent } from './_components/ktb-markdown/ktb-markdown.component';
 import { KtbModifyUniformSubscriptionComponent } from './_components/ktb-modify-uniform-subscription/ktb-modify-uniform-subscription.component';
@@ -132,6 +131,7 @@ import { NotFoundComponent } from './not-found/not-found.component';
 import { ProjectBoardComponent } from './project-board/project-board.component';
 import { KtbSubscriptionItemModule } from './_components/ktb-subscription-item/ktb-subscription-item.module';
 import { KtbUniformSubscriptionsModule } from './_components/ktb-uniform-subscriptions/ktb-uniform-subscriptions.module';
+import { KtbKeptnServicesListModule } from './_components/ktb-keptn-services-list/ktb-keptn-services-list.module';
 
 registerLocaleData(localeEn, 'en');
 
@@ -214,6 +214,7 @@ const ktbModules = [
   KtbExpandableTileModule,
   KtbHeatmapModule,
   KtbIntegerInputModule,
+  KtbKeptnServicesListModule,
   KtbLoadingModule,
   KtbNotificationModule,
   KtbPipeModule,
@@ -253,7 +254,6 @@ const ktbModules = [
     KtbStageDetailsComponent,
     KtbServicesListComponent,
     KtbUserComponent,
-    KtbKeptnServicesListComponent,
     KtbServiceDetailsComponent,
     KtbSettingsViewComponent,
     KtbSequenceListComponent,
