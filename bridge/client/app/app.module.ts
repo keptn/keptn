@@ -91,13 +91,8 @@ import { KtbStageBadgeModule } from './_components/ktb-stage-badge/ktb-stage-bad
 import { KtbStageDetailsComponent } from './_components/ktb-stage-details/ktb-stage-details.component';
 import { KtbStageOverviewComponent } from './_components/ktb-stage-overview/ktb-stage-overview.component';
 import { KtbTaskItemComponent, KtbTaskItemDetailDirective } from './_components/ktb-task-item/ktb-task-item.component';
-import {
-  KtbTreeListSelectComponent,
-  KtbTreeListSelectDirective,
-} from './_components/ktb-tree-list-select/ktb-tree-list-select.component';
 import { KtbTriggerSequenceComponent } from './_components/ktb-trigger-sequence/ktb-trigger-sequence.component';
 import { KtbUserComponent } from './_components/ktb-user/ktb-user.component';
-import { KtbVariableSelectorComponent } from './_components/ktb-variable-selector/ktb-variable-selector.component';
 import { KtbWebhookSettingsComponent } from './_components/ktb-webhook-settings/ktb-webhook-settings.component';
 import { KtbDragAndDropModule } from './_directives/ktb-drag-and-drop/ktb-drag-and-drop.module';
 import { KtbHideHttpLoadingDirective } from './_directives/ktb-hide-http-loading/ktb-hide-http-loading.directive';
@@ -132,6 +127,8 @@ import { KtbUniformSubscriptionsModule } from './_components/ktb-uniform-subscri
 import { KtbKeptnServicesListModule } from './_components/ktb-keptn-services-list/ktb-keptn-services-list.module';
 import { KtbUniformRegistrationLogsModule } from './_components/ktb-uniform-registration-logs/ktb-uniform-registration-logs.module';
 import { KtbPayloadViewerModule } from './_components/ktb-payload-viewer/ktb-payload-viewer.module';
+import { KtbVariableSelectorModule } from './_components/ktb-variable-selector/ktb-variable-selector.module';
+import { KtbTreeListSelectModule } from './_components/ktb-tree-list-select/ktb-tree-list-select.module';
 
 registerLocaleData(localeEn, 'en');
 
@@ -228,8 +225,10 @@ const ktbModules = [
   KtbSshKeyInputModule,
   KtbStageBadgeModule,
   KtbSubscriptionItemModule,
+  KtbTreeListSelectModule,
   KtbUniformRegistrationLogsModule,
   KtbUniformSubscriptionsModule,
+  KtbVariableSelectorModule,
 ];
 
 @NgModule({
@@ -267,9 +266,6 @@ const ktbModules = [
     KtbServiceSettingsComponent,
     KtbServiceSettingsOverviewComponent,
     KtbServiceSettingsListComponent,
-    KtbTreeListSelectComponent,
-    KtbTreeListSelectDirective,
-    KtbVariableSelectorComponent,
     ArrayToStringPipe,
     KtbTriggerSequenceComponent,
     KtbRootComponent,
