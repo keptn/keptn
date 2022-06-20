@@ -12,8 +12,8 @@ import (
 )
 
 const eventTypeWildcard = "*"
-const serviceName = "webhook-service"
 const envVarLogLevel = "LOG_LEVEL"
+const envVarIntegrationName = "INTEGRATION_NAME"
 
 func main() {
 	if os.Getenv(envVarLogLevel) != "" {
@@ -40,7 +40,7 @@ func main() {
 	taskHandler := handler.NewTaskHandler(&lib.TemplateEngine{}, curlExecutor, requestValidator, secretReader)
 
 	log.Fatal(sdk.NewKeptn(
-		serviceName,
+		os.Getenv(envVarIntegrationName),
 		sdk.WithTaskHandler(
 			eventTypeWildcard,
 			taskHandler,

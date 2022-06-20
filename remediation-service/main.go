@@ -10,8 +10,8 @@ import (
 )
 
 const getActionTriggeredEventType = "sh.keptn.event.get-action.triggered"
-const serviceName = "remediation-service"
 const envVarLogLevel = "LOG_LEVEL"
+const envVarIntegrationName = "INTEGRATION_NAME"
 
 func main() {
 	if os.Getenv(envVarLogLevel) != "" {
@@ -25,7 +25,7 @@ func main() {
 	}
 
 	log.Fatal(sdk.NewKeptn(
-		serviceName,
+		os.Getenv(envVarIntegrationName),
 		sdk.WithTaskHandler(
 			getActionTriggeredEventType,
 			handler.NewGetActionEventHandler()),

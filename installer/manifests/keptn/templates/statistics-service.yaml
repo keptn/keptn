@@ -4,6 +4,7 @@ metadata:
   name: statistics-service
   labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/component: statistics-service
+    keptn.sh/integration-name: {{ (.Values.statisticsService).nameOverride | default "statistics-service" }}
 spec:
   selector:
     matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}

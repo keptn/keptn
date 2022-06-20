@@ -52,21 +52,16 @@ lifecycle:
 {{- end }}
 
 {{- define "keptn.common.env.vars" -}}
-- name: K8S_DEPLOYMENT_NAME
-  valueFrom:
-    fieldRef:
-      apiVersion: v1
-      fieldPath: 'metadata.labels[''app.kubernetes.io/name'']'
 - name: K8S_DEPLOYMENT_VERSION
   valueFrom:
     fieldRef:
       apiVersion: v1
-      fieldPath: 'metadata.labels[''app.kubernetes.io/version'']'
-- name: K8S_DEPLOYMENT_COMPONENT
+      fieldPath: metadata.labels['app.kubernetes.io/version']
+- name: INTEGRATION_NAME
   valueFrom:
     fieldRef:
       apiVersion: v1
-      fieldPath: 'metadata.labels[''app.kubernetes.io/component'']'
+      fieldPath: metadata.labels['keptn.sh/integration-name']
 - name: K8S_NAMESPACE
   valueFrom:
     fieldRef:
@@ -99,18 +94,10 @@ lifecycle:
 {{- end }}
 - name: API_PROXY_HTTP_TIMEOUT
   value: {{ ((.Values.distributor.config).proxy).httpTimeout | default "30" | quote }}
-- name: LOCATION
-  valueFrom:
-   fieldRef:
-      fieldPath: metadata.labels['app.kubernetes.io/component']
-- name: K8S_DEPLOYMENT_NAME
+- name: INTEGRATION_NAME
   valueFrom:
     fieldRef:
-      fieldPath: metadata.labels['app.kubernetes.io/name']
-- name: K8S_DEPLOYMENT_COMPONENT
-  valueFrom:
-    fieldRef:
-      fieldPath: metadata.labels['app.kubernetes.io/component']
+      fieldPath: metadata.labels['keptn.sh/integration-name']
 - name: K8S_POD_NAME
   valueFrom:
     fieldRef:

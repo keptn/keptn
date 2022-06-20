@@ -6,6 +6,7 @@ metadata:
   name: webhook-service
   labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/component: webhook-service
+    keptn.sh/integration-name: {{ (.Values.webhookService).nameOverride | default "webhook-service" }}
 spec:
   selector:
     matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}

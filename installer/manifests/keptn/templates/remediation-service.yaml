@@ -6,6 +6,7 @@ metadata:
   name: remediation-service
   labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/component: remediation-service
+    keptn.sh/integration-name: {{ (.Values.remediationService).nameOverride | default "remediation-service" }}
 spec:
   selector:
     matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
