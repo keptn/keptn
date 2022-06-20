@@ -9,6 +9,7 @@ import { DtIconModule } from '@dynatrace/barista-components/icon';
 import { KtbPipeModule } from '../../_pipes/ktb-pipe.module';
 import { DtOverlayModule } from '@dynatrace/barista-components/overlay';
 import { KtbUniformSubscriptionsModule } from '../ktb-uniform-subscriptions/ktb-uniform-subscriptions.module';
+import { KtbUniformRegistrationLogsModule } from '../ktb-uniform-registration-logs/ktb-uniform-registration-logs.module';
 
 @NgModule({
   declarations: [KtbKeptnServicesListComponent],
@@ -23,6 +24,7 @@ import { KtbUniformSubscriptionsModule } from '../ktb-uniform-subscriptions/ktb-
     KtbExpandableTileModule,
     KtbLoadingModule,
     KtbPipeModule,
+    KtbUniformRegistrationLogsModule,
     KtbUniformSubscriptionsModule,
   ],
   exports: [KtbKeptnServicesListComponent],
