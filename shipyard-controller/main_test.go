@@ -394,7 +394,7 @@ func Test__main_SequenceQueueApproval(t *testing.T) {
 	require.Eventually(t, func() bool {
 		approvalTriggeredEvent = natsClient.getLatestEventOfType(*keptnContext.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType(keptnv2.ApprovalTaskName))
 		return approvalTriggeredEvent != nil
-	}, 5*time.Second, 100*time.Millisecond)
+	}, 10*time.Second, 100*time.Millisecond)
 
 	t.Logf("send the approval.started event to make sure the sequence will not be cancelled due to a timeout")
 	approvalTriggeredCE := keptnv2.ToCloudEvent(*approvalTriggeredEvent)
@@ -524,7 +524,7 @@ func Test__main_SequenceStateParallelStages(t *testing.T) {
 			return false
 		}
 		return true
-	}, 5*time.Second, 100*time.Millisecond)
+	}, 10*time.Second, 100*time.Millisecond)
 
 	require.Equal(t, int64(1), states.TotalCount)
 	require.Len(t, states.States, 1)
@@ -557,7 +557,7 @@ func Test__main_SequenceStateParallelStages(t *testing.T) {
 			return false
 		}
 		return states.States[0].Stages[0].LatestEvent.Type == keptnv2.GetStartedEventType("delivery")
-	}, 5*time.Second, 100*time.Millisecond)
+	}, 10*time.Second, 100*time.Millisecond)
 
 	_, err = keptn.SendTaskFinishedEvent(&keptnv2.EventData{Result: keptnv2.ResultPass, Status: keptnv2.StatusSucceeded}, source)
 	require.Nil(t, err)
@@ -668,7 +668,7 @@ func Test__main_SequenceStateParallelStages(t *testing.T) {
 			return false
 		}
 		return true
-	}, 5*time.Second, 100*time.Millisecond)
+	}, 10*time.Second, 100*time.Millisecond)
 
 	staging2TriggeredEvent := natsClient.getLatestEventOfType(*keptnContext.KeptnContext, projectName, "staging-2", keptnv2.GetTriggeredEventType("delivery"))
 	require.NotNil(t, staging1TriggeredEvent)
@@ -775,7 +775,7 @@ func Test__main_SequenceState_RetrieveMultiple(t *testing.T) {
 				return false
 			}
 			return true
-		}, 5*time.Second, 100*time.Millisecond)
+		}, 10*time.Second, 100*time.Millisecond)
 	}
 
 	verifyContextReturnsStates(context1, 1)
@@ -811,7 +811,7 @@ func Test__main_SequenceState_SequenceNotFound(t *testing.T) {
 		}
 		state = states.States[0]
 		return true
-	}, 5*time.Second, 100*time.Millisecond)
+	}, 10*time.Second, 100*time.Millisecond)
 
 	require.Equal(t, apimodels.SequenceFinished, state.State)
 
@@ -822,7 +822,7 @@ func Test__main_SequenceState_SequenceNotFound(t *testing.T) {
 			return false
 		}
 		return true
-	}, 5*time.Second, 100*time.Millisecond)
+	}, 10*time.Second, 100*time.Millisecond)
 
 	eventData := &keptnv2.EventData{}
 	err = keptnv2.Decode(finishedEvent.Data, eventData)
@@ -858,7 +858,7 @@ func Test__main_SequenceState_InvalidShipyard(t *testing.T) {
 		}
 		state = states.States[0]
 		return true
-	}, 5*time.Second, 100*time.Millisecond)
+	}, 10*time.Second, 100*time.Millisecond)
 
 	require.Equal(t, apimodels.SequenceFinished, state.State)
 
@@ -869,7 +869,7 @@ func Test__main_SequenceState_InvalidShipyard(t *testing.T) {
 			return false
 		}
 		return true
-	}, 5*time.Second, 100*time.Millisecond)
+	}, 10*time.Second, 100*time.Millisecond)
 
 	eventData := &keptnv2.EventData{}
 	err = keptnv2.Decode(finishedEvent.Data, eventData)
@@ -957,13 +957,13 @@ func Test__main_TriggerAndDeleteProject(t *testing.T) {
 			return false
 		}
 		return true
-	}, 5*time.Second, 100*time.Millisecond)
+	}, 10*time.Second, 100*time.Millisecond)
 
 	require.Eventually(t, func() bool {
 		openTriggeredEvents := getOpenTriggeredEvents(t, projectName, "mytask")
 
 		return openTriggeredEvents.TotalCount > 0
-	}, 5*time.Second, 100*time.Millisecond)
+	}, 10*time.Second, 100*time.Millisecond)
 
 	c := http.Client{}
 
@@ -1013,7 +1013,7 @@ func Test__main_SequenceControl_Abort(t *testing.T) {
 	require.Eventually(t, func() bool {
 		taskTriggeredEvent = natsClient.getLatestEventOfType(*keptnContext.KeptnContext, projectName, stageName, keptnv2.GetTriggeredEventType("mytask"))
 		return taskTriggeredEvent != nil
-	}, 5*time.Second, 100*time.Millisecond)
+	}, 10*time.Second, 100*time.Millisecond)
 
 	cloudEvent := keptnv2.ToCloudEvent(*taskTriggeredEvent)
 
@@ -1060,7 +1060,7 @@ func Test__main_SequenceControl_AbortQueuedSequence(t *testing.T) {
 	require.Eventually(t, func() bool {
 		taskTriggeredEvent = natsClient.getLatestEventOfType(*keptnContext.KeptnContext, projectName, stageName, keptnv2.GetTriggeredEventType("mytask"))
 		return taskTriggeredEvent != nil
-	}, 5*time.Second, 100*time.Millisecond)
+	}, 10*time.Second, 100*time.Millisecond)
 
 	cloudEvent := keptnv2.ToCloudEvent(*taskTriggeredEvent)
 
@@ -1075,13 +1075,13 @@ func Test__main_SequenceControl_AbortQueuedSequence(t *testing.T) {
 	secondContext := natsClient.triggerSequence(projectName, serviceName, stageName, sequencename)
 
 	// verify state
-	verifySequenceEndsUpInState(t, projectName, secondContext, 5*time.Second, []string{apimodels.SequenceWaitingState})
+	verifySequenceEndsUpInState(t, projectName, secondContext, 10*time.Second, []string{apimodels.SequenceWaitingState})
 
 	// abort the queued sequence
 	t.Log("aborting sequence")
 	controlSequence(t, projectName, *secondContext.KeptnContext, apimodels.AbortSequence)
 
-	verifySequenceEndsUpInState(t, projectName, secondContext, 5*time.Second, []string{apimodels.SequenceAborted})
+	verifySequenceEndsUpInState(t, projectName, secondContext, 10*time.Second, []string{apimodels.SequenceAborted})
 }
 
 func Test__main_SequenceControl_PauseSequence(t *testing.T) {
@@ -1124,13 +1124,13 @@ func Test__main_SequenceControl_PauseSequence(t *testing.T) {
 	controlSequence(t, projectName, *keptnContext.KeptnContext, apimodels.PauseSequence)
 
 	// verify state
-	verifySequenceEndsUpInState(t, projectName, keptnContext, 5*time.Second, []string{apimodels.SequencePaused})
+	verifySequenceEndsUpInState(t, projectName, keptnContext, 10*time.Second, []string{apimodels.SequencePaused})
 
 	// trigger a second sequence which should take over and be started
 	secondContext := natsClient.triggerSequence(projectName, serviceName, stageName, sequencename)
 
 	// verify state
-	verifySequenceEndsUpInState(t, projectName, secondContext, 5*time.Second, []string{apimodels.SequenceStartedState})
+	verifySequenceEndsUpInState(t, projectName, secondContext, 10*time.Second, []string{apimodels.SequenceStartedState})
 }
 
 func Test__main_SequenceControl_AbortPausedSequenceTaskPartiallyFinished(t *testing.T) {
@@ -1152,13 +1152,13 @@ func Test__main_SequenceControl_AbortPausedSequenceTaskPartiallyFinished(t *test
 	require.NotNil(t, keptnContext)
 
 	// verify state
-	verifySequenceEndsUpInState(t, projectName, keptnContext, 5*time.Second, []string{apimodels.SequenceStartedState})
+	verifySequenceEndsUpInState(t, projectName, keptnContext, 10*time.Second, []string{apimodels.SequenceStartedState})
 
 	var taskTriggeredEvent *apimodels.KeptnContextExtendedCE
 	require.Eventually(t, func() bool {
 		taskTriggeredEvent = natsClient.getLatestEventOfType(*keptnContext.KeptnContext, projectName, stageName, keptnv2.GetTriggeredEventType("mytask"))
 		return taskTriggeredEvent != nil
-	}, 5*time.Second, 100*time.Millisecond)
+	}, 10*time.Second, 100*time.Millisecond)
 
 	cloudEvent := keptnv2.ToCloudEvent(*taskTriggeredEvent)
 
@@ -1185,22 +1185,22 @@ func Test__main_SequenceControl_AbortPausedSequenceTaskPartiallyFinished(t *test
 	require.NotNil(t, secondContext)
 
 	// verify that the second sequence gets the triggered status
-	verifySequenceEndsUpInState(t, projectName, secondContext, 5*time.Second, []string{apimodels.SequenceWaitingState})
+	verifySequenceEndsUpInState(t, projectName, secondContext, 10*time.Second, []string{apimodels.SequenceWaitingState})
 
 	// pause the first sequence
 	t.Log("pausing sequence")
 	controlSequence(t, projectName, *keptnContext.KeptnContext, apimodels.PauseSequence)
 
-	verifySequenceEndsUpInState(t, projectName, keptnContext, 5*time.Second, []string{apimodels.SequencePaused})
+	verifySequenceEndsUpInState(t, projectName, keptnContext, 10*time.Second, []string{apimodels.SequencePaused})
 
 	// now abort the first sequence
 	t.Log("aborting first sequence")
 	controlSequence(t, projectName, *keptnContext.KeptnContext, apimodels.AbortSequence)
 
-	verifySequenceEndsUpInState(t, projectName, keptnContext, 5*time.Second, []string{apimodels.SequenceAborted})
+	verifySequenceEndsUpInState(t, projectName, keptnContext, 10*time.Second, []string{apimodels.SequenceAborted})
 
 	// now that the first sequence is aborted, the other sequence should eventually be started
-	verifySequenceEndsUpInState(t, projectName, secondContext, 5*time.Second, []string{apimodels.SequenceStartedState})
+	verifySequenceEndsUpInState(t, projectName, secondContext, 10*time.Second, []string{apimodels.SequenceStartedState})
 
 	// also make sure that the triggered event for the first task has been sent
 	require.Eventually(t, func() bool {
@@ -1209,7 +1209,7 @@ func Test__main_SequenceControl_AbortPausedSequenceTaskPartiallyFinished(t *test
 			return false
 		}
 		return true
-	}, 5*time.Second, 100*time.Millisecond)
+	}, 10*time.Second, 100*time.Millisecond)
 
 }
 
