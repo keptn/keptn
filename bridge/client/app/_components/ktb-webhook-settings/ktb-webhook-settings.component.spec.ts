@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbWebhookSettingsComponent } from './ktb-webhook-settings.component';
-import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { AbstractControl } from '@angular/forms';
 import { WebhookConfigMock } from '../../_services/_mockData/webhook-config.mock';
@@ -8,6 +7,7 @@ import { Secret } from '../../_models/secret';
 import { SecretScopeDefault } from '../../../../shared/interfaces/secret-scope';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
+import { KtbWebhookSettingsModule } from './ktb-webhook-settings.module';
 
 describe('KtbWebhookSettingsComponent', () => {
   let component: KtbWebhookSettingsComponent;
@@ -53,7 +53,7 @@ describe('KtbWebhookSettingsComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [],
-      imports: [AppModule, HttpClientTestingModule],
+      imports: [KtbWebhookSettingsModule, HttpClientTestingModule],
       providers: [{ provide: ApiService, useClass: ApiServiceMock }],
     }).compileComponents();
 

@@ -93,7 +93,6 @@ import { KtbStageOverviewComponent } from './_components/ktb-stage-overview/ktb-
 import { KtbTaskItemComponent, KtbTaskItemDetailDirective } from './_components/ktb-task-item/ktb-task-item.component';
 import { KtbTriggerSequenceComponent } from './_components/ktb-trigger-sequence/ktb-trigger-sequence.component';
 import { KtbUserComponent } from './_components/ktb-user/ktb-user.component';
-import { KtbWebhookSettingsComponent } from './_components/ktb-webhook-settings/ktb-webhook-settings.component';
 import { KtbDragAndDropModule } from './_directives/ktb-drag-and-drop/ktb-drag-and-drop.module';
 import { KtbHideHttpLoadingDirective } from './_directives/ktb-hide-http-loading/ktb-hide-http-loading.directive';
 import { KtbIntegerInputModule } from './_directives/ktb-integer-input/ktb-integer-input.module';
@@ -129,6 +128,7 @@ import { KtbUniformRegistrationLogsModule } from './_components/ktb-uniform-regi
 import { KtbPayloadViewerModule } from './_components/ktb-payload-viewer/ktb-payload-viewer.module';
 import { KtbVariableSelectorModule } from './_components/ktb-variable-selector/ktb-variable-selector.module';
 import { KtbTreeListSelectModule } from './_components/ktb-tree-list-select/ktb-tree-list-select.module';
+import { KtbWebhookSettingsModule } from './_components/ktb-webhook-settings/ktb-webhook-settings.module';
 
 registerLocaleData(localeEn, 'en');
 
@@ -229,6 +229,7 @@ const ktbModules = [
   KtbUniformRegistrationLogsModule,
   KtbUniformSubscriptionsModule,
   KtbVariableSelectorModule,
+  KtbWebhookSettingsModule,
 ];
 
 @NgModule({
@@ -262,7 +263,6 @@ const ktbModules = [
     KtbNoServiceInfoComponent,
     KtbSequenceControlsComponent,
     KtbModifyUniformSubscriptionComponent,
-    KtbWebhookSettingsComponent,
     KtbServiceSettingsComponent,
     KtbServiceSettingsOverviewComponent,
     KtbServiceSettingsListComponent,
