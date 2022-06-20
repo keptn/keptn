@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbUniformRegistrationLogsComponent } from './ktb-uniform-registration-logs.component';
 import { UniformRegistrationLogsMock } from '../../_services/_mockData/uniform-registrations-logs.mock';
-import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { KtbUniformRegistrationLogsModule } from './ktb-uniform-registration-logs.module';
 
 describe('KtbUniformRegistrationLogsComponent', () => {
   let component: KtbUniformRegistrationLogsComponent;
@@ -10,7 +10,7 @@ describe('KtbUniformRegistrationLogsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule, HttpClientTestingModule],
+      imports: [KtbUniformRegistrationLogsModule, HttpClientTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbUniformRegistrationLogsComponent);

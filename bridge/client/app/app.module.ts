@@ -97,7 +97,6 @@ import {
   KtbTreeListSelectDirective,
 } from './_components/ktb-tree-list-select/ktb-tree-list-select.component';
 import { KtbTriggerSequenceComponent } from './_components/ktb-trigger-sequence/ktb-trigger-sequence.component';
-import { KtbUniformRegistrationLogsComponent } from './_components/ktb-uniform-registration-logs/ktb-uniform-registration-logs.component';
 import { KtbUserComponent } from './_components/ktb-user/ktb-user.component';
 import { KtbVariableSelectorComponent } from './_components/ktb-variable-selector/ktb-variable-selector.component';
 import { KtbWebhookSettingsComponent } from './_components/ktb-webhook-settings/ktb-webhook-settings.component';
@@ -132,6 +131,7 @@ import { ProjectBoardComponent } from './project-board/project-board.component';
 import { KtbSubscriptionItemModule } from './_components/ktb-subscription-item/ktb-subscription-item.module';
 import { KtbUniformSubscriptionsModule } from './_components/ktb-uniform-subscriptions/ktb-uniform-subscriptions.module';
 import { KtbKeptnServicesListModule } from './_components/ktb-keptn-services-list/ktb-keptn-services-list.module';
+import { KtbUniformRegistrationLogsModule } from './_components/ktb-uniform-registration-logs/ktb-uniform-registration-logs.module';
 
 registerLocaleData(localeEn, 'en');
 
@@ -227,6 +227,7 @@ const ktbModules = [
   KtbSshKeyInputModule,
   KtbStageBadgeModule,
   KtbSubscriptionItemModule,
+  KtbUniformRegistrationLogsModule,
   KtbUniformSubscriptionsModule,
 ];
 
@@ -257,7 +258,6 @@ const ktbModules = [
     KtbServiceDetailsComponent,
     KtbSettingsViewComponent,
     KtbSequenceListComponent,
-    KtbUniformRegistrationLogsComponent,
     KtbSecretsListComponent,
     KtbNoServiceInfoComponent,
     KtbSequenceControlsComponent,
