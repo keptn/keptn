@@ -1681,13 +1681,15 @@ func (n *testNatsClient) Send(ctx context.Context, event cloudevents.Event) erro
 
 func (n *testNatsClient) getLatestEventOfType(keptnContext, projectName, stage, eventType string) *apimodels.KeptnContextExtendedCE {
 	var result *apimodels.KeptnContextExtendedCE
-	for _, ev := range n.receivedEvents {
-		if ev.Shkeptncontext == keptnContext && *ev.Type == eventType {
+	n.Lock()
+	defer n.Unlock()
+	for index := range n.receivedEvents {
+		if n.receivedEvents[index].Shkeptncontext == keptnContext && *n.receivedEvents[index].Type == eventType {
 			ed := &keptnv2.EventData{}
-			err := keptnv2.Decode(ev.Data, ed)
+			err := keptnv2.Decode(n.receivedEvents[index].Data, ed)
 			require.Nil(n.t, err)
 			if ed.Project == projectName && ed.Stage == stage {
-				result = &ev
+				result = &n.receivedEvents[index]
 			}
 		}
 	}
