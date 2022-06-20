@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"time"
 
+	"github.com/keptn/go-utils/pkg/common/kubeutils"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
@@ -22,7 +23,7 @@ func KubeCtlApplyFromURL(url string, namespace ...string) (func() error, error) 
 		ns = namespace[0]
 	}
 	fmt.Printf("Executing: %s %s -n=%s -f=%s\n", kubectlExecutable, "apply", ns, url)
-	result, err := ExecuteKubeCommand(kubectlExecutable, []string{"apply", "-n=" + ns, "-f=" + url})
+	result, err := kubeutils.ExecuteCommand(kubectlExecutable, []string{"apply", "-n=" + ns, "-f=" + url})
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +41,7 @@ func KubeCtlDeleteFromURL(url string, namespace ...string) error {
 		ns = namespace[0]
 	}
 	fmt.Printf("Executing: %s %s -n=%s -f=%s\n", kubectlExecutable, "delete", ns, url)
-	result, err := ExecuteKubeCommand(kubectlExecutable, []string{"delete", "-n=" + ns, "-f=" + url})
+	result, err := kubeutils.ExecuteCommand(kubectlExecutable, []string{"delete", "-n=" + ns, "-f=" + url})
 	if err != nil {
 		return err
 	}

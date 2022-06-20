@@ -16,6 +16,7 @@ import (
 	v12 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 
+	"github.com/keptn/go-utils/pkg/common/kubeutils"
 	"github.com/keptn/go-utils/pkg/common/strutils"
 
 	"github.com/keptn/go-utils/pkg/common/retry"
@@ -319,7 +320,7 @@ func GetServiceExternalIP(namespace string, service string) (string, error) {
 }
 
 func GetPrivateKeyAndPassphrase() (string, string, error) {
-	clientset, err := GetClientset(false)
+	clientset, err := kubeutils.GetClientset(false)
 	if err != nil {
 		return "", "", err
 	}
@@ -416,13 +417,13 @@ func CreateSubscription(t *testing.T, serviceName string, subscription models.Ev
 }
 
 func GetApiCredentials() (string, string, error) {
-	apiToken, err := GetKeptnAPITokenFromSecret(false, GetKeptnNameSpaceFromEnv(), "keptn-api-token")
+	apiToken, err := kubeutils.GetKeptnAPITokenFromSecret(false, GetKeptnNameSpaceFromEnv(), "keptn-api-token")
 	if err != nil {
 		return "", "", err
 	}
 	keptnAPIURL := os.Getenv("KEPTN_ENDPOINT")
 	if keptnAPIURL == "" {
-		serviceIP, err := GetKeptnEndpointFromService(false, GetKeptnNameSpaceFromEnv(), "api-gateway-nginx")
+		serviceIP, err := kubeutils.GetKeptnEndpointFromService(false, GetKeptnNameSpaceFromEnv(), "api-gateway-nginx")
 		if err != nil {
 			return "", "", err
 		}
@@ -433,7 +434,7 @@ func GetApiCredentials() (string, string, error) {
 
 func ScaleDownUniform(deployments []string) error {
 	for _, deployment := range deployments {
-		if err := ScaleDeployment(false, deployment, GetKeptnNameSpaceFromEnv(), 0); err != nil {
+		if err := kubeutils.ScaleDeployment(false, deployment, GetKeptnNameSpaceFromEnv(), 0); err != nil {
 			// log the error but continue
 			fmt.Println("could not scale down deployment: " + err.Error())
 		}
@@ -443,7 +444,7 @@ func ScaleDownUniform(deployments []string) error {
 
 func ScaleUpUniform(deployments []string, replicas int) error {
 	for _, deployment := range deployments {
-		if err := ScaleDeployment(false, deployment, GetKeptnNameSpaceFromEnv(), int32(replicas)); err != nil {
+		if err := kubeutils.ScaleDeployment(false, deployment, GetKeptnNameSpaceFromEnv(), int32(replicas)); err != nil {
 			// log the error but continue
 			fmt.Println("could not scale up deployment: " + err.Error())
 		}
@@ -452,7 +453,7 @@ func ScaleUpUniform(deployments []string, replicas int) error {
 }
 
 func RestartPod(deploymentName string) error {
-	return RestartPodsWithSelector(false, GetKeptnNameSpaceFromEnv(), "app.kubernetes.io/name="+deploymentName)
+	return kubeutils.RestartPodsWithSelector(false, GetKeptnNameSpaceFromEnv(), "app.kubernetes.io/name="+deploymentName)
 }
 
 func CreateTmpShipyardFile(shipyardContent string) (string, error) {
@@ -483,7 +484,7 @@ func ExecuteCommand(cmd string) (string, error) {
 	if len(split) == 0 {
 		return "", errors.New("invalid command")
 	}
-	return ExecuteKubeCommand(split[0], split[1:])
+	return kubeutils.ExecuteCommand(split[0], split[1:])
 }
 
 func ExecuteCommandf(cmd string, a ...interface{}) (string, error) {
@@ -726,7 +727,7 @@ func GetPublicURLOfService(serviceName, projectName, stageName string) (string, 
 // leads to the respective pod being restarted, which increases the duration of the integration tests and prevents us from executing tests in parallel
 func SetShipyardControllerEnvVar(t *testing.T, envVarName, envVarValue string) error {
 
-	k8sClient, err := GetClientset(false)
+	k8sClient, err := kubeutils.GetClientset(false)
 	if err != nil {
 		return err
 	}
@@ -810,7 +811,7 @@ func SetShipyardControllerEnvVar(t *testing.T, envVarName, envVarValue string) e
 }
 
 func GetPodNamesOfDeployment(labelSelector string) ([]string, error) {
-	k8sClient, err := GetClientset(false)
+	k8sClient, err := kubeutils.GetClientset(false)
 	if err != nil {
 		return nil, err
 	}
@@ -832,7 +833,7 @@ func GetPodNamesOfDeployment(labelSelector string) ([]string, error) {
 // Needed for our minishift tests right now, as there are problems with the RollingUpdate strategy of the shipyard-controller
 // Should become obsolete when we switch to testing on an OpenShift 4.x cluster instead.
 func SetRecreateUpgradeStrategyForDeployment(deploymentName string) error {
-	clientset, err := GetClientset(false)
+	clientset, err := kubeutils.GetClientset(false)
 	if err != nil {
 		return err
 	}
@@ -886,7 +887,7 @@ func GetGiteaToken() (string, error) {
 	if tokenFromEnv := os.Getenv("GITEA_TOKEN"); tokenFromEnv != "" {
 		return tokenFromEnv, nil
 	}
-	clientset, err := GetClientset(false)
+	clientset, err := kubeutils.GetClientset(false)
 	if err != nil {
 		return "", err
 	}
@@ -906,7 +907,7 @@ func GetGiteaToken() (string, error) {
 
 // GetMongoDBCredentials retrieves the credentials of the mongodb user from the mongodb credentials secret
 func GetMongoDBCredentials() (string, string, error) {
-	clientset, err := GetClientset(false)
+	clientset, err := kubeutils.GetClientset(false)
 	if err != nil {
 		return "", "", err
 	}
@@ -992,7 +993,7 @@ func RecreateGitUpstreamRepository(project string) error {
 
 func WaitForDeploymentToBeScaledDown(deploymentName string) error {
 	// if the token is set as an env var, return that
-	clientset, err := GetClientset(false)
+	clientset, err := kubeutils.GetClientset(false)
 	if err != nil {
 		return err
 	}

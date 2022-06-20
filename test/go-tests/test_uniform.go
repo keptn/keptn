@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/common/kubeutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
 	//	"github.com/keptn/keptn/shipyard-controller/models"
@@ -353,7 +354,7 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 		_, err = KubeCtlApplyFromURL(tmpFile)
 		require.Nil(t, err)
 
-		err = WaitForDeploymentToBeRolledOut(false, echoServiceName, GetKeptnNameSpaceFromEnv())
+		err = kubeutils.WaitForDeploymentToBeRolledOut(false, echoServiceName, GetKeptnNameSpaceFromEnv())
 		require.Nil(t, err)
 
 	}, func() {
@@ -387,7 +388,7 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods(t *test
 		_, err = KubeCtlApplyFromURL(tmpFile)
 		require.Nil(t, err)
 
-		err = WaitForDeploymentToBeRolledOut(false, echoServiceName, GetKeptnNameSpaceFromEnv())
+		err = kubeutils.WaitForDeploymentToBeRolledOut(false, echoServiceName, GetKeptnNameSpaceFromEnv())
 		require.Nil(t, err)
 
 	}, func() {
@@ -424,7 +425,7 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane(t *t
 		_, err = KubeCtlApplyFromURL(tmpFile)
 		require.Nil(t, err)
 
-		err = WaitForDeploymentToBeRolledOut(false, echoServiceName, GetKeptnNameSpaceFromEnv())
+		err = kubeutils.WaitForDeploymentToBeRolledOut(false, echoServiceName, GetKeptnNameSpaceFromEnv())
 		require.Nil(t, err)
 
 	}, func() {

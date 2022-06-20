@@ -11,6 +11,7 @@ import (
 
 	"github.com/imroc/req"
 	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/common/kubeutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -53,10 +54,10 @@ func Test_CustomUserManagedEndpointsTest(t *testing.T) {
 	defer os.Remove("chart.tgz")
 
 	// make sure the namespace from a previous test run has been deleted properly
-	exists, err := ExistsNamespace(false, projectName+"-dev")
+	exists, err := kubeutils.ExistsNamespace(false, projectName+"-dev")
 	if exists {
 		t.Logf("Deleting namespace %s-dev from previous test execution", projectName)
-		clientset, err := GetClientset(false)
+		clientset, err := kubeutils.GetClientset(false)
 		require.Nil(t, err)
 		err = clientset.CoreV1().Namespaces().Delete(context.TODO(), projectName+"-dev", v1.DeleteOptions{})
 		require.Nil(t, err)
@@ -64,7 +65,7 @@ func Test_CustomUserManagedEndpointsTest(t *testing.T) {
 
 	require.Eventually(t, func() bool {
 		t.Logf("Checking if namespace %s-dev is still there", projectName)
-		exists, err := ExistsNamespace(false, projectName+"-dev")
+		exists, err := kubeutils.ExistsNamespace(false, projectName+"-dev")
 		if err != nil || exists {
 			t.Logf("Namespace %s-dev is still there", projectName)
 			return false
@@ -116,7 +117,7 @@ func Test_CustomUserManagedEndpointsTest(t *testing.T) {
 	require.Nil(t, deploymentFinishedEventData.Deployment.DeploymentURIsLocal)
 
 	// get the LoadBalancer endpoint of the deployed service so we can define its URL in the next delivery
-	serviceEndpoint, err := GetKeptnEndpointFromService(false, projectName+"-dev", projectName+"-dev-"+serviceName)
+	serviceEndpoint, err := kubeutils.GetKeptnEndpointFromService(false, projectName+"-dev", projectName+"-dev-"+serviceName)
 	require.Nil(t, err)
 	require.NotEmpty(t, serviceEndpoint)
 

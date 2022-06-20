@@ -6,6 +6,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/keptn/go-utils/pkg/common/kubeutils"
 	"github.com/keptn/go-utils/pkg/common/osutils"
 	"github.com/keptn/go-utils/pkg/common/retry"
 	corev1 "k8s.io/api/core/v1"
@@ -689,7 +690,7 @@ func createConfigServiceUpstreamRepo(projectName string) (string, string, error)
 		return "", "", err
 	}
 
-	client, err := GetClientset(false)
+	client, err := kubeutils.GetClientset(false)
 	if err != nil {
 		return "", "", err
 	}
