@@ -215,10 +215,10 @@ github.com/karrick/godirwalk v1.8.0/go.mod h1:H5KPZjojv4lE+QYImBI8xVtrBRgYrIVsaR
 github.com/karrick/godirwalk v1.10.3/go.mod h1:RoGL9dQei4vP9ilrpETWE8CLOZ1kiN0LhBygSwrAsHA=
 github.com/kelseyhightower/envconfig v1.4.0 h1:Im6hONhd3pLkfDFsbRgu68RDNkGF1r3dvMUtDTo2cv8=
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
-github.com/keptn/go-utils v0.16.1 h1:P0BJuGeBfEN0I9Np0LMF7M3Kz/YVNt7I5q1maJeBPnc=
-github.com/keptn/go-utils v0.16.1/go.mod h1:oxLLKz2u9KId2HgLH63+T0pUbcgiDd2GDkRrRKwxGUU=
-github.com/keptn/keptn/cp-connector v0.0.0-20220608060450-36261c888f84 h1:SJ0ait1VCca6AvOpVAgyl2umv1LxnCPWTs8+HJ/NxVo=
-github.com/keptn/keptn/cp-connector v0.0.0-20220608060450-36261c888f84/go.mod h1:2Sc6bxKKt7DpBfAHASE2mlwR9fxQtDYVEfC3JgYZ5SI=
+github.com/keptn/go-utils v0.16.1-0.20220620075031-4eb97560a229 h1:g4xg+wgBXRGZV+oiQvGygRm7MGXUfXaVBmYkTqzfwpQ=
+github.com/keptn/go-utils v0.16.1-0.20220620075031-4eb97560a229/go.mod h1:oxLLKz2u9KId2HgLH63+T0pUbcgiDd2GDkRrRKwxGUU=
+github.com/keptn/keptn/cp-connector v0.0.0-20220620080207-1e39d343abe7 h1:3kIEcEUVGfDwvRfq5CQDLsaPqGHKDSzTMyrV5Fdm/Ls=
+github.com/keptn/keptn/cp-connector v0.0.0-20220620080207-1e39d343abe7/go.mod h1:ujRObUjiPLFmD0zQ7SPQWLTOe9m/Us4c4PMi8+QWEb4=
 github.com/kisielk/errcheck v1.5.0/go.mod h1:pFxgyoBC7bSaBwPgfKdkLd5X25qrDl4LWUI2bnpBCr8=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/klauspost/compress v1.13.6/go.mod h1:/3/Vjq9QcHkK5uEr5lBEmyoZ1iFhe47etQ6QUkpK6sk=
