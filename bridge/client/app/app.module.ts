@@ -99,7 +99,7 @@ import { KtbServiceSettingsListComponent } from './_components/ktb-service-setti
 import { KtbServiceSettingsOverviewComponent } from './_components/ktb-service-settings-overview/ktb-service-settings-overview.component';
 import { KtbServiceSettingsComponent } from './_components/ktb-service-settings/ktb-service-settings.component';
 import { KtbServicesListComponent } from './_components/ktb-services-list/ktb-services-list.component';
-import { KtbSshKeyInputComponent } from './_components/ktb-ssh-key-input/ktb-ssh-key-input.component';
+import { KtbSshKeyInputModule } from './_components/ktb-ssh-key-input/ktb-ssh-key-input.module';
 import { KtbStageBadgeModule } from './_components/ktb-stage-badge/ktb-stage-badge.module';
 import { KtbStageDetailsComponent } from './_components/ktb-stage-details/ktb-stage-details.component';
 import { KtbStageOverviewComponent } from './_components/ktb-stage-overview/ktb-stage-overview.component';
@@ -233,6 +233,7 @@ const ktbModules = [
   KtbSelectableTileModule,
   KtbSequenceStateInfoModule,
   KtbSequenceStateListModule,
+  KtbSshKeyInputModule,
   KtbStageBadgeModule,
 ];
 
@@ -292,7 +293,6 @@ const ktbModules = [
     KtbProjectSettingsGitExtendedComponent,
     KtbProjectSettingsGitHttpsComponent,
     KtbProjectSettingsGitSshComponent,
-    KtbSshKeyInputComponent,
     KtbProjectSettingsGitSshInputComponent,
   ],
   imports: [...angularModules, ...dtModules, ...ktbModules, AppRouting, MomentModule],
