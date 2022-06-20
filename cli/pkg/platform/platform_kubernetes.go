@@ -22,7 +22,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/keptn/keptn/cli/pkg/common"
+	"github.com/keptn/go-utils/pkg/common/kubeutils"
 	"github.com/keptn/keptn/cli/pkg/logging"
 )
 
@@ -68,7 +68,7 @@ func (p kubernetesPlatform) checkCreds() error {
 // GetKubeContext returns the configured current-context
 func GetKubeContext() (string, error) {
 	logging.PrintLog("Checking current Kubernetes context: kubectl config current-context", logging.VerboseLevel)
-	out, err := common.ExecuteCommand("kubectl", []string{
+	out, err := kubeutils.ExecuteCommand("kubectl", []string{
 		"config",
 		"current-context",
 	})

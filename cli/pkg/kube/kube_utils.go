@@ -7,13 +7,13 @@ import (
 	"regexp"
 
 	"github.com/hashicorp/go-version"
-	"github.com/keptn/keptn/cli/pkg/common"
+	kubeutils "github.com/keptn/go-utils/pkg/common/kubeutils"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var (
 	kubeServerVersion  = regexp.MustCompile(`Server Version: version\.Info{Major:"(\d+)", Minor:"(\d+.*?)\+{0,1}"`)
-	executeCommandFunc = common.ExecuteCommand
+	executeCommandFunc = kubeutils.ExecuteCommand
 )
 
 //go:generate moq -pkg fake -skip-ensure -out ./fake/namespace_handler.go . IKeptnNamespaceHandler
@@ -30,15 +30,15 @@ func NewKubernetesUtilsKeptnNamespaceHandler() *KubernetesUtilsKeptnNamespaceHan
 }
 
 func (KubernetesUtilsKeptnNamespaceHandler) ExistsNamespace(useInClusterConfig bool, namespace string) (bool, error) {
-	return common.ExistsNamespace(useInClusterConfig, namespace)
+	return kubeutils.ExistsNamespace(useInClusterConfig, namespace)
 }
 
 func (KubernetesUtilsKeptnNamespaceHandler) CreateNamespace(useInClusterConfig bool, namespace string, namespaceMetadata ...metav1.ObjectMeta) error {
-	return common.CreateNamespace(useInClusterConfig, namespace, namespaceMetadata...)
+	return kubeutils.CreateNamespace(useInClusterConfig, namespace, namespaceMetadata...)
 }
 
 func (KubernetesUtilsKeptnNamespaceHandler) PatchKeptnManagedNamespace(useInClusterConfig bool, namespace string) error {
-	return common.PatchKeptnManagedNamespace(useInClusterConfig, namespace)
+	return kubeutils.PatchKeptnManagedNamespace(useInClusterConfig, namespace)
 }
 
 // IsKubectlAvailable checks whether kubectl is available

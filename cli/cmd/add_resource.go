@@ -9,7 +9,7 @@ import (
 	"github.com/keptn/keptn/cli/internal"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/keptn/cli/pkg/common"
+	kubeutils "github.com/keptn/go-utils/pkg/common/kubeutils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
@@ -56,7 +56,7 @@ keptn add-resource --project=keptn --service=keptn-control-plane --all-stages --
 			return errors.New(authErrorMsg)
 		}
 
-		*addResourceCmdParams.Resource = common.ExpandTilde(*addResourceCmdParams.Resource)
+		*addResourceCmdParams.Resource = kubeutils.ExpandTilde(*addResourceCmdParams.Resource)
 		if !fileExists(*addResourceCmdParams.Resource) {
 			return errors.New("File " + *addResourceCmdParams.Resource + " not found on local file system")
 		}

@@ -11,10 +11,10 @@ import (
 	"strings"
 	"time"
 
+	kubeutils "github.com/keptn/go-utils/pkg/common/kubeutils"
 	"github.com/keptn/keptn/cli/internal"
 
 	"github.com/keptn/keptn/cli/internal/auth"
-	"github.com/keptn/keptn/cli/pkg/common"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 
 	"github.com/spf13/cobra"
@@ -192,9 +192,9 @@ func smartFetchKeptnAuthParameters(authParams *authCmdParams, smartKeptnAuth sma
 	var err error
 
 	if authParams.endPoint == nil || *authParams.endPoint == "" {
-		*authParams.endPoint, err = common.GetKeptnEndpointFromIngress(false, namespace, smartKeptnAuth.ingressName)
+		*authParams.endPoint, err = kubeutils.GetKeptnEndpointFromIngress(false, namespace, smartKeptnAuth.ingressName)
 		if err != nil {
-			*authParams.endPoint, err = common.GetKeptnEndpointFromService(false, namespace, smartKeptnAuth.serviceName)
+			*authParams.endPoint, err = kubeutils.GetKeptnEndpointFromService(false, namespace, smartKeptnAuth.serviceName)
 			if err != nil {
 				return fmt.Errorf("Cannot automatically fetch the endpoint\n" + err.Error() + "\n\n")
 			}
@@ -205,7 +205,7 @@ func smartFetchKeptnAuthParameters(authParams *authCmdParams, smartKeptnAuth sma
 	*authParams.endPoint = addCorrectHttpPrefix(authParams)
 
 	if authParams.apiToken == nil || *authParams.apiToken == "" {
-		*authParams.apiToken, err = common.GetKeptnAPITokenFromSecret(false, namespace, smartKeptnAuth.secretName)
+		*authParams.apiToken, err = kubeutils.GetKeptnAPITokenFromSecret(false, namespace, smartKeptnAuth.secretName)
 		if err != nil {
 			return fmt.Errorf("Error in fetching the api-token\n" + err.Error() + "\nCLI is not authenticated")
 		}
@@ -215,7 +215,7 @@ func smartFetchKeptnAuthParameters(authParams *authCmdParams, smartKeptnAuth sma
 }
 
 func smartKeptnCLIAuth() (string, error) {
-	keptnInstallations, err := common.GetKeptnManagedNamespace(false)
+	keptnInstallations, err := kubeutils.GetKeptnManagedNamespace(false)
 	if err != nil {
 		return "", errors.New("Could not get current Kubernetes context from KUBECONFIG: " + err.Error())
 	}

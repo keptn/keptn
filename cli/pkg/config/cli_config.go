@@ -8,7 +8,8 @@ import (
 	"time"
 
 	"github.com/keptn/go-utils/pkg/common/fileutils"
-	"github.com/keptn/keptn/cli/pkg/common"
+
+	kubeutils "github.com/keptn/go-utils/pkg/common/kubeutils"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
@@ -123,7 +124,7 @@ func (c *CLIConfigManager) StoreCLIConfig(config CLIConfig) error {
 
 // GetKeptnDefaultConfigPath returns default Keptn Config file path
 func GetKeptnDefaultConfigPath() (string, error) {
-	dir, err := common.GetKeptnDirectory()
+	dir, err := kubeutils.GetKeptnDirectory()
 	if err != nil {
 		return "", err
 	}

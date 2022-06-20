@@ -9,6 +9,7 @@ import (
 
 	"github.com/docker/docker-credential-helpers/credentials"
 	"github.com/keptn/go-utils/pkg/common/fileutils"
+	kubeutils "github.com/keptn/go-utils/pkg/common/kubeutils"
 	"github.com/keptn/keptn/cli/pkg/common"
 	"github.com/keptn/keptn/cli/pkg/config"
 	"gopkg.in/yaml.v3"
@@ -184,10 +185,10 @@ func getCurrentContextFromKubeConfig() {
 
 	var kubeconfig string
 	if os.Getenv("KUBECONFIG") != "" {
-		kubeconfig = common.ExpandTilde(os.Getenv("KUBECONFIG"))
+		kubeconfig = kubeutils.ExpandTilde(os.Getenv("KUBECONFIG"))
 	} else {
 		kubeconfig = filepath.Join(
-			common.UserHomeDir(), ".kube", "config",
+			kubeutils.UserHomeDir(), ".kube", "config",
 		)
 	}
 

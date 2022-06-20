@@ -40,9 +40,9 @@ import (
 	"k8s.io/client-go/rest"
 	cmdutil "k8s.io/kubectl/pkg/cmd/util"
 
-	"github.com/keptn/keptn/cli/pkg/common"
-
+	kubeutils "github.com/keptn/go-utils/pkg/common/kubeutils"
 	"github.com/keptn/keptn/cli/pkg/logging"
+	helmcommon "github.com/keptn/keptn/helm-service/pkg/common"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
@@ -78,7 +78,7 @@ func (c Helper) DownloadChart(chartRepoURL string) (*chart.Chart, error) {
 		return nil, errors.New("error retrieving Keptn Helm Chart at " + chartRepoURL + ": " + err.Error())
 	}
 
-	ch, err := common.LoadChart(bytes)
+	ch, err := helmcommon.LoadChart(bytes)
 	if err != nil {
 		return nil, errors.New("error retrieving Keptn Helm Chart at " + chartRepoURL + ": " + err.Error())
 	}
@@ -231,10 +231,10 @@ func (c Helper) UpgradeChart(ch *chart.Chart, releaseName, namespace string, val
 
 func getKubeConfig() string {
 	if os.Getenv("KUBECONFIG") != "" {
-		return common.ExpandTilde(os.Getenv("KUBECONFIG"))
+		return kubeutils.ExpandTilde(os.Getenv("KUBECONFIG"))
 	}
 	return filepath.Join(
-		common.UserHomeDir(), ".kube", "config",
+		kubeutils.UserHomeDir(), ".kube", "config",
 	)
 
 }
@@ -276,7 +276,7 @@ func getDeployments(helmManifest string) []*appsv1.Deployment {
 			continue
 		}
 
-		if common.IsDeployment(&dpl) {
+		if kubeutils.IsDeployment(&dpl) {
 			deployments = append(deployments, &dpl)
 		}
 	}
@@ -286,7 +286,7 @@ func getDeployments(helmManifest string) []*appsv1.Deployment {
 func waitForDeploymentsOfHelmRelease(helmManifest string) error {
 	depls := getDeployments(helmManifest)
 	for _, depl := range depls {
-		if err := common.WaitForDeploymentToBeRolledOut(false, depl.Name, depl.Namespace); err != nil {
+		if err := kubeutils.WaitForDeploymentToBeRolledOut(false, depl.Name, depl.Namespace); err != nil {
 			return fmt.Errorf("Error when waiting for deployment %s in namespace %s: %s", depl.Name, depl.Namespace, err.Error())
 		}
 	}
