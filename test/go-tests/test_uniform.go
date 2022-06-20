@@ -40,6 +40,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: echo-service
+  labels:
+    keptn.sh/intergation-name: echo-service-integration-name
 spec:
   selector:
     matchLabels:
@@ -55,6 +57,7 @@ spec:
         app.kubernetes.io/part-of: keptn-keptn
         app.kubernetes.io/component: echo-service
         app.kubernetes.io/version: develop
+				keptn.sh/intergation-name: echo-service-integration-name
     spec:
       containers:
         - name: echo-service
@@ -95,18 +98,10 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.labels['app.kubernetes.io/version']
-            - name: LOCATION
+            - name: INTEGRATION_NAME
               valueFrom:
                 fieldRef:
-                  fieldPath: metadata.labels['app.kubernetes.io/component']
-            - name: K8S_DEPLOYMENT_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.labels['app.kubernetes.io/name']
-            - name: K8S_DEPLOYMENT_COMPONENT
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.labels['app.kubernetes.io/component']
+                  fieldPath: metadata.labels['keptn.sh/intergation-name']
             - name: K8S_POD_NAME
               valueFrom:
                 fieldRef:
@@ -124,7 +119,7 @@ const echoServiceName = "echo-service"
 // to the Keptn control plane
 func Test_UniformRegistration_TestAPI(t *testing.T) {
 	uniformIntegration := &models.Integration{
-		Name: "my-uniform-service",
+		Name: "echo-service-integration-name",
 		MetaData: models.MetaData{
 			DistributorVersion: "0.8.3",
 			Hostname:           "hostname",
