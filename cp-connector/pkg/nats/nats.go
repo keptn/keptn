@@ -139,9 +139,12 @@ func (nc *NatsConnector) QueueSubscribeMultiple(subjects []string, queueGroup st
 		return ErrSubNilMessageProcessor
 	}
 
+	// Immediately verify if the Connection is valid, to avoid starting go routines for a
+	// faulty nats connection with no subjects
 	if _, err := nc.getOrCreateConnection(); err != nil {
 		return err
 	}
+
 	for _, sub := range subjects {
 		nc.logger.Debug("Subscribing to topic %s", sub)
 		if err := nc.queueSubscribe(sub, queueGroup, fn); err != nil {
