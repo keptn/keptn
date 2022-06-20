@@ -6,7 +6,7 @@ require (
 	github.com/benbjohnson/clock v1.3.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.16.1
-	github.com/keptn/keptn/test/go-tests v0.0.0-20220620060702-03ae15624dc0
+	github.com/keptn/keptn/test/go-tests v0.0.0-20220620072651-d9c8d585a001
 	github.com/steinfletcher/apitest v1.5.11
 	github.com/steinfletcher/apitest-jsonpath v1.7.1
 	github.com/stretchr/testify v1.7.1
@@ -50,7 +50,7 @@ require (
 	github.com/keptn/keptn/cp-common v0.0.0-20220602110035-92d59919c878 // indirect
 	github.com/keptn/keptn/cp-connector v0.0.0-20220608071003-6edd402d3253 // indirect
 	github.com/keptn/keptn/go-sdk v0.0.0-20220608071003-6edd402d3253 // indirect
-	github.com/keptn/keptn/webhook-service v0.0.0-20220603070303-72c9e665e2ef // indirect
+	github.com/keptn/keptn/webhook-service v0.0.0-20220617083415-7285f5120cd6 // indirect
 	github.com/keptn/kubernetes-utils v0.14.0 // indirect
 	github.com/klauspost/compress v1.14.4 // indirect
 	github.com/klauspost/pgzip v1.2.5 // indirect
