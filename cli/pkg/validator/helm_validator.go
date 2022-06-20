@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/keptn/keptn/cli/pkg/common"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"helm.sh/helm/v3/pkg/chart"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -21,7 +21,7 @@ func ValidateHelmChart(ch *chart.Chart, keptnServiceName string) (bool, error) {
 		return false, nil
 	}
 
-	services, err := keptnutils.GetRenderedServices(ch)
+	services, err := common.GetRenderedServices(ch)
 	if err != nil {
 		return false, err
 	}
@@ -29,7 +29,7 @@ func ValidateHelmChart(ch *chart.Chart, keptnServiceName string) (bool, error) {
 		return false, err
 	}
 
-	deployments, err := keptnutils.GetRenderedDeployments(ch)
+	deployments, err := common.GetRenderedDeployments(ch)
 	if err != nil {
 		return false, err
 	}
@@ -95,7 +95,7 @@ func validateDeployments(deployments []*appsv1.Deployment) (bool, error) {
 }
 
 func validateService(svc *corev1.Service, keptnServiceName string) bool {
-	if !keptnutils.IsService(svc) {
+	if !common.IsService(svc) {
 		logging.PrintLog(fmt.Sprintf("Service %s does not have kind \"service\"", svc.Name), logging.QuietLevel)
 		return false
 	}
@@ -118,7 +118,7 @@ func validateService(svc *corev1.Service, keptnServiceName string) bool {
 }
 
 func validateDeployment(depl *appsv1.Deployment) bool {
-	if !keptnutils.IsDeployment(depl) {
+	if !common.IsDeployment(depl) {
 		logging.PrintLog(fmt.Sprintf("Deployment %s does not have kind \"deployment\"", depl.Name), logging.QuietLevel)
 		return false
 	}

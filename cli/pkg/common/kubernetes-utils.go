@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -13,11 +14,14 @@ import (
 
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
+	"helm.sh/helm/v3/pkg/chartutil"
+	"helm.sh/helm/v3/pkg/engine"
 	"k8s.io/api/extensions/v1beta1"
 	"k8s.io/client-go/kubernetes"
 
 	typesv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 
 	apierr "k8s.io/apimachinery/pkg/api/errors"
 
@@ -29,6 +33,8 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+
+	kyaml "k8s.io/apimachinery/pkg/util/yaml"
 )
 
 const keptnFolderName = ".keptn"
@@ -202,6 +208,11 @@ func LoadChart(data []byte) (*chart.Chart, error) {
 	return loader.LoadArchive(bytes.NewReader(data))
 }
 
+// LoadChartFromPath loads a directory or Helm chart into a Chart
+func LoadChartFromPath(path string) (*chart.Chart, error) {
+	return loader.Load(path)
+}
+
 // IsDeployment tests whether the provided struct is a deployment
 func IsDeployment(dpl *appsv1.Deployment) bool {
 	return strings.ToLower(dpl.Kind) == "deployment"
@@ -258,4 +269,132 @@ func getDeployment(clientset *kubernetes.Clientset, namespace string, deployment
 		return clientset.AppsV1().Deployments(namespace).Get(context.TODO(), deploymentName, metav1.GetOptions{})
 	}
 	return dep, nil
+}
+
+// GetRenderedDeployments returns all deployments contained in the provided chart
+func GetRenderedDeployments(ch *chart.Chart) ([]*appsv1.Deployment, error) {
+
+	renderedTemplates, err := renderTemplatesWithKeptnValues(ch)
+	if err != nil {
+		return nil, err
+	}
+
+	deployments := make([]*appsv1.Deployment, 0, 0)
+
+	for _, v := range renderedTemplates {
+		dec := kyaml.NewYAMLToJSONDecoder(strings.NewReader(v))
+		for {
+			var dpl appsv1.Deployment
+			err := dec.Decode(&dpl)
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				fmt.Println(err)
+				continue
+			}
+
+			if IsDeployment(&dpl) {
+				deployments = append(deployments, &dpl)
+			}
+		}
+	}
+
+	return deployments, nil
+}
+
+// GetRenderedServices returns all services contained in the provided chart
+func GetRenderedServices(ch *chart.Chart) ([]*typesv1.Service, error) {
+
+	renderedTemplates, err := renderTemplatesWithKeptnValues(ch)
+	if err != nil {
+		return nil, err
+	}
+
+	services := make([]*typesv1.Service, 0, 0)
+
+	for _, v := range renderedTemplates {
+		dec := kyaml.NewYAMLToJSONDecoder(strings.NewReader(v))
+		for {
+			var svc typesv1.Service
+			err := dec.Decode(&svc)
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				continue
+			}
+
+			if IsService(&svc) {
+				services = append(services, &svc)
+			}
+		}
+	}
+
+	return services, nil
+}
+
+// IsService tests whether the provided struct is a service
+func IsService(svc *typesv1.Service) bool {
+	return strings.ToLower(svc.Kind) == "service"
+}
+
+func renderTemplatesWithKeptnValues(ch *chart.Chart) (map[string]string, error) {
+	keptnValues := map[string]interface{}{
+		"keptn": map[string]interface{}{
+			"project":    "prj",
+			"stage":      "stage",
+			"service":    "svc",
+			"deployment": "dpl",
+		},
+	}
+
+	cvals, err := chartutil.CoalesceValues(ch, keptnValues)
+	if err != nil {
+		return nil, err
+	}
+	options := chartutil.ReleaseOptions{
+		Name: "testRelease",
+	}
+	valuesToRender, err := chartutil.ToRenderValues(ch, cvals, options, nil)
+
+	renderedTemplates, err := engine.Render(ch, valuesToRender)
+	if err != nil {
+		return nil, err
+	}
+	return renderedTemplates, nil
+}
+
+// CreateNamespace creates a new Kubernetes namespace with the provided name
+func CreateNamespace(useInClusterConfig bool, namespace string, namespaceMetadata ...metav1.ObjectMeta) error {
+
+	var buildNamespaceMetadata metav1.ObjectMeta
+	if len(namespaceMetadata) > 0 {
+		buildNamespaceMetadata = namespaceMetadata[0]
+	}
+
+	buildNamespaceMetadata.Name = namespace
+
+	ns := &typesv1.Namespace{ObjectMeta: buildNamespaceMetadata}
+	clientset, err := GetClientset(useInClusterConfig)
+	if err != nil {
+		return err
+	}
+	_, err = clientset.CoreV1().Namespaces().Create(context.TODO(), ns, metav1.CreateOptions{})
+	return err
+}
+
+// PatchKeptnManagedNamespace to patch the namespace with the annotation & label `keptn.sh/managed-by: keptn`
+func PatchKeptnManagedNamespace(useInClusterConfig bool, namespace string) error {
+	var patchData = []byte(`{"metadata": {"annotations": {"keptn.sh/managed-by": "keptn"}, "labels": {"keptn.sh/managed-by": "keptn"}}}`)
+	clientset, err := GetClientset(useInClusterConfig)
+	if err != nil {
+		return err
+	}
+	_, err = clientset.CoreV1().Namespaces().Patch(context.TODO(), namespace, types.StrategicMergePatchType, patchData,
+		metav1.PatchOptions{})
+	if err != nil {
+		return err
+	}
+	return nil
 }

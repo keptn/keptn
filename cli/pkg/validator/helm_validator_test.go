@@ -5,9 +5,9 @@ import (
 	"os"
 	"testing"
 
-	keptnutils "github.com/keptn/kubernetes-utils/pkg"
-
 	"github.com/stretchr/testify/assert"
+
+	"github.com/keptn/keptn/cli/pkg/common"
 )
 
 const defaultService = `--- 
@@ -90,7 +90,7 @@ dockerImage: docker.io/keptnexamples/carts:0.8.1
 		err = ioutil.WriteFile("carts/templates/service.yaml", []byte(defaultService), 0644)
 		check(err, t)
 
-		ch, err := keptnutils.LoadChartFromPath("carts")
+		ch, err := common.LoadChartFromPath("carts")
 		check(err, t)
 
 		res, err := ValidateHelmChart(ch, "carts")
@@ -163,7 +163,7 @@ spec:
 		err = ioutil.WriteFile("carts/templates/service.yaml", []byte(invalidService), 0644)
 		check(err, t)
 
-		ch, err := keptnutils.LoadChartFromPath("carts")
+		ch, err := common.LoadChartFromPath("carts")
 		check(err, t)
 
 		res, err := ValidateHelmChart(ch, "carts")
@@ -310,7 +310,7 @@ spec:
 		err = ioutil.WriteFile("carts/templates/service.yaml", []byte(defaultService), 0644)
 		check(err, t)
 
-		ch, err := keptnutils.LoadChartFromPath("carts")
+		ch, err := common.LoadChartFromPath("carts")
 		check(err, t)
 
 		res, err := ValidateHelmChart(ch, "carts")
@@ -337,7 +337,7 @@ func TestTemplateFileNames(t *testing.T) {
 	err = ioutil.WriteFile("carts/templates/test-istio-destinationrule.yaml", empty, 0644)
 	check(err, t)
 
-	ch, err := keptnutils.LoadChartFromPath("carts")
+	ch, err := common.LoadChartFromPath("carts")
 	check(err, t)
 
 	res, err := ValidateHelmChart(ch, "carts")

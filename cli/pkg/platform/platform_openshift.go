@@ -1,3 +1,4 @@
+//go:build !nokubectl
 // +build !nokubectl
 
 // Copyright © 2019 NAME HERE <EMAIL ADDRESS>
@@ -24,9 +25,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/keptn/keptn/cli/pkg/common"
 	"github.com/keptn/keptn/cli/pkg/logging"
-
-	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 )
 
 type openShiftCredentials struct {
@@ -133,7 +133,7 @@ func readUserInput(value *string, regex string, promptMessage string, regexViola
 
 func (p openShiftPlatform) authenticateAtCluster() (bool, error) {
 	logging.PrintLog("Authenticating at OpenShift cluster: oc login "+p.creds.OpenshiftURL, logging.VerboseLevel)
-	out, err := keptnutils.ExecuteCommand("oc", []string{
+	out, err := common.ExecuteCommand("oc", []string{
 		"login",
 		p.creds.OpenshiftURL,
 		"-u=" + p.creds.OpenshiftUser,

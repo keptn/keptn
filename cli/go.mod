@@ -3,6 +3,7 @@ module github.com/keptn/keptn/cli
 go 1.18
 
 require (
+	github.com/Azure/go-autorest/autorest v0.11.27
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869
 	github.com/cloudevents/sdk-go/v2 v2.10.0
 	github.com/docker/docker-credential-helpers v0.6.4
@@ -10,7 +11,6 @@ require (
 	github.com/hashicorp/go-version v1.5.0
 	github.com/invopop/jsonschema v0.4.0
 	github.com/keptn/go-utils v0.16.1
-	github.com/keptn/kubernetes-utils v0.14.0
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/spf13/cobra v1.4.0
@@ -31,7 +31,6 @@ require (
 	cloud.google.com/go/compute v1.5.0 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
-	github.com/Azure/go-autorest/autorest v0.11.27 // indirect
 	github.com/Azure/go-autorest/autorest/adal v0.9.18 // indirect
 	github.com/Azure/go-autorest/autorest/date v0.3.0 // indirect
 	github.com/Azure/go-autorest/logger v0.2.1 // indirect
