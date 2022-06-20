@@ -139,6 +139,9 @@ func (nc *NatsConnector) QueueSubscribeMultiple(subjects []string, queueGroup st
 		return ErrSubNilMessageProcessor
 	}
 
+	if _, err := nc.getOrCreateConnection(); err != nil {
+		return err
+	}
 	for _, sub := range subjects {
 		nc.logger.Debug("Subscribing to topic %s", sub)
 		if err := nc.queueSubscribe(sub, queueGroup, fn); err != nil {
