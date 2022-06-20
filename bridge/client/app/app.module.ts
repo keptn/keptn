@@ -84,7 +84,7 @@ import { KtbProjectSettingsGitSshComponent } from './_components/ktb-project-set
 import { KtbProjectSettingsGitComponent } from './_components/ktb-project-settings-git/ktb-project-settings-git.component';
 import { KtbProjectSettingsShipyardComponent } from './_components/ktb-project-settings-shipyard/ktb-project-settings-shipyard.component';
 import { KtbProjectSettingsComponent } from './_components/ktb-project-settings/ktb-project-settings.component';
-import { KtbProxyInputComponent } from './_components/ktb-proxy-input/ktb-proxy-input.component';
+import { KtbProxyInputModule } from './_components/ktb-proxy-input/ktb-proxy-input.module';
 import { KtbRootEventsListComponent } from './_components/ktb-root-events-list/ktb-root-events-list.component';
 import { KtbSecretsListComponent } from './_components/ktb-secrets-list/ktb-secrets-list.component';
 import { KtbSelectableTileModule } from './_components/ktb-selectable-tile/ktb-selectable-tile.module';
@@ -229,6 +229,7 @@ const ktbModules = [
   KtbNotificationModule,
   KtbPipeModule,
   KtbProjectListModule,
+  KtbProxyInputModule,
   KtbSelectableTileModule,
   KtbSequenceStateInfoModule,
   KtbSequenceStateListModule,
@@ -291,7 +292,6 @@ const ktbModules = [
     KtbProjectSettingsGitExtendedComponent,
     KtbProjectSettingsGitHttpsComponent,
     KtbProjectSettingsGitSshComponent,
-    KtbProxyInputComponent,
     KtbSshKeyInputComponent,
     KtbProjectSettingsGitSshInputComponent,
   ],
