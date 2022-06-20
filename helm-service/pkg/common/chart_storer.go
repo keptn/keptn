@@ -41,22 +41,3 @@ func (cs chartStorer) Store(storeChartOpts StoreChartOptions) (string, error) {
 	}
 	return version, nil
 }
-
-// StoreChart stores a chart in the configuration service
-//Deprecated: StoreChart is deprecated, use chartStorer.Store instead
-func StoreChart(project string, service string, stage string, chartName string, helmChart []byte, configServiceURL string) (string, error) {
-
-	cs := chartStorer{
-		resourceHandler: goutils.NewResourceHandler(configServiceURL),
-	}
-
-	opts := StoreChartOptions{
-		Project:   project,
-		Service:   service,
-		Stage:     stage,
-		ChartName: chartName,
-		HelmChart: helmChart,
-	}
-	return cs.Store(opts)
-
-}

@@ -3,6 +3,7 @@ package configurationchanger
 import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
+	goutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/helm-service/pkg/common"
 	"github.com/keptn/keptn/helm-service/pkg/helm"
 	"helm.sh/helm/v3/pkg/chart"
@@ -36,12 +37,21 @@ func (c *ConfigurationChanger) UpdateLoadedChart(chart *chart.Chart, event keptn
 	}
 
 	// Package chart
-	chartData, err := common.PackageChart(chart)
+	chartPackager := common.NewChartPackager()
+	chartData, err := chartPackager.Package(chart)
 	if err != nil {
 		return nil, "", err
 	}
 	// Store chart
-	version, err := common.StoreChart(event.Project, event.Service, event.Stage, helmChartName, chartData, c.configServiceURL)
+	chartStorer := common.NewChartStorer(goutils.NewResourceHandler(c.configServiceURL))
+	opts := common.StoreChartOptions{
+		Project:   event.Project,
+		Service:   event.Service,
+		Stage:     event.Stage,
+		ChartName: helmChartName,
+		HelmChart: chartData,
+	}
+	version, err := chartStorer.Store(opts)
 	if err != nil {
 		return nil, "", err
 	}

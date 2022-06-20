@@ -114,10 +114,3 @@ func renderTemplatesWithKeptnValues(ch *chart.Chart) (map[string]string, error) 
 	}
 	return renderedTemplates, nil
 }
-
-// PackageChart packages the chart and returns it
-//Deprecated: PackageChart is deprecated, use chartPackager.Package instead
-func PackageChart(ch *chart.Chart) ([]byte, error) {
-	cp := chartPackager{}
-	return cp.Package(ch)
-}
