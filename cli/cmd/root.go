@@ -148,10 +148,10 @@ func runVersionCheck(vChecker *version.VersionChecker, flags []string, cliConfig
 func skipVersionCheck(args []string) bool {
 	for _, arg := range args {
 		switch {
-		case arg == "auth":
-			return true
 		case strings.HasPrefix(arg, "-"):
 			continue
+		case arg == "auth":
+			return true
 		case arg == "install":
 			return true
 		}
