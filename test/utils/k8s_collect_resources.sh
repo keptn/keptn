@@ -19,7 +19,7 @@ echo -e "\`\`\`"
 echo -e '$ kubectl describe node | grep -A5 "Allocated"'
 kubectl describe node | grep -A5 "Allocated"
 echo -e "\`\`\`"
-echo -e "Please note: Depending on the setup, the above includes usage for Istio aswell as the Kubernetes control-plane"
+echo -e "Please note: Depending on the setup, the above includes usage for Istio as well as the Kubernetes control-plane"
 echo -e ""
 
 # print PVC data

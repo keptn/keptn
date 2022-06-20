@@ -1,15 +1,13 @@
-{{- if .Values.helmservice.service.enabled -}}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "helm-service.fullname" . }}
+  name: bridge
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/component: helm-service
+    app.kubernetes.io/component: bridge
 spec:
-  type: ClusterIP
   ports:
     - port: 8080
+      targetPort: 3000
       protocol: TCP
   selector: {{- include "common.labels.selectorLabels" . | nindent 4 }}
-    app.kubernetes.io/component: helm-service
-  {{- end }}
+    app.kubernetes.io/component: bridge
