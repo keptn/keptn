@@ -64,10 +64,6 @@ import { KtbEvaluationInfoModule } from './_components/ktb-evaluation-info/ktb-e
 import { KtbEventItemModule } from './_components/ktb-event-item/ktb-event-item.module';
 import { KtbExpandableTileModule } from './_components/ktb-expandable-tile/ktb-expandable-tile.module';
 import { KtbHeatmapModule } from './_components/ktb-heatmap/ktb-heatmap.module';
-import {
-  KtbHorizontalSeparatorComponent,
-  KtbHorizontalSeparatorTitleDirective,
-} from './_components/ktb-horizontal-separator/ktb-horizontal-separator.component';
 import { KtbKeptnServicesListComponent } from './_components/ktb-keptn-services-list/ktb-keptn-services-list.component';
 import { KtbLoadingModule } from './_components/ktb-loading/ktb-loading.module';
 import { KtbMarkdownComponent } from './_components/ktb-markdown/ktb-markdown.component';
@@ -243,8 +239,6 @@ const ktbModules = [
     KtbServiceViewComponent,
     KtbShowHttpLoadingDirective,
     KtbHideHttpLoadingDirective,
-    KtbHorizontalSeparatorComponent,
-    KtbHorizontalSeparatorTitleDirective,
     KtbRootEventsListComponent,
     KtbSequenceTasksListComponent,
     KtbTaskItemComponent,
