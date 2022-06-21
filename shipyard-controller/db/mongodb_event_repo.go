@@ -9,6 +9,7 @@ import (
 
 	"github.com/jeremywohl/flatten"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/common/timeutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -379,7 +380,7 @@ func getSearchOptions(filter common.EventFilter) bson.M {
 	}
 	if !filter.Time.IsZero() {
 		searchOptions["time"] = bson.M{
-			"$lte": filter.Time,
+			"$lte": timeutils.GetKeptnTimeStamp(filter.Time),
 		}
 	}
 
