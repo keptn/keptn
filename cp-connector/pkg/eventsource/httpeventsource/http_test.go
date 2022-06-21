@@ -9,6 +9,7 @@ import (
 	"github.com/keptn/keptn/cp-connector/pkg/fake"
 	"github.com/keptn/keptn/cp-connector/pkg/types"
 	"github.com/stretchr/testify/require"
+	"sync"
 	"testing"
 )
 
@@ -21,7 +22,7 @@ func TestEventSourceCanBeStopped(t *testing.T) {
 	}
 	eventChan := make(chan types.EventUpdate)
 	ctx, cancel := context.WithCancel(context.TODO())
-	err := New(shippyEventAPI).Start(ctx, types.RegistrationData{}, eventChan)
+	err := New(shippyEventAPI).Start(ctx, types.RegistrationData{}, eventChan, make(chan error), &sync.WaitGroup{})
 	require.NoError(t, err)
 	cancel()
 	<-eventChan
@@ -38,7 +39,7 @@ func TestAPICallFails(t *testing.T) {
 	eventsource := New(shippyEventAPI)
 	eventsource.maxAttempts = 2
 
-	err := eventsource.Start(context.TODO(), types.RegistrationData{}, eventChan)
+	err := eventsource.Start(context.TODO(), types.RegistrationData{}, eventChan, make(chan error), &sync.WaitGroup{})
 	eventsource.OnSubscriptionUpdate([]string{"sh.keptn.event.task.triggered"})
 	require.NoError(t, err)
 	<-eventChan
@@ -55,7 +56,7 @@ func TestAPIReceiveEvents(t *testing.T) {
 	eventsource := New(shippyEventAPI)
 	eventChan := make(chan types.EventUpdate)
 
-	err := eventsource.Start(context.TODO(), types.RegistrationData{}, eventChan)
+	err := eventsource.Start(context.TODO(), types.RegistrationData{}, eventChan, make(chan error), &sync.WaitGroup{})
 	eventsource.OnSubscriptionUpdate([]string{"sh.keptn.event.task.triggered"})
 	require.NoError(t, err)
 	<-eventChan

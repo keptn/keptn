@@ -32,7 +32,7 @@ type HTTPEventSource struct {
 	logger               logger.Logger
 }
 
-func (hes *HTTPEventSource) Start(ctx context.Context, data types.RegistrationData, updates chan types.EventUpdate) error {
+func (hes *HTTPEventSource) Start(ctx context.Context, data types.RegistrationData, updates chan types.EventUpdate, errChan chan error, wg *sync.WaitGroup) error {
 	go func() {
 		failedPolls := 1
 		for {
