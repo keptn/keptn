@@ -485,8 +485,8 @@ github.com/keptn/go-utils v0.16.1 h1:P0BJuGeBfEN0I9Np0LMF7M3Kz/YVNt7I5q1maJeBPnc
 github.com/keptn/go-utils v0.16.1/go.mod h1:oxLLKz2u9KId2HgLH63+T0pUbcgiDd2GDkRrRKwxGUU=
 github.com/keptn/keptn/cp-common v0.0.0-20220602110035-92d59919c878 h1:fb8wJ1K4Hbo8NeSIxEToLqWJmZia4yPP5ZdxbZR4F2w=
 github.com/keptn/keptn/cp-common v0.0.0-20220602110035-92d59919c878/go.mod h1:eedRxxVKjFunx2S2PvOv/NgsePWrahMB0RlrzrosytE=
-github.com/keptn/keptn/cp-connector v0.0.0-20220621082647-d57cd8c91758 h1:acppjTlgIoipxcdCHlChIuEmqpPRFLvthOOuzSm+UQQ=
-github.com/keptn/keptn/cp-connector v0.0.0-20220621082647-d57cd8c91758/go.mod h1:2Sc6bxKKt7DpBfAHASE2mlwR9fxQtDYVEfC3JgYZ5SI=
+github.com/keptn/keptn/cp-connector v0.0.0-20220608071003-6edd402d3253 h1:7PhWFATTzJz+7pi5z87Tx8MVqFLI4ME4DeabBflt/kg=
+github.com/keptn/keptn/cp-connector v0.0.0-20220608071003-6edd402d3253/go.mod h1:2Sc6bxKKt7DpBfAHASE2mlwR9fxQtDYVEfC3JgYZ5SI=
 github.com/keptn/keptn/go-sdk v0.0.0-20220608071003-6edd402d3253 h1:KqDzo5DN3Ry027z60wfo1qDM9UumRB2jcn9uG7fOi5Y=
 github.com/keptn/keptn/go-sdk v0.0.0-20220608071003-6edd402d3253/go.mod h1:oxSIrYosLfAlrZq1K5SJ0A4ZtMRuqthQmScwUXCvniU=
 github.com/keptn/keptn/webhook-service v0.0.0-20220617083415-7285f5120cd6 h1:1YXA3JmPgKo8FiVrmitYny1OjwlzQasxnItUuy70rQw=
