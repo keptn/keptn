@@ -489,8 +489,8 @@ github.com/keptn/keptn/cp-connector v0.0.0-20220608071003-6edd402d3253 h1:7PhWFA
 github.com/keptn/keptn/cp-connector v0.0.0-20220608071003-6edd402d3253/go.mod h1:2Sc6bxKKt7DpBfAHASE2mlwR9fxQtDYVEfC3JgYZ5SI=
 github.com/keptn/keptn/go-sdk v0.0.0-20220608071003-6edd402d3253 h1:KqDzo5DN3Ry027z60wfo1qDM9UumRB2jcn9uG7fOi5Y=
 github.com/keptn/keptn/go-sdk v0.0.0-20220608071003-6edd402d3253/go.mod h1:oxSIrYosLfAlrZq1K5SJ0A4ZtMRuqthQmScwUXCvniU=
-github.com/keptn/keptn/webhook-service v0.0.0-20220620072651-d9c8d585a001 h1:V+gREvSE77KOOf0KGbdfDBcjp+3wSOxLltjsEjO6vek=
-github.com/keptn/keptn/webhook-service v0.0.0-20220620072651-d9c8d585a001/go.mod h1:VBZOtBH9Vq67YIRmWOWM7Xjj/z/bLjT4Rmq/9R1qWa4=
+github.com/keptn/keptn/webhook-service v0.0.0-20220620121742-e9ff5cc47a3a h1:55AvFmpePpKhyh5DJr38o9BXUWbtHL+G2GRKXVRHyUY=
+github.com/keptn/keptn/webhook-service v0.0.0-20220620121742-e9ff5cc47a3a/go.mod h1:VBZOtBH9Vq67YIRmWOWM7Xjj/z/bLjT4Rmq/9R1qWa4=
 github.com/keptn/kubernetes-utils v0.14.0 h1:dB4FmUXfYNiYg/oxk7AxtybrqOHUgvPtuzMpICw5zt4=
 github.com/keptn/kubernetes-utils v0.14.0/go.mod h1:cu8MTtcyy0QPyM+xbFISx76DMkrNkeHWNBXTzxDkUn4=
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=
