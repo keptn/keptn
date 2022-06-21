@@ -2,6 +2,9 @@ package db_test
 
 import (
 	"fmt"
+	"testing"
+	"time"
+
 	"github.com/google/uuid"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -9,9 +12,79 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
-	"testing"
-	"time"
 )
+
+func TestMongoDBEventsRepo_InsertAndRetrieveFuture(t *testing.T) {
+	projectName := "my-project"
+	stageName := "my-stage"
+	serviceName := "my-service"
+
+	myEvent1 := apimodels.KeptnContextExtendedCE{
+		Data: keptnv2.EventData{
+			Project: projectName,
+			Stage:   stageName,
+			Service: serviceName,
+		},
+		ID:             "my-event-id-1",
+		Shkeptncontext: "my-keptn-context-1",
+		Time:           time.Now().UTC(),
+		Type:           common.Stringp(keptnv2.GetTriggeredEventType("dev.delivery")),
+	}
+
+	myEvent2 := apimodels.KeptnContextExtendedCE{
+		Data: keptnv2.EventData{
+			Project: projectName,
+			Stage:   stageName,
+			Service: serviceName,
+		},
+		ID:             "my-event-id-2",
+		Shkeptncontext: "my-keptn-context-2",
+		Time:           time.Now().UTC().Add(10 * time.Second),
+		Type:           common.Stringp(keptnv2.GetTriggeredEventType("dev.delivery")),
+	}
+
+	repo := db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance())
+	err := repo.InsertEvent(projectName, myEvent1, "")
+	require.Nil(t, err)
+	err = repo.InsertEvent(projectName, myEvent2, "")
+	require.Nil(t, err)
+
+	time.Sleep(1 * time.Second)
+
+	eventTraceResult, err := repo.GetEvents(projectName, common.EventFilter{
+		KeptnContext: common.Stringp("my-keptn-context-1"),
+		Type:         keptnv2.GetTriggeredEventType("dev.delivery"),
+		Time:         time.Now().UTC(),
+	})
+
+	require.Nil(t, err)
+	require.Len(t, eventTraceResult, 1)
+	for _, event := range eventTraceResult {
+		require.Equal(t, "my-keptn-context-1", event.Shkeptncontext)
+	}
+
+	eventTraceResult, err = repo.GetEvents(projectName, common.EventFilter{
+		KeptnContext: common.Stringp("my-keptn-context-2"),
+		Type:         keptnv2.GetTriggeredEventType("dev.delivery"),
+		Time:         time.Now().UTC(),
+	})
+
+	require.NotNil(t, err)
+	require.Error(t, fmt.Errorf("no matching events found"))
+
+	eventTraceResult, err = repo.GetEvents(projectName, common.EventFilter{
+		KeptnContext: common.Stringp("my-keptn-context-2"),
+		Type:         keptnv2.GetTriggeredEventType("dev.delivery"),
+		Time:         time.Now().UTC().Add(10 * time.Second),
+	})
+
+	require.Nil(t, err)
+	require.Len(t, eventTraceResult, 1)
+	for _, event := range eventTraceResult {
+		require.Equal(t, "my-keptn-context-2", event.Shkeptncontext)
+	}
+
+}
 
 func TestMongoDBEventsRepo_InsertAndRetrieve(t *testing.T) {
 	projectName := "my-project"

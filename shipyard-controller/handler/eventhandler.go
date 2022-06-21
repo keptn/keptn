@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
@@ -67,6 +68,7 @@ func (eh *EventHandler) GetTriggeredEvents(c *gin.Context) {
 		Stage:   params.Stage,
 		Service: params.Service,
 		ID:      params.EventID,
+		Time:    common.Stringp(time.Now().UTC().String()),
 	}
 
 	if params.Project != nil && *params.Project != "" {
