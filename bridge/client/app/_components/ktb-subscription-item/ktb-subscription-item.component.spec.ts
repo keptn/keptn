@@ -9,6 +9,9 @@ import { ApiServiceMock } from '../../_services/api.service.mock';
 import { DataService } from '../../_services/data.service';
 import { KtbSubscriptionItemModule } from './ktb-subscription-item.module';
 import { RouterTestingModule } from '@angular/router/testing';
+import { AppRouting } from '../../app.routing';
+import { APP_BASE_HREF } from '@angular/common';
+import { environment } from '../../../environments/environment';
 
 describe('KtbSubscriptionItemComponent', () => {
   let component: KtbSubscriptionItemComponent;
@@ -17,7 +20,7 @@ describe('KtbSubscriptionItemComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [KtbSubscriptionItemModule, HttpClientTestingModule, RouterTestingModule],
+      imports: [KtbSubscriptionItemModule, HttpClientTestingModule, RouterTestingModule, AppRouting],
       providers: [
         { provide: ApiService, useClass: ApiServiceMock },
         {
@@ -25,6 +28,10 @@ describe('KtbSubscriptionItemComponent', () => {
           useValue: {
             paramMap: of(convertToParamMap({ projectName: 'sockshop' })),
           },
+        },
+        {
+          provide: APP_BASE_HREF,
+          useValue: environment.baseUrl,
         },
       ],
     }).compileComponents();
