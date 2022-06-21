@@ -13,8 +13,10 @@ class EnvironmentPage {
     return this;
   }
 
-  public visit(project: string): this {
-    cy.visit(`/project/${project}`).wait('@metadata').wait('@project');
+  public visit(project: string, stage = ''): this {
+    cy.visit(stage ? `/project/${project}/environment/stage/${stage}` : `/project/${project}`)
+      .wait('@metadata')
+      .wait('@project');
     return this;
   }
 
@@ -37,9 +39,9 @@ class EnvironmentPage {
       .contains(stage)
       .parentsUntil('ktb-selectable-tile')
       .byTestId(`filter-type-${filterType}`)
-      .click()
+      .click();
 
-    return this
+    return this;
   }
 
   public assertEvaluationHistoryLoadingCount(service: string, count: number): this {
@@ -51,7 +53,7 @@ class EnvironmentPage {
 
   public assertEvaluationHistoryCount(service: string, count: number): this {
     const tags = this.getServiceDetailsContainer(service).find(
-      'ktb-evaluation-info dt-tag-list[aria-label="evaluation-history"] dt-tag',
+      'ktb-evaluation-info dt-tag-list[aria-label="evaluation-history"] dt-tag'
     );
     tags.should('have.length', count);
     if (count !== 0) {
@@ -62,7 +64,7 @@ class EnvironmentPage {
 
   public assertEvaluationInDetails(service: string, score: number | '-', status?: 'success' | 'error'): this {
     const evaluationTag = this.getServiceDetailsContainer(service).find(
-      'ktb-evaluation-info dt-tag-list[aria-label="evaluation-info"] dt-tag',
+      'ktb-evaluation-info dt-tag-list[aria-label="evaluation-info"] dt-tag'
     );
     evaluationTag.should('not.have.class', 'border').should('have.text', score);
     if (status) {

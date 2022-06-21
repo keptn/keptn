@@ -38,17 +38,27 @@ describe('Environment Screen default requests', () => {
     environmentPage.selectStage(stage).assertEvaluationInDetails('carts-db', '-');
   });
 
-  it('should redirect to stage', () => {
-    environmentPage.visit(project).selectStage(stage);
+  it('stage-detail component should exist after clicking on stage', () => {
+    environmentPage.selectStage(stage);
+    cy.get('ktb-stage-details h2').should('contain.text', stage);
+  });
 
-    cy.location('pathname').should('eq', `/project/${project}/environment/stage/${stage}`);
+  it('stage-detail component should exist when navigating to /environment/stage url', () => {
+    environmentPage.visit(project, stage);
+    cy.get('ktb-stage-details h2').should('contain.text', stage);
+  });
+
+  it('should redirect to stage', () => {
+    environmentPage.selectStage('dev');
+    cy.location('pathname').should('eq', `/project/${project}/environment/stage/dev`);
+    environmentPage.selectStage('staging');
+    cy.location('pathname').should('eq', `/project/${project}/environment/stage/staging`);
   });
 
   it('should add query parameter if clicking on type', () => {
-    environmentPage.visit(project).clickFilterType(stage, 'problem')
-
+    environmentPage.clickFilterType(stage, 'problem');
     cy.location('href').should('include', `/project/${project}/environment/stage/${stage}?filterType=problem`);
-  })
+  });
 });
 
 describe('Environment Screen dynamic requests', () => {

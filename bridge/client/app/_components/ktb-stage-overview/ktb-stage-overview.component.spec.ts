@@ -24,19 +24,13 @@ describe('KtbStageOverviewComponent', () => {
 
   it('should return a link to the stage', () => {
     // given
-    let project = ProjectMock
-    let stage = project.stages[0]
+    const project = ProjectMock;
+    const stage = project.stages[0];
 
     // when
-    const link = component.linkToStage(project, stage)
+    const link = component.linkToStage(project, stage);
 
     // then
-    expect(link).toEqual([
-      '/project',
-      'sockshop',
-      'environment',
-      'stage',
-      'development',
-    ])
-  })
+    expect(link).toEqual(['/project', 'sockshop', 'environment', 'stage', 'development']);
+  });
 });

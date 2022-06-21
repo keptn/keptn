@@ -77,11 +77,11 @@ export class KtbStageOverviewComponent implements AfterContentInit, OnDestroy {
     };
     this.globalFilter = this.apiService.environmentFilter;
 
-    const createFilter = (project: Project): string[] => {
+    const createFilter = (p: Project): string[] => {
       // services can be deleted or added; adjust filter
-      const services = this.globalFilter[project.projectName]?.services || [];
-      return services.filter((service) => project.getServices().some((pService) => pService.serviceName === service));
-    }
+      const services = this.globalFilter[p.projectName]?.services || [];
+      return services.filter((service) => p.getServices().some((pService) => pService.serviceName === service));
+    };
     const newFilter: string[] = project ? createFilter(project) : [];
 
     if (projectChanged || newFilter.length !== this.filteredServices.length) {
@@ -128,7 +128,7 @@ export class KtbStageOverviewComponent implements AfterContentInit, OnDestroy {
     this.isTriggerSequenceOpen = state;
   }
 
-  public trackStage(index: number, stage: string[] | null): string | undefined {
+  public trackStage(_index: number, stage: string[] | null): string | undefined {
     return stage?.toString();
   }
 
