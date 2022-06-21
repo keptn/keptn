@@ -16,9 +16,7 @@ import { ApiServiceMock } from '../../_services/api.service.mock';
 import { ProjectsMock } from '../../_services/_mockData/projects.mock';
 import { KtbModifyUniformSubscriptionModule } from './ktb-modify-uniform-subscription.module';
 import { RouterTestingModule } from '@angular/router/testing';
-import { AppRouting } from '../../app.routing';
-import { APP_BASE_HREF } from '@angular/common';
-import { environment } from '../../../environments/environment';
+import { KtbKeptnServicesListComponent } from '../ktb-keptn-services-list/ktb-keptn-services-list.component';
 
 describe('KtbModifyUniformSubscriptionComponent', () => {
   let component: KtbModifyUniformSubscriptionComponent;
@@ -33,7 +31,16 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
       })
     );
     await TestBed.configureTestingModule({
-      imports: [KtbModifyUniformSubscriptionModule, HttpClientTestingModule, RouterTestingModule, AppRouting],
+      imports: [
+        KtbModifyUniformSubscriptionModule,
+        HttpClientTestingModule,
+        RouterTestingModule.withRoutes([
+          {
+            path: 'project/:projectName/settings/uniform/integrations/:integrationId',
+            component: KtbKeptnServicesListComponent,
+          },
+        ]),
+      ],
       providers: [
         { provide: ApiService, useClass: ApiServiceMock },
         {
@@ -41,10 +48,6 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
           useValue: {
             paramMap: paramMap.asObservable(),
           },
-        },
-        {
-          provide: APP_BASE_HREF,
-          useValue: environment.baseUrl,
         },
       ],
     }).compileComponents();
