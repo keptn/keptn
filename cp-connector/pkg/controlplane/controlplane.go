@@ -105,7 +105,7 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 		select {
 		// event updates
 		case event := <-eventUpdates:
-			cp.logger.Debug("New updates event")
+			cp.logger.Debug("Got new event update")
 			err := cp.handle(ctx, event, integration)
 			if errors.Is(err, ErrEventHandleFatal) {
 				return err
@@ -116,7 +116,6 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 			cp.logger.Debugf("ControlPlane: Got a subscription update with %d subscriptions", len(subscriptions))
 			cp.currentSubscriptions = subscriptions
 			cp.eventSource.OnSubscriptionUpdate(subscriptions)
-			cp.logger.Debug("Update successful")
 
 		// control plane cancelled via context
 		case <-ctx.Done():

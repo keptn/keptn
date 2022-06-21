@@ -107,6 +107,7 @@ func (hes *HTTPEventSource) doPoll(eventUpdates chan types.EventUpdate) error {
 			}
 			eventUpdates <- types.EventUpdate{
 				KeptnEvent: *e,
+				MetaData:   types.EventUpdateMetaData{Subject: sub.Event},
 			}
 			hes.cache.Add(sub.ID, e.ID)
 		}
