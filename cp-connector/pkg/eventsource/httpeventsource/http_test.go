@@ -7,6 +7,7 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/common/strutils"
+	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/cp-connector/pkg/fake"
 	"github.com/keptn/keptn/cp-connector/pkg/types"
 	"github.com/stretchr/testify/require"
@@ -91,6 +92,37 @@ func TestAPIReceiveEvents(t *testing.T) {
 	require.NoError(t, err)
 	clock.Add(time.Second)
 	<-eventChan
+	clock.Add(time.Second)
+	<-eventChan
+}
+
+func TestAPIReceiveEventsWithMoreAdvancedFilters(t *testing.T) {
+	shippyEventAPI := &fake.ShipyardEventAPIMock{}
+	shippyEventAPI.GetOpenTriggeredEventsFunc = func(filter api.EventFilter) ([]*models.KeptnContextExtendedCE, error) {
+		return []*models.KeptnContextExtendedCE{
+			{
+				Data: v0_2_0.EventData{
+					Project: "project1",
+					Stage:   "stage1",
+					Service: "service1",
+				},
+				Type: strutils.Stringp("sh.keptn.event.task.triggered"),
+			},
+			{
+				Type: strutils.Stringp("sh.keptn.event.task2.triggered"),
+			}}, nil
+	}
+	clock := clock.NewMock()
+	eventsource := New(clock, shippyEventAPI)
+	eventChan := make(chan types.EventUpdate)
+
+	err := eventsource.Start(context.TODO(), types.RegistrationData{}, eventChan, make(chan error), &sync.WaitGroup{})
+	eventsource.OnSubscriptionUpdate([]models.EventSubscription{{ID: "id1", Event: "sh.keptn.event.task.triggered", Filter: models.EventSubscriptionFilter{
+		Projects: []string{"project1"},
+		Stages:   []string{"stage1"},
+		Services: []string{"service1"},
+	}}})
+	require.NoError(t, err)
 	clock.Add(time.Second)
 	<-eventChan
 }

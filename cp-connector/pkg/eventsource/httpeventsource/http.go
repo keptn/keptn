@@ -94,9 +94,7 @@ func (hes *HTTPEventSource) doPoll(eventUpdates chan types.EventUpdate) error {
 	subscriptions := hes.currentSubscriptions
 	hes.mutex.Unlock()
 	for _, sub := range subscriptions {
-		events, err := hes.controlPlaneAPI.GetOpenTriggeredEvents(api.EventFilter{
-			EventType: sub.Event,
-		})
+		events, err := hes.controlPlaneAPI.GetOpenTriggeredEvents(getEventFilterForSubscription(sub))
 		if err != nil {
 			hes.logger.Warnf("Could not retrieve events of type %s: %s", sub.Event, err)
 			return err
@@ -113,4 +111,27 @@ func (hes *HTTPEventSource) doPoll(eventUpdates chan types.EventUpdate) error {
 		}
 	}
 	return nil
+}
+
+// getEventFilterForSubscription returns the event filter for the subscription
+// Per default, it only sets the event type of the subscription.
+// If exactly one project, stage or service is specified respectively, they are included in the filter.
+// However, this is only a (very) short term solution for the RBAC use case.
+// In the long term, we should just pass the subscription ID in the request, since the backend knows the required filters associated with the subscription.
+func getEventFilterForSubscription(subscription models.EventSubscription) api.EventFilter {
+	eventFilter := api.EventFilter{
+		EventType: subscription.Event,
+	}
+
+	if len(subscription.Filter.Projects) == 1 {
+		eventFilter.Project = subscription.Filter.Projects[0]
+	}
+	if len(subscription.Filter.Stages) == 1 {
+		eventFilter.Stage = subscription.Filter.Stages[0]
+	}
+	if len(subscription.Filter.Services) == 1 {
+		eventFilter.Service = subscription.Filter.Services[0]
+	}
+
+	return eventFilter
 }
