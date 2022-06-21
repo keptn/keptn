@@ -1,9 +1,9 @@
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { TestUtils } from '../../../_utils/test.utils';
+import { KtbProjectSettingsModule } from '../ktb-project-settings.module';
 
 import { KtbProjectSettingsShipyardComponent } from './ktb-project-settings-shipyard.component';
-import { AppModule } from '../../app.module';
-import { TestUtils } from '../../_utils/test.utils';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('KtbProjectSettingsEditProjectComponent', () => {
   let component: KtbProjectSettingsShipyardComponent;
@@ -11,7 +11,7 @@ describe('KtbProjectSettingsEditProjectComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule, HttpClientTestingModule],
+      imports: [KtbProjectSettingsModule, HttpClientTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbProjectSettingsShipyardComponent);

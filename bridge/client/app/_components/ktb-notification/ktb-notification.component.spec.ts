@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/dot-notation */
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { KtbNotificationComponent } from './ktb-notification.component';
-import { Notification, NotificationType } from '../../_models/notification';
-import { KtbProjectCreateMessageComponent } from '../_status-messages/ktb-project-create-message/ktb-project-create-message.component';
 import { ComponentFactory, ComponentFactoryResolver, ComponentRef, ViewContainerRef } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Notification, NotificationType } from '../../_models/notification';
+import { KtbProjectCreateMessageComponent } from '../ktb-project-settings/ktb-project-create-message/ktb-project-create-message.component';
+import { KtbNotificationComponent } from './ktb-notification.component';
 import { KtbNotificationModule } from './ktb-notification.module';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
