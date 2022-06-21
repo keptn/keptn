@@ -25,7 +25,7 @@ func New(clock clock.Clock, controlPlaneAPI api.ShipyardControlV1Interface) *HTT
 		currentSubscriptions: []models.EventSubscription{},
 		pollInterval:         time.Second,
 		maxAttempts:          10,
-		quitC:                make(chan struct{}),
+		quitC:                make(chan struct{}, 1),
 		cache:                NewCache(),
 		logger:               logger.NewDefaultLogger(),
 	}
@@ -98,7 +98,7 @@ func (hes *HTTPEventSource) doPoll(eventUpdates chan types.EventUpdate) error {
 			EventType: sub.Event,
 		})
 		if err != nil {
-			hes.logger.Warnf("Could not retrieve events of type %s: %s", sub, err)
+			hes.logger.Warnf("Could not retrieve events of type %s: %s", sub.Event, err)
 			return err
 		}
 		for _, e := range events {

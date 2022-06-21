@@ -11,6 +11,7 @@ import (
 	"github.com/keptn/keptn/cp-connector/pkg/logger"
 	"github.com/keptn/keptn/cp-connector/pkg/subscriptionsource"
 	"github.com/keptn/keptn/cp-connector/pkg/types"
+	"log"
 	"sync"
 )
 
@@ -102,24 +103,33 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 	cp.registered = true
 	for {
 		select {
+		// event updates
 		case event := <-eventUpdates:
 			cp.logger.Debug("New updates event")
 			err := cp.handle(ctx, event, integration)
 			if errors.Is(err, ErrEventHandleFatal) {
 				return err
 			}
+
+		// subscription updates
 		case subscriptions := <-subscriptionUpdates:
 			cp.logger.Debugf("ControlPlane: Got a subscription update with %d subscriptions", len(subscriptions))
 			cp.currentSubscriptions = subscriptions
 			cp.eventSource.OnSubscriptionUpdate(subscriptions)
 			cp.logger.Debug("Update successful")
+
+		// control plane cancelled via context
 		case <-ctx.Done():
-			cp.logger.Debug("Unregistering")
+			cp.logger.Debug("Controlplane cancelled via context. Unregistering...")
 			wg.Wait()
 			cp.registered = false
 			return nil
-		case <-errC:
+
+		// control plane cancelled via error in either one of the sub components
+		case e := <-errC:
+			cp.logger.Debugf("Stopping control plane due to error: %v", e)
 			cp.cleanup()
+			cp.logger.Debug("Waiting for components to shutdown")
 			wg.Wait()
 			cp.registered = false
 			return nil
@@ -187,14 +197,12 @@ func (cp *ControlPlane) forwardMatchedEvent(ctx context.Context, eventUpdate typ
 }
 
 func (cp *ControlPlane) cleanup() {
-	cp.subscriptionSource.Stop()
-	cp.eventSource.Stop()
-}
-
-func subjects(subscriptions []models.EventSubscription) []string {
-	var ret []string
-	for _, s := range subscriptions {
-		ret = append(ret, s.Event)
+	cp.logger.Info("Stopping subscription source...")
+	if err := cp.subscriptionSource.Stop(); err != nil {
+		log.Fatalf("Unable to stop subscription source: %v", err)
 	}
-	return ret
+	cp.logger.Info("Stopping event source...")
+	if err := cp.eventSource.Stop(); err != nil {
+		log.Fatalf("Unable to stop event source: %v", err)
+	}
 }

@@ -2,7 +2,6 @@ package subscriptionsource
 
 import (
 	"context"
-	"fmt"
 	"github.com/keptn/keptn/cp-connector/pkg/types"
 	"sync"
 	"time"
@@ -56,7 +55,12 @@ func WithLogger(logger logger.Logger) func(s *UniformSubscriptionSource) {
 
 // New creates a new UniformSubscriptionSource
 func New(uniformAPI api.UniformV1Interface, options ...func(source *UniformSubscriptionSource)) *UniformSubscriptionSource {
-	s := &UniformSubscriptionSource{uniformAPI: uniformAPI, clock: clock.New(), fetchInterval: time.Second * 5, logger: logger.NewDefaultLogger()}
+	s := &UniformSubscriptionSource{
+		uniformAPI:    uniformAPI,
+		clock:         clock.New(),
+		fetchInterval: time.Second * 5,
+		quitC:         make(chan struct{}, 1),
+		logger:        logger.NewDefaultLogger()}
 	for _, o := range options {
 		o(s)
 	}
@@ -77,7 +81,7 @@ func (s *UniformSubscriptionSource) Start(ctx context.Context, registrationData 
 			case <-ticker.C:
 				s.ping(registrationData.ID, subscriptionChannel)
 			case <-s.quitC:
-				fmt.Println("quitting event source")
+				wg.Done()
 				return
 			}
 		}
