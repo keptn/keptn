@@ -68,7 +68,7 @@ func TestMongoDBEventsRepo_InsertAndRetrieveFuture(t *testing.T) {
 	})
 
 	require.NotNil(t, err)
-	require.Error(t, fmt.Errorf("no matching events found"))
+	require.ErrorIs(t, err, db.ErrNoEventFound)
 
 	eventTraceResult, err = repo.GetEvents(projectName, common.EventFilter{
 		KeptnContext: common.Stringp("my-keptn-context-2"),
