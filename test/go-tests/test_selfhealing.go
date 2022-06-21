@@ -26,7 +26,8 @@ spec:
     metadata:
       labels:
         run: unleash-service
-        app.kubernetes.io/name: unleash-service
+        app.kubernetes.io/name: keptn
+        app.kubernetes.io/component: unleash-service
         app.kubernetes.io/version: 0.3.2
     spec:
       serviceAccountName: keptn-default
@@ -76,6 +77,11 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: 'metadata.labels[''app.kubernetes.io/name'']'
+            - name: K8S_DEPLOYMENT_COMPONENT
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: 'metadata.labels[''app.kubernetes.io/component'']'
             - name: K8S_POD_NAME
               valueFrom:
                 fieldRef:

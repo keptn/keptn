@@ -54,7 +54,7 @@ mv "common-${VERSION}.tgz" "keptn-charts/common-${VERSION}.tgz"
 # ####################
 INSTALLER_BASE_PATH=installer/manifests
 
-helm dependency build ${INSTALLER_BASE_PATH}/keptn/charts/control-plane
+helm dependency build ${INSTALLER_BASE_PATH}/keptn
 
 helm package ${INSTALLER_BASE_PATH}/keptn --app-version "$IMAGE_TAG" --version "$VERSION"
 if [ $? -ne 0 ]; then
