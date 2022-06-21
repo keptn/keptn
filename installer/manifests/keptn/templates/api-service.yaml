@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-service
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: api-service
+spec:
+  selector:
+    matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: api-service
+  replicas: 1
+  {{- include "keptn.common.update-strategy" . | nindent 2 }}
+  template:
+    metadata:
+      labels: {{- include "common.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/component: api-service
+    spec:
+      {{- include "keptn.common.pod-security-context" . | nindent 6 }}
+      terminationGracePeriodSeconds: {{ .Values.apiService.gracePeriod | default 60 }}
+      containers:
+        - name: api-service
+          image: {{ .Values.apiService.image.repository }}:{{ .Values.apiService.image.tag | default .Chart.AppVersion }}
+          {{- $prestop := .Values.apiService.preStopHookTime | default 5 | quote -}}
+          {{- include "keptn.prestop" $prestop | nindent 10 }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          resources:
+            {{- toYaml .Values.apiService.resources | nindent 12 }}
+          env:
+            - name: PREFIX_PATH
+              value: "{{ .Values.prefixPath }}"
+            - name: EVENTBROKER_URI
+              value: http://localhost:8081/event
+            - name: DATASTORE_URI
+              value: mongodb-datastore:8080
+            - name: CONFIGURATION_URI
+              value: configuration-service:8080
+            - name: SECRET_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ default "keptn-api-token" .Values.apiService.tokenSecretName }}
+                  key: keptn-api-token
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: AUTOMATIC_PROVISIONING_URL
+              value: {{ (.Values.features).automaticProvisioningURL | default "" | quote }}
+            - name: MAX_AUTH_ENABLED
+              value: {{ (.Values.apiService.maxAuth).enabled | default true | quote }}
+            - name: MAX_AUTH_REQUESTS_PER_SECOND
+              value: '{{ (.Values.apiService.maxAuth).requestsPerSecond | default "1.0"}}'
+            - name: MAX_AUTH_REQUESTS_BURST
+              value: '{{ (.Values.apiService.maxAuth).requestBurst | default "2"}}'
+            - name: LOG_LEVEL
+              value: {{ .Values.logLevel | default "info" }}
+          {{- include "keptn.common.container-security-context" . | nindent 10 }}
+          {{- if .Values.apiService.extraVolumeMounts }}
+          volumeMounts:
+          {{- include "common.tplvalues.render" ( dict "value" .Values.apiService.extraVolumeMounts "context" $) | nindent 12 }}
+          {{- end }}
+        {{- with .Values.apiService.sidecars }}
+        {{- include "common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
+        {{- end }}
+      {{- if .Values.apiService.extraVolumes }}
+      volumes:
+      {{- include "common.tplvalues.render" ( dict "value" .Values.apiService.extraVolumes "context" $) | nindent 8 }}
+      {{- end }}
+      serviceAccountName: keptn-api-service
+      {{- include "keptn.nodeSelector" (dict "value" .Values.apiService.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-service
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: api-service
+spec:
+  ports:
+    - port: 8080
+      name: http
+      targetPort: 8080
+      protocol: TCP
+  selector: {{- include "common.labels.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: api-service

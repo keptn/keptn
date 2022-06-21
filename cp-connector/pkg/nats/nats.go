@@ -183,6 +183,9 @@ func (nc *NatsConnector) Disconnect() error {
 
 func (nc *NatsConnector) queueSubscribe(subject string, queueGroup string, fn ProcessEventFn) error {
 	conn, err := nc.getOrCreateConnection()
+	if err != nil {
+		return fmt.Errorf("could not queue: %w", err)
+	}
 	sub, err := conn.QueueSubscribe(subject, queueGroup, func(m *nats.Msg) {
 		err := fn(m)
 		if err != nil {
