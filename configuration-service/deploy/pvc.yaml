@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/name: configuration-volume
     app.kubernetes.io/instance: keptn
     app.kubernetes.io/part-of: keptn-keptn
-    app.kubernetes.io/component: control-plane
+    app.kubernetes.io/component: keptn
 spec:
   accessModes:
   - ReadWriteOnce

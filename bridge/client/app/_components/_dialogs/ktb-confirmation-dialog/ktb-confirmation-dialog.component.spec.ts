@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbConfirmationDialogComponent } from './ktb-confirmation-dialog.component';
-import { AppModule } from '../../../app.module';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { KtbConfirmationDialogModule } from './ktb-confirmation-dialog.module';
 
 describe('KtbConfirmationDialogComponent', () => {
   let component: KtbConfirmationDialogComponent;
@@ -20,7 +20,7 @@ describe('KtbConfirmationDialogComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule, MatDialogModule, HttpClientTestingModule],
+      imports: [KtbConfirmationDialogModule, MatDialogModule, HttpClientTestingModule],
       providers: [
         { provide: MAT_DIALOG_DATA, useValue: dialogData },
         { provide: MatDialogRef, useValue: dialogRefMock },

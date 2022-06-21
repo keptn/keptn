@@ -1,15 +1,15 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbStageBadgeComponent } from './ktb-stage-badge.component';
-import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { KtbStageBadgeModule } from './ktb-stage-badge.module';
 
-describe('KtbEvaluationDetailsComponent', () => {
+describe('KtbStageBadgeComponent', () => {
   let component: KtbStageBadgeComponent;
   let fixture: ComponentFixture<KtbStageBadgeComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule, HttpClientTestingModule],
+      imports: [KtbStageBadgeModule, HttpClientTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbStageBadgeComponent);

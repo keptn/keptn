@@ -33,6 +33,7 @@ func Test_GKE(t *testing.T) {
 	t.Run("Test_WebhookConfigAtServiceLevel_Beta", Test_WebhookConfigAtServiceLevel_Beta)
 	t.Run("Test_WebhookConfigAtServiceLevel_Alpha", Test_WebhookConfigAtServiceLevel_Alpha)
 	t.Run("TTest_WebhookFailInternalAddress_Beta", Test_WebhookFailInternalAddress_Beta)
+	t.Run("Test_ProvisioningURL", Test_ProvisioningURL)
 	if res, err := CompareServiceNameWithDeploymentName("configuration-service", "resource-service"); err == nil && res {
 		t.Run("Test_ResourceServiceGETCommitID", Test_ResourceServiceGETCommitID)
 		t.Run("Test_EvaluationGitCommitID", Test_EvaluationGitCommitID)
@@ -53,5 +54,4 @@ func Test_GKE(t *testing.T) {
 	t.Run("Test_UniformRegistration_RegistrationOfKeptnIntegration", Test_UniformRegistration_RegistrationOfKeptnIntegration)
 	t.Run("Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods", Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods)
 	t.Run("Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane", Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane)
-	t.Run("Test_ProvisioningURL", Test_ProvisioningURL)
 }

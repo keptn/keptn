@@ -1,0 +1,27 @@
+@import 'client/variables';
+@import 'node_modules/@dynatrace/barista-components/core/src/style/variables';
+
+:host {
+  width: 100%;
+  border: 1px solid var(--dt-theme-main-default-color);
+  background: #ffffff;
+  padding: 10px;
+
+  &::ng-deep {
+    .dt-calendar-active {
+      .dt-calendar-table-cell-inner {
+        border-color: var(--dt-theme-main-default-color)!important;
+        background: var(--dt-theme-main-default-color);
+        color: #ffffff;
+      }
+    }
+  }
+}
+
+.dt-button {
+  width: 100%;
+}
+
+.ktb-datetime-picker {
+  justify-content: space-between;
+}

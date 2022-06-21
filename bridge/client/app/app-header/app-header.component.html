@@ -32,7 +32,13 @@
     </p>
   </dt-top-bar-navigation-item>
   <dt-top-bar-navigation-item align="end" uitestid="keptn-nav-userMenu">
-    <button dtTopBarAction variant="nested" [dtContextDialogTrigger]="dialog" aria-label="Open user menu">
+    <button
+      dtTopBarAction
+      uitestid="keptn-user-menu-button"
+      variant="nested"
+      [dtContextDialogTrigger]="dialog"
+      aria-label="Open user menu"
+    >
       <dt-icon name="user-uem"></dt-icon>
     </button>
   </dt-top-bar-navigation-item>
@@ -74,8 +80,12 @@
         [label]="'Keptn API token'"
       ></ktb-copy-to-clipboard>
     </div>
-    <div class="mt-1" uitestid="keptn-nav-copyKeptnAuthCommand" *ngIf="keptnInfo.authCommand">
-      <ktb-copy-to-clipboard [value]="keptnInfo.authCommand" [label]="'keptn auth command'"></ktb-copy-to-clipboard>
+    <div class="mt-1" uitestid="keptn-nav-copyKeptnAuthCommand">
+      <ktb-copy-to-clipboard
+        uitestid="keptn-auth-command-ctc"
+        [value]="getKeptnAuthCommand(keptnInfo)"
+        [label]="'keptn auth command'"
+      ></ktb-copy-to-clipboard>
     </div>
   </div>
   <hr />

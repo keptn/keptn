@@ -2,6 +2,9 @@ import { EvaluationResultTypeExtension, IDataPoint, IHeatmapTooltipType } from '
 import { ResultTypes } from '../../../../shared/models/result-types';
 import { Trace } from '../../_models/trace';
 import { IndicatorResult } from '../../../../shared/interfaces/indicator-result';
+import { parse as parseYaml } from 'yaml';
+import { SloConfig } from '../../../../shared/interfaces/slo-config';
+import { IEvaluationData } from '../../../../shared/models/trace';
 
 export type SliInfo = {
   score: number;
@@ -9,6 +12,9 @@ export type SliInfo = {
   failedCount: number;
   passCount: number;
 };
+
+export const filterUnparsedEvaluations = (trace: Trace): trace is Trace & { data: { evaluation: IEvaluationData } } =>
+  !!trace?.data?.evaluation?.sloFileContent && !trace.data.evaluation.sloFileContentParsed;
 
 export function getSliResultInfo(indicatorResults: IndicatorResult[]): {
   score: number;
@@ -101,4 +107,20 @@ export function createDataPoints(evaluationHistory: Trace[]): IDataPoint[] {
     .filter((dp) => dp.tooltip.type == IHeatmapTooltipType.SLI)
     .sort((a, b) => a.yElement.localeCompare(b.yElement));
   return [...scores, ...sortedResults];
+}
+
+export function parseSloOfEvaluations(evaluationTraces: Trace[]): void {
+  evaluationTraces.filter(filterUnparsedEvaluations).forEach((e) => parseSloFile(e.data.evaluation));
+}
+
+function parseSloFile(evaluation: IEvaluationData): void {
+  try {
+    const sloFileContentParsed: SloConfig = parseYaml(atob(evaluation.sloFileContent));
+    evaluation.score_pass = sloFileContentParsed.total_score?.pass?.split('%')[0];
+    evaluation.score_warning = sloFileContentParsed.total_score?.warning?.split('%')[0] ?? '';
+    evaluation.compare_with = sloFileContentParsed.comparison.compare_with ?? '';
+    evaluation.include_result_with_score = sloFileContentParsed.comparison.include_result_with_score;
+    evaluation.sloObjectives = sloFileContentParsed.objectives;
+    evaluation.sloFileContentParsed = true;
+  } catch {}
 }

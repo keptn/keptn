@@ -1,11 +1,11 @@
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { KtbEvaluationInfoComponent } from './ktb-evaluation-info.component';
-import { AppModule } from '../../app.module';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { EventTypes } from '../../../../shared/interfaces/event-types';
 import { KeptnService } from '../../../../shared/models/keptn-service';
 import { Trace } from '../../_models/trace';
 import { ResultTypes } from '../../../../shared/models/result-types';
+import { KtbEvaluationInfoModule } from './ktb-evaluation-info.module';
 
 const evaluationTrace = Trace.fromJSON({
   id: 'myID2',
@@ -27,7 +27,7 @@ describe('KtbEvaluationDetailsComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [],
-      imports: [AppModule, HttpClientTestingModule],
+      imports: [KtbEvaluationInfoModule, HttpClientTestingModule],
       providers: [],
     }).compileComponents();
 

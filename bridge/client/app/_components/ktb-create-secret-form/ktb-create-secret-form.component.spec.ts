@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbCreateSecretFormComponent } from './ktb-create-secret-form.component';
-import { AppModule } from '../../app.module';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { DataService } from '../../_services/data.service';
 import { Secret } from '../../_models/secret';
@@ -8,6 +7,8 @@ import { of, throwError } from 'rxjs';
 import { Router } from '@angular/router';
 import { SecretScopeDefault } from '../../../../shared/interfaces/secret-scope';
 import { POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
+import { KtbCreateSecretFormModule } from './ktb-create-secret-form.module';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('KtbCreateSecretFormComponent with valid scopes', () => {
   let component: KtbCreateSecretFormComponent;
@@ -19,7 +20,7 @@ describe('KtbCreateSecretFormComponent with valid scopes', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [],
-      imports: [AppModule, HttpClientTestingModule],
+      imports: [KtbCreateSecretFormModule, HttpClientTestingModule, RouterTestingModule],
       providers: [{ provide: POLLING_INTERVAL_MILLIS, useValue: 0 }],
     }).compileComponents();
 
@@ -135,7 +136,7 @@ describe('KtbCreateSecretFormComponent scopes', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [],
-      imports: [AppModule, HttpClientTestingModule],
+      imports: [KtbCreateSecretFormModule, HttpClientTestingModule, RouterTestingModule],
     }).compileComponents();
     fixture = TestBed.createComponent(KtbCreateSecretFormComponent);
     component = fixture.componentInstance;

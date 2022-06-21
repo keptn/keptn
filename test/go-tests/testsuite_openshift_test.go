@@ -1,8 +1,9 @@
 package go_tests
 
 import (
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func Test_Openshift(t *testing.T) {
@@ -15,6 +16,9 @@ func Test_Openshift(t *testing.T) {
 	// Common Tests
 	t.Run("Test_LogIngestion", Test_LogIngestion)
 	t.Run("Test_LogForwarding", Test_LogForwarding)
+	// Test disabled due to flakyness, in future will be rewritten as component test
+	//t.Run("Test_LogForwarding", Test_LogForwarding)
+
 	t.Run("Test_SelfHealing", Test_SelfHealing)
 	t.Run("Test_ResourceServiceBasic", Test_ResourceServiceBasic)
 	t.Run("Test_ManageSecrets_CreateUpdateAndDeleteSecret", Test_ManageSecrets_CreateUpdateAndDeleteSecret)
@@ -30,14 +34,13 @@ func Test_Openshift(t *testing.T) {
 	// Added a test using the API as outside address
 	t.Run("Test_Webhook_Beta_API", Test_Webhook_Beta_API)
 
+	t.Run("Test_ProvisioningURL", Test_ProvisioningURL)
 	if res, err := CompareServiceNameWithDeploymentName("configuration-service", "resource-service"); err == nil && res {
 		t.Run("Test_ResourceServiceGETCommitID", Test_ResourceServiceGETCommitID)
 		t.Run("Test_EvaluationGitCommitID", Test_EvaluationGitCommitID)
 		t.Run("Test_SSHPublicKeyAuth", Test_SSHPublicKeyAuth)
-		t.Run("Test_ProxyAuth", Test_ProxyAuth)
 	}
 	t.Run("Test_ZeroDownTimeTriggerSequence", Test_ZeroDownTimeTriggerSequence)
-	t.Run("Test_ProvisioningURL", Test_ProvisioningURL)
 
 	// Platform-specific Tests
 }

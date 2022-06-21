@@ -10,6 +10,7 @@ describe('Test /bridgeInfo', () => {
     process.env = {
       ...originalEnv,
       AUTOMATIC_PROVISIONING_MSG: '  message   ',
+      AUTH_MSG: 'a string',
     };
     app = await setupServer();
   });
@@ -33,6 +34,7 @@ describe('Test /bridgeInfo', () => {
       },
       authType: 'NONE',
       automaticProvisioningMsg: 'message',
+      authMsg: 'a string',
     });
     expect(response.statusCode).toBe(200);
   });

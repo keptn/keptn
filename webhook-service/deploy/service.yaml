@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/name: webhook-service
     app.kubernetes.io/instance: keptn
     app.kubernetes.io/part-of: keptn-keptn
-    app.kubernetes.io/component: control-plane
+    app.kubernetes.io/component: keptn
     app.kubernetes.io/version: develop
 spec:
   replicas: 1
@@ -19,12 +19,12 @@ spec:
   template:
     metadata:
       labels:
-
+        app.kubernetes.io/component: keptn
         app.kubernetes.io/instance: keptn
         app.kubernetes.io/name: webhook-service
         app.kubernetes.io/part-of: keptn-keptn
-        app.kubernetes.io/component: control-plane
         app.kubernetes.io/version: develop
+        helm.sh/chart: keptn-0.1.0
     spec:
       containers:
         - name: webhook-service
@@ -78,7 +78,6 @@ spec:
               cpu: 50m
               memory: 64Mi
 ---
-
 apiVersion: v1
 kind: Service
 metadata:
@@ -88,7 +87,7 @@ metadata:
     app.kubernetes.io/name: webhook-service
     app.kubernetes.io/instance: keptn
     app.kubernetes.io/part-of: keptn-keptn
-    app.kubernetes.io/component: control-plane
+    app.kubernetes.io/component: keptn
 spec:
   ports:
     - port: 8080

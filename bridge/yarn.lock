@@ -1422,10 +1422,10 @@
   resolved "https://registry.yarnpkg.com/@discoveryjs/json-ext/-/json-ext-0.5.3.tgz#90420f9f9c6d3987f176a19a7d8e764271a2f55d"
   integrity sha512-Fxt+AfXgjMoin2maPIYzFZnQjAXjAL0PHscM5pRTtatFqB+vZxAM9tLp2Optnuw3QOQC40jTNeGYFOMvyf7v9g==
 
-"@dynatrace/barista-components@10.7.3":
-  version "10.7.3"
-  resolved "https://registry.yarnpkg.com/@dynatrace/barista-components/-/barista-components-10.7.3.tgz#b03aa939e36d12cd385c495807fd3e53c678f75b"
-  integrity sha512-qt1W0Xfl3Ou+J8/uNkSlqcOWjhxr2JpUL6VnDN4iXFBtEaC2IuzckZQCgTq1NIdajzkUUxc58j+N890i6y0Fag==
+"@dynatrace/barista-components@10.7.4":
+  version "10.7.4"
+  resolved "https://registry.yarnpkg.com/@dynatrace/barista-components/-/barista-components-10.7.4.tgz#d7e26ef98aa37403c63d535582730797a41f7e8c"
+  integrity sha512-5bWgvTkq7jq44zpHdrchykRbaI5tjpEmd+UpEigyqFRckDOx/7N0R6G2dMhm838JDd55RjrrNA7sKHqPAPMa5g==
   dependencies:
     tslib "^2.0.0"
 
@@ -2299,10 +2299,10 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-17.0.32.tgz#51d59d7a90ef2d0ae961791e0900cad2393a0149"
   integrity sha512-eAIcfAvhf/BkHcf4pkLJ7ECpBAhh9kcxRBpip9cTiO+hf+aJrsxYxBeS6OXvOd9WqNAJmavXVpZvY1rBjNsXmw==
 
-"@types/node@14.18.20":
-  version "14.18.20"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.18.20.tgz#268f028b36eaf51181c3300252f605488c4f0650"
-  integrity sha512-Q8KKwm9YqEmUBRsqJ2GWJDtXltBDxTdC4m5vTdXBolu2PeQh8LX+f6BTwU+OuXPu37fLxoN6gidqBmnky36FXA==
+"@types/node@14.18.21":
+  version "14.18.21"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.18.21.tgz#0155ee46f6be28b2ff0342ca1a9b9fd4468bef41"
+  integrity sha512-x5W9s+8P4XteaxT/jKF0PSb7XEvo5VmqEWgsMlyeY4ZlLK8I6aH6g5TPPyDlLAep+GYf4kefb7HFyc7PAO3m+Q==
 
 "@types/node@^14.14.31":
   version "14.18.17"

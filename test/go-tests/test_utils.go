@@ -277,7 +277,7 @@ func CreateProjectWithSSH(projectName string, shipyardFilePath string) (string, 
 
 }
 
-func CreateProjectWithProxy(projectName string, shipyardFilePath string) (string, error) {
+func CreateProjectWithProxy(projectName string, shipyardFilePath string, proxyURL string) (string, error) {
 	// The project name is prefixed with the keptn test namespace to avoid name collisions during parallel integration test runs on CI
 	namespace := osutils.GetOSEnvOrDefault(KeptnNamespaceEnvVar, DefaultKeptnNamespace)
 	newProjectName := namespace + "-" + projectName
@@ -294,7 +294,7 @@ func CreateProjectWithProxy(projectName string, shipyardFilePath string) (string
 		}
 
 		// apply the k8s job for creating the git upstream
-		out, err := ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=%s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s --git-proxy-url=squid:3128 --git-proxy-scheme=http --insecure-skip-tls", newProjectName, shipyardFilePath, user, newProjectName, user, token))
+		out, err := ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=%s --git-remote-url=http://gitea-http:3000/%s/%s --git-user=%s --git-token=%s --git-proxy-url=%s --git-proxy-scheme=http --insecure-skip-tls", newProjectName, shipyardFilePath, user, newProjectName, user, token, proxyURL))
 
 		if !strings.Contains(out, "created successfully") {
 			return fmt.Errorf("unable to create project: %s", out)
@@ -453,7 +453,7 @@ func ScaleUpUniform(deployments []string, replicas int) error {
 }
 
 func RestartPod(deploymentName string) error {
-	return keptnkubeutils.RestartPodsWithSelector(false, GetKeptnNameSpaceFromEnv(), "app.kubernetes.io/name="+deploymentName)
+	return keptnkubeutils.RestartPodsWithSelector(false, GetKeptnNameSpaceFromEnv(), "app.kubernetes.io/component="+deploymentName)
 }
 
 func CreateTmpShipyardFile(shipyardContent string) (string, error) {
@@ -761,7 +761,7 @@ func SetShipyardControllerEnvVar(t *testing.T, envVarName, envVarValue string) e
 	}
 
 	require.Eventually(t, func() bool {
-		get, err := k8sClient.CoreV1().Pods(GetKeptnNameSpaceFromEnv()).List(context.TODO(), v1.ListOptions{LabelSelector: "app.kubernetes.io/name=shipyard-controller"})
+		get, err := k8sClient.CoreV1().Pods(GetKeptnNameSpaceFromEnv()).List(context.TODO(), v1.ListOptions{LabelSelector: "app.kubernetes.io/component=shipyard-controller"})
 		if err != nil {
 			return false
 		}

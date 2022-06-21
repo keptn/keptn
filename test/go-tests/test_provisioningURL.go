@@ -132,7 +132,7 @@ func Test_ProvisioningURL(t *testing.T) {
 			return err
 		}
 		return nil
-	})
+	}, retry.NumberOfRetries(10), retry.DelayBetweenRetries(10*time.Second))
 	require.Nil(t, err)
 
 	t.Logf("Creating a new project %s with a provisioned Gitea Upstream", projectName)

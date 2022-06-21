@@ -10,7 +10,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"strings"
 	"time"
 )
 
@@ -357,12 +356,7 @@ func (mdbrepo *MongoDBUniformRepo) DeleteServiceFromSubscriptions(subscriptionNa
 	}
 	defer cancel()
 
-	filter := bson.D{
-		{"$or", bson.A{
-			bson.D{{"subscription.filter.service", subscriptionName}},
-			bson.D{{"subscriptions.filter.services", subscriptionName}},
-		}},
-	}
+	filter := bson.D{{"subscriptions.filter.services", subscriptionName}}
 
 	cur, err := collection.Find(ctx, filter)
 	defer closeCursor(ctx, cur)
@@ -377,9 +371,6 @@ func (mdbrepo *MongoDBUniformRepo) DeleteServiceFromSubscriptions(subscriptionNa
 			//log the error, but continue
 			logger.Errorf("could not decode integration: %s", err.Error())
 		}
-		services := strings.ReplaceAll(integration.Subscription.Filter.Service, subscriptionName+",", "")
-		services = strings.ReplaceAll(services, subscriptionName, "")
-		integration.Subscription.Filter.Service = services
 
 		totalSub := len(integration.Subscriptions)
 		for i := 0; i < totalSub; i++ {

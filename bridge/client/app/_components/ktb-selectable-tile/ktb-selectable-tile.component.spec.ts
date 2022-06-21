@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbSelectableTileComponent } from './ktb-selectable-tile.component';
-import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { KtbSelectableTileModule } from './ktb-selectable-tile.module';
 
 describe('KtbSelectableTileComponent', () => {
   let component: KtbSelectableTileComponent;
@@ -9,7 +9,7 @@ describe('KtbSelectableTileComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule, HttpClientTestingModule],
+      imports: [KtbSelectableTileModule, HttpClientTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbSelectableTileComponent);
