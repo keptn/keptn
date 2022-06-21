@@ -91,7 +91,7 @@ func testInvalidInputHelper(inputCmd string, expectedOutput string, t *testing.T
 	}
 
 	got := err.Error()
-	if got != expectedOutput {
+	if strings.Compare(got, expectedOutput) != 0 {
 		t.Errorf("Expected %q, got %q", expectedOutput, got)
 	}
 }

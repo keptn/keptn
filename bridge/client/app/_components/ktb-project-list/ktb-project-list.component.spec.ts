@@ -1,8 +1,8 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { KtbProjectListComponent } from './ktb-project-list.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { AppModule } from '../../app.module';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RETRY_ON_HTTP_ERROR } from '../../_utils/app.utils';
+import { KtbProjectListComponent } from './ktb-project-list.component';
+import { KtbProjectListModule } from './ktb-project-list.module';
 
 describe('KtbProjectListComponent', () => {
   let component: KtbProjectListComponent;
@@ -10,7 +10,7 @@ describe('KtbProjectListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule, HttpClientTestingModule],
+      imports: [KtbProjectListModule, HttpClientTestingModule],
       providers: [{ provide: RETRY_ON_HTTP_ERROR, useValue: false }],
     }).compileComponents();
 

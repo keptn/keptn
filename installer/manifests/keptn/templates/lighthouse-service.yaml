@@ -1,0 +1,86 @@
+---
+# lighthouse-service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lighthouse-service
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: lighthouse-service
+spec:
+  selector:
+    matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: lighthouse-service
+  replicas: 1
+  {{- include "keptn.common.update-strategy" . | nindent 2 }}
+  template:
+    metadata:
+      labels: {{- include "common.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/component: lighthouse-service
+    spec:
+      {{- include "keptn.common.pod-security-context" . | nindent 6 }}
+      containers:
+        - name: lighthouse-service
+          image: {{ .Values.lighthouseService.image.repository }}:{{ .Values.lighthouseService.image.tag | default .Chart.AppVersion }}
+          {{- $prestop := .Values.lighthouseService.preStopHookTime | default 20 | quote -}}
+          {{- include "keptn.prestop" $prestop | nindent 10 }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          resources:
+            {{- toYaml .Values.lighthouseService.resources | nindent 12 }}
+          env:
+            - name: EVENTBROKER
+              value: 'http://localhost:8081/event'
+            - name: CONFIGURATION_SERVICE
+              value: 'http://configuration-service:8080'
+            - name: MONGODB_DATASTORE
+              value: 'mongodb-datastore:8080'
+            - name: ENVIRONMENT
+              value: 'production'
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: LOG_LEVEL
+              value: {{ .Values.logLevel | default "info" }}
+            {{- include "keptn.common.env.vars" . | nindent 12 }}
+          {{- include "keptn.common.container-security-context" . | nindent 10 }}
+          {{- if .Values.lighthouseService.extraVolumeMounts }}
+          volumeMounts:
+          {{- include "common.tplvalues.render" ( dict "value" .Values.lighthouseService.extraVolumeMounts "context" $) | nindent 12 }}
+          {{- end }}
+        {{- with .Values.lighthouseService.sidecars }}
+        {{- include "common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
+        {{- end }}
+      {{- if .Values.lighthouseService.extraVolumes }}
+      volumes:
+      {{- include "common.tplvalues.render" ( dict "value" .Values.lighthouseService.extraVolumes "context" $) | nindent 8 }}
+      {{- end }}
+      serviceAccountName: keptn-lighthouse-service
+      terminationGracePeriodSeconds: {{ .Values.lighthouseService.gracePeriod | default 60 }}
+      {{- include "keptn.nodeSelector" (dict "value" .Values.lighthouseService.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lighthouse-service
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: lighthouse-service
+spec:
+  ports:
+    - port: 8080
+      protocol: TCP
+  selector: {{- include "common.labels.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: lighthouse-service

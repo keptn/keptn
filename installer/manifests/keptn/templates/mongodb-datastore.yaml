@@ -1,0 +1,97 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb-datastore
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: mongodb-datastore
+spec:
+  selector:
+    matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: mongodb-datastore
+  replicas: 1
+  {{- include "keptn.common.update-strategy" . | nindent 2 }}
+  template:
+    metadata:
+      labels: {{- include "common.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/component: mongodb-datastore
+    spec:
+      {{- include "keptn.common.pod-security-context" . | nindent 6 }}
+      serviceAccountName: keptn-default
+      terminationGracePeriodSeconds: {{ .Values.mongodbDatastore.gracePeriod | default 60 }}
+      containers:
+        - name: mongodb-datastore
+          image: {{ .Values.mongodbDatastore.image.repository }}:{{ .Values.mongodbDatastore.image.tag | default .Chart.AppVersion }}
+          {{- $prestop := .Values.mongodbDatastore.preStopHookTime | default 20 | quote -}}
+          {{- include "keptn.prestop" $prestop | nindent 10 }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          resources:
+            {{- toYaml .Values.mongodbDatastore.resources | nindent 12 }}
+          env:
+            - name: PREFIX_PATH
+              value: "{{ .Values.prefixPath }}"
+            - name: MONGODB_HOST
+              value: '{{ .Release.Name }}-{{ .Values.mongo.service.nameOverride }}:{{ .Values.mongo.service.port }}'
+            - name: MONGODB_DATABASE
+              value: {{ .Values.mongo.auth.database | default "keptn" }}
+            - name: MONGODB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-credentials
+                  key: mongodb-user
+            - name: MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-credentials
+                  key: mongodb-passwords
+            - name: MONGODB_EXTERNAL_CONNECTION_STRING
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-credentials
+                  key: external_connection_string
+                  optional: true
+            - name: LOG_LEVEL
+              value: {{ .Values.logLevel | default "info" }}
+            - name: NATS_URL
+              value: 'nats://keptn-nats'
+            {{- include "keptn.common.env.vars" . | nindent 12 }}
+          {{- include "keptn.common.container-security-context" . | nindent 10 }}
+          {{- if .Values.mongodbDatastore.extraVolumeMounts }}
+          volumeMounts:
+            {{- include "common.tplvalues.render" ( dict "value" .Values.mongodbDatastore.extraVolumeMounts "context" $) | nindent 12 }}
+          {{- end }}
+        {{- with .Values.mongodbDatastore.sidecars }}
+        {{- include "common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
+        {{- end }}
+      {{- if .Values.mongodbDatastore.extraVolumes }}
+      volumes:
+      {{- include "common.tplvalues.render" ( dict "value" .Values.mongodbDatastore.extraVolumes "context" $) | nindent 8 }}
+      {{- end }}
+      {{- include "keptn.nodeSelector" (dict "value" .Values.mongodbDatastore.nodeSelector "default" .Values.nodeSelector "indent" 8 "context" . )}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb-datastore
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: mongodb-datastore
+spec:
+  ports:
+    - port: 8080
+      protocol: TCP
+  selector: {{- include "common.labels.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: mongodb-datastore
