@@ -5,6 +5,7 @@ import { BrowserDynamicTestingModule } from '@angular/platform-browser-dynamic/t
 import { OverlayService } from '../../_directives/overlay-service/overlay.service';
 import { KtbTreeListSelectModule } from './ktb-tree-list-select.module';
 import { KtbTreeListSelectComponent, KtbTreeListSelectDirective } from './ktb-tree-list-select.component';
+import { RouterTestingModule } from '@angular/router/testing';
 
 export class MockElementRef extends ElementRef {
   nativeElement = {};
@@ -29,7 +30,7 @@ describe('KtbTreeListSelectComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [KtbTreeListSelectModule, HttpClientTestingModule],
+      imports: [KtbTreeListSelectModule, HttpClientTestingModule, RouterTestingModule],
       providers: [{ provide: ElementRef, useClass: MockElementRef }],
     })
       .overrideModule(BrowserDynamicTestingModule, { set: { entryComponents: [KtbTreeListSelectComponent] } })
