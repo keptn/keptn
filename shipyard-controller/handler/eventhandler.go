@@ -68,7 +68,7 @@ func (eh *EventHandler) GetTriggeredEvents(c *gin.Context) {
 		Stage:   params.Stage,
 		Service: params.Service,
 		ID:      params.EventID,
-		Time:    common.Stringp(time.Now().UTC().String()),
+		Time:    time.Now().UTC(),
 	}
 
 	if params.Project != nil && *params.Project != "" {

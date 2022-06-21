@@ -84,6 +84,11 @@ func TestMongoDBEventsRepo_InsertAndRetrieveFuture(t *testing.T) {
 		require.Equal(t, "my-keptn-context-2", event.Shkeptncontext)
 	}
 
+	err = repo.DeleteEvent(projectName, "my-event-id-1", "")
+	require.Nil(t, err)
+	err = repo.DeleteEvent(projectName, "my-event-id-2", "")
+	require.Nil(t, err)
+
 }
 
 func TestMongoDBEventsRepo_InsertAndRetrieve(t *testing.T) {
