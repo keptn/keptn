@@ -31,7 +31,7 @@ spec:
         app.kubernetes.io/name: keptn
         app.kubernetes.io/component: unleash-service
         app.kubernetes.io/version: 0.3.2
-				keptn.sh/integration-name: unleash-service-integration-name
+        keptn.sh/integration-name: unleash-service-integration-name
     spec:
       serviceAccountName: keptn-default
       containers:
