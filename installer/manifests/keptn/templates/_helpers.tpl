@@ -97,6 +97,10 @@ lifecycle:
 {{- else }}
   value: {{ .Chart.AppVersion }}
 {{- end }}
+- name: API_PROXY_HTTP_TIMEOUT
+  valueFrom:
+   fieldRef:
+      fieldPath: {{ .Values.distributor.config.proxy.httpTimeout }}
 - name: LOCATION
   valueFrom:
    fieldRef:

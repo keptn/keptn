@@ -200,6 +200,8 @@ distributor:
     repository: docker.io/keptn/distributor
     tag: ""
   config:
+    proxy:
+      httpTimeout: ""
     queueGroup:
       enabled: true
     oauth:
