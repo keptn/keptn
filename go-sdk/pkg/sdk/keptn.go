@@ -6,7 +6,7 @@ import (
 	"github.com/keptn/keptn/cp-connector/pkg/logforwarder"
 	"github.com/keptn/keptn/cp-connector/pkg/subscriptionsource"
 	"github.com/keptn/keptn/cp-connector/pkg/types"
-	api3 "github.com/keptn/keptn/go-sdk/internal/api"
+	sdk "github.com/keptn/keptn/go-sdk/internal/api"
 	"github.com/keptn/keptn/go-sdk/internal/config"
 	logger "github.com/sirupsen/logrus"
 	"log"
@@ -391,12 +391,12 @@ func newControlPlaneFromEnv() (api.KeptnInterface, *controlplane.ControlPlane, c
 		log.Fatalf("failed to process env var: %s", err)
 	}
 
-	httpClient, err := api3.CreateClientGetter(env).Get()
+	httpClient, err := sdk.CreateClientGetter(env).Get()
 	if err != nil {
 		logger.WithError(err).Fatal("Could not initialize http client.")
 	}
 
-	apiSet, err := api3.CreateKeptnAPI(httpClient, env)
+	apiSet, err := sdk.CreateKeptnAPI(httpClient, env)
 	if err != nil {
 		log.Fatal(err)
 	}
