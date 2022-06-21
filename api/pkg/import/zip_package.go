@@ -12,6 +12,7 @@ import (
 	logger "github.com/sirupsen/logrus"
 )
 
+// ErrorUncompressedSizeTooBig signals that a zip archive has an uncompressed size greater than maximum size allowed
 var /*const*/ ErrorUncompressedSizeTooBig = errors.New("uncompressed size of package exceeds configured maximum size")
 
 // ZippedPackage represents a zipped import package ready to be use (it is extracted to a temp directory)
@@ -64,7 +65,7 @@ func (m *ZippedPackage) extract(zipFile string, maxSize uint64) error {
 
 // NewPackage creates a new ZippedPackage object ready to be used.
 // The zip file contents will be extracted in a subDirectory with the same name as the file stripped of the .zip
-// extension. During the extraction zip file uncompressed content is checked not to surpass maxSize.
+// extension. During the extraction, zip file uncompressed content is checked not to surpass maxSize.
 // If any error occurs, the temporary folder is cleaned up and (nil, error) will be returned
 func NewPackage(zipFile string, maxSize uint64) (*ZippedPackage, error) {
 	m := new(ZippedPackage)

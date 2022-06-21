@@ -220,9 +220,9 @@ func addDirectoryContentToZip(writer *zip.Writer, baseDir string) error {
 
 			if d.IsDir() {
 				return addDirectoryToZip(writer, relativePath)
-			} else {
-				return addFileToZip(writer, walkedPath, relativePath)
 			}
+			
+			return addFileToZip(writer, walkedPath, relativePath)
 		},
 	)
 }

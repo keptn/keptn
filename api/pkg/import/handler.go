@@ -23,12 +23,15 @@ type projectChecker interface {
 	ProjectExists(projectName string) (bool, error)
 }
 
+// ImportHandler is the rest handler for the /import endpoint
 type ImportHandler struct {
 	checker                    projectChecker
 	tempStorageDir             string
 	maxUncompressedPackageSize uint64
 }
 
+// GetImportHandlerFunc will instantiate a configured ImportHandler and return the method that can be used for
+// handling http requests to the endpoint. See restapi.configureAPI for usage
 func GetImportHandlerFunc(storagePath string, checker projectChecker, maxPackageSize uint64) func(
 	params import_operations.ImportParams, principal *models.Principal,
 ) middleware.Responder {
@@ -44,6 +47,10 @@ func getImportHandlerInstance(storagePath string, checker projectChecker, maxPac
 	}
 }
 
+// HandleImport is the method invoken when a POST request is received on the import endpoint.
+// This method will check that the project passed as parameter alredy exists in Keptn (
+// return a 404 immediately it that is not the case),
+// save the import package on the scratch storage and parse its contents.
 func (ih *ImportHandler) HandleImport(
 	params import_operations.ImportParams, principal *models.Principal,
 ) middleware.Responder {
