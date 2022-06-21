@@ -100,7 +100,7 @@ lifecycle:
 - name: API_PROXY_HTTP_TIMEOUT
   valueFrom:
    fieldRef:
-      fieldPath: {{ .Values.distributor.config.proxy.httpTimeout }}
+      fieldPath: {{ ((.Values.distributor.config).proxy).httpTimeout }}
 - name: LOCATION
   valueFrom:
    fieldRef:
