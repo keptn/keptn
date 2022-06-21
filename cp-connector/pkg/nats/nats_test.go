@@ -127,11 +127,13 @@ func TestSubscribeMultiple(t *testing.T) {
 }
 
 func TestSubscribeMultipleFails(t *testing.T) {
-	svr, shutdown := runNATSServer()
-	defer shutdown()
-	nc := nats2.New(svr.ClientURL())
-	err := nc.SubscribeMultiple([]string{}, nil)
-	require.ErrorIs(t, err, nats2.ErrSubNilMessageProcessor)
+	numberReceived := 0
+	nc := nats2.New("myverywrongurl")
+	err := nc.SubscribeMultiple([]string{}, func(msg *nats.Msg) error {
+		numberReceived++
+		return nil
+	})
+	require.ErrorContains(t, err, "could not connect to NATS: dial tcp: lookup myverywrongurl")
 }
 
 func TestUnsubscribeAll(t *testing.T) {
