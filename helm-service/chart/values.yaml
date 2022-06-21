@@ -75,5 +75,3 @@ affinity: {}                                 # Affinity rules
 logLevel: info
 
 useCommitID: "false"
-
-nameOverride: "some-new-service"
