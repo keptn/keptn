@@ -15,7 +15,6 @@ func Test_Openshift(t *testing.T) {
 
 	// Common Tests
 	t.Run("Test_LogIngestion", Test_LogIngestion)
-	t.Run("Test_LogForwarding", Test_LogForwarding)
 	// Test disabled due to flakyness, in future will be rewritten as component test
 	//t.Run("Test_LogForwarding", Test_LogForwarding)
 
