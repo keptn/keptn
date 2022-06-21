@@ -169,7 +169,7 @@ spec:
             - name: CONFIG_DIR
               value: "/config"
             - name: AUTOMATIC_PROVISIONING_MSG
-              value: {{ .Values.bridge.automaticProvisioningMsg | default "" | quote }}
+              value: {{ .Values.features.automaticProvisioning.message | default "" | quote }}
             - name: AUTH_MSG
               value: {{ .Values.bridge.authMsg | default "" | quote }}
             - name: RESOURCE_SERVICE_ENABLED
