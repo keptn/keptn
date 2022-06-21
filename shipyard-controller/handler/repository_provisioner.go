@@ -40,6 +40,8 @@ func (rp *RepositoryProvisioner) ProvideRepository(projectName, namespace string
 	}
 
 	req, err := http.NewRequest(http.MethodPost, rp.provisioningURL+"/repository", bytes.NewBuffer(jsonRequestData))
+	req.Header.Set("Content-type", "application/json")
+	req.Header.Set("Accept", "application/json")
 	if err != nil {
 		return nil, fmt.Errorf(UnableProvisionPostReq, err.Error())
 	}
@@ -77,6 +79,8 @@ func (rp *RepositoryProvisioner) DeleteRepository(projectName string, namespace 
 	}
 
 	req, err := http.NewRequest(http.MethodDelete, rp.provisioningURL+"/repository", bytes.NewBuffer(jsonRequestData))
+	req.Header.Set("Content-type", "application/json")
+	req.Header.Set("Accept", "application/json")
 	if err != nil {
 		return fmt.Errorf(UnableProvisionDeleteReq, err.Error())
 	}
