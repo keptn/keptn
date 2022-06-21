@@ -7,6 +7,7 @@ import { UniformRegistrationsMock } from '../../_services/_mockData/uniform-regi
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 import { KtbUniformSubscriptionsModule } from './ktb-uniform-subscriptions.module';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('KtbUniformSubscriptionsComponent', () => {
   let component: KtbUniformSubscriptionsComponent;
@@ -14,7 +15,7 @@ describe('KtbUniformSubscriptionsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [KtbUniformSubscriptionsModule, HttpClientTestingModule],
+      imports: [KtbUniformSubscriptionsModule, HttpClientTestingModule, RouterTestingModule],
       providers: [
         { provide: ApiService, useClass: ApiServiceMock },
         {
