@@ -6,6 +6,9 @@ import (
 	"github.com/keptn/keptn/cp-connector/pkg/logforwarder"
 	"github.com/keptn/keptn/cp-connector/pkg/subscriptionsource"
 	"github.com/keptn/keptn/cp-connector/pkg/types"
+	sdk "github.com/keptn/keptn/go-sdk/internal/api"
+	"github.com/keptn/keptn/go-sdk/internal/config"
+	logger "github.com/sirupsen/logrus"
 	"log"
 	"os"
 	"os/signal"
@@ -18,7 +21,6 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	api2 "github.com/keptn/keptn/cp-common/api"
 	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
 	"github.com/keptn/keptn/cp-connector/pkg/nats"
 )
@@ -42,6 +44,8 @@ type IKeptn interface {
 	// Per default DefaultLogger is used which internally just uses the go logging package
 	// Another logger can be configured using the sdk.WithLogger function
 	Logger() Logger
+	// APIV1 returns API utils for all Keptn APIs
+	APIV1() api.KeptnInterface
 }
 
 type TaskHandler interface {
@@ -135,20 +139,21 @@ type Keptn struct {
 	controlPlane           *controlplane.ControlPlane
 	eventSender            controlplane.EventSender
 	resourceHandler        ResourceHandler
+	api                    api.KeptnInterface
 	source                 string
 	taskRegistry           *taskRegistry
 	syncProcessing         bool
 	automaticEventResponse bool
 	gracefulShutdown       bool
 	logger                 Logger
-	env                    envConfig
+	env                    config.EnvConfig
 	healthEndpointRunner   healthEndpointRunner
 }
 
 // NewKeptn creates a new Keptn
 func NewKeptn(source string, opts ...KeptnOption) *Keptn {
-	env := newEnvConfig()
-	controlPlane, eventSender := newControlPlaneFromEnv()
+	env := config.NewEnvConfig()
+	apiSet, controlPlane, eventSender := newControlPlaneFromEnv()
 	resourceHandler := newResourceHandlerFromEnv()
 	taskRegistry := newTaskMap()
 	logger := newDefaultLogger()
@@ -158,6 +163,7 @@ func NewKeptn(source string, opts ...KeptnOption) *Keptn {
 		source:                 source,
 		taskRegistry:           taskRegistry,
 		resourceHandler:        resourceHandler,
+		api:                    apiSet,
 		automaticEventResponse: true,
 		gracefulShutdown:       true,
 		syncProcessing:         false,
@@ -328,6 +334,10 @@ func (k *Keptn) SendFinishedEvent(event KeptnEvent, result interface{}) error {
 	return k.eventSender(*finishedEvent)
 }
 
+func (k *Keptn) APIV1() api.KeptnInterface {
+	return k.api
+}
+
 func (k *Keptn) Logger() Logger {
 	return k.logger
 }
@@ -368,27 +378,37 @@ func newHealthEndpointRunner(port string, cp *controlplane.ControlPlane) {
 }
 
 func newResourceHandlerFromEnv() *api.ResourceHandler {
-	var env envConfig
+	var env config.EnvConfig
 	if err := envconfig.Process("", &env); err != nil {
 		log.Fatalf("failed to process env var: %s", err)
 	}
 	return api.NewResourceHandler(env.ConfigurationServiceURL)
 }
 
-func newControlPlaneFromEnv() (*controlplane.ControlPlane, controlplane.EventSender) {
-	var env envConfig
+func newControlPlaneFromEnv() (api.KeptnInterface, *controlplane.ControlPlane, controlplane.EventSender) {
+	var env config.EnvConfig
 	if err := envconfig.Process("", &env); err != nil {
 		log.Fatalf("failed to process env var: %s", err)
 	}
-	apiSet, err := api2.NewInternal(nil)
+
+	httpClient, err := sdk.CreateClientGetter(env).Get()
+	if err != nil {
+		logger.WithError(err).Fatal("Could not initialize http client.")
+	}
+
+	apiSet, err := sdk.CreateKeptnAPI(httpClient, env)
 	if err != nil {
 		log.Fatal(err)
 	}
-	natsConnector := nats.New(env.EventBrokerURL)
+
+	natsConnector, err := nats.Connect(env.EventBrokerURL)
+	if err != nil {
+		log.Fatal(err)
+	}
 	eventSource := eventsource.New(natsConnector)
 	eventSender := eventSource.Sender()
 	subscriptionSource := subscriptionsource.New(apiSet.UniformV1())
 	logForwarder := logforwarder.New(apiSet.LogsV1())
 	controlPlane := controlplane.New(subscriptionSource, eventSource, logForwarder)
-	return controlPlane, eventSender
+	return apiSet, controlPlane, eventSender
 }
