@@ -43,6 +43,12 @@ describe('Environment Screen default requests', () => {
 
     cy.location('pathname').should('eq', `/project/${project}/environment/stage/${stage}`);
   });
+
+  it('should add query parameter if clicking on type', () => {
+    environmentPage.visit(project).clickFilterType(stage, 'problem')
+
+    cy.location('href').should('include', `/project/${project}/environment/stage/${stage}?filterType=problem`);
+  })
 });
 
 describe('Environment Screen dynamic requests', () => {

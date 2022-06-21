@@ -58,7 +58,7 @@ export class KtbStageOverviewComponent implements AfterContentInit, OnDestroy {
       .subscribe(([stageName, filterType, project]) => {
         const stage = project!.getStage(stageName!);
         if (stage) {
-          this.selectedStageChange.emit({ stage: stage!, filterType: (filterType as ServiceFilterType) ?? undefined });
+          this.selectedStageChange.emit({ stage: stage, filterType: (filterType as ServiceFilterType) ?? undefined });
         }
       });
   }
@@ -76,17 +76,14 @@ export class KtbStageOverviewComponent implements AfterContentInit, OnDestroy {
       ],
     };
     this.globalFilter = this.apiService.environmentFilter;
-    let newFilter: string[];
-    if (project) {
+
+    const createFilter = (project: Project): string[] => {
       // services can be deleted or added; adjust filter
       const services = this.globalFilter[project.projectName]?.services || [];
-      newFilter = services.filter((service) =>
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        project!.getServices().some((pService) => pService.serviceName === service)
-      );
-    } else {
-      newFilter = [];
+      return services.filter((service) => project.getServices().some((pService) => pService.serviceName === service));
     }
+    const newFilter: string[] = project ? createFilter(project) : [];
+
     if (projectChanged || newFilter.length !== this.filteredServices.length) {
       this.filteredServices = newFilter;
       this.filteredServicesChange.emit(this.filteredServices);

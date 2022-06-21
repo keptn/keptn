@@ -54,6 +54,7 @@
               *ngIf="filterServices(stage.getServicesWithRemediations()) as problemServices"
               [routerLink]="linkToStage(project, stage)"
               [queryParams]="{ filterType: 'problem' }"
+              [attr.uitestid]="'filter-type-problem'"
               (click)="$event.stopPropagation()"
             >
               <dt-icon
@@ -70,6 +71,7 @@
               *ngIf="filterServices(stage.getServicesWithFailedEvaluation()) as failedServices"
               [routerLink]="linkToStage(project, stage)"
               [queryParams]="{ filterType: 'evaluation' }"
+              [attr.uitestid]="'filter-type-evaluation'"
               (click)="$event.stopPropagation()"
             >
               <dt-icon
@@ -86,6 +88,7 @@
               *ngIf="filterServices(stage.getServicesWithOpenApprovals()) as approvalServices"
               [routerLink]="linkToStage(project, stage)"
               [queryParams]="{ filterType: 'approval' }"
+              [attr.uitestid]="'filter-type-approval'"
               (click)="$event.stopPropagation()"
             >
               <dt-icon class="stage-state-icon" name="deploy" [class.highlight]="approvalServices.length > 0"></dt-icon>

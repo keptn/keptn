@@ -32,6 +32,16 @@ class EnvironmentPage {
     return this;
   }
 
+  public clickFilterType(stage: string, filterType: string): this {
+    cy.get('ktb-selectable-tile h2')
+      .contains(stage)
+      .parentsUntil('ktb-selectable-tile')
+      .byTestId(`filter-type-${filterType}`)
+      .click()
+
+    return this
+  }
+
   public assertEvaluationHistoryLoadingCount(service: string, count: number): this {
     this.getServiceDetailsContainer(service)
       .find('ktb-evaluation-info dt-tag-list[aria-label="evaluation-history"] dt-tag ktb-loading-spinner')
@@ -41,7 +51,7 @@ class EnvironmentPage {
 
   public assertEvaluationHistoryCount(service: string, count: number): this {
     const tags = this.getServiceDetailsContainer(service).find(
-      'ktb-evaluation-info dt-tag-list[aria-label="evaluation-history"] dt-tag'
+      'ktb-evaluation-info dt-tag-list[aria-label="evaluation-history"] dt-tag',
     );
     tags.should('have.length', count);
     if (count !== 0) {
@@ -52,7 +62,7 @@ class EnvironmentPage {
 
   public assertEvaluationInDetails(service: string, score: number | '-', status?: 'success' | 'error'): this {
     const evaluationTag = this.getServiceDetailsContainer(service).find(
-      'ktb-evaluation-info dt-tag-list[aria-label="evaluation-info"] dt-tag'
+      'ktb-evaluation-info dt-tag-list[aria-label="evaluation-info"] dt-tag',
     );
     evaluationTag.should('not.have.class', 'border').should('have.text', score);
     if (status) {
