@@ -24,21 +24,23 @@ type projectChecker interface {
 }
 
 type ImportHandler struct {
-	checker        projectChecker
-	tempStorageDir string
+	checker                    projectChecker
+	tempStorageDir             string
+	maxUncompressedPackageSize uint64
 }
 
-func GetImportHandlerFunc(storagePath string, checker projectChecker) func(
+func GetImportHandlerFunc(storagePath string, checker projectChecker, maxPackageSize uint64) func(
 	params import_operations.ImportParams, principal *models.Principal,
 ) middleware.Responder {
-	ih := getImportHandlerInstance(storagePath, checker)
+	ih := getImportHandlerInstance(storagePath, checker, maxPackageSize)
 	return ih.HandleImport
 }
 
-func getImportHandlerInstance(storagePath string, checker projectChecker) *ImportHandler {
+func getImportHandlerInstance(storagePath string, checker projectChecker, maxPackageSize uint64) *ImportHandler {
 	return &ImportHandler{
-		checker:        checker,
-		tempStorageDir: storagePath,
+		checker:                    checker,
+		tempStorageDir:             storagePath,
+		maxUncompressedPackageSize: maxPackageSize,
 	}
 }
 
@@ -98,7 +100,7 @@ func (ih *ImportHandler) HandleImport(
 		return import_operations.NewImportBadRequest().WithPayload(&error)
 	}
 
-	m, err := NewManifest(tempFileName)
+	m, err := NewPackage(tempFileName, ih.maxUncompressedPackageSize)
 
 	if err != nil {
 		logger.Errorf("Error opening import archive: %v", err)
@@ -110,35 +112,12 @@ func (ih *ImportHandler) HandleImport(
 		return import_operations.NewImportUnsupportedMediaType().WithPayload(&error)
 	}
 
-	// if err != nil {
-	// 	logger.Errorf("Error creating folder %s for zip extraction: %v", extractionDir, err)
-	// 	message := fmt.Sprintf("Error reading import archive: %s", err)
-	// 	error := models.Error{
-	// 		Code:    http.StatusBadRequest,
-	// 		Message: &message,
-	// 	}
-	// 	return import_operations.NewImportBadRequest().WithPayload(&error)
-	// }
-
 	defer func() {
 		manifestCloseErr := m.Close()
 		if manifestCloseErr != nil {
 			logger.Warnf("Error closing manifest %+v: %s", m, manifestCloseErr)
 		}
 	}()
-
-	// if err != nil {
-	// 	logger.Errorf("Error extracting zip %s: %v", , err)
-	// 	message := fmt.Sprintf("Error extracting archive: %s", err)
-	// 	error := models.Error{
-	// 		Code:    http.StatusBadRequest,
-	// 		Message: &message,
-	// 	}
-	// 	// TODO check if we want to return something != 400
-	// 	return import_operations.NewImportBadRequest().WithPayload(&error)
-	// }
-
-	// TODO validate and start mainfest import
 
 	return import_operations.NewImportOK()
 }

@@ -99,7 +99,9 @@ func configureAPI(api *operations.KeptnAPI) http.Handler {
 	// Import endpoint
 	api.ImportOperationsImportHandler = import_operations.ImportHandlerFunc(
 		_import.GetImportHandlerFunc(
-			env.ImportBasePath, _import.NewControlPlaneProjectChecker(os.Getenv(controlPlaneServiceEnvVar)),
+			env.ImportBasePath,
+			_import.NewControlPlaneProjectChecker(os.Getenv(controlPlaneServiceEnvVar)),
+			env.MaxImportUncompressedSize,
 		),
 	)
 

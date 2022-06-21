@@ -19,34 +19,74 @@ import (
 
 func TestExtractZipFileHappyPath(t *testing.T) {
 
+	sourceImportPackage := "../../test/data/import/sample-package"
+
 	tempDir, err := ioutil.TempDir("", "test-")
 	require.NoError(t, err)
 	defer os.RemoveAll(tempDir)
 
-	tempZipFile, err := ioutil.TempFile(tempDir, "test-archive")
+	tempZipFile, err := ioutil.TempFile(tempDir, "test-archive*"+defaultImportArchiveExtension)
 	require.NoError(t, err)
-	writeZip(tempZipFile, "../../test/data/import/samplemanifest")
+
+	err = writeZip(tempZipFile, sourceImportPackage)
+	require.NoError(t, err)
 
 	err = tempZipFile.Close()
 	require.NoError(t, err)
 
-	tempZipFile, err = os.Open(tempZipFile.Name())
+	p, err := NewPackage(tempZipFile.Name(), testArchiveSize20MB)
 	require.NoError(t, err)
+	require.NotNil(t, p)
 
-	zipFileStat, err := os.Stat(tempZipFile.Name())
-	require.NoError(t, err)
+	// assert that creating a package from a zipped file extracted the files in a subdir with the same name as the
+	// file minus the extension
+	expectedExtractedPath := strings.TrimSuffix(tempZipFile.Name(), defaultImportArchiveExtension)
+	assert.DirExists(t, expectedExtractedPath)
+	assertDirEqual(t, sourceImportPackage, expectedExtractedPath)
 
-	zipFileReader, err := zip.NewReader(tempZipFile, zipFileStat.Size())
-	require.NoError(t, err)
-
-	extractedPath := path.Join(tempDir, "extracted")
-	err = os.Mkdir(extractedPath, 0700)
-	require.NoError(t, err)
-
-	err = extractZipFile(zipFileReader, extractedPath)
+	// assert that closing the package cleans up the extracted files
+	err = p.Close()
 	assert.NoError(t, err)
+	assert.NoDirExists(t, expectedExtractedPath)
+}
 
-	assertDirEqual(t, "../../test/data/import/samplemanifest", extractedPath)
+func TestExtractZipFilePackageTooBig(t *testing.T) {
+
+	sourceImportPackage := "../../test/data/import/sample-package"
+
+	tempDir, err := ioutil.TempDir("", "test-")
+	require.NoError(t, err)
+	defer os.RemoveAll(tempDir)
+
+	tempZipFile, err := ioutil.TempFile(tempDir, "test-archive*"+defaultImportArchiveExtension)
+	require.NoError(t, err)
+
+	err = writeZip(tempZipFile, sourceImportPackage)
+	require.NoError(t, err)
+
+	err = tempZipFile.Close()
+	require.NoError(t, err)
+
+	p, err := NewPackage(tempZipFile.Name(), 10)
+	assert.ErrorIs(t, err, ErrorUncompressedSizeTooBig)
+	assert.Nil(t, p)
+
+	// the extraction folder is cleaned up
+	expectedExtractedPath := strings.TrimSuffix(tempZipFile.Name(), defaultImportArchiveExtension)
+	assert.NoDirExists(t, expectedExtractedPath)
+}
+
+func TestExtractNonExistentZipFile(t *testing.T) {
+
+	tempDir, err := ioutil.TempDir("", "test-")
+	require.NoError(t, err)
+	defer os.RemoveAll(tempDir)
+
+	nonExistingZipFileName := "thereisnospoon.zip"
+
+	p, err := NewPackage(path.Join(tempDir, nonExistingZipFileName), testArchiveSize20MB)
+	assert.Error(t, err)
+	assert.Nil(t, p)
 }
 
 func assertDirEqual(t *testing.T, expected string, actual string) {

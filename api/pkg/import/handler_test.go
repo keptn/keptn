@@ -15,6 +15,8 @@ import (
 	"github.com/keptn/keptn/api/restapi/operations/import_operations"
 )
 
+const testArchiveSize20MB uint64 = 20 * 1024 * 1204
+
 type testReader struct {
 	data         []byte
 	allowedLoops int
@@ -56,7 +58,7 @@ func TestErrorNonExistingProject(t *testing.T) {
 		},
 	}
 
-	sut := getImportHandlerInstance("", mockedprojectChecker)
+	sut := getImportHandlerInstance("", mockedprojectChecker, testArchiveSize20MB)
 	projectName := "this_project_doesn't_exist"
 	actualResponder := sut.HandleImport(
 		import_operations.ImportParams{
@@ -83,7 +85,7 @@ func TestErrorUnableToCheckProject(t *testing.T) {
 		},
 	}
 
-	sut := getImportHandlerInstance("", mockedprojectChecker)
+	sut := getImportHandlerInstance("", mockedprojectChecker, testArchiveSize20MB)
 	projectName := "this_project_existence_cannot_be_checked"
 	actualResponder := sut.HandleImport(
 		import_operations.ImportParams{
@@ -112,7 +114,7 @@ func TestErrorImportNoValidZip(t *testing.T) {
 		},
 	}
 
-	sut := getImportHandlerInstance("", mockedprojectChecker)
+	sut := getImportHandlerInstance("", mockedprojectChecker, testArchiveSize20MB)
 	projectName := "foobar"
 	actualResponder := sut.HandleImport(
 		import_operations.ImportParams{
@@ -149,7 +151,7 @@ func TestErrorImportBrokenReader(t *testing.T) {
 		},
 	}
 
-	sut := getImportHandlerInstance("", mockedprojectChecker)
+	sut := getImportHandlerInstance("", mockedprojectChecker, testArchiveSize20MB)
 
 	projectName := "foobarbaz"
 	actualResponder := sut.HandleImport(
