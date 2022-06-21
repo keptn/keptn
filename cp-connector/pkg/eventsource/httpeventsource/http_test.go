@@ -3,6 +3,7 @@ package httpeventsource
 import (
 	"context"
 	"fmt"
+	"github.com/benbjohnson/clock"
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/common/strutils"
@@ -11,7 +12,26 @@ import (
 	"github.com/stretchr/testify/require"
 	"sync"
 	"testing"
+	"time"
 )
+
+func TestEventSourceCanBeStoppedViaContext(t *testing.T) {
+	shippyEventAPI := &fake.ShipyardEventAPIMock{}
+	shippyEventAPI.GetOpenTriggeredEventsFunc = func(filter api.EventFilter) ([]*models.KeptnContextExtendedCE, error) {
+		return []*models.KeptnContextExtendedCE{{
+			Type: strutils.Stringp("sh.keptn.event.task.triggered"),
+		}}, nil
+	}
+	eventChan := make(chan types.EventUpdate)
+	ctx, cancel := context.WithCancel(context.TODO())
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	err := New(clock.New(), shippyEventAPI).Start(ctx, types.RegistrationData{}, eventChan, make(chan error), wg)
+	require.NoError(t, err)
+	cancel()
+	<-eventChan
+	wg.Wait()
+}
 
 func TestEventSourceCanBeStopped(t *testing.T) {
 	shippyEventAPI := &fake.ShipyardEventAPIMock{}
@@ -21,43 +41,86 @@ func TestEventSourceCanBeStopped(t *testing.T) {
 		}}, nil
 	}
 	eventChan := make(chan types.EventUpdate)
-	ctx, cancel := context.WithCancel(context.TODO())
-	err := New(shippyEventAPI).Start(ctx, types.RegistrationData{}, eventChan, make(chan error), &sync.WaitGroup{})
-	require.NoError(t, err)
-	cancel()
-	<-eventChan
 
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	es := New(clock.New(), shippyEventAPI)
+	es.Start(context.TODO(), types.RegistrationData{}, eventChan, make(chan error), wg)
+	es.Stop()
+	<-eventChan
+	wg.Wait()
 }
 
-func TestAPICallFails(t *testing.T) {
+func TestAPICallFailsAfterMaxAttempts(t *testing.T) {
 	shippyEventAPI := &fake.ShipyardEventAPIMock{}
 	shippyEventAPI.GetOpenTriggeredEventsFunc = func(filter api.EventFilter) ([]*models.KeptnContextExtendedCE, error) {
 		return nil, fmt.Errorf("error")
 	}
 
 	eventChan := make(chan types.EventUpdate)
-	eventsource := New(shippyEventAPI)
+	errChan := make(chan error)
+	eventsource := New(clock.New(), shippyEventAPI)
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
 	eventsource.maxAttempts = 2
 
-	err := eventsource.Start(context.TODO(), types.RegistrationData{}, eventChan, make(chan error), &sync.WaitGroup{})
-	eventsource.OnSubscriptionUpdate([]string{"sh.keptn.event.task.triggered"})
+	err := eventsource.Start(context.TODO(), types.RegistrationData{}, eventChan, errChan, wg)
+	eventsource.OnSubscriptionUpdate([]models.EventSubscription{{Event: "sh.keptn.event.task.triggered"}})
 	require.NoError(t, err)
-	<-eventChan
-
+	<-errChan
+	wg.Wait()
 }
 
 func TestAPIReceiveEvents(t *testing.T) {
 	shippyEventAPI := &fake.ShipyardEventAPIMock{}
 	shippyEventAPI.GetOpenTriggeredEventsFunc = func(filter api.EventFilter) ([]*models.KeptnContextExtendedCE, error) {
-		return []*models.KeptnContextExtendedCE{{
-			Type: strutils.Stringp("sh.keptn.event.task.triggered"),
-		}}, nil
+		return []*models.KeptnContextExtendedCE{
+			{
+				Type: strutils.Stringp("sh.keptn.event.task.triggered"),
+			},
+			{
+				Type: strutils.Stringp("sh.keptn.event.task2.triggered"),
+			}}, nil
 	}
-	eventsource := New(shippyEventAPI)
+	clock := clock.NewMock()
+	eventsource := New(clock, shippyEventAPI)
 	eventChan := make(chan types.EventUpdate)
 
 	err := eventsource.Start(context.TODO(), types.RegistrationData{}, eventChan, make(chan error), &sync.WaitGroup{})
-	eventsource.OnSubscriptionUpdate([]string{"sh.keptn.event.task.triggered"})
+	eventsource.OnSubscriptionUpdate([]models.EventSubscription{{ID: "id1", Event: "sh.keptn.event.task.triggered"}, {ID: "id2", Event: "sh.keptn.event.task2.triggered"}})
 	require.NoError(t, err)
+	clock.Add(time.Second)
 	<-eventChan
+	clock.Add(time.Second)
+	<-eventChan
+}
+
+func TestAPIPassEventOnlyOnce(t *testing.T) {
+	shippyEventAPI := &fake.ShipyardEventAPIMock{}
+	shippyEventAPI.GetOpenTriggeredEventsFunc = func(filter api.EventFilter) ([]*models.KeptnContextExtendedCE, error) {
+		return []*models.KeptnContextExtendedCE{
+			{
+				Type: strutils.Stringp("sh.keptn.event.task.triggered"),
+			},
+		}, nil
+	}
+	clock := clock.NewMock()
+	eventsource := New(clock, shippyEventAPI)
+	eventChan := make(chan types.EventUpdate)
+
+	err := eventsource.Start(context.TODO(), types.RegistrationData{}, eventChan, make(chan error), &sync.WaitGroup{})
+	eventsource.OnSubscriptionUpdate([]models.EventSubscription{{ID: "id1", Event: "sh.keptn.event.task.triggered"}})
+	require.NoError(t, err)
+
+	eventsReceived := 0
+	go func() {
+		for {
+			<-eventChan
+			eventsReceived++
+		}
+	}()
+	clock.Add(time.Second)
+	clock.Add(time.Second)
+	time.Sleep(time.Second)
+	require.Equal(t, 1, eventsReceived)
 }

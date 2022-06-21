@@ -126,7 +126,7 @@ func TestControlPlaneInboundEventIsForwardedToIntegration(t *testing.T) {
 			eventChan = ces
 			return nil
 		},
-		OnSubscriptionUpdateFn: func(strings []string) {},
+		OnSubscriptionUpdateFn: func(strings []models.EventSubscription) {},
 		SenderFn:               func() types.EventSender { return callBackSender },
 	}
 	fm := &LogForwarderMock{
@@ -191,7 +191,7 @@ func TestControlPlaneInboundEventIsForwardedToIntegrationWithoutLogForwarder(t *
 			eventChan = ces
 			return nil
 		},
-		OnSubscriptionUpdateFn: func(strings []string) {},
+		OnSubscriptionUpdateFn: func(strings []models.EventSubscription) {},
 		SenderFn:               func() types.EventSender { return callBackSender },
 	}
 
@@ -257,7 +257,7 @@ func TestControlPlaneIntegrationIDIsForwarded(t *testing.T) {
 			eventChan = ces
 			return nil
 		},
-		OnSubscriptionUpdateFn: func(strings []string) {},
+		OnSubscriptionUpdateFn: func(subscriptions []models.EventSubscription) {},
 		SenderFn:               func() types.EventSender { return callBackSender },
 	}
 	fm := &LogForwarderMock{
@@ -321,7 +321,7 @@ func TestControlPlaneIntegrationOnEventThrowsIgnoreableError(t *testing.T) {
 			eventChan = ces
 			return nil
 		},
-		OnSubscriptionUpdateFn: func(strings []string) {},
+		OnSubscriptionUpdateFn: func(subscriptions []models.EventSubscription) {},
 		SenderFn:               func() types.EventSender { return callBackSender },
 	}
 	fm := &LogForwarderMock{
@@ -372,7 +372,7 @@ func TestControlPlaneIntegrationOnEventThrowsFatalError(t *testing.T) {
 			eventChan = ces
 			return nil
 		},
-		OnSubscriptionUpdateFn: func(strings []string) {},
+		OnSubscriptionUpdateFn: func(subscriptions []models.EventSubscription) {},
 		SenderFn:               func() types.EventSender { return callBackSender },
 	}
 	fm := &LogForwarderMock{
@@ -430,7 +430,7 @@ func TestControlPlane_IsRegistered(t *testing.T) {
 			}()
 			return nil
 		},
-		OnSubscriptionUpdateFn: func(strings []string) {},
+		OnSubscriptionUpdateFn: func(subscriptions []models.EventSubscription) {},
 		SenderFn:               func() types.EventSender { return callBackSender },
 	}
 	fm := &LogForwarderMock{
@@ -496,7 +496,7 @@ func TestControlPlane_StoppedByReceivingErrEvent(t *testing.T) {
 			}()
 			return nil
 		},
-		OnSubscriptionUpdateFn: func(strings []string) {},
+		OnSubscriptionUpdateFn: func(subscriptions []models.EventSubscription) {},
 		SenderFn:               func() types.EventSender { return callBackSender },
 		StopFn: func() error {
 			eventSourceStopCalled = true

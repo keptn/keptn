@@ -2,13 +2,14 @@ package fake
 
 import (
 	"context"
+	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/cp-connector/pkg/types"
 	"sync"
 )
 
 type EventSourceMock struct {
 	StartFn                func(context.Context, types.RegistrationData, chan types.EventUpdate, chan error, *sync.WaitGroup) error
-	OnSubscriptionUpdateFn func([]string)
+	OnSubscriptionUpdateFn func([]models.EventSubscription)
 	SenderFn               func() types.EventSender
 	StopFn                 func() error
 }
@@ -20,9 +21,9 @@ func (e *EventSourceMock) Start(ctx context.Context, data types.RegistrationData
 	panic("implement me")
 }
 
-func (e *EventSourceMock) OnSubscriptionUpdate(strings []string) {
+func (e *EventSourceMock) OnSubscriptionUpdate(subscriptions []models.EventSubscription) {
 	if e.OnSubscriptionUpdateFn != nil {
-		e.OnSubscriptionUpdateFn(strings)
+		e.OnSubscriptionUpdateFn(subscriptions)
 		return
 	}
 	panic("implement me")

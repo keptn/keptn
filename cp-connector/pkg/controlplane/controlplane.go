@@ -111,7 +111,7 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 		case subscriptions := <-subscriptionUpdates:
 			cp.logger.Debugf("ControlPlane: Got a subscription update with %d subscriptions", len(subscriptions))
 			cp.currentSubscriptions = subscriptions
-			cp.eventSource.OnSubscriptionUpdate(subjects(subscriptions))
+			cp.eventSource.OnSubscriptionUpdate(subscriptions)
 			cp.logger.Debug("Update successful")
 		case <-ctx.Done():
 			cp.logger.Debug("Unregistering")
@@ -120,6 +120,8 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 			return nil
 		case <-errC:
 			cp.cleanup()
+			wg.Wait()
+			cp.registered = false
 			return nil
 		}
 	}
@@ -131,7 +133,7 @@ func (cp *ControlPlane) IsRegistered() bool {
 }
 
 func (cp *ControlPlane) handle(ctx context.Context, eventUpdate types.EventUpdate, integration Integration) error {
-	cp.logger.Debugf("Received an event of type: %s", eventUpdate.KeptnEvent.Type)
+	cp.logger.Debugf("Received an event of type: %s", *eventUpdate.KeptnEvent.Type)
 	for _, subscription := range cp.currentSubscriptions {
 		if subscription.Event == eventUpdate.MetaData.Subject {
 			cp.logger.Debugf("Check if event matches subscription %s", subscription.ID)

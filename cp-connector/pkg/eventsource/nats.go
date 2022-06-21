@@ -22,7 +22,7 @@ type EventSource interface {
 	Start(context.Context, types.RegistrationData, chan types.EventUpdate, chan error, *sync.WaitGroup) error
 	// OnSubscriptionUpdate can be called to tell the EventSource that
 	// the current subscriptions have been changed
-	OnSubscriptionUpdate([]string)
+	OnSubscriptionUpdate([]models.EventSubscription)
 	// Sender returns a component that gives the possiblity to send events back
 	// to the Keptn Control plane
 	Sender() types.EventSender
@@ -89,8 +89,8 @@ func (n *NATSEventSource) Start(ctx context.Context, registrationData types.Regi
 	return nil
 }
 
-func (n *NATSEventSource) OnSubscriptionUpdate(subjects []string) {
-	s := dedup(subjects)
+func (n *NATSEventSource) OnSubscriptionUpdate(subj []models.EventSubscription) {
+	s := dedup(subjects(subj))
 	n.logger.Debugf("Updating subscriptions")
 	if !isEqual(n.currentSubjects, s) {
 		n.logger.Debugf("Cleaning up %d old subscriptions", len(n.currentSubjects))
@@ -134,4 +134,12 @@ func dedup(elements []string) []string {
 		}
 	}
 	return result
+}
+
+func subjects(subscriptions []models.EventSubscription) []string {
+	var ret []string
+	for _, s := range subscriptions {
+		ret = append(ret, s.Event)
+	}
+	return ret
 }
