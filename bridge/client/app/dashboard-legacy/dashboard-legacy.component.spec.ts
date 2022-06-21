@@ -5,7 +5,7 @@ import { of } from 'rxjs';
 import { KeptnInfo } from '../_models/keptn-info';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 
-describe('DashboardComponent', () => {
+describe('DashboardLegacyComponent', () => {
   let component: DashboardLegacyComponent;
   let dataService: DataService;
 
