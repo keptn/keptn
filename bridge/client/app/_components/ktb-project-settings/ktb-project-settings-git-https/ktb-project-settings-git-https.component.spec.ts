@@ -1,9 +1,10 @@
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { IGitData, IGitHttps, IProxy } from '../../../_interfaces/git-upstream';
+import { AppUtils } from '../../../_utils/app.utils';
+import { KtbProjectSettingsModule } from '../ktb-project-settings.module';
 
 import { KtbProjectSettingsGitHttpsComponent } from './ktb-project-settings-git-https.component';
-import { IGitData, IGitHttps, IProxy } from '../../_interfaces/git-upstream';
-import { AppModule } from '../../app.module';
-import { AppUtils } from '../../_utils/app.utils';
 
 describe('KtbProjectSettingsGitHttpsComponent', () => {
   let component: KtbProjectSettingsGitHttpsComponent;
@@ -11,7 +12,7 @@ describe('KtbProjectSettingsGitHttpsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule],
+      imports: [KtbProjectSettingsModule, HttpClientTestingModule],
     }).compileComponents();
     fixture = TestBed.createComponent(KtbProjectSettingsGitHttpsComponent);
     component = fixture.componentInstance;

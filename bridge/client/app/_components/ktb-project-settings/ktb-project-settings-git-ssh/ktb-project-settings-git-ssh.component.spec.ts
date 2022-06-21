@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { KtbProjectSettingsModule } from '../ktb-project-settings.module';
 import { KtbProjectSettingsGitSshComponent } from './ktb-project-settings-git-ssh.component';
-import { AppModule } from '../../app.module';
 
 describe('KtbProjectSettingsGitSshComponent', () => {
   let component: KtbProjectSettingsGitSshComponent;
@@ -8,7 +8,7 @@ describe('KtbProjectSettingsGitSshComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule],
+      imports: [KtbProjectSettingsModule],
     }).compileComponents();
     fixture = TestBed.createComponent(KtbProjectSettingsGitSshComponent);
     component = fixture.componentInstance;

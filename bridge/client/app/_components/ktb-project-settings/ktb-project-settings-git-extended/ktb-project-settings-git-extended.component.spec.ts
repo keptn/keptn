@@ -1,14 +1,15 @@
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { DtRadioChange } from '@dynatrace/barista-components/radio';
+import { of, throwError } from 'rxjs';
+import { IGitHttps, IGitSsh } from '../../../_interfaces/git-upstream';
+import { ApiService } from '../../../_services/api.service';
+import { ApiServiceMock } from '../../../_services/api.service.mock';
+import { DataService } from '../../../_services/data.service';
+import { KtbProjectSettingsModule } from '../ktb-project-settings.module';
 
 import { GitFormType, KtbProjectSettingsGitExtendedComponent } from './ktb-project-settings-git-extended.component';
-import { AppModule } from '../../app.module';
-import { DtRadioChange } from '@dynatrace/barista-components/radio';
-import { ActivatedRoute, convertToParamMap } from '@angular/router';
-import { DataService } from '../../_services/data.service';
-import { of, throwError } from 'rxjs';
-import { IGitHttps, IGitSsh } from '../../_interfaces/git-upstream';
-import { ApiService } from '../../_services/api.service';
-import { ApiServiceMock } from '../../_services/api.service.mock';
 
 describe('KtbProjectSettingsGitExtendedComponent', () => {
   let component: KtbProjectSettingsGitExtendedComponent;
@@ -16,7 +17,7 @@ describe('KtbProjectSettingsGitExtendedComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule],
+      imports: [KtbProjectSettingsModule, HttpClientTestingModule],
       providers: [
         {
           provide: ActivatedRoute,
