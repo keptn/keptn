@@ -1,0 +1,226 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: configuration-service
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
+    {{- if .Values.resourceService.enabled }}
+    app.kubernetes.io/name: resource-service
+    {{- else }}
+    app.kubernetes.io/name: configuration-service
+    {{- end }}
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector: {{- include "keptn.common.labels.selectorLabels" . | nindent 4 }}
+    {{- if .Values.resourceService.enabled }}
+    app.kubernetes.io/name: resource-service
+    {{- else }}
+    app.kubernetes.io/name: configuration-service
+    {{- end }}
+---
+# resource-service
+{{- if .Values.resourceService.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: resource-service
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/name: resource-service
+spec:
+  selector:
+    matchLabels: {{- include "keptn.common.labels.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/name: resource-service
+  replicas: {{ .Values.resourceService.replicas }}
+  {{- include "keptn.common.update-strategy" . | nindent 2 }}
+  template:
+    metadata:
+      labels: {{- include "keptn.common.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/name: resource-service
+    spec:
+      securityContext:
+        fsGroup: {{ .Values.configurationService.fsGroup | default 1001 }}
+        {{- if ge .Capabilities.KubeVersion.Minor "21" }}
+        seccompProfile:
+          type: RuntimeDefault
+        {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.resourceService.gracePeriod | default 60 }}
+      containers:
+        - name: resource-service
+          image: {{ include "service.image" ( dict "imageRoot" .Values.resourceService.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
+          {{- $prestop := .Values.resourceService.preStopHookTime | default 20 | quote -}}
+          {{- include "keptn.prestop" $prestop | nindent 10 }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: PREFIX_PATH
+              value: "{{ .Values.prefixPath }}"
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: LOG_LEVEL
+              value: {{ .Values.logLevel | default "info" }}
+            {{- range $key, $value := .Values.resourceService.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          ports:
+            - containerPort: 8080
+          resources:
+            {{- toYaml .Values.resourceService.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /data/config
+              name: resource-volume
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: {{ .Values.configurationService.fsGroup | default 1001 }}
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            privileged: false
+          {{- if .Values.resourceService.extraVolumeMounts }}
+          volumeMounts:
+          {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.resourceService.extraVolumeMounts "context" $) | nindent 12 }}
+          {{- end }}
+        {{- with .Values.resourceService.sidecars }}
+        {{- include "keptn.common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
+        {{- end }}
+      volumes:
+        - name: resource-volume
+          emptyDir: {}
+        {{- if .Values.resourceService.extraVolumes }}
+        {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.resourceService.extraVolumes "context" $) | nindent 8 }}
+        {{- end }}
+      serviceAccountName: keptn-configuration-service
+      {{- include "keptn.nodeSelector" (dict "value" .Values.resourceService.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
+---
+{{- else }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: configuration-volume
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
+    {{- if .Values.resourceService.enabled }}
+    app.kubernetes.io/name: resource-service
+    {{- else }}
+    app.kubernetes.io/name: configuration-service
+    {{- end }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage:  {{ .Values.configurationService.storage }}
+  {{- if .Values.configurationService.storageClass }}
+  storageClassName: {{ .Values.configurationService.storageClass }}
+  {{- end }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: configuration-service
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/name: configuration-service
+spec:
+  selector:
+    matchLabels: {{- include "keptn.common.labels.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/name: configuration-service
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels: {{- include "keptn.common.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/name: configuration-service
+    spec:
+      securityContext:
+        fsGroup: {{ .Values.configurationService.fsGroup | default 1001 }}
+        {{- if ge .Capabilities.KubeVersion.Minor "21" }}
+        seccompProfile:
+          type: RuntimeDefault
+        {{- end }}
+{{- if .Values.configurationService.initContainer }}
+      initContainers:
+        - name: change-user-init
+          image: {{ .Values.configurationService.image.repository }}:{{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+            - mountPath: /data/config
+              name: configuration-volume
+          command:
+            - sh
+            - -c
+            - chown -R {{ .Values.configurationService.fsGroup | default 1001 }} /data/config
+{{- end }}
+      terminationGracePeriodSeconds: {{ .Values.configurationService.gracePeriod | default 60 }}
+      containers:
+        - name: configuration-service
+          image: {{ .Values.configurationService.image.repository }}:{{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
+          {{- $prestop := .Values.configurationService.preStopHookTime | default 20 | quote -}}
+          {{- include "keptn.prestop" $prestop | nindent 10 }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: PREFIX_PATH
+              value: "{{ .Values.prefixPath }}"
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: DATASTORE_URI
+              value: mongodb-datastore:8080
+            - name: LOG_LEVEL
+              value: {{ .Values.logLevel | default "info" }}
+            {{- range $key, $value := .Values.configurationService.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          ports:
+            - containerPort: 8080
+          resources:
+            {{- toYaml .Values.configurationService.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /data/config
+              name: configuration-volume
+            {{- if .Values.configurationService.extraVolumeMounts }}
+            {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.configurationService.extraVolumeMounts "context" $) | nindent 12 }}
+            {{- end }}
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: {{ .Values.configurationService.fsGroup | default 1001 }}
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            privileged: false
+        {{- with .Values.configurationService.sidecars }}
+        {{- include "keptn.common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
+        {{- end }}
+      volumes:
+        - name: configuration-volume
+          persistentVolumeClaim:
+            claimName: configuration-volume
+        {{- if .Values.configurationService.extraVolumes }}
+        {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.configurationService.extraVolumes "context" $) | nindent 8 }}
+        {{- end }}
+      serviceAccountName: keptn-configuration-service
+      {{- include "keptn.nodeSelector" (dict "value" .Values.configurationService.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
+{{- end }}
