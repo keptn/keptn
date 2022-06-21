@@ -18,6 +18,7 @@ func Test_GKE(t *testing.T) {
 	t.Run("Test_SelfHealing", Test_SelfHealing)
 	t.Run("Test_ResourceServiceBasic", Test_ResourceServiceBasic)
 	t.Run("Test_ManageSecrets_CreateUpdateAndDeleteSecret", Test_ManageSecrets_CreateUpdateAndDeleteSecret)
+	t.Run("Test_SequenceQueue_TriggerMultiple", Test_SequenceQueue_TriggerMultiple)
 	t.Run("Test_Webhook_Beta", Test_Webhook_Beta)
 	t.Run("Test_Webhook_Alpha", Test_Webhook_Alpha)
 	t.Run("Test_Webhook_OverlappingSubscriptions_Beta", Test_Webhook_OverlappingSubscriptions_Beta)
