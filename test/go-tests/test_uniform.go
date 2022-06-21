@@ -57,7 +57,7 @@ spec:
         app.kubernetes.io/part-of: keptn-keptn
         app.kubernetes.io/component: echo-service
         app.kubernetes.io/version: develop
-				keptn.sh/intergation-name: echo-service-integration-name
+        keptn.sh/intergation-name: echo-service-integration-name
     spec:
       containers:
         - name: echo-service
