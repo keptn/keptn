@@ -113,7 +113,7 @@ spec:
             - name: K8S_NODE_NAME
               value: 'some-node'`
 
-const echoServiceName = "echo-service"
+const echoServiceIntegrationName = "echo-service-integration-name"
 
 // Test_UniformRegistration_TestAPI directly tests the API for (un)registering Keptn integrations
 // to the Keptn control plane
@@ -353,7 +353,7 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 		_, err = KubeCtlApplyFromURL(tmpFile)
 		require.Nil(t, err)
 
-		err = keptnkubeutils.WaitForDeploymentToBeRolledOut(false, echoServiceName, GetKeptnNameSpaceFromEnv())
+		err = keptnkubeutils.WaitForDeploymentToBeRolledOut(false, echoServiceIntegrationName, GetKeptnNameSpaceFromEnv())
 		require.Nil(t, err)
 
 	}, func() {
@@ -387,7 +387,7 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods(t *test
 		_, err = KubeCtlApplyFromURL(tmpFile)
 		require.Nil(t, err)
 
-		err = keptnkubeutils.WaitForDeploymentToBeRolledOut(false, echoServiceName, GetKeptnNameSpaceFromEnv())
+		err = keptnkubeutils.WaitForDeploymentToBeRolledOut(false, echoServiceIntegrationName, GetKeptnNameSpaceFromEnv())
 		require.Nil(t, err)
 
 	}, func() {
@@ -424,7 +424,7 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane(t *t
 		_, err = KubeCtlApplyFromURL(tmpFile)
 		require.Nil(t, err)
 
-		err = keptnkubeutils.WaitForDeploymentToBeRolledOut(false, echoServiceName, GetKeptnNameSpaceFromEnv())
+		err = keptnkubeutils.WaitForDeploymentToBeRolledOut(false, echoServiceIntegrationName, GetKeptnNameSpaceFromEnv())
 		require.Nil(t, err)
 
 	}, func() {
@@ -460,20 +460,20 @@ func testUniformIntegration(t *testing.T, configureIntegrationFunc func(), clean
 
 	// wait a little bit and restart the echo-service to make sure it's not affected by a previous version that unsubscribes itself before being shut down
 	<-time.After(20 * time.Second)
-	err = RestartPod(echoServiceName)
+	err = RestartPod(echoServiceIntegrationName)
 	require.Nil(t, err)
 
 	// wait for echo integration registered
 	var fetchedEchoIntegration models.Integration
 	require.Eventually(t, func() bool {
-		fetchedEchoIntegration, err = GetIntegrationWithName(echoServiceName)
+		fetchedEchoIntegration, err = GetIntegrationWithName(echoServiceIntegrationName)
 		return err == nil
 	}, time.Second*20, time.Second*3)
 
 	// Integration exists - fine
 	require.Nil(t, err)
 	require.NotNil(t, fetchedEchoIntegration)
-	require.Equal(t, echoServiceName, fetchedEchoIntegration.Name)
+	require.Equal(t, echoServiceIntegrationName, fetchedEchoIntegration.Name)
 	require.Equal(t, "keptn", fetchedEchoIntegration.MetaData.KubernetesMetaData.DeploymentName)
 	require.Equal(t, GetKeptnNameSpaceFromEnv(), fetchedEchoIntegration.MetaData.KubernetesMetaData.Namespace)
 	require.Equal(t, "echo-service", fetchedEchoIntegration.MetaData.Location)

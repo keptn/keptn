@@ -145,6 +145,7 @@ spec:
 
 const defaultUnleashServiceVersion = "master"
 const unleashServiceEnvVar = "UNLEASH_SERVICE_VERSION"
+const unleashServiceIntegrationName = "unleash-service-integration-name"
 
 type RemediationTriggered struct {
 	keptnv2.EventData
@@ -208,7 +209,7 @@ func Test_SelfHealing(t *testing.T) {
 
 	var uniformServiceIntegration models.Integration
 	require.Eventually(t, func() bool {
-		uniformServiceIntegration, err = GetIntegrationWithName("unleash-service")
+		uniformServiceIntegration, err = GetIntegrationWithName(unleashServiceIntegrationName)
 		return err == nil
 	}, time.Second*20, time.Second*3)
 
