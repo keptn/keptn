@@ -50,7 +50,7 @@ func TestExtractZipFileHappyPath(t *testing.T) {
 	assert.NoDirExists(t, expectedExtractedPath)
 }
 
-func TestExtractZipFilePackageTooBig(t *testing.T) {
+func TestExtractErrorZipFilePackageTooBig(t *testing.T) {
 
 	sourceImportPackage := "../../test/data/import/sample-package"
 
@@ -76,7 +76,7 @@ func TestExtractZipFilePackageTooBig(t *testing.T) {
 	assert.NoDirExists(t, expectedExtractedPath)
 }
 
-func TestExtractNonExistentZipFile(t *testing.T) {
+func TestExtractErrorNonExistentZipFile(t *testing.T) {
 
 	tempDir, err := ioutil.TempDir("", "test-")
 	require.NoError(t, err)
@@ -87,6 +87,32 @@ func TestExtractNonExistentZipFile(t *testing.T) {
 	p, err := NewPackage(path.Join(tempDir, nonExistingZipFileName), testArchiveSize20MB)
 	assert.Error(t, err)
 	assert.Nil(t, p)
+}
+
+func TestExtractErrorNoManifest(t *testing.T) {
+
+	sourceImportPackage := "../../test/data/import/invalid-package"
+
+	tempDir, err := ioutil.TempDir("", "test-")
+	require.NoError(t, err)
+	defer os.RemoveAll(tempDir)
+
+	tempZipFile, err := ioutil.TempFile(tempDir, "test-archive*"+defaultImportArchiveExtension)
+	require.NoError(t, err)
+
+	err = writeZip(tempZipFile, sourceImportPackage)
+	require.NoError(t, err)
+
+	err = tempZipFile.Close()
+	require.NoError(t, err)
+
+	p, err := NewPackage(tempZipFile.Name(), testArchiveSize20MB)
+	assert.ErrorIs(t, err, os.ErrNotExist)
+	assert.Nil(t, p)
+
+	// the extraction folder is cleaned up
+	expectedExtractedPath := strings.TrimSuffix(tempZipFile.Name(), defaultImportArchiveExtension)
+	assert.NoDirExists(t, expectedExtractedPath)
 }
 
 func assertDirEqual(t *testing.T, expected string, actual string) {

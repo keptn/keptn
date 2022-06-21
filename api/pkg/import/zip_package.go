@@ -65,7 +65,7 @@ func (m *ZippedPackage) extract(zipFile string, maxSize uint64) error {
 // NewPackage creates a new ZippedPackage object ready to be used.
 // The zip file contents will be extracted in a subDirectory with the same name as the file stripped of the .zip
 // extension. During the extraction zip file uncompressed content is checked not to surpass maxSize.
-// If any error occurs, the temporary folder is cleaned up and nil, error will be returned
+// If any error occurs, the temporary folder is cleaned up and (nil, error) will be returned
 func NewPackage(zipFile string, maxSize uint64) (*ZippedPackage, error) {
 	m := new(ZippedPackage)
 	err := m.extract(zipFile, maxSize)
@@ -73,6 +73,13 @@ func NewPackage(zipFile string, maxSize uint64) (*ZippedPackage, error) {
 		m.Close()
 		return nil, fmt.Errorf("error initializing zip import package: %w", err)
 	}
+
+	if _, err = os.Stat(path.Join(m.extractedDir, "manifest.yaml")); err != nil {
+		// error checking for manifest.yaml, cleanup
+		m.Close()
+		return nil, fmt.Errorf("error checking for manifest.yaml: %w", err)
+	}
+
 	return m, nil
 }
 
