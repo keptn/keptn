@@ -1,12 +1,13 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbUniformSubscriptionsComponent } from './ktb-uniform-subscriptions.component';
-import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
 import { UniformRegistrationsMock } from '../../_services/_mockData/uniform-registrations.mock';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
+import { KtbUniformSubscriptionsModule } from './ktb-uniform-subscriptions.module';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('KtbUniformSubscriptionsComponent', () => {
   let component: KtbUniformSubscriptionsComponent;
@@ -14,7 +15,7 @@ describe('KtbUniformSubscriptionsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule, HttpClientTestingModule],
+      imports: [KtbUniformSubscriptionsModule, HttpClientTestingModule, RouterTestingModule],
       providers: [
         { provide: ApiService, useClass: ApiServiceMock },
         {

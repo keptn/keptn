@@ -64,17 +64,9 @@ import { KtbEvaluationInfoModule } from './_components/ktb-evaluation-info/ktb-e
 import { KtbEventItemModule } from './_components/ktb-event-item/ktb-event-item.module';
 import { KtbExpandableTileModule } from './_components/ktb-expandable-tile/ktb-expandable-tile.module';
 import { KtbHeatmapModule } from './_components/ktb-heatmap/ktb-heatmap.module';
-import {
-  KtbHorizontalSeparatorComponent,
-  KtbHorizontalSeparatorTitleDirective,
-} from './_components/ktb-horizontal-separator/ktb-horizontal-separator.component';
-import { KtbKeptnServicesListComponent } from './_components/ktb-keptn-services-list/ktb-keptn-services-list.component';
 import { KtbLoadingModule } from './_components/ktb-loading/ktb-loading.module';
 import { KtbMarkdownComponent } from './_components/ktb-markdown/ktb-markdown.component';
-import { KtbModifyUniformSubscriptionComponent } from './_components/ktb-modify-uniform-subscription/ktb-modify-uniform-subscription.component';
-import { KtbNoServiceInfoComponent } from './_components/ktb-no-service-info/ktb-no-service-info.component';
 import { KtbNotificationModule } from './_components/ktb-notification/ktb-notification.module';
-import { KtbPayloadViewerComponent } from './_components/ktb-payload-viewer/ktb-payload-viewer.component';
 import { KtbProjectListModule } from './_components/ktb-project-list/ktb-project-list.module';
 import { KtbProjectSettingsModule } from './_components/ktb-project-settings/ktb-project-settings.module';
 import { KtbProxyInputModule } from './_components/ktb-proxy-input/ktb-proxy-input.module';
@@ -96,18 +88,9 @@ import { KtbSshKeyInputModule } from './_components/ktb-ssh-key-input/ktb-ssh-ke
 import { KtbStageBadgeModule } from './_components/ktb-stage-badge/ktb-stage-badge.module';
 import { KtbStageDetailsComponent } from './_components/ktb-stage-details/ktb-stage-details.component';
 import { KtbStageOverviewComponent } from './_components/ktb-stage-overview/ktb-stage-overview.component';
-import { KtbSubscriptionItemComponent } from './_components/ktb-subscription-item/ktb-subscription-item.component';
 import { KtbTaskItemComponent, KtbTaskItemDetailDirective } from './_components/ktb-task-item/ktb-task-item.component';
-import {
-  KtbTreeListSelectComponent,
-  KtbTreeListSelectDirective,
-} from './_components/ktb-tree-list-select/ktb-tree-list-select.component';
 import { KtbTriggerSequenceComponent } from './_components/ktb-trigger-sequence/ktb-trigger-sequence.component';
-import { KtbUniformRegistrationLogsComponent } from './_components/ktb-uniform-registration-logs/ktb-uniform-registration-logs.component';
-import { KtbUniformSubscriptionsComponent } from './_components/ktb-uniform-subscriptions/ktb-uniform-subscriptions.component';
 import { KtbUserComponent } from './_components/ktb-user/ktb-user.component';
-import { KtbVariableSelectorComponent } from './_components/ktb-variable-selector/ktb-variable-selector.component';
-import { KtbWebhookSettingsComponent } from './_components/ktb-webhook-settings/ktb-webhook-settings.component';
 import { KtbDragAndDropModule } from './_directives/ktb-drag-and-drop/ktb-drag-and-drop.module';
 import { KtbHideHttpLoadingDirective } from './_directives/ktb-hide-http-loading/ktb-hide-http-loading.directive';
 import { KtbIntegerInputModule } from './_directives/ktb-integer-input/ktb-integer-input.module';
@@ -136,6 +119,16 @@ import { EvaluationBoardComponent } from './evaluation-board/evaluation-board.co
 import { KtbRootComponent } from './ktb-root/ktb-root.component';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { ProjectBoardComponent } from './project-board/project-board.component';
+import { KtbSubscriptionItemModule } from './_components/ktb-subscription-item/ktb-subscription-item.module';
+import { KtbUniformSubscriptionsModule } from './_components/ktb-uniform-subscriptions/ktb-uniform-subscriptions.module';
+import { KtbKeptnServicesListModule } from './_components/ktb-keptn-services-list/ktb-keptn-services-list.module';
+import { KtbUniformRegistrationLogsModule } from './_components/ktb-uniform-registration-logs/ktb-uniform-registration-logs.module';
+import { KtbPayloadViewerModule } from './_components/ktb-payload-viewer/ktb-payload-viewer.module';
+import { KtbVariableSelectorModule } from './_components/ktb-variable-selector/ktb-variable-selector.module';
+import { KtbTreeListSelectModule } from './_components/ktb-tree-list-select/ktb-tree-list-select.module';
+import { KtbWebhookSettingsModule } from './_components/ktb-webhook-settings/ktb-webhook-settings.module';
+import { KtbModifyUniformSubscriptionModule } from './_components/ktb-modify-uniform-subscription/ktb-modify-uniform-subscription.module';
+import { KtbNoServiceInfoModule } from './_components/ktb-no-service-info/ktb-no-service-info.module';
 
 registerLocaleData(localeEn, 'en');
 
@@ -218,8 +211,12 @@ const ktbModules = [
   KtbExpandableTileModule,
   KtbHeatmapModule,
   KtbIntegerInputModule,
+  KtbKeptnServicesListModule,
   KtbLoadingModule,
+  KtbModifyUniformSubscriptionModule,
+  KtbNoServiceInfoModule,
   KtbNotificationModule,
+  KtbPayloadViewerModule,
   KtbPipeModule,
   KtbProjectListModule,
   KtbProjectSettingsModule,
@@ -229,6 +226,12 @@ const ktbModules = [
   KtbSequenceStateListModule,
   KtbSshKeyInputModule,
   KtbStageBadgeModule,
+  KtbSubscriptionItemModule,
+  KtbTreeListSelectModule,
+  KtbUniformRegistrationLogsModule,
+  KtbUniformSubscriptionsModule,
+  KtbVariableSelectorModule,
+  KtbWebhookSettingsModule,
 ];
 
 @NgModule({
@@ -243,8 +246,6 @@ const ktbModules = [
     KtbServiceViewComponent,
     KtbShowHttpLoadingDirective,
     KtbHideHttpLoadingDirective,
-    KtbHorizontalSeparatorComponent,
-    KtbHorizontalSeparatorTitleDirective,
     KtbRootEventsListComponent,
     KtbSequenceTasksListComponent,
     KtbTaskItemComponent,
@@ -257,25 +258,14 @@ const ktbModules = [
     KtbStageDetailsComponent,
     KtbServicesListComponent,
     KtbUserComponent,
-    KtbKeptnServicesListComponent,
-    KtbSubscriptionItemComponent,
     KtbServiceDetailsComponent,
     KtbSettingsViewComponent,
     KtbSequenceListComponent,
-    KtbUniformRegistrationLogsComponent,
     KtbSecretsListComponent,
-    KtbNoServiceInfoComponent,
     KtbSequenceControlsComponent,
-    KtbUniformSubscriptionsComponent,
-    KtbModifyUniformSubscriptionComponent,
-    KtbWebhookSettingsComponent,
     KtbServiceSettingsComponent,
     KtbServiceSettingsOverviewComponent,
     KtbServiceSettingsListComponent,
-    KtbTreeListSelectComponent,
-    KtbTreeListSelectDirective,
-    KtbPayloadViewerComponent,
-    KtbVariableSelectorComponent,
     ArrayToStringPipe,
     KtbTriggerSequenceComponent,
     KtbRootComponent,
