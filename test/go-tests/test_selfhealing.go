@@ -17,6 +17,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: unleash-service
+  labels:
+    keptn.sh/integration-name: unleash-service-integration-name
 spec:
   selector:
     matchLabels:
@@ -29,6 +31,7 @@ spec:
         app.kubernetes.io/name: keptn
         app.kubernetes.io/component: unleash-service
         app.kubernetes.io/version: 0.3.2
+				keptn.sh/integration-name: unleash-service-integration-name
     spec:
       serviceAccountName: keptn-default
       containers:
@@ -72,16 +75,11 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.labels['app.kubernetes.io/version']
-            - name: K8S_DEPLOYMENT_NAME
+            - name: INTEGRATION_NAME
               valueFrom:
                 fieldRef:
                   apiVersion: v1
-                  fieldPath: 'metadata.labels[''app.kubernetes.io/name'']'
-            - name: K8S_DEPLOYMENT_COMPONENT
-              valueFrom:
-                fieldRef:
-                  apiVersion: v1
-                  fieldPath: 'metadata.labels[''app.kubernetes.io/component'']'
+                  fieldPath: metadata.labels['keptn.sh/integration-name']
             - name: K8S_POD_NAME
               valueFrom:
                 fieldRef:
