@@ -19,7 +19,7 @@ spec:
       terminationGracePeriodSeconds: {{ .Values.apiService.gracePeriod | default 60 }}
       containers:
         - name: api-service
-          image: {{ .Values.apiService.image.repository }}:{{ .Values.apiService.image.tag | default .Chart.AppVersion }}
+          image: {{ include "service.image" ( dict "imageRoot" .Values.apiService.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
           {{- $prestop := .Values.apiService.preStopHookTime | default 5 | quote -}}
           {{- include "keptn.prestop" $prestop | nindent 10 }}
           livenessProbe:

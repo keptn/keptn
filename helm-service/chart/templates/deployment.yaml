@@ -29,11 +29,7 @@ spec:
         - name: helm-service
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          {{- if .Values.image }}
-          image: {{ .Values.image }} # use image from .Values.image (e.g., when starting via skaffold)
-          {{- else }}
-          image: "{{ .Values.helmservice.image.repository }}:{{ .Values.helmservice.image.tag | default .Chart.AppVersion }}"
-          {{ end }}
+          image: {{ include "service.image" ( dict "imageRoot" .Values.helmservice.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
           imagePullPolicy: {{ .Values.helmservice.image.pullPolicy }}
           ports:
             - containerPort: 80
@@ -93,7 +89,7 @@ spec:
           resources:
             {{- toYaml .Values.helmservice.resources | nindent 12 }}
         - name: distributor
-          image: "{{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}"
+          image: {{ include "service.image" ( dict "imageRoot" .Values.distributor.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
           {{- include "helm-service.prestop" . | nindent 10 }}
           livenessProbe:
             httpGet:
@@ -128,7 +124,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.labels['app.kubernetes.io/version']
             - name: DISTRIBUTOR_VERSION
-              value: {{ .Values.distributor.image.tag | default .Chart.AppVersion }}
+              value: {{ include "service.tag" ( dict "imageRoot" .Values.distributor.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote}}
             - name: LOCATION
               valueFrom:
                 fieldRef:

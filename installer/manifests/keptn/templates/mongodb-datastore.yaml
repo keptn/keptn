@@ -20,7 +20,7 @@ spec:
       terminationGracePeriodSeconds: {{ .Values.mongodbDatastore.gracePeriod | default 60 }}
       containers:
         - name: mongodb-datastore
-          image: {{ .Values.mongodbDatastore.image.repository }}:{{ .Values.mongodbDatastore.image.tag | default .Chart.AppVersion }}
+          image: {{ include "service.image" ( dict "imageRoot" .Values.mongodbDatastore.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
           {{- $prestop := .Values.mongodbDatastore.preStopHookTime | default 20 | quote -}}
           {{- include "keptn.prestop" $prestop | nindent 10 }}
           livenessProbe:
