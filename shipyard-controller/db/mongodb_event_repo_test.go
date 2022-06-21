@@ -49,12 +49,10 @@ func TestMongoDBEventsRepo_InsertAndRetrieveFuture(t *testing.T) {
 	err = repo.InsertEvent(projectName, myEvent2, "")
 	require.Nil(t, err)
 
-	time.Sleep(1 * time.Second)
-
 	eventTraceResult, err := repo.GetEvents(projectName, common.EventFilter{
 		KeptnContext: common.Stringp("my-keptn-context-1"),
 		Type:         keptnv2.GetTriggeredEventType("dev.delivery"),
-		Time:         time.Now().UTC(),
+		Time:         time.Now().UTC().Add(1 * time.Second),
 	})
 
 	require.Nil(t, err)
@@ -66,7 +64,7 @@ func TestMongoDBEventsRepo_InsertAndRetrieveFuture(t *testing.T) {
 	eventTraceResult, err = repo.GetEvents(projectName, common.EventFilter{
 		KeptnContext: common.Stringp("my-keptn-context-2"),
 		Type:         keptnv2.GetTriggeredEventType("dev.delivery"),
-		Time:         time.Now().UTC(),
+		Time:         time.Now().UTC().Add(1 * time.Second),
 	})
 
 	require.NotNil(t, err)
@@ -75,7 +73,7 @@ func TestMongoDBEventsRepo_InsertAndRetrieveFuture(t *testing.T) {
 	eventTraceResult, err = repo.GetEvents(projectName, common.EventFilter{
 		KeptnContext: common.Stringp("my-keptn-context-2"),
 		Type:         keptnv2.GetTriggeredEventType("dev.delivery"),
-		Time:         time.Now().UTC().Add(10 * time.Second),
+		Time:         time.Now().UTC().Add(11 * time.Second),
 	})
 
 	require.Nil(t, err)
