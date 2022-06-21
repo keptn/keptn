@@ -502,9 +502,6 @@ func TestUniformParamsValidator_Validate(t *testing.T) {
 				ID:       "an-id",
 				Name:     "webhook-service",
 				MetaData: apimodels.MetaData{},
-				Subscription: apimodels.Subscription{
-					Topics: []string{"mytopic"},
-				},
 				Subscriptions: []apimodels.EventSubscription{
 					{
 						ID:    "",
