@@ -52,8 +52,9 @@ func TestProjectManager_CreateProject(t *testing.T) {
 	require.Equal(t, fields.git.StageAndCommitAllCalls()[0].GitContext, expectedGitContext)
 	require.Equal(t, fields.git.StageAndCommitAllCalls()[0].Message, "initialized project")
 
-	require.Len(t, fields.fileWriter.FileExistsCalls(), 1)
-	require.Equal(t, fields.fileWriter.FileExistsCalls()[0].Path, common.GetProjectConfigPath(project.ProjectName)+"/metadata.yaml")
+	require.Len(t, fields.fileWriter.FileExistsCalls(), 2)
+	require.Equal(t, fields.fileWriter.FileExistsCalls()[0].Path, common.GetProjectConfigPath(project.ProjectName))
+	require.Equal(t, fields.fileWriter.FileExistsCalls()[1].Path, common.GetProjectConfigPath(project.ProjectName)+"/metadata.yaml")
 
 	require.Len(t, fields.fileWriter.WriteFileCalls(), 1)
 	pmd := &common.ProjectMetadata{}
@@ -102,8 +103,9 @@ func TestProjectManager_CreateProject_ProjectAlreadyExists(t *testing.T) {
 
 	require.Empty(t, fields.fileWriter.WriteFileCalls())
 
-	require.Len(t, fields.fileWriter.FileExistsCalls(), 1)
-	require.Equal(t, fields.fileWriter.FileExistsCalls()[0].Path, common.GetProjectConfigPath(project.ProjectName)+"/metadata.yaml")
+	require.Len(t, fields.fileWriter.FileExistsCalls(), 2)
+	require.Equal(t, fields.fileWriter.FileExistsCalls()[0].Path, common.GetProjectConfigPath(project.ProjectName))
+	require.Equal(t, fields.fileWriter.FileExistsCalls()[1].Path, common.GetProjectConfigPath(project.ProjectName)+"/metadata.yaml")
 }
 
 func TestProjectManager_CreateProject_CannotReadCredentials(t *testing.T) {

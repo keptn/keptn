@@ -1,6 +1,6 @@
 # Keptn API Component
 
-The api component is a Keptn core component and allows the communication with Keptn. Therefore, it provides a defined interface as shown in the `./swagger.json`. Besides, it maintains a websocket server to forward Keptn messages to the Keptn CLI, used by the end-user.
+The api component is a Keptn core component and allows the communication with Keptn. Therefore, it provides a defined interface as shown in the `./swagger.yaml`. Besides, it maintains a websocket server to forward Keptn messages to the Keptn CLI, used by the end-user.
 
 ## Installation
 
