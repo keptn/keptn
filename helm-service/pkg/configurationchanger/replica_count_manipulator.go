@@ -6,7 +6,7 @@ import (
 	"io"
 
 	"github.com/ghodss/yaml"
-	"github.com/keptn/go-utils/pkg/common/kubeutils"
+	"github.com/keptn/keptn/helm-service/pkg/common"
 	"helm.sh/helm/v3/pkg/chart"
 	appsv1 "k8s.io/api/apps/v1"
 	kyaml "k8s.io/apimachinery/pkg/util/yaml"
@@ -47,7 +47,7 @@ func (u *ReplicaCountManipulator) Manipulate(ch *chart.Chart) error {
 			}
 
 			var depl appsv1.Deployment
-			if err := json.Unmarshal(doc, &depl); err == nil && kubeutils.IsDeployment(&depl) {
+			if err := json.Unmarshal(doc, &depl); err == nil && common.IsDeployment(&depl) {
 				// Deployment found
 				containsDepl = true
 				depl.Spec.Replicas = getPtr(*depl.Spec.Replicas + int32(u.replicaIncrement))

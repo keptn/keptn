@@ -438,7 +438,7 @@ func GetApiCredentials() (string, string, error) {
 
 func ScaleDownUniform(deployments []string) error {
 	for _, deployment := range deployments {
-		if err := kubeutils.ScaleDeployment(false, deployment, GetKeptnNameSpaceFromEnv(), 0); err != nil {
+		if err := ScaleDeployment(false, deployment, GetKeptnNameSpaceFromEnv(), 0); err != nil {
 			// log the error but continue
 			fmt.Println("could not scale down deployment: " + err.Error())
 		}
@@ -470,7 +470,7 @@ func ScaleDeployment(useInClusterConfig bool, deployment string, namespace strin
 
 func ScaleUpUniform(deployments []string, replicas int) error {
 	for _, deployment := range deployments {
-		if err := kubeutils.ScaleDeployment(false, deployment, GetKeptnNameSpaceFromEnv(), int32(replicas)); err != nil {
+		if err := ScaleDeployment(false, deployment, GetKeptnNameSpaceFromEnv(), int32(replicas)); err != nil {
 			// log the error but continue
 			fmt.Println("could not scale up deployment: " + err.Error())
 		}
@@ -497,7 +497,7 @@ func RestartPodsWithSelector(useInClusterConfig bool, namespace string, selector
 }
 
 func RestartPod(deploymentName string) error {
-	return kubeutils.RestartPodsWithSelector(false, GetKeptnNameSpaceFromEnv(), "app.kubernetes.io/name="+deploymentName)
+	return RestartPodsWithSelector(false, GetKeptnNameSpaceFromEnv(), "app.kubernetes.io/name="+deploymentName)
 }
 
 func CreateTmpShipyardFile(shipyardContent string) (string, error) {

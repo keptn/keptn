@@ -6,7 +6,6 @@ import (
 	"io"
 	"strings"
 
-	"github.com/keptn/go-utils/pkg/common/kubeutils"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/chartutil"
@@ -49,7 +48,7 @@ func GetRenderedDeployments(ch *chart.Chart) ([]*appsv1.Deployment, error) {
 				continue
 			}
 
-			if kubeutils.IsDeployment(&dpl) {
+			if IsDeployment(&dpl) {
 				deployments = append(deployments, &dpl)
 			}
 		}
