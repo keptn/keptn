@@ -5,7 +5,6 @@ import (
 	"net/url"
 
 	goutils "github.com/keptn/go-utils/pkg/api/utils"
-	"github.com/keptn/go-utils/pkg/common/kubeutils"
 	"helm.sh/helm/v3/pkg/chart"
 )
 
@@ -39,7 +38,7 @@ func (cs chartRetriever) Retrieve(chartOpts RetrieveChartOptions) (*chart.Chart,
 		*goutils.NewResourceScope().
 			Project(chartOpts.Project).
 			Service(chartOpts.Service).
-			Resource(kubeutils.GetHelmChartURI(chartOpts.ChartName)).
+			Resource(GetHelmChartURI(chartOpts.ChartName)).
 			Stage(chartOpts.Stage),
 		goutils.AppendQuery(option))
 

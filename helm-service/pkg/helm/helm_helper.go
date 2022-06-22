@@ -9,6 +9,7 @@ import (
 
 	utils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/common/kubeutils"
+	"github.com/keptn/keptn/helm-service/pkg/common"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	kyaml "k8s.io/apimachinery/pkg/util/yaml"
@@ -33,7 +34,7 @@ func GetServices(helmManifest string) []*corev1.Service {
 			continue
 		}
 
-		if kubeutils.IsService(&svc) {
+		if common.IsService(&svc) {
 			services = append(services, &svc)
 		}
 	}

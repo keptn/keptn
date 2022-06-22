@@ -5,7 +5,6 @@ import (
 
 	"github.com/keptn/go-utils/pkg/api/models"
 	goutils "github.com/keptn/go-utils/pkg/api/utils"
-	"github.com/keptn/go-utils/pkg/common/kubeutils"
 )
 
 //chartStorer  is able to store a helm chart
@@ -31,7 +30,7 @@ func NewChartStorer(resourceHandler *goutils.ResourceHandler) *chartStorer {
 //Store stores a chart in the configuration service
 func (cs chartStorer) Store(storeChartOpts StoreChartOptions) (string, error) {
 
-	uri := kubeutils.GetHelmChartURI(storeChartOpts.ChartName)
+	uri := GetHelmChartURI(storeChartOpts.ChartName)
 	resource := models.Resource{ResourceURI: &uri, ResourceContent: string(storeChartOpts.HelmChart)}
 
 	version, err := cs.resourceHandler.CreateServiceResources(storeChartOpts.Project, storeChartOpts.Stage, storeChartOpts.Service, []*models.Resource{&resource})

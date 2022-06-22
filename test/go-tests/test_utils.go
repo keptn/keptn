@@ -13,6 +13,8 @@ import (
 	"testing"
 	"time"
 
+	k8sretry "k8s.io/client-go/util/retry"
+
 	v12 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 
@@ -21,6 +23,7 @@ import (
 	keptn2 "github.com/keptn/go-utils/pkg/lib"
 
 	"github.com/keptn/go-utils/pkg/common/retry"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	v2 "github.com/cloudevents/sdk-go/v2"
@@ -443,11 +446,51 @@ func ScaleDownUniform(deployments []string) error {
 	return nil
 }
 
+func ScaleDeployment(useInClusterConfig bool, deployment string, namespace string, replicas int32) error {
+	clientset, err := kubeutils.GetClientset(useInClusterConfig)
+	if err != nil {
+		return err
+	}
+	deploymentsClient := clientset.AppsV1().Deployments(namespace)
+
+	retryErr := k8sretry.RetryOnConflict(k8sretry.DefaultRetry, func() error {
+		// Retrieve the latest version of Deployment before attempting update
+		// RetryOnConflict uses exponential backoff to avoid exhausting the apiserver
+		result, getErr := deploymentsClient.Get(context.TODO(), deployment, metav1.GetOptions{})
+		if getErr != nil {
+			return fmt.Errorf("Failed to get latest version of Deployment: %v", getErr)
+		}
+
+		result.Spec.Replicas = &replicas
+		_, updateErr := deploymentsClient.Update(context.TODO(), result, metav1.UpdateOptions{})
+		return updateErr
+	})
+	return retryErr
+}
+
 func ScaleUpUniform(deployments []string, replicas int) error {
 	for _, deployment := range deployments {
 		if err := kubeutils.ScaleDeployment(false, deployment, GetKeptnNameSpaceFromEnv(), int32(replicas)); err != nil {
 			// log the error but continue
 			fmt.Println("could not scale up deployment: " + err.Error())
+		}
+	}
+	return nil
+}
+
+// RestartPodsWithSelector restarts the pods which are found in the provided namespace and selector
+func RestartPodsWithSelector(useInClusterConfig bool, namespace string, selector string) error {
+	clientset, err := kubeutils.GetKubeAPI(useInClusterConfig)
+	if err != nil {
+		return err
+	}
+	pods, err := clientset.Pods(namespace).List(context.TODO(), metav1.ListOptions{LabelSelector: selector})
+	if err != nil {
+		return err
+	}
+	for _, pod := range pods.Items {
+		if err := clientset.Pods(namespace).Delete(context.TODO(), pod.Name, metav1.DeleteOptions{}); err != nil {
+			return err
 		}
 	}
 	return nil

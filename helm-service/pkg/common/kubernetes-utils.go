@@ -80,7 +80,7 @@ func GetRenderedServices(ch *chart.Chart) ([]*typesv1.Service, error) {
 				continue
 			}
 
-			if kubeutils.IsService(&svc) {
+			if IsService(&svc) {
 				services = append(services, &svc)
 			}
 		}
@@ -113,4 +113,18 @@ func renderTemplatesWithKeptnValues(ch *chart.Chart) (map[string]string, error) 
 		return nil, err
 	}
 	return renderedTemplates, nil
+}
+
+func GetHelmChartURI(chartName string) string {
+	return "helm/" + chartName + ".tgz"
+}
+
+// IsService tests whether the provided struct is a service
+func IsService(svc *typesv1.Service) bool {
+	return strings.ToLower(svc.Kind) == "service"
+}
+
+// IsDeployment tests whether the provided struct is a deployment
+func IsDeployment(dpl *appsv1.Deployment) bool {
+	return strings.ToLower(dpl.Kind) == "deployment"
 }
