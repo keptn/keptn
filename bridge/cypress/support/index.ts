@@ -29,9 +29,11 @@ beforeEach(() => {
   cy.intercept(/api\/(.)*/, (request) => {
     request.continue((response) => {
       if (response.statusCode < 200 || response.statusCode > 399) {
-        errorLogs.push([`Request to "${request.url}" failed`, `payload: ${JSON.stringify(request.body)}`]);
+        errorLogs.push([
+          `Request to "${request.method} ${request.url}" failed`,
+          `payload: ${JSON.stringify(request.body)}`,
+        ]);
       }
-      expect(response.statusCode).to.be.gte(200).and.to.be.lte(399);
     });
   });
 });

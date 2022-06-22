@@ -118,12 +118,12 @@ class UniformPage {
   }
 
   public setTaskPrefix(selection: string): this {
-    cy.byTestId(this.EDIT_SUBSCRIPTION_FIELD_TASK_ID).find('dt-select').focus().type(`{enter}${selection}{enter}`);
+    cy.byTestId(this.EDIT_SUBSCRIPTION_FIELD_TASK_ID).dtSelect(selection);
     return this;
   }
 
   public setTaskSuffix(selection: string): this {
-    cy.byTestId(this.EDIT_SUBSCRIPTION_FIELD_SUFFIX_ID).find('dt-select').focus().type(`{enter}${selection}{enter}`);
+    cy.byTestId(this.EDIT_SUBSCRIPTION_FIELD_SUFFIX_ID).dtSelect(selection);
     return this;
   }
 
