@@ -1,13 +1,14 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { KtbRootEventsListComponent } from './ktb-root-events-list.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { AppModule } from '../../app.module';
-import { ActivatedRoute } from '@angular/router';
-import { of } from 'rxjs';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { ActivatedRoute } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
+import { SequencesMock } from '../../_services/_mockData/sequences.mock';
+import { of } from 'rxjs';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
-import { SequencesMock } from '../../_services/_mockData/sequences.mock';
+import { KtbRootEventsListComponent } from './ktb-root-events-list.component';
+import { KtbRootEventsListModule } from './ktb-root-events-list.module';
 
 describe('KtbRootEventsListComponent', () => {
   let component: KtbRootEventsListComponent;
@@ -17,7 +18,7 @@ describe('KtbRootEventsListComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [],
-      imports: [AppModule, HttpClientTestingModule],
+      imports: [KtbRootEventsListModule, HttpClientTestingModule, RouterTestingModule],
       providers: [
         {
           provide: ApiService,
