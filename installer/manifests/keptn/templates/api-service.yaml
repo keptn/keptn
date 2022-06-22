@@ -58,7 +58,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
             - name: AUTOMATIC_PROVISIONING_URL
-              value: {{ .Values.features.automaticProvisioning.serviceURL | default "" | quote }}
+              value: {{ ((.Values.features).automaticProvisioning).serviceURL | default "" | quote }}
             - name: MAX_AUTH_ENABLED
               value: {{ (.Values.apiService.maxAuth).enabled | default true | quote }}
             - name: MAX_AUTH_REQUESTS_PER_SECOND
