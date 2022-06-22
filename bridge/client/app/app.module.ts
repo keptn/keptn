@@ -70,14 +70,11 @@ import { KtbNotificationModule } from './_components/ktb-notification/ktb-notifi
 import { KtbProjectListModule } from './_components/ktb-project-list/ktb-project-list.module';
 import { KtbProjectSettingsModule } from './_components/ktb-project-settings/ktb-project-settings.module';
 import { KtbProxyInputModule } from './_components/ktb-proxy-input/ktb-proxy-input.module';
-import { KtbRootEventsListComponent } from './_components/ktb-root-events-list/ktb-root-events-list.component';
-import { KtbSecretsListComponent } from './_components/ktb-secrets-list/ktb-secrets-list.component';
+import { KtbRootEventsListModule } from './_components/ktb-root-events-list/ktb-root-events-list.module';
 import { KtbSelectableTileModule } from './_components/ktb-selectable-tile/ktb-selectable-tile.module';
-import { KtbSequenceControlsComponent } from './_components/ktb-sequence-controls/ktb-sequence-controls.component';
-import { KtbSequenceListComponent } from './_components/ktb-sequence-list/ktb-sequence-list.component';
+import { KtbSequenceControlsModule } from './_components/ktb-sequence-controls/ktb-sequence-controls.module';
 import { KtbSequenceStateInfoModule } from './_components/ktb-sequence-state-info/ktb-sequence-state-info.module';
 import { KtbSequenceStateListModule } from './_components/ktb-sequence-state-list/ktb-sequence-state-list.module';
-import { KtbSequenceTasksListComponent } from './_components/ktb-sequence-tasks-list/ktb-sequence-tasks-list.component';
 import { KtbSequenceTimelineComponent } from './_components/ktb-sequence-timeline/ktb-sequence-timeline.component';
 import { KtbServiceDetailsComponent } from './_components/ktb-service-details/ktb-service-details.component';
 import { KtbServiceSettingsListComponent } from './_components/ktb-service-settings-list/ktb-service-settings-list.component';
@@ -88,7 +85,6 @@ import { KtbSshKeyInputModule } from './_components/ktb-ssh-key-input/ktb-ssh-ke
 import { KtbStageBadgeModule } from './_components/ktb-stage-badge/ktb-stage-badge.module';
 import { KtbStageDetailsComponent } from './_components/ktb-stage-details/ktb-stage-details.component';
 import { KtbStageOverviewComponent } from './_components/ktb-stage-overview/ktb-stage-overview.component';
-import { KtbTaskItemComponent, KtbTaskItemDetailDirective } from './_components/ktb-task-item/ktb-task-item.component';
 import { KtbTriggerSequenceComponent } from './_components/ktb-trigger-sequence/ktb-trigger-sequence.component';
 import { KtbUserComponent } from './_components/ktb-user/ktb-user.component';
 import { KtbDragAndDropModule } from './_directives/ktb-drag-and-drop/ktb-drag-and-drop.module';
@@ -99,7 +95,6 @@ import { PendingChangesGuard } from './_guards/pending-changes.guard';
 import { HttpDefaultInterceptor } from './_interceptors/http-default-interceptor';
 import { HttpErrorInterceptor } from './_interceptors/http-error-interceptor';
 import { HttpLoadingInterceptor } from './_interceptors/http-loading-interceptor';
-import { ArrayToStringPipe } from './_pipes/array-to-string';
 import { KtbPipeModule } from './_pipes/ktb-pipe.module';
 import { AppInitService } from './_services/app.init';
 import { EventService } from './_services/event.service';
@@ -129,6 +124,9 @@ import { KtbTreeListSelectModule } from './_components/ktb-tree-list-select/ktb-
 import { KtbWebhookSettingsModule } from './_components/ktb-webhook-settings/ktb-webhook-settings.module';
 import { KtbModifyUniformSubscriptionModule } from './_components/ktb-modify-uniform-subscription/ktb-modify-uniform-subscription.module';
 import { KtbNoServiceInfoModule } from './_components/ktb-no-service-info/ktb-no-service-info.module';
+import { KtbSequenceListModule } from './_components/ktb-sequence-list/ktb-sequence-list.module';
+import { KtbSequenceTasksListModule } from './_components/ktb-sequence-tasks-list/ktb-sequence-tasks-list.module';
+import { KtbSecretsListModule } from './_components/ktb-secrets-list/ktb-secrets-list.module';
 
 registerLocaleData(localeEn, 'en');
 
@@ -221,9 +219,14 @@ const ktbModules = [
   KtbProjectListModule,
   KtbProjectSettingsModule,
   KtbProxyInputModule,
+  KtbRootEventsListModule,
+  KtbSecretsListModule,
   KtbSelectableTileModule,
+  KtbSequenceControlsModule,
+  KtbSequenceListModule,
   KtbSequenceStateInfoModule,
   KtbSequenceStateListModule,
+  KtbSequenceTasksListModule,
   KtbSshKeyInputModule,
   KtbStageBadgeModule,
   KtbSubscriptionItemModule,
@@ -246,10 +249,6 @@ const ktbModules = [
     KtbServiceViewComponent,
     KtbShowHttpLoadingDirective,
     KtbHideHttpLoadingDirective,
-    KtbRootEventsListComponent,
-    KtbSequenceTasksListComponent,
-    KtbTaskItemComponent,
-    KtbTaskItemDetailDirective,
     KtbMarkdownComponent,
     KtbSequenceTimelineComponent,
     KtbEnvironmentViewComponent,
@@ -260,13 +259,9 @@ const ktbModules = [
     KtbUserComponent,
     KtbServiceDetailsComponent,
     KtbSettingsViewComponent,
-    KtbSequenceListComponent,
-    KtbSecretsListComponent,
-    KtbSequenceControlsComponent,
     KtbServiceSettingsComponent,
     KtbServiceSettingsOverviewComponent,
     KtbServiceSettingsListComponent,
-    ArrayToStringPipe,
     KtbTriggerSequenceComponent,
     KtbRootComponent,
     KtbLogoutViewComponent,
