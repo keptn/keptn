@@ -7,6 +7,7 @@ import (
 	"github.com/keptn/keptn/cp-connector/pkg/types"
 	"reflect"
 	"sort"
+	"sync"
 
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/cp-connector/pkg/logger"
@@ -18,7 +19,7 @@ import (
 // to get events from the Keptn Control Plane
 type EventSource interface {
 	// Start triggers the execution of the EventSource
-	Start(context.Context, types.RegistrationData, chan types.EventUpdate) error
+	Start(context.Context, types.RegistrationData, chan types.EventUpdate, *sync.WaitGroup) error
 	// OnSubscriptionUpdate can be called to tell the EventSource that
 	// the current subscriptions have been changed
 	OnSubscriptionUpdate([]string)
@@ -60,7 +61,7 @@ func WithLogger(logger logger.Logger) func(*NATSEventSource) {
 	}
 }
 
-func (n *NATSEventSource) Start(ctx context.Context, registrationData types.RegistrationData, eventChannel chan types.EventUpdate) error {
+func (n *NATSEventSource) Start(ctx context.Context, registrationData types.RegistrationData, eventChannel chan types.EventUpdate, wg *sync.WaitGroup) error {
 	n.queueGroup = registrationData.Name
 	n.eventProcessFn = func(event *nats.Msg) error {
 		keptnEvent := models.KeptnContextExtendedCE{}
@@ -73,10 +74,12 @@ func (n *NATSEventSource) Start(ctx context.Context, registrationData types.Regi
 		}
 		return nil
 	}
+
 	if err := n.connector.QueueSubscribeMultiple(n.currentSubjects, n.queueGroup, n.eventProcessFn); err != nil {
 		return fmt.Errorf("could not start NATS event source: %w", err)
 	}
 	go func() {
+		defer wg.Done()
 		<-ctx.Done()
 		if err := n.connector.UnsubscribeAll(); err != nil {
 			n.logger.Errorf("Unable to unsubscribe from NATS: %v", err)

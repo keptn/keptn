@@ -1,9 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { KtbSequenceStateInfoComponent } from './ktb-sequence-state-info.component';
-import { AppModule } from '../../app.module';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { KtbSequenceStateInfoComponent } from './ktb-sequence-state-info.component';
+import { KtbSequenceStateInfoModule } from './ktb-sequence-state-info.module';
 import { SequencesMock } from '../../_services/_mockData/sequences.mock';
 
 describe('KtbSequenceStateInfoComponent', () => {
@@ -13,7 +14,7 @@ describe('KtbSequenceStateInfoComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [],
-      imports: [AppModule, HttpClientTestingModule],
+      imports: [KtbSequenceStateInfoModule, HttpClientTestingModule, RouterTestingModule],
       providers: [
         {
           provide: ApiService,

@@ -3,18 +3,19 @@ package fake
 import (
 	"context"
 	"github.com/keptn/keptn/cp-connector/pkg/types"
+	"sync"
 )
 
 type EventSourceMock struct {
-	StartFn                func(context.Context, types.RegistrationData, chan types.EventUpdate) error
+	StartFn                func(context.Context, types.RegistrationData, chan types.EventUpdate, *sync.WaitGroup) error
 	OnSubscriptionUpdateFn func([]string)
 	SenderFn               func() types.EventSender
 	StopFn                 func() error
 }
 
-func (e *EventSourceMock) Start(ctx context.Context, data types.RegistrationData, ces chan types.EventUpdate) error {
+func (e *EventSourceMock) Start(ctx context.Context, data types.RegistrationData, ces chan types.EventUpdate, wg *sync.WaitGroup) error {
 	if e.StartFn != nil {
-		return e.StartFn(ctx, data, ces)
+		return e.StartFn(ctx, data, ces, wg)
 	}
 	panic("implement me")
 }

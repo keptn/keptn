@@ -129,7 +129,7 @@ describe('Test project resources', () => {
       .onGet(`${global.baseUrl}/mongodb-datastore/event/type/${EventTypes.DEPLOYMENT_FINISHED}`, {
         params: {
           filter: `data.project:${projectName} AND id:eventId`,
-          excludeInvalidated: 'true',
+          limit: '100',
         },
       })
       .reply(200, {
@@ -145,7 +145,6 @@ describe('Test project resources', () => {
       .onGet(`${global.baseUrl}/mongodb-datastore/event/type/${EventTypes.DEPLOYMENT_FINISHED}`, {
         params: {
           filter: `data.project:${projectName} AND data.service:carts AND data.stage:dev AND data.result:pass`,
-          excludeInvalidated: 'true',
           limit: '1',
         },
       })
@@ -180,7 +179,7 @@ describe('Test project resources', () => {
       .onGet(`${global.baseUrl}/mongodb-datastore/event/type/${EventTypes.EVALUATION_FINISHED}`, {
         params: {
           filter: `data.project:${projectName} AND id:webhookId`,
-          excludeInvalidated: 'true',
+          limit: '100',
         },
       })
       .reply(200, {
@@ -196,7 +195,6 @@ describe('Test project resources', () => {
       .onGet(`${global.baseUrl}/mongodb-datastore/event/type/${EventTypes.EVALUATION_FINISHED}`, {
         params: {
           filter: `data.project:${projectName} AND data.service:carts AND data.stage:dev AND source:${KeptnService.LIGHTHOUSE_SERVICE}`,
-          excludeInvalidated: 'true',
           limit: '1',
         },
       })

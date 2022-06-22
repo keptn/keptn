@@ -237,31 +237,32 @@ export class DataService {
     source?: KeptnService,
     resultType?: ResultTypes
   ): Promise<Trace[]> {
-    let traces: Trace[] = [];
+    const traces = [];
+    const fetchEvents = async (ids: string[]): Promise<Trace[]> => {
+      const response = await this.apiService.getTracesOfMultipleServices(
+        accessToken,
+        projectName,
+        eventType,
+        ids.join(',')
+      );
+      const events = response.data.events;
+      if (resultType || source) {
+        await this.checkAndSetEventsWithResult(accessToken, events, resultType, source);
+      }
+      return events;
+    };
 
-    for (let i = 0; i < services.length; i += this.MAX_PAGE_SIZE) {
-      const eventIds: string[] = [];
-      const maxLength = Math.min(i + this.MAX_PAGE_SIZE, services.length);
-      for (let y = i; y < maxLength; ++y) {
-        const latestServiceEvent = getServiceEvent(services[y]);
-        if (latestServiceEvent) {
-          // string concatenation is expensive; that's why we use an array here
-          eventIds.push(latestServiceEvent.eventId);
-        }
-      }
-      if (eventIds.length) {
-        const response = await this.apiService.getTracesOfMultipleServices(
-          accessToken,
-          projectName,
-          eventType,
-          eventIds.join(',')
-        );
-        if (resultType || source) {
-          await this.checkAndSetEventsWithResult(accessToken, response.data.events, resultType, source);
-        }
-        traces = [...traces, ...response.data.events];
-      }
+    const eventIds = services
+      .map((service) => getServiceEvent(service))
+      .filter((serviceEvent): serviceEvent is IServiceEvent => !!serviceEvent)
+      .map((serviceEvent) => serviceEvent.eventId);
+
+    for (let i = 0; i < eventIds.length; i += this.MAX_PAGE_SIZE) {
+      const eventIdChunk = eventIds.slice(i, i + this.MAX_PAGE_SIZE);
+      const events = await fetchEvents(eventIdChunk);
+      traces.push(...events);
     }
+
     return traces;
   }
 
@@ -298,7 +299,7 @@ export class DataService {
     latestSequence?: Sequence
   ): void {
     // remove reference. reduceToStage then does not affect other sequences
-    service.latestSequence = Sequence.fromJSON(latestSequence);
+    service.latestSequence = latestSequence ? Sequence.fromJSON(latestSequence) : undefined;
     service.latestSequence?.reduceToStage(stageName);
 
     const stage = service.latestSequence?.stages.find((seq) => seq.name === stageName);

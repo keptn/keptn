@@ -20,11 +20,11 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 	gotest.tools v2.2.0+incompatible
 	helm.sh/helm/v3 v3.7.2
-	k8s.io/api v0.22.10
-	k8s.io/apimachinery v0.22.10
-	k8s.io/cli-runtime v0.22.10
-	k8s.io/client-go v0.22.10
-	k8s.io/kubectl v0.22.10
+	k8s.io/api v0.22.11
+	k8s.io/apimachinery v0.22.11
+	k8s.io/cli-runtime v0.22.11
+	k8s.io/client-go v0.22.11
+	k8s.io/kubectl v0.22.11
 )
 
 require (
@@ -168,7 +168,7 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	k8s.io/apiextensions-apiserver v0.22.4 // indirect
 	k8s.io/apiserver v0.22.4 // indirect
-	k8s.io/component-base v0.22.10 // indirect
+	k8s.io/component-base v0.22.11 // indirect
 	k8s.io/klog/v2 v2.9.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20211109043538-20434351676c // indirect
 	k8s.io/utils v0.0.0-20211116205334-6203023598ed // indirect

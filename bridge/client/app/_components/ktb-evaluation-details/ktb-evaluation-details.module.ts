@@ -14,6 +14,7 @@ import { DtFormFieldModule } from '@dynatrace/barista-components/form-field';
 import { MatDialogModule } from '@angular/material/dialog';
 import { KtbPipeModule } from '../../_pipes/ktb-pipe.module';
 import { KtbSliBreakdownModule } from '../ktb-sli-breakdown/ktb-sli-breakdown.module';
+import { DtOverlayModule } from '@dynatrace/barista-components/overlay';
 
 @NgModule({
   declarations: [KtbEvaluationDetailsComponent],
@@ -28,6 +29,7 @@ import { KtbSliBreakdownModule } from '../ktb-sli-breakdown/ktb-sli-breakdown.mo
       svgIconLocation: `assets/icons/{{name}}.svg`,
     }),
     DtKeyValueListModule,
+    DtOverlayModule,
     FlexLayoutModule,
     KtbHeatmapModule,
     KtbPipeModule,

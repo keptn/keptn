@@ -1,0 +1,127 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shipyard-controller
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: shipyard-controller
+spec:
+  selector:
+    matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: shipyard-controller
+  {{- if or (lt .Capabilities.KubeVersion.Minor "14") (.Values.shipyardController.config.disableLeaderElection) }}
+  replicas : 1
+  {{- else }}
+  replicas: {{ .Values.shipyardController.config.replicas | default 3 }}
+  {{- end }}
+  {{- include "keptn.common.update-strategy" . | nindent 2 }}
+  template:
+    metadata:
+      labels: {{- include "common.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/component: shipyard-controller
+    spec:
+      {{- include "keptn.common.pod-security-context" . | nindent 6 }}
+      serviceAccountName: keptn-shipyard-controller
+      containers:
+        - name: shipyard-controller
+          image: {{ .Values.shipyardController.image.repository }}:{{ .Values.shipyardController.image.tag | default .Chart.AppVersion }}
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - wget -O- http://localhost:8081/operations/v1/pre-stop
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: CONFIGURATION_SERVICE
+              value: "http://configuration-service:8080"
+            - name: EVENTBROKER
+              value: http://localhost:8081/event
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: MONGODB_HOST
+              value: '{{ .Release.Name }}-{{ .Values.mongo.service.nameOverride }}:{{ .Values.mongo.service.port }}'
+            - name: MONGODB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-credentials
+                  key: mongodb-user
+            - name: MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-credentials
+                  key: mongodb-passwords
+            - name: MONGODB_DATABASE
+              value: {{ .Values.mongo.auth.database | default "keptn" }}
+            - name: MONGODB_EXTERNAL_CONNECTION_STRING
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-credentials
+                  key: external_connection_string
+                  optional: true
+            - name: KEPTN_SPEC_VERSION
+              value: {{ .Values.keptnSpecVersion }}
+            - name: TASK_STARTED_WAIT_DURATION
+              value: {{ .Values.shipyardController.config.taskStartedWaitDuration | default "10m"}}
+            - name: UNIFORM_INTEGRATION_TTL
+              value: {{ .Values.shipyardController.config.uniformIntegrationTTL | default "2m" }}
+            - name: PRE_STOP_HOOK_TIME
+              value: {{ .Values.shipyardController.preStopHookTime | default 15 | quote }}
+            - name: LOG_LEVEL
+              value: {{ .Values.logLevel | default "info" }}
+            - name: AUTOMATIC_PROVISIONING_URL
+              value: {{ (.Values.features).automaticProvisioningURL | default "" | quote }}
+            - name: DISABLE_LEADER_ELECTION
+              {{- if  lt .Capabilities.KubeVersion.Minor "14"}}
+              value: {{ true | quote }}
+              {{else }}
+              value: {{ .Values.shipyardController.config.disableLeaderElection | default false | quote }}
+              {{- end}}
+            - name: PROJECT_NAME_MAX_SIZE
+              value: {{ .Values.shipyardController.config.validation.projectNameMaxSize | default 200 | quote }}
+            - name: SERVICE_NAME_MAX_SIZE
+              value: {{ .Values.shipyardController.config.validation.serviceNameMaxSize | default 43 | quote }}
+          ports:
+            - containerPort: 8080
+          resources:
+            {{- toYaml .Values.shipyardController.resources | nindent 12 }}
+          {{- include "keptn.common.container-security-context" . | nindent 10 }}
+          {{- if .Values.shipyardController.extraVolumeMounts }}
+          volumeMounts:
+          {{- include "common.tplvalues.render" ( dict "value" .Values.shipyardController.extraVolumeMounts "context" $) | nindent 12 }}
+          {{- end }}
+        {{- with .Values.shipyardController.sidecars }}
+        {{- include "common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
+        {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.shipyardController.gracePeriod | default 60 }}
+      {{- include "keptn.nodeSelector" (dict "value" .Values.shipyardController.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
+      {{- if .Values.shipyardController.extraVolumes }}
+      volumes:
+      {{- include "common.tplvalues.render" ( dict "value" .Values.shipyardController.extraVolumes "context" $) | nindent 8 }}
+      {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shipyard-controller
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: shipyard-controller
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector: {{- include "common.labels.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: shipyard-controller

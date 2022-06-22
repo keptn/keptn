@@ -6,6 +6,7 @@ import (
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
+	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
 )
@@ -60,7 +61,7 @@ spec:
       - name: remediation
       - name: evaluation`
 
-func ShouldContainEvent(t *testing.T, events []apimodels.KeptnContextExtendedCE, eventType string, stage string, eval func(t *testing.T, event apimodels.KeptnContextExtendedCE) bool) bool {
+func ShouldContainEvent(t *testing.T, events []apimodels.KeptnContextExtendedCE, eventType string, stage string, eval func(t *testing.T, event apimodels.KeptnContextExtendedCE) bool) {
 	var foundEvent *apimodels.KeptnContextExtendedCE
 	for index, event := range events {
 		scope, _ := getEventScope(event)
@@ -75,30 +76,28 @@ func ShouldContainEvent(t *testing.T, events []apimodels.KeptnContextExtendedCE,
 		}
 	}
 
-	if foundEvent == nil {
-		t.Errorf("event list does not contain event of type " + eventType)
-		return true
-	}
+	require.NotNil(t, foundEvent)
+
 	if eval != nil {
-		return eval(t, *foundEvent)
+		require.False(t, eval(t, *foundEvent))
 	}
-	return false
 }
 
-func ShouldNotContainEvent(t *testing.T, events []apimodels.KeptnContextExtendedCE, eventType string, stage string) bool {
+func ShouldNotContainEvent(t *testing.T, events []apimodels.KeptnContextExtendedCE, eventType string, stage string) {
+	var foundEvent *apimodels.KeptnContextExtendedCE
 	for _, event := range events {
 		if *event.Type == eventType {
 			scope, _ := getEventScope(event)
 			if stage == "" {
-				t.Errorf("event list does contain event of type " + eventType)
-				return true
+				foundEvent = &event
+				break
 			} else if stage != "" && scope.Stage == stage {
-				t.Errorf("event list does contain event of type " + eventType)
-				return true
+				foundEvent = &event
+				break
 			}
 		}
 	}
-	return false
+	require.Nil(t, foundEvent)
 }
 
 func getEventScope(event apimodels.KeptnContextExtendedCE) (*keptnv2.EventData, error) {

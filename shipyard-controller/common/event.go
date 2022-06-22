@@ -1,6 +1,8 @@
 package common
 
 import (
+	"time"
+
 	"github.com/cloudevents/sdk-go/v2/event"
 )
 
@@ -33,4 +35,5 @@ type EventFilter struct {
 	TriggeredID  *string
 	Source       *string
 	KeptnContext *string
+	Time         time.Time
 }

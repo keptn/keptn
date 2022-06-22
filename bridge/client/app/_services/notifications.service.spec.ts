@@ -1,21 +1,13 @@
-import { TestBed } from '@angular/core/testing';
-import { NotificationsService } from './notifications.service';
-import { AppModule } from '../app.module';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { Notification, NotificationType } from '../_models/notification';
-import { KtbProjectCreateMessageComponent } from '../_components/_status-messages/ktb-project-create-message/ktb-project-create-message.component';
 import { firstValueFrom } from 'rxjs';
+import { KtbProjectCreateMessageComponent } from '../_components/ktb-project-settings/ktb-project-create-message/ktb-project-create-message.component';
+import { Notification, NotificationType } from '../_models/notification';
+import { NotificationsService } from './notifications.service';
 
 describe('NotificationsService', () => {
   let service: NotificationsService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({
-      declarations: [],
-      imports: [AppModule, HttpClientTestingModule],
-    });
-
-    service = TestBed.inject(NotificationsService);
+    service = new NotificationsService();
   });
 
   it('should be created', () => {

@@ -22,7 +22,7 @@ export class Service implements IService {
     let latestSequence: IServiceEvent | undefined;
     for (const key of Object.keys(this.lastEventTypes)) {
       const event = this.lastEventTypes[key];
-      if (!latestSequence || (event && event.time > latestSequence.time)) {
+      if (!latestSequence || (event && +event.time > +latestSequence.time)) {
         latestSequence = event;
       }
     }

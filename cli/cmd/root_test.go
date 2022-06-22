@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -91,7 +92,7 @@ func testInvalidInputHelper(inputCmd string, expectedOutput string, t *testing.T
 	}
 
 	got := err.Error()
-	if got != expectedOutput {
+	if strings.Compare(got, expectedOutput) != 0 {
 		t.Errorf("Expected %q, got %q", expectedOutput, got)
 	}
 }
@@ -346,6 +347,45 @@ func Test_runVersionCheck(t *testing.T) {
 			if tt.doNotWantOutput != "" && strings.Contains(out, tt.doNotWantOutput) {
 				t.Errorf("unexpected output: '%s', output should not contain '%s'", out, tt.doNotWantOutput)
 			}
+		})
+	}
+}
+
+func Test_skipVersionCheck(t *testing.T) {
+	tests := []struct {
+		name string
+		args []string
+		want bool
+	}{
+		{
+			name: "skip version check for install command",
+			args: []string{"install"},
+			want: true,
+		},
+		{
+			name: "skip version check for install command",
+			args: []string{"--option", "install"},
+			want: true,
+		},
+		{
+			name: "skip version check for auth command",
+			args: []string{"auth"},
+			want: true,
+		},
+		{
+			name: "skip version check for auth command",
+			args: []string{"--option", "auth"},
+			want: true,
+		},
+		{
+			name: "don't skip version check",
+			args: []string{"--option", "something"},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, skipVersionCheck(tt.args), "skipVersionCheck(%v)", tt.args)
 		})
 	}
 }
