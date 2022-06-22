@@ -201,7 +201,7 @@ distributor:
     tag: ""
   config:
     proxy:
-      httpTimeout: "30"
+      httpTimeout: "40"
     queueGroup:
       enabled: true
     oauth:
