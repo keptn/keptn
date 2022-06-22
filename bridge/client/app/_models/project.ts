@@ -4,12 +4,20 @@ import { DeploymentInformation, Service } from './service';
 import { Trace } from './trace';
 import { EventTypes } from '../../../shared/interfaces/event-types';
 import { Sequence } from './sequence';
-import { Project as pj } from '../../../shared/models/project';
 import { Approval } from '../_interfaces/approval';
 import { IGitDataExtended } from '../_interfaces/git-upstream';
 import { isGitInputWithHTTPS } from '../_utils/git-upstream.utils';
+import { IProject } from '../../../shared/interfaces/project';
 
-export class Project extends pj {
+export class Project implements IProject {
+  projectName = '';
+  gitUser?: string | undefined;
+  gitRemoteURI?: string | undefined;
+  shipyardVersion?: string | undefined;
+  gitProxyScheme?: 'https' | 'http' | undefined;
+  gitProxyUrl?: string | undefined;
+  gitProxyUser?: string | undefined;
+  gitProxyInsecure = false;
   private _gitUpstream?: IGitDataExtended;
   public allSequencesLoaded = false;
   public projectDetailsLoaded = false; // true if project was fetched via project endpoint of bridge server

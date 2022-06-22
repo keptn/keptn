@@ -1,13 +1,13 @@
 import NewProjectCreatePage from '../support/pageobjects/NewProjectCreatePage';
-import { Project } from '../../shared/models/project';
 import BasePage from '../support/pageobjects/BasePage';
 import { interceptFailedMetadata } from '../support/intercept';
+import { IProject } from '../../shared/interfaces/project';
 
 describe('Git upstream extended settings project https test', () => {
   const projectSettingsPage = new NewProjectCreatePage();
 
   it('should not show https or ssh form if resource service is disabled', () => {
-    const project: Project = {
+    const project: IProject = {
       projectName: 'sockshop',
       stages: [],
       gitUser: 'myGitUser',
@@ -29,7 +29,7 @@ describe('Git upstream extended settings project https test', () => {
   });
 
   it('should show "Git upstream repository" headline only once', () => {
-    const project: Project = {
+    const project: IProject = {
       projectName: 'sockshop',
       stages: [],
       gitUser: 'myGitUser',
@@ -47,7 +47,7 @@ describe('Git upstream extended settings project https test', () => {
   });
 
   it('should select HTTPS and fill out inputs', () => {
-    const project: Project = {
+    const project: IProject = {
       projectName: 'sockshop',
       stages: [],
       gitUser: 'myGitUser',
@@ -78,7 +78,7 @@ describe('Git upstream extended settings project https test', () => {
 
   it('should submit https form and show notification', () => {
     const basePage = new BasePage();
-    const project: Project = {
+    const project: IProject = {
       projectName: 'sockshop',
       stages: [],
       gitUser: 'myGitUser',
@@ -95,7 +95,7 @@ describe('Git upstream extended settings project https test', () => {
 
   it('should submit ssh form and show notification', () => {
     const basePage = new BasePage();
-    const project: Project = {
+    const project: IProject = {
       projectName: 'sockshop',
       stages: [],
       gitProxyInsecure: false,
@@ -111,7 +111,7 @@ describe('Git upstream extended settings project https test', () => {
   });
 
   it('should select SSH', () => {
-    const project: Project = {
+    const project: IProject = {
       projectName: 'sockshop',
       stages: [],
       gitProxyInsecure: false,
@@ -140,7 +140,7 @@ describe('Automatic provisioning enabled test', () => {
   });
 
   it('should select no upstream radio button as default when no upstream was configured for a project', () => {
-    const project: Project = {
+    const project: IProject = {
       projectName: 'sockshop',
       stages: [],
       gitUser: '',
@@ -161,7 +161,7 @@ describe('Automatic provisioning enabled test', () => {
   });
 
   it('should select https radio button as default if filled in and disable no upstream radio button', () => {
-    const project: Project = {
+    const project: IProject = {
       projectName: 'sockshop',
       stages: [],
       gitUser: 'myGitUser',
@@ -188,7 +188,7 @@ describe('Automatic provisioning enabled test', () => {
   });
 
   it('should select ssh radio button as default if filled in and disable no upstream radio button', () => {
-    const project: Project = {
+    const project: IProject = {
       projectName: 'sockshop',
       stages: [],
       gitProxyInsecure: false,
@@ -216,7 +216,7 @@ describe('Automatic provisioning enabled test', () => {
 describe('Project settings with invalid metadata', () => {
   const projectSettingsPage = new NewProjectCreatePage();
   it('should show error if metadata endpoint does not return data', () => {
-    const project: Project = {
+    const project: IProject = {
       projectName: 'sockshop',
       stages: [],
       gitProxyInsecure: false,
