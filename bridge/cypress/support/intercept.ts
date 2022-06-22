@@ -269,7 +269,7 @@ export function interceptIntegrations(): void {
   });
   cy.intercept('/api/uniform/registration/webhook-service/config', { body: true });
   cy.intercept('/api/project/sockshop/tasks', { fixture: 'tasks.mock' });
-  cy.intercept('/api/secrets/scope/keptn-webhook-service', { fixture: 'secrets.mock' });
+  cy.intercept('/api/secrets/scope/keptn-webhook-service', { fixture: 'secrets.mock' }).as('webhook-secrets');
   cy.intercept('/api/intersectEvents', { fixture: 'intersected-event.mock' });
   cy.intercept(
     'DELETE',

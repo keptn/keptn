@@ -32,8 +32,11 @@ class UniformPage {
     return this;
   }
 
-  public visitAdd(integrationID: string): this {
+  public visitAdd(integrationID: string, isWebhook = false): this {
     cy.visit(`/project/sockshop/settings/uniform/integrations/${integrationID}/subscriptions/add`).wait('@metadata');
+    if (isWebhook) {
+      cy.wait('@webhook-secrets');
+    }
     return this;
   }
 
