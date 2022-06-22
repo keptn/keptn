@@ -168,3 +168,47 @@ func (o *ImportUnsupportedMediaType) WriteResponse(rw http.ResponseWriter, produ
 		}
 	}
 }
+
+// ImportFailedDependencyCode is the HTTP code returned for type ImportFailedDependency
+const ImportFailedDependencyCode int = 424
+
+/*ImportFailedDependency Failed Dependency
+
+swagger:response importFailedDependency
+*/
+type ImportFailedDependency struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewImportFailedDependency creates ImportFailedDependency with default headers values
+func NewImportFailedDependency() *ImportFailedDependency {
+
+	return &ImportFailedDependency{}
+}
+
+// WithPayload adds the payload to the import failed dependency response
+func (o *ImportFailedDependency) WithPayload(payload *models.Error) *ImportFailedDependency {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the import failed dependency response
+func (o *ImportFailedDependency) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *ImportFailedDependency) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(424)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}

@@ -79,6 +79,7 @@ func init() {
     },
     "/import": {
       "post": {
+        "description": "This API is still in alpha state and we do not recommend its usage outside of testing purposes",
         "consumes": [
           "multipart/form-data"
         ],
@@ -88,7 +89,7 @@ func init() {
         "tags": [
           "Import"
         ],
-        "summary": "Imports configuration ZIP package",
+        "summary": "Alpha: Import a zip package",
         "operationId": "import",
         "parameters": [
           {
@@ -124,6 +125,12 @@ func init() {
           },
           "415": {
             "description": "Unsupported media type",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "424": {
+            "description": "Failed Dependency",
             "schema": {
               "$ref": "#/definitions/error"
             }
@@ -332,6 +339,7 @@ func init() {
     },
     "/import": {
       "post": {
+        "description": "This API is still in alpha state and we do not recommend its usage outside of testing purposes",
         "consumes": [
           "multipart/form-data"
         ],
@@ -341,7 +349,7 @@ func init() {
         "tags": [
           "Import"
         ],
-        "summary": "Imports configuration ZIP package",
+        "summary": "Alpha: Import a zip package",
         "operationId": "import",
         "parameters": [
           {
@@ -377,6 +385,12 @@ func init() {
           },
           "415": {
             "description": "Unsupported media type",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "424": {
+            "description": "Failed Dependency",
             "schema": {
               "$ref": "#/definitions/error"
             }

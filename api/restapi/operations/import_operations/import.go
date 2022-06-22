@@ -33,7 +33,9 @@ func NewImport(ctx *middleware.Context, handler ImportHandler) *Import {
 
 /* Import swagger:route POST /import Import import
 
-Imports configuration ZIP package
+Alpha: Import a zip package
+
+This API is still in alpha state and we do not recommend its usage outside of testing purposes
 
 */
 type Import struct {

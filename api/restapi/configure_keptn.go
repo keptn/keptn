@@ -19,9 +19,9 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 
 	"github.com/keptn/keptn/api/handlers"
+	"github.com/keptn/keptn/api/importer"
 	custommiddleware "github.com/keptn/keptn/api/middleware"
 	"github.com/keptn/keptn/api/models"
-	"github.com/keptn/keptn/api/pkg/import"
 	"github.com/keptn/keptn/api/restapi/operations"
 	"github.com/keptn/keptn/api/restapi/operations/auth"
 	"github.com/keptn/keptn/api/restapi/operations/event"
@@ -62,7 +62,7 @@ func configureAPI(api *operations.KeptnAPI) http.Handler {
 		os.Exit(1)
 	}
 
-	/// configure the api here
+	// / configure the api here
 	api.ServeError = errors.ServeError
 
 	// Set your custom logger if needed. Default one is log.Printf
@@ -84,29 +84,33 @@ func configureAPI(api *operations.KeptnAPI) http.Handler {
 	//
 	// Example:
 	// api.APIAuthorizer = security.Authorized()
-	api.AuthAuthHandler = auth.AuthHandlerFunc(func(params auth.AuthParams, principal *models.Principal) middleware.Responder {
-		return auth.NewAuthOK()
-	})
+	api.AuthAuthHandler = auth.AuthHandlerFunc(
+		func(params auth.AuthParams, principal *models.Principal) middleware.Responder {
+			return auth.NewAuthOK()
+		},
+	)
 
 	api.EventPostEventHandler = event.PostEventHandlerFunc(handlers.PostEventHandlerFunc)
-	//api.EventGetEventHandler = event.GetEventHandlerFunc(handlers.GetEventHandlerFunc)
+	// api.EventGetEventHandler = event.GetEventHandlerFunc(handlers.GetEventHandlerFunc)
 
 	// Metadata endpoint
 	api.MetadataMetadataHandler = metadata.MetadataHandlerFunc(handlers.GetMetadataHandlerFunc)
 
-	//api.EvaluationTriggerEvaluationHandler = evaluation.TriggerEvaluationHandlerFunc(handlers.TriggerEvaluationHandlerFunc)
+	// api.EvaluationTriggerEvaluationHandler = evaluation.TriggerEvaluationHandlerFunc(handlers.TriggerEvaluationHandlerFunc)
 
 	// Import endpoint
 	api.ImportOperationsImportHandler = import_operations.ImportHandlerFunc(
-		_import.GetImportHandlerFunc(
+		handlers.GetImportHandlerFunc(
 			env.ImportBasePath,
-			_import.NewControlPlaneProjectChecker(os.Getenv(controlPlaneServiceEnvVar)),
+			importer.NewControlPlaneProjectChecker(os.Getenv(controlPlaneServiceEnvVar)),
 			env.MaxImportUncompressedSize,
 		),
 	)
 
 	if env.MaxAuthEnabled {
-		rateLimiter := custommiddleware.NewRateLimiter(env.MaxAuthRequestsPerSecond, env.MaxAuthRequestBurst, tokenValidator, clock.New())
+		rateLimiter := custommiddleware.NewRateLimiter(
+			env.MaxAuthRequestsPerSecond, env.MaxAuthRequestBurst, tokenValidator, clock.New(),
+		)
 		api.AddMiddlewareFor(http.MethodPost, "/auth", rateLimiter.Handle)
 	}
 
@@ -152,8 +156,10 @@ func setupGlobalMiddleware(handler http.Handler) http.Handler {
 		// Set the prefix-path in the swagger.yaml
 		input, err := ioutil.ReadFile("swagger-ui/swagger.yaml")
 		if err == nil {
-			editedSwagger := strings.Replace(string(input), "basePath: /api/v1",
-				"basePath: "+prefixPath+"/api/v1", -1)
+			editedSwagger := strings.Replace(
+				string(input), "basePath: /api/v1",
+				"basePath: "+prefixPath+"/api/v1", -1,
+			)
 			err = ioutil.WriteFile("swagger-ui/swagger.yaml", []byte(editedSwagger), 0644)
 			if err != nil {
 				fmt.Println("Failed to write edited swagger.yaml")
@@ -165,8 +171,10 @@ func setupGlobalMiddleware(handler http.Handler) http.Handler {
 		// Set the prefix-path in the index.html
 		input, err = ioutil.ReadFile("swagger-ui/index.html")
 		if err == nil {
-			editedSwagger := strings.Replace(string(input), "const prefixPath = \"\"",
-				"const prefixPath = \""+prefixPath+"\"", -1)
+			editedSwagger := strings.Replace(
+				string(input), "const prefixPath = \"\"",
+				"const prefixPath = \""+prefixPath+"\"", -1,
+			)
 			err = ioutil.WriteFile("swagger-ui/index.html", []byte(editedSwagger), 0644)
 			if err != nil {
 				fmt.Println("Failed to write edited index.html")
@@ -176,15 +184,17 @@ func setupGlobalMiddleware(handler http.Handler) http.Handler {
 		}
 	}
 
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.Index(r.URL.Path, "/swagger-ui/") == 0 {
-			http.StripPrefix("/swagger-ui/", http.FileServer(http.Dir("swagger-ui"))).ServeHTTP(w, r)
-			return
-		}
-		if strings.Index(r.URL.Path, "/health") == 0 {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-		handler.ServeHTTP(w, r)
-	})
+	return http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			if strings.Index(r.URL.Path, "/swagger-ui/") == 0 {
+				http.StripPrefix("/swagger-ui/", http.FileServer(http.Dir("swagger-ui"))).ServeHTTP(w, r)
+				return
+			}
+			if strings.Index(r.URL.Path, "/health") == 0 {
+				w.WriteHeader(http.StatusOK)
+				return
+			}
+			handler.ServeHTTP(w, r)
+		},
+	)
 }

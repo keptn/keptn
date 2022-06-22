@@ -64,7 +64,8 @@ paths:
       tags:
         - Import
       operationId: import
-      summary: "WIP/DO NOT USE: Import a zip package"
+      summary: "Alpha: Import a zip package"
+      description: "This API is still in alpha state and we do not recommend its usage outside of testing purposes"
       parameters:         
         - in: formData
           name: configPackage
@@ -93,6 +94,10 @@ paths:
             $ref: "#/definitions/error"
         '415':
           description: Unsupported media type
+          schema:
+            $ref: "#/definitions/error"
+        '424':
+          description: Failed Dependency
           schema:
             $ref: "#/definitions/error"
 

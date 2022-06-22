@@ -1,4 +1,4 @@
-package _import
+package handlers
 
 import (
 	"errors"
@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/keptn/keptn/api/importer/fake"
 	"github.com/keptn/keptn/api/models"
-	"github.com/keptn/keptn/api/pkg/import/fake"
 	"github.com/keptn/keptn/api/restapi/operations/import_operations"
 )
 

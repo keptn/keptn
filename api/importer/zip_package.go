@@ -1,4 +1,4 @@
-package _import
+package importer
 
 import (
 	"archive/zip"
@@ -47,7 +47,7 @@ func (m *ZippedPackage) extract(zipFile string, maxSize uint64) error {
 		return fmt.Errorf("invalid zip archive: %w", err)
 	}
 
-	extractionDir := strings.TrimSuffix(srcFile.Name(), defaultImportArchiveExtension)
+	extractionDir := strings.TrimSuffix(srcFile.Name(), path.Ext(srcFile.Name()))
 	err = os.Mkdir(extractionDir, os.ModeDir|os.ModePerm)
 	if err != nil {
 		return fmt.Errorf("error creating temporary extraction directory %s: %w", extractionDir, err)

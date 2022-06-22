@@ -1,4 +1,4 @@
-package _import
+package handlers
 
 import (
 	"fmt"
@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 
+	"github.com/keptn/keptn/api/importer"
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/import_operations"
 
@@ -104,7 +105,7 @@ func (ih *ImportHandler) HandleImport(
 		return import_operations.NewImportBadRequest().WithPayload(&error)
 	}
 
-	m, err := NewPackage(file.Name(), ih.maxUncompressedPackageSize)
+	m, err := importer.NewPackage(file.Name(), ih.maxUncompressedPackageSize)
 
 	if err != nil {
 		logger.Errorf("Error opening import archive: %v", err)

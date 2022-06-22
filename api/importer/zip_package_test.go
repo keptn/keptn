@@ -1,4 +1,4 @@
-package _import
+package importer
 
 import (
 	"archive/zip"
@@ -17,9 +17,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const defaultImportArchiveExtension = ".zip"
+const testArchiveSize20MB uint64 = 20 * 1024 * 1024
+
 func TestExtractZipFileHappyPath(t *testing.T) {
 
-	sourceImportPackage := "../../test/data/import/sample-package"
+	sourceImportPackage := "../test/data/import/sample-package"
 
 	tempDir, err := ioutil.TempDir("", "test-")
 	require.NoError(t, err)
@@ -52,7 +55,7 @@ func TestExtractZipFileHappyPath(t *testing.T) {
 
 func TestExtractErrorZipFilePackageTooBig(t *testing.T) {
 
-	sourceImportPackage := "../../test/data/import/sample-package"
+	sourceImportPackage := "../test/data/import/sample-package"
 
 	tempDir, err := ioutil.TempDir("", "test-")
 	require.NoError(t, err)
@@ -105,7 +108,7 @@ func TestErrorInvalidZipFile(t *testing.T) {
 
 func TestExtractErrorNoManifest(t *testing.T) {
 
-	sourceImportPackage := "../../test/data/import/invalid-package"
+	sourceImportPackage := "../test/data/import/invalid-package"
 
 	tempDir, err := ioutil.TempDir("", "test-")
 	require.NoError(t, err)
