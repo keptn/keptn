@@ -37,6 +37,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const IngressConfigName = "ingress-config"
+
 type generateSupportArchiveCmdParams struct {
 	generateCmdParams
 }
@@ -226,7 +228,7 @@ keptn generate support-archive --dir=/some/directory`,
 }
 
 func isConfiguredIngressGatewayAvailable(keptnNamespace string) *errorableBoolResult {
-	res, err := keptn2.ExecuteCommand("kubectl", []string{"get", "cm", "-n", keptnNamespace, "ingress-config", "-o", "jsonpath='{.data.ingress_gateway}'"})
+	res, err := keptn2.ExecuteCommand("kubectl", []string{"get", "cm", "-n", keptnNamespace, IngressConfigName, "-o", "jsonpath='{.data.ingress_gateway}'"})
 	if err != nil {
 		return newErrorableBoolResult(false, err)
 	}
@@ -407,12 +409,12 @@ func getKubectlVersion() *errorableStringResult {
 
 func getIngressHostnameSuffix(keptnNamespace string) *errorableStringResult {
 	fmt.Println("Retrieving Keptn domain")
-	return newErrorableStringResult(keptn2.ExecuteCommand("kubectl", []string{"get", "cm", "ingress-config", "-n",
+	return newErrorableStringResult(keptn2.ExecuteCommand("kubectl", []string{"get", "cm", IngressConfigName, "-n",
 		keptnNamespace, "-o", "jsonpath='{.data.ingress_hostname_suffix}'"}))
 }
 
 func getIngressPort(keptnNamespace string) *errorableStringResult {
-	res, err := keptn2.ExecuteCommand("kubectl", []string{"get", "cm", "ingress-config", "-n",
+	res, err := keptn2.ExecuteCommand("kubectl", []string{"get", "cm", IngressConfigName, "-n",
 		keptnNamespace, "-o", "jsonpath='{.data.ingress_port}'"})
 	if err != nil {
 		return newErrorableStringResult("", err)
@@ -424,7 +426,7 @@ func getIngressPort(keptnNamespace string) *errorableStringResult {
 }
 
 func getIngressProtocol(keptnNamespace string) *errorableStringResult {
-	res, err := keptn2.ExecuteCommand("kubectl", []string{"get", "cm", "ingress-config", "-n",
+	res, err := keptn2.ExecuteCommand("kubectl", []string{"get", "cm", IngressConfigName, "-n",
 		keptnNamespace, "-o", "jsonpath='{.data.ingress_protocol}'"})
 	if err != nil {
 		return newErrorableStringResult("", err)
@@ -436,7 +438,7 @@ func getIngressProtocol(keptnNamespace string) *errorableStringResult {
 }
 
 func getIngressGateway(keptnNamespace string) *errorableStringResult {
-	res, err := keptn2.ExecuteCommand("kubectl", []string{"get", "cm", "ingress-config", "-n",
+	res, err := keptn2.ExecuteCommand("kubectl", []string{"get", "cm", IngressConfigName, "-n",
 		keptnNamespace, "-o", "jsonpath='{.data.ingress_gateway}'"})
 	if err != nil {
 		return newErrorableStringResult("", err)

@@ -23,7 +23,7 @@ func NewChartPackager() *chartPackager {
 func (pc chartPackager) Package(ch *chart.Chart) ([]byte, error) {
 	helmPackage, err := ioutil.TempDir("", "")
 	if err != nil {
-		return nil, fmt.Errorf("Error when packaging chart: %s", err.Error())
+		return nil, fmt.Errorf(ErrPackageChartMsg, err.Error())
 	}
 	defer os.RemoveAll(helmPackage)
 
@@ -41,12 +41,12 @@ func (pc chartPackager) Package(ch *chart.Chart) ([]byte, error) {
 
 	name, err := chartutil.Save(ch, helmPackage)
 	if err != nil {
-		return nil, fmt.Errorf("Error when packaging chart: %s", err.Error())
+		return nil, fmt.Errorf(ErrPackageChartMsg, err.Error())
 	}
 
 	data, err := ioutil.ReadFile(name)
 	if err != nil {
-		return nil, fmt.Errorf("Error when packaging chart: %s", err.Error())
+		return nil, fmt.Errorf(ErrPackageChartMsg, err.Error())
 	}
 	return data, nil
 }
