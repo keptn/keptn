@@ -1,7 +1,6 @@
 package _import
 
 import (
-	"bytes"
 	"errors"
 	"io"
 	"net/http"
@@ -72,6 +71,7 @@ func TestErrorNonExistingProject(t *testing.T) {
 	require.IsType(t, &import_operations.ImportNotFound{}, actualResponder)
 	actualPayload := actualResponder.(*import_operations.ImportNotFound).Payload
 	assert.NotEmpty(t, actualPayload.Message)
+	assert.Equal(t, int64(http.StatusNotFound), actualPayload.Code)
 	assert.Equal(t, projectName, actualCheckedProject)
 }
 
@@ -100,36 +100,6 @@ func TestErrorUnableToCheckProject(t *testing.T) {
 	actualPayload := actualResponder.(*import_operations.ImportNotFound).Payload
 	assert.NotEmpty(t, actualPayload.Message)
 	assert.Contains(t, *actualPayload.Message, prjCheckerErrDesc)
-	assert.Equal(t, projectName, actualCheckedProject)
-}
-
-func TestErrorImportNoValidZip(t *testing.T) {
-	contentReader := io.NopCloser(bytes.NewReader([]byte("this is clearly not a zip file")))
-
-	var actualCheckedProject string
-	mockedprojectChecker := &fake.ProjectCheckerMock{
-		ProjectExistsFunc: func(projectName string) (bool, error) {
-			actualCheckedProject = projectName
-			return true, nil
-		},
-	}
-
-	sut := getImportHandlerInstance("", mockedprojectChecker, testArchiveSize20MB)
-	projectName := "foobar"
-	actualResponder := sut.HandleImport(
-		import_operations.ImportParams{
-			HTTPRequest:   nil,
-			ConfigPackage: contentReader,
-			Project:       projectName,
-		},
-		new(models.Principal),
-	)
-
-	require.IsType(t, &import_operations.ImportUnsupportedMediaType{}, actualResponder)
-	actualPayload := actualResponder.(*import_operations.ImportUnsupportedMediaType).Payload
-	require.NotNil(t, actualPayload)
-	assert.Equal(t, int64(http.StatusUnsupportedMediaType), actualPayload.Code)
-	assert.NotEmpty(t, actualPayload.Message)
 	assert.Equal(t, projectName, actualCheckedProject)
 }
 

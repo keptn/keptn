@@ -47,9 +47,9 @@ func getImportHandlerInstance(storagePath string, checker projectChecker, maxPac
 	}
 }
 
-// HandleImport is the method invoken when a POST request is received on the import endpoint.
-// This method will check that the project passed as parameter alredy exists in Keptn (
-// return a 404 immediately it that is not the case),
+// HandleImport is the method invoked when a POST request is received on the import endpoint.
+// This method will check that the project passed as parameter already exists in Keptn (
+// return a 404 immediately if that is not the case),
 // save the import package on the scratch storage and parse its contents.
 func (ih *ImportHandler) HandleImport(
 	params import_operations.ImportParams, principal *models.Principal,
@@ -71,31 +71,28 @@ func (ih *ImportHandler) HandleImport(
 		return import_operations.NewImportNotFound().WithPayload(&error)
 	}
 
-	tempFileName, err := func() (string, error) {
-		file, err := ioutil.TempFile(ih.tempStorageDir, "importConfig*"+defaultImportArchiveExtension)
-		if err != nil {
-			return "", err
+	file, err := ioutil.TempFile(ih.tempStorageDir, "importConfig*"+defaultImportArchiveExtension)
+	if err != nil {
+		logger.Errorf("Error saving import archive: %v", err)
+		message := fmt.Sprintf("Error saving import archive: %s", err)
+		error := models.Error{
+			Code:    http.StatusBadRequest,
+			Message: &message,
+		}
+		return import_operations.NewImportBadRequest().WithPayload(&error)
+	}
+
+	defer func() {
+		if errDefer := file.Close(); errDefer != nil {
+			logger.Warnf("Error closing temporary import archive %s: %v", file.Name(), errDefer)
 		}
 
-		defer func() {
-			errDefer := file.Close()
-			if errDefer != nil {
-				logger.Warnf("Error closing temporary import archive %s: %v", file.Name(), errDefer)
-			}
-		}()
-
-		_, err = io.Copy(file, params.ConfigPackage)
-		return file.Name(), err
+		if errDefer := os.Remove(file.Name()); errDefer != nil {
+			logger.Errorf("Error deleting temporary import archive %s: %v", file.Name(), errDefer)
+		}
 	}()
 
-	if tempFileName != "" {
-		defer func() {
-			errDefer := os.Remove(tempFileName)
-			if errDefer != nil {
-				logger.Errorf("Error deleting temporary import archive %s: %v", tempFileName, errDefer)
-			}
-		}()
-	}
+	_, err = io.Copy(file, params.ConfigPackage)
 
 	if err != nil {
 		logger.Errorf("Error saving import archive: %v", err)
@@ -107,7 +104,7 @@ func (ih *ImportHandler) HandleImport(
 		return import_operations.NewImportBadRequest().WithPayload(&error)
 	}
 
-	m, err := NewPackage(tempFileName, ih.maxUncompressedPackageSize)
+	m, err := NewPackage(file.Name(), ih.maxUncompressedPackageSize)
 
 	if err != nil {
 		logger.Errorf("Error opening import archive: %v", err)

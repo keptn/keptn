@@ -57,12 +57,6 @@ func (m *ZippedPackage) extract(zipFile string, maxSize uint64) error {
 	return extractZipArchive(zipReader, extractionDir, maxSize)
 }
 
-// This function could be part of the manifest interface to abstract the physical location of the files
-// func (m *ZippedPackage) GetResource(resourcePath string) (io.ReadCloser, error) {
-// 	// TODO
-// 	return nil, nil
-// }
-
 // NewPackage creates a new ZippedPackage object ready to be used.
 // The zip file contents will be extracted in a subDirectory with the same name as the file stripped of the .zip
 // extension. During the extraction, zip file uncompressed content is checked not to surpass maxSize.
@@ -97,31 +91,24 @@ func extractZipArchive(reader *zip.Reader, outputDir string, maxSize uint64) err
 				return fmt.Errorf("error creating directory %s: %w", fullOutputDirectoryName, err)
 			}
 		} else {
-			err := func() error {
-				if extractedSize+zippedFile.UncompressedSize64 > maxSize {
-					return ErrorUncompressedSizeTooBig
-				}
+			if extractedSize+zippedFile.UncompressedSize64 > maxSize {
+				return ErrorUncompressedSizeTooBig
+			}
 
-				dstFileName, written, err := extractZippedFile(zippedFile, outputDir)
-
-				if err != nil {
-					return fmt.Errorf("error extracting %s from archive into %s: %w", zippedFile.Name, dstFileName, err)
-				}
-
-				if written != zippedFile.UncompressedSize64 {
-					logger.Warnf(
-						"Wrong uncompressed size reported for file %s: expected %d, got %d",
-						zippedFile.Name, zippedFile.UncompressedSize64, written,
-					)
-				}
-
-				extractedSize += zippedFile.UncompressedSize64
-				return nil
-			}()
+			dstFileName, written, err := extractZippedFile(zippedFile, outputDir)
 
 			if err != nil {
-				return err
+				return fmt.Errorf("error extracting %s from archive into %s: %w", zippedFile.Name, dstFileName, err)
 			}
+
+			if written != zippedFile.UncompressedSize64 {
+				logger.Warnf(
+					"Wrong uncompressed size reported for file %s: expected %d, got %d",
+					zippedFile.Name, zippedFile.UncompressedSize64, written,
+				)
+			}
+
+			extractedSize += zippedFile.UncompressedSize64
 		}
 	}
 

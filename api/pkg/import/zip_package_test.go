@@ -89,6 +89,20 @@ func TestExtractErrorNonExistentZipFile(t *testing.T) {
 	assert.Nil(t, p)
 }
 
+func TestErrorInvalidZipFile(t *testing.T) {
+
+	tempDir, err := ioutil.TempDir("", "test-")
+	require.NoError(t, err)
+	defer os.RemoveAll(tempDir)
+
+	invalidZipFile := path.Join(tempDir, "invalid.zip")
+	ioutil.WriteFile(invalidZipFile, []byte("this is clearly not a zip file"), 0600)
+
+	p, err := NewPackage(invalidZipFile, testArchiveSize20MB)
+	assert.Error(t, err)
+	assert.Nil(t, p)
+}
+
 func TestExtractErrorNoManifest(t *testing.T) {
 
 	sourceImportPackage := "../../test/data/import/invalid-package"
@@ -221,7 +235,7 @@ func addDirectoryContentToZip(writer *zip.Writer, baseDir string) error {
 			if d.IsDir() {
 				return addDirectoryToZip(writer, relativePath)
 			}
-			
+
 			return addFileToZip(writer, walkedPath, relativePath)
 		},
 	)
