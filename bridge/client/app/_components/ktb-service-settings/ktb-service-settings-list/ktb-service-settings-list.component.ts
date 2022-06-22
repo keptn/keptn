@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { filter, map } from 'rxjs/operators';
-import { DataService } from '../../_services/data.service';
+import { DataService } from '../../../_services/data.service';
 import { DtTableDataSource } from '@dynatrace/barista-components/table';
 
 @Component({
