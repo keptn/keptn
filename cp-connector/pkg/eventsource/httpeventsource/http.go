@@ -17,8 +17,31 @@ var ErrMaxPollRetriesExceeded = errors.New("maximum retries for polling event ap
 //go:generate moq -pkg fake -skip-ensure -out ../../fake/shipyardeventapi.go . shipyardEventAPI:ShipyardEventAPIMock
 type shipyardEventAPI api.ShipyardControlV1Interface
 
-func New(clock clock.Clock, controlPlaneAPI api.ShipyardControlV1Interface) *HTTPEventSource {
-	return &HTTPEventSource{
+// WithLogger sets the logger to use
+func WithLogger(logger logger.Logger) func(plane *HTTPEventSource) {
+	return func(ns *HTTPEventSource) {
+		ns.logger = logger
+	}
+}
+
+// WithMaxPollingAttempts sets the max number of attempts the HTTPEventSource shall retry to poll for new
+// events when failing
+func WithMaxPollingAttempts(maxPollingAttempts int) func(plane *HTTPEventSource) {
+	return func(ns *HTTPEventSource) {
+		ns.maxAttempts = maxPollingAttempts
+	}
+}
+
+// WithPollingInterval sets the interval between doing consecutive HTTP calls to the Keptn API to get new events
+func WithPollingInterval(interval time.Duration) func(plane *HTTPEventSource) {
+	return func(ns *HTTPEventSource) {
+		ns.pollInterval = interval
+	}
+}
+
+// New creates a new HTTPEventSource to be used for running a service on the remote execution plane
+func New(clock clock.Clock, controlPlaneAPI api.ShipyardControlV1Interface, opts ...func(source *HTTPEventSource)) *HTTPEventSource {
+	e := &HTTPEventSource{
 		mutex:                &sync.Mutex{},
 		clock:                clock,
 		controlPlaneAPI:      controlPlaneAPI,
@@ -29,6 +52,10 @@ func New(clock clock.Clock, controlPlaneAPI api.ShipyardControlV1Interface) *HTT
 		cache:                NewCache(),
 		logger:               logger.NewDefaultLogger(),
 	}
+	for _, o := range opts {
+		o(e)
+	}
+	return e
 }
 
 type HTTPEventSource struct {
