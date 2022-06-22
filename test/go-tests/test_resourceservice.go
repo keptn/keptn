@@ -690,7 +690,7 @@ func createConfigServiceUpstreamRepo(projectName string) (string, string, error)
 		return "", "", err
 	}
 
-	client, err := kubeutils.GetClientset(false)
+	client, err := kubeutils.GetClientSet(false)
 	if err != nil {
 		return "", "", err
 	}

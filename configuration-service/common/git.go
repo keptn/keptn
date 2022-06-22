@@ -540,7 +540,7 @@ func getK8sClient() (*kubernetes.Clientset, error) {
 	} else {
 		useInClusterConfig = false
 	}
-	clientSet, err := kubeutils.GetClientset(useInClusterConfig)
+	clientSet, err := kubeutils.GetClientSet(useInClusterConfig)
 	if err != nil {
 		return nil, err
 	}

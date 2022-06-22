@@ -9,7 +9,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/go-version v1.5.0
 	github.com/invopop/jsonschema v0.4.0
-	github.com/keptn/go-utils v0.16.1-0.20220622092637-15d6d2262e54
+	github.com/keptn/go-utils v0.16.1-0.20220622115956-bc8f6b76d03b
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/spf13/cobra v1.4.0
@@ -18,7 +18,6 @@ require (
 	golang.org/x/oauth2 v0.0.0-20220524215830-622c5d57e401
 	gopkg.in/yaml.v3 v3.0.1
 	gotest.tools v2.2.0+incompatible
-	k8s.io/apimachinery v0.24.2
 )
 
 require (
@@ -87,6 +86,7 @@ require (
 	gopkg.in/ini.v1 v1.66.4 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	k8s.io/api v0.24.2 // indirect
+	k8s.io/apimachinery v0.24.2 // indirect
 	k8s.io/client-go v0.24.2 // indirect
 	k8s.io/klog/v2 v2.60.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20220328201542-3ee0da9b0b42 // indirect

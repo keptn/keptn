@@ -191,7 +191,7 @@ func (h *HelmV3Executor) waitForDeploymentsOfHelmRelease(helmManifest string) er
 }
 
 func waitForDeploymentToBeRolledOut(useInClusterConfig bool, deploymentName string, namespace string) error {
-	clientset, err := kubeutils.GetClientset(useInClusterConfig)
+	clientset, err := kubeutils.GetClientSet(useInClusterConfig)
 	if err != nil {
 		return err
 	}

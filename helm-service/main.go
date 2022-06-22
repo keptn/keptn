@@ -208,7 +208,7 @@ func _main(args []string, env envConfig) int {
 
 // hasAdminRights checks if the current pod is assigned the Admin Role
 func hasAdminRights() (bool, error) {
-	clientset, err := kubeutils.GetClientset(true)
+	clientset, err := kubeutils.GetClientSet(true)
 	if err != nil {
 		return false, err
 	}

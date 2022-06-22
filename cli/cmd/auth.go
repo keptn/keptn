@@ -189,12 +189,14 @@ type resolveFunc func(string) ([]string, error)
 type sleepFunc func(time.Duration)
 
 func smartFetchKeptnAuthParameters(authParams *authCmdParams, smartKeptnAuth smartKeptnAuthParams) error {
-	var err error
-
 	if authParams.endPoint == nil || *authParams.endPoint == "" {
-		*authParams.endPoint, err = kubeutils.GetKeptnEndpointFromIngress(false, namespace, smartKeptnAuth.ingressName)
+		keptnEndpointProvider, err := kubeutils.NewKeptnEndpointProvider(false)
 		if err != nil {
-			*authParams.endPoint, err = kubeutils.GetKeptnEndpointFromService(false, namespace, smartKeptnAuth.serviceName)
+			return err
+		}
+		*authParams.endPoint, err = keptnEndpointProvider.GetKeptnEndpointFromIngress(namespace, smartKeptnAuth.ingressName)
+		if err != nil {
+			*authParams.endPoint, err = keptnEndpointProvider.GetKeptnEndpointFromService(namespace, smartKeptnAuth.serviceName)
 			if err != nil {
 				return fmt.Errorf("Cannot automatically fetch the endpoint\n" + err.Error() + "\n\n")
 			}
@@ -205,7 +207,11 @@ func smartFetchKeptnAuthParameters(authParams *authCmdParams, smartKeptnAuth sma
 	*authParams.endPoint = addCorrectHttpPrefix(authParams)
 
 	if authParams.apiToken == nil || *authParams.apiToken == "" {
-		*authParams.apiToken, err = kubeutils.GetKeptnAPITokenFromSecret(false, namespace, smartKeptnAuth.secretName)
+		keptnApiTokenProvider, err := kubeutils.NewApiTokenProvider(false)
+		if err != nil {
+			return err
+		}
+		*authParams.apiToken, err = keptnApiTokenProvider.GetKeptnAPITokenFromSecret(namespace, smartKeptnAuth.secretName)
 		if err != nil {
 			return fmt.Errorf("Error in fetching the api-token\n" + err.Error() + "\nCLI is not authenticated")
 		}
@@ -215,7 +221,11 @@ func smartFetchKeptnAuthParameters(authParams *authCmdParams, smartKeptnAuth sma
 }
 
 func smartKeptnCLIAuth() (string, error) {
-	keptnInstallations, err := kubeutils.GetKeptnManagedNamespace(false)
+	namespaceManager, err := kubeutils.NewManespaceManager(false)
+	if err != nil {
+		return "", err
+	}
+	keptnInstallations, err := namespaceManager.GetKeptnManagedNamespace()
 	if err != nil {
 		return "", errors.New("Could not get current Kubernetes context from KUBECONFIG: " + err.Error())
 	}

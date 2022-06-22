@@ -18,7 +18,7 @@ import (
 )
 
 func SetEnvVarsOfDeployment(deploymentName string, containerName string, envVars []v1.EnvVar) error {
-	clientset, err := kubeutils.GetClientset(false)
+	clientset, err := kubeutils.GetClientSet(false)
 	if err != nil {
 		return err
 	}
@@ -56,7 +56,7 @@ func SetEnvVarsOfDeployment(deploymentName string, containerName string, envVars
 }
 
 func GetImageOfDeploymentContainer(deploymentName, containerName string) (string, error) {
-	clientset, err := kubeutils.GetClientset(false)
+	clientset, err := kubeutils.GetClientSet(false)
 	if err != nil {
 		return "", err
 	}
@@ -74,7 +74,7 @@ func GetImageOfDeploymentContainer(deploymentName, containerName string) (string
 }
 
 func SetImageOfDeploymentContainer(deploymentName, containerName, image string) error {
-	clientset, err := kubeutils.GetClientset(false)
+	clientset, err := kubeutils.GetClientSet(false)
 	if err != nil {
 		return err
 	}
@@ -103,7 +103,7 @@ type WaitForDeploymentOptions struct {
 }
 
 func WaitAndCheckDeployment(deploymentName, namespace string, timeout time.Duration, options WaitForDeploymentOptions) error {
-	clientset, _ := kubeutils.GetClientset(false)
+	clientset, _ := kubeutils.GetClientSet(false)
 	return wait.PollImmediate(time.Second*3, timeout, checkDeployment(clientset, deploymentName, namespace, options))
 }
 
@@ -146,7 +146,7 @@ func checkURL(url string) wait.ConditionFunc {
 }
 
 func GetFromConfigMap(namespace string, configMapName string, getDataByKeyFn func(data map[string]string) string) (string, error) {
-	client, _ := kubeutils.GetClientset(false)
+	client, _ := kubeutils.GetClientSet(false)
 	cm, err := client.CoreV1().ConfigMaps(namespace).Get(context.TODO(), configMapName, metav1.GetOptions{})
 	if err != nil {
 		return "", err
@@ -155,7 +155,7 @@ func GetFromConfigMap(namespace string, configMapName string, getDataByKeyFn fun
 }
 
 func UpdateConfigMap(namespace string, configMapName string, replaceConfig func(cm *v1.ConfigMap)) error {
-	client, _ := kubeutils.GetClientset(false)
+	client, _ := kubeutils.GetClientSet(false)
 	cm, err := client.CoreV1().ConfigMaps(namespace).Get(context.TODO(), configMapName, metav1.GetOptions{})
 	if err != nil {
 		return err
@@ -221,7 +221,7 @@ func GetOOMEvents() (K8SEventArray, error) {
 }
 
 func CompareServiceNameWithDeploymentName(serviceName string, deploymentName string) (bool, error) {
-	api, err := kubeutils.GetClientset(false)
+	api, err := kubeutils.GetClientSet(false)
 	if err != nil {
 		return false, err
 	}

@@ -53,11 +53,14 @@ func Test_CustomUserManagedEndpointsTest(t *testing.T) {
 
 	defer os.Remove("chart.tgz")
 
+	namespaceManager, err := kubeutils.NewManespaceManager(false)
+	require.Nil(t, err)
+
 	// make sure the namespace from a previous test run has been deleted properly
-	exists, err := kubeutils.ExistsNamespace(false, projectName+"-dev")
+	exists, err := namespaceManager.ExistsNamespace(projectName + "-dev")
 	if exists {
 		t.Logf("Deleting namespace %s-dev from previous test execution", projectName)
-		clientset, err := kubeutils.GetClientset(false)
+		clientset, err := kubeutils.GetClientSet(false)
 		require.Nil(t, err)
 		err = clientset.CoreV1().Namespaces().Delete(context.TODO(), projectName+"-dev", v1.DeleteOptions{})
 		require.Nil(t, err)
@@ -65,7 +68,7 @@ func Test_CustomUserManagedEndpointsTest(t *testing.T) {
 
 	require.Eventually(t, func() bool {
 		t.Logf("Checking if namespace %s-dev is still there", projectName)
-		exists, err := kubeutils.ExistsNamespace(false, projectName+"-dev")
+		exists, err := namespaceManager.ExistsNamespace(projectName + "-dev")
 		if err != nil || exists {
 			t.Logf("Namespace %s-dev is still there", projectName)
 			return false
@@ -117,7 +120,9 @@ func Test_CustomUserManagedEndpointsTest(t *testing.T) {
 	require.Nil(t, deploymentFinishedEventData.Deployment.DeploymentURIsLocal)
 
 	// get the LoadBalancer endpoint of the deployed service so we can define its URL in the next delivery
-	serviceEndpoint, err := kubeutils.GetKeptnEndpointFromService(false, projectName+"-dev", projectName+"-dev-"+serviceName)
+	keptnEndpointProvider, err := kubeutils.NewKeptnEndpointProvider(false)
+	require.Nil(t, err)
+	serviceEndpoint, err := keptnEndpointProvider.GetKeptnEndpointFromService(projectName+"-dev", projectName+"-dev-"+serviceName)
 	require.Nil(t, err)
 	require.NotEmpty(t, serviceEndpoint)
 

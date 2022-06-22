@@ -29,8 +29,11 @@ func NewNamespaceManager(logger keptn.LoggerInterface) *NamespaceManager {
 
 // InitNamespaces initializes namespaces if they do not exist yet
 func (p *NamespaceManager) CreateNamespaceIfNotExists(nsName string) error {
-
-	exists, err := kubeutils.ExistsNamespace(true, nsName)
+	namespaceManager, err := kubeutils.NewManespaceManager(true)
+	if err != nil {
+		return err
+	}
+	exists, err := namespaceManager.ExistsNamespace(nsName)
 	if err != nil {
 		return fmt.Errorf("error when checking availability of namespace: %v", err)
 	}
@@ -38,7 +41,7 @@ func (p *NamespaceManager) CreateNamespaceIfNotExists(nsName string) error {
 		p.logger.Debug(fmt.Sprintf("Reuse existing namespace %s", nsName))
 	} else {
 		p.logger.Debug(fmt.Sprintf("Create new namespace %s", nsName))
-		if err != kubeutils.CreateNamespace(true, nsName) {
+		if err != namespaceManager.CreateNamespace(nsName) {
 			return fmt.Errorf("error when creating namespace %s: %v", nsName, err)
 		}
 	}
@@ -47,7 +50,7 @@ func (p *NamespaceManager) CreateNamespaceIfNotExists(nsName string) error {
 
 // InjectIstio injects Istio into the namespace used for the project and stage by adding the label istio-injection
 func (p *NamespaceManager) InjectIstio(project string, stage string) error {
-	kubeClient, err := kubeutils.GetClientset(true)
+	kubeClient, err := kubeutils.GetClientSet(true)
 	if err != nil {
 		return fmt.Errorf("error when getting kube API: %v", err)
 	}

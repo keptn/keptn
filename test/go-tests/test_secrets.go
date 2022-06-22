@@ -11,7 +11,7 @@ import (
 )
 
 func Test_ManageSecrets_CreateUpdateAndDeleteSecret(t *testing.T) {
-	k8s, err := kubeutils.GetClientset(false)
+	k8s, err := kubeutils.GetClientSet(false)
 	require.Nil(t, err)
 	var ns = GetKeptnNameSpaceFromEnv()
 	secret1 := "my-new-secret"

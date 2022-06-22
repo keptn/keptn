@@ -326,7 +326,7 @@ func GetServiceExternalIP(namespace string, service string) (string, error) {
 }
 
 func GetPrivateKeyAndPassphrase() (string, string, error) {
-	clientset, err := kubeutils.GetClientset(false)
+	clientset, err := kubeutils.GetClientSet(false)
 	if err != nil {
 		return "", "", err
 	}
@@ -423,13 +423,22 @@ func CreateSubscription(t *testing.T, serviceName string, subscription models.Ev
 }
 
 func GetApiCredentials() (string, string, error) {
-	apiToken, err := kubeutils.GetKeptnAPITokenFromSecret(false, GetKeptnNameSpaceFromEnv(), "keptn-api-token")
+	keptnApiTokenProvider, err := kubeutils.NewApiTokenProvider(false)
+	if err != nil {
+		return "", "", err
+	}
+
+	apiToken, err := keptnApiTokenProvider.GetKeptnAPITokenFromSecret(GetKeptnNameSpaceFromEnv(), "keptn-api-token")
 	if err != nil {
 		return "", "", err
 	}
 	keptnAPIURL := os.Getenv("KEPTN_ENDPOINT")
 	if keptnAPIURL == "" {
-		serviceIP, err := kubeutils.GetKeptnEndpointFromService(false, GetKeptnNameSpaceFromEnv(), "api-gateway-nginx")
+		keptnEndpointProvider, err := kubeutils.NewKeptnEndpointProvider(false)
+		if err != nil {
+			return "", "", err
+		}
+		serviceIP, err := keptnEndpointProvider.GetKeptnEndpointFromService(GetKeptnNameSpaceFromEnv(), "api-gateway-nginx")
 		if err != nil {
 			return "", "", err
 		}
@@ -449,7 +458,7 @@ func ScaleDownUniform(deployments []string) error {
 }
 
 func ScaleDeployment(useInClusterConfig bool, deployment string, namespace string, replicas int32) error {
-	clientset, err := kubeutils.GetClientset(useInClusterConfig)
+	clientset, err := kubeutils.GetClientSet(useInClusterConfig)
 	if err != nil {
 		return err
 	}
@@ -481,7 +490,7 @@ func ScaleUpUniform(deployments []string, replicas int) error {
 }
 
 func waitForDeploymentToBeRolledOut(useInClusterConfig bool, deploymentName string, namespace string) error {
-	clientset, err := kubeutils.GetClientset(useInClusterConfig)
+	clientset, err := kubeutils.GetClientSet(useInClusterConfig)
 	if err != nil {
 		return err
 	}
@@ -534,7 +543,7 @@ func getDeployment(clientset *kubernetes.Clientset, namespace string, deployment
 
 // RestartPodsWithSelector restarts the pods which are found in the provided namespace and selector
 func RestartPodsWithSelector(useInClusterConfig bool, namespace string, selector string) error {
-	clientset, err := kubeutils.GetClientset(useInClusterConfig)
+	clientset, err := kubeutils.GetClientSet(useInClusterConfig)
 	if err != nil {
 		return err
 	}
@@ -825,7 +834,7 @@ func GetPublicURLOfService(serviceName, projectName, stageName string) (string, 
 // leads to the respective pod being restarted, which increases the duration of the integration tests and prevents us from executing tests in parallel
 func SetShipyardControllerEnvVar(t *testing.T, envVarName, envVarValue string) error {
 
-	k8sClient, err := kubeutils.GetClientset(false)
+	k8sClient, err := kubeutils.GetClientSet(false)
 	if err != nil {
 		return err
 	}
@@ -909,7 +918,7 @@ func SetShipyardControllerEnvVar(t *testing.T, envVarName, envVarValue string) e
 }
 
 func GetPodNamesOfDeployment(labelSelector string) ([]string, error) {
-	k8sClient, err := kubeutils.GetClientset(false)
+	k8sClient, err := kubeutils.GetClientSet(false)
 	if err != nil {
 		return nil, err
 	}
@@ -931,7 +940,7 @@ func GetPodNamesOfDeployment(labelSelector string) ([]string, error) {
 // Needed for our minishift tests right now, as there are problems with the RollingUpdate strategy of the shipyard-controller
 // Should become obsolete when we switch to testing on an OpenShift 4.x cluster instead.
 func SetRecreateUpgradeStrategyForDeployment(deploymentName string) error {
-	clientset, err := kubeutils.GetClientset(false)
+	clientset, err := kubeutils.GetClientSet(false)
 	if err != nil {
 		return err
 	}
@@ -985,7 +994,7 @@ func GetGiteaToken() (string, error) {
 	if tokenFromEnv := os.Getenv("GITEA_TOKEN"); tokenFromEnv != "" {
 		return tokenFromEnv, nil
 	}
-	clientset, err := kubeutils.GetClientset(false)
+	clientset, err := kubeutils.GetClientSet(false)
 	if err != nil {
 		return "", err
 	}
@@ -1005,7 +1014,7 @@ func GetGiteaToken() (string, error) {
 
 // GetMongoDBCredentials retrieves the credentials of the mongodb user from the mongodb credentials secret
 func GetMongoDBCredentials() (string, string, error) {
-	clientset, err := kubeutils.GetClientset(false)
+	clientset, err := kubeutils.GetClientSet(false)
 	if err != nil {
 		return "", "", err
 	}
@@ -1091,7 +1100,7 @@ func RecreateGitUpstreamRepository(project string) error {
 
 func WaitForDeploymentToBeScaledDown(deploymentName string) error {
 	// if the token is set as an env var, return that
-	clientset, err := kubeutils.GetClientset(false)
+	clientset, err := kubeutils.GetClientSet(false)
 	if err != nil {
 		return err
 	}
