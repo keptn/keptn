@@ -7,8 +7,9 @@ import (
 	"os"
 
 	"github.com/keptn/go-utils/pkg/common/fileutils"
-	"github.com/keptn/go-utils/pkg/common/kubeutils"
 	"golang.org/x/oauth2"
+
+	"github.com/keptn/keptn/cli/pkg/config"
 )
 
 // OauthInfo is a wrapper for oauth related information that is
@@ -203,7 +204,7 @@ func (t *LocalFileOauthStore) Created() bool {
 }
 
 func getDefaultTokenLocation() string {
-	configPath, err := kubeutils.GetKeptnDirectory()
+	configPath, err := config.GetKeptnDirectory()
 	if err != nil {
 		return TokenFileName
 	}
@@ -211,7 +212,7 @@ func getDefaultTokenLocation() string {
 }
 
 func getDefaultDiscoveryResultLocation() string {
-	configPath, err := kubeutils.GetKeptnDirectory()
+	configPath, err := config.GetKeptnDirectory()
 	if err != nil {
 		return DiscoveryResultFileName
 	}
@@ -219,7 +220,7 @@ func getDefaultDiscoveryResultLocation() string {
 }
 
 func getDefaultClientValuesLocation() string {
-	configPath, err := kubeutils.GetKeptnDirectory()
+	configPath, err := config.GetKeptnDirectory()
 	if err != nil {
 		return ClientValuesFileName
 	}

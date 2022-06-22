@@ -5,15 +5,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/keptn/go-utils/pkg/common/fileutils"
 
-	"github.com/keptn/go-utils/pkg/common/kubeutils"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
 )
+
+const keptnFolderName = ".keptn"
 
 // CLIConfig holds infos of the CLI config
 type CLIConfig struct {
@@ -124,9 +126,25 @@ func (c *CLIConfigManager) StoreCLIConfig(config CLIConfig) error {
 
 // GetKeptnDefaultConfigPath returns default Keptn Config file path
 func GetKeptnDefaultConfigPath() (string, error) {
-	dir, err := kubeutils.GetKeptnDirectory()
+	dir, err := GetKeptnDirectory()
 	if err != nil {
 		return "", err
 	}
 	return dir + "config", nil
+}
+
+// GetKeptnDirectory returns a path, which is used to store logs and possibly creds
+func GetKeptnDirectory() (string, error) {
+
+	keptnDir := fileutils.UserHomeDir() + string(os.PathSeparator) + keptnFolderName + string(os.PathSeparator)
+
+	if _, err := os.Stat(keptnDir); os.IsNotExist(err) {
+		err := os.MkdirAll(keptnDir, os.ModePerm)
+		fmt.Println("keptn creates the folder " + keptnDir + " to store logs and possibly creds.")
+		if err != nil {
+			return "", err
+		}
+	}
+
+	return keptnDir, nil
 }

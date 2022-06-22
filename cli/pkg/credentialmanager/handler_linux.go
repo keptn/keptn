@@ -12,7 +12,6 @@ import (
 	"io/ioutil"
 
 	"github.com/docker/docker-credential-helpers/pass"
-	"github.com/keptn/go-utils/pkg/common/kubeutils"
 	"github.com/keptn/keptn/cli/pkg/config"
 )
 
@@ -38,7 +37,7 @@ type CredentialManager struct {
 // NewCredentialManager creates a new credential manager
 func NewCredentialManager(autoApplyNewContext bool) *CredentialManager {
 
-	dir, err := kubeutils.GetKeptnDirectory()
+	dir, err := config.GetKeptnDirectory()
 	if err != nil {
 		log.Fatal(err)
 	}

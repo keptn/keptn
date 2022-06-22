@@ -26,6 +26,7 @@ import (
 
 	"github.com/keptn/go-utils/pkg/common/kubeutils"
 
+	"github.com/keptn/keptn/cli/pkg/config"
 	"github.com/keptn/keptn/cli/pkg/platform"
 
 	"github.com/keptn/go-utils/pkg/api/models"
@@ -557,7 +558,7 @@ func getProjects() *errorableProjectResult {
 
 func writeKeptnInstallerLog(logFileName string, dir string) {
 	fmt.Println("Retrieving Keptn installer log " + logFileName)
-	path, err := kubeutils.GetKeptnDirectory()
+	path, err := config.GetKeptnDirectory()
 	if err != nil {
 		writeErrorableStringResult(newErrorableStringResult("", err), filepath.Join(dir, logFileName))
 		return

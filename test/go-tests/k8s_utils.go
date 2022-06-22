@@ -52,7 +52,7 @@ func SetEnvVarsOfDeployment(deploymentName string, containerName string, envVars
 		return err
 	}
 
-	return kubeutils.WaitForDeploymentToBeRolledOut(false, deploymentName, GetKeptnNameSpaceFromEnv())
+	return waitForDeploymentToBeRolledOut(false, deploymentName, GetKeptnNameSpaceFromEnv())
 }
 
 func GetImageOfDeploymentContainer(deploymentName, containerName string) (string, error) {
@@ -95,7 +95,7 @@ func SetImageOfDeploymentContainer(deploymentName, containerName, image string) 
 		return err
 	}
 
-	return kubeutils.WaitForDeploymentToBeRolledOut(false, deploymentName, GetKeptnNameSpaceFromEnv())
+	return waitForDeploymentToBeRolledOut(false, deploymentName, GetKeptnNameSpaceFromEnv())
 }
 
 type WaitForDeploymentOptions struct {
@@ -174,11 +174,11 @@ func PutConfigMapDataVal(namespace string, configMapName string, key string, val
 // WaitForDeploymentInNamespace
 // deprecated, use WaitAndCheckDeployment
 func WaitForDeploymentInNamespace(deploymentName, namespace string) error {
-	return kubeutils.WaitForDeploymentToBeRolledOut(false, deploymentName, namespace)
+	return waitForDeploymentToBeRolledOut(false, deploymentName, namespace)
 }
 
 func WaitForPodOfDeployment(deploymentName string) error {
-	return kubeutils.WaitForDeploymentToBeRolledOut(false, deploymentName, GetKeptnNameSpaceFromEnv())
+	return waitForDeploymentToBeRolledOut(false, deploymentName, GetKeptnNameSpaceFromEnv())
 }
 
 type K8SEvent struct {
@@ -221,12 +221,12 @@ func GetOOMEvents() (K8SEventArray, error) {
 }
 
 func CompareServiceNameWithDeploymentName(serviceName string, deploymentName string) (bool, error) {
-	api, err := kubeutils.GetKubeAPI(false)
+	api, err := kubeutils.GetClientset(false)
 	if err != nil {
 		return false, err
 	}
 
-	service, err := api.Services(GetKeptnNameSpaceFromEnv()).Get(context.TODO(), serviceName, metav1.GetOptions{})
+	service, err := api.CoreV1().Services(GetKeptnNameSpaceFromEnv()).Get(context.TODO(), serviceName, metav1.GetOptions{})
 	if err != nil {
 		return false, err
 	}

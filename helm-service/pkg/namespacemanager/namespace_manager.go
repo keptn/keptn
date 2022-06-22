@@ -47,12 +47,12 @@ func (p *NamespaceManager) CreateNamespaceIfNotExists(nsName string) error {
 
 // InjectIstio injects Istio into the namespace used for the project and stage by adding the label istio-injection
 func (p *NamespaceManager) InjectIstio(project string, stage string) error {
-	kubeClient, err := kubeutils.GetKubeAPI(true)
+	kubeClient, err := kubeutils.GetClientset(true)
 	if err != nil {
 		return fmt.Errorf("error when getting kube API: %v", err)
 	}
 	namespaceName := project + "-" + stage
-	namespace, err := kubeClient.Namespaces().Get(context.TODO(), namespaceName, v1.GetOptions{})
+	namespace, err := kubeClient.CoreV1().Namespaces().Get(context.TODO(), namespaceName, v1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -68,6 +68,6 @@ func (p *NamespaceManager) InjectIstio(project string, stage string) error {
 
 	// add the label istio-injection to the namespace
 	namespace.ObjectMeta.Labels["istio-injection"] = "enabled"
-	_, err = kubeClient.Namespaces().Update(context.TODO(), namespace, v1.UpdateOptions{})
+	_, err = kubeClient.CoreV1().Namespaces().Update(context.TODO(), namespace, v1.UpdateOptions{})
 	return err
 }
