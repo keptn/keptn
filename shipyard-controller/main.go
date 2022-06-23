@@ -90,7 +90,7 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 		}
 	}
 
-	exp, err := newExporter()
+	exp, err := newExporter(kubeAPI)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -436,8 +436,7 @@ func getDurationFromEnvVar(durationString, fallbackValue string) time.Duration {
 	return duration
 }
 
-func newExporter() (trace.SpanExporter, error) {
-	kubeClient, _ := createKubeAPI()
+func newExporter(kubeClient kubernetes.Interface) (trace.SpanExporter, error) {
 	dtToken, _ := kubeClient.CoreV1().Secrets(common.GetKeptnNamespace()).Get(context.TODO(), "dt-secret-otel", v1.GetOptions{})
 	if dtToken == nil {
 		return stdouttrace.New(
