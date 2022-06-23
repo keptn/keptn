@@ -12,6 +12,9 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
+// ProjectCredentialsRepo is a helper repository to migrate
+// the old git credentials model to a new one (including the projects in DB)
+// When the migration is not needed anymore, this struct/file can be removed
 type ProjectCredentialsRepo interface {
 	UpdateProject(project *models.ExpandedProjectOld) error
 	GetOldCredentialsProjects() ([]*models.ExpandedProjectOld, error)

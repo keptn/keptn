@@ -10,6 +10,9 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 )
 
+// SecretCredentialsRepo is a helper repository to migrate
+// the old git credentials model to a new one (including the K8s secrets)
+// When the migration is not needed anymore, this struct/file can be removed
 type SecretCredentialsRepo interface {
 	UpdateSecret(project *models.ExpandedProjectOld) error
 }

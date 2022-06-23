@@ -8,6 +8,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 )
 
+// NewProjectCredentialsMigrator creates new migrator
 func NewProjectCredentialsMigrator(dbConnection *db.MongoDBConnection, secretStore common.SecretStore) *ProjectCredentialsMigrator {
 	return &ProjectCredentialsMigrator{
 		projectRepo: db.NewProjectCredentialsRepo(dbConnection),
@@ -15,11 +16,15 @@ func NewProjectCredentialsMigrator(dbConnection *db.MongoDBConnection, secretSto
 	}
 }
 
+// ProjectCredentialsMigrator is a migrator from
+// the old git credentials model to a new one (including the projects in DB and secrets)
+// When the migration is not needed anymore, this struct/file can be removed
 type ProjectCredentialsMigrator struct {
 	projectRepo db.ProjectCredentialsRepo
 	secretRepo  db.SecretCredentialsRepo
 }
 
+// Transform transforms the data to a new credentials model
 func (s *ProjectCredentialsMigrator) Transform() error {
 	projects, err := s.projectRepo.GetOldCredentialsProjects()
 	if err != nil {
