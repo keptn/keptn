@@ -340,7 +340,7 @@ jobs:
 
       - name: Install Keptn
         id: keptn_install
-        timeout-minutes: 10
+        timeout-minutes: 12
         env:
           HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_CHART_NAME }}
           HELM_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_SERVICE_HELM_CHART_NAME }}
@@ -387,7 +387,8 @@ jobs:
               --set shipyardController.gracePeriod=10 \
               --set shipyardController.preStopHookTime=5 \
               --set continuousDelivery.enabled=${RUN_CONTINUOUS_DELIVERY_TEST} \
-              --wait
+              --wait \
+              --timeout=10m
           fi
           echo "::endgroup::"
 
