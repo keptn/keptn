@@ -7,7 +7,7 @@ import { Secret } from '../../_models/secret';
 import { DeleteDialogState } from '../_dialogs/ktb-delete-confirmation/ktb-delete-confirmation.component';
 
 @Component({
-  selector: 'ktb-secrets-view',
+  selector: 'ktb-secrets-list',
   templateUrl: './ktb-secrets-list.component.html',
   styleUrls: [],
 })

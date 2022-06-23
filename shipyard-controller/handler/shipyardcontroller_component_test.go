@@ -134,11 +134,10 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	sc, cancel := getTestShipyardController("")
 	defer sc.StopDispatchers()
 	defer cancel()
-	defer sc.sequenceExecutionRepo.Clear("test-project")
+	projectName := "test-project"
+	defer cleanupCollections(projectName, sc)
 
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
-
-	done := false
 
 	commitID := "my-commit-id"
 	// STEP 1
@@ -151,8 +150,10 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	}
 
 	// check event dispatcher -> should contain deployment.triggered event with properties: [deployment]
-	time.Sleep(3 * time.Second) //wait for dispatching
-	require.Equal(t, 1, len(mockDispatcher.AddCalls()))
+	require.Eventually(t, func() bool {
+		return len(mockDispatcher.AddCalls()) == 1
+	}, 3*time.Second, 100*time.Millisecond)
+
 	verifyEvent := mockDispatcher.AddCalls()[0].Event
 	require.Equal(t, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), verifyEvent.Event.Type())
 
@@ -170,10 +171,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 		Service: common.Stringp("carts"),
 		Source:  common.Stringp("shipyard-controller"),
 	}, common.TriggeredEvent)
-	done = fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
-	if done {
-		return
-	}
+	fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
 	require.Equal(t, commitID, triggeredEvents[0].GitCommitID)
 	triggeredID := triggeredEvents[0].ID
 
@@ -183,7 +181,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 
 	// STEP 3
 	// send deployment.finished event
-	triggeredID, done = sendAndVerifyFinishedEvent(
+	triggeredID = sendAndVerifyFinishedEvent(
 		t,
 		sc,
 		getDeploymentFinishedEvent("dev", triggeredID, "test-source", keptnv2.ResultPass),
@@ -191,9 +189,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 		keptnv2.TestTaskName,
 		"",
 	)
-	if done {
-		return
-	}
+
 	require.Equal(t, 2, len(mockDispatcher.AddCalls()))
 	verifyEvent = mockDispatcher.AddCalls()[1].Event
 	require.Equal(t, keptnv2.GetTriggeredEventType(keptnv2.TestTaskName), verifyEvent.Event.Type())
@@ -216,7 +212,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 
 	// STEP 5
 	// send test.finished event
-	triggeredID, done = sendAndVerifyFinishedEvent(
+	triggeredID = sendAndVerifyFinishedEvent(
 		t,
 		sc,
 		getTestTaskFinishedEvent("dev", triggeredID),
@@ -224,9 +220,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 		keptnv2.EvaluationTaskName,
 		"",
 	)
-	if done {
-		return
-	}
+
 	require.Equal(t, 3, len(mockDispatcher.AddCalls()))
 	verifyEvent = mockDispatcher.AddCalls()[2].Event
 	require.Equal(t, keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName), verifyEvent.Event.Type())
@@ -244,10 +238,8 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 
 	// STEP 7
 	// send evaluation.finished event -> result = warning should not abort the task sequence
-	triggeredID, done = sendAndVerifyFinishedEvent(t, sc, getEvaluationTaskFinishedEvent("dev", triggeredID, keptnv2.ResultWarning), keptnv2.EvaluationTaskName, keptnv2.ReleaseTaskName, "")
-	if done {
-		return
-	}
+	triggeredID = sendAndVerifyFinishedEvent(t, sc, getEvaluationTaskFinishedEvent("dev", triggeredID, keptnv2.ResultWarning), keptnv2.EvaluationTaskName, keptnv2.ReleaseTaskName, "")
+
 	require.Equal(t, 4, len(mockDispatcher.AddCalls()))
 	verifyEvent = mockDispatcher.AddCalls()[3].Event
 	require.Equal(t, keptnv2.GetTriggeredEventType(keptnv2.ReleaseTaskName), verifyEvent.Event.Type())
@@ -258,10 +250,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 
 	// STEP 9
 	// send release.finished event
-	triggeredID, done = sendAndVerifyFinishedEvent(t, sc, getReleaseTaskFinishedEvent("dev", triggeredID), keptnv2.ReleaseTaskName, keptnv2.DeploymentTaskName, "hardening")
-	if done {
-		return
-	}
+	triggeredID = sendAndVerifyFinishedEvent(t, sc, getReleaseTaskFinishedEvent("dev", triggeredID), keptnv2.ReleaseTaskName, keptnv2.DeploymentTaskName, "hardening")
 
 	require.Equal(t, 7, len(mockDispatcher.AddCalls()))
 
@@ -317,21 +306,23 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 
 	// STEP 10.1
 	// send deployment.finished event 1 with ID 1
-	done = sendAndVerifyPartialFinishedEvent(t, sc, getDeploymentFinishedEvent("hardening", triggeredID, "test-source-1", keptnv2.ResultPass), keptnv2.DeploymentTaskName, keptnv2.ReleaseTaskName, "")
-	if done {
-		return
-	}
+	sendAndVerifyPartialFinishedEvent(t, sc, getDeploymentFinishedEvent("hardening", triggeredID, "test-source-1", keptnv2.ResultPass), keptnv2.DeploymentTaskName, keptnv2.ReleaseTaskName, "")
+
 	// number of calls for dispatcher should not have increased before both finished events are received
 	require.Equal(t, 7, len(mockDispatcher.AddCalls()))
 
 	// STEP 10.2
 	// send deployment.finished event 1 with ID 1
-	triggeredID, done = sendAndVerifyFinishedEvent(t, sc, getDeploymentFinishedEvent("hardening", triggeredID, "test-source-2", keptnv2.ResultPass), keptnv2.DeploymentTaskName, keptnv2.TestTaskName, "")
-	if done {
-		return
-	}
+	triggeredID = sendAndVerifyFinishedEvent(t, sc, getDeploymentFinishedEvent("hardening", triggeredID, "test-source-2", keptnv2.ResultPass), keptnv2.DeploymentTaskName, keptnv2.TestTaskName, "")
+
 	require.Equal(t, 8, len(mockDispatcher.AddCalls()))
 	require.Equal(t, keptnv2.GetTriggeredEventType(keptnv2.TestTaskName), mockDispatcher.AddCalls()[7].Event.Event.Type())
+}
+
+func cleanupCollections(projectName string, sc *shipyardController) {
+	sc.sequenceExecutionRepo.Clear(projectName)
+	sc.eventRepo.DeleteEventCollections(projectName)
+	sc.projectMvRepo.DeleteProject(projectName)
 }
 
 //Scenario 2: Partial task sequence execution + triggering of next task sequence. Events are received out of order
@@ -340,10 +331,8 @@ func Test_shipyardController_Scenario2(t *testing.T) {
 	sc, cancel := getTestShipyardController("")
 
 	defer cancel()
-	defer sc.sequenceExecutionRepo.Clear("test-project")
+	defer cleanupCollections("test-project", sc)
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
-
-	done := false
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
@@ -365,10 +354,7 @@ func Test_shipyardController_Scenario2(t *testing.T) {
 		Service: common.Stringp("carts"),
 		Source:  common.Stringp("shipyard-controller"),
 	}, common.TriggeredEvent)
-	done = fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
-	if done {
-		return
-	}
+	fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
 	triggeredID := triggeredEvents[0].ID
 
 	// STEP 2
@@ -404,9 +390,8 @@ func Test_shipyardController_Scenario2(t *testing.T) {
 func Test_shipyardController_Scenario3(t *testing.T) {
 	t.Logf("Executing Shipyard Controller Scenario 1 with shipyard file %s", testShipyardFile)
 	sc, cancel := getTestShipyardController("")
-	defer sc.sequenceExecutionRepo.Clear("test-project")
+	defer cleanupCollections("test-project", sc)
 	defer cancel()
-	done := false
 
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
 
@@ -430,10 +415,7 @@ func Test_shipyardController_Scenario3(t *testing.T) {
 		Service: common.Stringp("carts"),
 		Source:  common.Stringp("shipyard-controller"),
 	}, common.TriggeredEvent)
-	done = fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
-	if done {
-		return
-	}
+	fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
 	triggeredID := triggeredEvents[0].ID
 
 	// STEP 2
@@ -481,8 +463,7 @@ func Test_shipyardController_Scenario4(t *testing.T) {
 	sc, cancel := getTestShipyardController("")
 
 	defer cancel()
-	defer sc.sequenceExecutionRepo.Clear("test-project")
-	done := false
+	defer cleanupCollections("test-project", sc)
 
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
 
@@ -506,10 +487,7 @@ func Test_shipyardController_Scenario4(t *testing.T) {
 		Service: common.Stringp("carts"),
 		Source:  common.Stringp("shipyard-controller"),
 	}, common.TriggeredEvent)
-	done = fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
-	if done {
-		return
-	}
+	fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
 	triggeredID := triggeredEvents[0].ID
 
 	// STEP 2
@@ -518,7 +496,7 @@ func Test_shipyardController_Scenario4(t *testing.T) {
 
 	// STEP 3
 	// send deployment.finished event
-	triggeredID, done = sendAndVerifyFinishedEvent(
+	triggeredID = sendAndVerifyFinishedEvent(
 		t,
 		sc,
 		getDeploymentFinishedEvent("dev", triggeredID, "test-source", keptnv2.ResultPass),
@@ -526,9 +504,7 @@ func Test_shipyardController_Scenario4(t *testing.T) {
 		keptnv2.TestTaskName,
 		"",
 	)
-	if done {
-		return
-	}
+
 	require.Equal(t, 2, len(mockDispatcher.AddCalls()))
 	verifyEvent = mockDispatcher.AddCalls()[1].Event
 	require.Equal(t, keptnv2.GetTriggeredEventType(keptnv2.TestTaskName), verifyEvent.Event.Type())
@@ -539,7 +515,7 @@ func Test_shipyardController_Scenario4(t *testing.T) {
 
 	// STEP 5
 	// send test.finished event
-	triggeredID, done = sendAndVerifyFinishedEvent(
+	triggeredID = sendAndVerifyFinishedEvent(
 		t,
 		sc,
 		getTestTaskFinishedEvent("dev", triggeredID),
@@ -547,9 +523,7 @@ func Test_shipyardController_Scenario4(t *testing.T) {
 		keptnv2.EvaluationTaskName,
 		"",
 	)
-	if done {
-		return
-	}
+
 	require.Equal(t, 3, len(mockDispatcher.AddCalls()))
 	verifyEvent = mockDispatcher.AddCalls()[2].Event
 	require.Equal(t, keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName), verifyEvent.Event.Type())
@@ -560,16 +534,13 @@ func Test_shipyardController_Scenario4(t *testing.T) {
 	// STEP 7
 	// send evaluation.finished event with result=fail
 
-	done = sendFinishedEventAndVerifyTaskSequenceCompletion(
+	sendFinishedEventAndVerifyTaskSequenceCompletion(
 		t,
 		sc,
 		getEvaluationTaskFinishedEvent("dev", triggeredID, keptnv2.ResultFailed),
 		keptnv2.EvaluationTaskName,
 		"",
 	)
-	if done {
-		return
-	}
 
 	// check for dev.artifact-delivery.finished event
 	require.Equal(t, 6, len(mockDispatcher.AddCalls()))
@@ -593,8 +564,7 @@ func Test_shipyardController_Scenario4a(t *testing.T) {
 	sc, cancel := getTestShipyardController("")
 
 	defer cancel()
-	defer sc.sequenceExecutionRepo.Clear("test-project")
-	done := false
+	defer cleanupCollections("test-project", sc)
 
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
 
@@ -618,10 +588,8 @@ func Test_shipyardController_Scenario4a(t *testing.T) {
 		Service: common.Stringp("carts"),
 		Source:  common.Stringp("shipyard-controller"),
 	}, common.TriggeredEvent)
-	done = fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
-	if done {
-		return
-	}
+	fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
+
 	triggeredID := triggeredEvents[0].ID
 
 	// STEP 2
@@ -635,7 +603,7 @@ func Test_shipyardController_Scenario4a(t *testing.T) {
 	err = sendFinishedEvent(sc, getDeploymentFinishedEvent("dev", triggeredID, "test-source", keptnv2.ResultFailed))
 	require.Nil(t, err)
 
-	done = sendFinishedEventAndVerifyTaskSequenceCompletion(
+	sendFinishedEventAndVerifyTaskSequenceCompletion(
 		t,
 		sc,
 		getDeploymentFinishedEvent("dev", triggeredID, "another-test-source", keptnv2.ResultPass),
@@ -665,8 +633,7 @@ func Test_shipyardController_TriggerOnFail(t *testing.T) {
 	sc, cancel := getTestShipyardController("")
 
 	defer cancel()
-	defer sc.sequenceExecutionRepo.Clear("test-project")
-	done := false
+	defer cleanupCollections("test-project", sc)
 
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
 
@@ -690,10 +657,8 @@ func Test_shipyardController_TriggerOnFail(t *testing.T) {
 		Service: common.Stringp("carts"),
 		Source:  common.Stringp("shipyard-controller"),
 	}, common.TriggeredEvent)
-	done = fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
-	if done {
-		return
-	}
+	fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
+
 	triggeredID := triggeredEvents[0].ID
 
 	// STEP 2
@@ -702,16 +667,13 @@ func Test_shipyardController_TriggerOnFail(t *testing.T) {
 
 	// STEP 3
 	// send deployment.finished event
-	done = sendFinishedEventAndVerifyTaskSequenceCompletion(
+	sendFinishedEventAndVerifyTaskSequenceCompletion(
 		t,
 		sc,
 		getDeploymentFinishedEvent("dev", triggeredID, "test-source", keptnv2.ResultFailed),
 		keptnv2.DeploymentTaskName,
 		"",
 	)
-	if done {
-		return
-	}
 
 	// check for dev.artifact-delivery.finished event
 	require.Equal(t, 4, len(mockDispatcher.AddCalls()))
@@ -744,7 +706,7 @@ func Test_shipyardController_Scenario5(t *testing.T) {
 	sc, cancel := getTestShipyardController(testShipyardFileWithInvalidVersion)
 
 	defer cancel()
-	defer sc.sequenceExecutionRepo.Clear("test-project")
+	defer cleanupCollections("test-project", sc)
 
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
 
@@ -768,7 +730,7 @@ func Test_shipyardController_Scenario6(t *testing.T) {
 	sc, cancel := getTestShipyardController(testShipyardFileWithInvalidVersion)
 
 	defer cancel()
-	defer sc.sequenceExecutionRepo.Clear("test-project")
+	defer cleanupCollections("test-project", sc)
 
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
 
@@ -787,7 +749,7 @@ func Test_shipyardController_Scenario7(t *testing.T) {
 	sc, cancel := getTestShipyardController(testShipyardFileWithInvalidVersion)
 
 	defer cancel()
-	defer sc.sequenceExecutionRepo.Clear("test-project")
+	defer cleanupCollections("test-project", sc)
 
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
 
@@ -825,7 +787,7 @@ func Test_shipyardController_DuplicateTask(t *testing.T) {
 
 	// STEP 3
 	// send deployment.finished event
-	triggeredID, done := sendAndVerifyFinishedEvent(
+	triggeredID := sendAndVerifyFinishedEvent(
 		t,
 		sc,
 		getDeploymentFinishedEvent("dev", triggeredKeptnEvent.ID, "test-source", keptnv2.ResultPass),
@@ -833,9 +795,6 @@ func Test_shipyardController_DuplicateTask(t *testing.T) {
 		keptnv2.DeploymentTaskName,
 		"",
 	)
-	if done {
-		return
-	}
 
 	// STEP 4
 	// send deployment.started event (for the second deployment task)
@@ -843,7 +802,7 @@ func Test_shipyardController_DuplicateTask(t *testing.T) {
 
 	// STEP 5
 	// send deployment.finished event for the second deployment task -> now we want an evaluation.triggered event as the next task
-	triggeredID, done = sendAndVerifyFinishedEvent(
+	triggeredID = sendAndVerifyFinishedEvent(
 		t,
 		sc,
 		getDeploymentFinishedEvent("dev", triggeredID, "test-source", keptnv2.ResultPass),
@@ -1362,6 +1321,7 @@ func getTestShipyardController(shipyardContent string) (*shipyardController, con
 	ctx, cancel := context.WithCancel(context.Background())
 	sc.run(ctx)
 	sc.StartDispatchers(ctx, common.SDModeRW)
+
 	return sc, cancel
 }
 
@@ -1528,12 +1488,9 @@ func sendFinishedEvent(sc *shipyardController, finishedEvent apimodels.KeptnCont
 	return sc.HandleIncomingEvent(finishedEvent, true)
 }
 
-func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEvent apimodels.KeptnContextExtendedCE, eventType, nextEventType string, nextStage string) (string, bool) {
+func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEvent apimodels.KeptnContextExtendedCE, eventType, nextEventType string, nextStage string) string {
 	err := sc.HandleIncomingEvent(finishedEvent, true)
-	if err != nil {
-		t.Errorf("STEP failed: HandleIncomingEvent(%s) returned %v", *finishedEvent.Type, err)
-		return "", true
-	}
+	require.Nil(t, err)
 
 	scope, _ := models.NewEventScope(finishedEvent)
 	if nextStage == "" {
@@ -1562,10 +1519,7 @@ func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEv
 	require.NotEmpty(t, triggeredEvents)
 
 	triggeredID := triggeredEvents[0].ID
-	done := fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(nextEventType), nextStage, nil)
-	if done {
-		return "", true
-	}
+	fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(nextEventType), nextStage, nil)
 
 	// check startedEvent collection -> should not contain <eventType>.started event anymore
 	startedEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
@@ -1574,20 +1528,14 @@ func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEv
 		Service:     common.Stringp("carts"),
 		TriggeredID: common.Stringp(finishedEvent.Triggeredid),
 	}, common.StartedEvent)
-	done = fake.ShouldNotContainEvent(t, startedEvents, keptnv2.GetStartedEventType(eventType), scope.Stage)
-	if done {
-		return "", true
-	}
+	fake.ShouldNotContainEvent(t, startedEvents, keptnv2.GetStartedEventType(eventType), scope.Stage)
 
-	return triggeredID, false
+	return triggeredID
 }
 
-func sendFinishedEventAndVerifyTaskSequenceCompletion(t *testing.T, sc *shipyardController, finishedEvent apimodels.KeptnContextExtendedCE, eventType, nextStage string) bool {
+func sendFinishedEventAndVerifyTaskSequenceCompletion(t *testing.T, sc *shipyardController, finishedEvent apimodels.KeptnContextExtendedCE, eventType, nextStage string) {
 	err := sc.HandleIncomingEvent(finishedEvent, true)
-	if err != nil {
-		t.Errorf("STEP failed: HandleIncomingEvent(%s) returned %v", *finishedEvent.Type, err)
-		return true
-	}
+	require.Nil(t, err)
 
 	scope, _ := models.NewEventScope(finishedEvent)
 	if nextStage == "" {
@@ -1600,10 +1548,7 @@ func sendFinishedEventAndVerifyTaskSequenceCompletion(t *testing.T, sc *shipyard
 		Service: common.Stringp("carts"),
 		Source:  common.Stringp("shipyard-controller"),
 	}, common.TriggeredEvent)
-	done := fake.ShouldNotContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(eventType), scope.Stage)
-	if done {
-		return true
-	}
+	fake.ShouldNotContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(eventType), scope.Stage)
 
 	// check startedEvent collection -> should not contain <eventType>.started event anymore
 	startedEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
@@ -1612,15 +1557,12 @@ func sendFinishedEventAndVerifyTaskSequenceCompletion(t *testing.T, sc *shipyard
 		Service:     common.Stringp("carts"),
 		TriggeredID: common.Stringp(finishedEvent.Triggeredid),
 	}, common.StartedEvent)
-	return fake.ShouldNotContainEvent(t, startedEvents, keptnv2.GetStartedEventType(eventType), scope.Stage)
+	fake.ShouldNotContainEvent(t, startedEvents, keptnv2.GetStartedEventType(eventType), scope.Stage)
 }
 
-func sendAndVerifyPartialFinishedEvent(t *testing.T, sc *shipyardController, finishedEvent apimodels.KeptnContextExtendedCE, eventType, nextEventType string, nextStage string) bool {
+func sendAndVerifyPartialFinishedEvent(t *testing.T, sc *shipyardController, finishedEvent apimodels.KeptnContextExtendedCE, eventType, nextEventType string, nextStage string) {
 	err := sc.HandleIncomingEvent(finishedEvent, true)
-	if err != nil {
-		t.Errorf("STEP failed: HandleIncomingEvent(%s) returned %v", *finishedEvent.Type, err)
-		return true
-	}
+	require.Nil(t, err)
 
 	scope, _ := models.NewEventScope(finishedEvent)
 	if nextStage == "" {
@@ -1633,10 +1575,7 @@ func sendAndVerifyPartialFinishedEvent(t *testing.T, sc *shipyardController, fin
 		Service: common.Stringp("carts"),
 		Source:  common.Stringp("shipyard-controller"),
 	}, common.TriggeredEvent)
-	done := fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(eventType), scope.Stage, nil)
-	if done {
-		return true
-	}
+	fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(eventType), scope.Stage, nil)
 
 	// check triggeredEvent collection -> should not contain <nextEventType>.triggered event
 	triggeredEvents, _ = sc.eventRepo.GetEvents("test-project", common.EventFilter{
@@ -1646,12 +1585,7 @@ func sendAndVerifyPartialFinishedEvent(t *testing.T, sc *shipyardController, fin
 		Source:  common.Stringp("shipyard-controller"),
 	}, common.TriggeredEvent)
 
-	done = fake.ShouldNotContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(nextEventType), nextStage)
-	if done {
-		return true
-	}
-
-	return false
+	fake.ShouldNotContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(nextEventType), nextStage)
 }
 
 func sendAndVerifyStartedEvent(t *testing.T, sc *shipyardController, taskName string, triggeredID string, stage string, fromSource string) {

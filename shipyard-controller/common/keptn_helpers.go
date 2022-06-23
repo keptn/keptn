@@ -11,7 +11,6 @@ import (
 	"github.com/Masterminds/semver/v3"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"gopkg.in/yaml.v3"
@@ -31,26 +30,6 @@ func GetKeptnNamespace() string {
 		return ns
 	}
 	return defaultKeptnNamespace
-}
-
-// GetShipyard godoc
-func GetShipyard(projectName string) (*keptnv2.Shipyard, error) {
-	csEndpoint, err := keptncommon.GetServiceEndpoint("CONFIGURATION_SERVICE")
-	if err != nil {
-		return nil, errors.New("Could not get configuration-service URL: " + err.Error())
-	}
-	resourceHandler := keptnapi.NewResourceHandler(csEndpoint.String())
-	resource, err := resourceHandler.GetProjectResource(projectName, "shipyard.yaml")
-	if err != nil {
-		return nil, errors.New("Could not retrieve shipyard.yaml for project " + projectName + ": " + err.Error())
-	}
-
-	shipyard, err := UnmarshalShipyard(resource.ResourceContent)
-	if err != nil {
-		return nil, err
-	}
-
-	return shipyard, err
 }
 
 // UnmarshalShipyard godoc
