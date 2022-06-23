@@ -449,9 +449,9 @@ func newResource() *resource.Resource {
 		resource.Default(),
 		resource.NewWithAttributes(
 			semconv.SchemaURL,
-			semconv.ServiceNameKey.String("fib"),
-			semconv.ServiceVersionKey.String("v0.1.0"),
-			attribute.String("environment", "demo"),
+			semconv.ServiceNameKey.String("keptn-shipyard-controller"),
+			semconv.ServiceVersionKey.String("0.17.0-dev-PR-8154"),
+			attribute.String("environment", "integration-tests-2"),
 		),
 	)
 	return r
