@@ -1,7 +1,7 @@
 FROM cypress/browsers:node14.17.6-chrome100-ff98 as builder-test-ui
 WORKDIR /usr/src/app
 COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
+# RUN yarn install --frozen-lockfile
 COPY ./ ./
 CMD echo "skipped"
 #CMD ./cypress/run-tests.sh
@@ -9,7 +9,7 @@ CMD echo "skipped"
 FROM node:14-alpine3.15 as builder-test-base
 WORKDIR /usr/src/app
 COPY package.json yarn.lock /usr/src/app/
-RUN yarn install --frozen-lockfile
+# RUN yarn install --frozen-lockfile
 COPY . /usr/src/app
 
 FROM builder-test-base as builder-code-style
