@@ -14,7 +14,7 @@ require (
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.16.1
-	github.com/keptn/keptn/cp-connector v0.0.0-20220621082647-d57cd8c91758
+	github.com/keptn/keptn/cp-connector v0.0.0-20220623055154-a9c1d2fc7481
 	github.com/nats-io/nats-server/v2 v2.8.4
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
@@ -47,7 +47,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 // indirect
 	github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742 // indirect
 	github.com/nats-io/jwt/v2 v2.2.1-0.20220330180145-442af02fd36a // indirect
-	github.com/nats-io/nats.go v1.15.0 // indirect
+	github.com/nats-io/nats.go v1.16.0 // indirect
 	github.com/nats-io/nkeys v0.3.0 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect

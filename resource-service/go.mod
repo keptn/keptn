@@ -8,7 +8,7 @@ require (
 	github.com/go-git/go-git-fixtures/v4 v4.3.1
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.16.1-0.20220621084859-46689a238b69
+	github.com/keptn/go-utils v0.16.1-0.20220622114838-3d2524063c4d
 	github.com/mholt/archiver/v3 v3.5.1
 	github.com/otiai10/copy v1.7.0
 	github.com/sirupsen/logrus v1.8.1
