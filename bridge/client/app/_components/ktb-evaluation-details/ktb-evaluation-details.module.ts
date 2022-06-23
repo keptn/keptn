@@ -15,6 +15,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { KtbPipeModule } from '../../_pipes/ktb-pipe.module';
 import { KtbSliBreakdownModule } from '../ktb-sli-breakdown/ktb-sli-breakdown.module';
 import { DtOverlayModule } from '@dynatrace/barista-components/overlay';
+import { DtInputModule } from '@dynatrace/barista-components/input';
 
 @NgModule({
   declarations: [KtbEvaluationDetailsComponent],
@@ -28,6 +29,7 @@ import { DtOverlayModule } from '@dynatrace/barista-components/overlay';
     DtIconModule.forRoot({
       svgIconLocation: `assets/icons/{{name}}.svg`,
     }),
+    DtInputModule,
     DtKeyValueListModule,
     DtOverlayModule,
     FlexLayoutModule,
