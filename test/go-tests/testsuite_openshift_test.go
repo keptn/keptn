@@ -2,11 +2,13 @@ package go_tests
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
 
 func Test_Openshift(t *testing.T) {
+	<-time.After(2 * time.Minute)
 
 	// On the minishift tests running on Github, using the rollingUpgrade strategy lead to random failures due to the
 	// shipyard controller not being available after a restart.
