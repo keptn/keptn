@@ -9,11 +9,13 @@ import { DtOverlayModule } from '@dynatrace/barista-components/overlay';
 import { DtIconModule } from '@dynatrace/barista-components/icon';
 import { KtbVariableSelectorModule } from '../ktb-variable-selector/ktb-variable-selector.module';
 import { DtInputModule } from '@dynatrace/barista-components/input';
+import { DtButtonModule } from '@dynatrace/barista-components/button';
 
 @NgModule({
   declarations: [KtbWebhookSettingsComponent],
   imports: [
     CommonModule,
+    DtButtonModule,
     DtSelectModule,
     DtIconModule.forRoot({
       svgIconLocation: `assets/icons/{{name}}.svg`,
