@@ -53,7 +53,7 @@ func Test_CustomUserManagedEndpointsTest(t *testing.T) {
 
 	defer os.Remove("chart.tgz")
 
-	namespaceManager, err := kubeutils.NewManespaceManager(false)
+	namespaceManager, err := kubeutils.NewMamespaceManager(false)
 	require.Nil(t, err)
 
 	// make sure the namespace from a previous test run has been deleted properly

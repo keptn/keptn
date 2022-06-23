@@ -221,7 +221,7 @@ func smartFetchKeptnAuthParameters(authParams *authCmdParams, smartKeptnAuth sma
 }
 
 func smartKeptnCLIAuth() (string, error) {
-	namespaceManager, err := kubeutils.NewManespaceManager(false)
+	namespaceManager, err := kubeutils.NewMamespaceManager(false)
 	if err != nil {
 		return "", err
 	}

@@ -399,7 +399,7 @@ func getKeptnAPIReachable() *errorableBoolResult {
 
 func getKubeContextPointsToKeptnCluster(keptnNamespace string) *errorableBoolResult {
 	fmt.Println("Checking whether kube context points to Keptn cluster")
-	namespaceManager, err := kubeutils.NewManespaceManager(false)
+	namespaceManager, err := kubeutils.NewMamespaceManager(false)
 	if err != nil {
 		return &errorableBoolResult{Result: false, Err: err}
 	}
