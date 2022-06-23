@@ -122,7 +122,6 @@ import { KtbSequenceListModule } from './_components/ktb-sequence-list/ktb-seque
 import { KtbSequenceTasksListModule } from './_components/ktb-sequence-tasks-list/ktb-sequence-tasks-list.module';
 import { KtbSecretsListModule } from './_components/ktb-secrets-list/ktb-secrets-list.module';
 import { KtbStageDetailsModule } from './_views/ktb-environment-view/ktb-stage-details/ktb-stage-details.module';
-import { KtbTriggerSequenceModule } from './_components/ktb-trigger-sequence/ktb-trigger-sequence.module';
 import { KtbStageOverviewModule } from './_views/ktb-environment-view/ktb-stage-overview/ktb-stage-overview.module';
 import { KtbAppHeaderModule } from './_components/ktb-app-header/ktb-app-header.module';
 
@@ -232,7 +231,6 @@ const ktbModules = [
   KtbStageOverviewModule,
   KtbSubscriptionItemModule,
   KtbTreeListSelectModule,
-  KtbTriggerSequenceModule,
   KtbUniformRegistrationLogsModule,
   KtbUniformSubscriptionsModule,
   KtbVariableSelectorModule,

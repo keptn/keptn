@@ -14,8 +14,8 @@ import { Router } from '@angular/router';
 import moment from 'moment';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { ICustomSequences } from '../../../../shared/interfaces/custom-sequences';
-import { Timeframe } from '../../_models/timeframe';
+import { ICustomSequences } from '../../../../../../shared/interfaces/custom-sequences';
+import { Timeframe } from '../../../../_models/timeframe';
 import {
   CustomSequenceFormData,
   DeliverySequenceFormData,
@@ -24,10 +24,10 @@ import {
   TRIGGER_SEQUENCE,
   TriggerResponse,
   TriggerSequenceData,
-} from '../../_models/trigger-sequence';
-import { DataService } from '../../_services/data.service';
-import { AppUtils } from '../../_utils/app.utils';
-import { FormUtils } from '../../_utils/form.utils';
+} from '../../../../_models/trigger-sequence';
+import { DataService } from '../../../../_services/data.service';
+import { AppUtils } from '../../../../_utils/app.utils';
+import { FormUtils } from '../../../../_utils/form.utils';
 
 export class ShowErrorStateMatcher implements ErrorStateMatcher {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
