@@ -90,7 +90,7 @@ spec:
             - name: SERVICE_FILTER
               value: "{{ .Values.distributor.serviceFilter }}"
             - name: DISTRIBUTOR_VERSION
-              value: {{ include "service.tag" ( dict "imageRoot" .Values.distributor.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote}}
+              value: {{ include "service.tag" ( dict "imageRoot" .Values.distributor.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote }}
             - name: VERSION
               valueFrom:
                 fieldRef:
