@@ -150,7 +150,7 @@ func TestGitCredentials_Validate(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "proxy URL without port",
+			name: "invalid credentials",
 			gitCredentials: GitCredentials{
 				User:      "my-user",
 				RemoteURL: "httpg://my-repo",

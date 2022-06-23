@@ -94,6 +94,7 @@ var ErrCredentialsPrivateKeyMustNotBeEmpty = New("private key must not be empty"
 var ErrProxyInvalidScheme = New("proxy scheme must be http or https")
 var ErrInvalidRemoteURL = New("remoteURL scheme must be http, https or ssh")
 var ErrProxyInvalidURL = New("proxy URL must contain IP address and port (<ip-address>:<port>)")
+var ErrInvalidCredentials = New("credentials need to have ssh or http auth method")
 
 // Error messages
 

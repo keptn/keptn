@@ -33,7 +33,7 @@ func (g GitCredentials) Validate() error {
 			return kerrors.ErrCredentialsPrivateKeyMustNotBeEmpty
 		}
 	} else {
-		return kerrors.ErrCredentialsInvalidRemoteURL
+		return kerrors.ErrInvalidCredentials
 	}
 	return nil
 }
