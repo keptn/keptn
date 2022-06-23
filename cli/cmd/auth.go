@@ -207,7 +207,7 @@ func smartFetchKeptnAuthParameters(authParams *authCmdParams, smartKeptnAuth sma
 	*authParams.endPoint = addCorrectHttpPrefix(authParams)
 
 	if authParams.apiToken == nil || *authParams.apiToken == "" {
-		keptnApiTokenProvider, err := kubeutils.NewApiTokenProvider(false)
+		keptnApiTokenProvider, err := kubeutils.NewAPITokenProvider(false)
 		if err != nil {
 			return err
 		}
@@ -221,7 +221,7 @@ func smartFetchKeptnAuthParameters(authParams *authCmdParams, smartKeptnAuth sma
 }
 
 func smartKeptnCLIAuth() (string, error) {
-	namespaceManager, err := kubeutils.NewMamespaceManager(false)
+	namespaceManager, err := kubeutils.NewNamespaceManager(false)
 	if err != nil {
 		return "", err
 	}

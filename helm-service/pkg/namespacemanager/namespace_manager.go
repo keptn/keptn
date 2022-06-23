@@ -29,7 +29,7 @@ func NewNamespaceManager(logger keptn.LoggerInterface) *NamespaceManager {
 
 // InitNamespaces initializes namespaces if they do not exist yet
 func (p *NamespaceManager) CreateNamespaceIfNotExists(nsName string) error {
-	namespaceManager, err := kubeutils.NewMamespaceManager(true)
+	namespaceManager, err := kubeutils.NewNamespaceManager(true)
 	if err != nil {
 		return err
 	}

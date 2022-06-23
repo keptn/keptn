@@ -423,7 +423,7 @@ func CreateSubscription(t *testing.T, serviceName string, subscription models.Ev
 }
 
 func GetApiCredentials() (string, string, error) {
-	keptnApiTokenProvider, err := kubeutils.NewApiTokenProvider(false)
+	keptnApiTokenProvider, err := kubeutils.NewAPITokenProvider(false)
 	if err != nil {
 		return "", "", err
 	}
