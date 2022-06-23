@@ -6,6 +6,7 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
+	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/sdk/trace"
@@ -438,6 +439,14 @@ func getDurationFromEnvVar(durationString, fallbackValue string) time.Duration {
 func newExporter() (trace.SpanExporter, error) {
 	kubeClient, _ := createKubeAPI()
 	dtToken, _ := kubeClient.CoreV1().Secrets(common.GetKeptnNamespace()).Get(context.TODO(), "dt-secret-otel", v1.GetOptions{})
+	if dtToken == nil {
+		return stdouttrace.New(
+			// Use human-readable output.
+			stdouttrace.WithPrettyPrint(),
+			// Do not print timestamps for the demo.
+			stdouttrace.WithoutTimestamps(),
+		)
+	}
 	return otlptracehttp.New(
 		context.TODO(),
 		otlptracehttp.WithEndpoint(string(dtToken.Data["tenant"])),
