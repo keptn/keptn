@@ -31,14 +31,14 @@ import { FormUtils } from '../../../../_utils/form.utils';
 
 export class ShowErrorStateMatcher implements ErrorStateMatcher {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  isErrorState(control: FormControl | null, form: FormGroupDirective | NgForm | null): boolean {
+  isErrorState(_control: FormControl | null, _form: FormGroupDirective | NgForm | null): boolean {
     return true;
   }
 }
 
 export class JsonErrorStateMatcher implements ErrorStateMatcher {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  isErrorState(control: FormControl | null, form: FormGroupDirective | NgForm | null): boolean {
+  isErrorState(control: FormControl | null, _form: FormGroupDirective | NgForm | null): boolean {
     if (control?.value) {
       return !AppUtils.isValidJson(control.value);
     }
