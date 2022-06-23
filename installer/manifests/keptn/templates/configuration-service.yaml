@@ -152,7 +152,7 @@ spec:
 {{- if .Values.configurationService.initContainer }}
       initContainers:
         - name: change-user-init
-          image: {{ .Values.configurationService.image.repository }}:{{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
+          image: {{ include "service.image" ( dict "imageRoot" .Values.configurationService.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
           securityContext:
             runAsUser: 0
           volumeMounts:
@@ -166,7 +166,7 @@ spec:
       terminationGracePeriodSeconds: {{ .Values.configurationService.gracePeriod | default 60 }}
       containers:
         - name: configuration-service
-          image: {{ .Values.configurationService.image.repository }}:{{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
+          image: {{ include "service.image" ( dict "imageRoot" .Values.configurationService.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
           {{- $prestop := .Values.configurationService.preStopHookTime | default 20 | quote -}}
           {{- include "keptn.prestop" $prestop | nindent 10 }}
           livenessProbe:

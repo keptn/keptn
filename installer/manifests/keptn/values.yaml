@@ -1,7 +1,7 @@
 global:
   keptn:
     repository: docker.io/keptn
-    appVersion: ""
+    tag: ""
 
 continuousDelivery:
   enabled: false
@@ -91,8 +91,9 @@ apiGatewayNginx:
     allowPrivilegeEscalation: false
     privileged: false
   image:
-    repository: docker.io/nginxinc/nginx-unprivileged
-    tag: 1.22.0-alpine
+    registry: "docker.io/nginxinc"           # Container Registry
+    repository: "nginx-unprivileged"         # Container Image Name
+    tag: "1.22.0-alpine"                     # Container Tag
   nodeSelector: {}
   gracePeriod: 60
   preStopHookTime: 20
