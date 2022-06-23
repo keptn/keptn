@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -29,6 +30,29 @@ func NewProjectCredentialsRepo(dbConnection *MongoDBConnection) *projectCredenti
 	return &projectCredentialsRepo{
 		ProjectRepo: projectsRepo,
 	}
+}
+
+func (m *projectCredentialsRepo) CreateOldCredentialsProject(project *models.ExpandedProjectOld) error {
+	err := m.ProjectRepo.DBConnection.EnsureDBConnection()
+	if err != nil {
+		return err
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	marshal, _ := json.Marshal(project)
+	var prjInterface interface{}
+	err = json.Unmarshal(marshal, &prjInterface)
+	if err != nil {
+		return err
+	}
+
+	projectCollection := m.ProjectRepo.getProjectsCollection()
+	_, err = projectCollection.InsertOne(ctx, prjInterface)
+	if err != nil {
+		fmt.Println("Could not create project " + project.ProjectName + ": " + err.Error())
+	}
+	return nil
 }
 
 func (m *projectCredentialsRepo) GetOldCredentialsProjects() ([]*models.ExpandedProjectOld, error) {
