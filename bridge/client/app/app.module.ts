@@ -75,12 +75,6 @@ import { KtbSelectableTileModule } from './_components/ktb-selectable-tile/ktb-s
 import { KtbSequenceControlsModule } from './_components/ktb-sequence-controls/ktb-sequence-controls.module';
 import { KtbSequenceStateInfoModule } from './_components/ktb-sequence-state-info/ktb-sequence-state-info.module';
 import { KtbSequenceStateListModule } from './_components/ktb-sequence-state-list/ktb-sequence-state-list.module';
-import { KtbSequenceTimelineComponent } from './_components/ktb-sequence-timeline/ktb-sequence-timeline.component';
-import { KtbServiceDetailsComponent } from './_components/ktb-service-details/ktb-service-details.component';
-import { KtbServiceSettingsListComponent } from './_components/ktb-service-settings-list/ktb-service-settings-list.component';
-import { KtbServiceSettingsOverviewComponent } from './_components/ktb-service-settings-overview/ktb-service-settings-overview.component';
-import { KtbServiceSettingsComponent } from './_components/ktb-service-settings/ktb-service-settings.component';
-import { KtbServicesListComponent } from './_components/ktb-services-list/ktb-services-list.component';
 import { KtbSshKeyInputModule } from './_components/ktb-ssh-key-input/ktb-ssh-key-input.module';
 import { KtbStageBadgeModule } from './_components/ktb-stage-badge/ktb-stage-badge.module';
 import { KtbStageDetailsComponent } from './_components/ktb-stage-details/ktb-stage-details.component';
@@ -127,6 +121,10 @@ import { KtbNoServiceInfoModule } from './_components/ktb-no-service-info/ktb-no
 import { KtbSequenceListModule } from './_components/ktb-sequence-list/ktb-sequence-list.module';
 import { KtbSequenceTasksListModule } from './_components/ktb-sequence-tasks-list/ktb-sequence-tasks-list.module';
 import { KtbSecretsListModule } from './_components/ktb-secrets-list/ktb-secrets-list.module';
+import { KtbSequenceTimelineModule } from './_components/ktb-sequence-timeline/ktb-sequence-timeline.module';
+import { KtbServiceDetailsModule } from './_components/ktb-service-details/ktb-service-details.module';
+import { KtbServiceSettingsModule } from './_components/ktb-service-settings/ktb-service-settings.module';
+import { KtbServicesListModule } from './_components/ktb-services-list/ktb-services-list.module';
 
 registerLocaleData(localeEn, 'en');
 
@@ -227,6 +225,10 @@ const ktbModules = [
   KtbSequenceStateInfoModule,
   KtbSequenceStateListModule,
   KtbSequenceTasksListModule,
+  KtbSequenceTimelineModule,
+  KtbServiceDetailsModule,
+  KtbServiceSettingsModule,
+  KtbServicesListModule,
   KtbSshKeyInputModule,
   KtbStageBadgeModule,
   KtbSubscriptionItemModule,
@@ -250,18 +252,12 @@ const ktbModules = [
     KtbShowHttpLoadingDirective,
     KtbHideHttpLoadingDirective,
     KtbMarkdownComponent,
-    KtbSequenceTimelineComponent,
     KtbEnvironmentViewComponent,
     KtbStageOverviewComponent,
     KtbIntegrationViewComponent,
     KtbStageDetailsComponent,
-    KtbServicesListComponent,
     KtbUserComponent,
-    KtbServiceDetailsComponent,
     KtbSettingsViewComponent,
-    KtbServiceSettingsComponent,
-    KtbServiceSettingsOverviewComponent,
-    KtbServiceSettingsListComponent,
     KtbTriggerSequenceComponent,
     KtbRootComponent,
     KtbLogoutViewComponent,

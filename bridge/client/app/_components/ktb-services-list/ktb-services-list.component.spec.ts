@@ -1,9 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbServicesListComponent } from './ktb-services-list.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { AppModule } from '../../app.module';
 import { Service } from '../../_models/service';
 import { ServiceMock } from '../../_services/_mockData/service.mock';
+import { KtbServicesListModule } from './ktb-services-list.module';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('KtbServicesListComponent', () => {
   let component: KtbServicesListComponent;
@@ -12,7 +13,7 @@ describe('KtbServicesListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule, HttpClientTestingModule],
+      imports: [KtbServicesListModule, HttpClientTestingModule, RouterTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbServicesListComponent);

@@ -1,9 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbServiceSettingsOverviewComponent } from './ktb-service-settings-overview.component';
-import { AppModule } from '../../app.module';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
 import { By } from '@angular/platform-browser';
+import { KtbServiceSettingsModule } from '../ktb-service-settings.module';
+import { RouterTestingModule } from '@angular/router/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('KtbServiceSettingsOverviewComponent', () => {
   let component: KtbServiceSettingsOverviewComponent;
@@ -11,7 +13,7 @@ describe('KtbServiceSettingsOverviewComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule],
+      imports: [KtbServiceSettingsModule, RouterTestingModule, HttpClientTestingModule],
       providers: [
         {
           provide: ActivatedRoute,
