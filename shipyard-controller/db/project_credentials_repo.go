@@ -12,23 +12,23 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-type MongoDBProjectCredentialsRepo interface {
+type ProjectCredentialsRepo interface {
 	UpdateProject(project *models.ExpandedProjectOld) error
 	GetOldCredentialsProjects() ([]*models.ExpandedProjectOld, error)
 }
 
-type mongoDBProjectCredentialsRepo struct {
+type projectCredentialsRepo struct {
 	ProjectRepo *MongoDBProjectsRepo
 }
 
-func NewMongoDBProjectCredentialsRepo(dbConnection *MongoDBConnection) *mongoDBProjectCredentialsRepo {
+func NewProjectCredentialsRepo(dbConnection *MongoDBConnection) *projectCredentialsRepo {
 	projectsRepo := NewMongoDBProjectsRepo(dbConnection)
-	return &mongoDBProjectCredentialsRepo{
+	return &projectCredentialsRepo{
 		ProjectRepo: projectsRepo,
 	}
 }
 
-func (m *mongoDBProjectCredentialsRepo) GetOldCredentialsProjects() ([]*models.ExpandedProjectOld, error) {
+func (m *projectCredentialsRepo) GetOldCredentialsProjects() ([]*models.ExpandedProjectOld, error) {
 	result := []*models.ExpandedProjectOld{}
 	err := m.ProjectRepo.DBConnection.EnsureDBConnection()
 	if err != nil {
@@ -48,7 +48,7 @@ func (m *mongoDBProjectCredentialsRepo) GetOldCredentialsProjects() ([]*models.E
 		projectResult := &models.ExpandedProjectOld{}
 		err := cursor.Decode(projectResult)
 		if err != nil {
-			logrus.Errorf("Could not cast to *models.Project")
+			logrus.Errorf("Could not cast to *models.ExpandedProjectOld")
 		}
 		result = append(result, projectResult)
 	}
@@ -92,7 +92,7 @@ func TransformGitCredentials(project *models.ExpandedProjectOld) *apimodels.Expa
 	return &newProject
 }
 
-func (m *mongoDBProjectCredentialsRepo) UpdateProject(project *models.ExpandedProjectOld) error {
+func (m *projectCredentialsRepo) UpdateProject(project *models.ExpandedProjectOld) error {
 	newProject := TransformGitCredentials(project)
 	if newProject == nil {
 		return nil

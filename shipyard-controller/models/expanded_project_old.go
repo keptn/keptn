@@ -2,6 +2,10 @@ package models
 
 import apimodels "github.com/keptn/go-utils/pkg/api/models"
 
+// ExpandedProjectOld represents the old git credentials model
+// which is needed here for retrieving the project credentials
+// in old format and migrate them to a newer format
+// Structure can be removed when the migration is not needed anymore
 type ExpandedProjectOld struct {
 
 	// Creation date of the project

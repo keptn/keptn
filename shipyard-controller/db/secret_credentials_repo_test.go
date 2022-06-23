@@ -325,7 +325,7 @@ func TestMongoDBSecretCredentialsRepo_UpdateSecret(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			repo := NewMongoDBSecretCredentialsRepo(&tt.secretStore)
+			repo := NewSecretCredentialsRepo(&tt.secretStore)
 			err := repo.UpdateSecret(tt.in)
 			require.Equal(t, tt.err, err)
 		})

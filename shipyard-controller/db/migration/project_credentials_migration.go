@@ -10,14 +10,14 @@ import (
 
 func NewProjectCredentialsMigrator(dbConnection *db.MongoDBConnection, secretStore common.SecretStore) *ProjectCredentialsMigrator {
 	return &ProjectCredentialsMigrator{
-		projectRepo: db.NewMongoDBProjectCredentialsRepo(dbConnection),
-		secretRepo:  db.NewMongoDBSecretCredentialsRepo(secretStore),
+		projectRepo: db.NewProjectCredentialsRepo(dbConnection),
+		secretRepo:  db.NewSecretCredentialsRepo(secretStore),
 	}
 }
 
 type ProjectCredentialsMigrator struct {
-	projectRepo db.MongoDBProjectCredentialsRepo
-	secretRepo  db.MongoDBSecretCredentialsRepo
+	projectRepo db.ProjectCredentialsRepo
+	secretRepo  db.SecretCredentialsRepo
 }
 
 func (s *ProjectCredentialsMigrator) Transform() error {

@@ -10,21 +10,21 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 )
 
-type MongoDBSecretCredentialsRepo interface {
+type SecretCredentialsRepo interface {
 	UpdateSecret(project *models.ExpandedProjectOld) error
 }
 
-type mongoDBSecretCredentialsRepo struct {
+type secretCredentialsRepo struct {
 	SecretStore common.SecretStore
 }
 
-func NewMongoDBSecretCredentialsRepo(secretStore common.SecretStore) *mongoDBSecretCredentialsRepo {
-	return &mongoDBSecretCredentialsRepo{
+func NewSecretCredentialsRepo(secretStore common.SecretStore) *secretCredentialsRepo {
+	return &secretCredentialsRepo{
 		SecretStore: secretStore,
 	}
 }
 
-func (s *mongoDBSecretCredentialsRepo) UpdateSecret(project *models.ExpandedProjectOld) error {
+func (s *secretCredentialsRepo) UpdateSecret(project *models.ExpandedProjectOld) error {
 	secret, err := s.SecretStore.GetSecret("git-credentials-" + project.ProjectName)
 	if err != nil {
 		return fmt.Errorf("failed to get git-credentials secret during migration for project %s", project.ProjectName)

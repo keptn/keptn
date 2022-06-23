@@ -13,18 +13,18 @@ import (
 func TestProjectCredentialsMigration_Transform(t *testing.T) {
 	tests := []struct {
 		name        string
-		projectRepo db.MongoDBProjectCredentialsRepo
-		secretRepo  db.MongoDBSecretCredentialsRepo
+		projectRepo db.ProjectCredentialsRepo
+		secretRepo  db.SecretCredentialsRepo
 		want        error
 	}{
 		{
 			name: "valid",
-			secretRepo: db_mock.MongoDBSecretCredentialsRepoMock{
+			secretRepo: db_mock.SecretCredentialsRepoMock{
 				UpdateSecretFunc: func(project *models.ExpandedProjectOld) error {
 					return nil
 				},
 			},
-			projectRepo: db_mock.MongoDBProjectCredentialsRepoMock{
+			projectRepo: db_mock.ProjectCredentialsRepoMock{
 				GetOldCredentialsProjectsFunc: func() ([]*models.ExpandedProjectOld, error) {
 					return []*models.ExpandedProjectOld{
 						{
@@ -59,12 +59,12 @@ func TestProjectCredentialsMigration_Transform(t *testing.T) {
 		},
 		{
 			name: "no projects",
-			secretRepo: db_mock.MongoDBSecretCredentialsRepoMock{
+			secretRepo: db_mock.SecretCredentialsRepoMock{
 				UpdateSecretFunc: func(project *models.ExpandedProjectOld) error {
 					return nil
 				},
 			},
-			projectRepo: db_mock.MongoDBProjectCredentialsRepoMock{
+			projectRepo: db_mock.ProjectCredentialsRepoMock{
 				GetOldCredentialsProjectsFunc: func() ([]*models.ExpandedProjectOld, error) {
 					return []*models.ExpandedProjectOld{}, nil
 				},
@@ -76,12 +76,12 @@ func TestProjectCredentialsMigration_Transform(t *testing.T) {
 		},
 		{
 			name: "nil projects",
-			secretRepo: db_mock.MongoDBSecretCredentialsRepoMock{
+			secretRepo: db_mock.SecretCredentialsRepoMock{
 				UpdateSecretFunc: func(project *models.ExpandedProjectOld) error {
 					return nil
 				},
 			},
-			projectRepo: db_mock.MongoDBProjectCredentialsRepoMock{
+			projectRepo: db_mock.ProjectCredentialsRepoMock{
 				GetOldCredentialsProjectsFunc: func() ([]*models.ExpandedProjectOld, error) {
 					return nil, nil
 				},
@@ -93,7 +93,7 @@ func TestProjectCredentialsMigration_Transform(t *testing.T) {
 		},
 		{
 			name: "get projects err",
-			projectRepo: db_mock.MongoDBProjectCredentialsRepoMock{
+			projectRepo: db_mock.ProjectCredentialsRepoMock{
 				GetOldCredentialsProjectsFunc: func() ([]*models.ExpandedProjectOld, error) {
 					return nil, fmt.Errorf("some err")
 				},
@@ -102,12 +102,12 @@ func TestProjectCredentialsMigration_Transform(t *testing.T) {
 		},
 		{
 			name: "update project err",
-			secretRepo: db_mock.MongoDBSecretCredentialsRepoMock{
+			secretRepo: db_mock.SecretCredentialsRepoMock{
 				UpdateSecretFunc: func(project *models.ExpandedProjectOld) error {
 					return nil
 				},
 			},
-			projectRepo: db_mock.MongoDBProjectCredentialsRepoMock{
+			projectRepo: db_mock.ProjectCredentialsRepoMock{
 				GetOldCredentialsProjectsFunc: func() ([]*models.ExpandedProjectOld, error) {
 					return []*models.ExpandedProjectOld{
 						{
@@ -142,12 +142,12 @@ func TestProjectCredentialsMigration_Transform(t *testing.T) {
 		},
 		{
 			name: "update secret err",
-			secretRepo: db_mock.MongoDBSecretCredentialsRepoMock{
+			secretRepo: db_mock.SecretCredentialsRepoMock{
 				UpdateSecretFunc: func(project *models.ExpandedProjectOld) error {
 					return fmt.Errorf("some err")
 				},
 			},
-			projectRepo: db_mock.MongoDBProjectCredentialsRepoMock{
+			projectRepo: db_mock.ProjectCredentialsRepoMock{
 				GetOldCredentialsProjectsFunc: func() ([]*models.ExpandedProjectOld, error) {
 					return []*models.ExpandedProjectOld{
 						{
