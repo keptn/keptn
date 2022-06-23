@@ -116,7 +116,7 @@ export class KtbStageOverviewComponent implements OnDestroy, OnInit {
     return services;
   }
 
-  public trackStage(index: number, stage: string[] | null): string | undefined {
+  public trackStage(_index: number, stage: string[] | null): string | undefined {
     return stage?.toString();
   }
 
