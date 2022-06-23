@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestMongoDBProjectCredentialsRepo_Transform(t *testing.T) {
+func TestProjectCredentialsRepo_Transform(t *testing.T) {
 	tests := []struct {
 		name string
 		in   *models.ExpandedProjectOld

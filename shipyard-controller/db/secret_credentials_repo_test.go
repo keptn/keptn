@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestMongoDBSecretCredentialsRepo_Transform(t *testing.T) {
+func TestSecretCredentialsRepo_Transform(t *testing.T) {
 	tests := []struct {
 		name string
 		in   *models.GitOldCredentials
@@ -200,7 +200,7 @@ func TestMongoDBSecretCredentialsRepo_Transform(t *testing.T) {
 	}
 }
 
-func TestMongoDBSecretCredentialsRepo_UpdateSecret(t *testing.T) {
+func TestSecretCredentialsRepo_UpdateSecret(t *testing.T) {
 	tests := []struct {
 		name        string
 		secretStore common_mock.SecretStoreMock
