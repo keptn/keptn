@@ -97,20 +97,20 @@ keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE
 			Name: &args[0],
 		}
 
-		if *updateProjectParams.GitUser != "" && *updateProjectParams.RemoteURL != "" {
-			if *updateProjectParams.GitToken == "" && *updateProjectParams.GitPrivateKey == "" {
+		if isStringFlagSet(updateProjectParams.GitUser) && isStringFlagSet(updateProjectParams.RemoteURL) {
+			if isStringFlagNotSet(updateProjectParams.GitToken) && isStringFlagNotSet(updateProjectParams.GitPrivateKey) {
 				return errors.New("Access token or private key must be set")
 			}
 
-			if *updateProjectParams.GitToken != "" && *updateProjectParams.GitPrivateKey != "" {
+			if isStringFlagSet(updateProjectParams.GitToken) && isStringFlagSet(updateProjectParams.GitPrivateKey) {
 				return errors.New("Access token and private key cannot be set together")
 			}
 
-			if *updateProjectParams.GitProxyURL != "" && strings.HasPrefix(*updateProjectParams.RemoteURL, "ssh://") {
+			if isStringFlagSet(updateProjectParams.GitProxyURL) && strings.HasPrefix(*updateProjectParams.RemoteURL, "ssh://") {
 				return errors.New("Proxy cannot be set with SSH")
 			}
 
-			if *updateProjectParams.GitProxyURL != "" && *updateProjectParams.GitProxyScheme == "" {
+			if isStringFlagSet(updateProjectParams.GitProxyURL) && isStringFlagNotSet(updateProjectParams.GitProxyScheme) {
 				return errors.New("Proxy cannot be set without scheme")
 			}
 
@@ -126,7 +126,7 @@ keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE
 				}
 
 				sshCredentials := apimodels.SshGitAuth{
-					PrivateKey:     string(base64.StdEncoding.EncodeToString(content)),
+					PrivateKey:     base64.StdEncoding.EncodeToString(content),
 					PrivateKeyPass: *updateProjectParams.GitPrivateKeyPass,
 				}
 
@@ -137,7 +137,7 @@ keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE
 					InsecureSkipTLS: *updateProjectParams.InsecureSkipTLS,
 				}
 
-				if updateProjectParams.GitProxyURL != nil && *updateProjectParams.GitProxyURL != "" {
+				if isStringFlagSet(updateProjectParams.GitProxyURL) {
 					proxyCredentials := apimodels.ProxyGitAuth{
 						URL:      *updateProjectParams.GitProxyURL,
 						Scheme:   *updateProjectParams.GitProxyScheme,
@@ -147,13 +147,13 @@ keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE
 					httpCredentials.Proxy = &proxyCredentials
 				}
 
-				if updateProjectParams.GitPemCertificate != nil && *updateProjectParams.GitPemCertificate != "" {
+				if isStringFlagSet(updateProjectParams.GitPemCertificate) {
 					content, err := ioutil.ReadFile(*updateProjectParams.GitPemCertificate)
 					if err != nil {
 						return fmt.Errorf("unable to read PEM Certificate file: %s\n", err.Error())
 					}
 
-					httpCredentials.Certificate = string(base64.StdEncoding.EncodeToString(content))
+					httpCredentials.Certificate = base64.StdEncoding.EncodeToString(content)
 				}
 				project.GitCredentials.HttpsAuth = &httpCredentials
 			}

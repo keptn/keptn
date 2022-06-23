@@ -25,14 +25,14 @@ func (s *ProjectCredentialsMigrator) Transform() error {
 	if err != nil {
 		return fmt.Errorf("could not transform git credentials to new format: %s", err.Error())
 	}
-	if err := s.UpdateSecrets(projects); err != nil {
+	if err := s.updateSecrets(projects); err != nil {
 		return err
 	}
-	return s.UpdateProjects(projects)
+	return s.updateProjects(projects)
 
 }
 
-func (s *ProjectCredentialsMigrator) UpdateProjects(projects []*models.ExpandedProjectOld) error {
+func (s *ProjectCredentialsMigrator) updateProjects(projects []*models.ExpandedProjectOld) error {
 	if projects == nil {
 		return nil
 	}
@@ -45,7 +45,7 @@ func (s *ProjectCredentialsMigrator) UpdateProjects(projects []*models.ExpandedP
 	return nil
 }
 
-func (s *ProjectCredentialsMigrator) UpdateSecrets(projects []*models.ExpandedProjectOld) error {
+func (s *ProjectCredentialsMigrator) updateSecrets(projects []*models.ExpandedProjectOld) error {
 	if projects == nil {
 		return nil
 	}

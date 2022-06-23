@@ -122,20 +122,20 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-r
 			Shipyard: &encodedShipyardContent,
 		}
 
-		if *createProjectParams.GitUser != "" && *createProjectParams.RemoteURL != "" {
-			if *createProjectParams.GitToken == "" && *createProjectParams.GitPrivateKey == "" {
+		if isStringFlagSet(createProjectParams.GitUser) && isStringFlagSet(createProjectParams.RemoteURL) {
+			if isStringFlagNotSet(createProjectParams.GitToken) && isStringFlagNotSet(createProjectParams.GitPrivateKey) {
 				return errors.New("Access token or private key must be set")
 			}
 
-			if *createProjectParams.GitToken != "" && *createProjectParams.GitPrivateKey != "" {
+			if isStringFlagSet(createProjectParams.GitToken) && isStringFlagSet(createProjectParams.GitPrivateKey) {
 				return errors.New("Access token and private key cannot be set together")
 			}
 
-			if *createProjectParams.GitProxyURL != "" && strings.HasPrefix(*createProjectParams.RemoteURL, "ssh://") {
+			if isStringFlagSet(createProjectParams.GitProxyURL) && strings.HasPrefix(*createProjectParams.RemoteURL, "ssh://") {
 				return errors.New("Proxy cannot be set with SSH")
 			}
 
-			if *createProjectParams.GitProxyURL != "" && *createProjectParams.GitProxyScheme == "" {
+			if isStringFlagSet(createProjectParams.GitProxyURL) && isStringFlagNotSet(createProjectParams.GitProxyScheme) {
 				return errors.New("Proxy cannot be set without scheme")
 			}
 
@@ -151,7 +151,7 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-r
 				}
 
 				sshCredentials := apimodels.SshGitAuth{
-					PrivateKey:     string(base64.StdEncoding.EncodeToString(content)),
+					PrivateKey:     base64.StdEncoding.EncodeToString(content),
 					PrivateKeyPass: *createProjectParams.GitPrivateKeyPass,
 				}
 
@@ -162,7 +162,7 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-r
 					InsecureSkipTLS: *createProjectParams.InsecureSkipTLS,
 				}
 
-				if createProjectParams.GitProxyURL != nil && *createProjectParams.GitProxyURL != "" {
+				if isStringFlagSet(createProjectParams.GitProxyURL) {
 					proxyCredentials := apimodels.ProxyGitAuth{
 						URL:      *createProjectParams.GitProxyURL,
 						Scheme:   *createProjectParams.GitProxyScheme,
@@ -172,13 +172,13 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-r
 					httpCredentials.Proxy = &proxyCredentials
 				}
 
-				if createProjectParams.GitPemCertificate != nil && *createProjectParams.GitPemCertificate != "" {
+				if isStringFlagSet(createProjectParams.GitPemCertificate) {
 					content, err := ioutil.ReadFile(*createProjectParams.GitPemCertificate)
 					if err != nil {
 						return fmt.Errorf("unable to read PEM Certificate file: %s\n", err.Error())
 					}
 
-					httpCredentials.Certificate = string(base64.StdEncoding.EncodeToString(content))
+					httpCredentials.Certificate = base64.StdEncoding.EncodeToString(content)
 				}
 				project.GitCredentials.HttpsAuth = &httpCredentials
 			}
@@ -208,20 +208,20 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-r
 }
 
 func checkGitCredentials() error {
-	if *createProjectParams.GitToken == "" && *createProjectParams.RemoteURL == "" {
+	if isStringFlagNotSet(createProjectParams.GitToken) && isStringFlagNotSet(createProjectParams.RemoteURL) {
 		fmt.Println(gitMissingUpstream)
 		return nil
 	}
 
-	if *createProjectParams.GitToken != "" && *createProjectParams.GitPrivateKey != "" {
+	if isStringFlagSet(createProjectParams.GitToken) && isStringFlagSet(createProjectParams.GitPrivateKey) {
 		return errors.New("Access token or private key cannot be set together")
 	}
 
-	if *createProjectParams.GitUser != "" && *createProjectParams.RemoteURL != "" {
+	if isStringFlagSet(createProjectParams.GitUser) && isStringFlagSet(createProjectParams.RemoteURL) {
 		return nil
 	}
 
-	if *createProjectParams.GitToken != "" && *createProjectParams.RemoteURL == "" {
+	if isStringFlagSet(createProjectParams.GitToken) && isStringFlagNotSet(createProjectParams.RemoteURL) {
 		return errors.New(gitErrMsg)
 	}
 

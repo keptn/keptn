@@ -92,7 +92,7 @@ var ErrCredentialsInvalidRemoteURL = New("invalid remote URL")
 var ErrCredentialsTokenMustNotBeEmpty = New("token must not be empty")
 var ErrCredentialsPrivateKeyMustNotBeEmpty = New("private key must not be empty")
 var ErrProxyInvalidScheme = New("proxy scheme must be http or https")
-var ErrInvalidRemoteURL = New("RemoteURL scheme must be http, https or ssh")
+var ErrInvalidRemoteURL = New("remoteURL scheme must be http, https or ssh")
 var ErrProxyInvalidURL = New("proxy URL must contain IP address and port (<ip-address>:<port>)")
 
 // Error messages

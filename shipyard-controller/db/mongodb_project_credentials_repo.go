@@ -8,6 +8,7 @@ import (
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/models"
+	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -47,7 +48,7 @@ func (m *mongoDBProjectCredentialsRepo) GetOldCredentialsProjects() ([]*models.E
 		projectResult := &models.ExpandedProjectOld{}
 		err := cursor.Decode(projectResult)
 		if err != nil {
-			fmt.Println("Could not cast to *models.Project")
+			logrus.Errorf("Could not cast to *models.Project")
 		}
 		result = append(result, projectResult)
 	}
