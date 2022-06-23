@@ -40,11 +40,11 @@ func WithPollingInterval(interval time.Duration) func(plane *HTTPEventSource) {
 }
 
 // New creates a new HTTPEventSource to be used for running a service on the remote execution plane
-func New(clock clock.Clock, controlPlaneAPI api.ShipyardControlV1Interface, opts ...func(source *HTTPEventSource)) *HTTPEventSource {
+func New(clock clock.Clock, eventGetSender EventAPI, opts ...func(source *HTTPEventSource)) *HTTPEventSource {
 	e := &HTTPEventSource{
 		mutex:                &sync.Mutex{},
 		clock:                clock,
-		controlPlaneAPI:      controlPlaneAPI,
+		eventAPI:             eventGetSender,
 		currentSubscriptions: []models.EventSubscription{},
 		pollInterval:         time.Second,
 		maxAttempts:          10,
@@ -61,7 +61,7 @@ func New(clock clock.Clock, controlPlaneAPI api.ShipyardControlV1Interface, opts
 type HTTPEventSource struct {
 	mutex                *sync.Mutex
 	clock                clock.Clock
-	controlPlaneAPI      api.ShipyardControlV1Interface
+	eventAPI             EventAPI
 	currentSubscriptions []models.EventSubscription
 	pollInterval         time.Duration
 	maxAttempts          int
@@ -108,7 +108,7 @@ func (hes *HTTPEventSource) OnSubscriptionUpdate(subscriptions []models.EventSub
 }
 
 func (hes *HTTPEventSource) Sender() types.EventSender {
-	return nil
+	return hes.eventAPI.Send
 }
 
 func (hes *HTTPEventSource) Stop() error {
@@ -121,7 +121,7 @@ func (hes *HTTPEventSource) doPoll(eventUpdates chan types.EventUpdate) error {
 	subscriptions := hes.currentSubscriptions
 	hes.mutex.Unlock()
 	for _, sub := range subscriptions {
-		events, err := hes.controlPlaneAPI.GetOpenTriggeredEvents(getEventFilterForSubscription(sub))
+		events, err := hes.eventAPI.Get(getEventFilterForSubscription(sub))
 		if err != nil {
 			hes.logger.Warnf("Could not retrieve events of type %s: %s", sub.Event, err)
 			return err

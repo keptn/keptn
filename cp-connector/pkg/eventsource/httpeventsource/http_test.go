@@ -8,7 +8,7 @@ import (
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/common/strutils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/cp-connector/pkg/fake"
+	"github.com/keptn/keptn/cp-connector/pkg/eventsource/httpeventsource/fake"
 	"github.com/keptn/keptn/cp-connector/pkg/types"
 	"github.com/stretchr/testify/require"
 	"sync"
@@ -17,8 +17,8 @@ import (
 )
 
 func TestEventSourceCanBeStoppedViaContext(t *testing.T) {
-	shippyEventAPI := &fake.ShipyardEventAPIMock{}
-	shippyEventAPI.GetOpenTriggeredEventsFunc = func(filter api.EventFilter) ([]*models.KeptnContextExtendedCE, error) {
+	eventGetSender := &fake.EventAPIMock{}
+	eventGetSender.GetFunc = func(filter api.EventFilter) ([]*models.KeptnContextExtendedCE, error) {
 		return []*models.KeptnContextExtendedCE{{
 			Type: strutils.Stringp("sh.keptn.event.task.triggered"),
 		}}, nil
@@ -27,7 +27,7 @@ func TestEventSourceCanBeStoppedViaContext(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.TODO())
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
-	err := New(clock.New(), shippyEventAPI).Start(ctx, types.RegistrationData{}, eventChan, make(chan error), wg)
+	err := New(clock.New(), eventGetSender).Start(ctx, types.RegistrationData{}, eventChan, make(chan error), wg)
 	require.NoError(t, err)
 	cancel()
 	<-eventChan
@@ -35,8 +35,8 @@ func TestEventSourceCanBeStoppedViaContext(t *testing.T) {
 }
 
 func TestEventSourceCanBeStopped(t *testing.T) {
-	shippyEventAPI := &fake.ShipyardEventAPIMock{}
-	shippyEventAPI.GetOpenTriggeredEventsFunc = func(filter api.EventFilter) ([]*models.KeptnContextExtendedCE, error) {
+	eventGetSender := &fake.EventAPIMock{}
+	eventGetSender.GetFunc = func(filter api.EventFilter) ([]*models.KeptnContextExtendedCE, error) {
 		return []*models.KeptnContextExtendedCE{{
 			Type: strutils.Stringp("sh.keptn.event.task.triggered"),
 		}}, nil
@@ -45,7 +45,7 @@ func TestEventSourceCanBeStopped(t *testing.T) {
 
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
-	es := New(clock.New(), shippyEventAPI)
+	es := New(clock.New(), eventGetSender)
 	es.Start(context.TODO(), types.RegistrationData{}, eventChan, make(chan error), wg)
 	es.Stop()
 	<-eventChan
@@ -53,14 +53,14 @@ func TestEventSourceCanBeStopped(t *testing.T) {
 }
 
 func TestAPICallFailsAfterMaxAttempts(t *testing.T) {
-	shippyEventAPI := &fake.ShipyardEventAPIMock{}
-	shippyEventAPI.GetOpenTriggeredEventsFunc = func(filter api.EventFilter) ([]*models.KeptnContextExtendedCE, error) {
+	eventGetSender := &fake.EventAPIMock{}
+	eventGetSender.GetFunc = func(filter api.EventFilter) ([]*models.KeptnContextExtendedCE, error) {
 		return nil, fmt.Errorf("error")
 	}
 
 	eventChan := make(chan types.EventUpdate)
 	errChan := make(chan error)
-	eventsource := New(clock.New(), shippyEventAPI)
+	eventsource := New(clock.New(), eventGetSender)
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 	eventsource.maxAttempts = 2
@@ -73,8 +73,8 @@ func TestAPICallFailsAfterMaxAttempts(t *testing.T) {
 }
 
 func TestAPIReceiveEvents(t *testing.T) {
-	shippyEventAPI := &fake.ShipyardEventAPIMock{}
-	shippyEventAPI.GetOpenTriggeredEventsFunc = func(filter api.EventFilter) ([]*models.KeptnContextExtendedCE, error) {
+	eventGetSender := &fake.EventAPIMock{}
+	eventGetSender.GetFunc = func(filter api.EventFilter) ([]*models.KeptnContextExtendedCE, error) {
 		return []*models.KeptnContextExtendedCE{
 			{
 				Type: strutils.Stringp("sh.keptn.event.task.triggered"),
@@ -84,7 +84,7 @@ func TestAPIReceiveEvents(t *testing.T) {
 			}}, nil
 	}
 	clock := clock.NewMock()
-	eventsource := New(clock, shippyEventAPI)
+	eventsource := New(clock, eventGetSender)
 	eventChan := make(chan types.EventUpdate)
 
 	err := eventsource.Start(context.TODO(), types.RegistrationData{}, eventChan, make(chan error), &sync.WaitGroup{})
@@ -97,8 +97,8 @@ func TestAPIReceiveEvents(t *testing.T) {
 }
 
 func TestAPIReceiveEventsWithMoreAdvancedFilters(t *testing.T) {
-	shippyEventAPI := &fake.ShipyardEventAPIMock{}
-	shippyEventAPI.GetOpenTriggeredEventsFunc = func(filter api.EventFilter) ([]*models.KeptnContextExtendedCE, error) {
+	eventGetSender := &fake.EventAPIMock{}
+	eventGetSender.GetFunc = func(filter api.EventFilter) ([]*models.KeptnContextExtendedCE, error) {
 		return []*models.KeptnContextExtendedCE{
 			{
 				Data: v0_2_0.EventData{
@@ -113,7 +113,7 @@ func TestAPIReceiveEventsWithMoreAdvancedFilters(t *testing.T) {
 			}}, nil
 	}
 	clock := clock.NewMock()
-	eventsource := New(clock, shippyEventAPI)
+	eventsource := New(clock, eventGetSender)
 	eventChan := make(chan types.EventUpdate)
 
 	err := eventsource.Start(context.TODO(), types.RegistrationData{}, eventChan, make(chan error), &sync.WaitGroup{})
@@ -128,8 +128,8 @@ func TestAPIReceiveEventsWithMoreAdvancedFilters(t *testing.T) {
 }
 
 func TestAPIPassEventOnlyOnce(t *testing.T) {
-	shippyEventAPI := &fake.ShipyardEventAPIMock{}
-	shippyEventAPI.GetOpenTriggeredEventsFunc = func(filter api.EventFilter) ([]*models.KeptnContextExtendedCE, error) {
+	eventGetSender := &fake.EventAPIMock{}
+	eventGetSender.GetFunc = func(filter api.EventFilter) ([]*models.KeptnContextExtendedCE, error) {
 		return []*models.KeptnContextExtendedCE{
 			{
 				Type: strutils.Stringp("sh.keptn.event.task.triggered"),
@@ -137,7 +137,7 @@ func TestAPIPassEventOnlyOnce(t *testing.T) {
 		}, nil
 	}
 	clock := clock.NewMock()
-	eventsource := New(clock, shippyEventAPI)
+	eventsource := New(clock, eventGetSender)
 	eventChan := make(chan types.EventUpdate)
 
 	err := eventsource.Start(context.TODO(), types.RegistrationData{}, eventChan, make(chan error), &sync.WaitGroup{})

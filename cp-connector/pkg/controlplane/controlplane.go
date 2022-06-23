@@ -12,7 +12,11 @@ import (
 	"github.com/keptn/keptn/cp-connector/pkg/subscriptionsource"
 	"github.com/keptn/keptn/cp-connector/pkg/types"
 	"log"
+	"os"
+	"os/signal"
 	"sync"
+	"syscall"
+	"time"
 )
 
 type EventSender = types.EventSender
@@ -48,6 +52,29 @@ func WithLogger(logger logger.Logger) func(plane *ControlPlane) {
 	return func(ns *ControlPlane) {
 		ns.logger = logger
 	}
+}
+
+// RunWithGracefulShutdown starts the controlplane component which takes care of registering
+// the integration and handling events and subscriptions. Further, it supports graceful shutdown handling
+// when receiving a SIGHUB, SIGINT, SIGQUIT, SIGARBT or SIGTERM signal.
+//
+// This call is blocking.
+//
+//If you want to start the controlplane component with an own context you need to call the Regiser(ctx,integration)
+// method on your own
+func RunWithGracefulShutdown(controlPlane *ControlPlane, integration Integration, shutdownTimeout time.Duration) error {
+	ctxShutdown, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	ctxShutdown, _ = signal.NotifyContext(ctxShutdown, syscall.SIGHUP, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGABRT, syscall.SIGTERM)
+	go func() {
+		<-ctxShutdown.Done()
+		time.Sleep(shutdownTimeout) // shutdown timeout
+		log.Printf("failed to gracefully shutdown")
+		os.Exit(1)
+	}()
+
+	return controlPlane.Register(ctxShutdown, integration)
 }
 
 // New creates a new ControlPlane
