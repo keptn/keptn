@@ -409,14 +409,12 @@ export class DataService {
         })
       )
       .subscribe(([sequences, totalCount]: [Sequence[], number]) => {
-        let allSequencesLoaded = false;
         const previousSequences = this._sequences.getValue();
         const sequenceData = previousSequences[projectName];
         const newSequences = this.addNewSequences(sequenceData?.sequences ?? [], sequences, !!beforeTime, oldSequence);
-
-        if (this.allSequencesLoaded(sequenceData?.sequences.length ?? 0, totalCount, fromTime, beforeTime)) {
-          allSequencesLoaded = true;
-        }
+        const allSequencesLoaded =
+          previousSequences[projectName]?.allSequencesLoaded ||
+          this.allSequencesLoaded(sequenceData?.sequences.length ?? 0, totalCount, fromTime, beforeTime);
 
         previousSequences[projectName] = {
           allSequencesLoaded,
