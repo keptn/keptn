@@ -19,6 +19,7 @@ import (
 type ProjectCredentialsRepo interface {
 	UpdateProject(project *models.ExpandedProjectOld) error
 	GetOldCredentialsProjects() ([]*models.ExpandedProjectOld, error)
+	CreateOldCredentialsProject(project *models.ExpandedProjectOld) error
 }
 
 type projectCredentialsRepo struct {
