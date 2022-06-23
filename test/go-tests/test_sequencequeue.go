@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	//models "github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
@@ -64,40 +63,40 @@ func Test_SequenceQueue_TriggerMultiple(t *testing.T) {
 	}
 	verifyNumberOfOpenTriggeredEvents(t, projectName, 1)
 
-	var currentActiveSequence models.SequenceState
-	for i := 0; i < numSequences; i++ {
-		require.Eventually(t, func() bool {
-			states, _, err := GetState(projectName)
-			if err != nil {
-				return false
-			}
-			for _, state := range states.States {
-				if state.State == models.SequenceStartedState {
-					// make sure the sequences are started in the chronologically correct order
-					if sequenceContexts[i] != state.Shkeptncontext {
-						return false
-					}
-					currentActiveSequence = state
-					t.Logf("received expected active sequence: %s", state.Shkeptncontext)
-					return true
-				}
-			}
-			return false
-		}, 15*time.Second, 2*time.Second)
-
-		_, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, currentActiveSequence.Shkeptncontext), models.SequenceControlCommand{
-			State: models.AbortSequence,
-			Stage: "",
-		}, 3)
-		require.Nil(t, err)
-		if i == numSequences-1 {
-			verifyNumberOfOpenTriggeredEvents(t, projectName, 0)
-		} else {
-			verifyNumberOfOpenTriggeredEvents(t, projectName, 1)
-		}
-	}
-
-	require.Nil(t, err)
+	//var currentActiveSequence models.SequenceState
+	//for i := 0; i < numSequences; i++ {
+	//	require.Eventually(t, func() bool {
+	//		states, _, err := GetState(projectName)
+	//		if err != nil {
+	//			return false
+	//		}
+	//		for _, state := range states.States {
+	//			if state.State == models.SequenceStartedState {
+	//				// make sure the sequences are started in the chronologically correct order
+	//				if sequenceContexts[i] != state.Shkeptncontext {
+	//					return false
+	//				}
+	//				currentActiveSequence = state
+	//				t.Logf("received expected active sequence: %s", state.Shkeptncontext)
+	//				return true
+	//			}
+	//		}
+	//		return false
+	//	}, 15*time.Second, 2*time.Second)
+	//
+	//	_, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, currentActiveSequence.Shkeptncontext), models.SequenceControlCommand{
+	//		State: models.AbortSequence,
+	//		Stage: "",
+	//	}, 3)
+	//	require.Nil(t, err)
+	//	if i == numSequences-1 {
+	//		verifyNumberOfOpenTriggeredEvents(t, projectName, 0)
+	//	} else {
+	//		verifyNumberOfOpenTriggeredEvents(t, projectName, 1)
+	//	}
+	//}
+	//
+	//require.Nil(t, err)
 }
 
 func verifyNumberOfOpenTriggeredEvents(t *testing.T, projectName string, numberOfEvents int) {
