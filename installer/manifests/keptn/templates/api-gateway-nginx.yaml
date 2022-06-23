@@ -373,7 +373,7 @@ spec:
       terminationGracePeriodSeconds: {{ .Values.apiGatewayNginx.gracePeriod | default 60 }}
       containers:
         - name: api-gateway-nginx
-          image: {{ include "service.image" ( dict "imageRoot" .Values.apiGatewayNginx.image "global" .Values.apiGatewayNginx "defaultTag" .Values.apiGatewayNginx) }}
+          image: {{ include "service.image" ( dict "imageRoot" .Values.apiGatewayNginx.image "global" .Values.apiGatewayNginx "defaultTag" .Values.apiGatewayNginx.image.tag) }}
           lifecycle:
             preStop:
               exec:
