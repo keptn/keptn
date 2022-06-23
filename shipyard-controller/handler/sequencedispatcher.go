@@ -4,6 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/trace"
 	"time"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
@@ -36,6 +40,8 @@ type SequenceDispatcher struct {
 	shipyardController    shipyardController
 	ticker                *clock.Ticker
 	mode                  common.SDMode
+	tracer                 trace.Tracer
+	propagators            propagation.TextMapPropagator
 }
 
 // NewSequenceDispatcher creates a new SequenceDispatcher
@@ -54,6 +60,8 @@ func NewSequenceDispatcher(
 		theClock:              theClock,
 		syncInterval:          syncInterval,
 		mode:                  mode,
+		propagators:            otel.GetTextMapPropagator(),
+		tracer:                 otel.Tracer("resourceService/serviceResource/handler"),
 	}
 }
 
@@ -146,8 +154,9 @@ func (sd *SequenceDispatcher) dispatchSequences() {
 	}
 }
 
-func (sd *SequenceDispatcher) isSequenceBlocked(queueItem models.QueueItem) (bool, error) {
+func (sd *SequenceDispatcher) isSequenceBlocked(queueItem models.QueueItem, span trace.Span) (bool, error) {
 	// searching for running sequences
+	span.AddEvent("Checking if sequence is blocked")
 	startedSequenceExecutions, err := sd.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
 		Scope: models.EventScope{
 			EventData: keptnv2.EventData{
@@ -164,6 +173,7 @@ func (sd *SequenceDispatcher) isSequenceBlocked(queueItem models.QueueItem) (boo
 	}
 
 	if len(startedSequenceExecutions) > 0 {
+		span.AddEvent("Blocking started sequence", trace.WithAttributes(attribute.String("context", startedSequenceExecutions[0].Scope.KeptnContext)))
 		log.Infof("Sequence with KeptnContext %s blocked due to started sequence with KeptnContext %s in stage %s", queueItem.Scope.KeptnContext, startedSequenceExecutions[0].Scope.KeptnContext, queueItem.Scope.Stage)
 		return true, nil
 	}
@@ -187,12 +197,14 @@ func (sd *SequenceDispatcher) isSequenceBlocked(queueItem models.QueueItem) (boo
 
 	if len(triggeredSequenceExecutions) == 1 {
 		if triggeredSequenceExecutions[0].Scope.KeptnContext != queueItem.Scope.KeptnContext {
+			span.AddEvent("Blocking triggered sequence", trace.WithAttributes(attribute.String("context", startedSequenceExecutions[0].Scope.KeptnContext)))
 			log.Infof("Sequence with KeptnContext %s is blocked due to triggered sequence with KeptnContext %s in stage %s", queueItem.Scope.KeptnContext, triggeredSequenceExecutions[0].Scope.KeptnContext, queueItem.Scope.Stage)
 			return true, nil
 		}
 	}
 
 	if len(triggeredSequenceExecutions) > 1 {
+		span.AddEvent("Blocking triggered sequences number", trace.WithAttributes(attribute.Int("number", len(triggeredSequenceExecutions))))
 		log.Infof("Sequence with KeptnContext %s is blocked due to triggered sequences in stage %s with KeptnContext %s", queueItem.Scope.KeptnContext, queueItem.Scope.Stage, triggeredSequenceExecutions[0].Scope.KeptnContext)
 		return true, nil
 	}
@@ -201,6 +213,14 @@ func (sd *SequenceDispatcher) isSequenceBlocked(queueItem models.QueueItem) (boo
 }
 
 func (sd *SequenceDispatcher) dispatchSequence(queueItem models.QueueItem) error {
+	var span trace.Span
+	_, span = sd.tracer.Start(context.TODO(), "Handling /project/{projectName}/stage/{stageName}/service/{serviceName}/resource")
+	span.AddEvent("Noice operation!", trace.WithAttributes(attribute.Int("bogons", 100)))
+	span.SetAttributes(attribute.Key("contextID").String(queueItem.Scope.KeptnContext))
+	span.SetAttributes(attribute.Key("project").String(queueItem.Scope.Project))
+	span.SetAttributes(attribute.Key("service").String(queueItem.Scope.Service))
+	span.SetAttributes(attribute.Key("stage").String(queueItem.Scope.Stage))
+	defer span.End()
 	// first, check if the sequence is currently paused
 	sequenceExecution, err := sd.sequenceExecutionRepo.GetByTriggeredID(queueItem.Scope.Project, queueItem.EventID)
 	if err != nil {
@@ -213,10 +233,11 @@ func (sd *SequenceDispatcher) dispatchSequence(queueItem models.QueueItem) error
 
 	if sequenceExecution.IsPaused() || sd.sequenceExecutionRepo.IsContextPaused(queueItem.Scope) {
 		log.Infof("Sequence %s is currently paused. Will not start it yet.", queueItem.Scope.KeptnContext)
+		span.AddEvent("Context paused")
 		return ErrSequenceBlocked
 	}
 
-	sequenceBlocked, err := sd.isSequenceBlocked(queueItem)
+	sequenceBlocked, err := sd.isSequenceBlocked(queueItem, span)
 	if err != nil {
 		return err
 	}
@@ -230,18 +251,22 @@ func (sd *SequenceDispatcher) dispatchSequence(queueItem models.QueueItem) error
 	}, common.TriggeredEvent)
 
 	if err != nil {
+		span.AddEvent("Error getting events")
 		return err
 	}
 
 	if len(events) == 0 {
+		span.AddEvent("No events found")
 		return fmt.Errorf("sequence.triggered event with ID %s cannot be found anymore", queueItem.EventID)
 	}
 
 	sequenceTriggeredEvent := events[0]
 
 	if err := sd.startSequenceFunc(sequenceTriggeredEvent); err != nil {
+		span.AddEvent("Could not start task sequence")
 		return fmt.Errorf("could not start task sequence %s: %s", queueItem.EventID, err.Error())
 	}
+	span.AddEvent("Sequence started")
 
 	return sd.sequenceQueue.DeleteQueuedSequences(queueItem)
 }
