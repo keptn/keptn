@@ -27,7 +27,12 @@ require (
 	k8s.io/client-go v0.22.11
 )
 
-require github.com/kelseyhightower/envconfig v1.4.0
+require (
+	github.com/kelseyhightower/envconfig v1.4.0
+	go.opentelemetry.io/otel v1.7.0
+	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.7.0
+	go.opentelemetry.io/otel/sdk v1.7.0
+)
 
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
@@ -80,7 +85,6 @@ require (
 	github.com/xdg-go/stringprep v1.0.2 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.27.0 // indirect
-	go.opentelemetry.io/otel v1.7.0 // indirect
 	go.opentelemetry.io/otel/internal/metric v0.25.0 // indirect
 	go.opentelemetry.io/otel/metric v0.25.0 // indirect
 	go.opentelemetry.io/otel/trace v1.7.0 // indirect
