@@ -1,12 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { KtbTriggerSequenceComponent } from './ktb-trigger-sequence.component';
-import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { TRIGGER_EVALUATION_TIME, TRIGGER_SEQUENCE } from '../../_models/trigger-sequence';
 import { Timeframe } from '../../_models/timeframe';
 import moment from 'moment';
 import { DataService } from '../../_services/data.service';
+import { KtbTriggerSequenceModule } from './ktb-trigger-sequence.module';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('KtbTriggerSequenceComponent', () => {
   let component: KtbTriggerSequenceComponent;
@@ -14,7 +14,7 @@ describe('KtbTriggerSequenceComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule, HttpClientTestingModule],
+      imports: [KtbTriggerSequenceModule, HttpClientTestingModule, RouterTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbTriggerSequenceComponent);

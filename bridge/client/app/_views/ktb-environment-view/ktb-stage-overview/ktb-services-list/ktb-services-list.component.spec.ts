@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbServicesListComponent } from './ktb-services-list.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { AppModule } from '../../app.module';
-import { Service } from '../../_models/service';
-import { ServiceMock } from '../../_services/_mockData/service.mock';
+import { AppModule } from '../../../../app.module';
+import { Service } from '../../../../_models/service';
+import { ServiceMock } from '../../../../_services/_mockData/service.mock';
 
 describe('KtbServicesListComponent', () => {
   let component: KtbServicesListComponent;

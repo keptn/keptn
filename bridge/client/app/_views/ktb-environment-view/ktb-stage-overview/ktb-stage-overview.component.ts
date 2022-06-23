@@ -1,11 +1,11 @@
 import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
-import { Project } from '../../_models/project';
-import { Stage } from '../../_models/stage';
-import { DataService } from '../../_services/data.service';
+import { Project } from '../../../_models/project';
+import { Stage } from '../../../_models/stage';
+import { DataService } from '../../../_services/data.service';
 import { DtFilterFieldChangeEvent, DtFilterFieldDefaultDataSource } from '@dynatrace/barista-components/filter-field';
-import { ApiService } from '../../_services/api.service';
-import { Service } from '../../_models/service';
-import { DtAutoComplete, DtFilter, DtFilterArray } from '../../_models/dt-filter';
+import { ApiService } from '../../../_services/api.service';
+import { Service } from '../../../_models/service';
+import { DtAutoComplete, DtFilter, DtFilterArray } from '../../../_models/dt-filter';
 import { filter, map, switchMap, takeUntil, tap } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
