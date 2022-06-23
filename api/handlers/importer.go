@@ -59,28 +59,34 @@ func (ih *ImportHandler) HandleImport(
 	// Check if the project exists
 	projectExists, err := ih.checker.ProjectExists(params.Project)
 
-	if err != nil || !projectExists {
-		message := fmt.Sprintf("project %s does not exist", params.Project)
-		if err != nil {
-			message = fmt.Sprintf("error checking for project %s existence : %v", params.Project, err)
+	if err != nil {
+		message := fmt.Sprintf("error checking for project %s existence : %v", params.Project, err)
+		mError := models.Error{
+			Code:    http.StatusFailedDependency,
+			Message: &message,
 		}
+		return import_operations.NewImportFailedDependency().WithPayload(&mError)
+	}
 
-		error := models.Error{
+	if !projectExists {
+		message := fmt.Sprintf("project %s does not exist", params.Project)
+
+		mError := models.Error{
 			Code:    http.StatusNotFound,
 			Message: &message,
 		}
-		return import_operations.NewImportNotFound().WithPayload(&error)
+		return import_operations.NewImportNotFound().WithPayload(&mError)
 	}
 
 	file, err := ioutil.TempFile(ih.tempStorageDir, "importConfig*"+defaultImportArchiveExtension)
 	if err != nil {
 		logger.Errorf("Error saving import archive: %v", err)
 		message := fmt.Sprintf("Error saving import archive: %s", err)
-		error := models.Error{
+		mError := models.Error{
 			Code:    http.StatusBadRequest,
 			Message: &message,
 		}
-		return import_operations.NewImportBadRequest().WithPayload(&error)
+		return import_operations.NewImportBadRequest().WithPayload(&mError)
 	}
 
 	defer func() {
@@ -98,11 +104,11 @@ func (ih *ImportHandler) HandleImport(
 	if err != nil {
 		logger.Errorf("Error saving import archive: %v", err)
 		message := fmt.Sprintf("Error saving import archive: %s", err)
-		error := models.Error{
+		mError := models.Error{
 			Code:    http.StatusBadRequest,
 			Message: &message,
 		}
-		return import_operations.NewImportBadRequest().WithPayload(&error)
+		return import_operations.NewImportBadRequest().WithPayload(&mError)
 	}
 
 	m, err := importer.NewPackage(file.Name(), ih.maxUncompressedPackageSize)
@@ -110,11 +116,11 @@ func (ih *ImportHandler) HandleImport(
 	if err != nil {
 		logger.Errorf("Error opening import archive: %v", err)
 		message := fmt.Sprintf("Error opening import archive: %s", err)
-		error := models.Error{
+		mError := models.Error{
 			Code:    http.StatusUnsupportedMediaType,
 			Message: &message,
 		}
-		return import_operations.NewImportUnsupportedMediaType().WithPayload(&error)
+		return import_operations.NewImportUnsupportedMediaType().WithPayload(&mError)
 	}
 
 	defer func() {

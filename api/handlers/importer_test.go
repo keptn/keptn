@@ -96,9 +96,10 @@ func TestErrorUnableToCheckProject(t *testing.T) {
 		new(models.Principal),
 	)
 
-	require.IsType(t, &import_operations.ImportNotFound{}, actualResponder)
-	actualPayload := actualResponder.(*import_operations.ImportNotFound).Payload
+	require.IsType(t, &import_operations.ImportFailedDependency{}, actualResponder)
+	actualPayload := actualResponder.(*import_operations.ImportFailedDependency).Payload
 	assert.NotEmpty(t, actualPayload.Message)
+	assert.Equal(t, int64(http.StatusFailedDependency), actualPayload.Code)
 	assert.Contains(t, *actualPayload.Message, prjCheckerErrDesc)
 	assert.Equal(t, projectName, actualCheckedProject)
 }

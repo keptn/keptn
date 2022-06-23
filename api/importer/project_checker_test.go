@@ -10,6 +10,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const projectEndpoint = "/v1/project/"
+
 const errorResponseBodyTemplate = `
 {
 	"code": %d,
