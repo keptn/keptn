@@ -5,12 +5,13 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/leaderelection"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
 	"io/ioutil"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/http"
 	"net/url"
 	"os"
@@ -435,11 +436,13 @@ func getDurationFromEnvVar(durationString, fallbackValue string) time.Duration {
 }
 
 func newExporter() (trace.SpanExporter, error) {
-	return stdouttrace.New(
-		// Use human-readable output.
-		stdouttrace.WithPrettyPrint(),
-		// Do not print timestamps for the demo.
-		stdouttrace.WithoutTimestamps(),
+	kubeClient, _ := createKubeAPI()
+	dtToken, _ := kubeClient.CoreV1().Secrets(common.GetKeptnNamespace()).Get(context.TODO(), "dt-secret-otel", v1.GetOptions{})
+	return otlptracehttp.New(
+		context.TODO(),
+		otlptracehttp.WithEndpoint(string(dtToken.Data["tenant"])),
+		otlptracehttp.WithURLPath("/api/v2/otlp/v1/traces"),
+		otlptracehttp.WithHeaders(map[string]string{"Authorization": "Api-Token " + string(dtToken.Data["token"])}),
 	)
 }
 
