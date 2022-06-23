@@ -414,7 +414,7 @@ export class DataService {
         const newSequences = this.addNewSequences(sequenceData?.sequences ?? [], sequences, !!beforeTime, oldSequence);
         const allSequencesLoaded =
           previousSequences[projectName]?.allSequencesLoaded ||
-          this.allSequencesLoaded(sequenceData?.sequences.length ?? 0, totalCount, fromTime, beforeTime);
+          this.allSequencesLoaded(newSequences.length, totalCount, fromTime, beforeTime);
 
         previousSequences[projectName] = {
           allSequencesLoaded,
