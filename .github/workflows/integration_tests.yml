@@ -386,7 +386,8 @@ jobs:
               --set resourceService.enabled=${USE_RESOURCE_SERVICE} \
               --set shipyardController.gracePeriod=10 \
               --set shipyardController.preStopHookTime=5 \
-              --set continuousDelivery.enabled=${RUN_CONTINUOUS_DELIVERY_TEST}
+              --set continuousDelivery.enabled=${RUN_CONTINUOUS_DELIVERY_TEST} \
+              --wait
           fi
           echo "::endgroup::"
 
