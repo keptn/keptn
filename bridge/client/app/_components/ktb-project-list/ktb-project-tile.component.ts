@@ -10,7 +10,7 @@ import { Sequence } from '../../_models/sequence';
 export class KtbProjectTileComponent {
   private _project?: Project;
   private _sequences: Sequence[] = [];
-  private _supportedShipyardVersion?: string | null;
+  private _supportedShipyardVersion: string | undefined;
 
   @Input()
   get project(): Project | undefined {
@@ -33,11 +33,11 @@ export class KtbProjectTileComponent {
   }
 
   @Input()
-  get supportedShipyardVersion(): string | undefined | null {
+  get supportedShipyardVersion(): string | undefined {
     return this._supportedShipyardVersion;
   }
 
-  set supportedShipyardVersion(value: string | undefined | null) {
+  set supportedShipyardVersion(value: string | undefined) {
     this._supportedShipyardVersion = value;
   }
 }

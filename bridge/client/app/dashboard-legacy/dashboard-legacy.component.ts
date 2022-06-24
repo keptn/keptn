@@ -22,7 +22,7 @@ export class DashboardLegacyComponent {
     take(1)
   );
   public readonly keptnMetadata$ = this.dataService.keptnMetadata.pipe(
-    filter((metadata): metadata is IMetadata | null => metadata !== undefined)
+    filter((metadata): metadata is IMetadata => metadata != null)
   );
   public readonly projects$: Observable<Project[] | undefined> = this.dataService.projects;
   public readonly latestSequences$: Observable<ProjectSequences> = this.projects$.pipe(

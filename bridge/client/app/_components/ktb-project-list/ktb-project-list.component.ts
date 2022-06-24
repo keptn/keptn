@@ -11,7 +11,7 @@ export type ProjectSequences = Record<string, Sequence[]>;
   styleUrls: ['./ktb-project-list.component.scss'],
 })
 export class KtbProjectListComponent {
-  private _metadata: IMetadata | undefined | null;
+  private _metadata: IMetadata | null = null;
   private _projects: Project[] = [];
   private _sequences: ProjectSequences = {};
 
@@ -27,11 +27,11 @@ export class KtbProjectListComponent {
   }
 
   @Input()
-  get metadata(): IMetadata | undefined | null {
+  get metadata(): IMetadata | null {
     return this._metadata;
   }
 
-  set metadata(value: IMetadata | undefined | null) {
+  set metadata(value: IMetadata | null) {
     this._metadata = value;
   }
 
