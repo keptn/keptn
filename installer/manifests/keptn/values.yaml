@@ -1,6 +1,6 @@
 global:
   keptn:
-    repository: docker.io/keptn
+    registry: docker.io/keptn
     tag: ""
 
 continuousDelivery:

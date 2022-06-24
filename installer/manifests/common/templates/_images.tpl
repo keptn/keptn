@@ -1,9 +1,9 @@
 {{/*Return the proper serivce image name*/}}
-{{- define "service.image" -}}
 {{/*{{- include "common.images.image" ( dict "imageRoot" .Values.helmservice.image "global" .Values.global.keptn "defaultTag" .Chart.appVersion) -}}*/}}
+{{- define "common.images.image" -}}
 {{- $registryName := "" -}}
 {{- $repositoryName := .imageRoot.repository -}}
-{{- $tag := include "service.tag" (dict "imageRoot" .imageRoot "global" .global "defaultTag" .defaultTag) -}}
+{{- $tag := include "common.images.tag" (dict "imageRoot" .imageRoot "global" .global "defaultTag" .defaultTag) -}}
 {{- if .global }}
     {{- if .global.registry }}
      {{- $registryName = .global.registry -}}
@@ -20,20 +20,20 @@
 {{- end -}}
 
 {{/*Return the proper serivce image tag*/}}
-{{- define "service.tag" -}}
 {{/*{{- include "common.images.image" ( dict "imageRoot" .Values.helmservice.image "global" .Values.global.keptn "defaultTag" .Chart.appVersion) -}}*/}}
+{{- define "common.images.tag" -}}
 {{- $tag := "" -}}
-{{/*    Set Image Tag: if globally set or at service level set or use default from Chart.yaml*/}}
+{{/* Set Image Tag: if globally set or at service level or use default from Chart.yaml*/}}
 {{- if .global -}}
     {{- if .global.tag -}}
-     {{- $tag = .global.tag -}}
+       {{- $tag = .global.tag -}}
     {{- end -}}
 {{- end -}}
 {{- if .imageRoot.tag -}}
- {{- $tag = .imageRoot.tag -}}
+   {{- $tag = .imageRoot.tag -}}
 {{- end -}}
 {{- if not $tag }}
- {{- $tag = .defaultTag -}}
+   {{- $tag = .defaultTag -}}
 {{- end -}}
 {{- printf "%s" $tag -}}
 {{- end -}}
