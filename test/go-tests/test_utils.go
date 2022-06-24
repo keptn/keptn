@@ -428,7 +428,7 @@ func GetApiCredentials() (string, string, error) {
 		return "", "", err
 	}
 
-	apiToken, err := keptnApiTokenProvider.GetKeptnAPITokenFromSecret(GetKeptnNameSpaceFromEnv(), "keptn-api-token")
+	apiToken, err := keptnApiTokenProvider.GetKeptnAPITokenFromSecret(context.TODO(), GetKeptnNameSpaceFromEnv(), "keptn-api-token")
 	if err != nil {
 		return "", "", err
 	}
@@ -438,7 +438,7 @@ func GetApiCredentials() (string, string, error) {
 		if err != nil {
 			return "", "", err
 		}
-		serviceIP, err := keptnEndpointProvider.GetKeptnEndpointFromService(GetKeptnNameSpaceFromEnv(), "api-gateway-nginx")
+		serviceIP, err := keptnEndpointProvider.GetKeptnEndpointFromService(context.TODO(), GetKeptnNameSpaceFromEnv(), "api-gateway-nginx")
 		if err != nil {
 			return "", "", err
 		}

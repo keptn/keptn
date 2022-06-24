@@ -6,6 +6,7 @@ package cmd
 
 import (
 	"archive/zip"
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
@@ -403,7 +404,7 @@ func getKubeContextPointsToKeptnCluster(keptnNamespace string) *errorableBoolRes
 	if err != nil {
 		return &errorableBoolResult{Result: false, Err: err}
 	}
-	return newErrorableBoolResult(namespaceManager.ExistsNamespace(keptnNamespace))
+	return newErrorableBoolResult(namespaceManager.ExistsNamespace(context.TODO(), keptnNamespace))
 }
 
 func getKubectlVersion() *errorableStringResult {

@@ -33,7 +33,7 @@ func (p *NamespaceManager) CreateNamespaceIfNotExists(nsName string) error {
 	if err != nil {
 		return err
 	}
-	exists, err := namespaceManager.ExistsNamespace(nsName)
+	exists, err := namespaceManager.ExistsNamespace(context.TODO(), nsName)
 	if err != nil {
 		return fmt.Errorf("error when checking availability of namespace: %v", err)
 	}
@@ -41,7 +41,7 @@ func (p *NamespaceManager) CreateNamespaceIfNotExists(nsName string) error {
 		p.logger.Debug(fmt.Sprintf("Reuse existing namespace %s", nsName))
 	} else {
 		p.logger.Debug(fmt.Sprintf("Create new namespace %s", nsName))
-		if err != namespaceManager.CreateNamespace(nsName) {
+		if err != namespaceManager.CreateNamespace(context.TODO(), nsName) {
 			return fmt.Errorf("error when creating namespace %s: %v", nsName, err)
 		}
 	}

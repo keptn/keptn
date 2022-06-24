@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bufio"
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -194,9 +195,9 @@ func smartFetchKeptnAuthParameters(authParams *authCmdParams, smartKeptnAuth sma
 		if err != nil {
 			return err
 		}
-		*authParams.endPoint, err = keptnEndpointProvider.GetKeptnEndpointFromIngress(namespace, smartKeptnAuth.ingressName)
+		*authParams.endPoint, err = keptnEndpointProvider.GetKeptnEndpointFromIngress(context.TODO(), namespace, smartKeptnAuth.ingressName)
 		if err != nil {
-			*authParams.endPoint, err = keptnEndpointProvider.GetKeptnEndpointFromService(namespace, smartKeptnAuth.serviceName)
+			*authParams.endPoint, err = keptnEndpointProvider.GetKeptnEndpointFromService(context.TODO(), namespace, smartKeptnAuth.serviceName)
 			if err != nil {
 				return fmt.Errorf("Cannot automatically fetch the endpoint\n" + err.Error() + "\n\n")
 			}
@@ -211,7 +212,7 @@ func smartFetchKeptnAuthParameters(authParams *authCmdParams, smartKeptnAuth sma
 		if err != nil {
 			return err
 		}
-		*authParams.apiToken, err = keptnApiTokenProvider.GetKeptnAPITokenFromSecret(namespace, smartKeptnAuth.secretName)
+		*authParams.apiToken, err = keptnApiTokenProvider.GetKeptnAPITokenFromSecret(context.TODO(), namespace, smartKeptnAuth.secretName)
 		if err != nil {
 			return fmt.Errorf("Error in fetching the api-token\n" + err.Error() + "\nCLI is not authenticated")
 		}
@@ -225,7 +226,7 @@ func smartKeptnCLIAuth() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	keptnInstallations, err := namespaceManager.GetKeptnManagedNamespace()
+	keptnInstallations, err := namespaceManager.GetKeptnManagedNamespace(context.TODO())
 	if err != nil {
 		return "", errors.New("Could not get current Kubernetes context from KUBECONFIG: " + err.Error())
 	}
