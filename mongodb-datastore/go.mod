@@ -13,8 +13,7 @@ require (
 	github.com/jeremywohl/flatten v1.0.1
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.16.1
-	github.com/keptn/keptn/cp-connector v0.0.0-20220624071723-c2174cfb9770
+	github.com/keptn/go-utils v0.16.1-0.20220624075633-4d49101f88b4
 	github.com/nats-io/nats-server/v2 v2.8.4
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
