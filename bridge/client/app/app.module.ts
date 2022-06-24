@@ -77,10 +77,6 @@ import { KtbSequenceStateInfoModule } from './_components/ktb-sequence-state-inf
 import { KtbSequenceStateListModule } from './_components/ktb-sequence-state-list/ktb-sequence-state-list.module';
 import { KtbSshKeyInputModule } from './_components/ktb-ssh-key-input/ktb-ssh-key-input.module';
 import { KtbStageBadgeModule } from './_components/ktb-stage-badge/ktb-stage-badge.module';
-import { KtbStageDetailsComponent } from './_components/ktb-stage-details/ktb-stage-details.component';
-import { KtbStageOverviewComponent } from './_components/ktb-stage-overview/ktb-stage-overview.component';
-import { KtbTriggerSequenceComponent } from './_components/ktb-trigger-sequence/ktb-trigger-sequence.component';
-import { KtbUserComponent } from './_components/ktb-user/ktb-user.component';
 import { KtbDragAndDropModule } from './_directives/ktb-drag-and-drop/ktb-drag-and-drop.module';
 import { KtbHideHttpLoadingDirective } from './_directives/ktb-hide-http-loading/ktb-hide-http-loading.directive';
 import { KtbIntegerInputModule } from './_directives/ktb-integer-input/ktb-integer-input.module';
@@ -100,7 +96,6 @@ import { KtbLogoutViewComponent } from './_views/ktb-logout-view/ktb-logout-view
 import { KtbSequenceViewComponent } from './_views/ktb-sequence-view/ktb-sequence-view.component';
 import { KtbServiceViewComponent } from './_views/ktb-service-view/ktb-service-view.component';
 import { KtbSettingsViewComponent } from './_views/ktb-settings-view/ktb-settings-view.component';
-import { AppHeaderComponent } from './app-header/app-header.component';
 import { AppComponent } from './app.component';
 import { AppRouting } from './app.routing';
 import { DashboardLegacyComponent } from './dashboard-legacy/dashboard-legacy.component';
@@ -121,10 +116,12 @@ import { KtbNoServiceInfoModule } from './_components/ktb-no-service-info/ktb-no
 import { KtbSequenceListModule } from './_components/ktb-sequence-list/ktb-sequence-list.module';
 import { KtbSequenceTasksListModule } from './_components/ktb-sequence-tasks-list/ktb-sequence-tasks-list.module';
 import { KtbSecretsListModule } from './_components/ktb-secrets-list/ktb-secrets-list.module';
+import { KtbStageDetailsModule } from './_views/ktb-environment-view/ktb-stage-details/ktb-stage-details.module';
+import { KtbStageOverviewModule } from './_views/ktb-environment-view/ktb-stage-overview/ktb-stage-overview.module';
+import { KtbAppHeaderModule } from './_components/ktb-app-header/ktb-app-header.module';
 import { KtbSequenceTimelineModule } from './_components/ktb-sequence-timeline/ktb-sequence-timeline.module';
 import { KtbServiceDetailsModule } from './_components/ktb-service-details/ktb-service-details.module';
 import { KtbServiceSettingsModule } from './_components/ktb-service-settings/ktb-service-settings.module';
-import { KtbServicesListModule } from './_components/ktb-services-list/ktb-services-list.module';
 
 registerLocaleData(localeEn, 'en');
 
@@ -186,6 +183,7 @@ const dtModules = [
 ];
 
 const ktbModules = [
+  KtbAppHeaderModule,
   KtbApprovalItemModule,
   KtbCertificateInputModule,
   KtbConfirmationDialogModule,
@@ -228,9 +226,10 @@ const ktbModules = [
   KtbSequenceTimelineModule,
   KtbServiceDetailsModule,
   KtbServiceSettingsModule,
-  KtbServicesListModule,
   KtbSshKeyInputModule,
   KtbStageBadgeModule,
+  KtbStageDetailsModule,
+  KtbStageOverviewModule,
   KtbSubscriptionItemModule,
   KtbTreeListSelectModule,
   KtbUniformRegistrationLogsModule,
@@ -244,7 +243,6 @@ const ktbModules = [
     AppComponent,
     DashboardLegacyComponent,
     NotFoundComponent,
-    AppHeaderComponent,
     ProjectBoardComponent,
     EvaluationBoardComponent,
     KtbSequenceViewComponent,
@@ -253,12 +251,8 @@ const ktbModules = [
     KtbHideHttpLoadingDirective,
     KtbMarkdownComponent,
     KtbEnvironmentViewComponent,
-    KtbStageOverviewComponent,
     KtbIntegrationViewComponent,
-    KtbStageDetailsComponent,
-    KtbUserComponent,
     KtbSettingsViewComponent,
-    KtbTriggerSequenceComponent,
     KtbRootComponent,
     KtbLogoutViewComponent,
   ],

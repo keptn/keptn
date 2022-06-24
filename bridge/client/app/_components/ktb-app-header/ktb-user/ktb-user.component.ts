@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, Input } from '@angular/core';
-import { DataService } from '../../_services/data.service';
-import { EndSessionData } from '../../../../shared/interfaces/end-session-data';
+import { DataService } from '../../../_services/data.service';
+import { EndSessionData } from '../../../../../shared/interfaces/end-session-data';
 import { Location } from '@angular/common';
 
 @Component({

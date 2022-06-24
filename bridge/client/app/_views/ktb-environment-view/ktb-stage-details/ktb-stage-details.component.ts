@@ -1,10 +1,10 @@
 import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { DtToggleButtonChange, DtToggleButtonItem } from '@dynatrace/barista-components/toggle-button-group';
 import { DtOverlayConfig } from '@dynatrace/barista-components/overlay';
-import { Project } from '../../_models/project';
-import { Stage } from '../../_models/stage';
-import { Service } from '../../_models/service';
-import { DataService } from '../../_services/data.service';
+import { Project } from '../../../_models/project';
+import { Stage } from '../../../_models/stage';
+import { Service } from '../../../_models/service';
+import { DataService } from '../../../_services/data.service';
 import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 

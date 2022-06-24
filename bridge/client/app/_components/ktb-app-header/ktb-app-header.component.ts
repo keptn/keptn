@@ -5,23 +5,23 @@ import { NavigationEnd, NavigationStart, Router } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { combineLatest, Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { Project } from '../_models/project';
-import { DataService } from '../_services/data.service';
-import { NotificationsService } from '../_services/notifications.service';
-import { NotificationType } from '../_models/notification';
-import { environment } from '../../environments/environment';
-import { KeptnInfo } from '../_models/keptn-info';
+import { Project } from '../../_models/project';
+import { DataService } from '../../_services/data.service';
+import { NotificationsService } from '../../_services/notifications.service';
+import { NotificationType } from '../../_models/notification';
+import { environment } from '../../../environments/environment';
+import { KeptnInfo } from '../../_models/keptn-info';
 import { DtSwitchChange } from '@dynatrace/barista-components/switch';
-import { VersionInfo } from '../../../shared/interfaces/keptn-versions';
+import { VersionInfo } from '../../../../shared/interfaces/keptn-versions';
 import { DtSelect } from '@dynatrace/barista-components/select';
-import { IMetadata } from '../_interfaces/metadata';
+import { IMetadata } from '../../_interfaces/metadata';
 
 @Component({
   selector: 'ktb-header',
-  templateUrl: './app-header.component.html',
-  styleUrls: ['./app-header.component.scss'],
+  templateUrl: './ktb-app-header.component.html',
+  styleUrls: ['./ktb-app-header.component.scss'],
 })
-export class AppHeaderComponent implements OnInit, OnDestroy {
+export class KtbAppHeaderComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
 
   @ViewChild('projectSelect') projectSelect?: DtSelect<string | undefined>;

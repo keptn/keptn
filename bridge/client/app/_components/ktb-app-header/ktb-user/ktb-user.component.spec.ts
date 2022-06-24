@@ -1,8 +1,8 @@
 import { KtbUserComponent } from './ktb-user.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { AppModule } from '../../app.module';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { EndSessionData } from '../../../../shared/interfaces/end-session-data';
+import { EndSessionData } from '../../../../../shared/interfaces/end-session-data';
+import { KtbAppHeaderModule } from '../ktb-app-header.module';
 
 describe('ktbUserComponentTest', () => {
   let component: KtbUserComponent;
@@ -12,7 +12,7 @@ describe('ktbUserComponentTest', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule, HttpClientTestingModule],
+      imports: [KtbAppHeaderModule, HttpClientTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbUserComponent);
@@ -46,7 +46,7 @@ describe('ktbUserComponentTest', () => {
     const submitForm = { target: { submit: (): void => {} } };
     component.logout(submitForm);
     httpMock.expectOne('./oauth/logout').flush(null);
-    expect(locationAssignMock).toBeCalledWith('/logoutsession');
+    expect(locationAssignMock).toBeCalledWith('http://localhost/logoutsession');
   });
 });
 
