@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbStageOverviewComponent } from './ktb-stage-overview.component';
-import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { RouterTestingModule } from '@angular/router/testing';
+import { KtbStageOverviewModule } from './ktb-stage-overview.module';
 
 describe('KtbStageOverviewComponent', () => {
   let component: KtbStageOverviewComponent;
@@ -9,7 +10,7 @@ describe('KtbStageOverviewComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule, HttpClientTestingModule],
+      imports: [KtbStageOverviewModule, HttpClientTestingModule, RouterTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbStageOverviewComponent);
