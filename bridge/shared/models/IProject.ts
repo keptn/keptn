@@ -25,11 +25,11 @@ export interface IGitSshData {
 }
 
 export interface IGitHTTPSConfiguration extends IGitBasicConfiguration {
-  https: IGitHTTPSData;
+  https?: IGitHTTPSData;
 }
 
 export interface IGitSSHConfiguration extends IGitBasicConfiguration {
-  ssh: IGitSshData;
+  ssh?: IGitSshData;
 }
 
 export type IGitDataExtended = IGitSSHConfiguration | IGitHTTPSConfiguration | IGitBasicConfiguration;
