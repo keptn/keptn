@@ -5,13 +5,10 @@ import (
 	"testing"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 )
 
 func TestProjectCredentialsMigration_Transform(t *testing.T) {
@@ -265,17 +262,21 @@ var projectOldToNew = &apimodels.ExpandedProject{
 }
 
 func TestProjectCredentialsMigration_TransformNewModel(t *testing.T) {
-	config, err := rest.InClusterConfig()
-	require.Nil(t, err)
-
-	kubeAPI, err := kubernetes.NewForConfig(config)
-	require.Nil(t, err)
-
 	projectRepo := db.NewMongoDBProjectsRepo(db.GetMongoDBConnectionInstance())
-	err = projectRepo.CreateProject(projectNew)
+
+	err := projectRepo.CreateProject(projectNew)
 	require.Nil(t, err)
 
-	migrator := NewProjectCredentialsMigrator(db.GetMongoDBConnectionInstance(), common.NewK8sSecretStore(kubeAPI))
+	secretStore := db_mock.SecretCredentialsRepoMock{
+		UpdateSecretFunc: func(project *models.ExpandedProjectOld) error {
+			return nil
+		},
+	}
+
+	migrator := &ProjectCredentialsMigrator{
+		projectRepo: db.NewProjectCredentialsRepo(db.GetMongoDBConnectionInstance()),
+		secretRepo:  secretStore,
+	}
 	migrator.Transform()
 
 	migratedProject, err := projectRepo.GetProject(projectNew.ProjectName)
@@ -287,17 +288,20 @@ func TestProjectCredentialsMigration_TransformNewModel(t *testing.T) {
 }
 
 func TestProjectCredentialsMigration_TransformOldModel(t *testing.T) {
-	config, err := rest.InClusterConfig()
-	require.Nil(t, err)
-
-	kubeAPI, err := kubernetes.NewForConfig(config)
-	require.Nil(t, err)
-
 	projectRepo := db.NewProjectCredentialsRepo(db.GetMongoDBConnectionInstance())
-	err = projectRepo.CreateOldCredentialsProject(projectOld)
+	err := projectRepo.CreateOldCredentialsProject(projectOld)
 	require.Nil(t, err)
 
-	migrator := NewProjectCredentialsMigrator(db.GetMongoDBConnectionInstance(), common.NewK8sSecretStore(kubeAPI))
+	secretStore := db_mock.SecretCredentialsRepoMock{
+		UpdateSecretFunc: func(project *models.ExpandedProjectOld) error {
+			return nil
+		},
+	}
+
+	migrator := &ProjectCredentialsMigrator{
+		projectRepo: db.NewProjectCredentialsRepo(db.GetMongoDBConnectionInstance()),
+		secretRepo:  secretStore,
+	}
 	migrator.Transform()
 
 	migratedProject, err := projectRepo.ProjectRepo.GetProject(projectOld.ProjectName)
@@ -309,21 +313,24 @@ func TestProjectCredentialsMigration_TransformOldModel(t *testing.T) {
 }
 
 func TestProjectCredentialsMigration_TransformMixed(t *testing.T) {
-	config, err := rest.InClusterConfig()
-	require.Nil(t, err)
-
-	kubeAPI, err := kubernetes.NewForConfig(config)
-	require.Nil(t, err)
-
 	projectRepo := db.NewProjectCredentialsRepo(db.GetMongoDBConnectionInstance())
 
-	err = projectRepo.CreateOldCredentialsProject(projectOld)
+	err := projectRepo.CreateOldCredentialsProject(projectOld)
 	require.Nil(t, err)
 
 	err = projectRepo.ProjectRepo.CreateProject(projectNew)
 	require.Nil(t, err)
 
-	migrator := NewProjectCredentialsMigrator(db.GetMongoDBConnectionInstance(), common.NewK8sSecretStore(kubeAPI))
+	secretStore := db_mock.SecretCredentialsRepoMock{
+		UpdateSecretFunc: func(project *models.ExpandedProjectOld) error {
+			return nil
+		},
+	}
+
+	migrator := &ProjectCredentialsMigrator{
+		projectRepo: db.NewProjectCredentialsRepo(db.GetMongoDBConnectionInstance()),
+		secretRepo:  secretStore,
+	}
 	migrator.Transform()
 
 	migratedProject, err := projectRepo.ProjectRepo.GetProject(projectOld.ProjectName)
