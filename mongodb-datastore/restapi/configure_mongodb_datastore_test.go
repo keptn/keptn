@@ -6,6 +6,7 @@ import (
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations"
 	"github.com/nats-io/nats-server/v2/server"
 	natstest "github.com/nats-io/nats-server/v2/test"
+	logger "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"os"
 	"testing"
@@ -29,7 +30,7 @@ func Test_startControlPlaneSuccess(t *testing.T) {
 	eventRequestHandler := handlers.NewEventRequestHandler(nil)
 	ctx := context.TODO()
 	go func() {
-		err := startControlPlane(ctx, api, eventRequestHandler)
+		err := startControlPlane(ctx, api, eventRequestHandler, logger.New())
 		require.Nil(t, err)
 		t.Log("control plane terminated")
 	}()
@@ -42,7 +43,7 @@ func Test_startControlPlaneSuccess(t *testing.T) {
 
 func Test_startControlPlaneFailNoNATS(t *testing.T) {
 	eventRequestHandler := handlers.NewEventRequestHandler(nil)
-	err := startControlPlane(context.TODO(), &operations.MongodbDatastoreAPI{}, eventRequestHandler)
+	err := startControlPlane(context.TODO(), &operations.MongodbDatastoreAPI{}, eventRequestHandler, logger.New())
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "could not connect to NATS")
 }

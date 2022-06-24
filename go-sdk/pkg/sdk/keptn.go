@@ -401,10 +401,7 @@ func newControlPlaneFromEnv() (api.KeptnInterface, *controlplane.ControlPlane, c
 		log.Fatal(err)
 	}
 
-	natsConnector, err := nats.Connect(env.EventBrokerURL)
-	if err != nil {
-		log.Fatal(err)
-	}
+	natsConnector := nats.New(env.EventBrokerURL)
 	eventSource := eventsource.New(natsConnector)
 	eventSender := eventSource.Sender()
 	subscriptionSource := subscriptionsource.New(apiSet.UniformV1())
