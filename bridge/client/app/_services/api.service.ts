@@ -7,7 +7,6 @@ import { EventTypes } from '../../../shared/interfaces/event-types';
 import { IMetadata } from '../_interfaces/metadata';
 import moment from 'moment';
 import { SequenceResult } from '../_models/sequence-result';
-import { Project } from '../_models/project';
 import { UniformRegistrationLogResponse } from '../../../shared/interfaces/uniform-registration-log';
 import { Secret } from '../_models/secret';
 import { KeptnInfoResult } from '../../../shared/interfaces/keptn-info-result';
@@ -32,7 +31,7 @@ import { environment } from '../../environments/environment';
 import { WindowConfig } from '../../environments/environment.dynamic';
 import { IService } from '../../../shared/interfaces/service';
 import { IProjectResult } from '../../../shared/interfaces/project-result';
-import { IGitDataExtended } from '../../../shared/models/IProject';
+import { IGitDataExtended, IProject } from '../../../shared/models/IProject';
 
 @Injectable({
   providedIn: 'root',
@@ -147,13 +146,13 @@ export class ApiService {
     return this.http.delete<Record<string, unknown>>(url);
   }
 
-  public getProject(projectName: string): Observable<Project> {
+  public getProject(projectName: string): Observable<IProject> {
     const url = `${this._baseUrl}/project/${projectName}`;
     const params = {
       approval: 'true',
       remediation: 'true',
     };
-    return this.http.get<Project>(url, { params });
+    return this.http.get<IProject>(url, { params });
   }
 
   public getService(projectName: string, stageName: string, serviceName: string): Observable<IService> {
@@ -162,9 +161,9 @@ export class ApiService {
     );
   }
 
-  public getPlainProject(projectName: string): Observable<Project> {
+  public getPlainProject(projectName: string): Observable<IProject> {
     const url = `${this._baseUrl}/project/${projectName}`;
-    return this.http.get<Project>(url);
+    return this.http.get<IProject>(url);
   }
 
   public getProjects(pageSize?: number): Observable<IProjectResult> {
