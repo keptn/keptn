@@ -13,11 +13,13 @@ import { KtbPayloadViewerModule } from '../ktb-payload-viewer/ktb-payload-viewer
 import { KtbWebhookSettingsModule } from '../ktb-webhook-settings/ktb-webhook-settings.module';
 import { KtbLoadingModule } from '../ktb-loading/ktb-loading.module';
 import { RouterModule } from '@angular/router';
+import { DtButtonModule } from '@dynatrace/barista-components/button';
 
 @NgModule({
   declarations: [KtbModifyUniformSubscriptionComponent],
   imports: [
     CommonModule,
+    DtButtonModule,
     DtCheckboxModule,
     DtIconModule.forRoot({
       svgIconLocation: `assets/icons/{{name}}.svg`,

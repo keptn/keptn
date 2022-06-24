@@ -8,10 +8,10 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { DtTableDataSource } from '@dynatrace/barista-components/table';
-import { Service } from '../../_models/service';
-import { DateUtil } from '../../_utils/date.utils';
-import { DataService } from '../../_services/data.service';
-import { Sequence } from '../../_models/sequence';
+import { Service } from '../../../../_models/service';
+import { DateUtil } from '../../../../_utils/date.utils';
+import { DataService } from '../../../../_services/data.service';
+import { Sequence } from '../../../../_models/sequence';
 
 const DEFAULT_PAGE_SIZE = 3;
 

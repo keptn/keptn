@@ -32,8 +32,11 @@ class UniformPage {
     return this;
   }
 
-  public visitAdd(integrationID: string): this {
+  public visitAdd(integrationID: string, isWebhook = false): this {
     cy.visit(`/project/sockshop/settings/uniform/integrations/${integrationID}/subscriptions/add`).wait('@metadata');
+    if (isWebhook) {
+      cy.wait('@webhook-secrets');
+    }
     return this;
   }
 
@@ -118,12 +121,12 @@ class UniformPage {
   }
 
   public setTaskPrefix(selection: string): this {
-    cy.byTestId(this.EDIT_SUBSCRIPTION_FIELD_TASK_ID).find('dt-select').focus().type(`{enter}${selection}{enter}`);
+    cy.byTestId(this.EDIT_SUBSCRIPTION_FIELD_TASK_ID).dtSelect(selection);
     return this;
   }
 
   public setTaskSuffix(selection: string): this {
-    cy.byTestId(this.EDIT_SUBSCRIPTION_FIELD_SUFFIX_ID).find('dt-select').focus().type(`{enter}${selection}{enter}`);
+    cy.byTestId(this.EDIT_SUBSCRIPTION_FIELD_SUFFIX_ID).dtSelect(selection);
     return this;
   }
 

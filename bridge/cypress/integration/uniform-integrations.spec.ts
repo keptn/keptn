@@ -242,7 +242,7 @@ describe('Integrations changed requests', () => {
 describe('Add webhook subscriptions', () => {
   beforeEach(() => {
     interceptIntegrations();
-    uniformPage.visitAdd(webhookID);
+    uniformPage.visitAdd(webhookID, true);
   });
   it('should have disabled button if first and second control is invalid', () => {
     uniformPage.assertIsUpdateButtonEnabled(false).assertIsUpdateButtonEnabled(false);

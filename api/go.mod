@@ -18,7 +18,7 @@ require (
 	github.com/keptn/go-utils v0.16.1
 	github.com/keptn/keptn/cp-connector v0.0.0-20220608060450-36261c888f84
 	github.com/nats-io/nats-server/v2 v2.8.4
-	github.com/nats-io/nats.go v1.15.0
+	github.com/nats-io/nats.go v1.16.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
 	golang.org/x/net v0.0.0-20220607020251-c690dde0001d
