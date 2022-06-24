@@ -56,20 +56,15 @@ func main() {
 		log.Fatal(err)
 	}
 
-	subscriptionSource := subscriptionsource.New(api.UniformV1())
-	subscriptionsource.WithLogger(log)
+	subscriptionSource := subscriptionsource.New(api.UniformV1(), subscriptionsource.WithLogger(log))
 
 	natsConnector := nats.NewFromEnv()
-	nats.WithLogger(log)
+	nats.WithLogger(log)(natsConnector)
+	eventSource := eventsource.New(natsConnector, eventsource.WithLogger(log))
 
-	eventSource := eventsource.New(natsConnector)
-	eventsource.WithLogger(log)
+	logForwarder := logforwarder.New(api.LogsV1(), logforwarder.WithLogger(log))
 
-	logForwarder := logforwarder.New(api.LogsV1())
-	logforwarder.WithLogger(log)
-
-	controlPlane := controlplane.New(subscriptionSource, eventSource, logForwarder)
-	controlplane.WithLogger(log)
+	controlPlane := controlplane.New(subscriptionSource, eventSource, logForwarder, controlplane.WithLogger(log))
 
 	go func() {
 		keptnapi.RunHealthEndpoint("8080", keptnapi.WithReadinessConditionFunc(func() bool {
