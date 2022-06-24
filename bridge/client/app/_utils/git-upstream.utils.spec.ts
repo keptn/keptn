@@ -1,13 +1,13 @@
 import * as gitUtils from './git-upstream.utils';
-import { Project } from '../_models/project';
 
 describe('GitUpstreamUtils', () => {
   it('should be HTTPS configuration', () => {
     expect(
       gitUtils.isGitHTTPS({
+        remoteURL: 'https://myRemoteUrl',
         https: {
-          gitRemoteURL: 'https://myRemoteUrl',
-          gitToken: '',
+          token: '',
+          insecureSkipTLS: false,
         },
       })
     ).toBe(true);
@@ -16,9 +16,9 @@ describe('GitUpstreamUtils', () => {
   it('should be SSH configuration', () => {
     expect(
       gitUtils.isGitHTTPS({
+        remoteURL: 'ssh://myGitUrl',
         ssh: {
-          gitRemoteURL: 'ssh://myGitUrl',
-          gitPrivateKey: btoa('myPrivateKey'),
+          privateKey: btoa('myPrivateKey'),
         },
       })
     ).toBe(false);
@@ -27,16 +27,16 @@ describe('GitUpstreamUtils', () => {
   it('should be valid git upstream', () => {
     expect(
       gitUtils.isGitUpstreamValidSet({
-        gitRemoteURL: 'https://myGitUrl',
-        gitToken: 'myToken',
+        remoteURL: 'https://myGitUrl',
+        token: 'myToken',
       })
     ).toBe(true);
 
     expect(
       gitUtils.isGitUpstreamValidSet({
-        gitRemoteURL: 'https://myGitUrl',
-        gitToken: 'myToken',
-        gitUser: 'myUser',
+        remoteURL: 'https://myGitUrl',
+        token: 'myToken',
+        user: 'myUser',
       })
     ).toBe(true);
   });
@@ -44,138 +44,38 @@ describe('GitUpstreamUtils', () => {
   it('should not be valid git upstream', () => {
     expect(
       gitUtils.isGitUpstreamValidSet({
-        gitRemoteURL: '',
-        gitToken: 'myToken',
+        remoteURL: '',
+        token: 'myToken',
       })
     ).toBe(false);
 
     expect(
       gitUtils.isGitUpstreamValidSet({
-        gitRemoteURL: 'https://myGitUrl',
-        gitToken: '',
-      })
-    ).toBe(false);
-  });
-
-  it('should be HTTPS with proxy configuration', () => {
-    expect(
-      gitUtils.isGitWithProxy({
-        https: {
-          gitToken: 'myToken',
-          gitRemoteURL: 'https://myGitUrl',
-          gitProxyUser: '',
-          gitProxyPassword: '',
-          gitProxyScheme: 'https',
-          gitProxyInsecure: false,
-          gitProxyUrl: '0.0.0.0',
-        },
-      })
-    ).toBe(true);
-
-    expect(
-      gitUtils.isGitWithProxy({
-        https: {
-          gitToken: 'myToken',
-          gitRemoteURL: 'https://myGitUrl',
-          gitProxyScheme: 'https',
-          gitProxyInsecure: false,
-          gitProxyUrl: '0.0.0.0',
-        },
-      })
-    ).toBe(true);
-  });
-
-  it('should be HTTPS without proxy configuration', () => {
-    expect(
-      gitUtils.isGitWithProxy({
-        https: {
-          gitToken: 'myToken',
-          gitRemoteURL: 'https://myGitUrl',
-        },
-      })
-    ).toBe(false);
-
-    expect(
-      gitUtils.isGitWithProxy({
-        https: {
-          gitToken: 'myToken',
-          gitRemoteURL: 'https://myGitUrl',
-          gitProxyScheme: 'https',
-          gitProxyUser: 'myUser',
-          gitProxyPassword: 'myPassword',
-          gitProxyInsecure: false,
-        },
+        remoteURL: 'https://myGitUrl',
+        token: '',
       })
     ).toBe(false);
   });
 
   it('should be project with HTTPS configuration', () => {
     expect(
-      gitUtils.isGitInputWithHTTPS({
-        gitRemoteURI: 'https://myGitUrl',
-      } as Project)
-    ).toBe(true);
+      gitUtils.isGitInputWithSSH({
+        remoteURL: 'https://myGitUrl',
+      })
+    ).toBe(false);
 
     expect(
-      gitUtils.isGitInputWithHTTPS({
-        gitRemoteURI: 'http://myGitUrl',
-      } as Project)
-    ).toBe(true);
+      gitUtils.isGitInputWithSSH({
+        remoteURL: 'http://myGitUrl',
+      })
+    ).toBe(false);
   });
 
   it('should be project with SSH configuration', () => {
     expect(
-      gitUtils.isGitInputWithHTTPS({
-        gitRemoteURI: 'ssh://myGitUrl',
-      } as Project)
-    ).toBe(false);
-  });
-
-  it('should return true if the https git remote url is empty', () => {
-    expect(
-      gitUtils.isRemoteUrlEmpty({
-        https: {
-          gitToken: '',
-          gitRemoteURL: '',
-        },
+      gitUtils.isGitInputWithSSH({
+        remoteURL: 'ssh://myGitUrl',
       })
     ).toBe(true);
-  });
-
-  it('should return false if the https git remote url is not empty', () => {
-    expect(
-      gitUtils.isRemoteUrlEmpty({
-        https: {
-          gitToken: '',
-          gitRemoteURL: 'https://myGitUrl',
-        },
-      })
-    ).toBe(false);
-  });
-
-  it('should return true if the ssh git remote url is empty', () => {
-    expect(
-      gitUtils.isRemoteUrlEmpty({
-        ssh: {
-          gitRemoteURL: '',
-          gitPrivateKey: '',
-        },
-      })
-    ).toBe(true);
-  });
-
-  it('should return false if the ssh git remote url is not empty', () => {
-    expect(
-      gitUtils.isRemoteUrlEmpty({
-        ssh: {
-          gitRemoteURL: 'ssh://myGitUrl',
-          gitPrivateKey: '',
-        },
-      })
-    ).toBe(false);
-  });
-
-  it('should return true if it is not a https or an ssh configuration', () => {
-    expect(gitUtils.isRemoteUrlEmpty({ noupstream: '' })).toBe(true);
   });
 });

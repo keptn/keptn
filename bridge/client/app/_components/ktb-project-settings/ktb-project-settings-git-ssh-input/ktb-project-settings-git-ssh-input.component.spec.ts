@@ -26,8 +26,8 @@ describe('KtbProjectSettingsGitSshInputComponent', () => {
 
     // when
     component.gitInputData = {
-      gitRemoteURL: 'ssh://myGitUrl',
-      gitUser: 'myUser',
+      remoteURL: 'ssh://myGitUrl',
+      user: 'myUser',
     };
 
     // then
@@ -40,8 +40,8 @@ describe('KtbProjectSettingsGitSshInputComponent', () => {
 
     // then
     expect(emitSpy).toHaveBeenCalledWith({
-      gitRemoteURL: 'ssh://myGitUrl',
-      gitUser: 'myUser',
+      remoteURL: 'ssh://myGitUrl',
+      user: 'myUser',
     });
   });
 
@@ -56,8 +56,8 @@ describe('KtbProjectSettingsGitSshInputComponent', () => {
 
     // then
     expect(emitSpy).toHaveBeenCalledWith({
-      gitRemoteURL: 'ssh://myGitUrl',
-      gitUser: 'myUser',
+      remoteURL: 'ssh://myGitUrl',
+      user: 'myUser',
     });
   });
 
@@ -71,8 +71,8 @@ describe('KtbProjectSettingsGitSshInputComponent', () => {
 
     // then
     expect(emitSpy).toHaveBeenCalledWith({
-      gitRemoteURL: 'ssh://myGitUrl',
-      gitUser: '',
+      remoteURL: 'ssh://myGitUrl',
+      user: '',
     });
   });
 

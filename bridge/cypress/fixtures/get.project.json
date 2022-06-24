@@ -113,8 +113,10 @@
         }
       ],
       "creationDate": "1621493016550266259",
-      "gitRemoteURI": "https://github.com/carpe-github/claus-tenant-dev.git",
-      "gitUser": "carpe-github",
+      "gitConfiguration": {
+        "remoteURL": "https://github.com/carpe-github/claus-tenant-dev.git",
+        "user": "carpe-github"
+      },
       "projectName": "dynatrace",
       "shipyard": "apiVersion: spec.keptn.sh/0.2.0\nkind: Shipyard\nmetadata:\n    name: shipyard-quality-gates\nspec:\n    stages:\n        - name: quality-gate\n          sequences: []\n",
       "shipyardVersion": "spec.keptn.sh/0.2.0"

@@ -1,6 +1,6 @@
-import { Project } from '../models/project';
+import { IProject } from '../models/IProject';
 
-export interface ProjectResult {
-  projects: Project[];
+export interface IProjectResult {
+  projects: IProject[];
   totalCount: number;
 }

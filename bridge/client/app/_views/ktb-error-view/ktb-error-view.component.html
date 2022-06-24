@@ -12,6 +12,10 @@
         <h2>Action not permitted</h2>
         <p>User is not allowed to perform this action.</p>
       </ng-container>
+      <ng-container *ngSwitchCase="ServerErrors.CONFIGURATION_SERVICE_NOT_ALLOWED">
+        <h2>Action not permitted</h2>
+        <p>You are not allowed to perform this action if the configuration service is enabled.</p>
+      </ng-container>
       <ng-container *ngSwitchDefault>
         <h2>Internal error</h2>
         <p>Error while handling the redirect. Please retry and check whether the problem still exists.</p>

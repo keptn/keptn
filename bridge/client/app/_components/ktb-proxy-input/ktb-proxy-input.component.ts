@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { KeyValue } from '@angular/common';
-import { IProxy } from '../../_interfaces/git-upstream';
 import { AppUtils } from '../../_utils/app.utils';
+import { IProxy } from '../../../../shared/models/IProject';
 
 @Component({
   selector: 'ktb-proxy-input',
@@ -20,14 +20,12 @@ export class KtbProxyInputComponent {
       value: 'https',
     },
   ];
-  public isInsecureControl = new FormControl(false);
   public schemeControl = new FormControl(this.schemes[1].value);
   public passwordControl = new FormControl('');
   public userControl = new FormControl('');
   public hostControl = new FormControl('', [Validators.required]);
   public portControl = new FormControl('', [Validators.required]);
   public proxyForm = new FormGroup({
-    isInsecure: this.isInsecureControl,
     scheme: this.schemeControl,
     user: this.userControl,
     password: this.passwordControl,
@@ -37,23 +35,21 @@ export class KtbProxyInputComponent {
   @Input()
   public set proxy(proxy: IProxy | undefined) {
     if (proxy) {
-      const urlParts = AppUtils.splitURLPort(proxy.gitProxyUrl);
-      this.isInsecureControl.setValue(proxy.gitProxyInsecure);
-      this.schemeControl.setValue(proxy.gitProxyScheme);
+      const urlParts = AppUtils.splitURLPort(proxy.url);
+      this.schemeControl.setValue(proxy.scheme);
       this.hostControl.setValue(urlParts.host);
       this.portControl.setValue(urlParts.port);
-      this.userControl.setValue(proxy.gitProxyUser ?? '');
-      this.passwordControl.setValue(proxy.gitProxyPassword ?? '');
+      this.userControl.setValue(proxy.user ?? '');
+      this.passwordControl.setValue(proxy.password ?? '');
     }
   }
   public get proxy(): IProxy | undefined {
     return this.proxyForm.valid
       ? {
-          gitProxyInsecure: this.isInsecureControl.value,
-          gitProxyScheme: this.schemeControl.value,
-          gitProxyUrl: `${this.hostControl.value}:${this.portControl.value}`,
-          gitProxyUser: this.userControl.value,
-          gitProxyPassword: this.passwordControl.value,
+          scheme: this.schemeControl.value,
+          url: `${this.hostControl.value}:${this.portControl.value}`,
+          user: this.userControl.value,
+          password: this.passwordControl.value,
         }
       : undefined;
   }

@@ -1,13 +1,15 @@
 import { Project } from '../../_models/project';
 import { Service } from '../../_models/service';
 import { Stage } from '../../_models/stage';
+import { IProject } from '../../../../shared/models/IProject';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const projectsData: any = [
+const projectsData: IProject[] = [
   {
     creationDate: '1614603785739925270',
-    gitRemoteURI: 'https://github.com/Kirdock/keptn-dynatrace',
-    gitUser: 'Kirdock',
+    gitCredentials: {
+      remoteURL: 'https://github.com/Kirdock/keptn-dynatrace',
+      user: 'Kirdock',
+    },
     projectName: 'sockshop',
     shipyard:
       'apiVersion: spec.keptn.sh/0.2.0\nkind: Shipyard\nmetadata:\n  name: shipyard-sockshop\nspec:\n  stages:\n  - name: dev\n    sequences:\n    - name: delivery\n      tasks:\n      - name: deployment\n        properties:\n          deploymentstrategy: direct\n      - name: test\n        properties:\n          teststrategy: functional\n      - name: evaluation\n        properties: null\n      - name: release\n        properties: null\n    - name: delivery-direct\n      tasks:\n      - name: deployment\n        properties:\n          deploymentstrategy: direct\n      - name: release\n        properties: null\n  - name: staging\n    sequences:\n    - name: delivery\n      tasks:\n      - name: deployment\n        properties:\n          deploymentstrategy: blue_green_service\n      - name: test\n        properties:\n          teststrategy: performance\n      - name: evaluation\n        properties: null\n      - name: release\n        properties: null\n      triggeredOn:\n      - event: dev.delivery.finished\n        selector:\n          match: null\n    - name: rollback\n      tasks:\n      - name: rollback\n        properties: null\n      triggeredOn:\n      - event: staging.delivery.finished\n        selector:\n          match:\n            result: fail\n    - name: delivery-direct\n      tasks:\n      - name: deployment\n        properties:\n          deploymentstrategy: direct\n      - name: release\n        properties: null\n      triggeredOn:\n      - event: dev.delivery-direct.finished\n        selector:\n          match: null\n  - name: production\n    sequences:\n    - name: delivery\n      tasks:\n      - name: deployment\n        properties:\n          deploymentstrategy: blue_green_service\n      - name: release\n        properties: null\n      triggeredOn:\n      - event: staging.delivery.finished\n        selector:\n          match: null\n    - name: rollback\n      tasks:\n      - name: rollback\n        properties: null\n      triggeredOn:\n      - event: production.delivery.finished\n        selector:\n          match:\n            result: fail\n    - name: delivery-direct\n      tasks:\n      - name: deployment\n        properties:\n          deploymentstrategy: direct\n      - name: release\n        properties: null\n      triggeredOn:\n      - event: staging.delivery-direct.finished\n        selector:\n          match: null\n',
@@ -16,8 +18,6 @@ const projectsData: any = [
       {
         services: [
           {
-            roots: [],
-            openApprovals: [],
             creationDate: '1614603919173353566',
             deployedImage: 'docker.io/mongo:4.2.2',
             lastEventTypes: {
@@ -62,13 +62,9 @@ const projectsData: any = [
                 time: '1615545130961599182',
               },
             },
-            openRemediations: null,
             serviceName: 'carts-db',
-            stage: 'dev',
           },
           {
-            roots: [],
-            openApprovals: [],
             creationDate: '1614683118180068607',
             deployedImage: 'docker.io/keptnexamples/carts:0.12.3',
             lastEventTypes: {
@@ -173,9 +169,7 @@ const projectsData: any = [
                 time: '1614923573857764232',
               },
             },
-            openRemediations: null,
             serviceName: 'carts',
-            stage: 'dev',
           },
         ],
         stageName: 'dev',
@@ -183,8 +177,6 @@ const projectsData: any = [
       {
         services: [
           {
-            roots: [],
-            openApprovals: [],
             creationDate: '1614603922172957849',
             deployedImage: 'docker.io/mongo:4.2.2',
             lastEventTypes: {
@@ -229,13 +221,9 @@ const projectsData: any = [
                 time: '1615545132066189728',
               },
             },
-            openRemediations: null,
             serviceName: 'carts-db',
-            stage: 'staging',
           },
           {
-            roots: [],
-            openApprovals: [],
             creationDate: '1614683121241067984',
             deployedImage: 'docker.io/keptnexamples/carts:0.12.3',
             lastEventTypes: {
@@ -360,9 +348,7 @@ const projectsData: any = [
                 time: '1615898694804880166',
               },
             },
-            openRemediations: null,
             serviceName: 'carts',
-            stage: 'staging',
           },
         ],
         stageName: 'staging',
@@ -370,8 +356,6 @@ const projectsData: any = [
       {
         services: [
           {
-            roots: [],
-            openApprovals: [],
             creationDate: '1614603925140444462',
             deployedImage: 'docker.io/mongo:4.2.2',
             lastEventTypes: {
@@ -416,13 +400,9 @@ const projectsData: any = [
                 time: '1615545152016404557',
               },
             },
-            openRemediations: null,
             serviceName: 'carts-db',
-            stage: 'production',
           },
           {
-            roots: [],
-            openApprovals: [],
             creationDate: '1614683124274548599',
             deployedImage: 'docker.io/keptnexamples/carts:0.12.3',
             lastEventTypes: {
@@ -467,9 +447,7 @@ const projectsData: any = [
                 time: '1615474723121107065',
               },
             },
-            openRemediations: null,
             serviceName: 'carts',
-            stage: 'production',
           },
         ],
         stageName: 'production',
@@ -478,8 +456,10 @@ const projectsData: any = [
   },
   {
     creationDate: '1614610006846830117',
-    gitRemoteURI: 'https://github.com/Kirdock/keptnTestApprove',
-    gitUser: 'Kirdock',
+    gitCredentials: {
+      remoteURL: 'https://github.com/Kirdock/keptnTestApprove',
+      user: 'Kirdock',
+    },
     projectName: 'sockshop-approve',
     shipyard:
       'apiVersion: spec.keptn.sh/0.2.0\nkind: Shipyard\nmetadata:\n  name: shipyard-sockshop\nspec:\n  stages:\n  - name: dev\n    sequences:\n    - name: delivery\n      tasks:\n      - name: deployment\n        properties:\n          deploymentstrategy: direct\n      - name: test\n        properties:\n          teststrategy: functional\n      - name: evaluation\n        properties: null\n      - name: release\n        properties: null\n    - name: delivery-direct\n      tasks:\n      - name: deployment\n        properties:\n          deploymentstrategy: direct\n      - name: release\n        properties: null\n  - name: staging\n    sequences:\n    - name: delivery\n      tasks:\n      - name: approval\n        properties:\n          pass: manual\n          warning: manual\n      - name: deployment\n        properties:\n          deploymentstrategy: blue_green_service\n      - name: test\n        properties:\n          teststrategy: performance\n      - name: evaluation\n        properties: null\n      - name: release\n        properties: null\n      triggeredOn:\n      - event: dev.delivery.finished\n        selector:\n          match: null\n    - name: rollback\n      tasks:\n      - name: rollback\n        properties: null\n      triggeredOn:\n      - event: staging.delivery.finished\n        selector:\n          match:\n            result: fail\n    - name: delivery-direct\n      tasks:\n      - name: deployment\n        properties:\n          deploymentstrategy: direct\n      - name: release\n        properties: null\n      triggeredOn:\n      - event: dev.delivery-direct.finished\n        selector:\n          match: null\n  - name: production\n    sequences:\n    - name: delivery\n      tasks:\n      - name: approval\n        properties:\n          pass: manual\n          warning: manual\n      - name: deployment\n        properties:\n          deploymentstrategy: blue_green_service\n      - name: release\n        properties: null\n      triggeredOn:\n      - event: staging.delivery.finished\n        selector:\n          match: null\n    - name: rollback\n      tasks:\n      - name: rollback\n        properties: null\n      triggeredOn:\n      - event: production.delivery.finished\n        selector:\n          match:\n            result: fail\n    - name: delivery-direct\n      tasks:\n      - name: deployment\n        properties:\n          deploymentstrategy: direct\n      - name: release\n        properties: null\n      triggeredOn:\n      - event: staging.delivery-direct.finished\n        selector:\n          match: null\n',
@@ -488,8 +468,6 @@ const projectsData: any = [
       {
         services: [
           {
-            roots: [],
-            openApprovals: [],
             creationDate: '1614610067247515271',
             deployedImage: 'docker.io/keptnexamples/carts:0.12.2',
             lastEventTypes: {
@@ -564,13 +542,9 @@ const projectsData: any = [
                 time: '1616683235676615049',
               },
             },
-            openRemediations: null,
             serviceName: 'carts',
-            stage: 'dev',
           },
           {
-            roots: [],
-            openApprovals: [],
             creationDate: '1614610137361542762',
             deployedImage: 'docker.io/mongo:4.2.2',
             lastEventTypes: {
@@ -615,13 +589,9 @@ const projectsData: any = [
                 time: '1614610199628683416',
               },
             },
-            openRemediations: null,
             serviceName: 'carts-db',
-            stage: 'dev',
           },
           {
-            roots: [],
-            openApprovals: [],
             creationDate: '1615478044097626854',
             deployedImage: 'docker.io/keptnexamples/carts:0.12.2',
             lastEventTypes: {
@@ -696,25 +666,15 @@ const projectsData: any = [
                 time: '1615479366034572304',
               },
             },
-            openRemediations: null,
             serviceName: 'carts-s1',
-            stage: 'dev',
           },
           {
-            roots: [],
-            openApprovals: [],
             creationDate: '1615478098597874154',
-            openRemediations: null,
             serviceName: 'carts-s2',
-            stage: 'dev',
           },
           {
-            roots: [],
-            openApprovals: [],
             creationDate: '1615478144985066621',
-            openRemediations: null,
             serviceName: 'carts-s3',
-            stage: 'dev',
           },
         ],
         stageName: 'dev',
@@ -722,8 +682,6 @@ const projectsData: any = [
       {
         services: [
           {
-            roots: [],
-            openApprovals: [],
             creationDate: '1614610070364938604',
             deployedImage: 'docker.io/keptnexamples/carts:0.12.2',
             lastEventTypes: {
@@ -853,13 +811,9 @@ const projectsData: any = [
                 time: '1615505706529080764',
               },
             },
-            openRemediations: null,
             serviceName: 'carts',
-            stage: 'staging',
           },
           {
-            roots: [],
-            openApprovals: [],
             creationDate: '1614610140488691226',
             deployedImage: 'docker.io/mongo:4.2.2',
             lastEventTypes: {
@@ -904,13 +858,9 @@ const projectsData: any = [
                 time: '1614610202071163140',
               },
             },
-            openRemediations: null,
             serviceName: 'carts-db',
-            stage: 'staging',
           },
           {
-            roots: [],
-            openApprovals: [],
             creationDate: '1615478046642275369',
             deployedImage: 'docker.io/keptnexamples/carts:0.12.2',
             lastEventTypes: {
@@ -980,25 +930,15 @@ const projectsData: any = [
                 time: '1615538150928333958',
               },
             },
-            openRemediations: null,
             serviceName: 'carts-s1',
-            stage: 'staging',
           },
           {
-            roots: [],
-            openApprovals: [],
             creationDate: '1615478101146553024',
-            openRemediations: null,
             serviceName: 'carts-s2',
-            stage: 'staging',
           },
           {
-            roots: [],
-            openApprovals: [],
             creationDate: '1615478147230298554',
-            openRemediations: null,
             serviceName: 'carts-s3',
-            stage: 'staging',
           },
         ],
         stageName: 'staging',
@@ -1006,8 +946,6 @@ const projectsData: any = [
       {
         services: [
           {
-            roots: [],
-            openApprovals: [],
             creationDate: '1614610073528643205',
             deployedImage: 'docker.io/keptnexamples/carts:0.12.3',
             lastEventTypes: {
@@ -1092,13 +1030,9 @@ const projectsData: any = [
                 time: '1615819454939348734',
               },
             },
-            openRemediations: null,
             serviceName: 'carts',
-            stage: 'production',
           },
           {
-            roots: [],
-            openApprovals: [],
             creationDate: '1614610143775644760',
             deployedImage: 'docker.io/mongo:4.2.2',
             lastEventTypes: {
@@ -1143,33 +1077,19 @@ const projectsData: any = [
                 time: '1614610257951086764',
               },
             },
-            openRemediations: null,
             serviceName: 'carts-db',
-            stage: 'production',
           },
           {
-            roots: [],
-            openApprovals: [],
             creationDate: '1615478049158525732',
-            openRemediations: null,
             serviceName: 'carts-s1',
-            stage: 'production',
           },
           {
-            roots: [],
-            openApprovals: [],
             creationDate: '1615478104139026666',
-            openRemediations: null,
             serviceName: 'carts-s2',
-            stage: 'production',
           },
           {
-            roots: [],
-            openApprovals: [],
             creationDate: '1615478149495331147',
-            openRemediations: null,
             serviceName: 'carts-s3',
-            stage: 'production',
           },
         ],
         stageName: 'production',
@@ -1179,8 +1099,10 @@ const projectsData: any = [
   {
     // project without 'carts'
     creationDate: '1614603785739925270',
-    gitRemoteURI: 'https://github.com/Kirdock/keptn-dynatrace',
-    gitUser: 'Kirdock',
+    gitCredentials: {
+      remoteURL: 'https://github.com/Kirdock/keptn-dynatrace',
+      user: 'Kirdock',
+    },
     projectName: 'sockshop-carts-db',
     shipyard:
       'apiVersion: spec.keptn.sh/0.2.0\nkind: Shipyard\nmetadata:\n  name: shipyard-sockshop\nspec:\n  stages:\n  - name: dev\n    sequences:\n    - name: delivery\n      tasks:\n      - name: deployment\n        properties:\n          deploymentstrategy: direct\n      - name: test\n        properties:\n          teststrategy: functional\n      - name: evaluation\n        properties: null\n      - name: release\n        properties: null\n    - name: delivery-direct\n      tasks:\n      - name: deployment\n        properties:\n          deploymentstrategy: direct\n      - name: release\n        properties: null\n  - name: staging\n    sequences:\n    - name: delivery\n      tasks:\n      - name: deployment\n        properties:\n          deploymentstrategy: blue_green_service\n      - name: test\n        properties:\n          teststrategy: performance\n      - name: evaluation\n        properties: null\n      - name: release\n        properties: null\n      triggeredOn:\n      - event: dev.delivery.finished\n        selector:\n          match: null\n    - name: rollback\n      tasks:\n      - name: rollback\n        properties: null\n      triggeredOn:\n      - event: staging.delivery.finished\n        selector:\n          match:\n            result: fail\n    - name: delivery-direct\n      tasks:\n      - name: deployment\n        properties:\n          deploymentstrategy: direct\n      - name: release\n        properties: null\n      triggeredOn:\n      - event: dev.delivery-direct.finished\n        selector:\n          match: null\n  - name: production\n    sequences:\n    - name: delivery\n      tasks:\n      - name: deployment\n        properties:\n          deploymentstrategy: blue_green_service\n      - name: release\n        properties: null\n      triggeredOn:\n      - event: staging.delivery.finished\n        selector:\n          match: null\n    - name: rollback\n      tasks:\n      - name: rollback\n        properties: null\n      triggeredOn:\n      - event: production.delivery.finished\n        selector:\n          match:\n            result: fail\n    - name: delivery-direct\n      tasks:\n      - name: deployment\n        properties:\n          deploymentstrategy: direct\n      - name: release\n        properties: null\n      triggeredOn:\n      - event: staging.delivery-direct.finished\n        selector:\n          match: null\n',
@@ -1189,14 +1111,10 @@ const projectsData: any = [
       {
         services: [
           {
-            roots: [],
-            openApprovals: [],
             creationDate: '1614603919173353566',
             deployedImage: 'docker.io/mongo:4.2.2',
             lastEventTypes: {},
-            openRemediations: null,
             serviceName: 'carts-db',
-            stage: 'dev',
           },
         ],
         stageName: 'dev',
@@ -1204,14 +1122,10 @@ const projectsData: any = [
       {
         services: [
           {
-            roots: [],
-            openApprovals: [],
             creationDate: '1614603922172957849',
             deployedImage: 'docker.io/mongo:4.2.2',
             lastEventTypes: {},
-            openRemediations: null,
             serviceName: 'carts-db',
-            stage: 'staging',
           },
         ],
         stageName: 'staging',
@@ -1219,14 +1133,10 @@ const projectsData: any = [
       {
         services: [
           {
-            roots: [],
-            openApprovals: [],
             creationDate: '1614603925140444462',
             deployedImage: 'docker.io/mongo:4.2.2',
             lastEventTypes: {},
-            openRemediations: null,
             serviceName: 'carts-db',
-            stage: 'production',
           },
         ],
         stageName: 'production',
@@ -1235,7 +1145,7 @@ const projectsData: any = [
   },
 ];
 
-const projects: Project[] = projectsData.map((project: Project) => {
+const projects: Project[] = projectsData.map((project: IProject) => {
   project.stages = project.stages.map((stage) => {
     stage.services = stage.services.map((service) => Service.fromJSON(service));
     return Stage.fromJSON(stage);

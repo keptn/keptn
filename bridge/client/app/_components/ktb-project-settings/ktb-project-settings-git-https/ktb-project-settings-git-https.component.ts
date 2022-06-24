@@ -1,7 +1,9 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { IGitData, IGitHttps, IProxy, IRequiredGitData } from '../../../_interfaces/git-upstream';
 import { AppUtils } from '../../../_utils/app.utils';
-import { isGitUpstreamValidSet, isGitWithProxy } from '../../../_utils/git-upstream.utils';
+import { isGitUpstreamValidSet } from '../../../_utils/git-upstream.utils';
+import { IGitHTTPSConfiguration, IProxy } from '../../../../../shared/models/IProject';
+import { FormControl } from '@angular/forms';
+import { IGitData, IRequiredGitData } from '../ktb-project-settings-git/ktb-project-settings-git.utils';
 
 @Component({
   selector: 'ktb-project-settings-git-https',
@@ -10,54 +12,53 @@ import { isGitUpstreamValidSet, isGitWithProxy } from '../../../_utils/git-upstr
 })
 export class KtbProjectSettingsGitHttpsComponent {
   private gitUpstream?: IRequiredGitData;
-  private _gitInputData?: IGitHttps;
+  private _gitInputData?: IGitHTTPSConfiguration;
   public certificateInput?: string;
   public proxyEnabled = false;
   public proxy?: IProxy;
   public certificate?: string;
   public isCertificateValid = true;
-  public gitDataRequired: IGitData = {};
+  public gitDataRequired: IGitData = { remoteURL: '', valid: false };
   public proxyInput?: IProxy;
+  public isInsecureControl = new FormControl(false);
 
   @Input()
   public isCreateMode = false;
   @Input()
   public isLoading = false;
   @Input()
-  public set gitInputData(data: IGitHttps | undefined) {
+  public set gitInputData(data: IGitHTTPSConfiguration | undefined) {
     this._gitInputData = data;
-    if (data && isGitWithProxy(data)) {
+    if (data?.https?.proxy) {
       this.proxyEnabled = true;
-      this.proxyInput = {
-        gitProxyUrl: data.https.gitProxyUrl,
-        gitProxyInsecure: data.https.gitProxyInsecure,
-        gitProxyScheme: data.https.gitProxyScheme,
-        gitProxyUser: data.https.gitProxyUser,
-        gitProxyPassword: data.https.gitProxyPassword,
-      };
+      this.proxyInput = data.https.proxy;
       this.proxy = AppUtils.copyObject(this.proxyInput);
     }
-    this.certificateInput = data?.https.gitPemCertificate;
-    this.certificate = data?.https.gitPemCertificate;
+    this.isInsecureControl.setValue(data?.https?.insecureSkipTLS ?? false);
+    this.certificateInput = data?.https?.certificate;
+    this.certificate = data?.https?.certificate;
     this.gitDataRequired = {
-      gitUser: data?.https.gitUser,
-      gitToken: data?.https.gitToken,
-      gitRemoteURL: data?.https.gitRemoteURL,
+      user: data?.user,
+      remoteURL: data?.remoteURL ?? '',
+      valid: false,
     };
   }
-  public get gitInputData(): IGitHttps | undefined {
+  public get gitInputData(): IGitHTTPSConfiguration | undefined {
     return this._gitInputData;
   }
   @Output()
-  public dataChange = new EventEmitter<IGitHttps | undefined>();
+  public dataChange = new EventEmitter<IGitHTTPSConfiguration | undefined>();
 
-  public get data(): IGitHttps | undefined {
+  public get data(): IGitHTTPSConfiguration | undefined {
     return this.isValid && this.gitUpstream
       ? {
+          remoteURL: this.gitUpstream.remoteURL,
+          user: this.gitUpstream.user,
           https: {
-            ...this.gitUpstream,
-            ...(this.proxyEnabled && this.proxy),
-            gitPemCertificate: this.certificate,
+            ...(this.proxyEnabled && this.proxy && { proxy: this.proxy }),
+            token: this.gitUpstream.token,
+            certificate: this.certificate,
+            insecureSkipTLS: this.isInsecureControl.value,
           },
         }
       : undefined;
@@ -76,8 +77,8 @@ export class KtbProjectSettingsGitHttpsComponent {
   }
 
   public gitUpstreamChanged(data: IGitData): void {
-    const { gitFormValid, ...gitUpstream } = data;
-    if (gitFormValid && isGitUpstreamValidSet(gitUpstream)) {
+    const { valid, ...gitUpstream } = data;
+    if (valid && isGitUpstreamValidSet(gitUpstream)) {
       this.gitUpstream = gitUpstream;
     } else {
       this.gitUpstream = undefined;

@@ -27,6 +27,7 @@ import { KtbProjectSettingsGitSshComponent } from './ktb-project-settings-git-ss
 import { KtbProjectSettingsGitComponent } from './ktb-project-settings-git/ktb-project-settings-git.component';
 import { KtbProjectSettingsShipyardComponent } from './ktb-project-settings-shipyard/ktb-project-settings-shipyard.component';
 import { KtbProjectSettingsComponent } from './ktb-project-settings.component';
+import { DtCheckboxModule } from '@dynatrace/barista-components/checkbox';
 
 @NgModule({
   declarations: [
@@ -62,6 +63,7 @@ import { KtbProjectSettingsComponent } from './ktb-project-settings.component';
     KtbPipeModule,
     KtbProxyInputModule,
     KtbSshKeyInputModule,
+    DtCheckboxModule,
   ],
   exports: [KtbProjectSettingsComponent],
 })

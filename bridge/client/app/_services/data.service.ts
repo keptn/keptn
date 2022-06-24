@@ -29,8 +29,6 @@ import { ISequencesFilter } from '../../../shared/interfaces/sequencesFilter';
 import { TriggerResponse, TriggerSequenceData } from '../_models/trigger-sequence';
 import { EventData } from '../_components/ktb-evaluation-info/ktb-evaluation-info.component';
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
-import { IGitDataExtended } from '../_interfaces/git-upstream';
-import { getGitData } from '../_utils/git-upstream.utils';
 import { ICustomSequences } from '../../../shared/interfaces/custom-sequences';
 import { KeptnService } from '../../../shared/models/keptn-service';
 import { IMetadata } from '../_interfaces/metadata';
@@ -39,6 +37,7 @@ import {
   ISequenceStateInfo,
   SequencesState,
 } from '../_views/ktb-sequence-view/ktb-sequence-view.utils';
+import { IGitDataExtended } from '../../../shared/models/IProject';
 
 @Injectable({
   providedIn: 'root',
@@ -135,18 +134,8 @@ export class DataService {
     return this.projects.pipe(map((projects) => projects?.some((project) => project.projectName === projectName)));
   }
 
-  public createProject(
-    projectName: string,
-    shipyard: string,
-    gitRemoteUrl?: string,
-    gitToken?: string,
-    gitUser?: string
-  ): Observable<unknown> {
-    return this.apiService.createProject(projectName, shipyard, gitRemoteUrl, gitToken, gitUser);
-  }
-
-  public createProjectExtended(projectName: string, shipyard: string, data: IGitDataExtended): Observable<unknown> {
-    return this.apiService.createProjectExtended(projectName, shipyard, getGitData(data));
+  public createProjectExtended(projectName: string, shipyard: string, data?: IGitDataExtended): Observable<unknown> {
+    return this.apiService.createProjectExtended(projectName, shipyard, data);
   }
 
   public createService(projectName: string, serviceName: string): Observable<Record<string, unknown>> {
@@ -246,21 +235,8 @@ export class DataService {
     return this._tracesLastUpdated[sequence.shkeptncontext];
   }
 
-  public setGitUpstreamUrl(
-    projectName: string,
-    gitUrl: string,
-    gitToken: string,
-    gitUser?: string
-  ): Observable<unknown> {
-    return this.apiService.sendGitUpstreamUrl(projectName, gitUrl, gitToken, gitUser).pipe(
-      tap(() => {
-        this.loadProject(projectName);
-      })
-    );
-  }
-
   public updateGitUpstream(projectName: string, data: IGitDataExtended): Observable<unknown> {
-    return this.apiService.updateGitUpstreamExtended(projectName, getGitData(data));
+    return this.apiService.updateGitUpstreamExtended(projectName, data);
   }
 
   public loadKeptnInfo(): void {

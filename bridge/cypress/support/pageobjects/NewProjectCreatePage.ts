@@ -397,13 +397,6 @@ class NewProjectCreatePage {
     return this;
   }
 
-  public assertNoUpstreamEnabled(status: boolean): this {
-    cy.byTestId('ktb-no-upstream-form-button')
-      .get('input')
-      .should(status ? 'be.enabled' : 'be.disabled');
-    return this;
-  }
-
   public selectHttpsForm(): this {
     cy.byTestId('ktb-https-form-button').click();
     return this;
@@ -434,11 +427,6 @@ class NewProjectCreatePage {
     return this;
   }
 
-  public assertUpdateButtonEnabled(status: boolean): this {
-    cy.byTestId('ktb-project-update-button').should(status ? 'be.enabled' : 'be.disabled');
-    return this;
-  }
-
   public assertGitUpstreamMessageContains(message: string): this {
     cy.byTestId('ktb-settings-git-upstream-message').should('contain', message);
     return this;
@@ -446,6 +434,17 @@ class NewProjectCreatePage {
 
   public assertErrorVisible(status: boolean): this {
     cy.get('ktb-error-view').should(status ? 'be.visible' : 'not.be.visible');
+    return this;
+  }
+
+  public assertConfigurationServiceErrorExists(status: boolean): this {
+    cy.get('ktb-error-view').should(status ? 'exist' : 'not.exist');
+    if (status) {
+      cy.get('ktb-error-view').should(
+        'contain.text',
+        'You are not allowed to perform this action if the configuration service is enabled.'
+      );
+    }
     return this;
   }
 }

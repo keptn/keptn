@@ -1,10 +1,10 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { IGitData, IGitHttps, IProxy } from '../../../_interfaces/git-upstream';
+import { IGitHTTPSConfiguration, IProxy } from 'shared/models/IProject';
 import { AppUtils } from '../../../_utils/app.utils';
 import { KtbProjectSettingsModule } from '../ktb-project-settings.module';
-
 import { KtbProjectSettingsGitHttpsComponent } from './ktb-project-settings-git-https.component';
+import { IGitData } from '../ktb-project-settings-git/ktb-project-settings-git.utils';
 
 describe('KtbProjectSettingsGitHttpsComponent', () => {
   let component: KtbProjectSettingsGitHttpsComponent;
@@ -26,20 +26,19 @@ describe('KtbProjectSettingsGitHttpsComponent', () => {
   it('should set input data with proxy correctly', () => {
     component.gitInputData = getInputDataWithProxy();
     const iProxy: IProxy = {
-      gitProxyUrl: '0.0.0.0',
-      gitProxyScheme: 'https',
-      gitProxyInsecure: false,
-      gitProxyPassword: '',
-      gitProxyUser: 'myProxyUser',
+      url: '0.0.0.0:5000',
+      scheme: 'https',
+      password: '',
+      user: 'myProxyUser',
     };
     expect(component.proxyEnabled).toBe(true);
     expect(component.proxyInput).toEqual(iProxy);
     expect(component.gitInputData).toEqual(getInputDataWithProxy());
     expect(component.certificateInput).toBe(btoa('-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----'));
     expect(component.gitDataRequired).toEqual({
-      gitUser: 'myUser',
-      gitRemoteURL: 'https://myGitUrl.com',
-      gitToken: '',
+      user: 'myUser',
+      remoteURL: 'https://myGitUrl.com',
+      valid: false,
     });
   });
 
@@ -55,39 +54,28 @@ describe('KtbProjectSettingsGitHttpsComponent', () => {
     expect(component.gitInputData).toEqual(getInputDataWithoutProxy());
     expect(component.certificateInput).toBe(btoa('-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----'));
     expect(component.gitDataRequired).toEqual({
-      gitUser: 'myUser',
-      gitRemoteURL: 'https://myGitUrl.com',
-      gitToken: '',
+      user: 'myUser',
+      remoteURL: 'https://myGitUrl.com',
+      valid: false,
     });
   });
 
   it('should only set gitUpstream if the data is valid', () => {
     const invalidGitUpstreams: IGitData[] = [
-      {},
       {
-        gitToken: '',
-        gitRemoteURL: '',
+        token: '',
+        remoteURL: '',
+        valid: false,
       },
       {
-        gitToken: '',
-        gitRemoteURL: '',
-        gitFormValid: false,
+        remoteURL: 'https://myGitUrl.com',
+        valid: false,
       },
       {
-        gitRemoteURL: 'https://myGitUrl.com',
-        gitFormValid: false,
+        token: 'myToken',
+        remoteURL: 'myGitUrl.com',
+        valid: false,
       },
-      {
-        gitToken: 'myToken',
-        gitUser: 'myUser',
-        gitFormValid: false,
-      },
-      {
-        gitToken: 'myToken',
-        gitRemoteURL: 'myGitUrl.com',
-        gitFormValid: false,
-      },
-      {},
     ];
     for (const gitData of invalidGitUpstreams) {
       component.gitUpstreamChanged(gitData);
@@ -97,20 +85,20 @@ describe('KtbProjectSettingsGitHttpsComponent', () => {
 
     const validUpstreams: IGitData[] = [
       {
-        gitUser: 'myUser',
-        gitToken: 'myToken',
-        gitRemoteURL: 'http://myGitUrl.com',
-        gitFormValid: true,
+        user: 'myUser',
+        token: 'myToken',
+        remoteURL: 'http://myGitUrl.com',
+        valid: true,
       },
       {
-        gitToken: 'myToken',
-        gitRemoteURL: 'http://myGitUrl.com',
-        gitFormValid: true,
+        token: 'myToken',
+        remoteURL: 'http://myGitUrl.com',
+        valid: true,
       },
     ];
     for (const gitData of validUpstreams) {
       component.gitUpstreamChanged(AppUtils.copyObject(gitData)); // just make sure that it isn't a reference. We use the same object to validate it again
-      const { gitFormValid, ...requiredData } = gitData;
+      const { valid, ...requiredData } = gitData;
       // eslint-disable-next-line @typescript-eslint/dot-notation
       expect(component['gitUpstream']).toEqual(requiredData);
     }
@@ -121,21 +109,20 @@ describe('KtbProjectSettingsGitHttpsComponent', () => {
     const emitSpy = jest.spyOn(component.dataChange, 'emit');
     component.gitInputData = getInputDataWithProxy();
     component.proxy = {
-      gitProxyUrl: '0.0.0.0',
-      gitProxyScheme: 'https',
-      gitProxyInsecure: false,
-      gitProxyPassword: '',
-      gitProxyUser: 'myProxyUser',
+      url: '0.0.0.0:5000',
+      scheme: 'https',
+      password: '',
+      user: 'myProxyUser',
     };
     expect(component.proxyInput).not.toBe(undefined);
     expect(component.proxy).not.toBe(undefined);
 
     // when
     component.gitUpstreamChanged({
-      gitUser: 'myUser',
-      gitToken: 'myToken',
-      gitRemoteURL: 'https://myGitUrl.com',
-      gitFormValid: true,
+      user: 'myUser',
+      token: 'myToken',
+      remoteURL: 'https://myGitUrl.com',
+      valid: true,
     });
     component.certificate = btoa('-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----');
     component.proxyEnabled = false;
@@ -153,17 +140,16 @@ describe('KtbProjectSettingsGitHttpsComponent', () => {
 
     // when
     component.proxy = {
-      gitProxyUrl: '0.0.0.0',
-      gitProxyScheme: 'https',
-      gitProxyInsecure: false,
-      gitProxyPassword: '',
-      gitProxyUser: 'myProxyUser',
+      url: '0.0.0.0:5000',
+      scheme: 'https',
+      password: '',
+      user: 'myProxyUser',
     };
     component.gitUpstreamChanged({
-      gitUser: 'myUser',
-      gitToken: 'myToken',
-      gitRemoteURL: 'https://myGitUrl.com',
-      gitFormValid: true,
+      user: 'myUser',
+      token: 'myToken',
+      remoteURL: 'https://myGitUrl.com',
+      valid: true,
     });
     component.certificate = btoa('-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----');
     component.proxyEnabled = false;
@@ -183,9 +169,9 @@ describe('KtbProjectSettingsGitHttpsComponent', () => {
 
     // when
     component.gitUpstreamChanged({
-      gitToken: 'myToken',
-      gitRemoteURL: 'https://myGitUrl.com',
-      gitFormValid: true,
+      token: 'myToken',
+      remoteURL: 'https://myGitUrl.com',
+      valid: true,
     });
     component.inputChanged();
 
@@ -193,9 +179,12 @@ describe('KtbProjectSettingsGitHttpsComponent', () => {
     expect(component.certificate).toBe(undefined);
     expect(component.proxy).toBe(undefined);
     expect(emitSpy).toHaveBeenCalledWith({
+      remoteURL: 'https://myGitUrl.com',
+      user: undefined,
       https: {
-        gitRemoteURL: 'https://myGitUrl.com',
-        gitToken: 'myToken',
+        certificate: undefined,
+        insecureSkipTLS: false,
+        token: 'myToken',
       },
     });
   });
@@ -207,9 +196,9 @@ describe('KtbProjectSettingsGitHttpsComponent', () => {
 
     // when
     component.gitUpstreamChanged({
-      gitToken: 'myToken',
-      gitRemoteURL: 'https://myGitUrl.com',
-      gitFormValid: true,
+      token: 'myToken',
+      remoteURL: 'https://myGitUrl.com',
+      valid: true,
     });
     component.proxyEnabled = true;
     component.inputChanged();
@@ -225,9 +214,9 @@ describe('KtbProjectSettingsGitHttpsComponent', () => {
 
     // when
     component.gitUpstreamChanged({
-      gitToken: 'myToken',
-      gitRemoteURL: 'https://myGitUrl.com',
-      gitFormValid: true,
+      token: 'myToken',
+      remoteURL: 'https://myGitUrl.com',
+      valid: true,
     });
     component.isCertificateValid = false;
     component.inputChanged();
@@ -236,39 +225,43 @@ describe('KtbProjectSettingsGitHttpsComponent', () => {
     expect(emitSpy).toHaveBeenCalledWith(undefined);
   });
 
-  function getInputDataWithProxy(gitToken = ''): IGitHttps {
+  function getInputDataWithProxy(token = ''): IGitHTTPSConfiguration {
     return {
+      remoteURL: 'https://myGitUrl.com',
+      user: 'myUser',
       https: {
-        gitRemoteURL: 'https://myGitUrl.com',
-        gitToken,
-        gitProxyUrl: '0.0.0.0',
-        gitProxyScheme: 'https',
-        gitProxyInsecure: false,
-        gitProxyPassword: '',
-        gitUser: 'myUser',
-        gitProxyUser: 'myProxyUser',
-        gitPemCertificate: btoa('-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----'),
+        token,
+        proxy: {
+          url: '0.0.0.0:5000',
+          scheme: 'https',
+          password: '',
+          user: 'myProxyUser',
+        },
+        insecureSkipTLS: false,
+        certificate: btoa('-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----'),
       },
     };
   }
 
-  function getInputDataWithoutProxy(gitToken = ''): IGitHttps {
+  function getInputDataWithoutProxy(token = ''): IGitHTTPSConfiguration {
     return {
+      remoteURL: 'https://myGitUrl.com',
+      user: 'myUser',
       https: {
-        gitRemoteURL: 'https://myGitUrl.com',
-        gitToken,
-        gitUser: 'myUser',
-        gitPemCertificate: btoa('-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----'),
+        token,
+        insecureSkipTLS: false,
+        certificate: btoa('-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----'),
       },
     };
   }
 
-  function getInputDataWithoutProxyAndCertificate(gitToken = ''): IGitHttps {
+  function getInputDataWithoutProxyAndCertificate(token = ''): IGitHTTPSConfiguration {
     return {
+      remoteURL: 'https://myGitUrl.com',
+      user: 'myUser',
       https: {
-        gitRemoteURL: 'https://myGitUrl.com',
-        gitToken,
-        gitUser: 'myUser',
+        token,
+        insecureSkipTLS: false,
       },
     };
   }

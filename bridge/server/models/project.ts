@@ -1,8 +1,13 @@
 import { Stage } from './stage';
-import { Project as pj } from '../../shared/models/project';
+import { IGitDataExtended, IProject } from '../../shared/models/IProject';
 
-export class Project extends pj {
-  stages: Stage[] = [];
+export class Project implements IProject {
+  public gitCredentials?: IGitDataExtended;
+  public projectName!: string;
+  public shipyardVersion?: string;
+  public stages: Stage[] = [];
+  public creationDate!: string;
+  public shipyard!: string;
 
   public static fromJSON(data: unknown): Project {
     const project: Project = Object.assign(new this(), data);

@@ -1,16 +1,16 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import { BehaviorSubject, of } from 'rxjs';
+import { BehaviorSubject, of, throwError } from 'rxjs';
 import { PendingChangesGuard } from '../../_guards/pending-changes.guard';
-import { IGitData } from '../../_interfaces/git-upstream';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 import { DataService } from '../../_services/data.service';
 import { TestUtils } from '../../_utils/test.utils';
 import { KtbProjectSettingsComponent } from './ktb-project-settings.component';
 import { KtbProjectSettingsModule } from './ktb-project-settings.module';
+import { getDefaultSshData } from './ktb-project-settings-git-extended/ktb-project-settings-git-extended.component.spec';
 
 describe('KtbProjectSettingsComponent', () => {
   let component: KtbProjectSettingsComponent;
@@ -39,6 +39,7 @@ describe('KtbProjectSettingsComponent', () => {
           useValue: {
             params: routeParamsSubject.asObservable(),
             queryParams: of({}),
+            queryParamMap: of(convertToParamMap({})),
           },
         },
       ],
@@ -91,6 +92,7 @@ describe('KtbProjectSettingsComponent', () => {
   it('should navigate to created project', async () => {
     // given
     routeParamsSubject.next({});
+    component.gitDataExtended = null;
     component.projectNameControl.setValue('sockshop');
     component.shipyardFile = new File(['test content'], 'test1.yaml');
     fixture.detectChanges();
@@ -102,24 +104,6 @@ describe('KtbProjectSettingsComponent', () => {
 
     // then
     expect(routeSpy).toHaveBeenCalled();
-  });
-
-  it('should call DataService.setGitUpstreamUrl on setGitUpstream', () => {
-    // given
-    const gitData: IGitData = {
-      gitRemoteURL: 'https://test.git',
-      gitUser: 'username',
-      gitToken: 'token',
-    };
-    component.projectName = 'sockshop';
-
-    // when
-    const spy = jest.spyOn(dataService, 'setGitUpstreamUrl');
-    component.updateGitData(gitData);
-    component.setGitUpstream();
-
-    // then
-    expect(spy).toHaveBeenCalled();
   });
 
   it('should have create mode disabled when projectName param is set', () => {
@@ -191,11 +175,13 @@ describe('KtbProjectSettingsComponent', () => {
     // given
 
     // when
-    component.updateGitData({
-      gitUser: 'someUser',
-      gitRemoteURL: 'someUri',
-      gitToken: 'someToken',
-      gitFormValid: true,
+    component.updateGitDataExtended({
+      user: 'someUser',
+      remoteURL: 'someUri',
+      https: {
+        token: 'someToken',
+        insecureSkipTLS: false,
+      },
     });
     fixture.detectChanges();
 
@@ -205,11 +191,13 @@ describe('KtbProjectSettingsComponent', () => {
 
   it('should show a dialog when showNotification is called', () => {
     // given
-    component.updateGitData({
-      gitUser: 'someUser',
-      gitRemoteURL: 'someUri',
-      gitToken: 'someToken',
-      gitFormValid: true,
+    component.updateGitDataExtended({
+      user: 'someUser',
+      remoteURL: 'someUri',
+      https: {
+        token: 'someToken',
+        insecureSkipTLS: false,
+      },
     });
     fixture.detectChanges();
 
@@ -229,11 +217,13 @@ describe('KtbProjectSettingsComponent', () => {
 
   it('should not show dialog when the notification was closed', () => {
     // given
-    component.updateGitData({
-      gitUser: 'someUser',
-      gitRemoteURL: 'someUri',
-      gitToken: 'someToken',
-      gitFormValid: true,
+    component.updateGitDataExtended({
+      user: 'someUser',
+      remoteURL: 'someUri',
+      https: {
+        token: 'someToken',
+        insecureSkipTLS: false,
+      },
     });
     fixture.detectChanges();
 
@@ -263,15 +253,17 @@ describe('KtbProjectSettingsComponent', () => {
 
     // when
     component.updateGitDataExtended({
+      remoteURL: 'https://myurl.git',
+      user: 'myUser',
       https: {
-        gitRemoteURL: 'https://myurl.git',
-        gitToken: '',
-        gitProxyInsecure: false,
-        gitProxyPassword: '',
-        gitProxyScheme: 'https',
-        gitProxyUrl: '',
-        gitProxyUser: '',
-        gitUser: 'myUser',
+        token: '',
+        insecureSkipTLS: false,
+        proxy: {
+          password: '',
+          scheme: 'https',
+          url: 'myUrl:5000',
+          user: '',
+        },
       },
     });
     expect(component.isProjectFormTouched).toBe(true);
@@ -281,14 +273,18 @@ describe('KtbProjectSettingsComponent', () => {
 
     // then
     expect(createExtendedSpy).toHaveBeenCalledWith('myProject', btoa('test content'), {
-      gitRemoteURL: 'https://myurl.git',
-      gitToken: '',
-      gitProxyInsecure: false,
-      gitProxyPassword: '',
-      gitProxyScheme: 'https',
-      gitProxyUrl: '',
-      gitProxyUser: '',
-      gitUser: 'myUser',
+      remoteURL: 'https://myurl.git',
+      user: 'myUser',
+      https: {
+        token: '',
+        insecureSkipTLS: false,
+        proxy: {
+          password: '',
+          scheme: 'https',
+          url: 'myUrl:5000',
+          user: '',
+        },
+      },
     });
   });
 
@@ -304,10 +300,10 @@ describe('KtbProjectSettingsComponent', () => {
 
     // when
     component.updateGitDataExtended({
+      remoteURL: 'https://my-git-url.com',
       ssh: {
-        gitPrivateKeyPass: 'myPrivateKeyPass',
-        gitPrivateKey: 'myPrivateKey',
-        gitRemoteURL: 'https://my-git-url.com',
+        privateKeyPass: 'myPrivateKeyPass',
+        privateKey: 'myPrivateKey',
       },
     });
     expect(component.isProjectFormTouched).toBe(true);
@@ -317,9 +313,11 @@ describe('KtbProjectSettingsComponent', () => {
 
     // then
     expect(createExtendedSpy).toHaveBeenCalledWith('myProject', btoa('test content'), {
-      gitPrivateKeyPass: 'myPrivateKeyPass',
-      gitPrivateKey: 'myPrivateKey',
-      gitRemoteURL: 'https://my-git-url.com',
+      remoteURL: 'https://my-git-url.com',
+      ssh: {
+        privateKeyPass: 'myPrivateKeyPass',
+        privateKey: 'myPrivateKey',
+      },
     });
   });
 
@@ -328,10 +326,10 @@ describe('KtbProjectSettingsComponent', () => {
     TestUtils.enableResourceService();
     // is a reference and may be modified by child components
     component.gitInputDataExtended = {
+      remoteURL: 'https://my-git-url.com',
       ssh: {
-        gitPrivateKeyPass: 'myPrivateKeyPass',
-        gitPrivateKey: 'myPrivateKey',
-        gitRemoteURL: 'https://my-git-url.com',
+        privateKeyPass: 'myPrivateKeyPass',
+        privateKey: 'myPrivateKey',
       },
     };
 
@@ -340,37 +338,79 @@ describe('KtbProjectSettingsComponent', () => {
 
     // then
     expect(component.gitInputDataExtended).toEqual({
-      https: {
-        gitProxyInsecure: false,
-        gitProxyPassword: '',
-        gitProxyScheme: 'https',
-        gitProxyUrl: '',
-        gitProxyUser: '',
-        gitRemoteURL: 'https://github.com/Kirdock/keptn-dynatrace',
-        gitToken: '',
-        gitUser: 'Kirdock',
-      },
+      remoteURL: 'https://github.com/Kirdock/keptn-dynatrace',
+      user: 'Kirdock',
     });
   });
 
   it('should update git upstream without user', () => {
     // given
-    const updateSpy = jest.spyOn(dataService, 'setGitUpstreamUrl');
+    const updateSpy = jest.spyOn(dataService, 'updateGitUpstream');
     component.projectName = 'sockshop';
-    component.gitData = {
-      gitRemoteURL: 'https://github.com/Kirdock/keptn-dynatrace',
-      gitToken: 'myGitToken',
+    component.gitDataExtended = {
+      remoteURL: 'https://github.com/Kirdock/keptn-dynatrace',
+      https: {
+        token: 'myGitToken',
+        insecureSkipTLS: false,
+      },
     };
 
     // when
-    component.setGitUpstream();
+    component.updateGitUpstream();
 
     // then
-    expect(updateSpy).toHaveBeenCalledWith(
-      'sockshop',
-      'https://github.com/Kirdock/keptn-dynatrace',
-      'myGitToken',
-      undefined
-    );
+    expect(updateSpy).toHaveBeenCalledWith('sockshop', {
+      remoteURL: 'https://github.com/Kirdock/keptn-dynatrace',
+      https: {
+        token: 'myGitToken',
+        insecureSkipTLS: false,
+      },
+    });
+  });
+
+  it('should not update gitUpstream if data is not set', () => {
+    // given
+    const updateUpstreamSpy = jest.spyOn(dataService, 'updateGitUpstream');
+    fixture.detectChanges();
+
+    // when
+    component.updateGitUpstream();
+
+    // then
+    expect(updateUpstreamSpy).not.toHaveBeenCalled();
+  });
+
+  it('should update gitUpstream', () => {
+    // given
+    fixture.detectChanges();
+    const updateUpstreamSpy = jest.spyOn(dataService, 'updateGitUpstream');
+    const data = getDefaultSshData();
+
+    // when
+    component.updateGitDataExtended(data);
+    component.updateGitUpstream();
+
+    // then
+    expect(updateUpstreamSpy).toHaveBeenCalledWith('sockshop', data);
+  });
+
+  it('should update gitUpstream and set inProgress to false on error', () => {
+    // given
+    fixture.detectChanges();
+    jest.spyOn(dataService, 'updateGitUpstream').mockReturnValue(throwError(() => of('error')));
+    const updateUpstreamSpy = jest.spyOn(dataService, 'updateGitUpstream');
+    const inProgressSpy = jest.fn();
+    Object.defineProperty(component, 'isGitUpstreamInProgress', {
+      get: jest.fn(() => true),
+      set: inProgressSpy,
+    });
+
+    // when
+    component.updateGitDataExtended(getDefaultSshData());
+    component.updateGitUpstream();
+
+    // then
+    expect(inProgressSpy).toHaveBeenCalledWith(false);
+    expect(updateUpstreamSpy).toHaveBeenCalled();
   });
 });

@@ -6,7 +6,6 @@ import { KeptnInfoResult } from '../../../shared/interfaces/keptn-info-result';
 import moment from 'moment';
 import { KeptnVersions } from '../../../shared/interfaces/keptn-versions';
 import { Project } from '../_models/project';
-import { ProjectResult } from '../_interfaces/project-result';
 import { UniformRegistrationResult } from '../../../shared/interfaces/uniform-registration-result';
 import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-registration-info';
 import { UniformSubscription } from '../_models/uniform-subscription';
@@ -41,8 +40,9 @@ import { DeploymentResponseMock } from './_mockData/api-responses/deployment-res
 import { ISequencesFilter } from '../../../shared/interfaces/sequencesFilter';
 import { SequenceFilterMock } from './_mockData/sequence-filter.mock';
 import { TriggerResponse, TriggerSequenceData } from '../_models/trigger-sequence';
-import { IGitHttps, IGitSsh } from '../_interfaces/git-upstream';
 import { IService } from '../../../shared/interfaces/service';
+import { IGitDataExtended } from '../../../shared/models/IProject';
+import { IProjectResult } from '../../../shared/interfaces/project-result';
 
 @Injectable({
   providedIn: null,
@@ -102,21 +102,7 @@ export class ApiServiceMock extends ApiService {
     });
   }
 
-  public createProject(
-    projectName: string,
-    shipyard: string,
-    gitRemoteUrl?: string,
-    gitToken?: string,
-    gitUser?: string
-  ): Observable<unknown> {
-    return of({});
-  }
-
-  public createProjectExtended(
-    projectName: string,
-    shipyard: string,
-    data: IGitHttps['https'] | IGitSsh['ssh']
-  ): Observable<unknown> {
+  public createProjectExtended(projectName: string, shipyard: string, data?: IGitDataExtended): Observable<unknown> {
     return of({});
   }
 
@@ -143,9 +129,9 @@ export class ApiServiceMock extends ApiService {
     return this.getProject(projectName);
   }
 
-  public getProjects(pageSize?: number): Observable<ProjectResult> {
+  public getProjects(pageSize?: number): Observable<IProjectResult> {
     const projects = [...ProjectsMock];
-    const result: ProjectResult = {
+    const result: IProjectResult = {
       projects: projects,
       totalCount: projects.length,
     };
@@ -304,19 +290,7 @@ export class ApiServiceMock extends ApiService {
     return of(result);
   }
 
-  public updateGitUpstreamExtended(
-    projectName: string,
-    data: IGitHttps['https'] | IGitSsh['ssh']
-  ): Observable<unknown> {
-    return of({});
-  }
-
-  public sendGitUpstreamUrl(
-    projectName: string,
-    gitUrl: string,
-    gitUser: string,
-    gitToken: string
-  ): Observable<unknown> {
+  public updateGitUpstreamExtended(projectName: string, data: IGitDataExtended): Observable<unknown> {
     return of({});
   }
 

@@ -6,8 +6,10 @@
     }
   ],
   "creationDate": "1629211070179837245",
-  "gitRemoteURI": "https://github.com/carpe-github/claus-tenant-dev.git",
-  "gitUser": "carpe-github",
+  "gitConfiguration": {
+    "remoteURL": "https://github.com/carpe-github/claus-tenant-dev.git",
+    "user": "carpe-github"
+  },
   "projectName": "testproject",
   "shipyard": "apiVersion: \"spec.keptn.sh/0.2.0\" kind: \"Shipyard\" metadata: name: \"shipyard-quality-gates\" spec: stages: - name: \"quality-gate-test\"",
   "shipyardVersion": "spec.keptn.sh/0.2.0"

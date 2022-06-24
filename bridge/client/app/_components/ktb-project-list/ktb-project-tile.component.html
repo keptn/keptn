@@ -38,25 +38,26 @@
         to upgrade to the latest shipyard version.
       </p>
     </div>
-    <p class="mt-0 mb-2" *ngIf="project.gitRemoteURI" uitestid="keptn-project-tile-gitRemoteUri">
-      <a
-        [href]="project.gitRemoteURI"
-        [textContent]="project.gitRemoteURI"
-        target="_blank"
-        (click)="$event.stopPropagation()"
-      ></a>
+    <p
+      class="mt-0 mb-2"
+      *ngIf="project.gitCredentials?.remoteURL as remoteURL; else noGitUpstream"
+      uitestid="keptn-project-tile-gitRemoteUri"
+    >
+      <a [href]="remoteURL" [textContent]="remoteURL" target="_blank" (click)="$event.stopPropagation()"></a>
     </p>
-    <div class="mb-2" fxLayout="row" fxLayoutAlign="flex-start start" *ngIf="!project.gitRemoteURI">
-      <dt-icon class="event-icon warning mr-1" [name]="'incident'"></dt-icon>
-      <p class="small m-0" uitestid="keptn-project-tile-gitRemoteUri-noUpstreamConfigured">
-        Keptn will not support a project without Git upstream repository in future releases.<br />
-        <a
-          [routerLink]="['/project', project.projectName, 'settings', 'project']"
-          uitestid="keptn-project-tile-gitRemoteUri-setUpstream"
-          >Set the Git upstream of your project</a
-        >
-      </p>
-    </div>
+    <ng-template #noGitUpstream>
+      <div class="mb-2" fxLayout="row" fxLayoutAlign="flex-start start">
+        <dt-icon class="event-icon warning mr-1" [name]="'incident'"></dt-icon>
+        <p class="small m-0" uitestid="keptn-project-tile-gitRemoteUri-noUpstreamConfigured">
+          Keptn will not support a project without Git upstream repository in future releases.<br />
+          <a
+            [routerLink]="['/project', project.projectName, 'settings', 'project']"
+            uitestid="keptn-project-tile-gitRemoteUri-setUpstream"
+            >Set the Git upstream of your project</a
+          >
+        </p>
+      </div>
+    </ng-template>
   </dt-tile-subtitle>
   <dt-tag-list aria-label="stages" uitestid="keptn-project-tile-stagesTags">
     <dt-tag *ngFor="let stage of project.stages" [textContent]="stage.stageName"></dt-tag>

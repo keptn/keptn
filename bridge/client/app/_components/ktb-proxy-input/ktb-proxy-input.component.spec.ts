@@ -33,17 +33,15 @@ describe('KtbProxyInputComponent', () => {
 
     // when
     component.proxy = {
-      gitProxyUrl: 'http://0.0.0.0:5000',
-      gitProxyInsecure: true,
-      gitProxyScheme: 'https',
-      gitProxyPassword: 'myPassword',
-      gitProxyUser: 'myUser',
+      url: '0.0.0.0:5000',
+      scheme: 'https',
+      password: 'myPassword',
+      user: 'myUser',
     };
 
     // then
-    expect(component.hostControl.value).toBe('http://0.0.0.0');
+    expect(component.hostControl.value).toBe('0.0.0.0');
     expect(component.portControl.value).toBe('5000');
-    expect(component.isInsecureControl.value).toBe(true);
     expect(component.schemeControl.value).toBe('https');
     expect(component.passwordControl.value).toBe('myPassword');
     expect(component.userControl.value).toBe('myUser');
@@ -54,11 +52,10 @@ describe('KtbProxyInputComponent', () => {
 
     // then
     expect(emitSpy).toHaveBeenCalledWith({
-      gitProxyUrl: 'http://0.0.0.0:5000',
-      gitProxyInsecure: true,
-      gitProxyScheme: 'https',
-      gitProxyPassword: 'myPassword',
-      gitProxyUser: 'myUser',
+      url: '0.0.0.0:5000',
+      scheme: 'https',
+      password: 'myPassword',
+      user: 'myUser',
     });
   });
 
@@ -68,15 +65,13 @@ describe('KtbProxyInputComponent', () => {
 
     // when
     component.proxy = {
-      gitProxyUrl: '',
-      gitProxyInsecure: true,
-      gitProxyScheme: 'https',
+      url: '0.0.0.0:5000',
+      scheme: 'https',
     };
 
     // then
-    expect(component.hostControl.value).toBe('');
-    expect(component.portControl.value).toBe('');
-    expect(component.isInsecureControl.value).toBe(true);
+    expect(component.hostControl.value).toBe('0.0.0.0');
+    expect(component.portControl.value).toBe('5000');
     expect(component.schemeControl.value).toBe('https');
     expect(component.passwordControl.value).toBe('');
     expect(component.userControl.value).toBe('');
@@ -89,15 +84,13 @@ describe('KtbProxyInputComponent', () => {
 
     // when
     component.proxy = {
-      gitProxyUrl: 'http://0.0.0.0:5000',
-      gitProxyInsecure: true,
-      gitProxyScheme: 'https',
+      url: '0.0.0.0:5000',
+      scheme: 'https',
     };
 
     // then
-    expect(component.hostControl.value).toBe('http://0.0.0.0');
+    expect(component.hostControl.value).toBe('0.0.0.0');
     expect(component.portControl.value).toBe('5000');
-    expect(component.isInsecureControl.value).toBe(true);
     expect(component.schemeControl.value).toBe('https');
     expect(emitSpy).not.toHaveBeenCalled();
 
@@ -106,11 +99,10 @@ describe('KtbProxyInputComponent', () => {
 
     // then
     expect(emitSpy).toHaveBeenCalledWith({
-      gitProxyUrl: 'http://0.0.0.0:5000',
-      gitProxyInsecure: true,
-      gitProxyScheme: 'https',
-      gitProxyPassword: '',
-      gitProxyUser: '',
+      url: '0.0.0.0:5000',
+      scheme: 'https',
+      password: '',
+      user: '',
     });
   });
 
@@ -119,7 +111,7 @@ describe('KtbProxyInputComponent', () => {
     const emitSpy = jest.spyOn(component.proxyChange, 'emit');
 
     // when
-    component.hostControl.setValue('https://myHost.com');
+    component.hostControl.setValue('myHost.com');
     component.portControl.setValue('5000');
     component.passwordControl.setValue('myPassword');
     component.userControl.setValue('myUser');
@@ -128,11 +120,10 @@ describe('KtbProxyInputComponent', () => {
 
     // then
     expect(emitSpy).toHaveBeenCalledWith({
-      gitProxyUrl: 'https://myHost.com:5000',
-      gitProxyInsecure: false,
-      gitProxyScheme: 'https',
-      gitProxyPassword: 'myPassword',
-      gitProxyUser: 'myUser',
+      url: 'myHost.com:5000',
+      scheme: 'https',
+      password: 'myPassword',
+      user: 'myUser',
     });
   });
 
@@ -141,18 +132,17 @@ describe('KtbProxyInputComponent', () => {
     const emitSpy = jest.spyOn(component.proxyChange, 'emit');
 
     // when
-    component.hostControl.setValue('https://myHost.com');
+    component.hostControl.setValue('myHost.com');
     component.portControl.setValue('5000');
 
     component.proxyChanged();
 
     // then
     expect(emitSpy).toHaveBeenCalledWith({
-      gitProxyUrl: 'https://myHost.com:5000',
-      gitProxyInsecure: false,
-      gitProxyScheme: 'https',
-      gitProxyPassword: '',
-      gitProxyUser: '',
+      url: 'myHost.com:5000',
+      scheme: 'https',
+      password: '',
+      user: '',
     });
   });
 
@@ -161,7 +151,7 @@ describe('KtbProxyInputComponent', () => {
     const emitSpy = jest.spyOn(component.proxyChange, 'emit');
 
     // when
-    component.hostControl.setValue('https://myHost.com');
+    component.hostControl.setValue('myHost.com');
     component.portControl.setValue('5000');
     component.userControl.setValue('myUser');
 
@@ -169,11 +159,10 @@ describe('KtbProxyInputComponent', () => {
 
     // then
     expect(emitSpy).toHaveBeenCalledWith({
-      gitProxyUrl: 'https://myHost.com:5000',
-      gitProxyInsecure: false,
-      gitProxyScheme: 'https',
-      gitProxyPassword: '',
-      gitProxyUser: 'myUser',
+      url: 'myHost.com:5000',
+      scheme: 'https',
+      password: '',
+      user: 'myUser',
     });
   });
 
@@ -182,7 +171,7 @@ describe('KtbProxyInputComponent', () => {
     const emitSpy = jest.spyOn(component.proxyChange, 'emit');
 
     // when
-    component.hostControl.setValue('https://myHost.com');
+    component.hostControl.setValue('myHost.com');
     component.portControl.setValue('5000');
     component.passwordControl.setValue('myPassword');
 
@@ -190,11 +179,10 @@ describe('KtbProxyInputComponent', () => {
 
     // then
     expect(emitSpy).toHaveBeenCalledWith({
-      gitProxyUrl: 'https://myHost.com:5000',
-      gitProxyInsecure: false,
-      gitProxyScheme: 'https',
-      gitProxyPassword: 'myPassword',
-      gitProxyUser: '',
+      url: 'myHost.com:5000',
+      scheme: 'https',
+      password: 'myPassword',
+      user: '',
     });
   });
 
@@ -203,7 +191,7 @@ describe('KtbProxyInputComponent', () => {
     const emitSpy = jest.spyOn(component.proxyChange, 'emit');
 
     // when
-    component.hostControl.setValue('https://myHost.com');
+    component.hostControl.setValue('myHost.com');
 
     component.proxyChanged();
 
@@ -228,11 +216,12 @@ describe('KtbProxyInputComponent', () => {
     for (const host of ['0.0.0.0', 'http://0.0.0.0']) {
       // when
       component.proxy = {
-        gitProxyUrl: host,
-        gitProxyInsecure: true,
-        gitProxyScheme: 'https',
-        gitProxyPassword: 'myPassword',
-        gitProxyUser: 'myUser',
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        url: host,
+        scheme: 'https',
+        password: 'myPassword',
+        user: 'myUser',
       };
 
       // then

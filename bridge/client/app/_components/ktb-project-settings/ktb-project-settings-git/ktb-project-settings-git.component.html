@@ -1,11 +1,3 @@
-<ng-container *ngIf="!isInGitExtended">
-  <p class="mt-0 mb-3">
-    It is recommended to set a Git upstream repository. In future releases, projects without a Git repository will not
-    be supported. Please specify the Git remote url, the user and the token. Instructions on how to set your Git
-    provider can be found in the
-    <a [href]="'/manage/git_upstream/' | keptnUrl" target="_blank">Git-based upstream documentation</a>.
-  </p>
-</ng-container>
 <form
   [formGroup]="gitUpstreamForm"
   (input)="onGitUpstreamFormChange()"
@@ -15,7 +7,7 @@
 >
   <div fxLayout="column" [ngClass]="{ 'full-width': isCreateMode }">
     <dt-form-field>
-      <dt-label [class.required]="required">Git remote URL</dt-label>
+      <dt-label class="required">Git remote URL</dt-label>
       <input
         formControlName="gitUrl"
         type="text"
@@ -35,7 +27,7 @@
         <ktb-loading-spinner *ngIf="isLoading" dtPrefix aria-label="Loading data"></ktb-loading-spinner>
       </dt-form-field>
       <dt-form-field>
-        <dt-label [class.required]="required">Token</dt-label>
+        <dt-label class="required">Token</dt-label>
         <input
           formControlName="gitToken"
           type="password"
@@ -47,18 +39,5 @@
         <dt-error>Must not be empty</dt-error>
       </dt-form-field>
     </div>
-  </div>
-  <div class="ml-3" *ngIf="!isCreateMode && !isInGitExtended">
-    <button
-      [disabled]="isButtonDisabled()"
-      (click)="setGitUpstream()"
-      dt-button
-      uitestid="ktb-project-update-button"
-      type="button"
-    >
-      <!--   type="button" else Firefox will trigger a validation regardless of untouched, pristine or emit: false   -->
-      <ktb-loading-spinner *ngIf="isGitUpstreamInProgress" aria-label="Setting Git upstream URL"></ktb-loading-spinner>
-      Set Git upstream
-    </button>
   </div>
 </form>

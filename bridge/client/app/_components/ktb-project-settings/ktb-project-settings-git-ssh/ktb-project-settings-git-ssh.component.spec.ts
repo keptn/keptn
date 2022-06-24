@@ -23,22 +23,22 @@ describe('KtbProjectSettingsGitSshComponent', () => {
     // given
     // when
     component.gitInputSshData = {
+      user: 'myUser',
+      remoteURL: 'ssh://myGitUrl',
       ssh: {
-        gitUser: 'myUser',
-        gitRemoteURL: 'ssh://myGitUrl',
-        gitPrivateKeyPass: '',
-        gitPrivateKey: '',
+        privateKeyPass: '',
+        privateKey: '',
       },
     };
 
     // then
     expect(component.gitInputData).toEqual({
-      gitUser: 'myUser',
-      gitRemoteURL: 'ssh://myGitUrl',
+      user: 'myUser',
+      remoteURL: 'ssh://myGitUrl',
     });
     expect(component.sshInputData).toEqual({
-      gitPrivateKeyPass: '',
-      gitPrivateKey: '',
+      privateKeyPass: '',
+      privateKey: '',
     });
   });
 
@@ -46,12 +46,12 @@ describe('KtbProjectSettingsGitSshComponent', () => {
     const emitSpy = jest.spyOn(component.sshChange, 'emit');
     // given
     component.gitUpstream = {
-      gitUser: 'myUser',
-      gitRemoteURL: 'ssh://myGitUrl',
+      user: 'myUser',
+      remoteURL: 'ssh://myGitUrl',
     };
     component.sshKeyData = {
-      gitPrivateKeyPass: 'myPassphrase',
-      gitPrivateKey: 'myPrivateKey',
+      privateKeyPass: 'myPassphrase',
+      privateKey: 'myPrivateKey',
     };
 
     // when
@@ -59,11 +59,11 @@ describe('KtbProjectSettingsGitSshComponent', () => {
 
     // then
     expect(emitSpy).toHaveBeenCalledWith({
+      user: 'myUser',
+      remoteURL: 'ssh://myGitUrl',
       ssh: {
-        gitUser: 'myUser',
-        gitRemoteURL: 'ssh://myGitUrl',
-        gitPrivateKeyPass: 'myPassphrase',
-        gitPrivateKey: 'myPrivateKey',
+        privateKeyPass: 'myPassphrase',
+        privateKey: 'myPrivateKey',
       },
     });
   });
@@ -72,8 +72,8 @@ describe('KtbProjectSettingsGitSshComponent', () => {
     const emitSpy = jest.spyOn(component.sshChange, 'emit');
     // given
     component.sshKeyData = {
-      gitPrivateKeyPass: 'myPassphrase',
-      gitPrivateKey: 'myPrivateKey',
+      privateKeyPass: 'myPassphrase',
+      privateKey: 'myPrivateKey',
     };
 
     // when
@@ -87,8 +87,8 @@ describe('KtbProjectSettingsGitSshComponent', () => {
     const emitSpy = jest.spyOn(component.sshChange, 'emit');
     // given
     component.sshKeyData = {
-      gitPrivateKeyPass: 'myPassphrase',
-      gitPrivateKey: 'myPrivateKey',
+      privateKeyPass: 'myPassphrase',
+      privateKey: 'myPrivateKey',
     };
 
     // when
