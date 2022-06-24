@@ -48,7 +48,7 @@ require (
 	github.com/imroc/req v0.3.2 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/keptn/keptn/cp-common v0.0.0-20220602110035-92d59919c878 // indirect
-	github.com/keptn/keptn/cp-connector v0.0.0-20220621082647-d57cd8c91758 // indirect
+	github.com/keptn/keptn/cp-connector v0.0.0-20220624090155-e031b2f0c7c8 // indirect
 	github.com/keptn/keptn/go-sdk v0.0.0-20220608071003-6edd402d3253 // indirect
 	github.com/keptn/keptn/webhook-service v0.0.0-20220603070303-72c9e665e2ef // indirect
 	github.com/keptn/kubernetes-utils v0.14.0 // indirect
@@ -60,7 +60,7 @@ require (
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
-	github.com/nats-io/nats.go v1.15.0 // indirect
+	github.com/nats-io/nats.go v1.16.0 // indirect
 	github.com/nats-io/nkeys v0.3.0 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/nwaples/rardecode v1.1.0 // indirect
