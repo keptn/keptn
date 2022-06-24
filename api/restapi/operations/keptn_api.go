@@ -22,6 +22,7 @@ import (
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/auth"
 	"github.com/keptn/keptn/api/restapi/operations/event"
+	"github.com/keptn/keptn/api/restapi/operations/import_operations"
 	"github.com/keptn/keptn/api/restapi/operations/metadata"
 )
 
@@ -43,7 +44,8 @@ func NewKeptnAPI(spec *loads.Document) *KeptnAPI {
 		APIKeyAuthenticator: security.APIKeyAuth,
 		BearerAuthenticator: security.BearerAuth,
 
-		JSONConsumer: runtime.JSONConsumer(),
+		JSONConsumer:          runtime.JSONConsumer(),
+		MultipartformConsumer: runtime.DiscardConsumer,
 
 		JSONProducer: runtime.JSONProducer(),
 
@@ -52,6 +54,9 @@ func NewKeptnAPI(spec *loads.Document) *KeptnAPI {
 		}),
 		AuthAuthHandler: auth.AuthHandlerFunc(func(params auth.AuthParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation auth.Auth has not yet been implemented")
+		}),
+		ImportOperationsImportHandler: import_operations.ImportHandlerFunc(func(params import_operations.ImportParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation import_operations.Import has not yet been implemented")
 		}),
 		MetadataMetadataHandler: metadata.MetadataHandlerFunc(func(params metadata.MetadataParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation metadata.Metadata has not yet been implemented")
@@ -95,6 +100,9 @@ type KeptnAPI struct {
 	//   - application/cloudevents+json
 	//   - application/json
 	JSONConsumer runtime.Consumer
+	// MultipartformConsumer registers a consumer for the following mime types:
+	//   - multipart/form-data
+	MultipartformConsumer runtime.Consumer
 
 	// JSONProducer registers a producer for the following mime types:
 	//   - application/json
@@ -111,6 +119,8 @@ type KeptnAPI struct {
 	EventPostEventHandler event.PostEventHandler
 	// AuthAuthHandler sets the operation handler for the auth operation
 	AuthAuthHandler auth.AuthHandler
+	// ImportOperationsImportHandler sets the operation handler for the import operation
+	ImportOperationsImportHandler import_operations.ImportHandler
 	// MetadataMetadataHandler sets the operation handler for the metadata operation
 	MetadataMetadataHandler metadata.MetadataHandler
 
@@ -185,6 +195,9 @@ func (o *KeptnAPI) Validate() error {
 	if o.JSONConsumer == nil {
 		unregistered = append(unregistered, "JSONConsumer")
 	}
+	if o.MultipartformConsumer == nil {
+		unregistered = append(unregistered, "MultipartformConsumer")
+	}
 
 	if o.JSONProducer == nil {
 		unregistered = append(unregistered, "JSONProducer")
@@ -199,6 +212,9 @@ func (o *KeptnAPI) Validate() error {
 	}
 	if o.AuthAuthHandler == nil {
 		unregistered = append(unregistered, "auth.AuthHandler")
+	}
+	if o.ImportOperationsImportHandler == nil {
+		unregistered = append(unregistered, "import_operations.ImportHandler")
 	}
 	if o.MetadataMetadataHandler == nil {
 		unregistered = append(unregistered, "metadata.MetadataHandler")
@@ -247,6 +263,8 @@ func (o *KeptnAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer
 			result["application/cloudevents+json"] = o.JSONConsumer
 		case "application/json":
 			result["application/json"] = o.JSONConsumer
+		case "multipart/form-data":
+			result["multipart/form-data"] = o.MultipartformConsumer
 		}
 
 		if c, ok := o.customConsumers[mt]; ok {
@@ -312,6 +330,10 @@ func (o *KeptnAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/auth"] = auth.NewAuth(o.context, o.AuthAuthHandler)
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/import"] = import_operations.NewImport(o.context, o.ImportOperationsImportHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
