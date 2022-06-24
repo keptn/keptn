@@ -7,7 +7,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/imroc/req v0.3.2
 	github.com/keptn/go-utils v0.16.1
-	github.com/keptn/keptn/webhook-service v0.0.0-20220623055154-a9c1d2fc7481
+	github.com/keptn/keptn/webhook-service v0.0.0-20220624071723-c2174cfb9770
 	github.com/keptn/kubernetes-utils v0.14.0
 	github.com/mholt/archiver/v3 v3.5.1
 	github.com/stretchr/testify v1.7.1

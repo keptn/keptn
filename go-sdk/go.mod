@@ -8,7 +8,7 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.16.1
 	github.com/keptn/keptn/cp-common v0.0.0-20220602110035-92d59919c878
-	github.com/keptn/keptn/cp-connector v0.0.0-20220623055154-a9c1d2fc7481
+	github.com/keptn/keptn/cp-connector v0.0.0-20220624071723-c2174cfb9770
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
 	golang.org/x/oauth2 v0.0.0-20220608161450-d0670ef3b1eb
