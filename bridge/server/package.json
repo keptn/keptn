@@ -8,7 +8,8 @@
     "start": "node --experimental-specifier-resolution=node dist/server/server.js",
     "build": "tsc --build",
     "dev": "nodemon --config nodemon.json",
-    "test": "node --experimental-vm-modules --experimental-specifier-resolution=node node_modules/jest/bin/jest.js"
+    "test": "node --experimental-vm-modules --experimental-specifier-resolution=node node_modules/jest/bin/jest.js",
+    "watch": "npx tsc -p . -w"
   },
   "bugs": {
     "url": "https://github.com/keptn/keptn/issues"

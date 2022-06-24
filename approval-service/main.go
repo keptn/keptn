@@ -133,7 +133,7 @@ func (as ApprovalService) OnEvent(ctx context.Context, event models.KeptnContext
 
 func (l ApprovalService) RegistrationData() controlplane.RegistrationData {
 	return controlplane.RegistrationData{
-		Name: l.env.K8SDeploymentName,
+		Name: l.env.K8SDeploymentComponent,
 		MetaData: models.MetaData{
 			Hostname:           l.env.K8SNodeName,
 			IntegrationVersion: l.env.K8SDeploymentVersion,

@@ -1,13 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { KtbSequenceControlsComponent } from './ktb-sequence-controls.component';
-import { AppModule } from '../../app.module';
-import { DataService } from '../../_services/data.service';
-import { Project } from '../../_models/project';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import { firstValueFrom, of } from 'rxjs';
+import { Project } from '../../_models/project';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
+import { DataService } from '../../_services/data.service';
+import { KtbSequenceControlsComponent } from './ktb-sequence-controls.component';
+import { KtbSequenceControlsModule } from './ktb-sequence-controls.module';
 
 describe('KtbSequenceControlsComponent', () => {
   let component: KtbSequenceControlsComponent;
@@ -18,7 +18,7 @@ describe('KtbSequenceControlsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule, HttpClientTestingModule],
+      imports: [KtbSequenceControlsModule, HttpClientTestingModule],
       providers: [
         {
           provide: ApiService,

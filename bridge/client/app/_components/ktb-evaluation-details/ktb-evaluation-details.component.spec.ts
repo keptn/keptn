@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbEvaluationDetailsComponent } from './ktb-evaluation-details.component';
-import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { EvaluationsTop10Mock } from '../../_services/_mockData/evaluations-top10.mock';
 import { EvaluationsMock } from '../../_services/_mockData/evaluations.mock';
@@ -9,6 +8,7 @@ import { EvaluationChartItemMock } from '../../_services/_mockData/evaluation-ch
 import { SliInfoMock } from '../../_services/_mockData/sli-info.mock';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
+import { KtbEvaluationDetailsModule } from './ktb-evaluation-details.module';
 
 describe('KtbEvaluationDetailsComponent', () => {
   let component: KtbEvaluationDetailsComponent;
@@ -17,7 +17,7 @@ describe('KtbEvaluationDetailsComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [],
-      imports: [AppModule, HttpClientTestingModule],
+      imports: [KtbEvaluationDetailsModule, HttpClientTestingModule],
       providers: [{ provide: ApiService, useClass: ApiServiceMock }],
     }).compileComponents();
 

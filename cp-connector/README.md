@@ -40,14 +40,20 @@ func main() {
 
 	// 2. create a subscription source
 	subscriptionSource := subscriptionsource.New(keptnAPI.UniformV1())
-
+	
 	// 3. create an event source (either NATS of HTTP,...)
-	natsConnector, err := nats.Connect("nats://localhost:4222")
+	natsConnector:= nats.New("nats://localhost:4222")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	eventSource := eventsource.New(natsConnector)
+	
+	// inject your favourite logger as follows
+	// eventsource.WithLogger(mylogger) 
+	// or  eventsource.New(natsConnector, eventsource.WithLogger(mylogger))
+	
+	
 	logForwarder := logforwarder.New(keptnAPI.LogsV1())
 
 	// 4. create control plane object and register yourself as an "integration"

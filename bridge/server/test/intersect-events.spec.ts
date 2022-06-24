@@ -42,7 +42,7 @@ describe('Test /intersectEvents', () => {
       .onGet(`${global.baseUrl}/mongodb-datastore/event/type/${EventTypes.DEPLOYMENT_FINISHED}`, {
         params: {
           filter: `data.project:${projectName} AND id:3`,
-          excludeInvalidated: 'true',
+          limit: '100',
         },
       })
       .reply(200, {
@@ -68,7 +68,7 @@ describe('Test /intersectEvents', () => {
       .onGet(`${global.baseUrl}/mongodb-datastore/event/type/${EventTypes.DEPLOYMENT_TRIGGERED}`, {
         params: {
           filter: `data.project:${projectName} AND id:1,4,7,10`,
-          excludeInvalidated: 'true',
+          limit: '100',
         },
       })
       .reply(200, IntersectDeploymentTriggeredResponse);
@@ -76,7 +76,7 @@ describe('Test /intersectEvents', () => {
       .onGet(`${global.baseUrl}/mongodb-datastore/event/type/${EventTypes.DEPLOYMENT_STARTED}`, {
         params: {
           filter: `data.project:${projectName} AND id:2,5,8,11`,
-          excludeInvalidated: 'true',
+          limit: '100',
         },
       })
       .reply(200, IntersectDeploymentStartedResponse);
@@ -84,7 +84,7 @@ describe('Test /intersectEvents', () => {
       .onGet(`${global.baseUrl}/mongodb-datastore/event/type/${EventTypes.DEPLOYMENT_FINISHED}`, {
         params: {
           filter: `data.project:${projectName} AND id:3,6,9`,
-          excludeInvalidated: 'true',
+          limit: '100',
         },
       })
       .reply(200, IntersectDeploymentFinishedResponse);
@@ -106,7 +106,7 @@ describe('Test /intersectEvents', () => {
       .onGet(`${global.baseUrl}/mongodb-datastore/event/type/${EventTypes.DEPLOYMENT_TRIGGERED}`, {
         params: {
           filter: `data.project:${projectName} AND id:1`,
-          excludeInvalidated: 'true',
+          limit: '100',
         },
       })
       .reply(200, {
@@ -196,7 +196,7 @@ describe('Test /intersectEvents', () => {
       .onGet(`${global.baseUrl}/mongodb-datastore/event/type/${EventTypes.DEPLOYMENT_TRIGGERED}`, {
         params: {
           filter: `data.project:${projectName} AND id:1`,
-          excludeInvalidated: 'true',
+          limit: '100',
         },
       })
       .reply(200, {

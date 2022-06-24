@@ -1,10 +1,11 @@
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { KtbSequenceStateListComponent } from './ktb-sequence-state-list.component';
-import { AppModule } from '../../app.module';
+import { RouterTestingModule } from '@angular/router/testing';
 import { ResultTypes } from '../../../../shared/models/result-types';
 import { Sequence } from '../../_models/sequence';
 import { POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { KtbSequenceStateListComponent } from './ktb-sequence-state-list.component';
+import { KtbSequenceStateListModule } from './ktb-sequence-state-list.module';
 
 describe('KtbSequenceStateListComponent', () => {
   let component: KtbSequenceStateListComponent;
@@ -12,7 +13,7 @@ describe('KtbSequenceStateListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule, HttpClientTestingModule],
+      imports: [KtbSequenceStateListModule, HttpClientTestingModule, RouterTestingModule],
       providers: [{ provide: POLLING_INTERVAL_MILLIS, useValue: 0 }],
     }).compileComponents();
 

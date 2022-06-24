@@ -1,7 +1,14 @@
 import { init as initApp } from './app';
+import { getConfiguration } from './utils/configuration';
+import { logger } from './utils/logger';
 
 const PORT = normalizePort(process.env.PORT || '3000');
 const HOST = process.env.HOST || '0.0.0.0';
+
+const configuration = getConfiguration();
+
+// init destination and debug flags
+logger.configure(configuration.logging.destination, configuration.logging.enabledComponents);
 
 if (typeof PORT === 'number') {
   (async (): Promise<void> => {

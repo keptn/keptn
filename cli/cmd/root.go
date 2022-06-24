@@ -60,7 +60,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&quietLogging, "quiet", "q", false, "Suppresses debug and info messages")
 	rootCmd.PersistentFlags().BoolVarP(&mocking, "mock", "", false, "Disables communication to a Keptn endpoint")
 	rootCmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "keptn",
-		"Specify the namespace where Keptn should be installed, used and uninstalled in")
+		"Specify the namespace where Keptn should be installed, used and uninstalled")
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config-file", "", "",
 		"Specify custom Keptn Config file path (default: ~/.keptn/config)")
 	rootCmd.PersistentFlags().BoolVarP(&assumeYes, "yes", "y", false, "Assume yes for all user prompts")
@@ -143,21 +143,17 @@ func runVersionCheck(vChecker *version.VersionChecker, flags []string, cliConfig
 	}
 }
 
-// skipVersionCheck checks if the subcommand requires to skip the version check step
-// (for now this is true in case of  `install` or `--oauth`)
-// args here does not contain the main command
-// e.g., For `keptn -q install`, args would be just ['-q', 'install']
+// skipVersionCheck checks if the subcommand requires to skip the version check step.
+// For now this is true in case of  `install` or `auth` subcommand)
 func skipVersionCheck(args []string) bool {
 	for _, arg := range args {
 		switch {
-		case arg == "--oauth":
-			return true
 		case strings.HasPrefix(arg, "-"):
 			continue
+		case arg == "auth":
+			return true
 		case arg == "install":
 			return true
-		default:
-			return false
 		}
 	}
 	return false

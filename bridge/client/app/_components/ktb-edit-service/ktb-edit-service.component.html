@@ -2,7 +2,6 @@
   <div fxLayout="column" fxFlexFill fxLayoutAlign="space-between" class="pb-3">
     <div>
       <h2>Edit service: {{ serviceName }}</h2>
-
       <div class="settings-section">
         <h3>Configuration files</h3>
         <ng-template #loading>
@@ -20,7 +19,6 @@
               >set a Git upstream repository</a
             >.
           </ng-container>
-
           <ng-container *ngIf="project.gitRemoteURI">
             <ng-container *ngIf="fileTree; else loading">
               <div *ngIf="fileTree.length > 0">

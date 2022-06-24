@@ -1,6 +1,8 @@
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { DtIconModule } from '@dynatrace/barista-components/icon';
 import { KtbProxyInputComponent } from './ktb-proxy-input.component';
-import { AppModule } from '../../app.module';
+import { KtbProxyInputModule } from './ktb-proxy-input.module';
 
 describe('KtbProxyInputComponent', () => {
   let component: KtbProxyInputComponent;
@@ -8,7 +10,13 @@ describe('KtbProxyInputComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule],
+      imports: [
+        KtbProxyInputModule,
+        DtIconModule.forRoot({
+          svgIconLocation: `assets/icons/{{name}}.svg`,
+        }),
+        HttpClientTestingModule,
+      ],
     }).compileComponents();
     fixture = TestBed.createComponent(KtbProxyInputComponent);
     component = fixture.componentInstance;

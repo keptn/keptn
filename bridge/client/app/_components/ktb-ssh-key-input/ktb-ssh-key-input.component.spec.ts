@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { KtbSshKeyInputComponent } from './ktb-ssh-key-input.component';
-import { AppModule } from '../../app.module';
 import { TestUtils } from '../../_utils/test.utils';
+import { KtbSshKeyInputComponent } from './ktb-ssh-key-input.component';
+import { KtbSshKeyInputModule } from './ktb-ssh-key-input.module';
 
 describe('KtbSshKeyInputComponent', () => {
   let component: KtbSshKeyInputComponent;
@@ -10,7 +10,7 @@ describe('KtbSshKeyInputComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule],
+      imports: [KtbSshKeyInputModule],
     }).compileComponents();
     fixture = TestBed.createComponent(KtbSshKeyInputComponent);
     component = fixture.componentInstance;

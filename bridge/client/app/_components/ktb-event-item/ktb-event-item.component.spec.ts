@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbEventItemComponent } from './ktb-event-item.component';
-import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { KtbEventItemModule } from './ktb-event-item.module';
 
 describe('KtbEventItemComponent', () => {
   let component: KtbEventItemComponent;
@@ -9,7 +9,7 @@ describe('KtbEventItemComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule, HttpClientTestingModule],
+      imports: [KtbEventItemModule, HttpClientTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbEventItemComponent);

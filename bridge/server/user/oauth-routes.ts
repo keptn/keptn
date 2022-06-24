@@ -2,8 +2,11 @@ import { Request, Response, Router } from 'express';
 import { BaseClient, errors, generators, TokenSet } from 'openid-client';
 import { EndSessionData } from '../../shared/interfaces/end-session-data';
 import { SessionService } from './session';
+import { ComponentLogger } from '../utils/logger';
 
 const prefixPath = process.env.PREFIX_PATH;
+
+const log = new ComponentLogger('OAuth');
 
 /**
  * Build the root path. The exact path depends on the deployment & PREFIX_PATH value
@@ -38,7 +41,7 @@ function oauthRouter(
   const router = Router();
   const additionalScopes = process.env.OAUTH_SCOPE ? ` ${process.env.OAUTH_SCOPE.trim()}` : '';
   const scope = `openid${additionalScopes}`;
-  console.log('Using scope:', scope);
+  log.info(`Using scope: ${scope}`);
 
   /**
    * Router level middleware for login
@@ -60,7 +63,8 @@ function oauthRouter(
       });
       res.redirect(authorizationUrl);
     } catch (e) {
-      console.log(e);
+      const msg = e instanceof Error ? `${e.name}: ${e.message}` : `${e}`;
+      log.error(msg);
     }
     return res;
   });
@@ -93,7 +97,7 @@ function oauthRouter(
       res.redirect(getRootLocation());
     } catch (error) {
       const err = error as errors.OPError | errors.RPError;
-      console.log(`Error while handling the redirect. Cause : ${err.message}`);
+      log.error(`Error while handling the redirect. Cause : ${err.message}`);
 
       if (err.response?.statusCode === 403) {
         return res.redirect(`${errorPageUrl}?status=403`);

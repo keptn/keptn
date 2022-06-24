@@ -4,6 +4,15 @@ interface Target {
   criteria: constraint[];
 }
 
+export interface ISloObjectives {
+  sli?: string;
+  displayName?: string;
+  key_sli?: boolean;
+  pass?: Target[];
+  warning?: Target[];
+  weight?: number;
+}
+
 export interface SloConfig {
   spec_version: string;
   comparison: {
@@ -13,14 +22,7 @@ export interface SloConfig {
     number_of_comparison_results: number;
   };
   filter: unknown;
-  objectives: {
-    sli?: string;
-    displayName?: string;
-    key_sli?: boolean;
-    pass?: Target[];
-    warning?: Target[];
-    weight?: number;
-  }[];
+  objectives: ISloObjectives[];
   total_score?: {
     pass?: scoreType;
     warning?: scoreType;

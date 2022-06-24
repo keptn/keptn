@@ -1,0 +1,46 @@
+@import 'client/variables';
+@import 'node_modules/@dynatrace/barista-components/core/src/style/variables';
+
+:host {
+  width: 100%;
+}
+
+input {
+  width: 35px;
+  display: inline-block;
+  text-align: center;
+  padding: 0;
+  border: none;
+  background-color: transparent;
+  margin: 0 3px;
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  &[type=number] {
+    -moz-appearance:textfield; /* Firefox */
+  }
+}
+
+:not(.dt-form-field-infix) > .dt-input:focus:not([disabled]), :not(.dt-inline-editor-infix) > .dt-input:focus:not([disabled]) {
+  outline: none;
+}
+
+.timeframe-input {
+  border: 1px solid $gray-300;
+  border-radius: 3px;
+  padding: 0 12px;
+  text-align: center;
+  background-color: #ffffff;
+
+  &.focused {
+    outline: 2px solid $gray-400;
+    outline-offset: 1px;
+  }
+}
+
+.dt-hint, .dt-error {
+  padding-top: 6px;
+}

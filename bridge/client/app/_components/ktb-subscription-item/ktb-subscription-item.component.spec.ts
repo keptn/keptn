@@ -1,13 +1,15 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbSubscriptionItemComponent } from './ktb-subscription-item.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { AppModule } from '../../app.module';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { UniformSubscription } from '../../_models/uniform-subscription';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 import { DataService } from '../../_services/data.service';
+import { KtbSubscriptionItemModule } from './ktb-subscription-item.module';
+import { RouterTestingModule } from '@angular/router/testing';
+import { KtbModifyUniformSubscriptionComponent } from '../ktb-modify-uniform-subscription/ktb-modify-uniform-subscription.component';
 
 describe('KtbSubscriptionItemComponent', () => {
   let component: KtbSubscriptionItemComponent;
@@ -16,7 +18,16 @@ describe('KtbSubscriptionItemComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule, HttpClientTestingModule],
+      imports: [
+        KtbSubscriptionItemModule,
+        HttpClientTestingModule,
+        RouterTestingModule.withRoutes([
+          {
+            path: 'project/:projectName/settings/uniform/integrations/:integrationId/subscriptions/:subscriptionId/edit',
+            component: KtbModifyUniformSubscriptionComponent,
+          },
+        ]),
+      ],
       providers: [
         { provide: ApiService, useClass: ApiServiceMock },
         {

@@ -3,8 +3,8 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: "{{ include "jmeter-service.fullname" . }}-test-api-connection"
-  labels:
-  {{- include "jmeter-service.labels" . | nindent 4 }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: jmeter-service
   annotations:
     "helm.sh/hook": test
 spec:

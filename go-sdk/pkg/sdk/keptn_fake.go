@@ -73,10 +73,13 @@ func (f *FakeKeptn) AssertSentEventResult(t *testing.T, eventIndex int, result v
 func (f *FakeKeptn) SetAutomaticResponse(autoResponse bool) {
 	f.Keptn.automaticEventResponse = autoResponse
 }
-
 func (f *FakeKeptn) SetResourceHandler(handler ResourceHandler) {
 	f.TestResourceHandler = handler
 	f.Keptn.resourceHandler = handler
+}
+
+func (f *FakeKeptn) SetAPI(api api.KeptnInterface) {
+	f.Keptn.api = api
 }
 
 func (f *FakeKeptn) AddTaskHandler(eventType string, handler TaskHandler, filters ...func(keptnHandle IKeptn, event KeptnEvent) bool) {
@@ -97,8 +100,9 @@ func NewFakeKeptn(source string) *FakeKeptn {
 	var fakeKeptn = &FakeKeptn{
 		TestResourceHandler: resourceHandler,
 		Keptn: &Keptn{
-			resourceHandler:        resourceHandler,
 			source:                 source,
+			api:                    panicKeptnInterface{},
+			resourceHandler:        resourceHandler,
 			taskRegistry:           newTaskMap(),
 			syncProcessing:         true,
 			automaticEventResponse: true,
@@ -150,4 +154,66 @@ type FailingResourceHandler struct {
 
 func (f FailingResourceHandler) GetResource(scope api.ResourceScope, options ...api.URIOption) (*models.Resource, error) {
 	return nil, errors.New("unable to get resource")
+}
+
+type panicKeptnInterface struct {
+}
+
+func (p panicKeptnInterface) AuthV1() api.AuthV1Interface {
+
+	panic("No implementation of AuthV1 found. Please Provide a mocked implementation of KeptnInterface for Fake Keptn")
+}
+
+func (p panicKeptnInterface) EventsV1() api.EventsV1Interface {
+
+	panic("No implementation of EventsV1 found. Please Provide a mocked implementation of KeptnInterface for Fake Keptn")
+}
+
+func (p panicKeptnInterface) LogsV1() api.LogsV1Interface {
+
+	panic("No implementation of LogsV1 found. Please Provide a mocked implementation of KeptnInterface for Fake Keptn")
+}
+
+func (p panicKeptnInterface) ProjectsV1() api.ProjectsV1Interface {
+
+	panic("No implementation of ProjectsV1 found. Please Provide a mocked implementation of KeptnInterface for Fake Keptn")
+}
+
+func (p panicKeptnInterface) ResourcesV1() api.ResourcesV1Interface {
+
+	panic("No implementation of  ResourcesV1 found. Please Provide a mocked implementation of KeptnInterface for Fake Keptn")
+}
+
+func (p panicKeptnInterface) SecretsV1() api.SecretsV1Interface {
+
+	panic("No implementation of SecretsV1 found. Please Provide a mocked implementation of KeptnInterface for Fake Keptn")
+}
+
+func (p panicKeptnInterface) SequencesV1() api.SequencesV1Interface {
+
+	panic("No implementation of SequencesV1 found. Please Provide a mocked implementation of KeptnInterface for Fake Keptn")
+}
+
+func (p panicKeptnInterface) ServicesV1() api.ServicesV1Interface {
+
+	panic("No implementation of ServicesV1 found. Please Provide a mocked implementation of KeptnInterface for Fake Keptn")
+}
+
+func (p panicKeptnInterface) StagesV1() api.StagesV1Interface {
+
+	panic("No implementation of StagesV1 found. Please Provide a mocked implementation of KeptnInterface for Fake Keptn")
+}
+
+func (p panicKeptnInterface) UniformV1() api.UniformV1Interface {
+
+	panic("No implementation of UniformV1found. Please Provide a mocked implementation of KeptnInterface for Fake Keptn")
+}
+
+func (p panicKeptnInterface) ShipyardControlV1() api.ShipyardControlV1Interface {
+
+	panic("No implementation of ShipyardControlV1 found. Please Provide a mocked implementation of KeptnInterface for Fake Keptn")
+}
+
+func (p panicKeptnInterface) APIV1() api.APIV1Interface {
+	panic("No implementation of APIV1 found. Please Provide a mocked implementation of KeptnInterface for Fake Keptn")
 }

@@ -14,7 +14,7 @@ class EnvironmentPage {
   }
 
   public visit(project: string): this {
-    cy.visit(`/project/${project}`).wait('@metadata');
+    cy.visit(`/project/${project}`).wait('@metadata').wait('@project');
     return this;
   }
 
@@ -67,6 +67,11 @@ class EnvironmentPage {
 
   private getServiceDetailsContainer(service: string): Cypress.Chainable<JQuery<HTMLElement>> {
     return cy.get('ktb-stage-details ktb-expandable-tile h2').contains(service).parentsUntil('ktb-expandable-tile');
+  }
+
+  public assertIsLoaded(status: boolean): this {
+    cy.byTestId('ktb-environment-is-loading').should(status ? 'not.exist' : 'exist');
+    return this;
   }
 }
 
