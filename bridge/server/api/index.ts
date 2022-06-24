@@ -20,7 +20,6 @@ const apiRouter = (params: {
   apiUrl: string;
   apiToken: string | undefined;
   cliDownloadLink: string;
-  integrationsPageLink: string;
   authType: AuthType;
   clientFeatureFlags: ClientFeatureFlags;
   session: SessionService | undefined;
@@ -30,7 +29,6 @@ const apiRouter = (params: {
     apiUrl,
     apiToken,
     cliDownloadLink,
-    integrationsPageLink,
     authType,
     clientFeatureFlags: featureFlags,
     session,
@@ -67,18 +65,6 @@ const apiRouter = (params: {
 
     try {
       return res.json(bridgeInfo);
-    } catch (err) {
-      return next(err);
-    }
-  });
-
-  router.get('/integrationsPage', async (req, res, next) => {
-    try {
-      const result = await axios({
-        method: req.method as Method,
-        url: `${integrationsPageLink}`,
-      });
-      return res.send(result.data);
     } catch (err) {
       return next(err);
     }

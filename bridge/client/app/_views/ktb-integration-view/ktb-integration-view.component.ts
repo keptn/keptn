@@ -122,22 +122,6 @@ export class KtbIntegrationViewComponent implements OnInit, OnDestroy {
     });
   }
 
-  loadIntegrations(): void {
-    this.integrationsExternalDetails = '<p>Loading ...</p>';
-    this.apiService
-      .getIntegrationsPage()
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(
-        (result: string) => {
-          this.integrationsExternalDetails = result;
-        },
-        () => {
-          this.integrationsExternalDetails =
-            '<p>Couldn\'t load page. For more details see <a href="https://keptn.sh/docs/integrations/" target="_blank" rel="noopener noreferrer">https://keptn.sh/docs/integrations/</a>';
-        }
-      );
-  }
-
   copyApiToken(): void {
     this.clipboard.copy(this.keptnInfo?.bridgeInfo.apiToken, 'API token');
   }

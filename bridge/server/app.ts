@@ -26,7 +26,6 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const apiUrl: string | undefined = process.env.API_URL;
 let apiToken: string | undefined = process.env.API_TOKEN;
 let cliDownloadLink: string | undefined = process.env.CLI_DOWNLOAD_LINK;
-let integrationsPageLink: string | undefined = process.env.INTEGRATIONS_PAGE_LINK;
 const lookAndFeelUrl: string | undefined = process.env.LOOK_AND_FEEL_URL;
 const requestTimeLimit = +(process.env.REQUEST_TIME_LIMIT || 60) * 60 * 1000; // x minutes
 const requestsWithinTime = +(process.env.REQUESTS_WITHIN_TIME || 10); // x requests within {requestTimeLimit}
