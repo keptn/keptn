@@ -24,11 +24,15 @@ type projectChecker interface {
 	ProjectExists(projectName string) (bool, error)
 }
 
+// ParseArchiveFunction is the function called to parse the uploaded file
+type ParseArchiveFunction func(string, uint64) (*importer.ZippedPackage, error)
+
 // ImportHandler is the rest handler for the /import endpoint
 type ImportHandler struct {
 	checker                    projectChecker
 	tempStorageDir             string
 	maxUncompressedPackageSize uint64
+	parseArchive               ParseArchiveFunction
 }
 
 // GetImportHandlerFunc will instantiate a configured ImportHandler and return the method that can be used for
@@ -36,15 +40,19 @@ type ImportHandler struct {
 func GetImportHandlerFunc(storagePath string, checker projectChecker, maxPackageSize uint64) func(
 	params import_operations.ImportParams, principal *models.Principal,
 ) middleware.Responder {
-	ih := getImportHandlerInstance(storagePath, checker, maxPackageSize)
+	ih := getImportHandlerInstance(storagePath, checker, maxPackageSize, importer.NewPackage)
 	return ih.HandleImport
 }
 
-func getImportHandlerInstance(storagePath string, checker projectChecker, maxPackageSize uint64) *ImportHandler {
+func getImportHandlerInstance(
+	storagePath string, checker projectChecker, maxPackageSize uint64,
+	parserFunction ParseArchiveFunction,
+) *ImportHandler {
 	return &ImportHandler{
 		checker:                    checker,
 		tempStorageDir:             storagePath,
 		maxUncompressedPackageSize: maxPackageSize,
+		parseArchive:               parserFunction,
 	}
 }
 
@@ -111,7 +119,7 @@ func (ih *ImportHandler) HandleImport(
 		return import_operations.NewImportBadRequest().WithPayload(&mError)
 	}
 
-	m, err := importer.NewPackage(file.Name(), ih.maxUncompressedPackageSize)
+	m, err := ih.parseArchive(file.Name(), ih.maxUncompressedPackageSize)
 
 	if err != nil {
 		logger.Errorf("Error opening import archive: %v", err)
