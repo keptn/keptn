@@ -6,7 +6,6 @@ import { Service } from '../models/service';
 import { Project } from '../models/project';
 import { EventState } from '../../shared/models/event-state';
 import { EventTypes } from '../../shared/interfaces/event-types';
-import { Approval } from '../interfaces/approval';
 import { ResultTypes } from '../../shared/models/result-types';
 import { UniformRegistration } from '../models/uniform-registration';
 import { parse as parseYaml } from 'yaml';
@@ -45,7 +44,7 @@ type StageRemediationInformation = {
   config?: string;
 };
 type StageOpenInformation = {
-  openApprovals: Approval[];
+  openApprovals: Trace[];
   openRemediations: Remediation[];
   evaluations: Trace[];
 };
@@ -96,7 +95,7 @@ export class DataService {
     includeApproval: boolean
   ): Promise<Project> {
     const project = await this.getPlainProject(accessToken, projectName);
-    let openApprovals: Approval[] = [];
+    let openApprovals: Trace[] = [];
     let openRemediations: Remediation[] = [];
     const allServices = Stage.getAllServices(project.stages);
     const latestDeployments = await this.getLatestDeploymentFinishedForServices(
@@ -113,12 +112,12 @@ export class DataService {
     }
 
     if (includeApproval) {
-      openApprovals = await this.getApprovals(accessToken, projectName, true);
+      openApprovals = await this.getApprovals(accessToken, projectName);
     }
 
     for (const stage of project.stages) {
       const stageRemediations = openRemediations.filter((seq) => seq.stages.some((s) => s.name === stage.stageName));
-      const stageApprovals = openApprovals.filter((approval) => approval.trace.data.stage === stage.stageName);
+      const stageApprovals = openApprovals.filter((approval) => approval.data.stage === stage.stageName);
       const stageEvaluations = latestEvaluations.filter((t) => t.data.stage === stage.stageName);
       const stageDeployments = latestDeployments.filter((t) => t.data.stage === stage.stageName);
       const stageInformation: StageOpenInformation = {
@@ -326,7 +325,7 @@ export class DataService {
     }
     service.openRemediations = serviceRemediations;
     service.openApprovals = stageInformation.openApprovals.filter(
-      (approval) => approval.trace.data.service === service.serviceName
+      (approval) => approval.data.service === service.serviceName
     );
   }
 
@@ -451,11 +450,9 @@ export class DataService {
   public async getApprovals(
     accessToken: string | undefined,
     projectName: string,
-    includeEvaluationTrace: boolean,
     stageName?: string,
     serviceName?: string
-  ): Promise<Approval[]> {
-    let tracesTriggered: Trace[];
+  ): Promise<Trace[]> {
     try {
       const response = await this.apiService.getOpenTriggeredEvents(
         accessToken,
@@ -464,32 +461,11 @@ export class DataService {
         stageName,
         serviceName
       );
-      tracesTriggered = response.data.events ?? [];
+      return response.data.events ?? [];
     } catch {
       // status 500 if no events are found
-      tracesTriggered = [];
+      return [];
     }
-    const approvals: Approval[] = [];
-    // for each approval the latest evaluation trace (before this event) is needed
-    for (const trace of tracesTriggered) {
-      let evaluationTrace: Trace | undefined;
-      if (includeEvaluationTrace) {
-        evaluationTrace = await this.getTrace(
-          accessToken,
-          trace.shkeptncontext,
-          projectName,
-          stageName,
-          serviceName,
-          EventTypes.EVALUATION_FINISHED,
-          KeptnService.LIGHTHOUSE_SERVICE
-        );
-      }
-      approvals.push({
-        evaluationTrace,
-        trace,
-      });
-    }
-    return approvals;
   }
 
   public async hasUnreadUniformRegistrationLogs(
@@ -609,27 +585,6 @@ export class DataService {
     }
 
     return Object.keys(services);
-  }
-
-  public async getRoots(
-    accessToken: string | undefined,
-    projectName: string | undefined,
-    pageSize: string | undefined,
-    serviceName: string | undefined,
-    fromTime?: string | undefined,
-    beforeTime?: string | undefined,
-    keptnContext?: string | undefined
-  ): Promise<EventResult> {
-    const response = await this.apiService.getRoots(
-      accessToken,
-      projectName,
-      pageSize,
-      serviceName,
-      fromTime,
-      beforeTime,
-      keptnContext
-    );
-    return response.data;
   }
 
   public async getTracesByContext(

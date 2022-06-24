@@ -29,7 +29,6 @@ export class KtbEventItemComponent {
   @Input() public showTime = true;
   @Input() public showLabels = true;
   @Input() public image?: string;
-  @Input() public evaluation?: Trace;
   @Output() public approvalSent: EventEmitter<void> = new EventEmitter<void>();
 
   @Input()

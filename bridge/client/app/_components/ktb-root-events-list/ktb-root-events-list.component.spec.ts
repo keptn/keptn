@@ -3,20 +3,17 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import { firstValueFrom, of } from 'rxjs';
-import { Project } from '../../_models/project';
+import { SequencesMock } from '../../_services/_mockData/sequences.mock';
+import { of } from 'rxjs';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
-import { DataService } from '../../_services/data.service';
 import { KtbRootEventsListComponent } from './ktb-root-events-list.component';
 import { KtbRootEventsListModule } from './ktb-root-events-list.module';
 
 describe('KtbRootEventsListComponent', () => {
   let component: KtbRootEventsListComponent;
   let fixture: ComponentFixture<KtbRootEventsListComponent>;
-  let dataService: DataService;
   const projectName = 'sockshop';
-  let project: Project;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -40,9 +37,6 @@ describe('KtbRootEventsListComponent', () => {
 
     fixture = TestBed.createComponent(KtbRootEventsListComponent);
     component = fixture.componentInstance;
-    dataService = fixture.debugElement.injector.get(DataService);
-    dataService.loadProjects().subscribe(); // reset project.sequences
-    project = (await firstValueFrom(dataService.getProject(projectName))) as Project;
     fixture.detectChanges();
   });
 
@@ -50,24 +44,11 @@ describe('KtbRootEventsListComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should show 25 sequences', () => {
-    // given
-    dataService.loadSequences(project);
-    component.events = project.sequences || [];
-    fixture.detectChanges();
-
-    // then
-    const sequences = fixture.nativeElement.querySelectorAll('ktb-selectable-tile');
-    expect(sequences.length).toEqual(25);
-    expect(component.events).toEqual(project.sequences);
-  });
-
   it('should select provided sequence', () => {
     // given
     const selectedSequenceIndex = 1;
-    dataService.loadSequences(project);
-    component.events = project.sequences || [];
-    component.selectedEvent = project.sequences?.[selectedSequenceIndex];
+    component.events = SequencesMock;
+    component.selectedEvent = SequencesMock[selectedSequenceIndex];
     fixture.detectChanges();
 
     // then
@@ -79,13 +60,12 @@ describe('KtbRootEventsListComponent', () => {
     // given
     const selectedSequenceIndex = 5;
     const changeEvent = jest.spyOn(component.selectedEventChange, 'emit');
-    dataService.loadSequences(project);
-    component.events = project.sequences || [];
+    component.events = SequencesMock;
     fixture.detectChanges();
 
     // when
     const targetSequence = getSequenceTile(selectedSequenceIndex);
-    const eventData = { sequence: project.sequences?.[selectedSequenceIndex], stage: undefined };
+    const eventData = { sequence: SequencesMock[selectedSequenceIndex], stage: undefined };
     targetSequence.click();
     fixture.detectChanges();
 
@@ -99,8 +79,7 @@ describe('KtbRootEventsListComponent', () => {
     // given
     const selectedSequenceIndex = 8;
     const changeEvent = jest.spyOn(component.selectedEventChange, 'emit');
-    dataService.loadSequences(project);
-    component.events = project.sequences || [];
+    component.events = SequencesMock;
     fixture.detectChanges();
 
     // when
@@ -115,7 +94,7 @@ describe('KtbRootEventsListComponent', () => {
     expect(stageBadges.length).toEqual(2);
     expect(targetSequence.getAttribute('class')).toContain('ktb-tile-selected');
     expect(changeEvent).toHaveBeenCalledWith({
-      sequence: project.sequences?.[selectedSequenceIndex],
+      sequence: SequencesMock[selectedSequenceIndex],
       stage: stageName,
     });
   });
@@ -171,13 +150,12 @@ describe('KtbRootEventsListComponent', () => {
 
   function getSequenceTile(index: number): HTMLElement {
     return fixture.nativeElement.querySelector(
-      `ktb-selectable-tile[uitestid="keptn-root-events-list-${project.sequences?.[index].shkeptncontext}"]`
+      `ktb-selectable-tile[uitestid="keptn-root-events-list-${SequencesMock[index].shkeptncontext}"]`
     );
   }
 
   function prepareSequenceElement(isFinished: boolean, isFaulty: boolean, hasPendingApproval: boolean): void {
-    dataService.loadSequences(project);
-    component.events = project.sequences || [];
+    component.events = SequencesMock;
     jest.spyOn(component.events[0], 'isFinished').mockReturnValue(isFinished);
     jest.spyOn(component.events[0], 'isFaulty').mockReturnValue(isFaulty);
     jest.spyOn(component.events[0], 'hasPendingApproval').mockReturnValue(hasPendingApproval);

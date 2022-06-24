@@ -178,6 +178,24 @@ export function interceptSequencesPage(): void {
       body: [],
     }
   );
+  interceptEvaluationOfApproval();
+}
+
+export function interceptEvaluationOfApproval(includeData = false, delay = 0): void {
+  const data = includeData
+    ? { fixture: 'get.approval-evaluation.mock.json' }
+    : {
+        body: {
+          events: [],
+        },
+      };
+  cy.intercept(
+    '/api/mongodb-datastore/event?keptnContext=99a20ef4-d822-4185-bbee-0d7a364c213b&type=sh.keptn.event.evaluation.finished&source=lighthouse-service&stage=production&pageSize=1',
+    {
+      ...data,
+      delay,
+    }
+  );
 }
 
 export function interceptSequencesPageWithSequenceThatIsNotLoaded(): void {

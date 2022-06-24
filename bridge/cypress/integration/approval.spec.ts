@@ -55,4 +55,35 @@ describe('Test sequence screen approval', () => {
       .clickEvent(approvalId); // open
     cy.get('@approvalImage.all').should('have.length', 1);
   });
+
+  it('should show loading indicator while evaluation is loading', () => {
+    sequencesPage
+      .interceptEvaluationOfApproval(false, 10_000)
+      .visit('sockshop')
+      .selectSequence('99a20ef4-d822-4185-bbee-0d7a364c213b')
+      .clickEvent(approvalId)
+      .assertIsApprovalEvaluationLoading(true)
+      .assertApprovalEvaluationBubbleExists(false);
+  });
+
+  it('should not show an evaluation for an approval', () => {
+    sequencesPage
+      .interceptEvaluationOfApproval(false)
+      .visit('sockshop')
+      .selectSequence('99a20ef4-d822-4185-bbee-0d7a364c213b')
+      .clickEvent(approvalId)
+      .assertIsApprovalEvaluationLoading(false)
+      .assertApprovalEvaluationBubbleExists(false);
+  });
+
+  it('should show an evaluation for an approval', () => {
+    sequencesPage
+      .interceptEvaluationOfApproval(true)
+      .visit('sockshop')
+      .selectSequence('99a20ef4-d822-4185-bbee-0d7a364c213b')
+      .clickEvent(approvalId)
+      .assertIsApprovalEvaluationLoading(false)
+      .assertApprovalEvaluationBubbleExists(true)
+      .assertApprovalEvaluationBubble(50, 'error');
+  });
 });
