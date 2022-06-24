@@ -1,0 +1,67 @@
+{
+  "events": [
+    {
+      "data": {
+        "evaluation": {
+          "comparedEvents": [],
+          "gitCommit": "",
+          "indicatorResults": [
+            {
+              "displayName": "Response time P95",
+              "keySli": false,
+              "passTargets": [
+                {
+                  "criteria": "<=+10%",
+                  "targetValue": 28.299605536062597,
+                  "violated": true
+                },
+                {
+                  "criteria": "<600",
+                  "targetValue": 600,
+                  "violated": false
+                }
+              ],
+              "score": 0.5,
+              "status": "warning",
+              "value": {
+                "comparedValue": 25.72691412369327,
+                "metric": "response_time_p95",
+                "success": true,
+                "value": 39.5330609699313
+              },
+              "warningTargets": [
+                {
+                  "criteria": "<=800",
+                  "targetValue": 800,
+                  "violated": false
+                }
+              ]
+            }
+          ],
+          "result": "fail",
+          "score": 50,
+          "sloFileContent": "LS0tCnNwZWNfdmVyc2lvbjogIjEuMCIKY29tcGFyaXNvbjoKICBhZ2dyZWdhdGVfZnVuY3Rpb246ICJhdmciCiAgY29tcGFyZV93aXRoOiAic2luZ2xlX3Jlc3VsdCIKICBpbmNsdWRlX3Jlc3VsdF93aXRoX3Njb3JlOiAicGFzcyIKICBudW1iZXJfb2ZfY29tcGFyaXNvbl9yZXN1bHRzOiAxCmZpbHRlcjoKb2JqZWN0aXZlczoKICAtIHNsaTogInJlc3BvbnNlX3RpbWVfcDk1IgogICAgZGlzcGxheU5hbWU6ICJSZXNwb25zZSB0aW1lIFA5NSIKICAgIGtleV9zbGk6IGZhbHNlCiAgICBwYXNzOiAgICAgICAgICAgICAjIHBhc3MgaWYgKHJlbGF0aXZlIGNoYW5nZSA8PSAxMCUgQU5EIGFic29sdXRlIHZhbHVlIGlzIDwgNjAwbXMpCiAgICAgIC0gY3JpdGVyaWE6CiAgICAgICAgICAtICI8PSsxMCUiICAjIHJlbGF0aXZlIHZhbHVlcyByZXF1aXJlIGEgcHJlZml4ZWQgc2lnbiAocGx1cyBvciBtaW51cykKICAgICAgICAgIC0gIjw2MDAiICAgICMgYWJzb2x1dGUgdmFsdWVzIG9ubHkgcmVxdWlyZSBhIGxvZ2ljYWwgb3BlcmF0b3IKICAgIHdhcm5pbmc6ICAgICAgICAgICMgaWYgdGhlIHJlc3BvbnNlIHRpbWUgaXMgYmVsb3cgODAwbXMsIHRoZSByZXN1bHQgc2hvdWxkIGJlIGEgd2FybmluZwogICAgICAtIGNyaXRlcmlhOgogICAgICAgICAgLSAiPD04MDAiCiAgICB3ZWlnaHQ6IDEKdG90YWxfc2NvcmU6CiAgcGFzczogIjkwJSIKICB3YXJuaW5nOiAiNzUlIg==",
+          "timeEnd": "2022-02-11T12:47:52.875Z",
+          "timeStart": "2022-02-11T12:47:19.442Z"
+        },
+        "labels": {
+          "DtCreds": "dynatrace"
+        },
+        "message": "Evaluation failed since the calculated score of 50 is below the warning value of 75",
+        "project": "sockshop",
+        "result": "fail",
+        "service": "carts",
+        "stage": "production",
+        "status": "succeeded"
+      },
+      "id": "3e53b6ab-7c60-4f47-ae3b-25bbbd5fe5d5",
+      "source": "lighthouse-service",
+      "specversion": "1.0",
+      "time": "2022-02-11T12:50:01.936Z",
+      "type": "sh.keptn.event.evaluation.finished",
+      "shkeptncontext": "99a20ef4-d822-4185-bbee-0d7a364c213b",
+      "shkeptnspecversion": "0.2.3",
+      "triggeredid": "2fce0b7c-5d77-4f46-9267-cbd5c3edba91"
+    }
+  ]
+}

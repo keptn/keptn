@@ -10,10 +10,9 @@ import {
   ViewChild,
 } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { Observable, of, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { Trace } from '../../_models/trace';
-import { Project } from '../../_models/project';
 import { ClipboardService } from '../../_services/clipboard.service';
 import { DataService } from '../../_services/data.service';
 import { DateUtil } from '../../_utils/date.utils';
@@ -32,7 +31,6 @@ export class KtbTaskItemDetailDirective {}
 })
 export class KtbTaskItemComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
-  public project$: Observable<Project | undefined> = of(undefined);
   public _task?: Trace;
   public latestDeployment?: string;
   private _expanded = false;
@@ -123,9 +121,6 @@ export class KtbTaskItemComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    if (this.task?.project) {
-      this.project$ = this.dataService.getProject(this.task.project);
-    }
     this.route.params.pipe(takeUntil(this.unsubscribe$)).subscribe((params) => {
       if (params.eventId === this.task?.id) {
         this.isExpanded = true;

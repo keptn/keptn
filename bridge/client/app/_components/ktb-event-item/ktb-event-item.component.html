@@ -112,11 +112,7 @@
       <tr>
         <td><p class="m-0">Deployable artifact:</p></td>
         <td>
-          <ktb-approval-item
-            [event]="_event"
-            [evaluation]="evaluation"
-            (approvalSent)="approvalSent.emit()"
-          ></ktb-approval-item>
+          <ktb-approval-item [event]="_event" (approvalSent)="approvalSent.emit()"></ktb-approval-item>
         </td>
       </tr>
     </table>
