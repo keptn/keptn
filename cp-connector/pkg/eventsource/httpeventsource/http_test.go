@@ -156,3 +156,18 @@ func TestAPIPassEventOnlyOnce(t *testing.T) {
 	time.Sleep(time.Second)
 	require.Equal(t, 1, eventsReceived)
 }
+
+func TestEventSourceGetSender(t *testing.T) {
+	senderCalled := false
+	sender := func(keptnContextExtendedCE models.KeptnContextExtendedCE) error {
+		senderCalled = true
+		return nil
+	}
+	eventGetSender := &fake.EventAPIMock{
+		SendFunc: sender,
+	}
+	err := New(clock.New(), eventGetSender).Sender()(models.KeptnContextExtendedCE{})
+	require.NoError(t, err)
+	require.True(t, senderCalled)
+
+}
