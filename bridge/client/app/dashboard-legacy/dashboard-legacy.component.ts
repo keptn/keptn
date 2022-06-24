@@ -41,7 +41,7 @@ export class DashboardLegacyComponent {
       this.refreshTimer$.pipe(
         switchMap(() =>
           this.dataService
-            .loadLatestSequences(project, MAX_SEQUENCES)
+            .loadLatestSequences(project.projectName, MAX_SEQUENCES)
             .pipe(map((sequences) => ({ [project.projectName]: sequences })))
         )
       )
