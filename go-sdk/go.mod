@@ -6,9 +6,9 @@ require (
 	github.com/cloudevents/sdk-go/v2 v2.10.0
 	github.com/google/uuid v1.3.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.16.1
+	github.com/keptn/go-utils v0.16.1-0.20220624075633-4d49101f88b4
 	github.com/keptn/keptn/cp-common v0.0.0-20220624104257-7f99ff1436c7
-	github.com/keptn/keptn/cp-connector v0.0.0-20220624090155-e031b2f0c7c8
+	github.com/keptn/keptn/cp-connector v0.0.0-20220624123322-a205084e713e
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
 	golang.org/x/oauth2 v0.0.0-20220608161450-d0670ef3b1eb
@@ -37,13 +37,9 @@ require (
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.19.0 // indirect
 	golang.org/x/crypto v0.0.0-20220315160706-3147a52a75dd // indirect
-	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
 	golang.org/x/sys v0.0.0-20220209214540-3681064d5158 // indirect
-	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8 // indirect
-	golang.org/x/tools v0.1.10-0.20220218145154-897bd77cd717 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )

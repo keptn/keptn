@@ -38,7 +38,7 @@ require (
 	github.com/dsnet/compress v0.0.2-0.20210315054119-f66993602bf5 // indirect
 	github.com/emicklei/go-restful v2.9.5+incompatible // indirect
 	github.com/felixge/httpsnoop v1.0.2 // indirect
-	github.com/go-logr/logr v1.2.0 // indirect
+	github.com/go-logr/logr v1.2.2 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/jsonreference v0.19.5 // indirect
 	github.com/go-openapi/swag v0.19.14 // indirect
@@ -48,9 +48,9 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.2 // indirect
 	github.com/google/gnostic v0.5.7-v3refs // indirect
-	github.com/google/gofuzz v1.1.0 // indirect
+	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/huandu/xstrings v1.3.1 // indirect
-	github.com/imdario/mergo v0.3.11 // indirect
+	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0 // indirect
