@@ -25,23 +25,6 @@ describe('KtbProjectListComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should return the shipyardversion', () => {
-    // given
-    component.metadata = {
-      namespace: 'string',
-      keptnversion: 'string',
-      keptnlabel: 'string',
-      bridgeversion: 'string',
-      shipyardversion: '1.2.3',
-    };
-
-    // when
-    const value = component.getShipyardversion();
-
-    // then
-    expect(value).toEqual('1.2.3');
-  });
-
   it('should extract the sequences of a project', () => {
     // given
     const project1 = ProjectsMock[0];

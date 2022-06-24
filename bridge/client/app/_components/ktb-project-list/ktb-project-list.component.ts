@@ -20,8 +20,4 @@ export class KtbProjectListComponent {
     const latestSequences = this.sequences[project.projectName];
     return latestSequences ?? [];
   }
-
-  getShipyardversion(): string | undefined {
-    return this.metadata != null ? this.metadata?.shipyardversion : undefined;
-  }
 }
