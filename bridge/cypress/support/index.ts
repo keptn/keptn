@@ -25,15 +25,26 @@ Cypress.on('window:before:load', (window) => {
 beforeEach(() => {
   errorLogs = [];
   warningLogs = [];
+
+  cy.intercept(/api\/(.)*/, (request) => {
+    request.continue((response) => {
+      if (response.statusCode < 200 || response.statusCode > 399) {
+        errorLogs.push([
+          `Request to "${request.method} ${request.url}" failed`,
+          `payload: ${JSON.stringify(request.body)}`,
+        ]);
+      }
+    });
+  });
 });
 
 afterEach(() => {
   /*eslint-disable promise/catch-or-return, promise/always-return*/
-  cy.task('logError', errorLogs)
+  cy.task('logError', [...errorLogs])
     .then((expectedErrors) => {
       expect(errorLogs.length).to.eq(expectedErrors);
     })
-    .task('logWarning', warningLogs)
+    .task('logWarning', [...warningLogs])
     .then((expectedWarnings) => {
       expect(warningLogs.length).to.eq(expectedWarnings);
     });

@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { KtbSequenceListComponent } from './ktb-sequence-list.component';
-import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { KtbSequenceListModule } from './ktb-sequence-list.module';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('KtbSequenceListComponent', () => {
   let component: KtbSequenceListComponent;
@@ -10,7 +10,7 @@ describe('KtbSequenceListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule, HttpClientTestingModule],
+      imports: [KtbSequenceListModule, HttpClientTestingModule, RouterTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbSequenceListComponent);

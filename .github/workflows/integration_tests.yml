@@ -590,7 +590,7 @@ jobs:
       - name: Uninstall Keptn
         if: always() && env.CLOUD_PROVIDER != 'GKE'
         timeout-minutes: 5
-        run: echo "y" | keptn uninstall -n ${KEPTN_NAMESPACE}
+        run: helm uninstall keptn -n ${KEPTN_NAMESPACE} --wait
 
       - name: Uninstall Istio
         if: always() && env.CLOUD_PROVIDER != 'minishift-on-GHA' && env.CLOUD_PROVIDER != 'GKE' # istio was not installed on minishift or GKE, so no need to uninstall it

@@ -5,8 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/jeremywohl/flatten"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/common/timeutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -14,7 +17,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"time"
 )
 
 const maxRepoReadRetries = 5
@@ -157,7 +159,9 @@ func (mdbrepo *MongoDBEventsRepo) InsertEvent(project string, event apimodels.Ke
 		return errors.New("invalid event type")
 	}
 
-	event.Time = time.Now().UTC()
+	if event.Time.IsZero() {
+		event.Time = time.Now().UTC()
+	}
 
 	marshal, _ := json.Marshal(event)
 	var eventInterface interface{}
@@ -374,6 +378,12 @@ func getSearchOptions(filter common.EventFilter) bson.M {
 	if filter.KeptnContext != nil && *filter.KeptnContext != "" {
 		searchOptions["shkeptncontext"] = *filter.KeptnContext
 	}
+	if !filter.Time.IsZero() {
+		searchOptions["time"] = bson.M{
+			"$lte": timeutils.GetKeptnTimeStamp(filter.Time),
+		}
+	}
+
 	return searchOptions
 }
 

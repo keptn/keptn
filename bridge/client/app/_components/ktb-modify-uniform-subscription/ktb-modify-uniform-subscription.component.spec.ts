@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbModifyUniformSubscriptionComponent } from './ktb-modify-uniform-subscription.component';
-import { AppModule } from '../../app.module';
 import { ActivatedRoute, convertToParamMap, ParamMap, Router } from '@angular/router';
 import { UniformRegistrationsMock } from '../../_services/_mockData/uniform-registrations.mock';
 import { BehaviorSubject, of, throwError } from 'rxjs';
@@ -15,6 +14,9 @@ import { AbstractControl } from '@angular/forms';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 import { ProjectsMock } from '../../_services/_mockData/projects.mock';
+import { KtbModifyUniformSubscriptionModule } from './ktb-modify-uniform-subscription.module';
+import { RouterTestingModule } from '@angular/router/testing';
+import { KtbKeptnServicesListComponent } from '../ktb-keptn-services-list/ktb-keptn-services-list.component';
 
 describe('KtbModifyUniformSubscriptionComponent', () => {
   let component: KtbModifyUniformSubscriptionComponent;
@@ -29,7 +31,16 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
       })
     );
     await TestBed.configureTestingModule({
-      imports: [AppModule, HttpClientTestingModule],
+      imports: [
+        KtbModifyUniformSubscriptionModule,
+        HttpClientTestingModule,
+        RouterTestingModule.withRoutes([
+          {
+            path: 'project/:projectName/settings/uniform/integrations/:integrationId',
+            component: KtbKeptnServicesListComponent,
+          },
+        ]),
+      ],
       providers: [
         { provide: ApiService, useClass: ApiServiceMock },
         {

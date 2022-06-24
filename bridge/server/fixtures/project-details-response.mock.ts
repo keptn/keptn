@@ -414,196 +414,99 @@ const projectDetailsResponse = {
           openRemediations: [],
           openApprovals: [
             {
-              evaluationTrace: {
-                data: {
-                  approval: {
-                    pass: 'manual',
-                    warning: 'manual',
-                  },
-                  configurationChange: {
-                    values: {
-                      image: 'docker.io/keptnexamples/carts:0.12.1',
-                    },
-                  },
-                  deployment: {
-                    deploymentNames: ['canary', 'direct'],
-                    deploymentURIsLocal: ['http://carts.sockshop-staging:80'],
-                    deploymentURIsPublic: [
-                      'http://carts.sockshop-staging.35.192.209.116.nip.io:80',
-                      'http://carts.sockshop-dev.35.192.209.116.nip.io:80',
-                    ],
-                    deploymentstrategy: 'duplicate',
-                    gitCommit: 'eb081e26f037bf32797c37f59a55f9f411b6f17d',
-                  },
-                  evaluation: {
-                    comparedEvents: ['3344487d-e384-4cd9-a0e0-fcf157a33ad6'],
-                    gitCommit: '',
-                    indicatorResults: [
-                      {
-                        displayName: 'Response time P95',
-                        keySli: false,
-                        passTargets: [
-                          {
-                            criteria: '<=+10%',
-                            targetValue: 336.9946150194969,
-                            violated: false,
-                          },
-                          {
-                            criteria: '<600',
-                            targetValue: 600,
-                            violated: false,
-                          },
-                        ],
-                        score: 1,
-                        status: 'pass',
-                        value: {
-                          metric: 'response_time_p95',
-                          success: true,
-                          value: 304.2952915485157,
-                        },
-                        warningTargets: [
-                          {
-                            criteria: '<=800',
-                            targetValue: 800,
-                            violated: false,
-                          },
-                        ],
-                      },
-                    ],
-                    result: 'pass',
-                    score: 100,
-                    sloFileContent:
-                      'LS0tCnNwZWNfdmVyc2lvbjogIjEuMCIKY29tcGFyaXNvbjoKICBhZ2dyZWdhdGVfZnVuY3Rpb246ICJhdmciCiAgY29tcGFyZV93aXRoOiAic2luZ2xlX3Jlc3VsdCIKICBpbmNsdWRlX3Jlc3VsdF93aXRoX3Njb3JlOiAicGFzcyIKICBudW1iZXJfb2ZfY29tcGFyaXNvbl9yZXN1bHRzOiAxCmZpbHRlcjoKb2JqZWN0aXZlczoKICAtIHNsaTogInJlc3BvbnNlX3RpbWVfcDk1IgogICAgZGlzcGxheU5hbWU6ICJSZXNwb25zZSB0aW1lIFA5NSIKICAgIGtleV9zbGk6IGZhbHNlCiAgICBwYXNzOiAgICAgICAgICAgICAjIHBhc3MgaWYgKHJlbGF0aXZlIGNoYW5nZSA8PSAxMCUgQU5EIGFic29sdXRlIHZhbHVlIGlzIDwgNjAwbXMpCiAgICAgIC0gY3JpdGVyaWE6CiAgICAgICAgICAtICI8PSsxMCUiICAjIHJlbGF0aXZlIHZhbHVlcyByZXF1aXJlIGEgcHJlZml4ZWQgc2lnbiAocGx1cyBvciBtaW51cykKICAgICAgICAgIC0gIjw2MDAiICAgICMgYWJzb2x1dGUgdmFsdWVzIG9ubHkgcmVxdWlyZSBhIGxvZ2ljYWwgb3BlcmF0b3IKICAgIHdhcm5pbmc6ICAgICAgICAgICMgaWYgdGhlIHJlc3BvbnNlIHRpbWUgaXMgYmVsb3cgODAwbXMsIHRoZSByZXN1bHQgc2hvdWxkIGJlIGEgd2FybmluZwogICAgICAtIGNyaXRlcmlhOgogICAgICAgICAgLSAiPD04MDAiCiAgICB3ZWlnaHQ6IDEKdG90YWxfc2NvcmU6CiAgcGFzczogIjkwJSIKICB3YXJuaW5nOiAiNzUlIg==',
-                    timeEnd: '2021-10-13T10:53:29Z',
-                    timeStart: '2021-10-13T10:51:08Z',
-                  },
-                  labels: {
-                    DtCreds: 'dynatrace',
-                  },
-                  message: '',
-                  project: 'sockshop',
-                  release: {
-                    gitCommit: '',
-                  },
-                  result: 'pass',
-                  service: 'carts',
-                  stage: 'staging',
-                  status: 'succeeded',
-                  temporaryData: {
-                    distributor: {
-                      subscriptionID: '',
-                    },
-                  },
-                  test: {
-                    end: '2021-10-13T10:53:29Z',
-                    gitCommit: '',
-                    start: '2021-10-13T10:51:08Z',
+              data: {
+                approval: {
+                  pass: 'manual',
+                  warning: 'manual',
+                },
+                configurationChange: {
+                  values: {
+                    image: 'docker.io/keptnexamples/carts:0.12.1',
                   },
                 },
-                id: '93c2eba9-b77c-4976-b079-29a0188d86ef',
-                source: 'lighthouse-service',
-                specversion: '1.0',
-                time: '2021-10-13T10:54:43.112Z',
-                type: 'sh.keptn.event.evaluation.finished',
-                shkeptncontext: '2c0e568b-8bd3-4726-a188-e528423813ed',
-                shkeptnspecversion: '0.2.3',
-                triggeredid: '1cc9c272-721a-43de-98f6-9eceae484cf5',
-              },
-              trace: {
-                data: {
-                  approval: {
-                    pass: 'manual',
-                    warning: 'manual',
-                  },
-                  configurationChange: {
-                    values: {
-                      image: 'docker.io/keptnexamples/carts:0.12.1',
-                    },
-                  },
-                  deployment: {
-                    deploymentNames: ['canary', 'direct'],
-                    deploymentURIsLocal: ['http://carts.sockshop-staging:80'],
-                    deploymentURIsPublic: [
-                      'http://carts.sockshop-staging.35.192.209.116.nip.io:80',
-                      'http://carts.sockshop-dev.35.192.209.116.nip.io:80',
-                    ],
-                    deploymentstrategy: 'duplicate',
-                    gitCommit: 'eb081e26f037bf32797c37f59a55f9f411b6f17d',
-                  },
-                  evaluation: {
-                    comparedEvents: ['3344487d-e384-4cd9-a0e0-fcf157a33ad6'],
-                    gitCommit: '',
-                    indicatorResults: [
-                      {
-                        displayName: 'Response time P95',
-                        keySli: false,
-                        passTargets: [
-                          {
-                            criteria: '<=+10%',
-                            targetValue: 336.9946150194969,
-                            violated: false,
-                          },
-                          {
-                            criteria: '<600',
-                            targetValue: 600,
-                            violated: false,
-                          },
-                        ],
-                        score: 1,
-                        status: 'pass',
-                        value: {
-                          metric: 'response_time_p95',
-                          success: true,
-                          value: 304.2952915485157,
+                deployment: {
+                  deploymentNames: ['canary', 'direct'],
+                  deploymentURIsLocal: ['http://carts.sockshop-staging:80'],
+                  deploymentURIsPublic: [
+                    'http://carts.sockshop-staging.35.192.209.116.nip.io:80',
+                    'http://carts.sockshop-dev.35.192.209.116.nip.io:80',
+                  ],
+                  deploymentstrategy: 'duplicate',
+                  gitCommit: 'eb081e26f037bf32797c37f59a55f9f411b6f17d',
+                },
+                evaluation: {
+                  comparedEvents: ['3344487d-e384-4cd9-a0e0-fcf157a33ad6'],
+                  gitCommit: '',
+                  indicatorResults: [
+                    {
+                      displayName: 'Response time P95',
+                      keySli: false,
+                      passTargets: [
+                        {
+                          criteria: '<=+10%',
+                          targetValue: 336.9946150194969,
+                          violated: false,
                         },
-                        warningTargets: [
-                          {
-                            criteria: '<=800',
-                            targetValue: 800,
-                            violated: false,
-                          },
-                        ],
+                        {
+                          criteria: '<600',
+                          targetValue: 600,
+                          violated: false,
+                        },
+                      ],
+                      score: 1,
+                      status: 'pass',
+                      value: {
+                        metric: 'response_time_p95',
+                        success: true,
+                        value: 304.2952915485157,
                       },
-                    ],
-                    responses: ['Redirecting to https://keptn.sh/\n'],
-                    result: 'pass',
-                    score: 100,
-                    sloFileContent:
-                      'LS0tCnNwZWNfdmVyc2lvbjogIjEuMCIKY29tcGFyaXNvbjoKICBhZ2dyZWdhdGVfZnVuY3Rpb246ICJhdmciCiAgY29tcGFyZV93aXRoOiAic2luZ2xlX3Jlc3VsdCIKICBpbmNsdWRlX3Jlc3VsdF93aXRoX3Njb3JlOiAicGFzcyIKICBudW1iZXJfb2ZfY29tcGFyaXNvbl9yZXN1bHRzOiAxCmZpbHRlcjoKb2JqZWN0aXZlczoKICAtIHNsaTogInJlc3BvbnNlX3RpbWVfcDk1IgogICAgZGlzcGxheU5hbWU6ICJSZXNwb25zZSB0aW1lIFA5NSIKICAgIGtleV9zbGk6IGZhbHNlCiAgICBwYXNzOiAgICAgICAgICAgICAjIHBhc3MgaWYgKHJlbGF0aXZlIGNoYW5nZSA8PSAxMCUgQU5EIGFic29sdXRlIHZhbHVlIGlzIDwgNjAwbXMpCiAgICAgIC0gY3JpdGVyaWE6CiAgICAgICAgICAtICI8PSsxMCUiICAjIHJlbGF0aXZlIHZhbHVlcyByZXF1aXJlIGEgcHJlZml4ZWQgc2lnbiAocGx1cyBvciBtaW51cykKICAgICAgICAgIC0gIjw2MDAiICAgICMgYWJzb2x1dGUgdmFsdWVzIG9ubHkgcmVxdWlyZSBhIGxvZ2ljYWwgb3BlcmF0b3IKICAgIHdhcm5pbmc6ICAgICAgICAgICMgaWYgdGhlIHJlc3BvbnNlIHRpbWUgaXMgYmVsb3cgODAwbXMsIHRoZSByZXN1bHQgc2hvdWxkIGJlIGEgd2FybmluZwogICAgICAtIGNyaXRlcmlhOgogICAgICAgICAgLSAiPD04MDAiCiAgICB3ZWlnaHQ6IDEKdG90YWxfc2NvcmU6CiAgcGFzczogIjkwJSIKICB3YXJuaW5nOiAiNzUlIg==',
-                    timeEnd: '2021-10-13T10:53:29Z',
-                    timeStart: '2021-10-13T10:51:08Z',
-                  },
-                  labels: {
-                    DtCreds: 'dynatrace',
-                  },
-                  message: '',
-                  project: 'sockshop',
-                  release: {
-                    gitCommit: '',
-                  },
-                  result: 'pass',
-                  service: 'carts',
-                  stage: 'staging',
-                  status: 'succeeded',
-                  temporaryData: {
-                    distributor: {
-                      subscriptionID: '',
+                      warningTargets: [
+                        {
+                          criteria: '<=800',
+                          targetValue: 800,
+                          violated: false,
+                        },
+                      ],
                     },
-                  },
-                  test: {
-                    end: '2021-10-13T10:53:29Z',
-                    gitCommit: '',
-                    start: '2021-10-13T10:51:08Z',
+                  ],
+                  responses: ['Redirecting to https://keptn.sh/\n'],
+                  result: 'pass',
+                  score: 100,
+                  sloFileContent:
+                    'LS0tCnNwZWNfdmVyc2lvbjogIjEuMCIKY29tcGFyaXNvbjoKICBhZ2dyZWdhdGVfZnVuY3Rpb246ICJhdmciCiAgY29tcGFyZV93aXRoOiAic2luZ2xlX3Jlc3VsdCIKICBpbmNsdWRlX3Jlc3VsdF93aXRoX3Njb3JlOiAicGFzcyIKICBudW1iZXJfb2ZfY29tcGFyaXNvbl9yZXN1bHRzOiAxCmZpbHRlcjoKb2JqZWN0aXZlczoKICAtIHNsaTogInJlc3BvbnNlX3RpbWVfcDk1IgogICAgZGlzcGxheU5hbWU6ICJSZXNwb25zZSB0aW1lIFA5NSIKICAgIGtleV9zbGk6IGZhbHNlCiAgICBwYXNzOiAgICAgICAgICAgICAjIHBhc3MgaWYgKHJlbGF0aXZlIGNoYW5nZSA8PSAxMCUgQU5EIGFic29sdXRlIHZhbHVlIGlzIDwgNjAwbXMpCiAgICAgIC0gY3JpdGVyaWE6CiAgICAgICAgICAtICI8PSsxMCUiICAjIHJlbGF0aXZlIHZhbHVlcyByZXF1aXJlIGEgcHJlZml4ZWQgc2lnbiAocGx1cyBvciBtaW51cykKICAgICAgICAgIC0gIjw2MDAiICAgICMgYWJzb2x1dGUgdmFsdWVzIG9ubHkgcmVxdWlyZSBhIGxvZ2ljYWwgb3BlcmF0b3IKICAgIHdhcm5pbmc6ICAgICAgICAgICMgaWYgdGhlIHJlc3BvbnNlIHRpbWUgaXMgYmVsb3cgODAwbXMsIHRoZSByZXN1bHQgc2hvdWxkIGJlIGEgd2FybmluZwogICAgICAtIGNyaXRlcmlhOgogICAgICAgICAgLSAiPD04MDAiCiAgICB3ZWlnaHQ6IDEKdG90YWxfc2NvcmU6CiAgcGFzczogIjkwJSIKICB3YXJuaW5nOiAiNzUlIg==',
+                  timeEnd: '2021-10-13T10:53:29Z',
+                  timeStart: '2021-10-13T10:51:08Z',
+                },
+                labels: {
+                  DtCreds: 'dynatrace',
+                },
+                message: '',
+                project: 'sockshop',
+                release: {
+                  gitCommit: '',
+                },
+                result: 'pass',
+                service: 'carts',
+                stage: 'staging',
+                status: 'succeeded',
+                temporaryData: {
+                  distributor: {
+                    subscriptionID: '',
                   },
                 },
-                id: '7d93986c-37bb-41b0-8e97-2e8ee7eee6c0',
-                source: 'shipyard-controller',
-                specversion: '1.0',
-                time: '2021-10-13T10:54:43.311Z',
-                type: 'sh.keptn.event.approval.triggered',
-                shkeptncontext: '2c0e568b-8bd3-4726-a188-e528423813ed',
-                shkeptnspecversion: '0.2.3',
+                test: {
+                  end: '2021-10-13T10:53:29Z',
+                  gitCommit: '',
+                  start: '2021-10-13T10:51:08Z',
+                },
               },
+              id: '7d93986c-37bb-41b0-8e97-2e8ee7eee6c0',
+              source: 'shipyard-controller',
+              specversion: '1.0',
+              time: '2021-10-13T10:54:43.311Z',
+              type: 'sh.keptn.event.approval.triggered',
+              shkeptncontext: '2c0e568b-8bd3-4726-a188-e528423813ed',
+              shkeptnspecversion: '0.2.3',
             },
           ],
           creationDate: '1632999823491550948',
