@@ -4,7 +4,8 @@ import { DataService } from '../_services/data.service';
 import { of } from 'rxjs';
 import { KeptnInfo } from '../_models/keptn-info';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { POLLING_INTERVAL_MILLIS } from '../_utils/app.utils';
+import { ApiService } from '../_services/api.service';
+import { ApiServiceMock } from '../_services/api.service.mock';
 
 describe('DashboardLegacyComponent', () => {
   let component: DashboardLegacyComponent;
@@ -13,7 +14,7 @@ describe('DashboardLegacyComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [{ provide: POLLING_INTERVAL_MILLIS, useValue: 0 }],
+      providers: [{ provide: ApiService, useClass: ApiServiceMock }],
     }).compileComponents();
 
     dataService = TestBed.inject(DataService);
@@ -48,6 +49,25 @@ describe('DashboardLegacyComponent', () => {
 
     // then
     expect(loadProjectSpy).toHaveBeenCalled();
+  });
+
+  it('should load a maximum of 5 sequences per project', (done) => {
+    // given
+    dataService.loadKeptnInfo();
+    createComponent();
+    component.loadProjects();
+
+    // when
+    component.latestSequences$.subscribe((projectSequences) => {
+      if (Object.keys(projectSequences).length != 3) {
+        return;
+      }
+
+      // then
+      expect(Object.keys(projectSequences)).toEqual(['sockshop', 'sockshop-approve', 'sockshop-carts-db']);
+      expect(projectSequences.sockshop.length).toEqual(5);
+      done();
+    });
   });
 
   function createComponent(): void {

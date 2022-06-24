@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, Input, ViewEncapsulation } from '@a
 import { DtTableDataSource } from '@dynatrace/barista-components/table';
 import { DateUtil } from '../../_utils/date.utils';
 import { Sequence } from '../../_models/sequence';
-import { Project } from '../../_models/project';
 import { Router } from '@angular/router';
 
 @Component({
@@ -14,7 +13,6 @@ import { Router } from '@angular/router';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KtbSequenceStateListComponent {
-  @Input() project?: Project;
   private _sequenceStates: Sequence[] = [];
   public dataSource: DtTableDataSource<Sequence> = new DtTableDataSource();
   public SequenceClass = Sequence;
