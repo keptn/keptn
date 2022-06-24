@@ -4,6 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"net/http"
+	"net/http/httptest"
+	"reflect"
+	"testing"
+
 	"github.com/gin-gonic/gin"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/db"
@@ -12,10 +17,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"net/http"
-	"net/http/httptest"
-	"reflect"
-	"testing"
 )
 
 func TestUniformIntegrationHandler_GetRegistrations(t *testing.T) {
@@ -502,9 +503,6 @@ func TestUniformParamsValidator_Validate(t *testing.T) {
 				ID:       "an-id",
 				Name:     "webhook-service",
 				MetaData: apimodels.MetaData{},
-				Subscription: apimodels.Subscription{
-					Topics: []string{"mytopic"},
-				},
 				Subscriptions: []apimodels.EventSubscription{
 					{
 						ID:    "",

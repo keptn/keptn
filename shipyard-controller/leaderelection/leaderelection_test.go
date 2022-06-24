@@ -25,7 +25,7 @@ func Test_LeaderElection(t *testing.T) {
 
 	shipyard := &fake.IShipyardControllerMock{
 		StartDispatchersFunc: func(ctx context.Context, mode common.SDMode) {
-			time.After(5 * time.Second)
+			time.After(10 * time.Second)
 			close(onNewLeader)
 		},
 		StopDispatchersFunc: func() {

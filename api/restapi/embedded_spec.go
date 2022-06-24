@@ -77,6 +77,67 @@ func init() {
         }
       }
     },
+    "/import": {
+      "post": {
+        "description": "This API is still in alpha state and we do not recommend its usage outside of testing purposes",
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Import"
+        ],
+        "summary": "Alpha: Import a zip package",
+        "operationId": "import",
+        "parameters": [
+          {
+            "type": "file",
+            "description": "The ZIP configuration package.",
+            "name": "configPackage",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The project on which the configuration should be applied",
+            "name": "project",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "404": {
+            "description": "Project not found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "415": {
+            "description": "Unsupported media type",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "424": {
+            "description": "Failed Dependency",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
     "/metadata": {
       "get": {
         "tags": [
@@ -269,6 +330,67 @@ func init() {
           },
           "500": {
             "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/import": {
+      "post": {
+        "description": "This API is still in alpha state and we do not recommend its usage outside of testing purposes",
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Import"
+        ],
+        "summary": "Alpha: Import a zip package",
+        "operationId": "import",
+        "parameters": [
+          {
+            "type": "file",
+            "description": "The ZIP configuration package.",
+            "name": "configPackage",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The project on which the configuration should be applied",
+            "name": "project",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "404": {
+            "description": "Project not found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "415": {
+            "description": "Unsupported media type",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "424": {
+            "description": "Failed Dependency",
             "schema": {
               "$ref": "#/definitions/error"
             }
