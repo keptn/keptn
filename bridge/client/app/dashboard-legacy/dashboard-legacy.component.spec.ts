@@ -4,6 +4,7 @@ import { DataService } from '../_services/data.service';
 import { of } from 'rxjs';
 import { KeptnInfo } from '../_models/keptn-info';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { POLLING_INTERVAL_MILLIS } from '../_utils/app.utils';
 
 describe('DashboardLegacyComponent', () => {
   let component: DashboardLegacyComponent;
@@ -12,7 +13,7 @@ describe('DashboardLegacyComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [],
+      providers: [{ provide: POLLING_INTERVAL_MILLIS, useValue: 0 }],
     }).compileComponents();
 
     dataService = TestBed.inject(DataService);
@@ -50,6 +51,6 @@ describe('DashboardLegacyComponent', () => {
   });
 
   function createComponent(): void {
-    component = new DashboardLegacyComponent(dataService);
+    component = new DashboardLegacyComponent(dataService, 0);
   }
 });

@@ -5,6 +5,11 @@
     fxFlex.lt-sm="100%"
     *ngFor="let project of projects"
   >
-    <ktb-project-tile fxFlexFill [project]="project"></ktb-project-tile>
+    <ktb-project-tile
+      fxFlexFill
+      [project]="project"
+      [sequences]="getSequencesPerProject(project)"
+      [supportedShipyardVersion]="getShipyardversion()"
+    ></ktb-project-tile>
   </div>
 </div>
