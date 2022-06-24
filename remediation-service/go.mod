@@ -4,8 +4,8 @@ go 1.18
 
 require (
 	github.com/ghodss/yaml v1.0.0
-	github.com/keptn/go-utils v0.16.1
-	github.com/keptn/keptn/go-sdk v0.0.0-20220624120127-87cc79834333
+	github.com/keptn/go-utils v0.16.1-0.20220624075633-4d49101f88b4
+	github.com/keptn/keptn/go-sdk v0.0.0-20220624124934-adc989bafa78
 	github.com/sirupsen/logrus v1.8.1
 )
 
@@ -22,7 +22,7 @@ require (
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0 // indirect
 	github.com/keptn/keptn/cp-common v0.0.0-20220624104257-7f99ff1436c7 // indirect
-	github.com/keptn/keptn/cp-connector v0.0.0-20220624090155-e031b2f0c7c8 // indirect
+	github.com/keptn/keptn/cp-connector v0.0.0-20220624123322-a205084e713e // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/nats-io/nats.go v1.16.0 // indirect
