@@ -20,7 +20,7 @@ spec:
       {{- include "keptn.common.pod-security-context" . | nindent 6 }}
       containers:
         - name: remediation-service
-          image: {{ include "service.image" ( dict "imageRoot" .Values.remediationService.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
+          image: {{ include "common.images.image" ( dict "imageRoot" .Values.remediationService.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
           {{- $prestop := .Values.remediationService.preStopHookTime | default 5 | quote -}}
           {{- include "keptn.prestop" $prestop | nindent 10 }}
           imagePullPolicy: IfNotPresent
