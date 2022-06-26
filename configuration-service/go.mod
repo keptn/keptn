@@ -11,7 +11,7 @@ require (
 	github.com/go-openapi/swag v0.21.1
 	github.com/go-openapi/validate v0.21.0
 	github.com/jessevdk/go-flags v1.5.0
-	github.com/keptn/go-utils v0.16.1-0.20220624075633-4d49101f88b4
+	github.com/keptn/go-utils v0.16.1-0.20220626145513-c45e9e71d0e9
 	github.com/mholt/archiver/v3 v3.5.1
 	github.com/otiai10/copy v1.7.0
 	github.com/sirupsen/logrus v1.8.1

@@ -634,8 +634,8 @@ github.com/karrick/godirwalk v1.16.1 h1:DynhcF+bztK8gooS0+NDJFrdNZjJ3gzVzC545UNA
 github.com/karrick/godirwalk v1.16.1/go.mod h1:j4mkqPuvaLI8mp1DroR3P6ad7cyYd4c1qeJ3RV7ULlk=
 github.com/kelseyhightower/envconfig v1.4.0 h1:Im6hONhd3pLkfDFsbRgu68RDNkGF1r3dvMUtDTo2cv8=
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
-github.com/keptn/go-utils v0.16.1-0.20220624075633-4d49101f88b4 h1:1htD2/i/FXF/KBBYG8r8riGRA8Byy2ltgbjPfVlDxdo=
-github.com/keptn/go-utils v0.16.1-0.20220624075633-4d49101f88b4/go.mod h1:cf/7GCpSzJdCNFLPf/UbFlNrv12s8sPCUmPN7SHYsw0=
+github.com/keptn/go-utils v0.16.1-0.20220626145513-c45e9e71d0e9 h1:Y4GxxAkKMJu56wliFOqeDv4CnPb7lwkES3zeoxjZf/Q=
+github.com/keptn/go-utils v0.16.1-0.20220626145513-c45e9e71d0e9/go.mod h1:cf/7GCpSzJdCNFLPf/UbFlNrv12s8sPCUmPN7SHYsw0=
 github.com/kinbiko/jsonassert v1.1.0 h1:AakKgkRFsuzE1FNLYrcxTI7ga5YYcbujOUbSf8l+WmU=
 github.com/kinbiko/jsonassert v1.1.0/go.mod h1:QRwBwiAsrcJpjw+L+Q4WS8psLxuUY+HylVZS/4j74TM=
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=
