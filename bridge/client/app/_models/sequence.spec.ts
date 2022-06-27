@@ -4,7 +4,7 @@ import {
   SequenceResponseWithDevAndStagingMock,
   SequenceResponseWithoutFailing,
 } from '../_services/_mockData/sequences.mock';
-import { SequenceState } from '../../../shared/models/sequence';
+import { SequenceState } from '../../../shared/interfaces/sequence';
 import { EvaluationTraceResponse } from '../_services/_mockData/evaluations.mock';
 import { Trace } from './trace';
 import { EventState } from '../../../shared/models/event-state';

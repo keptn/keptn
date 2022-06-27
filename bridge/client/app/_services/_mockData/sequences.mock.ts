@@ -1,5 +1,5 @@
 import { Sequence } from '../../_models/sequence';
-import { SequenceState } from '../../../../shared/models/sequence';
+import { SequenceState } from '../../../../shared/interfaces/sequence';
 import { ResultTypes } from '../../../../shared/models/result-types';
 
 const deliveryWithDevAndStaging = {

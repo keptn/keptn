@@ -1,19 +1,19 @@
-import { EvaluationResult } from '../interfaces/evaluation-result';
+import { EvaluationResult } from './evaluation-result';
 
-export type SequenceEvent = {
+export interface SequenceEvent {
   id: string;
   time: string;
   type: string;
-};
+}
 
-export type SequenceStage = {
+export interface SequenceStage {
   image?: string;
   latestEvaluation?: EvaluationResult;
   latestEvent?: SequenceEvent;
   latestFailedEvent?: SequenceEvent;
   state: SequenceState;
   name: string;
-};
+}
 
 export enum SequenceState {
   TRIGGERED = 'triggered',
@@ -33,13 +33,13 @@ export enum SequenceStateControl {
   RESUME = 'resume',
 }
 
-export class Sequence {
-  name!: string;
-  project!: string;
-  service!: string;
-  shkeptncontext!: string;
-  stages!: SequenceStage[];
-  state!: SequenceState;
-  time!: string;
+export interface ISequence {
+  name: string;
+  project: string;
+  service: string;
+  shkeptncontext: string;
+  stages: SequenceStage[];
+  state: SequenceState;
+  time: string;
   problemTitle?: string;
 }

@@ -1,7 +1,13 @@
-import { Sequence as sq, SequenceStage } from '../../shared/models/sequence';
+import { ISequence, SequenceStage, SequenceState } from '../../shared/interfaces/sequence';
 import { Trace } from '../../shared/models/trace';
 
-export class Sequence extends sq {
+export class Sequence implements ISequence {
+  name!: string;
+  project!: string;
+  service!: string;
+  shkeptncontext!: string;
+  state!: SequenceState;
+  time!: string;
   stages!: (SequenceStage & {
     latestEvaluationTrace?: Trace;
   })[];
