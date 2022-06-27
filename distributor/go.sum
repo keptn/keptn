@@ -133,8 +133,8 @@ github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024/go.mod h1
 github.com/jstemmer/go-junit-report v0.9.1/go.mod h1:Brl9GWCQeLvo8nXZwPNNblvFj/XSXhF0NWZEnDohbsk=
 github.com/kelseyhightower/envconfig v1.4.0 h1:Im6hONhd3pLkfDFsbRgu68RDNkGF1r3dvMUtDTo2cv8=
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
-github.com/keptn/go-utils v0.16.1-0.20220624075633-4d49101f88b4 h1:1htD2/i/FXF/KBBYG8r8riGRA8Byy2ltgbjPfVlDxdo=
-github.com/keptn/go-utils v0.16.1-0.20220624075633-4d49101f88b4/go.mod h1:cf/7GCpSzJdCNFLPf/UbFlNrv12s8sPCUmPN7SHYsw0=
+github.com/keptn/go-utils v0.16.1-0.20220627120041-8d145bc90294 h1:0BENiI6fZZtP5tmfj2DX7efrLtcRf1Blv2td8v511Vo=
+github.com/keptn/go-utils v0.16.1-0.20220627120041-8d145bc90294/go.mod h1:pndlhm9bbffAW1TlqsmE487TTZBqQojUL+dCtxhjwU8=
 github.com/keptn/keptn/cp-common v0.0.0-20220624100411-1ff24aabc440 h1:PgZOu4U7N0UAKm4obRMTZF2UsOdUxRDAz5y2j+GzkY0=
 github.com/keptn/keptn/cp-common v0.0.0-20220624100411-1ff24aabc440/go.mod h1:EQ81AeZGx/NGDkWyqQlyYmUQHorEhAiVr16kmMdAcm8=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
