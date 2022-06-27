@@ -7,9 +7,8 @@ require (
 	github.com/go-test/deep v1.0.8
 	github.com/google/uuid v1.3.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.16.1-0.20220624075633-4d49101f88b4
+	github.com/keptn/go-utils v0.16.1-0.20220627123527-16a3f814dbc1
 	github.com/keptn/keptn/cp-common v0.0.0-20220624104257-7f99ff1436c7
-	github.com/keptn/keptn/cp-connector v0.0.0-20220624123322-a205084e713e
 	github.com/nats-io/nats-server/v2 v2.8.4
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.8.1
@@ -60,7 +59,7 @@ require (
 	go.uber.org/zap v1.19.0 // indirect
 	golang.org/x/crypto v0.0.0-20220315160706-3147a52a75dd // indirect
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
-	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
+	golang.org/x/oauth2 v0.0.0-20220608161450-d0670ef3b1eb // indirect
 	golang.org/x/sys v0.0.0-20220209214540-3681064d5158 // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/text v0.3.7 // indirect

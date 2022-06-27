@@ -9,7 +9,7 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/cp-connector/pkg/nats"
+	"github.com/keptn/go-utils/pkg/sdk/connector/nats"
 
 	logger "github.com/sirupsen/logrus"
 

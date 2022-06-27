@@ -3,7 +3,7 @@ package api
 import (
 	"fmt"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	"github.com/keptn/keptn/cp-common/api"
+	api "github.com/keptn/go-utils/pkg/common/apiutils"
 	"github.com/keptn/keptn/distributor/pkg/config"
 	"net/http"
 	"net/url"
