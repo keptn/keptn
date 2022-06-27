@@ -6,6 +6,8 @@ import { KeptnInfo } from '../_models/keptn-info';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ApiService } from '../_services/api.service';
 import { ApiServiceMock } from '../_services/api.service.mock';
+import { finalize, take } from 'rxjs/operators';
+import { ProjectSequences } from '../_components/ktb-project-list/ktb-project-list.component';
 
 describe('DashboardLegacyComponent', () => {
   let component: DashboardLegacyComponent;
@@ -56,18 +58,32 @@ describe('DashboardLegacyComponent', () => {
     dataService.loadKeptnInfo();
     createComponent();
     component.loadProjects();
+    const emitTimes = 3;
+    let emitted = 0;
 
-    // when
-    component.latestSequences$.subscribe((projectSequences) => {
-      if (Object.keys(projectSequences).length != 3) {
+    // then
+    const checkEmittedValues = (projectSequences: ProjectSequences): void => {
+      emitted++;
+      // For every project the last sequences are loaded lazy time by time
+      // So the record is growing by one each emit
+      expect(Object.keys(projectSequences).length).toBe(emitted);
+      if (emitted != emitTimes) {
         return;
       }
-
-      // then
+      // Final assertion on the record
       expect(Object.keys(projectSequences)).toEqual(['sockshop', 'sockshop-approve', 'sockshop-carts-db']);
       expect(projectSequences.sockshop.length).toEqual(5);
-      done();
-    });
+      expect(projectSequences['sockshop-approve'].length).toEqual(5);
+      expect(projectSequences['sockshop-carts-db'].length).toEqual(5);
+    };
+
+    // when
+    component.latestSequences$
+      .pipe(
+        take(emitTimes),
+        finalize(() => done())
+      )
+      .subscribe(checkEmittedValues);
   });
 
   function createComponent(): void {
