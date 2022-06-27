@@ -1,4 +1,4 @@
-package httpeventsource
+package http
 
 import (
 	"github.com/stretchr/testify/assert"

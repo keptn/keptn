@@ -1,11 +1,11 @@
-package httpeventsource
+package http
 
 import (
 	"fmt"
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/common/strutils"
-	"github.com/keptn/keptn/cp-connector/pkg/eventsource/httpeventsource/fake"
+	"github.com/keptn/keptn/cp-connector/pkg/eventsource/http/fake"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"

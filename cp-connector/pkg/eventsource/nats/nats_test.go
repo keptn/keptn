@@ -1,4 +1,4 @@
-package eventsource
+package nats
 
 import (
 	"context"

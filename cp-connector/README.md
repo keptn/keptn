@@ -5,13 +5,15 @@
 ## Example
 
 ```go
+package main
+
 import (
 	"context"
 	"github.com/benbjohnson/clock"
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
-	"github.com/keptn/keptn/cp-connector/pkg/eventsource/httpeventsource"
+	"github.com/keptn/keptn/cp-connector/pkg/eventsource/http"
 	"github.com/keptn/keptn/cp-connector/pkg/logforwarder"
 	"github.com/keptn/keptn/cp-connector/pkg/subscriptionsource"
 	"github.com/keptn/keptn/cp-connector/pkg/types"
@@ -42,7 +44,7 @@ func main() {
 
 	// 2. create a subscription, event source and log forwarder
 	subscriptionSource := subscriptionsource.New(keptnAPI.UniformV1(), subscriptionsource.WithLogger(logger))
-	eventSource := httpeventsource.New(clock.New(), httpeventsource.NewEventAPI(keptnAPI.ShipyardControlV1(), keptnAPI.APIV1()))
+	eventSource := http.New(clock.New(), http.NewEventAPI(keptnAPI.ShipyardControlV1(), keptnAPI.APIV1()))
 	logForwarder := logforwarder.New(keptnAPI.LogsV1())
 
 	// 3. create control plane and start it
@@ -83,5 +85,4 @@ func (e LocalService) RegistrationData() types.RegistrationData {
 		},
 	}
 }
-
 ```

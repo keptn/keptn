@@ -2,12 +2,11 @@ module github.com/keptn/keptn/cp-connector
 
 go 1.18
 
-require github.com/keptn/go-utils v0.16.1
-
 require (
 	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/benbjohnson/clock v1.3.0
 	github.com/google/uuid v1.3.0
+	github.com/keptn/go-utils v0.16.1
 	github.com/nats-io/nats-server/v2 v2.8.4
 	github.com/nats-io/nats.go v1.15.0
 	github.com/stretchr/testify v1.7.1

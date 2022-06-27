@@ -1,4 +1,4 @@
-package httpeventsource
+package http
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/common/strutils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/cp-connector/pkg/eventsource/httpeventsource/fake"
+	"github.com/keptn/keptn/cp-connector/pkg/eventsource/http/fake"
 	"github.com/keptn/keptn/cp-connector/pkg/types"
 	"github.com/stretchr/testify/require"
 	"sync"
