@@ -32,7 +32,7 @@ spec:
           {{- if .Values.image }}
           image: {{ .Values.image }} # use image from .Values.image (e.g., when starting via skaffold)
           {{- else }}
-          image: {{ include "common.images.image" ( dict "imageRoot" .Values.jmeterservice.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
+          image: {{ include "common.images.image" ( dict "imageRoot" .Values.jmeterservice.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote }}
           {{- end }}
           imagePullPolicy: {{ .Values.jmeterservice.image.pullPolicy }}
           ports:
@@ -59,7 +59,7 @@ spec:
           resources:
             {{- toYaml .Values.jmeterservice.resources | nindent 12 }}
         - name: distributor
-          image: {{ include "common.images.image" ( dict "imageRoot" .Values.distributor.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) }}
+          image: {{ include "common.images.image" ( dict "imageRoot" .Values.distributor.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote }}
           {{- include "jmeter-service.prestop" . | nindent 10 }}
           livenessProbe:
             httpGet:

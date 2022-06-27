@@ -11,16 +11,16 @@ The following table lists the configurable parameters of the Helm-service chart 
 
 | Parameter                | Description             | Default       |
 | ------------------------ | ----------------------- | ------------- |
-| `global.keptn.registry` | Container repository/registry name. Will be set at all services. | `"docker.io/keptn/"` |
-| `global.keptn.tag` | Container tag. Will be set at all services. | `""` |
-| `helmservice.image.registry` | Container image name | `"global.keptn.image.repository/helm-service"` |
+| `global.keptn.registry` | Container repository/registry name. Will be set for all services. | `"docker.io/keptn/"` |
+| `global.keptn.tag` | Container tag. Will be set for all services. | `""` |
+| `helmservice.image.registry` | Container image name | `"${global.keptn.image.registry}/helm-service"` |
 | `helmservice.image.pullPolicy` | Kubernetes image pull policy | `"IfNotPresent"` |
 | `helmservice.image.tag` | Container tag | `global.keptn.image.tag` |
 | `helmservice.service.enabled` | Creates a kubernetes service for the helm-service | `true` |
 | `distributor.stageFilter` | Sets the stage this helm service belongs to | `""` |
 | `distributor.serviceFilter` | Sets the service this helm service belongs to | `""` |
 | `distributor.projectFilter` | Sets the project this helm service belongs to | `""` |
-| `distributor.image.registry` | Container image name | `"global.keptn.image.repository/distributor"` |
+| `distributor.image.registry` | Container image name | `"${global.keptn.image.registry}/distributor"` |
 | `distributor.image.pullPolicy` | Kubernetes image pull policy | `"IfNotPresent"` |
 | `distributor.image.tag` | Container tag | `global.keptn.image.tag` |
 | `remoteControlPlane.enabled` | Enables remote execution plane mode | `false` |
