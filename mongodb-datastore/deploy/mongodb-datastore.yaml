@@ -64,8 +64,6 @@ spec:
         - name: K8S_NAMESPACE
           value: keptn
         - name: K8S_DEPLOYMENT_NAME
-          value: keptn
-        - name: K8S_DEPLOYMENT_COMPONENT
           value: mongodb-datastore
         - name: K8S_NODE_NAME
           valueFrom:
