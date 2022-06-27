@@ -199,7 +199,7 @@ jobs:
             helm repo add keptndev "https://charts-dev.keptn.sh"
             helm repo update
           
-            if [[ ${{ github.event.inputs.upgradeTo }} == *"-dev"* ]]; then
+            if [[ "${{ github.event.inputs.upgradeTo }}" == *"-dev"* ]]; then
                helm pull keptndev/keptn --version ${{ github.event.inputs.upgradeTo }}
             else
                helm pull keptn/keptn --version ${{ github.event.inputs.upgradeTo }}
