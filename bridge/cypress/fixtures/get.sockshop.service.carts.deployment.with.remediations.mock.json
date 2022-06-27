@@ -14,34 +14,35 @@
           "service": "carts",
           "shkeptncontext": "abc",
           "stages": [
-            {"actions": [
-              {
-                "action": "my Action",
-                "description": "Action description",
-                "name": "Action",
-                "state": "finished",
-                "result": "pass"
+            {
+              "actions": [
+                {
+                  "action": "my Action",
+                  "description": "Action description",
+                  "name": "Action",
+                  "state": "finished",
+                  "result": "pass"
+                },
+                {
+                  "action": "my Action2",
+                  "description": "Action2 description",
+                  "name": "Action2",
+                  "state": "triggered"
+                }
+              ],
+              "image": "string",
+              "latestEvent": {
+                "id": "my-id2",
+                "time": "2022-02-09T09:30:08.057Z",
+                "type": "sh.keptn.event.action.triggered"
               },
-              {
-                "action": "my Action2",
-                "description": "Action2 description",
-                "name": "Action2",
-                "state": "triggered"
-              }
-            ],
-            "image": "string",
-            "latestEvent": {
-              "id": "my-id2",
-              "time": "2022-02-09T09:30:08.057Z",
-              "type": "sh.keptn.event.action.triggered"
-            },
-            "latestFailedEvent": {
-              "id": "my-id",
-              "time": "2022-02-09T09:30:08.057Z",
-              "type": "sh.keptn.event.action.triggered"
-            },
-            "state": "triggered",
-            "name": "dev"
+              "latestFailedEvent": {
+                "id": "my-id",
+                "time": "2022-02-09T09:30:08.057Z",
+                "type": "sh.keptn.event.action.triggered"
+              },
+              "state": "triggered",
+              "name": "dev"
             }
           ],
           "state": "triggered",
