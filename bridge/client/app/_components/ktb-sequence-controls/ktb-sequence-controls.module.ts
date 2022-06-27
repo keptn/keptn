@@ -6,6 +6,7 @@ import { DtButtonModule } from '@dynatrace/barista-components/button';
 import { DtIconModule } from '@dynatrace/barista-components/icon';
 import { KtbSequenceControlsComponent } from './ktb-sequence-controls.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { KtbConfirmationDialogModule } from '../_dialogs/ktb-confirmation-dialog/ktb-confirmation-dialog.module';
 
 @NgModule({
   declarations: [KtbSequenceControlsComponent],
@@ -18,6 +19,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
       svgIconLocation: `assets/icons/{{name}}.svg`,
     }),
     DtButtonModule,
+    KtbConfirmationDialogModule,
   ],
   exports: [KtbSequenceControlsComponent],
 })
