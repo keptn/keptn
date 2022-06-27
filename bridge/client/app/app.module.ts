@@ -65,7 +65,6 @@ import { KtbEventItemModule } from './_components/ktb-event-item/ktb-event-item.
 import { KtbExpandableTileModule } from './_components/ktb-expandable-tile/ktb-expandable-tile.module';
 import { KtbHeatmapModule } from './_components/ktb-heatmap/ktb-heatmap.module';
 import { KtbLoadingModule } from './_components/ktb-loading/ktb-loading.module';
-import { KtbMarkdownComponent } from './_components/ktb-markdown/ktb-markdown.component';
 import { KtbNotificationModule } from './_components/ktb-notification/ktb-notification.module';
 import { KtbProjectListModule } from './_components/ktb-project-list/ktb-project-list.module';
 import { KtbProjectSettingsModule } from './_components/ktb-project-settings/ktb-project-settings.module';
@@ -249,7 +248,6 @@ const ktbModules = [
     KtbServiceViewComponent,
     KtbShowHttpLoadingDirective,
     KtbHideHttpLoadingDirective,
-    KtbMarkdownComponent,
     KtbEnvironmentViewComponent,
     KtbIntegrationViewComponent,
     KtbSettingsViewComponent,

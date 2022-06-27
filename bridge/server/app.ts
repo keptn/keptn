@@ -78,11 +78,6 @@ async function init(): Promise<Express> {
     cliDownloadLink = 'https://github.com/keptn/keptn/releases';
   }
 
-  if (!integrationsPageLink) {
-    log.warning('Integrations page Link was not provided, defaulting to get.keptn.sh/integrations.html');
-    integrationsPageLink = 'https://get.keptn.sh/integrations.html';
-  }
-
   // UI static files - Angular application
   app.use(
     express.static(join(rootFolder, 'dist'), {
@@ -123,7 +118,6 @@ async function init(): Promise<Express> {
       apiUrl,
       apiToken,
       cliDownloadLink,
-      integrationsPageLink,
       authType,
       clientFeatureFlags,
       session,
