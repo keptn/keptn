@@ -9,16 +9,17 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"github.com/benbjohnson/clock"
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
-	"github.com/keptn/keptn/cp-connector/pkg/eventsource"
+	"github.com/keptn/keptn/cp-connector/pkg/eventsource/http"
 	"github.com/keptn/keptn/cp-connector/pkg/logforwarder"
-	"github.com/keptn/keptn/cp-connector/pkg/nats"
 	"github.com/keptn/keptn/cp-connector/pkg/subscriptionsource"
 	"github.com/keptn/keptn/cp-connector/pkg/types"
+	"github.com/sirupsen/logrus"
 	"log"
+	"time"
 )
 
 const (
@@ -27,10 +28,13 @@ const (
 )
 
 func main() {
-
 	if Endpoint == "" || Token == "" {
 		log.Fatal("Please set Keptn API endpoint and API Token to use this example")
 	}
+
+	// Create your favorite logger (e.g. logrus)
+	logger := logrus.New()
+	logger.SetLevel(logrus.DebugLevel)
 
 	// 1. create keptn client
 	keptnAPI, err := api.New(Endpoint, api.WithAuthToken(Token))
@@ -38,29 +42,14 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// 2. create a subscription source
-	subscriptionSource := subscriptionsource.New(keptnAPI.UniformV1())
-	
-	// 3. create an event source (either NATS of HTTP,...)
-	natsConnector:= nats.New("nats://localhost:4222")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	eventSource := eventsource.New(natsConnector)
-	
-	// inject your favourite logger as follows
-	// eventsource.WithLogger(mylogger) 
-	// or  eventsource.New(natsConnector, eventsource.WithLogger(mylogger))
-	
-	
+	// 2. create a subscription, event source and log forwarder
+	subscriptionSource := subscriptionsource.New(keptnAPI.UniformV1(), subscriptionsource.WithLogger(logger))
+	eventSource := http.New(clock.New(), http.NewEventAPI(keptnAPI.ShipyardControlV1(), keptnAPI.APIV1()))
 	logForwarder := logforwarder.New(keptnAPI.LogsV1())
 
-	// 4. create control plane object and register yourself as an "integration"
-	//NOTE: if log forwarding is not needed in your service, pass `nil` instead of the `logForwarder`
-	controlPlane := controlplane.New(subscriptionSource, eventSource, logForwarder)
-	err = controlPlane.Register(context.TODO(), LocalService{})
-	if err != nil {
+	// 3. create control plane and start it
+	controlPlane := controlplane.New(subscriptionSource, eventSource, logForwarder, controlplane.WithLogger(logger))
+	if err := controlplane.RunWithGracefulShutdown(controlPlane, LocalService{}, time.Second*10); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -69,11 +58,12 @@ func main() {
 type LocalService struct{}
 
 func (e LocalService) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE) error {
-	fmt.Println("Got an event: " + *event.Type + " :)")
-
+	// handle the event and grab a sender to send back started / finished events to keptn
+	// sendEvent := ctx.Value(controlplane.EventSenderKeyType{}).(types.EventSender)
 	return nil
 }
 
+// RegistrationData is used for initial registration to the Keptn control plane
 func (e LocalService) RegistrationData() types.RegistrationData {
 	return types.RegistrationData{
 		Name: "local-service",
@@ -88,8 +78,11 @@ func (e LocalService) RegistrationData() types.RegistrationData {
 				DeploymentName: "wuppi",
 			},
 		},
-		Subscriptions: []models.EventSubscription{},
+		Subscriptions: []models.EventSubscription{
+			{
+				Event: "sh.keptn.event.echo.triggered", // intitially subscribe to an event
+			},
+		},
 	}
 }
-
 ```
