@@ -6,7 +6,7 @@ import { KeptnInfo } from '../_models/keptn-info';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ApiService } from '../_services/api.service';
 import { ApiServiceMock } from '../_services/api.service.mock';
-import { finalize, take } from 'rxjs/operators';
+import { finalize, skip, take } from 'rxjs/operators';
 import { ProjectSequences } from '../_components/ktb-project-list/ktb-project-list.component';
 
 describe('DashboardLegacyComponent', () => {
@@ -53,7 +53,7 @@ describe('DashboardLegacyComponent', () => {
     expect(loadProjectSpy).toHaveBeenCalled();
   });
 
-  it('should load a maximum of 5 sequences per project', (done) => {
+  it('should load sequences one after another', (done) => {
     // given
     dataService.loadKeptnInfo();
     createComponent();
@@ -61,29 +61,35 @@ describe('DashboardLegacyComponent', () => {
     const emitTimes = 3;
     let emitted = 0;
 
-    // then
-    const checkEmittedValues = (projectSequences: ProjectSequences): void => {
-      emitted++;
-      // For every project the last sequences are loaded lazy time by time
-      // So the record is growing by one each emit
-      expect(Object.keys(projectSequences).length).toBe(emitted);
-      if (emitted != emitTimes) {
-        return;
-      }
-      // Final assertion on the record
-      expect(Object.keys(projectSequences)).toEqual(['sockshop', 'sockshop-approve', 'sockshop-carts-db']);
-      expect(projectSequences.sockshop.length).toEqual(5);
-      expect(projectSequences['sockshop-approve'].length).toEqual(5);
-      expect(projectSequences['sockshop-carts-db'].length).toEqual(5);
-    };
+    // when
+    component.latestSequences$
+      .pipe(take(emitTimes), finalize(done))
+      .subscribe((projectSequences: ProjectSequences): void => {
+        emitted++;
+        // then
+        // For every project the last sequences are loaded lazy time by time
+        // So the record is growing by one each emit
+        expect(Object.keys(projectSequences).length).toBe(emitted);
+        expect(emitted).toBeLessThanOrEqual(emitTimes);
+      });
+  });
+
+  it('should create a reacord with all sequences for projects', (done) => {
+    // given
+    dataService.loadKeptnInfo();
+    createComponent();
+    component.loadProjects();
 
     // when
     component.latestSequences$
-      .pipe(
-        take(emitTimes),
-        finalize(() => done())
-      )
-      .subscribe(checkEmittedValues);
+      .pipe(skip(2), take(1), finalize(done))
+      .subscribe((projectSequences: ProjectSequences): void => {
+        // then
+        expect(Object.keys(projectSequences)).toEqual(['sockshop', 'sockshop-approve', 'sockshop-carts-db']);
+        expect(projectSequences.sockshop.length).toEqual(5);
+        expect(projectSequences['sockshop-approve'].length).toEqual(5);
+        expect(projectSequences['sockshop-carts-db'].length).toEqual(5);
+      });
   });
 
   function createComponent(): void {
