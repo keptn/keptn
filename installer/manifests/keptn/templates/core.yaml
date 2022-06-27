@@ -37,7 +37,7 @@ kind: Secret
 metadata:
   name: keptn-api-token
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/component: {{ include "keptn.name" . }}
+    app.kubernetes.io/name: {{ include "keptn.name" . }}
 type: Opaque
 data:
   keptn-api-token: {{ $apiToken }}
@@ -49,7 +49,7 @@ kind: Secret
 metadata:
   name: bridge-credentials
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/component: bridge
+    app.kubernetes.io/name: bridge
 type: Opaque
 data:
   BASIC_AUTH_USERNAME: {{ "keptn" | b64enc | quote }}
@@ -61,7 +61,7 @@ kind: Secret
 metadata:
   name: bridge-oauth
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/component: bridge
+    app.kubernetes.io/name: bridge
 type: Opaque
 data:
   session_secret: {{ $bridgeSessionSecret }}
@@ -72,7 +72,7 @@ kind: Secret
 metadata:
   name: bridge-oauth-mongodb-credentials
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/component: bridge
+    app.kubernetes.io/name: bridge
 type: Opaque
 data:
   external_connection_string: {{ $bridgeMongoConnectionString }}
@@ -83,16 +83,16 @@ kind: Deployment
 metadata:
   name: bridge
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/component: bridge
+    app.kubernetes.io/name: bridge
 spec:
   selector:
     matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: bridge
+      app.kubernetes.io/name: bridge
   replicas: 1
   template:
     metadata:
       labels: {{- include "common.labels.standard" . | nindent 8 }}
-        app.kubernetes.io/component: bridge
+        app.kubernetes.io/name: bridge
     spec:
       {{- include "keptn.bridge.pod-security-context" . | nindent 6 }}
       containers:

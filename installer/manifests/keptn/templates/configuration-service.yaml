@@ -4,9 +4,9 @@ metadata:
   name: configuration-service
   labels: {{- include "common.labels.standard" . | nindent 4 }}
     {{- if .Values.resourceService.enabled }}
-    app.kubernetes.io/component: resource-service
+    app.kubernetes.io/name: resource-service
     {{- else }}
-    app.kubernetes.io/component: configuration-service
+    app.kubernetes.io/name: configuration-service
     {{- end }}
 spec:
   ports:
@@ -15,9 +15,9 @@ spec:
       protocol: TCP
   selector: {{- include "common.labels.selectorLabels" . | nindent 4 }}
     {{- if .Values.resourceService.enabled }}
-    app.kubernetes.io/component: resource-service
+    app.kubernetes.io/name: resource-service
     {{- else }}
-    app.kubernetes.io/component: configuration-service
+    app.kubernetes.io/name: configuration-service
     {{- end }}
 ---
 # resource-service
@@ -27,17 +27,17 @@ kind: Deployment
 metadata:
   name: resource-service
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/component: resource-service
+    app.kubernetes.io/name: resource-service
 spec:
   selector:
     matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: resource-service
+      app.kubernetes.io/name: resource-service
   replicas: {{ .Values.resourceService.replicas }}
   {{- include "keptn.common.update-strategy" . | nindent 2 }}
   template:
     metadata:
       labels: {{- include "common.labels.standard" . | nindent 8 }}
-        app.kubernetes.io/component: resource-service
+        app.kubernetes.io/name: resource-service
     spec:
       securityContext:
         fsGroup: {{ .Values.configurationService.fsGroup | default 1001 }}
@@ -111,9 +111,9 @@ metadata:
   name: configuration-volume
   labels: {{- include "common.labels.standard" . | nindent 4 }}
     {{- if .Values.resourceService.enabled }}
-    app.kubernetes.io/component: resource-service
+    app.kubernetes.io/name: resource-service
     {{- else }}
-    app.kubernetes.io/component: configuration-service
+    app.kubernetes.io/name: configuration-service
     {{- end }}
 spec:
   accessModes:
@@ -130,18 +130,18 @@ kind: Deployment
 metadata:
   name: configuration-service
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/component: configuration-service
+    app.kubernetes.io/name: configuration-service
 spec:
   selector:
     matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: configuration-service
+      app.kubernetes.io/name: configuration-service
   replicas: 1
   strategy:
     type: Recreate
   template:
     metadata:
       labels: {{- include "common.labels.standard" . | nindent 8 }}
-        app.kubernetes.io/component: configuration-service
+        app.kubernetes.io/name: configuration-service
     spec:
       securityContext:
         fsGroup: {{ .Values.configurationService.fsGroup | default 1001 }}

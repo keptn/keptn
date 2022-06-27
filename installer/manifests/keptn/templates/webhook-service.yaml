@@ -5,17 +5,17 @@ kind: Deployment
 metadata:
   name: webhook-service
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/component: webhook-service
+    app.kubernetes.io/name: webhook-service
 spec:
   selector:
     matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: webhook-service
+      app.kubernetes.io/name: webhook-service
   replicas: 1
   {{- include "keptn.common.update-strategy" . | nindent 2 }}
   template:
     metadata:
       labels: {{- include "common.labels.standard" . | nindent 8 }}
-        app.kubernetes.io/component: webhook-service
+        app.kubernetes.io/name: webhook-service
     spec:
       {{- include "keptn.common.pod-security-context" . | nindent 6 }}
       serviceAccountName: keptn-webhook-service
@@ -69,13 +69,13 @@ kind: Service
 metadata:
   name: webhook-service
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/component: webhook-service
+    app.kubernetes.io/name: webhook-service
 spec:
   ports:
     - port: 8080
       protocol: TCP
   selector: {{- include "common.labels.selectorLabels" . | nindent 4 }}
-    app.kubernetes.io/component: webhook-service
+    app.kubernetes.io/name: webhook-service
 {{- end }}
 ---
 apiVersion: v1
@@ -83,7 +83,7 @@ kind: ConfigMap
 metadata:
   name: keptn-webhook-config
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/component: webhook-service
+    app.kubernetes.io/name: webhook-service
 data:
   denyList: |-
     kubernetes

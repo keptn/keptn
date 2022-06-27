@@ -3,17 +3,17 @@ kind: Deployment
 metadata:
   name: approval-service
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/component: approval-service
+    app.kubernetes.io/name: approval-service
 spec:
   selector:
     matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: approval-service
+      app.kubernetes.io/name: approval-service
   replicas: 1
   {{- include "keptn.common.update-strategy" . | nindent 2 }}
   template:
     metadata:
       labels: {{- include "common.labels.standard" . | nindent 8 }}
-        app.kubernetes.io/component: approval-service
+        app.kubernetes.io/name: approval-service
     spec:
       {{- include "keptn.common.pod-security-context" . | nindent 6 }}
       terminationGracePeriodSeconds: {{ .Values.approvalService.gracePeriod | default 60 }}
@@ -67,10 +67,10 @@ kind: Service
 metadata:
   name: approval-service
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/component: approval-service
+    app.kubernetes.io/name: approval-service
 spec:
   ports:
     - port: 8080
       protocol: TCP
   selector: {{- include "common.labels.selectorLabels" . | nindent 4 }}
-    app.kubernetes.io/component: approval-service
+    app.kubernetes.io/name: approval-service

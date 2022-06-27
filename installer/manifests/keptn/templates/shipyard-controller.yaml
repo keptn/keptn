@@ -3,11 +3,11 @@ kind: Deployment
 metadata:
   name: shipyard-controller
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/component: shipyard-controller
+    app.kubernetes.io/name: shipyard-controller
 spec:
   selector:
     matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: shipyard-controller
+      app.kubernetes.io/name: shipyard-controller
   {{- if or (lt .Capabilities.KubeVersion.Minor "14") (.Values.shipyardController.config.disableLeaderElection) }}
   replicas : 1
   {{- else }}
@@ -17,7 +17,7 @@ spec:
   template:
     metadata:
       labels: {{- include "common.labels.standard" . | nindent 8 }}
-        app.kubernetes.io/component: shipyard-controller
+        app.kubernetes.io/name: shipyard-controller
     spec:
       {{- include "keptn.common.pod-security-context" . | nindent 6 }}
       serviceAccountName: keptn-shipyard-controller
@@ -117,11 +117,11 @@ kind: Service
 metadata:
   name: shipyard-controller
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/component: shipyard-controller
+    app.kubernetes.io/name: shipyard-controller
 spec:
   ports:
     - port: 8080
       targetPort: 8080
       protocol: TCP
   selector: {{- include "common.labels.selectorLabels" . | nindent 4 }}
-    app.kubernetes.io/component: shipyard-controller
+    app.kubernetes.io/name: shipyard-controller

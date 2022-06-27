@@ -18,7 +18,7 @@ metadata:
   name: ingress-config
   labels: {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: {{ include "keptn.name" . }}-cm
-    app.kubernetes.io/component: {{ include "keptn.name" . }}
+    app.kubernetes.io/name: {{ include "keptn.name" . }}
 data:
   ingress_hostname_suffix: "{{ $ingressHostnameSuffix }}"
   ingress_protocol: "{{ $ingressProtocol }}"
