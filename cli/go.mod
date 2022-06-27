@@ -9,7 +9,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/go-version v1.5.0
 	github.com/invopop/jsonschema v0.4.0
-	github.com/keptn/go-utils v0.16.1-0.20220627123527-16a3f814dbc1
+	github.com/keptn/go-utils v0.16.1-0.20220627142720-dc3f6c8a574c
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/spf13/cobra v1.4.0
@@ -21,6 +21,7 @@ require (
 )
 
 require (
+	cloud.google.com/go/compute v1.5.0 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/benbjohnson/clock v1.3.0 // indirect

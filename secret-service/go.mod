@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/gin-gonic/gin v1.8.1
-	github.com/keptn/go-utils v0.16.1-0.20220627123527-16a3f814dbc1
+	github.com/keptn/go-utils v0.16.1-0.20220627142720-dc3f6c8a574c
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
 	github.com/swaggo/swag v1.8.2
@@ -34,7 +34,6 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/gnostic v0.5.7-v3refs // indirect
-	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect

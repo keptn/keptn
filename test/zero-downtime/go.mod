@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/benbjohnson/clock v1.3.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.16.1-0.20220627123527-16a3f814dbc1
+	github.com/keptn/go-utils v0.16.1-0.20220627142720-dc3f6c8a574c
 	github.com/keptn/keptn/test/go-tests v0.0.0-20220627121717-60be3bfb7e9c
 	github.com/steinfletcher/apitest v1.5.11
 	github.com/steinfletcher/apitest-jsonpath v1.7.1
@@ -13,6 +13,7 @@ require (
 )
 
 require (
+	cloud.google.com/go v0.81.0 // indirect
 	github.com/PaesslerAG/gval v1.0.0 // indirect
 	github.com/PaesslerAG/jsonpath v0.1.1 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
