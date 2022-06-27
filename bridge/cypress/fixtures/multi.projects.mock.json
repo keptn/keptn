@@ -3,7 +3,7 @@
   "projects": [
     {
       "creationDate": "1621493016550266259",
-      "gitConfiguration": {
+      "gitCredentials": {
         "remoteURL": "https://github.com/carpe-github/claus-tenant-dev.git",
         "user": "carpe-github"
       },
@@ -124,7 +124,7 @@
     },
     {
       "creationDate": "1629211070179837245",
-      "gitConfiguration": {
+      "gitCredentials": {
         "remoteURL": "https://github.com/carpe-github/claus-tenant-dev-testproj.git",
         "user": "carpe-github-testproj"
       },

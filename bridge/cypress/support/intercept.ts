@@ -436,3 +436,11 @@ export function interceptHeatmapComponentWithSLO(slo?: string): void {
     body: EvaluationFinishedMock(slo),
   }).as('heatmapEvaluations');
 }
+
+export function interceptServiceSettings(): void {
+  interceptProjectBoard();
+  cy.intercept('/api/project/sockshop', { fixture: 'project.mock' }).as('projectPlain');
+  cy.intercept('/api/project/sockshop/service/carts/files', {
+    body: [],
+  });
+}

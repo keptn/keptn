@@ -113,7 +113,7 @@
         }
       ],
       "creationDate": "1621493016550266259",
-      "gitConfiguration": {
+      "gitCredentials": {
         "remoteURL": "https://github.com/carpe-github/claus-tenant-dev.git",
         "user": "carpe-github"
       },

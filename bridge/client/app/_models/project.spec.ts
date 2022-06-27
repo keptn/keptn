@@ -1,5 +1,6 @@
 import { Project } from './project';
 import { waitForAsync } from '@angular/core/testing';
+import { IProject } from '../../../shared/models/IProject';
 
 describe('Project', () => {
   it('should create instances from json', waitForAsync(() => {
@@ -11,7 +12,7 @@ describe('Project', () => {
           { services: [{ serviceName: 'carts' }, { serviceName: 'carts-db' }], stageName: 'staging' },
           { services: [{ serviceName: 'carts' }, { serviceName: 'carts-db' }], stageName: 'production' },
         ],
-      },
+      } as IProject,
     ].map((project) => Project.fromJSON(project));
 
     expect(projects[0]).toBeInstanceOf(Project);

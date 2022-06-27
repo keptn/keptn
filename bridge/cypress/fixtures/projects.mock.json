@@ -3,7 +3,7 @@
   "projects": [
     {
       "creationDate": "1631870924824247750",
-      "gitConfiguration": {
+      "gitCredentials": {
         "remoteURL": "https://github.com/laneli/sockshop",
         "user": "laneli"
       },
@@ -425,7 +425,7 @@
     },
     {
       "creationDate": "1631870924824247750",
-      "gitConfiguration": {
+      "gitCredentials": {
         "remoteURL": "https://github.com/laneli/my-error-project",
         "user": "laneli"
       },

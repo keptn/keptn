@@ -16,7 +16,7 @@
     }
   ],
   "creationDate": "1631870924824247750",
-  "gitConfiguration": {
+  "gitCredentials": {
     "remoteURL": "https://github.com/laneli/sockshop",
     "user": "laneli"
   },

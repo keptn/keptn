@@ -1,14 +1,31 @@
-import Chainable = Cypress.Chainable;
+import { interceptServiceSettings } from '../intercept';
 
 export class ServicesSettingsPage {
-  inputService(serviceName: string): Chainable<JQuery<HTMLElement>> {
-    return cy.get('input[formcontrolname="serviceName"]').type(serviceName);
+  public intercept(): this {
+    interceptServiceSettings();
+    return this;
   }
 
-  createService(serviceName?: string): Chainable<JQuery<HTMLElement>> {
+  public visitService(project: string, service: string): this {
+    cy.visit(`/project/${project}/settings/services/edit/${service}`).wait('@metadata').wait('@project');
+    return this;
+  }
+
+  public inputService(serviceName: string): this {
+    cy.get('input[formcontrolname="serviceName"]').type(serviceName);
+    return this;
+  }
+
+  public createService(serviceName?: string): this {
     if (serviceName) {
       this.inputService(serviceName);
     }
-    return cy.byTestId('createServiceButton').click();
+    cy.byTestId('createServiceButton').click();
+    return this;
+  }
+
+  public assertNoFilesMessageExists(status: boolean): this {
+    cy.byTestId('ktb-no-files-for-file-tree').should(status ? 'exist' : 'not.exist');
+    return this;
   }
 }

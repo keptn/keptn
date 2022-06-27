@@ -10,30 +10,21 @@
           </div>
         </ng-template>
         <ng-container *ngIf="project; else loading">
-          <ng-container *ngIf="project.gitCredentials?.remoteURL as url; else noUpstream">
-            <ng-container *ngIf="fileTree; else loading">
-              <div *ngIf="fileTree.length > 0">
-                <ng-container *ngFor="let stageEntry of fileTree">
-                  <ktb-edit-service-file-list
-                    [stageName]="stageEntry.stageName"
-                    [remoteUri]="url"
-                    [serviceName]="serviceName"
-                    [treeData]="stageEntry.tree"
-                  ></ktb-edit-service-file-list>
-                </ng-container>
-              </div>
-              <div class="mt-3" *ngIf="fileTree.length === 0">There are no files in the Git upstream repository</div>
-            </ng-container>
+          <ng-container *ngIf="fileTree; else loading">
+            <div *ngIf="fileTree.length > 0">
+              <ng-container *ngFor="let stageEntry of fileTree">
+                <ktb-edit-service-file-list
+                  [stageName]="stageEntry.stageName"
+                  [remoteUri]="project.gitCredentials?.remoteURL"
+                  [serviceName]="serviceName"
+                  [treeData]="stageEntry.tree"
+                ></ktb-edit-service-file-list>
+              </ng-container>
+            </div>
+            <div class="mt-3" *ngIf="fileTree.length === 0" uitestid="ktb-no-files-for-file-tree">
+              There are no files in the Git upstream repository
+            </div>
           </ng-container>
-          <ng-template #noUpstream>
-            <span>
-              There is no Git upstream repository set.<br />To show and manage the configuration files related to the
-              {{ serviceName }} service,
-            </span>
-            <a [routerLink]="['/', 'project', project.projectName, 'settings', 'project']">
-              set a Git upstream repository </a
-            >.
-          </ng-template>
         </ng-container>
       </div>
     </div>
