@@ -220,8 +220,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
         });
       },
       (err) => {
-        const service = this.resourceServiceEnabled ? 'resource-service' : 'configuration-service';
-        const errorMessage = err.error || `please, check the logs of ${service}`;
+        const errorMessage = err.error || 'please, check the logs of resource-service';
         this.notificationsService.addNotification(
           NotificationType.ERROR,
           `The project could not be created: ${errorMessage}.`
@@ -231,7 +230,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
     );
   }
 
-  public deleteProject(projectName: string): void {
+  private deleteProject(projectName: string): void {
     this.eventService.deletionProgressEvent.next({ isInProgress: true });
 
     this.dataService.deleteProject(projectName).subscribe(

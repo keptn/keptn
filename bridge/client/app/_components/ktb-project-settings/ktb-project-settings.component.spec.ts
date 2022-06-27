@@ -11,14 +11,21 @@ import { TestUtils } from '../../_utils/test.utils';
 import { KtbProjectSettingsComponent } from './ktb-project-settings.component';
 import { KtbProjectSettingsModule } from './ktb-project-settings.module';
 import { getDefaultSshData } from './ktb-project-settings-git-extended/ktb-project-settings-git-extended.component.spec';
+import { EventService } from '../../_services/event.service';
+import { DeleteResult, DeleteType } from '../../_interfaces/delete';
+import { NotificationsService } from '../../_services/notifications.service';
+import { NotificationType } from '../../_models/notification';
+import { KtbProjectCreateMessageComponent } from './ktb-project-create-message/ktb-project-create-message.component';
 
 describe('KtbProjectSettingsComponent', () => {
   let component: KtbProjectSettingsComponent;
   let fixture: ComponentFixture<KtbProjectSettingsComponent>;
   let dataService: DataService;
   let routeParamsSubject: BehaviorSubject<{ projectName: string } | Record<string, never>>;
+  let queryParamsSubject: BehaviorSubject<{ created?: boolean }>;
 
   beforeEach(async () => {
+    queryParamsSubject = new BehaviorSubject<{ created?: boolean }>({});
     routeParamsSubject = new BehaviorSubject<{ projectName: string } | Record<string, never>>({
       projectName: 'sockshop',
     });
@@ -38,7 +45,7 @@ describe('KtbProjectSettingsComponent', () => {
           provide: ActivatedRoute,
           useValue: {
             params: routeParamsSubject.asObservable(),
-            queryParams: of({}),
+            queryParams: queryParamsSubject.asObservable(),
             queryParamMap: of(convertToParamMap({})),
           },
         },
@@ -146,17 +153,38 @@ describe('KtbProjectSettingsComponent', () => {
 
   it('should delete a project and navigate to dashboard', () => {
     // given
+    const eventService = TestBed.inject(EventService);
+    const router = TestBed.inject(Router);
+    const routeSpy = jest.spyOn(router, 'navigate');
     component.isCreateMode = false;
     component.projectName = 'sockshop';
     fixture.detectChanges();
 
     // when
-    const router = TestBed.inject(Router);
-    const routeSpy = jest.spyOn(router, 'navigate');
-    component.deleteProject('sockshop');
+    eventService.deletionTriggeredEvent.next({ type: DeleteType.PROJECT, name: 'sockshop' });
 
     // then
     expect(routeSpy).toHaveBeenCalled();
+  });
+
+  it('should try to delete a project and throw an error', () => {
+    // given
+    const eventService = TestBed.inject(EventService);
+    const progressSpy = jest.spyOn(eventService.deletionProgressEvent, 'next');
+    jest.spyOn(dataService, 'deleteProject').mockReturnValue(throwError(() => new Error('my error')));
+    component.isCreateMode = false;
+    component.projectName = 'sockshop';
+    fixture.detectChanges();
+
+    // when
+    eventService.deletionTriggeredEvent.next({ type: DeleteType.PROJECT, name: 'sockshop' });
+
+    // then
+    expect(progressSpy).toHaveBeenCalledWith({
+      error: 'Project could not be deleted: my error',
+      isInProgress: false,
+      result: DeleteResult.ERROR,
+    });
   });
 
   it('should not show a notification when the component is initialized', () => {
@@ -412,5 +440,129 @@ describe('KtbProjectSettingsComponent', () => {
     // then
     expect(inProgressSpy).toHaveBeenCalledWith(false);
     expect(updateUpstreamSpy).toHaveBeenCalled();
+  });
+
+  it('should not create project if shipyard is not set', async () => {
+    // given
+    component.gitDataExtended = null;
+    component.projectNameControl.setValue('sockshop');
+
+    // when
+    const createSpy = jest.spyOn(dataService, 'createProjectExtended');
+    await component.createProject();
+
+    // then
+    expect(createSpy).not.toHaveBeenCalled();
+  });
+
+  it('should not create project if shipyard is empty', async () => {
+    // given
+    component.gitDataExtended = null;
+    component.projectNameControl.setValue('sockshop');
+    component.shipyardFile = new File([''], 'test1.yaml');
+
+    // when
+    const createSpy = jest.spyOn(dataService, 'createProjectExtended');
+    await component.createProject();
+
+    // then
+    expect(createSpy).not.toHaveBeenCalled();
+  });
+
+  it('should not create project if data is not set', async () => {
+    // given
+    component.gitDataExtended = undefined;
+    component.projectNameControl.setValue('sockshop');
+    component.shipyardFile = new File(['asfd'], 'test1.yaml');
+
+    // when
+    const createSpy = jest.spyOn(dataService, 'createProjectExtended');
+    await component.createProject();
+
+    // then
+    expect(createSpy).not.toHaveBeenCalled();
+  });
+
+  it('should show an error if project creation failed', async () => {
+    // given
+    const notificationService = TestBed.inject(NotificationsService);
+    const notificationSpy = jest.spyOn(notificationService, 'addNotification');
+    jest.spyOn(dataService, 'createProjectExtended').mockReturnValue(throwError(() => new Error()));
+    component.gitDataExtended = null;
+    component.projectNameControl.setValue('sockshop');
+    component.shipyardFile = new File(['asdf'], 'test1.yaml');
+
+    // when
+    await component.createProject();
+
+    // then
+    expect(notificationSpy).toHaveBeenCalledWith(
+      NotificationType.ERROR,
+      `The project could not be created: please, check the logs of resource-service.`
+    );
+  });
+
+  it('should save unsaved changes on create', () => {
+    // given
+    component.unsavedDialogState = 'unsaved';
+    component.isCreateMode = true;
+    const createSpy = jest.spyOn(component, 'createProject');
+
+    // when
+    component.saveAll();
+
+    // then
+    expect(component.unsavedDialogState).toBeNull();
+    expect(createSpy).toHaveBeenCalled();
+  });
+
+  it('should save unsaved changes on update', () => {
+    // given
+    component.unsavedDialogState = 'unsaved';
+    const createSpy = jest.spyOn(component, 'updateGitUpstream');
+
+    // when
+    component.saveAll();
+
+    // then
+    expect(component.unsavedDialogState).toBeNull();
+    expect(createSpy).toHaveBeenCalled();
+  });
+
+  it('should update shipyard file', () => {
+    // given
+    const shipyardFile = new File([], 'myfile.yaml');
+    const formTouchedSpy = jest.spyOn(component, 'projectFormTouched');
+
+    // when
+    component.updateShipyardFile(shipyardFile);
+
+    // then
+    expect(component.shipyardFile).toEqual(new File([], 'myfile.yaml'));
+    expect(formTouchedSpy).toHaveBeenCalled();
+  });
+
+  it('should show create message and remove param', () => {
+    // given
+    const notificationService = TestBed.inject(NotificationsService);
+    const notificationSpy = jest.spyOn(notificationService, 'addNotification');
+    const routeSpy = jest.spyOn(TestBed.inject(Router), 'navigate');
+
+    // when
+    queryParamsSubject.next({ created: true });
+
+    expect(notificationSpy).toHaveBeenCalledWith(
+      NotificationType.SUCCESS,
+      '',
+      {
+        component: KtbProjectCreateMessageComponent,
+        data: {
+          projectName: 'sockshop',
+          routerLink: '/project/sockshop/settings/services/create',
+        },
+      },
+      10_000
+    );
+    expect(routeSpy).toHaveBeenCalledWith(['/', 'project', 'sockshop', 'settings', 'project']);
   });
 });
