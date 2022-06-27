@@ -25,7 +25,7 @@ FROM builder-base as builder-test
 ENV GOTESTSUM_FORMAT=testname
 
 RUN go install gotest.tools/gotestsum@v1.7.0
-CMD gotestsum --no-color=false -- -coverprofile=coverage.txt -covermode=atomic -v ./handlers/... ./utils/... && mv ./coverage.txt /shared/coverage.txt
+CMD gotestsum --no-color=false -- -coverprofile=coverage.txt -covermode=atomic -v ./handlers/... ./importer/... ./utils/... && mv ./coverage.txt /shared/coverage.txt
 
 FROM builder-base as builder
 ARG version=develop

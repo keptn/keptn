@@ -2,15 +2,15 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbSequenceViewComponent } from './ktb-sequence-view.component';
 import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { ActivatedRoute } from '@angular/router';
-import { BehaviorSubject, of, Subject } from 'rxjs';
+import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { BehaviorSubject, firstValueFrom, of, Subject } from 'rxjs';
 import { POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 import { SequenceFilterMock } from '../../_services/_mockData/sequence-filter.mock';
 import { SequencesMock } from '../../_services/_mockData/sequences.mock';
-import { ProjectsMock } from '../../_services/_mockData/projects.mock';
 import moment from 'moment';
+import { DtQuickFilterDefaultDataSourceAutocomplete } from '@dynatrace/barista-components/quick-filter';
 
 describe('KtbEventsListComponent', () => {
   let component: KtbSequenceViewComponent;
@@ -85,7 +85,7 @@ describe('KtbEventsListComponent', () => {
           provide: ActivatedRoute,
           useValue: {
             data: of({}),
-            params: of({ projectName }),
+            paramMap: of(convertToParamMap({ projectName })),
             queryParams,
           },
         },
@@ -102,113 +102,77 @@ describe('KtbEventsListComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should not alter service filters if metadata and sequences match', () => {
+  it('should not alter service filters if metadata and sequences match', async () => {
     // given
-    /* eslint-disable @typescript-eslint/ban-ts-comment */
-    /* @ts-ignore */ // Ignore private property
-    component.project = ProjectsMock[0];
-    // @ts-ignore // Ignore private property
-    component.project.sequences = SequencesMock;
-    /* eslint-enable @typescript-eslint/ban-ts-comment */
-
+    const state = await firstValueFrom(component.state$);
     // when
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore // Ignore private property
-    component.mapServiceFilters(SequenceFilterMock);
+    component.mapServiceFilters(SequenceFilterMock, state.sequenceInfo?.sequences);
 
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore // Ignore private property
-    expect(component.filterFieldData.autocomplete[0].autocomplete).toEqual([
+    expect(getServiceFilter().autocomplete).toEqual([
       { name: 'carts-db', value: 'carts-db' },
       { name: 'carts', value: 'carts' },
     ]);
   });
 
-  it('should add a service if it is in a sequence but not in metadata', () => {
+  it('should add a service if it is in a sequence but not in metadata', async () => {
     // given
     const metadata = SequenceFilterMock;
     metadata.services = metadata.services.splice(1, 1); // remove carts-db
-    /* eslint-disable @typescript-eslint/ban-ts-comment */
-    /* @ts-ignore */ // Ignore private property
-    component.project = ProjectsMock[0];
-    // @ts-ignore // Ignore private property
-    component.project.sequences = SequencesMock;
-    // @ts-ignore // Ignore private property
-    component.filterFieldData.autocomplete[0].autocomplete = [{ name: 'carts', value: 'carts' }];
-    /* eslint-enable @typescript-eslint/ban-ts-comment */
+    const state = await firstValueFrom(component.state$);
+    getServiceFilter().autocomplete = [{ name: 'carts', value: 'carts' }];
 
     // when
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore // Ignore private property
-    component.mapServiceFilters(metadata);
+    component.mapServiceFilters(metadata, state.sequenceInfo?.sequences);
 
     // then
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore // Ignore private property
-    expect(component.filterFieldData.autocomplete[0].autocomplete).toEqual([
+    expect(getServiceFilter().autocomplete).toEqual([
       { name: 'carts', value: 'carts' },
       { name: 'carts-db', value: 'carts-db' },
     ]);
   });
 
-  it('should remove a service from filters if not available in metadata anymore', () => {
+  it('should remove a service from filters if not available in metadata anymore', async () => {
     // given
     const metadata = SequenceFilterMock;
     metadata.services.push('helloservice');
-    /* eslint-disable @typescript-eslint/ban-ts-comment */
-    /* @ts-ignore */ // Ignore private property
-    component.project = ProjectsMock[0];
-    // @ts-ignore // Ignore private property
-    component.project.sequences = SequencesMock;
-    // @ts-ignore // Ignore private property
-    component.filterFieldData.autocomplete[0].autocomplete.push({ name: 'helloservice', value: 'helloservice' });
-    /* eslint-enable @typescript-eslint/ban-ts-comment */
+    const state = await firstValueFrom(component.state$);
+    getServiceFilter().autocomplete.push({ name: 'helloservice', value: 'helloservice' });
 
     // when
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore // Ignore private property
-    component.mapServiceFilters(metadata);
+    component.mapServiceFilters(metadata, state.sequenceInfo?.sequences);
 
     // then
-    /* eslint-disable @typescript-eslint/ban-ts-comment */
-    // @ts-ignore // Ignore private property
-    expect(component.filterFieldData.autocomplete[0].autocomplete).toHaveLength(3);
-
+    expect(getServiceFilter().autocomplete).toHaveLength(3);
     // As order gets messed up sometimes, it's safer to test each individually
-
-    // @ts-ignore // Ignore private property
-    expect(component.filterFieldData.autocomplete[0].autocomplete).toContainEqual({
+    expect(getServiceFilter().autocomplete).toContainEqual({
       name: 'carts-db',
       value: 'carts-db',
     });
-    // @ts-ignore // Ignore private property
-    expect(component.filterFieldData.autocomplete[0].autocomplete).toContainEqual({ name: 'carts', value: 'carts' });
-    // @ts-ignore // Ignore private property
-    expect(component.filterFieldData.autocomplete[0].autocomplete).toContainEqual({
+    expect(getServiceFilter().autocomplete).toContainEqual({ name: 'carts', value: 'carts' });
+    expect(getServiceFilter().autocomplete).toContainEqual({
       name: 'helloservice',
       value: 'helloservice',
     });
-    /* eslint-enable @typescript-eslint/ban-ts-comment */
 
     // when
     metadata.services.pop();
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore // Ignore private property
-    component.mapServiceFilters(metadata);
+    component.mapServiceFilters(metadata, state.sequenceInfo?.sequences);
 
     // then
-
-    /* eslint-disable @typescript-eslint/ban-ts-comment */
-    // @ts-ignore // Ignore private property
-    expect(component.filterFieldData.autocomplete[0].autocomplete).toHaveLength(2);
-    // @ts-ignore // Ignore private property
-    expect(component.filterFieldData.autocomplete[0].autocomplete).toContainEqual({ name: 'carts', value: 'carts' });
-    // @ts-ignore // Ignore private property
-    expect(component.filterFieldData.autocomplete[0].autocomplete).toContainEqual({
+    expect(getServiceFilter().autocomplete).toHaveLength(2);
+    expect(getServiceFilter().autocomplete).toContainEqual({ name: 'carts', value: 'carts' });
+    expect(getServiceFilter().autocomplete).toContainEqual({
       name: 'carts-db',
       value: 'carts-db',
     });
-    /* eslint-enable @typescript-eslint/ban-ts-comment */
   });
 
   it('should show a reload button if older than 1 day', () => {
@@ -237,33 +201,34 @@ describe('KtbEventsListComponent', () => {
 
   it('should save filters on click, load sequences and filter properly', () => {
     // given
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    /* @ts-ignore */ // Ignore private property
-    component.project = ProjectsMock[0];
     const spySaveSequenceFilters = jest.spyOn(component, 'saveSequenceFilters');
     fixture.detectChanges();
 
     // when
-    component.filtersClicked({
-      filters: sequenceFilters,
-    });
+    component.filtersClicked(
+      {
+        filters: sequenceFilters,
+      },
+      SequencesMock,
+      projectName
+    );
     fixture.detectChanges();
 
     // then
-    expect(spySaveSequenceFilters).toHaveBeenCalledWith({
-      Stage: ['dev', 'production'],
-      Service: ['carts'],
-      Sequence: ['delivery'],
-      Status: ['started'],
-    });
+    expect(spySaveSequenceFilters).toHaveBeenCalledWith(
+      {
+        Stage: ['dev', 'production'],
+        Service: ['carts'],
+        Sequence: ['delivery'],
+        Status: ['started'],
+      },
+      projectName
+    );
     expect(component.filteredSequences).toEqual([SequencesMock[0]]);
   });
 
   it('should set sequence filters from query params', () => {
     // given
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    /* @ts-ignore */ // Ignore private property
-    component.project = ProjectsMock[0];
     const spySetSequenceFilters = jest.spyOn(component, 'setSequenceFilters');
     fixture.detectChanges();
 
@@ -277,20 +242,20 @@ describe('KtbEventsListComponent', () => {
     fixture.detectChanges();
 
     // then
-    expect(spySetSequenceFilters).toHaveBeenCalledWith({
-      Stage: ['dev', 'production'],
-      Service: ['carts'],
-      Sequence: ['delivery'],
-      Status: ['started'],
-    });
+    expect(spySetSequenceFilters).toHaveBeenCalledWith(
+      {
+        Stage: ['dev', 'production'],
+        Service: ['carts'],
+        Sequence: ['delivery'],
+        Status: ['started'],
+      },
+      projectName
+    );
     expect(component.filteredSequences).toEqual([SequencesMock[0]]);
   });
 
   it('should load sequence filters from local storage', () => {
     // given
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    /* @ts-ignore */ // Ignore private property
-    component.project = ProjectsMock[0];
     const spyLoadSequenceFilters = jest.spyOn(component, 'loadSequenceFilters');
     const spySetSequenceFilters = jest.spyOn(component, 'setSequenceFilters');
     queryParams.next({
@@ -307,12 +272,22 @@ describe('KtbEventsListComponent', () => {
 
     // then
     expect(spyLoadSequenceFilters).toHaveBeenCalled();
-    expect(spySetSequenceFilters).toHaveBeenCalledWith({
-      Stage: ['dev', 'production'],
-      Service: ['carts'],
-      Sequence: ['delivery'],
-      Status: ['started'],
-    });
+    expect(spySetSequenceFilters).toHaveBeenCalledWith(
+      {
+        Stage: ['dev', 'production'],
+        Service: ['carts'],
+        Sequence: ['delivery'],
+        Status: ['started'],
+      },
+      projectName
+    );
     expect(component.filteredSequences).toEqual([SequencesMock[0]]);
   });
+
+  function getServiceFilter(): { autocomplete: { name: string; value: string }[] } {
+    return (component._filterDataSource.data as DtQuickFilterDefaultDataSourceAutocomplete)
+      .autocomplete[0] as unknown as {
+      autocomplete: { name: string; value: string }[];
+    };
+  }
 });

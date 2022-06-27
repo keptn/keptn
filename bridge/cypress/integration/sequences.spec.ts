@@ -117,6 +117,16 @@ describe('Sequences', () => {
       .assertLoadOlderSequencesButtonExists(false);
   });
 
+  it('should not show show-older-sequences button if initially all sequences are loaded', () => {
+    cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=25', {
+      fixture: 'eventByContext.mock',
+    }).as('Sequences');
+
+    sequencePage.visit('sockshop');
+    cy.wait('@Sequences');
+    sequencePage.assertSequenceCount(1).assertLoadOlderSequencesButtonExists(false);
+  });
+
   describe('filtering', () => {
     it('should show a filtered list if filters are applied for Service', () => {
       sequencePage.visit('sockshop');

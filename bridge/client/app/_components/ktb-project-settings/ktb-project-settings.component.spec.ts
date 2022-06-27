@@ -1,15 +1,16 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { KtbProjectSettingsComponent } from './ktb-project-settings.component';
-import { DataService } from '../../_services/data.service';
-import { BehaviorSubject, of } from 'rxjs';
-import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ApiService } from '../../_services/api.service';
-import { ApiServiceMock } from '../../_services/api.service.mock';
+import { RouterTestingModule } from '@angular/router/testing';
+import { BehaviorSubject, of } from 'rxjs';
 import { PendingChangesGuard } from '../../_guards/pending-changes.guard';
 import { IGitData } from '../../_interfaces/git-upstream';
+import { ApiService } from '../../_services/api.service';
+import { ApiServiceMock } from '../../_services/api.service.mock';
+import { DataService } from '../../_services/data.service';
 import { TestUtils } from '../../_utils/test.utils';
+import { KtbProjectSettingsComponent } from './ktb-project-settings.component';
+import { KtbProjectSettingsModule } from './ktb-project-settings.module';
 
 describe('KtbProjectSettingsComponent', () => {
   let component: KtbProjectSettingsComponent;
@@ -22,7 +23,14 @@ describe('KtbProjectSettingsComponent', () => {
       projectName: 'sockshop',
     });
     await TestBed.configureTestingModule({
-      imports: [AppModule, HttpClientTestingModule],
+      imports: [
+        KtbProjectSettingsModule,
+        HttpClientTestingModule,
+        RouterTestingModule.withRoutes([
+          { path: 'dashboard', component: KtbProjectSettingsComponent },
+          { path: 'project/:projectName/settings/project', component: KtbProjectSettingsComponent },
+        ]),
+      ],
       providers: [
         PendingChangesGuard,
         { provide: ApiService, useClass: ApiServiceMock },

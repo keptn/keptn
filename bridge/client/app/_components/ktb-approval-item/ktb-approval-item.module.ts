@@ -7,6 +7,7 @@ import { DtOverlayModule } from '@dynatrace/barista-components/overlay';
 import { DtIconModule } from '@dynatrace/barista-components/icon';
 import { DtButtonModule } from '@dynatrace/barista-components/button';
 import { KtbEvaluationDetailsModule } from '../ktb-evaluation-details/ktb-evaluation-details.module';
+import { KtbLoadingModule } from '../ktb-loading/ktb-loading.module';
 
 @NgModule({
   declarations: [KtbApprovalItemComponent],
@@ -20,6 +21,7 @@ import { KtbEvaluationDetailsModule } from '../ktb-evaluation-details/ktb-evalua
     }),
     DtButtonModule,
     KtbEvaluationDetailsModule,
+    KtbLoadingModule,
   ],
   exports: [KtbApprovalItemComponent],
 })

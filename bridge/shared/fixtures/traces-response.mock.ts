@@ -2108,24 +2108,6 @@ const openApprovalsResponse = {
   totalCount: 1,
 };
 
-const approvalEvaluationResponse = {
-  events: [
-    {
-      ...defaultEvaluationFinishedTrace,
-      data: {
-        ...approvalTriggeredTraceStaging.data,
-        ...defaultEvaluationFinishedTrace.data,
-        stage: 'staging',
-        project: 'sockshop',
-        service: 'carts',
-      },
-      shkeptncontext: approvalTriggeredTraceStaging.shkeptncontext,
-    },
-  ],
-  pageSize: 1,
-  totalCount: 1,
-};
-
 const defaultDeploymentTriggeredEvent = {
   data: {
     configurationChange: {
@@ -2273,7 +2255,6 @@ export { evaluationFinishedStagingResponse as EvaluationFinishedStagingResponse 
 export { latestFinishedDeployments as LatestFinishedDeployments };
 export { latestFinishedEvaluations as LatestFinishedEvaluations };
 export { openApprovalsResponse as OpenApprovalsResponse };
-export { approvalEvaluationResponse as ApprovalEvaluationResponse };
 export { defaultDeploymentFinishedTrace as DefaultDeploymentFinishedTrace };
 export { defaultDeploymentData as DefaultDeploymentData };
 export { defaultEvaluationFinishedTrace as DefaultEvaluationFinishedTrace };

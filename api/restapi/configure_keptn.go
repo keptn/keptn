@@ -19,11 +19,13 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 
 	"github.com/keptn/keptn/api/handlers"
+	"github.com/keptn/keptn/api/importer"
 	custommiddleware "github.com/keptn/keptn/api/middleware"
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations"
 	"github.com/keptn/keptn/api/restapi/operations/auth"
 	"github.com/keptn/keptn/api/restapi/operations/event"
+	"github.com/keptn/keptn/api/restapi/operations/import_operations"
 	"github.com/keptn/keptn/api/restapi/operations/metadata"
 )
 
@@ -31,10 +33,14 @@ import (
 
 const envVarLogLevel = "LOG_LEVEL"
 
+const controlPlaneServiceEnvVar = "CONTROLPLANE_URI"
+
 type EnvConfig struct {
-	MaxAuthEnabled           bool    `envconfig:"MAX_AUTH_ENABLED" default:"true"`
-	MaxAuthRequestsPerSecond float64 `envconfig:"MAX_AUTH_REQUESTS_PER_SECOND" default:"1"`
-	MaxAuthRequestBurst      int     `envconfig:"MAX_AUTH_REQUESTS_BURST" default:"2"`
+	MaxAuthEnabled            bool    `envconfig:"MAX_AUTH_ENABLED" default:"true"`
+	MaxAuthRequestsPerSecond  float64 `envconfig:"MAX_AUTH_REQUESTS_PER_SECOND" default:"1"`
+	MaxAuthRequestBurst       int     `envconfig:"MAX_AUTH_REQUESTS_BURST" default:"2"`
+	MaxImportUncompressedSize uint64  `envconfig:"MAX_IMPORT_UNCOMPRESSED_SIZE" default:"52428800"` // 50MB default value
+	ImportBasePath            string  `envconfig:"IMPORT_BASE_PATH"`
 }
 
 func configureFlags(api *operations.KeptnAPI) {
@@ -56,7 +62,7 @@ func configureAPI(api *operations.KeptnAPI) http.Handler {
 		os.Exit(1)
 	}
 
-	/// configure the api here
+	// / configure the api here
 	api.ServeError = errors.ServeError
 
 	// Set your custom logger if needed. Default one is log.Printf
@@ -78,20 +84,33 @@ func configureAPI(api *operations.KeptnAPI) http.Handler {
 	//
 	// Example:
 	// api.APIAuthorizer = security.Authorized()
-	api.AuthAuthHandler = auth.AuthHandlerFunc(func(params auth.AuthParams, principal *models.Principal) middleware.Responder {
-		return auth.NewAuthOK()
-	})
+	api.AuthAuthHandler = auth.AuthHandlerFunc(
+		func(params auth.AuthParams, principal *models.Principal) middleware.Responder {
+			return auth.NewAuthOK()
+		},
+	)
 
 	api.EventPostEventHandler = event.PostEventHandlerFunc(handlers.PostEventHandlerFunc)
-	//api.EventGetEventHandler = event.GetEventHandlerFunc(handlers.GetEventHandlerFunc)
+	// api.EventGetEventHandler = event.GetEventHandlerFunc(handlers.GetEventHandlerFunc)
 
 	// Metadata endpoint
 	api.MetadataMetadataHandler = metadata.MetadataHandlerFunc(handlers.GetMetadataHandlerFunc)
 
-	//api.EvaluationTriggerEvaluationHandler = evaluation.TriggerEvaluationHandlerFunc(handlers.TriggerEvaluationHandlerFunc)
+	// api.EvaluationTriggerEvaluationHandler = evaluation.TriggerEvaluationHandlerFunc(handlers.TriggerEvaluationHandlerFunc)
+
+	// Import endpoint
+	api.ImportOperationsImportHandler = import_operations.ImportHandlerFunc(
+		handlers.GetImportHandlerFunc(
+			env.ImportBasePath,
+			importer.NewControlPlaneProjectChecker(os.Getenv(controlPlaneServiceEnvVar)),
+			env.MaxImportUncompressedSize,
+		),
+	)
 
 	if env.MaxAuthEnabled {
-		rateLimiter := custommiddleware.NewRateLimiter(env.MaxAuthRequestsPerSecond, env.MaxAuthRequestBurst, tokenValidator, clock.New())
+		rateLimiter := custommiddleware.NewRateLimiter(
+			env.MaxAuthRequestsPerSecond, env.MaxAuthRequestBurst, tokenValidator, clock.New(),
+		)
 		api.AddMiddlewareFor(http.MethodPost, "/auth", rateLimiter.Handle)
 	}
 
@@ -122,13 +141,13 @@ func configureServer(s *http.Server, scheme, addr string) {
 	}
 }
 
-// The middleware configuration is for the handler executors. These do not apply to the swagger.json document.
+// The middleware configuration is for the handler executors. These do not apply to the swagger.yaml document.
 // The middleware executes after routing but before authentication, binding and validation
 func setupMiddlewares(handler http.Handler) http.Handler {
 	return handler
 }
 
-// The middleware configuration happens before anything, this middleware also applies to serving the swagger.json document.
+// The middleware configuration happens before anything, this middleware also applies to serving the swagger.yaml document.
 // So this is a good place to plug in a panic handling middleware, logging and metrics
 func setupGlobalMiddleware(handler http.Handler) http.Handler {
 
@@ -137,8 +156,10 @@ func setupGlobalMiddleware(handler http.Handler) http.Handler {
 		// Set the prefix-path in the swagger.yaml
 		input, err := ioutil.ReadFile("swagger-ui/swagger.yaml")
 		if err == nil {
-			editedSwagger := strings.Replace(string(input), "basePath: /api/v1",
-				"basePath: "+prefixPath+"/api/v1", -1)
+			editedSwagger := strings.Replace(
+				string(input), "basePath: /api/v1",
+				"basePath: "+prefixPath+"/api/v1", -1,
+			)
 			err = ioutil.WriteFile("swagger-ui/swagger.yaml", []byte(editedSwagger), 0644)
 			if err != nil {
 				fmt.Println("Failed to write edited swagger.yaml")
@@ -150,8 +171,10 @@ func setupGlobalMiddleware(handler http.Handler) http.Handler {
 		// Set the prefix-path in the index.html
 		input, err = ioutil.ReadFile("swagger-ui/index.html")
 		if err == nil {
-			editedSwagger := strings.Replace(string(input), "const prefixPath = \"\"",
-				"const prefixPath = \""+prefixPath+"\"", -1)
+			editedSwagger := strings.Replace(
+				string(input), "const prefixPath = \"\"",
+				"const prefixPath = \""+prefixPath+"\"", -1,
+			)
 			err = ioutil.WriteFile("swagger-ui/index.html", []byte(editedSwagger), 0644)
 			if err != nil {
 				fmt.Println("Failed to write edited index.html")
@@ -161,15 +184,17 @@ func setupGlobalMiddleware(handler http.Handler) http.Handler {
 		}
 	}
 
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.Index(r.URL.Path, "/swagger-ui/") == 0 {
-			http.StripPrefix("/swagger-ui/", http.FileServer(http.Dir("swagger-ui"))).ServeHTTP(w, r)
-			return
-		}
-		if strings.Index(r.URL.Path, "/health") == 0 {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-		handler.ServeHTTP(w, r)
-	})
+	return http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			if strings.Index(r.URL.Path, "/swagger-ui/") == 0 {
+				http.StripPrefix("/swagger-ui/", http.FileServer(http.Dir("swagger-ui"))).ServeHTTP(w, r)
+				return
+			}
+			if strings.Index(r.URL.Path, "/health") == 0 {
+				w.WriteHeader(http.StatusOK)
+				return
+			}
+			handler.ServeHTTP(w, r)
+		},
+	)
 }

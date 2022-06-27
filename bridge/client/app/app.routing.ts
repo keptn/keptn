@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { ExtraOptions, RouterModule, Routes } from '@angular/router';
-import { DashboardComponent } from './dashboard/dashboard.component';
+import { DashboardLegacyComponent } from './dashboard-legacy/dashboard-legacy.component';
 import { ProjectBoardComponent } from './project-board/project-board.component';
 import { EvaluationBoardComponent } from './evaluation-board/evaluation-board.component';
 import { KtbIntegrationViewComponent } from './_views/ktb-integration-view/ktb-integration-view.component';
@@ -14,7 +14,7 @@ import { KtbCreateSecretFormComponent } from './_components/ktb-create-secret-fo
 import { KtbProjectSettingsComponent } from './_components/ktb-project-settings/ktb-project-settings.component';
 import { KtbModifyUniformSubscriptionComponent } from './_components/ktb-modify-uniform-subscription/ktb-modify-uniform-subscription.component';
 import { KtbCreateServiceComponent } from './_components/ktb-create-service/ktb-create-service.component';
-import { KtbServiceSettingsOverviewComponent } from './_components/ktb-service-settings-overview/ktb-service-settings-overview.component';
+import { KtbServiceSettingsOverviewComponent } from './_components/ktb-service-settings/ktb-service-settings-overview/ktb-service-settings-overview.component';
 import { KtbServiceSettingsComponent } from './_components/ktb-service-settings/ktb-service-settings.component';
 import { KtbEditServiceComponent } from './_components/ktb-edit-service/ktb-edit-service.component';
 import { NotFoundComponent } from './not-found/not-found.component';
@@ -35,7 +35,7 @@ const routes: Routes = [
     component: AppComponent,
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
-      { path: 'dashboard', component: DashboardComponent, data: { projectsHandledByComponent: true } },
+      { path: 'dashboard', component: DashboardLegacyComponent, data: { projectsHandledByComponent: true } },
       {
         path: 'create',
         component: ProjectBoardComponent,

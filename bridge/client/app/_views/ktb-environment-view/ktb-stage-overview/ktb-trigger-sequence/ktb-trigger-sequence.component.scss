@@ -1,0 +1,48 @@
+@import '../../../../../variables';
+@import '~@dynatrace/barista-components/style/main';
+
+.ktb-trigger-sequence {
+  background-color: $gray-100;
+  border-radius: $border-radius;
+
+  > div > div > div > dt-form-field,
+  > div > div > div > ktb-time-input {
+    width: 50%;
+  }
+
+  > div > div > div.full-width > dt-form-field {
+    width: 100%;
+  }
+}
+
+:host::ng-deep {
+  .dt-form-field-body {
+    background: transparent;
+  }
+  .dt-input {
+    border: none;
+  }
+
+  .dt-form-field.full-width-error .dt-form-field-error {
+    width: calc(200% + 15px);
+    left: calc(-100% - 15px);
+  }
+}
+
+.overlay-origin {
+  position: relative;
+}
+
+.sequence-select, ::ng-deep .custom-sequence-radio .dt-radio-content {
+  width: 100%;
+}
+
+.input-overlay {
+  height: 30px;
+  width: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 1;
+  cursor: text;
+}

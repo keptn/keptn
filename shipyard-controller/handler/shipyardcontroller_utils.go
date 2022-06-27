@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -99,6 +100,9 @@ func ExtractEventKind(event apimodels.KeptnContextExtendedCE) (string, error) {
 		return "", err
 	}
 
+	if event.Type == nil {
+		return "", errors.New("event does not contain a type")
+	}
 	statusType, err := keptnv2.ParseEventKind(*event.Type)
 	if err != nil {
 		return "", err

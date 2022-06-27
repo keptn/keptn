@@ -1,9 +1,11 @@
 import { ErrorPage } from '../support/pageobjects/ErrorPage';
 import { LogoutPage } from '../support/pageobjects/LogoutPage';
 import { interceptDashboard } from '../support/intercept';
+import DashboardPage from '../support/pageobjects/DashboardPage';
 
 describe('Test error pages', () => {
   const errorPage = new ErrorPage();
+  const dashboardPage = new DashboardPage();
 
   it('should show internal error if status is 500', () => {
     errorPage.visit('500').isInternalError();
@@ -28,6 +30,7 @@ describe('Test error pages', () => {
   it('should redirect to dashboard', () => {
     interceptDashboard();
     errorPage.visit().clickLocation();
+    dashboardPage.waitForProjects();
     cy.location('pathname').should('eq', '/dashboard');
   });
 });

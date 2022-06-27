@@ -336,34 +336,13 @@ export class ApiService {
     return this.http.get<SequenceResult>(url, { params, observe: 'response' });
   }
 
-  public getRoots(
-    projectName: string,
-    pageSize: number,
-    serviceName?: string,
-    fromTime?: string,
-    beforeTime?: string,
-    keptnContext?: string
-  ): Observable<HttpResponse<EventResult>> {
-    const url = `${this._baseUrl}/mongodb-datastore/event`;
-    const params = {
-      root: 'true',
-      pageSize: pageSize.toString(),
-      project: projectName,
-      ...(serviceName && { serviceName }),
-      ...(fromTime && { fromTime }),
-      ...(beforeTime && { beforeTime }),
-      ...(keptnContext && { keptnContext }),
-    };
-
-    return this.http.get<EventResult>(url, { params, observe: 'response' });
-  }
-
   public getTraces(
     keptnContext: string,
     projectName?: string,
     fromTime?: string,
     type?: EventTypes,
     source?: KeptnService,
+    stage?: string,
     pageSize?: number
   ): Observable<HttpResponse<EventResult>> {
     const url = `${this._baseUrl}/mongodb-datastore/event`;
@@ -373,6 +352,7 @@ export class ApiService {
       ...(fromTime && { fromTime }),
       ...(type && { type }),
       ...(source && { source }),
+      ...(stage && { stage }),
       ...(pageSize && { pageSize }),
     };
 

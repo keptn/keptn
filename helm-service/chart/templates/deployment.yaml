@@ -2,22 +2,21 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "helm-service.fullname" . }}
-  labels:
-    {{- include "helm-service.labels" . | nindent 4 }}
-
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: helm-service
 spec:
   replicas: 1
   selector:
-    matchLabels:
-      {{- include "helm-service.selectorLabels" . | nindent 6 }}
+    matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: helm-service
   template:
     metadata:
       {{- with .Values.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      labels:
-        {{- include "helm-service.labels" . | nindent 8 }}
+      labels: {{- include "common.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/component: helm-service
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -92,7 +91,7 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 5
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+            {{- toYaml .Values.helmservice.resources | nindent 12 }}
         - name: distributor
           image: "{{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}"
           {{- include "helm-service.prestop" . | nindent 10 }}
@@ -112,12 +111,7 @@ spec:
           ports:
             - containerPort: 8080
           resources:
-            requests:
-              memory: "16Mi"
-              cpu: "25m"
-            limits:
-              memory: "32Mi"
-              cpu: "100m"
+            {{- toYaml .Values.distributor.resources | nindent 12 }}
           env:
             - name: PUBSUB_TOPIC
               value: 'sh.keptn.event.deployment.triggered,sh.keptn.event.rollback.triggered,sh.keptn.event.release.triggered,sh.keptn.event.action.triggered,sh.keptn.event.service.delete.finished'
@@ -143,6 +137,10 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.labels['app.kubernetes.io/name']
+            - name: K8S_DEPLOYMENT_COMPONENT
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['app.kubernetes.io/component']
             - name: K8S_POD_NAME
               valueFrom:
                 fieldRef:

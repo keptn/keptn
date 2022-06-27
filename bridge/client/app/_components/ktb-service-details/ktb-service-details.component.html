@@ -59,7 +59,6 @@
     >
       <ktb-event-item
         [event]="approvalInformation.trace"
-        [evaluation]="deploymentStage.hasEvaluation ? deploymentStage.latestEvaluation : undefined"
         [image]="approvalInformation.deployedImage"
         (approvalSent)="deploymentStage.removeApproval()"
       >

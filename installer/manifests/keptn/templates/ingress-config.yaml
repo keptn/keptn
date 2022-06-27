@@ -1,0 +1,27 @@
+{{- if .Values.continuousDelivery.enabled }}
+{{- $ingressHostnameSuffix := .Values.continuousDelivery.ingressConfig.ingress_hostname_suffix  }}
+{{- $ingressProtocol := .Values.continuousDelivery.ingressConfig.ingress_protocol }}
+{{- $ingressPort := .Values.continuousDelivery.ingressConfig.ingress_port }}
+{{- $istioGateway := .Values.continuousDelivery.ingressConfig.istio_gateway }}
+{{- $ingressConfigCM := (lookup "v1" "ConfigMap" .Release.Namespace "ingress-config") }}
+{{- if $ingressConfigCM }}
+{{- $ingressHostnameSuffix = index $ingressConfigCM.data "ingress_hostname_suffix" }}
+{{- $ingressProtocol = index $ingressConfigCM.data "ingress_protocol" }}
+{{- $ingressPort = index $ingressConfigCM.data "ingress_port" }}
+{{- $istioGateway = index $ingressConfigCM.data "istio_gateway" }}
+{{- end -}}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ingress-config
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/name: {{ include "keptn.name" . }}-cm
+    app.kubernetes.io/component: {{ include "keptn.name" . }}
+data:
+  ingress_hostname_suffix: "{{ $ingressHostnameSuffix }}"
+  ingress_protocol: "{{ $ingressProtocol }}"
+  ingress_port: "{{ $ingressPort }}"
+  istio_gateway: "{{ $istioGateway }}"
+{{- end -}}
