@@ -76,9 +76,8 @@ func TestK8sCredentialReader_ReadSecretNoToken(t *testing.T) {
 	))
 
 	secret, err := secretReader.GetCredentials("my-project")
-
-	require.ErrorIs(t, err, errors.ErrCredentialsTokenMustNotBeEmpty)
-	require.Nil(t, secret)
+	require.Nil(t, err)
+	require.NotNil(t, secret)
 }
 
 func TestK8sCredentialReader_ReadSecretNoPrivateKey(t *testing.T) {

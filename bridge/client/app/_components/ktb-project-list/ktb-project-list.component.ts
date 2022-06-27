@@ -1,22 +1,23 @@
-import { Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { Project } from '../../_models/project';
+import { Sequence } from '../../_models/sequence';
+import { IMetadata } from '../../_interfaces/metadata';
+
+export type ProjectSequences = Record<string, Sequence[]>;
 
 @Component({
   selector: 'ktb-project-list',
   templateUrl: './ktb-project-list.component.html',
   styleUrls: ['./ktb-project-list.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KtbProjectListComponent {
-  public _projects: Project[] = [];
+  @Input() metadata: IMetadata | null = null;
+  @Input() projects: Project[] = [];
+  @Input() sequences: ProjectSequences = {};
 
-  @Input()
-  get projects(): Project[] {
-    return this._projects;
-  }
-
-  set projects(value: Project[]) {
-    if (this._projects !== value) {
-      this._projects = value;
-    }
+  getSequencesPerProject(project: Project): Sequence[] {
+    const latestSequences = this.sequences[project.projectName];
+    return latestSequences ?? [];
   }
 }

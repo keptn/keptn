@@ -13,12 +13,18 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/client-go/kubernetes"
+	k8sretry "k8s.io/client-go/util/retry"
+
 	v12 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 
+	"github.com/keptn/go-utils/pkg/common/kubeutils"
 	"github.com/keptn/go-utils/pkg/common/strutils"
+	keptn2 "github.com/keptn/go-utils/pkg/lib"
 
 	"github.com/keptn/go-utils/pkg/common/retry"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	v2 "github.com/cloudevents/sdk-go/v2"
@@ -28,8 +34,8 @@ import (
 	"github.com/keptn/go-utils/pkg/common/osutils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	keptnkubeutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/stretchr/testify/require"
+	appsv1 "k8s.io/api/apps/v1"
 )
 
 const (
@@ -320,7 +326,7 @@ func GetServiceExternalIP(namespace string, service string) (string, error) {
 }
 
 func GetPrivateKeyAndPassphrase() (string, string, error) {
-	clientset, err := keptnkubeutils.GetClientset(false)
+	clientset, err := kubeutils.GetClientSet(false)
 	if err != nil {
 		return "", "", err
 	}
@@ -417,13 +423,22 @@ func CreateSubscription(t *testing.T, serviceName string, subscription models.Ev
 }
 
 func GetApiCredentials() (string, string, error) {
-	apiToken, err := keptnkubeutils.GetKeptnAPITokenFromSecret(false, GetKeptnNameSpaceFromEnv(), "keptn-api-token")
+	keptnApiTokenProvider, err := kubeutils.NewAPITokenProvider(false)
+	if err != nil {
+		return "", "", err
+	}
+
+	apiToken, err := keptnApiTokenProvider.GetKeptnAPITokenFromSecret(context.TODO(), GetKeptnNameSpaceFromEnv(), "keptn-api-token")
 	if err != nil {
 		return "", "", err
 	}
 	keptnAPIURL := os.Getenv("KEPTN_ENDPOINT")
 	if keptnAPIURL == "" {
-		serviceIP, err := keptnkubeutils.GetKeptnEndpointFromService(false, GetKeptnNameSpaceFromEnv(), "api-gateway-nginx")
+		keptnEndpointProvider, err := kubeutils.NewKeptnEndpointProvider(false)
+		if err != nil {
+			return "", "", err
+		}
+		serviceIP, err := keptnEndpointProvider.GetKeptnEndpointFromService(context.TODO(), GetKeptnNameSpaceFromEnv(), "api-gateway-nginx")
 		if err != nil {
 			return "", "", err
 		}
@@ -434,7 +449,7 @@ func GetApiCredentials() (string, string, error) {
 
 func ScaleDownUniform(deployments []string) error {
 	for _, deployment := range deployments {
-		if err := keptnkubeutils.ScaleDeployment(false, deployment, GetKeptnNameSpaceFromEnv(), 0); err != nil {
+		if err := ScaleDeployment(false, deployment, GetKeptnNameSpaceFromEnv(), 0); err != nil {
 			// log the error but continue
 			fmt.Println("could not scale down deployment: " + err.Error())
 		}
@@ -442,9 +457,31 @@ func ScaleDownUniform(deployments []string) error {
 	return nil
 }
 
+func ScaleDeployment(useInClusterConfig bool, deployment string, namespace string, replicas int32) error {
+	clientset, err := kubeutils.GetClientSet(useInClusterConfig)
+	if err != nil {
+		return err
+	}
+	deploymentsClient := clientset.AppsV1().Deployments(namespace)
+
+	retryErr := k8sretry.RetryOnConflict(k8sretry.DefaultRetry, func() error {
+		// Retrieve the latest version of Deployment before attempting update
+		// RetryOnConflict uses exponential backoff to avoid exhausting the apiserver
+		result, getErr := deploymentsClient.Get(context.TODO(), deployment, metav1.GetOptions{})
+		if getErr != nil {
+			return fmt.Errorf("Failed to get latest version of Deployment: %v", getErr)
+		}
+
+		result.Spec.Replicas = &replicas
+		_, updateErr := deploymentsClient.Update(context.TODO(), result, metav1.UpdateOptions{})
+		return updateErr
+	})
+	return retryErr
+}
+
 func ScaleUpUniform(deployments []string, replicas int) error {
 	for _, deployment := range deployments {
-		if err := keptnkubeutils.ScaleDeployment(false, deployment, GetKeptnNameSpaceFromEnv(), int32(replicas)); err != nil {
+		if err := ScaleDeployment(false, deployment, GetKeptnNameSpaceFromEnv(), int32(replicas)); err != nil {
 			// log the error but continue
 			fmt.Println("could not scale up deployment: " + err.Error())
 		}
@@ -452,8 +489,78 @@ func ScaleUpUniform(deployments []string, replicas int) error {
 	return nil
 }
 
+func waitForDeploymentToBeRolledOut(useInClusterConfig bool, deploymentName string, namespace string) error {
+	clientset, err := kubeutils.GetClientSet(useInClusterConfig)
+	if err != nil {
+		return err
+	}
+
+	const maxWaitForDeploymentRetries = 90
+	deployment, err := getDeployment(clientset, namespace, deploymentName)
+	retries := 0
+	for {
+
+		var cond *appsv1.DeploymentCondition
+
+		for i := range deployment.Status.Conditions {
+			c := deployment.Status.Conditions[i]
+			if c.Type == appsv1.DeploymentProgressing {
+				cond = &c
+				break
+			}
+		}
+
+		if cond != nil && cond.Reason == "ProgressDeadlineExceeded" {
+			return fmt.Errorf("Deployment %q exceeded its progress deadline", deployment.Name)
+		}
+		if !(deployment.Spec.Replicas != nil && deployment.Status.UpdatedReplicas < *deployment.Spec.Replicas ||
+			deployment.Status.Replicas > deployment.Status.UpdatedReplicas ||
+			deployment.Status.AvailableReplicas < deployment.Status.UpdatedReplicas) {
+			return nil
+		}
+
+		time.Sleep(2 * time.Second)
+		deployment, err = getDeployment(clientset, namespace, deploymentName)
+		if err != nil {
+			return err
+		}
+		retries = retries + 1
+		if retries >= maxWaitForDeploymentRetries {
+			return fmt.Errorf("Timed out waiting for deployment %q", deployment.Name)
+		}
+	}
+}
+
+func getDeployment(clientset *kubernetes.Clientset, namespace string, deploymentName string) (*appsv1.Deployment, error) {
+	dep, err := clientset.AppsV1().Deployments(namespace).Get(context.TODO(), deploymentName, metav1.GetOptions{})
+	if err != nil &&
+		strings.Contains(err.Error(), "the object has been modified; please apply your changes to the latest version and try again") {
+		time.Sleep(10 * time.Second)
+		return clientset.AppsV1().Deployments(namespace).Get(context.TODO(), deploymentName, metav1.GetOptions{})
+	}
+	return dep, nil
+}
+
+// RestartPodsWithSelector restarts the pods which are found in the provided namespace and selector
+func RestartPodsWithSelector(useInClusterConfig bool, namespace string, selector string) error {
+	clientset, err := kubeutils.GetClientSet(useInClusterConfig)
+	if err != nil {
+		return err
+	}
+	pods, err := clientset.CoreV1().Pods(namespace).List(context.TODO(), metav1.ListOptions{LabelSelector: selector})
+	if err != nil {
+		return err
+	}
+	for _, pod := range pods.Items {
+		if err := clientset.CoreV1().Pods(namespace).Delete(context.TODO(), pod.Name, metav1.DeleteOptions{}); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func RestartPod(deploymentName string) error {
-	return keptnkubeutils.RestartPodsWithSelector(false, GetKeptnNameSpaceFromEnv(), "app.kubernetes.io/component="+deploymentName)
+	return RestartPodsWithSelector(false, GetKeptnNameSpaceFromEnv(), "app.kubernetes.io/name="+deploymentName)
 }
 
 func CreateTmpShipyardFile(shipyardContent string) (string, error) {
@@ -484,7 +591,7 @@ func ExecuteCommand(cmd string) (string, error) {
 	if len(split) == 0 {
 		return "", errors.New("invalid command")
 	}
-	return keptnkubeutils.ExecuteCommand(split[0], split[1:])
+	return keptn2.ExecuteCommand(split[0], split[1:])
 }
 
 func ExecuteCommandf(cmd string, a ...interface{}) (string, error) {
@@ -727,7 +834,7 @@ func GetPublicURLOfService(serviceName, projectName, stageName string) (string, 
 // leads to the respective pod being restarted, which increases the duration of the integration tests and prevents us from executing tests in parallel
 func SetShipyardControllerEnvVar(t *testing.T, envVarName, envVarValue string) error {
 
-	k8sClient, err := keptnkubeutils.GetClientset(false)
+	k8sClient, err := kubeutils.GetClientSet(false)
 	if err != nil {
 		return err
 	}
@@ -811,7 +918,7 @@ func SetShipyardControllerEnvVar(t *testing.T, envVarName, envVarValue string) e
 }
 
 func GetPodNamesOfDeployment(labelSelector string) ([]string, error) {
-	k8sClient, err := keptnkubeutils.GetClientset(false)
+	k8sClient, err := kubeutils.GetClientSet(false)
 	if err != nil {
 		return nil, err
 	}
@@ -833,7 +940,7 @@ func GetPodNamesOfDeployment(labelSelector string) ([]string, error) {
 // Needed for our minishift tests right now, as there are problems with the RollingUpdate strategy of the shipyard-controller
 // Should become obsolete when we switch to testing on an OpenShift 4.x cluster instead.
 func SetRecreateUpgradeStrategyForDeployment(deploymentName string) error {
-	clientset, err := keptnkubeutils.GetClientset(false)
+	clientset, err := kubeutils.GetClientSet(false)
 	if err != nil {
 		return err
 	}
@@ -887,7 +994,7 @@ func GetGiteaToken() (string, error) {
 	if tokenFromEnv := os.Getenv("GITEA_TOKEN"); tokenFromEnv != "" {
 		return tokenFromEnv, nil
 	}
-	clientset, err := keptnkubeutils.GetClientset(false)
+	clientset, err := kubeutils.GetClientSet(false)
 	if err != nil {
 		return "", err
 	}
@@ -907,7 +1014,7 @@ func GetGiteaToken() (string, error) {
 
 // GetMongoDBCredentials retrieves the credentials of the mongodb user from the mongodb credentials secret
 func GetMongoDBCredentials() (string, string, error) {
-	clientset, err := keptnkubeutils.GetClientset(false)
+	clientset, err := kubeutils.GetClientSet(false)
 	if err != nil {
 		return "", "", err
 	}
@@ -993,7 +1100,7 @@ func RecreateGitUpstreamRepository(project string) error {
 
 func WaitForDeploymentToBeScaledDown(deploymentName string) error {
 	// if the token is set as an env var, return that
-	clientset, err := keptnkubeutils.GetClientset(false)
+	clientset, err := kubeutils.GetClientSet(false)
 	if err != nil {
 		return err
 	}

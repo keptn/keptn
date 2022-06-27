@@ -20,13 +20,6 @@ jobs:
           path: 'go-utils'
           repository: 'keptn/go-utils'
 
-      - name: Checkout kubernetes-utils Repo
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.KEPTN_BOT_TOKEN }}
-          path: 'kubernetes-utils'
-          repository: 'keptn/kubernetes-utils'
-
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
@@ -92,15 +85,6 @@ jobs:
             go-licence-detector \
               -depsTemplate=../keptn/.dependencies/templates/dependencies.csv.tmpl \
               -depsOut="${TMP_DIR}"/go-utils-dependencies.txt
-          cd ..
-          
-          echo "🔍 Analyzing dependencies in kubernetes-utils"
-          cd ./kubernetes-utils || return
-          go mod tidy
-          go list -m -json all | \
-            go-licence-detector \
-              -depsTemplate=../keptn/.dependencies/templates/dependencies.csv.tmpl \
-              -depsOut="${TMP_DIR}"/kubernetes-utils-dependencies.txt
           cd ..
           
           cat "$TMP_DIR"/*.txt | sort | uniq > dependencies-and-licenses-go.txt

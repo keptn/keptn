@@ -2,6 +2,7 @@ package go_tests
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -15,8 +16,11 @@ func Test_Openshift(t *testing.T) {
 
 	// Common Tests
 	t.Run("Test_LogIngestion", Test_LogIngestion)
-	// Test disabled due to flakyness, in future will be rewritten as component test
-	//t.Run("Test_LogForwarding", Test_LogForwarding)
+
+	// Allow components to be up and running
+	time.Sleep(5 * time.Minute)
+
+	t.Run("Test_LogForwarding", Test_LogForwarding)
 
 	t.Run("Test_SelfHealing", Test_SelfHealing)
 	t.Run("Test_ResourceServiceBasic", Test_ResourceServiceBasic)

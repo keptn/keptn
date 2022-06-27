@@ -11,7 +11,12 @@ import (
 	"github.com/keptn/keptn/cp-connector/pkg/logger"
 	"github.com/keptn/keptn/cp-connector/pkg/subscriptionsource"
 	"github.com/keptn/keptn/cp-connector/pkg/types"
+	"log"
+	"os"
+	"os/signal"
 	"sync"
+	"syscall"
+	"time"
 )
 
 type EventSender = types.EventSender
@@ -49,6 +54,29 @@ func WithLogger(logger logger.Logger) func(plane *ControlPlane) {
 	}
 }
 
+// RunWithGracefulShutdown starts the controlplane component which takes care of registering
+// the integration and handling events and subscriptions. Further, it supports graceful shutdown handling
+// when receiving a SIGHUB, SIGINT, SIGQUIT, SIGARBT or SIGTERM signal.
+//
+// This call is blocking.
+//
+//If you want to start the controlplane component with an own context you need to call the Regiser(ctx,integration)
+// method on your own
+func RunWithGracefulShutdown(controlPlane *ControlPlane, integration Integration, shutdownTimeout time.Duration) error {
+	ctxShutdown, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	ctxShutdown, _ = signal.NotifyContext(ctxShutdown, syscall.SIGHUP, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGABRT, syscall.SIGTERM)
+	go func() {
+		<-ctxShutdown.Done()
+		time.Sleep(shutdownTimeout) // shutdown timeout
+		log.Printf("failed to gracefully shutdown")
+		os.Exit(1)
+	}()
+
+	return controlPlane.Register(ctxShutdown, integration)
+}
+
 // New creates a new ControlPlane
 // It is using a SubscriptionSource source to get information about current uniform subscriptions
 // as well as an EventSource to actually receive events from Keptn
@@ -72,6 +100,7 @@ func New(subscriptionSource subscriptionsource.SubscriptionSource, eventSource e
 func (cp *ControlPlane) Register(ctx context.Context, integration Integration) error {
 	eventUpdates := make(chan types.EventUpdate)
 	subscriptionUpdates := make(chan []models.EventSubscription)
+	errC := make(chan error)
 
 	var err error
 	registrationData := integration.RegistrationData()
@@ -89,31 +118,44 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 	wg.Add(2)
 
 	cp.logger.Debugf("Starting event source for integration ID %s", cp.integrationID)
-	if err := cp.eventSource.Start(ctx, registrationData, eventUpdates, wg); err != nil {
+	if err := cp.eventSource.Start(ctx, registrationData, eventUpdates, errC, wg); err != nil {
 		return err
 	}
 	cp.logger.Debugf("Event source started with data: %+v", registrationData)
 	cp.logger.Debugf("Starting subscription source for integration ID %s", cp.integrationID)
-	if err := cp.subscriptionSource.Start(ctx, registrationData, subscriptionUpdates, wg); err != nil {
+	if err := cp.subscriptionSource.Start(ctx, registrationData, subscriptionUpdates, errC, wg); err != nil {
 		return err
 	}
 	cp.logger.Debug("Subscription source started")
 	cp.registered = true
 	for {
 		select {
+		// event updates
 		case event := <-eventUpdates:
-			cp.logger.Debug("New updates event")
+			cp.logger.Debug("Got new event update")
 			err := cp.handle(ctx, event, integration)
 			if errors.Is(err, ErrEventHandleFatal) {
 				return err
 			}
+
+		// subscription updates
 		case subscriptions := <-subscriptionUpdates:
 			cp.logger.Debugf("ControlPlane: Got a subscription update with %d subscriptions", len(subscriptions))
 			cp.currentSubscriptions = subscriptions
-			cp.eventSource.OnSubscriptionUpdate(subjects(subscriptions))
-			cp.logger.Debug("Update successful")
+			cp.eventSource.OnSubscriptionUpdate(subscriptions)
+
+		// control plane cancelled via context
 		case <-ctx.Done():
-			cp.logger.Debug("Unregistering")
+			cp.logger.Debug("Controlplane cancelled via context. Unregistering...")
+			wg.Wait()
+			cp.registered = false
+			return nil
+
+		// control plane cancelled via error in either one of the sub components
+		case e := <-errC:
+			cp.logger.Debugf("Stopping control plane due to error: %v", e)
+			cp.cleanup()
+			cp.logger.Debug("Waiting for components to shutdown")
 			wg.Wait()
 			cp.registered = false
 			return nil
@@ -127,7 +169,7 @@ func (cp *ControlPlane) IsRegistered() bool {
 }
 
 func (cp *ControlPlane) handle(ctx context.Context, eventUpdate types.EventUpdate, integration Integration) error {
-	cp.logger.Debugf("Received an event of type: %s", eventUpdate.KeptnEvent.Type)
+	cp.logger.Debugf("Received an event of type: %s", *eventUpdate.KeptnEvent.Type)
 	for _, subscription := range cp.currentSubscriptions {
 		if subscription.Event == eventUpdate.MetaData.Subject {
 			cp.logger.Debugf("Check if event matches subscription %s", subscription.ID)
@@ -180,10 +222,13 @@ func (cp *ControlPlane) forwardMatchedEvent(ctx context.Context, eventUpdate typ
 	return nil
 }
 
-func subjects(subscriptions []models.EventSubscription) []string {
-	var ret []string
-	for _, s := range subscriptions {
-		ret = append(ret, s.Event)
+func (cp *ControlPlane) cleanup() {
+	cp.logger.Info("Stopping subscription source...")
+	if err := cp.subscriptionSource.Stop(); err != nil {
+		log.Fatalf("Unable to stop subscription source: %v", err)
 	}
-	return ret
+	cp.logger.Info("Stopping event source...")
+	if err := cp.eventSource.Stop(); err != nil {
+		log.Fatalf("Unable to stop event source: %v", err)
+	}
 }

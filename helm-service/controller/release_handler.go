@@ -2,14 +2,15 @@ package controller
 
 import (
 	"fmt"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/helm-service/pkg/common"
 	"github.com/keptn/keptn/helm-service/pkg/configurationchanger"
 	"github.com/keptn/keptn/helm-service/pkg/helm"
 	"github.com/keptn/keptn/helm-service/pkg/mesh"
 	keptntypes "github.com/keptn/keptn/helm-service/pkg/types"
-	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 )
 
 // ReleaseHandler is a handler for releasing a service
@@ -159,7 +160,7 @@ func (h *ReleaseHandler) updateGeneratedChart(e keptnv2.EventData) error {
 		return err
 	}
 
-	storeOpts := keptnutils.StoreChartOptions{
+	storeOpts := common.StoreChartOptions{
 		Project:   e.Project,
 		Service:   e.Service,
 		Stage:     e.Stage,

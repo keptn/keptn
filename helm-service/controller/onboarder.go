@@ -2,14 +2,15 @@ package controller
 
 import (
 	"fmt"
+
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/helm-service/pkg/common"
 	"github.com/keptn/keptn/helm-service/pkg/namespacemanager"
 	"github.com/keptn/keptn/helm-service/pkg/types"
 
 	"helm.sh/helm/v3/pkg/chart"
 
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
-	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 
 	"github.com/keptn/keptn/helm-service/pkg/helm"
 )
@@ -91,7 +92,7 @@ func (o *onboarder) OnboardGeneratedChart(helmManifest string, event keptnv2.Eve
 		return nil, err
 	}
 
-	storeOpts := keptnutils.StoreChartOptions{
+	storeOpts := common.StoreChartOptions{
 		Project:   event.Project,
 		Service:   event.Service,
 		Stage:     event.Stage,
