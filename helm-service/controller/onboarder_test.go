@@ -2,6 +2,8 @@ package controller
 
 import (
 	"errors"
+	"testing"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/golang/mock/gomock"
@@ -9,10 +11,9 @@ import (
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/helm-service/mocks"
-	keptnutils "github.com/keptn/kubernetes-utils/pkg"
+	"github.com/keptn/keptn/helm-service/pkg/common"
 	"github.com/stretchr/testify/assert"
 	"helm.sh/helm/v3/pkg/chart"
-	"testing"
 )
 
 //
@@ -25,7 +26,6 @@ import (
 //	keptnevents "github.com/keptn/go-utils/pkg/lib"
 //	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 //	"github.com/keptn/keptn/helm-service/mocks"
-//	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 //	"github.com/stretchr/testify/assert"
 //	"helm.sh/helm/v3/pkg/chart"
 //	"testing"
@@ -135,7 +135,7 @@ func TestOnboardGeneratedChart_withDirectStrategy(t *testing.T) {
 	mockBaseHandler := NewMockedHandler(createKeptn(), "")
 	testChart := createChart()
 
-	expectedStoreChartOpts := keptnutils.StoreChartOptions{
+	expectedStoreChartOpts := common.StoreChartOptions{
 		Project:   "myproject",
 		Service:   "myservice",
 		Stage:     "mydev",
@@ -223,7 +223,7 @@ func TestOnboardGeneratedChart_withDuplicateStrategy(t *testing.T) {
 	testChart := createChart()
 	instance := NewOnboarder(mockBaseHandler, mockNamespaceManager, mockChartStorer, mockChartGenerator, mockChartPackager)
 
-	expectedStoreChartOpts := keptnutils.StoreChartOptions{
+	expectedStoreChartOpts := common.StoreChartOptions{
 		Project:   "myproject",
 		Service:   "myservice",
 		Stage:     "mydev",
@@ -295,7 +295,7 @@ func TestOnboardGeneratedChart_chartStorageFails(t *testing.T) {
 	testChart := createChart()
 	instance := NewOnboarder(mockBaseHandler, mockNamespaceManager, mockChartStorer, mockChartGenerator, mockChartPackager)
 
-	expectedStoreChartOpts := keptnutils.StoreChartOptions{
+	expectedStoreChartOpts := common.StoreChartOptions{
 		Project:   "myproject",
 		Service:   "myservice",
 		Stage:     "mydev",
