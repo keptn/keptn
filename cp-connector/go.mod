@@ -2,9 +2,10 @@ module github.com/keptn/keptn/cp-connector
 
 go 1.18
 
-require github.com/keptn/go-utils v0.16.1
+require github.com/keptn/go-utils v0.16.1-0.20220624075633-4d49101f88b4
 
 require (
+	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/benbjohnson/clock v1.3.0
 	github.com/google/uuid v1.3.0
 	github.com/nats-io/nats-server/v2 v2.8.4
@@ -35,11 +36,8 @@ require (
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.19.0 // indirect
 	golang.org/x/crypto v0.0.0-20220315160706-3147a52a75dd // indirect
-	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
 	golang.org/x/sys v0.0.0-20220209214540-3681064d5158 // indirect
 	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8 // indirect
-	golang.org/x/tools v0.1.10-0.20220218145154-897bd77cd717 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
