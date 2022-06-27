@@ -1,8 +1,8 @@
-import NewProjectCreatePage from '../support/pageobjects/NewProjectCreatePage';
+import ProjectSettingsPage from '../support/pageobjects/ProjectSettingsPage';
 import { KeptnInfoResult } from '../../shared/interfaces/keptn-info-result';
 
 describe('Create project https', () => {
-  const createProjectPage = new NewProjectCreatePage();
+  const createProjectPage = new ProjectSettingsPage();
 
   beforeEach(() => {
     createProjectPage.intercept(true).visit();
@@ -144,7 +144,7 @@ describe('Create project https', () => {
 });
 
 describe('Create project ssh', () => {
-  const createProjectPage = new NewProjectCreatePage();
+  const createProjectPage = new ProjectSettingsPage();
 
   beforeEach(() => {
     createProjectPage.intercept(true).visit().selectSshForm();
@@ -209,7 +209,7 @@ describe('Create project ssh', () => {
 });
 
 describe('Create project ssh and https', () => {
-  const createProjectPage = new NewProjectCreatePage();
+  const createProjectPage = new ProjectSettingsPage();
 
   beforeEach(() => {
     createProjectPage.intercept(true).visit();
@@ -280,7 +280,7 @@ describe('Create project ssh and https', () => {
 });
 
 describe('Create project while resource service is disabled', () => {
-  const createProjectPage = new NewProjectCreatePage();
+  const createProjectPage = new ProjectSettingsPage();
 
   it('should show an error if the resource service is disabled', () => {
     createProjectPage.intercept(false).visit().assertConfigurationServiceErrorExists(true);
@@ -288,7 +288,7 @@ describe('Create project while resource service is disabled', () => {
 });
 
 describe('Create project with automatic provisioned git upstream', () => {
-  const createProjectPage = new NewProjectCreatePage();
+  const createProjectPage = new ProjectSettingsPage();
 
   beforeEach(() => {
     createProjectPage.intercept(true, true).visit();
@@ -323,7 +323,7 @@ describe('Create project with automatic provisioned git upstream', () => {
 });
 
 describe('Automatic provisioning message', () => {
-  const createProjectPage = new NewProjectCreatePage();
+  const createProjectPage = new ProjectSettingsPage();
 
   const bridgeInfo: KeptnInfoResult = {
     bridgeVersion: '0.10.0-next.1',

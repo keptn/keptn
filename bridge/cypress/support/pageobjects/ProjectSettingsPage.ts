@@ -8,8 +8,9 @@ import {
   interceptProjectBoard,
   interceptProjectSettings,
 } from '../intercept';
+import { IProject } from '../../../shared/models/IProject';
 
-class NewProjectCreatePage {
+class ProjectSettingsPage {
   private validCertificateInput = '-----BEGIN CERTIFICATE-----\nmyCertificate\n-----END CERTIFICATE-----';
   private validPrivateKeyInput = '-----BEGIN OPENSSH PRIVATE KEY-----\nmyPrivateKey\n-----END OPENSSH PRIVATE KEY-----';
 
@@ -24,6 +25,13 @@ class NewProjectCreatePage {
       interceptMain();
     }
     interceptCreateProject();
+    return this;
+  }
+
+  public interceptProject(project: IProject): this {
+    cy.intercept('/api/project/sockshop', {
+      body: project,
+    }).as('projectPlain');
     return this;
   }
 
@@ -447,6 +455,27 @@ class NewProjectCreatePage {
     }
     return this;
   }
+
+  public clickSaveChangesPopup(): this {
+    cy.get('.dt-button-primary > span.dt-button-label').contains('Save changes').click();
+    return this;
+  }
+
+  public clickDeleteProjectButton(): this {
+    cy.get('span.dt-button-label').contains('Delete this project').click();
+    return this;
+  }
+
+  public typeProjectNameToDelete(projectName: string): this {
+    const projectInputLoc = 'input[placeholder=proj_pattern]';
+    cy.get(projectInputLoc.replace('proj_pattern', projectName)).click().type(projectName);
+    return this;
+  }
+
+  public submitDelete(): this {
+    cy.get('span.dt-button-label').contains('I understand the consequences, delete this project').click();
+    return this;
+  }
 }
 
-export default NewProjectCreatePage;
+export default ProjectSettingsPage;

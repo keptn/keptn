@@ -1,10 +1,11 @@
-import NewProjectCreatePage from '../support/pageobjects/NewProjectCreatePage';
+import ProjectSettingsPage from '../support/pageobjects/ProjectSettingsPage';
 import { IProject } from '../../shared/models/IProject';
 import BasePage from '../support/pageobjects/BasePage';
 import { interceptFailedMetadata } from '../support/intercept';
+import { ProjectBoardPage } from '../support/pageobjects/ProjectBoardPage';
 
 describe('Git upstream extended settings project https test', () => {
-  const projectSettingsPage = new NewProjectCreatePage();
+  const projectSettingsPage = new ProjectSettingsPage();
 
   it('should not show https or ssh form if resource service is disabled', () => {
     const project: IProject = {
@@ -27,11 +28,10 @@ describe('Git upstream extended settings project https test', () => {
       creationDate: '',
       shipyard: '',
     };
-    cy.intercept('/api/project/sockshop', {
-      body: project,
-    });
+
     projectSettingsPage
       .interceptSettings()
+      .interceptProject(project)
       .visitSettings('sockshop')
       .assertSshFormExists(false)
       .assertHttpsFormExists(false);
@@ -58,10 +58,11 @@ describe('Git upstream extended settings project https test', () => {
       creationDate: '',
       shipyard: '',
     };
-    cy.intercept('/api/project/sockshop', {
-      body: project,
-    });
-    projectSettingsPage.interceptSettings(true).visitSettings('sockshop').assertGitUpstreamHeadlineExistsOnce();
+    projectSettingsPage
+      .interceptSettings(true)
+      .interceptProject(project)
+      .visitSettings('sockshop')
+      .assertGitUpstreamHeadlineExistsOnce();
   });
 
   it('should select HTTPS and fill out inputs', () => {
@@ -85,11 +86,10 @@ describe('Git upstream extended settings project https test', () => {
       creationDate: '',
       shipyard: '',
     };
-    cy.intercept('/api/project/sockshop', {
-      body: project,
-    });
+
     projectSettingsPage
       .interceptSettings(true)
+      .interceptProject(project)
       .visitSettings('sockshop')
       .assertGitUsername('myGitUser')
       .assertGitUrl('https://myGitURL.com')
@@ -116,10 +116,38 @@ describe('Git upstream extended settings project https test', () => {
       creationDate: '',
       shipyard: '',
     };
-    cy.intercept('/api/project/sockshop', {
-      body: project,
-    });
-    projectSettingsPage.interceptSettings(true).visitSettings('sockshop').typeGitToken('myToken').updateProject();
+
+    projectSettingsPage
+      .interceptSettings(true)
+      .interceptProject(project)
+      .visitSettings('sockshop')
+      .typeGitToken('myToken')
+      .updateProject();
+    basePage.notificationSuccessVisible('The Git upstream was changed successfully.');
+  });
+
+  it('should prevent data loss if git credentials are not saved before navigation', () => {
+    const basePage = new BasePage();
+    const projectBoardPage = new ProjectBoardPage();
+    const project: IProject = {
+      projectName: 'sockshop',
+      stages: [],
+      gitCredentials: {
+        user: 'myGitUser',
+        remoteURL: 'https://myGitURL.com',
+      },
+      shipyardVersion: '0.14',
+      creationDate: '',
+      shipyard: '',
+    };
+
+    projectSettingsPage
+      .interceptSettings(true)
+      .interceptProject(project)
+      .visitSettings('sockshop')
+      .typeGitToken('myToken');
+    projectBoardPage.goToServicesPage();
+    projectSettingsPage.clickSaveChangesPopup();
     basePage.notificationSuccessVisible('The Git upstream was changed successfully.');
   });
 
@@ -136,10 +164,13 @@ describe('Git upstream extended settings project https test', () => {
       creationDate: '',
       shipyard: '',
     };
-    cy.intercept('/api/project/sockshop', {
-      body: project,
-    });
-    projectSettingsPage.interceptSettings(true).visitSettings('sockshop').typeValidSshPrivateKey().updateProject();
+
+    projectSettingsPage
+      .interceptSettings(true)
+      .interceptProject(project)
+      .visitSettings('sockshop')
+      .typeValidSshPrivateKey()
+      .updateProject();
     basePage.notificationSuccessVisible('The Git upstream was changed successfully.');
   });
 
@@ -155,12 +186,13 @@ describe('Git upstream extended settings project https test', () => {
       creationDate: '',
       shipyard: '',
     };
-    cy.intercept('/api/project/sockshop', {
-      body: project,
-    });
-    projectSettingsPage.interceptSettings(true).visitSettings('sockshop');
 
-    projectSettingsPage.assertSshFormVisible(true).assertGitUsernameSsh('myGitUser');
+    projectSettingsPage
+      .interceptSettings(true)
+      .interceptProject(project)
+      .visitSettings('sockshop')
+      .assertSshFormVisible(true)
+      .assertGitUsernameSsh('myGitUser');
   });
 
   it('should show "Set Git upstream" button', () => {
@@ -169,7 +201,7 @@ describe('Git upstream extended settings project https test', () => {
 });
 
 describe('Project settings with resource service disabled', () => {
-  const projectSettingsPage = new NewProjectCreatePage();
+  const projectSettingsPage = new ProjectSettingsPage();
   it('should show an error if the resource service is not enabled', () => {
     const project: IProject = {
       projectName: 'sockshop',
@@ -178,15 +210,17 @@ describe('Project settings with resource service disabled', () => {
       creationDate: '',
       shipyard: '',
     };
-    cy.intercept('/api/project/sockshop', {
-      body: project,
-    });
-    projectSettingsPage.interceptSettings(false).visitSettings('sockshop').assertConfigurationServiceErrorExists(true);
+
+    projectSettingsPage
+      .interceptSettings(false)
+      .interceptProject(project)
+      .visitSettings('sockshop')
+      .assertConfigurationServiceErrorExists(true);
   });
 });
 
 describe('Project settings with invalid metadata', () => {
-  const projectSettingsPage = new NewProjectCreatePage();
+  const projectSettingsPage = new ProjectSettingsPage();
   it('should show error if metadata endpoint does not return data', () => {
     const project: IProject = {
       projectName: 'sockshop',
@@ -199,10 +233,8 @@ describe('Project settings with invalid metadata', () => {
       creationDate: '',
       shipyard: '',
     };
-    cy.intercept('/api/project/sockshop', {
-      body: project,
-    });
-    projectSettingsPage.interceptSettings(true);
+
+    projectSettingsPage.interceptSettings(true).interceptProject(project);
     interceptFailedMetadata();
     projectSettingsPage.visitSettings('sockshop').assertErrorVisible(true);
   });

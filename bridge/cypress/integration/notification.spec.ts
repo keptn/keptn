@@ -1,14 +1,14 @@
 /// <reference types="cypress" />
 
 import { ServicesSettingsPage } from '../support/pageobjects/ServicesSettingsPage';
-import NewProjectCreatePage from '../support/pageobjects/NewProjectCreatePage';
+import ProjectSettingsPage from '../support/pageobjects/ProjectSettingsPage';
 import DashboardPage from '../support/pageobjects/DashboardPage';
 import BasePage from '../support/pageobjects/BasePage';
 
 describe('Test notifications', () => {
   beforeEach(() => {
     cy.intercept('GET', 'api/v1/metadata', { fixture: 'metadata.json' }).as('metadataCmpl');
-    cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfo.mock' });
+    cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfoEnableResourceService.mock' });
 
     cy.intercept('POST', 'api/hasUnreadUniformRegistrationLogs', {
       statusCode: 200,
@@ -82,7 +82,7 @@ describe('Test notifications', () => {
 
   function createProject(): void {
     const dashboardPage = new DashboardPage();
-    const newProjectCreatePage = new NewProjectCreatePage();
+    const newProjectCreatePage = new ProjectSettingsPage();
     const GIT_USERNAME = 'carpe-github-username';
     const PROJECT_NAME = 'dynatrace';
     const GIT_REMOTE_URL = 'https://git-repo.com';

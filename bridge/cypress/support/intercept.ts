@@ -112,6 +112,10 @@ export function interceptProjectSettings(): void {
     statusCode: 200,
     body: {},
   });
+  cy.intercept('/api/project/sockshop', { fixture: 'project.mock' }).as('projectPlain');
+  cy.intercept('DELETE', '/api/controlPlane/v1/project/sockshop', {
+    statusCode: 200,
+  });
 }
 
 export function interceptDashboard(): void {
