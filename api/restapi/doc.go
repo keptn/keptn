@@ -11,6 +11,7 @@
 //  Consumes:
 //    - application/cloudevents+json
 //    - application/json
+//    - multipart/form-data
 //
 //  Produces:
 //    - application/json
