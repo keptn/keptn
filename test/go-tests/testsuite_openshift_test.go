@@ -20,7 +20,7 @@ func Test_Openshift(t *testing.T) {
 	// Allow components to be up and running
 	time.Sleep(5 * time.Minute)
 
-	//t.Run("Test_LogForwarding", Test_LogForwarding)
+	t.Run("Test_LogForwarding", Test_LogForwarding)
 
 	t.Run("Test_SelfHealing", Test_SelfHealing)
 	t.Run("Test_ResourceServiceBasic", Test_ResourceServiceBasic)
