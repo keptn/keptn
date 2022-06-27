@@ -176,6 +176,7 @@ const apiRouter = (params: {
         req.session?.tokenSet?.access_token,
         req.params.projectName,
         req.params.keptnContext,
+        req.query.includeRemediations === 'true',
         req.query.fromTime?.toString()
       );
       return res.json(deployment);
@@ -366,8 +367,7 @@ const apiRouter = (params: {
         const serviceRemediationInformation = await dataService.getServiceRemediationInformation(
           req.session?.tokenSet?.access_token,
           req.params.projectName,
-          req.params.serviceName,
-          req.query.config?.toString() === 'true'
+          req.params.serviceName
         );
 
         return res.json(serviceRemediationInformation);

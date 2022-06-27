@@ -133,15 +133,36 @@ export function interceptServicesPage(): void {
   cy.intercept('GET', '/api/project/sockshop/serviceStates', {
     statusCode: 200,
     fixture: 'get.sockshop.service.states.mock.json',
-  });
-  cy.intercept('GET', '/api/project/sockshop/deployment/da740469-9920-4e0c-b304-0fd4b18d17c2', {
-    statusCode: 200,
-    fixture: 'get.sockshop.service.carts.deployment.mock.json',
-  });
+  }).as('serviceStates');
+  cy.intercept(
+    'GET',
+    '/api/project/sockshop/deployment/da740469-9920-4e0c-b304-0fd4b18d17c2?includeRemediations=false',
+    {
+      statusCode: 200,
+      fixture: 'get.sockshop.service.carts.deployment.mock.json',
+    }
+  ).as('ServiceDeployment');
   cy.intercept('GET', 'api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?*', {
     statusCode: 200,
     fixture: 'get.sockshop.service.carts.evaluations.mock.json',
   });
+}
+
+export function interceptServicesPageWithRemediation(): void {
+  interceptServicesPage();
+  cy.intercept('GET', '/api/project/sockshop/serviceStates', {
+    statusCode: 200,
+    fixture: 'get.sockshop.service.states.with.remediation.mock.json',
+  }).as('serviceStates');
+
+  cy.intercept(
+    'GET',
+    '/api/project/sockshop/deployment/fa66eea5-53a8-45b6-aefe-ef03c08b61e4?includeRemediations=true',
+    {
+      statusCode: 200,
+      fixture: 'get.sockshop.service.carts.deployment.with.remediations.mock.json',
+    }
+  ).as('ServiceDeployment');
 }
 
 export function interceptSequencesPage(): void {
@@ -418,7 +439,7 @@ export function interceptHeatmapComponent(): void {
   cy.intercept('GET', '/api/project/sockshop/serviceStates', {
     statusCode: 200,
     fixture: 'get.sockshop.service.states.mock.json',
-  });
+  }).as('serviceStates');
   cy.intercept('GET', '/api/project/sockshop/deployment/da740469-9920-4e0c-b304-0fd4b18d17c2', {
     statusCode: 200,
     fixture: 'get.sockshop.service.carts.deployment.mock.json',

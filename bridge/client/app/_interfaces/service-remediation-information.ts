@@ -5,6 +5,5 @@ export interface IServiceRemediationInformation extends sri {
   stages: {
     name: string;
     remediations: Sequence[];
-    config?: string;
   }[];
 }

@@ -13,8 +13,9 @@ import {
 import { Deployment } from '../../_models/deployment';
 import { Location } from '@angular/common';
 import { ServiceState } from '../../_models/service-state';
+import { DataService } from '../../_services/data.service';
 
-describe('KtbEventsListComponent', () => {
+describe('KtbServiceViewComponent', () => {
   let component: KtbServiceViewComponent;
   let fixture: ComponentFixture<KtbServiceViewComponent>;
   const projectName = 'sockshop';
@@ -60,7 +61,10 @@ describe('KtbEventsListComponent', () => {
         shkeptncontext: selectedDeployment.keptnContext,
       })
     );
-    loadDeployment(selectedDeployment.keptnContext);
+    loadDeployment(
+      selectedDeployment.keptnContext,
+      selectedDeployment.stages.some((st) => st.hasOpenRemediations)
+    );
 
     expect(component.selectedDeployment?.deploymentInformation.deployment).not.toBeUndefined();
     expect(component.selectedDeployment?.stage).toEqual('staging');
@@ -79,7 +83,10 @@ describe('KtbEventsListComponent', () => {
         shkeptncontext: selectedDeployment.keptnContext,
       })
     );
-    loadDeployment(selectedDeployment.keptnContext);
+    loadDeployment(
+      selectedDeployment.keptnContext,
+      selectedDeployment.stages.some((st) => st.hasOpenRemediations)
+    );
 
     expect(component.selectedDeployment?.deploymentInformation.deployment).not.toBeUndefined();
     expect(component.selectedDeployment?.stage).toEqual('production');
@@ -141,11 +148,28 @@ describe('KtbEventsListComponent', () => {
       'sockshop'
     );
 
-    httpMock
-      .expectOne(`./api/project/${projectName}/service/${serviceName}/openRemediations?config=true`)
-      .flush({ stages: [] });
+    httpMock.expectOne(`./api/project/${projectName}/service/${serviceName}/openRemediations`).flush({ stages: [] });
     fixture.detectChanges();
     expect(updateRemediationSpy).toHaveBeenCalled();
+  });
+
+  it('should not update remediations if hasRemediations is false', () => {
+    const selectedDeployment = ServiceStateResponse[0].deploymentInformation[3];
+    const deployment = Deployment.fromJSON(ServiceDeploymentMock);
+    const updateRemediationSpy = jest.spyOn(TestBed.inject(DataService), 'getOpenRemediationsOfService');
+
+    component.deploymentSelected(
+      {
+        deploymentInformation: {
+          ...selectedDeployment,
+          deployment,
+        },
+        stage: 'production',
+      },
+      'sockshop'
+    );
+    fixture.detectChanges();
+    expect(updateRemediationSpy).not.toHaveBeenCalled();
   });
 
   it('should update service states', () => {
@@ -183,16 +207,20 @@ describe('KtbEventsListComponent', () => {
 
     httpMock
       .expectOne(
-        `./api/project/${projectName}/deployment/${selectedDeployment.keptnContext}?fromTime=2021-10-13T10:54:43.315Z`
+        `./api/project/${projectName}/deployment/${
+          selectedDeployment.keptnContext
+        }?fromTime=2021-10-13T10:54:43.315Z&includeRemediations=${selectedDeployment.stages.some(
+          (st) => st.hasOpenRemediations
+        )}`
       )
       .flush(AppUtils.copyObject(ServiceDeploymentWithApprovalMock));
     expect(updateDeploymentSpy).toHaveBeenCalled();
   });
 
-  function loadDeployment(keptnContext: string): void {
+  function loadDeployment(keptnContext: string, includeRemediations: boolean): void {
     httpMock.expectOne(`./api/project/${projectName}/serviceStates`).flush(AppUtils.copyObject(ServiceStateResponse));
     httpMock
-      .expectOne(`./api/project/${projectName}/deployment/${keptnContext}`)
+      .expectOne(`./api/project/${projectName}/deployment/${keptnContext}?includeRemediations=${includeRemediations}`)
       .flush(AppUtils.copyObject(ServiceDeploymentMock));
   }
 });

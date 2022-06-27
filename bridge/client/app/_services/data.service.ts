@@ -703,8 +703,13 @@ export class DataService {
       .pipe(map((serviceStates) => serviceStates.map((state) => ServiceState.fromJSON(state))));
   }
 
-  public getServiceDeployment(projectName: string, keptnContext: string, fromTime?: string): Observable<Deployment> {
-    return this.apiService.getServiceDeployment(projectName, keptnContext, fromTime).pipe(
+  public getServiceDeployment(
+    projectName: string,
+    keptnContext: string,
+    includeRemediations: boolean,
+    fromTime?: string
+  ): Observable<Deployment> {
+    return this.apiService.getServiceDeployment(projectName, keptnContext, includeRemediations, fromTime).pipe(
       map((deployment) => {
         return Deployment.fromJSON(deployment);
       })

@@ -4,6 +4,5 @@ export interface ServiceRemediationInformation {
   stages: {
     name: string;
     remediations: Sequence[];
-    config?: string;
   }[];
 }

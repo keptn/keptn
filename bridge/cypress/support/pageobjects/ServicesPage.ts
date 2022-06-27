@@ -1,15 +1,23 @@
 /// <reference types="cypress" />
 
 import { SliResult } from '../../../client/app/_models/sli-result';
-import { interceptServicesPage } from '../intercept';
+import { interceptProjectBoard, interceptServicesPage, interceptServicesPageWithRemediation } from '../intercept';
 
 type SliColumn = 'name' | 'value' | 'weight' | 'score' | 'result' | 'criteria' | 'pass-criteria' | 'warning-criteria';
 
 class ServicesPage {
-  SERVICE_PANEL_TEXT_LOC = 'dt-info-group-title.dt-info-group-title > div > h2';
+  public interceptAll(): this {
+    interceptProjectBoard();
+    return this.intercept();
+  }
 
   public intercept(): this {
     interceptServicesPage();
+    return this;
+  }
+
+  public interceptRemediations(): this {
+    interceptServicesPageWithRemediation();
     return this;
   }
 
@@ -55,6 +63,12 @@ class ServicesPage {
   public selectService(serviceName: string, version: string): this {
     cy.byTestId(`keptn-service-view-service-${serviceName}`).click();
     cy.get('dt-row').contains(version).click();
+    cy.wait('@ServiceDeployment');
+    return this;
+  }
+
+  public selectStage(stageName: string): this {
+    cy.byTestId(`keptn-deployment-timeline-stage-${stageName}`).click();
     return this;
   }
 
@@ -188,6 +202,11 @@ class ServicesPage {
   verifyCurrentOpenServiceNameEvaluationPanel(serviceName: string): this {
     cy.get('div.service-title > span').should('have.text', serviceName);
     cy.get('.highcharts-plot-background').should('be.visible');
+    return this;
+  }
+
+  public assertRemediationSequenceCount(count: number): this {
+    cy.byTestId('ktb-sequence-list-item-remediation').should('have.length', count);
     return this;
   }
 }

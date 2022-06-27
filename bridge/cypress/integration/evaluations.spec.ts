@@ -11,7 +11,7 @@ describe('evaluations', () => {
     cy.intercept('GET', '/api/project/sockshop/serviceStates', {
       statusCode: 200,
       fixture: 'get.sockshop.service.states.mock.json',
-    });
+    }).as('serviceStates');
     cy.intercept('GET', '/api/project/sockshop/deployment/da740469-9920-4e0c-b304-0fd4b18d17c2', {
       statusCode: 200,
       fixture: 'get.sockshop.service.carts.deployment.mock.json',
@@ -30,7 +30,7 @@ describe('evaluations', () => {
     cy.intercept('GET', '/api/project/sockshop/serviceStates', {
       statusCode: 200,
       fixture: 'get.sockshop.service.states.mock.json',
-    });
+    }).as('serviceStates');
     cy.intercept('GET', '/api/project/sockshop/deployment/da740469-9920-4e0c-b304-0fd4b18d17c2', {
       statusCode: 200,
       fixture: 'get.sockshop.service.carts.deployment.mock.json',

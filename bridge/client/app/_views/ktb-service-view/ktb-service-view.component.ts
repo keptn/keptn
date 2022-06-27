@@ -1,6 +1,6 @@
 import { Component, HostBinding, Inject, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { combineLatest, Observable, Subject, Subscription } from 'rxjs';
+import { combineLatest, Observable, of, Subject, Subscription } from 'rxjs';
 import { filter, map, switchMap, takeUntil, tap } from 'rxjs/operators';
 import { DataService } from '../../_services/data.service';
 import { Location } from '@angular/common';
@@ -142,7 +142,9 @@ export class KtbServiceViewComponent implements OnDestroy {
               originalDeployment.update(update);
             }
             this.deploymentLoading = false;
-          } else if (originalDeployment) {
+            return;
+          }
+          if (originalDeployment && update) {
             originalDeployment.updateRemediations(update);
           }
         },
@@ -157,27 +159,34 @@ export class KtbServiceViewComponent implements OnDestroy {
     projectName: string
   ): Observable<Deployment | ServiceRemediationInformation> {
     const originalDeployment = deploymentInfo.deploymentInformation.deployment;
+    const hasRemediations = deploymentInfo.deploymentInformation.stages.some((stage) => stage.hasOpenRemediations);
     this.selectedDeployment = deploymentInfo;
-    let update$: Observable<Deployment | ServiceRemediationInformation>;
 
     if (!originalDeployment) {
       // initially fetch deployment
       this.deploymentLoading = true;
-      update$ = this.dataService.getServiceDeployment(projectName, deploymentInfo.deploymentInformation.keptnContext);
-    } else {
-      // update deployment
-      if (originalDeployment.isFinished()) {
-        // deployment is finished. Just update open remediations
-        update$ = this.dataService.getOpenRemediationsOfService(projectName, originalDeployment.service);
-      } else {
-        update$ = this.dataService.getServiceDeployment(
-          projectName,
-          deploymentInfo.deploymentInformation.keptnContext,
-          originalDeployment.latestTimeUpdated?.toISOString()
-        );
-      }
+      return this.dataService.getServiceDeployment(
+        projectName,
+        deploymentInfo.deploymentInformation.keptnContext,
+        hasRemediations
+      );
     }
-    return update$;
+    // update deployment
+    if (originalDeployment.isFinished()) {
+      // deployment is finished. Just update open remediations
+      if (hasRemediations) {
+        return this.dataService.getOpenRemediationsOfService(projectName, originalDeployment.service);
+      }
+      const stages = originalDeployment.stages.map((stage) => ({ name: stage.name, remediations: [] }));
+      return of(ServiceRemediationInformation.fromJSON({ stages }));
+    }
+
+    return this.dataService.getServiceDeployment(
+      projectName,
+      deploymentInfo.deploymentInformation.keptnContext,
+      hasRemediations,
+      originalDeployment.latestTimeUpdated?.toISOString()
+    );
   }
 
   public ngOnDestroy(): void {
