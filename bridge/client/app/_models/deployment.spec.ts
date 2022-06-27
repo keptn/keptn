@@ -76,19 +76,13 @@ describe('Deployment', () => {
     deployment.updateRemediations(serviceRemediationInformation);
 
     // only update deployed
-    expect(deployment.stages[0].remediationConfig).toBeUndefined();
     expect(deployment.stages[0].openRemediations).toEqual([]);
-
-    expect(deployment.stages[1].remediationConfig).toBeUndefined();
     expect(deployment.stages[1].openRemediations).toEqual([]);
-
-    expect(deployment.stages[2].remediationConfig).toBeUndefined();
     expect(deployment.stages[2].openRemediations).toEqual([]);
   });
 
   it('should update open remediations', () => {
     const deployment = Deployment.fromJSON(ServiceDeploymentMock);
-    deployment.stages[2].remediationConfig = undefined;
     deployment.stages[2].openRemediations = [];
     const serviceRemediationInformation = ServiceRemediationInformation.fromJSON(
       ServiceRemediationInformationProductionWithRemediationMock
@@ -96,13 +90,8 @@ describe('Deployment', () => {
     deployment.updateRemediations(serviceRemediationInformation);
 
     // only update deployed
-    expect(deployment.stages[0].remediationConfig).toBeUndefined();
     expect(deployment.stages[0].openRemediations).toEqual([]);
-
-    expect(deployment.stages[1].remediationConfig).toBeUndefined();
     expect(deployment.stages[1].openRemediations).toEqual([]);
-
-    expect(deployment.stages[2].remediationConfig).toEqual(serviceRemediationInformation.stages[0].config);
     expect(deployment.stages[2].openRemediations).toEqual(serviceRemediationInformation.stages[0].remediations);
   });
 

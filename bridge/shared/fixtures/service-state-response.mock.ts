@@ -40,19 +40,6 @@ const serviceStateResponseMock = [
         version: '0.12.1',
         keptnContext: '2c0e568b-8bd3-4726-a188-e528423813ed',
       },
-      {
-        stages: [
-          {
-            name: 'production-b',
-            hasOpenRemediations: false,
-            time: '2021-10-13T11:01:18.567Z',
-          },
-        ],
-        name: 'carts',
-        image: 'carts',
-        version: '0.12.1',
-        keptnContext: '2c0e568b-8bd3-4726-a188-e528423813ef',
-      },
     ],
     name: 'carts',
   },
@@ -83,6 +70,27 @@ const serviceStateResponseMock = [
       },
     ],
     name: 'carts-db',
+  },
+];
+
+const serviceStateResponseWithoutRemediationsMock = [
+  {
+    deploymentInformation: [
+      {
+        stages: [
+          {
+            name: 'dev',
+            hasOpenRemediations: false,
+            time: '2021-10-13T11:01:18.567Z',
+          },
+        ],
+        name: 'carts-b',
+        image: 'carts-b',
+        version: '0.12.1',
+        keptnContext: '2c0e568b-8bd3-4726-a188-e528423813ef',
+      },
+    ],
+    name: 'carts',
   },
 ];
 
@@ -122,3 +130,4 @@ const serviceStateQualityGatesOnlyResponse = [
 
 export { serviceStateResponseMock as ServiceStateResponse };
 export { serviceStateQualityGatesOnlyResponse as ServiceStateQualityGatesOnlyResponse };
+export { serviceStateResponseWithoutRemediationsMock as ServiceStateResponseWithoutRemediationsMock };

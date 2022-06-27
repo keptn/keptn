@@ -29,7 +29,6 @@ export interface IStageDeployment {
   hasEvaluation: boolean;
   latestEvaluation?: Trace;
   openRemediations: Sequence[];
-  remediationConfig?: string;
   approvalInformation?: {
     trace: Trace;
     deployedImage?: string;

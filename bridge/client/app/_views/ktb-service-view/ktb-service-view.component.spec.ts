@@ -5,7 +5,10 @@ import { ActivatedRoute, convertToParamMap, ParamMap } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
-import { ServiceStateResponse } from '../../../../shared/fixtures/service-state-response.mock';
+import {
+  ServiceStateResponse,
+  ServiceStateResponseWithoutRemediationsMock,
+} from '../../../../shared/fixtures/service-state-response.mock';
 import {
   ServiceDeploymentMock,
   ServiceDeploymentWithApprovalMock,
@@ -154,7 +157,7 @@ describe('KtbServiceViewComponent', () => {
   });
 
   it('should not update remediations if hasRemediations is false', () => {
-    const selectedDeployment = ServiceStateResponse[0].deploymentInformation[3];
+    const selectedDeployment = ServiceStateResponseWithoutRemediationsMock[0].deploymentInformation[0];
     const deployment = Deployment.fromJSON(ServiceDeploymentMock);
     const updateRemediationSpy = jest.spyOn(TestBed.inject(DataService), 'getOpenRemediationsOfService');
 

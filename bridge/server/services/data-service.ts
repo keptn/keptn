@@ -41,7 +41,6 @@ type FlatSecret = { path: string; name: string; key: string; parsedPath: string 
 type StageRemediationInformation = {
   remediations: Remediation[];
   remediationsForStage: Sequence[];
-  config?: string;
 };
 type StageOpenInformation = {
   openApprovals: Trace[];
@@ -1186,7 +1185,6 @@ export class DataService {
           state: stage.state,
           lastTimeUpdated: (lastTimeUpdated ? new Date(lastTimeUpdated) : new Date()).toISOString(),
           openRemediations: stageRemediationInformation?.remediationsForStage ?? [],
-          remediationConfig: stageRemediationInformation?.config,
           approvalInformation,
           subSequences: this.getSubSequencesForStage(stageTraces, stage.name, fromTime),
           deploymentURL,
@@ -1255,7 +1253,6 @@ export class DataService {
         ? await this.getOpenRemediations(accessToken, projectName, false, serviceName)
         : [];
     }
-    let remediationConfig: string | undefined;
     const openRemediationsForStage = openRemediations
       .filter((seq) => seq.stages.some((st) => st.name === stageName))
       .map((seq) => {
@@ -1265,20 +1262,10 @@ export class DataService {
           stages: stages.filter((st) => st.name === stageName),
         });
       });
-    if (openRemediationsForStage.length) {
-      const resourceResponse = await this.apiService.getServiceResource(
-        accessToken,
-        projectName,
-        stageName,
-        serviceName,
-        'remediation.yaml'
-      );
-      remediationConfig = resourceResponse.data.resourceContent;
-    }
+
     return {
       remediations: openRemediations,
       remediationsForStage: openRemediationsForStage,
-      config: remediationConfig,
     };
   }
 
