@@ -38,13 +38,10 @@ jobs:
             bridge
             cli
             configuration-service
-            cp-connector
-            cp-common
             deps
             deps-dev
             distributor
             docs
-            go-sdk
             helm-service
             installer
             jmeter-service
