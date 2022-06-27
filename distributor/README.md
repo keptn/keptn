@@ -21,6 +21,7 @@ Additional environment variables configure other information for the distributor
 - `API_PROXY_PORT` - Port on which the distributor listens for incoming Keptn API requests by its execution plane service. default = `8081`.
 - `API_PROXY_PATH` - Path on which the distributor listens for incoming Keptn API requests by its execution plane service. default = `/`.
 - `API_PROXY_HTTP_TIMEOUT` - Timeout value (in seconds) for the API Proxy's HTTP Client. default = `30`.
+- `API_PROXY_MAX_PAYLOAD_BYTES_KB` - Maximum request body size for requests sent via the distributor's API proxy. default = `64`.
 - `HTTP_POLLING_INTERVAL` - Interval (in seconds) in which the distributor checks for new triggered events on the Keptn API. default = `10`
 - `EVENT_FORWARDING_PATH` - Path on which the distributor listens for incoming events from its execution plane service. default = `/event`
 - `HTTP_SSL_VERIFY` - Determines whether the distributor should check the validity of SSL certificates when sending requests to a Keptn API endpoint via HTTPS. default = `true`

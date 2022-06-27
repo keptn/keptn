@@ -67,7 +67,7 @@ func main() {
 
 	controlPlane := controlplane.New(apiset.UniformV1(), env.PubSubConnectionType(), env)
 	uniformWatch := watch.New(controlPlane, env)
-	forwarder := forwarder.New(apiset.APIV1(), httpClient, env)
+	forwarder := forwarder.New(apiset.APIV1(), httpClient, env, forwarder.WithMaxBytes(env.GetAPIProxyMaxBytes()))
 
 	// Start event forwarder
 	logger.Info("Starting Event Forwarder")

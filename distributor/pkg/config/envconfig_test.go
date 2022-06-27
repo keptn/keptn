@@ -358,3 +358,37 @@ func TestEnvConfig_GetAPIProxyHTTPTimeout(t *testing.T) {
 		})
 	}
 }
+
+func TestEnvConfig_GetAPIProxyMaxBytes(t *testing.T) {
+	type fields struct {
+		APIProxyMaxBytesKB int
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   int64
+	}{
+		{
+			name: "64KB",
+			fields: fields{
+				APIProxyMaxBytesKB: 64,
+			},
+			want: 65536,
+		},
+		{
+			name: "no limit",
+			fields: fields{
+				APIProxyMaxBytesKB: 0,
+			},
+			want: 0,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			env := &EnvConfig{
+				APIProxyMaxPayloadBytesKB: tt.fields.APIProxyMaxBytesKB,
+			}
+			assert.Equalf(t, tt.want, env.GetAPIProxyMaxBytes(), "GetAPIProxyMaxBytes()")
+		})
+	}
+}
