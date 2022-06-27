@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	"github.com/keptn/go-utils/pkg/sdk/connector/eventsource"
+	eventsource "github.com/keptn/go-utils/pkg/sdk/connector/eventsource/nats"
 	"github.com/keptn/go-utils/pkg/sdk/connector/logforwarder"
 	"github.com/keptn/go-utils/pkg/sdk/connector/subscriptionsource"
 	"log"
@@ -18,10 +18,10 @@ import (
 
 	"github.com/kelseyhightower/envconfig"
 	"github.com/keptn/go-utils/pkg/api/models"
+	api "github.com/keptn/go-utils/pkg/common/apiutils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/go-utils/pkg/sdk/connector/controlplane"
 	"github.com/keptn/go-utils/pkg/sdk/connector/nats"
-	"github.com/keptn/keptn/cp-common/api"
 	"github.com/keptn/keptn/lighthouse-service/event_handler"
 	"github.com/pkg/errors"
 )

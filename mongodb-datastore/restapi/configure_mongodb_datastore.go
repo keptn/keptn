@@ -6,7 +6,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"github.com/keptn/go-utils/pkg/sdk/connector/eventsource"
+	eventsource "github.com/keptn/go-utils/pkg/sdk/connector/eventsource/nats"
 	"github.com/keptn/go-utils/pkg/sdk/connector/subscriptionsource"
 	"io/ioutil"
 	"net/http"
