@@ -3,22 +3,26 @@ package main
 import (
 	"context"
 	"fmt"
+
 	"github.com/keptn/keptn/helm-service/controller"
+	"github.com/keptn/keptn/helm-service/pkg/common"
 	"github.com/keptn/keptn/helm-service/pkg/configurationchanger"
 	"github.com/keptn/keptn/helm-service/pkg/helm"
 
-	logger "github.com/sirupsen/logrus"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/url"
 	"os/signal"
 	"sync"
 	"syscall"
 
-	"github.com/keptn/keptn/helm-service/pkg/namespacemanager"
+	logger "github.com/sirupsen/logrus"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"log"
 	"os"
 
-	keptnutils "github.com/keptn/kubernetes-utils/pkg"
+	"github.com/keptn/go-utils/pkg/common/kubeutils"
+
+	"github.com/keptn/keptn/helm-service/pkg/namespacemanager"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
@@ -144,8 +148,8 @@ func createActionTriggeredHandler(configServiceURL *url.URL, keptn *keptnv2.Kept
 func createReleaseHandler(url *url.URL, mesh *mesh.IstioMesh, keptn *keptnv2.Keptn) *controller.ReleaseHandler {
 	configChanger := configurationchanger.NewConfigurationChanger(url.String())
 	chartGenerator := helm.NewGeneratedChartGenerator(mesh)
-	chartStorer := keptnutils.NewChartStorer(utils.NewResourceHandler(url.String()))
-	chartPackager := keptnutils.NewChartPackager()
+	chartStorer := common.NewChartStorer(utils.NewResourceHandler(url.String()))
+	chartPackager := common.NewChartPackager()
 	keptnBaseHandler := createKeptnBaseHandler(url, keptn)
 	releaseHandler := controller.NewReleaseHandler(keptnBaseHandler, mesh, configChanger, chartGenerator, chartStorer, chartPackager)
 	return releaseHandler
@@ -160,9 +164,9 @@ func createRollbackHandler(url *url.URL, mesh *mesh.IstioMesh, keptn *keptnv2.Ke
 
 func createOnboarder(configServiceURL *url.URL, keptn *keptnv2.Keptn, mesh *mesh.IstioMesh) controller.Onboarder {
 	namespaceManager := namespacemanager.NewNamespaceManager(keptn.Logger)
-	chartStorer := keptnutils.NewChartStorer(utils.NewResourceHandler(configServiceURL.String()))
+	chartStorer := common.NewChartStorer(utils.NewResourceHandler(configServiceURL.String()))
 	chartGenerator := helm.NewGeneratedChartGenerator(mesh)
-	chartPackager := keptnutils.NewChartPackager()
+	chartPackager := common.NewChartPackager()
 	keptnBaseHandler := createKeptnBaseHandler(configServiceURL, keptn)
 	onBoarder := controller.NewOnboarder(keptnBaseHandler, namespaceManager, chartStorer, chartGenerator, chartPackager)
 	return onBoarder
@@ -204,7 +208,7 @@ func _main(args []string, env envConfig) int {
 
 // hasAdminRights checks if the current pod is assigned the Admin Role
 func hasAdminRights() (bool, error) {
-	clientset, err := keptnutils.GetClientset(true)
+	clientset, err := kubeutils.GetClientSet(true)
 	if err != nil {
 		return false, err
 	}

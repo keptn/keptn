@@ -11,7 +11,6 @@ import (
 	"github.com/keptn/go-utils/pkg/common/fileutils"
 	"github.com/keptn/keptn/cli/pkg/common"
 	"github.com/keptn/keptn/cli/pkg/config"
-	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"gopkg.in/yaml.v3"
 )
 
@@ -185,10 +184,10 @@ func getCurrentContextFromKubeConfig() {
 
 	var kubeconfig string
 	if os.Getenv("KUBECONFIG") != "" {
-		kubeconfig = keptnutils.ExpandTilde(os.Getenv("KUBECONFIG"))
+		kubeconfig = fileutils.ExpandTilde(os.Getenv("KUBECONFIG"))
 	} else {
 		kubeconfig = filepath.Join(
-			keptnutils.UserHomeDir(), ".kube", "config",
+			fileutils.UserHomeDir(), ".kube", "config",
 		)
 	}
 

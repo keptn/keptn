@@ -19,6 +19,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/keptn/keptn/cli/pkg/platform"
 	"github.com/spf13/cobra"
 )
