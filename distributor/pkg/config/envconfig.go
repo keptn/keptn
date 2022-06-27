@@ -203,10 +203,7 @@ func (env *EnvConfig) GetAPIProxyHTTPTimeout() time.Duration {
 }
 
 func (env *EnvConfig) GetAPIProxyMaxBytes() int64 {
-	if env.APIProxyMaxPayloadBytesKB > 0 {
-		return int64(env.APIProxyMaxPayloadBytesKB << 10)
-	}
-	return 0
+	return int64(env.APIProxyMaxPayloadBytesKB << 10)
 }
 
 func queryEscapeConfigurationServiceURI(path string, value string) string {
