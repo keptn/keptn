@@ -271,42 +271,11 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v0
 
-      - name: Install and start GKE cluster
-        if: env.CLOUD_PROVIDER == 'GKE'
-        env:
-          GKE_VERSION: ${{ matrix.PLATFORM_VERSION }}
-          GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_RESTRICTED_SERVICE_KEY }}
-          GCLOUD_PROJECT_NAME: ${{ secrets.GCLOUD_PROJECT_NAME }}
-          CLOUDSDK_COMPUTE_ZONE: "us-east1-b"
-          CLOUDSDK_REGION: "us-east1"
-          GKE_KUBECONFIG: ${{ secrets.INTEGRATION_TEST_KUBECONFIG }}
-          BRANCH: ${{ steps.determine_branch.outputs.BRANCH}}
-        id: install_gke
-        run: |
-          export CLUSTER_NAME_NIGHTLY=${{ matrix.CLUSTER_NAME }}
-          echo "Setting up GCloud CLI"
-          export OS_TYPE="linux"
-          
-          export CLOUDSDK_CORE_DISABLE_PROMPTS=1;
-          
-          gcloud --quiet config set project "$GCLOUD_PROJECT_NAME"
-          gcloud --quiet config set container/cluster "$CLUSTER_NAME_NIGHTLY"
-          gcloud --quiet config set compute/zone "${CLOUDSDK_COMPUTE_ZONE}"
-          
-          
-          echo "Setting up kubectl"
-          echo "Setting KUBECONFIG to $PWD/.kubeconfig"
-          
-          echo "$GKE_KUBECONFIG" >> "$PWD/.kubeconfig"
-          chmod 600 "$PWD/.kubeconfig"
-          export KUBECONFIG="$PWD/.kubeconfig"
-          
-          echo "KUBECONFIG=${KUBECONFIG}" >> $GITHUB_ENV
-          
-          echo "Setting kube context..."
-          kubectl config use-context "$CLUSTER_NAME_NIGHTLY"
-          
-          echo "##[set-output name=CLUSTER_NAME_NIGHTLY;]$(echo ${CLUSTER_NAME_NIGHTLY})"
+      - id: 'get-credentials'
+        uses: google-github-actions/get-gke-credentials@v0
+        with:
+          cluster_name: ${{ matrix.CLUSTER_NAME }}
+          location: "us-east1-b"
 
       - name: Install Istio
         if: env.CLOUD_PROVIDER != 'minishift-on-GHA' && env.CLOUD_PROVIDER != 'GKE' # no need to install istio on minishift or GKE (pre-installed)
