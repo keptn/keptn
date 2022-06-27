@@ -263,6 +263,14 @@ jobs:
           k3d cluster create mykeptn --k3s-server-arg '--no-deploy=traefik' --agents 1 --registry-use "$AIRGAPPED_REGISTRY_URL"
           kubectl config use-context k3d-mykeptn
 
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v0
+        with:
+          credentials_json: ${{ secrets.GCLOUD_RESTRICTED_SERVICE_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0
+
       - name: Install and start GKE cluster
         if: env.CLOUD_PROVIDER == 'GKE'
         env:
@@ -279,16 +287,12 @@ jobs:
           echo "Setting up GCloud CLI"
           export OS_TYPE="linux"
           
-          echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
-          export GOOGLE_APPLICATION_CREDENTIALS=~/gcloud-service-key.json
           export CLOUDSDK_CORE_DISABLE_PROMPTS=1;
           
-          gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
           gcloud --quiet config set project "$GCLOUD_PROJECT_NAME"
           gcloud --quiet config set container/cluster "$CLUSTER_NAME_NIGHTLY"
           gcloud --quiet config set compute/zone "${CLOUDSDK_COMPUTE_ZONE}"
           
-          echo "GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}" >> $GITHUB_ENV
           
           echo "Setting up kubectl"
           echo "Setting KUBECONFIG to $PWD/.kubeconfig"
