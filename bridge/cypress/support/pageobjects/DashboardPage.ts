@@ -17,8 +17,13 @@ class DashboardPage {
   public visit(waitForProjects = true): this {
     cy.visit(`/`).wait('@metadata');
     if (waitForProjects) {
-      cy.wait('@projects');
+      this.waitForProjects();
     }
+    return this;
+  }
+
+  public waitForProjects(): this {
+    cy.wait('@projects');
     return this;
   }
 

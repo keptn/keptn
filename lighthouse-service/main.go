@@ -42,13 +42,13 @@ func main() {
 	if err := envconfig.Process("", &env); err != nil {
 		log.Fatalf("Failed to process env var: %s", err)
 	}
-
+	log := logger.New()
 	logLevel, err := logger.ParseLevel(env.LogLevel)
 	if err != nil {
-		logger.WithError(err).Error("could not parse log level provided by 'LOG_LEVEL' env var")
-		logger.SetLevel(logger.InfoLevel)
+		log.WithError(err).Error("could not parse log level provided by 'LOG_LEVEL' env var")
+		log.SetLevel(logger.InfoLevel)
 	} else {
-		logger.SetLevel(logLevel)
+		log.SetLevel(logLevel)
 	}
 
 	api, err := api.NewInternal(nil)
@@ -56,15 +56,15 @@ func main() {
 		log.Fatal(err)
 	}
 
-	subscriptionSource := subscriptionsource.New(api.UniformV1())
-	natsConnector, err := nats.ConnectFromEnv()
-	if err != nil {
-		log.Fatal(err)
-	}
-	eventSource := eventsource.New(natsConnector)
-	logForwarder := logforwarder.New(api.LogsV1())
+	subscriptionSource := subscriptionsource.New(api.UniformV1(), subscriptionsource.WithLogger(log))
 
-	controlPlane := controlplane.New(subscriptionSource, eventSource, logForwarder)
+	natsConnector := nats.NewFromEnv()
+	nats.WithLogger(log)(natsConnector)
+	eventSource := eventsource.New(natsConnector, eventsource.WithLogger(log))
+
+	logForwarder := logforwarder.New(api.LogsV1(), logforwarder.WithLogger(log))
+
+	controlPlane := controlplane.New(subscriptionSource, eventSource, logForwarder, controlplane.WithLogger(log))
 
 	go func() {
 		keptnapi.RunHealthEndpoint("8080", keptnapi.WithReadinessConditionFunc(func() bool {
@@ -79,7 +79,7 @@ func main() {
 	}
 
 	// this segment will be reached once the context has been cancelled - i.e. due to receiving the SIGTERM signal
-	logger.Info("Waiting for evaluation event handlers to finish")
+	log.Info("Waiting for evaluation event handlers to finish")
 	// add additional waiting time to ensure the waitGroup has been increased for all events that have been received between receiving SIGTERM and this point
 	<-time.After(5 * time.Second)
 	wg.Wait()

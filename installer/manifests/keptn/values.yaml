@@ -32,7 +32,9 @@ prefixPath: ""
 keptnSpecVersion: latest
 
 features:
-  automaticProvisioningURL: ""
+  automaticProvisioning:
+    serviceURL: ""
+    message: ""
 
 nats:
   nameOverride: keptn-nats
@@ -176,7 +178,6 @@ bridge:
     scope: ""
     userIdentifier: ""
     mongoConnectionString: ""
-  automaticProvisioningMsg: ""
   authMsg: ""
   d3heatmap:
     enabled: false
@@ -200,6 +201,8 @@ distributor:
     repository: docker.io/keptn/distributor
     tag: ""
   config:
+    proxy:
+      httpTimeout: "30"
     queueGroup:
       enabled: true
     oauth:

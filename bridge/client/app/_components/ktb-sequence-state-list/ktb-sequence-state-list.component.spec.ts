@@ -1,9 +1,7 @@
-import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ResultTypes } from '../../../../shared/models/result-types';
 import { Sequence } from '../../_models/sequence';
-import { POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 import { KtbSequenceStateListComponent } from './ktb-sequence-state-list.component';
 import { KtbSequenceStateListModule } from './ktb-sequence-state-list.module';
 
@@ -13,8 +11,7 @@ describe('KtbSequenceStateListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [KtbSequenceStateListModule, HttpClientTestingModule, RouterTestingModule],
-      providers: [{ provide: POLLING_INTERVAL_MILLIS, useValue: 0 }],
+      imports: [KtbSequenceStateListModule, RouterTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbSequenceStateListComponent);

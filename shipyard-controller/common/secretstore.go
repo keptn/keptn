@@ -29,7 +29,7 @@ type K8sSecretStore struct {
 }
 
 // NewK8sSecretStore
-func NewK8sSecretStore(kubeAPI *kubernetes.Clientset) *K8sSecretStore {
+func NewK8sSecretStore(kubeAPI kubernetes.Interface) *K8sSecretStore {
 	return &K8sSecretStore{client: kubeAPI}
 }
 

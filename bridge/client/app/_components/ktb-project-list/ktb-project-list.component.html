@@ -8,6 +8,8 @@
     <ktb-project-tile
       fxFlexFill
       [project]="project"
+      [sequences]="getSequencesPerProject(project)"
+      [supportedShipyardVersion]="metadata?.shipyardversion"
       [attr.uitestid]="'ktb-project-' + project.projectName"
     ></ktb-project-tile>
   </div>

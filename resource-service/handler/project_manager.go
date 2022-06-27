@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	logger "github.com/sirupsen/logrus"
 	"time"
 
 	"github.com/keptn/go-utils/pkg/common/retry"
@@ -9,7 +10,6 @@ import (
 	"github.com/keptn/keptn/resource-service/common_models"
 	"github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
-	logger "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 )
 
@@ -51,13 +51,11 @@ func (p ProjectManager) CreateProject(project models.CreateProjectParams) error 
 		Credentials: credentials,
 	}
 
-	if p.git.ProjectExists(gitContext) && p.isProjectInitialized(project.ProjectName) {
-		return errors.ErrProjectAlreadyExists
-	}
+	// first, check if the local directory of the project already exists
+	// if yes, we can definitely say that this is an attempt to create the same project again
 
-	// check if the repository directory is here - this should be the case, as the upstream clone needs to be available at this point
-	if !p.git.ProjectRepoExists(project.ProjectName) {
-		return errors.ErrRepositoryNotFound
+	if p.fileSystem.FileExists(projectDirectory) {
+		return errors.ErrProjectAlreadyExists
 	}
 
 	rollbackFunc := func() {
@@ -65,6 +63,21 @@ func (p ProjectManager) CreateProject(project models.CreateProjectParams) error 
 		if err := p.fileSystem.DeleteFile(projectDirectory); err != nil {
 			logger.Errorf("Rollback failed: could not delete created directory for project %s: %s", project.ProjectName, err.Error())
 		}
+	}
+
+	// here we check if the project on the upstream is already initialized
+	if p.git.ProjectExists(gitContext) && p.isProjectInitialized(project.ProjectName) {
+		// do the rollback, i.e. delete the local directory that has just been created.
+		// otherwise, it can happen that an attempt to create a new project with an upstream that is already in use
+		// leaves the local directory, which will prevent further attempts to create the project, even when the upstream is properly set to an empty repo
+		rollbackFunc()
+		return errors.ErrProjectAlreadyExists
+	}
+
+	// check if the repository directory is here - this should be the case, as the upstream clone needs to be available at this point
+	if !p.git.ProjectRepoExists(project.ProjectName) {
+		rollbackFunc()
+		return errors.ErrRepositoryNotFound
 	}
 
 	newProjectMetadata := &common.ProjectMetadata{

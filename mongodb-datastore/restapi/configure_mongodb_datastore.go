@@ -48,7 +48,7 @@ func configureAPI(api *operations.MongodbDatastoreAPI) http.Handler {
 
 	// start NATS receiver
 	go func() {
-		err := startControlPlane(context.Background(), api, eventRequestHandler)
+		err := startControlPlane(context.Background(), api, eventRequestHandler, log.New())
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -87,19 +87,17 @@ func configureAPI(api *operations.MongodbDatastoreAPI) http.Handler {
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))
 }
 
-func startControlPlane(ctx context.Context, api *operations.MongodbDatastoreAPI, eventRequestHandler controlplane.Integration) error {
+func startControlPlane(ctx context.Context, api *operations.MongodbDatastoreAPI, eventRequestHandler controlplane.Integration, log *log.Logger) error {
 	// 1. create a subscription source
-	natsConnector, err := nats.ConnectFromEnv()
-	if err != nil {
-		return err
-	}
-	eventSource := eventsource.New(natsConnector)
+	natsConnector := nats.NewFromEnv()
+	nats.WithLogger(log)(natsConnector)
+	eventSource := eventsource.New(natsConnector, eventsource.WithLogger(log))
 
 	// 2. Create a fixed event subscription with no uniform
 	subSource := subscriptionsource.NewFixedSubscriptionSource(subscriptionsource.WithFixedSubscriptions(keptnapi.EventSubscription{Event: "sh.keptn.event.>"}))
 
 	// 3. Create control plane
-	controlPlane := controlplane.New(subSource, eventSource, nil)
+	controlPlane := controlplane.New(subSource, eventSource, nil, controlplane.WithLogger(log))
 
 	ctx, cancel := context.WithCancel(ctx)
 
@@ -139,13 +137,13 @@ func configureServer(s *http.Server, scheme, addr string) {
 	// Make all necessary changes to the Server configuration here.
 }
 
-// The middleware configuration is for the handler executors. These do not apply to the swagger.json document.
+// The middleware configuration is for the handler executors. These do not apply to the swagger.yaml document.
 // The middleware executes after routing but before authentication, binding and validation
 func setupMiddlewares(handler http.Handler) http.Handler {
 	return handler
 }
 
-// The middleware configuration happens before anything, this middleware also applies to serving the swagger.json document.
+// The middleware configuration happens before anything, this middleware also applies to serving the swagger.yaml document.
 // So this is a good place to plug in a panic handling middleware, logging and metrics
 func setupGlobalMiddleware(handler http.Handler) http.Handler {
 

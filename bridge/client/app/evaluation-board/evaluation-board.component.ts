@@ -52,15 +52,17 @@ export class EvaluationBoardComponent {
       ),
       switchMap((data) =>
         // Only the triggered events have the previous data => configurationChange.values.image does not exist on finished events
-        this.dataService.getTracesByContext(data.keptnContext, EventTypes.EVALUATION_TRIGGERED, undefined, 1).pipe(
-          map((root) => {
-            return {
-              ...data,
-              artifact: root[0].getConfigurationChangeImage(),
-              deploymentName: root[0].getShortImageName() || root[0].service || '',
-            };
-          })
-        )
+        this.dataService
+          .getTracesByContext(data.keptnContext, EventTypes.EVALUATION_TRIGGERED, undefined, undefined, 1)
+          .pipe(
+            map((root) => {
+              return {
+                ...data,
+                artifact: root[0].getConfigurationChangeImage(),
+                deploymentName: root[0].getShortImageName() || root[0].service || '',
+              };
+            })
+          )
       ),
       switchMap((data): Observable<EvaluationBoardState> => {
         const { project: projectName, stage: stageName, service: serviceName } = data.evaluations[0];

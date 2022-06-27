@@ -48,6 +48,7 @@ describe('Test deep links', () => {
     environmentPage.visit(mockedProject);
     cy.location('pathname').should('eq', `/project/${mockedProject}`);
     basePage.clickMainHeaderKeptn();
+    dashboardPage.waitForProjects();
 
     cy.location('pathname').should('eq', '/dashboard');
   });

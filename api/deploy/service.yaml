@@ -39,6 +39,10 @@ spec:
               value: mongodb-datastore:8080
             - name: CONFIGURATION_URI
               value: configuration-service:8080
+            - name: CONTROLPLANE_URI
+              value: shipyard-controller:8080
+            - name: IMPORT_BASE_PATH
+              value: "/data/import-scratch"
             - name: SECRET_TOKEN
               valueFrom:
                 secretKeyRef:
@@ -73,7 +77,13 @@ spec:
             initialDelaySeconds: 10
             timeoutSeconds: 1
             periodSeconds: 5
+          volumeMounts:
+            - mountPath: /data/import-scratch
+              name: import-scratch
       serviceAccountName: keptn-api-service
+      volumes:
+        - name: import-scratch
+          emptyDir: {}
 ---
 apiVersion: v1
 kind: Service

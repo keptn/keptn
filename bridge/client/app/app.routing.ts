@@ -14,7 +14,7 @@ import { KtbCreateSecretFormComponent } from './_components/ktb-create-secret-fo
 import { KtbProjectSettingsComponent } from './_components/ktb-project-settings/ktb-project-settings.component';
 import { KtbModifyUniformSubscriptionComponent } from './_components/ktb-modify-uniform-subscription/ktb-modify-uniform-subscription.component';
 import { KtbCreateServiceComponent } from './_components/ktb-create-service/ktb-create-service.component';
-import { KtbServiceSettingsOverviewComponent } from './_components/ktb-service-settings-overview/ktb-service-settings-overview.component';
+import { KtbServiceSettingsOverviewComponent } from './_components/ktb-service-settings/ktb-service-settings-overview/ktb-service-settings-overview.component';
 import { KtbServiceSettingsComponent } from './_components/ktb-service-settings/ktb-service-settings.component';
 import { KtbEditServiceComponent } from './_components/ktb-edit-service/ktb-edit-service.component';
 import { NotFoundComponent } from './not-found/not-found.component';

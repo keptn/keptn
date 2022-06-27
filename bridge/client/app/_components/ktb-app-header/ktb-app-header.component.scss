@@ -1,0 +1,70 @@
+@import '../../../variables';
+@import '~@dynatrace/barista-components/core/src/style/variables';
+
+dt-top-bar-navigation {
+  color: #fff;
+  background-color: var(--dt-theme-main-default-color);
+  height: auto;
+
+  .dt-top-bar-action {
+    background-color: var(--dt-theme-main-default-color);
+  }
+
+  .brand {
+    color: #fff;
+    text-decoration: none;
+
+    img {
+      width: 2rem;
+    }
+  }
+
+  p {
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+}
+
+::ng-deep .dt-context-dialog-panel {
+  h3 {
+    color: $gray-300;
+  }
+  p.small {
+    color: $gray-100;
+    span {
+      color: $gray-200;
+    }
+  }
+  a {
+    color: $white;
+    word-break: break-all;
+  }
+  a:hover {
+    color: var(--dt-theme-main-hover-color);
+  }
+
+  .dt-icon.error {
+    fill: $error-color;
+  }
+}
+
+dt-select#projectSelect {
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 600;
+
+  ::ng-deep .dt-select-placeholder {
+    color: #fff;
+  }
+  ::ng-deep .dt-select-trigger {
+    padding: 0;
+  }
+  ::ng-deep .dt-select-panel {
+    border-radius: 3px;
+  }
+  ::ng-deep .dt-select-arrow svg {
+    fill: #fff !important;
+  }
+}
