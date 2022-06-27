@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { Project } from '../../_models/project';
 import { Sequence } from '../../_models/sequence';
 import { IMetadata } from '../../_interfaces/metadata';
+import { IProject } from '../../../../shared/interfaces/project';
 
 export type ProjectSequences = Record<string, Sequence[]>;
 
@@ -13,10 +13,10 @@ export type ProjectSequences = Record<string, Sequence[]>;
 })
 export class KtbProjectListComponent {
   @Input() metadata: IMetadata | null = null;
-  @Input() projects: Project[] = [];
+  @Input() projects: IProject[] = [];
   @Input() sequences: ProjectSequences = {};
 
-  getSequencesPerProject(project: Project): Sequence[] {
+  getSequencesPerProject(project: IProject): Sequence[] {
     const latestSequences = this.sequences[project.projectName];
     return latestSequences ?? [];
   }

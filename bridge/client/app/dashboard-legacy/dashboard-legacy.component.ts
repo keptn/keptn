@@ -2,11 +2,11 @@ import { Component, Inject } from '@angular/core';
 import { merge, Observable, of, scan, switchMap } from 'rxjs';
 import { filter, map, take } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
-import { Project } from '../_models/project';
 import { DataService } from '../_services/data.service';
 import { AppUtils, POLLING_INTERVAL_MILLIS } from '../_utils/app.utils';
 import { ProjectSequences } from '../_components/ktb-project-list/ktb-project-list.component';
 import { IMetadata } from '../_interfaces/metadata';
+import { IProject } from '../../../shared/interfaces/project';
 
 const MAX_SEQUENCES = 5;
 
@@ -24,7 +24,7 @@ export class DashboardLegacyComponent {
   public readonly keptnMetadata$ = this.dataService.keptnMetadata.pipe(
     filter((metadata): metadata is IMetadata => metadata != null)
   );
-  public readonly projects$: Observable<Project[] | undefined> = this.dataService.projects;
+  public readonly projects$: Observable<IProject[] | undefined> = this.dataService.projects;
   public readonly latestSequences$: Observable<ProjectSequences> = this.projects$.pipe(
     switchMap((projects) => (projects ? merge(...this.loadSequences(projects)) : of({}))),
     scan((agg, next) => ({ ...agg, ...next }), {} as ProjectSequences)
@@ -36,7 +36,7 @@ export class DashboardLegacyComponent {
     this.keptnInfo$.subscribe(() => this.loadProjects());
   }
 
-  private loadSequences(projects: Project[]): Observable<ProjectSequences>[] {
+  private loadSequences(projects: IProject[]): Observable<ProjectSequences>[] {
     return projects.map((project) =>
       this.refreshTimer$.pipe(
         switchMap(() =>
