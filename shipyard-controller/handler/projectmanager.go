@@ -357,18 +357,18 @@ func (pm *ProjectManager) Delete(projectName string) (string, error) {
 		}
 	}
 
-	if err := pm.ConfigurationStore.DeleteProject(projectName); err != nil {
-		return resultMessage.String(), pm.logAndReturnError(fmt.Sprintf("could not delete project: %s", err.Error()))
-	}
-
 	resultMessage.WriteString(pm.getDeleteInfoMessage(projectName))
 
+	//  clean up  database
 	if err := pm.ProjectMaterializedView.DeleteProject(projectName); err != nil {
 		log.Errorf("could not delete project: %s", err.Error())
 	}
-
 	pm.deleteProjectSequenceCollections(projectName)
 
+	// attempt deleting from local git
+	if err := pm.ConfigurationStore.DeleteProject(projectName); err != nil {
+		return resultMessage.String(), pm.logAndReturnError(fmt.Sprintf("could not delete project: %s", err.Error()))
+	}
 	return resultMessage.String(), nil
 }
 

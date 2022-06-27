@@ -415,18 +415,19 @@ func (ph *ProjectHandler) DeleteProject(c *gin.Context) {
 	projectName := c.Param("project")
 	namespace := c.Param("namespace")
 
+	common.LockProject(projectName)
+	defer common.UnlockProject(projectName)
+
 	automaticProvisioningURL := ph.Env.AutomaticProvisioningURL
 	if automaticProvisioningURL != "" {
 		err := ph.RepositoryProvisioner.DeleteRepository(projectName, namespace)
 		if err != nil {
+			// a failure to clean up the provisioned repo should not prevent the project delete
 			log.Errorf(err.Error())
 			SetFailedDependencyErrorResponse(c, UnableProvisionDeleteGeneric)
-			return
 		}
 	}
 
-	common.LockProject(projectName)
-	defer common.UnlockProject(projectName)
 	responseMessage, err := ph.ProjectManager.Delete(projectName)
 	if err != nil {
 		log.Errorf("failed to delete project %s: %s", projectName, err.Error())
