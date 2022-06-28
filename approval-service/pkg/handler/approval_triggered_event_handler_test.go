@@ -3,7 +3,7 @@ package handler
 import (
 	"context"
 	"fmt"
-	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
+	"github.com/keptn/go-utils/pkg/sdk/connector/controlplane"
 	"testing"
 	"time"
 
