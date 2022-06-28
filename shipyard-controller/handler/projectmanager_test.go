@@ -1667,10 +1667,14 @@ func TestDeleteNoUpstreamNoSecret(t *testing.T) {
 
 	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
 
+		gitCredentials := apimodels.GitAuthCredentialsSecure{
+			RemoteURL: "",
+			User:      "my-user",
+		}
+
 		p := &apimodels.ExpandedProject{
 			CreationDate:    "creationdate",
-			GitRemoteURI:    "",
-			GitUser:         "my-user",
+			GitCredentials:  &gitCredentials,
 			ProjectName:     "my-project",
 			Shipyard:        "",
 			ShipyardVersion: "v1",
@@ -1679,10 +1683,12 @@ func TestDeleteNoUpstreamNoSecret(t *testing.T) {
 		return p, nil
 	}
 
-	secretEncoded, _ := json.Marshal(gitCredentials{
+	secretEncoded, _ := json.Marshal(apimodels.GitAuthCredentials{
 		User:      "my-user",
-		Token:     "my-token",
-		RemoteURI: "",
+		RemoteURL: "",
+		HttpsAuth: &apimodels.HttpsGitAuth{
+			Token: "my-token",
+		},
 	})
 
 	secretStore.GetSecretFunc = func(name string) (map[string][]byte, error) {
