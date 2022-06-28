@@ -23,7 +23,7 @@ kubectl create namespace "${KEPTN_NAMESPACE}"
 
 helm upgrade keptn "${KEPTN_HELM_CHART}" --install --create-namespace -n "${KEPTN_NAMESPACE}" --wait \
 --set="apiGatewayNginx.type=${KEPTN_SERVICE_TYPE},continuousDelivery.enabled=true,\
-global.keptn.registry=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG}
+global.keptn.registry=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG}, \
 mongo.image.registry=${TARGET_INTERNAL_DOCKER_REGISTRY%/},\
 nats.nats.image=${TARGET_INTERNAL_DOCKER_REGISTRY}nats:2.7.2-alpine,\
 nats.reloader.image=${TARGET_INTERNAL_DOCKER_REGISTRY}natsio/nats-server-config-reloader:0.6.2,\
