@@ -651,6 +651,8 @@ func TestUpdateProject(t *testing.T) {
 
 func TestDeleteProject(t *testing.T) {
 
+	var deleted bool
+
 	type fields struct {
 		ProjectManager        IProjectManager
 		EventSender           common.EventSender
@@ -665,6 +667,7 @@ func TestDeleteProject(t *testing.T) {
 		expectJSONResponse *models.DeleteProjectResponse
 		projectPathParam   string
 		provisioningURL    string
+		projectDeleted     bool
 	}{
 		{
 			name: "Delete Project deleting project fails",
@@ -709,6 +712,7 @@ func TestDeleteProject(t *testing.T) {
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
 					DeleteFunc: func(projectName string) (string, error) {
+						deleted = true
 						return "a-message", nil
 					},
 				},
@@ -723,12 +727,14 @@ func TestDeleteProject(t *testing.T) {
 			expectHttpStatus:   http.StatusOK,
 			projectPathParam:   "myproject",
 			expectJSONResponse: &models.DeleteProjectResponse{Message: "a-message"},
+			projectDeleted:     true,
 		},
 		{
 			name: "Delete Project with provisioningURL - failure",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
 					DeleteFunc: func(projectName string) (string, error) {
+						deleted = true
 						return "a-message", nil
 					},
 				},
@@ -744,8 +750,9 @@ func TestDeleteProject(t *testing.T) {
 					},
 				},
 			},
-			expectHttpStatus: http.StatusFailedDependency,
+			expectHttpStatus: http.StatusOK,
 			projectPathParam: "myproject",
+			projectDeleted:   true,
 		},
 		{
 			name: "Delete Project with provisioningURL",
@@ -774,6 +781,7 @@ func TestDeleteProject(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			deleted = false
 			w, c := createGinTestContext()
 
 			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, tt.fields.EnvConfig, tt.fields.RepositoryProvisioner)
@@ -793,6 +801,7 @@ func TestDeleteProject(t *testing.T) {
 				assert.Equal(t, tt.expectJSONResponse, response)
 			}
 			assert.Equal(t, tt.expectHttpStatus, w.Code)
+			assert.Equal(t, tt.projectDeleted, deleted)
 
 		})
 	}
