@@ -1,7 +1,7 @@
 import semver from 'semver';
 import { Stage } from './stage';
 import { DeploymentInformation, Service } from './service';
-import { IGitDataExtended, IProject } from '../../../shared/interfaces/Project';
+import { IGitDataExtended, IProject } from '../../../shared/interfaces/project';
 
 export function getShipyardVersion(project?: IProject): string {
   return project?.shipyardVersion?.split('/').pop() ?? '';

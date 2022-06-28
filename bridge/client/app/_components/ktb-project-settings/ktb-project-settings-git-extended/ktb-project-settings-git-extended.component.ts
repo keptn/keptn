@@ -5,7 +5,7 @@ import {
   IGitDataExtended,
   IGitHTTPSConfiguration,
   IGitSSHConfiguration,
-} from '../../../../../shared/interfaces/Project';
+} from '../../../../../shared/interfaces/project';
 
 export enum GitFormType {
   SSH,

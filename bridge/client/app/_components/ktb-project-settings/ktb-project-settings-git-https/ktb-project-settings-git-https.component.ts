@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AppUtils } from '../../../_utils/app.utils';
 import { isGitUpstreamValidSet } from '../../../_utils/git-upstream.utils';
-import { IGitHTTPSConfiguration, IProxy } from '../../../../../shared/interfaces/Project';
+import { IGitHTTPSConfiguration, IProxy } from '../../../../../shared/interfaces/project';
 import { FormControl } from '@angular/forms';
 import { IGitData, IRequiredGitData } from '../ktb-project-settings-git/ktb-project-settings-git.utils';
 

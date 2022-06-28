@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { FormUtils } from '../../../_utils/form.utils';
-import { IGitBasicConfiguration } from '../../../../../shared/interfaces/Project';
+import { IGitBasicConfiguration } from '../../../../../shared/interfaces/project';
 
 @Component({
   selector: 'ktb-project-settings-git-ssh-input',

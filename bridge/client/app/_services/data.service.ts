@@ -37,7 +37,7 @@ import {
   ISequenceStateInfo,
   SequencesState,
 } from '../_views/ktb-sequence-view/ktb-sequence-view.utils';
-import { IGitDataExtended } from '../../../shared/interfaces/Project';
+import { IGitDataExtended } from '../../../shared/interfaces/project';
 
 @Injectable({
   providedIn: 'root',

@@ -1,5 +1,5 @@
 import { Stage } from './stage';
-import { IGitDataExtended, IProject } from '../../shared/interfaces/Project';
+import { IGitDataExtended, IProject } from '../../shared/interfaces/project';
 
 export class Project implements IProject {
   public gitCredentials?: IGitDataExtended;

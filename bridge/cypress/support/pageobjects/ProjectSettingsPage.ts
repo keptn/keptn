@@ -8,7 +8,7 @@ import {
   interceptProjectBoard,
   interceptProjectSettings,
 } from '../intercept';
-import { IProject } from '../../../shared/interfaces/Project';
+import { IProject } from '../../../shared/interfaces/project';
 
 class ProjectSettingsPage {
   private validCertificateInput = '-----BEGIN CERTIFICATE-----\nmyCertificate\n-----END CERTIFICATE-----';
