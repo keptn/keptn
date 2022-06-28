@@ -26,7 +26,7 @@ func (erh EventRequestHandler) OnEvent(ctx context.Context, event keptnapi.Keptn
 
 func (erh EventRequestHandler) RegistrationData() controlplane.RegistrationData {
 	return controlplane.RegistrationData{
-		Name: erh.Env.K8SDeploymentComponent,
+		Name: erh.Env.K8SDeploymentName,
 		MetaData: keptnapi.MetaData{
 			Hostname:           erh.Env.K8SNodeName,
 			IntegrationVersion: erh.Env.K8SDeploymentVersion,
