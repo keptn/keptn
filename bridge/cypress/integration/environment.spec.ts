@@ -48,6 +48,11 @@ describe('Environment Screen default requests', () => {
     cy.get('ktb-stage-details h2').should('contain.text', stage);
   });
 
+  it('filter should be set when navigating to /environment/stage?filterType=filter', () => {
+    environmentPage.visit(project, 'staging', 'evaluation');
+    cy.byTestId(`ktb-stage-details-evaluation-button`).should('be.selected', true);
+  });
+
   it('should redirect to stage', () => {
     environmentPage.selectStage('dev');
     cy.location('pathname').should('eq', `/project/${project}/environment/stage/dev`);
@@ -56,8 +61,8 @@ describe('Environment Screen default requests', () => {
   });
 
   it('should add query parameter if clicking on type', () => {
-    environmentPage.clickFilterType(stage, 'problem');
-    cy.location('href').should('include', `/project/${project}/environment/stage/${stage}?filterType=problem`);
+    environmentPage.clickFilterType('staging', 'evaluation');
+    cy.location('href').should('include', `/project/${project}/environment/stage/staging?filterType=evaluation`);
   });
 });
 

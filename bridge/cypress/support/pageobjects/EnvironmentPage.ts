@@ -13,8 +13,8 @@ class EnvironmentPage {
     return this;
   }
 
-  public visit(project: string, stage = ''): this {
-    cy.visit(stage ? `/project/${project}/environment/stage/${stage}` : `/project/${project}`)
+  public visit(project: string, stage = '', filterType = ''): this {
+    cy.visit(stage ? `/project/${project}/environment/stage/${stage}?filterType=${filterType}` : `/project/${project}`)
       .wait('@metadata')
       .wait('@project');
     return this;
