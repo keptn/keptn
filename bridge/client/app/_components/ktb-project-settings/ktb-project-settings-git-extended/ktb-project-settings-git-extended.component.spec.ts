@@ -8,7 +8,7 @@ import { ApiServiceMock } from '../../../_services/api.service.mock';
 import { KtbProjectSettingsModule } from '../ktb-project-settings.module';
 
 import { GitFormType, KtbProjectSettingsGitExtendedComponent } from './ktb-project-settings-git-extended.component';
-import { IGitHTTPSConfiguration, IGitSSHConfiguration } from '../../../../../shared/models/IProject';
+import { IGitHTTPSConfiguration, IGitSSHConfiguration } from '../../../../../shared/interfaces/Project';
 
 describe('KtbProjectSettingsGitExtendedComponent', () => {
   let component: KtbProjectSettingsGitExtendedComponent;

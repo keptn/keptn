@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AppUtils } from '../../../_utils/app.utils';
-import { IGitBasicConfiguration, IGitSSHConfiguration, IGitSshData } from '../../../../../shared/models/IProject';
+import { IGitBasicConfiguration, IGitSSHConfiguration, IGitSshData } from '../../../../../shared/interfaces/Project';
 
 @Component({
   selector: 'ktb-project-settings-git-ssh',

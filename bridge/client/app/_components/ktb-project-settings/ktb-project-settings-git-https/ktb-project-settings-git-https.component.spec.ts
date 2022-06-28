@@ -1,6 +1,6 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { IGitHTTPSConfiguration, IProxy } from 'shared/models/IProject';
+import { IGitHTTPSConfiguration, IProxy } from 'shared/interfaces/Project';
 import { AppUtils } from '../../../_utils/app.utils';
 import { KtbProjectSettingsModule } from '../ktb-project-settings.module';
 import { KtbProjectSettingsGitHttpsComponent } from './ktb-project-settings-git-https.component';

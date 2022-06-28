@@ -1,4 +1,4 @@
-import { IGitDataExtended, IGitHTTPSConfiguration, IGitSSHConfiguration } from '../../../shared/models/IProject';
+import { IGitDataExtended, IGitHTTPSConfiguration, IGitSSHConfiguration } from '../../../shared/interfaces/Project';
 import {
   IGitData,
   IRequiredGitData,

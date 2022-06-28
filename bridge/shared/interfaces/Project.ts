@@ -1,4 +1,4 @@
-import { IStage } from '../interfaces/stage';
+import { IStage } from './stage';
 
 export interface IGitBasicConfiguration {
   remoteURL: string;

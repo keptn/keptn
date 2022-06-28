@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { KeyValue } from '@angular/common';
 import { AppUtils } from '../../_utils/app.utils';
-import { IProxy } from '../../../../shared/models/IProject';
+import { IProxy } from '../../../../shared/interfaces/Project';
 
 @Component({
   selector: 'ktb-proxy-input',

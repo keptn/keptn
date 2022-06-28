@@ -5,7 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DtToast } from '@dynatrace/barista-components/toast';
 import { combineLatest, Observable, of, Subject } from 'rxjs';
 import { filter, map, startWith, takeUntil } from 'rxjs/operators';
-import { IGitDataExtended } from 'shared/models/IProject';
+import { IGitDataExtended } from 'shared/interfaces/Project';
 import { IClientFeatureFlags } from '../../../../shared/interfaces/feature-flags';
 import { PendingChangesComponent } from '../../_guards/pending-changes.guard';
 import { DeleteData, DeleteResult, DeleteType } from '../../_interfaces/delete';

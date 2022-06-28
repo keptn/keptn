@@ -1,7 +1,11 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { DtRadioChange } from '@dynatrace/barista-components/radio';
 import { isGitHTTPS, isGitSSH } from '../../../_utils/git-upstream.utils';
-import { IGitDataExtended, IGitHTTPSConfiguration, IGitSSHConfiguration } from '../../../../../shared/models/IProject';
+import {
+  IGitDataExtended,
+  IGitHTTPSConfiguration,
+  IGitSSHConfiguration,
+} from '../../../../../shared/interfaces/Project';
 
 export enum GitFormType {
   SSH,

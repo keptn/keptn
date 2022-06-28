@@ -1,5 +1,5 @@
 import { EventTypes } from '../interfaces/event-types';
-import { IProject } from '../models/IProject';
+import { IProject } from '../interfaces/Project';
 
 const keptnContextDeploymentDev = '2e21574c-dcf7-4275-b677-6bc19214acd5';
 const keptnContextDeploymentStaging = '29af69cc-ea85-4358-b169-ce29034d9c81';

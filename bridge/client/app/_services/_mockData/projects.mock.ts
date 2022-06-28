@@ -1,7 +1,7 @@
 import { Project } from '../../_models/project';
 import { Service } from '../../_models/service';
 import { Stage } from '../../_models/stage';
-import { IProject } from '../../../../shared/models/IProject';
+import { IProject } from '../../../../shared/interfaces/Project';
 
 const projectsData: IProject[] = [
   {
