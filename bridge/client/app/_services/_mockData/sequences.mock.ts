@@ -1,5 +1,5 @@
 import { Sequence } from '../../_models/sequence';
-import { SequenceState } from '../../../../shared/interfaces/sequence';
+import { ISequence, SequenceState } from '../../../../shared/interfaces/sequence';
 import { ResultTypes } from '../../../../shared/models/result-types';
 
 const deliveryWithDevAndStaging = {
@@ -1107,7 +1107,7 @@ const sequencesData = [
       },
     ],
   },
-] as Sequence[];
+] as ISequence[];
 const data = sequencesData.map((sequence) => Sequence.fromJSON(sequence));
 export { data as SequencesMock };
 export { sequencesData as SequenceResponseMock };

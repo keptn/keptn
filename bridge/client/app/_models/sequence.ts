@@ -7,12 +7,17 @@ import { ISequence, SequenceEvent, SequenceStage, SequenceState } from '../../..
 import { DtIconType } from '@dynatrace/barista-icons';
 import { ResultTypes } from '../../../shared/models/result-types';
 
+const pendingApprovalTypes = [EventTypes.APPROVAL_TRIGGERED, EventTypes.APPROVAL_STARTED];
+const finishedStates = [SequenceState.FINISHED, SequenceState.TIMEDOUT, SequenceState.ABORTED, SequenceState.SUCCEEDED];
+const startedStates = [SequenceState.TRIGGERED, SequenceState.STARTED];
+
 type SeqStage = SequenceStage & {
   latestEvaluationTrace?: Trace;
   actions?: RemediationAction[];
 };
 
 export interface SequenceStateInfo {
+  finished: boolean;
   loading: boolean;
   waiting: boolean;
   pendingApproval: boolean;
@@ -20,6 +25,7 @@ export interface SequenceStateInfo {
   warning: boolean;
   faulty: boolean;
   aborted: boolean;
+  timedOut: boolean;
   icon: DtIconType;
   statusText: string;
   evaluation: EvaluationResult | undefined;
@@ -31,14 +37,14 @@ function getStatusText(
 ): string {
   if (state.successful) {
     status = 'succeeded';
+  } else if (state.timedOut) {
+    status = 'timed out';
   } else if (state.faulty) {
     status = 'failed';
   } else if (state.aborted) {
     status = 'aborted';
   } else if (state.waiting) {
     status = 'waiting';
-  } else if (state.timedOut) {
-    status = 'timed out';
   }
   return status;
 }
@@ -49,7 +55,7 @@ export function createSequenceStateInfo(sequence: ISequence, stageName?: string)
   const stages = stage ? [stage] : sequence.stages;
   const state = stageName ? stage?.state : sequence.state;
   const finished = !!state && isFinished(state);
-  const started = sequence.state === SequenceState.TRIGGERED || sequence.state === SequenceState.STARTED;
+  const started = startedStates.includes(sequence.state);
   const loading = started && (!stageName || !finished);
   const waiting = state === SequenceState.WAITING;
   const aborted = state === SequenceState.ABORTED;
@@ -57,15 +63,26 @@ export function createSequenceStateInfo(sequence: ISequence, stageName?: string)
   const faulty = stages.some((s) => s.latestFailedEvent) || timedOut;
   const warning = !faulty && stages.some((s) => s.latestEvaluation?.result === ResultTypes.WARNING);
   const successful = finished && !faulty && !warning && !aborted;
-  const pendingApproval = stages.some(
-    (s) => s.latestEvent?.type === EventTypes.APPROVAL_TRIGGERED || s.latestEvent?.type === EventTypes.APPROVAL_STARTED
-  );
+  const pendingApproval = stages.some((s) => pendingApprovalTypes.includes(s.latestEvent?.type as EventTypes));
   const icon = latestStage?.latestEvent?.type
     ? EVENT_ICONS[getShortType(latestStage?.latestEvent?.type)] || EVENT_ICONS.default
     : EVENT_ICONS.default;
   const statusText = getStatusText(sequence.state, { successful, faulty, waiting, aborted, timedOut });
   const evaluation = stage?.latestEvaluation;
-  return { loading, waiting, pendingApproval, successful, warning, faulty, aborted, icon, statusText, evaluation };
+  return {
+    finished,
+    loading,
+    waiting,
+    pendingApproval,
+    successful,
+    warning,
+    timedOut,
+    faulty,
+    aborted,
+    icon,
+    statusText,
+    evaluation,
+  };
 }
 
 export function getStage(sequence: ISequence, stageName?: string): SeqStage | undefined {
@@ -81,12 +98,7 @@ export function getLastStageName(sequence: ISequence): string | undefined {
 }
 
 export function isFinished(state: SequenceState): boolean {
-  return (
-    state === SequenceState.FINISHED ||
-    state === SequenceState.TIMEDOUT ||
-    state === SequenceState.ABORTED ||
-    state === SequenceState.SUCCEEDED
-  );
+  return finishedStates.includes(state);
 }
 
 export function getShortType(type: string): string {

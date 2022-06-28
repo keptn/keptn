@@ -20,9 +20,12 @@ export function isShipyardNotSupported(
 export function getDistinctServiceNames(project?: IProject): string[] {
   return project
     ? Array.from(
-        project.stages.reduce((currentSet, stage) => {
-          const serviceNames = stage.services.map((s) => s.serviceName);
-          return new Set(...currentSet, ...serviceNames);
+        project.stages.reduce((set, stage) => {
+          stage.services.forEach((s) => {
+            set.add(s.serviceName);
+            return null;
+          });
+          return set;
         }, new Set<string>())
       )
     : [];
@@ -30,12 +33,12 @@ export function getDistinctServiceNames(project?: IProject): string[] {
 
 export class Project implements IProject {
   projectName = '';
-  gitUser?: string | undefined;
-  gitRemoteURI?: string | undefined;
-  shipyardVersion?: string | undefined;
-  gitProxyScheme?: 'https' | 'http' | undefined;
-  gitProxyUrl?: string | undefined;
-  gitProxyUser?: string | undefined;
+  gitUser?: string;
+  gitRemoteURI?: string;
+  shipyardVersion?: string;
+  gitProxyScheme: 'https' | 'http' | undefined;
+  gitProxyUrl?: string;
+  gitProxyUser?: string;
   gitProxyInsecure = false;
   private _gitUpstream?: IGitDataExtended;
   public projectDetailsLoaded = false; // true if project was fetched via project endpoint of bridge server
@@ -126,13 +129,8 @@ export class Project implements IProject {
     return this.services?.map((service) => service.serviceName) ?? [];
   }
 
-  getShipyardVersion(): string {
-    return getShipyardVersion(this);
-  }
-
   isShipyardNotSupported(supportedVersion: string | undefined | null): boolean {
-    const version = this.getShipyardVersion();
-    return supportedVersion !== null && (!version || !supportedVersion || semver.lt(version, supportedVersion));
+    return isShipyardNotSupported(this, supportedVersion);
   }
 
   getService(serviceName: string): Service | undefined {
