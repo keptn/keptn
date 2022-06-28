@@ -99,6 +99,8 @@ lifecycle:
 {{- end }}
 - name: API_PROXY_HTTP_TIMEOUT
   value: {{ ((.Values.distributor.config).proxy).httpTimeout | default "30" | quote }}
+- name: API_PROXY_MAX_PAYLOAD_BYTES_KB
+  value: {{ ((.Values.distributor.config).proxy).maxPayloadBytesKB | default "64" | quote }}
 - name: LOCATION
   valueFrom:
    fieldRef:

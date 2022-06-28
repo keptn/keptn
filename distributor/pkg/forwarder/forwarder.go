@@ -19,6 +19,12 @@ import (
 	"time"
 )
 
+func WithMaxBytes(maxBytes int64) func(f *Forwarder) {
+	return func(f *Forwarder) {
+		f.maxBytes = maxBytes
+	}
+}
+
 // Forwarder receives events directly from the Keptn Service and forwards them to the Keptn API
 type Forwarder struct {
 	EventChannel      chan cloudevents.Event
@@ -26,23 +32,30 @@ type Forwarder struct {
 	httpClient        *http.Client
 	pubSubConnections map[string]*cenats.Sender
 	env               config.EnvConfig
+	maxBytes          int64
 }
 
-func New(keptnEventAPI api.APIV1Interface, client *http.Client, env config.EnvConfig) *Forwarder {
-	return &Forwarder{
+func New(keptnEventAPI api.APIV1Interface, client *http.Client, env config.EnvConfig, opts ...func(f *Forwarder)) *Forwarder {
+	fw := &Forwarder{
 		EventChannel:      make(chan cloudevents.Event),
 		keptnEventAPI:     keptnEventAPI,
 		httpClient:        client,
 		pubSubConnections: map[string]*cenats.Sender{},
 		env:               env,
 	}
+
+	for _, o := range opts {
+		o(fw)
+	}
+
+	return fw
 }
 
 func (f *Forwarder) Start(executionContext *utils.ExecutionContext) {
 	mux := http.NewServeMux()
-	mux.Handle("/health", http.HandlerFunc(api.HealthEndpointHandler))
-	mux.Handle(f.env.EventForwardingPath, http.HandlerFunc(f.handleEvent))
-	mux.Handle(f.env.APIProxyPath, http.HandlerFunc(f.apiProxyHandler))
+	mux.Handle("/health", f.httpMiddleWare(api.HealthEndpointHandler))
+	mux.Handle(f.env.EventForwardingPath, f.httpMiddleWare(f.handleEvent))
+	mux.Handle(f.env.APIProxyPath, f.httpMiddleWare(f.apiProxyHandler))
 	serverURL := fmt.Sprintf("localhost:%d", f.env.APIProxyPort)
 
 	svr := &http.Server{
@@ -231,5 +244,16 @@ func (f *Forwarder) apiProxyHandler(rw http.ResponseWriter, req *http.Request) {
 	logger.Debugf("Received response from API: Status=%d", resp.StatusCode)
 	if _, err := rw.Write(respBytes); err != nil {
 		logger.Errorf("could not send response from API: %v", err)
+	}
+}
+
+func (f *Forwarder) httpMiddleWare(httpFunc http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// no limit, if maxBytes is not set
+		if f.maxBytes > 0 {
+			// limit request body size to f.maxBytes
+			r.Body = http.MaxBytesReader(w, r.Body, f.maxBytes)
+		}
+		httpFunc(w, r)
 	}
 }

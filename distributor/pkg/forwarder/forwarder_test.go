@@ -202,6 +202,60 @@ func Test_ForwardEventsToKeptnAPI(t *testing.T) {
 	executionContext.Wg.Wait()
 }
 
+func Test_ForwardEventsToKeptnAPIPayloadSizeNotExceeded(t *testing.T) {
+
+	receivedMessageCount := 0
+	ts := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) { receivedMessageCount++ }))
+
+	cfg := config.EnvConfig{}
+	envconfig.Process("", &cfg)
+	cfg.KeptnAPIEndpoint = ts.URL
+	apiset, _ := keptnapi.New(ts.URL)
+
+	f := New(apiset.APIV1(), &http.Client{}, cfg, WithMaxBytes(int64(len(taskStartedEvent))))
+
+	ctx, cancel := context.WithCancel(context.Background())
+	executionContext := utils.NewExecutionContext(ctx, 1)
+	go f.Start(executionContext)
+
+	time.Sleep(2 * time.Second)
+	eventFromService(taskStartedEvent)
+
+	assert.Eventually(t, func() bool {
+		return receivedMessageCount == 1
+	}, time.Second*time.Duration(10), time.Second)
+	cancel()
+	executionContext.Wg.Wait()
+}
+
+func Test_ForwardEventsToKeptnAPIPayloadSizeExceeded(t *testing.T) {
+
+	receivedMessageCount := 0
+	ts := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) { receivedMessageCount++ }))
+
+	cfg := config.EnvConfig{}
+	envconfig.Process("", &cfg)
+	cfg.KeptnAPIEndpoint = ts.URL
+	apiset, _ := keptnapi.New(ts.URL)
+
+	f := New(apiset.APIV1(), &http.Client{}, cfg, WithMaxBytes(int64(len(taskStartedEvent))-1))
+
+	ctx, cancel := context.WithCancel(context.Background())
+	executionContext := utils.NewExecutionContext(ctx, 1)
+	go f.Start(executionContext)
+
+	time.Sleep(2 * time.Second)
+	eventFromService(taskStartedEvent)
+	time.Sleep(2 * time.Second)
+
+	assert.Zero(t, receivedMessageCount)
+
+	cancel()
+	executionContext.Wg.Wait()
+}
+
 func Test_APIProxy(t *testing.T) {
 	proxyEndpointCalled := 0
 	ts := httptest.NewServer(

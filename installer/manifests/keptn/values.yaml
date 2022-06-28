@@ -203,6 +203,7 @@ distributor:
   config:
     proxy:
       httpTimeout: "30"
+      maxPayloadBytesKB: "64"
     queueGroup:
       enabled: true
     oauth:
