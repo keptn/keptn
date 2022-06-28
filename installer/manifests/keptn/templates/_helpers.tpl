@@ -3,7 +3,7 @@
 Expand the name of the chart.
 */}}
 {{- define "keptn.name" -}}
-{{- include "common.names.name" . -}}
+{{- include "keptn.common.names.name" . -}}
 {{- end }}
 
 {{/*
@@ -12,14 +12,14 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 If release name contains chart name it will be used as a full name.
 */}}
 {{- define "keptn.fullname" -}}
-{{- include "common.names.fullname" . -}}
+{{- include "keptn.common.names.fullname" . -}}
 {{- end }}
 
 {{/*
 Create chart name and version as used by the chart label.
 */}}
 {{- define "keptn.chart" -}}
-{{- include "common.names.chart" . -}}
+{{- include "keptn.common.names.chart" . -}}
 {{- end }}
 
 {{- define "keptn.dist.livenessProbe" -}}
@@ -304,9 +304,9 @@ Usage:
 */}}
 {{- define "keptn.tpl-value-or-default" -}}
   {{- if .value }}
-    {{- include "common.tplvalues.render" ( dict "value" .value "context" .context ) }}
+    {{- include "keptn.common.tplvalues.render" ( dict "value" .value "context" .context ) }}
   {{- else }}
-    {{- include "common.tplvalues.render" ( dict "value" .default "context" .context ) }}
+    {{- include "keptn.common.tplvalues.render" ( dict "value" .default "context" .context ) }}
   {{- end }}
 {{- end -}}
 

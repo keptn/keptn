@@ -3,17 +3,17 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mongodb-datastore
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: mongodb-datastore
 spec:
   selector:
-    matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
+    matchLabels: {{- include "keptn.common.labels.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/name: mongodb-datastore
   replicas: 1
   {{- include "keptn.common.update-strategy" . | nindent 2 }}
   template:
     metadata:
-      labels: {{- include "common.labels.standard" . | nindent 8 }}
+      labels: {{- include "keptn.common.labels.standard" . | nindent 8 }}
         app.kubernetes.io/name: mongodb-datastore
     spec:
       {{- include "keptn.common.pod-security-context" . | nindent 6 }}
@@ -72,14 +72,14 @@ spec:
           {{- include "keptn.common.container-security-context" . | nindent 10 }}
           {{- if .Values.mongodbDatastore.extraVolumeMounts }}
           volumeMounts:
-            {{- include "common.tplvalues.render" ( dict "value" .Values.mongodbDatastore.extraVolumeMounts "context" $) | nindent 12 }}
+            {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.mongodbDatastore.extraVolumeMounts "context" $) | nindent 12 }}
           {{- end }}
         {{- with .Values.mongodbDatastore.sidecars }}
-        {{- include "common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
+        {{- include "keptn.common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
         {{- end }}
       {{- if .Values.mongodbDatastore.extraVolumes }}
       volumes:
-      {{- include "common.tplvalues.render" ( dict "value" .Values.mongodbDatastore.extraVolumes "context" $) | nindent 8 }}
+      {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.mongodbDatastore.extraVolumes "context" $) | nindent 8 }}
       {{- end }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.mongodbDatastore.nodeSelector "default" .Values.nodeSelector "indent" 8 "context" . )}}
 ---
@@ -87,11 +87,11 @@ apiVersion: v1
 kind: Service
 metadata:
   name: mongodb-datastore
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: mongodb-datastore
 spec:
   ports:
     - port: 8080
       protocol: TCP
-  selector: {{- include "common.labels.selectorLabels" . | nindent 4 }}
+  selector: {{- include "keptn.common.labels.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/name: mongodb-datastore

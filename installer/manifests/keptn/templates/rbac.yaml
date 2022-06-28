@@ -3,14 +3,14 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: keptn-default
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: {{ include "keptn.name" . }}
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: keptn-configuration-service
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     {{- if .Values.resourceService.enabled }}
     app.kubernetes.io/name: resource-service
     {{- else }}
@@ -21,28 +21,28 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: keptn-shipyard-controller
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: shipyard-controller
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: keptn-secret-service
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: secret-service
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: keptn-lighthouse-service
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: lighthouse-service
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: keptn-api-service
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: api-service
 ---
 {{- if .Values.webhookService.enabled }}
@@ -50,7 +50,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: keptn-webhook-service
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: webhook-service
 ---
 {{- end }}
@@ -58,7 +58,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: keptn-manage-secrets
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: {{ include "keptn.name" . }}
 rules:
   - apiGroups:
@@ -77,7 +77,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: keptn-get-secrets
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     {{- if .Values.resourceService.enabled }}
     app.kubernetes.io/name: resource-service
     {{- else }}
@@ -96,7 +96,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: keptn-manage-roles
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: secret-service
 rules:
   - apiGroups:
@@ -114,7 +114,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: keptn-manage-rolebindings
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: secret-service
 rules:
   - apiGroups:
@@ -133,7 +133,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: keptn-read-metadata
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: api-service
 rules:
   - apiGroups:
@@ -150,7 +150,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: keptn-manage-configmaps
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: lighthouse-service
 rules:
   - apiGroups:
@@ -167,7 +167,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: keptn-get-webhook-config
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: webhook-service
 rules:
   - apiGroups:
@@ -184,7 +184,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: keptn-acquire-lease
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: shipyard-controller
 rules:
   - apiGroups:
@@ -204,7 +204,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: keptn-lighthouse-service
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: lighthouse-service
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -219,7 +219,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: keptn-webhook-service
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: webhook-service
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -234,7 +234,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: keptn-api-service-metadata
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: api-service
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -249,7 +249,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: keptn-configuration-service-get-secrets
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     {{- if .Values.resourceService.enabled }}
     app.kubernetes.io/name: resource-service
     {{- else }}
@@ -268,7 +268,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: keptn-shipyard-controller-manage-secrets
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: shipyard-controller
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -283,7 +283,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: keptn-secret-service-manage-secrets
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: secret-service
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -298,7 +298,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: keptn-secret-service-manage-roles
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: secret-service
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -312,7 +312,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: keptn-secret-service-manage-rolebindings
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: secret-service
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -327,7 +327,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: keptn-shipyard-controller-acquire-lease
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: shipyard-controller
 roleRef:
   apiGroup: rbac.authorization.k8s.io

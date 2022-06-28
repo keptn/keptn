@@ -4,17 +4,17 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: lighthouse-service
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: lighthouse-service
 spec:
   selector:
-    matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
+    matchLabels: {{- include "keptn.common.labels.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/name: lighthouse-service
   replicas: 1
   {{- include "keptn.common.update-strategy" . | nindent 2 }}
   template:
     metadata:
-      labels: {{- include "common.labels.standard" . | nindent 8 }}
+      labels: {{- include "keptn.common.labels.standard" . | nindent 8 }}
         app.kubernetes.io/name: lighthouse-service
     spec:
       {{- include "keptn.common.pod-security-context" . | nindent 6 }}
@@ -59,14 +59,14 @@ spec:
           {{- include "keptn.common.container-security-context" . | nindent 10 }}
           {{- if .Values.lighthouseService.extraVolumeMounts }}
           volumeMounts:
-          {{- include "common.tplvalues.render" ( dict "value" .Values.lighthouseService.extraVolumeMounts "context" $) | nindent 12 }}
+          {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.lighthouseService.extraVolumeMounts "context" $) | nindent 12 }}
           {{- end }}
         {{- with .Values.lighthouseService.sidecars }}
-        {{- include "common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
+        {{- include "keptn.common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
         {{- end }}
       {{- if .Values.lighthouseService.extraVolumes }}
       volumes:
-      {{- include "common.tplvalues.render" ( dict "value" .Values.lighthouseService.extraVolumes "context" $) | nindent 8 }}
+      {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.lighthouseService.extraVolumes "context" $) | nindent 8 }}
       {{- end }}
       serviceAccountName: keptn-lighthouse-service
       terminationGracePeriodSeconds: {{ .Values.lighthouseService.gracePeriod | default 60 }}
@@ -76,11 +76,11 @@ apiVersion: v1
 kind: Service
 metadata:
   name: lighthouse-service
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: lighthouse-service
 spec:
   ports:
     - port: 8080
       protocol: TCP
-  selector: {{- include "common.labels.selectorLabels" . | nindent 4 }}
+  selector: {{- include "keptn.common.labels.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/name: lighthouse-service
