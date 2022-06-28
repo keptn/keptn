@@ -4,7 +4,7 @@
   [isLoading]="isLoading"
   (gitDataChanged)="gitUpstreamChanged($event); inputChanged()"
 ></ktb-project-settings-git>
-<form>
+<form class="mt-2">
   <dt-form-field>
     <dt-checkbox [formControl]="isInsecureControl" class="mt-2" uitestid="ktb-proxy-insecure">
       Skip SSL certificate check

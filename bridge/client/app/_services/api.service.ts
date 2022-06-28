@@ -125,10 +125,14 @@ export class ApiService {
     return this.http.delete<Record<string, unknown>>(url);
   }
 
-  public createProjectExtended(projectName: string, shipyard: string, data?: IGitDataExtended): Observable<unknown> {
+  public createProjectExtended(
+    projectName: string,
+    shipyard: string,
+    gitCredentials?: IGitDataExtended
+  ): Observable<unknown> {
     const url = `${this._baseUrl}/controlPlane/v1/project`;
     return this.http.post<unknown>(url, {
-      ...data,
+      gitCredentials,
       name: projectName,
       shipyard,
     });
@@ -344,10 +348,10 @@ export class ApiService {
     return this.http.get<EventResult>(url, { params });
   }
 
-  public updateGitUpstreamExtended(projectName: string, data?: IGitDataExtended): Observable<unknown> {
+  public updateGitUpstreamExtended(projectName: string, gitCredentials?: IGitDataExtended): Observable<unknown> {
     const url = `${this._baseUrl}/controlPlane/v1/project`;
     return this.http.put<unknown>(url, {
-      ...data,
+      gitCredentials,
       name: projectName,
     });
   }
