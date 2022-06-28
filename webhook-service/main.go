@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/keptn/keptn/go-sdk/pkg/sdk"
+	"github.com/keptn/go-utils/pkg/sdk"
 	"github.com/keptn/keptn/webhook-service/handler"
 	"github.com/keptn/keptn/webhook-service/lib"
 	log "github.com/sirupsen/logrus"

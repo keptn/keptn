@@ -1,7 +1,7 @@
 import { Deployment as dp, IStageDeployment, SubSequence } from '../../../shared/interfaces/deployment';
 import { EvaluationResult } from '../../../shared/interfaces/evaluation-result';
 import { Trace } from './trace';
-import { SequenceState } from '../../../shared/models/sequence';
+import { SequenceState } from '../../../shared/interfaces/sequence';
 import { ResultTypes } from '../../../shared/models/result-types';
 import { Sequence } from './sequence';
 import { ServiceRemediationInformation } from './service-remediation-information';

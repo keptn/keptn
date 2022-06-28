@@ -1,13 +1,13 @@
-import { Stage } from './stage';
+import { IStage } from './stage';
 
-export class Project {
-  projectName!: string;
+export interface IProject {
+  projectName: string;
   gitUser?: string;
   gitRemoteURI?: string;
   shipyardVersion?: string;
   gitProxyScheme?: 'https' | 'http';
   gitProxyUrl?: string;
   gitProxyUser?: string;
-  gitProxyInsecure = false;
-  stages: Stage[] = [];
+  gitProxyInsecure: boolean;
+  stages: IStage[];
 }

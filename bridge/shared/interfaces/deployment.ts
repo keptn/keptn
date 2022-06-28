@@ -1,4 +1,4 @@
-import { Sequence, SequenceState } from '../models/sequence';
+import { ISequence, SequenceState } from './sequence';
 import { Trace } from '../models/trace';
 import { ResultTypes } from '../models/result-types';
 
@@ -28,7 +28,7 @@ export interface IStageDeployment {
   lastTimeUpdated: string;
   hasEvaluation: boolean;
   latestEvaluation?: Trace;
-  openRemediations: Sequence[];
+  openRemediations: ISequence[];
   approvalInformation?: {
     trace: Trace;
     deployedImage?: string;

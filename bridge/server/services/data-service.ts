@@ -22,7 +22,7 @@ import { EventResult } from '../interfaces/event-result';
 import { Secret } from '../models/secret';
 import { IRemediationAction } from '../../shared/models/remediation-action';
 import { KeptnService } from '../../shared/models/keptn-service';
-import { SequenceState } from '../../shared/models/sequence';
+import { SequenceState } from '../../shared/interfaces/sequence';
 import { ServiceDeploymentInformation, ServiceState } from '../../shared/models/service-state';
 import { Deployment, IStageDeployment, SubSequence } from '../../shared/interfaces/deployment';
 import semver from 'semver';

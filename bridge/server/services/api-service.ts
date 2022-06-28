@@ -7,13 +7,13 @@ import { UniformRegistration } from '../models/uniform-registration';
 import { UniformRegistrationLogResponse } from '../../shared/interfaces/uniform-registration-log';
 import { Resource, ResourceResponse } from '../../shared/interfaces/resource';
 import https from 'https';
-import { ProjectResult } from '../interfaces/project-result';
 import { UniformSubscription } from '../../shared/interfaces/uniform-subscription';
 import { Secret } from '../../shared/interfaces/secret';
 import { KeptnService } from '../../shared/models/keptn-service';
 import { IStage } from '../../shared/interfaces/stage';
 import { SequenceOptions, TraceOptions } from './data-service';
 import { ComponentLogger } from '../utils/logger';
+import { IProjectResult } from '../../shared/interfaces/project-result';
 
 export class ApiService {
   private readonly axios: AxiosInstance;
@@ -43,8 +43,8 @@ export class ApiService {
     }
   }
 
-  public getProjects(accessToken: string | undefined): Promise<AxiosResponse<ProjectResult>> {
-    return this.axios.get<ProjectResult>(`${this.baseUrl}/controlPlane/v1/project`, this.getAuthHeaders(accessToken));
+  public getProjects(accessToken: string | undefined): Promise<AxiosResponse<IProjectResult>> {
+    return this.axios.get<IProjectResult>(`${this.baseUrl}/controlPlane/v1/project`, this.getAuthHeaders(accessToken));
   }
 
   public getProject(accessToken: string | undefined, projectName: string): Promise<AxiosResponse<Project>> {

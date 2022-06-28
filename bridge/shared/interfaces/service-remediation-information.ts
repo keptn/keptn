@@ -1,8 +1,8 @@
-import { Sequence } from '../models/sequence';
+import { ISequence } from './sequence';
 
 export interface ServiceRemediationInformation {
   stages: {
     name: string;
-    remediations: Sequence[];
+    remediations: ISequence[];
   }[];
 }

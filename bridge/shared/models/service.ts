@@ -1,4 +1,4 @@
-import { Sequence } from './sequence';
+import { ISequence } from '../interfaces/sequence';
 import { IService, IServiceEvent } from '../interfaces/service';
 import { Trace } from './trace';
 
@@ -9,8 +9,8 @@ export class Service implements IService {
   creationDate!: string;
   deployedImage?: string;
   lastEventTypes: { [event: string]: IServiceEvent | undefined } = {};
-  latestSequence?: Sequence;
-  openRemediations: Sequence[] = [];
+  latestSequence?: ISequence;
+  openRemediations: ISequence[] = [];
   openApprovals?: Trace[] = [];
   deploymentInformation?: DeploymentInformation;
 

@@ -6,7 +6,6 @@ import { KeptnInfoResult } from '../../../shared/interfaces/keptn-info-result';
 import moment from 'moment';
 import { KeptnVersions } from '../../../shared/interfaces/keptn-versions';
 import { Project } from '../_models/project';
-import { ProjectResult } from '../_interfaces/project-result';
 import { UniformRegistrationResult } from '../../../shared/interfaces/uniform-registration-result';
 import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-registration-info';
 import { UniformSubscription } from '../_models/uniform-subscription';
@@ -43,6 +42,7 @@ import { SequenceFilterMock } from './_mockData/sequence-filter.mock';
 import { TriggerResponse, TriggerSequenceData } from '../_models/trigger-sequence';
 import { IGitHttps, IGitSsh } from '../_interfaces/git-upstream';
 import { IService } from '../../../shared/interfaces/service';
+import { IProjectResult } from '../../../shared/interfaces/project-result';
 
 @Injectable({
   providedIn: null,
@@ -143,9 +143,9 @@ export class ApiServiceMock extends ApiService {
     return this.getProject(projectName);
   }
 
-  public getProjects(pageSize?: number): Observable<ProjectResult> {
+  public getProjects(pageSize?: number): Observable<IProjectResult> {
     const projects = [...ProjectsMock];
-    const result: ProjectResult = {
+    const result: IProjectResult = {
       projects: projects,
       totalCount: projects.length,
     };

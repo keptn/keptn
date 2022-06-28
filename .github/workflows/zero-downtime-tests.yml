@@ -49,6 +49,7 @@ jobs:
             CLUSTER_NAME: "keptn-integration-test-2"
             KUBECONFIG: ""
             PLATFORM: "kubernetes"
+
     env:
       CLOUD_PROVIDER: ${{ matrix.CLOUD_PROVIDER }}
       PLATFORM: ${{ matrix.PLATFORM }}
@@ -56,6 +57,7 @@ jobs:
       KUBECONFIG: ${{ matrix.KUBECONFIG }}
       KEPTN_NAMESPACE: "keptn-zd-test-${{ github.run_number }}-${{ github.run_attempt }}"
       GO_VERSION: "~1.18"
+      RUN_CONTINUOUS_DELIVERY_TEST: "true"
     outputs:
       BRANCH: ${{ steps.determine_branch.outputs.BRANCH }}
       ARTIFACT_RUN_ID: ${{ steps.last_run_id.outputs.RUN_ID }}
@@ -303,9 +305,6 @@ jobs:
             --from-literal=ingress_protocol=http \
             --from-literal=ingress_gateway=public-gateway.istio-system \
             -oyaml --dry-run=client | kubectl replace -f -
-          # restart helm-service
-          kubectl delete pod -n ${KEPTN_NAMESPACE} -lapp.kubernetes.io/name=helm-service
-          sleep 15
 
       - name: Determine Keptn Endpoint
         id: determine_keptn_endpoint

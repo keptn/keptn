@@ -13,7 +13,6 @@ import { Secret } from '../_models/secret';
 import { KeptnInfoResult } from '../../../shared/interfaces/keptn-info-result';
 import { KeptnVersions } from '../../../shared/interfaces/keptn-versions';
 import { EventResult } from '../_interfaces/event-result';
-import { ProjectResult } from '../_interfaces/project-result';
 import { UniformSubscription } from '../_models/uniform-subscription';
 import { WebhookConfig } from '../../../shared/interfaces/webhook-config';
 import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-registration-info';
@@ -33,6 +32,7 @@ import { ICustomSequences } from '../../../shared/interfaces/custom-sequences';
 import { environment } from '../../environments/environment';
 import { WindowConfig } from '../../environments/environment.dynamic';
 import { IService } from '../../../shared/interfaces/service';
+import { IProjectResult } from '../../../shared/interfaces/project-result';
 
 @Injectable({
   providedIn: 'root',
@@ -198,13 +198,13 @@ export class ApiService {
     return this.http.get<Project>(url);
   }
 
-  public getProjects(pageSize?: number): Observable<ProjectResult> {
+  public getProjects(pageSize?: number): Observable<IProjectResult> {
     const url = `${this._baseUrl}/controlPlane/v1/project`;
     const params = {
       disableUpstreamSync: 'true',
       ...(pageSize && { pageSize: pageSize.toString() }),
     };
-    return this.http.get<ProjectResult>(url, { params });
+    return this.http.get<IProjectResult>(url, { params });
   }
 
   public getUniformRegistrations(uniformDates: { [key: string]: string }): Observable<UniformRegistrationResult[]> {
