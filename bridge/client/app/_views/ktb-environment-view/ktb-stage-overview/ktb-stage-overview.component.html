@@ -21,7 +21,8 @@
     </div>
     <ng-template class="mb-3 pr-1" #triggerSequenceClosed>
       <button dt-button class="mb-3" (click)="changeIsTriggerSequence(true)" uitestid="keptn-trigger-button-open">
-        <dt-icon name="flash"></dt-icon>Trigger a new sequence
+        <dt-icon name="flash"></dt-icon>
+        Trigger a new sequence
       </button>
     </ng-template>
   </div>
@@ -39,68 +40,52 @@
       fxLayoutGap="15px"
       *ngFor="let parentStage of project.getParentStages(); let i = index; trackBy: trackStage"
     >
-      <a
+      <ktb-selectable-tile
         *ngFor="let stage of project.getStages(parentStage)"
-        [routerLink]="linkToStage(project, stage)"
-        class="no-underline"
+        [selected]="(selectedStageName$ | async) === stage.stageName"
+        (click)="selectStage($event, project, stage)"
       >
-        <ktb-selectable-tile [selected]="(selectedStageName$ | async) === stage.stageName">
-          <h2 class="m-0 mt-1 mb-1" [textContent]="stage.stageName"></h2>
-          <div class="stage-state" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
-            <a
-              fxLayout="row"
-              fxLayoutAlign="start center"
-              fxLayoutGap="5px"
-              *ngIf="filterServices(stage.getServicesWithRemediations()) as problemServices"
-              [routerLink]="linkToStage(project, stage)"
-              [queryParams]="{ filterType: 'problem' }"
-              [attr.uitestid]="'filter-type-problem'"
-              (click)="$event.stopPropagation()"
-            >
-              <dt-icon
-                class="stage-state-icon"
-                name="criticalevent"
-                [class.error]="problemServices.length > 0"
-              ></dt-icon>
-              <span [textContent]="problemServices.length"></span>
-            </a>
-            <a
-              fxLayout="row"
-              fxLayoutAlign="start center"
-              fxLayoutGap="5px"
-              *ngIf="filterServices(stage.getServicesWithFailedEvaluation()) as failedServices"
-              [routerLink]="linkToStage(project, stage)"
-              [queryParams]="{ filterType: 'evaluation' }"
-              [attr.uitestid]="'filter-type-evaluation'"
-              (click)="$event.stopPropagation()"
-            >
-              <dt-icon
-                class="stage-state-icon"
-                name="traffic-light"
-                [class.error]="failedServices.length > 0"
-              ></dt-icon>
-              <span [textContent]="failedServices.length"></span>
-            </a>
-            <a
-              fxLayout="row"
-              fxLayoutAlign="start center"
-              fxLayoutGap="5px"
-              *ngIf="filterServices(stage.getServicesWithOpenApprovals()) as approvalServices"
-              [routerLink]="linkToStage(project, stage)"
-              [queryParams]="{ filterType: 'approval' }"
-              [attr.uitestid]="'filter-type-approval'"
-              (click)="$event.stopPropagation()"
-            >
-              <dt-icon class="stage-state-icon" name="deploy" [class.highlight]="approvalServices.length > 0"></dt-icon>
-              <span [textContent]="approvalServices.length"></span>
-            </a>
+        <h2 class="m-0 mt-1 mb-1" [textContent]="stage.stageName"></h2>
+        <div class="stage-state" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
+          <div
+            fxLayout="row"
+            fxLayoutAlign="start center"
+            fxLayoutGap="5px"
+            *ngIf="filterServices(stage.getServicesWithRemediations()) as problemServices"
+            (click)="problemServices.length > 0 && selectStage($event, project, stage, 'problem')"
+            [attr.uitestid]="'filter-type-problem'"
+          >
+            <dt-icon class="stage-state-icon" name="criticalevent" [class.error]="problemServices.length > 0"></dt-icon>
+            <span [textContent]="problemServices.length"></span>
           </div>
-          <ktb-services-list
-            [projectName]="project.projectName"
-            [services]="filterServices(stage.services)"
-          ></ktb-services-list>
-        </ktb-selectable-tile>
-      </a>
+          <div
+            fxLayout="row"
+            fxLayoutAlign="start center"
+            fxLayoutGap="5px"
+            *ngIf="filterServices(stage.getServicesWithFailedEvaluation()) as failedServices"
+            (click)="failedServices.length > 0 && selectStage($event, project, stage, 'evaluation')"
+            [attr.uitestid]="'filter-type-evaluation'"
+          >
+            <dt-icon class="stage-state-icon" name="traffic-light" [class.error]="failedServices.length > 0"></dt-icon>
+            <span [textContent]="failedServices.length"></span>
+          </div>
+          <div
+            fxLayout="row"
+            fxLayoutAlign="start center"
+            fxLayoutGap="5px"
+            *ngIf="filterServices(stage.getServicesWithOpenApprovals()) as approvalServices"
+            (click)="approvalServices.length > 0 && selectStage($event, project, stage, 'approval')"
+            [attr.uitestid]="'filter-type-approval'"
+          >
+            <dt-icon class="stage-state-icon" name="deploy" [class.highlight]="approvalServices.length > 0"></dt-icon>
+            <span [textContent]="approvalServices.length"></span>
+          </div>
+        </div>
+        <ktb-services-list
+          [projectName]="project.projectName"
+          [services]="filterServices(stage.services)"
+        ></ktb-services-list>
+      </ktb-selectable-tile>
     </div>
   </div>
 </div>

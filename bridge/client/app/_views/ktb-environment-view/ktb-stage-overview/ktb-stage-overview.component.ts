@@ -1,4 +1,4 @@
-import { AfterContentInit, Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
+import { AfterContentInit, Component, EventEmitter, OnDestroy, Output } from '@angular/core';
 import { Project } from '../../../_models/project';
 import { Stage } from '../../../_models/stage';
 import { DataService } from '../../../_services/data.service';
@@ -7,7 +7,7 @@ import { ApiService } from '../../../_services/api.service';
 import { Service } from '../../../_models/service';
 import { DtAutoComplete, DtFilter, DtFilterArray } from '../../../_models/dt-filter';
 import { distinctUntilChanged, filter, map, switchMap, takeUntil, tap, withLatestFrom } from 'rxjs/operators';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest, Subject } from 'rxjs';
 import { DtFilterFieldDefaultDataSourceAutocomplete } from '@dynatrace/barista-components/filter-field/src/filter-field-default-data-source';
 import { ServiceFilterType } from '../ktb-stage-details/ktb-stage-details.component';
@@ -30,6 +30,7 @@ export class KtbStageOverviewComponent implements AfterContentInit, OnDestroy {
     filter((projectName): projectName is string => !!projectName),
     distinctUntilChanged(),
     switchMap((projectName) => this.dataService.getProject(projectName)),
+    filter((project): project is Project => !!project),
     tap((project) => {
       this.setFilter(project, true);
     })
@@ -47,7 +48,12 @@ export class KtbStageOverviewComponent implements AfterContentInit, OnDestroy {
   @Output() selectedStageChange: EventEmitter<{ stage: Stage; filterType: ServiceFilterType }> = new EventEmitter();
   @Output() filteredServicesChange: EventEmitter<string[]> = new EventEmitter<string[]>();
 
-  constructor(private dataService: DataService, private apiService: ApiService, private route: ActivatedRoute) {
+  constructor(
+    private dataService: DataService,
+    private apiService: ApiService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {
     this.isTriggerSequenceOpen = this.dataService.isTriggerSequenceOpen;
     this.dataService.isTriggerSequenceOpen = false;
   }
@@ -56,7 +62,7 @@ export class KtbStageOverviewComponent implements AfterContentInit, OnDestroy {
     combineLatest([this.selectedStageName$, this.paramFilterType$, this.project$])
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(([stageName, filterType, project]) => {
-        const stage = project!.getStage(stageName!);
+        const stage = project.getStage(stageName!);
         if (stage) {
           this.selectedStageChange.emit({ stage: stage, filterType: (filterType as ServiceFilterType) ?? undefined });
         }
@@ -103,9 +109,8 @@ export class KtbStageOverviewComponent implements AfterContentInit, OnDestroy {
   public filterChanged(project: Project, event: DtFilterFieldChangeEvent<any>): void {
     // can't set another type because of "is not assignable to..."
     this.filteredServices = this.getServicesOfFilter(event);
-    if (project) {
-      this.globalFilter[project.projectName] = { services: this.filteredServices };
-    }
+    this.globalFilter[project.projectName] = { services: this.filteredServices };
+
     this.apiService.environmentFilter = this.globalFilter;
     this.filteredServicesChange.emit(this.filteredServices);
   }
@@ -132,8 +137,11 @@ export class KtbStageOverviewComponent implements AfterContentInit, OnDestroy {
     return stage?.toString();
   }
 
-  public linkToStage(project: Project, stage: Stage): string[] {
-    return ['/project', project.projectName, 'environment', 'stage', stage.stageName];
+  public selectStage($event: MouseEvent, project: Project, stage: Stage, filterType?: ServiceFilterType): void {
+    this.router.navigate(['/project', project.projectName, 'environment', 'stage', stage.stageName], {
+      queryParams: { filterType: filterType },
+    });
+    $event.stopPropagation();
   }
 
   public ngOnDestroy(): void {

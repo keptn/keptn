@@ -8,10 +8,10 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { DtTableDataSource } from '@dynatrace/barista-components/table';
-import { Service } from '../../_models/service';
-import { DateUtil } from '../../_utils/date.utils';
-import { DataService } from '../../_services/data.service';
-import { Sequence } from '../../_models/sequence';
+import { Service } from '../../../../_models/service';
+import { DateUtil } from '../../../../_utils/date.utils';
+import { DataService } from '../../../../_services/data.service';
+import { Sequence } from '../../../../_models/sequence';
 
 const DEFAULT_PAGE_SIZE = 3;
 
@@ -30,7 +30,7 @@ export class KtbServicesListComponent implements DoCheck {
   private _expanded = false;
   private iterableDiffer: IterableDiffer<unknown>;
 
-  @Input() projectName: string | undefined;
+  @Input() projectName = '';
 
   @Input()
   get services(): Service[] {
@@ -80,7 +80,7 @@ export class KtbServicesListComponent implements DoCheck {
   getServiceLink(service: Service): string[] {
     return [
       '/project',
-      this.projectName ?? '',
+      this.projectName,
       'service',
       service.serviceName,
       'context',
@@ -91,7 +91,7 @@ export class KtbServicesListComponent implements DoCheck {
   }
 
   getSequenceLink(sequence: Sequence, service: Service): string[] {
-    return ['/project', this.projectName ?? '', 'sequence', sequence.shkeptncontext, 'stage', service.stage];
+    return ['/project', this.projectName, 'sequence', sequence.shkeptncontext, 'stage', service.stage];
   }
 
   getImageText(service: Service): string {
