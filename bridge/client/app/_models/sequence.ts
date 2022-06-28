@@ -26,6 +26,7 @@ export interface SequenceStateInfo {
   faulty: boolean;
   aborted: boolean;
   timedOut: boolean;
+  steady: boolean;
   icon: DtIconType;
   statusText: string;
   evaluation: EvaluationResult | undefined;
@@ -67,6 +68,7 @@ export function createSequenceStateInfo(sequence: ISequence, stageName?: string)
   const icon = latestStage?.latestEvent?.type
     ? EVENT_ICONS[getShortType(latestStage?.latestEvent?.type)] || EVENT_ICONS.default
     : EVENT_ICONS.default;
+  const steady = (!waiting && !loading) || pendingApproval;
   const statusText = getStatusText(sequence.state, { successful, faulty, waiting, aborted, timedOut });
   const evaluation = stage?.latestEvaluation;
   return {
@@ -79,6 +81,7 @@ export function createSequenceStateInfo(sequence: ISequence, stageName?: string)
     timedOut,
     faulty,
     aborted,
+    steady,
     icon,
     statusText,
     evaluation,

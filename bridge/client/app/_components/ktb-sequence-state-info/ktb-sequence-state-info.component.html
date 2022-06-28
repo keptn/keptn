@@ -1,7 +1,7 @@
 <ng-container *ngIf="sequence">
   <div *ngIf="createSequenceStateInfo(sequence) as info" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
     <dt-icon
-      *ngIf="(!info.loading && !info.waiting) || info.pendingApproval; else showLoading"
+      *ngIf="info.steady; else showLoading"
       class="event-icon"
       [name]="info.icon"
       [class.success]="info.successful"
