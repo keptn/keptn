@@ -6,7 +6,7 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/go-sdk/pkg/sdk"
+	"github.com/keptn/go-utils/pkg/sdk"
 	"github.com/keptn/keptn/webhook-service/handler"
 	fake2 "github.com/keptn/keptn/webhook-service/handler/fake"
 	"github.com/keptn/keptn/webhook-service/lib"

@@ -46,10 +46,7 @@ jobs:
             approval-service
             cli
             configuration-service
-            cp-connector
-            cp-common
             distributor
-            go-sdk
             helm-service
             jmeter-service
             lighthouse-service

@@ -1,8 +1,8 @@
 package api
 
 import (
+	api "github.com/keptn/go-utils/pkg/api/utils"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	"github.com/keptn/keptn/cp-common/api"
 	"github.com/keptn/keptn/distributor/pkg/config"
 	"net/http"
 	"reflect"
