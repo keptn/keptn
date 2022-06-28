@@ -424,7 +424,6 @@ func (ph *ProjectHandler) DeleteProject(c *gin.Context) {
 		if err != nil {
 			// a failure to clean up the provisioned repo should not prevent the project delete
 			log.Errorf(err.Error())
-			SetFailedDependencyErrorResponse(c, UnableProvisionDeleteGeneric)
 		}
 	}
 
