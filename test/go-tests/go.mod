@@ -9,9 +9,9 @@ require (
 	github.com/keptn/go-utils v0.16.1-0.20220628065837-3ed2fc6cf1ed
 	github.com/mholt/archiver/v3 v3.5.1
 	github.com/stretchr/testify v1.7.1
-	k8s.io/api v0.24.2
-	k8s.io/apimachinery v0.24.2
-	k8s.io/client-go v0.24.2
+	k8s.io/api v0.22.11
+	k8s.io/apimachinery v0.22.11
+	k8s.io/client-go v0.22.11
 )
 
 require (
@@ -34,7 +34,9 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.2 // indirect
 	github.com/google/gnostic v0.5.7-v3refs // indirect
+	github.com/google/go-cmp v0.5.7 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
+	github.com/googleapis/gnostic v0.5.5 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect

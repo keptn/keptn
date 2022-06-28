@@ -19,7 +19,7 @@ require (
 	golang.org/x/net v0.0.0-20220624214902-1bab6f366d9e
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/apimachinery v0.24.2
-	k8s.io/client-go v0.24.2
+	k8s.io/client-go v0.22.11
 )
 
 require (
@@ -42,6 +42,7 @@ require (
 	github.com/golang/snappy v0.0.2 // indirect
 	github.com/google/gnostic v0.5.7-v3refs // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
+	github.com/googleapis/gnostic v0.5.5 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
