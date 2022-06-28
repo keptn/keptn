@@ -13,9 +13,6 @@
   "prConcurrentLimit": 15,
   "stabilityDays": 3,
   "timezone": "Europe/Vienna",
-  "ignoreDeps": [
-    "github.com/keptn/keptn/go-sdk"
-  ],
   "postUpdateOptions": [
     "gomodTidy"
   ],
