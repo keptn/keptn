@@ -96,10 +96,6 @@ lifecycle:
   value: {{ ((.Values.distributor.config).proxy).httpTimeout | default "30" | quote }}
 - name: API_PROXY_MAX_PAYLOAD_BYTES_KB
   value: {{ ((.Values.distributor.config).proxy).maxPayloadBytesKB | default "64" | quote }}
-- name: LOCATION
-  valueFrom:
-   fieldRef:
-      fieldPath: 'metadata.labels[''app.kubernetes.io/name'']'
 - name: K8S_DEPLOYMENT_NAME
   valueFrom:
     fieldRef:

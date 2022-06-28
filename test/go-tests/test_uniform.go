@@ -94,10 +94,6 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.labels['app.kubernetes.io/version']
-            - name: LOCATION
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.labels['app.kubernetes.io/component']
             - name: K8S_DEPLOYMENT_NAME
               valueFrom:
                 fieldRef:
