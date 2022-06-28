@@ -3,7 +3,7 @@ module github.com/keptn/keptn/webhook-service
 go 1.18
 
 require (
-	github.com/keptn/go-utils v0.16.1-0.20220627142720-dc3f6c8a574c
+	github.com/keptn/go-utils v0.16.1-0.20220628062536-0a59f743fbe7
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
