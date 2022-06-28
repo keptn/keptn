@@ -23,7 +23,7 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
     pinnable: true,
   };
   public isQualityGatesOnly = false;
-  private _filteredServices: string[] = [];
+  public filteredServices: string[] = [];
   private readonly unsubscribe$ = new Subject<void>();
 
   @ViewChild('problemFilterEventButton') public problemFilterEventButton?: DtToggleButtonItem<string>;
@@ -40,15 +40,6 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
       this._project = project;
       this.selectedStage = undefined;
     }
-  }
-
-  get filteredServices(): string[] {
-    return this._filteredServices;
-  }
-
-  set filteredServices(services: string[]) {
-    this._filteredServices = services;
-    this.resetFilter(undefined);
   }
 
   constructor(private dataService: DataService) {}
