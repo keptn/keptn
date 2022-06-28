@@ -158,13 +158,8 @@ func (g *Git) CreateBranch(project string, branch string, sourceBranch string) e
 	// if an upstream has been defined, push the new branch
 	credentials, err := g.CredentialReader.GetCredentials(project)
 	if err == nil && credentials != nil {
-<<<<<<< HEAD
 		repoURI := getRepoURI(credentials.RemoteURL, credentials.User, credentials.HttpsAuth.Token)
-		_, err = utils.ExecuteCommandInDirectory("git", []string{"push", "--set-upstream", repoURI, branch}, projectConfigPath)
-=======
-		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
 		_, err = keptn2.ExecuteCommandInDirectory("git", []string{"push", "--set-upstream", repoURI, branch}, projectConfigPath)
->>>>>>> master
 		if err != nil {
 			return fmt.Errorf("failed to set git upstream for project '%s'", project)
 		}
