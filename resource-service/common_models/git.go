@@ -21,14 +21,14 @@ func (g GitCredentials) Validate() error {
 	if !strings.HasPrefix(g.RemoteURL, "http://") && !strings.HasPrefix(g.RemoteURL, "ssh://") && !strings.HasPrefix(g.RemoteURL, "https://") {
 		return kerrors.ErrInvalidRemoteURL
 	}
-	if g.HttpsAuth != nil {
+	if g.HttpsAuth != nil && !strings.HasPrefix(g.RemoteURL, "ssh://") {
 		if err := g.validateRemoteURLAndToken(); err != nil {
 			return err
 		}
 		if err := g.validateProxy(); err != nil {
 			return err
 		}
-	} else if g.SshAuth != nil {
+	} else if g.SshAuth != nil && strings.HasPrefix(g.RemoteURL, "ssh://") {
 		if g.SshAuth.PrivateKey == "" {
 			return kerrors.ErrCredentialsPrivateKeyMustNotBeEmpty
 		}
