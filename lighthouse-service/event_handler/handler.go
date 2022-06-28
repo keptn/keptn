@@ -3,11 +3,11 @@ package event_handler
 import (
 	"context"
 	"fmt"
-	"github.com/keptn/keptn/cp-connector/pkg/types"
+	"github.com/keptn/go-utils/pkg/sdk/connector/types"
 	"net/http"
 
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
+	"github.com/keptn/go-utils/pkg/sdk/connector/controlplane"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	logger "github.com/sirupsen/logrus"

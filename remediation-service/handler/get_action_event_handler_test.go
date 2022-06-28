@@ -6,7 +6,7 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/lib/v0_1_4"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/go-sdk/pkg/sdk"
+	"github.com/keptn/go-utils/pkg/sdk"
 	"github.com/keptn/keptn/remediation-service/handler"
 	"io/ioutil"
 	"log"
