@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"testing"
 
@@ -1408,6 +1409,91 @@ func TestDelete(t *testing.T) {
 
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	instance.Delete("my-project")
+}
+
+// check if delete returns an error if it cannot delete the local repo, but removes project from DB anyway
+func TestDeleteNoUpstreamNoSecret(t *testing.T) {
+
+	deleteMV := false
+	deleteSeq := false
+	deleteEvents := false
+	secretStore := &common_mock.SecretStoreMock{}
+	projectMVRepo := &db_mock.ProjectMVRepoMock{}
+	eventRepo := &db_mock.EventRepoMock{}
+	configStore := &common_mock.ConfigurationStoreMock{}
+	sequenceQueueRepo := &db_mock.SequenceQueueRepoMock{}
+	eventQueueRepo := &db_mock.EventQueueRepoMock{}
+	sequenceExecutionRepo := &db_mock.SequenceExecutionRepoMock{}
+
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
+
+		p := &apimodels.ExpandedProject{
+			CreationDate:    "creationdate",
+			GitRemoteURI:    "",
+			GitUser:         "my-user",
+			ProjectName:     "my-project",
+			Shipyard:        "",
+			ShipyardVersion: "v1",
+		}
+
+		return p, nil
+	}
+
+	secretEncoded, _ := json.Marshal(gitCredentials{
+		User:      "my-user",
+		Token:     "my-token",
+		RemoteURI: "",
+	})
+
+	secretStore.GetSecretFunc = func(name string) (map[string][]byte, error) {
+
+		return map[string][]byte{"git-credentials": secretEncoded}, nil
+	}
+
+	secretStore.DeleteSecretFunc = func(name string) error {
+		return errors.New("something went wrong with secret deletion")
+	}
+
+	configStore.DeleteProjectFunc = func(projectName string) error {
+		return errors.New("no git setup")
+	}
+
+	configStore.GetProjectResourceFunc = func(projectName string, resourceURI string) (*apimodels.Resource, error) {
+		resource := apimodels.Resource{}
+		return &resource, nil
+	}
+	eventRepo.DeleteEventCollectionsFunc = func(project string) error {
+		deleteEvents = true
+		return nil
+	}
+
+	projectMVRepo.DeleteProjectFunc = func(projectName string) error {
+		deleteMV = true
+		return nil
+	}
+
+	sequenceQueueRepo.DeleteQueuedSequencesFunc = func(itemFilter models.QueueItem) error {
+		deleteSeq = true
+		return nil
+	}
+
+	eventQueueRepo.DeleteQueuedEventsFunc = func(scope models.EventScope) error {
+		return nil
+	}
+
+	sequenceExecutionRepo.ClearFunc = func(projectName string) error {
+		return nil
+	}
+
+	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	str, err := instance.Delete("my-project")
+
+	require.ErrorContains(t, err, "")
+	require.Contains(t, str, "WARNING: Could not delete secret containing the git upstream repo credentials")
+	require.True(t, deleteSeq)
+	require.True(t, deleteMV)
+	require.True(t, deleteEvents)
+
 }
 
 func TestValidateShipyardStagesUnchaged(t *testing.T) {
