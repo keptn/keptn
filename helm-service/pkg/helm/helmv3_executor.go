@@ -1,11 +1,16 @@
 package helm
 
 import (
+	"context"
 	"fmt"
-	"github.com/keptn/keptn/helm-service/pkg/namespacemanager"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
+
+	"github.com/keptn/keptn/helm-service/pkg/namespacemanager"
+	appsv1 "k8s.io/api/apps/v1"
+	"k8s.io/client-go/kubernetes"
 
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 
@@ -14,15 +19,16 @@ import (
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
 
+	"github.com/keptn/go-utils/pkg/common/fileutils"
+	"github.com/keptn/go-utils/pkg/common/kubeutils"
 	"helm.sh/helm/v3/pkg/kube"
 	"helm.sh/helm/v3/pkg/storage"
 	"helm.sh/helm/v3/pkg/storage/driver"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	cmdutil "k8s.io/kubectl/pkg/cmd/util"
-
-	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 )
 
 func getInClusterConfig() bool {
@@ -88,7 +94,7 @@ func (h *HelmV3Executor) getKubeRestConfig() (config *rest.Config, err error) {
 		config, err = rest.InClusterConfig()
 	} else {
 		kubeconfig := filepath.Join(
-			keptnutils.UserHomeDir(), ".kube", "config",
+			fileutils.UserHomeDir(), ".kube", "config",
 		)
 		config, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
 	}
@@ -177,11 +183,63 @@ func (h *HelmV3Executor) UpgradeChart(ch *chart.Chart, releaseName, namespace st
 func (h *HelmV3Executor) waitForDeploymentsOfHelmRelease(helmManifest string) error {
 	depls := GetDeployments(helmManifest)
 	for _, depl := range depls {
-		if err := keptnutils.WaitForDeploymentToBeRolledOut(getInClusterConfig(), depl.Name, depl.Namespace); err != nil {
+		if err := waitForDeploymentToBeRolledOut(getInClusterConfig(), depl.Name, depl.Namespace); err != nil {
 			return fmt.Errorf("Error when waiting for deployment %s in namespace %s: %s", depl.Name, depl.Namespace, err.Error())
 		}
 	}
 	return nil
+}
+
+func waitForDeploymentToBeRolledOut(useInClusterConfig bool, deploymentName string, namespace string) error {
+	clientset, err := kubeutils.GetClientSet(useInClusterConfig)
+	if err != nil {
+		return err
+	}
+
+	const maxWaitForDeploymentRetries = 90
+	deployment, err := getDeployment(clientset, namespace, deploymentName)
+	retries := 0
+	for {
+
+		var cond *appsv1.DeploymentCondition
+
+		for i := range deployment.Status.Conditions {
+			c := deployment.Status.Conditions[i]
+			if c.Type == appsv1.DeploymentProgressing {
+				cond = &c
+				break
+			}
+		}
+
+		if cond != nil && cond.Reason == "ProgressDeadlineExceeded" {
+			return fmt.Errorf("Deployment %q exceeded its progress deadline", deployment.Name)
+		}
+		if !(deployment.Spec.Replicas != nil && deployment.Status.UpdatedReplicas < *deployment.Spec.Replicas ||
+			deployment.Status.Replicas > deployment.Status.UpdatedReplicas ||
+			deployment.Status.AvailableReplicas < deployment.Status.UpdatedReplicas) {
+			return nil
+		}
+
+		time.Sleep(2 * time.Second)
+		deployment, err = getDeployment(clientset, namespace, deploymentName)
+		if err != nil {
+			return err
+		}
+		retries = retries + 1
+		if retries >= maxWaitForDeploymentRetries {
+			return fmt.Errorf("Timed out waiting for deployment %q", deployment.Name)
+		}
+	}
+}
+
+func getDeployment(clientset *kubernetes.Clientset, namespace string, deploymentName string) (*appsv1.Deployment, error) {
+	dep, err := clientset.AppsV1().Deployments(namespace).Get(context.TODO(), deploymentName, metav1.GetOptions{})
+	if err != nil &&
+		strings.Contains(err.Error(), "the object has been modified; please apply your changes to the latest version and try again") {
+		time.Sleep(10 * time.Second)
+		return clientset.AppsV1().Deployments(namespace).Get(context.TODO(), deploymentName, metav1.GetOptions{})
+	}
+	return dep, nil
 }
 
 // UninstallRelease uninstalls the specified release in the namespace

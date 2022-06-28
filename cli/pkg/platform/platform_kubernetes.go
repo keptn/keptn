@@ -1,3 +1,4 @@
+//go:build !nokubectl
 // +build !nokubectl
 
 // Copyright © 2019 NAME HERE <EMAIL ADDRESS>
@@ -21,9 +22,8 @@ import (
 	"fmt"
 	"strings"
 
+	keptn2 "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/cli/pkg/logging"
-
-	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 )
 
 type kubernetesCredentials struct{}
@@ -68,7 +68,7 @@ func (p kubernetesPlatform) checkCreds() error {
 // GetKubeContext returns the configured current-context
 func GetKubeContext() (string, error) {
 	logging.PrintLog("Checking current Kubernetes context: kubectl config current-context", logging.VerboseLevel)
-	out, err := keptnutils.ExecuteCommand("kubectl", []string{
+	out, err := keptn2.ExecuteCommand("kubectl", []string{
 		"config",
 		"current-context",
 	})

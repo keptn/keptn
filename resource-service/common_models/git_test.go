@@ -32,7 +32,7 @@ func TestGitCredentials_Validate(t *testing.T) {
 				Token:     "",
 				RemoteURI: "https://my-repo",
 			},
-			wantErr: true,
+			wantErr: false,
 		},
 		{
 			name: "invalid URI",
