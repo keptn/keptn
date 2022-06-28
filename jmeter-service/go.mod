@@ -3,7 +3,7 @@ module github.com/keptn/keptn/jmeter-service
 go 1.18
 
 require (
-	github.com/cloudevents/sdk-go/v2 v2.10.0
+	github.com/cloudevents/sdk-go/v2 v2.10.1
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.16.1-0.20220624075633-4d49101f88b4
 	github.com/sirupsen/logrus v1.8.1
