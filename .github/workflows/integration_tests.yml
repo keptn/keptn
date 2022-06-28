@@ -359,7 +359,7 @@ jobs:
               "$HELM_SERVICE_HELM_CHART_NAME" \
               "$JMETER_SERVICE_HELM_CHART_NAME"
           else
-            if [[ "$HELM_CHART_NAME" == *"dev"* ]]; the
+            if [[ "$HELM_CHART_NAME" == *"dev"* ]]; then
               helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} \
                 -f ./test/assets/helm-charts/keptn/values-int-tests.yaml \
                 --create-namespace \
