@@ -34,13 +34,18 @@ import { getGitData } from '../_utils/git-upstream.utils';
 import { ICustomSequences } from '../../../shared/interfaces/custom-sequences';
 import { KeptnService } from '../../../shared/models/keptn-service';
 import { IMetadata } from '../_interfaces/metadata';
+import {
+  ISequenceState,
+  ISequenceStateInfo,
+  SequencesState,
+} from '../_views/ktb-sequence-view/ktb-sequence-view.utils';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DataService {
   private _projects = new BehaviorSubject<Project[] | undefined>(undefined);
-  private _sequencesUpdated = new Subject<void>();
+  private _sequences = new BehaviorSubject<ISequenceState>({});
   private _traces = new BehaviorSubject<Trace[] | undefined>(undefined);
   private _openApprovals = new BehaviorSubject<Trace[]>([]);
   private _keptnInfo = new BehaviorSubject<KeptnInfo | undefined>(undefined);
@@ -61,10 +66,6 @@ export class DataService {
 
   get projects(): Observable<Project[] | undefined> {
     return this._projects.asObservable();
-  }
-
-  get sequencesUpdated(): Observable<void> {
-    return this._sequencesUpdated.asObservable();
   }
 
   get traces(): Observable<Trace[] | undefined> {
@@ -97,6 +98,10 @@ export class DataService {
 
   get hasUnreadUniformRegistrationLogs(): Observable<boolean> {
     return this._hasUnreadUniformRegistrationLogs.asObservable();
+  }
+
+  public getSequences(projectName: string): Observable<ISequenceStateInfo | undefined> {
+    return this._sequences.asObservable().pipe(map((seq) => seq[projectName]));
   }
 
   public setHasUnreadUniformRegistrationLogs(status: boolean): void {
@@ -377,15 +382,15 @@ export class DataService {
     );
   }
 
-  public loadSequences(project: Project, fromTime?: Date, beforeTime?: Date, oldSequence?: Sequence): void {
+  public loadSequences(projectName: string, fromTime?: Date, beforeTime?: Date, oldSequence?: Sequence): void {
     if (!beforeTime && !fromTime) {
       // set fromTime if it isn't loadOldSequences
-      fromTime = this._sequencesLastUpdated[project.projectName];
+      fromTime = this._sequencesLastUpdated[projectName];
     }
-    this._sequencesLastUpdated[project.projectName] = new Date();
+    this._sequencesLastUpdated[projectName] = new Date();
     this.apiService
       .getSequences(
-        project.projectName,
+        projectName,
         beforeTime ? this.DEFAULT_NEXT_SEQUENCE_PAGE_SIZE : this.DEFAULT_SEQUENCE_PAGE_SIZE,
         undefined,
         undefined,
@@ -394,7 +399,7 @@ export class DataService {
       )
       .pipe(
         map((response) => {
-          this.updateSequencesUpdated(response, project.projectName);
+          this.updateSequencesUpdated(response, projectName);
           return response.body;
         }),
         map((body) => {
@@ -404,17 +409,25 @@ export class DataService {
         })
       )
       .subscribe(([sequences, totalCount]: [Sequence[], number]) => {
-        this.addNewSequences(project, sequences, !!beforeTime, oldSequence);
+        const previousSequences = this._sequences.getValue();
+        const sequenceData = previousSequences[projectName];
+        const newSequences = this.addNewSequences(sequenceData?.sequences ?? [], sequences, !!beforeTime, oldSequence);
+        const allSequencesLoaded =
+          previousSequences[projectName]?.allSequencesLoaded ||
+          this.allSequencesLoaded(newSequences.length, totalCount, fromTime, beforeTime);
 
-        if (this.allSequencesLoaded(project.sequences?.length || 0, totalCount, fromTime, beforeTime)) {
-          project.allSequencesLoaded = true;
-        }
-        this._sequencesUpdated.next();
+        previousSequences[projectName] = {
+          allSequencesLoaded,
+          sequences: newSequences,
+          state: oldSequence ? SequencesState.LOAD_UNTIL_ROOT : SequencesState.UPDATE,
+        };
+
+        this._sequences.next(previousSequences);
       });
   }
 
-  public loadLatestSequences(project: Project, pageSize: number): Observable<Sequence[]> {
-    return this.apiService.getSequences(project.projectName, pageSize).pipe(
+  public loadLatestSequences(projectName: string, pageSize: number): Observable<Sequence[]> {
+    return this.apiService.getSequences(projectName, pageSize).pipe(
       map((response) => response.body),
       map((body) => body?.states.map((sequence) => Sequence.fromJSON(sequence)) ?? [])
     );
@@ -425,18 +438,18 @@ export class DataService {
   }
 
   protected addNewSequences(
-    project: Project,
+    previousSequences: Sequence[],
     sequences: Sequence[],
     areOldSequences: boolean,
     oldSequence?: Sequence
-  ): void {
+  ): Sequence[] {
     let newSequences: Sequence[] = [];
     if (areOldSequences) {
-      newSequences = [...(project.sequences || []), ...(sequences || []), ...(oldSequence ? [oldSequence] : [])];
+      newSequences = [...previousSequences, ...(sequences || []), ...(oldSequence ? [oldSequence] : [])];
     } else {
-      newSequences = [...(sequences || []), ...(project.sequences || [])];
+      newSequences = [...(sequences || []), ...previousSequences];
     }
-    project.sequences = newSequences.filter(
+    return newSequences.filter(
       (seq, index) => newSequences.findIndex((s) => s.shkeptncontext === seq.shkeptncontext) === index
     );
   }
@@ -464,34 +477,37 @@ export class DataService {
     );
   }
 
-  public loadOldSequences(project: Project, fromTime?: Date, oldSequence?: Sequence): void {
-    if (project.sequences) {
-      this.loadSequences(
-        project,
-        fromTime,
-        new Date(project.sequences[project.sequences.length - 1].time),
-        oldSequence
-      );
+  public loadOldSequences(projectName: string, fromTime?: Date, oldSequence?: Sequence): void {
+    const sequences = this._sequences.getValue()[projectName]?.sequences;
+    if (!sequences?.length) {
+      return;
     }
+    this.loadSequences(projectName, fromTime, new Date(sequences[sequences.length - 1].time), oldSequence);
   }
 
   public updateSequence(projectName: string, keptnContext: string): void {
     this.getSequenceByContext(projectName, keptnContext).subscribe((sequence) => {
-      const project = this._projects.getValue()?.find((p) => p.projectName === projectName);
-      const sequences = project?.sequences;
+      const sequenceDate = this._sequences.getValue()[projectName];
+      const sequences = sequenceDate?.sequences;
       const oldSequence = sequences?.find((seq) => seq.shkeptncontext === keptnContext);
       if (oldSequence && sequence) {
         const { traces, ...copySequence } = sequence; // don't overwrite loaded traces
         Object.assign(oldSequence, copySequence);
       }
-      this._sequencesUpdated.next();
+      const updateSequences = this._sequences.getValue();
+      updateSequences[projectName] = {
+        allSequencesLoaded: updateSequences[projectName]?.allSequencesLoaded ?? false,
+        sequences: sequences ?? [],
+        state: SequencesState.UPDATE,
+      };
+      this._sequences.next(updateSequences);
     });
   }
 
-  public loadUntilRoot(project: Project, shkeptncontext: string): void {
-    this.getSequenceByContext(project.projectName, shkeptncontext).subscribe((sequence) => {
+  public loadUntilRoot(projectName: string, shkeptncontext: string): void {
+    this.getSequenceByContext(projectName, shkeptncontext).subscribe((sequence) => {
       if (sequence) {
-        this.loadOldSequences(project, new Date(sequence.time), sequence);
+        this.loadOldSequences(projectName, new Date(sequence.time), sequence);
       }
     });
   }
@@ -513,9 +529,10 @@ export class DataService {
     keptnContext: string,
     type?: EventTypes,
     source?: KeptnService,
+    stage?: string,
     pageSize?: number
   ): Observable<Trace[]> {
-    return this.apiService.getTraces(keptnContext, undefined, undefined, type, source, pageSize).pipe(
+    return this.apiService.getTraces(keptnContext, undefined, undefined, type, source, stage, pageSize).pipe(
       map((response) => response.body?.events || []),
       map((traces) => traces.map((trace) => Trace.fromJSON(trace)))
     );
@@ -591,7 +608,9 @@ export class DataService {
         }
         const stage = project.stages.find((st) => st.stageName === approval.data.stage);
         const service = stage?.services.find((sv) => sv.serviceName === approval.data.service);
-        const sequence = project.sequences?.find((seq) => seq.shkeptncontext === approval.shkeptncontext);
+        const sequence = this._sequences
+          .getValue()
+          [project.projectName]?.sequences?.find((seq) => seq.shkeptncontext === approval.shkeptncontext);
 
         if (sequence) {
           // update data of sequence screen
@@ -608,7 +627,7 @@ export class DataService {
   }
 
   private updateServiceApproval(service: Service, approval: Trace): void {
-    const approvalIndex = service.openApprovals.findIndex((a) => a.trace.id === approval.id);
+    const approvalIndex = service.openApprovals.findIndex((a) => a.id === approval.id);
     if (approvalIndex >= 0 && approval.data.project) {
       service.openApprovals.splice(approvalIndex, 1);
       this.apiService

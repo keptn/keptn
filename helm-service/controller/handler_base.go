@@ -2,19 +2,20 @@ package controller
 
 import (
 	"fmt"
+	"net/url"
+	"os"
+	"strings"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	cloudtypes "github.com/cloudevents/sdk-go/v2/types"
 	"github.com/ghodss/yaml"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/helm-service/pkg/common"
 	"github.com/keptn/keptn/helm-service/pkg/helm"
 	"github.com/keptn/keptn/helm-service/pkg/types"
-	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"helm.sh/helm/v3/pkg/chart"
-	"net/url"
-	"os"
-	"strings"
 )
 
 // HandlerBase provides basic functionality for all handlers
@@ -33,7 +34,7 @@ var GracefulShutdownKey = gracefulShutdownKeyType{}
 // NewHandlerBase creates a new HandlerBase
 func NewHandlerBase(keptnHandler *keptnv2.Keptn, helmExecutor helm.HelmExecutor, configServiceURL string) *HandlerBase {
 
-	chartRetriever := keptnutils.NewChartRetriever(keptnapi.NewResourceHandler(configServiceURL))
+	chartRetriever := common.NewChartRetriever(keptnapi.NewResourceHandler(configServiceURL))
 
 	return &HandlerBase{
 		keptnHandler:     keptnHandler,
@@ -61,7 +62,7 @@ func (h *HandlerBase) getConfigServiceURL() string {
 
 func (h *HandlerBase) getGeneratedChart(e keptnv2.EventData, commitID string) (*chart.Chart, string, error) {
 	helmChartName := helm.GetChartName(e.Service, true)
-	options := keptnutils.RetrieveChartOptions{
+	options := common.RetrieveChartOptions{
 		Project:   e.Project,
 		Service:   e.Service,
 		Stage:     e.Stage,
@@ -75,7 +76,7 @@ func (h *HandlerBase) getGeneratedChart(e keptnv2.EventData, commitID string) (*
 
 func (h *HandlerBase) getUserChart(e keptnv2.EventData, commitID string) (*chart.Chart, string, error) {
 	helmChartName := helm.GetChartName(e.Service, false)
-	options := keptnutils.RetrieveChartOptions{
+	options := common.RetrieveChartOptions{
 		Project:   e.Project,
 		Service:   e.Service,
 		Stage:     e.Stage,

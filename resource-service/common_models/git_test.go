@@ -32,7 +32,7 @@ func TestGitCredentials_Validate(t *testing.T) {
 					Token: "",
 				},
 			},
-			wantErr: true,
+			wantErr: false,
 		},
 		{
 			name: "invalid URI",

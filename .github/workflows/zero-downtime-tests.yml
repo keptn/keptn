@@ -49,6 +49,7 @@ jobs:
             CLUSTER_NAME: "keptn-integration-test-2"
             KUBECONFIG: ""
             PLATFORM: "kubernetes"
+
     env:
       CLOUD_PROVIDER: ${{ matrix.CLOUD_PROVIDER }}
       PLATFORM: ${{ matrix.PLATFORM }}
@@ -56,6 +57,7 @@ jobs:
       KUBECONFIG: ${{ matrix.KUBECONFIG }}
       KEPTN_NAMESPACE: "keptn-zd-test-${{ github.run_number }}-${{ github.run_attempt }}"
       GO_VERSION: "~1.18"
+      RUN_CONTINUOUS_DELIVERY_TEST: "true"
     outputs:
       BRANCH: ${{ steps.determine_branch.outputs.BRANCH }}
       ARTIFACT_RUN_ID: ${{ steps.last_run_id.outputs.RUN_ID }}
@@ -199,7 +201,7 @@ jobs:
             helm repo add keptndev "https://charts-dev.keptn.sh"
             helm repo update
           
-            if [[ ${{ github.event.inputs.upgradeTo }} == *"-dev"* ]]; then
+            if [[ "${{ github.event.inputs.upgradeTo }}" == *"-dev"* ]]; then
                helm pull keptndev/keptn --version ${{ github.event.inputs.upgradeTo }}
             else
                helm pull keptn/keptn --version ${{ github.event.inputs.upgradeTo }}
@@ -277,8 +279,6 @@ jobs:
           helm install --values test/assets/gitea/values.yaml gitea gitea-charts/gitea -n ${KEPTN_NAMESPACE} --wait --version v5.0.0
           GITEA_ADMIN_USER=$(kubectl get pod -n ${KEPTN_NAMESPACE} gitea-0 -ojsonpath='{@.spec.initContainers[?(@.name=="configure-gitea")].env[?(@.name=="GITEA_ADMIN_USERNAME")].value}')
           GITEA_ADMIN_PASSWORD=$(kubectl get pod -n ${KEPTN_NAMESPACE} gitea-0 -ojsonpath='{@.spec.initContainers[?(@.name=="configure-gitea")].env[?(@.name=="GITEA_ADMIN_PASSWORD")].value}')
-          kubectl create configmap squid.conf --from-file=test/assets/squid/squid.conf -n ${KEPTN_NAMESPACE}
-          kubectl apply -f test/assets/squid/squid.yaml -n ${KEPTN_NAMESPACE}
           sleep 30 # TODO
           ssh-keygen -t rsa -C "gitea-http" -f "rsa_gitea" -P "myGiteaPassPhrase"
           GITEA_PRIVATE_KEY=$(cat rsa_gitea)
@@ -305,9 +305,6 @@ jobs:
             --from-literal=ingress_protocol=http \
             --from-literal=ingress_gateway=public-gateway.istio-system \
             -oyaml --dry-run=client | kubectl replace -f -
-          # restart helm-service
-          kubectl delete pod -n ${KEPTN_NAMESPACE} -lapp.kubernetes.io/name=helm-service
-          sleep 15
 
       - name: Determine Keptn Endpoint
         id: determine_keptn_endpoint

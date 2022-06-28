@@ -1,5 +1,10 @@
 import { EventTypes } from '../../../shared/interfaces/event-types';
-import { interceptMain, interceptSequencesPage, interceptSequencesPageWithSequenceThatIsNotLoaded } from '../intercept';
+import {
+  interceptEvaluationOfApproval,
+  interceptMain,
+  interceptSequencesPage,
+  interceptSequencesPageWithSequenceThatIsNotLoaded,
+} from '../intercept';
 
 export class SequencesPage {
   private readonly sequenceWaitingMessage = ' Sequence is waiting for previous sequences to finish. ';
@@ -11,6 +16,11 @@ export class SequencesPage {
 
   public interceptSequencesPageWithSequenceThatIsNotLoaded(): this {
     interceptSequencesPageWithSequenceThatIsNotLoaded();
+    return this;
+  }
+
+  public interceptEvaluationOfApproval(includeData: boolean, delay = 0): this {
+    interceptEvaluationOfApproval(includeData, delay);
     return this;
   }
 
@@ -295,6 +305,21 @@ export class SequencesPage {
         return splitUrl.length <= 1 ? [] : splitUrl[1].split('&');
       })
       .should('have.length', amount);
+    return this;
+  }
+
+  public assertIsApprovalEvaluationLoading(status: boolean): this {
+    cy.byTestId('ktb-approval-evaluation-loading').should(status ? 'exist' : 'not.exist');
+    return this;
+  }
+
+  public assertApprovalEvaluationBubbleExists(status: boolean): this {
+    cy.byTestId('ktb-approval-evaluation-bubble').should(status ? 'exist' : 'not.exist');
+    return this;
+  }
+
+  public assertApprovalEvaluationBubble(score: number, status: 'warning' | 'error' | 'success'): this {
+    cy.byTestId('ktb-approval-evaluation-bubble').should('have.class', status).should('have.text', score);
     return this;
   }
 }

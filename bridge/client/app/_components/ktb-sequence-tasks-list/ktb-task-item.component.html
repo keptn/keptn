@@ -5,7 +5,7 @@
   [warning]="task.isWarning()"
   [success]="task.isSuccessful()"
   [highlight]="!!task.isApproval()"
-  *ngIf="task && (project$ | async) as project"
+  *ngIf="task"
   [attr.uitestid]="'ktb-task-' + task.id"
 >
   <ktb-expandable-tile-header>
@@ -192,7 +192,7 @@
       <tr>
         <td><p class="m-0">Deployable artifact:</p></td>
         <td>
-          <ktb-approval-item [event]="task" [evaluation]="project.getApprovalEvaluation(task)"></ktb-approval-item>
+          <ktb-approval-item [event]="task"></ktb-approval-item>
         </td>
       </tr>
     </table>

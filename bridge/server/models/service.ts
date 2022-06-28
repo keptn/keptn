@@ -1,15 +1,15 @@
 import { Sequence } from './sequence';
-import { Approval } from '../../shared/interfaces/approval';
 import { DeploymentInformation, Service as sv } from '../../shared/models/service';
 import { Remediation } from '../../shared/models/remediation';
 import { EventTypes } from '../../shared/interfaces/event-types';
 import { IServiceEvent } from '../../shared/interfaces/service';
+import { Trace } from '../../shared/models/trace';
 
 export class Service extends sv {
   lastEventTypes: { [event: string]: IServiceEvent | undefined } = {};
   latestSequence?: Sequence;
   openRemediations: Remediation[] = [];
-  openApprovals: Approval[] = [];
+  openApprovals: Trace[] = [];
   deploymentInformation?: DeploymentInformation;
 
   public static fromJSON(data: unknown): Service {
