@@ -19,7 +19,7 @@ import {
   SubSequencesWarningMock,
   UpdatedDeploymentMock,
 } from '../_services/_mockData/deployments.mock';
-import { SequenceState } from '../../../shared/models/sequence';
+import { SequenceState } from '../../../shared/interfaces/sequence';
 
 describe('Deployment', () => {
   it('should correctly create new class', () => {

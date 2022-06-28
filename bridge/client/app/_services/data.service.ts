@@ -15,7 +15,7 @@ import { EventResult } from '../../../shared/interfaces/event-result';
 import { KeptnInfo } from '../_models/keptn-info';
 import { UniformRegistration } from '../_models/uniform-registration';
 import { UniformSubscription } from '../_models/uniform-subscription';
-import { SequenceState } from '../../../shared/models/sequence';
+import { SequenceState } from '../../../shared/interfaces/sequence';
 import { WebhookConfig } from '../../../shared/models/webhook-config';
 import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-registration-info';
 import { FileTree } from '../../../shared/interfaces/resourceFileTree';
@@ -402,8 +402,8 @@ export class DataService {
       });
   }
 
-  public loadLatestSequences(project: Project, pageSize: number): Observable<Sequence[]> {
-    return this.apiService.getSequences(project.projectName, pageSize).pipe(
+  public loadLatestSequences(projectName: string, pageSize: number): Observable<Sequence[]> {
+    return this.apiService.getSequences(projectName, pageSize).pipe(
       map((response) => response.body),
       map((body) => body?.states.map((sequence) => Sequence.fromJSON(sequence)) ?? [])
     );

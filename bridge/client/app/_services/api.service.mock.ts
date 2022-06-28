@@ -41,8 +41,8 @@ import { ISequencesFilter } from '../../../shared/interfaces/sequencesFilter';
 import { SequenceFilterMock } from './_mockData/sequence-filter.mock';
 import { TriggerResponse, TriggerSequenceData } from '../_models/trigger-sequence';
 import { IService } from '../../../shared/interfaces/service';
-import { IGitDataExtended } from '../../../shared/models/IProject';
 import { IProjectResult } from '../../../shared/interfaces/project-result';
+import { IGitDataExtended } from '../../../shared/interfaces/Project';
 
 @Injectable({
   providedIn: null,

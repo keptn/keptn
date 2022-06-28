@@ -31,7 +31,7 @@ import { environment } from '../../environments/environment';
 import { WindowConfig } from '../../environments/environment.dynamic';
 import { IService } from '../../../shared/interfaces/service';
 import { IProjectResult } from '../../../shared/interfaces/project-result';
-import { IGitDataExtended, IProject } from '../../../shared/models/IProject';
+import { IGitDataExtended, IProject } from '../../../shared/interfaces/Project';
 
 @Injectable({
   providedIn: 'root',

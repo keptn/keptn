@@ -65,8 +65,5 @@ func (g GitCredentials) validateRemoteURIAndToken() error {
 	if err != nil {
 		return kerrors.ErrCredentialsInvalidRemoteURI
 	}
-	if g.Token == "" {
-		return kerrors.ErrCredentialsTokenMustNotBeEmpty
-	}
 	return nil
 }

@@ -9,7 +9,8 @@ import (
 	"strings"
 	"time"
 
-	keptnkubeutils "github.com/keptn/kubernetes-utils/pkg"
+	"github.com/keptn/go-utils/pkg/common/kubeutils"
+	keptn2 "github.com/keptn/go-utils/pkg/lib"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -17,7 +18,7 @@ import (
 )
 
 func SetEnvVarsOfDeployment(deploymentName string, containerName string, envVars []v1.EnvVar) error {
-	clientset, err := keptnkubeutils.GetClientset(false)
+	clientset, err := kubeutils.GetClientSet(false)
 	if err != nil {
 		return err
 	}
@@ -51,11 +52,11 @@ func SetEnvVarsOfDeployment(deploymentName string, containerName string, envVars
 		return err
 	}
 
-	return keptnkubeutils.WaitForDeploymentToBeRolledOut(false, deploymentName, GetKeptnNameSpaceFromEnv())
+	return waitForDeploymentToBeRolledOut(false, deploymentName, GetKeptnNameSpaceFromEnv())
 }
 
 func GetImageOfDeploymentContainer(deploymentName, containerName string) (string, error) {
-	clientset, err := keptnkubeutils.GetClientset(false)
+	clientset, err := kubeutils.GetClientSet(false)
 	if err != nil {
 		return "", err
 	}
@@ -73,7 +74,7 @@ func GetImageOfDeploymentContainer(deploymentName, containerName string) (string
 }
 
 func SetImageOfDeploymentContainer(deploymentName, containerName, image string) error {
-	clientset, err := keptnkubeutils.GetClientset(false)
+	clientset, err := kubeutils.GetClientSet(false)
 	if err != nil {
 		return err
 	}
@@ -94,7 +95,7 @@ func SetImageOfDeploymentContainer(deploymentName, containerName, image string) 
 		return err
 	}
 
-	return keptnkubeutils.WaitForDeploymentToBeRolledOut(false, deploymentName, GetKeptnNameSpaceFromEnv())
+	return waitForDeploymentToBeRolledOut(false, deploymentName, GetKeptnNameSpaceFromEnv())
 }
 
 type WaitForDeploymentOptions struct {
@@ -102,7 +103,7 @@ type WaitForDeploymentOptions struct {
 }
 
 func WaitAndCheckDeployment(deploymentName, namespace string, timeout time.Duration, options WaitForDeploymentOptions) error {
-	clientset, _ := keptnkubeutils.GetClientset(false)
+	clientset, _ := kubeutils.GetClientSet(false)
 	return wait.PollImmediate(time.Second*3, timeout, checkDeployment(clientset, deploymentName, namespace, options))
 }
 
@@ -145,7 +146,7 @@ func checkURL(url string) wait.ConditionFunc {
 }
 
 func GetFromConfigMap(namespace string, configMapName string, getDataByKeyFn func(data map[string]string) string) (string, error) {
-	client, _ := keptnkubeutils.GetClientset(false)
+	client, _ := kubeutils.GetClientSet(false)
 	cm, err := client.CoreV1().ConfigMaps(namespace).Get(context.TODO(), configMapName, metav1.GetOptions{})
 	if err != nil {
 		return "", err
@@ -154,7 +155,7 @@ func GetFromConfigMap(namespace string, configMapName string, getDataByKeyFn fun
 }
 
 func UpdateConfigMap(namespace string, configMapName string, replaceConfig func(cm *v1.ConfigMap)) error {
-	client, _ := keptnkubeutils.GetClientset(false)
+	client, _ := kubeutils.GetClientSet(false)
 	cm, err := client.CoreV1().ConfigMaps(namespace).Get(context.TODO(), configMapName, metav1.GetOptions{})
 	if err != nil {
 		return err
@@ -173,11 +174,11 @@ func PutConfigMapDataVal(namespace string, configMapName string, key string, val
 // WaitForDeploymentInNamespace
 // deprecated, use WaitAndCheckDeployment
 func WaitForDeploymentInNamespace(deploymentName, namespace string) error {
-	return keptnkubeutils.WaitForDeploymentToBeRolledOut(false, deploymentName, namespace)
+	return waitForDeploymentToBeRolledOut(false, deploymentName, namespace)
 }
 
 func WaitForPodOfDeployment(deploymentName string) error {
-	return keptnkubeutils.WaitForDeploymentToBeRolledOut(false, deploymentName, GetKeptnNameSpaceFromEnv())
+	return waitForDeploymentToBeRolledOut(false, deploymentName, GetKeptnNameSpaceFromEnv())
 }
 
 type K8SEvent struct {
@@ -192,7 +193,7 @@ type K8SEventArray struct {
 }
 
 func GetOOMEvents() (K8SEventArray, error) {
-	events, err := keptnkubeutils.ExecuteCommand(kubectlExecutable, []string{"get", "events", "--sort-by=’.lastTimestamp’", "-n=default", "-o=json"})
+	events, err := keptn2.ExecuteCommand(kubectlExecutable, []string{"get", "events", "--sort-by=’.lastTimestamp’", "-n=default", "-o=json"})
 	TimeInterval := time.Now().Add(-1 * time.Hour)
 	if err != nil {
 		return K8SEventArray{}, err
@@ -220,12 +221,12 @@ func GetOOMEvents() (K8SEventArray, error) {
 }
 
 func CompareServiceNameWithDeploymentName(serviceName string, deploymentName string) (bool, error) {
-	api, err := keptnkubeutils.GetKubeAPI(false)
+	api, err := kubeutils.GetClientSet(false)
 	if err != nil {
 		return false, err
 	}
 
-	service, err := api.Services(GetKeptnNameSpaceFromEnv()).Get(context.TODO(), serviceName, metav1.GetOptions{})
+	service, err := api.CoreV1().Services(GetKeptnNameSpaceFromEnv()).Get(context.TODO(), serviceName, metav1.GetOptions{})
 	if err != nil {
 		return false, err
 	}

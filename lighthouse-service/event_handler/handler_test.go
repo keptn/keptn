@@ -2,7 +2,7 @@ package event_handler
 
 import (
 	"context"
-	"github.com/keptn/keptn/cp-connector/pkg/types"
+	"github.com/keptn/go-utils/pkg/sdk/connector/types"
 	"net/http"
 	"os"
 	"testing"
@@ -20,7 +20,7 @@ import (
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
+	"github.com/keptn/go-utils/pkg/sdk/connector/controlplane"
 )
 
 func TestNewEventHandler(t *testing.T) {

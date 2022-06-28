@@ -1,5 +1,5 @@
 import ProjectSettingsPage from '../support/pageobjects/ProjectSettingsPage';
-import { IProject } from '../../shared/models/IProject';
+import { IProject } from '../../shared/interfaces/Project';
 import BasePage from '../support/pageobjects/BasePage';
 import { interceptFailedMetadata } from '../support/intercept';
 import { ProjectBoardPage } from '../support/pageobjects/ProjectBoardPage';

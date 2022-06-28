@@ -2,28 +2,28 @@
   <dt-tile-title uitestid="keptn-project-tile-title">
     <a
       [routerLink]="['/project', project.projectName]"
-      [class.error]="project.isShipyardNotSupported(supportedShipyardVersion)"
+      [class.error]="isShipyardNotSupported(project, supportedShipyardVersion)"
       >{{ project.projectName }}</a
     >
   </dt-tile-title>
   <dt-tile-subtitle>
     <p class="mt-0 mb-2" *ngIf="project.stages" uitestid="keptn-project-tile-numStagesServices">
       <span [textContent]="project.stages.length"></span> Stages,
-      <span [textContent]="project.getServices().length"></span> Services
+      <span [textContent]="getDistinctServiceNames(project).length"></span> Services
     </p>
-    <p class="mt-0 mb-2" *ngIf="project.getShipyardVersion() as sv" uitestid="keptn-project-tile-shipyardVersion">
+    <p class="mt-0 mb-2" *ngIf="getShipyardVersion(project) as sv" uitestid="keptn-project-tile-shipyardVersion">
       Shipyard version: <span [textContent]="sv"></span>
       <dt-icon
         name="abort"
         class="error bottom"
-        *ngIf="project.isShipyardNotSupported(supportedShipyardVersion)"
+        *ngIf="isShipyardNotSupported(project, supportedShipyardVersion)"
       ></dt-icon>
     </p>
     <div
       class="mb-2"
       fxLayout="row"
       fxLayoutAlign="flex-start center"
-      *ngIf="project.isShipyardNotSupported(supportedShipyardVersion)"
+      *ngIf="isShipyardNotSupported(project, supportedShipyardVersion)"
     >
       <dt-icon name="information" class="info mr-1"></dt-icon>
       <p class="small m-0" uitestid="keptn-project-tile-shipyardVersionNotSupported">
@@ -63,5 +63,5 @@
     <dt-tag *ngFor="let stage of project.stages" [textContent]="stage.stageName"></dt-tag>
   </dt-tag-list>
   <p class="small">Recent sequences:</p>
-  <ktb-sequence-state-list [project]="project"></ktb-sequence-state-list>
+  <ktb-sequence-state-list [sequenceStates]="sequences"></ktb-sequence-state-list>
 </dt-tile>

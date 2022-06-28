@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/keptn/keptn/go-sdk/pkg/sdk"
+	"github.com/keptn/go-utils/pkg/sdk"
 	"github.com/keptn/keptn/remediation-service/handler"
 	"github.com/sirupsen/logrus"
 )

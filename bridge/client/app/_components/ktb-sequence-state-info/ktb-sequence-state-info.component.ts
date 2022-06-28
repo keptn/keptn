@@ -1,5 +1,6 @@
 import { Component, EventEmitter, HostBinding, Input, Output, ViewEncapsulation } from '@angular/core';
-import { Sequence } from '../../_models/sequence';
+import { ISequence } from '../../../../shared/interfaces/sequence';
+import { createSequenceStateInfo, getLastStageName, getStageNames } from '../../_models/sequence';
 
 @Component({
   selector: 'ktb-sequence-state-info',
@@ -9,16 +10,20 @@ import { Sequence } from '../../_models/sequence';
 })
 export class KtbSequenceStateInfoComponent {
   @HostBinding('class') cls = 'ktb-sequence-state-info';
-  private _sequence?: Sequence;
+  private _sequence?: ISequence;
   private _showStages = true;
 
-  @Output() readonly stageClicked = new EventEmitter<{ sequence: Sequence; stage?: string }>();
+  createSequenceStateInfo = createSequenceStateInfo;
+  getStageNames = getStageNames;
+
+  @Output() readonly stageClicked = new EventEmitter<{ sequence: ISequence; stage?: string }>();
 
   @Input()
-  get sequence(): Sequence | undefined {
+  get sequence(): ISequence | undefined {
     return this._sequence;
   }
-  set sequence(sequence: Sequence | undefined) {
+
+  set sequence(sequence: ISequence | undefined) {
     if (this._sequence !== sequence) {
       this._sequence = sequence;
     }
@@ -28,13 +33,14 @@ export class KtbSequenceStateInfoComponent {
   get showStages(): boolean {
     return this._showStages;
   }
+
   set showStages(showStages: boolean) {
     if (this._showStages !== showStages) {
       this._showStages = showStages;
     }
   }
 
-  getServiceLink(sequence: Sequence): (string | undefined)[] {
+  getServiceLink(sequence: ISequence): (string | undefined)[] {
     return [
       '/project',
       sequence.project,
@@ -43,15 +49,15 @@ export class KtbSequenceStateInfoComponent {
       'context',
       sequence.shkeptncontext,
       'stage',
-      sequence.getLastStage(),
+      getLastStageName(sequence),
     ];
   }
 
-  getSequenceLink(sequence: Sequence): (string | undefined)[] {
-    return ['/project', sequence.project, 'sequence', sequence.shkeptncontext, 'stage', sequence.getLastStage()];
+  getSequenceLink(sequence: ISequence): (string | undefined)[] {
+    return ['/project', sequence.project, 'sequence', sequence.shkeptncontext, 'stage', getLastStageName(sequence)];
   }
 
-  stageClick(sequence: Sequence, stage: string): void {
+  stageClick(sequence: ISequence, stage: string): void {
     this.stageClicked.emit({ sequence, stage });
   }
 }

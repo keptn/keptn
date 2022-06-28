@@ -2,15 +2,16 @@ package go_tests
 
 import (
 	"context"
-	keptnkubeutils "github.com/keptn/kubernetes-utils/pkg"
+	"testing"
+
+	"github.com/keptn/go-utils/pkg/common/kubeutils"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"testing"
 )
 
 func Test_ManageSecrets_CreateUpdateAndDeleteSecret(t *testing.T) {
-	k8s, err := keptnkubeutils.GetClientset(false)
+	k8s, err := kubeutils.GetClientSet(false)
 	require.Nil(t, err)
 	var ns = GetKeptnNameSpaceFromEnv()
 	secret1 := "my-new-secret"

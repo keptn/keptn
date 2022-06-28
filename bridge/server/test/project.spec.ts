@@ -9,7 +9,7 @@ import {
   ProjectResponseURLFallback,
 } from '../../shared/fixtures/project-response.mock';
 import { EventTypes } from '../../shared/interfaces/event-types';
-import { SequenceState } from '../../shared/models/sequence';
+import { SequenceState } from '../../shared/interfaces/sequence';
 import {
   OpenRemediationsResponse,
   RemediationTracesResponse,

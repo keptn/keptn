@@ -1,10 +1,10 @@
-import { Sequence } from './sequence';
+import { createSequenceStateInfo, Sequence } from './sequence';
 import {
   SequenceResponseMock,
   SequenceResponseWithDevAndStagingMock,
   SequenceResponseWithoutFailing,
 } from '../_services/_mockData/sequences.mock';
-import { SequenceState } from '../../../shared/models/sequence';
+import { SequenceState } from '../../../shared/interfaces/sequence';
 import { EvaluationTraceResponse } from '../_services/_mockData/evaluations.mock';
 import { Trace } from './trace';
 import { EventState } from '../../../shared/models/event-state';
@@ -87,7 +87,9 @@ describe('Sequence', () => {
       SequenceState.SUCCEEDED,
     ]) {
       sequence.state = state;
+      const actual = createSequenceStateInfo(sequence);
       expect(sequence.isFinished()).toBe(true);
+      expect(actual.finished).toBe(true);
     }
   });
 
@@ -96,7 +98,9 @@ describe('Sequence', () => {
     const { ABORTED, FINISHED, TIMEDOUT, SUCCEEDED, ...states } = SequenceState;
     for (const state of Object.values(states)) {
       sequence.state = state;
+      const actual = createSequenceStateInfo(sequence);
       expect(sequence.isFinished()).toBe(false);
+      expect(actual.finished).toBe(false);
     }
   });
 
@@ -109,7 +113,9 @@ describe('Sequence', () => {
       SequenceState.SUCCEEDED,
     ]) {
       sequence.stages[0].state = state;
+      const actual = createSequenceStateInfo(sequence, 'dev');
       expect(sequence.isFinished('dev')).toBe(true);
+      expect(actual.finished).toBe(true);
     }
   });
 
@@ -118,7 +124,9 @@ describe('Sequence', () => {
     const { ABORTED, FINISHED, TIMEDOUT, SUCCEEDED, ...states } = SequenceState;
     for (const state of Object.values(states)) {
       sequence.stages[0].state = state;
+      const actual = createSequenceStateInfo(sequence, 'dev');
       expect(sequence.isFinished('dev')).toBe(false);
+      expect(actual.finished).toBe(false);
     }
   });
 
@@ -134,39 +142,56 @@ describe('Sequence', () => {
 
   it('should be faulty if it has failed event', () => {
     const sequence = getSequenceWithTwoStages();
+    const actual = createSequenceStateInfo(sequence);
     expect(sequence.isFaulty()).toBe(true);
+    expect(actual.faulty).toBe(true);
   });
 
   it('should have faulty stage if it has failed event', () => {
     const sequence = getSequenceWithTwoStages();
+    const actual = createSequenceStateInfo(sequence, 'staging');
     expect(sequence.isFaulty('staging')).toBe(true);
+    expect(actual.faulty).toBe(true);
   });
 
   it('should not be faulty if it does not have failed event', () => {
     const sequence = getEvaluationSequenceWithoutFailing();
+    const actual = createSequenceStateInfo(sequence);
     expect(sequence.isFaulty()).toBe(false);
+    expect(actual.faulty).toBe(false);
   });
 
   it('should not have faulty stage if it has failed event', () => {
     const sequence = getSequenceWithTwoStages();
+    const actual = createSequenceStateInfo(sequence, 'dev');
     expect(sequence.isFaulty('dev')).toBe(false);
+    expect(actual.faulty).toBe(false);
   });
 
   it('should be faulty if it timed out', () => {
     const sequence = getSequenceWithTwoStages();
     sequence.state = SequenceState.TIMEDOUT;
+    const actual = createSequenceStateInfo(sequence);
     expect(sequence.isFaulty()).toBe(true);
+    expect(actual.faulty).toBe(true);
   });
 
   it('should have faulty stage if it timed out', () => {
     const sequence = getSequenceWithTwoStages();
     sequence.stages[0].state = SequenceState.TIMEDOUT;
+    const actual = createSequenceStateInfo(sequence, 'dev');
     expect(sequence.isFaulty('dev')).toBe(true);
+    expect(actual.faulty).toBe(true);
   });
 
   it('should return evaluation of specific stage', () => {
     const sequence = getEvaluationSequenceWithoutFailing();
+    const actual = createSequenceStateInfo(sequence, 'dev');
     expect(sequence.getEvaluation('dev')).toEqual({
+      result: ResultTypes.PASSED,
+      score: 0,
+    });
+    expect(actual.evaluation).toEqual({
       result: ResultTypes.PASSED,
       score: 0,
     });
@@ -174,14 +199,17 @@ describe('Sequence', () => {
 
   it('should not return evaluation of not existing stage', () => {
     const sequence = getEvaluationSequenceWithoutFailing();
+    const actual = createSequenceStateInfo(sequence, 'staging');
     expect(sequence.getEvaluation('staging')).toBeUndefined();
+    expect(actual.evaluation).toBeUndefined();
   });
 
   it('should not return evaluation if latest evaluation does not exist', () => {
     const sequence = getEvaluationSequenceWithoutFailing();
     sequence.stages[0].latestEvaluation = undefined;
-
+    const actual = createSequenceStateInfo(sequence, 'dev');
     expect(sequence.getEvaluation('dev')).toBeUndefined();
+    expect(actual.evaluation).toBeUndefined();
   });
 
   it('should return evaluation trace of specific stage', () => {
@@ -197,123 +225,168 @@ describe('Sequence', () => {
   it('should not return evaluation trace if latest evaluation does not exist', () => {
     const sequence = getSequenceWithEvaluationAndRemediation();
     sequence.stages[0].latestEvaluationTrace = undefined;
-
     expect(sequence.getEvaluationTrace('dev')).toBeUndefined();
   });
 
   it('should have pending approval', () => {
     const sequence = getSequenceWithApproval();
+    const actual = createSequenceStateInfo(sequence);
     expect(sequence.hasPendingApproval()).toBe(true);
+    expect(actual.pendingApproval).toBe(true);
   });
 
   it('should have pending approval for stage', () => {
     const sequence = getSequenceWithApproval();
+    const actual = createSequenceStateInfo(sequence, 'dev');
     expect(sequence.hasPendingApproval('dev')).toBe(true);
+    expect(actual.pendingApproval).toBe(true);
   });
 
   it('should not have pending approval', () => {
     const sequence = getDefaultSequence();
+    const actual = createSequenceStateInfo(sequence);
     expect(sequence.hasPendingApproval()).toBe(false);
+    expect(actual.pendingApproval).toBe(false);
   });
 
   it('should not have pending approval for stage', () => {
     const sequence = getDefaultSequence();
+    const actual = createSequenceStateInfo(sequence, 'dev');
     expect(sequence.hasPendingApproval('dev')).toBe(false);
+    expect(actual.pendingApproval).toBe(false);
   });
 
   it('should have status failed', () => {
     const sequence = getFailedSequence();
+    const actual = createSequenceStateInfo(sequence);
     expect(sequence.getStatus()).toBe('failed');
+    expect(actual.statusText).toBe('failed');
   });
 
   it('should have status succeeded', () => {
     const sequence = getSucceededSequence();
+    const actual = createSequenceStateInfo(sequence);
     expect(sequence.getStatus()).toBe('succeeded');
+    expect(actual.statusText).toBe('succeeded');
   });
 
   it('should have status aborted', () => {
     const sequence = getAbortedSequence();
+    const actual = createSequenceStateInfo(sequence);
     expect(sequence.getStatus()).toBe('aborted');
+    expect(actual.statusText).toBe('aborted');
   });
 
   it('should have status timed out', () => {
     const sequence = getTimedOutSequence();
+    const actual = createSequenceStateInfo(sequence);
     expect(sequence.getStatus()).toBe('timed out');
+    expect(actual.statusText).toBe('timed out');
   });
 
   it('should have status waiting', () => {
     const sequence = getWaitingSequence();
+    const actual = createSequenceStateInfo(sequence);
     expect(sequence.getStatus()).toBe('waiting');
+    expect(actual.statusText).toBe('waiting');
   });
 
   it('should have status fallback to state', () => {
     const sequence = getUnknownSequence();
+    const actual = createSequenceStateInfo(sequence);
     expect(sequence.getStatus()).toBe('unknown');
+    expect(actual.statusText).toBe('unknown');
   });
 
   it('should be loading', () => {
     const sequence = getLoadingSequence();
+    const actual = createSequenceStateInfo(sequence);
     expect(sequence.isLoading()).toBe(true);
+    expect(actual.loading).toBe(true);
   });
 
   it('should be loading in stage', () => {
     const sequence = getLoadingSequence();
+    const actual = createSequenceStateInfo(sequence, 'dev');
     expect(sequence.isLoading('dev')).toBe(true);
+    expect(actual.loading).toBe(true);
   });
 
   it('should not be loading', () => {
     const sequence = getDefaultSequence();
+    const actual = createSequenceStateInfo(sequence);
     expect(sequence.isLoading()).toBe(false);
+    expect(actual.loading).toBe(false);
   });
 
   it('should not be loading in stage', () => {
     const sequence = getDefaultSequence();
+    const actual = createSequenceStateInfo(sequence, 'dev');
     expect(sequence.isLoading('dev')).toBe(false);
+    expect(actual.loading).toBe(false);
   });
 
   it('should be successful', () => {
     const sequence = getSucceededSequence();
+    const actual = createSequenceStateInfo(sequence);
     expect(sequence.isSuccessful()).toBe(true);
+    expect(actual.successful).toBe(true);
   });
 
   it('should be successful in stage', () => {
     const sequence = getSucceededSequence();
+    const actual = createSequenceStateInfo(sequence, 'dev');
     expect(sequence.isSuccessful('dev')).toBe(true);
+    expect(actual.successful).toBe(true);
   });
 
   it('should not be successful', () => {
     const sequence = getDefaultSequence();
+    const actual = createSequenceStateInfo(sequence);
     expect(sequence.isSuccessful()).toBe(false);
+    expect(actual.successful).toBe(false);
   });
 
   it('should not be successful if stage succeeded but has failed', () => {
     const sequence = getSucceededFailedSequence();
+    const actual = createSequenceStateInfo(sequence);
     expect(sequence.isSuccessful()).toBe(false);
+    expect(actual.successful).toBe(false);
   });
 
   it('should not be successful in stage', () => {
     const sequence = getLoadingSequence();
+    const actual = createSequenceStateInfo(sequence, 'staging');
     expect(sequence.isSuccessful('staging')).toBe(false);
+    expect(actual.successful).toBe(false);
   });
 
   it('should be warning', () => {
     const sequence = getEvaluationSequenceWarning();
+    const actual = createSequenceStateInfo(sequence);
     expect(sequence.isWarning()).toBe(true);
+    expect(actual.warning).toBe(true);
   });
 
   it('should be warning in stage', () => {
     const sequence = getEvaluationSequenceWarning();
+    const actual = createSequenceStateInfo(sequence, 'dev');
     expect(sequence.isWarning('dev')).toBe(true);
+    expect(actual.warning).toBe(true);
   });
 
   it('should not be warning if it is failed', () => {
     const sequence = getEvaluationSequenceWarningFailed();
+    const actual = createSequenceStateInfo(sequence);
     expect(sequence.isWarning()).toBe(false);
+    expect(actual.warning).toBe(false);
   });
 
   it('should not be warning in stage if it is failed', () => {
     const sequence = getEvaluationSequenceWarningFailed();
+    const actual = createSequenceStateInfo(sequence, 'dev');
     expect(sequence.isWarning('dev')).toBe(false);
+    expect(actual.warning).toBe(false);
   });
 
   it('should be remediation', () => {
@@ -350,42 +423,58 @@ describe('Sequence', () => {
 
   it('should be aborted', () => {
     const sequence = getAbortedSequence();
+    const actual = createSequenceStateInfo(sequence);
     expect(sequence.isAborted()).toBe(true);
+    expect(actual.aborted).toBe(true);
   });
 
   it('should be aborted stage', () => {
     const sequence = getAbortedSequence();
+    const actual = createSequenceStateInfo(sequence, 'dev');
     expect(sequence.isAborted('dev')).toBe(true);
+    expect(actual.aborted).toBe(true);
   });
 
   it('should not be aborted', () => {
     const sequence = getDefaultSequence();
+    const actual = createSequenceStateInfo(sequence);
     expect(sequence.isAborted()).toBe(false);
+    expect(actual.aborted).toBe(false);
   });
 
   it('should not be aborted stage', () => {
     const sequence = getDefaultSequence();
+    const actual = createSequenceStateInfo(sequence, 'dev');
     expect(sequence.isAborted('dev')).toBe(false);
+    expect(actual.aborted).toBe(false);
   });
 
   it('should be timed out', () => {
     const sequence = getTimedOutSequence();
+    const actual = createSequenceStateInfo(sequence);
     expect(sequence.isTimedOut()).toBe(true);
+    expect(actual.timedOut).toBe(true);
   });
 
   it('should be timed out stage', () => {
     const sequence = getTimedOutSequence();
+    const actual = createSequenceStateInfo(sequence, 'dev');
     expect(sequence.isTimedOut('dev')).toBe(true);
+    expect(actual.timedOut).toBe(true);
   });
 
   it('should not be timed out', () => {
     const sequence = getDefaultSequence();
+    const actual = createSequenceStateInfo(sequence);
     expect(sequence.isTimedOut()).toBe(false);
+    expect(actual.timedOut).toBe(false);
   });
 
   it('should not be timed out stage', () => {
     const sequence = getDefaultSequence();
+    const actual = createSequenceStateInfo(sequence, 'dev');
     expect(sequence.isTimedOut('dev')).toBe(false);
+    expect(actual.timedOut).toBe(false);
   });
 
   it('should return latest event', () => {
@@ -404,32 +493,44 @@ describe('Sequence', () => {
 
   it('should return icon of delivery sequence', () => {
     const sequence = getDefaultSequence();
+    const actual = createSequenceStateInfo(sequence);
     expect(sequence.getIcon()).toBe('duplicate');
+    expect(actual.icon).toBe('duplicate');
   });
 
   it('should return default icon if not found', () => {
     const sequence = getSequenceWithTwoStages();
+    const actual = createSequenceStateInfo(sequence);
     expect(sequence.getIcon()).toBe('information');
+    expect(actual.icon).toBe('information');
   });
 
   it('should return icon of sequence stage', () => {
     const sequence = getSequenceWithTwoStages();
+    const actual = createSequenceStateInfo(sequence, 'dev');
     expect(sequence.getIcon('dev')).toBe('duplicate');
+    expect(actual.icon).toBe('duplicate');
   });
 
   it('should return default icon of sequence stage', () => {
     const sequence = getSequenceWithTwoStages();
+    const actual = createSequenceStateInfo(sequence, 'staging');
     expect(sequence.getIcon('staging')).toBe('information');
+    expect(actual.icon).toBe('information');
   });
 
   it('should return default icon of sequence stage if latest stage is undefined', () => {
     const sequence = getTriggeredSequence();
+    const actual = createSequenceStateInfo(sequence, 'staging');
     expect(sequence.getIcon('staging')).toBe('information');
+    expect(actual.icon).toBe('information');
   });
 
   it('should return default icon of sequence if latest event is undefined', () => {
     const sequence = getTriggeredSequence();
+    const actual = createSequenceStateInfo(sequence);
     expect(sequence.getIcon()).toBe('information');
+    expect(actual.icon).toBe('information');
   });
 
   it('should return short image', () => {
@@ -837,7 +938,7 @@ describe('Sequence', () => {
   }
 
   function getSequenceObjectWithEvaluationAndRemediation(): Sequence {
-    const seq = AppUtils.copyObject(SequenceResponseMock[0]);
+    const seq = <Sequence>AppUtils.copyObject(SequenceResponseMock[0]);
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     seq.stages[0].latestEvaluationTrace = EvaluationTraceResponse.data.evaluationHistory[0];

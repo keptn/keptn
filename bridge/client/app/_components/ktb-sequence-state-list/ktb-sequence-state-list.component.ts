@@ -1,12 +1,9 @@
-import { Component, HostBinding, Inject, Input, NgZone, OnDestroy, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, ViewEncapsulation } from '@angular/core';
 import { DtTableDataSource } from '@dynatrace/barista-components/table';
 import { DateUtil } from '../../_utils/date.utils';
-import { DataService } from '../../_services/data.service';
-import { Sequence } from '../../_models/sequence';
-import { Subscription } from 'rxjs';
-import { Project } from '../../_models/project';
-import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 import { Router } from '@angular/router';
+import { ISequence } from '../../../../shared/interfaces/sequence';
+import { getLastStageName } from '../../_models/sequence';
 
 @Component({
   selector: 'ktb-sequence-state-list',
@@ -14,64 +11,32 @@ import { Router } from '@angular/router';
   styleUrls: [],
   encapsulation: ViewEncapsulation.None,
   preserveWhitespaces: false,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KtbSequenceStateListComponent implements OnDestroy {
-  @HostBinding('class') cls = 'ktb-sequence-state-list';
-  private _project?: Project;
-  private _sequenceStates: Sequence[] = [];
-  private _timer: Subscription = Subscription.EMPTY;
-  public dataSource: DtTableDataSource<Sequence> = new DtTableDataSource();
-  public SequenceClass = Sequence;
-  public PAGE_SIZE = 5;
+export class KtbSequenceStateListComponent {
+  private _sequenceStates: ISequence[] = [];
+  public dataSource: DtTableDataSource<ISequence> = new DtTableDataSource();
 
   @Input()
-  get project(): Project | undefined {
-    return this._project;
-  }
-
-  set project(value: Project | undefined) {
-    if (this._project !== value) {
-      this._project = value;
-      this._timer.unsubscribe();
-      this._timer = AppUtils.createTimer(0, this.initialDelayMillis).subscribe(() => {
-        this.loadLatestSequences();
-      });
-    }
-  }
-
-  get sequenceStates(): Sequence[] {
+  get sequenceStates(): ISequence[] {
     return this._sequenceStates;
   }
 
-  set sequenceStates(value: Sequence[]) {
+  set sequenceStates(value: ISequence[]) {
     if (this._sequenceStates !== value) {
       this._sequenceStates = value;
       this.updateDataSource();
     }
   }
 
-  constructor(
-    public dataService: DataService,
-    public dateUtil: DateUtil,
-    private ngZone: NgZone,
-    @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number,
-    private router: Router
-  ) {}
-
-  loadLatestSequences(): void {
-    if (this.project) {
-      this.dataService.loadLatestSequences(this.project, this.PAGE_SIZE).subscribe((sequences: Sequence[]) => {
-        this.sequenceStates = sequences;
-      });
-    }
-  }
+  constructor(public dateUtil: DateUtil, private router: Router) {}
 
   updateDataSource(): void {
-    this.dataSource = new DtTableDataSource(this.sequenceStates.slice(0, this.PAGE_SIZE) || []);
+    this.dataSource = new DtTableDataSource(this.sequenceStates);
   }
 
-  selectSequence(event: { sequence: Sequence; stage?: string }): void {
-    const stage = event.stage || event.sequence.getStages().pop();
+  selectSequence(event: { sequence: ISequence; stage?: string }): void {
+    const stage = event.stage || getLastStageName(event.sequence);
     this.router.navigate([
       '/project',
       event.sequence.project,
@@ -81,7 +46,7 @@ export class KtbSequenceStateListComponent implements OnDestroy {
     ]);
   }
 
-  ngOnDestroy(): void {
-    this._timer.unsubscribe();
+  toSequence(value: unknown): ISequence {
+    return value as ISequence;
   }
 }

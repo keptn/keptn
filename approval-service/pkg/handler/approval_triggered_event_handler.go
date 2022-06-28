@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
+	"github.com/keptn/go-utils/pkg/sdk/connector/controlplane"
 	logger "github.com/sirupsen/logrus"
 
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"

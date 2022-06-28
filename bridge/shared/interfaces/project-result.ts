@@ -1,4 +1,4 @@
-import { IProject } from '../models/IProject';
+import { IProject } from './Project';
 
 export interface IProjectResult {
   projects: IProject[];

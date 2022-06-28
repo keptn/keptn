@@ -3,11 +3,12 @@ package go_tests
 import (
 	"context"
 	"fmt"
-	keptnkubeutils "github.com/keptn/kubernetes-utils/pkg"
-	"k8s.io/apimachinery/pkg/util/wait"
 	"net"
 	"os/exec"
 	"time"
+
+	keptn2 "github.com/keptn/go-utils/pkg/lib"
+	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 const kubectlExecutable = "kubectl"
@@ -22,7 +23,7 @@ func KubeCtlApplyFromURL(url string, namespace ...string) (func() error, error) 
 		ns = namespace[0]
 	}
 	fmt.Printf("Executing: %s %s -n=%s -f=%s\n", kubectlExecutable, "apply", ns, url)
-	result, err := keptnkubeutils.ExecuteCommand(kubectlExecutable, []string{"apply", "-n=" + ns, "-f=" + url})
+	result, err := keptn2.ExecuteCommand(kubectlExecutable, []string{"apply", "-n=" + ns, "-f=" + url})
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +41,7 @@ func KubeCtlDeleteFromURL(url string, namespace ...string) error {
 		ns = namespace[0]
 	}
 	fmt.Printf("Executing: %s %s -n=%s -f=%s\n", kubectlExecutable, "delete", ns, url)
-	result, err := keptnkubeutils.ExecuteCommand(kubectlExecutable, []string{"delete", "-n=" + ns, "-f=" + url})
+	result, err := keptn2.ExecuteCommand(kubectlExecutable, []string{"delete", "-n=" + ns, "-f=" + url})
 	if err != nil {
 		return err
 	}

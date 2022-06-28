@@ -8,7 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	keptnkubeutils "github.com/keptn/kubernetes-utils/pkg"
+	"github.com/keptn/keptn/helm-service/pkg/common"
 	chart "helm.sh/helm/v3/pkg/chart"
 )
 
@@ -36,7 +36,7 @@ func (m *MockIChartRetriever) EXPECT() *MockIChartRetrieverMockRecorder {
 }
 
 // Retrieve mocks base method.
-func (m *MockIChartRetriever) Retrieve(arg0 keptnkubeutils.RetrieveChartOptions) (*chart.Chart, string, error) {
+func (m *MockIChartRetriever) Retrieve(arg0 common.RetrieveChartOptions) (*chart.Chart, string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Retrieve", arg0)
 	ret0, _ := ret[0].(*chart.Chart)

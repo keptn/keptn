@@ -1,7 +1,33 @@
 import semver from 'semver';
 import { Stage } from './stage';
 import { DeploymentInformation, Service } from './service';
-import { IGitDataExtended, IProject } from '../../../shared/models/IProject';
+import { IGitDataExtended, IProject } from '../../../shared/interfaces/Project';
+
+export function getShipyardVersion(project?: IProject): string {
+  return project?.shipyardVersion?.split('/').pop() ?? '';
+}
+
+export function isShipyardNotSupported(
+  project: IProject | undefined,
+  supportedVersion: string | undefined | null
+): boolean {
+  const version = getShipyardVersion(project);
+  return supportedVersion !== null && (!version || !supportedVersion || semver.lt(version, supportedVersion));
+}
+
+export function getDistinctServiceNames(project?: IProject): string[] {
+  return project
+    ? Array.from(
+        project.stages.reduce((set, stage) => {
+          stage.services.forEach((s) => {
+            set.add(s.serviceName);
+            return null;
+          });
+          return set;
+        }, new Set<string>())
+      )
+    : [];
+}
 
 export class Project implements IProject {
   public projectName!: string;
@@ -67,21 +93,12 @@ export class Project implements IProject {
     return this.services?.map((service) => service.serviceName) ?? [];
   }
 
-  getShipyardVersion(): string {
-    return this.shipyardVersion?.split('/').pop() ?? '';
-  }
-
   isShipyardNotSupported(supportedVersion: string | undefined | null): boolean {
-    const version = this.getShipyardVersion();
-    return supportedVersion !== null && (!version || !supportedVersion || semver.lt(version, supportedVersion));
+    return isShipyardNotSupported(this, supportedVersion);
   }
 
   getService(serviceName: string): Service | undefined {
     return this.getServices().find((s) => s.serviceName === serviceName);
-  }
-
-  getStage(stageName: string): Stage | undefined {
-    return this.stages.find((s) => s.stageName === stageName);
   }
 
   getLatestDeployment(service?: Service, stage?: Stage): DeploymentInformation | undefined {
