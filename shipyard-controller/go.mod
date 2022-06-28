@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/benbjohnson/clock v1.3.0
-	github.com/cloudevents/sdk-go/v2 v2.10.0
+	github.com/cloudevents/sdk-go/v2 v2.10.1
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-test/deep v1.0.8
 	github.com/google/uuid v1.3.0

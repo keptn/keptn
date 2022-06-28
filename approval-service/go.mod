@@ -3,7 +3,7 @@ module keptn/approval-service
 go 1.18
 
 require (
-	github.com/cloudevents/sdk-go/v2 v2.10.0
+	github.com/cloudevents/sdk-go/v2 v2.10.1
 	github.com/google/uuid v1.3.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.16.1-0.20220627142720-dc3f6c8a574c
