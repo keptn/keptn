@@ -1,9 +1,9 @@
 {{/*Return the proper serivce image name*/}}
-{{/*{{- include "common.images.image" ( dict "imageRoot" .Values.helmservice.image "global" .Values.global.keptn "defaultTag" .Chart.appVersion) -}}*/}}
-{{- define "common.images.image" -}}
+{{/*{{- include "keptn.common.images.image" ( dict "imageRoot" .Values.helmservice.image "global" .Values.global.keptn "defaultTag" .Chart.appVersion) -}}*/}}
+{{- define "keptn.common.images.image" -}}
 {{- $registryName := "" -}}
 {{- $repositoryName := .imageRoot.repository -}}
-{{- $tag := include "common.images.tag" (dict "imageRoot" .imageRoot "global" .global "defaultTag" .defaultTag) -}}
+{{- $tag := include "keptn.common.images.tag" (dict "imageRoot" .imageRoot "global" .global "defaultTag" .defaultTag) -}}
 {{- if .global }}
     {{- if .global.registry }}
      {{- $registryName = .global.registry -}}
@@ -20,8 +20,8 @@
 {{- end -}}
 
 {{/*Return the proper serivce image tag*/}}
-{{/*{{- include "common.images.tag" ( dict "imageRoot" .Values.helmservice.image "global" .Values.global.keptn "defaultTag" .Chart.appVersion) -}}*/}}
-{{- define "common.images.tag" -}}
+{{/*{{- include "keptn.common.images.tag" ( dict "imageRoot" .Values.helmservice.image "global" .Values.global.keptn "defaultTag" .Chart.appVersion) -}}*/}}
+{{- define "keptn.common.images.tag" -}}
 {{- $tag := "" -}}
 {{/* Set Image Tag: if globally set or at service level or use default from Chart.yaml*/}}
 {{- if .global -}}

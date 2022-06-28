@@ -22,7 +22,7 @@ spec:
       serviceAccountName: keptn-default
       containers:
         - name: approval-service
-          image: {{ include "common.images.image" ( dict "imageRoot" .Values.approvalService.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote }}
+          image: {{ include "keptn.common.images.image" ( dict "imageRoot" .Values.approvalService.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote }}
           {{- $prestop := .Values.approvalService.preStopHookTime | default 5 | quote -}}
           {{- include "keptn.prestop" $prestop | nindent 10 }}
           livenessProbe:

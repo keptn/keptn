@@ -21,7 +21,7 @@ spec:
       serviceAccountName: keptn-default
       containers:
         - name: statistics-service
-          image: {{ include "common.images.image" ( dict "imageRoot" .Values.statisticsService.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote }}
+          image: {{ include "keptn.common.images.image" ( dict "imageRoot" .Values.statisticsService.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote }}
           {{- $prestop := .Values.statisticsService.preStopHookTime | default 20 | quote -}}
           {{- include "keptn.prestop" $prestop | nindent 10 }}
           livenessProbe:
@@ -72,7 +72,7 @@ spec:
           {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.statisticsService.extraVolumeMounts "context" $) | nindent 12 }}
           {{- end }}
         - name: distributor
-          image: {{ include "common.images.image" ( dict "imageRoot" .Values.distributor.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote }}
+          image: {{ include "keptn.common.images.image" ( dict "imageRoot" .Values.distributor.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote }}
           {{- include "keptn.dist.livenessProbe" . | nindent 10 }}
           {{- include "keptn.dist.readinessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
