@@ -353,7 +353,7 @@ jobs:
               "$JMETER_SERVICE_HELM_CHART_NAME"
           else
             helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} \
-              $(if [[ $HELM_CHART_NAME == *"dev"* ]]; then echo "-f ./test/assets/helm-charts/keptn/values-int-tests.yaml"; fi) \
+              $(if [[ "$HELM_CHART_NAME" == *"dev"* ]]; then echo "-f ./test/assets/helm-charts/keptn/values-int-tests.yaml"; fi) \
               --create-namespace \
               --set apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
               --set shipyardController.gracePeriod=10 \
