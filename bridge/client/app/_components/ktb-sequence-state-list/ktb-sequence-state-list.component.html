@@ -3,18 +3,16 @@
     <dt-table [dataSource]="dataSource">
       <ng-container dtColumnDef="recentSequence" [dtColumnProportion]="4">
         <dt-cell *dtCellDef="let row">
-          <ng-container *ngIf="row | toType: SequenceClass as sequence">
-            <ktb-sequence-state-info
-              [sequence]="sequence"
-              [showStages]="false"
-              (stageClicked)="selectSequence($event)"
-            ></ktb-sequence-state-info>
-          </ng-container>
+          <ktb-sequence-state-info
+            [sequence]="toSequence(row)"
+            [showStages]="false"
+            (stageClicked)="selectSequence($event)"
+          ></ktb-sequence-state-info>
         </dt-cell>
       </ng-container>
       <ng-container dtColumnDef="recentEvaluation" dtColumnAlign="number" [dtColumnProportion]="2">
         <dt-cell *dtCellDef="let row">
-          <ng-container *ngIf="row | toType: SequenceClass as sequence">
+          <ng-container *ngIf="toSequence(row) as sequence">
             <p class="m-0 small" [textContent]="sequence.time | toDate | amCalendar: dateUtil.getCalendarFormats()"></p>
           </ng-container>
         </dt-cell>

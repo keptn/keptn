@@ -1,27 +1,27 @@
 <ng-container *ngIf="sequence">
-  <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
+  <div *ngIf="createSequenceStateInfo(sequence) as info" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
     <dt-icon
-      *ngIf="(!sequence.isLoading() && !sequence.isWaiting()) || sequence.hasPendingApproval(); else showLoading"
+      *ngIf="info.steady; else showLoading"
       class="event-icon"
-      [name]="sequence.getIcon()"
-      [class.success]="sequence.isSuccessful()"
-      [class.warning]="sequence.isWarning()"
-      [class.error]="sequence.isFaulty()"
-      [class.highlight]="sequence.hasPendingApproval()"
-      [class.aborted]="sequence.isAborted()"
+      [name]="info.icon"
+      [class.success]="info.successful"
+      [class.warning]="info.warning"
+      [class.error]="info.faulty"
+      [class.highlight]="info.pendingApproval"
+      [class.aborted]="info.aborted"
     ></dt-icon>
     <ng-template #showLoading>
-      <button class="m-0 p-0" dt-button disabled variant="nested" *ngIf="sequence.isLoading() && !sequence.isWaiting()">
+      <button class="m-0 p-0" dt-button disabled variant="nested" *ngIf="info.loading && !info.waiting">
         <ktb-loading-spinner aria-label="Task is running..."></ktb-loading-spinner>
       </button>
-      <dt-icon *ngIf="sequence.isWaiting()" class="event-icon" name="idle"></dt-icon>
+      <dt-icon *ngIf="info.waiting" class="event-icon" name="idle"></dt-icon>
     </ng-template>
     <p class="m-0 smaller">
       <a
         class="m-0 bold"
         uitestid="keptn-sequence-info-sequenceName"
         [routerLink]="getSequenceLink(sequence)"
-        [class.error]="sequence.isFaulty()"
+        [class.error]="info.faulty"
         [textContent]="sequence.name"
       ></a>
       of
@@ -31,7 +31,7 @@
         [routerLink]="getServiceLink(sequence)"
         [textContent]="sequence.service"
       ></a>
-      <span [textContent]="sequence.getStatus()" uitestid="keptn-sequence-info-status"></span>
+      <span [textContent]="info.statusText" uitestid="keptn-sequence-info-status"></span>
     </p>
   </div>
   <div
@@ -42,16 +42,17 @@
     fxLayoutGap="5px"
     uitestid="keptn-sequence-info-stageDetails"
   >
-    <ng-container *ngFor="let stage of sequence.getStages()">
+    <ng-container *ngFor="let stageName of getStageNames(sequence)">
       <ktb-stage-badge
-        [stage]="stage"
-        [evaluationResult]="sequence.getEvaluation(stage)"
-        [success]="sequence.isSuccessful(stage)"
-        [error]="sequence.isFaulty(stage)"
-        [warning]="sequence.isWarning(stage)"
-        [highlight]="sequence.hasPendingApproval(stage)"
-        [aborted]="sequence.isAborted(stage)"
-        (click)="$event.stopPropagation(); stageClick(sequence, stage)"
+        *ngIf="createSequenceStateInfo(sequence, stageName) as badgeInfo"
+        [stage]="stageName"
+        [evaluationResult]="badgeInfo.evaluation"
+        [success]="badgeInfo.successful"
+        [error]="badgeInfo.faulty"
+        [warning]="badgeInfo.warning"
+        [highlight]="badgeInfo.pendingApproval"
+        [aborted]="badgeInfo.aborted"
+        (click)="$event.stopPropagation(); stageClick(sequence, stageName)"
       ></ktb-stage-badge>
     </ng-container>
   </div>

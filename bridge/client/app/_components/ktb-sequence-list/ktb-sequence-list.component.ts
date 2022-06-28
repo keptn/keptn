@@ -9,7 +9,7 @@ import { SubSequence } from '../../../../shared/interfaces/deployment';
 import { EVENT_ICONS } from '../../_models/event-icons';
 import { DtIconType } from '@dynatrace/barista-icons';
 import { ResultTypes } from '../../../../shared/models/result-types';
-import { SequenceState } from '../../../../shared/models/sequence';
+import { SequenceState } from '../../../../shared/interfaces/sequence';
 
 @Component({
   selector: 'ktb-sequence-list',

@@ -1,5 +1,5 @@
 import { Sequence } from './sequence';
-import { SequenceStage } from '../../shared/models/sequence';
+import { SequenceStage } from '../../shared/interfaces/sequence';
 import { IRemediationAction } from '../../shared/models/remediation-action';
 
 export class Remediation extends Sequence {

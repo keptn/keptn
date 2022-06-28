@@ -1,7 +1,7 @@
 import { Stage } from './stage';
-import { Project as pj } from '../../shared/models/project';
+import { IProject } from '../../shared/interfaces/project';
 
-export class Project extends pj {
+export class Project implements IProject {
   stages: Stage[] = [];
 
   public static fromJSON(data: unknown): Project {
@@ -9,4 +9,7 @@ export class Project extends pj {
     project.stages = project.stages.map((stage) => Stage.fromJSON(stage));
     return project;
   }
+
+  gitProxyInsecure = false;
+  projectName = '';
 }
