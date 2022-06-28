@@ -423,8 +423,7 @@ func (ph *ProjectHandler) DeleteProject(c *gin.Context) {
 		err := ph.RepositoryProvisioner.DeleteRepository(projectName, namespace)
 		if err != nil {
 			// a failure to clean up the provisioned repo should not prevent the project delete
-			log.Errorf(err.Error())
-			SetFailedDependencyErrorResponse(c, UnableProvisionDeleteGeneric)
+			log.Errorf("Automatic Provisioning error: %s", err.Error())
 		}
 	}
 
