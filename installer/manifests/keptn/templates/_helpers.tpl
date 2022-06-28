@@ -62,11 +62,6 @@ lifecycle:
     fieldRef:
       apiVersion: v1
       fieldPath: 'metadata.labels[''app.kubernetes.io/version'']'
-- name: K8S_DEPLOYMENT_COMPONENT
-  valueFrom:
-    fieldRef:
-      apiVersion: v1
-      fieldPath: 'metadata.labels[''app.kubernetes.io/component'']'
 - name: K8S_NAMESPACE
   valueFrom:
     fieldRef:
@@ -90,7 +85,7 @@ lifecycle:
 - name: VERSION
   valueFrom:
     fieldRef:
-      fieldPath: metadata.labels['app.kubernetes.io/version']
+      fieldPath: 'metadata.labels[''app.kubernetes.io/version'']'
 - name: DISTRIBUTOR_VERSION
 {{- if .Values.distributor.image.tag }}
   value: {{ .Values.distributor.image.tag }}
@@ -104,15 +99,11 @@ lifecycle:
 - name: LOCATION
   valueFrom:
    fieldRef:
-      fieldPath: metadata.labels['app.kubernetes.io/component']
+      fieldPath: 'metadata.labels[''app.kubernetes.io/name'']'
 - name: K8S_DEPLOYMENT_NAME
   valueFrom:
     fieldRef:
-      fieldPath: metadata.labels['app.kubernetes.io/name']
-- name: K8S_DEPLOYMENT_COMPONENT
-  valueFrom:
-    fieldRef:
-      fieldPath: metadata.labels['app.kubernetes.io/component']
+      fieldPath: 'metadata.labels[''app.kubernetes.io/name'']'
 - name: K8S_POD_NAME
   valueFrom:
     fieldRef:
@@ -137,7 +128,7 @@ lifecycle:
 - name: PUBSUB_GROUP
   valueFrom:
     fieldRef:
-      fieldPath: metadata.labels['app.kubernetes.io/name']
+      fieldPath: 'metadata.labels[''app.kubernetes.io/name'']'
 {{- end }}
 - name: OAUTH_CLIENT_ID
   value: "{{ (((.Values.distributor).config).oauth).clientID }}"

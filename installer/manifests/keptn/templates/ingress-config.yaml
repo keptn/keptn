@@ -17,8 +17,7 @@ kind: ConfigMap
 metadata:
   name: ingress-config
   labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/name: {{ include "keptn.name" . }}-cm
-    app.kubernetes.io/name: {{ include "keptn.name" . }}
+    app.kubernetes.io/name: ingress-config-cm
 data:
   ingress_hostname_suffix: "{{ $ingressHostnameSuffix }}"
   ingress_protocol: "{{ $ingressProtocol }}"
