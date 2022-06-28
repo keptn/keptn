@@ -5,15 +5,16 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/go-utils/pkg/common/osutils"
-	"github.com/mholt/archiver/v3"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/url"
 	"os"
 	"path"
 	"testing"
+
+	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/common/osutils"
+	"github.com/mholt/archiver/v3"
+	"github.com/stretchr/testify/require"
 )
 
 const testingProxyShipyard = `apiVersion: "spec.keptn.sh/0.2.3"
@@ -206,10 +207,13 @@ func Test_ProxyAuth(t *testing.T) {
 	project := models.ExpandedProject{}
 	err = resp.ToJSON(&project)
 	require.Nil(t, err)
-	require.Equal(t, mockServerIP, project.GitProxyURL)
-	require.Equal(t, "http", project.GitProxyScheme)
-	require.Equal(t, "", project.GitProxyUser)
-	require.Equal(t, true, project.InsecureSkipTLS)
+	require.NotNil(t, project.GitCredentials)
+	require.NotNil(t, project.GitCredentials.HttpsAuth)
+	require.NotNil(t, project.GitCredentials.HttpsAuth.Proxy)
+	require.Equal(t, mockServerIP, project.GitCredentials.HttpsAuth.Proxy.URL)
+	require.Equal(t, "http", project.GitCredentials.HttpsAuth.Proxy.Scheme)
+	require.Equal(t, "", project.GitCredentials.HttpsAuth.Proxy.User)
+	require.Equal(t, true, project.GitCredentials.HttpsAuth.InsecureSkipTLS)
 	require.Equal(t, projectName, project.ProjectName)
 
 	t.Logf("Updating project credentials")

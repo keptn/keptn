@@ -11,6 +11,7 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 )
 
 // ExpandedProject expanded project
@@ -21,11 +22,8 @@ type ExpandedProject struct {
 	// Creation date of the project
 	CreationDate string `json:"creationDate,omitempty"`
 
-	// Git remote URI
-	GitRemoteURI string `json:"gitRemoteURI,omitempty"`
-
-	// Git User
-	GitUser string `json:"gitUser,omitempty"`
+	// git auth credentials
+	GitCredentials *apimodels.GitAuthCredentialsSecure `json:"gitCredentials,omitempty"`
 
 	// last event context
 	LastEventContext *EventContext `json:"lastEventContext,omitempty"`

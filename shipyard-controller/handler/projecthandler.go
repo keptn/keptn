@@ -68,31 +68,27 @@ func (p ProjectValidator) validateCreateProjectParams(createProjectParams *model
 		return fmt.Errorf("provided shipyard file is not valid: %s", err.Error())
 	}
 
-	if err := common.ValidateGitRemoteURL(createProjectParams.GitRemoteURL); err != nil {
+	if createProjectParams.GitCredentials == nil {
+		return nil
+	}
+
+	if err := common.ValidateGitRemoteURL(createProjectParams.GitCredentials.RemoteURL); err != nil {
 		return fmt.Errorf("provided gitRemoteURL is not valid: %s", err.Error())
 	}
 
-	if createProjectParams.GitPrivateKey != "" && createProjectParams.GitToken != "" {
-		return fmt.Errorf("privateKey and token cannot be used together")
+	if createProjectParams.GitCredentials.HttpsAuth != nil && createProjectParams.GitCredentials.SshAuth != nil {
+		return fmt.Errorf("SSH and HTTPS authorization cannot be used together")
 	}
 
-	if createProjectParams.GitPrivateKey != "" && createProjectParams.GitProxyURL != "" {
-		return fmt.Errorf("privateKey and proxy cannot be used together")
-	}
-
-	if createProjectParams.GitPrivateKey != "" {
-		decodeString, err = base64.StdEncoding.DecodeString(createProjectParams.GitPrivateKey)
+	if createProjectParams.GitCredentials.SshAuth != nil && createProjectParams.GitCredentials.SshAuth.PrivateKey != "" {
+		decodeString, err = base64.StdEncoding.DecodeString(createProjectParams.GitCredentials.SshAuth.PrivateKey)
 		if err != nil {
 			return errors.New("could not decode privateKey content")
 		}
 	}
 
-	if createProjectParams.GitPrivateKey != "" && createProjectParams.GitPemCertificate != "" {
-		return fmt.Errorf("SSH authorization and PEM Certificate be used together")
-	}
-
-	if createProjectParams.GitPemCertificate != "" {
-		decodeString, err = base64.StdEncoding.DecodeString(createProjectParams.GitPemCertificate)
+	if createProjectParams.GitCredentials.HttpsAuth != nil && createProjectParams.GitCredentials.HttpsAuth.Certificate != "" {
+		decodeString, err = base64.StdEncoding.DecodeString(createProjectParams.GitCredentials.HttpsAuth.Certificate)
 		if err != nil {
 			return errors.New("could not decode PEM Certificate content")
 		}
@@ -130,31 +126,27 @@ func (p ProjectValidator) validateUpdateProjectParams(updateProjectParams *model
 		}
 	}
 
-	if err := common.ValidateGitRemoteURL(updateProjectParams.GitRemoteURL); err != nil {
+	if updateProjectParams.GitCredentials == nil {
+		return nil
+	}
+
+	if err := common.ValidateGitRemoteURL(updateProjectParams.GitCredentials.RemoteURL); err != nil {
 		return fmt.Errorf("provided gitRemoteURL is not valid: %s", err.Error())
 	}
 
-	if updateProjectParams.GitPrivateKey != "" && updateProjectParams.GitToken != "" {
-		return fmt.Errorf("privateKey and token cannot be used together")
+	if updateProjectParams.GitCredentials.HttpsAuth != nil && updateProjectParams.GitCredentials.SshAuth != nil {
+		return fmt.Errorf("SSH and HTTPS authorization cannot be used together")
 	}
 
-	if updateProjectParams.GitPrivateKey != "" && updateProjectParams.GitProxyURL != "" {
-		return fmt.Errorf("privateKey and proxy cannot be used together")
-	}
-
-	if updateProjectParams.GitPrivateKey != "" {
-		_, err := base64.StdEncoding.DecodeString(updateProjectParams.GitPrivateKey)
+	if updateProjectParams.GitCredentials.SshAuth != nil && updateProjectParams.GitCredentials.SshAuth.PrivateKey != "" {
+		_, err := base64.StdEncoding.DecodeString(updateProjectParams.GitCredentials.SshAuth.PrivateKey)
 		if err != nil {
 			return errors.New("could not decode privateKey content")
 		}
 	}
 
-	if updateProjectParams.GitPrivateKey != "" && updateProjectParams.GitPemCertificate != "" {
-		return fmt.Errorf("SSH authorization and PEM Certificate be used together")
-	}
-
-	if updateProjectParams.GitPemCertificate != "" {
-		_, err := base64.StdEncoding.DecodeString(updateProjectParams.GitPemCertificate)
+	if updateProjectParams.GitCredentials.HttpsAuth != nil && updateProjectParams.GitCredentials.HttpsAuth.Certificate != "" {
+		_, err := base64.StdEncoding.DecodeString(updateProjectParams.GitCredentials.HttpsAuth.Certificate)
 		if err != nil {
 			return errors.New("could not decode PEM Certificate content")
 		}
@@ -290,7 +282,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 	}
 
 	automaticProvisioningURL := ph.Env.AutomaticProvisioningURL
-	if automaticProvisioningURL != "" && params.GitRemoteURL == "" {
+	if automaticProvisioningURL != "" && params.GitCredentials == nil {
 		provisioningData, err := ph.RepositoryProvisioner.ProvideRepository(*params.Name, common.GetKeptnNamespace())
 		if err != nil {
 			log.Errorf(err.Error())
@@ -298,9 +290,14 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 			return
 		}
 
-		params.GitRemoteURL = provisioningData.GitRemoteURL
-		params.GitToken = provisioningData.GitToken
-		params.GitUser = provisioningData.GitUser
+		params.GitCredentials = &apimodels.GitAuthCredentials{
+			RemoteURL : provisioningData.GitRemoteURL,
+			HttpsAuth : &apimodels.HttpsGitAuth{
+				InsecureSkipTLS: false,
+				Token:           provisioningData.GitToken,
+			},
+			User : provisioningData.GitUser,
+		}
 	}
 
 	projectValidator := ProjectValidator{ProjectNameMaxSize: ph.Env.ProjectNameMaxSize}
@@ -468,9 +465,12 @@ func (ph *ProjectHandler) sendProjectCreateSuccessFinishedEvent(keptnContext str
 		},
 		CreatedProject: keptnv2.ProjectCreateData{
 			ProjectName:  *params.Name,
-			GitRemoteURL: params.GitRemoteURL,
 			Shipyard:     *params.Shipyard,
 		},
+	}
+
+	if params.GitCredentials != nil {
+		eventPayload.CreatedProject.GitRemoteURL = params.GitCredentials.RemoteURL
 	}
 
 	ce := common.CreateEventWithPayload(keptnContext, "", keptnv2.GetFinishedEventType(keptnv2.ProjectCreateTaskName), eventPayload)

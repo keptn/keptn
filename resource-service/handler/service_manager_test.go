@@ -2,16 +2,19 @@ package handler
 
 import (
 	"errors"
+	"strings"
+	"testing"
+
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/resource-service/common"
 	common_mock "github.com/keptn/keptn/resource-service/common/fake"
+
 	"github.com/keptn/keptn/resource-service/common_models"
 	errors2 "github.com/keptn/keptn/resource-service/errors"
 	handler_mock "github.com/keptn/keptn/resource-service/handler/fake"
 	"github.com/keptn/keptn/resource-service/models"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
-	"strings"
-	"testing"
 )
 
 type serviceManagerTestFields struct {
@@ -35,9 +38,11 @@ func TestServiceManager_CreateService(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
 		},
 	}
 
@@ -100,9 +105,11 @@ func TestServiceManager_CreateService_ProjectNotFound(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
 		},
 	}
 
@@ -138,9 +145,11 @@ func TestServiceManager_CreateService_StageNotFound(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
 		},
 	}
 
@@ -178,9 +187,11 @@ func TestServiceManager_CreateService_ServiceAlreadyExists(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
 		},
 	}
 
@@ -217,9 +228,11 @@ func TestServiceManager_CreateService_CannotCreateDirectory(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
 		},
 	}
 
@@ -256,9 +269,11 @@ func TestServiceManager_CreateService_CannotCreateMetadata(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
 		},
 	}
 
@@ -296,9 +311,11 @@ func TestServiceManager_CreateService_CannotCommit(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
 		},
 	}
 
@@ -331,9 +348,11 @@ func TestServiceManager_DeleteService(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
 		},
 	}
 
@@ -369,9 +388,11 @@ func TestServiceManager_DeleteService_ProjectDoesNotExist(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
 		},
 	}
 
@@ -410,9 +431,11 @@ func TestServiceManager_DeleteService_ServiceDoesNotExist(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
 		},
 	}
 
@@ -445,9 +468,11 @@ func TestServiceManager_DeleteService_DeleteDirectoryFails(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
 		},
 	}
 
@@ -486,9 +511,11 @@ func TestServiceManager_DeleteService_CannotCommit(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
 		},
 	}
 
@@ -532,9 +559,11 @@ func getTestServiceManagerFields() serviceManagerTestFields {
 		credentialReader: &common_mock.CredentialReaderMock{
 			GetCredentialsFunc: func(project string) (*common_models.GitCredentials, error) {
 				return &common_models.GitCredentials{
-					User:      "my-user",
-					Token:     "my-token",
-					RemoteURI: "my-remote-uri",
+					User: "my-user",
+					HttpsAuth: &apimodels.HttpsGitAuth{
+						Token: "my-token",
+					},
+					RemoteURL: "my-remote-uri",
 				}, nil
 			},
 		},

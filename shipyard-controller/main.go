@@ -104,10 +104,12 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 
 	sequenceExecutionRepo := createSequenceExecutionRepo()
 
+	secretStore := createSecretStore(kubeAPI)
+
 	projectMVRepo := createProjectMVRepo()
 	projectManager := handler.NewProjectManager(
 		common.NewGitConfigurationStore(csEndpoint.String()),
-		createSecretStore(kubeAPI),
+		secretStore,
 		projectMVRepo,
 		sequenceExecutionRepo,
 		createEventsRepo(),
@@ -236,6 +238,14 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 	logHandler := handler.NewLogHandler(handler.NewLogManager(logRepo))
 	logController := controller.NewLogController(logHandler)
 	logController.Inject(apiV1)
+
+	log.Info("Migrating project git credentials")
+	projectCredentialsMigrator := migration.NewProjectCredentialsMigrator(db.GetMongoDBConnectionInstance(), secretStore)
+	err = projectCredentialsMigrator.Transform()
+	if err != nil {
+		log.Errorf("Unable to transform project git credentials: %v", err)
+	}
+	log.Info("Finished migrating project git credentials")
 
 	log.Info("Migrating project key format")
 	projectsMigrator := migration.NewProjectMVMigrator(db.GetMongoDBConnectionInstance())

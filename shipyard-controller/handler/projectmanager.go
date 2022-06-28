@@ -94,23 +94,7 @@ func (pm *ProjectManager) Create(params *models.CreateProjectParams) (error, com
 		return ErrProjectAlreadyExists, nilRollback
 	}
 
-	decodedPrivateKey, _ := base64.StdEncoding.DecodeString(params.GitPrivateKey)
-
-	decodedPemCertificate, _ := base64.StdEncoding.DecodeString(params.GitPemCertificate)
-
-	err = pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
-		User:              params.GitUser,
-		Token:             params.GitToken,
-		RemoteURI:         params.GitRemoteURL,
-		GitPrivateKey:     string(decodedPrivateKey),
-		GitPrivateKeyPass: params.GitPrivateKeyPass,
-		GitProxyURL:       params.GitProxyURL,
-		GitProxyScheme:    params.GitProxyScheme,
-		GitProxyUser:      params.GitProxyUser,
-		GitProxyPassword:  params.GitProxyPassword,
-		GitPemCertificate: string(decodedPemCertificate),
-		InsecureSkipTLS:   params.InsecureSkipTLS,
-	})
+	err = pm.updateGITRepositorySecret(*params.Name, decodeGitCredentials(params.GitCredentials))
 	if err != nil {
 		return err, nilRollback
 	}
@@ -189,19 +173,7 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 		return err, nilRollback
 	}
 
-	rollbackSecretCredentials := &gitCredentials{
-		User:              oldSecret.User,
-		Token:             oldSecret.Token,
-		RemoteURI:         oldSecret.RemoteURI,
-		GitPrivateKey:     oldSecret.GitPrivateKey,
-		GitPrivateKeyPass: oldSecret.GitPrivateKeyPass,
-		GitProxyURL:       oldSecret.GitProxyURL,
-		GitProxyScheme:    oldSecret.GitProxyScheme,
-		GitProxyUser:      oldSecret.GitProxyUser,
-		GitProxyPassword:  oldSecret.GitProxyPassword,
-		GitPemCertificate: oldSecret.GitPemCertificate,
-		InsecureSkipTLS:   oldSecret.InsecureSkipTLS,
-	}
+	rollbackSecretCredentials := oldSecret
 
 	// old project for rollback
 	oldProject, err := pm.ProjectMaterializedView.GetProject(*params.Name)
@@ -212,25 +184,9 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 		return ErrProjectNotFound, nilRollback
 	}
 
-	decodedPrivateKey, _ := base64.StdEncoding.DecodeString(params.GitPrivateKey)
-
-	decodedPemCertificate, _ := base64.StdEncoding.DecodeString(params.GitPemCertificate)
-
-	if params.GitRemoteURL != "" {
+	if params.GitCredentials != nil {
 		// try to update git repository secret
-		err = pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
-			User:              params.GitUser,
-			Token:             params.GitToken,
-			RemoteURI:         params.GitRemoteURL,
-			GitPrivateKey:     string(decodedPrivateKey),
-			GitPrivateKeyPass: params.GitPrivateKeyPass,
-			GitProxyURL:       params.GitProxyURL,
-			GitProxyScheme:    params.GitProxyScheme,
-			GitProxyUser:      params.GitProxyUser,
-			GitProxyPassword:  params.GitProxyPassword,
-			GitPemCertificate: string(decodedPemCertificate),
-			InsecureSkipTLS:   params.InsecureSkipTLS,
-		})
+		err = pm.updateGITRepositorySecret(*params.Name, decodeGitCredentials(params.GitCredentials))
 
 		// no roll back needed since updating the git repository secret was the first operation
 		if err != nil {
@@ -246,14 +202,9 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 	// project content in configuration service to rollback
 	projectToRollback := apimodels.Project{
 		CreationDate:    oldProject.CreationDate,
-		GitRemoteURI:    oldProject.GitRemoteURI,
-		GitUser:         oldProject.GitUser,
 		ProjectName:     oldProject.ProjectName,
-		GitProxyURL:     oldProject.GitProxyURL,
-		GitProxyScheme:  oldProject.GitProxyScheme,
-		GitProxyUser:    oldProject.GitProxyUser,
-		InsecureSkipTLS: oldProject.InsecureSkipTLS,
 		ShipyardVersion: oldProject.ShipyardVersion,
+		GitCredentials:  toInsecureGitCredentials(oldProject.GitCredentials),
 	}
 
 	// try to update the project information in configuration service
@@ -298,13 +249,9 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 	}
 
 	// copy by value
+
 	updateProject := *oldProject
-	updateProject.GitUser = params.GitUser
-	updateProject.GitRemoteURI = params.GitRemoteURL
-	updateProject.GitProxyURL = params.GitProxyURL
-	updateProject.GitProxyScheme = params.GitProxyScheme
-	updateProject.GitProxyUser = params.GitProxyUser
-	updateProject.InsecureSkipTLS = params.InsecureSkipTLS
+	updateProject.GitCredentials = toSecureGitCredentials(params.GitCredentials)
 	if isShipyardPresent {
 		updateProject.Shipyard = *params.Shipyard
 	}
@@ -341,8 +288,8 @@ func (pm *ProjectManager) Delete(projectName string) (string, error) {
 	project, err := pm.ProjectMaterializedView.GetProject(projectName)
 	if err != nil {
 		resultMessage.WriteString(fmt.Sprintf("Project %s cannot be retrieved anymore. Any Git upstream of the project will not be deleted.\n", projectName))
-	} else if project != nil && project.GitRemoteURI != "" {
-		resultMessage.WriteString(fmt.Sprintf("The Git upstream of the project will not be deleted: %s\n", project.GitRemoteURI))
+	} else if project != nil && project.GitCredentials != nil {
+		resultMessage.WriteString(fmt.Sprintf("The Git upstream of the project will not be deleted: %s\n", project.GitCredentials.RemoteURL))
 	}
 
 	secret, err := pm.SecretStore.GetSecret("git-credentials-" + projectName)
@@ -412,15 +359,10 @@ func (pm *ProjectManager) createProjectInRepository(params *models.CreateProject
 
 	p := &apimodels.ExpandedProject{
 		CreationDate:    strconv.FormatInt(time.Now().UnixNano(), 10),
-		GitRemoteURI:    params.GitRemoteURL,
-		GitUser:         params.GitUser,
 		ProjectName:     *params.Name,
 		Shipyard:        string(decodedShipyard),
 		ShipyardVersion: shipyardVersion,
-		GitProxyURL:     params.GitProxyURL,
-		GitProxyScheme:  params.GitProxyScheme,
-		GitProxyUser:    params.GitProxyUser,
-		InsecureSkipTLS: params.InsecureSkipTLS,
+		GitCredentials:  toSecureGitCredentials(params.GitCredentials),
 		Stages:          expandedStages,
 	}
 
@@ -431,7 +373,7 @@ func (pm *ProjectManager) createProjectInRepository(params *models.CreateProject
 	return nil
 }
 
-func (pm *ProjectManager) getGITRepositorySecret(projectName string) (*gitCredentials, error) {
+func (pm *ProjectManager) getGITRepositorySecret(projectName string) (*apimodels.GitAuthCredentials, error) {
 	secret, err := pm.SecretStore.GetSecret("git-credentials-" + projectName)
 	if err != nil {
 		return nil, err
@@ -441,7 +383,7 @@ func (pm *ProjectManager) getGITRepositorySecret(projectName string) (*gitCreden
 	}
 
 	if marshalledSecret, ok := secret["git-credentials"]; ok {
-		secretObj := &gitCredentials{}
+		secretObj := &apimodels.GitAuthCredentials{}
 		if err := json.Unmarshal(marshalledSecret, secretObj); err != nil {
 			return nil, fmt.Errorf("failed to unmarshal git-credentials secret")
 		}
@@ -450,7 +392,7 @@ func (pm *ProjectManager) getGITRepositorySecret(projectName string) (*gitCreden
 	return nil, nil
 }
 
-func (pm *ProjectManager) updateGITRepositorySecret(projectName string, credentials *gitCredentials) error {
+func (pm *ProjectManager) updateGITRepositorySecret(projectName string, credentials *apimodels.GitAuthCredentials) error {
 
 	credsEncoded, err := json.Marshal(credentials)
 	if err != nil {
@@ -510,13 +452,67 @@ func getShipyardNotAvailableError(project string) string {
 
 func toModelProject(project apimodels.ExpandedProject) apimodels.Project {
 	return apimodels.Project{
-
 		CreationDate:    project.CreationDate,
-		GitRemoteURI:    project.GitRemoteURI,
-		GitUser:         project.GitUser,
+		GitCredentials:  toInsecureGitCredentials(project.GitCredentials),
 		ProjectName:     project.ProjectName,
 		ShipyardVersion: project.ShipyardVersion,
 	}
+}
+
+func toSecureGitCredentials(credentials *apimodels.GitAuthCredentials) *apimodels.GitAuthCredentialsSecure {
+	if credentials == nil {
+		return nil
+	}
+	secureCredentials := apimodels.GitAuthCredentialsSecure{
+		User:      credentials.User,
+		RemoteURL: credentials.RemoteURL,
+	}
+
+	if credentials.HttpsAuth != nil {
+		httpAuth := apimodels.HttpsGitAuthSecure{
+			InsecureSkipTLS: credentials.HttpsAuth.InsecureSkipTLS,
+		}
+		if credentials.HttpsAuth.Proxy != nil {
+			httpAuth.Proxy = &apimodels.ProxyGitAuthSecure{
+				URL:    credentials.HttpsAuth.Proxy.URL,
+				Scheme: credentials.HttpsAuth.Proxy.Scheme,
+				User:   credentials.HttpsAuth.Proxy.User,
+			}
+		}
+
+		secureCredentials.HttpsAuth = &httpAuth
+	}
+
+	return &secureCredentials
+}
+
+func toInsecureGitCredentials(credentials *apimodels.GitAuthCredentialsSecure) *apimodels.GitAuthCredentials {
+	if credentials == nil {
+		return nil
+	}
+
+	insecureCredentials := apimodels.GitAuthCredentials{
+		User:      credentials.User,
+		RemoteURL: credentials.RemoteURL,
+	}
+
+	if credentials.HttpsAuth != nil {
+		httpAuth := apimodels.HttpsGitAuth{
+			InsecureSkipTLS: credentials.HttpsAuth.InsecureSkipTLS,
+		}
+		if credentials.HttpsAuth.Proxy != nil {
+			httpAuth.Proxy = &apimodels.ProxyGitAuth{
+				URL:    credentials.HttpsAuth.Proxy.URL,
+				Scheme: credentials.HttpsAuth.Proxy.Scheme,
+				User:   credentials.HttpsAuth.Proxy.User,
+			}
+		}
+
+		insecureCredentials.HttpsAuth = &httpAuth
+	}
+
+	return &insecureCredentials
+
 }
 
 func validateShipyardStagesUnchaged(oldProject *apimodels.ExpandedProject, newProject *apimodels.ExpandedProject) error {
@@ -555,6 +551,25 @@ func stageInArrayOfStages(comparedStage string, stages []*apimodels.ExpandedStag
 	return false
 }
 
+func decodeGitCredentials(oldCredentials *apimodels.GitAuthCredentials) *apimodels.GitAuthCredentials {
+	if oldCredentials == nil {
+		return nil
+	}
+
+	credentials := oldCredentials
+	if oldCredentials.HttpsAuth != nil && oldCredentials.HttpsAuth.Certificate != "" {
+		decodedPemCertificate, _ := base64.StdEncoding.DecodeString(oldCredentials.HttpsAuth.Certificate)
+		credentials.HttpsAuth.Certificate = string(decodedPemCertificate)
+	}
+
+	if oldCredentials.SshAuth != nil && oldCredentials.SshAuth.PrivateKey != "" {
+		decodedPrivateKey, _ := base64.StdEncoding.DecodeString(oldCredentials.SshAuth.PrivateKey)
+		credentials.SshAuth.PrivateKey = string(decodedPrivateKey)
+	}
+
+	return credentials
+}
+
 func validateShipyardUpdate(params *models.UpdateProjectParams, oldProject *apimodels.ExpandedProject) error {
 	shipyard := &keptnv2.Shipyard{}
 	decodedShipyard, _ := base64.StdEncoding.DecodeString(*params.Shipyard)
@@ -571,15 +586,10 @@ func validateShipyardUpdate(params *models.UpdateProjectParams, oldProject *apim
 
 	newProject := &apimodels.ExpandedProject{
 		CreationDate:    strconv.FormatInt(time.Now().UnixNano(), 10),
-		GitRemoteURI:    params.GitRemoteURL,
-		GitUser:         params.GitUser,
+		GitCredentials:  toSecureGitCredentials(params.GitCredentials),
 		ProjectName:     *params.Name,
 		Shipyard:        string(decodedShipyard),
 		ShipyardVersion: shipyardVersion,
-		GitProxyURL:     params.GitProxyURL,
-		GitProxyScheme:  params.GitProxyScheme,
-		GitProxyUser:    params.GitProxyUser,
-		InsecureSkipTLS: params.InsecureSkipTLS,
 		Stages:          expandedStages,
 	}
 
@@ -588,18 +598,4 @@ func validateShipyardUpdate(params *models.UpdateProjectParams, oldProject *apim
 		return ErrInvalidStageChange
 	}
 	return nil
-}
-
-type gitCredentials struct {
-	User              string `json:"user,omitempty"`
-	Token             string `json:"token,omitempty"`
-	RemoteURI         string `json:"remoteURI,omitempty"`
-	GitPrivateKey     string `json:"privateKey,omitempty"`
-	GitPrivateKeyPass string `json:"privateKeyPass,omitempty"`
-	GitProxyURL       string `json:"gitProxyUrl,omitempty"`
-	GitProxyScheme    string `json:"gitProxyScheme,omitempty"`
-	GitProxyUser      string `json:"gitProxyUser,omitempty"`
-	GitProxyPassword  string `json:"gitProxyPassword,omitempty"`
-	GitPemCertificate string `json:"gitPemCertificate,omitempty"`
-	InsecureSkipTLS   bool   `json:"insecureSkipTLS,omitempty"`
 }

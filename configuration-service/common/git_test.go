@@ -3,19 +3,20 @@ package common
 import (
 	"errors"
 	"fmt"
-	common_mock "github.com/keptn/keptn/configuration-service/common/fake"
-	"github.com/keptn/keptn/configuration-service/common_models"
-	"github.com/keptn/keptn/configuration-service/models"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"os"
 	"strings"
 	"testing"
+
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	common_mock "github.com/keptn/keptn/configuration-service/common/fake"
+	"github.com/keptn/keptn/configuration-service/models"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_addRepoURIToMetadata(t *testing.T) {
 	type args struct {
-		credentials *common_models.GitCredentials
+		credentials *apimodels.GitAuthCredentials
 		err         error
 		resource    *models.Resource
 	}
@@ -26,10 +27,12 @@ func Test_addRepoURIToMetadata(t *testing.T) {
 		{
 			name: "Token must not be included",
 			args: args{
-				credentials: &common_models.GitCredentials{
-					User:      "user",
-					Token:     "secret-token",
-					RemoteURI: "https://user:secret-token@my-url.test",
+				credentials: &apimodels.GitAuthCredentials{
+					User: "user",
+					HttpsAuth: &apimodels.HttpsGitAuth{
+						Token: "secret-token",
+					},
+					RemoteURL: "https://user:secret-token@my-url.test",
 				},
 				err: nil,
 				resource: &models.Resource{
@@ -45,7 +48,7 @@ func Test_addRepoURIToMetadata(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			addRepoURIToMetadata(tt.args.credentials, tt.args.resource.Metadata)
-			if strings.Contains(tt.args.resource.Metadata.UpstreamURL, tt.args.credentials.Token) {
+			if strings.Contains(tt.args.resource.Metadata.UpstreamURL, tt.args.credentials.HttpsAuth.Token) {
 				t.Errorf("Resource URI contains secret token")
 			}
 		})
@@ -224,11 +227,13 @@ func TestGit_GetDefaultBranch(t *testing.T) {
 
 func getDummyCredentialReader() *common_mock.CredentialReaderMock {
 	return &common_mock.CredentialReaderMock{
-		GetCredentialsFunc: func(project string) (*common_models.GitCredentials, error) {
-			return &common_models.GitCredentials{
-				User:      "my-user",
-				Token:     "token",
-				RemoteURI: "https://my-repo.git",
+		GetCredentialsFunc: func(project string) (*apimodels.GitAuthCredentials, error) {
+			return &apimodels.GitAuthCredentials{
+				User: "my-user",
+				HttpsAuth: &apimodels.HttpsGitAuth{
+					Token: "token",
+				},
+				RemoteURL: "https://my-repo.git",
 			}, nil
 		},
 	}
@@ -241,7 +246,7 @@ func TestGit_setUpstreamsAndPush(t *testing.T) {
 	}
 	type args struct {
 		project     string
-		credentials *common_models.GitCredentials
+		credentials *apimodels.GitAuthCredentials
 		repoURI     string
 	}
 	tests := []struct {
@@ -720,7 +725,7 @@ func TestGit_CloneRepo(t *testing.T) {
 	}
 	type args struct {
 		project     string
-		credentials common_models.GitCredentials
+		credentials apimodels.GitAuthCredentials
 	}
 	tests := []struct {
 		name    string
@@ -741,6 +746,13 @@ func TestGit_CloneRepo(t *testing.T) {
 			},
 			args: args{
 				project: "my-project",
+				credentials: apimodels.GitAuthCredentials{
+					User:      "user",
+					RemoteURL: "https://url.com",
+					HttpsAuth: &apimodels.HttpsGitAuth{
+						Token: "token",
+					},
+				},
 			},
 			want:    true,
 			wantErr: false,
@@ -757,6 +769,13 @@ func TestGit_CloneRepo(t *testing.T) {
 			},
 			args: args{
 				project: "my-project",
+				credentials: apimodels.GitAuthCredentials{
+					User:      "user",
+					RemoteURL: "https://url.com",
+					HttpsAuth: &apimodels.HttpsGitAuth{
+						Token: "token",
+					},
+				},
 			},
 			want:    false,
 			wantErr: false,
@@ -773,6 +792,13 @@ func TestGit_CloneRepo(t *testing.T) {
 			},
 			args: args{
 				project: "my-project",
+				credentials: apimodels.GitAuthCredentials{
+					User:      "user",
+					RemoteURL: "https://url.com",
+					HttpsAuth: &apimodels.HttpsGitAuth{
+						Token: "token",
+					},
+				},
 			},
 			want:    false,
 			wantErr: true,
@@ -784,7 +810,7 @@ func TestGit_CloneRepo(t *testing.T) {
 				Executor:         tt.fields.Executor,
 				CredentialReader: tt.fields.CredentialReader,
 			}
-			got, err := g.CloneRepo(tt.args.project, tt.args.credentials)
+			got, err := g.CloneRepo(tt.args.project, &tt.args.credentials)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("CloneRepo() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -803,36 +829,40 @@ func Test_unmarshalGitCredentials(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *common_models.GitCredentials
+		want    *apimodels.GitAuthCredentials
 		wantErr bool
 	}{
 		{
 			name: "get secret",
 			args: args{
-				data: []byte(`{"user":"user","token":"token","remoteURI":"http://remote-url.git"}`),
+				data: []byte(`{"user":"user","remoteURL":"http://remote-url.git","https":{"token":"token"}}`),
 			},
-			want: &common_models.GitCredentials{
-				User:      "user",
-				Token:     "token",
-				RemoteURI: "http://remote-url.git",
+			want: &apimodels.GitAuthCredentials{
+				User: "user",
+				HttpsAuth: &apimodels.HttpsGitAuth{
+					Token: "token",
+				},
+				RemoteURL: "http://remote-url.git",
 			},
 			wantErr: false,
 		},
 		{
 			name: "get secret",
 			args: args{
-				data: []byte(`{"token":"token","remoteURI":"http://remote-url.git"}`),
+				data: []byte(`{"remoteURL":"http://remote-url.git","https":{"token":"token"}}`),
 			},
-			want: &common_models.GitCredentials{
-				Token:     "token",
-				RemoteURI: "http://remote-url.git",
+			want: &apimodels.GitAuthCredentials{
+				HttpsAuth: &apimodels.HttpsGitAuth{
+					Token: "token",
+				},
+				RemoteURL: "http://remote-url.git",
 			},
 			wantErr: false,
 		},
 		{
 			name: "no token and remote URI",
 			args: args{
-				data: []byte(`{"user":"user","token":"","remoteURI":""}`),
+				data: []byte(`{"user":"user","remoteURL":"","https":{"token":""}}`),
 			},
 			want:    nil,
 			wantErr: false,

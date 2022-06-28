@@ -4,26 +4,13 @@ import (
 	"net/url"
 	"strings"
 
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
+
 	kerrors "github.com/keptn/keptn/resource-service/errors"
 )
 
 // GitCredentials contains git credentials info
-type GitCredentials struct {
-	User              string `json:"user,omitempty"`
-	Token             string `json:"token,omitempty"`
-	RemoteURI         string `json:"remoteURI,omitempty"`
-	GitPrivateKey     string `json:"privateKey,omitempty"`
-	GitPrivateKeyPass string `json:"privateKeyPass,omitempty"`
-	GitProxyURL       string `json:"gitProxyUrl,omitempty"`
-	GitProxyScheme    string `json:"gitProxyScheme,omitempty"`
-	GitProxyUser      string `json:"gitProxyUser,omitempty"`
-	GitProxyPassword  string `json:"gitProxyPassword,omitempty"`
-	GitPemCertificate string `json:"gitPemCertificate,omitempty"`
-	// omitempty property is missing due to fallback of this
-	// parameter to "undefined" when marshalling/unmarshalling data
-	// when "false" value is present
-	InsecureSkipTLS bool `json:"insecureSkipTLS"`
-}
+type GitCredentials apimodels.GitAuthCredentials
 
 type GitContext struct {
 	Project     string
@@ -31,39 +18,42 @@ type GitContext struct {
 }
 
 func (g GitCredentials) Validate() error {
-	if strings.HasPrefix(g.RemoteURI, "https://") || strings.HasPrefix(g.RemoteURI, "http://") {
-		if err := g.validateRemoteURIAndToken(); err != nil {
+	if !strings.HasPrefix(g.RemoteURL, "http://") && !strings.HasPrefix(g.RemoteURL, "ssh://") && !strings.HasPrefix(g.RemoteURL, "https://") {
+		return kerrors.ErrInvalidRemoteURL
+	}
+	if g.HttpsAuth != nil && !strings.HasPrefix(g.RemoteURL, "ssh://") {
+		if err := g.validateRemoteURLAndToken(); err != nil {
 			return err
 		}
 		if err := g.validateProxy(); err != nil {
 			return err
 		}
-	} else if strings.HasPrefix(g.RemoteURI, "ssh://") {
-		if g.GitPrivateKey == "" {
+	} else if g.SshAuth != nil && strings.HasPrefix(g.RemoteURL, "ssh://") {
+		if g.SshAuth.PrivateKey == "" {
 			return kerrors.ErrCredentialsPrivateKeyMustNotBeEmpty
 		}
 	} else {
-		return kerrors.ErrCredentialsInvalidRemoteURI
+		return kerrors.ErrInvalidCredentials
 	}
 	return nil
 }
 
 func (g GitCredentials) validateProxy() error {
-	if g.GitProxyURL != "" {
-		if g.GitProxyScheme != "http" && g.GitProxyScheme != "https" {
+	if g.HttpsAuth.Proxy != nil {
+		if g.HttpsAuth.Proxy.Scheme != "http" && g.HttpsAuth.Proxy.Scheme != "https" {
 			return kerrors.ErrProxyInvalidScheme
 		}
-		if !strings.Contains(g.GitProxyURL, ":") {
+		if !strings.Contains(g.HttpsAuth.Proxy.URL, ":") {
 			return kerrors.ErrProxyInvalidURL
 		}
 	}
 	return nil
 }
 
-func (g GitCredentials) validateRemoteURIAndToken() error {
-	_, err := url.Parse(g.RemoteURI)
+func (g GitCredentials) validateRemoteURLAndToken() error {
+	_, err := url.Parse(g.RemoteURL)
 	if err != nil {
-		return kerrors.ErrCredentialsInvalidRemoteURI
+		return kerrors.ErrCredentialsInvalidRemoteURL
 	}
 	return nil
 }
