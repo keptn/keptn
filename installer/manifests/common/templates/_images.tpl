@@ -20,7 +20,7 @@
 {{- end -}}
 
 {{/*Return the proper serivce image tag*/}}
-{{/*{{- include "common.images.image" ( dict "imageRoot" .Values.helmservice.image "global" .Values.global.keptn "defaultTag" .Chart.appVersion) -}}*/}}
+{{/*{{- include "common.images.tag" ( dict "imageRoot" .Values.helmservice.image "global" .Values.global.keptn "defaultTag" .Chart.appVersion) -}}*/}}
 {{- define "common.images.tag" -}}
 {{- $tag := "" -}}
 {{/* Set Image Tag: if globally set or at service level or use default from Chart.yaml*/}}
