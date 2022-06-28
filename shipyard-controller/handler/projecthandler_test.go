@@ -741,7 +741,7 @@ func TestDeleteProject(t *testing.T) {
 					},
 				},
 			},
-			expectHttpStatus: http.StatusFailedDependency,
+			expectHttpStatus: http.StatusOK,
 			projectPathParam: "myproject",
 			projectDeleted:   true,
 		},
