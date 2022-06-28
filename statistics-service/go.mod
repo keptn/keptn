@@ -7,7 +7,7 @@ require (
 	github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
 	github.com/go-test/deep v1.0.8
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.16.1-0.20220628071524-fc5b6f967e50
+	github.com/keptn/go-utils v0.16.1-0.20220628141633-eb5fb9ba43e0
 	github.com/mitchellh/copystructure v1.2.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
