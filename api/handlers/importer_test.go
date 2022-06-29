@@ -15,41 +15,10 @@ import (
 	"github.com/keptn/keptn/api/importer/fake"
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/import_operations"
+	"github.com/keptn/keptn/api/test/utils"
 )
 
 const testArchiveSize20MB uint64 = 20 * 1024 * 1204
-
-type testReader struct {
-	data         []byte
-	allowedLoops int
-	loopCount    int
-	pos          int
-	throwError   bool
-}
-
-func (tr *testReader) Read(p []byte) (n int, err error) {
-	// check if we can reset
-	if tr.pos >= len(tr.data) && tr.loopCount < tr.allowedLoops {
-		tr.allowedLoops++
-		tr.pos = 0
-	}
-
-	if tr.pos >= len(tr.data) {
-		err := io.EOF
-
-		if tr.throwError {
-			err = errors.New("testReader error")
-		}
-
-		// end of buffer
-		return 0, err
-	}
-
-	// try to copy as much as possible in the buffer
-	copied := copy(p, tr.data[tr.pos:])
-	tr.pos += copied
-	return copied, nil
-}
 
 func TestErrorNonExistingProject(t *testing.T) {
 	var actualCheckedProject string
@@ -110,11 +79,7 @@ func TestErrorUnableToCheckProject(t *testing.T) {
 func TestErrorImportBrokenReader(t *testing.T) {
 
 	contentReader := io.NopCloser(
-		&testReader{
-			data:         []byte("some bytes before the error"),
-			allowedLoops: 0,
-			throwError:   true,
-		},
+		utils.NewTestReader([]byte("some bytes before the error"), 0, true),
 	)
 
 	var actualCheckedProject string
