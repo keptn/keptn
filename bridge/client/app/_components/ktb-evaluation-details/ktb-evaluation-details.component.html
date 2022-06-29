@@ -259,18 +259,15 @@
           <p class="m-0">
             <span class="small">Score: </span>
             <span
+              uitestid="keptn-evaluation-details-scoreInfo"
               [class.error]="evaluation.score_state === 'fail'"
               [class.warning]="evaluation.score_state === 'warning'"
               [class.success]="evaluation.score_state === 'pass'"
             >
-              <span
-                uitestid="keptn-evaluation-details-scoreInfo"
-                class="bold"
-                [textContent]="evaluation.score | truncateNumber: 2"
-              ></span>
+              <span class="bold" [textContent]="evaluation.score | truncateNumber: 2"></span>
               <span [textContent]="evaluation.score_info"></span>
             </span>
-            <span class="small">
+            <span class="small" uitestid="keptn-evaluation-details-resultInfo">
               <span class="ml-2">Result: </span>
               <span
                 [class.error]="_selectedEvaluationData.isFailed()"
@@ -278,14 +275,14 @@
                 [class.success]="!_selectedEvaluationData.isFailed() && !_selectedEvaluationData.isWarning()"
                 [textContent]="_selectedEvaluationData.data.result"
               ></span>
-              <ng-container *ngIf="getSliInfo(_selectedEvaluationData.data.evaluation.indicatorResults) as sliInfo">
-                <span *ngIf="sliInfo.keySliCount > 0">
-                  <span class="ml-2">Key SLI<span *ngIf="sliInfo.keySliCount > 1">s</span>: </span>
-                  <span *ngIf="sliInfo.keySliFailedCount > 0" class="error">failed</span>
-                  <span *ngIf="sliInfo.keySliFailedCount === 0" class="success">passed</span>
-                </span>
-              </ng-container>
             </span>
+            <ng-container *ngIf="getSliInfo(_selectedEvaluationData.data.evaluation.indicatorResults) as sliInfo">
+              <span class="small" *ngIf="sliInfo.keySliCount > 0" uitestid="keptn-evaluation-details-keySliInfo">
+                <span class="ml-2">Key SLI<span *ngIf="sliInfo.keySliCount > 1">s</span>: </span>
+                <span *ngIf="sliInfo.keySliFailedCount > 0" class="error">failed</span>
+                <span *ngIf="sliInfo.keySliFailedCount === 0" class="success">passed</span>
+              </span>
+            </ng-container>
           </p>
         </dt-consumption-count>
         <dt-consumption-label>

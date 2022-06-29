@@ -1,7 +1,11 @@
+import { HeatmapComponentPage } from '../support/pageobjects/HeatmapComponentPage';
+
+const heatmap = new HeatmapComponentPage();
+
 describe('evaluations', () => {
   beforeEach(() => {
     cy.intercept('/api/v1/metadata', { fixture: 'metadata.mock' });
-    cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfo.mock' });
+    cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfoEnableD3Heatmap.mock.json' });
     cy.intercept('/api/project/sockshop?approval=true&remediation=true', { fixture: 'project.mock' }).as('project');
     cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: false });
     cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
@@ -27,7 +31,7 @@ describe('evaluations', () => {
 
     cy.visit('/project/sockshop/service/carts/context/da740469-9920-4e0c-b304-0fd4b18d17c2/stage/staging');
     cy.byTestId('keptn-service-view-service-carts').should('exist');
-    cy.byTestId('keptn-evaluation-details-chartHeatmap').should('exist');
+    cy.get('ktb-heatmap').should('exist');
   });
 
   xit('should truncate score to 2 decimals', () => {
@@ -69,6 +73,20 @@ describe('evaluations', () => {
 
     cy.visit('/project/sockshop/service/carts/context/da740469-9920-4e0c-b304-0fd4b18d17c2/stage/staging');
     cy.byTestId('keptn-service-view-service-carts').should('exist');
-    cy.byTestId('keptn-evaluation-details-chartHeatmap').should('exist');
+    cy.get('ktb-heatmap').should('exist');
+
+    cy.byTestId('keptn-evaluation-details-scoreInfo').should('have.text', '50 < 75');
+    cy.byTestId('keptn-evaluation-details-resultInfo').should('have.text', 'Result: fail');
+    cy.byTestId('keptn-evaluation-details-keySliInfo').should('have.text', 'Key SLI: passed');
+
+    heatmap.clickScore('52b4b2c7-fa49-41f3-9b5c-b9aea2370bb4');
+    cy.byTestId('keptn-evaluation-details-scoreInfo').should('have.text', '75 >= 75');
+    cy.byTestId('keptn-evaluation-details-resultInfo').should('have.text', 'Result: fail');
+    cy.byTestId('keptn-evaluation-details-keySliInfo').should('have.text', 'Key SLI: failed');
+
+    heatmap.clickScore('182d10b8-b68d-49d4-86cd-5521352d7a42');
+    cy.byTestId('keptn-evaluation-details-scoreInfo').should('have.text', '100 >= 90');
+    cy.byTestId('keptn-evaluation-details-resultInfo').should('have.text', 'Result: pass');
+    cy.byTestId('keptn-evaluation-details-keySliInfo').should('have.text', 'Key SLI: passed');
   });
 });

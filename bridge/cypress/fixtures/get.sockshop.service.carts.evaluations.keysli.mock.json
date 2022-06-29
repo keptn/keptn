@@ -339,7 +339,7 @@
           "gitCommit": "",
           "indicatorResults": [
             {
-              "displayName": "",
+              "displayName": "HTTP Respone Time",
               "keySli": false,
               "passTargets": [
                 {
@@ -364,7 +364,7 @@
               ]
             },
             {
-              "displayName": "",
+              "displayName": "Request Throughput",
               "keySli": false,
               "passTargets": [
                 {
@@ -388,7 +388,7 @@
               "warningTargets": null
             },
             {
-              "displayName": "",
+              "displayName": "Go Routines",
               "keySli": false,
               "passTargets": [
                 {
@@ -435,7 +435,7 @@
           "gitCommit": "",
           "indicatorResults": [
             {
-              "displayName": "",
+              "displayName": "HTTP Respone Time",
               "keySli": false,
               "passTargets": [
                 {
@@ -460,7 +460,7 @@
               ]
             },
             {
-              "displayName": "",
+              "displayName": "Request Throughput",
               "keySli": false,
               "passTargets": [
                 {
@@ -484,7 +484,7 @@
               "warningTargets": null
             },
             {
-              "displayName": "",
+              "displayName": "Go Routines",
               "keySli": false,
               "passTargets": [
                 {
@@ -532,7 +532,7 @@
           "gitCommit": "",
           "indicatorResults": [
             {
-              "displayName": "",
+              "displayName": "HTTP Respone Time",
               "keySli": false,
               "passTargets": [
                 {
@@ -557,7 +557,7 @@
               ]
             },
             {
-              "displayName": "",
+              "displayName": "Request Throughput",
               "keySli": false,
               "passTargets": [
                 {
@@ -581,7 +581,7 @@
               "warningTargets": null
             },
             {
-              "displayName": "",
+              "displayName": "Go Routines",
               "keySli": false,
               "passTargets": [
                 {
