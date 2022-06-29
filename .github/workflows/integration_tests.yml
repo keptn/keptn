@@ -268,10 +268,10 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCLOUD_RESTRICTED_SERVICE_KEY }}
 
-      - name: Set up Cloud SDK
+      - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v0
 
-      - id: 'get-credentials'
+      - name: Get Kubeconfig
         uses: google-github-actions/get-gke-credentials@v0
         with:
           cluster_name: ${{ matrix.CLUSTER_NAME }}
