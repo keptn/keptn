@@ -10,10 +10,16 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/keptn/keptn/api/importer/fake"
+	"github.com/keptn/keptn/api/importer/model"
 )
 
 func TestImportPackageManifestRetrievedAndPackageClosed(t *testing.T) {
-	sut := NewImportPackageProcessor()
+	parserMock := &fake.ManifestParserMock{
+		ParseFunc: func(input io.Reader) (*model.ImportManifest, error) {
+			return new(model.ImportManifest), nil
+		},
+	}
+	sut := NewImportPackageProcessor(parserMock)
 	closeCallCount := 0
 	requestedResources := map[string]int{}
 
@@ -31,23 +37,25 @@ func TestImportPackageManifestRetrievedAndPackageClosed(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, 1, closeCallCount)
 	assert.Equal(t, 1, requestedResources["manifest.yaml"])
+	assert.Len(t, parserMock.ParseCalls(), 0)
 }
 
 func TestErrorImportPackageWhenManifestCannotBeRetrieved(t *testing.T) {
-	sut := NewImportPackageProcessor()
-	closeCallCount := 0
-	requestedResources := map[string]int{}
+	parserMock := &fake.ManifestParserMock{
+		ParseFunc: func(input io.Reader) (*model.ImportManifest, error) {
+			return new(model.ImportManifest), nil
+		},
+	}
+
+	sut := NewImportPackageProcessor(parserMock)
 
 	errorManifestAccess := errors.New("error retrieving manifest.yaml")
 
 	importPackageMock := &fake.ImportPackageMock{
 		CloseFunc: func() error {
-			closeCallCount++
 			return nil
 		},
 		GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
-
-			requestedResources[resourceName] = requestedResources[resourceName] + 1
 
 			if resourceName == "manifest.yaml" {
 				return nil, errorManifestAccess
@@ -58,6 +66,11 @@ func TestErrorImportPackageWhenManifestCannotBeRetrieved(t *testing.T) {
 	}
 	err := sut.Process(importPackageMock)
 	assert.ErrorIs(t, err, errorManifestAccess)
-	assert.Equal(t, 1, closeCallCount)
-	assert.Equal(t, 1, requestedResources["manifest.yaml"])
+	assert.Len(t, importPackageMock.CloseCalls(), 1)
+	assert.ElementsMatch(
+		t, importPackageMock.GetResourceCalls(), []struct {
+			ResourceName string
+		}{{ResourceName: manifestFileName}},
+	)
+	assert.Len(t, parserMock.ParseCalls(), 0)
 }

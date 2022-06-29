@@ -4,6 +4,7 @@
 package fake
 
 import (
+	"github.com/keptn/keptn/api/importer/model"
 	"io"
 	"sync"
 )
@@ -102,5 +103,66 @@ func (mock *ImportPackageMock) GetResourceCalls() []struct {
 	mock.lockGetResource.RLock()
 	calls = mock.calls.GetResource
 	mock.lockGetResource.RUnlock()
+	return calls
+}
+
+// ManifestParserMock is a mock implementation of importer.ManifestParser.
+//
+// 	func TestSomethingThatUsesManifestParser(t *testing.T) {
+//
+// 		// make and configure a mocked importer.ManifestParser
+// 		mockedManifestParser := &ManifestParserMock{
+// 			ParseFunc: func(input io.Reader) (*model.ImportManifest, error) {
+// 				panic("mock out the Parse method")
+// 			},
+// 		}
+//
+// 		// use mockedManifestParser in code that requires importer.ManifestParser
+// 		// and then make assertions.
+//
+// 	}
+type ManifestParserMock struct {
+	// ParseFunc mocks the Parse method.
+	ParseFunc func(input io.Reader) (*model.ImportManifest, error)
+
+	// calls tracks calls to the methods.
+	calls struct {
+		// Parse holds details about calls to the Parse method.
+		Parse []struct {
+			// Input is the input argument value.
+			Input io.Reader
+		}
+	}
+	lockParse sync.RWMutex
+}
+
+// Parse calls ParseFunc.
+func (mock *ManifestParserMock) Parse(input io.Reader) (*model.ImportManifest, error) {
+	if mock.ParseFunc == nil {
+		panic("ManifestParserMock.ParseFunc: method is nil but ManifestParser.Parse was just called")
+	}
+	callInfo := struct {
+		Input io.Reader
+	}{
+		Input: input,
+	}
+	mock.lockParse.Lock()
+	mock.calls.Parse = append(mock.calls.Parse, callInfo)
+	mock.lockParse.Unlock()
+	return mock.ParseFunc(input)
+}
+
+// ParseCalls gets all the calls that were made to Parse.
+// Check the length with:
+//     len(mockedManifestParser.ParseCalls())
+func (mock *ManifestParserMock) ParseCalls() []struct {
+	Input io.Reader
+} {
+	var calls []struct {
+		Input io.Reader
+	}
+	mock.lockParse.RLock()
+	calls = mock.calls.Parse
+	mock.lockParse.RUnlock()
 	return calls
 }
