@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { Sequence } from '../../_models/sequence';
 import { IMetadata } from '../../_interfaces/metadata';
 import { IProject } from '../../../../shared/interfaces/project';
+import { ISequence } from '../../../../shared/interfaces/sequence';
 
-export type ProjectSequences = Record<string, Sequence[]>;
+export type ProjectSequences = Record<string, ISequence[]>;
 
 @Component({
   selector: 'ktb-project-list',
@@ -16,7 +16,7 @@ export class KtbProjectListComponent {
   @Input() projects: IProject[] = [];
   @Input() sequences: ProjectSequences = {};
 
-  getSequencesPerProject(project: IProject): Sequence[] {
+  getSequencesPerProject(project: IProject): ISequence[] {
     const latestSequences = this.sequences[project.projectName];
     return latestSequences ?? [];
   }

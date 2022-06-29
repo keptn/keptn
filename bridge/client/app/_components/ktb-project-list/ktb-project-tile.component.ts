@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { Sequence } from '../../_models/sequence';
 import { IProject } from '../../../../shared/interfaces/project';
 import { getDistinctServiceNames, getShipyardVersion, isShipyardNotSupported } from '../../_models/project';
+import { ISequence } from '../../../../shared/interfaces/sequence';
 
 @Component({
   selector: 'ktb-project-tile',
@@ -11,7 +11,7 @@ import { getDistinctServiceNames, getShipyardVersion, isShipyardNotSupported } f
 })
 export class KtbProjectTileComponent {
   @Input() project?: IProject;
-  @Input() sequences: Sequence[] = [];
+  @Input() sequences: ISequence[] = [];
   @Input() supportedShipyardVersion: string | undefined;
 
   getShipyardVersion = getShipyardVersion;

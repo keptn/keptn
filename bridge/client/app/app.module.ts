@@ -75,6 +75,8 @@ import { KtbStageOverviewModule } from './_views/ktb-environment-view/ktb-stage-
 import { KtbMarkdownComponent } from './_components/ktb-markdown/ktb-markdown.component';
 
 import { BrowserModule } from '@angular/platform-browser';
+import { DashboardComponent } from './dashboard/dashboard.component';
+import { RootStoreModule } from './_stores/root/root.store.module';
 
 registerLocaleData(localeEn, 'en');
 
@@ -144,8 +146,9 @@ const ktbModules = [
     KtbSettingsViewComponent,
     KtbRootComponent,
     KtbLogoutViewComponent,
+    DashboardComponent,
   ],
-  imports: [...angularModules, ...dtModules, ...ktbModules, AppRouting, FlexModule, MomentModule],
+  imports: [...angularModules, ...dtModules, ...ktbModules, AppRouting, FlexModule, MomentModule, RootStoreModule],
   entryComponents: [],
   providers: [
     EventService,

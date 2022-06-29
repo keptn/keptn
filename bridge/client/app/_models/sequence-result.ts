@@ -1,6 +1,6 @@
-import { Sequence } from './sequence';
 import { SequenceResult as sr } from '../../../shared/interfaces/sequence-result';
+import { ISequence } from '../../../shared/interfaces/sequence';
 
 export interface SequenceResult extends sr {
-  states: Sequence[];
+  states: ISequence[];
 }

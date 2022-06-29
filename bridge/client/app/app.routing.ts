@@ -22,10 +22,14 @@ import { PendingChangesGuard } from './_guards/pending-changes.guard';
 import { KtbErrorViewComponent } from './_views/ktb-error-view/ktb-error-view.component';
 import { AppComponent } from './app.component';
 import { KtbLogoutViewComponent } from './_views/ktb-logout-view/ktb-logout-view.component';
+import { environment } from '../environments/environment';
+import { DashboardComponent } from './dashboard/dashboard.component';
 
 const routingConfiguration: ExtraOptions = {
   paramsInheritanceStrategy: 'always',
 };
+
+const ngrx = environment.ngrx;
 
 const routes: Routes = [
   { path: 'error', component: KtbErrorViewComponent },
@@ -35,7 +39,11 @@ const routes: Routes = [
     component: AppComponent,
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
-      { path: 'dashboard', component: DashboardLegacyComponent, data: { projectsHandledByComponent: true } },
+      {
+        path: 'dashboard',
+        component: ngrx ? DashboardComponent : DashboardLegacyComponent,
+        data: { projectsHandledByComponent: true },
+      },
       {
         path: 'create',
         component: ProjectBoardComponent,

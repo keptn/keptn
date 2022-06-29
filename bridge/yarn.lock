@@ -1788,6 +1788,25 @@
     merge-source-map "^1.1.0"
     schema-utils "^2.7.0"
 
+"@ngrx/effects@12.5.1":
+  version "12.5.1"
+  resolved "https://registry.yarnpkg.com/@ngrx/effects/-/effects-12.5.1.tgz#acd0ff86d8db514e47337508dde83cc98f7a3416"
+  integrity sha512-fVNGIIntYLRWW1XWe0os2XOv03L22S4WTkX0OPZ9O6ztwuaNq0yzxWN7UeAC6H385F+g0k76KwRV78zHyP0bfQ==
+  dependencies:
+    tslib "^2.0.0"
+
+"@ngrx/schematics@12.5.1":
+  version "12.5.1"
+  resolved "https://registry.yarnpkg.com/@ngrx/schematics/-/schematics-12.5.1.tgz#4e7a883b5ba35d4de36d2272a5a35e2e9b981650"
+  integrity sha512-kXCMOAQrPU09ZrAtUtX4U6IE2B1jgx4qc1OjQUuJzmO2j2/wFfc8ec9IR8OpAEX4utE8/CFRWWAdI/VEkzBtYQ==
+
+"@ngrx/store@12.5.1":
+  version "12.5.1"
+  resolved "https://registry.yarnpkg.com/@ngrx/store/-/store-12.5.1.tgz#a7c21d7df1d017d2cb7e77804b210cc14bcf8786"
+  integrity sha512-NLVkHLVeZc7IboXSDZlFoq1QrupmwYTYKRHS6se7ZasAv/lrIjHWsVVdICKSVRBsHZYu3+dmCXmu+YgulP7iHw==
+  dependencies:
+    tslib "^2.0.0"
+
 "@ngtools/webpack@12.2.17":
   version "12.2.17"
   resolved "https://registry.yarnpkg.com/@ngtools/webpack/-/webpack-12.2.17.tgz#0d7bee1da3c1a25a7b51901df016e1d0c8184135"
