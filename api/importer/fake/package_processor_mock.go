@@ -166,3 +166,64 @@ func (mock *ManifestParserMock) ParseCalls() []struct {
 	mock.lockParse.RUnlock()
 	return calls
 }
+
+// TaskExecutorMock is a mock implementation of importer.TaskExecutor.
+//
+// 	func TestSomethingThatUsesTaskExecutor(t *testing.T) {
+//
+// 		// make and configure a mocked importer.TaskExecutor
+// 		mockedTaskExecutor := &TaskExecutorMock{
+// 			ExecuteFunc: func(task *model.ManifestTask) (any, error) {
+// 				panic("mock out the Execute method")
+// 			},
+// 		}
+//
+// 		// use mockedTaskExecutor in code that requires importer.TaskExecutor
+// 		// and then make assertions.
+//
+// 	}
+type TaskExecutorMock struct {
+	// ExecuteFunc mocks the Execute method.
+	ExecuteFunc func(task *model.ManifestTask) (any, error)
+
+	// calls tracks calls to the methods.
+	calls struct {
+		// Execute holds details about calls to the Execute method.
+		Execute []struct {
+			// Task is the task argument value.
+			Task *model.ManifestTask
+		}
+	}
+	lockExecute sync.RWMutex
+}
+
+// Execute calls ExecuteFunc.
+func (mock *TaskExecutorMock) Execute(task *model.ManifestTask) (any, error) {
+	if mock.ExecuteFunc == nil {
+		panic("TaskExecutorMock.ExecuteFunc: method is nil but TaskExecutor.Execute was just called")
+	}
+	callInfo := struct {
+		Task *model.ManifestTask
+	}{
+		Task: task,
+	}
+	mock.lockExecute.Lock()
+	mock.calls.Execute = append(mock.calls.Execute, callInfo)
+	mock.lockExecute.Unlock()
+	return mock.ExecuteFunc(task)
+}
+
+// ExecuteCalls gets all the calls that were made to Execute.
+// Check the length with:
+//     len(mockedTaskExecutor.ExecuteCalls())
+func (mock *TaskExecutorMock) ExecuteCalls() []struct {
+	Task *model.ManifestTask
+} {
+	var calls []struct {
+		Task *model.ManifestTask
+	}
+	mock.lockExecute.RLock()
+	calls = mock.calls.Execute
+	mock.lockExecute.RUnlock()
+	return calls
+}

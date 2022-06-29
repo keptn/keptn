@@ -1,4 +1,4 @@
-package importer
+package model
 
 import (
 	"io"
@@ -7,7 +7,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/keptn/keptn/api/importer/model"
 	"github.com/keptn/keptn/api/test/utils"
 )
 
@@ -15,7 +14,7 @@ func TestUnmarshalManifest(t *testing.T) {
 	tests := []struct {
 		name                  string
 		inputManifest         io.Reader
-		expectedManifest      *model.ImportManifest
+		expectedManifest      *ImportManifest
 		expectErr             bool
 		expectedError         error
 		expectedErrorContains string
@@ -23,7 +22,7 @@ func TestUnmarshalManifest(t *testing.T) {
 		{
 			name:          "Basic empty manifest",
 			inputManifest: strings.NewReader(`apiVersion: v1beta1`),
-			expectedManifest: &model.ImportManifest{
+			expectedManifest: &ImportManifest{
 				ApiVersion: "v1beta1",
 				Tasks:      nil,
 			},
@@ -44,11 +43,11 @@ func TestUnmarshalManifest(t *testing.T) {
                     action: "keptn-api-v1-endpoint-operation"
                 `,
 			),
-			expectedManifest: &model.ImportManifest{
+			expectedManifest: &ImportManifest{
 				ApiVersion: "v1beta1",
-				Tasks: []*model.ManifestTask{
+				Tasks: []*ManifestTask{
 					{
-						APITask: &model.APITask{
+						APITask: &APITask{
 							Action:      "keptn-api-v1-endpoint-operation",
 							PayloadFile: "api/some-payload.json",
 						},
@@ -82,11 +81,11 @@ func TestUnmarshalManifest(t *testing.T) {
                     stage: "dev"
                 `,
 			),
-			expectedManifest: &model.ImportManifest{
+			expectedManifest: &ImportManifest{
 				ApiVersion: "v1beta1",
-				Tasks: []*model.ManifestTask{
+				Tasks: []*ManifestTask{
 					{
-						APITask: &model.APITask{
+						APITask: &APITask{
 							Action:      "keptn-api-v1-endpoint-operation",
 							PayloadFile: "api/some-payload.json",
 						},
@@ -97,7 +96,7 @@ func TestUnmarshalManifest(t *testing.T) {
 					},
 					{
 						APITask: nil,
-						ResourceTask: &model.ResourceTask{
+						ResourceTask: &ResourceTask{
 							File:      "resources/webhook.yaml",
 							RemoteURI: "webhook.yaml",
 							Stage:     "dev",
@@ -125,12 +124,12 @@ func TestUnmarshalManifest(t *testing.T) {
                     resourceUri: "webhook.yaml"           # what should the file be called in the upstream repo
                 `,
 			),
-			expectedManifest: &model.ImportManifest{
+			expectedManifest: &ImportManifest{
 				ApiVersion: "v1beta1",
-				Tasks: []*model.ManifestTask{
+				Tasks: []*ManifestTask{
 					{
 						APITask: nil,
-						ResourceTask: &model.ResourceTask{
+						ResourceTask: &ResourceTask{
 							File:      "resources/webhook.yaml",
 							RemoteURI: "webhook.yaml",
 						},

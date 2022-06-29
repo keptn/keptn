@@ -7,7 +7,7 @@ import (
 	"github.com/keptn/keptn/api/importer/model"
 )
 
-//go:generate moq -pkg fake --skip-ensure -out ./fake/package_processor_mock.go . ImportPackage:ImportPackageMock ManifestParser:ManifestParserMock
+//go:generate moq -pkg fake --skip-ensure -out ./fake/package_processor_mock.go . ImportPackage:ImportPackageMock ManifestParser:ManifestParserMock TaskExecutor:TaskExecutorMock
 
 type ImportPackage interface {
 	io.Closer
@@ -18,13 +18,19 @@ type ManifestParser interface {
 	Parse(input io.Reader) (*model.ImportManifest, error)
 }
 
-type ImportPackageProcessor struct {
-	parser ManifestParser
+type TaskExecutor interface {
+	Execute(task *model.ManifestTask) (any, error)
 }
 
-func NewImportPackageProcessor(mp ManifestParser) *ImportPackageProcessor {
+type ImportPackageProcessor struct {
+	parser   ManifestParser
+	executor TaskExecutor
+}
+
+func NewImportPackageProcessor(mp ManifestParser, ex TaskExecutor) *ImportPackageProcessor {
 	return &ImportPackageProcessor{
-		parser: mp,
+		parser:   mp,
+		executor: ex,
 	}
 }
 
@@ -34,10 +40,26 @@ func (ipp *ImportPackageProcessor) Process(ip ImportPackage) error {
 
 	defer ip.Close()
 
-	_, err := ip.GetResource(manifestFileName)
+	manifestReader, err := ip.GetResource(manifestFileName)
 
 	if err != nil {
 		return fmt.Errorf("error accessing manifest: %w", err)
+	}
+
+	defer manifestReader.Close()
+
+	manifest, err := ipp.parser.Parse(manifestReader)
+
+	if err != nil {
+		return fmt.Errorf("error parsing manifest: %w", err)
+	}
+	// TODO add manifestValidation
+
+	for _, task := range manifest.Tasks {
+		_, err := ipp.executor.Execute(task)
+		if err != nil {
+			return fmt.Errorf("execution of task %s failed: %w", task.ID, err)
+		}
 	}
 
 	return nil
