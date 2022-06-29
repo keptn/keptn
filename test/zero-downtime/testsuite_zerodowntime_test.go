@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-const valuesFileNew = "./assets/test-values.yml"
+const valuesFile = "./assets/test-values.yml"
 
 const shipyard = `--- 
 apiVersion: spec.keptn.sh/0.2.0
@@ -181,7 +181,7 @@ func RollingUpgrade(t *testing.T, env *ZeroDowntimeEnv) {
 		t.Logf("Upgrading Keptn to %s", chartPath)
 		_, err = testutils.ExecuteCommand(
 			fmt.Sprintf(
-				"helm upgrade keptn -n %s %s --wait --values=%s", testutils.GetKeptnNameSpaceFromEnv(), chartPath, valuesFileNew))
+				"helm upgrade keptn -n %s %s --wait --values=%s", testutils.GetKeptnNameSpaceFromEnv(), chartPath, valuesFile))
 		require.Nil(t, err)
 	}
 }
