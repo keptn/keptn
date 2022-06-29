@@ -1,10 +1,10 @@
 import { Document, Pair, Scalar, YAMLMap, YAMLSeq } from 'yaml';
 import { IWebhookConfigClient } from '../../shared/interfaces/webhook-config';
-import { IWebhookSecret } from '../interfaces/webhook-config';
 import {
   IWebhookConfigYamlResult,
   IWebhookConfigYamlResultV1Beta1,
   IWebhookRequestV1Beta1,
+  IWebhookSecret,
   IWebhookV1Beta1,
   WebhookApiVersions,
 } from '../interfaces/webhook-config-yaml-result';

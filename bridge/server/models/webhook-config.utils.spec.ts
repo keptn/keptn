@@ -1,6 +1,7 @@
 import {
   IWebhookConfigYamlResultV1Alpha1,
   IWebhookConfigYamlResultV1Beta1,
+  IWebhookSecret,
   WebhookApiVersions,
 } from '../interfaces/webhook-config-yaml-result';
 import {
@@ -12,7 +13,6 @@ import {
 } from './webhook-config.utils';
 import { WebhookConfigYaml } from './webhook-config-yaml';
 import { IWebhookConfigClient } from '../../shared/interfaces/webhook-config';
-import { IWebhookSecret } from '../interfaces/webhook-config';
 import { ISecret } from '../../shared/interfaces/secret';
 import { SecretScopeDefault } from '../../shared/interfaces/secret-scope';
 
