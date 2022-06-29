@@ -2,7 +2,7 @@ import MockAdapter from 'axios-mock-adapter';
 import { ApiService } from '../services/api-service';
 import { setupServer } from '../.jest/setupServer';
 import { AxiosResponse } from 'axios';
-import { EnvType } from '../utils/configuration';
+import { EnvType } from '../interfaces/configuration';
 
 describe('Test setting header authorization', () => {
   let apiService: ApiService;

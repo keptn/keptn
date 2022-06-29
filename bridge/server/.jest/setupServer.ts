@@ -2,7 +2,8 @@ import { init } from '../app';
 import Axios from 'axios';
 import https from 'https';
 import { Express } from 'express';
-import { BridgeConfiguration, BridgeOption, getConfiguration } from '../utils/configuration';
+import { getConfiguration } from '../utils/configuration';
+import { BridgeConfiguration, BridgeOption } from '../interfaces/configuration';
 
 const baseOptions: BridgeOption = {
   api: {

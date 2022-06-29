@@ -24,7 +24,7 @@ jest.unstable_mockModule('../user/session', () => {
   return {
     SessionService: jest.fn().mockImplementation(() => {
       // eslint-disable-next-line @typescript-eslint/no-use-before-define
-      return Object.assign(new SessionService(TestUtils.config), {
+      return Object.assign(new SessionService(TestUtils.OAuthConfig), {
         async saveValidationData(state: string, codeVerifier: string, nonce: string): Promise<void> {
           store[state] = {
             _id: state,
