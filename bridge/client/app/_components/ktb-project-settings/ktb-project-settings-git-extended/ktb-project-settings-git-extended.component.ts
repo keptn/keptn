@@ -1,10 +1,10 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { DtRadioChange } from '@dynatrace/barista-components/radio';
-import { isGitHTTPS, isGitSSH } from '../../../_utils/git-upstream.utils';
+import { isGitHttps, isGitSsh } from '../../../_utils/git-upstream.utils';
 import {
   IGitDataExtended,
-  IGitHTTPSConfiguration,
-  IGitSSHConfiguration,
+  IGitHttpsConfiguration,
+  IGitSshConfiguration,
 } from '../../../../../shared/interfaces/project';
 
 export enum GitFormType {
@@ -22,11 +22,11 @@ export type IGitDataExtendedWithNoUpstream = IGitDataExtended | null; // null =>
 })
 export class KtbProjectSettingsGitExtendedComponent implements OnInit {
   public selectedForm: GitFormType = GitFormType.NO_UPSTREAM;
-  public gitInputDataHttps?: IGitHTTPSConfiguration;
-  public gitInputDataSsh?: IGitSSHConfiguration;
+  public gitInputDataHttps?: IGitHttpsConfiguration;
+  public gitInputDataSsh?: IGitSshConfiguration;
   public FormType = GitFormType;
-  public gitDataHttps?: IGitHTTPSConfiguration;
-  public gitDataSsh?: IGitSSHConfiguration;
+  public gitDataHttps?: IGitHttpsConfiguration;
+  public gitDataSsh?: IGitSshConfiguration;
 
   @Input()
   public isCreateMode = false;
@@ -64,13 +64,13 @@ export class KtbProjectSettingsGitExtendedComponent implements OnInit {
       return;
     }
 
-    if (isGitHTTPS(this.gitInputData)) {
+    if (isGitHttps(this.gitInputData)) {
       this.gitInputDataHttps = this.gitInputData;
       this.selectedForm = GitFormType.HTTPS;
       return;
     }
 
-    if (isGitSSH(this.gitInputData)) {
+    if (isGitSsh(this.gitInputData)) {
       this.gitInputDataSsh = this.gitInputData;
       this.selectedForm = GitFormType.SSH;
     }
@@ -87,10 +87,10 @@ export class KtbProjectSettingsGitExtendedComponent implements OnInit {
     if (data) {
       switch (type) {
         case GitFormType.HTTPS:
-          this.gitDataHttps = data as IGitHTTPSConfiguration;
+          this.gitDataHttps = data as IGitHttpsConfiguration;
           break;
         case GitFormType.SSH:
-          this.gitDataSsh = data as IGitSSHConfiguration;
+          this.gitDataSsh = data as IGitSshConfiguration;
           break;
       }
     } else {

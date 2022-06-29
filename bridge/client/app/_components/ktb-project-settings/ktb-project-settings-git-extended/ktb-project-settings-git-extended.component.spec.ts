@@ -8,7 +8,7 @@ import { ApiServiceMock } from '../../../_services/api.service.mock';
 import { KtbProjectSettingsModule } from '../ktb-project-settings.module';
 
 import { GitFormType, KtbProjectSettingsGitExtendedComponent } from './ktb-project-settings-git-extended.component';
-import { IGitHTTPSConfiguration, IGitSSHConfiguration } from '../../../../../shared/interfaces/project';
+import { IGitHttpsConfiguration, IGitSshConfiguration } from '../../../../../shared/interfaces/project';
 
 describe('KtbProjectSettingsGitExtendedComponent', () => {
   let component: KtbProjectSettingsGitExtendedComponent;
@@ -208,7 +208,7 @@ describe('KtbProjectSettingsGitExtendedComponent', () => {
   }
 });
 
-export function getDefaultSshData(): IGitSSHConfiguration {
+export function getDefaultSshData(): IGitSshConfiguration {
   return {
     remoteURL: 'ssh://git@github.com/keptn/keptn',
     ssh: {
@@ -218,7 +218,7 @@ export function getDefaultSshData(): IGitSSHConfiguration {
   };
 }
 
-export function getDefaultHttpsData(): IGitHTTPSConfiguration {
+export function getDefaultHttpsData(): IGitHttpsConfiguration {
   return {
     remoteURL: 'https://github.com/keptn/keptn',
     https: {

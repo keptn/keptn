@@ -12,7 +12,7 @@ export interface IProxy {
   password?: string;
 }
 
-export interface IGitHTTPSData {
+export interface IGitHttpsData {
   token: string;
   certificate?: string;
   insecureSkipTLS: boolean;
@@ -24,15 +24,15 @@ export interface IGitSshData {
   privateKeyPass?: string;
 }
 
-export interface IGitHTTPSConfiguration extends IGitBasicConfiguration {
-  https?: IGitHTTPSData;
+export interface IGitHttpsConfiguration extends IGitBasicConfiguration {
+  https?: IGitHttpsData;
 }
 
-export interface IGitSSHConfiguration extends IGitBasicConfiguration {
+export interface IGitSshConfiguration extends IGitBasicConfiguration {
   ssh?: IGitSshData;
 }
 
-export type IGitDataExtended = IGitSSHConfiguration | IGitHTTPSConfiguration | IGitBasicConfiguration;
+export type IGitDataExtended = IGitSshConfiguration | IGitHttpsConfiguration;
 
 export interface IProject {
   projectName: string;

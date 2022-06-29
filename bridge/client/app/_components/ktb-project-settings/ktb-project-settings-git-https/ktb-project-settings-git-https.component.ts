@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AppUtils } from '../../../_utils/app.utils';
 import { isGitUpstreamValidSet } from '../../../_utils/git-upstream.utils';
-import { IGitHTTPSConfiguration, IProxy } from '../../../../../shared/interfaces/project';
+import { IGitHttpsConfiguration, IProxy } from '../../../../../shared/interfaces/project';
 import { FormControl } from '@angular/forms';
 import { IGitData, IRequiredGitData } from '../ktb-project-settings-git/ktb-project-settings-git.utils';
 
@@ -12,7 +12,7 @@ import { IGitData, IRequiredGitData } from '../ktb-project-settings-git/ktb-proj
 })
 export class KtbProjectSettingsGitHttpsComponent {
   private gitUpstream?: IRequiredGitData;
-  private _gitInputData?: IGitHTTPSConfiguration;
+  private _gitInputData?: IGitHttpsConfiguration;
   public certificateInput?: string;
   public proxyEnabled = false;
   public proxy?: IProxy;
@@ -27,7 +27,7 @@ export class KtbProjectSettingsGitHttpsComponent {
   @Input()
   public isLoading = false;
   @Input()
-  public set gitInputData(data: IGitHTTPSConfiguration | undefined) {
+  public set gitInputData(data: IGitHttpsConfiguration | undefined) {
     this._gitInputData = data;
     if (data?.https?.proxy) {
       this.proxyEnabled = true;
@@ -43,13 +43,13 @@ export class KtbProjectSettingsGitHttpsComponent {
       valid: false,
     };
   }
-  public get gitInputData(): IGitHTTPSConfiguration | undefined {
+  public get gitInputData(): IGitHttpsConfiguration | undefined {
     return this._gitInputData;
   }
   @Output()
-  public dataChange = new EventEmitter<IGitHTTPSConfiguration | undefined>();
+  public dataChange = new EventEmitter<IGitHttpsConfiguration | undefined>();
 
-  public get data(): IGitHTTPSConfiguration | undefined {
+  public get data(): IGitHttpsConfiguration | undefined {
     return this.isValid && this.gitUpstream
       ? {
           remoteURL: this.gitUpstream.remoteURL,

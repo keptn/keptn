@@ -1,6 +1,6 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { IGitHTTPSConfiguration, IProxy } from 'shared/interfaces/project';
+import { IGitHttpsConfiguration, IProxy } from 'shared/interfaces/project';
 import { AppUtils } from '../../../_utils/app.utils';
 import { KtbProjectSettingsModule } from '../ktb-project-settings.module';
 import { KtbProjectSettingsGitHttpsComponent } from './ktb-project-settings-git-https.component';
@@ -225,7 +225,7 @@ describe('KtbProjectSettingsGitHttpsComponent', () => {
     expect(emitSpy).toHaveBeenCalledWith(undefined);
   });
 
-  function getInputDataWithProxy(token = ''): IGitHTTPSConfiguration {
+  function getInputDataWithProxy(token = ''): IGitHttpsConfiguration {
     return {
       remoteURL: 'https://myGitUrl.com',
       user: 'myUser',
@@ -243,7 +243,7 @@ describe('KtbProjectSettingsGitHttpsComponent', () => {
     };
   }
 
-  function getInputDataWithoutProxy(token = ''): IGitHTTPSConfiguration {
+  function getInputDataWithoutProxy(token = ''): IGitHttpsConfiguration {
     return {
       remoteURL: 'https://myGitUrl.com',
       user: 'myUser',
@@ -255,7 +255,7 @@ describe('KtbProjectSettingsGitHttpsComponent', () => {
     };
   }
 
-  function getInputDataWithoutProxyAndCertificate(token = ''): IGitHTTPSConfiguration {
+  function getInputDataWithoutProxyAndCertificate(token = ''): IGitHttpsConfiguration {
     return {
       remoteURL: 'https://myGitUrl.com',
       user: 'myUser',

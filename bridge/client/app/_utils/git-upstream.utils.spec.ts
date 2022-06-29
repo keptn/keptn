@@ -3,7 +3,7 @@ import * as gitUtils from './git-upstream.utils';
 describe('GitUpstreamUtils', () => {
   it('should be HTTPS configuration', () => {
     expect(
-      gitUtils.isGitHTTPS({
+      gitUtils.isGitHttps({
         remoteURL: 'https://myRemoteUrl',
         https: {
           token: '',
@@ -15,7 +15,7 @@ describe('GitUpstreamUtils', () => {
 
   it('should be SSH configuration', () => {
     expect(
-      gitUtils.isGitHTTPS({
+      gitUtils.isGitHttps({
         remoteURL: 'ssh://myGitUrl',
         ssh: {
           privateKey: btoa('myPrivateKey'),
@@ -59,13 +59,13 @@ describe('GitUpstreamUtils', () => {
 
   it('should be project with HTTPS configuration', () => {
     expect(
-      gitUtils.isGitInputWithSSH({
+      gitUtils.isGitInputWithSsh({
         remoteURL: 'https://myGitUrl',
       })
     ).toBe(false);
 
     expect(
-      gitUtils.isGitInputWithSSH({
+      gitUtils.isGitInputWithSsh({
         remoteURL: 'http://myGitUrl',
       })
     ).toBe(false);
@@ -73,7 +73,7 @@ describe('GitUpstreamUtils', () => {
 
   it('should be project with SSH configuration', () => {
     expect(
-      gitUtils.isGitInputWithSSH({
+      gitUtils.isGitInputWithSsh({
         remoteURL: 'ssh://myGitUrl',
       })
     ).toBe(true);

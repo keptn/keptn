@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AppUtils } from '../../../_utils/app.utils';
-import { IGitBasicConfiguration, IGitSSHConfiguration, IGitSshData } from '../../../../../shared/interfaces/project';
+import { IGitBasicConfiguration, IGitSshConfiguration, IGitSshData } from '../../../../../shared/interfaces/project';
 
 @Component({
   selector: 'ktb-project-settings-git-ssh',
@@ -17,7 +17,7 @@ export class KtbProjectSettingsGitSshComponent {
   public isLoading = false;
 
   @Input()
-  public set gitInputSshData(data: IGitSSHConfiguration | undefined) {
+  public set gitInputSshData(data: IGitSshConfiguration | undefined) {
     if (data) {
       this.gitInputData = {
         remoteURL: data.remoteURL,
@@ -31,9 +31,9 @@ export class KtbProjectSettingsGitSshComponent {
     }
   }
   @Output()
-  public sshChange = new EventEmitter<IGitSSHConfiguration | undefined>();
+  public sshChange = new EventEmitter<IGitSshConfiguration | undefined>();
 
-  public get data(): IGitSSHConfiguration | undefined {
+  public get data(): IGitSshConfiguration | undefined {
     return this.gitUpstream && this.sshKeyData
       ? {
           remoteURL: this.gitUpstream.remoteURL,
