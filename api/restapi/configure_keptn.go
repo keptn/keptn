@@ -36,14 +36,14 @@ const envVarLogLevel = "LOG_LEVEL"
 const controlPlaneServiceEnvVar = "CONTROLPLANE_URI"
 
 type EnvConfig struct {
-	HideDeprecated           bool    `envconfig:"HIDE_DEPRECATED" default:"false"`
+	HideDeprecated            bool    `envconfig:"HIDE_DEPRECATED" default:"false"`
 	ImportBasePath            string  `envconfig:"IMPORT_BASE_PATH"`
 	MaxAuthEnabled            bool    `envconfig:"MAX_AUTH_ENABLED" default:"true"`
 	MaxAuthRequestsPerSecond  float64 `envconfig:"MAX_AUTH_REQUESTS_PER_SECOND" default:"1"`
 	MaxAuthRequestBurst       int     `envconfig:"MAX_AUTH_REQUESTS_BURST" default:"2"`
 	MaxImportUncompressedSize uint64  `envconfig:"MAX_IMPORT_UNCOMPRESSED_SIZE" default:"52428800"` // 50MB default value
-	OAuthEnabled             bool    `envconfig:"OAUTH_ENABLED" default:"false"`
-	OAuthPrefix              string  `envconfig:"OAUTH_PREFIX" default:"keptn:"`
+	OAuthEnabled              bool    `envconfig:"OAUTH_ENABLED" default:"false"`
+	OAuthPrefix               string  `envconfig:"OAUTH_PREFIX" default:"keptn:"`
 }
 
 func configureFlags(api *operations.KeptnAPI) {
@@ -150,11 +150,10 @@ func setupMiddlewares(handler http.Handler) http.Handler {
 	return handler
 }
 
-// The middleware configuration happens before anything, this middleware also applies to serving the swagger.yaml document.
-// So this is a good place to plug in a panic handling middleware, logging and metrics
-func setupGlobalMiddleware(handler http.Handler, env *EnvConfig) http.Handler {
+// This function patches the index.html file of the swagger-ui to configure OAuth values
+func patchHtmlForOAuth(env *EnvConfig, readFile func(string) ([]byte, error)) string {
 	inMemoryIndex := ""
-	b, err := ioutil.ReadFile("swagger-ui/index.html")
+	b, err := readFile("swagger-ui/index.html")
 	if err != nil {
 		fmt.Printf("Failed to set conf in index.html %v\n", err)
 	} else {
@@ -168,20 +167,31 @@ func setupGlobalMiddleware(handler http.Handler, env *EnvConfig) http.Handler {
 	if env.HideDeprecated {
 		inMemoryIndex = strings.Replace(inMemoryIndex, "const hide_deprecated = false;", "const hide_deprecated = true;", -1)
 	}
+	return inMemoryIndex
+}
 
+// implements the logic to serve the patched index file, or the rest of the application
+func handle(w http.ResponseWriter, r *http.Request, inMemoryIndex string, handler http.Handler) {
+	if strings.Index(r.URL.Path, "/swagger-ui/") == 0 {
+		if (strings.HasSuffix(r.URL.Path, "/swagger-ui/") || strings.HasSuffix(r.URL.Path, "/swagger-ui/index.html")) && inMemoryIndex != "" {
+			w.Write([]byte(inMemoryIndex))
+			return
+		}
+		http.StripPrefix("/swagger-ui/", http.FileServer(http.Dir("swagger-ui"))).ServeHTTP(w, r)
+		return
+	}
+	if strings.Index(r.URL.Path, "/health") == 0 {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	handler.ServeHTTP(w, r)
+}
+
+// The middleware configuration happens before anything, this middleware also applies to serving the swagger.yaml document.
+// So this is a good place to plug in a panic handling middleware, logging and metrics
+func setupGlobalMiddleware(handler http.Handler, env *EnvConfig) http.Handler {
+	inMemoryIndex := patchHtmlForOAuth(env, ioutil.ReadFile)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.Index(r.URL.Path, "/swagger-ui/") == 0 {
-			if (strings.HasSuffix(r.URL.Path, "/swagger-ui/") || strings.HasSuffix(r.URL.Path, "/swagger-ui/index.html")) && inMemoryIndex != "" {
-				w.Write([]byte(inMemoryIndex))
-				return
-			}
-			http.StripPrefix("/swagger-ui/", http.FileServer(http.Dir("swagger-ui"))).ServeHTTP(w, r)
-			return
-		}
-		if strings.Index(r.URL.Path, "/health") == 0 {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-		handler.ServeHTTP(w, r)
+		handle(w, r, inMemoryIndex, handler)
 	})
 }
