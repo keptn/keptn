@@ -14,8 +14,8 @@ metadata:
 {{- end }}
   name: keptn-ingress
   namespace: {{ .Release.Namespace }}
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/component: {{ include "keptn.name" . }}
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/name: {{ include "keptn.name" . }}
 spec:
   {{- if and .Values.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
   ingressClassName: {{ .Values.ingress.className }}

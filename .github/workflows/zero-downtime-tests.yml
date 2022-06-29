@@ -342,6 +342,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Node Dependencies
+        if: github.event.inputs.testUI == 'true'
         working-directory: bridge
         run: yarn install --frozen-lockfile
 

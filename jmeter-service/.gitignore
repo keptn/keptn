@@ -17,3 +17,6 @@ vendor/*
 #binary - go build
 jmeter-service
 jmeter-extended-service
+
+chart/charts/*.tgz
+chart/Chart.lock

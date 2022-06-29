@@ -2,18 +2,18 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: approval-service
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/component: approval-service
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/name: approval-service
 spec:
   selector:
-    matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: approval-service
+    matchLabels: {{- include "keptn.common.labels.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/name: approval-service
   replicas: 1
   {{- include "keptn.common.update-strategy" . | nindent 2 }}
   template:
     metadata:
-      labels: {{- include "common.labels.standard" . | nindent 8 }}
-        app.kubernetes.io/component: approval-service
+      labels: {{- include "keptn.common.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/name: approval-service
     spec:
       {{- include "keptn.common.pod-security-context" . | nindent 6 }}
       terminationGracePeriodSeconds: {{ .Values.approvalService.gracePeriod | default 60 }}
@@ -51,14 +51,14 @@ spec:
           {{- include "keptn.common.container-security-context" . | nindent 10 }}
           {{- if .Values.approvalService.extraVolumeMounts }}
           volumeMounts:
-          {{- include "common.tplvalues.render" ( dict "value" .Values.approvalService.extraVolumeMounts "context" $) | nindent 12 }}
+          {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.approvalService.extraVolumeMounts "context" $) | nindent 12 }}
           {{- end }}
         {{- with .Values.approvalService.sidecars }}
-        {{- include "common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
+        {{- include "keptn.common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
         {{- end }}
       {{- if .Values.approvalService.extraVolumes }}
       volumes:
-      {{- include "common.tplvalues.render" ( dict "value" .Values.approvalService.extraVolumes "context" $) | nindent 8 }}
+      {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.approvalService.extraVolumes "context" $) | nindent 8 }}
       {{- end }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.approvalService.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
 ---
@@ -66,11 +66,11 @@ apiVersion: v1
 kind: Service
 metadata:
   name: approval-service
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/component: approval-service
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/name: approval-service
 spec:
   ports:
     - port: 8080
       protocol: TCP
-  selector: {{- include "common.labels.selectorLabels" . | nindent 4 }}
-    app.kubernetes.io/component: approval-service
+  selector: {{- include "keptn.common.labels.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/name: approval-service

@@ -38,7 +38,6 @@ type EnvConfig struct {
 	DistributorVersion        string        `envconfig:"DISTRIBUTOR_VERSION" default:"0.9.0"` // TODO: set this automatically
 	Version                   string        `envconfig:"VERSION" default:""`
 	K8sDeploymentName         string        `envconfig:"K8S_DEPLOYMENT_NAME" default:""`
-	K8sDeploymentComponent    string        `envconfig:"K8S_DEPLOYMENT_COMPONENT" default:""`
 	K8sNamespace              string        `envconfig:"K8S_NAMESPACE" default:""`
 	K8sPodName                string        `envconfig:"K8S_POD_NAME" default:""`
 	K8sNodeName               string        `envconfig:"K8S_NODE_NAME" default:""`
@@ -77,13 +76,13 @@ func (env *EnvConfig) ValidateRegistrationConstraints() bool {
 		return false
 	}
 
-	if env.K8sNamespace == "" || env.K8sDeploymentComponent == "" {
-		logger.Warn("Skipping Registration because not all mandatory environment variables are set: K8S_NAMESPACE, K8S_DEPLOYMENT_COMPONENT")
+	if env.K8sNamespace == "" || env.K8sDeploymentName == "" {
+		logger.Warn("Skipping Registration because not all mandatory environment variables are set: K8S_NAMESPACE, K8S_DEPLOYMENT_NAME")
 		return false
 	}
 
-	if isOneOfFilteredServices(env.K8sDeploymentComponent) {
-		logger.Infof("Skipping Registration because service name %s is actively filtered", env.K8sDeploymentComponent)
+	if isOneOfFilteredServices(env.K8sDeploymentName) {
+		logger.Infof("Skipping Registration because service name %s is actively filtered", env.K8sDeploymentName)
 		return false
 	}
 

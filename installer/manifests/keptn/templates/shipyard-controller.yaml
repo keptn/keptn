@@ -2,12 +2,12 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: shipyard-controller
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/component: shipyard-controller
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/name: shipyard-controller
 spec:
   selector:
-    matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: shipyard-controller
+    matchLabels: {{- include "keptn.common.labels.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/name: shipyard-controller
   {{- if or (lt .Capabilities.KubeVersion.Minor "14") (.Values.shipyardController.config.disableLeaderElection) }}
   replicas : 1
   {{- else }}
@@ -16,8 +16,8 @@ spec:
   {{- include "keptn.common.update-strategy" . | nindent 2 }}
   template:
     metadata:
-      labels: {{- include "common.labels.standard" . | nindent 8 }}
-        app.kubernetes.io/component: shipyard-controller
+      labels: {{- include "keptn.common.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/name: shipyard-controller
     spec:
       {{- include "keptn.common.pod-security-context" . | nindent 6 }}
       serviceAccountName: keptn-shipyard-controller
@@ -100,28 +100,28 @@ spec:
           {{- include "keptn.common.container-security-context" . | nindent 10 }}
           {{- if .Values.shipyardController.extraVolumeMounts }}
           volumeMounts:
-          {{- include "common.tplvalues.render" ( dict "value" .Values.shipyardController.extraVolumeMounts "context" $) | nindent 12 }}
+          {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.shipyardController.extraVolumeMounts "context" $) | nindent 12 }}
           {{- end }}
         {{- with .Values.shipyardController.sidecars }}
-        {{- include "common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
+        {{- include "keptn.common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
         {{- end }}
       terminationGracePeriodSeconds: {{ .Values.shipyardController.gracePeriod | default 60 }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.shipyardController.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
       {{- if .Values.shipyardController.extraVolumes }}
       volumes:
-      {{- include "common.tplvalues.render" ( dict "value" .Values.shipyardController.extraVolumes "context" $) | nindent 8 }}
+      {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.shipyardController.extraVolumes "context" $) | nindent 8 }}
       {{- end }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: shipyard-controller
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/component: shipyard-controller
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/name: shipyard-controller
 spec:
   ports:
     - port: 8080
       targetPort: 8080
       protocol: TCP
-  selector: {{- include "common.labels.selectorLabels" . | nindent 4 }}
-    app.kubernetes.io/component: shipyard-controller
+  selector: {{- include "keptn.common.labels.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/name: shipyard-controller

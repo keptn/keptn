@@ -231,7 +231,7 @@ func CompareServiceNameWithDeploymentName(serviceName string, deploymentName str
 		return false, err
 	}
 
-	if service.Spec.Selector["app.kubernetes.io/component"] == deploymentName {
+	if service.Spec.Selector["app.kubernetes.io/name"] == deploymentName {
 		return true, nil
 	}
 

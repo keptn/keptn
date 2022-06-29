@@ -2,21 +2,21 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "jmeter-service.fullname" . }}
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/component: jmeter-service
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/name: jmeter-service
 spec:
   replicas: 1
   selector:
-    matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: jmeter-service
+    matchLabels: {{- include "keptn.common.labels.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/name: jmeter-service
   template:
     metadata:
       {{- with .Values.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      labels: {{- include "common.labels.standard" . | nindent 8 }}
-        app.kubernetes.io/component: jmeter-service
+      labels: {{- include "keptn.common.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/name: jmeter-service
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -103,10 +103,6 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.labels['app.kubernetes.io/name']
-            - name: K8S_DEPLOYMENT_COMPONENT
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.labels['app.kubernetes.io/component']
             - name: K8S_POD_NAME
               valueFrom:
                 fieldRef:
