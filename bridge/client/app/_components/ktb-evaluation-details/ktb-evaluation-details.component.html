@@ -13,14 +13,14 @@
             [value]="'heatmap'"
             uitestid="keptn-evaluation-details-contextButtons-heatmap"
             (click)="_comparisonView = 'heatmap'"
-            >Heatmap</dt-button-group-item
-          >
+            >Heatmap
+          </dt-button-group-item>
           <dt-button-group-item
             [value]="'chart'"
             uitestid="keptn-evaluation-details-contextButtons-chart"
             (click)="_comparisonView = 'chart'"
-            >Chart</dt-button-group-item
-          >
+            >Chart
+          </dt-button-group-item>
         </dt-button-group>
       </div>
     </div>
@@ -47,7 +47,8 @@
       [style.top.px]="heatmapHeight + 20"
       [style.width.px]="heatmapWidth - 8"
     >
-      <dt-icon name="sorter2-down"></dt-icon> Show all SLIs
+      <dt-icon name="sorter2-down"></dt-icon>
+      Show all SLIs
     </button>
     <button
       dt-button
@@ -58,7 +59,8 @@
       [style.width.px]="heatmapWidth - 8"
       (click)="toggleHeatmap()"
     >
-      <dt-icon name="sorter2-up"></dt-icon> Collapse to 10 SLIs
+      <dt-icon name="sorter2-up"></dt-icon>
+      Collapse to 10 SLIs
     </button>
     <dt-chart
       class="mr-2"
@@ -76,7 +78,7 @@
             *ngIf="tooltip.point.point | toType: HeatmapPointClass as dataPoint"
           >
             <dt-key-value-list-item>
-              <dt-key-value-list-key> Value </dt-key-value-list-key>
+              <dt-key-value-list-key> Value</dt-key-value-list-key>
               <dt-key-value-list-value>
                 {{ dataPoint.value | truncateNumber: 2 }}
               </dt-key-value-list-value>
@@ -84,21 +86,21 @@
 
             <ng-container *ngIf="dataPoint.sliInfo as info">
               <dt-key-value-list-item>
-                <dt-key-value-list-key> Total passed SLIs </dt-key-value-list-key>
+                <dt-key-value-list-key> Total passed SLIs</dt-key-value-list-key>
                 <dt-key-value-list-value>
                   {{ info.passCount }}
                 </dt-key-value-list-value>
               </dt-key-value-list-item>
 
               <dt-key-value-list-item>
-                <dt-key-value-list-key> Total warning SLIs </dt-key-value-list-key>
+                <dt-key-value-list-key> Total warning SLIs</dt-key-value-list-key>
                 <dt-key-value-list-value>
                   {{ info.warningCount }}
                 </dt-key-value-list-value>
               </dt-key-value-list-item>
 
               <dt-key-value-list-item>
-                <dt-key-value-list-key> Total failed SLIs </dt-key-value-list-key>
+                <dt-key-value-list-key> Total failed SLIs</dt-key-value-list-key>
                 <dt-key-value-list-value>
                   {{ info.failedCount }}
                 </dt-key-value-list-value>
@@ -128,14 +130,14 @@
 
             <ng-container *ngIf="dataPoint.data">
               <dt-key-value-list-item>
-                <dt-key-value-list-key> Score </dt-key-value-list-key>
+                <dt-key-value-list-key> Score</dt-key-value-list-key>
                 <dt-key-value-list-value>
                   {{ dataPoint.data.score | truncateNumber: 2 }}
                 </dt-key-value-list-value>
               </dt-key-value-list-item>
 
               <dt-key-value-list-item>
-                <dt-key-value-list-key> Key SLI </dt-key-value-list-key>
+                <dt-key-value-list-key> Key SLI</dt-key-value-list-key>
                 <dt-key-value-list-value>
                   {{ dataPoint.data.keySli ? 'true' : 'false' }}
                 </dt-key-value-list-value>
@@ -227,7 +229,8 @@
               (click)="showSloDialog()"
               [disabled]="!evaluation.sloFileContentParsed"
             >
-              <dt-icon name="services"></dt-icon> Show SLO
+              <dt-icon name="services"></dt-icon>
+              Show SLO
             </button>
           </div>
           <ng-template #invalidSLO>
@@ -254,54 +257,35 @@
         ></dt-consumption-title>
         <dt-consumption-count>
           <p class="m-0">
-            <span class="error" *ngIf="_selectedEvaluationData.isFailed()"
-              ><span
-                uitestid="keptn-evaluation-details-scoreInfo"
-                class="bold"
-                [textContent]="evaluation.score | truncateNumber: 2"
-              ></span
-            ></span>
+            <span class="small">Score: </span>
             <span
-              class="small"
-              *ngIf="
-                (_selectedEvaluationData.isFailed() || _selectedEvaluationData.isWarning()) && evaluation.score_warning
-              "
+              [class.error]="evaluation.score_state === 'fail'"
+              [class.warning]="evaluation.score_state === 'warning'"
+              [class.success]="evaluation.score_state === 'pass'"
             >
-              <span *ngIf="_selectedEvaluationData.isFailed()"> < </span>
-              <span [textContent]="evaluation.score_warning"></span>
-              <span *ngIf="_selectedEvaluationData.isWarning()"> <= </span>
-            </span>
-            <span class="warning" *ngIf="_selectedEvaluationData.isWarning()"
-              ><span
+              <span
                 uitestid="keptn-evaluation-details-scoreInfo"
                 class="bold"
                 [textContent]="evaluation.score | truncateNumber: 2"
-              ></span
-            ></span>
-            <span
-              class="small"
-              *ngIf="!(_selectedEvaluationData.isFailed() && evaluation.score_warning) && evaluation.score_pass"
-            >
-              <span *ngIf="_selectedEvaluationData.isFailed() || _selectedEvaluationData.isWarning()"> < </span>
-              <span [textContent]="evaluation.score_pass"></span>
-              <span *ngIf="!_selectedEvaluationData.isFailed() && !_selectedEvaluationData.isWarning()"> <= </span>
+              ></span>
+              <span [textContent]="evaluation.score_info"></span>
             </span>
-            <span class="success" *ngIf="!_selectedEvaluationData.isFailed() && !_selectedEvaluationData.isWarning()"
-              ><span
-                uitestid="keptn-evaluation-details-scoreInfo"
-                class="bold"
-                [textContent]="evaluation.score | truncateNumber: 2"
-              ></span
-            ></span>
-            <span class="small ml-2"
-              >Result:
+            <span class="small">
+              <span class="ml-2">Result: </span>
               <span
                 [class.error]="_selectedEvaluationData.isFailed()"
                 [class.warning]="_selectedEvaluationData.isWarning()"
                 [class.success]="!_selectedEvaluationData.isFailed() && !_selectedEvaluationData.isWarning()"
                 [textContent]="_selectedEvaluationData.data.result"
-              ></span
-            ></span>
+              ></span>
+              <ng-container *ngIf="getSliInfo(_selectedEvaluationData.data.evaluation.indicatorResults) as sliInfo">
+                <span *ngIf="sliInfo.keySliCount > 0">
+                  <span class="ml-2">Key SLI<span *ngIf="sliInfo.keySliCount > 1">s</span>: </span>
+                  <span *ngIf="sliInfo.keySliFailedCount > 0" class="error">failed</span>
+                  <span *ngIf="sliInfo.keySliFailedCount === 0" class="success">passed</span>
+                </span>
+              </ng-container>
+            </span>
           </p>
         </dt-consumption-count>
         <dt-consumption-label>

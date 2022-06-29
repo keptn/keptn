@@ -899,6 +899,10 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     this.heatmapChart?._update();
   }
 
+  public getSliInfo(indicatorResults: IndicatorResult[]): SliInfo {
+    return getSliResultInfo(indicatorResults);
+  }
+
   ngOnDestroy(): void {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();

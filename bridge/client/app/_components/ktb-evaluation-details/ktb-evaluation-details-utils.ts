@@ -11,29 +11,30 @@ export type SliInfo = {
   warningCount: number;
   failedCount: number;
   passCount: number;
+  keySliCount: number;
+  keySliFailedCount: number;
 };
 
 export const filterUnparsedEvaluations = (trace: Trace): trace is Trace & { data: { evaluation: IEvaluationData } } =>
   !!trace?.data?.evaluation?.sloFileContent && !trace.data.evaluation.sloFileContentParsed;
 
-export function getSliResultInfo(indicatorResults: IndicatorResult[]): {
-  score: number;
-  warningCount: number;
-  failedCount: number;
-  passCount: number;
-} {
+export function getSliResultInfo(indicatorResults: IndicatorResult[]): SliInfo {
   return indicatorResults.reduce(
     (acc, result) => {
       const warning = result.status === ResultTypes.WARNING ? 1 : 0;
       const failed = result.status === ResultTypes.FAILED ? 1 : 0;
+      const keySli = result.keySli ? 1 : 0;
+      const keySliFailed = result.keySli && result.status === ResultTypes.FAILED ? 1 : 0;
       return {
         score: acc.score + result.score,
         warningCount: acc.warningCount + warning,
         failedCount: acc.failedCount + failed,
         passCount: acc.passCount + 1 - warning - failed,
+        keySliCount: acc.keySliCount + keySli,
+        keySliFailedCount: acc.keySliFailedCount + keySliFailed,
       };
     },
-    { score: 0, warningCount: 0, failedCount: 0, passCount: 0 } as SliInfo
+    { score: 0, warningCount: 0, failedCount: 0, passCount: 0, keySliCount: 0, keySliFailedCount: 0 } as SliInfo
   );
 }
 
@@ -41,6 +42,26 @@ export function getTotalScore(evaluation: Trace): number {
   return evaluation.data.evaluation?.indicatorResults
     ? evaluation.data.evaluation?.indicatorResults.reduce((total: number, ir: IndicatorResult) => total + ir.score, 0)
     : 1;
+}
+
+export function getScoreState(evaluation: IEvaluationData): string {
+  if (evaluation.score >= evaluation.score_pass) {
+    return 'pass';
+  } else if (evaluation.score_warning && evaluation.score >= evaluation.score_warning) {
+    return 'warning';
+  } else {
+    return 'fail';
+  }
+}
+
+export function getScoreInfo(evaluation: IEvaluationData): string {
+  if (evaluation.score_state === 'pass') {
+    return ` >= ${evaluation.score_pass}`;
+  } else if (evaluation.score_state === 'warning') {
+    return ` >= ${evaluation.score_warning}`;
+  } else {
+    return ` < ${evaluation.score_warning ? evaluation.score_warning : evaluation.score_pass}`;
+  }
 }
 
 export function indicatorResultToDataPoint(
@@ -83,8 +104,8 @@ export function evaluationToDataPoint(evaluation: Trace, scoreValue: number): ID
       passCount: resultInfo.passCount,
       warningCount: resultInfo.warningCount,
       failedCount: resultInfo.failedCount,
-      thresholdPass: +(evaluation.data.evaluation?.score_pass ?? 0),
-      thresholdWarn: +(evaluation.data.evaluation?.score_warning ?? 0),
+      thresholdPass: evaluation.data.evaluation?.score_pass ?? 0,
+      thresholdWarn: evaluation.data.evaluation?.score_warning ?? 0,
       fail: evaluation.isFailed(),
       warn: evaluation.isWarning(),
     },
@@ -116,8 +137,10 @@ export function parseSloOfEvaluations(evaluationTraces: Trace[]): void {
 function parseSloFile(evaluation: IEvaluationData): void {
   try {
     const sloFileContentParsed: SloConfig = parseYaml(atob(evaluation.sloFileContent));
-    evaluation.score_pass = sloFileContentParsed.total_score?.pass?.split('%')[0];
-    evaluation.score_warning = sloFileContentParsed.total_score?.warning?.split('%')[0] ?? '';
+    evaluation.score_pass = +(sloFileContentParsed.total_score?.pass?.split('%')[0] ?? 0);
+    evaluation.score_warning = +(sloFileContentParsed.total_score?.warning?.split('%')[0] ?? 0);
+    evaluation.score_state = getScoreState(evaluation);
+    evaluation.score_info = getScoreInfo(evaluation);
     evaluation.compare_with = sloFileContentParsed.comparison.compare_with ?? '';
     evaluation.include_result_with_score = sloFileContentParsed.comparison.include_result_with_score;
     evaluation.sloObjectives = sloFileContentParsed.objectives;

@@ -16,6 +16,7 @@ import { KtbPipeModule } from '../../_pipes/ktb-pipe.module';
 import { KtbSliBreakdownModule } from '../ktb-sli-breakdown/ktb-sli-breakdown.module';
 import { DtOverlayModule } from '@dynatrace/barista-components/overlay';
 import { DtInputModule } from '@dynatrace/barista-components/input';
+import { DtCardModule } from '@dynatrace/barista-components/card';
 
 @NgModule({
   declarations: [KtbEvaluationDetailsComponent],
@@ -38,6 +39,7 @@ import { DtInputModule } from '@dynatrace/barista-components/input';
     KtbSliBreakdownModule,
     MatDialogModule,
     MomentModule,
+    DtCardModule,
   ],
   exports: [KtbEvaluationDetailsComponent],
 })
