@@ -264,15 +264,15 @@ jobs:
           kubectl config use-context k3d-mykeptn
 
       - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v0
+        uses: google-github-actions/auth@v0.8.0
         with:
           credentials_json: ${{ secrets.GCLOUD_RESTRICTED_SERVICE_KEY }}
 
       - name: Set up Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v0
+        uses: google-github-actions/setup-gcloud@v0.6.0
 
       - name: Get Kubeconfig
-        uses: google-github-actions/get-gke-credentials@v0
+        uses: google-github-actions/get-gke-credentials@v0.7.0
         with:
           cluster_name: ${{ matrix.CLUSTER_NAME }}
           location: "us-east1-b"
