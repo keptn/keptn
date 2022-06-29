@@ -182,6 +182,7 @@ func NewProjectHandler(projectManager IProjectManager, eventSender common.EventS
 // GetAllProjects godoc
 // @Summary      Get all projects
 // @Description  Get the list of all projects
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}projects:read</span>
 // @Tags         Projects
 // @Security     ApiKeyAuth
 // @Accept       json
@@ -231,6 +232,7 @@ func (ph *ProjectHandler) GetAllProjects(c *gin.Context) {
 // GetProjectByName godoc
 // @Summary      Get a project by name
 // @Description  Get a project by its name
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}projects:read</span>
 // @Tags         Projects
 // @Security     ApiKeyAuth
 // @Accept       json
@@ -261,6 +263,7 @@ func (ph *ProjectHandler) GetProjectByName(c *gin.Context) {
 // CreateProject godoc
 // @Summary      Create a new project
 // @Description  Create a new project
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}projects:write</span>
 // @Tags         Projects
 // @Security     ApiKeyAuth
 // @Accept       json
@@ -342,6 +345,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 // UpdateProject godoc
 // @Summary      Updates a project
 // @Description  Updates project
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}projects:write</span>
 // @Tags         Projects
 // @Security     ApiKeyAuth
 // @Accept       json
@@ -397,6 +401,7 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 // DeleteProject godoc
 // @Summary      Delete a project
 // @Description  Delete a project
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}projects:delete</span>
 // @Tags         Projects
 // @Security     ApiKeyAuth
 // @Accept       json

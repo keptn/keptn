@@ -71,6 +71,12 @@ spec:
               value: '{{ (.Values.apiService.maxAuth).requestBurst | default "2"}}'
             - name: LOG_LEVEL
               value: {{ .Values.logLevel | default "info" }}
+            - name: OAUTH_ENABLED
+              value: "{{ or (.Values.bridge.oauth).enabled ((.Values.features).oauth).enabled | default false }}"
+            - name: OAUTH_PREFIX
+              value: "{{ ((.Values.features).oauth).prefix | default "keptn:" }}"
+            - name: HIDE_DEPRECATED
+              value: "{{ ((.Values.features).swagger).hideDeprecated | default false }}"
           {{- include "keptn.common.container-security-context" . | nindent 10 }}
           volumeMounts:
             - mountPath: /data/import-scratch

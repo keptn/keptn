@@ -25,6 +25,7 @@ func NewLogHandler(logManager ILogManager) *LogHandler {
 // CreateLogEntries persists log entries
 // @Summary      Persist a list of log entries
 // @Description  Persist a list of log entries
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}logs:write</span>
 // @Tags         Log
 // @Security     ApiKeyAuth
 // @Accept       json
@@ -51,6 +52,7 @@ func (lh *LogHandler) CreateLogEntries(context *gin.Context) {
 // GetLogEntries Retrieves log entries based on the provided filter
 // @Summary      Retrieve logs
 // @Description  Retrieve logs
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}logs:read</span>
 // @Tags         Log
 // @Security     ApiKeyAuth
 // @Accept       json
@@ -83,6 +85,7 @@ func (lh *LogHandler) GetLogEntries(context *gin.Context) {
 // @Summary      Delete logs
 // @Deprecated   true
 // @Description  INTERNAL Endpoint: Delete logs
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}logs:delete</span>
 // @Tags         Log
 // @Security     ApiKeyAuth
 // @Accept       json

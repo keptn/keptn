@@ -1,10 +1,11 @@
 package handler
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
-	"net/http"
 )
 
 type IProjectResourceHandler interface {
@@ -29,6 +30,7 @@ func NewProjectResourceHandler(projectResourceManager IResourceManager) *Project
 // CreateProjectResources godoc
 // @Summary      Creates project resources
 // @Description  Create list of new resources for the project
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}resources:write</span>
 // @Tags         Project Resource
 // @Security     ApiKeyAuth
 // @Accept       json
@@ -71,6 +73,7 @@ func (ph *ProjectResourceHandler) CreateProjectResources(c *gin.Context) {
 // GetProjectResources godoc
 // @Summary      Get list of project resources
 // @Description  Get list of project resources
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}resources:read</span>
 // @Tags         Project Resource
 // @Security     ApiKeyAuth
 // @Accept       json
@@ -114,6 +117,7 @@ func (ph *ProjectResourceHandler) GetProjectResources(c *gin.Context) {
 // UpdateProjectResources godoc
 // @Summary      Updates project resources
 // @Description  Update list of new resources for the project
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}resources:write</span>
 // @Tags         Project Resource
 // @Security     ApiKeyAuth
 // @Accept       json
@@ -156,6 +160,7 @@ func (ph *ProjectResourceHandler) UpdateProjectResources(c *gin.Context) {
 // GetProjectResource godoc
 // @Summary      Get project resource
 // @Description  Get project resource
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}resources:read</span>
 // @Tags         Project Resource
 // @Security     ApiKeyAuth
 // @Accept       json
@@ -199,12 +204,13 @@ func (ph *ProjectResourceHandler) GetProjectResource(c *gin.Context) {
 // UpdateProjectResource godoc
 // @Summary      Updates a project resource
 // @Description  Updates a resource for the project
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}resources:write</span>
 // @Tags         Project Resource
 // @Security     ApiKeyAuth
 // @Accept       json
 // @Produce      json
-// @Param        projectName                                                      path    string  true  "The name of the project"
-// @Param        resourceURI                                                path  string  true    "The path of the resource file"
+// @Param        projectName  path    string  true  "The name of the project"
+// @Param        resourceURI  path  string  true    "The path of the resource file"
 // @Param        resources    body      models.UpdateResourcePayload  true  "resource"
 // @Success      200          {string}  models.WriteResourceResponse
 // @Failure      400          {object}  models.Error  "Invalid payload"
@@ -242,12 +248,13 @@ func (ph *ProjectResourceHandler) UpdateProjectResource(c *gin.Context) {
 // DeleteProjectResource godoc
 // @Summary      Deletes a project resource
 // @Description  Deletes a project resource
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}resources:delete</span>
 // @Tags         Project Resource
 // @Security     ApiKeyAuth
 // @Accept       json
 // @Produce      json
-// @Param        projectName                      path    string  true  "The name of the project"
-// @Param        resourceURI                path  string  true    "The path of the resource file"
+// @Param        projectName  path    string  true  "The name of the project"
+// @Param        resourceURI  path  string  true    "The path of the resource file"
 // @Success      200          {string}  models.WriteResourceResponse
 // @Failure      400          {object}  models.Error  "Invalid payload"
 // @Failure      500          {object}  models.Error  "Internal error"

@@ -122,7 +122,7 @@ spec:
             - name: PREFIX_PATH
               value: "{{ .Values.prefixPath }}"
             - name: OAUTH_ENABLED
-              value: "{{ .Values.bridge.oauth.enabled }}"
+              value: "{{ or (.Values.bridge.oauth).enabled ((.Values.features).oauth).enabled | default false }}"
             - name: OAUTH_DISCOVERY
               value: "{{ .Values.bridge.oauth.discovery }}"
             # Base URL e.g. https://example.com/

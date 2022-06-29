@@ -69,6 +69,7 @@ func NewServiceHandler(serviceManager IServiceManager, eventSender common.EventS
 // CreateService godoc
 // @Summary      Create a new service
 // @Description  Create a new service
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}services:write</span>
 // @Tags         Services
 // @Security     ApiKeyAuth
 // @Accept       json
@@ -131,6 +132,7 @@ func (sh *ServiceHandler) CreateService(c *gin.Context) {
 // DeleteService godoc
 // @Summary      Delete a service
 // @Description  Delete a service
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}services:delete</span>
 // @Tags         Services
 // @Security     ApiKeyAuth
 // @Accept       json
@@ -179,6 +181,7 @@ func (sh *ServiceHandler) DeleteService(c *gin.Context) {
 // GetService godoc
 // @Summary      Gets a service by its name
 // @Description  Gets a service by its name
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}services:read</span>
 // @Tags         Services
 // @Security     ApiKeyAuth
 // @Accept       json
@@ -211,6 +214,7 @@ func (sh *ServiceHandler) GetService(c *gin.Context) {
 // GetServices godoc
 // @Summary      Gets all services of a stage in a project
 // @Description  Gets all services of a stage in a project
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}stages:read</span>
 // @Tags         Services
 // @Security     ApiKeyAuth
 // @Accept       json

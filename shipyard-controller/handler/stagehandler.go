@@ -30,6 +30,7 @@ func NewStageHandler(stageManager IStageManager) *StageHandler {
 // GetAllStages godoc
 // @Summary      Get all stages of a project
 // @Description  Get the list of stages of a project
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}stages:read</span>
 // @Tags         Stage
 // @Security     ApiKeyAuth
 // @Accept       json
@@ -89,6 +90,7 @@ func (sh *StageHandler) GetAllStages(c *gin.Context) {
 // GetStage godoc
 // @Summary      Get a stage
 // @Description  Get a stage of a project
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}stages:read</span>
 // @Tags         Stage
 // @Security     ApiKeyAuth
 // @Accept       json

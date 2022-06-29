@@ -34,6 +34,8 @@ paths:
         - Metadata
       operationId: metadata
       summary: Get keptn installation metadata
+      description: >
+        <span class="oauth-scopes">Required OAuth scopes: ${prefix}metadata:read</span>
       responses:
         200:
           description: Success
@@ -50,6 +52,8 @@ paths:
           in: body
           schema:
             $ref: "#/definitions/keptnContextExtendedCE"
+      description: >
+        <span class="oauth-scopes">Required OAuth scopes: ${prefix}events:write</span>
       responses:
         200:
           description: Forwarded
