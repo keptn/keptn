@@ -14,7 +14,7 @@ import { KeptnInfoResult } from '../../../shared/interfaces/keptn-info-result';
 import { KeptnVersions } from '../../../shared/interfaces/keptn-versions';
 import { EventResult } from '../_interfaces/event-result';
 import { UniformSubscription } from '../_models/uniform-subscription';
-import { WebhookConfig } from '../../../shared/interfaces/webhook-config';
+import { IWebhookConfigClient } from '../../../shared/interfaces/webhook-config';
 import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-registration-info';
 import { UniformRegistrationResult } from '../../../shared/interfaces/uniform-registration-result';
 import { FileTree } from '../../../shared/interfaces/resourceFileTree';
@@ -225,7 +225,7 @@ export class ApiService {
   public updateUniformSubscription(
     integrationId: string,
     subscription: Partial<UniformSubscription>,
-    webhookConfig?: WebhookConfig
+    webhookConfig?: IWebhookConfigClient
   ): Observable<Record<string, unknown>> {
     const url = `${this._baseUrl}/uniform/registration/${integrationId}/subscription/${subscription.id}`;
     return this.http.put<Record<string, unknown>>(url, { subscription, webhookConfig });
@@ -234,7 +234,7 @@ export class ApiService {
   public createUniformSubscription(
     integrationId: string,
     subscription: Partial<UniformSubscription>,
-    webhookConfig?: WebhookConfig
+    webhookConfig?: IWebhookConfigClient
   ): Observable<Record<string, unknown>> {
     const url = `${this._baseUrl}/uniform/registration/${integrationId}/subscription`;
     return this.http.post<Record<string, unknown>>(url, { subscription, webhookConfig });
@@ -472,14 +472,14 @@ export class ApiService {
     projectName: string,
     stageName?: string,
     serviceName?: string
-  ): Observable<WebhookConfig> {
+  ): Observable<IWebhookConfigClient> {
     const url = `${this._baseUrl}/uniform/registration/webhook-service/config/${subscriptionId}`;
     const params = {
       projectName,
       ...(stageName && { stageName }),
       ...(serviceName && { serviceName }),
     };
-    return this.http.get<WebhookConfig>(url, { params });
+    return this.http.get<IWebhookConfigClient>(url, { params });
   }
 
   public getServiceStates(projectName: string): Observable<ServiceState[]> {

@@ -11,15 +11,14 @@ import { UniformRegistration } from '../models/uniform-registration';
 import { parse as parseYaml } from 'yaml';
 import { Shipyard } from '../interfaces/shipyard';
 import { UniformRegistrationLocations } from '../../shared/interfaces/uniform-registration-locations';
-import { WebhookConfig, WebhookConfigFilter, WebhookSecret } from '../../shared/models/webhook-config';
+import { IWebhookConfigFilter } from '../interfaces/webhook-config';
 import { UniformRegistrationInfo } from '../../shared/interfaces/uniform-registration-info';
 import { WebhookConfigYaml } from '../models/webhook-config-yaml';
-import { UniformSubscription, UniformSubscriptionFilter } from '../../shared/interfaces/uniform-subscription';
+import { IUniformSubscription, IUniformSubscriptionFilter } from '../../shared/interfaces/uniform-subscription';
 import axios from 'axios';
 import { Resource } from '../../shared/interfaces/resource';
 import { FileTree, TreeEntry } from '../../shared/interfaces/resourceFileTree';
 import { EventResult } from '../interfaces/event-result';
-import { Secret } from '../models/secret';
 import { IRemediationAction } from '../../shared/models/remediation-action';
 import { KeptnService } from '../../shared/models/keptn-service';
 import { SequenceState } from '../../shared/interfaces/sequence';
@@ -33,11 +32,18 @@ import { Remediation } from '../models/remediation';
 import { IStage } from '../../shared/interfaces/stage';
 import { ISequencesFilter } from '../../shared/interfaces/sequencesFilter';
 import { SecretScope, SecretScopeDefault } from '../../shared/interfaces/secret-scope';
-import { generateWebhookConfigCurl } from '../utils/curl.utils';
 import { ICustomSequences } from '../../shared/interfaces/custom-sequences';
+import { IWebhookConfigYamlResult, IWebhookSecret } from '../interfaces/webhook-config-yaml-result';
+import {
+  mapBridgeSecretsToYamlSecrets,
+  mapYamlSecretsToBridgeSecrets,
+  migrateWebhook,
+  parseToClientWebhookRequest,
+} from '../models/webhook-config.utils';
+import { IWebhookConfigClient } from '../../shared/interfaces/webhook-config';
+import { ISecret } from '../../shared/interfaces/secret';
 
 type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
-type FlatSecret = { path: string; name: string; key: string; parsedPath: string };
 type StageRemediationInformation = {
   remediations: Remediation[];
   remediationsForStage: Sequence[];
@@ -426,27 +432,6 @@ export class DataService {
     return actions;
   }
 
-  private async getTrace(
-    accessToken: string | undefined,
-    keptnContext?: string,
-    projectName?: string,
-    stageName?: string,
-    serviceName?: string,
-    eventType?: EventTypes,
-    eventSource?: KeptnService
-  ): Promise<Trace | undefined> {
-    const response = await this.apiService.getTraces(accessToken, {
-      type: eventType,
-      pageSize: '1',
-      ...(projectName && { project: projectName }),
-      ...(stageName && { stage: stageName }),
-      ...(serviceName && { service: serviceName }),
-      ...(keptnContext && { keptnContext }),
-      ...(eventSource && { source: eventSource }),
-    });
-    return response.data.events.shift();
-  }
-
   public async getApprovals(
     accessToken: string | undefined,
     projectName: string,
@@ -692,12 +677,12 @@ export class DataService {
   public async createSubscription(
     accessToken: string | undefined,
     integrationId: string,
-    subscription: UniformSubscription,
-    webhookConfig?: WebhookConfig
+    subscription: IUniformSubscription,
+    webhookConfig?: IWebhookConfigClient
   ): Promise<void> {
     const response = await this.apiService.createSubscription(accessToken, integrationId, subscription);
     if (webhookConfig) {
-      await this.saveWebhookConfig(accessToken, webhookConfig, response.data.id);
+      await this.saveWebhookConfig(accessToken, webhookConfig, response.data.id, subscription.filter);
     }
   }
 
@@ -705,12 +690,12 @@ export class DataService {
     accessToken: string | undefined,
     integrationId: string,
     subscriptionId: string,
-    subscription: UniformSubscription,
-    webhookConfig?: WebhookConfig
+    subscription: IUniformSubscription,
+    webhookConfig?: IWebhookConfigClient
   ): Promise<void> {
     await this.apiService.updateSubscription(accessToken, integrationId, subscriptionId, subscription);
     if (webhookConfig) {
-      await this.saveWebhookConfig(accessToken, webhookConfig, subscriptionId);
+      await this.saveWebhookConfig(accessToken, webhookConfig, subscriptionId, subscription.filter);
     }
   }
 
@@ -723,26 +708,12 @@ export class DataService {
     const response = await this.apiService.getWebhookConfig(accessToken, projectName, stageName, serviceName);
 
     try {
-      const webhookConfigFile = Buffer.from(response.data.resourceContent, 'base64').toString('utf-8');
-      return WebhookConfigYaml.fromJSON(parseYaml(webhookConfigFile));
+      const webhookConfigFile: IWebhookConfigYamlResult = parseYaml(
+        Buffer.from(response.data.resourceContent, 'base64').toString('utf-8')
+      );
+      return WebhookConfigYaml.fromJSON(migrateWebhook(webhookConfigFile));
     } catch (error) {
       throw Error('Could not parse webhook.yaml');
-    }
-  }
-
-  private replaceWithBridgeSecrets(webhookConfig: WebhookConfig): void {
-    if (webhookConfig.secrets) {
-      for (const webhookSecret of webhookConfig.secrets) {
-        const bridgeSecret = '.secret.' + webhookSecret.secretRef.name + '.' + webhookSecret.secretRef.key;
-
-        const regex = new RegExp('.env.' + webhookSecret.name, 'g');
-        webhookConfig.url = webhookConfig.url.replace(regex, bridgeSecret);
-        webhookConfig.payload = webhookConfig.payload.replace(regex, bridgeSecret);
-
-        for (const header of webhookConfig.header) {
-          header.value = header.value.replace(regex, bridgeSecret);
-        }
-      }
     }
   }
 
@@ -752,7 +723,7 @@ export class DataService {
     projectName: string,
     stageName?: string,
     serviceName?: string
-  ): Promise<WebhookConfig> {
+  ): Promise<IWebhookConfigClient> {
     const webhookConfigYaml: WebhookConfigYaml = await this.getWebhookConfigYaml(
       accessToken,
       projectName,
@@ -760,20 +731,23 @@ export class DataService {
       serviceName
     );
 
-    const webhookConfig = webhookConfigYaml.parsedRequest(subscriptionId);
-    if (!webhookConfig) {
-      throw Error('Could not parse curl command');
+    const config = parseToClientWebhookRequest(webhookConfigYaml, subscriptionId);
+    if (!config) {
+      throw Error('Could not parse webhook request');
     }
-    this.replaceWithBridgeSecrets(webhookConfig);
-    return webhookConfig;
+    if (config.secrets) {
+      mapYamlSecretsToBridgeSecrets(config.webhookConfig, config.secrets);
+    }
+    return config.webhookConfig;
   }
 
   public async saveWebhookConfig(
     accessToken: string | undefined,
-    webhookConfig: WebhookConfig,
-    subscriptionId: string
+    webhookConfig: IWebhookConfigClient,
+    subscriptionId: string,
+    filter: IUniformSubscriptionFilter
   ): Promise<boolean> {
-    const currentFilters = await this.getWebhookConfigFilter(accessToken, webhookConfig.filter);
+    const currentFilters = await this.getWebhookConfigFilter(accessToken, filter);
 
     if (webhookConfig.prevConfiguration) {
       const previousFilter = await this.getWebhookConfigFilter(accessToken, webhookConfig.prevConfiguration.filter);
@@ -781,7 +755,6 @@ export class DataService {
     }
 
     const secrets = await this.parseAndReplaceWebhookSecret(accessToken, webhookConfig);
-    const curl = generateWebhookConfigCurl(webhookConfig);
 
     for (const project of currentFilters.projects) {
       for (const stage of currentFilters.stages) {
@@ -792,14 +765,7 @@ export class DataService {
             stage,
             service
           );
-          previousWebhookConfig.addWebhook(
-            webhookConfig.type,
-            curl,
-            subscriptionId,
-            secrets,
-            webhookConfig.sendFinished,
-            webhookConfig.sendStarted
-          );
+          previousWebhookConfig.addWebhook(webhookConfig, subscriptionId, secrets);
           await this.apiService.saveWebhookConfig(accessToken, previousWebhookConfig.toYAML(), project, stage, service);
         }
       }
@@ -810,67 +776,12 @@ export class DataService {
 
   private async parseAndReplaceWebhookSecret(
     accessToken: string | undefined,
-    webhookConfig: WebhookConfig
-  ): Promise<WebhookSecret[]> {
-    const webhookScopeSecrets = await this.getSecretsForScope(accessToken, SecretScopeDefault.WEBHOOK);
-    const flatSecret = this.getSecretPathFlat(webhookScopeSecrets);
-
-    const secrets: WebhookSecret[] = [];
-    webhookConfig.url = this.addWebhookSecretsFromString(webhookConfig.url, flatSecret, secrets);
-    webhookConfig.payload = this.addWebhookSecretsFromString(webhookConfig.payload, flatSecret, secrets);
-
-    for (const head of webhookConfig.header) {
-      head.value = this.addWebhookSecretsFromString(head.value, flatSecret, secrets);
-    }
-
-    return secrets;
+    webhookConfig: IWebhookConfigClient
+  ): Promise<IWebhookSecret[]> {
+    const secrets = await this.getSecretsForScope(accessToken, SecretScopeDefault.WEBHOOK);
+    return mapBridgeSecretsToYamlSecrets(webhookConfig, secrets);
   }
 
-  private addWebhookSecretsFromString(
-    parseString: string,
-    allSecretPaths: FlatSecret[],
-    existingSecrets: WebhookSecret[]
-  ): string {
-    const foundSecrets = allSecretPaths.filter((scrt) => parseString.includes(scrt.path));
-    let replacedString = parseString;
-    for (const found of foundSecrets) {
-      const idx = existingSecrets.findIndex((secret) => secret.name === found.parsedPath);
-      if (idx === -1) {
-        const secret: WebhookSecret = {
-          name: found.parsedPath,
-          secretRef: {
-            name: found.name,
-            key: found.key,
-          },
-        };
-        existingSecrets.push(secret);
-      }
-
-      replacedString = replacedString.replace(new RegExp('secret.' + found.path, 'g'), 'env.' + found.parsedPath);
-    }
-
-    return replacedString;
-  }
-
-  private getSecretPathFlat(secrets: Secret[]): FlatSecret[] {
-    const flatScopeSecrets: FlatSecret[] = [];
-    for (const secret of secrets) {
-      if (secret.keys) {
-        for (const key of secret.keys) {
-          const sanitizedName = secret.name.replace(/[^a-zA-Z0-9]/g, '');
-          const sanitizedKey = key.replace(/[^a-zA-Z0-9]/g, '');
-          const flat: FlatSecret = {
-            path: secret.name + '.' + key,
-            name: secret.name,
-            key,
-            parsedPath: 'secret_' + sanitizedName + '_' + sanitizedKey,
-          };
-          flatScopeSecrets.push(flat);
-        }
-      }
-    }
-    return flatScopeSecrets;
-  }
   private async getOrCreateWebhookConfigYaml(
     accessToken: string | undefined,
     project: string,
@@ -894,7 +805,7 @@ export class DataService {
 
   private async removePreviousWebhooks(
     accessToken: string | undefined,
-    previousConfig: WebhookConfigFilter,
+    previousConfig: IWebhookConfigFilter,
     subscriptionId: string
   ): Promise<void> {
     for (const project of previousConfig.projects) {
@@ -908,8 +819,8 @@ export class DataService {
 
   private async getWebhookConfigFilter(
     accessToken: string | undefined,
-    webhookConfig: UniformSubscriptionFilter
-  ): Promise<WebhookConfigFilter> {
+    webhookConfig: IUniformSubscriptionFilter
+  ): Promise<IWebhookConfigFilter> {
     return {
       projects: webhookConfig.projects?.length
         ? webhookConfig.projects
@@ -943,10 +854,9 @@ export class DataService {
     await this.apiService.deleteUniformSubscription(accessToken, integrationId, subscriptionId);
   }
 
-  public async getSecretsForScope(accessToken: string | undefined, scope: SecretScope): Promise<Secret[]> {
+  public async getSecretsForScope(accessToken: string | undefined, scope: SecretScope): Promise<ISecret[]> {
     const response = await this.apiService.getSecrets(accessToken);
-    const secrets = response.data.Secrets.map((secret) => Secret.fromJSON(secret));
-    return secrets.filter((secret) => secret.scope === scope);
+    return response.data.Secrets.filter((secret) => secret.scope === scope);
   }
 
   private async removeWebhooks(

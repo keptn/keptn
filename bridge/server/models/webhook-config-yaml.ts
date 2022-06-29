@@ -1,24 +1,30 @@
-import { Document, Scalar, YAMLMap, YAMLSeq } from 'yaml';
-import { WebhookConfigMethod } from '../../shared/interfaces/webhook-config';
-import { WebhookConfig, WebhookSecret } from '../../shared/models/webhook-config';
-import { Webhook, WebhookConfigYamlResult } from '../interfaces/webhook-config-yaml-result';
-import { parseCurl } from '../utils/curl.utils';
+import { Document, Pair, Scalar, YAMLMap, YAMLSeq } from 'yaml';
+import { IWebhookConfigClient } from '../../shared/interfaces/webhook-config';
+import { IWebhookSecret } from '../interfaces/webhook-config';
+import {
+  IWebhookConfigYamlResult,
+  IWebhookConfigYamlResultV1Beta1,
+  IWebhookRequestV1Beta1,
+  IWebhookV1Beta1,
+  WebhookApiVersions,
+} from '../interfaces/webhook-config-yaml-result';
+import { stringifyPayload } from './webhook-config.utils';
 
-const order: { [key in keyof WebhookConfigYamlResult]: number } = {
+const order: { [key in keyof IWebhookConfigYamlResultV1Beta1]: number } = {
   apiVersion: 0,
   kind: 1,
   metadata: 2,
   spec: 3,
 };
 
-export class WebhookConfigYaml implements WebhookConfigYamlResult {
-  apiVersion: 'webhookconfig.keptn.sh/v1alpha1';
+export class WebhookConfigYaml implements IWebhookConfigYamlResultV1Beta1 {
+  apiVersion: WebhookApiVersions.V1BETA1;
   kind: 'WebhookConfig';
   metadata: {
     name: 'webhook-configuration';
   };
   spec: {
-    webhooks: Webhook[];
+    webhooks: IWebhookV1Beta1[];
   };
 
   constructor() {
@@ -28,11 +34,11 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
     this.metadata = {
       name: 'webhook-configuration',
     };
-    this.apiVersion = 'webhookconfig.keptn.sh/v1alpha1';
+    this.apiVersion = WebhookApiVersions.V1BETA1;
     this.kind = 'WebhookConfig';
   }
 
-  public static fromJSON(data: WebhookConfigYamlResult): WebhookConfigYaml {
+  public static fromJSON(data: IWebhookConfigYamlResultV1Beta1): WebhookConfigYaml {
     return Object.assign(new this(), data);
   }
 
@@ -61,30 +67,30 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
    * @params eventType
    * @params curl
    */
-  public addWebhook(
-    eventType: string,
-    curl: string,
-    subscriptionId: string,
-    secrets: WebhookSecret[],
-    sendFinished: boolean,
-    sendStarted: boolean
-  ): void {
+  public addWebhook(config: IWebhookConfigClient, subscriptionId: string, secrets: IWebhookSecret[]): void {
     const webhook = this.getWebhook(subscriptionId);
+    const request: IWebhookRequestV1Beta1 = {
+      ...(config.proxy && { options: `--proxy ${config.proxy}` }),
+      url: config.url,
+      payload: stringifyPayload(config.payload),
+      headers: config.header,
+      method: config.method,
+    };
     if (!webhook) {
       this.spec.webhooks.push({
-        type: eventType,
-        requests: [curl],
+        type: config.type,
+        requests: [request],
         ...(secrets.length && { envFrom: secrets }),
         subscriptionID: subscriptionId,
-        sendFinished: sendFinished,
-        sendStarted: sendStarted,
+        sendFinished: config.sendFinished,
+        sendStarted: config.sendStarted,
       });
     } else {
       // overwrite
-      webhook.type = eventType;
-      webhook.requests[0] = curl;
-      webhook.sendFinished = sendFinished;
-      webhook.sendStarted = sendStarted;
+      webhook.type = config.type;
+      webhook.requests[0] = request;
+      webhook.sendFinished = config.sendFinished;
+      webhook.sendStarted = config.sendStarted;
       if (secrets.length) {
         webhook.envFrom = secrets;
       } else {
@@ -93,7 +99,7 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
     }
   }
 
-  private getWebhook(subscriptionId: string): Webhook | undefined {
+  public getWebhook(subscriptionId: string): IWebhookV1Beta1 | undefined {
     return this.spec.webhooks.find(this.findWebhook(subscriptionId));
   }
 
@@ -101,60 +107,14 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
     return this.spec.webhooks.findIndex(this.findWebhook(subscriptionId));
   }
 
-  private findWebhook(subscriptionId: string): (webhook: Webhook) => boolean {
-    return (webhook: Webhook): boolean => webhook.subscriptionID === subscriptionId;
-  }
-
-  public parsedRequest(subscriptionId: string): WebhookConfig | undefined {
-    const webhook = this.getWebhook(subscriptionId);
-    if (webhook) {
-      const curl = webhook.requests[0];
-      if (curl) {
-        const parsedConfig = this.parseConfig(curl);
-        parsedConfig.secrets = webhook.envFrom;
-        parsedConfig.sendFinished = webhook.sendFinished ?? false;
-        parsedConfig.sendStarted = webhook.sendStarted ?? true;
-        parsedConfig.type = webhook.type;
-        return parsedConfig;
-      }
-    }
-    return undefined;
-  }
-
-  private parseConfig(curl: string): WebhookConfig {
-    const config = new WebhookConfig();
-    const result = parseCurl(curl);
-    config.url = result._?.join(' ') ?? '';
-    config.payload = this.formatJSON(result.data?.[0] ?? '');
-    config.proxy = result.proxy?.[0] ?? '';
-    config.method = (result.request?.[0] ?? '') as WebhookConfigMethod;
-    const headers: { name: string; value: string }[] = [];
-    if (result.header) {
-      for (const header of result.header) {
-        const headerInfo = header.split(':');
-
-        headers.push({
-          name: headerInfo[0]?.trim(),
-          value: headerInfo[1]?.trim(),
-        });
-      }
-    }
-
-    config.header = headers;
-    return config;
-  }
-
-  private formatJSON(data: string): string {
-    try {
-      data = JSON.stringify(JSON.parse(data), null, 2);
-    } catch {}
-    return data;
+  private findWebhook(subscriptionId: string): (webhook: IWebhookV1Beta1) => boolean {
+    return (webhook: IWebhookV1Beta1): boolean => webhook.subscriptionID === subscriptionId;
   }
 
   public toYAML(): string {
     const yamlDoc = new Document(this, {
-      sortMapEntries: (a, b): number =>
-        order[a.key as keyof WebhookConfigYamlResult] - order[b.key as keyof WebhookConfigYamlResult],
+      sortMapEntries: (a: Pair, b: Pair): number =>
+        order[a.key as keyof IWebhookConfigYamlResult] - order[b.key as keyof IWebhookConfigYamlResult],
       toStringDefaults: {
         lineWidth: 0,
       },
@@ -167,8 +127,9 @@ export class WebhookConfigYaml implements WebhookConfigYamlResult {
     const yamlSeq = yamlDoc.getIn(['spec', 'webhooks'], true) as YAMLSeq;
     for (const webhookYaml of yamlSeq.items) {
       const requests = (webhookYaml as YAMLMap).get('requests', true) as unknown as YAMLSeq;
-      for (const curl of requests.items) {
-        (curl as Scalar).type = 'BLOCK_FOLDED';
+      for (const requestConfig of requests.items) {
+        const payload = (requestConfig as YAMLMap).get('payload', true);
+        (payload as Scalar).type = 'BLOCK_FOLDED';
       }
     }
   }

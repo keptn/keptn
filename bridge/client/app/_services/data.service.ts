@@ -16,7 +16,6 @@ import { KeptnInfo } from '../_models/keptn-info';
 import { UniformRegistration } from '../_models/uniform-registration';
 import { UniformSubscription } from '../_models/uniform-subscription';
 import { SequenceState } from '../../../shared/interfaces/sequence';
-import { WebhookConfig } from '../../../shared/models/webhook-config';
 import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-registration-info';
 import { FileTree } from '../../../shared/interfaces/resourceFileTree';
 import { EvaluationHistory } from '../_interfaces/evaluation-history';
@@ -39,6 +38,7 @@ import {
   ISequenceStateInfo,
   SequencesState,
 } from '../_views/ktb-sequence-view/ktb-sequence-view.utils';
+import { IWebhookConfigClient } from '../../../shared/interfaces/webhook-config';
 
 @Injectable({
   providedIn: 'root',
@@ -180,7 +180,7 @@ export class DataService {
   public updateUniformSubscription(
     integrationId: string,
     subscription: UniformSubscription,
-    webhookConfig?: WebhookConfig
+    webhookConfig?: IWebhookConfigClient
   ): Observable<Record<string, unknown>> {
     return this.apiService.updateUniformSubscription(integrationId, subscription.reduced, webhookConfig);
   }
@@ -188,7 +188,7 @@ export class DataService {
   public createUniformSubscription(
     integrationId: string,
     subscription: UniformSubscription,
-    webhookConfig?: WebhookConfig
+    webhookConfig?: IWebhookConfigClient
   ): Observable<Record<string, unknown>> {
     return this.apiService.createUniformSubscription(integrationId, subscription.reduced, webhookConfig);
   }
@@ -689,7 +689,7 @@ export class DataService {
     projectName: string,
     stageName?: string,
     serviceName?: string
-  ): Observable<WebhookConfig> {
+  ): Observable<IWebhookConfigClient> {
     return this.apiService.getWebhookConfig(subscriptionId, projectName, stageName, serviceName);
   }
 

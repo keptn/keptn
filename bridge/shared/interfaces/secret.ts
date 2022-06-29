@@ -5,7 +5,7 @@ export interface SecretKeyValuePair {
   value: string;
 }
 
-export interface Secret {
+export interface ISecret {
   name: string;
   scope: SecretScope;
   data?: SecretKeyValuePair[];

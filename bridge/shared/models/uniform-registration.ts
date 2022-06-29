@@ -1,5 +1,5 @@
 import { UniformRegistrationResult } from '../interfaces/uniform-registration-result';
-import { UniformSubscription } from '../interfaces/uniform-subscription';
+import { IUniformSubscription } from '../interfaces/uniform-subscription';
 import { KeptnService } from './keptn-service';
 
 export class UniformRegistration implements UniformRegistrationResult {
@@ -20,7 +20,7 @@ export class UniformRegistration implements UniformRegistrationResult {
   };
   unreadEventsCount?: number;
   name!: string;
-  subscriptions: UniformSubscription[] = [];
+  subscriptions: IUniformSubscription[] = [];
 
   public get isWebhookService(): boolean {
     return this.name === KeptnService.WEBHOOK_SERVICE;

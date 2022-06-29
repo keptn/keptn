@@ -1,17 +1,22 @@
+import { IWebhookRequestV1Beta1, IWebhookV1Beta1, WebhookApiVersions } from '../interfaces/webhook-config-yaml-result';
+import { migrateWebhook } from './webhook-config.utils';
 import { WebhookConfigYaml } from './webhook-config-yaml';
-import { WebhookConfig } from '../../shared/models/webhook-config';
-import { Webhook } from '../interfaces/webhook-config-yaml-result';
 
-const config = WebhookConfigYaml.fromJSON({
+const config: WebhookConfigYaml = WebhookConfigYaml.fromJSON({
   kind: 'WebhookConfig',
-  apiVersion: 'webhookconfig.keptn.sh/v1alpha1',
+  apiVersion: WebhookApiVersions.V1BETA1,
   spec: {
     webhooks: [
       {
         subscriptionID: 'myID',
         type: 'sh.keptn.event.deployment.started',
         requests: [
-          `curl http://keptn.sh/asdf asdf --request GET --proxy http://keptn.sh/proxy --data '{"data": "myData"}'`,
+          {
+            url: 'https://keptn.sh/asdf',
+            options: '--proxy https://keptn.sh/proxy',
+            payload: '{"data": "myData"}',
+            method: 'GET',
+          },
         ],
         envFrom: [
           {
@@ -31,16 +36,32 @@ const config = WebhookConfigYaml.fromJSON({
     name: 'webhook-configuration',
   },
 });
-const configWithLongCurl = WebhookConfigYaml.fromJSON({
+const configWithLongCurl: WebhookConfigYaml = WebhookConfigYaml.fromJSON({
   kind: 'WebhookConfig',
-  apiVersion: 'webhookconfig.keptn.sh/v1alpha1',
+  apiVersion: WebhookApiVersions.V1BETA1,
   spec: {
     webhooks: [
       {
         subscriptionID: 'myID',
         type: 'sh.keptn.event.deployment.started',
         requests: [
-          `curl http://keptn.sh/asdf asdf --request GET --header 'content-type: application/json' --header 'Authorization: myVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongHeader' --proxy http://keptn.sh/proxy --data '{"data": "myData"}'`,
+          {
+            url: 'https://keptn.sh/asdf',
+            method: 'GET',
+            options: '--proxy https://keptn.sh/proxy',
+            payload: '{"data": "myData"}',
+            headers: [
+              {
+                key: 'content-type',
+                value: 'application/json',
+              },
+              {
+                key: 'Authorization',
+                value:
+                  'myVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongHeader',
+              },
+            ],
+          },
         ],
         envFrom: [
           {
@@ -60,16 +81,32 @@ const configWithLongCurl = WebhookConfigYaml.fromJSON({
     name: 'webhook-configuration',
   },
 });
-const configWithoutSecrets = WebhookConfigYaml.fromJSON({
+const configWithoutSecrets: WebhookConfigYaml = WebhookConfigYaml.fromJSON({
   kind: 'WebhookConfig',
-  apiVersion: 'webhookconfig.keptn.sh/v1alpha1',
+  apiVersion: WebhookApiVersions.V1BETA1,
   spec: {
     webhooks: [
       {
         subscriptionID: 'myID',
         type: 'sh.keptn.event.deployment.started',
         requests: [
-          `curl http://keptn.sh/asdf asdf --request GET --header 'content-type: application/json' --header 'Authorization: myVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongHeader' --proxy http://keptn.sh/proxy --data '{"data": "myData"}'`,
+          {
+            url: 'https://keptn.sh/asdf',
+            method: 'GET',
+            headers: [
+              {
+                key: 'content-type',
+                value: 'application/json',
+              },
+              {
+                key: 'Authorization',
+                value:
+                  'myVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongHeader',
+              },
+            ],
+            options: '--proxy https://keptn.sh/proxy',
+            payload: '{"data": "myData"}',
+          },
         ],
         sendFinished: true,
         sendStarted: true,
@@ -82,96 +119,24 @@ const configWithoutSecrets = WebhookConfigYaml.fromJSON({
 });
 
 describe('Test webhook-config-yaml', () => {
-  it('should parse request correctly', () => {
-    // given
-    const yamlConfig = getDefaultWebhookYaml();
-
-    // when
-    const result = yamlConfig.parsedRequest('myID') as WebhookConfig;
-
-    // then
-    const webhookConfig: WebhookConfig = Object.assign(new WebhookConfig(), {
-      url: 'http://keptn.sh/asdf asdf',
-      type: 'sh.keptn.event.deployment.started',
-      header: [
-        {
-          name: 'content-type',
-          value: 'application/json',
-        },
-      ],
-      proxy: 'http://keptn.sh/proxy',
-      payload: '{\n  "data": "myData"\n}',
-      method: 'GET',
-      secrets: [
-        {
-          name: 'mySecret',
-          secretRef: {
-            name: 'myName',
-            key: 'myKey',
-          },
-        },
-      ],
-      sendFinished: false,
-      sendStarted: true,
-    });
-    expect(result).toEqual(webhookConfig);
-  });
-
-  it('should set sendFinished to the value specified', () => {
-    // given
-    const yamlConfigTrue = getDefaultWebhookYaml(true, true);
-    const yamlConfigFalse = getDefaultWebhookYaml(false, false);
-    const yamlConfigUndefined = getDefaultWebhookYaml();
-
-    // when
-    const webhookConfigTrue = yamlConfigTrue.parsedRequest('myID') as WebhookConfig;
-    const webhookConfigFalse = yamlConfigFalse.parsedRequest('myID') as WebhookConfig;
-    const webhookConfigUndefined = yamlConfigUndefined.parsedRequest('myID') as WebhookConfig;
-
-    // then
-    expect(webhookConfigTrue.sendFinished).toBe(true);
-    expect(webhookConfigFalse.sendFinished).toBe(false);
-    expect(webhookConfigUndefined.sendFinished).toBe(false);
-  });
-
-  it('should set sendStarted to the value specified', () => {
-    // given
-    const yamlConfigTrue = getDefaultWebhookYaml(true, true);
-    const yamlConfigFalse = getDefaultWebhookYaml(false, false);
-    const yamlConfigUndefined = getDefaultWebhookYaml();
-
-    // when
-    const webhookConfigTrue = yamlConfigTrue.parsedRequest('myID') as WebhookConfig;
-    const webhookConfigFalse = yamlConfigFalse.parsedRequest('myID') as WebhookConfig;
-    const webhookConfigUndefined = yamlConfigUndefined.parsedRequest('myID') as WebhookConfig;
-
-    // then
-    expect(webhookConfigTrue.sendStarted).toBe(true);
-    expect(webhookConfigFalse.sendStarted).toBe(false);
-    expect(webhookConfigUndefined.sendStarted).toBe(true);
-  });
-
-  it('should return undefined if subscriptionID does not exist', () => {
-    // given
-    const yamlConfig = getDefaultWebhookYaml(true);
-    // when
-    const webhookConfig = yamlConfig.parsedRequest('notExistingID');
-    // then
-    expect(webhookConfig).toBeUndefined();
-  });
-
   it('should add another webhook', () => {
     // given
     const yamlConfig = getDefaultWebhookYaml(true);
 
     // when
     yamlConfig.addWebhook(
-      'sh.keptn.events.approval.triggered',
-      'curl http://keptn.sh --request GET',
+      {
+        type: 'sh.keptn.events.approval.triggered',
+        sendFinished: true,
+        sendStarted: true,
+        header: [],
+        url: 'https://keptn.sh',
+        method: 'GET',
+        payload: '',
+        proxy: 'asdf',
+      },
       'mySecondID',
-      [],
-      true,
-      true
+      []
     );
 
     // then
@@ -181,8 +146,16 @@ describe('Test webhook-config-yaml', () => {
       sendFinished: true,
       sendStarted: true,
       subscriptionID: 'mySecondID',
-      requests: ['curl http://keptn.sh --request GET'],
-    } as Webhook);
+      requests: [
+        {
+          method: 'GET',
+          payload: '',
+          headers: [],
+          url: 'https://keptn.sh',
+          options: '--proxy asdf',
+        },
+      ],
+    } as IWebhookV1Beta1);
   });
 
   it('should update an existing webhook', () => {
@@ -192,8 +165,16 @@ describe('Test webhook-config-yaml', () => {
 
     // when
     yamlConfig.addWebhook(
-      'sh.keptn.events.approval.started',
-      'curl http://keptn.sh/second --request GET',
+      {
+        type: 'sh.keptn.events.approval.started',
+        sendFinished: true,
+        sendStarted: true,
+        url: 'https://keptn.sh/second',
+        method: 'GET',
+        proxy: '',
+        payload: '',
+        header: [],
+      },
       'myID',
       [
         {
@@ -203,9 +184,7 @@ describe('Test webhook-config-yaml', () => {
             key: 'myKey',
           },
         },
-      ],
-      true,
-      true
+      ]
     );
 
     // then
@@ -223,9 +202,16 @@ describe('Test webhook-config-yaml', () => {
           },
         },
       ],
+      requests: [
+        {
+          url: 'https://keptn.sh/second',
+          method: 'GET',
+          headers: [],
+          payload: '',
+        },
+      ],
       subscriptionID: 'myID',
-      requests: ['curl http://keptn.sh/second --request GET'],
-    } as Webhook);
+    } as IWebhookV1Beta1);
   });
 
   it('should update an existing webhook and remove secrets', () => {
@@ -234,23 +220,37 @@ describe('Test webhook-config-yaml', () => {
 
     // when
     yamlConfig.addWebhook(
-      'sh.keptn.events.approval.started',
-      'curl http://keptn.sh/second --request GET',
+      {
+        type: 'sh.keptn.events.approval.started',
+        url: 'https://keptn.sh/second',
+        method: 'GET',
+        proxy: 'https://keptn.sh/proxy',
+        payload: '',
+        header: [],
+        sendStarted: true,
+        sendFinished: false,
+      },
       'myID',
-      [],
-      true,
-      true
+      []
     );
 
     // then
     expect(yamlConfig.spec.webhooks.length).toBe(1);
     expect(yamlConfig.spec.webhooks[0]).toEqual({
       type: 'sh.keptn.events.approval.started',
-      sendFinished: true,
+      sendFinished: false,
       sendStarted: true,
       subscriptionID: 'myID',
-      requests: ['curl http://keptn.sh/second --request GET'],
-    } as Webhook);
+      requests: [
+        {
+          url: 'https://keptn.sh/second',
+          method: 'GET',
+          options: '--proxy https://keptn.sh/proxy',
+          headers: [],
+          payload: '',
+        },
+      ],
+    } as IWebhookV1Beta1);
   });
 
   it('should remove webhooks', () => {
@@ -271,7 +271,7 @@ describe('Test webhook-config-yaml', () => {
     // when
     const result = config.toYAML();
     // then
-    expect(result).toBe(`apiVersion: webhookconfig.keptn.sh/v1alpha1
+    expect(result).toBe(`apiVersion: webhookconfig.keptn.sh/v1beta1
 kind: WebhookConfig
 metadata:
   name: webhook-configuration
@@ -280,8 +280,11 @@ spec:
     - subscriptionID: myID
       type: sh.keptn.event.deployment.started
       requests:
-        - >-
-          curl http://keptn.sh/asdf asdf --request GET --proxy http://keptn.sh/proxy --data '{"data": "myData"}'
+        - url: https://keptn.sh/asdf
+          options: --proxy https://keptn.sh/proxy
+          payload: >-
+            {"data": "myData"}
+          method: GET
       envFrom:
         - name: mySecret
           secretRef:
@@ -297,7 +300,7 @@ spec:
     const result = configWithLongCurl.toYAML();
 
     // then
-    expect(result).toBe(`apiVersion: webhookconfig.keptn.sh/v1alpha1
+    expect(result).toBe(`apiVersion: webhookconfig.keptn.sh/v1beta1
 kind: WebhookConfig
 metadata:
   name: webhook-configuration
@@ -306,8 +309,16 @@ spec:
     - subscriptionID: myID
       type: sh.keptn.event.deployment.started
       requests:
-        - >-
-          curl http://keptn.sh/asdf asdf --request GET --header 'content-type: application/json' --header 'Authorization: myVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongHeader' --proxy http://keptn.sh/proxy --data '{"data": "myData"}'
+        - url: https://keptn.sh/asdf
+          method: GET
+          options: --proxy https://keptn.sh/proxy
+          payload: >-
+            {"data": "myData"}
+          headers:
+            - key: content-type
+              value: application/json
+            - key: Authorization
+              value: myVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongHeader
       envFrom:
         - name: mySecret
           secretRef:
@@ -323,7 +334,7 @@ spec:
     const result = configWithoutSecrets.toYAML();
 
     // then
-    expect(result).toBe(`apiVersion: webhookconfig.keptn.sh/v1alpha1
+    expect(result).toBe(`apiVersion: webhookconfig.keptn.sh/v1beta1
 kind: WebhookConfig
 metadata:
   name: webhook-configuration
@@ -332,42 +343,52 @@ spec:
     - subscriptionID: myID
       type: sh.keptn.event.deployment.started
       requests:
-        - >-
-          curl http://keptn.sh/asdf asdf --request GET --header 'content-type: application/json' --header 'Authorization: myVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongHeader' --proxy http://keptn.sh/proxy --data '{"data": "myData"}'
+        - url: https://keptn.sh/asdf
+          method: GET
+          headers:
+            - key: content-type
+              value: application/json
+            - key: Authorization
+              value: myVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongHeader
+          options: --proxy https://keptn.sh/proxy
+          payload: >-
+            {"data": "myData"}
       sendFinished: true
       sendStarted: true
 `);
   });
 
   function getDefaultWebhookYaml(sendFinished?: boolean, sendStarted?: boolean): WebhookConfigYaml {
-    return WebhookConfigYaml.fromJSON({
-      kind: 'WebhookConfig',
-      apiVersion: 'webhookconfig.keptn.sh/v1alpha1',
-      spec: {
-        webhooks: [
-          {
-            subscriptionID: 'myID',
-            type: 'sh.keptn.event.deployment.started',
-            requests: [
-              `curl http://keptn.sh/asdf asdf --request GET --header 'content-type: application/json' --proxy http://keptn.sh/proxy --data '{"data": "myData"}'`,
-            ],
-            envFrom: [
-              {
-                name: 'mySecret',
-                secretRef: {
-                  name: 'myName',
-                  key: 'myKey',
+    return WebhookConfigYaml.fromJSON(
+      migrateWebhook({
+        kind: 'WebhookConfig',
+        apiVersion: WebhookApiVersions.V1ALPHA1,
+        spec: {
+          webhooks: [
+            {
+              subscriptionID: 'myID',
+              type: 'sh.keptn.event.deployment.started',
+              requests: [
+                `curl https://keptn.sh/asdf asdf --request GET --header 'content-type: application/json' --proxy https://keptn.sh/proxy --data '{"data": "myData"}'`,
+              ],
+              envFrom: [
+                {
+                  name: 'mySecret',
+                  secretRef: {
+                    name: 'myName',
+                    key: 'myKey',
+                  },
                 },
-              },
-            ],
-            ...(sendFinished !== undefined && { sendFinished }),
-            ...(sendStarted !== undefined && { sendStarted }),
-          },
-        ],
-      },
-      metadata: {
-        name: 'webhook-configuration',
-      },
-    });
+              ],
+              ...(sendFinished !== undefined && { sendFinished }),
+              ...(sendStarted !== undefined && { sendStarted }),
+            },
+          ],
+        },
+        metadata: {
+          name: 'webhook-configuration',
+        },
+      })
+    );
   }
 });

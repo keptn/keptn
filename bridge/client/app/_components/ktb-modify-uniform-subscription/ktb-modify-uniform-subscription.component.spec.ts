@@ -8,7 +8,6 @@ import { UniformSubscription } from '../../_models/uniform-subscription';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { UniformRegistrationLocations } from '../../../../shared/interfaces/uniform-registration-locations';
 import { UniformRegistrationInfo } from '../../../../shared/interfaces/uniform-registration-info';
-import { WebhookConfig } from '../../../../shared/models/webhook-config';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AbstractControl } from '@angular/forms';
 import { ApiService } from '../../_services/api.service';
@@ -17,6 +16,7 @@ import { ProjectsMock } from '../../_services/_mockData/projects.mock';
 import { KtbModifyUniformSubscriptionModule } from './ktb-modify-uniform-subscription.module';
 import { RouterTestingModule } from '@angular/router/testing';
 import { KtbKeptnServicesListComponent } from '../ktb-keptn-services-list/ktb-keptn-services-list.component';
+import { IWebhookConfigClient } from '../../../../shared/interfaces/webhook-config';
 
 describe('KtbModifyUniformSubscriptionComponent', () => {
   let component: KtbModifyUniformSubscriptionComponent;
@@ -109,20 +109,22 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     const subscription = setSubscription(10, 0);
     const dataService = TestBed.inject(DataService);
     const updateSpy = jest.spyOn(dataService, 'updateUniformSubscription');
-    const webhookConfig = new WebhookConfig();
     fixture.detectChanges();
-
-    webhookConfig.method = 'POST';
-    webhookConfig.url = 'https://keptn.sh';
-    webhookConfig.payload = '{}';
-    webhookConfig.header = [{ name: 'Content-Type', value: 'application/json' }];
+    const webhookConfig: IWebhookConfigClient = {
+      method: 'POST',
+      url: 'https://keptn.sh',
+      payload: '{}',
+      header: [{ key: 'Content-Type', value: 'application/json' }],
+      type: 'sh.keptn.event.evaluation.triggered',
+      sendStarted: true,
+      sendFinished: true,
+    };
 
     // when
     component.updateSubscription('sockshop', UniformRegistrationsMock[10].id, subscription, webhookConfig);
     fixture.detectChanges();
 
     webhookConfig.type = subscription.event;
-    webhookConfig.filter = subscription.filter;
     webhookConfig.prevConfiguration = {
       filter: subscription.filter,
       type: subscription.event,
