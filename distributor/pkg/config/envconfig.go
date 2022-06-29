@@ -39,16 +39,16 @@ type EnvConfig struct {
 	Version                   string        `envconfig:"VERSION" default:""`
 	K8sDeploymentName         string        `envconfig:"K8S_DEPLOYMENT_NAME" default:""`
 	K8sNamespace              string        `envconfig:"K8S_NAMESPACE" default:""`
-	K8sPodName           		  string        `envconfig:"K8S_POD_NAME" default:""`
-	K8sNodeName          		  string        `envconfig:"K8S_NODE_NAME" default:""`
-	MaxHeartBeatRetries  		  int           `envconfig:"MAX_HEARTBEAT_RETRIES" default:"10"`
-	HeartbeatInterval    		  time.Duration `envconfig:"HEARTBEAT_INTERVAL" default:"10s"`
-	MaxRegistrationRetries 		int           `envconfig:"MAX_REGISTRATION_RETRIES" default:"10"`
-	OAuthClientID          		string        `envconfig:"OAUTH_CLIENT_ID" default:""`
-	OAuthClientSecret      		string        `envconfig:"OAUTH_CLIENT_SECRET" default:""`
-	OAuthScopes            		[]string      `envconfig:"OAUTH_SCOPES" default:""`
-	OAuthDiscovery         		string        `envconfig:"OAUTH_DISCOVERY" default:""`
-	OauthTokenURL          		string        `envconfig:"OAUTH_TOKEN_URL" default:""`
+	K8sPodName                string        `envconfig:"K8S_POD_NAME" default:""`
+	K8sNodeName               string        `envconfig:"K8S_NODE_NAME" default:""`
+	MaxHeartBeatRetries       int           `envconfig:"MAX_HEARTBEAT_RETRIES" default:"10"`
+	HeartbeatInterval         time.Duration `envconfig:"HEARTBEAT_INTERVAL" default:"10s"`
+	MaxRegistrationRetries    int           `envconfig:"MAX_REGISTRATION_RETRIES" default:"10"`
+	OAuthClientID             string        `envconfig:"OAUTH_CLIENT_ID" default:""`
+	OAuthClientSecret         string        `envconfig:"OAUTH_CLIENT_SECRET" default:""`
+	OAuthScopes               []string      `envconfig:"OAUTH_SCOPES" default:""`
+	OAuthDiscovery            string        `envconfig:"OAUTH_DISCOVERY" default:""`
+	OauthTokenURL             string        `envconfig:"OAUTH_TOKEN_URL" default:""`
 }
 
 func (env *EnvConfig) PubSubConnectionType() ConnectionType {

@@ -31,8 +31,8 @@ spec:
 type ZeroDowntimeEnv struct {
 	quit              chan struct{}
 	NrOfUpgrades      int           `envconfig:"NUMBER_OF_UPGRADES"  default:"2"`
-	EnvUpgradeVersion string        `envconfig:"UPGRADE_HELM_CHART"  default:"https://charts-dev.keptn.sh/packages/keptn-0.17.0-dev-PR-8213.tgz"` //for local run you can add a default ref to this string here e.g. default:"https://github.com/keptn/helm-charts-dev/raw/69eea439a26a99ecc163e296860dbb5d43e41600/packages/keptn-0.15.1-dev.tgz"`
-	EnvInstallVersion string        `envconfig:"INSTALL_HELM_CHART"  default:"https://charts.keptn.sh/packages/keptn-0.16.0.tgz"`                 //for local run you can add a default ref to this string here e.g. default:"https://github.com/keptn/helm-charts-dev/raw/gh-pages/packages/keptn-0.15.0-dev.tgz"
+	EnvUpgradeVersion string        `envconfig:"UPGRADE_HELM_CHART" ` //for local run you can add a default ref to this string here e.g. default:"https://github.com/keptn/helm-charts-dev/raw/69eea439a26a99ecc163e296860dbb5d43e41600/packages/keptn-0.15.1-dev.tgz"`
+	EnvInstallVersion string        `envconfig:"INSTALL_HELM_CHART" ` //for local run you can add a default ref to this string here e.g. default:"https://github.com/keptn/helm-charts-dev/raw/gh-pages/packages/keptn-0.15.0-dev.tgz"
 	ApiProbeInterval  time.Duration `envconfig:"API_PROBES_INTERVAL" default:"15s"`
 	SequencesInterval time.Duration `envconfig:"SEQUENCES_INTERVAL"  default:"30s"`
 	Wg                *sync.WaitGroup

@@ -267,7 +267,7 @@ jobs:
           install: true
 
       - name: Build ${{ matrix.config.artifact }} test image
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' && matrix.config.artifact != 'bridge2') || matrix.config.should-run == 'true'
+        if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
         uses: docker/build-push-action@v3
         with:
           context: ${{ matrix.config.working-dir }}
@@ -277,7 +277,7 @@ jobs:
           push: false
 
       - name: Test ${{ matrix.config.artifact }}
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' && matrix.config.artifact != 'bridge2') || matrix.config.should-run == 'true'
+        if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true')
         env:
           IMAGE_NAME: ${{ matrix.config.artifact }}-test-${{ github.sha }}
         run: |

@@ -1,21 +1,3 @@
-# Old values set
-control-plane:
-  enabled: true
-  apiGatewayNginx:
-    type: LoadBalancer
-  common:
-    strategy:
-      rollingUpdate:
-        maxUnavailable: 0
-  resourceService:
-    enabled: "true"
-    env:
-      DIRECTORY_STAGE_STRUCTURE: "true"
-
-continuous-delivery:
-  enabled: true
-
-# New values set
 apiGatewayNginx:
   type: LoadBalancer
 strategy:
