@@ -315,6 +315,15 @@ describe('KtbWebhookSettingsComponent', () => {
     });
   });
 
+  it('should set sendFinished and sendStarted true by default for triggered events', () => {
+    // given
+    component.eventType = 'triggered';
+    fixture.detectChanges();
+    // then
+    expect(component.getFormControl('sendFinished').value).toEqual('true');
+    expect(component.getFormControl('sendStarted').value).toEqual('true');
+  });
+
   it('should set sendFinished and sendStarted null when eventType started', () => {
     // given
     component.eventType = 'started';
