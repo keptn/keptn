@@ -4,12 +4,12 @@ kind: Service
 metadata:
   name: {{ include "jmeter-service.fullname" . }}
   labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/name: jmeter-service
+    app.kubernetes.io/name: {{ include "jmeter-service.name" . }}
 spec:
   type: ClusterIP
   ports:
     - port: 8080
       protocol: TCP
   selector: {{- include "keptn.common.labels.selectorLabels" . | nindent 4 }}
-    app.kubernetes.io/name: jmeter-service
+    app.kubernetes.io/name: {{ include "jmeter-service.name" . }}
   {{- end }}

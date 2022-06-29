@@ -3,12 +3,12 @@ kind: Deployment
 metadata:
   name: {{ include "jmeter-service.fullname" . }}
   labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/name: jmeter-service
+    app.kubernetes.io/name: {{ include "jmeter-service.name" . }}
 spec:
   replicas: 1
   selector:
     matchLabels: {{- include "keptn.common.labels.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/name: jmeter-service
+      app.kubernetes.io/name: {{ include "jmeter-service.name" . }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -16,7 +16,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels: {{- include "keptn.common.labels.standard" . | nindent 8 }}
-        app.kubernetes.io/name: jmeter-service
+        app.kubernetes.io/name: {{ include "jmeter-service.name" . }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
