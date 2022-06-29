@@ -15,7 +15,7 @@ require (
 	github.com/mholt/archiver/v3 v3.5.1
 	github.com/otiai10/copy v1.7.0
 	github.com/sirupsen/logrus v1.8.1
-	github.com/stretchr/testify v1.7.1
+	github.com/stretchr/testify v1.7.5
 	golang.org/x/net v0.0.0-20220624214902-1bab6f366d9e
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/apimachinery v0.22.11

@@ -19,7 +19,7 @@ require (
 	github.com/nats-io/nats-server/v2 v2.8.4
 	github.com/nats-io/nats.go v1.16.0
 	github.com/sirupsen/logrus v1.8.1
-	github.com/stretchr/testify v1.7.1
+	github.com/stretchr/testify v1.7.5
 	golang.org/x/net v0.0.0-20220624214902-1bab6f366d9e
 	golang.org/x/time v0.0.0-20220609170525-579cf78fd858
 	gopkg.in/yaml.v2 v2.4.0
@@ -76,7 +76,7 @@ require (
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/klog/v2 v2.60.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20211109043538-20434351676c // indirect
 	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9 // indirect
