@@ -5,13 +5,13 @@ import { EnabledComponents, LogDestination } from '../utils/logger';
  */
 export interface BridgeOption {
   logging?: LogOptions;
-  auth?: AuthOptions;
-  oauth?: OAuthOptions;
-  api?: APIOptions;
-  feature?: FeatureOption;
+  auth?: Partial<AuthConfig>;
+  oauth?: Partial<OAuthConfig>;
+  api?: Partial<APIConfig>;
+  feature?: Partial<FeatureConfig>;
   version?: string;
   mode?: string;
-  mongo?: MongoOptions;
+  mongo?: Partial<MongoConfig>;
 }
 
 export enum EnvType {
@@ -23,33 +23,6 @@ export enum EnvType {
 interface LogOptions {
   destination?: LogDestination;
   enabledComponents?: string;
-}
-
-interface AuthOptions {
-  authMessage?: string;
-}
-
-interface OAuthOptions {
-  enabled?: boolean;
-  discoveryURL?: string;
-  baseURL?: string;
-  clientID?: string;
-}
-
-interface APIOptions {
-  url?: string;
-  token?: string;
-  showToken?: boolean;
-}
-
-interface MongoOptions {
-  user: string;
-  password: string;
-  host: string;
-}
-
-interface FeatureOption {
-  automaticProvisioningMessage?: string;
 }
 
 /**
