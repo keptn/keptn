@@ -4,6 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DtToast } from '@dynatrace/barista-components/toast';
 import { combineLatest, Observable, of, Subject } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { filter, map, startWith, takeUntil } from 'rxjs/operators';
 import { IGitDataExtended } from 'shared/interfaces/project';
 import { IClientFeatureFlags } from '../../../../shared/interfaces/feature-flags';
@@ -207,27 +208,28 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
     const shipyardBase64 = btoa(fileContent);
     const projectName = this.projectNameControl.value;
 
-    this.dataService.createProjectExtended(projectName, shipyardBase64, this.gitDataExtended ?? undefined).subscribe(
-      () => {
-        this.projectName = projectName;
-        this.dataService.loadProjects().subscribe(() => {
+    this.dataService
+      .createProjectExtended(projectName, shipyardBase64, this.gitDataExtended ?? undefined)
+      .pipe(switchMap(() => this.dataService.loadProjects()))
+      .subscribe(
+        () => {
+          this.projectName = projectName;
           this.isCreatingProjectInProgress = false;
           this.isProjectFormTouched = false;
 
           this.router.navigate(['/', 'project', this.projectName, 'settings', 'project'], {
             queryParams: { created: true },
           });
-        });
-      },
-      (err) => {
-        const errorMessage = err.error || 'please, check the logs of resource-service';
-        this.notificationsService.addNotification(
-          NotificationType.ERROR,
-          `The project could not be created: ${errorMessage}.`
-        );
-        this.isCreatingProjectInProgress = false;
-      }
-    );
+        },
+        (err) => {
+          const errorMessage = err.error || 'please, check the logs of resource-service';
+          this.notificationsService.addNotification(
+            NotificationType.ERROR,
+            `The project could not be created: ${errorMessage}.`
+          );
+          this.isCreatingProjectInProgress = false;
+        }
+      );
   }
 
   private deleteProject(projectName: string): void {
