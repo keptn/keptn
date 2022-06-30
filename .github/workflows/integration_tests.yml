@@ -269,6 +269,7 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCLOUD_RESTRICTED_SERVICE_KEY }}
           access_token_lifetime: "7200s"
+          token_format: "access_token"
 
       - name: Set up Google Cloud SDK
         if: env.CLOUD_PROVIDER == 'GKE'
