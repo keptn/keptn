@@ -11,8 +11,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	handlers_mock "github.com/keptn/keptn/api/handlers/fake"
 	"github.com/keptn/keptn/api/importer"
-	"github.com/keptn/keptn/api/importer/fake"
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/import_operations"
 	"github.com/keptn/keptn/api/test/utils"
@@ -22,7 +22,7 @@ const testArchiveSize20MB uint64 = 20 * 1024 * 1204
 
 func TestErrorNonExistingProject(t *testing.T) {
 	var actualCheckedProject string
-	mockedprojectChecker := &fake.ProjectCheckerMock{
+	mockedprojectChecker := &handlers_mock.ProjectCheckerMock{
 		ProjectExistsFunc: func(projectName string) (bool, error) {
 			actualCheckedProject = projectName
 			return false, nil
@@ -50,7 +50,7 @@ func TestErrorNonExistingProject(t *testing.T) {
 func TestErrorUnableToCheckProject(t *testing.T) {
 	var actualCheckedProject string
 	prjCheckerErrDesc := "some obscure project checker error"
-	mockedprojectChecker := &fake.ProjectCheckerMock{
+	mockedprojectChecker := &handlers_mock.ProjectCheckerMock{
 		ProjectExistsFunc: func(projectName string) (bool, error) {
 			actualCheckedProject = projectName
 			return true, errors.New(prjCheckerErrDesc)
@@ -83,7 +83,7 @@ func TestErrorImportBrokenReader(t *testing.T) {
 	)
 
 	var actualCheckedProject string
-	mockedprojectChecker := &fake.ProjectCheckerMock{
+	mockedprojectChecker := &handlers_mock.ProjectCheckerMock{
 		ProjectExistsFunc: func(projectName string) (bool, error) {
 			actualCheckedProject = projectName
 			return true, nil
@@ -127,7 +127,7 @@ func TestErrorSaveArchiveFromUpload(t *testing.T) {
 
 	tempDir := "this-directory-must-not-exist"
 
-	mockedprojectChecker := &fake.ProjectCheckerMock{
+	mockedprojectChecker := &handlers_mock.ProjectCheckerMock{
 		ProjectExistsFunc: func(projectName string) (bool, error) {
 			return true, nil
 		},
@@ -154,7 +154,7 @@ func TestErrorCreateNewZippedArchiveFromUpload(t *testing.T) {
 	t.Logf("using %s as temp folder", tempDir)
 	require.NoError(t, err)
 
-	mockedprojectChecker := &fake.ProjectCheckerMock{
+	mockedprojectChecker := &handlers_mock.ProjectCheckerMock{
 		ProjectExistsFunc: func(projectName string) (bool, error) {
 			return true, nil
 		},
@@ -162,14 +162,22 @@ func TestErrorCreateNewZippedArchiveFromUpload(t *testing.T) {
 
 	packageContent := []byte("some payload bytes here")
 
-	errorParsingPackage := func(file string, maxSize uint64) (*importer.ZippedPackage, error) {
+	errorParsingPackage := func(file string, maxSize uint64) (importer.ImportPackage, error) {
 		require.FileExists(t, file)
 
 		return nil, errors.New("error parsing package")
 	}
 
+	mockedProcessor := &handlers_mock.MockImportPackageProcessor{
+		ProcessFunc: func(
+			project string, ip importer.ImportPackage,
+		) error {
+			return nil
+		},
+	}
+
 	importHandlerFunc := getImportHandlerInstance(
-		tempDir, mockedprojectChecker, testArchiveSize20MB, errorParsingPackage,
+		tempDir, mockedprojectChecker, testArchiveSize20MB, errorParsingPackage, mockedProcessor,
 	).HandleImport
 
 	actualResponder := importHandlerFunc(
@@ -185,14 +193,15 @@ func TestErrorCreateNewZippedArchiveFromUpload(t *testing.T) {
 	actualPayload := actualResponder.(*import_operations.ImportUnsupportedMediaType).Payload
 	assert.NotEmpty(t, actualPayload.Message)
 	assert.Equal(t, int64(http.StatusUnsupportedMediaType), actualPayload.Code)
+	assert.Len(t, mockedProcessor.ProcessCalls(), 0)
 }
 
-func TestImportHandlerHappyPath(t *testing.T) {
+func TestErrorProcessingImportPackage(t *testing.T) {
 	tempDir, err := ioutil.TempDir("", "test-handler-save-")
 	t.Logf("using %s as temp folder", tempDir)
 	require.NoError(t, err)
 
-	mockedprojectChecker := &fake.ProjectCheckerMock{
+	mockedprojectChecker := &handlers_mock.ProjectCheckerMock{
 		ProjectExistsFunc: func(projectName string) (bool, error) {
 			return true, nil
 		},
@@ -200,7 +209,7 @@ func TestImportHandlerHappyPath(t *testing.T) {
 
 	packageContent := []byte("some payload bytes here")
 
-	parsingPackage := func(file string, maxSize uint64) (*importer.ZippedPackage, error) {
+	parsingPackage := func(file string, maxSize uint64) (importer.ImportPackage, error) {
 		require.FileExists(t, file)
 		packageBytes, err := ioutil.ReadFile(file)
 		require.NoError(t, err)
@@ -208,8 +217,62 @@ func TestImportHandlerHappyPath(t *testing.T) {
 		return &importer.ZippedPackage{}, nil
 	}
 
+	mockedProcessor := &handlers_mock.MockImportPackageProcessor{
+		ProcessFunc: func(
+			project string, ip importer.ImportPackage,
+		) error {
+			return errors.New("error processing archive")
+		},
+	}
+
 	importHandlerFunc := getImportHandlerInstance(
-		tempDir, mockedprojectChecker, testArchiveSize20MB, parsingPackage,
+		tempDir, mockedprojectChecker, testArchiveSize20MB, parsingPackage, mockedProcessor,
+	).HandleImport
+
+	actualResponder := importHandlerFunc(
+		import_operations.ImportParams{
+			HTTPRequest:   nil,
+			ConfigPackage: io.NopCloser(bytes.NewReader(packageContent)),
+			Project:       "projectName",
+		},
+		new(models.Principal),
+	)
+
+	require.IsType(t, &import_operations.ImportBadRequest{}, actualResponder)
+	assert.Len(t, mockedProcessor.ProcessCalls(), 1)
+}
+
+func TestImportHandlerHappyPath(t *testing.T) {
+	tempDir, err := ioutil.TempDir("", "test-handler-save-")
+	t.Logf("using %s as temp folder", tempDir)
+	require.NoError(t, err)
+
+	mockedprojectChecker := &handlers_mock.ProjectCheckerMock{
+		ProjectExistsFunc: func(projectName string) (bool, error) {
+			return true, nil
+		},
+	}
+
+	packageContent := []byte("some payload bytes here")
+
+	parsingPackage := func(file string, maxSize uint64) (importer.ImportPackage, error) {
+		require.FileExists(t, file)
+		packageBytes, err := ioutil.ReadFile(file)
+		require.NoError(t, err)
+		assert.Equal(t, packageContent, packageBytes)
+		return &importer.ZippedPackage{}, nil
+	}
+
+	mockedProcessor := &handlers_mock.MockImportPackageProcessor{
+		ProcessFunc: func(
+			project string, ip importer.ImportPackage,
+		) error {
+			return nil
+		},
+	}
+
+	importHandlerFunc := getImportHandlerInstance(
+		tempDir, mockedprojectChecker, testArchiveSize20MB, parsingPackage, mockedProcessor,
 	).HandleImport
 
 	actualResponder := importHandlerFunc(
@@ -222,4 +285,5 @@ func TestImportHandlerHappyPath(t *testing.T) {
 	)
 
 	require.IsType(t, &import_operations.ImportOK{}, actualResponder)
+	assert.Len(t, mockedProcessor.ProcessCalls(), 1)
 }

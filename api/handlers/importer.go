@@ -10,6 +10,7 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 
 	"github.com/keptn/keptn/api/importer"
+	"github.com/keptn/keptn/api/importer/model"
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/import_operations"
 
@@ -18,14 +19,18 @@ import (
 
 const defaultImportArchiveExtension = ".zip"
 
-//go:generate moq -pkg fake --skip-ensure -out ./fake/projectchecker_mock.go . projectChecker:ProjectCheckerMock
+//go:generate moq -pkg handlers_mock --skip-ensure -out ./fake/projectchecker_mock.go . projectChecker:ProjectCheckerMock importPackageProcessor:MockImportPackageProcessor
 
 type projectChecker interface {
 	ProjectExists(projectName string) (bool, error)
 }
 
+type importPackageProcessor interface {
+	Process(project string, ip importer.ImportPackage) error
+}
+
 // ParseArchiveFunction is the function called to parse the uploaded file
-type ParseArchiveFunction func(string, uint64) (*importer.ZippedPackage, error)
+type ParseArchiveFunction func(string, uint64) (importer.ImportPackage, error)
 
 // ImportHandler is the rest handler for the /import endpoint
 type ImportHandler struct {
@@ -33,6 +38,7 @@ type ImportHandler struct {
 	tempStorageDir             string
 	maxUncompressedPackageSize uint64
 	parseArchive               ParseArchiveFunction
+	processor                  importPackageProcessor
 }
 
 // GetImportHandlerFunc will instantiate a configured ImportHandler and return the method that can be used for
@@ -40,19 +46,25 @@ type ImportHandler struct {
 func GetImportHandlerFunc(storagePath string, checker projectChecker, maxPackageSize uint64) func(
 	params import_operations.ImportParams, principal *models.Principal,
 ) middleware.Responder {
-	ih := getImportHandlerInstance(storagePath, checker, maxPackageSize, importer.NewPackage)
+	ih := getImportHandlerInstance(
+		storagePath, checker, maxPackageSize, importer.NewPackage,
+		importer.NewImportPackageProcessor(
+			new(model.YAMLManifestUnMarshaler), nil,
+		), // TODO replace with correct task executor
+	)
 	return ih.HandleImport
 }
 
 func getImportHandlerInstance(
 	storagePath string, checker projectChecker, maxPackageSize uint64,
-	parserFunction ParseArchiveFunction,
+	parserFunction ParseArchiveFunction, processor importPackageProcessor,
 ) *ImportHandler {
 	return &ImportHandler{
 		checker:                    checker,
 		tempStorageDir:             storagePath,
 		maxUncompressedPackageSize: maxPackageSize,
 		parseArchive:               parserFunction,
+		processor:                  processor,
 	}
 }
 
@@ -137,6 +149,17 @@ func (ih *ImportHandler) HandleImport(
 			logger.Warnf("Error closing manifest %+v: %s", m, manifestCloseErr)
 		}
 	}()
+
+	err = ih.processor.Process(params.Project, m)
+	if err != nil {
+		logger.Errorf("Error processing import archive: %v", err)
+		message := fmt.Sprintf("Error processing import archive: %s", err)
+		mError := models.Error{
+			Code:    http.StatusBadRequest,
+			Message: &message,
+		}
+		return import_operations.NewImportBadRequest().WithPayload(&mError)
+	}
 
 	return import_operations.NewImportOK()
 }

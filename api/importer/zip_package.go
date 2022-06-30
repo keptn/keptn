@@ -20,6 +20,11 @@ type ZippedPackage struct {
 	extractedDir string
 }
 
+func (m *ZippedPackage) GetResource(resourceName string) (io.ReadCloser, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
 // Close signals that the package resources can be freed (including any extracted files).
 // Once Close has been called it's illegal to call any other ZippedPackage operation
 func (m *ZippedPackage) Close() error {
@@ -61,7 +66,7 @@ func (m *ZippedPackage) extract(zipFile string, maxSize uint64) error {
 // The zip file contents will be extracted in a subDirectory with the same name as the file stripped of the .zip
 // extension. During the extraction, zip file uncompressed content is checked not to surpass maxSize.
 // If any error occurs, the temporary folder is cleaned up and (nil, error) will be returned
-func NewPackage(zipFile string, maxSize uint64) (*ZippedPackage, error) {
+func NewPackage(zipFile string, maxSize uint64) (ImportPackage, error) {
 	m := new(ZippedPackage)
 	err := m.extract(zipFile, maxSize)
 	if err != nil {

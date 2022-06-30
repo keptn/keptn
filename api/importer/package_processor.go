@@ -36,7 +36,7 @@ func NewImportPackageProcessor(mp ManifestParser, ex TaskExecutor) *ImportPackag
 
 const manifestFileName = "manifest.yaml"
 
-func (ipp *ImportPackageProcessor) Process(ip ImportPackage) error {
+func (ipp *ImportPackageProcessor) Process(project string, ip ImportPackage) error {
 
 	defer ip.Close()
 

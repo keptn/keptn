@@ -35,7 +35,7 @@ func TestImportPackageEmptyManifestRetrievedAndPackageClosed(t *testing.T) {
 			return io.NopCloser(bytes.NewReader([]byte{})), nil
 		},
 	}
-	err := sut.Process(importPackageMock)
+	err := sut.Process("project", importPackageMock)
 	require.NoError(t, err)
 	assert.Len(t, importPackageMock.CloseCalls(), 1)
 	assert.ElementsMatch(
@@ -77,7 +77,7 @@ func TestErrorImportPackageWhenManifestCannotBeRetrieved(t *testing.T) {
 			return io.NopCloser(bytes.NewReader([]byte{})), nil
 		},
 	}
-	err := sut.Process(importPackageMock)
+	err := sut.Process("project", importPackageMock)
 	assert.ErrorIs(t, err, errorManifestAccess)
 	assert.Len(t, importPackageMock.CloseCalls(), 1)
 	assert.ElementsMatch(
@@ -113,7 +113,7 @@ func TestErrorImportPackageWhenManifestCannotBeParsed(t *testing.T) {
 			return io.NopCloser(bytes.NewReader([]byte{})), nil
 		},
 	}
-	err := sut.Process(importPackageMock)
+	err := sut.Process("project", importPackageMock)
 	assert.ErrorIs(t, err, parsingError)
 	assert.Len(t, importPackageMock.CloseCalls(), 1)
 	assert.ElementsMatch(
@@ -190,7 +190,7 @@ func TestErrorImportPackageWhenTaskFails(t *testing.T) {
 			return io.NopCloser(bytes.NewReader([]byte{})), nil
 		},
 	}
-	err := sut.Process(importPackageMock)
+	err := sut.Process("project", importPackageMock)
 	assert.ErrorIs(t, err, taskError)
 	assert.ErrorContains(t, err, "execution of task sometask failed")
 	assert.Len(t, importPackageMock.CloseCalls(), 1)
