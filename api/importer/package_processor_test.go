@@ -21,7 +21,7 @@ func TestImportPackageEmptyManifestRetrievedAndPackageClosed(t *testing.T) {
 	}
 
 	taskExecutor := &fake.TaskExecutorMock{
-		ExecuteFunc: func(task *model.ManifestTask) (any, error) {
+		ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
 			return nil, nil
 		},
 	}
@@ -44,7 +44,7 @@ func TestImportPackageEmptyManifestRetrievedAndPackageClosed(t *testing.T) {
 		}{{ResourceName: manifestFileName}},
 	)
 	assert.Len(t, parserMock.ParseCalls(), 1)
-	assert.Len(t, taskExecutor.ExecuteCalls(), 0)
+	assert.Len(t, taskExecutor.ExecuteAPICalls(), 0)
 }
 
 func TestErrorImportPackageWhenManifestCannotBeRetrieved(t *testing.T) {
@@ -55,7 +55,7 @@ func TestErrorImportPackageWhenManifestCannotBeRetrieved(t *testing.T) {
 	}
 
 	taskExecutor := &fake.TaskExecutorMock{
-		ExecuteFunc: func(task *model.ManifestTask) (any, error) {
+		ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
 			return nil, nil
 		},
 	}
@@ -86,7 +86,7 @@ func TestErrorImportPackageWhenManifestCannotBeRetrieved(t *testing.T) {
 		}{{ResourceName: manifestFileName}},
 	)
 	assert.Len(t, parserMock.ParseCalls(), 0)
-	assert.Len(t, taskExecutor.ExecuteCalls(), 0)
+	assert.Len(t, taskExecutor.ExecuteAPICalls(), 0)
 }
 
 func TestErrorImportPackageWhenManifestCannotBeParsed(t *testing.T) {
@@ -98,7 +98,7 @@ func TestErrorImportPackageWhenManifestCannotBeParsed(t *testing.T) {
 	}
 
 	taskExecutor := &fake.TaskExecutorMock{
-		ExecuteFunc: func(task *model.ManifestTask) (any, error) {
+		ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
 			return nil, nil
 		},
 	}
@@ -122,14 +122,125 @@ func TestErrorImportPackageWhenManifestCannotBeParsed(t *testing.T) {
 		}{{ResourceName: manifestFileName}},
 	)
 	assert.Len(t, parserMock.ParseCalls(), 1)
-	assert.Len(t, taskExecutor.ExecuteCalls(), 0)
+	assert.Len(t, taskExecutor.ExecuteAPICalls(), 0)
+}
+
+func TestErrorImportPackageWhenManifestResourceNotFound(t *testing.T) {
+
+	const missingFileName = "non-existing-file.json"
+	taskWithMissingResource := &model.ManifestTask{
+		APITask: &model.APITask{
+			Action:      "test-missing-resource",
+			PayloadFile: missingFileName,
+		},
+		ResourceTask: nil,
+		ID:           "missingresourcetask",
+		Type:         "api",
+		Name:         "Missing Resource Task",
+	}
+
+	parserMock := &fake.ManifestParserMock{
+		ParseFunc: func(input io.Reader) (*model.ImportManifest, error) {
+			return &model.ImportManifest{
+				ApiVersion: "v1beta1",
+				Tasks: []*model.ManifestTask{
+					taskWithMissingResource,
+				},
+			}, nil
+		},
+	}
+
+	taskExecutor := &fake.TaskExecutorMock{
+		ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
+			return nil, nil
+		},
+	}
+
+	sut := NewImportPackageProcessor(parserMock, taskExecutor)
+
+	resourceError := errors.New("error retrieving resource manifest")
+
+	importPackageMock := &fake.ImportPackageMock{
+		CloseFunc: func() error {
+			return nil
+		},
+		GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
+			if resourceName == missingFileName {
+				return nil, resourceError
+			}
+
+			return io.NopCloser(bytes.NewReader([]byte{})), nil
+		},
+	}
+	err := sut.Process("project", importPackageMock)
+	assert.ErrorIs(t, err, resourceError)
+	assert.Len(t, importPackageMock.CloseCalls(), 1)
+	assert.ElementsMatch(
+		t, importPackageMock.GetResourceCalls(), []struct {
+			ResourceName string
+		}{{ResourceName: manifestFileName}, {ResourceName: missingFileName}},
+	)
+	assert.Len(t, parserMock.ParseCalls(), 1)
+	assert.Len(t, taskExecutor.ExecuteAPICalls(), 0)
+}
+
+func TestErrorImportPackageWhenUnknownManifestTaskType(t *testing.T) {
+
+	taskWithUnknownType := &model.ManifestTask{
+		APITask:      nil,
+		ResourceTask: nil,
+		ID:           "misterytask",
+		Type:         "weirdunknowntasktype",
+		Name:         "Mistery Task",
+	}
+
+	parserMock := &fake.ManifestParserMock{
+		ParseFunc: func(input io.Reader) (*model.ImportManifest, error) {
+			return &model.ImportManifest{
+				ApiVersion: "v1beta1",
+				Tasks: []*model.ManifestTask{
+					taskWithUnknownType,
+				},
+			}, nil
+		},
+	}
+
+	taskExecutor := &fake.TaskExecutorMock{
+		ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
+			return nil, nil
+		},
+	}
+
+	sut := NewImportPackageProcessor(parserMock, taskExecutor)
+
+	importPackageMock := &fake.ImportPackageMock{
+		CloseFunc: func() error {
+			return nil
+		},
+		GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
+			return io.NopCloser(bytes.NewReader([]byte{})), nil
+		},
+	}
+	err := sut.Process("project", importPackageMock)
+	assert.ErrorContains(t, err, "task of type weirdunknowntasktype not implemented")
+	assert.Len(t, importPackageMock.CloseCalls(), 1)
+	assert.ElementsMatch(
+		t, importPackageMock.GetResourceCalls(), []struct {
+			ResourceName string
+		}{{ResourceName: manifestFileName}},
+	)
+	assert.Len(t, parserMock.ParseCalls(), 1)
+	assert.Len(t, taskExecutor.ExecuteAPICalls(), 0)
 }
 
 func TestErrorImportPackageWhenTaskFails(t *testing.T) {
 
 	firstTask := &model.ManifestTask{
 		// random filler task to check that we execute in order until the failure
-		APITask:      &model.APITask{},
+		APITask: &model.APITask{
+			Action:      "success ✌",
+			PayloadFile: "okfile/someok.json",
+		},
 		ResourceTask: nil,
 		ID:           "firsttask",
 		Type:         "api",
@@ -172,8 +283,8 @@ func TestErrorImportPackageWhenTaskFails(t *testing.T) {
 	taskError := errors.New("api task failed")
 
 	taskExecutor := &fake.TaskExecutorMock{
-		ExecuteFunc: func(task *model.ManifestTask) (any, error) {
-			if task.Type == "api" && task.APITask.Action == "fail" {
+		ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
+			if ate.Context.Task.Type == "api" && ate.Context.Task.APITask.Action == "fail" {
 				return nil, taskError
 			}
 
@@ -197,9 +308,14 @@ func TestErrorImportPackageWhenTaskFails(t *testing.T) {
 	assert.ElementsMatch(
 		t, importPackageMock.GetResourceCalls(), []struct {
 			ResourceName string
-		}{{ResourceName: manifestFileName}},
+		}{
+			{ResourceName: manifestFileName},
+			{ResourceName: "okfile/someok.json"},
+			{ResourceName: "somefile/somewhere.json"},
+		},
 	)
 	assert.Len(t, parserMock.ParseCalls(), 1)
-	assert.Len(t, taskExecutor.ExecuteCalls(), 2)
-	assert.Equal(t, []struct{ Task *model.ManifestTask }{{firstTask}, {failingTask}}, taskExecutor.ExecuteCalls())
+	assert.Len(t, taskExecutor.ExecuteAPICalls(), 2)
+	// FIXME review the assertion below after implementing mapper
+	// assert.Equal(t, []struct{ Ate model.APITaskExecution }{{firstTask}, {failingTask}}, taskExecutor.ExecuteAPICalls())
 }

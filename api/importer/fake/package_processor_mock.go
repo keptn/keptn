@@ -4,9 +4,10 @@
 package fake
 
 import (
-	"github.com/keptn/keptn/api/importer/model"
 	"io"
 	"sync"
+
+	"github.com/keptn/keptn/api/importer/model"
 )
 
 // ImportPackageMock is a mock implementation of importer.ImportPackage.
@@ -173,8 +174,8 @@ func (mock *ManifestParserMock) ParseCalls() []struct {
 //
 // 		// make and configure a mocked importer.TaskExecutor
 // 		mockedTaskExecutor := &TaskExecutorMock{
-// 			ExecuteFunc: func(task *model.ManifestTask) (any, error) {
-// 				panic("mock out the Execute method")
+// 			ExecuteAPIFunc: func(ate importer.APITaskExecution) (any, error) {
+// 				panic("mock out the ExecuteAPI method")
 // 			},
 // 		}
 //
@@ -183,47 +184,47 @@ func (mock *ManifestParserMock) ParseCalls() []struct {
 //
 // 	}
 type TaskExecutorMock struct {
-	// ExecuteFunc mocks the Execute method.
-	ExecuteFunc func(task *model.ManifestTask) (any, error)
+	// ExecuteAPIFunc mocks the ExecuteAPI method.
+	ExecuteAPIFunc func(ate model.APITaskExecution) (any, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
-		// Execute holds details about calls to the Execute method.
-		Execute []struct {
-			// Task is the task argument value.
-			Task *model.ManifestTask
+		// ExecuteAPI holds details about calls to the ExecuteAPI method.
+		ExecuteAPI []struct {
+			// Ate is the ate argument value.
+			Ate model.APITaskExecution
 		}
 	}
-	lockExecute sync.RWMutex
+	lockExecuteAPI sync.RWMutex
 }
 
-// Execute calls ExecuteFunc.
-func (mock *TaskExecutorMock) Execute(task *model.ManifestTask) (any, error) {
-	if mock.ExecuteFunc == nil {
-		panic("TaskExecutorMock.ExecuteFunc: method is nil but TaskExecutor.Execute was just called")
+// ExecuteAPI calls ExecuteAPIFunc.
+func (mock *TaskExecutorMock) ExecuteAPI(ate model.APITaskExecution) (any, error) {
+	if mock.ExecuteAPIFunc == nil {
+		panic("TaskExecutorMock.ExecuteAPIFunc: method is nil but TaskExecutor.ExecuteAPI was just called")
 	}
 	callInfo := struct {
-		Task *model.ManifestTask
+		Ate model.APITaskExecution
 	}{
-		Task: task,
+		Ate: ate,
 	}
-	mock.lockExecute.Lock()
-	mock.calls.Execute = append(mock.calls.Execute, callInfo)
-	mock.lockExecute.Unlock()
-	return mock.ExecuteFunc(task)
+	mock.lockExecuteAPI.Lock()
+	mock.calls.ExecuteAPI = append(mock.calls.ExecuteAPI, callInfo)
+	mock.lockExecuteAPI.Unlock()
+	return mock.ExecuteAPIFunc(ate)
 }
 
-// ExecuteCalls gets all the calls that were made to Execute.
+// ExecuteAPICalls gets all the calls that were made to ExecuteAPI.
 // Check the length with:
-//     len(mockedTaskExecutor.ExecuteCalls())
-func (mock *TaskExecutorMock) ExecuteCalls() []struct {
-	Task *model.ManifestTask
+//     len(mockedTaskExecutor.ExecuteAPICalls())
+func (mock *TaskExecutorMock) ExecuteAPICalls() []struct {
+	Ate model.APITaskExecution
 } {
 	var calls []struct {
-		Task *model.ManifestTask
+		Ate model.APITaskExecution
 	}
-	mock.lockExecute.RLock()
-	calls = mock.calls.Execute
-	mock.lockExecute.RUnlock()
+	mock.lockExecuteAPI.RLock()
+	calls = mock.calls.ExecuteAPI
+	mock.lockExecuteAPI.RUnlock()
 	return calls
 }

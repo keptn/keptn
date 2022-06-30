@@ -19,7 +19,7 @@ type ManifestParser interface {
 }
 
 type TaskExecutor interface {
-	Execute(task *model.ManifestTask) (any, error)
+	ExecuteAPI(ate model.APITaskExecution) (any, error)
 }
 
 type ImportPackageProcessor struct {
@@ -35,6 +35,8 @@ func NewImportPackageProcessor(mp ManifestParser, ex TaskExecutor) *ImportPackag
 }
 
 const manifestFileName = "manifest.yaml"
+const apiTaskType = "api"
+const resourceTaskType = "resource"
 
 func (ipp *ImportPackageProcessor) Process(project string, ip ImportPackage) error {
 
@@ -56,11 +58,43 @@ func (ipp *ImportPackageProcessor) Process(project string, ip ImportPackage) err
 	// TODO add manifestValidation
 
 	for _, task := range manifest.Tasks {
-		_, err := ipp.executor.Execute(task)
-		if err != nil {
-			return fmt.Errorf("execution of task %s failed: %w", task.ID, err)
+
+		switch task.Type {
+		case apiTaskType:
+			apiTaskExecution, err := mapAPITask(project, ip, task)
+			if err != nil {
+				return fmt.Errorf("error setting up API task ID %s: %w", task.ID, err)
+			}
+			_, err = ipp.executor.ExecuteAPI(apiTaskExecution)
+			if err != nil {
+				return fmt.Errorf("execution of task %s failed: %w", task.ID, err)
+			}
+		default:
+			return fmt.Errorf("task of type %s not implemented", task.Type)
 		}
 	}
 
 	return nil
+}
+
+func mapAPITask(project string, ip ImportPackage, task *model.ManifestTask) (model.APITaskExecution, error) {
+
+	resource, err := ip.GetResource(task.APITask.PayloadFile)
+
+	// TODO who should close the resource ?
+
+	if err != nil {
+		return model.APITaskExecution{}, fmt.Errorf("error accessing resource %s: %w", task.APITask.PayloadFile, err)
+	}
+
+	ret := model.APITaskExecution{
+		Payload:    resource,
+		EndpointID: task.APITask.Action,
+		Context: model.TaskContext{
+			Project: project,
+			Task:    task,
+		},
+	}
+
+	return ret, nil
 }

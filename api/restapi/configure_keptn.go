@@ -104,7 +104,8 @@ func configureAPI(api *operations.KeptnAPI) http.Handler {
 
 	// Import endpoint
 	importProcessor := importer.NewImportPackageProcessor(
-		new(model.YAMLManifestUnMarshaler), new(importer.KeptnAPIExecutor), // TODO review after implementing executor
+		new(model.YAMLManifestUnMarshaler), nil, /*new(importer.KeptnAPIExecutor)*/
+		// TODO review after implementing executor
 	)
 
 	api.ImportOperationsImportHandler = import_operations.ImportHandlerFunc(
