@@ -2,14 +2,13 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { DtRadioChange } from '@dynatrace/barista-components/radio';
-import { of, throwError } from 'rxjs';
-import { IGitHttps, IGitSsh } from '../../../_interfaces/git-upstream';
+import { of } from 'rxjs';
 import { ApiService } from '../../../_services/api.service';
 import { ApiServiceMock } from '../../../_services/api.service.mock';
-import { DataService } from '../../../_services/data.service';
 import { KtbProjectSettingsModule } from '../ktb-project-settings.module';
 
 import { GitFormType, KtbProjectSettingsGitExtendedComponent } from './ktb-project-settings-git-extended.component';
+import { IGitHttpsConfiguration, IGitSshConfiguration } from '../../../../../shared/interfaces/project';
 
 describe('KtbProjectSettingsGitExtendedComponent', () => {
   let component: KtbProjectSettingsGitExtendedComponent;
@@ -49,7 +48,7 @@ describe('KtbProjectSettingsGitExtendedComponent', () => {
 
   it('should default select NO_UPSTREAM if git upstream is not required', () => {
     // given
-    component.required = false;
+    component.gitUpstreamRequired = false;
 
     // when
     fixture.detectChanges();
@@ -82,9 +81,9 @@ describe('KtbProjectSettingsGitExtendedComponent', () => {
 
   it('should select NO_UPSTREAM form on init if not data given and git upstream is not required', () => {
     // given
-    component.required = false;
+    component.gitUpstreamRequired = false;
     component.gitInputData = getDefaultHttpsData();
-    component.gitInputData.https.gitRemoteURL = '';
+    component.gitInputData.remoteURL = '';
 
     // when
     fixture.detectChanges();
@@ -119,57 +118,6 @@ describe('KtbProjectSettingsGitExtendedComponent', () => {
     expect(emitSpy).toHaveBeenCalledWith(getDefaultSshData());
   });
 
-  it('should not update gitUpstream if data is not set', () => {
-    // given
-    const dataService = TestBed.inject(DataService);
-    const updateUpstreamSpy = jest.spyOn(dataService, 'updateGitUpstream');
-    fixture.detectChanges();
-
-    // when
-    component.updateUpstream();
-
-    // then
-    expect(updateUpstreamSpy).not.toHaveBeenCalled();
-  });
-
-  it('should update gitUpstream', () => {
-    // given
-    fixture.detectChanges();
-    const dataService = TestBed.inject(DataService);
-    const updateUpstreamSpy = jest.spyOn(dataService, 'updateGitUpstream');
-    const data = getDefaultSshData();
-
-    // when
-    setSelectedForm(GitFormType.SSH);
-    component.dataChanged(GitFormType.SSH, data);
-    component.updateUpstream();
-
-    // then
-    expect(updateUpstreamSpy).toHaveBeenCalledWith('sockshop', data);
-  });
-
-  it('should update gitUpstream and set inProgress to false on error', () => {
-    // given
-    fixture.detectChanges();
-    const dataService = TestBed.inject(DataService);
-    jest.spyOn(dataService, 'updateGitUpstream').mockReturnValue(throwError('error'));
-    const updateUpstreamSpy = jest.spyOn(dataService, 'updateGitUpstream');
-    const inProgressSpy = jest.fn();
-    Object.defineProperty(component, 'isGitUpstreamInProgress', {
-      get: jest.fn(() => true),
-      set: inProgressSpy,
-    });
-
-    // when
-    setSelectedForm(GitFormType.SSH);
-    component.dataChanged(GitFormType.SSH, getDefaultSshData());
-    component.updateUpstream();
-
-    // then
-    expect(inProgressSpy).toHaveBeenCalledWith(false);
-    expect(updateUpstreamSpy).toHaveBeenCalled();
-  });
-
   it('should correctly return data if input is HTTPS', () => {
     // given
     component.gitInputData = getDefaultHttpsData();
@@ -197,7 +145,7 @@ describe('KtbProjectSettingsGitExtendedComponent', () => {
   it('should correctly return data if no upstream is selected', () => {
     // given
     const spy = jest.spyOn(component.gitDataChange, 'emit');
-    component.required = false;
+    component.gitUpstreamRequired = false;
     fixture.detectChanges();
 
     // when
@@ -206,7 +154,7 @@ describe('KtbProjectSettingsGitExtendedComponent', () => {
     // then
     expect(component.gitInputDataSsh).toEqual(undefined);
     expect(component.gitInputDataHttps).toBe(undefined);
-    expect(spy).toHaveBeenCalledWith({ noupstream: '' });
+    expect(spy).toHaveBeenCalledWith(null);
   });
 
   it('should return undefined if input is undefined', () => {
@@ -258,23 +206,24 @@ describe('KtbProjectSettingsGitExtendedComponent', () => {
   function setSelectedForm(type: GitFormType): void {
     component.setSelectedForm({ value: type } as DtRadioChange<GitFormType>);
   }
-
-  function getDefaultSshData(): IGitSsh {
-    return {
-      ssh: {
-        gitPrivateKeyPass: '',
-        gitPrivateKey: '',
-        gitRemoteURL: 'ssh://git@github.com/keptn/keptn',
-      },
-    };
-  }
-
-  function getDefaultHttpsData(): IGitHttps {
-    return {
-      https: {
-        gitRemoteURL: 'https://github.com/keptn/keptn',
-        gitToken: '',
-      },
-    };
-  }
 });
+
+export function getDefaultSshData(): IGitSshConfiguration {
+  return {
+    remoteURL: 'ssh://git@github.com/keptn/keptn',
+    ssh: {
+      privateKeyPass: '',
+      privateKey: '',
+    },
+  };
+}
+
+export function getDefaultHttpsData(): IGitHttpsConfiguration {
+  return {
+    remoteURL: 'https://github.com/keptn/keptn',
+    https: {
+      token: '',
+      insecureSkipTLS: false,
+    },
+  };
+}

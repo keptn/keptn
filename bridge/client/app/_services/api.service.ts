@@ -7,7 +7,6 @@ import { EventTypes } from '../../../shared/interfaces/event-types';
 import { IMetadata } from '../_interfaces/metadata';
 import moment from 'moment';
 import { SequenceResult } from '../_models/sequence-result';
-import { Project } from '../_models/project';
 import { UniformRegistrationLogResponse } from '../../../shared/interfaces/uniform-registration-log';
 import { Secret } from '../_models/secret';
 import { KeptnInfoResult } from '../../../shared/interfaces/keptn-info-result';
@@ -27,12 +26,12 @@ import { ISequencesFilter } from '../../../shared/interfaces/sequencesFilter';
 import { TriggerResponse, TriggerSequenceData } from '../_models/trigger-sequence';
 import { IScopesResult } from '../_interfaces/scopes-result';
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
-import { IGitHttps, IGitSsh } from '../_interfaces/git-upstream';
 import { ICustomSequences } from '../../../shared/interfaces/custom-sequences';
 import { environment } from '../../environments/environment';
 import { WindowConfig } from '../../environments/environment.dynamic';
 import { IService } from '../../../shared/interfaces/service';
 import { IProjectResult } from '../../../shared/interfaces/project-result';
+import { IGitDataExtended, IProject } from '../../../shared/interfaces/project';
 
 @Injectable({
   providedIn: 'root',
@@ -126,41 +125,14 @@ export class ApiService {
     return this.http.delete<Record<string, unknown>>(url);
   }
 
-  /**
-   * Creates a new project
-   *
-   * @param projectName - The unique project name - uniqueness is validated by the backend
-   * @param shipyard - The base64 encoded contents of the yaml file
-   * @param gitRemoteUrl (optional) - URL of the Git repository for the keptn configurations
-   * @param gitToken (optional) - The Git token used for access permissions to the repository
-   * @param gitUser (optional) - The username of the Git provider
-   * @returns Observable with type unknown of the HttpResponse
-   */
-  public createProject(
-    projectName: string,
-    shipyard: string,
-    gitRemoteUrl?: string,
-    gitToken?: string,
-    gitUser?: string
-  ): Observable<unknown> {
-    const url = `${this._baseUrl}/controlPlane/v1/project`;
-    return this.http.post<unknown>(url, {
-      gitRemoteUrl,
-      gitToken,
-      gitUser,
-      name: projectName,
-      shipyard,
-    });
-  }
-
   public createProjectExtended(
     projectName: string,
     shipyard: string,
-    data?: IGitHttps['https'] | IGitSsh['ssh']
+    gitCredentials?: IGitDataExtended
   ): Observable<unknown> {
     const url = `${this._baseUrl}/controlPlane/v1/project`;
     return this.http.post<unknown>(url, {
-      ...data,
+      gitCredentials,
       name: projectName,
       shipyard,
     });
@@ -178,13 +150,13 @@ export class ApiService {
     return this.http.delete<Record<string, unknown>>(url);
   }
 
-  public getProject(projectName: string): Observable<Project> {
+  public getProject(projectName: string): Observable<IProject> {
     const url = `${this._baseUrl}/project/${projectName}`;
     const params = {
       approval: 'true',
       remediation: 'true',
     };
-    return this.http.get<Project>(url, { params });
+    return this.http.get<IProject>(url, { params });
   }
 
   public getService(projectName: string, stageName: string, serviceName: string): Observable<IService> {
@@ -193,9 +165,9 @@ export class ApiService {
     );
   }
 
-  public getPlainProject(projectName: string): Observable<Project> {
+  public getPlainProject(projectName: string): Observable<IProject> {
     const url = `${this._baseUrl}/project/${projectName}`;
-    return this.http.get<Project>(url);
+    return this.http.get<IProject>(url);
   }
 
   public getProjects(pageSize?: number): Observable<IProjectResult> {
@@ -376,28 +348,10 @@ export class ApiService {
     return this.http.get<EventResult>(url, { params });
   }
 
-  public sendGitUpstreamUrl(
-    projectName: string,
-    gitUrl: string,
-    gitToken: string,
-    gitUser?: string
-  ): Observable<unknown> {
-    const url = `${this._baseUrl}/controlPlane/v1/project`;
-    return this.http.put(url, {
-      gitRemoteURL: gitUrl,
-      gitToken,
-      gitUser,
-      name: projectName,
-    });
-  }
-
-  public updateGitUpstreamExtended(
-    projectName: string,
-    data?: IGitHttps['https'] | IGitSsh['ssh']
-  ): Observable<unknown> {
+  public updateGitUpstreamExtended(projectName: string, gitCredentials?: IGitDataExtended): Observable<unknown> {
     const url = `${this._baseUrl}/controlPlane/v1/project`;
     return this.http.put<unknown>(url, {
-      ...data,
+      gitCredentials,
       name: projectName,
     });
   }

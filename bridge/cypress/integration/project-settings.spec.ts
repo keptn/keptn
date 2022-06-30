@@ -1,68 +1,95 @@
-import NewProjectCreatePage from '../support/pageobjects/NewProjectCreatePage';
-import { Project } from '../../shared/interfaces/project';
+import ProjectSettingsPage from '../support/pageobjects/ProjectSettingsPage';
+import { IProject } from '../../shared/interfaces/project';
 import BasePage from '../support/pageobjects/BasePage';
 import { interceptFailedMetadata } from '../support/intercept';
+import { ProjectBoardPage } from '../support/pageobjects/ProjectBoardPage';
 
 describe('Git upstream extended settings project https test', () => {
-  const projectSettingsPage = new NewProjectCreatePage();
+  const projectSettingsPage = new ProjectSettingsPage();
 
   it('should not show https or ssh form if resource service is disabled', () => {
-    const project: Project = {
+    const project: IProject = {
       projectName: 'sockshop',
       stages: [],
-      gitUser: 'myGitUser',
-      gitRemoteURI: 'https://myGitURL.com',
-      gitProxyInsecure: true,
-      gitProxyScheme: 'https',
-      gitProxyUrl: 'myProxyUrl:5000',
-      gitProxyUser: 'myProxyUser',
+      gitCredentials: {
+        user: 'myGitUser',
+        remoteURL: 'https://myGitURL.com',
+        https: {
+          insecureSkipTLS: true,
+          token: '',
+          proxy: {
+            scheme: 'https',
+            url: 'myProxyUrl:5000',
+            user: 'myProxyUser',
+          },
+        },
+      },
       shipyardVersion: '0.14',
+      creationDate: '',
+      shipyard: '',
     };
-    cy.intercept('/api/project/sockshop', {
-      body: project,
-    });
+
     projectSettingsPage
       .interceptSettings()
+      .interceptProject(project)
       .visitSettings('sockshop')
       .assertSshFormExists(false)
       .assertHttpsFormExists(false);
   });
 
   it('should show "Git upstream repository" headline only once', () => {
-    const project: Project = {
+    const project: IProject = {
       projectName: 'sockshop',
       stages: [],
-      gitUser: 'myGitUser',
-      gitRemoteURI: 'https://myGitURL.com',
-      gitProxyInsecure: true,
-      gitProxyScheme: 'https',
-      gitProxyUrl: 'myProxyUrl:5000',
-      gitProxyUser: 'myProxyUser',
+      gitCredentials: {
+        user: 'myGitUser',
+        remoteURL: 'https://myGitURL.com',
+        https: {
+          token: '',
+          insecureSkipTLS: true,
+          proxy: {
+            scheme: 'https',
+            url: 'myProxyUrl:5000',
+            user: 'myProxyUser',
+          },
+        },
+      },
       shipyardVersion: '0.14',
+      creationDate: '',
+      shipyard: '',
     };
-    cy.intercept('/api/project/sockshop', {
-      body: project,
-    });
-    projectSettingsPage.interceptSettings().visitSettings('sockshop').assertGitUpstreamHeadlineExistsOnce();
+    projectSettingsPage
+      .interceptSettings(true)
+      .interceptProject(project)
+      .visitSettings('sockshop')
+      .assertGitUpstreamHeadlineExistsOnce();
   });
 
   it('should select HTTPS and fill out inputs', () => {
-    const project: Project = {
+    const project: IProject = {
       projectName: 'sockshop',
       stages: [],
-      gitUser: 'myGitUser',
-      gitRemoteURI: 'https://myGitURL.com',
-      gitProxyInsecure: true,
-      gitProxyScheme: 'https',
-      gitProxyUrl: 'myProxyUrl:5000',
-      gitProxyUser: 'myProxyUser',
+      gitCredentials: {
+        user: 'myGitUser',
+        remoteURL: 'https://myGitURL.com',
+        https: {
+          insecureSkipTLS: true,
+          token: '',
+          proxy: {
+            scheme: 'https',
+            url: 'myProxyUrl:5000',
+            user: 'myProxyUser',
+          },
+        },
+      },
       shipyardVersion: '0.14',
+      creationDate: '',
+      shipyard: '',
     };
-    cy.intercept('/api/project/sockshop', {
-      body: project,
-    });
+
     projectSettingsPage
       .interceptSettings(true)
+      .interceptProject(project)
       .visitSettings('sockshop')
       .assertGitUsername('myGitUser')
       .assertGitUrl('https://myGitURL.com')
@@ -78,53 +105,94 @@ describe('Git upstream extended settings project https test', () => {
 
   it('should submit https form and show notification', () => {
     const basePage = new BasePage();
-    const project: Project = {
+    const project: IProject = {
       projectName: 'sockshop',
       stages: [],
-      gitUser: 'myGitUser',
-      gitRemoteURI: 'https://myGitURL.com',
-      gitProxyInsecure: false,
+      gitCredentials: {
+        user: 'myGitUser',
+        remoteURL: 'https://myGitURL.com',
+      },
       shipyardVersion: '0.14',
+      creationDate: '',
+      shipyard: '',
     };
-    cy.intercept('/api/project/sockshop', {
-      body: project,
-    });
-    projectSettingsPage.interceptSettings(true).visitSettings('sockshop').typeGitToken('myToken').updateProject();
+
+    projectSettingsPage
+      .interceptSettings(true)
+      .interceptProject(project)
+      .visitSettings('sockshop')
+      .typeGitToken('myToken')
+      .updateProject();
+    basePage.notificationSuccessVisible('The Git upstream was changed successfully.');
+  });
+
+  it('should prevent data loss if git credentials are not saved before navigation', () => {
+    const basePage = new BasePage();
+    const projectBoardPage = new ProjectBoardPage();
+    const project: IProject = {
+      projectName: 'sockshop',
+      stages: [],
+      gitCredentials: {
+        user: 'myGitUser',
+        remoteURL: 'https://myGitURL.com',
+      },
+      shipyardVersion: '0.14',
+      creationDate: '',
+      shipyard: '',
+    };
+
+    projectSettingsPage
+      .interceptSettings(true)
+      .interceptProject(project)
+      .visitSettings('sockshop')
+      .typeGitToken('myToken');
+    projectBoardPage.goToServicesPage();
+    projectSettingsPage.clickSaveChangesPopup();
     basePage.notificationSuccessVisible('The Git upstream was changed successfully.');
   });
 
   it('should submit ssh form and show notification', () => {
     const basePage = new BasePage();
-    const project: Project = {
+    const project: IProject = {
       projectName: 'sockshop',
       stages: [],
-      gitProxyInsecure: false,
-      gitUser: 'myGitUser',
-      gitRemoteURI: 'ssh://myGitURL.com',
+      gitCredentials: {
+        user: 'myGitUser',
+        remoteURL: 'ssh://myGitURL.com',
+      },
       shipyardVersion: '0.14',
+      creationDate: '',
+      shipyard: '',
     };
-    cy.intercept('/api/project/sockshop', {
-      body: project,
-    });
-    projectSettingsPage.interceptSettings(true).visitSettings('sockshop').typeValidSshPrivateKey().updateProject();
+
+    projectSettingsPage
+      .interceptSettings(true)
+      .interceptProject(project)
+      .visitSettings('sockshop')
+      .typeValidSshPrivateKey()
+      .updateProject();
     basePage.notificationSuccessVisible('The Git upstream was changed successfully.');
   });
 
   it('should select SSH', () => {
-    const project: Project = {
+    const project: IProject = {
       projectName: 'sockshop',
       stages: [],
-      gitProxyInsecure: false,
-      gitUser: 'myGitUser',
-      gitRemoteURI: 'ssh://myGitURL.com',
+      gitCredentials: {
+        user: 'myGitUser',
+        remoteURL: 'ssh://myGitURL.com',
+      },
       shipyardVersion: '0.14',
+      creationDate: '',
+      shipyard: '',
     };
-    cy.intercept('/api/project/sockshop', {
-      body: project,
-    });
-    projectSettingsPage.interceptSettings(true).visitSettings('sockshop');
 
-    projectSettingsPage.assertSshFormVisible(true).assertGitUsernameSsh('myGitUser');
+    projectSettingsPage
+      .interceptSettings(true)
+      .interceptProject(project)
+      .visitSettings('sockshop')
+      .assertSshFormVisible(true)
+      .assertGitUsernameSsh('myGitUser');
   });
 
   it('should show "Set Git upstream" button', () => {
@@ -132,102 +200,41 @@ describe('Git upstream extended settings project https test', () => {
   });
 });
 
-describe('Automatic provisioning enabled test', () => {
-  const projectSettingsPage = new NewProjectCreatePage();
-
-  beforeEach(() => {
-    projectSettingsPage.interceptSettings(true, true);
-  });
-
-  it('should select no upstream radio button as default when no upstream was configured for a project', () => {
-    const project: Project = {
+describe('Project settings with resource service disabled', () => {
+  const projectSettingsPage = new ProjectSettingsPage();
+  it('should show an error if the resource service is not enabled', () => {
+    const project: IProject = {
       projectName: 'sockshop',
       stages: [],
-      gitUser: '',
-      gitRemoteURI: '',
-      gitProxyInsecure: false,
-      gitProxyUrl: '',
-      gitProxyUser: '',
       shipyardVersion: '0.14',
+      creationDate: '',
+      shipyard: '',
     };
-    cy.intercept('/api/project/sockshop', {
-      body: project,
-    }).as('project');
-
-    projectSettingsPage.visitSettings('sockshop');
-    cy.wait('@project');
-
-    projectSettingsPage.assertNoUpstreamSelected(true);
-  });
-
-  it('should select https radio button as default if filled in and disable no upstream radio button', () => {
-    const project: Project = {
-      projectName: 'sockshop',
-      stages: [],
-      gitUser: 'myGitUser',
-      gitRemoteURI: 'https://myGitURL.com',
-      gitProxyInsecure: false,
-      gitProxyUrl: '',
-      gitProxyUser: '',
-      shipyardVersion: '0.14',
-    };
-    cy.intercept('/api/project/sockshop', {
-      body: project,
-    }).as('project');
-
-    projectSettingsPage.visitSettings('sockshop');
-    cy.wait('@project');
-
-    projectSettingsPage.assertHttpsFormVisible(true).assertNoUpstreamSelected(false).assertNoUpstreamEnabled(false);
 
     projectSettingsPage
-      .enterBasicHttps()
-      .assertUpdateButtonEnabled(true)
-      .clearGitToken()
-      .assertUpdateButtonEnabled(false);
-  });
-
-  it('should select ssh radio button as default if filled in and disable no upstream radio button', () => {
-    const project: Project = {
-      projectName: 'sockshop',
-      stages: [],
-      gitProxyInsecure: false,
-      gitUser: 'myGitUser',
-      gitRemoteURI: 'ssh://myGitURL.com',
-      shipyardVersion: '0.14',
-    };
-    cy.intercept('/api/project/sockshop', {
-      body: project,
-    }).as('project');
-
-    projectSettingsPage.visitSettings('sockshop');
-    cy.wait('@project');
-
-    projectSettingsPage.assertSshFormVisible(true).assertNoUpstreamSelected(false).assertNoUpstreamEnabled(false);
-
-    projectSettingsPage
-      .enterBasicSsh()
-      .assertUpdateButtonEnabled(true)
-      .clearSshPrivateKey()
-      .assertUpdateButtonEnabled(false);
+      .interceptSettings(false)
+      .interceptProject(project)
+      .visitSettings('sockshop')
+      .assertConfigurationServiceErrorExists(true);
   });
 });
 
 describe('Project settings with invalid metadata', () => {
-  const projectSettingsPage = new NewProjectCreatePage();
+  const projectSettingsPage = new ProjectSettingsPage();
   it('should show error if metadata endpoint does not return data', () => {
-    const project: Project = {
+    const project: IProject = {
       projectName: 'sockshop',
       stages: [],
-      gitProxyInsecure: false,
-      gitUser: 'myGitUser',
-      gitRemoteURI: 'ssh://myGitURL.com',
+      gitCredentials: {
+        user: 'myGitUser',
+        remoteURL: 'ssh://myGitURL.com',
+      },
       shipyardVersion: '0.14',
+      creationDate: '',
+      shipyard: '',
     };
-    cy.intercept('/api/project/sockshop', {
-      body: project,
-    });
-    projectSettingsPage.interceptSettings(true);
+
+    projectSettingsPage.interceptSettings(true).interceptProject(project);
     interceptFailedMetadata();
     projectSettingsPage.visitSettings('sockshop').assertErrorVisible(true);
   });

@@ -5,7 +5,8 @@ import { IProject } from '../../../shared/interfaces/project';
 const projects: IProject[] = [
   {
     projectName: 'sockshop',
-    gitProxyInsecure: false,
+    creationDate: '',
+    shipyard: '',
     stages: [
       {
         services: [

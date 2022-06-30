@@ -27,8 +27,8 @@ describe('KtbSshKeyInputComponent', () => {
 
     // when
     component.sshInput = {
-      gitPrivateKeyPass: 'myPassphrase',
-      gitPrivateKey: btoa(validFileContent),
+      privateKeyPass: 'myPassphrase',
+      privateKey: btoa(validFileContent),
     };
 
     // then
@@ -39,8 +39,8 @@ describe('KtbSshKeyInputComponent', () => {
 
     // then
     expect(emitSpy).toHaveBeenCalledWith({
-      gitPrivateKeyPass: 'myPassphrase',
-      gitPrivateKey: btoa(validFileContent),
+      privateKeyPass: 'myPassphrase',
+      privateKey: btoa(validFileContent),
     });
   });
 
@@ -55,8 +55,8 @@ describe('KtbSshKeyInputComponent', () => {
 
     // then
     expect(emitSpy).toHaveBeenCalledWith({
-      gitPrivateKeyPass: 'myPassphrase',
-      gitPrivateKey: btoa(validFileContent),
+      privateKeyPass: 'myPassphrase',
+      privateKey: btoa(validFileContent),
     });
   });
 
@@ -70,8 +70,8 @@ describe('KtbSshKeyInputComponent', () => {
 
     // then
     expect(emitSpy).toHaveBeenCalledWith({
-      gitPrivateKeyPass: '',
-      gitPrivateKey: btoa(validFileContent),
+      privateKeyPass: '',
+      privateKey: btoa(validFileContent),
     });
   });
 
@@ -120,8 +120,8 @@ describe('KtbSshKeyInputComponent', () => {
     // then
     expect(component.privateKeyControl.valid).toBe(true);
     expect(emitSpy).toHaveBeenCalledWith({
-      gitPrivateKeyPass: '',
-      gitPrivateKey: btoa(validFileContent),
+      privateKeyPass: '',
+      privateKey: btoa(validFileContent),
     });
   });
 });

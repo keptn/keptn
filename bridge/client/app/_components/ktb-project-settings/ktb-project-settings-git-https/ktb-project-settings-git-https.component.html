@@ -1,10 +1,16 @@
 <ktb-project-settings-git
   [isCreateMode]="true"
-  [isInGitExtended]="true"
   [gitData]="gitDataRequired"
   [isLoading]="isLoading"
   (gitDataChanged)="gitUpstreamChanged($event); inputChanged()"
 ></ktb-project-settings-git>
+<form class="mt-2">
+  <dt-form-field>
+    <dt-checkbox [formControl]="isInsecureControl" class="mt-2" uitestid="ktb-proxy-insecure">
+      Skip SSL certificate check
+    </dt-checkbox>
+  </dt-form-field>
+</form>
 <h3>Certificate</h3>
 <p class="mt-0">
   If a certificate is needed for the Git repository connection, upload the certificate file or add it directly as text.

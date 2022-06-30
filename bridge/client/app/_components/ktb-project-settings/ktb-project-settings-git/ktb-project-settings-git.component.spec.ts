@@ -1,9 +1,8 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { IGitData } from '../../../_interfaces/git-upstream';
 import { KtbProjectSettingsModule } from '../ktb-project-settings.module';
-
 import { KtbProjectSettingsGitComponent } from './ktb-project-settings-git.component';
+import { IGitData } from './ktb-project-settings-git.utils';
 
 describe('KtbProjectSettingsGitComponent', () => {
   let component: KtbProjectSettingsGitComponent;
@@ -26,8 +25,9 @@ describe('KtbProjectSettingsGitComponent', () => {
   it('should set token value to empty string if git uri and git user are set', () => {
     // given
     component.gitData = {
-      gitRemoteURL: 'https://some-repo.git',
-      gitUser: 'username',
+      remoteURL: 'https://some-repo.git',
+      user: 'username',
+      valid: false,
     };
 
     // then
@@ -37,7 +37,8 @@ describe('KtbProjectSettingsGitComponent', () => {
   it('should not set git token control when only git uri is set', () => {
     // given
     component.gitData = {
-      gitRemoteURL: 'https://some-repo.git',
+      remoteURL: 'https://some-repo.git',
+      valid: false,
     };
 
     // then
@@ -48,7 +49,8 @@ describe('KtbProjectSettingsGitComponent', () => {
     // given
     // when
     component.gitData = {
-      gitUser: 'username',
+      user: 'username',
+      valid: false,
     };
 
     // then
@@ -174,43 +176,12 @@ describe('KtbProjectSettingsGitComponent', () => {
     expect(component.gitUpstreamForm.valid).toBe(true);
   });
 
-  it('should show a disabled button when form is invalid', () => {
-    // given
-    component.isCreateMode = false;
-    component.gitUserControl.setValue('username');
-    component.gitTokenControl.setValue('testToken');
-    component.gitUpstreamForm.markAsDirty();
-
-    // when
-    fixture.detectChanges();
-    const button = fixture.nativeElement.querySelector('button');
-
-    // then
-    expect(button.disabled).toBeTruthy();
-  });
-
-  it('should show an enabled button when form is valid', () => {
-    // given
-    component.isCreateMode = false;
-    component.gitUserControl.setValue('username');
-    component.gitUrlControl.setValue('https://some-repo.git');
-    component.gitTokenControl.setValue('testToken');
-    component.gitUpstreamForm.markAsDirty();
-
-    // when
-    // component.gitUpstreamForm.updateValueAndValidity();
-    fixture.detectChanges();
-    const button = fixture.nativeElement.querySelector('button');
-
-    // then
-    expect(button.disabled).toBeFalsy();
-  });
-
   it('should emit the changed git data when form is changed', () => {
     // given
     component.gitData = {
-      gitRemoteURL: 'https://some-repo.git',
-      gitUser: 'username',
+      remoteURL: 'https://some-repo.git',
+      user: 'username',
+      valid: false,
     };
 
     // when
@@ -221,39 +192,19 @@ describe('KtbProjectSettingsGitComponent', () => {
     // then
     expect(spy).toHaveBeenCalled();
     expect(spy).toHaveBeenCalledWith({
-      gitToken: '',
-      gitFormValid: false,
-      gitRemoteURL: 'https://some-other-repo.git',
-      gitUser: 'username',
+      token: '',
+      valid: false,
+      remoteURL: 'https://some-other-repo.git',
+      user: 'username',
     } as IGitData);
-  });
-
-  it('should submit/emit form', () => {
-    // given
-    const emitSpy = jest.spyOn(component.gitUpstreamSubmit, 'emit');
-    const url = 'https://my-git-repo.git';
-    const user = 'myUser';
-    const token = 'myToken';
-    component.gitUrlControl.setValue(url);
-    component.gitUserControl.setValue(user);
-    component.gitTokenControl.setValue(token);
-
-    // when
-    component.setGitUpstream();
-
-    // then
-    expect(emitSpy).toHaveBeenCalledWith({
-      gitRemoteURL: url,
-      gitUser: user,
-      gitToken: token,
-    });
   });
 
   it('should reset form to input values', () => {
     // given
     component.gitData = {
-      gitRemoteURL: 'https://some-repo.git',
-      gitUser: 'username',
+      remoteURL: 'https://some-repo.git',
+      user: 'username',
+      valid: false,
     };
 
     // when
