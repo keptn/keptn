@@ -123,17 +123,9 @@ function getAPIConfiguration(options?: BridgeOption): APIConfig {
   if (!apiUrl) {
     throw new Error('API_URL is not provided');
   }
-  let apiToken = options?.api?.token ?? process.env[EnvVar.API_TOKEN];
+  const apiToken = options?.api?.token ?? process.env[EnvVar.API_TOKEN];
   if (typeof apiToken !== 'string') {
-    log.warning(_componentName, 'API_TOKEN was not provided. Fetching it from the K8s secrets via kubectl.');
-    apiToken =
-      Buffer.from(
-        execSync('kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token}').toString(),
-        'base64'
-      ).toString() || undefined;
-    if (typeof apiToken !== 'string') {
-      log.warning(_componentName, 'Could not fetch API_TOKEN from k8s secret.');
-    }
+    log.warning(_componentName, 'API_TOKEN was not provided.');
   }
 
   return {
