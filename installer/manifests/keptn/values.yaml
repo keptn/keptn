@@ -87,7 +87,7 @@ apiGatewayNginx:
     privileged: false
   image:
     repository: docker.io/nginxinc/nginx-unprivileged
-    tag: 1.22.0-alpine
+    tag: 1.23.0-alpine
   nodeSelector: {}
   gracePeriod: 60
   preStopHookTime: 20
