@@ -62,7 +62,7 @@ export class KtbStageOverviewComponent implements AfterContentInit, OnDestroy {
     combineLatest([this.selectedStageName$, this.paramFilterType$, this.project$])
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(([stageName, filterType, project]) => {
-        const stage = project.getStage(stageName!);
+        const stage = project.stages.find((s) => s.stageName === stageName);
         if (stage) {
           this.selectedStageChange.emit({ stage: stage, filterType: (filterType as ServiceFilterType) ?? undefined });
         }
