@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	"github.com/keptn/keptn/cp-connector/pkg/eventsource"
-	"github.com/keptn/keptn/cp-connector/pkg/logforwarder"
-	"github.com/keptn/keptn/cp-connector/pkg/subscriptionsource"
+	eventsource "github.com/keptn/go-utils/pkg/sdk/connector/eventsource/nats"
+	"github.com/keptn/go-utils/pkg/sdk/connector/logforwarder"
+	"github.com/keptn/go-utils/pkg/sdk/connector/subscriptionsource"
 	"keptn/approval-service/pkg/handler"
 	"log"
 	"os"
@@ -16,11 +16,11 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/keptn/go-utils/pkg/api/models"
+	api "github.com/keptn/go-utils/pkg/api/utils"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/cp-common/api"
-	"github.com/keptn/keptn/cp-connector/pkg/controlplane"
-	"github.com/keptn/keptn/cp-connector/pkg/nats"
+	"github.com/keptn/go-utils/pkg/sdk/connector/controlplane"
+	"github.com/keptn/go-utils/pkg/sdk/connector/nats"
 	"github.com/pkg/errors"
 	logger "github.com/sirupsen/logrus"
 )
@@ -131,7 +131,7 @@ func (as ApprovalService) OnEvent(ctx context.Context, event models.KeptnContext
 
 func (l ApprovalService) RegistrationData() controlplane.RegistrationData {
 	return controlplane.RegistrationData{
-		Name: l.env.K8SDeploymentComponent,
+		Name: l.env.K8SDeploymentName,
 		MetaData: models.MetaData{
 			Hostname:           l.env.K8SNodeName,
 			IntegrationVersion: l.env.K8SDeploymentVersion,

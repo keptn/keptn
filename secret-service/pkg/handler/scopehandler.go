@@ -26,6 +26,7 @@ func NewScopeHandler(backend backend.ScopeManager) *ScopeHandler {
 // GetScopes godoc
 // @Summary      Get scopes
 // @Description  Get scopes
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}secrets:read</span>
 // @Tags         Scopes
 // @Security     ApiKeyAuth
 // @Success      200  {object}  model.GetScopesResponse  "OK"

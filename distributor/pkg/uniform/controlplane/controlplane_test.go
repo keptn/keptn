@@ -18,7 +18,7 @@ func TestControlPlaneRegister(t *testing.T) {
 		data := models.Integration{}
 		data.FromJSON(reqBody)
 		assert.Equal(t, models.Integration{
-			Name: "k8s-component",
+			Name: "k8s-deployment",
 			MetaData: models.MetaData{
 				Hostname:           "k8s-nodename",
 				IntegrationVersion: "2.0",
@@ -53,18 +53,17 @@ func TestControlPlaneRegister(t *testing.T) {
 	defer server.Close()
 
 	cfg := config.EnvConfig{
-		ProjectFilter:          "p-filter",
-		StageFilter:            "s-filter",
-		ServiceFilter:          "sv-filter",
-		Location:               "location",
-		DistributorVersion:     "1.0",
-		Version:                "2.0",
-		K8sDeploymentName:      "k8s-deployment",
-		K8sDeploymentComponent: "k8s-component",
-		K8sNamespace:           "k8s-namespace",
-		K8sPodName:             "k8s-podname",
-		K8sNodeName:            "k8s-nodename",
-		PubSubTopic:            "t1,t2",
+		ProjectFilter:      "p-filter",
+		StageFilter:        "s-filter",
+		ServiceFilter:      "sv-filter",
+		Location:           "location",
+		DistributorVersion: "1.0",
+		Version:            "2.0",
+		K8sDeploymentName:  "k8s-deployment",
+		K8sNamespace:       "k8s-namespace",
+		K8sPodName:         "k8s-podname",
+		K8sNodeName:        "k8s-nodename",
+		PubSubTopic:        "t1,t2",
 	}
 
 	controlPlane := New(api.NewUniformHandler(server.URL), config.ConnectionTypeNATS, cfg)

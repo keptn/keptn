@@ -1,11 +1,45 @@
 import semver from 'semver';
 import { Stage } from './stage';
 import { DeploymentInformation, Service } from './service';
-import { Project as pj } from '../../../shared/models/project';
 import { IGitDataExtended } from '../_interfaces/git-upstream';
 import { isGitInputWithHTTPS } from '../_utils/git-upstream.utils';
+import { IProject } from '../../../shared/interfaces/project';
 
-export class Project extends pj {
+export function getShipyardVersion(project?: IProject): string {
+  return project?.shipyardVersion?.split('/').pop() ?? '';
+}
+
+export function isShipyardNotSupported(
+  project: IProject | undefined,
+  supportedVersion: string | undefined | null
+): boolean {
+  const version = getShipyardVersion(project);
+  return supportedVersion !== null && (!version || !supportedVersion || semver.lt(version, supportedVersion));
+}
+
+export function getDistinctServiceNames(project?: IProject): string[] {
+  return project
+    ? Array.from(
+        project.stages.reduce((set, stage) => {
+          stage.services.forEach((s) => {
+            set.add(s.serviceName);
+            return null;
+          });
+          return set;
+        }, new Set<string>())
+      )
+    : [];
+}
+
+export class Project implements IProject {
+  projectName = '';
+  gitUser?: string;
+  gitRemoteURI?: string;
+  shipyardVersion?: string;
+  gitProxyScheme: 'https' | 'http' | undefined;
+  gitProxyUrl?: string;
+  gitProxyUser?: string;
+  gitProxyInsecure = false;
   private _gitUpstream?: IGitDataExtended;
   public projectDetailsLoaded = false; // true if project was fetched via project endpoint of bridge server
   public stages: Stage[] = [];
@@ -95,21 +129,12 @@ export class Project extends pj {
     return this.services?.map((service) => service.serviceName) ?? [];
   }
 
-  getShipyardVersion(): string {
-    return this.shipyardVersion?.split('/').pop() ?? '';
-  }
-
   isShipyardNotSupported(supportedVersion: string | undefined | null): boolean {
-    const version = this.getShipyardVersion();
-    return supportedVersion !== null && (!version || !supportedVersion || semver.lt(version, supportedVersion));
+    return isShipyardNotSupported(this, supportedVersion);
   }
 
   getService(serviceName: string): Service | undefined {
     return this.getServices().find((s) => s.serviceName === serviceName);
-  }
-
-  getStage(stageName: string): Stage | undefined {
-    return this.stages.find((s) => s.stageName === stageName);
   }
 
   getLatestDeployment(service?: Service, stage?: Stage): DeploymentInformation | undefined {

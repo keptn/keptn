@@ -4,8 +4,8 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: api-nginx-config
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/component: api-gateway-nginx
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/name: api-gateway-nginx
 data:
   nginx.conf: |
     worker_processes  3;
@@ -355,18 +355,18 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: api-gateway-nginx
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/component: api-gateway-nginx
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/name: api-gateway-nginx
 spec:
   selector:
-    matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: api-gateway-nginx
+    matchLabels: {{- include "keptn.common.labels.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/name: api-gateway-nginx
   replicas: 1
   {{- include "keptn.common.update-strategy" . | nindent 2 }}
   template:
     metadata:
-      labels: {{- include "common.labels.standard" . | nindent 8 }}
-        app.kubernetes.io/component: api-gateway-nginx
+      labels: {{- include "keptn.common.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/name: api-gateway-nginx
       annotations: # add randomizer to restart the deployment if anything changes - see https://github.com/keptn/keptn/issues/3320
         rollme: {{ randAlphaNum 5 | quote }}
     spec:
@@ -411,20 +411,20 @@ spec:
               readOnly: true
               name: api-nginx-config
             {{- if .Values.apiGatewayNginx.extraVolumeMounts }}
-            {{- include "common.tplvalues.render" ( dict "value" .Values.apiGatewayNginx.extraVolumeMounts "context" $) | nindent 12 }}
+            {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.apiGatewayNginx.extraVolumeMounts "context" $) | nindent 12 }}
             {{- end }}
           resources:
             {{- toYaml .Values.apiGatewayNginx.resources | nindent 12 }}
           {{- include "keptn.apiGatewayNginx.container-security-context" . | nindent 10 }}
         {{- with .Values.apiGatewayNginx.sidecars }}
-        {{- include "common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
+        {{- include "keptn.common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
         {{- end }}
       volumes:
         - name: api-nginx-config
           configMap:
             name: api-nginx-config # place ConfigMap `api-nginx-config` on /etc/nginx
         {{- if .Values.apiGatewayNginx.extraVolumes }}
-        {{- include "common.tplvalues.render" ( dict "value" .Values.apiGatewayNginx.extraVolumes "context" $) | nindent 8 }}
+        {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.apiGatewayNginx.extraVolumes "context" $) | nindent 8 }}
         {{- end }}
       serviceAccountName: keptn-default
       {{- include "keptn.nodeSelector" (dict "value" .Values.apiGatewayNginx.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
@@ -433,8 +433,8 @@ apiVersion: v1
 kind: Service
 metadata:
   name: api-gateway-nginx
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/component: api-gateway-nginx
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/name: api-gateway-nginx
 spec:
   type: {{ .Values.apiGatewayNginx.type }}
   ports:
@@ -445,5 +445,5 @@ spec:
       nodePort: {{ .Values.apiGatewayNginx.nodePort }}
       {{- end }}
       protocol: TCP
-  selector: {{- include "common.labels.selectorLabels" . | nindent 4 }}
-    app.kubernetes.io/component: api-gateway-nginx
+  selector: {{- include "keptn.common.labels.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/name: api-gateway-nginx

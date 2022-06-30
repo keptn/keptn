@@ -4,13 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
+	"time"
+
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/mitchellh/copystructure"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"strings"
-	"time"
 )
 
 const projectsCollectionName = "keptnProjectsMV"
@@ -123,9 +124,9 @@ func (m *MongoDBProjectsRepo) UpdateProjectUpstream(projectName string, uri stri
 	if existingProject == nil {
 		return nil
 	}
-	if existingProject.GitRemoteURI != uri || existingProject.GitUser != user {
-		existingProject.GitRemoteURI = uri
-		existingProject.GitUser = user
+	if existingProject.GitCredentials.RemoteURL != uri || existingProject.GitCredentials.User != user {
+		existingProject.GitCredentials.RemoteURL = uri
+		existingProject.GitCredentials.User = user
 		if err := m.UpdateProject(existingProject); err != nil {
 			log.Errorf("could not update upstream credentials of project %s: %s", projectName, err.Error())
 			return err

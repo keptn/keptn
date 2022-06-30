@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, HostBinding, Input } from '@angular/core';
 import { DataService } from '../../_services/data.service';
 import { Sequence } from '../../_models/sequence';
-import { SequenceStateControl } from '../../../../shared/models/sequence';
+import { SequenceStateControl } from '../../../../shared/interfaces/sequence';
 import {
   KtbConfirmationDialogComponent,
   SequenceConfirmDialogData,

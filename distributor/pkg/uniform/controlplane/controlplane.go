@@ -110,7 +110,7 @@ func (c *ControlPlane) createRegistrationData() models.Integration {
 	}
 
 	return models.Integration{
-		Name: c.env.K8sDeploymentComponent,
+		Name: c.env.K8sDeploymentName,
 		MetaData: models.MetaData{
 			Hostname:           c.env.K8sNodeName,
 			IntegrationVersion: c.env.Version,

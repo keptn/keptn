@@ -6,7 +6,7 @@ import (
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/go-sdk/pkg/sdk"
+	"github.com/keptn/go-utils/pkg/sdk"
 )
 
 type DistributorData struct {

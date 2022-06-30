@@ -1,6 +1,6 @@
 import { OpenRemediationsResponse } from '../../../../shared/fixtures/open-remediations-response.mock';
 import { ResultTypes } from '../../../../shared/models/result-types';
-import { SequenceState } from '../../../../shared/models/sequence';
+import { SequenceState } from '../../../../shared/interfaces/sequence';
 import { Sequence } from '../../_models/sequence';
 
 const updatedDeploymentMock = {

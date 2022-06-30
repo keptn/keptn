@@ -13,6 +13,7 @@ import (
 // @Deprecated   true
 // @Summary      INTERNAL Endpoint: Handle event
 // @Description  Handle incoming cloud event
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}statistics:write</span>
 // @Tags         Events
 // @Security     ApiKeyAuth
 // @Accept       json

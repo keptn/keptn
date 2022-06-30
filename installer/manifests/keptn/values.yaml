@@ -35,6 +35,11 @@ features:
   automaticProvisioning:
     serviceURL: ""
     message: ""
+  swagger:
+    hideDeprecated: false
+  oauth:
+    enabled: false
+    prefix: "keptn:"
 
 nats:
   nameOverride: keptn-nats
@@ -82,7 +87,7 @@ apiGatewayNginx:
     privileged: false
   image:
     repository: docker.io/nginxinc/nginx-unprivileged
-    tag: 1.22.0-alpine
+    tag: 1.23.0-alpine
   nodeSelector: {}
   gracePeriod: 60
   preStopHookTime: 20
@@ -165,7 +170,6 @@ bridge:
     allowPrivilegeEscalation: false
     privileged: false
   oauth:
-    enabled: false
     discovery: ""
     secureCookie: false
     trustProxy: ""
@@ -203,6 +207,7 @@ distributor:
   config:
     proxy:
       httpTimeout: "30"
+      maxPayloadBytesKB: "64"
     queueGroup:
       enabled: true
     oauth:

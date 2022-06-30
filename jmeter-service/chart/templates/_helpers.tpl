@@ -2,7 +2,7 @@
 Expand the name of the chart.
 */}}
 {{- define "jmeter-service.name" -}}
-{{- include "common.names.name" . -}}
+{{- include "keptn.common.names.name" . -}}
 {{- end }}
 
 {{/*
@@ -11,14 +11,14 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 If release name contains chart name it will be used as a full name.
 */}}
 {{- define "jmeter-service.fullname" -}}
-{{- include "common.names.fullname" . -}}
+{{- include "keptn.common.names.fullname" . -}}
 {{- end }}
 
 {{/*
 Create chart name and version as used by the chart label.
 */}}
 {{- define "jmeter-service.chart" -}}
-{{- include "common.names.chart" . -}}
+{{- include "keptn.common.names.chart" . -}}
 {{- end }}
 
 {{/*

@@ -3,16 +3,125 @@ import { EventTypes } from '../../../shared/interfaces/event-types';
 import { EvaluationResult } from '../../../shared/interfaces/evaluation-result';
 import { EVENT_ICONS } from './event-icons';
 import { RemediationAction } from '../../../shared/models/remediation-action';
-import { Sequence as sq, SequenceEvent, SequenceStage, SequenceState } from '../../../shared/models/sequence';
+import { ISequence, SequenceEvent, SequenceStage, SequenceState } from '../../../shared/interfaces/sequence';
 import { DtIconType } from '@dynatrace/barista-icons';
 import { ResultTypes } from '../../../shared/models/result-types';
+
+const pendingApprovalTypes = [EventTypes.APPROVAL_TRIGGERED, EventTypes.APPROVAL_STARTED];
+const finishedStates = [SequenceState.FINISHED, SequenceState.TIMEDOUT, SequenceState.ABORTED, SequenceState.SUCCEEDED];
+const startedStates = [SequenceState.TRIGGERED, SequenceState.STARTED];
 
 type SeqStage = SequenceStage & {
   latestEvaluationTrace?: Trace;
   actions?: RemediationAction[];
 };
 
-export class Sequence extends sq {
+export interface SequenceStateInfo {
+  finished: boolean;
+  loading: boolean;
+  waiting: boolean;
+  pendingApproval: boolean;
+  successful: boolean;
+  warning: boolean;
+  faulty: boolean;
+  aborted: boolean;
+  timedOut: boolean;
+  steady: boolean;
+  icon: DtIconType;
+  statusText: string;
+  evaluation: EvaluationResult | undefined;
+}
+
+function getStatusText(
+  status: string,
+  state: { successful: boolean; faulty: boolean; aborted: boolean; waiting: boolean; timedOut: boolean }
+): string {
+  if (state.successful) {
+    status = 'succeeded';
+  } else if (state.timedOut) {
+    status = 'timed out';
+  } else if (state.faulty) {
+    status = 'failed';
+  } else if (state.aborted) {
+    status = 'aborted';
+  } else if (state.waiting) {
+    status = 'waiting';
+  }
+  return status;
+}
+
+export function createSequenceStateInfo(sequence: ISequence, stageName?: string): SequenceStateInfo {
+  const stage = getStage(sequence, stageName);
+  const latestStage = stage ? stage : sequence.stages[sequence.stages.length - 1];
+  const stages = stage ? [stage] : sequence.stages;
+  const state = stageName ? stage?.state : sequence.state;
+  const finished = !!state && isFinished(state);
+  const started = startedStates.includes(sequence.state);
+  const loading = started && (!stageName || !finished);
+  const waiting = state === SequenceState.WAITING;
+  const aborted = state === SequenceState.ABORTED;
+  const timedOut = state === SequenceState.TIMEDOUT;
+  const faulty = stages.some((s) => s.latestFailedEvent) || timedOut;
+  const warning = !faulty && stages.some((s) => s.latestEvaluation?.result === ResultTypes.WARNING);
+  const successful = finished && !faulty && !warning && !aborted;
+  const pendingApproval = stages.some((s) => pendingApprovalTypes.includes(s.latestEvent?.type as EventTypes));
+  const icon = latestStage?.latestEvent?.type
+    ? EVENT_ICONS[getShortType(latestStage?.latestEvent?.type)] || EVENT_ICONS.default
+    : EVENT_ICONS.default;
+  const steady = (!waiting && !loading) || pendingApproval;
+  const statusText = getStatusText(sequence.state, { successful, faulty, waiting, aborted, timedOut });
+  const evaluation = stage?.latestEvaluation;
+  return {
+    finished,
+    loading,
+    waiting,
+    pendingApproval,
+    successful,
+    warning,
+    timedOut,
+    faulty,
+    aborted,
+    steady,
+    icon,
+    statusText,
+    evaluation,
+  };
+}
+
+export function getStage(sequence: ISequence, stageName?: string): SeqStage | undefined {
+  return sequence.stages.find((stage) => stage.name === stageName);
+}
+
+export function getStageNames(sequence: ISequence): string[] {
+  return sequence.stages.map((stage) => stage.name);
+}
+
+export function getLastStageName(sequence: ISequence): string | undefined {
+  return sequence.stages[sequence.stages.length - 1]?.name;
+}
+
+export function isFinished(state: SequenceState): boolean {
+  return finishedStates.includes(state);
+}
+
+export function getShortType(type: string): string {
+  const parts = type?.split('.');
+  if (parts.length === 6) {
+    return parts[4];
+  } else if (parts.length === 5) {
+    return parts[3];
+  } else {
+    return type;
+  }
+}
+
+export class Sequence implements ISequence {
+  name!: string;
+  project!: string;
+  service!: string;
+  shkeptncontext!: string;
+  state!: SequenceState;
+  time!: string;
   stages!: SeqStage[];
   problemTitle?: string;
   traces: Trace[] = [];
@@ -29,23 +138,11 @@ export class Sequence extends sq {
   }
 
   public static isFinished(state: SequenceState): boolean {
-    return (
-      state === SequenceState.FINISHED ||
-      state === SequenceState.TIMEDOUT ||
-      state === SequenceState.ABORTED ||
-      state === SequenceState.SUCCEEDED
-    );
+    return isFinished(state);
   }
 
   public static getShortType(type: string): string {
-    const parts = type?.split('.');
-    if (parts.length === 6) {
-      return parts[4];
-    } else if (parts.length === 5) {
-      return parts[3];
-    } else {
-      return type;
-    }
+    return getShortType(type);
   }
 
   public getStage(stageName: string): SeqStage | undefined {
@@ -57,11 +154,11 @@ export class Sequence extends sq {
   }
 
   public getStages(): string[] {
-    return this.stages.map((stage) => stage.name);
+    return getStageNames(this);
   }
 
   public getLastStage(): string | undefined {
-    return this.stages[this.stages.length - 1]?.name;
+    return getLastStageName(this);
   }
 
   public isFaulty(stageName?: string): boolean {

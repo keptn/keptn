@@ -15,6 +15,10 @@ func isStringFlagSet(s *string) bool {
 	return s != nil && *s != ""
 }
 
+func isStringFlagNotSet(s *string) bool {
+	return s == nil || (s != nil && *s == "")
+}
+
 func areBoolFlagsSet(el ...*bool) bool {
 	for _, e := range el {
 		if !isBoolFlagSet(e) {

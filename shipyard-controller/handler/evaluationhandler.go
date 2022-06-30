@@ -50,6 +50,7 @@ func NewEvaluationHandler(evaluationManager IEvaluationManager) *EvaluationHandl
 // CreateEvaluation triggers a new evaluation
 // @Summary      Trigger a new evaluation
 // @Description  Trigger a new evaluation for a service within a project
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}events:write</span>
 // @Tags         Evaluation
 // @Security     ApiKeyAuth
 // @Accept       json

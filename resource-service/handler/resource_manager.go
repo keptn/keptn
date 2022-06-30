@@ -68,7 +68,7 @@ func (p ResourceManager) GetResources(params models.GetResourcesParams) (*models
 		return nil, err
 	}
 	metadata := models.Version{
-		UpstreamURL: gitContext.Credentials.RemoteURI,
+		UpstreamURL: gitContext.Credentials.RemoteURL,
 		Version:     revision,
 	}
 
@@ -225,7 +225,7 @@ func (p ResourceManager) readResource(gitContext *common_models.GitContext, para
 			ResourceContent: models.ResourceContent(resourceContent),
 		},
 		Metadata: models.Version{
-			UpstreamURL: gitContext.Credentials.RemoteURI,
+			UpstreamURL: gitContext.Credentials.RemoteURL,
 			Version:     revision,
 		},
 	}, nil
@@ -312,7 +312,7 @@ func (p ResourceManager) stageAndCommit(gitContext *common_models.GitContext, me
 	result := &models.WriteResourceResponse{
 		CommitID: commitID,
 		Metadata: models.Version{
-			UpstreamURL: gitContext.Credentials.RemoteURI,
+			UpstreamURL: gitContext.Credentials.RemoteURL,
 			Version:     commitID,
 		},
 	}

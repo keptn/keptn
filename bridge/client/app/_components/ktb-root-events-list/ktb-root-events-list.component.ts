@@ -11,6 +11,7 @@ import {
 import { DateUtil } from '../../_utils/date.utils';
 import { Project } from '../../_models/project';
 import { Sequence } from '../../_models/sequence';
+import { ISequence } from '../../../../shared/interfaces/sequence';
 
 @Component({
   selector: 'ktb-root-events-list',
@@ -54,9 +55,11 @@ export class KtbRootEventsListComponent {
 
   constructor(private _changeDetectorRef: ChangeDetectorRef, public dateUtil: DateUtil) {}
 
-  selectEvent(sequence: Sequence, stage?: string): void {
-    this.selectedEvent = sequence;
-    this.selectedEventChange.emit({ sequence, stage });
+  selectEvent(sequence: ISequence, stage?: string): void {
+    // Refactor without using cast to Sequence
+    // use ISequence instead
+    this.selectedEvent = <Sequence>sequence;
+    this.selectedEventChange.emit({ sequence: <Sequence>sequence, stage });
   }
 
   identifyEvent(index: number, item: Sequence): string | undefined {

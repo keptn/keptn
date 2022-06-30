@@ -1,5 +1,5 @@
 import NewProjectCreatePage from '../support/pageobjects/NewProjectCreatePage';
-import { Project } from '../../shared/models/project';
+import { Project } from '../../shared/interfaces/project';
 import BasePage from '../support/pageobjects/BasePage';
 import { interceptFailedMetadata } from '../support/intercept';
 

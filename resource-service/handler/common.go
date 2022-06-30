@@ -2,11 +2,12 @@ package handler
 
 import (
 	"errors"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	errors2 "github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
 	logger "github.com/sirupsen/logrus"
-	"net/http"
 )
 
 const pathParamProjectName = "projectName"
@@ -25,7 +26,7 @@ func OnAPIError(c *gin.Context, err error) {
 		SetNotFoundErrorResponse(c, "Could not find credentials for upstream repository")
 	} else if errors.Is(err, errors2.ErrMalformedCredentials) {
 		SetFailedDependencyErrorResponse(c, "Could not decode credentials for upstream repository")
-	} else if errors.Is(err, errors2.ErrCredentialsInvalidRemoteURI) || errors.Is(err, errors2.ErrCredentialsTokenMustNotBeEmpty) {
+	} else if errors.Is(err, errors2.ErrCredentialsInvalidRemoteURL) || errors.Is(err, errors2.ErrCredentialsTokenMustNotBeEmpty) {
 		SetBadRequestErrorResponse(c, "Upstream repository not found")
 	} else if errors.Is(err, errors2.ErrRepositoryNotFound) {
 		SetNotFoundErrorResponse(c, "Upstream repository not found")

@@ -16,6 +16,7 @@ import (
 // GetStatistics godoc
 // @Summary      Get statistics
 // @Description  get statistics about Keptn installation
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}statistics:read</span>
 // @Tags         Statistics
 // @Security     ApiKeyAuth
 // @Accept       json
