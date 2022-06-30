@@ -1,9 +1,15 @@
+# Default values for stash.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
 global:
   keptn:
     registry: docker.io/keptn
     tag: ""
 
+# Overrides name template
 continuousDelivery:
+  # Nieco nieco
   enabled: false
   ingressConfig:
     ingress_hostname_suffix: "svc.cluster.local"
@@ -11,7 +17,7 @@ continuousDelivery:
     ingress_port: "80"
     istio_gateway: "public-gateway.istio-system"
 
-mongo:
+mongo: # Example comment got mongo odubajmanifests
   enabled: true
   host: mongodb:27017
   architecture: standalone
