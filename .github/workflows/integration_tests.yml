@@ -268,7 +268,7 @@ jobs:
         uses: google-github-actions/auth@v0.8.0
         with:
           credentials_json: ${{ secrets.GCLOUD_RESTRICTED_SERVICE_KEY }}
-          access_token_lifetime: "7200s"
+#          access_token_lifetime: "7200s"
           token_format: "access_token"
 
       - name: Set up Google Cloud SDK
