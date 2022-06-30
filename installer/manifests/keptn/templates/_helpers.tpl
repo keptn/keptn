@@ -3,7 +3,7 @@
 Expand the name of the chart.
 */}}
 {{- define "keptn.name" -}}
-{{- include "common.names.name" . -}}
+{{- include "keptn.common.names.name" . -}}
 {{- end }}
 
 {{/*
@@ -12,14 +12,14 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 If release name contains chart name it will be used as a full name.
 */}}
 {{- define "keptn.fullname" -}}
-{{- include "common.names.fullname" . -}}
+{{- include "keptn.common.names.fullname" . -}}
 {{- end }}
 
 {{/*
 Create chart name and version as used by the chart label.
 */}}
 {{- define "keptn.chart" -}}
-{{- include "common.names.chart" . -}}
+{{- include "keptn.common.names.chart" . -}}
 {{- end }}
 
 {{- define "keptn.dist.livenessProbe" -}}
@@ -62,11 +62,6 @@ lifecycle:
     fieldRef:
       apiVersion: v1
       fieldPath: 'metadata.labels[''app.kubernetes.io/version'']'
-- name: K8S_DEPLOYMENT_COMPONENT
-  valueFrom:
-    fieldRef:
-      apiVersion: v1
-      fieldPath: 'metadata.labels[''app.kubernetes.io/component'']'
 - name: K8S_NAMESPACE
   valueFrom:
     fieldRef:
@@ -90,7 +85,7 @@ lifecycle:
 - name: VERSION
   valueFrom:
     fieldRef:
-      fieldPath: metadata.labels['app.kubernetes.io/version']
+      fieldPath: 'metadata.labels[''app.kubernetes.io/version'']'
 - name: DISTRIBUTOR_VERSION
 {{- if .Values.distributor.image.tag }}
   value: {{ .Values.distributor.image.tag }}
@@ -99,18 +94,12 @@ lifecycle:
 {{- end }}
 - name: API_PROXY_HTTP_TIMEOUT
   value: {{ ((.Values.distributor.config).proxy).httpTimeout | default "30" | quote }}
-- name: LOCATION
-  valueFrom:
-   fieldRef:
-      fieldPath: metadata.labels['app.kubernetes.io/component']
+- name: API_PROXY_MAX_PAYLOAD_BYTES_KB
+  value: {{ ((.Values.distributor.config).proxy).maxPayloadBytesKB | default "64" | quote }}
 - name: K8S_DEPLOYMENT_NAME
   valueFrom:
     fieldRef:
-      fieldPath: metadata.labels['app.kubernetes.io/name']
-- name: K8S_DEPLOYMENT_COMPONENT
-  valueFrom:
-    fieldRef:
-      fieldPath: metadata.labels['app.kubernetes.io/component']
+      fieldPath: 'metadata.labels[''app.kubernetes.io/name'']'
 - name: K8S_POD_NAME
   valueFrom:
     fieldRef:
@@ -135,7 +124,7 @@ lifecycle:
 - name: PUBSUB_GROUP
   valueFrom:
     fieldRef:
-      fieldPath: metadata.labels['app.kubernetes.io/name']
+      fieldPath: 'metadata.labels[''app.kubernetes.io/name'']'
 {{- end }}
 - name: OAUTH_CLIENT_ID
   value: "{{ (((.Values.distributor).config).oauth).clientID }}"
@@ -311,9 +300,9 @@ Usage:
 */}}
 {{- define "keptn.tpl-value-or-default" -}}
   {{- if .value }}
-    {{- include "common.tplvalues.render" ( dict "value" .value "context" .context ) }}
+    {{- include "keptn.common.tplvalues.render" ( dict "value" .value "context" .context ) }}
   {{- else }}
-    {{- include "common.tplvalues.render" ( dict "value" .default "context" .context ) }}
+    {{- include "keptn.common.tplvalues.render" ( dict "value" .default "context" .context ) }}
   {{- end }}
 {{- end -}}
 

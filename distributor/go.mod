@@ -6,12 +6,12 @@ require (
 	github.com/cloudevents/sdk-go/protocol/nats/v2 v2.10.1
 	github.com/cloudevents/sdk-go/v2 v2.10.1
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.16.1-0.20220628065837-3ed2fc6cf1ed
+	github.com/keptn/go-utils v0.16.1-0.20220628071524-fc5b6f967e50
 	github.com/nats-io/nats-server/v2 v2.8.4
 	github.com/nats-io/nats.go v1.16.0
 	github.com/sirupsen/logrus v1.8.1
-	github.com/stretchr/testify v1.7.1
-	golang.org/x/oauth2 v0.0.0-20220622183110-fd043fe589d2
+	github.com/stretchr/testify v1.7.5
+	golang.org/x/oauth2 v0.0.0-20220628200809-02e64fa58f26
 )
 
 require (
@@ -45,7 +45,7 @@ require (
 	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 replace (

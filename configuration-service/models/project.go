@@ -11,6 +11,7 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 )
 
 // Project project
@@ -18,14 +19,8 @@ import (
 // swagger:model Project
 type Project struct {
 
-	// Git remote URI
-	GitRemoteURI string `json:"gitRemoteURI,omitempty"`
-
-	// Git token
-	GitToken string `json:"gitToken,omitempty"`
-
-	// Git User
-	GitUser string `json:"gitUser,omitempty"`
+	// git auth credentials
+	GitCredentials *apimodels.GitAuthCredentials `json:"gitCredentials,omitempty"`
 
 	// Project name
 	ProjectName string `json:"projectName,omitempty"`

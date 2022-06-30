@@ -88,11 +88,13 @@ var ErrExactSHA1NotSupported = New("server does not support exact SHA1 refspec")
 
 var ErrCredentialsNotFound = New("could not find upstream repository credentials")
 var ErrMalformedCredentials = New("could not decode upstream repository credentials")
-var ErrCredentialsInvalidRemoteURI = New("invalid remote URI")
+var ErrCredentialsInvalidRemoteURL = New("invalid remote URL")
 var ErrCredentialsTokenMustNotBeEmpty = New("token must not be empty")
 var ErrCredentialsPrivateKeyMustNotBeEmpty = New("private key must not be empty")
 var ErrProxyInvalidScheme = New("proxy scheme must be http or https")
+var ErrInvalidRemoteURL = New("remoteURL scheme must be http, https or ssh")
 var ErrProxyInvalidURL = New("proxy URL must contain IP address and port (<ip-address>:<port>)")
+var ErrInvalidCredentials = New("credentials need to have ssh or http auth method")
 
 // Error messages
 

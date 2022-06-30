@@ -43,17 +43,16 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: keptn
+      app.kubernetes.io/name: echo-service
       app.kubernetes.io/instance: keptn
-      app.kubernetes.io/component: echo-service
   replicas: 1
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: keptn
+        app.kubernetes.io/name: echo-service
         app.kubernetes.io/instance: keptn
         app.kubernetes.io/part-of: keptn-keptn
-        app.kubernetes.io/component: echo-service
+        app.kubernetes.io/component: keptn
         app.kubernetes.io/version: develop
     spec:
       containers:
@@ -95,18 +94,10 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.labels['app.kubernetes.io/version']
-            - name: LOCATION
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.labels['app.kubernetes.io/component']
             - name: K8S_DEPLOYMENT_NAME
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.labels['app.kubernetes.io/name']
-            - name: K8S_DEPLOYMENT_COMPONENT
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.labels['app.kubernetes.io/component']
             - name: K8S_POD_NAME
               valueFrom:
                 fieldRef:
@@ -479,9 +470,9 @@ func testUniformIntegration(t *testing.T, configureIntegrationFunc func(), clean
 	require.Nil(t, err)
 	require.NotNil(t, fetchedEchoIntegration)
 	require.Equal(t, echoServiceName, fetchedEchoIntegration.Name)
-	require.Equal(t, "keptn", fetchedEchoIntegration.MetaData.KubernetesMetaData.DeploymentName)
+	require.Equal(t, echoServiceName, fetchedEchoIntegration.MetaData.KubernetesMetaData.DeploymentName)
 	require.Equal(t, GetKeptnNameSpaceFromEnv(), fetchedEchoIntegration.MetaData.KubernetesMetaData.Namespace)
-	require.Equal(t, "echo-service", fetchedEchoIntegration.MetaData.Location)
+	require.Equal(t, "control-plane", fetchedEchoIntegration.MetaData.Location)
 	require.Equal(t, "develop", fetchedEchoIntegration.MetaData.DistributorVersion)
 	require.Equal(t, "develop", fetchedEchoIntegration.MetaData.IntegrationVersion)
 

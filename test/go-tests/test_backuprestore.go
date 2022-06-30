@@ -181,7 +181,7 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 
 	t.Logf("Extracting name of service %s", serviceUnderTestName)
 
-	serviceUnderTestPods, err := GetPodNamesOfDeployment("app.kubernetes.io/component=" + serviceUnderTestName)
+	serviceUnderTestPods, err := GetPodNamesOfDeployment("app.kubernetes.io/name=" + serviceUnderTestName)
 	require.Nil(t, err)
 	require.NotEmpty(t, serviceUnderTestPods)
 	serviceUnderTestPod := serviceUnderTestPods[0]
@@ -254,7 +254,7 @@ func BackupRestoreTestGeneric(t *testing.T, serviceUnderTestName string) {
 	//restore Configuration/Resource Service data
 
 	t.Logf("Restoring %s data", serviceUnderTestName)
-	serviceUnderTestPods, err = GetPodNamesOfDeployment("app.kubernetes.io/component=" + serviceUnderTestName)
+	serviceUnderTestPods, err = GetPodNamesOfDeployment("app.kubernetes.io/name=" + serviceUnderTestName)
 	require.Nil(t, err)
 	require.NotEmpty(t, serviceUnderTestPods)
 	serviceUnderTestPod = serviceUnderTestPods[0]

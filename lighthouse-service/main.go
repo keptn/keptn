@@ -107,7 +107,7 @@ func (l LighthouseService) OnEvent(ctx context.Context, event models.KeptnContex
 
 func (l LighthouseService) RegistrationData() controlplane.RegistrationData {
 	return controlplane.RegistrationData{
-		Name: l.env.K8SDeploymentComponent,
+		Name: l.env.K8SDeploymentName,
 		MetaData: models.MetaData{
 			Hostname:           l.env.K8SNodeName,
 			IntegrationVersion: l.env.K8SDeploymentVersion,

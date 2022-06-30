@@ -2,6 +2,10 @@ package handler
 
 import (
 	"errors"
+	"strings"
+	"testing"
+
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/resource-service/common"
 	common_mock "github.com/keptn/keptn/resource-service/common/fake"
 	"github.com/keptn/keptn/resource-service/common_models"
@@ -9,8 +13,6 @@ import (
 	"github.com/keptn/keptn/resource-service/models"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
-	"strings"
-	"testing"
 )
 
 type projectManagerTestFields struct {
@@ -27,9 +29,11 @@ func TestProjectManager_CreateProject(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
 		},
 	}
 
@@ -72,9 +76,11 @@ func TestProjectManager_CreateProject_ProjectAlreadyExists(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
 		},
 	}
 
@@ -142,9 +148,11 @@ func TestProjectManager_CreateProject_ProjectRepoDoesNotExist(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
 		},
 	}
 
@@ -184,9 +192,11 @@ func TestProjectManager_CreateProject_WritingFileFails(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
 		},
 	}
 
@@ -226,9 +236,11 @@ func TestProjectManager_CreateProject_CommitFails(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
 		},
 	}
 
@@ -268,9 +280,11 @@ func TestProjectManager_UpdateProject(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
 		},
 	}
 
@@ -314,9 +328,11 @@ func TestProjectManager_UpdateProject_WithMigration(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
 		},
 	}
 
@@ -369,9 +385,11 @@ func TestProjectManager_UpdateProject_WithMigration_CannotPull(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
 		},
 	}
 
@@ -428,9 +446,11 @@ func TestProjectManager_UpdateProject_WithMigration_MigrationFailsOnFirstTry(t *
 	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
 		},
 	}
 
@@ -492,9 +512,11 @@ func TestProjectManager_UpdateProject_WithMigration_AlreadyMigrated(t *testing.T
 	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
 		},
 	}
 
@@ -548,9 +570,11 @@ func TestProjectManager_UpdateProject_WithMigration_InvalidMetadata(t *testing.T
 	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
 		},
 	}
 
@@ -605,9 +629,11 @@ func TestProjectManager_UpdateProject_WithMigration_NoMetadata(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
 		},
 	}
 
@@ -690,9 +716,11 @@ func TestProjectManager_UpdateProject_ProjectDoesNotExist(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
 		},
 	}
 
@@ -726,9 +754,11 @@ func TestProjectManager_UpdateProject_ProjectNotInitialized(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
 		},
 	}
 
@@ -765,9 +795,11 @@ func TestProjectManager_UpdateProject_ProjectNotInitializedEmptyMetadataFile(t *
 	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
 		},
 	}
 
@@ -804,9 +836,11 @@ func TestProjectManager_UpdateProject_CannotGetDefaultBranch(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
 		},
 	}
 
@@ -846,9 +880,11 @@ func TestProjectManager_UpdateProject_CheckoutBranchFails(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
 		},
 	}
 
@@ -946,9 +982,11 @@ func getTestProjectManagerFields() projectManagerTestFields {
 		credentialReader: &common_mock.CredentialReaderMock{
 			GetCredentialsFunc: func(project string) (*common_models.GitCredentials, error) {
 				return &common_models.GitCredentials{
-					User:      "my-user",
-					Token:     "my-token",
-					RemoteURI: "my-remote-uri",
+					User: "my-user",
+					HttpsAuth: &apimodels.HttpsGitAuth{
+						Token: "my-token",
+					},
+					RemoteURL: "my-remote-uri",
 				}, nil
 			},
 		},

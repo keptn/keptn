@@ -1,8 +1,9 @@
 package handler
 
 import (
-	"github.com/keptn/keptn/resource-service/errors"
 	"net/http"
+
+	"github.com/keptn/keptn/resource-service/errors"
 
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/keptn/resource-service/models"
@@ -30,17 +31,18 @@ func NewServiceResourceHandler(serviceResourceManager IResourceManager) *Service
 // CreateServiceResources godoc
 // @Summary      Creates service resources
 // @Description  Create list of new resources for the service in the given stage of a project
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}resources:write</span>
 // @Tags         Service Resource
 // @Security     ApiKeyAuth
 // @Accept       json
 // @Produce      json
-// @Param        projectName                                                   path  string  true  "The name of the project"
-// @Param        stageName                                                     path  string  true  "The name of the stage"
-// @Param        serviceName                                                   path  string  true  "The name of the service"
-// @Param        resources    body      models.CreateResourcesPayload  true  "List of resources"
-// @Success      201          {string}  models.WriteResourceResponse
-// @Failure      400          {object}  models.Error  "Invalid payload"
-// @Failure      500          {object}  models.Error  "Internal error"
+// @Param        projectName	path  string  true  "The name of the project"
+// @Param        stageName		path  string  true  "The name of the stage"
+// @Param        serviceName	path  string  true  "The name of the service"
+// @Param        resources		body      models.CreateResourcesPayload  true  "List of resources"
+// @Success      201			{string}  models.WriteResourceResponse
+// @Failure      400			{object}  models.Error  "Invalid payload"
+// @Failure      500			{object}  models.Error  "Internal error"
 // @Router       /project/{projectName}/stage/{stageName}/service/{serviceName}/resource [post]
 func (ph *ServiceResourceHandler) CreateServiceResources(c *gin.Context) {
 	params := &models.CreateResourcesParams{
@@ -76,6 +78,7 @@ func (ph *ServiceResourceHandler) CreateServiceResources(c *gin.Context) {
 // GetServiceResources godoc
 // @Summary      Get list of project resources
 // @Description  Get list of resources for the service in the given stage of a project
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}resources:read</span>
 // @Tags         Service Resource
 // @Security     ApiKeyAuth
 // @Accept       json
@@ -123,6 +126,7 @@ func (ph *ServiceResourceHandler) GetServiceResources(c *gin.Context) {
 // UpdateServiceResources godoc
 // @Summary      Updates service resources
 // @Description  Update list of new resources for the service in the given stage of a project
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}resources:write</span>
 // @Tags         Service Resource
 // @Security     ApiKeyAuth
 // @Accept       json
@@ -169,6 +173,7 @@ func (ph *ServiceResourceHandler) UpdateServiceResources(c *gin.Context) {
 // GetServiceResource godoc
 // @Summary      Get service resource
 // @Description  Get resource for the service in the given stage of a project
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}resources:read</span>
 // @Tags         Service Resource
 // @Security     ApiKeyAuth
 // @Accept       json
@@ -215,6 +220,7 @@ func (ph *ServiceResourceHandler) GetServiceResource(c *gin.Context) {
 // UpdateServiceResource godoc
 // @Summary      Updates a service resource
 // @Description  Updates a resource for the service in the given stage of a project
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}resources:write</span>
 // @Tags         Service Resource
 // @Security     ApiKeyAuth
 // @Accept       json
@@ -262,6 +268,7 @@ func (ph *ServiceResourceHandler) UpdateServiceResource(c *gin.Context) {
 // DeleteServiceResource godoc
 // @Summary      Deletes a service resource
 // @Description  Deletes a resource for the service in the given stage of a project
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}resources:delete</span>
 // @Tags         Service Resource
 // @Security     ApiKeyAuth
 // @Accept       json

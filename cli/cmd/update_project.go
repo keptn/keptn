@@ -97,32 +97,27 @@ keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE
 			Name: &args[0],
 		}
 
-		if *updateProjectParams.GitUser != "" && *updateProjectParams.RemoteURL != "" {
-			if *updateProjectParams.GitToken == "" && *updateProjectParams.GitPrivateKey == "" {
+		if isStringFlagSet(updateProjectParams.GitUser) && isStringFlagSet(updateProjectParams.RemoteURL) {
+			if isStringFlagNotSet(updateProjectParams.GitToken) && isStringFlagNotSet(updateProjectParams.GitPrivateKey) {
 				return errors.New("Access token or private key must be set")
 			}
 
-			if *updateProjectParams.GitToken != "" && *updateProjectParams.GitPrivateKey != "" {
-				return errors.New("Access token or private key cannot be set together")
+			if isStringFlagSet(updateProjectParams.GitToken) && isStringFlagSet(updateProjectParams.GitPrivateKey) {
+				return errors.New("Access token and private key cannot be set together")
 			}
 
-			project.GitUser = *updateProjectParams.GitUser
-			project.GitToken = *updateProjectParams.GitToken
-			project.GitRemoteURL = *updateProjectParams.RemoteURL
-
-			if *updateProjectParams.GitProxyURL != "" && strings.HasPrefix(*updateProjectParams.RemoteURL, "ssh://") {
+			if isStringFlagSet(updateProjectParams.GitProxyURL) && strings.HasPrefix(*updateProjectParams.RemoteURL, "ssh://") {
 				return errors.New("Proxy cannot be set with SSH")
 			}
 
-			if *updateProjectParams.GitProxyURL != "" && *updateProjectParams.GitProxyScheme == "" {
+			if isStringFlagSet(updateProjectParams.GitProxyURL) && isStringFlagNotSet(updateProjectParams.GitProxyScheme) {
 				return errors.New("Proxy cannot be set without scheme")
 			}
 
-			project.GitProxyURL = *updateProjectParams.GitProxyURL
-			project.GitProxyScheme = *updateProjectParams.GitProxyScheme
-			project.GitProxyUser = *updateProjectParams.GitProxyUser
-			project.GitProxyPassword = *updateProjectParams.GitProxyPassword
-			project.InsecureSkipTLS = *updateProjectParams.InsecureSkipTLS
+			project.GitCredentials = &apimodels.GitAuthCredentials{
+				User:      *updateProjectParams.GitUser,
+				RemoteURL: *updateProjectParams.RemoteURL,
+			}
 
 			if strings.HasPrefix(*updateProjectParams.RemoteURL, "ssh://") {
 				content, err := ioutil.ReadFile(*updateProjectParams.GitPrivateKey)
@@ -130,17 +125,37 @@ keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE
 					return fmt.Errorf("unable to read privateKey file: %s\n", err.Error())
 				}
 
-				project.GitPrivateKey = string(base64.StdEncoding.EncodeToString(content))
-				project.GitPrivateKeyPass = *updateProjectParams.GitPrivateKeyPass
-			}
-
-			if *updateProjectParams.GitPemCertificate != "" {
-				content, err := ioutil.ReadFile(*updateProjectParams.GitPemCertificate)
-				if err != nil {
-					return fmt.Errorf("unable to read PEM Certificate file: %s\n", err.Error())
+				sshCredentials := apimodels.SshGitAuth{
+					PrivateKey:     base64.StdEncoding.EncodeToString(content),
+					PrivateKeyPass: *updateProjectParams.GitPrivateKeyPass,
 				}
 
-				project.GitPemCertificate = string(base64.StdEncoding.EncodeToString(content))
+				project.GitCredentials.SshAuth = &sshCredentials
+			} else if strings.HasPrefix(*updateProjectParams.RemoteURL, "http") {
+				httpCredentials := apimodels.HttpsGitAuth{
+					Token:           *updateProjectParams.GitToken,
+					InsecureSkipTLS: *updateProjectParams.InsecureSkipTLS,
+				}
+
+				if isStringFlagSet(updateProjectParams.GitProxyURL) {
+					proxyCredentials := apimodels.ProxyGitAuth{
+						URL:      *updateProjectParams.GitProxyURL,
+						Scheme:   *updateProjectParams.GitProxyScheme,
+						User:     *updateProjectParams.GitProxyUser,
+						Password: *updateProjectParams.GitProxyPassword,
+					}
+					httpCredentials.Proxy = &proxyCredentials
+				}
+
+				if isStringFlagSet(updateProjectParams.GitPemCertificate) {
+					content, err := ioutil.ReadFile(*updateProjectParams.GitPemCertificate)
+					if err != nil {
+						return fmt.Errorf("unable to read PEM Certificate file: %s\n", err.Error())
+					}
+
+					httpCredentials.Certificate = base64.StdEncoding.EncodeToString(content)
+				}
+				project.GitCredentials.HttpsAuth = &httpCredentials
 			}
 		}
 

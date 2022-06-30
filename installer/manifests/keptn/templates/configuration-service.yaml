@@ -2,22 +2,22 @@ apiVersion: v1
 kind: Service
 metadata:
   name: configuration-service
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     {{- if .Values.resourceService.enabled }}
-    app.kubernetes.io/component: resource-service
+    app.kubernetes.io/name: resource-service
     {{- else }}
-    app.kubernetes.io/component: configuration-service
+    app.kubernetes.io/name: configuration-service
     {{- end }}
 spec:
   ports:
     - port: 8080
       targetPort: 8080
       protocol: TCP
-  selector: {{- include "common.labels.selectorLabels" . | nindent 4 }}
+  selector: {{- include "keptn.common.labels.selectorLabels" . | nindent 4 }}
     {{- if .Values.resourceService.enabled }}
-    app.kubernetes.io/component: resource-service
+    app.kubernetes.io/name: resource-service
     {{- else }}
-    app.kubernetes.io/component: configuration-service
+    app.kubernetes.io/name: configuration-service
     {{- end }}
 ---
 # resource-service
@@ -26,18 +26,18 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: resource-service
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/component: resource-service
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/name: resource-service
 spec:
   selector:
-    matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: resource-service
+    matchLabels: {{- include "keptn.common.labels.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/name: resource-service
   replicas: {{ .Values.resourceService.replicas }}
   {{- include "keptn.common.update-strategy" . | nindent 2 }}
   template:
     metadata:
-      labels: {{- include "common.labels.standard" . | nindent 8 }}
-        app.kubernetes.io/component: resource-service
+      labels: {{- include "keptn.common.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/name: resource-service
     spec:
       securityContext:
         fsGroup: {{ .Values.configurationService.fsGroup | default 1001 }}
@@ -90,16 +90,16 @@ spec:
             privileged: false
           {{- if .Values.resourceService.extraVolumeMounts }}
           volumeMounts:
-          {{- include "common.tplvalues.render" ( dict "value" .Values.resourceService.extraVolumeMounts "context" $) | nindent 12 }}
+          {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.resourceService.extraVolumeMounts "context" $) | nindent 12 }}
           {{- end }}
         {{- with .Values.resourceService.sidecars }}
-        {{- include "common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
+        {{- include "keptn.common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
         {{- end }}
       volumes:
         - name: resource-volume
           emptyDir: {}
         {{- if .Values.resourceService.extraVolumes }}
-        {{- include "common.tplvalues.render" ( dict "value" .Values.resourceService.extraVolumes "context" $) | nindent 8 }}
+        {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.resourceService.extraVolumes "context" $) | nindent 8 }}
         {{- end }}
       serviceAccountName: keptn-configuration-service
       {{- include "keptn.nodeSelector" (dict "value" .Values.resourceService.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
@@ -109,11 +109,11 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: configuration-volume
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     {{- if .Values.resourceService.enabled }}
-    app.kubernetes.io/component: resource-service
+    app.kubernetes.io/name: resource-service
     {{- else }}
-    app.kubernetes.io/component: configuration-service
+    app.kubernetes.io/name: configuration-service
     {{- end }}
 spec:
   accessModes:
@@ -129,19 +129,19 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: configuration-service
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/component: configuration-service
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/name: configuration-service
 spec:
   selector:
-    matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: configuration-service
+    matchLabels: {{- include "keptn.common.labels.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/name: configuration-service
   replicas: 1
   strategy:
     type: Recreate
   template:
     metadata:
-      labels: {{- include "common.labels.standard" . | nindent 8 }}
-        app.kubernetes.io/component: configuration-service
+      labels: {{- include "keptn.common.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/name: configuration-service
     spec:
       securityContext:
         fsGroup: {{ .Values.configurationService.fsGroup | default 1001 }}
@@ -203,7 +203,7 @@ spec:
             - mountPath: /data/config
               name: configuration-volume
             {{- if .Values.configurationService.extraVolumeMounts }}
-            {{- include "common.tplvalues.render" ( dict "value" .Values.configurationService.extraVolumeMounts "context" $) | nindent 12 }}
+            {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.configurationService.extraVolumeMounts "context" $) | nindent 12 }}
             {{- end }}
           securityContext:
             runAsNonRoot: true
@@ -212,14 +212,14 @@ spec:
             allowPrivilegeEscalation: false
             privileged: false
         {{- with .Values.configurationService.sidecars }}
-        {{- include "common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
+        {{- include "keptn.common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
         {{- end }}
       volumes:
         - name: configuration-volume
           persistentVolumeClaim:
             claimName: configuration-volume
         {{- if .Values.configurationService.extraVolumes }}
-        {{- include "common.tplvalues.render" ( dict "value" .Values.configurationService.extraVolumes "context" $) | nindent 8 }}
+        {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.configurationService.extraVolumes "context" $) | nindent 8 }}
         {{- end }}
       serviceAccountName: keptn-configuration-service
       {{- include "keptn.nodeSelector" (dict "value" .Values.configurationService.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}

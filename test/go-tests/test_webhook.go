@@ -13,8 +13,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const WebhookConfigMap = "keptn-webhook-config"
-
 const webhookShipyard = `--- 
 apiVersion: "spec.keptn.sh/0.2.3"
 kind: Shipyard
@@ -441,6 +439,8 @@ spec:
           headers:
             - key: x-token
               value: "{{.env.tokensecretKey}}"`
+
+const WebhookConfigMap = "keptn-webhook-config"
 
 func CreateWebhookProject(t *testing.T, projectName, serviceName string) (string, string) {
 

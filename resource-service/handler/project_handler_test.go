@@ -3,14 +3,15 @@ package handler
 import (
 	"bytes"
 	"errors"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
 	"github.com/gin-gonic/gin"
 	errors2 "github.com/keptn/keptn/resource-service/errors"
 	handler_mock "github.com/keptn/keptn/resource-service/handler/fake"
 	"github.com/keptn/keptn/resource-service/models"
 	"github.com/stretchr/testify/require"
-	"net/http"
-	"net/http/httptest"
-	"testing"
 )
 
 const createProjectTestPayload = `{"projectName": "my-project"}`
@@ -94,7 +95,7 @@ func TestProjectHandler_CreateProject(t *testing.T) {
 			name: "invalid url or empty credentials",
 			fields: fields{
 				ProjectManager: &handler_mock.IProjectManagerMock{CreateProjectFunc: func(project models.CreateProjectParams) error {
-					return errors2.ErrCredentialsInvalidRemoteURI
+					return errors2.ErrCredentialsInvalidRemoteURL
 				}},
 			},
 			request: httptest.NewRequest(http.MethodPost, "/project", bytes.NewBuffer([]byte(createProjectTestPayload))),

@@ -66,7 +66,7 @@ func TestUpdateProjectCmdTokenAndKey(t *testing.T) {
 	cmd := fmt.Sprintf("update project sockshop --git-user=user --git-remote-url=https://someurl.com --mock --git-private-key=key --git-token=token")
 	_, err := executeActionCommandC(cmd)
 
-	if !errorContains(err, "Access token or private key cannot be set together") {
+	if !errorContains(err, "Access token and private key cannot be set together") {
 		t.Errorf("missing expected error, but got %v", err)
 	}
 }

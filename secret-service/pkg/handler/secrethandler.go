@@ -30,6 +30,7 @@ type SecretHandler struct {
 // CreateSecret godoc
 // @Summary      Create a Secret
 // @Description  Create a new Secret
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}secrets:write</span>
 // @Tags         Secrets
 // @Security     ApiKeyAuth
 // @Accept       json
@@ -71,6 +72,7 @@ func (s SecretHandler) CreateSecret(c *gin.Context) {
 // CreateSecret godoc
 // @Summary      Update a Secret
 // @Description  Update an existing Secret
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}secrets:write</span>
 // @Tags         Secrets
 // @Security     ApiKeyAuth
 // @Accept       json
@@ -108,6 +110,7 @@ func (s SecretHandler) UpdateSecret(c *gin.Context) {
 // CreateSecret godoc
 // @Summary      Delete a Secret
 // @Description  Delete an existing Secret
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}secrets:delete</span>
 // @Tags         Secrets
 // @Security     ApiKeyAuth
 // @Param        name   query  string  true  "The name of the secret"
@@ -152,6 +155,7 @@ func (s SecretHandler) DeleteSecret(c *gin.Context) {
 // GetSecrets godoc
 // @Summary      Get secrets
 // @Description  Get secrets
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}secrets:read</span>
 // @Tags         Secrets
 // @Security     ApiKeyAuth
 // @Success      200  {object}  model.GetSecretsResponse  "OK"

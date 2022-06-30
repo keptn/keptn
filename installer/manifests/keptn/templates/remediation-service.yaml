@@ -4,18 +4,18 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: remediation-service
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/component: remediation-service
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/name: remediation-service
 spec:
   selector:
-    matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: remediation-service
+    matchLabels: {{- include "keptn.common.labels.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/name: remediation-service
   replicas: 1
   {{- include "keptn.common.update-strategy" . | nindent 2 }}
   template:
     metadata:
-      labels: {{- include "common.labels.standard" . | nindent 8 }}
-        app.kubernetes.io/component: remediation-service
+      labels: {{- include "keptn.common.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/name: remediation-service
     spec:
       {{- include "keptn.common.pod-security-context" . | nindent 6 }}
       containers:
@@ -51,14 +51,14 @@ spec:
           {{- include "keptn.common.container-security-context" . | nindent 10 }}
           {{- if .Values.remediationService.extraVolumeMounts }}
           volumeMounts:
-          {{- include "common.tplvalues.render" ( dict "value" .Values.remediationService.extraVolumeMounts "context" $) | nindent 12 }}
+          {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.remediationService.extraVolumeMounts "context" $) | nindent 12 }}
           {{- end }}
         {{- with .Values.remediationService.sidecars }}
-        {{- include "common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
+        {{- include "keptn.common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
         {{- end }}
       {{- if .Values.remediationService.extraVolumes }}
       volumes:
-      {{- include "common.tplvalues.render" ( dict "value" .Values.remediationService.extraVolumes "context" $) | nindent 8 }}
+      {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.remediationService.extraVolumes "context" $) | nindent 8 }}
       {{- end }}
       serviceAccountName: keptn-default
       terminationGracePeriodSeconds: {{ .Values.remediationService.gracePeriod | default 60 }}
@@ -68,13 +68,13 @@ apiVersion: v1
 kind: Service
 metadata:
   name: remediation-service
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/component: remediation-service
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/name: remediation-service
 spec:
   ports:
     - port: 8080
       targetPort: 8080
       protocol: TCP
-  selector: {{- include "common.labels.selectorLabels" . | nindent 4 }}
-    app.kubernetes.io/component: remediation-service
+  selector: {{- include "keptn.common.labels.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/name: remediation-service
 

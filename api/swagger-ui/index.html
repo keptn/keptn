@@ -74,6 +74,38 @@
       // End Swagger UI call region
 
       window.ui = ui
+
+      // add oauth checks
+      const oauth_prefix = "";
+      const oauth_enabled = false;
+      const hide_deprecated = false;
+
+      if(hide_deprecated) {
+        document.getElementById("swagger-ui").addEventListener('DOMSubtreeModified', function(event){
+          const endpoints = document.getElementsByClassName("opblock-deprecated");
+          for (const e of endpoints){
+            e.style.display = "none"
+          }
+        });
+      }
+
+      document.getElementById("swagger-ui").addEventListener('DOMSubtreeModified', function(event) {
+        if(event.target.className == "oauth-scopes"){
+          // do not propagate
+          return;
+        }
+        const elms = document.getElementsByClassName("oauth-scopes");
+        for (let i = 0; i < elms.length; i++) {
+          const e = elms[i];
+          const origin = e.innerHTML;
+          let r = "";
+          if(oauth_enabled) {
+            r = origin.replace("${prefix}", oauth_prefix);
+          }
+          event.stopPropagation();
+          e.innerHTML = r;
+        }
+      });
     }
     </script>
   </body>

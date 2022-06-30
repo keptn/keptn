@@ -2,13 +2,15 @@ package handler
 
 import (
 	"errors"
+	"testing"
+
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	common_mock "github.com/keptn/keptn/resource-service/common/fake"
 	"github.com/keptn/keptn/resource-service/common_models"
 	errors2 "github.com/keptn/keptn/resource-service/errors"
 	handler_mock "github.com/keptn/keptn/resource-service/handler/fake"
 	"github.com/keptn/keptn/resource-service/models"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 const testStageConfigDir = "/data/config/my-project/.keptn-stages/my-stage"
@@ -33,9 +35,11 @@ func TestStageManager_CreateStage(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
 		},
 	}
 
@@ -92,9 +96,11 @@ func TestStageManager_CreateStage_ProjectDoesNotExist(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
 		},
 	}
 
@@ -128,9 +134,11 @@ func TestStageManager_CreateStage_CannotGetDefaultBranch(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
 		},
 	}
 
@@ -164,9 +172,11 @@ func TestStageManager_CreateStage_CannotCreateBranch(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
 		},
 	}
 
@@ -203,9 +213,11 @@ func TestStageManager_CreateStage_CannotPushBranch(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project: "my-project",
 		Credentials: &common_models.GitCredentials{
-			User:      "my-user",
-			Token:     "my-token",
-			RemoteURI: "my-remote-uri",
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
 		},
 	}
 
@@ -257,9 +269,11 @@ func getTestStageManagerFields() stageManagerTestFields {
 		credentialReader: &common_mock.CredentialReaderMock{
 			GetCredentialsFunc: func(project string) (*common_models.GitCredentials, error) {
 				return &common_models.GitCredentials{
-					User:      "my-user",
-					Token:     "my-token",
-					RemoteURI: "my-remote-uri",
+					User: "my-user",
+					HttpsAuth: &apimodels.HttpsGitAuth{
+						Token: "my-token",
+					},
+					RemoteURL: "my-remote-uri",
 				}, nil
 			},
 		},

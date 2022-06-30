@@ -4,13 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+
 	"github.com/keptn/keptn/resource-service/common_models"
 	errors2 "github.com/keptn/keptn/resource-service/errors"
 	logger "github.com/sirupsen/logrus"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"os"
 )
 
 //go:generate moq -pkg common_mock -skip-ensure -out ./fake/credential_reader_mock.go . CredentialReader
@@ -45,7 +46,7 @@ func (kr K8sCredentialReader) GetCredentials(project string) (*common_models.Git
 		return nil, errors2.ErrMalformedCredentials
 	}
 	if err := credentials.Validate(); err != nil {
-		logger.Debug("Issue with credentials : ", err)
+		logger.Errorf("Issue with credentials: %v", err)
 		return nil, err
 	}
 	return credentials, nil

@@ -390,7 +390,7 @@ jobs:
         git config user.email "$KEPTN_BOT_EMAIL"
 
     - name: Install Helm
-      uses: azure/setup-helm@v1
+      uses: azure/setup-helm@v3
       with:
         version: v3.7.2
 
