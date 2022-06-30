@@ -446,13 +446,7 @@ class ProjectSettingsPage {
   }
 
   public assertConfigurationServiceErrorExists(status: boolean): this {
-    cy.get('ktb-error-view').should(status ? 'exist' : 'not.exist');
-    if (status) {
-      cy.get('ktb-error-view').should(
-        'contain.text',
-        'You are not allowed to perform this action if the configuration service is enabled.'
-      );
-    }
+    cy.byTestId('ktb-error-configuration-service-enabled').should(status ? 'exist' : 'not.exist');
     return this;
   }
 
