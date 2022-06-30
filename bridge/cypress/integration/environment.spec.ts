@@ -50,7 +50,7 @@ describe('Environment Screen default requests', () => {
 
   it('filter should be set when navigating to /environment/stage?filterType=filter', () => {
     environmentPage.visit(project, 'staging', 'evaluation');
-    cy.byTestId(`ktb-stage-details-evaluation-button`).should('be.selected', true);
+    cy.byTestId(`ktb-stage-details-evaluation-button`).should('not.be.disabled');
   });
 
   it('should redirect to stage', () => {
