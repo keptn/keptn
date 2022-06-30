@@ -8,6 +8,7 @@ import { Crypto } from './crypto';
 import { getRootLocation } from './oauth-routes';
 import { getOAuthMongoExternalConnectionString, getOAuthSecrets } from './secrets';
 import { ComponentLogger } from '../utils/logger';
+import { BridgeConfiguration, EnvType } from '../interfaces/configuration';
 
 declare module 'express-session' {
   export interface SessionData {
@@ -22,7 +23,7 @@ export interface ValidSession extends expressSession.Session {
   principal?: string;
 }
 
-interface ValidationType {
+export interface ValidationType {
   _id: string;
   codeVerifier: string;
   nonce: string;
@@ -31,11 +32,11 @@ interface ValidationType {
 
 // before using it "init" has to be called!
 export class SessionService {
+  private configuration: BridgeConfiguration;
   private validationCollection: Collection<ValidationType> | undefined;
   private sessionConfig: (expressSession.SessionOptions & { cookie: expressSession.CookieOptions }) | undefined;
   private readonly crypto: Crypto;
   private readonly SESSION_TIME_SECONDS: number;
-  private readonly DEFAULT_TRUST_PROXY = 1;
   private readonly cookieName = 'KTSESSION';
   private readonly cookieLength = 10;
   private readonly sessionSecret: string;
@@ -45,9 +46,21 @@ export class SessionService {
   private readonly sessionCollectionName = 'sessions';
   private readonly log = new ComponentLogger('OAuth');
 
-  constructor() {
-    this.SESSION_TIME_SECONDS = this.getOrDefaultSessionTimeout(60); // session timeout, default to 60 minutes
-    this.SESSION_VALIDATING_DATA_SECONDS = this.getOrDefaultValidatingDataTimeout(60);
+  constructor(configuration: BridgeConfiguration) {
+    this.configuration = configuration;
+    /**
+     * public to determine session timeout. Input value is in minutes and return value is in millisecond. Value can be
+     * configurable through environment variable SESSION_TIMEOUT_MIN. If the configuration is invalid, fallback to
+     * provided default value.
+     */
+    this.SESSION_TIME_SECONDS = this.configuration.oauth.session.timeoutMin * 60;
+    /**
+     * public to determine validating timeout, the timeout for the temporarily saved validation data for the login.
+     * Input value is in minutes and return value is in millisecond. Value can be
+     * configurable through environment variable SESSION_VALIDATING_TIMEOUT_MIN. If the configuration is invalid, fallback to
+     * provided default value.
+     */
+    this.SESSION_VALIDATING_DATA_SECONDS = this.configuration.oauth.session.validationTimeoutMin * 60;
     const errorSuffix =
       'must be defined when OAuth based login (OAUTH_ENABLED) is activated. Please check your bridge-oauth secret.';
     const secrets = getOAuthSecrets();
@@ -68,7 +81,7 @@ export class SessionService {
   public async init(): Promise<SessionService> {
     let store: MemoryStore | MongoStore;
 
-    if (process.env.NODE_ENV === 'test') {
+    if (this.configuration.mode == EnvType.TEST) {
       store = new MemoryStore();
     } else {
       store = await this.setupMongoDB();
@@ -98,10 +111,10 @@ export class SessionService {
 
   public async setupMongoDB(): Promise<MongoStore> {
     const mongoCredentials = {
-      user: process.env.MONGODB_USER,
-      password: process.env.MONGODB_PASSWORD,
-      host: process.env.MONGODB_HOST,
-      database: process.env.MONGODB_DATABASE || 'openid',
+      user: this.configuration.mongo.user,
+      password: this.configuration.mongo.password,
+      host: this.configuration.mongo.host,
+      database: this.configuration.mongo.db,
     };
     const externalConnectionString = getOAuthMongoExternalConnectionString();
 
@@ -235,7 +248,7 @@ export class SessionService {
     // Regenerate session for the successful login
     return new Promise((resolve) => {
       req.session.regenerate(() => {
-        const userIdentifier = process.env.OAUTH_NAME_PROPERTY;
+        const userIdentifier = this.configuration.oauth.nameProperty;
         const claims = tokenSet.claims();
         req.session.authenticated = true;
         req.session.tokenSet = tokenSet;
@@ -283,21 +296,15 @@ export class SessionService {
     const router = Router();
     this.log.info(`Enabling sessions for bridge with session timeout ${this.SESSION_TIME_SECONDS} seconds.`);
 
-    if (process.env.SECURE_COOKIE === 'true') {
+    if (this.configuration.oauth.session.secureCookie) {
       this.log.info(
         'Setting secure cookies. Make sure SSL is enabled for deployment & correct trust proxy value is used.'
       );
       this.sessionConfig.cookie.secure = true;
 
-      const trustProxy = process.env.TRUST_PROXY;
-
-      if (trustProxy) {
-        this.log.info('Using trust proxy hops value : ' + trustProxy);
-        app.set('trust proxy', +trustProxy);
-      } else {
-        this.log.info('Using default trust proxy hops value : ' + this.DEFAULT_TRUST_PROXY);
-        app.set('trust proxy', this.DEFAULT_TRUST_PROXY);
-      }
+      const trustProxy = this.configuration.oauth.session.trustProxyHops;
+      this.log.info('Using trust proxy hops value : ' + trustProxy);
+      app.set('trust proxy', trustProxy);
     }
 
     // Register session middleware
@@ -320,7 +327,7 @@ export class SessionService {
         } else {
           // On initial load, if pages are directly accessed like /dashboard, response must not be 401,
           // else this would not allow fetching/forwarding/accessing the page/website
-          res.redirect(getRootLocation());
+          res.redirect(getRootLocation(this.configuration.features.prefixPath));
         }
       } else {
         return next(status);
@@ -336,36 +343,5 @@ export class SessionService {
         resolve(status);
       });
     });
-  }
-
-  /**
-   * public to determine session timeout. Input value is in minutes and return value is in millisecond. Value can be
-   * configurable through environment variable SESSION_TIMEOUT_MIN. If the configuration is invalid, fallback to
-   * provided default value.
-   */
-  private getOrDefaultSessionTimeout(defMinutes: number): number {
-    return this.getDefaultTime(process.env.SESSION_TIMEOUT_MIN, defMinutes);
-  }
-
-  /**
-   * public to determine validating timeout, the timeout for the temporarily saved validation data for the login.
-   * Input value is in minutes and return value is in millisecond. Value can be
-   * configurable through environment variable SESSION_VALIDATING_TIMEOUT_MIN. If the configuration is invalid, fallback to
-   * provided default value.
-   */
-  private getOrDefaultValidatingDataTimeout(defMinutes: number): number {
-    return this.getDefaultTime(process.env.SESSION_VALIDATING_TIMEOUT_MIN, defMinutes);
-  }
-
-  private getDefaultTime(timeMin: string | undefined, defMinutes: number): number {
-    if (timeMin) {
-      const sTimeout = parseInt(timeMin, 10);
-
-      if (!isNaN(sTimeout) && sTimeout > 0) {
-        return sTimeout * 60;
-      }
-    }
-
-    return defMinutes * 60;
   }
 }

@@ -5,37 +5,34 @@ import { getBuildableRootLocation, getRootLocation, oauthRouter, reduceRefreshDa
 import { defaultContentSecurityPolicyOptions } from '../app';
 import { contentSecurityPolicy } from 'helmet';
 import { ComponentLogger } from '../utils/logger';
+import { BridgeConfiguration } from '../interfaces/configuration';
 
 const refreshPromises: { [sessionId: string]: Promise<TokenSet> } = {};
 const reduceRefreshDateSeconds = 10;
 
 const log = new ComponentLogger('OAuth');
 
-async function setupOAuth(
-  app: Express,
-  discoveryEndpoint: string,
-  clientId: string,
-  baseUrl: string
-): Promise<SessionService> {
-  const session = await new SessionService().init();
-  const prefix = getBuildableRootLocation();
+async function setupOAuth(app: Express, configuration: BridgeConfiguration): Promise<SessionService> {
+  const session = await new SessionService(configuration).init();
+  const prefix = getBuildableRootLocation(configuration);
+  let baseUrl = configuration.oauth.baseURL;
   baseUrl = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
   const site = `${baseUrl}${prefix}`;
   const redirectUri = `${site}oauth/redirect`;
   const logoutUri = `${site}logoutsession`;
   // Initialise session middleware
   app.use(session.sessionRouter(app));
-  const client = await setupClient(discoveryEndpoint, clientId, redirectUri);
-  setEndSessionPolicy(app, client);
-  setRoutes(app, client, redirectUri, logoutUri, session);
+  const client = await setupClient(configuration, redirectUri);
+  setEndSessionPolicy(app, client, configuration);
+  setRoutes(app, client, redirectUri, logoutUri, session, configuration);
   return session;
 }
 
-async function setupClient(discoveryEndpoint: string, clientId: string, redirectUri: string): Promise<BaseClient> {
+async function setupClient(configuration: BridgeConfiguration, redirectUri: string): Promise<BaseClient> {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  const ssoIssuer = await (global.issuer ?? Issuer).discover(discoveryEndpoint);
-  const clientSecret = process.env.OAUTH_CLIENT_SECRET;
+  const ssoIssuer = await (global.issuer ?? Issuer).discover(configuration.oauth.discoveryURL);
+  const clientSecret = configuration.oauth.clientSecret;
 
   if (!ssoIssuer.metadata.authorization_endpoint) {
     throw Error('OAuth service discovery must contain the authorization endpoint.');
@@ -55,21 +52,21 @@ async function setupClient(discoveryEndpoint: string, clientId: string, redirect
   }
 
   return new ssoIssuer.Client({
-    client_id: clientId,
+    client_id: configuration.oauth.clientID,
     ...(clientSecret && { client_secret: clientSecret }),
     redirect_uris: [redirectUri],
     response_types: ['code'],
     token_endpoint_auth_method: clientSecret ? 'client_secret_basic' : 'none',
-    id_token_signed_response_alg: process.env.OAUTH_ID_TOKEN_ALG || 'RS256',
+    id_token_signed_response_alg: configuration.oauth.tokenAlgorithm,
   });
 }
 
-function setEndSessionPolicy(app: Express, client: BaseClient): void {
+function setEndSessionPolicy(app: Express, client: BaseClient, configuration: BridgeConfiguration): void {
   if (client.issuer.metadata.end_session_endpoint && defaultContentSecurityPolicyOptions.directives) {
     defaultContentSecurityPolicyOptions.directives['form-action'] = [
       `'self'`,
       client.issuer.metadata.end_session_endpoint,
-      process.env.OAUTH_ALLOWED_LOGOUT_URLS || '',
+      configuration.oauth.allowedLogoutURL,
     ];
     app.use(contentSecurityPolicy(defaultContentSecurityPolicyOptions));
   }
@@ -80,10 +77,11 @@ function setRoutes(
   client: BaseClient,
   redirectUri: string,
   logoutUri: string,
-  session: SessionService
+  session: SessionService,
+  configuration: BridgeConfiguration
 ): void {
   // Initializing OAuth middleware.
-  app.use(oauthRouter(client, redirectUri, logoutUri, reduceRefreshDateSeconds, session));
+  app.use(oauthRouter(client, redirectUri, logoutUri, reduceRefreshDateSeconds, session, configuration));
   // Authentication filter for API requests
   app.use('/api', async (req: Request, resp: Response, next: NextFunction) => {
     if (!session.isAuthenticated(req.session)) {
@@ -110,7 +108,7 @@ function setRoutes(
 
           delete refreshPromises[req.session.id];
           session.removeSession(req);
-          resp.redirect(getRootLocation());
+          resp.redirect(getRootLocation(configuration.features.prefixPath));
         }
       } else {
         return next();

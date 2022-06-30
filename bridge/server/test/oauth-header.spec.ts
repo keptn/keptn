@@ -2,6 +2,7 @@ import MockAdapter from 'axios-mock-adapter';
 import { ApiService } from '../services/api-service';
 import { setupServer } from '../.jest/setupServer';
 import { AxiosResponse } from 'axios';
+import { EnvType } from '../interfaces/configuration';
 
 describe('Test setting header authorization', () => {
   let apiService: ApiService;
@@ -10,12 +11,12 @@ describe('Test setting header authorization', () => {
   const authorizationHeader = `Bearer ${myAccessToken}`;
 
   beforeAll(async () => {
-    await setupServer('');
+    await setupServer();
     axiosMock = new MockAdapter(global.axiosInstance);
   });
 
   beforeEach(async () => {
-    apiService = new ApiService('./', undefined);
+    apiService = new ApiService('./', undefined, EnvType.TEST);
   });
 
   afterEach(() => {

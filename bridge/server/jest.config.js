@@ -11,6 +11,5 @@ export default {
   },
   collectCoverage: true,
   coverageDirectory: '<rootDir>/coverage',
-  setupFiles: ['<rootDir>/.jest/setEnvVars.ts'],
   testPathIgnorePatterns: ['<rootDir>/dist', '<rootDir>/node_modules'],
 };

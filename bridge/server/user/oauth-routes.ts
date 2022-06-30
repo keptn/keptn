@@ -3,8 +3,7 @@ import { BaseClient, errors, generators, TokenSet } from 'openid-client';
 import { EndSessionData } from '../../shared/interfaces/end-session-data';
 import { SessionService } from './session';
 import { ComponentLogger } from '../utils/logger';
-
-const prefixPath = process.env.PREFIX_PATH;
+import { BridgeConfiguration } from '../interfaces/configuration';
 
 const log = new ComponentLogger('OAuth');
 
@@ -15,8 +14,8 @@ const log = new ComponentLogger('OAuth');
  *
  * Redirection to / will be either handled by Nginx (ex:- generic keptn deployment) OR the Express layer (ex:- local bridge development).
  */
-function getRootLocation(): string {
-  if (prefixPath !== undefined) {
+function getRootLocation(prefixPath: string): string {
+  if (prefixPath !== undefined && prefixPath !== '/') {
     return `${prefixPath}/bridge`;
   }
   return '/';
@@ -25,8 +24,8 @@ function getRootLocation(): string {
 /**
  * returns the root location and ends with "/"
  */
-export function getBuildableRootLocation(): string {
-  const prefix = getRootLocation();
+export function getBuildableRootLocation(conf: BridgeConfiguration): string {
+  const prefix = getRootLocation(conf.features.prefixPath);
   return prefix.endsWith('/') ? prefix : `${prefix}/`;
   // currently "/bridge/" leads to an empty page. That's why getRootLocation is not changed to end with "/"
 }
@@ -36,10 +35,11 @@ function oauthRouter(
   redirectUri: string,
   logoutUri: string,
   reduceRefreshDateSeconds: number,
-  session: SessionService
+  session: SessionService,
+  configuration: BridgeConfiguration
 ): Router {
   const router = Router();
-  const additionalScopes = process.env.OAUTH_SCOPE ? ` ${process.env.OAUTH_SCOPE.trim()}` : '';
+  const additionalScopes = configuration.oauth.scope ? ` ${configuration.oauth.scope.trim()}` : '';
   const scope = `openid${additionalScopes}`;
   log.info(`Using scope: ${scope}`);
 
@@ -74,7 +74,7 @@ function oauthRouter(
    */
   router.get('/oauth/redirect', async (req: Request, res: Response) => {
     const params = client.callbackParams(req);
-    const errorPageUrl = `${getBuildableRootLocation()}error`;
+    const errorPageUrl = `${getBuildableRootLocation(configuration)}error`;
 
     if (!params.code || !params.state) {
       return res.redirect(errorPageUrl);
@@ -94,7 +94,7 @@ function oauthRouter(
       });
       reduceRefreshDateBy(tokenSet, reduceRefreshDateSeconds);
       await session.authenticateSession(req, tokenSet);
-      res.redirect(getRootLocation());
+      res.redirect(getRootLocation(configuration.features.prefixPath));
     } catch (error) {
       const err = error as errors.OPError | errors.RPError;
       log.error(`Error while handling the redirect. Cause : ${err.message}`);
