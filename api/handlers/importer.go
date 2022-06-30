@@ -10,7 +10,6 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 
 	"github.com/keptn/keptn/api/importer"
-	"github.com/keptn/keptn/api/importer/model"
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/import_operations"
 
@@ -29,35 +28,35 @@ type importPackageProcessor interface {
 	Process(project string, ip importer.ImportPackage) error
 }
 
-// ParseArchiveFunction is the function called to parse the uploaded file
-type ParseArchiveFunction func(string, uint64) (importer.ImportPackage, error)
+// parseArchiveFunction is the function called to parse the uploaded file
+type parseArchiveFunction func(string, uint64) (*ZippedPackage, error)
 
 // ImportHandler is the rest handler for the /import endpoint
 type ImportHandler struct {
 	checker                    projectChecker
 	tempStorageDir             string
 	maxUncompressedPackageSize uint64
-	parseArchive               ParseArchiveFunction
+	parseArchive               parseArchiveFunction
 	processor                  importPackageProcessor
 }
 
 // GetImportHandlerFunc will instantiate a configured ImportHandler and return the method that can be used for
 // handling http requests to the endpoint. See restapi.configureAPI for usage
-func GetImportHandlerFunc(storagePath string, checker projectChecker, maxPackageSize uint64) func(
+func GetImportHandlerFunc(
+	storagePath string, checker projectChecker, maxPackageSize uint64, processor importPackageProcessor,
+) func(
 	params import_operations.ImportParams, principal *models.Principal,
 ) middleware.Responder {
 	ih := getImportHandlerInstance(
-		storagePath, checker, maxPackageSize, importer.NewPackage,
-		importer.NewImportPackageProcessor(
-			new(model.YAMLManifestUnMarshaler), nil,
-		), // TODO replace with correct task executor
+		storagePath, checker, maxPackageSize, NewZippedPackage,
+		processor,
 	)
 	return ih.HandleImport
 }
 
 func getImportHandlerInstance(
 	storagePath string, checker projectChecker, maxPackageSize uint64,
-	parserFunction ParseArchiveFunction, processor importPackageProcessor,
+	parserFunction parseArchiveFunction, processor importPackageProcessor,
 ) *ImportHandler {
 	return &ImportHandler{
 		checker:                    checker,

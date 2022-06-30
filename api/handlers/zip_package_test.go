@@ -1,4 +1,4 @@
-package importer
+package handlers
 
 import (
 	"archive/zip"
@@ -17,9 +17,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const defaultImportArchiveExtension = ".zip"
-const testArchiveSize20MB uint64 = 20 * 1024 * 1024
-
 func TestExtractZipFileHappyPath(t *testing.T) {
 
 	sourceImportPackage := "../test/data/import/sample-package"
@@ -37,7 +34,7 @@ func TestExtractZipFileHappyPath(t *testing.T) {
 	err = tempZipFile.Close()
 	require.NoError(t, err)
 
-	p, err := NewPackage(tempZipFile.Name(), testArchiveSize20MB)
+	p, err := NewZippedPackage(tempZipFile.Name(), testArchiveSize20MB)
 	require.NoError(t, err)
 	require.NotNil(t, p)
 
@@ -70,7 +67,7 @@ func TestExtractErrorZipFilePackageTooBig(t *testing.T) {
 	err = tempZipFile.Close()
 	require.NoError(t, err)
 
-	p, err := NewPackage(tempZipFile.Name(), 10)
+	p, err := NewZippedPackage(tempZipFile.Name(), 10)
 	assert.ErrorIs(t, err, ErrorUncompressedSizeTooBig)
 	assert.Nil(t, p)
 
@@ -87,7 +84,7 @@ func TestExtractErrorNonExistentZipFile(t *testing.T) {
 
 	nonExistingZipFileName := "thereisnospoon.zip"
 
-	p, err := NewPackage(path.Join(tempDir, nonExistingZipFileName), testArchiveSize20MB)
+	p, err := NewZippedPackage(path.Join(tempDir, nonExistingZipFileName), testArchiveSize20MB)
 	assert.Error(t, err)
 	assert.Nil(t, p)
 }
@@ -101,7 +98,7 @@ func TestErrorInvalidZipFile(t *testing.T) {
 	invalidZipFile := path.Join(tempDir, "invalid.zip")
 	ioutil.WriteFile(invalidZipFile, []byte("this is clearly not a zip file"), 0600)
 
-	p, err := NewPackage(invalidZipFile, testArchiveSize20MB)
+	p, err := NewZippedPackage(invalidZipFile, testArchiveSize20MB)
 	assert.Error(t, err)
 	assert.Nil(t, p)
 }
@@ -123,7 +120,7 @@ func TestExtractErrorNoManifest(t *testing.T) {
 	err = tempZipFile.Close()
 	require.NoError(t, err)
 
-	p, err := NewPackage(tempZipFile.Name(), testArchiveSize20MB)
+	p, err := NewZippedPackage(tempZipFile.Name(), testArchiveSize20MB)
 	assert.ErrorIs(t, err, os.ErrNotExist)
 	assert.Nil(t, p)
 

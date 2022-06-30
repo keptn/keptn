@@ -1,4 +1,4 @@
-package importer
+package handlers
 
 import (
 	"archive/zip"
@@ -62,11 +62,11 @@ func (m *ZippedPackage) extract(zipFile string, maxSize uint64) error {
 	return extractZipArchive(zipReader, extractionDir, maxSize)
 }
 
-// NewPackage creates a new ZippedPackage object ready to be used.
+// NewZippedPackage creates a new ZippedPackage object ready to be used.
 // The zip file contents will be extracted in a subDirectory with the same name as the file stripped of the .zip
 // extension. During the extraction, zip file uncompressed content is checked not to surpass maxSize.
 // If any error occurs, the temporary folder is cleaned up and (nil, error) will be returned
-func NewPackage(zipFile string, maxSize uint64) (ImportPackage, error) {
+func NewZippedPackage(zipFile string, maxSize uint64) (*ZippedPackage, error) {
 	m := new(ZippedPackage)
 	err := m.extract(zipFile, maxSize)
 	if err != nil {

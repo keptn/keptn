@@ -29,9 +29,9 @@ func TestErrorNonExistingProject(t *testing.T) {
 		},
 	}
 
-	sut := GetImportHandlerFunc("", mockedprojectChecker, testArchiveSize20MB)
+	sut := getImportHandlerInstance("", mockedprojectChecker, testArchiveSize20MB, nil, nil)
 	projectName := "this_project_doesn't_exist"
-	actualResponder := sut(
+	actualResponder := sut.HandleImport(
 		import_operations.ImportParams{
 			HTTPRequest:   nil,
 			ConfigPackage: nil,
@@ -57,9 +57,10 @@ func TestErrorUnableToCheckProject(t *testing.T) {
 		},
 	}
 
-	sut := GetImportHandlerFunc("", mockedprojectChecker, testArchiveSize20MB)
+	sut := getImportHandlerInstance("", mockedprojectChecker, testArchiveSize20MB, nil, nil)
+
 	projectName := "this_project_existence_cannot_be_checked"
-	actualResponder := sut(
+	actualResponder := sut.HandleImport(
 		import_operations.ImportParams{
 			HTTPRequest:   nil,
 			ConfigPackage: nil,
@@ -90,10 +91,10 @@ func TestErrorImportBrokenReader(t *testing.T) {
 		},
 	}
 
-	sut := GetImportHandlerFunc("", mockedprojectChecker, testArchiveSize20MB)
+	sut := getImportHandlerInstance("", mockedprojectChecker, testArchiveSize20MB, nil, nil)
 
 	projectName := "foobarbaz"
-	actualResponder := sut(
+	actualResponder := sut.HandleImport(
 		import_operations.ImportParams{
 			HTTPRequest:   nil,
 			ConfigPackage: contentReader,
@@ -133,8 +134,8 @@ func TestErrorSaveArchiveFromUpload(t *testing.T) {
 		},
 	}
 
-	importHandlerFunc := GetImportHandlerFunc(tempDir, mockedprojectChecker, testArchiveSize20MB)
-	actualResponder := importHandlerFunc(
+	importHandler := getImportHandlerInstance(tempDir, mockedprojectChecker, testArchiveSize20MB, nil, nil)
+	actualResponder := importHandler.HandleImport(
 		import_operations.ImportParams{
 			HTTPRequest:   nil,
 			ConfigPackage: io.NopCloser(bytes.NewReader([]byte("some payload bytes here"))),
@@ -162,7 +163,7 @@ func TestErrorCreateNewZippedArchiveFromUpload(t *testing.T) {
 
 	packageContent := []byte("some payload bytes here")
 
-	errorParsingPackage := func(file string, maxSize uint64) (importer.ImportPackage, error) {
+	errorParsingPackage := func(file string, maxSize uint64) (*ZippedPackage, error) {
 		require.FileExists(t, file)
 
 		return nil, errors.New("error parsing package")
@@ -209,12 +210,12 @@ func TestErrorProcessingImportPackage(t *testing.T) {
 
 	packageContent := []byte("some payload bytes here")
 
-	parsingPackage := func(file string, maxSize uint64) (importer.ImportPackage, error) {
+	parsingPackage := func(file string, maxSize uint64) (*ZippedPackage, error) {
 		require.FileExists(t, file)
 		packageBytes, err := ioutil.ReadFile(file)
 		require.NoError(t, err)
 		assert.Equal(t, packageContent, packageBytes)
-		return &importer.ZippedPackage{}, nil
+		return &ZippedPackage{}, nil
 	}
 
 	mockedProcessor := &handlers_mock.MockImportPackageProcessor{
@@ -255,12 +256,12 @@ func TestImportHandlerHappyPath(t *testing.T) {
 
 	packageContent := []byte("some payload bytes here")
 
-	parsingPackage := func(file string, maxSize uint64) (importer.ImportPackage, error) {
+	parsingPackage := func(file string, maxSize uint64) (*ZippedPackage, error) {
 		require.FileExists(t, file)
 		packageBytes, err := ioutil.ReadFile(file)
 		require.NoError(t, err)
 		assert.Equal(t, packageContent, packageBytes)
-		return &importer.ZippedPackage{}, nil
+		return &ZippedPackage{}, nil
 	}
 
 	mockedProcessor := &handlers_mock.MockImportPackageProcessor{

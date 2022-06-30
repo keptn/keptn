@@ -20,6 +20,7 @@ import (
 
 	"github.com/keptn/keptn/api/handlers"
 	"github.com/keptn/keptn/api/importer"
+	"github.com/keptn/keptn/api/importer/model"
 	custommiddleware "github.com/keptn/keptn/api/middleware"
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations"
@@ -102,11 +103,16 @@ func configureAPI(api *operations.KeptnAPI) http.Handler {
 	// api.EvaluationTriggerEvaluationHandler = evaluation.TriggerEvaluationHandlerFunc(handlers.TriggerEvaluationHandlerFunc)
 
 	// Import endpoint
+	importProcessor := importer.NewImportPackageProcessor(
+		new(model.YAMLManifestUnMarshaler), new(importer.KeptnAPIExecutor), // TODO review after implementing executor
+	)
+
 	api.ImportOperationsImportHandler = import_operations.ImportHandlerFunc(
 		handlers.GetImportHandlerFunc(
 			env.ImportBasePath,
-			importer.NewControlPlaneProjectChecker(os.Getenv(controlPlaneServiceEnvVar)),
+			handlers.NewControlPlaneProjectChecker(os.Getenv(controlPlaneServiceEnvVar)),
 			env.MaxImportUncompressedSize,
+			importProcessor,
 		),
 	)
 
