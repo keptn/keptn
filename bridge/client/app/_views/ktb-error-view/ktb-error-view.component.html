@@ -12,6 +12,16 @@
         <h2>Action not permitted</h2>
         <p>User is not allowed to perform this action.</p>
       </ng-container>
+      <ng-container *ngSwitchCase="ServerErrors.CONFIGURATION_SERVICE_NOT_ALLOWED">
+        <h2>Action not permitted</h2>
+        <p uitestid="ktb-error-configuration-service-enabled">
+          You can not perform this action with the configuration service any longer. Please enable the resource service.
+          Instructions on how to enable the resource service can be found here:
+          <a href="https://github.com/keptn/keptn/tree/master/resource-service" target="_blank" rel="noopener">
+            https://github.com/keptn/keptn/tree/master/resource-service
+          </a>
+        </p>
+      </ng-container>
       <ng-container *ngSwitchDefault>
         <h2>Internal error</h2>
         <p>Error while handling the redirect. Please retry and check whether the problem still exists.</p>

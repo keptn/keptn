@@ -40,9 +40,9 @@ import { DeploymentResponseMock } from './_mockData/api-responses/deployment-res
 import { ISequencesFilter } from '../../../shared/interfaces/sequencesFilter';
 import { SequenceFilterMock } from './_mockData/sequence-filter.mock';
 import { TriggerResponse, TriggerSequenceData } from '../_models/trigger-sequence';
-import { IGitHttps, IGitSsh } from '../_interfaces/git-upstream';
 import { IService } from '../../../shared/interfaces/service';
 import { IProjectResult } from '../../../shared/interfaces/project-result';
+import { IGitDataExtended } from '../../../shared/interfaces/project';
 
 @Injectable({
   providedIn: null,
@@ -102,21 +102,7 @@ export class ApiServiceMock extends ApiService {
     });
   }
 
-  public createProject(
-    projectName: string,
-    shipyard: string,
-    gitRemoteUrl?: string,
-    gitToken?: string,
-    gitUser?: string
-  ): Observable<unknown> {
-    return of({});
-  }
-
-  public createProjectExtended(
-    projectName: string,
-    shipyard: string,
-    data: IGitHttps['https'] | IGitSsh['ssh']
-  ): Observable<unknown> {
+  public createProjectExtended(projectName: string, shipyard: string, data?: IGitDataExtended): Observable<unknown> {
     return of({});
   }
 
@@ -304,19 +290,7 @@ export class ApiServiceMock extends ApiService {
     return of(result);
   }
 
-  public updateGitUpstreamExtended(
-    projectName: string,
-    data: IGitHttps['https'] | IGitSsh['ssh']
-  ): Observable<unknown> {
-    return of({});
-  }
-
-  public sendGitUpstreamUrl(
-    projectName: string,
-    gitUrl: string,
-    gitUser: string,
-    gitToken: string
-  ): Observable<unknown> {
+  public updateGitUpstreamExtended(projectName: string, data: IGitDataExtended): Observable<unknown> {
     return of({});
   }
 

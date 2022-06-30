@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { KtbDeletionDialogComponent } from '../_dialogs/ktb-deletion-dialog/ktb-deletion-dialog.component';
 import { DeleteData } from '../../_interfaces/delete';
 
@@ -11,8 +11,6 @@ import { DeleteData } from '../../_interfaces/delete';
 export class KtbDangerZoneComponent {
   @Input() data?: DeleteData;
 
-  public deletionDialogRef?: MatDialogRef<KtbDeletionDialogComponent>;
-
   constructor(public dialog: MatDialog) {}
 
   public openDeletionDialog(): void {
@@ -21,8 +19,9 @@ export class KtbDangerZoneComponent {
         type: this.data.type,
         name: this.data.name,
       };
-      this.deletionDialogRef = this.dialog.open(KtbDeletionDialogComponent, {
+      this.dialog.open(KtbDeletionDialogComponent, {
         data,
+        autoFocus: false, // else the close icon will be incorrectly selected
       });
     }
   }

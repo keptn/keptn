@@ -1,9 +1,7 @@
 import semver from 'semver';
 import { Stage } from './stage';
 import { DeploymentInformation, Service } from './service';
-import { IGitDataExtended } from '../_interfaces/git-upstream';
-import { isGitInputWithHTTPS } from '../_utils/git-upstream.utils';
-import { IProject } from '../../../shared/interfaces/project';
+import { IGitDataExtended, IProject } from '../../../shared/interfaces/project';
 
 export function getShipyardVersion(project?: IProject): string {
   return project?.shipyardVersion?.split('/').pop() ?? '';
@@ -32,20 +30,16 @@ export function getDistinctServiceNames(project?: IProject): string[] {
 }
 
 export class Project implements IProject {
-  projectName = '';
-  gitUser?: string;
-  gitRemoteURI?: string;
-  shipyardVersion?: string;
-  gitProxyScheme: 'https' | 'http' | undefined;
-  gitProxyUrl?: string;
-  gitProxyUser?: string;
-  gitProxyInsecure = false;
-  private _gitUpstream?: IGitDataExtended;
+  public projectName!: string;
+  public gitCredentials?: IGitDataExtended;
+  public shipyardVersion?: string;
   public projectDetailsLoaded = false; // true if project was fetched via project endpoint of bridge server
   public stages: Stage[] = [];
   public services?: Service[];
+  public creationDate!: string;
+  public shipyard!: string;
 
-  static fromJSON(data: unknown): Project {
+  static fromJSON(data: IProject): Project {
     const project: Project = Object.assign(new this(), data);
     project.stages = project.stages.map((stage) => Stage.fromJSON(stage));
     return project;
@@ -57,39 +51,9 @@ export class Project implements IProject {
     return copyProject;
   }
 
-  public get gitUpstream(): IGitDataExtended {
-    if (!this._gitUpstream) {
-      if (isGitInputWithHTTPS(this)) {
-        this._gitUpstream = {
-          https: {
-            gitUser: this.gitUser,
-            gitRemoteURL: this.gitRemoteURI ?? '',
-            gitToken: '',
-            gitProxyScheme: this.gitProxyScheme ?? 'https',
-            gitProxyUrl: this.gitProxyUrl ?? '',
-            gitProxyPassword: '',
-            gitProxyUser: this.gitProxyUser ?? '',
-            gitProxyInsecure: this.gitProxyInsecure,
-          },
-        };
-      } else {
-        this._gitUpstream = {
-          ssh: {
-            gitRemoteURL: this.gitRemoteURI ?? '',
-            gitUser: this.gitUser,
-            gitPrivateKey: '',
-            gitPrivateKeyPass: '',
-          },
-        };
-      }
-    }
-    return this._gitUpstream;
-  }
-
   // replace project with a new one, but keep references
   public update(project: Project): void {
-    this.gitRemoteURI = project.gitRemoteURI;
-    this.gitUser = project.gitUser;
+    this.gitCredentials = project.gitCredentials;
     const services: { [name: string]: Service } = {};
     for (const newStage of project.stages) {
       const existingStage = this.stages.find((stage) => stage.stageName === newStage.stageName);

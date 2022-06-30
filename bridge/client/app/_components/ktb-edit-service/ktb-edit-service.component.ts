@@ -48,11 +48,9 @@ export class KtbEditServiceComponent implements OnDestroy {
         this.dataService.loadPlainProject(params.projectName).subscribe((project) => {
           this.project = project;
 
-          if (project?.gitRemoteURI) {
-            this.dataService.getFileTreeForService(params.projectName, params.serviceName).subscribe((fileTree) => {
-              this.fileTree = fileTree;
-            });
-          }
+          this.dataService.getFileTreeForService(params.projectName, params.serviceName).subscribe((fileTree) => {
+            this.fileTree = fileTree;
+          });
         });
       });
 

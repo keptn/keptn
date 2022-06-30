@@ -1,15 +1,17 @@
 import { Stage } from './stage';
-import { IProject } from '../../shared/interfaces/project';
+import { IGitDataExtended, IProject } from '../../shared/interfaces/project';
 
 export class Project implements IProject {
-  stages: Stage[] = [];
+  public gitCredentials?: IGitDataExtended;
+  public projectName = '';
+  public shipyardVersion?: string;
+  public stages: Stage[] = [];
+  public creationDate = '';
+  public shipyard = '';
 
   public static fromJSON(data: unknown): Project {
     const project: Project = Object.assign(new this(), data);
     project.stages = project.stages.map((stage) => Stage.fromJSON(stage));
     return project;
   }
-
-  gitProxyInsecure = false;
-  projectName = '';
 }

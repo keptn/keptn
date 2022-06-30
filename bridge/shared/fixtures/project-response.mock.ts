@@ -1,4 +1,5 @@
 import { EventTypes } from '../interfaces/event-types';
+import { IProject } from '../interfaces/project';
 
 const keptnContextDeploymentDev = '2e21574c-dcf7-4275-b677-6bc19214acd5';
 const keptnContextDeploymentStaging = '29af69cc-ea85-4358-b169-ce29034d9c81';
@@ -86,10 +87,12 @@ const productionCartsDbLatestServiceEvent = {
   time: '1634037299899856567',
 };
 
-const projectResponseMock = {
+const projectResponseMock: IProject = {
   creationDate: '1632999780800366280',
-  gitRemoteURI: 'https://github.com/Kirdock/keptn-dynatrace-v1',
-  gitUser: 'Kirdock',
+  gitCredentials: {
+    remoteURL: 'https://github.com/Kirdock/keptn-dynatrace-v1',
+    user: 'Kirdock',
+  },
   projectName: 'sockshop',
   shipyard:
     'apiVersion: spec.keptn.sh/0.2.2\nkind: Shipyard\nmetadata:\n    name: shipyard-sockshop\nspec:\n    stages:\n        - name: dev\n          sequences:\n            - name: delivery\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: direct\n                - name: test\n                  properties:\n                    teststrategy: functional\n                - name: evaluation\n                  properties: null\n                - name: approval\n                  properties:\n                    pass: manual\n                    warning: manual\n                - name: release\n                  properties: null\n            - name: delivery-direct\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: direct\n                - name: approval\n                  properties:\n                    pass: manual\n                    warning: manual\n                - name: release\n                  properties: null\n        - name: staging\n          sequences:\n            - name: delivery\n              triggeredOn:\n                - event: dev.delivery.finished\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: blue_green_service\n                - name: test\n                  properties:\n                    teststrategy: performance\n                - name: evaluation\n                  properties: null\n                - name: approval\n                  properties:\n                    pass: manual\n                    warning: manual\n                - name: release\n                  properties: null\n            - name: rollback\n              triggeredOn:\n                - event: staging.delivery.finished\n                  selector:\n                    match:\n                        result: fail\n              tasks:\n                - name: rollback\n                  properties: null\n            - name: delivery-direct\n              triggeredOn:\n                - event: dev.delivery-direct.finished\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: direct\n                - name: approval\n                  properties:\n                    pass: manual\n                    warning: manual\n                - name: release\n                  properties: null\n        - name: production\n          sequences:\n            - name: delivery\n              triggeredOn:\n                - event: staging.delivery.finished\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: blue_green_service\n                - name: release\n                  properties: null\n            - name: rollback\n              triggeredOn:\n                - event: production.delivery.finished\n                  selector:\n                    match:\n                        result: fail\n              tasks:\n                - name: rollback\n                  properties: null\n            - name: delivery-direct\n              triggeredOn:\n                - event: staging.delivery-direct.finished\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: direct\n                - name: release\n                  properties: null\n            - name: remediation\n              triggeredOn:\n                - event: production.remediation.finished\n                  selector:\n                    match:\n                        evaluation.result: fail\n              tasks:\n                - name: get-action\n                  properties: null\n                - name: action\n                  properties: null\n                - name: evaluation\n                  triggeredAfter: 15m\n                  properties:\n                    timeframe: 15m\n',
@@ -215,7 +218,6 @@ const projectResponseMock = {
               time: '1636002113431434060',
             },
           },
-          openRemediations: null,
           serviceName: 'carts',
         },
         {
@@ -270,7 +272,6 @@ const projectResponseMock = {
               time: '1634037212001312487',
             },
           },
-          openRemediations: null,
           serviceName: 'carts-db',
         },
       ],
@@ -426,7 +427,6 @@ const projectResponseMock = {
               time: '1633073831796796941',
             },
           },
-          openRemediations: null,
           serviceName: 'carts',
         },
         {
@@ -481,7 +481,6 @@ const projectResponseMock = {
               time: '1634037214405956780',
             },
           },
-          openRemediations: null,
           serviceName: 'carts-db',
         },
       ],
@@ -557,7 +556,6 @@ const projectResponseMock = {
             },
             'sh.keptn.events.problem': productionCartsLatestServiceEvent,
           },
-          openRemediations: null,
           serviceName: 'carts',
         },
         {
@@ -597,7 +595,6 @@ const projectResponseMock = {
               time: '1634037297604313167',
             },
           },
-          openRemediations: null,
           serviceName: 'carts-db',
         },
       ],
@@ -607,10 +604,12 @@ const projectResponseMock = {
   ],
 };
 
-const projectQualityGatesResponse = {
+const projectQualityGatesResponse: IProject = {
   creationDate: '1632999780800366280',
-  gitRemoteURI: 'https://github.com/Kirdock/keptn-dynatrace-v1',
-  gitUser: 'Kirdock',
+  gitCredentials: {
+    remoteURL: 'https://github.com/Kirdock/keptn-dynatrace-v1',
+    user: 'Kirdock',
+  },
   projectName: 'sockshop',
   shipyard:
     'apiVersion: spec.keptn.sh/0.2.2\nkind: Shipyard\nmetadata:\n    name: shipyard-sockshop\nspec:\n    stages:\n        - name: dev\n          sequences:\n            - name: delivery\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: direct\n                - name: test\n                  properties:\n                    teststrategy: functional\n                - name: evaluation\n                  properties: null\n                - name: approval\n                  properties:\n                    pass: manual\n                    warning: manual\n                - name: release\n                  properties: null\n            - name: delivery-direct\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: direct\n                - name: approval\n                  properties:\n                    pass: manual\n                    warning: manual\n                - name: release\n                  properties: null\n        - name: staging\n          sequences:\n            - name: delivery\n              triggeredOn:\n                - event: dev.delivery.finished\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: blue_green_service\n                - name: test\n                  properties:\n                    teststrategy: performance\n                - name: evaluation\n                  properties: null\n                - name: approval\n                  properties:\n                    pass: manual\n                    warning: manual\n                - name: release\n                  properties: null\n            - name: rollback\n              triggeredOn:\n                - event: staging.delivery.finished\n                  selector:\n                    match:\n                        result: fail\n              tasks:\n                - name: rollback\n                  properties: null\n            - name: delivery-direct\n              triggeredOn:\n                - event: dev.delivery-direct.finished\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: direct\n                - name: approval\n                  properties:\n                    pass: manual\n                    warning: manual\n                - name: release\n                  properties: null\n        - name: production\n          sequences:\n            - name: delivery\n              triggeredOn:\n                - event: staging.delivery.finished\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: blue_green_service\n                - name: release\n                  properties: null\n            - name: rollback\n              triggeredOn:\n                - event: production.delivery.finished\n                  selector:\n                    match:\n                        result: fail\n              tasks:\n                - name: rollback\n                  properties: null\n            - name: delivery-direct\n              triggeredOn:\n                - event: staging.delivery-direct.finished\n              tasks:\n                - name: deployment\n                  properties:\n                    deploymentstrategy: direct\n                - name: release\n                  properties: null\n            - name: remediation\n              triggeredOn:\n                - event: production.remediation.finished\n                  selector:\n                    match:\n                        evaluation.result: fail\n              tasks:\n                - name: get-action\n                  properties: null\n                - name: action\n                  properties: null\n                - name: evaluation\n                  triggeredAfter: 15m\n                  properties:\n                    timeframe: 15m\n',
@@ -677,13 +676,11 @@ const projectQualityGatesResponse = {
               time: '1636114894156898359',
             },
           },
-          openRemediations: null,
           serviceName: 'carts',
         },
         {
           creationDate: '1632999870648452455',
           lastEventTypes: {},
-          openRemediations: null,
           serviceName: 'carts-db',
         },
       ],
@@ -755,13 +752,11 @@ const projectQualityGatesResponse = {
               time: '1636109341364946130',
             },
           },
-          openRemediations: null,
           serviceName: 'carts',
         },
         {
           creationDate: '1632999875203630913',
           lastEventTypes: {},
-          openRemediations: null,
           serviceName: 'carts-db',
         },
       ],
@@ -773,13 +768,11 @@ const projectQualityGatesResponse = {
         {
           creationDate: '1632999827864626575',
           lastEventTypes: {},
-          openRemediations: null,
           serviceName: 'carts',
         },
         {
           creationDate: '1632999879474188928',
           lastEventTypes: {},
-          openRemediations: null,
           serviceName: 'carts-db',
         },
       ],
@@ -789,14 +782,18 @@ const projectQualityGatesResponse = {
   ],
 };
 
-const projectResponseURLFallback = {
+const projectResponseURLFallback: IProject = {
   projectName: 'sockshop',
+  shipyard: '',
+  creationDate: '',
+  shipyardVersion: '',
   stages: [
     {
       stageName: 'dev',
       services: [
         {
           serviceName: 'carts',
+          creationDate: '',
           lastEventTypes: {
             [EventTypes.DEPLOYMENT_FINISHED]: {
               eventId: 'eventId',
@@ -810,14 +807,18 @@ const projectResponseURLFallback = {
   ],
 };
 
-const projectResponseEvaluationFallback = {
+const projectResponseEvaluationFallback: IProject = {
   projectName: 'sockshop',
+  shipyard: '',
+  creationDate: '',
+  shipyardVersion: '',
   stages: [
     {
       stageName: 'dev',
       services: [
         {
           serviceName: 'carts',
+          creationDate: '',
           lastEventTypes: {
             [EventTypes.EVALUATION_FINISHED]: {
               eventId: 'webhookId',
@@ -831,14 +832,18 @@ const projectResponseEvaluationFallback = {
   ],
 };
 
-const projectResponseIntersect = {
+const projectResponseIntersect: IProject = {
   projectName: 'sockshop',
+  shipyard: '',
+  creationDate: '',
+  shipyardVersion: '',
   stages: [
     {
       stageName: 'dev',
       services: [
         {
           serviceName: 'carts',
+          creationDate: '',
           lastEventTypes: {
             [EventTypes.DEPLOYMENT_TRIGGERED]: {
               eventId: '1',
@@ -859,6 +864,7 @@ const projectResponseIntersect = {
         },
         {
           serviceName: 'carts-db',
+          creationDate: '',
           lastEventTypes: {
             [EventTypes.DEPLOYMENT_TRIGGERED]: {
               eventId: '4',
@@ -884,6 +890,7 @@ const projectResponseIntersect = {
       services: [
         {
           serviceName: 'carts',
+          creationDate: '',
           lastEventTypes: {
             [EventTypes.DEPLOYMENT_TRIGGERED]: {
               eventId: '7',
@@ -904,6 +911,7 @@ const projectResponseIntersect = {
         },
         {
           serviceName: 'carts-db',
+          creationDate: '',
           lastEventTypes: {
             [EventTypes.DEPLOYMENT_TRIGGERED]: {
               eventId: '10',
@@ -927,6 +935,7 @@ const projectDetailsResponseURLFallback = {
     {
       services: [
         {
+          creationDate: '',
           lastEventTypes: {
             'sh.keptn.event.deployment.finished': {
               eventId: 'eventId',
@@ -968,7 +977,9 @@ const projectDetailsResponseURLFallback = {
     },
   ],
   projectName: 'sockshop',
-  gitProxyInsecure: false,
+  shipyard: '',
+  creationDate: '',
+  shipyardVersion: '',
 };
 
 const projectDetailsResponseEvaluationFallback = {
@@ -976,6 +987,7 @@ const projectDetailsResponseEvaluationFallback = {
     {
       services: [
         {
+          creationDate: '',
           lastEventTypes: {
             'sh.keptn.event.evaluation.finished': {
               eventId: 'webhookId',
@@ -1054,7 +1066,9 @@ const projectDetailsResponseEvaluationFallback = {
     },
   ],
   projectName: 'sockshop',
-  gitProxyInsecure: false,
+  shipyard: '',
+  creationDate: '',
+  shipyardVersion: '',
 };
 
 export { projectResponseMock as ProjectResponse };

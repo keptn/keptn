@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { IGitSsh, IGitSshData, ISshKeyData } from '../../../_interfaces/git-upstream';
 import { AppUtils } from '../../../_utils/app.utils';
+import { IGitBasicConfiguration, IGitSshConfiguration, IGitSshData } from '../../../../../shared/interfaces/project';
 
 @Component({
   selector: 'ktb-project-settings-git-ssh',
@@ -8,36 +8,37 @@ import { AppUtils } from '../../../_utils/app.utils';
   styleUrls: [],
 })
 export class KtbProjectSettingsGitSshComponent {
-  public gitUpstream?: IGitSshData;
-  public sshKeyData?: ISshKeyData;
-  public gitInputData?: IGitSshData;
-  public sshInputData?: ISshKeyData;
+  public gitUpstream?: IGitBasicConfiguration;
+  public sshKeyData?: IGitSshData;
+  public gitInputData?: IGitBasicConfiguration;
+  public sshInputData?: IGitSshData;
 
   @Input()
   public isLoading = false;
 
   @Input()
-  public set gitInputSshData(data: IGitSsh | undefined) {
+  public set gitInputSshData(data: IGitSshConfiguration | undefined) {
     if (data) {
       this.gitInputData = {
-        gitRemoteURL: data.ssh.gitRemoteURL,
-        gitUser: data.ssh.gitUser,
+        remoteURL: data.remoteURL,
+        user: data.user,
       };
       this.gitUpstream = AppUtils.copyObject(this.gitInputData);
       this.sshInputData = {
-        gitPrivateKeyPass: data.ssh.gitPrivateKeyPass,
-        gitPrivateKey: data.ssh.gitPrivateKey,
+        privateKeyPass: data.ssh?.privateKeyPass ?? '',
+        privateKey: data.ssh?.privateKey ?? '',
       };
     }
   }
   @Output()
-  public sshChange = new EventEmitter<IGitSsh | undefined>();
+  public sshChange = new EventEmitter<IGitSshConfiguration | undefined>();
 
-  public get data(): IGitSsh | undefined {
+  public get data(): IGitSshConfiguration | undefined {
     return this.gitUpstream && this.sshKeyData
       ? {
+          remoteURL: this.gitUpstream.remoteURL,
+          user: this.gitUpstream.user,
           ssh: {
-            ...this.gitUpstream,
             ...this.sshKeyData,
           },
         }

@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { IGitSshData } from '../../../_interfaces/git-upstream';
 import { FormUtils } from '../../../_utils/form.utils';
+import { IGitBasicConfiguration } from '../../../../../shared/interfaces/project';
 
 @Component({
   selector: 'ktb-project-settings-git-ssh-input',
@@ -20,20 +20,21 @@ export class KtbProjectSettingsGitSshInputComponent {
   public isLoading = false;
 
   @Input()
-  public set gitInputData(data: IGitSshData | undefined) {
-    if (data) {
-      this.gitUrlControl.setValue(data.gitRemoteURL);
-      this.gitUserControl.setValue(data.gitUser);
+  public set gitInputData(data: IGitBasicConfiguration | undefined) {
+    if (!data) {
+      return;
     }
+    this.gitUrlControl.setValue(data.remoteURL);
+    this.gitUserControl.setValue(data.user);
   }
   @Output()
-  public gitDataChange = new EventEmitter<IGitSshData | undefined>();
+  public gitDataChange = new EventEmitter<IGitBasicConfiguration | undefined>();
 
-  private get data(): IGitSshData | undefined {
+  private get data(): IGitBasicConfiguration | undefined {
     return this.gitUpstreamForm.valid
       ? {
-          gitRemoteURL: this.gitUrlControl.value,
-          gitUser: this.gitUserControl.value,
+          remoteURL: this.gitUrlControl.value,
+          user: this.gitUserControl.value,
         }
       : undefined;
   }

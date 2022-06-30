@@ -36,6 +36,9 @@ describe('KtbDeletionComponent', () => {
 
     // then
     expect(spy).toHaveBeenCalled();
-    expect(spy).toHaveBeenCalledWith(KtbDeletionDialogComponent, { data: { name: 'sockshop', type: 'project' } });
+    expect(spy).toHaveBeenCalledWith(KtbDeletionDialogComponent, {
+      autoFocus: false,
+      data: { name: 'sockshop', type: 'project' },
+    });
   });
 });

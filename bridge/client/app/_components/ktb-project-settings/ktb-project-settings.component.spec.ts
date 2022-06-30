@@ -1,24 +1,31 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import { BehaviorSubject, of } from 'rxjs';
+import { BehaviorSubject, of, throwError } from 'rxjs';
 import { PendingChangesGuard } from '../../_guards/pending-changes.guard';
-import { IGitData } from '../../_interfaces/git-upstream';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 import { DataService } from '../../_services/data.service';
 import { TestUtils } from '../../_utils/test.utils';
 import { KtbProjectSettingsComponent } from './ktb-project-settings.component';
 import { KtbProjectSettingsModule } from './ktb-project-settings.module';
+import { getDefaultSshData } from './ktb-project-settings-git-extended/ktb-project-settings-git-extended.component.spec';
+import { EventService } from '../../_services/event.service';
+import { DeleteResult, DeleteType } from '../../_interfaces/delete';
+import { NotificationsService } from '../../_services/notifications.service';
+import { NotificationType } from '../../_models/notification';
+import { KtbProjectCreateMessageComponent } from './ktb-project-create-message/ktb-project-create-message.component';
 
 describe('KtbProjectSettingsComponent', () => {
   let component: KtbProjectSettingsComponent;
   let fixture: ComponentFixture<KtbProjectSettingsComponent>;
   let dataService: DataService;
   let routeParamsSubject: BehaviorSubject<{ projectName: string } | Record<string, never>>;
+  let queryParamsSubject: BehaviorSubject<{ created?: boolean }>;
 
   beforeEach(async () => {
+    queryParamsSubject = new BehaviorSubject<{ created?: boolean }>({});
     routeParamsSubject = new BehaviorSubject<{ projectName: string } | Record<string, never>>({
       projectName: 'sockshop',
     });
@@ -38,7 +45,8 @@ describe('KtbProjectSettingsComponent', () => {
           provide: ActivatedRoute,
           useValue: {
             params: routeParamsSubject.asObservable(),
-            queryParams: of({}),
+            queryParams: queryParamsSubject.asObservable(),
+            queryParamMap: of(convertToParamMap({})),
           },
         },
       ],
@@ -91,6 +99,7 @@ describe('KtbProjectSettingsComponent', () => {
   it('should navigate to created project', async () => {
     // given
     routeParamsSubject.next({});
+    component.gitDataExtended = null;
     component.projectNameControl.setValue('sockshop');
     component.shipyardFile = new File(['test content'], 'test1.yaml');
     fixture.detectChanges();
@@ -102,24 +111,6 @@ describe('KtbProjectSettingsComponent', () => {
 
     // then
     expect(routeSpy).toHaveBeenCalled();
-  });
-
-  it('should call DataService.setGitUpstreamUrl on setGitUpstream', () => {
-    // given
-    const gitData: IGitData = {
-      gitRemoteURL: 'https://test.git',
-      gitUser: 'username',
-      gitToken: 'token',
-    };
-    component.projectName = 'sockshop';
-
-    // when
-    const spy = jest.spyOn(dataService, 'setGitUpstreamUrl');
-    component.updateGitData(gitData);
-    component.setGitUpstream();
-
-    // then
-    expect(spy).toHaveBeenCalled();
   });
 
   it('should have create mode disabled when projectName param is set', () => {
@@ -162,17 +153,38 @@ describe('KtbProjectSettingsComponent', () => {
 
   it('should delete a project and navigate to dashboard', () => {
     // given
+    const eventService = TestBed.inject(EventService);
+    const router = TestBed.inject(Router);
+    const routeSpy = jest.spyOn(router, 'navigate');
     component.isCreateMode = false;
     component.projectName = 'sockshop';
     fixture.detectChanges();
 
     // when
-    const router = TestBed.inject(Router);
-    const routeSpy = jest.spyOn(router, 'navigate');
-    component.deleteProject('sockshop');
+    eventService.deletionTriggeredEvent.next({ type: DeleteType.PROJECT, name: 'sockshop' });
 
     // then
     expect(routeSpy).toHaveBeenCalled();
+  });
+
+  it('should try to delete a project and throw an error', () => {
+    // given
+    const eventService = TestBed.inject(EventService);
+    const progressSpy = jest.spyOn(eventService.deletionProgressEvent, 'next');
+    jest.spyOn(dataService, 'deleteProject').mockReturnValue(throwError(() => new Error('my error')));
+    component.isCreateMode = false;
+    component.projectName = 'sockshop';
+    fixture.detectChanges();
+
+    // when
+    eventService.deletionTriggeredEvent.next({ type: DeleteType.PROJECT, name: 'sockshop' });
+
+    // then
+    expect(progressSpy).toHaveBeenCalledWith({
+      error: 'Project could not be deleted: my error',
+      isInProgress: false,
+      result: DeleteResult.ERROR,
+    });
   });
 
   it('should not show a notification when the component is initialized', () => {
@@ -191,11 +203,13 @@ describe('KtbProjectSettingsComponent', () => {
     // given
 
     // when
-    component.updateGitData({
-      gitUser: 'someUser',
-      gitRemoteURL: 'someUri',
-      gitToken: 'someToken',
-      gitFormValid: true,
+    component.updateGitDataExtended({
+      user: 'someUser',
+      remoteURL: 'someUri',
+      https: {
+        token: 'someToken',
+        insecureSkipTLS: false,
+      },
     });
     fixture.detectChanges();
 
@@ -205,11 +219,13 @@ describe('KtbProjectSettingsComponent', () => {
 
   it('should show a dialog when showNotification is called', () => {
     // given
-    component.updateGitData({
-      gitUser: 'someUser',
-      gitRemoteURL: 'someUri',
-      gitToken: 'someToken',
-      gitFormValid: true,
+    component.updateGitDataExtended({
+      user: 'someUser',
+      remoteURL: 'someUri',
+      https: {
+        token: 'someToken',
+        insecureSkipTLS: false,
+      },
     });
     fixture.detectChanges();
 
@@ -229,11 +245,13 @@ describe('KtbProjectSettingsComponent', () => {
 
   it('should not show dialog when the notification was closed', () => {
     // given
-    component.updateGitData({
-      gitUser: 'someUser',
-      gitRemoteURL: 'someUri',
-      gitToken: 'someToken',
-      gitFormValid: true,
+    component.updateGitDataExtended({
+      user: 'someUser',
+      remoteURL: 'someUri',
+      https: {
+        token: 'someToken',
+        insecureSkipTLS: false,
+      },
     });
     fixture.detectChanges();
 
@@ -263,15 +281,17 @@ describe('KtbProjectSettingsComponent', () => {
 
     // when
     component.updateGitDataExtended({
+      remoteURL: 'https://myurl.git',
+      user: 'myUser',
       https: {
-        gitRemoteURL: 'https://myurl.git',
-        gitToken: '',
-        gitProxyInsecure: false,
-        gitProxyPassword: '',
-        gitProxyScheme: 'https',
-        gitProxyUrl: '',
-        gitProxyUser: '',
-        gitUser: 'myUser',
+        token: '',
+        insecureSkipTLS: false,
+        proxy: {
+          password: '',
+          scheme: 'https',
+          url: 'myUrl:5000',
+          user: '',
+        },
       },
     });
     expect(component.isProjectFormTouched).toBe(true);
@@ -281,14 +301,18 @@ describe('KtbProjectSettingsComponent', () => {
 
     // then
     expect(createExtendedSpy).toHaveBeenCalledWith('myProject', btoa('test content'), {
-      gitRemoteURL: 'https://myurl.git',
-      gitToken: '',
-      gitProxyInsecure: false,
-      gitProxyPassword: '',
-      gitProxyScheme: 'https',
-      gitProxyUrl: '',
-      gitProxyUser: '',
-      gitUser: 'myUser',
+      remoteURL: 'https://myurl.git',
+      user: 'myUser',
+      https: {
+        token: '',
+        insecureSkipTLS: false,
+        proxy: {
+          password: '',
+          scheme: 'https',
+          url: 'myUrl:5000',
+          user: '',
+        },
+      },
     });
   });
 
@@ -304,10 +328,10 @@ describe('KtbProjectSettingsComponent', () => {
 
     // when
     component.updateGitDataExtended({
+      remoteURL: 'https://my-git-url.com',
       ssh: {
-        gitPrivateKeyPass: 'myPrivateKeyPass',
-        gitPrivateKey: 'myPrivateKey',
-        gitRemoteURL: 'https://my-git-url.com',
+        privateKeyPass: 'myPrivateKeyPass',
+        privateKey: 'myPrivateKey',
       },
     });
     expect(component.isProjectFormTouched).toBe(true);
@@ -317,9 +341,11 @@ describe('KtbProjectSettingsComponent', () => {
 
     // then
     expect(createExtendedSpy).toHaveBeenCalledWith('myProject', btoa('test content'), {
-      gitPrivateKeyPass: 'myPrivateKeyPass',
-      gitPrivateKey: 'myPrivateKey',
-      gitRemoteURL: 'https://my-git-url.com',
+      remoteURL: 'https://my-git-url.com',
+      ssh: {
+        privateKeyPass: 'myPrivateKeyPass',
+        privateKey: 'myPrivateKey',
+      },
     });
   });
 
@@ -328,10 +354,10 @@ describe('KtbProjectSettingsComponent', () => {
     TestUtils.enableResourceService();
     // is a reference and may be modified by child components
     component.gitInputDataExtended = {
+      remoteURL: 'https://my-git-url.com',
       ssh: {
-        gitPrivateKeyPass: 'myPrivateKeyPass',
-        gitPrivateKey: 'myPrivateKey',
-        gitRemoteURL: 'https://my-git-url.com',
+        privateKeyPass: 'myPrivateKeyPass',
+        privateKey: 'myPrivateKey',
       },
     };
 
@@ -340,37 +366,203 @@ describe('KtbProjectSettingsComponent', () => {
 
     // then
     expect(component.gitInputDataExtended).toEqual({
-      https: {
-        gitProxyInsecure: false,
-        gitProxyPassword: '',
-        gitProxyScheme: 'https',
-        gitProxyUrl: '',
-        gitProxyUser: '',
-        gitRemoteURL: 'https://github.com/Kirdock/keptn-dynatrace',
-        gitToken: '',
-        gitUser: 'Kirdock',
-      },
+      remoteURL: 'https://github.com/Kirdock/keptn-dynatrace',
+      user: 'Kirdock',
     });
   });
 
   it('should update git upstream without user', () => {
     // given
-    const updateSpy = jest.spyOn(dataService, 'setGitUpstreamUrl');
+    const updateSpy = jest.spyOn(dataService, 'updateGitUpstream');
     component.projectName = 'sockshop';
-    component.gitData = {
-      gitRemoteURL: 'https://github.com/Kirdock/keptn-dynatrace',
-      gitToken: 'myGitToken',
+    component.gitDataExtended = {
+      remoteURL: 'https://github.com/Kirdock/keptn-dynatrace',
+      https: {
+        token: 'myGitToken',
+        insecureSkipTLS: false,
+      },
     };
 
     // when
-    component.setGitUpstream();
+    component.updateGitUpstream();
 
     // then
-    expect(updateSpy).toHaveBeenCalledWith(
-      'sockshop',
-      'https://github.com/Kirdock/keptn-dynatrace',
-      'myGitToken',
-      undefined
+    expect(updateSpy).toHaveBeenCalledWith('sockshop', {
+      remoteURL: 'https://github.com/Kirdock/keptn-dynatrace',
+      https: {
+        token: 'myGitToken',
+        insecureSkipTLS: false,
+      },
+    });
+  });
+
+  it('should not update gitUpstream if data is not set', () => {
+    // given
+    const updateUpstreamSpy = jest.spyOn(dataService, 'updateGitUpstream');
+    fixture.detectChanges();
+
+    // when
+    component.updateGitUpstream();
+
+    // then
+    expect(updateUpstreamSpy).not.toHaveBeenCalled();
+  });
+
+  it('should update gitUpstream', () => {
+    // given
+    fixture.detectChanges();
+    const updateUpstreamSpy = jest.spyOn(dataService, 'updateGitUpstream');
+    const data = getDefaultSshData();
+
+    // when
+    component.updateGitDataExtended(data);
+    component.updateGitUpstream();
+
+    // then
+    expect(updateUpstreamSpy).toHaveBeenCalledWith('sockshop', data);
+  });
+
+  it('should update gitUpstream and set inProgress to false on error', () => {
+    // given
+    fixture.detectChanges();
+    jest.spyOn(dataService, 'updateGitUpstream').mockReturnValue(throwError(() => of('error')));
+    const updateUpstreamSpy = jest.spyOn(dataService, 'updateGitUpstream');
+    const inProgressSpy = jest.fn();
+    Object.defineProperty(component, 'isGitUpstreamInProgress', {
+      get: jest.fn(() => true),
+      set: inProgressSpy,
+    });
+
+    // when
+    component.updateGitDataExtended(getDefaultSshData());
+    component.updateGitUpstream();
+
+    // then
+    expect(inProgressSpy).toHaveBeenCalledWith(false);
+    expect(updateUpstreamSpy).toHaveBeenCalled();
+  });
+
+  it('should not create project if shipyard is not set', async () => {
+    // given
+    component.gitDataExtended = null;
+    component.projectNameControl.setValue('sockshop');
+
+    // when
+    const createSpy = jest.spyOn(dataService, 'createProjectExtended');
+    await component.createProject();
+
+    // then
+    expect(createSpy).not.toHaveBeenCalled();
+  });
+
+  it('should not create project if shipyard is empty', async () => {
+    // given
+    component.gitDataExtended = null;
+    component.projectNameControl.setValue('sockshop');
+    component.shipyardFile = new File([''], 'test1.yaml');
+
+    // when
+    const createSpy = jest.spyOn(dataService, 'createProjectExtended');
+    await component.createProject();
+
+    // then
+    expect(createSpy).not.toHaveBeenCalled();
+  });
+
+  it('should not create project if data is not set', async () => {
+    // given
+    component.gitDataExtended = undefined;
+    component.projectNameControl.setValue('sockshop');
+    component.shipyardFile = new File(['asfd'], 'test1.yaml');
+
+    // when
+    const createSpy = jest.spyOn(dataService, 'createProjectExtended');
+    await component.createProject();
+
+    // then
+    expect(createSpy).not.toHaveBeenCalled();
+  });
+
+  it('should show an error if project creation failed', async () => {
+    // given
+    const notificationService = TestBed.inject(NotificationsService);
+    const notificationSpy = jest.spyOn(notificationService, 'addNotification');
+    jest.spyOn(dataService, 'createProjectExtended').mockReturnValue(throwError(() => new Error()));
+    component.gitDataExtended = null;
+    component.projectNameControl.setValue('sockshop');
+    component.shipyardFile = new File(['asdf'], 'test1.yaml');
+
+    // when
+    await component.createProject();
+
+    // then
+    expect(notificationSpy).toHaveBeenCalledWith(
+      NotificationType.ERROR,
+      `The project could not be created: please, check the logs of resource-service.`
     );
+  });
+
+  it('should save unsaved changes on create', () => {
+    // given
+    component.unsavedDialogState = 'unsaved';
+    component.isCreateMode = true;
+    const createSpy = jest.spyOn(component, 'createProject');
+
+    // when
+    component.saveAll();
+
+    // then
+    expect(component.unsavedDialogState).toBeNull();
+    expect(createSpy).toHaveBeenCalled();
+  });
+
+  it('should save unsaved changes on update', () => {
+    // given
+    component.unsavedDialogState = 'unsaved';
+    const createSpy = jest.spyOn(component, 'updateGitUpstream');
+
+    // when
+    component.saveAll();
+
+    // then
+    expect(component.unsavedDialogState).toBeNull();
+    expect(createSpy).toHaveBeenCalled();
+  });
+
+  it('should update shipyard file', () => {
+    // given
+    const shipyardFile = new File([], 'myfile.yaml');
+    const formTouchedSpy = jest.spyOn(component, 'projectFormTouched');
+
+    // when
+    component.updateShipyardFile(shipyardFile);
+
+    // then
+    expect(component.shipyardFile).toEqual(new File([], 'myfile.yaml'));
+    expect(formTouchedSpy).toHaveBeenCalled();
+  });
+
+  it('should show create message and remove param', () => {
+    // given
+    const notificationService = TestBed.inject(NotificationsService);
+    const notificationSpy = jest.spyOn(notificationService, 'addNotification');
+    const routeSpy = jest.spyOn(TestBed.inject(Router), 'navigate');
+
+    // when
+    queryParamsSubject.next({ created: true });
+
+    expect(notificationSpy).toHaveBeenCalledWith(
+      NotificationType.SUCCESS,
+      '',
+      {
+        component: KtbProjectCreateMessageComponent,
+        data: {
+          projectName: 'sockshop',
+          routerLink: '/project/sockshop/settings/services/create',
+        },
+      },
+      10_000
+    );
+    expect(routeSpy).toHaveBeenCalledWith(['/', 'project', 'sockshop', 'settings', 'project']);
   });
 });
