@@ -62,8 +62,11 @@ func (mdbrepo *MongoDBProjectsRepo) GetProject(projectName string) (*apimodels.E
 
 	projectCollection := mdbrepo.getProjectsCollection()
 	result := projectCollection.FindOne(ctx, bson.M{"projectName": projectName})
-	if result.Err() != nil && result.Err() == mongo.ErrNoDocuments {
-		return nil, nil
+	if result.Err() != nil {
+		if result.Err() == mongo.ErrNoDocuments {
+			return nil, ErrProjectNotFound
+		}
+		return nil, result.Err()
 	}
 	projectResult := &apimodels.ExpandedProject{}
 	err = result.Decode(projectResult)
