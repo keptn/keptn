@@ -1,5 +1,6 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { jest } from '@jest/globals';
+import { join } from 'path';
 
 const readFileSyncSpy = jest.fn();
 const existsSyncSpy = jest.fn();
@@ -37,9 +38,9 @@ describe('Test fetching secrets from the file system', () => {
       databaseEncryptSecret: 'secret2',
       clientSecret: 'secret3',
     });
-    expect(readFileSyncSpy).toHaveBeenCalledWith('config\\oauth\\session_secret', options);
-    expect(readFileSyncSpy).toHaveBeenCalledWith('config\\oauth\\client_secret', options);
-    expect(readFileSyncSpy).toHaveBeenCalledWith('config\\oauth\\database_encrypt_secret', options);
+    expect(readFileSyncSpy).toHaveBeenCalledWith(join('config', 'oauth', 'session_secret'), options);
+    expect(readFileSyncSpy).toHaveBeenCalledWith(join('config', 'oauth', 'client_secret'), options);
+    expect(readFileSyncSpy).toHaveBeenCalledWith(join('config', 'oauth', 'database_encrypt_secret'), options);
   });
 
   it('should read mongo secret', () => {
@@ -49,7 +50,10 @@ describe('Test fetching secrets from the file system', () => {
     const secret = getOAuthMongoExternalConnectionString('config');
 
     expect(secret).toBe('secretMongo');
-    expect(readFileSyncSpy).toHaveBeenCalledWith('config\\oauth_mongodb\\external_connection_string', options);
+    expect(readFileSyncSpy).toHaveBeenCalledWith(
+      join('config', 'oauth_mongodb', 'external_connection_string'),
+      options
+    );
   });
 
   it('should return empty string if the directory can not be found', () => {

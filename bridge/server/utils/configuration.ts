@@ -113,9 +113,6 @@ function getAuthConfiguration(api: APIConfig, options: BridgeOption): AuthConfig
 
 function getOAuthConfiguration(configDir: string, options: BridgeOption): OAuthConfig {
   const logoutURL = options.oauth?.allowedLogoutURL ?? '';
-  let baseURL = options.oauth?.baseURL;
-  let clientID = options.oauth?.clientID;
-  let discoveryURL = options.oauth?.discoveryURL;
   const enabled = options.oauth?.enabled ?? false;
   const nameProperty = options.oauth?.nameProperty;
   const scope = options.oauth?.scope ?? '';
@@ -124,9 +121,45 @@ function getOAuthConfiguration(configDir: string, options: BridgeOption): OAuthC
   const proxyHops = options.oauth?.session?.trustProxyHops ?? 1;
   const validation = options.oauth?.session?.validationTimeoutMin ?? 60;
   const algo = options.oauth?.tokenAlgorithm || 'RS256';
-  let secrets;
+  const basicOptions = validateOAuthBasicOptions(
+    enabled,
+    options.oauth?.discoveryURL,
+    options.oauth?.clientID,
+    options.oauth?.baseURL,
+    configDir
+  );
+
+  return {
+    allowedLogoutURL: logoutURL,
+    baseURL: basicOptions.baseURL,
+    clientID: basicOptions.clientID,
+    discoveryURL: basicOptions.discoveryURL,
+    enabled: enabled,
+    nameProperty: nameProperty,
+    scope: scope.trim(),
+    session: {
+      secureCookie: secureCookie,
+      timeoutMin: timeout,
+      trustProxyHops: proxyHops,
+      validationTimeoutMin: validation,
+    },
+    secrets: basicOptions.secrets ?? {
+      sessionSecret: '',
+      databaseEncryptSecret: '',
+    },
+    tokenAlgorithm: algo,
+  };
+}
+
+function validateOAuthBasicOptions(
+  enabled: boolean,
+  discoveryURL: string | undefined,
+  clientID: string | undefined,
+  baseURL: string | undefined,
+  configDir: string
+): { discoveryURL: string; clientID: string; baseURL: string; secrets?: OAuthSecrets } {
   if (enabled) {
-    secrets = getOAuthSecrets(configDir);
+    const secrets = getOAuthSecrets(configDir);
     const errorSuffix =
       'must be defined when OAuth based login (OAUTH_ENABLED) is activated.' +
       ' Please check your environment variables.';
@@ -140,31 +173,17 @@ function getOAuthConfiguration(configDir: string, options: BridgeOption): OAuthC
       throw new Error(`OAUTH_BASE_URL ${errorSuffix}`);
     }
     validateSecrets(secrets);
-  } else {
-    discoveryURL = '';
-    clientID = '';
-    baseURL = '';
+    return {
+      discoveryURL,
+      baseURL,
+      clientID,
+      secrets,
+    };
   }
-
   return {
-    allowedLogoutURL: logoutURL,
-    baseURL: baseURL,
-    clientID: clientID,
-    discoveryURL: discoveryURL,
-    enabled: enabled,
-    nameProperty: nameProperty,
-    scope: scope.trim(),
-    session: {
-      secureCookie: secureCookie,
-      timeoutMin: timeout,
-      trustProxyHops: proxyHops,
-      validationTimeoutMin: validation,
-    },
-    secrets: secrets ?? {
-      sessionSecret: '',
-      databaseEncryptSecret: '',
-    },
-    tokenAlgorithm: algo,
+    discoveryURL: '',
+    clientID: '',
+    baseURL: '',
   };
 }
 
