@@ -85,16 +85,11 @@ func (pm *ProjectManager) GetByName(projectName string) (*apimodels.ExpandedProj
 
 func (pm *ProjectManager) Create(params *models.CreateProjectParams) (error, common.RollbackFunc) {
 
-	existingProject, err := pm.ProjectMaterializedView.GetProject(*params.Name)
-	if err != nil && err != db.ErrProjectNotFound {
-		log.Errorf("Error occurred while getting project: %s", err.Error())
-		return fmt.Errorf("failed to get project: '%s'", *params.Name), nilRollback
-	}
-	if existingProject != nil {
-		return ErrProjectAlreadyExists, nilRollback
+	if err := pm.checkForExistingProject(params); err != nil {
+		return err, nilRollback
 	}
 
-	err = pm.updateGITRepositorySecret(*params.Name, decodeGitCredentials(params.GitCredentials))
+	err := pm.updateGITRepositorySecret(*params.Name, decodeGitCredentials(params.GitCredentials))
 	if err != nil {
 		return err, nilRollback
 	}
@@ -164,6 +159,18 @@ func (pm *ProjectManager) Create(params *models.CreateProjectParams) (error, com
 	pm.deleteProjectSequenceCollections(*params.Name)
 
 	return nil, nilRollback
+}
+
+func (pm *ProjectManager) checkForExistingProject(params *models.CreateProjectParams) error {
+	existingProject, err := pm.ProjectMaterializedView.GetProject(*params.Name)
+	if err != nil && err != db.ErrProjectNotFound {
+		log.Errorf("Error occurred while getting project: %s", err.Error())
+		return fmt.Errorf("failed to get project: '%s'", *params.Name)
+	}
+	if existingProject != nil {
+		return ErrProjectAlreadyExists
+	}
+	return nil
 }
 
 func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, common.RollbackFunc) {
