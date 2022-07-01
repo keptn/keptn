@@ -45,13 +45,14 @@ export class TestUtils {
     return init(this.getOAuthConfig());
   }
 
-  public static readonly getOAuthConfig = () => getConfiguration({
-    ...getBaseOptions(),
-    oauth: {
-      enabled: true,
-      clientID: 'myClientID',
-      baseURL: 'http://localhost',
-      discoveryURL: 'http://localhost/.well-known/openid-configuration',
-    },
-  });
+  public static readonly getOAuthConfig = () =>
+    getConfiguration({
+      ...getBaseOptions(),
+      oauth: {
+        enabled: true,
+        clientID: 'myClientID',
+        baseURL: 'http://localhost',
+        discoveryURL: 'http://localhost/.well-known/openid-configuration',
+      },
+    });
 }

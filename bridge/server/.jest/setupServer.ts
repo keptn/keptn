@@ -48,5 +48,5 @@ export function getBaseOptions(): BridgeOption {
     },
     version: 'develop',
     mode: EnvType.TEST,
-  }
+  };
 }
