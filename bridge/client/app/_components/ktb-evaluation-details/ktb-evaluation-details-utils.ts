@@ -60,7 +60,7 @@ export function getScoreInfo(evaluation: IEvaluationData): string {
   } else if (evaluation.score_state === 'warning') {
     return ` >= ${evaluation.score_warning}`;
   } else {
-    return ` < ${evaluation.score_warning ? evaluation.score_warning : evaluation.score_pass}`;
+    return ` < ${evaluation.score_warning || evaluation.score_pass}`;
   }
 }
 
