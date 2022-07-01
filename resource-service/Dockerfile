@@ -75,7 +75,7 @@ COPY --from=builder /go/src/github.com/keptn/keptn/resource-service/swagger-ui /
 COPY --from=builder /go/src/github.com/keptn/keptn/resource-service/docs/swagger.yaml /swagger-ui/swagger-original.yaml
 COPY --from=builder /go/src/github.com/keptn/keptn/resource-service/docs/swagger.yaml /swagger-ui/swagger.yaml
 # Replace contents for api proxy
-RUN sed -i "s|basePath: /v1|basePath: /api/configuration-service/v1 |g" /swagger-ui/swagger.yaml
+RUN sed -i "s|basePath: /v1|basePath: /api/resource-service/v1 |g" /swagger-ui/swagger.yaml
 
 EXPOSE 8080
 

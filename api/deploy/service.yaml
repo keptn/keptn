@@ -38,7 +38,7 @@ spec:
             - name: DATASTORE_URI
               value: mongodb-datastore:8080
             - name: CONFIGURATION_URI
-              value: configuration-service:8080
+              value: resource-service:8080
             - name: CONTROLPLANE_URI
               value: shipyard-controller:8080
             - name: IMPORT_BASE_PATH

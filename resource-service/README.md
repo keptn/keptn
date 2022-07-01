@@ -7,7 +7,7 @@ to any Git-based service such as GitLab, GitHub, Bitbucket, etc.
 
 The *resource-service* has been designed from the ground up to work with a remote upstream.
 Hence, Keptn projects must always have a Git repository configured. Furthermore, the *resource-service* does **not** have the requirement of using uninitialized repositories.
-These changes allow the service implementation to be more flexible and faster in retrieving and storing Keptn data comparing it to the *configuration-service*.
+These changes allow the service implementation to be more flexible and faster in retrieving and storing Keptn data comparing it to the *resource-service*.
 
 ## Entity model
 

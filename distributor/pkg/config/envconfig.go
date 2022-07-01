@@ -207,7 +207,7 @@ func (env *EnvConfig) GetAPIProxyMaxBytes() int64 {
 
 func queryEscapeConfigurationServiceURI(path string, value string) string {
 	// special case: configuration service /resource requests with nested resource URIs need to have an escaped '/' - see https://github.com/keptn/keptn/issues/2707
-	if value == "/configuration-service" {
+	if value == "/resource-service" {
 		splitPath := strings.Split(path, "/resource/")
 		if len(splitPath) > 1 {
 			path = ""
@@ -225,7 +225,7 @@ func isOneOfFilteredServices(serviceName string) bool {
 		"statistics-service",
 		"api-service",
 		"mongodb-datastore",
-		"configuration-service",
+		"resource-service",
 		"secret-service",
 		"shipyard-controller":
 		return true
