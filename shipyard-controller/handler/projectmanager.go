@@ -86,7 +86,7 @@ func (pm *ProjectManager) GetByName(projectName string) (*apimodels.ExpandedProj
 func (pm *ProjectManager) Create(params *models.CreateProjectParams) (error, common.RollbackFunc) {
 
 	existingProject, err := pm.ProjectMaterializedView.GetProject(*params.Name)
-	if err != nil {
+	if err != nil && err != db.ErrProjectNotFound {
 		log.Errorf("Error occurred while getting project: %s", err.Error())
 		return fmt.Errorf("failed to get project: '%s'", *params.Name), nilRollback
 	}
