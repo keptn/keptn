@@ -4271,10 +4271,10 @@ cypress-file-upload@5.0.8:
   resolved "https://registry.yarnpkg.com/cypress-file-upload/-/cypress-file-upload-5.0.8.tgz#d8824cbeaab798e44be8009769f9a6c9daa1b4a1"
   integrity sha512-+8VzNabRk3zG6x8f8BWArF/xA/W0VK4IZNx3MV0jFWrJS/qKn8eHfa5nU73P9fOQAgwHFJx7zjg4lwOnljMO8g==
 
-cypress-xpath@1.6.2:
-  version "1.6.2"
-  resolved "https://registry.yarnpkg.com/cypress-xpath/-/cypress-xpath-1.6.2.tgz#e9d44c3ab694fefa8608f1d977e3e389647f10d3"
-  integrity sha512-mtwJPl840GQPGtb480fKR5vDIcijBHhAVwby5/AIPIT/UVT7UJhM2L42/R+venR7N01I0PoOJErb6UiMbCyUxg==
+cypress-xpath@1.8.0:
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/cypress-xpath/-/cypress-xpath-1.8.0.tgz#6dd6949cd8a12eaac723875b2b5a845d5f096ea2"
+  integrity sha512-a76JxNgkYwKCi8tJkY6DjLV8NQ2TBBFA4pIcq5nMDIGOee2DnIIbYbD0ucT7qxF2LSwOow/Ze49WhaTL4pRPmg==
 
 cypress@10.3.0:
   version "10.3.0"
