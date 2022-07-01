@@ -6,7 +6,6 @@ import MongoStore from 'connect-mongo';
 import { Collection, Db, MongoClient } from 'mongodb';
 import { Crypto } from './crypto';
 import { getRootLocation } from './oauth-routes';
-import { getOAuthMongoExternalConnectionString, getOAuthSecrets } from './secrets';
 import { ComponentLogger } from '../utils/logger';
 import { BridgeConfiguration, EnvType } from '../interfaces/configuration';
 
@@ -61,20 +60,8 @@ export class SessionService {
      * provided default value.
      */
     this.SESSION_VALIDATING_DATA_SECONDS = this.configuration.oauth.session.validationTimeoutMin * 60;
-    const errorSuffix =
-      'must be defined when OAuth based login (OAUTH_ENABLED) is activated. Please check your bridge-oauth secret.';
-    const secrets = getOAuthSecrets();
-    if (!secrets.sessionSecret) {
-      throw Error(`session_secret ${errorSuffix}`);
-    }
-
-    if (!secrets.databaseEncryptSecret) {
-      throw Error(`database_encrypt_secret ${errorSuffix}`);
-    } else if (secrets.databaseEncryptSecret.length !== 32) {
-      throw Error(`The length of the secret "database_encrypt_secret" must be 32`);
-    }
-    this.sessionSecret = secrets.sessionSecret;
-    this.databaseSecret = secrets.databaseEncryptSecret;
+    this.sessionSecret = this.configuration.oauth.secrets.sessionSecret;
+    this.databaseSecret = this.configuration.oauth.secrets.databaseEncryptSecret;
     this.crypto = new Crypto(this.databaseSecret);
   }
 
@@ -110,15 +97,14 @@ export class SessionService {
   }
 
   public async setupMongoDB(): Promise<MongoStore> {
-    const mongoCredentials = {
-      user: this.configuration.mongo.user,
-      password: this.configuration.mongo.password,
-      host: this.configuration.mongo.host,
-      database: this.configuration.mongo.db,
-    };
-    const externalConnectionString = getOAuthMongoExternalConnectionString();
+    const mongoCredentials = this.configuration.mongo;
 
-    if (!externalConnectionString && !mongoCredentials.user && !mongoCredentials.password && !mongoCredentials.host) {
+    if (
+      !mongoCredentials.externalConnectionString &&
+      !mongoCredentials.user &&
+      !mongoCredentials.password &&
+      !mongoCredentials.host
+    ) {
       this.log.error(
         'could not construct mongodb connection string: env vars "MONGODB_HOST", "MONGODB_USER" and "MONGODB_PASSWORD" have to be set'
       );
@@ -126,8 +112,8 @@ export class SessionService {
     }
 
     const mongoClient = new MongoClient(
-      externalConnectionString ||
-        `mongodb://${mongoCredentials.user}:${mongoCredentials.password}@${mongoCredentials.host}/${mongoCredentials.database}`
+      mongoCredentials.externalConnectionString ||
+        `mongodb://${mongoCredentials.user}:${mongoCredentials.password}@${mongoCredentials.host}/${mongoCredentials.db}`
     );
     await mongoClient.connect();
     const db = mongoClient.db();
