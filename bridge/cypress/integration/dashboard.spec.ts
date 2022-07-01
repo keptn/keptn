@@ -18,7 +18,7 @@ describe('Bridge Dashboard', () => {
     dashboardPage.visit().clickCreateNewProjectButton(); // 1 call
     const basePage = new BasePage();
     basePage.clickMainHeaderKeptn(); // 1 call
-    cy.wait('@projects').get('@projects.all').should('have.length', 2);
+    cy.wait('@projects').get('@projects.all').should('have.length.at.least', 2);
   });
 
   it('should load also if version.json is not available', () => {
@@ -30,7 +30,8 @@ describe('Bridge Dashboard', () => {
 
     dashboardPage.visit(false);
     // wait for all retries
-    for (let i = 0; i < 4; ++i) {
+    const retries = 3 + 3; // 3 for old and 3 for new NGRX impl
+    for (let i = 0; i <= retries; ++i) {
       cy.wait('@version.json');
     }
     cy.wait('@projects').wait('@sequences');

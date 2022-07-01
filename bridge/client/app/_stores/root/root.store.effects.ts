@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Actions, concatLatestFrom, createEffect, ofType } from '@ngrx/effects';
+import { Actions, createEffect, ofType } from '@ngrx/effects';
 import {
   keptnInfoLoaded,
   latestSequencesForProjectLoaded,
@@ -8,6 +8,7 @@ import {
   metadataErrored,
   metadataLoaded,
   projectsLoaded,
+  refreshProjects,
 } from './root.store.actions';
 import { catchError, filter, map, mergeMap } from 'rxjs/operators';
 import { combineLatest, forkJoin, merge, Observable, of } from 'rxjs';
@@ -15,7 +16,6 @@ import { KeptnInfo } from '../../_models/keptn-info';
 import { Store } from '@ngrx/store';
 import { State } from './root.store.reducer';
 import { fromProjects, fromProjectsPageSize } from './root.store.selectors';
-import { ProjectService } from '../../_services/project.service';
 import { ApiService } from '../../_services/api.service';
 import { IProject } from '../../../../shared/interfaces/project';
 import { LoadingState } from '../store';
@@ -39,14 +39,14 @@ export class RootStoreEffects {
     )
   );
 
-  loadProjects$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(keptnInfoLoaded),
-      concatLatestFrom(() => this.store.select(fromProjectsPageSize)),
-      mergeMap((_action, pageSize) => this.loadProjects(pageSize)),
+  loadProjects$ = createEffect(() => {
+    const pageSize$ = this.store.select(fromProjectsPageSize);
+    const loadAction$ = this.actions$.pipe(ofType(keptnInfoLoaded, refreshProjects));
+    return combineLatest([pageSize$, loadAction$]).pipe(
+      mergeMap(([pageSize]) => this.loadProjects(pageSize)),
       map((projects) => projectsLoaded({ projects }))
-    )
-  );
+    );
+  });
 
   loadLatestSequences$ = createEffect(() => {
     const projects$ = this.store.select(fromProjects).pipe(
@@ -60,19 +60,17 @@ export class RootStoreEffects {
     );
   });
 
-  constructor(
-    private store: Store<State>,
-    private actions$: Actions,
-    private apiService: ApiService,
-    private projectService: ProjectService
-  ) {}
+  constructor(private store: Store<State>, private actions$: Actions, private apiService: ApiService) {}
 
   loadKeptnInfo(): Observable<KeptnInfo> {
     return this.apiService.getKeptnInfo().pipe(
       mergeMap((bridgeInfo) => {
-        const ignoreError = catchError(() => of(undefined));
         const availableVersionsObs = bridgeInfo.enableVersionCheckFeature
-          ? this.apiService.getAvailableVersions().pipe(ignoreError)
+          ? this.apiService.getAvailableVersions().pipe(
+              catchError(() => {
+                return of(undefined);
+              })
+            )
           : of(undefined);
         return forkJoin([of(bridgeInfo), availableVersionsObs]);
       }),
@@ -81,10 +79,7 @@ export class RootStoreEffects {
   }
 
   loadProjects(pageSize?: number): Observable<IProject[]> {
-    return this.projectService
-      .getProjects(pageSize || 50)
-      .pipe(catchError(() => of(undefined)))
-      .pipe(map((res) => (res ? res.projects : [])));
+    return this.apiService.getProjects(pageSize || 50).pipe(map((res) => (res ? res.projects : [])));
   }
 
   private loadSequences(projects: IProject[]): Observable<{ projectName: string; sequences: ISequence[] }>[] {

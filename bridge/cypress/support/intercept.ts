@@ -117,7 +117,7 @@ export function interceptProjectSettings(): void {
 export function interceptDashboard(): void {
   interceptMain();
   cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=5', { fixture: 'sequences.sockshop' }).as('sequences');
-  cy.intercept('/api/controlPlane/v1/sequence/my-error-project?pageSize=5', { body: { states: [] } });
+  cy.intercept('/api/controlPlane/v1/sequence/my-error-project?pageSize=5', { body: { states: [] } }).as('sequences2');
   cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' }).as(
     'projects'
   );

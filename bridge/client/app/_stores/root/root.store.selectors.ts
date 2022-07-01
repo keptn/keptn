@@ -10,7 +10,7 @@ export const fromMetadata = createSelector(fromRoot, (state) => state.metadata);
 
 export const fromProjectsPageSize = createSelector(
   fromRoot,
-  (state) => state.keptInfo.data?.bridgeInfo.projectsPageSize
+  (state) => state.keptInfo.data?.bridgeInfo.projectsPageSize ?? 0
 );
 export const fromProjects = createSelector(fromRoot, (state) => state.projects);
 

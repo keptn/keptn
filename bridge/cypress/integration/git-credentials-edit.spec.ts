@@ -55,7 +55,7 @@ describe('Changing git credentials', () => {
       .clickSaveGitUpstream();
   });
 
-  it('Prevent data loss if git crendetials not saved before navigation', () => {
+  it('Prevent data loss if git credentials not saved before navigation', () => {
     const basePage = new ProjectBoardPage();
     const DYNATRACE_PROJECT = 'dynatrace';
     const GIT_URL = 'https://git-repo.com';
@@ -99,7 +99,8 @@ describe('Changing git credentials', () => {
     cy.intercept('GET', '/api/project/dynatrace/serviceStates', { statusCode: 200, body: [] });
 
     cy.visit('/');
-    cy.wait('@metadataCmpl');
+    cy.wait('@initProjects');
+    cy.wait(1000);
     basePage.selectProject(DYNATRACE_PROJECT);
 
     const settingsPage = basePage.gotoSettingsPage();

@@ -58,7 +58,7 @@ export const rootStoreReducer = createReducer(
 
   on(projectsLoaded, (state, { projects }) => ({
     ...state,
-    projects: { ...state.projects, data: projects, call: LoadingState.LOADED },
+    projects: { ...state.projects, data: [...projects], call: LoadingState.LOADED },
   })),
 
   on(latestSequencesForProjectLoaded, (state, { projectName, sequences }) => ({

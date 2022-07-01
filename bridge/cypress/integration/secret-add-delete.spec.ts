@@ -13,7 +13,7 @@ describe('Keptn Secrets adding deleting test', () => {
 
   it('should navigate to add secret page', () => {
     cy.visit('/');
-    cy.wait('@metadataCmpl');
+    cy.wait('@initProjects');
     basePage.selectProject(DYNATRACE_PROJECT);
     basePage.goToUniformPage().goToSecretsPage();
     secretsPage.clickAddSecret();

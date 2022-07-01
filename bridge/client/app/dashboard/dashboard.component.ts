@@ -2,6 +2,7 @@ import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { RootStoreFacade } from '../_stores/root/root.store.facade';
 import { environment } from '../../environments/environment';
 import { AppUtils, POLLING_INTERVAL_MILLIS } from '../_utils/app.utils';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'ktb-dashboard',
@@ -18,12 +19,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
   logoInvertedUrl = environment?.config?.logoInvertedUrl;
 
   constructor(
+    private router: Router,
     private rootStoreFacade: RootStoreFacade,
     @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number
-  ) {}
+  ) {
+    const currentNav = this.router.getCurrentNavigation();
+    const hadPreviousNavigation = currentNav != null && currentNav.previousNavigation != null;
+    if (hadPreviousNavigation) {
+      this.rootStoreFacade.refreshProjects();
+    }
+  }
 
   ngOnInit(): void {
-    this.rootStoreFacade.loadRootState();
     this.rootStoreFacade.refreshSequences();
   }
 
@@ -31,7 +38,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.rootStoreFacade.refreshSequences();
   }
 
-  loadProjects(): void {}
+  loadProjects(): void {
+    this.rootStoreFacade.refreshProjects();
+  }
 
   ngOnDestroy(): void {
     this.refreshTimerSubscription.unsubscribe();

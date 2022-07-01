@@ -8,6 +8,7 @@ export const loadRootState = createAction('[Root] Load Root State');
 export const keptnInfoLoaded = createAction('[Root] KeptnInfo Loaded', props<{ keptnInfo: KeptnInfo }>());
 export const metadataLoaded = createAction('[Root] Metadata Loaded', props<{ metadata: IMetadata }>());
 export const metadataErrored = createAction('[Root] Metadata Errored');
+export const refreshProjects = createAction('[Root] Refresh Projects');
 export const projectsLoaded = createAction('[Root] Projects Loaded', props<{ projects: IProject[] }>());
 export const loadLatestSequences = createAction('[Root] Load Latest Sequences');
 export const latestSequencesForProjectLoaded = createAction(

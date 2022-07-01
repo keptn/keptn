@@ -7,7 +7,7 @@ import {
   fromProjects,
   qualityGatesOnly,
 } from './root.store.selectors';
-import { loadLatestSequences, loadRootState } from './root.store.actions';
+import { loadLatestSequences, loadRootState, refreshProjects } from './root.store.actions';
 import { State } from './root.store.reducer';
 
 @Injectable({
@@ -24,6 +24,10 @@ export class RootStoreFacade {
 
   loadRootState(): void {
     this.store.dispatch(loadRootState());
+  }
+
+  refreshProjects(): void {
+    this.store.dispatch(refreshProjects());
   }
 
   refreshSequences(): void {
