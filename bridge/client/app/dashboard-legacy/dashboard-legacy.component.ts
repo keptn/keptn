@@ -34,6 +34,10 @@ export class DashboardLegacyComponent {
     private dataService: DataService,
     @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number
   ) {
+    this.checkRefreshProjects();
+  }
+
+  private checkRefreshProjects(): void {
     const currentNav = this.router.getCurrentNavigation();
     const hadPreviousNavigation = currentNav != null && currentNav.previousNavigation != null;
     if (hadPreviousNavigation) {
