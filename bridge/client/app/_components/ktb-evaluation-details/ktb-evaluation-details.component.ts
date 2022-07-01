@@ -318,6 +318,8 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     return this.heatmapChart?._chartObject?.chartWidth ?? 0;
   }
 
+  public getSliInfo = getSliResultInfo;
+
   constructor(
     private _changeDetectorRef: ChangeDetectorRef,
     private dataService: DataService,
@@ -897,10 +899,6 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     }
 
     this.heatmapChart?._update();
-  }
-
-  public getSliInfo(indicatorResults: IndicatorResult[]): SliInfo {
-    return getSliResultInfo(indicatorResults);
   }
 
   ngOnDestroy(): void {
