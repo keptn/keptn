@@ -14,14 +14,15 @@ import { IStage } from '../../shared/interfaces/stage';
 import { SequenceOptions, TraceOptions } from './data-service';
 import { ComponentLogger } from '../utils/logger';
 import { IProjectResult } from '../../shared/interfaces/project-result';
+import { EnvType } from '../interfaces/configuration';
 
 export class ApiService {
   private readonly axios: AxiosInstance;
   private readonly escapeSlash = '%252F';
   private readonly log = new ComponentLogger('API');
 
-  constructor(private readonly baseUrl: string, readonly apiToken: string | undefined) {
-    if (process.env.NODE_ENV === 'test' && global.axiosInstance) {
+  constructor(private readonly baseUrl: string, readonly apiToken: string | undefined, mode: EnvType) {
+    if (mode === EnvType.TEST && global.axiosInstance) {
       this.axios = global.axiosInstance;
     } else {
       this.axios = Axios.create({

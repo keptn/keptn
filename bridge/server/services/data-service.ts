@@ -42,6 +42,7 @@ import {
 } from '../models/webhook-config.utils';
 import { IWebhookConfigClient } from '../../shared/interfaces/webhook-config';
 import { ISecret } from '../../shared/interfaces/secret';
+import { EnvType } from '../interfaces/configuration';
 
 type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
 type StageRemediationInformation = {
@@ -80,8 +81,8 @@ export class DataService {
   private readonly MAX_TRACE_PAGE_SIZE = 50;
   private readonly MAX_PAGE_SIZE = 100;
 
-  constructor(apiUrl: string, apiToken: string | undefined) {
-    this.apiService = new ApiService(apiUrl, apiToken);
+  constructor(apiUrl: string, apiToken: string | undefined, mode: EnvType) {
+    this.apiService = new ApiService(apiUrl, apiToken, mode);
   }
 
   public async getProjects(accessToken: string | undefined): Promise<Project[]> {

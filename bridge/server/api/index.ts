@@ -3,7 +3,6 @@ import { AxiosError, Method } from 'axios';
 import { axios } from '../services/axios-instance';
 import { DataService } from '../services/data-service';
 import { KeptnInfoResult } from '../../shared/interfaces/keptn-info-result';
-import { EnvironmentUtils } from '../utils/environment.utils';
 import { ClientFeatureFlags } from '../feature-flags';
 import { EventTypes } from '../../shared/interfaces/event-types';
 import { SessionService } from '../user/session';
@@ -12,38 +11,30 @@ import { AuthType } from '../../shared/models/auth-type';
 import { KeptnVersions } from '../../shared/interfaces/keptn-versions';
 import { printError } from '../utils/print-utils';
 import { ComponentLogger } from '../utils/logger';
+import { BridgeConfiguration } from '../interfaces/configuration';
 
 const router = Router();
 const log = new ComponentLogger('APIService');
 
 const apiRouter = (params: {
-  apiUrl: string;
-  apiToken: string | undefined;
-  cliDownloadLink: string;
-  integrationsPageLink: string;
   authType: AuthType;
   clientFeatureFlags: ClientFeatureFlags;
   session: SessionService | undefined;
+  configuration: BridgeConfiguration;
 }): Router => {
   // fetch parameters for bridgeInfo endpoint
-  const {
-    apiUrl,
-    apiToken,
-    cliDownloadLink,
-    integrationsPageLink,
-    authType,
-    clientFeatureFlags: featureFlags,
-    session,
-  } = params;
-  const enableVersionCheckFeature = process.env.ENABLE_VERSION_CHECK !== 'false';
-  const showApiToken = process.env.SHOW_API_TOKEN !== 'false';
-  const bridgeVersion = process.env.VERSION;
-  const projectsPageSize = EnvironmentUtils.getNumber(process.env.PROJECTS_PAGE_SIZE);
-  const servicesPageSize = EnvironmentUtils.getNumber(process.env.SERVICES_PAGE_SIZE);
-  const keptnInstallationType = process.env.KEPTN_INSTALLATION_TYPE;
-  const automaticProvisioningMsg = process.env.AUTOMATIC_PROVISIONING_MSG?.trim();
-  const authMsg = process.env.AUTH_MSG;
-  const dataService = new DataService(apiUrl, apiToken);
+  const { authType, clientFeatureFlags: featureFlags, session, configuration } = params;
+  const enableVersionCheckFeature = configuration.features.versionCheck;
+  const showApiToken = configuration.api.showToken;
+  const bridgeVersion = configuration.version;
+  const projectsPageSize = configuration.features.pageSize.project;
+  const servicesPageSize = configuration.features.pageSize.service;
+  const keptnInstallationType = configuration.features.installationType;
+  const automaticProvisioningMsg = configuration.features.automaticProvisioningMessage.trim();
+  const authMsg = configuration.auth.authMessage;
+  const apiUrl = configuration.api.url;
+  const apiToken = configuration.api.token;
+  const dataService = new DataService(apiUrl, apiToken, configuration.mode);
 
   // bridgeInfo endpoint: Provide certain metadata for Bridge
   router.get('/bridgeInfo', async (req, res, next) => {
@@ -54,7 +45,7 @@ const apiRouter = (params: {
       keptnInstallationType,
       apiUrl,
       ...(showApiToken && { apiToken }),
-      cliDownloadLink,
+      cliDownloadLink: configuration.urls.CLI,
       enableVersionCheckFeature,
       showApiToken,
       projectsPageSize,
@@ -76,7 +67,7 @@ const apiRouter = (params: {
     try {
       const result = await axios({
         method: req.method as Method,
-        url: `${integrationsPageLink}`,
+        url: `${configuration.urls.integrationPage}`,
       });
       return res.send(result.data);
     } catch (err) {
@@ -106,7 +97,7 @@ const apiRouter = (params: {
         url: `https://get.keptn.sh/version.json`,
         headers: {
           'Content-Type': 'application/json',
-          'User-Agent': `keptn/bridge:${process.env.VERSION}`,
+          'User-Agent': `keptn/bridge:${bridgeVersion}`,
         },
       });
       return res.json(result.data);

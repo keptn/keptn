@@ -208,6 +208,33 @@ If the imported module doesn't show up immediately, close the IDE and re-open it
 
 ### Code Style
 
+#### Testing Assertions
+
+Assertions should target a whole object, for example, given the following Object definition
+
+```
+interface OAuthConfig {
+  enabled: boolean;
+  discoveryURL: string;
+  clientSecret?: string;
+}
+```
+
+An assertion on an object with type `OAuthConfig` should look like for the whole object and not to the single properties:
+
+```
+const c = getOAuthConfig();
+// GOOD
+expect(c).toEqual({
+  enabled: true;
+  discoveryURL: "localhost";
+});
+// BAD
+expect(c.enabled).toStrictEqual(true);
+expect(c.discoveryURL).toStrictEqual("localhost");
+expect(c.clientSecret).toStrictEqual(undefined);
+```
+
 #### IntelliJ
 
 `File > Settings... > Editor > Code Style > TypeScript`
