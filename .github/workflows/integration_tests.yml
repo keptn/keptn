@@ -59,6 +59,7 @@ jobs:
             KEPTN_SERVICE_TYPE: "NodePort"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "false"
+            USE_RESOURCE_SERVICE_DIRECTORY: "true"   #TODO use this to setup directory mode on gke19
           - CLOUD_PROVIDER: "k3d-on-GHA"
             PLATFORM_VERSION: "v4.4.6" # see https://github.com/rancher/k3d/releases
             KUBECONFIG: ""
@@ -85,6 +86,7 @@ jobs:
             RUN_CONTINUOUS_DELIVERY_TEST: "true"
             REMOTE_EXECUTION_PLANE: "false"
             COLLECT_RESOURCE_LIMITS: "true"
+            USE_RESOURCE_SERVICE: "true"
     env:
       CLOUD_PROVIDER: ${{ matrix.CLOUD_PROVIDER }}
       PLATFORM: ${{ matrix.PLATFORM }}
@@ -319,6 +321,7 @@ jobs:
           HELM_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_SERVICE_HELM_CHART_NAME }}
           JMETER_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.JMETER_SERVICE_HELM_CHART_NAME }}
           RUN_AIRGAPPED_TEST: ${{ env.RUN_AIRGAPPED_TEST }}
+          USE_RESOURCE_SERVICE_DIRECTORY: ${{ matrix.USE_RESOURCE_SERVICE_DIRECTORY }}
         run: |
           echo "Installing Keptn on cluster"
           if [[ $PLATFORM == "openshift" ]]; then
@@ -355,6 +358,7 @@ jobs:
             helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} \
               --create-namespace \
               --set apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
+              --set resourceService.enabled=true \
               --set shipyardController.gracePeriod=10 \
               --set shipyardController.preStopHookTime=5 \
               --set continuousDelivery.enabled=${RUN_CONTINUOUS_DELIVERY_TEST} \
