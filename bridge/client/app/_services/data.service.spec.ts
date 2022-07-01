@@ -10,6 +10,8 @@ import { IService } from '../../../shared/interfaces/service';
 import { Trace } from '../_models/trace';
 import { HttpResponse } from '@angular/common/http';
 import { EventTypes } from '../../../shared/interfaces/event-types';
+import { ApiServiceMock } from './api.service.mock';
+import { filter } from 'rxjs/operators';
 
 describe('DataService', () => {
   let dataService: DataService;
@@ -19,6 +21,7 @@ describe('DataService', () => {
     TestBed.configureTestingModule({
       declarations: [],
       imports: [HttpClientTestingModule],
+      providers: [{ provide: ApiService, useClass: ApiServiceMock }],
     });
     dataService = TestBed.inject(DataService);
     apiService = TestBed.inject(ApiService);
@@ -26,6 +29,14 @@ describe('DataService', () => {
 
   it('should be an instance', () => {
     expect(dataService).toBeTruthy();
+  });
+
+  it('should load projects', (done) => {
+    dataService.loadProjects();
+    dataService.projects.pipe(filter((projects) => !!projects && projects?.length > 0)).subscribe((projects) => {
+      expect(projects?.length).toBe(3);
+      done();
+    });
   });
 
   it('should trigger a delivery', () => {

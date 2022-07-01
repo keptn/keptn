@@ -1,12 +1,13 @@
 import { Component, Inject } from '@angular/core';
 import { merge, Observable, of, scan, switchMap } from 'rxjs';
-import { filter, map, take } from 'rxjs/operators';
+import { filter, map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { DataService } from '../_services/data.service';
 import { AppUtils, POLLING_INTERVAL_MILLIS } from '../_utils/app.utils';
 import { ProjectSequences } from '../_components/ktb-project-list/ktb-project-list.component';
 import { IMetadata } from '../_interfaces/metadata';
 import { IProject } from '../../../shared/interfaces/project';
+import { Router } from '@angular/router';
 
 const MAX_SEQUENCES = 5;
 
@@ -17,10 +18,6 @@ const MAX_SEQUENCES = 5;
 })
 export class DashboardLegacyComponent {
   private readonly refreshTimer$ = AppUtils.createTimer(0, this.initialDelayMillis);
-  private readonly keptnInfo$ = this.dataService.keptnInfo.pipe(
-    filter((keptnInfo) => !!keptnInfo),
-    take(1)
-  );
   public readonly keptnMetadata$ = this.dataService.keptnMetadata.pipe(
     filter((metadata): metadata is IMetadata => metadata != null)
   );
@@ -32,8 +29,16 @@ export class DashboardLegacyComponent {
   public readonly isQualityGatesOnly$: Observable<boolean> = this.dataService.isQualityGatesOnly;
   public readonly logoInvertedUrl = environment?.config?.logoInvertedUrl;
 
-  constructor(private dataService: DataService, @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number) {
-    this.keptnInfo$.subscribe(() => this.loadProjects());
+  constructor(
+    private router: Router,
+    private dataService: DataService,
+    @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number
+  ) {
+    const currentNav = this.router.getCurrentNavigation();
+    const hadPreviousNavigation = currentNav != null && currentNav.previousNavigation != null;
+    if (hadPreviousNavigation) {
+      this.refreshProjects();
+    }
   }
 
   private loadSequences(projects: IProject[]): Observable<ProjectSequences>[] {
@@ -48,7 +53,7 @@ export class DashboardLegacyComponent {
     );
   }
 
-  public loadProjects(): void {
-    this.dataService.loadProjects().subscribe();
+  public refreshProjects(): void {
+    this.dataService.loadProjects();
   }
 }

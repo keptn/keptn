@@ -53,7 +53,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     }).compileComponents();
     fixture = TestBed.createComponent(KtbModifyUniformSubscriptionComponent);
     component = fixture.componentInstance;
-    TestBed.inject(DataService).loadProjects().subscribe();
+    TestBed.inject(DataService).loadProjects();
   });
 
   it('should create', () => {

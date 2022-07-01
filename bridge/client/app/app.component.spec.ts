@@ -4,8 +4,6 @@ import { ApiService } from './_services/api.service';
 import { ApiServiceMock } from './_services/api.service.mock';
 import { DataService } from './_services/data.service';
 import { HttpClient } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
-import { of } from 'rxjs';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('AppComponent', () => {
@@ -81,20 +79,7 @@ describe('AppComponent', () => {
     expect(loadSpy).toHaveBeenCalled();
   });
 
-  it('should not load projects if child component handles it', () => {
-    // given, when
-    const loadSpy = jest.spyOn(dataService, 'loadProjects');
-    createComponent(true);
-
-    // then
-    expect(loadSpy).not.toHaveBeenCalled();
-  });
-
-  function createComponent(handlyByComponent = false): void {
-    component = new AppComponent(TestBed.inject(HttpClient), dataService, {
-      firstChild: {
-        data: of({ projectsHandledByComponent: handlyByComponent }),
-      },
-    } as unknown as ActivatedRoute);
+  function createComponent(): void {
+    component = new AppComponent(TestBed.inject(HttpClient), dataService);
   }
 });
