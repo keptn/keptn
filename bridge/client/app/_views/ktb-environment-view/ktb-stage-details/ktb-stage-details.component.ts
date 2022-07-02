@@ -7,6 +7,7 @@ import { Service } from '../../../_models/service';
 import { DataService } from '../../../_services/data.service';
 import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
+import { Router } from '@angular/router';
 
 export type ServiceFilterType = 'evaluation' | 'problem' | 'approval' | undefined;
 
@@ -42,7 +43,7 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
-  constructor(private dataService: DataService) {}
+  constructor(private dataService: DataService, private router: Router) {}
 
   ngOnInit(): void {
     this.dataService.isQualityGatesOnly.pipe(takeUntil(this.unsubscribe$)).subscribe((isQualityGatesOnly) => {
@@ -68,6 +69,11 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
   selectFilterEvent($event: DtToggleButtonChange<any>): void {
     if ($event.isUserInput) {
       this.filterEventType = $event.source.selected ? $event.value : null;
+
+      // Add filterType query parameter
+      this.router.navigate([], {
+        queryParams: { filterType: $event.source.selected ? $event.value : null },
+      });
     }
   }
 
@@ -82,6 +88,11 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
         : services.filter((service) => this.filteredServices.includes(service.serviceName));
     if (this.filterEventType && filteredServices.length === 0 && this.filterEventType === type) {
       this.resetFilter(undefined);
+
+      // Remove filterType query parameter
+      this.router.navigate([], {
+        queryParams: { filterType: null },
+      });
     }
     return filteredServices;
   }

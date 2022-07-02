@@ -40,17 +40,17 @@ describe('Environment Screen default requests', () => {
 
   it('stage-detail component should exist after clicking on stage', () => {
     environmentPage.selectStage(stage);
-    cy.get('ktb-stage-details h2').should('contain.text', stage);
+    environmentPage.assertStageDetailsHeader(stage);
   });
 
   it('stage-detail component should exist when navigating to /environment/stage url', () => {
     environmentPage.visit(project, stage);
-    cy.get('ktb-stage-details h2').should('contain.text', stage);
+    environmentPage.assertStageDetailsHeader(stage);
   });
 
   it('filter should be set when navigating to /environment/stage?filterType=filter', () => {
     environmentPage.visit(project, 'staging', 'evaluation');
-    cy.byTestId(`ktb-stage-details-evaluation-button`).should('not.be.disabled');
+    environmentPage.assertStageDetailsFilterEnabled('evaluation', true);
   });
 
   it('should redirect to stage', () => {

@@ -129,10 +129,6 @@ export class KtbStageOverviewComponent implements AfterContentInit, OnDestroy {
     return services;
   }
 
-  public changeIsTriggerSequence(state: boolean): void {
-    this.isTriggerSequenceOpen = state;
-  }
-
   public trackStage(_index: number, stage: string[] | null): string | undefined {
     return stage?.toString();
   }

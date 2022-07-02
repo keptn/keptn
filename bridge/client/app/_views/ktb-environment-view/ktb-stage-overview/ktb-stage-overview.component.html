@@ -16,11 +16,11 @@
         [stage]="selectedStageName$ | async"
         [stages]="project.getStageNames()"
         [services]="project.getServiceNames()"
-        (formClosed)="changeIsTriggerSequence(false)"
+        (formClosed)="isTriggerSequenceOpen = false"
       ></ktb-trigger-sequence>
     </div>
     <ng-template class="mb-3 pr-1" #triggerSequenceClosed>
-      <button dt-button class="mb-3" (click)="changeIsTriggerSequence(true)" uitestid="keptn-trigger-button-open">
+      <button dt-button class="mb-3" (click)="isTriggerSequenceOpen = true" uitestid="keptn-trigger-button-open">
         <dt-icon name="flash"></dt-icon>
         Trigger a new sequence
       </button>
@@ -53,7 +53,7 @@
             fxLayoutGap="5px"
             *ngIf="filterServices(stage.getServicesWithRemediations()) as problemServices"
             (click)="problemServices.length > 0 && selectStage($event, project, stage, 'problem')"
-            [attr.uitestid]="'filter-type-problem'"
+            [attr.uitestid]="'filter-type-' + stage.stageName + '-problem'"
           >
             <dt-icon class="stage-state-icon" name="criticalevent" [class.error]="problemServices.length > 0"></dt-icon>
             <span [textContent]="problemServices.length"></span>
@@ -64,7 +64,7 @@
             fxLayoutGap="5px"
             *ngIf="filterServices(stage.getServicesWithFailedEvaluation()) as failedServices"
             (click)="failedServices.length > 0 && selectStage($event, project, stage, 'evaluation')"
-            [attr.uitestid]="'filter-type-evaluation'"
+            [attr.uitestid]="'filter-type-' + stage.stageName + '-evaluation'"
           >
             <dt-icon class="stage-state-icon" name="traffic-light" [class.error]="failedServices.length > 0"></dt-icon>
             <span [textContent]="failedServices.length"></span>
@@ -75,7 +75,7 @@
             fxLayoutGap="5px"
             *ngIf="filterServices(stage.getServicesWithOpenApprovals()) as approvalServices"
             (click)="approvalServices.length > 0 && selectStage($event, project, stage, 'approval')"
-            [attr.uitestid]="'filter-type-approval'"
+            [attr.uitestid]="'filter-type-' + stage.stageName + '-approval'"
           >
             <dt-icon class="stage-state-icon" name="deploy" [class.highlight]="approvalServices.length > 0"></dt-icon>
             <span [textContent]="approvalServices.length"></span>

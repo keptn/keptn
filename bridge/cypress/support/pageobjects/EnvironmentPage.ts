@@ -14,7 +14,8 @@ class EnvironmentPage {
   }
 
   public visit(project: string, stage = '', filterType = ''): this {
-    cy.visit(stage ? `/project/${project}/environment/stage/${stage}?filterType=${filterType}` : `/project/${project}`)
+    const query = filterType ? `?filterType=${filterType}` : '';
+    cy.visit(stage ? `/project/${project}/environment/stage/${stage}${query}` : `/project/${project}`)
       .wait('@metadata')
       .wait('@project');
     return this;
@@ -34,13 +35,8 @@ class EnvironmentPage {
     return this;
   }
 
-  public clickFilterType(stage: string, filterType: string): this {
-    cy.get('ktb-selectable-tile h2')
-      .contains(stage)
-      .parentsUntil('ktb-selectable-tile')
-      .byTestId(`filter-type-${filterType}`)
-      .click();
-
+  public clickFilterType(stage: string, filterType: 'problem' | 'evaluation' | 'approval'): this {
+    cy.byTestId(`filter-type-${stage}-${filterType}`).click();
     return this;
   }
 
@@ -83,6 +79,16 @@ class EnvironmentPage {
 
   public assertIsLoaded(status: boolean): this {
     cy.byTestId('ktb-environment-is-loading').should(status ? 'not.exist' : 'exist');
+    return this;
+  }
+
+  public assertStageDetailsHeader(stage: string): this {
+    cy.get('ktb-stage-details h2').should('contain.text', stage);
+    return this;
+  }
+
+  public assertStageDetailsFilterEnabled(filterType: 'problem' | 'evaluation' | 'approval', enabled: boolean): this {
+    cy.byTestId(`ktb-stage-details-${filterType}-button`).should(enabled ? 'be.enabled' : 'be.disabled');
     return this;
   }
 }
