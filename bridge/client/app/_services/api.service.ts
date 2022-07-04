@@ -440,9 +440,15 @@ export class ApiService {
     return this.http.get<ServiceState[]>(`${this._baseUrl}/project/${projectName}/serviceStates`);
   }
 
-  public getServiceDeployment(projectName: string, keptnContext: string, fromTime?: string): Observable<Deployment> {
+  public getServiceDeployment(
+    projectName: string,
+    keptnContext: string,
+    includeRemediations: boolean,
+    fromTime?: string
+  ): Observable<Deployment> {
     const params = {
       ...(fromTime && { fromTime }),
+      includeRemediations,
     };
     return this.http.get<Deployment>(`${this._baseUrl}/project/${projectName}/deployment/${keptnContext}`, { params });
   }
@@ -451,12 +457,8 @@ export class ApiService {
     projectName: string,
     serviceName: string
   ): Observable<IServiceRemediationInformation> {
-    const params = {
-      config: 'true',
-    };
     return this.http.get<IServiceRemediationInformation>(
-      `${this._baseUrl}/project/${projectName}/service/${serviceName}/openRemediations`,
-      { params }
+      `${this._baseUrl}/project/${projectName}/service/${serviceName}/openRemediations`
     );
   }
 

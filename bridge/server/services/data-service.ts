@@ -42,7 +42,6 @@ type FlatSecret = { path: string; name: string; key: string; parsedPath: string 
 type StageRemediationInformation = {
   remediations: Remediation[];
   remediationsForStage: Sequence[];
-  config?: string;
 };
 type StageOpenInformation = {
   openApprovals: Trace[];
@@ -1123,6 +1122,7 @@ export class DataService {
     accessToken: string | undefined,
     projectName: string,
     keptnContext: string,
+    includeRemediation: boolean,
     fromTimeString?: string
   ): Promise<Deployment | undefined> {
     const fromTime = fromTimeString ? new Date(fromTimeString) : undefined;
@@ -1175,6 +1175,7 @@ export class DataService {
             projectName,
             stage.name,
             sequence.service,
+            includeRemediation,
             openRemediations
           );
           openRemediations = stageRemediationInformation.remediations;
@@ -1185,7 +1186,6 @@ export class DataService {
           state: stage.state,
           lastTimeUpdated: (lastTimeUpdated ? new Date(lastTimeUpdated) : new Date()).toISOString(),
           openRemediations: stageRemediationInformation?.remediationsForStage ?? [],
-          remediationConfig: stageRemediationInformation?.config,
           approvalInformation,
           subSequences: this.getSubSequencesForStage(stageTraces, stage.name, fromTime),
           deploymentURL,
@@ -1246,12 +1246,14 @@ export class DataService {
     projectName: string,
     stageName: string,
     serviceName: string,
+    includeRemediation: boolean,
     openRemediations?: Remediation[]
   ): Promise<StageRemediationInformation> {
     if (!openRemediations) {
-      openRemediations = await this.getOpenRemediations(accessToken, projectName, false, serviceName);
+      openRemediations = includeRemediation
+        ? await this.getOpenRemediations(accessToken, projectName, false, serviceName)
+        : [];
     }
-    let remediationConfig: string | undefined;
     const openRemediationsForStage = openRemediations
       .filter((seq) => seq.stages.some((st) => st.name === stageName))
       .map((seq) => {
@@ -1261,28 +1263,17 @@ export class DataService {
           stages: stages.filter((st) => st.name === stageName),
         });
       });
-    if (openRemediationsForStage.length) {
-      const resourceResponse = await this.apiService.getServiceResource(
-        accessToken,
-        projectName,
-        stageName,
-        serviceName,
-        'remediation.yaml'
-      );
-      remediationConfig = resourceResponse.data.resourceContent;
-    }
+
     return {
       remediations: openRemediations,
       remediationsForStage: openRemediationsForStage,
-      config: remediationConfig,
     };
   }
 
   public async getServiceRemediationInformation(
     accessToken: string | undefined,
     projectName: string,
-    serviceName: string,
-    includeConfig: boolean
+    serviceName: string
   ): Promise<ServiceRemediationInformation> {
     const serviceRemediationInformation: ServiceRemediationInformation = { stages: [] };
     const openRemediations = await this.getOpenRemediations(accessToken, projectName, false, serviceName);
@@ -1295,18 +1286,7 @@ export class DataService {
       return stagesAcc;
     }, {});
     for (const stage in stageRemediations) {
-      let config: string | undefined;
-      if (includeConfig) {
-        const configResponse = await this.apiService.getServiceResource(
-          accessToken,
-          projectName,
-          stage,
-          serviceName,
-          'remediation.yaml'
-        );
-        config = configResponse.data.resourceContent;
-      }
-      serviceRemediationInformation.stages.push({ name: stage, remediations: stageRemediations[stage], config });
+      serviceRemediationInformation.stages.push({ name: stage, remediations: stageRemediations[stage] });
     }
     return serviceRemediationInformation;
   }

@@ -15,7 +15,6 @@ export class StageDeployment implements IStageDeployment {
   evaluationResult?: EvaluationResult;
   latestEvaluation?: Trace;
   openRemediations!: Sequence[];
-  remediationConfig?: string;
   approvalInformation?: {
     trace: Trace;
     deployedImage?: string;
@@ -60,7 +59,6 @@ export class StageDeployment implements IStageDeployment {
   public update(stage: StageDeployment): void {
     this.lastTimeUpdated = stage.lastTimeUpdated;
     this.approvalInformation = stage.approvalInformation;
-    this.remediationConfig = stage.remediationConfig;
     this.openRemediations = stage.openRemediations;
     this.deploymentURL ??= stage.deploymentURL;
     this.evaluationResult ??= stage.evaluationResult;
@@ -133,10 +131,8 @@ export class Deployment implements dp {
       const newStage = remediationInfo.stages.find((st) => st.name === stage.name);
       if (newStage && stage.deploymentURL) {
         stage.openRemediations = newStage.remediations;
-        stage.remediationConfig = newStage.config;
       } else {
         stage.openRemediations = [];
-        stage.remediationConfig = undefined;
       }
     }
   }

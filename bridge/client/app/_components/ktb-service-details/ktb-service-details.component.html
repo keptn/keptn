@@ -39,17 +39,6 @@
       [stage]="deploymentInfo.stage"
       [remediations]="deploymentStage.openRemediations"
     ></ktb-sequence-list>
-    <button
-      *ngIf="deploymentStage.remediationConfig"
-      class="mt-1"
-      dt-button
-      variant="secondary"
-      uitestid="show-remediation-config-button"
-      (click)="showRemediationConfigDialog(deploymentStage.remediationConfig)"
-    >
-      <dt-icon name="services"></dt-icon>
-      Show remediation config
-    </button>
     <div
       class="mt-3"
       [class]="{ 'animation-pulse': deploymentInfo.stage }"
