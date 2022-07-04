@@ -29,6 +29,6 @@ func main() {
 		sdk.WithTaskHandler(
 			getActionTriggeredEventType,
 			handler.NewGetActionEventHandler()),
-		sdk.WithLogger(logrus.New()),
+		sdk.WithLogger(logrus.StandardLogger()),
 	).Start())
 }
