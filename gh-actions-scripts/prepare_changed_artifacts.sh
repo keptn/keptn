@@ -1,5 +1,13 @@
 #!/bin/bash
 
+######################################################################################
+#
+# This script heavily uses Bash parameter expansion.
+# To better understand what is going on here, you can read up on the topic here:
+# https://www.gnu.org/software/bash/manual/html_node/Shell-Parameter-Expansion.html
+#
+######################################################################################
+
 CHANGED_FILES=$1
 
 if [ $# -ne 1 ]; then
