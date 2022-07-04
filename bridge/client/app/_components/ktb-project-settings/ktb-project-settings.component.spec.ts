@@ -56,7 +56,7 @@ describe('KtbProjectSettingsComponent', () => {
     component = fixture.componentInstance;
     dataService = fixture.debugElement.injector.get(DataService);
     dataService.loadKeptnInfo();
-    dataService.loadProjects().subscribe();
+    dataService.loadProjects();
 
     const notifications = document.getElementsByTagName('dt-confirmation-dialog-state');
     if (notifications.length > 0) {

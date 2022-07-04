@@ -35,7 +35,7 @@ const routes: Routes = [
     component: AppComponent,
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
-      { path: 'dashboard', component: DashboardLegacyComponent, data: { projectsHandledByComponent: true } },
+      { path: 'dashboard', component: DashboardLegacyComponent },
       {
         path: 'create',
         component: ProjectBoardComponent,

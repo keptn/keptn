@@ -4,7 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DtToast } from '@dynatrace/barista-components/toast';
 import { combineLatest, Observable, of, Subject } from 'rxjs';
-import { filter, map, startWith, switchMap, takeUntil } from 'rxjs/operators';
+import { catchError, filter, finalize, map, startWith, takeUntil } from 'rxjs/operators';
 import { IGitDataExtended } from 'shared/interfaces/project';
 import { IClientFeatureFlags } from '../../../../shared/interfaces/feature-flags';
 import { PendingChangesComponent } from '../../_guards/pending-changes.guard';
@@ -209,26 +209,28 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
 
     this.dataService
       .createProjectExtended(projectName, shipyardBase64, this.gitDataExtended ?? undefined)
-      .pipe(switchMap(() => this.dataService.loadProjects()))
-      .subscribe(
-        () => {
-          this.projectName = projectName;
-          this.isCreatingProjectInProgress = false;
-          this.isProjectFormTouched = false;
-
-          this.router.navigate(['/', 'project', this.projectName, 'settings', 'project'], {
-            queryParams: { created: true },
-          });
-        },
-        (err) => {
+      .pipe(
+        map(() => true),
+        catchError((err) => {
           const errorMessage = err.error || 'please, check the logs of resource-service';
           this.notificationsService.addNotification(
             NotificationType.ERROR,
             `The project could not be created: ${errorMessage}.`
           );
-          this.isCreatingProjectInProgress = false;
+          return of(false);
+        }),
+        finalize(() => (this.isCreatingProjectInProgress = false))
+      )
+      .subscribe((success) => {
+        if (!success) {
+          return;
         }
-      );
+        this.projectName = projectName;
+        this.isProjectFormTouched = false;
+        this.router.navigate(['/', 'project', this.projectName, 'settings', 'project'], {
+          queryParams: { created: true },
+        });
+      });
   }
 
   private deleteProject(projectName: string): void {

@@ -135,7 +135,14 @@ export class DataService {
   }
 
   public createProjectExtended(projectName: string, shipyard: string, data?: IGitDataExtended): Observable<unknown> {
-    return this.apiService.createProjectExtended(projectName, shipyard, data);
+    return this.apiService.createProjectExtended(projectName, shipyard, data).pipe(
+      mergeMap(() => this.loadPlainProject(projectName)),
+      map((project) => {
+        const projects = this._projects.getValue() ?? [];
+        this._projects.next([...projects, project]);
+        return null;
+      })
+    );
   }
 
   public createService(projectName: string, serviceName: string): Observable<Record<string, unknown>> {
@@ -330,32 +337,30 @@ export class DataService {
       );
   }
 
-  public loadProjects(): Observable<Project[]> {
-    return this.apiService.getProjects(this._keptnInfo.getValue()?.bridgeInfo.projectsPageSize || 50).pipe(
-      map((result) => (result ? result.projects : [])),
-      map((projects) => projects.map((project) => Project.fromJSON(project))),
-      map(
-        (projects: Project[]) => {
+  public loadProjects(): void {
+    this.apiService
+      .getProjects(this._keptnInfo.getValue()?.bridgeInfo.projectsPageSize || 50)
+      .pipe(
+        map((result) => (result ? result.projects : [])),
+        map((projects) => projects.map((project) => Project.fromJSON(project))),
+        map((projects: Project[]) => {
           const existingProjects = this._projects.getValue();
-          projects = projects.map((project) => {
+          return projects.map((project) => {
             const existingProject = existingProjects?.find((p) => p.projectName === project.projectName);
-            if (existingProject) {
-              project = existingProject.projectDetailsLoaded
-                ? existingProject
-                : Object.assign(existingProject, project.reduced);
+            if (!existingProject) {
+              return project;
             }
-            return project;
+            return existingProject.projectDetailsLoaded
+              ? existingProject
+              : Object.assign(existingProject, project.reduced);
           });
-          return projects;
-        },
-        () => {
+        }),
+        catchError((err) => {
+          console.error(err);
           return of([]);
-        }
-      ),
-      tap((projects) => {
-        this._projects.next(projects);
-      })
-    );
+        })
+      )
+      .subscribe((projects) => this._projects.next(projects));
   }
 
   public loadSequences(projectName: string, fromTime?: Date, beforeTime?: Date, oldSequence?: Sequence): void {
