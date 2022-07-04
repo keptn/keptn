@@ -10,7 +10,7 @@ import { KeptnInfo } from '../_models/keptn-info';
 })
 export class KeptnUrlPipe implements PipeTransform {
   private static _version: Observable<KeptnInfo | undefined>;
-  private static version = '';
+  private static version?: string;
 
   constructor(dataService: DataService) {
     if (!KeptnUrlPipe._version) {
@@ -25,12 +25,14 @@ export class KeptnUrlPipe implements PipeTransform {
           if (!version) {
             return;
           }
-          KeptnUrlPipe.version = `${semver.major(version)}.${semver.minor(version)}.x`;
+          KeptnUrlPipe.version = semver.valid(version) ? `${semver.major(version)}.${semver.minor(version)}.x` : '';
         });
     }
   }
 
   transform(relativePath: string): string {
-    return `https://keptn.sh/docs/${KeptnUrlPipe.version}${relativePath}`;
+    return KeptnUrlPipe.version
+      ? 'https://keptn.sh/docs/install/'
+      : `https://keptn.sh/docs/${KeptnUrlPipe.version}${relativePath}`;
   }
 }
