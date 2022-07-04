@@ -281,6 +281,7 @@ jobs:
         with:
           cluster_name: ${{ matrix.CLUSTER_NAME }}
           location: "us-east1-b"
+          use_auth_provider: true
 
       - name: Install Istio
         if: env.CLOUD_PROVIDER != 'minishift-on-GHA' && env.CLOUD_PROVIDER != 'GKE' # no need to install istio on minishift or GKE (pre-installed)
