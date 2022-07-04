@@ -1,3 +1,5 @@
+nameOverride:
+
 jmeterservice:
   image:
     repository: docker.io/keptn/jmeter-service # Container Image Name

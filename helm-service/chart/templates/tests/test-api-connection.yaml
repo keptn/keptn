@@ -4,7 +4,7 @@ kind: Pod
 metadata:
   name: "{{ include "helm-service.fullname" . }}-test-api-connection"
   labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/name: helm-service
+    app.kubernetes.io/name: {{ include "helm-service.name" . }}
   annotations:
     "helm.sh/hook": test
 spec:

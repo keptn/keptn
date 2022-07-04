@@ -1,3 +1,5 @@
+nameOverride:
+
 helmservice:
   image:
     repository: docker.io/keptn/helm-service # Container Image Name

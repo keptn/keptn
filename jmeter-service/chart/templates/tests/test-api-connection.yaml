@@ -4,7 +4,7 @@ kind: Pod
 metadata:
   name: "{{ include "jmeter-service.fullname" . }}-test-api-connection"
   labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/name: jmeter-service
+    app.kubernetes.io/name: {{ include "jmeter-service.name" . }}
   annotations:
     "helm.sh/hook": test
 spec:
