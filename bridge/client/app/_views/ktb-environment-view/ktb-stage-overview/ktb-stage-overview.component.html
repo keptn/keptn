@@ -1,91 +1,101 @@
 <div class="ktb-stage-overview container" fxFlexFill *ngIf="project$ | async as project">
-  <div>
-    <p><span [textContent]="project.stages.length"></span> Stages</p>
-    <dt-filter-field
-      class="mb-3"
-      [dataSource]="_dataSource"
-      [filters]="filter"
-      (filterChanges)="filterChanged(project, $event)"
-      label="Filter by service"
-      aria-label="Filter by service"
-      clearAllLabel="Clear all"
-    ></dt-filter-field>
-    <div *ngIf="isTriggerSequenceOpen; else triggerSequenceClosed">
-      <ktb-trigger-sequence
-        [projectName]="project.projectName"
-        [stage]="selectedStageName$ | async"
-        [stages]="project.getStageNames()"
-        [services]="project.getServiceNames()"
-        (formClosed)="isTriggerSequenceOpen = false"
-      ></ktb-trigger-sequence>
-    </div>
-    <ng-template class="mb-3 pr-1" #triggerSequenceClosed>
-      <button dt-button class="mb-3" (click)="isTriggerSequenceOpen = true" uitestid="keptn-trigger-button-open">
-        <dt-icon name="flash"></dt-icon>
-        Trigger a new sequence
-      </button>
-    </ng-template>
-  </div>
-  <div
-    [ngClass]="{ 'stage-list': true, scrollable: project.getParentStages().length > 3 }"
-    fxLayout="row"
-    fxLayout.lt-sm="column"
-    fxLayoutGap="15px"
-    fxLayoutAlign="start"
-    class="mt-3 pb-3"
-  >
-    <div
-      class="stage-group"
-      fxLayout="column"
-      fxLayoutGap="15px"
-      *ngFor="let parentStage of project.getParentStages(); let i = index; trackBy: trackStage"
-    >
-      <ktb-selectable-tile
-        *ngFor="let stage of project.getStages(parentStage)"
-        [selected]="(selectedStageName$ | async) === stage.stageName"
-        (click)="selectStage($event, project, stage)"
-      >
-        <h2 class="m-0 mt-1 mb-1" [textContent]="stage.stageName"></h2>
-        <div class="stage-state" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
-          <div
-            fxLayout="row"
-            fxLayoutAlign="start center"
-            fxLayoutGap="5px"
-            *ngIf="filterServices(stage.getServicesWithRemediations()) as problemServices"
-            (click)="problemServices.length > 0 && selectStage($event, project, stage, 'problem')"
-            [attr.uitestid]="'filter-type-' + stage.stageName + '-problem'"
-          >
-            <dt-icon class="stage-state-icon" name="criticalevent" [class.error]="problemServices.length > 0"></dt-icon>
-            <span [textContent]="problemServices.length"></span>
-          </div>
-          <div
-            fxLayout="row"
-            fxLayoutAlign="start center"
-            fxLayoutGap="5px"
-            *ngIf="filterServices(stage.getServicesWithFailedEvaluation()) as failedServices"
-            (click)="failedServices.length > 0 && selectStage($event, project, stage, 'evaluation')"
-            [attr.uitestid]="'filter-type-' + stage.stageName + '-evaluation'"
-          >
-            <dt-icon class="stage-state-icon" name="traffic-light" [class.error]="failedServices.length > 0"></dt-icon>
-            <span [textContent]="failedServices.length"></span>
-          </div>
-          <div
-            fxLayout="row"
-            fxLayoutAlign="start center"
-            fxLayoutGap="5px"
-            *ngIf="filterServices(stage.getServicesWithOpenApprovals()) as approvalServices"
-            (click)="approvalServices.length > 0 && selectStage($event, project, stage, 'approval')"
-            [attr.uitestid]="'filter-type-' + stage.stageName + '-approval'"
-          >
-            <dt-icon class="stage-state-icon" name="deploy" [class.highlight]="approvalServices.length > 0"></dt-icon>
-            <span [textContent]="approvalServices.length"></span>
-          </div>
-        </div>
-        <ktb-services-list
+  <ng-container *ngIf="{ value: selectedStageName$ | async } as selectedStageName">
+    <div>
+      <p><span [textContent]="project.stages.length"></span> Stages</p>
+      <dt-filter-field
+        class="mb-3"
+        [dataSource]="_dataSource"
+        [filters]="filter"
+        (filterChanges)="filterChanged(project, $event)"
+        label="Filter by service"
+        aria-label="Filter by service"
+        clearAllLabel="Clear all"
+      ></dt-filter-field>
+      <div *ngIf="isTriggerSequenceOpen; else triggerSequenceClosed">
+        <ktb-trigger-sequence
           [projectName]="project.projectName"
-          [services]="filterServices(stage.services)"
-        ></ktb-services-list>
-      </ktb-selectable-tile>
+          [stage]="selectedStageName.value"
+          [stages]="project.getStageNames()"
+          [services]="project.getServiceNames()"
+          (formClosed)="isTriggerSequenceOpen = false"
+        ></ktb-trigger-sequence>
+      </div>
+      <ng-template class="mb-3 pr-1" #triggerSequenceClosed>
+        <button dt-button class="mb-3" (click)="isTriggerSequenceOpen = true" uitestid="keptn-trigger-button-open">
+          <dt-icon name="flash"></dt-icon>
+          Trigger a new sequence
+        </button>
+      </ng-template>
     </div>
-  </div>
+    <div
+      [ngClass]="{ 'stage-list': true, scrollable: project.getParentStages().length > 3 }"
+      fxLayout="row"
+      fxLayout.lt-sm="column"
+      fxLayoutGap="15px"
+      fxLayoutAlign="start"
+      class="mt-3 pb-3"
+    >
+      <div
+        class="stage-group"
+        fxLayout="column"
+        fxLayoutGap="15px"
+        *ngFor="let parentStage of project.getParentStages(); let i = index; trackBy: trackStage"
+      >
+        <ktb-selectable-tile
+          *ngFor="let stage of project.getStages(parentStage)"
+          [selected]="selectedStageName.value === stage.stageName"
+          (click)="selectStage($event, project, stage)"
+        >
+          <h2 class="m-0 mt-1 mb-1" [textContent]="stage.stageName"></h2>
+          <div class="stage-state" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
+            <div
+              fxLayout="row"
+              fxLayoutAlign="start center"
+              fxLayoutGap="5px"
+              *ngIf="filterServices(stage.getServicesWithRemediations()) as problemServices"
+              (click)="problemServices.length > 0 && selectStage($event, project, stage, 'problem')"
+              [attr.uitestid]="'filter-type-' + stage.stageName + '-problem'"
+            >
+              <dt-icon
+                class="stage-state-icon"
+                name="criticalevent"
+                [class.error]="problemServices.length > 0"
+              ></dt-icon>
+              <span [textContent]="problemServices.length"></span>
+            </div>
+            <div
+              fxLayout="row"
+              fxLayoutAlign="start center"
+              fxLayoutGap="5px"
+              *ngIf="filterServices(stage.getServicesWithFailedEvaluation()) as failedServices"
+              (click)="failedServices.length > 0 && selectStage($event, project, stage, 'evaluation')"
+              [attr.uitestid]="'filter-type-' + stage.stageName + '-evaluation'"
+            >
+              <dt-icon
+                class="stage-state-icon"
+                name="traffic-light"
+                [class.error]="failedServices.length > 0"
+              ></dt-icon>
+              <span [textContent]="failedServices.length"></span>
+            </div>
+            <div
+              fxLayout="row"
+              fxLayoutAlign="start center"
+              fxLayoutGap="5px"
+              *ngIf="filterServices(stage.getServicesWithOpenApprovals()) as approvalServices"
+              (click)="approvalServices.length > 0 && selectStage($event, project, stage, 'approval')"
+              [attr.uitestid]="'filter-type-' + stage.stageName + '-approval'"
+            >
+              <dt-icon class="stage-state-icon" name="deploy" [class.highlight]="approvalServices.length > 0"></dt-icon>
+              <span [textContent]="approvalServices.length"></span>
+            </div>
+          </div>
+          <ktb-services-list
+            [projectName]="project.projectName"
+            [services]="filterServices(stage.services)"
+          ></ktb-services-list>
+        </ktb-selectable-tile>
+      </div>
+    </div>
+  </ng-container>
 </div>
