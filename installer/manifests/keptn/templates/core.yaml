@@ -66,6 +66,7 @@ type: Opaque
 data:
   session_secret: {{ $bridgeSessionSecret }}
   database_encrypt_secret: {{ $bridgeDatabaseEncryptSecret }}
+  client_secret: {{ .Values.bridge.oauth.clientSecret | default "" | b64enc | quote }}
 ---
 apiVersion: v1
 kind: Secret
@@ -130,8 +131,6 @@ spec:
               value: "{{ .Values.bridge.oauth.baseUrl }}"
             - name: OAUTH_CLIENT_ID
               value: "{{ .Values.bridge.oauth.clientID }}"
-            - name: OAUTH_CLIENT_SECRET
-              value: "{{ .Values.bridge.oauth.clientSecret }}"
             # Token algorithm which is used for the ID token e.g. "RS256"
             - name: OAUTH_ID_TOKEN_ALG
               value: "{{ .Values.bridge.oauth.IDTokenAlg }}"

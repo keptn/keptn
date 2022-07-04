@@ -29,10 +29,8 @@ async function setupOAuth(app: Express, configuration: BridgeConfiguration): Pro
 }
 
 async function setupClient(configuration: BridgeConfiguration, redirectUri: string): Promise<BaseClient> {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  const ssoIssuer = await (global.issuer ?? Issuer).discover(configuration.oauth.discoveryURL);
-  const clientSecret = configuration.oauth.clientSecret;
+  const ssoIssuer = await ((global.issuer ?? Issuer) as typeof Issuer).discover(configuration.oauth.discoveryURL);
+  const clientSecret = configuration.oauth.secrets.clientSecret;
 
   if (!ssoIssuer.metadata.authorization_endpoint) {
     throw Error('OAuth service discovery must contain the authorization endpoint.');

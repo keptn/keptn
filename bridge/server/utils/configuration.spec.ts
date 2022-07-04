@@ -1,36 +1,41 @@
-import { BridgeConfiguration, EnvType } from '../interfaces/configuration';
-import { EnvVar, getConfiguration } from './configuration';
+import {
+  BridgeConfiguration,
+  BridgeOption,
+  EnvType,
+  EnvVar,
+  MongoConfig,
+  OAuthConfig,
+} from '../interfaces/configuration';
 import { LogDestination } from './logger';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { jest } from '@jest/globals';
+
+const getOAuthSecretsSpy = jest.fn();
+
+jest.unstable_mockModule('../user/secrets', () => {
+  return {
+    getOAuthSecrets: getOAuthSecretsSpy,
+    getOAuthMongoExternalConnectionString: (): string => '',
+  };
+});
+
+const { envToConfiguration, getConfiguration } = await import('./configuration');
 
 describe('Configuration', () => {
-  beforeEach(() => {
-    cleanEnv();
-    process.env[EnvVar.API_TOKEN] = 'some value to do not run kubectl cmds as part of the tests';
-  });
-  afterEach(() => {
-    cleanEnv();
-  });
-
-  function cleanEnv(): void {
-    for (const e in EnvVar) {
-      delete process.env[e];
-    }
-  }
-
   const defaultAPIURL = 'http://localhost';
   const defaultAPIToken = 'abcdefgh';
 
-  function setBasicEnvVar(): void {
-    process.env[EnvVar.API_URL] = defaultAPIURL;
-    process.env[EnvVar.API_TOKEN] = defaultAPIToken;
-    process.env[EnvVar.MONGODB_HOST] = '';
-    process.env[EnvVar.MONGODB_USER] = '';
-    process.env[EnvVar.MONGODB_PASSWORD] = '';
-  }
+  beforeEach(() => {
+    getOAuthSecretsSpy.mockReturnValue({
+      sessionSecret: 'session_secret',
+      databaseEncryptSecret: 'database_secret_'.repeat(2),
+      clientSecret: '',
+    });
+  });
 
   it('should use default values', () => {
-    setBasicEnvVar();
-    const result = getConfiguration();
+    const basicEnv = getBasicEnvVar();
+    const result = getConfiguration(envToConfiguration(basicEnv));
     const expected: BridgeConfiguration = {
       logging: {
         destination: LogDestination.STDOUT,
@@ -53,7 +58,6 @@ describe('Configuration', () => {
         allowedLogoutURL: '',
         baseURL: '',
         clientID: '',
-        clientSecret: undefined,
         discoveryURL: '',
         enabled: false,
         nameProperty: undefined,
@@ -63,6 +67,10 @@ describe('Configuration', () => {
           timeoutMin: 60,
           trustProxyHops: 1,
           validationTimeoutMin: 60,
+        },
+        secrets: {
+          sessionSecret: '',
+          databaseEncryptSecret: '',
         },
         tokenAlgorithm: 'RS256',
       },
@@ -84,11 +92,12 @@ describe('Configuration', () => {
       },
       mongo: {
         db: 'openid',
+        externalConnectionString: '',
         host: '',
         password: '',
         user: '',
       },
-      mode: EnvType.DEV,
+      mode: EnvType.TEST,
       version: 'develop',
     };
 
@@ -100,7 +109,6 @@ describe('Configuration', () => {
   });
 
   it('should set values using options object', () => {
-    setBasicEnvVar();
     const oauthBaseUrl = 'mybaseurl';
     const oauthClientID = 'myclientid';
     const oauthDiscovery = 'mydiscovery';
@@ -127,6 +135,7 @@ describe('Configuration', () => {
         user: '',
         password: '',
         host: mongoHost,
+        externalConnectionString: '',
       },
       mode: 'test',
       version: version,
@@ -158,7 +167,6 @@ describe('Configuration', () => {
         allowedLogoutURL: '',
         baseURL: oauthBaseUrl,
         clientID: oauthClientID,
-        clientSecret: undefined,
         discoveryURL: oauthDiscovery,
         enabled: true,
         nameProperty: undefined,
@@ -168,6 +176,11 @@ describe('Configuration', () => {
           timeoutMin: 60,
           trustProxyHops: 1,
           validationTimeoutMin: 60,
+        },
+        secrets: {
+          clientSecret: '',
+          sessionSecret: 'session_secret',
+          databaseEncryptSecret: 'database_secret_'.repeat(2),
         },
         tokenAlgorithm: 'RS256',
       },
@@ -189,6 +202,7 @@ describe('Configuration', () => {
       },
       mongo: {
         db: 'openid',
+        externalConnectionString: '',
         host: mongoHost,
         password: '',
         user: '',
@@ -197,7 +211,7 @@ describe('Configuration', () => {
       version: version,
     };
 
-    // handlign special cases separately and then patch them to known values
+    // handling special cases separately and then patch them to known values
     expect(result.features.configDir).toMatch(/config$/);
     result.features.configDir = 'config';
 
@@ -205,6 +219,7 @@ describe('Configuration', () => {
 
     // check that values can change
     result = getConfiguration({
+      ...envToConfiguration(getBasicEnvVar()),
       logging: {
         enabledComponents: 'a=false',
         destination: LogDestination.FILE,
@@ -217,69 +232,105 @@ describe('Configuration', () => {
   });
 
   it('should fail for missing API values', () => {
-    expect(getConfiguration).toThrow('API_URL is not provided');
+    expect(() => getConfiguration({})).toThrow('API_URL is not provided');
   });
 
   it('should fail for missing OAuth values', () => {
-    process.env[EnvVar.MONGODB_HOST] = 'mongo://';
-    process.env[EnvVar.MONGODB_PASSWORD] = 'pwd';
-    process.env[EnvVar.MONGODB_USER] = 'usr';
+    const config: Omit<BridgeOption, 'oauth'> & { oauth: Partial<OAuthConfig> } = {
+      api: { url: 'somevalue' },
+      oauth: { enabled: true },
+      mode: 'test',
+      mongo: {
+        host: 'mongo://',
+        password: 'pwd',
+        user: 'usr',
+      },
+    };
     expect(() => {
       getConfiguration({
         api: { url: 'somevalue' },
         oauth: { enabled: true },
+        mode: 'test',
+        mongo: {
+          host: 'mongo://',
+          password: 'pwd',
+          user: 'usr',
+        },
       });
     }).toThrow(/OAUTH_.*/);
-    process.env[EnvVar.OAUTH_ENABLED] = 'true';
+
     const t: () => void = () => {
-      getConfiguration({
-        api: { url: 'somevalue' },
-      });
+      getConfiguration(config);
     };
     expect(t).toThrow(/OAUTH_.*/);
-    process.env[EnvVar.OAUTH_DISCOVERY] = 'http://keptn';
+    config.oauth.discoveryURL = 'http://keptn';
     expect(t).toThrow(/OAUTH_.*/);
-    process.env[EnvVar.OAUTH_CLIENT_ID] = 'abcdefg';
+    config.oauth.clientID = 'abcdefg';
     expect(t).toThrow(/OAUTH_.*/);
-    process.env[EnvVar.OAUTH_BASE_URL] = 'http://keptn';
+    config.oauth.baseURL = 'http://keptn';
+    expect(t).not.toThrow();
+  });
+
+  it('should throw error if OAuth secrets are not provided or invalid', () => {
+    const config = envToConfiguration(getDefaultOAuthConfig());
+    getOAuthSecretsSpy.mockReturnValue({
+      sessionSecret: '',
+      databaseEncryptSecret: '',
+      clientSecret: '',
+    });
+    const t = (): BridgeConfiguration => getConfiguration(config);
+    expect(t).toThrow(/^session_secret.*/);
+
+    getOAuthSecretsSpy.mockReturnValue({
+      sessionSecret: 'asdf',
+      databaseEncryptSecret: '',
+      clientSecret: '',
+    });
+    expect(t).toThrow(/^database_encrypt_secret.*/);
+
+    getOAuthSecretsSpy.mockReturnValue({
+      sessionSecret: 'asdf',
+      databaseEncryptSecret: 'asdf',
+      clientSecret: '',
+    });
+    expect(t).toThrow(/^The length of.*/);
+
+    getOAuthSecretsSpy.mockReturnValue({
+      sessionSecret: 'asdf',
+      databaseEncryptSecret: 'database_secret_'.repeat(2),
+      clientSecret: '',
+    });
     expect(t).not.toThrow();
   });
 
   it('should fail for missing Mongo values', () => {
-    process.env[EnvVar.API_URL] = 'http://localhost';
-    process.env[EnvVar.OAUTH_ENABLED] = 'true';
-    process.env[EnvVar.OAUTH_DISCOVERY] = 'smth';
-    process.env[EnvVar.OAUTH_CLIENT_ID] = 'id';
-    process.env[EnvVar.OAUTH_BASE_URL] = 'url';
-    expect(getConfiguration).toThrow(/Could not construct mongodb connection string.*/);
-    process.env[EnvVar.MONGODB_HOST] = 'mongo://';
-    expect(getConfiguration).toThrow(/Could not construct mongodb connection string.*/);
-    process.env[EnvVar.MONGODB_PASSWORD] = 'pwd';
-    expect(getConfiguration).toThrow(/Could not construct mongodb connection string.*/);
-    process.env[EnvVar.MONGODB_USER] = 'usr';
-    expect(getConfiguration).not.toThrow();
+    const config: Omit<BridgeOption, 'mongo'> & { mongo: Partial<MongoConfig> } = {
+      api: {
+        url: 'http://localhost',
+        token: defaultAPIToken,
+      },
+      oauth: {
+        enabled: true,
+        discoveryURL: 'smth',
+        clientID: 'id',
+        baseURL: 'url',
+      },
+      mongo: {},
+    };
+    const t = (): BridgeConfiguration => getConfiguration(config);
+    expect(t).toThrow(/Could not construct mongodb connection string.*/);
+    config.mongo.host = 'mongo://';
+    expect(t).toThrow(/Could not construct mongodb connection string.*/);
+    config.mongo.password = 'pwd';
+    expect(t).toThrow(/Could not construct mongodb connection string.*/);
+    config.mongo.user = 'usr';
+    expect(t).not.toThrow();
   });
 
   it('should set values using env var', () => {
-    setBasicEnvVar();
-    process.env.LOGGING_COMPONENTS = 'a=true,b=false,c=true';
-    const result = getConfiguration();
-    expect(result.logging.destination).toBe(LogDestination.STDOUT);
-    expect(result.logging.enabledComponents).toStrictEqual({
-      a: true,
-      b: false,
-      c: true,
-    });
-  });
-
-  it('option object should win over env var', () => {
-    setBasicEnvVar();
-    process.env.LOGGING_COMPONENTS = 'a=false,b=true,c=false';
-    const result = getConfiguration({
-      logging: {
-        enabledComponents: 'a=true,b=false,c=true',
-      },
-    });
+    const config = getBasicEnvVar();
+    config.LOGGING_COMPONENTS = 'a=true,b=false,c=true';
+    const result = getConfiguration(envToConfiguration(config));
     expect(result.logging.destination).toBe(LogDestination.STDOUT);
     expect(result.logging.enabledComponents).toStrictEqual({
       a: true,
@@ -289,8 +340,9 @@ describe('Configuration', () => {
   });
 
   it('should correctly eval booleans', () => {
-    setBasicEnvVar();
+    const config = envToConfiguration(getBasicEnvVar());
     const result = getConfiguration({
+      ...config,
       logging: {
         enabledComponents: 'a=tRue,b=FaLsE,c=0,d=1,e=enabled',
       },
@@ -303,4 +355,134 @@ describe('Configuration', () => {
       e: true,
     });
   });
+
+  it('should correctly map process.env to options', () => {
+    const config: Record<EnvVar, string> = {
+      LOGGING_COMPONENTS: 'xyz',
+      SHOW_API_TOKEN: 'invalidBool',
+      API_URL: 'apiUrl',
+      API_TOKEN: 'apiToken',
+      AUTH_MSG: 'authMsg',
+      BASIC_AUTH_USERNAME: 'basicUsername',
+      BASIC_AUTH_PASSWORD: 'basicPassword',
+      REQUEST_TIME_LIMIT: '100',
+      REQUESTS_WITHIN_TIME: '5',
+      CLEAN_BUCKET_INTERVAL: '2000',
+      OAUTH_ALLOWED_LOGOUT_URLS: 'logoutUrl',
+      OAUTH_BASE_URL: 'baseUrl',
+      OAUTH_CLIENT_ID: 'clientID',
+      OAUTH_DISCOVERY: 'discovery',
+      OAUTH_ENABLED: '',
+      OAUTH_NAME_PROPERTY: 'name',
+      OAUTH_SCOPE: 'scope',
+      SECURE_COOKIE: 'fAlSe',
+      SESSION_TIMEOUT_MIN: '2',
+      TRUST_PROXY: '1',
+      SESSION_VALIDATING_TIMEOUT_MIN: 'invalidNumber',
+      OAUTH_ID_TOKEN_ALG: 'alg',
+      CLI_DOWNLOAD_LINK: 'cliLink',
+      INTEGRATIONS_PAGE_LINK: 'integrationLink',
+      LOOK_AND_FEEL_URL: 'lookAndFeel',
+      AUTOMATIC_PROVISIONING_MSG: 'automaticProvMsg',
+      CONFIG_DIR: 'config',
+      KEPTN_INSTALLATION_TYPE: 'installation',
+      PROJECTS_PAGE_SIZE: '70',
+      SERVICES_PAGE_SIZE: '',
+      PREFIX_PATH: 'prefix',
+      ENABLE_VERSION_CHECK: '0',
+      MONGODB_DATABASE: 'mongoDatabase',
+      MONGODB_HOST: 'mongoHost',
+      MONGODB_PASSWORD: 'mongoPwd',
+      MONGODB_USER: 'mongoUser',
+      NODE_ENV: 'test',
+      VERSION: '0.0.0',
+    };
+
+    const result = envToConfiguration(config);
+
+    expect(result).toEqual({
+      api: {
+        showToken: true,
+        token: 'apiToken',
+        url: 'apiUrl',
+      },
+      auth: {
+        authMessage: 'authMsg',
+        basicPassword: 'basicPassword',
+        basicUsername: 'basicUsername',
+        cleanBucketIntervalMs: 2000,
+        nRequestWithinTime: 5,
+        requestTimeLimitMs: 100,
+      },
+      features: {
+        automaticProvisioningMessage: 'automaticProvMsg',
+        configDir: 'config',
+        installationType: 'installation',
+        pageSize: {
+          project: 70,
+          service: undefined,
+        },
+        prefixPath: 'prefix',
+        versionCheck: false,
+      },
+      logging: {
+        enabledComponents: 'xyz',
+      },
+      mode: 'test',
+      mongo: {
+        db: 'mongoDatabase',
+        host: 'mongoHost',
+        password: 'mongoPwd',
+        user: 'mongoUser',
+      },
+      oauth: {
+        allowedLogoutURL: 'logoutUrl',
+        baseURL: 'baseUrl',
+        clientID: 'clientID',
+        discoveryURL: 'discovery',
+        enabled: undefined,
+        nameProperty: 'name',
+        scope: 'scope',
+        session: {
+          secureCookie: false,
+          timeoutMin: 2,
+          trustProxyHops: 1,
+          validationTimeoutMin: undefined,
+        },
+        tokenAlgorithm: 'alg',
+      },
+      urls: {
+        CLI: 'cliLink',
+        integrationPage: 'integrationLink',
+        lookAndFeel: 'lookAndFeel',
+      },
+      version: '0.0.0',
+    });
+  });
+
+  function getBasicEnvVar(): { [key in EnvVar]?: string } {
+    return {
+      [EnvVar.API_URL]: defaultAPIURL,
+      [EnvVar.API_TOKEN]: defaultAPIToken,
+      [EnvVar.MONGODB_HOST]: '',
+      [EnvVar.MONGODB_USER]: '',
+      [EnvVar.MONGODB_PASSWORD]: '',
+      [EnvVar.NODE_ENV]: 'test',
+    };
+  }
+
+  function getDefaultOAuthConfig(): { [key in EnvVar]?: string } {
+    return {
+      [EnvVar.API_URL]: defaultAPIURL,
+      [EnvVar.API_TOKEN]: defaultAPIToken,
+      [EnvVar.MONGODB_HOST]: 'asdf',
+      [EnvVar.MONGODB_USER]: 'asdf',
+      [EnvVar.MONGODB_PASSWORD]: 'asdf',
+      [EnvVar.NODE_ENV]: 'test',
+      [EnvVar.OAUTH_ENABLED]: 'true',
+      [EnvVar.OAUTH_DISCOVERY]: 'asdf',
+      [EnvVar.OAUTH_CLIENT_ID]: 'asdf',
+      [EnvVar.OAUTH_BASE_URL]: 'asdf',
+    };
+  }
 });

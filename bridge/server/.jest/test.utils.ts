@@ -7,7 +7,8 @@ import { RemediationConfigResponse } from '../fixtures/remediation-config-respon
 import { init } from '../app';
 import { Express } from 'express';
 import { getConfiguration } from '../utils/configuration';
-import { baseOptions } from './setupServer';
+import { getBaseOptions } from './setupServer';
+
 export class TestUtils {
   public static mockOpenRemediations(axiosMock: MockAdapter, projectName: string): void {
     axiosMock
@@ -41,16 +42,17 @@ export class TestUtils {
   }
 
   public static async setupOAuthTest(): Promise<Express> {
-    return init(this.OAuthConfig);
+    return init(this.getOAuthConfig());
   }
 
-  public static readonly OAuthConfig = getConfiguration({
-    ...baseOptions,
-    oauth: {
-      enabled: true,
-      clientID: 'myClientID',
-      baseURL: 'http://localhost',
-      discoveryURL: 'http://localhost/.well-known/openid-configuration',
-    },
-  });
+  public static readonly getOAuthConfig = () =>
+    getConfiguration({
+      ...getBaseOptions(),
+      oauth: {
+        enabled: true,
+        clientID: 'myClientID',
+        baseURL: 'http://localhost',
+        discoveryURL: 'http://localhost/.well-known/openid-configuration',
+      },
+    });
 }

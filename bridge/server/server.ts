@@ -1,13 +1,13 @@
 import { init as initApp } from './app';
 import { BridgeConfiguration } from './interfaces/configuration';
-import { getConfiguration } from './utils/configuration';
+import { envToConfiguration, getConfiguration } from './utils/configuration';
 import { logger } from './utils/logger';
 
 const PORT = normalizePort(process.env.PORT || '3000');
 const HOST = process.env.HOST || '0.0.0.0';
 let configuration: BridgeConfiguration;
 try {
-  configuration = getConfiguration();
+  configuration = getConfiguration(envToConfiguration(process.env));
 } catch (e) {
   console.log(`Error while configuring the application. Cause: ${e}`);
   process.exit(1);

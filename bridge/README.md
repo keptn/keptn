@@ -90,11 +90,25 @@ After this is done, the following environment variables have to be set:
 - `OAUTH_BASE_URL` - URL of the bridge (e.g. `http://localhost:3000` or `https://myBridgeInstallation.com`).
 - `OAUTH_DISCOVERY` - Discovery URL of the identity provider (e.g. https://api.login.yahoo.com/.well-known/openid-configuration).
 - `OAUTH_CLIENT_ID` - Client ID.
-- `OAUTH_CLIENT_SECRET` (optional) - Client secret. Some identity providers require using the client secret.
 - `OAUTH_ID_TOKEN_ALG` (optional) - Algorithm that is used to verify the ID token (e.g. `ES256`). Default is `RS256`.
 - `OAUTH_SCOPE` (optional) - Additional scopes that should be added to the authentication flow (e.g. `profile email`), separated by space.
 - `OAUTH_NAME_PROPERTY` (optional) - The property of the ID token that identifies the user. Default is `name` and fallback to `nickname`, `preferred_username` and `email`.
 - `OAUTH_ALLOWED_LOGOUT_URLS` (optional) - Allowed URLs for the redirect of the end_session endpoint separated by space. Some browsers require to also add the URL the end_session endpoint is redirecting to.
+
+The following k8s secret has to be set
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: bridge-oauth
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/name: bridge
+type: Opaque
+data:
+  session_secret: {{ $bridgeSessionSecret }} # (automatically generated on install). Secret for encrypting the user session.
+  database_encrypt_secret: {{ $bridgeDatabaseEncryptSecret }} # (automatically generated on install). Secret for encrypting authentication related data inside the database.
+  client_secret: {{ .Values.bridge.oauth.clientSecret }} # (optional). Some identity providers require using the client secret.
+```
 
 #### Additional information:
 

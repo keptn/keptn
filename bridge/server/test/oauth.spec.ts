@@ -24,7 +24,7 @@ jest.unstable_mockModule('../user/session', () => {
   return {
     SessionService: jest.fn().mockImplementation(() => {
       // eslint-disable-next-line @typescript-eslint/no-use-before-define
-      return Object.assign(new SessionService(TestUtils.OAuthConfig), {
+      return Object.assign(new SessionService(TestUtils.getOAuthConfig()), {
         async saveValidationData(state: string, codeVerifier: string, nonce: string): Promise<void> {
           store[state] = {
             _id: state,
@@ -48,7 +48,7 @@ const { TestUtils } = await import('../.jest/test.utils');
 // has to be imported after jest mocked
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const { init } = await import('../app');
-const { baseOptions } = await import('../.jest/setupServer');
+const { getBaseOptions } = await import('../.jest/setupServer');
 const { getConfiguration } = await import('../utils/configuration');
 
 interface CachedStore {
@@ -71,59 +71,8 @@ describe('Test OAuth env variables', () => {
     mockSecrets();
   });
 
-  it('should throw errors if session secret is not provided', async () => {
-    const opt = getConfiguration(baseOptions);
-    opt.oauth.enabled = true;
-    opt.oauth.clientID = 'myClientID';
-    opt.oauth.baseURL = 'http://localhost';
-    opt.oauth.discoveryURL = 'http://localhost/.well-known/openid-configuration';
-    fakeGetOAuthSecrets.mockImplementation(() => {
-      return {
-        sessionSecret: '',
-        databaseEncryptSecret: 'database_secret_'.repeat(2),
-      };
-    });
-    await expect(async () => {
-      await init(opt);
-    }).rejects.toThrowError();
-  });
-
-  it('should throw errors if database encrypt secret is not provided', async () => {
-    const opt = getConfiguration(baseOptions);
-    opt.oauth.enabled = true;
-    opt.oauth.clientID = 'myClientID';
-    opt.oauth.baseURL = 'http://localhost';
-    opt.oauth.discoveryURL = 'http://localhost/.well-known/openid-configuration';
-    fakeGetOAuthSecrets.mockImplementation(() => {
-      return {
-        sessionSecret: 'abcd',
-        databaseEncryptSecret: '',
-      };
-    });
-    await expect(async () => {
-      await init(opt);
-    }).rejects.toThrowError();
-  });
-
-  it('should throw errors if database encrypt secret length is invalid', async () => {
-    const opt = getConfiguration(baseOptions);
-    opt.oauth.enabled = true;
-    opt.oauth.clientID = 'myClientID';
-    opt.oauth.baseURL = 'http://localhost';
-    opt.oauth.discoveryURL = 'http://localhost/.well-known/openid-configuration';
-    fakeGetOAuthSecrets.mockImplementation(() => {
-      return {
-        sessionSecret: 'abcd',
-        databaseEncryptSecret: 'mySecret',
-      };
-    });
-    await expect(async () => {
-      await init(opt);
-    }).rejects.toThrowError();
-  });
-
   it('should not register OAuth endpoints if OAuth is not enabled', async () => {
-    const opt = getConfiguration(baseOptions);
+    const opt = getConfiguration(getBaseOptions());
     opt.oauth.enabled = false;
     opt.oauth.clientID = 'myClientID';
     opt.oauth.baseURL = 'http://localhost';

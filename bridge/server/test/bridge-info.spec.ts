@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { baseOptions, setupServer } from '../.jest/setupServer';
+import { getBaseOptions, setupServer } from '../.jest/setupServer';
 import { Express } from 'express';
 import { getConfiguration } from '../utils/configuration';
 
@@ -14,7 +14,7 @@ describe('Test /bridgeInfo', () => {
 
   beforeAll(async () => {
     const conf = getConfiguration({
-      ...baseOptions,
+      ...getBaseOptions(),
       api: {
         url: apiUrl,
         token: apiToken,
@@ -23,7 +23,7 @@ describe('Test /bridgeInfo', () => {
       auth: {
         authMessage: authMsg,
       },
-      feature: {
+      features: {
         automaticProvisioningMessage: provMsg,
       },
       version: version,
