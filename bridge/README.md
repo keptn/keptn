@@ -170,6 +170,10 @@ Both commands serve Angular on port 3000 with no live reload - this will also en
 - Currently, our UI tests are flaky because of some bugs in Cypress. You can find more information in [Known Issues](https://github.com/keptn/keptn/issues/7107).  
 - One UI test will fail if you are on Windows and in a different time zone than Europe/Berlin due to a bug in Cypress.
 
+### Bundle Size Report
+
+The Keptn Bridge is bundled with the Angular CLI. To analyze the current bundle size, first build the application with `ng build --stats-json`, to generate the [`stats.json`](https://webpack.js.org/api/stats/) file. Then run the [Webpack Bundle Analyzer](https://github.com/webpack-contrib/webpack-bundle-analyzer) with `npm run bundle-report` to create an interactive treemap visualization of the contents of all your bundles.
+
 ## IDE Setup
 
 ### Create workspace
