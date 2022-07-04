@@ -1,5 +1,4 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import 'cypress-xpath';
 import './commands';
 import './intercept';
 
