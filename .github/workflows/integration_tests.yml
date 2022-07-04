@@ -59,7 +59,7 @@ jobs:
             KEPTN_SERVICE_TYPE: "NodePort"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "false"
-            USE_RESOURCE_SERVICE_DIRECTORY: "true"   #TODO use this to setup directory mode on gke19
+            USE_RESOURCE_SERVICE_DIRECTORY: "true"
           - CLOUD_PROVIDER: "k3d-on-GHA"
             PLATFORM_VERSION: "v4.4.6" # see https://github.com/rancher/k3d/releases
             KUBECONFIG: ""
@@ -362,6 +362,7 @@ jobs:
               --set shipyardController.gracePeriod=10 \
               --set shipyardController.preStopHookTime=5 \
               --set continuousDelivery.enabled=${RUN_CONTINUOUS_DELIVERY_TEST} \
+              --set resourceService.env..DIRECTORY_STAGE_STRUCTURE=${USE_RESOURCE_SERVICE_DIRECTORY} \
               --wait \
               --timeout=10m
           fi
