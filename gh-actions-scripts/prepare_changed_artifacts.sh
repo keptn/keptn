@@ -28,6 +28,7 @@ BUILD_MONGODB_DS=false
 BUILD_STATISTICS_SVC=false
 BUILD_WEBHOOK_SVC=false
 
+# Don't include additional bridge artifacts that are only used for testing if this is (pre-)release build
 if [ "$RELEASE_BUILD" != 'true' ] && [ "$PRERELEASE_BUILD" != 'true' ]; then
   artifacts=(
     "$BRIDGE_ARTIFACT_PREFIX"
@@ -73,6 +74,7 @@ matrix_config='{"config":['
 # shellcheck disable=SC2016
 build_artifact_template='{"artifact":$artifact,"working-dir":$working_dir,"should-run":$should_run,"docker-test-target":$docker_test_target,"should-push-image":$should_push_image}'
 
+# Add all changed artifacts to the build matrix
 echo "Checking changed files against artifacts now"
 echo "::group::Check output"
 for changed_file in $CHANGED_FILES; do
@@ -98,6 +100,7 @@ for changed_file in $CHANGED_FILES; do
     docker_test_target="${artifact}_DOCKER_TEST_TARGET"
     should_push_image="${artifact}_SHOULD_PUSH_IMAGE"
 
+    # Check if this artifact needs an image to be pushed
     if [ "${!should_push_image}" != "false" ]; then
       should_push_image="true"
     else
@@ -106,7 +109,10 @@ for changed_file in $CHANGED_FILES; do
 
     if [[ ( $changed_file == ${!artifact_folder}* ) && ( "${!should_build_artifact}" != 'true' ) ]]; then
       echo "Found changes in $artifact"
+      # Set the artifact's should-build variable to true
       IFS= read -r "${should_build_artifact?}" <<< "true"
+
+      # Render build matrix string for the current artifact
       artifact_config=$(jq -j -n \
         --arg artifact "${!artifact_fullname}" \
         --arg working_dir "${!artifact_folder}" \
@@ -115,6 +121,8 @@ for changed_file in $CHANGED_FILES; do
         --arg should_push_image "${should_push_image}" \
         "$build_artifact_template"
       )
+
+      # Add rendered string to matrix
       matrix_config="$matrix_config$artifact_config,"
     fi
   done
@@ -123,6 +131,7 @@ done
 echo "Done checking changed files"
 echo "Checking for build-everything build"
 
+# If this is a build-everything build, also add all other unchanged artifacts to the build matrix
 if [[ $BUILD_EVERYTHING == 'true' ]]; then
   for artifact in "${artifacts[@]}"; do
     # Prepare variables
@@ -132,6 +141,7 @@ if [[ $BUILD_EVERYTHING == 'true' ]]; then
     docker_test_target="${artifact}_DOCKER_TEST_TARGET"
     should_push_image="${artifact}_SHOULD_PUSH_IMAGE"
 
+    # Check if this artifact needs an image to be pushed
     if [ "${!should_push_image}" != "false" ]; then
       should_push_image="true"
     else
@@ -139,6 +149,7 @@ if [[ $BUILD_EVERYTHING == 'true' ]]; then
     fi
 
     if [[ "${!should_build_artifact}" != 'true' ]]; then
+      # Render build matrix string for the current artifact
       echo "Adding unchanged artifact $artifact to build matrix since build everything was requested"
       artifact_config=$(jq -j -n \
         --arg artifact "${!artifact_fullname}" \
@@ -148,6 +159,8 @@ if [[ $BUILD_EVERYTHING == 'true' ]]; then
         --arg should_push_image "${should_push_image}" \
         "$build_artifact_template"
       )
+
+      # Add rendered string to matrix
       matrix_config="$matrix_config$artifact_config,"
     fi
   done
