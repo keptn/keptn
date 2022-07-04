@@ -72,7 +72,7 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
 
       // Add filterType query parameter
       this.router.navigate([], {
-        queryParams: { filterType: $event.source.selected ? $event.value : null },
+        queryParams: { filterType: this.filterEventType },
       });
     }
   }
