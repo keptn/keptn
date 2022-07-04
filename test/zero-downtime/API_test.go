@@ -118,9 +118,9 @@ func (suite *TestSuiteAPI) Test_Secret_Service() {
 func (suite *TestSuiteAPI) Test_Resource_Service() {
 
 	started := time.Now()
-	apiURL := suite.keptnAPIURL + "/configuration-service/v1"
+	apiURL := suite.keptnAPIURL + "/resource-service/v1"
 
-	api := apitest.New("Test configuration-service: not existing project").
+	api := apitest.New("Test resource-service: not existing project").
 		Observe(func(res *http.Response, req *http.Request, apiTest *apitest.APITest) {
 			suite.logResult(res, apiTest, http.StatusNotFound, started)
 		}).EnableNetworking(getClient(1))
@@ -130,11 +130,7 @@ func (suite *TestSuiteAPI) Test_Resource_Service() {
 		Expect(suite.T()).
 		Status(http.StatusNotFound)
 
-	if res, err := testutils.CompareServiceNameWithDeploymentName("configuration-service", "configuration-service"); err == nil && res {
-		req.Assert(jsonpath.Equal(`$.message`, "Project does not exist")).End()
-	} else {
-		req.Assert(jsonpath.Equal(`$.message`, "Could not find credentials for upstream repository")).End()
-	}
+	req.Assert(jsonpath.Equal(`$.message`, "Could not find credentials for upstream repository")).End()
 
 }
 
