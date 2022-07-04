@@ -17,31 +17,23 @@ const router = Router();
 const log = new ComponentLogger('APIService');
 
 const apiRouter = (params: {
-  apiUrl: string;
-  apiToken: string | undefined;
-  cliDownloadLink: string;
   authType: AuthType;
   clientFeatureFlags: ClientFeatureFlags;
   session: SessionService | undefined;
 }): Router => {
   // fetch parameters for bridgeInfo endpoint
-  const {
-    apiUrl,
-    apiToken,
-    cliDownloadLink,
-    authType,
-    clientFeatureFlags: featureFlags,
-    session,
-  } = params;
-  const enableVersionCheckFeature = process.env.ENABLE_VERSION_CHECK !== 'false';
-  const showApiToken = process.env.SHOW_API_TOKEN !== 'false';
-  const bridgeVersion = process.env.VERSION;
-  const projectsPageSize = EnvironmentUtils.getNumber(process.env.PROJECTS_PAGE_SIZE);
-  const servicesPageSize = EnvironmentUtils.getNumber(process.env.SERVICES_PAGE_SIZE);
-  const keptnInstallationType = process.env.KEPTN_INSTALLATION_TYPE;
-  const automaticProvisioningMsg = process.env.AUTOMATIC_PROVISIONING_MSG?.trim();
-  const authMsg = process.env.AUTH_MSG;
-  const dataService = new DataService(apiUrl, apiToken);
+  const { authType, clientFeatureFlags: featureFlags, session, configuration } = params;
+  const enableVersionCheckFeature = configuration.features.versionCheck;
+  const showApiToken = configuration.api.showToken;
+  const bridgeVersion = configuration.version;
+  const projectsPageSize = configuration.features.pageSize.project;
+  const servicesPageSize = configuration.features.pageSize.service;
+  const keptnInstallationType = configuration.features.installationType;
+  const automaticProvisioningMsg = configuration.features.automaticProvisioningMessage.trim();
+  const authMsg = configuration.auth.authMessage;
+  const apiUrl = configuration.api.url;
+  const apiToken = configuration.api.token;
+  const dataService = new DataService(apiUrl, apiToken, configuration.mode);
 
   // bridgeInfo endpoint: Provide certain metadata for Bridge
   router.get('/bridgeInfo', async (req, res, next) => {
@@ -65,6 +57,18 @@ const apiRouter = (params: {
 
     try {
       return res.json(bridgeInfo);
+    } catch (err) {
+      return next(err);
+    }
+  });
+
+  router.get('/integrationsPage', async (req, res, next) => {
+    try {
+      const result = await axios({
+        method: req.method as Method,
+        url: `${configuration.urls.integrationPage}`,
+      });
+      return res.send(result.data);
     } catch (err) {
       return next(err);
     }

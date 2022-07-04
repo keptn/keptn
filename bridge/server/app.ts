@@ -23,13 +23,6 @@ import { AuthType } from '../shared/models/auth-type';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const apiUrl: string | undefined = process.env.API_URL;
-let apiToken: string | undefined = process.env.API_TOKEN;
-let cliDownloadLink: string | undefined = process.env.CLI_DOWNLOAD_LINK;
-const lookAndFeelUrl: string | undefined = process.env.LOOK_AND_FEEL_URL;
-const requestTimeLimit = +(process.env.REQUEST_TIME_LIMIT || 60) * 60 * 1000; // x minutes
-const requestsWithinTime = +(process.env.REQUESTS_WITHIN_TIME || 10); // x requests within {requestTimeLimit}
-const cleanBucketsInterval = +(process.env.CLEAN_BUCKET_INTERVAL || 60) * 60 * 1000; // clean buckets every x minutes
 const throttleBucket: { [ip: string]: number[] } = {};
 const rootFolder = join(__dirname, process.env.NODE_ENV === 'test' ? '../' : '../../../');
 const oneWeek = 7 * 24 * 3_600_000; // 3600000msec == 1hour
@@ -54,30 +47,18 @@ async function init(): Promise<Express> {
   const clientFeatureFlags = new ClientFeatureFlags();
   EnvironmentUtils.setFeatureFlags(process.env, serverFeatureFlags);
   EnvironmentUtils.setFeatureFlags(process.env, clientFeatureFlags);
+  
+  const { mode, urls } = configuration;
 
-  if (process.env.NODE_ENV !== 'test') {
-    setupDefaultLookAndFeel();
-  }
-  if (lookAndFeelUrl) {
-    setupLookAndFeel(lookAndFeelUrl);
-  }
-  if (!apiUrl) {
-    throw Error('API_URL is not provided');
-  }
-  if (!apiToken) {
-    log.warning('API_TOKEN was not provided. Fetching from kubectl.');
-    apiToken =
-      Buffer.from(
-        execSync('kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token}').toString(),
-        'base64'
-      ).toString() || undefined;
-  }
+  const rootFolder = join(__dirname, mode === EnvType.TEST ? '../' : '../../../');
 
-  if (!cliDownloadLink) {
-    log.warning('CLI Download Link was not provided, defaulting to github.com/keptn/keptn releases');
-    cliDownloadLink = 'https://github.com/keptn/keptn/releases';
+  if (mode !== EnvType.TEST) {
+    setupDefaultLookAndFeel(mode, rootFolder);
   }
-
+  if (urls.lookAndFeel) {
+    setupLookAndFeel(urls.lookAndFeel, rootFolder);
+  }
+  
   // UI static files - Angular application
   app.use(
     express.static(join(rootFolder, 'dist'), {
@@ -115,9 +96,6 @@ async function init(): Promise<Express> {
   app.use(
     '/api',
     apiRouter({
-      apiUrl,
-      apiToken,
-      cliDownloadLink,
       authType,
       clientFeatureFlags,
       session,
