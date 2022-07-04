@@ -362,7 +362,7 @@ jobs:
               --set shipyardController.gracePeriod=10 \
               --set shipyardController.preStopHookTime=5 \
               --set continuousDelivery.enabled=${RUN_CONTINUOUS_DELIVERY_TEST} \
-              --set resourceService.env..DIRECTORY_STAGE_STRUCTURE=${USE_RESOURCE_SERVICE_DIRECTORY} \
+              --set resourceService.env.DIRECTORY_STAGE_STRUCTURE=${USE_RESOURCE_SERVICE_DIRECTORY} \
               --wait \
               --timeout=10m
           fi
