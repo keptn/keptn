@@ -10,6 +10,7 @@
     "start:ci": "ng serve --port=5000 --no-live-reload --configuration=test",
     "ng": "ng",
     "build": "ng build --configuration production --base-href=./",
+    "build:stats": "ng build --stats-json",
     "test": "TZ=Europe/Berlin jest --config=jest.config.ts --maxWorkers=1",
     "test:win32": "set TZ=Europe/Berlin && jest --config=jest.config.ts --maxWorkers=1",
     "lint:check": "eslint ./",
@@ -19,7 +20,8 @@
     "cypress:open": "TZ=Europe/Berlin ng run bridge:cypress-open",
     "cypress:open:win32": "set TZ=Europe/Berlin && ng run bridge:cypress-open",
     "test:ui": "TZ=Europe/Berlin ng run bridge:cypress-run",
-    "test:ui:win32": "set TZ=Europe/Berlin && ng run bridge:cypress-run"
+    "test:ui:win32": "set TZ=Europe/Berlin && ng run bridge:cypress-run",
+    "bundle-report": "webpack-bundle-analyzer dist/stats.json"
   },
   "license": "Apache-2.0",
   "author": "Ermin Muratovic <ermin.muratovic@dynatrace.com>",
@@ -110,7 +112,8 @@
     "npm-run-all": "4.1.5",
     "prettier": "2.6.2",
     "ts-node": "10.8.1",
-    "typescript": "4.3.5"
+    "typescript": "4.3.5",
+    "webpack-bundle-analyzer": "4.5.0"
   },
   "resolutions": {
     "minimist": "1.2.6",
