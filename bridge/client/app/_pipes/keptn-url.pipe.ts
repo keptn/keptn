@@ -9,8 +9,8 @@ import { KeptnInfo } from '../_models/keptn-info';
   name: 'keptnUrl',
 })
 export class KeptnUrlPipe implements PipeTransform {
-  private static _version: Observable<KeptnInfo | undefined>;
-  private static version?: string;
+  private static _version?: Observable<KeptnInfo | undefined>;
+  private static version = '';
 
   constructor(dataService: DataService) {
     if (!KeptnUrlPipe._version) {
@@ -32,7 +32,7 @@ export class KeptnUrlPipe implements PipeTransform {
 
   transform(relativePath: string): string {
     return KeptnUrlPipe.version
-      ? 'https://keptn.sh/docs/install/'
-      : `https://keptn.sh/docs/${KeptnUrlPipe.version}${relativePath}`;
+      ? `https://keptn.sh/docs/${KeptnUrlPipe.version}${relativePath}`
+      : 'https://keptn.sh/docs/install/';
   }
 }
