@@ -456,7 +456,7 @@ class ProjectSettingsPage {
   }
 
   public clickDeleteProjectButton(): this {
-    cy.get('span.dt-button-label').contains('Delete this project').click();
+    cy.byTestId('ktb-danger-project-button').click();
     return this;
   }
 

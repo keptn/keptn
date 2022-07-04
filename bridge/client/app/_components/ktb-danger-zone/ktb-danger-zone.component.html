@@ -4,7 +4,14 @@
     <h4 class="pt-0 mt-0">Delete {{ data.type }}</h4>
     <div fxLayout="row" fxLayoutAlign="space-between center">
       <span>Once deleted, it will be gone forever. Please be certain.</span>
-      <button dt-button class="danger-button" (click)="openDeletionDialog()">Delete this {{ data.type }}</button>
+      <button
+        dt-button
+        class="danger-button"
+        (click)="openDeletionDialog()"
+        [attr.uitestid]="'ktb-danger-' + data.type + '-button'"
+      >
+        Delete this {{ data.type }}
+      </button>
     </div>
   </div>
 </ng-container>
