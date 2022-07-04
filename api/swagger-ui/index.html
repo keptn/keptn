@@ -90,20 +90,23 @@
       }
 
       document.getElementById("swagger-ui").addEventListener('DOMSubtreeModified', function(event) {
-        if(event.target.className == "oauth-scopes"){
+        const match = "Required OAuth scopes";
+        if(event.target.innerHTML.startsWith(match)){
           // do not propagate
           return;
         }
-        const elms = document.getElementsByClassName("oauth-scopes");
+        const elms = document.getElementsByTagName("span");
         for (let i = 0; i < elms.length; i++) {
           const e = elms[i];
           const origin = e.innerHTML;
-          let r = "";
-          if(oauth_enabled) {
-            r = origin.replace("${prefix}", oauth_prefix);
+          if(origin.startsWith(match)){
+            let r = "";
+            if(oauth_enabled) {
+              r = origin.replace("${prefix}", oauth_prefix);
+            }
+            event.stopPropagation();
+            e.innerHTML = r;
           }
-          event.stopPropagation();
-          e.innerHTML = r;
         }
       });
     }
