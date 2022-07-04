@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbSequenceViewComponent } from './ktb-sequence-view.component';
-import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { BehaviorSubject, firstValueFrom, of, Subject } from 'rxjs';
@@ -11,6 +10,7 @@ import { SequenceFilterMock } from '../../_services/_mockData/sequence-filter.mo
 import { SequencesMock } from '../../_services/_mockData/sequences.mock';
 import moment from 'moment';
 import { DtQuickFilterDefaultDataSourceAutocomplete } from '@dynatrace/barista-components/quick-filter';
+import { KtbSequenceViewModule } from './ktb-sequence-view.module';
 
 describe('KtbEventsListComponent', () => {
   let component: KtbSequenceViewComponent;
@@ -79,7 +79,7 @@ describe('KtbEventsListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule, HttpClientTestingModule],
+      imports: [KtbSequenceViewModule, HttpClientTestingModule],
       providers: [
         {
           provide: ActivatedRoute,
