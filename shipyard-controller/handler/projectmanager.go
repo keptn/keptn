@@ -86,7 +86,7 @@ func (pm *ProjectManager) GetByName(projectName string) (*apimodels.ExpandedProj
 func (pm *ProjectManager) Create(params *models.CreateProjectParams) (error, common.RollbackFunc) {
 
 	if err := pm.checkForExistingProject(params); err != nil {
-		return err, nilRollback
+		return fmt.Errorf("could not create project '%s': %w", *params.Name, err), nilRollback
 	}
 
 	err := pm.updateGITRepositorySecret(*params.Name, decodeGitCredentials(params.GitCredentials))
@@ -165,7 +165,7 @@ func (pm *ProjectManager) checkForExistingProject(params *models.CreateProjectPa
 	existingProject, err := pm.ProjectMaterializedView.GetProject(*params.Name)
 	if err != nil && err != db.ErrProjectNotFound {
 		log.Errorf("Error occurred while getting project: %s", err.Error())
-		return fmt.Errorf("failed to get project: '%s'", *params.Name)
+		return fmt.Errorf("failed to get information for project '%s'", *params.Name)
 	}
 	if existingProject != nil {
 		return ErrProjectAlreadyExists
