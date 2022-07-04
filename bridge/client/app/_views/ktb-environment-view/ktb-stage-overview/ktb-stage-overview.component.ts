@@ -6,7 +6,7 @@ import { DtFilterFieldChangeEvent, DtFilterFieldDefaultDataSource } from '@dynat
 import { ApiService } from '../../../_services/api.service';
 import { Service } from '../../../_models/service';
 import { DtAutoComplete, DtFilter, DtFilterArray } from '../../../_models/dt-filter';
-import { distinctUntilChanged, filter, map, switchMap, takeUntil, tap, withLatestFrom } from 'rxjs/operators';
+import { distinctUntilChanged, filter, map, switchMap, takeUntil, withLatestFrom } from 'rxjs/operators';
 import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest, Subject } from 'rxjs';
 import { DtFilterFieldDefaultDataSourceAutocomplete } from '@dynatrace/barista-components/filter-field/src/filter-field-default-data-source';
@@ -30,10 +30,7 @@ export class KtbStageOverviewComponent implements AfterContentInit, OnDestroy {
     filter((projectName): projectName is string => !!projectName),
     distinctUntilChanged(),
     switchMap((projectName) => this.dataService.getProject(projectName)),
-    filter((project): project is Project => !!project),
-    tap((project) => {
-      this.setFilter(project, true);
-    })
+    filter((project): project is Project => !!project)
   );
 
   public readonly selectedStageName$ = this.route.paramMap.pipe(
@@ -67,6 +64,9 @@ export class KtbStageOverviewComponent implements AfterContentInit, OnDestroy {
           this.selectedStageChange.emit({ stage: stage, filterType: (filterType as ServiceFilterType) ?? undefined });
         }
       });
+    this.project$.pipe(takeUntil(this.unsubscribe$)).subscribe((project) => {
+      this.setFilter(project, true);
+    });
   }
 
   private setFilter(project: Project | undefined, projectChanged: boolean): void {
