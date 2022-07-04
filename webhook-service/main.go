@@ -46,7 +46,7 @@ func main() {
 			taskHandler,
 		),
 		sdk.WithAutomaticResponse(false),
-		sdk.WithLogger(log.New()),
+		sdk.WithLogger(log.StandardLogger()),
 	).Start())
 }
 
