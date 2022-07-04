@@ -66,7 +66,7 @@ type: Opaque
 data:
   session_secret: {{ $bridgeSessionSecret }}
   database_encrypt_secret: {{ $bridgeDatabaseEncryptSecret }}
-  client_secret: {{ .Values.bridge.oauth.clientSecret }}
+  client_secret: {{ .Values.bridge.oauth.clientSecret | default "" | b64enc | quote }}
 ---
 apiVersion: v1
 kind: Secret
