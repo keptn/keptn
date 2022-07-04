@@ -38,7 +38,7 @@ func Test_getProxyRequestURL(t *testing.T) {
 				path:     "/configuration-service",
 			},
 			wantScheme: "http",
-			wantHost:   "configuration-service:8080",
+			wantHost:   "resource-service:8080",
 		},
 		{
 			name: "Get configuration service",
@@ -47,7 +47,7 @@ func Test_getProxyRequestURL(t *testing.T) {
 				path:     "/configuration-service",
 			},
 			wantScheme: "http",
-			wantHost:   "configuration-service:8080",
+			wantHost:   "resource-service:8080",
 		},
 		{
 			name: "Get configuration service via public API",

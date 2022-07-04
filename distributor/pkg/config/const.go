@@ -10,7 +10,7 @@ const controlPlaneUrl = "/controlPlane"
 
 var InClusterAPIProxyMappings = map[string]string{
 	mongoDbUrl:       "mongodb-datastore:8080",
-	configServiceUrl: "configuration-service:8080",
+	configServiceUrl: "resource-service:8080",
 	controlPlaneUrl:  "shipyard-controller:8080",
 }
 

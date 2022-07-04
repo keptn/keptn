@@ -50,8 +50,8 @@ spec:
             memory: "256Mi"
             cpu: "100m"
         env:
-        - name: CONFIGURATION_SERVICE
-          value: 'http://configuration-service:8080'
+        - name: RESOURCE_SERVICE
+          value: 'http://resource-service:8080'
         - name: EVENTBROKER
           value: 'http://event-broker/keptn'
         - name: DATASTORE

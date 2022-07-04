@@ -115,7 +115,7 @@ func (suite *TestSuiteAPI) Test_Secret_Service() {
 
 }
 
-func (suite *TestSuiteAPI) Test_Configuration_Service() {
+func (suite *TestSuiteAPI) Test_Resource_Service() {
 
 	started := time.Now()
 	apiURL := suite.keptnAPIURL + "/configuration-service/v1"
