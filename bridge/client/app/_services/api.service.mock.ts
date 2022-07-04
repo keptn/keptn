@@ -9,7 +9,7 @@ import { Project } from '../_models/project';
 import { UniformRegistrationResult } from '../../../shared/interfaces/uniform-registration-result';
 import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-registration-info';
 import { UniformSubscription } from '../_models/uniform-subscription';
-import { WebhookConfig, WebhookConfigMethod } from '../../../shared/interfaces/webhook-config';
+import { IWebhookConfigClient, WebhookConfigMethod } from '../../../shared/interfaces/webhook-config';
 import { UniformRegistrationLogResponse } from '../../../shared/interfaces/uniform-registration-log';
 import { Secret } from '../_models/secret';
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
@@ -165,14 +165,14 @@ export class ApiServiceMock extends ApiService {
   public updateUniformSubscription(
     integrationId: string,
     subscription: Partial<UniformSubscription>,
-    webhookConfig?: WebhookConfig
+    webhookConfig?: IWebhookConfigClient
   ): Observable<Record<string, unknown>> {
     return of({});
   }
   public createUniformSubscription(
     integrationId: string,
     subscription: Partial<UniformSubscription>,
-    webhookConfig?: WebhookConfig
+    webhookConfig?: IWebhookConfigClient
   ): Observable<Record<string, unknown>> {
     return of({});
   }
@@ -327,7 +327,7 @@ export class ApiServiceMock extends ApiService {
     projectName: string,
     stageName?: string,
     serviceName?: string
-  ): Observable<WebhookConfig> {
+  ): Observable<IWebhookConfigClient> {
     const config = {
       type: '',
       method: 'POST' as WebhookConfigMethod,

@@ -7,8 +7,8 @@ import { UniformRegistration } from '../models/uniform-registration';
 import { UniformRegistrationLogResponse } from '../../shared/interfaces/uniform-registration-log';
 import { Resource, ResourceResponse } from '../../shared/interfaces/resource';
 import https from 'https';
-import { UniformSubscription } from '../../shared/interfaces/uniform-subscription';
-import { Secret } from '../../shared/interfaces/secret';
+import { IUniformSubscription } from '../../shared/interfaces/uniform-subscription';
+import { ISecret } from '../../shared/interfaces/secret';
 import { KeptnService } from '../../shared/models/keptn-service';
 import { IStage } from '../../shared/interfaces/stage';
 import { SequenceOptions, TraceOptions } from './data-service';
@@ -216,7 +216,7 @@ export class ApiService {
   public createSubscription(
     accessToken: string | undefined,
     integrationId: string,
-    subscription: UniformSubscription
+    subscription: IUniformSubscription
   ): Promise<AxiosResponse<{ id: string }>> {
     return this.axios.post(
       `${this.baseUrl}/controlPlane/v1/uniform/registration/${integrationId}/subscription`,
@@ -229,7 +229,7 @@ export class ApiService {
     accessToken: string | undefined,
     integrationId: string,
     subscriptionId: string,
-    subscription: UniformSubscription
+    subscription: IUniformSubscription
   ): Promise<AxiosResponse<Record<string, unknown>>> {
     return this.axios.put(
       `${this.baseUrl}/controlPlane/v1/uniform/registration/${integrationId}/subscription/${subscriptionId}`,
@@ -319,8 +319,8 @@ export class ApiService {
     accessToken: string | undefined,
     integrationId: string,
     subscriptionId: string
-  ): Promise<AxiosResponse<UniformSubscription>> {
-    return this.axios.get<UniformSubscription>(
+  ): Promise<AxiosResponse<IUniformSubscription>> {
+    return this.axios.get<IUniformSubscription>(
       `${this.baseUrl}/controlPlane/v1/uniform/registration/${integrationId}/subscription/${subscriptionId}`,
       this.getAuthHeaders(accessToken)
     );
@@ -354,9 +354,9 @@ export class ApiService {
     return this.axios.get<Resource>(url, this.getAuthHeaders(accessToken));
   }
 
-  public getSecrets(accessToken: string | undefined): Promise<AxiosResponse<{ Secrets: Secret[] }>> {
+  public getSecrets(accessToken: string | undefined): Promise<AxiosResponse<{ Secrets: ISecret[] }>> {
     const url = `${this.baseUrl}/secrets/v1/secret`;
-    return this.axios.get<{ Secrets: Secret[] }>(url, this.getAuthHeaders(accessToken));
+    return this.axios.get<{ Secrets: ISecret[] }>(url, this.getAuthHeaders(accessToken));
   }
 
   public getStages(accessToken: string | undefined, projectName: string): Promise<AxiosResponse<{ stages: IStage[] }>> {

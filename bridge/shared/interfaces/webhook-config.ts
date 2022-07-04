@@ -1,20 +1,24 @@
-import { UniformSubscriptionFilter } from './uniform-subscription';
+import { IUniformSubscriptionFilter } from './uniform-subscription';
 
 export type WebhookConfigMethod = 'POST' | 'PUT' | 'GET';
 
 export interface PreviousWebhookConfig {
-  filter: UniformSubscriptionFilter;
+  filter: IUniformSubscriptionFilter;
   type: string;
 }
 
-export interface WebhookConfig {
+export interface IWebhookHeader {
+  key: string;
+  value: string;
+}
+
+export interface IWebhookConfigClient {
   type: string;
-  filter: UniformSubscriptionFilter;
-  prevConfiguration?: PreviousWebhookConfig;
+  prevConfiguration?: PreviousWebhookConfig; // send from client to server
   method: WebhookConfigMethod;
   url: string;
   payload: string;
-  header: { name: string; value: string }[];
+  header: IWebhookHeader[];
   proxy?: string;
   sendFinished: boolean;
   sendStarted: boolean;

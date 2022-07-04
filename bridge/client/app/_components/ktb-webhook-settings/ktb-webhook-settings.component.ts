@@ -1,8 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { AbstractControl, FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { FormUtils } from '../../_utils/form.utils';
-import { WebhookConfigMethod } from '../../../../shared/interfaces/webhook-config';
-import { WebhookConfig } from '../../../../shared/models/webhook-config';
+import { IWebhookConfigClient, WebhookConfigMethod } from '../../../../shared/interfaces/webhook-config';
 import { DtOverlayConfig } from '@dynatrace/barista-components/overlay';
 import { Secret } from '../../_models/secret';
 import { SelectTreeNode } from '../ktb-tree-list-select/ktb-tree-list-select.component';
@@ -15,7 +14,7 @@ type ControlType = 'method' | 'url' | 'payload' | 'proxy' | 'header' | 'sendFini
   styleUrls: ['./ktb-webhook-settings.component.scss'],
 })
 export class KtbWebhookSettingsComponent implements OnInit {
-  private _webhook: WebhookConfig = new WebhookConfig();
+  private _webhook?: IWebhookConfigClient;
   public webhookConfigForm = new FormGroup({
     method: new FormControl('', [Validators.required]),
     url: new FormControl('', [Validators.required, FormUtils.isUrlOrSecretValidator]),
@@ -43,7 +42,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
   }
 
   @Input()
-  set webhook(webhookConfig: WebhookConfig | undefined) {
+  set webhook(webhookConfig: IWebhookConfigClient | undefined) {
     if (webhookConfig && webhookConfig !== this._webhook) {
       this._webhook = webhookConfig;
       this.getFormControl('method').setValue(webhookConfig.method);
@@ -53,7 +52,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
       this.setSendFinishedControl();
 
       for (const header of webhookConfig.header || []) {
-        this.addHeader(header.name, header.value);
+        this.addHeader(header.key, header.value);
       }
 
       for (const controlKey of Object.keys(this.webhookConfigForm.controls)) {
@@ -108,7 +107,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
   }
 
   @Output() validityChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() webhookChange: EventEmitter<WebhookConfig> = new EventEmitter<WebhookConfig>();
+  @Output() webhookChange: EventEmitter<IWebhookConfigClient> = new EventEmitter<IWebhookConfigClient>();
 
   get header(): FormArray {
     return this.getFormControl('header') as FormArray;
@@ -129,13 +128,16 @@ export class KtbWebhookSettingsComponent implements OnInit {
   }
 
   public onWebhookFormChange(): void {
-    this._webhook.method = this.getFormControl('method').value;
-    this._webhook.url = this.getFormControl('url').value;
-    this._webhook.payload = this.getFormControl('payload').value;
-    this._webhook.proxy = this.getFormControl('proxy').value;
-    this._webhook.header = this.getFormControl('header').value;
-    this._webhook.sendFinished = this.getFormControl('sendFinished').value === 'true';
-    this._webhook.sendStarted = this.getFormControl('sendStarted').value === 'true';
+    this._webhook = {
+      method: this.getFormControl('method').value,
+      url: this.getFormControl('url').value,
+      payload: this.getFormControl('payload').value,
+      proxy: this.getFormControl('proxy').value,
+      header: this.getFormControl('header').value,
+      sendFinished: this.getFormControl('sendFinished').value === 'true',
+      sendStarted: this.getFormControl('sendStarted').value === 'true',
+      type: this._webhook?.type ?? '',
+    };
     this.webhookChange.emit(this._webhook);
   }
 
@@ -166,8 +168,8 @@ export class KtbWebhookSettingsComponent implements OnInit {
       this.disableFormControl('sendStarted');
       this.disableFormControl('sendFinished');
     } else {
-      this.enableFormControl('sendStarted', this._webhook.sendStarted.toString());
-      this.enableFormControl('sendFinished', this._webhook.sendFinished.toString());
+      this.enableFormControl('sendStarted', (this._webhook?.sendStarted ?? true).toString());
+      this.enableFormControl('sendFinished', (this._webhook?.sendFinished ?? true).toString());
     }
   }
 
