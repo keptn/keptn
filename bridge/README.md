@@ -172,7 +172,7 @@ Both commands serve Angular on port 3000 with no live reload - this will also en
 
 ### Bundle Size Report
 
-The Keptn Bridge is bundled with the Angular CLI. To analyze the current bundle size, first build the application with `ng build --stats-json`, to generate the [`stats.json`](https://webpack.js.org/api/stats/) file. Then run the [Webpack Bundle Analyzer](https://github.com/webpack-contrib/webpack-bundle-analyzer) with `npm run bundle-report` to create an interactive treemap visualization of the contents of all your bundles.
+The Keptn Bridge is bundled with the Angular CLI. To analyze the current bundle size, first run `yarn build:stats`, to generate the [`stats.json`](https://webpack.js.org/api/stats/) file. Then run the [Webpack Bundle Analyzer](https://github.com/webpack-contrib/webpack-bundle-analyzer) with `yarn bundle-report` to create an interactive treemap visualization of the contents of all your bundles.
 
 ## IDE Setup
 

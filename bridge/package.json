@@ -10,6 +10,7 @@
     "start:ci": "ng serve --port=5000 --no-live-reload --configuration=test",
     "ng": "ng",
     "build": "ng build --configuration production --base-href=./",
+    "build:stats": "ng build --stats-json",
     "test": "TZ=Europe/Berlin jest --config=jest.config.ts --maxWorkers=1",
     "test:win32": "set TZ=Europe/Berlin && jest --config=jest.config.ts --maxWorkers=1",
     "lint:check": "eslint ./",
@@ -113,7 +114,7 @@
     "prettier": "2.6.2",
     "ts-node": "10.8.1",
     "typescript": "4.3.5",
-    "webpack-bundle-analyzer": "^4.5.0"
+    "webpack-bundle-analyzer": "4.5.0"
   },
   "resolutions": {
     "minimist": "1.2.6",
