@@ -348,7 +348,10 @@ export class DataService {
               : Object.assign(existingProject, project.reduced);
           });
         }),
-        catchError(() => of([]))
+        catchError((err) => {
+          console.error(err);
+          return of([]);
+        })
       )
       .subscribe((projects) => this._projects.next(projects));
   }

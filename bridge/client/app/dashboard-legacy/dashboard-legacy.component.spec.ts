@@ -41,7 +41,10 @@ describe('DashboardLegacyComponent', () => {
     // given
     const loadProjectSpy = jest.spyOn(dataService, 'loadProjects');
 
-    // when, then
+    // when
+    component.checkRefreshProjects();
+
+    // then
     expect(loadProjectSpy).not.toHaveBeenCalled();
   });
 
@@ -51,7 +54,7 @@ describe('DashboardLegacyComponent', () => {
     jest.spyOn(router, 'getCurrentNavigation').mockReturnValue({ previousNavigation: {} } as Navigation);
 
     // when
-    new DashboardLegacyComponent(router, dataService, 0);
+    component.checkRefreshProjects();
 
     // then
     expect(loadProjectSpy).toHaveBeenCalled();

@@ -37,7 +37,7 @@ export class DashboardLegacyComponent {
     this.checkRefreshProjects();
   }
 
-  private checkRefreshProjects(): void {
+  checkRefreshProjects(): void {
     const currentNav = this.router.getCurrentNavigation();
     const hadPreviousNavigation = currentNav != null && currentNav.previousNavigation != null;
     if (hadPreviousNavigation) {
@@ -57,7 +57,7 @@ export class DashboardLegacyComponent {
     );
   }
 
-  public refreshProjects(): void {
+  refreshProjects(): void {
     this.dataService.loadProjects();
   }
 }
