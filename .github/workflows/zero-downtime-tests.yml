@@ -444,7 +444,7 @@ jobs:
 
         # Upload the original go test log as an artifact for later review.
       - name: Upload go test log
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         if: always()
         with:
           name: go-test-log
@@ -453,7 +453,7 @@ jobs:
 
       # Upload the original cypress test log as an artifact for later review.
       - name: Upload cypress test log
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         if: always() && github.event.inputs.testUI == 'true'
         with:
           name: ui-test-log

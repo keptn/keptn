@@ -3,7 +3,7 @@ import { interceptEvaluationBoard, interceptEvaluationBoardWithoutDeployment } f
 export class EvaluationBoardPage {
   public visit(keptnContext: string, stage?: string): this {
     const stagePath = stage ? `/${stage}` : '';
-    cy.visit(`/evaluation/${keptnContext}${stagePath}`);
+    cy.visit(`/evaluation/${keptnContext}${stagePath}`).wait('@projects');
     return this;
   }
 

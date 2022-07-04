@@ -1,12 +1,15 @@
 import { DtAutoComplete, DtFilterArray } from './dt-filter';
 import { DtFilterFieldChangeEvent } from '@dynatrace/barista-components/filter-field';
-import { UniformSubscription as us, UniformSubscriptionFilter } from '../../../shared/interfaces/uniform-subscription';
+import {
+  IUniformSubscription as us,
+  IUniformSubscriptionFilter,
+} from '../../../shared/interfaces/uniform-subscription';
 import { DtFilterFieldDefaultDataSourceAutocomplete } from '@dynatrace/barista-components/filter-field/src/filter-field-default-data-source';
 import { EventTypes } from '../../../shared/interfaces/event-types';
 
 export class UniformSubscription implements us {
   public id?: string;
-  public filter!: UniformSubscriptionFilter;
+  public filter!: IUniformSubscriptionFilter;
   public event = '';
   public parameters: { key: string; value: string; visible: boolean }[] = [];
   private _filter?: DtFilterArray[];

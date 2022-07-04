@@ -1,8 +1,12 @@
-import { WebhookConfig } from '../../../../shared/models/webhook-config';
+import { IWebhookConfigClient } from '../../../../shared/interfaces/webhook-config';
 
-const config = new WebhookConfig();
-config.method = 'POST';
-config.url = 'https://keptn.sh';
-config.payload = '{}';
-config.header = [{ name: 'Content-Type', value: 'application/json' }];
+const config: IWebhookConfigClient = {
+  method: 'POST',
+  url: 'https://keptn.sh',
+  payload: '{}',
+  header: [{ key: 'Content-Type', value: 'application/json' }],
+  sendFinished: false,
+  sendStarted: false,
+  type: 'sh.keptn.event.evaluation.triggered',
+};
 export { config as WebhookConfigMock };

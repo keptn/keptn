@@ -874,40 +874,7 @@ const remediationTracesResponse = {
   totalCount: 19,
 };
 
-const serviceRemediationWithConfigResponse = {
-  stages: [
-    {
-      name: 'production',
-      remediations: [
-        {
-          name: 'remediation',
-          problemTitle: 'Failure rate increase',
-          service: 'carts',
-          project: 'sockshop',
-          time: '2021-11-04T04:51:21.557Z',
-          shkeptncontext: '35383737-3630-4639-b037-353138323631',
-          state: 'started',
-          stages: [
-            {
-              name: 'production',
-              actions: [],
-              state: 'started',
-              latestEvent: {
-                type: 'sh.keptn.event.get-action.started',
-                id: '7448420f-5b15-4777-9d39-cc8308e2b0c3',
-                time: '2021-11-04T04:51:23.266Z',
-              },
-            },
-          ],
-        },
-      ],
-      config:
-        'YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjEuNApraW5kOiBSZW1lZGlhdGlvbgptZXRhZGF0YToKICBuYW1lOiBjYXJ0cy1yZW1lZGlhdGlvbgpzcGVjOgogIHJlbWVkaWF0aW9uczoKICAgIC0gcHJvYmxlbVR5cGU6IFJlc3BvbnNlIHRpbWUgZGVncmFkYXRpb24KICAgICAgYWN0aW9uc09uT3BlbjoKICAgICAgICAtIGFjdGlvbjogc2NhbGluZwogICAgICAgICAgbmFtZTogc2NhbGluZwogICAgICAgICAgZGVzY3JpcHRpb246IFNjYWxlIHVwCiAgICAgICAgICB2YWx1ZTogIjEiCiAgICAtIHByb2JsZW1UeXBlOiByZXNwb25zZV90aW1lX3A5MAogICAgICBhY3Rpb25zT25PcGVuOgogICAgICAgIC0gYWN0aW9uOiBzY2FsaW5nCiAgICAgICAgICBuYW1lOiBzY2FsaW5nCiAgICAgICAgICBkZXNjcmlwdGlvbjogU2NhbGUgdXAKICAgICAgICAgIHZhbHVlOiAiMSI=',
-    },
-  ],
-};
-
-const serviceRemediationWithoutConfigResponse = {
+const serviceRemediationResponse = {
   stages: [
     {
       name: 'production',
@@ -941,5 +908,4 @@ const serviceRemediationWithoutConfigResponse = {
 export { openRemediationsResponseMock as OpenRemediationsResponse };
 export { remediationTraceResponse as RemediationTraceResponse };
 export { remediationTracesResponse as RemediationTracesResponse };
-export { serviceRemediationWithConfigResponse as ServiceRemediationWithConfigResponse };
-export { serviceRemediationWithoutConfigResponse as ServiceRemediationWithoutConfigResponse };
+export { serviceRemediationResponse as ServiceRemediationResponse };

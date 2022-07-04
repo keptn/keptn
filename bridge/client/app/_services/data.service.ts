@@ -16,7 +16,6 @@ import { KeptnInfo } from '../_models/keptn-info';
 import { UniformRegistration } from '../_models/uniform-registration';
 import { UniformSubscription } from '../_models/uniform-subscription';
 import { SequenceState } from '../../../shared/interfaces/sequence';
-import { WebhookConfig } from '../../../shared/models/webhook-config';
 import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-registration-info';
 import { FileTree } from '../../../shared/interfaces/resourceFileTree';
 import { EvaluationHistory } from '../_interfaces/evaluation-history';
@@ -37,6 +36,7 @@ import {
   ISequenceStateInfo,
   SequencesState,
 } from '../_views/ktb-sequence-view/ktb-sequence-view.utils';
+import { IWebhookConfigClient } from '../../../shared/interfaces/webhook-config';
 import { IGitDataExtended } from '../../../shared/interfaces/project';
 
 @Injectable({
@@ -169,7 +169,7 @@ export class DataService {
   public updateUniformSubscription(
     integrationId: string,
     subscription: UniformSubscription,
-    webhookConfig?: WebhookConfig
+    webhookConfig?: IWebhookConfigClient
   ): Observable<Record<string, unknown>> {
     return this.apiService.updateUniformSubscription(integrationId, subscription.reduced, webhookConfig);
   }
@@ -177,7 +177,7 @@ export class DataService {
   public createUniformSubscription(
     integrationId: string,
     subscription: UniformSubscription,
-    webhookConfig?: WebhookConfig
+    webhookConfig?: IWebhookConfigClient
   ): Observable<Record<string, unknown>> {
     return this.apiService.createUniformSubscription(integrationId, subscription.reduced, webhookConfig);
   }
@@ -663,7 +663,7 @@ export class DataService {
     projectName: string,
     stageName?: string,
     serviceName?: string
-  ): Observable<WebhookConfig> {
+  ): Observable<IWebhookConfigClient> {
     return this.apiService.getWebhookConfig(subscriptionId, projectName, stageName, serviceName);
   }
 
@@ -677,8 +677,13 @@ export class DataService {
       .pipe(map((serviceStates) => serviceStates.map((state) => ServiceState.fromJSON(state))));
   }
 
-  public getServiceDeployment(projectName: string, keptnContext: string, fromTime?: string): Observable<Deployment> {
-    return this.apiService.getServiceDeployment(projectName, keptnContext, fromTime).pipe(
+  public getServiceDeployment(
+    projectName: string,
+    keptnContext: string,
+    includeRemediations: boolean,
+    fromTime?: string
+  ): Observable<Deployment> {
+    return this.apiService.getServiceDeployment(projectName, keptnContext, includeRemediations, fromTime).pipe(
       map((deployment) => {
         return Deployment.fromJSON(deployment);
       })

@@ -3,35 +3,16 @@ import Axios from 'axios';
 import https from 'https';
 import { Express } from 'express';
 import { getConfiguration } from '../utils/configuration';
-import { BridgeConfiguration, BridgeOption } from '../interfaces/configuration';
+import { BridgeConfiguration, BridgeOption, EnvType } from '../interfaces/configuration';
 
-const baseOptions: BridgeOption = {
-  api: {
-    token: 'apiToken',
-    url: 'http://localhost/api/',
-  },
-  oauth: {
-    baseURL: 'http://baseoauthurl',
-    clientID: 'myclientid',
-    discoveryURL: 'http://discoveryurl',
-    enabled: false,
-  },
-  mongo: {
-    host: 'mongo://localhost',
-    password: 'pwd',
-    user: 'usr',
-  },
-  version: 'develop',
-};
+export const baseConfig = getConfiguration(getBaseOptions());
 
-const baseConfig = getConfiguration(baseOptions);
-
-const setupServer = async (config: BridgeConfiguration = Object.create({})): Promise<Express> => {
+export const setupServer = async (config: BridgeConfiguration = Object.create({})): Promise<Express> => {
   global.baseUrl = 'http://localhost/api/';
 
   // create a new fresh configuration
   if (config && Object.keys(config).length === 0) {
-    config = getConfiguration(baseOptions);
+    config = getConfiguration(getBaseOptions());
   }
 
   global.axiosInstance = Axios.create({
@@ -48,4 +29,24 @@ const setupServer = async (config: BridgeConfiguration = Object.create({})): Pro
   return init(config);
 };
 
-export { setupServer, baseOptions, baseConfig };
+export function getBaseOptions(): BridgeOption {
+  return {
+    api: {
+      token: 'apiToken',
+      url: 'http://localhost/api/',
+    },
+    oauth: {
+      baseURL: 'http://baseoauthurl',
+      clientID: 'myclientid',
+      discoveryURL: 'http://discoveryurl',
+      enabled: false,
+    },
+    mongo: {
+      host: 'mongo://localhost',
+      password: 'pwd',
+      user: 'usr',
+    },
+    version: 'develop',
+    mode: EnvType.TEST,
+  };
+}

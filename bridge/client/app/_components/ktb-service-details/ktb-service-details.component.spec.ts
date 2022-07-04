@@ -57,18 +57,4 @@ describe('KtbServiceDetailsComponent', () => {
   it('should be label', () => {
     expect(component.isUrl('myLabel')).toBe(false);
   });
-
-  it('should show remediation dialog', () => {
-    component.deploymentInfo = {
-      deployment: Deployment.fromJSON(ServiceDeploymentMock),
-      stage: 'production',
-    };
-    fixture.detectChanges();
-    const remediationConfigButton = fixture.nativeElement.querySelector('[uitestid=show-remediation-config-button]');
-    expect(remediationConfigButton).toBeTruthy();
-    remediationConfigButton.click();
-    fixture.detectChanges();
-    const remediationConfigContent = document.querySelector('[uitestid=remediation-config-content]');
-    expect(remediationConfigContent).toBeTruthy();
-  });
 });

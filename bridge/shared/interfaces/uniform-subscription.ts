@@ -1,12 +1,12 @@
-export type UniformSubscriptionFilter = {
+export interface IUniformSubscriptionFilter {
   projects: string[] | null;
   stages: string[] | null;
   services: string[] | null;
-};
+}
 
-export interface UniformSubscription {
+export interface IUniformSubscription {
   event: string;
-  filter: UniformSubscriptionFilter;
+  filter: IUniformSubscriptionFilter;
   parameters?: { key: string; value: string; visible: boolean }[];
   id?: string;
 }

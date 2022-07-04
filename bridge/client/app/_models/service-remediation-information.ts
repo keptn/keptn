@@ -2,7 +2,7 @@ import { IServiceRemediationInformation } from '../_interfaces/service-remediati
 import { Sequence } from './sequence';
 
 export class ServiceRemediationInformation implements IServiceRemediationInformation {
-  stages!: { name: string; remediations: Sequence[]; config?: string }[];
+  stages!: { name: string; remediations: Sequence[] }[];
 
   public static fromJSON(data: IServiceRemediationInformation): ServiceRemediationInformation {
     const serviceRemediationInformation = Object.assign(new this(), data);

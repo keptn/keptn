@@ -4,7 +4,7 @@
     <dt-header-cell *dtHeaderCellDef>Started at</dt-header-cell>
     <dt-cell *dtCellDef="let row">
       <ng-container *ngIf="isRemediation(row) as sequence; else trace">
-        <div fxLayout="row" fxLayoutAlign="start center">
+        <div fxLayout="row" fxLayoutAlign="start center" uitestid="ktb-sequence-list-item-remediation">
           <button *ngIf="sequence.isLoading(); else finished" class="m-0 p-0" dt-button disabled variant="nested">
             <ktb-loading-spinner aria-label="Remediation is running..."></ktb-loading-spinner>
           </button>

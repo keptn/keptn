@@ -179,7 +179,7 @@ describe('KtbWebhookSettingsComponent', () => {
 
     for (let i = 0; i < component.headerControls.length; ++i) {
       expect(WebhookConfigMock.header[i]).toEqual({
-        name: component.headerControls[i].get('name')?.value,
+        key: component.headerControls[i].get('name')?.value,
         value: component.headerControls[i].get('value')?.value,
       });
     }
@@ -319,7 +319,6 @@ describe('KtbWebhookSettingsComponent', () => {
     // given
     component.eventType = 'triggered';
     fixture.detectChanges();
-
     // then
     expect(component.getFormControl('sendFinished').value).toEqual('true');
     expect(component.getFormControl('sendStarted').value).toEqual('true');
@@ -349,17 +348,12 @@ describe('KtbWebhookSettingsComponent', () => {
     // given
     component.eventType = 'triggered';
     component.webhook = {
-      header: [{ name: 'x-token', value: 'token-value' }],
+      header: [{ key: 'x-token', value: 'token-value' }],
       method: 'GET',
       payload: 'payload',
       proxy: 'https://proxy.com',
       sendFinished: true,
       sendStarted: true,
-      filter: {
-        projects: null,
-        services: null,
-        stages: null,
-      },
       type: '',
       url: 'https://example.com',
     };
@@ -375,17 +369,12 @@ describe('KtbWebhookSettingsComponent', () => {
     // given
     component.eventType = 'triggered';
     component.webhook = {
-      header: [{ name: 'x-token', value: 'token-value' }],
+      header: [{ key: 'x-token', value: 'token-value' }],
       method: 'GET',
       payload: 'payload',
       proxy: 'https://proxy.com',
       sendFinished: false,
       sendStarted: false,
-      filter: {
-        projects: null,
-        services: null,
-        stages: null,
-      },
       type: '',
       url: 'https://example.com',
     };

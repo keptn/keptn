@@ -1,6 +1,6 @@
 <div fxLayout="row" fxLayoutAlign="space-between" fxLayoutGap="5px" class="timeline" *ngIf="deployment">
   <ng-container *ngFor="let stage of deployment.stages">
-    <div fxLayout="row" [attr.uitestid]="'keptn-deployment-timeline-stage-' + stage">
+    <div fxLayout="row" [attr.uitestid]="'keptn-deployment-timeline-stage-' + stage.name">
       <ktb-stage-badge
         class="pointer"
         [stage]="stage.name"

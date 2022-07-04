@@ -1,28 +1,5 @@
-import { WebhookConfig } from '../../shared/models/webhook-config';
-
-function generateWebhookConfigCurl(webhookConfig: WebhookConfig): string {
-  let params = '';
-  for (const header of webhookConfig?.header || []) {
-    params += `--header '${header.name}: ${header.value}' `;
-  }
-  params += `--request ${webhookConfig.method} `;
-  if (webhookConfig.proxy) {
-    params += `--proxy ${webhookConfig.proxy} `;
-  }
-  if (webhookConfig.payload) {
-    let stringify = webhookConfig.payload;
-    try {
-      stringify = JSON.stringify(JSON.parse(webhookConfig.payload));
-    } catch {
-      stringify = stringify.replace(/\r\n|\n|\r/gm, '');
-    }
-    params += `--data '${stringify}' `;
-  }
-  return `curl ${params}${webhookConfig.url}`;
-}
-
-function parseCurl(curl: string): { [key: string]: string[] } {
-  const startCommand = 'curl ';
+function parseCurl(curl: string, ignoreStart = false): { [key: string]: string[] } {
+  const startCommand = ignoreStart ? '' : 'curl ';
   const result: { [key: string]: string[] } = {};
   if (curl.startsWith(startCommand)) {
     let i = startCommand.length;
@@ -93,4 +70,4 @@ function getNextCommand(curl: string, i: number): { data: string; index: number 
   };
 }
 
-export { parseCurl, generateWebhookConfigCurl };
+export { parseCurl };

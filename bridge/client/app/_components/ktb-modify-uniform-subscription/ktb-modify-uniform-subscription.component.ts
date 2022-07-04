@@ -10,9 +10,8 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { DtFilterFieldDefaultDataSourceAutocomplete } from '@dynatrace/barista-components/filter-field/src/filter-field-default-data-source';
 import { EventTypes } from '../../../../shared/interfaces/event-types';
 import { UniformRegistration } from '../../_models/uniform-registration';
-import { WebhookConfig } from '../../../../shared/models/webhook-config';
 import { AppUtils } from '../../_utils/app.utils';
-import { PreviousWebhookConfig } from '../../../../shared/interfaces/webhook-config';
+import { IWebhookConfigClient, PreviousWebhookConfig } from '../../../../shared/interfaces/webhook-config';
 import { NotificationsService } from '../../_services/notifications.service';
 import { UniformRegistrationInfo } from '../../../../shared/interfaces/uniform-registration-info';
 import { NotificationType } from '../../_models/notification';
@@ -38,7 +37,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     subscription: UniformSubscription;
     project: Project;
     integrationId: string;
-    webhook?: WebhookConfig;
+    webhook?: IWebhookConfigClient;
     webhookSecrets?: Secret[];
   }>;
   public _dataSource = new DtFilterFieldDefaultDataSource();
@@ -169,7 +168,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
           projectName: string;
           integrationInfo: UniformRegistrationInfo;
         }) => {
-          let webhook: Observable<WebhookConfig | undefined>;
+          let webhook: Observable<IWebhookConfigClient | undefined>;
           if (data.integrationInfo.isWebhookService && this.editMode && data.subscription.id) {
             const stage: string | undefined = data.subscription.filter?.stages?.[0];
             const services: string | undefined = data.subscription.filter?.services?.[0];
@@ -268,7 +267,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     projectName: string,
     integrationId: string,
     subscription: UniformSubscription,
-    webhookConfig?: WebhookConfig
+    webhookConfig?: IWebhookConfigClient
   ): void {
     this.updating = true;
     let update;
@@ -282,7 +281,6 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
 
     if (webhookConfig) {
       webhookConfig.type = subscription.event;
-      webhookConfig.filter = subscription.filter;
       webhookConfig.prevConfiguration = this._previousFilter;
     }
 

@@ -1,4 +1,4 @@
-import { UniformSubscription } from './uniform-subscription';
+import { IUniformSubscription } from './uniform-subscription';
 
 export interface UniformRegistrationResult {
   id: string;
@@ -18,5 +18,5 @@ export interface UniformRegistrationResult {
   };
   unreadEventsCount?: number;
   name: string;
-  subscriptions: UniformSubscription[];
+  subscriptions: IUniformSubscription[];
 }
