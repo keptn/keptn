@@ -135,7 +135,14 @@ export class DataService {
   }
 
   public createProjectExtended(projectName: string, shipyard: string, data?: IGitDataExtended): Observable<unknown> {
-    return this.apiService.createProjectExtended(projectName, shipyard, data);
+    return this.apiService.createProjectExtended(projectName, shipyard, data).pipe(
+      mergeMap(() => this.loadPlainProject(projectName)),
+      map((project) => {
+        const projects = this._projects.getValue() ?? [];
+        this._projects.next([...projects, project]);
+        return null;
+      })
+    );
   }
 
   public createService(projectName: string, serviceName: string): Observable<Record<string, unknown>> {
