@@ -39,10 +39,6 @@ flags:
     paths:
       - cli/
     carryforward: true
-  configuration-service:
-    paths:
-      - configuration-service/
-    carryforward: true
   resource-service:
     paths:
       - resource-service/

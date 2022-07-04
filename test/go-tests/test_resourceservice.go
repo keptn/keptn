@@ -145,23 +145,19 @@ func Test_ResourceServiceBasic(t *testing.T) {
 	resp, err = internalKeptnAPI.Post(basePath, createProjectRequest, 3)
 	require.Nil(t, err)
 
-	// configuration-service returns 400
-	// resource-service returns 409
-	require.Contains(t, []int{400, 409}, resp.Response().StatusCode)
+	require.Equal(t, 409, resp.Response().StatusCode)
 
 	t.Logf("Creating a new resource for non-existing project %s", nonExistingProjectName)
 	resp, err = internalKeptnAPI.Post(basePath+"/"+nonExistingProjectName+"/resource", createResourceRequest, 3)
 	require.Nil(t, err)
-	// configuration-service returns 400
-	// resource-service returns 404
-	require.Contains(t, []int{400, 404}, resp.Response().StatusCode)
+
+	require.Equal(t, 404, resp.Response().StatusCode)
 
 	t.Logf("Creating a new resource with invalid payload for project %s", projectName)
 	resp, err = internalKeptnAPI.Post(basePath+"/"+projectName+"/resource", invalidResourceRequest, 3)
 	require.Nil(t, err)
-	// configuration-service returns 400
-	// resource-service returns 404
-	require.Contains(t, []int{400, 404}, resp.Response().StatusCode)
+
+	require.Equal(t, 404, resp.Response().StatusCode)
 
 	for _, stageReq := range createStageRequests {
 		t.Logf("Creating a new stage %s in project %s", stageReq.StageName, projectName)
@@ -211,16 +207,12 @@ func Test_ResourceServiceBasic(t *testing.T) {
 		t.Logf("Creating an existing new stage %s in project %s", stageReq.StageName, projectName)
 		resp, err = internalKeptnAPI.Post(basePath+"/"+projectName+"/stage", stageReq, 3)
 		require.Nil(t, err)
-		// configuration-service returns 400
-		// resource-service returns 409
-		require.Contains(t, []int{400, 409}, resp.Response().StatusCode)
+		require.Equal(t, 409, resp.Response().StatusCode)
 
 		t.Logf("Creating a new resource for non-existing stage %s for project %s", nonExistingStageName, projectName)
 		resp, err = internalKeptnAPI.Post(basePath+"/"+projectName+"/stage/"+nonExistingStageName+"/resource", createResourceRequest, 3)
 		require.Nil(t, err)
-		// configuration-service returns 400
-		// resource-service returns 404
-		require.Contains(t, []int{400, 404}, resp.Response().StatusCode)
+		require.Equal(t, 404, resp.Response().StatusCode)
 
 		t.Logf("Creating a new resource with invalid payload for stage %s for project %s", stageReq.StageName, projectName)
 		resp, err = internalKeptnAPI.Post(basePath+"/"+projectName+"/stage/"+stageReq.StageName+"/resource", invalidResourceRequest, 3)
@@ -272,16 +264,12 @@ func Test_ResourceServiceBasic(t *testing.T) {
 			t.Logf("Creating an existing new service %s in stage %s in project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
 			resp, err = internalKeptnAPI.Post(basePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service", serviceReq, 3)
 			require.Nil(t, err)
-			// configuration-service returns 400
-			// resource-service returns 409
-			require.Contains(t, []int{400, 409}, resp.Response().StatusCode)
+			require.Equal(t, 409, resp.Response().StatusCode)
 
 			t.Logf("Creating a new resource for non-existing service %s in stage %s for project %s", nonExistingServiceName, stageReq.StageName, projectName)
 			resp, err = internalKeptnAPI.Post(basePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+nonExistingServiceName+"/resource", createResourceRequest, 3)
 			require.Nil(t, err)
-			// configuration-service returns 400
-			// resource-service returns 404
-			require.Contains(t, []int{400, 404}, resp.Response().StatusCode)
+			require.Equal(t, 404, resp.Response().StatusCode)
 
 			t.Logf("Creating a new resource with invalid payload for service %s in stage %s for project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
 			resp, err = internalKeptnAPI.Post(basePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource", invalidResourceRequest, 3)
@@ -302,9 +290,7 @@ func Test_ResourceServiceBasic(t *testing.T) {
 	t.Logf("Updating existing resource of project %s", projectName)
 	resp, err = internalKeptnAPI.Put(basePath+"/"+projectName+"/resource"+resourceUriPath, updateResourceRequest, 3)
 	require.Nil(t, err)
-	// configuration-service returns 201
-	// resource-service returns 200
-	require.Contains(t, []int{201, 200}, resp.Response().StatusCode)
+	require.Equal(t, 200, resp.Response().StatusCode)
 
 	t.Logf("Checking resource for project %s", projectName)
 	resp, err = internalKeptnAPI.Get(basePath+"/"+projectName+"/resource"+resourceUriPath, 3)
@@ -321,9 +307,7 @@ func Test_ResourceServiceBasic(t *testing.T) {
 	t.Logf("Updating existing list of resources of project %s", projectName)
 	resp, err = internalKeptnAPI.Put(basePath+"/"+projectName+"/resource", updateResourceListRequest, 3)
 	require.Nil(t, err)
-	// configuration-service returns 201
-	// resource-service returns 200
-	require.Contains(t, []int{201, 200}, resp.Response().StatusCode)
+	require.Equal(t, 200, resp.Response().StatusCode)
 
 	t.Logf("Checking all resources for project %s", projectName)
 	resp, err = internalKeptnAPI.Get(basePath+"/"+projectName+"/resource", 3)
@@ -352,9 +336,7 @@ func Test_ResourceServiceBasic(t *testing.T) {
 		t.Logf("Updating existing resource for stage %s in project %s", stageReq.StageName, projectName)
 		resp, err = internalKeptnAPI.Put(basePath+"/"+projectName+"/stage/"+stageReq.StageName+"/resource"+resourceUriPath, updateResourceRequest, 3)
 		require.Nil(t, err)
-		// configuration-service returns 201
-		// resource-service returns 200
-		require.Contains(t, []int{201, 200}, resp.Response().StatusCode)
+		require.Equal(t, 200, resp.Response().StatusCode)
 
 		t.Logf("Checking resource for stage %s for project %s", stageReq.StageName, projectName)
 		resp, err = internalKeptnAPI.Get(basePath+"/"+projectName+"/stage/"+stageReq.StageName+"/resource"+resourceUriPath, 3)
@@ -371,9 +353,7 @@ func Test_ResourceServiceBasic(t *testing.T) {
 		t.Logf("Updating existing list of resources for stage %s in project %s", stageReq.StageName, projectName)
 		resp, err = internalKeptnAPI.Put(basePath+"/"+projectName+"/stage/"+stageReq.StageName+"/resource", updateResourceListRequest, 3)
 		require.Nil(t, err)
-		// configuration-service returns 201
-		// resource-service returns 200
-		require.Contains(t, []int{201, 200}, resp.Response().StatusCode)
+		require.Equal(t, 200, resp.Response().StatusCode)
 
 		t.Logf("Checking all resources for stage %s for project %s", stageReq.StageName, projectName)
 		resp, err = internalKeptnAPI.Get(basePath+"/"+projectName+"/stage/"+stageReq.StageName+"/resource", 3)
@@ -404,9 +384,7 @@ func Test_ResourceServiceBasic(t *testing.T) {
 			t.Logf("Updating existing resource for service %s in stage %s in project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
 			resp, err = internalKeptnAPI.Put(basePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource"+resourceUriPath, updateResourceRequest, 3)
 			require.Nil(t, err)
-			// configuration-service returns 201
-			// resource-service returns 200
-			require.Contains(t, []int{201, 200}, resp.Response().StatusCode)
+			require.Equal(t, 200, resp.Response().StatusCode)
 
 			t.Logf("Checking resource for service %s in stage %s for project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
 			resp, err = internalKeptnAPI.Get(basePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource"+resourceUriPath, 3)
@@ -423,9 +401,7 @@ func Test_ResourceServiceBasic(t *testing.T) {
 			t.Logf("Updating existing list of resources for service %s in stage %s in project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
 			resp, err = internalKeptnAPI.Put(basePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource", updateResourceListRequest, 3)
 			require.Nil(t, err)
-			// configuration-service returns 201
-			// resource-service returns 200
-			require.Contains(t, []int{201, 200}, resp.Response().StatusCode)
+			require.Equal(t, 200, resp.Response().StatusCode)
 
 			t.Logf("Checking all resources for service %s in stage %s for project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
 			resp, err = internalKeptnAPI.Get(basePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource", 3)
@@ -461,9 +437,7 @@ func Test_ResourceServiceBasic(t *testing.T) {
 			t.Logf("Deleting the resource from service %s from stage %s from project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
 			resp, err = internalKeptnAPI.Delete(basePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource"+resourceUriPath, 3)
 			require.Nil(t, err)
-			// configuration-service returns 204
-			// resource-service returns 200
-			require.Contains(t, []int{204, 200}, resp.Response().StatusCode)
+			require.Equal(t, 200, resp.Response().StatusCode)
 
 			t.Logf("Checking non-existing resource for service %s for stage %s for project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
 			resp, err = internalKeptnAPI.Get(basePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource"+resourceUriPath, 3)
@@ -473,16 +447,12 @@ func Test_ResourceServiceBasic(t *testing.T) {
 			t.Logf("Deleting non-existing resource from service %s from stage %s from project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
 			resp, err = internalKeptnAPI.Delete(basePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource"+resourceUriPath, 3)
 			require.Nil(t, err)
-			// configuration-service returns 500
-			// resource-service returns 404
-			require.Contains(t, []int{500, 404}, resp.Response().StatusCode) //needs other code in resource-service
+			require.Equal(t, 404, resp.Response().StatusCode) //needs other code in resource-service
 
 			t.Logf("Deleting service %s in stage %s in project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
 			resp, err = internalKeptnAPI.Delete(basePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName, 3)
 			require.Nil(t, err)
-			// configuration-service returns 204
-			// resource-service returns 200
-			require.Contains(t, []int{204, 200}, resp.Response().StatusCode)
+			require.Equal(t, 200, resp.Response().StatusCode)
 
 			t.Logf("Checking resource for non-existing service %s in stage %s for project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
 			resp, err = internalKeptnAPI.Get(basePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource"+resourceUriPath, 3)
@@ -492,9 +462,7 @@ func Test_ResourceServiceBasic(t *testing.T) {
 			t.Logf("Deleting non-existing service %s in stage %s in project %s", nonExistingServiceName, stageReq.StageName, projectName)
 			resp, err = internalKeptnAPI.Delete(basePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+nonExistingServiceName, 3)
 			require.Nil(t, err)
-			// configuration-service returns 400
-			// resource-service returns 404
-			require.Contains(t, []int{400, 404}, resp.Response().StatusCode)
+			require.Equal(t, 404, resp.Response().StatusCode)
 		}
 	}
 
@@ -502,9 +470,7 @@ func Test_ResourceServiceBasic(t *testing.T) {
 		t.Logf("Deleting the resource from stage %s from project %s", stageReq.StageName, projectName)
 		resp, err = internalKeptnAPI.Delete(basePath+"/"+projectName+"/stage/"+stageReq.StageName+"/resource"+resourceUriPath, 3)
 		require.Nil(t, err)
-		// configuration-service returns 204
-		// resource-service returns 200
-		require.Contains(t, []int{204, 200}, resp.Response().StatusCode)
+		require.Equal(t, 200, resp.Response().StatusCode)
 
 		t.Logf("Checking non-existing resource for stage %s for project %s", stageReq.StageName, projectName)
 		resp, err = internalKeptnAPI.Get(basePath+"/"+projectName+"/stage/"+stageReq.StageName+"/resource"+resourceUriPath, 3)
@@ -514,16 +480,12 @@ func Test_ResourceServiceBasic(t *testing.T) {
 		t.Logf("Deleting non-existing resource from stage %s from project %s", stageReq.StageName, projectName)
 		resp, err = internalKeptnAPI.Delete(basePath+"/"+projectName+"/stage/"+stageReq.StageName+"/resource"+resourceUriPath, 3)
 		require.Nil(t, err)
-		// configuration-service returns 500
-		// resource-service returns 404
-		require.Contains(t, []int{500, 404}, resp.Response().StatusCode) //needs other code in resource-service
+		require.Equal(t, 404, resp.Response().StatusCode) //needs other code in resource-service
 
 		t.Logf("Deleting stage %s in project %s", stageReq.StageName, projectName)
 		resp, err = internalKeptnAPI.Delete(basePath+"/"+projectName+"/stage/"+stageReq.StageName, 3)
 		require.Nil(t, err)
-		// configuration-service returns 501
-		// resource-service returns 404
-		require.Contains(t, []int{501, 404}, resp.Response().StatusCode) //will be 204 for resource-service
+		require.Equal(t, 404, resp.Response().StatusCode) //will be 204 for resource-service
 
 		t.Logf("Checking resource for non-existing stage %s for project %s", stageReq.StageName, projectName)
 		resp, err = internalKeptnAPI.Get(basePath+"/"+projectName+"/stage/"+stageReq.StageName+"/resource"+resourceUriPath, 3)
@@ -534,17 +496,13 @@ func Test_ResourceServiceBasic(t *testing.T) {
 		t.Logf("Deleting non-existing stage %s in project %s", nonExistingStageName, projectName)
 		resp, err = internalKeptnAPI.Delete(basePath+"/"+projectName+"/stage/"+nonExistingStageName, 3)
 		require.Nil(t, err)
-		// configuration-service returns 501
-		// resource-service returns 404
-		require.Contains(t, []int{501, 404}, resp.Response().StatusCode) //will be 400 for resource-service
+		require.Equal(t, 404, resp.Response().StatusCode) //will be 400 for resource-service
 	}
 
 	t.Logf("Deleting the resource from project %s", projectName)
 	resp, err = internalKeptnAPI.Delete(basePath+"/"+projectName+"/resource"+resourceUriPath, 3)
 	require.Nil(t, err)
-	// configuration-service returns 204
-	// resource-service returns 200
-	require.Contains(t, []int{204, 200}, resp.Response().StatusCode)
+	require.Equal(t, 200, resp.Response().StatusCode)
 
 	t.Logf("Checking non-existing resource for project %s", projectName)
 	resp, err = internalKeptnAPI.Get(basePath+"/"+projectName+"/resource"+resourceUriPath, 3)
@@ -554,9 +512,8 @@ func Test_ResourceServiceBasic(t *testing.T) {
 	t.Logf("Deleting non-existing resource from project %s", projectName)
 	resp, err = internalKeptnAPI.Delete(basePath+"/"+projectName+"/resource"+resourceUriPath, 3)
 	require.Nil(t, err)
-	// configuration-service returns 500
-	// resource-service returns 404
-	require.Contains(t, []int{500, 404}, resp.Response().StatusCode) //needs other code in resource-service
+
+	require.Equal(t, 404, resp.Response().StatusCode) //needs other code in resource-service
 
 	t.Logf("Deleting the project %s", projectName)
 	resp, err = internalKeptnAPI.Delete(basePath+"/"+projectName, 3)
@@ -571,9 +528,7 @@ func Test_ResourceServiceBasic(t *testing.T) {
 	t.Logf("Deleting non-existing project %s", nonExistingProjectName)
 	resp, err = internalKeptnAPI.Delete(basePath+"/"+nonExistingProjectName, 3)
 	require.Nil(t, err)
-	// configuration-service returns 204
-	// resource-service returns 404
-	require.Contains(t, []int{204, 404}, resp.Response().StatusCode)
+	require.Equal(t, 404, resp.Response().StatusCode)
 }
 
 const resourceServiceCommitIDShipyard = `--- 
