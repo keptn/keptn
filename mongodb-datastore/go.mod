@@ -13,7 +13,7 @@ require (
 	github.com/jeremywohl/flatten v1.0.1
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.16.1-0.20220628071524-fc5b6f967e50
+	github.com/keptn/go-utils v0.16.1-0.20220705082456-83692294c579
 	github.com/nats-io/nats-server/v2 v2.8.4
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.5
