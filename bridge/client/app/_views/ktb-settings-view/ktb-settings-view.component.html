@@ -1,5 +1,5 @@
 <div fxFlexFill>
-  <div fxFlex fxLayout="row">
+  <div fxFlex fxLayout="row" id="settings-view-flex-row">
     <dt-menu class="submenu" aria-label="Keptn Settings Submenu" fxFlex="0 0 200px">
       <dt-menu-group label="Project configuration">
         <button dtMenuItem aria-label="Open project settings" routerLinkActive="active" routerLink="project">
@@ -37,7 +37,7 @@
         </button>
       </dt-menu-group>
     </dt-menu>
-    <div fxFlex>
+    <div fxFlex="calc(100%-200px)">
       <router-outlet></router-outlet>
     </div>
   </div>
