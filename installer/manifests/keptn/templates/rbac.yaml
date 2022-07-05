@@ -9,13 +9,9 @@ metadata:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: keptn-configuration-service
+  name: keptn-resource-service
   labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
-    {{- if .Values.resourceService.enabled }}
     app.kubernetes.io/name: resource-service
-    {{- else }}
-    app.kubernetes.io/name: configuration-service
-    {{- end }}
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -78,11 +74,7 @@ kind: Role
 metadata:
   name: keptn-get-secrets
   labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
-    {{- if .Values.resourceService.enabled }}
     app.kubernetes.io/name: resource-service
-    {{- else }}
-    app.kubernetes.io/name: configuration-service
-    {{- end }}
 rules:
   - apiGroups:
       - ""
@@ -248,20 +240,16 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: keptn-configuration-service-get-secrets
+  name: keptn-resource-service-get-secrets
   labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
-    {{- if .Values.resourceService.enabled }}
     app.kubernetes.io/name: resource-service
-    {{- else }}
-    app.kubernetes.io/name: configuration-service
-    {{- end }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: keptn-get-secrets
 subjects:
   - kind: ServiceAccount
-    name: keptn-configuration-service
+    name: keptn-resource-service
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
