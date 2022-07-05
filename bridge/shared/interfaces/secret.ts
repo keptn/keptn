@@ -11,9 +11,9 @@ interface ISecret {
 }
 
 export interface IClientSecret extends ISecret {
-  keys?: string[];
+  keys: string[];
 }
 
 export interface IServiceSecret extends ISecret {
-  data?: SecretKeyValuePair[];
+  data: SecretKeyValuePair[];
 }

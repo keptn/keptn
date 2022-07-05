@@ -12,7 +12,7 @@ import { IClientSecret } from '../../../../shared/interfaces/secret';
 })
 export class KtbSecretsListComponent implements OnInit {
   private _secrets = new BehaviorSubject<IClientSecret[]>([]);
-  secrets$ = this._secrets.asObservable();
+  public secrets$ = this._secrets.asObservable();
   public currentSecret?: IClientSecret;
   public deleteState: DeleteDialogState = null;
 

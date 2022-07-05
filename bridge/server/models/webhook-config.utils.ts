@@ -142,15 +142,13 @@ export function mapBridgeSecretsToYamlSecrets(
 }
 
 function getSecretPathFlat(secrets: IClientSecret[]): FlatSecret[] {
-  return secrets
-    .filter((secret): secret is IClientSecret & { keys: string[] } => !!secret.keys)
-    .reduce(
-      (flatSecrets: FlatSecret[], secret) => [
-        ...flatSecrets,
-        ...secret.keys.map((key) => mapSecretToFlatSecret(secret.name, key)),
-      ],
-      [] as FlatSecret[]
-    );
+  return secrets.reduce(
+    (flatSecrets: FlatSecret[], secret) => [
+      ...flatSecrets,
+      ...secret.keys.map((key) => mapSecretToFlatSecret(secret.name, key)),
+    ],
+    [] as FlatSecret[]
+  );
 }
 
 function mapSecretToFlatSecret(name: string, key: string): FlatSecret {

@@ -57,7 +57,7 @@ export class KtbCreateSecretFormComponent implements OnInit {
     this.loadSecretScopes();
   }
 
-  private setLoadingState(isLoading: boolean): void {
+  private activateLoadingState(isLoading: boolean): void {
     this.isLoading = isLoading;
     if (isLoading) {
       this.scopeControl.disable();
@@ -67,10 +67,10 @@ export class KtbCreateSecretFormComponent implements OnInit {
   }
 
   private loadSecretScopes(): void {
-    this.setLoadingState(true);
+    this.activateLoadingState(true);
     this.dataService
       .getSecretScopes()
-      .pipe(finalize(() => this.setLoadingState(false)))
+      .pipe(finalize(() => this.activateLoadingState(false)))
       .subscribe((scopes) => this._scopes.next(scopes));
   }
 
@@ -79,6 +79,7 @@ export class KtbCreateSecretFormComponent implements OnInit {
     const secret: IServiceSecret = {
       name: this.nameControl.value,
       scope: this.scopeControl.value,
+      data: [],
     };
     for (const dataGroup of this.dataControl.controls) {
       addData(secret, dataGroup.get('key')?.value, dataGroup.get('value')?.value);
@@ -89,7 +90,6 @@ export class KtbCreateSecretFormComponent implements OnInit {
       .pipe(
         map(() => true),
         catchError((err) => {
-          console.log(err);
           if (err.status !== 409) {
             return of(false);
           }

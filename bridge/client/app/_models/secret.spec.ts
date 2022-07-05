@@ -8,6 +8,7 @@ describe('Secret', () => {
     const secret: IServiceSecret = {
       name: '',
       scope: SecretScopeDefault.DEFAULT,
+      data: [],
     };
 
     // when
@@ -22,6 +23,7 @@ describe('Secret', () => {
     const secret: IServiceSecret = {
       name: '',
       scope: SecretScopeDefault.DEFAULT,
+      data: [],
     };
 
     // when
@@ -41,6 +43,7 @@ describe('Secret', () => {
     const secret: IServiceSecret = {
       name: '',
       scope: SecretScopeDefault.DEFAULT,
+      data: [],
     };
 
     // when
