@@ -16,7 +16,7 @@ import { ProjectsMock } from '../../../_services/_mockData/projects.mock';
 import { RouterTestingModule } from '@angular/router/testing';
 import { KtbIntegrationViewComponent } from '../ktb-integration-view.component';
 import { IWebhookConfigClient } from '../../../../../shared/interfaces/webhook-config';
-import { KtbCommonUseCasesViewModule } from '../../ktb-common-use-cases-view/ktb-common-use-cases-view.module';
+import { KtbIntegrationViewModule } from '../ktb-integration-view.module';
 
 describe('KtbModifyUniformSubscriptionComponent', () => {
   let component: KtbModifyUniformSubscriptionComponent;
@@ -32,7 +32,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     );
     await TestBed.configureTestingModule({
       imports: [
-        KtbCommonUseCasesViewModule,
+        KtbIntegrationViewModule,
         HttpClientTestingModule,
         RouterTestingModule.withRoutes([
           {
