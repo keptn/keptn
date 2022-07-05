@@ -38,6 +38,7 @@ BUILD_WEBHOOK_SVC=false
 
 # Don't include additional bridge artifacts that are only used for testing if this is (pre-)release build
 if [ "$RELEASE_BUILD" != 'true' ] && [ "$PRERELEASE_BUILD" != 'true' ] && [ "$BUILD_EVERYTHING" != 'true' ]; then
+  echo "Preparing for build of changed artifacts..."
   artifacts=(
     "$BRIDGE_ARTIFACT_PREFIX"
     "$BRIDGE_UI_TEST_ARTIFACT_PREFIX"
@@ -58,6 +59,7 @@ if [ "$RELEASE_BUILD" != 'true' ] && [ "$PRERELEASE_BUILD" != 'true' ] && [ "$BU
     "$WEBHOOK_SVC_ARTIFACT_PREFIX"
   )
 elif [ "$RELEASE_BUILD" != 'true' ] && [ "$PRERELEASE_BUILD" != 'true' ] && [ "$BUILD_EVERYTHING" == 'true' ]; then
+  echo "Preparing for build-everything build..."
   artifacts=(
     "$BRIDGE_ARTIFACT_PREFIX"
     "$BRIDGE_SERVER_ARTIFACT_PREFIX"
@@ -77,6 +79,7 @@ elif [ "$RELEASE_BUILD" != 'true' ] && [ "$PRERELEASE_BUILD" != 'true' ] && [ "$
     "$WEBHOOK_SVC_ARTIFACT_PREFIX"
   )
 else
+  echo "Preparing for release build..."
   artifacts=(
     "$BRIDGE_ARTIFACT_PREFIX"
     "$API_ARTIFACT_PREFIX"
