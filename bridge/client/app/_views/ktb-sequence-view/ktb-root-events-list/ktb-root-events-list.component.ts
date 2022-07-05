@@ -62,7 +62,7 @@ export class KtbRootEventsListComponent {
     this.selectedEventChange.emit({ sequence: <Sequence>sequence, stage });
   }
 
-  identifyEvent(index: number, item: Sequence): string | undefined {
+  identifyEvent(_index: number, item: Sequence): string | undefined {
     return item?.time;
   }
 

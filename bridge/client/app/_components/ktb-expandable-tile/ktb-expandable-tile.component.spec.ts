@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbExpandableTileComponent } from './ktb-expandable-tile.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { KtbExpandableTileModule } from './ktb-expandable-tile.module';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('KtbExpandableTileComponent', () => {
   let component: KtbExpandableTileComponent;
@@ -9,7 +10,7 @@ describe('KtbExpandableTileComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [KtbExpandableTileModule, HttpClientTestingModule],
+      imports: [KtbExpandableTileModule, BrowserAnimationsModule, HttpClientTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbExpandableTileComponent);

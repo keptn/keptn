@@ -11,8 +11,10 @@ import { SequencesMock } from '../../_services/_mockData/sequences.mock';
 import moment from 'moment';
 import { DtQuickFilterDefaultDataSourceAutocomplete } from '@dynatrace/barista-components/quick-filter';
 import { KtbSequenceViewModule } from './ktb-sequence-view.module';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { RouterTestingModule } from '@angular/router/testing';
 
-describe('KtbEventsListComponent', () => {
+describe('KtbSequenceViewComponent', () => {
   let component: KtbSequenceViewComponent;
   let fixture: ComponentFixture<KtbSequenceViewComponent>;
   const queryParams: Subject<Record<string, string | string[]>> = new BehaviorSubject({});
@@ -79,7 +81,7 @@ describe('KtbEventsListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [KtbSequenceViewModule, HttpClientTestingModule],
+      imports: [KtbSequenceViewModule, BrowserAnimationsModule, RouterTestingModule, HttpClientTestingModule],
       providers: [
         {
           provide: ActivatedRoute,
