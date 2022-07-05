@@ -8,6 +8,8 @@ import { DtExpandablePanelModule } from '@dynatrace/barista-components/expandabl
 import { DtShowMoreModule } from '@dynatrace/barista-components/show-more';
 import { DtButtonModule } from '@dynatrace/barista-components/button';
 import { KtbMarkdownComponent } from './ktb-markdown/ktb-markdown.component';
+import { DtOverlayModule } from '@dynatrace/barista-components/overlay';
+import { DtIconModule } from '@dynatrace/barista-components/icon';
 
 @NgModule({
   declarations: [KtbCommonUseCasesViewComponent, KtbMarkdownComponent],
@@ -19,6 +21,10 @@ import { KtbMarkdownComponent } from './ktb-markdown/ktb-markdown.component';
     DtButtonModule,
     DtExpandablePanelModule,
     DtShowMoreModule,
+    DtOverlayModule,
+    DtIconModule.forRoot({
+      svgIconLocation: `assets/icons/{{name}}.svg`,
+    }),
   ],
 })
 export class KtbCommonUseCasesViewModule {}

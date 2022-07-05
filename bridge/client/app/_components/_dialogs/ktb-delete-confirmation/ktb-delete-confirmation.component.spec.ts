@@ -2,6 +2,7 @@ import { ComponentFixture, fakeAsync, flush, TestBed, tick } from '@angular/core
 import { KtbDeleteConfirmationComponent } from './ktb-delete-confirmation.component';
 import { TestUtils } from '../../../_utils/test.utils';
 import { KtbDeleteConfirmationModule } from './ktb-delete-confirmation.module';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('KtbDeleteConfirmationComponent', () => {
   let component: KtbDeleteConfirmationComponent;
@@ -9,7 +10,7 @@ describe('KtbDeleteConfirmationComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [KtbDeleteConfirmationModule],
+      imports: [KtbDeleteConfirmationModule, BrowserAnimationsModule],
     }).compileComponents();
     fixture = TestBed.createComponent(KtbDeleteConfirmationComponent);
     component = fixture.componentInstance;
