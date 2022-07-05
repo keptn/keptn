@@ -1,8 +1,7 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { DataService } from '../../_services/data.service';
-import { ActivatedRoute } from '@angular/router';
 import { DtTableDataSource } from '@dynatrace/barista-components/table';
-import { Subject } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { Secret } from '../../_models/secret';
 import { DeleteDialogState } from '../_dialogs/ktb-delete-confirmation/ktb-delete-confirmation.component';
 
@@ -11,25 +10,28 @@ import { DeleteDialogState } from '../_dialogs/ktb-delete-confirmation/ktb-delet
   templateUrl: './ktb-secrets-list.component.html',
   styleUrls: [],
 })
-export class KtbSecretsListComponent implements OnInit, OnDestroy {
-  private readonly unsubscribe$ = new Subject<void>();
-  public tableEntries: DtTableDataSource<Secret> = new DtTableDataSource();
+export class KtbSecretsListComponent implements OnInit {
+  private _secrets = new BehaviorSubject<Secret[]>([]);
+  secrets$ = this._secrets.asObservable();
   public currentSecret?: Secret;
-  public SecretClass = Secret;
   public deleteState: DeleteDialogState = null;
 
-  constructor(
-    private dataService: DataService,
-    private route: ActivatedRoute,
-    private _changeDetectorRef: ChangeDetectorRef
-  ) {
+  constructor(private dataService: DataService) {
     this.deleteSecret.bind(this);
   }
 
   ngOnInit(): void {
     this.dataService.getSecrets().subscribe((secrets) => {
-      this.tableEntries.data = secrets;
+      this._secrets.next(secrets);
     });
+  }
+
+  public createDataSource(secrets: Secret[]): DtTableDataSource<Secret> {
+    return new DtTableDataSource(secrets);
+  }
+
+  public toSecret(value: unknown): Secret {
+    return <Secret>value;
   }
 
   public triggerDeleteSecret(secret: Secret): void {
@@ -38,21 +40,12 @@ export class KtbSecretsListComponent implements OnInit, OnDestroy {
   }
 
   public deleteSecret(secret?: Secret): void {
-    if (secret) {
-      this.dataService.deleteSecret(secret.name, secret.scope).subscribe(() => {
-        this.deleteState = 'success';
-        const data: Secret[] = this.tableEntries.data;
-        data.splice(
-          data.findIndex((s: Secret) => s.name === secret.name),
-          1
-        );
-        this.tableEntries = new DtTableDataSource(data);
-      });
+    if (!secret) {
+      return;
     }
-  }
-
-  ngOnDestroy(): void {
-    this.unsubscribe$.next();
-    this.unsubscribe$.complete();
+    this.dataService.deleteSecret(secret.name, secret.scope).subscribe(() => {
+      this.deleteState = 'success';
+      this._secrets.next(this._secrets.getValue().filter((s) => s.name !== secret.name));
+    });
   }
 }

@@ -1,55 +1,48 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { DataService } from '../../_services/data.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Secret } from '../../_models/secret';
 import { NotificationType } from '../../_models/notification';
 import { NotificationsService } from '../../_services/notifications.service';
-import { Subject } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
+import { catchError, finalize, map } from 'rxjs/operators';
+
+const secretNamePattern = '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*';
+const secretKeyPattern = '[-._a-zA-Z0-9]+';
 
 @Component({
   selector: 'ktb-secrets-view',
   templateUrl: './ktb-create-secret-form.component.html',
   styleUrls: ['./ktb-create-secret-form.component.scss'],
 })
-export class KtbCreateSecretFormComponent implements OnDestroy {
-  private secretNamePattern = '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*';
-  private secretKeyPattern = '[-._a-zA-Z0-9]+';
-  private _isLoading = false;
-  private unsubscribe$ = new Subject<void>();
-  public FormGroupClass = FormGroup;
-  public scopeControl = new FormControl(undefined, [Validators.required]);
-  public nameControl = new FormControl('', [
+export class KtbCreateSecretFormComponent implements OnInit {
+  FormGroupClass = FormGroup;
+  scopeControl = new FormControl(undefined, [Validators.required]);
+
+  nameControl = new FormControl('', [
     Validators.required,
-    Validators.pattern(this.secretNamePattern),
+    Validators.pattern(secretNamePattern),
     Validators.maxLength(253),
   ]);
-  public dataControl = this.fb.array([
+
+  dataControl = this.fb.array([
     this.fb.group({
-      key: ['', [Validators.required, Validators.pattern(this.secretKeyPattern), Validators.maxLength(253)]],
+      key: ['', [Validators.required, Validators.pattern(secretKeyPattern), Validators.maxLength(253)]],
       value: ['', [Validators.required]],
     }),
   ]);
 
-  public isUpdating = false;
-  public scopes?: string[];
-  public createSecretForm = this.fb.group({
+  createSecretForm = this.fb.group({
     name: this.nameControl,
     scope: this.scopeControl,
     data: this.dataControl,
   });
 
-  public get isLoading(): boolean {
-    return this._isLoading;
-  }
-  public set isLoading(isLoading: boolean) {
-    this._isLoading = isLoading;
-    if (isLoading) {
-      this.scopeControl.disable();
-    } else {
-      this.scopeControl.enable();
-    }
-  }
+  _scopes = new BehaviorSubject<string[]>([]);
+  scopes$ = this._scopes.asObservable();
+  isUpdating = false;
+  isLoading = false;
 
   constructor(
     private dataService: DataService,
@@ -57,56 +50,64 @@ export class KtbCreateSecretFormComponent implements OnDestroy {
     private route: ActivatedRoute,
     private fb: FormBuilder,
     private notificationService: NotificationsService
-  ) {
-    this.getSecretScopes();
+  ) {}
+
+  ngOnInit(): void {
+    this.loadSecretScopes();
   }
 
-  private getSecretScopes(): void {
-    this.isLoading = true;
-    this.dataService.getSecretScopes().subscribe(
-      (scopes) => {
-        this.scopes = scopes;
-        this.isLoading = false;
-      },
-      () => {
-        this.isLoading = false;
-      }
-    );
+  private setLoadingState(isLoading: boolean): void {
+    this.isLoading = isLoading;
+    if (isLoading) {
+      this.scopeControl.disable();
+    } else {
+      this.scopeControl.enable();
+    }
+  }
+
+  private loadSecretScopes(): void {
+    this.setLoadingState(true);
+    this.dataService
+      .getSecretScopes()
+      .pipe(finalize(() => this.setLoadingState(false)))
+      .subscribe((scopes) => this._scopes.next(scopes));
   }
 
   public createSecret(): void {
-    if (this.createSecretForm.valid) {
-      this.isUpdating = true;
-
-      const secret: Secret = new Secret();
-      secret.setName(this.nameControl.value);
-      secret.setScope(this.scopeControl.value);
-      for (const dataGroup of this.dataControl.controls) {
-        secret.addData(dataGroup.get('key')?.value, dataGroup.get('value')?.value);
-      }
-
-      this.dataService.addSecret(secret).subscribe(
-        () => {
-          this.isUpdating = false;
-          this.router.navigate(['../'], { relativeTo: this.route });
-        },
-        (err) => {
-          if (err.status === 409) {
-            this.notificationService.addNotification(
-              NotificationType.ERROR,
-              `A secret with the name ${secret.name} already exists. Please use another name for this secret to continue.`
-            );
-          }
-          this.isUpdating = false;
-        }
-      );
+    this.isUpdating = true;
+    const secret: Secret = new Secret();
+    secret.setName(this.nameControl.value);
+    secret.setScope(this.scopeControl.value);
+    for (const dataGroup of this.dataControl.controls) {
+      secret.addData(dataGroup.get('key')?.value, dataGroup.get('value')?.value);
     }
+
+    this.dataService
+      .addSecret(secret)
+      .pipe(
+        map(() => true),
+        catchError((err) => {
+          console.log(err);
+          if (err.status !== 409) {
+            return of(false);
+          }
+          const message = `A secret with the name ${secret.name} already exists. Please use another name for this secret to continue.`;
+          this.notificationService.addNotification(NotificationType.ERROR, message);
+          return of(false);
+        }),
+        finalize(() => (this.isUpdating = false))
+      )
+      .subscribe((success) => {
+        if (success) {
+          this.router.navigate(['../'], { relativeTo: this.route });
+        }
+      });
   }
 
   public addPair(): void {
     this.dataControl.push(
       this.fb.group({
-        key: ['', [Validators.required, Validators.pattern(this.secretKeyPattern), Validators.maxLength(253)]],
+        key: ['', [Validators.required, Validators.pattern(secretKeyPattern), Validators.maxLength(253)]],
         value: ['', [Validators.required]],
       })
     );
@@ -118,10 +119,5 @@ export class KtbCreateSecretFormComponent implements OnDestroy {
 
   public isFormValid(): boolean {
     return this.createSecretForm.valid && !this.isUpdating && !this.isLoading;
-  }
-
-  public ngOnDestroy(): void {
-    this.unsubscribe$.next();
-    this.unsubscribe$.complete();
   }
 }
