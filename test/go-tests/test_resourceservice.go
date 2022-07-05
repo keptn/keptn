@@ -157,7 +157,7 @@ func Test_ResourceServiceBasic(t *testing.T) {
 	resp, err = internalKeptnAPI.Post(basePath+"/"+projectName+"/resource", invalidResourceRequest, 3)
 	require.Nil(t, err)
 
-	require.Equal(t, 404, resp.Response().StatusCode)
+	require.Equal(t, 400, resp.Response().StatusCode)
 
 	for _, stageReq := range createStageRequests {
 		t.Logf("Creating a new stage %s in project %s", stageReq.StageName, projectName)
