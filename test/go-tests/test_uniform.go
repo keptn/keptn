@@ -107,7 +107,9 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
             - name: K8S_NODE_NAME
-              value: 'some-node'`
+							valueFrom:
+								fieldRef:
+									fieldPath: spec.nodeName`
 
 const echoServiceName = "echo-service"
 
