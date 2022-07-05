@@ -45,7 +45,6 @@ jobs:
             api
             approval-service
             cli
-            configuration-service
             distributor
             helm-service
             jmeter-service
