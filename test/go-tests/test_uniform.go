@@ -355,7 +355,8 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 	}, func() {
 		err := KubeCtlDeleteFromURL(tmpFile)
 		require.Nil(t, err)
-	})
+	},
+		false)
 }
 
 // Test_UniformRegistration_RegistrationOfKeptnIntegration tests whether a deployed Keptn Integration gets correctly
@@ -389,7 +390,8 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods(t *test
 	}, func() {
 		err := KubeCtlDeleteFromURL(tmpFile)
 		require.Nil(t, err)
-	})
+	},
+		false)
 }
 
 // Test_UniformRegistration_RegistrationOfKeptnIntegration tests whether a deployed Keptn Integration gets correctly
@@ -426,10 +428,11 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane(t *t
 	}, func() {
 		err := KubeCtlDeleteFromURL(tmpFile)
 		require.Nil(t, err)
-	})
+	},
+		true)
 }
 
-func testUniformIntegration(t *testing.T, configureIntegrationFunc func(), cleanupIntegrationFunc func()) {
+func testUniformIntegration(t *testing.T, configureIntegrationFunc func(), cleanupIntegrationFunc func(), remoteExecPlane bool) {
 	projectName := "uniform-filter"
 	serviceName := "myservice"
 	sequencename := "mysequence"
@@ -472,6 +475,11 @@ func testUniformIntegration(t *testing.T, configureIntegrationFunc func(), clean
 	require.Equal(t, echoServiceName, fetchedEchoIntegration.Name)
 	require.Equal(t, echoServiceName, fetchedEchoIntegration.MetaData.KubernetesMetaData.DeploymentName)
 	require.Equal(t, GetKeptnNameSpaceFromEnv(), fetchedEchoIntegration.MetaData.KubernetesMetaData.Namespace)
+	if remoteExecPlane {
+		require.Equal(t, "remote-execution-plane", fetchedEchoIntegration.MetaData.Location)
+	} else {
+		require.Equal(t, "control-plane", fetchedEchoIntegration.MetaData.Location)
+	}
 	require.Equal(t, "control-plane", fetchedEchoIntegration.MetaData.Location)
 	require.Equal(t, "develop", fetchedEchoIntegration.MetaData.DistributorVersion)
 	require.Equal(t, "develop", fetchedEchoIntegration.MetaData.IntegrationVersion)
