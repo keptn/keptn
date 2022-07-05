@@ -452,7 +452,7 @@ func Test_ResourceServiceBasic(t *testing.T) {
 			t.Logf("Deleting service %s in stage %s in project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
 			resp, err = internalKeptnAPI.Delete(basePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName, 3)
 			require.Nil(t, err)
-			require.Equal(t, 200, resp.Response().StatusCode)
+			require.Equal(t, 204, resp.Response().StatusCode)
 
 			t.Logf("Checking resource for non-existing service %s in stage %s for project %s", serviceReq.ServiceName, stageReq.StageName, projectName)
 			resp, err = internalKeptnAPI.Get(basePath+"/"+projectName+"/stage/"+stageReq.StageName+"/service/"+serviceReq.ServiceName+"/resource"+resourceUriPath, 3)
@@ -528,7 +528,7 @@ func Test_ResourceServiceBasic(t *testing.T) {
 	t.Logf("Deleting non-existing project %s", nonExistingProjectName)
 	resp, err = internalKeptnAPI.Delete(basePath+"/"+nonExistingProjectName, 3)
 	require.Nil(t, err)
-	require.Equal(t, 404, resp.Response().StatusCode)
+	require.Equal(t, 204, resp.Response().StatusCode)
 }
 
 const resourceServiceCommitIDShipyard = `--- 
