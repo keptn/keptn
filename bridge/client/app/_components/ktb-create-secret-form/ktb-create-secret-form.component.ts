@@ -6,8 +6,7 @@ import { NotificationType } from '../../_models/notification';
 import { NotificationsService } from '../../_services/notifications.service';
 import { BehaviorSubject, of } from 'rxjs';
 import { catchError, finalize, map } from 'rxjs/operators';
-import { IServiceSecret } from '../../../../shared/interfaces/secret';
-import { addData } from '../../_models/secret';
+import { IServiceSecret, SecretKeyValuePair } from '../../../../shared/interfaces/secret';
 
 const secretNamePattern = '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*';
 const secretKeyPattern = '[-._a-zA-Z0-9]+';
@@ -79,12 +78,14 @@ export class KtbCreateSecretFormComponent implements OnInit {
     const secret: IServiceSecret = {
       name: this.nameControl.value,
       scope: this.scopeControl.value,
-      data: [],
+      data: this.dataControl.controls.map(
+        (dataGroup) =>
+          ({
+            key: dataGroup.get('key')?.value,
+            value: dataGroup.get('value')?.value,
+          } as SecretKeyValuePair)
+      ),
     };
-    for (const dataGroup of this.dataControl.controls) {
-      addData(secret, dataGroup.get('key')?.value, dataGroup.get('value')?.value);
-    }
-
     this.dataService
       .addSecret(secret)
       .pipe(
