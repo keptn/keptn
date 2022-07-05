@@ -1,6 +1,7 @@
 import { SequencesPage } from '../support/pageobjects/SequencesPage';
 import { interceptProjectBoard } from '../support/intercept';
 import EnvironmentPage from '../support/pageobjects/EnvironmentPage';
+import { ProjectBoardPage } from '../support/pageobjects/ProjectBoardPage';
 
 describe('Sequences', () => {
   const sequencePage = new SequencesPage();
@@ -125,6 +126,12 @@ describe('Sequences', () => {
     sequencePage.visit('sockshop');
     cy.wait('@Sequences');
     sequencePage.assertSequenceCount(1).assertLoadOlderSequencesButtonExists(false);
+  });
+
+  it('should have active menu button if navigated from one sub page to this one', () => {
+    const projectBoardPage = new ProjectBoardPage();
+    environmentPage.intercept().visit('sockshop');
+    projectBoardPage.clickSequenceMenuitem().assertOnlySequencesViewSelected();
   });
 
   describe('filtering', () => {
