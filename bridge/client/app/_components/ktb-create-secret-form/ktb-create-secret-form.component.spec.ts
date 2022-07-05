@@ -2,13 +2,13 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbCreateSecretFormComponent } from './ktb-create-secret-form.component';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { DataService } from '../../_services/data.service';
-import { Secret } from '../../_models/secret';
 import { firstValueFrom, of, throwError } from 'rxjs';
 import { Router } from '@angular/router';
 import { SecretScopeDefault } from '../../../../shared/interfaces/secret-scope';
 import { POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 import { KtbCreateSecretFormModule } from './ktb-create-secret-form.module';
 import { RouterTestingModule } from '@angular/router/testing';
+import { IServiceSecret } from '../../../../shared/interfaces/secret';
 
 describe('KtbCreateSecretFormComponent with valid scopes', () => {
   let component: KtbCreateSecretFormComponent;
@@ -58,18 +58,9 @@ describe('KtbCreateSecretFormComponent with valid scopes', () => {
     // given
     const spy = jest.spyOn(dataService, 'addSecret').mockReturnValue(of({}));
     const routerSpy = jest.spyOn(router, 'navigate');
-    const secret: Secret = new Secret();
-    secret.name = 'test';
-    secret.scope = SecretScopeDefault.DEFAULT;
-    secret.data?.push({ key: 'testKey', value: 'testValue' });
+    const secret = insertDefaultSecret(component);
 
     // when
-    component.nameControl.setValue(secret.name);
-    component.scopeControl.setValue(secret.scope);
-    if (secret.data) {
-      component.dataControl.controls[0].get('key')?.setValue(secret.data[0].key);
-      component.dataControl.controls[0].get('value')?.setValue(secret.data[0].value);
-    }
     component.createSecretForm.updateValueAndValidity();
 
     expect(component.createSecretForm.errors).toBeNull();
@@ -86,18 +77,9 @@ describe('KtbCreateSecretFormComponent with valid scopes', () => {
     // given
     const spy = jest.spyOn(dataService, 'addSecret').mockReturnValue(throwError({}));
     const routerSpy = jest.spyOn(router, 'navigate');
-    const secret: Secret = new Secret();
-    secret.name = 'test';
-    secret.scope = SecretScopeDefault.DEFAULT;
-    secret.data?.push({ key: 'testKey', value: 'testValue' });
+    const secret = insertDefaultSecret(component);
 
     // when
-    component.nameControl.setValue(secret.name);
-    component.scopeControl.setValue(secret.scope);
-    if (secret.data) {
-      component.dataControl.controls[0].get('key')?.setValue(secret.data[0].key);
-      component.dataControl.controls[0].get('value')?.setValue(secret.data[0].value);
-    }
     component.createSecretForm.updateValueAndValidity();
 
     expect(component.createSecretForm.errors).toBeNull();
@@ -166,13 +148,16 @@ describe('KtbCreateSecretFormComponent scopes', () => {
   });
 });
 
-function insertDefaultSecret(component: KtbCreateSecretFormComponent): Secret {
-  const secret: Secret = new Secret();
-  secret.name = 'test';
-  secret.scope = SecretScopeDefault.DEFAULT;
-  secret.data?.push({ key: 'testKey', value: 'testValue' });
+function createDefaultSecret(): IServiceSecret {
+  return {
+    name: 'test',
+    scope: SecretScopeDefault.DEFAULT,
+    data: [{ key: 'testKey', value: 'testValue' }],
+  };
+}
 
-  // when
+function insertDefaultSecret(component: KtbCreateSecretFormComponent): IServiceSecret {
+  const secret = createDefaultSecret();
   component.nameControl.setValue(secret.name);
   component.scopeControl.setValue(secret.scope);
   if (secret.data) {

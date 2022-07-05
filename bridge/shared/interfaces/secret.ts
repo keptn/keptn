@@ -5,9 +5,15 @@ export interface SecretKeyValuePair {
   value: string;
 }
 
-export interface ISecret {
+interface ISecret {
   name: string;
   scope: SecretScope;
-  data?: SecretKeyValuePair[];
+}
+
+export interface IClientSecret extends ISecret {
   keys?: string[];
+}
+
+export interface IServiceSecret extends ISecret {
+  data?: SecretKeyValuePair[];
 }

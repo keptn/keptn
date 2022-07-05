@@ -1,42 +1,19 @@
-import { ISecret as scrt, SecretKeyValuePair } from '../../../shared/interfaces/secret';
-import { SecretScope } from '../../../shared/interfaces/secret-scope';
+import { IServiceSecret, SecretKeyValuePair } from '../../../shared/interfaces/secret';
 
-export class Secret implements scrt {
-  name!: string;
-  scope: SecretScope | string;
-  keys?: string[];
-  data?: SecretKeyValuePair[];
-
-  constructor() {
-    this.scope = '';
-    this.data = [];
+export function addData(secret: IServiceSecret, key: string, value: string): void {
+  if (!secret.data) {
+    secret.data = [];
   }
+  secret.data.push({ key, value });
+}
 
-  static fromJSON(data: unknown): Secret {
-    return Object.assign(new this(), data);
+export function getData(secret: IServiceSecret, index: number): SecretKeyValuePair {
+  if (!secret.data) {
+    secret.data = [];
   }
+  return secret.data[index];
+}
 
-  setName(name: string): void {
-    this.name = name;
-  }
-
-  setScope(scope: string): void {
-    this.scope = scope;
-  }
-
-  addData(key: string, value: string): void {
-    this.data?.push({ key, value });
-  }
-
-  getData(index: number): SecretKeyValuePair {
-    if (!this.data) {
-      this.data = [];
-    }
-
-    return this.data[index];
-  }
-
-  removeData(index: number): void {
-    this.data?.splice(index, 1);
-  }
+export function removeData(secret: IServiceSecret, index: number): void {
+  secret.data?.splice(index, 1);
 }

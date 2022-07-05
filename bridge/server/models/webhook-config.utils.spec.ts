@@ -13,8 +13,8 @@ import {
 } from './webhook-config.utils';
 import { WebhookConfigYaml } from './webhook-config-yaml';
 import { IWebhookConfigClient } from '../../shared/interfaces/webhook-config';
-import { ISecret } from '../../shared/interfaces/secret';
 import { SecretScopeDefault } from '../../shared/interfaces/secret-scope';
+import { IClientSecret } from '../../shared/interfaces/secret';
 
 describe('Test webhook-config-yaml', () => {
   it('should correctly migrate from v1alpha1 to v1beta1', () => {
@@ -303,7 +303,7 @@ describe('Test webhook-config-yaml', () => {
     });
   }
 
-  function getDefaultSecrets(): ISecret[] {
+  function getDefaultSecrets(): IClientSecret[] {
     return [
       {
         name: 'myName1',

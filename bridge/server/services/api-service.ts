@@ -8,13 +8,13 @@ import { UniformRegistrationLogResponse } from '../../shared/interfaces/uniform-
 import { Resource, ResourceResponse } from '../../shared/interfaces/resource';
 import https from 'https';
 import { IUniformSubscription } from '../../shared/interfaces/uniform-subscription';
-import { ISecret } from '../../shared/interfaces/secret';
 import { KeptnService } from '../../shared/models/keptn-service';
 import { IStage } from '../../shared/interfaces/stage';
 import { SequenceOptions, TraceOptions } from './data-service';
 import { ComponentLogger } from '../utils/logger';
 import { IProjectResult } from '../../shared/interfaces/project-result';
 import { EnvType } from '../interfaces/configuration';
+import { IClientSecret } from '../../shared/interfaces/secret';
 
 export class ApiService {
   private readonly axios: AxiosInstance;
@@ -354,9 +354,9 @@ export class ApiService {
     return this.axios.get<Resource>(url, this.getAuthHeaders(accessToken));
   }
 
-  public getSecrets(accessToken: string | undefined): Promise<AxiosResponse<{ Secrets: ISecret[] }>> {
+  public getSecrets(accessToken: string | undefined): Promise<AxiosResponse<{ Secrets: IClientSecret[] }>> {
     const url = `${this.baseUrl}/secrets/v1/secret`;
-    return this.axios.get<{ Secrets: ISecret[] }>(url, this.getAuthHeaders(accessToken));
+    return this.axios.get<{ Secrets: IClientSecret[] }>(url, this.getAuthHeaders(accessToken));
   }
 
   public getStages(accessToken: string | undefined, projectName: string): Promise<AxiosResponse<{ stages: IStage[] }>> {

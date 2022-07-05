@@ -2,11 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { DataService } from '../../_services/data.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { Secret } from '../../_models/secret';
 import { NotificationType } from '../../_models/notification';
 import { NotificationsService } from '../../_services/notifications.service';
 import { BehaviorSubject, of } from 'rxjs';
 import { catchError, finalize, map } from 'rxjs/operators';
+import { IServiceSecret } from '../../../../shared/interfaces/secret';
+import { addData } from '../../_models/secret';
 
 const secretNamePattern = '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*';
 const secretKeyPattern = '[-._a-zA-Z0-9]+';
@@ -75,11 +76,12 @@ export class KtbCreateSecretFormComponent implements OnInit {
 
   public createSecret(): void {
     this.isUpdating = true;
-    const secret: Secret = new Secret();
-    secret.setName(this.nameControl.value);
-    secret.setScope(this.scopeControl.value);
+    const secret: IServiceSecret = {
+      name: this.nameControl.value,
+      scope: this.scopeControl.value,
+    };
     for (const dataGroup of this.dataControl.controls) {
-      secret.addData(dataGroup.get('key')?.value, dataGroup.get('value')?.value);
+      addData(secret, dataGroup.get('key')?.value, dataGroup.get('value')?.value);
     }
 
     this.dataService

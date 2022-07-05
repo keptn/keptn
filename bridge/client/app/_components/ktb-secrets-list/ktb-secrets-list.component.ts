@@ -2,8 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { DataService } from '../../_services/data.service';
 import { DtTableDataSource } from '@dynatrace/barista-components/table';
 import { BehaviorSubject } from 'rxjs';
-import { Secret } from '../../_models/secret';
 import { DeleteDialogState } from '../_dialogs/ktb-delete-confirmation/ktb-delete-confirmation.component';
+import { IClientSecret } from '../../../../shared/interfaces/secret';
 
 @Component({
   selector: 'ktb-secrets-list',
@@ -11,14 +11,12 @@ import { DeleteDialogState } from '../_dialogs/ktb-delete-confirmation/ktb-delet
   styleUrls: [],
 })
 export class KtbSecretsListComponent implements OnInit {
-  private _secrets = new BehaviorSubject<Secret[]>([]);
+  private _secrets = new BehaviorSubject<IClientSecret[]>([]);
   secrets$ = this._secrets.asObservable();
-  public currentSecret?: Secret;
+  public currentSecret?: IClientSecret;
   public deleteState: DeleteDialogState = null;
 
-  constructor(private dataService: DataService) {
-    this.deleteSecret.bind(this);
-  }
+  constructor(private dataService: DataService) {}
 
   ngOnInit(): void {
     this.dataService.getSecrets().subscribe((secrets) => {
@@ -26,20 +24,20 @@ export class KtbSecretsListComponent implements OnInit {
     });
   }
 
-  public createDataSource(secrets: Secret[]): DtTableDataSource<Secret> {
+  public createDataSource(secrets: IClientSecret[]): DtTableDataSource<IClientSecret> {
     return new DtTableDataSource(secrets);
   }
 
-  public toSecret(value: unknown): Secret {
-    return <Secret>value;
+  public toSecret(value: unknown): IClientSecret {
+    return <IClientSecret>value;
   }
 
-  public triggerDeleteSecret(secret: Secret): void {
+  public triggerDeleteSecret(secret: IClientSecret): void {
     this.currentSecret = secret;
     this.deleteState = 'confirm';
   }
 
-  public deleteSecret(secret?: Secret): void {
+  public deleteSecret(secret?: IClientSecret): void {
     if (!secret) {
       return;
     }
