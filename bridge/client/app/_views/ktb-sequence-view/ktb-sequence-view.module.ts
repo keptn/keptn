@@ -24,17 +24,7 @@ import { KtbEvaluationInfoModule } from '../../_components/ktb-evaluation-info/k
 import { KtbExpandableTileModule } from '../../_components/ktb-expandable-tile/ktb-expandable-tile.module';
 import { KtbConfirmationDialogModule } from '../../_components/_dialogs/ktb-confirmation-dialog/ktb-confirmation-dialog.module';
 import { KtbSequenceControlsComponent } from './ktb-sequence-controls/ktb-sequence-controls.component';
-import { RouterModule, Routes } from '@angular/router';
-
-const routes: Routes = [
-  {
-    path: '',
-    component: KtbSequenceViewComponent,
-  },
-  { path: ':shkeptncontext', component: KtbSequenceViewComponent },
-  { path: ':shkeptncontext/event/:eventId', component: KtbSequenceViewComponent },
-  { path: ':shkeptncontext/stage/:stage', component: KtbSequenceViewComponent },
-];
+import { KtbSequenceViewRoutingModule } from './ktb-sequence-view-routing.module';
 
 @NgModule({
   declarations: [
@@ -66,9 +56,9 @@ const routes: Routes = [
     KtbPipeModule,
     KtbSelectableTileModule,
     KtbSequenceStateInfoModule,
+    KtbSequenceViewRoutingModule,
     MatDialogModule,
     MomentModule,
-    RouterModule.forChild(routes),
   ],
 })
 export class KtbSequenceViewModule {}
