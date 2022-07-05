@@ -36,8 +36,9 @@ BUILD_MONGODB_DS=false
 BUILD_STATISTICS_SVC=false
 BUILD_WEBHOOK_SVC=false
 
-# Don't include additional bridge artifacts that are only used for testing if this is (pre-)release build
+# Set the list of artifacts corresponding to the build that's currently running
 if [ "$RELEASE_BUILD" != 'true' ] && [ "$PRERELEASE_BUILD" != 'true' ] && [ "$BUILD_EVERYTHING" != 'true' ]; then
+  # This is a normal build that needs to build and test the changed artifacts
   echo "Preparing for build of changed artifacts..."
   artifacts=(
     "$BRIDGE_ARTIFACT_PREFIX"
@@ -59,6 +60,7 @@ if [ "$RELEASE_BUILD" != 'true' ] && [ "$PRERELEASE_BUILD" != 'true' ] && [ "$BU
     "$WEBHOOK_SVC_ARTIFACT_PREFIX"
   )
 elif [ "$RELEASE_BUILD" != 'true' ] && [ "$PRERELEASE_BUILD" != 'true' ] && [ "$BUILD_EVERYTHING" == 'true' ]; then
+  # This is a build-everything build for integration tests, which skips bridge code style and UI tests
   echo "Preparing for build-everything build..."
   artifacts=(
     "$BRIDGE_ARTIFACT_PREFIX"
@@ -78,6 +80,7 @@ elif [ "$RELEASE_BUILD" != 'true' ] && [ "$PRERELEASE_BUILD" != 'true' ] && [ "$
     "$WEBHOOK_SVC_ARTIFACT_PREFIX"
   )
 else
+  # This is a release build
   echo "Preparing for release build..."
   artifacts=(
     "$BRIDGE_ARTIFACT_PREFIX"
