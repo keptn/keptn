@@ -37,6 +37,7 @@ jobs:
             approval-service
             bridge
             cli
+            configuration-service
             deps
             deps-dev
             distributor
