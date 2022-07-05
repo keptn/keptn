@@ -8,7 +8,7 @@ import (
 	"github.com/keptn/keptn/api/importer/model"
 )
 
-//go:generate moq -pkg fake --skip-ensure -out ./fake/executor_mock.go . KeptnEndpointProvider:KeptnEndpointProviderMock
+//go:generate moq -pkg fake --skip-ensure -out ./fake/executor_mock.go . KeptnEndpointProvider:KeptnEndpointProviderMock httpdoer:MockHTTPDoer
 
 type httpdoer interface {
 	Do(r *http.Request) (*http.Response, error)
@@ -49,7 +49,7 @@ func (kae *KeptnAPIExecutor) registerEndpoints(kep KeptnEndpointProvider) {
 	kae.endpointMappings["keptn-api-v1-create-service"] = &defaultEndpointHandler{
 		requestFactory: &projectRenderRequestFactory{
 			httpMethod: http.MethodPost,
-			path:       `/v1/project/[[project]]/service`,
+			path:       `/project/[[project]]/service`,
 		},
 		endpoint: kep.GetControlPlaneEndpoint(),
 	}

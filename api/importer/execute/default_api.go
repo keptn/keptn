@@ -10,18 +10,24 @@ import (
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
+	logger "github.com/sirupsen/logrus"
+
 	"github.com/keptn/keptn/api/importer/model"
 )
 
+//go:generate moq -pkg fake --skip-ensure -out ./fake/default_api_mock.go . requestFactory:MockRequestFactory
+
 var /*const*/ ErrTaskFailed = errors.New("task failed")
 
-type otelWrappedHttpClient struct{}
+type otelWrappedHttpClient struct {
+	client http.Client
+}
 
 func (o *otelWrappedHttpClient) Do(r *http.Request) (*http.Response, error) {
-	client := http.Client{
-		Transport: otelhttp.NewTransport(nil),
+	if _, isOtelTransport := o.client.Transport.(*otelhttp.Transport); !isOtelTransport {
+		o.client.Transport = otelhttp.NewTransport(o.client.Transport)
 	}
-	return client.Do(r)
+	return o.client.Do(r)
 }
 
 type requestFactory interface {
@@ -72,11 +78,21 @@ func (ep *defaultEndpointHandler) ExecuteAPI(doer httpdoer, ate model.APITaskExe
 
 	defer response.Body.Close()
 	responseBody := new(any)
-	if response.Header.Get("Content-Type") == "application/json" {
+	if isJSONResponse(response) {
 		bytes, err := io.ReadAll(response.Body)
 		if err == nil {
-			json.Unmarshal(bytes, responseBody)
+			err = json.Unmarshal(bytes, responseBody)
+			if err != nil {
+				logger.Warnf("Error unmarshaling JSON response body for task %s: %v", ate.Context.Task.ID, err)
+			}
+		} else {
+			logger.Warnf("Error reading JSON response body for task %s: %v", ate.Context.Task.ID, err)
 		}
+	} else {
+		logger.Warnf(
+			"Response for task %s does not appear to be JSON (content type : %s), skipping parsing",
+			ate.Context.Task.ID, response.Header.Get("Content-Type"),
+		)
 	}
 
 	if response.StatusCode >= 200 && response.StatusCode < 300 {
@@ -87,4 +103,9 @@ func (ep *defaultEndpointHandler) ExecuteAPI(doer httpdoer, ate model.APITaskExe
 		"received unsuccessful http status <%d: %s>:%w", response.StatusCode,
 		response.Status, ErrTaskFailed,
 	)
+}
+
+func isJSONResponse(r *http.Response) bool {
+	contentType := r.Header.Get("Content-Type")
+	return contentType == "application/json" || strings.HasPrefix(contentType, "application/json;")
 }

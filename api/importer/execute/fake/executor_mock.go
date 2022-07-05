@@ -4,6 +4,7 @@
 package fake
 
 import (
+	"net/http"
 	"sync"
 )
 
@@ -58,5 +59,66 @@ func (mock *KeptnEndpointProviderMock) GetControlPlaneEndpointCalls() []struct {
 	mock.lockGetControlPlaneEndpoint.RLock()
 	calls = mock.calls.GetControlPlaneEndpoint
 	mock.lockGetControlPlaneEndpoint.RUnlock()
+	return calls
+}
+
+// MockHTTPDoer is a mock implementation of execute.httpdoer.
+//
+// 	func TestSomethingThatUseshttpdoer(t *testing.T) {
+//
+// 		// make and configure a mocked execute.httpdoer
+// 		mockedhttpdoer := &MockHTTPDoer{
+// 			DoFunc: func(r *http.Request) (*http.Response, error) {
+// 				panic("mock out the Do method")
+// 			},
+// 		}
+//
+// 		// use mockedhttpdoer in code that requires execute.httpdoer
+// 		// and then make assertions.
+//
+// 	}
+type MockHTTPDoer struct {
+	// DoFunc mocks the Do method.
+	DoFunc func(r *http.Request) (*http.Response, error)
+
+	// calls tracks calls to the methods.
+	calls struct {
+		// Do holds details about calls to the Do method.
+		Do []struct {
+			// R is the r argument value.
+			R *http.Request
+		}
+	}
+	lockDo sync.RWMutex
+}
+
+// Do calls DoFunc.
+func (mock *MockHTTPDoer) Do(r *http.Request) (*http.Response, error) {
+	if mock.DoFunc == nil {
+		panic("MockHTTPDoer.DoFunc: method is nil but httpdoer.Do was just called")
+	}
+	callInfo := struct {
+		R *http.Request
+	}{
+		R: r,
+	}
+	mock.lockDo.Lock()
+	mock.calls.Do = append(mock.calls.Do, callInfo)
+	mock.lockDo.Unlock()
+	return mock.DoFunc(r)
+}
+
+// DoCalls gets all the calls that were made to Do.
+// Check the length with:
+//     len(mockedhttpdoer.DoCalls())
+func (mock *MockHTTPDoer) DoCalls() []struct {
+	R *http.Request
+} {
+	var calls []struct {
+		R *http.Request
+	}
+	mock.lockDo.RLock()
+	calls = mock.calls.Do
+	mock.lockDo.RUnlock()
 	return calls
 }
