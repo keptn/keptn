@@ -178,6 +178,7 @@ describe('HttpErrorInterceptorService', () => {
     const secret: IServiceSecret = {
       name: 'secret',
       scope: SecretScopeDefault.DEFAULT,
+      data: [],
     };
 
     apiService.addSecret(secret).subscribe();
