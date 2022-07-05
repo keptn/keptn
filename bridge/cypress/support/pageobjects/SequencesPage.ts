@@ -6,11 +6,21 @@ import {
   interceptSequencesPageWithSequenceThatIsNotLoaded,
 } from '../intercept';
 
+type EFilterGroup = 'Service' | 'Stage' | 'Sequence' | 'Status';
+
 export class SequencesPage {
   private readonly sequenceWaitingMessage = ' Sequence is waiting for previous sequences to finish. ';
 
   public intercept(): this {
     interceptSequencesPage();
+    return this;
+  }
+
+  public interceptWithManyFilters(): this {
+    this.intercept();
+    cy.intercept('/api/project/sockshop/sequences/filter', { fixture: 'sequence.filter-many.mock' }).as(
+      'SequencesMetadata'
+    );
     return this;
   }
 
@@ -98,12 +108,27 @@ export class SequencesPage {
     return this;
   }
 
-  private setFilterForGroup(filterGroup: string, itemName: string, status: boolean): this {
+  private setFilterForGroup(filterGroup: EFilterGroup, itemName: string, status: boolean): this {
     cy.byTestId('keptn-sequence-view-filter').find('dt-quick-filter').dtQuickFilterCheck(filterGroup, itemName, status);
     return this;
   }
 
-  public assertFilterIsChecked(filterGroup: string, itemName: string, status: boolean): this {
+  public assertFilterItemsCount(filterGroup: EFilterGroup, count: number): this {
+    cy.byTestId('keptn-sequence-view-filter').find('dt-quick-filter').dtQuickFilterCount(count, filterGroup);
+    return this;
+  }
+
+  public assertFilterShowMoreCount(count: number): this {
+    cy.byTestId('keptn-sequence-view-filter').find('dt-quick-filter').dtQuickFilterCount(count);
+    return this;
+  }
+
+  public clickFilterViewMore(filterGroup: EFilterGroup): this {
+    cy.byTestId('keptn-sequence-view-filter').find('dt-quick-filter').dtQuickFilterClickShowMore(filterGroup);
+    return this;
+  }
+
+  public assertFilterIsChecked(filterGroup: EFilterGroup, itemName: string, status: boolean): this {
     cy.byTestId('keptn-sequence-view-filter')
       .find('dt-quick-filter')
       .dtQuickFilterIsChecked(filterGroup, itemName, status);
