@@ -50,6 +50,92 @@ func TestExtractZipFileHappyPath(t *testing.T) {
 	assert.NoDirExists(t, expectedExtractedPath)
 }
 
+func TestZippedPackage_GetResource(t *testing.T) {
+
+	sourceImportPackage := "../test/data/import/sample-package"
+	tempDir, err := ioutil.TempDir("", "test-")
+	require.NoError(t, err)
+	defer os.RemoveAll(tempDir)
+
+	tempZipFile, err := ioutil.TempFile(tempDir, "test-archive*"+defaultImportArchiveExtension)
+	require.NoError(t, err)
+
+	err = writeZip(tempZipFile, sourceImportPackage)
+	require.NoError(t, err)
+
+	err = tempZipFile.Close()
+	require.NoError(t, err)
+
+	p, err := NewZippedPackage(tempZipFile.Name(), testArchiveSize20MB)
+	require.NoError(t, err)
+	require.NotNil(t, p)
+	defer p.Close()
+
+	tests := []struct {
+		name          string
+		resourceName  string
+		want          []byte
+		wantErr       bool
+		errorContains string
+		expectedErr   error
+	}{
+		{
+			name:         "Happy path - access existing resource",
+			resourceName: "api/create-service.json",
+			want: []byte(`{
+    "serviceName": "{{ .context.service }}"
+}`),
+			wantErr:       false,
+			errorContains: "",
+		},
+		{
+			name:          "Error - access non-existing resource",
+			resourceName:  "fantasydir/imaginaryfile.json",
+			want:          nil,
+			wantErr:       true,
+			errorContains: "error accessing resource fantasydir/imaginaryfile.json",
+		},
+		{
+			name:         "Error - try to escape from zipped package confines",
+			resourceName: "../../somefile.json",
+			want:         nil,
+			wantErr:      true,
+			expectedErr:  ErrorInvalidResourcePath,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				resource, err := p.GetResource(tt.resourceName)
+				if tt.wantErr {
+					assert.Error(t, err)
+					assert.Nil(t, resource)
+					if tt.errorContains != "" {
+						assert.ErrorContains(t, err, tt.errorContains)
+					}
+					if tt.expectedErr != nil {
+						assert.ErrorIs(t, err, tt.expectedErr)
+					}
+				} else {
+					require.NoError(t, err)
+				}
+
+				if resource != nil {
+					defer resource.Close()
+				}
+
+				if tt.want != nil {
+					actualBytes, err := io.ReadAll(resource)
+					require.NoError(t, err)
+					assert.Equal(t, tt.want, actualBytes)
+				}
+			},
+		)
+	}
+
+}
+
 func TestExtractErrorZipFilePackageTooBig(t *testing.T) {
 
 	sourceImportPackage := "../test/data/import/sample-package"

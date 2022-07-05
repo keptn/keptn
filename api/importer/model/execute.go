@@ -8,7 +8,7 @@ type TaskContext struct {
 }
 
 type APITaskExecution struct {
-	Payload    io.Reader
+	Payload    io.ReadCloser
 	EndpointID string
 	Context    TaskContext
 }

@@ -66,6 +66,10 @@ type defaultEndpointHandler struct {
 }
 
 func (ep *defaultEndpointHandler) ExecuteAPI(doer httpdoer, ate model.APITaskExecution) (any, error) {
+	if ate.Payload != nil {
+		defer ate.Payload.Close()
+	}
+
 	request, err := ep.CreateRequest(ate.Context, ep.endpoint, ate.Payload)
 	if err != nil {
 		return nil, fmt.Errorf("error creating request: %w", err)

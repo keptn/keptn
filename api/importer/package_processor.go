@@ -81,10 +81,11 @@ func mapAPITask(project string, ip ImportPackage, task *model.ManifestTask) (mod
 
 	resource, err := ip.GetResource(task.APITask.PayloadFile)
 
-	// TODO who should close the resource ?
-
 	if err != nil {
-		return model.APITaskExecution{}, fmt.Errorf("error accessing resource %s: %w", task.APITask.PayloadFile, err)
+		return model.APITaskExecution{}, fmt.Errorf(
+			"error accessing resource %s: %w", task.APITask.PayloadFile,
+			err,
+		)
 	}
 
 	ret := model.APITaskExecution{

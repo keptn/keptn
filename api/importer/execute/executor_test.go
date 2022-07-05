@@ -27,7 +27,7 @@ func TestKeptnAPIExecutor_ErrorUnknownEndpointID(t *testing.T) {
 	kae := newKeptnExecutor(mockKeptnEndpointProvider, nil)
 
 	ate := model.APITaskExecution{
-		Payload:    strings.NewReader(""),
+		Payload:    io.NopCloser(strings.NewReader("")),
 		EndpointID: "unknown-endpoint-id",
 		Context: model.TaskContext{
 			Project: "project",
@@ -65,7 +65,7 @@ func TestKeptnAPIExecutor_Execute(t *testing.T) {
 			name: "Simple createServiceForProject api call",
 			args: args{
 				ate: model.APITaskExecution{
-					Payload:    strings.NewReader(`{"serviceName": "new-test-service"}`),
+					Payload:    io.NopCloser(strings.NewReader(`{"serviceName": "new-test-service"}`)),
 					EndpointID: "keptn-api-v1-create-service",
 					Context: model.TaskContext{
 						Project: "funky-project",
@@ -105,7 +105,7 @@ func TestKeptnAPIExecutor_Execute(t *testing.T) {
 			name: "CreateServiceForProject api call - Bad request",
 			args: args{
 				ate: model.APITaskExecution{
-					Payload: strings.NewReader(`{"somerandomstuff": "foobar"}`),
+					Payload: io.NopCloser(strings.NewReader(`{"somerandomstuff": "foobar"}`)),
 
 					EndpointID: "keptn-api-v1-create-service",
 					Context: model.TaskContext{
