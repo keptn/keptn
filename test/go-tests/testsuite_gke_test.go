@@ -6,11 +6,8 @@ import (
 
 func Test_GKE(t *testing.T) {
 	// Shut DownTests
-	if res, err := CompareServiceNameWithDeploymentName("configuration-service", "configuration-service"); err == nil && res {
-		t.Run("Test_BackupRestoreConfigService", Test_BackupRestoreConfigService)
-	} else {
-		t.Run("Test_BackupRestoreResourceService", Test_BackupRestoreResourceService)
-	}
+
+	t.Run("Test_BackupRestoreResourceService", Test_BackupRestoreResourceService)
 	t.Run("Test_GracefulShutdown", Test_GracefulShutdown)
 	// Common Tests
 	t.Run("Test_LogIngestion", Test_LogIngestion)
