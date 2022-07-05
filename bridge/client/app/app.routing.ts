@@ -3,16 +3,13 @@ import { ExtraOptions, RouterModule, Routes } from '@angular/router';
 import { DashboardLegacyComponent } from './dashboard-legacy/dashboard-legacy.component';
 import { ProjectBoardComponent } from './project-board/project-board.component';
 import { EvaluationBoardComponent } from './evaluation-board/evaluation-board.component';
-import { KtbIntegrationViewComponent } from './_views/ktb-integration-view/ktb-integration-view.component';
 import { KtbSettingsViewComponent } from './_views/ktb-settings-view/ktb-settings-view.component';
 import { KtbServiceViewComponent } from './_views/ktb-service-view/ktb-service-view.component';
 import { KtbSequenceViewComponent } from './_views/ktb-sequence-view/ktb-sequence-view.component';
 import { KtbEnvironmentViewComponent } from './_views/ktb-environment-view/ktb-environment-view.component';
-import { KtbKeptnServicesListComponent } from './_components/ktb-keptn-services-list/ktb-keptn-services-list.component';
 import { KtbSecretsListComponent } from './_components/ktb-secrets-list/ktb-secrets-list.component';
 import { KtbCreateSecretFormComponent } from './_components/ktb-create-secret-form/ktb-create-secret-form.component';
 import { KtbProjectSettingsComponent } from './_components/ktb-project-settings/ktb-project-settings.component';
-import { KtbModifyUniformSubscriptionComponent } from './_components/ktb-modify-uniform-subscription/ktb-modify-uniform-subscription.component';
 import { KtbCreateServiceComponent } from './_components/ktb-create-service/ktb-create-service.component';
 import { KtbServiceSettingsOverviewComponent } from './_components/ktb-service-settings/ktb-service-settings-overview/ktb-service-settings-overview.component';
 import { KtbServiceSettingsComponent } from './_components/ktb-service-settings/ktb-service-settings.component';
@@ -63,15 +60,12 @@ const routes: Routes = [
               {
                 path: 'uniform',
                 children: [
-                  { path: 'integrations', component: KtbKeptnServicesListComponent },
-                  { path: 'integrations/:integrationId', component: KtbKeptnServicesListComponent },
                   {
-                    path: 'integrations/:integrationId/subscriptions/add',
-                    component: KtbModifyUniformSubscriptionComponent,
-                  },
-                  {
-                    path: 'integrations/:integrationId/subscriptions/:subscriptionId/edit',
-                    component: KtbModifyUniformSubscriptionComponent,
+                    path: 'integrations',
+                    loadChildren: () =>
+                      import('./_views/ktb-integration-view/ktb-integration-view.module').then(
+                        (m) => m.KtbIntegrationViewModule
+                      ),
                   },
                   {
                     path: 'secrets',
@@ -86,7 +80,10 @@ const routes: Routes = [
                 children: [
                   {
                     path: 'common-use-cases',
-                    component: KtbIntegrationViewComponent,
+                    loadChildren: () =>
+                      import('./_views/ktb-common-use-cases-view/ktb-common-use-cases-view.module').then(
+                        (m) => m.KtbCommonUseCasesViewModule
+                      ),
                   },
                   { path: '', pathMatch: 'full', redirectTo: 'common-use-cases' },
                 ],

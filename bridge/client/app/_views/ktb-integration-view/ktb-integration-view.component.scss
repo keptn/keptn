@@ -1,11 +1,53 @@
-#integration-container {
-  ::ng-deep p,
-  ul,
-  ol {
-    margin: 0;
+@import 'client/variables';
+@import 'node_modules/@dynatrace/barista-components/core/src/style/variables';
+
+.container > div:first-of-type {
+  border-top: 1px solid $gray-200;
+}
+
+.notification {
+  background-color: $blue-500;
+  padding: 6px;
+  color: $white;
+
+  a {
+    color: $white;
   }
-  h2 {
-    margin-top: 0.3em;
-    margin-bottom: 0.3em;
-  }
+}
+
+.info {
+  fill: var(--dt-theme-main-default-color);
+}
+
+.no-integration-selected {
+  background-color: $gray-200;
+  border-radius: 5px;
+}
+
+.overflow-y-auto {
+  overflow-y: auto;
+}
+
+.overflow-y-scroll {
+  overflow-y: scroll;
+}
+
+.pointer {
+  cursor: pointer;
+}
+
+.error {
+  color: $error-color;
+}
+
+.success {
+  color: $cta-color-active;
+}
+
+.active {
+  background-color: $yellow-100 !important;
+}
+
+dt-row[disabled='true'] {
+  color: $gray-400;
 }

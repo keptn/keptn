@@ -19,7 +19,6 @@ import { ProjectBoardComponent } from './project-board/project-board.component';
 import { DashboardLegacyComponent } from './dashboard-legacy/dashboard-legacy.component';
 import { EvaluationBoardComponent } from './evaluation-board/evaluation-board.component';
 import { KtbEnvironmentViewComponent } from './_views/ktb-environment-view/ktb-environment-view.component';
-import { KtbIntegrationViewComponent } from './_views/ktb-integration-view/ktb-integration-view.component';
 import { KtbLogoutViewComponent } from './_views/ktb-logout-view/ktb-logout-view.component';
 import { KtbSequenceViewComponent } from './_views/ktb-sequence-view/ktb-sequence-view.component';
 import { KtbServiceViewComponent } from './_views/ktb-service-view/ktb-service-view.component';
@@ -56,9 +55,7 @@ import { KtbErrorViewModule } from './_views/ktb-error-view/ktb-error-view.modul
 import { KtbEvaluationDetailsModule } from './_components/ktb-evaluation-details/ktb-evaluation-details.module';
 import { KtbEventItemModule } from './_components/ktb-event-item/ktb-event-item.module';
 import { KtbExpandableTileModule } from './_components/ktb-expandable-tile/ktb-expandable-tile.module';
-import { KtbKeptnServicesListModule } from './_components/ktb-keptn-services-list/ktb-keptn-services-list.module';
 import { KtbLoadingModule } from './_components/ktb-loading/ktb-loading.module';
-import { KtbModifyUniformSubscriptionModule } from './_components/ktb-modify-uniform-subscription/ktb-modify-uniform-subscription.module';
 import { KtbNoServiceInfoModule } from './_components/ktb-no-service-info/ktb-no-service-info.module';
 import { KtbNotificationModule } from './_components/ktb-notification/ktb-notification.module';
 import { KtbProjectListModule } from './_components/ktb-project-list/ktb-project-list.module';
@@ -72,9 +69,9 @@ import { KtbServiceDetailsModule } from './_components/ktb-service-details/ktb-s
 import { KtbServiceSettingsModule } from './_components/ktb-service-settings/ktb-service-settings.module';
 import { KtbStageDetailsModule } from './_views/ktb-environment-view/ktb-stage-details/ktb-stage-details.module';
 import { KtbStageOverviewModule } from './_views/ktb-environment-view/ktb-stage-overview/ktb-stage-overview.module';
-import { KtbMarkdownComponent } from './_components/ktb-markdown/ktb-markdown.component';
 
 import { BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 registerLocaleData(localeEn, 'en');
 
@@ -82,7 +79,7 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
   return (): Promise<WindowConfig | null> => appLoadService.init();
 }
 
-const angularModules = [BrowserModule, CommonModule];
+const angularModules = [BrowserModule, BrowserAnimationsModule, CommonModule];
 
 const dtModules = [
   DtAlertModule,
@@ -110,9 +107,7 @@ const ktbModules = [
   KtbEvaluationDetailsModule,
   KtbEventItemModule,
   KtbExpandableTileModule,
-  KtbKeptnServicesListModule,
   KtbLoadingModule,
-  KtbModifyUniformSubscriptionModule,
   KtbNoServiceInfoModule,
   KtbNotificationModule,
   KtbPipeModule,
@@ -138,9 +133,7 @@ const ktbModules = [
     EvaluationBoardComponent,
     KtbSequenceViewComponent,
     KtbServiceViewComponent,
-    KtbMarkdownComponent,
     KtbEnvironmentViewComponent,
-    KtbIntegrationViewComponent,
     KtbSettingsViewComponent,
     KtbRootComponent,
     KtbLogoutViewComponent,

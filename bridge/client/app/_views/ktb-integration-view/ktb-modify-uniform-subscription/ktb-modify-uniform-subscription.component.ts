@@ -1,24 +1,24 @@
 import { ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { DataService } from '../../_services/data.service';
+import { DataService } from '../../../_services/data.service';
 import { combineLatest, forkJoin, Observable, of, Subject, throwError } from 'rxjs';
 import { catchError, filter, map, switchMap, take, takeUntil, tap } from 'rxjs/operators';
-import { UniformSubscription } from '../../_models/uniform-subscription';
+import { UniformSubscription } from '../../../_models/uniform-subscription';
 import { DtFilterFieldDefaultDataSource } from '@dynatrace/barista-components/filter-field';
-import { Project } from '../../_models/project';
+import { Project } from '../../../_models/project';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { DtFilterFieldDefaultDataSourceAutocomplete } from '@dynatrace/barista-components/filter-field/src/filter-field-default-data-source';
-import { EventTypes } from '../../../../shared/interfaces/event-types';
-import { UniformRegistration } from '../../_models/uniform-registration';
-import { AppUtils } from '../../_utils/app.utils';
-import { IWebhookConfigClient, PreviousWebhookConfig } from '../../../../shared/interfaces/webhook-config';
-import { NotificationsService } from '../../_services/notifications.service';
-import { UniformRegistrationInfo } from '../../../../shared/interfaces/uniform-registration-info';
-import { NotificationType } from '../../_models/notification';
-import { Secret } from '../../_models/secret';
-import { SecretScopeDefault } from '../../../../shared/interfaces/secret-scope';
-import { EventState } from '../../../../shared/models/event-state';
-import { Trace } from '../../_models/trace';
+import { EventTypes } from '../../../../../shared/interfaces/event-types';
+import { UniformRegistration } from '../../../_models/uniform-registration';
+import { AppUtils } from '../../../_utils/app.utils';
+import { IWebhookConfigClient, PreviousWebhookConfig } from '../../../../../shared/interfaces/webhook-config';
+import { NotificationsService } from '../../../_services/notifications.service';
+import { UniformRegistrationInfo } from '../../../../../shared/interfaces/uniform-registration-info';
+import { NotificationType } from '../../../_models/notification';
+import { Secret } from '../../../_models/secret';
+import { SecretScopeDefault } from '../../../../../shared/interfaces/secret-scope';
+import { EventState } from '../../../../../shared/models/event-state';
+import { Trace } from '../../../_models/trace';
 import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
