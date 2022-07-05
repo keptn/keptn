@@ -68,6 +68,7 @@ lifecycle:
 {{- else }}
   valueFrom:
     fieldRef:
+      apiVersion: v1
       fieldPath: metadata.namespace
 {{- end }}
 - name: K8S_NODE_NAME
@@ -76,6 +77,7 @@ lifecycle:
 {{- else }}
   valueFrom:
     fieldRef:
+      apiVersion: v1
       fieldPath: spec.nodeName
 {{- end }}
 - name: K8S_POD_NAME
