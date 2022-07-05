@@ -8,6 +8,12 @@ import (
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 )
 
+//go:generate moq -pkg handlers_mock --skip-ensure -out ./fake/project_checker_mock.go . KeptnControlPlaneEndpointProvider:EndpointProviderMock
+
+type KeptnControlPlaneEndpointProvider interface {
+	GetControlPlaneEndpoint() string
+}
+
 // ControlPlaneProjectChecker is a simple client that will check the existence of a keptn project by querying the
 // control plane service
 type ControlPlaneProjectChecker struct {
@@ -16,9 +22,9 @@ type ControlPlaneProjectChecker struct {
 
 // NewControlPlaneProjectChecker instantiates a new initialized ControlPlaneProjectChecker that will use the control
 // plane service available at controlPlaneURI
-func NewControlPlaneProjectChecker(controlPlaneURI string) *ControlPlaneProjectChecker {
+func NewControlPlaneProjectChecker(provider KeptnControlPlaneEndpointProvider) *ControlPlaneProjectChecker {
 	c := new(ControlPlaneProjectChecker)
-	c.controlPlaneProjectBaseURI = controlPlaneURI
+	c.controlPlaneProjectBaseURI = provider.GetControlPlaneEndpoint()
 	return c
 }
 

@@ -8,6 +8,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	handlers_mock "github.com/keptn/keptn/api/handlers/fake"
 )
 
 const projectEndpoint = "/v1/project/"
@@ -70,7 +72,13 @@ func TestProjectNotFound(t *testing.T) {
 	testServer := httptest.NewServer(&handler)
 	defer testServer.Close()
 
-	checker := NewControlPlaneProjectChecker(testServer.URL)
+	epm := &handlers_mock.EndpointProviderMock{
+		GetControlPlaneEndpointFunc: func() string {
+			return testServer.URL
+		},
+	}
+
+	checker := NewControlPlaneProjectChecker(epm)
 
 	exists, err := checker.ProjectExists("foobar")
 	assert.NoError(t, err)
@@ -94,7 +102,13 @@ func TestProjectFound(t *testing.T) {
 	testServer := httptest.NewServer(&handler)
 	defer testServer.Close()
 
-	checker := NewControlPlaneProjectChecker(testServer.URL)
+	epm := &handlers_mock.EndpointProviderMock{
+		GetControlPlaneEndpointFunc: func() string {
+			return testServer.URL
+		},
+	}
+
+	checker := NewControlPlaneProjectChecker(epm)
 
 	exists, err := checker.ProjectExists("foobar-exists")
 	assert.NoError(t, err)
@@ -111,7 +125,13 @@ func TestErrorCheckingProject(t *testing.T) {
 	testServer := httptest.NewServer(&handler)
 	testServer.Close()
 
-	checker := NewControlPlaneProjectChecker(testServer.URL)
+	epm := &handlers_mock.EndpointProviderMock{
+		GetControlPlaneEndpointFunc: func() string {
+			return testServer.URL
+		},
+	}
+
+	checker := NewControlPlaneProjectChecker(epm)
 
 	exists, err := checker.ProjectExists("foobar-exists")
 	assert.Error(t, err)

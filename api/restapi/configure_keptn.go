@@ -20,6 +20,7 @@ import (
 
 	"github.com/keptn/keptn/api/handlers"
 	"github.com/keptn/keptn/api/importer"
+	"github.com/keptn/keptn/api/importer/execute"
 	"github.com/keptn/keptn/api/importer/model"
 	custommiddleware "github.com/keptn/keptn/api/middleware"
 	"github.com/keptn/keptn/api/models"
@@ -33,8 +34,6 @@ import (
 //go:generate swagger generate server --target ../../api --name Keptn --spec ../swagger.yaml --principal models.Principal
 
 const envVarLogLevel = "LOG_LEVEL"
-
-const controlPlaneServiceEnvVar = "CONTROLPLANE_URI"
 
 type EnvConfig struct {
 	HideDeprecated            bool    `envconfig:"HIDE_DEPRECATED" default:"false"`
@@ -103,15 +102,16 @@ func configureAPI(api *operations.KeptnAPI) http.Handler {
 	// api.EvaluationTriggerEvaluationHandler = evaluation.TriggerEvaluationHandlerFunc(handlers.TriggerEvaluationHandlerFunc)
 
 	// Import endpoint
+	keptnEndpointProvider := execute.KeptnEndpointProviderFromEnv()
+
 	importProcessor := importer.NewImportPackageProcessor(
-		new(model.YAMLManifestUnMarshaler), nil, /*new(importer.KeptnAPIExecutor)*/
-		// TODO review after implementing executor
+		new(model.YAMLManifestUnMarshaler), execute.NewKeptnExecutor(keptnEndpointProvider),
 	)
 
 	api.ImportOperationsImportHandler = import_operations.ImportHandlerFunc(
 		handlers.GetImportHandlerFunc(
 			env.ImportBasePath,
-			handlers.NewControlPlaneProjectChecker(os.Getenv(controlPlaneServiceEnvVar)),
+			handlers.NewControlPlaneProjectChecker(keptnEndpointProvider),
 			env.MaxImportUncompressedSize,
 			importProcessor,
 		),

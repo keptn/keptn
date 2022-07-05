@@ -83,7 +83,7 @@ func TestKeptnAPIExecutor_Execute(t *testing.T) {
 				},
 				handlerFunc: func(t *testing.T) http.HandlerFunc {
 					return func(writer http.ResponseWriter, request *http.Request) {
-						assert.Equal(t, "/project/funky-project/service", request.URL.Path)
+						assert.Equal(t, "/v1/project/funky-project/service", request.URL.Path)
 						assert.Equal(t, http.MethodPost, request.Method)
 						assert.Equal(t, "application/json", request.Header.Get("Content-Type"))
 						bodyBytes, err := io.ReadAll(request.Body)
@@ -124,7 +124,7 @@ func TestKeptnAPIExecutor_Execute(t *testing.T) {
 				},
 				handlerFunc: func(t *testing.T) http.HandlerFunc {
 					return func(writer http.ResponseWriter, request *http.Request) {
-						assert.Equal(t, "/project/funky-project/service", request.URL.Path)
+						assert.Equal(t, "/v1/project/funky-project/service", request.URL.Path)
 						assert.Equal(t, http.MethodPost, request.Method)
 						assert.Equal(t, "application/json", request.Header.Get("Content-Type"))
 						bodyBytes, err := io.ReadAll(request.Body)

@@ -25,8 +25,11 @@ type KeptnAPIExecutor struct {
 	endpointMappings map[string]endpointHandler
 }
 
-type KeptnEndpointProvider interface {
+type KeptnControlPlaneEndpointProvider interface {
 	GetControlPlaneEndpoint() string
+}
+type KeptnEndpointProvider interface {
+	KeptnControlPlaneEndpointProvider
 }
 
 func NewKeptnExecutor(kep KeptnEndpointProvider) *KeptnAPIExecutor {
@@ -49,7 +52,7 @@ func (kae *KeptnAPIExecutor) registerEndpoints(kep KeptnEndpointProvider) {
 	kae.endpointMappings["keptn-api-v1-create-service"] = &defaultEndpointHandler{
 		requestFactory: &projectRenderRequestFactory{
 			httpMethod: http.MethodPost,
-			path:       `/project/[[project]]/service`,
+			path:       `/v1/project/[[project]]/service`,
 		},
 		endpoint: kep.GetControlPlaneEndpoint(),
 	}
