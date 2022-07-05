@@ -39,11 +39,10 @@ func Test_Openshift(t *testing.T) {
 	t.Run("Test_Webhook_Beta_API", Test_Webhook_Beta_API)
 
 	t.Run("Test_ProvisioningURL", Test_ProvisioningURL)
-	if res, err := CompareServiceNameWithDeploymentName("configuration-service", "resource-service"); err == nil && res {
-		t.Run("Test_ResourceServiceGETCommitID", Test_ResourceServiceGETCommitID)
-		t.Run("Test_EvaluationGitCommitID", Test_EvaluationGitCommitID)
-		t.Run("Test_SSHPublicKeyAuth", Test_SSHPublicKeyAuth)
-	}
+
+	t.Run("Test_ResourceServiceGETCommitID", Test_ResourceServiceGETCommitID)
+	t.Run("Test_EvaluationGitCommitID", Test_EvaluationGitCommitID)
+	t.Run("Test_SSHPublicKeyAuth", Test_SSHPublicKeyAuth)
 	t.Run("Test_ZeroDownTimeTriggerSequence", Test_ZeroDownTimeTriggerSequence)
 
 	// Platform-specific Tests
