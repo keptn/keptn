@@ -3,8 +3,6 @@ apiGatewayNginx:
 strategy:
   rollingUpdate:
     maxUnavailable: 0
-resourceService:
-  enabled: "true"
   env:
     DIRECTORY_STAGE_STRUCTURE: "false"
 continuousDelivery:
