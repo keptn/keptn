@@ -4,7 +4,7 @@ build:
   local:
     useBuildkit: true
   artifacts:
-    - image: docker.io/keptndev/webhook-service
+    - image: docker.io/triggetry/webhook-service
       docker:
         dockerfile: Dockerfile
         target: production

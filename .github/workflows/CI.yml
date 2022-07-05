@@ -81,10 +81,6 @@ env:
   SECRET_SVC_FOLDER: "secret-service/"
   SECRET_SVC_DOCKER_TEST_TARGET: "builder-test"
 
-  CONFIGURATION_SVC_ARTIFACT: "configuration-service"
-  CONFIGURATION_SVC_FOLDER: "configuration-service/"
-  CONFIGURATION_SVC_DOCKER_TEST_TARGET: "builder-test"
-
   RESOURCE_SVC_ARTIFACT: "resource-service"
   RESOURCE_SVC_FOLDER: "resource-service/"
   RESOURCE_SVC_DOCKER_TEST_TARGET: "builder-test"
