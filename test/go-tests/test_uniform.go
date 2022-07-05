@@ -480,7 +480,6 @@ func testUniformIntegration(t *testing.T, configureIntegrationFunc func(), clean
 	} else {
 		require.Equal(t, "control-plane", fetchedEchoIntegration.MetaData.Location)
 	}
-	require.Equal(t, "control-plane", fetchedEchoIntegration.MetaData.Location)
 	require.Equal(t, "develop", fetchedEchoIntegration.MetaData.DistributorVersion)
 	require.Equal(t, "develop", fetchedEchoIntegration.MetaData.IntegrationVersion)
 
