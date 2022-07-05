@@ -45,7 +45,7 @@ export function getTotalScore(evaluation: Trace): number {
 }
 
 export function getScoreState(evaluation: IEvaluationData): string {
-  if (evaluation.score >= evaluation.score_pass) {
+  if (evaluation.score_pass && evaluation.score >= evaluation.score_pass) {
     return 'pass';
   } else if (evaluation.score_warning && evaluation.score >= evaluation.score_warning) {
     return 'warning';
