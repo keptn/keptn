@@ -143,8 +143,8 @@ describe('KtbEvaluationDetailsUtils', () => {
     parseSloOfEvaluations([trace]);
 
     // then
-    expect(trace.data.evaluation?.score_pass).toBe('90');
-    expect(trace.data.evaluation?.score_warning).toBe('75');
+    expect(trace.data.evaluation?.score_pass).toBe(90);
+    expect(trace.data.evaluation?.score_warning).toBe(75);
     expect(trace.data.evaluation?.compare_with).toBe('single_result');
     expect(trace.data.evaluation?.include_result_with_score).toBe('pass');
     expect(trace.data.evaluation?.sloFileContentParsed).toBe(true);
