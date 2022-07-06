@@ -41,8 +41,8 @@ import {
   parseToClientWebhookRequest,
 } from '../models/webhook-config.utils';
 import { IWebhookConfigClient } from '../../shared/interfaces/webhook-config';
-import { ISecret } from '../../shared/interfaces/secret';
 import { EnvType } from '../interfaces/configuration';
+import { IClientSecret } from '../../shared/interfaces/secret';
 
 type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
 type StageRemediationInformation = {
@@ -854,7 +854,7 @@ export class DataService {
     await this.apiService.deleteUniformSubscription(accessToken, integrationId, subscriptionId);
   }
 
-  public async getSecretsForScope(accessToken: string | undefined, scope: SecretScope): Promise<ISecret[]> {
+  public async getSecretsForScope(accessToken: string | undefined, scope: SecretScope): Promise<IClientSecret[]> {
     const response = await this.apiService.getSecrets(accessToken);
     return response.data.Secrets.filter((secret) => secret.scope === scope);
   }
