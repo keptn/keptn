@@ -249,6 +249,7 @@ jobs:
     env:
       CHART_TO_SCAN: "scans/rendered-helm-chart/scan-tpl.yml"
     strategy:
+      fail-fast: false
       matrix:
         include:
           - tool: "kics"
