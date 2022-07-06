@@ -175,10 +175,12 @@
         [ktbEventItemDetail]"
   ></ng-content>
   <div *ngIf="task.isApproval() && task.isApprovalPending()">
-    <table>
-      <tr>
-        <td><p class="m-0">Currently deployed artifact:</p></td>
-        <td>
+    <div class="table">
+      <div class="table-row">
+        <div class="table-cell">
+          <p class="m-0">Currently deployed artifact:</p>
+        </div>
+        <div class="table-cell">
           <ktb-loading-spinner
             *ngIf="latestDeployment === undefined; else showDeployment"
             class="smaller"
@@ -187,15 +189,17 @@
           <ng-template #showDeployment>
             <p class="m-0" uitestid="ktb-approval-deployed-image" [textContent]="latestDeployment || 'N/A'"></p>
           </ng-template>
-        </td>
-      </tr>
-      <tr>
-        <td><p class="m-0">Deployable artifact:</p></td>
-        <td>
+        </div>
+      </div>
+      <div class="table-row">
+        <div class="table-cell">
+          <p class="m-0">Deployable artifact:</p>
+        </div>
+        <div class="table-cell">
           <ktb-approval-item [event]="task"></ktb-approval-item>
-        </td>
-      </tr>
-    </table>
+        </div>
+      </div>
+    </div>
   </div>
 </ktb-expandable-tile>
 <ng-template #taskPayloadDialog let-data>

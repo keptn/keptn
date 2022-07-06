@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbSequenceTimelineComponent } from './ktb-sequence-timeline.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { KtbSequenceTimelineModule } from './ktb-sequence-timeline.module';
+import { KtbSequenceViewModule } from '../ktb-sequence-view.module';
 
 describe('KtbSequenceTimelineComponent', () => {
   let component: KtbSequenceTimelineComponent;
@@ -10,7 +10,7 @@ describe('KtbSequenceTimelineComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [],
-      imports: [KtbSequenceTimelineModule, HttpClientTestingModule],
+      imports: [KtbSequenceViewModule, HttpClientTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbSequenceTimelineComponent);

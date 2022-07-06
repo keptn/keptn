@@ -3,8 +3,8 @@ import { AbstractControl, FormArray, FormControl, FormGroup, Validators } from '
 import { FormUtils } from '../../_utils/form.utils';
 import { IWebhookConfigClient, WebhookConfigMethod } from '../../../../shared/interfaces/webhook-config';
 import { DtOverlayConfig } from '@dynatrace/barista-components/overlay';
-import { Secret } from '../../_models/secret';
 import { SelectTreeNode } from '../ktb-tree-list-select/ktb-tree-list-select.component';
+import { IClientSecret } from '../../../../shared/interfaces/secret';
 
 type ControlType = 'method' | 'url' | 'payload' | 'proxy' | 'header' | 'sendFinished' | 'sendStarted';
 
@@ -62,9 +62,9 @@ export class KtbWebhookSettingsComponent implements OnInit {
   }
 
   @Input()
-  set secrets(secrets: Secret[] | undefined) {
+  set secrets(secrets: IClientSecret[] | undefined) {
     if (secrets) {
-      this.secretDataSource = secrets.map((secret: Secret) => this.mapSecret(secret));
+      this.secretDataSource = secrets.map((secret: IClientSecret) => this.mapSecret(secret));
     }
   }
 
@@ -183,7 +183,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
     this.getFormControl(controlName).enable();
   }
 
-  private mapSecret(secret: Secret): SelectTreeNode {
+  private mapSecret(secret: IClientSecret): SelectTreeNode {
     const scrt: SelectTreeNode = { name: secret.name };
     if (secret.keys) {
       scrt.keys = secret.keys.map((key: string) => {

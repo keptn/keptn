@@ -3,10 +3,10 @@ import { KtbSequenceControlsComponent } from './ktb-sequence-controls.component'
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
-import { ApiService } from '../../_services/api.service';
-import { ApiServiceMock } from '../../_services/api.service.mock';
-import { SequencesMock } from '../../_services/_mockData/sequences.mock';
-import { KtbSequenceControlsModule } from './ktb-sequence-controls.module';
+import { ApiService } from '../../../_services/api.service';
+import { ApiServiceMock } from '../../../_services/api.service.mock';
+import { SequencesMock } from '../../../_services/_mockData/sequences.mock';
+import { KtbSequenceViewModule } from '../ktb-sequence-view.module';
 
 describe('KtbSequenceControlsComponent', () => {
   let component: KtbSequenceControlsComponent;
@@ -15,7 +15,7 @@ describe('KtbSequenceControlsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [KtbSequenceControlsModule, HttpClientTestingModule],
+      imports: [KtbSequenceViewModule, HttpClientTestingModule],
       providers: [
         {
           provide: ApiService,

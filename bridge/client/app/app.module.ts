@@ -19,8 +19,6 @@ import { ProjectBoardComponent } from './project-board/project-board.component';
 import { DashboardLegacyComponent } from './dashboard-legacy/dashboard-legacy.component';
 import { EvaluationBoardComponent } from './evaluation-board/evaluation-board.component';
 import { KtbIntegrationViewComponent } from './_views/ktb-integration-view/ktb-integration-view.component';
-import { KtbLogoutViewComponent } from './_views/ktb-logout-view/ktb-logout-view.component';
-import { KtbSequenceViewComponent } from './_views/ktb-sequence-view/ktb-sequence-view.component';
 import { KtbServiceViewComponent } from './_views/ktb-service-view/ktb-service-view.component';
 import { KtbSettingsViewComponent } from './_views/ktb-settings-view/ktb-settings-view.component';
 
@@ -62,17 +60,14 @@ import { KtbNoServiceInfoModule } from './_components/ktb-no-service-info/ktb-no
 import { KtbNotificationModule } from './_components/ktb-notification/ktb-notification.module';
 import { KtbProjectListModule } from './_components/ktb-project-list/ktb-project-list.module';
 import { KtbProjectSettingsModule } from './_components/ktb-project-settings/ktb-project-settings.module';
-import { KtbRootEventsListModule } from './_components/ktb-root-events-list/ktb-root-events-list.module';
 import { KtbSecretsListModule } from './_components/ktb-secrets-list/ktb-secrets-list.module';
-import { KtbSequenceControlsModule } from './_components/ktb-sequence-controls/ktb-sequence-controls.module';
-import { KtbSequenceTasksListModule } from './_components/ktb-sequence-tasks-list/ktb-sequence-tasks-list.module';
-import { KtbSequenceTimelineModule } from './_components/ktb-sequence-timeline/ktb-sequence-timeline.module';
 import { KtbServiceDetailsModule } from './_components/ktb-service-details/ktb-service-details.module';
 import { KtbServiceSettingsModule } from './_components/ktb-service-settings/ktb-service-settings.module';
 import { KtbMarkdownComponent } from './_components/ktb-markdown/ktb-markdown.component';
-
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+
+// Import BrowserModule, BrowserAnimationsModule, HttpModule or HttpClientModule only once!
 
 registerLocaleData(localeEn, 'en');
 
@@ -116,11 +111,7 @@ const ktbModules = [
   KtbPipeModule,
   KtbProjectListModule,
   KtbProjectSettingsModule,
-  KtbRootEventsListModule,
   KtbSecretsListModule,
-  KtbSequenceControlsModule,
-  KtbSequenceTasksListModule,
-  KtbSequenceTimelineModule,
   KtbServiceDetailsModule,
   KtbServiceSettingsModule,
 ];
@@ -132,13 +123,11 @@ const ktbModules = [
     NotFoundComponent,
     ProjectBoardComponent,
     EvaluationBoardComponent,
-    KtbSequenceViewComponent,
     KtbServiceViewComponent,
     KtbMarkdownComponent,
     KtbIntegrationViewComponent,
     KtbSettingsViewComponent,
     KtbRootComponent,
-    KtbLogoutViewComponent,
   ],
   imports: [...angularModules, ...dtModules, ...ktbModules, AppRouting, FlexModule, MomentModule],
   entryComponents: [],

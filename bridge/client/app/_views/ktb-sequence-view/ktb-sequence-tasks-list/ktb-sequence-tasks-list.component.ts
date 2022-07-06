@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, HostBinding, Input } from '@angular/core';
 import { Router } from '@angular/router';
 import { Location } from '@angular/common';
-import { Trace } from '../../_models/trace';
-import { DateUtil } from '../../_utils/date.utils';
-import { ApiService } from '../../_services/api.service';
+import { Trace } from '../../../_models/trace';
+import { DateUtil } from '../../../_utils/date.utils';
+import { ApiService } from '../../../_services/api.service';
 
 @Component({
   selector: 'ktb-sequence-tasks-list[tasks][focusedEventId]',

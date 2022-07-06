@@ -6,7 +6,6 @@ import { EvaluationBoardComponent } from './evaluation-board/evaluation-board.co
 import { KtbIntegrationViewComponent } from './_views/ktb-integration-view/ktb-integration-view.component';
 import { KtbSettingsViewComponent } from './_views/ktb-settings-view/ktb-settings-view.component';
 import { KtbServiceViewComponent } from './_views/ktb-service-view/ktb-service-view.component';
-import { KtbSequenceViewComponent } from './_views/ktb-sequence-view/ktb-sequence-view.component';
 import { KtbKeptnServicesListComponent } from './_components/ktb-keptn-services-list/ktb-keptn-services-list.component';
 import { KtbSecretsListComponent } from './_components/ktb-secrets-list/ktb-secrets-list.component';
 import { KtbCreateSecretFormComponent } from './_components/ktb-create-secret-form/ktb-create-secret-form.component';
@@ -20,7 +19,6 @@ import { NotFoundComponent } from './not-found/not-found.component';
 import { PendingChangesGuard } from './_guards/pending-changes.guard';
 import { KtbErrorViewComponent } from './_views/ktb-error-view/ktb-error-view.component';
 import { AppComponent } from './app.component';
-import { KtbLogoutViewComponent } from './_views/ktb-logout-view/ktb-logout-view.component';
 
 const routingConfiguration: ExtraOptions = {
   paramsInheritanceStrategy: 'always',
@@ -28,7 +26,10 @@ const routingConfiguration: ExtraOptions = {
 
 const routes: Routes = [
   { path: 'error', component: KtbErrorViewComponent },
-  { path: 'logoutsession', component: KtbLogoutViewComponent },
+  {
+    path: 'logoutsession',
+    loadChildren: () => import('./_views/ktb-logout-view/ktb-logout-view.module').then((m) => m.KtbLogoutViewModule),
+  },
   {
     path: '',
     component: AppComponent,
@@ -101,13 +102,14 @@ const routes: Routes = [
             ],
           },
           { path: 'service', component: KtbServiceViewComponent },
-          { path: 'sequence', component: KtbSequenceViewComponent },
           { path: 'service/:serviceName', component: KtbServiceViewComponent },
           { path: 'service/:serviceName/context/:shkeptncontext', component: KtbServiceViewComponent },
           { path: 'service/:serviceName/context/:shkeptncontext/stage/:stage', component: KtbServiceViewComponent },
-          { path: 'sequence/:shkeptncontext', component: KtbSequenceViewComponent },
-          { path: 'sequence/:shkeptncontext/event/:eventId', component: KtbSequenceViewComponent },
-          { path: 'sequence/:shkeptncontext/stage/:stage', component: KtbSequenceViewComponent },
+          {
+            path: 'sequence',
+            loadChildren: () =>
+              import('./_views/ktb-sequence-view/ktb-sequence-view.module').then((m) => m.KtbSequenceViewModule),
+          },
         ],
       },
       { path: 'trace/:shkeptncontext', component: ProjectBoardComponent },

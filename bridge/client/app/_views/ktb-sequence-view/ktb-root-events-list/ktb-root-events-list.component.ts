@@ -8,10 +8,10 @@ import {
   Output,
   ViewEncapsulation,
 } from '@angular/core';
-import { DateUtil } from '../../_utils/date.utils';
-import { Project } from '../../_models/project';
-import { Sequence } from '../../_models/sequence';
-import { ISequence } from '../../../../shared/interfaces/sequence';
+import { DateUtil } from '../../../_utils/date.utils';
+import { Project } from '../../../_models/project';
+import { Sequence } from '../../../_models/sequence';
+import { ISequence } from '../../../../../shared/interfaces/sequence';
 
 @Component({
   selector: 'ktb-root-events-list',
@@ -62,7 +62,7 @@ export class KtbRootEventsListComponent {
     this.selectedEventChange.emit({ sequence: <Sequence>sequence, stage });
   }
 
-  identifyEvent(index: number, item: Sequence): string | undefined {
+  identifyEvent(_index: number, item: Sequence): string | undefined {
     return item?.time;
   }
 

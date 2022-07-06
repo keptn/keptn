@@ -15,11 +15,11 @@ import { IWebhookConfigClient, PreviousWebhookConfig } from '../../../../shared/
 import { NotificationsService } from '../../_services/notifications.service';
 import { UniformRegistrationInfo } from '../../../../shared/interfaces/uniform-registration-info';
 import { NotificationType } from '../../_models/notification';
-import { Secret } from '../../_models/secret';
 import { SecretScopeDefault } from '../../../../shared/interfaces/secret-scope';
 import { EventState } from '../../../../shared/models/event-state';
 import { Trace } from '../../_models/trace';
 import { HttpErrorResponse } from '@angular/common/http';
+import { IClientSecret } from '../../../../shared/interfaces/secret';
 
 @Component({
   selector: 'ktb-modify-uniform-subscription',
@@ -38,7 +38,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     project: Project;
     integrationId: string;
     webhook?: IWebhookConfigClient;
-    webhookSecrets?: Secret[];
+    webhookSecrets?: IClientSecret[];
   }>;
   public _dataSource = new DtFilterFieldDefaultDataSource();
   public editMode = false;
