@@ -259,6 +259,8 @@ jobs:
       - name: Set up Go
         if: matrix.tool == 'kubeconform'
         uses: actions/setup-go@v3
+        with:
+          go-version: ${{ env.GO_VERSION }}
 
       - name: Check out code
         uses: actions/checkout@v3
