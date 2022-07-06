@@ -220,6 +220,9 @@ jobs:
     needs: prepare_ci_run
     runs-on: ubuntu-20.04
     steps:
+      - name: Set up Go
+        uses: actions/setup-go@v3
+
       - name: Check out code
         uses: actions/checkout@v3
         with:
@@ -232,14 +235,19 @@ jobs:
           helm repo add nats https://nats-io.github.io/k8s/helm/charts/
           helm dependency update ./installer/manifests/keptn
           helm dependency build ./installer/manifests/keptn
-          helm template ./installer/manifests/keptn -n keptn --name-template keptn --version 0.17.0 > kics-tpl.yml
+          helm template ./installer/manifests/keptn -n keptn --name-template keptn --version 0.17.0 > scan-tpl.yml
 
       - name: KICS Scan
         uses: Checkmarx/kics-github-action@v1.5
         with:
-          path: "kics-tpl.yml"
+          path: "scan-tpl.yml"
           token: ${{ secrets.GITHUB_TOKEN }}
           enable_comments: true
+
+      - name: Kubeconform Scan
+        run: |
+          go install github.com/yannh/kubeconform/cmd/kubeconform@v0.4.13
+          kubeconform -summary -kubernetes-version 1.22 ./scan-tpl.yml
 
   store-output-in-build-config:
     name: "Store output of last step in build-config.env"
