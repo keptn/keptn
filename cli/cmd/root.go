@@ -14,8 +14,6 @@ var cfgFile string
 var verboseLogging bool
 var quietLogging bool
 var mocking bool
-var insecureSkipTLSVerify bool
-var kubectlOptions string
 var namespace string
 var assumeYes bool
 var help bool
@@ -92,14 +90,6 @@ func initConfig() {
 		logging.PrintLog(err.Error(), logging.InfoLevel)
 	}
 
-}
-
-type options []string
-
-func (s *options) appendIfNotEmpty(newOption string) {
-	if newOption != "" {
-		*s = append(*s, newOption)
-	}
 }
 
 // passing flags and cliConfig as arguments makes it easy to test this function

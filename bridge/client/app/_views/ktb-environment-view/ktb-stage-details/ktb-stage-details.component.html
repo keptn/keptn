@@ -21,6 +21,7 @@
               [class.error]="remediationServices.length > 0"
               [disabled]="remediationServices.length === 0"
               [selected]="filterEventType === 'problem'"
+              [attr.uitestid]="'ktb-stage-details-problem-button'"
             >
               <dt-toggle-button-item-icon>
                 <dt-icon class="stage-state-icon event-icon" name="criticalevent"></dt-icon>
@@ -37,6 +38,7 @@
               [class.error]="failedQualityGatesServices.length > 0"
               [disabled]="failedQualityGatesServices.length === 0"
               [selected]="filterEventType === 'evaluation'"
+              [attr.uitestid]="'ktb-stage-details-evaluation-button'"
             >
               <dt-toggle-button-item-icon>
                 <dt-icon class="stage-state-icon event-icon" name="traffic-light"></dt-icon>
@@ -53,6 +55,7 @@
               [class.highlight]="approvalServices.length > 0"
               [disabled]="approvalServices.length === 0"
               [selected]="filterEventType === 'approval'"
+              [attr.uitestid]="'ktb-stage-details-approval-button'"
             >
               <dt-toggle-button-item-icon>
                 <dt-icon class="stage-state-icon" name="deploy"></dt-icon>

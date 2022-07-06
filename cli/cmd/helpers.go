@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	models "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
