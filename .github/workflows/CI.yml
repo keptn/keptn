@@ -215,6 +215,24 @@ jobs:
           echo "::set-output name=TIME::$(date +'%H%M')"
           echo "::set-output name=DATETIME::$(date +'%Y%m%d')$(date +'%H%M')"
 
+  security-scans:
+    name: "Security Scans"
+    needs: prepare_ci_run
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: 'true'
+
+      - name: KICS Scan
+        uses: Checkmarx/kics-github-action@v1.5
+        with:
+          path: "installer/manifests"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          enable_comments: true
+
   store-output-in-build-config:
     name: "Store output of last step in build-config.env"
     needs: prepare_ci_run
