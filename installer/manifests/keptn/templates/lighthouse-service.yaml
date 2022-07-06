@@ -1,5 +1,4 @@
 {{- if .Values.approvalService.enabled }}
----
 # lighthouse-service
 apiVersion: apps/v1
 kind: Deployment
@@ -85,5 +84,4 @@ spec:
       protocol: TCP
   selector: {{- include "keptn.common.labels.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/name: lighthouse-service
-
 {{- end}}

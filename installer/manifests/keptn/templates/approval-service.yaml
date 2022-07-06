@@ -1,5 +1,4 @@
 {{- if .Values.approvalService.enabled }}
----
 # approval-service
 apiVersion: apps/v1
 kind: Deployment

@@ -1,5 +1,4 @@
 {{- if .Values.statisticsService.enabled }}
----
 # statistics-service
 apiVersion: apps/v1
 kind: Deployment

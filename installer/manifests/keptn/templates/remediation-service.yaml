@@ -1,5 +1,4 @@
 {{- if .Values.remediationService.enabled }}
----
 # remediation-service
 apiVersion: apps/v1
 kind: Deployment
