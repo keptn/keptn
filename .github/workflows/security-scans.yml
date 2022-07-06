@@ -21,7 +21,6 @@ env:
 jobs:
   prepare-security-scans:
     name: "Prepare Security Scans"
-    needs: prepare_ci_run
     runs-on: ubuntu-20.04
     env:
       RENDERED_CHART_FILENAME: "scan-tpl.yml"
