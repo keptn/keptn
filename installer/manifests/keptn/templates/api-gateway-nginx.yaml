@@ -1,5 +1,4 @@
 {{- $prefixPathTrimmed := trimPrefix "/" .Values.prefixPath  }}
----
 apiVersion: v1
 kind: ConfigMap
 metadata:
