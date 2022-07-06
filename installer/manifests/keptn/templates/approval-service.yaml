@@ -1,3 +1,6 @@
+{{- if .Values.approvalService.enabled }}
+---
+# approval-service
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -74,3 +77,4 @@ spec:
       protocol: TCP
   selector: {{- include "keptn.common.labels.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/name: approval-service
+{{- end }}
