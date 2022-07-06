@@ -107,4 +107,4 @@ jobs:
           curl -s https://raw.githubusercontent.com/armosec/kubescape/master/install.sh | /bin/bash
           echo "::endgroup::"
 
-          kubescape scan framework ${{ matrix.kubescape-framework }} -t ${{ env.FAILURE_PERCENTAGE }} --disable-color false ${{ env.CHART_TO_SCAN }}
+          kubescape scan framework ${{ matrix.kubescape-framework }} ${{ env.CHART_TO_SCAN }}
