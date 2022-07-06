@@ -30,6 +30,7 @@ metadata:
   labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: secret-service
 ---
+{{- if .Values.lighthouseService.enabled }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -37,6 +38,7 @@ metadata:
   labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: lighthouse-service
 ---
+{{-end }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
