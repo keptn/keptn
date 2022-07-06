@@ -47,7 +47,7 @@ jobs:
 
   security-scans:
     name: "Security Scans"
-    needs: [ prepare_ci_run,prepare-security-scans ]
+    needs: prepare-security-scans
     runs-on: ubuntu-20.04
     env:
       CHART_TO_SCAN: "scans/scan-tpl.yml"
