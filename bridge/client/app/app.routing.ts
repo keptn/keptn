@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { ExtraOptions, RouterModule, Routes } from '@angular/router';
-import { DashboardLegacyComponent } from './dashboard-legacy/dashboard-legacy.component';
+import { KtbDashboardLegacyComponent } from './_views/ktb-dashboard-legacy/ktb-dashboard-legacy.component';
 import { ProjectBoardComponent } from './project-board/project-board.component';
 import { EvaluationBoardComponent } from './evaluation-board/evaluation-board.component';
 import { KtbIntegrationViewComponent } from './_views/ktb-integration-view/ktb-integration-view.component';
@@ -35,7 +35,7 @@ const routes: Routes = [
     component: AppComponent,
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
-      { path: 'dashboard', component: DashboardLegacyComponent },
+      { path: 'dashboard', component: KtbDashboardLegacyComponent },
       {
         path: 'create',
         component: ProjectBoardComponent,

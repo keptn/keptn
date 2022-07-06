@@ -16,7 +16,7 @@ import { AppRouting } from './app.routing';
 import { KtbRootComponent } from './ktb-root/ktb-root.component';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { ProjectBoardComponent } from './project-board/project-board.component';
-import { DashboardLegacyComponent } from './dashboard-legacy/dashboard-legacy.component';
+import { KtbDashboardLegacyComponent } from './_views/ktb-dashboard-legacy/ktb-dashboard-legacy.component';
 import { EvaluationBoardComponent } from './evaluation-board/evaluation-board.component';
 import { KtbEnvironmentViewComponent } from './_views/ktb-environment-view/ktb-environment-view.component';
 import { KtbIntegrationViewComponent } from './_views/ktb-integration-view/ktb-integration-view.component';
@@ -132,7 +132,7 @@ const ktbModules = [
 @NgModule({
   declarations: [
     AppComponent,
-    DashboardLegacyComponent,
+    KtbDashboardLegacyComponent,
     NotFoundComponent,
     ProjectBoardComponent,
     EvaluationBoardComponent,

@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { DashboardLegacyComponent } from './dashboard-legacy.component';
-import { DataService } from '../_services/data.service';
+import { KtbDashboardLegacyComponent } from './ktb-dashboard-legacy.component';
+import { DataService } from '../../_services/data.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { ApiService } from '../_services/api.service';
-import { ApiServiceMock } from '../_services/api.service.mock';
+import { ApiService } from '../../_services/api.service';
+import { ApiServiceMock } from '../../_services/api.service.mock';
 import { finalize, skip, take } from 'rxjs/operators';
-import { ProjectSequences } from '../_components/ktb-project-list/ktb-project-list.component';
-import { POLLING_INTERVAL_MILLIS } from '../_utils/app.utils';
+import { ProjectSequences } from '../../_components/ktb-project-list/ktb-project-list.component';
+import { POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 import { RouterTestingModule } from '@angular/router/testing';
 import { Navigation, Router } from '@angular/router';
 
 describe('DashboardLegacyComponent', () => {
-  let component: DashboardLegacyComponent;
-  let fixture: ComponentFixture<DashboardLegacyComponent>;
+  let component: KtbDashboardLegacyComponent;
+  let fixture: ComponentFixture<KtbDashboardLegacyComponent>;
   let dataService: DataService;
   let router: Router;
 
@@ -23,10 +23,10 @@ describe('DashboardLegacyComponent', () => {
         { provide: ApiService, useClass: ApiServiceMock },
         { provide: POLLING_INTERVAL_MILLIS, useValue: 0 },
       ],
-      declarations: [DashboardLegacyComponent],
+      declarations: [KtbDashboardLegacyComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(DashboardLegacyComponent);
+    fixture = TestBed.createComponent(KtbDashboardLegacyComponent);
     component = fixture.componentInstance;
     dataService = TestBed.inject(DataService);
     router = TestBed.inject(Router);
