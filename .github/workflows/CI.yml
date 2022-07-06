@@ -287,7 +287,7 @@ jobs:
         if: matrix.tool == 'kubeconform'
         run: |
           go install github.com/yannh/kubeconform/cmd/kubeconform@v0.4.13
-          ./bin/kubeconform -summary -kubernetes-version 1.22 ${{ env.CHART_TO_SCAN }}
+          kubeconform -summary -kubernetes-version 1.22 ${{ env.CHART_TO_SCAN }}
 
   store-output-in-build-config:
     name: "Store output of last step in build-config.env"
