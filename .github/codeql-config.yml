@@ -1,0 +1,19 @@
+paths:
+  - api
+  - approval-service
+  - cli
+  - distributor
+  - helm-service
+  - jmeter-service
+  - lighthouse-service
+  - mongodb-datastore
+  - remediation-service
+  - secret-service
+  - shipyard-controller
+  - statistics-service
+  - webhook-service
+  - resource-service
+paths-ignore:
+  - '**/*.spec.ts'
+  - '**/swagger-ui/*'
+  - '**/*_test.go'

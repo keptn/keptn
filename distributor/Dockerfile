@@ -48,7 +48,8 @@ LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
     org.opencontainers.image.vendor="Keptn" \
     org.opencontainers.image.documentation="https://keptn.sh/docs/" \
     org.opencontainers.image.licenses="Apache-2.0" \
-    org.opencontainers.image.version="${version}"
+    org.opencontainers.image.version="${version}" \
+    io.snyk.containers.image.dockerfile="distributor/Dockerfile"
 
 RUN apk add --no-cache ca-certificates libc6-compat
 

@@ -11,8 +11,6 @@ ENV GOPROXY=https://proxy.golang.org
 
 RUN apk add --no-cache gcc libc-dev git
 
-# Copy `go.mod` for definitions and `go.sum` to invalidate the next layer
-# in case of a change in the dependencies
 COPY go.mod go.sum ./
 
 # Download dependencies
@@ -49,9 +47,9 @@ LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
     org.opencontainers.image.vendor="Keptn" \
     org.opencontainers.image.documentation="https://keptn.sh/docs/" \
     org.opencontainers.image.licenses="Apache-2.0" \
-    org.opencontainers.image.version="${version}"
+    org.opencontainers.image.version="${version}" \
+    io.snyk.containers.image.dockerfile="api/Dockerfile"
 
-# we need to install ca-certificates and libc6-compat for go programs to work properly
 RUN apk add --no-cache ca-certificates libc6-compat
 
 # Copy the binary to the production image from the builder stage.

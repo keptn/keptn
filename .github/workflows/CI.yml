@@ -457,6 +457,26 @@ jobs:
           push: ${{ matrix.config.should-push-image == 'true' && (( github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository ) || ( github.event_name == 'push' )) && github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' }}
           pull: true
 
+      - id: snyk_container_test
+        name: Snyk Container Image Check
+        uses: snyk/actions/docker@0.3.0
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: keptndev/${{ matrix.config.artifact }}:${{ env.VERSION }}
+          args: --severity-threshold=medium --file=${{ matrix.config.working-dir }}Dockerfile
+
+      - id: snyk_container_monitor
+        name: Snyk Container Image Check
+        if: github.ref_protected == 'true'
+        uses: snyk/actions/docker@0.3.0
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: keptndev/${{ matrix.config.artifact }}:${{ env.VERSION }}
+          command: monitor
+          args: --severity-threshold=medium --file=${{ matrix.config.working-dir }}Dockerfile
+
   calculate-total-runtime:
     name: End-of-Pipeline Metrics
     if: always() && (( github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository ) || ( github.event_name == 'push' ))
