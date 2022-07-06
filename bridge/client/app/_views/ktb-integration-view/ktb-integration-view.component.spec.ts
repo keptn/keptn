@@ -8,7 +8,7 @@ import { ApiServiceMock } from '../../_services/api.service.mock';
 import { RouterTestingModule } from '@angular/router/testing';
 import { KtbIntegrationViewModule } from './ktb-integration-view.module';
 
-describe('KtbKeptnServicesListComponent', () => {
+describe('KtbIntegrationViewComponent', () => {
   let component: KtbIntegrationViewComponent;
   let fixture: ComponentFixture<KtbIntegrationViewComponent>;
 
