@@ -5,6 +5,7 @@ import { Service } from '../../../../_models/service';
 import { ServiceMock } from '../../../../_services/_mockData/service.mock';
 import { KtbStageOverviewModule } from '../ktb-stage-overview.module';
 import { RouterTestingModule } from '@angular/router/testing';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('KtbServicesListComponent', () => {
   let component: KtbServicesListComponent;
@@ -13,7 +14,7 @@ describe('KtbServicesListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [KtbStageOverviewModule, HttpClientTestingModule, RouterTestingModule],
+      imports: [KtbStageOverviewModule, BrowserAnimationsModule, HttpClientTestingModule, RouterTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbServicesListComponent);

@@ -12,11 +12,11 @@ import { Router } from '@angular/router';
 const MAX_SEQUENCES = 5;
 
 @Component({
-  selector: 'ktb-dashboard-legacy',
-  templateUrl: './ktb-dashboard-legacy.component.html',
-  styleUrls: ['./ktb-dashboard-legacy.component.scss'],
+  selector: 'ktb-dashboard-legacy-view',
+  templateUrl: './ktb-dashboard-legacy-view.component.html',
+  styleUrls: ['./ktb-dashboard-legacy-view.component.scss'],
 })
-export class KtbDashboardLegacyComponent {
+export class KtbDashboardLegacyViewComponent {
   private readonly refreshTimer$ = AppUtils.createTimer(0, this.initialDelayMillis);
   public readonly keptnMetadata$ = this.dataService.keptnMetadata.pipe(
     filter((metadata): metadata is IMetadata => metadata != null)

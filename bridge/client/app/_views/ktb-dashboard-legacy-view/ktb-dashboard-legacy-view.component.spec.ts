@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { KtbDashboardLegacyComponent } from './ktb-dashboard-legacy.component';
+import { KtbDashboardLegacyViewComponent } from './ktb-dashboard-legacy-view.component';
 import { DataService } from '../../_services/data.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ApiService } from '../../_services/api.service';
@@ -10,9 +10,9 @@ import { POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 import { RouterTestingModule } from '@angular/router/testing';
 import { Navigation, Router } from '@angular/router';
 
-describe('DashboardLegacyComponent', () => {
-  let component: KtbDashboardLegacyComponent;
-  let fixture: ComponentFixture<KtbDashboardLegacyComponent>;
+describe('DashboardLegacyView', () => {
+  let component: KtbDashboardLegacyViewComponent;
+  let fixture: ComponentFixture<KtbDashboardLegacyViewComponent>;
   let dataService: DataService;
   let router: Router;
 
@@ -23,10 +23,10 @@ describe('DashboardLegacyComponent', () => {
         { provide: ApiService, useClass: ApiServiceMock },
         { provide: POLLING_INTERVAL_MILLIS, useValue: 0 },
       ],
-      declarations: [KtbDashboardLegacyComponent],
+      declarations: [KtbDashboardLegacyViewComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(KtbDashboardLegacyComponent);
+    fixture = TestBed.createComponent(KtbDashboardLegacyViewComponent);
     component = fixture.componentInstance;
     dataService = TestBed.inject(DataService);
     router = TestBed.inject(Router);
