@@ -1,8 +1,8 @@
-import { Component, OnDestroy } from '@angular/core';
-import { Subject } from 'rxjs';
+import { Component } from '@angular/core';
+import { mergeMap, Observable, of } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../_services/data.service';
-import { filter, map, takeUntil } from 'rxjs/operators';
+import { catchError, filter, finalize, map, tap } from 'rxjs/operators';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { NotificationsService } from '../../_services/notifications.service';
 import { NotificationType } from '../../_models/notification';
@@ -12,82 +12,72 @@ import { FormUtils } from '../../_utils/form.utils';
   selector: 'ktb-create-service',
   templateUrl: './ktb-create-service.component.html',
 })
-export class KtbCreateServiceComponent implements OnDestroy {
-  public projectName?: string;
-  public isCreating = false;
-  public serviceNameControl: FormControl = new FormControl();
+export class KtbCreateServiceComponent {
   public isLoading = true;
-  private unsubscribe$: Subject<void> = new Subject<void>();
-  private redirectTo?: string;
-  public formGroup: FormGroup = new FormGroup({
+  public isCreating = false;
+
+  public projectName$: Observable<string> = this.route.paramMap.pipe(
+    map((params) => params.get('projectName')),
+    filter((projectName): projectName is string => !!projectName)
+  );
+
+  public serviceNames$: Observable<string[]> = this.projectName$.pipe(
+    mergeMap((projectName) =>
+      this.dataService.getServiceNames(projectName).pipe(
+        tap(this.setValidators),
+        finalize(() => (this.isLoading = false))
+      )
+    )
+  );
+
+  public redirectTo$ = this.route.queryParamMap.pipe(
+    map((params) => params.get('redirectTo')),
+    map((value) => ({
+      value,
+    }))
+  );
+
+  public serviceNameControl: FormControl = new FormControl();
+  public formGroup = new FormGroup({
     serviceName: this.serviceNameControl,
   });
 
   constructor(
+    private router: Router,
     private route: ActivatedRoute,
     private dataService: DataService,
-    private router: Router,
     private notificationsService: NotificationsService
-  ) {
-    this.route.queryParamMap
-      .pipe(
-        map((params) => params.get('redirectTo')),
-        takeUntil(this.unsubscribe$),
-        filter((redirectTo): redirectTo is string => !!redirectTo)
-      )
-      .subscribe((redirectTo) => {
-        this.redirectTo = redirectTo;
-      });
+  ) {}
 
-    this.route.paramMap
-      .pipe(
-        map((params) => params.get('projectName')),
-        filter((projectName): projectName is string => !!projectName),
-        takeUntil(this.unsubscribe$)
-      )
-      .subscribe((projectName) => {
-        this.projectName = projectName;
-        this.isLoading = true;
+  private setValidators = (services: string[]): void =>
+    this.serviceNameControl.setValidators([
+      Validators.required,
+      FormUtils.nameExistsValidator(services),
+      Validators.pattern('[a-z]([a-z]|[0-9]|-)*'),
+    ]);
 
-        this.dataService.getServiceNames(this.projectName).subscribe((serviceNames) => {
-          this.isLoading = false;
-
-          this.serviceNameControl.setValidators([
-            Validators.required,
-            FormUtils.nameExistsValidator(serviceNames),
-            Validators.pattern('[a-z]([a-z]|[0-9]|-)*'),
-          ]);
-        });
-      });
-  }
-
-  public createService(projectName: string): void {
+  public createService(projectName: string, redirectTo: string | null): void {
     this.isCreating = true;
-    this.dataService.createService(projectName, this.serviceNameControl.value).subscribe(
-      async () => {
-        this.isCreating = false;
-        if (this.projectName) {
-          this.dataService.loadProject(this.projectName);
-        }
-        await this.cancel();
+    this.dataService
+      .createService(projectName, this.serviceNameControl.value)
+      .pipe(
+        map(() => true),
+        catchError(() => of(false)),
+        filter((success) => success),
+        finalize(() => (this.isCreating = false))
+      )
+      .subscribe(async () => {
+        this.dataService.loadProject(projectName);
+        await this.cancel(redirectTo);
         this.notificationsService.addNotification(NotificationType.SUCCESS, 'Service successfully created!');
-      },
-      () => {
-        this.isCreating = false;
-      }
-    );
+      });
   }
 
-  public async cancel(): Promise<void> {
-    if (this.redirectTo) {
-      await this.router.navigateByUrl(this.redirectTo);
+  public async cancel(redirectTo: string | null): Promise<void> {
+    if (redirectTo) {
+      await this.router.navigateByUrl(redirectTo);
     } else {
       await this.router.navigate(['../'], { relativeTo: this.route });
     }
-  }
-
-  public ngOnDestroy(): void {
-    this.unsubscribe$.next();
-    this.unsubscribe$.complete();
   }
 }

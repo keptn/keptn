@@ -1,8 +1,8 @@
-<div fxLayout="column">
-  <div class="container settings-section">
+<div *ngIf="projectName$ | async as projectName" fxLayout="column">
+  <div *ngIf="serviceNames$ | async as services" class="container settings-section">
     <h2>Create service</h2>
     <ktb-loading-distractor *ngIf="isLoading">Loading ...</ktb-loading-distractor>
-    <form [formGroup]="formGroup" class="mb-3" *ngIf="projectName && !isLoading">
+    <form #form [formGroup]="formGroup" class="mb-3" *ngIf="projectName && !isLoading">
       <div fxLayout="column" fxLayoutGap="10px">
         <dt-form-field>
           <dt-label class="required">Service name</dt-label>
@@ -20,19 +20,19 @@
             </ng-container>
           </dt-error>
         </dt-form-field>
-        <div fxLayout="row">
+        <div *ngIf="redirectTo$ | async as redirectTo" fxLayout="row">
           <button
             dt-button
             uitestid="createServiceButton"
             type="submit"
             class="mr-2"
-            [disabled]="!formGroup.valid || isCreating"
-            (click)="createService(projectName)"
+            [disabled]="formGroup.invalid || isCreating"
+            (click)="createService(projectName, redirectTo.value)"
           >
             <ktb-loading-spinner *ngIf="isCreating" aria-label="Creating service"></ktb-loading-spinner>
             Create service
           </button>
-          <button dt-button variant="secondary" type="reset" (click)="cancel()">Cancel</button>
+          <button dt-button variant="secondary" type="reset" (click)="cancel(redirectTo.value)">Cancel</button>
         </div>
       </div>
       <div class="mt-2 required-info">fields are required</div>
