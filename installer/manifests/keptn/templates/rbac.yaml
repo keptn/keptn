@@ -38,7 +38,7 @@ metadata:
   labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: lighthouse-service
 ---
-{{-end }}
+{{- end }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -217,7 +217,7 @@ subjects:
     name: keptn-lighthouse-service
 
 ---
-{{-end }}
+{{- end }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
