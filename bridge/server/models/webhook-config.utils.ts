@@ -11,7 +11,7 @@ import {
 import { parseCurl } from '../utils/curl.utils';
 import { IWebhookConfigClient, WebhookConfigMethod } from '../../shared/interfaces/webhook-config';
 import { WebhookConfigYaml } from './webhook-config-yaml';
-import { ISecret } from '../../shared/interfaces/secret';
+import { IClientSecret } from '../../shared/interfaces/secret';
 
 interface FlatSecret {
   path: string;
@@ -125,7 +125,10 @@ export function mapYamlSecretsToBridgeSecrets(webhookConfig: IWebhookConfigClien
   }
 }
 
-export function mapBridgeSecretsToYamlSecrets(config: IWebhookConfigClient, secrets: ISecret[]): IWebhookSecret[] {
+export function mapBridgeSecretsToYamlSecrets(
+  config: IWebhookConfigClient,
+  secrets: IClientSecret[]
+): IWebhookSecret[] {
   const flatSecret = getSecretPathFlat(secrets);
   const webhookSecrets: IWebhookSecret[] = [];
 
@@ -138,16 +141,14 @@ export function mapBridgeSecretsToYamlSecrets(config: IWebhookConfigClient, secr
   return webhookSecrets;
 }
 
-function getSecretPathFlat(secrets: ISecret[]): FlatSecret[] {
-  return secrets
-    .filter((secret): secret is ISecret & { keys: string[] } => !!secret.keys)
-    .reduce(
-      (flatSecrets: FlatSecret[], secret) => [
-        ...flatSecrets,
-        ...secret.keys.map((key) => mapSecretToFlatSecret(secret.name, key)),
-      ],
-      [] as FlatSecret[]
-    );
+function getSecretPathFlat(secrets: IClientSecret[]): FlatSecret[] {
+  return secrets.reduce(
+    (flatSecrets: FlatSecret[], secret) => [
+      ...flatSecrets,
+      ...secret.keys.map((key) => mapSecretToFlatSecret(secret.name, key)),
+    ],
+    [] as FlatSecret[]
+  );
 }
 
 function mapSecretToFlatSecret(name: string, key: string): FlatSecret {

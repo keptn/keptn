@@ -8,7 +8,6 @@ import { IMetadata } from '../_interfaces/metadata';
 import moment from 'moment';
 import { SequenceResult } from '../_models/sequence-result';
 import { UniformRegistrationLogResponse } from '../../../shared/interfaces/uniform-registration-log';
-import { Secret } from '../_models/secret';
 import { KeptnInfoResult } from '../../../shared/interfaces/keptn-info-result';
 import { KeptnVersions } from '../../../shared/interfaces/keptn-versions';
 import { EventResult } from '../_interfaces/event-result';
@@ -32,6 +31,7 @@ import { WindowConfig } from '../../environments/environment.dynamic';
 import { IService } from '../../../shared/interfaces/service';
 import { IProjectResult } from '../../../shared/interfaces/project-result';
 import { IGitDataExtended, IProject } from '../../../shared/interfaces/project';
+import { IClientSecret, IServiceSecret } from '../../../shared/interfaces/secret';
 
 @Injectable({
   providedIn: 'root',
@@ -225,17 +225,17 @@ export class ApiService {
     return this.http.post<boolean>(url, uniformDates);
   }
 
-  public getSecrets(): Observable<{ Secrets: Secret[] }> {
+  public getSecrets(): Observable<{ Secrets: IClientSecret[] }> {
     const url = `${this._baseUrl}/secrets/v1/secret`;
-    return this.http.get<{ Secrets: Secret[] }>(url);
+    return this.http.get<{ Secrets: IClientSecret[] }>(url);
   }
 
-  public getSecretsForScope(scope: SecretScope): Observable<Secret[]> {
+  public getSecretsForScope(scope: SecretScope): Observable<IClientSecret[]> {
     const url = `${this._baseUrl}/secrets/scope/${scope}`;
-    return this.http.get<Secret[]>(url);
+    return this.http.get<IClientSecret[]>(url);
   }
 
-  public addSecret(secret: Secret): Observable<Record<string, unknown>> {
+  public addSecret(secret: IServiceSecret): Observable<Record<string, unknown>> {
     const url = `${this._baseUrl}/secrets/v1/secret`;
     return this.http.post<Record<string, unknown>>(url, secret);
   }

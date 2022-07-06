@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
-import { Sequence } from '../../_models/sequence';
+import { Sequence } from '../../../_models/sequence';
 
 @Component({
   selector: 'ktb-sequence-timeline',

@@ -8,7 +8,6 @@ import { ApiService } from './api.service';
 import moment from 'moment';
 import { Sequence } from '../_models/sequence';
 import { UniformRegistrationLog } from '../../../shared/interfaces/uniform-registration-log';
-import { Secret } from '../_models/secret';
 import { HttpResponse } from '@angular/common/http';
 import { SequenceResult } from '../_models/sequence-result';
 import { EventResult } from '../../../shared/interfaces/event-result';
@@ -38,6 +37,7 @@ import {
 } from '../_views/ktb-sequence-view/ktb-sequence-view.utils';
 import { IWebhookConfigClient } from '../../../shared/interfaces/webhook-config';
 import { IGitDataExtended } from '../../../shared/interfaces/project';
+import { IClientSecret, IServiceSecret } from '../../../shared/interfaces/secret';
 
 @Injectable({
   providedIn: 'root',
@@ -207,18 +207,15 @@ export class DataService {
     });
   }
 
-  public getSecrets(): Observable<Secret[]> {
-    return this.apiService.getSecrets().pipe(
-      map((res) => res.Secrets),
-      map((secrets) => secrets.map((secret) => Secret.fromJSON(secret)))
-    );
+  public getSecrets(): Observable<IClientSecret[]> {
+    return this.apiService.getSecrets().pipe(map((res) => res.Secrets));
   }
 
-  public getSecretsForScope(scope: SecretScope): Observable<Secret[]> {
+  public getSecretsForScope(scope: SecretScope): Observable<IClientSecret[]> {
     return this.apiService.getSecretsForScope(scope);
   }
 
-  public addSecret(secret: Secret): Observable<Record<string, unknown>> {
+  public addSecret(secret: IServiceSecret): Observable<Record<string, unknown>> {
     return this.apiService.addSecret(
       Object.assign({}, secret, {
         data: secret.data?.reduce((result, item) => Object.assign(result, { [item.key]: item.value }), {}),
