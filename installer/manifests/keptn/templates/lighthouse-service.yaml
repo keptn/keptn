@@ -41,6 +41,8 @@ spec:
           resources:
             {{- toYaml .Values.lighthouseService.resources | nindent 12 }}
           env:
+            - name: RESOURCE_SERVICE
+              value: 'http://resource-service:8080'
             - name: MONGODB_DATASTORE
               value: 'mongodb-datastore:8080'
             - name: ENVIRONMENT
