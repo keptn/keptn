@@ -7,6 +7,7 @@ import ProjectSettingsPage from './ProjectSettingsPage';
 
 class DashboardPage {
   private PROJECT_TILE_LOCATOR = 'dt-tile[id="proj_pattern"]';
+  private STAGE_TAG_LOCATOR = 'dt';
 
   public intercept(): this {
     interceptDashboard();
@@ -27,7 +28,7 @@ class DashboardPage {
   }
 
   public clickProjectTile(projectName: string): EnvironmentPage {
-    cy.wait(500).get(this.PROJECT_TILE_LOCATOR.replace('proj_pattern', projectName)).click();
+    cy.get(this.PROJECT_TILE_LOCATOR.replace('proj_pattern', projectName)).click();
     return new EnvironmentPage();
   }
 
@@ -54,6 +55,11 @@ class DashboardPage {
   public assertIsValidPath(): this {
     cy.location('pathname').should('eq', '/dashboard');
     return this;
+  }
+
+  public clickStageTag(projectName: string, stageName: string): EnvironmentPage {
+    cy.byTestId(`ktb-project-${projectName}`).find('dt-tag a').contains(stageName).click();
+    return new EnvironmentPage();
   }
 }
 
