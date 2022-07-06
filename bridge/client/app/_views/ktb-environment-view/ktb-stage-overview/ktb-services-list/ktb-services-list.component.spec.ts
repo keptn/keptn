@@ -78,6 +78,15 @@ describe('KtbServicesListComponent', () => {
     const link = component.getServiceLink(service);
 
     // then
-    expect(link).toEqual(['service', 'carts-db', 'context', 'ff8a3e69-7e5c-48ec-b668-4e96a006a505', 'stage', 'dev']);
+    expect(link).toEqual([
+      '/project',
+      '',
+      'service',
+      'carts-db',
+      'context',
+      'ff8a3e69-7e5c-48ec-b668-4e96a006a505',
+      'stage',
+      'dev',
+    ]);
   });
 });

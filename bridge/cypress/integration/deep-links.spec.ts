@@ -16,6 +16,7 @@ describe('Test deep links', () => {
   const mockedKeptnContext = '62cca6f3-dc54-4df6-a04c-6ffc894a4b5e';
   const mockedProject = 'sockshop';
   const mockedService = 'carts';
+  const mockedStage = 'dev';
   const mockedServiceDeploymentContext = 'da740469-9920-4e0c-b304-0fd4b18d17c2';
 
   beforeEach(() => {
@@ -50,6 +51,12 @@ describe('Test deep links', () => {
     dashboardPage.waitForProjects();
 
     cy.location('pathname').should('eq', '/dashboard');
+  });
+
+  it('should navigate to environment stage view through click on stage tag', () => {
+    dashboardPage.visit().clickStageTag(mockedProject, mockedStage);
+
+    cy.location('pathname').should('eq', `/project/${mockedProject}/environment/stage/${mockedStage}`);
   });
 
   it('deepLink project/:projectName/service', () => {

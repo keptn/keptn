@@ -30,6 +30,8 @@ export class KtbServicesListComponent implements DoCheck {
   private _expanded = false;
   private iterableDiffer: IterableDiffer<unknown>;
 
+  @Input() projectName = '';
+
   @Input()
   get services(): Service[] {
     return this._services;
@@ -76,11 +78,20 @@ export class KtbServicesListComponent implements DoCheck {
   }
 
   getServiceLink(service: Service): string[] {
-    return ['service', service.serviceName, 'context', service.deploymentContext ?? '', 'stage', service.stage];
+    return [
+      '/project',
+      this.projectName,
+      'service',
+      service.serviceName,
+      'context',
+      service.deploymentContext ?? '',
+      'stage',
+      service.stage,
+    ];
   }
 
   getSequenceLink(sequence: Sequence, service: Service): string[] {
-    return ['sequence', sequence.shkeptncontext, 'stage', service.stage];
+    return ['/project', this.projectName, 'sequence', sequence.shkeptncontext, 'stage', service.stage];
   }
 
   getImageText(service: Service): string {

@@ -37,6 +37,33 @@ describe('Environment Screen default requests', () => {
   it('should not show evaluation', () => {
     environmentPage.selectStage(stage).assertEvaluationInDetails('carts-db', '-');
   });
+
+  it('stage-detail component should exist after clicking on stage', () => {
+    environmentPage.selectStage(stage);
+    environmentPage.assertStageDetailsHeader(stage);
+  });
+
+  it('stage-detail component should exist when navigating to /environment/stage url', () => {
+    environmentPage.visit(project, stage);
+    environmentPage.assertStageDetailsHeader(stage);
+  });
+
+  it('filter should be set when navigating to /environment/stage?filterType=filter', () => {
+    environmentPage.visit(project, 'staging', 'evaluation');
+    environmentPage.assertStageDetailsFilterEnabled('evaluation', true);
+  });
+
+  it('should redirect to stage', () => {
+    environmentPage.selectStage('dev');
+    cy.location('pathname').should('eq', `/project/${project}/environment/stage/dev`);
+    environmentPage.selectStage('staging');
+    cy.location('pathname').should('eq', `/project/${project}/environment/stage/staging`);
+  });
+
+  it('should add query parameter if clicking on type', () => {
+    environmentPage.clickFilterType('staging', 'evaluation');
+    cy.location('href').should('include', `/project/${project}/environment/stage/staging?filterType=evaluation`);
+  });
 });
 
 describe('Environment Screen dynamic requests', () => {

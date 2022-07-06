@@ -101,6 +101,8 @@ const routes: Routes = [
               { path: '', pathMatch: 'full', redirectTo: 'project' },
             ],
           },
+          { path: 'environment', component: KtbEnvironmentViewComponent },
+          { path: 'environment/stage/:stageName', component: KtbEnvironmentViewComponent },
           { path: 'service', component: KtbServiceViewComponent },
           { path: 'service/:serviceName', component: KtbServiceViewComponent },
           { path: 'service/:serviceName/context/:shkeptncontext', component: KtbServiceViewComponent },
