@@ -276,7 +276,12 @@
                 [textContent]="_selectedEvaluationData.data.result"
               ></span>
             </span>
-            <ng-container *ngIf="getSliInfo(_selectedEvaluationData.data.evaluation.indicatorResults) as sliInfo">
+            <ng-container
+              *ngIf="
+                _selectedEvaluationData.data.evaluation.indicatorResults &&
+                getSliInfo(_selectedEvaluationData.data.evaluation.indicatorResults) as sliInfo
+              "
+            >
               <span class="small" *ngIf="sliInfo.keySliCount > 0" uitestid="keptn-evaluation-details-keySliInfo">
                 <span class="ml-2">Key SLI<span *ngIf="sliInfo.keySliCount > 1">s</span>: </span>
                 <span *ngIf="sliInfo.keySliFailedCount > 0" class="error">failed</span>
