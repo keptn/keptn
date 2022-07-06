@@ -1,15 +1,15 @@
 import { Component, Input, OnDestroy } from '@angular/core';
 import { DtTableDataSource } from '@dynatrace/barista-components/table';
-import { DateUtil } from '../../_utils/date.utils';
-import { Sequence } from '../../_models/sequence';
+import { DateUtil } from '../../../_utils/date.utils';
+import { Sequence } from '../../../_models/sequence';
 import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
-import { SubSequence } from '../../../../shared/interfaces/deployment';
-import { EVENT_ICONS } from '../../_models/event-icons';
+import { SubSequence } from '../../../../../shared/interfaces/deployment';
+import { EVENT_ICONS } from '../../../_models/event-icons';
 import { DtIconType } from '@dynatrace/barista-icons';
-import { ResultTypes } from '../../../../shared/models/result-types';
-import { SequenceState } from '../../../../shared/interfaces/sequence';
+import { ResultTypes } from '../../../../../shared/models/result-types';
+import { SequenceState } from '../../../../../shared/interfaces/sequence';
 
 @Component({
   selector: 'ktb-sequence-list',

@@ -4,7 +4,6 @@ import { DashboardLegacyComponent } from './dashboard-legacy/dashboard-legacy.co
 import { ProjectBoardComponent } from './project-board/project-board.component';
 import { EvaluationBoardComponent } from './evaluation-board/evaluation-board.component';
 import { KtbSettingsViewComponent } from './_views/ktb-settings-view/ktb-settings-view.component';
-import { KtbServiceViewComponent } from './_views/ktb-service-view/ktb-service-view.component';
 import { KtbEnvironmentViewComponent } from './_views/ktb-environment-view/ktb-environment-view.component';
 import { KtbSecretsListComponent } from './_components/ktb-secrets-list/ktb-secrets-list.component';
 import { KtbCreateSecretFormComponent } from './_components/ktb-create-secret-form/ktb-create-secret-form.component';
@@ -94,10 +93,11 @@ const routes: Routes = [
           },
           { path: 'environment', component: KtbEnvironmentViewComponent },
           { path: 'environment/stage/:stageName', component: KtbEnvironmentViewComponent },
-          { path: 'service', component: KtbServiceViewComponent },
-          { path: 'service/:serviceName', component: KtbServiceViewComponent },
-          { path: 'service/:serviceName/context/:shkeptncontext', component: KtbServiceViewComponent },
-          { path: 'service/:serviceName/context/:shkeptncontext/stage/:stage', component: KtbServiceViewComponent },
+          {
+            path: 'service',
+            loadChildren: () =>
+              import('./_views/ktb-service-view/ktb-service-view.module').then((m) => m.KtbServiceViewModule),
+          },
           {
             path: 'sequence',
             loadChildren: () =>

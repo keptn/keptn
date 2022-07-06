@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbServiceViewComponent } from './ktb-service-view.component';
-import { AppModule } from '../../app.module';
 import { ActivatedRoute, convertToParamMap, ParamMap } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
@@ -17,6 +16,7 @@ import { Deployment } from '../../_models/deployment';
 import { Location } from '@angular/common';
 import { ServiceState } from '../../_models/service-state';
 import { DataService } from '../../_services/data.service';
+import { KtbServiceViewModule } from './ktb-service-view.module';
 
 describe('KtbServiceViewComponent', () => {
   let component: KtbServiceViewComponent;
@@ -41,7 +41,7 @@ describe('KtbServiceViewComponent', () => {
           useValue: 0,
         },
       ],
-      imports: [AppModule, HttpClientTestingModule],
+      imports: [KtbServiceViewModule, HttpClientTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbServiceViewComponent);

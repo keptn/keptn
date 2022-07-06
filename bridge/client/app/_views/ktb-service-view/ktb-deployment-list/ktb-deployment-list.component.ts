@@ -2,11 +2,11 @@ import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angu
 import { switchMap, takeUntil } from 'rxjs/operators';
 import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest, Subject } from 'rxjs';
-import { DataService } from '../../_services/data.service';
+import { DataService } from '../../../_services/data.service';
 import { DtTableDataSource } from '@dynatrace/barista-components/table';
 import { Location } from '@angular/common';
-import { ServiceDeploymentInformation as sdi, ServiceState } from '../../../../shared/models/service-state';
-import { DeploymentInformationSelection } from '../../_interfaces/deployment-selection';
+import { ServiceDeploymentInformation as sdi, ServiceState } from '../../../../../shared/models/service-state';
+import { DeploymentInformationSelection } from '../../../_interfaces/deployment-selection';
 
 class DeploymentInformation implements sdi {
   keptnContext!: string;
