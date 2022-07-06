@@ -19,9 +19,6 @@ import { ProjectBoardComponent } from './project-board/project-board.component';
 import { DashboardLegacyComponent } from './dashboard-legacy/dashboard-legacy.component';
 import { EvaluationBoardComponent } from './evaluation-board/evaluation-board.component';
 import { KtbEnvironmentViewComponent } from './_views/ktb-environment-view/ktb-environment-view.component';
-import { KtbLogoutViewComponent } from './_views/ktb-logout-view/ktb-logout-view.component';
-import { KtbSequenceViewComponent } from './_views/ktb-sequence-view/ktb-sequence-view.component';
-import { KtbIntegrationViewComponent } from './_views/ktb-integration-view/ktb-integration-view.component';
 import { KtbServiceViewComponent } from './_views/ktb-service-view/ktb-service-view.component';
 import { KtbSettingsViewComponent } from './_views/ktb-settings-view/ktb-settings-view.component';
 
