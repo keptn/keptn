@@ -18,7 +18,6 @@ import { NotFoundComponent } from './not-found/not-found.component';
 import { ProjectBoardComponent } from './project-board/project-board.component';
 import { DashboardLegacyComponent } from './dashboard-legacy/dashboard-legacy.component';
 import { EvaluationBoardComponent } from './evaluation-board/evaluation-board.component';
-import { KtbIntegrationViewComponent } from './_views/ktb-integration-view/ktb-integration-view.component';
 import { KtbServiceViewComponent } from './_views/ktb-service-view/ktb-service-view.component';
 import { KtbSettingsViewComponent } from './_views/ktb-settings-view/ktb-settings-view.component';
 
@@ -53,9 +52,7 @@ import { KtbErrorViewModule } from './_views/ktb-error-view/ktb-error-view.modul
 import { KtbEvaluationDetailsModule } from './_components/ktb-evaluation-details/ktb-evaluation-details.module';
 import { KtbEventItemModule } from './_components/ktb-event-item/ktb-event-item.module';
 import { KtbExpandableTileModule } from './_components/ktb-expandable-tile/ktb-expandable-tile.module';
-import { KtbKeptnServicesListModule } from './_components/ktb-keptn-services-list/ktb-keptn-services-list.module';
 import { KtbLoadingModule } from './_components/ktb-loading/ktb-loading.module';
-import { KtbModifyUniformSubscriptionModule } from './_components/ktb-modify-uniform-subscription/ktb-modify-uniform-subscription.module';
 import { KtbNoServiceInfoModule } from './_components/ktb-no-service-info/ktb-no-service-info.module';
 import { KtbNotificationModule } from './_components/ktb-notification/ktb-notification.module';
 import { KtbProjectListModule } from './_components/ktb-project-list/ktb-project-list.module';
@@ -63,7 +60,6 @@ import { KtbProjectSettingsModule } from './_components/ktb-project-settings/ktb
 import { KtbSecretsListModule } from './_components/ktb-secrets-list/ktb-secrets-list.module';
 import { KtbServiceDetailsModule } from './_components/ktb-service-details/ktb-service-details.module';
 import { KtbServiceSettingsModule } from './_components/ktb-service-settings/ktb-service-settings.module';
-import { KtbMarkdownComponent } from './_components/ktb-markdown/ktb-markdown.component';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
@@ -103,9 +99,7 @@ const ktbModules = [
   KtbEvaluationDetailsModule,
   KtbEventItemModule,
   KtbExpandableTileModule,
-  KtbKeptnServicesListModule,
   KtbLoadingModule,
-  KtbModifyUniformSubscriptionModule,
   KtbNoServiceInfoModule,
   KtbNotificationModule,
   KtbPipeModule,
@@ -124,8 +118,6 @@ const ktbModules = [
     ProjectBoardComponent,
     EvaluationBoardComponent,
     KtbServiceViewComponent,
-    KtbMarkdownComponent,
-    KtbIntegrationViewComponent,
     KtbSettingsViewComponent,
     KtbRootComponent,
   ],

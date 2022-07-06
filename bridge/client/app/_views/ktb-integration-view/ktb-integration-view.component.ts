@@ -1,148 +1,188 @@
-import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
-import { filter, takeUntil } from 'rxjs/operators';
+import { Component, OnDestroy, OnInit, TemplateRef } from '@angular/core';
+import { DtSortEvent, DtTableDataSource } from '@dynatrace/barista-components/table';
+import { BehaviorSubject, combineLatest, Observable, Subject } from 'rxjs';
 import { DataService } from '../../_services/data.service';
-import { Subject } from 'rxjs';
-import moment from 'moment';
-import { ClipboardService } from '../../_services/clipboard.service';
-import { ApiService } from '../../_services/api.service';
-import { KeptnInfo } from '../../_models/keptn-info';
-import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
+import { ActivatedRoute, Router } from '@angular/router';
+import { filter, map, switchMap, takeUntil } from 'rxjs/operators';
+import { UniformRegistrationLog } from '../../../../shared/interfaces/uniform-registration-log';
+import { UniformRegistration } from '../../_models/uniform-registration';
+import { Location } from '@angular/common';
+import { UniformSubscription } from '../../_models/uniform-subscription';
 
 @Component({
-  selector: 'ktb-integration-view',
+  selector: 'ktb-keptn-services-list',
   templateUrl: './ktb-integration-view.component.html',
   styleUrls: ['./ktb-integration-view.component.scss'],
 })
 export class KtbIntegrationViewComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
-  public currentTime: string = this.getCurrentTime();
-  public keptnInfo?: KeptnInfo;
-  public integrationsExternalDetails?: string;
-  public useCaseExamples: { cli: { label: string; code: string }[]; api: { label: string; code: string }[] } = {
-    cli: [],
-    api: [],
-  };
+  private selectedUniformRegistrationId$ = new Subject<string>();
+  private uniformRegistrationLogsSubject = new BehaviorSubject<UniformRegistrationLog[]>([]);
+  public UniformRegistrationClass = UniformRegistration;
+  public isLoadingUniformRegistrations = true;
+  public uniformRegistrations: DtTableDataSource<UniformRegistration> = new DtTableDataSource();
+  public selectedUniformRegistration?: UniformRegistration;
+  public uniformRegistrationLogs$: Observable<UniformRegistrationLog[]> =
+    this.uniformRegistrationLogsSubject.asObservable();
+  public isLoadingLogs = false;
+  public projectName?: string;
+  public lastSeen?: Date;
 
   constructor(
     private dataService: DataService,
-    private clipboard: ClipboardService,
-    private apiService: ApiService,
-    @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number
-  ) {}
+    private route: ActivatedRoute,
+    private router: Router,
+    private location: Location
+  ) {
+    this.route.paramMap
+      .pipe(
+        map((paramMap) => paramMap.get('projectName')),
+        takeUntil(this.unsubscribe$),
+        filter((projectName: string | null): projectName is string => !!projectName)
+      )
+      .subscribe((projectName) => {
+        this.projectName = projectName;
+      });
+  }
 
   ngOnInit(): void {
-    this.dataService.keptnInfo
-      .pipe(filter((keptnInfo: KeptnInfo | undefined): keptnInfo is KeptnInfo => !!keptnInfo))
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((keptnInfo) => {
-        this.keptnInfo = keptnInfo;
-        if (this.keptnInfo.bridgeInfo.keptnInstallationType) {
-          if (this.keptnInfo.bridgeInfo.keptnInstallationType.includes('CONTINUOUS_DELIVERY')) {
-            this.addDeploymentUseCaseToIntegrations();
-          }
-          if (this.keptnInfo.bridgeInfo.keptnInstallationType.includes('QUALITY_GATES')) {
-            this.addEvaluationUseCaseToIntegrations();
-          }
-          if (this.keptnInfo.bridgeInfo.keptnInstallationType.includes('CONTINUOUS_OPERATIONS')) {
-            this.addRemediationUseCaseToIntegrations();
-          }
-          this.updateIntegrations();
+    this.selectedUniformRegistrationId$
+      .pipe(
+        takeUntil(this.unsubscribe$),
+        switchMap((uniformRegistrationId) => {
+          this.isLoadingLogs = true;
+          const routeUrl = this.router.createUrlTree([
+            '/project',
+            this.projectName,
+            'settings',
+            'uniform',
+            'integrations',
+            uniformRegistrationId,
+          ]);
+          this.location.go(routeUrl.toString());
+          return this.dataService.getUniformRegistrationLogs(uniformRegistrationId);
+        })
+      )
+      .subscribe((uniformRegLogs) => {
+        uniformRegLogs.sort(this.sortLogs);
+        this.isLoadingLogs = false;
+        if (this.selectedUniformRegistration) {
+          this.dataService.setUniformDate(this.selectedUniformRegistration.id, uniformRegLogs[0]?.time);
         }
+        this.uniformRegistrationLogsSubject.next(uniformRegLogs);
       });
 
-    AppUtils.createTimer(0, this.initialDelayMillis)
+    const registrations$ = this.dataService.getUniformRegistrations();
+    const integrationId$ = this.route.paramMap.pipe(map((paramMap) => paramMap.get('integrationId')));
+
+    combineLatest([registrations$, integrationId$])
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(() => {
-        this.updateIntegrations();
+      .subscribe(([uniformRegistrations, integrationId]) => {
+        this.isLoadingUniformRegistrations = false;
+        this.uniformRegistrations.data = uniformRegistrations;
+        if (integrationId) {
+          const selectedUniformRegistration = uniformRegistrations.find(
+            (uniformRegistration) => uniformRegistration.id === integrationId
+          );
+          if (selectedUniformRegistration) {
+            this.setSelectedUniformRegistration(selectedUniformRegistration);
+          }
+        }
       });
   }
 
-  updateIntegrations(): void {
-    if (
-      this.keptnInfo &&
-      this.keptnInfo.bridgeInfo.keptnInstallationType &&
-      this.keptnInfo.bridgeInfo.keptnInstallationType.includes('QUALITY_GATES')
-    ) {
-      this.currentTime = this.getCurrentTime();
-      const cliItem = this.useCaseExamples.cli.find((e) => e.label === 'Trigger a quality gate evaluation');
-      const apiItem = this.useCaseExamples.api.find((e) => e.label === 'Trigger a quality gate evaluation');
-      if (cliItem) {
-        cliItem.code = `keptn trigger evaluation --project=\${PROJECT} --stage=\${STAGE} --service=\${SERVICE} --start=${this.currentTime} --timeframe=5m`;
-      }
-      if (apiItem) {
-        apiItem.code = `curl -X POST "\${KEPTN_API_ENDPOINT}/controlPlane/v1/project/\${PROJECT}/stage/\${STAGE}/service/\${SERVICE}/evaluation" \\
-    -H "accept: application/json; charset=utf-8" \\
-    -H "x-token: \${KEPTN_API_TOKEN}" \\
-    -H "Content-Type: application/json; charset=utf-8" \\
-    -d "{\\"start\\": \\"${this.currentTime}\\", \\"timeframe\\": \\"5m\\", \\"labels\\":{\\"buildId\\":\\"build-17\\", \\"owner\\":\\"JohnDoe\\",\\"testNo\\":\\"47-11\\"}}"`;
-      }
+  private sortLogs(a: UniformRegistrationLog, b: UniformRegistrationLog): number {
+    let status = 0;
+    if (a.time.valueOf() > b.time.valueOf()) {
+      status = -1;
+    } else if (a.time.valueOf() < b.time.valueOf()) {
+      status = 1;
     }
-  }
-
-  private getCurrentTime(): string {
-    const curr = moment().subtract(5, 'minutes');
-    return curr.utc().startOf('minute').toISOString();
-  }
-
-  addEvaluationUseCaseToIntegrations(): void {
-    this.useCaseExamples.cli.push({
-      label: 'Trigger a quality gate evaluation',
-      code: '',
-    });
-    this.useCaseExamples.api.push({
-      label: 'Trigger a quality gate evaluation',
-      code: '',
-    });
-  }
-
-  addDeploymentUseCaseToIntegrations(): void {
-    this.useCaseExamples.cli.push({
-      label: 'Trigger deployment with a new artifact',
-      code: `keptn trigger delivery --project=\${PROJECT} --service=\${SERVICE} --image=\${IMAGE}:\${TAG} --sequence=\${SEQUENCE}`,
-    });
-    this.useCaseExamples.api.push({
-      label: 'Trigger deployment with a new artifact',
-      code: `curl -X POST "\${KEPTN_API_ENDPOINT}/api/v1/event" \\
-      -H "accept: application/json; charset=utf-8" -H "x-token: \${KEPTN_API_TOKEN}" -H "Content-Type: application/json; charset=utf-8" \\
-      -d "{\\"type\\":\\"sh.keptn.event.\${STAGE}.delivery.triggered\\",\\"specversion\\":\\"1.0\\",\\"source\\":\\"api\\",\\"contenttype\\":\\"application\/json\\",\\"data\\":{\\"project\\":\\"\${PROJECT}\\",\\"stage\\":\\"\${STAGE}\\",\\"service\\":\\"\${SERVICE}\\",\\"configurationChange\\":{\\"values\\":{\\"image\\":\\"\${IMAGE}:\${TAG}\\"}}}}"`,
-    });
-  }
-
-  addRemediationUseCaseToIntegrations(): void {
-    this.useCaseExamples.cli.push({
-      label: 'Trigger remediation with a dummy problem event (Note: Linux/mac OS only)',
-      code: `echo '{"type":"sh.keptn.event.problem.open","specversion":"1.0","source":"api","contenttype":"application\/json","data":{"State":"OPEN","ProblemID":"\${PROBLEM_ID}","ProblemTitle":"\${PROBLEM}","project":"\${PROJECT}","stage":"\${STAGE}","service":"\${SERVICE}"}}' > dummy_problem.json \\
-      keptn send event -f=dummy_problem.json`,
-    });
-    this.useCaseExamples.api.push({
-      label: 'Trigger remediation with a dummy problem event',
-      code: `curl -X POST "\${KEPTN_API_ENDPOINT}/api/v1/event" \\
-      -H "accept: application/json; charset=utf-8" -H "x-token: \${KEPTN_API_TOKEN}" -H "Content-Type: application/json; charset=utf-8" \\
-      -d "{\\"type\\":\\"sh.keptn.event.problem.open\\", \\"specversion\\":\\"1.0\\", \\"source\\":\\"api\\", \\"contenttype\\":\\"application\/json\\", \\"data\\":{\\"State\\":\\"OPEN\\",\\"ProblemID\\":\\"\${PROBLEM_ID}\\",\\"ProblemTitle\\":\\"\${PROBLEM}\\",\\"project\\":\\"\${PROJECT}\\",\\"stage\\":\\"\${STAGE}\\",\\"service\\":\\"\${SERVICE}\\"}}"`,
-    });
-  }
-
-  loadIntegrations(): void {
-    this.integrationsExternalDetails = '<p>Loading ...</p>';
-    this.apiService
-      .getIntegrationsPage()
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(
-        (result: string) => {
-          this.integrationsExternalDetails = result;
-        },
-        () => {
-          this.integrationsExternalDetails =
-            '<p>Couldn\'t load page. For more details see <a href="https://keptn.sh/docs/integrations/" target="_blank" rel="noopener noreferrer">https://keptn.sh/docs/integrations/</a>';
-        }
-      );
-  }
-
-  copyApiToken(): void {
-    this.clipboard.copy(this.keptnInfo?.bridgeInfo.apiToken, 'API token');
+    return status;
   }
 
   ngOnDestroy(): void {
     this.unsubscribe$.next();
+    this.unsubscribe$.complete();
+  }
+
+  public setSelectedUniformRegistration(uniformRegistration: UniformRegistration): void {
+    if (this.selectedUniformRegistration !== uniformRegistration) {
+      this.lastSeen = this.dataService.getUniformDate(uniformRegistration.id);
+
+      uniformRegistration.unreadEventsCount = 0;
+      if (!this.uniformRegistrations.data.some((registration) => registration.unreadEventsCount !== 0)) {
+        this.dataService.setHasUnreadUniformRegistrationLogs(false);
+      }
+
+      this.selectedUniformRegistration = uniformRegistration;
+      this.selectedUniformRegistrationId$.next(this.selectedUniformRegistration.id);
+    }
+  }
+
+  public sortData(sortEvent: DtSortEvent): void {
+    if (this.uniformRegistrations.data) {
+      const isAscending = sortEvent.direction === 'asc';
+      const data: UniformRegistration[] = this.uniformRegistrations.data.slice();
+
+      data.sort((a: UniformRegistration, b: UniformRegistration) => {
+        switch (sortEvent.active) {
+          case 'host':
+            return (
+              this.compare(a.metadata.hostname, b.metadata.hostname, isAscending) || this.compare(a.name, b.name, true)
+            );
+          case 'namespace':
+            return (
+              this.compare(
+                a.metadata.kubernetesmetadata.namespace,
+                b.metadata.kubernetesmetadata.namespace,
+                isAscending
+              ) || this.compare(a.name, b.name, true)
+            );
+          case 'location':
+            return (
+              this.compare(a.metadata.location, b.metadata.location, isAscending) || this.compare(a.name, b.name, true)
+            );
+          case 'name':
+          default:
+            return this.compare(a.name, b.name, isAscending);
+        }
+      });
+
+      this.uniformRegistrations.data = data;
+    } else {
+      this.uniformRegistrations.data = [];
+    }
+  }
+
+  public getOverlay(
+    registration: UniformRegistration,
+    projectName: string,
+    template: TemplateRef<unknown>
+  ): TemplateRef<unknown> {
+    // The overlay must be conditional but in general directives are not meant to be dynamic.
+    // That's why we ignore the fact that undefined is not assignable to TemplateRef
+    return (registration.hasSubscriptions(projectName) ? undefined : template) as TemplateRef<unknown>;
+  }
+
+  private compare(a: string, b: string, isAsc: boolean): number {
+    const result = a.localeCompare(b);
+    if (result !== 0 && !isAsc) {
+      return -result;
+    }
+    return result;
+  }
+
+  public formatSubscriptions(uniformRegistration: UniformRegistration, projectName: string): string | undefined {
+    const subscriptions = uniformRegistration.subscriptions.reduce(
+      (accSubscriptions: string[], subscription: UniformSubscription) => {
+        if (subscription.hasProject(projectName, true)) {
+          accSubscriptions.push(subscription.formattedEvent);
+        }
+        return accSubscriptions;
+      },
+      []
+    );
+    return subscriptions.length !== 0 ? subscriptions.join('<br/>') : undefined;
   }
 }

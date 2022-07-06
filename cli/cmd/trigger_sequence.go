@@ -19,9 +19,9 @@ import (
 )
 
 type sequenceStruct struct {
-	Project  *string `json:"project"`
-	Service  *string `json:"service"`
-	Stage    *string `json:"stage"`
+	Project *string `json:"project"`
+	Service *string `json:"service"`
+	Stage   *string `json:"stage"`
 }
 
 var sequence = sequenceStruct{}
@@ -137,22 +137,6 @@ func doTriggerSequence(sequenceInputData sequenceStruct, sequenceName string) er
 	_, err2 := apiHandler.SendEvent(apiEvent)
 	if err2 != nil {
 		return fmt.Errorf("trigger sequence was unsuccessful. %s", *err2.Message)
-	}
-
-	return nil
-}
-
-func doTriggerSequencePreRunCheck(sequenceInputData sequenceStruct) error {
-	if sequenceInputData.Project == nil {
-		return fmt.Errorf("Project has to be provided")
-	}
-
-	if sequenceInputData.Service == nil {
-		return fmt.Errorf("Service has to be provided")
-	}
-
-	if sequenceInputData.Stage == nil {
-		return fmt.Errorf("Stage has to be provided")
 	}
 
 	return nil

@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbMarkdownComponent } from './ktb-markdown.component';
-import { AppModule } from '../../app.module';
+import { AppModule } from '../../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('KtbExpandableTileComponent', () => {

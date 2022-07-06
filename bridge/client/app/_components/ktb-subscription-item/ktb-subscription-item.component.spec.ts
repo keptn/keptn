@@ -9,7 +9,7 @@ import { ApiServiceMock } from '../../_services/api.service.mock';
 import { DataService } from '../../_services/data.service';
 import { KtbSubscriptionItemModule } from './ktb-subscription-item.module';
 import { RouterTestingModule } from '@angular/router/testing';
-import { KtbModifyUniformSubscriptionComponent } from '../ktb-modify-uniform-subscription/ktb-modify-uniform-subscription.component';
+import { KtbIntegrationViewModule } from '../../_views/ktb-integration-view/ktb-integration-view.module';
 
 describe('KtbSubscriptionItemComponent', () => {
   let component: KtbSubscriptionItemComponent;
@@ -24,7 +24,7 @@ describe('KtbSubscriptionItemComponent', () => {
         RouterTestingModule.withRoutes([
           {
             path: 'project/:projectName/settings/uniform/integrations/:integrationId/subscriptions/:subscriptionId/edit',
-            component: KtbModifyUniformSubscriptionComponent,
+            component: KtbIntegrationViewModule,
           },
         ]),
       ],

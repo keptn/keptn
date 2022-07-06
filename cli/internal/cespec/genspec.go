@@ -213,60 +213,6 @@ func Generate(outputDir string) {
 
 }
 
-func createDataStructureCodeBlock(md *MarkDown) {
-	md.CodeBlock(`"data": {
-  "required": [
-    "labels",
-    "message",
-    "project",
-    "result",
-    "service",
-    "stage",
-    "status",
-    "[task]"
-  ],
-  "properties": {
-    "labels": {
-      "patternProperties": {
-        ".*": {
-          "type": "string"
-        }
-      },
-      "type": "object"
-    },
-    "message": {
-      "type": "string",
-      "description": "A message from the last task"
-    },
-    "project": {
-      "type": "string",
-      "description": "The name of the project"
-    },
-    "result": {
-      "type": "string",
-      "description": "The result of the last task"
-    },
-    "service": {
-      "type": "string",
-      "description": "The name of the service"
-    },
-    "stage": {
-      "type": "string",
-      "description": "The name of the stage"
-    },
-    "status": {
-      "type": "string",
-      "description": "The status of the last task"
-    },
-    "[task]": {
-      "type": "object"
-    }
-  },
-  "additionalProperties": false,
-  "type": "object"
-}`, "json")
-}
-
 func createCEStructureCodeBlock(md *MarkDown) {
 	md.CodeBlock(`"sh.keptn.event": {
   "required": [

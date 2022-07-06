@@ -123,27 +123,6 @@ func printApprovalEvents(allEvents []*apimodels.KeptnContextExtendedCE) {
 	}
 }
 
-func retrieveApprovalEventsFromService(svc *apimodels.Service, project, stage string, eventHandler *apiutils.EventHandler, allEvents []*apimodels.KeptnContextExtendedCE) ([]*apimodels.KeptnContextExtendedCE, error) {
-	for _, approval := range svc.OpenApprovals {
-		events, err := eventHandler.GetEvents(&apiutils.EventFilter{
-			Project: project,
-			Stage:   stage,
-			Service: svc.ServiceName,
-			EventID: approval.EventID,
-		})
-
-		if err != nil {
-			logging.PrintLog("Get approval.triggered event was unsuccessful", logging.InfoLevel)
-			return nil, fmt.Errorf("%s", *err.Message)
-		}
-
-		if events != nil {
-			allEvents = append(allEvents, events...)
-		}
-	}
-	return allEvents, nil
-}
-
 func init() {
 	getEventCmd.AddCommand(approvalTriggeredCmd)
 
