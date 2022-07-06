@@ -18,7 +18,6 @@ const (
 								},1500)
 						</script>`
 	redirectURL = "http://localhost:3000/oauth/redirect"
-	openIDScope = "openid"
 )
 
 // OAuthenticator represents just the interface for a component performing OAuth authentication

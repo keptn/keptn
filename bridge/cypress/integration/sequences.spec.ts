@@ -372,12 +372,11 @@ describe('Sequences', () => {
     });
 
     it('should limit visible services and show all on "view more"', () => {
-      sequencePage
-        .interceptWithManyFilters()
-        .visit('sockshop')
-        .assertFilterItemsCount('Service', 5)
-        .clickFilterViewMore('Service')
-        .assertFilterShowMoreCount(12);
+      sequencePage.interceptWithManyFilters().visit('sockshop');
+
+      cy.wait('@Sequences');
+
+      sequencePage.assertFilterItemsCount('Service', 5).clickFilterViewMore('Service').assertFilterShowMoreCount(12);
     });
   });
 });
