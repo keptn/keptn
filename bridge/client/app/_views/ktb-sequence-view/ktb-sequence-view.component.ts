@@ -416,9 +416,12 @@ export class KtbSequenceViewComponent implements OnDestroy {
   }
 
   public loadSequenceFilters(projectName: string): void {
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: this.apiService.getSequenceFilters(projectName),
+    const queryParams = this.apiService.getSequenceFilters(projectName);
+    if (!Object.keys(queryParams).length) {
+      return;
+    }
+    this.router.navigate(['project', projectName, 'sequence'], {
+      queryParams,
       replaceUrl: true,
     });
   }

@@ -37,34 +37,6 @@ describe('Git upstream extended settings project https test', () => {
       .assertHttpsFormExists(false);
   });
 
-  it('should show "Git upstream repository" headline only once', () => {
-    const project: IProject = {
-      projectName: 'sockshop',
-      stages: [],
-      gitCredentials: {
-        user: 'myGitUser',
-        remoteURL: 'https://myGitURL.com',
-        https: {
-          token: '',
-          insecureSkipTLS: true,
-          proxy: {
-            scheme: 'https',
-            url: 'myProxyUrl:5000',
-            user: 'myProxyUser',
-          },
-        },
-      },
-      shipyardVersion: '0.14',
-      creationDate: '',
-      shipyard: '',
-    };
-    projectSettingsPage
-      .interceptSettings(true)
-      .interceptProject(project)
-      .visitSettings('sockshop')
-      .assertGitUpstreamHeadlineExistsOnce();
-  });
-
   it('should select HTTPS and fill out inputs', () => {
     const project: IProject = {
       projectName: 'sockshop',

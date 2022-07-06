@@ -1,13 +1,12 @@
 import { SequencesPage } from '../support/pageobjects/SequencesPage';
-import { interceptProjectBoard } from '../support/intercept';
 import EnvironmentPage from '../support/pageobjects/EnvironmentPage';
+import { ProjectBoardPage } from '../support/pageobjects/ProjectBoardPage';
 
 describe('Sequences', () => {
   const sequencePage = new SequencesPage();
   const environmentPage = new EnvironmentPage();
 
   beforeEach(() => {
-    interceptProjectBoard();
     sequencePage.intercept();
   });
 
@@ -125,6 +124,12 @@ describe('Sequences', () => {
     sequencePage.visit('sockshop');
     cy.wait('@Sequences');
     sequencePage.assertSequenceCount(1).assertLoadOlderSequencesButtonExists(false);
+  });
+
+  it('should have active menu button if navigated from one sub page to this one', () => {
+    const projectBoardPage = new ProjectBoardPage();
+    environmentPage.intercept().visit('sockshop');
+    projectBoardPage.clickSequenceMenuitem().assertOnlySequencesViewSelected();
   });
 
   describe('filtering', () => {
@@ -364,6 +369,15 @@ describe('Sequences', () => {
         .clearFilter()
         .selectSequence('62cca6f3-dc54-4df6-a04c-6ffc894a4b5e')
         .assertAmountOfQueryParameters(0);
+    });
+
+    it('should limit visible services and show all on "view more"', () => {
+      sequencePage
+        .interceptWithManyFilters()
+        .visit('sockshop')
+        .assertFilterItemsCount('Service', 5)
+        .clickFilterViewMore('Service')
+        .assertFilterShowMoreCount(12);
     });
   });
 });
