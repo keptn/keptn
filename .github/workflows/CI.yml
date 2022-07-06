@@ -286,8 +286,10 @@ jobs:
       - name: Kubeconform Scan
         if: matrix.tool == 'kubeconform'
         run: |
+          echo "::group::Kubeconform installation"
           go install github.com/yannh/kubeconform/cmd/kubeconform@v0.4.13
-          kubeconform -summary -kubernetes-version 1.22 ${{ env.CHART_TO_SCAN }}
+          echo "::endgroup::"
+          kubeconform -schema-location default -summary ${{ env.CHART_TO_SCAN }}
 
   store-output-in-build-config:
     name: "Store output of last step in build-config.env"
