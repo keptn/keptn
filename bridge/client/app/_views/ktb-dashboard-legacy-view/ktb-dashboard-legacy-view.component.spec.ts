@@ -5,7 +5,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 import { finalize, skip, take } from 'rxjs/operators';
-import { ProjectSequences } from '../../_components/ktb-project-list/ktb-project-list.component';
+import { ProjectSequences } from './ktb-project-list/ktb-project-list.component';
 import { POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 import { RouterTestingModule } from '@angular/router/testing';
 import { Navigation, Router } from '@angular/router';

@@ -60,7 +60,6 @@ import { KtbLoadingModule } from './_components/ktb-loading/ktb-loading.module';
 import { KtbModifyUniformSubscriptionModule } from './_components/ktb-modify-uniform-subscription/ktb-modify-uniform-subscription.module';
 import { KtbNoServiceInfoModule } from './_components/ktb-no-service-info/ktb-no-service-info.module';
 import { KtbNotificationModule } from './_components/ktb-notification/ktb-notification.module';
-import { KtbProjectListModule } from './_components/ktb-project-list/ktb-project-list.module';
 import { KtbProjectSettingsModule } from './_components/ktb-project-settings/ktb-project-settings.module';
 import { KtbRootEventsListModule } from './_components/ktb-root-events-list/ktb-root-events-list.module';
 import { KtbSecretsListModule } from './_components/ktb-secrets-list/ktb-secrets-list.module';
@@ -116,7 +115,6 @@ const ktbModules = [
   KtbNoServiceInfoModule,
   KtbNotificationModule,
   KtbPipeModule,
-  KtbProjectListModule,
   KtbProjectSettingsModule,
   KtbRootEventsListModule,
   KtbSecretsListModule,
