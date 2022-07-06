@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -46,8 +45,6 @@ type smartKeptnAuthParams struct {
 var smartKeptnAuth smartKeptnAuthParams
 
 var authParams *authCmdParams
-var exportEndPoint url.URL
-var exportAPIToken string
 
 // authCmd represents the auth command
 var authCmd = &cobra.Command{

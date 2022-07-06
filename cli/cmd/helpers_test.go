@@ -5,8 +5,6 @@ import (
 	"context"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/stretchr/testify/assert"
-	"net/http"
-	"net/http/httptest"
 	"strings"
 	"testing"
 )
@@ -21,7 +19,7 @@ type HelpersTestStruct struct {
 func (fw fakeWatcher) Watch(ctx context.Context) (<-chan []*models.KeptnContextExtendedCE, context.CancelFunc) {
 	ch := make(chan []*models.KeptnContextExtendedCE, 2)
 	defer close(ch)
-	ch <- []*models.KeptnContextExtendedCE{&models.KeptnContextExtendedCE{ID: "ID1"}}
+	ch <- []*models.KeptnContextExtendedCE{{ID: "ID1"}}
 	return ch, func() {}
 }
 
@@ -92,28 +90,4 @@ func fullTrim(str string) string {
 
 func stringp(s string) *string {
 	return &s
-}
-
-func boolp(b bool) *bool {
-	return &b
-}
-
-func getTestAPI() *httptest.Server {
-	ts := httptest.NewServer(
-		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			defer r.Body.Close()
-			if r.Method == http.MethodPost {
-				w.Header().Add("Content-Type", "application/json")
-				w.WriteHeader(200)
-				w.Write([]byte(``))
-				return
-			} else if r.Method == http.MethodGet {
-				w.Header().Add("Content-Type", "application/json")
-				w.WriteHeader(200)
-				w.Write([]byte(`{"user":"user", "password":"password"}`))
-				return
-			}
-		}),
-	)
-	return ts
 }

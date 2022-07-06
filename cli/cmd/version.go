@@ -45,8 +45,6 @@ const setVersionCheckMsg = `* To %s the daily version check, please execute:
 
 `
 
-const disableVersionCheckMsg = "To disable this notice, run: '%s set config AutomaticVersionCheck false'"
-
 // KubeServerVersionConstraints the Kubernetes Cluster version's constraints is passed by ldflags
 var KubeServerVersionConstraints string
 

@@ -185,7 +185,7 @@ var evaluationFinishedEventData = keptnv2.EvaluationFinishedEventData{
 		Result:         "fail",
 		Score:          0,
 		SLOFileContent: "LS0tDQpzcGVjX3ZlcnNpb246ICcxLjAnDQpjb21wYXJpc29uOg0KICBjb21wYXJlX3dpdGg6ICJzaW5nbGVfcmVzdWx0Ig0KICBpbmNsdWRlX3Jlc3VsdF93aXRoX3Njb3JlOiAicGFzcyINCiAgYWdncmVnYXRlX2Z1bmN0aW9uOiBhdmcNCm9iamVjdGl2ZXM6DQogIC0gc2xpOiByZXNwb25zZV90aW1lX3A5NQ0KICAgIHBhc3M6ICAgICAgICAjIHBhc3MgaWYgKHJlbGF0aXZlIGNoYW5nZSA8PSAxMCUgQU5EIGFic29sdXRlIHZhbHVlIGlzIDwgNTAwKQ0KICAgICAgLSBjcml0ZXJpYToNCiAgICAgICAgICAtICI8PSsxMCUiICMgcmVsYXRpdmUgdmFsdWVzIHJlcXVpcmUgYSBwcmVmaXhlZCBzaWduIChwbHVzIG9yIG1pbnVzKQ0KICAgICAgICAgIC0gIjw2MDAiICAgIyBhYnNvbHV0ZSB2YWx1ZXMgb25seSByZXF1aXJlIGEgbG9naWNhbCBvcGVyYXRvcg0KICAgIHdhcm5pbmc6ICAgICAjIGlmIHRoZSByZXNwb25zZSB0aW1lIGlzIGJlbG93IDgwMG1zLCB0aGUgcmVzdWx0IHNob3VsZCBiZSBhIHdhcm5pbmcNCiAgICAgIC0gY3JpdGVyaWE6DQogICAgICAgICAgLSAiPD04MDAiDQp0b3RhbF9zY29yZToNCiAgcGFzczogIjkwJSINCiAgd2FybmluZzogNzUl",
-		IndicatorResults: []*keptnv2.SLIEvaluationResult{&keptnv2.SLIEvaluationResult{
+		IndicatorResults: []*keptnv2.SLIEvaluationResult{{
 			Score: 0,
 			Value: &keptnv2.SLIResult{
 				Metric:  "response_time_p95",
@@ -194,12 +194,12 @@ var evaluationFinishedEventData = keptnv2.EvaluationFinishedEventData{
 				Message: "a message",
 			},
 			DisplayName: "Response Time P95",
-			PassTargets: []*keptnv2.SLITarget{&keptnv2.SLITarget{
+			PassTargets: []*keptnv2.SLITarget{{
 				Criteria:    "<=+10%",
 				TargetValue: 600,
 				Violated:    true,
 			}},
-			WarningTargets: []*keptnv2.SLITarget{&keptnv2.SLITarget{
+			WarningTargets: []*keptnv2.SLITarget{{
 				Criteria:    "<=+20%",
 				TargetValue: 800,
 				Violated:    true,
