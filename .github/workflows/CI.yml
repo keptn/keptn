@@ -226,10 +226,16 @@ jobs:
           fetch-depth: 0
           submodules: 'true'
 
+      - name: Render helm template
+        run: |
+          helm dependency update ./installer/manifests/keptn
+          helm dependency build ./installer/manifests/keptn
+          helm template ./installer/manifests/keptn -n keptn --name-template keptn --version 0.17.0 > kics-tpl.yml
+
       - name: KICS Scan
         uses: Checkmarx/kics-github-action@v1.5
         with:
-          path: "installer/manifests"
+          path: "kics-tpl.yml"
           token: ${{ secrets.GITHUB_TOKEN }}
           enable_comments: true
 
