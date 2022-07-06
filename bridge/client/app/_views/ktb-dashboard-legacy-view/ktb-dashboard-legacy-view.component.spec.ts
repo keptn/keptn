@@ -4,7 +4,7 @@ import { DataService } from '../../_services/data.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
-import { finalize, skip, take } from 'rxjs/operators';
+import { skip, take } from 'rxjs/operators';
 import { ProjectSequences } from './ktb-project-list/ktb-project-list.component';
 import { POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -68,16 +68,17 @@ describe('DashboardLegacyView', () => {
     let emitted = 0;
 
     // when
-    component.latestSequences$
-      .pipe(take(emitTimes), finalize(done))
-      .subscribe((projectSequences: ProjectSequences): void => {
-        emitted++;
-        // then
-        // For every project the last sequences are loaded lazy time by time
-        // So the record is growing by one each emit
-        expect(Object.keys(projectSequences).length).toBe(emitted);
-        expect(emitted).toBeLessThanOrEqual(emitTimes);
-      });
+    component.latestSequences$.pipe(take(emitTimes)).subscribe((projectSequences: ProjectSequences): void => {
+      emitted++;
+      // then
+      // For every project the last sequences are loaded lazy time by time
+      // So the record is growing by one each emit
+      expect(Object.keys(projectSequences).length).toBe(emitted);
+      expect(emitted).toBeLessThanOrEqual(emitTimes);
+      if (emitted === emitTimes) {
+        done();
+      }
+    });
   });
 
   it('should create a reacord with all sequences for projects', (done) => {
@@ -86,14 +87,13 @@ describe('DashboardLegacyView', () => {
     component.refreshProjects();
 
     // when
-    component.latestSequences$
-      .pipe(skip(2), take(1), finalize(done))
-      .subscribe((projectSequences: ProjectSequences): void => {
-        // then
-        expect(Object.keys(projectSequences)).toEqual(['sockshop', 'sockshop-approve', 'sockshop-carts-db']);
-        expect(projectSequences.sockshop.length).toEqual(5);
-        expect(projectSequences['sockshop-approve'].length).toEqual(5);
-        expect(projectSequences['sockshop-carts-db'].length).toEqual(5);
-      });
+    component.latestSequences$.pipe(skip(2), take(1)).subscribe((projectSequences: ProjectSequences): void => {
+      // then
+      expect(Object.keys(projectSequences)).toEqual(['sockshop', 'sockshop-approve', 'sockshop-carts-db']);
+      expect(projectSequences.sockshop.length).toEqual(5);
+      expect(projectSequences['sockshop-approve'].length).toEqual(5);
+      expect(projectSequences['sockshop-carts-db'].length).toEqual(5);
+      done();
+    });
   });
 });

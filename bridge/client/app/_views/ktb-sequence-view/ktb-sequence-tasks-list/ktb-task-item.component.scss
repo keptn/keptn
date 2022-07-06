@@ -1,4 +1,4 @@
-@import '../../../variables';
+@import '../../../../variables';
 @import '~@dynatrace/barista-components/core/src/style/variables';
 
 .dt-button + .dt-button {
@@ -18,4 +18,17 @@
 
 .overflow-auto {
   overflow: auto;
+}
+
+.table {
+  display: table;
+  border-spacing: 0.5em;
+
+  .table-row {
+    display: table-row;
+
+    .table-cell {
+      display: table-cell;
+    }
+  }
 }

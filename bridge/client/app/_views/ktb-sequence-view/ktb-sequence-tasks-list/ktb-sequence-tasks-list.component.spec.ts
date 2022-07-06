@@ -1,10 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbSequenceTasksListComponent } from './ktb-sequence-tasks-list.component';
-import { Trace } from '../../_models/trace';
+import { Trace } from '../../../_models/trace';
 import { Location } from '@angular/common';
-import { KtbSequenceTasksListModule } from './ktb-sequence-tasks-list.module';
 import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { KtbSequenceViewModule } from '../ktb-sequence-view.module';
 
 describe('KtbEventsListComponent', () => {
   let component: KtbSequenceTasksListComponent;
@@ -13,7 +13,7 @@ describe('KtbEventsListComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [],
-      imports: [KtbSequenceTasksListModule, RouterTestingModule, HttpClientTestingModule],
+      imports: [KtbSequenceViewModule, RouterTestingModule, HttpClientTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbSequenceTasksListComponent);

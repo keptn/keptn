@@ -1,5 +1,5 @@
-@import 'client/variables';
-@import 'node_modules/@dynatrace/barista-components/core/src/style/variables';
+@import '../../../variables';
+@import '~@dynatrace/barista-components/core/src/style/variables';
 
 ::ng-deep ktb-project-tile .dt-tile-header {
   height: auto;
@@ -30,6 +30,7 @@ p {
   vertical-align: bottom;
 }
 
-dt-tile-title a {
+dt-tile-title a,
+dt-tag a {
   text-decoration: none;
 }
