@@ -1,4 +1,4 @@
-@import '../../../variables';
+@import '../../../../variables';
 @import '~@dynatrace/barista-components/core/src/style/variables';
 
 ::ng-deep ktb-project-tile .dt-tile-header {
@@ -21,6 +21,7 @@ p {
   &.info {
     fill: var(--dt-theme-main-default-color);
   }
+
   &.error {
     fill: $error-color;
   }
