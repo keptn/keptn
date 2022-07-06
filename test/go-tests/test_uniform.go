@@ -476,7 +476,6 @@ func testUniformIntegration(t *testing.T, configureIntegrationFunc func(), clean
 	require.Equal(t, echoServiceName, fetchedEchoIntegration.Name)
 	require.Equal(t, echoServiceName, fetchedEchoIntegration.MetaData.KubernetesMetaData.DeploymentName)
 	require.Equal(t, GetKeptnNameSpaceFromEnv(), fetchedEchoIntegration.MetaData.KubernetesMetaData.Namespace)
-	require.Equal(t, "control-plane", fetchedEchoIntegration.MetaData.Location)
 	require.Equal(t, "develop", fetchedEchoIntegration.MetaData.DistributorVersion)
 	require.Equal(t, "develop", fetchedEchoIntegration.MetaData.IntegrationVersion)
 

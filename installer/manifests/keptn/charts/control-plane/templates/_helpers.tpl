@@ -100,15 +100,23 @@ lifecycle:
       apiVersion: v1
       fieldPath: 'metadata.labels[''app.kubernetes.io/component'']'
 - name: K8S_NAMESPACE
+{{- if .Values.distributor.metadata.namespace }}
+  value: {{ .Values.distributor.metadata.namespace }}
+{{- else }}
   valueFrom:
     fieldRef:
       apiVersion: v1
       fieldPath: metadata.namespace
+{{- end }}
 - name: K8S_NODE_NAME
+{{- if .Values.distributor.metadata.hostname }}
+  value: {{ .Values.distributor.metadata.hostname }}
+{{- else }}
   valueFrom:
     fieldRef:
       apiVersion: v1
       fieldPath: spec.nodeName
+{{- end }}
 - name: K8S_POD_NAME
   valueFrom:
     fieldRef:
