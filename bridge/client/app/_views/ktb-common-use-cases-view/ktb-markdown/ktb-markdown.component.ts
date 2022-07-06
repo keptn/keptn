@@ -15,7 +15,6 @@ import { SafeHtml } from '@angular/platform-browser';
 @Component({
   selector: 'ktb-markdown',
   templateUrl: './ktb-markdown.component.html',
-  styleUrls: ['./ktb-markdown.component.scss'],
   encapsulation: ViewEncapsulation.None,
   preserveWhitespaces: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
