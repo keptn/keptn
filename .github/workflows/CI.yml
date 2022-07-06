@@ -228,6 +228,8 @@ jobs:
 
       - name: Render helm template
         run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo add nats https://nats-io.github.io/k8s/helm/charts/
           helm dependency update ./installer/manifests/keptn
           helm dependency build ./installer/manifests/keptn
           helm template ./installer/manifests/keptn -n keptn --name-template keptn --version 0.17.0 > kics-tpl.yml
