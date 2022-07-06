@@ -247,7 +247,7 @@ jobs:
     needs: [prepare_ci_run,prepare-security-scans]
     runs-on: ubuntu-20.04
     env:
-      CHART_TO_SCAN: "scans/rendered-helm-chart/scan-tpl.yml"
+      CHART_TO_SCAN: "scans/scan-tpl.yml"
     strategy:
       fail-fast: false
       matrix:
