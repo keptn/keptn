@@ -1,0 +1,109 @@
+name: "Security Scans"
+on:
+  # always execute docker build when something is pushed to master or a maintenance branch
+  push:
+    branches:
+      - 'master'
+      - '[0-9]+.[1-9][0-9]*.x'
+  # in addition, execute for pull requests to those branches
+  pull_request:
+    branches:
+      - 'master'
+      - '[0-9]+.[1-9][0-9]*.x'
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  GO_VERSION: "~1.18"
+
+jobs:
+  prepare-security-scans:
+    name: "Prepare Security Scans"
+    needs: prepare_ci_run
+    runs-on: ubuntu-20.04
+    env:
+      RENDERED_CHART_FILENAME: "scan-tpl.yml"
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: 'true'
+
+      - name: Render helm template
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo add nats https://nats-io.github.io/k8s/helm/charts/
+          helm dependency update ./installer/manifests/keptn
+          helm dependency build ./installer/manifests/keptn
+          helm template ./installer/manifests/keptn -n keptn --name-template keptn --version 0.17.0 > ${{ env.RENDERED_CHART_FILENAME }}
+
+      - name: Upload rendered chart as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: rendered-helm-chart
+          path: ${{ env.RENDERED_CHART_FILENAME }}
+
+  security-scans:
+    name: "Security Scans"
+    needs: [ prepare_ci_run,prepare-security-scans ]
+    runs-on: ubuntu-20.04
+    env:
+      CHART_TO_SCAN: "scans/scan-tpl.yml"
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - tool: "kics"
+          - tool: "kubeconform"
+          - tool: "kubescape"
+            kubescape-framework: "nsa"
+          - tool: "kubescape"
+            kubescape-framework: "mitre"
+    steps:
+      - name: Set up Go
+        if: matrix.tool == 'kubeconform'
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Check out code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: 'true'
+
+      - name: Download helm template
+        id: download_helm_chart
+        uses: actions/download-artifact@v3
+        with:
+          name: rendered-helm-chart
+          path: scans
+
+      - name: KICS Scan
+        if: matrix.tool == 'kics'
+        uses: Checkmarx/kics-github-action@v1.5
+        with:
+          path: ${{ env.CHART_TO_SCAN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          enable_comments: true
+
+      - name: Kubeconform Scan
+        if: matrix.tool == 'kubeconform'
+        run: |
+          echo "::group::Kubeconform installation"
+          go install github.com/yannh/kubeconform/cmd/kubeconform@v0.4.13
+          echo "::endgroup::"
+
+          kubeconform -schema-location default -summary ${{ env.CHART_TO_SCAN }}
+
+      - name: Kubescape Scan
+        if: matrix.tool == 'kubescape'
+        run: |
+          echo "::group::Kubescape installation"
+          curl -s https://raw.githubusercontent.com/armosec/kubescape/master/install.sh | /bin/bash
+          echo "::endgroup::"
+
+          kubescape scan framework ${{ matrix.kubescape-framework }} ${{ env.CHART_TO_SCAN }}

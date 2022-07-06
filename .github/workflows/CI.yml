@@ -215,82 +215,6 @@ jobs:
           echo "::set-output name=TIME::$(date +'%H%M')"
           echo "::set-output name=DATETIME::$(date +'%Y%m%d')$(date +'%H%M')"
 
-  prepare-security-scans:
-    name: "Prepare Security Scans"
-    needs: prepare_ci_run
-    runs-on: ubuntu-20.04
-    env:
-      RENDERED_CHART_FILENAME: "scan-tpl.yml"
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          submodules: 'true'
-
-      - name: Render helm template
-        run: |
-          helm repo add bitnami https://charts.bitnami.com/bitnami
-          helm repo add nats https://nats-io.github.io/k8s/helm/charts/
-          helm dependency update ./installer/manifests/keptn
-          helm dependency build ./installer/manifests/keptn
-          helm template ./installer/manifests/keptn -n keptn --name-template keptn --version 0.17.0 > ${{ env.RENDERED_CHART_FILENAME }}
-
-      - name: Upload rendered chart as artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: rendered-helm-chart
-          path: ${{ env.RENDERED_CHART_FILENAME }}
-
-  security-scans:
-    name: "Security Scans"
-    needs: [prepare_ci_run,prepare-security-scans]
-    runs-on: ubuntu-20.04
-    env:
-      CHART_TO_SCAN: "scans/scan-tpl.yml"
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - tool: "kics"
-          - tool: "kubeconform"
-          - tool: "kubescape"
-    steps:
-      - name: Set up Go
-        if: matrix.tool == 'kubeconform'
-        uses: actions/setup-go@v3
-        with:
-          go-version: ${{ env.GO_VERSION }}
-
-      - name: Check out code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          submodules: 'true'
-
-      - name: Download helm template
-        id: download_helm_chart
-        uses: actions/download-artifact@v3
-        with:
-          name: rendered-helm-chart
-          path: scans
-
-      - name: KICS Scan
-        if: matrix.tool == 'kics'
-        uses: Checkmarx/kics-github-action@v1.5
-        with:
-          path: ${{ env.CHART_TO_SCAN }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          enable_comments: true
-
-      - name: Kubeconform Scan
-        if: matrix.tool == 'kubeconform'
-        run: |
-          echo "::group::Kubeconform installation"
-          go install github.com/yannh/kubeconform/cmd/kubeconform@v0.4.13
-          echo "::endgroup::"
-          kubeconform -schema-location default -summary ${{ env.CHART_TO_SCAN }}
-
   store-output-in-build-config:
     name: "Store output of last step in build-config.env"
     needs: prepare_ci_run
@@ -546,8 +470,6 @@ jobs:
       - helm_charts_build
       - helm_charts_upload
       - docker_build
-      - prepare-security-scans
-      - security-scans
     uses: ./.github/workflows/end-of-pipeline-metrics.yml
     with:
       workflow_name: "CI"
