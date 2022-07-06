@@ -24,6 +24,9 @@ const routingConfiguration: ExtraOptions = {
   paramsInheritanceStrategy: 'always',
 };
 
+const lazyLoadEnvironmentView = (): Promise<unknown> =>
+  import('./_views/ktb-environment-view/ktb-environment-view.module').then((m) => m.KtbEnvironmentViewModule);
+
 const routes: Routes = [
   { path: 'error', component: KtbErrorViewComponent },
   {
@@ -45,14 +48,9 @@ const routes: Routes = [
         path: 'project/:projectName',
         component: ProjectBoardComponent,
         children: [
-          {
-            path: '',
-            pathMatch: 'full',
-            loadChildren: () =>
-              import('./_views/ktb-environment-view/ktb-environment-view.module').then(
-                (m) => m.KtbEnvironmentViewModule
-              ),
-          },
+          { path: '', pathMatch: 'full', loadChildren: lazyLoadEnvironmentView },
+          { path: 'environment', pathMatch: 'full', loadChildren: lazyLoadEnvironmentView },
+          { path: 'environment/stage/:stageName', loadChildren: lazyLoadEnvironmentView },
           {
             path: 'settings',
             component: KtbSettingsViewComponent,
@@ -101,8 +99,6 @@ const routes: Routes = [
               { path: '', pathMatch: 'full', redirectTo: 'project' },
             ],
           },
-          { path: 'environment', component: KtbEnvironmentViewComponent },
-          { path: 'environment/stage/:stageName', component: KtbEnvironmentViewComponent },
           { path: 'service', component: KtbServiceViewComponent },
           { path: 'service/:serviceName', component: KtbServiceViewComponent },
           { path: 'service/:serviceName/context/:shkeptncontext', component: KtbServiceViewComponent },

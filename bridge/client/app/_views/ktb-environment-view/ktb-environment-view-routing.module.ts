@@ -2,13 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { KtbEnvironmentViewComponent } from './ktb-environment-view.component';
 
-const routes: Routes = [
-  {
-    path: '',
-    pathMatch: 'full',
-    component: KtbEnvironmentViewComponent,
-  },
-];
+const routes: Routes = [{ path: '', component: KtbEnvironmentViewComponent }];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
