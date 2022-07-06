@@ -33,9 +33,20 @@ Afterwards, install Keptn CLI:
 curl -sL https://get.keptn.sh | bash
 ```
 
-And install Keptn (Note: remove `--use-case=continuous-delivery` in case you don't want to install `helm-service` and `jmeter-service`):
+And install Keptn usint Helm:
 ```console
-keptn install --use-case=continuous-delivery
+helm repo add keptn https://charts.keptn.sh && helm repo update
+helm install keptn keptn/keptn \
+-n keptn --create-namespace \
+--wait \
+--set=control-plane.apiGatewayNginx.type=LoadBalancer
+```
+
+In case you want to install `helm-service` and `jmeter-service`, execute:
+
+```console
+helm install jmeter-service keptn/jmeter-service -n keptn
+helm install helm-service keptn/helm-service -n keptn
 ```
 
 Please follow the instructions printed by the CLI to connect to your Keptn installation.
