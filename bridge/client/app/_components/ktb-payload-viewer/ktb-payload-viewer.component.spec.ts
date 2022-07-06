@@ -9,6 +9,7 @@ import { TestUtils } from '../../_utils/test.utils';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 import { KtbPayloadViewerModule } from './ktb-payload-viewer.module';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('KtbPayloadViewerComponent', () => {
   let component: KtbPayloadViewerComponent;
@@ -18,7 +19,7 @@ describe('KtbPayloadViewerComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [],
-      imports: [KtbPayloadViewerModule, HttpClientTestingModule],
+      imports: [KtbPayloadViewerModule, BrowserAnimationsModule, HttpClientTestingModule],
       providers: [{ provide: ApiService, useClass: ApiServiceMock }],
     }).compileComponents();
 
