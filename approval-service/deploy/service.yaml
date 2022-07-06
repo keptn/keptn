@@ -27,7 +27,7 @@ spec:
       serviceAccountName: keptn-default
       containers:
       - name: approval-service
-        image: keptndev/approval-service:latest
+        image: keptndev/approval-service:0.17.0
         livenessProbe:
           httpGet:
             path: /health
@@ -50,12 +50,6 @@ spec:
             memory: "256Mi"
             cpu: "100m"
         env:
-        - name: RESOURCE_SERVICE
-          value: 'http://resource-service:8080'
-        - name: EVENTBROKER
-          value: 'http://event-broker/keptn'
-        - name: DATASTORE
-          value: 'http://mongodb-datastore:8080'
         - name: LOG_LEVEL
           value: "info"
         - name: K8S_DEPLOYMENT_NAME

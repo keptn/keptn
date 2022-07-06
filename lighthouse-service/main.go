@@ -27,14 +27,13 @@ import (
 )
 
 type envConfig struct {
-	ConfigurationServiceURL string `envconfig:"RESOURCE_SERVICE" default:"http://resource-service:8080"`
-	K8SDeploymentName       string `envconfig:"K8S_DEPLOYMENT_NAME" default:""`
-	K8SDeploymentVersion    string `envconfig:"K8S_DEPLOYMENT_VERSION" default:""`
-	K8SDeploymentComponent  string `envconfig:"K8S_DEPLOYMENT_COMPONENT" default:""`
-	K8SPodName              string `envconfig:"K8S_POD_NAME" default:""`
-	K8SNamespace            string `envconfig:"K8S_NAMESPACE" default:""`
-	K8SNodeName             string `envconfig:"K8S_NODE_NAME" default:""`
-	LogLevel                string `envconfig:"LOG_LEVEL" default:"info"`
+	K8SDeploymentName      string `envconfig:"K8S_DEPLOYMENT_NAME" default:""`
+	K8SDeploymentVersion   string `envconfig:"K8S_DEPLOYMENT_VERSION" default:""`
+	K8SDeploymentComponent string `envconfig:"K8S_DEPLOYMENT_COMPONENT" default:""`
+	K8SPodName             string `envconfig:"K8S_POD_NAME" default:""`
+	K8SNamespace           string `envconfig:"K8S_NAMESPACE" default:""`
+	K8SNodeName            string `envconfig:"K8S_NODE_NAME" default:""`
+	LogLevel               string `envconfig:"LOG_LEVEL" default:"info"`
 }
 
 func main() {

@@ -52,10 +52,6 @@ spec:
               memory: "512Mi"
               cpu: "200m"
           env:
-            - name: EVENTBROKER
-              value: 'http://localhost:8081/event'
-            - name: RESOURCE_SERVICE
-              value: 'http://resource-service:8080'
             - name: MONGODB_DATASTORE
               value: 'mongodb-datastore:8080'
             - name: ENVIRONMENT
