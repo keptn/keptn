@@ -8,10 +8,7 @@ func Test_GKE(t *testing.T) {
 	// Shut DownTests
 
 	t.Run("Test_BackupRestoreResourceService", Test_BackupRestoreResourceService)
-	t.Run("Test_GracefulShutdown", Test_GracefulShutdown)
 	// Common Tests
-	t.Run("Test_LogIngestion", Test_LogIngestion)
-	t.Run("Test_LogForwarding", Test_LogForwarding)
 	t.Run("Test_SelfHealing", Test_SelfHealing)
 	t.Run("Test_ResourceServiceBasic", Test_ResourceServiceBasic)
 	t.Run("Test_ManageSecrets_CreateUpdateAndDeleteSecret", Test_ManageSecrets_CreateUpdateAndDeleteSecret)
@@ -38,7 +35,6 @@ func Test_GKE(t *testing.T) {
 		t.Run("Test_SSHPublicKeyAuth", Test_SSHPublicKeyAuth)
 		t.Run("Test_ProxyAuth", Test_ProxyAuth)
 	}
-	t.Run("Test_ZeroDownTimeTriggerSequence", Test_ZeroDownTimeTriggerSequence)
 
 	// Platform-specific Tests
 	t.Run("Test_QualityGates", Test_QualityGates)
