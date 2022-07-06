@@ -163,6 +163,7 @@ jobs:
         id: check_modified_files
         env:
           BUILD_EVERYTHING: ${{ steps.build_everything.outputs.BUILD_EVERYTHING }}
+          GITHUB_REF_PROTECTED: ${{ env.GITHUB_REF_PROTECTED }}
         run: |
           ./gh-actions-scripts/prepare_changed_artifacts.sh "${{ steps.changed_files.outputs.all }}"
 

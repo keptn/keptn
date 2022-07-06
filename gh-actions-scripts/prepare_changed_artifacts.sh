@@ -59,7 +59,29 @@ if [ "$RELEASE_BUILD" != 'true' ] && [ "$PRERELEASE_BUILD" != 'true' ] && [ "$BU
     "$STATISTICS_SVC_ARTIFACT_PREFIX"
     "$WEBHOOK_SVC_ARTIFACT_PREFIX"
   )
-elif [ "$RELEASE_BUILD" != 'true' ] && [ "$PRERELEASE_BUILD" != 'true' ] && [ "$BUILD_EVERYTHING" == 'true' ]; then
+elif [ "$RELEASE_BUILD" != 'true' ] && [ "$PRERELEASE_BUILD" != 'true' ] && [ "$BUILD_EVERYTHING" == 'true' ] && [ "$GITHUB_REF_PROTECTED" == 'true' ]; then
+  # This is a build-everything build from a protected branch, i.e. master or a maintenance branch, we should run bridge tests in this case
+  echo "Preparing for master/maintenance branch build..."
+  artifacts=(
+    "$BRIDGE_ARTIFACT_PREFIX"
+    "$BRIDGE_UI_TEST_ARTIFACT_PREFIX"
+    "$BRIDGE_CODE_STYLE_ARTIFACT_PREFIX"
+    "$BRIDGE_SERVER_ARTIFACT_PREFIX"
+    "$API_ARTIFACT_PREFIX"
+    "$JMETER_SVC_ARTIFACT_PREFIX"
+    "$HELM_SVC_ARTIFACT_PREFIX"
+    "$APPROVAL_SVC_ARTIFACT_PREFIX"
+    "$DISTRIBUTOR_ARTIFACT_PREFIX"
+    "$SHIPYARD_CONTROLLER_ARTIFACT_PREFIX"
+    "$SECRET_SVC_ARTIFACT_PREFIX"
+    "$RESOURCE_SVC_ARTIFACT_PREFIX"
+    "$REMEDIATION_SVC_ARTIFACT_PREFIX"
+    "$LIGHTHOUSE_SVC_ARTIFACT_PREFIX"
+    "$MONGODB_DS_ARTIFACT_PREFIX"
+    "$STATISTICS_SVC_ARTIFACT_PREFIX"
+    "$WEBHOOK_SVC_ARTIFACT_PREFIX"
+  )
+elif [ "$RELEASE_BUILD" != 'true' ] && [ "$PRERELEASE_BUILD" != 'true' ] && [ "$BUILD_EVERYTHING" == 'true' ] && [ "$GITHUB_REF_PROTECTED" != 'true' ]; then
   # This is a build-everything build for integration tests, which skips bridge code style and UI tests
   echo "Preparing for build-everything build..."
   artifacts=(
