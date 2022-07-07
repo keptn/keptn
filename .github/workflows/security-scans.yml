@@ -101,7 +101,7 @@ jobs:
         if: always() && matrix.tool == 'kics'
         uses: actions/upload-artifact@v3
         with:
-          name: rendered-helm-chart
+          name: kics-results
           path: results.json
 
       - name: Kubeconform Scan
