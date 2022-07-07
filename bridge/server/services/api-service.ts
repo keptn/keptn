@@ -8,13 +8,13 @@ import { UniformRegistrationLogResponse } from '../../shared/interfaces/uniform-
 import { Resource, ResourceResponse } from '../../shared/interfaces/resource';
 import https from 'https';
 import { IUniformSubscription } from '../../shared/interfaces/uniform-subscription';
-import { ISecret } from '../../shared/interfaces/secret';
 import { KeptnService } from '../../shared/models/keptn-service';
 import { IStage } from '../../shared/interfaces/stage';
 import { SequenceOptions, TraceOptions } from './data-service';
 import { ComponentLogger } from '../utils/logger';
 import { IProjectResult } from '../../shared/interfaces/project-result';
 import { EnvType } from '../interfaces/configuration';
+import { IClientSecret } from '../../shared/interfaces/secret';
 
 export class ApiService {
   private readonly axios: AxiosInstance;
@@ -208,7 +208,7 @@ export class ApiService {
 
   public getShipyard(accessToken: string | undefined, projectName: string): Promise<AxiosResponse<Resource>> {
     return this.axios.get<Resource>(
-      `${this.baseUrl}/configuration-service/v1/project/${projectName}/resource/shipyard.yaml`,
+      `${this.baseUrl}/resource-service/v1/project/${projectName}/resource/shipyard.yaml`,
       this.getAuthHeaders(accessToken)
     );
   }
@@ -244,7 +244,7 @@ export class ApiService {
     stageName?: string,
     serviceName?: string
   ): Promise<AxiosResponse<Resource>> {
-    let url = `${this.baseUrl}/configuration-service/v1/project/${projectName}`;
+    let url = `${this.baseUrl}/resource-service/v1/project/${projectName}`;
     if (stageName) {
       url += `/stage/${stageName}`;
     }
@@ -262,7 +262,7 @@ export class ApiService {
     stageName?: string,
     serviceName?: string
   ): Promise<AxiosResponse<Resource>> {
-    let url = `${this.baseUrl}/configuration-service/v1/project/${projectName}`;
+    let url = `${this.baseUrl}/resource-service/v1/project/${projectName}`;
     if (stageName) {
       url += `/stage/${stageName}`;
     }
@@ -281,7 +281,7 @@ export class ApiService {
     stageName?: string,
     serviceName?: string
   ): Promise<AxiosResponse<Resource>> {
-    let url = `${this.baseUrl}/configuration-service/v1/project/${projectName}`;
+    let url = `${this.baseUrl}/resource-service/v1/project/${projectName}`;
     if (stageName) {
       url += `/stage/${stageName}`;
     }
@@ -333,7 +333,7 @@ export class ApiService {
     serviceName: string,
     nextPageKey?: string
   ): Promise<AxiosResponse<ResourceResponse>> {
-    const url = `${this.baseUrl}/configuration-service/v1/project/${projectName}/stage/${stageName}/service/${serviceName}/resource`;
+    const url = `${this.baseUrl}/resource-service/v1/project/${projectName}/stage/${stageName}/service/${serviceName}/resource`;
     const params: { [key: string]: string } = {};
     if (nextPageKey) {
       params.nextPageKey = nextPageKey;
@@ -349,14 +349,14 @@ export class ApiService {
     serviceName: string,
     resourceURI: string
   ): Promise<AxiosResponse<Resource>> {
-    const url = `${this.baseUrl}/configuration-service/v1/project/${projectName}/stage/${stageName}/service/${serviceName}/resource/${resourceURI}`;
+    const url = `${this.baseUrl}/resource-service/v1/project/${projectName}/stage/${stageName}/service/${serviceName}/resource/${resourceURI}`;
 
     return this.axios.get<Resource>(url, this.getAuthHeaders(accessToken));
   }
 
-  public getSecrets(accessToken: string | undefined): Promise<AxiosResponse<{ Secrets: ISecret[] }>> {
+  public getSecrets(accessToken: string | undefined): Promise<AxiosResponse<{ Secrets: IClientSecret[] }>> {
     const url = `${this.baseUrl}/secrets/v1/secret`;
-    return this.axios.get<{ Secrets: ISecret[] }>(url, this.getAuthHeaders(accessToken));
+    return this.axios.get<{ Secrets: IClientSecret[] }>(url, this.getAuthHeaders(accessToken));
   }
 
   public getStages(accessToken: string | undefined, projectName: string): Promise<AxiosResponse<{ stages: IStage[] }>> {

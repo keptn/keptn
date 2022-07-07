@@ -32,12 +32,12 @@ func Test_GKE(t *testing.T) {
 	t.Run("Test_WebhookConfigAtServiceLevel_Alpha", Test_WebhookConfigAtServiceLevel_Alpha)
 	t.Run("TTest_WebhookFailInternalAddress_Beta", Test_WebhookFailInternalAddress_Beta)
 	t.Run("Test_ProvisioningURL", Test_ProvisioningURL)
-	if res, err := CompareServiceNameWithDeploymentName("configuration-service", "resource-service"); err == nil && res {
-		t.Run("Test_ResourceServiceGETCommitID", Test_ResourceServiceGETCommitID)
-		t.Run("Test_EvaluationGitCommitID", Test_EvaluationGitCommitID)
-		t.Run("Test_SSHPublicKeyAuth", Test_SSHPublicKeyAuth)
-		t.Run("Test_ProxyAuth", Test_ProxyAuth)
-	}
+
+	t.Run("Test_ResourceServiceGETCommitID", Test_ResourceServiceGETCommitID)
+	t.Run("Test_EvaluationGitCommitID", Test_EvaluationGitCommitID)
+	t.Run("Test_SSHPublicKeyAuth", Test_SSHPublicKeyAuth)
+	t.Run("Test_ProxyAuth", Test_ProxyAuth)
+
 	t.Run("Test_ZeroDownTimeTriggerSequence", Test_ZeroDownTimeTriggerSequence)
 
 	// Platform-specific Tests

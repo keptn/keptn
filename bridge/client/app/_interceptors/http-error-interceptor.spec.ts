@@ -8,7 +8,7 @@ import { ApiService } from '../_services/api.service';
 import { NotificationsService } from '../_services/notifications.service';
 import { NotificationType } from '../_models/notification';
 import { SecretScopeDefault } from '../../../shared/interfaces/secret-scope';
-import { Secret } from '../_models/secret';
+import { IServiceSecret } from '../../../shared/interfaces/secret';
 
 describe('HttpErrorInterceptorService', () => {
   let httpErrorInterceptor: HttpErrorInterceptor;
@@ -175,10 +175,11 @@ describe('HttpErrorInterceptorService', () => {
   it('should not show any notification when a secret already exists', () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
-
-    const secret = new Secret();
-    secret.name = 'secret';
-    secret.scope = SecretScopeDefault.DEFAULT;
+    const secret: IServiceSecret = {
+      name: 'secret',
+      scope: SecretScopeDefault.DEFAULT,
+      data: [],
+    };
 
     apiService.addSecret(secret).subscribe();
 

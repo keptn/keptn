@@ -3,8 +3,9 @@ import { KtbServicesListComponent } from './ktb-services-list.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { Service } from '../../../../_models/service';
 import { ServiceMock } from '../../../../_services/_mockData/service.mock';
-import { KtbStageOverviewModule } from '../ktb-stage-overview.module';
 import { RouterTestingModule } from '@angular/router/testing';
+import { KtbEnvironmentViewModule } from '../../ktb-environment-view.module';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('KtbServicesListComponent', () => {
   let component: KtbServicesListComponent;
@@ -13,7 +14,7 @@ describe('KtbServicesListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [KtbStageOverviewModule, HttpClientTestingModule, RouterTestingModule],
+      imports: [BrowserAnimationsModule, KtbEnvironmentViewModule, HttpClientTestingModule, RouterTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbServicesListComponent);
@@ -77,6 +78,15 @@ describe('KtbServicesListComponent', () => {
     const link = component.getServiceLink(service);
 
     // then
-    expect(link).toEqual(['service', 'carts-db', 'context', 'ff8a3e69-7e5c-48ec-b668-4e96a006a505', 'stage', 'dev']);
+    expect(link).toEqual([
+      '/project',
+      '',
+      'service',
+      'carts-db',
+      'context',
+      'ff8a3e69-7e5c-48ec-b668-4e96a006a505',
+      'stage',
+      'dev',
+    ]);
   });
 });

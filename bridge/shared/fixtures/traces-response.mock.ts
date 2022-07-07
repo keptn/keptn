@@ -1472,6 +1472,31 @@ const evaluationAndSliTracesDev = [
   },
   {
     data: {
+      labels: {
+        DtCreds: 'dynatrace',
+      },
+      project: 'sockshop',
+      result: 'pass',
+      service: 'carts',
+      stage: 'dev',
+      status: 'succeeded',
+      temporaryData: {
+        distributor: {
+          subscriptionID: '',
+        },
+      },
+    },
+    id: 'x286a8ea-1b11-4106-b892-fade06245bcf',
+    source: 'webhook-service',
+    specversion: '1.0',
+    time: '2021-10-13T10:49:27.607Z',
+    type: 'sh.keptn.event.evaluation.started',
+    shkeptncontext: keptnContext,
+    shkeptnspecversion: '0.2.3',
+    triggeredid: 'b286a8ea-1b11-4106-b892-fade06245bcf',
+  },
+  {
+    data: {
       'get-sli': {
         end: '2021-10-13T10:47:11Z',
         indicatorValues: [

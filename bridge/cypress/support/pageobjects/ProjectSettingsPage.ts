@@ -370,11 +370,6 @@ class ProjectSettingsPage {
     return this;
   }
 
-  public assertGitUpstreamHeadlineExistsOnce(): this {
-    cy.get('ktb-project-settings').find('h2').filter(':contains("Git upstream repository")').should('have.length', 1);
-    return this;
-  }
-
   public assertSshFormExists(status: boolean): this {
     cy.get('ktb-project-settings-git-ssh').should(status ? 'exist' : 'not.exist');
     return this;
@@ -446,7 +441,7 @@ class ProjectSettingsPage {
   }
 
   public assertConfigurationServiceErrorExists(status: boolean): this {
-    cy.byTestId('ktb-error-configuration-service-enabled').should(status ? 'exist' : 'not.exist');
+    cy.byTestId('ktb-error-resource-service-enabled').should(status ? 'exist' : 'not.exist');
     return this;
   }
 

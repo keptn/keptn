@@ -6,6 +6,7 @@
           <ktb-sequence-state-info
             [sequence]="toSequence(row)"
             [showStages]="false"
+            (click)="$event.stopPropagation()"
             (stageClicked)="selectSequence($event)"
           ></ktb-sequence-state-info>
         </dt-cell>

@@ -11,7 +11,6 @@ import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-regi
 import { UniformSubscription } from '../_models/uniform-subscription';
 import { IWebhookConfigClient, WebhookConfigMethod } from '../../../shared/interfaces/webhook-config';
 import { UniformRegistrationLogResponse } from '../../../shared/interfaces/uniform-registration-log';
-import { Secret } from '../_models/secret';
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
 import { IMetadata } from '../_interfaces/metadata';
 import { FileTree } from '../../../shared/interfaces/resourceFileTree';
@@ -43,6 +42,7 @@ import { TriggerResponse, TriggerSequenceData } from '../_models/trigger-sequenc
 import { IService } from '../../../shared/interfaces/service';
 import { IProjectResult } from '../../../shared/interfaces/project-result';
 import { IGitDataExtended } from '../../../shared/interfaces/project';
+import { IClientSecret, IServiceSecret } from '../../../shared/interfaces/secret';
 
 @Injectable({
   providedIn: null,
@@ -169,6 +169,7 @@ export class ApiServiceMock extends ApiService {
   ): Observable<Record<string, unknown>> {
     return of({});
   }
+
   public createUniformSubscription(
     integrationId: string,
     subscription: Partial<UniformSubscription>,
@@ -188,17 +189,17 @@ export class ApiServiceMock extends ApiService {
     return of(false);
   }
 
-  public getSecrets(): Observable<{ Secrets: Secret[] }> {
+  public getSecrets(): Observable<{ Secrets: IClientSecret[] }> {
     const secrets = SecretsResponseMock;
     return of(secrets);
   }
 
-  public getSecretsForScope(scope: SecretScope): Observable<Secret[]> {
+  public getSecretsForScope(scope: SecretScope): Observable<IClientSecret[]> {
     const secrets = SecretsResponseMock.Secrets.filter((s) => s.scope === scope);
     return of(secrets);
   }
 
-  public addSecret(secret: Secret): Observable<Record<string, unknown>> {
+  public addSecret(secret: IServiceSecret): Observable<Record<string, unknown>> {
     return of({});
   }
 
@@ -388,4 +389,5 @@ export class ApiServiceMock extends ApiService {
     return of({ keptnContext: '6c98fbb0-4c40-4bff-ba9f-b20556a57c8a' });
   }
 }
+
 /* eslint-enable @typescript-eslint/no-unused-vars */

@@ -1,5 +1,5 @@
-@import 'client/variables';
-@import 'node_modules/@dynatrace/barista-components/core/src/style/variables';
+@import '../../../variables';
+@import '~@dynatrace/barista-components/core/src/style/variables';
 
 :host {
   width: 100%;

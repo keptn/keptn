@@ -41,8 +41,9 @@ import {
   parseToClientWebhookRequest,
 } from '../models/webhook-config.utils';
 import { IWebhookConfigClient } from '../../shared/interfaces/webhook-config';
-import { ISecret } from '../../shared/interfaces/secret';
 import { EnvType } from '../interfaces/configuration';
+import { IClientSecret } from '../../shared/interfaces/secret';
+import { IServerSequenceStage } from '../interfaces/sequence-stage';
 
 type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
 type StageRemediationInformation = {
@@ -854,7 +855,7 @@ export class DataService {
     await this.apiService.deleteUniformSubscription(accessToken, integrationId, subscriptionId);
   }
 
-  public async getSecretsForScope(accessToken: string | undefined, scope: SecretScope): Promise<ISecret[]> {
+  public async getSecretsForScope(accessToken: string | undefined, scope: SecretScope): Promise<IClientSecret[]> {
     const response = await this.apiService.getSecrets(accessToken);
     return response.data.Secrets.filter((secret) => secret.scope === scope);
   }
@@ -1059,55 +1060,97 @@ export class DataService {
           {},
       };
       for (const stage of sequence.stages) {
-        const stageTraces = traces.filter((trace) => trace.data.stage === stage.name);
-        const service = project.stages
-          .find((st) => st.stageName === stage.name)
-          ?.services.find((sv) => sv.serviceName === sequence.service);
-        const latestDeploymentContext = service?.deploymentEvent?.keptnContext;
-        const evaluationTrace = stageTraces.reduce(
-          (event: Trace | undefined, trace) => event || trace.getEvaluationFinishedEvent(),
-          undefined
-        );
-        const lastTimeUpdated = stageTraces[stageTraces.length - 1]?.getLastTrace()?.time;
-        const approvalInformation = this.getApprovalInformation(stageTraces, service?.getShortImage());
-        let deploymentURL: string | undefined;
-        let stageRemediationInformation: StageRemediationInformation | undefined;
-        deployment.image ??= service?.getShortImage();
-
-        if (latestDeploymentContext === sequence.shkeptncontext) {
-          deploymentURL = stageTraces.reduce(
-            (url: string | undefined, tc) =>
-              url || tc.findTrace((t) => t.type === EventTypes.DEPLOYMENT_FINISHED)?.getDeploymentUrl(),
-            undefined
-          );
-          stageRemediationInformation = await this.getStageRemediationInformation(
-            accessToken,
-            projectName,
-            stage.name,
-            sequence.service,
+        const { deploymentStage, remediations, image } = await this.getDeploymentStageInformation(
+          accessToken,
+          traces,
+          stage,
+          sequence,
+          project,
+          {
             includeRemediation,
-            openRemediations
-          );
-          openRemediations = stageRemediationInformation.remediations;
-        }
-
-        deployment.stages.push({
-          name: stage.name,
-          state: stage.state,
-          lastTimeUpdated: (lastTimeUpdated ? new Date(lastTimeUpdated) : new Date()).toISOString(),
-          openRemediations: stageRemediationInformation?.remediationsForStage ?? [],
-          approvalInformation,
-          subSequences: this.getSubSequencesForStage(stageTraces, stage.name, fromTime),
-          deploymentURL,
-          hasEvaluation: !!evaluationTrace,
-          latestEvaluation:
-            evaluationTrace ??
-            (await this.apiService.getEvaluationResults(accessToken, projectName, sequence.service, stage.name, 1)).data
-              .events[0],
-        });
+            fromTime,
+            cachedRemediations: openRemediations,
+          }
+        );
+        openRemediations = remediations;
+        deployment.image ??= image;
+        deployment.stages.push(deploymentStage);
       }
     }
     return deployment;
+  }
+
+  private async getDeploymentStageInformation(
+    accessToken: string | undefined,
+    traces: Trace[],
+    stage: IServerSequenceStage,
+    sequence: Sequence,
+    project: Project,
+    options: { includeRemediation: boolean; fromTime?: Date; cachedRemediations: Remediation[] | undefined }
+  ): Promise<{
+    deploymentStage: IStageDeployment;
+    remediations: Remediation[] | undefined;
+    image: string | undefined;
+  }> {
+    const stageTraces = traces.filter((trace) => trace.data.stage === stage.name);
+    const service = project.stages
+      .find((st) => st.stageName === stage.name)
+      ?.services.find((sv) => sv.serviceName === sequence.service);
+    const latestDeploymentContext = service?.deploymentEvent?.keptnContext;
+    const evaluationTrace = stageTraces.reduce(
+      (event: Trace | undefined, trace) => event || trace.getEvaluationFinishedEvent(),
+      undefined
+    );
+    if (evaluationTrace) {
+      evaluationTrace.traces = []; //clear not wanted events like from the webhook-service
+    }
+    const lastTimeUpdated = stageTraces[stageTraces.length - 1]?.getLastTrace()?.time;
+    const approvalInformation = this.getApprovalInformation(stageTraces, service?.getShortImage());
+    let deploymentURL: string | undefined;
+    let stageRemediationInformation: StageRemediationInformation | undefined;
+
+    if (latestDeploymentContext === sequence.shkeptncontext) {
+      deploymentURL = stageTraces.reduce(
+        (url: string | undefined, tc) =>
+          url || tc.findTrace((t) => t.type === EventTypes.DEPLOYMENT_FINISHED)?.getDeploymentUrl(),
+        undefined
+      );
+      stageRemediationInformation = await this.getStageRemediationInformation(
+        accessToken,
+        project.projectName,
+        stage.name,
+        sequence.service,
+        options.includeRemediation,
+        options.cachedRemediations
+      );
+      options.cachedRemediations = stageRemediationInformation.remediations;
+    }
+
+    return {
+      deploymentStage: {
+        name: stage.name,
+        state: stage.state,
+        lastTimeUpdated: (lastTimeUpdated ? new Date(lastTimeUpdated) : new Date()).toISOString(),
+        openRemediations: stageRemediationInformation?.remediationsForStage ?? [],
+        approvalInformation,
+        subSequences: this.getSubSequencesForStage(stageTraces, stage.name, options.fromTime),
+        deploymentURL,
+        hasEvaluation: !!evaluationTrace,
+        latestEvaluation:
+          evaluationTrace ??
+          (
+            await this.apiService.getEvaluationResults(
+              accessToken,
+              project.projectName,
+              sequence.service,
+              stage.name,
+              1
+            )
+          ).data.events[0],
+      },
+      remediations: options.cachedRemediations,
+      image: service?.getShortImage(),
+    };
   }
 
   private getApprovalInformation(traces: Trace[], deployedImage?: string): IStageDeployment['approvalInformation'] {

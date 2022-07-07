@@ -104,6 +104,7 @@ apiGatewayNginx:
       cpu: "100m"
 
 remediationService:
+  enabled: true
   image:
     repository: docker.io/keptn/remediation-service
     tag: ""
@@ -303,7 +304,6 @@ configurationService:
       cpu: "100m"
 
 resourceService:
-  enabled: true
   replicas: 1
   image:
     repository: docker.io/keptn/resource-service
@@ -345,6 +345,7 @@ mongodbDatastore:
       cpu: "300m"
 
 lighthouseService:
+  enabled: true
   image:
     repository: docker.io/keptn/lighthouse-service
     tag: ""
@@ -363,6 +364,7 @@ lighthouseService:
       cpu: "200m"
 
 statisticsService:
+  enabled: true
   image:
     repository: docker.io/keptn/statistics-service
     tag: ""
@@ -381,6 +383,7 @@ statisticsService:
       cpu: "100m"
 
 approvalService:
+  enabled: true
   image:
     repository: docker.io/keptn/approval-service
     tag: ""

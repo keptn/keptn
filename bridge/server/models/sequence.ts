@@ -1,5 +1,5 @@
-import { ISequence, SequenceStage, SequenceState } from '../../shared/interfaces/sequence';
-import { Trace } from '../../shared/models/trace';
+import { ISequence, SequenceState } from '../../shared/interfaces/sequence';
+import { IServerSequenceStage } from '../interfaces/sequence-stage';
 
 export class Sequence implements ISequence {
   name!: string;
@@ -8,9 +8,7 @@ export class Sequence implements ISequence {
   shkeptncontext!: string;
   state!: SequenceState;
   time!: string;
-  stages!: (SequenceStage & {
-    latestEvaluationTrace?: Trace;
-  })[];
+  stages!: IServerSequenceStage[];
   problemTitle?: string;
 
   public static fromJSON(data: unknown): Sequence {

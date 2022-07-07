@@ -1,5 +1,4 @@
 import { SequencesPage } from '../support/pageobjects/SequencesPage';
-import { interceptProjectBoard } from '../support/intercept';
 import EnvironmentPage from '../support/pageobjects/EnvironmentPage';
 
 describe('Sequences', () => {
@@ -7,7 +6,6 @@ describe('Sequences', () => {
   const environmentPage = new EnvironmentPage();
 
   beforeEach(() => {
-    interceptProjectBoard();
     sequencePage.intercept();
   });
 
@@ -364,6 +362,14 @@ describe('Sequences', () => {
         .clearFilter()
         .selectSequence('62cca6f3-dc54-4df6-a04c-6ffc894a4b5e')
         .assertAmountOfQueryParameters(0);
+    });
+
+    it('should limit visible services and show all on "view more"', () => {
+      sequencePage.interceptWithManyFilters().visit('sockshop');
+
+      cy.wait('@Sequences');
+
+      sequencePage.assertFilterItemsCount('Service', 5).clickFilterViewMore('Service').assertFilterShowMoreCount(12);
     });
   });
 });

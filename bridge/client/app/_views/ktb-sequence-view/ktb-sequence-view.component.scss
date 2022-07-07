@@ -37,15 +37,4 @@ ktb-event-item.focused {
     overflow-x: hidden;
     min-width: 230px;
   }
-
-  .dt-quick-filter-detail {
-    dt-quick-filter-group {
-      height: calc(100% - 35px) !important;
-      padding: 0 !important;
-    }
-
-    dt-quick-filter-group .dt-quick-filter-group-items, cdk-virtual-scroll-viewport {
-      height: 100% !important;
-    }
-  }
 }

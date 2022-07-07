@@ -5,10 +5,10 @@ import ServicesPage from './ServicesPage';
 import { interceptProjectBoard } from '../intercept';
 
 enum View {
-  SERVICE_VIEW = 'service-view',
-  ENVIRONMENT_VIEW = 'environment-view',
-  SEQUENCE_VIEW = 'sequence-view',
-  SETTINGS_VIEW = 'settings-view',
+  SERVICE_VIEW = 'services',
+  ENVIRONMENT_VIEW = 'environment',
+  SEQUENCE_VIEW = 'sequences',
+  SETTINGS_VIEW = 'settings',
 }
 
 export class ProjectBoardPage {
@@ -101,6 +101,27 @@ export class ProjectBoardPage {
       .assertEnvironmentViewSelected(view === View.ENVIRONMENT_VIEW)
       .assertSequencesViewSelected(view === View.SEQUENCE_VIEW)
       .assertSettingsViewSelected(view === View.SETTINGS_VIEW);
+  }
+
+  public clickSequenceMenuitem(): this {
+    return this.clickMenuItem(View.SEQUENCE_VIEW);
+  }
+
+  public clickServicesMenuitem(): this {
+    return this.clickMenuItem(View.SERVICE_VIEW);
+  }
+
+  public clickEnvironmentMenuitem(): this {
+    return this.clickMenuItem(View.ENVIRONMENT_VIEW);
+  }
+
+  public clickSettingsMenuitem(): this {
+    return this.clickMenuItem(View.SETTINGS_VIEW);
+  }
+
+  private clickMenuItem(view: View): this {
+    cy.byTestId(`ktb-${view}-menu-button`).click();
+    return this;
   }
 
   private assertMenuSelected(selector: string, status: boolean): this {

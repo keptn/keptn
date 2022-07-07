@@ -5,7 +5,7 @@ import (
 	"net/url"
 )
 
-const configservice = "CONFIGURATION_SERVICE"
+const configservice = "RESOURCE_SERVICE"
 const shipyardController = "SHIPYARD_CONTROLLER"
 
 func GetConfigServiceURL() (*url.URL, error) {

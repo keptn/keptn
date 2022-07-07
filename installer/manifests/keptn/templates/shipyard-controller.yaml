@@ -43,8 +43,8 @@ spec:
               port: 8080
           imagePullPolicy: IfNotPresent
           env:
-            - name: CONFIGURATION_SERVICE
-              value: "http://configuration-service:8080"
+            - name: RESOURCE_SERVICE
+              value: "http://resource-service:8080"
             - name: EVENTBROKER
               value: http://localhost:8081/event
             - name: POD_NAMESPACE

@@ -2,7 +2,7 @@ import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testin
 import { KtbCreateServiceComponent } from './ktb-create-service.component';
 import { DataService } from '../../_services/data.service';
 import { ActivatedRoute, convertToParamMap, ParamMap, Router } from '@angular/router';
-import { BehaviorSubject, of, throwError } from 'rxjs';
+import { BehaviorSubject, firstValueFrom, of, throwError } from 'rxjs';
 import { NotificationsService } from '../../_services/notifications.service';
 import { NotificationType } from '../../_models/notification';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -10,6 +10,8 @@ import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 import { KtbCreateServiceModule } from './ktb-create-service.module';
 import { RouterTestingModule } from '@angular/router/testing';
+import { take } from 'rxjs/operators';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('KtbCreateServiceComponent', () => {
   let component: KtbCreateServiceComponent;
@@ -20,7 +22,7 @@ describe('KtbCreateServiceComponent', () => {
   beforeEach(async () => {
     queryParams = new BehaviorSubject<ParamMap>(convertToParamMap({}));
     await TestBed.configureTestingModule({
-      imports: [KtbCreateServiceModule, RouterTestingModule],
+      imports: [KtbCreateServiceModule, RouterTestingModule, BrowserAnimationsModule],
       providers: [
         { provide: ApiService, useClass: ApiServiceMock },
         {
@@ -39,11 +41,17 @@ describe('KtbCreateServiceComponent', () => {
     }).compileComponents();
     fixture = TestBed.createComponent(KtbCreateServiceComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should set the projectName', (done) => {
+    component.projectName$.pipe(take(1)).subscribe((actualProjectName) => {
+      expect(actualProjectName).toBe(projectName);
+      done();
+    });
   });
 
   it('should show duplicate error', () => {
@@ -64,7 +72,10 @@ describe('KtbCreateServiceComponent', () => {
     }
   });
 
-  it('should show required error', () => {
+  it('should show required error', async () => {
+    await firstValueFrom(component.projectName$);
+    await firstValueFrom(component.redirectTo$);
+
     const serviceNames = ['service', ''];
     for (const serviceName of serviceNames) {
       component.serviceNameControl.setValue(serviceName);
@@ -101,6 +112,7 @@ describe('KtbCreateServiceComponent', () => {
 
   it('should not create service', fakeAsync(() => {
     // given
+    fixture.detectChanges();
     const notificationService = TestBed.inject(NotificationsService);
     const notificationSpy = jest.spyOn(notificationService, 'addNotification');
     const inProgressSpy = jest.fn();
@@ -114,7 +126,7 @@ describe('KtbCreateServiceComponent', () => {
       .mockReturnValue(throwError(new HttpErrorResponse({ error: 'service already exists' })));
 
     // when
-    component.createService(projectName);
+    component.createService(projectName, null);
 
     // then
     expect(inProgressSpy).toHaveBeenCalledWith(true);
@@ -123,32 +135,31 @@ describe('KtbCreateServiceComponent', () => {
     expect(notificationSpy).toBeCalledTimes(0);
   }));
 
-  it('should go back', () => {
+  it('should go back', async () => {
     // given
     const redirectTo = '%2Fproject%2Fsockshop%2Fservice';
-    const cancelButton = fixture.nativeElement.querySelector('button[type=reset]');
     const router = TestBed.inject(Router);
     const routerNavigateSpy = jest.spyOn(router, 'navigateByUrl');
-    updateQueryParams(redirectTo);
 
     // when
-    cancelButton.click();
-    fixture.detectChanges();
+    try {
+      await component.cancel(redirectTo);
+    } catch (_err) {}
 
     // then
     expect(routerNavigateSpy).toHaveBeenCalledWith(redirectTo);
   });
 
-  it('should go back to service overview', () => {
+  it('should go back to service overview', async () => {
     // given
     const router = TestBed.inject(Router);
     const routerNavigateSpy = jest.spyOn(router, 'navigate');
     const route = TestBed.inject(ActivatedRoute);
-    const cancelButton = fixture.nativeElement.querySelector('button[type=reset]');
 
-    // when
-    cancelButton.click();
-    fixture.detectChanges();
+    /// when
+    try {
+      await component.cancel(null);
+    } catch (_err) {}
 
     // then
     expect(routerNavigateSpy).toHaveBeenCalledWith(['../'], { relativeTo: route });
@@ -165,12 +176,5 @@ describe('KtbCreateServiceComponent', () => {
 
   function getCreateButton(): HTMLElement {
     return fixture.nativeElement.querySelector('button[uitestid=createServiceButton]');
-  }
-
-  function updateQueryParams(redirectTo: string): void {
-    queryParams.next(convertToParamMap({ redirectTo }));
-    fixture = TestBed.createComponent(KtbCreateServiceComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
   }
 });

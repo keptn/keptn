@@ -1,4 +1,4 @@
----
+{{- if .Values.lighthouseService.enabled }}
 # lighthouse-service
 apiVersion: apps/v1
 kind: Deployment
@@ -41,10 +41,8 @@ spec:
           resources:
             {{- toYaml .Values.lighthouseService.resources | nindent 12 }}
           env:
-            - name: EVENTBROKER
-              value: 'http://localhost:8081/event'
-            - name: CONFIGURATION_SERVICE
-              value: 'http://configuration-service:8080'
+            - name: RESOURCE_SERVICE
+              value: 'http://resource-service:8080'
             - name: MONGODB_DATASTORE
               value: 'mongodb-datastore:8080'
             - name: ENVIRONMENT
@@ -84,3 +82,4 @@ spec:
       protocol: TCP
   selector: {{- include "keptn.common.labels.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/name: lighthouse-service
+{{- end }}

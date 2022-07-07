@@ -71,54 +71,6 @@ const evaluationFinishedMockResponse = `{
     "totalCount": 1
 }`
 
-const deploymentFinishedMockResponse = `{
-    "events": [
-        {
-		  "contenttype": "application/json",
-		  "data": {
-			"deploymentstrategy": "blue_green_service",
-			"deployment": {
-			  "gitCommit": "commit-id"
-			},
-			"labels": null,
-			"project": "sockshop",
-			"result": "pass",
-			"service": "carts",
-			"stage": "staging",
-			"teststrategy": "performance",
-		  },
-		  "id": "123",
-		  "source": "helm-service",
-		  "specversion": "1.0",
-		  "time": "2020-06-02T12:28:54.642Z",
-		  "type": "sh.keptn.event.deployment.finished",
-		  "shkeptncontext": "test-event-context-1"
-		}
-    ],
-	"nextPageKey": "0",
-    "pageSize": 1,
-    "totalCount": 1
-}`
-
-const serviceResponse = `
-        {
-            "creationDate": "1589377890962439729",
-            "deployedImage": "docker.io/keptnexamples/carts:0.10.1",
-            "lastEventTypes": {
-               
-            },
-            "openApprovals": [
-				{
-					"eventId": "test-event-id-1",
-					"image": "docker.io/keptnexamples/carts",
-					"keptnContext": "test-event-context-1",
-					"tag": "0.10.1",
-					"time": "2020-05-13 11:59:18.131869605 +0000 UTC"
-				}
-			],
-            "serviceName": "carts"
-        }`
-
 func Test_sendApprovalFinishedEvent(t *testing.T) {
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

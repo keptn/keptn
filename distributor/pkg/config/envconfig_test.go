@@ -35,40 +35,40 @@ func Test_getProxyRequestURL(t *testing.T) {
 			name: "Get internal configuration service",
 			args: args{
 				endpoint: "",
-				path:     "/configuration-service",
+				path:     "/resource-service",
 			},
 			wantScheme: "http",
-			wantHost:   "configuration-service:8080",
+			wantHost:   "resource-service:8080",
 		},
 		{
 			name: "Get configuration service",
 			args: args{
 				endpoint: "",
-				path:     "/configuration-service",
+				path:     "/resource-service",
 			},
 			wantScheme: "http",
-			wantHost:   "configuration-service:8080",
+			wantHost:   "resource-service:8080",
 		},
 		{
 			name: "Get configuration service via public API",
 			args: args{
 				endpoint: "",
-				path:     "/configuration-service",
+				path:     "/resource-service",
 			},
 			wantScheme:       "http",
 			wantHost:         "external-api.com",
-			wantPath:         "/api/configuration-service/",
+			wantPath:         "/api/resource-service/",
 			externalEndpoint: "http://external-api.com/api",
 		},
 		{
 			name: "Get configuration service via public API with API prefix",
 			args: args{
 				endpoint: "",
-				path:     "/configuration-service",
+				path:     "/resource-service",
 			},
 			wantScheme:       "http",
 			wantHost:         "external-api.com",
-			wantPath:         "/my/path/prefix/api/configuration-service/",
+			wantPath:         "/my/path/prefix/api/resource-service/",
 			externalEndpoint: "http://external-api.com/my/path/prefix/api",
 		},
 	}

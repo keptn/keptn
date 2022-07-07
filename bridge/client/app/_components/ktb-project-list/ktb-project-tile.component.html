@@ -60,7 +60,13 @@
     </ng-template>
   </dt-tile-subtitle>
   <dt-tag-list aria-label="stages" uitestid="keptn-project-tile-stagesTags">
-    <dt-tag *ngFor="let stage of project.stages" [textContent]="stage.stageName"></dt-tag>
+    <dt-tag *ngFor="let stage of project.stages">
+      <a
+        [routerLink]="['/project', project.projectName, 'environment', 'stage', stage.stageName]"
+        (click)="$event.stopPropagation()"
+        >{{ stage.stageName }}</a
+      >
+    </dt-tag>
   </dt-tag-list>
   <p class="small">Recent sequences:</p>
   <ktb-sequence-state-list [sequenceStates]="sequences"></ktb-sequence-state-list>

@@ -1,0 +1,75 @@
+@import '../../../../variables';
+@import '~@dynatrace/barista-components/core/src/style/variables';
+
+.ktb-root-events-list {
+  .ktb-selectable-tile {
+    .ktb-selectable-tile-container {
+      border: 1px solid $gray-200;
+    }
+
+    &:hover {
+      .ktb-selectable-tile-container {
+        border-color: $gray-300;
+      }
+
+      .ktb-selectable-tile-header {
+        background-color: $gray-200;
+      }
+    }
+
+    &.ktb-tile-selected .ktb-selectable-tile-container:before {
+      content: '';
+      position: absolute;
+      height: 100%;
+      width: 6px;
+      left: 0;
+      top: 0;
+      background: $gray-300;
+    }
+
+    &.ktb-tile-error:hover .ktb-selectable-tile-container,
+    &.ktb-tile-error .ktb-selectable-tile-container {
+      border-color: $error-color;
+    }
+
+    &.ktb-tile-selected.ktb-tile-error .ktb-selectable-tile-container:before {
+      background: $error-color;
+    }
+
+    &.ktb-tile-success:hover .ktb-selectable-tile-container,
+    &.ktb-tile-success .ktb-selectable-tile-container {
+      border-color: $cta-color;
+    }
+
+    &.ktb-tile-selected.ktb-tile-success .ktb-selectable-tile-container:before {
+      background: $cta-color;
+    }
+
+    &.ktb-tile-warning:hover .ktb-selectable-tile-container,
+    &.ktb-tile-warning .ktb-selectable-tile-container {
+      border-color: $warning-color;
+    }
+
+    &.ktb-tile-selected.ktb-tile-warning .ktb-selectable-tile-container:before {
+      background: $warning-color;
+    }
+
+    &.ktb-tile-highlight:hover .ktb-selectable-tile-container,
+    &.ktb-tile-highlight .ktb-selectable-tile-container {
+      border-color: $approval-color;
+    }
+
+    &.ktb-tile-selected.ktb-tile-highlight .ktb-selectable-tile-container:before {
+      background: $approval-color;
+    }
+
+    &.ktb-tile-aborted:hover .ktb-selectable-tile-container,
+    &.ktb-tile-aborted .ktb-selectable-tile-container {
+      border-color: $aborted-color;
+    }
+
+    &.ktb-tile-selected.ktb-tile-aborted .ktb-selectable-tile-container:before {
+      background: $aborted-color;
+    }
+  }
+}
