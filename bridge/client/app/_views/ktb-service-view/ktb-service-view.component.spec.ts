@@ -17,6 +17,7 @@ import { Location } from '@angular/common';
 import { ServiceState } from '../../_models/service-state';
 import { DataService } from '../../_services/data.service';
 import { KtbServiceViewModule } from './ktb-service-view.module';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('KtbServiceViewComponent', () => {
   let component: KtbServiceViewComponent;
@@ -41,7 +42,7 @@ describe('KtbServiceViewComponent', () => {
           useValue: 0,
         },
       ],
-      imports: [KtbServiceViewModule, HttpClientTestingModule],
+      imports: [KtbServiceViewModule, RouterTestingModule, HttpClientTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbServiceViewComponent);
