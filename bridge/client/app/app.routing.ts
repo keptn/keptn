@@ -15,6 +15,7 @@ import { NotFoundComponent } from './not-found/not-found.component';
 import { PendingChangesGuard } from './_guards/pending-changes.guard';
 import { KtbErrorViewComponent } from './_views/ktb-error-view/ktb-error-view.component';
 import { AppComponent } from './app.component';
+import { TraceDeepLinkGuard } from './_guards/trace-deep-link.guard';
 
 const routingConfiguration: ExtraOptions = {
   paramsInheritanceStrategy: 'always',
@@ -107,8 +108,8 @@ const routes: Routes = [
           },
         ],
       },
-      { path: 'trace/:shkeptncontext', component: ProjectBoardComponent },
-      { path: 'trace/:shkeptncontext/:eventselector', component: ProjectBoardComponent },
+      { path: 'trace/:keptnContext', canActivate: [TraceDeepLinkGuard], children: [] },
+      { path: 'trace/:keptnContext/:eventSelector', canActivate: [TraceDeepLinkGuard], children: [] },
       { path: 'evaluation/:shkeptncontext', component: EvaluationBoardComponent },
       { path: 'evaluation/:shkeptncontext/:eventselector', component: EvaluationBoardComponent },
       { path: '**', component: NotFoundComponent },

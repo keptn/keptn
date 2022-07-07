@@ -517,9 +517,7 @@ export class DataService {
   }
 
   public loadTracesByContext(keptnContext: string): void {
-    this.getTracesByContext(keptnContext).subscribe((traces: Trace[]) => {
-      this._traces.next(traces);
-    });
+    this.getTracesByContext(keptnContext);
   }
 
   public getEvent(type?: string, project?: string, stage?: string, service?: string): Observable<Trace | undefined> {
