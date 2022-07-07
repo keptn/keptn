@@ -102,6 +102,7 @@ jobs:
         if: matrix.tool == 'kubescape'
         env:
           FAILURE_PERCENTAGE: 20
+          KS_LOGGER_NAME: "pretty"
         run: |
           echo "::group::Kubescape installation"
           curl -s https://raw.githubusercontent.com/armosec/kubescape/master/install.sh | /bin/bash
