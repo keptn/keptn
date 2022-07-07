@@ -28,19 +28,12 @@ describe('evaluations with key sli', () => {
 
   it('should show key sli info', () => {
     heatmap.visitPageWithHeatmapComponent();
-
-    evaluationBoard.assertScoreInfo(50, '<', 75);
-    evaluationBoard.assertResultInfo(ResultTypes.FAILED);
-    evaluationBoard.assertKeySliInfo('passed');
+    evaluationBoard.assertScoreInfo(50, '<', 75).assertResultInfo(ResultTypes.FAILED).assertKeySliInfo('passed');
 
     heatmap.clickScore('52b4b2c7-fa49-41f3-9b5c-b9aea2370bb4');
-    evaluationBoard.assertScoreInfo(75, '>=', 75);
-    evaluationBoard.assertResultInfo(ResultTypes.FAILED);
-    evaluationBoard.assertKeySliInfo('failed');
+    evaluationBoard.assertScoreInfo(75, '>=', 75).assertResultInfo(ResultTypes.FAILED).assertKeySliInfo('failed');
 
     heatmap.clickScore('182d10b8-b68d-49d4-86cd-5521352d7a42');
-    evaluationBoard.assertScoreInfo(100, '>=', 90);
-    evaluationBoard.assertResultInfo(ResultTypes.PASSED);
-    evaluationBoard.assertKeySliInfo('passed');
+    evaluationBoard.assertScoreInfo(100, '>=', 90).assertResultInfo(ResultTypes.PASSED).assertKeySliInfo('passed');
   });
 });
