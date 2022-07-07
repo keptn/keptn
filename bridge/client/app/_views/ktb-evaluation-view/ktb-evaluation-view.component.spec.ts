@@ -12,7 +12,7 @@ import { Location } from '@angular/common';
 import { skip } from 'rxjs/operators';
 import { HttpClientModule } from '@angular/common/http';
 
-describe('ProjectBoardComponent', () => {
+describe('KtbEvaluationViewComponent', () => {
   let component: KtbEvaluationViewComponent;
   let dataService: DataService;
   const paramMap: BehaviorSubject<ParamMap> = new BehaviorSubject<ParamMap>(convertToParamMap({}));
