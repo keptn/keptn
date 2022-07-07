@@ -50,7 +50,9 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 	}
 	webhook, err := th.getWebHookConfig(keptnHandler, eventAdapter, subscriptionID, event.GitCommitID)
 	if err != nil {
-		return th.onPreExecutionError(keptnHandler, event, eventAdapter, fmt.Errorf("could not retrieve Webhook config: %s", err.Error()))
+		err = fmt.Errorf("could not retrieve Webhook config: %w", err)
+		th.onPreExecutionError(keptnHandler, event, eventAdapter, err)
+		return nil, sdkError(err.Error(), err)
 	}
 
 	responses := []string{}
@@ -99,10 +101,10 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 	return nil, nil
 }
 
-func (th *TaskHandler) onPreExecutionError(keptnHandler sdk.IKeptn, event sdk.KeptnEvent, eventAdapter *lib.EventDataAdapter, err error) (interface{}, *sdk.Error) {
+func (th *TaskHandler) onPreExecutionError(keptnHandler sdk.IKeptn, event sdk.KeptnEvent, eventAdapter *lib.EventDataAdapter, err error) {
 	// only send .started events for <task>.triggered events
 	if !keptnv2.IsTaskEventType(*event.Type) || !keptnv2.IsTriggeredEventType(*event.Type) {
-		return nil, sdkError(err.Error(), err)
+		return
 	}
 	// in this case, send .started and .finished event immediately
 	if err := keptnHandler.SendStartedEvent(event); err != nil {
@@ -119,7 +121,6 @@ func (th *TaskHandler) onPreExecutionError(keptnHandler sdk.IKeptn, event sdk.Ke
 		"message": err.Error(),
 	}
 	th.sendFinishedEvent(keptnHandler, event, result)
-	return nil, sdkError(err.Error(), err)
 }
 
 func (th *TaskHandler) getErrorCallbackForWebhookConfig(keptnHandler sdk.IKeptn, event sdk.KeptnEvent, eventAdapter *lib.EventDataAdapter, webhook *lib.Webhook) func(err error, secrets map[string]string) {
