@@ -9,7 +9,8 @@
       {
         "designatorType": "Attributes",
         "attributes": {
-          "pod": "keptn-nats-test-request-reply"
+          "kind": "pod",
+          "name": "keptn-nats-test-request-reply"
         }
       }
     ]
