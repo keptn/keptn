@@ -9,18 +9,9 @@
       {
         "designatorType": "Attributes",
         "attributes": {
-          "kind": "pod",
-          "namespace": ".*",
+          "kind": "Pod",
           "name": "keptn-nats-test-request-reply"
         }
-      }
-    ],
-    "posturePolicies": [
-      {
-        "frameworkName": "NSA"
-      },
-      {
-        "frameworkName": "MITRE"
       }
     ]
   }
