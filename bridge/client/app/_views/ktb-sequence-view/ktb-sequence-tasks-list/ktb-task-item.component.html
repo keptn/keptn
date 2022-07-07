@@ -28,7 +28,6 @@
           </button>
           <dt-icon
             *ngIf="!task.isLoading() || task.isApproval() || task.getLastTrace().isApproval()"
-            class="event-icon"
             [class.error]="task.isFaulty()"
             [class.success]="task.isSuccessful()"
             [class.highlight]="task.isApproval() || task.getLastTrace().isApproval()"
