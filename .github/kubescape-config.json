@@ -1,6 +1,6 @@
 [
   {
-    "name": "ignore-keptn-nats-test-request-reply",
+    "name": "ignore-keptn-nats-test-request-reply-pod",
     "policyType": "postureExceptionPolicy",
     "actions": [
       "alertOnly"
@@ -10,6 +10,7 @@
         "designatorType": "Attributes",
         "attributes": {
           "kind": "pod",
+          "namespace": ".*",
           "name": "keptn-nats-test-request-reply"
         }
       }
