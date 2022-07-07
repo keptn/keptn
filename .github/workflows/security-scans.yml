@@ -1,15 +1,8 @@
 name: "Security Scans"
 on:
-  # always execute docker build when something is pushed to master or a maintenance branch
-  push:
-    branches:
-      - 'master'
-      - '[0-9]+.[1-9][0-9]*.x'
-  # in addition, execute for pull requests to those branches
-  pull_request:
-    branches:
-      - 'master'
-      - '[0-9]+.[1-9][0-9]*.x'
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * 1' # run tests at 1 AM (UTC), every monday (1)
 
 defaults:
   run:
@@ -108,4 +101,4 @@ jobs:
           curl -s https://raw.githubusercontent.com/armosec/kubescape/master/install.sh | /bin/bash
           echo "::endgroup::"
 
-          kubescape scan framework ${{ matrix.kubescape-framework }} -v ${{ env.CHART_TO_SCAN }}
+          kubescape scan framework ${{ matrix.kubescape-framework }} -t 20 ${{ env.CHART_TO_SCAN }}
