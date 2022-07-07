@@ -3,6 +3,8 @@ import {
   createDataPoints,
   evaluationToDataPoint,
   filterUnparsedEvaluations,
+  getScoreInfo,
+  getScoreState,
   getTotalScore,
   indicatorResultToDataPoint,
   parseSloOfEvaluations,
@@ -11,6 +13,8 @@ import { EvaluationsMock } from '../../_services/_mockData/evaluations.mock';
 import { IDataPoint, IHeatmapScoreTooltip, IHeatmapSliTooltip, IHeatmapTooltipType } from '../../_interfaces/heatmap';
 import { IndicatorResult } from '../../../../shared/interfaces/indicator-result';
 import { EventTypes } from '../../../../shared/interfaces/event-types';
+import { IEvaluationData } from '../../../../shared/models/trace';
+import { EvaluationsKeySliMock } from '../../_services/_mockData/evaluations-keySli.mock';
 
 describe('KtbEvaluationDetailsUtils', () => {
   const validSLOFile =
@@ -166,6 +170,42 @@ describe('KtbEvaluationDetailsUtils', () => {
         weight: 1,
       },
     ]);
+  });
+
+  it('should return score state', () => {
+    const evaluations = EvaluationsKeySliMock;
+    parseSloOfEvaluations(evaluations);
+
+    const failedEvaluationData: IEvaluationData = evaluations[0].data.evaluation!;
+    const failedScoreState = getScoreState(failedEvaluationData);
+
+    const warningEvaluationData: IEvaluationData = evaluations[1].data.evaluation!;
+    const warningScoreState = getScoreState(warningEvaluationData);
+
+    const passedEvaluationData: IEvaluationData = evaluations[2].data.evaluation!;
+    const passedScoreState = getScoreState(passedEvaluationData);
+
+    expect(failedScoreState).toBe('fail');
+    expect(warningScoreState).toBe('warning');
+    expect(passedScoreState).toBe('pass');
+  });
+
+  it('should return score info', () => {
+    const evaluations = EvaluationsKeySliMock;
+    parseSloOfEvaluations(evaluations);
+
+    const failedEvaluationData: IEvaluationData = evaluations[0].data.evaluation!;
+    const failedScoreInfo = getScoreInfo(failedEvaluationData);
+
+    const warningEvaluationData: IEvaluationData = evaluations[1].data.evaluation!;
+    const warningScoreInfo = getScoreInfo(warningEvaluationData);
+
+    const passedEvaluationData: IEvaluationData = evaluations[2].data.evaluation!;
+    const passedScoreInfo = getScoreInfo(passedEvaluationData);
+
+    expect(failedScoreInfo).toBe(' < 75');
+    expect(warningScoreInfo).toBe(' >= 75');
+    expect(passedScoreInfo).toBe(' >= 90');
   });
 
   function getTraceWithSloContent(
