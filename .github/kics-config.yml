@@ -1,4 +1,5 @@
 exclude-queries:
+  # query IDs can be found here: https://docs.kics.io/latest/queries/all-queries/
   - b9c83569-459b-4110-8f79-6305aa33cb37 # Using Kubernetes Native Secret Management
   - 48a5beba-e4c0-4584-a2aa-e6894e4cf424 # Pod or Container Without ResourceQuota
   - 8b36775e-183d-4d46-b0f7-96a6f34a723f # Missing AppArmor Profile
@@ -9,6 +10,7 @@ exclude-queries:
   - 4a20ebac-1060-4c81-95d1-1f7f620e983b # Pod or Container Without LimitRange
 exclude-results:
   # Result similarity IDs corresponding to nats-box helm test pod that can't be adjusted
+  # Similarity IDs can be found in the JSON result file of kics
   - 3035c0adc3554b403ebad6846a6a20f57e82356bea7491e85024e9e67c2a3f13
   - e0b27e0da659f8b4c8235fbd82ee3f332c30b5e533d15cfeea4f52dc36f921ca
   - d2c888850ed588b2a1acc38400317d44f2d37d33984e30a9dac25542ea8c231c
@@ -24,6 +26,9 @@ exclude-results:
   - dc2001d7264413ae771ac25ce635312a02fa18dfbbdf0a248fd79661ca439180
   - a7e2db55d9bcc368d7ef0449bad8d72aa928445155707c31fc131ff59b13158c
   - ec2e9658f90079aa7aa0add6b0337b39c9349f036d24c7cd8f9eb4d6784d3f6f
+  - 73e01db98cc6dd2ef91974bb50eefe192d84f2c0c4df61f857840a2a92d29bc8
+  - 0d0be3bd1e192a82b005349145ac9ec4137dab3a02099e57a8c89748b619f13b
+  - bc8cc2f5bb21b281b4ca50e2d0bab82dbcf5392da4564b2ae18c8ecf7cb0c6c8
 no-color: false
 no-progress: true
 preview-lines: 5
