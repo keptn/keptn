@@ -1,12 +1,17 @@
 apiGatewayNginx:
   type: LoadBalancer
+
 strategy:
   rollingUpdate:
     maxUnavailable: 0
+
+resourceService:
   env:
     DIRECTORY_STAGE_STRUCTURE: "false"
+
 continuousDelivery:
   enabled: true
+
 shipyardController:
   gracePeriod: 10
   preStopHookTime: 5
