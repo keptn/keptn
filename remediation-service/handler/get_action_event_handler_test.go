@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"log"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -24,6 +25,36 @@ func newGetActionTriggeredEvent(filename string) models.KeptnContextExtendedCE {
 	return event
 }
 
+// This test reproduces integration test self-healing until line 176 :
+// it riggers a remediation that fails because no remediation.yaml is available yet
+// remediation-service finished with result fail
+// message is "Could not get remediation.yaml file ..."
+// require.Equal(t, keptnv2.StatusErrored, finishedEventData.Status)
+// require.Equal(t, keptnv2.ResultFailed, finishedEventData.Result)
+
+func Test_Fail_Missing_YAML(t *testing.T) {
+	fakeKeptn := sdk.NewFakeKeptn("test-remediation-svc")
+	fakeKeptn.SetResourceHandler(sdk.FailingResourceHandler{})
+	fakeKeptn.AddTaskHandler("sh.keptn.event.get-action.triggered", handler.NewGetActionEventHandler())
+	fakeKeptn.NewEvent(newGetActionTriggeredEvent("test/events/get-action.triggered-0.json"))
+
+	fakeKeptn.AssertNumberOfEventSent(t, 2)
+	fakeKeptn.AssertSentEventType(t, 0, keptnv2.GetStartedEventType("get-action"))
+	fakeKeptn.AssertSentEventType(t, 1, keptnv2.GetFinishedEventType("get-action"))
+
+	fakeKeptn.AssertSentEventStatus(t, 1, keptnv2.StatusErrored)
+	fakeKeptn.AssertSentEventResult(t, 1, keptnv2.ResultFailed)
+
+	fakeKeptn.AssertSentEvent(t, 1, func(ce models.KeptnContextExtendedCE) bool {
+		getActionFinishedData := keptnv2.GetActionFinishedEventData{}
+		ce.DataAs(&getActionFinishedData)
+		return strings.Contains(getActionFinishedData.Message, "Could not get remediation.yaml")
+	})
+
+}
+
+// this test already checks for a passing path and for a EnablePromotion to value off
+// so it covers integration test from line 177 onward
 func Test_Receiving_GetActionTriggeredEvent_RemediationFromServiceLevel(t *testing.T) {
 	fakeKeptn := sdk.NewFakeKeptn("test-remediation-svc")
 	fakeKeptn.AddTaskHandler("sh.keptn.event.get-action.triggered", handler.NewGetActionEventHandler())
