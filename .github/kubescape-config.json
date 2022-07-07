@@ -1,0 +1,17 @@
+[
+  {
+    "name": "ignore-keptn-nats-test-request-reply",
+    "policyType": "postureExceptionPolicy",
+    "actions": [
+      "alertOnly"
+    ],
+    "resources": [
+      {
+        "designatorType": "Attributes",
+        "attributes": {
+          "pod": "keptn-nats-test-request-reply"
+        }
+      }
+    ]
+  }
+]
