@@ -568,3 +568,103 @@ func Test_defaultEndpointHandler_ExecuteAPI(t *testing.T) {
 		)
 	}
 }
+
+func Test_noRenderRequestFactory_CreateRequest(t *testing.T) {
+	type fields struct {
+		httpMethod string
+		path       string
+	}
+	type args struct {
+		tCtx model.TaskContext
+		host string
+		body io.Reader
+	}
+	newKeptnServiceReader := io.NopCloser(strings.NewReader(
+		`{"scope":"keptn-default", "name":"test-secret", "data": { "token": "<token>" }}`,
+	))
+	expectedNewServiceRequest, _ := http.NewRequest(
+		http.MethodPost,
+		"http://secret-service:4200/v1/secret",
+		newKeptnServiceReader,
+	)
+	expectedNewServiceRequest.Header.Set("Content-Type", "application/json")
+	tests := []struct {
+		name          string
+		fields        fields
+		args          args
+		want          *http.Request
+		wantError     bool
+		errorContains string
+	}{
+		{
+			name: "Happy path",
+			fields: fields{
+				httpMethod: http.MethodPost,
+				path:       "/v1/secret",
+			},
+			args: args{
+				tCtx: model.TaskContext{
+					Project: "super-secret-project",
+					Task: &model.ManifestTask{
+						APITask: &model.APITask{
+							Action:      "keptn-api-v1-uniform-create-secret",
+							PayloadFile: "secret.json",
+						},
+						ResourceTask: nil,
+						ID:           "test-task",
+						Type:         "api",
+						Name:         "Test task",
+					},
+				},
+				host: "http://secret-service:4200",
+				body: newKeptnServiceReader,
+			},
+			want: expectedNewServiceRequest,
+		},
+		{
+			name: "Request creation fails",
+			fields: fields{
+				httpMethod: "wrong http method",
+				path:       "/v1/secret",
+			},
+			args: args{
+				tCtx: model.TaskContext{
+					Project: "super-secret-project",
+					Task: &model.ManifestTask{
+						APITask: &model.APITask{
+							Action:      "keptn-api-v1-uniform-create-secret",
+							PayloadFile: "secret.json",
+						},
+						ResourceTask: nil,
+						ID:           "wrong-http-method",
+						Type:         "api",
+						Name:         "Wrong HTTP method",
+					},
+				},
+				host: "http://secret-service:4200",
+				body: newKeptnServiceReader,
+			},
+			want:          nil,
+			wantError:     true,
+			errorContains: "error composing request for api call wrong-http-method",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				rf := &projectRenderRequestFactory{
+					httpMethod: tt.fields.httpMethod,
+					path:       tt.fields.path,
+				}
+				got, err := rf.CreateRequest(tt.args.tCtx, tt.args.host, tt.args.body)
+				assert.Equalf(t, tt.want, got, "CreateRequest(%v, %v, %v)", tt.args.tCtx, tt.args.host, tt.args.body)
+				if tt.wantError {
+					assert.Error(t, err)
+					if tt.errorContains != "" {
+						assert.ErrorContains(t, err, tt.errorContains)
+					}
+				}
+			},
+		)
+	}
+}

@@ -34,6 +34,23 @@ type requestFactory interface {
 	CreateRequest(tCtx model.TaskContext, host string, body io.Reader) (*http.Request, error)
 }
 
+type noRenderRequestFactory struct {
+	httpMethod string
+	path       string
+}
+
+func (dr *noRenderRequestFactory) CreateRequest(
+	tCtx model.TaskContext, host string, body io.Reader,
+) (*http.Request, error) {
+	req, err := http.NewRequest(dr.httpMethod, host+dr.path, body)
+
+	if err != nil {
+		return nil, fmt.Errorf("error composing request for api call %s: %w", tCtx.Task.ID, err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	return req, nil
+}
+
 type projectRenderRequestFactory struct {
 	httpMethod string
 	path       string
@@ -104,7 +121,7 @@ func (ep *defaultEndpointHandler) ExecuteAPI(doer httpdoer, ate model.APITaskExe
 	}
 
 	return responseBody, fmt.Errorf(
-		"received unsuccessful http status <%d: %s>:%w", response.StatusCode,
+		"received unsuccessful http status <%d: %s>: %w", response.StatusCode,
 		response.Status, ErrTaskFailed,
 	)
 }
