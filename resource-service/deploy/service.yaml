@@ -27,7 +27,7 @@ spec:
         app.kubernetes.io/component: keptn
         app.kubernetes.io/version: develop
     spec:
-      serviceAccountName: keptn-configuration-service
+      serviceAccountName: keptn-resource-service
       containers:
         - name: resource-service
         # livenessProbe:
