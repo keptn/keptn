@@ -96,6 +96,13 @@ jobs:
           config_path: .github/kics-config.yml
           fail_on: high,medium
 
+      - name: Upload KICS results
+        if: matrix.tool == 'kics'
+        uses: actions/upload-artifact@v3
+        with:
+          name: rendered-helm-chart
+          path: results.json
+
       - name: Kubeconform Scan
         if: matrix.tool == 'kubeconform'
         run: |

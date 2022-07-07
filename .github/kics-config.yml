@@ -6,6 +6,7 @@ exclude-queries:
   - caa3479d-885d-4882-9aac-95e5e78ef5c2 # Image Pull Policy Of The Container Is Not Set To Always
   - aee3c7d2-a811-4201-90c7-11c028be9a46 # Container Requests Not Equal To It's Limits
   - 611ab018-c4aa-4ba2-b0f6-a448337509a6 # Using Unrecommended Namespace
+  - 4a20ebac-1060-4c81-95d1-1f7f620e983b # Pod or Container Without LimitRange
 exclude-results: "exclude results by providing a list of similarity IDs of a result"
 no-color: false
 no-progress: true
