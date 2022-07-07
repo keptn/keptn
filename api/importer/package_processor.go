@@ -20,6 +20,7 @@ type ManifestParser interface {
 
 type TaskExecutor interface {
 	ExecuteAPI(ate model.APITaskExecution) (any, error)
+	PushResource(rp model.ResourcePush) (any, error)
 }
 
 type ImportPackageProcessor struct {
@@ -69,12 +70,41 @@ func (ipp *ImportPackageProcessor) Process(project string, ip ImportPackage) err
 			if err != nil {
 				return fmt.Errorf("execution of task %s failed: %w", task.ID, err)
 			}
+		case resourceTaskType:
+			resourcePush, err := mapResourcePush(project, ip, task)
+			if err != nil {
+				return fmt.Errorf("error setting up resource push for task ID %s: %w", task.ID, err)
+			}
+			_, err = ipp.executor.PushResource(resourcePush)
+			if err != nil {
+				return fmt.Errorf("resource task id %s failed: %w", task.ID, err)
+			}
 		default:
 			return fmt.Errorf("task of type %s not implemented", task.Type)
 		}
 	}
 
 	return nil
+}
+
+func mapResourcePush(project string, ip ImportPackage, task *model.ManifestTask) (model.ResourcePush, error) {
+	resource, err := ip.GetResource(task.ResourceTask.File)
+	if err != nil {
+		return model.ResourcePush{}, fmt.Errorf("error accessing resource content: %w", err)
+	}
+
+	ret := model.ResourcePush{
+		Content:     resource,
+		ResourceURI: task.ResourceTask.RemoteURI,
+		Stage:       task.ResourceTask.Stage,
+		Service:     task.ResourceTask.Service,
+		Context: model.TaskContext{
+			Project: project,
+			Task:    task,
+		},
+	}
+
+	return ret, nil
 }
 
 func mapAPITask(project string, ip ImportPackage, task *model.ManifestTask) (model.APITaskExecution, error) {

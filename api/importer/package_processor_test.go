@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"io"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -318,4 +319,280 @@ func TestErrorImportPackageWhenTaskFails(t *testing.T) {
 	assert.Len(t, taskExecutor.ExecuteAPICalls(), 2)
 	// FIXME review the assertion below after implementing mapper
 	// assert.Equal(t, []struct{ Ate model.APITaskExecution }{{firstTask}, {failingTask}}, taskExecutor.ExecuteAPICalls())
+}
+
+func TestImportPackageProcessor_Process_ResourceTask(t *testing.T) {
+	const resourceFileName = "somelocation/somefile.pcap"
+
+	resourceTask := &model.ManifestTask{
+		ResourceTask: &model.ResourceTask{
+			File:      resourceFileName,
+			RemoteURI: "/wireshark/capture.pcap",
+			Stage:     "dev",
+			Service:   "service",
+		},
+		ID:   "res-task",
+		Type: "resource",
+		Name: "ResTask",
+	}
+
+	parserMock := &fake.ManifestParserMock{
+		ParseFunc: func(input io.Reader) (*model.ImportManifest, error) {
+			return &model.ImportManifest{
+				ApiVersion: "v1beta1",
+				Tasks: []*model.ManifestTask{
+					resourceTask,
+				},
+			}, nil
+		},
+	}
+
+	const project = "somekeptnproject"
+
+	resourceContentString := "some fancy binary content here"
+
+	taskExecutor := &fake.TaskExecutorMock{
+		PushResourceFunc: func(rp model.ResourcePush) (any, error) {
+			assert.Equal(t, resourceTask.ResourceTask.Service, rp.Service)
+			assert.Equal(t, resourceTask.ResourceTask.Stage, rp.Stage)
+			assert.Equal(t, resourceTask.ResourceTask.RemoteURI, rp.ResourceURI)
+			assert.Equal(t, project, rp.Context.Project)
+			assert.Equal(t, resourceTask, rp.Context.Task)
+			actualResourceContent, err := io.ReadAll(rp.Content)
+			require.NoError(t, err)
+			assert.Equal(t, []byte(resourceContentString), actualResourceContent)
+
+			return &struct{}{}, nil
+		},
+	}
+
+	sut := NewImportPackageProcessor(parserMock, taskExecutor)
+
+	resourceContentReader := io.NopCloser(strings.NewReader(resourceContentString))
+	importPackageMock := &fake.ImportPackageMock{
+		CloseFunc: func() error {
+			return nil
+		},
+		GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
+			if resourceName == resourceFileName {
+				return resourceContentReader, nil
+			}
+
+			return io.NopCloser(bytes.NewReader([]byte{})), nil
+		},
+	}
+
+	err := sut.Process(project, importPackageMock)
+
+	assert.NoError(t, err)
+	assert.Len(t, taskExecutor.PushResourceCalls(), 1)
+	assert.Len(t, importPackageMock.CloseCalls(), 1)
+	assert.ElementsMatch(
+		t, importPackageMock.GetResourceCalls(), []struct {
+			ResourceName string
+		}{
+			{ResourceName: manifestFileName},
+			{ResourceName: resourceFileName},
+		},
+	)
+}
+
+func TestImportPackageProcessor_Process_ResourceTask_AllStages(t *testing.T) {
+	const resourceFileName = "somelocation/somefile.pcap"
+
+	resourceTask := &model.ManifestTask{
+		ResourceTask: &model.ResourceTask{
+			File:      resourceFileName,
+			RemoteURI: "/wireshark/capture.pcap",
+			Stage:     "",
+			Service:   "service",
+		},
+		ID:   "res-task",
+		Type: "resource",
+		Name: "ResTask",
+	}
+
+	parserMock := &fake.ManifestParserMock{
+		ParseFunc: func(input io.Reader) (*model.ImportManifest, error) {
+			return &model.ImportManifest{
+				ApiVersion: "v1beta1",
+				Tasks: []*model.ManifestTask{
+					resourceTask,
+				},
+			}, nil
+		},
+	}
+
+	const project = "somekeptnproject"
+
+	stages := []string{"dev", "test", "prod"}
+	var actualStages []string
+
+	taskExecutor := &fake.TaskExecutorMock{
+		PushResourceFunc: func(rp model.ResourcePush) (any, error) {
+			assert.NotEmpty(t, rp.Stage)
+			actualStages = append(actualStages, rp.Stage)
+			return &struct{}{}, nil
+		},
+	}
+
+	sut := NewImportPackageProcessor(parserMock, taskExecutor)
+
+	importPackageMock := &fake.ImportPackageMock{
+		CloseFunc: func() error {
+			return nil
+		},
+		GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
+			return io.NopCloser(bytes.NewReader([]byte{})), nil
+		},
+	}
+
+	err := sut.Process(project, importPackageMock)
+
+	assert.NoError(t, err)
+	assert.Len(t, taskExecutor.PushResourceCalls(), len(stages))
+	assert.Len(t, importPackageMock.CloseCalls(), 1)
+	expectedGetResourceArgs := []struct {
+		ResourceName string
+	}{
+		{ResourceName: manifestFileName},
+	}
+	for i := 0; i < len(stages); i++ {
+		expectedGetResourceArgs = append(
+			expectedGetResourceArgs,
+			struct {
+				ResourceName string
+			}{ResourceName: resourceFileName},
+		)
+	}
+
+	assert.ElementsMatch(
+		t, importPackageMock.GetResourceCalls(), expectedGetResourceArgs,
+	)
+}
+
+func TestImportPackageProcessor_ProcessResourceTask_ErrorGettingResource(t *testing.T) {
+	const resourceFileName = "somelocation/somefile.pcap"
+
+	resourceTask := &model.ManifestTask{
+		ResourceTask: &model.ResourceTask{
+			File:      resourceFileName,
+			RemoteURI: "/wireshark/capture.pcap",
+			Stage:     "dev",
+			Service:   "service",
+		},
+		ID:   "res-task",
+		Type: "resource",
+		Name: "ResTask",
+	}
+
+	parserMock := &fake.ManifestParserMock{
+		ParseFunc: func(input io.Reader) (*model.ImportManifest, error) {
+			return &model.ImportManifest{
+				ApiVersion: "v1beta1",
+				Tasks: []*model.ManifestTask{
+					resourceTask,
+				},
+			}, nil
+		},
+	}
+
+	const project = "somekeptnproject"
+
+	taskExecutor := &fake.TaskExecutorMock{}
+
+	sut := NewImportPackageProcessor(parserMock, taskExecutor)
+
+	importPackageMock := &fake.ImportPackageMock{
+		CloseFunc: func() error {
+			return nil
+		},
+		GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
+			if resourceName == resourceFileName {
+				return nil, errors.New("error getting resource")
+			}
+
+			return io.NopCloser(bytes.NewReader([]byte{})), nil
+		},
+	}
+
+	err := sut.Process(project, importPackageMock)
+
+	assert.Error(t, err)
+	assert.Len(t, importPackageMock.CloseCalls(), 1)
+	assert.ElementsMatch(
+		t, importPackageMock.GetResourceCalls(), []struct {
+			ResourceName string
+		}{
+			{ResourceName: manifestFileName},
+			{ResourceName: resourceFileName},
+		},
+	)
+}
+
+func TestImportPackageProcessor_Process_ResourceTask_ErrorExecutingTask(t *testing.T) {
+	const resourceFileName = "somelocation/somefile.pcap"
+
+	resourceTask := &model.ManifestTask{
+		ResourceTask: &model.ResourceTask{
+			File:      resourceFileName,
+			RemoteURI: "/wireshark/capture.pcap",
+			Stage:     "dev",
+			Service:   "service",
+		},
+		ID:   "res-task",
+		Type: "resource",
+		Name: "ResTask",
+	}
+
+	parserMock := &fake.ManifestParserMock{
+		ParseFunc: func(input io.Reader) (*model.ImportManifest, error) {
+			return &model.ImportManifest{
+				ApiVersion: "v1beta1",
+				Tasks: []*model.ManifestTask{
+					resourceTask,
+				},
+			}, nil
+		},
+	}
+
+	const project = "somekeptnproject"
+
+	resourceContentString := "some fancy binary content here"
+
+	taskExecutor := &fake.TaskExecutorMock{
+		PushResourceFunc: func(rp model.ResourcePush) (any, error) {
+			return nil, errors.New("error executing resource push")
+		},
+	}
+
+	sut := NewImportPackageProcessor(parserMock, taskExecutor)
+
+	resourceContentReader := io.NopCloser(strings.NewReader(resourceContentString))
+	importPackageMock := &fake.ImportPackageMock{
+		CloseFunc: func() error {
+			return nil
+		},
+		GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
+			if resourceName == resourceFileName {
+				return resourceContentReader, nil
+			}
+
+			return io.NopCloser(bytes.NewReader([]byte{})), nil
+		},
+	}
+
+	err := sut.Process(project, importPackageMock)
+
+	assert.Error(t, err)
+	assert.Len(t, taskExecutor.PushResourceCalls(), 1)
+	assert.Len(t, importPackageMock.CloseCalls(), 1)
+	assert.ElementsMatch(
+		t, importPackageMock.GetResourceCalls(), []struct {
+			ResourceName string
+		}{
+			{ResourceName: manifestFileName},
+			{ResourceName: resourceFileName},
+		},
+	)
 }

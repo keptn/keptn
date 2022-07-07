@@ -144,6 +144,76 @@ func TestUnmarshalManifest(t *testing.T) {
 			expectedErrorContains: "",
 		},
 		{
+			name: "Resource task with service indication manifest",
+			inputManifest: strings.NewReader(
+				`
+                apiVersion: v1beta1
+                tasks:
+                  - id: sample-resource
+                    type: resource
+                    name: Sample resource task
+                    service: foobar
+                    resource: "resources/webhook.yaml"    # where is the file stored in the package
+                    resourceUri: "webhook.yaml"           # what should the file be called in the upstream repo
+                `,
+			),
+			expectedManifest: &ImportManifest{
+				ApiVersion: "v1beta1",
+				Tasks: []*ManifestTask{
+					{
+						APITask: nil,
+						ResourceTask: &ResourceTask{
+							File:      "resources/webhook.yaml",
+							RemoteURI: "webhook.yaml",
+							Service:   "foobar",
+						},
+						ID:   "sample-resource",
+						Type: "resource",
+						Name: "Sample resource task",
+					},
+				},
+			},
+			expectErr:             false,
+			expectedError:         nil,
+			expectedErrorContains: "",
+		},
+		{
+			name: "Resource task with service and stage indication manifest",
+			inputManifest: strings.NewReader(
+				`
+                apiVersion: v1beta1
+                tasks:
+                  - id: sample-resource
+                    type: resource
+                    name: Sample resource task
+                    stage: "dev"
+                    service: foobar
+                    resource: "resources/webhook.yaml"    # where is the file stored in the package
+                    resourceUri: "webhook.yaml"           # what should the file be called in the upstream repo
+                `,
+			),
+			expectedManifest: &ImportManifest{
+				ApiVersion: "v1beta1",
+				Tasks: []*ManifestTask{
+					{
+						APITask: nil,
+						ResourceTask: &ResourceTask{
+							File:      "resources/webhook.yaml",
+							RemoteURI: "webhook.yaml",
+							Service:   "foobar",
+							Stage:     "dev",
+						},
+						ID:   "sample-resource",
+						Type: "resource",
+						Name: "Sample resource task",
+					},
+				},
+			},
+			expectErr:             false,
+			expectedError:         nil,
+			expectedErrorContains: "",
+		},
+		{
 			name:                  "Return error when reading manifest fails",
 			inputManifest:         utils.NewTestReader([]byte("somerandomdatabeforeerror"), 0, true),
 			expectedManifest:      nil,
