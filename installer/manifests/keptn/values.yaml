@@ -364,7 +364,7 @@ lighthouseService:
       cpu: "200m"
 
 statisticsService:
-  enabled: false
+  enabled: true
   image:
     repository: docker.io/keptn/statistics-service
     tag: ""
