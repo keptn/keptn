@@ -26,6 +26,10 @@ mongo:
     bridgeAuthDatabase: 'keptn'
   external:
     connectionString:
+  containerSecurityContext:
+    capabilities:
+      drop:
+        - NET_RAW
 
 prefixPath: ""
 
