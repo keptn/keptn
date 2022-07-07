@@ -107,6 +107,18 @@ export class ProjectBoardPage {
     return this.clickMenuItem(View.SEQUENCE_VIEW);
   }
 
+  public clickServicesMenuitem(): this {
+    return this.clickMenuItem(View.SERVICE_VIEW);
+  }
+
+  public clickEnvironmentMenuitem(): this {
+    return this.clickMenuItem(View.ENVIRONMENT_VIEW);
+  }
+
+  public clickSettingsMenuitem(): this {
+    return this.clickMenuItem(View.SETTINGS_VIEW);
+  }
+
   private clickMenuItem(view: View): this {
     cy.byTestId(`ktb-${view}-menu-button`).click();
     return this;

@@ -91,6 +91,16 @@ class EnvironmentPage {
     cy.byTestId(`ktb-stage-details-${filterType}-button`).should(enabled ? 'be.enabled' : 'be.disabled');
     return this;
   }
+
+  public assertRootDeepLink(project: string): this {
+    cy.location('pathname').should('eq', `/project/${project}`);
+    return this;
+  }
+
+  public assertStageDeepLink(project: string, stage: string): this {
+    cy.location('pathname').should('eq', `/project/${project}/environment/stage/${stage}`);
+    return this;
+  }
 }
 
 export default EnvironmentPage;
