@@ -13,14 +13,12 @@
 ::ng-deep {
   .dt-button-nested,
   .dt-button-nested:hover:not([disabled]) {
+
     .dt-button-icon .dt-icon.error svg {
       color: $error-color;
       fill: $error-color;
     }
-  }
 
-  .dt-button-nested,
-  .dt-button-nested:hover:not([disabled]) {
     .dt-button-icon .dt-icon.success svg {
       color: $cta-color-active;
       fill: $cta-color-active;
