@@ -19,17 +19,25 @@ echo "-----------------------------------------------------------------------"
 echo "Installing Keptn Core Helm Chart in Namespace ${KEPTN_NAMESPACE}"
 echo "-----------------------------------------------------------------------"
 
-kubectl create namespace "${KEPTN_NAMESPACE}"
-
-helm upgrade keptn "${KEPTN_HELM_CHART}" --install --create-namespace -n "${KEPTN_NAMESPACE}" --wait \
+helm template keptn "${KEPTN_HELM_CHART}" -n "${KEPTN_NAMESPACE}" \
 --set="apiGatewayNginx.type=${KEPTN_SERVICE_TYPE},continuousDelivery.enabled=true,\
-global.keptn.registry=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG}, \
+global.keptn.registry=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG},\
 mongo.image.registry=${TARGET_INTERNAL_DOCKER_REGISTRY%/},\
 nats.nats.image=${TARGET_INTERNAL_DOCKER_REGISTRY}nats:2.7.2-alpine,\
 nats.reloader.image=${TARGET_INTERNAL_DOCKER_REGISTRY}natsio/nats-server-config-reloader:0.6.2,\
 nats.exporter.image=${TARGET_INTERNAL_DOCKER_REGISTRY}natsio/prometheus-nats-exporter:0.9.1,\
-apiGatewayNginx.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}nginxinc/nginx-unprivileged,\
-apiGatewayNginx.image.tag=1.22.0-alpine"
+apiGatewayNginx.image.registry="",\
+apiGatewayNginx.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}nginxinc/nginx-unprivileged"
+
+helm upgrade keptn "${KEPTN_HELM_CHART}" --install -n "${KEPTN_NAMESPACE}" --create-namespace --wait --timeout 12m \
+--set="apiGatewayNginx.type=${KEPTN_SERVICE_TYPE},continuousDelivery.enabled=true,\
+global.keptn.registry=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG},\
+mongo.image.registry=${TARGET_INTERNAL_DOCKER_REGISTRY%/},\
+nats.nats.image=${TARGET_INTERNAL_DOCKER_REGISTRY}nats:2.7.2-alpine,\
+nats.reloader.image=${TARGET_INTERNAL_DOCKER_REGISTRY}natsio/nats-server-config-reloader:0.6.2,\
+nats.exporter.image=${TARGET_INTERNAL_DOCKER_REGISTRY}natsio/prometheus-nats-exporter:0.9.1,\
+apiGatewayNginx.image.registry="",\
+apiGatewayNginx.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}nginxinc/nginx-unprivileged"
 
 if [[ $? -ne 0 ]]; then
   echo "Installing Keptn failed."

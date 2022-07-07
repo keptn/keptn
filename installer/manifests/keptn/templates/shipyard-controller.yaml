@@ -23,7 +23,7 @@ spec:
       serviceAccountName: keptn-shipyard-controller
       containers:
         - name: shipyard-controller
-          image: {{ include "common.images.image" ( dict "imageRoot" .Values.shipyardController.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote }}
+          image: {{ include "keptn.common.images.image" ( dict "imageRoot" .Values.shipyardController.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote }}
           lifecycle:
             preStop:
               exec:

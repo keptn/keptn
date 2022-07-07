@@ -1,3 +1,0 @@
-global:
-  keptn:
-    registry: "docker.io/keptndev"
