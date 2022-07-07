@@ -85,6 +85,9 @@ apiGatewayNginx:
     readOnlyRootFilesystem: false
     allowPrivilegeEscalation: false
     privileged: false
+    capabilities:
+      drop:
+        - NET_RAW
   image:
     repository: docker.io/nginxinc/nginx-unprivileged
     tag: 1.22.0-alpine
@@ -170,6 +173,9 @@ bridge:
     readOnlyRootFilesystem: true
     allowPrivilegeEscalation: false
     privileged: false
+    capabilities:
+      drop:
+        - NET_RAW
   oauth:
     discovery: ""
     secureCookie: false
@@ -448,4 +454,7 @@ containerSecurityContext:
   readOnlyRootFilesystem: true
   allowPrivilegeEscalation: false
   privileged: false
+  capabilities:
+    drop:
+      - NET_RAW
 nodeSelector: {}
