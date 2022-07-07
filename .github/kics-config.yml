@@ -1,0 +1,15 @@
+exclude-queries:
+  - b9c83569-459b-4110-8f79-6305aa33cb37
+exclude-results: "exclude results by providing a list of similarity IDs of a result"
+no-color: false
+no-progress: true
+output-name: "results"
+output-path: "reports"
+preview-lines: 5
+profiling: false
+report-formats:
+  - json
+  - sarif
+silent: false
+verbose: true
+disable-full-descriptions: false

@@ -89,8 +89,8 @@ jobs:
         uses: Checkmarx/kics-github-action@v1.5
         with:
           path: ${{ env.CHART_TO_SCAN }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          enable_comments: true
+          config_path: .github/kics-config.yml
+          fail_on: high,medium
 
       - name: Kubeconform Scan
         if: matrix.tool == 'kubeconform'
@@ -111,4 +111,4 @@ jobs:
           curl -s https://raw.githubusercontent.com/armosec/kubescape/master/install.sh | /bin/bash
           echo "::endgroup::"
 
-          kubescape scan framework ${{ matrix.kubescape-framework }} -t 20 ${{ env.CHART_TO_SCAN }}
+          kubescape scan framework ${{ matrix.kubescape-framework }} -v -t 10 ${{ env.CHART_TO_SCAN }}
