@@ -1,15 +1,13 @@
 import { Component, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { filter, map, takeUntil } from 'rxjs/operators';
-import { Subject } from 'rxjs';
-import { DeleteData, DeleteResult, DeleteType } from '../../_interfaces/delete';
+import { catchError, filter, map, mergeMap, takeUntil, withLatestFrom } from 'rxjs/operators';
+import { of, Subject } from 'rxjs';
+import { DeleteData, DeleteResult, DeleteType, DeletionProgressEvent } from '../../_interfaces/delete';
 import { EventService } from '../../_services/event.service';
 import { DataService } from '../../_services/data.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { NotificationsService } from '../../_services/notifications.service';
 import { NotificationType } from '../../_models/notification';
-import { Project } from '../../_models/project';
-import { FileTree } from '../../../../shared/interfaces/resourceFileTree';
 
 @Component({
   selector: 'ktb-edit-service',
@@ -17,73 +15,64 @@ import { FileTree } from '../../../../shared/interfaces/resourceFileTree';
   styleUrls: ['./ktb-edit-service.component.scss'],
 })
 export class KtbEditServiceComponent implements OnDestroy {
-  public serviceName?: string;
-  public project: Project | undefined;
-  public fileTree: FileTree[] | undefined;
-  private projectName?: string;
+  public params$ = this.route.paramMap.pipe(
+    map((params) => ({
+      serviceName: params.get('serviceName'),
+      projectName: params.get('projectName'),
+    })),
+    filter(
+      (params): params is { serviceName: string; projectName: string } => !!params.serviceName && !!params.projectName
+    )
+  );
+
+  public project$ = this.params$.pipe(mergeMap((params) => this.dataService.loadPlainProject(params.projectName)));
+
+  public fileTree$ = this.params$.pipe(
+    mergeMap((params) => this.dataService.getFileTreeForService(params.projectName, params.serviceName))
+  );
+
   private unsubscribe$: Subject<void> = new Subject<void>();
 
   constructor(
+    private router: Router,
     private route: ActivatedRoute,
     private eventService: EventService,
     private dataService: DataService,
-    private router: Router,
     private notificationsService: NotificationsService
   ) {
-    this.route.paramMap
-      .pipe(
-        map((params) => ({
-          serviceName: params.get('serviceName'),
-          projectName: params.get('projectName'),
-        })),
-        filter(
-          (params): params is { serviceName: string; projectName: string } =>
-            !!params.serviceName && !!params.projectName
-        )
-      )
-      .subscribe((params) => {
-        this.serviceName = params.serviceName;
-        this.projectName = params.projectName;
-
-        this.dataService.loadPlainProject(params.projectName).subscribe((project) => {
-          this.project = project;
-
-          this.dataService.getFileTreeForService(params.projectName, params.serviceName).subscribe((fileTree) => {
-            this.fileTree = fileTree;
-          });
-        });
-      });
-
     this.eventService.deletionTriggeredEvent
       .pipe(
-        filter((event) => event.type === DeleteType.SERVICE && event.name === this.serviceName),
+        withLatestFrom(this.params$),
+        filter(([event, params]) => event.type === DeleteType.SERVICE && event.name === params.serviceName),
         takeUntil(this.unsubscribe$)
       )
-      .subscribe(() => {
+      .subscribe(([, params]) => {
         this.eventService.deletionProgressEvent.next({ isInProgress: true });
-        this.deleteService();
+        this.deleteService(params.projectName, params.serviceName);
       });
   }
 
-  private deleteService(): void {
-    const projectName = this.projectName;
-    if (this.serviceName && projectName) {
-      this.dataService.deleteService(projectName, this.serviceName).subscribe(
-        async () => {
-          this.eventService.deletionProgressEvent.next({ isInProgress: false, result: DeleteResult.SUCCESS });
-          this.dataService.loadProject(projectName);
-          await this.router.navigate(['../../'], { relativeTo: this.route });
-          this.notificationsService.addNotification(NotificationType.SUCCESS, 'Service deleted');
-        },
-        (error: HttpErrorResponse) => {
-          this.eventService.deletionProgressEvent.next({
+  private deleteService(projectName: string, serviceName: string): void {
+    this.dataService
+      .deleteService(projectName, serviceName)
+      .pipe(
+        map(() => ({ isInProgress: false, result: DeleteResult.SUCCESS })),
+        catchError((error: HttpErrorResponse) => {
+          return of({
             isInProgress: false,
             result: DeleteResult.ERROR,
             error: error.error,
           });
+        })
+      )
+      .subscribe(async (event: DeletionProgressEvent) => {
+        this.eventService.deletionProgressEvent.next(event);
+        if (event.result === DeleteResult.SUCCESS) {
+          this.dataService.loadProject(projectName);
+          await this.router.navigate(['../../'], { relativeTo: this.route });
+          this.notificationsService.addNotification(NotificationType.SUCCESS, 'Service deleted');
         }
-      );
-    }
+      });
   }
 
   public getServiceDeletionData(serviceName: string): DeleteData {

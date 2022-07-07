@@ -1,7 +1,4 @@
-import { Component } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { filter, map } from 'rxjs/operators';
-import { DataService } from '../../../_services/data.service';
+import { Component, Input } from '@angular/core';
 import { DtTableDataSource } from '@dynatrace/barista-components/table';
 
 @Component({
@@ -9,26 +6,23 @@ import { DtTableDataSource } from '@dynatrace/barista-components/table';
   templateUrl: './ktb-service-settings-list.component.html',
 })
 export class KtbServiceSettingsListComponent {
-  public projectName?: string;
-  public isLoading = false;
-  public dataSource: DtTableDataSource<string> = new DtTableDataSource<string>();
+  dataSource = new DtTableDataSource<string>();
 
-  constructor(private router: ActivatedRoute, private dataService: DataService) {
-    this.router.paramMap
-      .pipe(
-        map((params) => params.get('projectName')),
-        filter((projectName): projectName is string => !!projectName)
-      )
-      .subscribe((projectName) => {
-        this.projectName = projectName;
-        this.isLoading = true;
+  @Input()
+  projectName = '';
 
-        if (this.projectName) {
-          this.dataService.getServiceNames(this.projectName).subscribe((services) => {
-            this.dataSource = new DtTableDataSource<string>(services);
-            this.isLoading = false;
-          });
-        }
-      });
+  @Input()
+  isLoading = false;
+
+  private _serviceNames: string[] = [];
+
+  @Input()
+  get serviceNames(): string[] {
+    return this._serviceNames;
+  }
+
+  set serviceNames(values: string[] | null) {
+    this._serviceNames = values ?? [];
+    this.dataSource = new DtTableDataSource<string>(this._serviceNames);
   }
 }
