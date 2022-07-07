@@ -15,7 +15,6 @@ import { AppComponent } from './app.component';
 import { AppRouting } from './app.routing';
 import { KtbRootComponent } from './ktb-root/ktb-root.component';
 import { NotFoundComponent } from './not-found/not-found.component';
-import { ProjectBoardComponent } from './project-board/project-board.component';
 import { DashboardLegacyComponent } from './dashboard-legacy/dashboard-legacy.component';
 import { EvaluationBoardComponent } from './evaluation-board/evaluation-board.component';
 import { KtbSettingsViewComponent } from './_views/ktb-settings-view/ktb-settings-view.component';
@@ -110,7 +109,6 @@ const ktbModules = [
     AppComponent,
     DashboardLegacyComponent,
     NotFoundComponent,
-    ProjectBoardComponent,
     EvaluationBoardComponent,
     KtbSettingsViewComponent,
     KtbRootComponent,

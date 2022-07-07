@@ -2,16 +2,16 @@ import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { filter, map, switchMap, takeUntil, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
-import { DataService } from '../_services/data.service';
-import { environment } from '../../environments/environment';
-import { AppUtils, POLLING_INTERVAL_MILLIS } from '../_utils/app.utils';
+import { DataService } from '../../_services/data.service';
+import { environment } from '../../../environments/environment';
+import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 
 @Component({
   selector: 'ktb-project-board',
-  templateUrl: './project-board.component.html',
-  styleUrls: ['./project-board.component.scss'],
+  templateUrl: './ktb-project-view.component.html',
+  styleUrls: ['./ktb-project-view.component.scss'],
 })
-export class ProjectBoardComponent implements OnInit, OnDestroy {
+export class KtbProjectViewComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
 
   public logoInvertedUrl = environment?.config?.logoInvertedUrl;
@@ -30,7 +30,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   ) {
     this.hasUnreadLogs$ = this.dataService.hasUnreadUniformRegistrationLogs;
     // disable log-polling
-    const uniformLogInterval = initialDelayMillis === 0 ? 0 : ProjectBoardComponent.uniformLogPollingInterval;
+    const uniformLogInterval = initialDelayMillis === 0 ? 0 : KtbProjectViewComponent.uniformLogPollingInterval;
     const projectName$ = this.route.paramMap.pipe(
       map((params) => params.get('projectName')),
       filter((projectName: string | null): projectName is string => !!projectName)
