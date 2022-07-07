@@ -441,7 +441,7 @@ class ProjectSettingsPage {
   }
 
   public assertConfigurationServiceErrorExists(status: boolean): this {
-    cy.byTestId('ktb-error-configuration-service-enabled').should(status ? 'exist' : 'not.exist');
+    cy.byTestId('ktb-error-resource-service-enabled').should(status ? 'exist' : 'not.exist');
     return this;
   }
 
