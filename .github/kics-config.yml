@@ -12,7 +12,6 @@ no-progress: true
 output-name: "results"
 output-path: "reports"
 preview-lines: 5
-profiling: false
 report-formats:
   - json
   - sarif
