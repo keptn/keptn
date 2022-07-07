@@ -2,7 +2,7 @@
   <div *ngIf="serviceNames$ | async as services" class="container settings-section">
     <h2>Create service</h2>
     <ktb-loading-distractor *ngIf="isLoading">Loading ...</ktb-loading-distractor>
-    <form #form [formGroup]="formGroup" class="mb-3" *ngIf="projectName && !isLoading">
+    <form [formGroup]="formGroup" class="mb-3" *ngIf="projectName && !isLoading">
       <div fxLayout="column" fxLayoutGap="10px">
         <dt-form-field>
           <dt-label class="required">Service name</dt-label>

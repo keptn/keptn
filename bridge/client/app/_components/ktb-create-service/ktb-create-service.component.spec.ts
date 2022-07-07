@@ -41,7 +41,6 @@ describe('KtbCreateServiceComponent', () => {
     }).compileComponents();
     fixture = TestBed.createComponent(KtbCreateServiceComponent);
     component = fixture.componentInstance;
-    // fixture.detectChanges();
   });
 
   it('should create', () => {
