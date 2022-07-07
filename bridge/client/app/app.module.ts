@@ -18,7 +18,6 @@ import { NotFoundComponent } from './not-found/not-found.component';
 import { ProjectBoardComponent } from './project-board/project-board.component';
 import { DashboardLegacyComponent } from './dashboard-legacy/dashboard-legacy.component';
 import { EvaluationBoardComponent } from './evaluation-board/evaluation-board.component';
-import { KtbServiceViewComponent } from './_views/ktb-service-view/ktb-service-view.component';
 import { KtbSettingsViewComponent } from './_views/ktb-settings-view/ktb-settings-view.component';
 
 import { AppInitService } from './_services/app.init';
@@ -46,7 +45,6 @@ import { DtTagModule } from '@dynatrace/barista-components/tag';
 import { KtbAppHeaderModule } from './_components/ktb-app-header/ktb-app-header.module';
 import { KtbCreateSecretFormModule } from './_components/ktb-create-secret-form/ktb-create-secret-form.module';
 import { KtbCreateServiceModule } from './_components/ktb-create-service/ktb-create-service.module';
-import { KtbDeploymentListModule } from './_components/ktb-deployment-list/ktb-deployment-list.module';
 import { KtbEditServiceModule } from './_components/ktb-edit-service/ktb-edit-service.module';
 import { KtbErrorViewModule } from './_views/ktb-error-view/ktb-error-view.module';
 import { KtbEvaluationDetailsModule } from './_components/ktb-evaluation-details/ktb-evaluation-details.module';
@@ -58,7 +56,6 @@ import { KtbNotificationModule } from './_components/ktb-notification/ktb-notifi
 import { KtbProjectListModule } from './_components/ktb-project-list/ktb-project-list.module';
 import { KtbProjectSettingsModule } from './_components/ktb-project-settings/ktb-project-settings.module';
 import { KtbSecretsListModule } from './_components/ktb-secrets-list/ktb-secrets-list.module';
-import { KtbServiceDetailsModule } from './_components/ktb-service-details/ktb-service-details.module';
 import { KtbServiceSettingsModule } from './_components/ktb-service-settings/ktb-service-settings.module';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -93,7 +90,6 @@ const ktbModules = [
   KtbAppHeaderModule,
   KtbCreateSecretFormModule,
   KtbCreateServiceModule,
-  KtbDeploymentListModule,
   KtbEditServiceModule,
   KtbErrorViewModule,
   KtbEvaluationDetailsModule,
@@ -106,7 +102,6 @@ const ktbModules = [
   KtbProjectListModule,
   KtbProjectSettingsModule,
   KtbSecretsListModule,
-  KtbServiceDetailsModule,
   KtbServiceSettingsModule,
 ];
 
@@ -117,7 +112,6 @@ const ktbModules = [
     NotFoundComponent,
     ProjectBoardComponent,
     EvaluationBoardComponent,
-    KtbServiceViewComponent,
     KtbSettingsViewComponent,
     KtbRootComponent,
   ],

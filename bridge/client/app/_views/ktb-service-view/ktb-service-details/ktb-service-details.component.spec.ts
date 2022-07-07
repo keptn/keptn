@@ -2,12 +2,12 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbServiceDetailsComponent } from './ktb-service-details.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
-import { Deployment } from '../../_models/deployment';
-import { ServiceDeploymentMock } from '../../../../shared/fixtures/service-deployment-response.mock';
+import { Deployment } from '../../../_models/deployment';
+import { ServiceDeploymentMock } from '../../../../../shared/fixtures/service-deployment-response.mock';
 import { Location } from '@angular/common';
 import { of } from 'rxjs';
-import { KtbServiceDetailsModule } from './ktb-service-details.module';
 import { RouterTestingModule } from '@angular/router/testing';
+import { KtbServiceViewModule } from '../ktb-service-view.module';
 
 describe('KtbServiceDetailsComponent', () => {
   let component: KtbServiceDetailsComponent;
@@ -24,7 +24,7 @@ describe('KtbServiceDetailsComponent', () => {
           },
         },
       ],
-      imports: [KtbServiceDetailsModule, HttpClientTestingModule, RouterTestingModule],
+      imports: [KtbServiceViewModule, HttpClientTestingModule, RouterTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbServiceDetailsComponent);

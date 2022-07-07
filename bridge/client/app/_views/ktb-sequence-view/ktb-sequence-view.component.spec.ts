@@ -81,7 +81,17 @@ describe('KtbSequenceViewComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [KtbSequenceViewModule, BrowserAnimationsModule, RouterTestingModule, HttpClientTestingModule],
+      imports: [
+        KtbSequenceViewModule,
+        BrowserAnimationsModule,
+        RouterTestingModule.withRoutes([
+          {
+            path: 'project/:projectName/sequence',
+            component: KtbSequenceViewComponent,
+          },
+        ]),
+        HttpClientTestingModule,
+      ],
       providers: [
         {
           provide: ActivatedRoute,

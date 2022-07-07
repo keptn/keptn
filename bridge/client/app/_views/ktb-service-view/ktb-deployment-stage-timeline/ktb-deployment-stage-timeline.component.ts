@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { Deployment } from '../../_models/deployment';
+import { Deployment } from '../../../_models/deployment';
 
 @Component({
   selector: 'ktb-deployment-timeline[deployment]',

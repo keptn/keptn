@@ -1,12 +1,12 @@
 import { Location } from '@angular/common';
 import { Component, Input, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
-import { DataService } from '../../_services/data.service';
+import { DataService } from '../../../_services/data.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { ClipboardService } from '../../_services/clipboard.service';
-import { DeploymentSelection } from '../../_interfaces/deployment-selection';
+import { ClipboardService } from '../../../_services/clipboard.service';
+import { DeploymentSelection } from '../../../_interfaces/deployment-selection';
 
 @Component({
   selector: 'ktb-service-details',
