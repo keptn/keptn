@@ -27,7 +27,7 @@ import (
 )
 
 type envConfig struct {
-	ConfigurationServiceURL string `envconfig:"CONFIGURATION_SERVICE" default:"http://configuration-service:8080"`
+	ConfigurationServiceURL string `envconfig:"RESOURCE_SERVICE" default:"http://resource-service:8080"`
 	K8SDeploymentName       string `envconfig:"K8S_DEPLOYMENT_NAME" default:""`
 	K8SDeploymentVersion    string `envconfig:"K8S_DEPLOYMENT_VERSION" default:""`
 	K8SDeploymentComponent  string `envconfig:"K8S_DEPLOYMENT_COMPONENT" default:""`

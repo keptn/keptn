@@ -38,8 +38,8 @@ spec:
           env:
             - name: EVENTBROKER
               value: 'http://localhost:8081/event'
-            - name: CONFIGURATION_SERVICE
-              value: 'http://configuration-service:8080'
+            - name: RESOURCE_SERVICE
+              value: 'http://resource-service:8080'
           envFrom:
             - secretRef:
                 name: unleash

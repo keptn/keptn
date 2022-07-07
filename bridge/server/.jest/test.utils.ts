@@ -23,7 +23,7 @@ export class TestUtils {
 
     axiosMock
       .onGet(
-        `${global.baseUrl}/configuration-service/v1/project/${projectName}/stage/production/service/carts/resource/remediation.yaml`
+        `${global.baseUrl}/resource-service/v1/project/${projectName}/stage/production/service/carts/resource/remediation.yaml`
       )
       .reply(200, RemediationConfigResponse);
 
