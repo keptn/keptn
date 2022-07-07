@@ -26,7 +26,7 @@ func newGetActionTriggeredEvent(filename string) models.KeptnContextExtendedCE {
 }
 
 // This test reproduces integration test self-healing until line 176 :
-// it riggers a remediation that fails because no remediation.yaml is available yet
+// it triggers a remediation that fails because no remediation.yaml is available yet
 // remediation-service finished with result fail
 // message is "Could not get remediation.yaml file ..."
 // require.Equal(t, keptnv2.StatusErrored, finishedEventData.Status)
@@ -44,7 +44,6 @@ func Test_Fail_Missing_YAML(t *testing.T) {
 
 	fakeKeptn.AssertSentEventStatus(t, 1, keptnv2.StatusErrored)
 	fakeKeptn.AssertSentEventResult(t, 1, keptnv2.ResultFailed)
-
 	fakeKeptn.AssertSentEvent(t, 1, func(ce models.KeptnContextExtendedCE) bool {
 		getActionFinishedData := keptnv2.GetActionFinishedEventData{}
 		ce.DataAs(&getActionFinishedData)
@@ -53,8 +52,8 @@ func Test_Fail_Missing_YAML(t *testing.T) {
 
 }
 
-// this test already checks for a passing path and for a EnablePromotion to value off
-// so it covers integration test from line 177 onward
+// this test already checks for a passing path and for retrieving an action to set EnablePromotion to value off
+// component test should not care about action.triggered event since this depends on unleash service
 func Test_Receiving_GetActionTriggeredEvent_RemediationFromServiceLevel(t *testing.T) {
 	fakeKeptn := sdk.NewFakeKeptn("test-remediation-svc")
 	fakeKeptn.AddTaskHandler("sh.keptn.event.get-action.triggered", handler.NewGetActionEventHandler())
