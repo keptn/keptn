@@ -14,6 +14,14 @@
           "name": "keptn-nats-test-request-reply"
         }
       }
+    ],
+    "posturePolicies": [
+      {
+        "frameworkName": "NSA"
+      },
+      {
+        "frameworkName": "MITRE"
+      }
     ]
   }
 ]
