@@ -516,10 +516,6 @@ export class DataService {
     );
   }
 
-  public loadTracesByContext(keptnContext: string): void {
-    this.getTracesByContext(keptnContext);
-  }
-
   public getEvent(type?: string, project?: string, stage?: string, service?: string): Observable<Trace | undefined> {
     return this.apiService.getEvent(type, project, stage, service).pipe(map((result) => result.events[0]));
   }
