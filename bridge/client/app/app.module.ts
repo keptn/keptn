@@ -17,7 +17,6 @@ import { KtbRootComponent } from './ktb-root/ktb-root.component';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { ProjectBoardComponent } from './project-board/project-board.component';
 import { DashboardLegacyComponent } from './dashboard-legacy/dashboard-legacy.component';
-import { EvaluationBoardComponent } from './evaluation-board/evaluation-board.component';
 import { KtbSettingsViewComponent } from './_views/ktb-settings-view/ktb-settings-view.component';
 
 import { AppInitService } from './_services/app.init';
@@ -47,9 +46,6 @@ import { KtbCreateSecretFormModule } from './_components/ktb-create-secret-form/
 import { KtbCreateServiceModule } from './_components/ktb-create-service/ktb-create-service.module';
 import { KtbEditServiceModule } from './_components/ktb-edit-service/ktb-edit-service.module';
 import { KtbErrorViewModule } from './_views/ktb-error-view/ktb-error-view.module';
-import { KtbEvaluationDetailsModule } from './_components/ktb-evaluation-details/ktb-evaluation-details.module';
-import { KtbEventItemModule } from './_components/ktb-event-item/ktb-event-item.module';
-import { KtbExpandableTileModule } from './_components/ktb-expandable-tile/ktb-expandable-tile.module';
 import { KtbLoadingModule } from './_components/ktb-loading/ktb-loading.module';
 import { KtbNoServiceInfoModule } from './_components/ktb-no-service-info/ktb-no-service-info.module';
 import { KtbNotificationModule } from './_components/ktb-notification/ktb-notification.module';
@@ -92,9 +88,6 @@ const ktbModules = [
   KtbCreateServiceModule,
   KtbEditServiceModule,
   KtbErrorViewModule,
-  KtbEvaluationDetailsModule,
-  KtbEventItemModule,
-  KtbExpandableTileModule,
   KtbLoadingModule,
   KtbNoServiceInfoModule,
   KtbNotificationModule,
@@ -111,7 +104,6 @@ const ktbModules = [
     DashboardLegacyComponent,
     NotFoundComponent,
     ProjectBoardComponent,
-    EvaluationBoardComponent,
     KtbSettingsViewComponent,
     KtbRootComponent,
   ],

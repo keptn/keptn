@@ -1,19 +1,19 @@
 import { TestBed } from '@angular/core/testing';
-import { EvaluationBoardComponent } from './evaluation-board.component';
-import { DataService } from '../_services/data.service';
-import { EventTypes } from '../../../shared/interfaces/event-types';
+import { KtbEvaluationViewComponent } from './ktb-evaluation-view.component';
+import { DataService } from '../../_services/data.service';
+import { EventTypes } from '../../../../shared/interfaces/event-types';
 import { BehaviorSubject, firstValueFrom, of, throwError } from 'rxjs';
-import { Trace } from '../_models/trace';
+import { Trace } from '../../_models/trace';
 import { ActivatedRoute, convertToParamMap, ParamMap } from '@angular/router';
-import { Service } from '../_models/service';
-import { IService } from '../../../shared/interfaces/service';
-import { EvaluationBoardStatus } from './evaluation-board-state';
+import { Service } from '../../_models/service';
+import { IService } from '../../../../shared/interfaces/service';
+import { EvaluationBoardStatus } from './ktb-evaluation-view-state';
 import { Location } from '@angular/common';
 import { skip } from 'rxjs/operators';
 import { HttpClientModule } from '@angular/common/http';
 
 describe('ProjectBoardComponent', () => {
-  let component: EvaluationBoardComponent;
+  let component: KtbEvaluationViewComponent;
   let dataService: DataService;
   const paramMap: BehaviorSubject<ParamMap> = new BehaviorSubject<ParamMap>(convertToParamMap({}));
   let location: Location;
@@ -273,7 +273,7 @@ describe('ProjectBoardComponent', () => {
   }
 
   function createComponent(): void {
-    component = new EvaluationBoardComponent(
+    component = new KtbEvaluationViewComponent(
       location,
       { paramMap: paramMap.asObservable() } as ActivatedRoute,
       dataService

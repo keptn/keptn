@@ -89,6 +89,7 @@
             variant="nested"
             title="Evaluation board"
             [routerLink]="['/evaluation', task.shkeptncontext, task.stage]"
+            (click)="$event.stopPropagation()"
             *ngIf="task.isEvaluation() && task.isFinished()"
           >
             <dt-icon name="chart-bar"></dt-icon>
