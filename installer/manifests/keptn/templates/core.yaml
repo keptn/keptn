@@ -171,8 +171,6 @@ spec:
               value: {{ ((.Values.features).automaticProvisioning).message | default "" | quote }}
             - name: AUTH_MSG
               value: {{ .Values.bridge.authMsg | default "" | quote }}
-            - name: RESOURCE_SERVICE_ENABLED
-              value: {{ .Values.resourceService.enabled | quote }}
             - name: D3_HEATMAP_ENABLED
               value: {{ .Values.bridge.d3heatmap.enabled | default false | quote }}
             {{- range $key, $value := .Values.bridge.env }}
