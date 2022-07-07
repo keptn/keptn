@@ -446,7 +446,7 @@ class ProjectSettingsPage {
   }
 
   public clickSaveChangesPopup(): this {
-    cy.get('.dt-button-primary > span.dt-button-label').contains('Save changes').click();
+    cy.byTestId('ktb-confirmation-dialog-save').click();
     return this;
   }
 
