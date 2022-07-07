@@ -95,9 +95,10 @@ jobs:
           path: ${{ env.CHART_TO_SCAN }}
           config_path: .github/kics-config.yml
           fail_on: high,medium
+          output_formats: json,sarif
 
       - name: Upload KICS results
-        if: matrix.tool == 'kics'
+        if: always() && matrix.tool == 'kics'
         uses: actions/upload-artifact@v3
         with:
           name: rendered-helm-chart
