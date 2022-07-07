@@ -87,8 +87,8 @@ The Keptn API services are then reachable for the execution plane service via th
 - Mongodb-datastore:
   - `http://localhost:8081/mongodb-datastore`
 
-- Configuration-service:
-  - `http://localhost:8081/configuration-service`
+- Resource-service:
+  - `http://localhost:8081/resource-service`
 
 - Shipyard-controller:
   - `http://localhost:8081/controlPlane`

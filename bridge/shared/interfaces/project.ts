@@ -36,7 +36,7 @@ export type IGitDataExtended = IGitSshConfiguration | IGitHttpsConfiguration;
 
 export interface IProject {
   projectName: string;
-  gitCredentials?: IGitDataExtended; // optional because of configuration-service.
+  gitCredentials?: IGitDataExtended; // optional because of resource-service.
   shipyardVersion?: string;
   creationDate: string;
   shipyard: string;

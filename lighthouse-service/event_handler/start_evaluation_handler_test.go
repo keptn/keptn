@@ -117,7 +117,7 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 	defer ts.Close()
 
 	os.Setenv("EVENTBROKER", ts.URL+"/events")
-	os.Setenv("CONFIGURATION_SERVICE", ts.URL+"/configuration")
+	os.Setenv("RESOURCE_SERVICE", ts.URL+"/configuration")
 
 	////////// TEST DEFINITION ///////////
 	type fields struct {
@@ -177,8 +177,8 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 			fields: fields{
 				Event: getStartEvaluationEvent(),
 				SLOFileRetriever: SLOFileRetriever{
-					ResourceHandler: api.NewResourceHandler(os.Getenv("CONFIGURATION_SERVICE")),
-					ServiceHandler:  api.NewServiceHandler(os.Getenv("CONFIGURATION_SERVICE")),
+					ResourceHandler: api.NewResourceHandler(os.Getenv("RESOURCE_SERVICE")),
+					ServiceHandler:  api.NewServiceHandler(os.Getenv("RESOURCE_SERVICE")),
 				},
 			},
 			sloAvailable:        false,
@@ -203,8 +203,8 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 			fields: fields{
 				Event: getStartEvaluationEvent(),
 				SLOFileRetriever: SLOFileRetriever{
-					ResourceHandler: api.NewResourceHandler(os.Getenv("CONFIGURATION_SERVICE")),
-					ServiceHandler:  api.NewServiceHandler(os.Getenv("CONFIGURATION_SERVICE")),
+					ResourceHandler: api.NewResourceHandler(os.Getenv("RESOURCE_SERVICE")),
+					ServiceHandler:  api.NewServiceHandler(os.Getenv("RESOURCE_SERVICE")),
 				},
 			},
 			sloAvailable:  false,
@@ -231,8 +231,8 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 			fields: fields{
 				Event: getStartEventWithCommitId("myID"),
 				SLOFileRetriever: SLOFileRetriever{
-					ResourceHandler: api.NewResourceHandler(os.Getenv("CONFIGURATION_SERVICE")),
-					ServiceHandler:  api.NewServiceHandler(os.Getenv("CONFIGURATION_SERVICE")),
+					ResourceHandler: api.NewResourceHandler(os.Getenv("RESOURCE_SERVICE")),
+					ServiceHandler:  api.NewServiceHandler(os.Getenv("RESOURCE_SERVICE")),
 				},
 			},
 			sloAvailable:   true,
@@ -259,8 +259,8 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 			fields: fields{
 				Event: getStartEvaluationEvent(),
 				SLOFileRetriever: SLOFileRetriever{
-					ResourceHandler: api.NewResourceHandler(os.Getenv("CONFIGURATION_SERVICE")),
-					ServiceHandler:  api.NewServiceHandler(os.Getenv("CONFIGURATION_SERVICE")),
+					ResourceHandler: api.NewResourceHandler(os.Getenv("RESOURCE_SERVICE")),
+					ServiceHandler:  api.NewServiceHandler(os.Getenv("RESOURCE_SERVICE")),
 				},
 			},
 			sloAvailable:   true,
@@ -289,7 +289,7 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 
 			keptnHandler, _ := keptnv2.NewKeptn(&tt.fields.Event, keptncommon.KeptnOpts{
 				EventBrokerURL:          os.Getenv("EVENTBROKER"),
-				ConfigurationServiceURL: os.Getenv("CONFIGURATION_SERVICE"),
+				ConfigurationServiceURL: os.Getenv("RESOURCE_SERVICE"),
 			})
 			returnSlo = tt.sloAvailable
 			sloFileContent = tt.sloFileContent

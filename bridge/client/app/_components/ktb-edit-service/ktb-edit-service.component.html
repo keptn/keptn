@@ -1,7 +1,7 @@
-<div *ngIf="serviceName" fxFlexFill class="container">
+<div *ngIf="params$ | async as params" fxFlexFill class="container">
   <div fxLayout="column" fxFlexFill fxLayoutAlign="space-between" class="pb-3">
     <div>
-      <h2>Edit service: {{ serviceName }}</h2>
+      <h2>Edit service: {{ params.serviceName }}</h2>
       <div class="settings-section">
         <h3>Configuration files</h3>
         <ng-template #loading>
@@ -9,14 +9,14 @@
             <ktb-loading-distractor>Loading ...</ktb-loading-distractor>
           </div>
         </ng-template>
-        <ng-container *ngIf="project; else loading">
-          <ng-container *ngIf="fileTree; else loading">
+        <ng-container *ngIf="project$ | async as project; else loading">
+          <ng-container *ngIf="fileTree$ | async as fileTree; else loading">
             <div *ngIf="fileTree.length > 0">
               <ng-container *ngFor="let stageEntry of fileTree">
                 <ktb-edit-service-file-list
                   [stageName]="stageEntry.stageName"
                   [remoteUri]="project.gitCredentials?.remoteURL"
-                  [serviceName]="serviceName"
+                  [serviceName]="params.serviceName"
                   [treeData]="stageEntry.tree"
                 ></ktb-edit-service-file-list>
               </ng-container>
@@ -29,7 +29,7 @@
       </div>
     </div>
     <div class="settings-section">
-      <ktb-danger-zone [data]="getServiceDeletionData(serviceName)"></ktb-danger-zone>
+      <ktb-danger-zone [data]="getServiceDeletionData(params.serviceName)"></ktb-danger-zone>
     </div>
   </div>
 </div>

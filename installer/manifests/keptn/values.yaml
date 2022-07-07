@@ -304,7 +304,6 @@ configurationService:
       cpu: "100m"
 
 resourceService:
-  enabled: true
   replicas: 1
   image:
     repository: docker.io/keptn/resource-service
@@ -365,7 +364,7 @@ lighthouseService:
       cpu: "200m"
 
 statisticsService:
-  enabled: false
+  enabled: true
   image:
     repository: docker.io/keptn/statistics-service
     tag: ""

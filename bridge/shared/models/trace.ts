@@ -16,8 +16,10 @@ export interface IEvaluationData {
   sloFileContent: string;
   timeEnd: Date;
   timeStart: Date;
-  score_pass?: string;
-  score_warning?: string;
+  score_pass?: number;
+  score_warning?: number;
+  score_info?: string;
+  score_state?: string;
   compare_with?: string;
   include_result_with_score?: string;
   number_of_missing_comparison_results?: number;

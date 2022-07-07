@@ -3,15 +3,10 @@ import { ExtraOptions, RouterModule, Routes } from '@angular/router';
 import { DashboardLegacyComponent } from './dashboard-legacy/dashboard-legacy.component';
 import { ProjectBoardComponent } from './project-board/project-board.component';
 import { EvaluationBoardComponent } from './evaluation-board/evaluation-board.component';
-import { KtbIntegrationViewComponent } from './_views/ktb-integration-view/ktb-integration-view.component';
 import { KtbSettingsViewComponent } from './_views/ktb-settings-view/ktb-settings-view.component';
-import { KtbServiceViewComponent } from './_views/ktb-service-view/ktb-service-view.component';
-import { KtbEnvironmentViewComponent } from './_views/ktb-environment-view/ktb-environment-view.component';
-import { KtbKeptnServicesListComponent } from './_components/ktb-keptn-services-list/ktb-keptn-services-list.component';
 import { KtbSecretsListComponent } from './_components/ktb-secrets-list/ktb-secrets-list.component';
 import { KtbCreateSecretFormComponent } from './_components/ktb-create-secret-form/ktb-create-secret-form.component';
 import { KtbProjectSettingsComponent } from './_components/ktb-project-settings/ktb-project-settings.component';
-import { KtbModifyUniformSubscriptionComponent } from './_components/ktb-modify-uniform-subscription/ktb-modify-uniform-subscription.component';
 import { KtbCreateServiceComponent } from './_components/ktb-create-service/ktb-create-service.component';
 import { KtbServiceSettingsOverviewComponent } from './_components/ktb-service-settings/ktb-service-settings-overview/ktb-service-settings-overview.component';
 import { KtbServiceSettingsComponent } from './_components/ktb-service-settings/ktb-service-settings.component';
@@ -24,6 +19,9 @@ import { AppComponent } from './app.component';
 const routingConfiguration: ExtraOptions = {
   paramsInheritanceStrategy: 'always',
 };
+
+const lazyLoadEnvironmentView = (): Promise<unknown> =>
+  import('./_views/ktb-environment-view/ktb-environment-view.module').then((m) => m.KtbEnvironmentViewModule);
 
 const routes: Routes = [
   { path: 'error', component: KtbErrorViewComponent },
@@ -46,7 +44,9 @@ const routes: Routes = [
         path: 'project/:projectName',
         component: ProjectBoardComponent,
         children: [
-          { path: '', pathMatch: 'full', component: KtbEnvironmentViewComponent },
+          { path: '', pathMatch: 'full', loadChildren: lazyLoadEnvironmentView },
+          { path: 'environment', pathMatch: 'full', loadChildren: lazyLoadEnvironmentView },
+          { path: 'environment/stage/:stageName', loadChildren: lazyLoadEnvironmentView },
           {
             path: 'settings',
             component: KtbSettingsViewComponent,
@@ -64,15 +64,12 @@ const routes: Routes = [
               {
                 path: 'uniform',
                 children: [
-                  { path: 'integrations', component: KtbKeptnServicesListComponent },
-                  { path: 'integrations/:integrationId', component: KtbKeptnServicesListComponent },
                   {
-                    path: 'integrations/:integrationId/subscriptions/add',
-                    component: KtbModifyUniformSubscriptionComponent,
-                  },
-                  {
-                    path: 'integrations/:integrationId/subscriptions/:subscriptionId/edit',
-                    component: KtbModifyUniformSubscriptionComponent,
+                    path: 'integrations',
+                    loadChildren: () =>
+                      import('./_views/ktb-integration-view/ktb-integration-view.module').then(
+                        (m) => m.KtbIntegrationViewModule
+                      ),
                   },
                   {
                     path: 'secrets',
@@ -87,7 +84,10 @@ const routes: Routes = [
                 children: [
                   {
                     path: 'common-use-cases',
-                    component: KtbIntegrationViewComponent,
+                    loadChildren: () =>
+                      import('./_views/ktb-common-use-cases-view/ktb-common-use-cases-view.module').then(
+                        (m) => m.KtbCommonUseCasesViewModule
+                      ),
                   },
                   { path: '', pathMatch: 'full', redirectTo: 'common-use-cases' },
                 ],
@@ -95,12 +95,11 @@ const routes: Routes = [
               { path: '', pathMatch: 'full', redirectTo: 'project' },
             ],
           },
-          { path: 'environment', component: KtbEnvironmentViewComponent },
-          { path: 'environment/stage/:stageName', component: KtbEnvironmentViewComponent },
-          { path: 'service', component: KtbServiceViewComponent },
-          { path: 'service/:serviceName', component: KtbServiceViewComponent },
-          { path: 'service/:serviceName/context/:shkeptncontext', component: KtbServiceViewComponent },
-          { path: 'service/:serviceName/context/:shkeptncontext/stage/:stage', component: KtbServiceViewComponent },
+          {
+            path: 'service',
+            loadChildren: () =>
+              import('./_views/ktb-service-view/ktb-service-view.module').then((m) => m.KtbServiceViewModule),
+          },
           {
             path: 'sequence',
             loadChildren: () =>

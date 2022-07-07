@@ -42,7 +42,7 @@ func Test_executeJMeter(t *testing.T) {
 	)
 	defer ts.Close()
 	checkJmeter()
-	os.Setenv("CONFIGURATION_SERVICE", ts.URL)
+	os.Setenv("RESOURCE_SERVICE", ts.URL)
 	os.Setenv("env", "production")
 
 	type args struct {
