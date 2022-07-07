@@ -100,6 +100,10 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 }
 
 func (th *TaskHandler) onPreExecutionError(keptnHandler sdk.IKeptn, event sdk.KeptnEvent, eventAdapter *lib.EventDataAdapter, err error) (interface{}, *sdk.Error) {
+	// only send .started events for <task>.triggered events
+	if !keptnv2.IsTaskEventType(*event.Type) || !keptnv2.IsTriggeredEventType(*event.Type) {
+		return nil, sdkError(err.Error(), err)
+	}
 	// in this case, send .started and .finished event immediately
 	if err := keptnHandler.SendStartedEvent(event); err != nil {
 		// log the error but continue - we need to try to send the .finished event nevertheless
