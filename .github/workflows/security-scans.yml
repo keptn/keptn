@@ -116,11 +116,10 @@ jobs:
       - name: Kubescape Scan
         if: matrix.tool == 'kubescape'
         env:
-          FAILURE_PERCENTAGE: 20
-          KS_LOGGER_NAME: "pretty"
+          FAILURE_PERCENTAGE: 10
         run: |
           echo "::group::Kubescape installation"
           curl -s https://raw.githubusercontent.com/armosec/kubescape/master/install.sh | /bin/bash
           echo "::endgroup::"
-
-          kubescape scan framework ${{ matrix.kubescape-framework }} -v -t 10 ${{ env.CHART_TO_SCAN }}
+          # Docs on how to configure exceptions: https://hub.armosec.io/docs/exceptions
+          kubescape scan framework ${{ matrix.kubescape-framework }} -v -t ${{ env.FAILURE_PERCENTAGE }} --exceptions ./.github/kubescape-config.json ${{ env.CHART_TO_SCAN }}
