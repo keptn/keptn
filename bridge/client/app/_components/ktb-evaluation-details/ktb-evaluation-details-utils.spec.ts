@@ -176,13 +176,13 @@ describe('KtbEvaluationDetailsUtils', () => {
     const evaluations = EvaluationsKeySliMock;
     parseSloOfEvaluations(evaluations);
 
-    const failedEvaluationData: IEvaluationData = evaluations[0].data.evaluation!;
+    const failedEvaluationData = evaluations[0].data.evaluation as IEvaluationData;
     const failedScoreState = getScoreState(failedEvaluationData);
 
-    const warningEvaluationData: IEvaluationData = evaluations[1].data.evaluation!;
+    const warningEvaluationData = evaluations[1].data.evaluation as IEvaluationData;
     const warningScoreState = getScoreState(warningEvaluationData);
 
-    const passedEvaluationData: IEvaluationData = evaluations[2].data.evaluation!;
+    const passedEvaluationData = evaluations[2].data.evaluation as IEvaluationData;
     const passedScoreState = getScoreState(passedEvaluationData);
 
     expect(failedScoreState).toBe('fail');
@@ -194,13 +194,13 @@ describe('KtbEvaluationDetailsUtils', () => {
     const evaluations = EvaluationsKeySliMock;
     parseSloOfEvaluations(evaluations);
 
-    const failedEvaluationData: IEvaluationData = evaluations[0].data.evaluation!;
+    const failedEvaluationData = evaluations[0].data.evaluation as IEvaluationData;
     const failedScoreInfo = getScoreInfo(failedEvaluationData);
 
-    const warningEvaluationData: IEvaluationData = evaluations[1].data.evaluation!;
+    const warningEvaluationData = evaluations[1].data.evaluation as IEvaluationData;
     const warningScoreInfo = getScoreInfo(warningEvaluationData);
 
-    const passedEvaluationData: IEvaluationData = evaluations[2].data.evaluation!;
+    const passedEvaluationData = evaluations[2].data.evaluation as IEvaluationData;
     const passedScoreInfo = getScoreInfo(passedEvaluationData);
 
     expect(failedScoreInfo).toBe(' < 75');
