@@ -1,7 +1,7 @@
 # Build, Debug files
 
 vendor
-cmd/configuration-service-server/debug
+cmd/resource-service-server/debug
 
 MANIFEST
 
@@ -9,4 +9,4 @@ MANIFEST
 .idea
 
 #binary - go build
-configuration-service
+resource-service

@@ -241,9 +241,17 @@ jobs:
           echo "::group::Keptn Installation Log"
 
           # Use Keptn helm chart to be able to customize the values
-          helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} \
-            --create-namespace \
-            --values=./test/zero-downtime/assets/test-values.yml
+          if [[ "$HELM_CHART_NAME" == *"dev"* ]]; then
+            helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} \
+              --set global.keptn.registry="docker.io/keptndev" \
+              --create-namespace \
+              --values=./test/zero-downtime/assets/test-values.yml          
+          else
+           helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} \
+              --set global.keptn.registry="docker.io/keptndev" \
+              --create-namespace \
+              --values=./test/zero-downtime/assets/test-values.yml      
+          fi
 
           echo "::endgroup::"
 
@@ -303,13 +311,29 @@ jobs:
           HELM_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_SERVICE_HELM_CHART_NAME }}
           JMETER_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.JMETER_SERVICE_HELM_CHART_NAME }}
         run: |
-
+          
           # In-cluster execution plane
-          helm install helm-service "${HELM_SERVICE_HELM_CHART_NAME}" -n ${{ env.KEPTN_NAMESPACE }}
-          helm install jmeter-service "${JMETER_SERVICE_HELM_CHART_NAME}" -n ${{ env.KEPTN_NAMESPACE }}
+           if [[ "$HELM_SERVICE_HELM_CHART_NAME" == *"dev"* ]]; then
+            echo "install helm locally from dev repo"
+            helm install helm-service ${HELM_SERVICE_HELM_CHART_NAME} -n ${{ env.KEPTN_NAMESPACE }} \
+             -f './test/assets/helm-charts/keptn/values-int-tests-dev.yaml' 
+           else
+            echo "install helm locally from keptn repo"         
+            helm install helm-service ${HELM_SERVICE_HELM_CHART_NAME} -n ${{ env.KEPTN_NAMESPACE }}
+           fi
+          
+           if [[ "$JMETER_SERVICE_HELM_CHART_NAME" == *"dev"* ]]; then
+            echo "install jmeter locally from dev repo"
+            helm install jmeter-service ${JMETER_SERVICE_HELM_CHART_NAME} -n ${{ env.KEPTN_NAMESPACE }} \
+             -f './test/assets/helm-charts/keptn/values-int-tests-dev.yaml'
+           else
+              echo "install jmeter locally from keptn repo"
+              helm install jmeter-service ${JMETER_SERVICE_HELM_CHART_NAME} -n ${{ env.KEPTN_NAMESPACE }}
+           fi
+          
+           helm test jmeter-service -n ${{ env.KEPTN_NAMESPACE }}
+           helm test helm-service -n ${{ env.KEPTN_NAMESPACE }}
 
-          helm test jmeter-service -n ${{ env.KEPTN_NAMESPACE }}
-          helm test helm-service -n ${{ env.KEPTN_NAMESPACE }}
 
       - name: Set up gotestfmt
         uses: haveyoudebuggedit/gotestfmt-action@v2.0.0

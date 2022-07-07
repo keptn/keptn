@@ -7,3 +7,7 @@ strategy:
     DIRECTORY_STAGE_STRUCTURE: "false"
 continuousDelivery:
   enabled: true
+shipyardController:
+  gracePeriod: 10
+  preStopHookTime: 5
+
