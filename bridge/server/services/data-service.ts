@@ -1068,6 +1068,9 @@ export class DataService {
           (event: Trace | undefined, trace) => event || trace.getEvaluationFinishedEvent(),
           undefined
         );
+        if (evaluationTrace) {
+          evaluationTrace.traces = []; //clear not wanted events like from the webhook-service
+        }
         const lastTimeUpdated = stageTraces[stageTraces.length - 1]?.getLastTrace()?.time;
         const approvalInformation = this.getApprovalInformation(stageTraces, service?.getShortImage());
         let deploymentURL: string | undefined;
