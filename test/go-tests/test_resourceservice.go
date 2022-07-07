@@ -89,7 +89,7 @@ func Test_ResourceServiceBasic(t *testing.T) {
 
 	ctx, closeInternalKeptnAPI := context.WithCancel(context.Background())
 	defer closeInternalKeptnAPI()
-	internalKeptnAPI, err := GetInternalKeptnAPI(ctx, "service/configuration-service", "8888", "8080")
+	internalKeptnAPI, err := GetInternalKeptnAPI(ctx, "service/resource-service", "8888", "8080")
 	require.Nil(t, err)
 
 	///////////////////////////////////////

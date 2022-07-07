@@ -77,10 +77,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: configuration-service
+  name: resource-service
   namespace: keptn
   labels:
-    app.kubernetes.io/name: configuration-service
+    app.kubernetes.io/name: resource-service
     app.kubernetes.io/instance: keptn
     app.kubernetes.io/part-of: keptn-keptn
     app.kubernetes.io/component: keptn

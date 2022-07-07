@@ -14,7 +14,6 @@
               [class.error]="sequence.isFaulty(this.stage)"
               [class.warning]="sequence.isWarning(this.stage)"
               [class.success]="sequence.isSuccessful(this.stage)"
-              class="event-icon"
             ></dt-icon>
           </ng-template>
           <span [textContent]="sequence.time | amDateFormat: dateUtil.getDateTimeFormat()"></span>
@@ -24,7 +23,6 @@
         <ng-container *ngIf="isSubsequence(row) as subSequence">
           <dt-icon
             *ngIf="subSequence.state === SequenceState.FINISHED || subSequence.hasPendingApproval; else loading"
-            class="event-icon"
             [class.error]="subSequence.result === ResultTypes.FAILED"
             [class.success]="subSequence.result === ResultTypes.PASSED"
             [class.warning]="subSequence.result === ResultTypes.WARNING"

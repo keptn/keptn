@@ -2,7 +2,6 @@
   <div *ngIf="createSequenceStateInfo(sequence) as info" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
     <dt-icon
       *ngIf="info.steady; else showLoading"
-      class="event-icon"
       [name]="info.icon"
       [class.success]="info.successful"
       [class.warning]="info.warning"
@@ -14,7 +13,7 @@
       <button class="m-0 p-0" dt-button disabled variant="nested" *ngIf="info.loading && !info.waiting">
         <ktb-loading-spinner aria-label="Task is running..."></ktb-loading-spinner>
       </button>
-      <dt-icon *ngIf="info.waiting" class="event-icon" name="idle"></dt-icon>
+      <dt-icon *ngIf="info.waiting" name="idle"></dt-icon>
     </ng-template>
     <p class="m-0 smaller">
       <a

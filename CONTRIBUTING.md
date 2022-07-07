@@ -240,7 +240,6 @@ Your PR will usually be reviewed by the Keptn team within a couple of days, but 
 - approval-service
 - bridge
 - cli
-- configuration-service
 - resource-service
 - distributor
 - docs

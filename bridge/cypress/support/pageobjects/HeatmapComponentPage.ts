@@ -1,4 +1,4 @@
-import { interceptHeatmapComponent, interceptHeatmapComponentWithSLO } from '../intercept';
+import { interceptHeatmapComponent, interceptHeatmapComponentWithSLO, interceptHeatmapWithKeySLI } from '../intercept';
 
 export type ResultState = 'pass' | 'warning' | 'fail' | 'info';
 
@@ -12,6 +12,11 @@ export class HeatmapComponentPage {
 
   public interceptWithSLO(slo?: string): this {
     interceptHeatmapComponentWithSLO(slo);
+    return this;
+  }
+
+  public interceptWithKeySli(): this {
+    interceptHeatmapWithKeySLI();
     return this;
   }
 

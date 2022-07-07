@@ -33,7 +33,7 @@ func NewEventHandler(ctx context.Context, event cloudevents.Event) (EvaluationEv
 		return nil, err
 	}
 
-	configurationServiceEndpoint, err := keptncommon.GetServiceEndpoint("CONFIGURATION_SERVICE")
+	configurationServiceEndpoint, err := keptncommon.GetServiceEndpoint("RESOURCE_SERVICE")
 	if err != nil {
 		return nil, err
 	}

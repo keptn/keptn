@@ -88,7 +88,7 @@ done`
 // please update the Keptn documentation for Backup & Restore accordingly.
 
 func Test_BackupRestoreConfigService(t *testing.T) {
-	serviceName := "configuration-service"
+	serviceName := "resource-service"
 	BackupRestoreTestGeneric(t, serviceName)
 }
 

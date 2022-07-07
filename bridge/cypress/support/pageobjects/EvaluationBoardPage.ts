@@ -1,3 +1,4 @@
+import { ResultTypes } from 'shared/models/result-types';
 import { interceptEvaluationBoard, interceptEvaluationBoardWithoutDeployment } from '../intercept';
 
 export class EvaluationBoardPage {
@@ -59,6 +60,19 @@ export class EvaluationBoardPage {
 
   public assertViewSequenceDetailsExists(status: boolean): this {
     cy.byTestId('ktb-view-sequence-details').should(status ? 'exist' : 'not.exist');
+    return this;
+  }
+
+  public assertScoreInfo(score: number, equality: '<' | '<=' | '>' | '>=', threshold: number): this {
+    cy.byTestId('keptn-evaluation-details-scoreInfo').should('have.text', `${score} ${equality} ${threshold}`);
+    return this;
+  }
+  public assertResultInfo(type: ResultTypes): this {
+    cy.byTestId('keptn-evaluation-details-resultInfo').should('have.text', `Result: ${type}`);
+    return this;
+  }
+  public assertKeySliInfo(type: 'passed' | 'failed'): this {
+    cy.byTestId('keptn-evaluation-details-keySliInfo').should('have.text', `Key SLI: ${type}`);
     return this;
   }
 }

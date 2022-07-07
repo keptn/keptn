@@ -43,7 +43,7 @@
           </span>
         </p>
         <ng-container *ngIf="!result.success">
-          <dt-icon class="event-icon error" [dtOverlay]="errorOverlay" [name]="'criticalevent'"></dt-icon>
+          <dt-icon class="error" [dtOverlay]="errorOverlay" [name]="'criticalevent'"></dt-icon>
           <ng-template #errorOverlay>
             <p class="error small" [textContent]="result.value"></p>
           </ng-template>
