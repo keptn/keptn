@@ -68,6 +68,8 @@ jobs:
             kubescape-framework: "nsa"
           - tool: "kubescape"
             kubescape-framework: "mitre"
+          - tool: "kubescape"
+            kubescape-framework: "ARMOBest"
     steps:
       - name: Set up Go
         if: matrix.tool == 'kubeconform'
