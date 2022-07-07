@@ -50,7 +50,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: rendered-helm-chart
-          path: ${{ env.RENDERED_CHART_FILENAME }}
+          path: installer/manifests/keptn/${{ env.RENDERED_CHART_FILENAME }}
 
   security-scans:
     name: "Security Scans"
