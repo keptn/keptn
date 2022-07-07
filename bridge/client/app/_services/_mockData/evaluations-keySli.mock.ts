@@ -22,7 +22,7 @@ const evaluationsData = [
             value: {
               metric: 'http_response_time_seconds_main_page_sum',
               success: true,
-              value: 0.40115315268094103,
+              value: 0.40115315268094,
             },
             warningTargets: [
               {
