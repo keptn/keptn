@@ -242,15 +242,19 @@ jobs:
 
           # Use Keptn helm chart to be able to customize the values
           if [[ "$HELM_CHART_NAME" == *"dev"* ]]; then
+            helm template -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} \
+              --set global.keptn.registry="docker.io/keptndev" \
+              --values=./test/zero-downtime/assets/test-values.yml   
+          
             helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} \
               --set global.keptn.registry="docker.io/keptndev" \
               --create-namespace \
               --values=./test/zero-downtime/assets/test-values.yml          
           else
-           helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} \
-              --set global.keptn.registry="docker.io/keptndev" \
-              --create-namespace \
-              --values=./test/zero-downtime/assets/test-values.yml      
+             helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} \
+                --set global.keptn.registry="docker.io/keptndev" \
+                --create-namespace \
+                --values=./test/zero-downtime/assets/test-values.yml      
           fi
 
           echo "::endgroup::"
