@@ -15,7 +15,6 @@
                 currentSequence.hasPendingApproval(stage);
               else showLoading
             "
-            class="event-icon"
             [name]="currentSequence.getIcon(stage)"
             [class.error]="currentSequence.isFaulty(stage)"
             [class.success]="currentSequence.isSuccessful(stage)"
@@ -33,7 +32,7 @@
             >
               <ktb-loading-spinner aria-label="Task is running..."></ktb-loading-spinner>
             </button>
-            <dt-icon *ngIf="currentSequence.isWaiting()" class="event-icon" name="idle"></dt-icon>
+            <dt-icon *ngIf="currentSequence.isWaiting()" name="idle"></dt-icon>
           </ng-template>
           <span
             class="stage-text"

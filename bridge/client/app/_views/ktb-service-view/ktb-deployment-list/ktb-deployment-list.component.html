@@ -18,11 +18,7 @@
           <dt-tag>
             <a href="javascript:void(0)" (click)="selectStage(deployment, stage.name, $event)">
               <span [textContent]="stage.name"></span>
-              <dt-icon
-                *ngIf="stage.hasOpenRemediations"
-                name="criticalevent"
-                class="event-icon error tag-icon"
-              ></dt-icon>
+              <dt-icon *ngIf="stage.hasOpenRemediations" name="criticalevent" class="error tag-icon"></dt-icon>
             </a>
           </dt-tag>
         </dt-tag-list>

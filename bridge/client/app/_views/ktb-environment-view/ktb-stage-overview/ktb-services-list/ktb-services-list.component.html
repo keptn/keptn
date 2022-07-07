@@ -15,7 +15,6 @@
                   !currentSequence.isLoading(service.stage) || currentSequence.hasPendingApproval(service.stage);
                   else showLoading
                 "
-                class="event-icon"
                 [name]="currentSequence.getIcon()"
                 [class.error]="currentSequence.isFaulty(service.stage)"
                 [class.success]="currentSequence.isSuccessful(service.stage)"
