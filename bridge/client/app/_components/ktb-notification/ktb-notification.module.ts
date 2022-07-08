@@ -6,7 +6,6 @@ import { DtAlertModule } from '@dynatrace/barista-components/alert';
 import { DtIconModule } from '@dynatrace/barista-components/icon';
 import { KtbPipeModule } from '../../_pipes/ktb-pipe.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { HttpClientModule } from '@angular/common/http';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { DtButtonModule } from '@dynatrace/barista-components/button';
 
@@ -20,7 +19,6 @@ import { DtButtonModule } from '@dynatrace/barista-components/button';
       svgIconLocation: `assets/icons/{{name}}.svg`,
     }),
     KtbPipeModule,
-    HttpClientModule,
     FlexLayoutModule,
     DtButtonModule,
   ],

@@ -17,7 +17,6 @@ const lazyLoadEnvironmentView = (): Promise<unknown> =>
 const routes: Routes = [
   {
     path: '',
-    pathMatch: 'full',
     component: KtbProjectViewComponent,
     children: [
       { path: '', pathMatch: 'full', loadChildren: lazyLoadEnvironmentView },
@@ -83,7 +82,6 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  declarations: [],
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
 })

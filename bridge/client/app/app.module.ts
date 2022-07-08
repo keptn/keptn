@@ -42,22 +42,14 @@ import { DtShowMoreModule } from '@dynatrace/barista-components/show-more';
 import { DtTagModule } from '@dynatrace/barista-components/tag';
 
 import { KtbAppHeaderModule } from './_components/ktb-app-header/ktb-app-header.module';
-import { KtbCreateSecretFormModule } from './_components/ktb-create-secret-form/ktb-create-secret-form.module';
-import { KtbCreateServiceModule } from './_components/ktb-create-service/ktb-create-service.module';
-import { KtbEditServiceModule } from './_components/ktb-edit-service/ktb-edit-service.module';
 import { KtbErrorViewModule } from './_views/ktb-error-view/ktb-error-view.module';
-import { KtbEvaluationDetailsModule } from './_components/ktb-evaluation-details/ktb-evaluation-details.module';
 import { KtbEventItemModule } from './_components/ktb-event-item/ktb-event-item.module';
-import { KtbExpandableTileModule } from './_components/ktb-expandable-tile/ktb-expandable-tile.module';
 import { KtbLoadingModule } from './_components/ktb-loading/ktb-loading.module';
-import { KtbNoServiceInfoModule } from './_components/ktb-no-service-info/ktb-no-service-info.module';
 import { KtbNotificationModule } from './_components/ktb-notification/ktb-notification.module';
 import { KtbProjectListModule } from './_components/ktb-project-list/ktb-project-list.module';
-import { KtbProjectSettingsModule } from './_components/ktb-project-settings/ktb-project-settings.module';
-import { KtbSecretsListModule } from './_components/ktb-secrets-list/ktb-secrets-list.module';
-import { KtbServiceSettingsModule } from './_components/ktb-service-settings/ktb-service-settings.module';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { KtbEvaluationDetailsModule } from './_components/ktb-evaluation-details/ktb-evaluation-details.module';
 
 // Import BrowserModule, BrowserAnimationsModule, HttpModule or HttpClientModule only once!
 
@@ -87,21 +79,13 @@ const dtModules = [
 
 const ktbModules = [
   KtbAppHeaderModule,
-  KtbCreateSecretFormModule,
-  KtbCreateServiceModule,
-  KtbEditServiceModule,
   KtbErrorViewModule,
   KtbEvaluationDetailsModule,
   KtbEventItemModule,
-  KtbExpandableTileModule,
   KtbLoadingModule,
-  KtbNoServiceInfoModule,
   KtbNotificationModule,
   KtbPipeModule,
   KtbProjectListModule,
-  KtbProjectSettingsModule,
-  KtbSecretsListModule,
-  KtbServiceSettingsModule,
 ];
 
 @NgModule({
