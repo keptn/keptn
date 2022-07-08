@@ -26,7 +26,6 @@ func newGetActionTriggeredEvent(filename string) models.KeptnContextExtendedCE {
 }
 
 // Test_Fail_Missing_YAML tests triggering a remediation that fails because no "remediation.yam" is available yet
-
 func Test_Fail_Missing_YAML(t *testing.T) {
 	fakeKeptn := sdk.NewFakeKeptn("test-remediation-svc")
 	fakeKeptn.SetResourceHandler(sdk.FailingResourceHandler{})
@@ -47,8 +46,6 @@ func Test_Fail_Missing_YAML(t *testing.T) {
 
 }
 
-// this test already checks for a passing path and for retrieving an action to set EnablePromotion to value off
-// component test should not care about action.triggered event since this depends on unleash service
 func Test_Receiving_GetActionTriggeredEvent_RemediationFromServiceLevel(t *testing.T) {
 	fakeKeptn := sdk.NewFakeKeptn("test-remediation-svc")
 	fakeKeptn.AddTaskHandler("sh.keptn.event.get-action.triggered", handler.NewGetActionEventHandler())
