@@ -50,7 +50,7 @@
     "@angular/platform-browser": "12.2.16",
     "@angular/platform-browser-dynamic": "12.2.16",
     "@angular/router": "12.2.16",
-    "@dynatrace/barista-components": "10.7.4",
+    "@dynatrace/barista-components": "10.7.5",
     "@dynatrace/barista-fonts": "1.0.1",
     "@dynatrace/barista-icons": "7.21.1",
     "cypress-file-upload": "5.0.8",
