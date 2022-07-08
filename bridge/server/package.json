@@ -25,7 +25,7 @@
     "helmet": "5.1.0",
     "mongodb": "4.7.0",
     "morgan": "1.10.0",
-    "openid-client": "5.1.7",
+    "openid-client": "5.1.8",
     "semver": "7.3.7",
     "yaml": "2.1.1"
   },
