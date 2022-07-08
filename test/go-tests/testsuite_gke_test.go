@@ -7,7 +7,7 @@ import (
 func Test_GKE(t *testing.T) {
 	// Shut DownTests
 
-	t.Run("Test_BackupRestoreResourceService", Test_BackupRestoreResourceService)
+	t.Run("Test_BackupRestore", Test_BackupRestore)
 	t.Run("Test_GracefulShutdown", Test_GracefulShutdown)
 	// Common Tests
 	t.Run("Test_LogIngestion", Test_LogIngestion)
