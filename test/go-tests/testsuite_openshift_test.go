@@ -17,7 +17,6 @@ func Test_Openshift(t *testing.T) {
 	// Common Tests
 	// Allow components to be up and running
 	time.Sleep(5 * time.Minute)
-	t.Run("Test_SelfHealing", Test_SelfHealing)
 	t.Run("Test_ResourceServiceBasic", Test_ResourceServiceBasic)
 	t.Run("Test_ManageSecrets_CreateUpdateAndDeleteSecret", Test_ManageSecrets_CreateUpdateAndDeleteSecret)
 	t.Run("Test_SequenceQueue_TriggerMultiple", Test_SequenceQueue_TriggerMultiple)
