@@ -99,7 +99,6 @@ export interface PageSizeConfiguration {
 
 export interface URLsConfig {
   lookAndFeel?: string;
-  integrationPage: string;
   CLI: string;
 }
 
@@ -139,7 +138,6 @@ export enum EnvVar {
   SESSION_VALIDATING_TIMEOUT_MIN = 'SESSION_VALIDATING_TIMEOUT_MIN',
   OAUTH_ID_TOKEN_ALG = 'OAUTH_ID_TOKEN_ALG',
   CLI_DOWNLOAD_LINK = 'CLI_DOWNLOAD_LINK',
-  INTEGRATIONS_PAGE_LINK = 'INTEGRATIONS_PAGE_LINK',
   LOOK_AND_FEEL_URL = 'LOOK_AND_FEEL_URL',
   AUTOMATIC_PROVISIONING_MSG = 'AUTOMATIC_PROVISIONING_MSG',
   CONFIG_DIR = 'CONFIG_DIR',

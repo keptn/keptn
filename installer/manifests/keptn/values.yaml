@@ -150,7 +150,6 @@ bridge:
     repository: docker.io/keptn/bridge2
     tag: ""
   cliDownloadLink: null
-  integrationsPageLink: null
   secret:
     enabled: true
   versionCheck:

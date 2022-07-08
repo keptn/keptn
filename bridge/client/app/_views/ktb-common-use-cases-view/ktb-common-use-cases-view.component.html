@@ -59,18 +59,5 @@
         </dt-expandable-panel>
       </li>
     </ul>
-    <p *ngIf="!integrationsExternalDetails">
-      <button dt-button (click)="loadIntegrations()">
-        <dt-icon name="xhr-load-action"></dt-icon> Load more information about integrations
-      </button>
-    </p>
-    <ktb-markdown [html]="integrationsExternalDetails"></ktb-markdown>
-    <p class="small light">
-      Additional information about integrations will be loaded from external sources and Keptn will collect statistical
-      data. Details can be found at
-      <a [href]="'/reference/load_information/' | keptnUrl" target="_blank" rel="noopener noreferrer">{{
-        '/reference/load_information/' | keptnUrl
-      }}</a>
-    </p>
   </div>
 </div>

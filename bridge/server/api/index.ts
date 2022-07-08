@@ -63,18 +63,6 @@ const apiRouter = (params: {
     }
   });
 
-  router.get('/integrationsPage', async (req, res, next) => {
-    try {
-      const result = await axios({
-        method: req.method as Method,
-        url: `${configuration.urls.integrationPage}`,
-      });
-      return res.send(result.data);
-    } catch (err) {
-      return next(err);
-    }
-  });
-
   router.get('/swagger-ui/swagger.yaml', async (req, res, next) => {
     try {
       const result = await axios({
