@@ -15,13 +15,8 @@ func Test_Openshift(t *testing.T) {
 	require.Nil(t, err)
 
 	// Common Tests
-	t.Run("Test_LogIngestion", Test_LogIngestion)
-
 	// Allow components to be up and running
 	time.Sleep(5 * time.Minute)
-
-	t.Run("Test_LogForwarding", Test_LogForwarding)
-
 	t.Run("Test_SelfHealing", Test_SelfHealing)
 	t.Run("Test_ResourceServiceBasic", Test_ResourceServiceBasic)
 	t.Run("Test_ManageSecrets_CreateUpdateAndDeleteSecret", Test_ManageSecrets_CreateUpdateAndDeleteSecret)
@@ -32,8 +27,6 @@ func Test_Openshift(t *testing.T) {
 	t.Run("Test_ResourceServiceGETCommitID", Test_ResourceServiceGETCommitID)
 	t.Run("Test_EvaluationGitCommitID", Test_EvaluationGitCommitID)
 	t.Run("Test_SSHPublicKeyAuth", Test_SSHPublicKeyAuth)
-
-	t.Run("Test_ZeroDownTimeTriggerSequence", Test_ZeroDownTimeTriggerSequence)
 
 	// Platform-specific Tests
 }
