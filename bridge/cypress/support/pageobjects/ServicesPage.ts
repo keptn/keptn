@@ -209,5 +209,23 @@ class ServicesPage {
     cy.byTestId('ktb-sequence-list-item-remediation').should('have.length', count);
     return this;
   }
+
+  public assertRootDeepLink(project: string): this {
+    cy.location('pathname').should('eq', `/project/${project}/service`);
+    return this;
+  }
+
+  public assertServiceDeepLink(project: string, service: string): this {
+    cy.location('pathname').should('eq', `/project/${project}/service/${service}`);
+    return this;
+  }
+
+  public assertDeploymentDeepLink(project: string, service: string, keptnContext: string, stage: string): this {
+    cy.location('pathname').should(
+      'eq',
+      `/project/${project}/service/${service}/context/${keptnContext}/stage/${stage}`
+    );
+    return this;
+  }
 }
 export default ServicesPage;

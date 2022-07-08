@@ -637,7 +637,7 @@ func storeWithCommit(t *testing.T, projectName, stage, serviceName, content, uri
 
 	ctx, closeInternalKeptnAPI := context.WithCancel(context.Background())
 	defer closeInternalKeptnAPI()
-	internalKeptnAPI, err := GetInternalKeptnAPI(ctx, "service/configuration-service", "8889", "8080")
+	internalKeptnAPI, err := GetInternalKeptnAPI(ctx, "service/resource-service", "8889", "8080")
 	require.Nil(t, err)
 	t.Log("Storing new slo file")
 	resp, err := internalKeptnAPI.Post(basePath+"/"+projectName+"/stage/"+stage+"/service/"+serviceName+"/resource", models.Resources{

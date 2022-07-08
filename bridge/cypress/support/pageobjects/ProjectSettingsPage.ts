@@ -441,12 +441,12 @@ class ProjectSettingsPage {
   }
 
   public assertConfigurationServiceErrorExists(status: boolean): this {
-    cy.byTestId('ktb-error-configuration-service-enabled').should(status ? 'exist' : 'not.exist');
+    cy.byTestId('ktb-error-resource-service-enabled').should(status ? 'exist' : 'not.exist');
     return this;
   }
 
   public clickSaveChangesPopup(): this {
-    cy.get('.dt-button-primary > span.dt-button-label').contains('Save changes').click();
+    cy.byTestId('ktb-confirmation-dialog-save').click();
     return this;
   }
 

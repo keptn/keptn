@@ -87,9 +87,17 @@
         routerLinkActive="active"
         routerLink="./"
         [routerLinkActiveOptions]="{ exact: true }"
+        [class.active]="secondEnvironmentLink.isActive"
       >
         <dt-icon name="environment"></dt-icon>
       </button>
+
+      <a
+        routerLink="environment"
+        routerLinkActive="active"
+        #secondEnvironmentLink="routerLinkActive"
+        class="hidden"
+      ></a>
 
       <button
         dt-icon-button

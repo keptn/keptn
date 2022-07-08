@@ -7,6 +7,7 @@ import { ApiService } from '../../../_services/api.service';
 import { ApiServiceMock } from '../../../_services/api.service.mock';
 import { SequencesMock } from '../../../_services/_mockData/sequences.mock';
 import { KtbSequenceViewModule } from '../ktb-sequence-view.module';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('KtbSequenceControlsComponent', () => {
   let component: KtbSequenceControlsComponent;
@@ -15,7 +16,7 @@ describe('KtbSequenceControlsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [KtbSequenceViewModule, HttpClientTestingModule],
+      imports: [KtbSequenceViewModule, BrowserAnimationsModule, HttpClientTestingModule],
       providers: [
         {
           provide: ApiService,

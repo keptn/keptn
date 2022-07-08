@@ -22,7 +22,7 @@ describe('Test /project/:projectName/customSequences', () => {
   it('should retrieve custom sequences', async () => {
     const projectName = 'sockshop';
     axiosMock
-      .onGet(`${global.baseUrl}/configuration-service/v1/project/${projectName}/resource/shipyard.yaml`)
+      .onGet(`${global.baseUrl}/resource-service/v1/project/${projectName}/resource/shipyard.yaml`)
       .reply(200, ShipyardResponse);
     const response = await request(app).get(`/api/project/${projectName}/customSequences`);
     expect(response.body).toEqual({
@@ -36,7 +36,7 @@ describe('Test /project/:projectName/customSequences', () => {
   it('should return empty sequences if stage does not have any sequences', async () => {
     const projectName = 'sockshop';
     axiosMock
-      .onGet(`${global.baseUrl}/configuration-service/v1/project/${projectName}/resource/shipyard.yaml`)
+      .onGet(`${global.baseUrl}/resource-service/v1/project/${projectName}/resource/shipyard.yaml`)
       .reply(200, ShipyardEmptySequenceResponse);
     const response = await request(app).get(`/api/project/${projectName}/customSequences`);
     expect(response.body).toEqual({

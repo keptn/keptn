@@ -38,8 +38,8 @@ spec:
           ports:
             - containerPort: 80
           env:
-          - name: CONFIGURATION_SERVICE
-            value: "http://localhost:8081/configuration-service"
+          - name: RESOURCE_SERVICE
+            value: "http://localhost:8081/resource-service"
           - name: env
             value: 'production'
           - name: LOG_LEVEL

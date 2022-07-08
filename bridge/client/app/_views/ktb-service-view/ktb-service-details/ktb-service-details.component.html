@@ -1,0 +1,92 @@
+<ng-container *ngIf="deploymentInfo as deploymentInfo" uitestid="keptn-service-details-deploymentInfo.deployment">
+  <dt-info-group class="mb-2">
+    <dt-info-group-title>
+      <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="15px">
+        <div fxLayout="row" fxLayoutAlign="start center" class="service-title mt-1 mb-1">
+          <span
+            class="bold"
+            [textContent]="deploymentInfo.deployment.image || deploymentInfo.deployment.service"
+          ></span>
+          <dt-tag-list
+            aria-label="deploymentInfo.deployment-labels"
+            uitestid="keptn-service-details-deploymentInfo.deploymentTags"
+          >
+            <dt-tag *ngFor="let label of deploymentInfo.deployment.labels | keyvalue">
+              <a
+                *ngIf="isUrl(label.value); else displayText"
+                [href]="label.value"
+                target="_blank"
+                [textContent]="label.key"
+              ></a>
+              <ng-template #displayText>
+                <p><span [textContent]="label.key"></span>:&nbsp;<span [textContent]="label.value"></span></p>
+              </ng-template>
+            </dt-tag>
+          </dt-tag-list>
+        </div>
+      </div>
+    </dt-info-group-title>
+  </dt-info-group>
+  <ktb-deployment-timeline
+    [deployment]="deploymentInfo.deployment"
+    [(selectedStage)]="deploymentInfo.stage"
+    (selectedStageChange)="selectStage($event)"
+  ></ktb-deployment-timeline>
+  <ng-container *ngIf="deploymentInfo.deployment.getStage(deploymentInfo.stage) as deploymentStage">
+    <ktb-sequence-list
+      [shkeptncontext]="deploymentInfo.deployment.keptnContext"
+      [sequences]="deploymentStage.subSequences"
+      [stage]="deploymentInfo.stage"
+      [remediations]="deploymentStage.openRemediations"
+    ></ktb-sequence-list>
+    <div
+      class="mt-3"
+      [class]="{ 'animation-pulse': deploymentInfo.stage }"
+      fxLayout="column"
+      fxLayoutGap="15px"
+      *ngIf="deploymentStage.approvalInformation as approvalInformation"
+    >
+      <ktb-event-item
+        [event]="approvalInformation.trace"
+        [image]="approvalInformation.deployedImage"
+        (approvalSent)="deploymentStage.removeApproval()"
+      >
+      </ktb-event-item>
+    </div>
+
+    <div *ngIf="!deploymentStage.hasEvaluation" fxLayout="row" fxLayoutAlign="start start" class="mt-2">
+      <dt-icon class="info mr-1" name="information"></dt-icon>
+      <div fxLayout="column">
+        <span>No evaluation was performed during the sequence execution.</span>
+        <span
+          >To perform an evaluation, add the <code>evaluation</code> task to the <code>delivery</code> sequence of the
+          <code [textContent]="deploymentInfo.stage"></code> stage in the Shipyard for this project.</span
+        >
+      </div>
+    </div>
+
+    <div class="mt-3" fxLayout="column" fxLayoutGap="15px" *ngIf="deploymentStage.latestEvaluation as evaluationEvent">
+      <ktb-event-item [showChartLink]="true" [event]="evaluationEvent" [showTime]="false" [showLabels]="false">
+        <ktb-event-item-detail>
+          <ktb-evaluation-details
+            [evaluationInfo]="{
+              evaluation: evaluationEvent,
+              shouldSelect: deploymentStage.hasEvaluation
+            }"
+            [isInvalidated]="evaluationEvent.isInvalidated()"
+          ></ktb-evaluation-details>
+        </ktb-event-item-detail>
+      </ktb-event-item>
+    </div>
+  </ng-container>
+  <ng-template #remediationDialog let-data>
+    <h1 mat-dialog-title>Remediation</h1>
+    <div mat-dialog-content uitestid="remediation-config-content">
+      <pre [textContent]="data"></pre>
+    </div>
+    <div mat-dialog-actions>
+      <button dt-button variant="secondary" (click)="copyPayload(data)">Copy</button>
+      <button dt-button class="ml-2" (click)="closeRemediationConfigDialog()">Close</button>
+    </div>
+  </ng-template>
+</ng-container>

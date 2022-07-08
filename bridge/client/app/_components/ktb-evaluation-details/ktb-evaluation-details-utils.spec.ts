@@ -3,6 +3,8 @@ import {
   createDataPoints,
   evaluationToDataPoint,
   filterUnparsedEvaluations,
+  getScoreInfo,
+  getScoreState,
   getTotalScore,
   indicatorResultToDataPoint,
   parseSloOfEvaluations,
@@ -11,6 +13,8 @@ import { EvaluationsMock } from '../../_services/_mockData/evaluations.mock';
 import { IDataPoint, IHeatmapScoreTooltip, IHeatmapSliTooltip, IHeatmapTooltipType } from '../../_interfaces/heatmap';
 import { IndicatorResult } from '../../../../shared/interfaces/indicator-result';
 import { EventTypes } from '../../../../shared/interfaces/event-types';
+import { IEvaluationData } from '../../../../shared/models/trace';
+import { EvaluationsKeySliMock } from '../../_services/_mockData/evaluations-keySli.mock';
 
 describe('KtbEvaluationDetailsUtils', () => {
   const validSLOFile =
@@ -143,8 +147,8 @@ describe('KtbEvaluationDetailsUtils', () => {
     parseSloOfEvaluations([trace]);
 
     // then
-    expect(trace.data.evaluation?.score_pass).toBe('90');
-    expect(trace.data.evaluation?.score_warning).toBe('75');
+    expect(trace.data.evaluation?.score_pass).toBe(90);
+    expect(trace.data.evaluation?.score_warning).toBe(75);
     expect(trace.data.evaluation?.compare_with).toBe('single_result');
     expect(trace.data.evaluation?.include_result_with_score).toBe('pass');
     expect(trace.data.evaluation?.sloFileContentParsed).toBe(true);
@@ -166,6 +170,42 @@ describe('KtbEvaluationDetailsUtils', () => {
         weight: 1,
       },
     ]);
+  });
+
+  it('should return score state', () => {
+    const evaluations = EvaluationsKeySliMock;
+    parseSloOfEvaluations(evaluations);
+
+    const failedEvaluationData = evaluations[0].data.evaluation as IEvaluationData;
+    const failedScoreState = getScoreState(failedEvaluationData);
+
+    const warningEvaluationData = evaluations[1].data.evaluation as IEvaluationData;
+    const warningScoreState = getScoreState(warningEvaluationData);
+
+    const passedEvaluationData = evaluations[2].data.evaluation as IEvaluationData;
+    const passedScoreState = getScoreState(passedEvaluationData);
+
+    expect(failedScoreState).toBe('fail');
+    expect(warningScoreState).toBe('warning');
+    expect(passedScoreState).toBe('pass');
+  });
+
+  it('should return score info', () => {
+    const evaluations = EvaluationsKeySliMock;
+    parseSloOfEvaluations(evaluations);
+
+    const failedEvaluationData = evaluations[0].data.evaluation as IEvaluationData;
+    const failedScoreInfo = getScoreInfo(failedEvaluationData);
+
+    const warningEvaluationData = evaluations[1].data.evaluation as IEvaluationData;
+    const warningScoreInfo = getScoreInfo(warningEvaluationData);
+
+    const passedEvaluationData = evaluations[2].data.evaluation as IEvaluationData;
+    const passedScoreInfo = getScoreInfo(passedEvaluationData);
+
+    expect(failedScoreInfo).toBe(' < 75');
+    expect(warningScoreInfo).toBe(' >= 75');
+    expect(passedScoreInfo).toBe(' >= 90');
   });
 
   function getTraceWithSloContent(

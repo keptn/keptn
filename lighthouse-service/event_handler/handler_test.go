@@ -102,7 +102,7 @@ func TestNewEventHandler(t *testing.T) {
 				return fake.NewSimpleClientset(), nil
 			}
 			tt.args.event.SetType(tt.eventType)
-			os.Setenv("CONFIGURATION_SERVICE", configurationServiceURL)
+			os.Setenv("RESOURCE_SERVICE", configurationServiceURL)
 
 			got, err := NewEventHandler(ctx, tt.args.event)
 			if (err != nil) != tt.wantErr {

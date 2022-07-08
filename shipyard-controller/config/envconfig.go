@@ -20,7 +20,7 @@ type EnvConfig struct {
 	// termination of the shipyard-controller's pod and the reception of the SIGTERM signal
 	PreStopHookTime int `envconfig:"PRE_STOP_HOOK_TIME" default:"5"`
 	// ConfigurationSvcEndpoint is the URL of the configuration service
-	ConfigurationSvcEndpoint string `envconfig:"CONFIGURATION_SERVICE" default:"http://configuration-service:8080"`
+	ConfigurationSvcEndpoint string `envconfig:"RESOURCE_SERVICE" default:"http://resource-service:8080"`
 	// EventDispatchIntervalSec is the interval with which the event dispatcher tries to send events
 	EventDispatchIntervalSec int `envconfig:"EVENT_DISPATCH_INTERVAL_SEC" default:"10"`
 	// SequenceDispatchIntervalSec is the interval with which the sequence dispatcher tries to dispatch sequences

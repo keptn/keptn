@@ -1,0 +1,74 @@
+<h2>Sequences</h2>
+<dt-table [dataSource]="dataSource">
+  <ng-container dtColumnDef="time" dtColumnAlign="text" dtColumnProportion="2">
+    <dt-header-cell *dtHeaderCellDef>Started at</dt-header-cell>
+    <dt-cell *dtCellDef="let row">
+      <ng-container *ngIf="isRemediation(row) as sequence; else trace">
+        <div fxLayout="row" fxLayoutAlign="start center" uitestid="ktb-sequence-list-item-remediation">
+          <button *ngIf="sequence.isLoading(); else finished" class="m-0 p-0" dt-button disabled variant="nested">
+            <ktb-loading-spinner aria-label="Remediation is running..."></ktb-loading-spinner>
+          </button>
+          <ng-template #finished>
+            <dt-icon
+              name="criticalevent"
+              [class.error]="sequence.isFaulty(this.stage)"
+              [class.warning]="sequence.isWarning(this.stage)"
+              [class.success]="sequence.isSuccessful(this.stage)"
+            ></dt-icon>
+          </ng-template>
+          <span [textContent]="sequence.time | amDateFormat: dateUtil.getDateTimeFormat()"></span>
+        </div>
+      </ng-container>
+      <ng-template #trace>
+        <ng-container *ngIf="isSubsequence(row) as subSequence">
+          <dt-icon
+            *ngIf="subSequence.state === SequenceState.FINISHED || subSequence.hasPendingApproval; else loading"
+            [class.error]="subSequence.result === ResultTypes.FAILED"
+            [class.success]="subSequence.result === ResultTypes.PASSED"
+            [class.warning]="subSequence.result === ResultTypes.WARNING"
+            [class.highlight]="subSequence.hasPendingApproval"
+            [name]="getEventIcon(subSequence)"
+          ></dt-icon>
+          <ng-template #loading>
+            <button class="m-0 p-0" dt-button disabled variant="nested">
+              <ktb-loading-spinner aria-label="Task is running..."></ktb-loading-spinner>
+            </button>
+          </ng-template>
+          <span
+            *ngIf="subSequence.time"
+            [textContent]="subSequence.time | toDate | amCalendar: dateUtil.getCalendarFormats()"
+          ></span>
+        </ng-container>
+      </ng-template>
+    </dt-cell>
+  </ng-container>
+
+  <ng-container dtColumnDef="sequence" dtColumnAlign="text" dtColumnProportion="1">
+    <dt-header-cell *dtHeaderCellDef>Sequence</dt-header-cell>
+    <dt-cell *dtCellDef="let row">
+      <a
+        *ngIf="isRemediation(row) as sequence"
+        [textContent]="sequence.name"
+        [routerLink]="getRemediationLink(sequence)"
+      ></a>
+      <a
+        *ngIf="isSubsequence(row) as subSequence"
+        [textContent]="subSequence.name"
+        [routerLink]="getSequenceLink(subSequence)"
+      ></a>
+    </dt-cell>
+  </ng-container>
+
+  <ng-container dtColumnDef="message" dtColumnAlign="text" dtColumnProportion="4">
+    <dt-header-cell *dtHeaderCellDef>Message</dt-header-cell>
+    <dt-cell *dtCellDef="let row">
+      <span *ngIf="isRemediation(row) as sequence; else traceMessage" [textContent]="sequence.problemTitle"></span>
+      <ng-template #traceMessage>
+        <span [textContent]="row.message"></span>
+      </ng-template>
+    </dt-cell>
+  </ng-container>
+
+  <dt-header-row *dtHeaderRowDef="['time', 'sequence', 'message']"></dt-header-row>
+  <dt-row *dtRowDef="let row; columns: ['time', 'sequence', 'message']"></dt-row>
+</dt-table>

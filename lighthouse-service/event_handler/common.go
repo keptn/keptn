@@ -26,7 +26,7 @@ import (
 )
 
 const datastore = "MONGODB_DATASTORE"
-const configurationServiceURL = "configuration-service:8080"
+const configurationServiceURL = "resource-service:8080"
 
 // Opaque key type used for graceful shutdown context value
 type gracefulShutdownKeyType struct{}
