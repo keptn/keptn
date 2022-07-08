@@ -46,6 +46,67 @@ func Test_Fail_Missing_YAML(t *testing.T) {
 
 }
 
+func Test_Fail_Wrong_Specs(t *testing.T) {
+	fakeKeptn := sdk.NewFakeKeptn("test-remediation-svc")
+	fakeKeptn.SetResourceHandler(sdk.StringResourceHandler{
+		ResourceContent: `apiVersion: spec.kept`,
+	})
+	fakeKeptn.AddTaskHandler("sh.keptn.event.get-action.triggered", handler.NewGetActionEventHandler())
+	fakeKeptn.NewEvent(newGetActionTriggeredEvent("test/events/get-action.triggered-0.json"))
+
+	fakeKeptn.AssertNumberOfEventSent(t, 2)
+	fakeKeptn.AssertSentEventType(t, 0, keptnv2.GetStartedEventType("get-action"))
+	fakeKeptn.AssertSentEventType(t, 1, keptnv2.GetFinishedEventType("get-action"))
+	fakeKeptn.AssertSentEventStatus(t, 1, keptnv2.StatusErrored)
+	fakeKeptn.AssertSentEventResult(t, 1, keptnv2.ResultFailed)
+	fakeKeptn.AssertSentEvent(t, 1, func(ce models.KeptnContextExtendedCE) bool {
+		getActionFinishedData := keptnv2.GetActionFinishedEventData{}
+		ce.DataAs(&getActionFinishedData)
+		t.Logf("%v", getActionFinishedData)
+		return strings.Contains(getActionFinishedData.Message, "Please validate it against the specification.")
+	})
+
+}
+
+func Test_Malformed_Event(t *testing.T) {
+	fakeKeptn := sdk.NewFakeKeptn("test-remediation-svc")
+	fakeKeptn.AddTaskHandler("sh.keptn.event.get-action.triggered", handler.NewGetActionEventHandler())
+	fakeKeptn.NewEvent(newGetActionTriggeredEvent("test/events/get-action.triggered-malformed.json"))
+	fakeKeptn.AssertNumberOfEventSent(t, 2)
+	fakeKeptn.AssertSentEventStatus(t, 1, keptnv2.StatusErrored)
+	fakeKeptn.AssertSentEventResult(t, 1, keptnv2.ResultFailed)
+	fakeKeptn.AssertSentEvent(t, 1, func(ce models.KeptnContextExtendedCE) bool {
+		getActionFinishedData := keptnv2.GetActionFinishedEventData{}
+		ce.DataAs(&getActionFinishedData)
+		t.Logf("%v", getActionFinishedData)
+		return strings.Contains(getActionFinishedData.Message, "Could not decode input event data")
+	})
+}
+
+func Test_Fail_Unparsable(t *testing.T) {
+	fakeKeptn := sdk.NewFakeKeptn("test-remediation-svc")
+	fakeKeptn.SetResourceHandler(sdk.StringResourceHandler{
+		ResourceContent: `apiVersion: spec.kept
+             kind: Remediation`,
+	})
+	fakeKeptn.AddTaskHandler("sh.keptn.event.get-action.triggered", handler.NewGetActionEventHandler())
+	fakeKeptn.NewEvent(newGetActionTriggeredEvent("test/events/get-action.triggered-0.json"))
+
+	fakeKeptn.AssertNumberOfEventSent(t, 2)
+	fakeKeptn.AssertSentEventType(t, 0, keptnv2.GetStartedEventType("get-action"))
+	fakeKeptn.AssertSentEventType(t, 1, keptnv2.GetFinishedEventType("get-action"))
+
+	fakeKeptn.AssertSentEventStatus(t, 1, keptnv2.StatusErrored)
+	fakeKeptn.AssertSentEventResult(t, 1, keptnv2.ResultFailed)
+	fakeKeptn.AssertSentEvent(t, 1, func(ce models.KeptnContextExtendedCE) bool {
+		getActionFinishedData := keptnv2.GetActionFinishedEventData{}
+		ce.DataAs(&getActionFinishedData)
+		t.Logf("%v", getActionFinishedData)
+		return strings.Contains(getActionFinishedData.Message, "Please validate it against the specification.")
+	})
+
+}
+
 func Test_Receiving_GetActionTriggeredEvent_RemediationFromServiceLevel(t *testing.T) {
 	fakeKeptn := sdk.NewFakeKeptn("test-remediation-svc")
 	fakeKeptn.AddTaskHandler("sh.keptn.event.get-action.triggered", handler.NewGetActionEventHandler())
