@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { ExtraOptions, RouterModule, Routes } from '@angular/router';
 import { DashboardLegacyComponent } from './dashboard-legacy/dashboard-legacy.component';
-import { EvaluationBoardComponent } from './evaluation-board/evaluation-board.component';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { KtbErrorViewComponent } from './_views/ktb-error-view/ktb-error-view.component';
 import { AppComponent } from './app.component';
@@ -35,8 +34,11 @@ const routes: Routes = [
       },
       { path: 'trace/:keptnContext', canActivate: [TraceDeepLinkGuard], children: [] },
       { path: 'trace/:keptnContext/:eventSelector', canActivate: [TraceDeepLinkGuard], children: [] },
-      { path: 'evaluation/:shkeptncontext', component: EvaluationBoardComponent },
-      { path: 'evaluation/:shkeptncontext/:eventselector', component: EvaluationBoardComponent },
+      {
+        path: 'evaluation/:shkeptncontext',
+        loadChildren: () =>
+          import('./_views/ktb-evaluation-view/ktb-evaluation-view.module').then((m) => m.KtbEvaluationViewModule),
+      },
       { path: '**', component: NotFoundComponent },
     ],
   },

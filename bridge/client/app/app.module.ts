@@ -16,7 +16,6 @@ import { AppRouting } from './app.routing';
 import { KtbRootComponent } from './ktb-root/ktb-root.component';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { DashboardLegacyComponent } from './dashboard-legacy/dashboard-legacy.component';
-import { EvaluationBoardComponent } from './evaluation-board/evaluation-board.component';
 import { KtbSettingsViewComponent } from './_views/ktb-settings-view/ktb-settings-view.component';
 
 import { AppInitService } from './_services/app.init';
@@ -43,7 +42,6 @@ import { DtTagModule } from '@dynatrace/barista-components/tag';
 
 import { KtbAppHeaderModule } from './_components/ktb-app-header/ktb-app-header.module';
 import { KtbErrorViewModule } from './_views/ktb-error-view/ktb-error-view.module';
-import { KtbEventItemModule } from './_components/ktb-event-item/ktb-event-item.module';
 import { KtbLoadingModule } from './_components/ktb-loading/ktb-loading.module';
 import { KtbNotificationModule } from './_components/ktb-notification/ktb-notification.module';
 import { KtbProjectListModule } from './_components/ktb-project-list/ktb-project-list.module';
@@ -80,8 +78,6 @@ const dtModules = [
 const ktbModules = [
   KtbAppHeaderModule,
   KtbErrorViewModule,
-  KtbEvaluationDetailsModule,
-  KtbEventItemModule,
   KtbLoadingModule,
   KtbNotificationModule,
   KtbPipeModule,
@@ -93,7 +89,6 @@ const ktbModules = [
     AppComponent,
     DashboardLegacyComponent,
     NotFoundComponent,
-    EvaluationBoardComponent,
     KtbSettingsViewComponent,
     KtbRootComponent,
   ],

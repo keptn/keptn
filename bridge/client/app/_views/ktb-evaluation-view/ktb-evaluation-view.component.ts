@@ -3,30 +3,30 @@ import { catchError, filter, map, startWith, switchMap } from 'rxjs/operators';
 import { Observable, of, throwError } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
-import { EventTypes } from '../../../shared/interfaces/event-types';
-import { DataService } from '../_services/data.service';
-import { environment } from '../../environments/environment';
-import { KeptnService } from '../../../shared/models/keptn-service';
+import { EventTypes } from '../../../../shared/interfaces/event-types';
+import { DataService } from '../../_services/data.service';
+import { environment } from '../../../environments/environment';
+import { KeptnService } from '../../../../shared/models/keptn-service';
 import {
   EvaluationBoardParams,
-  EvaluationBoardState,
   EvaluationBoardStateLoading,
   EvaluationBoardStatus,
-} from './evaluation-board-state';
-import { DateUtil } from '../_utils/date.utils';
+  KtbEvaluationViewState,
+} from './ktb-evaluation-view-state';
+import { DateUtil } from '../../_utils/date.utils';
 import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'ktb-evaluation-board',
-  templateUrl: './evaluation-board.component.html',
-  styleUrls: ['./evaluation-board.component.scss'],
+  templateUrl: './ktb-evaluation-view.component.html',
+  styleUrls: ['./ktb-evaluation-view.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EvaluationBoardComponent {
+export class KtbEvaluationViewComponent {
   public logoInvertedUrl = environment?.config?.logoInvertedUrl;
   public hasHistory: boolean;
   public EvaluationBoardState = EvaluationBoardStatus;
-  public state$: Observable<EvaluationBoardState>;
+  public state$: Observable<KtbEvaluationViewState>;
 
   constructor(private location: Location, private route: ActivatedRoute, private dataService: DataService) {
     this.hasHistory = window.history.length > 1;
@@ -64,7 +64,7 @@ export class EvaluationBoardComponent {
             })
           )
       ),
-      switchMap((data): Observable<EvaluationBoardState> => {
+      switchMap((data): Observable<KtbEvaluationViewState> => {
         const { project: projectName, stage: stageName, service: serviceName } = data.evaluations[0];
         if (!projectName || !stageName || !serviceName) {
           return of({ state: EvaluationBoardStatus.ERROR, kind: 'trace', keptnContext: data.keptnContext });
@@ -85,7 +85,7 @@ export class EvaluationBoardComponent {
           }))
         );
       }),
-      catchError((error: HttpErrorResponse | { keptnContext: string }): Observable<EvaluationBoardState> => {
+      catchError((error: HttpErrorResponse | { keptnContext: string }): Observable<KtbEvaluationViewState> => {
         if ('keptnContext' in error) {
           return of({ state: EvaluationBoardStatus.ERROR, kind: 'trace', keptnContext: error.keptnContext });
         }

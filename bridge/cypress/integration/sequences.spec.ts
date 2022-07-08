@@ -367,7 +367,7 @@ describe('Sequences', () => {
     it('should limit visible services and show all on "view more"', () => {
       sequencePage.interceptWithManyFilters().visit('sockshop');
 
-      cy.wait('@Sequences');
+      cy.wait('@Sequences').wait(500);
 
       sequencePage.assertFilterItemsCount('Service', 5).clickFilterViewMore('Service').assertFilterShowMoreCount(12);
     });
