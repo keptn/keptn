@@ -2835,10 +2835,10 @@ onetime@^5.1.2:
   dependencies:
     mimic-fn "^2.1.0"
 
-openid-client@5.1.7:
-  version "5.1.7"
-  resolved "https://registry.yarnpkg.com/openid-client/-/openid-client-5.1.7.tgz#deb16847c610075716be1ec679068b04db16f065"
-  integrity sha512-VNtf/q+fv2Jiqi0ViLVmN3gGMSHF+YUGW6baKA/naoPKkKw4JdvghaP/kXQ/bzRRDWk6VmpCYDcR934UdDs8ug==
+openid-client@5.1.8:
+  version "5.1.8"
+  resolved "https://registry.yarnpkg.com/openid-client/-/openid-client-5.1.8.tgz#3a24910288b32c32f548fb6e391f44178ce6370f"
+  integrity sha512-EPxJY6bT7YIYQEXSGxRC5flQ3GUhLy98ufdto6+BVBrFGPmwjUpy4xBcYuU/Wt9nPkO/3EgljBrr6Ezx4lp1RQ==
   dependencies:
     jose "^4.1.4"
     lru-cache "^6.0.0"
