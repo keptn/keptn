@@ -6,6 +6,7 @@
   "time": "",
   "contenttype": "application/json",
   "shkeptncontext": "",
+  "gitcommitid": "1234",
   "data": {
     "project": "sockshop",
     "service": "carts-db",
