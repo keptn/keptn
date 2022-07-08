@@ -18,41 +18,52 @@ import (
 
 const defaultImportArchiveExtension = ".zip"
 
-//go:generate moq -pkg fake --skip-ensure -out ./fake/projectchecker_mock.go . projectChecker:ProjectCheckerMock
+//go:generate moq -pkg handlers_mock --skip-ensure -out ./fake/projectchecker_mock.go . projectChecker:ProjectCheckerMock importPackageProcessor:MockImportPackageProcessor
 
 type projectChecker interface {
 	ProjectExists(projectName string) (bool, error)
 }
 
-// ParseArchiveFunction is the function called to parse the uploaded file
-type ParseArchiveFunction func(string, uint64) (*importer.ZippedPackage, error)
+type importPackageProcessor interface {
+	Process(project string, ip importer.ImportPackage) error
+}
+
+// parseArchiveFunction is the function called to parse the uploaded file
+type parseArchiveFunction func(string, uint64) (*ZippedPackage, error)
 
 // ImportHandler is the rest handler for the /import endpoint
 type ImportHandler struct {
 	checker                    projectChecker
 	tempStorageDir             string
 	maxUncompressedPackageSize uint64
-	parseArchive               ParseArchiveFunction
+	parseArchive               parseArchiveFunction
+	processor                  importPackageProcessor
 }
 
 // GetImportHandlerFunc will instantiate a configured ImportHandler and return the method that can be used for
 // handling http requests to the endpoint. See restapi.configureAPI for usage
-func GetImportHandlerFunc(storagePath string, checker projectChecker, maxPackageSize uint64) func(
+func GetImportHandlerFunc(
+	storagePath string, checker projectChecker, maxPackageSize uint64, processor importPackageProcessor,
+) func(
 	params import_operations.ImportParams, principal *models.Principal,
 ) middleware.Responder {
-	ih := getImportHandlerInstance(storagePath, checker, maxPackageSize, importer.NewPackage)
+	ih := getImportHandlerInstance(
+		storagePath, checker, maxPackageSize, NewZippedPackage,
+		processor,
+	)
 	return ih.HandleImport
 }
 
 func getImportHandlerInstance(
 	storagePath string, checker projectChecker, maxPackageSize uint64,
-	parserFunction ParseArchiveFunction,
+	parserFunction parseArchiveFunction, processor importPackageProcessor,
 ) *ImportHandler {
 	return &ImportHandler{
 		checker:                    checker,
 		tempStorageDir:             storagePath,
 		maxUncompressedPackageSize: maxPackageSize,
 		parseArchive:               parserFunction,
+		processor:                  processor,
 	}
 }
 
@@ -137,6 +148,17 @@ func (ih *ImportHandler) HandleImport(
 			logger.Warnf("Error closing manifest %+v: %s", m, manifestCloseErr)
 		}
 	}()
+
+	err = ih.processor.Process(params.Project, m)
+	if err != nil {
+		logger.Errorf("Error processing import archive: %v", err)
+		message := fmt.Sprintf("Error processing import archive: %s", err)
+		mError := models.Error{
+			Code:    http.StatusBadRequest,
+			Message: &message,
+		}
+		return import_operations.NewImportBadRequest().WithPayload(&mError)
+	}
 
 	return import_operations.NewImportOK()
 }

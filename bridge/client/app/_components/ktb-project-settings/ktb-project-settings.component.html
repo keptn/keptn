@@ -130,7 +130,9 @@
     <dt-confirmation-dialog-actions>
       <button dt-button variant="secondary" (click)="reject()">Stay</button>
       <button dt-button variant="secondary" (click)="reset()">Discard changes and leave page</button>
-      <button dt-button [disabled]="isProjectFormInvalid()" (click)="saveAll()">Save changes</button>
+      <button dt-button [disabled]="isProjectFormInvalid()" (click)="saveAll()" uitestid="ktb-confirmation-dialog-save">
+        Save changes
+      </button>
     </dt-confirmation-dialog-actions>
   </dt-confirmation-dialog-state>
 </dt-confirmation-dialog>

@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { ExtraOptions, RouterModule, Routes } from '@angular/router';
 import { DashboardLegacyComponent } from './dashboard-legacy/dashboard-legacy.component';
 import { ProjectBoardComponent } from './project-board/project-board.component';
-import { EvaluationBoardComponent } from './evaluation-board/evaluation-board.component';
 import { KtbSettingsViewComponent } from './_views/ktb-settings-view/ktb-settings-view.component';
 import { KtbSecretsListComponent } from './_components/ktb-secrets-list/ktb-secrets-list.component';
 import { KtbCreateSecretFormComponent } from './_components/ktb-create-secret-form/ktb-create-secret-form.component';
@@ -109,8 +108,11 @@ const routes: Routes = [
       },
       { path: 'trace/:shkeptncontext', component: ProjectBoardComponent },
       { path: 'trace/:shkeptncontext/:eventselector', component: ProjectBoardComponent },
-      { path: 'evaluation/:shkeptncontext', component: EvaluationBoardComponent },
-      { path: 'evaluation/:shkeptncontext/:eventselector', component: EvaluationBoardComponent },
+      {
+        path: 'evaluation/:shkeptncontext',
+        loadChildren: () =>
+          import('./_views/ktb-evaluation-view/ktb-evaluation-view.module').then((m) => m.KtbEvaluationViewModule),
+      },
       { path: '**', component: NotFoundComponent },
     ],
   },

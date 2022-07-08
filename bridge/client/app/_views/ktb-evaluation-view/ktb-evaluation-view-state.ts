@@ -1,4 +1,4 @@
-import { Trace } from '../_models/trace';
+import { Trace } from '../../_models/trace';
 
 export enum EvaluationBoardStatus {
   LOADING,
@@ -34,4 +34,7 @@ type EvaluationBoardStateError = (EvaluationBoardStateErrorDefault | EvaluationB
   state: EvaluationBoardStatus.ERROR;
 };
 
-export type EvaluationBoardState = EvaluationBoardStateLoaded | EvaluationBoardStateLoading | EvaluationBoardStateError;
+export type KtbEvaluationViewState =
+  | EvaluationBoardStateLoaded
+  | EvaluationBoardStateLoading
+  | EvaluationBoardStateError;

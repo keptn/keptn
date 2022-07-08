@@ -1,4 +1,4 @@
-package importer
+package handlers
 
 import (
 	"archive/zip"
@@ -15,9 +15,26 @@ import (
 // ErrorUncompressedSizeTooBig signals that a zip archive has an uncompressed size greater than maximum size allowed
 var /*const*/ ErrorUncompressedSizeTooBig = errors.New("uncompressed size of package exceeds configured maximum size")
 
+// ErrorInvalidResourcePath is returned whenever the requested resource location would not be within the ZippedPackage
+// content
+var /*const*/ ErrorInvalidResourcePath = errors.New("invalid resource path")
+
 // ZippedPackage represents a zipped import package ready to be use (it is extracted to a temp directory)
 type ZippedPackage struct {
 	extractedDir string
+}
+
+func (m *ZippedPackage) GetResource(resourceName string) (io.ReadCloser, error) {
+	actualPath := path.Clean(path.Join(m.extractedDir, resourceName))
+	if !strings.HasPrefix(actualPath, m.extractedDir) {
+		return nil, ErrorInvalidResourcePath
+	}
+	file, err := os.Open(actualPath)
+	if err != nil {
+		return nil, fmt.Errorf("error accessing resource %s: %w", resourceName, err)
+	}
+
+	return file, nil
 }
 
 // Close signals that the package resources can be freed (including any extracted files).
@@ -57,11 +74,11 @@ func (m *ZippedPackage) extract(zipFile string, maxSize uint64) error {
 	return extractZipArchive(zipReader, extractionDir, maxSize)
 }
 
-// NewPackage creates a new ZippedPackage object ready to be used.
+// NewZippedPackage creates a new ZippedPackage object ready to be used.
 // The zip file contents will be extracted in a subDirectory with the same name as the file stripped of the .zip
 // extension. During the extraction, zip file uncompressed content is checked not to surpass maxSize.
 // If any error occurs, the temporary folder is cleaned up and (nil, error) will be returned
-func NewPackage(zipFile string, maxSize uint64) (*ZippedPackage, error) {
+func NewZippedPackage(zipFile string, maxSize uint64) (*ZippedPackage, error) {
 	m := new(ZippedPackage)
 	err := m.extract(zipFile, maxSize)
 	if err != nil {
