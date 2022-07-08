@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbProjectViewComponent } from './ktb-project-view.component';
-import { ActivatedRoute, convertToParamMap, ParamMap, UrlSegment } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, ParamMap } from '@angular/router';
 import { BehaviorSubject, of } from 'rxjs';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
@@ -29,7 +29,7 @@ describe('ProjectBoardComponent', () => {
           useValue: {
             paramMap: paramsSubject.asObservable(),
             snapshot: { url: [{ path: 'project' }, { path: 'sockshop' }] },
-            url: of([new UrlSegment('project', {}), new UrlSegment('sockshop', {})]),
+            data: of({}),
           },
         },
       ],

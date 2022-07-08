@@ -16,6 +16,7 @@ import { DeleteResult, DeleteType } from '../../_interfaces/delete';
 import { NotificationsService } from '../../_services/notifications.service';
 import { NotificationType } from '../../_models/notification';
 import { KtbProjectCreateMessageComponent } from './ktb-project-create-message/ktb-project-create-message.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('KtbProjectSettingsComponent', () => {
   let component: KtbProjectSettingsComponent;
@@ -32,6 +33,7 @@ describe('KtbProjectSettingsComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         KtbProjectSettingsModule,
+        BrowserAnimationsModule,
         HttpClientTestingModule,
         RouterTestingModule.withRoutes([
           { path: 'dashboard', component: KtbProjectSettingsComponent },
