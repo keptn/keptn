@@ -25,12 +25,7 @@ func newGetActionTriggeredEvent(filename string) models.KeptnContextExtendedCE {
 	return event
 }
 
-// This test reproduces integration test self-healing until line 176 :
-// it triggers a remediation that fails because no remediation.yaml is available yet
-// remediation-service finished with result fail
-// message is "Could not get remediation.yaml file ..."
-// require.Equal(t, keptnv2.StatusErrored, finishedEventData.Status)
-// require.Equal(t, keptnv2.ResultFailed, finishedEventData.Result)
+// Test_Fail_Missing_YAML tests triggering a remediation that fails because no "remediation.yam" is available yet
 
 func Test_Fail_Missing_YAML(t *testing.T) {
 	fakeKeptn := sdk.NewFakeKeptn("test-remediation-svc")
