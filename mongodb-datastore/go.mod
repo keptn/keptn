@@ -17,7 +17,7 @@ require (
 	github.com/nats-io/nats-server/v2 v2.8.4
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.5
-	github.com/tryvium-travels/memongo v0.5.0
+	github.com/tryvium-travels/memongo v0.6.0
 	go.mongodb.org/mongo-driver v1.9.1
 	golang.org/x/net v0.0.0-20220706163947-c90051bbdb60
 )
