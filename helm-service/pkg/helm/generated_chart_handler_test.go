@@ -3,7 +3,6 @@ package helm
 import (
 	"errors"
 	"log"
-	"os"
 	"strings"
 	"testing"
 
@@ -133,8 +132,8 @@ func Test_getVirtualServicePublicHost(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			os.Setenv("HOSTNAME_TEMPLATE", tt.hostnameTemplate)
-			os.Setenv("INGRESS_HOSTNAME_SUFFIX", tt.hostnameSuffix)
+			t.Setenv("HOSTNAME_TEMPLATE", tt.hostnameTemplate)
+			t.Setenv("INGRESS_HOSTNAME_SUFFIX", tt.hostnameSuffix)
 			got, err := getVirtualServicePublicHost(tt.args.svc, tt.args.project, tt.args.stageName)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getVirtualServicePublicHost() error = %v, wantErr %v", err, tt.wantErr)

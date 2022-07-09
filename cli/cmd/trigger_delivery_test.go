@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -13,11 +12,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
-
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/stretchr/testify/require"
 
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 )
 
@@ -113,7 +112,7 @@ func TestTriggerDelivery(t *testing.T) {
 	)
 	defer ts.Close()
 
-	os.Setenv("MOCK_SERVER", ts.URL)
+	t.Setenv("MOCK_SERVER", ts.URL)
 
 	cmd := fmt.Sprintf("trigger delivery --project=%s --service=%s --stage=%s --sequence=%s "+
 		"--image=%s --values=a.b.c=d --mock --values=c.d=e", "sockshop", "carts", "dev", "artifact-delivery", "docker-registry:5000/keptnexamples/carts:0.9.1")
@@ -183,7 +182,7 @@ func TestTriggerDeliveryNoStageProvided(t *testing.T) {
 	)
 	defer ts.Close()
 
-	os.Setenv("MOCK_SERVER", ts.URL)
+	t.Setenv("MOCK_SERVER", ts.URL)
 
 	cmd := fmt.Sprintf("trigger delivery --project=%s --service=%s --sequence=%s "+
 		"--image=%s:%s --values=a.b.c=d --mock --values=c.d=e", "sockshop", "carts", "artifact-delivery", "docker.io/keptnexamples/carts", "0.9.1")
@@ -272,7 +271,7 @@ func TestTriggerDeliveryNonExistingProject(t *testing.T) {
 		}),
 	)
 	defer ts.Close()
-	os.Setenv("MOCK_SERVER", ts.URL)
+	t.Setenv("MOCK_SERVER", ts.URL)
 
 	tests := []struct {
 		project string
@@ -328,7 +327,7 @@ func TestTriggerDeliveryNonExistingService(t *testing.T) {
 		}),
 	)
 	defer ts.Close()
-	os.Setenv("MOCK_SERVER", ts.URL)
+	t.Setenv("MOCK_SERVER", ts.URL)
 
 	tests := []struct {
 		service string

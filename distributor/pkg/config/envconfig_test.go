@@ -1,11 +1,11 @@
 package config
 
 import (
-	"github.com/kelseyhightower/envconfig"
-	"github.com/stretchr/testify/assert"
-	"os"
 	"testing"
 	"time"
+
+	"github.com/kelseyhightower/envconfig"
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_getProxyRequestURL(t *testing.T) {
@@ -198,19 +198,13 @@ func Test_getPubSubRecipientURL(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.args.recipientService != "" {
-				os.Setenv("PUBSUB_RECIPIENT", tt.args.recipientService)
-			} else {
-				os.Unsetenv("PUBSUB_RECIPIENT")
+				t.Setenv("PUBSUB_RECIPIENT", tt.args.recipientService)
 			}
 			if tt.args.port != "" {
-				os.Setenv("PUBSUB_RECIPIENT_PORT", tt.args.port)
-			} else {
-				os.Unsetenv("PUBSUB_RECIPIENT_PORT")
+				t.Setenv("PUBSUB_RECIPIENT_PORT", tt.args.port)
 			}
 			if tt.args.path != "" {
-				os.Setenv("PUBSUB_RECIPIENT_PATH", tt.args.path)
-			} else {
-				os.Unsetenv("PUBSUB_RECIPIENT_PATH")
+				t.Setenv("PUBSUB_RECIPIENT_PATH", tt.args.path)
 			}
 
 			env := EnvConfig{}

@@ -16,8 +16,8 @@ func init() {
 	logging.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
 }
 
-func setup() {
-	os.Setenv("MOCK_SERVER", "http://some-valid-url.com")
+func setup(t *testing.T) {
+	t.Setenv("MOCK_SERVER", "http://some-valid-url.com")
 	credentialmanager.MockAuthCreds = true
 
 	*addResourceCmdParams.AllStages = false
@@ -26,10 +26,6 @@ func setup() {
 	*addResourceCmdParams.Project = ""
 	*addResourceCmdParams.Resource = ""
 	*addResourceCmdParams.ResourceURI = ""
-}
-
-func teardown() {
-
 }
 
 // testResource writes a default file
@@ -51,8 +47,7 @@ func testResource(t *testing.T, fileName string, fileContent string) func() {
 // TestAddResourceToProjectStageService
 func TestAddResourceToProjectStageService(t *testing.T) {
 
-	setup()
-	defer teardown()
+	setup(t)
 
 	resourceFileName := "testResource.txt"
 	defer testResource(t, resourceFileName, "")()
@@ -68,8 +63,7 @@ func TestAddResourceToProjectStageService(t *testing.T) {
 // TestAddResourceToProjectStageAndAllStages tests that using --stage and --all-stages together doesn't work
 func TestAddResourceToProjectStageAndAllStages(t *testing.T) {
 
-	setup()
-	defer teardown()
+	setup(t)
 
 	resourceFileName := "testResource.txt"
 	defer testResource(t, resourceFileName, "")()
@@ -85,8 +79,7 @@ func TestAddResourceToProjectStageAndAllStages(t *testing.T) {
 // TestAddResourceToProjectAndStage tests that using --project and --stage (without --service) works
 func TestAddResourceToProjectAndStage(t *testing.T) {
 
-	setup()
-	defer teardown()
+	setup(t)
 
 	resourceFileName := "testResource.txt"
 	defer testResource(t, resourceFileName, "")()
@@ -102,8 +95,7 @@ func TestAddResourceToProjectAndStage(t *testing.T) {
 // TestAddResourceAllStagesWithoutService tests that using --all-stages without --service doesn't work
 func TestAddResourceAllStagesWithoutService(t *testing.T) {
 
-	setup()
-	defer teardown()
+	setup(t)
 
 	resourceFileName := "testResource.txt"
 	defer testResource(t, resourceFileName, "")()
@@ -119,8 +111,7 @@ func TestAddResourceAllStagesWithoutService(t *testing.T) {
 // TestAddResourceToProjectServiceAllStages tests that using --project, --service and --all-stages works
 func TestAddResourceToProjectServiceAllStages(t *testing.T) {
 
-	setup()
-	defer teardown()
+	setup(t)
 
 	resourceFileName := "testResource.txt"
 	defer testResource(t, resourceFileName, "")()
@@ -136,8 +127,7 @@ func TestAddResourceToProjectServiceAllStages(t *testing.T) {
 // TestAddResourceToProjectStage
 func TestAddResourceToProjectStage(t *testing.T) {
 
-	setup()
-	defer teardown()
+	setup(t)
 
 	resourceFileName := "testResource.txt"
 	defer testResource(t, resourceFileName, "")()
@@ -153,8 +143,7 @@ func TestAddResourceToProjectStage(t *testing.T) {
 // TestAddResourceToProject
 func TestAddResourceToProject(t *testing.T) {
 
-	setup()
-	defer teardown()
+	setup(t)
 
 	resourceFileName := "testResource.txt"
 	defer testResource(t, resourceFileName, "")()
@@ -170,8 +159,7 @@ func TestAddResourceToProject(t *testing.T) {
 // TestAddResourceToProjectService
 func TestAddResourceToProjectService(t *testing.T) {
 
-	setup()
-	defer teardown()
+	setup(t)
 
 	resourceFileName := "testResource.txt"
 	defer testResource(t, resourceFileName, "")()

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -17,6 +16,7 @@ import (
 	"github.com/keptn/keptn/cli/pkg/version"
 	"github.com/mattn/go-shellwords"
 	"github.com/spf13/cobra"
+	"github.com/stretchr/testify/assert"
 )
 
 const unexpectedErrMsg = "unexpected error, got '%v'"
@@ -186,7 +186,7 @@ func Test_runVersionCheck(t *testing.T) {
 	}))
 
 	defer ts.Close()
-	os.Setenv("MOCK_SERVER", ts.URL)
+	t.Setenv("MOCK_SERVER", ts.URL)
 
 	tests := []struct {
 		name             string

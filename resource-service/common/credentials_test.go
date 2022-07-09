@@ -2,7 +2,6 @@ package common
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
@@ -17,7 +16,7 @@ import (
 )
 
 func TestK8sCredentialReader_ReadSecret(t *testing.T) {
-	_ = os.Setenv("POD_NAMESPACE", "keptn")
+	t.Setenv("POD_NAMESPACE", "keptn")
 	secretReader := NewK8sCredentialReader(fake.NewSimpleClientset(
 		getK8sSecret(),
 	))
@@ -35,7 +34,7 @@ func TestK8sCredentialReader_ReadSecret(t *testing.T) {
 }
 
 func TestK8sCredentialReader_ReadSecretNotFound(t *testing.T) {
-	_ = os.Setenv("POD_NAMESPACE", "keptn")
+	t.Setenv("POD_NAMESPACE", "keptn")
 	secretReader := NewK8sCredentialReader(fake.NewSimpleClientset())
 
 	secret, err := secretReader.GetCredentials("my-other-project")
@@ -45,7 +44,7 @@ func TestK8sCredentialReader_ReadSecretNotFound(t *testing.T) {
 }
 
 func TestK8sCredentialReader_ReadSecretWrongFormat(t *testing.T) {
-	_ = os.Setenv("POD_NAMESPACE", "keptn")
+	t.Setenv("POD_NAMESPACE", "keptn")
 	secretReader := NewK8sCredentialReader(fake.NewSimpleClientset(
 		&corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
@@ -65,7 +64,7 @@ func TestK8sCredentialReader_ReadSecretWrongFormat(t *testing.T) {
 }
 
 func TestK8sCredentialReader_ReadSecretNoToken(t *testing.T) {
-	_ = os.Setenv("POD_NAMESPACE", "keptn")
+	t.Setenv("POD_NAMESPACE", "keptn")
 	secretReader := NewK8sCredentialReader(fake.NewSimpleClientset(
 		&corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
@@ -84,7 +83,7 @@ func TestK8sCredentialReader_ReadSecretNoToken(t *testing.T) {
 }
 
 func TestK8sCredentialReader_ReadSecretNoPrivateKey(t *testing.T) {
-	_ = os.Setenv("POD_NAMESPACE", "keptn")
+	t.Setenv("POD_NAMESPACE", "keptn")
 	secretReader := NewK8sCredentialReader(fake.NewSimpleClientset(
 		&corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
@@ -104,7 +103,7 @@ func TestK8sCredentialReader_ReadSecretNoPrivateKey(t *testing.T) {
 }
 
 func TestK8sCredentialReader_ReadSecretError(t *testing.T) {
-	_ = os.Setenv("POD_NAMESPACE", "keptn")
+	t.Setenv("POD_NAMESPACE", "keptn")
 
 	fakeClient := fake.NewSimpleClientset()
 

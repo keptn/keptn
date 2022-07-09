@@ -2,9 +2,7 @@ package event_handler
 
 import (
 	"context"
-	"github.com/keptn/go-utils/pkg/sdk/connector/types"
 	"net/http"
-	"os"
 	"testing"
 	"time"
 
@@ -21,6 +19,7 @@ import (
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/go-utils/pkg/sdk/connector/controlplane"
+	"github.com/keptn/go-utils/pkg/sdk/connector/types"
 )
 
 func TestNewEventHandler(t *testing.T) {
@@ -102,7 +101,7 @@ func TestNewEventHandler(t *testing.T) {
 				return fake.NewSimpleClientset(), nil
 			}
 			tt.args.event.SetType(tt.eventType)
-			os.Setenv("RESOURCE_SERVICE", configurationServiceURL)
+			t.Setenv("RESOURCE_SERVICE", configurationServiceURL)
 
 			got, err := NewEventHandler(ctx, tt.args.event)
 			if (err != nil) != tt.wantErr {

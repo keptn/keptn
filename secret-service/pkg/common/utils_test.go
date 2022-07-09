@@ -1,13 +1,13 @@
 package common
 
 import (
-	"github.com/stretchr/testify/assert"
-	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_EnvBasedStringSupplier(t *testing.T) {
-	os.Setenv("KEPTN_TEST_ENV_VAR", "KEPTN_TEST_ENV_VAR_VAL")
+	t.Setenv("KEPTN_TEST_ENV_VAR", "KEPTN_TEST_ENV_VAR_VAL")
 	val := EnvBasedStringSupplier("KEPTN_TEST_ENV_VAR", "")()
 	assert.Equal(t, "KEPTN_TEST_ENV_VAR_VAL", val)
 

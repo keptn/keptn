@@ -3,7 +3,6 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -15,6 +14,7 @@ import (
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 )
 
@@ -103,7 +103,7 @@ func TestTriggerSequence(t *testing.T) {
 	)
 	defer ts.Close()
 
-	os.Setenv("MOCK_SERVER", ts.URL)
+	t.Setenv("MOCK_SERVER", ts.URL)
 
 	cmd := fmt.Sprintf("trigger sequence %s --project=%s --service=%s --stage=%s --mock", "hello", "hello-world", "demo", "dev")
 	_, err := executeActionCommandC(cmd)
@@ -137,7 +137,7 @@ func TestTriggerSequenceNonExistingProject(t *testing.T) {
 		}),
 	)
 	defer ts.Close()
-	os.Setenv("MOCK_SERVER", ts.URL)
+	t.Setenv("MOCK_SERVER", ts.URL)
 
 	tests := []struct {
 		project string
@@ -195,7 +195,7 @@ func TestTriggerSequenceNonExistingService(t *testing.T) {
 		}),
 	)
 	defer ts.Close()
-	os.Setenv("MOCK_SERVER", ts.URL)
+	t.Setenv("MOCK_SERVER", ts.URL)
 
 	tests := []struct {
 		service string
