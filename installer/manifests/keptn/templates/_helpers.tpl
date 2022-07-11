@@ -95,11 +95,7 @@ lifecycle:
     fieldRef:
       fieldPath: 'metadata.labels[''app.kubernetes.io/version'']'
 - name: DISTRIBUTOR_VERSION
-{{- if .Values.distributor.image.tag }}
-  value: {{ .Values.distributor.image.tag }}
-{{- else }}
-  value: {{ .Chart.AppVersion }}
-{{- end }}
+  value: {{ include "keptn.common.images.tag" ( dict "imageRoot" .Values.distributor.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote }}
 - name: API_PROXY_HTTP_TIMEOUT
   value: {{ ((.Values.distributor.config).proxy).httpTimeout | default "30" | quote }}
 - name: API_PROXY_MAX_PAYLOAD_BYTES_KB

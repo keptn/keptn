@@ -98,7 +98,7 @@ spec:
       {{- include "keptn.bridge.pod-security-context" . | nindent 6 }}
       containers:
         - name: bridge
-          image: {{ .Values.bridge.image.repository }}:{{ .Values.bridge.image.tag | default .Chart.AppVersion }}
+          image: {{ include "keptn.common.images.image" ( dict "imageRoot" .Values.bridge.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote }}
           imagePullPolicy: IfNotPresent
           env:
             - name: API_URL

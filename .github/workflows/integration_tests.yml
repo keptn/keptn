@@ -319,7 +319,7 @@ jobs:
 
       - name: Install Keptn
         id: keptn_install
-        timeout-minutes: 12
+        timeout-minutes: 15
         env:
           HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_CHART_NAME }}
           HELM_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_SERVICE_HELM_CHART_NAME }}
@@ -359,16 +359,21 @@ jobs:
               "$HELM_SERVICE_HELM_CHART_NAME" \
               "$JMETER_SERVICE_HELM_CHART_NAME"
           else
-            helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} \
-              --create-namespace \
-              --set apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
-              --set resourceService.enabled=true \
-              --set shipyardController.gracePeriod=10 \
-              --set shipyardController.preStopHookTime=5 \
-              --set continuousDelivery.enabled=${RUN_CONTINUOUS_DELIVERY_TEST} \
-              --set resourceService.env.DIRECTORY_STAGE_STRUCTURE=${USE_RESOURCE_SERVICE_DIRECTORY} \
-              --wait \
-              --timeout=10m
+            if [[ "$HELM_CHART_NAME" == *"dev"* ]]; then
+              helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} \
+                -f ./test/assets/helm-charts/keptn/values-int-tests-dev.yaml \
+                --create-namespace \
+                --set apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
+                --set resourceService.env.DIRECTORY_STAGE_STRUCTURE=${USE_RESOURCE_SERVICE_DIRECTORY} \
+                --set continuousDelivery.enabled=${RUN_CONTINUOUS_DELIVERY_TEST}
+            else
+              helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} \
+                -f ./test/assets/helm-charts/keptn/values-int-tests.yaml \
+                --create-namespace \
+                --set apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
+                --set resourceService.env.DIRECTORY_STAGE_STRUCTURE=${USE_RESOURCE_SERVICE_DIRECTORY} \
+                --set continuousDelivery.enabled=${RUN_CONTINUOUS_DELIVERY_TEST}
+            fi
           fi
           echo "::endgroup::"
 
@@ -460,46 +465,91 @@ jobs:
           echo "KEPTN_ENDPOINT=${KEPTN_ENDPOINT}"
           echo "##[set-output name=KEPTN_ENDPOINT;]$(echo ${KEPTN_ENDPOINT})"
 
-      - name: Install Helm/JMeter Service
-        if: env.CLOUD_PROVIDER == 'GKE'
+      - name: Install Remote Helm/JMeter Service
+        if: env.CLOUD_PROVIDER == 'GKE' && env.REMOTE_EXECUTION_PLANE == 'true'
         timeout-minutes: 5
         env:
           KEPTN_ENDPOINT: ${{ steps.determine_keptn_endpoint.outputs.KEPTN_ENDPOINT }}
           HELM_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_SERVICE_HELM_CHART_NAME }}
           JMETER_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.JMETER_SERVICE_HELM_CHART_NAME }}
         run: |
-          if [[ "$REMOTE_EXECUTION_PLANE" == 'true' ]]; then
             # Remote execution plane
             KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n "$KEPTN_NAMESPACE" -o jsonpath='{.data.keptn-api-token}' | base64 --decode)
-          
             KEPTN_API_HOSTNAME=$(echo "${KEPTN_ENDPOINT}" | awk -F[/] '{print $3}')
           
-            helm install helm-service "${HELM_SERVICE_HELM_CHART_NAME}" \
-              -n ${{ env.KEPTN_NAMESPACE }}-helm-service \
-              --set remoteControlPlane.enabled=true \
-              --set remoteControlPlane.api.protocol=http \
-              --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" \
-              --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" \
-              --create-namespace
-            helm install jmeter-service "${JMETER_SERVICE_HELM_CHART_NAME}" \
-            -n ${{ env.KEPTN_NAMESPACE }}-jmeter-service \
-              --set remoteControlPlane.enabled=true \
-              --set remoteControlPlane.api.protocol=http \
-              --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" \
-              --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" \
-              --create-namespace
+            if [[ "$HELM_SERVICE_HELM_CHART_NAME" == *"dev"* ]]; then
+              echo "installing helm service from dev repo"
+              echo 'helm install helm-service ${HELM_SERVICE_HELM_CHART_NAME} --namespace ${{ env.KEPTN_NAMESPACE }}-helm-service --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" --create-namespace --values "./test/assets/helm-charts/helm-service/values-int-tests.yaml"'
+              helm install helm-service ${HELM_SERVICE_HELM_CHART_NAME} --namespace ${{ env.KEPTN_NAMESPACE }}-helm-service \
+                --set remoteControlPlane.enabled=true \
+                --set remoteControlPlane.api.protocol=http \
+                --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" \
+                --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" \
+                --create-namespace \
+                --values "./test/assets/helm-charts/keptn/values-int-tests-dev.yaml"
+
+            else
+              echo "installing helm service from keptn repo" 
+              helm install helm-service ${HELM_SERVICE_HELM_CHART_NAME} -n ${{ env.KEPTN_NAMESPACE }}-helm-service \
+                --set remoteControlPlane.enabled=true \
+                --set remoteControlPlane.api.protocol=http \
+                --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" \
+                --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" \
+                --create-namespace
+            fi
+          
+            if [[ "$JMETER_SERVICE_HELM_CHART_NAME" == *"dev"* ]]; then
+              echo "installing jmeter from dev repo"
+              helm install jmeter-service ${JMETER_SERVICE_HELM_CHART_NAME} -n ${{ env.KEPTN_NAMESPACE }}-jmeter-service \
+                --set remoteControlPlane.enabled=true \
+                --set remoteControlPlane.api.protocol=http \
+                --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" \
+                --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" \
+                --create-namespace \
+                --values "./test/assets/helm-charts/keptn/values-int-tests-dev.yaml"
+                
+            else
+              echo "installing jmeter from keptn repo"
+              helm install jmeter-service ${JMETER_SERVICE_HELM_CHART_NAME} -n ${{ env.KEPTN_NAMESPACE }}-jmeter-service \
+                --set remoteControlPlane.enabled=true \
+                --set remoteControlPlane.api.protocol=http \
+                --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" \
+                --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" \
+                --create-namespace
+            fi
           
             helm test jmeter-service -n ${{ env.KEPTN_NAMESPACE }}-jmeter-service
             helm test helm-service -n ${{ env.KEPTN_NAMESPACE }}-helm-service
-          else
+
+      - name: Install Helm/JMeter Service
+        if: env.CLOUD_PROVIDER == 'GKE' && env.REMOTE_EXECUTION_PLANE != 'true'
+        timeout-minutes: 5
+        env:
+          KEPTN_ENDPOINT: ${{ steps.determine_keptn_endpoint.outputs.KEPTN_ENDPOINT }}
+          HELM_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_SERVICE_HELM_CHART_NAME }}
+          JMETER_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.JMETER_SERVICE_HELM_CHART_NAME }}
+        run: |
             # In-cluster execution plane
-            helm install helm-service "${HELM_SERVICE_HELM_CHART_NAME}" -n ${{ env.KEPTN_NAMESPACE }}
-            helm install jmeter-service "${JMETER_SERVICE_HELM_CHART_NAME}" -n ${{ env.KEPTN_NAMESPACE }}
+            if [[ "$HELM_SERVICE_HELM_CHART_NAME" == *"dev"* ]]; then
+             echo "install helm locally from dev repo"
+             helm install helm-service ${HELM_SERVICE_HELM_CHART_NAME} -n ${{ env.KEPTN_NAMESPACE }} \
+              -f './test/assets/helm-charts/keptn/values-int-tests-dev.yaml' 
+            else
+             echo "install helm locally from keptn repo"         
+             helm install helm-service ${HELM_SERVICE_HELM_CHART_NAME} -n ${{ env.KEPTN_NAMESPACE }}
+            fi
+          
+            if [[ "$JMETER_SERVICE_HELM_CHART_NAME" == *"dev"* ]]; then
+             echo "install jmeter locally from dev repo"
+             helm install jmeter-service ${JMETER_SERVICE_HELM_CHART_NAME} -n ${{ env.KEPTN_NAMESPACE }} \
+              -f './test/assets/helm-charts/keptn/values-int-tests-dev.yaml'
+            else
+               echo "install jmeter locally from keptn repo"
+               helm install jmeter-service ${JMETER_SERVICE_HELM_CHART_NAME} -n ${{ env.KEPTN_NAMESPACE }}
+            fi
           
             helm test jmeter-service -n ${{ env.KEPTN_NAMESPACE }}
             helm test helm-service -n ${{ env.KEPTN_NAMESPACE }}
-          fi
-
 
       - name: Prepare test run
         id: prepare_test_run

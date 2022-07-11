@@ -1,10 +1,16 @@
+global:
+  keptn:                                     # This values will be automatically templated to all keptn services
+    registry: docker.io/keptn                # Registry where the image is located.
+    tag: ""                                  # Container Tag globally for all keptn services
+
 nameOverride:
 
 jmeterservice:
   image:
-    repository: docker.io/keptn/jmeter-service # Container Image Name
-    pullPolicy: IfNotPresent                   # Kubernetes Image Pull Policy
-    tag: ""                                    # Container Tag
+    registry: ""                             # Container Registry
+    repository: "jmeter-service"             # Container Image Name
+    tag: ""                                  # Container Tag
+    pullPolicy: IfNotPresent                 # Kubernetes Image Pull Policy
   service:
     enabled: true                              # Creates a Kubernetes Service for the jmeter-service
   gracePeriod: 60
@@ -26,9 +32,10 @@ distributor:
   serviceFilter: ""                          # Sets the service this helm service belongs to
   projectFilter: ""                          # Sets the project this helm service belongs to
   image:
-    repository: docker.io/keptn/distributor  # Container Image Name
-    pullPolicy: IfNotPresent                 # Kubernetes Image Pull Policy
+    registry: ""                             # Container Registry
+    repository: "distributor"                # Container Image Name
     tag: ""                                  # Container Tag
+    pullPolicy: IfNotPresent                 # Kubernetes Image Pull Policy
   config:
     queueGroup:
       enabled: true                          # Enable connection via Nats queue group to support exactly-once message processing
