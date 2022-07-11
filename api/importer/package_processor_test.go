@@ -26,7 +26,9 @@ func TestImportPackageEmptyManifestRetrievedAndPackageClosed(t *testing.T) {
 			return nil, nil
 		},
 	}
-	sut := NewImportPackageProcessor(parserMock, taskExecutor)
+
+	stageRetriever := &fake.MockStageRetriever{}
+	sut := NewImportPackageProcessor(parserMock, taskExecutor, stageRetriever)
 
 	importPackageMock := &fake.ImportPackageMock{
 		CloseFunc: func() error {
@@ -61,7 +63,8 @@ func TestErrorImportPackageWhenManifestCannotBeRetrieved(t *testing.T) {
 		},
 	}
 
-	sut := NewImportPackageProcessor(parserMock, taskExecutor)
+	stageRetriever := &fake.MockStageRetriever{}
+	sut := NewImportPackageProcessor(parserMock, taskExecutor, stageRetriever)
 
 	errorManifestAccess := errors.New("error retrieving manifest.yaml")
 
@@ -104,7 +107,8 @@ func TestErrorImportPackageWhenManifestCannotBeParsed(t *testing.T) {
 		},
 	}
 
-	sut := NewImportPackageProcessor(parserMock, taskExecutor)
+	stageRetriever := &fake.MockStageRetriever{}
+	sut := NewImportPackageProcessor(parserMock, taskExecutor, stageRetriever)
 
 	importPackageMock := &fake.ImportPackageMock{
 		CloseFunc: func() error {
@@ -157,7 +161,8 @@ func TestErrorImportPackageWhenManifestResourceNotFound(t *testing.T) {
 		},
 	}
 
-	sut := NewImportPackageProcessor(parserMock, taskExecutor)
+	stageRetriever := &fake.MockStageRetriever{}
+	sut := NewImportPackageProcessor(parserMock, taskExecutor, stageRetriever)
 
 	resourceError := errors.New("error retrieving resource manifest")
 
@@ -212,7 +217,8 @@ func TestErrorImportPackageWhenUnknownManifestTaskType(t *testing.T) {
 		},
 	}
 
-	sut := NewImportPackageProcessor(parserMock, taskExecutor)
+	stageRetriever := &fake.MockStageRetriever{}
+	sut := NewImportPackageProcessor(parserMock, taskExecutor, stageRetriever)
 
 	importPackageMock := &fake.ImportPackageMock{
 		CloseFunc: func() error {
@@ -292,7 +298,9 @@ func TestErrorImportPackageWhenTaskFails(t *testing.T) {
 			return nil, nil
 		},
 	}
-	sut := NewImportPackageProcessor(parserMock, taskExecutor)
+
+	stageRetriever := &fake.MockStageRetriever{}
+	sut := NewImportPackageProcessor(parserMock, taskExecutor, stageRetriever)
 
 	importPackageMock := &fake.ImportPackageMock{
 		CloseFunc: func() error {
@@ -366,7 +374,8 @@ func TestImportPackageProcessor_Process_ResourceTask(t *testing.T) {
 		},
 	}
 
-	sut := NewImportPackageProcessor(parserMock, taskExecutor)
+	stageRetriever := &fake.MockStageRetriever{}
+	sut := NewImportPackageProcessor(parserMock, taskExecutor, stageRetriever)
 
 	resourceContentReader := io.NopCloser(strings.NewReader(resourceContentString))
 	importPackageMock := &fake.ImportPackageMock{
@@ -436,7 +445,12 @@ func TestImportPackageProcessor_Process_ResourceTask_AllStages(t *testing.T) {
 		},
 	}
 
-	sut := NewImportPackageProcessor(parserMock, taskExecutor)
+	stageRetriever := &fake.MockStageRetriever{
+		GetStagesFunc: func(project string) ([]string, error) {
+			return stages, nil
+		},
+	}
+	sut := NewImportPackageProcessor(parserMock, taskExecutor, stageRetriever)
 
 	importPackageMock := &fake.ImportPackageMock{
 		CloseFunc: func() error {
@@ -501,7 +515,8 @@ func TestImportPackageProcessor_ProcessResourceTask_ErrorGettingResource(t *test
 
 	taskExecutor := &fake.TaskExecutorMock{}
 
-	sut := NewImportPackageProcessor(parserMock, taskExecutor)
+	stageRetriever := &fake.MockStageRetriever{}
+	sut := NewImportPackageProcessor(parserMock, taskExecutor, stageRetriever)
 
 	importPackageMock := &fake.ImportPackageMock{
 		CloseFunc: func() error {
@@ -566,7 +581,8 @@ func TestImportPackageProcessor_Process_ResourceTask_ErrorExecutingTask(t *testi
 		},
 	}
 
-	sut := NewImportPackageProcessor(parserMock, taskExecutor)
+	stageRetriever := &fake.MockStageRetriever{}
+	sut := NewImportPackageProcessor(parserMock, taskExecutor, stageRetriever)
 
 	resourceContentReader := io.NopCloser(strings.NewReader(resourceContentString))
 	importPackageMock := &fake.ImportPackageMock{

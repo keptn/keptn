@@ -8,7 +8,7 @@ import (
 )
 
 //go:generate moq -pkg fake --skip-ensure -out ./fake/package_processor_mock.go . ImportPackage:ImportPackageMock ManifestParser:ManifestParserMock TaskExecutor:TaskExecutorMock
-
+//go:generate moq -pkg fake --skip-ensure -out ./fake/stage_retriever_mock.go . ProjectStageRetriever:MockStageRetriever
 type ImportPackage interface {
 	io.Closer
 	GetResource(resourceName string) (io.ReadCloser, error)
@@ -23,15 +23,23 @@ type TaskExecutor interface {
 	PushResource(rp model.ResourcePush) (any, error)
 }
 
-type ImportPackageProcessor struct {
-	parser   ManifestParser
-	executor TaskExecutor
+type ProjectStageRetriever interface {
+	GetStages(project string) ([]string, error)
 }
 
-func NewImportPackageProcessor(mp ManifestParser, ex TaskExecutor) *ImportPackageProcessor {
+type ImportPackageProcessor struct {
+	parser         ManifestParser
+	executor       TaskExecutor
+	stageRetriever ProjectStageRetriever
+}
+
+func NewImportPackageProcessor(
+	mp ManifestParser, ex TaskExecutor, retriever ProjectStageRetriever,
+) *ImportPackageProcessor {
 	return &ImportPackageProcessor{
-		parser:   mp,
-		executor: ex,
+		parser:         mp,
+		executor:       ex,
+		stageRetriever: retriever,
 	}
 }
 
@@ -71,14 +79,27 @@ func (ipp *ImportPackageProcessor) Process(project string, ip ImportPackage) err
 				return fmt.Errorf("execution of task %s failed: %w", task.ID, err)
 			}
 		case resourceTaskType:
-			resourcePush, err := mapResourcePush(project, ip, task)
-			if err != nil {
-				return fmt.Errorf("error setting up resource push for task ID %s: %w", task.ID, err)
+			var stages []string
+			if task.Stage == "" {
+				stages, err = ipp.stageRetriever.GetStages(project)
+				if err != nil {
+					return fmt.Errorf("error retrieving stages for project %s: %w", project, err)
+				}
+			} else {
+				stages = []string{task.Stage}
 			}
-			_, err = ipp.executor.PushResource(resourcePush)
-			if err != nil {
-				return fmt.Errorf("resource task id %s failed: %w", task.ID, err)
+
+			for _, stage := range stages {
+				resourcePush, err := mapResourcePush(project, stage, ip, task)
+				if err != nil {
+					return fmt.Errorf("error setting up resource push for task ID %s: %w", task.ID, err)
+				}
+				_, err = ipp.executor.PushResource(resourcePush)
+				if err != nil {
+					return fmt.Errorf("resource task id %s failed: %w", task.ID, err)
+				}
 			}
+
 		default:
 			return fmt.Errorf("task of type %s not implemented", task.Type)
 		}
@@ -87,7 +108,8 @@ func (ipp *ImportPackageProcessor) Process(project string, ip ImportPackage) err
 	return nil
 }
 
-func mapResourcePush(project string, ip ImportPackage, task *model.ManifestTask) (model.ResourcePush, error) {
+func mapResourcePush(project string, stage string, ip ImportPackage, task *model.ManifestTask) (model.ResourcePush,
+	error) {
 	resource, err := ip.GetResource(task.ResourceTask.File)
 	if err != nil {
 		return model.ResourcePush{}, fmt.Errorf("error accessing resource content: %w", err)
@@ -96,7 +118,7 @@ func mapResourcePush(project string, ip ImportPackage, task *model.ManifestTask)
 	ret := model.ResourcePush{
 		Content:     resource,
 		ResourceURI: task.ResourceTask.RemoteURI,
-		Stage:       task.ResourceTask.Stage,
+		Stage:       stage,
 		Service:     task.ResourceTask.Service,
 		Context: model.TaskContext{
 			Project: project,

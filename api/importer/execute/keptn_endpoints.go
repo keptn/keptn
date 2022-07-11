@@ -10,15 +10,6 @@ const defaultControlPlaneEndpoint = "http://shipyard-controller:8080"
 const defaultConfigurationServiceEndpoint = "http://configuration-service:8080"
 const defaultSecretServiceEndpoint = "http://secret-service:8080"
 
-// StaticKeptnEndpointProvider is a completely static implementation of the KeptnEndpointProvider interface.
-// This is meant to be used when we are running in the same namespace as the other keptn services
-type StaticKeptnEndpointProvider struct{}
-
-// GetControlPlaneEndpoint returns the default shipyard controller expectedControlPlaneEndpoint
-func (_ StaticKeptnEndpointProvider) GetControlPlaneEndpoint() string {
-	return utils.SanitizeURL(defaultControlPlaneEndpoint)
-}
-
 func NewKeptnEndpointProviderFromEnv() *configurableKeptnEndpointProvider {
 	kep := new(configurableKeptnEndpointProvider)
 

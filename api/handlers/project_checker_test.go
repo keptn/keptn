@@ -23,19 +23,64 @@ const errorResponseBodyTemplate = `
 
 const projectResponseBodyTemplate = `
 {
-  "creationDate": "1655467882190850007",
-  "gitRemoteURI": "http://somehost.somedomain/somenamespace/somerepo.git",
-  "gitUser": "git-user",
+  "creationDate": "1657029454223822431",
   "projectName": "%s",
   "shipyard": "apiVersion: \"spec.keptn.sh/0.2.2\"\nkind: \"Shipyard\"\nmetadata:\n  name: \"shipyard-jes-sample\"\nspec:\n  stages:\n    - name: \"production\"\n      sequences:\n        - name: \"example-seq\"\n          tasks:\n            - name: \"remote-task\"",
   "shipyardVersion": "spec.keptn.sh/0.2.2",
-  "insecureSkipTLS": false,
   "stages": [
     {
-      "services": [],
+      "services": [
+        {
+          "creationDate": "1657030663780124926",
+          "openRemediations": null,
+          "serviceName": "foobar"
+        },
+        {
+          "creationDate": "1657206127855300115",
+          "openRemediations": null,
+          "serviceName": "test-service"
+        }
+      ],
+      "stageName": "dev"
+    },
+    {
+      "services": [
+        {
+          "creationDate": "1657030663780124926",
+          "openRemediations": null,
+          "serviceName": "foobar"
+        },
+        {
+          "creationDate": "1657206127855300115",
+          "openRemediations": null,
+          "serviceName": "test-service"
+        }
+      ],
+      "stageName": "test"
+    },
+    {
+      "services": [
+        {
+          "creationDate": "1657030663780124926",
+          "openRemediations": null,
+          "serviceName": "foobar"
+        },
+        {
+          "creationDate": "1657206127855300115",
+          "openRemediations": null,
+          "serviceName": "test-service"
+        }
+      ],
       "stageName": "production"
     }
-  ]
+  ],
+  "gitCredentials": {
+    "remoteURL": "http://gitea-http.gitea:3000/gitea_admin/test-import.git",
+    "user": "gitea_admin",
+    "https": {
+      "insecureSkipTLS": false
+    }
+  }
 }
 `
 
@@ -136,4 +181,57 @@ func TestErrorCheckingProject(t *testing.T) {
 	exists, err := checker.ProjectExists("foobar-exists")
 	assert.Error(t, err)
 	assert.False(t, exists)
+}
+
+func TestGetStages(t *testing.T) {
+	handler := fakeProjectEndPoint{
+		f: func(w http.ResponseWriter, r *http.Request) {
+			projectRequested := strings.TrimPrefix(r.URL.Path, projectEndpoint)
+			body := fmt.Sprintf(
+				projectResponseBodyTemplate, projectRequested,
+			)
+
+			w.WriteHeader(http.StatusOK)
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			w.Write([]byte(body))
+		},
+	}
+
+	testServer := httptest.NewServer(&handler)
+	defer testServer.Close()
+
+	epm := &handlers_mock.EndpointProviderMock{
+		GetControlPlaneEndpointFunc: func() string {
+			return testServer.URL
+		},
+	}
+
+	checker := NewControlPlaneProjectChecker(epm)
+
+	stages, err := checker.GetStages("testproject")
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"dev", "test", "production"}, stages)
+}
+
+func TestErrorGetStages(t *testing.T) {
+	handler := fakeProjectEndPoint{
+		f: func(w http.ResponseWriter, r *http.Request) {
+			t.Fatalf("Handler should not have been called with a closed server")
+		},
+	}
+
+	testServer := httptest.NewServer(&handler)
+	testServer.Close()
+
+	epm := &handlers_mock.EndpointProviderMock{
+		GetControlPlaneEndpointFunc: func() string {
+			return testServer.URL
+		},
+	}
+
+	checker := NewControlPlaneProjectChecker(epm)
+
+	stages, err := checker.GetStages("testproject")
+	assert.Error(t, err)
+	assert.Nil(t, stages)
 }

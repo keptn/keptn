@@ -52,3 +52,24 @@ func (c *ControlPlaneProjectChecker) ProjectExists(projectName string) (bool, er
 
 	return true, nil
 }
+
+func (c *ControlPlaneProjectChecker) GetStages(projectName string) ([]string, error) {
+	projectHandler := apiutils.NewProjectHandler(c.controlPlaneProjectBaseURI)
+
+	project, kErr := projectHandler.GetProject(
+		models.Project{
+			ProjectName: projectName,
+		},
+	)
+
+	if kErr != nil {
+		return nil, fmt.Errorf("error getting project %s definition: %w", projectName, kErr.ToError())
+	}
+
+	var retStages []string
+	for _, stage := range project.Stages {
+		retStages = append(retStages, stage.StageName)
+	}
+
+	return retStages, nil
+}
