@@ -387,7 +387,6 @@ describe('Configuration', () => {
       CONFIG_DIR: 'config',
       KEPTN_INSTALLATION_TYPE: 'installation',
       PROJECTS_PAGE_SIZE: '70',
-      SERVICES_PAGE_SIZE: '',
       PREFIX_PATH: 'prefix',
       ENABLE_VERSION_CHECK: '0',
       MONGODB_DATABASE: 'mongoDatabase',

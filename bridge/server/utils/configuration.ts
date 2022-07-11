@@ -335,7 +335,6 @@ export function envToConfiguration(env: { [key in EnvVar]?: string }): BridgeOpt
       prefixPath: env.PREFIX_PATH,
       pageSize: {
         project: isInt(env.PROJECTS_PAGE_SIZE) ? toInt(env.PROJECTS_PAGE_SIZE) : undefined,
-        service: isInt(env.SERVICES_PAGE_SIZE) ? toInt(env.SERVICES_PAGE_SIZE) : undefined,
       },
     },
     mongo: {
