@@ -26,6 +26,7 @@ mongo:
     bridgeAuthDatabase: 'keptn'
   external:
     connectionString:
+
 prefixPath: ""
 
 keptnSpecVersion: latest
