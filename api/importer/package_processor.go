@@ -64,12 +64,14 @@ func (ipp *ImportPackageProcessor) Process(project string, ip ImportPackage) err
 	if err != nil {
 		return fmt.Errorf("error parsing manifest: %w", err)
 	}
-	// TODO add manifestValidation
 
 	for _, task := range manifest.Tasks {
 
 		switch task.Type {
 		case apiTaskType:
+			if task.APITask == nil {
+				return fmt.Errorf("malformed task of type api: %+v", task)
+			}
 			apiTaskExecution, err := mapAPITask(project, ip, task)
 			if err != nil {
 				return fmt.Errorf("error setting up API task ID %s: %w", task.ID, err)
@@ -79,8 +81,11 @@ func (ipp *ImportPackageProcessor) Process(project string, ip ImportPackage) err
 				return fmt.Errorf("execution of task %s failed: %w", task.ID, err)
 			}
 		case resourceTaskType:
+			if task.ResourceTask == nil {
+				return fmt.Errorf("malformed task of type resource: %+v", task)
+			}
 			var stages []string
-			if task.Stage == "" {
+			if task.ResourceTask.Stage == "" {
 				stages, err = ipp.stageRetriever.GetStages(project)
 				if err != nil {
 					return fmt.Errorf("error retrieving stages for project %s: %w", project, err)
