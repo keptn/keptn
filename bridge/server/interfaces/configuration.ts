@@ -54,7 +54,7 @@ export interface AuthConfig {
   cleanBucketIntervalMs: number;
   basicUsername?: string;
   basicPassword?: string;
-  authMessage: string;
+  authMessage?: string;
 }
 
 export interface OAuthConfig {
