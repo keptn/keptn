@@ -96,13 +96,7 @@ const ktbModules = [
 ];
 
 @NgModule({
-  declarations: [
-    AppComponent,
-    NotFoundComponent,
-    ProjectBoardComponent,
-    KtbSettingsViewComponent,
-    KtbRootComponent,
-  ],
+  declarations: [AppComponent, NotFoundComponent, ProjectBoardComponent, KtbSettingsViewComponent, KtbRootComponent],
   imports: [...angularModules, ...dtModules, ...ktbModules, AppRouting, FlexModule, MomentModule],
   entryComponents: [],
   providers: [
