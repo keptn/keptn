@@ -11,7 +11,10 @@ import { DeploymentInformationSelection } from '../../../_interfaces/deployment-
 class DeploymentInformation implements sdi {
   keptnContext!: string;
   name!: string;
-  stages!: { name: string; hasOpenRemediations: boolean; time: string }[];
+  stages!: {
+    name: string;
+    time: string;
+  }[];
   version?: string;
 }
 

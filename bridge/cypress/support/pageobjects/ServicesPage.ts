@@ -1,7 +1,12 @@
 /// <reference types="cypress" />
 
 import { SliResult } from '../../../client/app/_models/sli-result';
-import { interceptProjectBoard, interceptServicesPage, interceptServicesPageWithRemediation } from '../intercept';
+import {
+  interceptProjectBoard,
+  interceptServicesPage,
+  interceptServicesPageWithLoadingSequences,
+  interceptServicesPageWithRemediation,
+} from '../intercept';
 
 type SliColumn = 'name' | 'value' | 'weight' | 'score' | 'result' | 'criteria' | 'pass-criteria' | 'warning-criteria';
 
@@ -13,6 +18,11 @@ class ServicesPage {
 
   public intercept(): this {
     interceptServicesPage();
+    return this;
+  }
+
+  public interceptRunning(): this {
+    interceptServicesPageWithLoadingSequences();
     return this;
   }
 
@@ -225,6 +235,11 @@ class ServicesPage {
       'eq',
       `/project/${project}/service/${service}/context/${keptnContext}/stage/${stage}`
     );
+    return this;
+  }
+
+  public assertIsStageLoading(stage: string, status: boolean): this {
+    cy.byTestId(`ktb-deployment-stage-${stage}-loading`).should(status ? 'exist' : 'not.exist');
     return this;
   }
 }

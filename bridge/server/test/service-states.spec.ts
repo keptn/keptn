@@ -37,7 +37,7 @@ describe('Test project/:projectName/serviceStates', () => {
       })
       .reply(200, OpenRemediationsResponse);
 
-    const response = await request(app).get(`/api/project/${projectName}/serviceStates?includeRemediations=true`);
+    const response = await request(app).get(`/api/project/${projectName}/serviceStates`);
     expect(response.body).toEqual(ServiceStateResponse);
     expect(response.statusCode).toBe(200);
   });

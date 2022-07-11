@@ -4,10 +4,7 @@ import { ActivatedRoute, convertToParamMap, ParamMap } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
-import {
-  ServiceStateResponse,
-  ServiceStateResponseWithoutRemediationsMock,
-} from '../../../../shared/fixtures/service-state-response.mock';
+import { ServiceStateResponse } from '../../../../shared/fixtures/service-state-response.mock';
 import {
   ServiceDeploymentMock,
   ServiceDeploymentWithApprovalMock,
@@ -15,7 +12,6 @@ import {
 import { Deployment } from '../../_models/deployment';
 import { Location } from '@angular/common';
 import { ServiceState } from '../../_models/service-state';
-import { DataService } from '../../_services/data.service';
 import { KtbServiceViewModule } from './ktb-service-view.module';
 import { RouterTestingModule } from '@angular/router/testing';
 
@@ -65,10 +61,7 @@ describe('KtbServiceViewComponent', () => {
         shkeptncontext: selectedDeployment.keptnContext,
       })
     );
-    loadDeployment(
-      selectedDeployment.keptnContext,
-      selectedDeployment.stages.some((st) => st.hasOpenRemediations)
-    );
+    loadDeployment(selectedDeployment.keptnContext);
 
     expect(component.selectedDeployment?.deploymentInformation.deployment).not.toBeUndefined();
     expect(component.selectedDeployment?.stage).toEqual('staging');
@@ -87,10 +80,7 @@ describe('KtbServiceViewComponent', () => {
         shkeptncontext: selectedDeployment.keptnContext,
       })
     );
-    loadDeployment(
-      selectedDeployment.keptnContext,
-      selectedDeployment.stages.some((st) => st.hasOpenRemediations)
-    );
+    loadDeployment(selectedDeployment.keptnContext);
 
     expect(component.selectedDeployment?.deploymentInformation.deployment).not.toBeUndefined();
     expect(component.selectedDeployment?.stage).toEqual('production');
@@ -157,25 +147,6 @@ describe('KtbServiceViewComponent', () => {
     expect(updateRemediationSpy).toHaveBeenCalled();
   });
 
-  it('should not update remediations if hasRemediations is false', () => {
-    const selectedDeployment = ServiceStateResponseWithoutRemediationsMock[0].deploymentInformation[0];
-    const deployment = Deployment.fromJSON(ServiceDeploymentMock);
-    const updateRemediationSpy = jest.spyOn(TestBed.inject(DataService), 'getOpenRemediationsOfService');
-
-    component.deploymentSelected(
-      {
-        deploymentInformation: {
-          ...selectedDeployment,
-          deployment,
-        },
-        stage: 'production',
-      },
-      'sockshop'
-    );
-    fixture.detectChanges();
-    expect(updateRemediationSpy).not.toHaveBeenCalled();
-  });
-
   it('should update service states', () => {
     const serviceStateUpdateSpy = jest.spyOn(ServiceState, 'update');
     component.serviceStates = ServiceStateResponse.map((st) => ServiceState.fromJSON(st));
@@ -211,20 +182,16 @@ describe('KtbServiceViewComponent', () => {
 
     httpMock
       .expectOne(
-        `./api/project/${projectName}/deployment/${
-          selectedDeployment.keptnContext
-        }?fromTime=2021-10-13T10:54:43.315Z&includeRemediations=${selectedDeployment.stages.some(
-          (st) => st.hasOpenRemediations
-        )}`
+        `./api/project/${projectName}/deployment/${selectedDeployment.keptnContext}?fromTime=2021-10-13T10:54:43.315Z`
       )
       .flush(AppUtils.copyObject(ServiceDeploymentWithApprovalMock));
     expect(updateDeploymentSpy).toHaveBeenCalled();
   });
 
-  function loadDeployment(keptnContext: string, includeRemediations: boolean): void {
+  function loadDeployment(keptnContext: string): void {
     httpMock.expectOne(`./api/project/${projectName}/serviceStates`).flush(AppUtils.copyObject(ServiceStateResponse));
     httpMock
-      .expectOne(`./api/project/${projectName}/deployment/${keptnContext}?includeRemediations=${includeRemediations}`)
+      .expectOne(`./api/project/${projectName}/deployment/${keptnContext}`)
       .flush(AppUtils.copyObject(ServiceDeploymentMock));
   }
 });

@@ -1,6 +1,6 @@
 import { Component, HostBinding, Inject, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { combineLatest, Observable, of, Subject, Subscription } from 'rxjs';
+import { combineLatest, Observable, Subject, Subscription } from 'rxjs';
 import { filter, map, switchMap, takeUntil, tap } from 'rxjs/operators';
 import { DataService } from '../../_services/data.service';
 import { Location } from '@angular/common';
@@ -159,32 +159,22 @@ export class KtbServiceViewComponent implements OnDestroy {
     projectName: string
   ): Observable<Deployment | ServiceRemediationInformation> {
     const originalDeployment = deploymentInfo.deploymentInformation.deployment;
-    const hasRemediations = deploymentInfo.deploymentInformation.stages.some((stage) => stage.hasOpenRemediations);
     this.selectedDeployment = deploymentInfo;
 
     if (!originalDeployment) {
       // initially fetch deployment
       this.deploymentLoading = true;
-      return this.dataService.getServiceDeployment(
-        projectName,
-        deploymentInfo.deploymentInformation.keptnContext,
-        hasRemediations
-      );
+      return this.dataService.getServiceDeployment(projectName, deploymentInfo.deploymentInformation.keptnContext);
     }
     // update deployment
     if (originalDeployment.isFinished()) {
       // deployment is finished. Just update open remediations
-      if (hasRemediations) {
-        return this.dataService.getOpenRemediationsOfService(projectName, originalDeployment.service);
-      }
-      const stages = originalDeployment.stages.map((stage) => ({ name: stage.name, remediations: [] }));
-      return of(ServiceRemediationInformation.fromJSON({ stages }));
+      return this.dataService.getOpenRemediationsOfService(projectName, originalDeployment.service);
     }
 
     return this.dataService.getServiceDeployment(
       projectName,
       deploymentInfo.deploymentInformation.keptnContext,
-      hasRemediations,
       originalDeployment.latestTimeUpdated?.toISOString()
     );
   }

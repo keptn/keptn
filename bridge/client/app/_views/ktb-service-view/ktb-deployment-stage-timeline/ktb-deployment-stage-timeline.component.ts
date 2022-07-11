@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { Deployment } from '../../../_models/deployment';
+import { createStageDeploymentStateInfo, Deployment } from '../../../_models/deployment';
 
 @Component({
   selector: 'ktb-deployment-timeline[deployment]',
@@ -10,6 +10,7 @@ export class KtbDeploymentStageTimelineComponent {
   @Input() deployment?: Deployment;
   @Input() selectedStage?: string;
   @Output() selectedStageChange: EventEmitter<string> = new EventEmitter<string>();
+  public createStageDeploymentStateInfo = createStageDeploymentStateInfo;
 
   public selectStage(stage: string): void {
     if (this.selectedStage !== stage) {

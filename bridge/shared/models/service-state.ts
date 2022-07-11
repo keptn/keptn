@@ -4,7 +4,6 @@ export interface ServiceDeploymentInformation {
   image?: string;
   stages: {
     name: string;
-    hasOpenRemediations: boolean;
     time: string; // ISO-string
   }[];
   keptnContext: string;

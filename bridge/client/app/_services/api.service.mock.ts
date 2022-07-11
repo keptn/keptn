@@ -351,12 +351,7 @@ export class ApiServiceMock extends ApiService {
     return of(ServiceStatesResultResponseMock);
   }
 
-  public getServiceDeployment(
-    projectName: string,
-    keptnContext: string,
-    includeRemediations: boolean,
-    fromTime?: string
-  ): Observable<Deployment> {
+  public getServiceDeployment(projectName: string, keptnContext: string, fromTime?: string): Observable<Deployment> {
     return of(DeploymentResponseMock);
   }
 

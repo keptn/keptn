@@ -5,7 +5,6 @@ const serviceStateResponseMock = [
         stages: [
           {
             name: 'dev',
-            hasOpenRemediations: false,
             time: '2021-11-05T12:21:33.991Z',
           },
         ],
@@ -18,7 +17,6 @@ const serviceStateResponseMock = [
         stages: [
           {
             name: 'staging',
-            hasOpenRemediations: false,
             time: '2021-11-05T10:49:01.288Z',
           },
         ],
@@ -31,7 +29,6 @@ const serviceStateResponseMock = [
         stages: [
           {
             name: 'production',
-            hasOpenRemediations: true,
             time: '2021-10-13T11:01:18.567Z',
           },
         ],
@@ -49,17 +46,14 @@ const serviceStateResponseMock = [
         stages: [
           {
             name: 'dev',
-            hasOpenRemediations: false,
             time: '2021-10-12T11:13:18.563Z',
           },
           {
             name: 'staging',
-            hasOpenRemediations: false,
             time: '2021-10-12T11:13:59.263Z',
           },
           {
             name: 'production',
-            hasOpenRemediations: false,
             time: '2021-10-12T11:14:57.469Z',
           },
         ],
@@ -80,7 +74,6 @@ const serviceStateResponseWithoutRemediationsMock = [
         stages: [
           {
             name: 'dev',
-            hasOpenRemediations: false,
             time: '2021-10-13T11:01:18.567Z',
           },
         ],
@@ -101,7 +94,6 @@ const serviceStateQualityGatesOnlyResponse = [
         stages: [
           {
             name: 'dev',
-            hasOpenRemediations: false,
             time: '2021-11-05T12:24:08.667Z',
           },
         ],
@@ -112,7 +104,6 @@ const serviceStateQualityGatesOnlyResponse = [
         stages: [
           {
             name: 'staging',
-            hasOpenRemediations: false,
             time: '2021-11-05T10:52:31.167Z',
           },
         ],
@@ -130,4 +121,3 @@ const serviceStateQualityGatesOnlyResponse = [
 
 export { serviceStateResponseMock as ServiceStateResponse };
 export { serviceStateQualityGatesOnlyResponse as ServiceStateQualityGatesOnlyResponse };
-export { serviceStateResponseWithoutRemediationsMock as ServiceStateResponseWithoutRemediationsMock };
