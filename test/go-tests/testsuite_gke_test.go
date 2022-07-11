@@ -24,7 +24,6 @@ func Test_GKE(t *testing.T) {
 	t.Run("Test_SSHPublicKeyAuth", Test_SSHPublicKeyAuth)
 	t.Run("Test_ProxyAuth", Test_ProxyAuth)
 
-	t.Run("Test_ZeroDownTimeTriggerSequence", Test_ZeroDownTimeTriggerSequence)
 	// Platform-specific Tests
 	t.Run("Test_QualityGates", Test_QualityGates)
 	t.Run("Test_QualityGates_SLIWrongFinishedPayloadSend", Test_QualityGates_SLIWrongFinishedPayloadSend)
