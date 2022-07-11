@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"os/exec"
+	"strings"
 	"time"
 
 	keptn2 "github.com/keptn/go-utils/pkg/lib"
@@ -57,7 +58,7 @@ func KubeCtlPortForwardSvc(ctx context.Context, svcName, localPort string, remot
 	fmt.Printf("Executing: %s port-forward -n %s %s %s\n", kubectlExecutable, ns, svcName, localPort+":"+remotePort)
 	cmd := exec.CommandContext(ctx, kubectlExecutable, "port-forward", "-n", ns, svcName, localPort+":"+remotePort)
 	err := cmd.Start()
-	if err != nil {
+	if err != nil && !strings.Contains(err.Error(), "already in use") {
 		return err
 	}
 	err = wait.Poll(2*time.Second, 30*time.Second, func() (bool, error) {
