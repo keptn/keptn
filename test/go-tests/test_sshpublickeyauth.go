@@ -111,6 +111,7 @@ func Test_SSHPublicKeyAuth(t *testing.T) {
 	_, err = ExecuteCommand(fmt.Sprintf("keptn update project %s --git-remote-url=ssh://gitea-ssh:22/%s/%s.git --git-user=%s --git-private-key=%s --git-private-key-pass=%s", projectName, user, projectName, user, privateKeyPath, passphrase))
 	require.Nil(t, err)
 
+	// check if interacting with the project (e.g. adding a service) still works after updating
 	t.Logf("Creating service %s in project %s", secondServiceName, projectName)
 	_, err = ExecuteCommandf("keptn create service %s --project %s", secondServiceName, projectName)
 	require.Nil(t, err)
