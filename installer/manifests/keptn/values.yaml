@@ -32,7 +32,6 @@ mongo:
   external:
     connectionString:
   containerSecurityContext:
-    readOnlyRootFilesystem: true
     allowPrivilegeEscalation: false
     capabilities:
       drop:
