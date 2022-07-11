@@ -76,7 +76,6 @@ describe('Configuration', () => {
       },
       urls: {
         CLI: 'https://github.com/keptn/keptn/releases',
-        integrationPage: 'https://get.keptn.sh/integrations.html',
         lookAndFeel: undefined,
       },
       features: {
@@ -186,7 +185,6 @@ describe('Configuration', () => {
       },
       urls: {
         CLI: 'https://github.com/keptn/keptn/releases',
-        integrationPage: 'https://get.keptn.sh/integrations.html',
         lookAndFeel: undefined,
       },
       features: {
@@ -381,7 +379,6 @@ describe('Configuration', () => {
       SESSION_VALIDATING_TIMEOUT_MIN: 'invalidNumber',
       OAUTH_ID_TOKEN_ALG: 'alg',
       CLI_DOWNLOAD_LINK: 'cliLink',
-      INTEGRATIONS_PAGE_LINK: 'integrationLink',
       LOOK_AND_FEEL_URL: 'lookAndFeel',
       AUTOMATIC_PROVISIONING_MSG: 'automaticProvMsg',
       CONFIG_DIR: 'config',
@@ -452,7 +449,6 @@ describe('Configuration', () => {
       },
       urls: {
         CLI: 'cliLink',
-        integrationPage: 'integrationLink',
         lookAndFeel: 'lookAndFeel',
       },
       version: '0.0.0',

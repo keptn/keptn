@@ -17,7 +17,6 @@ export class KtbCommonUseCasesViewComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
   public currentTime: string = this.getCurrentTime();
   public keptnInfo?: KeptnInfo;
-  public integrationsExternalDetails?: string;
   public useCaseExamples: { cli: { label: string; code: string }[]; api: { label: string; code: string }[] } = {
     cli: [],
     api: [],
@@ -122,27 +121,12 @@ export class KtbCommonUseCasesViewComponent implements OnInit, OnDestroy {
     });
   }
 
-  loadIntegrations(): void {
-    this.integrationsExternalDetails = '<p>Loading ...</p>';
-    this.apiService
-      .getIntegrationsPage()
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(
-        (result: string) => {
-          this.integrationsExternalDetails = result;
-        },
-        () => {
-          this.integrationsExternalDetails =
-            '<p>Couldn\'t load page. For more details see <a href="https://keptn.sh/docs/integrations/" target="_blank" rel="noopener noreferrer">https://keptn.sh/docs/integrations/</a>';
-        }
-      );
-  }
-
   copyApiToken(): void {
     this.clipboard.copy(this.keptnInfo?.bridgeInfo.apiToken, 'API token');
   }
 
   ngOnDestroy(): void {
     this.unsubscribe$.next();
+    this.unsubscribe$.complete();
   }
 }
