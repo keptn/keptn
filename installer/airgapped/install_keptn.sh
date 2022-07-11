@@ -34,7 +34,6 @@ apiService.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG}/api,
 bridge.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG}/bridge2,\
 distributor.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG}/distributor,\
 shipyardController.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG}/shipyard-controller,\
-configurationService.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG}/configuration-service,\
 resourceService.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG}/resource-service,\
 mongodbDatastore.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG}/mongodb-datastore,\
 statisticsService.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG}/statistics-service,\
