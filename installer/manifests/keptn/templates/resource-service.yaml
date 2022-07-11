@@ -113,4 +113,5 @@ spec:
         {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.resourceService.extraVolumes "context" $) | nindent 8 }}
         {{- end }}
       serviceAccountName: keptn-resource-service
+      automountServiceAccountToken: true
       {{- include "keptn.nodeSelector" (dict "value" .Values.resourceService.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
