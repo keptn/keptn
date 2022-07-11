@@ -13,13 +13,13 @@ require (
 	github.com/jeremywohl/flatten v1.0.1
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.17.1-0.20220706105648-65503489d75a
+	github.com/keptn/go-utils v0.17.1-0.20220708080640-d9a621b67838
 	github.com/nats-io/nats-server/v2 v2.8.4
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.5
 	github.com/tryvium-travels/memongo v0.5.0
 	go.mongodb.org/mongo-driver v1.9.1
-	golang.org/x/net v0.0.0-20220624214902-1bab6f366d9e
+	golang.org/x/net v0.0.0-20220706163947-c90051bbdb60
 )
 
 require (

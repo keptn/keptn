@@ -6,6 +6,7 @@
   "time": "2019-06-07T07:02:15.64489Z",
   "contenttype": "application/json",
   "shkeptncontext": "08735340-6f9e-4b32-97ff-3b6c292bc50f",
+  "gitcommitid": "1234",
   "data": {
     "project": "myproject",
     "service": "myservice",
