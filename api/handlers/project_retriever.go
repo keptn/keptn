@@ -14,16 +14,16 @@ type KeptnControlPlaneEndpointProvider interface {
 	GetControlPlaneEndpoint() string
 }
 
-// ControlPlaneProjectChecker is a simple client that will check the existence of a keptn project by querying the
+// ControlPlaneProjectRetriever is a simple client that will check the existence of a keptn project by querying the
 // control plane service
-type ControlPlaneProjectChecker struct {
+type ControlPlaneProjectRetriever struct {
 	controlPlaneProjectBaseURI string
 }
 
-// NewControlPlaneProjectChecker instantiates a new initialized ControlPlaneProjectChecker that will use the control
+// NewControlPlaneProjectRetriever instantiates a new initialized ControlPlaneProjectRetriever that will use the control
 // plane service available at controlPlaneURI
-func NewControlPlaneProjectChecker(provider KeptnControlPlaneEndpointProvider) *ControlPlaneProjectChecker {
-	c := new(ControlPlaneProjectChecker)
+func NewControlPlaneProjectRetriever(provider KeptnControlPlaneEndpointProvider) *ControlPlaneProjectRetriever {
+	c := new(ControlPlaneProjectRetriever)
 	c.controlPlaneProjectBaseURI = provider.GetControlPlaneEndpoint()
 	return c
 }
@@ -32,15 +32,9 @@ func NewControlPlaneProjectChecker(provider KeptnControlPlaneEndpointProvider) *
 // In case of error performing the HTTP request the returned error will be not nil and will wrap the original error
 // received from the http client
 // It returns (true, nil) if the http status code from the control plane is 200, (false, nil) otherwise.
-func (c *ControlPlaneProjectChecker) ProjectExists(projectName string) (bool, error) {
+func (c *ControlPlaneProjectRetriever) ProjectExists(projectName string) (bool, error) {
 
-	projectHandler := apiutils.NewProjectHandler(c.controlPlaneProjectBaseURI)
-
-	_, kErr := projectHandler.GetProject(
-		models.Project{
-			ProjectName: projectName,
-		},
-	)
+	_, kErr := c.getProject(projectName)
 
 	if kErr != nil {
 		if kErr.Code == http.StatusNotFound {
@@ -53,14 +47,18 @@ func (c *ControlPlaneProjectChecker) ProjectExists(projectName string) (bool, er
 	return true, nil
 }
 
-func (c *ControlPlaneProjectChecker) GetStages(projectName string) ([]string, error) {
+func (c *ControlPlaneProjectRetriever) getProject(projectName string) (*models.Project, *models.Error) {
 	projectHandler := apiutils.NewProjectHandler(c.controlPlaneProjectBaseURI)
-
-	project, kErr := projectHandler.GetProject(
+	return projectHandler.GetProject(
 		models.Project{
 			ProjectName: projectName,
 		},
 	)
+}
+
+// GetStages will perform a GetProject on controlPlane and parse the output to return the defined stages names.
+func (c *ControlPlaneProjectRetriever) GetStages(projectName string) ([]string, error) {
+	project, kErr := c.getProject(projectName)
 
 	if kErr != nil {
 		return nil, fmt.Errorf("error getting project %s definition: %w", projectName, kErr.ToError())

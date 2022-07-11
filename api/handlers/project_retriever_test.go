@@ -123,7 +123,7 @@ func TestProjectNotFound(t *testing.T) {
 		},
 	}
 
-	checker := NewControlPlaneProjectChecker(epm)
+	checker := NewControlPlaneProjectRetriever(epm)
 
 	exists, err := checker.ProjectExists("foobar")
 	assert.NoError(t, err)
@@ -153,7 +153,7 @@ func TestProjectFound(t *testing.T) {
 		},
 	}
 
-	checker := NewControlPlaneProjectChecker(epm)
+	checker := NewControlPlaneProjectRetriever(epm)
 
 	exists, err := checker.ProjectExists("foobar-exists")
 	assert.NoError(t, err)
@@ -176,7 +176,7 @@ func TestErrorCheckingProject(t *testing.T) {
 		},
 	}
 
-	checker := NewControlPlaneProjectChecker(epm)
+	checker := NewControlPlaneProjectRetriever(epm)
 
 	exists, err := checker.ProjectExists("foobar-exists")
 	assert.Error(t, err)
@@ -206,7 +206,7 @@ func TestGetStages(t *testing.T) {
 		},
 	}
 
-	checker := NewControlPlaneProjectChecker(epm)
+	checker := NewControlPlaneProjectRetriever(epm)
 
 	stages, err := checker.GetStages("testproject")
 	assert.NoError(t, err)
@@ -229,7 +229,7 @@ func TestErrorGetStages(t *testing.T) {
 		},
 	}
 
-	checker := NewControlPlaneProjectChecker(epm)
+	checker := NewControlPlaneProjectRetriever(epm)
 
 	stages, err := checker.GetStages("testproject")
 	assert.Error(t, err)

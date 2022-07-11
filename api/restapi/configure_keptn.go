@@ -104,7 +104,7 @@ func configureAPI(api *operations.KeptnAPI) http.Handler {
 	// Import endpoint
 	keptnEndpointProvider := execute.NewKeptnEndpointProviderFromEnv()
 
-	projectChecker := handlers.NewControlPlaneProjectChecker(keptnEndpointProvider)
+	projectChecker := handlers.NewControlPlaneProjectRetriever(keptnEndpointProvider)
 
 	importProcessor := importer.NewImportPackageProcessor(
 		new(model.YAMLManifestUnMarshaler), execute.NewKeptnExecutor(keptnEndpointProvider),
