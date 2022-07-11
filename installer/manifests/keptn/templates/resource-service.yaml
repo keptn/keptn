@@ -56,7 +56,7 @@ spec:
       terminationGracePeriodSeconds: {{ .Values.resourceService.gracePeriod | default 60 }}
       containers:
         - name: resource-service
-          image: {{ include "keptn.common.images.image" ( dict "imageRoot" .Values.remediationService.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote }}
+          image: {{ include "keptn.common.images.image" ( dict "imageRoot" .Values.resourceService.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote }}
           {{- $prestop := .Values.resourceService.preStopHookTime | default 20 | quote -}}
           {{- include "keptn.prestop" $prestop | nindent 10 }}
           livenessProbe:
