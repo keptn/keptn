@@ -16,7 +16,7 @@ require (
 	github.com/keptn/go-utils v0.17.1-0.20220708080640-d9a621b67838
 	github.com/nats-io/nats-server/v2 v2.8.4
 	github.com/sirupsen/logrus v1.8.1
-	github.com/stretchr/testify v1.7.5
+	github.com/stretchr/testify v1.8.0
 	github.com/tryvium-travels/memongo v0.6.0
 	go.mongodb.org/mongo-driver v1.9.1
 	golang.org/x/net v0.0.0-20220708220712-1185a9018129

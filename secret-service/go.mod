@@ -7,7 +7,7 @@ require (
 	github.com/gin-gonic/gin v1.8.1
 	github.com/keptn/go-utils v0.17.1-0.20220708080640-d9a621b67838
 	github.com/sirupsen/logrus v1.8.1
-	github.com/stretchr/testify v1.7.5
+	github.com/stretchr/testify v1.8.0
 	github.com/swaggo/swag v1.8.3
 	k8s.io/api v0.22.11
 	k8s.io/apimachinery v0.22.11
