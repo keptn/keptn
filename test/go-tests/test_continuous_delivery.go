@@ -124,6 +124,7 @@ spec:
 `
 
 func Test_ContinuousDelivery(t *testing.T) {
+	t.Parallel()
 	repoLocalDir, err := filepath.Abs("../assets/podtato-head")
 	require.Nil(t, err)
 	projectName := "podtato-head"

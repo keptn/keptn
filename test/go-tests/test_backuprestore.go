@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/keptn/go-utils/pkg/api/models"
-	//"archiver "github.com/mholt/archiver/v3"
 	"github.com/stretchr/testify/require"
 )
 
@@ -25,10 +24,7 @@ spec:
 `
 
 func Test_BackupRestore(t *testing.T) {
-	BackupRestoreTestGeneric(t)
-}
-
-func BackupRestoreTestGeneric(t *testing.T) {
+	t.Parallel()
 	projectName := "backup-restore"
 	serviceName := "helloservice"
 	keptnNamespace := GetKeptnNameSpaceFromEnv()

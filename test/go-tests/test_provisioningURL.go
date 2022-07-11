@@ -84,6 +84,7 @@ data:
  * @Issue 7149
  */
 func Test_ProvisioningURL(t *testing.T) {
+	t.Parallel()
 	projectName := "url-provisioning"
 	mockserverConfigFileName := "mockserver-config.yaml"
 	keptnNamespace := GetKeptnNameSpaceFromEnv()

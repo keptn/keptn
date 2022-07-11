@@ -53,6 +53,7 @@ total_score:
   warning: "75%"`
 
 func Test_EvaluationGitCommitID(t *testing.T) {
+	t.Parallel()
 	projectName := "commit-id-evaluation"
 	serviceName := "my-service"
 	shipyardFilePath, err := CreateTmpShipyardFile(commitIDShipyard)

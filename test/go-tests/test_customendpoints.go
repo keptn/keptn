@@ -37,6 +37,7 @@ deploymentURIsPublic:
   - "${PUBLIC_URL}"`
 
 func Test_CustomUserManagedEndpointsTest(t *testing.T) {
+	t.Parallel()
 	projectName := "user-managed"
 	serviceName := "nginx"
 	stageName := "dev"
