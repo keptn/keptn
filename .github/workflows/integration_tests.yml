@@ -360,14 +360,14 @@ jobs:
               "$JMETER_SERVICE_HELM_CHART_NAME"
           else
             if [[ "$HELM_CHART_NAME" == *"dev"* ]]; then
-              helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} \
+              helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} --wait --timeout 15m \
                 -f ./test/assets/helm-charts/keptn/values-int-tests-dev.yaml \
                 --create-namespace \
                 --set apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
                 --set resourceService.env.DIRECTORY_STAGE_STRUCTURE=${USE_RESOURCE_SERVICE_DIRECTORY} \
                 --set continuousDelivery.enabled=${RUN_CONTINUOUS_DELIVERY_TEST}
             else
-              helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} \
+              helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} --wait --timeout 15m \
                 -f ./test/assets/helm-charts/keptn/values-int-tests.yaml \
                 --create-namespace \
                 --set apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
