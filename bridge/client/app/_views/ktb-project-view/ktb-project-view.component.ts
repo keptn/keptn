@@ -7,7 +7,7 @@ import { environment } from '../../../environments/environment';
 import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 
 @Component({
-  selector: 'ktb-project-board',
+  selector: 'ktb-project-view',
   templateUrl: './ktb-project-view.component.html',
   styleUrls: ['./ktb-project-view.component.scss'],
 })
