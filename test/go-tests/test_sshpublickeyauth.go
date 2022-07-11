@@ -69,7 +69,7 @@ spec:
 const baseSSHProjectPath = "/controlPlane/v1/project"
 
 func Test_SSHPublicKeyAuth(t *testing.T) {
-	t.Parallel()
+	//t.Parallel()
 	projectName := "public-key-auth"
 	serviceName := "helloservice"
 	secondServiceName := "helloservice2"
