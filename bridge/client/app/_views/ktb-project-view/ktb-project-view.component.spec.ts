@@ -1,33 +1,26 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ProjectBoardComponent } from './project-board.component';
-import { AppModule } from '../app.module';
-import { ActivatedRoute, convertToParamMap, ParamMap, UrlSegment } from '@angular/router';
+import { KtbProjectViewComponent } from './ktb-project-view.component';
+import { ActivatedRoute, convertToParamMap, ParamMap } from '@angular/router';
 import { BehaviorSubject, of } from 'rxjs';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { POLLING_INTERVAL_MILLIS } from '../_utils/app.utils';
-import { ApiService } from '../_services/api.service';
-import { ApiServiceMock } from '../_services/api.service.mock';
-import { Trace } from '../_models/trace';
+import { POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
+import { ApiService } from '../../_services/api.service';
+import { ApiServiceMock } from '../../_services/api.service.mock';
+import { KtbProjectViewCommonModule } from './ktb-project-view-common.module';
+import { RouterTestingModule } from '@angular/router/testing';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('ProjectBoardComponent', () => {
-  let component: ProjectBoardComponent;
-  let fixture: ComponentFixture<ProjectBoardComponent>;
+  let component: KtbProjectViewComponent;
+  let fixture: ComponentFixture<KtbProjectViewComponent>;
   let paramsSubject: BehaviorSubject<ParamMap>;
-
-  function setupTraceTest(paramMap: ParamMap): void {
-    const route = TestBed.inject(ActivatedRoute);
-    route.snapshot.url[0].path = 'trace';
-    paramsSubject.next(paramMap);
-    fixture = TestBed.createComponent(ProjectBoardComponent);
-    component = fixture.componentInstance;
-  }
 
   beforeEach(async () => {
     paramsSubject = new BehaviorSubject(convertToParamMap({ projectName: 'sockshop' }));
 
     await TestBed.configureTestingModule({
       declarations: [],
-      imports: [AppModule, HttpClientTestingModule],
+      imports: [KtbProjectViewCommonModule, BrowserAnimationsModule, RouterTestingModule, HttpClientTestingModule],
       providers: [
         { provide: ApiService, useClass: ApiServiceMock },
         { provide: POLLING_INTERVAL_MILLIS, useValue: 0 },
@@ -36,13 +29,13 @@ describe('ProjectBoardComponent', () => {
           useValue: {
             paramMap: paramsSubject.asObservable(),
             snapshot: { url: [{ path: 'project' }, { path: 'sockshop' }] },
-            url: of([new UrlSegment('project', {}), new UrlSegment('sockshop', {})]),
+            data: of({}),
           },
         },
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(ProjectBoardComponent);
+    fixture = TestBed.createComponent(KtbProjectViewComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
@@ -62,39 +55,6 @@ describe('ProjectBoardComponent', () => {
     });
   });
 
-  it('should have a "trace" error when list of traces is empty', (done) => {
-    // given
-    const traces: Trace[] = [];
-
-    // when
-    component.navigateToTrace(traces, null);
-
-    // then
-    component.error$.subscribe((err) => {
-      expect(err).toEqual('trace');
-      done();
-    });
-  });
-
-  it('should have a "trace" error when a trace can not be found with right shkeptncontext but wrong eventselector', (done) => {
-    // given
-    setupTraceTest(
-      convertToParamMap({
-        shkeptncontext: '0bbaaa6b-fd89-4def-ad2c-975beda970cf',
-        eventselector: 'some-wrong-selector',
-      })
-    );
-
-    // when
-    fixture.detectChanges();
-
-    // then
-    component.error$.subscribe((err) => {
-      expect(err).toEqual('trace');
-      done();
-    });
-  });
-
   it("should show a project doesn't exists message when error is project", () => {
     // given
     const projectName = 'wrong-project';
@@ -106,20 +66,6 @@ describe('ProjectBoardComponent', () => {
     // then
     const elem = fixture.nativeElement.querySelector('dt-empty-state-item-title');
     expect(elem.textContent).toEqual("Project doesn't exist");
-  });
-
-  it('should show a trace not found message when error is trace', () => {
-    // given
-    setupTraceTest(convertToParamMap({ shkeptncontext: 'asdf123asdf456789' }));
-    const traces: Trace[] = [];
-
-    // when
-    component.navigateToTrace(traces, null);
-    fixture.detectChanges();
-
-    // then
-    const elem = fixture.nativeElement.querySelector('dt-empty-state-item-title');
-    expect(elem.textContent).toContain('Traces for asdf123asdf456789 not found');
   });
 
   it('should have an undefined error when no error occurred', (done) => {

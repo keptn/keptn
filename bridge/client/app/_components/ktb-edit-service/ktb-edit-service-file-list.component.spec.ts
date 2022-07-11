@@ -4,6 +4,7 @@ import { By } from '@angular/platform-browser';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { KtbEditServiceModule } from './ktb-edit-service.module';
 import { RouterTestingModule } from '@angular/router/testing';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('KtbEditServiceFileListComponent', () => {
   let component: KtbEditServiceFileListComponent;
@@ -11,7 +12,7 @@ describe('KtbEditServiceFileListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [KtbEditServiceModule, HttpClientTestingModule, RouterTestingModule],
+      imports: [KtbEditServiceModule, BrowserAnimationsModule, HttpClientTestingModule, RouterTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbEditServiceFileListComponent);

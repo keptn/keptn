@@ -119,13 +119,6 @@ describe('DataService', () => {
     }
   });
 
-  it('should get traces by context and cache it', async () => {
-    setGetTracesResponse([getDefaultTrace() as Trace]);
-    dataService.loadTracesByContext('keptnContext');
-    const cachedTraces = await firstValueFrom(dataService.traces);
-    expect(cachedTraces).toEqual([Trace.fromJSON(getDefaultTrace())]);
-  });
-
   it('should send an approval once', () => {
     const sendApprovalSpy = jest.spyOn(apiService, 'sendApprovalEvent');
     sendApprovalSpy.mockReturnValue(of({}));

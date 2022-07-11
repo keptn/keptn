@@ -45,7 +45,6 @@ import { IClientSecret, IServiceSecret } from '../../../shared/interfaces/secret
 export class DataService {
   private _projects = new BehaviorSubject<Project[] | undefined>(undefined);
   private _sequences = new BehaviorSubject<ISequenceState>({});
-  private _traces = new BehaviorSubject<Trace[] | undefined>(undefined);
   private _openApprovals = new BehaviorSubject<Trace[]>([]);
   private _keptnInfo = new BehaviorSubject<KeptnInfo | undefined>(undefined);
   private _keptnMetadata = new BehaviorSubject<IMetadata | undefined | null>(undefined); // fetched | not fetched | not existing
@@ -65,10 +64,6 @@ export class DataService {
 
   get projects(): Observable<Project[] | undefined> {
     return this._projects.asObservable();
-  }
-
-  get traces(): Observable<Trace[] | undefined> {
-    return this._traces.asObservable();
   }
 
   get openApprovals(): Observable<Trace[]> {
@@ -514,12 +509,6 @@ export class DataService {
       map((response) => response.body?.events || []),
       map((traces) => traces.map((trace) => Trace.fromJSON(trace)))
     );
-  }
-
-  public loadTracesByContext(keptnContext: string): void {
-    this.getTracesByContext(keptnContext).subscribe((traces: Trace[]) => {
-      this._traces.next(traces);
-    });
   }
 
   public getEvent(type?: string, project?: string, stage?: string, service?: string): Observable<Trace | undefined> {

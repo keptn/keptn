@@ -1,4 +1,4 @@
-import { IWebhookRequestV1Beta1, IWebhookV1Beta1, WebhookApiVersions } from '../interfaces/webhook-config-yaml-result';
+import { IWebhookV1Beta1, WebhookApiVersions } from '../interfaces/webhook-config-yaml-result';
 import { migrateWebhook } from './webhook-config.utils';
 import { WebhookConfigYaml } from './webhook-config-yaml';
 
