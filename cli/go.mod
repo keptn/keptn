@@ -7,7 +7,7 @@ require (
 	github.com/cloudevents/sdk-go/v2 v2.10.1
 	github.com/docker/docker-credential-helpers v0.6.4
 	github.com/google/uuid v1.3.0
-	github.com/hashicorp/go-version v1.5.0
+	github.com/hashicorp/go-version v1.6.0
 	github.com/invopop/jsonschema v0.4.0
 	github.com/keptn/go-utils v0.17.1-0.20220708080640-d9a621b67838
 	github.com/mattn/go-shellwords v1.0.12
