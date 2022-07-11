@@ -19,7 +19,7 @@ require (
 	github.com/nats-io/nats-server/v2 v2.8.4
 	github.com/nats-io/nats.go v1.16.0
 	github.com/sirupsen/logrus v1.8.1
-	github.com/stretchr/testify v1.7.5
+	github.com/stretchr/testify v1.8.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.32.0
 	golang.org/x/net v0.0.0-20220708220712-1185a9018129
 	golang.org/x/time v0.0.0-20220609170525-579cf78fd858
