@@ -12,7 +12,6 @@ const keptnContext = '2c0e568b-8bd3-4726-a188-e528423813ed';
 
 const defaultEvaluationData = {
   comparedEvents: ['3344487d-e384-4cd9-a0e0-fcf157a33ad6'],
-  gitCommit: '',
   indicatorResults: [
     {
       displayName: 'Response time P95',
@@ -85,7 +84,6 @@ const defaultDeploymentData = {
   deploymentURIsLocal: ['http://carts.sockshop-dev:80'],
   deploymentURIsPublic: ['http://carts.sockshop-dev.35.192.209.116.nip.io:80'],
   deploymentstrategy: 'direct',
-  gitCommit: '2e18a8cce50a27b5cb9cb633fa440492dc6c6290',
 };
 
 const defaultDeploymentFinishedTrace = {
@@ -148,9 +146,6 @@ const releaseTracesProduction = [
       },
       message: 'Finished release',
       project: 'sockshop',
-      release: {
-        gitCommit: '7047a5d89098f18455fcdc2d49f48eae3c24280a',
-      },
       result: 'pass',
       service: 'carts',
       stage: 'production',
@@ -211,11 +206,9 @@ const releaseTracesProduction = [
           'http://carts.sockshop-dev.35.192.209.116.nip.io:80',
         ],
         deploymentstrategy: 'duplicate',
-        gitCommit: '6085ba3f74e98227bba2533b97f76804b61ea35a',
       },
       evaluation: {
         comparedEvents: ['3344487d-e384-4cd9-a0e0-fcf157a33ad6'],
-        gitCommit: '',
         indicatorResults: null,
         responses: ['Redirecting to https://keptn.sh/\n', 'Redirecting to https://keptn.sh/\n'],
         result: 'pass',
@@ -229,9 +222,6 @@ const releaseTracesProduction = [
       },
       message: '',
       project: 'sockshop',
-      release: {
-        gitCommit: '',
-      },
       result: 'pass',
       service: 'carts',
       stage: 'production',
@@ -243,7 +233,6 @@ const releaseTracesProduction = [
       },
       test: {
         end: '2021-10-13T10:47:11Z',
-        gitCommit: '',
         start: '2021-10-13T10:46:42Z',
       },
     },
@@ -273,11 +262,9 @@ const deliveryTriggeredProduction = {
         'http://carts.sockshop-dev.35.192.209.116.nip.io:80',
       ],
       deploymentstrategy: '',
-      gitCommit: '2e18a8cce50a27b5cb9cb633fa440492dc6c6290',
     },
     evaluation: {
       comparedEvents: ['3344487d-e384-4cd9-a0e0-fcf157a33ad6'],
-      gitCommit: '',
       indicatorResults: null,
       responses: ['Redirecting to https://keptn.sh/\n', 'Redirecting to https://keptn.sh/\n'],
       result: 'pass',
@@ -291,9 +278,6 @@ const deliveryTriggeredProduction = {
     },
     message: 'Finished release',
     project: 'sockshop',
-    release: {
-      gitCommit: '',
-    },
     result: '',
     service: 'carts',
     stage: 'production',
@@ -305,7 +289,6 @@ const deliveryTriggeredProduction = {
     },
     test: {
       end: '2021-10-13T10:47:11Z',
-      gitCommit: '',
       start: '2021-10-13T10:46:42Z',
     },
   },
@@ -357,10 +340,8 @@ const deliveryTriggeredStaging = {
       deploymentURIsLocal: null,
       deploymentURIsPublic: ['http://carts.sockshop-dev.35.192.209.116.nip.io:80'],
       deploymentstrategy: '',
-      gitCommit: '2e18a8cce50a27b5cb9cb633fa440492dc6c6290',
     },
     evaluation: {
-      gitCommit: '',
       indicatorResults: null,
       responses: ['Redirecting to https://keptn.sh/\n'],
       result: 'pass',
@@ -374,9 +355,6 @@ const deliveryTriggeredStaging = {
     },
     message: 'Finished release',
     project: 'sockshop',
-    release: {
-      gitCommit: '',
-    },
     result: '',
     service: 'carts',
     stage: 'staging',
@@ -388,7 +366,6 @@ const deliveryTriggeredStaging = {
     },
     test: {
       end: '2021-10-13T10:47:11Z',
-      gitCommit: '',
       start: '2021-10-13T10:46:42Z',
     },
   },
@@ -409,7 +386,6 @@ const deploymentTracesProduction = [
         deploymentURIsLocal: ['http://carts.sockshop-production:80'],
         deploymentURIsPublic: ['http://carts.sockshop-production.35.192.209.116.nip.io:80'],
         deploymentstrategy: 'duplicate',
-        gitCommit: '6085ba3f74e98227bba2533b97f76804b61ea35a',
       },
       labels: {
         DtCreds: 'dynatrace',
@@ -475,11 +451,9 @@ const deploymentTracesProduction = [
           'http://carts.sockshop-dev.35.192.209.116.nip.io:80',
         ],
         deploymentstrategy: 'blue_green_service',
-        gitCommit: '2e18a8cce50a27b5cb9cb633fa440492dc6c6290',
       },
       evaluation: {
         comparedEvents: ['3344487d-e384-4cd9-a0e0-fcf157a33ad6'],
-        gitCommit: '',
         indicatorResults: null,
         responses: ['Redirecting to https://keptn.sh/\n', 'Redirecting to https://keptn.sh/\n'],
         result: 'pass',
@@ -493,9 +467,6 @@ const deploymentTracesProduction = [
       },
       message: '',
       project: 'sockshop',
-      release: {
-        gitCommit: '',
-      },
       result: '',
       service: 'carts',
       stage: 'production',
@@ -507,7 +478,6 @@ const deploymentTracesProduction = [
       },
       test: {
         end: '2021-10-13T10:47:11Z',
-        gitCommit: '',
         start: '2021-10-13T10:46:42Z',
       },
     },
@@ -529,9 +499,6 @@ const releaseTracesStaging = [
       },
       message: 'Finished release',
       project: 'sockshop',
-      release: {
-        gitCommit: 'e2150495e51274a9b591e1769558d73c1867c211',
-      },
       result: 'pass',
       service: 'carts',
       stage: 'staging',
@@ -590,11 +557,9 @@ const releaseTracesStaging = [
           'http://carts.sockshop-dev.35.192.209.116.nip.io:80',
         ],
         deploymentstrategy: 'duplicate',
-        gitCommit: 'eb081e26f037bf32797c37f59a55f9f411b6f17d',
       },
       evaluation: {
         comparedEvents: ['3344487d-e384-4cd9-a0e0-fcf157a33ad6'],
-        gitCommit: '',
         indicatorResults: [
           {
             displayName: 'Response time P95',
@@ -640,9 +605,6 @@ const releaseTracesStaging = [
       },
       message: '',
       project: 'sockshop',
-      release: {
-        gitCommit: '',
-      },
       result: 'pass',
       service: 'carts',
       stage: 'staging',
@@ -654,7 +616,6 @@ const releaseTracesStaging = [
       },
       test: {
         end: '2021-10-13T10:53:29Z',
-        gitCommit: '',
         start: '2021-10-13T10:51:08Z',
       },
     },
@@ -676,7 +637,6 @@ const deploymentTracesStaging = [
         deploymentURIsLocal: ['http://carts.sockshop-staging:80'],
         deploymentURIsPublic: ['http://carts.sockshop-staging.35.192.209.116.nip.io:80'],
         deploymentstrategy: 'duplicate',
-        gitCommit: 'eb081e26f037bf32797c37f59a55f9f411b6f17d',
       },
       labels: {
         DtCreds: 'dynatrace',
@@ -738,10 +698,8 @@ const deploymentTracesStaging = [
         deploymentURIsLocal: null,
         deploymentURIsPublic: ['http://carts.sockshop-dev.35.192.209.116.nip.io:80'],
         deploymentstrategy: 'blue_green_service',
-        gitCommit: '2e18a8cce50a27b5cb9cb633fa440492dc6c6290',
       },
       evaluation: {
-        gitCommit: '',
         indicatorResults: null,
         responses: ['Redirecting to https://keptn.sh/\n'],
         result: 'pass',
@@ -755,9 +713,6 @@ const deploymentTracesStaging = [
       },
       message: '',
       project: 'sockshop',
-      release: {
-        gitCommit: '',
-      },
       result: '',
       service: 'carts',
       stage: 'staging',
@@ -769,7 +724,6 @@ const deploymentTracesStaging = [
       },
       test: {
         end: '2021-10-13T10:47:11Z',
-        gitCommit: '',
         start: '2021-10-13T10:46:42Z',
       },
     },
@@ -829,11 +783,9 @@ const approvalTriggeredTraceStaging = {
         'http://carts.sockshop-dev.35.192.209.116.nip.io:80',
       ],
       deploymentstrategy: 'duplicate',
-      gitCommit: 'eb081e26f037bf32797c37f59a55f9f411b6f17d',
     },
     evaluation: {
       comparedEvents: ['3344487d-e384-4cd9-a0e0-fcf157a33ad6'],
-      gitCommit: '',
       indicatorResults: [
         {
           displayName: 'Response time P95',
@@ -879,9 +831,6 @@ const approvalTriggeredTraceStaging = {
     },
     message: '',
     project: 'sockshop',
-    release: {
-      gitCommit: '',
-    },
     result: 'pass',
     service: 'carts',
     stage: 'staging',
@@ -893,7 +842,6 @@ const approvalTriggeredTraceStaging = {
     },
     test: {
       end: '2021-10-13T10:53:29Z',
-      gitCommit: '',
       start: '2021-10-13T10:51:08Z',
     },
   },
@@ -941,7 +889,6 @@ const evaluationAndSliTracesStaging = [
     data: {
       evaluation: {
         comparedEvents: ['3344487d-e384-4cd9-a0e0-fcf157a33ad6'],
-        gitCommit: '',
         indicatorResults: [
           {
             displayName: 'Response time P95',
@@ -1134,10 +1081,8 @@ const evaluationAndSliTracesStaging = [
           'http://carts.sockshop-dev.35.192.209.116.nip.io:80',
         ],
         deploymentstrategy: 'duplicate',
-        gitCommit: 'eb081e26f037bf32797c37f59a55f9f411b6f17d',
       },
       evaluation: {
-        gitCommit: '',
         indicatorResults: null,
         responses: ['Redirecting to https://keptn.sh/\n'],
         result: 'pass',
@@ -1151,9 +1096,6 @@ const evaluationAndSliTracesStaging = [
       },
       message: '',
       project: 'sockshop',
-      release: {
-        gitCommit: '',
-      },
       result: 'pass',
       service: 'carts',
       stage: 'staging',
@@ -1165,7 +1107,6 @@ const evaluationAndSliTracesStaging = [
       },
       test: {
         end: '2021-10-13T10:53:29Z',
-        gitCommit: '',
         start: '2021-10-13T10:51:08Z',
       },
     },
@@ -1199,7 +1140,6 @@ const testTracesStaging = [
       },
       test: {
         end: '2021-10-13T10:53:29Z',
-        gitCommit: '',
         start: '2021-10-13T10:51:08Z',
       },
     },
@@ -1252,10 +1192,8 @@ const testTracesStaging = [
           'http://carts.sockshop-dev.35.192.209.116.nip.io:80',
         ],
         deploymentstrategy: 'duplicate',
-        gitCommit: 'eb081e26f037bf32797c37f59a55f9f411b6f17d',
       },
       evaluation: {
-        gitCommit: '',
         indicatorResults: null,
         responses: ['Redirecting to https://keptn.sh/\n'],
         result: 'pass',
@@ -1269,9 +1207,6 @@ const testTracesStaging = [
       },
       message: '',
       project: 'sockshop',
-      release: {
-        gitCommit: '',
-      },
       result: 'pass',
       service: 'carts',
       stage: 'staging',
@@ -1283,7 +1218,6 @@ const testTracesStaging = [
       },
       test: {
         end: '2021-10-13T10:47:11Z',
-        gitCommit: '',
         start: '2021-10-13T10:46:42Z',
         teststrategy: 'performance',
       },
@@ -1333,9 +1267,6 @@ const releaseTracesDev = [
       },
       message: 'Finished release',
       project: 'sockshop',
-      release: {
-        gitCommit: '',
-      },
       result: 'pass',
       service: 'carts',
       stage: 'dev',
@@ -1391,10 +1322,8 @@ const releaseTracesDev = [
         deploymentURIsLocal: ['http://carts.sockshop-dev:80'],
         deploymentURIsPublic: ['http://carts.sockshop-dev.35.192.209.116.nip.io:80'],
         deploymentstrategy: 'direct',
-        gitCommit: '2e18a8cce50a27b5cb9cb633fa440492dc6c6290',
       },
       evaluation: {
-        gitCommit: '',
         indicatorResults: null,
         responses: ['Redirecting to https://keptn.sh/\n'],
         result: 'pass',
@@ -1420,7 +1349,6 @@ const releaseTracesDev = [
       },
       test: {
         end: '2021-10-13T10:47:11Z',
-        gitCommit: '',
         start: '2021-10-13T10:46:42Z',
       },
     },
@@ -1438,7 +1366,6 @@ const evaluationAndSliTracesDev = [
   {
     data: {
       evaluation: {
-        gitCommit: '',
         indicatorResults: null,
         result: 'pass',
         score: 0,
@@ -1613,7 +1540,6 @@ const evaluationAndSliTracesDev = [
         deploymentURIsLocal: ['http://carts.sockshop-dev:80'],
         deploymentURIsPublic: ['http://carts.sockshop-dev.35.192.209.116.nip.io:80'],
         deploymentstrategy: 'direct',
-        gitCommit: '2e18a8cce50a27b5cb9cb633fa440492dc6c6290',
       },
       evaluation: null,
       message: '',
@@ -1629,7 +1555,6 @@ const evaluationAndSliTracesDev = [
       },
       test: {
         end: '2021-10-13T10:47:11Z',
-        gitCommit: '',
         start: '2021-10-13T10:46:42Z',
       },
     },
@@ -1660,7 +1585,6 @@ const testTracesDev = [
       },
       test: {
         end: '2021-10-13T10:47:11Z',
-        gitCommit: '',
         start: '2021-10-13T10:46:42Z',
       },
     },
@@ -1707,7 +1631,6 @@ const testTracesDev = [
         deploymentURIsLocal: ['http://carts.sockshop-dev:80'],
         deploymentURIsPublic: ['http://carts.sockshop-dev.35.192.209.116.nip.io:80'],
         deploymentstrategy: 'direct',
-        gitCommit: '2e18a8cce50a27b5cb9cb633fa440492dc6c6290',
       },
       message: '',
       project: 'sockshop',
@@ -1742,7 +1665,6 @@ const deploymentTracesDev = [
         deploymentURIsLocal: ['http://carts.sockshop-dev:80'],
         deploymentURIsPublic: ['http://carts.sockshop-dev.35.192.209.116.nip.io:80'],
         deploymentstrategy: 'direct',
-        gitCommit: '2e18a8cce50a27b5cb9cb633fa440492dc6c6290',
       },
       message: 'Successfully deployed',
       project: 'sockshop',
@@ -1893,7 +1815,6 @@ const evaluationFinishedProductionResponse = {
     {
       data: {
         evaluation: {
-          gitCommit: '',
           indicatorResults: null,
           result: 'pass',
           score: 0,
@@ -1934,7 +1855,6 @@ const evaluationFinishedStagingResponse = {
       data: {
         evaluation: {
           comparedEvents: ['3344487d-e384-4cd9-a0e0-fcf157a33ad6'],
-          gitCommit: '',
           indicatorResults: [
             {
               displayName: 'Response time P95',

@@ -8,7 +8,6 @@ const eventData = [
         deploymentURIsLocal: ['http://carts.sockshop-production:80'],
         deploymentURIsPublic: ['http://carts.sockshop-production.35.188.183.151.nip.io:80'],
         deploymentstrategy: 'duplicate',
-        gitCommit: 'fd4f1a7a90a9db82910f9d3366dd7359f13b8bd8',
       },
       labels: {
         DtCreds: 'dynatrace',

@@ -4,7 +4,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["4fbf5b9b-3b41-41ea-b120-2f17d43891f1"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -92,7 +91,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["73e7180e-9e92-4da9-b174-a30e82bac187"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -180,7 +178,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["4f27c86a-4ef5-49ec-99d8-f9f684040c77"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -268,7 +265,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["3accb17f-528d-4c7e-9303-cf411975211d"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -356,7 +352,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["3accb17f-528d-4c7e-9303-cf411975211d"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -445,7 +440,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["862c4c1b-12c7-4161-8009-f378f3b071e4"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -502,7 +496,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["862c4c1b-12c7-4161-8009-f378f3b071e4"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -558,7 +551,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["ccd95721-ba12-4297-932d-abbbb2c238be"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -614,7 +606,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["9375a672-4568-4cbd-a9a1-325d47d654eb"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -671,7 +662,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["7771920c-b6d0-4cb3-a6b4-a151f6472fad"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -759,7 +749,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["7771920c-b6d0-4cb3-a6b4-a151f6472fad"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -848,7 +837,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["5fa3fc1a-1712-4960-97af-b214025348f0"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -905,7 +893,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["5fa3fc1a-1712-4960-97af-b214025348f0"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -961,7 +948,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["bc302859-732d-46fc-94a7-47fac5bf1cf0"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -1017,7 +1003,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["0713992b-6c26-48c2-8733-7128f497979f"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -1074,7 +1059,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["9e04b65c-fd56-437e-a164-53ec516aa6ad"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -1162,7 +1146,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["9e04b65c-fd56-437e-a164-53ec516aa6ad"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -1251,7 +1234,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["c9e06261-2c5b-4da2-9a53-a5cba5a57100"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -1308,7 +1290,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["c9e06261-2c5b-4da2-9a53-a5cba5a57100"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -1364,7 +1345,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["7e140d06-b500-4d88-b146-c91aacb171e1"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -1420,7 +1400,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["0364b66e-4132-48e3-91df-9fb6d2bbaf09"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -1477,7 +1456,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["3fb69db1-9716-4548-943d-bcef7ca65462"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -1565,7 +1543,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["3fb69db1-9716-4548-943d-bcef7ca65462"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -1654,7 +1631,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["8792e0f5-e6f6-41a8-a968-6c359f36aacd"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -1711,7 +1687,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["8792e0f5-e6f6-41a8-a968-6c359f36aacd"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -1767,7 +1742,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["9f25c2f2-00f0-447f-bd3b-b7c792d1d251"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -1823,7 +1797,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["32b00e7a-8893-4e47-a2c7-e0470df24cb3"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -1880,7 +1853,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["3732db5c-5d70-49b4-8bdd-327fc4556e99"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -1968,7 +1940,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["807af439-0be3-4fa2-b6bb-43d1ffedaa03"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -2056,7 +2027,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["aa6fef7f-17f6-4810-a61a-296b3bc4cc8d"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -2144,7 +2114,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["aa6fef7f-17f6-4810-a61a-296b3bc4cc8d"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -2200,7 +2169,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["aa6fef7f-17f6-4810-a61a-296b3bc4cc8d"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -2256,7 +2224,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["833cffc2-28a5-4f06-832e-5925ee9bae92"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -2344,7 +2311,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["833cffc2-28a5-4f06-832e-5925ee9bae92"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -2400,7 +2366,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["90229b71-5179-4ac1-b7dd-c05f5712dfd5"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -2488,7 +2453,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["5386be1d-618c-4447-86fa-1b41f77fe008"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -2576,7 +2540,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["e593ab5f-05bd-4e1e-846f-811aef5e667e"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -2664,7 +2627,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["38a4f567-770e-48e1-b13f-5311c2491419"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -2752,7 +2714,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["7494512a-cf48-4157-95f3-387b4b87fe3f"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -2840,7 +2801,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["c6d5b464-8f7e-4c97-95bd-b58230921e01"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -2928,7 +2888,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["c6d5b464-8f7e-4c97-95bd-b58230921e01"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -3017,7 +2976,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["e8775f9a-b904-402c-8e4a-fa76bf6808e0"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -3074,7 +3032,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["e8775f9a-b904-402c-8e4a-fa76bf6808e0"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -3130,7 +3087,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["6b0007ee-db9e-42ae-af7d-cef6599edb7f"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -3186,7 +3142,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["c13bac4c-6641-4a69-ba27-84ab7a92bf64"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -3243,7 +3198,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["8b1a27ab-9045-4991-bfa6-4403d73c2f6d"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -3331,7 +3285,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["8b1a27ab-9045-4991-bfa6-4403d73c2f6d"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -3419,7 +3372,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["8b1a27ab-9045-4991-bfa6-4403d73c2f6d"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -3475,7 +3427,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["8b1a27ab-9045-4991-bfa6-4403d73c2f6d"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
@@ -3531,7 +3482,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["aa705759-3228-4a8a-a97f-52be18f1d447"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",
