@@ -1,15 +1,5 @@
 name: "Security Scans"
 on:
-  # always execute docker build when something is pushed to master or a maintenance branch
-  push:
-    branches:
-      - 'master'
-      - '[0-9]+.[1-9][0-9]*.x'
-  # in addition, execute for pull requests to those branches
-  pull_request:
-    branches:
-      - 'master'
-      - '[0-9]+.[1-9][0-9]*.x'
   workflow_dispatch:
   schedule:
     - cron: '0 3 * * 1' # run tests at 1 AM (UTC), every monday (1)
