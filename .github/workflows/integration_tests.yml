@@ -551,57 +551,6 @@ jobs:
             helm test jmeter-service -n ${{ env.KEPTN_NAMESPACE }}
             helm test helm-service -n ${{ env.KEPTN_NAMESPACE }}
 
-      - name: Install Gitea
-        id: install_gitea
-        if: env.RUN_AIRGAPPED_TEST != 'true'
-        timeout-minutes: 5
-        env:
-          GITEA_PORT_HTTP: 3000
-          GITEA_PORT_SSH: 3001
-        run: |
-          helm repo add gitea-charts https://dl.gitea.io/charts/
-          helm install --values test/assets/gitea/values.yaml gitea gitea-charts/gitea -n ${KEPTN_NAMESPACE} --wait --version v5.0.0
-          GITEA_ADMIN_USER=$(kubectl get pod -n ${KEPTN_NAMESPACE} gitea-0 -ojsonpath='{@.spec.initContainers[?(@.name=="configure-gitea")].env[?(@.name=="GITEA_ADMIN_USERNAME")].value}')
-          GITEA_ADMIN_PASSWORD=$(kubectl get pod -n ${KEPTN_NAMESPACE} gitea-0 -ojsonpath='{@.spec.initContainers[?(@.name=="configure-gitea")].env[?(@.name=="GITEA_ADMIN_PASSWORD")].value}')
-
-          ssh-keygen -t rsa -C "gitea-http" -f "rsa_gitea" -P "myGiteaPassPhrase"
-          GITEA_PRIVATE_KEY=$(cat rsa_gitea)
-          GITEA_PUBLIC_KEY=$(cat rsa_gitea.pub)
-          GITEA_PRIVATE_KEY_PASSPHRASE=myGiteaPassPhrase
-
-          kubectl port-forward -n ${KEPTN_NAMESPACE} svc/gitea-http $GITEA_PORT_HTTP:3000 &
-          kubectl port-forward -n ${KEPTN_NAMESPACE} svc/gitea-ssh $GITEA_PORT_SSH:22 &
-
-          # wait for port $GITEA_PORT_HTTP to become available
-          while ! nc -vz localhost $GITEA_PORT_HTTP > /dev/null 2>&1 ; do
-            echo "Sleeping until port-forward for Gitea at port $GITEA_PORT_HTTP is ready..."
-            sleep 0.1
-          done
-          
-          # wait for port $GITEA_PORT_SSH to become available
-          while ! nc -vz localhost $GITEA_PORT_SSH > /dev/null 2>&1 ; do
-            echo "Sleeping until port-forward for Gitea at port $GITEA_PORT_SSH is ready..."
-            sleep 0.1
-          done
-
-          curl -vkL --silent --user ${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASSWORD} -X POST "http://localhost:$GITEA_PORT_HTTP/api/v1/users/${GITEA_ADMIN_USER}/tokens" -H "accept: application/json" -H "Content-Type: application/json; charset=utf-8" -d "{ \"name\": \"my-token\" }" -o gitea-token.txt
-          curl -vkL --silent --user ${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASSWORD} -X POST "http://localhost:$GITEA_PORT_HTTP/api/v1/user/keys" -H "accept: application/json" -H "Content-Type: application/json; charset=utf-8" -d "{ \"key\": \"$GITEA_PUBLIC_KEY\",  \"title\": \"public-key-gitea\"}"
-          GITEA_TOKEN=$(cat gitea-token.txt | jq -r .sha1)
-          kubectl create secret generic gitea-access -n ${KEPTN_NAMESPACE} --from-literal=username=${GITEA_ADMIN_USER} --from-literal=password=${GITEA_TOKEN} --from-literal=private-key="${GITEA_PRIVATE_KEY}" --from-literal=private-key-pass=${GITEA_PRIVATE_KEY_PASSPHRASE}
-          rm gitea-token.txt
-
-      - name: Install Mockserver
-        id: install_mockserver
-        if: env.RUN_AIRGAPPED_TEST != 'true'
-        timeout-minutes: 5
-        run: |
-          helm repo add mockserver https://www.mock-server.com
-          helm upgrade --install --namespace ${KEPTN_NAMESPACE} --version 5.13.0 mockserver mockserver/mockserver --set service.type=ClusterIP
-
-      - name: Expose Keptn API (Minishift)
-        if: env.CLOUD_PROVIDER == 'minishift-on-GHA'
-        run: oc expose svc/api-gateway-nginx -n ${KEPTN_NAMESPACE} --hostname=api.${KEPTN_NAMESPACE}.127.0.0.1.nip.io
-
       - name: Prepare test run
         id: prepare_test_run
         run: |
