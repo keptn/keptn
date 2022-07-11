@@ -13,27 +13,37 @@ import { KtbDashboardLegacyViewRoutingModule } from './ktb-dashboard-legacy-view
 import { KtbProjectListComponent } from './ktb-project-list/ktb-project-list.component';
 import { DtTagModule } from '@dynatrace/barista-components/tag';
 import { DtTileModule } from '@dynatrace/barista-components/tile';
-import { KtbSequenceStateListModule } from '../../_components/ktb-sequence-state-list/ktb-sequence-state-list.module';
 import { KtbProjectTileComponent } from './ktb-project-list/ktb-project-tile.component';
+import { DtTableModule } from '@dynatrace/barista-components/table';
+import { KtbSequenceStateInfoModule } from '../../_components/ktb-sequence-state-info/ktb-sequence-state-info.module';
+import { MomentModule } from 'ngx-moment';
+import { KtbSequenceStateListComponent } from './ktb-sequence-state-list/ktb-sequence-state-list.component';
 
 @NgModule({
-  declarations: [KtbDashboardLegacyViewComponent, KtbProjectTileComponent, KtbProjectListComponent],
+  declarations: [
+    KtbDashboardLegacyViewComponent,
+    KtbProjectTileComponent,
+    KtbProjectListComponent,
+    KtbSequenceStateListComponent,
+  ],
   imports: [
     CommonModule,
+    DtButtonModule,
+    DtEmptyStateModule,
     DtIconModule.forRoot({
       svgIconLocation: `assets/icons/{{name}}.svg`,
     }),
-    DtEmptyStateModule,
     DtInfoGroupModule,
-    KtbPipeModule,
-    DtButtonModule,
-    KtbLoadingModule,
-    FlexLayoutModule,
-    KtbDashboardLegacyViewRoutingModule,
-    RouterModule,
+    DtTableModule,
     DtTagModule,
     DtTileModule,
-    KtbSequenceStateListModule,
+    FlexLayoutModule,
+    KtbDashboardLegacyViewRoutingModule,
+    KtbLoadingModule,
+    KtbPipeModule,
+    KtbSequenceStateInfoModule,
+    MomentModule,
+    RouterModule,
   ],
 })
 export class KtbDashboardLegacyViewModule {}
