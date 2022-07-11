@@ -6411,10 +6411,10 @@ hdr-histogram-percentiles-obj@^3.0.0:
   resolved "https://registry.yarnpkg.com/hdr-histogram-percentiles-obj/-/hdr-histogram-percentiles-obj-3.0.0.tgz#9409f4de0c2dda78e61de2d9d78b1e9f3cba283c"
   integrity sha512-7kIufnBqdsBGcSZLPJwqHT3yhk1QTsSlFsVD3kx5ixH/AlgBs9yM1q6DPhXZ8f8gtdqgh7N7/5btRLpQsS2gHw==
 
-highcharts@^7.2.2:
-  version "7.2.2"
-  resolved "https://registry.yarnpkg.com/highcharts/-/highcharts-7.2.2.tgz#94d6bae545d7f0fbf49615b28640f5fdbf99d11e"
-  integrity sha512-jRKujQuPKHLgGQd2sByBI9K5m56CInm2augVZnBYqdmyoU88hcI62uuAXHvxC3FW8YY0FJ74A1uw6sxrcmcmvg==
+highcharts@^9.0.0:
+  version "9.3.3"
+  resolved "https://registry.yarnpkg.com/highcharts/-/highcharts-9.3.3.tgz#ae62178de788fd7934431aa26b8e250b8073c541"
+  integrity sha512-QeOvm6cifeZYYdTLm4IxZsXcOE9c4xqfs0z0OJJ0z7hhA9WG0rmcVAyuIp5HBl/znjA/ayYHmpYjBYD/9PG4Fg==
 
 hosted-git-info@^2.1.4:
   version "2.8.9"
