@@ -62,7 +62,7 @@ func (kae *KeptnAPIExecutor) registerEndpoints(kep KeptnEndpointProvider) {
 	}
 
 	kae.endpointMappings["keptn-api-v1-uniform-create-secret"] = &defaultEndpointHandler{
-		requestFactory: &noRenderRequestFactory{
+		requestFactory: &projectRenderRequestFactory{
 			httpMethod: http.MethodPost,
 			path:       "/v1/secret",
 		},

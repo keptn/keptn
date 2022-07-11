@@ -663,6 +663,8 @@ func Test_noRenderRequestFactory_CreateRequest(t *testing.T) {
 					if tt.errorContains != "" {
 						assert.ErrorContains(t, err, tt.errorContains)
 					}
+				} else {
+					assert.NoError(t, err)
 				}
 			},
 		)

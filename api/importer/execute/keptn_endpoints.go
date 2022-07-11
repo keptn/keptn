@@ -18,11 +18,6 @@ func (_ StaticKeptnEndpointProvider) GetControlPlaneEndpoint() string {
 	return utils.SanitizeURL(defaultControlPlaneEndpoint)
 }
 
-// GetSecretsServiceEndpoint returns the default secrets service endpoint
-func (_ StaticKeptnEndpointProvider) GetSecretsServiceEndpoint() string {
-	return utils.SanitizeURL(defaultSecretServiceEndpoint)
-}
-
 type configurableKeptnEndpointProvider struct {
 	controlPlane  string
 	secretService string

@@ -52,35 +52,43 @@ func TestGetEnvVariablewithDefault(t *testing.T) {
 
 func TestKeptnEndpointProviderFromEnv(t *testing.T) {
 	tests := []struct {
-		name                         string
-		env                          map[string]string
-		expectedControlPlaneEndpoint string
+		name                          string
+		env                           map[string]string
+		expectedControlPlaneEndpoint  string
+		expectedSecretServiceEndpoint string
 	}{
 		{
-			name:                         "No Env setup - get default value",
-			env:                          map[string]string{},
-			expectedControlPlaneEndpoint: defaultControlPlaneEndpoint,
+			name:                          "No Env setup - get default value",
+			env:                           map[string]string{},
+			expectedControlPlaneEndpoint:  defaultControlPlaneEndpoint,
+			expectedSecretServiceEndpoint: defaultSecretServiceEndpoint,
 		},
 		{
 			name: "Set custom control plane without scheme",
 			env: map[string]string{
-				"CONTROLPLANE_URI": "somehost:1234",
+				"CONTROLPLANE_URI":   "somehost:1234",
+				"SECRET_SERVICE_URI": "verysecret.host:9876",
 			},
-			expectedControlPlaneEndpoint: "http://somehost:1234",
+			expectedControlPlaneEndpoint:  "http://somehost:1234",
+			expectedSecretServiceEndpoint: "http://verysecret.host:9876",
 		},
 		{
 			name: "Set custom control plane with http scheme",
 			env: map[string]string{
-				"CONTROLPLANE_URI": "http://somehost:1234",
+				"CONTROLPLANE_URI":   "http://somehost:1234",
+				"SECRET_SERVICE_URI": "http://verysecret.host:9876",
 			},
-			expectedControlPlaneEndpoint: "http://somehost:1234",
+			expectedControlPlaneEndpoint:  "http://somehost:1234",
+			expectedSecretServiceEndpoint: "http://verysecret.host:9876",
 		},
 		{
 			name: "Set custom control plane with https scheme",
 			env: map[string]string{
-				"CONTROLPLANE_URI": "https://somehost:1234",
+				"CONTROLPLANE_URI":   "https://somehost:1234",
+				"SECRET_SERVICE_URI": "https://verysecret.host:9876",
 			},
-			expectedControlPlaneEndpoint: "https://somehost:1234",
+			expectedControlPlaneEndpoint:  "https://somehost:1234",
+			expectedSecretServiceEndpoint: "https://verysecret.host:9876",
 		},
 	}
 	for _, tt := range tests {
@@ -91,6 +99,7 @@ func TestKeptnEndpointProviderFromEnv(t *testing.T) {
 				}
 				sut := KeptnEndpointProviderFromEnv()
 				assert.Equal(t, tt.expectedControlPlaneEndpoint, sut.GetControlPlaneEndpoint())
+				assert.Equal(t, tt.expectedSecretServiceEndpoint, sut.GetSecretsServiceEndpoint())
 			},
 		)
 	}
