@@ -31,6 +31,21 @@ mongo:
     bridgeAuthDatabase: 'keptn'
   external:
     connectionString:
+  containerSecurityContext:
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+  serviceAccount:
+    automountServiceAccountToken: false
+  resources:
+    requests:
+      cpu: 200m
+      memory: 100Mi
+    limits:
+      cpu: 1000m
+      memory: 500Mi
 
 prefixPath: ""
 
@@ -90,6 +105,9 @@ apiGatewayNginx:
     readOnlyRootFilesystem: false
     allowPrivilegeEscalation: false
     privileged: false
+    capabilities:
+      drop:
+        - ALL
   image:
     registry: "docker.io/nginxinc"           # Container Registry
     repository: "nginx-unprivileged"         # Container Image Name
@@ -178,6 +196,9 @@ bridge:
     readOnlyRootFilesystem: true
     allowPrivilegeEscalation: false
     privileged: false
+    capabilities:
+      drop:
+        - ALL
   oauth:
     discovery: ""
     secureCookie: false
@@ -466,4 +487,7 @@ containerSecurityContext:
   readOnlyRootFilesystem: true
   allowPrivilegeEscalation: false
   privileged: false
+  capabilities:
+    drop:
+      - ALL
 nodeSelector: {}
