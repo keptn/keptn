@@ -1,7 +1,6 @@
 package execute
 
 import (
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,8 +11,8 @@ func TestGetEnvVariablewithDefault(t *testing.T) {
 	const envVar1Value = "VALUE_1"
 	const emptyVarName = "EMPTY_VAR"
 	const defaultValue1 = "MY_DEFAULT_1"
-	os.Setenv(envVar1Name, envVar1Value)
-	os.Setenv(emptyVarName, "")
+	t.Setenv(envVar1Name, envVar1Value)
+	t.Setenv(emptyVarName, "")
 	tests := []struct {
 		name          string
 		envVarName    string
@@ -83,14 +82,12 @@ func TestKeptnEndpointProviderFromEnv(t *testing.T) {
 			},
 			expectedControlPlaneEndpoint: "https://somehost:1234",
 		},
-
 	}
 	for _, tt := range tests {
 		t.Run(
 			tt.name, func(t *testing.T) {
-				os.Clearenv()
 				for k, v := range tt.env {
-					os.Setenv(k, v)
+					t.Setenv(k, v)
 				}
 				sut := KeptnEndpointProviderFromEnv()
 				assert.Equal(t, tt.expectedControlPlaneEndpoint, sut.GetControlPlaneEndpoint())

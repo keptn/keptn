@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"strings"
 	"testing"
 
@@ -13,18 +12,12 @@ import (
 )
 
 func Test_getEnvConfig(t *testing.T) {
-	defer os.Unsetenv("MAX_AUTH_ENABLED")
-	defer os.Unsetenv("MAX_AUTH_REQUESTS_PER_SECOND")
-	defer os.Unsetenv("MAX_AUTH_REQUESTS_BURST")
-	defer os.Unsetenv("HIDE_DEPRECATED")
-	defer os.Unsetenv("OAUTH_ENABLED")
-	defer os.Unsetenv("OAUTH_PREFIX")
-	_ = os.Setenv("MAX_AUTH_ENABLED", "false")
-	_ = os.Setenv("MAX_AUTH_REQUESTS_PER_SECOND", "0.5")
-	_ = os.Setenv("MAX_AUTH_REQUESTS_BURST", "1")
-	_ = os.Setenv("HIDE_DEPRECATED", "true")
-	_ = os.Setenv("OAUTH_ENABLED", "true")
-	_ = os.Setenv("OAUTH_PREFIX", "prefix")
+	t.Setenv("MAX_AUTH_ENABLED", "false")
+	t.Setenv("MAX_AUTH_REQUESTS_PER_SECOND", "0.5")
+	t.Setenv("MAX_AUTH_REQUESTS_BURST", "1")
+	t.Setenv("HIDE_DEPRECATED", "true")
+	t.Setenv("OAUTH_ENABLED", "true")
+	t.Setenv("OAUTH_PREFIX", "prefix")
 
 	config, err := getEnvConfig()
 	require.Nil(t, err)

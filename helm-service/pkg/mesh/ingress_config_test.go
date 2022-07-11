@@ -1,10 +1,10 @@
 package mesh
 
 import (
-	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"os"
 	"reflect"
 	"testing"
+
+	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
 
 func TestGetPublicDeploymentURI(t *testing.T) {
@@ -64,10 +64,10 @@ func TestGetPublicDeploymentURI(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			os.Setenv("INGRESS_HOSTNAME_SUFFIX", tt.ingressHostNameSuffix)
-			os.Setenv("INGRESS_PORT", tt.ingressPort)
-			os.Setenv("INGRESS_PROTOCOL", tt.ingressProtocol)
-			os.Setenv("HOSTNAME_TEMPLATE", tt.hostNameTemplate)
+			t.Setenv("INGRESS_HOSTNAME_SUFFIX", tt.ingressHostNameSuffix)
+			t.Setenv("INGRESS_PORT", tt.ingressPort)
+			t.Setenv("INGRESS_PROTOCOL", tt.ingressProtocol)
+			t.Setenv("HOSTNAME_TEMPLATE", tt.hostNameTemplate)
 			if got := GetPublicDeploymentURI(tt.args.event); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetPublicDeploymentURI() = %v, want %v", got, tt.want)
 			}

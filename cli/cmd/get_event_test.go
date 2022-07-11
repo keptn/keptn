@@ -33,7 +33,7 @@ func TestGetTriggeredEvent(t *testing.T) {
 	)
 	defer ts.Close()
 
-	os.Setenv("MOCK_SERVER", ts.URL)
+	t.Setenv("MOCK_SERVER", ts.URL)
 
 	var numOfPages *int
 	numOfPages = new(int)
