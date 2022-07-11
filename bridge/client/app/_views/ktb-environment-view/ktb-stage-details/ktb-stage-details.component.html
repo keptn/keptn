@@ -24,7 +24,7 @@
               [attr.uitestid]="'ktb-stage-details-problem-button'"
             >
               <dt-toggle-button-item-icon>
-                <dt-icon class="stage-state-icon event-icon" name="criticalevent"></dt-icon>
+                <dt-icon class="stage-state-icon" name="criticalevent"></dt-icon>
               </dt-toggle-button-item-icon>
               <span [textContent]="remediationServices.length"></span>
               Problem<span *ngIf="remediationServices.length !== 1">s</span>
@@ -41,7 +41,7 @@
               [attr.uitestid]="'ktb-stage-details-evaluation-button'"
             >
               <dt-toggle-button-item-icon>
-                <dt-icon class="stage-state-icon event-icon" name="traffic-light"></dt-icon>
+                <dt-icon class="stage-state-icon" name="traffic-light"></dt-icon>
               </dt-toggle-button-item-icon>
               <span [textContent]="failedQualityGatesServices.length"></span>
               Quality gate<span *ngIf="failedQualityGatesServices.length !== 1">s</span>
@@ -90,10 +90,10 @@
                     <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
                       <h2 class="m-0" [textContent]="service.serviceName"></h2>
                       <ng-container *ngIf="service.hasFailedEvaluation()">
-                        <dt-icon class="stage-state-icon event-icon error" name="traffic-light"></dt-icon>
+                        <dt-icon class="stage-state-icon error" name="traffic-light"></dt-icon>
                       </ng-container>
                       <ng-container *ngIf="service.hasRemediations()">
-                        <dt-icon class="stage-state-icon event-icon error" name="criticalevent"></dt-icon>
+                        <dt-icon class="stage-state-icon error" name="criticalevent"></dt-icon>
                       </ng-container>
                       <dt-icon
                         class="stage-state-icon highlight"
@@ -162,7 +162,7 @@
               </ktb-expandable-tile-header>
               <ng-container *ngFor="let remediationSequence of service.openRemediations">
                 <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
-                  <dt-icon class="stage-state-icon event-icon error" name="criticalevent"></dt-icon>
+                  <dt-icon class="stage-state-icon error" name="criticalevent"></dt-icon>
                   <p class="m-0" [textContent]="remediationSequence.problemTitle"></p>
                 </div>
                 <div
@@ -172,7 +172,7 @@
                   fxLayoutGap="5px"
                   *ngFor="let remediationAction of remediationSequence.getRemediationActions()"
                 >
-                  <dt-icon class="stage-state-icon event-icon" name="process"></dt-icon>
+                  <dt-icon class="stage-state-icon" name="process"></dt-icon>
                   <p class="m-0" [textContent]="remediationAction.getDetails()"></p>
                   <button
                     class="m-0 p-0 ml-1"
@@ -192,7 +192,7 @@
               </ng-container>
               <ng-container *ngIf="service.getFailedEvaluationSequence() as failedRootEvent">
                 <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
-                  <dt-icon fxFlex="none" class="stage-state-icon event-icon error mr-2" name="traffic-light"></dt-icon>
+                  <dt-icon fxFlex="none" class="stage-state-icon error mr-2" name="traffic-light"></dt-icon>
                   <p class="m-0">
                     Quality gate
                     <span *ngIf="failedRootEvent.getShortImageName()"

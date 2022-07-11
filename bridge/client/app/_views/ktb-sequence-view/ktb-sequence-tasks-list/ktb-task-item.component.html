@@ -28,7 +28,6 @@
           </button>
           <dt-icon
             *ngIf="!task.isLoading() || task.isApproval() || task.getLastTrace().isApproval()"
-            class="event-icon"
             [class.error]="task.isFaulty()"
             [class.success]="task.isSuccessful()"
             [class.highlight]="task.isApproval() || task.getLastTrace().isApproval()"
@@ -89,6 +88,7 @@
             variant="nested"
             title="Evaluation board"
             [routerLink]="['/evaluation', task.shkeptncontext, task.stage]"
+            (click)="$event.stopPropagation()"
             *ngIf="task.isEvaluation() && task.isFinished()"
           >
             <dt-icon name="chart-bar"></dt-icon>

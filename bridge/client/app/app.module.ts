@@ -16,10 +16,6 @@ import { AppRouting } from './app.routing';
 import { KtbRootComponent } from './ktb-root/ktb-root.component';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { ProjectBoardComponent } from './project-board/project-board.component';
-import { EvaluationBoardComponent } from './evaluation-board/evaluation-board.component';
-import { KtbEnvironmentViewComponent } from './_views/ktb-environment-view/ktb-environment-view.component';
-import { KtbIntegrationViewComponent } from './_views/ktb-integration-view/ktb-integration-view.component';
-import { KtbServiceViewComponent } from './_views/ktb-service-view/ktb-service-view.component';
 import { KtbSettingsViewComponent } from './_views/ktb-settings-view/ktb-settings-view.component';
 
 import { AppInitService } from './_services/app.init';
@@ -47,24 +43,14 @@ import { DtTagModule } from '@dynatrace/barista-components/tag';
 import { KtbAppHeaderModule } from './_components/ktb-app-header/ktb-app-header.module';
 import { KtbCreateSecretFormModule } from './_components/ktb-create-secret-form/ktb-create-secret-form.module';
 import { KtbCreateServiceModule } from './_components/ktb-create-service/ktb-create-service.module';
-import { KtbDeploymentListModule } from './_components/ktb-deployment-list/ktb-deployment-list.module';
 import { KtbEditServiceModule } from './_components/ktb-edit-service/ktb-edit-service.module';
 import { KtbErrorViewModule } from './_views/ktb-error-view/ktb-error-view.module';
-import { KtbEvaluationDetailsModule } from './_components/ktb-evaluation-details/ktb-evaluation-details.module';
-import { KtbEventItemModule } from './_components/ktb-event-item/ktb-event-item.module';
-import { KtbExpandableTileModule } from './_components/ktb-expandable-tile/ktb-expandable-tile.module';
-import { KtbKeptnServicesListModule } from './_components/ktb-keptn-services-list/ktb-keptn-services-list.module';
 import { KtbLoadingModule } from './_components/ktb-loading/ktb-loading.module';
-import { KtbModifyUniformSubscriptionModule } from './_components/ktb-modify-uniform-subscription/ktb-modify-uniform-subscription.module';
 import { KtbNoServiceInfoModule } from './_components/ktb-no-service-info/ktb-no-service-info.module';
 import { KtbNotificationModule } from './_components/ktb-notification/ktb-notification.module';
 import { KtbProjectSettingsModule } from './_components/ktb-project-settings/ktb-project-settings.module';
 import { KtbSecretsListModule } from './_components/ktb-secrets-list/ktb-secrets-list.module';
-import { KtbServiceDetailsModule } from './_components/ktb-service-details/ktb-service-details.module';
 import { KtbServiceSettingsModule } from './_components/ktb-service-settings/ktb-service-settings.module';
-import { KtbStageDetailsModule } from './_views/ktb-environment-view/ktb-stage-details/ktb-stage-details.module';
-import { KtbStageOverviewModule } from './_views/ktb-environment-view/ktb-stage-overview/ktb-stage-overview.module';
-import { KtbMarkdownComponent } from './_components/ktb-markdown/ktb-markdown.component';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
@@ -98,24 +84,15 @@ const ktbModules = [
   KtbAppHeaderModule,
   KtbCreateSecretFormModule,
   KtbCreateServiceModule,
-  KtbDeploymentListModule,
   KtbEditServiceModule,
   KtbErrorViewModule,
-  KtbEvaluationDetailsModule,
-  KtbEventItemModule,
-  KtbExpandableTileModule,
-  KtbKeptnServicesListModule,
   KtbLoadingModule,
-  KtbModifyUniformSubscriptionModule,
   KtbNoServiceInfoModule,
   KtbNotificationModule,
   KtbPipeModule,
   KtbProjectSettingsModule,
   KtbSecretsListModule,
-  KtbServiceDetailsModule,
   KtbServiceSettingsModule,
-  KtbStageDetailsModule,
-  KtbStageOverviewModule,
 ];
 
 @NgModule({
@@ -123,11 +100,6 @@ const ktbModules = [
     AppComponent,
     NotFoundComponent,
     ProjectBoardComponent,
-    EvaluationBoardComponent,
-    KtbServiceViewComponent,
-    KtbMarkdownComponent,
-    KtbEnvironmentViewComponent,
-    KtbIntegrationViewComponent,
     KtbSettingsViewComponent,
     KtbRootComponent,
   ],

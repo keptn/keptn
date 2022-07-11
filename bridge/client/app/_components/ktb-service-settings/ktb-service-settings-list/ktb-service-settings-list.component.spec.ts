@@ -1,10 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbServiceSettingsListComponent } from './ktb-service-settings-list.component';
-import { ActivatedRoute, convertToParamMap } from '@angular/router';
-import { of } from 'rxjs';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { ApiService } from '../../../_services/api.service';
-import { ApiServiceMock } from '../../../_services/api.service.mock';
 import { KtbServiceSettingsModule } from '../ktb-service-settings.module';
 
 describe('KtbServiceSettingsListComponent', () => {
@@ -14,19 +10,6 @@ describe('KtbServiceSettingsListComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [KtbServiceSettingsModule, HttpClientTestingModule],
-      providers: [
-        { provide: ApiService, useClass: ApiServiceMock },
-        {
-          provide: ActivatedRoute,
-          useValue: {
-            paramMap: of(
-              convertToParamMap({
-                projectName: 'sockshop',
-              })
-            ),
-          },
-        },
-      ],
     }).compileComponents();
     fixture = TestBed.createComponent(KtbServiceSettingsListComponent);
     component = fixture.componentInstance;
@@ -37,7 +20,15 @@ describe('KtbServiceSettingsListComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should return empty service names on default', () => {
+    expect(component.serviceNames).toStrictEqual([]);
+  });
+
   it('should contain services', () => {
+    // given
+    component.serviceNames = ['carts-db', 'carts'];
+
+    // when, then
     expect(component.dataSource.data.sort()).toEqual(['carts', 'carts-db']);
   });
 });

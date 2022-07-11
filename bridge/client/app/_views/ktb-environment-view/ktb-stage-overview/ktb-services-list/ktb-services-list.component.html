@@ -15,7 +15,6 @@
                   !currentSequence.isLoading(service.stage) || currentSequence.hasPendingApproval(service.stage);
                   else showLoading
                 "
-                class="event-icon"
                 [name]="currentSequence.getIcon()"
                 [class.error]="currentSequence.isFaulty(service.stage)"
                 [class.success]="currentSequence.isSuccessful(service.stage)"
@@ -30,6 +29,7 @@
               </ng-template>
               <a
                 class="m-0"
+                (click)="$event.stopPropagation()"
                 [routerLink]="getSequenceLink(currentSequence, service)"
                 [class.error]="
                   currentSequence.isRemediation() && currentSequence.isFaulty() && !currentSequence.isSuccessful()
@@ -51,7 +51,11 @@
               [class.error]="service.openRemediations.length > 0"
               class="m-0 overflow-ellipsis"
             >
-              <a [routerLink]="getServiceLink(service)" *ngIf="service.deploymentContext; else serviceContent">
+              <a
+                [routerLink]="getServiceLink(service)"
+                (click)="$event.stopPropagation()"
+                *ngIf="service.deploymentContext; else serviceContent"
+              >
                 <ng-container *ngTemplateOutlet="serviceContent"></ng-container>
               </a>
               <ng-template #serviceContent>

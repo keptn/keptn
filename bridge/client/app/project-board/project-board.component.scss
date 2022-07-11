@@ -6,6 +6,10 @@
   height: 100%;
 }
 
+.hidden {
+  display: none;
+}
+
 ::ng-deep {
   .dt-button-nested,
   .dt-button-nested:hover:not([disabled]) {

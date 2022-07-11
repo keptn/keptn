@@ -47,7 +47,7 @@
     </p>
     <ng-template #noGitUpstream>
       <div class="mb-2" fxLayout="row" fxLayoutAlign="flex-start start">
-        <dt-icon class="event-icon warning mr-1" [name]="'incident'"></dt-icon>
+        <dt-icon class="warning mr-1" [name]="'incident'"></dt-icon>
         <p class="small m-0" uitestid="keptn-project-tile-gitRemoteUri-noUpstreamConfigured">
           Keptn will not support a project without Git upstream repository in future releases.<br />
           <a
@@ -61,9 +61,11 @@
   </dt-tile-subtitle>
   <dt-tag-list aria-label="stages" uitestid="keptn-project-tile-stagesTags">
     <dt-tag *ngFor="let stage of project.stages">
-      <a [routerLink]="['/project', project.projectName, 'environment', 'stage', stage.stageName]">{{
-        stage.stageName
-      }}</a>
+      <a
+        [routerLink]="['/project', project.projectName, 'environment', 'stage', stage.stageName]"
+        (click)="$event.stopPropagation()"
+        >{{ stage.stageName }}</a
+      >
     </dt-tag>
   </dt-tag-list>
   <p class="small">Recent sequences:</p>

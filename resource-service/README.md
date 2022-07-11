@@ -7,7 +7,7 @@ to any Git-based service such as GitLab, GitHub, Bitbucket, etc.
 
 The *resource-service* has been designed from the ground up to work with a remote upstream.
 Hence, Keptn projects must always have a Git repository configured. Furthermore, the *resource-service* does **not** have the requirement of using uninitialized repositories.
-These changes allow the service implementation to be more flexible and faster in retrieving and storing Keptn data comparing it to the *configuration-service*.
+These changes allow the service implementation to be more flexible and faster in retrieving and storing Keptn data comparing it to the *resource-service*.
 
 ## Entity model
 
@@ -28,10 +28,7 @@ These changes allow the service implementation to be more flexible and faster in
 
 ## Installation
 
-The *resource-service* replaces the *configuration-service*, hence only one of the two can be run at the same time.
-The *resource-service* can be enabled during the installation of Keptn setting the Helm value `control-plane.resourceService.enabled` to `true`.
-This flag changes the *configuration-service* `Service` to point towards the *resource-service* `Pod`.
-In the future, the *resource-service* will be enabled by default. With this, we will remove the `configuration-service` Kubernetes `Service` in favor of a `resource-service` Kubernetes `Service`.
+As of Keptn 0.16.0, the `resource-service` is installed by default, and replaces the old `configuration-service`.
 
 ### Deploy it directly into your Kubernetes cluster
 

@@ -8,7 +8,11 @@
     </div>
     <div class="settings-section mt-3">
       <h3>Services</h3>
-      <ktb-service-settings-list></ktb-service-settings-list>
+      <ktb-service-settings-list
+        [isLoading]="isLoading"
+        [projectName]="projectName"
+        [serviceNames]="serviceNames$ | async"
+      ></ktb-service-settings-list>
     </div>
   </div>
 </div>

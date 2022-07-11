@@ -1,0 +1,40 @@
+<dt-table [dataSource]="dataSource" interactiveRows>
+  <ng-container dtColumnDef="version" dtColumnProportion="1">
+    <dt-cell *dtCellDef="let row" uitestid="keptn-deployment-list-serviceVersion">
+      <ng-container *ngIf="row | toType: DeploymentClass as deployment">
+        <span [textContent]="deployment.version || deployment.name"></span>
+      </ng-container>
+    </dt-cell>
+  </ng-container>
+
+  <ng-container dtColumnDef="stages" dtColumnProportion="2" dtColumnAlign="number">
+    <dt-cell *dtCellDef="let row">
+      <ng-container *ngIf="row | toType: DeploymentClass as deployment">
+        <dt-tag-list
+          aria-label="fetch-info"
+          *ngFor="let stage of deployment.stages"
+          uitestid="keptn-deployment-list-stages"
+        >
+          <dt-tag>
+            <a href="javascript:void(0)" (click)="selectStage(deployment, stage.name, $event)">
+              <span [textContent]="stage.name"></span>
+              <dt-icon *ngIf="stage.hasOpenRemediations" name="criticalevent" class="error tag-icon"></dt-icon>
+            </a>
+          </dt-tag>
+        </dt-tag-list>
+      </ng-container>
+    </dt-cell>
+  </ng-container>
+
+  <dt-row
+    *dtRowDef="let row; columns: ['version', 'stages']"
+    (click)="selectDeployment(row)"
+    [class.active]="
+      selectedDeploymentInfo?.deploymentInformation?.keptnContext === (row | toType: DeploymentClass).keptnContext
+    "
+    [attr.uitestid]="
+      'ktb-service-' + service?.name + '-deployment-' + (row | toType: DeploymentClass).version ||
+      (row | toType: DeploymentClass).name
+    "
+  ></dt-row>
+</dt-table>

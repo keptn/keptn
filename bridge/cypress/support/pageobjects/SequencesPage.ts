@@ -347,4 +347,19 @@ export class SequencesPage {
     cy.byTestId('ktb-approval-evaluation-bubble').should('have.class', status).should('have.text', score);
     return this;
   }
+
+  public assertRootDeepLink(project: string): this {
+    cy.location('pathname').should('eq', `/project/${project}/sequence`);
+    return this;
+  }
+
+  public assertSequenceDeepLink(project: string, keptnContext: string, stage: string): this {
+    cy.location('pathname').should('eq', `/project/${project}/sequence/${keptnContext}/stage/${stage}`);
+    return this;
+  }
+
+  public assertSequenceEventDeepLink(project: string, keptnContext: string, eventId: string): this {
+    cy.location('pathname').should('eq', `/project/${project}/sequence/${keptnContext}/event/${eventId}`);
+    return this;
+  }
 }

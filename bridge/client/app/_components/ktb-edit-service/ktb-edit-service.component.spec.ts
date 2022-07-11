@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbEditServiceComponent } from './ktb-edit-service.component';
 import { DataService } from '../../_services/data.service';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
-import { BehaviorSubject, throwError } from 'rxjs';
+import { BehaviorSubject, firstValueFrom, throwError } from 'rxjs';
 import { EventService } from '../../_services/event.service';
 import { DeleteResult, DeleteType } from '../../_interfaces/delete';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -82,10 +82,10 @@ describe('KtbEditServiceComponent', () => {
     });
   });
 
-  it('should get the file tree of all stages for project sockshop and service carts', () => {
+  it('should get the file tree of all stages for project sockshop and service carts', async () => {
     // given, when
     const expectedTree = FileTreeMock;
-
+    const fileTree = await firstValueFrom(component.fileTree$);
     const dataService = TestBed.inject(DataService);
     const spy = jest.spyOn(dataService, 'getFileTreeForService');
 
@@ -99,7 +99,7 @@ describe('KtbEditServiceComponent', () => {
 
     // then
     expect(spy).toHaveBeenCalledWith('sockshop', 'carts');
-    expect(component.fileTree).toBeTruthy();
-    expect(component.fileTree).toEqual(expectedTree);
+    expect(fileTree).toBeTruthy();
+    expect(fileTree).toEqual(expectedTree);
   });
 });

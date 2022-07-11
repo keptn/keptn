@@ -74,7 +74,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	}
 
 	keptnHandler, err := keptnv2.NewKeptn(&event, keptncommon.KeptnOpts{
-		ConfigurationServiceURL: os.Getenv("CONFIGURATION_SERVICE"),
+		ConfigurationServiceURL: os.Getenv("RESOURCE_SERVICE"),
 	})
 	if err != nil {
 		fmt.Println("Could not initialize keptn handler: " + err.Error())

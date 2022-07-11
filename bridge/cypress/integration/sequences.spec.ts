@@ -1,6 +1,5 @@
 import { SequencesPage } from '../support/pageobjects/SequencesPage';
 import EnvironmentPage from '../support/pageobjects/EnvironmentPage';
-import { ProjectBoardPage } from '../support/pageobjects/ProjectBoardPage';
 
 describe('Sequences', () => {
   const sequencePage = new SequencesPage();
@@ -124,12 +123,6 @@ describe('Sequences', () => {
     sequencePage.visit('sockshop');
     cy.wait('@Sequences');
     sequencePage.assertSequenceCount(1).assertLoadOlderSequencesButtonExists(false);
-  });
-
-  it('should have active menu button if navigated from one sub page to this one', () => {
-    const projectBoardPage = new ProjectBoardPage();
-    environmentPage.intercept().visit('sockshop');
-    projectBoardPage.clickSequenceMenuitem().assertOnlySequencesViewSelected();
   });
 
   describe('filtering', () => {
@@ -374,7 +367,7 @@ describe('Sequences', () => {
     it('should limit visible services and show all on "view more"', () => {
       sequencePage.interceptWithManyFilters().visit('sockshop');
 
-      cy.wait('@Sequences');
+      cy.wait('@Sequences').wait(500);
 
       sequencePage.assertFilterItemsCount('Service', 5).clickFilterViewMore('Service').assertFilterShowMoreCount(12);
     });
