@@ -1,27 +1,17 @@
 import { Injectable } from '@angular/core';
 import { DtToast } from '@dynatrace/barista-components/toast';
 import { JsonSerializable } from '../_models/json-serializable';
+import { Clipboard } from '@angular/cdk/clipboard';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ClipboardService {
-  constructor(private readonly toast: DtToast) {}
+  constructor(private readonly toast: DtToast, private readonly clipboard: Clipboard) {}
 
   copy(serializable: JsonSerializable, label = 'value'): void {
     const value = this.stringify(serializable);
-    if (navigator && 'clipboard' in navigator && typeof navigator.clipboard.writeText === 'function') {
-      navigator.clipboard.writeText(value);
-    } else {
-      const textarea = document.createElement('textarea');
-      textarea.value = value;
-      textarea.setAttribute('readonly', '');
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textarea);
-    }
-
+    this.clipboard.copy(value);
     this.toast.create(`Copied ${label} to clipboard`);
   }
 
