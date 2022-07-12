@@ -67,7 +67,7 @@ describe('Environment Screen default requests', () => {
   });
 });
 
-describe.only('Environment Screen Navigation', () => {
+describe('Environment Screen Navigation', () => {
   const environmentPage = new EnvironmentPage();
   const servicesPage = new ServicesPage();
   const project = 'sockshop';
