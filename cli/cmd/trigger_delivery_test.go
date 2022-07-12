@@ -60,6 +60,10 @@ const getSvcMockResponse = `{
 	"totalCount": 1
 }`
 
+const eventContextMockResponse = `{
+  "keptnContext": "my-context-id"
+}`
+
 func init() {
 	logging.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
 }
@@ -92,9 +96,11 @@ func TestTriggerDelivery(t *testing.T) {
 				if *event.Type != keptnv2.GetTriggeredEventType("dev.artifact-delivery") {
 					t.Errorf("did not receive correct event: %s", err.Error())
 				}
+				w.Write([]byte(eventContextMockResponse))
 				go func() {
 					receivedEvent <- event
 				}()
+				return
 			} else if strings.Contains(r.RequestURI, "/v1/metadata") {
 				defer r.Body.Close()
 				w.Write([]byte(metadataMockResponse))
