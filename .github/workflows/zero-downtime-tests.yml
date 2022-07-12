@@ -60,7 +60,7 @@ jobs:
       RUN_CONTINUOUS_DELIVERY_TEST: "true"
       TEST_REPORT_FOLDER: test-reports-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}
       FINAL_TEST_REPORT_FOLDER: test-reports
-      FINAL_TEST_REPORT_PATH: test-reports/test-report-final-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}.log
+      FINAL_TEST_REPORT_PATH: tmp/.log
       TEST_REPORT_FILENAME_SUFFIX: test-report-${{ github.run_id }}-${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}.log
     outputs:
       BRANCH: ${{ steps.determine_branch.outputs.BRANCH }}
@@ -318,8 +318,10 @@ jobs:
       - name: Prepare test run
         id: prepare_test_run
         working-directory: test/zero-downtime
-        run: go get ./...
-
+        run: | 
+         go get ./...
+         mkdir "${{ env.TEST_REPORT_FOLDER }}"
+         mkdir "${{ env.FINAL_TEST_REPORT_FOLDER }}"
       #######################################################################
       # TESTS
       #######################################################################
@@ -510,7 +512,7 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       BRANCH: ${{ needs.zd-test.outputs.BRANCH }}
-      TEST_REPORTS_PATH: "./test-reports/"
+      TEST_REPORTS_PATH: "./tmp/"
       FINAL_TEST_REPORTS_FOLDER: "./final-test-reports/"
       FINAL_TEST_REPORT_FILEPATH_JSON: "./final-test-reports/final-test-report.json"
       FINAL_TEST_REPORT_FILEPATH_MARKDOWN: "./final-test-reports/final-test-report.md"
