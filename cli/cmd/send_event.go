@@ -67,11 +67,13 @@ In addition, the payload of the CloudEvent needs to follow the Keptn spec (https
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			_, err := api.APIV1().SendEvent(apiEvent)
+			eventContext, err := api.APIV1().SendEvent(apiEvent)
 			if err != nil {
 				logging.PrintLog("Send event was unsuccessful", logging.QuietLevel)
 				return fmt.Errorf("Send event was unsuccessful. %s", *err.Message)
 			}
+
+			logging.PrintLog("ID of Keptn context: "+*eventContext.KeptnContext, logging.InfoLevel)
 
 			return nil
 		}
