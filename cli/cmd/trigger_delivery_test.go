@@ -319,6 +319,12 @@ func TestTriggerDeliveryNonExistingService(t *testing.T) {
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(200)
+			if strings.Contains(r.RequestURI, "v1/event") {
+				defer r.Body.Close()
+				defer r.Body.Close()
+				w.Write([]byte(eventContextMockResponse))
+				return
+			}
 			if strings.Contains(r.RequestURI, "/v1/metadata") {
 				defer r.Body.Close()
 				w.Write([]byte(metadataMockResponse))
