@@ -12,7 +12,7 @@ on:
       upgradeTo:
         description: 'The helm upgrade command will run with this version (e.g. 0.15.0-dev-PR-7504 or a full address like in the default value )'
         required: true
-        default: 'https://github.com/keptn/helm-charts-dev/raw/1d63e5d3c3f409279a4157d5ad537413abade2e5/packages/keptn-0.16.0-dev.tgz'
+        default: 'https://github.com/keptn/helm-charts-dev/raw/gh-pages/packages/keptn-0.17.0-dev.tgz'
       testUI:
         type: boolean
         description: 'Cypress tests for Bridge will be run in parallel to the zero downtime tests'
