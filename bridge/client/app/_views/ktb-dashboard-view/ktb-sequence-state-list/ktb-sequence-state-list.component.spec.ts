@@ -4,7 +4,7 @@ import { ResultTypes } from '../../../../../shared/models/result-types';
 import { Sequence } from '../../../_models/sequence';
 import { KtbSequenceStateListComponent } from './ktb-sequence-state-list.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { KtbDashboardLegacyViewModule } from '../ktb-dashboard-legacy-view.module';
+import { KtbDashboardViewModule } from '../ktb-dashboard-view.module';
 
 describe('KtbSequenceStateListComponent', () => {
   let component: KtbSequenceStateListComponent;
@@ -12,7 +12,7 @@ describe('KtbSequenceStateListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [KtbDashboardLegacyViewModule, RouterTestingModule, HttpClientTestingModule],
+      imports: [KtbDashboardViewModule, RouterTestingModule, HttpClientTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbSequenceStateListComponent);

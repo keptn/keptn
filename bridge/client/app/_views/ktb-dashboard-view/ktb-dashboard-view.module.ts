@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { KtbDashboardLegacyViewComponent } from './ktb-dashboard-legacy-view.component';
+import { KtbDashboardViewComponent } from './ktb-dashboard-view.component';
 import { DtIconModule } from '@dynatrace/barista-components/icon';
 import { DtEmptyStateModule } from '@dynatrace/barista-components/empty-state';
 import { DtInfoGroupModule } from '@dynatrace/barista-components/info-group';
@@ -9,7 +9,7 @@ import { KtbLoadingModule } from '../../_components/ktb-loading/ktb-loading.modu
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { KtbDashboardLegacyViewRoutingModule } from './ktb-dashboard-legacy-view-routing.module';
+import { KtbDashboardViewRoutingModule } from './ktb-dashboard-view-routing.module';
 import { KtbProjectListComponent } from './ktb-project-list/ktb-project-list.component';
 import { DtTagModule } from '@dynatrace/barista-components/tag';
 import { DtTileModule } from '@dynatrace/barista-components/tile';
@@ -21,7 +21,7 @@ import { KtbSequenceStateListComponent } from './ktb-sequence-state-list/ktb-seq
 
 @NgModule({
   declarations: [
-    KtbDashboardLegacyViewComponent,
+    KtbDashboardViewComponent,
     KtbProjectTileComponent,
     KtbProjectListComponent,
     KtbSequenceStateListComponent,
@@ -38,7 +38,7 @@ import { KtbSequenceStateListComponent } from './ktb-sequence-state-list/ktb-seq
     DtTagModule,
     DtTileModule,
     FlexLayoutModule,
-    KtbDashboardLegacyViewRoutingModule,
+    KtbDashboardViewRoutingModule,
     KtbLoadingModule,
     KtbPipeModule,
     KtbSequenceStateInfoModule,
@@ -46,4 +46,4 @@ import { KtbSequenceStateListComponent } from './ktb-sequence-state-list/ktb-seq
     RouterModule,
   ],
 })
-export class KtbDashboardLegacyViewModule {}
+export class KtbDashboardViewModule {}

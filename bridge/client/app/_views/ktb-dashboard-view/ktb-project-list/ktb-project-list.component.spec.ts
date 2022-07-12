@@ -4,7 +4,7 @@ import { RETRY_ON_HTTP_ERROR } from '../../../_utils/app.utils';
 import { KtbProjectListComponent } from './ktb-project-list.component';
 import { ProjectsMock } from '../../../_services/_mockData/projects.mock';
 import { SequencesMock } from '../../../_services/_mockData/sequences.mock';
-import { KtbDashboardLegacyViewModule } from '../ktb-dashboard-legacy-view.module';
+import { KtbDashboardViewModule } from '../ktb-dashboard-view.module';
 
 describe('KtbProjectListComponent', () => {
   let component: KtbProjectListComponent;
@@ -12,7 +12,7 @@ describe('KtbProjectListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [KtbDashboardLegacyViewModule, HttpClientTestingModule],
+      imports: [KtbDashboardViewModule, HttpClientTestingModule],
       providers: [{ provide: RETRY_ON_HTTP_ERROR, useValue: false }],
     }).compileComponents();
 

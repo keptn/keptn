@@ -1,7 +1,7 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbProjectTileComponent } from './ktb-project-tile.component';
-import { KtbDashboardLegacyViewModule } from '../ktb-dashboard-legacy-view.module';
+import { KtbDashboardViewModule } from '../ktb-dashboard-view.module';
 
 describe('KtbProjectTileComponent', () => {
   let component: KtbProjectTileComponent;
@@ -9,7 +9,7 @@ describe('KtbProjectTileComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [KtbDashboardLegacyViewModule, HttpClientTestingModule],
+      imports: [KtbDashboardViewModule, HttpClientTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbProjectTileComponent);

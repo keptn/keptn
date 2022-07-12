@@ -23,9 +23,7 @@ const routes: Routes = [
       {
         path: 'dashboard',
         loadChildren: () =>
-          import('./_views/ktb-dashboard-legacy-view/ktb-dashboard-legacy-view.module').then(
-            (m) => m.KtbDashboardLegacyViewModule
-          ),
+          import('./_views/ktb-dashboard-view/ktb-dashboard-view.module').then((m) => m.KtbDashboardViewModule),
       },
       {
         path: 'create',
