@@ -12,7 +12,7 @@ class SettingsPage {
   }
 
   private goToSubSettings(subPage: subSettings): this {
-    cy.get('dt-menu-group button[role=menuitem]').contains(subPage).click();
+    cy.byTestId('settings-menu-container').get('dt-menu-group button[role=menuitem]').contains(subPage).click();
     return this;
   }
 }
