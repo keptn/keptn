@@ -43,10 +43,6 @@ import { KtbAppHeaderModule } from './_components/ktb-app-header/ktb-app-header.
 import { KtbErrorViewModule } from './_views/ktb-error-view/ktb-error-view.module';
 import { KtbLoadingModule } from './_components/ktb-loading/ktb-loading.module';
 import { KtbNotificationModule } from './_components/ktb-notification/ktb-notification.module';
-import { KtbProjectSettingsModule } from './_components/ktb-project-settings/ktb-project-settings.module';
-import { KtbSecretsListModule } from './_components/ktb-secrets-list/ktb-secrets-list.module';
-import { KtbServiceSettingsModule } from './_components/ktb-service-settings/ktb-service-settings.module';
-import { KtbProjectListModule } from './_components/ktb-project-list/ktb-project-list.module';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
@@ -76,13 +72,7 @@ const dtModules = [
   DtTagModule,
 ];
 
-const ktbModules = [
-  KtbAppHeaderModule,
-  KtbErrorViewModule,
-  KtbLoadingModule,
-  KtbNotificationModule,
-  KtbPipeModule,
-];
+const ktbModules = [KtbAppHeaderModule, KtbErrorViewModule, KtbLoadingModule, KtbNotificationModule, KtbPipeModule];
 
 @NgModule({
   declarations: [AppComponent, NotFoundComponent, KtbSettingsViewComponent, KtbRootComponent],
