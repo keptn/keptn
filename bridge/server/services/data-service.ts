@@ -9,7 +9,7 @@ import { EventTypes } from '../../shared/interfaces/event-types';
 import { ResultTypes } from '../../shared/models/result-types';
 import { UniformRegistration } from '../models/uniform-registration';
 import { parse as parseYaml } from 'yaml';
-import { Shipyard } from '../interfaces/shipyard';
+import { IShipyardSequence, IShipyardTask, Shipyard } from '../interfaces/shipyard';
 import { UniformRegistrationLocations } from '../../shared/interfaces/uniform-registration-locations';
 import { IWebhookConfigFilter } from '../interfaces/webhook-config';
 import { UniformRegistrationInfo } from '../../shared/interfaces/uniform-registration-info';
@@ -55,6 +55,13 @@ type StageOpenInformation = {
   openRemediations: Remediation[];
   evaluations: Trace[];
 };
+
+interface IEventStateDict {
+  [EventState.TRIGGERED]: string[];
+  [EventState.STARTED]: string[];
+  [EventState.FINISHED]: string[];
+}
+
 export interface SequenceOptions {
   pageSize: string;
   name?: string;
@@ -520,23 +527,22 @@ export class DataService {
 
   public async getTasks(accessToken: string | undefined, projectName: string): Promise<string[]> {
     const shipyard = await this.getShipyard(accessToken, projectName);
-    const tasks: string[] = ['evaluation'];
     try {
-      for (const stage of shipyard.spec.stages) {
-        if (stage.sequences) {
-          for (const sequence of stage.sequences) {
-            for (const task of sequence.tasks) {
-              if (!tasks.includes(task.name)) {
-                tasks.push(task.name);
-              }
-            }
-          }
-        }
-      }
+      const defaultTasks = new Set<string>();
+      defaultTasks.add('evaluation');
+
+      const taskSet = shipyard.spec.stages
+        .reduce((sequences, stage) => [...sequences, ...(stage.sequences ?? [])], [] as IShipyardSequence[])
+        .reduce((tasks, sequence) => [...tasks, ...sequence.tasks], [] as IShipyardTask[])
+        .reduce((tasks, task) => {
+          tasks.add(task.name);
+          return tasks;
+        }, defaultTasks);
+
+      return Array.from(taskSet);
     } catch (error) {
       throw Error('Could not parse shipyard.yaml');
     }
-    return tasks;
   }
 
   public async getServiceNames(accessToken: string | undefined, projectName: string): Promise<string[]> {
@@ -612,22 +618,24 @@ export class DataService {
 
   public async getTraces(
     accessToken: string | undefined,
-    keptnContext?: string,
-    projectName?: string,
-    stageName?: string,
-    serviceName?: string,
-    eventType?: EventTypes,
-    source?: KeptnService,
-    pageSize?: number
+    filterOptions?: {
+      keptnContext?: string;
+      projectName?: string;
+      stageName?: string;
+      serviceName?: string;
+      eventType?: EventTypes;
+      source?: KeptnService;
+      pageSize?: number;
+    }
   ): Promise<EventResult> {
     const response = await this.apiService.getTraces(accessToken, {
-      type: eventType,
-      ...(pageSize !== undefined && { pageSize: pageSize.toString() }),
-      ...(projectName && { project: projectName }),
-      ...(stageName && { stage: stageName }),
-      ...(serviceName && { service: serviceName }),
-      ...(keptnContext && { keptnContext }),
-      ...(source && { source }),
+      type: filterOptions?.eventType,
+      ...(filterOptions?.pageSize !== undefined && { pageSize: filterOptions.pageSize.toString() }),
+      ...(filterOptions?.projectName && { project: filterOptions.projectName }),
+      ...(filterOptions?.stageName && { stage: filterOptions.stageName }),
+      ...(filterOptions?.serviceName && { service: filterOptions.serviceName }),
+      ...(filterOptions?.keptnContext && { keptnContext: filterOptions.keptnContext }),
+      ...(filterOptions?.source && { source: filterOptions.source }),
     });
     return response.data;
   }
@@ -1387,35 +1395,25 @@ export class DataService {
     serviceFilter: string[],
     event: string,
     suffixes: EventState[]
-  ): {
-    [EventState.TRIGGERED]: string[];
-    [EventState.STARTED]: string[];
-    [EventState.FINISHED]: string[];
-  } {
-    const eventIds: {
-      [EventState.TRIGGERED]: string[];
-      [EventState.STARTED]: string[];
-      [EventState.FINISHED]: string[];
-    } = {
+  ): IEventStateDict {
+    const eventIds: IEventStateDict = {
       triggered: [],
       started: [],
       finished: [],
     };
 
-    for (const stage of project.stages) {
-      if (stageFilter.includes(stage.stageName)) {
-        for (const service of stage.services) {
-          if (serviceFilter.includes(service.serviceName)) {
-            for (const suffix of suffixes) {
-              const id = service.lastEventTypes[`${event}.${suffix}`]?.eventId;
-              if (id) {
-                eventIds[suffix].push(id);
-              }
-            }
-          }
-        }
-      }
-    }
+    project.stages
+      .filter((st) => stageFilter.includes(st.stageName))
+      .reduce((services, stage) => [...services, ...stage.services], [] as Service[])
+      .filter((sv) => serviceFilter.includes(sv.serviceName))
+      .forEach((service) => {
+        suffixes
+          .map((suffix) => ({ suffix, id: service.lastEventTypes[`${event}.${suffix}`]?.eventId }))
+          .filter((data): data is { suffix: EventState; id: string } => !!data.id)
+          .forEach(({ suffix, id }) => {
+            eventIds[suffix].push(id);
+          });
+      });
     return eventIds;
   }
 }

@@ -715,7 +715,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   private updateHeatmapScore(series: EvaluationChartItem): void {
     series.data.sort(this.compareSeriesData);
     this._heatmapOptions.xAxis[0].categories = series.data
-      .map((item, index, items) => {
+      .map((item, _index, items) => {
         const duplicateItems = items.filter(
           (c) => c.evaluationData?.getHeatmapLabel() === item.evaluationData?.getHeatmapLabel()
         );
