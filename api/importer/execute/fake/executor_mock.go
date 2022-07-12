@@ -17,6 +17,9 @@ import (
 // 			GetControlPlaneEndpointFunc: func() string {
 // 				panic("mock out the GetControlPlaneEndpoint method")
 // 			},
+// 			GetSecretsServiceEndpointFunc: func() string {
+// 				panic("mock out the GetSecretsServiceEndpoint method")
+// 			},
 // 		}
 //
 // 		// use mockedKeptnEndpointProvider in code that requires execute.KeptnEndpointProvider
@@ -27,13 +30,20 @@ type KeptnEndpointProviderMock struct {
 	// GetControlPlaneEndpointFunc mocks the GetControlPlaneEndpoint method.
 	GetControlPlaneEndpointFunc func() string
 
+	// GetSecretsServiceEndpointFunc mocks the GetSecretsServiceEndpoint method.
+	GetSecretsServiceEndpointFunc func() string
+
 	// calls tracks calls to the methods.
 	calls struct {
 		// GetControlPlaneEndpoint holds details about calls to the GetControlPlaneEndpoint method.
 		GetControlPlaneEndpoint []struct {
 		}
+		// GetSecretsServiceEndpoint holds details about calls to the GetSecretsServiceEndpoint method.
+		GetSecretsServiceEndpoint []struct {
+		}
 	}
-	lockGetControlPlaneEndpoint sync.RWMutex
+	lockGetControlPlaneEndpoint   sync.RWMutex
+	lockGetSecretsServiceEndpoint sync.RWMutex
 }
 
 // GetControlPlaneEndpoint calls GetControlPlaneEndpointFunc.
@@ -59,6 +69,32 @@ func (mock *KeptnEndpointProviderMock) GetControlPlaneEndpointCalls() []struct {
 	mock.lockGetControlPlaneEndpoint.RLock()
 	calls = mock.calls.GetControlPlaneEndpoint
 	mock.lockGetControlPlaneEndpoint.RUnlock()
+	return calls
+}
+
+// GetSecretsServiceEndpoint calls GetSecretsServiceEndpointFunc.
+func (mock *KeptnEndpointProviderMock) GetSecretsServiceEndpoint() string {
+	if mock.GetSecretsServiceEndpointFunc == nil {
+		panic("KeptnEndpointProviderMock.GetSecretsServiceEndpointFunc: method is nil but KeptnEndpointProvider.GetSecretsServiceEndpoint was just called")
+	}
+	callInfo := struct {
+	}{}
+	mock.lockGetSecretsServiceEndpoint.Lock()
+	mock.calls.GetSecretsServiceEndpoint = append(mock.calls.GetSecretsServiceEndpoint, callInfo)
+	mock.lockGetSecretsServiceEndpoint.Unlock()
+	return mock.GetSecretsServiceEndpointFunc()
+}
+
+// GetSecretsServiceEndpointCalls gets all the calls that were made to GetSecretsServiceEndpoint.
+// Check the length with:
+//     len(mockedKeptnEndpointProvider.GetSecretsServiceEndpointCalls())
+func (mock *KeptnEndpointProviderMock) GetSecretsServiceEndpointCalls() []struct {
+} {
+	var calls []struct {
+	}
+	mock.lockGetSecretsServiceEndpoint.RLock()
+	calls = mock.calls.GetSecretsServiceEndpoint
+	mock.lockGetSecretsServiceEndpoint.RUnlock()
 	return calls
 }
 

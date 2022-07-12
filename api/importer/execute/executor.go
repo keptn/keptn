@@ -28,8 +28,12 @@ type KeptnAPIExecutor struct {
 type KeptnControlPlaneEndpointProvider interface {
 	GetControlPlaneEndpoint() string
 }
+type KeptnSecretsEndpointProvider interface {
+	GetSecretsServiceEndpoint() string
+}
 type KeptnEndpointProvider interface {
 	KeptnControlPlaneEndpointProvider
+	KeptnSecretsEndpointProvider
 }
 
 func NewKeptnExecutor(kep KeptnEndpointProvider) *KeptnAPIExecutor {
@@ -55,6 +59,14 @@ func (kae *KeptnAPIExecutor) registerEndpoints(kep KeptnEndpointProvider) {
 			path:       `/v1/project/[[project]]/service`,
 		},
 		endpoint: kep.GetControlPlaneEndpoint(),
+	}
+
+	kae.endpointMappings["keptn-api-v1-uniform-create-secret"] = &defaultEndpointHandler{
+		requestFactory: &projectRenderRequestFactory{
+			httpMethod: http.MethodPost,
+			path:       "/v1/secret",
+		},
+		endpoint: kep.GetSecretsServiceEndpoint(),
 	}
 }
 
