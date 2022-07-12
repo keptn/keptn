@@ -173,7 +173,22 @@ func migrateWebhooks(webhooks []*webhookResource, params *migrateWebhooksCmdPara
 }
 
 func migrateAlphaWebhook(webhook *lib.WebHookConfig) (*lib.WebHookConfig, error) {
-	return webhook, nil
+	migratedWebhook := webhook
+	migratedWebhook.ApiVersion = betaApiVersion
+	for i, w := range webhook.Spec.Webhooks {
+		for j, request := range w.Requests {
+			betaRequest, err := migrateAlphaRequest(fmt.Sprintf("%s", request))
+			if err != nil {
+				return nil, err
+			}
+			migratedWebhook.Spec.Webhooks[i].Requests[j] = betaRequest
+		}
+	}
+	return migratedWebhook, nil
+}
+
+func migrateAlphaRequest(request string) (*lib.Request, error) {
+	return nil, nil
 }
 
 func updateWebhookResources(webhook *webhookResource, webhookConfig *lib.WebHookConfig, api *api.APISet) error {
