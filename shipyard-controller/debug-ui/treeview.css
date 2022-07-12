@@ -1,0 +1,33 @@
+ul,
+#tree_container {
+  font-size: 1.5rem;
+  list-style-type: none;
+}
+
+#tree_container {
+  margin: 20px;
+  padding: 0;
+}
+
+.caret {
+  cursor: pointer;
+}
+
+.caret::before {
+  content: "\25B6";
+  color: #006bb8;
+  display: inline-block;
+  margin-right: 6px;
+}
+
+.caret-down::before {
+  transform: rotate(90deg);
+}
+
+.nested {
+  display: none;
+}
+
+.active {
+  display: block;
+}

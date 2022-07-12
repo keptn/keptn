@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>DebugUI</title>
+    <link rel="icon" type="image/png" href="./favicon.png" />
+
+    <link rel="stylesheet" href="index.css" />
+    <link rel="stylesheet" href="treeview.css" />
+  </head>
+  <body>
+    <ul class="header">
+      <li class="header">
+        <a href="/">
+          <img src="./favicon.png" alt="" />
+        </a>
+      </li>
+      <li class="header" id="titlecontext"></li>
+    </ul>
+
+    <ul id="tree_container"></ul>
+
+    <script>
+      const urlParams = new URLSearchParams(window.location.search);
+      context = urlParams.get("shkeptncontext");
+
+      document.getElementById("titlecontext").innerHTML = context;
+    </script>
+
+    <script src="fetch_events.js"></script>
+  </body>
+</html>

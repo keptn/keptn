@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>DebugUI</title>
+    <link rel="icon" type="image/png" href="./favicon.png" />
+
+    <link rel="stylesheet" href="index.css" />
+    <script src="./fetch_sequences.js"></script>
+  </head>
+  <body>
+    <ul class="header">
+      <li class="header">
+        <img src="./favicon.png" alt="" />
+      </li>
+
+      <li class="header">
+        Blocked:
+        <input
+          onChange="fetchSequences()"
+          id="checkboxBlocked"
+          type="checkbox"
+          checked
+        />
+      </li>
+
+      <li class="header">
+        Active:
+        <input
+          onChange="fetchSequences()"
+          id="checkboxActive"
+          type="checkbox"
+          checked
+        />
+      </li>
+
+      <li class="header">
+        Finished:
+        <input
+          onChange="fetchSequences()"
+          id="checkboxFinished"
+          type="checkbox"
+          checked
+        />
+      </li>
+
+      <li class="header">
+        Aborted:
+        <input
+          onChange="fetchSequences()"
+          id="checkboxAborted"
+          type="checkbox"
+          checked
+        />
+      </li>
+
+      <li class="header">
+        Select Project:
+
+        <select id="projectSelector" onChange="fetchSequences()"></select>
+      </li>
+    </ul>
+
+    <table id="prodTable"></table>
+
+    <script>
+      // get projects
+      fetch("/debug/project", {
+        method: "get",
+      })
+        .then((res) => {
+          return res.json();
+        })
+        .then((response) => {
+          var projectSelector = document.getElementById("projectSelector");
+          projectSelector.innerHTML = "";
+
+          response.forEach((object) => {
+            el_project = document.createElement("option");
+            el_project.innerHTML = object.projectName;
+            projectSelector.appendChild(el_project);
+          });
+          fetchSequences();
+        });
+    </script>
+  </body>
+</html>

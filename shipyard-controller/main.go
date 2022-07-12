@@ -132,6 +132,8 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 
 	stageManager := handler.NewStageManager(projectMVRepo)
 
+	debugManager := handler.NewDebugManager(createEventsRepo(), createStateRepo(), createProjectRepo())
+
 	eventDispatcher := handler.NewEventDispatcher(createEventsRepo(), createEventQueueRepo(), sequenceExecutionRepo, eventSender, time.Duration(env.EventDispatchIntervalSec)*time.Second)
 	sequenceDispatcher := handler.NewSequenceDispatcher(
 		createEventsRepo(),
@@ -181,6 +183,12 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 	stageHandler := handler.NewStageHandler(stageManager)
 	stageController := controller.NewStageController(stageHandler)
 	stageController.Inject(apiV1)
+
+	debugEngine := gin.Default()
+	apiDebug := debugEngine.Group("/")
+	debugHandler := handler.NewDebugHandler(debugManager)
+	debugController := controller.NewDebugController(debugHandler)
+	debugController.Inject(apiDebug)
 
 	evaluationManager, err := handler.NewEvaluationManager(eventSender, projectMVRepo)
 	if err != nil {
@@ -288,6 +296,8 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 			log.WithError(err).Error("could not start API server")
 		}
 	}()
+
+	debugEngine.Run("localhost:9090")
 
 	if env.DisableLeaderElection {
 		// single shipyard
