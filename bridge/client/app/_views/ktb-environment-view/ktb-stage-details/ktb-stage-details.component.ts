@@ -78,7 +78,16 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
   }
 
   getServiceLink(service: Service): string[] {
-    return ['service', service.serviceName, 'context', service.deploymentContext ?? '', 'stage', service.stage];
+    return [
+      '/project',
+      this.project?.projectName ?? '',
+      'service',
+      service.serviceName,
+      'context',
+      service.deploymentContext ?? '',
+      'stage',
+      service.stage,
+    ];
   }
 
   public filterServices(services: Service[], type: ServiceFilterType): Service[] {
