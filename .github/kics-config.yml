@@ -1,5 +1,6 @@
 exclude-queries:
   # query IDs can be found here: https://docs.kics.io/latest/queries/all-queries/
+  # The queries below are excluded because they are not relevant or not needed for Keptn
   - b9c83569-459b-4110-8f79-6305aa33cb37 # Using Kubernetes Native Secret Management
   - 48a5beba-e4c0-4584-a2aa-e6894e4cf424 # Pod or Container Without ResourceQuota
   - 8b36775e-183d-4d46-b0f7-96a6f34a723f # Missing AppArmor Profile

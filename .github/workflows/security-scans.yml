@@ -34,7 +34,7 @@ jobs:
           helm dependency build ./
           # replace "appVersion: latest" with "appVersion: $VERSION" in all Chart.yaml files
           find . -name Chart.yaml -exec sed -i -- "s/appVersion: latest/appVersion: ${VERSION}/g" {} \;
-          helm template ./ -n keptn --name-template keptn --version 0.17.0 > ${{ env.RENDERED_CHART_FILENAME }}
+          helm template ./ -n keptn --name-template keptn --version ${VERSION} > ${{ env.RENDERED_CHART_FILENAME }}
 
       - name: Upload rendered chart as artifact
         uses: actions/upload-artifact@v3
