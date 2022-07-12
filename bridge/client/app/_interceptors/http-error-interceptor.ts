@@ -1,24 +1,29 @@
-import { Inject, Injectable } from '@angular/core';
+import { Inject, Injectable, OnDestroy } from '@angular/core';
 import { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
-import { EMPTY, NEVER, Observable, throwError } from 'rxjs';
-import { catchError, retryWhen } from 'rxjs/operators';
+import { EMPTY, NEVER, Observable, Subject, throwError } from 'rxjs';
+import { catchError, retryWhen, take, takeUntil } from 'rxjs/operators';
 import { genericRetryStrategy, RetryParams } from './http-generic-retry-strategy';
 import { Location } from '@angular/common';
 import { RETRY_ON_HTTP_ERROR } from '../_utils/app.utils';
 import { NotificationsService } from '../_services/notifications.service';
 import { NotificationType } from '../_models/notification';
 import { AuthType } from '../../../shared/models/auth-type';
+import { DataService } from '../_services/data.service';
 
 @Injectable({
   providedIn: 'root',
 })
-export class HttpErrorInterceptor implements HttpInterceptor {
+export class HttpErrorInterceptor implements HttpInterceptor, OnDestroy {
+  private readonly unsubscribe$ = new Subject<void>();
+
   private isReloading = false;
   private isAuthorizedErrorShown = false;
+  private keptnInfo$ = this.dataService.keptnInfo;
 
   constructor(
     private readonly location: Location,
     private readonly notificationService: NotificationsService,
+    private readonly dataService: DataService,
     @Inject(RETRY_ON_HTTP_ERROR) private hasRetry: boolean
   ) {}
 
@@ -40,10 +45,14 @@ export class HttpErrorInterceptor implements HttpInterceptor {
     }
 
     if (response.status === 403) {
-      this.notificationService.addNotification(
-        NotificationType.ERROR,
-        'You do not have the permissions to perform this action.'
-      );
+      this.keptnInfo$.pipe(take(1), takeUntil(this.unsubscribe$)).subscribe((keptnInfo) => {
+        this.notificationService.addNotification(
+          NotificationType.ERROR,
+          `${
+            keptnInfo?.bridgeInfo.user ? keptnInfo?.bridgeInfo.user : 'User'
+          } does not have the permissions to perform this action.`
+        );
+      });
       return throwError(() => response);
     }
 
@@ -102,5 +111,10 @@ export class HttpErrorInterceptor implements HttpInterceptor {
     this.notificationService.addNotification(NotificationType.ERROR, errorInfo);
 
     return throwError(() => error);
+  }
+
+  ngOnDestroy(): void {
+    this.unsubscribe$.next();
+    this.unsubscribe$.complete();
   }
 }
