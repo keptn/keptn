@@ -1,0 +1,14 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.25.0
+# ignores vulnerabilities until expiry date; change duration by modifying expiry date
+ignore:
+  'snyk:lic:golang:github.com:*:MPL-2.0':
+    - '*':
+        reason: this license is fine for keptn
+        created: 2022-07-12T09:35:29.655Z
+patch: {}
+exclude:
+  global:
+    - ./**/*.spec.ts:
+        reason: test files
+        created: 2022-07-12T09:24:40.510Z
