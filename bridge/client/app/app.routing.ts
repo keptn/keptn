@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { ExtraOptions, RouterModule, Routes } from '@angular/router';
-import { DashboardLegacyComponent } from './dashboard-legacy/dashboard-legacy.component';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { KtbErrorViewComponent } from './_views/ktb-error-view/ktb-error-view.component';
 import { AppComponent } from './app.component';
@@ -21,7 +20,11 @@ const routes: Routes = [
     component: AppComponent,
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
-      { path: 'dashboard', component: DashboardLegacyComponent },
+      {
+        path: 'dashboard',
+        loadChildren: () =>
+          import('./_views/ktb-dashboard-view/ktb-dashboard-view.module').then((m) => m.KtbDashboardViewModule),
+      },
       {
         path: 'create',
         loadChildren: () =>

@@ -1,10 +1,10 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { RETRY_ON_HTTP_ERROR } from '../../_utils/app.utils';
+import { RETRY_ON_HTTP_ERROR } from '../../../_utils/app.utils';
 import { KtbProjectListComponent } from './ktb-project-list.component';
-import { KtbProjectListModule } from './ktb-project-list.module';
-import { ProjectsMock } from '../../_services/_mockData/projects.mock';
-import { SequencesMock } from '../../_services/_mockData/sequences.mock';
+import { ProjectsMock } from '../../../_services/_mockData/projects.mock';
+import { SequencesMock } from '../../../_services/_mockData/sequences.mock';
+import { KtbDashboardViewModule } from '../ktb-dashboard-view.module';
 
 describe('KtbProjectListComponent', () => {
   let component: KtbProjectListComponent;
@@ -12,7 +12,7 @@ describe('KtbProjectListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [KtbProjectListModule, HttpClientTestingModule],
+      imports: [KtbDashboardViewModule, HttpClientTestingModule],
       providers: [{ provide: RETRY_ON_HTTP_ERROR, useValue: false }],
     }).compileComponents();
 

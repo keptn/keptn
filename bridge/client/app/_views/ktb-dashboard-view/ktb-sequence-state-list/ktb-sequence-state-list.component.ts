@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, Input, ViewEncapsulation } from '@angular/core';
 import { DtTableDataSource } from '@dynatrace/barista-components/table';
-import { DateUtil } from '../../_utils/date.utils';
+import { DateUtil } from '../../../_utils/date.utils';
 import { Router } from '@angular/router';
-import { ISequence } from '../../../../shared/interfaces/sequence';
-import { getLastStageName } from '../../_models/sequence';
+import { ISequence } from '../../../../../shared/interfaces/sequence';
+import { getLastStageName } from '../../../_models/sequence';
 
 @Component({
   selector: 'ktb-sequence-state-list',

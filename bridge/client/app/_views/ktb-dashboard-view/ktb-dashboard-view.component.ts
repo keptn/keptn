@@ -1,22 +1,22 @@
 import { Component, Inject } from '@angular/core';
 import { merge, Observable, of, scan, switchMap } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
-import { environment } from '../../environments/environment';
-import { DataService } from '../_services/data.service';
-import { AppUtils, POLLING_INTERVAL_MILLIS } from '../_utils/app.utils';
-import { ProjectSequences } from '../_components/ktb-project-list/ktb-project-list.component';
-import { IMetadata } from '../_interfaces/metadata';
-import { IProject } from '../../../shared/interfaces/project';
+import { environment } from '../../../environments/environment';
+import { DataService } from '../../_services/data.service';
+import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
+import { ProjectSequences } from './ktb-project-list/ktb-project-list.component';
+import { IMetadata } from '../../_interfaces/metadata';
+import { IProject } from '../../../../shared/interfaces/project';
 import { Router } from '@angular/router';
 
 const MAX_SEQUENCES = 5;
 
 @Component({
-  selector: 'ktb-dashboard-legacy',
-  templateUrl: './dashboard-legacy.component.html',
-  styleUrls: ['./dashboard-legacy.component.scss'],
+  selector: 'ktb-dashboard-view',
+  templateUrl: './ktb-dashboard-view.component.html',
+  styleUrls: ['./ktb-dashboard-view.component.scss'],
 })
-export class DashboardLegacyComponent {
+export class KtbDashboardViewComponent {
   private readonly refreshTimer$ = AppUtils.createTimer(0, this.initialDelayMillis);
   public readonly keptnMetadata$ = this.dataService.keptnMetadata.pipe(
     filter((metadata): metadata is IMetadata => metadata != null)

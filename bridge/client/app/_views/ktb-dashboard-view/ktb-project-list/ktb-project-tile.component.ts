@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { Sequence } from '../../_models/sequence';
-import { IProject } from '../../../../shared/interfaces/project';
-import { getDistinctServiceNames, getShipyardVersion, isShipyardNotSupported } from '../../_models/project';
+import { Sequence } from '../../../_models/sequence';
+import { IProject } from '../../../../../shared/interfaces/project';
+import { getDistinctServiceNames, getShipyardVersion, isShipyardNotSupported } from '../../../_models/project';
 
 @Component({
   selector: 'ktb-project-tile',

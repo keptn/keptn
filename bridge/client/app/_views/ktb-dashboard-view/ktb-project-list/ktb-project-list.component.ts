@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { Sequence } from '../../_models/sequence';
-import { IMetadata } from '../../_interfaces/metadata';
-import { IProject } from '../../../../shared/interfaces/project';
+import { Sequence } from '../../../_models/sequence';
+import { IMetadata } from '../../../_interfaces/metadata';
+import { IProject } from '../../../../../shared/interfaces/project';
 
 export type ProjectSequences = Record<string, Sequence[]>;
 
