@@ -10,7 +10,7 @@ import { POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 import { RouterTestingModule } from '@angular/router/testing';
 import { Navigation, Router } from '@angular/router';
 
-describe('DashboardLegacyView', () => {
+describe('KtbDashboardViewComponent', () => {
   let component: KtbDashboardViewComponent;
   let fixture: ComponentFixture<KtbDashboardViewComponent>;
   let dataService: DataService;
