@@ -532,7 +532,7 @@
           "lastEventTypes": {
             "sh.keptn.event.deployment.finished": {
               "eventId": "717a6fb0-8e8d-46ad-909c-6d219bd8e7f3",
-              "keptnContext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+              "keptnContext": "da740469-9920-4e0c-b304-0fd4b18d17c2",
               "time": "1632413574151690370"
             },
             "sh.keptn.event.deployment.started": {

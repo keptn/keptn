@@ -145,7 +145,7 @@ export function interceptServicesPage(): void {
   cy.intercept('GET', 'api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?*', {
     statusCode: 200,
     fixture: 'get.sockshop.service.carts.evaluations.mock.json',
-  });
+  }).as('serviceDatastore');
 }
 
 export function interceptServicesPageWithLoadingSequences(): void {
