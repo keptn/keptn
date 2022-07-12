@@ -75,6 +75,8 @@ describe('Test OAuth', () => {
   });
 
   it('should show a message for 403 response', () => {
+    const user = 'claus.keptn-dev@ruxitlabs.com';
+
     cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfo.mock' });
     cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { statusCode: 403 }).as(
       'projects'
@@ -82,6 +84,6 @@ describe('Test OAuth', () => {
     cy.task('setExpectedErrorCount', 1);
 
     cy.visit('/').wait('@projects');
-    basePage.notificationErrorVisible('You do not have the permissions to perform this action.');
+    basePage.notificationErrorVisible(`${user} does not have the permissions to perform this action.`);
   });
 });

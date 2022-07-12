@@ -169,7 +169,10 @@ describe('HttpErrorInterceptorService', () => {
     testRequest.error(errorEvent, { status: 403 });
 
     // then
-    expect(spy).toHaveBeenCalledWith(NotificationType.ERROR, 'You do not have the permissions to perform this action.');
+    expect(spy).toHaveBeenCalledWith(
+      NotificationType.ERROR,
+      'User does not have the permissions to perform this action.'
+    );
   });
 
   it('should not show any notification when a secret already exists', () => {
