@@ -1,9 +1,9 @@
 /// <reference types="cypress" />
-type subSettings = 'Integration' | 'Project' | 'Services' | 'Secrets' | 'Common use cases';
+type subSettings = 'Integrations' | 'Project' | 'Services' | 'Secrets' | 'Common use cases';
 
 class SettingsPage {
   public goToUniformPage(): this {
-    return this.goToSubSettings('Integration');
+    return this.goToSubSettings('Integrations');
   }
 
   // go to Secrets page
