@@ -2,6 +2,7 @@ package go_tests
 
 import (
 	"github.com/mholt/archiver/v3"
+	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -131,7 +132,11 @@ func Test_ContinuousDelivery(t *testing.T) {
 	serviceName := "helloservice"
 	chartFileName := "helloservice.tgz"
 	serviceChartSrcPath := path.Join(repoLocalDir, "helm-charts", "helloservice")
-	serviceChartArchivePath := path.Join(repoLocalDir, "helm-charts", chartFileName)
+
+	serviceArchiveBaseDir, err := ioutil.TempDir("", "cd-test-*")
+	require.Nil(t, err)
+
+	serviceChartArchivePath := path.Join(serviceArchiveBaseDir, "helm-charts", chartFileName)
 	serviceJmeterDir := repoLocalDir + "/jmeter"
 	serviceHealthCheckEndpoint := "/metrics"
 
