@@ -69,7 +69,6 @@
         "data": {
           "evaluation": {
             "comparedEvents": ["182d10b8-b68d-49d4-86cd-5521352d7a42"],
-            "gitCommit": "",
             "indicatorResults": [
               {
                 "displayName": "",
@@ -190,7 +189,6 @@
         "data": {
           "evaluation": {
             "comparedEvents": ["182d10b8-b68d-49d4-86cd-5521352d7a42"],
-            "gitCommit": "",
             "indicatorResults": [
               {
                 "displayName": "",

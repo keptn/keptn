@@ -1018,7 +1018,6 @@ const projectDetailsResponseEvaluationFallback = {
                   data: {
                     evaluation: {
                       comparedEvents: ['3344487d-e384-4cd9-a0e0-fcf157a33ad6'],
-                      gitCommit: '',
                       indicatorResults: [
                         {
                           displayName: 'Response time P95',

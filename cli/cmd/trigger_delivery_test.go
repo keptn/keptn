@@ -60,6 +60,10 @@ const getSvcMockResponse = `{
 	"totalCount": 1
 }`
 
+const eventContextMockResponse = `{
+  "keptnContext": "my-context-id"
+}`
+
 func init() {
 	logging.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
 }
@@ -92,9 +96,11 @@ func TestTriggerDelivery(t *testing.T) {
 				if *event.Type != keptnv2.GetTriggeredEventType("dev.artifact-delivery") {
 					t.Errorf("did not receive correct event: %s", err.Error())
 				}
+				w.Write([]byte(eventContextMockResponse))
 				go func() {
 					receivedEvent <- event
 				}()
+				return
 			} else if strings.Contains(r.RequestURI, "/v1/metadata") {
 				defer r.Body.Close()
 				w.Write([]byte(metadataMockResponse))
@@ -162,9 +168,11 @@ func TestTriggerDeliveryNoStageProvided(t *testing.T) {
 				if *event.Type != keptnv2.GetTriggeredEventType("dev.artifact-delivery") {
 					t.Errorf("did not receive correct event: %s", err.Error())
 				}
+				w.Write([]byte(eventContextMockResponse))
 				go func() {
 					receivedEvent <- true
 				}()
+				return
 			} else if strings.Contains(r.RequestURI, "/v1/metadata") {
 				defer r.Body.Close()
 				w.Write([]byte(metadataMockResponse))
@@ -311,6 +319,12 @@ func TestTriggerDeliveryNonExistingService(t *testing.T) {
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(200)
+			if strings.Contains(r.RequestURI, "v1/event") {
+				defer r.Body.Close()
+				defer r.Body.Close()
+				w.Write([]byte(eventContextMockResponse))
+				return
+			}
 			if strings.Contains(r.RequestURI, "/v1/metadata") {
 				defer r.Body.Close()
 				w.Write([]byte(metadataMockResponse))

@@ -5,7 +5,6 @@ const evaluationData = {
   data: {
     evaluation: {
       comparedEvents: ['c38712d2-0e2f-4412-bd39-fed91f333510'],
-      gitCommit: '',
       indicatorResults: [
         {
           displayName: '',
@@ -111,7 +110,6 @@ const evaluationData = {
               },
             ],
             comparedEvents: ['cfa408ce-f552-43c4-aff2-673b1e0548d2'],
-            gitCommit: '',
           },
         },
         id: '04266cc2-eeea-485b-85b3-f1dea50890ce',
@@ -150,7 +148,6 @@ const evaluationData = {
                 },
               ],
               comparedEvents: ['cfa408ce-f552-43c4-aff2-673b1e0548d2'],
-              gitCommit: '',
             },
           },
           id: '04266cc2-eeea-485b-85b3-f1dea50890ce',
@@ -193,7 +190,6 @@ const evaluationData = {
               },
             ],
             comparedEvents: ['04266cc2-eeea-485b-85b3-f1dea50890ce'],
-            gitCommit: '',
           },
         },
         id: 'beefaec1-ecc8-43a0-8d8f-c1cb9b17c18a',
@@ -232,7 +228,6 @@ const evaluationData = {
                 },
               ],
               comparedEvents: ['04266cc2-eeea-485b-85b3-f1dea50890ce'],
-              gitCommit: '',
             },
           },
           id: 'beefaec1-ecc8-43a0-8d8f-c1cb9b17c18a',
@@ -275,7 +270,6 @@ const evaluationData = {
               },
             ],
             comparedEvents: ['04266cc2-eeea-485b-85b3-f1dea50890ce'],
-            gitCommit: '',
           },
         },
         id: '99ef68f9-a2a8-426d-81a5-f4ed359506f9',
@@ -314,7 +308,6 @@ const evaluationData = {
                 },
               ],
               comparedEvents: ['04266cc2-eeea-485b-85b3-f1dea50890ce'],
-              gitCommit: '',
             },
           },
           id: '99ef68f9-a2a8-426d-81a5-f4ed359506f9',
@@ -357,7 +350,6 @@ const evaluationData = {
               },
             ],
             comparedEvents: ['99ef68f9-a2a8-426d-81a5-f4ed359506f9'],
-            gitCommit: '',
           },
         },
         id: 'a9dcaf6a-f234-4971-80de-c8ad3e045585',
@@ -396,7 +388,6 @@ const evaluationData = {
                 },
               ],
               comparedEvents: ['99ef68f9-a2a8-426d-81a5-f4ed359506f9'],
-              gitCommit: '',
             },
           },
           id: 'a9dcaf6a-f234-4971-80de-c8ad3e045585',
@@ -439,7 +430,6 @@ const evaluationData = {
               },
             ],
             comparedEvents: ['a9dcaf6a-f234-4971-80de-c8ad3e045585'],
-            gitCommit: '',
           },
         },
         id: 'd5550753-d690-431e-96e0-8b0c3f7f7ca9',
@@ -478,7 +468,6 @@ const evaluationData = {
                 },
               ],
               comparedEvents: ['a9dcaf6a-f234-4971-80de-c8ad3e045585'],
-              gitCommit: '',
             },
           },
           id: 'd5550753-d690-431e-96e0-8b0c3f7f7ca9',
@@ -495,7 +484,6 @@ const evaluationData = {
         data: {
           evaluation: {
             comparedEvents: ['d5550753-d690-431e-96e0-8b0c3f7f7ca9'],
-            gitCommit: '',
             indicatorResults: [
               {
                 keySli: false,
@@ -554,7 +542,6 @@ const evaluationData = {
           data: {
             evaluation: {
               comparedEvents: ['d5550753-d690-431e-96e0-8b0c3f7f7ca9'],
-              gitCommit: '',
               indicatorResults: [
                 {
                   keySli: false,
@@ -617,7 +604,6 @@ const evaluationData = {
         data: {
           evaluation: {
             comparedEvents: ['e0b793e2-0e14-467c-b31d-3d08156651f2'],
-            gitCommit: '',
             indicatorResults: [
               {
                 keySli: false,
@@ -676,7 +662,6 @@ const evaluationData = {
           data: {
             evaluation: {
               comparedEvents: ['e0b793e2-0e14-467c-b31d-3d08156651f2'],
-              gitCommit: '',
               indicatorResults: [
                 {
                   keySli: false,
@@ -739,7 +724,6 @@ const evaluationData = {
         data: {
           evaluation: {
             comparedEvents: ['e0b793e2-0e14-467c-b31d-3d08156651f2'],
-            gitCommit: '',
             indicatorResults: [
               {
                 keySli: false,
@@ -798,7 +782,6 @@ const evaluationData = {
           data: {
             evaluation: {
               comparedEvents: ['e0b793e2-0e14-467c-b31d-3d08156651f2'],
-              gitCommit: '',
               indicatorResults: [
                 {
                   keySli: false,
@@ -861,7 +844,6 @@ const evaluationData = {
         data: {
           evaluation: {
             comparedEvents: ['acb7af04-6dea-4aa5-a6d8-e502d627eaaf'],
-            gitCommit: '',
             indicatorResults: [
               {
                 displayName: '',
@@ -921,7 +903,6 @@ const evaluationData = {
           data: {
             evaluation: {
               comparedEvents: ['acb7af04-6dea-4aa5-a6d8-e502d627eaaf'],
-              gitCommit: '',
               indicatorResults: [
                 {
                   displayName: '',
@@ -985,7 +966,6 @@ const evaluationData = {
         data: {
           evaluation: {
             comparedEvents: ['acb7af04-6dea-4aa5-a6d8-e502d627eaaf'],
-            gitCommit: '',
             indicatorResults: [
               {
                 displayName: '',
@@ -1045,7 +1025,6 @@ const evaluationData = {
           data: {
             evaluation: {
               comparedEvents: ['acb7af04-6dea-4aa5-a6d8-e502d627eaaf'],
-              gitCommit: '',
               indicatorResults: [
                 {
                   displayName: '',
@@ -1109,7 +1088,6 @@ const evaluationData = {
         data: {
           evaluation: {
             comparedEvents: ['8ca4250c-5442-45cb-b745-4b00f2284ea0'],
-            gitCommit: '',
             indicatorResults: [
               {
                 displayName: '',
@@ -1169,7 +1147,6 @@ const evaluationData = {
           data: {
             evaluation: {
               comparedEvents: ['8ca4250c-5442-45cb-b745-4b00f2284ea0'],
-              gitCommit: '',
               indicatorResults: [
                 {
                   displayName: '',
@@ -1233,7 +1210,6 @@ const evaluationData = {
         data: {
           evaluation: {
             comparedEvents: ['c38712d2-0e2f-4412-bd39-fed91f333510'],
-            gitCommit: '',
             indicatorResults: [
               {
                 displayName: '',
@@ -1302,7 +1278,6 @@ const evaluationData = {
           data: {
             evaluation: {
               comparedEvents: ['c38712d2-0e2f-4412-bd39-fed91f333510'],
-              gitCommit: '',
               indicatorResults: [
                 {
                   displayName: '',
@@ -1375,7 +1350,6 @@ const evaluationData = {
     data: {
       evaluation: {
         comparedEvents: ['c38712d2-0e2f-4412-bd39-fed91f333510'],
-        gitCommit: '',
         indicatorResults: [
           {
             displayName: '',
