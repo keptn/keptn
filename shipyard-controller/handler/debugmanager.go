@@ -9,7 +9,7 @@ import (
 
 type IDebugManager interface {
 	GetAllProjects() ([]*models.ExpandedProject, error)
-	GetSequenceByID(shkeptncontext string) (models.SequenceState, error)
+	GetSequenceByID(projectName string, shkeptncontext string) (models.SequenceState, error)
 	GetAllSequencesForProject(projectName string) ([]models.SequenceState, error)
 	GetAllEvents(projectName string, shkeptncontext string) ([]models.KeptnContextExtendedCE, error)
 	GetEventByID(projectName string, shkeptncontext string, event_id string) (models.KeptnContextExtendedCE, error)
@@ -29,9 +29,10 @@ func NewDebugManager(eventRepo db.EventRepo, stateRepo db.SequenceStateRepo, pro
 	}
 }
 
-func (dm *DebugManager) GetSequenceByID(shkeptncontext string) (models.SequenceState, error) {
+func (dm *DebugManager) GetSequenceByID(projectName string, shkeptncontext string) (models.SequenceState, error) {
 	sequence, err := dm.stateRepo.FindSequenceStates(apimodels.StateFilter{
 		GetSequenceStateParams: apimodels.GetSequenceStateParams{
+			Project:      projectName,
 			KeptnContext: shkeptncontext,
 		},
 	})
