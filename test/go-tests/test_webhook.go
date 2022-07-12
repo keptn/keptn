@@ -170,7 +170,7 @@ spec:
         - url: http://shipyard-controller:8080/v1/project/{{.data.project}}/stage/{{.data.stage}}
           method: GET`
 
-func createWebhookProject(t *testing.T, projectName, serviceName string) (string, string) {
+func CreateWebhookProject(t *testing.T, projectName, serviceName string) (string, string) {
 	shipyardFilePath, err := CreateTmpShipyardFile(webhookShipyard)
 	require.Nil(t, err)
 
@@ -201,8 +201,8 @@ func createWebhookProject(t *testing.T, projectName, serviceName string) (string
 func Test_Webhook_Failures(t *testing.T) {
 	projectName := "webhooks-b"
 	serviceName := "myservice"
-	projectName, shipyardFilePath := createWebhookProject(t, projectName, serviceName)
-	defer deleteFile(t, shipyardFilePath)
+	projectName, shipyardFilePath := CreateWebhookProject(t, projectName, serviceName)
+	defer DeleteFile(t, shipyardFilePath)
 	stageName := "dev"
 	sequencename := "mysequence"
 	// create subscriptions for the webhook-service
@@ -340,8 +340,8 @@ func Test_Webhook(t *testing.T) {
 
 	projectName := "webhooks-subscription-overlap"
 	serviceName := "myservice"
-	projectName, shipyardFilePath := createWebhookProject(t, projectName, serviceName)
-	defer deleteFile(t, shipyardFilePath)
+	projectName, shipyardFilePath := CreateWebhookProject(t, projectName, serviceName)
+	defer DeleteFile(t, shipyardFilePath)
 	stageName := "dev"
 	sequencename := "mysequence"
 	taskName := "mytask"
@@ -377,7 +377,7 @@ func Test_Webhook(t *testing.T) {
 	// now, let's add a webhook.yaml file to our service
 	webhookFilePath, err := CreateTmpFile("webhook.yaml", webhookYamlWithSubscriptionIDs)
 	require.Nil(t, err)
-	defer deleteFile(t, webhookFilePath)
+	defer DeleteFile(t, webhookFilePath)
 
 	t.Log("Adding webhook.yaml to our service")
 	_, err = ExecuteCommand(fmt.Sprintf("keptn add-resource --project=%s --service=%s --resource=%s --resourceUri=webhook/webhook.yaml --all-stages", projectName, serviceName, webhookFilePath))
@@ -405,8 +405,8 @@ func Test_ExecutingWebhookTargetingClusterInternalAddressesFails(t *testing.T) {
 	serviceName := "myservice"
 	sequencename := "mysequence"
 	taskname := "mytask"
-	projectName, shipyardFile := createWebhookProject(t, projectName, serviceName)
-	defer deleteFile(t, shipyardFile)
+	projectName, shipyardFile := CreateWebhookProject(t, projectName, serviceName)
+	defer DeleteFile(t, shipyardFile)
 
 	// create subscriptions for the webhook-service
 	taskTypes := []string{"mytask"}
@@ -420,7 +420,7 @@ func Test_ExecutingWebhookTargetingClusterInternalAddressesFails(t *testing.T) {
 	// now, let's add a webhook.yaml file to our service
 	webhookFilePath, err := CreateTmpFile("webhook.yaml", webhookYamlWithSubscriptionIDs)
 	require.Nil(t, err)
-	defer deleteFile(t, webhookFilePath)
+	defer DeleteFile(t, webhookFilePath)
 
 	t.Log("Adding webhook.yaml to our service")
 	_, err = ExecuteCommand(fmt.Sprintf("keptn add-resource --project=%s --resource=%s --resourceUri=webhook/webhook.yaml", projectName, webhookFilePath))
@@ -490,7 +490,7 @@ func getWebhookYamlWithSubscriptionIDs(t *testing.T, taskTypes []string, project
 	return webhookYamlWithSubscriptionIDs
 }
 
-func deleteFile(t *testing.T, shipyardFilePath string) {
+func DeleteFile(t *testing.T, shipyardFilePath string) {
 	func() {
 		err := os.Remove(shipyardFilePath)
 		if err != nil {
