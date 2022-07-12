@@ -2,15 +2,15 @@ package restapi
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	"github.com/keptn/keptn/mongodb-datastore/handlers"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations"
 	"github.com/nats-io/nats-server/v2/server"
 	natstest "github.com/nats-io/nats-server/v2/test"
 	logger "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
-	"os"
-	"testing"
-	"time"
 )
 
 // Test_startControlPlane verifies whether the api pre server shutdown is initialized
@@ -23,8 +23,7 @@ func Test_startControlPlaneSuccess(t *testing.T) {
 	defer func() {
 		shutdown()
 	}()
-	err := os.Setenv("NATS_URL", natsServer.ClientURL())
-	require.NoError(t, err)
+	t.Setenv("NATS_URL", natsServer.ClientURL())
 
 	api := &operations.MongodbDatastoreAPI{}
 	eventRequestHandler := handlers.NewEventRequestHandler(nil)

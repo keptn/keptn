@@ -87,3 +87,4 @@ For a realtime overview of current contributors to the Keptn project, we refer t
 * [Heinz Burgstaller](https://github.com/heinzburgstaller)
 * [Simon Schrottner](https://github.com/aepfli)
 * [Zhou Zhiqiang](https://github.com/STRRL)
+* [Sarah Huber](https://github.com/sarahhuber001)

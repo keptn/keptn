@@ -10,9 +10,9 @@ require (
 	github.com/keptn/go-utils v0.17.1-0.20220708080640-d9a621b67838
 	github.com/mitchellh/copystructure v1.2.0
 	github.com/sirupsen/logrus v1.8.1
-	github.com/stretchr/testify v1.7.5
+	github.com/stretchr/testify v1.8.0
 	github.com/swaggo/swag v1.8.3
-	github.com/tryvium-travels/memongo v0.5.0
+	github.com/tryvium-travels/memongo v0.6.0
 	go.mongodb.org/mongo-driver v1.9.1
 )
 

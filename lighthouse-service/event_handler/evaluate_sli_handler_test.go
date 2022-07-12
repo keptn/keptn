@@ -4,16 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/go-utils/pkg/common/strutils"
-	keptnfake "github.com/keptn/go-utils/pkg/lib/v0_2_0/fake"
-	event_handler_mock "github.com/keptn/keptn/lighthouse-service/event_handler/fake"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"reflect"
 	"sort"
 	"strings"
@@ -21,10 +13,18 @@ import (
 	"testing"
 	"time"
 
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/keptn/go-utils/pkg/api/models"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/go-utils/pkg/common/strutils"
 	apimodelsv2 "github.com/keptn/go-utils/pkg/lib"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	keptnfake "github.com/keptn/go-utils/pkg/lib/v0_2_0/fake"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	event_handler_mock "github.com/keptn/keptn/lighthouse-service/event_handler/fake"
 )
 
 type operatorParserTest struct {
@@ -3166,7 +3166,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluations(t *testing.T) {
 	)
 	defer ts.Close()
 
-	_ = os.Setenv("MONGODB_DATASTORE", strings.TrimPrefix(ts.URL, "http://"))
+	t.Setenv("MONGODB_DATASTORE", strings.TrimPrefix(ts.URL, "http://"))
 
 	type fields struct {
 		Logger     *keptncommon.Logger

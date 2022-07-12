@@ -92,11 +92,6 @@ export class ApiService {
     return this.http.get<KeptnInfoResult>(url);
   }
 
-  public getIntegrationsPage(): Observable<string> {
-    const url = `${this._baseUrl}/integrationsPage`;
-    return this.http.get<string>(url, { responseType: 'text' as 'json' });
-  }
-
   public isVersionCheckEnabled(): boolean | undefined {
     const item = localStorage.getItem(this.VERSION_CHECK_COOKIE);
     const versionInfo = item ? JSON.parse(item) : undefined;

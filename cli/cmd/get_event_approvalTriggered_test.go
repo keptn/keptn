@@ -3,7 +3,6 @@ package cmd
 import (
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"strings"
 	"testing"
 )
@@ -75,7 +74,7 @@ func Test_getApprovalTriggeredEvents(t *testing.T) {
 	)
 	defer ts.Close()
 
-	os.Setenv("MOCK_SERVER", ts.URL)
+	t.Setenv("MOCK_SERVER", ts.URL)
 
 	type args struct {
 		approvalTriggered approvalTriggeredStruct

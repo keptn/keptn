@@ -1,0 +1,7 @@
+global:
+  keptn:
+    registry: "docker.io/keptn"
+
+shipyardController:
+  gracePeriod: 10
+  preStopHookTime: 5

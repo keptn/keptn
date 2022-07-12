@@ -7,14 +7,14 @@ require (
 	github.com/cloudevents/sdk-go/v2 v2.10.1
 	github.com/docker/docker-credential-helpers v0.6.4
 	github.com/google/uuid v1.3.0
-	github.com/hashicorp/go-version v1.5.0
-	github.com/invopop/jsonschema v0.4.0
+	github.com/hashicorp/go-version v1.6.0
+	github.com/invopop/jsonschema v0.5.0
 	github.com/keptn/go-utils v0.17.1-0.20220708080640-d9a621b67838
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/spf13/cobra v1.4.0
+	github.com/spf13/cobra v1.5.0
 	github.com/spf13/viper v1.12.0
-	github.com/stretchr/testify v1.7.5
+	github.com/stretchr/testify v1.8.0
 	golang.org/x/oauth2 v0.0.0-20220630143837-2104d58473e0
 	gopkg.in/yaml.v3 v3.0.1
 	gotest.tools v2.2.0+incompatible
@@ -24,7 +24,7 @@ require (
 	cloud.google.com/go/compute v1.7.0 // indirect
 	github.com/benbjohnson/clock v1.3.0 // indirect
 	github.com/cloudevents/sdk-go/observability/opentelemetry/v2 v2.0.0-20211001212819-74757a691209 // indirect
-	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect
+	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/danieljoos/wincred v1.1.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/felixge/httpsnoop v1.0.2 // indirect

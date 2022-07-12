@@ -116,8 +116,8 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 	)
 	defer ts.Close()
 
-	os.Setenv("EVENTBROKER", ts.URL+"/events")
-	os.Setenv("RESOURCE_SERVICE", ts.URL+"/configuration")
+	t.Setenv("EVENTBROKER", ts.URL+"/events")
+	t.Setenv("RESOURCE_SERVICE", ts.URL+"/configuration")
 
 	////////// TEST DEFINITION ///////////
 	type fields struct {

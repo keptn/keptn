@@ -132,7 +132,6 @@ export const traceData = [
             deploymentURIsLocal: ['http://carts.sockshop-dev:80'],
             deploymentURIsPublic: ['http://carts.sockshop-dev.34.72.118.255.nip.io:80'],
             deploymentstrategy: 'direct',
-            gitCommit: '42a5bdbc0cc2b0c4d258c2a74c0afbcfaaab7620',
           },
           message: 'Successfully deployed',
           project: 'sockshop',
@@ -155,7 +154,6 @@ export const traceData = [
               deploymentURIsLocal: ['http://carts.sockshop-dev:80'],
               deploymentURIsPublic: ['http://carts.sockshop-dev.34.72.118.255.nip.io:80'],
               deploymentstrategy: 'direct',
-              gitCommit: '42a5bdbc0cc2b0c4d258c2a74c0afbcfaaab7620',
             },
             message: 'Successfully deployed',
             project: 'sockshop',
@@ -272,7 +270,6 @@ export const traceData = [
           status: 'succeeded',
           test: {
             end: '2021-03-16T12:41:24Z',
-            gitCommit: '',
             start: '2021-03-16T12:41:12Z',
           },
         },
@@ -292,7 +289,6 @@ export const traceData = [
             status: 'succeeded',
             test: {
               end: '2021-03-16T12:41:24Z',
-              gitCommit: '',
               start: '2021-03-16T12:41:12Z',
             },
           },
@@ -317,7 +313,6 @@ export const traceData = [
         deploymentURIsLocal: ['http://carts.sockshop-dev:80'],
         deploymentURIsPublic: ['http://carts.sockshop-dev.34.72.118.255.nip.io:80'],
         deploymentstrategy: 'direct',
-        gitCommit: '42a5bdbc0cc2b0c4d258c2a74c0afbcfaaab7620',
       },
       message: '',
       project: 'sockshop',
@@ -348,7 +343,6 @@ export const traceData = [
           deploymentURIsLocal: ['http://carts.sockshop-dev:80'],
           deploymentURIsPublic: ['http://carts.sockshop-dev.34.72.118.255.nip.io:80'],
           deploymentstrategy: 'direct',
-          gitCommit: '42a5bdbc0cc2b0c4d258c2a74c0afbcfaaab7620',
         },
         message: '',
         project: 'sockshop',
@@ -409,7 +403,6 @@ export const traceData = [
         traces: [],
         data: {
           evaluation: {
-            gitCommit: '',
             indicatorResults: null,
             result: 'no evaluation performed by lighthouse because no SLO file configured for project sockshop',
             score: 0,
@@ -435,7 +428,6 @@ export const traceData = [
         plainEvent: {
           data: {
             evaluation: {
-              gitCommit: '',
               indicatorResults: null,
               result: 'no evaluation performed by lighthouse because no SLO file configured for project sockshop',
               score: 0,
@@ -472,7 +464,6 @@ export const traceData = [
         deploymentURIsLocal: ['http://carts.sockshop-dev:80'],
         deploymentURIsPublic: ['http://carts.sockshop-dev.34.72.118.255.nip.io:80'],
         deploymentstrategy: 'direct',
-        gitCommit: '42a5bdbc0cc2b0c4d258c2a74c0afbcfaaab7620',
       },
       evaluation: null,
       message: '',
@@ -483,7 +474,6 @@ export const traceData = [
       status: 'succeeded',
       test: {
         end: '2021-03-16T12:41:24Z',
-        gitCommit: '',
         start: '2021-03-16T12:41:12Z',
       },
     },
@@ -506,7 +496,6 @@ export const traceData = [
           deploymentURIsLocal: ['http://carts.sockshop-dev:80'],
           deploymentURIsPublic: ['http://carts.sockshop-dev.34.72.118.255.nip.io:80'],
           deploymentstrategy: 'direct',
-          gitCommit: '42a5bdbc0cc2b0c4d258c2a74c0afbcfaaab7620',
         },
         evaluation: null,
         message: '',
@@ -517,7 +506,6 @@ export const traceData = [
         status: 'succeeded',
         test: {
           end: '2021-03-16T12:41:24Z',
-          gitCommit: '',
           start: '2021-03-16T12:41:12Z',
         },
       },
@@ -715,9 +703,6 @@ export const traceData = [
           },
           message: 'Finished release',
           project: 'sockshop',
-          release: {
-            gitCommit: '',
-          },
           result: 'pass',
           service: 'carts',
           stage: 'dev',
@@ -737,9 +722,6 @@ export const traceData = [
             },
             message: 'Finished release',
             project: 'sockshop',
-            release: {
-              gitCommit: '',
-            },
             result: 'pass',
             service: 'carts',
             stage: 'dev',
@@ -766,10 +748,8 @@ export const traceData = [
         deploymentURIsLocal: ['http://carts.sockshop-dev:80'],
         deploymentURIsPublic: ['http://carts.sockshop-dev.34.72.118.255.nip.io:80'],
         deploymentstrategy: 'direct',
-        gitCommit: '42a5bdbc0cc2b0c4d258c2a74c0afbcfaaab7620',
       },
       evaluation: {
-        gitCommit: '',
         indicatorResults: null,
         result: 'no evaluation performed by lighthouse because no SLO file configured for project sockshop',
         score: 0,
@@ -789,7 +769,6 @@ export const traceData = [
       status: '',
       test: {
         end: '2021-03-16T12:41:24Z',
-        gitCommit: '',
         start: '2021-03-16T12:41:12Z',
       },
     },
@@ -812,10 +791,8 @@ export const traceData = [
           deploymentURIsLocal: ['http://carts.sockshop-dev:80'],
           deploymentURIsPublic: ['http://carts.sockshop-dev.34.72.118.255.nip.io:80'],
           deploymentstrategy: 'direct',
-          gitCommit: '42a5bdbc0cc2b0c4d258c2a74c0afbcfaaab7620',
         },
         evaluation: {
-          gitCommit: '',
           indicatorResults: null,
           result: 'no evaluation performed by lighthouse because no SLO file configured for project sockshop',
           score: 0,
@@ -835,7 +812,6 @@ export const traceData = [
         status: '',
         test: {
           end: '2021-03-16T12:41:24Z',
-          gitCommit: '',
           start: '2021-03-16T12:41:12Z',
         },
       },
@@ -987,7 +963,6 @@ export const traceData = [
             deploymentURIsLocal: ['http://carts.sockshop-staging:80'],
             deploymentURIsPublic: ['http://carts.sockshop-staging.34.72.118.255.nip.io:80'],
             deploymentstrategy: 'duplicate',
-            gitCommit: 'cbb81a2a64047bef051f39d9153d14d524465442',
           },
           labels: {
             DtCreds: 'dynatrace',
@@ -1013,7 +988,6 @@ export const traceData = [
               deploymentURIsLocal: ['http://carts.sockshop-staging:80'],
               deploymentURIsPublic: ['http://carts.sockshop-staging.34.72.118.255.nip.io:80'],
               deploymentstrategy: 'duplicate',
-              gitCommit: 'cbb81a2a64047bef051f39d9153d14d524465442',
             },
             labels: {
               DtCreds: 'dynatrace',
@@ -1046,10 +1020,8 @@ export const traceData = [
         deploymentURIsLocal: ['http://carts.sockshop-dev:80'],
         deploymentURIsPublic: ['http://carts.sockshop-dev.34.72.118.255.nip.io:80'],
         deploymentstrategy: 'blue_green_service',
-        gitCommit: '42a5bdbc0cc2b0c4d258c2a74c0afbcfaaab7620',
       },
       evaluation: {
-        gitCommit: '',
         indicatorResults: null,
         result: 'no evaluation performed by lighthouse because no SLO file configured for project sockshop',
         score: 0,
@@ -1062,16 +1034,12 @@ export const traceData = [
       },
       message: '',
       project: 'sockshop',
-      release: {
-        gitCommit: '',
-      },
       result: '',
       service: 'carts',
       stage: 'staging',
       status: '',
       test: {
         end: '2021-03-16T12:41:24Z',
-        gitCommit: '',
         start: '2021-03-16T12:41:12Z',
       },
     },
@@ -1094,10 +1062,8 @@ export const traceData = [
           deploymentURIsLocal: ['http://carts.sockshop-dev:80'],
           deploymentURIsPublic: ['http://carts.sockshop-dev.34.72.118.255.nip.io:80'],
           deploymentstrategy: 'blue_green_service',
-          gitCommit: '42a5bdbc0cc2b0c4d258c2a74c0afbcfaaab7620',
         },
         evaluation: {
-          gitCommit: '',
           indicatorResults: null,
           result: 'no evaluation performed by lighthouse because no SLO file configured for project sockshop',
           score: 0,
@@ -1110,16 +1076,12 @@ export const traceData = [
         },
         message: '',
         project: 'sockshop',
-        release: {
-          gitCommit: '',
-        },
         result: '',
         service: 'carts',
         stage: 'staging',
         status: '',
         test: {
           end: '2021-03-16T12:41:24Z',
-          gitCommit: '',
           start: '2021-03-16T12:41:12Z',
         },
       },
@@ -1187,7 +1149,6 @@ export const traceData = [
           status: 'succeeded',
           test: {
             end: '2021-03-16T12:46:58Z',
-            gitCommit: '',
             start: '2021-03-16T12:44:54Z',
           },
         },
@@ -1210,7 +1171,6 @@ export const traceData = [
             status: 'succeeded',
             test: {
               end: '2021-03-16T12:46:58Z',
-              gitCommit: '',
               start: '2021-03-16T12:44:54Z',
             },
           },
@@ -1235,7 +1195,6 @@ export const traceData = [
         deploymentURIsLocal: ['http://carts.sockshop-staging:80'],
         deploymentURIsPublic: ['http://carts.sockshop-staging.34.72.118.255.nip.io:80'],
         deploymentstrategy: 'duplicate',
-        gitCommit: 'cbb81a2a64047bef051f39d9153d14d524465442',
       },
       labels: {
         DtCreds: 'dynatrace',
@@ -1269,7 +1228,6 @@ export const traceData = [
           deploymentURIsLocal: ['http://carts.sockshop-staging:80'],
           deploymentURIsPublic: ['http://carts.sockshop-staging.34.72.118.255.nip.io:80'],
           deploymentstrategy: 'duplicate',
-          gitCommit: 'cbb81a2a64047bef051f39d9153d14d524465442',
         },
         labels: {
           DtCreds: 'dynatrace',
@@ -1340,7 +1298,6 @@ export const traceData = [
         data: {
           evaluation: {
             comparedEvents: ['8ad74029-5ceb-4680-b697-d1701078faff'],
-            gitCommit: '',
             indicatorResults: [
               {
                 displayName: 'This is my very very very very very very very very very very very very long displayName',
@@ -1400,7 +1357,6 @@ export const traceData = [
           data: {
             evaluation: {
               comparedEvents: ['8ad74029-5ceb-4680-b697-d1701078faff'],
-              gitCommit: '',
               indicatorResults: [
                 {
                   displayName:
@@ -1471,7 +1427,6 @@ export const traceData = [
         deploymentURIsLocal: ['http://carts.sockshop-staging:80'],
         deploymentURIsPublic: ['http://carts.sockshop-staging.34.72.118.255.nip.io:80'],
         deploymentstrategy: 'duplicate',
-        gitCommit: 'cbb81a2a64047bef051f39d9153d14d524465442',
       },
       evaluation: null,
       labels: {
@@ -1485,7 +1440,6 @@ export const traceData = [
       status: 'succeeded',
       test: {
         end: '2021-03-16T12:46:58Z',
-        gitCommit: '',
         start: '2021-03-16T12:44:54Z',
       },
     },
@@ -1508,7 +1462,6 @@ export const traceData = [
           deploymentURIsLocal: ['http://carts.sockshop-staging:80'],
           deploymentURIsPublic: ['http://carts.sockshop-staging.34.72.118.255.nip.io:80'],
           deploymentstrategy: 'duplicate',
-          gitCommit: 'cbb81a2a64047bef051f39d9153d14d524465442',
         },
         evaluation: null,
         labels: {
@@ -1522,7 +1475,6 @@ export const traceData = [
         status: 'succeeded',
         test: {
           end: '2021-03-16T12:46:58Z',
-          gitCommit: '',
           start: '2021-03-16T12:44:54Z',
         },
       },
@@ -1867,11 +1819,9 @@ export const traceData = [
         deploymentURIsLocal: ['http://carts.sockshop-staging:80'],
         deploymentURIsPublic: ['http://carts.sockshop-staging.34.72.118.255.nip.io:80'],
         deploymentstrategy: 'duplicate',
-        gitCommit: 'cbb81a2a64047bef051f39d9153d14d524465442',
       },
       evaluation: {
         comparedEvents: ['8ad74029-5ceb-4680-b697-d1701078faff'],
-        gitCommit: '',
         indicatorResults: [
           {
             displayName: 'This is my very very very very very very very very very very very very long displayName',
@@ -1923,7 +1873,6 @@ export const traceData = [
       status: '',
       test: {
         end: '2021-03-16T12:46:58Z',
-        gitCommit: '',
         start: '2021-03-16T12:44:54Z',
       },
     },
@@ -1946,11 +1895,9 @@ export const traceData = [
           deploymentURIsLocal: ['http://carts.sockshop-staging:80'],
           deploymentURIsPublic: ['http://carts.sockshop-staging.34.72.118.255.nip.io:80'],
           deploymentstrategy: 'duplicate',
-          gitCommit: 'cbb81a2a64047bef051f39d9153d14d524465442',
         },
         evaluation: {
           comparedEvents: ['8ad74029-5ceb-4680-b697-d1701078faff'],
-          gitCommit: '',
           indicatorResults: [
             {
               displayName: 'This is my very very very very very very very very very very very very long displayName',
@@ -2002,7 +1949,6 @@ export const traceData = [
         status: '',
         test: {
           end: '2021-03-16T12:46:58Z',
-          gitCommit: '',
           start: '2021-03-16T12:44:54Z',
         },
       },

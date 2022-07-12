@@ -1,17 +1,17 @@
 package lib_test
 
 import (
+	"testing"
+
 	"github.com/keptn/keptn/webhook-service/lib"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
-	"os"
-	"testing"
 )
 
 func TestK8sSecretReater_ReadSecret(t *testing.T) {
-	_ = os.Setenv("POD_NAMESPACE", "keptn")
+	t.Setenv("POD_NAMESPACE", "keptn")
 	secretReader := lib.NewK8sSecretReader(fake.NewSimpleClientset(
 		getK8sSecret(map[string]string{
 			"app.kubernetes.io/managed-by": "keptn-secret-service",
@@ -30,7 +30,7 @@ func TestK8sSecretReater_ReadSecret(t *testing.T) {
 }
 
 func TestK8sSecretReater_ReadSecretWithInvalidScope(t *testing.T) {
-	_ = os.Setenv("POD_NAMESPACE", "keptn")
+	t.Setenv("POD_NAMESPACE", "keptn")
 	secretReader := lib.NewK8sSecretReader(fake.NewSimpleClientset(
 		getK8sSecret(map[string]string{}),
 	))

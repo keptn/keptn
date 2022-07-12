@@ -4,7 +4,6 @@ const evaluationData = {
   data: {
     evaluation: {
       comparedEvents: ['8ad74029-5ceb-4680-b697-d1701078faff'],
-      gitCommit: '',
       indicatorResults: [
         {
           displayName: 'Response time P95 A',
@@ -515,7 +514,6 @@ const evaluationData = {
         traces: [],
         data: {
           evaluation: {
-            gitCommit: '',
             indicatorResults: [
               {
                 displayName: 'Response time P95',
@@ -1057,7 +1055,6 @@ const evaluationData = {
         plainEvent: {
           data: {
             evaluation: {
-              gitCommit: '',
               indicatorResults: [
                 {
                   displayName: 'Response time P95',
@@ -1603,7 +1600,6 @@ const evaluationData = {
         traces: [],
         data: {
           evaluation: {
-            gitCommit: '',
             indicatorResults: [
               {
                 displayName: 'Response time P95',
@@ -2145,7 +2141,6 @@ const evaluationData = {
         plainEvent: {
           data: {
             evaluation: {
-              gitCommit: '',
               indicatorResults: [
                 {
                   displayName: 'Response time P95',
@@ -2691,7 +2686,6 @@ const evaluationData = {
         traces: [],
         data: {
           evaluation: {
-            gitCommit: '',
             indicatorResults: [
               {
                 displayName: 'Response time P95 A',
@@ -3233,7 +3227,6 @@ const evaluationData = {
         plainEvent: {
           data: {
             evaluation: {
-              gitCommit: '',
               indicatorResults: [
                 {
                   displayName: 'Response time P95 A',
@@ -3779,7 +3772,6 @@ const evaluationData = {
         traces: [],
         data: {
           evaluation: {
-            gitCommit: '',
             indicatorResults: [
               {
                 displayName: 'Response time P95 A with even a long long long name',
@@ -4321,7 +4313,6 @@ const evaluationData = {
         plainEvent: {
           data: {
             evaluation: {
-              gitCommit: '',
               indicatorResults: [
                 {
                   displayName: 'Response time P95 A with even a long long long name',
@@ -4867,7 +4858,6 @@ const evaluationData = {
         traces: [],
         data: {
           evaluation: {
-            gitCommit: '',
             indicatorResults: [
               {
                 displayName: 'Response time P95 A',
@@ -5416,7 +5406,6 @@ const evaluationData = {
         plainEvent: {
           data: {
             evaluation: {
-              gitCommit: '',
               indicatorResults: [
                 {
                   displayName: 'Response time P95 A',
@@ -5973,7 +5962,6 @@ const evaluationData = {
     data: {
       evaluation: {
         comparedEvents: ['8ad74029-5ceb-4680-b697-d1701078faff'],
-        gitCommit: '',
         indicatorResults: [
           {
             displayName: 'Response time P95 A',

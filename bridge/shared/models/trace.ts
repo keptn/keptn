@@ -41,7 +41,6 @@ export interface TraceData {
     deploymentURIsLocal: string[];
     deploymentURIsPublic: string[];
     deploymentstrategy: string;
-    gitCommit: string;
   };
 
   deploymentURILocal?: string;

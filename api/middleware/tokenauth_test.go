@@ -1,10 +1,10 @@
 package middleware
 
 import (
-	"github.com/keptn/keptn/api/models"
-	"os"
 	"reflect"
 	"testing"
+
+	"github.com/keptn/keptn/api/models"
 )
 
 func TestValidateToken(t *testing.T) {
@@ -38,7 +38,7 @@ func TestValidateToken(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_ = os.Setenv("SECRET_TOKEN", tt.configuredToken)
+			t.Setenv("SECRET_TOKEN", tt.configuredToken)
 			tv := &BasicTokenValidator{}
 			got, err := tv.ValidateToken(tt.args.token)
 			if (err != nil) != tt.wantErr {

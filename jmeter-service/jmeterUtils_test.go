@@ -3,18 +3,16 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"os/exec"
-
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
+	"os/exec"
 	"strings"
 	"testing"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
 
 func Test_executeJMeter(t *testing.T) {
@@ -42,8 +40,8 @@ func Test_executeJMeter(t *testing.T) {
 	)
 	defer ts.Close()
 	checkJmeter()
-	os.Setenv("RESOURCE_SERVICE", ts.URL)
-	os.Setenv("env", "production")
+	t.Setenv("RESOURCE_SERVICE", ts.URL)
+	t.Setenv("env", "production")
 
 	type args struct {
 		testInfo       TestInfo

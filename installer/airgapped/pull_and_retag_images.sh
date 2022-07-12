@@ -24,7 +24,6 @@ IMAGES_CONTROL_PLANE_THIRD_PARTY=(
 IMAGES_CONTROL_PLANE=(
   "${DOCKER_ORG}/api:${KEPTN_TAG}"
   "${DOCKER_ORG}/bridge2:${KEPTN_TAG}"
-  "${DOCKER_ORG}/configuration-service:${KEPTN_TAG}"
   "${DOCKER_ORG}/distributor:${KEPTN_TAG}"
   "${DOCKER_ORG}/secret-service:${KEPTN_TAG}"
   "${DOCKER_ORG}/shipyard-controller:${KEPTN_TAG}"

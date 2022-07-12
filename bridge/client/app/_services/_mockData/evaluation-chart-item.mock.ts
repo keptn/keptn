@@ -12,7 +12,6 @@ const evaluationChartItemMock = [
           traces: [],
           data: {
             evaluation: {
-              gitCommit: '',
               indicatorResults: [
                 {
                   displayName: 'Response time P95',
@@ -84,7 +83,6 @@ const evaluationChartItemMock = [
           plainEvent: {
             data: {
               evaluation: {
-                gitCommit: '',
                 indicatorResults: [
                   {
                     displayName: 'Response time P95',
@@ -161,7 +159,6 @@ const evaluationChartItemMock = [
           data: {
             evaluation: {
               comparedEvents: ['40cfcfc2-9cc6-4fce-ba62-5f5fec3e3e3b'],
-              gitCommit: '',
               indicatorResults: [
                 {
                   displayName: 'Response time P95',
@@ -235,7 +232,6 @@ const evaluationChartItemMock = [
             data: {
               evaluation: {
                 comparedEvents: ['40cfcfc2-9cc6-4fce-ba62-5f5fec3e3e3b'],
-                gitCommit: '',
                 indicatorResults: [
                   {
                     displayName: 'Response time P95',
@@ -313,7 +309,6 @@ const evaluationChartItemMock = [
           data: {
             evaluation: {
               comparedEvents: ['40cfcfc2-9cc6-4fce-ba62-5f5fec3e3e3b'],
-              gitCommit: '',
               indicatorResults: [
                 {
                   displayName: 'Response time P95',
@@ -386,7 +381,6 @@ const evaluationChartItemMock = [
             data: {
               evaluation: {
                 comparedEvents: ['40cfcfc2-9cc6-4fce-ba62-5f5fec3e3e3b'],
-                gitCommit: '',
                 indicatorResults: [
                   {
                     displayName: 'Response time P95',
@@ -463,7 +457,6 @@ const evaluationChartItemMock = [
           data: {
             evaluation: {
               comparedEvents: ['3344487d-e384-4cd9-a0e0-fcf157a33ad6'],
-              gitCommit: '',
               indicatorResults: [
                 {
                   displayName: 'Response time P95',
@@ -536,7 +529,6 @@ const evaluationChartItemMock = [
             data: {
               evaluation: {
                 comparedEvents: ['3344487d-e384-4cd9-a0e0-fcf157a33ad6'],
-                gitCommit: '',
                 indicatorResults: [
                   {
                     displayName: 'Response time P95',
@@ -613,7 +605,6 @@ const evaluationChartItemMock = [
           data: {
             evaluation: {
               comparedEvents: ['27c733aa-9bb0-44b4-9574-ef04e38eb4c4'],
-              gitCommit: '',
               indicatorResults: [
                 {
                   displayName: 'Response time P95',
@@ -687,7 +678,6 @@ const evaluationChartItemMock = [
             data: {
               evaluation: {
                 comparedEvents: ['27c733aa-9bb0-44b4-9574-ef04e38eb4c4'],
-                gitCommit: '',
                 indicatorResults: [
                   {
                     displayName: 'Response time P95',
@@ -765,7 +755,6 @@ const evaluationChartItemMock = [
           data: {
             evaluation: {
               comparedEvents: ['27c733aa-9bb0-44b4-9574-ef04e38eb4c4'],
-              gitCommit: '',
               indicatorResults: [
                 {
                   displayName: 'Response time P95',
@@ -838,7 +827,6 @@ const evaluationChartItemMock = [
             data: {
               evaluation: {
                 comparedEvents: ['27c733aa-9bb0-44b4-9574-ef04e38eb4c4'],
-                gitCommit: '',
                 indicatorResults: [
                   {
                     displayName: 'Response time P95',
@@ -915,7 +903,6 @@ const evaluationChartItemMock = [
           data: {
             evaluation: {
               comparedEvents: ['53359c6f-fa31-4e8b-9fde-e003b3ea57ec'],
-              gitCommit: '',
               indicatorResults: [
                 {
                   displayName: 'Response time P95',
@@ -988,7 +975,6 @@ const evaluationChartItemMock = [
             data: {
               evaluation: {
                 comparedEvents: ['53359c6f-fa31-4e8b-9fde-e003b3ea57ec'],
-                gitCommit: '',
                 indicatorResults: [
                   {
                     displayName: 'Response time P95',
@@ -1073,7 +1059,6 @@ const evaluationChartItemMock = [
           traces: [],
           data: {
             evaluation: {
-              gitCommit: '',
               indicatorResults: [
                 {
                   displayName: 'Response time P95',
@@ -1145,7 +1130,6 @@ const evaluationChartItemMock = [
           plainEvent: {
             data: {
               evaluation: {
-                gitCommit: '',
                 indicatorResults: [
                   {
                     displayName: 'Response time P95',
@@ -1222,7 +1206,6 @@ const evaluationChartItemMock = [
           data: {
             evaluation: {
               comparedEvents: ['40cfcfc2-9cc6-4fce-ba62-5f5fec3e3e3b'],
-              gitCommit: '',
               indicatorResults: [
                 {
                   displayName: 'Response time P95',
@@ -1296,7 +1279,6 @@ const evaluationChartItemMock = [
             data: {
               evaluation: {
                 comparedEvents: ['40cfcfc2-9cc6-4fce-ba62-5f5fec3e3e3b'],
-                gitCommit: '',
                 indicatorResults: [
                   {
                     displayName: 'Response time P95',
@@ -1374,7 +1356,6 @@ const evaluationChartItemMock = [
           data: {
             evaluation: {
               comparedEvents: ['40cfcfc2-9cc6-4fce-ba62-5f5fec3e3e3b'],
-              gitCommit: '',
               indicatorResults: [
                 {
                   displayName: 'Response time P95',
@@ -1447,7 +1428,6 @@ const evaluationChartItemMock = [
             data: {
               evaluation: {
                 comparedEvents: ['40cfcfc2-9cc6-4fce-ba62-5f5fec3e3e3b'],
-                gitCommit: '',
                 indicatorResults: [
                   {
                     displayName: 'Response time P95',
@@ -1524,7 +1504,6 @@ const evaluationChartItemMock = [
           data: {
             evaluation: {
               comparedEvents: ['3344487d-e384-4cd9-a0e0-fcf157a33ad6'],
-              gitCommit: '',
               indicatorResults: [
                 {
                   displayName: 'Response time P95',
@@ -1597,7 +1576,6 @@ const evaluationChartItemMock = [
             data: {
               evaluation: {
                 comparedEvents: ['3344487d-e384-4cd9-a0e0-fcf157a33ad6'],
-                gitCommit: '',
                 indicatorResults: [
                   {
                     displayName: 'Response time P95',
@@ -1674,7 +1652,6 @@ const evaluationChartItemMock = [
           data: {
             evaluation: {
               comparedEvents: ['27c733aa-9bb0-44b4-9574-ef04e38eb4c4'],
-              gitCommit: '',
               indicatorResults: [
                 {
                   displayName: 'Response time P95',
@@ -1748,7 +1725,6 @@ const evaluationChartItemMock = [
             data: {
               evaluation: {
                 comparedEvents: ['27c733aa-9bb0-44b4-9574-ef04e38eb4c4'],
-                gitCommit: '',
                 indicatorResults: [
                   {
                     displayName: 'Response time P95',
@@ -1826,7 +1802,6 @@ const evaluationChartItemMock = [
           data: {
             evaluation: {
               comparedEvents: ['27c733aa-9bb0-44b4-9574-ef04e38eb4c4'],
-              gitCommit: '',
               indicatorResults: [
                 {
                   displayName: 'Response time P95',
@@ -1899,7 +1874,6 @@ const evaluationChartItemMock = [
             data: {
               evaluation: {
                 comparedEvents: ['27c733aa-9bb0-44b4-9574-ef04e38eb4c4'],
-                gitCommit: '',
                 indicatorResults: [
                   {
                     displayName: 'Response time P95',
@@ -1976,7 +1950,6 @@ const evaluationChartItemMock = [
           data: {
             evaluation: {
               comparedEvents: ['53359c6f-fa31-4e8b-9fde-e003b3ea57ec'],
-              gitCommit: '',
               indicatorResults: [
                 {
                   displayName: 'Response time P95',
@@ -2049,7 +2022,6 @@ const evaluationChartItemMock = [
             data: {
               evaluation: {
                 comparedEvents: ['53359c6f-fa31-4e8b-9fde-e003b3ea57ec'],
-                gitCommit: '',
                 indicatorResults: [
                   {
                     displayName: 'Response time P95',
@@ -2166,7 +2138,6 @@ const evaluationChartItemMock = [
           traces: [],
           data: {
             evaluation: {
-              gitCommit: '',
               indicatorResults: [
                 {
                   displayName: 'Response time P95',
@@ -2238,7 +2209,6 @@ const evaluationChartItemMock = [
           plainEvent: {
             data: {
               evaluation: {
-                gitCommit: '',
                 indicatorResults: [
                   {
                     displayName: 'Response time P95',
@@ -2343,7 +2313,6 @@ const evaluationChartItemMock = [
           data: {
             evaluation: {
               comparedEvents: ['40cfcfc2-9cc6-4fce-ba62-5f5fec3e3e3b'],
-              gitCommit: '',
               indicatorResults: [
                 {
                   displayName: 'Response time P95',
@@ -2417,7 +2386,6 @@ const evaluationChartItemMock = [
             data: {
               evaluation: {
                 comparedEvents: ['40cfcfc2-9cc6-4fce-ba62-5f5fec3e3e3b'],
-                gitCommit: '',
                 indicatorResults: [
                   {
                     displayName: 'Response time P95',
@@ -2523,7 +2491,6 @@ const evaluationChartItemMock = [
           data: {
             evaluation: {
               comparedEvents: ['40cfcfc2-9cc6-4fce-ba62-5f5fec3e3e3b'],
-              gitCommit: '',
               indicatorResults: [
                 {
                   displayName: 'Response time P95',
@@ -2596,7 +2563,6 @@ const evaluationChartItemMock = [
             data: {
               evaluation: {
                 comparedEvents: ['40cfcfc2-9cc6-4fce-ba62-5f5fec3e3e3b'],
-                gitCommit: '',
                 indicatorResults: [
                   {
                     displayName: 'Response time P95',
@@ -2701,7 +2667,6 @@ const evaluationChartItemMock = [
           data: {
             evaluation: {
               comparedEvents: ['3344487d-e384-4cd9-a0e0-fcf157a33ad6'],
-              gitCommit: '',
               indicatorResults: [
                 {
                   displayName: 'Response time P95',
@@ -2774,7 +2739,6 @@ const evaluationChartItemMock = [
             data: {
               evaluation: {
                 comparedEvents: ['3344487d-e384-4cd9-a0e0-fcf157a33ad6'],
-                gitCommit: '',
                 indicatorResults: [
                   {
                     displayName: 'Response time P95',
@@ -2879,7 +2843,6 @@ const evaluationChartItemMock = [
           data: {
             evaluation: {
               comparedEvents: ['27c733aa-9bb0-44b4-9574-ef04e38eb4c4'],
-              gitCommit: '',
               indicatorResults: [
                 {
                   displayName: 'Response time P95',
@@ -2953,7 +2916,6 @@ const evaluationChartItemMock = [
             data: {
               evaluation: {
                 comparedEvents: ['27c733aa-9bb0-44b4-9574-ef04e38eb4c4'],
-                gitCommit: '',
                 indicatorResults: [
                   {
                     displayName: 'Response time P95',
@@ -3059,7 +3021,6 @@ const evaluationChartItemMock = [
           data: {
             evaluation: {
               comparedEvents: ['27c733aa-9bb0-44b4-9574-ef04e38eb4c4'],
-              gitCommit: '',
               indicatorResults: [
                 {
                   displayName: 'Response time P95',
@@ -3132,7 +3093,6 @@ const evaluationChartItemMock = [
             data: {
               evaluation: {
                 comparedEvents: ['27c733aa-9bb0-44b4-9574-ef04e38eb4c4'],
-                gitCommit: '',
                 indicatorResults: [
                   {
                     displayName: 'Response time P95',
@@ -3237,7 +3197,6 @@ const evaluationChartItemMock = [
           data: {
             evaluation: {
               comparedEvents: ['53359c6f-fa31-4e8b-9fde-e003b3ea57ec'],
-              gitCommit: '',
               indicatorResults: [
                 {
                   displayName: 'Response time P95',
@@ -3310,7 +3269,6 @@ const evaluationChartItemMock = [
             data: {
               evaluation: {
                 comparedEvents: ['53359c6f-fa31-4e8b-9fde-e003b3ea57ec'],
-                gitCommit: '',
                 indicatorResults: [
                   {
                     displayName: 'Response time P95',

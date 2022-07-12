@@ -6,7 +6,7 @@ require (
 	github.com/keptn/go-utils v0.17.1-0.20220708080640-d9a621b67838
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/sirupsen/logrus v1.8.1
-	github.com/stretchr/testify v1.7.5
+	github.com/stretchr/testify v1.8.0
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.22.11
 	k8s.io/apimachinery v0.22.11
