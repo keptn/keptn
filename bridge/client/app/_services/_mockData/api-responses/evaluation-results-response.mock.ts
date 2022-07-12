@@ -5,7 +5,6 @@ const evaluationResultsData = [
     data: {
       evaluation: {
         comparedEvents: ['01100b8e-6a03-45ba-b140-78142187f24f'],
-        gitCommit: '',
         indicatorResults: [
           {
             displayName: 'Response time P95',
@@ -68,7 +67,6 @@ const evaluationResultsData = [
     data: {
       evaluation: {
         comparedEvents: ['80da2703-0df4-4995-80f6-39cae6fec4e5'],
-        gitCommit: '',
         indicatorResults: [
           {
             displayName: 'Response time P95',
@@ -129,7 +127,6 @@ const evaluationResultsData = [
   {
     data: {
       evaluation: {
-        gitCommit: '',
         indicatorResults: [
           {
             displayName: 'Response time P95',

@@ -87,7 +87,6 @@
                   "data": {
                     "evaluation": {
                       "comparedEvents": ["30bb40ec-e52e-44ae-938b-a85f68043c57"],
-                      "gitCommit": "",
                       "indicatorResults": [
                         {
                           "displayName": "",
@@ -246,7 +245,6 @@
                   "data": {
                     "evaluation": {
                       "comparedEvents": ["4fbf5b9b-3b41-41ea-b120-2f17d43891f1"],
-                      "gitCommit": "",
                       "indicatorResults": [
                         {
                           "displayName": "",

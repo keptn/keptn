@@ -124,7 +124,6 @@
                 "latestEvaluationTrace": {
                   "data": {
                     "evaluation": {
-                      "gitCommit": "",
                       "indicatorResults": null,
                       "result": "pass",
                       "score": 0,
@@ -388,7 +387,6 @@
                   "data": {
                     "evaluation": {
                       "comparedEvents": ["d5cab700-068d-41f2-99b1-35fa867816d6"],
-                      "gitCommit": "",
                       "indicatorResults": [
                         {
                           "displayName": "Response time P95",

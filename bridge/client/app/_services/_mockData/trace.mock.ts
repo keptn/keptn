@@ -637,7 +637,6 @@ const multipleEvaluationsTraces = [
             data: {
               evaluation: {
                 comparedEvents: ['5c563cbe-e862-4a42-829c-d319683d3654'],
-                gitCommit: '',
                 indicatorResults: [
                   {
                     displayName: '',
@@ -730,7 +729,6 @@ const multipleEvaluationsTraces = [
               data: {
                 evaluation: {
                   comparedEvents: ['5c563cbe-e862-4a42-829c-d319683d3654'],
-                  gitCommit: '',
                   indicatorResults: [
                     {
                       displayName: '',
