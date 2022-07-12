@@ -505,11 +505,11 @@ jobs:
 
   publish-final-test-report:
     name: Finalize tests and create reports
-    needs: integration-test
+    needs: zd-test
     if: always() # always run, regardless of the outcome of the last job
     runs-on: ubuntu-20.04
     env:
-      BRANCH: ${{ needs.integration-test.outputs.BRANCH }}
+      BRANCH: ${{ needs.zd-test.outputs.BRANCH }}
       TEST_REPORTS_PATH: "./test-reports/"
       FINAL_TEST_REPORTS_FOLDER: "./final-test-reports/"
       FINAL_TEST_REPORT_FILEPATH_JSON: "./final-test-reports/final-test-report.json"
@@ -630,7 +630,7 @@ jobs:
           # Download last successful artifact from a CI build
           github_token: ${{secrets.GITHUB_TOKEN}}
           workflow: CI.yml
-          run_id: ${{ needs.integration-test.outputs.ARTIFACT_RUN_ID }}
+          run_id: ${{ needs.zd-test.outputs.ARTIFACT_RUN_ID }}
           name: build-config
           # directory where to extract artifacts to
           path: ./dist/build-config
@@ -662,7 +662,7 @@ jobs:
           REPORT=$(cat "$FINAL_TEST_REPORT_FILEPATH_MARKDOWN")
           
           if [[ "$REPORT" == *"fail"* ]]; then
-            echo "INTEGRATION TESTS FAILED! - Creating GH issue description now..."
+            echo "ZERO DOWNTIME TESTS FAILED! - Creating GH issue description now..."
           
             # adding emojis to test report
             REPORT=$(echo "${REPORT//pass/:white_check_mark: pass}")
@@ -670,30 +670,30 @@ jobs:
             REPORT=$(echo "${REPORT//skip/:yellow_circle: skip}")
           
             # create a markdown file that contains details about the error
-            echo "---" > integration-tests-failed.md
-            echo "title: Integration tests failed" >> integration-tests-failed.md
-            echo "labels: type:critical" >> integration-tests-failed.md
-            echo "---" >> integration-tests-failed.md
-            echo "" >> integration-tests-failed.md
-            echo "* Link to run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> integration-tests-failed.md
+            echo "---" > zd-test-failed.md
+            echo "title: Zero Downtime tests failed" >> zd-test-failed.md
+            echo "labels: type:critical" >> zd-test-failed.md
+            echo "---" >> zd-test-failed.md
+            echo "" >> zd-test-failed.md
+            echo "* Link to run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> zd-test-failed.md
           
             if [[ $GITHUB_EVENT_NAME == 'schedule' ]]; then
-              echo "* Triggered by: Scheduled build" >> integration-tests-failed.md
+              echo "* Triggered by: Scheduled build" >> zd-test-failed.md
             else
-              echo "* Triggered by: @$GITHUB_ACTOR" >> integration-tests-failed.md
+              echo "* Triggered by: @$GITHUB_ACTOR" >> zd-test-failed.md
             fi
           
-            echo "* Branch: $BRANCH" >> integration-tests-failed.md
-            echo "* Version: $VERSION" >> integration-tests-failed.md
-            echo "* Datetime: $DATETIME" >> integration-tests-failed.md
-            echo "* Commit: $GIT_SHA" >> integration-tests-failed.md
-            echo "" >> integration-tests-failed.md
+            echo "* Branch: $BRANCH" >> zd-test-failed.md
+            echo "* Version: $VERSION" >> zd-test-failed.md
+            echo "* Datetime: $DATETIME" >> zd-test-failed.md
+            echo "* Commit: $GIT_SHA" >> zd-test-failed.md
+            echo "" >> zd-test-failed.md
           
             # print report
-            echo "$REPORT" >> integration-tests-failed.md
+            echo "$REPORT" >> zd-test-failed.md
           
-            echo "" >> integration-tests-failed.md
-            echo "Note: This issue was auto-generated from [integration_tests.yml](.github/workflows/integration_tests.yml)" >> integration-tests-failed.md
+            echo "" >> zd-test-failed.md
+            echo "Note: This issue was auto-generated from [integration_tests.yml](.github/workflows/integration_tests.yml)" >> zd-test-failed.md
           
             echo "##[set-output name=INTEGRATION_TESTS_FAILED;]true"
           else
@@ -706,7 +706,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          filename: integration-tests-failed.md
+          filename: zd-test-failed.md
   calculate-total-runtime:
     name: End-of-Pipeline Metrics
     if: always()
