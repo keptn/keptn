@@ -386,9 +386,7 @@
                 "latestEvaluationTrace": {
                   "data": {
                     "evaluation": {
-                      "comparedEvents": [
-                        "d5cab700-068d-41f2-99b1-35fa867816d6"
-                      ],
+                      "comparedEvents": ["d5cab700-068d-41f2-99b1-35fa867816d6"],
                       "indicatorResults": [
                         {
                           "displayName": "Response time P95",
@@ -526,9 +524,7 @@
         }
       ],
       "stageName": "staging",
-      "parentStages": [
-        "dev"
-      ]
+      "parentStages": ["dev"]
     },
     {
       "services": [
@@ -678,9 +674,7 @@
         }
       ],
       "stageName": "production",
-      "parentStages": [
-        "staging"
-      ]
+      "parentStages": ["staging"]
     }
   ],
   "creationDate": "1631870924824247750",

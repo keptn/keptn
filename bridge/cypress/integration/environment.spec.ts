@@ -82,12 +82,12 @@ describe('Environment Screen Navigation', () => {
     environmentPage.visit(project);
   });
 
-  it.only('navigate to service if clicking on service from stage-overview', () => {
+  it('navigate to service if clicking on service from stage-overview', () => {
     environmentPage.clickServiceFromStageOverview(stage, service);
     servicesPage.assertDeploymentDeepLink(project, service, keptnContext, stage);
   });
 
-  it.only('navigate to service if clicking on service from stage-details', () => {
+  it('navigate to service if clicking on service from stage-details', () => {
     environmentPage.clickServiceFromStageDetails(stage, service);
     servicesPage.assertDeploymentDeepLink(project, service, keptnContext, stage);
   });
