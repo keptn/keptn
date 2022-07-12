@@ -636,3 +636,16 @@ textarea.resize-vertical {
   resize: vertical;
   min-height: 100px;
 }
+
+.table {
+  display: table;
+  border-spacing: 0.5em;
+
+  .table-row {
+    display: table-row;
+
+    .table-cell {
+      display: table-cell;
+    }
+  }
+}

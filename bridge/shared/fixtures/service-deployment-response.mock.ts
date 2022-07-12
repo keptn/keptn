@@ -27,7 +27,6 @@ const serviceDeploymentMock = {
         traces: [],
         data: {
           evaluation: {
-            gitCommit: '',
             indicatorResults: null,
             result: 'pass',
             score: 0,
@@ -83,7 +82,6 @@ const serviceDeploymentMock = {
         data: {
           evaluation: {
             comparedEvents: ['3344487d-e384-4cd9-a0e0-fcf157a33ad6'],
-            gitCommit: '',
             indicatorResults: [
               {
                 displayName: 'Response time P95',
@@ -191,7 +189,6 @@ const serviceDeploymentMock = {
       latestEvaluation: {
         data: {
           evaluation: {
-            gitCommit: '',
             indicatorResults: null,
             result: 'pass',
             score: 0,
@@ -247,7 +244,6 @@ const serviceDeploymentWithFromTimeMock = {
         traces: [],
         data: {
           evaluation: {
-            gitCommit: '',
             indicatorResults: null,
             result: 'pass',
             score: 0,
@@ -292,7 +288,6 @@ const serviceDeploymentWithFromTimeMock = {
         data: {
           evaluation: {
             comparedEvents: ['3344487d-e384-4cd9-a0e0-fcf157a33ad6'],
-            gitCommit: '',
             indicatorResults: [
               {
                 displayName: 'Response time P95',
@@ -400,7 +395,6 @@ const serviceDeploymentWithFromTimeMock = {
       latestEvaluation: {
         data: {
           evaluation: {
-            gitCommit: '',
             indicatorResults: null,
             result: 'pass',
             score: 0,
@@ -467,7 +461,6 @@ const serviceDeploymentWithApprovalMock = {
         traces: [],
         data: {
           evaluation: {
-            gitCommit: '',
             indicatorResults: null,
             result: 'pass',
             score: 0,
@@ -538,11 +531,9 @@ const serviceDeploymentWithApprovalMock = {
                 'http://carts.sockshop-dev.35.192.209.116.nip.io:80',
               ],
               deploymentstrategy: 'duplicate',
-              gitCommit: 'eb081e26f037bf32797c37f59a55f9f411b6f17d',
             },
             evaluation: {
               comparedEvents: ['3344487d-e384-4cd9-a0e0-fcf157a33ad6'],
-              gitCommit: '',
               indicatorResults: [
                 {
                   displayName: 'Response time P95',
@@ -588,9 +579,6 @@ const serviceDeploymentWithApprovalMock = {
             },
             message: '',
             project: 'sockshop',
-            release: {
-              gitCommit: '',
-            },
             result: 'pass',
             service: 'carts',
             stage: 'staging',
@@ -602,7 +590,6 @@ const serviceDeploymentWithApprovalMock = {
             },
             test: {
               end: '2021-10-13T10:53:29Z',
-              gitCommit: '',
               start: '2021-10-13T10:51:08Z',
             },
           },

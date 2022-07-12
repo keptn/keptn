@@ -25,7 +25,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["d916dc5d-0fb9-46aa-8759-4ec74b93a9f1"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "",

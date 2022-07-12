@@ -22,6 +22,19 @@
           </a>
         </p>
       </ng-container>
+      <ng-container *ngSwitchCase="ServerErrors.TRACE">
+        <h2 *ngIf="(queryParams$ | async)?.get('keptnContext') as keptnContext; else defaultTraceError">
+          Traces for <span class="italic" [textContent]="keptnContext"></span> not found
+        </h2>
+        <ng-template #defaultTraceError>
+          <h2>No traces found</h2>
+        </ng-template>
+        <p uitestid="ktb-error-trace">
+          Sorry, traces with this shkeptncontext could not be loaded.
+          <a routerLink="/create/project">Create a project</a> or go back to
+          <a [routerLink]="['/dashboard']">your dashboard</a>.
+        </p>
+      </ng-container>
       <ng-container *ngSwitchDefault>
         <h2>Internal error</h2>
         <p>Error while handling the redirect. Please retry and check whether the problem still exists.</p>

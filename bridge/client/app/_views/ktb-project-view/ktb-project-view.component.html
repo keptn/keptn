@@ -18,21 +18,6 @@
             Retry
           </button>
         </ng-container>
-        <ng-container *ngSwitchCase="'trace'">
-          <dt-empty-state-item-title class="mt-2" aria-level="2"
-            >Traces for <span class="italic" [textContent]="contextId"></span> not found
-          </dt-empty-state-item-title>
-          <p>
-            Sorry, traces with this shkeptncontext could not be loaded. Check out the
-            <a href="https://keptn.sh/docs/quickstart/" target="_blank" rel="noopener noreferrer">Quick Start</a>
-            instructions on how to <a [href]="'/manage/project/' | keptnUrl" target="_blank">create a project</a> or go
-            back to <a [routerLink]="['/dashboard']">your dashboard</a>.
-          </p>
-          <button dt-button (click)="loadProjects()">
-            <dt-icon name="refresh"></dt-icon>
-            Retry
-          </button>
-        </ng-container>
         <ng-container *ngSwitchDefault>
           <dt-empty-state-item-title class="mt-2" aria-level="2">Some error occurred</dt-empty-state-item-title>
           <p>

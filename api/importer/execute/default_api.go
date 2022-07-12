@@ -104,7 +104,7 @@ func (ep *defaultEndpointHandler) ExecuteAPI(doer httpdoer, ate model.APITaskExe
 	}
 
 	return responseBody, fmt.Errorf(
-		"received unsuccessful http status <%d: %s>:%w", response.StatusCode,
+		"received unsuccessful http status <%d: %s>: %w", response.StatusCode,
 		response.Status, ErrTaskFailed,
 	)
 }

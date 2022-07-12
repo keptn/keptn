@@ -147,7 +147,6 @@ const remediationTracesResponse = {
         },
         evaluation: {
           comparedEvents: ['e2800526-c0f9-4817-9aec-9a3037d42837'],
-          gitCommit: '',
           indicatorResults: [
             {
               displayName: 'Response time P90',
@@ -268,7 +267,6 @@ const remediationTracesResponse = {
         },
         evaluation: {
           comparedEvents: ['e2800526-c0f9-4817-9aec-9a3037d42837'],
-          gitCommit: '',
           indicatorResults: [
             {
               displayName: 'Response time P90',
@@ -401,7 +399,6 @@ const remediationTracesResponse = {
       data: {
         evaluation: {
           comparedEvents: ['e2800526-c0f9-4817-9aec-9a3037d42837'],
-          gitCommit: '',
           indicatorResults: [
             {
               displayName: 'Response time P90',

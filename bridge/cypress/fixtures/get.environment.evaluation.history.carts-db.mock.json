@@ -3,7 +3,6 @@
     {
       "data": {
         "evaluation": {
-          "gitCommit": "",
           "indicatorResults": null,
           "result": "pass",
           "score": 0,
@@ -33,7 +32,6 @@
     {
       "data": {
         "evaluation": {
-          "gitCommit": "",
           "indicatorResults": null,
           "result": "pass",
           "score": 0,
@@ -63,7 +61,6 @@
     {
       "data": {
         "evaluation": {
-          "gitCommit": "",
           "indicatorResults": null,
           "result": "pass",
           "score": 0,
@@ -94,7 +91,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["e9fd2196-bfe9-4a72-a621-eefb4bef4e0f"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "Response time P95",
@@ -157,7 +153,6 @@
       "data": {
         "evaluation": {
           "comparedEvents": ["38a361b7-be7a-4fb8-9db6-bc7cf0bd5293"],
-          "gitCommit": "",
           "indicatorResults": [
             {
               "displayName": "Response time P95",

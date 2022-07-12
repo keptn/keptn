@@ -4,6 +4,7 @@ import { DeleteType } from '../../_interfaces/delete';
 import { KtbDeletionDialogComponent } from '../_dialogs/ktb-deletion-dialog/ktb-deletion-dialog.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { KtbDangerZoneModule } from './ktb-danger-zone.module';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('KtbDeletionComponent', () => {
   let component: KtbDangerZoneComponent;
@@ -11,7 +12,7 @@ describe('KtbDeletionComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [KtbDangerZoneModule, HttpClientTestingModule],
+      imports: [KtbDangerZoneModule, BrowserAnimationsModule, HttpClientTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbDangerZoneComponent);

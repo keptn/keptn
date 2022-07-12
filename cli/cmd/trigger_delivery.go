@@ -157,6 +157,8 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 		return fmt.Errorf("trigger delivery was unsuccessful. %s", *err2.Message)
 	}
 
+	logging.PrintLog("ID of Keptn context: "+*eventContext.KeptnContext, logging.InfoLevel)
+
 	if *deliveryInputData.Watch {
 		filter := apiutils.EventFilter{
 			KeptnContext: *eventContext.KeptnContext,

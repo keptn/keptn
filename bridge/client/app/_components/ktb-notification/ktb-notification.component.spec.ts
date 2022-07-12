@@ -5,6 +5,7 @@ import { Notification, NotificationType } from '../../_models/notification';
 import { KtbProjectCreateMessageComponent } from '../ktb-project-settings/ktb-project-create-message/ktb-project-create-message.component';
 import { KtbNotificationComponent } from './ktb-notification.component';
 import { KtbNotificationModule } from './ktb-notification.module';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare let global: any;
@@ -15,7 +16,7 @@ describe('KtbNotificationComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [KtbNotificationModule],
+      imports: [KtbNotificationModule, HttpClientTestingModule],
     }).compileComponents();
   });
 

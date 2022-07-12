@@ -5,7 +5,6 @@ const evaluationsData = [
     data: {
       evaluation: {
         comparedEvents: ['182d10b8-b68d-49d4-86cd-5521352d7a42'],
-        gitCommit: '',
         indicatorResults: [
           {
             displayName: 'HTTP Respone Time',
@@ -117,7 +116,6 @@ const evaluationsData = [
     data: {
       evaluation: {
         comparedEvents: ['182d10b8-b68d-49d4-86cd-5521352d7a42'],
-        gitCommit: '',
         indicatorResults: [
           {
             displayName: 'HTTP Respone Time',
@@ -229,7 +227,6 @@ const evaluationsData = [
     data: {
       evaluation: {
         comparedEvents: ['c1b2761f-5b6d-4bdc-9bb7-4661a05ea3b2'],
-        gitCommit: '',
         indicatorResults: [
           {
             displayName: 'HTTP Respone Time',
@@ -340,7 +337,6 @@ const evaluationsData = [
     data: {
       evaluation: {
         comparedEvents: ['91a77341-fe5e-43e1-a8a7-be9761b9cee5'],
-        gitCommit: '',
         indicatorResults: [
           {
             displayName: 'HTTP Respone Time',
@@ -437,7 +433,6 @@ const evaluationsData = [
     data: {
       evaluation: {
         comparedEvents: ['91a77341-fe5e-43e1-a8a7-be9761b9cee5'],
-        gitCommit: '',
         indicatorResults: [
           {
             displayName: 'HTTP Respone Time',
@@ -535,7 +530,6 @@ const evaluationsData = [
     data: {
       evaluation: {
         comparedEvents: ['0c275de6-fbde-457e-b2f2-60f32a6acf54'],
-        gitCommit: '',
         indicatorResults: [
           {
             displayName: 'HTTP Respone Time',
@@ -632,7 +626,6 @@ const evaluationsData = [
     data: {
       evaluation: {
         comparedEvents: ['0c275de6-fbde-457e-b2f2-60f32a6acf54'],
-        gitCommit: '',
         indicatorResults: [
           {
             displayName: 'Response time P95',
@@ -695,7 +688,6 @@ const evaluationsData = [
   {
     data: {
       evaluation: {
-        gitCommit: '',
         indicatorResults: null,
         result: 'pass',
         score: 0,
@@ -725,7 +717,6 @@ const evaluationsData = [
   {
     data: {
       evaluation: {
-        gitCommit: '',
         indicatorResults: null,
         result: 'pass',
         score: 0,
@@ -755,7 +746,6 @@ const evaluationsData = [
   {
     data: {
       evaluation: {
-        gitCommit: '',
         indicatorResults: null,
         result: 'pass',
         score: 0,
