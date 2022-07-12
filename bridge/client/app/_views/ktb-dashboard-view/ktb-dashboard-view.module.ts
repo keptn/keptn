@@ -8,7 +8,6 @@ import { DtButtonModule } from '@dynatrace/barista-components/button';
 import { KtbLoadingModule } from '../../_components/ktb-loading/ktb-loading.module';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
 import { KtbDashboardViewRoutingModule } from './ktb-dashboard-view-routing.module';
 import { KtbProjectListComponent } from './ktb-project-list/ktb-project-list.component';
 import { DtTagModule } from '@dynatrace/barista-components/tag';
@@ -43,7 +42,6 @@ import { KtbSequenceStateListComponent } from './ktb-sequence-state-list/ktb-seq
     KtbPipeModule,
     KtbSequenceStateInfoModule,
     MomentModule,
-    RouterModule,
   ],
 })
 export class KtbDashboardViewModule {}
