@@ -9,7 +9,6 @@ func Test_K3S(t *testing.T) {
 	t.Run("Test_ResourceServiceBasic", Test_ResourceServiceBasic)
 	t.Run("Test_ManageSecrets_CreateUpdateAndDeleteSecret", Test_ManageSecrets_CreateUpdateAndDeleteSecret)
 	t.Run("Test_SequenceQueue_TriggerMultiple", Test_SequenceQueue_TriggerMultiple)
-	t.Run("Test_ProvisioningURL", Test_ProvisioningURL)
 	t.Run("Test_ResourceServiceGETCommitID", Test_ResourceServiceGETCommitID)
 	t.Run("Test_EvaluationGitCommitID", Test_EvaluationGitCommitID)
 	t.Run("Test_SSHPublicKeyAuth", Test_SSHPublicKeyAuth)
@@ -24,4 +23,6 @@ func Test_K3S(t *testing.T) {
 	t.Run("Test_UniformRegistration_RegistrationOfKeptnIntegration", Test_UniformRegistration_RegistrationOfKeptnIntegration)
 	t.Run("Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods", Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods)
 	t.Run("Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane", Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane)
+
+	t.Run("Test_ProvisioningURL", Test_ProvisioningURL)
 }
