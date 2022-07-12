@@ -58,8 +58,8 @@ jobs:
       KEPTN_NAMESPACE: "keptn-zd-test-${{ github.run_number }}-${{ github.run_attempt }}"
       GO_VERSION: "~1.18"
       RUN_CONTINUOUS_DELIVERY_TEST: "true"
-      TEST_REPORT_FOLDER: test-reports-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}
-      FINAL_TEST_REPORT_FOLDER: test-reports
+      TEST_REPORT_FOLDER: tmp
+      FINAL_TEST_REPORT_FOLDER: tmp
       FINAL_TEST_REPORT_PATH: tmp/.log
       TEST_REPORT_FILENAME_SUFFIX: test-report-${{ github.run_id }}-${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}.log
     outputs:
