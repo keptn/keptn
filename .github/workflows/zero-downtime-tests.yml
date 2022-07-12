@@ -85,13 +85,13 @@ jobs:
           key: ${{ runner.os }}-${{ matrix.CLOUD_PROVIDER }}-downloads
 
       # This step is supposed to determine the target branch where to download the build-artifacts from
-      - name: Determine Target Branch for Integration Tests
+      - name: Determine Target Branch for ZD Tests
         id: determine_branch
         run: |
           if [[ "${{ github.event.inputs.branch }}" != "" ]]; then
             # branch was manually set by user -> probably a workflow_dispatch action
             BRANCH=${{ github.event.inputs.branch }}
-            echo "Using $BRANCH as target branch for integration tests"
+            echo "Using $BRANCH as target branch for zd tests"
           else
             echo "Determining branch based on what triggered this workflow"
 
