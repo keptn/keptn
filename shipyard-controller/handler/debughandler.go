@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -25,30 +26,53 @@ func NewDebugHandler(debugManager IDebugManager) *DebugHandler {
 }
 
 func (dh *DebugHandler) GetAllProjects(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, dh.DebugManager.GetAllProjects())
+	projects, err := dh.DebugManager.GetAllProjects()
+
+	if err != nil {
+		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, projects)
 }
 
 func (dh *DebugHandler) GetAllSequencesForProject(c *gin.Context) {
 	projectName := c.Param("project")
-	c.IndentedJSON(http.StatusOK, dh.DebugManager.GetAllSequencesForProject(projectName))
+	sequences, err := dh.DebugManager.GetAllSequencesForProject(projectName)
+
+	if err != nil {
+		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, sequences)
 }
 
 func (dh *DebugHandler) GetSequenceByID(c *gin.Context) {
 	shkeptncontext := c.Param("shkeptncontext")
-	sequence := dh.DebugManager.GetSequenceByID(shkeptncontext)
 
-	if &sequence != nil {
-		c.IndentedJSON(http.StatusOK, sequence)
-	} else {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "sequence not found"})
+	sequence, err := dh.DebugManager.GetSequenceByID(shkeptncontext)
+
+	if err != nil {
+		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		return
 	}
+
+	c.IndentedJSON(http.StatusOK, sequence)
 }
 
 func (dh *DebugHandler) GetAllEvents(c *gin.Context) {
 	shkeptncontext := c.Param("shkeptncontext")
 	projectName := c.Param("project")
 
-	c.IndentedJSON(http.StatusOK, dh.DebugManager.GetAllEvents(projectName, shkeptncontext))
+	events, err := dh.DebugManager.GetAllEvents(projectName, shkeptncontext)
+
+	if err != nil {
+		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, events)
 }
 
 func (dh *DebugHandler) GetEventByID(c *gin.Context) {
@@ -56,11 +80,12 @@ func (dh *DebugHandler) GetEventByID(c *gin.Context) {
 	eventId := c.Param("event_id")
 	projectName := c.Param("project")
 
-	event := dh.DebugManager.GetEventByID(projectName, shkeptncontext, eventId)
+	event, err := dh.DebugManager.GetEventByID(projectName, shkeptncontext, eventId)
 
-	if &event != nil {
-		c.IndentedJSON(http.StatusOK, event)
-	} else {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "sequence not found"})
+	if err != nil {
+		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		return
 	}
+
+	c.IndentedJSON(http.StatusOK, event)
 }

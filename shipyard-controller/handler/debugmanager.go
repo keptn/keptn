@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"fmt"
-
 	"github.com/keptn/go-utils/pkg/api/models"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/common"
@@ -10,11 +8,11 @@ import (
 )
 
 type IDebugManager interface {
-	GetAllProjects() []*models.ExpandedProject
-	GetSequenceByID(shkeptncontext string) models.SequenceState
-	GetAllSequencesForProject(projectName string) []models.SequenceState
-	GetAllEvents(projectName string, shkeptncontext string) []models.KeptnContextExtendedCE
-	GetEventByID(projectName string, shkeptncontext string, event_id string) models.KeptnContextExtendedCE
+	GetAllProjects() ([]*models.ExpandedProject, error)
+	GetSequenceByID(shkeptncontext string) (models.SequenceState, error)
+	GetAllSequencesForProject(projectName string) ([]models.SequenceState, error)
+	GetAllEvents(projectName string, shkeptncontext string) ([]models.KeptnContextExtendedCE, error)
+	GetEventByID(projectName string, shkeptncontext string, event_id string) (models.KeptnContextExtendedCE, error)
 }
 
 type DebugManager struct {
@@ -31,64 +29,40 @@ func NewDebugManager(eventRepo db.EventRepo, stateRepo db.SequenceStateRepo, pro
 	}
 }
 
-func (dm *DebugManager) GetSequenceByID(shkeptncontext string) models.SequenceState {
-
+func (dm *DebugManager) GetSequenceByID(shkeptncontext string) (models.SequenceState, error) {
 	sequence, err := dm.stateRepo.FindSequenceStates(apimodels.StateFilter{
 		GetSequenceStateParams: apimodels.GetSequenceStateParams{
 			KeptnContext: shkeptncontext,
 		},
 	})
 
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	return sequence.States[0]
+	return sequence.States[0], err
 }
 
-func (dm *DebugManager) GetAllSequencesForProject(projectName string) []models.SequenceState {
-
+func (dm *DebugManager) GetAllSequencesForProject(projectName string) ([]models.SequenceState, error) {
 	sequences, err := dm.stateRepo.FindSequenceStates(apimodels.StateFilter{
 		GetSequenceStateParams: apimodels.GetSequenceStateParams{
 			Project: projectName,
 		},
 	})
 
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	return sequences.States
+	return sequences.States, err
 }
 
-func (dm *DebugManager) GetAllEvents(projectName string, shkeptncontext string) []models.KeptnContextExtendedCE {
+func (dm *DebugManager) GetAllEvents(projectName string, shkeptncontext string) ([]models.KeptnContextExtendedCE, error) {
 	events, err := dm.eventRepo.GetEvents(projectName, common.EventFilter{KeptnContext: &shkeptncontext})
 
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	return events
+	return events, err
 }
 
-func (dm *DebugManager) GetEventByID(projectName string, shkeptncontext string, event_id string) models.KeptnContextExtendedCE {
+func (dm *DebugManager) GetEventByID(projectName string, shkeptncontext string, event_id string) (models.KeptnContextExtendedCE, error) {
 	events, err := dm.eventRepo.GetEvents(projectName, common.EventFilter{KeptnContext: &shkeptncontext, ID: &event_id})
 
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	return events[0]
+	return events[0], err
 }
 
-func (dm *DebugManager) GetAllProjects() []*models.ExpandedProject {
-
+func (dm *DebugManager) GetAllProjects() ([]*models.ExpandedProject, error) {
 	projects, err := dm.projectsRepo.GetProjects()
 
-	if err != nil {
-		fmt.Println(err)
-
-	}
-
-	return projects
+	return projects, err
 }
