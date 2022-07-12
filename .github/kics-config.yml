@@ -1,0 +1,38 @@
+exclude-queries:
+  # query IDs can be found here: https://docs.kics.io/latest/queries/all-queries/
+  # The queries below are excluded because they are not relevant or not needed for Keptn
+  - b9c83569-459b-4110-8f79-6305aa33cb37 # Using Kubernetes Native Secret Management
+  - 48a5beba-e4c0-4584-a2aa-e6894e4cf424 # Pod or Container Without ResourceQuota
+  - 8b36775e-183d-4d46-b0f7-96a6f34a723f # Missing AppArmor Profile
+  - 7c81d34c-8e5a-402b-9798-9f442630e678 # Image Without Digest
+  - caa3479d-885d-4882-9aac-95e5e78ef5c2 # Image Pull Policy Of The Container Is Not Set To Always
+  - aee3c7d2-a811-4201-90c7-11c028be9a46 # Container Requests Not Equal To It's Limits
+  - 611ab018-c4aa-4ba2-b0f6-a448337509a6 # Using Unrecommended Namespace
+  - 4a20ebac-1060-4c81-95d1-1f7f620e983b # Pod or Container Without LimitRange
+exclude-results:
+  # Result similarity IDs corresponding to nats-box helm test pod that can't be adjusted
+  # Similarity IDs can be found in the JSON result file of kics
+  - 3035c0adc3554b403ebad6846a6a20f57e82356bea7491e85024e9e67c2a3f13
+  - e0b27e0da659f8b4c8235fbd82ee3f332c30b5e533d15cfeea4f52dc36f921ca
+  - d2c888850ed588b2a1acc38400317d44f2d37d33984e30a9dac25542ea8c231c
+  - abfc312a59a6930f4849a934536cb1c11d2f5cf55a35fb1646a5c5e700f68c83
+  - ef30b5a0a32eb702d8bcc6e9471ec32212ce6245bdcaf4bc2b9e518b8abd8981
+  - 70dfbc1b9be500cf654485cae0d9d9fc1d28ffb2344856610e8e8ac4a19ef733
+  - bde2202ecdc971a839199a66e6cbe81c41919a077fa20c2c66f9e9980bc5675c
+  - a63a52148865c3705fe1491b7708a407054ac4868f432409f7b94e38400497d8
+  - bb2aa342051f72153a6e2de778e4212b17df054bc8a8bfa5a7fe5b694d00583d
+  - fa8456b16bc692d79b87834e68a8da593c6cc927fabea2e6ad1f701af8ea78c5
+  - ac2fbae87a5b3e3eb4b4598618d7b932c6d8a601014a21cce1feffabb53c4ff8
+  - 3d696ac67bdfff53e0b0cf64049a6080fe15cf80386b93d4be6282e6c81c04aa
+  - dc2001d7264413ae771ac25ce635312a02fa18dfbbdf0a248fd79661ca439180
+  - a7e2db55d9bcc368d7ef0449bad8d72aa928445155707c31fc131ff59b13158c
+  - ec2e9658f90079aa7aa0add6b0337b39c9349f036d24c7cd8f9eb4d6784d3f6f
+  - 73e01db98cc6dd2ef91974bb50eefe192d84f2c0c4df61f857840a2a92d29bc8
+  - 0d0be3bd1e192a82b005349145ac9ec4137dab3a02099e57a8c89748b619f13b
+  - bc8cc2f5bb21b281b4ca50e2d0bab82dbcf5392da4564b2ae18c8ecf7cb0c6c8
+no-color: false
+no-progress: true
+preview-lines: 5
+silent: false
+verbose: true
+disable-full-descriptions: false
