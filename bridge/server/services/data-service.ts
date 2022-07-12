@@ -966,7 +966,6 @@ export class DataService {
   public async getServiceStates(accessToken: string | undefined, projectName: string): Promise<ServiceState[]> {
     const projectResponse = await this.apiService.getProject(accessToken, projectName);
     const project = Project.fromJSON(projectResponse.data);
-    const openRemediations = await this.getOpenRemediations(accessToken, projectName, false);
     const serviceStates: ServiceState[] = [];
     for (const stage of project.stages) {
       for (const service of stage.services) {
@@ -978,11 +977,6 @@ export class DataService {
         }
 
         if (latestDeploymentEvent) {
-          const serviceRemediations = openRemediations.filter(
-            (remediation) =>
-              remediation.service === service.serviceName &&
-              remediation.stages.some((remediationStage) => remediationStage.name === stage.stageName)
-          );
           const deploymentInformation = this.getOrCreateDeploymentInformation(
             serviceState,
             service,
@@ -990,7 +984,6 @@ export class DataService {
           );
           const deploymentStage = {
             name: stage.stageName,
-            hasOpenRemediations: serviceRemediations.length !== 0,
             time: new Date(+latestDeploymentEvent.time / 1_000_000).toISOString(),
           };
           deploymentInformation.stages.push(deploymentStage);
@@ -1041,7 +1034,6 @@ export class DataService {
     accessToken: string | undefined,
     projectName: string,
     keptnContext: string,
-    includeRemediation: boolean,
     fromTimeString?: string
   ): Promise<Deployment | undefined> {
     const fromTime = fromTimeString ? new Date(fromTimeString) : undefined;
@@ -1075,7 +1067,6 @@ export class DataService {
           sequence,
           project,
           {
-            includeRemediation,
             fromTime,
             cachedRemediations: openRemediations,
           }
@@ -1094,7 +1085,7 @@ export class DataService {
     stage: IServerSequenceStage,
     sequence: Sequence,
     project: Project,
-    options: { includeRemediation: boolean; fromTime?: Date; cachedRemediations: Remediation[] | undefined }
+    options: { fromTime?: Date; cachedRemediations: Remediation[] | undefined }
   ): Promise<{
     deploymentStage: IStageDeployment;
     remediations: Remediation[] | undefined;
@@ -1128,7 +1119,6 @@ export class DataService {
         project.projectName,
         stage.name,
         sequence.service,
-        options.includeRemediation,
         options.cachedRemediations
       );
       options.cachedRemediations = stageRemediationInformation.remediations;
@@ -1207,13 +1197,10 @@ export class DataService {
     projectName: string,
     stageName: string,
     serviceName: string,
-    includeRemediation: boolean,
     openRemediations?: Remediation[]
   ): Promise<StageRemediationInformation> {
     if (!openRemediations) {
-      openRemediations = includeRemediation
-        ? await this.getOpenRemediations(accessToken, projectName, false, serviceName)
-        : [];
+      openRemediations = await this.getOpenRemediations(accessToken, projectName, false, serviceName);
     }
     const openRemediationsForStage = openRemediations
       .filter((seq) => seq.stages.some((st) => st.name === stageName))

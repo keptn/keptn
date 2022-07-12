@@ -1,4 +1,4 @@
-import { Deployment, StageDeployment } from './deployment';
+import { createStageDeploymentStateInfo, Deployment, StageDeployment } from './deployment';
 import {
   ServiceDeploymentMock,
   ServiceDeploymentWithApprovalMock,
@@ -103,50 +103,98 @@ describe('Deployment', () => {
   });
 
   it('should be faulty', () => {
+    // given
     const stageDeployment = getStageDeployment();
     stageDeployment.subSequences = SubSequencesFailedAndPassedMock;
-    expect(stageDeployment.isFaulty()).toBe(true);
+
+    // when
+    const info = createStageDeploymentStateInfo(stageDeployment);
+
+    // then
+    expect(info.isFaulty).toBe(true);
   });
 
   it('should not be faulty', () => {
+    // given
     const stageDeployment = getStageDeployment();
     stageDeployment.subSequences = SubSequencesPassedLoadingMock;
-    expect(stageDeployment.isFaulty()).toBe(false);
+
+    // when
+    const info = createStageDeploymentStateInfo(stageDeployment);
+
+    // then
+    expect(info.isFaulty).toBe(false);
   });
 
   it('should not be successful', () => {
+    // given
     const stageDeployment = getStageDeployment();
     stageDeployment.subSequences = SubSequencesPassedLoadingMock;
-    expect(stageDeployment.isSuccessful()).toBe(false);
+
+    // when
+    const info = createStageDeploymentStateInfo(stageDeployment);
+
+    // then
+    expect(info.isSuccessful).toBe(false);
   });
 
   it('should be successful', () => {
+    // given
     const stageDeployment = getStageDeployment();
     stageDeployment.subSequences = SubSequencesPassedMock;
-    expect(stageDeployment.isSuccessful()).toBe(true);
+
+    // when
+    const info = createStageDeploymentStateInfo(stageDeployment);
+
+    // then
+    expect(info.isSuccessful).toBe(true);
   });
 
   it('should not be warning', () => {
+    // given
     const stageDeployment = getStageDeployment();
     stageDeployment.subSequences = SubSequencesWarningFailedMock;
-    expect(stageDeployment.isWarning()).toBe(false);
+
+    // when
+    const info = createStageDeploymentStateInfo(stageDeployment);
+
+    // then
+    expect(info.isWarning).toBe(false);
   });
 
   it('should be warning', () => {
+    // given
     const stageDeployment = getStageDeployment();
     stageDeployment.subSequences = SubSequencesWarningMock;
-    expect(stageDeployment.isWarning()).toBe(true);
+
+    // when
+    const info = createStageDeploymentStateInfo(stageDeployment);
+
+    // then
+    expect(info.isWarning).toBe(true);
   });
 
   it('should be aborted', () => {
+    // given
     const stageDeployment = getStageDeployment();
     stageDeployment.state = SequenceState.ABORTED;
-    expect(stageDeployment.isAborted()).toBe(true);
+
+    // when
+    const info = createStageDeploymentStateInfo(stageDeployment);
+
+    // then
+    expect(info.isAborted).toBe(true);
   });
 
   it('should not be aborted', () => {
+    // given
     const stageDeployment = getStageDeployment();
-    expect(stageDeployment.isAborted()).toBe(false);
+
+    // when
+    const info = createStageDeploymentStateInfo(stageDeployment);
+
+    // then
+    expect(info.isAborted).toBe(false);
   });
 
   function getStageDeployment(): StageDeployment {

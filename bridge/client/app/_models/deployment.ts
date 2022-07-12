@@ -3,8 +3,29 @@ import { EvaluationResult } from '../../../shared/interfaces/evaluation-result';
 import { Trace } from './trace';
 import { SequenceState } from '../../../shared/interfaces/sequence';
 import { ResultTypes } from '../../../shared/models/result-types';
-import { Sequence } from './sequence';
+import { isSequenceAborted, isSequenceLoading, Sequence } from './sequence';
 import { ServiceRemediationInformation } from './service-remediation-information';
+
+export interface IStageDeploymentStateInfo {
+  isLoading: boolean;
+  isSuccessful: boolean;
+  isWarning: boolean;
+  isFaulty: boolean;
+  isAborted: boolean;
+}
+
+export function createStageDeploymentStateInfo(stageDeployment: IStageDeployment): IStageDeploymentStateInfo {
+  const isFaulty = stageDeployment.subSequences.some((seq) => seq.result === ResultTypes.FAILED);
+  return {
+    isLoading: stageDeployment.subSequences.some((seq) => isSequenceLoading(seq.state)),
+    isSuccessful: stageDeployment.subSequences.every(
+      (seq) => seq.state === SequenceState.FINISHED && seq.result === ResultTypes.PASSED
+    ),
+    isWarning: stageDeployment.subSequences.some((seq) => seq.result === ResultTypes.WARNING) && !isFaulty,
+    isFaulty,
+    isAborted: isSequenceAborted(stageDeployment.state),
+  };
+}
 
 export class StageDeployment implements IStageDeployment {
   name!: string;
@@ -31,22 +52,6 @@ export class StageDeployment implements IStageDeployment {
     }
     stage.openRemediations = stage.openRemediations.map((seq) => Sequence.fromJSON(seq));
     return stage;
-  }
-
-  public isSuccessful(): boolean {
-    return this.subSequences.every((seq) => seq.state === SequenceState.FINISHED && seq.result === ResultTypes.PASSED);
-  }
-
-  public isWarning(): boolean {
-    return this.subSequences.some((seq) => seq.result === ResultTypes.WARNING) && !this.isFaulty();
-  }
-
-  public isFaulty(): boolean {
-    return this.subSequences.some((seq) => seq.result === ResultTypes.FAILED);
-  }
-
-  public isAborted(): boolean {
-    return this.state === SequenceState.ABORTED;
   }
 
   public removeApproval(): void {

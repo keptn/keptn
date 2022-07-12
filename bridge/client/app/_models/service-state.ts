@@ -66,12 +66,6 @@ export class ServiceState extends svs {
     }
   }
 
-  public hasRemediations(): boolean {
-    return this.deploymentInformation.some((deployment) =>
-      deployment.stages.some((stage) => stage.hasOpenRemediations)
-    );
-  }
-
   public getLatestImage(): string {
     const unknownImage = 'unknown';
     let latestTime: Date | undefined;

@@ -155,7 +155,6 @@ const apiRouter = (params: {
         req.session?.tokenSet?.access_token,
         req.params.projectName,
         req.params.keptnContext,
-        req.query.includeRemediations === 'true',
         req.query.fromTime?.toString()
       );
       return res.json(deployment);

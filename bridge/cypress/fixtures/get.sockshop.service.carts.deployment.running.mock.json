@@ -1,0 +1,251 @@
+{
+  "state": "finished",
+  "keptnContext": "da740469-9920-4e0c-b304-0fd4b18d17c2",
+  "service": "carts",
+  "stages": [
+    {
+      "name": "staging",
+      "state": "succeeded",
+      "lastTimeUpdated": "2022-02-09T09:30:08.057Z",
+      "openRemediations": [],
+      "subSequences": [
+        {
+          "name": "delivery",
+          "type": "sh.keptn.event.staging.delivery.triggered",
+          "result": "fail",
+          "time": "2022-02-09T09:28:38.189Z",
+          "state": "finished",
+          "id": "f56292b7-9dfa-41f0-abd7-a8925ee9cf59",
+          "message": "Evaluation failed since the calculated score of 33.33333333333333 is below the warning value of 75",
+          "hasPendingApproval": false
+        }
+      ],
+      "deploymentURL": "http://carts.sockshop-staging.35.233.122.229.nip.io:80",
+      "hasEvaluation": true,
+      "latestEvaluation": {
+        "traces": [],
+        "data": {
+          "evaluation": {
+            "comparedEvents": ["182d10b8-b68d-49d4-86cd-5521352d7a42"],
+            "gitCommit": "",
+            "indicatorResults": [
+              {
+                "displayName": "",
+                "keySli": false,
+                "passTargets": [
+                  {
+                    "criteria": "<=1",
+                    "targetValue": 1,
+                    "violated": true
+                  }
+                ],
+                "score": 0,
+                "status": "fail",
+                "value": {
+                  "comparedValue": 0,
+                  "metric": "http_response_time_seconds_main_page_sum",
+                  "success": true,
+                  "value": 2.00052919040708
+                },
+                "warningTargets": [
+                  {
+                    "criteria": "<=0.5",
+                    "targetValue": 0.5,
+                    "violated": true
+                  }
+                ]
+              },
+              {
+                "displayName": "",
+                "keySli": false,
+                "passTargets": [
+                  {
+                    "criteria": "<=+100%",
+                    "targetValue": 0,
+                    "violated": true
+                  },
+                  {
+                    "criteria": ">=-80%",
+                    "targetValue": 0,
+                    "violated": false
+                  }
+                ],
+                "score": 0,
+                "status": "fail",
+                "value": {
+                  "comparedValue": 0,
+                  "metric": "request_throughput",
+                  "success": true,
+                  "value": 18.42
+                },
+                "warningTargets": null
+              },
+              {
+                "displayName": "",
+                "keySli": false,
+                "passTargets": [
+                  {
+                    "criteria": "<=100",
+                    "targetValue": 100,
+                    "violated": false
+                  }
+                ],
+                "score": 1,
+                "status": "pass",
+                "value": {
+                  "comparedValue": 8,
+                  "metric": "go_routines",
+                  "success": true,
+                  "value": 88
+                },
+                "warningTargets": null
+              }
+            ],
+            "result": "fail",
+            "score": 33.33333333333333,
+            "sloFileContent": "LS0tDQpzcGVjX3ZlcnNpb246ICcwLjEuMCcNCmNvbXBhcmlzb246DQogIGNvbXBhcmVfd2l0aDogInNpbmdsZV9yZXN1bHQiDQogIGluY2x1ZGVfcmVzdWx0X3dpdGhfc2NvcmU6ICJwYXNzIg0KICBhZ2dyZWdhdGVfZnVuY3Rpb246IGF2Zw0Kb2JqZWN0aXZlczoNCiAgLSBzbGk6IGh0dHBfcmVzcG9uc2VfdGltZV9zZWNvbmRzX21haW5fcGFnZV9zdW0NCiAgICBwYXNzOg0KICAgICAgLSBjcml0ZXJpYToNCiAgICAgICAgICAtICI8PTEiDQogICAgd2FybmluZzoNCiAgICAgIC0gY3JpdGVyaWE6DQogICAgICAgICAgLSAiPD0wLjUiDQogIC0gc2xpOiByZXF1ZXN0X3Rocm91Z2hwdXQNCiAgICBwYXNzOg0KICAgICAgLSBjcml0ZXJpYToNCiAgICAgICAgICAtICI8PSsxMDAlIg0KICAgICAgICAgIC0gIj49LTgwJSINCiAgLSBzbGk6IGdvX3JvdXRpbmVzDQogICAgcGFzczoNCiAgICAgIC0gY3JpdGVyaWE6DQogICAgICAgICAgLSAiPD0xMDAiDQp0b3RhbF9zY29yZToNCiAgcGFzczogIjkwJSINCiAgd2FybmluZzogIjc1JSI=",
+            "timeEnd": "2022-02-09T09:29:47.625Z",
+            "timeStart": "2022-02-09T09:28:55.866Z"
+          },
+          "message": "Evaluation failed since the calculated score of 33.33333333333333 is below the warning value of 75",
+          "project": "sockshop",
+          "result": "fail",
+          "service": "carts",
+          "stage": "staging",
+          "status": "succeeded"
+        },
+        "id": "1500b971-bfc3-4e20-8dc1-a624e0faf963",
+        "source": "lighthouse-service",
+        "specversion": "1.0",
+        "time": "2022-02-09T09:30:07.865Z",
+        "type": "sh.keptn.event.evaluation.finished",
+        "shkeptncontext": "da740469-9920-4e0c-b304-0fd4b18d17c2",
+        "shkeptnspecversion": "0.2.3",
+        "triggeredid": "09f53f15-c89d-4a4a-82cc-138985696172"
+      }
+    },
+    {
+      "name": "production",
+      "state": "succeeded",
+      "lastTimeUpdated": "2022-02-09T09:31:08.057Z",
+      "openRemediations": [],
+      "subSequences": [
+        {
+          "name": "delivery",
+          "type": "sh.keptn.event.production.delivery.triggered",
+          "result": "fail",
+          "time": "2022-02-09T09:28:38.189Z",
+          "state": "started",
+          "id": "f56292b7-9dfa-41f0-abd7-a8925ee9cf59",
+          "message": "Evaluation failed since the calculated score of 33.33333333333333 is below the warning value of 75",
+          "hasPendingApproval": false
+        }
+      ],
+      "deploymentURL": "http://carts.sockshop-production.35.233.122.229.nip.io:80",
+      "hasEvaluation": true,
+      "latestEvaluation": {
+        "traces": [],
+        "data": {
+          "evaluation": {
+            "comparedEvents": ["182d10b8-b68d-49d4-86cd-5521352d7a42"],
+            "gitCommit": "",
+            "indicatorResults": [
+              {
+                "displayName": "",
+                "keySli": false,
+                "passTargets": [
+                  {
+                    "criteria": "<=1",
+                    "targetValue": 1,
+                    "violated": true
+                  }
+                ],
+                "score": 0,
+                "status": "fail",
+                "value": {
+                  "comparedValue": 0,
+                  "metric": "http_response_time_seconds_main_page_sum",
+                  "success": true,
+                  "value": 2.00052919040708
+                },
+                "warningTargets": [
+                  {
+                    "criteria": "<=0.5",
+                    "targetValue": 0.5,
+                    "violated": true
+                  }
+                ]
+              },
+              {
+                "displayName": "",
+                "keySli": false,
+                "passTargets": [
+                  {
+                    "criteria": "<=+100%",
+                    "targetValue": 0,
+                    "violated": true
+                  },
+                  {
+                    "criteria": ">=-80%",
+                    "targetValue": 0,
+                    "violated": false
+                  }
+                ],
+                "score": 0,
+                "status": "fail",
+                "value": {
+                  "comparedValue": 0,
+                  "metric": "request_throughput",
+                  "success": true,
+                  "value": 18.42
+                },
+                "warningTargets": null
+              },
+              {
+                "displayName": "",
+                "keySli": false,
+                "passTargets": [
+                  {
+                    "criteria": "<=100",
+                    "targetValue": 100,
+                    "violated": false
+                  }
+                ],
+                "score": 1,
+                "status": "pass",
+                "value": {
+                  "comparedValue": 8,
+                  "metric": "go_routines",
+                  "success": true,
+                  "value": 88
+                },
+                "warningTargets": null
+              }
+            ],
+            "result": "fail",
+            "score": 33.33333333333333,
+            "sloFileContent": "LS0tDQpzcGVjX3ZlcnNpb246ICcwLjEuMCcNCmNvbXBhcmlzb246DQogIGNvbXBhcmVfd2l0aDogInNpbmdsZV9yZXN1bHQiDQogIGluY2x1ZGVfcmVzdWx0X3dpdGhfc2NvcmU6ICJwYXNzIg0KICBhZ2dyZWdhdGVfZnVuY3Rpb246IGF2Zw0Kb2JqZWN0aXZlczoNCiAgLSBzbGk6IGh0dHBfcmVzcG9uc2VfdGltZV9zZWNvbmRzX21haW5fcGFnZV9zdW0NCiAgICBwYXNzOg0KICAgICAgLSBjcml0ZXJpYToNCiAgICAgICAgICAtICI8PTEiDQogICAgd2FybmluZzoNCiAgICAgIC0gY3JpdGVyaWE6DQogICAgICAgICAgLSAiPD0wLjUiDQogIC0gc2xpOiByZXF1ZXN0X3Rocm91Z2hwdXQNCiAgICBwYXNzOg0KICAgICAgLSBjcml0ZXJpYToNCiAgICAgICAgICAtICI8PSsxMDAlIg0KICAgICAgICAgIC0gIj49LTgwJSINCiAgLSBzbGk6IGdvX3JvdXRpbmVzDQogICAgcGFzczoNCiAgICAgIC0gY3JpdGVyaWE6DQogICAgICAgICAgLSAiPD0xMDAiDQp0b3RhbF9zY29yZToNCiAgcGFzczogIjkwJSINCiAgd2FybmluZzogIjc1JSI=",
+            "timeEnd": "2022-02-09T09:29:47.625Z",
+            "timeStart": "2022-02-09T09:28:55.866Z"
+          },
+          "message": "Evaluation failed since the calculated score of 33.33333333333333 is below the warning value of 75",
+          "project": "sockshop",
+          "result": "fail",
+          "service": "carts",
+          "stage": "production",
+          "status": "succeeded"
+        },
+        "id": "1500b971-bfc3-4e20-8dc1-a624e0faf963",
+        "source": "lighthouse-service",
+        "specversion": "1.0",
+        "time": "2022-02-09T09:30:07.865Z",
+        "type": "sh.keptn.event.evaluation.finished",
+        "shkeptncontext": "da740469-9920-4e0c-b304-0fd4b18d17c2",
+        "shkeptnspecversion": "0.2.3",
+        "triggeredid": "09f53f15-c89d-4a4a-82cc-138985696172"
+      }
+    }
+  ],
+  "labels": {},
+  "image": "carts:v0.1.2"
+}

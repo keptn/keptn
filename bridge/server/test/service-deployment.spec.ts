@@ -13,7 +13,6 @@ import {
   ServiceDeploymentMock,
   ServiceDeploymentWithApprovalMock,
   ServiceDeploymentWithFromTimeMock,
-  ServiceDeploymentWithoutRemediationsMock,
 } from '../../shared/fixtures/service-deployment-response.mock';
 import {
   SequenceDeliveryResponseMock,
@@ -51,31 +50,8 @@ describe('Test /project/:projectName/deployment/:keptnContext', () => {
       .reply(200, DeploymentTracesResponseMock);
     init(ProjectResponse, SequenceDeliveryResponseMock, projectName, keptnContext);
 
-    const response = await request(app).get(
-      `/api/project/${projectName}/deployment/${keptnContext}?includeRemediations=true`
-    );
+    const response = await request(app).get(`/api/project/${projectName}/deployment/${keptnContext}`);
     expect(response.body).toEqual(ServiceDeploymentMock);
-    expect(response.statusCode).toBe(200);
-  });
-
-  it('should retrieve deployment of service without remediations', async () => {
-    const projectName = 'sockshop';
-    const keptnContext = '2c0e568b-8bd3-4726-a188-e528423813ed';
-    axiosMock
-      .onGet(`${global.baseUrl}/mongodb-datastore/event`, {
-        params: {
-          keptnContext,
-          project: projectName,
-          pageSize: '100',
-        },
-      })
-      .reply(200, DeploymentTracesResponseMock);
-    init(ProjectResponse, SequenceDeliveryResponseMock, projectName, keptnContext);
-
-    const response = await request(app).get(
-      `/api/project/${projectName}/deployment/${keptnContext}?includeRemediations=false`
-    );
-    expect(response.body).toEqual(ServiceDeploymentWithoutRemediationsMock);
     expect(response.statusCode).toBe(200);
   });
 
@@ -94,7 +70,7 @@ describe('Test /project/:projectName/deployment/:keptnContext', () => {
     init(ProjectResponse, SequenceDeliveryResponseMock, projectName, keptnContext);
 
     const response = await request(app).get(
-      `/api/project/${projectName}/deployment/${keptnContext}?fromTime=2021-10-13T10:59:45.104Z&includeRemediations=true`
+      `/api/project/${projectName}/deployment/${keptnContext}?fromTime=2021-10-13T10:59:45.104Z`
     );
     expect(response.body).toEqual(ServiceDeploymentWithFromTimeMock);
     expect(response.statusCode).toBe(200);

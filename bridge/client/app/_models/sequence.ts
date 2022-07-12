@@ -50,16 +50,27 @@ function getStatusText(
   return status;
 }
 
+export function isSequenceStarted(state: SequenceState): boolean {
+  return startedStates.includes(state);
+}
+
+export function isSequenceLoading(sequenceState: SequenceState, stageState?: SequenceState): boolean {
+  return isSequenceStarted(sequenceState) && (!stageState || !isFinished(stageState));
+}
+
+export function isSequenceAborted(state: SequenceState): boolean {
+  return state === SequenceState.ABORTED;
+}
+
 export function createSequenceStateInfo(sequence: ISequence, stageName?: string): SequenceStateInfo {
   const stage = getStage(sequence, stageName);
   const latestStage = stage ? stage : sequence.stages[sequence.stages.length - 1];
   const stages = stage ? [stage] : sequence.stages;
   const state = stageName ? stage?.state : sequence.state;
   const finished = !!state && isFinished(state);
-  const started = startedStates.includes(sequence.state);
-  const loading = started && (!stageName || !finished);
+  const loading = isSequenceLoading(sequence.state, stage?.state);
   const waiting = state === SequenceState.WAITING;
-  const aborted = state === SequenceState.ABORTED;
+  const aborted = !!state && isSequenceAborted(state);
   const timedOut = state === SequenceState.TIMEDOUT;
   const faulty = stages.some((s) => s.latestFailedEvent) || timedOut;
   const warning = !faulty && stages.some((s) => s.latestEvaluation?.result === ResultTypes.WARNING);

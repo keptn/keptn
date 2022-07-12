@@ -5,12 +5,10 @@ const serviceStates = [
         stages: [
           {
             name: 'dev',
-            hasOpenRemediations: false,
             time: '2021-11-11T15:24:07.170Z',
           },
           {
             name: 'staging',
-            hasOpenRemediations: false,
             time: '2021-11-11T15:28:22.406Z',
           },
         ],
@@ -23,7 +21,6 @@ const serviceStates = [
         stages: [
           {
             name: 'production',
-            hasOpenRemediations: false,
             time: '2021-11-11T13:21:21.359Z',
           },
         ],
@@ -41,17 +38,14 @@ const serviceStates = [
         stages: [
           {
             name: 'dev',
-            hasOpenRemediations: false,
             time: '2021-11-09T15:15:24.800Z',
           },
           {
             name: 'staging',
-            hasOpenRemediations: false,
             time: '2021-11-09T15:15:54.741Z',
           },
           {
             name: 'production',
-            hasOpenRemediations: false,
             time: '2021-11-09T15:16:18.314Z',
           },
         ],

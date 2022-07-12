@@ -12,7 +12,6 @@ describe('ServiceState', () => {
           stages: [
             {
               name: 'dev',
-              hasOpenRemediations: false,
               time: '2021-11-05T12:21:33.991Z',
             },
           ],
@@ -39,7 +38,6 @@ describe('ServiceState', () => {
             stages: [
               {
                 name: 'dev',
-                hasOpenRemediations: true,
                 time: '2021-11-05T12:21:33.991Z',
               },
             ],
@@ -53,12 +51,10 @@ describe('ServiceState', () => {
             stages: [
               {
                 name: 'staging',
-                hasOpenRemediations: false,
                 time: '2021-11-05T10:49:01.288Z',
               },
               {
                 name: 'production',
-                hasOpenRemediations: true,
                 time: '2021-10-13T11:01:18.567Z',
               },
             ],
@@ -72,7 +68,6 @@ describe('ServiceState', () => {
             stages: [
               {
                 name: 'production-A',
-                hasOpenRemediations: false,
                 time: '2021-11-10T12:21:33.991Z',
               },
             ],
@@ -98,88 +93,6 @@ describe('ServiceState', () => {
     expect(serviceStates).toEqual(newServiceStates);
   });
 
-  it('should have open remediations', () => {
-    const serviceStateBasic = {
-      name: 'carts',
-      deploymentInformation: [
-        {
-          stages: [
-            {
-              name: 'dev',
-              hasOpenRemediations: false,
-              time: '2021-11-05T12:21:33.991Z',
-            },
-          ],
-          name: 'carts',
-          image: 'carts',
-          version: '0.12.3',
-          keptnContext: '2e21574c-dcf7-4275-b677-6bc19214acd5',
-        },
-        {
-          stages: [
-            {
-              name: 'staging',
-              hasOpenRemediations: false,
-              time: '2021-11-05T10:49:01.288Z',
-            },
-            {
-              name: 'production',
-              hasOpenRemediations: true,
-              time: '2021-10-13T11:01:18.567Z',
-            },
-          ],
-          name: 'carts',
-          image: 'carts',
-          version: '0.12.3',
-          keptnContext: '29af69cc-ea85-4358-b169-ce29034d9c81',
-        },
-      ],
-    };
-    const serviceState = ServiceState.fromJSON(serviceStateBasic);
-    expect(serviceState.hasRemediations()).toBe(true);
-  });
-
-  it('should not have open remediations', () => {
-    const serviceStateBasic = {
-      name: 'carts',
-      deploymentInformation: [
-        {
-          stages: [
-            {
-              name: 'dev',
-              hasOpenRemediations: false,
-              time: '2021-11-05T12:21:33.991Z',
-            },
-          ],
-          name: 'carts',
-          image: 'carts',
-          version: '0.12.3',
-          keptnContext: '2e21574c-dcf7-4275-b677-6bc19214acd5',
-        },
-        {
-          stages: [
-            {
-              name: 'staging',
-              hasOpenRemediations: false,
-              time: '2021-11-05T10:49:01.288Z',
-            },
-            {
-              name: 'production',
-              hasOpenRemediations: false,
-              time: '2021-10-13T11:01:18.567Z',
-            },
-          ],
-          name: 'carts',
-          image: 'carts',
-          version: '0.12.3',
-          keptnContext: '29af69cc-ea85-4358-b169-ce29034d9c81',
-        },
-      ],
-    };
-    const serviceState = ServiceState.fromJSON(serviceStateBasic);
-    expect(serviceState.hasRemediations()).toBe(false);
-  });
-
   it('should return latest image', () => {
     const serviceStateBasic = {
       name: 'carts',
@@ -188,7 +101,6 @@ describe('ServiceState', () => {
           stages: [
             {
               name: 'dev',
-              hasOpenRemediations: false,
               time: '2021-11-05T12:21:33.991Z',
             },
           ],
@@ -201,12 +113,10 @@ describe('ServiceState', () => {
           stages: [
             {
               name: 'staging',
-              hasOpenRemediations: false,
               time: '2021-11-05T10:49:01.288Z',
             },
             {
               name: 'production',
-              hasOpenRemediations: true,
               time: '2021-10-13T11:01:18.567Z',
             },
           ],
@@ -241,12 +151,10 @@ describe('ServiceState', () => {
           stages: [
             {
               name: 'staging',
-              hasOpenRemediations: false,
               time: '2021-11-05T10:49:01.288Z',
             },
             {
               name: 'production',
-              hasOpenRemediations: true,
               time: '2021-10-13T11:01:18.567Z',
             },
           ],
