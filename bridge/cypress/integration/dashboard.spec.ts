@@ -2,6 +2,7 @@ import DashboardPage from '../support/pageobjects/DashboardPage';
 
 import * as projectsResponse from '../fixtures/projects.mock.json';
 import BasePage from '../support/pageobjects/BasePage';
+import ProjectSettingsPage from '../support/pageobjects/ProjectSettingsPage';
 
 describe('Bridge Dashboard', () => {
   const dashboardPage = new DashboardPage();
@@ -15,8 +16,11 @@ describe('Bridge Dashboard', () => {
   });
 
   it('should trigger loadProjects once per dashboard visit', () => {
-    dashboardPage.visit().clickCreateNewProjectButton(); // 1 call
     const basePage = new BasePage();
+    const projectSettings = new ProjectSettingsPage();
+
+    dashboardPage.visit().clickCreateNewProjectButton(); // 1 call
+    projectSettings.waitForSettingsToBeVisible();
     basePage.clickMainHeaderKeptn(); // 1 call
     cy.wait('@projects').get('@projects.all').should('have.length', 2);
   });
