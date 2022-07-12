@@ -3,6 +3,7 @@ import { By } from '@angular/platform-browser';
 import { KtbSettingsViewModule } from './ktb-settings-view.module';
 import { KtbSettingsViewComponent } from './ktb-settings-view.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('KtbSettingsViewComponent', () => {
   let component: KtbSettingsViewComponent;
@@ -10,7 +11,7 @@ describe('KtbSettingsViewComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [KtbSettingsViewModule, HttpClientTestingModule],
+      imports: [KtbSettingsViewModule, HttpClientTestingModule, RouterTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbSettingsViewComponent);
