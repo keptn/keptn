@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { KtbSettingsViewComponent } from './ktb-settings-view.component';
-import { AppModule } from '../../app.module';
 import { By } from '@angular/platform-browser';
+import { KtbSettingsViewModule } from './ktb-settings-view.module';
+import { KtbSettingsViewComponent } from './ktb-settings-view.component';
 
 describe('KtbSettingsViewComponent', () => {
   let component: KtbSettingsViewComponent;
@@ -9,7 +9,7 @@ describe('KtbSettingsViewComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule],
+      imports: [KtbSettingsViewModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(KtbSettingsViewComponent);
