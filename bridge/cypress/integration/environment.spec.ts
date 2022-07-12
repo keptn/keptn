@@ -67,7 +67,7 @@ describe('Environment Screen default requests', () => {
   });
 });
 
-describe('Environment Screen Navigation', () => {
+describe.only('Environment Screen Navigation', () => {
   const environmentPage = new EnvironmentPage();
   const servicesPage = new ServicesPage();
   const project = 'sockshop';
@@ -84,11 +84,13 @@ describe('Environment Screen Navigation', () => {
 
   it('navigate to service if clicking on service from stage-overview', () => {
     environmentPage.clickServiceFromStageOverview(stage, service);
+    cy.wait('@serviceDatastore');
     servicesPage.assertDeploymentDeepLink(project, service, keptnContext, stage);
   });
 
   it('navigate to service if clicking on service from stage-details', () => {
     environmentPage.clickServiceFromStageDetails(stage, service);
+    cy.wait('@serviceDatastore');
     servicesPage.assertDeploymentDeepLink(project, service, keptnContext, stage);
   });
 });
