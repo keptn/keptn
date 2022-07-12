@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, ParamMap } from '@angular/router';
 import { map } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 import { ServerErrors } from '../../_models/server-error';
@@ -14,6 +14,7 @@ export class KtbErrorViewComponent {
   public logoUrl = environment.config.logoInvertedUrl;
   public error$: Observable<ServerErrors>;
   public ServerErrors = ServerErrors;
+  public queryParams$: Observable<ParamMap>;
 
   @Input() set error(error: ServerErrors) {
     this.error$ = of(error);
@@ -33,5 +34,7 @@ export class KtbErrorViewComponent {
         return status ?? ServerErrors.INTERNAL;
       })
     );
+
+    this.queryParams$ = this.route.queryParamMap;
   }
 }

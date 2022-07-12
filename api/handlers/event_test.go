@@ -2,6 +2,11 @@ package handlers
 
 import (
 	"errors"
+	"io"
+	"net/http"
+	"testing"
+	"time"
+
 	"github.com/go-openapi/strfmt"
 	"github.com/google/uuid"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
@@ -10,11 +15,6 @@ import (
 	natstest "github.com/nats-io/nats-server/v2/test"
 	nats2 "github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/require"
-	"io"
-	"net/http"
-	"os"
-	"testing"
-	"time"
 
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/event"
@@ -98,8 +98,7 @@ func TestPostEventHandlerFunc(t *testing.T) {
 
 	defer shutdown()
 
-	err := os.Setenv("NATS_URL", natsServer.ClientURL())
-	require.NoError(t, err)
+	t.Setenv("NATS_URL", natsServer.ClientURL())
 
 	natsClient, err := nats2.Connect(natsServer.ClientURL())
 	require.Nil(t, err)
@@ -196,8 +195,7 @@ func Test_getDatastoreURL(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := os.Setenv("DATASTORE_URI", tt.datastoreURLEnv)
-			require.NoError(t, err)
+			t.Setenv("DATASTORE_URI", tt.datastoreURLEnv)
 
 			require.Equal(t, tt.want, utils.GetDatastoreURL())
 		})

@@ -1166,6 +1166,27 @@ func TestTaskHandler_Execute_WebhookCannotBeRetrieved(t *testing.T) {
 	fakeKeptn.AssertSentEventResult(t, 1, keptnv2.ResultFailed)
 }
 
+func TestTaskHandler_Execute_NotATriggeredEventWebhookCannotBeRetrieved(t *testing.T) {
+	templateEngineMock := &fake.ITemplateEngineMock{}
+	secretReaderMock := &fake.ISecretReaderMock{}
+	curlExecutorMock := &fake.ICurlExecutorMock{}
+	requestValidatorMock := &fake.RequestValidatorMock{}
+
+	taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, requestValidatorMock, secretReaderMock)
+
+	fakeKeptn := sdk.NewFakeKeptn(
+		"test-webhook-svc")
+	fakeKeptn.SetResourceHandler(sdk.FailingResourceHandler{})
+	fakeKeptn.AddTaskHandlerWithSubscriptionID("sh.keptn.event.webhook.finished", taskHandler, "my-subscription-id")
+	fakeKeptn.SetAutomaticResponse(false)
+
+	fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.finished.json"))
+
+	//verify sent events
+	fakeKeptn.AssertNumberOfEventSent(t, 0)
+
+}
+
 func TestTaskHandler_Execute_NoSubscriptionIDInEvent(t *testing.T) {
 	templateEngineMock := &fake.ITemplateEngineMock{}
 	secretReaderMock := &fake.ISecretReaderMock{}

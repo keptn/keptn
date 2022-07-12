@@ -1,0 +1,117 @@
+name: "Security Scans"
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * 1' # run tests at 1 AM (UTC), every monday (1)
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  GO_VERSION: "~1.18"
+
+jobs:
+  prepare-security-scans:
+    name: "Prepare Security Scans"
+    runs-on: ubuntu-20.04
+    env:
+      RENDERED_CHART_FILENAME: "scan-tpl.yml"
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: 'true'
+
+      - name: Render helm template
+        run: |
+          VERSION=$(cat './VERSION.txt')
+          cd ./installer/manifests/keptn
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo add nats https://nats-io.github.io/k8s/helm/charts/
+          helm dependency update ./
+          helm dependency build ./
+          # replace "appVersion: latest" with "appVersion: $VERSION" in all Chart.yaml files
+          find . -name Chart.yaml -exec sed -i -- "s/appVersion: latest/appVersion: ${VERSION}/g" {} \;
+          helm template ./ -n keptn --name-template keptn --version ${VERSION} > ${{ env.RENDERED_CHART_FILENAME }}
+
+      - name: Upload rendered chart as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: rendered-helm-chart
+          path: installer/manifests/keptn/${{ env.RENDERED_CHART_FILENAME }}
+
+  security-scans:
+    name: "Security Scans"
+    needs: prepare-security-scans
+    runs-on: ubuntu-20.04
+    env:
+      CHART_TO_SCAN: "scans/scan-tpl.yml"
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - tool: "kics"
+          - tool: "kubeconform"
+          - tool: "kubescape"
+            kubescape-framework: "nsa"
+          - tool: "kubescape"
+            kubescape-framework: "mitre"
+          - tool: "kubescape"
+            kubescape-framework: "ARMOBest"
+    steps:
+      - name: Set up Go
+        if: matrix.tool == 'kubeconform'
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Check out code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: 'true'
+
+      - name: Download helm template
+        id: download_helm_chart
+        uses: actions/download-artifact@v3
+        with:
+          name: rendered-helm-chart
+          path: scans
+
+      - name: KICS Scan
+        if: matrix.tool == 'kics'
+        uses: Checkmarx/kics-github-action@v1.5
+        with:
+          path: ${{ env.CHART_TO_SCAN }}
+          config_path: .github/kics-config.yml
+          fail_on: high,medium
+          output_formats: json,sarif
+
+      - name: Upload KICS results
+        if: always() && matrix.tool == 'kics'
+        uses: actions/upload-artifact@v3
+        with:
+          name: kics-results
+          path: results.json
+
+      - name: Kubeconform Scan
+        if: matrix.tool == 'kubeconform'
+        run: |
+          echo "::group::Kubeconform installation"
+          go install github.com/yannh/kubeconform/cmd/kubeconform@v0.4.13
+          echo "::endgroup::"
+
+          kubeconform -schema-location default -summary ${{ env.CHART_TO_SCAN }}
+
+      - name: Kubescape Scan
+        if: matrix.tool == 'kubescape'
+        env:
+          FAILURE_PERCENTAGE: 10
+        run: |
+          echo "::group::Kubescape installation"
+          curl -s https://raw.githubusercontent.com/armosec/kubescape/master/install.sh | /bin/bash
+          echo "::endgroup::"
+          # Docs on how to configure exceptions: https://hub.armosec.io/docs/exceptions
+          kubescape scan framework ${{ matrix.kubescape-framework }} -v -t ${{ env.FAILURE_PERCENTAGE }} --exceptions ./.github/kubescape-config.json ${{ env.CHART_TO_SCAN }}

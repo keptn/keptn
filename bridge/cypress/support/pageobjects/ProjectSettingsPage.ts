@@ -60,6 +60,11 @@ class ProjectSettingsPage {
     return this;
   }
 
+  public waitForSettingsToBeVisible(): this {
+    cy.get('ktb-project-settings').should('be.visible');
+    return this;
+  }
+
   public setShipyardFile(): this {
     cy.byTestId('ktb-shipyard-file-input').attachFile('shipyard.yaml');
     return this;

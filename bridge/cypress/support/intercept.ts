@@ -241,15 +241,6 @@ export function interceptSequencesPageWithSequenceThatIsNotLoaded(): void {
     }
   );
 
-  cy.intercept(
-    '/api/controlPlane/v1/sequence/sockshop?pageSize=10&fromTime=2021-07-06T08:13:53.766Z&beforeTime=2021-07-06T08:13:53.766Z',
-    {
-      fixture: 'get.sequence.mock.json',
-    }
-  );
-  // TODO: the intercept above is a workaround. For some weird reason loadUntilRoot is triggered twice.
-  //  Probably related to our data model. Remove this workaround after the data model for the sequence view is adapted
-
   cy.intercept(`/api/mongodb-datastore/event?keptnContext=${keptnContext}&project=sockshop&fromTime=*`, {
     body: [],
   });

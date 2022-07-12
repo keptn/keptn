@@ -46,8 +46,7 @@ func TestGetMetadataHandlerFunc(t *testing.T) {
 		},
 	}
 
-	err := os.Setenv("SECRET_TOKEN", "testtesttesttesttest")
-	require.NoError(t, err)
+	t.Setenv("SECRET_TOKEN", "testtesttesttesttest")
 
 	returnedStatus := 200
 
@@ -60,8 +59,7 @@ func TestGetMetadataHandlerFunc(t *testing.T) {
 	)
 	defer ts.Close()
 
-	err = os.Setenv("EVENTBROKER_URI", ts.URL)
-	require.NoError(t, err)
+	t.Setenv("EVENTBROKER_URI", ts.URL)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -127,8 +125,7 @@ func Test_metadataHandler_getMetadata(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := os.Setenv("POD_NAMESPACE", "keptn")
-			require.NoError(t, err)
+			t.Setenv("POD_NAMESPACE", "keptn")
 
 			tmpSwaggerFileName := "tmp-swagger.yaml"
 

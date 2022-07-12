@@ -203,12 +203,10 @@ function validateSecrets(secrets: OAuthSecrets): void {
 
 function getURLsConfiguration(options: BridgeOption): URLsConfig {
   const cliURL = options.urls?.CLI ?? 'https://github.com/keptn/keptn/releases';
-  const integrationURL = options.urls?.integrationPage ?? 'https://get.keptn.sh/integrations.html';
   const looksURL = options.urls?.lookAndFeel;
 
   return {
     CLI: cliURL,
-    integrationPage: integrationURL,
     lookAndFeel: looksURL,
   };
 }
@@ -324,7 +322,6 @@ export function envToConfiguration(env: { [key in EnvVar]?: string }): BridgeOpt
     },
     urls: {
       CLI: env.CLI_DOWNLOAD_LINK,
-      integrationPage: env.INTEGRATIONS_PAGE_LINK,
       lookAndFeel: env.LOOK_AND_FEEL_URL,
     },
     features: {
@@ -335,7 +332,6 @@ export function envToConfiguration(env: { [key in EnvVar]?: string }): BridgeOpt
       prefixPath: env.PREFIX_PATH,
       pageSize: {
         project: isInt(env.PROJECTS_PAGE_SIZE) ? toInt(env.PROJECTS_PAGE_SIZE) : undefined,
-        service: isInt(env.SERVICES_PAGE_SIZE) ? toInt(env.SERVICES_PAGE_SIZE) : undefined,
       },
     },
     mongo: {

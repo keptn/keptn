@@ -9,17 +9,17 @@ require (
 	github.com/go-openapi/spec v0.20.6
 	github.com/go-openapi/strfmt v0.21.2
 	github.com/go-openapi/swag v0.21.1
-	github.com/go-openapi/validate v0.21.0
+	github.com/go-openapi/validate v0.22.0
 	github.com/jeremywohl/flatten v1.0.1
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.17.1-0.20220708080640-d9a621b67838
 	github.com/nats-io/nats-server/v2 v2.8.4
 	github.com/sirupsen/logrus v1.8.1
-	github.com/stretchr/testify v1.7.5
-	github.com/tryvium-travels/memongo v0.5.0
+	github.com/stretchr/testify v1.8.0
+	github.com/tryvium-travels/memongo v0.6.0
 	go.mongodb.org/mongo-driver v1.9.1
-	golang.org/x/net v0.0.0-20220706163947-c90051bbdb60
+	golang.org/x/net v0.0.0-20220708220712-1185a9018129
 )
 
 require (

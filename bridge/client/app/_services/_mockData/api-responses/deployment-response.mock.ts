@@ -26,7 +26,6 @@ const deploymentData = {
         traces: [],
         data: {
           evaluation: {
-            gitCommit: '',
             indicatorResults: null,
             result: 'pass',
             score: 0,
@@ -72,7 +71,6 @@ const deploymentData = {
         traces: [],
         data: {
           evaluation: {
-            gitCommit: '',
             indicatorResults: [
               {
                 displayName: 'Response time P95',

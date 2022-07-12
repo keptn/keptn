@@ -101,20 +101,24 @@
     </div>
   </div>
   <div *ngIf="_event.isApproval() && _event.isApprovalPending()" uitestid="keptn-event-item-approval">
-    <table>
-      <tr>
-        <td><p class="m-0">Currently deployed artifact:</p></td>
-        <td>
+    <div class="table">
+      <div class="table-row">
+        <div class="table-cell">
+          <p class="m-0">Currently deployed artifact:</p>
+        </div>
+        <div class="table-cell">
           <p class="m-0" [textContent]="image || 'N/A'"></p>
-        </td>
-      </tr>
-      <tr>
-        <td><p class="m-0">Deployable artifact:</p></td>
-        <td>
+        </div>
+      </div>
+      <div class="table-row">
+        <div class="table-cell">
+          <p class="m-0">Deployable artifact:</p>
+        </div>
+        <div class="table-cell">
           <ktb-approval-item [event]="_event" (approvalSent)="approvalSent.emit()"></ktb-approval-item>
-        </td>
-      </tr>
-    </table>
+        </div>
+      </div>
+    </div>
   </div>
   <ng-content
     select="ktb-event-item-detail,

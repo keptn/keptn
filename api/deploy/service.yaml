@@ -37,6 +37,8 @@ spec:
               value: mongodb-datastore:8080
             - name: CONTROLPLANE_URI
               value: shipyard-controller:8080
+            - name: SECRET_SERVICE_URI
+              value: secret-service:8080
             - name: IMPORT_BASE_PATH
               value: "/data/import-scratch"
             - name: SECRET_TOKEN

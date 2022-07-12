@@ -3,16 +3,16 @@ package db
 import (
 	"context"
 	"fmt"
+	"log"
+	"testing"
+	"time"
+
 	"github.com/keptn/keptn/statistics-service/operations"
 	logger "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/tryvium-travels/memongo"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
-	"os"
-	"testing"
-	"time"
 )
 
 var mongoDbVersion = "4.4.9"
@@ -24,8 +24,8 @@ func setupLocalMongoDB(t *testing.T) func() {
 	}
 	randomDbName := memongo.RandomDatabase()
 
-	os.Setenv("MONGODB_DATABASE", randomDbName)
-	os.Setenv("MONGODB_EXTERNAL_CONNECTION_STRING", fmt.Sprintf("%s/%s", mongoServer.URI(), randomDbName))
+	t.Setenv("MONGODB_DATABASE", randomDbName)
+	t.Setenv("MONGODB_EXTERNAL_CONNECTION_STRING", fmt.Sprintf("%s/%s", mongoServer.URI(), randomDbName))
 
 	var mongoDBClient *mongo.Client
 	mongoDBClient, err = mongo.NewClient(options.Client().ApplyURI(mongoServer.URI()))

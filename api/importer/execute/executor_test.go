@@ -22,6 +22,9 @@ func TestKeptnAPIExecutor_ErrorUnknownEndpointID(t *testing.T) {
 		GetControlPlaneEndpointFunc: func() string {
 			return "someserver.somewhere"
 		},
+		GetSecretsServiceEndpointFunc: func() string {
+			return "someserver.somewherelese"
+		},
 	}
 
 	kae := newKeptnExecutor(mockKeptnEndpointProvider, nil)
@@ -150,6 +153,48 @@ func TestKeptnAPIExecutor_Execute(t *testing.T) {
 				return true
 			},
 		},
+		{
+			name: "Simple CreateSecret api call",
+			args: args{
+				ate: model.APITaskExecution{
+					Payload: io.NopCloser(strings.NewReader(
+						`{"scope":"", "name":"test-secret", "data": { "token": "<token>"}}`,
+					)),
+					EndpointID: "keptn-api-v1-uniform-create-secret",
+					Context: model.TaskContext{
+						Project: "totally-secret-project",
+						Task: &model.ManifestTask{
+							APITask: &model.APITask{
+								Action:      "keptn-api-v1-uniform-create-secret",
+								PayloadFile: "api/create-secret.json",
+							},
+							ResourceTask: nil,
+							ID:           "create-secret-id-0",
+							Type:         "api",
+							Name:         "Create secret",
+						},
+					},
+				},
+				handlerFunc: func(t *testing.T) http.HandlerFunc {
+					return func(writer http.ResponseWriter, request *http.Request) {
+						assert.Equal(t, "/v1/secret", request.URL.Path)
+						assert.Equal(t, http.MethodPost, request.Method)
+						assert.Equal(t, "application/json", request.Header.Get("Content-Type"))
+						bodyBytes, err := io.ReadAll(request.Body)
+						assert.NoError(t, err)
+						assert.Equal(t, `{"scope":"", "name":"test-secret", "data": { "token": "<token>"}}`, string(bodyBytes))
+						writer.Header().Set("Content-Type", "application/json")
+						marshal, _ := json.Marshal(map[string]interface{}{})
+						writer.Write(marshal)
+					}
+				},
+			},
+			want: `{}`,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.NoError(t, err)
+				return true
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(
@@ -159,6 +204,9 @@ func TestKeptnAPIExecutor_Execute(t *testing.T) {
 
 				mockKeptnEndpointProvider := &fake.KeptnEndpointProviderMock{
 					GetControlPlaneEndpointFunc: func() string {
+						return server.URL
+					},
+					GetSecretsServiceEndpointFunc: func() string {
 						return server.URL
 					},
 				}

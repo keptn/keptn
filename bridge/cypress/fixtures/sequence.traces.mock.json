@@ -22,9 +22,6 @@
       "data": {
         "message": "Finished release",
         "project": "sockshop",
-        "release": {
-          "gitCommit": "badb59657c2149f2f1e35d8045389ea7c5158d38"
-        },
         "result": "pass",
         "service": "carts",
         "stage": "production",
@@ -71,11 +68,9 @@
             "http://carts.sockshop-staging.34.66.9.11.nip.io:80",
             "http://carts.sockshop-dev.34.66.9.11.nip.io:80"
           ],
-          "deploymentstrategy": "duplicate",
-          "gitCommit": "0520891318fd35426623657c611dd86b7ba37f32"
+          "deploymentstrategy": "duplicate"
         },
         "evaluation": {
-          "gitCommit": "",
           "indicatorResults": null,
           "result": "pass",
           "score": 0,
@@ -85,16 +80,12 @@
         },
         "message": "",
         "project": "sockshop",
-        "release": {
-          "gitCommit": ""
-        },
         "result": "pass",
         "service": "carts",
         "stage": "production",
         "status": "succeeded",
         "test": {
           "end": "2022-01-17T11:41:44.207Z",
-          "gitCommit": "",
           "start": "2022-01-17T11:41:19.452Z"
         }
       },
@@ -112,8 +103,7 @@
           "deploymentNames": ["canary"],
           "deploymentURIsLocal": ["http://carts.sockshop-production:80"],
           "deploymentURIsPublic": ["http://carts.sockshop-production.34.66.9.11.nip.io:80"],
-          "deploymentstrategy": "duplicate",
-          "gitCommit": "0520891318fd35426623657c611dd86b7ba37f32"
+          "deploymentstrategy": "duplicate"
         },
         "message": "Successfully deployed",
         "project": "sockshop",
@@ -162,11 +152,9 @@
             "http://carts.sockshop-staging.34.66.9.11.nip.io:80",
             "http://carts.sockshop-dev.34.66.9.11.nip.io:80"
           ],
-          "deploymentstrategy": "blue_green_service",
-          "gitCommit": "8aaaee3e976459fd5dd0dc8f19673f6195f101c1"
+          "deploymentstrategy": "blue_green_service"
         },
         "evaluation": {
-          "gitCommit": "",
           "indicatorResults": null,
           "result": "pass",
           "score": 0,
@@ -176,16 +164,12 @@
         },
         "message": "",
         "project": "sockshop",
-        "release": {
-          "gitCommit": ""
-        },
         "result": "",
         "service": "carts",
         "stage": "production",
         "status": "",
         "test": {
           "end": "2022-01-17T11:41:44.207Z",
-          "gitCommit": "",
           "start": "2022-01-17T11:41:19.452Z"
         }
       },
@@ -212,11 +196,9 @@
             "http://carts.sockshop-staging.34.66.9.11.nip.io:80",
             "http://carts.sockshop-dev.34.66.9.11.nip.io:80"
           ],
-          "deploymentstrategy": "",
-          "gitCommit": "8aaaee3e976459fd5dd0dc8f19673f6195f101c1"
+          "deploymentstrategy": ""
         },
         "evaluation": {
-          "gitCommit": "",
           "indicatorResults": null,
           "result": "pass",
           "score": 0,
@@ -226,16 +208,12 @@
         },
         "message": "Finished release",
         "project": "sockshop",
-        "release": {
-          "gitCommit": ""
-        },
         "result": "",
         "service": "carts",
         "stage": "production",
         "status": "",
         "test": {
           "end": "2022-01-17T11:41:44.207Z",
-          "gitCommit": "",
           "start": "2022-01-17T11:41:19.452Z"
         }
       },
@@ -269,9 +247,6 @@
       "data": {
         "message": "Finished release",
         "project": "sockshop",
-        "release": {
-          "gitCommit": "3aae3dc90a0703d50a62bd85d6b72ad934c38a60"
-        },
         "result": "pass",
         "service": "carts",
         "stage": "staging",
@@ -316,11 +291,9 @@
             "http://carts.sockshop-staging.34.66.9.11.nip.io:80",
             "http://carts.sockshop-dev.34.66.9.11.nip.io:80"
           ],
-          "deploymentstrategy": "duplicate",
-          "gitCommit": "f9eda50e8d6f11bb4f5a9f80f15e02b8258c1e1c"
+          "deploymentstrategy": "duplicate"
         },
         "evaluation": {
-          "gitCommit": "",
           "indicatorResults": null,
           "result": "pass",
           "score": 0,
@@ -330,16 +303,12 @@
         },
         "message": "",
         "project": "sockshop",
-        "release": {
-          "gitCommit": ""
-        },
         "result": "pass",
         "service": "carts",
         "stage": "staging",
         "status": "succeeded",
         "test": {
           "end": "2022-01-17T11:43:08.044Z",
-          "gitCommit": "",
           "start": "2022-01-17T11:42:32.738Z"
         }
       },
@@ -354,7 +323,6 @@
     {
       "data": {
         "evaluation": {
-          "gitCommit": "",
           "indicatorResults": null,
           "result": "pass",
           "score": 0,
@@ -451,11 +419,9 @@
             "http://carts.sockshop-staging.34.66.9.11.nip.io:80",
             "http://carts.sockshop-dev.34.66.9.11.nip.io:80"
           ],
-          "deploymentstrategy": "duplicate",
-          "gitCommit": "f9eda50e8d6f11bb4f5a9f80f15e02b8258c1e1c"
+          "deploymentstrategy": "duplicate"
         },
         "evaluation": {
-          "gitCommit": "",
           "indicatorResults": null,
           "result": "pass",
           "score": 0,
@@ -465,16 +431,12 @@
         },
         "message": "",
         "project": "sockshop",
-        "release": {
-          "gitCommit": ""
-        },
         "result": "pass",
         "service": "carts",
         "stage": "staging",
         "status": "succeeded",
         "test": {
           "end": "2022-01-17T11:43:08.044Z",
-          "gitCommit": "",
           "start": "2022-01-17T11:42:32.738Z"
         }
       },
@@ -496,7 +458,6 @@
         "status": "succeeded",
         "test": {
           "end": "2022-01-17T11:43:08.044Z",
-          "gitCommit": "",
           "start": "2022-01-17T11:42:32.738Z"
         }
       },
@@ -538,11 +499,9 @@
             "http://carts.sockshop-staging.34.66.9.11.nip.io:80",
             "http://carts.sockshop-dev.34.66.9.11.nip.io:80"
           ],
-          "deploymentstrategy": "duplicate",
-          "gitCommit": "f9eda50e8d6f11bb4f5a9f80f15e02b8258c1e1c"
+          "deploymentstrategy": "duplicate"
         },
         "evaluation": {
-          "gitCommit": "",
           "indicatorResults": null,
           "result": "pass",
           "score": 0,
@@ -552,16 +511,12 @@
         },
         "message": "",
         "project": "sockshop",
-        "release": {
-          "gitCommit": ""
-        },
         "result": "pass",
         "service": "carts",
         "stage": "staging",
         "status": "succeeded",
         "test": {
           "end": "2022-01-17T11:41:44.207Z",
-          "gitCommit": "",
           "start": "2022-01-17T11:41:19.452Z",
           "teststrategy": "performance"
         }
@@ -580,8 +535,7 @@
           "deploymentNames": ["canary"],
           "deploymentURIsLocal": ["http://carts.sockshop-staging:80"],
           "deploymentURIsPublic": ["http://carts.sockshop-staging.34.66.9.11.nip.io:80"],
-          "deploymentstrategy": "duplicate",
-          "gitCommit": "f9eda50e8d6f11bb4f5a9f80f15e02b8258c1e1c"
+          "deploymentstrategy": "duplicate"
         },
         "message": "Successfully deployed",
         "project": "sockshop",
@@ -626,11 +580,9 @@
           "deploymentNames": ["direct"],
           "deploymentURIsLocal": null,
           "deploymentURIsPublic": ["http://carts.sockshop-dev.34.66.9.11.nip.io:80"],
-          "deploymentstrategy": "blue_green_service",
-          "gitCommit": "8aaaee3e976459fd5dd0dc8f19673f6195f101c1"
+          "deploymentstrategy": "blue_green_service"
         },
         "evaluation": {
-          "gitCommit": "",
           "indicatorResults": null,
           "result": "pass",
           "score": 0,
@@ -640,16 +592,12 @@
         },
         "message": "",
         "project": "sockshop",
-        "release": {
-          "gitCommit": ""
-        },
         "result": "",
         "service": "carts",
         "stage": "staging",
         "status": "",
         "test": {
           "end": "2022-01-17T11:41:44.207Z",
-          "gitCommit": "",
           "start": "2022-01-17T11:41:19.452Z"
         }
       },
@@ -672,11 +620,9 @@
           "deploymentNames": ["direct"],
           "deploymentURIsLocal": null,
           "deploymentURIsPublic": ["http://carts.sockshop-dev.34.66.9.11.nip.io:80"],
-          "deploymentstrategy": "",
-          "gitCommit": "8aaaee3e976459fd5dd0dc8f19673f6195f101c1"
+          "deploymentstrategy": ""
         },
         "evaluation": {
-          "gitCommit": "",
           "indicatorResults": null,
           "result": "pass",
           "score": 0,
@@ -686,16 +632,12 @@
         },
         "message": "Finished release",
         "project": "sockshop",
-        "release": {
-          "gitCommit": ""
-        },
         "result": "",
         "service": "carts",
         "stage": "staging",
         "status": "",
         "test": {
           "end": "2022-01-17T11:41:44.207Z",
-          "gitCommit": "",
           "start": "2022-01-17T11:41:19.452Z"
         }
       },
@@ -729,9 +671,6 @@
       "data": {
         "message": "Finished release",
         "project": "sockshop",
-        "release": {
-          "gitCommit": ""
-        },
         "result": "pass",
         "service": "carts",
         "stage": "dev",
@@ -773,11 +712,9 @@
           "deploymentNames": ["direct"],
           "deploymentURIsLocal": ["http://carts.sockshop-dev:80"],
           "deploymentURIsPublic": ["http://carts.sockshop-dev.34.66.9.11.nip.io:80"],
-          "deploymentstrategy": "direct",
-          "gitCommit": "8aaaee3e976459fd5dd0dc8f19673f6195f101c1"
+          "deploymentstrategy": "direct"
         },
         "evaluation": {
-          "gitCommit": "",
           "indicatorResults": null,
           "result": "pass",
           "score": 0,
@@ -794,7 +731,6 @@
         "status": "succeeded",
         "test": {
           "end": "2022-01-17T11:41:44.207Z",
-          "gitCommit": "",
           "start": "2022-01-17T11:41:19.452Z"
         }
       },
@@ -809,7 +745,6 @@
     {
       "data": {
         "evaluation": {
-          "gitCommit": "",
           "indicatorResults": null,
           "result": "pass",
           "score": 0,
@@ -903,8 +838,7 @@
           "deploymentNames": ["direct"],
           "deploymentURIsLocal": ["http://carts.sockshop-dev:80"],
           "deploymentURIsPublic": ["http://carts.sockshop-dev.34.66.9.11.nip.io:80"],
-          "deploymentstrategy": "direct",
-          "gitCommit": "8aaaee3e976459fd5dd0dc8f19673f6195f101c1"
+          "deploymentstrategy": "direct"
         },
         "evaluation": null,
         "message": "",
@@ -915,7 +849,6 @@
         "status": "succeeded",
         "test": {
           "end": "2022-01-17T11:41:44.207Z",
-          "gitCommit": "",
           "start": "2022-01-17T11:41:19.452Z"
         }
       },
@@ -937,7 +870,6 @@
         "status": "succeeded",
         "test": {
           "end": "2022-01-17T11:41:44.207Z",
-          "gitCommit": "",
           "start": "2022-01-17T11:41:19.452Z"
         }
       },
@@ -976,8 +908,7 @@
           "deploymentNames": ["direct"],
           "deploymentURIsLocal": ["http://carts.sockshop-dev:80"],
           "deploymentURIsPublic": ["http://carts.sockshop-dev.34.66.9.11.nip.io:80"],
-          "deploymentstrategy": "direct",
-          "gitCommit": "8aaaee3e976459fd5dd0dc8f19673f6195f101c1"
+          "deploymentstrategy": "direct"
         },
         "message": "",
         "project": "sockshop",
@@ -1003,8 +934,7 @@
           "deploymentNames": ["direct"],
           "deploymentURIsLocal": ["http://carts.sockshop-dev:80"],
           "deploymentURIsPublic": ["http://carts.sockshop-dev.34.66.9.11.nip.io:80"],
-          "deploymentstrategy": "direct",
-          "gitCommit": "8aaaee3e976459fd5dd0dc8f19673f6195f101c1"
+          "deploymentstrategy": "direct"
         },
         "message": "Successfully deployed",
         "project": "sockshop",

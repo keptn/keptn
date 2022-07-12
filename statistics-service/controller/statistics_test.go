@@ -1,14 +1,13 @@
 package controller
 
 import (
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
-	"os"
 	"strconv"
 	"sync"
 	"testing"
 	"time"
 
 	"github.com/go-test/deep"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 
 	"github.com/keptn/keptn/statistics-service/db"
 	"github.com/keptn/keptn/statistics-service/operations"
@@ -418,7 +417,7 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 
 func TestStatisticsBucket(t *testing.T) {
 	interval := 5
-	os.Setenv("AGGREGATION_INTERVAL_SECONDS", strconv.FormatInt(int64(interval), 10))
+	t.Setenv("AGGREGATION_INTERVAL_SECONDS", strconv.FormatInt(int64(interval), 10))
 
 	expectedStatistics := &operations.Statistics{
 		From: time.Time{},

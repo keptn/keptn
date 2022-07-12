@@ -4,7 +4,6 @@ const evaluationFinishedMock = (slo?: string): unknown => ({
       data: {
         evaluation: {
           comparedEvents: [],
-          gitCommit: '',
           indicatorResults: [
             {
               displayName: '',

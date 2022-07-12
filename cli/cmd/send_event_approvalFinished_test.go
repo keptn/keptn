@@ -91,7 +91,7 @@ func Test_sendApprovalFinishedEvent(t *testing.T) {
 	)
 	defer ts.Close()
 
-	os.Setenv("MOCK_SERVER", ts.URL)
+	t.Setenv("MOCK_SERVER", ts.URL)
 
 	type args struct {
 		sendApprovalFinishedOptions sendApprovalFinishedStruct
