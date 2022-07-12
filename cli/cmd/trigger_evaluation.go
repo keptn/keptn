@@ -133,6 +133,8 @@ func doTriggerEvaluation(triggerEvaluationData triggerEvaluationStruct) error {
 			return nil
 		}
 
+		logging.PrintLog("ID of Keptn context: "+*response.KeptnContext, logging.InfoLevel)
+
 		if *triggerEvaluationData.Watch {
 			api, err := internal.APIProvider(endPoint.String(), apiToken)
 			if err != nil {

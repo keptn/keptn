@@ -382,16 +382,15 @@ const apiRouter = (params: {
         );
         return res.json(response);
       } else {
-        const response = await dataService.getTraces(
-          req.session?.tokenSet?.access_token,
-          req.query.keptnContext?.toString(),
-          req.query.project?.toString(),
-          req.query.stage?.toString(),
-          req.query.service?.toString(),
-          req.query.type?.toString() as EventTypes | undefined,
-          req.query.source?.toString() as KeptnService | undefined,
-          req.query.pageSize ? parseInt(req.query.pageSize.toString(), 10) : undefined
-        );
+        const response = await dataService.getTraces(req.session?.tokenSet?.access_token, {
+          keptnContext: req.query.keptnContext?.toString(),
+          projectName: req.query.project?.toString(),
+          stageName: req.query.stage?.toString(),
+          serviceName: req.query.service?.toString(),
+          eventType: req.query.type?.toString() as EventTypes | undefined,
+          source: req.query.source?.toString() as KeptnService | undefined,
+          pageSize: req.query.pageSize ? parseInt(req.query.pageSize.toString(), 10) : undefined,
+        });
         return res.json(response);
       }
     } catch (error) {

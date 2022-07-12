@@ -16,7 +16,6 @@ export class KtbSelectableTileHeaderDirective {}
 export class KtbSelectableTileComponent {
   @HostBinding('class') cls = 'ktb-selectable-tile';
   private _selected = false;
-  private _disabled = false;
   private _error = false;
   private _warning = false;
   private _success = false;
@@ -28,26 +27,12 @@ export class KtbSelectableTileComponent {
   @HostBinding('class.ktb-tile-selected')
   @HostBinding('class.ktb-tile-selected')
   get selected(): boolean {
-    return this._selected && !this.disabled;
+    return this._selected;
   }
 
   set selected(value: boolean) {
     if (this._selected !== value) {
       this._selected = value;
-    }
-  }
-
-  /** Whether the tile is disabled. */
-  @Input()
-  @HostBinding('attr.aria-disabled')
-  @HostBinding('class.ktb-tile-disabled')
-  get disabled(): boolean {
-    return this._disabled;
-  }
-
-  set disabled(value: boolean) {
-    if (this._disabled && this._selected) {
-      this._selected = false;
     }
   }
 
