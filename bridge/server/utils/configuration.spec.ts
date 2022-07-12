@@ -47,7 +47,7 @@ describe('Configuration', () => {
         url: defaultAPIURL,
       },
       auth: {
-        authMessage: `keptn auth --endpoint=${defaultAPIURL} --api-token=${defaultAPIToken}`,
+        authMessage: undefined,
         basicPassword: undefined,
         basicUsername: undefined,
         cleanBucketIntervalMs: 60 * 60 * 1000, //1h
@@ -155,7 +155,7 @@ describe('Configuration', () => {
         url: apiUrl,
       },
       auth: {
-        authMessage: `keptn auth --endpoint=${apiUrl} --api-token=${apiToken}`,
+        authMessage: undefined,
         basicPassword: undefined,
         basicUsername: undefined,
         cleanBucketIntervalMs: 60 * 60 * 1000, //1h

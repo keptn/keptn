@@ -28,7 +28,7 @@ export function getConfiguration(options: BridgeOption): BridgeConfiguration {
   const featConfig = getFeatureConfiguration(options);
   const logConfig = getLogConfiguration(options);
   const apiConfig = getAPIConfiguration(options);
-  const authConfig = getAuthConfiguration(apiConfig, options);
+  const authConfig = getAuthConfiguration(options);
   const oauthConfig = getOAuthConfiguration(featConfig.configDir, options);
   const urlsConfig = getURLsConfiguration(options);
   const mongoConfig = getMongoConfiguration(featConfig.configDir, options, oauthConfig.enabled);
@@ -93,8 +93,8 @@ function getAPIConfiguration(options: BridgeOption): APIConfig {
   };
 }
 
-function getAuthConfiguration(api: APIConfig, options: BridgeOption): AuthConfig {
-  const authMsg = options.auth?.authMessage || `keptn auth --endpoint=${api.url} --api-token=${api.token}`;
+function getAuthConfiguration(options: BridgeOption): AuthConfig {
+  const authMsg = options.auth?.authMessage;
   const basicUser = options.auth?.basicUsername;
   const basicPass = options.auth?.basicPassword;
   const requestLimit = (options.auth?.requestTimeLimitMs ?? 60) * 60 * 1000;
