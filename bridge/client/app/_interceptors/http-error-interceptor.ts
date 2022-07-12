@@ -1,7 +1,7 @@
 import { Inject, Injectable, OnDestroy } from '@angular/core';
 import { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { EMPTY, NEVER, Observable, Subject, throwError } from 'rxjs';
-import { catchError, retryWhen, takeUntil } from 'rxjs/operators';
+import { catchError, retryWhen, take, takeUntil } from 'rxjs/operators';
 import { genericRetryStrategy, RetryParams } from './http-generic-retry-strategy';
 import { Location } from '@angular/common';
 import { RETRY_ON_HTTP_ERROR } from '../_utils/app.utils';
@@ -45,7 +45,7 @@ export class HttpErrorInterceptor implements HttpInterceptor, OnDestroy {
     }
 
     if (response.status === 403) {
-      this.keptnInfo$.pipe(takeUntil(this.unsubscribe$)).subscribe((keptnInfo) => {
+      this.keptnInfo$.pipe(take(1), takeUntil(this.unsubscribe$)).subscribe((keptnInfo) => {
         this.notificationService.addNotification(
           NotificationType.ERROR,
           `${

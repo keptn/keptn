@@ -74,7 +74,7 @@ describe('Test OAuth', () => {
     cy.location('pathname').should('eq', '/oauth/login');
   });
 
-  it('should show a message for 403 response', () => {
+  it('should show a message for 403 response with specific user', () => {
     const user = 'claus.keptn-dev@ruxitlabs.com';
 
     cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfo.mock' });
@@ -85,5 +85,17 @@ describe('Test OAuth', () => {
 
     cy.visit('/').wait('@projects');
     basePage.notificationErrorVisible(`${user} does not have the permissions to perform this action.`);
+  });
+
+  it('should show a message for 403 response with default user', () => {
+    cy.intercept('/api/bridgeInfo', { statusCode: 403, headers: { 'keptn-auth-type': 'OAUTH' } });
+    cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', {
+      statusCode: 403,
+      headers: { 'keptn-auth-type': 'OAUTH' },
+    });
+    cy.task('setExpectedErrorCount', 1);
+
+    cy.visit('/');
+    basePage.notificationErrorVisible('User does not have the permissions to perform this action.');
   });
 });

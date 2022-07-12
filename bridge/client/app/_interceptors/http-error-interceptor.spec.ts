@@ -9,6 +9,9 @@ import { NotificationsService } from '../_services/notifications.service';
 import { NotificationType } from '../_models/notification';
 import { SecretScopeDefault } from '../../../shared/interfaces/secret-scope';
 import { IServiceSecret } from '../../../shared/interfaces/secret';
+import { DataService } from '../_services/data.service';
+import { KeptnInfo } from '../_models/keptn-info';
+import { of } from 'rxjs';
 
 describe('HttpErrorInterceptorService', () => {
   let httpErrorInterceptor: HttpErrorInterceptor;
@@ -172,6 +175,27 @@ describe('HttpErrorInterceptorService', () => {
     expect(spy).toHaveBeenCalledWith(
       NotificationType.ERROR,
       'User does not have the permissions to perform this action.'
+    );
+  });
+
+  it('should show an  error notification in case of 403', () => {
+    // given
+    jest
+      .spyOn(TestBed.inject(DataService), 'keptnInfo', 'get')
+      .mockReturnValue(of({ bridgeInfo: { user: 'test' } } as KeptnInfo));
+
+    const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
+
+    apiService.getMetadata().subscribe();
+
+    const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
+    const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
+    testRequest.error(errorEvent, { status: 403 });
+
+    // then
+    expect(spy).toHaveBeenCalledWith(
+      NotificationType.ERROR,
+      'test does not have the permissions to perform this action.'
     );
   });
 
