@@ -12,7 +12,7 @@ type IDebugManager interface {
 	GetSequenceByID(projectName string, shkeptncontext string) (models.SequenceState, error)
 	GetAllSequencesForProject(projectName string) ([]models.SequenceState, error)
 	GetAllEvents(projectName string, shkeptncontext string) ([]models.KeptnContextExtendedCE, error)
-	GetEventByID(projectName string, shkeptncontext string, event_id string) (models.KeptnContextExtendedCE, error)
+	GetEventByID(projectName string, shkeptncontext string, eventId string) (models.KeptnContextExtendedCE, error)
 }
 
 type DebugManager struct {
@@ -56,8 +56,8 @@ func (dm *DebugManager) GetAllEvents(projectName string, shkeptncontext string) 
 	return events, err
 }
 
-func (dm *DebugManager) GetEventByID(projectName string, shkeptncontext string, event_id string) (models.KeptnContextExtendedCE, error) {
-	events, err := dm.eventRepo.GetEvents(projectName, common.EventFilter{KeptnContext: &shkeptncontext, ID: &event_id})
+func (dm *DebugManager) GetEventByID(projectName string, shkeptncontext string, eventId string) (models.KeptnContextExtendedCE, error) {
+	events, err := dm.eventRepo.GetEvents(projectName, common.EventFilter{KeptnContext: &shkeptncontext, ID: &eventId})
 
 	return events[0], err
 }

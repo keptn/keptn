@@ -2,8 +2,8 @@ fetchEvents();
 
 function fetchEvents() {
   const urlParams = new URLSearchParams(window.location.search);
-  context = urlParams.get("shkeptncontext");
-  projectname = urlParams.get("projectname");
+  const context = urlParams.get("shkeptncontext");
+  const projectname = urlParams.get("projectname");
 
   let list = document.getElementById("tree_container");
   list.innerHTML = "";
@@ -45,7 +45,7 @@ function fetchEvents() {
           let detail_ul = document.createElement("ul");
           detail_ul.className = "nested";
 
-          for (key in object.data) {
+          for (let key in object.data) {
             let li = document.createElement("li");
             li.innerHTML = key + ": " + object.data[key];
             detail_ul.appendChild(li);
@@ -61,10 +61,10 @@ function fetchEvents() {
         }
       });
 
-      var toggler = document.getElementsByClassName("caret");
+      let toggler = document.getElementsByClassName("caret");
 
-      for (var i = 0; i < toggler.length; i++) {
-        toggler[i].addEventListener("click", function () {
+      for (let toggle_item of toggler) {
+        toggle_item.addEventListener("click", function () {
           this.parentElement
             .querySelector(".nested")
             .classList.toggle("active");

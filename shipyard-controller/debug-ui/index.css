@@ -18,11 +18,8 @@ tr {
 }
 
 td {
-  border: 2px solid #006bb8;
-  padding: 5px;
-}
-
-td {
+    border: 2px solid #006bb8;
+    padding: 5px;
   text-align: left;
   width: 20vw;
 }

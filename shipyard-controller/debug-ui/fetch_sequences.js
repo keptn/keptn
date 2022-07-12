@@ -1,5 +1,5 @@
 function fetchSequences() {
-  var project = document.getElementById("projectSelector").value;
+  const project = document.getElementById("projectSelector").value;
 
   fetch("/debug/project/" + project, {
     method: "get",
@@ -8,12 +8,12 @@ function fetchSequences() {
       return res.json();
     })
     .then((response) => {
-      var table = document.getElementById("prodTable");
+      let table = document.getElementById("prodTable");
 
-      var show_finished = document.getElementById("checkboxFinished").checked;
-      var show_aborted = document.getElementById("checkboxAborted").checked;
-      var show_active = document.getElementById("checkboxActive").checked;
-      var show_blocked = document.getElementById("checkboxBlocked").checked;
+      const show_finished = document.getElementById("checkboxFinished").checked;
+      const show_aborted = document.getElementById("checkboxAborted").checked;
+      const show_active = document.getElementById("checkboxActive").checked;
+      const show_blocked = document.getElementById("checkboxBlocked").checked;
 
       table.innerHTML =
         "<tr><th>shkeptncontext</th><th>SequenceName</th><th>Projectname</th><th>service</th></tr>";
@@ -25,7 +25,7 @@ function fetchSequences() {
           (object.state == "blocked" && show_blocked) ||
           (object.state == "aborted" && show_aborted)
         ) {
-          var tr = document.createElement("tr");
+          let tr = document.createElement("tr");
           tr.className = object.state;
           tr.innerHTML =
             "<td>" +
@@ -40,13 +40,11 @@ function fetchSequences() {
             "<td>" +
             object.service +
             "</td>" +
-            '<td><a href="viewevents.html?shkeptncontext=' +
+            "<td><a href=\"viewevents.html?shkeptncontext=" +
             object.shkeptncontext +
             "&projectname=" +
             project +
-            '"><button>View Events</button></a>';
-          ("</td>");
-
+            "\"><button>View Events</button></a></td>"
           table.appendChild(tr);
         }
       });
