@@ -168,9 +168,11 @@ func TestTriggerDeliveryNoStageProvided(t *testing.T) {
 				if *event.Type != keptnv2.GetTriggeredEventType("dev.artifact-delivery") {
 					t.Errorf("did not receive correct event: %s", err.Error())
 				}
+				w.Write([]byte(eventContextMockResponse))
 				go func() {
 					receivedEvent <- true
 				}()
+				return
 			} else if strings.Contains(r.RequestURI, "/v1/metadata") {
 				defer r.Body.Close()
 				w.Write([]byte(metadataMockResponse))
