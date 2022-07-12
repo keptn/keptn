@@ -454,54 +454,54 @@ jobs:
           if-no-files-found: error
 
       - name: Write test report
-          id: write_test_report
-          if: always()
-          run: |
-            cd test/go-tests
-            echo "write test report to ${{ env.FINAL_TEST_REPORT_PATH }}"
-            report_template='{"test":$test_name, "${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}":$test_outcome}'
-            
-            test_names=(
-            "${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}/Keptn Install"
-            "${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}/Keptn Auth"
-            )
-            
-            test_outcomes=(
-            "${{ steps.keptn_install.outcome }}"
-            )
-            
-            for ((i=0; i<${#test_names[@]}; i++)); do
-            test_name="${test_names[$i]}"
-            test_outcome="${test_outcomes[$i]}"
-            
-            if [[ "$test_outcome" == "" ]]; then
-             test_outcome="skip"
-            elif [[ "$test_outcome" == "success" ]]; then
-             test_outcome="pass"
-            elif [[ "$test_outcome" == "failure" ]]; then
-             test_outcome="fail"
-            else
-             test_outcome="something went terribly wrong..."
-            fi
-            log_line=$(jq -j -c -n --arg test_name "$test_name" --arg test_outcome "$test_outcome" "$report_template")
-            echo "$log_line" >> "${{ env.FINAL_TEST_REPORT_PATH }}"
-            done
-            
-            cat "${{ env.FINAL_TEST_REPORT_PATH }}"
+        id: write_test_report
+        if: always()
+        run: |
+          cd test/go-tests
+          echo "write test report to ${{ env.FINAL_TEST_REPORT_PATH }}"
+          report_template='{"test":$test_name, "${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}":$test_outcome}'
+          
+          test_names=(
+          "${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}/Keptn Install"
+          "${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}/Keptn Auth"
+          )
+          
+          test_outcomes=(
+          "${{ steps.keptn_install.outcome }}"
+          )
+          
+          for ((i=0; i<${#test_names[@]}; i++)); do
+          test_name="${test_names[$i]}"
+          test_outcome="${test_outcomes[$i]}"
+          
+          if [[ "$test_outcome" == "" ]]; then
+           test_outcome="skip"
+          elif [[ "$test_outcome" == "success" ]]; then
+           test_outcome="pass"
+          elif [[ "$test_outcome" == "failure" ]]; then
+           test_outcome="fail"
+          else
+           test_outcome="something went terribly wrong..."
+          fi
+          log_line=$(jq -j -c -n --arg test_name "$test_name" --arg test_outcome "$test_outcome" "$report_template")
+          echo "$log_line" >> "${{ env.FINAL_TEST_REPORT_PATH }}"
+          done
+          
+          cat "${{ env.FINAL_TEST_REPORT_PATH }}"
 
-            - name: Upload JSON test report as artifact
-              if: always()
-              uses: actions/upload-artifact@v3
-              with:
-                name: test-report-json
-                path: test/go-tests/${{ env.FINAL_TEST_REPORT_PATH }}
+          - name: Upload JSON test report as artifact
+            if: always()
+            uses: actions/upload-artifact@v3
+            with:
+              name: test-report-json
+              path: test/go-tests/${{ env.FINAL_TEST_REPORT_PATH }}
 
-            - name: Upload support archive as an artifact
-              if: always()
-              uses: actions/upload-artifact@v3
-              with:
-                name: support-archive
-                path: support-archive/*.zip
+          - name: Upload support archive as an artifact
+            if: always()
+            uses: actions/upload-artifact@v3
+            with:
+              name: support-archive
+              path: support-archive/*.zip
 
   publish-final-test-report:
     name: Finalize tests and create reports
