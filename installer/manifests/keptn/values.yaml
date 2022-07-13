@@ -85,6 +85,7 @@ nats:
         storageDirectory: /data/
         storageClassName: ""
     securityContext:
+      readOnlyRootFilesystem: true
       allowPrivilegeEscalation: false
       runAsNonRoot: true
       capabilities:
