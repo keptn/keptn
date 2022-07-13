@@ -3,7 +3,9 @@ package cmd
 import (
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
@@ -21,6 +23,7 @@ type migrateWebhooksCmdParams struct {
 
 var migrateWebhooksParams *migrateWebhooksCmdParams
 var ErrResourceNotFound = fmt.Errorf("Resource not found")
+var supportedCurlMethods = [4]string{"POST", "PUT", "GET", "HEAD"}
 
 const webhookURI = "%2Fwebhook%2Fwebhook.yaml"
 const betaApiVersion = "webhookconfig.keptn.sh/v1beta1"
@@ -188,7 +191,112 @@ func migrateAlphaWebhook(webhook *lib.WebHookConfig) (*lib.WebHookConfig, error)
 }
 
 func migrateAlphaRequest(request string) (*lib.Request, error) {
+	newRequest := lib.Request{}
+	curlArr, err := parseCurl(request)
+	if err != nil {
+		return nil, fmt.Errorf("cannot parse curl command: %s", err.Error())
+	}
+
+	curlArr = deleteItem(curlArr, 0, false)
+
+	fmt.Println("zaciatok")
+	fmt.Println(curlArr)
+
+	url, i := extractURL(curlArr)
+	curlArr = deleteItem(curlArr, i, false)
+	newRequest.URL = url
+
+	method, i := extractMethod(curlArr)
+	curlArr = deleteItem(curlArr, i, true)
+	newRequest.Method = method
+
+	payload, i := extractPayload(curlArr)
+	curlArr = deleteItem(curlArr, i, true)
+	newRequest.Payload = payload
+
+	curlArr, headers := extractHeaders(curlArr)
+	newRequest.Headers = headers
+
+	newRequest.Options = strings.Join(curlArr[:], " ")
+
+	fmt.Println("konec")
+	fmt.Println(curlArr)
+
+	fmt.Println(newRequest)
+
 	return nil, nil
+}
+
+func deleteItem(arr []string, index int, previous bool) []string {
+	if index < 0 {
+		return arr
+	}
+	if previous {
+		return append(arr[:index-1], arr[index+1:]...)
+	}
+	return append(arr[:index], arr[index+1:]...)
+}
+
+func extractURL(array []string) (string, int) {
+	for i, item := range array {
+		if strings.HasPrefix(item, "http") {
+			return item, i
+		}
+	}
+	return "", -1
+}
+
+func extractMethod(array []string) (string, int) {
+	for i, item := range array {
+		if item == "-X" || item == "--request" {
+			if i < len(array)-1 {
+				return array[i+1], i + 1
+			}
+		}
+	}
+	return "GET", -1
+}
+
+func extractPayload(array []string) (string, int) {
+	for i, item := range array {
+		if item == "-d" || item == "--data" {
+			if i < len(array)-1 {
+				return array[i+1], i + 1
+			}
+		}
+	}
+	return "", -1
+}
+
+func extractHeaders(array []string) ([]string, []lib.Header) {
+	var headers []lib.Header
+	var newArray []string
+	var indexesToDelete []int
+	previous := false
+	for i, item := range array {
+		if item == "-H" || item == "--header" {
+			header := createHeader(array[i+1])
+			indexesToDelete = append(indexesToDelete, i, i+1)
+			headers = append(headers, header)
+			previous = true
+		} else {
+			if previous {
+				previous = false
+				continue
+			}
+			newArray = append(newArray, item)
+		}
+	}
+
+	return newArray, headers
+}
+
+func createHeader(headerStr string) lib.Header {
+	arr := strings.Split(headerStr, ":")
+	return lib.Header{
+		Key:   arr[0],
+		Value: arr[1],
+	}
 }
 
 func updateWebhookResources(webhook *webhookResource, webhookConfig *lib.WebHookConfig, api *api.APISet) error {
@@ -239,6 +347,103 @@ func checkProjectExists(projectName string, api *api.APISet) (*models.Project, e
 		return project, fmt.Errorf("project does not exist")
 	}
 	return project, nil
+}
+
+// func parseCurl(curl string) ([]string, error) {
+// 	// b, err := ioutil.ReadFile("parsecurl.js")
+// 	// if err != nil {
+// 	// 	fmt.Printf(err.Error())
+// 	// }
+// 	// ctx := v8.NewContext()
+// 	// ctx.RunScript(string(b), "parsecurl.js")
+// 	// ctx.RunScript(fmt.Sprintf("const result = JSON.stringify(parseCurl(%q))", curl), "main.js")
+// 	// val, err := ctx.RunScript("result", "value.js")
+// 	// if err != nil {
+// 	// 	fmt.Printf(err.Error())
+// 	// 	return
+// 	// }
+// 	// fmt.Printf("%s", val)
+
+// 	arr, err := parseCommandLine(curl)
+// 	if err != nil {
+// 		return []string{}, err
+// 	}
+// 	return arr, nil
+// }
+
+func parseCurl(command string) ([]string, error) {
+	var args []string
+	state := "start"
+	current := ""
+	quote := "\""
+	escapeNext := true
+	for i := 0; i < len(command); i++ {
+		c := command[i]
+
+		if state == "quotes" {
+			if string(c) != quote {
+				current += string(c)
+			} else {
+				args = append(args, current)
+				current = ""
+				state = "start"
+			}
+			continue
+		}
+
+		if escapeNext {
+			current += string(c)
+			escapeNext = false
+			continue
+		}
+
+		if c == '\\' {
+			escapeNext = true
+			continue
+		}
+
+		if c == '"' || c == '\'' {
+			state = "quotes"
+			quote = string(c)
+			continue
+		}
+
+		if state == "arg" {
+			if c == ' ' || c == '\t' {
+				args = append(args, current)
+				current = ""
+				state = "start"
+			} else {
+				current += string(c)
+			}
+			continue
+		}
+
+		if c != ' ' && c != '\t' {
+			state = "arg"
+			current += string(c)
+		}
+	}
+
+	if state == "quotes" {
+		return []string{}, errors.New("unclosed quote in command")
+	}
+
+	if current != "" {
+		args = append(args, current)
+	}
+
+	return deleteEmpty(args), nil
+}
+
+func deleteEmpty(s []string) []string {
+	var r []string
+	for _, str := range s {
+		if str != "" {
+			r = append(r, str)
+		}
+	}
+	return r
 }
 
 func init() {
