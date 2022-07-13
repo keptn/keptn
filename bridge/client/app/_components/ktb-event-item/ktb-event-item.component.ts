@@ -4,6 +4,7 @@ import { Trace } from '../../_models/trace';
 import { ClipboardService } from '../../_services/clipboard.service';
 import { DataService } from '../../_services/data.service';
 import { DateUtil } from '../../_utils/date.utils';
+import { AppUtils } from '../../_utils/app.utils';
 
 @Directive({
   selector: `ktb-event-item-detail, [ktb-event-item-detail], [ktbEventItemDetail]`,
@@ -66,12 +67,6 @@ export class KtbEventItemComponent {
   }
 
   isUrl(value: string): boolean {
-    try {
-      // tslint:disable-next-line:no-unused-expression
-      new URL(value);
-    } catch (_) {
-      return false;
-    }
-    return true;
+    return AppUtils.isValidUrl(value);
   }
 }

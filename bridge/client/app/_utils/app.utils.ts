@@ -47,6 +47,16 @@ export class AppUtils {
     }
   }
 
+  public static isValidUrl(value: string): boolean {
+    try {
+      // tslint:disable-next-line:no-unused-expression
+      new URL(value);
+    } catch (_) {
+      return false;
+    }
+    return true;
+  }
+
   public static splitURLPort(url: string): { host: string; port: string } {
     const index = url.lastIndexOf(':');
     let host = url;

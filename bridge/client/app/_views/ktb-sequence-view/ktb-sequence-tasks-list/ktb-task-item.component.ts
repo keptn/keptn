@@ -17,6 +17,7 @@ import { ClipboardService } from '../../../_services/clipboard.service';
 import { DataService } from '../../../_services/data.service';
 import { DateUtil } from '../../../_utils/date.utils';
 import { ActivatedRoute } from '@angular/router';
+import { AppUtils } from '../../../_utils/app.utils';
 
 @Directive({
   selector: `ktb-task-item-detail, [ktb-task-item-detail], [ktbTaskItemDetail]`,
@@ -107,13 +108,7 @@ export class KtbTaskItemComponent implements OnInit, OnDestroy {
   }
 
   isUrl(value: string): boolean {
-    try {
-      // tslint:disable-next-line:no-unused-expression
-      new URL(value);
-    } catch (_) {
-      return false;
-    }
-    return true;
+    return AppUtils.isValidUrl(value);
   }
 
   onClick(item: Trace): void {
