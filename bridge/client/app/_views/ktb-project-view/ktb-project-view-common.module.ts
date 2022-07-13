@@ -10,12 +10,6 @@ import { FlexModule } from '@angular/flex-layout';
 import { KtbLoadingModule } from '../../_components/ktb-loading/ktb-loading.module';
 import { DtMenuModule } from '@dynatrace/barista-components/menu';
 import { DtOverlayModule } from '@dynatrace/barista-components/overlay';
-import { KtbCreateSecretFormModule } from '../../_components/ktb-create-secret-form/ktb-create-secret-form.module';
-import { KtbCreateServiceModule } from '../../_components/ktb-create-service/ktb-create-service.module';
-import { KtbEditServiceModule } from '../../_components/ktb-edit-service/ktb-edit-service.module';
-import { KtbProjectSettingsModule } from '../../_components/ktb-project-settings/ktb-project-settings.module';
-import { KtbSecretsListModule } from '../../_components/ktb-secrets-list/ktb-secrets-list.module';
-import { KtbServiceSettingsModule } from '../../_components/ktb-service-settings/ktb-service-settings.module';
 
 @NgModule({
   declarations: [KtbProjectViewComponent],
@@ -32,12 +26,6 @@ import { KtbServiceSettingsModule } from '../../_components/ktb-service-settings
     KtbLoadingModule,
     KtbPipeModule,
     RouterModule,
-    KtbCreateSecretFormModule,
-    KtbCreateServiceModule,
-    KtbEditServiceModule,
-    KtbProjectSettingsModule,
-    KtbSecretsListModule,
-    KtbServiceSettingsModule,
   ],
 })
 export class KtbProjectViewCommonModule {}
