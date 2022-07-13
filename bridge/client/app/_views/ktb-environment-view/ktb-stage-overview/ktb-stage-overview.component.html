@@ -1,5 +1,5 @@
-<div class="ktb-stage-overview container" fxFlexFill *ngIf="project$ | async as project">
-  <ng-container *ngIf="{ value: selectedStageName$ | async } as selectedStageName">
+<div class="ktb-stage-overview container" fxFlexFill *ngIf="project">
+  <ng-container>
     <div>
       <p><span [textContent]="project.stages.length"></span> Stages</p>
       <dt-filter-field
@@ -14,7 +14,7 @@
       <div *ngIf="isTriggerSequenceOpen; else triggerSequenceClosed">
         <ktb-trigger-sequence
           [projectName]="project.projectName"
-          [stage]="selectedStageName.value"
+          [stage]="selectedStageInfo?.stage?.stageName"
           [stages]="project.getStageNames()"
           [services]="project.getServiceNames()"
           (formClosed)="isTriggerSequenceOpen = false"
@@ -43,7 +43,7 @@
       >
         <ktb-selectable-tile
           *ngFor="let stage of project.getStages(parentStage)"
-          [selected]="selectedStageName.value === stage.stageName"
+          [selected]="selectedStageInfo?.stage?.stageName === stage.stageName"
           (click)="selectStage($event, project, stage)"
         >
           <h2 class="m-0 mt-1 mb-1" [textContent]="stage.stageName"></h2>

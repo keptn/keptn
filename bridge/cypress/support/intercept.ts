@@ -21,6 +21,7 @@ export function interceptEmptyEnvironmentScreen(): void {
 export function interceptEnvironmentScreen(): void {
   const project = 'sockshop';
   interceptProjectBoard();
+  cy.intercept('/api/project/sockshop?approval=true&remediation=true', { fixture: 'project.mock' }).as('project');
   cy.intercept('/api/project/sockshop/customSequences', { fixture: 'custom-sequences.mock' }).as('customSequences');
   cy.intercept('POST', '/api/v1/event', { body: { keptnContext: '6c98fbb0-4c40-4bff-ba9f-b20556a57c8a' } });
   cy.intercept('POST', '/api/controlPlane/v1/project/sockshop/stage/dev/service/carts/evaluation', {
@@ -129,7 +130,6 @@ export function interceptDashboard(): void {
 
 export function interceptProjectBoard(): void {
   interceptMain();
-  cy.intercept('/api/project/sockshop?approval=true&remediation=true', { fixture: 'project.mock' }).as('project');
   cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: false });
 }
 
@@ -247,12 +247,7 @@ export function interceptSequencesPageWithSequenceThatIsNotLoaded(): void {
 }
 
 export function interceptIntegrations(): void {
-  interceptMain();
-  cy.intercept('/api/project/sockshop?approval=true&remediation=true', { fixture: 'project.mock' }).as('project');
-  cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: false });
-  cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' }).as(
-    'projects'
-  );
+  interceptProjectBoard();
   cy.intercept('/api/uniform/registration', { fixture: 'registration.mock' });
   // jmeter-service
   cy.intercept('/api/controlPlane/v1/log?integrationId=355311a7bec3f35bf3abc2484ab09bcba8e2b297&pageSize=100', {
@@ -322,18 +317,12 @@ export function interceptIntegrations(): void {
     '/api/uniform/registration/355311a7bec3f35bf3abc2484ab09bcba8e2b297/subscription/0e021b71-1533-4cfe-875a-b756aa6107ba',
     { body: {} }
   );
+
+  cy.intercept('/api/project/sockshop/sequences/filter', { fixture: 'sequence.filter.mock' }).as('SequencesMetadata');
 }
 
 export function interceptSecrets(): void {
-  cy.fixture('get.project.json').as('initProjectJSON');
-  cy.fixture('metadata.json').as('initmetadata');
-
-  cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfo.mock' });
-  cy.intercept('GET', 'api/v1/metadata', { fixture: 'metadata.json' }).as('metadataCmpl');
-  cy.intercept('GET', 'api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', {
-    fixture: 'get.project.json',
-  }).as('initProjects');
-  cy.intercept('GET', 'api/controlPlane/v1/sequence/dynatrace?pageSize=5', { fixture: 'project.sequences.json' });
+  interceptProjectBoard();
 
   cy.intercept('POST', 'api/secrets/v1/secret', {
     statusCode: 200,
@@ -351,11 +340,7 @@ export function interceptSecrets(): void {
     },
   }).as('getSecrets');
 
-  cy.intercept('GET', 'api/project/dynatrace?approval=true&remediation=true', {
-    statusCode: 200,
-  }).as('getApproval');
-
-  cy.intercept('GET', 'api/project/dynatrace', {
+  cy.intercept('GET', 'api/project/sockshop', {
     statusCode: 200,
     fixture: 'get.approval.json',
   });
@@ -428,7 +413,6 @@ export function interceptEvaluationBoardWithoutDeployment(): void {
 export function interceptHeatmapComponent(): void {
   cy.intercept('/api/v1/metadata', { fixture: 'metadata.mock' });
   cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfoEnableD3Heatmap.mock.json' });
-  cy.intercept('/api/project/sockshop?approval=true&remediation=true', { fixture: 'project.mock' }).as('project');
   cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: false });
   cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
   cy.intercept('GET', '/api/project/sockshop/serviceStates', {

@@ -1,5 +1,5 @@
 import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
-import { filter, map, switchMap, takeUntil, tap } from 'rxjs/operators';
+import { distinctUntilChanged, filter, map, switchMap, takeUntil, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../_services/data.service';
@@ -13,6 +13,7 @@ import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 })
 export class KtbProjectViewComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
+  public console = console;
 
   public logoInvertedUrl = environment?.config?.logoInvertedUrl;
   public hasProject$: Observable<boolean | undefined>;
@@ -36,28 +37,21 @@ export class KtbProjectViewComponent implements OnInit, OnDestroy {
       filter((projectName: string | null): projectName is string => !!projectName)
     );
 
-    const projectTimer$ = projectName$.pipe(
-      switchMap((projectName) => AppUtils.createTimer(0, initialDelayMillis).pipe(map(() => projectName))),
-      takeUntil(this.unsubscribe$)
-    );
-
     const uniformLogTimer$ = projectName$.pipe(
       switchMap(() => AppUtils.createTimer(0, uniformLogInterval)),
       takeUntil(this.unsubscribe$)
     );
 
-    projectTimer$.subscribe((projectName) => {
-      // this is on project-board level because we need the project in environment, service, sequence and settings screen
-      // sequence screen because there is a check for the latest deployment context (lastEventTypes)
-      this.dataService.loadProject(projectName);
-    });
-
     uniformLogTimer$.subscribe(() => {
       this.dataService.loadUnreadUniformRegistrationLogs();
     });
+
     this.hasProject$ = projectName$.pipe(switchMap((projectName) => this.dataService.projectExists(projectName)));
 
-    this.isCreateMode$ = this.route.data.pipe(map((data) => !!data.createMode));
+    this.isCreateMode$ = this.route.data.pipe(
+      map((data) => !!data.createMode),
+      distinctUntilChanged()
+    );
   }
 
   ngOnInit(): void {
