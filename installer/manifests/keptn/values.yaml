@@ -93,6 +93,8 @@ nats:
     enabled: false
   reloader:
     enabled: false
+  exporter:
+    enabled: false
 
 apiGatewayNginx:
   type: ClusterIP
