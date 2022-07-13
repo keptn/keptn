@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Express server specific dependencies.",
   "scripts": {
-    "start": "node --experimental-specifier-resolution=node dist/server/server.js",
+    "start": "node dist/server/server.js",
     "build": "tsc --build",
     "dev": "nodemon --config nodemon.json",
     "test": "node --experimental-vm-modules --experimental-specifier-resolution=node node_modules/jest/bin/jest.js",
