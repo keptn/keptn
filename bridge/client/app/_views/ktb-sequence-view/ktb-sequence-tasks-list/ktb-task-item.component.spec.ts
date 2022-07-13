@@ -90,28 +90,6 @@ describe('KtbEventItemComponent', () => {
     httpMock.expectNone('./api/controlPlane/v1/project/socksohp/stage/dev/service/carts');
   });
 
-  it('isUrl should return true if given valid URL', () => {
-    // given
-    const url = 'https://keptn.sh';
-
-    // when
-    const isUrl = component.isUrl(url);
-
-    // then
-    expect(isUrl).toBeTruthy();
-  });
-
-  it('isUrl should return false if given invalid URL', () => {
-    // given
-    const url = 'keptn.sh';
-
-    // when
-    const isUrl = component.isUrl(url);
-
-    // then
-    expect(isUrl).toBeFalsy();
-  });
-
   function getApprovalTrace(): Trace {
     return Trace.fromJSON({
       data: {
