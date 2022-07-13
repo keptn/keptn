@@ -16,6 +16,8 @@ func Test_GKE(t *testing.T) {
 	t.Run("Test_Webhook", Test_Webhook)
 	t.Run("Test_ExecutingWebhookTargetingClusterInternalAddressesFails", Test_ExecutingWebhookTargetingClusterInternalAddressesFails)
 
+	t.Run("Test_ProvisioningURL", Test_ProvisioningURL)
+
 	t.Run("Test_ResourceServiceGETCommitID", Test_ResourceServiceGETCommitID)
 	t.Run("Test_EvaluationGitCommitID", Test_EvaluationGitCommitID)
 	t.Run("Test_SSHPublicKeyAuth", Test_SSHPublicKeyAuth)
@@ -33,5 +35,4 @@ func Test_GKE(t *testing.T) {
 	t.Run("Test_UniformRegistration_RegistrationOfKeptnIntegration", Test_UniformRegistration_RegistrationOfKeptnIntegration)
 	t.Run("Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods", Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods)
 	t.Run("Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane", Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane)
-	t.Run("Test_ProvisioningURL", Test_ProvisioningURL)
 }
