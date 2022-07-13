@@ -2,7 +2,7 @@ name: ZeroDowntime Tests
 on:
   schedule:
     # * is a special character in YAML so you have to quote this string
-    - cron: '0 1 * * 1' # run zero downtime tests at 1 AM (UTC), every monday (1)
+    - cron:  '0 4 * * 1-5' # run integration tests at 4 AM (UTC), monday to friday (1-5)
   workflow_dispatch: # run zero downtime tests selecting the installation branch and the upgrade chart
     inputs:
       branch:
@@ -12,7 +12,7 @@ on:
       upgradeTo:
         description: 'The helm upgrade command will run with this version (e.g. 0.15.0-dev-PR-7504 or a full address like in the default value )'
         required: true
-        default: 'https://github.com/keptn/helm-charts-dev/raw/gh-pages/packages/keptn-0.18.0-dev.tgz'
+        default: 'https://github.com/keptn/helm-charts-dev/raw/gh-pages/packages/keptn-0.18.1-dev.tgz'
       testUI:
         type: boolean
         description: 'Cypress tests for Bridge will be run in parallel to the zero downtime tests'
@@ -278,18 +278,6 @@ jobs:
           kubectl create secret generic gitea-access -n ${KEPTN_NAMESPACE} --from-literal=username=${GITEA_ADMIN_USER} --from-literal=password=${GITEA_TOKEN} --from-literal=private-key="${GITEA_PRIVATE_KEY}" --from-literal=private-key-pass=${GITEA_PRIVATE_KEY_PASSPHRASE}
           rm gitea-token.txt
 
-      - name: Expose Deployed Services via Istio (for CD use-case)
-        run: |
-          # set ingress-hostname params
-          INGRESS_IP=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-          echo "INGRESS_IP=$INGRESS_IP"
-          kubectl create configmap -n ${KEPTN_NAMESPACE} ingress-config \
-            --from-literal=ingress_hostname_suffix=${INGRESS_IP}.nip.io \
-            --from-literal=ingress_port=80 \
-            --from-literal=ingress_protocol=http \
-            --from-literal=ingress_gateway=public-gateway.istio-system \
-            -oyaml --dry-run=client | kubectl replace -f -
-
       - name: Determine Keptn Endpoint
         id: determine_keptn_endpoint
         timeout-minutes: 5
@@ -307,7 +295,7 @@ jobs:
       - name: Set up gotestfmt
         uses: haveyoudebuggedit/gotestfmt-action@v2.0.0
         with:
-          # Optional: pass GITHUB_TOKEN to avoid rate limiting.
+          # Passing GITHUB_TOKEN to avoid rate limiting.
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Node Dependencies
@@ -318,7 +306,9 @@ jobs:
       - name: Prepare test run
         id: prepare_test_run
         working-directory: test/zero-downtime
-        run: | 
+        run: |
+         mkdir ../../temp_res
+         go install github.com/jstemmer/go-junit-report/v2@v2.0.0
          go get ./...
 
       #######################################################################
@@ -326,22 +316,21 @@ jobs:
       #######################################################################
 
       - name: Zero Downtime Tests
-        timeout-minutes: 90
+        timeout-minutes: 30
         working-directory: test/zero-downtime
         id: test_zero_downtime
         env:
           GOMAXPROCS: 10
           KEPTN_ENDPOINT: ${{ steps.determine_keptn_endpoint.outputs.KEPTN_ENDPOINT }}
         run: |
-          set -euo pipefail 
           
-          go test -json -v -run Test_ZeroDowntime -v -timeout 90m 2>&1 | tee /tmp/gotest.log & GOTEST=$!
-
+          go test -v -json -run Test_ZeroDowntime -timeout 25m > ../../temp_res/gotest.log & GOTEST=$!
+          
           cd ../../bridge &&
           if [[ "${{ github.event.inputs.testUI }}" == 'true' ]]; then
             while [[ $(jobs -pr) ]]; do
-              echo "New Run: "  >> /tmp/uitest.log 
-              npm run test:ui >> /tmp/uitest.log 2>&1 
+              echo "New Run: " >> /tmp/uitest.log
+              npm run test:ui >> /tmp/uitest.log 2>&1
             done
           else
             echo "UI tests will not run"
@@ -349,20 +338,65 @@ jobs:
         
           wait $GOTEST
           if [[ $? -ne 0 ]]; then
-            echo "::error::Zero Downtime go test failed - exiting"
-            echo "##[set-output name=FAILURE;]$(echo true)"
+            echo " Zero Downtime go test failed - exiting "
+            echo "::error::Zero Downtime go test failed - exiting"          
             exit 1
           fi
+          echo "Zero Downtime go test finished, storing result"
+
+      - name: Generate XML
+        if: always()
+        run: go-junit-report -in temp_res/gotest.log -parser gojson -out temp_res/gotest.xml
+
+      - name: Generate test Summary
+        uses: test-summary/action@v1
+        with:
+          paths: "temp_res/*.xml"
+          output: temp_res/test-summary.md
+        if: always()
 
       - name: Format go test log output
         if: always()
         run: |
           set -euo pipefail
-          cat /tmp/gotest.log | gotestfmt
+          cat temp_res/gotest.log 2>&1 | gotestfmt
 
       - name: Format cypress log output
+        id: log_output
         if: always() && github.event.inputs.testUI == 'true'
         run: cat /tmp/uitest.log
+
+      - name: Generate Report
+        if: always()
+        id: report
+        run: |
+          
+          FINAL=$(cat temp_res/test-summary.md) 
+          echo "$FINAL" >>  $GITHUB_STEP_SUMMARY
+          echo "##[set-output name=FINAL;]$(echo ${FINAL})"
+
+      - name: Generate Github Summary
+        if: always()
+        env:
+          TESTUI: github.event.inputs.testUI
+          UIOUT: steps.log_output.outcome
+        run: |  
+          if [[ $TESTUI == 'true' && $UIOUT != 'success' ]]; then
+             echo "UI test failed!" >> $GITHUB_STEP_SUMMARY 
+          fi
+          if [[ $GITHUB_EVENT_NAME == 'schedule' ]]; then
+             echo "* Triggered by: Scheduled build" >> $GITHUB_STEP_SUMMARY
+          else
+             echo "* Triggered by: @$GITHUB_ACTOR" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          
+          echo "* Branch: $BRANCH" >> $GITHUB_STEP_SUMMARY
+          echo "* Version: $VERSION" >> $GITHUB_STEP_SUMMARY
+          echo "* Datetime: $DATETIME" >> $GITHUB_STEP_SUMMARY
+          echo "* Commit: $GIT_SHA" >> $GITHUB_STEP_SUMMARY
+          echo "* Upgraded to: $UPGRADE_HELM_CHART" >> $GITHUB_STEP_SUMMARY
+          echo "" >>$GITHUB_STEP_SUMMARY
 
       #######################################################################
       # TEARDOWN
@@ -437,13 +471,21 @@ jobs:
           name: support-archive
           path: support-archive/*.zip
 
-        # Upload the original go test log as an artifact for later review.
+      # Upload the original go test log as an artifact for later review.
       - name: Upload go test log
         uses: actions/upload-artifact@v3
         if: always()
         with:
           name: go-test-log
-          path: /tmp/gotest.log
+          path: temp_res/gotest.xml
+          if-no-files-found: error
+
+      - name: Upload go test summary
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: summary
+          path: temp_res/test-summary.md
           if-no-files-found: error
 
       # Upload the original cypress test log as an artifact for later review.
@@ -455,47 +497,6 @@ jobs:
           path: /tmp/uitest.log
           if-no-files-found: error
 
-  publish-final-test-report:
-    name: Finalize tests and create reports
-    needs: zd-test
-    if:  steps.test_aggregated.outcome != 'success'  # always run, regardless of the outcome of the last job
-    runs-on: ubuntu-20.04
-    env:
-      BRANCH: ${{ needs.zd-test.outputs.BRANCH }}
-      TEST_REPORTS_PATH: "./tmp/"
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v3
-
-      - name: Set up Node
-        uses: actions/setup-node@v3.3.0
-        with:
-          node-version: 16
-      - run: npm install ndjson-parse@1.0.4
-
-      - name: Download test reports
-        uses: actions/download-artifact@v3
-        with:
-          name: test-report-json
-          path: ${{ env.TEST_REPORTS_PATH }}
-
-      - name: Download all artifacts from last successful build of specified branch
-        uses: dawidd6/action-download-artifact@v2.21.1
-        with:
-          # Download last successful artifact from a CI build
-          github_token: ${{secrets.GITHUB_TOKEN}}
-          workflow: CI.yml
-          run_id: ${{ needs.zd-test.outputs.ARTIFACT_RUN_ID }}
-          name: build-config
-          # directory where to extract artifacts to
-          path: ./dist/build-config
-
-      - name: Load Build-Config Environment from ./dist/build-config/build-config.env
-        id: load_build_env
-        uses: c-py/action-dotenv-to-setenv@v3
-        with:
-          env-file: ./dist/build-config/build-config.env
-
       - name: Overwrite VERSION String for nightly builds
         if: env.BRANCH == 'master'
         run: |
@@ -505,24 +506,18 @@ jobs:
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
 
       - name: Print Build-Config
+        if: always()
         run: |
           echo VERSION=${VERSION}
           echo BRANCH=${BRANCH}
 
       - name: Formulate bug issue on errors
         id: formulate_bug_issue
+        if: always() && steps.test_zero_downtime.outcome != 'success'
         env:
-          FINAL_TEST_REPORT_FILEPATH_MARKDOWN: ${{ env.FINAL_TEST_REPORT_FILEPATH_MARKDOWN }}
+          FINAL: ${{ steps.report.outputs.FINAL }}
         run: |
-          REPORT=$(cat "$FINAL_TEST_REPORT_FILEPATH_MARKDOWN")
-          
-          if [[ "$REPORT" == *"fail"* ]]; then
             echo "ZERO DOWNTIME TESTS FAILED! - Creating GH issue description now..."
-          
-            # adding emojis to test report
-            REPORT=$(echo "${REPORT//pass/:white_check_mark: pass}")
-            REPORT=$(echo "${REPORT//fail/:x: fail}")
-            REPORT=$(echo "${REPORT//skip/:yellow_circle: skip}")
           
             # create a markdown file that contains details about the error
             echo "---" > zd-test-failed.md
@@ -532,31 +527,14 @@ jobs:
             echo "" >> zd-test-failed.md
             echo "* Link to run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> zd-test-failed.md
           
-            if [[ $GITHUB_EVENT_NAME == 'schedule' ]]; then
-              echo "* Triggered by: Scheduled build" >> zd-test-failed.md
-            else
-              echo "* Triggered by: @$GITHUB_ACTOR" >> zd-test-failed.md
-            fi
-          
-            echo "* Branch: $BRANCH" >> zd-test-failed.md
-            echo "* Version: $VERSION" >> zd-test-failed.md
-            echo "* Datetime: $DATETIME" >> zd-test-failed.md
-            echo "* Commit: $GIT_SHA" >> zd-test-failed.md
-            echo "" >> zd-test-failed.md
-          
-            # print report
-            echo "$REPORT" >> zd-test-failed.md
+            echo "$FINAL" >> zd-test-failed.md
           
             echo "" >> zd-test-failed.md
-            echo "Note: This issue was auto-generated from [integration_tests.yml](.github/workflows/integration_tests.yml)" >> zd-test-failed.md
-          
-            echo "##[set-output name=INTEGRATION_TESTS_FAILED;]true"
-          else
-            echo "Integration tests passed, moving on..."
-          fi
+            echo "Note: This issue was auto-generated from [zero-downtime-tests.yml](.github/workflows/zero-downtime-tests.yml)" >> zd-test-failed.md
+            cat zd-test-failed.md
 
       - name: Create issue if tests failed
-        if: always() && github.event_name == 'schedule' && steps.formulate_bug_issue.outputs.INTEGRATION_TESTS_FAILED == 'true'
+        if: always() && github.event_name == 'schedule' && steps.test_zero_downtime.outcome != 'success'
         uses: JasonEtco/create-an-issue@v2.6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
