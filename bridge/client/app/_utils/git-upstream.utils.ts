@@ -2,7 +2,7 @@ import { IGitDataExtended, IGitHttpsConfiguration, IGitSshConfiguration } from '
 import {
   IGitData,
   IRequiredGitData,
-} from '../_components/ktb-project-settings/ktb-project-settings-git/ktb-project-settings-git.utils';
+} from '../_views/ktb-settings-view/ktb-project-settings/ktb-project-settings-git/ktb-project-settings-git.utils';
 
 export function isGitHttps(data: IGitDataExtended): data is IGitHttpsConfiguration {
   return !isGitInputWithSsh(data) || data.hasOwnProperty('https');
