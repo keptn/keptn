@@ -60,7 +60,7 @@ jobs:
       RUN_CONTINUOUS_DELIVERY_TEST: "true"
       TEST_REPORT_FOLDER: tmp
       FINAL_TEST_REPORT_FOLDER: tmp
-      FINAL_TEST_REPORT_PATH: tmp/.log
+      FINAL_TEST_REPORT_PATH: tmp/gotest.log
       TEST_REPORT_FILENAME_SUFFIX: test-report-${{ github.run_id }}-${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}.log
     outputs:
       BRANCH: ${{ steps.determine_branch.outputs.BRANCH }}
