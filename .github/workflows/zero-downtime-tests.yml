@@ -350,6 +350,7 @@ jobs:
           wait $GOTEST
           if [[ $? -ne 0 ]]; then
             echo "::error::Zero Downtime go test failed - exiting"
+            echo "##[set-output name=FAILURE;]$(echo true)"
             exit 1
           fi
 
@@ -454,67 +455,14 @@ jobs:
           path: /tmp/uitest.log
           if-no-files-found: error
 
-      - name: Write test report
-        id: write_test_report
-        if: always()
-        run: |
-          cd test/go-tests
-          echo "write test report to ${{ env.FINAL_TEST_REPORT_PATH }}"
-          report_template='{"test":$test_name, "${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}":$test_outcome}'
-          
-          test_names=(
-          "${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}/Keptn Install"
-          "${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}/Keptn Auth"
-          )
-          
-          test_outcomes=(
-          "${{ steps.keptn_install.outcome }}"
-          )
-          
-          for ((i=0; i<${#test_names[@]}; i++)); do
-          test_name="${test_names[$i]}"
-          test_outcome="${test_outcomes[$i]}"
-          
-          if [[ "$test_outcome" == "" ]]; then
-           test_outcome="skip"
-          elif [[ "$test_outcome" == "success" ]]; then
-           test_outcome="pass"
-          elif [[ "$test_outcome" == "failure" ]]; then
-           test_outcome="fail"
-          else
-           test_outcome="something went terribly wrong..."
-          fi
-          log_line=$(jq -j -c -n --arg test_name "$test_name" --arg test_outcome "$test_outcome" "$report_template")
-          echo "$log_line" >> "${{ env.FINAL_TEST_REPORT_PATH }}"
-          done
-          
-          cat "${{ env.FINAL_TEST_REPORT_PATH }}"
-
-          - name: Upload JSON test report as artifact
-            if: always()
-            uses: actions/upload-artifact@v3
-            with:
-              name: test-report-json
-              path: test/go-tests/${{ env.FINAL_TEST_REPORT_PATH }}
-
-          - name: Upload support archive as an artifact
-            if: always()
-            uses: actions/upload-artifact@v3
-            with:
-              name: support-archive
-              path: support-archive/*.zip
-
   publish-final-test-report:
     name: Finalize tests and create reports
     needs: zd-test
-    if: always() # always run, regardless of the outcome of the last job
+    if:  steps.test_aggregated.outcome != 'success'  # always run, regardless of the outcome of the last job
     runs-on: ubuntu-20.04
     env:
       BRANCH: ${{ needs.zd-test.outputs.BRANCH }}
       TEST_REPORTS_PATH: "./tmp/"
-      FINAL_TEST_REPORTS_FOLDER: "./final-test-reports/"
-      FINAL_TEST_REPORT_FILEPATH_JSON: "./final-test-reports/final-test-report.json"
-      FINAL_TEST_REPORT_FILEPATH_MARKDOWN: "./final-test-reports/final-test-report.md"
     steps:
       - name: Check out code
         uses: actions/checkout@v3
@@ -530,100 +478,6 @@ jobs:
         with:
           name: test-report-json
           path: ${{ env.TEST_REPORTS_PATH }}
-
-      - name: Build multi-platform test report
-        uses: actions/github-script@v6.1.0
-        env:
-          TEST_REPORTS_PATH: ${{ env.TEST_REPORTS_PATH }}
-          FINAL_TEST_REPORTS_FOLDER: ${{ env.FINAL_TEST_REPORTS_FOLDER }}
-          FINAL_TEST_REPORT_FILEPATH_JSON: ${{ env.FINAL_TEST_REPORT_FILEPATH_JSON }}
-        with:
-          script: |
-            ndJsonParser = require('ndjson-parse');
-            fs = require('fs');
-            
-            const {TEST_REPORTS_PATH, FINAL_TEST_REPORT_FILEPATH_JSON, FINAL_TEST_REPORTS_FOLDER} = process.env
-            const jsonReportData = [];
-            
-            const fileList = fs.readdirSync(TEST_REPORTS_PATH);
-            fileList.forEach(fileName => {1
-              console.log(`Reading file: ${fileName}`);
-              const platformReportFile = fs.readFileSync(TEST_REPORTS_PATH + fileName, {encoding:'utf8', flag:'r'});
-              const platformTestReportRaw = ndJsonParser(platformReportFile);
-            
-              // Only pick the test results that have a format like this: Test_GKE/Test_name
-              // There are some other results in there for the whole package for example, that we don't want
-              platformTestReportRaw.forEach(platformTestResult => {
-                if(platformTestResult.test.includes("/")) {
-                  jsonReportData.push(platformTestResult);
-                }
-              });
-            });
-            
-            const testResultMap = {};
-            
-            jsonReportData.forEach(testResult => {
-              const trimmedTestResult = { ...testResult, test: testResult.test.split("/")[1] }
-            
-              // If this is a new testcase the result list needs to be created first
-              if (!(trimmedTestResult.test in testResultMap)) {
-                testResultMap[trimmedTestResult.test] = [];
-              }
-            
-              // Add to result list
-              testResultMap[trimmedTestResult.test].push(trimmedTestResult)
-            });
-            
-            const finalTestReport = [];
-            const allPlatforms = [];
-            
-            // Create properly formatted final test report
-            Object.entries(testResultMap).forEach(([test, testResults]) => {
-              const finalResult = {};
-              finalResult.test = test;
-              testResults.forEach(result => {
-                const {test, ...results} = result;
-                Object.assign(finalResult, results);
-            
-                const currentPlatform = Object.keys(results)[0];
-                if(!allPlatforms.includes(currentPlatform)) {
-                  allPlatforms.push(currentPlatform);
-                }
-              });
-              finalTestReport.push(finalResult);
-            });
-            
-            // Fill in platforms where a test was not executed
-            finalTestReport.forEach(testResult => {
-              allPlatforms.forEach(platform => {
-                if(!(platform in testResult)) {
-                  testResult[platform] = "skip";
-                }
-              });
-            });
-            
-            if(!fs.existsSync(FINAL_TEST_REPORTS_FOLDER)) {
-              fs.mkdirSync(FINAL_TEST_REPORTS_FOLDER);
-            }
-            fs.writeFileSync(FINAL_TEST_REPORT_FILEPATH_JSON, JSON.stringify(finalTestReport));
-
-      - name: Generate Markdown Test Report
-        run: |
-          npx tablemark-cli@v2.0.0 "${{ env.FINAL_TEST_REPORT_FILEPATH_JSON }}" > "${{ env.FINAL_TEST_REPORT_FILEPATH_MARKDOWN }}" -N -c Test
-
-      - name: Upload final JSON test report as an artifact
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: final-test-report-json
-          path: ${{ env.FINAL_TEST_REPORT_FILEPATH_JSON }}
-
-      - name: Upload final Markdown test report as an artifact
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: final-test-report-markdown
-          path: ${{ env.FINAL_TEST_REPORT_FILEPATH_MARKDOWN }}
 
       - name: Download all artifacts from last successful build of specified branch
         uses: dawidd6/action-download-artifact@v2.21.1
