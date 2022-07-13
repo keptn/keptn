@@ -3,8 +3,12 @@ package handler
 import (
 	"fmt"
 	"net/http"
+	"sort"
 
 	"github.com/gin-gonic/gin"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/keptn/shipyard-controller/common"
+	"github.com/keptn/keptn/shipyard-controller/models"
 )
 
 type IDebugHandler interface {
@@ -30,10 +34,10 @@ func NewDebugHandler(debugManager IDebugManager) *DebugHandler {
 // @Description  Get all keptn projects
 // @Tags         Project
 // @Success      200                  {object}  []apimodels.ExpandedProject     "ok"
-// @Failure      404                  {object}  models.Error                    "not found"
 // @Failure      500                  {object}  models.Error                    "Internal error"
 // @Router       /debug/project [get]
 func (dh *DebugHandler) GetAllProjects(c *gin.Context) {
+	params := &models.GetProjectParams{}
 	projects, err := dh.DebugManager.GetAllProjects()
 
 	if err != nil {
@@ -41,12 +45,26 @@ func (dh *DebugHandler) GetAllProjects(c *gin.Context) {
 		return
 	}
 
-	if len(projects) == 0 {
-		SetNotFoundErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, "Not Found"))
-		return
+	sort.Slice(projects, func(i, j int) bool {
+		return projects[i].ProjectName < projects[j].ProjectName
+	})
+
+	var payload = &apimodels.ExpandedProjects{
+		PageSize:    0,
+		NextPageKey: "0",
+		TotalCount:  0,
+		Projects:    []*apimodels.ExpandedProject{},
 	}
 
-	c.JSON(http.StatusOK, projects)
+	paginationInfo := common.Paginate(len(projects), params.PageSize, params.NextPageKey)
+	totalCount := len(projects)
+	if paginationInfo.NextPageKey < int64(totalCount) {
+		payload.Projects = append(payload.Projects, projects[paginationInfo.NextPageKey:paginationInfo.EndIndex]...)
+	}
+
+	payload.TotalCount = float64(totalCount)
+	payload.NextPageKey = paginationInfo.NewNextPageKey
+	c.JSON(http.StatusOK, payload)
 }
 
 // GetAllSequencesForProject godoc
@@ -55,10 +73,10 @@ func (dh *DebugHandler) GetAllProjects(c *gin.Context) {
 // @Tags         Sequence
 // @Param        project              path      string                    true "The name of the project"
 // @Success      200                  {object}  []models.SequenceState    "ok"
-// @Failure      404                  {object}  models.Error                    "not found"
 // @Failure      500                  {object}  models.Error              "Internal error"
 // @Router       /debug/project/{project} [get]
 func (dh *DebugHandler) GetAllSequencesForProject(c *gin.Context) {
+	params := &models.GetProjectParams{}
 	projectName := c.Param("project")
 	sequences, err := dh.DebugManager.GetAllSequencesForProject(projectName)
 
@@ -67,12 +85,20 @@ func (dh *DebugHandler) GetAllSequencesForProject(c *gin.Context) {
 		return
 	}
 
-	if len(sequences) == 0 {
-		SetNotFoundErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, "Not Found"))
-		return
+	var payload = &apimodels.SequenceStates{
+		PageSize:   0,
+		TotalCount: 0,
+		States:     []apimodels.SequenceState{},
 	}
 
-	c.JSON(http.StatusOK, sequences)
+	paginationInfo := common.Paginate(len(sequences), params.PageSize, params.NextPageKey)
+	totalCount := len(sequences)
+	if paginationInfo.NextPageKey < int64(totalCount) {
+		payload.States = append(payload.States, sequences[paginationInfo.NextPageKey:paginationInfo.EndIndex]...)
+	}
+
+	payload.TotalCount = int64(totalCount)
+	c.JSON(http.StatusOK, payload)
 }
 
 // GetSequenceByID godoc
@@ -114,6 +140,7 @@ func (dh *DebugHandler) GetSequenceByID(c *gin.Context) {
 // @Failure      500                  {object}  models.Error                       "Internal error"
 // @Router       /debug/project/{project}/shkeptncontext/{shkeptncontext}/event [get]
 func (dh *DebugHandler) GetAllEvents(c *gin.Context) {
+	params := &models.GetProjectParams{}
 	shkeptncontext := c.Param("shkeptncontext")
 	projectName := c.Param("project")
 
@@ -124,15 +151,24 @@ func (dh *DebugHandler) GetAllEvents(c *gin.Context) {
 		return
 	}
 
-	if len(events) == 0 {
-		SetNotFoundErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, "Not Found"))
-		return
+	var payload = &apimodels.Events{
+		PageSize:    0,
+		NextPageKey: "0",
+		TotalCount:  0,
+		Events:      []*apimodels.KeptnContextExtendedCE{},
 	}
 
-	c.JSON(http.StatusOK, events)
+	paginationInfo := common.Paginate(len(events), params.PageSize, params.NextPageKey)
+	totalCount := len(events)
+	if paginationInfo.NextPageKey < int64(totalCount) {
+		payload.Events = append(payload.Events, events[paginationInfo.NextPageKey:paginationInfo.EndIndex]...)
+	}
+
+	payload.TotalCount = float64(totalCount)
+	c.JSON(http.StatusOK, payload)
 }
 
-// GetAllProjects godoc
+// GetEventByID godoc
 // @Summary      Get a single Event
 // @Description  Gets a single event of a project with the given shkeptncontext and event_id
 // @Tags         Sequence

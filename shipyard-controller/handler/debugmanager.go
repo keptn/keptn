@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"fmt"
+
 	"github.com/keptn/go-utils/pkg/api/models"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/common"
@@ -11,7 +13,7 @@ type IDebugManager interface {
 	GetAllProjects() ([]*models.ExpandedProject, error)
 	GetSequenceByID(projectName string, shkeptncontext string) (models.SequenceState, error)
 	GetAllSequencesForProject(projectName string) ([]models.SequenceState, error)
-	GetAllEvents(projectName string, shkeptncontext string) ([]models.KeptnContextExtendedCE, error)
+	GetAllEvents(projectName string, shkeptncontext string) ([]*models.KeptnContextExtendedCE, error)
 	GetEventByID(projectName string, shkeptncontext string, eventId string) (models.KeptnContextExtendedCE, error)
 }
 
@@ -50,10 +52,18 @@ func (dm *DebugManager) GetAllSequencesForProject(projectName string) ([]models.
 	return sequences.States, err
 }
 
-func (dm *DebugManager) GetAllEvents(projectName string, shkeptncontext string) ([]models.KeptnContextExtendedCE, error) {
+func (dm *DebugManager) GetAllEvents(projectName string, shkeptncontext string) ([]*models.KeptnContextExtendedCE, error) {
 	events, err := dm.eventRepo.GetEvents(projectName, common.EventFilter{KeptnContext: &shkeptncontext})
 
-	return events, err
+	eventsPointer := make([]*models.KeptnContextExtendedCE, len(events))
+
+	fmt.Println("here")
+	for i, _ := range events {
+		eventsPointer[i] = &events[i]
+		fmt.Println(eventsPointer[i])
+	}
+
+	return eventsPointer, err
 }
 
 func (dm *DebugManager) GetEventByID(projectName string, shkeptncontext string, eventId string) (models.KeptnContextExtendedCE, error) {
