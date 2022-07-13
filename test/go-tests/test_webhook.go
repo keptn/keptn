@@ -489,12 +489,3 @@ func getWebhookYamlWithSubscriptionIDs(t *testing.T, taskTypes []string, project
 	}
 	return webhookYamlWithSubscriptionIDs
 }
-
-func DeleteFile(t *testing.T, shipyardFilePath string) {
-	func() {
-		err := os.Remove(shipyardFilePath)
-		if err != nil {
-			t.Logf("Could not delete tmp file: %s", err.Error())
-		}
-	}()
-}

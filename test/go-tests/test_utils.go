@@ -691,6 +691,15 @@ func StringArr(el ...string) []string {
 	return el
 }
 
+func DeleteFile(t *testing.T, filePath string) {
+	func() {
+		err := os.Remove(filePath)
+		if err != nil {
+			t.Logf("Could not delete tmp file: %s", err.Error())
+		}
+	}()
+}
+
 func VerifySequenceEndsUpInState(t *testing.T, projectName string, context *models.EventContext, timeout time.Duration, desiredStates []string) {
 	t.Logf("waiting for state with keptnContext %s to have the status %s", *context.KeptnContext, desiredStates)
 	require.Eventuallyf(t, func() bool {
