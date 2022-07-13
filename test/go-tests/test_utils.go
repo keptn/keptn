@@ -635,8 +635,8 @@ func GetEventsOfType(keptnContext, projectName, stage, eventType string) ([]*mod
 
 func storeWithCommit(t *testing.T, projectName, stage, serviceName, content, uri string) string {
 
-	ctx, _ := context.WithCancel(context.Background())
-	//defer closeInternalKeptnAPI()
+	ctx, closeInternalKeptnAPI := context.WithCancel(context.Background())
+	defer closeInternalKeptnAPI()
 	internalKeptnAPI, err := GetInternalKeptnAPI(ctx, "service/resource-service", "8889", "8080")
 	require.Nil(t, err)
 	t.Log("Storing new slo file")
@@ -1046,8 +1046,8 @@ func GetGiteaUser() string {
 
 // RecreateGitUpstreamRepository creates a kubernetes job that (re)creates the upstream repo for a project on the internal gitea instance
 func RecreateGitUpstreamRepository(project string) error {
-	ctx, _ := context.WithCancel(context.Background())
-	//defer closeInternalKeptnAPI()
+	ctx, closeInternalKeptnAPI := context.WithCancel(context.Background())
+	defer closeInternalKeptnAPI()
 	internalKeptnAPI, err := GetInternalKeptnAPI(ctx, "service/gitea-http", "3002", "3000")
 
 	if err != nil {

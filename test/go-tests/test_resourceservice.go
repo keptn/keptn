@@ -87,8 +87,8 @@ func Test_ResourceServiceBasic(t *testing.T) {
 		GitCredentials: &gitCredentials,
 	}
 
-	ctx, _ := context.WithCancel(context.Background())
-	//defer closeInternalKeptnAPI()
+	ctx, closeInternalKeptnAPI := context.WithCancel(context.Background())
+	defer closeInternalKeptnAPI()
 	internalKeptnAPI, err := GetInternalKeptnAPI(ctx, "service/resource-service", "8888", "8080")
 	require.Nil(t, err)
 
