@@ -29,18 +29,24 @@ func NewDebugHandler(debugManager IDebugManager) *DebugHandler {
 // @Summary      Get all keptn projects
 // @Description  Get all keptn projects
 // @Tags         Project
-// @Success      200                  {object}  []apimodels.ExpandedProject      "ok"
-// @Failure      404                  {object}  models.Error                     "Not found"
+// @Success      200                  {object}  []apimodels.ExpandedProject     "ok"
+// @Failure      404                  {object}  models.Error                    "not found"
+// @Failure      500                  {object}  models.Error                    "Internal error"
 // @Router       /debug/project [get]
 func (dh *DebugHandler) GetAllProjects(c *gin.Context) {
 	projects, err := dh.DebugManager.GetAllProjects()
 
 	if err != nil {
-		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetInternalServerErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, projects)
+	if len(projects) == 0 {
+		SetNotFoundErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, "Not Found"))
+		return
+	}
+
+	c.JSON(http.StatusOK, projects)
 }
 
 // GetAllSequencesForProject godoc
@@ -49,18 +55,24 @@ func (dh *DebugHandler) GetAllProjects(c *gin.Context) {
 // @Tags         Sequence
 // @Param        project              path      string                    true "The name of the project"
 // @Success      200                  {object}  []models.SequenceState    "ok"
-// @Failure      404                  {object}  models.Error              "Not found"
+// @Failure      404                  {object}  models.Error                    "not found"
+// @Failure      500                  {object}  models.Error              "Internal error"
 // @Router       /debug/project/{project} [get]
 func (dh *DebugHandler) GetAllSequencesForProject(c *gin.Context) {
 	projectName := c.Param("project")
 	sequences, err := dh.DebugManager.GetAllSequencesForProject(projectName)
 
 	if err != nil {
-		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetInternalServerErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, sequences)
+	if len(sequences) == 0 {
+		SetNotFoundErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, "Not Found"))
+		return
+	}
+
+	c.JSON(http.StatusOK, sequences)
 }
 
 // GetSequenceByID godoc
@@ -70,30 +82,36 @@ func (dh *DebugHandler) GetAllSequencesForProject(c *gin.Context) {
 // @Param        project              path      string                    true  "The name of the project"
 // @Param        shkeptncontext       path      string                    true  "The shkeptncontext"
 // @Success      200                  {object}  models.SequenceState      "ok"
-// @Failure      404                  {object}  models.Error              "Not found"
+// @Failure      404                  {object}  models.Error              "not found"
+// @Failure      500                  {object}  models.Error              "Internal error"
 // @Router       /debug/project/{project}/shkeptncontext/{shkeptncontext} [get]
 func (dh *DebugHandler) GetSequenceByID(c *gin.Context) {
 	shkeptncontext := c.Param("shkeptncontext")
 	projectName := c.Param("project")
-
 	sequence, err := dh.DebugManager.GetSequenceByID(projectName, shkeptncontext)
 
 	if err != nil {
-		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetInternalServerErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, sequence)
+	if &sequence == nil {
+		SetNotFoundErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, "Not Found"))
+		return
+	}
+
+	c.JSON(http.StatusOK, sequence)
 }
 
 // GetAllEvents godoc
 // @Summary      Get all the Events
 // @Description  Gets all the events of a project with the given shkeptncontext
 // @Tags         Sequence
-// @Param        project              path      string                    true  "The name of the project"
-// @Param        shkeptncontext       path      string                    true  "The shkeptncontext"
+// @Param        project              path      string                             true  "The name of the project"
+// @Param        shkeptncontext       path      string                             true  "The shkeptncontext"
 // @Success      200                  {object}  []models.KeptnContextExtendedCE    "ok"
-// @Failure      404                  {object}  models.Error                       "Not found"
+// @Failure      404                  {object}  models.Error                       "not found"
+// @Failure      500                  {object}  models.Error                       "Internal error"
 // @Router       /debug/project/{project}/shkeptncontext/{shkeptncontext}/event [get]
 func (dh *DebugHandler) GetAllEvents(c *gin.Context) {
 	shkeptncontext := c.Param("shkeptncontext")
@@ -102,22 +120,28 @@ func (dh *DebugHandler) GetAllEvents(c *gin.Context) {
 	events, err := dh.DebugManager.GetAllEvents(projectName, shkeptncontext)
 
 	if err != nil {
-		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetInternalServerErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, events)
+	if len(events) == 0 {
+		SetNotFoundErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, "Not Found"))
+		return
+	}
+
+	c.JSON(http.StatusOK, events)
 }
 
 // GetAllProjects godoc
 // @Summary      Get a single Event
 // @Description  Gets a single event of a project with the given shkeptncontext and event_id
 // @Tags         Sequence
-// @Param        project              path      string                    true  "The name of the project"
-// @Param        shkeptncontext       path      string                    true  "The shkeptncontext"
-// @Param        event_id             path      string                    true  "The Id of the event"
+// @Param        project              path      string                             true  "The name of the project"
+// @Param        shkeptncontext       path      string                             true  "The shkeptncontext"
+// @Param        event_id             path      string                             true  "The Id of the event"
 // @Success      200                  {object}  models.KeptnContextExtendedCE      "ok"
-// @Failure      404                  {object}  models.Error                       "Not found"
+// @Failure      404                  {object}  models.Error                       "not found"
+// @Failure      500                  {object}  models.Error                       "Internal error"
 // @Router       /debug/project/{project}/shkeptncontext/{shkeptncontext}/event/{event_id} [get]
 func (dh *DebugHandler) GetEventByID(c *gin.Context) {
 	shkeptncontext := c.Param("shkeptncontext")
@@ -127,9 +151,14 @@ func (dh *DebugHandler) GetEventByID(c *gin.Context) {
 	event, err := dh.DebugManager.GetEventByID(projectName, shkeptncontext, eventId)
 
 	if err != nil {
-		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetInternalServerErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, event)
+	if &event == nil {
+		SetNotFoundErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, "Not Found"))
+		return
+	}
+
+	c.JSON(http.StatusOK, event)
 }
