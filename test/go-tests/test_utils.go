@@ -582,10 +582,6 @@ func CreateTmpFile(fileNamePattern, fileContent string) (string, error) {
 	return file.Name(), nil
 }
 
-func CreateTmpDir() (string, error) {
-	return ioutil.TempDir("", "")
-}
-
 func ExecuteCommand(cmd string) (string, error) {
 	split := strings.Split(cmd, " ")
 	if len(split) == 0 {

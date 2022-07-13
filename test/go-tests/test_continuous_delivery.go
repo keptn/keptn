@@ -2,7 +2,6 @@ package go_tests
 
 import (
 	"github.com/mholt/archiver/v3"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -132,13 +131,12 @@ func Test_ContinuousDelivery(t *testing.T) {
 	chartFileName := "helloservice.tgz"
 	serviceChartSrcPath := path.Join(repoLocalDir, "helm-charts", "helloservice")
 
-	serviceArchiveBaseDir, err := ioutil.TempDir("", "cd-test-*")
+	serviceArchiveBaseDir := t.TempDir()
 	defer func() {
 		if err := os.RemoveAll(serviceArchiveBaseDir); err != nil {
 			t.Logf("could not remove temp dir '%s': %v", serviceArchiveBaseDir, err)
 		}
 	}()
-	require.Nil(t, err)
 
 	serviceChartArchivePath := path.Join(serviceArchiveBaseDir, "helm-charts", chartFileName)
 	serviceJmeterDir := repoLocalDir + "/jmeter"

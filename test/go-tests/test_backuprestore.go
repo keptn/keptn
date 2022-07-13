@@ -2,7 +2,6 @@ package go_tests
 
 import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -30,13 +29,12 @@ func Test_BackupRestore(t *testing.T) {
 	keptnNamespace := GetKeptnNameSpaceFromEnv()
 	secretFileName := "-credentials.yaml"
 
-	mongoDBBackupFolder, err := ioutil.TempDir("", "mongodb-backup")
+	mongoDBBackupFolder := t.TempDir()
 	defer func() {
 		if err := os.RemoveAll(mongoDBBackupFolder); err != nil {
 			t.Logf("could not remove temp dir '%s': %v", mongoDBBackupFolder, err)
 		}
 	}()
-	require.Nil(t, err)
 
 	t.Logf("Creating a new project %s with a Gitea Upstream", projectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(testingShipyard)
