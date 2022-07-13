@@ -3,6 +3,12 @@ package handler_test
 import (
 	"encoding/json"
 	"errors"
+	"io/ioutil"
+	"log"
+	"reflect"
+	"testing"
+	"time"
+
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -13,11 +19,6 @@ import (
 	"github.com/keptn/keptn/webhook-service/lib/fake"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"io/ioutil"
-	"log"
-	"reflect"
-	"testing"
-	"time"
 )
 
 const webHookContent1_ALPHA = `apiVersion: webhookconfig.keptn.sh/v1alpha1
@@ -35,7 +36,7 @@ spec:
       requests:
         - "curl http://local:8080 {{.data.project}} {{.env.mysecret}}"`
 
-const webHookContent1_BETA = `apiVersion: webhookconfig.keptn.sh/v1alpha1
+const webHookContent1_BETA = `apiVersion: webhookconfig.keptn.sh/v1beta1
 kind: WebhookConfig
 metadata:
   name: webhook-configuration
