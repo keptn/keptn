@@ -352,5 +352,10 @@ class UniformPage {
     cy.byTestId(this.EDIT_WEBHOOK_FIELD_HEADER_VALUE_ID).find('input').eq(index).should('have.value', content);
     return this;
   }
+
+  public waitForJmeterInfoRequest(): this {
+    cy.wait('@jmeterUniformInfo');
+    return this;
+  }
 }
 export default UniformPage;

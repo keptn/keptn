@@ -27,10 +27,10 @@ export class KtbStageOverviewComponent {
   @Input() selectedStageInfo?: ISelectedStageInfo;
 
   @Input() set project(project: Project | undefined) {
-    this._project = project;
     if (project) {
-      this.setFilter(project, true);
+      this.setFilter(project, this._project?.projectName !== project.projectName);
     }
+    this._project = project;
   }
   get project(): Project | undefined {
     return this._project;

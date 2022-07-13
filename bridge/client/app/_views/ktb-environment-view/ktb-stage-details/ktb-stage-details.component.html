@@ -141,7 +141,7 @@
                     </dt-info-group-title>
                     <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
                       <a
-                        [routerLink]="getServiceLink(service)"
+                        [routerLink]="getServiceLink(service, project.projectName)"
                         class="m-0 mt-1"
                         *ngIf="service.deployedImage; else noDeployment"
                         [textContent]="service.getImageName()"

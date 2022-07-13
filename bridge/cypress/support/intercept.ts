@@ -276,12 +276,13 @@ export function interceptIntegrations(): void {
       ],
     },
   });
+  // jmeter-service uniform-info
   cy.intercept('/api/uniform/registration/355311a7bec3f35bf3abc2484ab09bcba8e2b297/info', {
     body: {
       isControlPlane: true,
       isWebhookService: false,
     },
-  });
+  }).as('jmeterUniformInfo');
   cy.intercept('/api/uniform/registration/0f2d35875bbaa72b972157260a7bd4af4f2826df/info', {
     body: {
       isControlPlane: true,

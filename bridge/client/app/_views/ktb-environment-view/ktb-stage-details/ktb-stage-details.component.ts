@@ -55,17 +55,17 @@ export class KtbStageDetailsComponent {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   selectFilterEvent(stage: Stage, $event: DtToggleButtonChange<any>): void {
     if ($event.isUserInput) {
-      this.filterEventType = $event.source.selected ? $event.value : null;
+      this.filterEventType = $event.source.selected ? $event.value : undefined;
 
       this._selectedStageInfo = { stage, filterType: this.filterEventType };
       this.selectedStageInfoChange.emit(this.selectedStageInfo);
     }
   }
 
-  getServiceLink(service: Service): string[] {
+  getServiceLink(service: Service, projectName: string): string[] {
     return [
       '/project',
-      this.project?.projectName ?? '',
+      projectName,
       'service',
       service.serviceName,
       'context',
