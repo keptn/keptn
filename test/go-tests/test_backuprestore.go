@@ -32,7 +32,7 @@ func Test_BackupRestore(t *testing.T) {
 
 	mongoDBBackupFolder, err := ioutil.TempDir("", "mongodb-backup")
 	defer func() {
-		if err := os.Remove(mongoDBBackupFolder); err != nil {
+		if err := os.RemoveAll(mongoDBBackupFolder); err != nil {
 			t.Logf("could not remove temp dir '%s': %v", mongoDBBackupFolder, err)
 		}
 	}()

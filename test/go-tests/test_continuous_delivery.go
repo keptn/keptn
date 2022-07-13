@@ -134,7 +134,7 @@ func Test_ContinuousDelivery(t *testing.T) {
 
 	serviceArchiveBaseDir, err := ioutil.TempDir("", "cd-test-*")
 	defer func() {
-		if err := os.Remove(serviceArchiveBaseDir); err != nil {
+		if err := os.RemoveAll(serviceArchiveBaseDir); err != nil {
 			t.Logf("could not remove temp dir '%s': %v", serviceArchiveBaseDir, err)
 		}
 	}()
