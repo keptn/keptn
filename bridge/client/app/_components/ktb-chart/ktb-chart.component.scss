@@ -1,0 +1,56 @@
+:host ::ng-deep {
+  .axis {
+    path.domain, line {
+      stroke: #c5c5c5 !important;
+    }
+  }
+
+  svg text {
+    font-size: 12px;
+  }
+}
+
+.ktb-chart-container {
+  display: flex;
+  flex-direction: column;
+
+  .ktb-chart {
+    flex: 0 0 auto;
+  }
+
+  .ktb-chart-legend-container {
+    flex: 1 1 auto;
+    display: flex;
+    justify-content: center;
+    align-content: flex-start;
+    flex-wrap: wrap;
+    gap: 18px;
+  }
+}
+
+.ktb-chart-legend-item {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+
+  &:hover span {
+    text-decoration: underline;
+    color: black;
+  }
+
+  &.invisible {
+
+    span {
+      color: #cccccc;
+
+      &:hover {
+        color: inherit;
+      }
+    }
+  }
+
+  span {
+    margin-left: 3px;
+  }
+
+}

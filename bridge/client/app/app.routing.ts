@@ -4,6 +4,7 @@ import { NotFoundComponent } from './not-found/not-found.component';
 import { KtbErrorViewComponent } from './_views/ktb-error-view/ktb-error-view.component';
 import { AppComponent } from './app.component';
 import { TraceDeepLinkGuard } from './_guards/trace-deep-link.guard';
+import { KtbTestChartComponent } from './_components/ktb-chart/testing/ktb-test-chart.component';
 
 const routingConfiguration: ExtraOptions = {
   paramsInheritanceStrategy: 'always',
@@ -25,6 +26,7 @@ const routes: Routes = [
         loadChildren: () =>
           import('./_views/ktb-dashboard-view/ktb-dashboard-view.module').then((m) => m.KtbDashboardViewModule),
       },
+      { path: 'chart', component: KtbTestChartComponent },
       {
         path: 'create',
         loadChildren: () =>
