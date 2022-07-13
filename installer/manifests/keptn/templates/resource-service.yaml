@@ -96,6 +96,9 @@ spec:
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
             privileged: false
+            capabilities:
+              drop:
+                - ALL
           {{- if .Values.resourceService.extraVolumeMounts }}
           volumeMounts:
           {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.resourceService.extraVolumeMounts "context" $) | nindent 12 }}
@@ -110,4 +113,5 @@ spec:
         {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.resourceService.extraVolumes "context" $) | nindent 8 }}
         {{- end }}
       serviceAccountName: keptn-resource-service
+      automountServiceAccountToken: true
       {{- include "keptn.nodeSelector" (dict "value" .Values.resourceService.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
