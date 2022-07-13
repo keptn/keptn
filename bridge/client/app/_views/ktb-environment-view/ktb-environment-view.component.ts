@@ -33,8 +33,6 @@ export class KtbEnvironmentViewComponent implements OnDestroy {
     private location: Location,
     @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number
   ) {
-    console.log('constructor');
-
     const selectedStageName$ = this.route.paramMap.pipe(
       map((params) => params.get('stageName')),
       takeUntil(this.unsubscribe$)
