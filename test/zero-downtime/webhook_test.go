@@ -3,13 +3,16 @@ package zero_downtime
 import (
 	"fmt"
 	"github.com/benbjohnson/clock"
+	"github.com/keptn/go-utils/pkg/api/models"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	testutils "github.com/keptn/keptn/test/go-tests"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"os"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
 )
 
 type TestSuiteWebhook struct {
@@ -63,79 +66,155 @@ Loop:
 
 }
 
-const webhookShipyard = `--- 
-apiVersion: "spec.keptn.sh/0.2.3"
-kind: Shipyard
+const webhookConfig = `apiVersion: webhookconfig.keptn.sh/v1beta1
+kind: WebhookConfig
 metadata:
-  name: "shipyard-echo-service"
+  name: webhook-configuration
 spec:
-  stages:
-    - name: "otherstage"
-    - name: "dev"
-      sequences:
-        - name: "othersequence"
-          tasks:
-            - name: "othertask"
-        - name: "sequencewithunknowntask"
-          tasks:
-            - name: "unknowntask"
-        - name: "unallowedsequence"
-          tasks:
-            - name: "unallowedtask"
-        - name: "failedsequence"
-          tasks:
-            - name: "failedtask"
-        - name: "loopbacksequence"
-          tasks:
-            - name: "loopback"
-        - name: "loopbacksequence2"
-          tasks:
-            - name: "loopback2"
-        - name: "loopbacksequence3"
-          tasks:
-            - name: "loopback3"
-        - name: "mysequence"
-          tasks:
-            - name: "mytask"`
+  webhooks:
+    - type: "sh.keptn.event.othertask.triggered"
+      subscriptionID: ${othertask-sub-id}
+      sendFinished: true
+      envFrom: 
+        - name: "secretKey"
+          secretRef:
+            name: "my-webhook-k8s-secret"
+            key: "my-key"
+      requests:
+        - url: http://shipyard-controller:8080/v1/project{{.unknownKey}}
+          method: GET
+    - type: "sh.keptn.event.failedtask.triggered"
+      subscriptionID: ${failedtask-sub-id}
+      sendFinished: true
+      requests:
+        - url: http://shipyard-controller:8080/v1/some-unknown-api
+          method: GET
+    - type: "sh.keptn.event.unallowedtask.triggered"
+      subscriptionID: ${unallowedtask-sub-id}
+      sendFinished: true
+      envFrom: 
+        - name: "secretKey"
+          secretRef:
+            name: "my-webhook-k8s-secret"
+            key: "my-key"
+      requests:
+        - url: http://kubernetes.default.svc.cluster.local:443/v1
+          method: GET
+    - type: "sh.keptn.event.loopback.triggered"
+      subscriptionID: ${loopback-sub-id}
+      sendFinished: true
+      requests:
+        - url: http://localhost:8080
+          method: GET
+    - type: "sh.keptn.event.loopback2.triggered"
+      subscriptionID: ${loopback2-sub-id}
+      sendFinished: true
+      requests:
+        - url: http://127.0.0.1:8080
+          method: GET
+    - type: "sh.keptn.event.loopback3.triggered"
+      subscriptionID: ${loopback3-sub-id}
+      sendFinished: true
+      requests:
+        - url: http://[::1]:8080
+          method: GET
+    - type: "sh.keptn.event.mytask.finished"
+      subscriptionID: ${mytask-finished-sub-id}
+      sendFinished: true
+      envFrom: 
+        - name: "secretKey"
+          secretRef:
+            name: "my-webhook-k8s-secret"
+            key: "my-key"
+      requests:
+        - url: http://shipyard-controller:8080/v1/some-unknown-api
+          method: GET
+    - type: "sh.keptn.event.mytask.triggered"
+      subscriptionID: ${mytask-sub-id}
+      sendFinished: true
+      envFrom: 
+        - name: "secretKey"
+          secretRef:
+            name: "my-webhook-k8s-secret"
+            key: "my-key"
+      requests:
+        - url: http://keptn.sh
+          method: GET
+          headers:
+            - key: x-token
+              value: "{{.env.secretKey}}"
+        - url: http://keptn.sh
+          method: GET`
+const webhookConfigMap = "keptn-webhook-config"
 
 // 1 Pass 7 Fails
 func (suite *TestSuiteWebhook) Test_Webhook() {
+	suite.env.failSequence()
+	t := suite.T()
+	oldConfig, err := testutils.GetFromConfigMap(testutils.GetKeptnNameSpaceFromEnv(), webhookConfigMap, func(data map[string]string) string {
+		return data["denyList"]
+	})
+	require.Nil(t, err)
+	testutils.PutConfigMapDataVal(testutils.GetKeptnNameSpaceFromEnv(), webhookConfigMap, "denyList", "kubernetes")
+	defer testutils.PutConfigMapDataVal(testutils.GetKeptnNameSpaceFromEnv(), webhookConfigMap, "denyList", oldConfig)
+
 	projectName := "webhooks" + suite.env.gedId()
 	serviceName := "myservice"
+	projectName, shipyardFilePath := testutils.CreateWebhookProject(t, projectName, serviceName)
+	defer testutils.DeleteFile(t, shipyardFilePath)
+	stageName := "dev"
+	sequencename := "mysequence"
+	taskName := "mytask"
 
-	//test considered failed by default so that we can use require
-	suite.env.failSequence()
-
-	shipyardFilePath, err := testutils.CreateTmpShipyardFile(webhookShipyard)
-	require.Nil(suite.T(), err)
-
-	suite.T().Logf("creating project %s", projectName)
-	projectName, err = testutils.CreateProject(projectName, shipyardFilePath)
-	require.Nil(suite.T(), err)
-
-	suite.T().Logf("creating service %s", serviceName)
-	output, err := testutils.ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
-
-	require.Nil(suite.T(), err)
-	require.Contains(suite.T(), output, "created successfully")
-
-	// create a secret that should be referenced in the webhook yaml
-	_, _ = testutils.ApiPOSTRequest("/secrets/v1/secret", map[string]interface{}{
-		"name":  "my-webhook-k8s-secret",
-		"scope": "keptn-webhook-service",
-		"data": map[string]string{
-			"my-key": "my-value",
+	// create subscriptions for the webhook-service
+	webhookYamlWithSubscriptionIDs := webhookConfig
+	subscriptionID, err := testutils.CreateSubscription(t, "webhook-service", models.EventSubscription{
+		Event: keptnv2.GetTriggeredEventType(taskName),
+		Filter: models.EventSubscriptionFilter{
+			Projects: []string{projectName},
+			Stages:   []string{stageName},
 		},
-	}, 3)
+	})
+	require.Nil(t, err)
 
-	defer func() {
-		err := os.Remove(shipyardFilePath)
-		if err != nil {
-			suite.T().Logf("Could not delete tmp file: %s", err.Error())
+	webhookYamlWithSubscriptionIDs = strings.Replace(webhookYamlWithSubscriptionIDs, "${mytask-sub-id}", subscriptionID, -1)
+
+	// create a second subscription that overlaps with the previously created one
+	subscriptionID2, err := testutils.CreateSubscription(t, "webhook-service", models.EventSubscription{
+		Event: keptnv2.GetTriggeredEventType(taskName),
+		Filter: models.EventSubscriptionFilter{
+			Projects: []string{projectName},
+			Stages:   []string{stageName, "otherstage"},
+		},
+	})
+	require.Nil(t, err)
+
+	webhookYamlWithSubscriptionIDs = strings.Replace(webhookYamlWithSubscriptionIDs, "${mytask-sub-2-id}", subscriptionID2, -1)
+
+	// wait some time to make sure the webhook service has pulled the updated subscription
+	<-time.After(20 * time.Second) // sorry :(
+
+	// now, let's add a webhook.yaml file to our service
+	webhookFilePath, err := testutils.CreateTmpFile("webhook.yaml", webhookYamlWithSubscriptionIDs)
+	require.Nil(t, err)
+	defer testutils.DeleteFile(t, webhookFilePath)
+
+	t.Log("Adding webhook.yaml to our service")
+	_, err = testutils.ExecuteCommand(fmt.Sprintf("keptn add-resource --project=%s --service=%s --resource=%s --resourceUri=webhook/webhook.yaml --all-stages", projectName, serviceName, webhookFilePath))
+
+	require.Nil(t, err)
+
+	t.Logf("triggering sequence %s in stage %s", sequencename, stageName)
+	keptnContextID, _ := testutils.TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
+
+	var taskFinishedEvent []*models.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		taskFinishedEvent, err = testutils.GetEventsOfType(keptnContextID, projectName, stageName, keptnv2.GetFinishedEventType(taskName))
+		if err != nil || taskFinishedEvent == nil || len(taskFinishedEvent) != 2 {
+			return false
 		}
-	}()
-	testutils.Test_Webhook(suite.T(), testutils.WebhookYamlBeta, projectName, serviceName)
-
+		return true
+	}, 30*time.Second, 3*time.Second)
 	//if test returns then it's passed
 	suite.env.passFailedSequence()
 }
