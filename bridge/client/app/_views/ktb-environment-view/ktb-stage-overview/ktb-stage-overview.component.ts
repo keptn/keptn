@@ -81,10 +81,10 @@ export class KtbStageOverviewComponent {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public filterChanged(project: Project, event: DtFilterFieldChangeEvent<any>): void {
+  public filterChanged(projectName: string, event: DtFilterFieldChangeEvent<any>): void {
     // can't set another type because of "is not assignable to..."
     this.filteredServices = this.getServicesOfFilter(event);
-    this.globalFilter[project.projectName] = { services: this.filteredServices };
+    this.globalFilter[projectName] = { services: this.filteredServices };
 
     this.apiService.environmentFilter = this.globalFilter;
     this.filteredServicesChange.emit(this.filteredServices);
@@ -108,7 +108,7 @@ export class KtbStageOverviewComponent {
     return stage?.toString();
   }
 
-  public selectStage($event: MouseEvent, project: Project, stage: Stage, filterType?: ServiceFilterType): void {
+  public selectStage($event: MouseEvent, stage: Stage, filterType?: ServiceFilterType): void {
     $event.stopPropagation();
     this.selectedStageInfoChange.emit({ stage, filterType });
   }
