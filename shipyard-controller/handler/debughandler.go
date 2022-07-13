@@ -29,7 +29,7 @@ func NewDebugHandler(debugManager IDebugManager) *DebugHandler {
 // @Summary      Get all keptn projects
 // @Description  Get all keptn projects
 // @Tags         Project
-// @Success      200                  {object}  []apimodels.ExpandedProjects     "ok"
+// @Success      200                  {object}  []apimodels.ExpandedProject      "ok"
 // @Failure      404                  {object}  models.Error                     "Not found"
 // @Router       /debug/project [get]
 func (dh *DebugHandler) GetAllProjects(c *gin.Context) {
