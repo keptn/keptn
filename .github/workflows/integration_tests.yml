@@ -580,7 +580,7 @@ jobs:
           UNLEASH_SERVICE_VERSION: "release-0.3.2"
           GOTESTSUM_FORMAT: "testname"
           GOTESTSUM_JSONFILE: ${{ env.TEST_REPORT_FOLDER }}/tests-${{ env.TEST_REPORT_FILENAME_SUFFIX }}
-          GOMAXPROCS: 10
+          #GOMAXPROCS: 10
         run: |
           cd test/go-tests
           

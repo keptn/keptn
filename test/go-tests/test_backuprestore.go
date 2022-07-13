@@ -2,6 +2,7 @@ package go_tests
 
 import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -24,12 +25,13 @@ spec:
 `
 
 func Test_BackupRestore(t *testing.T) {
-	t.Parallel()
 	projectName := "backup-restore"
 	serviceName := "helloservice"
 	keptnNamespace := GetKeptnNameSpaceFromEnv()
 	secretFileName := "-credentials.yaml"
-	mongoDBBackupFolder := "mongodb-backup"
+
+	mongoDBBackupFolder, err := ioutil.TempDir("", "mongodb-backup")
+	require.Nil(t, err)
 
 	t.Logf("Creating a new project %s with a Gitea Upstream", projectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(testingShipyard)

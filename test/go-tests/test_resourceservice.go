@@ -19,7 +19,6 @@ import (
 const basePath = "/v1/project"
 
 func Test_ResourceServiceBasic(t *testing.T) {
-	t.Parallel()
 	// The project name is prefixed with the keptn test namespace to avoid name collisions during parallel integration test runs on CI
 	projectName := osutils.GetOSEnvOrDefault(KeptnNamespaceEnvVar, DefaultKeptnNamespace) + "-resource-service-test-project"
 	nonExistingProjectName := osutils.GetOSEnvOrDefault(KeptnNamespaceEnvVar, DefaultKeptnNamespace) + "-non_existing_project"
@@ -543,7 +542,6 @@ spec:
       name: hardening`
 
 func Test_ResourceServiceGETCommitID(t *testing.T) {
-	t.Parallel()
 	projectName := "resource-service-commitid"
 	serviceName := "my-service"
 	resourceUri := "slo.yaml"

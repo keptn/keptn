@@ -55,7 +55,6 @@ spec:
                 warning: "manual"`
 
 func Test_DeliveryAssistant(t *testing.T) {
-	t.Parallel()
 	projectName := "delivery-assistant"
 	serviceName := "my-service"
 

@@ -199,7 +199,6 @@ func createWebhookProject(t *testing.T, projectName, serviceName string) (string
 // Test_Webhook_Failures contains tests for possible types of failures that can potentially
 // happen while processing a webhook request (e.g. webhook configuration not found, ...)
 func Test_Webhook_Failures(t *testing.T) {
-	t.Parallel()
 	projectName := "webhooks-b"
 	serviceName := "myservice"
 	projectName, shipyardFilePath := createWebhookProject(t, projectName, serviceName)
@@ -331,7 +330,6 @@ func Test_Webhook_Failures(t *testing.T) {
 // Note, that for this test we temporarily disable the restriction of only being allowed
 // to call external targets with the webhook service
 func Test_Webhook(t *testing.T) {
-	t.Parallel()
 	const webhookConfigMap = "keptn-webhook-config"
 	oldConfig, err := GetFromConfigMap(GetKeptnNameSpaceFromEnv(), webhookConfigMap, func(data map[string]string) string {
 		return data["denyList"]
@@ -402,7 +400,6 @@ func Test_Webhook(t *testing.T) {
 // Test_ExecutingWebhookTargetingClusterInternalAddressesFails tests whether the webhook requests
 // targeting an internal component (e.g. shipyard-controller) is blocked
 func Test_ExecutingWebhookTargetingClusterInternalAddressesFails(t *testing.T) {
-	t.Parallel()
 	stageName := "dev"
 	projectName := "webhooks-fail-internal-host-b"
 	serviceName := "myservice"

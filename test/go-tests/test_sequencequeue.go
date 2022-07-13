@@ -28,7 +28,6 @@ spec:
             - name: "task3"`
 
 func Test_SequenceQueue_TriggerMultiple(t *testing.T) {
-	t.Parallel()
 	projectName := "sequence-queue2"
 	serviceName := "myservice"
 	stageName := "dev"

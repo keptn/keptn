@@ -88,7 +88,6 @@ total_score:
 const invalidSLOFileContent = "invalid"
 
 func Test_QualityGates(t *testing.T) {
-	t.Parallel()
 	projectName := "quality-gates"
 	serviceName := "my-service"
 	shipyardFilePath, err := CreateTmpShipyardFile(qualityGatesShipyard)

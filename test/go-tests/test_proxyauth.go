@@ -145,7 +145,6 @@ func UpdateMockserverConfig(t *testing.T, project string) {
 }
 
 func Test_ProxyAuth(t *testing.T) {
-	//t.Parallel()
 	projectName := "proxy-auth"
 	serviceName := "helloservice"
 	secondServiceName := "helloservice2"
