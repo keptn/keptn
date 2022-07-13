@@ -88,10 +88,12 @@ func (mdbrepo *MongoDBLogRepo) GetLogEntries(params models.GetLogParams) (*model
 	}
 
 	result := &models.GetLogsResponse{
-		Logs:        []apimodels.LogEntry{},
-		NextPageKey: 0,
-		PageSize:    0,
-		TotalCount:  totalCount,
+		Logs: []apimodels.LogEntry{},
+		PaginationResult: models.PaginationResult{
+			NextPageKey: 0,
+			PageSize:    0,
+			TotalCount:  totalCount,
+		},
 	}
 	logs := []apimodels.LogEntry{}
 

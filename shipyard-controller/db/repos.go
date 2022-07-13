@@ -102,6 +102,7 @@ type SequenceQueueRepo interface {
 //go:generate moq --skip-ensure -pkg db_mock -out ./mock/sequenceexecution_mock.go . SequenceExecutionRepo
 type SequenceExecutionRepo interface {
 	Get(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error)
+	GetPaginated(filter models.SequenceExecutionFilter, paginationParams models.PaginationParams) ([]models.SequenceExecution, *models.PaginationResult, error)
 	GetByTriggeredID(project, triggeredID string) (*models.SequenceExecution, error)
 	Upsert(item models.SequenceExecution, options *models.SequenceExecutionUpsertOptions) error
 	AppendTaskEvent(taskSequence models.SequenceExecution, event models.TaskEvent) (*models.SequenceExecution, error)

@@ -1,0 +1,56 @@
+package handler
+
+import (
+	"fmt"
+	"github.com/gin-gonic/gin"
+	"github.com/keptn/keptn/shipyard-controller/db"
+	"github.com/keptn/keptn/shipyard-controller/models/api"
+)
+
+type SequenceExecutionHandler interface {
+	GetSequenceExecutions(context *gin.Context)
+}
+
+type sequenceExecutionHandler struct {
+	sequenceExecutionRepo db.SequenceExecutionRepo
+}
+
+func NewSequenceExecutionHandler(sequenceExecutionRepo db.SequenceExecutionRepo) *sequenceExecutionHandler {
+	return &sequenceExecutionHandler{
+		sequenceExecutionRepo: sequenceExecutionRepo,
+	}
+}
+
+// GetSequenceExecutions is the handler for the sequence execution GET endpoint
+// @Summary      Get sequence executions
+// @Description  Get sequence executions
+// @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}projects:read</span>
+// @Tags         Sequence Execution
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        project       path      string                    true  "The project name"
+// @Param        stage       query      string                    true  "The stage name"
+// @Param        service       query      string                    true  "The service name"
+// @Param        name          query     string                    false  "The name of the sequence"
+// @Param        status        query     string                    false  "The status of the sequence (e.g., triggered, finished, started)"
+// @Param        fromTime      query     string                    false  "The from time stamp for fetching sequence states (in ISO8601 time format, e.g.: 2021-05-10T09:51:00.000Z)"
+// @Param        beforeTime    query     string                    false  "The before time stamp for fetching sequence states (in ISO8601 time format, e.g.: 2021-05-10T09:51:00.000Z)"
+// @Param        pageSize      query     int                       false  "The maximum number of items to return"
+// @Param        nextPageKey   query     int                       false  "Offset to the next set of items"
+// @Param        keptnContext  query     string                    false  "Keptn context ID"
+// @Success      200           {object}  api.GetSequenceExecutionResponse  "ok"
+// @Failure      500           {object}  models.Error              "Internal error"
+// @Router       /sequence-execution/{project} [get]
+func (h *sequenceExecutionHandler) GetSequenceExecutions(ctx *gin.Context) {
+	params := api.GetSequenceExecutionParams{}
+	if err := ctx.ShouldBindQuery(params); err != nil {
+		SetBadRequestErrorResponse(ctx, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		return
+	}
+
+	params.Project = ctx.Param("project")
+
+	//h.sequenceExecutionRepo.Get
+
+}
