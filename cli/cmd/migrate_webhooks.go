@@ -199,9 +199,6 @@ func migrateAlphaRequest(request string) (*lib.Request, error) {
 
 	curlArr = deleteItem(curlArr, 0, false)
 
-	fmt.Println("zaciatok")
-	fmt.Println(curlArr)
-
 	url, i := extractURL(curlArr)
 	curlArr = deleteItem(curlArr, i, false)
 	newRequest.URL = url
@@ -219,12 +216,7 @@ func migrateAlphaRequest(request string) (*lib.Request, error) {
 
 	newRequest.Options = strings.Join(curlArr[:], " ")
 
-	fmt.Println("konec")
-	fmt.Println(curlArr)
-
-	fmt.Println(newRequest)
-
-	return nil, nil
+	return &newRequest, nil
 }
 
 func deleteItem(arr []string, index int, previous bool) []string {
@@ -348,28 +340,6 @@ func checkProjectExists(projectName string, api *api.APISet) (*models.Project, e
 	}
 	return project, nil
 }
-
-// func parseCurl(curl string) ([]string, error) {
-// 	// b, err := ioutil.ReadFile("parsecurl.js")
-// 	// if err != nil {
-// 	// 	fmt.Printf(err.Error())
-// 	// }
-// 	// ctx := v8.NewContext()
-// 	// ctx.RunScript(string(b), "parsecurl.js")
-// 	// ctx.RunScript(fmt.Sprintf("const result = JSON.stringify(parseCurl(%q))", curl), "main.js")
-// 	// val, err := ctx.RunScript("result", "value.js")
-// 	// if err != nil {
-// 	// 	fmt.Printf(err.Error())
-// 	// 	return
-// 	// }
-// 	// fmt.Printf("%s", val)
-
-// 	arr, err := parseCommandLine(curl)
-// 	if err != nil {
-// 		return []string{}, err
-// 	}
-// 	return arr, nil
-// }
 
 func parseCurl(command string) ([]string, error) {
 	var args []string
