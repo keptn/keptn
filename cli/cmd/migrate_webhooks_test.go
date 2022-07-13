@@ -9,9 +9,8 @@ import (
 
 func TestMigrateAlphaRequest(t *testing.T) {
 	tests := []struct {
-		input   string
-		output  *lib.Request
-		wantErr bool
+		input  string
+		output *lib.Request
 	}{
 		{
 			input: "curl --data '{\"email\":\"test@example.com\", \"name\": [\"Boolean\", \"World\"]}' -H \"Accept-Charset: utf-8\" -H 'Content-Type: application/json' https://httpbin.org/post --some-random-options -YYY -X POST",
@@ -31,7 +30,6 @@ func TestMigrateAlphaRequest(t *testing.T) {
 				Payload: "{\"email\":\"test@example.com\", \"name\": [\"Boolean\", \"World\"]}",
 				Options: "--some-random-options -YYY",
 			},
-			wantErr: false,
 		},
 		{
 			input: "curl -d '{\"email\":\"test@example.com\", \"name\": [\"Boolean\", \"World\"]}' -H \"Accept-Charset: utf-8\" --header 'Content-Type: application/json' https://httpbin.org/post --some-random-options -YYY --request POST",
@@ -51,7 +49,6 @@ func TestMigrateAlphaRequest(t *testing.T) {
 				Payload: "{\"email\":\"test@example.com\", \"name\": [\"Boolean\", \"World\"]}",
 				Options: "--some-random-options -YYY",
 			},
-			wantErr: false,
 		},
 		{
 			input: "curl --data '{\"email\":\"test@example.com\", \"name\": [\"Boolean\", \"World\"]}' -H \"Accept-Charset: utf-8\" -H 'Content-Type: application/json' https://httpbin.org/post --some-random-options -YYY",
@@ -71,7 +68,6 @@ func TestMigrateAlphaRequest(t *testing.T) {
 				Payload: "{\"email\":\"test@example.com\", \"name\": [\"Boolean\", \"World\"]}",
 				Options: "--some-random-options -YYY",
 			},
-			wantErr: false,
 		},
 		{
 			input: "curl --data '{\"email\":\"test@example.com\", \"name\": [\"Boolean\", \"World\"]}' https://httpbin.org/post --some-random-options -YYY",
@@ -81,7 +77,6 @@ func TestMigrateAlphaRequest(t *testing.T) {
 				Payload: "{\"email\":\"test@example.com\", \"name\": [\"Boolean\", \"World\"]}",
 				Options: "--some-random-options -YYY",
 			},
-			wantErr: false,
 		},
 		{
 			input: "curl https://httpbin.org/post --some-random-options -YYY",
@@ -90,7 +85,6 @@ func TestMigrateAlphaRequest(t *testing.T) {
 				Method:  "GET",
 				Options: "--some-random-options -YYY",
 			},
-			wantErr: false,
 		},
 		{
 			input: "curl https://httpbin.org/post",
@@ -98,7 +92,6 @@ func TestMigrateAlphaRequest(t *testing.T) {
 				URL:    "https://httpbin.org/post",
 				Method: "GET",
 			},
-			wantErr: false,
 		},
 		{
 			input: "curl -d '{\"email\":\"test@example.com\", \"name\": [\"Boolean\", \"World\"]}' -H \"Accept-Charset: utf-8\" --header 'Content-Type: application/json' https://httpbin.org/post --some-random-options -YYY --request",
@@ -118,7 +111,6 @@ func TestMigrateAlphaRequest(t *testing.T) {
 				Payload: "{\"email\":\"test@example.com\", \"name\": [\"Boolean\", \"World\"]}",
 				Options: "--some-random-options -YYY --request",
 			},
-			wantErr: false,
 		},
 		{
 			input: "curl -d '{\"email\":\"test@example.com\", \"name\": [\"Boolean\", \"World\"]}' -H \"Accept-Charset: utf-8\" --header 'Content-Type: application/json' httttps://httpbin.org/post --some-random-options -YYY --request",
@@ -138,16 +130,145 @@ func TestMigrateAlphaRequest(t *testing.T) {
 				Payload: "{\"email\":\"test@example.com\", \"name\": [\"Boolean\", \"World\"]}",
 				Options: "httttps://httpbin.org/post --some-random-options -YYY --request",
 			},
-			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run("", func(t *testing.T) {
-			res, err := migrateAlphaRequest(tt.input)
-			require.Equal(t, tt.wantErr, err != nil)
+			res, _ := migrateAlphaRequest(tt.input)
 			require.Equal(t, tt.output, res)
 
 		})
 	}
 
+}
+
+func TestMigrateAlphaWebhook(t *testing.T) {
+	tests := []struct {
+		input  *lib.WebHookConfig
+		output *lib.WebHookConfig
+	}{
+		{
+			input: &lib.WebHookConfig{
+				ApiVersion: "webhookconfig.keptn.sh/v1alpha1",
+				Kind:       "WebhookConfig",
+				Metadata: lib.Metadata{
+					Name: "webhook-configuration",
+				},
+				Spec: lib.WebHookConfigSpec{
+					Webhooks: []lib.Webhook{
+						{
+							Type:           "sh.keptn.event.webhook.triggered",
+							SubscriptionID: "my-subscription-id",
+							EnvFrom: []lib.EnvFrom{
+								{
+									Name: "mysecret",
+								},
+							},
+							Requests: []interface{}{
+								"curl http://localhost:8080 {{.data.project}} {{.env.mysecret}}",
+							},
+						},
+					},
+				},
+			},
+			output: &lib.WebHookConfig{
+				ApiVersion: "webhookconfig.keptn.sh/v1beta1",
+				Kind:       "WebhookConfig",
+				Metadata: lib.Metadata{
+					Name: "webhook-configuration",
+				},
+				Spec: lib.WebHookConfigSpec{
+					Webhooks: []lib.Webhook{
+						{
+							Type:           "sh.keptn.event.webhook.triggered",
+							SubscriptionID: "my-subscription-id",
+							EnvFrom: []lib.EnvFrom{
+								{
+									Name: "mysecret",
+								},
+							},
+							Requests: []interface{}{
+								lib.Request{
+									Method:  "GET",
+									URL:     "http://localhost:8080",
+									Options: "{{.data.project}} {{.env.mysecret}}",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			input: &lib.WebHookConfig{
+				ApiVersion: "webhookconfig.keptn.sh/v1alpha1",
+				Kind:       "WebhookConfig",
+				Metadata: lib.Metadata{
+					Name: "webhook-configuration",
+				},
+				Spec: lib.WebHookConfigSpec{
+					Webhooks: []lib.Webhook{
+						{
+							Type:           "sh.keptn.event.webhook.triggered",
+							SubscriptionID: "my-subscription-id",
+							EnvFrom: []lib.EnvFrom{
+								{
+									Name: "mysecret",
+								},
+							},
+							Requests: []interface{}{
+								"curl --data '{\"email\":\"test@example.com\", \"name\": [\"Boolean\", \"World\"]}' -H \"Accept-Charset: utf-8\" -H 'Content-Type: application/json' https://httpbin.org/post --some-random-options -YYY -X POST",
+							},
+						},
+					},
+				},
+			},
+			output: &lib.WebHookConfig{
+				ApiVersion: "webhookconfig.keptn.sh/v1beta1",
+				Kind:       "WebhookConfig",
+				Metadata: lib.Metadata{
+					Name: "webhook-configuration",
+				},
+				Spec: lib.WebHookConfigSpec{
+					Webhooks: []lib.Webhook{
+						{
+							Type:           "sh.keptn.event.webhook.triggered",
+							SubscriptionID: "my-subscription-id",
+							EnvFrom: []lib.EnvFrom{
+								{
+									Name: "mysecret",
+								},
+							},
+							Requests: []interface{}{
+								lib.Request{
+									URL:    "https://httpbin.org/post",
+									Method: "POST",
+									Headers: []lib.Header{
+										{
+											Key:   "Accept-Charset",
+											Value: " utf-8",
+										},
+										{
+											Key:   "Content-Type",
+											Value: " application/json",
+										},
+									},
+									Payload: "{\"email\":\"test@example.com\", \"name\": [\"Boolean\", \"World\"]}",
+									Options: "--some-random-options -YYY",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run("", func(t *testing.T) {
+			res, _ := migrateAlphaWebhook(tt.input)
+			require.Equal(t, tt.output, res)
+
+		})
+	}
 }
