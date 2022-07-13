@@ -54,7 +54,6 @@ func Test_ResourceServiceBasic(t *testing.T) {
 			ServiceName: "app-db",
 		},
 	}
-
 	createResourceRequest := models.Resources{
 		Resources: []*models.Resource{
 			{
