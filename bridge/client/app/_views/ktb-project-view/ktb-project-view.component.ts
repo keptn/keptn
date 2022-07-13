@@ -13,8 +13,6 @@ import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 })
 export class KtbProjectViewComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
-  public console = console;
-
   public logoInvertedUrl = environment?.config?.logoInvertedUrl;
   public hasProject$: Observable<boolean | undefined>;
   private _errorSubject: BehaviorSubject<string | undefined> = new BehaviorSubject<string | undefined>(undefined);
