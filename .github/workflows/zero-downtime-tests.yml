@@ -320,8 +320,7 @@ jobs:
         working-directory: test/zero-downtime
         run: | 
          go get ./...
-         mkdir "${{ env.TEST_REPORT_FOLDER }}"
-         mkdir "${{ env.FINAL_TEST_REPORT_FOLDER }}"
+
       #######################################################################
       # TESTS
       #######################################################################
