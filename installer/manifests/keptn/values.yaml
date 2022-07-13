@@ -66,6 +66,12 @@ nats:
   cluster:
     replicas: 3
     name: nats
+  securityContext:
+    allowPrivilegeEscalation: false
+    runAsNonRoot: true
+    capabilities:
+      drop:
+        - ALL
   nats:
     healthcheck:
       startup:
