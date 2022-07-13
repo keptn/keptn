@@ -133,6 +133,11 @@ func Test_ContinuousDelivery(t *testing.T) {
 	serviceChartSrcPath := path.Join(repoLocalDir, "helm-charts", "helloservice")
 
 	serviceArchiveBaseDir, err := ioutil.TempDir("", "cd-test-*")
+	defer func() {
+		if err := os.Remove(serviceArchiveBaseDir); err != nil {
+			t.Logf("could not remove temp dir '%s': %v", serviceArchiveBaseDir, err)
+		}
+	}()
 	require.Nil(t, err)
 
 	serviceChartArchivePath := path.Join(serviceArchiveBaseDir, "helm-charts", chartFileName)

@@ -31,6 +31,11 @@ func Test_BackupRestore(t *testing.T) {
 	secretFileName := "-credentials.yaml"
 
 	mongoDBBackupFolder, err := ioutil.TempDir("", "mongodb-backup")
+	defer func() {
+		if err := os.Remove(mongoDBBackupFolder); err != nil {
+			t.Logf("could not remove temp dir '%s': %v", mongoDBBackupFolder, err)
+		}
+	}()
 	require.Nil(t, err)
 
 	t.Logf("Creating a new project %s with a Gitea Upstream", projectName)
