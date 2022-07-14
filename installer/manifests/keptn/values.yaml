@@ -71,6 +71,13 @@ nats:
     runAsUser: 10001
     fsGroup: 10001
   nats:
+    resources:
+      requests:
+        cpu: 200m
+        memory: 500Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
     healthcheck:
       startup:
         enabled: false
@@ -79,7 +86,7 @@ nats:
 
       memStorage:
         enabled: true
-        size: 2Gi
+        size: 500Mi
 
       fileStorage:
         enabled: true
