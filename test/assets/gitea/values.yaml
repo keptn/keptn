@@ -14,8 +14,6 @@ cache:
 
 gitea:
   config:
-    server:
-      OFFLINE_MODE: true
     database:
       DB_TYPE: postgresql
       HOST: gitea-postgresql:5432
