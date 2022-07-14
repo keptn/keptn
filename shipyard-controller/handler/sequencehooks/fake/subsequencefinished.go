@@ -31,7 +31,7 @@ type ISubSequenceFinishedHookMock struct {
 	calls struct {
 		// OnSubSequenceFinished holds details about calls to the OnSubSequenceFinished method.
 		OnSubSequenceFinished []struct {
-			//models.KeptnContextExtendedCEis the event argument value.
+			// Event is the event argument value.
 			Event apimodels.KeptnContextExtendedCE
 		}
 	}

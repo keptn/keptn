@@ -14,7 +14,7 @@ import (
 //
 // 		// make and configure a mocked sequencehooks.ISequenceTaskStartedHook
 // 		mockedISequenceTaskStartedHook := &ISequenceTaskStartedHookMock{
-// 			OnSequenceTaskStartedFunc: func(event apimodels.KeptnContextExtendedCE)  {
+// 			OnSequenceTaskStartedFunc: func(keptnContextExtendedCE apimodels.KeptnContextExtendedCE)  {
 // 				panic("mock out the OnSequenceTaskStarted method")
 // 			},
 // 		}
@@ -25,43 +25,43 @@ import (
 // 	}
 type ISequenceTaskStartedHookMock struct {
 	// OnSequenceTaskStartedFunc mocks the OnSequenceTaskStarted method.
-	OnSequenceTaskStartedFunc func(event apimodels.KeptnContextExtendedCE)
+	OnSequenceTaskStartedFunc func(keptnContextExtendedCE apimodels.KeptnContextExtendedCE)
 
 	// calls tracks calls to the methods.
 	calls struct {
 		// OnSequenceTaskStarted holds details about calls to the OnSequenceTaskStarted method.
 		OnSequenceTaskStarted []struct {
-			//models.KeptnContextExtendedCEis the event argument value.
-			Event apimodels.KeptnContextExtendedCE
+			// KeptnContextExtendedCE is the keptnContextExtendedCE argument value.
+			KeptnContextExtendedCE apimodels.KeptnContextExtendedCE
 		}
 	}
 	lockOnSequenceTaskStarted sync.RWMutex
 }
 
 // OnSequenceTaskStarted calls OnSequenceTaskStartedFunc.
-func (mock *ISequenceTaskStartedHookMock) OnSequenceTaskStarted(event apimodels.KeptnContextExtendedCE) {
+func (mock *ISequenceTaskStartedHookMock) OnSequenceTaskStarted(keptnContextExtendedCE apimodels.KeptnContextExtendedCE) {
 	if mock.OnSequenceTaskStartedFunc == nil {
 		panic("ISequenceTaskStartedHookMock.OnSequenceTaskStartedFunc: method is nil but ISequenceTaskStartedHook.OnSequenceTaskStarted was just called")
 	}
 	callInfo := struct {
-		Event apimodels.KeptnContextExtendedCE
+		KeptnContextExtendedCE apimodels.KeptnContextExtendedCE
 	}{
-		Event: event,
+		KeptnContextExtendedCE: keptnContextExtendedCE,
 	}
 	mock.lockOnSequenceTaskStarted.Lock()
 	mock.calls.OnSequenceTaskStarted = append(mock.calls.OnSequenceTaskStarted, callInfo)
 	mock.lockOnSequenceTaskStarted.Unlock()
-	mock.OnSequenceTaskStartedFunc(event)
+	mock.OnSequenceTaskStartedFunc(keptnContextExtendedCE)
 }
 
 // OnSequenceTaskStartedCalls gets all the calls that were made to OnSequenceTaskStarted.
 // Check the length with:
 //     len(mockedISequenceTaskStartedHook.OnSequenceTaskStartedCalls())
 func (mock *ISequenceTaskStartedHookMock) OnSequenceTaskStartedCalls() []struct {
-	Event apimodels.KeptnContextExtendedCE
+	KeptnContextExtendedCE apimodels.KeptnContextExtendedCE
 } {
 	var calls []struct {
-		Event apimodels.KeptnContextExtendedCE
+		KeptnContextExtendedCE apimodels.KeptnContextExtendedCE
 	}
 	mock.lockOnSequenceTaskStarted.RLock()
 	calls = mock.calls.OnSequenceTaskStarted

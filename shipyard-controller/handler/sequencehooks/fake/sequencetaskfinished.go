@@ -14,7 +14,7 @@ import (
 //
 // 		// make and configure a mocked sequencehooks.ISequenceTaskFinishedHook
 // 		mockedISequenceTaskFinishedHook := &ISequenceTaskFinishedHookMock{
-// 			OnSequenceTaskFinishedFunc: func(event apimodels.KeptnContextExtendedCE)  {
+// 			OnSequenceTaskFinishedFunc: func(keptnContextExtendedCE apimodels.KeptnContextExtendedCE)  {
 // 				panic("mock out the OnSequenceTaskFinished method")
 // 			},
 // 		}
@@ -25,43 +25,43 @@ import (
 // 	}
 type ISequenceTaskFinishedHookMock struct {
 	// OnSequenceTaskFinishedFunc mocks the OnSequenceTaskFinished method.
-	OnSequenceTaskFinishedFunc func(event apimodels.KeptnContextExtendedCE)
+	OnSequenceTaskFinishedFunc func(keptnContextExtendedCE apimodels.KeptnContextExtendedCE)
 
 	// calls tracks calls to the methods.
 	calls struct {
 		// OnSequenceTaskFinished holds details about calls to the OnSequenceTaskFinished method.
 		OnSequenceTaskFinished []struct {
-			//models.KeptnContextExtendedCEis the event argument value.
-			Event apimodels.KeptnContextExtendedCE
+			// KeptnContextExtendedCE is the keptnContextExtendedCE argument value.
+			KeptnContextExtendedCE apimodels.KeptnContextExtendedCE
 		}
 	}
 	lockOnSequenceTaskFinished sync.RWMutex
 }
 
 // OnSequenceTaskFinished calls OnSequenceTaskFinishedFunc.
-func (mock *ISequenceTaskFinishedHookMock) OnSequenceTaskFinished(event apimodels.KeptnContextExtendedCE) {
+func (mock *ISequenceTaskFinishedHookMock) OnSequenceTaskFinished(keptnContextExtendedCE apimodels.KeptnContextExtendedCE) {
 	if mock.OnSequenceTaskFinishedFunc == nil {
 		panic("ISequenceTaskFinishedHookMock.OnSequenceTaskFinishedFunc: method is nil but ISequenceTaskFinishedHook.OnSequenceTaskFinished was just called")
 	}
 	callInfo := struct {
-		Event apimodels.KeptnContextExtendedCE
+		KeptnContextExtendedCE apimodels.KeptnContextExtendedCE
 	}{
-		Event: event,
+		KeptnContextExtendedCE: keptnContextExtendedCE,
 	}
 	mock.lockOnSequenceTaskFinished.Lock()
 	mock.calls.OnSequenceTaskFinished = append(mock.calls.OnSequenceTaskFinished, callInfo)
 	mock.lockOnSequenceTaskFinished.Unlock()
-	mock.OnSequenceTaskFinishedFunc(event)
+	mock.OnSequenceTaskFinishedFunc(keptnContextExtendedCE)
 }
 
 // OnSequenceTaskFinishedCalls gets all the calls that were made to OnSequenceTaskFinished.
 // Check the length with:
 //     len(mockedISequenceTaskFinishedHook.OnSequenceTaskFinishedCalls())
 func (mock *ISequenceTaskFinishedHookMock) OnSequenceTaskFinishedCalls() []struct {
-	Event apimodels.KeptnContextExtendedCE
+	KeptnContextExtendedCE apimodels.KeptnContextExtendedCE
 } {
 	var calls []struct {
-		Event apimodels.KeptnContextExtendedCE
+		KeptnContextExtendedCE apimodels.KeptnContextExtendedCE
 	}
 	mock.lockOnSequenceTaskFinished.RLock()
 	calls = mock.calls.OnSequenceTaskFinished

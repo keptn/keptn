@@ -25,6 +25,9 @@ import (
 // 			DeleteEventCollectionsFunc: func(project string) error {
 // 				panic("mock out the DeleteEventCollections method")
 // 			},
+// 			GetEventByIDFunc: func(project string, eventID string, status ...common.EventStatus) (*apimodels.KeptnContextExtendedCE, error) {
+// 				panic("mock out the GetEventByID method")
+// 			},
 // 			GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]apimodels.KeptnContextExtendedCE, error) {
 // 				panic("mock out the GetEvents method")
 // 			},
@@ -61,6 +64,9 @@ type EventRepoMock struct {
 
 	// DeleteEventCollectionsFunc mocks the DeleteEventCollections method.
 	DeleteEventCollectionsFunc func(project string) error
+
+	// GetEventByIDFunc mocks the GetEventByID method.
+	GetEventByIDFunc func(project string, eventID string, status ...common.EventStatus) (*apimodels.KeptnContextExtendedCE, error)
 
 	// GetEventsFunc mocks the GetEvents method.
 	GetEventsFunc func(project string, filter common.EventFilter, status ...common.EventStatus) ([]apimodels.KeptnContextExtendedCE, error)
@@ -103,6 +109,15 @@ type EventRepoMock struct {
 		DeleteEventCollections []struct {
 			// Project is the project argument value.
 			Project string
+		}
+		// GetEventByID holds details about calls to the GetEventByID method.
+		GetEventByID []struct {
+			// Project is the project argument value.
+			Project string
+			// EventID is the eventID argument value.
+			EventID string
+			// Status is the status argument value.
+			Status []common.EventStatus
 		}
 		// GetEvents holds details about calls to the GetEvents method.
 		GetEvents []struct {
@@ -159,6 +174,7 @@ type EventRepoMock struct {
 	lockDeleteAllFinishedEvents        sync.RWMutex
 	lockDeleteEvent                    sync.RWMutex
 	lockDeleteEventCollections         sync.RWMutex
+	lockGetEventByID                   sync.RWMutex
 	lockGetEvents                      sync.RWMutex
 	lockGetEventsWithRetry             sync.RWMutex
 	lockGetFinishedEvents              sync.RWMutex
@@ -266,6 +282,45 @@ func (mock *EventRepoMock) DeleteEventCollectionsCalls() []struct {
 	mock.lockDeleteEventCollections.RLock()
 	calls = mock.calls.DeleteEventCollections
 	mock.lockDeleteEventCollections.RUnlock()
+	return calls
+}
+
+// GetEventByID calls GetEventByIDFunc.
+func (mock *EventRepoMock) GetEventByID(project string, eventID string, status ...common.EventStatus) (*apimodels.KeptnContextExtendedCE, error) {
+	if mock.GetEventByIDFunc == nil {
+		panic("EventRepoMock.GetEventByIDFunc: method is nil but EventRepo.GetEventByID was just called")
+	}
+	callInfo := struct {
+		Project string
+		EventID string
+		Status  []common.EventStatus
+	}{
+		Project: project,
+		EventID: eventID,
+		Status:  status,
+	}
+	mock.lockGetEventByID.Lock()
+	mock.calls.GetEventByID = append(mock.calls.GetEventByID, callInfo)
+	mock.lockGetEventByID.Unlock()
+	return mock.GetEventByIDFunc(project, eventID, status...)
+}
+
+// GetEventByIDCalls gets all the calls that were made to GetEventByID.
+// Check the length with:
+//     len(mockedEventRepo.GetEventByIDCalls())
+func (mock *EventRepoMock) GetEventByIDCalls() []struct {
+	Project string
+	EventID string
+	Status  []common.EventStatus
+} {
+	var calls []struct {
+		Project string
+		EventID string
+		Status  []common.EventStatus
+	}
+	mock.lockGetEventByID.RLock()
+	calls = mock.calls.GetEventByID
+	mock.lockGetEventByID.RUnlock()
 	return calls
 }
 

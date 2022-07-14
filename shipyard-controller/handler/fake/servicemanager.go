@@ -5,7 +5,7 @@ package fake
 
 import (
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/keptn/shipyard-controller/models"
+	scmodels "github.com/keptn/keptn/shipyard-controller/models"
 	"sync"
 )
 
@@ -15,7 +15,7 @@ import (
 //
 // 		// make and configure a mocked handler.IServiceManager
 // 		mockedIServiceManager := &IServiceManagerMock{
-// 			CreateServiceFunc: func(projectName string, params *models.CreateServiceParams) error {
+// 			CreateServiceFunc: func(projectName string, params *scmodels.CreateServiceParams) error {
 // 				panic("mock out the CreateService method")
 // 			},
 // 			DeleteServiceFunc: func(projectName string, serviceName string) error {
@@ -35,7 +35,7 @@ import (
 // 	}
 type IServiceManagerMock struct {
 	// CreateServiceFunc mocks the CreateService method.
-	CreateServiceFunc func(projectName string, params *models.CreateServiceParams) error
+	CreateServiceFunc func(projectName string, params *scmodels.CreateServiceParams) error
 
 	// DeleteServiceFunc mocks the DeleteService method.
 	DeleteServiceFunc func(projectName string, serviceName string) error
@@ -53,7 +53,7 @@ type IServiceManagerMock struct {
 			// ProjectName is the projectName argument value.
 			ProjectName string
 			// Params is the params argument value.
-			Params *models.CreateServiceParams
+			Params *scmodels.CreateServiceParams
 		}
 		// DeleteService holds details about calls to the DeleteService method.
 		DeleteService []struct {
@@ -86,13 +86,13 @@ type IServiceManagerMock struct {
 }
 
 // CreateService calls CreateServiceFunc.
-func (mock *IServiceManagerMock) CreateService(projectName string, params *models.CreateServiceParams) error {
+func (mock *IServiceManagerMock) CreateService(projectName string, params *scmodels.CreateServiceParams) error {
 	if mock.CreateServiceFunc == nil {
 		panic("IServiceManagerMock.CreateServiceFunc: method is nil but IServiceManager.CreateService was just called")
 	}
 	callInfo := struct {
 		ProjectName string
-		Params      *models.CreateServiceParams
+		Params      *scmodels.CreateServiceParams
 	}{
 		ProjectName: projectName,
 		Params:      params,
@@ -108,11 +108,11 @@ func (mock *IServiceManagerMock) CreateService(projectName string, params *model
 //     len(mockedIServiceManager.CreateServiceCalls())
 func (mock *IServiceManagerMock) CreateServiceCalls() []struct {
 	ProjectName string
-	Params      *models.CreateServiceParams
+	Params      *scmodels.CreateServiceParams
 } {
 	var calls []struct {
 		ProjectName string
-		Params      *models.CreateServiceParams
+		Params      *scmodels.CreateServiceParams
 	}
 	mock.lockCreateService.RLock()
 	calls = mock.calls.CreateService

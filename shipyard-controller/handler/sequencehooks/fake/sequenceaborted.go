@@ -31,7 +31,7 @@ type ISequenceAbortedHookMock struct {
 	calls struct {
 		// OnSequenceAborted holds details about calls to the OnSequenceAborted method.
 		OnSequenceAborted []struct {
-			//models.KeptnContextExtendedCEis the event argument value.
+			// Event is the event argument value.
 			Event models.EventScope
 		}
 	}
