@@ -25,7 +25,7 @@ import (
 // 			DeleteEventCollectionsFunc: func(project string) error {
 // 				panic("mock out the DeleteEventCollections method")
 // 			},
-// 			GetEventByIDFunc: func(project string, eventID string, status ...common.EventStatus) (*apimodels.KeptnContextExtendedCE, error) {
+// 			GetEventByIDFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) (*apimodels.KeptnContextExtendedCE, error) {
 // 				panic("mock out the GetEventByID method")
 // 			},
 // 			GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]apimodels.KeptnContextExtendedCE, error) {
@@ -66,7 +66,7 @@ type EventRepoMock struct {
 	DeleteEventCollectionsFunc func(project string) error
 
 	// GetEventByIDFunc mocks the GetEventByID method.
-	GetEventByIDFunc func(project string, eventID string, status ...common.EventStatus) (*apimodels.KeptnContextExtendedCE, error)
+	GetEventByIDFunc func(project string, filter common.EventFilter, status ...common.EventStatus) (*apimodels.KeptnContextExtendedCE, error)
 
 	// GetEventsFunc mocks the GetEvents method.
 	GetEventsFunc func(project string, filter common.EventFilter, status ...common.EventStatus) ([]apimodels.KeptnContextExtendedCE, error)
@@ -114,8 +114,8 @@ type EventRepoMock struct {
 		GetEventByID []struct {
 			// Project is the project argument value.
 			Project string
-			// EventID is the eventID argument value.
-			EventID string
+			// Filter is the filter argument value.
+			Filter common.EventFilter
 			// Status is the status argument value.
 			Status []common.EventStatus
 		}
@@ -286,23 +286,23 @@ func (mock *EventRepoMock) DeleteEventCollectionsCalls() []struct {
 }
 
 // GetEventByID calls GetEventByIDFunc.
-func (mock *EventRepoMock) GetEventByID(project string, eventID string, status ...common.EventStatus) (*apimodels.KeptnContextExtendedCE, error) {
+func (mock *EventRepoMock) GetEventByID(project string, filter common.EventFilter, status ...common.EventStatus) (*apimodels.KeptnContextExtendedCE, error) {
 	if mock.GetEventByIDFunc == nil {
 		panic("EventRepoMock.GetEventByIDFunc: method is nil but EventRepo.GetEventByID was just called")
 	}
 	callInfo := struct {
 		Project string
-		EventID string
+		Filter  common.EventFilter
 		Status  []common.EventStatus
 	}{
 		Project: project,
-		EventID: eventID,
+		Filter:  filter,
 		Status:  status,
 	}
 	mock.lockGetEventByID.Lock()
 	mock.calls.GetEventByID = append(mock.calls.GetEventByID, callInfo)
 	mock.lockGetEventByID.Unlock()
-	return mock.GetEventByIDFunc(project, eventID, status...)
+	return mock.GetEventByIDFunc(project, filter, status...)
 }
 
 // GetEventByIDCalls gets all the calls that were made to GetEventByID.
@@ -310,12 +310,12 @@ func (mock *EventRepoMock) GetEventByID(project string, eventID string, status .
 //     len(mockedEventRepo.GetEventByIDCalls())
 func (mock *EventRepoMock) GetEventByIDCalls() []struct {
 	Project string
-	EventID string
+	Filter  common.EventFilter
 	Status  []common.EventStatus
 } {
 	var calls []struct {
 		Project string
-		EventID string
+		Filter  common.EventFilter
 		Status  []common.EventStatus
 	}
 	mock.lockGetEventByID.RLock()
