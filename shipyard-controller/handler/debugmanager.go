@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"fmt"
-
 	"github.com/keptn/go-utils/pkg/api/models"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/common"
@@ -57,10 +55,8 @@ func (dm *DebugManager) GetAllEvents(projectName string, shkeptncontext string) 
 
 	eventsPointer := make([]*models.KeptnContextExtendedCE, len(events))
 
-	fmt.Println("here")
 	for i, _ := range events {
 		eventsPointer[i] = &events[i]
-		fmt.Println(eventsPointer[i])
 	}
 
 	return eventsPointer, err

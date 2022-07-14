@@ -45,6 +45,8 @@ var UnableRetrieveLogsMsg = "Unable to retrieve logs: %s"
 
 var ProjectNotFoundMsg = "Project not found: %s"
 
+var EventNotFoundMsg = "Event not found: %s"
+
 var InvalidPayloadMsg = "Could not validate payload: %s"
 
 var NoProjectNameMsg = "Must provide a project name"

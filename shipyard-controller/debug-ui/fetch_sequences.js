@@ -18,7 +18,7 @@ function fetchSequences() {
       table.innerHTML =
         "<tr><th>shkeptncontext</th><th>SequenceName</th><th>Projectname</th><th>service</th></tr>";
 
-      response.forEach((object) => {
+      response.states.forEach((object) => {
         if (
           (object.state == "finished" && show_finished) ||
           (object.state == "active" && show_active) ||

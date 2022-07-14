@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"sort"
@@ -38,6 +39,12 @@ func NewDebugHandler(debugManager IDebugManager) *DebugHandler {
 // @Router       /debug/project [get]
 func (dh *DebugHandler) GetAllProjects(c *gin.Context) {
 	params := &models.GetProjectParams{}
+
+	if err := c.ShouldBindQuery(params); err != nil {
+		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		return
+	}
+
 	projects, err := dh.DebugManager.GetAllProjects()
 
 	if err != nil {
@@ -73,14 +80,26 @@ func (dh *DebugHandler) GetAllProjects(c *gin.Context) {
 // @Tags         Sequence
 // @Param        project              path      string                    true "The name of the project"
 // @Success      200                  {object}  []models.SequenceState    "ok"
+// @Failure      404                  {object}  models.Error              "not found"
 // @Failure      500                  {object}  models.Error              "Internal error"
 // @Router       /debug/project/{project} [get]
 func (dh *DebugHandler) GetAllSequencesForProject(c *gin.Context) {
 	params := &models.GetProjectParams{}
+
+	if err := c.ShouldBindQuery(params); err != nil {
+		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		return
+	}
+
 	projectName := c.Param("project")
 	sequences, err := dh.DebugManager.GetAllSequencesForProject(projectName)
 
 	if err != nil {
+		if errors.Is(err, ErrProjectNotFound) {
+			SetNotFoundErrorResponse(c, fmt.Sprintf(ProjectNotFoundMsg, projectName))
+			return
+		}
+
 		SetInternalServerErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
@@ -112,17 +131,29 @@ func (dh *DebugHandler) GetAllSequencesForProject(c *gin.Context) {
 // @Failure      500                  {object}  models.Error              "Internal error"
 // @Router       /debug/project/{project}/shkeptncontext/{shkeptncontext} [get]
 func (dh *DebugHandler) GetSequenceByID(c *gin.Context) {
+	params := &models.GetProjectParams{}
+
 	shkeptncontext := c.Param("shkeptncontext")
 	projectName := c.Param("project")
 	sequence, err := dh.DebugManager.GetSequenceByID(projectName, shkeptncontext)
 
-	if err != nil {
-		SetInternalServerErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+	if err := c.ShouldBindQuery(params); err != nil {
+		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
-	if &sequence == nil {
-		SetNotFoundErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, "Not Found"))
+	if err != nil {
+		if errors.Is(err, ErrProjectNotFound) {
+			SetNotFoundErrorResponse(c, fmt.Sprintf(ProjectNotFoundMsg, projectName))
+			return
+		}
+
+		if errors.Is(err, ErrSequenceNotFound) {
+			SetNotFoundErrorResponse(c, fmt.Sprintf(UnableFindSequenceMsg, shkeptncontext))
+			return
+		}
+
+		SetInternalServerErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
@@ -144,9 +175,24 @@ func (dh *DebugHandler) GetAllEvents(c *gin.Context) {
 	shkeptncontext := c.Param("shkeptncontext")
 	projectName := c.Param("project")
 
+	if err := c.ShouldBindQuery(params); err != nil {
+		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		return
+	}
+
 	events, err := dh.DebugManager.GetAllEvents(projectName, shkeptncontext)
 
 	if err != nil {
+		if errors.Is(err, ErrProjectNotFound) {
+			SetNotFoundErrorResponse(c, fmt.Sprintf(ProjectNotFoundMsg, projectName))
+			return
+		}
+
+		if errors.Is(err, ErrSequenceNotFound) {
+			SetNotFoundErrorResponse(c, fmt.Sprintf(UnableFindSequenceMsg, shkeptncontext))
+			return
+		}
+
 		SetInternalServerErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
@@ -180,19 +226,36 @@ func (dh *DebugHandler) GetAllEvents(c *gin.Context) {
 // @Failure      500                  {object}  models.Error                       "Internal error"
 // @Router       /debug/project/{project}/shkeptncontext/{shkeptncontext}/event/{event_id} [get]
 func (dh *DebugHandler) GetEventByID(c *gin.Context) {
+	params := &models.GetProjectParams{}
+
 	shkeptncontext := c.Param("shkeptncontext")
 	eventId := c.Param("event_id")
 	projectName := c.Param("project")
 
-	event, err := dh.DebugManager.GetEventByID(projectName, shkeptncontext, eventId)
-
-	if err != nil {
-		SetInternalServerErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+	if err := c.ShouldBindQuery(params); err != nil {
+		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
-	if &event == nil {
-		SetNotFoundErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, "Not Found"))
+	event, err := dh.DebugManager.GetEventByID(projectName, shkeptncontext, eventId)
+
+	if err != nil {
+		if errors.Is(err, ErrProjectNotFound) {
+			SetNotFoundErrorResponse(c, fmt.Sprintf(ProjectNotFoundMsg, projectName))
+			return
+		}
+
+		if errors.Is(err, ErrSequenceNotFound) {
+			SetNotFoundErrorResponse(c, fmt.Sprintf(UnableFindSequenceMsg, shkeptncontext))
+			return
+		}
+
+		if errors.Is(err, ErrNoMatchingEvent) {
+			SetNotFoundErrorResponse(c, fmt.Sprintf(EventNotFoundMsg, eventId))
+			return
+		}
+
+		SetInternalServerErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 

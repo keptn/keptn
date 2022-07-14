@@ -21,7 +21,7 @@ function fetchEvents() {
       let rootevent_list = document.getElementById("tree_container");
       let rootevent_li, taskevent_ul, label;
 
-      response.forEach((object) => {
+      response.events.forEach((object) => {
         if (object.type.split(".").length == 6) {
           rootevent_li = document.createElement("li");
 

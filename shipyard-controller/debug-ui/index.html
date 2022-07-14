@@ -74,7 +74,7 @@
           var projectSelector = document.getElementById("projectSelector");
           projectSelector.innerHTML = "";
 
-          response.forEach((object) => {
+          response.projects.forEach((object) => {
             el_project = document.createElement("option");
             el_project.innerHTML = object.projectName;
             projectSelector.appendChild(el_project);
