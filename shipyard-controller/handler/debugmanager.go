@@ -63,7 +63,7 @@ func (dm *DebugManager) GetAllEvents(projectName string, shkeptncontext string) 
 }
 
 func (dm *DebugManager) GetEventByID(projectName string, shkeptncontext string, eventId string) (models.KeptnContextExtendedCE, error) {
-	event, err := dm.eventRepo.GetEventByID(projectName, eventId)
+	event, err := dm.eventRepo.GetEventByID(projectName, common.EventFilter{KeptnContext: &shkeptncontext, ID: &eventId})
 
 	return *event, err
 }

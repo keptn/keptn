@@ -79,18 +79,21 @@ func (mdbrepo *MongoDBEventsRepo) GetEvents(project string, filter common.EventF
 // GetEventByID gets a single event of a project, based on the id
 func (mdbrepo *MongoDBEventsRepo) GetEventByID(projectName string, filter common.EventFilter, status ...common.EventStatus) (*apimodels.KeptnContextExtendedCE, error) {
 	collection, ctx, cancel, err := mdbrepo.getEventsCollection(projectName, status...)
+
 	if err != nil {
 		return nil, err
 	}
 
 	defer cancel()
 
-	cur := collection.FindOne(ctx, filter)
+	cur := collection.FindOne(ctx, getSearchOptions(filter))
 
-	var event *apimodels.KeptnContextExtendedCE
-	cur.Decode(event)
+	var event apimodels.KeptnContextExtendedCE
+	cur.Decode(&event)
 
-	return event, cur.Err()
+	fmt.Println(event)
+
+	return &event, cur.Err()
 }
 
 func decodeKeptnEvent(cur *mongo.Cursor) (*apimodels.KeptnContextExtendedCE, error) {
