@@ -69,6 +69,7 @@ nats:
   securityContext:
     runAsNonRoot: true
     runAsUser: 10001
+    fsGroup: 10001
   nats:
     healthcheck:
       startup:
