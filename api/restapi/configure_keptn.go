@@ -102,16 +102,19 @@ func configureAPI(api *operations.KeptnAPI) http.Handler {
 	// api.EvaluationTriggerEvaluationHandler = evaluation.TriggerEvaluationHandlerFunc(handlers.TriggerEvaluationHandlerFunc)
 
 	// Import endpoint
-	keptnEndpointProvider := execute.KeptnEndpointProviderFromEnv()
+	keptnEndpointProvider := execute.NewKeptnEndpointProviderFromEnv()
+
+	projectChecker := handlers.NewControlPlaneProjectRetriever(keptnEndpointProvider)
 
 	importProcessor := importer.NewImportPackageProcessor(
 		new(model.YAMLManifestUnMarshaler), execute.NewKeptnExecutor(keptnEndpointProvider),
+		projectChecker,
 	)
 
 	api.ImportOperationsImportHandler = import_operations.ImportHandlerFunc(
 		handlers.GetImportHandlerFunc(
 			env.ImportBasePath,
-			handlers.NewControlPlaneProjectChecker(keptnEndpointProvider),
+			projectChecker,
 			env.MaxImportUncompressedSize,
 			importProcessor,
 		),

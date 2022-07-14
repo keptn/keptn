@@ -87,7 +87,7 @@ func (ep *defaultEndpointHandler) ExecuteAPI(doer httpdoer, ate model.APITaskExe
 		if err == nil {
 			err = json.Unmarshal(bytes, responseBody)
 			if err != nil {
-				logger.Warnf("Error unmarshaling JSON response body for task %s: %v", ate.Context.Task.ID, err)
+				logger.Warnf("Error unmarshalling JSON response body for task %s: %v", ate.Context.Task.ID, err)
 			}
 		} else {
 			logger.Warnf("Error reading JSON response body for task %s: %v", ate.Context.Task.ID, err)
@@ -107,9 +107,4 @@ func (ep *defaultEndpointHandler) ExecuteAPI(doer httpdoer, ate model.APITaskExe
 		"received unsuccessful http status <%d: %s>: %w", response.StatusCode,
 		response.Status, ErrTaskFailed,
 	)
-}
-
-func isJSONResponse(r *http.Response) bool {
-	contentType := r.Header.Get("Content-Type")
-	return contentType == "application/json" || strings.HasPrefix(contentType, "application/json;")
 }
