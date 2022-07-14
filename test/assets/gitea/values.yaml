@@ -14,11 +14,13 @@ cache:
 
 gitea:
   config:
-    cache:
-      HOST: gitea-memcached:11211
+    server:
+      OFFLINE_MODE: true
     database:
-      DB_TYPE: postgresql
-      HOST: gitea-postgresql:5432
-      NAME: gitea
-      USER: gitea
-      PASSWD: gitea
+      DB_TYPE: sqlite3
+
+memcached:
+  enabled: false
+
+postgresql:
+  enabled: false
