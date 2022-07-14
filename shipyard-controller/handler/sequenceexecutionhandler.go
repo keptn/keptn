@@ -63,5 +63,4 @@ func (h *sequenceExecutionHandler) GetSequenceExecutions(ctx *gin.Context) {
 		PaginationResult:   *paginationInfo,
 		SequenceExecutions: sequences,
 	})
-
 }
