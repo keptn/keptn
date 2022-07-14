@@ -88,7 +88,6 @@ total_score:
 const invalidSLOFileContent = "invalid"
 
 func Test_QualityGates(t *testing.T) {
-
 	projectName := "quality-gates"
 	serviceName := "my-service"
 	shipyardFilePath, err := CreateTmpShipyardFile(qualityGatesShipyard)
@@ -632,6 +631,7 @@ func Test_QualityGates_SLIStartedEventSend(t *testing.T) {
 }
 
 func Test_QualityGates_SLIWrongFinishedPayloadSend(t *testing.T) {
+	t.Parallel()
 	source := "golang-test"
 	projectName := "quality-gates-invalid-finish"
 	serviceName := "my-service"
@@ -709,6 +709,7 @@ func Test_QualityGates_SLIWrongFinishedPayloadSend(t *testing.T) {
 }
 
 func Test_QualityGates_AbortedFinishedPayloadSend(t *testing.T) {
+	t.Parallel()
 	source := "golang-test"
 	projectName := "quality-gates-aborted-finish"
 	serviceName := "my-service"
@@ -814,6 +815,7 @@ func Test_QualityGates_AbortedFinishedPayloadSend(t *testing.T) {
 }
 
 func Test_QualityGates_ErroredFinishedPayloadSend(t *testing.T) {
+	t.Parallel()
 	source := "golang-test"
 	projectName := "quality-gates-errored-finish"
 	serviceName := "my-service"

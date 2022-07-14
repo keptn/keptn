@@ -7,13 +7,10 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"os"
-	"path"
 	"testing"
 
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/osutils"
-	"github.com/mholt/archiver/v3"
 	"github.com/stretchr/testify/require"
 )
 
@@ -148,24 +145,11 @@ func UpdateMockserverConfig(t *testing.T, project string) {
 }
 
 func Test_ProxyAuth(t *testing.T) {
-	repoLocalDir := "../assets/podtato-head"
 	projectName := "proxy-auth"
 	serviceName := "helloservice"
 	secondServiceName := "helloservice2"
-	chartFileName := "helloservice.tgz"
-	serviceChartSrcPath := path.Join(repoLocalDir, "helm-charts", "helloservice")
-	serviceChartArchivePath := path.Join(repoLocalDir, "helm-charts", chartFileName)
-	serviceJmeterDir := path.Join(repoLocalDir, "jmeter")
 
 	mockServerIP := "localhost:1080"
-	// Delete chart archive at the end of the test
-	defer func(path string) {
-		err := os.RemoveAll(path)
-		require.Nil(t, err)
-	}(serviceChartArchivePath)
-
-	err := archiver.Archive([]string{serviceChartSrcPath}, serviceChartArchivePath)
-	require.Nil(t, err)
 
 	t.Logf("Creating a new project %s with Gitea Upstream", projectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(testingProxyShipyard)
@@ -178,22 +162,6 @@ func Test_ProxyAuth(t *testing.T) {
 
 	t.Logf("Creating service %s in project %s", serviceName, projectName)
 	_, err = ExecuteCommandf("keptn create service %s --project %s", serviceName, projectName)
-	require.Nil(t, err)
-
-	t.Logf("Adding resource for service %s in project %s", serviceName, projectName)
-	_, err = ExecuteCommandf("keptn add-resource --project %s --service=%s --all-stages --resource=%s --resourceUri=%s", projectName, serviceName, serviceChartArchivePath, path.Join("helm", chartFileName))
-	require.Nil(t, err)
-
-	t.Log("Adding jmeter config in prod")
-	_, err = ExecuteCommandf("keptn add-resource --project=%s --service=%s --stage=%s --resource=%s --resourceUri=%s", projectName, serviceName, "prod", serviceJmeterDir+"/jmeter.conf.yaml", "jmeter/jmeter.conf.yaml")
-	require.Nil(t, err)
-
-	t.Log("Adding load test resources for jmeter in prod")
-	_, err = ExecuteCommandf("keptn add-resource --project=%s --service=%s --stage=%s --resource=%s --resourceUri=%s", projectName, serviceName, "prod", serviceJmeterDir+"/load.jmx", "jmeter/load.jmx")
-	require.Nil(t, err)
-
-	t.Logf("Trigger delivery of helloservice:v0.1.0")
-	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s:%s --sequence=%s", projectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery")
 	require.Nil(t, err)
 
 	t.Logf("Getting project %s with a proxy", projectName)
@@ -227,10 +195,6 @@ func Test_ProxyAuth(t *testing.T) {
 
 	t.Logf("Creating service %s in project %s", secondServiceName, projectName)
 	_, err = ExecuteCommandf("keptn create service %s --project %s", secondServiceName, projectName)
-	require.Nil(t, err)
-
-	t.Logf("Trigger delivery of helloservice:v0.1.0")
-	_, err = ExecuteCommandf("keptn trigger delivery --project=%s --service=%s --image=%s:%s --sequence=%s", projectName, serviceName, "ghcr.io/podtato-head/podtatoserver", "v0.1.0", "delivery")
 	require.Nil(t, err)
 
 	//Modify the proxy settings to be certain that no other project use the proxy
