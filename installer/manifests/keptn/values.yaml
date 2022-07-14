@@ -68,6 +68,7 @@ nats:
     name: nats
   securityContext:
     runAsNonRoot: true
+    runAsUser: 10001
   nats:
     healthcheck:
       startup:
