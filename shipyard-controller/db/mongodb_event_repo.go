@@ -91,8 +91,6 @@ func (mdbrepo *MongoDBEventsRepo) GetEventByID(projectName string, filter common
 	var event apimodels.KeptnContextExtendedCE
 	cur.Decode(&event)
 
-	fmt.Println(event)
-
 	return &event, cur.Err()
 }
 
