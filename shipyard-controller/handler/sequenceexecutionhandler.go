@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models/api"
+	"net/http"
 )
 
 type SequenceExecutionHandler interface {
@@ -51,6 +52,16 @@ func (h *sequenceExecutionHandler) GetSequenceExecutions(ctx *gin.Context) {
 
 	params.Project = ctx.Param("project")
 
-	//h.sequenceExecutionRepo.Get
+	sequences, paginationInfo, err := h.sequenceExecutionRepo.GetPaginated(params.GetSequenceExecutionFilter(), params.PaginationParams)
+
+	if err != nil {
+		SetInternalServerErrorResponse(ctx, fmt.Sprintf(UnableQueryStateMsg, err.Error()))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, api.GetSequenceExecutionResponse{
+		PaginationResult:   *paginationInfo,
+		SequenceExecutions: sequences,
+	})
 
 }
