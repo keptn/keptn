@@ -35,13 +35,14 @@ func NewDebugHandler(debugManager IDebugManager) *DebugHandler {
 // @Description  Get all keptn projects
 // @Tags         Project
 // @Success      200                  {object}  []apimodels.ExpandedProject     "ok"
+// @Failure      400                  {object}  models.Error                    "Bad Request"
 // @Failure      500                  {object}  models.Error                    "Internal error"
 // @Router       /debug/project [get]
 func (dh *DebugHandler) GetAllProjects(c *gin.Context) {
 	params := &models.GetProjectParams{}
 
 	if err := c.ShouldBindQuery(params); err != nil {
-		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetBadRequestErrorResponse(c, err.Error())
 		return
 	}
 
@@ -80,6 +81,7 @@ func (dh *DebugHandler) GetAllProjects(c *gin.Context) {
 // @Tags         Sequence
 // @Param        project              path      string                    true "The name of the project"
 // @Success      200                  {object}  []models.SequenceState    "ok"
+// @Failure      400                  {object}  models.Error              "Bad Request"
 // @Failure      404                  {object}  models.Error              "not found"
 // @Failure      500                  {object}  models.Error              "Internal error"
 // @Router       /debug/project/{project} [get]
@@ -87,7 +89,7 @@ func (dh *DebugHandler) GetAllSequencesForProject(c *gin.Context) {
 	params := &models.GetProjectParams{}
 
 	if err := c.ShouldBindQuery(params); err != nil {
-		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetBadRequestErrorResponse(c, err.Error())
 		return
 	}
 
@@ -127,6 +129,7 @@ func (dh *DebugHandler) GetAllSequencesForProject(c *gin.Context) {
 // @Param        project              path      string                    true  "The name of the project"
 // @Param        shkeptncontext       path      string                    true  "The shkeptncontext"
 // @Success      200                  {object}  models.SequenceState      "ok"
+// @Failure      400                  {object}  models.Error              "Bad Request"
 // @Failure      404                  {object}  models.Error              "not found"
 // @Failure      500                  {object}  models.Error              "Internal error"
 // @Router       /debug/project/{project}/shkeptncontext/{shkeptncontext} [get]
@@ -138,7 +141,7 @@ func (dh *DebugHandler) GetSequenceByID(c *gin.Context) {
 	sequence, err := dh.DebugManager.GetSequenceByID(projectName, shkeptncontext)
 
 	if err := c.ShouldBindQuery(params); err != nil {
-		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetBadRequestErrorResponse(c, err.Error())
 		return
 	}
 
@@ -167,6 +170,7 @@ func (dh *DebugHandler) GetSequenceByID(c *gin.Context) {
 // @Param        project              path      string                             true  "The name of the project"
 // @Param        shkeptncontext       path      string                             true  "The shkeptncontext"
 // @Success      200                  {object}  []models.KeptnContextExtendedCE    "ok"
+// @Failure      400                  {object}  models.Error                       "Bad Request"
 // @Failure      404                  {object}  models.Error                       "not found"
 // @Failure      500                  {object}  models.Error                       "Internal error"
 // @Router       /debug/project/{project}/shkeptncontext/{shkeptncontext}/event [get]
@@ -176,7 +180,7 @@ func (dh *DebugHandler) GetAllEvents(c *gin.Context) {
 	projectName := c.Param("project")
 
 	if err := c.ShouldBindQuery(params); err != nil {
-		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetBadRequestErrorResponse(c, err.Error())
 		return
 	}
 
@@ -222,6 +226,7 @@ func (dh *DebugHandler) GetAllEvents(c *gin.Context) {
 // @Param        shkeptncontext       path      string                             true  "The shkeptncontext"
 // @Param        event_id             path      string                             true  "The Id of the event"
 // @Success      200                  {object}  models.KeptnContextExtendedCE      "ok"
+// @Failure      400                  {object}  models.Error                       "Bad Request"
 // @Failure      404                  {object}  models.Error                       "not found"
 // @Failure      500                  {object}  models.Error                       "Internal error"
 // @Router       /debug/project/{project}/shkeptncontext/{shkeptncontext}/event/{event_id} [get]
@@ -233,7 +238,7 @@ func (dh *DebugHandler) GetEventByID(c *gin.Context) {
 	projectName := c.Param("project")
 
 	if err := c.ShouldBindQuery(params); err != nil {
-		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetBadRequestErrorResponse(c, err.Error())
 		return
 	}
 
