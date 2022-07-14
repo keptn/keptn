@@ -20,11 +20,11 @@ func TestMigrateAlphaRequest(t *testing.T) {
 				Headers: []lib.Header{
 					{
 						Key:   "Accept-Charset",
-						Value: " utf-8",
+						Value: "utf-8",
 					},
 					{
 						Key:   "Content-Type",
-						Value: " application/json",
+						Value: "application/json",
 					},
 				},
 				Payload: "{\"email\":\"test@example.com\", \"name\": [\"Boolean\", \"World\"]}",
@@ -39,11 +39,11 @@ func TestMigrateAlphaRequest(t *testing.T) {
 				Headers: []lib.Header{
 					{
 						Key:   "Accept-Charset",
-						Value: " utf-8",
+						Value: "utf-8",
 					},
 					{
 						Key:   "Content-Type",
-						Value: " application/json",
+						Value: "application/json",
 					},
 				},
 				Payload: "{\"email\":\"test@example.com\", \"name\": [\"Boolean\", \"World\"]}",
@@ -58,11 +58,11 @@ func TestMigrateAlphaRequest(t *testing.T) {
 				Headers: []lib.Header{
 					{
 						Key:   "Accept-Charset",
-						Value: " utf-8",
+						Value: "utf-8",
 					},
 					{
 						Key:   "Content-Type",
-						Value: " application/json",
+						Value: "application/json",
 					},
 				},
 				Payload: "{\"email\":\"test@example.com\", \"name\": [\"Boolean\", \"World\"]}",
@@ -101,11 +101,11 @@ func TestMigrateAlphaRequest(t *testing.T) {
 				Headers: []lib.Header{
 					{
 						Key:   "Accept-Charset",
-						Value: " utf-8",
+						Value: "utf-8",
 					},
 					{
 						Key:   "Content-Type",
-						Value: " application/json",
+						Value: "application/json",
 					},
 				},
 				Payload: "{\"email\":\"test@example.com\", \"name\": [\"Boolean\", \"World\"]}",
@@ -120,11 +120,11 @@ func TestMigrateAlphaRequest(t *testing.T) {
 				Headers: []lib.Header{
 					{
 						Key:   "Accept-Charset",
-						Value: " utf-8",
+						Value: "utf-8",
 					},
 					{
 						Key:   "Content-Type",
-						Value: " application/json",
+						Value: "application/json",
 					},
 				},
 				Payload: "{\"email\":\"test@example.com\", \"name\": [\"Boolean\", \"World\"]}",
@@ -246,11 +246,11 @@ func TestMigrateAlphaWebhook(t *testing.T) {
 									Headers: []lib.Header{
 										{
 											Key:   "Accept-Charset",
-											Value: " utf-8",
+											Value: "utf-8",
 										},
 										{
 											Key:   "Content-Type",
-											Value: " application/json",
+											Value: "application/json",
 										},
 									},
 									Payload: "{\"email\":\"test@example.com\", \"name\": [\"Boolean\", \"World\"]}",
@@ -271,4 +271,8 @@ func TestMigrateAlphaWebhook(t *testing.T) {
 
 		})
 	}
+}
+
+func TestMigrateWebhooksCommand(t *testing.T) {
+	testInvalidInputHelper("migrate-webhooks --unknown", "unknown flag: --unknown", t)
 }

@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,19 +12,20 @@ import (
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/webhook-service/lib"
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
 )
 
 type migrateWebhooksCmdParams struct {
 	ProjectName *string
 	DryRun      *bool
-	AcceptAll   bool
+	AcceptAll   *bool
 }
 
 var migrateWebhooksParams *migrateWebhooksCmdParams
 var ErrResourceNotFound = fmt.Errorf("Resource not found")
 var supportedCurlMethods = [4]string{"POST", "PUT", "GET", "HEAD"}
+var webhookURI = "%2Fwebhook%2Fwebhook.yaml"
 
-const webhookURI = "%2Fwebhook%2Fwebhook.yaml"
 const betaApiVersion = "webhookconfig.keptn.sh/v1beta1"
 const alphaApiVersion = "webhookconfig.keptn.sh/v1alpha1"
 
@@ -49,6 +49,8 @@ var migrateWebhooksCmd = &cobra.Command{
 }
 
 func doMigration(params *migrateWebhooksCmdParams) error {
+	// fmt.Println(url.QueryEscape("%2Fwebhook%2Fwebhook.yaml"))
+	// return nil
 	endPoint, apiToken, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
 	if err != nil {
 		return fmt.Errorf(authErrorMsg)
@@ -167,7 +169,10 @@ func migrateWebhooks(webhooks []*webhookResource, params *migrateWebhooksCmdPara
 			}
 			fmt.Println(string(byteWebhook))
 		}
-		if err := updateWebhookResources(w, migratedWebhook, api); err != nil {
+		// if !*migrateWebhooksParams.AcceptAll {
+		// 	//if user adds N then continue
+		// }
+		if err := updateWebhookResource(w, migratedWebhook, api); err != nil {
 			return err
 		}
 	}
@@ -198,23 +203,29 @@ func migrateAlphaRequest(request string) (*lib.Request, error) {
 		return nil, fmt.Errorf("cannot parse curl command: %s", err.Error())
 	}
 
+	//removes `curl` from array`
 	curlArr = deleteItem(curlArr, 0, false)
 
+	//extracts URL
 	url, i := extractURL(curlArr)
 	curlArr = deleteItem(curlArr, i, false)
 	newRequest.URL = url
 
+	//extracts Method
 	method, i := extractMethod(curlArr)
 	curlArr = deleteItem(curlArr, i, true)
 	newRequest.Method = method
 
+	//extracts Payload
 	payload, i := extractPayload(curlArr)
 	curlArr = deleteItem(curlArr, i, true)
 	newRequest.Payload = payload
 
+	//extracts Headers
 	curlArr, headers := extractHeaders(curlArr)
 	newRequest.Headers = headers
 
+	//consider the rest as Options
 	newRequest.Options = strings.Join(curlArr[:], " ")
 
 	return &newRequest, nil
@@ -287,32 +298,44 @@ func extractHeaders(array []string) ([]string, []lib.Header) {
 func createHeader(headerStr string) lib.Header {
 	arr := strings.Split(headerStr, ":")
 	return lib.Header{
-		Key:   arr[0],
-		Value: arr[1],
+		Key:   strings.ReplaceAll(arr[0], " ", ""),
+		Value: strings.ReplaceAll(arr[1], " ", ""),
 	}
 }
 
-func updateWebhookResources(webhook *webhookResource, webhookConfig *lib.WebHookConfig, api *api.APISet) error {
-	byteWebhook, err := json.Marshal(webhookConfig)
+func updateWebhookResource(webhook *webhookResource, webhookConfig *lib.WebHookConfig, api *api.APISet) error {
+	resourceURI := "/webhook/webhook.yaml"
+	byteWebhook, err := yaml.Marshal(webhookConfig)
 	if err != nil {
 		return fmt.Errorf("cannot marshal webhookConfig: %s", err.Error())
 	}
-	encodedWebhook := base64.StdEncoding.EncodeToString(byteWebhook)
+	//encodedWebhook := base64.StdEncoding.EncodeToString(byteWebhook)
 	webhookResource := webhook.WebhookResource
-	webhookResource.ResourceContent = encodedWebhook
+	webhookResource.ResourceContent = string(byteWebhook)
+	webhookResource.ResourceURI = &resourceURI
+	// webhookResources := models.Resources{
+	// 	Resources: []*models.Resource{
+	// 		{
+	// 			ResourceContent: string(encodedWebhook),
+	// 			ResourceURI:     &resourceURI,
+	// 		},
+	// 	},
+	// }
+
+	webhookResources := []*models.Resource{webhookResource}
 
 	if webhook.Sevice != nil && *webhook.Sevice != "" {
-		_, err := api.ResourcesV1().UpdateServiceResource(*webhook.Project, *webhook.Stage, *webhook.Sevice, webhookResource)
+		_, err := api.ResourcesV1().UpdateServiceResources(*webhook.Project, *webhook.Stage, *webhook.Sevice, webhookResources)
 		if err != nil {
 			return fmt.Errorf("cannot update webhook resource on service level for project %s stage %s service %s: %s", *webhook.Project, *webhook.Stage, *webhook.Sevice, err.Error())
 		}
 	} else if webhook.Stage != nil && *webhook.Stage != "" {
-		_, err := api.ResourcesV1().UpdateStageResource(*webhook.Project, *webhook.Stage, webhookResource)
+		_, err := api.ResourcesV1().UpdateStageResources(*webhook.Project, *webhook.Stage, webhookResources)
 		if err != nil {
 			return fmt.Errorf("cannot update webhook resource on stage level for project %s stage %s: %s", *webhook.Project, *webhook.Stage, err.Error())
 		}
 	} else {
-		_, err := api.ResourcesV1().UpdateProjectResource(*webhook.Project, webhookResource)
+		_, err := api.ResourcesV1().UpdateProjectResources(*webhook.Project, webhookResources)
 		if err != nil {
 			return fmt.Errorf("cannot update webhook resource on project level for project %s: %s", *webhook.Project, err.Error())
 		}
@@ -422,5 +445,6 @@ func init() {
 	migrateWebhooksParams = &migrateWebhooksCmdParams{}
 	migrateWebhooksParams.DryRun = migrateWebhooksCmd.Flags().BoolP("dry-run", "", false, "Executes a dry run of webhook-config migrations without updating the files")
 	migrateWebhooksParams.ProjectName = migrateWebhooksCmd.Flags().StringP("project", "", "", "The project which webhook-configs will be migrated")
-	migrateWebhooksCmd.Flags().BoolVarP(&migrateWebhooksParams.AcceptAll, "yes", "y", false, "Automatically accept change of all migrations")
+	migrateWebhooksParams.AcceptAll = migrateWebhooksCmd.Flags().BoolP("yes", "", false, "Automatically accept change of all migrations")
+	//migrateWebhooksCmd.Flags().BoolVarP(&migrateWebhooksParams.AcceptAll, "yes", "y", false, "Automatically accept change of all migrations")
 }
