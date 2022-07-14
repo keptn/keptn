@@ -17,14 +17,11 @@ gitea:
     server:
       OFFLINE_MODE: true
     database:
-      DB_TYPE: mysql
-      HOST: gitea-mysql:5432
+      DB_TYPE: postgresql
+      HOST: gitea-postgresql:5432
       NAME: gitea
       USER: gitea
       PASSWD: gitea
 
-postgresql:
+memcached:
   enabled: false
-
-mysql:
-  enabled: true
