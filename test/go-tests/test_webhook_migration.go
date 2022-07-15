@@ -136,7 +136,7 @@ func Test_Webhook_Migrator(t *testing.T) {
 		require.Nil(t, err)
 
 		fillProjectWithWebhooks(t, shipyardFilePath, webhookFilePath, projectName+fmt.Sprint(i), serviceName)
-		checkWebhooksHaveCorrectWersion(t, internalKeptnAPI, projectName+fmt.Sprint(i), serviceName, webhookConfigMigrationAlpha)
+		checkWebhooksHaveCorrectVersion(t, internalKeptnAPI, projectName+fmt.Sprint(i), serviceName, webhookConfigMigrationAlpha)
 	}
 
 	t.Logf("Executing dry-run migration for project %s1", projectName)
@@ -146,7 +146,7 @@ func Test_Webhook_Migrator(t *testing.T) {
 
 	t.Logf("Checking if all projects still contain Alpha version")
 	for i := 1; i <= 3; i++ {
-		checkWebhooksHaveCorrectWersion(t, internalKeptnAPI, projectName+fmt.Sprint(i), serviceName, webhookConfigMigrationAlpha)
+		checkWebhooksHaveCorrectVersion(t, internalKeptnAPI, projectName+fmt.Sprint(i), serviceName, webhookConfigMigrationAlpha)
 	}
 
 	t.Logf("Executing migration for project %s1", projectName)
@@ -154,9 +154,9 @@ func Test_Webhook_Migrator(t *testing.T) {
 	require.Nil(t, err)
 
 	t.Logf("Checking if all webhooks contain the right version")
-	checkWebhooksHaveCorrectWersion(t, internalKeptnAPI,projectName+"1", serviceName, webhookConfigMigrationBeta)
-	checkWebhooksHaveCorrectWersion(t, internalKeptnAPI, projectName+"2", serviceName, webhookConfigMigrationAlpha)
-	checkWebhooksHaveCorrectWersion(t, internalKeptnAPI,projectName+"3", serviceName, webhookConfigMigrationAlpha)
+	checkWebhooksHaveCorrectVersion(t, internalKeptnAPI,projectName+"1", serviceName, webhookConfigMigrationBeta)
+	checkWebhooksHaveCorrectVersion(t, internalKeptnAPI, projectName+"2", serviceName, webhookConfigMigrationAlpha)
+	checkWebhooksHaveCorrectVersion(t, internalKeptnAPI,projectName+"3", serviceName, webhookConfigMigrationAlpha)
 
 	t.Logf("Executing migration for all projects")
 	_, err = ExecuteCommandf("keptn migrate-webhooks -y")
@@ -164,7 +164,7 @@ func Test_Webhook_Migrator(t *testing.T) {
 
 	t.Logf("Checking if all webhooks in all projects were migrated")
 	for i := 1; i <= 3; i++ {
-		checkWebhooksHaveCorrectWersion(t, internalKeptnAPI, projectName+fmt.Sprint(i), serviceName, webhookConfigMigrationBeta)
+		checkWebhooksHaveCorrectVersion(t, internalKeptnAPI, projectName+fmt.Sprint(i), serviceName, webhookConfigMigrationBeta)
 	}
 }
 
@@ -191,7 +191,7 @@ func fillProjectWithWebhooks(t *testing.T, shipyardFilePath string, webhookFileP
 	require.Nil(t, err)
 }
 
-func checkWebhooksHaveCorrectWersion(t *testing.T, internalKeptnAPI *APICaller, projectName string, serviceName string, webhookConfig string) {
+func checkWebhooksHaveCorrectVersion(t *testing.T, internalKeptnAPI *APICaller, projectName string, serviceName string, webhookConfig string) {
 	t.Logf("Checking if webhook config has required format for project")
 	resp, err := internalKeptnAPI.Get(basePath+"/"+projectName+"/resource"+webhookURI, 3)
 	require.Nil(t, err)

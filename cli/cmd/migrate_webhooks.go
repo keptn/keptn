@@ -11,6 +11,7 @@ import (
 	"github.com/keptn/keptn/cli/pkg/common"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/webhook-service/lib"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 )
@@ -148,7 +149,8 @@ func migrateWebhooks(webhooks []*webhookResource, params *migrateWebhooksCmdPara
 	for _, w := range webhooks {
 		webhook := resourceToWebhook(w.WebhookResource)
 		if webhook == nil {
-			return fmt.Errorf("cannot decode webhook resource")
+			logrus.Errorf("cannot decode webhook resource for project %s stage %s service %s", resolveNilPointer(w.Project), resolveNilPointer(w.Stage), resolveNilPointer(w.Service))
+			continue
 		}
 		// migrate only webhooks in v1alpha1 version
 		if webhook.ApiVersion == betaApiVersion {
@@ -156,7 +158,8 @@ func migrateWebhooks(webhooks []*webhookResource, params *migrateWebhooksCmdPara
 		}
 		migratedWebhook, err := migrateAlphaWebhook(webhook)
 		if err != nil {
-			return err
+			logrus.Errorf("cannot migrate webhook for project %s stage %s service %s", resolveNilPointer(w.Project), resolveNilPointer(w.Stage), resolveNilPointer(w.Service))
+			continue
 		}
 		if *migrateWebhooksParams.DryRun {
 			if err := printWebhook(migratedWebhook, w); err != nil {
@@ -174,7 +177,7 @@ func migrateWebhooks(webhooks []*webhookResource, params *migrateWebhooksCmdPara
 			}
 		}
 		if err := updateWebhookResource(w, migratedWebhook, api); err != nil {
-			return err
+			logrus.Errorf("cannot update webhook for project %s stage %s service %s", resolveNilPointer(w.Project), resolveNilPointer(w.Stage), resolveNilPointer(w.Service))
 		}
 	}
 
