@@ -118,6 +118,18 @@ func Test_Webhook_Migrator(t *testing.T) {
 	internalKeptnAPI, err := GetInternalKeptnAPI(ctx, "service/resource-service", "8888", "8080")
 	require.Nil(t, err)
 
+	t.Logf("Executing migration for non-existing project")
+	_, err = ExecuteCommandf("keptn migrate-webhooks --project=non-exist -y")
+	require.NotNil(t, err)
+
+	t.Logf("creating project %s", projectName)
+	_, err = CreateProject(projectName, shipyardFilePath)
+	require.Nil(t, err)
+
+	t.Logf("Executing migration for project without webhooks")
+	_, err = ExecuteCommandf("keptn migrate-webhooks -y")
+	require.Nil(t, err)
+
 	for i := 1; i <= 3; i++ {
 		fillProjectWithWebhooks(t, shipyardFilePath, webhookFilePath, projectName+fmt.Sprint(i), serviceName+fmt.Sprint(i))
 		checkWebhooksHaveCorrectWersion(t, internalKeptnAPI, "keptn-"+projectName+fmt.Sprint(i), serviceName+fmt.Sprint(i), webhookConfigMigrationAlpha)

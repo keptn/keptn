@@ -31,7 +31,7 @@ const alphaApiVersion = "webhookconfig.keptn.sh/v1alpha1"
 type webhookResource struct {
 	Project         *string
 	Stage           *string
-	Sevice          *string
+	Service         *string
 	WebhookResource *models.Resource
 }
 
@@ -39,8 +39,8 @@ var migrateWebhooksCmd = &cobra.Command{
 	Use:     "migrate-webhooks",
 	Short:   `Migrates the webhook configurations from version v1alpha1 to v1beta1`,
 	Example: `keptn migrate-webhooks [--project=PROJECTMNAME] [--dry-run]`,
-	Long: `Migrates the webhook configurations from version v1alpha1 to v1beta1. Version v1beta1 is the new default version
-				and it is highly encouraged to use this one. Version v1alpha1 won't be supported from version Keptn 0.19.0`,
+	Long: `Migrates the webhook configurations for all projects from version v1alpha1 to v1beta1. To migrate only a single project, please use "--project" flag.
+				Version v1beta1 is the new default version and it is highly encouraged to use this one. Version v1alpha1 won't be supported from Keptn 0.19.0`,
 	Args: cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return doMigration(migrateWebhooksParams)
@@ -96,7 +96,7 @@ func getProjectWebhooks(project *models.Project, api *api.APISet) ([]*webhookRes
 
 	// getting project resources
 	projectWebhookResource, err := api.ResourcesV1().GetProjectResource(project.ProjectName, webhookURI)
-	if err != nil && err.Error() != ErrResourceNotFound.Error() {
+	if err != nil && errors.Is(err, ErrResourceNotFound) {
 		return nil, fmt.Errorf("cannot retrieve webhook resource on project level for project %s: %s", project.ProjectName, err.Error())
 	}
 	if projectWebhookResource != nil {
@@ -110,7 +110,7 @@ func getProjectWebhooks(project *models.Project, api *api.APISet) ([]*webhookRes
 	// getting stage resources
 	for _, stage := range project.Stages {
 		stageWebhookResource, err := api.ResourcesV1().GetStageResource(project.ProjectName, stage.StageName, webhookURI)
-		if err != nil && err.Error() != ErrResourceNotFound.Error() {
+		if err != nil && errors.Is(err, ErrResourceNotFound) {
 			return nil, fmt.Errorf("cannot retrieve webhook resource on stage level for project %s: %s", project.ProjectName, err.Error())
 		}
 		if stageWebhookResource != nil {
@@ -127,14 +127,14 @@ func getProjectWebhooks(project *models.Project, api *api.APISet) ([]*webhookRes
 	for _, stage := range project.Stages {
 		for _, service := range stage.Services {
 			serviceWebhookResource, err := api.ResourcesV1().GetServiceResource(project.ProjectName, stage.StageName, service.ServiceName, webhookURI)
-			if err != nil && err.Error() != ErrResourceNotFound.Error() {
+			if err != nil && errors.Is(err, ErrResourceNotFound) {
 				return nil, fmt.Errorf("cannot retrieve webhook resource on service level for project %s: %s", project.ProjectName, err.Error())
 			}
 			if serviceWebhookResource != nil {
 				tmpWebhookResource := webhookResource{
 					Project:         &project.ProjectName,
 					Stage:           &stage.StageName,
-					Sevice:          &service.ServiceName,
+					Service:         &service.ServiceName,
 					WebhookResource: serviceWebhookResource,
 				}
 				webhooks = append(webhooks, &tmpWebhookResource)
@@ -190,7 +190,7 @@ func printWebhook(webhook *lib.WebHookConfig, webhookResource *webhookResource) 
 	fmt.Println("---------------------------------------------------------------------")
 	fmt.Printf("Project:  %s\n", resolveNilPointer(webhookResource.Project))
 	fmt.Printf("Stage:    %s\n", resolveNilPointer(webhookResource.Stage))
-	fmt.Printf("Service:  %s\n", resolveNilPointer(webhookResource.Sevice))
+	fmt.Printf("Service:  %s\n", resolveNilPointer(webhookResource.Service))
 	fmt.Println("---------------------------------------------------------------------")
 	fmt.Println(string(byteWebhook))
 	fmt.Println("---------------------------------------------------------------------")
@@ -340,10 +340,10 @@ func updateWebhookResource(webhook *webhookResource, webhookConfig *lib.WebHookC
 	webhookResource.ResourceURI = &resourceURI
 	webhookResources := []*models.Resource{webhookResource}
 
-	if webhook.Sevice != nil && *webhook.Sevice != "" {
-		_, err := api.ResourcesV1().UpdateServiceResources(*webhook.Project, *webhook.Stage, *webhook.Sevice, webhookResources)
+	if webhook.Service != nil && *webhook.Service != "" {
+		_, err := api.ResourcesV1().UpdateServiceResources(*webhook.Project, *webhook.Stage, *webhook.Service, webhookResources)
 		if err != nil {
-			return fmt.Errorf("cannot update webhook resource on service level for project %s stage %s service %s: %s", *webhook.Project, *webhook.Stage, *webhook.Sevice, err.Error())
+			return fmt.Errorf("cannot update webhook resource on service level for project %s stage %s service %s: %s", *webhook.Project, *webhook.Stage, *webhook.Service, err.Error())
 		}
 	} else if webhook.Stage != nil && *webhook.Stage != "" {
 		_, err := api.ResourcesV1().UpdateStageResources(*webhook.Project, *webhook.Stage, webhookResources)
