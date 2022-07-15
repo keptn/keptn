@@ -78,7 +78,7 @@ jobs:
         run: mkdir ~/downloads
 
       - name: Cache downloads paths
-        uses: actions/cache@v3.0.4
+        uses: actions/cache@v3.0.5
         with:
           path: |
             ~/downloads
@@ -189,9 +189,9 @@ jobs:
         run: |
           
           echo "copying helm chart in zero downtime folder"
-          cp ${HELM_CHART_NAME} test/zero-downtime/keptn-installed.tgz
+          cp ${HELM_CHART_NAME} test/zero-downtime/keptn-dev-installed.tgz
           cd test/zero-downtime
-          echo "INSTALL_HELM_CHART=$(ls ./keptn-installed.tgz)" >> $GITHUB_ENV
+          echo "INSTALL_HELM_CHART=$(ls ./keptn-dev-installed.tgz)" >> $GITHUB_ENV
           
           if [[ "${{ github.event_name }}" == 'schedule' || "${{ github.event.inputs.upgradeTo }}" == "http"* ]]; then
             echo "UPGRADE_HELM_CHART=${{ github.event.inputs.upgradeTo }}" >> $GITHUB_ENV

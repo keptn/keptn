@@ -179,13 +179,13 @@ func RollingUpgrade(t *testing.T, env *ZeroDowntimeEnv) {
 			chartPath = env.EnvInstallVersion
 		}
 		t.Logf("Upgrading Keptn to %s", chartPath)
-		setRegistry := ""
+		setRegistry := "global.keptn.registry=docker.io/keptn"
 		if strings.Contains(chartPath, "dev") {
-			setRegistry = "--set global.keptn.registry=\"docker.io/keptndev\""
+			setRegistry = "global.keptn.registry=docker.io/keptndev"
 		}
 		_, err = testutils.ExecuteCommand(
 			fmt.Sprintf(
-				"helm upgrade keptn -n %s %s --wait --values=%s %s", testutils.GetKeptnNameSpaceFromEnv(), chartPath, valuesFile, setRegistry))
+				"helm upgrade keptn -n %s %s --wait --values=%s --set=%s", testutils.GetKeptnNameSpaceFromEnv(), chartPath, valuesFile, setRegistry))
 		require.Nil(t, err)
 	}
 }

@@ -4,10 +4,9 @@
 package fake
 
 import (
+	"github.com/keptn/keptn/api/importer/model"
 	"io"
 	"sync"
-
-	"github.com/keptn/keptn/api/importer/model"
 )
 
 // ImportPackageMock is a mock implementation of importer.ImportPackage.
@@ -174,8 +173,11 @@ func (mock *ManifestParserMock) ParseCalls() []struct {
 //
 // 		// make and configure a mocked importer.TaskExecutor
 // 		mockedTaskExecutor := &TaskExecutorMock{
-// 			ExecuteAPIFunc: func(ate importer.APITaskExecution) (any, error) {
+// 			ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
 // 				panic("mock out the ExecuteAPI method")
+// 			},
+// 			PushResourceFunc: func(rp model.ResourcePush) (any, error) {
+// 				panic("mock out the PushResource method")
 // 			},
 // 		}
 //
@@ -187,6 +189,9 @@ type TaskExecutorMock struct {
 	// ExecuteAPIFunc mocks the ExecuteAPI method.
 	ExecuteAPIFunc func(ate model.APITaskExecution) (any, error)
 
+	// PushResourceFunc mocks the PushResource method.
+	PushResourceFunc func(rp model.ResourcePush) (any, error)
+
 	// calls tracks calls to the methods.
 	calls struct {
 		// ExecuteAPI holds details about calls to the ExecuteAPI method.
@@ -194,8 +199,14 @@ type TaskExecutorMock struct {
 			// Ate is the ate argument value.
 			Ate model.APITaskExecution
 		}
+		// PushResource holds details about calls to the PushResource method.
+		PushResource []struct {
+			// Rp is the rp argument value.
+			Rp model.ResourcePush
+		}
 	}
-	lockExecuteAPI sync.RWMutex
+	lockExecuteAPI   sync.RWMutex
+	lockPushResource sync.RWMutex
 }
 
 // ExecuteAPI calls ExecuteAPIFunc.
@@ -226,5 +237,36 @@ func (mock *TaskExecutorMock) ExecuteAPICalls() []struct {
 	mock.lockExecuteAPI.RLock()
 	calls = mock.calls.ExecuteAPI
 	mock.lockExecuteAPI.RUnlock()
+	return calls
+}
+
+// PushResource calls PushResourceFunc.
+func (mock *TaskExecutorMock) PushResource(rp model.ResourcePush) (any, error) {
+	if mock.PushResourceFunc == nil {
+		panic("TaskExecutorMock.PushResourceFunc: method is nil but TaskExecutor.PushResource was just called")
+	}
+	callInfo := struct {
+		Rp model.ResourcePush
+	}{
+		Rp: rp,
+	}
+	mock.lockPushResource.Lock()
+	mock.calls.PushResource = append(mock.calls.PushResource, callInfo)
+	mock.lockPushResource.Unlock()
+	return mock.PushResourceFunc(rp)
+}
+
+// PushResourceCalls gets all the calls that were made to PushResource.
+// Check the length with:
+//     len(mockedTaskExecutor.PushResourceCalls())
+func (mock *TaskExecutorMock) PushResourceCalls() []struct {
+	Rp model.ResourcePush
+} {
+	var calls []struct {
+		Rp model.ResourcePush
+	}
+	mock.lockPushResource.RLock()
+	calls = mock.calls.PushResource
+	mock.lockPushResource.RUnlock()
 	return calls
 }

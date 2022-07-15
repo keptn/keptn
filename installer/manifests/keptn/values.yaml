@@ -66,7 +66,18 @@ nats:
   cluster:
     replicas: 3
     name: nats
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10001
+    fsGroup: 10001
   nats:
+    resources:
+      requests:
+        cpu: 200m
+        memory: 500Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
     healthcheck:
       startup:
         enabled: false
@@ -75,17 +86,26 @@ nats:
 
       memStorage:
         enabled: true
-        size: 2Gi
+        size: 500Mi
 
       fileStorage:
         enabled: true
         size: 5Gi
         storageDirectory: /data/
         storageClassName: ""
+    securityContext:
+      readOnlyRootFilesystem: true
+      allowPrivilegeEscalation: false
+      runAsNonRoot: true
+      capabilities:
+        drop:
+          - ALL
 
   natsbox:
     enabled: false
   reloader:
+    enabled: false
+  exporter:
     enabled: false
 
 apiGatewayNginx:
