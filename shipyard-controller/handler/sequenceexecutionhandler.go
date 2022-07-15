@@ -35,10 +35,10 @@ func NewSequenceExecutionHandler(sequenceExecutionRepo db.SequenceExecutionRepo,
 // @Accept       json
 // @Produce      json
 // @Param        project       path      string                    true  "The project name"
-// @Param        stage       query      string                    false  "The stage name"
-// @Param        service       query      string                    false  "The service name"
+// @Param        stage         query      string                   false  "The stage name"
+// @Param        service       query      string                   false  "The service name"
 // @Param        name          query     string                    false  "The name of the sequence"
-// @Param        status        query     string                    false  "The status of the sequence (e.g., triggered, finished, started)"
+// @Param        status        query     string                    false  "The status of the sequence (triggered, finished, started, paused, timedOut)"
 // @Param        pageSize      query     int                       false  "The maximum number of items to return"
 // @Param        nextPageKey   query     int                       false  "Offset to the next set of items"
 // @Param        keptnContext  query     string                    false  "Keptn context ID"
