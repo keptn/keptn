@@ -1,0 +1,4 @@
+event: sh.keptn.test.api.task.render
+project: some-project
+service: some-super-secret-hush-hush-service
+stage: dev

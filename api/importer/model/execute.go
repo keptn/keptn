@@ -5,6 +5,7 @@ import "io"
 type TaskContext struct {
 	Project string
 	Task    *ManifestTask
+	Context map[string]string
 }
 
 type APITaskExecution struct {

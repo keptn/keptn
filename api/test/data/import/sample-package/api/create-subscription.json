@@ -1,9 +1,9 @@
 {
-    "event": "{{ .context.event }}",
+    "event": "[[ .Context.event ]]",
     "filter": {
-        "projects": ["{{ .context.project }}"],
-        "services": ["{{ .context.service "],
-        "stages": ["{{ .context.stage }}"]
+        "projects": ["[[ .Context.project ]]"],
+        "services": ["[[ .Context.service ]]"],
+        "stages": ["[[ .Context.stage ]]"]
     }
   }
 
