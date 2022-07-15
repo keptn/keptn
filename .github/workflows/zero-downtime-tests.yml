@@ -78,7 +78,7 @@ jobs:
         run: mkdir ~/downloads
 
       - name: Cache downloads paths
-        uses: actions/cache@v3.0.4
+        uses: actions/cache@v3.0.5
         with:
           path: |
             ~/downloads
