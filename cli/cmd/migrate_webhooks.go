@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/keptn/go-utils/pkg/api/models"
-	api "github.com/keptn/go-utils/pkg/api/utils"
+	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/internal"
 	"github.com/keptn/keptn/cli/pkg/common"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
@@ -21,7 +21,6 @@ type migrateWebhooksCmdParams struct {
 }
 
 var migrateWebhooksParams *migrateWebhooksCmdParams
-var ErrResourceNotFound = fmt.Errorf("Resource not found")
 var supportedCurlMethods = [4]string{"POST", "PUT", "GET", "HEAD"}
 var webhookURI = "%2Fwebhook%2Fwebhook.yaml"
 
@@ -91,12 +90,12 @@ func doMigration(params *migrateWebhooksCmdParams) error {
 	return nil
 }
 
-func getProjectWebhooks(project *models.Project, api *api.APISet) ([]*webhookResource, error) {
+func getProjectWebhooks(project *models.Project, api *apiutils.APISet) ([]*webhookResource, error) {
 	var webhooks []*webhookResource
 
 	// getting project resources
 	projectWebhookResource, err := api.ResourcesV1().GetProjectResource(project.ProjectName, webhookURI)
-	if err != nil && errors.Is(err, ErrResourceNotFound) {
+	if err != nil && errors.Is(err, apiutils.ResourceNotFoundError) {
 		return nil, fmt.Errorf("cannot retrieve webhook resource on project level for project %s: %s", project.ProjectName, err.Error())
 	}
 	if projectWebhookResource != nil {
@@ -110,7 +109,7 @@ func getProjectWebhooks(project *models.Project, api *api.APISet) ([]*webhookRes
 	// getting stage resources
 	for _, stage := range project.Stages {
 		stageWebhookResource, err := api.ResourcesV1().GetStageResource(project.ProjectName, stage.StageName, webhookURI)
-		if err != nil && errors.Is(err, ErrResourceNotFound) {
+		if err != nil && errors.Is(err, apiutils.ResourceNotFoundError) {
 			return nil, fmt.Errorf("cannot retrieve webhook resource on stage level for project %s: %s", project.ProjectName, err.Error())
 		}
 		if stageWebhookResource != nil {
@@ -127,7 +126,7 @@ func getProjectWebhooks(project *models.Project, api *api.APISet) ([]*webhookRes
 	for _, stage := range project.Stages {
 		for _, service := range stage.Services {
 			serviceWebhookResource, err := api.ResourcesV1().GetServiceResource(project.ProjectName, stage.StageName, service.ServiceName, webhookURI)
-			if err != nil && errors.Is(err, ErrResourceNotFound) {
+			if err != nil && errors.Is(err, apiutils.ResourceNotFoundError) {
 				return nil, fmt.Errorf("cannot retrieve webhook resource on service level for project %s: %s", project.ProjectName, err.Error())
 			}
 			if serviceWebhookResource != nil {
@@ -145,7 +144,7 @@ func getProjectWebhooks(project *models.Project, api *api.APISet) ([]*webhookRes
 	return webhooks, nil
 }
 
-func migrateWebhooks(webhooks []*webhookResource, params *migrateWebhooksCmdParams, api *api.APISet) error {
+func migrateWebhooks(webhooks []*webhookResource, params *migrateWebhooksCmdParams, api *apiutils.APISet) error {
 	for _, w := range webhooks {
 		webhook := resourceToWebhook(w.WebhookResource)
 		if webhook == nil {
@@ -328,7 +327,7 @@ func createHeader(headerStr string) lib.Header {
 	}
 }
 
-func updateWebhookResource(webhook *webhookResource, webhookConfig *lib.WebHookConfig, api *api.APISet) error {
+func updateWebhookResource(webhook *webhookResource, webhookConfig *lib.WebHookConfig, api *apiutils.APISet) error {
 	resourceURI := "/webhook/webhook.yaml"
 	byteWebhook, err := yaml.Marshal(webhookConfig)
 	if err != nil {
@@ -367,7 +366,7 @@ func resourceToWebhook(resource *models.Resource) *lib.WebHookConfig {
 	return whConfig
 }
 
-func checkProjectExists(projectName string, api *api.APISet) (*models.Project, error) {
+func checkProjectExists(projectName string, api *apiutils.APISet) (*models.Project, error) {
 	project, err := api.ProjectsV1().GetProject(models.Project{
 		ProjectName: projectName,
 	})
