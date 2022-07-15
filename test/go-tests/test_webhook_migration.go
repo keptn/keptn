@@ -88,10 +88,6 @@ spec:
               method: GET
               options: '{{.data.project}} {{.env.mysecret}}'
 `
-
-//const encodedAlpha = "YXBpVmVyc2lvbjogd2ViaG9va2NvbmZpZy5rZXB0bi5zaC92MWFscGhhMQpraW5kOiBXZWJob29rQ29uZmlnCm1ldGFkYXRhOgogIG5hbWU6IHdlYmhvb2stY29uZmlndXJhdGlvbgpzcGVjOgogIHdlYmhvb2tzOgogICAgLSB0eXBlOiAic2gua2VwdG4uZXZlbnQub3RoZXJ0YXNrLnRyaWdnZXJlZCIKICAgICAgc3Vic2NyaXB0aW9uSUQ6ICR7b3RoZXJ0YXNrLXN1Yi1pZH0KICAgICAgc2VuZEZpbmlzaGVkOiB0cnVlCiAgICAgIGVudkZyb206IAogICAgICAgIC0gbmFtZTogInNlY3JldEtleSIKICAgICAgICAgIHNlY3JldFJlZjoKICAgICAgICAgICAgbmFtZTogIm15LXdlYmhvb2stazhzLXNlY3JldCIKICAgICAgICAgICAga2V5OiAibXkta2V5IgogICAgICByZXF1ZXN0czoKICAgICAgICAtICJjdXJsIC0tZGF0YSAne1wiZW1haWxcIjpcInRlc3RAZXhhbXBsZS5jb21cIiwgXCJuYW1lXCI6IFtcIkJvb2xlYW5cIiwgXCJXb3JsZFwiXX0nIC1IIFwiQWNjZXB0LUNoYXJzZXQ6IHV0Zi04XCIgLUggJ0NvbnRlbnQtVHlwZTogYXBwbGljYXRpb24vanNvbicgaHR0cHM6Ly9odHRwYmluLm9yZy9wb3N0IC0tc29tZS1yYW5kb20tb3B0aW9ucyAtWVlZIgogICAgLSB0eXBlOiAic2gua2VwdG4uZXZlbnQuZmFpbGVkdGFzay50cmlnZ2VyZWQiCiAgICAgIHN1YnNjcmlwdGlvbklEOiAke2ZhaWxlZHRhc2stc3ViLWlkfQogICAgICBzZW5kRmluaXNoZWQ6IHRydWUKICAgICAgcmVxdWVzdHM6CiAgICAgICAgLSBjdXJsIGh0dHA6Ly9sb2NhbDo4MDgwIHt7LmRhdGEucHJvamVjdH19IHt7LmVudi5teXNlY3JldH19CiAgICAtIHR5cGU6ICJzaC5rZXB0bi5ldmVudC51bmFsbG93ZWR0YXNrLnRyaWdnZXJlZCIKICAgICAgc3Vic2NyaXB0aW9uSUQ6ICR7dW5hbGxvd2VkdGFzay1zdWItaWR9CiAgICAgIHNlbmRGaW5pc2hlZDogdHJ1ZQogICAgICBlbnZGcm9tOiAKICAgICAgICAtIG5hbWU6ICJzZWNyZXRLZXkiCiAgICAgICAgICBzZWNyZXRSZWY6CiAgICAgICAgICAgIG5hbWU6ICJteS13ZWJob29rLWs4cy1zZWNyZXQiCiAgICAgICAgICAgIGtleTogIm15LWtleSIKICAgICAgcmVxdWVzdHM6CiAgICAgICAgLSBjdXJsIGh0dHA6Ly9sb2NhbDo4MDgwIHt7LmRhdGEucHJvamVjdH19IHt7LmVudi5teXNlY3JldH19"
-//const encodedBeta = "YXBpVmVyc2lvbjogd2ViaG9va2NvbmZpZy5rZXB0bi5zaC92MWJldGExCmtpbmQ6IFdlYmhvb2tDb25maWcKbWV0YWRhdGE6CiAgbmFtZTogd2ViaG9vay1jb25maWd1cmF0aW9uCnNwZWM6CiAgd2ViaG9va3M6CiAgICAtIHR5cGU6ICJzaC5rZXB0bi5ldmVudC5vdGhlcnRhc2sudHJpZ2dlcmVkIgogICAgICBzdWJzY3JpcHRpb25JRDogJHtvdGhlcnRhc2stc3ViLWlkfQogICAgICBzZW5kRmluaXNoZWQ6IHRydWUKICAgICAgZW52RnJvbTogCiAgICAgICAgLSBuYW1lOiAic2VjcmV0S2V5IgogICAgICAgICAgc2VjcmV0UmVmOgogICAgICAgICAgICBuYW1lOiAibXktd2ViaG9vay1rOHMtc2VjcmV0IgogICAgICAgICAgICBrZXk6ICJteS1rZXkiCiAgICAgIHJlcXVlc3RzOgogICAgICAgIC0gdXJsOiBodHRwczovL2h0dHBiaW4ub3JnL3Bvc3QKICAgICAgICAgIG1ldGhvZDogR0VUCiAgICAgICAgICBwYXlsb2FkOiAie1wiZW1haWxcIjpcInRlc3RAZXhhbXBsZS5jb21cIiwgXCJuYW1lXCI6IFtcIkJvb2xlYW5cIiwgXCJXb3JsZFwiXX0iCiAgICAgICAgICBvcHRpb25zOiAiLS1zb21lLXJhbmRvbS1vcHRpb25zIC1ZWVkiCiAgICAgICAgICBoZWFkZXJzOgogICAgICAgICAgICAtIGtleTogIkNvbnRlbnQtVHlwZSIKICAgICAgICAgICAgICB2YWx1ZTogImFwcGxpY2F0aW9uL2pzb24iCiAgICAgICAgICBoZWFkZXJzOgogICAgICAgICAgICAtIGtleTogIkFjY2VwdC1DaGFyc2V0IgogICAgICAgICAgICAgIHZhbHVlOiAidXRmLTgiCiAgICAtIHR5cGU6ICJzaC5rZXB0bi5ldmVudC5mYWlsZWR0YXNrLnRyaWdnZXJlZCIKICAgICAgc3Vic2NyaXB0aW9uSUQ6ICR7ZmFpbGVkdGFzay1zdWItaWR9CiAgICAgIHNlbmRGaW5pc2hlZDogdHJ1ZQogICAgICByZXF1ZXN0czoKICAgICAgICAtIHVybDogaHR0cDovL2xvY2FsOjgwODAge3suZGF0YS5wcm9qZWN0fX0ge3suZW52Lm15c2VjcmV0fX0KICAgICAgICAgIG1ldGhvZDogR0VUCiAgICAtIHR5cGU6ICJzaC5rZXB0bi5ldmVudC51bmFsbG93ZWR0YXNrLnRyaWdnZXJlZCIKICAgICAgc3Vic2NyaXB0aW9uSUQ6ICR7dW5hbGxvd2VkdGFzay1zdWItaWR9CiAgICAgIHNlbmRGaW5pc2hlZDogdHJ1ZQogICAgICBlbnZGcm9tOiAKICAgICAgICAtIG5hbWU6ICJzZWNyZXRLZXkiCiAgICAgICAgICBzZWNyZXRSZWY6CiAgICAgICAgICAgIG5hbWU6ICJteS13ZWJob29rLWs4cy1zZWNyZXQiCiAgICAgICAgICAgIGtleTogIm15LWtleSIKICAgICAgcmVxdWVzdHM6CiAgICAgICAgLSB1cmw6IGh0dHA6Ly9sb2NhbDo4MDgwIHt7LmRhdGEucHJvamVjdH19IHt7LmVudi5teXNlY3JldH19CiAgICAgICAgICBtZXRob2Q6IEdFVA=="
-
 const webhookURI = "/%252Fwebhook%252Fwebhook.yaml"
 
 func Test_Webhook_Migrator(t *testing.T) {
@@ -122,16 +118,36 @@ func Test_Webhook_Migrator(t *testing.T) {
 	internalKeptnAPI, err := GetInternalKeptnAPI(ctx, "service/resource-service", "8888", "8080")
 	require.Nil(t, err)
 
-	for i := 1; i <= 1; i++ {
+	for i := 1; i <= 3; i++ {
 		fillProjectWithWebhooks(t, shipyardFilePath, webhookFilePath, projectName+fmt.Sprint(i), serviceName+fmt.Sprint(i))
 		checkWebhooksHaveCorrectWersion(t, internalKeptnAPI, "keptn-"+projectName+fmt.Sprint(i), serviceName+fmt.Sprint(i), webhookConfigMigrationAlpha)
 	}
 
-	t.Logf("Executing dry-run for project %s", "keptn-"+projectName+"1")
+	t.Logf("Executing dry-run migration for project keptn-%s1", projectName)
+	output, err := ExecuteCommandf("./../../cli/cli migrate-webhooks --dry-run --project=keptn-%s1", projectName)
+	require.Nil(t, err)
+	require.Contains(t, output, webhookConfigMigrationBeta)
+
+	t.Logf("Checking if all projects still contain Alpha version")
+	for i := 1; i <= 3; i++ {
+		checkWebhooksHaveCorrectWersion(t, internalKeptnAPI, "keptn-"+projectName+fmt.Sprint(i), serviceName+fmt.Sprint(i), webhookConfigMigrationAlpha)
+	}
+
+	t.Logf("Executing migration for project keptn-%s1", projectName)
+	_, err = ExecuteCommandf("./../../cli/cli migrate-webhooks --project=keptn-%s1", projectName)
+	require.Nil(t, err)
+
+	t.Logf("Checking if all webhooks contain the right version")
+	checkWebhooksHaveCorrectWersion(t, internalKeptnAPI, "keptn-"+projectName+"1", serviceName+"1", webhookConfigMigrationBeta)
+	checkWebhooksHaveCorrectWersion(t, internalKeptnAPI, "keptn-"+projectName+"2", serviceName+"2", webhookConfigMigrationAlpha)
+	checkWebhooksHaveCorrectWersion(t, internalKeptnAPI, "keptn-"+projectName+"3", serviceName+"3", webhookConfigMigrationAlpha)
+
+	t.Logf("Executing migration for all projects")
 	_, err = ExecuteCommandf("./../../cli/cli migrate-webhooks")
 	require.Nil(t, err)
 
-	for i := 1; i <= 1; i++ {
+	t.Logf("Checking if all webhooks in all projects were migrated")
+	for i := 1; i <= 3; i++ {
 		checkWebhooksHaveCorrectWersion(t, internalKeptnAPI, "keptn-"+projectName+fmt.Sprint(i), serviceName+fmt.Sprint(i), webhookConfigMigrationBeta)
 	}
 }

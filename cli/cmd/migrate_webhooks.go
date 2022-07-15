@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -49,8 +48,6 @@ var migrateWebhooksCmd = &cobra.Command{
 }
 
 func doMigration(params *migrateWebhooksCmdParams) error {
-	// fmt.Println(url.QueryEscape("%2Fwebhook%2Fwebhook.yaml"))
-	// return nil
 	endPoint, apiToken, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
 	if err != nil {
 		return fmt.Errorf(authErrorMsg)
@@ -163,11 +160,18 @@ func migrateWebhooks(webhooks []*webhookResource, params *migrateWebhooksCmdPara
 			return err
 		}
 		if *migrateWebhooksParams.DryRun {
-			byteWebhook, err := json.Marshal(migratedWebhook)
+			byteWebhook, err := yaml.Marshal(migratedWebhook)
 			if err != nil {
 				return err
 			}
+			fmt.Println("---------------------------------------------------------------------")
+			fmt.Printf("Project:  %s\n", resolveNilPointer(w.Project))
+			fmt.Printf("Stage:    %s\n", resolveNilPointer(w.Stage))
+			fmt.Printf("Service:  %s\n", resolveNilPointer(w.Sevice))
+			fmt.Println("---------------------------------------------------------------------")
 			fmt.Println(string(byteWebhook))
+			fmt.Println("---------------------------------------------------------------------")
+			continue
 		}
 		// if !*migrateWebhooksParams.AcceptAll {
 		// 	//if user adds N then continue
@@ -178,6 +182,13 @@ func migrateWebhooks(webhooks []*webhookResource, params *migrateWebhooksCmdPara
 	}
 
 	return nil
+}
+
+func resolveNilPointer(p *string) string {
+	if p != nil {
+		return *p
+	}
+	return "undefined"
 }
 
 func migrateAlphaWebhook(webhook *lib.WebHookConfig) (*lib.WebHookConfig, error) {
@@ -309,19 +320,10 @@ func updateWebhookResource(webhook *webhookResource, webhookConfig *lib.WebHookC
 	if err != nil {
 		return fmt.Errorf("cannot marshal webhookConfig: %s", err.Error())
 	}
-	//encodedWebhook := base64.StdEncoding.EncodeToString(byteWebhook)
+
 	webhookResource := webhook.WebhookResource
 	webhookResource.ResourceContent = string(byteWebhook)
 	webhookResource.ResourceURI = &resourceURI
-	// webhookResources := models.Resources{
-	// 	Resources: []*models.Resource{
-	// 		{
-	// 			ResourceContent: string(encodedWebhook),
-	// 			ResourceURI:     &resourceURI,
-	// 		},
-	// 	},
-	// }
-
 	webhookResources := []*models.Resource{webhookResource}
 
 	if webhook.Sevice != nil && *webhook.Sevice != "" {
@@ -446,5 +448,4 @@ func init() {
 	migrateWebhooksParams.DryRun = migrateWebhooksCmd.Flags().BoolP("dry-run", "", false, "Executes a dry run of webhook-config migrations without updating the files")
 	migrateWebhooksParams.ProjectName = migrateWebhooksCmd.Flags().StringP("project", "", "", "The project which webhook-configs will be migrated")
 	migrateWebhooksParams.AcceptAll = migrateWebhooksCmd.Flags().BoolP("yes", "", false, "Automatically accept change of all migrations")
-	//migrateWebhooksCmd.Flags().BoolVarP(&migrateWebhooksParams.AcceptAll, "yes", "y", false, "Automatically accept change of all migrations")
 }
