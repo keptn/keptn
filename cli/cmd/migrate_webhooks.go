@@ -97,7 +97,7 @@ func getProjectWebhooks(project *models.Project, api *apiutils.APISet) ([]*webho
 	// getting project resources
 	projectWebhookResource, err := api.ResourcesV1().GetProjectResource(project.ProjectName, webhookURI)
 	if err != nil && !errors.Is(err, apiutils.ResourceNotFoundError) {
-		return nil, fmt.Errorf("cannot retrieve webhook resource on project level for project %s: %s", project.ProjectName, err.Error())
+		logrus.Errorf("cannot retrieve webhook resource on project level for project %s: %s", project.ProjectName, err.Error())
 	}
 	if projectWebhookResource != nil {
 		tmpWebhookResource := webhookResource{
@@ -111,7 +111,8 @@ func getProjectWebhooks(project *models.Project, api *apiutils.APISet) ([]*webho
 	for _, stage := range project.Stages {
 		stageWebhookResource, err := api.ResourcesV1().GetStageResource(project.ProjectName, stage.StageName, webhookURI)
 		if err != nil && !errors.Is(err, apiutils.ResourceNotFoundError) {
-			return nil, fmt.Errorf("cannot retrieve webhook resource on stage level for project %s: %s", project.ProjectName, err.Error())
+			logrus.Errorf("cannot retrieve webhook resource on stage level for project %s stage %s: %s", project.ProjectName, stage.StageName, err.Error())
+			continue
 		}
 		if stageWebhookResource != nil {
 			tmpWebhookResource := webhookResource{
@@ -128,7 +129,8 @@ func getProjectWebhooks(project *models.Project, api *apiutils.APISet) ([]*webho
 		for _, service := range stage.Services {
 			serviceWebhookResource, err := api.ResourcesV1().GetServiceResource(project.ProjectName, stage.StageName, service.ServiceName, webhookURI)
 			if err != nil && !errors.Is(err, apiutils.ResourceNotFoundError) {
-				return nil, fmt.Errorf("cannot retrieve webhook resource on service level for project %s: %s", project.ProjectName, err.Error())
+				logrus.Errorf("cannot retrieve webhook resource on service level for project %s stage %s service %s: %s", project.ProjectName, stage.StageName, service.ServiceName, err.Error())
+				continue
 			}
 			if serviceWebhookResource != nil {
 				tmpWebhookResource := webhookResource{
