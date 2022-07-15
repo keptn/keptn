@@ -77,7 +77,7 @@ func (dh *DebugHandler) GetAllProjects(c *gin.Context) {
 
 // GetAllSequencesForProject godoc
 // @Summary      Get all sequences for specific project
-// @Description  Get the all the sequences which are present in a sequence
+// @Description  Get all the sequences which are present in a project
 // @Tags         Sequence
 // @Param        project              path      string                    true "The name of the project"
 // @Success      200                  {object}  []models.SequenceState    "ok"
@@ -86,13 +86,6 @@ func (dh *DebugHandler) GetAllProjects(c *gin.Context) {
 // @Failure      500                  {object}  models.Error              "Internal error"
 // @Router       /debug/project/{project} [get]
 func (dh *DebugHandler) GetAllSequencesForProject(c *gin.Context) {
-	params := &models.GetProjectParams{}
-
-	if err := c.ShouldBindQuery(params); err != nil {
-		SetBadRequestErrorResponse(c, err.Error())
-		return
-	}
-
 	projectName := c.Param("project")
 	payload, err := dh.DebugManager.GetAllSequencesForProject(projectName)
 
@@ -121,16 +114,9 @@ func (dh *DebugHandler) GetAllSequencesForProject(c *gin.Context) {
 // @Failure      500                  {object}  models.Error              "Internal error"
 // @Router       /debug/project/{project}/shkeptncontext/{shkeptncontext} [get]
 func (dh *DebugHandler) GetSequenceByID(c *gin.Context) {
-	params := &models.GetProjectParams{}
-
 	shkeptncontext := c.Param("shkeptncontext")
 	projectName := c.Param("project")
 	sequence, err := dh.DebugManager.GetSequenceByID(projectName, shkeptncontext)
-
-	if err := c.ShouldBindQuery(params); err != nil {
-		SetBadRequestErrorResponse(c, err.Error())
-		return
-	}
 
 	if err != nil {
 		if errors.Is(err, ErrProjectNotFound) {
@@ -207,21 +193,21 @@ func (dh *DebugHandler) GetAllEvents(c *gin.Context) {
 
 // GetEventByID godoc
 // @Summary      Get a single Event
-// @Description  Gets a single event of a project with the given shkeptncontext and event_id
+// @Description  Gets a single event of a project with the given shkeptncontext and eventId
 // @Tags         Sequence
 // @Param        project              path      string                             true  "The name of the project"
 // @Param        shkeptncontext       path      string                             true  "The shkeptncontext"
-// @Param        event_id             path      string                             true  "The Id of the event"
+// @Param        eventId              path      string                             true  "The Id of the event"
 // @Success      200                  {object}  models.KeptnContextExtendedCE      "ok"
 // @Failure      400                  {object}  models.Error                       "Bad Request"
 // @Failure      404                  {object}  models.Error                       "not found"
 // @Failure      500                  {object}  models.Error                       "Internal error"
-// @Router       /debug/project/{project}/shkeptncontext/{shkeptncontext}/event/{event_id} [get]
+// @Router       /debug/project/{project}/shkeptncontext/{shkeptncontext}/event/{eventId} [get]
 func (dh *DebugHandler) GetEventByID(c *gin.Context) {
 	params := &models.GetProjectParams{}
 
 	shkeptncontext := c.Param("shkeptncontext")
-	eventId := c.Param("event_id")
+	eventId := c.Param("eventId")
 	projectName := c.Param("project")
 
 	if err := c.ShouldBindQuery(params); err != nil {

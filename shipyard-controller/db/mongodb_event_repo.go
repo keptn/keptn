@@ -89,7 +89,19 @@ func (mdbrepo *MongoDBEventsRepo) GetEventByID(projectName string, filter common
 
 	cur := collection.FindOne(ctx, getSearchOptions(filter))
 
-	cur.Decode(&event)
+	if cur.Err() != nil {
+		if errors.Is(cur.Err(), mongo.ErrNoDocuments) {
+			return event, mongo.ErrNoDocuments
+		}
+
+		return event, fmt.Errorf("could not retrieve event: %w", err)
+	}
+
+	err = cur.Decode(&event)
+
+	if err != nil {
+		return event, err
+	}
 
 	return event, cur.Err()
 }

@@ -1,7 +1,7 @@
 function fetchSequences() {
   const project = document.getElementById("projectSelector").value;
 
-  fetch("/debug/project/" + project, {
+  fetch("/sequence/project/" + project, {
     method: "get",
   })
     .then((res) => {

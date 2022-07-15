@@ -26,6 +26,6 @@ func (controller DebugController) Inject(apiGroup *gin.RouterGroup) {
 		seq.GET("/project/:project", controller.DebugHandler.GetAllSequencesForProject)
 		seq.GET("/project/:project/shkeptncontext/:shkeptncontext", controller.DebugHandler.GetSequenceByID)
 		seq.GET("/project/:project/shkeptncontext/:shkeptncontext/event", controller.DebugHandler.GetAllEvents)
-		seq.GET("/project/:project/shkeptncontext/:shkeptncontext/event/:event_id", controller.DebugHandler.GetEventByID)
+		seq.GET("/project/:project/shkeptncontext/:shkeptncontext/event/:eventId", controller.DebugHandler.GetEventByID)
 	}
 }

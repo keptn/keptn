@@ -115,6 +115,8 @@ func (mdbrepo *MongoDBStateRepo) FindSequenceStates(filter models.StateFilter) (
 }
 
 func (mdbrepo *MongoDBStateRepo) GetSequenceStateByID(filter models.StateFilter) (*models.SequenceState, error) {
+	var sequence *models.SequenceState
+
 	if filter.Project == "" {
 		return nil, errors.New("project must be set")
 	}
@@ -129,10 +131,23 @@ func (mdbrepo *MongoDBStateRepo) GetSequenceStateByID(filter models.StateFilter)
 
 	cur := collection.FindOne(ctx, mdbrepo.getSearchOptions(filter))
 
-	var sequence models.SequenceState
-	cur.Decode(&sequence)
+	if cur.Err() != nil {
+		if errors.Is(cur.Err(), mongo.ErrNoDocuments) {
+			return sequence, mongo.ErrNoDocuments
+		}
 
-	return &sequence, cur.Err()
+		return sequence, fmt.Errorf("could not retrieve sequence: %w", err)
+	}
+
+	err = cur.Decode(&sequence)
+
+	if err != nil {
+		return sequence, err
+	}
+
+	cur.Decode(sequence)
+
+	return sequence, cur.Err()
 }
 
 func (mdbrepo *MongoDBStateRepo) getSearchOptions(filter models.StateFilter) bson.M {

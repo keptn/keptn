@@ -9,7 +9,7 @@ function fetchEvents() {
   list.innerHTML = "";
 
   fetch(
-    "../debug/project/" + projectname + "/shkeptncontext/" + context + "/event",
+    "../sequence/project/" + projectname + "/shkeptncontext/" + context + "/event",
     {
       method: "get",
     }
