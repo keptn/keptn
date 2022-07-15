@@ -9,10 +9,10 @@ import (
 
 type IDebugManager interface {
 	GetAllProjects() ([]*models.ExpandedProject, error)
-	GetSequenceByID(projectName string, shkeptncontext string) (models.SequenceState, error)
-	GetAllSequencesForProject(projectName string) ([]models.SequenceState, error)
+	GetSequenceByID(projectName string, shkeptncontext string) (*models.SequenceState, error)
+	GetAllSequencesForProject(projectName string) (*models.SequenceStates, error)
 	GetAllEvents(projectName string, shkeptncontext string) ([]*models.KeptnContextExtendedCE, error)
-	GetEventByID(projectName string, shkeptncontext string, eventId string) (models.KeptnContextExtendedCE, error)
+	GetEventByID(projectName string, shkeptncontext string, eventId string) (*models.KeptnContextExtendedCE, error)
 }
 
 type DebugManager struct {
@@ -29,8 +29,8 @@ func NewDebugManager(eventRepo db.EventRepo, stateRepo db.SequenceStateRepo, pro
 	}
 }
 
-func (dm *DebugManager) GetSequenceByID(projectName string, shkeptncontext string) (models.SequenceState, error) {
-	sequence, err := dm.stateRepo.FindSequenceStateByID(
+func (dm *DebugManager) GetSequenceByID(projectName string, shkeptncontext string) (*models.SequenceState, error) {
+	sequence, err := dm.stateRepo.GetSequenceStateByID(
 		apimodels.StateFilter{
 			GetSequenceStateParams: apimodels.GetSequenceStateParams{
 				Project:      projectName,
@@ -38,17 +38,17 @@ func (dm *DebugManager) GetSequenceByID(projectName string, shkeptncontext strin
 			},
 		})
 
-	return *sequence, err
+	return sequence, err
 }
 
-func (dm *DebugManager) GetAllSequencesForProject(projectName string) ([]models.SequenceState, error) {
+func (dm *DebugManager) GetAllSequencesForProject(projectName string) (*models.SequenceStates, error) {
 	sequences, err := dm.stateRepo.FindSequenceStates(apimodels.StateFilter{
 		GetSequenceStateParams: apimodels.GetSequenceStateParams{
 			Project: projectName,
 		},
 	})
 
-	return sequences.States, err
+	return sequences, err
 }
 
 func (dm *DebugManager) GetAllEvents(projectName string, shkeptncontext string) ([]*models.KeptnContextExtendedCE, error) {
@@ -63,10 +63,10 @@ func (dm *DebugManager) GetAllEvents(projectName string, shkeptncontext string) 
 	return eventsPointer, err
 }
 
-func (dm *DebugManager) GetEventByID(projectName string, shkeptncontext string, eventId string) (models.KeptnContextExtendedCE, error) {
+func (dm *DebugManager) GetEventByID(projectName string, shkeptncontext string, eventId string) (*models.KeptnContextExtendedCE, error) {
 	event, err := dm.eventRepo.GetEventByID(projectName, common.EventFilter{KeptnContext: &shkeptncontext, ID: &eventId})
 
-	return *event, err
+	return event, err
 }
 
 func (dm *DebugManager) GetAllProjects() ([]*models.ExpandedProject, error) {

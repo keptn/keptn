@@ -94,7 +94,7 @@ func (dh *DebugHandler) GetAllSequencesForProject(c *gin.Context) {
 	}
 
 	projectName := c.Param("project")
-	sequences, err := dh.DebugManager.GetAllSequencesForProject(projectName)
+	payload, err := dh.DebugManager.GetAllSequencesForProject(projectName)
 
 	if err != nil {
 		if errors.Is(err, ErrProjectNotFound) {
@@ -106,19 +106,6 @@ func (dh *DebugHandler) GetAllSequencesForProject(c *gin.Context) {
 		return
 	}
 
-	var payload = &apimodels.SequenceStates{
-		PageSize:   0,
-		TotalCount: 0,
-		States:     []apimodels.SequenceState{},
-	}
-
-	paginationInfo := common.Paginate(len(sequences), params.PageSize, params.NextPageKey)
-	totalCount := len(sequences)
-	if paginationInfo.NextPageKey < int64(totalCount) {
-		payload.States = append(payload.States, sequences[paginationInfo.NextPageKey:paginationInfo.EndIndex]...)
-	}
-
-	payload.TotalCount = int64(totalCount)
 	c.JSON(http.StatusOK, payload)
 }
 

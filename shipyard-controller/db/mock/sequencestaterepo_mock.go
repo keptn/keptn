@@ -20,11 +20,11 @@ import (
 // 			DeleteSequenceStatesFunc: func(filter apimodels.StateFilter) error {
 // 				panic("mock out the DeleteSequenceStates method")
 // 			},
-// 			FindSequenceStateByIDFunc: func(filter apimodels.StateFilter) (*apimodels.SequenceState, error) {
-// 				panic("mock out the FindSequenceStateByID method")
-// 			},
 // 			FindSequenceStatesFunc: func(filter apimodels.StateFilter) (*apimodels.SequenceStates, error) {
 // 				panic("mock out the FindSequenceStates method")
+// 			},
+// 			GetSequenceStateByIDFunc: func(filter apimodels.StateFilter) (*apimodels.SequenceState, error) {
+// 				panic("mock out the GetSequenceStateByID method")
 // 			},
 // 			UpdateSequenceStateFunc: func(state apimodels.SequenceState) error {
 // 				panic("mock out the UpdateSequenceState method")
@@ -42,11 +42,11 @@ type SequenceStateRepoMock struct {
 	// DeleteSequenceStatesFunc mocks the DeleteSequenceStates method.
 	DeleteSequenceStatesFunc func(filter apimodels.StateFilter) error
 
-	// FindSequenceStateByIDFunc mocks the FindSequenceStateByID method.
-	FindSequenceStateByIDFunc func(filter apimodels.StateFilter) (*apimodels.SequenceState, error)
-
 	// FindSequenceStatesFunc mocks the FindSequenceStates method.
 	FindSequenceStatesFunc func(filter apimodels.StateFilter) (*apimodels.SequenceStates, error)
+
+	// GetSequenceStateByIDFunc mocks the GetSequenceStateByID method.
+	GetSequenceStateByIDFunc func(filter apimodels.StateFilter) (*apimodels.SequenceState, error)
 
 	// UpdateSequenceStateFunc mocks the UpdateSequenceState method.
 	UpdateSequenceStateFunc func(state apimodels.SequenceState) error
@@ -63,13 +63,13 @@ type SequenceStateRepoMock struct {
 			// Filter is the filter argument value.
 			Filter apimodels.StateFilter
 		}
-		// FindSequenceStateByID holds details about calls to the FindSequenceStateByID method.
-		FindSequenceStateByID []struct {
+		// FindSequenceStates holds details about calls to the FindSequenceStates method.
+		FindSequenceStates []struct {
 			// Filter is the filter argument value.
 			Filter apimodels.StateFilter
 		}
-		// FindSequenceStates holds details about calls to the FindSequenceStates method.
-		FindSequenceStates []struct {
+		// GetSequenceStateByID holds details about calls to the GetSequenceStateByID method.
+		GetSequenceStateByID []struct {
 			// Filter is the filter argument value.
 			Filter apimodels.StateFilter
 		}
@@ -79,11 +79,11 @@ type SequenceStateRepoMock struct {
 			State apimodels.SequenceState
 		}
 	}
-	lockCreateSequenceState   sync.RWMutex
-	lockDeleteSequenceStates  sync.RWMutex
-	lockFindSequenceStateByID sync.RWMutex
-	lockFindSequenceStates    sync.RWMutex
-	lockUpdateSequenceState   sync.RWMutex
+	lockCreateSequenceState  sync.RWMutex
+	lockDeleteSequenceStates sync.RWMutex
+	lockFindSequenceStates   sync.RWMutex
+	lockGetSequenceStateByID sync.RWMutex
+	lockUpdateSequenceState  sync.RWMutex
 }
 
 // CreateSequenceState calls CreateSequenceStateFunc.
@@ -148,37 +148,6 @@ func (mock *SequenceStateRepoMock) DeleteSequenceStatesCalls() []struct {
 	return calls
 }
 
-// FindSequenceStateByID calls FindSequenceStateByIDFunc.
-func (mock *SequenceStateRepoMock) FindSequenceStateByID(filter apimodels.StateFilter) (*apimodels.SequenceState, error) {
-	if mock.FindSequenceStateByIDFunc == nil {
-		panic("SequenceStateRepoMock.FindSequenceStateByIDFunc: method is nil but SequenceStateRepo.FindSequenceStateByID was just called")
-	}
-	callInfo := struct {
-		Filter apimodels.StateFilter
-	}{
-		Filter: filter,
-	}
-	mock.lockFindSequenceStateByID.Lock()
-	mock.calls.FindSequenceStateByID = append(mock.calls.FindSequenceStateByID, callInfo)
-	mock.lockFindSequenceStateByID.Unlock()
-	return mock.FindSequenceStateByIDFunc(filter)
-}
-
-// FindSequenceStateByIDCalls gets all the calls that were made to FindSequenceStateByID.
-// Check the length with:
-//     len(mockedSequenceStateRepo.FindSequenceStateByIDCalls())
-func (mock *SequenceStateRepoMock) FindSequenceStateByIDCalls() []struct {
-	Filter apimodels.StateFilter
-} {
-	var calls []struct {
-		Filter apimodels.StateFilter
-	}
-	mock.lockFindSequenceStateByID.RLock()
-	calls = mock.calls.FindSequenceStateByID
-	mock.lockFindSequenceStateByID.RUnlock()
-	return calls
-}
-
 // FindSequenceStates calls FindSequenceStatesFunc.
 func (mock *SequenceStateRepoMock) FindSequenceStates(filter apimodels.StateFilter) (*apimodels.SequenceStates, error) {
 	if mock.FindSequenceStatesFunc == nil {
@@ -207,6 +176,37 @@ func (mock *SequenceStateRepoMock) FindSequenceStatesCalls() []struct {
 	mock.lockFindSequenceStates.RLock()
 	calls = mock.calls.FindSequenceStates
 	mock.lockFindSequenceStates.RUnlock()
+	return calls
+}
+
+// GetSequenceStateByID calls GetSequenceStateByIDFunc.
+func (mock *SequenceStateRepoMock) GetSequenceStateByID(filter apimodels.StateFilter) (*apimodels.SequenceState, error) {
+	if mock.GetSequenceStateByIDFunc == nil {
+		panic("SequenceStateRepoMock.GetSequenceStateByIDFunc: method is nil but SequenceStateRepo.GetSequenceStateByID was just called")
+	}
+	callInfo := struct {
+		Filter apimodels.StateFilter
+	}{
+		Filter: filter,
+	}
+	mock.lockGetSequenceStateByID.Lock()
+	mock.calls.GetSequenceStateByID = append(mock.calls.GetSequenceStateByID, callInfo)
+	mock.lockGetSequenceStateByID.Unlock()
+	return mock.GetSequenceStateByIDFunc(filter)
+}
+
+// GetSequenceStateByIDCalls gets all the calls that were made to GetSequenceStateByID.
+// Check the length with:
+//     len(mockedSequenceStateRepo.GetSequenceStateByIDCalls())
+func (mock *SequenceStateRepoMock) GetSequenceStateByIDCalls() []struct {
+	Filter apimodels.StateFilter
+} {
+	var calls []struct {
+		Filter apimodels.StateFilter
+	}
+	mock.lockGetSequenceStateByID.RLock()
+	calls = mock.calls.GetSequenceStateByID
+	mock.lockGetSequenceStateByID.RUnlock()
 	return calls
 }
 

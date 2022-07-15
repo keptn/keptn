@@ -114,7 +114,7 @@ func (mdbrepo *MongoDBStateRepo) FindSequenceStates(filter models.StateFilter) (
 	return result, nil
 }
 
-func (mdbrepo *MongoDBStateRepo) FindSequenceStateByID(filter models.StateFilter) (*models.SequenceState, error) {
+func (mdbrepo *MongoDBStateRepo) GetSequenceStateByID(filter models.StateFilter) (*models.SequenceState, error) {
 	if filter.Project == "" {
 		return nil, errors.New("project must be set")
 	}
