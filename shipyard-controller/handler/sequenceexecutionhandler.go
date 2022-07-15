@@ -39,8 +39,6 @@ func NewSequenceExecutionHandler(sequenceExecutionRepo db.SequenceExecutionRepo,
 // @Param        service       query      string                    false  "The service name"
 // @Param        name          query     string                    false  "The name of the sequence"
 // @Param        status        query     string                    false  "The status of the sequence (e.g., triggered, finished, started)"
-// @Param        fromTime      query     string                    false  "The from time stamp for fetching sequence states (in ISO8601 time format, e.g.: 2021-05-10T09:51:00.000Z)"
-// @Param        beforeTime    query     string                    false  "The before time stamp for fetching sequence states (in ISO8601 time format, e.g.: 2021-05-10T09:51:00.000Z)"
 // @Param        pageSize      query     int                       false  "The maximum number of items to return"
 // @Param        nextPageKey   query     int                       false  "Offset to the next set of items"
 // @Param        keptnContext  query     string                    false  "Keptn context ID"
