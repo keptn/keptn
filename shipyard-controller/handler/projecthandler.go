@@ -293,13 +293,15 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 			return
 		}
 
+		log.Debug("Provisioner data\nGit URL: %s\nUser: %s\n", provisioningData.GitRemoteURL, provisioningData.GitUser)
+
 		params.GitCredentials = &apimodels.GitAuthCredentials{
-			RemoteURL : provisioningData.GitRemoteURL,
-			HttpsAuth : &apimodels.HttpsGitAuth{
+			RemoteURL: provisioningData.GitRemoteURL,
+			HttpsAuth: &apimodels.HttpsGitAuth{
 				InsecureSkipTLS: false,
 				Token:           provisioningData.GitToken,
 			},
-			User : provisioningData.GitUser,
+			User: provisioningData.GitUser,
 		}
 	}
 
@@ -469,8 +471,8 @@ func (ph *ProjectHandler) sendProjectCreateSuccessFinishedEvent(keptnContext str
 			Result:  keptnv2.ResultPass,
 		},
 		CreatedProject: keptnv2.ProjectCreateData{
-			ProjectName:  *params.Name,
-			Shipyard:     *params.Shipyard,
+			ProjectName: *params.Name,
+			Shipyard:    *params.Shipyard,
 		},
 	}
 
