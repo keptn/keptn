@@ -171,6 +171,38 @@ func Test_sequenceExecutionHandler_GetSequenceExecutions(t *testing.T) {
 			wantSequenceExecutionFilter: nil,
 			wantPaginationParams:        nil,
 		},
+		{
+			name: "get sequence execution - error when retrieving sequence executions",
+			fields: fields{
+				sequenceExecutionRepo: &db_mock.SequenceExecutionRepoMock{
+					GetPaginatedFunc: func(filter models.SequenceExecutionFilter, paginationParams models.PaginationParams) ([]models.SequenceExecution, *models.PaginationResult, error) {
+						return nil, nil, errors.New("oops")
+					},
+				},
+				projectRepo: &db_mock.ProjectRepoMock{
+					GetProjectFunc: func(projectName string) (*apimodels.ExpandedProject, error) {
+						return &apimodels.ExpandedProject{}, nil
+					},
+				},
+			},
+			request:                     httptest.NewRequest(http.MethodGet, "/sequence-execution/my-project?pageSize=10&nextPageKey=5&stage=my-stage&service=my-service&status=started", nil),
+			wantStatus:                  http.StatusInternalServerError,
+			wantResponse:                nil,
+			wantSequenceExecutionFilter: nil,
+			wantPaginationParams:        nil,
+		},
+		{
+			name: "get sequence execution - invalid params",
+			fields: fields{
+				sequenceExecutionRepo: &db_mock.SequenceExecutionRepoMock{},
+				projectRepo:           &db_mock.ProjectRepoMock{},
+			},
+			request:                     httptest.NewRequest(http.MethodGet, "/sequence-execution/my-project?pageSize=invalid&nextPageKey=5&stage=my-stage&service=my-service&status=started", nil),
+			wantStatus:                  http.StatusBadRequest,
+			wantResponse:                nil,
+			wantSequenceExecutionFilter: nil,
+			wantPaginationParams:        nil,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
