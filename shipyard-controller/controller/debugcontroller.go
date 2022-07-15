@@ -20,7 +20,7 @@ func (controller DebugController) Inject(apiGroup *gin.RouterGroup) {
 		c.Redirect(302, "/ui")
 	})
 
-	seq := apiGroup.Group("/debug")
+	seq := apiGroup.Group("/sequence")
 	{
 		seq.GET("/project", controller.DebugHandler.GetAllProjects)
 		seq.GET("/project/:project", controller.DebugHandler.GetAllSequencesForProject)
