@@ -8,6 +8,7 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/internal"
+	"github.com/keptn/keptn/cli/pkg/common"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/webhook-service/lib"
 	"github.com/spf13/cobra"
@@ -17,7 +18,6 @@ import (
 type migrateWebhooksCmdParams struct {
 	ProjectName *string
 	DryRun      *bool
-	AcceptAll   *bool
 }
 
 var migrateWebhooksParams *migrateWebhooksCmdParams
@@ -38,7 +38,7 @@ type webhookResource struct {
 var migrateWebhooksCmd = &cobra.Command{
 	Use:     "migrate-webhooks",
 	Short:   `Migrates the webhook configurations from version v1alpha1 to v1beta1`,
-	Example: `keptn migrate-webhooks [--project=PROJECTMNAME] [--dry-run] [--yes]`,
+	Example: `keptn migrate-webhooks [--project=PROJECTMNAME] [--dry-run]`,
 	Long: `Migrates the webhook configurations from version v1alpha1 to v1beta1. Version v1beta1 is the new default version
 				and it is highly encouraged to use this one. Version v1alpha1 won't be supported from version Keptn 0.19.0`,
 	Args: cobra.NoArgs,
@@ -160,26 +160,40 @@ func migrateWebhooks(webhooks []*webhookResource, params *migrateWebhooksCmdPara
 			return err
 		}
 		if *migrateWebhooksParams.DryRun {
-			byteWebhook, err := yaml.Marshal(migratedWebhook)
-			if err != nil {
+			if err := printWebhook(migratedWebhook, w); err != nil {
 				return err
 			}
-			fmt.Println("---------------------------------------------------------------------")
-			fmt.Printf("Project:  %s\n", resolveNilPointer(w.Project))
-			fmt.Printf("Stage:    %s\n", resolveNilPointer(w.Stage))
-			fmt.Printf("Service:  %s\n", resolveNilPointer(w.Sevice))
-			fmt.Println("---------------------------------------------------------------------")
-			fmt.Println(string(byteWebhook))
-			fmt.Println("---------------------------------------------------------------------")
 			continue
 		}
-		// if !*migrateWebhooksParams.AcceptAll {
-		// 	//if user adds N then continue
-		// }
+		if !assumeYes {
+			if err := printWebhook(migratedWebhook, w); err != nil {
+				return err
+			}
+			userConfirmation := common.NewUserInput().AskBool("Do you want to store this migrated webhook?", &common.UserInputOptions{AssumeYes: assumeYes})
+			if !userConfirmation {
+				continue
+			}
+		}
 		if err := updateWebhookResource(w, migratedWebhook, api); err != nil {
 			return err
 		}
 	}
+
+	return nil
+}
+
+func printWebhook(webhook *lib.WebHookConfig, webhookResource *webhookResource) error {
+	byteWebhook, err := yaml.Marshal(webhook)
+	if err != nil {
+		return err
+	}
+	fmt.Println("---------------------------------------------------------------------")
+	fmt.Printf("Project:  %s\n", resolveNilPointer(webhookResource.Project))
+	fmt.Printf("Stage:    %s\n", resolveNilPointer(webhookResource.Stage))
+	fmt.Printf("Service:  %s\n", resolveNilPointer(webhookResource.Sevice))
+	fmt.Println("---------------------------------------------------------------------")
+	fmt.Println(string(byteWebhook))
+	fmt.Println("---------------------------------------------------------------------")
 
 	return nil
 }
@@ -447,5 +461,4 @@ func init() {
 	migrateWebhooksParams = &migrateWebhooksCmdParams{}
 	migrateWebhooksParams.DryRun = migrateWebhooksCmd.Flags().BoolP("dry-run", "", false, "Executes a dry run of webhook-config migrations without updating the files")
 	migrateWebhooksParams.ProjectName = migrateWebhooksCmd.Flags().StringP("project", "", "", "The project which webhook-configs will be migrated")
-	migrateWebhooksParams.AcceptAll = migrateWebhooksCmd.Flags().BoolP("yes", "", false, "Automatically accept change of all migrations")
 }

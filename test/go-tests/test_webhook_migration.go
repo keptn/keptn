@@ -124,7 +124,7 @@ func Test_Webhook_Migrator(t *testing.T) {
 	}
 
 	t.Logf("Executing dry-run migration for project keptn-%s1", projectName)
-	output, err := ExecuteCommandf("./../../cli/cli migrate-webhooks --dry-run --project=keptn-%s1", projectName)
+	output, err := ExecuteCommandf("keptn migrate-webhooks --dry-run --project=keptn-%s1 -y", projectName)
 	require.Nil(t, err)
 	require.Contains(t, output, webhookConfigMigrationBeta)
 
@@ -134,7 +134,7 @@ func Test_Webhook_Migrator(t *testing.T) {
 	}
 
 	t.Logf("Executing migration for project keptn-%s1", projectName)
-	_, err = ExecuteCommandf("./../../cli/cli migrate-webhooks --project=keptn-%s1", projectName)
+	_, err = ExecuteCommandf("keptn migrate-webhooks --project=keptn-%s1 -y", projectName)
 	require.Nil(t, err)
 
 	t.Logf("Checking if all webhooks contain the right version")
@@ -143,7 +143,7 @@ func Test_Webhook_Migrator(t *testing.T) {
 	checkWebhooksHaveCorrectWersion(t, internalKeptnAPI, "keptn-"+projectName+"3", serviceName+"3", webhookConfigMigrationAlpha)
 
 	t.Logf("Executing migration for all projects")
-	_, err = ExecuteCommandf("./../../cli/cli migrate-webhooks")
+	_, err = ExecuteCommandf("keptn migrate-webhooks -y")
 	require.Nil(t, err)
 
 	t.Logf("Checking if all webhooks in all projects were migrated")
