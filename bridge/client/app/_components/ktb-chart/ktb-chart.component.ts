@@ -125,10 +125,7 @@ export class KtbChartComponent implements AfterViewInit, OnChanges {
       const metricValue = !!point && !alreadyInList ? { label: itemLabel, value: point.y } : undefined;
       return metricValue ? [...cur, metricValue] : cur;
     };
-    const metricValues = this.chartItems
-      .filter((item) => !(item.invisible === true))
-      .reduce(addMetricValue, [] as MetricValue[]);
-
+    const metricValues = this.visibleChartItems.reduce(addMetricValue, [] as MetricValue[]);
     this.tooltipState.next({ ...this.tooltipState.getValue(), top, left, label, metricValues });
     this.cdr.detectChanges();
   }
@@ -266,7 +263,7 @@ export class KtbChartComponent implements AfterViewInit, OnChanges {
     if (item.invisible) {
       return true;
     }
-    const itemsVisible = this.chartItems.filter((i) => !(i.invisible === true)).length;
+    const itemsVisible = this.visibleChartItems.length;
     return itemsVisible > 1;
   }
 
@@ -277,8 +274,10 @@ export class KtbChartComponent implements AfterViewInit, OnChanges {
   }
 
   private getMaxValue(fn: (p: ChartItemPoint) => number): number {
-    return this.chartItems
-      .filter((i) => !(i.invisible === true))
-      .reduce((prev, cur) => Math.max(prev, ...cur.points.map(fn)), 0);
+    return this.visibleChartItems.reduce((prev, cur) => Math.max(prev, ...cur.points.map(fn)), 0);
+  }
+
+  private get visibleChartItems(): ChartItem[] {
+    return this.chartItems.filter((i) => !i.invisible || i.invisible);
   }
 }
