@@ -95,7 +95,7 @@ func getProjectWebhooks(project *models.Project, api *apiutils.APISet) ([]*webho
 
 	// getting project resources
 	projectWebhookResource, err := api.ResourcesV1().GetProjectResource(project.ProjectName, webhookURI)
-	if err != nil && errors.Is(err, apiutils.ResourceNotFoundError) {
+	if err != nil && !errors.Is(err, apiutils.ResourceNotFoundError) {
 		return nil, fmt.Errorf("cannot retrieve webhook resource on project level for project %s: %s", project.ProjectName, err.Error())
 	}
 	if projectWebhookResource != nil {
@@ -109,7 +109,7 @@ func getProjectWebhooks(project *models.Project, api *apiutils.APISet) ([]*webho
 	// getting stage resources
 	for _, stage := range project.Stages {
 		stageWebhookResource, err := api.ResourcesV1().GetStageResource(project.ProjectName, stage.StageName, webhookURI)
-		if err != nil && errors.Is(err, apiutils.ResourceNotFoundError) {
+		if err != nil && !errors.Is(err, apiutils.ResourceNotFoundError) {
 			return nil, fmt.Errorf("cannot retrieve webhook resource on stage level for project %s: %s", project.ProjectName, err.Error())
 		}
 		if stageWebhookResource != nil {
@@ -126,7 +126,7 @@ func getProjectWebhooks(project *models.Project, api *apiutils.APISet) ([]*webho
 	for _, stage := range project.Stages {
 		for _, service := range stage.Services {
 			serviceWebhookResource, err := api.ResourcesV1().GetServiceResource(project.ProjectName, stage.StageName, service.ServiceName, webhookURI)
-			if err != nil && errors.Is(err, apiutils.ResourceNotFoundError) {
+			if err != nil && !errors.Is(err, apiutils.ResourceNotFoundError) {
 				return nil, fmt.Errorf("cannot retrieve webhook resource on service level for project %s: %s", project.ProjectName, err.Error())
 			}
 			if serviceWebhookResource != nil {
