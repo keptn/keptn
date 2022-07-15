@@ -24,7 +24,7 @@
     justify-content: center;
     align-content: flex-start;
     flex-wrap: wrap;
-    gap: 18px;
+    gap: 4px 16px;
   }
 }
 
@@ -53,4 +53,28 @@
     margin-left: 3px;
   }
 
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 1070;
+  pointer-events: none;
+  display: inline-block;
+}
+
+.tooltip-container {
+  font-family: BerninaSansWeb,OpenSans,sans-serif;
+  font-weight: 400;
+  line-height: 1.6;
+  background-color: #fff;
+  border: 1px solid var(--dt-theme-main-default-color);
+  border-radius: 4px;
+  font-size: 14px;
+  color: #454646;
+  padding: 12px;
+  max-width: 620px;
+
+  h4 {
+    margin: 5px 0;
+  }
 }

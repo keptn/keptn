@@ -10,6 +10,7 @@ describe('KtbChartComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [KtbChartModule, HttpClientTestingModule],
+      providers: [],
     }).compileComponents();
     fixture = TestBed.createComponent(KtbChartComponent);
     component = fixture.componentInstance;

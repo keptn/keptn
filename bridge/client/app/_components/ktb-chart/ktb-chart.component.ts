@@ -1,57 +1,39 @@
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   HostListener,
   Input,
   OnChanges,
   SimpleChanges,
+  ViewChild,
 } from '@angular/core';
 import { axisBottom, axisLeft, axisRight, BaseType, line, ScaleLinear, scaleLinear, select, Selection } from 'd3';
 import { v4 as uuid } from 'uuid';
+import { BehaviorSubject } from 'rxjs';
+import { ChartItem, ChartItemPoint } from '../../_interfaces/chart';
+import { getColor, getIconStyle, getTooltipPosition, replaceSpace } from './ktb-chart-utils';
 
+type BarPoint = [number, number, string];
 type SVGGSelection = Selection<SVGGElement, unknown, HTMLElement, unknown>;
 type SVGPath = Selection<SVGPathElement, [number, number][], HTMLElement, unknown>;
-type SVGRect = Selection<SVGRectElement, [number, number, string], BaseType, unknown>;
+type SVGRect = Selection<SVGRectElement, BarPoint, BaseType, unknown>;
 type LinearScale = ScaleLinear<number, number, never>;
 type Margin = { top: number; right: number; left: number; bottom: number };
-
-export interface ChartItemPoint {
-  x: number;
-  y: number;
-  identifier: string;
-  color?: string;
-}
-
-export interface ChartItem {
-  identifier: string;
-  label?: string;
-  type: 'metric-line' | 'score-bar' | 'score-line';
-  invisible?: boolean;
-  points: ChartItemPoint[];
-}
+type MetricValue = { label: string; value: number };
+type ToolTipState = {
+  visible: boolean;
+  top: number;
+  left: number;
+  label: string;
+  metricValues: MetricValue[];
+};
 
 const _height = 400;
-const _margin: Margin = { top: 60, right: 60, left: 50, bottom: 100 };
+const margin: Margin = { top: 60, right: 60, left: 50, bottom: 100 };
 const yTicks = [25, 50, 75, 100];
-
-const colors = [
-  '#9355b7',
-  '#7dc540',
-  '#14a8f5',
-  '#f5d30f',
-  '#ef651f',
-  '#dc172a',
-  '#00b9cc',
-  '#522273',
-  '#1f7e1e',
-  '#004999',
-  '#ab8300',
-  '#8d380f',
-  '#93060e',
-  '#006d75',
-];
 
 @Component({
   selector: 'ktb-chart',
@@ -69,38 +51,51 @@ export class KtbChartComponent implements AfterViewInit, OnChanges {
   @Input()
   public xLabels: Record<number, string> = {};
 
-  xScale = scaleLinear();
-  yScaleLeft = scaleLinear();
-  yScaleRight = scaleLinear();
+  @Input()
+  public xTooltipLabels: Record<number, string> = {};
 
-  xAxisGroup: SVGGSelection | undefined;
-  yAxisGroupLeft: SVGGSelection | undefined;
-  yAxisGroupRight: SVGGSelection | undefined;
+  private xScale = scaleLinear();
+  private yScaleLeft = scaleLinear();
+  private yScaleRight = scaleLinear();
+
+  private xAxisGroup: SVGGSelection | undefined;
+  private yAxisGroupLeft: SVGGSelection | undefined;
+  private yAxisGroupRight: SVGGSelection | undefined;
 
   private paths: SVGPath[] = [];
   private rects: SVGRect[] = [];
 
-  constructor(private elementRef: ElementRef) {}
+  @ViewChild('tooltip', { static: false })
+  tooltip!: ElementRef;
+  private tooltipState = new BehaviorSubject<ToolTipState>({
+    visible: false,
+    top: 0,
+    left: 0,
+    label: '',
+    metricValues: [],
+  });
+  public tooltipState$ = this.tooltipState.asObservable();
 
-  ngAfterViewInit(): void {
+  getIconStyle = getIconStyle;
+  replaceSpace = replaceSpace;
+
+  constructor(private elementRef: ElementRef, private cdr: ChangeDetectorRef) {}
+
+  public ngAfterViewInit(): void {
     this.init();
     this.onResize();
   }
 
-  private init(): void {
-    const svg = select(this.chartSelector).on('mousemove', (event: MouseEvent) => this.onMousemove(event));
-    this.xAxisGroup = svg.append('g').attr('class', 'axis').attr('uitestid', 'axis-x');
-    this.yAxisGroupLeft = svg.append('g').attr('class', 'axis').attr('uitestid', 'axis-y-left');
-    this.yAxisGroupRight = svg.append('g').attr('class', 'axis').attr('uitestid', 'axis-y-right');
-  }
-
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  ngOnChanges(changes: SimpleChanges): void {
+  public ngOnChanges(_changes: SimpleChanges): void {
     this.draw();
   }
 
-  public onMousemove(event: MouseEvent): void {
-    console.log(document.elementsFromPoint(event.clientX, event.clientY));
+  private init(): void {
+    const svg = select(this.chartSelector);
+    this.xAxisGroup = svg.append('g').attr('class', 'axis').attr('uitestid', 'axis-x');
+    this.yAxisGroupLeft = svg.append('g').attr('class', 'axis').attr('uitestid', 'axis-y-left');
+    this.yAxisGroupRight = svg.append('g').attr('class', 'axis').attr('uitestid', 'axis-y-right');
   }
 
   @HostListener('window:resize', ['$event'])
@@ -108,9 +103,38 @@ export class KtbChartComponent implements AfterViewInit, OnChanges {
     this.draw();
   }
 
+  public onMousemove(event: MouseEvent, data: BarPoint): void {
+    const xValue = data[0];
+    const elements = document.elementsFromPoint(event.clientX, event.clientY);
+    const barArea = elements.filter((e) => e.tagName === 'rect' && e.classList.contains('area'))[0];
+
+    if (!barArea) {
+      return;
+    }
+
+    const { top, left } = getTooltipPosition(
+      { width: window.innerWidth ?? 0, height: window.innerHeight ?? 0 },
+      this.tooltip.nativeElement.getBoundingClientRect(),
+      barArea.getClientRects()[0]
+    );
+    const label = this.xTooltipLabels[xValue] ?? this.xLabels[xValue] ?? xValue + '';
+    const addMetricValue = (cur: MetricValue[], item: ChartItem): MetricValue[] => {
+      const point = item.points.find((p) => p.x === xValue);
+      const itemLabel = item.label ?? item.identifier;
+      const alreadyInList = cur.find((v) => v.label === label);
+      const metricValue = !!point && !alreadyInList ? { label: itemLabel, value: point.y } : undefined;
+      return metricValue ? [...cur, metricValue] : cur;
+    };
+    const metricValues = this.chartItems
+      .filter((item) => !(item.invisible === true))
+      .reduce(addMetricValue, [] as MetricValue[]);
+
+    this.tooltipState.next({ ...this.tooltipState.getValue(), top, left, label, metricValues });
+    this.cdr.detectChanges();
+  }
+
   private draw(): void {
     const { width, height } = this.getAvailableSpace();
-    const margin = this.margin;
     const svg = select(this.chartSelector);
     svg
       .attr('viewBox', `0 0 ${width} ${height}`)
@@ -118,7 +142,8 @@ export class KtbChartComponent implements AfterViewInit, OnChanges {
       .attr('height', height)
       .attr('preserveAspectRatio', 'xMinYMin meet');
 
-    this.xScale.domain([-0.5, this.getMaxValue((p) => p.x) + 0.5]).range([margin.left, width - margin.right]);
+    const xMaxValue = this.getMaxValue((p) => p.x);
+    this.xScale.domain([-0.5, xMaxValue + 0.5]).range([margin.left, width - margin.right]);
     const xTicks = this.xScale.ticks().filter((n) => Number.isInteger(n));
     this.yScaleLeft.domain([0, 100]).range([height - margin.bottom, margin.top]);
     this.yScaleRight.domain([0, this.getMaxValue((p) => p.y)]).range([height - margin.bottom, margin.top]);
@@ -163,11 +188,12 @@ export class KtbChartComponent implements AfterViewInit, OnChanges {
         return;
       }
       const yScale = item.type === 'score-line' ? this.yScaleLeft : this.yScaleRight;
-      this.drawLine(item, yScale, this.getColor(index));
+      this.drawLine(item, yScale, getColor(index));
     });
+    this.drawArea(xMaxValue + 1, height);
   }
 
-  drawLine(item: ChartItem, yScale: LinearScale, color: string): void {
+  private drawLine(item: ChartItem, yScale: LinearScale, color: string): void {
     const svg = select(this.chartSelector);
     const points: [number, number][] = item.points.map((d) => [d.x, d.y]);
     const path = svg
@@ -177,7 +203,7 @@ export class KtbChartComponent implements AfterViewInit, OnChanges {
       .attr('stroke', color)
       .attr('stroke-width', 1.5)
       .attr('class', 'line red')
-      .attr('uitestid', `line-${this.replaceSpace(item.identifier)}`)
+      .attr('uitestid', `line-${replaceSpace(item.identifier)}`)
       .attr(
         'd',
         line()
@@ -187,16 +213,15 @@ export class KtbChartComponent implements AfterViewInit, OnChanges {
     this.paths.push(path);
   }
 
-  drawBar(item: ChartItem, height: number): void {
+  private drawBar(item: ChartItem, height: number): void {
     const svg = select(this.chartSelector);
-    const margin = this.margin;
-    const points: [number, number, string][] = item.points.map((d) => [d.x, d.y, d.color ?? '#7e7e7e']);
+    const points: BarPoint[] = item.points.map((d) => [d.x, d.y, d.color ?? '#7e7e7e']);
     const selection = svg
       .selectAll()
       .data(points)
       .enter()
       .append('g')
-      .attr('uitestid', `bar-${this.replaceSpace(item.identifier)}`);
+      .attr('uitestid', `bar-${replaceSpace(item.identifier)}`);
 
     const rect = selection
       .append('rect')
@@ -205,7 +230,28 @@ export class KtbChartComponent implements AfterViewInit, OnChanges {
       .attr('width', 3)
       .attr('height', (d) => height - margin.bottom - this.yScaleLeft(d[1]))
       .attr('fill', (d) => d[2])
-      .attr('uitestid', (d) => `bar-${this.replaceSpace(item.identifier)}-${d[0]}`);
+      .attr('uitestid', (d) => `bar-${replaceSpace(item.identifier)}-${d[0]}`);
+    this.rects.push(rect);
+  }
+
+  private drawArea(xSize: number, height: number): void {
+    const svg = select(this.chartSelector);
+    const points: BarPoint[] = [...Array(xSize).keys()].map((x) => [x, 100, 'transparent']);
+    const selection = svg.selectAll().data(points).enter().append('g').attr('uitestid', `area`);
+
+    const rect = selection
+      .append('rect')
+      .on('mouseenter', () => this.tooltipState.next({ ...this.tooltipState.getValue(), visible: true }))
+      .on('mousemove', (event: MouseEvent, data) => this.onMousemove(event, data))
+      .on('mouseleave', () => this.tooltipState.next({ ...this.tooltipState.getValue(), visible: false }))
+      .attr('x', (d) => this.xScale(d[0] - 0.5))
+      .attr('y', (d) => this.yScaleLeft(d[1]))
+      .attr('width', this.xScale(2) - this.xScale(1))
+      .attr('height', (d) => height - margin.bottom - this.yScaleLeft(d[1]))
+      .attr('fill', (d) => d[2])
+      .attr('class', 'area')
+      .attr('uitestid', (d) => `area-${d[0]}`);
+
     this.rects.push(rect);
   }
 
@@ -224,7 +270,7 @@ export class KtbChartComponent implements AfterViewInit, OnChanges {
     return itemsVisible > 1;
   }
 
-  public getAvailableSpace(): { width: number; height: number } {
+  private getAvailableSpace(): { width: number; height: number } {
     const parentElement: HTMLElement = this.elementRef.nativeElement;
     const availableSpace = parentElement.getBoundingClientRect();
     return { width: availableSpace.width, height: _height };
@@ -234,30 +280,5 @@ export class KtbChartComponent implements AfterViewInit, OnChanges {
     return this.chartItems
       .filter((i) => !(i.invisible === true))
       .reduce((prev, cur) => Math.max(prev, ...cur.points.map(fn)), 0);
-  }
-
-  public getColor(index: number): string {
-    return colors[index % colors.length];
-  }
-
-  public replaceSpace(value: string): string {
-    return value.replace(/ /g, '-');
-  }
-
-  public getIconStyle(index: number, invisible?: boolean): string {
-    if (invisible === true) {
-      return `--dt-icon-color: #cccccc`;
-    }
-    return `--dt-icon-color: ${this.getColor(index)}`;
-  }
-
-  private get margin(): Margin {
-    // const zoom = 1 / window.devicePixelRatio;
-    return {
-      top: _margin.top, // * zoom,
-      right: _margin.right, // * zoom,
-      bottom: _margin.bottom, // * zoom,
-      left: _margin.left, // * zoom,
-    };
   }
 }

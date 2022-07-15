@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { ChartItem } from '../ktb-chart.component';
+import { ChartItem } from '../../../_interfaces/chart';
 
 @Component({
   selector: 'ktb-test-chart',
@@ -8,6 +8,11 @@ import { ChartItem } from '../ktb-chart.component';
 })
 export class KtbTestChartComponent {
   public labels = { 1: '2022-02-22 09:22', 2: '2022-02-22 12:03' };
+  public tooltipLabels = {
+    0: 'SLO evaluation of test from 2022-02-22 07:01',
+    1: '2022-02-22 09:22',
+    2: '2022-02-22 12:03',
+  };
   public data: ChartItem[] = [
     {
       type: 'score-bar',
@@ -131,4 +136,45 @@ export class KtbTestChartComponent {
       ],
     },
   ];
+
+  public addMetric(): void {
+    const name = 'Metric ' + this.randomNumber(100, 999);
+    const item: ChartItem = {
+      type: 'metric-line',
+      identifier: name,
+      invisible: false,
+      points: [
+        {
+          x: 0,
+          y: this.randomNumber(0, 255),
+          identifier: 'e0',
+        },
+        {
+          x: 1,
+          y: this.randomNumber(0, 255),
+          identifier: 'e1',
+        },
+        {
+          x: 2,
+          y: this.randomNumber(0, 255),
+          identifier: 'e2',
+        },
+        {
+          x: 3,
+          y: this.randomNumber(0, 255),
+          identifier: 'e3',
+        },
+        {
+          x: 4,
+          y: this.randomNumber(0, 255),
+          identifier: 'e4',
+        },
+      ],
+    };
+    this.data = [...this.data, item];
+  }
+
+  private randomNumber(min: number, max: number): number {
+    return Math.floor(Math.random() * (max - min)) + min + 1;
+  }
 }

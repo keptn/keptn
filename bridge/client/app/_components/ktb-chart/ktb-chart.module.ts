@@ -5,6 +5,8 @@ import { DtButtonModule } from '@dynatrace/barista-components/button';
 import { KtbChartComponent } from './ktb-chart.component';
 import { KtbTestChartComponent } from './testing/ktb-test-chart.component';
 import { FlexModule } from '@angular/flex-layout';
+import { DtKeyValueListModule } from '@dynatrace/barista-components/key-value-list';
+import { KtbPipeModule } from '../../_pipes/ktb-pipe.module';
 
 @NgModule({
   declarations: [KtbChartComponent, KtbTestChartComponent], // add KtbTestChartComponent for testing
@@ -15,7 +17,9 @@ import { FlexModule } from '@angular/flex-layout';
     }),
     DtButtonModule,
     FlexModule,
+    DtKeyValueListModule,
+    KtbPipeModule,
   ],
-  exports: [KtbChartComponent, KtbTestChartComponent], // add KtbTestChartComponent for testing
+  exports: [KtbChartComponent, KtbTestChartComponent], // add KtbTestChartComponent for testing,
 })
 export class KtbChartModule {}
