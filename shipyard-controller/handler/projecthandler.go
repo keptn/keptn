@@ -293,7 +293,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 			return
 		}
 
-		log.Debug("Provisioner data\nGit URL: %s\nUser: %s\n", provisioningData.GitRemoteURL, provisioningData.GitUser)
+		log.Debugf("Provisioner data\nGit URL: %s\nUser: %s\n", provisioningData.GitRemoteURL, provisioningData.GitUser)
 
 		params.GitCredentials = &apimodels.GitAuthCredentials{
 			RemoteURL: provisioningData.GitRemoteURL,
