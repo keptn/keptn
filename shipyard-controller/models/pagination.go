@@ -2,10 +2,10 @@ package models
 
 type PaginationParams struct {
 	// NextPageKey indicates at which index the result should start
-	NextPageKey int64 `json:"nextPageKey,omitempty"`
+	NextPageKey int64 `form:"nextPageKey" json:"nextPageKey,omitempty"`
 
 	// PageSize is the maximum size of returned page
-	PageSize int64 `json:"pageSize,omitempty"`
+	PageSize int64 `form:"pageSize" json:"pageSize,omitempty"`
 }
 
 type PaginationResult struct {
