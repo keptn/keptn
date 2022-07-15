@@ -125,6 +125,19 @@ func TestMongoDBSequenceExecutionRepo_InsertAndRetrieveWithPagination(t *testing
 
 	require.NotNil(t, get)
 	require.EqualValues(t, 0, paginationResult.NextPageKey)
+
+	// no matching filter
+	get, paginationResult, err = mdbrepo.GetPaginated(models.SequenceExecutionFilter{
+		Scope: models.EventScope{
+			EventData: keptnv2.EventData{Project: "hulumulu"},
+		},
+		Name:   "delivery",
+		Status: []string{"triggered"},
+	}, models.PaginationParams{PageSize: 10, NextPageKey: 2})
+
+	require.Empty(t, get)
+	require.EqualValues(t, 0, paginationResult.TotalCount)
+	require.EqualValues(t, 0, paginationResult.PageSize)
 }
 
 func TestMongoDBSequenceExecutionRepo_InsertAndRetrieveByTime(t *testing.T) {

@@ -24,7 +24,7 @@ type GetSequenceExecutionResponse struct {
 }
 
 func (p GetSequenceExecutionParams) GetSequenceExecutionFilter() models.SequenceExecutionFilter {
-	return models.SequenceExecutionFilter{
+	filter := models.SequenceExecutionFilter{
 		Scope: models.EventScope{
 			EventData: keptnv2.EventData{
 				Project: p.Project,
@@ -33,7 +33,12 @@ func (p GetSequenceExecutionParams) GetSequenceExecutionFilter() models.Sequence
 			},
 			KeptnContext: p.KeptnContext,
 		},
-		Status: []string{p.Status},
-		Name:   p.Name,
+		Name: p.Name,
 	}
+
+	if p.Status != "" {
+		filter.Status = []string{p.Status}
+	}
+
+	return filter
 }

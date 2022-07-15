@@ -230,7 +230,7 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 	uniformController := controller.NewUniformIntegrationController(uniformHandler)
 	uniformController.Inject(apiV1)
 
-	sequenceExecutionHandler := handler.NewSequenceExecutionHandler(sequenceExecutionRepo)
+	sequenceExecutionHandler := handler.NewSequenceExecutionHandler(sequenceExecutionRepo, createProjectRepo())
 	sequenceExecutionController := controller.NewSequenceExecutionController(sequenceExecutionHandler)
 	sequenceExecutionController.Inject(apiV1)
 

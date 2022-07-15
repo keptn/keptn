@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/keptn/shipyard-controller/db"
@@ -15,11 +16,13 @@ type SequenceExecutionHandler interface {
 
 type sequenceExecutionHandler struct {
 	sequenceExecutionRepo db.SequenceExecutionRepo
+	projectRepo           db.ProjectRepo
 }
 
-func NewSequenceExecutionHandler(sequenceExecutionRepo db.SequenceExecutionRepo) *sequenceExecutionHandler {
+func NewSequenceExecutionHandler(sequenceExecutionRepo db.SequenceExecutionRepo, projectRepo db.ProjectRepo) *sequenceExecutionHandler {
 	return &sequenceExecutionHandler{
 		sequenceExecutionRepo: sequenceExecutionRepo,
+		projectRepo:           projectRepo,
 	}
 }
 
@@ -42,6 +45,7 @@ func NewSequenceExecutionHandler(sequenceExecutionRepo db.SequenceExecutionRepo)
 // @Param        nextPageKey   query     int                       false  "Offset to the next set of items"
 // @Param        keptnContext  query     string                    false  "Keptn context ID"
 // @Success      200           {object}  api.GetSequenceExecutionResponse  "ok"
+// @Success      404           {object}  models.Error  "Project not found"
 // @Failure      500           {object}  models.Error              "Internal error"
 // @Router       /sequence-execution/{project} [get]
 func (h *sequenceExecutionHandler) GetSequenceExecutions(ctx *gin.Context) {
@@ -52,11 +56,21 @@ func (h *sequenceExecutionHandler) GetSequenceExecutions(ctx *gin.Context) {
 	}
 
 	params.Project = ctx.Param("project")
+	_, err := h.projectRepo.GetProject(params.Project)
+	if err != nil {
+		if errors.Is(err, db.ErrProjectNotFound) {
+			SetNotFoundErrorResponse(ctx, err.Error())
+			return
+		} else {
+			SetInternalServerErrorResponse(ctx, fmt.Sprintf(UnableQuerySequenceExecutionMsg, err.Error()))
+			return
+		}
+	}
 
 	sequences, paginationInfo, err := h.sequenceExecutionRepo.GetPaginated(params.GetSequenceExecutionFilter(), params.PaginationParams)
 
 	if err != nil {
-		SetInternalServerErrorResponse(ctx, fmt.Sprintf(UnableQueryStateMsg, err.Error()))
+		SetInternalServerErrorResponse(ctx, fmt.Sprintf(UnableQuerySequenceExecutionMsg, err.Error()))
 		return
 	}
 

@@ -45,6 +45,8 @@ var NoServiceNameMsg = "Must provide a service name"
 
 var UnableQueryStateMsg = "Unable to query sequence state repository: %s"
 
+var UnableQuerySequenceExecutionMsg = "Unable to query sequence execution repository: %s"
+
 var UnableControleSequenceMsg = "Unable to control sequence: %s"
 
 var UnableFindSequenceMsg = "Unable to control sequence: %s"
