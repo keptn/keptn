@@ -101,7 +101,7 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) GetPaginated(filter models.Sequence
 		return nil, nil, fmt.Errorf("error counting elements in sequence execution collection: %w", err)
 	}
 
-	sortOptions := options.Find().SetSort(bson.D{{Key: "time", Value: -1}}).SetSkip(paginationParams.NextPageKey)
+	sortOptions := options.Find().SetSort(bson.D{{Key: "triggeredAt", Value: -1}}).SetSkip(paginationParams.NextPageKey)
 
 	if paginationParams.PageSize > 0 {
 		sortOptions = sortOptions.SetLimit(paginationParams.PageSize)
