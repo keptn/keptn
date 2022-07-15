@@ -121,7 +121,7 @@ export class KtbChartComponent implements AfterViewInit, OnChanges {
     const addMetricValue = (cur: MetricValue[], item: ChartItem): MetricValue[] => {
       const point = item.points.find((p) => p.x === xValue);
       const itemLabel = item.label ?? item.identifier;
-      const alreadyInList = cur.find((v) => v.label === label);
+      const alreadyInList = cur.find((v) => v.label === itemLabel);
       const metricValue = !!point && !alreadyInList ? { label: itemLabel, value: point.y } : undefined;
       return metricValue ? [...cur, metricValue] : cur;
     };
@@ -278,6 +278,6 @@ export class KtbChartComponent implements AfterViewInit, OnChanges {
   }
 
   private get visibleChartItems(): ChartItem[] {
-    return this.chartItems.filter((i) => !i.invisible || i.invisible);
+    return this.chartItems.filter((i) => !i.invisible);
   }
 }
