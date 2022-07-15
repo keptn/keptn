@@ -35,15 +35,16 @@ func NewSequenceExecutionHandler(sequenceExecutionRepo db.SequenceExecutionRepo,
 // @Accept       json
 // @Produce      json
 // @Param        project       path      string                    true  "The project name"
-// @Param        stage         query      string                   false  "The stage name"
-// @Param        service       query      string                   false  "The service name"
+// @Param        stage         query     string                    false  "The stage name"
+// @Param        service       query     string                    false  "The service name"
 // @Param        name          query     string                    false  "The name of the sequence"
 // @Param        status        query     string                    false  "The status of the sequence (triggered, finished, started, paused, timedOut)"
+// @Param        keptnContext  query     string                    false  "Keptn context ID"
 // @Param        pageSize      query     int                       false  "The maximum number of items to return"
 // @Param        nextPageKey   query     int                       false  "Offset to the next set of items"
-// @Param        keptnContext  query     string                    false  "Keptn context ID"
 // @Success      200           {object}  api.GetSequenceExecutionResponse  "ok"
-// @Success      404           {object}  models.Error  "Project not found"
+// @Success      404           {object}  models.Error              "Project not found"
+// @Success      400           {object}  models.Error              "Bad Request"
 // @Failure      500           {object}  models.Error              "Internal error"
 // @Router       /sequence-execution/{project} [get]
 func (h *sequenceExecutionHandler) GetSequenceExecutions(ctx *gin.Context) {
