@@ -12,6 +12,7 @@ import (
 type SequenceStateRepo interface {
 	CreateSequenceState(state apimodels.SequenceState) error
 	FindSequenceStates(filter apimodels.StateFilter) (*apimodels.SequenceStates, error)
+	FindSequenceStateByID(filter apimodels.StateFilter) (*apimodels.SequenceState, error)
 	UpdateSequenceState(state apimodels.SequenceState) error
 	DeleteSequenceStates(filter apimodels.StateFilter) error
 }

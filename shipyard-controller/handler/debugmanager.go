@@ -30,14 +30,15 @@ func NewDebugManager(eventRepo db.EventRepo, stateRepo db.SequenceStateRepo, pro
 }
 
 func (dm *DebugManager) GetSequenceByID(projectName string, shkeptncontext string) (models.SequenceState, error) {
-	sequence, err := dm.stateRepo.FindSequenceStates(apimodels.StateFilter{
-		GetSequenceStateParams: apimodels.GetSequenceStateParams{
-			Project:      projectName,
-			KeptnContext: shkeptncontext,
-		},
-	})
+	sequence, err := dm.stateRepo.FindSequenceStateByID(
+		apimodels.StateFilter{
+			GetSequenceStateParams: apimodels.GetSequenceStateParams{
+				Project:      projectName,
+				KeptnContext: shkeptncontext,
+			},
+		})
 
-	return sequence.States[0], err
+	return *sequence, err
 }
 
 func (dm *DebugManager) GetAllSequencesForProject(projectName string) ([]models.SequenceState, error) {

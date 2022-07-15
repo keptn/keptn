@@ -114,6 +114,27 @@ func (mdbrepo *MongoDBStateRepo) FindSequenceStates(filter models.StateFilter) (
 	return result, nil
 }
 
+func (mdbrepo *MongoDBStateRepo) FindSequenceStateByID(filter models.StateFilter) (*models.SequenceState, error) {
+	if filter.Project == "" {
+		return nil, errors.New("project must be set")
+	}
+	err := mdbrepo.DBConnection.EnsureDBConnection()
+	if err != nil {
+		return nil, err
+	}
+	collection := mdbrepo.DBConnection.Client.Database(getDatabaseName()).Collection(filter.Project + taskSequenceStateCollectionSuffix)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	cur := collection.FindOne(ctx, mdbrepo.getSearchOptions(filter))
+
+	var sequence models.SequenceState
+	cur.Decode(&sequence)
+
+	return &sequence, cur.Err()
+}
+
 func (mdbrepo *MongoDBStateRepo) getSearchOptions(filter models.StateFilter) bson.M {
 	searchOptions := bson.M{
 		"project": filter.Project,
