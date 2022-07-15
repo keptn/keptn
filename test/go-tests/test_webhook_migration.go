@@ -91,7 +91,7 @@ spec:
 const webhookURI = "/%252Fwebhook%252Fwebhook.yaml"
 
 func Test_Webhook_Migrator(t *testing.T) {
-	projectName := "webhook-migration"
+	baseProjectName := "webhook-migration"
 	serviceName := "myservice"
 	shipyardFilePath, err := CreateTmpShipyardFile(webhookShipyard)
 	require.Nil(t, err)
@@ -122,8 +122,8 @@ func Test_Webhook_Migrator(t *testing.T) {
 	_, err = ExecuteCommandf("keptn migrate-webhooks --project=non-exist -y")
 	require.NotNil(t, err)
 
-	t.Logf("creating project %s", projectName)
-	_, err = CreateProject(projectName, shipyardFilePath)
+	t.Logf("creating project %s", baseProjectName)
+	projectName, err := CreateProject(baseProjectName, shipyardFilePath)
 	require.Nil(t, err)
 
 	t.Logf("Executing migration for project without webhooks")
@@ -131,28 +131,32 @@ func Test_Webhook_Migrator(t *testing.T) {
 	require.Nil(t, err)
 
 	for i := 1; i <= 3; i++ {
-		fillProjectWithWebhooks(t, shipyardFilePath, webhookFilePath, projectName+fmt.Sprint(i), serviceName+fmt.Sprint(i))
-		checkWebhooksHaveCorrectWersion(t, internalKeptnAPI, "keptn-"+projectName+fmt.Sprint(i), serviceName+fmt.Sprint(i), webhookConfigMigrationAlpha)
+		t.Logf("creating project %s%d", baseProjectName, i)
+		_, err = CreateProject(baseProjectName+fmt.Sprint(i), shipyardFilePath)
+		require.Nil(t, err)
+
+		fillProjectWithWebhooks(t, shipyardFilePath, webhookFilePath, projectName+fmt.Sprint(i), serviceName)
+		checkWebhooksHaveCorrectWersion(t, internalKeptnAPI, projectName+fmt.Sprint(i), serviceName, webhookConfigMigrationAlpha)
 	}
 
-	t.Logf("Executing dry-run migration for project keptn-%s1", projectName)
-	output, err := ExecuteCommandf("keptn migrate-webhooks --dry-run --project=keptn-%s1 -y", projectName)
+	t.Logf("Executing dry-run migration for project %s1", projectName)
+	output, err := ExecuteCommandf("keptn migrate-webhooks --dry-run --project=%s1 -y", projectName)
 	require.Nil(t, err)
 	require.Contains(t, output, webhookConfigMigrationBeta)
 
 	t.Logf("Checking if all projects still contain Alpha version")
 	for i := 1; i <= 3; i++ {
-		checkWebhooksHaveCorrectWersion(t, internalKeptnAPI, "keptn-"+projectName+fmt.Sprint(i), serviceName+fmt.Sprint(i), webhookConfigMigrationAlpha)
+		checkWebhooksHaveCorrectWersion(t, internalKeptnAPI, projectName+fmt.Sprint(i), serviceName, webhookConfigMigrationAlpha)
 	}
 
-	t.Logf("Executing migration for project keptn-%s1", projectName)
-	_, err = ExecuteCommandf("keptn migrate-webhooks --project=keptn-%s1 -y", projectName)
+	t.Logf("Executing migration for project %s1", projectName)
+	_, err = ExecuteCommandf("keptn migrate-webhooks --project=%s1 -y", projectName)
 	require.Nil(t, err)
 
 	t.Logf("Checking if all webhooks contain the right version")
-	checkWebhooksHaveCorrectWersion(t, internalKeptnAPI, "keptn-"+projectName+"1", serviceName+"1", webhookConfigMigrationBeta)
-	checkWebhooksHaveCorrectWersion(t, internalKeptnAPI, "keptn-"+projectName+"2", serviceName+"2", webhookConfigMigrationAlpha)
-	checkWebhooksHaveCorrectWersion(t, internalKeptnAPI, "keptn-"+projectName+"3", serviceName+"3", webhookConfigMigrationAlpha)
+	checkWebhooksHaveCorrectWersion(t, internalKeptnAPI,projectName+"1", serviceName, webhookConfigMigrationBeta)
+	checkWebhooksHaveCorrectWersion(t, internalKeptnAPI, projectName+"2", serviceName, webhookConfigMigrationAlpha)
+	checkWebhooksHaveCorrectWersion(t, internalKeptnAPI,projectName+"3", serviceName, webhookConfigMigrationAlpha)
 
 	t.Logf("Executing migration for all projects")
 	_, err = ExecuteCommandf("keptn migrate-webhooks -y")
@@ -160,15 +164,11 @@ func Test_Webhook_Migrator(t *testing.T) {
 
 	t.Logf("Checking if all webhooks in all projects were migrated")
 	for i := 1; i <= 3; i++ {
-		checkWebhooksHaveCorrectWersion(t, internalKeptnAPI, "keptn-"+projectName+fmt.Sprint(i), serviceName+fmt.Sprint(i), webhookConfigMigrationBeta)
+		checkWebhooksHaveCorrectWersion(t, internalKeptnAPI, projectName+fmt.Sprint(i), serviceName, webhookConfigMigrationBeta)
 	}
 }
 
 func fillProjectWithWebhooks(t *testing.T, shipyardFilePath string, webhookFilePath string, projectName string, serviceName string) {
-	t.Logf("creating project %s", projectName)
-	projectName, err := CreateProject(projectName, shipyardFilePath)
-	require.Nil(t, err)
-
 	t.Logf("creating service %s", serviceName)
 	output, err := ExecuteCommandf("keptn create service %s --project=%s", serviceName, projectName)
 	require.Nil(t, err)
