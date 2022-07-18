@@ -8,6 +8,10 @@
   svg text {
     font-size: 12px;
   }
+
+  rect.area:hover {
+    fill: rgba(0, 0, 0, 0.05);
+  }
 }
 
 .ktb-chart-container {
@@ -63,7 +67,7 @@
 }
 
 .tooltip-container {
-  font-family: BerninaSansWeb,OpenSans,sans-serif;
+  font-family: BerninaSansWeb, OpenSans, sans-serif;
   font-weight: 400;
   line-height: 1.6;
   background-color: #fff;
