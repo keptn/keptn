@@ -30,7 +30,7 @@ func TestDebughandlerGetAllProjects(t *testing.T) {
 					GetAllProjectsFunc: func() ([]*apimodels.ExpandedProject, error) {
 						projects := []*apimodels.ExpandedProject{
 							{
-								CreationDate:     "",
+								CreationDate:     "string",
 								LastEventContext: &apimodels.EventContextInfo{},
 								ProjectName:      "project1",
 								Shipyard:         "shipyard",
@@ -39,7 +39,7 @@ func TestDebughandlerGetAllProjects(t *testing.T) {
 								GitCredentials:   &apimodels.GitAuthCredentialsSecure{},
 							},
 							{
-								CreationDate:     "",
+								CreationDate:     "string",
 								LastEventContext: &apimodels.EventContextInfo{},
 								ProjectName:      "project2",
 								Shipyard:         "shipyard",
@@ -193,14 +193,14 @@ func TestDebughandlerGetSequenceByID(t *testing.T) {
 				DebugManager: &fake.IDebugManagerMock{
 					GetSequenceByIDFunc: func(projectName string, shkeptncontext string) (*apimodels.SequenceState, error) {
 						event := &apimodels.SequenceState{
-							Name:           "",
-							Service:        "",
-							Project:        "",
-							Time:           "",
-							Shkeptncontext: "",
-							State:          "",
+							Name:           "sequence1",
+							Service:        "service1",
+							Project:        "project1",
+							Time:           "string",
+							Shkeptncontext: "context",
+							State:          "state",
 							Stages:         []apimodels.SequenceStateStage{},
-							ProblemTitle:   "",
+							ProblemTitle:   "problemtitle",
 						}
 						return event, nil
 					},
@@ -278,17 +278,17 @@ func TestDebughandlerGetEventByID(t *testing.T) {
 						eventSource := ""
 						eventType := ""
 						event := &apimodels.KeptnContextExtendedCE{
-							Contenttype:        "",
-							Data:               "",
-							Extensions:         "",
-							ID:                 "",
-							Shkeptncontext:     "",
-							Shkeptnspecversion: "",
+							Contenttype:        "contenttype",
+							Data:               "data",
+							Extensions:         "extensions",
+							ID:                 "id",
+							Shkeptncontext:     "shkeptncontext",
+							Shkeptnspecversion: "Shkeptnspecversion",
 							Source:             &eventSource,
-							Specversion:        "",
+							Specversion:        "specversion",
 							Time:               time.Time{},
-							Triggeredid:        "",
-							GitCommitID:        "",
+							Triggeredid:        "triggeredid",
+							GitCommitID:        "gitcommitid",
 							Type:               &eventType,
 						}
 						return event, nil
