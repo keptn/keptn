@@ -32,7 +32,9 @@ describe('Sequences', () => {
   });
 
   it('should show labels for remediation sequence', () => {
-    sequencePage.visit('sockshop').selectSequence('29355a07-7b65-47fa-896e-06f656283c5d');
-    cy.get('ktb-expandable-tile-header dt-tag-list').first().children().should('have.length', 1);
+    sequencePage
+      .visit('sockshop')
+      .selectSequence('29355a07-7b65-47fa-896e-06f656283c5d')
+      .assertEventLabelCount('ktb-task-250a869c-d9b0-486d-8f23-146ae1b9976b', 1);
   });
 });

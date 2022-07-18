@@ -20,6 +20,8 @@ export class KtbEventItemDetailDirective {}
 export class KtbEventItemComponent {
   public _event?: Trace;
 
+  public isUrl = AppUtils.isValidUrl;
+
   @ViewChild('eventPayloadDialog')
   /* eslint-disable @typescript-eslint/no-explicit-any */
   public eventPayloadDialog?: TemplateRef<any>;
@@ -64,9 +66,5 @@ export class KtbEventItemComponent {
 
   copyEventPayload(plainEvent: string): void {
     this.clipboard.copy(plainEvent, 'event payload');
-  }
-
-  isUrl(value: string): boolean {
-    return AppUtils.isValidUrl(value);
   }
 }

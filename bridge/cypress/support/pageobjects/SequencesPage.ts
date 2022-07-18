@@ -362,4 +362,9 @@ export class SequencesPage {
     cy.location('pathname').should('eq', `/project/${project}/sequence/${keptnContext}/event/${eventId}`);
     return this;
   }
+
+  public assertEventLabelCount(uitestIdOfExpandableTile: string, count: number): this {
+    cy.byTestId(uitestIdOfExpandableTile).find('dt-tag-list').first().children().should('have.length', count);
+    return this;
+  }
 }
