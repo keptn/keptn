@@ -67,6 +67,7 @@ class DashboardPage {
       'have.text',
       'Set the Git upstream of your project'
     );
+    return this;
   }
 }
 
