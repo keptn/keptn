@@ -103,33 +103,6 @@ export class KtbChartComponent implements AfterViewInit, OnChanges {
     this.draw();
   }
 
-  public onMousemove(event: MouseEvent, data: BarPoint): void {
-    const xValue = data[0];
-    const elements = document.elementsFromPoint(event.clientX, event.clientY);
-    const barArea = elements.filter((e) => e.tagName === 'rect' && e.classList.contains('area'))[0];
-
-    if (!barArea) {
-      return;
-    }
-
-    const { top, left } = getTooltipPosition(
-      { width: window.innerWidth ?? 0, height: window.innerHeight ?? 0 },
-      this.tooltip.nativeElement.getBoundingClientRect(),
-      barArea.getClientRects()[0]
-    );
-    const label = this.xTooltipLabels[xValue] ?? this.xLabels[xValue] ?? xValue + '';
-    const addMetricValue = (cur: MetricValue[], item: ChartItem): MetricValue[] => {
-      const point = item.points.find((p) => p.x === xValue);
-      const itemLabel = item.label ?? item.identifier;
-      const alreadyInList = cur.find((v) => v.label === itemLabel);
-      const metricValue = !!point && !alreadyInList ? { label: itemLabel, value: point.y } : undefined;
-      return metricValue ? [...cur, metricValue] : cur;
-    };
-    const metricValues = this.visibleChartItems.reduce(addMetricValue, [] as MetricValue[]);
-    this.tooltipState.next({ ...this.tooltipState.getValue(), top, left, label, metricValues });
-    this.cdr.detectChanges();
-  }
-
   private draw(): void {
     const { width, height } = this.getAvailableSpace();
     const svg = select(this.chartSelector);
@@ -174,7 +147,9 @@ export class KtbChartComponent implements AfterViewInit, OnChanges {
     }
 
     this.paths.forEach((p) => p.remove());
+    this.paths = [];
     this.rects.forEach((r) => r.remove());
+    this.rects = [];
 
     this.chartItems.forEach((item, index) => {
       if (item.invisible) {
@@ -238,9 +213,9 @@ export class KtbChartComponent implements AfterViewInit, OnChanges {
 
     const rect = selection
       .append('rect')
-      .on('mouseenter', () => this.tooltipState.next({ ...this.tooltipState.getValue(), visible: true }))
-      .on('mousemove', (event: MouseEvent, data) => this.onMousemove(event, data))
-      .on('mouseleave', () => this.tooltipState.next({ ...this.tooltipState.getValue(), visible: false }))
+      .on('mouseenter', this.showTooltip(true))
+      .on('mousemove', this.onMousemove())
+      .on('mouseleave', this.showTooltip(false))
       .attr('x', (d) => this.xScale(d[0] - 0.5))
       .attr('y', (d) => this.yScaleLeft(d[1]))
       .attr('width', this.xScale(2) - this.xScale(1))
@@ -248,8 +223,40 @@ export class KtbChartComponent implements AfterViewInit, OnChanges {
       .attr('fill', (d) => d[2])
       .attr('class', 'area')
       .attr('uitestid', (d) => `area-${d[0]}`);
-
     this.rects.push(rect);
+  }
+
+  public showTooltip(visible: boolean): () => void {
+    return () => this.tooltipState.next({ ...this.tooltipState.getValue(), visible });
+  }
+
+  public onMousemove(): (event: MouseEvent, data: BarPoint) => void {
+    return (event, data) => {
+      const xValue = data[0];
+      const elements = document.elementsFromPoint(event.clientX, event.clientY);
+      const barArea = elements.filter((e) => e.tagName === 'rect' && e.classList.contains('area'))[0];
+
+      if (!barArea) {
+        return;
+      }
+
+      const { top, left } = getTooltipPosition(
+        { width: window.innerWidth ?? 0, height: window.innerHeight ?? 0 },
+        this.tooltip.nativeElement.getBoundingClientRect(),
+        barArea.getClientRects()[0]
+      );
+      const label = this.xTooltipLabels[xValue] ?? this.xLabels[xValue] ?? xValue + '';
+      const addMetricValue = (cur: MetricValue[], item: ChartItem): MetricValue[] => {
+        const point = item.points.find((p) => p.x === xValue);
+        const itemLabel = item.label ?? item.identifier;
+        const alreadyInList = cur.find((v) => v.label === itemLabel);
+        const metricValue = !!point && !alreadyInList ? { label: itemLabel, value: point.y } : undefined;
+        return metricValue ? [...cur, metricValue] : cur;
+      };
+      const metricValues = this.visibleChartItems.reduce(addMetricValue, [] as MetricValue[]);
+      this.tooltipState.next({ ...this.tooltipState.getValue(), top, left, label, metricValues });
+      this.cdr.detectChanges();
+    };
   }
 
   public hideChartItem(item: ChartItem): void {
@@ -268,8 +275,7 @@ export class KtbChartComponent implements AfterViewInit, OnChanges {
   }
 
   private getAvailableSpace(): { width: number; height: number } {
-    const parentElement: HTMLElement = this.elementRef.nativeElement;
-    const availableSpace = parentElement.getBoundingClientRect();
+    const availableSpace = this.elementRef.nativeElement.getBoundingClientRect();
     return { width: availableSpace.width, height: _height };
   }
 
