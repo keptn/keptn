@@ -304,17 +304,12 @@ export class TriggerSequenceSubPage {
     }
   }
 
-  public assertDatePreservation(value: string): this {
-    this.clickStartTime();
-    cy.byTestId('keptn-datetime-picker-submit').should('be.enabled').click();
-    return this.assertStartDateDisplayValue(value);
-  }
-
   public assertDatePreservationDatePicker(hours: string, minutes: string, seconds: string): this {
     this.clickStartTime();
     cy.byTestId('keptn-datetime-picker-time').byTestId('keptn-time-input-hours').should('have.value', hours);
     cy.byTestId('keptn-datetime-picker-time').byTestId('keptn-time-input-minutes').should('have.value', minutes);
     cy.byTestId('keptn-datetime-picker-time').byTestId('keptn-time-input-seconds').should('have.value', seconds);
+    cy.byTestId('keptn-datetime-picker-submit').should('be.enabled').click();
     return this;
   }
 
