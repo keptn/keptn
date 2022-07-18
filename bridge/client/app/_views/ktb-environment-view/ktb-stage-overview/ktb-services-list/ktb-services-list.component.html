@@ -15,7 +15,7 @@
                   !currentSequence.isLoading(service.stage) || currentSequence.hasPendingApproval(service.stage);
                   else showLoading
                 "
-                [name]="currentSequence.getIcon()"
+                [name]="currentSequence.isPaused() ? 'pause' : currentSequence.getIcon()"
                 [class.error]="currentSequence.isFaulty(service.stage)"
                 [class.success]="currentSequence.isSuccessful(service.stage)"
                 [class.warning]="currentSequence.isWarning(service.stage)"
