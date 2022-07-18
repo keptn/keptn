@@ -210,6 +210,7 @@
             ktbDatetimePicker
             [timeEnabled]="true"
             [secondsEnabled]="true"
+            [startDateTime]="evaluationFormData.timeframeStart || ''"
             (selectedDateTime)="evaluationFormData.timeframeStart = $event"
           >
             <dt-icon name="calendar"></dt-icon>
@@ -260,6 +261,7 @@
             uitestid="keptn-trigger-button-starttime"
             [timeEnabled]="true"
             [secondsEnabled]="true"
+            [startDateTime]="evaluationFormData.startDatetime || ''"
             (selectedDateTime)="setStartDate($event)"
           >
             <dt-icon name="calendar"></dt-icon>
@@ -293,6 +295,7 @@
             uitestid="keptn-trigger-button-end-date"
             [timeEnabled]="true"
             [secondsEnabled]="true"
+            [startDateTime]="evaluationFormData.endDatetime || ''"
             (selectedDateTime)="setEndDate($event)"
           >
             <dt-icon name="calendar"></dt-icon>

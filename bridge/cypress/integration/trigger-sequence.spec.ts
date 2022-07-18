@@ -350,4 +350,26 @@ describe('Trigger an evaluation sequence', () => {
       .assertEvaluationTimeframeErrorExists(true)
       .assertTriggerSequenceEnabled(false);
   });
+
+  it('should preselect date if date was already selected before', () => {
+    const currentDate = new Date();
+    const currentMonthFormatted = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+
+    triggerSequencePage
+      .selectEvaluationEndDate()
+      .setStartDate(0, '1', '15', '0')
+      .assertStartDateDisplayValue(`${currentDate.getFullYear()}-${currentMonthFormatted}-01 01:15:00`)
+      .assertDatePreservation(`${currentDate.getFullYear()}-${currentMonthFormatted}-01 01:15:00`);
+  });
+
+  it('should preselect date if date was already selected before II', () => {
+    const currentDate = new Date();
+    const currentMonthFormatted = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+
+    triggerSequencePage
+      .selectEvaluationEndDate()
+      .setStartDate(0, '1', '15', '0')
+      .assertStartDateDisplayValue(`${currentDate.getFullYear()}-${currentMonthFormatted}-01 01:15:00`)
+      .assertDatePreservationDatePicker('1', '15', '0');
+  });
 });
