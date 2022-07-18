@@ -1,10 +1,15 @@
 <div fxLayout="column" fxFlexFill class="ktb-datetime-picker">
-  <dt-calendar [maxDate]="maxDate" (selectedChange)="changeDate($event)"></dt-calendar>
+  <dt-calendar
+    [maxDate]="maxDate"
+    [startAt]="selectedDate.toDate()"
+    (selectedChange)="changeDate($event)"
+  ></dt-calendar>
   <div>
     <div class="mt-3" uitestid="keptn-datetime-picker-time">
       <ktb-time-input
         [millisEnabled]="false"
         [microsEnabled]="false"
+        [timeframe]="selectedTime"
         (timeChanged)="changeTime($event)"
         [max]="maxTimeValues"
       ></ktb-time-input>
