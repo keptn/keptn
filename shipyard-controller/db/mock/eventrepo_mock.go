@@ -25,28 +25,25 @@ import (
 // 			DeleteEventCollectionsFunc: func(project string) error {
 // 				panic("mock out the DeleteEventCollections method")
 // 			},
-// 			GetEventByIDFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) (apimodels.KeptnContextExtendedCE, error) {
-// 				panic("mock out the GetEventByID method")
-// 			},
-// 			GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]apimodels.KeptnContextExtendedCE, error) {
+// 			GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
 // 				panic("mock out the GetEvents method")
 // 			},
-// 			GetEventsWithRetryFunc: func(project string, filter common.EventFilter, status common.EventStatus, nrRetries int) ([]apimodels.KeptnContextExtendedCE, error) {
+// 			GetEventsWithRetryFunc: func(project string, filter common.EventFilter, status common.EventStatus, nrRetries int) ([]models.Event, error) {
 // 				panic("mock out the GetEventsWithRetry method")
 // 			},
-// 			GetFinishedEventsFunc: func(eventScope models.EventScope) ([]apimodels.KeptnContextExtendedCE, error) {
+// 			GetFinishedEventsFunc: func(eventScope models.EventScope) ([]models.Event, error) {
 // 				panic("mock out the GetFinishedEvents method")
 // 			},
 // 			GetRootEventsFunc: func(params models.GetRootEventParams) (*models.GetEventsResult, error) {
 // 				panic("mock out the GetRootEvents method")
 // 			},
-// 			GetStartedEventsForTriggeredIDFunc: func(eventScope models.EventScope) ([]apimodels.KeptnContextExtendedCE, error) {
+// 			GetStartedEventsForTriggeredIDFunc: func(eventScope models.EventScope) ([]models.Event, error) {
 // 				panic("mock out the GetStartedEventsForTriggeredID method")
 // 			},
-// 			GetTaskSequenceTriggeredEventFunc: func(eventScope models.EventScope, taskSequenceName string) (*apimodels.KeptnContextExtendedCE, error) {
+// 			GetTaskSequenceTriggeredEventFunc: func(eventScope models.EventScope, taskSequenceName string) (*models.Event, error) {
 // 				panic("mock out the GetTaskSequenceTriggeredEvent method")
 // 			},
-// 			InsertEventFunc: func(project string, event apimodels.KeptnContextExtendedCE, status common.EventStatus) error {
+// 			InsertEventFunc: func(project string, event models.Event, status common.EventStatus) error {
 // 				panic("mock out the InsertEvent method")
 // 			},
 // 		}
@@ -64,9 +61,6 @@ type EventRepoMock struct {
 
 	// DeleteEventCollectionsFunc mocks the DeleteEventCollections method.
 	DeleteEventCollectionsFunc func(project string) error
-
-	// GetEventByIDFunc mocks the GetEventByID method.
-	GetEventByIDFunc func(project string, filter common.EventFilter, status ...common.EventStatus) (apimodels.KeptnContextExtendedCE, error)
 
 	// GetEventsFunc mocks the GetEvents method.
 	GetEventsFunc func(project string, filter common.EventFilter, status ...common.EventStatus) ([]apimodels.KeptnContextExtendedCE, error)
@@ -109,15 +103,6 @@ type EventRepoMock struct {
 		DeleteEventCollections []struct {
 			// Project is the project argument value.
 			Project string
-		}
-		// GetEventByID holds details about calls to the GetEventByID method.
-		GetEventByID []struct {
-			// Project is the project argument value.
-			Project string
-			// Filter is the filter argument value.
-			Filter common.EventFilter
-			// Status is the status argument value.
-			Status []common.EventStatus
 		}
 		// GetEvents holds details about calls to the GetEvents method.
 		GetEvents []struct {
@@ -165,7 +150,7 @@ type EventRepoMock struct {
 		InsertEvent []struct {
 			// Project is the project argument value.
 			Project string
-			// Event is the event argument value.
+			//models.KeptnContextExtendedCE is the event argument value.
 			Event apimodels.KeptnContextExtendedCE
 			// Status is the status argument value.
 			Status common.EventStatus
@@ -174,7 +159,6 @@ type EventRepoMock struct {
 	lockDeleteAllFinishedEvents        sync.RWMutex
 	lockDeleteEvent                    sync.RWMutex
 	lockDeleteEventCollections         sync.RWMutex
-	lockGetEventByID                   sync.RWMutex
 	lockGetEvents                      sync.RWMutex
 	lockGetEventsWithRetry             sync.RWMutex
 	lockGetFinishedEvents              sync.RWMutex
@@ -282,45 +266,6 @@ func (mock *EventRepoMock) DeleteEventCollectionsCalls() []struct {
 	mock.lockDeleteEventCollections.RLock()
 	calls = mock.calls.DeleteEventCollections
 	mock.lockDeleteEventCollections.RUnlock()
-	return calls
-}
-
-// GetEventByID calls GetEventByIDFunc.
-func (mock *EventRepoMock) GetEventByID(project string, filter common.EventFilter, status ...common.EventStatus) (apimodels.KeptnContextExtendedCE, error) {
-	if mock.GetEventByIDFunc == nil {
-		panic("EventRepoMock.GetEventByIDFunc: method is nil but EventRepo.GetEventByID was just called")
-	}
-	callInfo := struct {
-		Project string
-		Filter  common.EventFilter
-		Status  []common.EventStatus
-	}{
-		Project: project,
-		Filter:  filter,
-		Status:  status,
-	}
-	mock.lockGetEventByID.Lock()
-	mock.calls.GetEventByID = append(mock.calls.GetEventByID, callInfo)
-	mock.lockGetEventByID.Unlock()
-	return mock.GetEventByIDFunc(project, filter, status...)
-}
-
-// GetEventByIDCalls gets all the calls that were made to GetEventByID.
-// Check the length with:
-//     len(mockedEventRepo.GetEventByIDCalls())
-func (mock *EventRepoMock) GetEventByIDCalls() []struct {
-	Project string
-	Filter  common.EventFilter
-	Status  []common.EventStatus
-} {
-	var calls []struct {
-		Project string
-		Filter  common.EventFilter
-		Status  []common.EventStatus
-	}
-	mock.lockGetEventByID.RLock()
-	calls = mock.calls.GetEventByID
-	mock.lockGetEventByID.RUnlock()
 	return calls
 }
 

@@ -4,7 +4,7 @@
 package fake
 
 import (
-	scmodels "github.com/keptn/keptn/shipyard-controller/models"
+	"github.com/keptn/keptn/shipyard-controller/models"
 	"sync"
 )
 
@@ -14,13 +14,13 @@ import (
 //
 // 		// make and configure a mocked handler.ILogManager
 // 		mockedILogManager := &ILogManagerMock{
-// 			CreateLogEntriesFunc: func(entry scmodels.CreateLogsRequest) error {
+// 			CreateLogEntriesFunc: func(entry models.CreateLogsRequest) error {
 // 				panic("mock out the CreateLogEntries method")
 // 			},
-// 			DeleteLogEntriesFunc: func(params scmodels.DeleteLogParams) error {
+// 			DeleteLogEntriesFunc: func(params models.DeleteLogParams) error {
 // 				panic("mock out the DeleteLogEntries method")
 // 			},
-// 			GetLogEntriesFunc: func(filter scmodels.GetLogParams) (*scmodels.GetLogsResponse, error) {
+// 			GetLogEntriesFunc: func(filter models.GetLogParams) (*models.GetLogsResponse, error) {
 // 				panic("mock out the GetLogEntries method")
 // 			},
 // 		}
@@ -31,30 +31,30 @@ import (
 // 	}
 type ILogManagerMock struct {
 	// CreateLogEntriesFunc mocks the CreateLogEntries method.
-	CreateLogEntriesFunc func(entry scmodels.CreateLogsRequest) error
+	CreateLogEntriesFunc func(entry models.CreateLogsRequest) error
 
 	// DeleteLogEntriesFunc mocks the DeleteLogEntries method.
-	DeleteLogEntriesFunc func(params scmodels.DeleteLogParams) error
+	DeleteLogEntriesFunc func(params models.DeleteLogParams) error
 
 	// GetLogEntriesFunc mocks the GetLogEntries method.
-	GetLogEntriesFunc func(filter scmodels.GetLogParams) (*scmodels.GetLogsResponse, error)
+	GetLogEntriesFunc func(filter models.GetLogParams) (*models.GetLogsResponse, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
 		// CreateLogEntries holds details about calls to the CreateLogEntries method.
 		CreateLogEntries []struct {
 			// Entry is the entry argument value.
-			Entry scmodels.CreateLogsRequest
+			Entry models.CreateLogsRequest
 		}
 		// DeleteLogEntries holds details about calls to the DeleteLogEntries method.
 		DeleteLogEntries []struct {
 			// Params is the params argument value.
-			Params scmodels.DeleteLogParams
+			Params models.DeleteLogParams
 		}
 		// GetLogEntries holds details about calls to the GetLogEntries method.
 		GetLogEntries []struct {
 			// Filter is the filter argument value.
-			Filter scmodels.GetLogParams
+			Filter models.GetLogParams
 		}
 	}
 	lockCreateLogEntries sync.RWMutex
@@ -63,12 +63,12 @@ type ILogManagerMock struct {
 }
 
 // CreateLogEntries calls CreateLogEntriesFunc.
-func (mock *ILogManagerMock) CreateLogEntries(entry scmodels.CreateLogsRequest) error {
+func (mock *ILogManagerMock) CreateLogEntries(entry models.CreateLogsRequest) error {
 	if mock.CreateLogEntriesFunc == nil {
 		panic("ILogManagerMock.CreateLogEntriesFunc: method is nil but ILogManager.CreateLogEntries was just called")
 	}
 	callInfo := struct {
-		Entry scmodels.CreateLogsRequest
+		Entry models.CreateLogsRequest
 	}{
 		Entry: entry,
 	}
@@ -82,10 +82,10 @@ func (mock *ILogManagerMock) CreateLogEntries(entry scmodels.CreateLogsRequest) 
 // Check the length with:
 //     len(mockedILogManager.CreateLogEntriesCalls())
 func (mock *ILogManagerMock) CreateLogEntriesCalls() []struct {
-	Entry scmodels.CreateLogsRequest
+	Entry models.CreateLogsRequest
 } {
 	var calls []struct {
-		Entry scmodels.CreateLogsRequest
+		Entry models.CreateLogsRequest
 	}
 	mock.lockCreateLogEntries.RLock()
 	calls = mock.calls.CreateLogEntries
@@ -94,12 +94,12 @@ func (mock *ILogManagerMock) CreateLogEntriesCalls() []struct {
 }
 
 // DeleteLogEntries calls DeleteLogEntriesFunc.
-func (mock *ILogManagerMock) DeleteLogEntries(params scmodels.DeleteLogParams) error {
+func (mock *ILogManagerMock) DeleteLogEntries(params models.DeleteLogParams) error {
 	if mock.DeleteLogEntriesFunc == nil {
 		panic("ILogManagerMock.DeleteLogEntriesFunc: method is nil but ILogManager.DeleteLogEntries was just called")
 	}
 	callInfo := struct {
-		Params scmodels.DeleteLogParams
+		Params models.DeleteLogParams
 	}{
 		Params: params,
 	}
@@ -113,10 +113,10 @@ func (mock *ILogManagerMock) DeleteLogEntries(params scmodels.DeleteLogParams) e
 // Check the length with:
 //     len(mockedILogManager.DeleteLogEntriesCalls())
 func (mock *ILogManagerMock) DeleteLogEntriesCalls() []struct {
-	Params scmodels.DeleteLogParams
+	Params models.DeleteLogParams
 } {
 	var calls []struct {
-		Params scmodels.DeleteLogParams
+		Params models.DeleteLogParams
 	}
 	mock.lockDeleteLogEntries.RLock()
 	calls = mock.calls.DeleteLogEntries
@@ -125,12 +125,12 @@ func (mock *ILogManagerMock) DeleteLogEntriesCalls() []struct {
 }
 
 // GetLogEntries calls GetLogEntriesFunc.
-func (mock *ILogManagerMock) GetLogEntries(filter scmodels.GetLogParams) (*scmodels.GetLogsResponse, error) {
+func (mock *ILogManagerMock) GetLogEntries(filter models.GetLogParams) (*models.GetLogsResponse, error) {
 	if mock.GetLogEntriesFunc == nil {
 		panic("ILogManagerMock.GetLogEntriesFunc: method is nil but ILogManager.GetLogEntries was just called")
 	}
 	callInfo := struct {
-		Filter scmodels.GetLogParams
+		Filter models.GetLogParams
 	}{
 		Filter: filter,
 	}
@@ -144,10 +144,10 @@ func (mock *ILogManagerMock) GetLogEntries(filter scmodels.GetLogParams) (*scmod
 // Check the length with:
 //     len(mockedILogManager.GetLogEntriesCalls())
 func (mock *ILogManagerMock) GetLogEntriesCalls() []struct {
-	Filter scmodels.GetLogParams
+	Filter models.GetLogParams
 } {
 	var calls []struct {
-		Filter scmodels.GetLogParams
+		Filter models.GetLogParams
 	}
 	mock.lockGetLogEntries.RLock()
 	calls = mock.calls.GetLogEntries

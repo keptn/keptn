@@ -6,7 +6,7 @@ package fake
 import (
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/common"
-	scmodels "github.com/keptn/keptn/shipyard-controller/models"
+	"github.com/keptn/keptn/shipyard-controller/models"
 	"sync"
 )
 
@@ -16,7 +16,7 @@ import (
 //
 // 		// make and configure a mocked handler.IProjectManager
 // 		mockedIProjectManager := &IProjectManagerMock{
-// 			CreateFunc: func(params *scmodels.CreateProjectParams) (error, common.RollbackFunc) {
+// 			CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
 // 				panic("mock out the Create method")
 // 			},
 // 			DeleteFunc: func(projectName string) (string, error) {
@@ -28,7 +28,7 @@ import (
 // 			GetByNameFunc: func(projectName string) (*apimodels.ExpandedProject, error) {
 // 				panic("mock out the GetByName method")
 // 			},
-// 			UpdateFunc: func(params *scmodels.UpdateProjectParams) (error, common.RollbackFunc) {
+// 			UpdateFunc: func(params *models.UpdateProjectParams) (error, common.RollbackFunc) {
 // 				panic("mock out the Update method")
 // 			},
 // 		}
@@ -39,7 +39,7 @@ import (
 // 	}
 type IProjectManagerMock struct {
 	// CreateFunc mocks the Create method.
-	CreateFunc func(params *scmodels.CreateProjectParams) (error, common.RollbackFunc)
+	CreateFunc func(params *models.CreateProjectParams) (error, common.RollbackFunc)
 
 	// DeleteFunc mocks the Delete method.
 	DeleteFunc func(projectName string) (string, error)
@@ -51,14 +51,14 @@ type IProjectManagerMock struct {
 	GetByNameFunc func(projectName string) (*apimodels.ExpandedProject, error)
 
 	// UpdateFunc mocks the Update method.
-	UpdateFunc func(params *scmodels.UpdateProjectParams) (error, common.RollbackFunc)
+	UpdateFunc func(params *models.UpdateProjectParams) (error, common.RollbackFunc)
 
 	// calls tracks calls to the methods.
 	calls struct {
 		// Create holds details about calls to the Create method.
 		Create []struct {
 			// Params is the params argument value.
-			Params *scmodels.CreateProjectParams
+			Params *models.CreateProjectParams
 		}
 		// Delete holds details about calls to the Delete method.
 		Delete []struct {
@@ -76,7 +76,7 @@ type IProjectManagerMock struct {
 		// Update holds details about calls to the Update method.
 		Update []struct {
 			// Params is the params argument value.
-			Params *scmodels.UpdateProjectParams
+			Params *models.UpdateProjectParams
 		}
 	}
 	lockCreate    sync.RWMutex
@@ -87,12 +87,12 @@ type IProjectManagerMock struct {
 }
 
 // Create calls CreateFunc.
-func (mock *IProjectManagerMock) Create(params *scmodels.CreateProjectParams) (error, common.RollbackFunc) {
+func (mock *IProjectManagerMock) Create(params *models.CreateProjectParams) (error, common.RollbackFunc) {
 	if mock.CreateFunc == nil {
 		panic("IProjectManagerMock.CreateFunc: method is nil but IProjectManager.Create was just called")
 	}
 	callInfo := struct {
-		Params *scmodels.CreateProjectParams
+		Params *models.CreateProjectParams
 	}{
 		Params: params,
 	}
@@ -106,10 +106,10 @@ func (mock *IProjectManagerMock) Create(params *scmodels.CreateProjectParams) (e
 // Check the length with:
 //     len(mockedIProjectManager.CreateCalls())
 func (mock *IProjectManagerMock) CreateCalls() []struct {
-	Params *scmodels.CreateProjectParams
+	Params *models.CreateProjectParams
 } {
 	var calls []struct {
-		Params *scmodels.CreateProjectParams
+		Params *models.CreateProjectParams
 	}
 	mock.lockCreate.RLock()
 	calls = mock.calls.Create
@@ -206,12 +206,12 @@ func (mock *IProjectManagerMock) GetByNameCalls() []struct {
 }
 
 // Update calls UpdateFunc.
-func (mock *IProjectManagerMock) Update(params *scmodels.UpdateProjectParams) (error, common.RollbackFunc) {
+func (mock *IProjectManagerMock) Update(params *models.UpdateProjectParams) (error, common.RollbackFunc) {
 	if mock.UpdateFunc == nil {
 		panic("IProjectManagerMock.UpdateFunc: method is nil but IProjectManager.Update was just called")
 	}
 	callInfo := struct {
-		Params *scmodels.UpdateProjectParams
+		Params *models.UpdateProjectParams
 	}{
 		Params: params,
 	}
@@ -225,10 +225,10 @@ func (mock *IProjectManagerMock) Update(params *scmodels.UpdateProjectParams) (e
 // Check the length with:
 //     len(mockedIProjectManager.UpdateCalls())
 func (mock *IProjectManagerMock) UpdateCalls() []struct {
-	Params *scmodels.UpdateProjectParams
+	Params *models.UpdateProjectParams
 } {
 	var calls []struct {
-		Params *scmodels.UpdateProjectParams
+		Params *models.UpdateProjectParams
 	}
 	mock.lockUpdate.RLock()
 	calls = mock.calls.Update

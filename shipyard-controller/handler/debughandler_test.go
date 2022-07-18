@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/keptn/go-utils/pkg/api/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/handler/fake"
 	"github.com/stretchr/testify/assert"
 )
@@ -27,8 +27,8 @@ func TestGetAllEvents(t *testing.T) {
 			name: "GET events project not found",
 			fields: fields{
 				DebugManager: &fake.IDebugManagerMock{
-					GetAllEventsFunc: func(projectName string, shkeptncontext string) ([]*models.KeptnContextExtendedCE, error) {
-						var test []*models.KeptnContextExtendedCE
+					GetAllEventsFunc: func(projectName string, shkeptncontext string) ([]*apimodels.KeptnContextExtendedCE, error) {
+						var test []*apimodels.KeptnContextExtendedCE
 						return test, ErrProjectNotFound
 					},
 				},

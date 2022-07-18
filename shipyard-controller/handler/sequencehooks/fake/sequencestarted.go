@@ -8,63 +8,63 @@ import (
 	"sync"
 )
 
-// ISequenceWaitingHookMock is a mock implementation of sequencehooks.ISequenceWaitingHook.
+// ISequenceStartedHookMock is a mock implementation of sequencehooks.ISequenceStartedHook.
 //
-// 	func TestSomethingThatUsesISequenceWaitingHook(t *testing.T) {
+// 	func TestSomethingThatUsesISequenceStartedHook(t *testing.T) {
 //
-// 		// make and configure a mocked sequencehooks.ISequenceWaitingHook
-// 		mockedISequenceWaitingHook := &ISequenceWaitingHookMock{
-// 			OnSequenceWaitingFunc: func(keptnContextExtendedCE apimodels.KeptnContextExtendedCE)  {
-// 				panic("mock out the OnSequenceWaiting method")
+// 		// make and configure a mocked sequencehooks.ISequenceStartedHook
+// 		mockedISequenceStartedHook := &ISequenceStartedHookMock{
+// 			OnSequenceStartedFunc: func(event apimodels.KeptnContextExtendedCE)  {
+// 				panic("mock out the OnSequenceStarted method")
 // 			},
 // 		}
 //
-// 		// use mockedISequenceWaitingHook in code that requires sequencehooks.ISequenceWaitingHook
+// 		// use mockedISequenceStartedHook in code that requires sequencehooks.ISequenceStartedHook
 // 		// and then make assertions.
 //
 // 	}
-type ISequenceWaitingHookMock struct {
-	// OnSequenceWaitingFunc mocks the OnSequenceWaiting method.
-	OnSequenceWaitingFunc func(keptnContextExtendedCE apimodels.KeptnContextExtendedCE)
+type ISequenceStartedHookMock struct {
+	// OnSequenceStartedFunc mocks the OnSequenceStarted method.
+	OnSequenceStartedFunc func(event apimodels.KeptnContextExtendedCE)
 
 	// calls tracks calls to the methods.
 	calls struct {
-		// OnSequenceWaiting holds details about calls to the OnSequenceWaiting method.
-		OnSequenceWaiting []struct {
-			// KeptnContextExtendedCE is the keptnContextExtendedCE argument value.
-			KeptnContextExtendedCE apimodels.KeptnContextExtendedCE
+		// OnSequenceStarted holds details about calls to the OnSequenceStarted method.
+		OnSequenceStarted []struct {
+			//models.KeptnContextExtendedCEis the event argument value.
+			Event apimodels.KeptnContextExtendedCE
 		}
 	}
-	lockOnSequenceWaiting sync.RWMutex
+	lockOnSequenceStarted sync.RWMutex
 }
 
-// OnSequenceWaiting calls OnSequenceWaitingFunc.
-func (mock *ISequenceWaitingHookMock) OnSequenceWaiting(keptnContextExtendedCE apimodels.KeptnContextExtendedCE) {
-	if mock.OnSequenceWaitingFunc == nil {
-		panic("ISequenceWaitingHookMock.OnSequenceWaitingFunc: method is nil but ISequenceWaitingHook.OnSequenceWaiting was just called")
+// OnSequenceStarted calls OnSequenceStartedFunc.
+func (mock *ISequenceStartedHookMock) OnSequenceStarted(event apimodels.KeptnContextExtendedCE) {
+	if mock.OnSequenceStartedFunc == nil {
+		panic("ISequenceStartedHookMock.OnSequenceStartedFunc: method is nil but ISequenceStartedHook.OnSequenceStarted was just called")
 	}
 	callInfo := struct {
-		KeptnContextExtendedCE apimodels.KeptnContextExtendedCE
+		Event apimodels.KeptnContextExtendedCE
 	}{
-		KeptnContextExtendedCE: keptnContextExtendedCE,
+		Event: event,
 	}
-	mock.lockOnSequenceWaiting.Lock()
-	mock.calls.OnSequenceWaiting = append(mock.calls.OnSequenceWaiting, callInfo)
-	mock.lockOnSequenceWaiting.Unlock()
-	mock.OnSequenceWaitingFunc(keptnContextExtendedCE)
+	mock.lockOnSequenceStarted.Lock()
+	mock.calls.OnSequenceStarted = append(mock.calls.OnSequenceStarted, callInfo)
+	mock.lockOnSequenceStarted.Unlock()
+	mock.OnSequenceStartedFunc(event)
 }
 
-// OnSequenceWaitingCalls gets all the calls that were made to OnSequenceWaiting.
+// OnSequenceStartedCalls gets all the calls that were made to OnSequenceStarted.
 // Check the length with:
-//     len(mockedISequenceWaitingHook.OnSequenceWaitingCalls())
-func (mock *ISequenceWaitingHookMock) OnSequenceWaitingCalls() []struct {
-	KeptnContextExtendedCE apimodels.KeptnContextExtendedCE
+//     len(mockedISequenceStartedHook.OnSequenceStartedCalls())
+func (mock *ISequenceStartedHookMock) OnSequenceStartedCalls() []struct {
+	Event apimodels.KeptnContextExtendedCE
 } {
 	var calls []struct {
-		KeptnContextExtendedCE apimodels.KeptnContextExtendedCE
+		Event apimodels.KeptnContextExtendedCE
 	}
-	mock.lockOnSequenceWaiting.RLock()
-	calls = mock.calls.OnSequenceWaiting
-	mock.lockOnSequenceWaiting.RUnlock()
+	mock.lockOnSequenceStarted.RLock()
+	calls = mock.calls.OnSequenceStarted
+	mock.lockOnSequenceStarted.RUnlock()
 	return calls
 }

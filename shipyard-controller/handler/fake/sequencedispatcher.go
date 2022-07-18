@@ -7,7 +7,7 @@ import (
 	"context"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/common"
-	scmodels "github.com/keptn/keptn/shipyard-controller/models"
+	"github.com/keptn/keptn/shipyard-controller/models"
 	"sync"
 )
 
@@ -17,13 +17,13 @@ import (
 //
 // 		// make and configure a mocked handler.ISequenceDispatcher
 // 		mockedISequenceDispatcher := &ISequenceDispatcherMock{
-// 			AddFunc: func(queueItem scmodels.QueueItem) error {
+// 			AddFunc: func(queueItem models.QueueItem) error {
 // 				panic("mock out the Add method")
 // 			},
-// 			RemoveFunc: func(eventScope scmodels.EventScope) error {
+// 			RemoveFunc: func(eventScope apimodels.KeptnContextExtendedCEScope) error {
 // 				panic("mock out the Remove method")
 // 			},
-// 			RunFunc: func(ctx context.Context, mode common.SDMode, startSequenceFunc func(event apimodels.KeptnContextExtendedCE) error)  {
+// 			RunFunc: func(ctx context.Context, startSequenceFunc func(event apimodels.KeptnContextExtendedCE) error)  {
 // 				panic("mock out the Run method")
 // 			},
 // 			StopFunc: func()  {
@@ -37,10 +37,10 @@ import (
 // 	}
 type ISequenceDispatcherMock struct {
 	// AddFunc mocks the Add method.
-	AddFunc func(queueItem scmodels.QueueItem) error
+	AddFunc func(queueItem models.QueueItem) error
 
 	// RemoveFunc mocks the Remove method.
-	RemoveFunc func(eventScope scmodels.EventScope) error
+	RemoveFunc func(eventScope models.EventScope) error
 
 	// RunFunc mocks the Run method.
 	RunFunc func(ctx context.Context, mode common.SDMode, startSequenceFunc func(event apimodels.KeptnContextExtendedCE) error)
@@ -53,19 +53,17 @@ type ISequenceDispatcherMock struct {
 		// Add holds details about calls to the Add method.
 		Add []struct {
 			// QueueItem is the queueItem argument value.
-			QueueItem scmodels.QueueItem
+			QueueItem models.QueueItem
 		}
 		// Remove holds details about calls to the Remove method.
 		Remove []struct {
 			// EventScope is the eventScope argument value.
-			EventScope scmodels.EventScope
+			EventScope models.EventScope
 		}
 		// Run holds details about calls to the Run method.
 		Run []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
-			// Mode is the mode argument value.
-			Mode common.SDMode
 			// StartSequenceFunc is the startSequenceFunc argument value.
 			StartSequenceFunc func(event apimodels.KeptnContextExtendedCE) error
 		}
@@ -80,12 +78,12 @@ type ISequenceDispatcherMock struct {
 }
 
 // Add calls AddFunc.
-func (mock *ISequenceDispatcherMock) Add(queueItem scmodels.QueueItem) error {
+func (mock *ISequenceDispatcherMock) Add(queueItem models.QueueItem) error {
 	if mock.AddFunc == nil {
 		panic("ISequenceDispatcherMock.AddFunc: method is nil but ISequenceDispatcher.Add was just called")
 	}
 	callInfo := struct {
-		QueueItem scmodels.QueueItem
+		QueueItem models.QueueItem
 	}{
 		QueueItem: queueItem,
 	}
@@ -99,10 +97,10 @@ func (mock *ISequenceDispatcherMock) Add(queueItem scmodels.QueueItem) error {
 // Check the length with:
 //     len(mockedISequenceDispatcher.AddCalls())
 func (mock *ISequenceDispatcherMock) AddCalls() []struct {
-	QueueItem scmodels.QueueItem
+	QueueItem models.QueueItem
 } {
 	var calls []struct {
-		QueueItem scmodels.QueueItem
+		QueueItem models.QueueItem
 	}
 	mock.lockAdd.RLock()
 	calls = mock.calls.Add
@@ -111,12 +109,12 @@ func (mock *ISequenceDispatcherMock) AddCalls() []struct {
 }
 
 // Remove calls RemoveFunc.
-func (mock *ISequenceDispatcherMock) Remove(eventScope scmodels.EventScope) error {
+func (mock *ISequenceDispatcherMock) Remove(eventScope models.EventScope) error {
 	if mock.RemoveFunc == nil {
 		panic("ISequenceDispatcherMock.RemoveFunc: method is nil but ISequenceDispatcher.Remove was just called")
 	}
 	callInfo := struct {
-		EventScope scmodels.EventScope
+		EventScope models.EventScope
 	}{
 		EventScope: eventScope,
 	}
@@ -130,10 +128,10 @@ func (mock *ISequenceDispatcherMock) Remove(eventScope scmodels.EventScope) erro
 // Check the length with:
 //     len(mockedISequenceDispatcher.RemoveCalls())
 func (mock *ISequenceDispatcherMock) RemoveCalls() []struct {
-	EventScope scmodels.EventScope
+	EventScope models.EventScope
 } {
 	var calls []struct {
-		EventScope scmodels.EventScope
+		EventScope models.EventScope
 	}
 	mock.lockRemove.RLock()
 	calls = mock.calls.Remove
@@ -148,11 +146,9 @@ func (mock *ISequenceDispatcherMock) Run(ctx context.Context, mode common.SDMode
 	}
 	callInfo := struct {
 		Ctx               context.Context
-		Mode              common.SDMode
 		StartSequenceFunc func(event apimodels.KeptnContextExtendedCE) error
 	}{
 		Ctx:               ctx,
-		Mode:              mode,
 		StartSequenceFunc: startSequenceFunc,
 	}
 	mock.lockRun.Lock()
@@ -166,12 +162,10 @@ func (mock *ISequenceDispatcherMock) Run(ctx context.Context, mode common.SDMode
 //     len(mockedISequenceDispatcher.RunCalls())
 func (mock *ISequenceDispatcherMock) RunCalls() []struct {
 	Ctx               context.Context
-	Mode              common.SDMode
 	StartSequenceFunc func(event apimodels.KeptnContextExtendedCE) error
 } {
 	var calls []struct {
 		Ctx               context.Context
-		Mode              common.SDMode
 		StartSequenceFunc func(event apimodels.KeptnContextExtendedCE) error
 	}
 	mock.lockRun.RLock()

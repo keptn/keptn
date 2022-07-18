@@ -5,7 +5,7 @@ package fake
 
 import (
 	"context"
-	scmodels "github.com/keptn/keptn/shipyard-controller/models"
+	"github.com/keptn/keptn/shipyard-controller/models"
 	"sync"
 )
 
@@ -15,7 +15,7 @@ import (
 //
 // 		// make and configure a mocked handler.IEventDispatcher
 // 		mockedIEventDispatcher := &IEventDispatcherMock{
-// 			AddFunc: func(event scmodels.DispatcherEvent, skipQueue bool) error {
+// 			AddFunc: func(event models.DispatcherEvent, skipQueue bool) error {
 // 				panic("mock out the Add method")
 // 			},
 // 			RunFunc: func(ctx context.Context)  {
@@ -32,7 +32,7 @@ import (
 // 	}
 type IEventDispatcherMock struct {
 	// AddFunc mocks the Add method.
-	AddFunc func(event scmodels.DispatcherEvent, skipQueue bool) error
+	AddFunc func(event models.DispatcherEvent, skipQueue bool) error
 
 	// RunFunc mocks the Run method.
 	RunFunc func(ctx context.Context)
@@ -44,8 +44,8 @@ type IEventDispatcherMock struct {
 	calls struct {
 		// Add holds details about calls to the Add method.
 		Add []struct {
-			// Event is the event argument value.
-			Event scmodels.DispatcherEvent
+			//models.KeptnContextExtendedCEis the event argument value.
+			Event models.DispatcherEvent
 			// SkipQueue is the skipQueue argument value.
 			SkipQueue bool
 		}
@@ -64,12 +64,12 @@ type IEventDispatcherMock struct {
 }
 
 // Add calls AddFunc.
-func (mock *IEventDispatcherMock) Add(event scmodels.DispatcherEvent, skipQueue bool) error {
+func (mock *IEventDispatcherMock) Add(event models.DispatcherEvent, skipQueue bool) error {
 	if mock.AddFunc == nil {
 		panic("IEventDispatcherMock.AddFunc: method is nil but IEventDispatcher.Add was just called")
 	}
 	callInfo := struct {
-		Event     scmodels.DispatcherEvent
+		Event     models.DispatcherEvent
 		SkipQueue bool
 	}{
 		Event:     event,
@@ -85,11 +85,11 @@ func (mock *IEventDispatcherMock) Add(event scmodels.DispatcherEvent, skipQueue 
 // Check the length with:
 //     len(mockedIEventDispatcher.AddCalls())
 func (mock *IEventDispatcherMock) AddCalls() []struct {
-	Event     scmodels.DispatcherEvent
+	Event     models.DispatcherEvent
 	SkipQueue bool
 } {
 	var calls []struct {
-		Event     scmodels.DispatcherEvent
+		Event     models.DispatcherEvent
 		SkipQueue bool
 	}
 	mock.lockAdd.RLock()

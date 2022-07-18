@@ -87,7 +87,7 @@ type SequenceExecutionRepoMock struct {
 		AppendTaskEvent []struct {
 			// TaskSequence is the taskSequence argument value.
 			TaskSequence models.SequenceExecution
-			// Event is the event argument value.
+			//models.KeptnContextExtendedCEis the event argument value.
 			Event models.TaskEvent
 		}
 		// Clear holds details about calls to the Clear method.

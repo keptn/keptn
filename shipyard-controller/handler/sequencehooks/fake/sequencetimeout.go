@@ -31,7 +31,7 @@ type ISequenceTimeoutHookMock struct {
 	calls struct {
 		// OnSequenceTimeout holds details about calls to the OnSequenceTimeout method.
 		OnSequenceTimeout []struct {
-			// Event is the event argument value.
+			//models.KeptnContextExtendedCEis the event argument value.
 			Event apimodels.KeptnContextExtendedCE
 		}
 	}

@@ -225,12 +225,12 @@ type ProjectMVRepoMock struct {
 		}
 		// OnSequenceTaskFinished holds details about calls to the OnSequenceTaskFinished method.
 		OnSequenceTaskFinished []struct {
-			// Event is the event argument value.
+			//models.KeptnContextExtendedCEis the event argument value.
 			Event apimodels.KeptnContextExtendedCE
 		}
 		// OnSequenceTaskStarted holds details about calls to the OnSequenceTaskStarted method.
 		OnSequenceTaskStarted []struct {
-			// Event is the event argument value.
+			//models.KeptnContextExtendedCEis the event argument value.
 			Event apimodels.KeptnContextExtendedCE
 		}
 		// UpdateEventOfService holds details about calls to the UpdateEventOfService method.
