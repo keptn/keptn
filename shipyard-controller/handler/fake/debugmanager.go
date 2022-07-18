@@ -4,7 +4,7 @@
 package fake
 
 import (
-	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/api/models"
 	"sync"
 )
 
@@ -36,20 +36,11 @@ import (
 //
 // 	}
 type IDebugManagerMock struct {
-	// GetAllEventsFunc mocks the GetAllEvents method.
-	GetAllEventsFunc func(projectName string, shkeptncontext string) ([]apimodels.KeptnContextExtendedCE, error)
-
-	// GetAllProjectsFunc mocks the GetAllProjects method.
-	GetAllProjectsFunc func() ([]*apimodels.ExpandedProject, error)
-
-	// GetAllSequencesForProjectFunc mocks the GetAllSequencesForProject method.
-	GetAllSequencesForProjectFunc func(projectName string) ([]apimodels.SequenceState, error)
-
-	// GetEventByIDFunc mocks the GetEventByID method.
-	GetEventByIDFunc func(projectName string, shkeptncontext string, eventId string) (apimodels.KeptnContextExtendedCE, error)
-
-	// GetSequenceByIDFunc mocks the GetSequenceByID method.
-	GetSequenceByIDFunc func(projectName string, shkeptncontext string) (apimodels.SequenceState, error)
+	GetAllProjectsFunc func () ([]*models.ExpandedProject, error)
+	GetSequenceByIDFunc func(projectName string, shkeptncontext string) (*models.SequenceState, error)
+	GetAllSequencesForProjectFunc func(projectName string) (*models.SequenceStates, error)
+	GetAllEventsFunc func(projectName string, shkeptncontext string) ([]*models.KeptnContextExtendedCE, error)
+	GetEventByIDFunc func(projectName string, shkeptncontext string, eventId string) (*models.KeptnContextExtendedCE, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -93,7 +84,7 @@ type IDebugManagerMock struct {
 }
 
 // GetAllEvents calls GetAllEventsFunc.
-func (mock *IDebugManagerMock) GetAllEvents(projectName string, shkeptncontext string) ([]apimodels.KeptnContextExtendedCE, error) {
+func (mock *IDebugManagerMock) GetAllEvents(projectName string, shkeptncontext string) ([]*models.KeptnContextExtendedCE, error) {
 	if mock.GetAllEventsFunc == nil {
 		panic("IDebugManagerMock.GetAllEventsFunc: method is nil but IDebugManager.GetAllEvents was just called")
 	}
@@ -128,7 +119,7 @@ func (mock *IDebugManagerMock) GetAllEventsCalls() []struct {
 }
 
 // GetAllProjects calls GetAllProjectsFunc.
-func (mock *IDebugManagerMock) GetAllProjects() ([]*apimodels.ExpandedProject, error) {
+func (mock *IDebugManagerMock) GetAllProjects() ([]*models.ExpandedProject, error) {
 	if mock.GetAllProjectsFunc == nil {
 		panic("IDebugManagerMock.GetAllProjectsFunc: method is nil but IDebugManager.GetAllProjects was just called")
 	}
@@ -154,7 +145,7 @@ func (mock *IDebugManagerMock) GetAllProjectsCalls() []struct {
 }
 
 // GetAllSequencesForProject calls GetAllSequencesForProjectFunc.
-func (mock *IDebugManagerMock) GetAllSequencesForProject(projectName string) ([]apimodels.SequenceState, error) {
+func (mock *IDebugManagerMock) GetAllSequencesForProject(projectName string) (*models.SequenceStates, error) {
 	if mock.GetAllSequencesForProjectFunc == nil {
 		panic("IDebugManagerMock.GetAllSequencesForProjectFunc: method is nil but IDebugManager.GetAllSequencesForProject was just called")
 	}
@@ -185,7 +176,7 @@ func (mock *IDebugManagerMock) GetAllSequencesForProjectCalls() []struct {
 }
 
 // GetEventByID calls GetEventByIDFunc.
-func (mock *IDebugManagerMock) GetEventByID(projectName string, shkeptncontext string, eventId string) (apimodels.KeptnContextExtendedCE, error) {
+func (mock *IDebugManagerMock) GetEventByID(projectName string, shkeptncontext string, eventId string) (*models.KeptnContextExtendedCE, error) {
 	if mock.GetEventByIDFunc == nil {
 		panic("IDebugManagerMock.GetEventByIDFunc: method is nil but IDebugManager.GetEventByID was just called")
 	}
@@ -224,7 +215,7 @@ func (mock *IDebugManagerMock) GetEventByIDCalls() []struct {
 }
 
 // GetSequenceByID calls GetSequenceByIDFunc.
-func (mock *IDebugManagerMock) GetSequenceByID(projectName string, shkeptncontext string) (apimodels.SequenceState, error) {
+func (mock *IDebugManagerMock) GetSequenceByID(projectName string, shkeptncontext string) (*models.SequenceState, error) {
 	if mock.GetSequenceByIDFunc == nil {
 		panic("IDebugManagerMock.GetSequenceByIDFunc: method is nil but IDebugManager.GetSequenceByID was just called")
 	}

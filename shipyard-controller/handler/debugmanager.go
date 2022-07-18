@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
+
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 )
