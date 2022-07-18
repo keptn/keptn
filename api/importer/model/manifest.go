@@ -9,6 +9,7 @@ type ResourceTask struct {
 	File      string `yaml:"resource"`
 	RemoteURI string `yaml:"resourceUri"`
 	Stage     string `yaml:"stage"`
+	Service   string `yaml:"service"`
 }
 
 type ManifestTask struct {

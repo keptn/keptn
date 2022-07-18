@@ -1,0 +1,18 @@
+@import '../../../../variables';
+@import '~@dynatrace/barista-components/core/src/style/variables';
+
+:host ::ng-deep {
+  ktb-notification-bar > div.page-note {
+    margin-top: -16px;
+    margin-left: -16px;
+    width: calc(100% + 32px);
+  }
+
+  .dt-form-field-prefix {
+    background: $gray-130;
+  }
+  .dt-prefix:first-child:not(.dt-button) {
+    margin-left: 5px;
+    margin-right: 5px;
+  }
+}

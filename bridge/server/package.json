@@ -36,7 +36,7 @@
     "@types/express-session": "1.17.5",
     "@types/jest": "28.1.4",
     "@types/morgan": "1.9.3",
-    "@types/node": "14.18.21",
+    "@types/node": "14.18.22",
     "@types/semver": "7.3.10",
     "@types/supertest": "2.0.12",
     "axios-mock-adapter": "1.21.1",

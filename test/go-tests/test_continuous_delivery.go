@@ -130,7 +130,15 @@ func Test_ContinuousDelivery(t *testing.T) {
 	serviceName := "helloservice"
 	chartFileName := "helloservice.tgz"
 	serviceChartSrcPath := path.Join(repoLocalDir, "helm-charts", "helloservice")
-	serviceChartArchivePath := path.Join(repoLocalDir, "helm-charts", chartFileName)
+
+	serviceArchiveBaseDir := t.TempDir()
+	defer func() {
+		if err := os.RemoveAll(serviceArchiveBaseDir); err != nil {
+			t.Logf("could not remove temp dir '%s': %v", serviceArchiveBaseDir, err)
+		}
+	}()
+
+	serviceChartArchivePath := path.Join(serviceArchiveBaseDir, "helm-charts", chartFileName)
 	serviceJmeterDir := repoLocalDir + "/jmeter"
 	serviceHealthCheckEndpoint := "/metrics"
 

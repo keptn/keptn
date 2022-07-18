@@ -114,6 +114,7 @@ const echoServiceName = "echo-service"
 // Test_UniformRegistration_TestAPI directly tests the API for (un)registering Keptn integrations
 // to the Keptn control plane
 func Test_UniformRegistration_TestAPI(t *testing.T) {
+	t.Parallel()
 	uniformIntegration := &models.Integration{
 		Name: "my-uniform-service",
 		MetaData: models.MetaData{

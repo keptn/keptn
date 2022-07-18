@@ -1,5 +1,6 @@
 import EnvironmentPage from '../support/pageobjects/EnvironmentPage';
 import { ServicesSettingsPage } from '../support/pageobjects/ServicesSettingsPage';
+import ServicesPage from '../support/pageobjects/ServicesPage';
 
 describe('Environment Screen empty', () => {
   const environmentPage = new EnvironmentPage();
@@ -63,6 +64,34 @@ describe('Environment Screen default requests', () => {
   it('should add query parameter if clicking on type', () => {
     environmentPage.clickFilterType('staging', 'evaluation');
     cy.location('href').should('include', `/project/${project}/environment/stage/staging?filterType=evaluation`);
+  });
+});
+
+describe('Environment Screen Navigation', () => {
+  const environmentPage = new EnvironmentPage();
+  const servicesPage = new ServicesPage();
+  const project = 'sockshop';
+  const stage = 'production';
+  const service = 'carts';
+  const keptnContext = 'da740469-9920-4e0c-b304-0fd4b18d17c2';
+
+  beforeEach(() => {
+    environmentPage.intercept();
+    servicesPage.intercept();
+
+    environmentPage.visit(project);
+  });
+
+  it('navigate to service if clicking on service from stage-overview', () => {
+    environmentPage.clickServiceFromStageOverview(stage, service);
+    cy.wait('@serviceDatastore');
+    servicesPage.assertDeploymentDeepLink(project, service, keptnContext, stage);
+  });
+
+  it('navigate to service if clicking on service from stage-details', () => {
+    environmentPage.clickServiceFromStageDetails(stage, service);
+    cy.wait('@serviceDatastore');
+    servicesPage.assertDeploymentDeepLink(project, service, keptnContext, stage);
   });
 });
 

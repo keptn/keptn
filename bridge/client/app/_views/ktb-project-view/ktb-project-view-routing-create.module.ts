@@ -1,9 +1,9 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { KtbProjectViewComponent } from './ktb-project-view.component';
-import { KtbProjectSettingsComponent } from '../../_components/ktb-project-settings/ktb-project-settings.component';
 import { PendingChangesGuard } from '../../_guards/pending-changes.guard';
 import { NotFoundComponent } from '../../not-found/not-found.component';
+import { KtbProjectViewComponent } from './ktb-project-view.component';
+import { KtbProjectSettingsComponent } from '../ktb-settings-view/ktb-project-settings/ktb-project-settings.component';
 
 const routes: Routes = [
   {

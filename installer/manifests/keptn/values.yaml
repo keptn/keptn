@@ -31,6 +31,20 @@ mongo:
     bridgeAuthDatabase: 'keptn'
   external:
     connectionString:
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+  serviceAccount:
+    automountServiceAccountToken: false
+  resources:
+    requests:
+      cpu: 200m
+      memory: 100Mi
+    limits:
+      cpu: 1000m
+      memory: 500Mi
 
 prefixPath: ""
 
@@ -52,7 +66,18 @@ nats:
   cluster:
     replicas: 3
     name: nats
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10001
+    fsGroup: 10001
   nats:
+    resources:
+      requests:
+        cpu: 200m
+        memory: 500Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
     healthcheck:
       startup:
         enabled: false
@@ -61,17 +86,26 @@ nats:
 
       memStorage:
         enabled: true
-        size: 2Gi
+        size: 500Mi
 
       fileStorage:
         enabled: true
         size: 5Gi
         storageDirectory: /data/
         storageClassName: ""
+    securityContext:
+      readOnlyRootFilesystem: true
+      allowPrivilegeEscalation: false
+      runAsNonRoot: true
+      capabilities:
+        drop:
+          - ALL
 
   natsbox:
     enabled: false
   reloader:
+    enabled: false
+  exporter:
     enabled: false
 
 apiGatewayNginx:
@@ -90,6 +124,9 @@ apiGatewayNginx:
     readOnlyRootFilesystem: false
     allowPrivilegeEscalation: false
     privileged: false
+    capabilities:
+      drop:
+        - ALL
   image:
     registry: "docker.io/nginxinc"           # Container Registry
     repository: "nginx-unprivileged"         # Container Image Name
@@ -178,6 +215,9 @@ bridge:
     readOnlyRootFilesystem: true
     allowPrivilegeEscalation: false
     privileged: false
+    capabilities:
+      drop:
+        - ALL
   oauth:
     discovery: ""
     secureCookie: false
@@ -466,4 +506,7 @@ containerSecurityContext:
   readOnlyRootFilesystem: true
   allowPrivilegeEscalation: false
   privileged: false
+  capabilities:
+    drop:
+      - ALL
 nodeSelector: {}

@@ -582,10 +582,6 @@ func CreateTmpFile(fileNamePattern, fileContent string) (string, error) {
 	return file.Name(), nil
 }
 
-func CreateTmpDir() (string, error) {
-	return ioutil.TempDir("", "")
-}
-
 func ExecuteCommand(cmd string) (string, error) {
 	split := strings.Split(cmd, " ")
 	if len(split) == 0 {
@@ -689,6 +685,15 @@ func IsEqual(t *testing.T, expected, actual interface{}, property string) bool {
 
 func StringArr(el ...string) []string {
 	return el
+}
+
+func DeleteFile(t *testing.T, filePath string) {
+	func() {
+		err := os.Remove(filePath)
+		if err != nil {
+			t.Logf("Could not delete tmp file: %s", err.Error())
+		}
+	}()
 }
 
 func VerifySequenceEndsUpInState(t *testing.T, projectName string, context *models.EventContext, timeout time.Duration, desiredStates []string) {

@@ -12,7 +12,7 @@ on:
       upgradeTo:
         description: 'The helm upgrade command will run with this version (e.g. 0.15.0-dev-PR-7504 or a full address like in the default value )'
         required: true
-        default: 'https://github.com/keptn/helm-charts-dev/raw/1d63e5d3c3f409279a4157d5ad537413abade2e5/packages/keptn-0.16.0-dev.tgz'
+        default: 'https://github.com/keptn/helm-charts-dev/raw/gh-pages/packages/keptn-0.18.0-dev.tgz'
       testUI:
         type: boolean
         description: 'Cypress tests for Bridge will be run in parallel to the zero downtime tests'
@@ -78,20 +78,20 @@ jobs:
         run: mkdir ~/downloads
 
       - name: Cache downloads paths
-        uses: actions/cache@v3.0.4
+        uses: actions/cache@v3.0.5
         with:
           path: |
             ~/downloads
           key: ${{ runner.os }}-${{ matrix.CLOUD_PROVIDER }}-downloads
 
       # This step is supposed to determine the target branch where to download the build-artifacts from
-      - name: Determine Target Branch for Integration Tests
+      - name: Determine Target Branch for ZD Tests
         id: determine_branch
         run: |
           if [[ "${{ github.event.inputs.branch }}" != "" ]]; then
             # branch was manually set by user -> probably a workflow_dispatch action
             BRANCH=${{ github.event.inputs.branch }}
-            echo "Using $BRANCH as target branch for integration tests"
+            echo "Using $BRANCH as target branch for zd tests"
           else
             echo "Determining branch based on what triggered this workflow"
 
@@ -189,9 +189,9 @@ jobs:
         run: |
           
           echo "copying helm chart in zero downtime folder"
-          cp ${HELM_CHART_NAME} test/zero-downtime/keptn-installed.tgz
+          cp ${HELM_CHART_NAME} test/zero-downtime/keptn-dev-installed.tgz
           cd test/zero-downtime
-          echo "INSTALL_HELM_CHART=$(ls ./keptn-installed.tgz)" >> $GITHUB_ENV
+          echo "INSTALL_HELM_CHART=$(ls ./keptn-dev-installed.tgz)" >> $GITHUB_ENV
           
           if [[ "${{ github.event_name }}" == 'schedule' || "${{ github.event.inputs.upgradeTo }}" == "http"* ]]; then
             echo "UPGRADE_HELM_CHART=${{ github.event.inputs.upgradeTo }}" >> $GITHUB_ENV

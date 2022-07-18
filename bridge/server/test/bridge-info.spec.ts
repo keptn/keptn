@@ -41,7 +41,7 @@ describe('Test /bridgeInfo', () => {
       enableVersionCheckFeature: true,
       showApiToken: true,
       featureFlags: {
-        RESOURCE_SERVICE_ENABLED: false,
+        RESOURCE_SERVICE_ENABLED: true,
         D3_HEATMAP_ENABLED: false,
       },
       authType: 'NONE',

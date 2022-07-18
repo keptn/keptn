@@ -40,6 +40,22 @@ class EnvironmentPage {
     return this;
   }
 
+  public clickServiceFromStageOverview(stage: string, service: string): this {
+    cy.get('ktb-selectable-tile h2')
+      .contains(stage)
+      .parentsUntil('ktb-selectable-tile')
+      .find('ktb-services-list')
+      .contains(service)
+      .click();
+    return this;
+  }
+
+  public clickServiceFromStageDetails(stage: string, service: string): this {
+    this.selectStage(stage);
+    cy.get('ktb-expandable-tile dt-info-group a').contains(service).click();
+    return this;
+  }
+
   public assertEvaluationHistoryLoadingCount(service: string, count: number): this {
     this.getServiceDetailsContainer(service)
       .find('ktb-evaluation-info dt-tag-list[aria-label="evaluation-history"] dt-tag ktb-loading-spinner')
