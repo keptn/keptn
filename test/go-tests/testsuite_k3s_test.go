@@ -14,6 +14,7 @@ func Test_K3S(t *testing.T) {
 	t.Run("Test_EvaluationGitCommitID", Test_EvaluationGitCommitID)
 	t.Run("Test_SSHPublicKeyAuth", Test_SSHPublicKeyAuth)
 	t.Run("Test_ProxyAuth", Test_ProxyAuth)
+	t.Run("Test_Webhook_Migrator", Test_Webhook_Migrator)
 
 	// Platform-specific Tests
 	t.Run("Test_QualityGates", Test_QualityGates)

@@ -7,7 +7,7 @@ import (
 func Test_GKE(t *testing.T) {
 	// Shut DownTests
 
-	t.Run("Test_BackupRestoreResourceService", Test_BackupRestoreResourceService)
+	t.Run("Test_BackupRestore", Test_BackupRestore)
 	// Common Tests
 	t.Run("Test_ResourceServiceBasic", Test_ResourceServiceBasic)
 	t.Run("Test_ManageSecrets_CreateUpdateAndDeleteSecret", Test_ManageSecrets_CreateUpdateAndDeleteSecret)
@@ -22,6 +22,7 @@ func Test_GKE(t *testing.T) {
 	t.Run("Test_EvaluationGitCommitID", Test_EvaluationGitCommitID)
 	t.Run("Test_SSHPublicKeyAuth", Test_SSHPublicKeyAuth)
 	t.Run("Test_ProxyAuth", Test_ProxyAuth)
+	t.Run("Test_Webhook_Migrator", Test_Webhook_Migrator)
 
 	// Platform-specific Tests
 	t.Run("Test_QualityGates", Test_QualityGates)

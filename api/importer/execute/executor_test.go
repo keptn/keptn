@@ -224,3 +224,107 @@ func TestKeptnAPIExecutor_Execute(t *testing.T) {
 		)
 	}
 }
+
+func TestKeptnAPIExecutor_PushResource(t *testing.T) {
+
+	const iRemoteURI = "resourceURI"
+	const iStage = "iStage"
+	const iProject = "iProject"
+
+	const resourceContent = "sample content"
+
+	type inputs struct {
+		service string
+	}
+	type expectations struct {
+		pushToStageCalls   int
+		pushToServiceCalls int
+	}
+	tests := []struct {
+		name         string
+		input        inputs
+		expectations expectations
+	}{
+		{
+			name: "Push to Service", input: inputs{service: "someservice"}, expectations: expectations{
+				pushToStageCalls:   0,
+				pushToServiceCalls: 1,
+			},
+		},
+		{
+			name: "Push to Stage", input: inputs{service: ""}, expectations: expectations{
+				pushToStageCalls:   1,
+				pushToServiceCalls: 0,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(
+			tt.name, func(t *testing.T) {
+
+				resourceReader := io.NopCloser(strings.NewReader(resourceContent))
+
+				pusher := &fake.MockResourcePusher{
+					PushToServiceFunc: func(
+						project string, stage string, service string, content io.ReadCloser, resourceURI string,
+					) (any, error) {
+						assert.Equal(t, iProject, project)
+						assert.Equal(t, iStage, stage)
+						assert.Equal(t, tt.input.service, service)
+						assert.Equal(t, iRemoteURI, resourceURI)
+						all, err := io.ReadAll(content)
+						require.NoError(t, err)
+						assert.Equal(t, string(all), resourceContent)
+						return nil, nil
+					},
+					PushToStageFunc: func(
+						project string, stage string, content io.ReadCloser, resourceURI string,
+					) (any, error) {
+						assert.Equal(t, iProject, project)
+						assert.Equal(t, iStage, stage)
+						assert.Equal(t, iRemoteURI, resourceURI)
+						all, err := io.ReadAll(content)
+						require.NoError(t, err)
+						assert.Equal(t, string(all), resourceContent)
+						return nil, nil
+					},
+				}
+				mockDoer := &fake.MockHTTPDoer{}
+				kae := KeptnAPIExecutor{
+					doer:             mockDoer,
+					endpointMappings: map[string]endpointHandler{},
+					resourcePusher:   pusher,
+				}
+
+				rp := model.ResourcePush{
+					Content:     resourceReader,
+					ResourceURI: iRemoteURI,
+					Stage:       iStage,
+					Service:     tt.input.service,
+					Context: model.TaskContext{
+						Project: iProject,
+						Task: &model.ManifestTask{
+							APITask: nil,
+							ResourceTask: &model.ResourceTask{
+								File:      "somefileinpackage.dmp",
+								RemoteURI: iRemoteURI,
+								Stage:     iStage,
+								Service:   tt.input.service,
+							},
+							ID:   "resource-task-id",
+							Type: "resource",
+							Name: "sample resource task",
+						},
+					},
+				}
+
+				kae.PushResource(rp)
+
+				assert.Len(t, pusher.PushToStageCalls(), tt.expectations.pushToStageCalls)
+				assert.Len(t, pusher.PushToServiceCalls(), tt.expectations.pushToServiceCalls)
+
+			},
+		)
+	}
+}

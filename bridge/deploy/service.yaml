@@ -98,7 +98,7 @@ spec:
             - name: CONFIG_DIR
               value: "/config"
             - name: RESOURCE_SERVICE_ENABLED
-              value: 'false'
+              value: 'true'
           envFrom:
             - secretRef:
                 name: bridge-credentials
