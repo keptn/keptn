@@ -17,6 +17,7 @@ import { ClipboardService } from '../../../_services/clipboard.service';
 import { DataService } from '../../../_services/data.service';
 import { DateUtil } from '../../../_utils/date.utils';
 import { ActivatedRoute } from '@angular/router';
+import { AppUtils } from '../../../_utils/app.utils';
 
 @Directive({
   selector: `ktb-task-item-detail, [ktb-task-item-detail], [ktbTaskItemDetail]`,
@@ -33,6 +34,7 @@ export class KtbTaskItemComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
   public _task?: Trace;
   public latestDeployment?: string;
+  public isUrl = AppUtils.isValidUrl;
   private _expanded = false;
   @Input()
   public set isExpanded(isExpanded: boolean) {
@@ -104,16 +106,6 @@ export class KtbTaskItemComponent implements OnInit, OnDestroy {
 
   copyEventPayload(plainEvent: string): void {
     this.clipboard.copy(plainEvent, 'payload');
-  }
-
-  isUrl(value: string): boolean {
-    try {
-      // tslint:disable-next-line:no-unused-expression
-      new URL(value);
-    } catch (_) {
-      return false;
-    }
-    return true;
   }
 
   onClick(item: Trace): void {
