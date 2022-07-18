@@ -23,17 +23,16 @@ describe('KtbSettingsViewComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should have 5 entries in the submenu', () => {
+  it('should have 4 entries in the submenu', () => {
     // given
     const menuItems = fixture.debugElement.queryAll(By.css('.dt-menu.submenu .dt-menu-item'));
 
     // then
     expect(menuItems).toBeTruthy();
-    expect(menuItems.length).toEqual(5);
+    expect(menuItems.length).toEqual(4);
     expect(menuItems[0].nativeElement.textContent.trim()).toEqual('Project');
     expect(menuItems[1].nativeElement.textContent.trim()).toEqual('Services');
     expect(menuItems[2].nativeElement.textContent.trim()).toEqual('Integrations');
     expect(menuItems[3].nativeElement.textContent.trim()).toEqual('Secrets');
-    expect(menuItems[4].nativeElement.textContent.trim()).toEqual('Common use cases');
   });
 });
