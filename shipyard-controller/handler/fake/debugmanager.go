@@ -5,14 +5,10 @@ package fake
 
 import (
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/keptn/shipyard-controller/handler"
 	"sync"
 )
 
-// Ensure, that IDebugManagerMock does implement handler.IDebugManager.
-// If this is not the case, regenerate this file with moq.
-var _ handler.IDebugManager = &IDebugManagerMock{}
-
+// Ensure, that IDebugManagerMock does implement handler.IDebugManager
 // IDebugManagerMock is a mock implementation of handler.IDebugManager.
 //
 // 	func TestSomethingThatUsesIDebugManager(t *testing.T) {

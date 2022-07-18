@@ -41,11 +41,6 @@ func NewDebugHandler(debugManager IDebugManager) *DebugHandler {
 func (dh *DebugHandler) GetAllProjects(c *gin.Context) {
 	params := &models.GetProjectParams{}
 
-	if err := c.ShouldBindQuery(params); err != nil {
-		SetBadRequestErrorResponse(c, err.Error())
-		return
-	}
-
 	projects, err := dh.DebugManager.GetAllProjects()
 
 	if err != nil {
@@ -142,20 +137,14 @@ func (dh *DebugHandler) GetSequenceByID(c *gin.Context) {
 // @Tags         Sequence
 // @Param        project              path      string                             true  "The name of the project"
 // @Param        shkeptncontext       path      string                             true  "The shkeptncontext"
-// @Success      200                  {object}  []models.KeptnContextExtendedCE    "ok"
+// @Success      200                  {object}  []apimodels.KeptnContextExtendedCE    "ok"
 // @Failure      400                  {object}  models.Error                       "Bad Request"
 // @Failure      404                  {object}  models.Error                       "not found"
 // @Failure      500                  {object}  models.Error                       "Internal error"
 // @Router       /debug/project/{project}/shkeptncontext/{shkeptncontext}/event [get]
 func (dh *DebugHandler) GetAllEvents(c *gin.Context) {
-	params := &models.GetProjectParams{}
 	shkeptncontext := c.Param("shkeptncontext")
 	projectName := c.Param("project")
-
-	if err := c.ShouldBindQuery(params); err != nil {
-		SetBadRequestErrorResponse(c, err.Error())
-		return
-	}
 
 	events, err := dh.DebugManager.GetAllEvents(projectName, shkeptncontext)
 
@@ -181,11 +170,8 @@ func (dh *DebugHandler) GetAllEvents(c *gin.Context) {
 		Events:      []*apimodels.KeptnContextExtendedCE{},
 	}
 
-	paginationInfo := common.Paginate(len(events), params.PageSize, params.NextPageKey)
 	totalCount := len(events)
-	if paginationInfo.NextPageKey < int64(totalCount) {
-		payload.Events = append(payload.Events, events[paginationInfo.NextPageKey:paginationInfo.EndIndex]...)
-	}
+	payload.Events = events
 
 	payload.TotalCount = float64(totalCount)
 	c.JSON(http.StatusOK, payload)
@@ -204,16 +190,10 @@ func (dh *DebugHandler) GetAllEvents(c *gin.Context) {
 // @Failure      500                  {object}  models.Error                       "Internal error"
 // @Router       /debug/project/{project}/shkeptncontext/{shkeptncontext}/event/{eventId} [get]
 func (dh *DebugHandler) GetEventByID(c *gin.Context) {
-	params := &models.GetProjectParams{}
 
 	shkeptncontext := c.Param("shkeptncontext")
 	eventId := c.Param("eventId")
 	projectName := c.Param("project")
-
-	if err := c.ShouldBindQuery(params); err != nil {
-		SetBadRequestErrorResponse(c, err.Error())
-		return
-	}
 
 	event, err := dh.DebugManager.GetEventByID(projectName, shkeptncontext, eventId)
 
