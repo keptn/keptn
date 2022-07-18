@@ -1,11 +1,11 @@
 package handler
 
 import (
-	"bytes"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
@@ -25,6 +25,38 @@ func TestDebughandlerGetAllProjects(t *testing.T) {
 	}{
 		{
 			name: "GET projects ok",
+			fields: fields{
+				DebugManager: &fake.IDebugManagerMock{
+					GetAllProjectsFunc: func() ([]*apimodels.ExpandedProject, error) {
+						projects := []*apimodels.ExpandedProject{
+							{
+								CreationDate:     "",
+								LastEventContext: &apimodels.EventContextInfo{},
+								ProjectName:      "project1",
+								Shipyard:         "shipyard",
+								ShipyardVersion:  "shipyard version",
+								Stages:           []*apimodels.ExpandedStage{},
+								GitCredentials:   &apimodels.GitAuthCredentialsSecure{},
+							},
+							{
+								CreationDate:     "",
+								LastEventContext: &apimodels.EventContextInfo{},
+								ProjectName:      "project2",
+								Shipyard:         "shipyard",
+								ShipyardVersion:  "shipyard version",
+								Stages:           []*apimodels.ExpandedStage{},
+								GitCredentials:   &apimodels.GitAuthCredentialsSecure{},
+							},
+						}
+
+						return projects, nil
+					},
+				},
+			},
+			expectHttpStatus: http.StatusOK,
+		},
+		{
+			name: "GET projects empty",
 			fields: fields{
 				DebugManager: &fake.IDebugManagerMock{
 					GetAllProjectsFunc: func() ([]*apimodels.ExpandedProject, error) {
@@ -51,7 +83,6 @@ func TestDebughandlerGetAllProjects(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(w)
-			c.Request, _ = http.NewRequest(http.MethodGet, "", bytes.NewBuffer([]byte{}))
 			c.Params = gin.Params{
 				gin.Param{Key: "project", Value: ""},
 				gin.Param{Key: "shkeptncontext", Value: ""},
@@ -77,6 +108,23 @@ func TestDebughandlerGetAllSequencesForProject(t *testing.T) {
 	}{
 		{
 			name: "GET sequences for project ok",
+			fields: fields{
+				DebugManager: &fake.IDebugManagerMock{
+					GetAllSequencesForProjectFunc: func(projectName string) (*apimodels.SequenceStates, error) {
+						sequences := &apimodels.SequenceStates{
+							States:      []apimodels.SequenceState{},
+							NextPageKey: 0,
+							PageSize:    0,
+							TotalCount:  0,
+						}
+						return sequences, nil
+					},
+				},
+			},
+			expectHttpStatus: http.StatusOK,
+		},
+		{
+			name: "GET sequences for project empty",
 			fields: fields{
 				DebugManager: &fake.IDebugManagerMock{
 					GetAllSequencesForProjectFunc: func(projectName string) (*apimodels.SequenceStates, error) {
@@ -115,7 +163,6 @@ func TestDebughandlerGetAllSequencesForProject(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(w)
-			c.Request, _ = http.NewRequest(http.MethodGet, "", bytes.NewBuffer([]byte{}))
 			c.Params = gin.Params{
 				gin.Param{Key: "project", Value: ""},
 				gin.Param{Key: "shkeptncontext", Value: ""},
@@ -145,7 +192,16 @@ func TestDebughandlerGetSequenceByID(t *testing.T) {
 			fields: fields{
 				DebugManager: &fake.IDebugManagerMock{
 					GetSequenceByIDFunc: func(projectName string, shkeptncontext string) (*apimodels.SequenceState, error) {
-						var event *apimodels.SequenceState
+						event := &apimodels.SequenceState{
+							Name:           "",
+							Service:        "",
+							Project:        "",
+							Time:           "",
+							Shkeptncontext: "",
+							State:          "",
+							Stages:         []apimodels.SequenceStateStage{},
+							ProblemTitle:   "",
+						}
 						return event, nil
 					},
 				},
@@ -190,7 +246,6 @@ func TestDebughandlerGetSequenceByID(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(w)
-			c.Request, _ = http.NewRequest(http.MethodGet, "", bytes.NewBuffer([]byte{}))
 			c.Params = gin.Params{
 				gin.Param{Key: "project", Value: ""},
 				gin.Param{Key: "shkeptncontext", Value: ""},
@@ -220,7 +275,22 @@ func TestDebughandlerGetEventByID(t *testing.T) {
 			fields: fields{
 				DebugManager: &fake.IDebugManagerMock{
 					GetEventByIDFunc: func(projectName string, shkeptncontext string, eventId string) (*apimodels.KeptnContextExtendedCE, error) {
-						var event *apimodels.KeptnContextExtendedCE
+						eventSource := ""
+						eventType := ""
+						event := &apimodels.KeptnContextExtendedCE{
+							Contenttype:        "",
+							Data:               "",
+							Extensions:         "",
+							ID:                 "",
+							Shkeptncontext:     "",
+							Shkeptnspecversion: "",
+							Source:             &eventSource,
+							Specversion:        "",
+							Time:               time.Time{},
+							Triggeredid:        "",
+							GitCommitID:        "",
+							Type:               &eventType,
+						}
 						return event, nil
 					},
 				},
@@ -276,7 +346,6 @@ func TestDebughandlerGetEventByID(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(w)
-			c.Request, _ = http.NewRequest(http.MethodGet, "", bytes.NewBuffer([]byte{}))
 			c.Params = gin.Params{
 				gin.Param{Key: "project", Value: ""},
 				gin.Param{Key: "shkeptncontext", Value: ""},
@@ -352,7 +421,6 @@ func TestDebughandlerGetAllEvents(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(w)
-			c.Request, _ = http.NewRequest(http.MethodGet, "", bytes.NewBuffer([]byte{}))
 			c.Params = gin.Params{
 				gin.Param{Key: "project", Value: ""},
 				gin.Param{Key: "shkeptncontext", Value: ""},
