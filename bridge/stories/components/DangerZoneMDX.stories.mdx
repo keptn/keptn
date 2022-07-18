@@ -1,0 +1,23 @@
+import {moduleMetadata} from "@storybook/angular";
+import {KtbDangerZoneComponent} from "../../client/app/_components/ktb-danger-zone/ktb-danger-zone.component";
+import {DeleteType} from "../../client/app/_interfaces/delete";
+import {KtbDangerZoneModule} from "../../client/app/_components/ktb-danger-zone/ktb-danger-zone.module";
+
+<Meta title="Components/Heatmap MDX" component={KtbDangerZoneComponent}
+      decorators={[moduleMetadata({imports: [KtbDangerZoneModule]})]}/>
+
+# Danger Zone MDX
+
+<Story name="Danger Zone" args={{
+    data: {
+      name: 'project-1',
+      type: DeleteType.PROJECT,
+    },
+    openDeletionDialog: () => alert('Deleting project'),
+}}>
+  {(args) => ({props: args})}
+</Story>
+
+<Source story="Danger Zone" />
+
+<ArgsTable story="Danger Zone" />

@@ -14,11 +14,13 @@ import { DtTopBarNavigationModule } from '@dynatrace/barista-components/top-bar-
 import { DtContextDialogModule } from '@dynatrace/barista-components/context-dialog';
 import { KtbCopyToClipboardModule } from '../ktb-copy-to-clipboard/ktb-copy-to-clipboard.module';
 import { DtIconModule } from '@dynatrace/barista-components/icon';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [KtbAppHeaderComponent, KtbUserComponent],
   imports: [
     CommonModule,
+    HttpClientModule,
     DtButtonModule,
     DtConfirmationDialogModule,
     DtContextDialogModule,
