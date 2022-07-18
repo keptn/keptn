@@ -10,9 +10,10 @@ require (
 	github.com/hashicorp/go-version v1.6.0
 	github.com/invopop/jsonschema v0.5.0
 	github.com/keptn/go-utils v0.17.1-0.20220712140512-5415a61d819b
-	github.com/keptn/keptn/webhook-service v0.0.0-20220711135243-e2837bb62d8c
+	github.com/keptn/keptn/webhook-service v0.0.0-20220716225802-aa172e84a58e
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/mapstructure v1.5.0
+	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/viper v1.12.0
 	github.com/stretchr/testify v1.8.0
@@ -58,7 +59,6 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.6.1 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
-	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/spf13/afero v1.8.2 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
