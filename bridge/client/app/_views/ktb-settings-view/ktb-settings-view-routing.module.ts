@@ -39,19 +39,6 @@ const routes: Routes = [
           { path: '', pathMatch: 'full', redirectTo: 'integrations' },
         ],
       },
-      {
-        path: 'support',
-        children: [
-          {
-            path: 'common-use-cases',
-            loadChildren: () =>
-              import('./ktb-common-use-cases-view/ktb-common-use-cases-view.module').then(
-                (m) => m.KtbCommonUseCasesViewModule
-              ),
-          },
-          { path: '', pathMatch: 'full', redirectTo: 'common-use-cases' },
-        ],
-      },
       { path: '', pathMatch: 'full', redirectTo: 'project' },
     ],
   },
