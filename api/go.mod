@@ -91,5 +91,5 @@ replace (
 	golang.org/x/net => golang.org/x/net v0.0.0-20220708220712-1185a9018129
 	golang.org/x/text => golang.org/x/text v0.3.7
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
-	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.2.3
+	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.2.8
 )
