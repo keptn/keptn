@@ -376,8 +376,36 @@ func TestDebughandlerGetAllEvents(t *testing.T) {
 			fields: fields{
 				DebugManager: &fake.IDebugManagerMock{
 					GetAllEventsFunc: func(projectName string, shkeptncontext string) ([]*apimodels.KeptnContextExtendedCE, error) {
-						var events []*apimodels.KeptnContextExtendedCE
+						eventSource := ""
+						eventType := ""
+						events := []*apimodels.KeptnContextExtendedCE{
+							{
+								Contenttype:        "contenttype",
+								Data:               "data",
+								Extensions:         "extensions",
+								ID:                 "id",
+								Shkeptncontext:     "shkeptncontext",
+								Shkeptnspecversion: "Shkeptnspecversion",
+								Source:             &eventSource,
+								Specversion:        "specversion",
+								Time:               time.Time{},
+								Triggeredid:        "triggeredid",
+								GitCommitID:        "gitcommitid",
+								Type:               &eventType,
+							},
+						}
 						return events, nil
+					},
+				},
+			},
+			expectHttpStatus: http.StatusOK,
+		},
+		{
+			name: "GET events empty",
+			fields: fields{
+				DebugManager: &fake.IDebugManagerMock{
+					GetAllEventsFunc: func(projectName string, shkeptncontext string) ([]*apimodels.KeptnContextExtendedCE, error) {
+						return nil, nil
 					},
 				},
 			},
