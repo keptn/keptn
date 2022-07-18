@@ -14,7 +14,8 @@
   "stabilityDays": 3,
   "timezone": "Europe/Vienna",
   "postUpdateOptions": [
-    "gomodTidy"
+    "gomodTidy",
+    "gomodMassage"
   ],
   "packageRules": [
     {
