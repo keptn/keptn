@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/cloudevents/sdk-go/v2 v2.10.1
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.17.1-0.20220713122409-3a171cc6c166
+	github.com/keptn/go-utils v0.17.1-0.20220718124953-6b126790c54c
 	github.com/sirupsen/logrus v1.8.1
 	gopkg.in/yaml.v3 v3.0.1
 )
