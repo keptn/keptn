@@ -49,10 +49,9 @@
       <div class="mb-2" fxLayout="row" fxLayoutAlign="flex-start start">
         <dt-icon class="warning mr-1" [name]="'incident'"></dt-icon>
         <p class="small m-0" uitestid="keptn-project-tile-gitRemoteUri-noUpstreamConfigured">
-          Keptn will not support a project without Git upstream repository in future releases.<br />
           <a
             [routerLink]="['/project', project.projectName, 'settings', 'project']"
-            uitestid="keptn-project-tile-gitRemoteUri-setUpstream"
+            [attr.uitestid]="'keptn-project-' + project.projectName + '-tile-gitRemoteUri-setUpstream'"
             >Set the Git upstream of your project</a
           >
         </p>

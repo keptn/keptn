@@ -47,4 +47,8 @@ describe('Bridge Dashboard', () => {
     const basePage = new BasePage();
     basePage.clickOpenUserMenu().assertAuthCommandCopyToClipboardValue('Hello handsome');
   });
+
+  it.only('should show "Set the Git upstream of your project" message if Github remote URL is empty string', () => {
+    dashboardPage.visit().assertEmptyGitRemoteUrl('my-error-project');
+  });
 });
