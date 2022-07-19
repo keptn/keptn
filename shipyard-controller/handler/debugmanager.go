@@ -16,16 +16,16 @@ type IDebugManager interface {
 }
 
 type DebugManager struct {
-	eventRepo    db.EventRepo
-	stateRepo    db.SequenceStateRepo
-	projectsRepo db.ProjectRepo
+	eventRepo   db.EventRepo
+	stateRepo   db.SequenceStateRepo
+	projectRepo db.ProjectRepo
 }
 
 func NewDebugManager(eventRepo db.EventRepo, stateRepo db.SequenceStateRepo, projectsRepo db.ProjectRepo) *DebugManager {
 	return &DebugManager{
-		eventRepo:    eventRepo,
-		stateRepo:    stateRepo,
-		projectsRepo: projectsRepo,
+		eventRepo:   eventRepo,
+		stateRepo:   stateRepo,
+		projectRepo: projectsRepo,
 	}
 }
 
@@ -70,7 +70,7 @@ func (dm *DebugManager) GetEventByID(projectName string, shkeptncontext string, 
 }
 
 func (dm *DebugManager) GetAllProjects() ([]*apimodels.ExpandedProject, error) {
-	projects, err := dm.projectsRepo.GetProjects()
+	projects, err := dm.projectRepo.GetProjects()
 
 	return projects, err
 }
