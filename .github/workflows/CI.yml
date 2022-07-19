@@ -418,6 +418,7 @@ jobs:
     runs-on: ubuntu-20.04
     if: needs.prepare_ci_run.outputs.BUILD_MATRIX_EMPTY == 'false'
     strategy:
+      fail-fast: false
       matrix: ${{ fromJson(needs.prepare_ci_run.outputs.BUILD_MATRIX) }}
     env:
       BRANCH: ${{ needs.prepare_ci_run.outputs.BRANCH }}
