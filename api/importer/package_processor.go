@@ -76,15 +76,17 @@ func (ipp *ImportPackageProcessor) Process(project string, ip ImportPackage) err
 		return fmt.Errorf("error parsing manifest: %w", err)
 	}
 
+	mCtx := model.NewManifestExecution(project)
+
 	for _, task := range manifest.Tasks {
 
 		switch task.Type {
 		case apiTaskType:
-			if err = ipp.processAPITask(project, ip, task); err != nil {
+			if err = ipp.processAPITask(mCtx, ip, task); err != nil {
 				return err
 			}
 		case resourceTaskType:
-			if err = ipp.processResourceTask(project, ip, task); err != nil {
+			if err = ipp.processResourceTask(mCtx, ip, task); err != nil {
 				return err
 			}
 		default:
@@ -96,7 +98,7 @@ func (ipp *ImportPackageProcessor) Process(project string, ip ImportPackage) err
 }
 
 func (ipp *ImportPackageProcessor) processResourceTask(
-	project string, ip ImportPackage, task *model.ManifestTask,
+	mCtx *model.ManifestExecution, ip ImportPackage, task *model.ManifestTask,
 ) error {
 	if task.ResourceTask == nil {
 		return fmt.Errorf("malformed task of type resource: %+v", task)
@@ -104,44 +106,58 @@ func (ipp *ImportPackageProcessor) processResourceTask(
 	var stages []string
 	var err error
 	if task.ResourceTask.Stage == "" {
-		stages, err = ipp.stageRetriever.GetStages(project)
+		stages, err = ipp.stageRetriever.GetStages(mCtx.GetProject())
 		if err != nil {
-			return fmt.Errorf("error retrieving stages for project %s: %w", project, err)
+			return fmt.Errorf("error retrieving stages for project %s: %w", mCtx.GetProject(), err)
 		}
 	} else {
 		stages = []string{task.Stage}
 	}
 
 	for _, stage := range stages {
-		resourcePush, err := ipp.mapResourcePush(project, stage, ip, task)
+		resourcePush, err := ipp.mapResourcePush(mCtx, stage, ip, task)
 		if err != nil {
 			return fmt.Errorf("error setting up resource push for task ID %s: %w", task.ID, err)
 		}
-		_, err = ipp.executor.PushResource(resourcePush)
+		response, err := ipp.executor.PushResource(resourcePush)
 		if err != nil {
 			return fmt.Errorf("resource task id %s failed: %w", task.ID, err)
+		}
+		// TODO what should we store for multiple stage resources upload ?
+		mCtx.Tasks[task.ID] = model.TaskExecution{
+			TaskContext: resourcePush.Context,
+			Response:    response,
 		}
 	}
 	return nil
 }
 
-func (ipp *ImportPackageProcessor) processAPITask(project string, ip ImportPackage, task *model.ManifestTask) error {
+func (ipp *ImportPackageProcessor) processAPITask(
+	mCtx *model.ManifestExecution, ip ImportPackage, task *model.ManifestTask,
+) error {
 	if task.APITask == nil {
 		return fmt.Errorf("malformed task of type api: %+v", task)
 	}
-	apiTaskExecution, err := ipp.mapAPITask(project, ip, task)
+	apiTaskExecution, err := ipp.mapAPITask(mCtx, ip, task)
 	if err != nil {
 		return fmt.Errorf("error setting up API task ID %s: %w", task.ID, err)
 	}
-	_, err = ipp.executor.ExecuteAPI(apiTaskExecution)
+	response, err := ipp.executor.ExecuteAPI(apiTaskExecution)
 	if err != nil {
 		return fmt.Errorf("execution of task %s failed: %w", task.ID, err)
 	}
+
+	// store task context and response into the manifest context
+	mCtx.Tasks[task.ID] = model.TaskExecution{
+		TaskContext: apiTaskExecution.Context,
+		Response:    response,
+	}
+
 	return nil
 }
 
 func (ipp *ImportPackageProcessor) mapResourcePush(
-	project string, stage string, ip ImportPackage,
+	mCtx *model.ManifestExecution, stage string, ip ImportPackage,
 	task *model.ManifestTask,
 ) (model.ResourcePush,
 	error) {
@@ -150,11 +166,7 @@ func (ipp *ImportPackageProcessor) mapResourcePush(
 		return model.ResourcePush{}, fmt.Errorf("error accessing resource content: %w", err)
 	}
 
-	taskContext := model.TaskContext{
-		Project: project,
-		Task:    task,
-		Context: task.Context,
-	}
+	taskContext := newTaskContext(mCtx, task)
 
 	renderedResource, err := ipp.render(resource, taskContext)
 	if err != nil {
@@ -173,7 +185,7 @@ func (ipp *ImportPackageProcessor) mapResourcePush(
 }
 
 func (ipp *ImportPackageProcessor) mapAPITask(
-	project string, ip ImportPackage,
+	mCtx *model.ManifestExecution, ip ImportPackage,
 	task *model.ManifestTask,
 ) (model.APITaskExecution, error) {
 
@@ -186,11 +198,7 @@ func (ipp *ImportPackageProcessor) mapAPITask(
 		)
 	}
 
-	taskContext := model.TaskContext{
-		Project: project,
-		Task:    task,
-		Context: task.Context,
-	}
+	taskContext := newTaskContext(mCtx, task)
 
 	renderedPayload, err := ipp.render(payload, taskContext)
 	if err != nil {
@@ -207,4 +215,20 @@ func (ipp *ImportPackageProcessor) mapAPITask(
 	}
 
 	return ret, nil
+}
+
+func newTaskContext(mCtx *model.ManifestExecution, task *model.ManifestTask) model.TaskContext {
+	renderedContext, _ := renderContext(mCtx, task.Context)
+	// TODO handle error
+
+	return model.TaskContext{
+		Project: mCtx.GetProject(),
+		Task:    task,
+		Context: renderedContext,
+	}
+}
+
+func renderContext(mCtx *model.ManifestExecution, context map[string]string) (map[string]string, error) {
+	// TODO implement rendering of values
+	return context, nil
 }
