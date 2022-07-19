@@ -52,7 +52,7 @@ LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
 
 # we need to install ca-certificates and libc6-compat for go programs to work properly
 RUN apk add --no-cache ca-certificates libc6-compat
-RUN apk upgrade busybox=1.35.0-r17
+RUN apk upgrade busybox
 
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/keptn/helm-service/helm-service /helm-service

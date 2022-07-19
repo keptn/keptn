@@ -52,7 +52,7 @@ LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
     io.snyk.containers.image.dockerfile="distributor/Dockerfile"
 
 RUN apk add --no-cache ca-certificates libc6-compat
-RUN apk upgrade busybox=1.35.0-r17
+RUN apk upgrade busybox
 
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/keptn/distributor/distributor /distributor
