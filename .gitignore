@@ -50,3 +50,6 @@ bin/
 test/assets/podtato-head/keptn-backup
 
 .env
+
+.dccache
+*/.dccache
