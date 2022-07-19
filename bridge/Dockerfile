@@ -57,7 +57,7 @@ RUN yarn build && \
 
 # Use a Docker multi-stage build to create a lean production image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
-FROM node:14-alpine3.15 as production
+FROM gcr.io/distroless/nodejs:16 as production
 ARG version=develop
 LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
     org.opencontainers.image.url="https://keptn.sh" \
@@ -75,15 +75,13 @@ ENV API_TOKEN ""
 WORKDIR /usr/src/app
 
 # copy angular output from angularBuilder
-COPY --from=bridge-builder /usr/src/app/dist /usr/src/app/dist
-COPY --from=bridge-server-builder /usr/src/app/server/dist /usr/src/app/server/dist
-COPY --from=bridge-server-builder /usr/src/app/server/package.json /usr/src/app/server/
-COPY --from=bridge-server-builder /usr/src/app/server/node_modules /usr/src/app/server/node_modules
-
-RUN addgroup mygroup --gid 65532 && adduser -D -G mygroup myuser --uid 65532 && mkdir -p /usr/src/app && chown -R myuser /usr/src/app
+COPY --from=bridge-builder --chown=65532:65532 /usr/src/app/dist /usr/src/app/dist
+COPY --from=bridge-server-builder --chown=65532:65532 /usr/src/app/server/dist /usr/src/app/server/dist
+COPY --from=bridge-server-builder --chown=65532:65532 /usr/src/app/server/package.json /usr/src/app/server/
+COPY --from=bridge-server-builder --chown=65532:65532 /usr/src/app/server/node_modules /usr/src/app/server/node_modules
 
 # Set user
-USER myuser
+USER 65532:65532
 
 EXPOSE 3000
 CMD ["npm", "start", "--prefix", "./server"]
