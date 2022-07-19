@@ -67,7 +67,7 @@ ARG TZ="Europe/Amsterdam"
 RUN    apk update \
 	&& apk upgrade \
 	&& apk add ca-certificates libc6-compat \
-	&& apk del busybox \
+	&& apk update busybox=1.35.0-r17 \ \
 	&& update-ca-certificates \
 	&& apk add --update openjdk8-jre tzdata curl unzip bash \
 	&& apk add --no-cache nss \

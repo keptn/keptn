@@ -51,7 +51,7 @@ LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
 
 # we need to install ca-certificates and libc6-compat for go programs to work properly
 RUN apk add --no-cache ca-certificates libc6-compat
-RUN apk del busybox
+RUN apk update busybox=1.35.0-r17
 
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/keptn/approval-service/approval-service /approval-service

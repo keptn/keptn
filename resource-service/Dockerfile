@@ -66,7 +66,7 @@ ENV env=production
 
 # we need to install ca-certificates and libc6-compat for go programs to work properly
 RUN apk add --no-cache ca-certificates libc6-compat
-RUN apk del busybox
+RUN apk update busybox=1.35.0-r17
 
 # Install git
 RUN apk --update add --no-cache git
