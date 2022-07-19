@@ -1,0 +1,37 @@
+name: Helm-docs
+on:
+  # in addition, execute for pull requests to those branches
+  pull_request:
+    branches:
+      - 'master'
+      - '[0-9]+.[1-9][0-9]*.x'
+defaults:
+  run:
+    shell: bash
+jobs:
+  check-helm-docs:
+    name: Check helm documentation values
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: 'true'
+      - name: Set up Node
+        uses: actions/setup-node@v3.4.1
+        with:
+          node-version: 16
+      - name: Install dependencies
+        run: |
+          npm install diff unzip cp
+          unzip ../readme-generator-for-helm-main.zip
+          npm install ./readme-generator-for-helm-main
+      - name: Execute diff
+        run: |
+          cp ../../bitnami.md bitnami-tmp.md
+          readme-generator --values=../../installer/manifests/keptn/values.yaml --readme=./bitnami-tmp.md
+          diff bitnami-tmp.md ../../bitnami.md
+      - name: Cleanup
+        run: |
+          rm -rf readme-generator-for-helm-main bitnami-tmp.md
