@@ -364,7 +364,7 @@ func TestDebugManager_GetSequenceByID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			p, err := tt.fields.DebugManager.GetAllSequencesForProject("")
+			p, err := tt.fields.DebugManager.GetSequenceByID("", "")
 
 			assert.Equal(t, tt.expectedProjectsResult, p)
 			assert.Equal(t, tt.expectedErrorResult, err)
