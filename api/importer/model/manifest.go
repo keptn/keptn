@@ -15,9 +15,10 @@ type ResourceTask struct {
 type ManifestTask struct {
 	*APITask      `yaml:",inline"`
 	*ResourceTask `yaml:",inline"`
-	ID            string `yaml:"id"`
-	Type          string `yaml:"type"`
-	Name          string `yaml:"name"`
+	ID            string            `yaml:"id"`
+	Type          string            `yaml:"type"`
+	Name          string            `yaml:"name"`
+	Context       map[string]string `yaml:"context"`
 }
 
 type ImportManifest struct {

@@ -5,11 +5,15 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"os"
+	"path"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"gopkg.in/yaml.v3"
 
 	"github.com/keptn/keptn/api/importer/fake"
 	"github.com/keptn/keptn/api/importer/model"
@@ -486,6 +490,214 @@ func TestImportPackageProcessor_Process_ResourceTask_AllStages(t *testing.T) {
 	assert.ElementsMatch(
 		t, importPackageMock.GetResourceCalls(), expectedGetResourceArgs,
 	)
+}
+
+func TestImportPackageProcessor_Process_WebhookConfigWithTemplating(t *testing.T) {
+
+	const resourceFileName = "webhook.yaml"
+
+	const rawWebhookConfigResourceFile = "../test/data/import/sample-package/resources/webhook.yaml"
+	const webhookConfigResourceRenderContext = "../test/data/import/rendered-sample-package/resources/webhook.context.yaml"
+	const renderedWebhookConfigResourceFile = "../test/data/import/rendered-sample-package/resources/webhook.yaml"
+
+	context := map[string]string{}
+
+	contextbytes, err := ioutil.ReadFile(webhookConfigResourceRenderContext)
+	require.NoError(t, err)
+
+	err = yaml.Unmarshal(contextbytes, &context)
+	require.NoError(t, err)
+
+	resourceTask := &model.ManifestTask{
+		ResourceTask: &model.ResourceTask{
+			File:      rawWebhookConfigResourceFile,
+			RemoteURI: resourceFileName,
+			Stage:     "dev",
+			Service:   "service",
+		},
+		ID:      "res-task",
+		Type:    "resource",
+		Name:    "ResTask",
+		Context: context,
+	}
+
+	parserMock := &fake.ManifestParserMock{
+		ParseFunc: func(input io.Reader) (*model.ImportManifest, error) {
+			return &model.ImportManifest{
+				ApiVersion: "v1beta1",
+				Tasks: []*model.ManifestTask{
+					resourceTask,
+				},
+			}, nil
+		},
+	}
+
+	const project = "somekeptnproject"
+
+	taskExecutor := &fake.TaskExecutorMock{
+		PushResourceFunc: func(rp model.ResourcePush) (any, error) {
+			assert.NotNil(t, rp.Content)
+			defer rp.Content.Close()
+
+			renderedBytes, err := io.ReadAll(rp.Content)
+			require.NoError(t, err)
+
+			expectedRenderedBytes, err := ioutil.ReadFile(renderedWebhookConfigResourceFile)
+			require.NoError(t, err)
+
+			assert.Equal(t, string(expectedRenderedBytes), string(renderedBytes))
+			// For debugging purposes it may be easier to look at the YAML/JSON comparison
+			// assert.YAMLEq(t, string(expectedRenderedBytes), string(renderedBytes))
+			// assert.JSONEq(t, string(expectedRenderedBytes), string(renderedBytes))
+			return nil, nil
+		},
+	}
+
+	stageRetriever := &fake.MockStageRetriever{}
+	sut := NewImportPackageProcessor(parserMock, taskExecutor, stageRetriever)
+
+	importPackageMock := &fake.ImportPackageMock{
+		CloseFunc: func() error {
+			return nil
+		},
+		GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
+			if resourceName == manifestFileName {
+				return io.NopCloser(bytes.NewReader([]byte{})), nil
+			}
+			return os.Open(resourceName)
+		},
+	}
+
+	err = sut.Process(project, importPackageMock)
+
+	assert.NoError(t, err)
+	assert.Len(t, taskExecutor.PushResourceCalls(), 1)
+	assert.Len(t, importPackageMock.CloseCalls(), 1)
+	expectedGetResourceArgs := []struct {
+		ResourceName string
+	}{
+		{ResourceName: manifestFileName},
+		{ResourceName: rawWebhookConfigResourceFile},
+	}
+
+	assert.ElementsMatch(
+		t, importPackageMock.GetResourceCalls(), expectedGetResourceArgs,
+	)
+}
+
+func TestImportPackageProcessor_Process_APITaskWithTemplating(t *testing.T) {
+
+	const rawPayloadDir = "../test/data/import/sample-package/api/"
+	const renderedPayloadDir = "../test/data/import/rendered-sample-package/api/"
+
+	tests := []struct {
+		name                     string
+		rawPayloadFile           string
+		payloadRenderContextFile string
+		action                   string
+	}{
+		{
+			name:                     "Template create-service request",
+			rawPayloadFile:           "create-service.json",
+			payloadRenderContextFile: "create-service.context.yaml",
+			action:                   "keptn-api-v1-create-service",
+		},
+		{
+			name:                     "Template create-subscription request",
+			rawPayloadFile:           "create-subscription.json",
+			payloadRenderContextFile: "create-subscription.context.yaml",
+			action:                   "keptn-api-v1-create-subscription",
+		},
+	}
+
+	for i, tt := range tests {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				context := map[string]string{}
+
+				contextbytes, err := ioutil.ReadFile(path.Join(renderedPayloadDir, tt.payloadRenderContextFile))
+				require.NoError(t, err)
+
+				err = yaml.Unmarshal(contextbytes, &context)
+				require.NoError(t, err)
+
+				rawPayloadFullPath := path.Join(rawPayloadDir, tt.rawPayloadFile)
+				apiTask := &model.ManifestTask{
+					ID:      fmt.Sprintf("api-task-%d", i),
+					Type:    "api",
+					Name:    fmt.Sprintf("API Task No. %d", i),
+					Context: context,
+					APITask: &model.APITask{
+						Action:      tt.action,
+						PayloadFile: rawPayloadFullPath,
+					},
+				}
+
+				parserMock := &fake.ManifestParserMock{
+					ParseFunc: func(input io.Reader) (*model.ImportManifest, error) {
+						return &model.ImportManifest{
+							ApiVersion: "v1beta1",
+							Tasks: []*model.ManifestTask{
+								apiTask,
+							},
+						}, nil
+					},
+				}
+
+				const project = "somekeptnproject"
+
+				taskExecutor := &fake.TaskExecutorMock{
+					ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
+						assert.NotNil(t, ate.Payload)
+						defer ate.Payload.Close()
+
+						renderedBytes, err := io.ReadAll(ate.Payload)
+						require.NoError(t, err)
+
+						expectedRenderedBytes, err := ioutil.ReadFile(path.Join(renderedPayloadDir, tt.rawPayloadFile))
+						require.NoError(t, err)
+
+						assert.Equal(t, string(expectedRenderedBytes), string(renderedBytes))
+						// For debugging purposes it may be easier to look at the YAML/JSON comparison
+						// assert.YAMLEq(t, string(expectedRenderedBytes), string(renderedBytes))
+						// assert.JSONEq(t, string(expectedRenderedBytes), string(renderedBytes))
+						return nil, nil
+					},
+				}
+
+				stageRetriever := &fake.MockStageRetriever{}
+				sut := NewImportPackageProcessor(parserMock, taskExecutor, stageRetriever)
+
+				importPackageMock := &fake.ImportPackageMock{
+					CloseFunc: func() error {
+						return nil
+					},
+					GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
+						if resourceName == manifestFileName {
+							return io.NopCloser(bytes.NewReader([]byte{})), nil
+						}
+						return os.Open(resourceName)
+					},
+				}
+
+				err = sut.Process(project, importPackageMock)
+
+				assert.NoError(t, err)
+				assert.Len(t, taskExecutor.ExecuteAPICalls(), 1)
+				assert.Len(t, importPackageMock.CloseCalls(), 1)
+				expectedGetResourceArgs := []struct {
+					ResourceName string
+				}{
+					{ResourceName: manifestFileName},
+					{ResourceName: rawPayloadFullPath},
+				}
+
+				assert.ElementsMatch(
+					t, importPackageMock.GetResourceCalls(), expectedGetResourceArgs,
+				)
+			},
+		)
+	}
 }
 
 func TestImportPackageProcessor_ProcessResourceTask_ErrorGettingResource(t *testing.T) {
