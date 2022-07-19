@@ -325,7 +325,7 @@ func TestDebugManager_GetAllSequencesForProject(t *testing.T) {
 		expectedProjectsResult *apimodels.SequenceStates
 	}{
 		{
-			name: "GET all sequences empty",
+			name: "GET all sequences ok",
 			fields: fields{
 				DebugManager: &DebugManager{
 					projectRepo: &db_mock.ProjectRepoMock{},
@@ -357,7 +357,7 @@ func TestDebugManager_GetAllSequencesForProject(t *testing.T) {
 			expectedProjectsResult: &apimodels.SequenceStates{},
 		},
 		{
-			name: "GET all sequences ok",
+			name: "GET all sequences error",
 			fields: fields{
 				DebugManager: &DebugManager{
 					projectRepo: &db_mock.ProjectRepoMock{},
