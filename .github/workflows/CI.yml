@@ -264,6 +264,7 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
+        id: buildx
         with:
           install: true
 
@@ -330,6 +331,9 @@ jobs:
             gitSha=${{ needs.prepare_ci_run.outputs.GIT_SHA }}
           push: ${{ matrix.config.should-push-image == 'true' && (( github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository ) || ( github.event_name == 'push' )) && github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' }}
           pull: true
+          builder: ${{ steps.buildx.outputs.name }}
+          cache-from: type=gha, scope=${{ github.workflow }}
+          cache-to: type=gha, scope=${{ github.workflow }}
 
   unit-tests-cli:
     name: Unit Tests CLI (multi OS/arch)
