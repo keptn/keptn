@@ -287,6 +287,9 @@ jobs:
           target: ${{ matrix.config.docker-test-target }}
           load: true
           push: false
+          builder: ${{ steps.buildx.outputs.name }}
+          cache-from: type=gha, scope=${{ github.workflow }}
+          cache-to: type=gha, scope=${{ github.workflow }}
 
       - name: Test ${{ matrix.config.artifact }}
         if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
