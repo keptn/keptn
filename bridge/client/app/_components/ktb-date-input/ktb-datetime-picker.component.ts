@@ -24,6 +24,7 @@ export class KtbDatetimePickerDirective extends KtbOverlay implements OnInit, On
 
   @Input() timeEnabled = false;
   @Input() secondsEnabled = false;
+  @Input() startDateTime = '';
   @Output() selectedDateTime: EventEmitter<string> = new EventEmitter<string>();
 
   constructor(protected elementRef: ElementRef, protected overlayService: OverlayService) {
@@ -51,6 +52,18 @@ export class KtbDatetimePickerDirective extends KtbOverlay implements OnInit, On
     if (this.contentRef) {
       this.contentRef.instance.timeEnabled = this.timeEnabled;
       this.contentRef.instance.secondsEnabled = this.secondsEnabled;
+
+      if (this.startDateTime != '') {
+        const date = moment(this.startDateTime).toDate();
+        this.contentRef.instance.changeDate(date);
+        this.contentRef.instance.changeTime({
+          hours: date.getHours(),
+          minutes: date.getMinutes(),
+          seconds: date.getSeconds(),
+          millis: date.getMilliseconds(),
+          micros: 0,
+        });
+      }
       this.contentRef.instance.closeDialog.subscribe(() => {
         this.close();
       });
@@ -83,8 +96,8 @@ export class KtbDatetimePickerComponent {
     millis: 999,
     micros: 999,
   };
-  private selectedDate = moment().hours(0).minutes(0).seconds(0).milliseconds(0);
-  private selectedTime: Timeframe | undefined;
+  public selectedDate = moment().hours(0).minutes(0).seconds(0).milliseconds(0);
+  public selectedTime: Timeframe | undefined;
 
   public changeDate(event: Date): void {
     this.selectedDate = moment(event).hours(0).minutes(0).seconds(0).milliseconds(0);

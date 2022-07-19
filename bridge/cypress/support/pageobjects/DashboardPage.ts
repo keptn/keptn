@@ -61,6 +61,14 @@ class DashboardPage {
     cy.byTestId(`ktb-project-${projectName}`).find('dt-tag a').contains(stageName).click();
     return new EnvironmentPage();
   }
+
+  public assertEmptyGitRemoteUrl(projectName: string): this {
+    cy.byTestId(`keptn-project-${projectName}-tile-gitRemoteUri-setUpstream`).should(
+      'have.text',
+      'Set the Git upstream of your project'
+    );
+    return this;
+  }
 }
 
 export default DashboardPage;

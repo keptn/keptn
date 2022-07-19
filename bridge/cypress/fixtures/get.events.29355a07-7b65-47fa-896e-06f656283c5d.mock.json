@@ -3,7 +3,7 @@
     {
       "data": {
         "labels": {
-          "Problem URL": "link"
+          "Problem URL": "https://myURL.com"
         },
         "message": "could not retrieve Webhook config: no webhook config found",
         "project": "sockshop",
@@ -24,7 +24,7 @@
     {
       "data": {
         "labels": {
-          "Problem URL": "link"
+          "Problem URL": "https://myURL.com"
         },
         "message": "could not retrieve Webhook config: no webhook config found",
         "project": "sockshop",
@@ -44,7 +44,7 @@
     {
       "data": {
         "labels": {
-          "Problem URL": "link"
+          "Problem URL": "https://myURL.com"
         },
         "project": "sockshop",
         "result": "pass",
@@ -64,7 +64,7 @@
       "data": {
         "action": {},
         "labels": {
-          "Problem URL": "link"
+          "Problem URL": "https://myURL.com"
         },
         "project": "sockshop",
         "result": "pass",
@@ -83,7 +83,7 @@
     {
       "data": {
         "labels": {
-          "Problem URL": "link"
+          "Problem URL": "https://myURL.com"
         },
         "project": "sockshop",
         "service": "carts",
@@ -111,7 +111,7 @@
           "actionIndex": 1
         },
         "labels": {
-          "Problem URL": "link"
+          "Problem URL": "https://myURL.com"
         },
         "message": "",
         "problem": {
@@ -129,7 +129,7 @@
           },
           "ProblemID": "P-21127",
           "ProblemTitle": "Response time degradation",
-          "ProblemURL": "link",
+          "Problem URL": "https://myURL.com",
           "State": "OPEN",
           "Tags": "keptn_service:carts, keptn_project:sockshop, keptn_stage:production"
         },
@@ -162,7 +162,7 @@
           "actionIndex": 1
         },
         "labels": {
-          "Problem URL": "link"
+          "Problem URL": "https://myURL.com"
         },
         "project": "sockshop",
         "result": "pass",
@@ -181,7 +181,7 @@
     {
       "data": {
         "labels": {
-          "Problem URL": "link"
+          "Problem URL": "https://myURL.com"
         },
         "project": "sockshop",
         "service": "carts",
@@ -199,7 +199,7 @@
       "data": {
         "get-action": null,
         "labels": {
-          "Problem URL": "link"
+          "Problem URL": "https://myURL.com"
         },
         "message": "",
         "problem": {
@@ -217,7 +217,7 @@
           },
           "ProblemID": "P-21127",
           "ProblemTitle": "Response time degradation",
-          "ProblemURL": "link",
+          "Problem URL": "https://myURL.com",
           "State": "OPEN",
           "Tags": "keptn_service:carts, keptn_project:sockshop, keptn_stage:production"
         },
@@ -239,7 +239,7 @@
     {
       "data": {
         "labels": {
-          "Problem URL": "link"
+          "Problem URL": "https://myURL.com"
         },
         "problem": {
           "ImpactedEntity": "Response time degradation on Web service sockshop.carts.production",
@@ -256,7 +256,7 @@
           },
           "ProblemID": "P-21127",
           "ProblemTitle": "Response time degradation",
-          "ProblemURL": "link",
+          "Problem URL": "https://myURL.com",
           "State": "OPEN",
           "Tags": "keptn_service:carts, keptn_project:sockshop, keptn_stage:production"
         },
