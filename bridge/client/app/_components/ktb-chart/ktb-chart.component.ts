@@ -20,7 +20,7 @@ type BarPoint = [number, number, string];
 type SVGGSelection = Selection<SVGGElement, unknown, HTMLElement, unknown>;
 type SVGPath = Selection<SVGPathElement, [number, number][], HTMLElement, unknown>;
 type SVGRect = Selection<SVGRectElement, BarPoint, BaseType, unknown>;
-type LinearScale = ScaleLinear<number, number, never>;
+type LinearScale = ScaleLinear<number, number>;
 type Margin = { top: number; right: number; left: number; bottom: number };
 type MetricValue = { label: string; value: number };
 type ToolTipState = {
@@ -267,11 +267,7 @@ export class KtbChartComponent implements AfterViewInit, OnChanges {
   }
 
   private isHidingAllowed(item: ChartItem): boolean {
-    if (item.invisible) {
-      return true;
-    }
-    const itemsVisible = this.visibleChartItems.length;
-    return itemsVisible > 1;
+    return item.invisible ? true : this.visibleChartItems.length > 1;
   }
 
   private getAvailableSpace(): { width: number; height: number } {
@@ -279,8 +275,8 @@ export class KtbChartComponent implements AfterViewInit, OnChanges {
     return { width: availableSpace.width, height: _height };
   }
 
-  private getMaxValue(fn: (p: ChartItemPoint) => number): number {
-    return this.visibleChartItems.reduce((prev, cur) => Math.max(prev, ...cur.points.map(fn)), 0);
+  private getMaxValue(getPointValue: (p: ChartItemPoint) => number): number {
+    return this.visibleChartItems.reduce((prev, cur) => Math.max(prev, ...cur.points.map(getPointValue)), 0);
   }
 
   private get visibleChartItems(): ChartItem[] {

@@ -11,7 +11,7 @@ import Mock = jest.Mock;
 describe('KtbChartComponent', () => {
   let component: KtbChartComponent;
   let fixture: ComponentFixture<KtbChartComponent>;
-  const parentNodeBoundingClientRectSpy: Mock<DOMRect, [void]> = jest.fn();
+  const boundingClientRectSpy: Mock<DOMRect, [void]> = jest.fn();
   const elementsFromPointSpy: Mock<Element[], [number, number]> = jest.fn();
 
   beforeEach(async () => {
@@ -147,9 +147,9 @@ describe('KtbChartComponent', () => {
     elementsFromPointSpy.mockReturnValue([element]);
     document.elementsFromPoint = elementsFromPointSpy;
 
-    parentNodeBoundingClientRectSpy.mockReturnValue(getDomRect(1000, 800));
+    boundingClientRectSpy.mockReturnValue(getDomRect(1000, 800));
     const htmlElement: HTMLElement = fixture.nativeElement;
-    jest.spyOn(htmlElement, 'getBoundingClientRect').mockImplementation(parentNodeBoundingClientRectSpy);
+    jest.spyOn(htmlElement, 'getBoundingClientRect').mockImplementation(boundingClientRectSpy);
   }
 
   function getDomRect(width: number, height: number, top = 0, left = 0): DOMRect {
