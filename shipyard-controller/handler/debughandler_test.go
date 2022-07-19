@@ -192,7 +192,7 @@ func TestDebughandlerGetSequenceByID(t *testing.T) {
 			fields: fields{
 				DebugManager: &fake.IDebugManagerMock{
 					GetSequenceByIDFunc: func(projectName string, shkeptncontext string) (*apimodels.SequenceState, error) {
-						event := &apimodels.SequenceState{
+						sequence := &apimodels.SequenceState{
 							Name:           "sequence1",
 							Service:        "service1",
 							Project:        "project1",
@@ -202,7 +202,7 @@ func TestDebughandlerGetSequenceByID(t *testing.T) {
 							Stages:         []apimodels.SequenceStateStage{},
 							ProblemTitle:   "problemtitle",
 						}
-						return event, nil
+						return sequence, nil
 					},
 				},
 			},

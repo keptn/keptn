@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	"testing"
+	"time"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/common"
@@ -18,6 +19,16 @@ func TestDebugManager_GetAllProjects(t *testing.T) {
 		DebugManager IDebugManager
 	}
 
+	project := &apimodels.ExpandedProject{
+		CreationDate:     "string",
+		LastEventContext: &apimodels.EventContextInfo{},
+		ProjectName:      "project1",
+		Shipyard:         "shipyard",
+		ShipyardVersion:  "shipyard version",
+		Stages:           []*apimodels.ExpandedStage{},
+		GitCredentials:   &apimodels.GitAuthCredentialsSecure{},
+	}
+
 	tests := []struct {
 		name                   string
 		fields                 fields
@@ -26,6 +37,22 @@ func TestDebugManager_GetAllProjects(t *testing.T) {
 	}{
 		{
 			name: "GET projects ok",
+			fields: fields{
+				DebugManager: &DebugManager{
+					projectRepo: &db_mock.ProjectRepoMock{
+						GetProjectsFunc: func() ([]*apimodels.ExpandedProject, error) {
+							return []*apimodels.ExpandedProject{project}, nil
+						},
+					},
+					stateRepo: &db_mock.SequenceStateRepoMock{},
+					eventRepo: &db_mock.EventRepoMock{},
+				},
+			},
+			expectedErrorResult:    nil,
+			expectedProjectsResult: []*apimodels.ExpandedProject{project},
+		},
+		{
+			name: "GET projects empty",
 			fields: fields{
 				DebugManager: &DebugManager{
 					projectRepo: &db_mock.ProjectRepoMock{
@@ -74,6 +101,23 @@ func TestDebugManager_GetEventByID(t *testing.T) {
 		DebugManager IDebugManager
 	}
 
+	eventSource := ""
+	eventType := ""
+	event := apimodels.KeptnContextExtendedCE{
+		Contenttype:        "contenttype",
+		Data:               "data",
+		Extensions:         "extensions",
+		ID:                 "id",
+		Shkeptncontext:     "shkeptncontext",
+		Shkeptnspecversion: "Shkeptnspecversion",
+		Source:             &eventSource,
+		Specversion:        "specversion",
+		Time:               time.Time{},
+		Triggeredid:        "triggeredid",
+		GitCommitID:        "gitcommitid",
+		Type:               &eventType,
+	}
+
 	tests := []struct {
 		name                   string
 		fields                 fields
@@ -82,6 +126,22 @@ func TestDebugManager_GetEventByID(t *testing.T) {
 	}{
 		{
 			name: "GET eventID ok",
+			fields: fields{
+				DebugManager: &DebugManager{
+					projectRepo: &db_mock.ProjectRepoMock{},
+					stateRepo:   &db_mock.SequenceStateRepoMock{},
+					eventRepo: &db_mock.EventRepoMock{
+						GetEventByIDFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) (apimodels.KeptnContextExtendedCE, error) {
+							return event, nil
+						},
+					},
+				},
+			},
+			expectedErrorResult:    nil,
+			expectedProjectsResult: event,
+		},
+		{
+			name: "GET eventID empty",
 			fields: fields{
 				DebugManager: &DebugManager{
 					projectRepo: &db_mock.ProjectRepoMock{},
@@ -146,6 +206,23 @@ func TestDebugManager_GetAllEvents(t *testing.T) {
 		DebugManager IDebugManager
 	}
 
+	eventSource := ""
+	eventType := ""
+	event := apimodels.KeptnContextExtendedCE{
+		Contenttype:        "contenttype",
+		Data:               "data",
+		Extensions:         "extensions",
+		ID:                 "id",
+		Shkeptncontext:     "shkeptncontext",
+		Shkeptnspecversion: "Shkeptnspecversion",
+		Source:             &eventSource,
+		Specversion:        "specversion",
+		Time:               time.Time{},
+		Triggeredid:        "triggeredid",
+		GitCommitID:        "gitcommitid",
+		Type:               &eventType,
+	}
+
 	tests := []struct {
 		name                   string
 		fields                 fields
@@ -154,6 +231,22 @@ func TestDebugManager_GetAllEvents(t *testing.T) {
 	}{
 		{
 			name: "GET all events ok",
+			fields: fields{
+				DebugManager: &DebugManager{
+					projectRepo: &db_mock.ProjectRepoMock{},
+					stateRepo:   &db_mock.SequenceStateRepoMock{},
+					eventRepo: &db_mock.EventRepoMock{
+						GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]apimodels.KeptnContextExtendedCE, error) {
+							return []apimodels.KeptnContextExtendedCE{event}, nil
+						},
+					},
+				},
+			},
+			expectedErrorResult:    nil,
+			expectedProjectsResult: []*apimodels.KeptnContextExtendedCE{&event},
+		},
+		{
+			name: "GET all events empty",
 			fields: fields{
 				DebugManager: &DebugManager{
 					projectRepo: &db_mock.ProjectRepoMock{},
@@ -218,6 +311,13 @@ func TestDebugManager_GetAllSequencesForProject(t *testing.T) {
 		DebugManager IDebugManager
 	}
 
+	sequences := &apimodels.SequenceStates{
+		States:      []apimodels.SequenceState{},
+		NextPageKey: 0,
+		PageSize:    0,
+		TotalCount:  0,
+	}
+
 	tests := []struct {
 		name                   string
 		fields                 fields
@@ -225,7 +325,23 @@ func TestDebugManager_GetAllSequencesForProject(t *testing.T) {
 		expectedProjectsResult *apimodels.SequenceStates
 	}{
 		{
-			name: "GET all sequences ok",
+			name: "GET all sequences empty",
+			fields: fields{
+				DebugManager: &DebugManager{
+					projectRepo: &db_mock.ProjectRepoMock{},
+					stateRepo: &db_mock.SequenceStateRepoMock{
+						FindSequenceStatesFunc: func(filter apimodels.StateFilter) (*apimodels.SequenceStates, error) {
+							return sequences, nil
+						},
+					},
+					eventRepo: &db_mock.EventRepoMock{},
+				},
+			},
+			expectedErrorResult:    nil,
+			expectedProjectsResult: sequences,
+		},
+		{
+			name: "GET all sequences empty",
 			fields: fields{
 				DebugManager: &DebugManager{
 					projectRepo: &db_mock.ProjectRepoMock{},
@@ -241,7 +357,7 @@ func TestDebugManager_GetAllSequencesForProject(t *testing.T) {
 			expectedProjectsResult: &apimodels.SequenceStates{},
 		},
 		{
-			name: "GET all sequences error",
+			name: "GET all sequences ok",
 			fields: fields{
 				DebugManager: &DebugManager{
 					projectRepo: &db_mock.ProjectRepoMock{},
@@ -290,6 +406,17 @@ func TestDebugManager_GetSequenceByID(t *testing.T) {
 		DebugManager IDebugManager
 	}
 
+	sequence := apimodels.SequenceState{
+		Name:           "sequence1",
+		Service:        "service1",
+		Project:        "project1",
+		Time:           "string",
+		Shkeptncontext: "context",
+		State:          "state",
+		Stages:         []apimodels.SequenceStateStage{},
+		ProblemTitle:   "problemtitle",
+	}
+
 	tests := []struct {
 		name                   string
 		fields                 fields
@@ -298,6 +425,22 @@ func TestDebugManager_GetSequenceByID(t *testing.T) {
 	}{
 		{
 			name: "GET sequenceByID ok",
+			fields: fields{
+				DebugManager: &DebugManager{
+					projectRepo: &db_mock.ProjectRepoMock{},
+					stateRepo: &db_mock.SequenceStateRepoMock{
+						GetSequenceStateByIDFunc: func(filter apimodels.StateFilter) (*apimodels.SequenceState, error) {
+							return &sequence, nil
+						},
+					},
+					eventRepo: &db_mock.EventRepoMock{},
+				},
+			},
+			expectedErrorResult:    nil,
+			expectedProjectsResult: &sequence,
+		},
+		{
+			name: "GET sequenceByID empty",
 			fields: fields{
 				DebugManager: &DebugManager{
 					projectRepo: &db_mock.ProjectRepoMock{},
