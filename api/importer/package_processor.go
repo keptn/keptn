@@ -9,6 +9,9 @@ import (
 
 //go:generate moq -pkg fake --skip-ensure -out ./fake/package_processor_mock.go . ImportPackage:ImportPackageMock ManifestParser:ManifestParserMock TaskExecutor:TaskExecutorMock
 //go:generate moq -pkg fake --skip-ensure -out ./fake/stage_retriever_mock.go . ProjectStageRetriever:MockStageRetriever
+
+type RenderFunction func(raw io.ReadCloser, context any) (io.ReadCloser, error)
+
 type ImportPackage interface {
 	io.Closer
 	GetResource(resourceName string) (io.ReadCloser, error)
@@ -31,15 +34,23 @@ type ImportPackageProcessor struct {
 	parser         ManifestParser
 	executor       TaskExecutor
 	stageRetriever ProjectStageRetriever
+	render         RenderFunction
 }
 
 func NewImportPackageProcessor(
 	mp ManifestParser, ex TaskExecutor, retriever ProjectStageRetriever,
 ) *ImportPackageProcessor {
+	return newImportPackageProcessor(mp, ex, retriever, RenderContent)
+}
+
+func newImportPackageProcessor(
+	mp ManifestParser, ex TaskExecutor, retriever ProjectStageRetriever, renderF RenderFunction,
+) *ImportPackageProcessor {
 	return &ImportPackageProcessor{
 		parser:         mp,
 		executor:       ex,
 		stageRetriever: retriever,
+		render:         renderF,
 	}
 }
 
@@ -102,7 +113,7 @@ func (ipp *ImportPackageProcessor) processResourceTask(
 	}
 
 	for _, stage := range stages {
-		resourcePush, err := mapResourcePush(project, stage, ip, task)
+		resourcePush, err := ipp.mapResourcePush(project, stage, ip, task)
 		if err != nil {
 			return fmt.Errorf("error setting up resource push for task ID %s: %w", task.ID, err)
 		}
@@ -118,7 +129,7 @@ func (ipp *ImportPackageProcessor) processAPITask(project string, ip ImportPacka
 	if task.APITask == nil {
 		return fmt.Errorf("malformed task of type api: %+v", task)
 	}
-	apiTaskExecution, err := mapAPITask(project, ip, task)
+	apiTaskExecution, err := ipp.mapAPITask(project, ip, task)
 	if err != nil {
 		return fmt.Errorf("error setting up API task ID %s: %w", task.ID, err)
 	}
@@ -129,45 +140,70 @@ func (ipp *ImportPackageProcessor) processAPITask(project string, ip ImportPacka
 	return nil
 }
 
-func mapResourcePush(project string, stage string, ip ImportPackage, task *model.ManifestTask) (model.ResourcePush,
+func (ipp *ImportPackageProcessor) mapResourcePush(
+	project string, stage string, ip ImportPackage,
+	task *model.ManifestTask,
+) (model.ResourcePush,
 	error) {
 	resource, err := ip.GetResource(task.ResourceTask.File)
 	if err != nil {
 		return model.ResourcePush{}, fmt.Errorf("error accessing resource content: %w", err)
 	}
 
+	taskContext := model.TaskContext{
+		Project: project,
+		Task:    task,
+		Context: task.Context,
+	}
+
+	renderedResource, err := ipp.render(resource, taskContext)
+	if err != nil {
+		return model.ResourcePush{}, fmt.Errorf("error rendering resource content: %w", err)
+	}
+
 	ret := model.ResourcePush{
-		Content:     resource,
+		Content:     renderedResource,
 		ResourceURI: task.ResourceTask.RemoteURI,
 		Stage:       stage,
 		Service:     task.ResourceTask.Service,
-		Context: model.TaskContext{
-			Project: project,
-			Task:    task,
-		},
+		Context:     taskContext,
 	}
 
 	return ret, nil
 }
 
-func mapAPITask(project string, ip ImportPackage, task *model.ManifestTask) (model.APITaskExecution, error) {
+func (ipp *ImportPackageProcessor) mapAPITask(
+	project string, ip ImportPackage,
+	task *model.ManifestTask,
+) (model.APITaskExecution, error) {
 
-	resource, err := ip.GetResource(task.APITask.PayloadFile)
+	payload, err := ip.GetResource(task.APITask.PayloadFile)
 
 	if err != nil {
 		return model.APITaskExecution{}, fmt.Errorf(
-			"error accessing resource %s: %w", task.APITask.PayloadFile,
+			"error accessing payload %s: %w", task.APITask.PayloadFile,
+			err,
+		)
+	}
+
+	taskContext := model.TaskContext{
+		Project: project,
+		Task:    task,
+		Context: task.Context,
+	}
+
+	renderedPayload, err := ipp.render(payload, taskContext)
+	if err != nil {
+		return model.APITaskExecution{}, fmt.Errorf(
+			"error rendering payload %s: %w", task.APITask.PayloadFile,
 			err,
 		)
 	}
 
 	ret := model.APITaskExecution{
-		Payload:    resource,
+		Payload:    renderedPayload,
 		EndpointID: task.APITask.Action,
-		Context: model.TaskContext{
-			Project: project,
-			Task:    task,
-		},
+		Context:    taskContext,
 	}
 
 	return ret, nil
