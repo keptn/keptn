@@ -247,12 +247,17 @@ jobs:
   # Unit tests                                                               #
   ############################################################################
   unit-tests-microservices:
-    name: Unit Tests Microservices
+    name: Unit Tests and Build
     needs: prepare_ci_run
     runs-on: ubuntu-20.04
     if: needs.prepare_ci_run.outputs.BUILD_MATRIX_EMPTY == 'false'
     strategy:
       matrix: ${{ fromJson(needs.prepare_ci_run.outputs.BUILD_MATRIX) }}
+    env:
+      BRANCH: ${{ needs.prepare_ci_run.outputs.BRANCH }}
+      VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
+      DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
+      GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -261,6 +266,16 @@ jobs:
         uses: docker/setup-buildx-action@v2
         with:
           install: true
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        # only run docker login on pushes; also for PRs, but only if this is not a fork
+        if: ( github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' ) && (matrix.config.should-push-image == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository))
+        # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
+        # that's fine, but it means we can't push images to dockerhub
+        with:
+          username: ${{ secrets.REGISTRY_USER }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
 
       - name: Build ${{ matrix.config.artifact }} test image
         if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
@@ -299,6 +314,22 @@ jobs:
         with:
           name: bridge-e2e-screenshots
           path: ./shared/screenshots
+
+      - id: docker_build_image
+        name: "Docker Build keptn/${{ matrix.config.artifact }}"
+        if: matrix.config.should-push-image == 'true' && ( matrix.config.should-run == 'true' || needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' )
+        uses: docker/build-push-action@v3
+        with:
+          context: ${{ matrix.config.working-dir }}
+          tags: |
+            keptndev/${{ matrix.config.artifact }}:${{ env.VERSION }}
+            keptndev/${{ matrix.config.artifact }}:${{ env.VERSION }}.${{ env.DATETIME }}
+          build-args: |
+            version=${{ env.VERSION }}
+            buildTime=${{ needs.prepare_ci_run.outputs.DATETIME }}
+            gitSha=${{ needs.prepare_ci_run.outputs.GIT_SHA }}
+          push: ${{ matrix.config.should-push-image == 'true' && (( github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository ) || ( github.event_name == 'push' )) && github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' }}
+          pull: true
 
   unit-tests-cli:
     name: Unit Tests CLI (multi OS/arch)
@@ -409,54 +440,6 @@ jobs:
         git commit --signoff -m "Keptn Dev Version $RELEASE_TAG"
         git push
 
-  ############################################################################
-  # Build Docker Images                                                      #
-  ############################################################################
-  docker_build:
-    name: Docker Build
-    needs: [prepare_ci_run]
-    runs-on: ubuntu-20.04
-    if: needs.prepare_ci_run.outputs.BUILD_MATRIX_EMPTY == 'false'
-    strategy:
-      matrix: ${{ fromJson(needs.prepare_ci_run.outputs.BUILD_MATRIX) }}
-    env:
-      BRANCH: ${{ needs.prepare_ci_run.outputs.BRANCH }}
-      VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
-      DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
-      GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        # only run docker login on pushes; also for PRs, but only if this is not a fork
-        if: ( github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' ) && (matrix.config.should-push-image == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository))
-        # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
-        # that's fine, but it means we can't push images to dockerhub
-        with:
-          username: ${{ secrets.REGISTRY_USER }}
-          password: ${{ secrets.REGISTRY_PASSWORD }}
-
-      - id: docker_build_image
-        name: "Docker Build keptn/${{ matrix.config.artifact }}"
-        if: matrix.config.should-push-image == 'true' && ( matrix.config.should-run == 'true' || needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' )
-        uses: docker/build-push-action@v3
-        with:
-          context: ${{ matrix.config.working-dir }}
-          tags: |
-            keptndev/${{ matrix.config.artifact }}:${{ env.VERSION }}
-            keptndev/${{ matrix.config.artifact }}:${{ env.VERSION }}.${{ env.DATETIME }}
-          build-args: |
-            version=${{ env.VERSION }}
-            buildTime=${{ needs.prepare_ci_run.outputs.DATETIME }}
-            gitSha=${{ needs.prepare_ci_run.outputs.GIT_SHA }}
-          push: ${{ matrix.config.should-push-image == 'true' && (( github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository ) || ( github.event_name == 'push' )) && github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' }}
-          pull: true
-
   calculate-total-runtime:
     name: End-of-Pipeline Metrics
     if: always() && (( github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository ) || ( github.event_name == 'push' ))
@@ -469,7 +452,7 @@ jobs:
       - build-cli
       - helm_charts_build
       - helm_charts_upload
-      - docker_build
+
     uses: ./.github/workflows/end-of-pipeline-metrics.yml
     with:
       workflow_name: "CI"
