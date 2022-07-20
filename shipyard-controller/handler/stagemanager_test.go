@@ -2,10 +2,12 @@ package handler
 
 import (
 	"errors"
+	"testing"
+
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/keptn/shipyard-controller/common"
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestGetAllStages_GettingProjectFromDBFails(t *testing.T) {
@@ -32,7 +34,7 @@ func TestGetAllStages_ProjectNotFound(t *testing.T) {
 
 	stage, err := instance.GetAllStages("my-project")
 	assert.Nil(t, stage)
-	assert.Equal(t, ErrProjectNotFound, err)
+	assert.Equal(t, common.ErrProjectNotFound, err)
 
 }
 
@@ -84,7 +86,7 @@ func TestGetStage_ProjectNotFound(t *testing.T) {
 
 	stage, err := instance.GetStage("my-project", "the-stage")
 	assert.Nil(t, stage)
-	assert.Equal(t, ErrProjectNotFound, err)
+	assert.Equal(t, common.ErrProjectNotFound, err)
 
 }
 
@@ -108,5 +110,5 @@ func TestGetStage_StageNotFound(t *testing.T) {
 	}
 	stage, err := instance.GetStage("my-project", "unknown-stage")
 	assert.Nil(t, stage)
-	assert.Equal(t, ErrStageNotFound, err)
+	assert.Equal(t, common.ErrStageNotFound, err)
 }

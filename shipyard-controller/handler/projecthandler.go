@@ -197,7 +197,7 @@ func NewProjectHandler(projectManager IProjectManager, eventSender common.EventS
 func (ph *ProjectHandler) GetAllProjects(c *gin.Context) {
 	params := &models.GetProjectParams{}
 	if err := c.ShouldBindQuery(params); err != nil {
-		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetBadRequestErrorResponse(c, fmt.Sprintf(common.InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
@@ -247,8 +247,8 @@ func (ph *ProjectHandler) GetProjectByName(c *gin.Context) {
 
 	project, err := ph.ProjectManager.GetByName(projectName)
 	if err != nil {
-		if project == nil && errors.Is(err, ErrProjectNotFound) {
-			SetNotFoundErrorResponse(c, fmt.Sprintf(ProjectNotFoundMsg, projectName))
+		if project == nil && errors.Is(err, common.ErrProjectNotFound) {
+			SetNotFoundErrorResponse(c, fmt.Sprintf(common.ProjectNotFoundMsg, projectName))
 			return
 		}
 
@@ -280,7 +280,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 
 	params := &models.CreateProjectParams{}
 	if err := c.ShouldBindJSON(params); err != nil {
-		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetBadRequestErrorResponse(c, fmt.Sprintf(common.InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
@@ -289,7 +289,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 		provisioningData, err := ph.RepositoryProvisioner.ProvideRepository(*params.Name, common.GetKeptnNamespace())
 		if err != nil {
 			log.Errorf(err.Error())
-			SetFailedDependencyErrorResponse(c, UnableProvisionInstanceGeneric)
+			SetFailedDependencyErrorResponse(c, common.UnableProvisionInstanceGeneric)
 			return
 		}
 
@@ -305,7 +305,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 
 	projectValidator := ProjectValidator{ProjectNameMaxSize: ph.Env.ProjectNameMaxSize}
 	if err := projectValidator.Validate(params); err != nil {
-		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidPayloadMsg, err.Error()))
+		SetBadRequestErrorResponse(c, fmt.Sprintf(common.InvalidPayloadMsg, err.Error()))
 		return
 	}
 
@@ -323,7 +323,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 		}
 
 		rollback()
-		if errors.Is(err, ErrProjectAlreadyExists) {
+		if errors.Is(err, common.ErrProjectAlreadyExists) {
 			SetConflictErrorResponse(c, err.Error())
 			return
 		}
@@ -361,12 +361,12 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 	// validate the input
 	params := &models.UpdateProjectParams{}
 	if err := c.ShouldBindJSON(params); err != nil {
-		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetBadRequestErrorResponse(c, fmt.Sprintf(common.InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 	projectValidator := ProjectValidator{ProjectNameMaxSize: ph.Env.ProjectNameMaxSize}
 	if err := projectValidator.Validate(params); err != nil {
-		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidPayloadMsg, err.Error()))
+		SetBadRequestErrorResponse(c, fmt.Sprintf(common.InvalidPayloadMsg, err.Error()))
 		return
 	}
 
@@ -384,15 +384,15 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 			SetNotFoundErrorResponse(c, err.Error())
 			return
 		}
-		if errors.Is(err, ErrProjectNotFound) {
+		if errors.Is(err, common.ErrProjectNotFound) {
 			SetNotFoundErrorResponse(c, err.Error())
 			return
 		}
-		if errors.Is(err, ErrInvalidStageChange) {
+		if errors.Is(err, common.ErrInvalidStageChange) {
 			SetBadRequestErrorResponse(c, err.Error())
 			return
 		}
-		SetInternalServerErrorResponse(c, ErrInternalError.Error())
+		SetInternalServerErrorResponse(c, common.ErrInternalError.Error())
 		return
 	}
 	c.Status(http.StatusCreated)

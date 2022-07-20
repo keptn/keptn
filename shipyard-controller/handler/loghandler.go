@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
 )
 
@@ -69,13 +70,13 @@ func (lh *LogHandler) CreateLogEntries(context *gin.Context) {
 func (lh *LogHandler) GetLogEntries(context *gin.Context) {
 	params := &models.GetLogParams{}
 	if err := context.ShouldBindQuery(params); err != nil {
-		SetBadRequestErrorResponse(context, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetBadRequestErrorResponse(context, fmt.Sprintf(common.InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
 	logs, err := lh.logManager.GetLogEntries(*params)
 	if err != nil {
-		SetNotFoundErrorResponse(context, fmt.Sprintf(UnableRetrieveLogsMsg, err.Error()))
+		SetNotFoundErrorResponse(context, fmt.Sprintf(common.UnableRetrieveLogsMsg, err.Error()))
 		return
 	}
 	context.JSON(http.StatusOK, logs)
@@ -100,12 +101,12 @@ func (lh *LogHandler) GetLogEntries(context *gin.Context) {
 func (lh *LogHandler) DeleteLogEntries(context *gin.Context) {
 	params := &models.DeleteLogParams{}
 	if err := context.ShouldBindQuery(params); err != nil {
-		SetBadRequestErrorResponse(context, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetBadRequestErrorResponse(context, fmt.Sprintf(common.InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
 	if err := lh.logManager.DeleteLogEntries(*params); err != nil {
-		SetInternalServerErrorResponse(context, fmt.Sprintf(UnableRetrieveLogsMsg, err.Error()))
+		SetInternalServerErrorResponse(context, fmt.Sprintf(common.UnableRetrieveLogsMsg, err.Error()))
 		return
 	}
 	context.JSON(http.StatusOK, models.DeleteLogParams{})

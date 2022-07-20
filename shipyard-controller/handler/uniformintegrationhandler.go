@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -253,12 +254,12 @@ func (rh *UniformIntegrationHandler) Unregister(c *gin.Context) {
 func (rh *UniformIntegrationHandler) GetRegistrations(c *gin.Context) {
 	params := &models.GetUniformIntegrationsParams{}
 	if err := c.ShouldBindQuery(params); err != nil {
-		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetBadRequestErrorResponse(c, fmt.Sprintf(common.InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 	uniformIntegrations, err := rh.uniformRepo.GetUniformIntegrations(*params)
 	if err != nil {
-		SetInternalServerErrorResponse(c, fmt.Sprintf(UnableQueryIntegrationsMsg, err.Error()))
+		SetInternalServerErrorResponse(c, fmt.Sprintf(common.UnableQueryIntegrationsMsg, err.Error()))
 		return
 	}
 
