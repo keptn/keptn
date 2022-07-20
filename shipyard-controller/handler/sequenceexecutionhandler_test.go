@@ -35,7 +35,7 @@ func Test_sequenceExecutionHandler_GetSequenceExecutions(t *testing.T) {
 		wantPaginationParams        *models.PaginationParams
 	}{
 		{
-			name: "get sequence execution - no filter",
+			name: "get sequence execution - only project filter",
 			fields: fields{
 				sequenceExecutionRepo: &db_mock.SequenceExecutionRepoMock{
 					GetPaginatedFunc: func(filter models.SequenceExecutionFilter, paginationParams models.PaginationParams) ([]models.SequenceExecution, *models.PaginationResult, error) {
@@ -56,7 +56,7 @@ func Test_sequenceExecutionHandler_GetSequenceExecutions(t *testing.T) {
 					},
 				},
 			},
-			request:    httptest.NewRequest(http.MethodGet, "/sequence-execution", nil),
+			request:    httptest.NewRequest(http.MethodGet, "/sequence-execution?project=my-project", nil),
 			wantStatus: http.StatusOK,
 			wantResponse: &api.GetSequenceExecutionResponse{
 				PaginationResult: models.PaginationResult{
