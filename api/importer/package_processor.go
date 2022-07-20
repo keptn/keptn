@@ -3,7 +3,6 @@ package importer
 import (
 	"fmt"
 	"io"
-	"strings"
 
 	"github.com/keptn/keptn/api/importer/model"
 )
@@ -11,7 +10,10 @@ import (
 //go:generate moq -pkg fake --skip-ensure -out ./fake/package_processor_mock.go . ImportPackage:ImportPackageMock ManifestParser:ManifestParserMock TaskExecutor:TaskExecutorMock
 //go:generate moq -pkg fake --skip-ensure -out ./fake/stage_retriever_mock.go . ProjectStageRetriever:MockStageRetriever
 
-type RenderFunction func(raw io.ReadCloser, context any) (io.ReadCloser, error)
+type Renderer interface {
+	RenderContent(raw io.ReadCloser, context any) (io.ReadCloser, error)
+	RenderString(raw string, context any) (string, error)
+}
 
 type ImportPackage interface {
 	io.Closer
@@ -35,23 +37,23 @@ type ImportPackageProcessor struct {
 	parser         ManifestParser
 	executor       TaskExecutor
 	stageRetriever ProjectStageRetriever
-	render         RenderFunction
+	renderer       Renderer
 }
 
 func NewImportPackageProcessor(
 	mp ManifestParser, ex TaskExecutor, retriever ProjectStageRetriever,
 ) *ImportPackageProcessor {
-	return newImportPackageProcessor(mp, ex, retriever, RenderContent)
+	return newImportPackageProcessor(mp, ex, retriever, &templateRenderer{})
 }
 
 func newImportPackageProcessor(
-	mp ManifestParser, ex TaskExecutor, retriever ProjectStageRetriever, renderF RenderFunction,
+	mp ManifestParser, ex TaskExecutor, retriever ProjectStageRetriever, renderer Renderer,
 ) *ImportPackageProcessor {
 	return &ImportPackageProcessor{
 		parser:         mp,
 		executor:       ex,
 		stageRetriever: retriever,
-		render:         renderF,
+		renderer:       renderer,
 	}
 }
 
@@ -175,7 +177,7 @@ func (ipp *ImportPackageProcessor) mapResourcePush(
 		)
 	}
 
-	renderedResource, err := ipp.render(resource, taskContext)
+	renderedResource, err := ipp.renderer.RenderContent(resource, taskContext)
 	if err != nil {
 		return model.ResourcePush{}, fmt.Errorf("error rendering resource content: %w", err)
 	}
@@ -213,7 +215,7 @@ func (ipp *ImportPackageProcessor) mapAPITask(
 		)
 	}
 
-	renderedPayload, err := ipp.render(payload, taskContext)
+	renderedPayload, err := ipp.renderer.RenderContent(payload, taskContext)
 	if err != nil {
 		return model.APITaskExecution{}, fmt.Errorf(
 			"error rendering payload %s: %w", task.APITask.PayloadFile,
@@ -251,18 +253,11 @@ func (ipp *ImportPackageProcessor) renderContext(
 ) (map[string]string, error) {
 	renderedContext := map[string]string{}
 	for k, v := range context {
-		// TODO instead of the song and dance with closer and reader we can think of a specific case for strings
-		renderedValue, err := ipp.render(io.NopCloser(strings.NewReader(v)), mCtx)
+		renderedValue, err := ipp.renderer.RenderString(v, mCtx)
 		if err != nil {
 			return nil, fmt.Errorf("error rendering value for context key %s: %w", k, err)
 		}
-		defer renderedValue.Close()
-		builder := &strings.Builder{}
-		_, err = io.Copy(builder, renderedValue)
-		if err != nil {
-			return nil, fmt.Errorf("error copying rendered value for context key %s: %w", k, err)
-		}
-		renderedContext[k] = builder.String()
+		renderedContext[k] = renderedValue
 	}
 	return renderedContext, nil
 }
