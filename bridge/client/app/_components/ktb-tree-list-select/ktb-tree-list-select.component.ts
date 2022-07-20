@@ -9,6 +9,7 @@ import {
   OnDestroy,
   OnInit,
   Output,
+  TemplateRef,
 } from '@angular/core';
 import { DtTreeControl, DtTreeDataSource, DtTreeFlattener } from '@dynatrace/barista-components/core';
 import { FlatTreeControl } from '@angular/cdk/tree';
@@ -32,7 +33,7 @@ export class SelectTreeFlatNode implements SelectTreeNode {
 
 export type TreeListSelectOptions = {
   headerText: string;
-  emptyText: string;
+  emptyTemplate: TemplateRef<any> | null;
   hintText: string;
 };
 
@@ -43,7 +44,7 @@ export class KtbTreeListSelectDirective extends KtbOverlay implements OnInit, On
   private contentRef: ComponentRef<KtbTreeListSelectComponent> | undefined;
 
   @Input() data: SelectTreeNode[] = [];
-  @Input() options: TreeListSelectOptions = { headerText: '', emptyText: '', hintText: '' };
+  @Input() options: TreeListSelectOptions = { headerText: '', emptyTemplate: null, hintText: '' };
   @Output() selected: EventEmitter<string> = new EventEmitter<string>();
 
   constructor(protected elementRef: ElementRef, protected overlayService: OverlayService) {
@@ -109,7 +110,7 @@ export class KtbTreeListSelectComponent {
     this.dataSource.data = data;
   }
 
-  @Input() options: TreeListSelectOptions = { headerText: '', emptyText: '', hintText: '' };
+  @Input() options: TreeListSelectOptions = { headerText: '', emptyTemplate: null, hintText: '' };
 
   @Output() closeDialog: EventEmitter<void> = new EventEmitter<void>();
   @Output() selected: EventEmitter<string> = new EventEmitter<string>();

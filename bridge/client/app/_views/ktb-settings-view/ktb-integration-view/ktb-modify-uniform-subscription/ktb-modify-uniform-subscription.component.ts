@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../../../_services/data.service';
 import { combineLatest, forkJoin, Observable, of, Subject, throwError } from 'rxjs';
@@ -20,13 +20,14 @@ import { EventState } from '../../../../../../shared/models/event-state';
 import { Trace } from '../../../../_models/trace';
 import { HttpErrorResponse } from '@angular/common/http';
 import { IClientSecret } from '../../../../../../shared/interfaces/secret';
+import { PendingChangesComponent } from '../../../../_guards/pending-changes.guard';
 
 @Component({
   selector: 'ktb-modify-uniform-subscription',
   templateUrl: './ktb-modify-uniform-subscription.component.html',
   styleUrls: ['./ktb-modify-uniform-subscription.component.scss'],
 })
-export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
+export class KtbModifyUniformSubscriptionComponent implements OnDestroy, PendingChangesComponent {
   private readonly unsubscribe$: Subject<void> = new Subject<void>();
   private taskControl = new FormControl('', [Validators.required]);
   public eventPayload: Record<string, unknown> | undefined;
@@ -346,6 +347,12 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
   public webhookFormValidityChanged(isValid: boolean): void {
     this.isWebhookFormValid = isValid;
     this._changeDetectorRef.detectChanges();
+  }
+
+  // @HostListener allows us to also guard against browser refresh, close, etc.
+  @HostListener('window:beforeunload', ['$event'])
+  public canDeactivate($event?: BeforeUnloadEvent): Observable<boolean> {
+    return of(false);
   }
 
   public ngOnDestroy(): void {

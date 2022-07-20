@@ -216,15 +216,32 @@
 </form>
 
 <ng-template #secretButton let-controlName="controlName" let-index="index" let-selectionStart="selectionStart">
+  <ng-template #secretEmpty>
+    <div class="container">
+      No secrets for the scope keptn-webhook-service are available.
+      <p>
+        Configure secrets for the scope keptn-webhook-service under the menu entry
+        <a
+          [routerLink]="[
+            '/project/',
+            projectName,
+            '/settings',
+            '/uniform',
+            '/secrets/add',
+            '?scope=keptn-webhook-service'
+          ]"
+          ><span class="&quot;bold&quot;">Secrets</span></a
+        >
+        in the Uniform.
+      </p>
+    </div>
+  </ng-template>
+
   <ktb-variable-selector
     [data]="secretDataSource"
     [title]="'Select secret'"
     [label]="'Add secret'"
-    [emptyText]="
-      'No secrets for the scope keptn-webhook-service are available.<p>Configure secrets for the scope keptn-webhook-service under the menu entry <a href=&quot;/project/' +
-      projectName +
-      '/settings/uniform/secrets/add?scope=keptn-webhook-service&quot;><span class=&quot;bold&quot;>Secrets</span></a> in the Uniform.</p>'
-    "
+    [emptyText]="secretEmpty"
     [hintText]="'Only secrets of scope keptn-webhook-secret can be referenced.'"
     [control]="getFormControl(controlName, index)"
     [selectionStart]="selectionStart"

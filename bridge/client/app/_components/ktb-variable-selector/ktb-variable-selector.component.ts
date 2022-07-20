@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, TemplateRef } from '@angular/core';
 import { SelectTreeNode, TreeListSelectOptions } from '../ktb-tree-list-select/ktb-tree-list-select.component';
 import { AbstractControl } from '@angular/forms';
 import { DtIconType } from '@dynatrace/barista-icons';
@@ -10,7 +10,7 @@ import { DtIconType } from '@dynatrace/barista-icons';
 export class KtbVariableSelectorComponent {
   public options: TreeListSelectOptions = {
     headerText: 'Select element',
-    emptyText: 'No elements available.',
+    emptyTemplate: null,
     hintText: '',
   };
   @Output() changed: EventEmitter<void> = new EventEmitter<void>();
@@ -27,8 +27,8 @@ export class KtbVariableSelectorComponent {
   }
 
   @Input()
-  set emptyText(text: string) {
-    this.options.emptyText = text;
+  set emptyText(template: TemplateRef<any>) {
+    this.options.emptyTemplate = template;
   }
 
   @Input()

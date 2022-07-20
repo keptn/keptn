@@ -20,7 +20,7 @@
 </div>
 
 <ng-template #empty>
-  <div class="container" [innerHTML]="options.emptyText"></div>
+  <ng-container [ngTemplateOutlet]="options.emptyTemplate"></ng-container>
 </ng-template>
 
 <ng-template #overlay>
