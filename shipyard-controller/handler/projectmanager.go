@@ -78,7 +78,7 @@ func (pm *ProjectManager) GetByName(projectName string) (*apimodels.ExpandedProj
 		return nil, err
 	}
 	if project == nil {
-		return nil, ErrProjectNotFound
+		return nil, common.ErrProjectNotFound
 	}
 	return project, err
 }
@@ -102,7 +102,7 @@ func (pm *ProjectManager) Create(params *models.CreateProjectParams) (error, com
 		log.Infof("Rollback: Try to delete GIT repository credentials secret for project %s", *params.Name)
 		if err := pm.deleteGITRepositorySecret(*params.Name); err != nil {
 			log.Errorf("Rollback failed: Unable to delete GIT repository credentials secret for project %s: %s", *params.Name, err.Error())
-			return ErrChangesRollback
+			return common.ErrChangesRollback
 		}
 		return nil
 	}
@@ -118,12 +118,12 @@ func (pm *ProjectManager) Create(params *models.CreateProjectParams) (error, com
 		log.Infof("Rollback: Try to delete project %s from configuration service", *params.Name)
 		if err := pm.ConfigurationStore.DeleteProject(*params.Name); err != nil {
 			log.Errorf("Rollback failed: Unable to delete project %s from configuration service: %s", *params.Name, err.Error())
-			return ErrChangesRollback
+			return common.ErrChangesRollback
 		}
 		log.Infof("Rollback: Try to delete GIT repository credentials secret for project %s", *params.Name)
 		if err := pm.deleteGITRepositorySecret(*params.Name); err != nil {
 			log.Errorf("Rollback failed: Unable to delete GIT repository credentials secret for project %s: %s", *params.Name, err.Error())
-			return ErrChangesRollback
+			return common.ErrChangesRollback
 		}
 		return nil
 	}
@@ -163,12 +163,12 @@ func (pm *ProjectManager) Create(params *models.CreateProjectParams) (error, com
 
 func (pm *ProjectManager) checkForExistingProject(params *models.CreateProjectParams) error {
 	existingProject, err := pm.ProjectMaterializedView.GetProject(*params.Name)
-	if err != nil && err != db.ErrProjectNotFound {
+	if err != nil && err != common.ErrProjectNotFound {
 		log.Errorf("Error occurred while getting project: %s", err.Error())
 		return fmt.Errorf("failed to get information for project '%s': %w", *params.Name, err)
 	}
 	if existingProject != nil {
-		return ErrProjectAlreadyExists
+		return common.ErrProjectAlreadyExists
 	}
 	return nil
 }
@@ -188,7 +188,7 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 		log.Errorf("Error occurred while getting project: %s", err.Error())
 		return fmt.Errorf("failed to get project: '%s'", *params.Name), nilRollback
 	} else if oldProject == nil {
-		return ErrProjectNotFound, nilRollback
+		return common.ErrProjectNotFound, nilRollback
 	}
 
 	if params.GitCredentials != nil {
@@ -222,7 +222,7 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 		return fmt.Errorf(errUpdateProject, projectToUpdate.ProjectName, err), func() error {
 			// try to rollback already updated git repository secret
 			if err := pm.updateGITRepositorySecret(*params.Name, rollbackSecretCredentials); err != nil {
-				return ErrChangesRollback
+				return common.ErrChangesRollback
 			}
 			// try to rollback already updated project in configuration store
 			return pm.ConfigurationStore.UpdateProject(projectToRollback)
@@ -247,7 +247,7 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 			return fmt.Errorf(errUpdateProject, projectToUpdate.ProjectName, err), func() error {
 				// try to rollback already updated git repository secret
 				if err = pm.updateGITRepositorySecret(*params.Name, rollbackSecretCredentials); err != nil {
-					return ErrChangesRollback
+					return common.ErrChangesRollback
 				}
 				// try to rollback already updated project in configuration store
 				return pm.ConfigurationStore.UpdateProject(projectToRollback)
@@ -272,12 +272,12 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 			if err = pm.ConfigurationStore.UpdateProjectResource(*params.Name, &apimodels.Resource{
 				ResourceContent: oldProject.Shipyard,
 				ResourceURI:     common.Stringp("shipyard.yaml")}); err != nil {
-				return ErrChangesRollback
+				return common.ErrChangesRollback
 			}
 
 			// try to rollback already updated project information in configuration service
 			if err = pm.ConfigurationStore.UpdateProject(projectToRollback); err != nil {
-				return ErrChangesRollback
+				return common.ErrChangesRollback
 			}
 
 			// try to rollback already updated git repository secret
@@ -602,7 +602,7 @@ func validateShipyardUpdate(params *models.UpdateProjectParams, oldProject *apim
 
 	err := validateShipyardStagesUnchaged(oldProject, newProject)
 	if err != nil {
-		return ErrInvalidStageChange
+		return common.ErrInvalidStageChange
 	}
 	return nil
 }

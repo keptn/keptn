@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"strings"
 	"time"
+
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 
 	"github.com/benbjohnson/clock"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -76,7 +77,7 @@ func (e *EventDispatcher) Add(event models.DispatcherEvent, skipQueue bool) erro
 		if err := e.tryToSendEvent(*eventScope, event); err != nil {
 			// if the event cannot be sent because it is blocked by other sequences,
 			// we'll add it to the queue and try to send it again later
-			if !strings.Contains(err.Error(), OtherActiveSequencesRunning) && err != ErrSequencePaused {
+			if !strings.Contains(err.Error(), common.OtherActiveSequencesRunning) && err != common.ErrSequencePaused {
 				// in all other cases, return the error
 				return err
 			}
@@ -181,7 +182,7 @@ func (e *EventDispatcher) dispatchEvents() {
 func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event models.DispatcherEvent) error {
 	if e.sequenceExecutionRepo.IsContextPaused(eventScope) {
 		log.Infof("sequence %s is currently paused. will not send event %s", eventScope.KeptnContext, event.Event.ID())
-		return ErrSequencePaused
+		return common.ErrSequencePaused
 	}
 	sequenceExecutions, err := e.sequenceExecutionRepo.Get(
 		models.SequenceExecutionFilter{
@@ -193,7 +194,7 @@ func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event mod
 		return err
 	}
 	if len(sequenceExecutions) == 0 {
-		return ErrSequenceNotFound
+		return common.ErrSequenceNotFound
 	}
 
 	filter := models.SequenceExecutionFilter{
@@ -225,7 +226,7 @@ func checkStarted(startedSequenceExecutions []models.SequenceExecution, event mo
 		for _, otherSequence := range startedSequenceExecutions {
 			if otherSequence.Status.CurrentTask.TriggeredID != event.Event.ID() {
 				if !e.isCurrentEventOverrulingOtherEvent(otherSequence, event) {
-					return errors.New(fmt.Sprint(OtherActiveSequencesRunning, otherSequence.Scope.KeptnContext))
+					return errors.New(fmt.Sprint(common.OtherActiveSequencesRunning, otherSequence.Scope.KeptnContext))
 				}
 			}
 		}
