@@ -3,6 +3,7 @@ package importer
 import (
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/keptn/keptn/api/importer/model"
 )
@@ -166,7 +167,13 @@ func (ipp *ImportPackageProcessor) mapResourcePush(
 		return model.ResourcePush{}, fmt.Errorf("error accessing resource content: %w", err)
 	}
 
-	taskContext := newTaskContext(mCtx, task)
+	taskContext, err := ipp.newTaskContext(mCtx, task)
+	if err != nil {
+		return model.ResourcePush{}, fmt.Errorf(
+			"error building task context for task %s: %w", task.ID,
+			err,
+		)
+	}
 
 	renderedResource, err := ipp.render(resource, taskContext)
 	if err != nil {
@@ -198,7 +205,13 @@ func (ipp *ImportPackageProcessor) mapAPITask(
 		)
 	}
 
-	taskContext := newTaskContext(mCtx, task)
+	taskContext, err := ipp.newTaskContext(mCtx, task)
+	if err != nil {
+		return model.APITaskExecution{}, fmt.Errorf(
+			"error building task context for task %s: %w", task.ID,
+			err,
+		)
+	}
 
 	renderedPayload, err := ipp.render(payload, taskContext)
 	if err != nil {
@@ -217,18 +230,39 @@ func (ipp *ImportPackageProcessor) mapAPITask(
 	return ret, nil
 }
 
-func newTaskContext(mCtx *model.ManifestExecution, task *model.ManifestTask) model.TaskContext {
-	renderedContext, _ := renderContext(mCtx, task.Context)
-	// TODO handle error
+func (ipp *ImportPackageProcessor) newTaskContext(
+	mCtx *model.ManifestExecution, task *model.ManifestTask,
+) (model.TaskContext, error) {
+	renderedContext, err := ipp.renderContext(mCtx, task.Context)
+
+	if err != nil {
+		return model.TaskContext{}, fmt.Errorf("error while creating task context: %w", err)
+	}
 
 	return model.TaskContext{
 		Project: mCtx.GetProject(),
 		Task:    task,
 		Context: renderedContext,
-	}
+	}, nil
 }
 
-func renderContext(mCtx *model.ManifestExecution, context map[string]string) (map[string]string, error) {
-	// TODO implement rendering of values
-	return context, nil
+func (ipp *ImportPackageProcessor) renderContext(
+	mCtx *model.ManifestExecution, context map[string]string,
+) (map[string]string, error) {
+	renderedContext := map[string]string{}
+	for k, v := range context {
+		// TODO instead of the song and dance with closer and reader we can think of a specific case for strings
+		renderedValue, err := ipp.render(io.NopCloser(strings.NewReader(v)), mCtx)
+		if err != nil {
+			return nil, fmt.Errorf("error rendering value for context key %s: %w", k, err)
+		}
+		defer renderedValue.Close()
+		builder := &strings.Builder{}
+		_, err = io.Copy(builder, renderedValue)
+		if err != nil {
+			return nil, fmt.Errorf("error copying rendered value for context key %s: %w", k, err)
+		}
+		renderedContext[k] = builder.String()
+	}
+	return renderedContext, nil
 }

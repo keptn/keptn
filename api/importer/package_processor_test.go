@@ -2,6 +2,7 @@ package importer
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -497,8 +498,8 @@ func TestImportPackageProcessor_Process_WebhookConfigWithTemplating(t *testing.T
 	const resourceFileName = "webhook.yaml"
 
 	const rawWebhookConfigResourceFile = "../test/data/import/sample-package/resources/webhook.yaml"
-	const webhookConfigResourceRenderContext = "../test/data/import/rendered-sample-package/resources/webhook.context.yaml"
-	const renderedWebhookConfigResourceFile = "../test/data/import/rendered-sample-package/resources/webhook.yaml"
+	const webhookConfigResourceRenderContext = "../test/data/import/rendered-sample-package/simple-task-rendering/resources/webhook.context.yaml"
+	const renderedWebhookConfigResourceFile = "../test/data/import/rendered-sample-package/simple-task-rendering/resources/webhook.yaml"
 
 	context := map[string]string{}
 
@@ -588,7 +589,7 @@ func TestImportPackageProcessor_Process_WebhookConfigWithTemplating(t *testing.T
 func TestImportPackageProcessor_Process_APITaskWithTemplating(t *testing.T) {
 
 	const rawPayloadDir = "../test/data/import/sample-package/api/"
-	const renderedPayloadDir = "../test/data/import/rendered-sample-package/api/"
+	const renderedPayloadDir = "../test/data/import/rendered-sample-package/simple-task-rendering/api/"
 
 	tests := []struct {
 		name                     string
@@ -883,6 +884,155 @@ func TestImportPackageProcessor_Process_ErrorMalformedTasks(t *testing.T) {
 				err := sut.Process("test-project", importPackageMock)
 				assert.Error(t, err)
 				assert.ErrorContains(t, err, fmt.Sprintf("malformed task of type %s", tt.task.Type))
+			},
+		)
+	}
+}
+
+// This test is written as a "component" (not really but close enough) test for the import core business logic
+// (everything is the real thing except interaction with external systems which relies on canned responses through
+// mocks). This is by necessity unwieldy and more complicated than a regular unit test,
+// however it still delivers valuable information on import package behavior and it can be used as a testbed for
+// manifest processing/rendering verification. Match of api and resource tasks is based on action and remoteURI,
+// content/payload is checked against expectation and a non empty response is returned if defined, nil otherwise.
+// The inputs, expectations and canned responses are defined in a .yaml file like ../../
+func TestImportPackageProcessor_Process_FullManifestRendering(t *testing.T) {
+
+	type apiCallExpectation struct {
+		Action   string `yaml:"action"`
+		Expected string `yaml:"expected"`
+		Response string `yaml:"response"`
+	}
+
+	type resourceUploadExpectation struct {
+		ResourceURI string `yaml:"uri"`
+		Expected    string `yaml:"expected"`
+	}
+
+	type testData struct {
+		API      map[string][]apiCallExpectation        `yaml:"api"`
+		Resource map[string][]resourceUploadExpectation `yaml:"resource"`
+	}
+
+	type testInput struct {
+		Project  string   `yaml:"project"`
+		TestData testData `yaml:"test-data"`
+	}
+
+	const rawPackageDir = "../test/data/import/sample-package/"
+	const renderedPackageDir = "../test/data/import/rendered-sample-package/full-manifest-rendering/"
+
+	tests := []struct {
+		name               string
+		rawPackageDir      string
+		renderedPackageDir string
+		testInput          string
+	}{
+		{
+			name:               "Template sample package",
+			rawPackageDir:      rawPackageDir,
+			renderedPackageDir: renderedPackageDir,
+			testInput:          "input.yaml",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(
+			tt.name, func(t *testing.T) {
+
+				inputFile, err := os.Open(path.Join(tt.renderedPackageDir, tt.testInput))
+				require.NoError(t, err)
+				defer inputFile.Close()
+
+				inputs := testInput{}
+				decoder := yaml.NewDecoder(inputFile)
+				decoder.KnownFields(true)
+				err = decoder.Decode(&inputs)
+				require.NoError(t, err)
+
+				taskExecutor := &fake.TaskExecutorMock{
+					ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
+						expectations, ok := inputs.TestData.API[ate.EndpointID]
+						if !ok || len(expectations) == 0 {
+							t.Fatalf("API call %+v has no expectations defined in inputs %+v", ate, inputs)
+						}
+						inputs.TestData.API[ate.EndpointID] = expectations[1:]
+						expectation := expectations[0]
+
+						assert.NotNil(t, ate.Payload)
+						defer ate.Payload.Close()
+
+						renderedBytes, err := io.ReadAll(ate.Payload)
+						require.NoError(t, err)
+
+						expectedRenderedBytes, err := ioutil.ReadFile(
+							path.Join(
+								tt.renderedPackageDir, expectation.Expected,
+							),
+						)
+						require.NoError(t, err)
+
+						assert.Equal(t, string(expectedRenderedBytes), string(renderedBytes))
+						// For debugging purposes it may be easier to look at the YAML/JSON comparison
+						// assert.YAMLEq(t, string(expectedRenderedBytes), string(renderedBytes))
+						// assert.JSONEq(t, string(expectedRenderedBytes), string(renderedBytes))
+						var retval any
+						if expectation.Response != "" {
+							err = json.Unmarshal([]byte(expectation.Response), &retval)
+							require.NoErrorf(
+								t, err, "canned response for %s is not parseable JSON: %s",
+								expectation.Action, expectation.Response,
+							)
+						}
+						return retval, nil
+					},
+					PushResourceFunc: func(rp model.ResourcePush) (any, error) {
+						expectations, ok := inputs.TestData.Resource[rp.ResourceURI]
+						if !ok || len(expectations) == 0 {
+							t.Fatalf("Resource upload %+v has no expectations defined in inputs %+v", rp, inputs)
+						}
+						inputs.TestData.Resource[rp.ResourceURI] = expectations[1:]
+						expectation := expectations[0]
+
+						assert.NotNil(t, rp.Content)
+						defer rp.Content.Close()
+
+						renderedBytes, err := io.ReadAll(rp.Content)
+						require.NoError(t, err)
+
+						expectedRenderedBytes, err := ioutil.ReadFile(
+							path.Join(
+								tt.renderedPackageDir, expectation.Expected,
+							),
+						)
+						require.NoError(t, err)
+
+						assert.Equal(t, string(expectedRenderedBytes), string(renderedBytes))
+						// For debugging purposes it may be easier to look at the YAML/JSON comparison
+						// assert.YAMLEq(t, string(expectedRenderedBytes), string(renderedBytes))
+						// assert.JSONEq(t, string(expectedRenderedBytes), string(renderedBytes))
+
+						return nil, nil
+					},
+				}
+
+				stageRetriever := &fake.MockStageRetriever{}
+				parser := &model.YAMLManifestUnMarshaler{}
+				sut := NewImportPackageProcessor(parser, taskExecutor, stageRetriever)
+
+				importPackageMock := &fake.ImportPackageMock{
+					CloseFunc: func() error {
+						return nil
+					},
+					GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
+						return os.Open(path.Join(tt.rawPackageDir, resourceName))
+					},
+				}
+
+				err = sut.Process(inputs.Project, importPackageMock)
+
+				assert.NoError(t, err)
+				assert.Len(t, importPackageMock.CloseCalls(), 1)
 			},
 		)
 	}
