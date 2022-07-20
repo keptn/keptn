@@ -16,9 +16,9 @@ require (
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
 	gopkg.in/yaml.v3 v3.0.1
-	k8s.io/api v0.22.11
-	k8s.io/apimachinery v0.22.11
-	k8s.io/client-go v0.22.11
+	k8s.io/api v0.22.12
+	k8s.io/apimachinery v0.22.12
+	k8s.io/client-go v0.22.12
 )
 
 require (
