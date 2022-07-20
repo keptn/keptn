@@ -33,6 +33,10 @@
     {
       "matchManagers": ["dockerfile"],
       "addLabels": ["docker"]
+    },
+    {
+      "matchPackageNames": ["mongodb", "nats"],
+      "automerge": false
     }
   ]
 }
