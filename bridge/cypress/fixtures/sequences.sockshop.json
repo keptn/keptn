@@ -159,6 +159,24 @@
       ]
     },
     {
+      "name": "delivery",
+      "service": "carts",
+      "project": "sockshop",
+      "time": "2021-07-15T11:58:51.729Z",
+      "shkeptncontext": "e28592c6-d857-44fe-aea6-e65de02929bf",
+      "state": "paused",
+      "stages": [
+        {
+          "name": "dev",
+          "image": "docker.io/keptnexamples/carts:0.12.3",
+          "latestEvaluation": {
+            "result": "pass",
+            "score": 0
+          }
+        }
+      ]
+    },
+    {
       "name": "delivery-direct",
       "service": "carts-db",
       "project": "sockshop",
@@ -480,29 +498,6 @@
           "latestEvaluation": {
             "result": "pass",
             "score": 0
-          },
-          "latestEvent": {
-            "type": "sh.keptn.event.dev.delivery.finished",
-            "id": "0838ff2c-f736-41f1-9d7e-5e420f07830d",
-            "time": "2021-07-15T12:02:45.561Z"
-          }
-        },
-        {
-          "name": "staging",
-          "image": "docker.io/keptnexamples/carts:0.12.3",
-          "latestEvaluation": {
-            "result": "pass",
-            "score": 0
-          },
-          "latestEvent": {
-            "type": "sh.keptn.event.staging.rollback.finished",
-            "id": "5d16ec19-e0ef-453d-b312-03e5988a0905",
-            "time": "2021-07-15T12:13:40.942Z"
-          },
-          "latestFailedEvent": {
-            "type": "sh.keptn.event.staging.rollback.finished",
-            "id": "5d16ec19-e0ef-453d-b312-03e5988a0905",
-            "time": "2021-07-15T12:13:40.942Z"
           }
         }
       ]

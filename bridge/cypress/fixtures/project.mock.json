@@ -504,12 +504,12 @@
             "project": "sockshop",
             "time": "2021-09-17T09:32:05.363Z",
             "shkeptncontext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
-            "state": "finished",
+            "state": "paused",
             "stages": [
               {
                 "name": "staging",
                 "image": "docker.io/mongo:4.2.2",
-                "state": "finished",
+                "state": "paused",
                 "latestEvent": {
                   "type": "sh.keptn.event.staging.delivery-direct.finished",
                   "id": "c465f8ee-c29f-4d9f-bd96-e9e1fbfd2e75",
@@ -517,9 +517,6 @@
                 }
               }
             ]
-          },
-          "deploymentInformation": {
-            "deploymentUrl": "http://carts-db.sockshop-staging.35.188.183.151.nip.io:80"
           }
         }
       ],

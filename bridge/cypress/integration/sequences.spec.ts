@@ -189,7 +189,7 @@ describe('Sequences', () => {
 
         .clearFilter()
         .checkStatusFilter('Failed')
-        .assertSequenceCount(14)
+        .assertSequenceCount(13)
         .assertStatusOfSequences('failed')
 
         .clearFilter()
@@ -370,6 +370,13 @@ describe('Sequences', () => {
       cy.wait('@Sequences').wait(500);
 
       sequencePage.assertFilterItemsCount('Service', 5).clickFilterViewMore('Service').assertFilterShowMoreCount(12);
+    });
+
+    it.only('should show pause icon if sequence is paused', () => {
+      sequencePage.visit('sockshop');
+      cy.byTestId('keptn-root-events-list-e28592c6-d857-44fe-aea6-e65de02929bf')
+        .find('path')
+        .should('have.attr', 'd', 'M112 64h104v384H112zM296 64h104v384H296z');
     });
   });
 });

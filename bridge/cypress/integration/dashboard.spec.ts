@@ -47,4 +47,8 @@ describe('Bridge Dashboard', () => {
     const basePage = new BasePage();
     basePage.clickOpenUserMenu().assertAuthCommandCopyToClipboardValue('Hello handsome');
   });
+
+  it('should show pause icon if sequence is paused', () => {
+    dashboardPage.visit().assertPauseIconShown();
+  });
 });
