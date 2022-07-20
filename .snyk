@@ -9,9 +9,12 @@ ignore:
 patch: {}
 exclude:
   global:
-    - "**/*.spec.ts":
+    - '**/*.spec.ts':
         reason: test files
         created: 2022-07-12T09:24:40.510Z
-    - "**/*_test.go":
+    - '**/*_test.go':
         reason: go test files
         created: 2022-07-14T05:47:36.373Z
+    - test/**:
+        reason: zero downtime and integration tests
+        created: 2022-07-20T12:23:41.321Z
