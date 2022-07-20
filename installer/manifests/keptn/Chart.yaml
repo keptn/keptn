@@ -45,7 +45,7 @@ dependencies:
     condition: mongo.enabled
     alias: mongo
   - name: nats
-    version: 0.13.2
+    version: 0.17.1
     repository: https://nats-io.github.io/k8s/helm/charts/
   - name: common
     repository: "file://../common"
