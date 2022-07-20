@@ -69,33 +69,15 @@
       </div>
     </div>
   </div>
-  <div *ngIf="_event.data.problem?.ProblemDetails as problemDetails">
-    <div
-      fxLayout="row"
-      fxLayoutAlign="start start"
-      *ngIf="problemDetails.tagsOfAffectedEntities"
-      uitestid="keptn-event-item-problemTags"
-    >
-      <p class="bold nobreak m-0 mt-1 mb-1">Labels:</p>
-      <dt-tag-list aria-label="affected-entities" (click)="$event.stopPropagation()">
-        <dt-tag *ngFor="let tag of problemDetails.tagsOfAffectedEntities">
-          <p *ngIf="!isUrl(tag.value)">
-            <span [textContent]="tag.key"></span>:&nbsp;<span [textContent]="tag.value"></span>
-          </p>
-          <a *ngIf="isUrl(tag.value)" [href]="tag.value" target="_blank" [textContent]="tag.key"></a>
-        </dt-tag>
-      </dt-tag-list>
-    </div>
-  </div>
   <div *ngIf="showLabels && _event.getFinishedEvent()?.hasLabels()" uitestid="keptn-event-item-evaluationTags">
     <div fxLayout="row" fxLayoutAlign="start center">
       <p class="bold">Labels:</p>
       <dt-tag-list aria-label="evaluation-labels">
         <dt-tag *ngFor="let label of _event.getFinishedEvent()?.labels | keyvalue">
-          <p *ngIf="!isUrl(label.value)">
+          <a *ngIf="isUrl(label.value); else noUrl" [href]="label.value" target="_blank" [textContent]="label.key"></a>
+          <ng-template #noUrl>
             <span [textContent]="label.key"></span>:&nbsp;<span [textContent]="label.value"></span>
-          </p>
-          <a *ngIf="isUrl(label.value)" [href]="label.value" target="_blank" [textContent]="label.key"></a>
+          </ng-template>
         </dt-tag>
       </dt-tag-list>
     </div>

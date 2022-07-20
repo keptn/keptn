@@ -62,6 +62,14 @@ class DashboardPage {
     return new EnvironmentPage();
   }
 
+  public assertEmptyGitRemoteUrl(projectName: string): this {
+    cy.byTestId(`keptn-project-${projectName}-tile-gitRemoteUri-setUpstream`).should(
+      'have.text',
+      'Set the Git upstream of your project'
+    );
+    return this;
+  }
+
   public assertPauseIconShown(): this {
     cy.byTestId('keptn-sequence-info-status')
       .contains('paused')

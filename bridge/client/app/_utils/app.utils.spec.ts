@@ -69,4 +69,48 @@ describe('AppUtils', () => {
       });
     }
   });
+
+  it('isValidJson should return true if given valid JSON string', () => {
+    // given
+    const jsonString = '{"name":"John"}';
+
+    // when
+    const isJson = AppUtils.isValidJson(jsonString);
+
+    // then
+    expect(isJson).toBeTruthy();
+  });
+
+  it('isValidJson should return false if given invalid JSON string', () => {
+    // given
+    for (const jsonString of ['{"name":"John",}', '{name:John}']) {
+      // when
+      const isJson = AppUtils.isValidJson(jsonString);
+
+      // then
+      expect(isJson).toBeFalsy();
+    }
+  });
+
+  it('isValidUrl should return true if given valid URL', () => {
+    // given
+    for (const url of ['https://keptn.sh', 'https://tutorials.keptn.sh/']) {
+      // when
+      const isUrl = AppUtils.isValidUrl(url);
+
+      // then
+      expect(isUrl).toBeTruthy();
+    }
+  });
+
+  it('isValidUrl should return false if given invalid URL', () => {
+    // given
+    const url = 'keptn.sh';
+
+    // when
+    const isUrl = AppUtils.isValidUrl(url);
+
+    // then
+    expect(isUrl).toBeFalsy();
+  });
 });

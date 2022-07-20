@@ -83,7 +83,7 @@ func TestZippedPackage_GetResource(t *testing.T) {
 			name:         "Happy path - access existing resource",
 			resourceName: "api/create-service.json",
 			want: []byte(`{
-    "serviceName": "{{ .context.service }}"
+    "serviceName": "[[ .Context.service ]]"
 }`),
 			wantErr:       false,
 			errorContains: "",
