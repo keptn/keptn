@@ -39,7 +39,7 @@ RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-linkmode=external -X main.gitCommit=$gitSha -X main.buildTime=$buildTime" $BUILDFLAGS -v -o distributor ./cmd/
 
-FROM alpine:3.16 as production
+FROM gcr.io/distroless/static-debian11 as production
 ARG version=develop
 
 LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
@@ -50,15 +50,12 @@ LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
     org.opencontainers.image.licenses="Apache-2.0" \
     org.opencontainers.image.version="${version}"
 
-RUN apk add --no-cache ca-certificates libc6-compat
-
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/keptn/distributor/distributor /distributor
 
 # required for external tools to detect this as a go binary
 ENV GOTRACEBACK=all
 
-RUN adduser -D nonroot -u 65532
 USER nonroot
 
 # Run the web service on container startup.

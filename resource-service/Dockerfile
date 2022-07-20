@@ -50,8 +50,11 @@ RUN sed -i "s/version: develop/version: ${version}/g" docs/swagger.yaml
 # either manually or with a tool like "godep".)
 RUN GOOS=linux go build -ldflags '-linkmode=external' -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v main.go
 
+# Replace contents for api proxy
+RUN sed -i "s|basePath: /v1|basePath: /api/resource-service/v1 |g" /go/src/github.com/keptn/keptn/resource-service/docs/swagger.yaml
+
 # Use a Docker multi-stage build to create a lean production image.
-FROM alpine:3.16 as production
+FROM gcr.io/distroless/static-debian11 as production
 ARG version=develop
 LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
     org.opencontainers.image.url="https://keptn.sh" \
@@ -63,26 +66,17 @@ LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
 
 ENV env=production
 
-# we need to install ca-certificates and libc6-compat for go programs to work properly
-RUN apk add --no-cache ca-certificates libc6-compat
-
-# Install git
-RUN apk --update add --no-cache git
-
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/keptn/resource-service/main /resource-service
 COPY --from=builder /go/src/github.com/keptn/keptn/resource-service/swagger-ui /swagger-ui
 COPY --from=builder /go/src/github.com/keptn/keptn/resource-service/docs/swagger.yaml /swagger-ui/swagger-original.yaml
 COPY --from=builder /go/src/github.com/keptn/keptn/resource-service/docs/swagger.yaml /swagger-ui/swagger.yaml
-# Replace contents for api proxy
-RUN sed -i "s|basePath: /v1|basePath: /api/resource-service/v1 |g" /swagger-ui/swagger.yaml
 
 EXPOSE 8080
 
 # required for external tools to detect this as a go binary
 ENV GOTRACEBACK=all
 
-RUN adduser -D nonroot -u 65532
 USER nonroot
 
 # Run the web service on container startup.
