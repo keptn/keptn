@@ -1,5 +1,6 @@
 # Introduction
-This document should serve as a guideline for adding endpoints to the Keptn API, and should help to provide a consistent user experience across all of our APIs.
+This document serves as a guideline for adding endpoints to the Keptn API,
+and should help to provide a consistent user experience across all of our APIs.
 
 # API Grouping
 We define three different *types* of APIs:
@@ -66,7 +67,7 @@ POST cluster.keptn.sh/api/tokens/v1/token:rotate
 API endpoints supporting result filtering **must** accept the filter
 as a query parameter named *filter* containing a *filter expression*:
 
-In general each field should be filter-able. Exceptions **must** be documented.
+In general each field **should** be filter-able. Exceptions **must** be documented.
 *Filter expressions* follow the following form: `<fieldname> operator <value>`
 
 ## Filters
@@ -158,13 +159,13 @@ lastModified >= '2020-01-01T01:00:00Z
 ---
 # JSON Format
 
-Payload sent to and returned by API endpoints should be represented as JSON objects.  
-The structure of these objects should be documented in the swagger API docs.
-When accepting JSON payload from a client, the API endpoint should validate if the payload adheres to the documented structure, and shall return an error
+Payload sent to and returned by API endpoints **should** be represented as JSON objects.  
+The structure of these objects **should** be documented in the swagger API docs.
+When accepting JSON payload from a client, the API endpoint **should** validate if the payload adheres to the documented structure, and shall return an error
 if it does not.
-However, if a client sends an object with an unknown property, the API endpoint should just ignore it, and proceed with the execution of the request.
+However, if a client sends an object with an unknown property, the API endpoint **should** just ignore it, and proceed with the execution of the request.
 
-Groups of properties that are mutually exclusive from each other should be stored in nested objects, instead of having all properties in a flat JSON object.
+Groups of properties that are mutually exclusive from each other **should** be stored in nested objects, instead of having all properties in a flat JSON object.
 
 *Example:*
 
@@ -231,7 +232,7 @@ GET /projects/123-456-789:migrate?job-id=123-456-789
 
 ## Component Names
 
-Service names ****should**** be concise and as simple as possible. They ****should**** be written in *kebap-case*. Also, since the name of a service will also be used
+Service names **should** be concise and as simple as possible. They **should** be written in *kebap-case*. Also, since the name of a service will also be used
 for the internal domain name in K8s, they **should** adhere to the DNS label standard defined in [RFC 1035](https://datatracker.ietf.org/doc/html/rfc3339), which means that service names **should**:
 
 - Contain at most 63 characters
@@ -408,7 +409,7 @@ For time frames, the property names `startTime` and `endTime` **should** be cons
 ---
 # Versioning
 
-Each service has its own individual API version, i.e., there is no shared version for all services within Keptn. The versioning scheme should follow
+Each service has its own individual API version, i.e., there is no shared version for all services within Keptn. The versioning scheme **must** follow
 the semantic versioning conventions by maintaining a `major`, `minor` and `patch` version (`<major>.<minor>.<patch>`).
 
 These versions **must** be incremented according to the following rules:
@@ -430,7 +431,7 @@ The URLs pointing to released API endpoints shall only include the major version
 /<service-name>/v<major version>/<api-resource>
 ```
 
-For unreleased APIs, the version should be provided in the following format:
+For unreleased APIs, the version **should** be provided in the following format:
 
 ```
 /<service-name>/v0.<minor version>/<api-resource>
