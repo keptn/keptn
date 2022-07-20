@@ -1,9 +1,12 @@
 package api
 
 import (
+	"errors"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/models"
 )
+
+var ErrProjectNameMustNotBeEmpty = errors.New("project name must not be empty")
 
 // GetSequenceExecutionParams contains the parameters for requests to the GET /sequence-execution endpoint
 type GetSequenceExecutionParams struct {
@@ -41,4 +44,11 @@ func (p GetSequenceExecutionParams) GetSequenceExecutionFilter() models.Sequence
 	}
 
 	return filter
+}
+
+func (p GetSequenceExecutionParams) Validate() error {
+	if p.Project == "" {
+		return ErrProjectNameMustNotBeEmpty
+	}
+	return nil
 }

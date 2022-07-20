@@ -14,5 +14,5 @@ func NewSequenceExecutionController(seh handler.SequenceExecutionHandler) *Seque
 }
 
 func (controller SequenceExecutionController) Inject(apiGroup *gin.RouterGroup) {
-	apiGroup.GET("/sequence-execution/:project", controller.sequenceExecutionHandler.GetSequenceExecutions)
+	apiGroup.GET("/sequence-execution", controller.sequenceExecutionHandler.GetSequenceExecutions)
 }

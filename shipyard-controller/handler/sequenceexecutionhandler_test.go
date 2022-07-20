@@ -56,7 +56,7 @@ func Test_sequenceExecutionHandler_GetSequenceExecutions(t *testing.T) {
 					},
 				},
 			},
-			request:    httptest.NewRequest(http.MethodGet, "/sequence-execution/my-project", nil),
+			request:    httptest.NewRequest(http.MethodGet, "/sequence-execution", nil),
 			wantStatus: http.StatusOK,
 			wantResponse: &api.GetSequenceExecutionResponse{
 				PaginationResult: models.PaginationResult{
@@ -102,7 +102,7 @@ func Test_sequenceExecutionHandler_GetSequenceExecutions(t *testing.T) {
 					},
 				},
 			},
-			request:    httptest.NewRequest(http.MethodGet, "/sequence-execution/my-project?pageSize=10&nextPageKey=5&stage=my-stage&service=my-service&status=started", nil),
+			request:    httptest.NewRequest(http.MethodGet, "/sequence-execution?project=my-project&pageSize=10&nextPageKey=5&stage=my-stage&service=my-service&status=started", nil),
 			wantStatus: http.StatusOK,
 			wantResponse: &api.GetSequenceExecutionResponse{
 				PaginationResult: models.PaginationResult{
@@ -145,7 +145,7 @@ func Test_sequenceExecutionHandler_GetSequenceExecutions(t *testing.T) {
 					},
 				},
 			},
-			request:                     httptest.NewRequest(http.MethodGet, "/sequence-execution/my-project?pageSize=10&nextPageKey=5&stage=my-stage&service=my-service&status=started", nil),
+			request:                     httptest.NewRequest(http.MethodGet, "/sequence-execution?project=my-project&pageSize=10&nextPageKey=5&stage=my-stage&service=my-service&status=started", nil),
 			wantStatus:                  http.StatusNotFound,
 			wantResponse:                nil,
 			wantSequenceExecutionFilter: nil,
@@ -165,7 +165,7 @@ func Test_sequenceExecutionHandler_GetSequenceExecutions(t *testing.T) {
 					},
 				},
 			},
-			request:                     httptest.NewRequest(http.MethodGet, "/sequence-execution/my-project?pageSize=10&nextPageKey=5&stage=my-stage&service=my-service&status=started", nil),
+			request:                     httptest.NewRequest(http.MethodGet, "/sequence-execution?project=my-project&pageSize=10&nextPageKey=5&stage=my-stage&service=my-service&status=started", nil),
 			wantStatus:                  http.StatusInternalServerError,
 			wantResponse:                nil,
 			wantSequenceExecutionFilter: nil,
@@ -185,7 +185,7 @@ func Test_sequenceExecutionHandler_GetSequenceExecutions(t *testing.T) {
 					},
 				},
 			},
-			request:                     httptest.NewRequest(http.MethodGet, "/sequence-execution/my-project?pageSize=10&nextPageKey=5&stage=my-stage&service=my-service&status=started", nil),
+			request:                     httptest.NewRequest(http.MethodGet, "/sequence-execution?project=my-project&pageSize=10&nextPageKey=5&stage=my-stage&service=my-service&status=started", nil),
 			wantStatus:                  http.StatusInternalServerError,
 			wantResponse:                nil,
 			wantSequenceExecutionFilter: nil,
@@ -197,7 +197,19 @@ func Test_sequenceExecutionHandler_GetSequenceExecutions(t *testing.T) {
 				sequenceExecutionRepo: &db_mock.SequenceExecutionRepoMock{},
 				projectRepo:           &db_mock.ProjectRepoMock{},
 			},
-			request:                     httptest.NewRequest(http.MethodGet, "/sequence-execution/my-project?pageSize=invalid&nextPageKey=5&stage=my-stage&service=my-service&status=started", nil),
+			request:                     httptest.NewRequest(http.MethodGet, "/sequence-execution?project=my-project&pageSize=invalid&nextPageKey=5&stage=my-stage&service=my-service&status=started", nil),
+			wantStatus:                  http.StatusBadRequest,
+			wantResponse:                nil,
+			wantSequenceExecutionFilter: nil,
+			wantPaginationParams:        nil,
+		},
+		{
+			name: "get sequence execution - no project name set",
+			fields: fields{
+				sequenceExecutionRepo: &db_mock.SequenceExecutionRepoMock{},
+				projectRepo:           &db_mock.ProjectRepoMock{},
+			},
+			request:                     httptest.NewRequest(http.MethodGet, "/sequence-execution", nil),
 			wantStatus:                  http.StatusBadRequest,
 			wantResponse:                nil,
 			wantSequenceExecutionFilter: nil,
@@ -209,7 +221,7 @@ func Test_sequenceExecutionHandler_GetSequenceExecutions(t *testing.T) {
 			h := handler.NewSequenceExecutionHandler(tt.fields.sequenceExecutionRepo, tt.fields.projectRepo)
 
 			router := gin.Default()
-			router.GET("/sequence-execution/:project", func(c *gin.Context) {
+			router.GET("/sequence-execution", func(c *gin.Context) {
 				h.GetSequenceExecutions(c)
 			})
 			w := performRequest(router, tt.request)

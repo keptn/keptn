@@ -34,7 +34,7 @@ func NewSequenceExecutionHandler(sequenceExecutionRepo db.SequenceExecutionRepo,
 // @Security     ApiKeyAuth
 // @Accept       json
 // @Produce      json
-// @Param        project       path      string                    true  "The project name"
+// @Param        project       query     string                    true  "The project name"
 // @Param        stage         query     string                    false  "The stage name"
 // @Param        service       query     string                    false  "The service name"
 // @Param        name          query     string                    false  "The name of the sequence"
@@ -46,7 +46,7 @@ func NewSequenceExecutionHandler(sequenceExecutionRepo db.SequenceExecutionRepo,
 // @Success      404           {object}  models.Error              "Project not found"
 // @Success      400           {object}  models.Error              "Bad Request"
 // @Failure      500           {object}  models.Error              "Internal error"
-// @Router       /sequence-execution/{project} [get]
+// @Router       /sequence-execution [get]
 func (h *sequenceExecutionHandler) GetSequenceExecutions(ctx *gin.Context) {
 	params := &api.GetSequenceExecutionParams{}
 	if err := ctx.ShouldBindQuery(params); err != nil {
@@ -54,7 +54,10 @@ func (h *sequenceExecutionHandler) GetSequenceExecutions(ctx *gin.Context) {
 		return
 	}
 
-	params.Project = ctx.Param("project")
+	if err := params.Validate(); err != nil {
+		SetBadRequestErrorResponse(ctx, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		return
+	}
 	_, err := h.projectRepo.GetProject(params.Project)
 	if err != nil {
 		if errors.Is(err, db.ErrProjectNotFound) {
