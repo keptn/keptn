@@ -18,4 +18,3 @@ vendor/*
 jmeter-service
 jmeter-extended-service
 
-chart/charts/*.tgz
