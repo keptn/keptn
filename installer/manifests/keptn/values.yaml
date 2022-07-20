@@ -67,6 +67,7 @@ nats:
     enabled: true
     replicas: 3
     name: nats
+    automountServiceAccountToken: false
   securityContext:
     runAsNonRoot: true
     runAsUser: 10001
@@ -97,7 +98,9 @@ nats:
     securityContext:
       readOnlyRootFilesystem: true
       allowPrivilegeEscalation: false
+      privileged: false
       runAsNonRoot: true
+      runAsUser: 65532
       capabilities:
         drop:
           - ALL
