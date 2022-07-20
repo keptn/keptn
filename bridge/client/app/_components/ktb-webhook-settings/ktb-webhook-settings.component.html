@@ -222,14 +222,8 @@
       <p>
         Configure secrets for the scope keptn-webhook-service under the menu entry
         <a
-          [routerLink]="[
-            '/project/',
-            projectName,
-            '/settings',
-            '/uniform',
-            '/secrets/add',
-            '?scope=keptn-webhook-service'
-          ]"
+          [routerLink]="['/project', projectName, 'settings', 'uniform', 'secrets', 'add']"
+          [queryParams]="{ scope: 'keptn-webhook-service' }"
           ><span class="&quot;bold&quot;">Secrets</span></a
         >
         in the Uniform.

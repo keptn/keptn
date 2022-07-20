@@ -323,9 +323,8 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
       }
       this.showNotification();
       return this.pendingChangesSubject.asObservable();
-    } else {
-      return of(true);
     }
+    return of(true);
   }
 
   public showNotification(): void {

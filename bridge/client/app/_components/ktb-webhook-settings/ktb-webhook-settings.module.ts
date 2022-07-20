@@ -10,6 +10,7 @@ import { DtIconModule } from '@dynatrace/barista-components/icon';
 import { KtbVariableSelectorModule } from '../ktb-variable-selector/ktb-variable-selector.module';
 import { DtInputModule } from '@dynatrace/barista-components/input';
 import { DtButtonModule } from '@dynatrace/barista-components/button';
+import { RouterModule } from '@angular/router';
 
 @NgModule({
   declarations: [KtbWebhookSettingsComponent],
@@ -26,6 +27,7 @@ import { DtButtonModule } from '@dynatrace/barista-components/button';
     ReactiveFormsModule,
     KtbVariableSelectorModule,
     DtInputModule,
+    RouterModule,
   ],
   exports: [KtbWebhookSettingsComponent],
 })

@@ -52,6 +52,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
   private _previousFilter?: PreviousWebhookConfig;
   public uniformRegistration?: UniformRegistration;
   public isWebhookFormValid = true;
+  public webhookFormTouched = false;
   public isWebhookService = false;
   public suffixes: { value: string; displayValue: string }[] = [
     {
@@ -72,6 +73,10 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
     },
   ];
   public errorMessage?: string;
+
+  private pendingChangesSubject = new Subject<boolean>();
+  public message = 'You have pending changes. Are you sure you want to leave this page?';
+  public unsavedDialogState: null | 'unsaved' = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -209,6 +214,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
         };
       }),
       tap((data) => {
+        this.webhookFormTouched = true;
         this.updateDataSource(data.project, data.subscription);
       })
     );
@@ -352,7 +358,34 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
   // @HostListener allows us to also guard against browser refresh, close, etc.
   @HostListener('window:beforeunload', ['$event'])
   public canDeactivate($event?: BeforeUnloadEvent): Observable<boolean> {
-    return of(false);
+    if (this.subscriptionForm.touched || this.webhookFormTouched) {
+      this.showNotification();
+      return this.pendingChangesSubject.asObservable();
+    }
+    return of(true);
+  }
+
+  public reject(): void {
+    this.pendingChangesSubject.next(false);
+    this.hideNotification();
+  }
+
+  public reset(): void {
+    this.pendingChangesSubject.next(true);
+    this.hideNotification();
+  }
+
+  public showNotification(): void {
+    this.unsavedDialogState = 'unsaved';
+
+    document.querySelector('div[aria-label="Dialog for notifying about unsaved data"]')?.classList.add('shake');
+    setTimeout(() => {
+      document.querySelector('div[aria-label="Dialog for notifying about unsaved data"]')?.classList.remove('shake');
+    }, 500);
+  }
+
+  public hideNotification(): void {
+    this.unsavedDialogState = null;
   }
 
   public ngOnDestroy(): void {
