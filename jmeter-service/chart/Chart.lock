@@ -1,0 +1,6 @@
+dependencies:
+- name: common
+  repository: file://../../installer/manifests/common
+  version: 0.1.0
+digest: sha256:0548b3b2c0f632ed70205a07d6eba9a8e458f579861a564dfbb2d5b3ec1e5227
+generated: "2022-07-20T10:10:57.677638388+02:00"

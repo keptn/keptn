@@ -41,12 +41,12 @@ keywords:
 dependencies:
   - name: mongodb
     version: 11.1.10
-    repository: https://charts.bitnami.com/bitnami
+    repository: file://charts
     condition: mongo.enabled
     alias: mongo
   - name: nats
     version: 0.13.2
-    repository: https://nats-io.github.io/k8s/helm/charts/
+    repository: file://charts
   - name: common
     repository: "file://../common"
     version: 0.1.0
