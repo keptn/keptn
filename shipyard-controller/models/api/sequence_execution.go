@@ -23,7 +23,7 @@ type GetSequenceExecutionResponse struct {
 	models.PaginationResult
 
 	// SequenceExecutions array containing the result
-	SequenceExecutions []models.SequenceExecution
+	SequenceExecutions []models.SequenceExecution `json:"sequenceExecutions"`
 }
 
 func (p GetSequenceExecutionParams) GetSequenceExecutionFilter() models.SequenceExecutionFilter {
