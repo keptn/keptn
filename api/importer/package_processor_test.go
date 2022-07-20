@@ -889,13 +889,125 @@ func TestImportPackageProcessor_Process_ErrorMalformedTasks(t *testing.T) {
 	}
 }
 
+func TestImportPackageProcessor_Process_ErrorRenderingContext(t *testing.T) {
+
+	tests := []struct {
+		name string
+		task *model.ManifestTask
+	}{
+		{
+			name: "Error rendering context for api task",
+			task: &model.ManifestTask{
+				ID:      "api-task",
+				Type:    "api",
+				Name:    "API Task",
+				Context: map[string]string{"foo": "bar"},
+				APITask: &model.APITask{
+					Action:      "someaction",
+					PayloadFile: "payload.json",
+				},
+			},
+		},
+		{
+			// this will fail during content rendering because there is no key in context ;)
+			name: "Error rendering payload for api task",
+			task: &model.ManifestTask{
+				ID:      "api-task",
+				Type:    "api",
+				Name:    "API Task",
+				Context: map[string]string{},
+				APITask: &model.APITask{
+					Action:      "someaction",
+					PayloadFile: "payload.json",
+				},
+			},
+		},
+		{
+			name: "Error rendering context for resource task",
+			task: &model.ManifestTask{
+				ResourceTask: &model.ResourceTask{
+					File:      "somefile.json",
+					RemoteURI: "somefile.json",
+					Stage:     "dev",
+				},
+				ID:      "res-task",
+				Type:    "resource",
+				Name:    "Resource Task",
+				Context: map[string]string{"foo": "bar"},
+			},
+		},
+		{
+			// this will fail during content rendering because there is no key in context ;)
+			name: "Error rendering content for resource task",
+			task: &model.ManifestTask{
+				ResourceTask: &model.ResourceTask{
+					File:      "somefile.json",
+					RemoteURI: "somefile.json",
+					Stage:     "dev",
+				},
+				ID:      "res-task",
+				Type:    "resource",
+				Name:    "Resource Task",
+				Context: map[string]string{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				const renderErrorMessage = "error rendering some weird template"
+				renderer := &fake.MockRenderer{
+					RenderStringFunc: func(raw string, context any) (string, error) {
+						return "", errors.New(renderErrorMessage)
+					},
+					RenderContentFunc: func(raw io.ReadCloser, context any) (io.ReadCloser, error) {
+						return nil, errors.New(renderErrorMessage)
+					},
+				}
+
+				task := tt.task
+
+				parserMock := &fake.ManifestParserMock{
+					ParseFunc: func(input io.Reader) (*model.ImportManifest, error) {
+						return &model.ImportManifest{
+							ApiVersion: "v1beta1",
+							Tasks: []*model.ManifestTask{
+								task,
+							},
+						}, nil
+					},
+				}
+
+				taskExecutor := &fake.TaskExecutorMock{}
+				stageRetriever := &fake.MockStageRetriever{}
+				sut := newImportPackageProcessor(parserMock, taskExecutor, stageRetriever, renderer)
+
+				importPackageMock := &fake.ImportPackageMock{
+					CloseFunc: func() error {
+						return nil
+					},
+					GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
+						return io.NopCloser(bytes.NewReader([]byte{})), nil
+					},
+				}
+
+				err := sut.Process("test-project", importPackageMock)
+				assert.Error(t, err)
+				assert.ErrorContains(t, err, renderErrorMessage)
+			},
+		)
+	}
+}
+
 // This test is written as a "component" (not really but close enough) test for the import core business logic
 // (everything is the real thing except interaction with external systems which relies on canned responses through
 // mocks). This is by necessity unwieldy and more complicated than a regular unit test,
 // however it still delivers valuable information on import package behavior and it can be used as a testbed for
 // manifest processing/rendering verification. Match of api and resource tasks is based on action and remoteURI,
-// content/payload is checked against expectation and a non empty response is returned if defined, nil otherwise.
-// The inputs, expectations and canned responses are defined in a .yaml file like ../../
+// content/payload is checked against expectation and a not empty response is returned if defined, nil otherwise.
+// The inputs, expectations and canned responses are defined in a .yaml file like
+// ../../test/data/import/rendered-sample-package/input.yaml
 func TestImportPackageProcessor_Process_FullManifestRendering(t *testing.T) {
 
 	type apiCallExpectation struct {
@@ -952,13 +1064,14 @@ func TestImportPackageProcessor_Process_FullManifestRendering(t *testing.T) {
 
 				taskExecutor := &fake.TaskExecutorMock{
 					ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
+						t.Logf("Handling API execution %+v", ate)
 						expectations, ok := inputs.TestData.API[ate.EndpointID]
 						if !ok || len(expectations) == 0 {
-							t.Fatalf("API call %+v has no expectations defined in inputs %+v", ate, inputs)
+							t.Fatalf("API call %+v has no expectations available in inputs %+v", ate, inputs)
 						}
 						inputs.TestData.API[ate.EndpointID] = expectations[1:]
 						expectation := expectations[0]
-
+						t.Logf("Consuming expectation %+v", expectation)
 						assert.NotNil(t, ate.Payload)
 						defer ate.Payload.Close()
 
@@ -987,12 +1100,15 @@ func TestImportPackageProcessor_Process_FullManifestRendering(t *testing.T) {
 						return retval, nil
 					},
 					PushResourceFunc: func(rp model.ResourcePush) (any, error) {
+						t.Logf("Handling resource push %+v", rp)
 						expectations, ok := inputs.TestData.Resource[rp.ResourceURI]
 						if !ok || len(expectations) == 0 {
-							t.Fatalf("Resource upload %+v has no expectations defined in inputs %+v", rp, inputs)
+							t.Fatalf("Resource upload %+v has no expectations available in inputs %+v", rp, inputs)
 						}
 						inputs.TestData.Resource[rp.ResourceURI] = expectations[1:]
 						expectation := expectations[0]
+
+						t.Logf("Consuming expectation %+v", expectation)
 
 						assert.NotNil(t, rp.Content)
 						defer rp.Content.Close()

@@ -23,7 +23,7 @@ tasks:
 
   # create a secret which we will later use in webhook
   - name: "Create secret"
-    id: create_secret
+    id: create-secret
     type: api
     payload: "api/create-secret.json"
     action: "keptn-api-v1-uniform-create-secret"

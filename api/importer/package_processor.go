@@ -9,6 +9,7 @@ import (
 
 //go:generate moq -pkg fake --skip-ensure -out ./fake/package_processor_mock.go . ImportPackage:ImportPackageMock ManifestParser:ManifestParserMock TaskExecutor:TaskExecutorMock
 //go:generate moq -pkg fake --skip-ensure -out ./fake/stage_retriever_mock.go . ProjectStageRetriever:MockStageRetriever
+//go:generate moq -pkg fake --skip-ensure -out ./fake/renderer_mock.go . Renderer:MockRenderer
 
 type Renderer interface {
 	RenderContent(raw io.ReadCloser, context any) (io.ReadCloser, error)
