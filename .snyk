@@ -75,4 +75,4 @@ exclude:
   global:
     - '**/*.spec.ts'
     - '**/*_test.go'
-    - test/**
+    - 'test/**'
