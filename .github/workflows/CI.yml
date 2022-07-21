@@ -460,6 +460,7 @@ jobs:
 
       - id: snyk_container_monitor
         name: Snyk Container Image Check
+        if: github.ref_protected == 'true'
         uses: snyk/actions/docker@0.3.0
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
