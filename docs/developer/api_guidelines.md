@@ -222,7 +222,7 @@ Status: 202 - Accepted
 Body:
 
 {
-  "jobId": "123-456-789"
+  "jobID": "123-456-789"
 }
 ```
 
