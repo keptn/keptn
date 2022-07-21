@@ -19,6 +19,7 @@ import (
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/keptn/shipyard-controller/common"
+	common_mock "github.com/keptn/keptn/shipyard-controller/common/fake"
 	"github.com/keptn/keptn/shipyard-controller/handler/fake"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/assert"
@@ -39,6 +40,12 @@ func TestGetAllProjects(t *testing.T) {
 	}
 	p2 := &apimodels.ExpandedProject{
 		Stages: es2,
+	}
+
+	denyListProvider := common_mock.DenyListProviderMock{
+		GetDenyListFunc: func() []string {
+			return []string{"some-denied"}
+		},
 	}
 
 	type fields struct {
@@ -134,7 +141,7 @@ func TestGetAllProjects(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			w, c := createGinTestContext()
 
-			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, tt.fields.EnvConfig, tt.fields.RepositoryProvisioner)
+			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, tt.fields.EnvConfig, tt.fields.RepositoryProvisioner, denyListProvider)
 			c.Request, _ = http.NewRequest(http.MethodGet, tt.queryParams, bytes.NewBuffer([]byte{}))
 
 			handler.GetAllProjects(c)
@@ -158,6 +165,12 @@ func TestGetProjectByName(t *testing.T) {
 	es1 := []*apimodels.ExpandedStage{s1, s2}
 
 	p1 := &apimodels.ExpandedProject{Stages: es1}
+
+	denyListProvider := common_mock.DenyListProviderMock{
+		GetDenyListFunc: func() []string {
+			return []string{"some-denied"}
+		},
+	}
 
 	type fields struct {
 		ProjectManager        IProjectManager
@@ -229,7 +242,7 @@ func TestGetProjectByName(t *testing.T) {
 				gin.Param{Key: "project", Value: "my-project"},
 			}
 
-			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, tt.fields.EnvConfig, tt.fields.RepositoryProvisioner)
+			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, tt.fields.EnvConfig, tt.fields.RepositoryProvisioner, denyListProvider)
 			c.Request, _ = http.NewRequest(http.MethodGet, "", bytes.NewBuffer([]byte{}))
 
 			handler.GetProjectByName(c)
@@ -249,6 +262,12 @@ func TestGetProjectByName(t *testing.T) {
 }
 
 func TestCreateProject(t *testing.T) {
+
+	denyListProvider := common_mock.DenyListProviderMock{
+		GetDenyListFunc: func() []string {
+			return []string{"some-denied"}
+		},
+	}
 
 	type fields struct {
 		ProjectManager        IProjectManager
@@ -444,7 +463,7 @@ func TestCreateProject(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			w, c := createGinTestContext()
 
-			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, tt.fields.EnvConfig, tt.fields.RepositoryProvisioner)
+			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, tt.fields.EnvConfig, tt.fields.RepositoryProvisioner, denyListProvider)
 			c.Request, _ = http.NewRequest(http.MethodPost, "", bytes.NewBuffer([]byte(tt.jsonPayload)))
 
 			handler.CreateProject(c)
@@ -476,6 +495,11 @@ func TestUpdateProject(t *testing.T) {
 	examplePayload := `{"gitRemoteURL":"http://remote-url.com","gitToken":"99c4c193-4813-43c5-864f-ad6f12ac1d82","gitUser":"gituser","name":"myproject"}`
 	examplePayloadInvalid := `{"gitRemoteURL":"http://remote-url.com","gitToken":"99c4c193-4813-43c5-864f-ad6f12ac1d82","gitUser":"gituser","name":"myPPPProject","shipyard":"YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAoKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyczoKICAgICAgLSBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6IAogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW5fc2VydmljZQogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBraW5kOiBwZXJmb3JtYW5jZQogICAgICAtIG5hbWU6IGV2YWx1YXRpb24KICAgICAgLSBuYW1lOiByZWxlYXNlCiAgICAgICAgCiAgLSBuYW1lOiBwcm9kdWN0aW9uCiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5IAogICAgICB0cmlnZ2VyczoKICAgICAgLSBoYXJkZW5pbmcuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBzdHJhdGVneTogYmx1ZV9ncmVlbgogICAgICAtIG5hbWU6IHJlbGVhc2UKICAgICAgCiAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg=="}`
 
+	denyListProvider := common_mock.DenyListProviderMock{
+		GetDenyListFunc: func() []string {
+			return []string{"some-denied"}
+		},
+	}
 	tests := []struct {
 		name               string
 		fields             fields
@@ -640,7 +664,7 @@ func TestUpdateProject(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			w, c := createGinTestContext()
 
-			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, tt.fields.EnvConfig, tt.fields.RepositoryProvisioner)
+			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, tt.fields.EnvConfig, tt.fields.RepositoryProvisioner, denyListProvider)
 			c.Request, _ = http.NewRequest(http.MethodPut, "", bytes.NewBuffer([]byte(tt.jsonPayload)))
 
 			handler.UpdateProject(c)
@@ -659,6 +683,12 @@ func TestDeleteProject(t *testing.T) {
 		EventSender           common.EventSender
 		RepositoryProvisioner IRepositoryProvisioner
 		EnvConfig             config.EnvConfig
+	}
+
+	denyListProvider := common_mock.DenyListProviderMock{
+		GetDenyListFunc: func() []string {
+			return []string{"some-denied"}
+		},
 	}
 
 	tests := []struct {
@@ -785,7 +815,7 @@ func TestDeleteProject(t *testing.T) {
 			deleted = false
 			w, c := createGinTestContext()
 
-			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, tt.fields.EnvConfig, tt.fields.RepositoryProvisioner)
+			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, tt.fields.EnvConfig, tt.fields.RepositoryProvisioner, denyListProvider)
 			c.Params = gin.Params{
 				gin.Param{Key: "project", Value: tt.projectPathParam},
 				gin.Param{Key: "namespace", Value: "keptn"},

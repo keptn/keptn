@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"regexp"
 
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/shipyard-controller/config"
@@ -168,14 +169,16 @@ type ProjectHandler struct {
 	EventSender           common.EventSender
 	Env                   config.EnvConfig
 	RepositoryProvisioner IRepositoryProvisioner
+	DenyListProvider      common.DenyListProvider
 }
 
-func NewProjectHandler(projectManager IProjectManager, eventSender common.EventSender, env config.EnvConfig, repositoryProvisioner IRepositoryProvisioner) *ProjectHandler {
+func NewProjectHandler(projectManager IProjectManager, eventSender common.EventSender, env config.EnvConfig, repositoryProvisioner IRepositoryProvisioner, denyListProvider common.DenyListProvider) *ProjectHandler {
 	return &ProjectHandler{
 		ProjectManager:        projectManager,
 		EventSender:           eventSender,
 		Env:                   env,
 		RepositoryProvisioner: repositoryProvisioner,
+		DenyListProvider:      denyListProvider,
 	}
 }
 
@@ -303,6 +306,12 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 			},
 			User: provisioningData.GitUser,
 		}
+	} else {
+		deniedRepositoriesList := ph.DenyListProvider.Get()
+		if isRemoteURLDenied(params.GitCredentials.RemoteURL, deniedRepositoriesList) {
+			SetUnprocessableEntityResponse(c, fmt.Sprintf(InvalidRemoteURLMsg, params.GitCredentials.RemoteURL))
+			return
+		}
 	}
 
 	projectValidator := ProjectValidator{ProjectNameMaxSize: ph.Env.ProjectNameMaxSize}
@@ -370,6 +379,15 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 	if err := projectValidator.Validate(params); err != nil {
 		SetBadRequestErrorResponse(c, fmt.Sprintf(common.InvalidPayloadMsg, err.Error()))
 		return
+	}
+
+	automaticProvisioningURL := ph.Env.AutomaticProvisioningURL
+	if automaticProvisioningURL == "" || params.GitCredentials != nil {
+		deniedRepositoriesList := ph.DenyListProvider.Get()
+		if isRemoteURLDenied(params.GitCredentials.RemoteURL, deniedRepositoriesList) {
+			SetUnprocessableEntityResponse(c, fmt.Sprintf(InvalidRemoteURLMsg, params.GitCredentials.RemoteURL))
+			return
+		}
 	}
 
 	common.LockProject(*params.Name)
@@ -495,6 +513,15 @@ func (ph *ProjectHandler) sendProjectCreateFailFinishedEvent(keptnContext string
 
 	ce := common.CreateEventWithPayload(keptnContext, "", keptnv2.GetFinishedEventType(keptnv2.ProjectCreateTaskName), eventPayload)
 	return ph.EventSender.SendEvent(ce)
+}
+
+func isRemoteURLDenied(url string, list []string) bool {
+	for _, item := range list {
+		if res, _ := regexp.MatchString(item, url); res {
+			return true
+		}
+	}
+	return false
 }
 
 func (ph *ProjectHandler) sendProjectDeleteSuccessFinishedEvent(keptnContext, projectName string) error {
