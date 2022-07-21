@@ -67,7 +67,7 @@ nats:
     enabled: true
     replicas: 3
     name: nats
-    automountServiceAccountToken: false
+  automountServiceAccountToken: false
   securityContext:
     runAsNonRoot: true
     runAsUser: 10001
