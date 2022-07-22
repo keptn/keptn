@@ -23,7 +23,7 @@ standard.args = {
   webhook: {
     type: 'MYTYPE',
     method: 'GET',
-    url: 'http://webhook',
+    url: 'https://webhook',
     payload: '',
     header: [],
     sendFinished: true,
