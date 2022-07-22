@@ -25,6 +25,8 @@ const routes: Routes = [
         loadChildren: () =>
           import('./_views/ktb-dashboard-view/ktb-dashboard-view.module').then((m) => m.KtbDashboardViewModule),
       },
+      // Enable this if you want to test the D3 chart component
+      // { path: 'chart', component: KtbTestChartComponent },
       {
         path: 'create',
         loadChildren: () =>
