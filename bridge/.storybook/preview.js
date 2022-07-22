@@ -1,6 +1,7 @@
 import {setCompodocJson} from "@storybook/addon-docs/angular";
 import docJson from "../documentation.json";
 import '!style-loader!css-loader!sass-loader!./scss-loader.scss';
+import {componentWrapperDecorator} from "@storybook/angular";
 
 setCompodocJson(docJson);
 
@@ -16,5 +17,10 @@ export const parameters = {
   docs: { inlineStories: true },
   storySort: {
     order: ['Introduction']
-  }
-}
+  },
+};
+
+export const decorators = [
+  componentWrapperDecorator((story) =>
+    `<link href="/assets/default-branding/keptn-theme.css" rel="stylesheet"/>${story}`),
+];

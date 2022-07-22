@@ -1,15 +1,17 @@
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { KtbTreeListSelectComponent, KtbTreeListSelectDirective } from './ktb-tree-list-select.component';
-import { DtOverlayModule } from '@dynatrace/barista-components/overlay';
-import { DtIconModule } from '@dynatrace/barista-components/icon';
-import { DtTreeTableModule } from '@dynatrace/barista-components/tree-table';
+import { HttpClientModule } from '@angular/common/http';
+import { NgModule } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
+import { DtIconModule } from '@dynatrace/barista-components/icon';
+import { DtOverlayModule } from '@dynatrace/barista-components/overlay';
+import { DtTreeTableModule } from '@dynatrace/barista-components/tree-table';
+import { KtbTreeListSelectComponent, KtbTreeListSelectDirective } from './ktb-tree-list-select.component';
 
 @NgModule({
   declarations: [KtbTreeListSelectDirective, KtbTreeListSelectComponent],
   imports: [
     CommonModule,
+    HttpClientModule,
     DtIconModule.forRoot({
       svgIconLocation: `assets/icons/{{name}}.svg`,
     }),

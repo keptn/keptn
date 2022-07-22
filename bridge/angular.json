@@ -173,6 +173,8 @@
       }
     },
     "storybook": {
+      "projectType": "application",
+      "root": "stories",
       "builder": "@storybook/angular:start-storybook",
       "options": {
         "browserTarget": "angular-cli:build",
@@ -180,6 +182,7 @@
       }
     },
     "build-storybook": {
+      "root": "stories",
       "builder": "@storybook/angular:build-storybook",
       "options": {
         "browserTarget": "angular-cli:build"

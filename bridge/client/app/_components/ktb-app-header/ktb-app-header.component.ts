@@ -1,40 +1,48 @@
-import semver from 'semver';
 import { DOCUMENT } from '@angular/common';
-import { Component, Inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { NavigationEnd, NavigationStart, Router } from '@angular/router';
+import { AfterViewInit, Component, Inject, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { combineLatest, Observable, Subject } from 'rxjs';
+import { NavigationEnd, NavigationStart, Router } from '@angular/router';
+import { DtSelect } from '@dynatrace/barista-components/select';
+import { DtSwitchChange } from '@dynatrace/barista-components/switch';
+import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import semver from 'semver';
+import { VersionInfo } from '../../../../shared/interfaces/keptn-versions';
+import { environment } from '../../../environments/environment';
+import { IMetadata } from '../../_interfaces/metadata';
+import { KeptnInfo } from '../../_models/keptn-info';
+import { NotificationType } from '../../_models/notification';
 import { Project } from '../../_models/project';
 import { DataService } from '../../_services/data.service';
 import { NotificationsService } from '../../_services/notifications.service';
-import { NotificationType } from '../../_models/notification';
-import { environment } from '../../../environments/environment';
-import { KeptnInfo } from '../../_models/keptn-info';
-import { DtSwitchChange } from '@dynatrace/barista-components/switch';
-import { VersionInfo } from '../../../../shared/interfaces/keptn-versions';
-import { DtSelect } from '@dynatrace/barista-components/select';
-import { IMetadata } from '../../_interfaces/metadata';
 
 @Component({
   selector: 'ktb-header',
   templateUrl: './ktb-app-header.component.html',
   styleUrls: ['./ktb-app-header.component.scss'],
 })
-export class KtbAppHeaderComponent implements OnInit, OnDestroy {
+export class KtbAppHeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
 
   @ViewChild('projectSelect') projectSelect?: DtSelect<string | undefined>;
-  public projects: Observable<Project[] | undefined>;
-  public selectedProject: string | undefined;
   public projectBoardView = '';
-  public appTitle = environment.config.appTitle;
-  public logoUrl = environment.config.logoUrl;
-  public logoInvertedUrl = environment.config.logoInvertedUrl;
-  public keptnInfo?: KeptnInfo;
+  public appTitle: string;
+  public logoUrl: string;
+  public logoInvertedUrl: string;
   public versionCheckDialogState: string | null = null;
   public versionCheckReference = '/reference/version_check/';
-  public metadata?: IMetadata;
+
+  @Input()
+  public info?: KeptnInfo | null;
+
+  @Input()
+  public metadata?: IMetadata | null;
+
+  @Input()
+  public projects?: Project[] | null;
+
+  @Input()
+  public selectedProject?: string | null;
 
   constructor(
     @Inject(DOCUMENT) private _document: Document,
@@ -43,7 +51,9 @@ export class KtbAppHeaderComponent implements OnInit, OnDestroy {
     private notificationsService: NotificationsService,
     private titleService: Title
   ) {
-    this.projects = this.dataService.projects;
+    this.appTitle = environment.config.appTitle;
+    this.logoUrl = environment.config.logoUrl;
+    this.logoInvertedUrl = environment.config.logoInvertedUrl;
     this.router.events.pipe(takeUntil(this.unsubscribe$)).subscribe((event) => {
       if (event instanceof NavigationStart || event instanceof NavigationEnd) {
         this.setProject();
@@ -54,33 +64,29 @@ export class KtbAppHeaderComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.titleService.setTitle(this.appTitle);
     this.setAppFavicon(this.logoInvertedUrl);
+  }
 
-    combineLatest([this.dataService.keptnInfo, this.dataService.keptnMetadata])
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(([keptnInfo, metadata]) => {
-        this.keptnInfo = keptnInfo;
-        this.metadata = metadata ?? undefined;
-        if (!keptnInfo) {
-          return;
-        }
-        if (keptnInfo.versionCheckEnabled === undefined) {
-          this.showVersionCheckInfoDialog();
-        } else if (
-          metadata &&
-          keptnInfo.bridgeInfo.enableVersionCheckFeature &&
-          keptnInfo.versionCheckEnabled &&
-          keptnInfo.availableVersions
-        ) {
-          keptnInfo.keptnVersionInvalid = !semver.valid(metadata.keptnversion);
-          keptnInfo.bridgeVersionInvalid = !semver.valid(keptnInfo.bridgeInfo.bridgeVersion);
-          this.doVersionCheck(
-            keptnInfo.bridgeInfo.bridgeVersion,
-            metadata.keptnversion,
-            keptnInfo.availableVersions.bridge,
-            keptnInfo.availableVersions.cli
-          );
-        }
-      });
+  ngAfterViewInit(): void {
+    if (!this.info) {
+      return;
+    }
+    if (this.info.versionCheckEnabled === undefined) {
+      this.showVersionCheckInfoDialog();
+    } else if (
+      this.metadata &&
+      this.info.bridgeInfo.enableVersionCheckFeature &&
+      this.info.versionCheckEnabled &&
+      this.info.availableVersions
+    ) {
+      this.info.keptnVersionInvalid = !semver.valid(this.metadata.keptnversion);
+      this.info.bridgeVersionInvalid = !semver.valid(this.info.bridgeInfo.bridgeVersion);
+      this.doVersionCheck(
+        this.info.bridgeInfo.bridgeVersion,
+        this.metadata.keptnversion,
+        this.info.availableVersions.bridge,
+        this.info.availableVersions.cli
+      );
+    }
   }
 
   // Returns a string array that allows routing to the project board view
@@ -178,7 +184,7 @@ export class KtbAppHeaderComponent implements OnInit, OnDestroy {
   }
 
   showVersionCheckInfoDialog(): void {
-    if (this.keptnInfo?.bridgeInfo.enableVersionCheckFeature) {
+    if (this.info?.bridgeInfo.enableVersionCheckFeature) {
       this.versionCheckDialogState = 'info';
     }
   }
@@ -205,7 +211,7 @@ export class KtbAppHeaderComponent implements OnInit, OnDestroy {
     this._document.getElementById('appFavicon')?.setAttribute('href', path);
   }
 
-  changeProject(selectedProject: string | undefined): void {
+  changeProject(selectedProject: string | null | undefined): void {
     this.router.navigate(this.getRouterLink(selectedProject as string));
   }
 
@@ -228,7 +234,7 @@ export class KtbAppHeaderComponent implements OnInit, OnDestroy {
       this.selectedProject = undefined;
     }
 
-    if (this.projectSelect) {
+    if (this.projectSelect && this.selectedProject !== null) {
       this.projectSelect.value = this.selectedProject;
     }
   }

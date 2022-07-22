@@ -1,0 +1,39 @@
+import {Canvas, Meta, Story} from '@storybook/addon-docs';
+import {moduleMetadata} from "@storybook/angular";
+import {KtbDangerZoneComponent} from "../../client/app/_components/ktb-danger-zone/ktb-danger-zone.component";
+import {KtbDangerZoneModule} from "../../client/app/_components/ktb-danger-zone/ktb-danger-zone.module";
+
+<Meta title="Components/Danger Zone" component={KtbDangerZoneComponent}
+      decorators={[moduleMetadata({imports: [KtbDangerZoneModule]})]}/>
+
+# Danger Zone
+
+The danger zone is a component that emphasizes on the terminal operation of deleting a project or service.
+
+## Project
+
+Let's define the danger zone for a project:
+
+<Canvas>
+  <Story name="Project">
+    {{
+      template: `
+        <ktb-danger-zone [data]="${"{ name: 'project-1', type: 'project' }"}"></ktb-danger-zone>
+      `
+    }}
+  </Story>
+</Canvas>
+
+## Service
+
+The following is how you define the danger zone for a service:
+
+<Canvas>
+  <Story name="Service">
+    {{
+      template: `
+        <ktb-danger-zone [data]="${"{ name: 'service-1', type: 'service' }"}"></ktb-danger-zone>
+      `
+    }}
+  </Story>
+</Canvas>

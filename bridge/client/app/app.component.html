@@ -1,6 +1,11 @@
 <div fxFlexFill fxLayout="column">
   <ktb-notification-bar></ktb-notification-bar>
-  <ktb-header></ktb-header>
+  <ktb-header
+    [info]="keptnInfo$ | async"
+    [metadata]="keptnMetadata$ | async"
+    [projects]="projects$ | async"
+    [selectedProject]="selectedProject$ | async"
+  ></ktb-header>
   <div id="page-content" fxFlex fxFlexFill>
     <router-outlet></router-outlet>
   </div>
