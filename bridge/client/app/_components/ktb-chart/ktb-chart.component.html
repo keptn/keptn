@@ -1,0 +1,38 @@
+<div class="ktb-chart-container">
+  <div class="ktb-chart">
+    <svg [id]="uniqueId"></svg>
+  </div>
+  <div class="ktb-chart-legend-container">
+    <div
+      *ngFor="let item of chartItems; let i = index"
+      [attr.uitestid]="'chart-legend-item-' + replaceSpace(item.identifier)"
+      class="ktb-chart-legend-item"
+      [class.invisible]="item.invisible"
+      (click)="hideChartItem(item)"
+    >
+      <dt-icon
+        [style]="getIconStyle(i, item.invisible)"
+        [name]="item.type === 'score-bar' ? 'chart-legend-bar' : 'chart-legend-line'"
+      ></dt-icon>
+      <span>{{ item.label ?? item.identifier }}</span>
+    </div>
+  </div>
+</div>
+
+<ng-container *ngIf="tooltipState$ | async as tooltipState">
+  <div
+    #tooltip
+    *ngIf="tooltipState.visible"
+    class="tooltip tooltip-container"
+    [style.top.px]="tooltipState.top"
+    [style.left.px]="tooltipState.left"
+  >
+    <h4>{{ tooltipState.label }}</h4>
+    <dt-key-value-list>
+      <dt-key-value-list-item *ngFor="let metric of tooltipState.metricValues">
+        <dt-key-value-list-key>{{ metric.label }}</dt-key-value-list-key>
+        <dt-key-value-list-value>{{ metric.value | truncateNumber: 2 }}</dt-key-value-list-value>
+      </dt-key-value-list-item>
+    </dt-key-value-list>
+  </div>
+</ng-container>
