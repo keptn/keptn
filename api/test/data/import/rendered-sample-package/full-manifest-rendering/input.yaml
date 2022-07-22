@@ -1,0 +1,17 @@
+project: full-manifest-test
+test-data:
+  api:
+    keptn-api-v1-create-service:
+      - action: keptn-api-v1-create-service
+        expected: api/create-service.json
+    keptn-api-v1-uniform-create-secret:
+      - action: keptn-api-v1-uniform-create-secret
+        expected: api/create-secret.json
+    keptn-api-v1-uniform-create-webhook-subscription:
+      - action: keptn-api-v1-uniform-create-webhook-subscription
+        expected: api/create-subscription.json
+        response: '{ "id": "e6c6700b-6f1a-489f-a309-fba8d40fcca1" }'
+  resource:
+    webhook.yaml:
+      - uri: webhook.yaml
+        expected: "resources/webhook.yaml"
