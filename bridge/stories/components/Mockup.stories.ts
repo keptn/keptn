@@ -3,10 +3,12 @@ import '@angular/localize/init';
 import { RouterTestingModule } from '@angular/router/testing';
 import { moduleMetadata } from '@storybook/angular';
 import { Meta, Story } from '@storybook/angular/types-6-0';
+import { Service } from 'client/app/_models/service';
 import { KtbAppHeaderComponent } from '../../client/app/_components/ktb-app-header/ktb-app-header.component';
 import { KtbAppHeaderModule } from '../../client/app/_components/ktb-app-header/ktb-app-header.module';
 import { KtbSelectableTileModule } from '../../client/app/_components/ktb-selectable-tile/ktb-selectable-tile.module';
 import { Project } from '../../client/app/_models/project';
+import { Stage } from '../../client/app/_models/stage';
 
 export default {
   title: 'Components/Mockup',
@@ -20,7 +22,28 @@ export default {
   },
 } as Meta;
 
+const defaultStageNames = ['develop', 'staging', 'qa', 'prod-us', 'prod-eu'];
+
 const toTemplate = (a: unknown): string => JSON.stringify(a).replace(/"/g, "'");
+
+const createService = (id: number): Service =>
+  ({
+    serviceName: 'svc-' + id,
+  } as Service);
+
+const createStage = (stageName: string, id: number): Stage =>
+  ({
+    stageName,
+    services: Array(((id + 3) % 5) + 1)
+      .fill(0)
+      .map((v, index) => createService(index + 1)),
+  } as Stage);
+
+const createProject = (id: number, stageNames: string[]): Project =>
+  ({
+    projectName: `project-${id}`,
+    stages: stageNames.map((name) => createStage(name, id)),
+  } as Project);
 
 const template: Story<KtbAppHeaderComponent> = (args: KtbAppHeaderComponent) => ({
   props: args,
@@ -118,6 +141,37 @@ single.args = {
       ],
     } as Project,
   ],
+  info: {
+    bridgeInfo: {
+      featureFlags: {
+        RESOURCE_SERVICE_ENABLED: true,
+        D3_HEATMAP_ENABLED: true,
+      },
+      cliDownloadLink: '',
+      enableVersionCheckFeature: true,
+      showApiToken: true,
+      authType: '',
+    },
+  },
+  metadata: {
+    namespace: 'keptn',
+    keptnversion: '0.18.0',
+    keptnlabel: '',
+    bridgeversion: '0.18.0',
+    shipyardversion: '2',
+  },
+  selectedProject: 'sockshop',
+  changeProject: (selectedProject: string | undefined): void => {
+    (standard.args ?? {}).selectedProject = selectedProject;
+  },
+};
+
+export const many = template.bind({});
+
+many.args = {
+  projects: Array(100)
+    .fill(0)
+    .map((v, index) => createProject(index + 1, defaultStageNames.slice(0, (index % defaultStageNames.length) + 1))),
   info: {
     bridgeInfo: {
       featureFlags: {
