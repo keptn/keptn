@@ -2,7 +2,7 @@ import { IClientFeatureFlags } from '../../../../../shared/interfaces/feature-fl
 
 const featureFlags: IClientFeatureFlags = {
   RESOURCE_SERVICE_ENABLED: false,
-  D3_HEATMAP_ENABLED: false,
+  D3_ENABLED: false,
 };
 
 const bridgeInfo = {
