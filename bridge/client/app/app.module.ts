@@ -75,6 +75,7 @@ const ktbModules = [KtbAppHeaderModule, KtbErrorViewModule, KtbLoadingModule, Kt
 
 @NgModule({
   declarations: [AppComponent, NotFoundComponent, KtbRootComponent],
+  // Move KtbChartModule to the page module, where it is needed
   imports: [...angularModules, ...dtModules, ...ktbModules, AppRouting, FlexModule, MomentModule, KtbChartModule],
   entryComponents: [],
   providers: [

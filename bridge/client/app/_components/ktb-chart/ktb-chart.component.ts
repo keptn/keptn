@@ -34,6 +34,7 @@ type ToolTipState = {
 const _height = 400;
 const margin: Margin = { top: 60, right: 60, left: 50, bottom: 100 };
 const yTicks = [25, 50, 75, 100];
+const barWidth = 5;
 
 @Component({
   selector: 'ktb-chart',
@@ -197,9 +198,9 @@ export class KtbChartComponent implements AfterViewInit, OnChanges {
 
     const rect = selection
       .append('rect')
-      .attr('x', (d) => this.xScale(d[0]) - 1)
+      .attr('x', (d) => this.xScale(d[0]) - Math.floor(barWidth / 2))
       .attr('y', (d) => this.yScaleLeft(d[1]))
-      .attr('width', 3)
+      .attr('width', barWidth)
       .attr('height', (d) => height - margin.bottom - this.yScaleLeft(d[1]))
       .attr('fill', (d) => d[2])
       .attr('uitestid', (d) => `bar-${replaceSpace(item.identifier)}-${d[0]}`);
