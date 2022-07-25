@@ -170,7 +170,7 @@ spec:
             - name: AUTH_MSG
               value: {{ .Values.bridge.authMsg | default "" | quote }}
             - name: D3_ENABLED
-              value: {{ or .Values.bridge.d3heatmap.enabled ((.Values.bridge).d3).enabled | default false | quote }}
+              value: {{ or ((.Values.bridge).d3heatmap).enabled ((.Values.bridge).d3).enabled | default false | quote }}
             {{- range $key, $value := .Values.bridge.env }}
             - name: {{ $key }}
               value: {{ $value | quote }}
