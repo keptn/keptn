@@ -307,11 +307,11 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 		}
 	} else if automaticProvisioningURL == "" {
 		if params.GitCredentials == nil {
-			SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, "cannot create project without git credentials"))
+			SetBadRequestErrorResponse(c, fmt.Sprintf(common.InvalidRequestFormatMsg, "cannot create project without git credentials"))
 			return
 		}
 		if err := ph.RemoteURLValidator.Validate(params.GitCredentials.RemoteURL); err != nil {
-			SetUnprocessableEntityResponse(c, fmt.Sprintf(InvalidRemoteURLMsg, params.GitCredentials.RemoteURL))
+			SetUnprocessableEntityResponse(c, fmt.Sprintf(common.InvalidRemoteURLMsg, params.GitCredentials.RemoteURL))
 			return
 		}
 	}
@@ -386,11 +386,11 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 	automaticProvisioningURL := ph.Env.AutomaticProvisioningURL
 	if automaticProvisioningURL == "" {
 		if params.GitCredentials == nil {
-			SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, "cannot update project without git credentials"))
+			SetBadRequestErrorResponse(c, fmt.Sprintf(common.InvalidRequestFormatMsg, "cannot update project without git credentials"))
 			return
 		}
 		if err := ph.RemoteURLValidator.Validate(params.GitCredentials.RemoteURL); err != nil {
-			SetUnprocessableEntityResponse(c, fmt.Sprintf(InvalidRemoteURLMsg, params.GitCredentials.RemoteURL))
+			SetUnprocessableEntityResponse(c, fmt.Sprintf(common.InvalidRemoteURLMsg, params.GitCredentials.RemoteURL))
 			return
 		}
 	}
