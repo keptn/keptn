@@ -3,7 +3,7 @@
     <ktb-loading-distractor>Loading ...</ktb-loading-distractor>
   </div>
   <div
-    *ngIf="state.state === ProjectSettingsStatus.LOADED && resourceServiceEnabled"
+    *ngIf="state.state === ProjectSettingsStatus.LOADED && state.resourceServiceEnabled"
     fxLayout="column"
     fxFlexFill
     fxLayoutAlign="space-between"
@@ -115,7 +115,7 @@
     <ktb-error-view [error]="ServerErrors.NOT_ALLOWED"></ktb-error-view>
   </ng-container>
 
-  <ng-container *ngIf="!resourceServiceEnabled">
+  <ng-container *ngIf="!state.resourceServiceEnabled">
     <ktb-error-view [error]="ServerErrors.CONFIGURATION_SERVICE_NOT_ALLOWED"></ktb-error-view>
   </ng-container>
 </div>

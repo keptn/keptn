@@ -4,7 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DtToast } from '@dynatrace/barista-components/toast';
 import { combineLatest, Observable, of, Subject } from 'rxjs';
-import { catchError, filter, finalize, map, startWith, takeUntil } from 'rxjs/operators';
+import { catchError, filter, finalize, map, startWith, takeUntil, tap } from 'rxjs/operators';
 import { IGitDataExtended } from 'shared/interfaces/project';
 import { IClientFeatureFlags } from '../../../../../shared/interfaces/feature-flags';
 import { PendingChangesComponent } from '../../../_guards/pending-changes.guard';
@@ -32,6 +32,8 @@ enum ProjectSettingsStatus {
 }
 
 interface ProjectSettingsState {
+  projectName: string | undefined;
+  resourceServiceEnabled: boolean | undefined;
   gitUpstreamRequired: boolean | undefined;
   automaticProvisioningMessage: string | undefined;
   state: ProjectSettingsStatus;
@@ -68,21 +70,54 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
 
   public message = 'You have pending changes. Make sure to save your data before you continue.';
   public unsavedDialogState: DialogState = null;
-  public resourceServiceEnabled?: boolean;
+
+  public resourceServiceEnabled$ = this.featureFlagService.featureFlags$.pipe(
+    map((featureFlags: IClientFeatureFlags) => featureFlags.RESOURCE_SERVICE_ENABLED)
+  );
+
+  public projectName$: Observable<string | null> = this.route.paramMap.pipe(
+    map((params) => params.get('projectName')),
+    tap((projectName) => {
+      if (!projectName) {
+        this.isCreateMode = true;
+        this.isProjectLoading = true;
+
+        this.loadProjectsAndSetValidator();
+      } else {
+        this.isProjectLoading = true;
+        this.isCreateMode = false;
+        this.isProjectFormTouched = false;
+        this.projectName = projectName;
+
+        this.projectDeletionData = {
+          type: DeleteType.PROJECT,
+          name: this.projectName || '',
+        };
+
+        this.loadProject(projectName);
+      }
+    })
+  );
 
   readonly state$: Observable<ProjectSettingsState> = combineLatest([
     this.dataService.keptnInfo,
     this.dataService.keptnMetadata,
+    this.projectName$,
+    this.resourceServiceEnabled$,
   ]).pipe(
-    filter((info): info is [KeptnInfo, IMetadata | undefined | null] => !!info[0]),
-    map(([keptnInfo, metadata]) => {
+    filter((info): info is [KeptnInfo, IMetadata | undefined | null, string, boolean] => !!info[0]),
+    map(([keptnInfo, metadata, projectName, resourceServiceEnabled]) => {
       return {
+        projectName,
+        resourceServiceEnabled,
         gitUpstreamRequired: !metadata?.automaticprovisioning,
         automaticProvisioningMessage: keptnInfo.bridgeInfo.automaticProvisioningMsg,
         state: metadata === null ? ProjectSettingsStatus.ERROR : ProjectSettingsStatus.LOADED,
       };
     }),
     startWith({
+      projectName: undefined,
+      resourceServiceEnabled: undefined,
       gitUpstreamRequired: undefined,
       automaticProvisioningMessage: undefined,
       state: ProjectSettingsStatus.INIT,
@@ -96,42 +131,18 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
     private router: Router,
     private notificationsService: NotificationsService,
     private eventService: EventService,
-    featureFlagService: FeatureFlagsService
-  ) {
-    featureFlagService.featureFlags$
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((featureFlags: IClientFeatureFlags) => {
-        this.resourceServiceEnabled = featureFlags.RESOURCE_SERVICE_ENABLED;
-      });
-  }
+    private featureFlagService: FeatureFlagsService
+  ) {}
 
   public ngOnInit(): void {
-    this.route.params.subscribe((params) => {
-      if (!params.projectName) {
-        this.isCreateMode = true;
-        this.isProjectLoading = true;
-
-        this.loadProjectsAndSetValidator();
-      } else {
-        this.isProjectLoading = true;
-        this.isCreateMode = false;
-        this.isProjectFormTouched = false;
-        this.projectName = params.projectName;
-
-        this.projectDeletionData = {
-          type: DeleteType.PROJECT,
-          name: this.projectName || '',
-        };
-
-        this.loadProject(params.projectName);
-      }
-    });
-
-    this.route.queryParams.subscribe((queryParams) => {
-      if (queryParams.created) {
-        this.showCreateNotificationAndRedirect();
-      }
-    });
+    this.route.queryParams.pipe(
+      map((queryParams) => queryParams.created),
+      tap((projectCreated) => {
+        if (projectCreated) {
+          this.showCreateNotificationAndRedirect();
+        }
+      })
+    );
 
     this.eventService.deletionTriggeredEvent.pipe(takeUntil(this.unsubscribe$)).subscribe((data) => {
       if (data.type === DeleteType.PROJECT) {
