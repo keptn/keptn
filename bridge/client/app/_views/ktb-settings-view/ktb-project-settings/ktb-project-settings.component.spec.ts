@@ -18,7 +18,7 @@ import { NotificationType } from '../../../_models/notification';
 import { KtbProjectCreateMessageComponent } from './ktb-project-create-message/ktb-project-create-message.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
-describe('KtbProjectSettingsComponent', () => {
+describe('KtbProjectSettingsComponent create', () => {
   let component: KtbProjectSettingsComponent;
   let fixture: ComponentFixture<KtbProjectSettingsComponent>;
   let dataService: DataService;
@@ -27,9 +27,8 @@ describe('KtbProjectSettingsComponent', () => {
 
   beforeEach(async () => {
     queryParamsSubject = new BehaviorSubject<{ created?: boolean }>({});
-    routeParamsSubject = new BehaviorSubject<{ projectName: string } | Record<string, never>>({
-      projectName: 'sockshop',
-    });
+    routeParamsSubject = new BehaviorSubject<{ projectName: string } | Record<string, never>>({});
+
     await TestBed.configureTestingModule({
       imports: [
         KtbProjectSettingsModule,
@@ -47,6 +46,7 @@ describe('KtbProjectSettingsComponent', () => {
           provide: ActivatedRoute,
           useValue: {
             params: routeParamsSubject.asObservable(),
+            paramMap: of(convertToParamMap(routeParamsSubject.getValue())),
             queryParams: queryParamsSubject.asObservable(),
             queryParamMap: of(convertToParamMap({})),
           },
@@ -81,7 +81,7 @@ describe('KtbProjectSettingsComponent', () => {
     fixture.detectChanges();
 
     // then
-    expect(component.isCreateMode).toBe(true);
+    expect(component.isCreateMode()).toBe(true);
   });
 
   it('should have a validation error if project name already exists in projects', async () => {
@@ -115,20 +115,9 @@ describe('KtbProjectSettingsComponent', () => {
     expect(routeSpy).toHaveBeenCalled();
   });
 
-  it('should have create mode disabled when projectName param is set', () => {
-    routeParamsSubject.next({ projectName: 'sockshop' });
-    expect(component.isCreateMode).toBe(false);
-  });
-
-  it('should set project name to projectName retrieved by route', () => {
-    routeParamsSubject.next({ projectName: 'sockshop' });
-    expect(component.projectName).toEqual('sockshop');
-  });
-
   it('should have an pattern validation error when project name does not match: first letter lowercase, only lowercase, numbers and hyphens allowed', () => {
     // given
     routeParamsSubject.next({});
-    component.isCreateMode = true;
     fixture.detectChanges();
 
     component.projectNameControl.setValue('Sockshop');
@@ -153,12 +142,177 @@ describe('KtbProjectSettingsComponent', () => {
     expect(component.projectNameControl.errors).toBeNull();
   });
 
+  it('should not create project if shipyard is not set', async () => {
+    // given
+    component.gitDataExtended = null;
+    component.projectNameControl.setValue('sockshop');
+
+    // when
+    const createSpy = jest.spyOn(dataService, 'createProjectExtended');
+    await component.createProject();
+
+    // then
+    expect(createSpy).not.toHaveBeenCalled();
+  });
+
+  it('should not create project if shipyard is empty', async () => {
+    // given
+    component.gitDataExtended = null;
+    component.projectNameControl.setValue('sockshop');
+    component.shipyardFile = new File([''], 'test1.yaml');
+
+    // when
+    const createSpy = jest.spyOn(dataService, 'createProjectExtended');
+    await component.createProject();
+
+    // then
+    expect(createSpy).not.toHaveBeenCalled();
+  });
+
+  it('should not create project if data is not set', async () => {
+    // given
+    component.gitDataExtended = undefined;
+    component.projectNameControl.setValue('sockshop');
+    component.shipyardFile = new File(['asfd'], 'test1.yaml');
+
+    // when
+    const createSpy = jest.spyOn(dataService, 'createProjectExtended');
+    await component.createProject();
+
+    // then
+    expect(createSpy).not.toHaveBeenCalled();
+  });
+
+  it('should show an error if project creation failed', async () => {
+    // given
+    const notificationService = TestBed.inject(NotificationsService);
+    const notificationSpy = jest.spyOn(notificationService, 'addNotification');
+    jest.spyOn(dataService, 'createProjectExtended').mockReturnValue(throwError(() => new Error()));
+    component.gitDataExtended = null;
+    component.projectNameControl.setValue('sockshop');
+    component.shipyardFile = new File(['asdf'], 'test1.yaml');
+
+    // when
+    await component.createProject();
+
+    // then
+    expect(notificationSpy).toHaveBeenCalledWith(
+      NotificationType.ERROR,
+      `The project could not be created: please, check the logs of resource-service.`
+    );
+  });
+
+  it('should save unsaved changes on create', () => {
+    // given
+    component.unsavedDialogState = 'unsaved';
+    const createSpy = jest.spyOn(component, 'createProject');
+
+    // when
+    component.saveAll();
+
+    // then
+    expect(component.unsavedDialogState).toBeNull();
+    expect(createSpy).toHaveBeenCalled();
+  });
+
+  it('should show create message and remove param', () => {
+    // given
+    const notificationService = TestBed.inject(NotificationsService);
+    const notificationSpy = jest.spyOn(notificationService, 'addNotification');
+    const routeSpy = jest.spyOn(TestBed.inject(Router), 'navigate');
+
+    // when
+    queryParamsSubject.next({ created: true });
+
+    expect(notificationSpy).toHaveBeenCalledWith(
+      NotificationType.SUCCESS,
+      '',
+      {
+        component: KtbProjectCreateMessageComponent,
+        data: {
+          projectName: 'sockshop',
+          routerLink: '/project/sockshop/settings/services/create',
+        },
+      },
+      10_000
+    );
+    expect(routeSpy).toHaveBeenCalledWith(['/', 'project', 'sockshop', 'settings', 'project']);
+  });
+});
+
+describe('KtbProjectSettingsComponent update', () => {
+  let component: KtbProjectSettingsComponent;
+  let fixture: ComponentFixture<KtbProjectSettingsComponent>;
+  let dataService: DataService;
+  let routeParamsSubject: BehaviorSubject<{ projectName: string } | Record<string, never>>;
+  let queryParamsSubject: BehaviorSubject<{ created?: boolean }>;
+
+  beforeEach(async () => {
+    queryParamsSubject = new BehaviorSubject<{ created?: boolean }>({});
+    routeParamsSubject = new BehaviorSubject<{ projectName: string } | Record<string, never>>({
+      projectName: 'sockshop',
+    });
+    await TestBed.configureTestingModule({
+      imports: [
+        KtbProjectSettingsModule,
+        BrowserAnimationsModule,
+        HttpClientTestingModule,
+        RouterTestingModule.withRoutes([
+          { path: 'dashboard', component: KtbProjectSettingsComponent },
+          { path: 'project/:projectName/settings/project', component: KtbProjectSettingsComponent },
+        ]),
+      ],
+      providers: [
+        PendingChangesGuard,
+        { provide: ApiService, useClass: ApiServiceMock },
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            params: routeParamsSubject.asObservable(),
+            paramMap: of(convertToParamMap(routeParamsSubject.getValue())),
+            queryParams: queryParamsSubject.asObservable(),
+            queryParamMap: of(convertToParamMap({})),
+          },
+        },
+      ],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(KtbProjectSettingsComponent);
+    component = fixture.componentInstance;
+    dataService = fixture.debugElement.injector.get(DataService);
+    dataService.loadKeptnInfo();
+    dataService.loadProjects();
+
+    const notifications = document.getElementsByTagName('dt-confirmation-dialog-state');
+    if (notifications.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
+      for (let i = 0; i < notifications.length; i++) {
+        notifications[i].remove();
+      }
+    }
+
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+
+  it('should have create mode disabled when projectName param is set', () => {
+    routeParamsSubject.next({ projectName: 'sockshop' });
+    expect(component.isCreateMode()).toBe(false);
+  });
+
+  it('should set project name to projectName retrieved by route', () => {
+    routeParamsSubject.next({ projectName: 'sockshop' });
+    expect(component.projectName).toEqual('sockshop');
+  });
+
   it('should delete a project and navigate to dashboard', () => {
     // given
     const eventService = TestBed.inject(EventService);
     const router = TestBed.inject(Router);
     const routeSpy = jest.spyOn(router, 'navigate');
-    component.isCreateMode = false;
     component.projectName = 'sockshop';
     fixture.detectChanges();
 
@@ -174,7 +328,6 @@ describe('KtbProjectSettingsComponent', () => {
     const eventService = TestBed.inject(EventService);
     const progressSpy = jest.spyOn(eventService.deletionProgressEvent, 'next');
     jest.spyOn(dataService, 'deleteProject').mockReturnValue(throwError(() => new Error('my error')));
-    component.isCreateMode = false;
     component.projectName = 'sockshop';
     fixture.detectChanges();
 
@@ -191,7 +344,6 @@ describe('KtbProjectSettingsComponent', () => {
 
   it('should not show a notification when the component is initialized', () => {
     // given
-    component.isCreateMode = false;
     fixture.detectChanges();
 
     // then
@@ -444,80 +596,6 @@ describe('KtbProjectSettingsComponent', () => {
     expect(updateUpstreamSpy).toHaveBeenCalled();
   });
 
-  it('should not create project if shipyard is not set', async () => {
-    // given
-    component.gitDataExtended = null;
-    component.projectNameControl.setValue('sockshop');
-
-    // when
-    const createSpy = jest.spyOn(dataService, 'createProjectExtended');
-    await component.createProject();
-
-    // then
-    expect(createSpy).not.toHaveBeenCalled();
-  });
-
-  it('should not create project if shipyard is empty', async () => {
-    // given
-    component.gitDataExtended = null;
-    component.projectNameControl.setValue('sockshop');
-    component.shipyardFile = new File([''], 'test1.yaml');
-
-    // when
-    const createSpy = jest.spyOn(dataService, 'createProjectExtended');
-    await component.createProject();
-
-    // then
-    expect(createSpy).not.toHaveBeenCalled();
-  });
-
-  it('should not create project if data is not set', async () => {
-    // given
-    component.gitDataExtended = undefined;
-    component.projectNameControl.setValue('sockshop');
-    component.shipyardFile = new File(['asfd'], 'test1.yaml');
-
-    // when
-    const createSpy = jest.spyOn(dataService, 'createProjectExtended');
-    await component.createProject();
-
-    // then
-    expect(createSpy).not.toHaveBeenCalled();
-  });
-
-  it('should show an error if project creation failed', async () => {
-    // given
-    const notificationService = TestBed.inject(NotificationsService);
-    const notificationSpy = jest.spyOn(notificationService, 'addNotification');
-    jest.spyOn(dataService, 'createProjectExtended').mockReturnValue(throwError(() => new Error()));
-    component.gitDataExtended = null;
-    component.projectNameControl.setValue('sockshop');
-    component.shipyardFile = new File(['asdf'], 'test1.yaml');
-
-    // when
-    await component.createProject();
-
-    // then
-    expect(notificationSpy).toHaveBeenCalledWith(
-      NotificationType.ERROR,
-      `The project could not be created: please, check the logs of resource-service.`
-    );
-  });
-
-  it('should save unsaved changes on create', () => {
-    // given
-    component.unsavedDialogState = 'unsaved';
-    component.isCreateMode = true;
-    const createSpy = jest.spyOn(component, 'createProject');
-
-    // when
-    component.saveAll();
-
-    // then
-    expect(component.unsavedDialogState).toBeNull();
-    expect(createSpy).toHaveBeenCalled();
-  });
-
   it('should save unsaved changes on update', () => {
     // given
     component.unsavedDialogState = 'unsaved';
@@ -542,29 +620,5 @@ describe('KtbProjectSettingsComponent', () => {
     // then
     expect(component.shipyardFile).toEqual(new File([], 'myfile.yaml'));
     expect(formTouchedSpy).toHaveBeenCalled();
-  });
-
-  it('should show create message and remove param', () => {
-    // given
-    const notificationService = TestBed.inject(NotificationsService);
-    const notificationSpy = jest.spyOn(notificationService, 'addNotification');
-    const routeSpy = jest.spyOn(TestBed.inject(Router), 'navigate');
-
-    // when
-    queryParamsSubject.next({ created: true });
-
-    expect(notificationSpy).toHaveBeenCalledWith(
-      NotificationType.SUCCESS,
-      '',
-      {
-        component: KtbProjectCreateMessageComponent,
-        data: {
-          projectName: 'sockshop',
-          routerLink: '/project/sockshop/settings/services/create',
-        },
-      },
-      10_000
-    );
-    expect(routeSpy).toHaveBeenCalledWith(['/', 'project', 'sockshop', 'settings', 'project']);
   });
 });
