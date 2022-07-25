@@ -36,7 +36,7 @@ const createStage = (stageName: string, id: number): Stage =>
     stageName,
     services: Array(((id + 3) % 5) + 1)
       .fill(0)
-      .map((v, index) => createService(index + 1)),
+      .map((_v, index) => createService(index + 1)),
   } as Stage);
 
 const createProject = (id: number, stageNames: string[]): Project =>
@@ -171,7 +171,7 @@ export const many = template.bind({});
 many.args = {
   projects: Array(100)
     .fill(0)
-    .map((v, index) => createProject(index + 1, defaultStageNames.slice(0, (index % defaultStageNames.length) + 1))),
+    .map((_v, index) => createProject(index + 1, defaultStageNames.slice(0, (index % defaultStageNames.length) + 1))),
   info: {
     bridgeInfo: {
       featureFlags: {
