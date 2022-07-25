@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 
 	"github.com/keptn/keptn/shipyard-controller/config"
 
@@ -192,7 +193,7 @@ func TestGetProjectByName(t *testing.T) {
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
 					GetByNameFunc: func(projectName string) (*apimodels.ExpandedProject, error) {
-						return nil, ErrProjectNotFound
+						return nil, common.ErrProjectNotFound
 					},
 				},
 				EventSender:           &fake.IEventSenderMock{},
@@ -276,7 +277,7 @@ func TestCreateProject(t *testing.T) {
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
 					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
-						return ErrProjectAlreadyExists, func() error {
+						return common.ErrProjectAlreadyExists, func() error {
 
 							return nil
 						}
@@ -304,7 +305,7 @@ func TestCreateProject(t *testing.T) {
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
 					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
-						return ErrProjectAlreadyExists, func() error { return nil }
+						return common.ErrProjectAlreadyExists, func() error { return nil }
 					},
 				},
 				EventSender: &fake.IEventSenderMock{
@@ -524,7 +525,7 @@ func TestUpdateProject(t *testing.T) {
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
 					UpdateFunc: func(params *models.UpdateProjectParams) (error, common.RollbackFunc) {
-						return ErrProjectNotFound, func() error { return nil }
+						return common.ErrProjectNotFound, func() error { return nil }
 					},
 				},
 				EventSender: &fake.IEventSenderMock{
@@ -600,7 +601,7 @@ func TestUpdateProject(t *testing.T) {
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
 					UpdateFunc: func(params *models.UpdateProjectParams) (error, common.RollbackFunc) {
-						return ErrInvalidStageChange, func() error { return nil }
+						return common.ErrInvalidStageChange, func() error { return nil }
 					},
 				},
 				EventSender: &fake.IEventSenderMock{

@@ -1,27 +1,12 @@
 package db
 
 import (
-	"errors"
+	"time"
+
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"time"
 )
-
-// ErrSequenceWithTriggeredIDAlreadyExists indicates that a sequence execution with the same triggeredID already exists
-var ErrSequenceWithTriggeredIDAlreadyExists = errors.New("sequence with the same triggeredID already exists")
-
-// ErrProjectNotFound indicates that a project has not been found
-var ErrProjectNotFound = errors.New("project not found")
-
-// ErrStageNotFound indicates that a stage has not been found
-var ErrStageNotFound = errors.New("stage not found")
-
-// ErrServiceNotFound indicates that a service has not been found
-var ErrServiceNotFound = errors.New("service not found")
-
-// ErrOpenRemediationNotFound indicates that no open remediation has been found
-var ErrOpenRemediationNotFound = errors.New("open remediation not found")
 
 //go:generate moq --skip-ensure -pkg db_mock -out ./mock/sequencestaterepo_mock.go . SequenceStateRepo
 type SequenceStateRepo interface {

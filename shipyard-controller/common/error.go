@@ -1,9 +1,17 @@
-package handler
+package common
 
 import (
 	"errors"
 	"fmt"
 )
+
+var ErrConfigStoreInvalidToken = errors.New("invalid git token")
+
+var ErrConfigStoreUpstreamNotFound = errors.New("upstream repository not found")
+
+var ErrSequenceWithTriggeredIDAlreadyExists = errors.New("sequence with the same triggeredID already exists")
+
+var ErrOpenRemediationNotFound = errors.New("open remediation not found")
 
 var ErrProjectAlreadyExists = errors.New("project already exists")
 
