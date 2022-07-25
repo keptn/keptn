@@ -372,11 +372,9 @@ describe('Sequences', () => {
       sequencePage.assertFilterItemsCount('Service', 5).clickFilterViewMore('Service').assertFilterShowMoreCount(12);
     });
 
-    it.only('should show pause icon if sequence is paused', () => {
+    it('should show pause icon if sequence is paused', () => {
       sequencePage.visit('sockshop');
-      cy.byTestId('keptn-root-events-list-e28592c6-d857-44fe-aea6-e65de02929bf')
-        .find('path')
-        .should('have.attr', 'd', 'M112 64h104v384H112zM296 64h104v384H296z');
+      cy.byTestId('keptn-root-events-list-e28592c6-d857-44fe-aea6-e65de02929bf').assertDtIcon('pause');
     });
   });
 });

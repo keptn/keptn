@@ -74,8 +74,7 @@ class DashboardPage {
     cy.byTestId('keptn-sequence-info-status')
       .contains('paused')
       .parentsUntil('ktb-sequence-state-info')
-      .find('path')
-      .should('have.attr', 'd', 'M112 64h104v384H112zM296 64h104v384H296z');
+      .assertDtIcon('pause');
     return this;
   }
 }

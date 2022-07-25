@@ -33,6 +33,7 @@ declare global {
       ): Cypress.Chainable<JQuery<E>>;
       clearDtFilter<E extends Node = HTMLElement>(): Cypress.Chainable<JQuery<E>>;
       clickOutside<E extends Node = HTMLElement>(): Cypress.Chainable<JQuery<E>>;
+      assertDtIcon<E extends Node = HTMLElement>(icon: string): Cypress.Chainable<JQuery<E>>;
     }
   }
 }
@@ -104,6 +105,10 @@ Cypress.Commands.add(
 Cypress.Commands.add('clearDtFilter', { prevSubject: 'element' }, (subject: JQuery) => {
   subject.find('.dt-filter-field-clear-all-button').trigger('click');
   cy.wrap(subject).find('.dt-filter-field-input').trigger('click').type('{esc}');
+});
+
+Cypress.Commands.add('assertDtIcon', { prevSubject: 'element' }, (subject: JQuery, icon: string) => {
+  cy.wrap(subject).find('dt-icon').should('have.attr', 'uitestid', `dt-icon-${icon}`);
 });
 
 function getDtFilterGroup(subject: JQuery, filterName: string): Cypress.Chainable<JQuery> {

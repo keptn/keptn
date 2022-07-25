@@ -125,8 +125,7 @@ class EnvironmentPage {
       .find('ktb-services-list')
       .contains(service)
       .parentsUntil('dt-table')
-      .find('path')
-      .should('have.attr', 'd', 'M112 64h104v384H112zM296 64h104v384H296z');
+      .assertDtIcon('pause');
     return this;
   }
 }

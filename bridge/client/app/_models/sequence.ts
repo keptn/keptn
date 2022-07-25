@@ -51,7 +51,7 @@ function getStatusText(
 }
 
 function getIcon(state: SequenceState | undefined, stage: SequenceStage): DtIconType {
-  if (state == SequenceState.PAUSED) return EVENT_ICONS.pause;
+  if (state === SequenceState.PAUSED) return EVENT_ICONS.pause;
 
   return stage?.latestEvent?.type
     ? EVENT_ICONS[getShortType(stage?.latestEvent?.type)] || EVENT_ICONS.default
