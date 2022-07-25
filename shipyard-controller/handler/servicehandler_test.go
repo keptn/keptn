@@ -5,6 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/gin-gonic/gin"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
@@ -13,10 +18,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/handler/fake"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
-	"net/http"
-	"net/http/httptest"
-	"testing"
 )
 
 func TestServiceHandler_CreateService(t *testing.T) {
@@ -65,7 +66,7 @@ func TestServiceHandler_CreateService(t *testing.T) {
 			fields: fields{
 				serviceManager: &fake.IServiceManagerMock{
 					CreateServiceFunc: func(projectName string, params *models.CreateServiceParams) error {
-						return ErrServiceAlreadyExists
+						return common.ErrServiceAlreadyExists
 					},
 				},
 				EventSender: &fake.IEventSenderMock{
@@ -84,7 +85,7 @@ func TestServiceHandler_CreateService(t *testing.T) {
 			expectJSONResponse: &models.CreateServiceResponse{},
 			expectJSONError: &models.Error{
 				Code:    http.StatusConflict,
-				Message: stringp(ErrServiceAlreadyExists.Error()),
+				Message: stringp(common.ErrServiceAlreadyExists.Error()),
 			},
 		},
 		{
@@ -375,7 +376,7 @@ func TestServiceHandler_GetService(t *testing.T) {
 			fields: fields{
 				serviceManager: &fake.IServiceManagerMock{
 					GetServiceFunc: func(projectName string, stageName string, serviceName string) (*apimodels.ExpandedService, error) {
-						return nil, ErrServiceNotFound
+						return nil, common.ErrServiceNotFound
 					},
 				},
 				EventSender: &fake.IEventSenderMock{},
@@ -385,7 +386,7 @@ func TestServiceHandler_GetService(t *testing.T) {
 			expectJSONResponse:         nil,
 			expectJSONError: &models.Error{
 				Code:    http.StatusNotFound,
-				Message: stringp(ErrServiceNotFound.Error()),
+				Message: stringp(common.ErrServiceNotFound.Error()),
 			},
 		},
 		{
@@ -393,7 +394,7 @@ func TestServiceHandler_GetService(t *testing.T) {
 			fields: fields{
 				serviceManager: &fake.IServiceManagerMock{
 					GetServiceFunc: func(projectName string, stageName string, serviceName string) (*apimodels.ExpandedService, error) {
-						return nil, ErrStageNotFound
+						return nil, common.ErrStageNotFound
 					},
 				},
 				EventSender: &fake.IEventSenderMock{},
@@ -403,7 +404,7 @@ func TestServiceHandler_GetService(t *testing.T) {
 			expectJSONResponse:         nil,
 			expectJSONError: &models.Error{
 				Code:    http.StatusNotFound,
-				Message: stringp(ErrStageNotFound.Error()),
+				Message: stringp(common.ErrStageNotFound.Error()),
 			},
 		},
 		{
@@ -411,7 +412,7 @@ func TestServiceHandler_GetService(t *testing.T) {
 			fields: fields{
 				serviceManager: &fake.IServiceManagerMock{
 					GetServiceFunc: func(projectName string, stageName string, serviceName string) (*apimodels.ExpandedService, error) {
-						return nil, ErrProjectNotFound
+						return nil, common.ErrProjectNotFound
 					},
 				},
 				EventSender: &fake.IEventSenderMock{},
@@ -421,7 +422,7 @@ func TestServiceHandler_GetService(t *testing.T) {
 			expectJSONResponse:         nil,
 			expectJSONError: &models.Error{
 				Code:    http.StatusNotFound,
-				Message: stringp(ErrProjectNotFound.Error()),
+				Message: stringp(common.ErrProjectNotFound.Error()),
 			},
 		},
 		{
@@ -537,7 +538,7 @@ func TestServiceHandler_GetServices(t *testing.T) {
 			fields: fields{
 				serviceManager: &fake.IServiceManagerMock{
 					GetAllServicesFunc: func(projectName string, stageName string) ([]*apimodels.ExpandedService, error) {
-						return nil, ErrStageNotFound
+						return nil, common.ErrStageNotFound
 					},
 				},
 				EventSender: &fake.IEventSenderMock{},
@@ -547,7 +548,7 @@ func TestServiceHandler_GetServices(t *testing.T) {
 			expectJSONResponse:         nil,
 			expectJSONError: &models.Error{
 				Code:    http.StatusNotFound,
-				Message: stringp(ErrStageNotFound.Error()),
+				Message: stringp(common.ErrStageNotFound.Error()),
 			},
 		},
 		{
@@ -555,7 +556,7 @@ func TestServiceHandler_GetServices(t *testing.T) {
 			fields: fields{
 				serviceManager: &fake.IServiceManagerMock{
 					GetAllServicesFunc: func(projectName string, stageName string) ([]*apimodels.ExpandedService, error) {
-						return nil, ErrProjectNotFound
+						return nil, common.ErrProjectNotFound
 					},
 				},
 				EventSender: &fake.IEventSenderMock{},
@@ -565,7 +566,7 @@ func TestServiceHandler_GetServices(t *testing.T) {
 			expectJSONResponse:         nil,
 			expectJSONError: &models.Error{
 				Code:    http.StatusNotFound,
-				Message: stringp(ErrProjectNotFound.Error()),
+				Message: stringp(common.ErrProjectNotFound.Error()),
 			},
 		},
 		{

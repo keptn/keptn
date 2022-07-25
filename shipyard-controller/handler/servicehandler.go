@@ -85,13 +85,13 @@ func (sh *ServiceHandler) CreateService(c *gin.Context) {
 	keptnContext := uuid.New().String()
 	projectName := c.Param("project")
 	if projectName == "" {
-		SetBadRequestErrorResponse(c, NoProjectNameMsg)
+		SetBadRequestErrorResponse(c, common.NoProjectNameMsg)
 		return
 	}
 	// validate the input
 	params := &models.CreateServiceParams{}
 	if err := c.ShouldBindJSON(params); err != nil {
-		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetBadRequestErrorResponse(c, fmt.Sprintf(common.InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 	serviceValidator := ServiceParamsValidator{
@@ -114,7 +114,7 @@ func (sh *ServiceHandler) CreateService(c *gin.Context) {
 			log.Errorf("could not send service.create.finished event: %s", err2.Error())
 		}
 
-		if errors.Is(err, ErrServiceAlreadyExists) {
+		if errors.Is(err, common.ErrServiceAlreadyExists) {
 			SetConflictErrorResponse(c, err.Error())
 			return
 		}
@@ -148,11 +148,11 @@ func (sh *ServiceHandler) DeleteService(c *gin.Context) {
 	projectName := c.Param("project")
 	serviceName := c.Param("service")
 	if projectName == "" {
-		SetBadRequestErrorResponse(c, NoProjectNameMsg)
+		SetBadRequestErrorResponse(c, common.NoProjectNameMsg)
 		return
 	}
 	if serviceName == "" {
-		SetBadRequestErrorResponse(c, NoServiceNameMsg)
+		SetBadRequestErrorResponse(c, common.NoServiceNameMsg)
 	}
 
 	common.LockProject(projectName)
@@ -200,7 +200,7 @@ func (sh *ServiceHandler) GetService(c *gin.Context) {
 
 	service, err := sh.serviceManager.GetService(projectName, stageName, serviceName)
 	if err != nil {
-		if errors.Is(err, ErrProjectNotFound) || errors.Is(err, ErrStageNotFound) || errors.Is(err, ErrServiceNotFound) {
+		if errors.Is(err, common.ErrProjectNotFound) || errors.Is(err, common.ErrStageNotFound) || errors.Is(err, common.ErrServiceNotFound) {
 			SetNotFoundErrorResponse(c, err.Error())
 			return
 		}
@@ -234,13 +234,13 @@ func (sh *ServiceHandler) GetServices(c *gin.Context) {
 
 	params := &models.GetServiceParams{}
 	if err := c.ShouldBindQuery(params); err != nil {
-		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetBadRequestErrorResponse(c, fmt.Sprintf(common.InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
 	services, err := sh.serviceManager.GetAllServices(projectName, stageName)
 	if err != nil {
-		if errors.Is(err, ErrProjectNotFound) || errors.Is(err, ErrStageNotFound) {
+		if errors.Is(err, common.ErrProjectNotFound) || errors.Is(err, common.ErrStageNotFound) {
 			SetNotFoundErrorResponse(c, err.Error())
 			return
 		}

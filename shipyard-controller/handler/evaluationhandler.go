@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
 )
 
@@ -70,13 +71,13 @@ func (eh *EvaluationHandler) CreateEvaluation(c *gin.Context) {
 
 	params := &models.CreateEvaluationParams{}
 	if err := c.ShouldBindJSON(params); err != nil {
-		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetBadRequestErrorResponse(c, fmt.Sprintf(common.InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
 	evaluationValidator := EvaluationParamsValidator{}
 	if err := evaluationValidator.Validate(params); err != nil {
-		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetBadRequestErrorResponse(c, fmt.Sprintf(common.InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
