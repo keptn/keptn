@@ -26,6 +26,9 @@ import (
 // 			GetByTriggeredIDFunc: func(project string, triggeredID string) (*models.SequenceExecution, error) {
 // 				panic("mock out the GetByTriggeredID method")
 // 			},
+// 			GetPaginatedFunc: func(filter models.SequenceExecutionFilter, paginationParams models.PaginationParams) ([]models.SequenceExecution, *models.PaginationResult, error) {
+// 				panic("mock out the GetPaginated method")
+// 			},
 // 			IsContextPausedFunc: func(eventScope models.EventScope) bool {
 // 				panic("mock out the IsContextPaused method")
 // 			},
@@ -60,6 +63,9 @@ type SequenceExecutionRepoMock struct {
 	// GetByTriggeredIDFunc mocks the GetByTriggeredID method.
 	GetByTriggeredIDFunc func(project string, triggeredID string) (*models.SequenceExecution, error)
 
+	// GetPaginatedFunc mocks the GetPaginated method.
+	GetPaginatedFunc func(filter models.SequenceExecutionFilter, paginationParams models.PaginationParams) ([]models.SequenceExecution, *models.PaginationResult, error)
+
 	// IsContextPausedFunc mocks the IsContextPaused method.
 	IsContextPausedFunc func(eventScope models.EventScope) bool
 
@@ -81,7 +87,7 @@ type SequenceExecutionRepoMock struct {
 		AppendTaskEvent []struct {
 			// TaskSequence is the taskSequence argument value.
 			TaskSequence models.SequenceExecution
-			//models.KeptnContextExtendedCEis the event argument value.
+			// Event is the event argument value.
 			Event models.TaskEvent
 		}
 		// Clear holds details about calls to the Clear method.
@@ -100,6 +106,13 @@ type SequenceExecutionRepoMock struct {
 			Project string
 			// TriggeredID is the triggeredID argument value.
 			TriggeredID string
+		}
+		// GetPaginated holds details about calls to the GetPaginated method.
+		GetPaginated []struct {
+			// Filter is the filter argument value.
+			Filter models.SequenceExecutionFilter
+			// PaginationParams is the paginationParams argument value.
+			PaginationParams models.PaginationParams
 		}
 		// IsContextPaused holds details about calls to the IsContextPaused method.
 		IsContextPaused []struct {
@@ -133,6 +146,7 @@ type SequenceExecutionRepoMock struct {
 	lockClear            sync.RWMutex
 	lockGet              sync.RWMutex
 	lockGetByTriggeredID sync.RWMutex
+	lockGetPaginated     sync.RWMutex
 	lockIsContextPaused  sync.RWMutex
 	lockPauseContext     sync.RWMutex
 	lockResumeContext    sync.RWMutex
@@ -269,6 +283,41 @@ func (mock *SequenceExecutionRepoMock) GetByTriggeredIDCalls() []struct {
 	mock.lockGetByTriggeredID.RLock()
 	calls = mock.calls.GetByTriggeredID
 	mock.lockGetByTriggeredID.RUnlock()
+	return calls
+}
+
+// GetPaginated calls GetPaginatedFunc.
+func (mock *SequenceExecutionRepoMock) GetPaginated(filter models.SequenceExecutionFilter, paginationParams models.PaginationParams) ([]models.SequenceExecution, *models.PaginationResult, error) {
+	if mock.GetPaginatedFunc == nil {
+		panic("SequenceExecutionRepoMock.GetPaginatedFunc: method is nil but SequenceExecutionRepo.GetPaginated was just called")
+	}
+	callInfo := struct {
+		Filter           models.SequenceExecutionFilter
+		PaginationParams models.PaginationParams
+	}{
+		Filter:           filter,
+		PaginationParams: paginationParams,
+	}
+	mock.lockGetPaginated.Lock()
+	mock.calls.GetPaginated = append(mock.calls.GetPaginated, callInfo)
+	mock.lockGetPaginated.Unlock()
+	return mock.GetPaginatedFunc(filter, paginationParams)
+}
+
+// GetPaginatedCalls gets all the calls that were made to GetPaginated.
+// Check the length with:
+//     len(mockedSequenceExecutionRepo.GetPaginatedCalls())
+func (mock *SequenceExecutionRepoMock) GetPaginatedCalls() []struct {
+	Filter           models.SequenceExecutionFilter
+	PaginationParams models.PaginationParams
+} {
+	var calls []struct {
+		Filter           models.SequenceExecutionFilter
+		PaginationParams models.PaginationParams
+	}
+	mock.lockGetPaginated.RLock()
+	calls = mock.calls.GetPaginated
+	mock.lockGetPaginated.RUnlock()
 	return calls
 }
 

@@ -15,7 +15,7 @@ import (
 //
 // 		// make and configure a mocked db.UniformRepo
 // 		mockedUniformRepo := &UniformRepoMock{
-// 			CreateOrUpdateSubscriptionFunc: func(integrationID string, subscriptionapimodels.EventSubscription) error {
+// 			CreateOrUpdateSubscriptionFunc: func(integrationID string, subscription apimodels.EventSubscription) error {
 // 				panic("mock out the CreateOrUpdateSubscription method")
 // 			},
 // 			CreateOrUpdateUniformIntegrationFunc: func(integration apimodels.Integration) error {

@@ -87,6 +87,62 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) Get(filter models.SequenceExecution
 	return result, nil
 }
 
+// GetPaginated returns all matching sequence executions within the specified range, based on the given filter
+func (mdbrepo *MongoDBSequenceExecutionRepo) GetPaginated(filter models.SequenceExecutionFilter, paginationParams models.PaginationParams) ([]models.SequenceExecution, *models.PaginationResult, error) {
+	collection, ctx, cancel, err := mdbrepo.getSequenceExecutionStateCollection(filter.Scope.Project)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer cancel()
+
+	searchOptions := mdbrepo.getSearchOptions(filter)
+
+	totalCount, err := collection.CountDocuments(ctx, searchOptions)
+	if err != nil {
+		return nil, nil, fmt.Errorf("error counting elements in sequence execution collection: %w", err)
+	}
+
+	if totalCount == 0 {
+		return []models.SequenceExecution{}, &models.PaginationResult{}, nil
+	}
+
+	sortOptions := options.Find().SetSort(bson.D{{Key: "triggeredAt", Value: -1}}).SetSkip(paginationParams.NextPageKey)
+
+	if paginationParams.PageSize > 0 {
+		sortOptions = sortOptions.SetLimit(paginationParams.PageSize)
+	}
+
+	cur, err := collection.Find(ctx, searchOptions, sortOptions)
+	defer closeCursor(ctx, cur)
+
+	if err != nil && err != mongo.ErrNoDocuments {
+		return nil, nil, err
+	}
+
+	result := []models.SequenceExecution{}
+	paginationResult := &models.PaginationResult{
+		TotalCount: totalCount,
+	}
+
+	for cur.Next(ctx) {
+		var outInterface interface{}
+		err := cur.Decode(&outInterface)
+		sequenceExecution, err := mdbrepo.transformBSONToSequenceExecution(outInterface)
+		if err != nil {
+			log.Errorf("Could not decode sequenceExecution: %v", err)
+			continue
+		}
+		result = append(result, *sequenceExecution)
+	}
+
+	paginationResult.PageSize = int64(len(result))
+
+	if paginationParams.PageSize > 0 && paginationParams.PageSize+paginationParams.NextPageKey < totalCount {
+		paginationResult.NextPageKey = paginationParams.PageSize + paginationParams.NextPageKey
+	}
+	return result, paginationResult, nil
+}
+
 // GetByTriggeredID searches for a sequence execution with the given triggeredID.
 func (mdbrepo *MongoDBSequenceExecutionRepo) GetByTriggeredID(project, triggeredID string) (*models.SequenceExecution, error) {
 	collection, ctx, cancel, err := mdbrepo.getSequenceExecutionStateCollection(project)
