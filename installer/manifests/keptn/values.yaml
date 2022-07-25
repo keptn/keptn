@@ -233,7 +233,7 @@ bridge:
     userIdentifier: ""
     mongoConnectionString: ""
   authMsg: ""
-  d3heatmap:
+  d3:
     enabled: false
   nodeSelector: {}
   sidecars: []

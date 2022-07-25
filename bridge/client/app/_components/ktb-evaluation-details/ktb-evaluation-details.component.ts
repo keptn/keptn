@@ -269,8 +269,8 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   private _shouldSelectEvaluation = true;
   public updateResults?: EvaluationHistory;
   public dataPoints: IDataPoint[] = [];
-  public d3HeatmapEnabled$ = this.featureFlagService.featureFlags$.pipe(
-    map((featureFlags: IClientFeatureFlags) => featureFlags.D3_HEATMAP_ENABLED)
+  public d3Enabled$ = this.featureFlagService.featureFlags$.pipe(
+    map((featureFlags: IClientFeatureFlags) => featureFlags.D3_ENABLED)
   );
   public selectedIdentifier = '';
 
