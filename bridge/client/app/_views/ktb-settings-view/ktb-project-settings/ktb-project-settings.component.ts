@@ -4,7 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DtToast } from '@dynatrace/barista-components/toast';
 import { combineLatest, Observable, of, Subject } from 'rxjs';
-import { catchError, filter, finalize, map, startWith, takeUntil, tap } from 'rxjs/operators';
+import { catchError, filter, finalize, map, mergeMap, startWith, takeUntil, tap } from 'rxjs/operators';
 import { IGitDataExtended } from 'shared/interfaces/project';
 import { IClientFeatureFlags } from '../../../../../shared/interfaces/feature-flags';
 import { PendingChangesComponent } from '../../../_guards/pending-changes.guard';
@@ -18,7 +18,6 @@ import { DataService } from '../../../_services/data.service';
 import { EventService } from '../../../_services/event.service';
 import { FeatureFlagsService } from '../../../_services/feature-flags.service';
 import { NotificationsService } from '../../../_services/notifications.service';
-import { AppUtils } from '../../../_utils/app.utils';
 import { FormUtils } from '../../../_utils/form.utils';
 import { KtbProjectCreateMessageComponent } from './ktb-project-create-message/ktb-project-create-message.component';
 import { IGitDataExtendedWithNoUpstream } from './ktb-project-settings-git-extended/ktb-project-settings-git-extended.component';
@@ -35,6 +34,7 @@ interface ProjectSettingsState {
   projectName: string | undefined;
   resourceServiceEnabled: boolean | undefined;
   gitUpstreamRequired: boolean | undefined;
+  gitInputDataExtended: IGitDataExtended | undefined;
   automaticProvisioningMessage: string | undefined;
   state: ProjectSettingsStatus;
 }
@@ -51,12 +51,8 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
 
   @ViewChild('deleteProjectDialog')
   private deleteProjectDialog?: TemplateRef<MatDialog>;
-  public gitInputDataExtended?: IGitDataExtended;
-  public gitInputDataExtendedDefault?: IGitDataExtended;
   public projectName?: string;
   public projectDeletionData?: DeleteData;
-  public isProjectLoading: boolean | undefined;
-  public isCreateMode = false;
   public isGitUpstreamInProgress = false;
   public isCreatingProjectInProgress = false;
   private pendingChangesSubject = new Subject<boolean>();
@@ -78,25 +74,24 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
   public projectName$: Observable<string | null> = this.route.paramMap.pipe(
     map((params) => params.get('projectName')),
     tap((projectName) => {
-      if (!projectName) {
-        this.isCreateMode = true;
-        this.isProjectLoading = true;
-
-        this.loadProjectsAndSetValidator();
-      } else {
-        this.isProjectLoading = true;
-        this.isCreateMode = false;
-        this.isProjectFormTouched = false;
+      if (projectName) {
         this.projectName = projectName;
-
         this.projectDeletionData = {
           type: DeleteType.PROJECT,
-          name: this.projectName || '',
+          name: projectName,
         };
-
-        this.loadProject(projectName);
       }
     })
+  );
+
+  public gitInputDataExtended$: Observable<IGitDataExtended | undefined> = this.projectName$.pipe(
+    mergeMap((projectName) => (projectName ? this.dataService.loadPlainProject(projectName) : of(undefined))),
+    map((project) => project?.gitCredentials)
+  );
+
+  public projectNames$: Observable<string[] | undefined> = this.projectName$.pipe(
+    mergeMap((projectName) => (!projectName ? this.dataService.projects : of(undefined))),
+    map((projects: Project[] | undefined) => projects?.map((project) => project.projectName))
   );
 
   readonly state$: Observable<ProjectSettingsState> = combineLatest([
@@ -104,13 +99,35 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
     this.dataService.keptnMetadata,
     this.projectName$,
     this.resourceServiceEnabled$,
+    this.gitInputDataExtended$,
+    this.projectNames$,
   ]).pipe(
-    filter((info): info is [KeptnInfo, IMetadata | undefined | null, string, boolean] => !!info[0]),
-    map(([keptnInfo, metadata, projectName, resourceServiceEnabled]) => {
+    filter(
+      (
+        info
+      ): info is [
+        KeptnInfo,
+        IMetadata | undefined | null,
+        string,
+        boolean,
+        IGitDataExtended | undefined,
+        string[] | undefined
+      ] => !!info[0]
+    ),
+    map(([keptnInfo, metadata, projectName, resourceServiceEnabled, gitInputDataExtended, projectNames]) => {
+      if (projectNames) {
+        this.projectNameControl.setValidators([
+          Validators.required,
+          FormUtils.nameExistsValidator(projectNames),
+          Validators.pattern('[a-z]([a-z]|[0-9]|-)*'),
+        ]);
+      }
+
       return {
         projectName,
         resourceServiceEnabled,
         gitUpstreamRequired: !metadata?.automaticprovisioning,
+        gitInputDataExtended,
         automaticProvisioningMessage: keptnInfo.bridgeInfo.automaticProvisioningMsg,
         state: metadata === null ? ProjectSettingsStatus.ERROR : ProjectSettingsStatus.LOADED,
       };
@@ -119,6 +136,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
       projectName: undefined,
       resourceServiceEnabled: undefined,
       gitUpstreamRequired: undefined,
+      gitInputDataExtended: undefined,
       automaticProvisioningMessage: undefined,
       state: ProjectSettingsStatus.INIT,
     })
@@ -148,33 +166,6 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
       if (data.type === DeleteType.PROJECT) {
         this.deleteProject(data.name);
       }
-    });
-  }
-
-  private loadProjectsAndSetValidator(): void {
-    this.dataService.projects
-      .pipe(
-        takeUntil(this.unsubscribe$),
-        filter((projects: Project[] | undefined): projects is Project[] => !!projects),
-        map((projects: Project[]) => projects.map((project) => project.projectName))
-      )
-      .subscribe((projectNames) => {
-        this.projectNameControl.setValidators([
-          Validators.required,
-          FormUtils.nameExistsValidator(projectNames),
-          Validators.pattern('[a-z]([a-z]|[0-9]|-)*'),
-        ]);
-        this.isProjectLoading = false;
-      });
-  }
-
-  private loadProject(projectName: string): void {
-    this.dataService.loadPlainProject(projectName).subscribe((project) => {
-      this.gitInputDataExtendedDefault = project.gitCredentials;
-      this.gitInputDataExtended = AppUtils.copyObject(project.gitCredentials); // there should not be a reference. Could
-      // lead to problems when the form is reset
-
-      this.isProjectLoading = false;
     });
   }
 
@@ -270,13 +261,12 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
   }
 
   public reset(): void {
-    this.gitInputDataExtended = AppUtils.copyObject(this.gitInputDataExtendedDefault);
     this.pendingChangesSubject.next(true);
     this.hideNotification();
   }
 
   public saveAll(): void {
-    if (this.isCreateMode) {
+    if (this.isCreateMode()) {
       this.createProject();
     } else {
       this.updateGitUpstream();
@@ -305,7 +295,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
   }
 
   public isProjectFormInvalid(): boolean {
-    return this.isCreateMode ? this.isProjectCreateFormInvalid() : this.isProjectSettingsFormInvalid();
+    return this.isCreateMode() ? this.isProjectCreateFormInvalid() : this.isProjectSettingsFormInvalid();
   }
 
   public isProjectCreateFormInvalid(): boolean {
@@ -350,6 +340,10 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
 
   public hideNotification(): void {
     this.unsavedDialogState = null;
+  }
+
+  public isCreateMode(): boolean {
+    return !this.projectName;
   }
 
   public ngOnDestroy(): void {

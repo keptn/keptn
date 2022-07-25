@@ -10,7 +10,7 @@
     class="pb-3"
   >
     <div>
-      <div [formGroup]="projectNameForm" *ngIf="isCreateMode" class="mb-3 settings-section">
+      <div [formGroup]="projectNameForm" *ngIf="isCreateMode()" class="mb-3 settings-section">
         <h2 class="required">Project name</h2>
         <dt-form-field>
           <input
@@ -37,9 +37,6 @@
         </dt-form-field>
       </div>
       <h2 [class.required]="state.gitUpstreamRequired">Git upstream repository</h2>
-      <ng-template #loading>
-        <ktb-loading-distractor>Loading ...</ktb-loading-distractor>
-      </ng-template>
       <div class="mb-3 settings-section">
         <p class="mt-0 mb-3" uitestid="ktb-settings-git-upstream-message" *ngIf="state.gitUpstreamRequired">
           A Git upstream repository has to be set. You can connect your Git repository with HTTPS or SSH. Instructions,
@@ -56,16 +53,14 @@
             <a [href]="'/manage/git_upstream/' | keptnUrl" target="_blank">Git-based upstream documentation</a>.
           </ng-template>
         </p>
-
         <ktb-project-settings-git-extended
-          *ngIf="!isProjectLoading && state.gitUpstreamRequired !== undefined; else loading"
-          [isCreateMode]="isCreateMode"
-          [gitInputData]="gitInputDataExtended"
+          *ngIf="state.gitUpstreamRequired !== undefined"
+          [isCreateMode]="isCreateMode()"
+          [gitInputData]="state.gitInputDataExtended"
           [gitUpstreamRequired]="state.gitUpstreamRequired"
           (gitDataChange)="updateGitDataExtended($event)"
         ></ktb-project-settings-git-extended>
-
-        <div class="mt-3" *ngIf="!isCreateMode">
+        <div class="mt-3" *ngIf="!isCreateMode()">
           <button
             [disabled]="!gitDataExtended || isGitUpstreamInProgress"
             (click)="updateGitUpstream()"
@@ -81,13 +76,13 @@
         </div>
       </div>
 
-      <div class="mb-3 settings-section" *ngIf="isCreateMode">
+      <div class="mb-3 settings-section" *ngIf="isCreateMode()">
         <ktb-project-settings-shipyard
           (shipyardFileChanged)="updateShipyardFile($event)"
-          [isCreateMode]="isCreateMode"
+          [isCreateMode]="isCreateMode()"
         ></ktb-project-settings-shipyard>
       </div>
-      <div class="mt-3 settings-section settings-actions" *ngIf="isCreateMode">
+      <div class="mt-3 settings-section settings-actions" *ngIf="isCreateMode()">
         <button
           [disabled]="isProjectCreateFormInvalid()"
           (click)="createProject()"
@@ -105,7 +100,7 @@
 
     <div
       [ngClass]="['settings-section', unsavedDialogState ? 'notification-open' : '']"
-      *ngIf="!isCreateMode"
+      *ngIf="!isCreateMode()"
       class="pb-4"
     >
       <ktb-danger-zone [data]="projectDeletionData"></ktb-danger-zone>
