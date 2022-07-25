@@ -27,6 +27,7 @@ export class KtbVariableSelectorComponent {
   }
 
   @Input()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   set emptyTemplate(template: TemplateRef<any>) {
     this.options.emptyTemplate = template;
   }

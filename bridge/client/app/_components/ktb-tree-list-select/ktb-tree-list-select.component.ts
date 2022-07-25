@@ -33,6 +33,7 @@ export class SelectTreeFlatNode implements SelectTreeNode {
 
 export type TreeListSelectOptions = {
   headerText: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   emptyTemplate: TemplateRef<any> | null;
   hintText: string;
 };

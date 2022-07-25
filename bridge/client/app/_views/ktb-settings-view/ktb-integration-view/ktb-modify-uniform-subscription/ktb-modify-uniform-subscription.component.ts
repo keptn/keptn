@@ -359,7 +359,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
 
   // @HostListener allows us to also guard against browser refresh, close, etc.
   @HostListener('window:beforeunload', ['$event'])
-  public canDeactivate($event?: BeforeUnloadEvent): Observable<boolean> {
+  public canDeactivate(_$event?: BeforeUnloadEvent): Observable<boolean> {
     if (!this.overrideChangeGuard && (this.subscriptionForm.touched || this.webhookFormTouched)) {
       this.showNotification();
       return this.pendingChangesSubject.asObservable();
