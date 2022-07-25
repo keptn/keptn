@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	"fmt"
+
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
@@ -42,7 +43,7 @@ func (sm *serviceManager) GetAllStages(projectName string) ([]*apimodels.Expande
 		return nil, err
 	}
 	if project == nil {
-		return nil, ErrProjectNotFound
+		return nil, common.ErrProjectNotFound
 	}
 
 	return project.Stages, nil
@@ -55,7 +56,7 @@ func (sm *serviceManager) GetService(projectName, stageName, serviceName string)
 		return nil, err
 	}
 	if project == nil {
-		return nil, ErrProjectNotFound
+		return nil, common.ErrProjectNotFound
 	}
 
 	for _, stg := range project.Stages {
@@ -65,10 +66,10 @@ func (sm *serviceManager) GetService(projectName, stageName, serviceName string)
 					return svc, nil
 				}
 			}
-			return nil, ErrServiceNotFound
+			return nil, common.ErrServiceNotFound
 		}
 	}
-	return nil, ErrStageNotFound
+	return nil, common.ErrStageNotFound
 }
 
 func (sm *serviceManager) GetAllServices(projectName, stageName string) ([]*apimodels.ExpandedService, error) {
@@ -77,7 +78,7 @@ func (sm *serviceManager) GetAllServices(projectName, stageName string) ([]*apim
 		return nil, err
 	}
 	if project == nil {
-		return nil, ErrProjectNotFound
+		return nil, common.ErrProjectNotFound
 	}
 
 	for _, stg := range project.Stages {
@@ -85,7 +86,7 @@ func (sm *serviceManager) GetAllServices(projectName, stageName string) ([]*apim
 			return stg.Services, nil
 		}
 	}
-	return nil, ErrStageNotFound
+	return nil, common.ErrStageNotFound
 }
 
 func (sm *serviceManager) CreateService(projectName string, params *models.CreateServiceParams) error {
@@ -102,7 +103,7 @@ func (sm *serviceManager) CreateService(projectName string, params *models.Creat
 		service, _ := sm.GetService(projectName, stage.StageName, *params.ServiceName)
 		if service != nil {
 			log.Infof("Service %s already exists in project %s", *params.ServiceName, projectName)
-			return ErrServiceAlreadyExists
+			return common.ErrServiceAlreadyExists
 		}
 
 		log.Infof("Creating service %s in project %s", *params.ServiceName, projectName)

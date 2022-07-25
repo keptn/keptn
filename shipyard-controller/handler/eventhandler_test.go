@@ -3,16 +3,17 @@ package handler_test
 import (
 	"bytes"
 	"errors"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+
 	"github.com/gin-gonic/gin"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/handler"
 	"github.com/keptn/keptn/shipyard-controller/handler/fake"
 	"github.com/stretchr/testify/require"
-	"net/http"
-	"net/http/httptest"
-	"strings"
-	"testing"
 )
 
 func TestEventHandler_HandleEvent(t *testing.T) {
@@ -55,7 +56,7 @@ func TestEventHandler_HandleEvent(t *testing.T) {
 			fields: fields{
 				ShipyardController: &fake.IShipyardControllerMock{
 					HandleIncomingEventFunc: func(event apimodels.KeptnContextExtendedCE, waitForCompletion bool) error {
-						return handler.ErrNoMatchingEvent
+						return common.ErrNoMatchingEvent
 					},
 				},
 			},
@@ -146,7 +147,7 @@ func TestEventHandler_GetTriggeredEvents(t *testing.T) {
 			fields: fields{
 				ShipyardController: &fake.IShipyardControllerMock{
 					GetTriggeredEventsOfProjectFunc: func(project string, filter common.EventFilter) ([]apimodels.KeptnContextExtendedCE, error) {
-						return nil, handler.ErrProjectNotFound
+						return nil, common.ErrProjectNotFound
 					},
 				},
 			},

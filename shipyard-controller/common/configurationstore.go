@@ -11,10 +11,6 @@ import (
 
 type configStoreErrType int
 
-var ErrConfigStoreInvalidToken = errors.New("invalid git token")
-var ErrConfigStoreUpstreamNotFound = errors.New("upstream repository not found")
-var ErrServiceNotFound = errors.New("service not found")
-
 const configServiceSvcDoesNotExistErrorMsg = "service does not exists" // [sic] this is what we get from the configuration service
 const resourceServiceSvcDoesNotExistErrorMsg = "service not found"
 

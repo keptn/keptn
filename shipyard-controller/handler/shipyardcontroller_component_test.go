@@ -738,7 +738,7 @@ func Test_shipyardController_Scenario6(t *testing.T) {
 	// send dev.artifact-delivery.triggered event
 	err := sc.HandleIncomingEvent(getTestTaskFinishedEvent("dev", "unknown-triggered-id"), true)
 	require.NotNil(t, err)
-	require.ErrorIs(t, err, ErrSequenceNotFound)
+	require.ErrorIs(t, err, common.ErrSequenceNotFound)
 
 	require.Empty(t, mockDispatcher.AddCalls())
 }

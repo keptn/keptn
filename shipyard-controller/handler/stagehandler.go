@@ -49,7 +49,7 @@ func (sh *StageHandler) GetAllStages(c *gin.Context) {
 
 	params := &models.GetStagesParams{}
 	if err := c.ShouldBindQuery(params); err != nil {
-		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetBadRequestErrorResponse(c, fmt.Sprintf(common.InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
@@ -57,7 +57,7 @@ func (sh *StageHandler) GetAllStages(c *gin.Context) {
 
 	allStages, err := sh.StageManager.GetAllStages(params.ProjectName)
 	if err != nil {
-		if errors.Is(err, ErrProjectNotFound) {
+		if errors.Is(err, common.ErrProjectNotFound) {
 			SetNotFoundErrorResponse(c, err.Error())
 			return
 		}
@@ -107,11 +107,11 @@ func (sh *StageHandler) GetStage(c *gin.Context) {
 
 	stage, err := sh.StageManager.GetStage(projectName, stageName)
 	if err != nil {
-		if errors.Is(err, ErrProjectNotFound) {
+		if errors.Is(err, common.ErrProjectNotFound) {
 			SetNotFoundErrorResponse(c, err.Error())
 			return
 		}
-		if errors.Is(err, ErrStageNotFound) {
+		if errors.Is(err, common.ErrStageNotFound) {
 			SetNotFoundErrorResponse(c, err.Error())
 		}
 

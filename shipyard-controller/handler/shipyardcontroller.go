@@ -171,7 +171,7 @@ func (sc *shipyardController) HandleIncomingEvent(event apimodels.KeptnContextEx
 		go func() {
 			err := sc.handleTaskEvent(event)
 			if err != nil {
-				if errors.Is(err, ErrSequenceNotFound) || errors.Is(err, models.ErrInvalidEventScope) {
+				if errors.Is(err, common.ErrSequenceNotFound) || errors.Is(err, models.ErrInvalidEventScope) {
 					log.Infof("Unable to handle task event: %v", err)
 				} else {
 					log.Errorf("Unable to handle task event: %v", err)
@@ -273,7 +273,7 @@ func (sc *shipyardController) handleSequenceTriggered(event apimodels.KeptnConte
 		EventID:   eventScope.WrappedEvent.ID,
 		Timestamp: eventScope.WrappedEvent.Time,
 	})
-	if errors.Is(err, ErrSequenceBlockedWaiting) {
+	if errors.Is(err, common.ErrSequenceBlockedWaiting) {
 		sc.onSequenceWaiting(eventScope.WrappedEvent)
 		return nil
 	}
@@ -311,7 +311,7 @@ func (sc *shipyardController) handleTaskEvent(event apimodels.KeptnContextExtend
 	if sequenceExecution == nil {
 		log.Infof("The received %s event with keptn context %s is not accociated with a task that was previously triggered",
 			eventScope.EventType, eventScope.KeptnContext)
-		return ErrSequenceNotFound
+		return common.ErrSequenceNotFound
 	}
 
 	if keptnv2.IsStartedEventType(*event.Type) {
@@ -675,7 +675,7 @@ func (sc *shipyardController) GetTriggeredEventsOfProject(projectName string, fi
 	if err != nil {
 		return nil, err
 	} else if project == nil {
-		return nil, ErrProjectNotFound
+		return nil, common.ErrProjectNotFound
 	}
 	events, err := sc.eventRepo.GetEvents(projectName, filter, common.TriggeredEvent)
 	if err != nil && err != db.ErrNoEventFound {

@@ -378,7 +378,7 @@ func (mv *MongoDBProjectMVRepo) GetService(projectName, stageName, serviceName s
 		return nil, err
 	}
 	if project == nil {
-		return nil, ErrProjectNotFound
+		return nil, common.ErrProjectNotFound
 	}
 
 	for _, stg := range project.Stages {
@@ -388,10 +388,10 @@ func (mv *MongoDBProjectMVRepo) GetService(projectName, stageName, serviceName s
 					return svc, nil
 				}
 			}
-			return nil, ErrServiceNotFound
+			return nil, common.ErrServiceNotFound
 		}
 	}
-	return nil, ErrStageNotFound
+	return nil, common.ErrStageNotFound
 }
 
 // DeleteService deletes a service
@@ -447,7 +447,7 @@ func (mv *MongoDBProjectMVRepo) UpdateEventOfService(e apimodels.KeptnContextExt
 		return err
 	} else if existingProject == nil {
 		log.Errorf("Could not update service %s in stage %s in project %s: Project not found.", eventData.Service, eventData.Stage, eventData.Project)
-		return ErrProjectNotFound
+		return common.ErrProjectNotFound
 	}
 
 	contextInfo := &apimodels.EventContextInfo{
@@ -502,7 +502,7 @@ func (mv *MongoDBProjectMVRepo) CreateRemediation(project, stage, service string
 	existingProject, err := mv.GetProject(project)
 	if err != nil {
 		log.Errorf("Could not create remediation for service %s in stage %s in project%s. Could not load project: %s", service, stage, project, err.Error())
-		return ErrProjectNotFound
+		return common.ErrProjectNotFound
 	}
 
 	err = updateServiceInStage(existingProject, stage, service, func(service *apimodels.ExpandedService) error {
@@ -520,7 +520,7 @@ func (mv *MongoDBProjectMVRepo) CloseOpenRemediations(project, stage, service, k
 	existingProject, err := mv.GetProject(project)
 	if err != nil {
 		log.Errorf("Could not close remediation for service %s in stage %s in project %s. Could not load project: %s", service, stage, project, err.Error())
-		return ErrProjectNotFound
+		return common.ErrProjectNotFound
 	}
 	if keptnContext == "" {
 		log.Warn("No keptnContext has been set.")
@@ -539,7 +539,7 @@ func (mv *MongoDBProjectMVRepo) CloseOpenRemediations(project, stage, service, k
 		}
 
 		if !foundRemediation {
-			return ErrOpenRemediationNotFound
+			return common.ErrOpenRemediationNotFound
 		}
 		service.OpenRemediations = updatedRemediations
 		return nil

@@ -97,6 +97,27 @@ func TestGetByNameErr(t *testing.T) {
 	assert.Equal(t, "my-project", projectMVRepo.GetProjectCalls()[0].ProjectName)
 }
 
+func TestGetByNameErrNotFound(t *testing.T) {
+	secretStore := &common_mock.SecretStoreMock{}
+	projectMVRepo := &db_mock.ProjectMVRepoMock{}
+	eventRepo := &db_mock.EventRepoMock{}
+	configStore := &common_mock.ConfigurationStoreMock{}
+	sequenceQueueRepo := &db_mock.SequenceQueueRepoMock{}
+	eventQueueRepo := &db_mock.EventQueueRepoMock{}
+	sequenceExecutionRepo := &db_mock.SequenceExecutionRepoMock{}
+
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
+		return nil, common.ErrProjectNotFound
+	}
+
+	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	project, err := instance.GetByName("my-project")
+	assert.NotNil(t, err)
+	assert.Equal(t, common.ErrProjectNotFound, err)
+	assert.Nil(t, project)
+	assert.Equal(t, "my-project", projectMVRepo.GetProjectCalls()[0].ProjectName)
+}
+
 func TestGetByNameNotFound(t *testing.T) {
 	secretStore := &common_mock.SecretStoreMock{}
 	projectMVRepo := &db_mock.ProjectMVRepoMock{}
@@ -111,7 +132,7 @@ func TestGetByNameNotFound(t *testing.T) {
 	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
 	project, err := instance.GetByName("my-project")
 	assert.NotNil(t, err)
-	assert.Equal(t, ErrProjectNotFound, err)
+	assert.Equal(t, common.ErrProjectNotFound, err)
 	assert.Nil(t, project)
 	assert.Equal(t, "my-project", projectMVRepo.GetProjectCalls()[0].ProjectName)
 }
@@ -626,7 +647,7 @@ func TestUpdate_OldProjectNotAvailable(t *testing.T) {
 	}
 	err, rollback := instance.Update(params)
 	assert.NotNil(t, err)
-	assert.Equal(t, ErrProjectNotFound, err)
+	assert.Equal(t, common.ErrProjectNotFound, err)
 	rollback()
 
 }

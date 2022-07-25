@@ -2,9 +2,11 @@ package db
 
 import (
 	"fmt"
-	apimodels "github.com/keptn/go-utils/pkg/api/models"
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/keptn/shipyard-controller/common"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMongoDBProjectsRepo_InsertAndRetrieve(t *testing.T) {
@@ -26,7 +28,7 @@ func TestMongoDBProjectsRepo_InsertAndRetrieve(t *testing.T) {
 
 	prj, err = r.GetProject("my-project")
 
-	require.ErrorIs(t, err, ErrProjectNotFound)
+	require.ErrorIs(t, err, common.ErrProjectNotFound)
 	require.Nil(t, prj)
 }
 

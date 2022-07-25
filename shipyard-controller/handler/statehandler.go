@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	_ "github.com/keptn/keptn/shipyard-controller/models"
 )
@@ -52,7 +53,7 @@ func (sh *StateHandler) GetSequenceState(c *gin.Context) {
 	projectName := c.Param("project")
 	params := &apimodels.GetSequenceStateParams{}
 	if err := c.ShouldBindQuery(params); err != nil {
-		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetBadRequestErrorResponse(c, fmt.Sprintf(common.InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 	params.Project = projectName
@@ -61,7 +62,7 @@ func (sh *StateHandler) GetSequenceState(c *gin.Context) {
 		GetSequenceStateParams: *params,
 	})
 	if err != nil {
-		SetInternalServerErrorResponse(c, fmt.Sprintf(UnableQueryStateMsg, err.Error()))
+		SetInternalServerErrorResponse(c, fmt.Sprintf(common.UnableQueryStateMsg, err.Error()))
 		return
 	}
 
@@ -90,7 +91,7 @@ func (sh *StateHandler) ControlSequenceState(c *gin.Context) {
 
 	params := &apimodels.SequenceControlCommand{}
 	if err := c.ShouldBindJSON(params); err != nil {
-		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetBadRequestErrorResponse(c, fmt.Sprintf(common.InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
@@ -101,10 +102,10 @@ func (sh *StateHandler) ControlSequenceState(c *gin.Context) {
 		Project:      project,
 	})
 	if err != nil {
-		if errors.Is(err, ErrSequenceNotFound) {
-			SetNotFoundErrorResponse(c, fmt.Sprintf(UnableFindSequenceMsg, err.Error()))
+		if errors.Is(err, common.ErrSequenceNotFound) {
+			SetNotFoundErrorResponse(c, fmt.Sprintf(common.UnableFindSequenceMsg, err.Error()))
 		}
-		SetInternalServerErrorResponse(c, fmt.Sprintf(UnableControleSequenceMsg, err.Error()))
+		SetInternalServerErrorResponse(c, fmt.Sprintf(common.UnableControleSequenceMsg, err.Error()))
 		return
 	}
 

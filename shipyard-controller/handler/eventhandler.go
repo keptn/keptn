@@ -48,7 +48,7 @@ func (eh *EventHandler) GetTriggeredEvents(c *gin.Context) {
 	eventType := c.Param("eventType")
 	params := &models.GetTriggeredEventsParams{}
 	if err := c.ShouldBindQuery(params); err != nil {
-		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetBadRequestErrorResponse(c, fmt.Sprintf(common.InvalidRequestFormatMsg, err.Error()))
 	}
 
 	params.EventType = eventType
@@ -78,7 +78,7 @@ func (eh *EventHandler) GetTriggeredEvents(c *gin.Context) {
 	}
 
 	if err != nil {
-		if errors.Is(err, ErrProjectNotFound) {
+		if errors.Is(err, common.ErrProjectNotFound) {
 			SetNotFoundErrorResponse(c, err.Error())
 			return
 		}
@@ -103,16 +103,16 @@ func (eh *EventHandler) GetTriggeredEvents(c *gin.Context) {
 func (eh *EventHandler) HandleEvent(c *gin.Context) {
 	event := &apimodels.KeptnContextExtendedCE{}
 	if err := c.ShouldBindJSON(event); err != nil {
-		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetBadRequestErrorResponse(c, fmt.Sprintf(common.InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 	keptnEvent := &apimodels.KeptnContextExtendedCE{}
 	if err := keptnv2.Decode(event, keptnEvent); err != nil {
-		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetBadRequestErrorResponse(c, fmt.Sprintf(common.InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 	if err := keptnEvent.Validate(); err != nil {
-		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetBadRequestErrorResponse(c, fmt.Sprintf(common.InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
