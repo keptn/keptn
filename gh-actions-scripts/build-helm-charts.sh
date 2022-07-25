@@ -67,7 +67,9 @@ do
   BASE_NAME=$i
   BASE_PATH=${charts[$i]}
 
+  echo "::group::Helm dependency build"
   helm dependency build ${BASE_PATH}
+  echo "::endgroup::"
 
   helm package ${BASE_PATH} --app-version "$IMAGE_TAG" --version "$VERSION"
   if [ $? -ne 0 ]; then
