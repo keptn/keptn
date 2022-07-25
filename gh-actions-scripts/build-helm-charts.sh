@@ -63,6 +63,7 @@ charts[jmeter-service]=jmeter-service/chart
 
 for i in "${!charts[@]}"
 do
+  echo "=== Building $i ==="
   BASE_NAME=$i
   BASE_PATH=${charts[$i]}
 
