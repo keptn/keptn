@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { Project } from '../../../_models/project';
 import { Stage } from '../../../_models/stage';
-import { DataService } from '../../../_services/data.service';
 import { DtFilterFieldChangeEvent, DtFilterFieldDefaultDataSource } from '@dynatrace/barista-components/filter-field';
 import { ApiService } from '../../../_services/api.service';
 import { Service } from '../../../_models/service';
@@ -19,12 +18,12 @@ import { ISelectedStageInfo } from '../ktb-environment-view.component';
 export class KtbStageOverviewComponent {
   public _dataSource = new DtFilterFieldDefaultDataSource();
   public filter: DtFilterArray[] = [];
-  public isTriggerSequenceOpen: boolean;
   private filteredServices: string[] = [];
   private globalFilter: { [projectName: string]: { services: string[] } } = {};
   private _project?: Project;
 
   @Input() selectedStageInfo?: ISelectedStageInfo;
+  @Input() isTriggerSequenceOpen = false;
 
   @Input() set project(project: Project | undefined) {
     if (project) {
@@ -39,10 +38,7 @@ export class KtbStageOverviewComponent {
   @Output() selectedStageInfoChange: EventEmitter<ISelectedStageInfo> = new EventEmitter();
   @Output() filteredServicesChange: EventEmitter<string[]> = new EventEmitter<string[]>();
 
-  constructor(private dataService: DataService, private apiService: ApiService) {
-    this.isTriggerSequenceOpen = this.dataService.isTriggerSequenceOpen;
-    this.dataService.isTriggerSequenceOpen = false;
-  }
+  constructor(private apiService: ApiService) {}
 
   private setFilter(project: Project | undefined, projectChanged: boolean): void {
     this._dataSource.data = {

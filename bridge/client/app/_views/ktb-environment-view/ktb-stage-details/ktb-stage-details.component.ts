@@ -4,8 +4,6 @@ import { DtOverlayConfig } from '@dynatrace/barista-components/overlay';
 import { Project } from '../../../_models/project';
 import { Stage } from '../../../_models/stage';
 import { Service } from '../../../_models/service';
-import { DataService } from '../../../_services/data.service';
-import { Observable } from 'rxjs';
 import { ISelectedStageInfo } from '../ktb-environment-view.component';
 
 export type ServiceFilterType = 'evaluation' | 'problem' | 'approval' | undefined;
@@ -21,7 +19,6 @@ export class KtbStageDetailsComponent {
   public overlayConfig: DtOverlayConfig = {
     pinnable: true,
   };
-  public isQualityGatesOnly$: Observable<boolean>;
   public filteredServices: string[] = [];
   private _selectedStageInfo?: ISelectedStageInfo;
 
@@ -36,14 +33,11 @@ export class KtbStageDetailsComponent {
     return this._selectedStageInfo;
   }
   @Output() selectedStageInfoChange = new EventEmitter<ISelectedStageInfo>();
+  @Input() isQualityGatesOnly = false;
 
   @ViewChild('problemFilterEventButton') public problemFilterEventButton?: DtToggleButtonItem<string>;
   @ViewChild('evaluationFilterEventButton') public evaluationFilterEventButton?: DtToggleButtonItem<string>;
   @ViewChild('approvalFilterEventButton') public approvalFilterEventButton?: DtToggleButtonItem<string>;
-
-  constructor(private dataService: DataService) {
-    this.isQualityGatesOnly$ = this.dataService.isQualityGatesOnly;
-  }
 
   private resetFilter(eventType: ServiceFilterType): void {
     this.problemFilterEventButton?.deselect();

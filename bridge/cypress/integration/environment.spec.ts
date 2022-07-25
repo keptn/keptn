@@ -133,7 +133,7 @@ describe('Environment Screen dynamic requests', () => {
       .assertEvaluationInDetails(service, '-');
   });
 
-  it.only('should show 2 evaluations in history and should not show current evaluation in history', () => {
+  it('should show 2 evaluations in history and should not show current evaluation in history', () => {
     const service = 'carts';
     cy.intercept(environmentPage.getEvaluationHistoryURL(project, stage, service, 6), {
       fixture: 'get.environment.evaluation.history.limited.mock', // 3 events, including the current one

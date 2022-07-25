@@ -6,10 +6,12 @@
       [(selectedStageInfo)]="selectedStageInfo"
       (selectedStageInfoChange)="setLocation(project.projectName, $event)"
       (filteredServicesChange)="stageDetails.filteredServices = $event"
+      [isTriggerSequenceOpen]="!!(isTriggerSequenceOpen$ | async)"
     ></ktb-stage-overview>
     <ktb-stage-details
       fxFlex="30"
       #stageDetails
+      [isQualityGatesOnly]="!!(isQualityGatesOnly$ | async)"
       [project]="project"
       [(selectedStageInfo)]="selectedStageInfo"
       (selectedStageInfoChange)="setLocation(project.projectName, $event)"

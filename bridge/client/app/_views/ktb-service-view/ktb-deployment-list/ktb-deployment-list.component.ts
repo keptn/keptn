@@ -1,6 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { DataService } from '../../../_services/data.service';
 import { DtTableDataSource } from '@dynatrace/barista-components/table';
 import { Location } from '@angular/common';
 import { ServiceDeploymentInformation as sdi, ServiceState } from '../../../../../shared/models/service-state';
@@ -52,12 +51,7 @@ export class KtbDeploymentListComponent {
     }
   }
 
-  constructor(
-    private route: ActivatedRoute,
-    private dataService: DataService,
-    private router: Router,
-    private location: Location
-  ) {}
+  constructor(private route: ActivatedRoute, private router: Router, private location: Location) {}
 
   private updateDataSource(): void {
     this.dataSource.data = this.service?.deploymentInformation ?? [];
