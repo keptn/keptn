@@ -27,7 +27,7 @@ export class KtbVariableSelectorComponent {
   }
 
   @Input()
-  set emptyText(template: TemplateRef<any>) {
+  set emptyTemplate(template: TemplateRef<any>) {
     this.options.emptyTemplate = template;
   }
 

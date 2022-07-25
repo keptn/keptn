@@ -5,7 +5,7 @@ import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms'
 import { NotificationType } from '../../../_models/notification';
 import { NotificationsService } from '../../../_services/notifications.service';
 import { BehaviorSubject, combineLatest, Observable, of } from 'rxjs';
-import { catchError, filter, finalize, map } from 'rxjs/operators';
+import { catchError, finalize, map } from 'rxjs/operators';
 import { IServiceSecret, SecretKeyValuePair } from '../../../../../shared/interfaces/secret';
 
 const secretNamePattern = '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*';
@@ -40,10 +40,7 @@ export class KtbCreateSecretFormComponent implements OnInit {
   });
 
   _scopes = new BehaviorSubject<string[]>([]);
-  scopeQueryParam$ = this.route.queryParams.pipe(
-    map((params) => params.scope),
-    filter((scope) => !!scope)
-  );
+  scopeQueryParam$ = this.route.queryParams.pipe(map((params) => params.scope));
   scopes$: Observable<string[]> = combineLatest([this.scopeQueryParam$, this._scopes.asObservable()]).pipe(
     map(([scope, scopes]) => {
       if (scopes.includes(scope)) {

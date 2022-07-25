@@ -324,6 +324,12 @@ export function interceptIntegrations(): void {
   );
 }
 
+export function interceptNoWebhookSecrets(): void {
+  cy.intercept('/api/secrets/scope/keptn-webhook-service', {
+    body: [],
+  }).as('webhook-secrets');
+}
+
 export function interceptSecrets(): void {
   cy.fixture('get.project.json').as('initProjectJSON');
   cy.fixture('metadata.json').as('initmetadata');
@@ -376,7 +382,7 @@ export function interceptSecrets(): void {
   cy.intercept('GET', 'api/secrets/v1/scope', {
     statusCode: 200,
     body: {
-      scopes: ['dynatrace-service'],
+      scopes: ['dynatrace-service', 'keptn-webhook-service'],
     },
   });
 }

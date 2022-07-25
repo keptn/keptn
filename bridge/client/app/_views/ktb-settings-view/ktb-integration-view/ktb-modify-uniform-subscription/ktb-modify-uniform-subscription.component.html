@@ -123,12 +123,20 @@
     id="unsavedDataDialog"
     [state]="unsavedDialogState"
     aria-label="Dialog for notifying about unsaved data"
+    uitestid="ktb-uniform-subscription-confirmation-dialog"
   >
     <dt-confirmation-dialog-state name="unsaved">
       <p [textContent]="message"></p>
       <dt-confirmation-dialog-actions>
         <button dt-button variant="secondary" (click)="reject()">Stay</button>
-        <button dt-button variant="secondary" (click)="reset()">Discard changes and leave page</button>
+        <button
+          dt-button
+          variant="secondary"
+          (click)="reset()"
+          uitestid="ktb-uniform-subscription-confirmation-discard-button"
+        >
+          Discard changes and leave page
+        </button>
       </dt-confirmation-dialog-actions>
     </dt-confirmation-dialog-state>
   </dt-confirmation-dialog>

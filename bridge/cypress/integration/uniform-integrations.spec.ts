@@ -1,4 +1,4 @@
-import { interceptIntegrations } from '../support/intercept';
+import { interceptIntegrations, interceptNoWebhookSecrets, interceptSecrets } from '../support/intercept';
 import UniformPage from '../support/pageobjects/UniformPage';
 
 const uniformPage = new UniformPage();
@@ -244,6 +244,7 @@ describe('Add webhook subscriptions', () => {
     interceptIntegrations();
     uniformPage.visitAdd(webhookID, true);
   });
+
   it('should have disabled button if first and second control is invalid', () => {
     uniformPage.assertIsUpdateButtonEnabled(false).assertIsUpdateButtonEnabled(false);
   });
@@ -422,6 +423,26 @@ describe('Add webhook subscriptions', () => {
       .assertIsSendFinishedButtonsEnabled(true)
       .assertIsSendStarted(true)
       .assertIsSendFinished(false);
+  });
+});
+
+describe('Add secret from webhook subscriptions', () => {
+  beforeEach(() => {
+    interceptIntegrations();
+    interceptNoWebhookSecrets();
+  });
+
+  it('should have secret creation link if not secret is available', () => {
+    uniformPage.visitAdd(webhookID, true).assertSecretCreationLink();
+  });
+
+  it('should navigate to secret creation and have keptn-webhook-service preselected', () => {
+    uniformPage.visitAdd(webhookID, true);
+    interceptSecrets();
+    uniformPage.createSecret();
+    cy.location('pathname').should('eq', `/project/sockshop/settings/uniform/secrets/add`);
+    cy.location('search').should('eq', '?scope=keptn-webhook-service');
+    cy.byTestId('keptn-secret-scope-input').should('have.text', 'keptn-webhook-service');
   });
 });
 

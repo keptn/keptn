@@ -352,5 +352,18 @@ class UniformPage {
     cy.byTestId(this.EDIT_WEBHOOK_FIELD_HEADER_VALUE_ID).find('input').eq(index).should('have.value', content);
     return this;
   }
+
+  public assertSecretCreationLink(): this {
+    cy.byTestId('ktb-webhook-secret-selector').first().click();
+    cy.byTestId('ktb-webhook-secret-creation-link').should('exist');
+    return this;
+  }
+
+  public createSecret(): this {
+    this.assertSecretCreationLink();
+    cy.byTestId('ktb-webhook-secret-creation-link').click();
+    cy.byTestId('ktb-uniform-subscription-confirmation-discard-button').click();
+    return this;
+  }
 }
 export default UniformPage;

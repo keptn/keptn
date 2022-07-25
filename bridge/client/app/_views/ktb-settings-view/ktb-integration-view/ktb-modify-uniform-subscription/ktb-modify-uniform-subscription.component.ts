@@ -77,6 +77,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
   private pendingChangesSubject = new Subject<boolean>();
   public message = 'You have pending changes. Are you sure you want to leave this page?';
   public unsavedDialogState: null | 'unsaved' = null;
+  private overrideChangeGuard = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -301,6 +302,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
       () => {
         this.updating = false;
         this.notificationsService.addNotification(NotificationType.SUCCESS, 'Subscription successfully created!');
+        this.overrideChangeGuard = true;
         this.router.navigate(['/', 'project', projectName, 'settings', 'uniform', 'integrations', integrationId]);
       },
       () => {
@@ -358,7 +360,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
   // @HostListener allows us to also guard against browser refresh, close, etc.
   @HostListener('window:beforeunload', ['$event'])
   public canDeactivate($event?: BeforeUnloadEvent): Observable<boolean> {
-    if (this.subscriptionForm.touched || this.webhookFormTouched) {
+    if (!this.overrideChangeGuard && (this.subscriptionForm.touched || this.webhookFormTouched)) {
       this.showNotification();
       return this.pendingChangesSubject.asObservable();
     }

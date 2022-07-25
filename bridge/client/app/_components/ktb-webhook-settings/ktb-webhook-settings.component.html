@@ -222,6 +222,7 @@
       <p>
         Configure secrets for the scope keptn-webhook-service under the menu entry
         <a
+          uitestid="ktb-webhook-secret-creation-link"
           [routerLink]="['/project', projectName, 'settings', 'uniform', 'secrets', 'add']"
           [queryParams]="{ scope: 'keptn-webhook-service' }"
           ><span class="&quot;bold&quot;">Secrets</span></a
@@ -232,10 +233,11 @@
   </ng-template>
 
   <ktb-variable-selector
+    uitestid="ktb-webhook-secret-selector"
     [data]="secretDataSource"
     [title]="'Select secret'"
     [label]="'Add secret'"
-    [emptyText]="secretEmpty"
+    [emptyTemplate]="secretEmpty"
     [hintText]="'Only secrets of scope keptn-webhook-secret can be referenced.'"
     [control]="getFormControl(controlName, index)"
     [selectionStart]="selectionStart"

@@ -17,6 +17,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { KtbIntegrationViewComponent } from '../ktb-integration-view.component';
 import { IWebhookConfigClient } from '../../../../../../shared/interfaces/webhook-config';
 import { KtbIntegrationViewModule } from '../ktb-integration-view.module';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('KtbModifyUniformSubscriptionComponent', () => {
   let component: KtbModifyUniformSubscriptionComponent;
@@ -33,6 +34,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         KtbIntegrationViewModule,
+        BrowserAnimationsModule,
         HttpClientTestingModule,
         RouterTestingModule.withRoutes([
           {
@@ -47,6 +49,12 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
           provide: ActivatedRoute,
           useValue: {
             paramMap: paramMap.asObservable(),
+            snapshot: {
+              paramMap: convertToParamMap({
+                projectName: 'sockshop',
+                integrationId: UniformRegistrationsMock[0].id,
+              }),
+            },
           },
         },
       ],
@@ -313,6 +321,66 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
         },
       ],
     });
+  });
+
+  it('should not show a notification when the component is initialized', () => {
+    // given
+    fixture.detectChanges();
+
+    // then
+    // Has to be retrieved by document, as it is not created at component level
+    const notifications = document.getElementsByTagName('dt-confirmation-dialog-state');
+    expect(component.unsavedDialogState).toBeNull();
+    expect(notifications.length).toEqual(0);
+  });
+
+  it('should not allow navigation for unsaved changes', () => {
+    // given
+
+    // when
+    component.webhookFormTouched = true;
+    fixture.detectChanges();
+
+    // then
+    expect(component.canDeactivate()).not.toEqual(true);
+  });
+
+  it('should show a dialog when showNotification is called', () => {
+    // given
+    component.webhookFormTouched = true;
+    fixture.detectChanges();
+
+    // when
+    component.showNotification();
+    fixture.detectChanges();
+
+    // then
+    const notification = document.getElementsByTagName('dt-confirmation-dialog-state');
+    expect(notification.length).toEqual(1);
+
+    // We have to reset the state, as the dt-confirmation-dialog component has some pending timer open
+    // and the test will not complete
+    component.hideNotification();
+    fixture.detectChanges();
+  });
+
+  it('should not show dialog when the notification was closed', () => {
+    // given
+    component.webhookFormTouched = true;
+    fixture.detectChanges();
+
+    // given
+    component.showNotification();
+    fixture.detectChanges();
+
+    // when
+    component.hideNotification();
+    fixture.detectChanges();
+
+    // then
+    const notification = document.getElementsByTagName('dt-confirmation-dialog-state')[0];
+    // It still exists in the dom but is hidden - so we test for aria-hidden
+    expect(notification.getAttribute('aria-hidden')).toEqual('true');
   });
 
   function setSubscription(integrationIndex: number, subscriptionIndex?: number): UniformSubscription {
