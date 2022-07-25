@@ -1,7 +1,7 @@
 package common
 
 import (
-	"k8s.io/client-go/kubernetes"
+	"bufio"
 )
 
 type DenyListProvider interface {
@@ -9,50 +9,38 @@ type DenyListProvider interface {
 }
 
 type denyListProvider struct {
-	getDeniedURLs GetDeniedURLsFunc
-	kubeClient    kubernetes.Interface
+	Scanner FileScanner
 }
 
-type GetDeniedURLsFunc func() []string
+type FileScanner interface {
+	Split(split bufio.SplitFunc)
+	Scan() bool
+	Text() string
+}
 
-func NewDenyListProvider(kubeClient kubernetes.Interface) DenyListProvider {
+func NewDenyListProvider(scanner FileScanner) DenyListProvider {
 	return denyListProvider{
-		getDeniedURLs: GetDeniedURLs,
-		kubeClient:    kubeClient,
+		Scanner: scanner,
 	}
 }
 
 func (d denyListProvider) Get() []string {
-	denyList := d.getDeniedURLs()
-	return denyList
+	var fileLines []string
+	d.Scanner.Split(bufio.ScanLines)
 
-	// configMap, err := d.kubeClient.CoreV1().ConfigMaps(GetNamespaceFromEnvVar()).Get(context.TODO(), WebhookConfigMap, metav1.GetOptions{})
-	// if err != nil {
-	// 	logger.Errorf("Unable to get ConfigMap %s content: %s", WebhookConfigMap, err.Error())
-	// 	return denyList
-	// }
+	for d.Scanner.Scan() {
+		fileLines = append(fileLines, d.Scanner.Text())
+	}
 
-	// denyListString := configMap.Data["denyList"]
-	// denyListConfig := strings.Fields(denyListString)
-	// return append(denyList, denyListConfig...)
+	return removeEmptyStrings(fileLines)
 }
 
-func GetDeniedURLs() []string {
-	// kubeAPIHostIP := env[KubernetesSvcHostEnvVar]
-	// kubeAPIPort := env[KubernetesAPIPortEnvVar]
-
-	// urls := make([]string, 0)
-	// if kubeAPIHostIP != "" {
-	// 	urls = append(urls, kubeAPIHostIP)
-	// }
-	// if kubeAPIPort != "" {
-	// 	urls = append(urls, "kubernetes"+":"+kubeAPIPort)
-	// 	urls = append(urls, "kubernetes.default"+":"+kubeAPIPort)
-	// 	urls = append(urls, "kubernetes.default.svc"+":"+kubeAPIPort)
-	// 	urls = append(urls, "kubernetes.default.svc.cluster.local"+":"+kubeAPIPort)
-	// }
-	// if kubeAPIHostIP != "" && kubeAPIPort != "" {
-	// 	urls = append(urls, kubeAPIHostIP+":"+kubeAPIPort)
-	// }
-	return []string{}
+func removeEmptyStrings(s []string) []string {
+	var r []string
+	for _, str := range s {
+		if str != "" {
+			r = append(r, str)
+		}
+	}
+	return r
 }
