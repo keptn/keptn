@@ -19,7 +19,7 @@ var createSecretParams *createSecretCmdParams
 var createSecretCommand = &cobra.Command{
 	Use:          `secret SECRET_NAME --from-literal="key1=value1"" --from-literal="key2=value2" --scope=my-scope`,
 	Short:        "Creates a new secret",
-	Example:      `keptn create secret SECRET_NAME --from-literal="key1=value1"" --from-literal="key2=value2" --scope=my-scope`,
+	Example:      `keptn create secret SECRET_NAME --from-literal="key1=value1" --from-literal="key2=value2" --scope=my-scope`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
