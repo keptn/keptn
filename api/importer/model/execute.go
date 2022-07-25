@@ -31,6 +31,14 @@ type TaskExecution struct {
 
 const projectInputContextKey = "project"
 
+const (
+	CreateServiceAction = "keptn-api-v1-create-service"
+	CreateSecretAction  = "keptn-api-v1-uniform-create-secret"
+	CreateWebhookAction = "keptn-api-v1-uniform-create-webhook-subscription"
+)
+
+var AllActions = []string{CreateServiceAction, CreateSecretAction, CreateWebhookAction}
+
 type ManifestExecution struct {
 	Inputs map[string]string
 	Tasks  map[string]TaskExecution

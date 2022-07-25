@@ -1153,3 +1153,207 @@ func TestImportPackageProcessor_Process_FullManifestRendering(t *testing.T) {
 		)
 	}
 }
+
+func TestPackageValidationEmptyId(t *testing.T) {
+	manifest := &model.ImportManifest{
+		ApiVersion: "v1beta1",
+		Tasks: []*model.ManifestTask{
+			{
+				ID:      "",
+				Type:    "api",
+				Context: nil,
+				APITask: &model.APITask{
+					Action:      "keptn-api-v1-create-service",
+					PayloadFile: "",
+				},
+			},
+		},
+	}
+
+	expectedErrorMsg := "task id cannot be empty"
+
+	parserMock := &fake.ManifestParserMock{
+		ParseFunc: func(input io.Reader) (*model.ImportManifest, error) {
+			return new(model.ImportManifest), nil
+		},
+	}
+
+	taskExecutor := &fake.TaskExecutorMock{
+		ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
+			return nil, nil
+		},
+	}
+
+	importPackageMock := &fake.ImportPackageMock{
+		CloseFunc: func() error {
+			return nil
+		},
+		GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
+			return io.NopCloser(bytes.NewReader([]byte{})), nil
+		},
+	}
+
+	stageRetriever := &fake.MockStageRetriever{}
+	sut := NewImportPackageProcessor(parserMock, taskExecutor, stageRetriever)
+
+	err := sut.validateManifest(manifest, importPackageMock)
+
+	assert.EqualErrorf(t, err, expectedErrorMsg, "Error should be: %v, got: %v", expectedErrorMsg, err)
+}
+
+func TestPackageValidationIdAlphaNumeric(t *testing.T) {
+	manifests := []model.ImportManifest{
+		{
+			ApiVersion: "v1beta1",
+			Tasks: []*model.ManifestTask{
+				{
+					ID:      "valid_id",
+					Type:    "api",
+					Context: nil,
+					APITask: &model.APITask{
+						Action:      "keptn-api-v1-create-service",
+						PayloadFile: "",
+					},
+				},
+			},
+		},
+		{
+			ApiVersion: "v1beta1",
+			Tasks: []*model.ManifestTask{
+				{
+					ID:      "invalid-id",
+					Type:    "api",
+					Context: nil,
+					APITask: &model.APITask{
+						Action:      "keptn-api-v1-create-service",
+						PayloadFile: "",
+					},
+				},
+			},
+		},
+		{
+			ApiVersion: "v1beta1",
+			Tasks: []*model.ManifestTask{
+				{
+					ID:      "invalid~char#",
+					Type:    "api",
+					Context: nil,
+					APITask: &model.APITask{
+						Action:      "keptn-api-v1-create-service",
+						PayloadFile: "",
+					},
+				},
+			},
+		},
+	}
+
+	parserMock := &fake.ManifestParserMock{
+		ParseFunc: func(input io.Reader) (*model.ImportManifest, error) {
+			return new(model.ImportManifest), nil
+		},
+	}
+
+	taskExecutor := &fake.TaskExecutorMock{
+		ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
+			return nil, nil
+		},
+	}
+
+	importPackageMock := &fake.ImportPackageMock{
+		CloseFunc: func() error {
+			return nil
+		},
+		GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
+			return io.NopCloser(bytes.NewReader([]byte{})), nil
+		},
+	}
+
+	stageRetriever := &fake.MockStageRetriever{}
+	sut := NewImportPackageProcessor(parserMock, taskExecutor, stageRetriever)
+
+	tests := []struct {
+		name               string
+		manifest           model.ImportManifest
+		expectedErrMessage string
+		expectError        bool
+	}{
+		{
+			name:               "valid id",
+			manifest:           manifests[0],
+			expectedErrMessage: "<nil>",
+			expectError:        false,
+		},
+		{
+			name:               "containing invalid dash",
+			manifest:           manifests[1],
+			expectedErrMessage: fmt.Sprintf("task id %s can only consist of alphnumeric characters and underscores", manifests[1].Tasks[0].ID),
+			expectError:        true,
+		},
+		{
+			name:               "containing invalid character",
+			manifest:           manifests[2],
+			expectedErrMessage: fmt.Sprintf("task id %s can only consist of alphnumeric characters and underscores", manifests[2].Tasks[0].ID),
+			expectError:        true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				err := sut.validateManifest(&tt.manifest, importPackageMock)
+				if tt.expectError {
+					assert.EqualErrorf(t, err, tt.expectedErrMessage, "Error should be: %v, got: %v", tt.expectedErrMessage, err)
+				} else {
+					require.NoError(t, err)
+				}
+			})
+	}
+
+}
+
+func TestPackageValidationInvalidType(t *testing.T) {
+	manifest := &model.ImportManifest{
+		ApiVersion: "v1beta1",
+		Tasks: []*model.ManifestTask{
+			{
+				ID:      "testing_invalid_type",
+				Type:    "invalid",
+				Context: nil,
+				APITask: &model.APITask{
+					Action:      "keptn-api-v1-create-service",
+					PayloadFile: "",
+				},
+			},
+		},
+	}
+
+	expectedErrorMsg := fmt.Sprintf("task of type %s not implemented", manifest.Tasks[0].Type)
+
+	parserMock := &fake.ManifestParserMock{
+		ParseFunc: func(input io.Reader) (*model.ImportManifest, error) {
+			return new(model.ImportManifest), nil
+		},
+	}
+
+	taskExecutor := &fake.TaskExecutorMock{
+		ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
+			return nil, nil
+		},
+	}
+
+	importPackageMock := &fake.ImportPackageMock{
+		CloseFunc: func() error {
+			return nil
+		},
+		GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
+			return io.NopCloser(bytes.NewReader([]byte{})), nil
+		},
+	}
+
+	stageRetriever := &fake.MockStageRetriever{}
+	sut := NewImportPackageProcessor(parserMock, taskExecutor, stageRetriever)
+
+	err := sut.validateManifest(manifest, importPackageMock)
+
+	assert.EqualErrorf(t, err, expectedErrorMsg, "Error should be: %v, got: %v", expectedErrorMsg, err)
+}

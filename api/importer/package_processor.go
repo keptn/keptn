@@ -3,6 +3,8 @@ package importer
 import (
 	"fmt"
 	"io"
+	"k8s.io/utils/strings/slices"
+	"regexp"
 
 	"github.com/keptn/keptn/api/importer/model"
 )
@@ -80,6 +82,11 @@ func (ipp *ImportPackageProcessor) Process(project string, ip ImportPackage) err
 		return fmt.Errorf("error parsing manifest: %w", err)
 	}
 
+	err = ipp.validateManifest(manifest, ip)
+	if err != nil {
+		return fmt.Errorf("error validating manifest: %w", err)
+	}
+
 	mCtx := model.NewManifestExecution(project)
 
 	for _, task := range manifest.Tasks {
@@ -92,6 +99,47 @@ func (ipp *ImportPackageProcessor) Process(project string, ip ImportPackage) err
 		case resourceTaskType:
 			if err = ipp.processResourceTask(mCtx, ip, task); err != nil {
 				return err
+			}
+		default:
+			return fmt.Errorf("task of type %s not implemented", task.Type)
+		}
+	}
+
+	return nil
+}
+
+func (ipp *ImportPackageProcessor) validateManifest(
+	manifest *model.ImportManifest, ip ImportPackage) error {
+	re := regexp.MustCompile("^[a-zA-Z0-9_]*$")
+
+	for _, task := range manifest.Tasks {
+		// Check if ID is not empty and formatted properly
+		if task.ID == "" {
+			return fmt.Errorf("task id cannot be empty")
+		} else if !re.MatchString(task.ID) {
+			return fmt.Errorf("task id %s can only consist of alphnumeric characters and underscores", task.ID)
+		}
+
+		// Check if task definition is correct
+		switch task.Type {
+		case apiTaskType:
+			// Check if the action type is supported
+			if !slices.Contains(model.AllActions, task.APITask.Action) {
+				return fmt.Errorf("unsupported action type: %s", task.APITask.Action)
+			}
+
+			// Check if payload file does exist
+			if err := ipp.resourceDoesExits(task.APITask.PayloadFile, ip); err != nil {
+				return fmt.Errorf("payload file %s does not exists: %w", task.APITask.PayloadFile, err)
+			}
+		case resourceTaskType:
+			if task.ResourceTask.RemoteURI == "" {
+				return fmt.Errorf("resourceUri %s cannot be empty for resource task type", task.ResourceTask.RemoteURI)
+			}
+
+			// Check if resource file does exist
+			if err := ipp.resourceDoesExits(task.ResourceTask.File, ip); err != nil {
+				return fmt.Errorf("resource file %s does not exists: %w", task.ResourceTask.File, err)
 			}
 		default:
 			return fmt.Errorf("task of type %s not implemented", task.Type)
@@ -261,4 +309,16 @@ func (ipp *ImportPackageProcessor) renderContext(
 		renderedContext[k] = renderedValue
 	}
 	return renderedContext, nil
+}
+
+func (ipp *ImportPackageProcessor) resourceDoesExits(resource string, ip ImportPackage) error {
+	_, err := ip.GetResource(resource)
+
+	if err != nil {
+		return fmt.Errorf(
+			"error accessing resource %s: %w", resource,
+			err,
+		)
+	}
+	return nil
 }
