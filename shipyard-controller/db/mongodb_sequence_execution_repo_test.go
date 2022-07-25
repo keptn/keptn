@@ -6,6 +6,7 @@ import (
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
 
 	"testing"
@@ -140,7 +141,7 @@ func TestMongoDBTaskSequenceV2Repo_InsertTwice(t *testing.T) {
 	// try to insert the same sequence again, but with check for already existing triggeredID - this should return an error
 	err = mdbrepo.Upsert(sequence, &models.SequenceExecutionUpsertOptions{CheckUniqueTriggeredID: true})
 
-	require.ErrorIs(t, err, ErrSequenceWithTriggeredIDAlreadyExists)
+	require.ErrorIs(t, err, common.ErrSequenceWithTriggeredIDAlreadyExists)
 }
 
 func TestMongoDBTaskSequenceV2Repo_AppendTaskEvent(t *testing.T) {
