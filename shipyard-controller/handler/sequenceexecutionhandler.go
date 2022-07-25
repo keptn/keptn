@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	_ "github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/models/api"
@@ -50,21 +51,21 @@ func NewSequenceExecutionHandler(sequenceExecutionRepo db.SequenceExecutionRepo,
 func (h *sequenceExecutionHandler) GetSequenceExecutions(ctx *gin.Context) {
 	params := &api.GetSequenceExecutionParams{}
 	if err := ctx.ShouldBindQuery(params); err != nil {
-		SetBadRequestErrorResponse(ctx, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetBadRequestErrorResponse(ctx, fmt.Sprintf(common.InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
 	if err := params.Validate(); err != nil {
-		SetBadRequestErrorResponse(ctx, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetBadRequestErrorResponse(ctx, fmt.Sprintf(common.InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 	_, err := h.projectRepo.GetProject(params.Project)
 	if err != nil {
-		if errors.Is(err, db.ErrProjectNotFound) {
+		if errors.Is(err, common.ErrProjectNotFound) {
 			SetNotFoundErrorResponse(ctx, err.Error())
 			return
 		} else {
-			SetInternalServerErrorResponse(ctx, fmt.Sprintf(UnableQuerySequenceExecutionMsg, err.Error()))
+			SetInternalServerErrorResponse(ctx, fmt.Sprintf(common.UnableQuerySequenceExecutionMsg, err.Error()))
 			return
 		}
 	}
@@ -72,7 +73,7 @@ func (h *sequenceExecutionHandler) GetSequenceExecutions(ctx *gin.Context) {
 	sequences, paginationInfo, err := h.sequenceExecutionRepo.GetPaginated(params.GetSequenceExecutionFilter(), params.PaginationParams)
 
 	if err != nil {
-		SetInternalServerErrorResponse(ctx, fmt.Sprintf(UnableQuerySequenceExecutionMsg, err.Error()))
+		SetInternalServerErrorResponse(ctx, fmt.Sprintf(common.UnableQuerySequenceExecutionMsg, err.Error()))
 		return
 	}
 

@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/shipyard-controller/db"
+	"github.com/keptn/keptn/shipyard-controller/common"
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/handler"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -21,9 +21,6 @@ func Test_sequenceExecutionHandler_GetSequenceExecutions(t *testing.T) {
 	type fields struct {
 		sequenceExecutionRepo *db_mock.SequenceExecutionRepoMock
 		projectRepo           *db_mock.ProjectRepoMock
-	}
-	type args struct {
-		ctx *gin.Context
 	}
 	tests := []struct {
 		name                        string
@@ -141,7 +138,7 @@ func Test_sequenceExecutionHandler_GetSequenceExecutions(t *testing.T) {
 				},
 				projectRepo: &db_mock.ProjectRepoMock{
 					GetProjectFunc: func(projectName string) (*apimodels.ExpandedProject, error) {
-						return nil, db.ErrProjectNotFound
+						return nil, common.ErrProjectNotFound
 					},
 				},
 			},
