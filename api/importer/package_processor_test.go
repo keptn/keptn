@@ -141,7 +141,7 @@ func TestErrorImportPackageWhenManifestResourceNotFound(t *testing.T) {
 	const missingFileName = "non-existing-file.json"
 	taskWithMissingResource := &model.ManifestTask{
 		APITask: &model.APITask{
-			Action:      "test-missing-resource",
+			Action:      "keptn-api-v1-uniform-create-webhook-subscription",
 			PayloadFile: missingFileName,
 		},
 		ResourceTask: nil,
@@ -251,7 +251,7 @@ func TestErrorImportPackageWhenTaskFails(t *testing.T) {
 	firstTask := &model.ManifestTask{
 		// random filler task to check that we execute in order until the failure
 		APITask: &model.APITask{
-			Action:      "success ✌",
+			Action:      "keptn-api-v1-create-service",
 			PayloadFile: "okfile/someok.json",
 		},
 		ResourceTask: nil,
@@ -262,7 +262,7 @@ func TestErrorImportPackageWhenTaskFails(t *testing.T) {
 
 	failingTask := &model.ManifestTask{
 		APITask: &model.APITask{
-			Action:      "fail",
+			Action:      "keptn-api-v1-uniform-create-webhook-subscription",
 			PayloadFile: "somefile/somewhere.json",
 		},
 		ResourceTask: nil,
@@ -273,7 +273,10 @@ func TestErrorImportPackageWhenTaskFails(t *testing.T) {
 
 	neverExecutedTask := &model.ManifestTask{
 		// random filler task to check that we stop executing at the first failure
-		APITask:      &model.APITask{},
+		APITask: &model.APITask{
+			Action:      "keptn-api-v1-uniform-create-webhook-subscription",
+			PayloadFile: "somefile/somewhere.json",
+		},
 		ResourceTask: nil,
 		ID:           "neverexecuted",
 		Type:         "api",
@@ -300,7 +303,7 @@ func TestErrorImportPackageWhenTaskFails(t *testing.T) {
 	taskExecutor := &fake.TaskExecutorMock{
 		ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
 			apiTasksExecuted = append(apiTasksExecuted, ate.Context.Task.ID)
-			if ate.Context.Task.Type == "api" && ate.Context.Task.APITask.Action == "fail" {
+			if ate.Context.Task.Type == "api" && ate.Context.Task.APITask.Action == "keptn-api-v1-uniform-create-webhook-subscription" {
 				return nil, taskError
 			}
 
@@ -330,6 +333,9 @@ func TestErrorImportPackageWhenTaskFails(t *testing.T) {
 			{ResourceName: manifestFileName},
 			{ResourceName: "okfile/someok.json"},
 			{ResourceName: "somefile/somewhere.json"},
+			{ResourceName: "okfile/someok.json"},
+			{ResourceName: "somefile/somewhere.json"},
+			{ResourceName: "somefile/somewhere.json"},
 		},
 	)
 	assert.Len(t, parserMock.ParseCalls(), 1)
@@ -347,7 +353,7 @@ func TestImportPackageProcessor_Process_ResourceTask(t *testing.T) {
 			Stage:     "dev",
 			Service:   "service",
 		},
-		ID:   "res-task",
+		ID:   "res_task",
 		Type: "resource",
 		Name: "ResTask",
 	}
@@ -410,6 +416,7 @@ func TestImportPackageProcessor_Process_ResourceTask(t *testing.T) {
 		}{
 			{ResourceName: manifestFileName},
 			{ResourceName: resourceFileName},
+			{ResourceName: resourceFileName},
 		},
 	)
 }
@@ -424,7 +431,7 @@ func TestImportPackageProcessor_Process_ResourceTask_AllStages(t *testing.T) {
 			Stage:     "",
 			Service:   "service",
 		},
-		ID:   "res-task",
+		ID:   "res_task",
 		Type: "resource",
 		Name: "ResTask",
 	}
@@ -478,6 +485,7 @@ func TestImportPackageProcessor_Process_ResourceTask_AllStages(t *testing.T) {
 		ResourceName string
 	}{
 		{ResourceName: manifestFileName},
+		{ResourceName: resourceFileName},
 	}
 	for i := 0; i < len(stages); i++ {
 		expectedGetResourceArgs = append(
@@ -516,7 +524,7 @@ func TestImportPackageProcessor_Process_WebhookConfigWithTemplating(t *testing.T
 			Stage:     "dev",
 			Service:   "service",
 		},
-		ID:      "res-task",
+		ID:      "res_task",
 		Type:    "resource",
 		Name:    "ResTask",
 		Context: context,
@@ -579,6 +587,7 @@ func TestImportPackageProcessor_Process_WebhookConfigWithTemplating(t *testing.T
 	}{
 		{ResourceName: manifestFileName},
 		{ResourceName: rawWebhookConfigResourceFile},
+		{ResourceName: rawWebhookConfigResourceFile},
 	}
 
 	assert.ElementsMatch(
@@ -607,7 +616,7 @@ func TestImportPackageProcessor_Process_APITaskWithTemplating(t *testing.T) {
 			name:                     "Template create-subscription request",
 			rawPayloadFile:           "create-subscription.json",
 			payloadRenderContextFile: "create-subscription.context.yaml",
-			action:                   "keptn-api-v1-create-subscription",
+			action:                   "keptn-api-v1-uniform-create-webhook-subscription",
 		},
 	}
 
@@ -624,7 +633,7 @@ func TestImportPackageProcessor_Process_APITaskWithTemplating(t *testing.T) {
 
 				rawPayloadFullPath := path.Join(rawPayloadDir, tt.rawPayloadFile)
 				apiTask := &model.ManifestTask{
-					ID:      fmt.Sprintf("api-task-%d", i),
+					ID:      fmt.Sprintf("api_task_%d", i),
 					Type:    "api",
 					Name:    fmt.Sprintf("API Task No. %d", i),
 					Context: context,
@@ -691,6 +700,7 @@ func TestImportPackageProcessor_Process_APITaskWithTemplating(t *testing.T) {
 				}{
 					{ResourceName: manifestFileName},
 					{ResourceName: rawPayloadFullPath},
+					{ResourceName: rawPayloadFullPath},
 				}
 
 				assert.ElementsMatch(
@@ -711,7 +721,7 @@ func TestImportPackageProcessor_ProcessResourceTask_ErrorGettingResource(t *test
 			Stage:     "dev",
 			Service:   "service",
 		},
-		ID:   "res-task",
+		ID:   "res_task",
 		Type: "resource",
 		Name: "ResTask",
 	}
@@ -771,7 +781,7 @@ func TestImportPackageProcessor_Process_ResourceTask_ErrorExecutingTask(t *testi
 			Stage:     "dev",
 			Service:   "service",
 		},
-		ID:   "res-task",
+		ID:   "res_task",
 		Type: "resource",
 		Name: "ResTask",
 	}
@@ -819,14 +829,6 @@ func TestImportPackageProcessor_Process_ResourceTask_ErrorExecutingTask(t *testi
 	assert.Error(t, err)
 	assert.Len(t, taskExecutor.PushResourceCalls(), 1)
 	assert.Len(t, importPackageMock.CloseCalls(), 1)
-	assert.ElementsMatch(
-		t, importPackageMock.GetResourceCalls(), []struct {
-			ResourceName string
-		}{
-			{ResourceName: manifestFileName},
-			{ResourceName: resourceFileName},
-		},
-	)
 }
 
 func TestImportPackageProcessor_Process_ErrorMalformedTasks(t *testing.T) {
@@ -838,7 +840,7 @@ func TestImportPackageProcessor_Process_ErrorMalformedTasks(t *testing.T) {
 			name: "malformed resource task",
 			task: &model.ManifestTask{
 				ResourceTask: nil,
-				ID:           "res-task",
+				ID:           "res_task",
 				Type:         "resource",
 				Name:         "ResTask",
 			},
@@ -847,7 +849,7 @@ func TestImportPackageProcessor_Process_ErrorMalformedTasks(t *testing.T) {
 			name: "malformed api task",
 			task: &model.ManifestTask{
 				APITask: nil,
-				ID:      "api-task",
+				ID:      "api_task",
 				Type:    "api",
 				Name:    "APITask",
 			},
@@ -881,9 +883,11 @@ func TestImportPackageProcessor_Process_ErrorMalformedTasks(t *testing.T) {
 					},
 				}
 
+				fmt.Println("Calling process")
 				err := sut.Process("test-project", importPackageMock)
+				fmt.Println(err)
 				assert.Error(t, err)
-				assert.ErrorContains(t, err, fmt.Sprintf("malformed task of type %s", tt.task.Type))
+				assert.ErrorContains(t, err, fmt.Sprintf("empty %s definition not supported", tt.task.Type))
 			},
 		)
 	}
@@ -898,12 +902,12 @@ func TestImportPackageProcessor_Process_ErrorRenderingContext(t *testing.T) {
 		{
 			name: "Error rendering context for api task",
 			task: &model.ManifestTask{
-				ID:      "api-task",
+				ID:      "api_task",
 				Type:    "api",
 				Name:    "API Task",
 				Context: map[string]string{"foo": "bar"},
 				APITask: &model.APITask{
-					Action:      "someaction",
+					Action:      "keptn-api-v1-uniform-create-webhook-subscription",
 					PayloadFile: "payload.json",
 				},
 			},
@@ -912,12 +916,12 @@ func TestImportPackageProcessor_Process_ErrorRenderingContext(t *testing.T) {
 			// this will fail during content rendering because there is no key in context ;)
 			name: "Error rendering payload for api task",
 			task: &model.ManifestTask{
-				ID:      "api-task",
+				ID:      "api_task",
 				Type:    "api",
 				Name:    "API Task",
 				Context: map[string]string{},
 				APITask: &model.APITask{
-					Action:      "someaction",
+					Action:      "keptn-api-v1-uniform-create-webhook-subscription",
 					PayloadFile: "payload.json",
 				},
 			},
@@ -930,7 +934,7 @@ func TestImportPackageProcessor_Process_ErrorRenderingContext(t *testing.T) {
 					RemoteURI: "somefile.json",
 					Stage:     "dev",
 				},
-				ID:      "res-task",
+				ID:      "res_task",
 				Type:    "resource",
 				Name:    "Resource Task",
 				Context: map[string]string{"foo": "bar"},
@@ -945,7 +949,7 @@ func TestImportPackageProcessor_Process_ErrorRenderingContext(t *testing.T) {
 					RemoteURI: "somefile.json",
 					Stage:     "dev",
 				},
-				ID:      "res-task",
+				ID:      "res_task",
 				Type:    "resource",
 				Name:    "Resource Task",
 				Context: map[string]string{},
