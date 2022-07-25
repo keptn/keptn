@@ -149,25 +149,25 @@ describe('DataService', () => {
     expect(loadLogSpy).not.toHaveBeenCalled();
   });
 
-  it('should correctly set isTriggerSequenceOpen', () => {
+  it('should correctly set isTriggerSequenceOpen', async () => {
     // given, when
-    let value = firstValueFrom(dataService.isTriggerSequenceOpen);
+    let value = await firstValueFrom(dataService.isTriggerSequenceOpen);
     // then
-    expect(value).toBe(true);
-
-    // when
-    dataService.setIsTriggerSequenceOpen(false);
-
-    // then
-    value = firstValueFrom(dataService.isTriggerSequenceOpen);
     expect(value).toBe(false);
 
     // when
     dataService.setIsTriggerSequenceOpen(true);
-    value = firstValueFrom(dataService.isTriggerSequenceOpen);
 
     // then
+    value = await firstValueFrom(dataService.isTriggerSequenceOpen);
     expect(value).toBe(true);
+
+    // when
+    dataService.setIsTriggerSequenceOpen(false);
+    value = await firstValueFrom(dataService.isTriggerSequenceOpen);
+
+    // then
+    expect(value).toBe(false);
   });
 
   function setGetTracesResponse(traces: Trace[]): void {
