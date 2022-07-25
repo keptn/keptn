@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
@@ -266,7 +267,215 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 			}
 		})
 	}
+}
 
+func TestUniformIntegrationHandler_RegisterMergeIntegrationInstances(t *testing.T) {
+	mockRepo := &db_mock.UniformRepoMock{
+		CreateUniformIntegrationFunc: func(integration apimodels.Integration) error { return db.ErrUniformRegistrationAlreadyExists },
+		CreateOrUpdateUniformIntegrationFunc: func(integration apimodels.Integration) error {
+			return nil
+		},
+		UpdateLastSeenFunc: func(integrationID string) (*apimodels.Integration, error) {
+			return nil, nil
+		},
+		UpdateVersionInfoFunc: func(integrationID string, integrationVersion string, distributorVersion string) (*apimodels.Integration, error) {
+			return nil, nil
+		},
+		GetUniformIntegrationsFunc: func(filter models.GetUniformIntegrationsParams) ([]apimodels.Integration, error) {
+			return []apimodels.Integration{
+				{
+					ID:   "123",
+					Name: "my-integration",
+					MetaData: apimodels.MetaData{
+						Hostname:           "my-host",
+						DistributorVersion: "0.16.0",
+						KubernetesMetaData: apimodels.KubernetesMetaData{
+							Namespace: "my-namespace",
+						},
+						LastSeen: time.Now(),
+					},
+					Subscriptions: []apimodels.EventSubscription{
+						{
+							ID:    "123",
+							Event: "some-event.triggered",
+						},
+					},
+				},
+				{
+					ID:   "456",
+					Name: "my-integration",
+					MetaData: apimodels.MetaData{
+						Hostname:           "my-host",
+						DistributorVersion: "0.17.0",
+						KubernetesMetaData: apimodels.KubernetesMetaData{
+							Namespace: "my-namespace",
+						},
+						LastSeen: time.Now().Add(10 * time.Second),
+					},
+					Subscriptions: []apimodels.EventSubscription{
+						{
+							ID:    "456",
+							Event: "other-event.triggered",
+						},
+					},
+				},
+			}, nil
+		},
+	}
+
+	h := handler.NewUniformIntegrationHandler(mockRepo)
+
+	router := gin.Default()
+	router.POST("/uniform/registration", func(c *gin.Context) {
+		h.Register(c)
+	})
+
+	myIntegration := &apimodels.Integration{
+		Name: "my-integration",
+		MetaData: apimodels.MetaData{
+			Hostname:           "my-host",
+			DistributorVersion: "0.17.0",
+			KubernetesMetaData: apimodels.KubernetesMetaData{
+				Namespace: "my-namespace",
+			},
+		},
+		Subscriptions: []apimodels.EventSubscription{
+			{
+				Event: "sh.keptn.event.test.triggered",
+			},
+		},
+	}
+	payload, _ := json.Marshal(myIntegration)
+
+	request := httptest.NewRequest("POST", "/uniform/registration", bytes.NewBuffer(payload))
+
+	resp := performRequest(router, request)
+
+	require.Equal(t, http.StatusOK, resp.Code)
+
+	require.Len(t, mockRepo.CreateOrUpdateUniformIntegrationCalls(), 1)
+
+	// the update should have been performed for the integration which has been seen most recently
+	require.Equal(t, "456", mockRepo.CreateOrUpdateUniformIntegrationCalls()[0].Integration.ID)
+
+	require.Len(t, mockRepo.CreateOrUpdateUniformIntegrationCalls()[0].Integration.Subscriptions, 2)
+
+	require.ElementsMatch(t, mockRepo.CreateOrUpdateUniformIntegrationCalls()[0].Integration.Subscriptions, []apimodels.EventSubscription{
+		{
+			ID:    "123",
+			Event: "some-event.triggered",
+		},
+		{
+			ID:    "456",
+			Event: "other-event.triggered",
+		},
+	})
+}
+
+func TestUniformIntegrationHandler_RegisterMergeIntegrationInstancesNoSubscriptions(t *testing.T) {
+	mockRepo := &db_mock.UniformRepoMock{
+		CreateUniformIntegrationFunc: func(integration apimodels.Integration) error { return db.ErrUniformRegistrationAlreadyExists },
+		CreateOrUpdateUniformIntegrationFunc: func(integration apimodels.Integration) error {
+			return nil
+		},
+		UpdateLastSeenFunc: func(integrationID string) (*apimodels.Integration, error) {
+			return nil, nil
+		},
+		UpdateVersionInfoFunc: func(integrationID string, integrationVersion string, distributorVersion string) (*apimodels.Integration, error) {
+			return nil, nil
+		},
+		GetUniformIntegrationsFunc: func(filter models.GetUniformIntegrationsParams) ([]apimodels.Integration, error) {
+			if filter.ID == "456" {
+				return []apimodels.Integration{
+					{
+						ID:   "456",
+						Name: "my-integration",
+						MetaData: apimodels.MetaData{
+							Hostname:           "my-host",
+							DistributorVersion: "0.17.0",
+							KubernetesMetaData: apimodels.KubernetesMetaData{
+								Namespace: "my-namespace",
+							},
+							LastSeen: time.Now().Add(10 * time.Second),
+						},
+						Subscriptions: []apimodels.EventSubscription{
+							{
+								ID:    "456",
+								Event: "other-event.triggered",
+							},
+						},
+					},
+				}, nil
+			}
+			return []apimodels.Integration{
+				{
+					ID:   "123",
+					Name: "my-integration",
+					MetaData: apimodels.MetaData{
+						Hostname:           "my-host",
+						DistributorVersion: "0.16.0",
+						KubernetesMetaData: apimodels.KubernetesMetaData{
+							Namespace: "my-namespace",
+						},
+						LastSeen: time.Now(),
+					},
+					Subscriptions: []apimodels.EventSubscription{},
+				},
+				{
+					ID:   "456",
+					Name: "my-integration",
+					MetaData: apimodels.MetaData{
+						Hostname:           "my-host",
+						DistributorVersion: "0.17.0",
+						KubernetesMetaData: apimodels.KubernetesMetaData{
+							Namespace: "my-namespace",
+						},
+						LastSeen: time.Now().Add(10 * time.Second),
+					},
+					Subscriptions: []apimodels.EventSubscription{
+						{
+							ID:    "456",
+							Event: "other-event.triggered",
+						},
+					},
+				},
+			}, nil
+		},
+	}
+
+	h := handler.NewUniformIntegrationHandler(mockRepo)
+
+	router := gin.Default()
+	router.POST("/uniform/registration", func(c *gin.Context) {
+		h.Register(c)
+	})
+
+	myIntegration := &apimodels.Integration{
+		Name: "my-integration",
+		MetaData: apimodels.MetaData{
+			Hostname:           "my-host",
+			DistributorVersion: "0.17.0",
+			KubernetesMetaData: apimodels.KubernetesMetaData{
+				Namespace: "my-namespace",
+			},
+		},
+		Subscriptions: []apimodels.EventSubscription{
+			{
+				Event: "sh.keptn.event.test.triggered",
+			},
+		},
+	}
+	payload, _ := json.Marshal(myIntegration)
+
+	request := httptest.NewRequest("POST", "/uniform/registration", bytes.NewBuffer(payload))
+
+	resp := performRequest(router, request)
+
+	require.Equal(t, http.StatusOK, resp.Code)
+
+	// since no subscriptions needed to be merged from another instance we only want to update the lastSeen property in this case
+	require.Len(t, mockRepo.CreateOrUpdateUniformIntegrationCalls(), 0)
+	require.Len(t, mockRepo.UpdateLastSeenCalls(), 1)
 }
 
 func TestUniformIntegrationKeepAlive(t *testing.T) {
