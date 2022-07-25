@@ -23,6 +23,9 @@ spec:
       serviceAccountName: keptn-shipyard-controller
       containers:
         - name: shipyard-controller
+          volumeMounts:
+          - name: git-config
+            mountPath: /etc/git-config
           image: {{ include "keptn.common.images.image" ( dict "imageRoot" .Values.shipyardController.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote }}
           lifecycle:
             preStop:
@@ -109,6 +112,9 @@ spec:
       {{- include "keptn.nodeSelector" (dict "value" .Values.shipyardController.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
       {{- if .Values.shipyardController.extraVolumes }}
       volumes:
+        - name: git-config
+          configMap:
+            name: keptn-git-config
       {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.shipyardController.extraVolumes "context" $) | nindent 8 }}
       {{- end }}
 ---
@@ -125,3 +131,15 @@ spec:
       protocol: TCP
   selector: {{- include "keptn.common.labels.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/name: shipyard-controller
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keptn-git-config
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/name: shipyard-controller
+data:
+  denyList: |-
+    some random data
+    blah
