@@ -44,7 +44,7 @@ func TestImportPackageEmptyManifestRetrievedAndPackageClosed(t *testing.T) {
 			return io.NopCloser(bytes.NewReader([]byte{})), nil
 		},
 	}
-	err := sut.Process("project", importPackageMock)
+	_, err := sut.Process("project", importPackageMock)
 	require.NoError(t, err)
 	assert.Len(t, importPackageMock.CloseCalls(), 1)
 	assert.ElementsMatch(
@@ -87,7 +87,7 @@ func TestErrorImportPackageWhenManifestCannotBeRetrieved(t *testing.T) {
 			return io.NopCloser(bytes.NewReader([]byte{})), nil
 		},
 	}
-	err := sut.Process("project", importPackageMock)
+	_, err := sut.Process("project", importPackageMock)
 	assert.ErrorIs(t, err, errorManifestAccess)
 	assert.Len(t, importPackageMock.CloseCalls(), 1)
 	assert.ElementsMatch(
@@ -124,7 +124,7 @@ func TestErrorImportPackageWhenManifestCannotBeParsed(t *testing.T) {
 			return io.NopCloser(bytes.NewReader([]byte{})), nil
 		},
 	}
-	err := sut.Process("project", importPackageMock)
+	_, err := sut.Process("project", importPackageMock)
 	assert.ErrorIs(t, err, parsingError)
 	assert.Len(t, importPackageMock.CloseCalls(), 1)
 	assert.ElementsMatch(
@@ -184,7 +184,7 @@ func TestErrorImportPackageWhenManifestResourceNotFound(t *testing.T) {
 			return io.NopCloser(bytes.NewReader([]byte{})), nil
 		},
 	}
-	err := sut.Process("project", importPackageMock)
+	_, err := sut.Process("project", importPackageMock)
 	assert.ErrorIs(t, err, resourceError)
 	assert.Len(t, importPackageMock.CloseCalls(), 1)
 	assert.ElementsMatch(
@@ -234,7 +234,7 @@ func TestErrorImportPackageWhenUnknownManifestTaskType(t *testing.T) {
 			return io.NopCloser(bytes.NewReader([]byte{})), nil
 		},
 	}
-	err := sut.Process("project", importPackageMock)
+	_, err := sut.Process("project", importPackageMock)
 	assert.ErrorContains(t, err, "task of type weirdunknowntasktype not implemented")
 	assert.Len(t, importPackageMock.CloseCalls(), 1)
 	assert.ElementsMatch(
@@ -319,7 +319,7 @@ func TestErrorImportPackageWhenTaskFails(t *testing.T) {
 			return io.NopCloser(bytes.NewReader([]byte{})), nil
 		},
 	}
-	err := sut.Process("project", importPackageMock)
+	_, err := sut.Process("project", importPackageMock)
 	assert.ErrorIs(t, err, taskError)
 	assert.ErrorContains(t, err, "execution of task sometask failed")
 	assert.Len(t, importPackageMock.CloseCalls(), 1)
@@ -399,7 +399,7 @@ func TestImportPackageProcessor_Process_ResourceTask(t *testing.T) {
 		},
 	}
 
-	err := sut.Process(project, importPackageMock)
+	_, err := sut.Process(project, importPackageMock)
 
 	assert.NoError(t, err)
 	assert.Len(t, taskExecutor.PushResourceCalls(), 1)
@@ -469,7 +469,7 @@ func TestImportPackageProcessor_Process_ResourceTask_AllStages(t *testing.T) {
 		},
 	}
 
-	err := sut.Process(project, importPackageMock)
+	_, err := sut.Process(project, importPackageMock)
 
 	assert.NoError(t, err)
 	assert.Len(t, taskExecutor.PushResourceCalls(), len(stages))
@@ -569,7 +569,7 @@ func TestImportPackageProcessor_Process_WebhookConfigWithTemplating(t *testing.T
 		},
 	}
 
-	err = sut.Process(project, importPackageMock)
+	_, err = sut.Process(project, importPackageMock)
 
 	assert.NoError(t, err)
 	assert.Len(t, taskExecutor.PushResourceCalls(), 1)
@@ -681,7 +681,7 @@ func TestImportPackageProcessor_Process_APITaskWithTemplating(t *testing.T) {
 					},
 				}
 
-				err = sut.Process(project, importPackageMock)
+				_, err = sut.Process(project, importPackageMock)
 
 				assert.NoError(t, err)
 				assert.Len(t, taskExecutor.ExecuteAPICalls(), 1)
@@ -747,7 +747,7 @@ func TestImportPackageProcessor_ProcessResourceTask_ErrorGettingResource(t *test
 		},
 	}
 
-	err := sut.Process(project, importPackageMock)
+	_, err := sut.Process(project, importPackageMock)
 
 	assert.Error(t, err)
 	assert.Len(t, importPackageMock.CloseCalls(), 1)
@@ -814,7 +814,7 @@ func TestImportPackageProcessor_Process_ResourceTask_ErrorExecutingTask(t *testi
 		},
 	}
 
-	err := sut.Process(project, importPackageMock)
+	_, err := sut.Process(project, importPackageMock)
 
 	assert.Error(t, err)
 	assert.Len(t, taskExecutor.PushResourceCalls(), 1)
@@ -881,7 +881,7 @@ func TestImportPackageProcessor_Process_ErrorMalformedTasks(t *testing.T) {
 					},
 				}
 
-				err := sut.Process("test-project", importPackageMock)
+				_, err := sut.Process("test-project", importPackageMock)
 				assert.Error(t, err)
 				assert.ErrorContains(t, err, fmt.Sprintf("malformed task of type %s", tt.task.Type))
 			},
@@ -992,7 +992,7 @@ func TestImportPackageProcessor_Process_ErrorRenderingContext(t *testing.T) {
 					},
 				}
 
-				err := sut.Process("test-project", importPackageMock)
+				_, err := sut.Process("test-project", importPackageMock)
 				assert.Error(t, err)
 				assert.ErrorContains(t, err, renderErrorMessage)
 			},
@@ -1145,7 +1145,7 @@ func TestImportPackageProcessor_Process_FullManifestRendering(t *testing.T) {
 					},
 				}
 
-				err = sut.Process(inputs.Project, importPackageMock)
+				_, err = sut.Process(inputs.Project, importPackageMock)
 
 				assert.NoError(t, err)
 				assert.Len(t, importPackageMock.CloseCalls(), 1)

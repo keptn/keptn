@@ -5,6 +5,7 @@ package handlers_mock
 
 import (
 	"github.com/keptn/keptn/api/importer"
+	"github.com/keptn/keptn/api/importer/model"
 	"sync"
 )
 
@@ -75,7 +76,7 @@ func (mock *ProjectCheckerMock) ProjectExistsCalls() []struct {
 //
 // 		// make and configure a mocked handlers.importPackageProcessor
 // 		mockedimportPackageProcessor := &MockImportPackageProcessor{
-// 			ProcessFunc: func(project string, ip importer.ImportPackage) error {
+// 			ProcessFunc: func(project string, ip importer.ImportPackage) (*model.ManifestExecution, error) {
 // 				panic("mock out the Process method")
 // 			},
 // 		}
@@ -86,7 +87,7 @@ func (mock *ProjectCheckerMock) ProjectExistsCalls() []struct {
 // 	}
 type MockImportPackageProcessor struct {
 	// ProcessFunc mocks the Process method.
-	ProcessFunc func(project string, ip importer.ImportPackage) error
+	ProcessFunc func(project string, ip importer.ImportPackage) (*model.ManifestExecution, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -102,7 +103,7 @@ type MockImportPackageProcessor struct {
 }
 
 // Process calls ProcessFunc.
-func (mock *MockImportPackageProcessor) Process(project string, ip importer.ImportPackage) error {
+func (mock *MockImportPackageProcessor) Process(project string, ip importer.ImportPackage) (*model.ManifestExecution, error) {
 	if mock.ProcessFunc == nil {
 		panic("MockImportPackageProcessor.ProcessFunc: method is nil but importPackageProcessor.Process was just called")
 	}

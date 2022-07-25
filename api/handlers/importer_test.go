@@ -13,6 +13,7 @@ import (
 
 	handlers_mock "github.com/keptn/keptn/api/handlers/fake"
 	"github.com/keptn/keptn/api/importer"
+	"github.com/keptn/keptn/api/importer/model"
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/import_operations"
 	"github.com/keptn/keptn/api/test/utils"
@@ -172,8 +173,8 @@ func TestErrorCreateNewZippedArchiveFromUpload(t *testing.T) {
 	mockedProcessor := &handlers_mock.MockImportPackageProcessor{
 		ProcessFunc: func(
 			project string, ip importer.ImportPackage,
-		) error {
-			return nil
+		) (*model.ManifestExecution, error) {
+			return nil, nil
 		},
 	}
 
@@ -221,8 +222,8 @@ func TestErrorProcessingImportPackage(t *testing.T) {
 	mockedProcessor := &handlers_mock.MockImportPackageProcessor{
 		ProcessFunc: func(
 			project string, ip importer.ImportPackage,
-		) error {
-			return errors.New("error processing archive")
+		) (*model.ManifestExecution, error) {
+			return nil, errors.New("error processing archive")
 		},
 	}
 
@@ -267,8 +268,8 @@ func TestImportHandlerHappyPath(t *testing.T) {
 	mockedProcessor := &handlers_mock.MockImportPackageProcessor{
 		ProcessFunc: func(
 			project string, ip importer.ImportPackage,
-		) error {
-			return nil
+		) (*model.ManifestExecution, error) {
+			return nil, nil
 		},
 	}
 
@@ -287,4 +288,139 @@ func TestImportHandlerHappyPath(t *testing.T) {
 
 	require.IsType(t, &import_operations.ImportOK{}, actualResponder)
 	assert.Len(t, mockedProcessor.ProcessCalls(), 1)
+}
+
+func Test_mapManifestExecution(t *testing.T) {
+
+	taskaExecution := model.TaskExecution{
+		TaskContext: model.TaskContext{
+			Project: "test-prj",
+			Task: &model.ManifestTask{
+				APITask: &model.APITask{
+					Action:      "",
+					PayloadFile: "",
+				},
+				ID:      "taska",
+				Type:    "api",
+				Name:    "Task A",
+				Context: map[string]string{"ctxKey1": "ctxValue1"},
+			},
+			Context: map[string]string{"ctxKey1": "ctxValue1"},
+		},
+		Response: map[string]any{"respkey1": "value1", "respkey2": "value2"},
+	}
+
+	taskbExecution := model.TaskExecution{
+		TaskContext: model.TaskContext{
+			Project: "test-prj",
+			Task: &model.ManifestTask{
+				APITask: &model.APITask{
+					Action:      "",
+					PayloadFile: "",
+				},
+				ID:      "taskb",
+				Type:    "api",
+				Name:    "Task B",
+				Context: map[string]string{"ctxBKey1": "[[.Tasks.taska.Context.ctxKey1]]"},
+			},
+			Context: map[string]string{"ctxBKey1": "ctxValue1"},
+		},
+		Response: map[string]any{"foo": "bar"},
+	}
+
+	type args struct {
+		exec *model.ManifestExecution
+	}
+	tests := []struct {
+		name string
+		args args
+		want *models.ImportSummary
+	}{
+		{
+			name: "Nil manifest execution - empty summary",
+			args: args{exec: nil},
+			want: &models.ImportSummary{
+				Message: "",
+				Outcome: models.ImportSummaryOutcomeSuccess,
+				Tasks:   nil,
+			},
+		},
+		{
+			name: "Empty manifest execution - empty summary",
+			args: args{
+				exec: &model.ManifestExecution{
+					Inputs:       map[string]string{},
+					Tasks:        map[string]model.TaskExecution{},
+					TaskSequence: nil,
+				},
+			},
+			want: &models.ImportSummary{
+				Message: "",
+				Outcome: models.ImportSummaryOutcomeSuccess,
+				Tasks:   []*models.Task{},
+			},
+		},
+		{
+			name: "Pair of tasks in manifest execution - simple summary",
+			args: args{
+				exec: &model.ManifestExecution{
+					Inputs: map[string]string{},
+					Tasks: map[string]model.TaskExecution{
+						"taska": taskaExecution,
+						"taskb": taskbExecution,
+					},
+					TaskSequence: []string{"taska", "taskb"},
+				},
+			},
+			want: &models.ImportSummary{
+				Message: "",
+				Outcome: models.ImportSummaryOutcomeSuccess,
+				Tasks: []*models.Task{
+					{
+						Response: taskaExecution.Response,
+						Task:     taskaExecution.TaskContext,
+					},
+					{
+						Response: taskbExecution.Response,
+						Task:     taskbExecution.TaskContext,
+					},
+				},
+			},
+		},
+		{
+			name: "Unknown task in manifest execution - nil task in summary",
+			args: args{
+				exec: &model.ManifestExecution{
+					Inputs: map[string]string{},
+					Tasks: map[string]model.TaskExecution{
+						"taska": taskaExecution,
+						"taskb": taskbExecution,
+					},
+					TaskSequence: []string{"taska", "taskc", "taskb"},
+				},
+			},
+			want: &models.ImportSummary{
+				Message: "",
+				Outcome: models.ImportSummaryOutcomeSuccess,
+				Tasks: []*models.Task{
+					{
+						Response: taskaExecution.Response,
+						Task:     taskaExecution.TaskContext,
+					},
+					nil, // this is where taskc should have been
+					{
+						Response: taskbExecution.Response,
+						Task:     taskbExecution.TaskContext,
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				assert.Equalf(t, tt.want, mapManifestExecution(tt.args.exec), "mapManifestExecution(%v)", tt.args.exec)
+			},
+		)
+	}
 }

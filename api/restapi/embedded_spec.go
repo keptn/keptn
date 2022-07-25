@@ -109,7 +109,10 @@ func init() {
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/importSummary"
+            }
           },
           "400": {
             "description": "Bad request",
@@ -183,6 +186,27 @@ func init() {
       "properties": {
         "keptnContext": {
           "type": "string"
+        }
+      }
+    },
+    "importSummary": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "success",
+            "failure"
+          ]
+        },
+        "tasks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/task"
+          }
         }
       }
     },
@@ -260,6 +284,17 @@ func init() {
         },
         "shipyardversion": {
           "type": "string"
+        }
+      }
+    },
+    "task": {
+      "type": "object",
+      "properties": {
+        "response": {
+          "type": "object"
+        },
+        "task": {
+          "type": "object"
         }
       }
     }
@@ -369,7 +404,10 @@ func init() {
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/importSummary"
+            }
           },
           "400": {
             "description": "Bad request",
@@ -443,6 +481,27 @@ func init() {
       "properties": {
         "keptnContext": {
           "type": "string"
+        }
+      }
+    },
+    "importSummary": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "success",
+            "failure"
+          ]
+        },
+        "tasks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/task"
+          }
         }
       }
     },
@@ -520,6 +579,17 @@ func init() {
         },
         "shipyardversion": {
           "type": "string"
+        }
+      }
+    },
+    "task": {
+      "type": "object",
+      "properties": {
+        "response": {
+          "type": "object"
+        },
+        "task": {
+          "type": "object"
         }
       }
     }

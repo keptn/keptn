@@ -21,6 +21,11 @@ const ImportOKCode int = 200
 swagger:response importOK
 */
 type ImportOK struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.ImportSummary `json:"body,omitempty"`
 }
 
 // NewImportOK creates ImportOK with default headers values
@@ -29,12 +34,27 @@ func NewImportOK() *ImportOK {
 	return &ImportOK{}
 }
 
+// WithPayload adds the payload to the import o k response
+func (o *ImportOK) WithPayload(payload *models.ImportSummary) *ImportOK {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the import o k response
+func (o *ImportOK) SetPayload(payload *models.ImportSummary) {
+	o.Payload = payload
+}
+
 // WriteResponse to the client
 func (o *ImportOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
-
 	rw.WriteHeader(200)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
 }
 
 // ImportBadRequestCode is the HTTP code returned for type ImportBadRequest
