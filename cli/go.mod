@@ -10,7 +10,7 @@ require (
 	github.com/hashicorp/go-version v1.6.0
 	github.com/invopop/jsonschema v0.5.0
 	github.com/keptn/go-utils v0.17.1-0.20220718124953-6b126790c54c
-	github.com/keptn/keptn/webhook-service v0.0.0-20220718133514-1365894178b2
+	github.com/keptn/keptn/webhook-service v0.0.0-20220725111236-6a389df6d44f
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/sirupsen/logrus v1.8.1
@@ -82,9 +82,9 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.66.4 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	k8s.io/api v0.22.11 // indirect
-	k8s.io/apimachinery v0.22.11 // indirect
-	k8s.io/client-go v0.22.11 // indirect
+	k8s.io/api v0.22.12 // indirect
+	k8s.io/apimachinery v0.22.12 // indirect
+	k8s.io/client-go v0.22.12 // indirect
 	k8s.io/klog/v2 v2.60.1 // indirect
 	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
