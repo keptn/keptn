@@ -74,7 +74,12 @@ export class KtbEnvironmentViewComponent implements OnDestroy {
     });
   }
 
-  public setLocation(projectName: string, stageInfo: ISelectedStageInfo): void {
+  public setSelectedStageInfo(projectName: string, stageInfo: ISelectedStageInfo): void {
+    this.selectedStageInfo = stageInfo;
+    this.setLocation(projectName, stageInfo);
+  }
+
+  private setLocation(projectName: string, stageInfo: ISelectedStageInfo): void {
     const url = this.router.createUrlTree(
       ['/project', projectName, 'environment', 'stage', stageInfo.stage.stageName],
       {

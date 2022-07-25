@@ -51,26 +51,28 @@ describe('KtbEnvironmentViewComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should set the right location', () => {
+  it('should set stage and the right location', () => {
     // given
     const locationSpy = jest.spyOn(TestBed.inject(Location), 'go');
 
     // when
-    component.setLocation('sockshop', { stage: { stageName: 'myStage' } as Stage, filterType: 'approval' });
+    component.setSelectedStageInfo('sockshop', { stage: { stageName: 'myStage' } as Stage, filterType: 'approval' });
 
     // then
     expect(locationSpy).toHaveBeenCalledWith('/project/sockshop/environment/stage/myStage?filterType=approval');
+    expect(component.selectedStageInfo).toEqual({ stage: { stageName: 'myStage' } as Stage, filterType: 'approval' });
   });
 
-  it('should set the right location without filterType', () => {
+  it('should set stage info and the right location without filterType', () => {
     // given
     const locationSpy = jest.spyOn(TestBed.inject(Location), 'go');
 
     // when
-    component.setLocation('sockshop', { stage: { stageName: 'myStage' } as Stage, filterType: undefined });
+    component.setSelectedStageInfo('sockshop', { stage: { stageName: 'myStage' } as Stage, filterType: undefined });
 
     // then
     expect(locationSpy).toHaveBeenCalledWith('/project/sockshop/environment/stage/myStage');
+    expect(component.selectedStageInfo).toEqual({ stage: { stageName: 'myStage' } as Stage, filterType: undefined });
   });
 
   it('should load the project', () => {

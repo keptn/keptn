@@ -3,8 +3,8 @@
     <ktb-stage-overview
       fxFlex="70"
       [project]="project"
-      [(selectedStageInfo)]="selectedStageInfo"
-      (selectedStageInfoChange)="setLocation(project.projectName, $event)"
+      [selectedStageInfo]="selectedStageInfo"
+      (selectedStageInfoChange)="setSelectedStageInfo(project.projectName, $event)"
       (filteredServicesChange)="stageDetails.filteredServices = $event"
       [isTriggerSequenceOpen]="!!(isTriggerSequenceOpen$ | async)"
     ></ktb-stage-overview>
@@ -13,8 +13,8 @@
       #stageDetails
       [isQualityGatesOnly]="!!(isQualityGatesOnly$ | async)"
       [project]="project"
-      [(selectedStageInfo)]="selectedStageInfo"
-      (selectedStageInfoChange)="setLocation(project.projectName, $event)"
+      [selectedStageInfo]="selectedStageInfo"
+      (selectedStageInfoChange)="setSelectedStageInfo(project.projectName, $event)"
     ></ktb-stage-details>
   </ng-container>
 </div>
