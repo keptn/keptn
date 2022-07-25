@@ -94,6 +94,8 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
     map((projects: Project[] | undefined) => projects?.map((project) => project.projectName))
   );
 
+  public projectCreated$: Observable<boolean> = this.route.queryParams.pipe(map((queryParams) => queryParams.created));
+
   readonly state$: Observable<ProjectSettingsState> = combineLatest([
     this.dataService.keptnInfo,
     this.dataService.keptnMetadata,
@@ -101,6 +103,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
     this.resourceServiceEnabled$,
     this.gitInputDataExtended$,
     this.projectNames$,
+    this.projectCreated$,
   ]).pipe(
     filter(
       (
@@ -111,27 +114,42 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
         string,
         boolean,
         IGitDataExtended | undefined,
-        string[] | undefined
+        string[] | undefined,
+        boolean
       ] => !!info[0]
     ),
-    map(([keptnInfo, metadata, projectName, resourceServiceEnabled, gitInputDataExtended, projectNames]) => {
-      if (projectNames) {
-        this.projectNameControl.setValidators([
-          Validators.required,
-          FormUtils.nameExistsValidator(projectNames),
-          Validators.pattern('[a-z]([a-z]|[0-9]|-)*'),
-        ]);
-      }
-
-      return {
+    map(
+      ([
+        keptnInfo,
+        metadata,
         projectName,
         resourceServiceEnabled,
-        gitUpstreamRequired: !metadata?.automaticprovisioning,
         gitInputDataExtended,
-        automaticProvisioningMessage: keptnInfo.bridgeInfo.automaticProvisioningMsg,
-        state: metadata === null ? ProjectSettingsStatus.ERROR : ProjectSettingsStatus.LOADED,
-      };
-    }),
+        projectNames,
+        projectCreated,
+      ]) => {
+        if (projectCreated) {
+          this.showCreateNotificationAndRedirect();
+        }
+
+        if (projectNames) {
+          this.projectNameControl.setValidators([
+            Validators.required,
+            FormUtils.nameExistsValidator(projectNames),
+            Validators.pattern('[a-z]([a-z]|[0-9]|-)*'),
+          ]);
+        }
+
+        return {
+          projectName,
+          resourceServiceEnabled,
+          gitUpstreamRequired: !metadata?.automaticprovisioning,
+          gitInputDataExtended,
+          automaticProvisioningMessage: keptnInfo.bridgeInfo.automaticProvisioningMsg,
+          state: metadata === null ? ProjectSettingsStatus.ERROR : ProjectSettingsStatus.LOADED,
+        };
+      }
+    ),
     startWith({
       projectName: undefined,
       resourceServiceEnabled: undefined,
@@ -153,15 +171,6 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
   ) {}
 
   public ngOnInit(): void {
-    this.route.queryParams.pipe(
-      map((queryParams) => queryParams.created),
-      tap((projectCreated) => {
-        if (projectCreated) {
-          this.showCreateNotificationAndRedirect();
-        }
-      })
-    );
-
     this.eventService.deletionTriggeredEvent.pipe(takeUntil(this.unsubscribe$)).subscribe((data) => {
       if (data.type === DeleteType.PROJECT) {
         this.deleteProject(data.name);
