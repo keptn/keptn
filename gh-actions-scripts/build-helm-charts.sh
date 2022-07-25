@@ -36,6 +36,9 @@ find . -name values.yaml -exec sed -i -- "s/docker.io\/keptn\//docker.io\/${DOCK
 
 mkdir keptn-charts/
 
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo add nats https://nats-io.github.io/k8s/helm/charts/
+
 # ####################
 # COMMON HELM CHART
 # ####################
