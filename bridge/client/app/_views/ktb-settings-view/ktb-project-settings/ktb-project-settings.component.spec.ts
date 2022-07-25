@@ -2,7 +2,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import { BehaviorSubject, of, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { PendingChangesGuard } from '../../../_guards/pending-changes.guard';
 import { ApiService } from '../../../_services/api.service';
 import { ApiServiceMock } from '../../../_services/api.service.mock';
@@ -214,30 +214,6 @@ describe('KtbProjectSettingsComponent create', () => {
     expect(component.unsavedDialogState).toBeNull();
     expect(createSpy).toHaveBeenCalled();
   });
-
-  it('should show create message and remove param', () => {
-    // given
-    const notificationService = TestBed.inject(NotificationsService);
-    const notificationSpy = jest.spyOn(notificationService, 'addNotification');
-    const routeSpy = jest.spyOn(TestBed.inject(Router), 'navigate');
-
-    // when
-    queryParamsSubject.next({ created: true });
-
-    expect(notificationSpy).toHaveBeenCalledWith(
-      NotificationType.SUCCESS,
-      '',
-      {
-        component: KtbProjectCreateMessageComponent,
-        data: {
-          projectName: 'sockshop',
-          routerLink: '/project/sockshop/settings/services/create',
-        },
-      },
-      10_000
-    );
-    expect(routeSpy).toHaveBeenCalledWith(['/', 'project', 'sockshop', 'settings', 'project']);
-  });
 });
 
 describe('KtbProjectSettingsComponent update', () => {
@@ -355,6 +331,7 @@ describe('KtbProjectSettingsComponent update', () => {
 
   it('should not allow navigation for unsaved changes', () => {
     // given
+    const spy = jest.spyOn(component.canDeactivate(), 'subscribe');
 
     // when
     component.updateGitDataExtended({
@@ -368,7 +345,8 @@ describe('KtbProjectSettingsComponent update', () => {
     fixture.detectChanges();
 
     // then
-    expect(component.canDeactivate()).not.toEqual(true);
+    expect(component.canDeactivate() instanceof Observable).toEqual(true);
+    expect(spy).not.toHaveBeenCalled();
   });
 
   it('should show a dialog when showNotification is called', () => {
@@ -428,7 +406,6 @@ describe('KtbProjectSettingsComponent update', () => {
     const apiService = TestBed.inject(ApiService);
     const createExtendedSpy = jest.spyOn(apiService, 'createProjectExtended');
     TestUtils.enableResourceService();
-    expect(component.resourceServiceEnabled).toBe(true);
     expect(component.isProjectFormTouched).toBe(false);
     component.shipyardFile = new File(['test content'], 'test1.yaml');
     component.projectNameControl.setValue('myProject');
@@ -475,7 +452,6 @@ describe('KtbProjectSettingsComponent update', () => {
     const apiService = TestBed.inject(ApiService);
     const createExtendedSpy = jest.spyOn(apiService, 'createProjectExtended');
     TestUtils.enableResourceService();
-    expect(component.resourceServiceEnabled).toBe(true);
     expect(component.isProjectFormTouched).toBe(false);
     component.shipyardFile = new File(['test content'], 'test1.yaml');
     component.projectNameControl.setValue('myProject');
@@ -503,26 +479,48 @@ describe('KtbProjectSettingsComponent update', () => {
     });
   });
 
-  it('should reset input for extended git data to default', () => {
+  it('should allow navigation on reset git data', (done) => {
     // given
-    TestUtils.enableResourceService();
-    // is a reference and may be modified by child components
-    component.gitInputDataExtended = {
-      remoteURL: 'https://my-git-url.com',
-      ssh: {
-        privateKeyPass: 'myPrivateKeyPass',
-        privateKey: 'myPrivateKey',
+    component.updateGitDataExtended({
+      user: 'someUser',
+      remoteURL: 'someUri',
+      https: {
+        token: 'someToken',
+        insecureSkipTLS: false,
       },
-    };
+    });
+    fixture.detectChanges();
+
+    // then
+    component.canDeactivate().subscribe((canDeactivate) => {
+      expect(canDeactivate).toEqual(true);
+      done();
+    });
 
     // when
     component.reset();
+  });
+
+  it('should not allow navigation on reject', (done) => {
+    // given
+    component.updateGitDataExtended({
+      user: 'someUser',
+      remoteURL: 'someUri',
+      https: {
+        token: 'someToken',
+        insecureSkipTLS: false,
+      },
+    });
+    fixture.detectChanges();
 
     // then
-    expect(component.gitInputDataExtended).toEqual({
-      remoteURL: 'https://github.com/Kirdock/keptn-dynatrace',
-      user: 'Kirdock',
+    component.canDeactivate().subscribe((canDeactivate) => {
+      expect(canDeactivate).toEqual(false);
+      done();
     });
+
+    // when
+    component.reject();
   });
 
   it('should update git upstream without user', () => {
@@ -620,5 +618,29 @@ describe('KtbProjectSettingsComponent update', () => {
     // then
     expect(component.shipyardFile).toEqual(new File([], 'myfile.yaml'));
     expect(formTouchedSpy).toHaveBeenCalled();
+  });
+
+  it('should show create message and remove param', () => {
+    // given
+    const notificationService = TestBed.inject(NotificationsService);
+    const notificationSpy = jest.spyOn(notificationService, 'addNotification');
+    const routeSpy = jest.spyOn(TestBed.inject(Router), 'navigate');
+
+    // when
+    queryParamsSubject.next({ created: true });
+
+    expect(notificationSpy).toHaveBeenCalledWith(
+      NotificationType.SUCCESS,
+      '',
+      {
+        component: KtbProjectCreateMessageComponent,
+        data: {
+          projectName: 'sockshop',
+          routerLink: '/project/sockshop/settings/services/create',
+        },
+      },
+      10_000
+    );
+    expect(routeSpy).toHaveBeenCalledWith(['/', 'project', 'sockshop', 'settings', 'project']);
   });
 });
