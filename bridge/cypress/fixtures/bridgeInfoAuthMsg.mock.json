@@ -11,6 +11,6 @@
   "authMsg": "Hello handsome",
   "featureFlags": {
     "RESOURCE_SERVICE_ENABLED": false,
-    "D3_HEATMAP_ENABLED": false
+    "D3_ENABLED": false
   }
 }
