@@ -67,7 +67,9 @@ func TestMongoDBLogRepo_InsertAndRetrieve(t *testing.T) {
 
 	// check if pagination works
 	entries, err = repo.GetLogEntries(models.GetLogParams{
-		PageSize: 1,
+		PaginationParams: models.PaginationParams{
+			PageSize: 1,
+		},
 		LogFilter: models.LogFilter{
 			IntegrationID: "my-integration-id",
 		},
@@ -80,8 +82,10 @@ func TestMongoDBLogRepo_InsertAndRetrieve(t *testing.T) {
 	require.Equal(t, "my second message", entries.Logs[0].Message)
 
 	entries, err = repo.GetLogEntries(models.GetLogParams{
-		PageSize:    1,
-		NextPageKey: 1,
+		PaginationParams: models.PaginationParams{
+			PageSize:    1,
+			NextPageKey: 1,
+		},
 		LogFilter: models.LogFilter{
 			IntegrationID: "my-integration-id",
 		},

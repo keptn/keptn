@@ -25,25 +25,25 @@ import (
 // 			DeleteEventCollectionsFunc: func(project string) error {
 // 				panic("mock out the DeleteEventCollections method")
 // 			},
-// 			GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
+// 			GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]apimodels.KeptnContextExtendedCE, error) {
 // 				panic("mock out the GetEvents method")
 // 			},
-// 			GetEventsWithRetryFunc: func(project string, filter common.EventFilter, status common.EventStatus, nrRetries int) ([]models.Event, error) {
+// 			GetEventsWithRetryFunc: func(project string, filter common.EventFilter, status common.EventStatus, nrRetries int) ([]apimodels.KeptnContextExtendedCE, error) {
 // 				panic("mock out the GetEventsWithRetry method")
 // 			},
-// 			GetFinishedEventsFunc: func(eventScope models.EventScope) ([]models.Event, error) {
+// 			GetFinishedEventsFunc: func(eventScope models.EventScope) ([]apimodels.KeptnContextExtendedCE, error) {
 // 				panic("mock out the GetFinishedEvents method")
 // 			},
 // 			GetRootEventsFunc: func(params models.GetRootEventParams) (*models.GetEventsResult, error) {
 // 				panic("mock out the GetRootEvents method")
 // 			},
-// 			GetStartedEventsForTriggeredIDFunc: func(eventScope models.EventScope) ([]models.Event, error) {
+// 			GetStartedEventsForTriggeredIDFunc: func(eventScope models.EventScope) ([]apimodels.KeptnContextExtendedCE, error) {
 // 				panic("mock out the GetStartedEventsForTriggeredID method")
 // 			},
-// 			GetTaskSequenceTriggeredEventFunc: func(eventScope models.EventScope, taskSequenceName string) (*models.Event, error) {
+// 			GetTaskSequenceTriggeredEventFunc: func(eventScope models.EventScope, taskSequenceName string) (*apimodels.KeptnContextExtendedCE, error) {
 // 				panic("mock out the GetTaskSequenceTriggeredEvent method")
 // 			},
-// 			InsertEventFunc: func(project string, event models.Event, status common.EventStatus) error {
+// 			InsertEventFunc: func(project string, event apimodels.KeptnContextExtendedCE, status common.EventStatus) error {
 // 				panic("mock out the InsertEvent method")
 // 			},
 // 		}
@@ -150,7 +150,7 @@ type EventRepoMock struct {
 		InsertEvent []struct {
 			// Project is the project argument value.
 			Project string
-			//models.KeptnContextExtendedCE is the event argument value.
+			// Event is the event argument value.
 			Event apimodels.KeptnContextExtendedCE
 			// Status is the status argument value.
 			Status common.EventStatus

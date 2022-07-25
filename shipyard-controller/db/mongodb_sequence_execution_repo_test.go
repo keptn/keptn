@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"sync"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
@@ -15,7 +16,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestMongoDBTaskSequenceV2Repo_InsertAndRetrieve(t *testing.T) {
+func TestMongoDBSequenceExecutionRepo_InsertAndRetrieve(t *testing.T) {
 	scope, sequence := getTestSequenceExecution()
 
 	mdbrepo := NewMongoDBSequenceExecutionRepo(GetMongoDBConnectionInstance())
@@ -49,7 +50,98 @@ func TestMongoDBTaskSequenceV2Repo_InsertAndRetrieve(t *testing.T) {
 	require.Empty(t, get)
 }
 
-func TestMongoDBTaskSequenceV2Repo_InsertAndRetrieveByTime(t *testing.T) {
+func TestMongoDBSequenceExecutionRepo_InsertAndRetrieveWithPagination(t *testing.T) {
+	mdbrepo := NewMongoDBSequenceExecutionRepo(GetMongoDBConnectionInstance())
+
+	nrSequenceExecutions := 5
+
+	for i := 0; i < nrSequenceExecutions; i++ {
+		_, sequence := getTestSequenceExecution()
+
+		sequence.Scope.TriggeredID = fmt.Sprintf("triggered-id-%d", i)
+		sequence.ID = fmt.Sprintf("triggered-id-%d", i)
+		err := mdbrepo.Upsert(sequence, nil)
+		require.Nil(t, err)
+	}
+
+	get, paginationResult, err := mdbrepo.GetPaginated(models.SequenceExecutionFilter{
+		Scope: models.EventScope{
+			EventData: keptnv2.EventData{Project: "my-project"},
+		},
+		Name:   "delivery",
+		Status: []string{"triggered"},
+	}, models.PaginationParams{PageSize: 2, NextPageKey: 0})
+
+	require.Nil(t, err)
+
+	require.EqualValues(t, 5, paginationResult.TotalCount)
+
+	require.NotNil(t, get)
+	require.EqualValues(t, 2, paginationResult.NextPageKey)
+
+	// get with page offset
+	get, paginationResult, err = mdbrepo.GetPaginated(models.SequenceExecutionFilter{
+		Scope: models.EventScope{
+			EventData: keptnv2.EventData{Project: "my-project"},
+		},
+		Name:   "delivery",
+		Status: []string{"triggered"},
+	}, models.PaginationParams{PageSize: 2, NextPageKey: 2})
+
+	require.Nil(t, err)
+
+	require.EqualValues(t, 5, paginationResult.TotalCount)
+
+	require.NotNil(t, get)
+	require.EqualValues(t, 4, paginationResult.NextPageKey)
+
+	// get all remaining result with page offset
+	get, paginationResult, err = mdbrepo.GetPaginated(models.SequenceExecutionFilter{
+		Scope: models.EventScope{
+			EventData: keptnv2.EventData{Project: "my-project"},
+		},
+		Name:   "delivery",
+		Status: []string{"triggered"},
+	}, models.PaginationParams{PageSize: 3, NextPageKey: 2})
+
+	require.Nil(t, err)
+
+	require.EqualValues(t, 5, paginationResult.TotalCount)
+
+	require.NotNil(t, get)
+	require.EqualValues(t, 0, paginationResult.NextPageKey)
+
+	// get with page offset and page size exceeding total count
+	get, paginationResult, err = mdbrepo.GetPaginated(models.SequenceExecutionFilter{
+		Scope: models.EventScope{
+			EventData: keptnv2.EventData{Project: "my-project"},
+		},
+		Name:   "delivery",
+		Status: []string{"triggered"},
+	}, models.PaginationParams{PageSize: 10, NextPageKey: 2})
+
+	require.Nil(t, err)
+
+	require.EqualValues(t, 5, paginationResult.TotalCount)
+
+	require.NotNil(t, get)
+	require.EqualValues(t, 0, paginationResult.NextPageKey)
+
+	// no matching filter
+	get, paginationResult, err = mdbrepo.GetPaginated(models.SequenceExecutionFilter{
+		Scope: models.EventScope{
+			EventData: keptnv2.EventData{Project: "hulumulu"},
+		},
+		Name:   "delivery",
+		Status: []string{"triggered"},
+	}, models.PaginationParams{PageSize: 10, NextPageKey: 2})
+
+	require.Empty(t, get)
+	require.EqualValues(t, 0, paginationResult.TotalCount)
+	require.EqualValues(t, 0, paginationResult.PageSize)
+}
+
+func TestMongoDBSequenceExecutionRepo_InsertAndRetrieveByTime(t *testing.T) {
 	scope, sequence := getTestSequenceExecution()
 
 	mdbrepo := NewMongoDBSequenceExecutionRepo(GetMongoDBConnectionInstance())
@@ -81,7 +173,7 @@ func TestMongoDBTaskSequenceV2Repo_InsertAndRetrieveByTime(t *testing.T) {
 	require.Empty(t, get)
 }
 
-func TestMongoDBTaskSequenceV2Repo_GetByTriggeredID(t *testing.T) {
+func TestMongoDBSequenceExecutionRepo_GetByTriggeredID(t *testing.T) {
 	scope, sequence := getTestSequenceExecution()
 
 	mdbrepo := NewMongoDBSequenceExecutionRepo(GetMongoDBConnectionInstance())
@@ -108,7 +200,7 @@ func TestMongoDBTaskSequenceV2Repo_GetByTriggeredID(t *testing.T) {
 	require.NotNil(t, sequenceByTriggeredID)
 }
 
-func TestMongoDBTaskSequenceV2Repo_InsertAndRetrieveSameStage(t *testing.T) {
+func TestMongoDBSequenceExecutionRepo_InsertAndRetrieveSameStage(t *testing.T) {
 	scope, sequence := getTestSequenceExecution()
 	scope2 := scope
 	scope2.TriggeredID = "diff"
@@ -129,7 +221,7 @@ func TestMongoDBTaskSequenceV2Repo_InsertAndRetrieveSameStage(t *testing.T) {
 	require.Empty(t, get)
 }
 
-func TestMongoDBTaskSequenceV2Repo_InsertTwice(t *testing.T) {
+func TestMongoDBSequenceExecutionRepo_InsertTwice(t *testing.T) {
 	_, sequence := getTestSequenceExecution()
 
 	mdbrepo := NewMongoDBSequenceExecutionRepo(GetMongoDBConnectionInstance())
@@ -144,7 +236,7 @@ func TestMongoDBTaskSequenceV2Repo_InsertTwice(t *testing.T) {
 	require.ErrorIs(t, err, common.ErrSequenceWithTriggeredIDAlreadyExists)
 }
 
-func TestMongoDBTaskSequenceV2Repo_AppendTaskEvent(t *testing.T) {
+func TestMongoDBSequenceExecutionRepo_AppendTaskEvent(t *testing.T) {
 	scope, sequence := getTestSequenceExecution()
 
 	mdbrepo := NewMongoDBSequenceExecutionRepo(GetMongoDBConnectionInstance())
@@ -178,7 +270,7 @@ func TestMongoDBTaskSequenceV2Repo_AppendTaskEvent(t *testing.T) {
 	require.Equal(t, triggeredEvent, result.Status.CurrentTask.Events[1])
 }
 
-func TestMongoDBTaskSequenceV2Repo_AppendTaskEventMultipleWriters(t *testing.T) {
+func TestMongoDBSequenceExecutionRepo_AppendTaskEventMultipleWriters(t *testing.T) {
 	scope, sequence := getTestSequenceExecution()
 
 	mdbrepo := NewMongoDBSequenceExecutionRepo(GetMongoDBConnectionInstance())
@@ -234,7 +326,7 @@ func TestMongoDBTaskSequenceV2Repo_AppendTaskEventMultipleWriters(t *testing.T) 
 	require.Len(t, get[0].Status.CurrentTask.Events, nrConcurrentWrites+1)
 }
 
-func TestMongoDBTaskSequenceV2Repo_UpdateStatus(t *testing.T) {
+func TestMongoDBSequenceExecutionRepo_UpdateStatus(t *testing.T) {
 	scope, sequence := getTestSequenceExecution()
 
 	mdbrepo := NewMongoDBSequenceExecutionRepo(GetMongoDBConnectionInstance())
@@ -316,7 +408,7 @@ func getTestSequenceExecution() (models.EventScope, models.SequenceExecution) {
 	return scope, sequence
 }
 
-func TestMongoDBTaskSequenceV2Repo_PauseContext(t *testing.T) {
+func TestMongoDBSequenceExecutionRepo_PauseContext(t *testing.T) {
 	scope, _ := getTestSequenceExecution()
 
 	mdbrepo := NewMongoDBSequenceExecutionRepo(GetMongoDBConnectionInstance())

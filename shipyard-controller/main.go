@@ -230,6 +230,10 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 	uniformController := controller.NewUniformIntegrationController(uniformHandler)
 	uniformController.Inject(apiV1)
 
+	sequenceExecutionHandler := handler.NewSequenceExecutionHandler(sequenceExecutionRepo, createProjectRepo())
+	sequenceExecutionController := controller.NewSequenceExecutionController(sequenceExecutionHandler)
+	sequenceExecutionController.Inject(apiV1)
+
 	logRepo := createLogRepo()
 	err = logRepo.SetupTTLIndex(getDurationFromEnvVar(env.LogTTL, envVarLogsTTLDefault))
 	if err != nil {

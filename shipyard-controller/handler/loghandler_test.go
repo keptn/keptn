@@ -107,9 +107,11 @@ func TestLogHandler_GetLogEntries(t *testing.T) {
 				&fake.ILogManagerMock{
 					GetLogEntriesFunc: func(filter models.GetLogParams) (*models.GetLogsResponse, error) {
 						return &models.GetLogsResponse{
-							NextPageKey: 0,
-							PageSize:    1,
-							TotalCount:  1,
+							PaginationResult: models.PaginationResult{
+								NextPageKey: 0,
+								PageSize:    1,
+								TotalCount:  1,
+							},
 							Logs: []apimodels.LogEntry{
 								{
 									IntegrationID: "my-id",
@@ -123,9 +125,11 @@ func TestLogHandler_GetLogEntries(t *testing.T) {
 			request:    httptest.NewRequest(http.MethodGet, "/log", nil),
 			wantStatus: http.StatusOK,
 			wantLogs: &models.GetLogsResponse{
-				NextPageKey: 0,
-				PageSize:    1,
-				TotalCount:  1,
+				PaginationResult: models.PaginationResult{
+					NextPageKey: 0,
+					PageSize:    1,
+					TotalCount:  1,
+				},
 				Logs: []apimodels.LogEntry{
 					{
 						IntegrationID: "my-id",
@@ -141,9 +145,11 @@ func TestLogHandler_GetLogEntries(t *testing.T) {
 				&fake.ILogManagerMock{
 					GetLogEntriesFunc: func(filter models.GetLogParams) (*models.GetLogsResponse, error) {
 						return &models.GetLogsResponse{
-							NextPageKey: 0,
-							PageSize:    1,
-							TotalCount:  1,
+							PaginationResult: models.PaginationResult{
+								NextPageKey: 0,
+								PageSize:    1,
+								TotalCount:  1,
+							},
 							Logs: []apimodels.LogEntry{
 								{
 									IntegrationID: "my-id",
@@ -157,9 +163,11 @@ func TestLogHandler_GetLogEntries(t *testing.T) {
 			request:    httptest.NewRequest(http.MethodGet, "/log?nextPageKey=1&pageSize=2&integrationId=my-id&fromTime=from&beforeTime=to", nil),
 			wantStatus: http.StatusOK,
 			wantLogs: &models.GetLogsResponse{
-				NextPageKey: 0,
-				PageSize:    1,
-				TotalCount:  1,
+				PaginationResult: models.PaginationResult{
+					NextPageKey: 0,
+					PageSize:    1,
+					TotalCount:  1,
+				},
 				Logs: []apimodels.LogEntry{
 					{
 						IntegrationID: "my-id",
@@ -168,8 +176,10 @@ func TestLogHandler_GetLogEntries(t *testing.T) {
 				},
 			},
 			wantGetLogsParams: &models.GetLogParams{
-				NextPageKey: 1,
-				PageSize:    2,
+				PaginationParams: models.PaginationParams{
+					NextPageKey: 1,
+					PageSize:    2,
+				},
 				LogFilter: models.LogFilter{
 					IntegrationID: "my-id",
 					FromTime:      "from",
