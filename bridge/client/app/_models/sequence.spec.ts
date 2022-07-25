@@ -533,6 +533,13 @@ describe('Sequence', () => {
     expect(actual.icon).toBe('information');
   });
 
+  it('should return pause icon if sequence is paused', () => {
+    const sequence = getPausedSequence();
+    const actual = createSequenceStateInfo(sequence);
+    expect(sequence.getIcon()).toBe('pause');
+    expect(actual.icon).toBe('pause');
+  });
+
   it('should return short image', () => {
     const sequence = getDefaultSequence();
     expect(sequence.getShortImageName()).toBe('carts:0.12.1');
@@ -617,6 +624,18 @@ describe('Sequence', () => {
   it('should return undefined for time if traces are not loaded', () => {
     const sequence = getDefaultSequence();
     expect(sequence.getStageTime('dev')).toBeUndefined();
+  });
+
+  it('should return correct sequence icon when calling createSequenceStateInfo', () => {
+    const sequence = getDefaultSequence();
+    const actual = createSequenceStateInfo(sequence);
+    expect(actual.icon).toBe('duplicate');
+  });
+
+  it('should return correct sequence icon when calling createSequenceStateInfo II', () => {
+    const sequence = getPausedSequence();
+    const actual = createSequenceStateInfo(sequence);
+    expect(actual.icon).toBe('pause');
   });
 
   function getDefaultSequence(): Sequence {
