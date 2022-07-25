@@ -118,7 +118,12 @@ func (p ResourceManager) UpdateResource(params models.UpdateResourceParams) (*mo
 		return nil, err
 	}
 
-	resourcePath := configPath + "/" + params.ResourceURI
+	unescapedResourceName, err := url.QueryUnescape(params.ResourceURI)
+	if err != nil {
+		return nil, kerrors.ErrResourceInvalidResourceURI
+	}
+
+	resourcePath := configPath + "/" + unescapedResourceName
 
 	return p.writeAndCommitResource(gitContext, resourcePath, string(params.ResourceContent))
 }

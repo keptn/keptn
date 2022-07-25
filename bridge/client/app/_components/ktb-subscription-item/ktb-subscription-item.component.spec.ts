@@ -9,7 +9,7 @@ import { ApiServiceMock } from '../../_services/api.service.mock';
 import { DataService } from '../../_services/data.service';
 import { KtbSubscriptionItemModule } from './ktb-subscription-item.module';
 import { RouterTestingModule } from '@angular/router/testing';
-import { KtbIntegrationViewModule } from '../../_views/ktb-integration-view/ktb-integration-view.module';
+import { KtbIntegrationViewModule } from '../../_views/ktb-settings-view/ktb-integration-view/ktb-integration-view.module';
 
 describe('KtbSubscriptionItemComponent', () => {
   let component: KtbSubscriptionItemComponent;

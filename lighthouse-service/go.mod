@@ -7,15 +7,15 @@ require (
 	github.com/go-test/deep v1.0.8
 	github.com/google/uuid v1.3.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.17.1-0.20220712140512-5415a61d819b
+	github.com/keptn/go-utils v0.17.1-0.20220718124953-6b126790c54c
 	github.com/nats-io/nats-server/v2 v2.8.4
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.8.0
 	gopkg.in/yaml.v3 v3.0.1
-	k8s.io/api v0.22.11
-	k8s.io/apimachinery v0.22.11
-	k8s.io/client-go v0.22.11
+	k8s.io/api v0.22.12
+	k8s.io/apimachinery v0.22.12
+	k8s.io/client-go v0.22.12
 )
 
 require (
@@ -49,7 +49,7 @@ require (
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.19.0 // indirect
-	golang.org/x/crypto v0.0.0-20220315160706-3147a52a75dd // indirect
+	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
 	golang.org/x/oauth2 v0.0.0-20220608161450-d0670ef3b1eb // indirect
 	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
@@ -65,4 +65,13 @@ require (
 	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
+)
+
+replace (
+	github.com/emicklei/go-restful/v3 => github.com/emicklei/go-restful/v3 v3.8.0
+	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
+	golang.org/x/net => golang.org/x/net v0.0.0-20220708220712-1185a9018129
+	golang.org/x/text => golang.org/x/text v0.3.7
+	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.2.8
+	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
 )

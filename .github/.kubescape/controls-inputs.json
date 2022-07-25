@@ -1,0 +1,92 @@
+{
+  "imageRepositoryAllowList": [
+    "ecr.*amazonaws.com",
+    ".*.gcr.io",
+    ".*azurecr.io",
+    "docker.io"
+  ],
+  "max_critical_vulnerabilities": [
+    "5"
+  ],
+  "max_high_vulnerabilities": [
+    "10"
+  ],
+  "memory_limit_max": [],
+  "memory_limit_min": [],
+  "memory_request_max": [],
+  "memory_request_min": [],
+  "publicRegistries": [
+    "quay.io",
+    "registry.hub.docker.com"
+  ],
+  "recommendedLabels": [
+    "app",
+    "tier",
+    "phase",
+    "version",
+    "owner",
+    "env"
+  ],
+  "sensitiveInterfaces": [
+    "nifi",
+    "argo-server",
+    "weave-scope-app",
+    "kubeflow",
+    "kubernetes-dashboard"
+  ],
+  "sensitiveKeyNames": [
+    "aws_access_key_id",
+    "aws_secret_access_key",
+    "azure_batchai_storage_account",
+    "azure_batchai_storage_key",
+    "azure_batch_account",
+    "azure_batch_key",
+    "secret",
+    "key",
+    "password",
+    "pwd",
+    "token",
+    "jwt",
+    "bearer",
+    "credential"
+  ],
+  "sensitiveValues": [
+    "BEGIN \\w+ PRIVATE KEY",
+    "PRIVATE KEY",
+    "eyJhbGciO",
+    "JWT",
+    "Bearer",
+    "_key_",
+    "_secret_"
+  ],
+  "sensitiveValuesAllowed": [],
+  "servicesNames": [
+    "nifi-service",
+    "argo-server",
+    "minio",
+    "postgres",
+    "workflow-controller-metrics",
+    "weave-scope-app",
+    "kubernetes-dashboard"
+  ],
+  "untrustedRegistries": [],
+  "wlKnownNames": [
+    "coredns",
+    "kube-proxy",
+    "event-exporter-gke",
+    "kube-dns",
+    "17-default-backend",
+    "metrics-server",
+    "ca-audit",
+    "ca-dashboard-aggregator",
+    "ca-notification-server",
+    "ca-ocimage",
+    "ca-oracle",
+    "ca-posture",
+    "ca-rbac",
+    "ca-vuln-scan",
+    "ca-webhook",
+    "ca-websocket",
+    "clair-clair"
+  ]
+}

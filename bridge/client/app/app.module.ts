@@ -1,5 +1,5 @@
 import { APP_INITIALIZER, NgModule } from '@angular/core';
-import { APP_BASE_HREF, CommonModule, registerLocaleData } from '@angular/common';
+import { APP_BASE_HREF, registerLocaleData } from '@angular/common';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import localeEn from '@angular/common/locales/en';
 import { FlexModule } from '@angular/flex-layout';
@@ -15,7 +15,6 @@ import { AppComponent } from './app.component';
 import { AppRouting } from './app.routing';
 import { KtbRootComponent } from './ktb-root/ktb-root.component';
 import { NotFoundComponent } from './not-found/not-found.component';
-import { KtbSettingsViewComponent } from './_views/ktb-settings-view/ktb-settings-view.component';
 
 import { AppInitService } from './_services/app.init';
 import { EventService } from './_services/event.service';
@@ -45,8 +44,7 @@ import { KtbLoadingModule } from './_components/ktb-loading/ktb-loading.module';
 import { KtbNotificationModule } from './_components/ktb-notification/ktb-notification.module';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-
-// Import BrowserModule, BrowserAnimationsModule, HttpModule or HttpClientModule only once!
+import { KtbChartModule } from './_components/ktb-chart/ktb-chart.module';
 
 registerLocaleData(localeEn, 'en');
 
@@ -54,7 +52,8 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
   return (): Promise<WindowConfig | null> => appLoadService.init();
 }
 
-const angularModules = [BrowserModule, BrowserAnimationsModule, HttpClientModule, CommonModule];
+// Import BrowserModule, BrowserAnimationsModule, HttpModule or HttpClientModule only once!
+const angularModules = [BrowserModule, BrowserAnimationsModule, HttpClientModule];
 
 const dtModules = [
   DtAlertModule,
@@ -75,8 +74,9 @@ const dtModules = [
 const ktbModules = [KtbAppHeaderModule, KtbErrorViewModule, KtbLoadingModule, KtbNotificationModule, KtbPipeModule];
 
 @NgModule({
-  declarations: [AppComponent, NotFoundComponent, KtbSettingsViewComponent, KtbRootComponent],
-  imports: [...angularModules, ...dtModules, ...ktbModules, AppRouting, FlexModule, MomentModule],
+  declarations: [AppComponent, NotFoundComponent, KtbRootComponent],
+  // Move KtbChartModule to the page module, where it is needed
+  imports: [...angularModules, ...dtModules, ...ktbModules, AppRouting, FlexModule, MomentModule, KtbChartModule],
   entryComponents: [],
   providers: [
     EventService,

@@ -1,5 +1,5 @@
 import { firstValueFrom } from 'rxjs';
-import { KtbProjectCreateMessageComponent } from '../_components/ktb-project-settings/ktb-project-create-message/ktb-project-create-message.component';
+import { KtbProjectCreateMessageComponent } from '../_views/ktb-settings-view/ktb-project-settings/ktb-project-create-message/ktb-project-create-message.component';
 import { Notification, NotificationType } from '../_models/notification';
 import { NotificationsService } from './notifications.service';
 

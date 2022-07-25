@@ -112,6 +112,63 @@ func TestUnmarshalManifest(t *testing.T) {
 			expectedErrorContains: "",
 		},
 		{
+			name: "API and resource task manifest with context",
+			inputManifest: strings.NewReader(
+				`
+                apiVersion: v1beta1
+                tasks:
+                  - id: sample-api
+                    type: api
+                    name: Sample API Task
+                    payload: "api/some-payload.json"
+                    action: "keptn-api-v1-endpoint-operation"
+                    context:
+                      key1: value1
+                      key2: value2
+                  - id: sample-resource
+                    type: resource
+                    name: Sample resource task
+                    resource: "resources/webhook.yaml"    # where is the file stored in the package
+                    resourceUri: "webhook.yaml"           # what should the file be called in the upstream repo
+                    stage: "dev"
+                    context:
+                      key3: value3
+                      key2: othervalue2
+                `,
+			),
+			expectedManifest: &ImportManifest{
+				ApiVersion: "v1beta1",
+				Tasks: []*ManifestTask{
+					{
+						APITask: &APITask{
+							Action:      "keptn-api-v1-endpoint-operation",
+							PayloadFile: "api/some-payload.json",
+						},
+						ResourceTask: nil,
+						ID:           "sample-api",
+						Type:         "api",
+						Name:         "Sample API Task",
+						Context:      map[string]string{"key1": "value1", "key2": "value2"},
+					},
+					{
+						APITask: nil,
+						ResourceTask: &ResourceTask{
+							File:      "resources/webhook.yaml",
+							RemoteURI: "webhook.yaml",
+							Stage:     "dev",
+						},
+						ID:      "sample-resource",
+						Type:    "resource",
+						Name:    "Sample resource task",
+						Context: map[string]string{"key3": "value3", "key2": "othervalue2"},
+					},
+				},
+			},
+			expectErr:             false,
+			expectedError:         nil,
+			expectedErrorContains: "",
+		},
+		{
 			name: "Resource task without stage indication manifest",
 			inputManifest: strings.NewReader(
 				`
@@ -132,6 +189,76 @@ func TestUnmarshalManifest(t *testing.T) {
 						ResourceTask: &ResourceTask{
 							File:      "resources/webhook.yaml",
 							RemoteURI: "webhook.yaml",
+						},
+						ID:   "sample-resource",
+						Type: "resource",
+						Name: "Sample resource task",
+					},
+				},
+			},
+			expectErr:             false,
+			expectedError:         nil,
+			expectedErrorContains: "",
+		},
+		{
+			name: "Resource task with service indication manifest",
+			inputManifest: strings.NewReader(
+				`
+                apiVersion: v1beta1
+                tasks:
+                  - id: sample-resource
+                    type: resource
+                    name: Sample resource task
+                    service: foobar
+                    resource: "resources/webhook.yaml"    # where is the file stored in the package
+                    resourceUri: "webhook.yaml"           # what should the file be called in the upstream repo
+                `,
+			),
+			expectedManifest: &ImportManifest{
+				ApiVersion: "v1beta1",
+				Tasks: []*ManifestTask{
+					{
+						APITask: nil,
+						ResourceTask: &ResourceTask{
+							File:      "resources/webhook.yaml",
+							RemoteURI: "webhook.yaml",
+							Service:   "foobar",
+						},
+						ID:   "sample-resource",
+						Type: "resource",
+						Name: "Sample resource task",
+					},
+				},
+			},
+			expectErr:             false,
+			expectedError:         nil,
+			expectedErrorContains: "",
+		},
+		{
+			name: "Resource task with service and stage indication manifest",
+			inputManifest: strings.NewReader(
+				`
+                apiVersion: v1beta1
+                tasks:
+                  - id: sample-resource
+                    type: resource
+                    name: Sample resource task
+                    stage: "dev"
+                    service: foobar
+                    resource: "resources/webhook.yaml"    # where is the file stored in the package
+                    resourceUri: "webhook.yaml"           # what should the file be called in the upstream repo
+                `,
+			),
+			expectedManifest: &ImportManifest{
+				ApiVersion: "v1beta1",
+				Tasks: []*ManifestTask{
+					{
+						APITask: nil,
+						ResourceTask: &ResourceTask{
+							File:      "resources/webhook.yaml",
+							RemoteURI: "webhook.yaml",
+							Service:   "foobar",
+							Stage:     "dev",
 						},
 						ID:   "sample-resource",
 						Type: "resource",

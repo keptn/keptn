@@ -1,5 +1,5 @@
 <div fxFlexFill>
-  <div fxFlex fxLayout="row" id="settings-view-flex-row">
+  <div fxFlex fxLayout="row" uitestid="settings-menu-container" id="settings-view-flex-row">
     <dt-menu class="submenu" aria-label="Keptn Settings Submenu" fxFlex="0 0 200px">
       <dt-menu-group label="Project configuration">
         <button dtMenuItem aria-label="Open project settings" routerLinkActive="active" routerLink="project">
@@ -24,16 +24,6 @@
         </button>
         <button dtMenuItem aria-label="Open secrets settings" routerLinkActive="active" routerLink="uniform/secrets">
           Secrets
-        </button>
-      </dt-menu-group>
-      <dt-menu-group label="Support">
-        <button
-          dtMenuItem
-          aria-label="Open common use cases"
-          routerLinkActive="active"
-          routerLink="support/common-use-cases"
-        >
-          Common use cases
         </button>
       </dt-menu-group>
     </dt-menu>

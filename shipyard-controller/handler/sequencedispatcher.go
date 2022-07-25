@@ -62,15 +62,15 @@ func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
 		//if there is only one shipyard we can both read and write,
 		//so we try to dispatch the sequence immediately
 		if err := sd.dispatchSequence(queueItem); err != nil {
-			if errors.Is(err, ErrSequenceBlocked) {
+			if errors.Is(err, common.ErrSequenceBlocked) {
 				//if the sequence is currently blocked, insert it into the queue
 				return sd.add(queueItem)
-			} else if errors.Is(err, ErrSequenceBlockedWaiting) {
+			} else if errors.Is(err, common.ErrSequenceBlockedWaiting) {
 				//if the sequence is currently blocked and should wait, insert it into the queue
 				if err2 := sd.add(queueItem); err2 != nil {
 					return err2
 				}
-				return ErrSequenceBlockedWaiting
+				return common.ErrSequenceBlockedWaiting
 			} else {
 				return err
 			}
@@ -137,7 +137,7 @@ func (sd *SequenceDispatcher) dispatchSequences() {
 
 	for _, queuedSequence := range queuedSequences {
 		if err := sd.dispatchSequence(queuedSequence); err != nil {
-			if errors.Is(err, ErrSequenceBlocked) || errors.Is(err, ErrSequenceBlockedWaiting) {
+			if errors.Is(err, common.ErrSequenceBlocked) || errors.Is(err, common.ErrSequenceBlockedWaiting) {
 				log.Infof("Could not dispatch sequence with keptnContext %s. Sequence is currently blocked by other sequence", queuedSequence.Scope.KeptnContext)
 			} else {
 				log.WithError(err).Errorf("Could not dispatch sequence with keptnContext %s", queuedSequence.Scope.KeptnContext)
@@ -208,12 +208,12 @@ func (sd *SequenceDispatcher) dispatchSequence(queueItem models.QueueItem) error
 	}
 
 	if sequenceExecution == nil {
-		return ErrSequenceNotFound
+		return common.ErrSequenceNotFound
 	}
 
 	if sequenceExecution.IsPaused() || sd.sequenceExecutionRepo.IsContextPaused(queueItem.Scope) {
 		log.Infof("Sequence %s is currently paused. Will not start it yet.", queueItem.Scope.KeptnContext)
-		return ErrSequenceBlocked
+		return common.ErrSequenceBlocked
 	}
 
 	sequenceBlocked, err := sd.isSequenceBlocked(queueItem)
@@ -222,7 +222,7 @@ func (sd *SequenceDispatcher) dispatchSequence(queueItem models.QueueItem) error
 	}
 
 	if sequenceBlocked {
-		return ErrSequenceBlockedWaiting
+		return common.ErrSequenceBlockedWaiting
 	}
 
 	events, err := sd.eventRepo.GetEvents(queueItem.Scope.Project, common.EventFilter{

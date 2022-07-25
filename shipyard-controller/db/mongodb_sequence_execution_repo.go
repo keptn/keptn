@@ -8,6 +8,7 @@ import (
 	"time"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db/models/sequence_execution"
 	v02 "github.com/keptn/keptn/shipyard-controller/db/models/sequence_execution/v1"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -191,7 +192,7 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) Upsert(item models.SequenceExecutio
 			return fmt.Errorf("could not check for existing sequence with same triggeredID: %w", err)
 		}
 		if existingSequence != nil {
-			return ErrSequenceWithTriggeredIDAlreadyExists
+			return common.ErrSequenceWithTriggeredIDAlreadyExists
 		}
 	}
 	opts := options.Update().SetUpsert(true)

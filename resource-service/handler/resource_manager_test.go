@@ -582,6 +582,31 @@ func TestResourceManager_UpdateResource_ProjectResource(t *testing.T) {
 	require.Equal(t, testConfigDir+"/file1", fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path)
 }
 
+func TestResourceManager_UpdateResource_ProjectResourceWebhook(t *testing.T) {
+	fields := getTestResourceManagerFields()
+
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
+
+	revision, err := rm.UpdateResource(models.UpdateResourceParams{
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
+		},
+		ResourceURI: "file1%2Ffile1",
+		UpdateResourcePayload: models.UpdateResourcePayload{
+			ResourceContent: "c3RyaW5n",
+		},
+	})
+
+	require.Nil(t, err)
+
+	require.Equal(t, &models.WriteResourceResponse{CommitID: "my-revision", Metadata: models.Version{Branch: "", UpstreamURL: "remote-url", Version: "my-revision"}}, revision)
+
+	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
+
+	require.Len(t, fields.fileSystem.WriteBase64EncodedFileCalls(), 1)
+	require.Equal(t, testConfigDir+"/file1/file1", fields.fileSystem.WriteBase64EncodedFileCalls()[0].Path)
+}
+
 func TestResourceManager_UpdateResource_ProjectResource_ProjectNotFound(t *testing.T) {
 	fields := getTestResourceManagerFields()
 

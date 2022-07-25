@@ -5,13 +5,13 @@ go 1.18
 require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/gin-gonic/gin v1.8.1
-	github.com/keptn/go-utils v0.17.1-0.20220712140512-5415a61d819b
+	github.com/keptn/go-utils v0.17.1-0.20220718124953-6b126790c54c
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.8.0
 	github.com/swaggo/swag v1.8.3
-	k8s.io/api v0.22.11
-	k8s.io/apimachinery v0.22.11
-	k8s.io/client-go v0.22.11
+	k8s.io/api v0.22.12
+	k8s.io/apimachinery v0.22.12
+	k8s.io/client-go v0.22.12
 )
 
 require (
@@ -46,7 +46,7 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/ugorji/go/codec v1.2.7 // indirect
-	golang.org/x/crypto v0.0.0-20220315160706-3147a52a75dd // indirect
+	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
 	golang.org/x/net v0.0.0-20220425223048-2871e0cb64e4 // indirect
 	golang.org/x/oauth2 v0.0.0-20220608161450-d0670ef3b1eb // indirect
 	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
@@ -64,4 +64,13 @@ require (
 	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
+)
+
+replace (
+	github.com/emicklei/go-restful/v3 => github.com/emicklei/go-restful/v3 v3.8.0
+	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
+	golang.org/x/net => golang.org/x/net v0.0.0-20220708220712-1185a9018129
+	golang.org/x/text => golang.org/x/text v0.3.7
+	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.2.8
+	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
 )
