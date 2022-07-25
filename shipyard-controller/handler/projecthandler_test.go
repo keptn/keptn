@@ -455,6 +455,31 @@ func TestCreateProject(t *testing.T) {
 			projectNameParam: "my-project",
 		},
 		{
+			name: "Create project with validator fail",
+			fields: fields{
+				ProjectManager: &fake.IProjectManagerMock{
+					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+						return nil, func() error { return nil }
+					},
+				},
+				EventSender: &fake.IEventSenderMock{
+					SendEventFunc: func(eventMoqParam event.Event) error {
+						return nil
+					},
+				},
+				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 20},
+				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
+				RemoteURLValidator: fake.RequestValidatorMock{
+					ValidateFunc: func(url string) error {
+						return fmt.Errorf("some err")
+					},
+				},
+			},
+			jsonPayload:      examplePayload,
+			expectHttpStatus: http.StatusUnprocessableEntity,
+			projectNameParam: "my-project",
+		},
+		{
 			name: "Create project with provisioning - fail",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
@@ -658,6 +683,30 @@ func TestUpdateProject(t *testing.T) {
 			},
 			jsonPayload:        examplePayload,
 			expectedHTTPStatus: http.StatusOK,
+		},
+		{
+			name: "Update project with validator failed",
+			fields: fields{
+				ProjectManager: &fake.IProjectManagerMock{
+					UpdateFunc: func(params *models.UpdateProjectParams) (error, common.RollbackFunc) {
+						return nil, func() error { return nil }
+					},
+				},
+				EventSender: &fake.IEventSenderMock{
+					SendEventFunc: func(eventMoqParam event.Event) error {
+						return nil
+					},
+				},
+				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
+				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
+				RemoteURLValidator: fake.RequestValidatorMock{
+					ValidateFunc: func(url string) error {
+						return fmt.Errorf("some err")
+					},
+				},
+			},
+			jsonPayload:        examplePayload,
+			expectedHTTPStatus: http.StatusUnprocessableEntity,
 		},
 		{
 			name: "Update project with invalid token",
