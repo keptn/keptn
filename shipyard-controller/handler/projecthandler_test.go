@@ -19,7 +19,6 @@ import (
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/keptn/shipyard-controller/common"
-	common_mock "github.com/keptn/keptn/shipyard-controller/common/fake"
 	"github.com/keptn/keptn/shipyard-controller/handler/fake"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/assert"
@@ -47,7 +46,7 @@ func TestGetAllProjects(t *testing.T) {
 		EventSender           common.EventSender
 		RepositoryProvisioner IRepositoryProvisioner
 		EnvConfig             config.EnvConfig
-		RemoteURLValidator    common.RemoteURLValidator
+		RemoteURLValidator    RemoteURLValidator
 	}
 
 	tests := []struct {
@@ -68,7 +67,7 @@ func TestGetAllProjects(t *testing.T) {
 				EventSender:           &fake.IEventSenderMock{},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: common_mock.RequestValidatorMock{
+				RemoteURLValidator: fake.RequestValidatorMock{
 					ValidateFunc: func(url string) error {
 						return nil
 					},
@@ -87,7 +86,7 @@ func TestGetAllProjects(t *testing.T) {
 				EventSender:           &fake.IEventSenderMock{},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: common_mock.RequestValidatorMock{
+				RemoteURLValidator: fake.RequestValidatorMock{
 					ValidateFunc: func(url string) error {
 						return nil
 					},
@@ -111,7 +110,7 @@ func TestGetAllProjects(t *testing.T) {
 				EventSender:           &fake.IEventSenderMock{},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: common_mock.RequestValidatorMock{
+				RemoteURLValidator: fake.RequestValidatorMock{
 					ValidateFunc: func(url string) error {
 						return nil
 					},
@@ -136,7 +135,7 @@ func TestGetAllProjects(t *testing.T) {
 				EventSender:           &fake.IEventSenderMock{},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: common_mock.RequestValidatorMock{
+				RemoteURLValidator: fake.RequestValidatorMock{
 					ValidateFunc: func(url string) error {
 						return nil
 					},
@@ -186,7 +185,7 @@ func TestGetProjectByName(t *testing.T) {
 		EventSender           common.EventSender
 		RepositoryProvisioner IRepositoryProvisioner
 		EnvConfig             config.EnvConfig
-		RemoteURLValidator    common.RemoteURLValidator
+		RemoteURLValidator    RemoteURLValidator
 	}
 
 	tests := []struct {
@@ -207,7 +206,7 @@ func TestGetProjectByName(t *testing.T) {
 				EventSender:           &fake.IEventSenderMock{},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: common_mock.RequestValidatorMock{
+				RemoteURLValidator: fake.RequestValidatorMock{
 					ValidateFunc: func(url string) error {
 						return nil
 					},
@@ -227,7 +226,7 @@ func TestGetProjectByName(t *testing.T) {
 				EventSender:           &fake.IEventSenderMock{},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: common_mock.RequestValidatorMock{
+				RemoteURLValidator: fake.RequestValidatorMock{
 					ValidateFunc: func(url string) error {
 						return nil
 					},
@@ -247,7 +246,7 @@ func TestGetProjectByName(t *testing.T) {
 				EventSender:           &fake.IEventSenderMock{},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: common_mock.RequestValidatorMock{
+				RemoteURLValidator: fake.RequestValidatorMock{
 					ValidateFunc: func(url string) error {
 						return nil
 					},
@@ -293,7 +292,7 @@ func TestCreateProject(t *testing.T) {
 		EventSender           common.EventSender
 		RepositoryProvisioner *fake.IRepositoryProvisionerMock
 		EnvConfig             config.EnvConfig
-		RemoteURLValidator    common.RemoteURLValidator
+		RemoteURLValidator    RemoteURLValidator
 	}
 	examplePayload := `{"gitCredentials":{"remoteURL":"http://remote-url.com", "user":"gituser", "https":{"token":"99c4c193-4813-43c5-864f-ad6f12ac1d82"}},"name":"my-project","shipyard":"YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAoKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyczoKICAgICAgLSBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6IAogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW5fc2VydmljZQogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBraW5kOiBwZXJmb3JtYW5jZQogICAgICAtIG5hbWU6IGV2YWx1YXRpb24KICAgICAgLSBuYW1lOiByZWxlYXNlCiAgICAgICAgCiAgLSBuYW1lOiBwcm9kdWN0aW9uCiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5IAogICAgICB0cmlnZ2VyczoKICAgICAgLSBoYXJkZW5pbmcuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBzdHJhdGVneTogYmx1ZV9ncmVlbgogICAgICAtIG5hbWU6IHJlbGVhc2UKICAgICAgCiAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg=="}`
 	examplePayloadInvalidToolongPrjName := `{"gitCredentials":{"remoteURL":"http://remote-url.com", "user":"gituser", "https":{"token":"99c4c193-4813-43c5-864f-ad6f12ac1d82"}},"name":"my-projecttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt","shipyard":"YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAoKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyczoKICAgICAgLSBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6IAogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW5fc2VydmljZQogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBraW5kOiBwZXJmb3JtYW5jZQogICAgICAtIG5hbWU6IGV2YWx1YXRpb24KICAgICAgLSBuYW1lOiByZWxlYXNlCiAgICAgICAgCiAgLSBuYW1lOiBwcm9kdWN0aW9uCiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5IAogICAgICB0cmlnZ2VyczoKICAgICAgLSBoYXJkZW5pbmcuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBzdHJhdGVneTogYmx1ZV9ncmVlbgogICAgICAtIG5hbWU6IHJlbGVhc2UKICAgICAgCiAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg=="}`
@@ -329,7 +328,7 @@ func TestCreateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 20},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: common_mock.RequestValidatorMock{
+				RemoteURLValidator: fake.RequestValidatorMock{
 					ValidateFunc: func(url string) error {
 						return nil
 					},
@@ -344,7 +343,7 @@ func TestCreateProject(t *testing.T) {
 			jsonPayload:      examplePayloadInvalidToolongPrjName,
 			expectHttpStatus: http.StatusBadRequest,
 			fields: fields{
-				RemoteURLValidator: common_mock.RequestValidatorMock{
+				RemoteURLValidator: fake.RequestValidatorMock{
 					ValidateFunc: func(url string) error {
 						return nil
 					},
@@ -366,7 +365,7 @@ func TestCreateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 20},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: common_mock.RequestValidatorMock{
+				RemoteURLValidator: fake.RequestValidatorMock{
 					ValidateFunc: func(url string) error {
 						return nil
 					},
@@ -391,7 +390,7 @@ func TestCreateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 20},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: common_mock.RequestValidatorMock{
+				RemoteURLValidator: fake.RequestValidatorMock{
 					ValidateFunc: func(url string) error {
 						return nil
 					},
@@ -419,7 +418,7 @@ func TestCreateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 20},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: common_mock.RequestValidatorMock{
+				RemoteURLValidator: fake.RequestValidatorMock{
 					ValidateFunc: func(url string) error {
 						return nil
 					},
@@ -445,7 +444,7 @@ func TestCreateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 20},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: common_mock.RequestValidatorMock{
+				RemoteURLValidator: fake.RequestValidatorMock{
 					ValidateFunc: func(url string) error {
 						return nil
 					},
@@ -474,7 +473,7 @@ func TestCreateProject(t *testing.T) {
 						return nil, fmt.Errorf("some error")
 					},
 				},
-				RemoteURLValidator: common_mock.RequestValidatorMock{
+				RemoteURLValidator: fake.RequestValidatorMock{
 					ValidateFunc: func(url string) error {
 						return nil
 					},
@@ -508,7 +507,7 @@ func TestCreateProject(t *testing.T) {
 						}, nil
 					},
 				},
-				RemoteURLValidator: common_mock.RequestValidatorMock{
+				RemoteURLValidator: fake.RequestValidatorMock{
 					ValidateFunc: func(url string) error {
 						return nil
 					},
@@ -553,7 +552,7 @@ func TestUpdateProject(t *testing.T) {
 		EventSender           common.EventSender
 		RepositoryProvisioner IRepositoryProvisioner
 		EnvConfig             config.EnvConfig
-		RemoteURLValidator    common.RemoteURLValidator
+		RemoteURLValidator    RemoteURLValidator
 	}
 	examplePayload := `{"gitCredentials":{"remoteURL":"http://remote-url.com", "user":"gituser", "https":{"token":"99c4c193-4813-43c5-864f-ad6f12ac1d82"}},"name":"myproject"}`
 	examplePayloadInvalid := `{"gitCredentials":{"remofdteURL":"http://remote-url.com", "usefdsfdr":"gituser", "httfdjnfjps":{"token":"99c4c193-4813-43c5-864f-ad6f12ac1d82"}},"name":"myPPPProject","shipyard":"YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAoKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyczoKICAgICAgLSBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6IAogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW5fc2VydmljZQogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBraW5kOiBwZXJmb3JtYW5jZQogICAgICAtIG5hbWU6IGV2YWx1YXRpb24KICAgICAgLSBuYW1lOiByZWxlYXNlCiAgICAgICAgCiAgLSBuYW1lOiBwcm9kdWN0aW9uCiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5IAogICAgICB0cmlnZ2VyczoKICAgICAgLSBoYXJkZW5pbmcuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBzdHJhdGVneTogYmx1ZV9ncmVlbgogICAgICAtIG5hbWU6IHJlbGVhc2UKICAgICAgCiAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg=="}`
@@ -579,7 +578,7 @@ func TestUpdateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: common_mock.RequestValidatorMock{
+				RemoteURLValidator: fake.RequestValidatorMock{
 					ValidateFunc: func(url string) error {
 						return nil
 					},
@@ -603,7 +602,7 @@ func TestUpdateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: common_mock.RequestValidatorMock{
+				RemoteURLValidator: fake.RequestValidatorMock{
 					ValidateFunc: func(url string) error {
 						return nil
 					},
@@ -627,7 +626,7 @@ func TestUpdateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: common_mock.RequestValidatorMock{
+				RemoteURLValidator: fake.RequestValidatorMock{
 					ValidateFunc: func(url string) error {
 						return nil
 					},
@@ -651,7 +650,7 @@ func TestUpdateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: common_mock.RequestValidatorMock{
+				RemoteURLValidator: fake.RequestValidatorMock{
 					ValidateFunc: func(url string) error {
 						return nil
 					},
@@ -675,7 +674,7 @@ func TestUpdateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: common_mock.RequestValidatorMock{
+				RemoteURLValidator: fake.RequestValidatorMock{
 					ValidateFunc: func(url string) error {
 						return nil
 					},
@@ -699,7 +698,7 @@ func TestUpdateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: common_mock.RequestValidatorMock{
+				RemoteURLValidator: fake.RequestValidatorMock{
 					ValidateFunc: func(url string) error {
 						return nil
 					},
@@ -723,7 +722,7 @@ func TestUpdateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: common_mock.RequestValidatorMock{
+				RemoteURLValidator: fake.RequestValidatorMock{
 					ValidateFunc: func(url string) error {
 						return nil
 					},
@@ -747,7 +746,7 @@ func TestUpdateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: common_mock.RequestValidatorMock{
+				RemoteURLValidator: fake.RequestValidatorMock{
 					ValidateFunc: func(url string) error {
 						return nil
 					},
@@ -781,7 +780,7 @@ func TestDeleteProject(t *testing.T) {
 		EventSender           common.EventSender
 		RepositoryProvisioner IRepositoryProvisioner
 		EnvConfig             config.EnvConfig
-		RemoteURLValidator    common.RemoteURLValidator
+		RemoteURLValidator    RemoteURLValidator
 	}
 
 	tests := []struct {
@@ -808,7 +807,7 @@ func TestDeleteProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: common_mock.RequestValidatorMock{
+				RemoteURLValidator: fake.RequestValidatorMock{
 					ValidateFunc: func(url string) error {
 						return nil
 					},
@@ -832,7 +831,7 @@ func TestDeleteProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: common_mock.RequestValidatorMock{
+				RemoteURLValidator: fake.RequestValidatorMock{
 					ValidateFunc: func(url string) error {
 						return nil
 					},
@@ -857,7 +856,7 @@ func TestDeleteProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: common_mock.RequestValidatorMock{
+				RemoteURLValidator: fake.RequestValidatorMock{
 					ValidateFunc: func(url string) error {
 						return nil
 					},
@@ -888,7 +887,7 @@ func TestDeleteProject(t *testing.T) {
 						return fmt.Errorf("some error")
 					},
 				},
-				RemoteURLValidator: common_mock.RequestValidatorMock{
+				RemoteURLValidator: fake.RequestValidatorMock{
 					ValidateFunc: func(url string) error {
 						return nil
 					},
@@ -917,7 +916,7 @@ func TestDeleteProject(t *testing.T) {
 						return nil
 					},
 				},
-				RemoteURLValidator: common_mock.RequestValidatorMock{
+				RemoteURLValidator: fake.RequestValidatorMock{
 					ValidateFunc: func(url string) error {
 						return nil
 					},
@@ -1249,49 +1248,3 @@ func createGinTestContext() (*httptest.ResponseRecorder, *gin.Context) {
 	c, _ := gin.CreateTestContext(w)
 	return w, c
 }
-
-// func Test_ProjectHandler_isRemoteURLDenied(t *testing.T) {
-// 	tests := []struct {
-// 		url    string
-// 		list   []string
-// 		expect bool
-// 	}{
-// 		{
-// 			url:    "some",
-// 			list:   []string{"some", "list"},
-// 			expect: true,
-// 		},
-// 		{
-// 			url:    "some",
-// 			list:   []string{},
-// 			expect: false,
-// 		},
-// 		{
-// 			url:    "some",
-// 			list:   []string{"something"},
-// 			expect: false,
-// 		},
-// 		{
-// 			url:    "something",
-// 			list:   []string{"some"},
-// 			expect: true,
-// 		},
-// 		{
-// 			url:    "something",
-// 			list:   []string{""},
-// 			expect: true,
-// 		},
-// 		{
-// 			url:    "something",
-// 			list:   []string{"."},
-// 			expect: true,
-// 		},
-// 	}
-
-// 	for _, tt := range tests {
-// 		t.Run("", func(t *testing.T) {
-// 			res := isRemoteURLDenied(tt.url, tt.list)
-// 			require.Equal(t, tt.expect, res)
-// 		})
-// 	}
-// }

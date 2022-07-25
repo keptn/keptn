@@ -1,19 +1,21 @@
-package common
+package handler
 
 import (
 	"fmt"
 	"regexp"
+
+	"github.com/keptn/keptn/shipyard-controller/common"
 )
 
 type remoteURLValidator struct {
-	denyListProvider DenyListProvider
+	denyListProvider common.DenyListProvider
 }
 
 type RemoteURLValidator interface {
 	Validate(url string) error
 }
 
-func NewRemoteURLValidator(denyListProvider DenyListProvider) RemoteURLValidator {
+func NewRemoteURLValidator(denyListProvider common.DenyListProvider) RemoteURLValidator {
 	validator := remoteURLValidator{
 		denyListProvider: denyListProvider,
 	}

@@ -1,4 +1,4 @@
-package common_mock
+package fake
 
 type RequestValidatorMock struct {
 	ValidateFunc func(url string) error

@@ -167,7 +167,7 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 	apiHealth := engine.Group("")
 
 	denyListProvider := common.NewDenyListProvider(kubeAPI)
-	remoteURLValidator := common.NewRemoteURLValidator(denyListProvider)
+	remoteURLValidator := handler.NewRemoteURLValidator(denyListProvider)
 
 	projectService := handler.NewProjectHandler(projectManager, eventSender, env, repositoryProvisioner, remoteURLValidator)
 

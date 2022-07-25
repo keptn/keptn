@@ -168,10 +168,10 @@ type ProjectHandler struct {
 	EventSender           common.EventSender
 	Env                   config.EnvConfig
 	RepositoryProvisioner IRepositoryProvisioner
-	RemoteURLValidator    common.RemoteURLValidator
+	RemoteURLValidator    RemoteURLValidator
 }
 
-func NewProjectHandler(projectManager IProjectManager, eventSender common.EventSender, env config.EnvConfig, repositoryProvisioner IRepositoryProvisioner, remoteURLValidator common.RemoteURLValidator) *ProjectHandler {
+func NewProjectHandler(projectManager IProjectManager, eventSender common.EventSender, env config.EnvConfig, repositoryProvisioner IRepositoryProvisioner, remoteURLValidator RemoteURLValidator) *ProjectHandler {
 	return &ProjectHandler{
 		ProjectManager:        projectManager,
 		EventSender:           eventSender,
