@@ -22,6 +22,10 @@ func Test_DenyListProvider(t *testing.T) {
 			result: []string{"some", "string"},
 		},
 		{
+			input:  "some\n\n\nstring\n\n\n",
+			result: []string{"some", "string"},
+		},
+		{
 			input:  "some",
 			result: []string{"some"},
 		},

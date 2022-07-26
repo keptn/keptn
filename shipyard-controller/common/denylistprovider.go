@@ -16,7 +16,6 @@ type denyListProvider struct {
 }
 
 type FileScanner interface {
-	Split(split bufio.SplitFunc)
 	Scan() bool
 	Text() string
 }
@@ -35,7 +34,6 @@ func NewDenyListProvider() DenyListProvider {
 
 func (d denyListProvider) Get() []string {
 	fileLines := []string{}
-	d.Scanner.Split(bufio.ScanLines)
 
 	for d.Scanner.Scan() {
 		fileLines = append(fileLines, d.Scanner.Text())
