@@ -107,12 +107,12 @@ export class KtbAppHeaderComponent implements OnInit, OnDestroy {
       const cliVersionsString = this.buildVersionString(this.getNewerVersions(availableCliVersions, cliVersion));
 
       if (bridgeVersionsString || cliVersionsString) {
-        const versionMessage = `New ${cliVersionsString ? ' Keptn CLI ' + cliVersionsString : ''} ${
-          cliVersionsString && bridgeVersionsString ? 'and' : ''
+        const versionMessage = `New ${cliVersionsString ? ' Keptn release ' + cliVersionsString : ''} ${
+          cliVersionsString && bridgeVersionsString ? ''
         }
                             ${
-                              bridgeVersionsString ? ' Keptn Bridge ' + bridgeVersionsString : ''
-                            } available. For details how to upgrade visit
+                              bridgeVersionsString
+                            } available. Please upgrade to this release following these instructions
                             <a href="https://keptn.sh/docs/${semver.major(latestVersion)}.${semver.minor(
           latestVersion
         )}.x/operate/upgrade/" target="_blank">
