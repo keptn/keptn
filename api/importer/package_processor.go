@@ -21,6 +21,7 @@ type Renderer interface {
 type ImportPackage interface {
 	io.Closer
 	GetResource(resourceName string) (io.ReadCloser, error)
+	CheckIfResourceExists(resourceName string) error
 }
 
 type ManifestParser interface {
@@ -130,13 +131,12 @@ func (ipp *ImportPackageProcessor) validateManifest(
 				}
 
 				// Check if payload file does exist
-				if err := ipp.resourceDoesExits(task.APITask.PayloadFile, ip); err != nil {
+				if err := ip.CheckIfResourceExists(task.APITask.PayloadFile); err != nil {
 					return fmt.Errorf("payload file %s does not exists: %w", task.APITask.PayloadFile, err)
 				}
 			} else {
 				return fmt.Errorf("empty api definition not supported")
 			}
-
 		case resourceTaskType:
 			if task.ResourceTask != nil {
 				if task.ResourceTask.RemoteURI == "" {
@@ -144,13 +144,12 @@ func (ipp *ImportPackageProcessor) validateManifest(
 				}
 
 				// Check if resource file does exist
-				if err := ipp.resourceDoesExits(task.ResourceTask.File, ip); err != nil {
+				if err := ip.CheckIfResourceExists(task.ResourceTask.File); err != nil {
 					return fmt.Errorf("resource file %s does not exists: %w", task.ResourceTask.File, err)
 				}
 			} else {
 				return fmt.Errorf("empty resource definition not supported")
 			}
-
 		default:
 			return fmt.Errorf("task of type %s not implemented", task.Type)
 		}
@@ -319,16 +318,4 @@ func (ipp *ImportPackageProcessor) renderContext(
 		renderedContext[k] = renderedValue
 	}
 	return renderedContext, nil
-}
-
-func (ipp *ImportPackageProcessor) resourceDoesExits(resource string, ip ImportPackage) error {
-	_, err := ip.GetResource(resource)
-
-	if err != nil {
-		return fmt.Errorf(
-			"error accessing resource %s: %w", resource,
-			err,
-		)
-	}
-	return nil
 }

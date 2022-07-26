@@ -37,6 +37,20 @@ func (m *ZippedPackage) GetResource(resourceName string) (io.ReadCloser, error) 
 	return file, nil
 }
 
+func (m *ZippedPackage) CheckIfResourceExists(resourceName string) error {
+	actualPath := path.Clean(path.Join(m.extractedDir, resourceName))
+	if !strings.HasPrefix(actualPath, m.extractedDir) {
+		return ErrorInvalidResourcePath
+	}
+
+	_, err := os.Stat(actualPath)
+	if err != nil {
+		return fmt.Errorf("error accessing resource %s: %w", resourceName, err)
+	}
+
+	return nil
+}
+
 // Close signals that the package resources can be freed (including any extracted files).
 // Once Close has been called it's illegal to call any other ZippedPackage operation
 func (m *ZippedPackage) Close() error {
