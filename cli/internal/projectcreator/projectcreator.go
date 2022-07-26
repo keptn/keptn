@@ -78,8 +78,8 @@ func (p *ProjectCreator) CreateProject(projectInfo ProjectInfo) error {
 	}
 
 	if !*metaData.Automaticprovisioning {
-		if strNotSet(projectInfo.GitUser) || strNotSet(projectInfo.RemoteURL) {
-			return errors.New("GIT username and GIT remote URL must be set")
+		if strNotSet(projectInfo.RemoteURL) {
+			return errors.New("GIT remote URL must be set")
 		}
 		if strNotSet(projectInfo.GitToken) && strNotSet(projectInfo.GitPrivateKey) {
 			return errors.New("GIT Access token or GIT private key must be set")

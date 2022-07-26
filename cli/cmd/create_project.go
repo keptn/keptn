@@ -33,39 +33,16 @@ type createProjectCmdParams struct {
 
 var createProjectParams *createProjectCmdParams
 
-const gitErrMsg = `Please specify a 'git-user' and 'git-remote-url' as flags for configuring a Git upstream repository together with 'git-token' or 'git-private-key' depending on auth method. Please be aware that authentication with public/private key is supported only when using resource-service.`
-const gitMissingUpstream = `WARNING: Creating a project without Git upstream repository is not recommended and will not be supported in the future anymore.
-You can configure a Git upstream repository using: 
-
-keptn update project PROJECTNAME --git-remote-url=GIT_REMOTE_URL --git-token=GIT_TOKEN
-
-or (if your repository provider allows to use user and password)
-
-keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE_URL --git-token=GIT_TOKEN
-
-or (only for resource-service)
-
-keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE_URL --git-private-key=PRIVATE_KEY_PATH --git-private-key-pass=PRIVATE_KEY_PASSPHRASE
-
-or (only for resource-service)
-
-keptn update project PROJECTNAME --git-user=GIT_USER --git-remote-url=GIT_REMOTE_URL --git-token=GIT_TOKEN --git-proxy-url=PROXY_IP --git-proxy-scheme=SCHEME --git-proxy-user=PROXY_USER --git-proxy-password=PROXY_PASS --insecure-skip-tls
-
-Please be aware that authentication with public/private key and via proxy is supported only when using resource-service.`
-
 // crProjectCmd represents the project command
 var crProjectCmd = &cobra.Command{
 	Use:   "project PROJECTNAME --shipyard=FILEPATH",
 	Short: "Creates a new project",
-	Long: `Creates a new project with the provided name and Shipyard. 
+	Long: `Creates a new project with the provided name and shipyard file.
 The shipyard file describes the used stages. These stages are defined by name, as well as their task sequences.
-
-By executing the *create project* command, Keptn initializes an internal Git repository that is used to maintain all project-related resources. 
-To upstream this internal Git repository to a remote repository, the remote URL (*--git-remote-url*) is required
-together with private key (*--git-private-key*) or access token (*--git-token*). The Git user (*--git-user*) can be specified if the repository allows it. 
-For using proxy please specify proxy IP address together with port (*--git-proxy-url*) and
-used scheme (*--git-proxy-scheme=*) to connect to proxy. Please be aware that authentication with public/private key and via proxy is 
-supported only when using resource-service.
+If the Keptn installation is setup with the "automatic GIT repository provisioning" feature disabled, this command requires the user to pass GIT related information using
+the "--git-remote-url", as well as the "--git-token" or "--git-private-key" flag.
+If the GIT repository allows it, you can specify the a GIT user using the "--git-user" flag. For using a proxy please specify the proxy IP address together with port using the ""--git-proxy-url" flag and
+the scheme using the "--git-proxy-scheme" flag. Please be aware that authentication with public/private key and via proxy is supported only when using resource-service.
 
 For more information about Shipyard, creating projects, or upstream repositories, please go to [Manage Keptn](https://keptn.sh/docs/` + getReleaseDocsURL() + `/manage/)
 `,
@@ -161,22 +138,16 @@ func init() {
 	createCmd.AddCommand(crProjectCmd)
 	createProjectParams = &createProjectCmdParams{}
 	createProjectParams.Shipyard = crProjectCmd.Flags().StringP("shipyard", "s", "", "The path or URL to the shipyard file specifying the environment")
-	crProjectCmd.MarkFlagRequired("shipyard")
-
 	createProjectParams.GitUser = crProjectCmd.Flags().StringP("git-user", "u", "", "The git user of the upstream target")
 	createProjectParams.RemoteURL = crProjectCmd.Flags().StringP("git-remote-url", "r", "", "The remote url of the upstream target")
-
 	createProjectParams.GitToken = crProjectCmd.Flags().StringP("git-token", "t", "", "The git token of the git user")
-
 	createProjectParams.GitPrivateKey = crProjectCmd.Flags().StringP("git-private-key", "k", "", "The SSH git private key of the git user")
 	createProjectParams.GitPrivateKeyPass = crProjectCmd.Flags().StringP("git-private-key-pass", "l", "", "The passphrase of git private key")
-
 	createProjectParams.GitProxyURL = crProjectCmd.Flags().StringP("git-proxy-url", "p", "", "The git proxy URL and port")
 	createProjectParams.GitProxyScheme = crProjectCmd.Flags().StringP("git-proxy-scheme", "j", "", "The git proxy scheme")
 	createProjectParams.GitProxyUser = crProjectCmd.Flags().StringP("git-proxy-user", "w", "", "The git proxy user")
 	createProjectParams.GitProxyPassword = crProjectCmd.Flags().StringP("git-proxy-password", "e", "", "The git proxy password")
 	createProjectParams.InsecureSkipTLS = crProjectCmd.Flags().BoolP("insecure-skip-tls", "x", false, "Disable TLS verification to allow connections to servers using self signed certificates")
-
 	createProjectParams.GitPemCertificate = crProjectCmd.Flags().StringP("git-pem-certificate", "g", "", "The git PEM Certificate file")
-
+	crProjectCmd.MarkFlagRequired("shipyard")
 }

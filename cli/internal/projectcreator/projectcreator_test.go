@@ -58,6 +58,24 @@ func TestProjectCreator_CreateProject(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name: "Git remote url missing",
+			fields: fields{
+				APIV1Interface: &fake.APIV1InterfaceMock{
+					GetMetadataFunc: func() (*apimodels.Metadata, *apimodels.Error) {
+						return &apimodels.Metadata{
+							Automaticprovisioning: boolP(false),
+						}, nil
+					},
+				},
+				ShipyardProvider: func(s string) ([]byte, error) { return []byte{}, nil },
+			},
+			args: args{projectInfo: ProjectInfo{
+				Shipyard: "shipyard-file",
+				GitUser:  "gitUser",
+			}},
+			wantErr: true,
+		},
+		{
 			name: "Access token or private key must be set",
 			fields: fields{
 				APIV1Interface: &fake.APIV1InterfaceMock{
@@ -72,7 +90,7 @@ func TestProjectCreator_CreateProject(t *testing.T) {
 			args: args{projectInfo: ProjectInfo{
 				Shipyard:  "shipyard-file",
 				GitUser:   "gitUser",
-				RemoteURL: "remotURL",
+				RemoteURL: "remoteURL",
 			}},
 			wantErr: true,
 		},
@@ -308,8 +326,4 @@ func TestProjectCreator_CreateProject(t *testing.T) {
 
 func boolP(b bool) *bool {
 	return &b
-}
-
-func stringP(s string) *string {
-	return &s
 }
