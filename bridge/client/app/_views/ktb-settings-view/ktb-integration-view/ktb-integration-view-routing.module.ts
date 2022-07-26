@@ -15,6 +15,7 @@ const routes: Routes = [
   {
     path: ':integrationId/subscriptions/:subscriptionId/edit',
     component: KtbModifyUniformSubscriptionComponent,
+    canDeactivate: [PendingChangesGuard],
   },
 ];
 
