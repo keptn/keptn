@@ -72,6 +72,7 @@ nats:
     runAsUser: 10001
     fsGroup: 10001
   nats:
+    automountServiceAccountToken: false
     resources:
       requests:
         cpu: 200m
@@ -97,7 +98,9 @@ nats:
     securityContext:
       readOnlyRootFilesystem: true
       allowPrivilegeEscalation: false
+      privileged: false
       runAsNonRoot: true
+      runAsUser: 65532
       capabilities:
         drop:
           - ALL
