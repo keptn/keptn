@@ -2,6 +2,7 @@ package common
 
 import (
 	"bufio"
+	"io"
 	"os"
 
 	"github.com/sirupsen/logrus"
@@ -13,6 +14,7 @@ type DenyListProvider interface {
 
 type denyListProvider struct {
 	Scanner FileScanner
+	File    *os.File
 }
 
 type FileScanner interface {
@@ -25,15 +27,20 @@ const denyListFileName = "/keptn-git-config/git-remote-url-denylist"
 func NewDenyListProvider() DenyListProvider {
 	gitConfigFile, err := os.Open(denyListFileName)
 	if err != nil {
-		logrus.Errorf("cannot open keptn-git-config file %s", err.Error())
+		logrus.Errorf("cannot open %s file: %s", denyListFileName, err.Error())
 	}
-	defer gitConfigFile.Close()
 	return denyListProvider{
 		Scanner: bufio.NewScanner(gitConfigFile),
+		File:    gitConfigFile,
 	}
 }
 
 func (d denyListProvider) Get() []string {
+	_, err := d.File.Seek(0, io.SeekStart)
+	if err != nil {
+		logrus.Errorf("cannot seek %s file: %s", denyListFileName, err.Error())
+	}
+
 	fileLines := []string{}
 
 	for d.Scanner.Scan() {
