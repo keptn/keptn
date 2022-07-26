@@ -13,7 +13,6 @@ import (
 )
 
 type IDebugHandler interface {
-	GetAllProjects(context *gin.Context)
 	GetSequenceByID(context *gin.Context)
 	GetAllSequencesForProject(context *gin.Context)
 	GetAllEvents(context *gin.Context)
@@ -30,46 +29,6 @@ func NewDebugHandler(debugManager IDebugManager) *DebugHandler {
 	}
 }
 
-// GetAllProjects godoc
-// @Summary      Get all keptn projects
-// @Description  Get all keptn projects
-// @Tags         Project
-// @Success      200                  {object}  []apimodels.ExpandedProject     "ok"
-// @Failure      400                  {object}  models.Error                    "Bad Request"
-// @Failure      500                  {object}  models.Error                    "Internal error"
-// @Router       /debug/project [get]
-func (dh *DebugHandler) GetAllProjects(c *gin.Context) {
-	params := &models.GetProjectParams{}
-
-	projects, err := dh.DebugManager.GetAllProjects()
-
-	if err != nil {
-		SetInternalServerErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
-		return
-	}
-
-	sort.Slice(projects, func(i, j int) bool {
-		return projects[i].ProjectName < projects[j].ProjectName
-	})
-
-	var payload = &apimodels.ExpandedProjects{
-		PageSize:    0,
-		NextPageKey: "0",
-		TotalCount:  0,
-		Projects:    []*apimodels.ExpandedProject{},
-	}
-
-	paginationInfo := common.Paginate(len(projects), params.PageSize, params.NextPageKey)
-	totalCount := len(projects)
-	if paginationInfo.NextPageKey < int64(totalCount) {
-		payload.Projects = append(payload.Projects, projects[paginationInfo.NextPageKey:paginationInfo.EndIndex]...)
-	}
-
-	payload.TotalCount = float64(totalCount)
-	payload.NextPageKey = paginationInfo.NewNextPageKey
-	c.JSON(http.StatusOK, payload)
-}
-
 // GetAllSequencesForProject godoc
 // @Summary      Get all sequences for specific project
 // @Description  Get all the sequences which are present in a project
@@ -79,7 +38,7 @@ func (dh *DebugHandler) GetAllProjects(c *gin.Context) {
 // @Failure      400                  {object}  models.Error              "Bad Request"
 // @Failure      404                  {object}  models.Error              "not found"
 // @Failure      500                  {object}  models.Error              "Internal error"
-// @Router       /debug/project/{project} [get]
+// @Router       /sequence/project/{project} [get]
 func (dh *DebugHandler) GetAllSequencesForProject(c *gin.Context) {
 	projectName := c.Param("project")
 	payload, err := dh.DebugManager.GetAllSequencesForProject(projectName)
@@ -90,7 +49,7 @@ func (dh *DebugHandler) GetAllSequencesForProject(c *gin.Context) {
 			return
 		}
 
-		SetInternalServerErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetInternalServerErrorResponse(c, fmt.Sprintf(UnexpectedErrorFormatMsg, err.Error()))
 		return
 	}
 
@@ -107,7 +66,7 @@ func (dh *DebugHandler) GetAllSequencesForProject(c *gin.Context) {
 // @Failure      400                  {object}  models.Error              "Bad Request"
 // @Failure      404                  {object}  models.Error              "not found"
 // @Failure      500                  {object}  models.Error              "Internal error"
-// @Router       /debug/project/{project}/shkeptncontext/{shkeptncontext} [get]
+// @Router       /sequence/project/{project}/shkeptncontext/{shkeptncontext} [get]
 func (dh *DebugHandler) GetSequenceByID(c *gin.Context) {
 	shkeptncontext := c.Param("shkeptncontext")
 	projectName := c.Param("project")
@@ -124,7 +83,7 @@ func (dh *DebugHandler) GetSequenceByID(c *gin.Context) {
 			return
 		}
 
-		SetInternalServerErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetInternalServerErrorResponse(c, fmt.Sprintf(UnexpectedErrorFormatMsg, err.Error()))
 		return
 	}
 
@@ -141,7 +100,7 @@ func (dh *DebugHandler) GetSequenceByID(c *gin.Context) {
 // @Failure      400                  {object}  models.Error                       "Bad Request"
 // @Failure      404                  {object}  models.Error                       "not found"
 // @Failure      500                  {object}  models.Error                       "Internal error"
-// @Router       /debug/project/{project}/shkeptncontext/{shkeptncontext}/event [get]
+// @Router       /sequence/project/{project}/shkeptncontext/{shkeptncontext}/event [get]
 func (dh *DebugHandler) GetAllEvents(c *gin.Context) {
 	shkeptncontext := c.Param("shkeptncontext")
 	projectName := c.Param("project")
@@ -159,7 +118,7 @@ func (dh *DebugHandler) GetAllEvents(c *gin.Context) {
 			return
 		}
 
-		SetInternalServerErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetInternalServerErrorResponse(c, fmt.Sprintf(UnexpectedErrorFormatMsg, err.Error()))
 		return
 	}
 
@@ -188,7 +147,7 @@ func (dh *DebugHandler) GetAllEvents(c *gin.Context) {
 // @Failure      400                  {object}  models.Error                       "Bad Request"
 // @Failure      404                  {object}  models.Error                       "not found"
 // @Failure      500                  {object}  models.Error                       "Internal error"
-// @Router       /debug/project/{project}/shkeptncontext/{shkeptncontext}/event/{eventId} [get]
+// @Router       /sequence/project/{project}/shkeptncontext/{shkeptncontext}/event/{eventId} [get]
 func (dh *DebugHandler) GetEventByID(c *gin.Context) {
 
 	shkeptncontext := c.Param("shkeptncontext")
@@ -213,7 +172,7 @@ func (dh *DebugHandler) GetEventByID(c *gin.Context) {
 			return
 		}
 
-		SetInternalServerErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetInternalServerErrorResponse(c, fmt.Sprintf(UnexpectedErrorFormatMsg, err.Error()))
 		return
 	}
 

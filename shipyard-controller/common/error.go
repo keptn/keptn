@@ -41,6 +41,8 @@ var ErrInternalError = errors.New("internal server error")
 
 var InvalidRequestFormatMsg = "Invalid request format: %s"
 
+var UnexpectedErrorFormatMsg = "Unexpected error: %s"
+
 var UnableRetrieveLogsMsg = "Unable to retrieve logs: %s"
 
 var ProjectNotFoundMsg = "Project not found: %s"

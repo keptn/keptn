@@ -6,11 +6,12 @@ import (
 )
 
 type DebugController struct {
-	DebugHandler handler.IDebugHandler
+	DebugHandler   handler.IDebugHandler
+	ProjectHandler handler.IProjectHandler
 }
 
-func NewDebugController(debugHandler handler.IDebugHandler) Controller {
-	return &DebugController{DebugHandler: debugHandler}
+func NewDebugController(debugHandler handler.IDebugHandler, projectHandler handler.IProjectHandler) Controller {
+	return &DebugController{DebugHandler: debugHandler, ProjectHandler: projectHandler}
 }
 
 func (controller DebugController) Inject(apiGroup *gin.RouterGroup) {
@@ -22,7 +23,7 @@ func (controller DebugController) Inject(apiGroup *gin.RouterGroup) {
 
 	seq := apiGroup.Group("/sequence")
 	{
-		seq.GET("/project", controller.DebugHandler.GetAllProjects)
+		seq.GET("/project", controller.ProjectHandler.GetAllProjects)
 		seq.GET("/project/:project", controller.DebugHandler.GetAllSequencesForProject)
 		seq.GET("/project/:project/shkeptncontext/:shkeptncontext", controller.DebugHandler.GetSequenceByID)
 		seq.GET("/project/:project/shkeptncontext/:shkeptncontext/event", controller.DebugHandler.GetAllEvents)
