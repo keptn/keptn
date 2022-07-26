@@ -27,6 +27,7 @@ func NewDenyListProvider() DenyListProvider {
 	if err != nil {
 		logrus.Errorf("cannot open keptn-git-config file %s", err.Error())
 	}
+	defer gitConfigFile.Close()
 	return denyListProvider{
 		Scanner: bufio.NewScanner(gitConfigFile),
 	}
