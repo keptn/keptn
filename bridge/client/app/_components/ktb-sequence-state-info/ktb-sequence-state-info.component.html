@@ -8,6 +8,7 @@
       [class.error]="info.faulty"
       [class.highlight]="info.pendingApproval"
       [class.aborted]="info.aborted"
+      [attr.uitestid]="'dt-icon-' + info.icon"
     ></dt-icon>
     <ng-template #showLoading>
       <button class="m-0 p-0" dt-button disabled variant="nested" *ngIf="info.loading && !info.waiting">

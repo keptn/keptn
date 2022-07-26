@@ -11,5 +11,6 @@ export const EVENT_ICONS: { [key: string]: DtIconType } = {
   release: 'hops',
   approval: 'unknown',
   waiting: 'idle',
+  pause: 'pause',
   default: 'information',
 };

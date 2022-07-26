@@ -159,6 +159,24 @@
       ]
     },
     {
+      "name": "delivery",
+      "service": "carts",
+      "project": "sockshop",
+      "time": "2021-07-15T11:58:51.729Z",
+      "shkeptncontext": "e28592c6-d857-44fe-aea6-e65de02929bf",
+      "state": "paused",
+      "stages": [
+        {
+          "name": "dev",
+          "image": "docker.io/keptnexamples/carts:0.12.3",
+          "latestEvaluation": {
+            "result": "pass",
+            "score": 0
+          }
+        }
+      ]
+    },
+    {
       "name": "delivery-direct",
       "service": "carts-db",
       "project": "sockshop",

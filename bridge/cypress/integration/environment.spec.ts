@@ -65,6 +65,10 @@ describe('Environment Screen default requests', () => {
     environmentPage.clickFilterType('staging', 'evaluation');
     cy.location('href').should('include', `/project/${project}/environment/stage/staging?filterType=evaluation`);
   });
+
+  it('should show pause icon if sequence is paused', () => {
+    environmentPage.assertPauseIconShown('staging', 'carts-db');
+  });
 });
 
 describe('Environment Screen Navigation', () => {
