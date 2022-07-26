@@ -1,11 +1,9 @@
 package cmd
 
 import (
-	"encoding/base64"
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"strings"
+	"github.com/keptn/keptn/cli/internal/projectcreator"
 	"time"
 
 	"github.com/keptn/keptn/cli/internal"
@@ -15,7 +13,6 @@ import (
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 
-	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/spf13/cobra"
 )
 
@@ -100,132 +97,50 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-r
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
+		logging.PrintLog("Starting to create project", logging.InfoLevel)
 
+		// getting Keptn endpoint and token
+		endPoint, apiToken, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
+		if err != nil {
+			return errors.New(authErrorMsg)
+		}
+
+		// loading shipyard file from specified location
 		shipyard, err := retrieveShipyard(*createProjectParams.Shipyard)
 		if err != nil {
 			return fmt.Errorf("Failed to read and parse shipyard file - %s", err.Error())
 		}
 
-		if err := checkGitCredentials(); err != nil {
-			return err
-		}
-
-		endPoint, apiToken, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
-		if err != nil {
-			return errors.New(authErrorMsg)
-		}
-		logging.PrintLog("Starting to create project", logging.InfoLevel)
-
-		encodedShipyardContent := base64.StdEncoding.EncodeToString(shipyard)
-		project := apimodels.CreateProject{
-			Name:     &args[0],
-			Shipyard: &encodedShipyardContent,
-		}
-
-		if isStringFlagSet(createProjectParams.GitUser) && isStringFlagSet(createProjectParams.RemoteURL) {
-			if isStringFlagNotSet(createProjectParams.GitToken) && isStringFlagNotSet(createProjectParams.GitPrivateKey) {
-				return errors.New("Access token or private key must be set")
-			}
-
-			if isStringFlagSet(createProjectParams.GitToken) && isStringFlagSet(createProjectParams.GitPrivateKey) {
-				return errors.New("Access token and private key cannot be set together")
-			}
-
-			if isStringFlagSet(createProjectParams.GitProxyURL) && strings.HasPrefix(*createProjectParams.RemoteURL, "ssh://") {
-				return errors.New("Proxy cannot be set with SSH")
-			}
-
-			if isStringFlagSet(createProjectParams.GitProxyURL) && isStringFlagNotSet(createProjectParams.GitProxyScheme) {
-				return errors.New("Proxy cannot be set without scheme")
-			}
-
-			project.GitCredentials = &apimodels.GitAuthCredentials{
-				User:      *createProjectParams.GitUser,
-				RemoteURL: *createProjectParams.RemoteURL,
-			}
-
-			if strings.HasPrefix(*createProjectParams.RemoteURL, "ssh://") {
-				content, err := ioutil.ReadFile(*createProjectParams.GitPrivateKey)
-				if err != nil {
-					return fmt.Errorf("unable to read privateKey file: %s\n", err.Error())
-				}
-
-				sshCredentials := apimodels.SshGitAuth{
-					PrivateKey:     base64.StdEncoding.EncodeToString(content),
-					PrivateKeyPass: *createProjectParams.GitPrivateKeyPass,
-				}
-
-				project.GitCredentials.SshAuth = &sshCredentials
-			} else if strings.HasPrefix(*createProjectParams.RemoteURL, "http") {
-				httpCredentials := apimodels.HttpsGitAuth{
-					Token:           *createProjectParams.GitToken,
-					InsecureSkipTLS: *createProjectParams.InsecureSkipTLS,
-				}
-
-				if isStringFlagSet(createProjectParams.GitProxyURL) {
-					proxyCredentials := apimodels.ProxyGitAuth{
-						URL:      *createProjectParams.GitProxyURL,
-						Scheme:   *createProjectParams.GitProxyScheme,
-						User:     *createProjectParams.GitProxyUser,
-						Password: *createProjectParams.GitProxyPassword,
-					}
-					httpCredentials.Proxy = &proxyCredentials
-				}
-
-				if isStringFlagSet(createProjectParams.GitPemCertificate) {
-					content, err := ioutil.ReadFile(*createProjectParams.GitPemCertificate)
-					if err != nil {
-						return fmt.Errorf("unable to read PEM Certificate file: %s\n", err.Error())
-					}
-
-					httpCredentials.Certificate = base64.StdEncoding.EncodeToString(content)
-				}
-				project.GitCredentials.HttpsAuth = &httpCredentials
-			}
-		}
-
+		// getting API set
 		api, err := internal.APIProvider(endPoint.String(), apiToken)
 		if err != nil {
 			return internal.OnAPIError(err)
 		}
 
-		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
-
-		if !mocking {
-			_, err := api.APIV1().CreateProject(project)
-			if err != nil {
-				return fmt.Errorf("Create project was unsuccessful.\n%s", *err.Message)
-			}
-
-			logging.PrintLog("Project created successfully", logging.InfoLevel)
-
-			return nil
+		// creating project using project creator
+		projectCreator := projectcreator.New(api.APIV1(), func(string) ([]byte, error) { return shipyard, nil }, fileOpener{})
+		projectInfo := projectcreator.ProjectInfo{
+			Name:              args[0],
+			Shipyard:          *createProjectParams.Shipyard,
+			GitUser:           *createProjectParams.GitUser,
+			GitToken:          *createProjectParams.GitToken,
+			RemoteURL:         *createProjectParams.RemoteURL,
+			GitPrivateKey:     *createProjectParams.GitPrivateKey,
+			GitPrivateKeyPass: *createProjectParams.GitPrivateKeyPass,
+			GitProxyURL:       *createProjectParams.GitProxyURL,
+			GitProxyScheme:    *createProjectParams.GitProxyScheme,
+			GitProxyUser:      *createProjectParams.GitProxyUser,
+			GitProxyPassword:  *createProjectParams.GitProxyPassword,
+			GitPemCertificate: *createProjectParams.GitPemCertificate,
+			InsecureSkipTLS:   *createProjectParams.InsecureSkipTLS,
 		}
+		err = projectCreator.CreateProject(projectInfo)
 
-		fmt.Println("Skipping create project due to mocking flag set to true")
+		if err != nil {
+			return err
+		}
 		return nil
 	},
-}
-
-func checkGitCredentials() error {
-	if isStringFlagNotSet(createProjectParams.GitToken) && isStringFlagNotSet(createProjectParams.RemoteURL) {
-		fmt.Println(gitMissingUpstream)
-		return nil
-	}
-
-	if isStringFlagSet(createProjectParams.GitToken) && isStringFlagSet(createProjectParams.GitPrivateKey) {
-		return errors.New("Access token or private key cannot be set together")
-	}
-
-	if isStringFlagSet(createProjectParams.GitUser) && isStringFlagSet(createProjectParams.RemoteURL) {
-		return nil
-	}
-
-	if isStringFlagSet(createProjectParams.GitToken) && isStringFlagNotSet(createProjectParams.RemoteURL) {
-		return errors.New(gitErrMsg)
-	}
-
-	return nil
 }
 
 func retrieveShipyard(location string) ([]byte, error) {
