@@ -28,6 +28,8 @@ jobs:
         run: |
           VERSION=$(cat './VERSION.txt')
           cd ./installer/manifests/keptn
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo add nats https://nats-io.github.io/k8s/helm/charts/
           helm dependency build ./
           # replace "appVersion: latest" with "appVersion: $VERSION" in all Chart.yaml files
           find . -name Chart.yaml -exec sed -i -- "s/appVersion: latest/appVersion: ${VERSION}/g" {} \;
