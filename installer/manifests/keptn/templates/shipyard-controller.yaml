@@ -141,4 +141,4 @@ metadata:
   labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: shipyard-controller
 data:
-  denyList: |-
+  git-remote-url-denylist: |-

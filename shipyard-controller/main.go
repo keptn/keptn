@@ -167,7 +167,7 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 	apiV1 := engine.Group("/v1")
 	apiHealth := engine.Group("")
 
-	gitConfigFile, err := os.Open("/keptn-git-config/denyList")
+	gitConfigFile, err := os.Open("/keptn-git-config/git-remote-url-denylist")
 	if err != nil {
 		log.WithError(err).Error("could not open keptn-git-config file")
 	}
