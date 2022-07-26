@@ -24,8 +24,8 @@ spec:
       containers:
         - name: shipyard-controller
           volumeMounts:
-          - name: keptn-git-config-volume
-            mountPath: /keptn-git-config
+            - name: keptn-git-config-volume
+              mountPath: /keptn-git-config
           image: {{ include "keptn.common.images.image" ( dict "imageRoot" .Values.shipyardController.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote }}
           lifecycle:
             preStop:
@@ -109,12 +109,13 @@ spec:
         {{- include "keptn.common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
         {{- end }}
       terminationGracePeriodSeconds: {{ .Values.shipyardController.gracePeriod | default 60 }}
-      {{- include "keptn.nodeSelector" (dict "value" .Values.shipyardController.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
-      {{- if .Values.shipyardController.extraVolumes }}
       volumes:
         - name: keptn-git-config-volume
           configMap:
             name: keptn-git-config
+      {{- include "keptn.nodeSelector" (dict "value" .Values.shipyardController.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
+      {{- if .Values.shipyardController.extraVolumes }}
+      volumes:
       {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.shipyardController.extraVolumes "context" $) | nindent 8 }}
       {{- end }}
 ---
