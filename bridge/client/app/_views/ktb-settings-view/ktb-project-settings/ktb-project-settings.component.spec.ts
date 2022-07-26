@@ -2,7 +2,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
+import { BehaviorSubject, of, throwError } from 'rxjs';
 import { PendingChangesGuard } from '../../../_guards/pending-changes.guard';
 import { ApiService } from '../../../_services/api.service';
 import { ApiServiceMock } from '../../../_services/api.service.mock';
@@ -327,26 +327,6 @@ describe('KtbProjectSettingsComponent update', () => {
     const notifications = document.getElementsByTagName('dt-confirmation-dialog-state');
     expect(component.unsavedDialogState).toBeNull();
     expect(notifications.length).toEqual(0);
-  });
-
-  it('should not allow navigation for unsaved changes', () => {
-    // given
-    const spy = jest.spyOn(component.canDeactivate(), 'subscribe');
-
-    // when
-    component.updateGitDataExtended({
-      user: 'someUser',
-      remoteURL: 'someUri',
-      https: {
-        token: 'someToken',
-        insecureSkipTLS: false,
-      },
-    });
-    fixture.detectChanges();
-
-    // then
-    expect(component.canDeactivate() instanceof Observable).toEqual(true);
-    expect(spy).not.toHaveBeenCalled();
   });
 
   it('should show a dialog when showNotification is called', () => {
