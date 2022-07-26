@@ -299,6 +299,10 @@ func TestUniformIntegrationHandler_RegisterMergeIntegrationInstances(t *testing.
 							ID:    "123",
 							Event: "some-event.triggered",
 						},
+						{
+							ID:    "456",
+							Event: "other-event.triggered",
+						},
 					},
 				},
 				{

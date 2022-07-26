@@ -506,12 +506,9 @@ func (rh *UniformIntegrationHandler) GetSubscriptions(c *gin.Context) {
 
 func (rh *UniformIntegrationHandler) mergeIntegrationSubscriptions(integrations []apimodels.Integration) (*apimodels.Integration, error) {
 	// first, determine the target integration - i.e. the one which was seen most recently
-	targetIntegration := integrations[0]
-
-	for _, integration := range integrations {
-		if integration.MetaData.LastSeen.After(targetIntegration.MetaData.LastSeen) {
-			targetIntegration = integration
-		}
+	targetIntegration, err := getMostRecentIntegration(integrations)
+	if err != nil {
+		return nil, err
 	}
 
 	// put the subscriptions of the outdated integrations into the target integration
@@ -519,27 +516,51 @@ func (rh *UniformIntegrationHandler) mergeIntegrationSubscriptions(integrations 
 	updateSubscriptions := false
 	for _, integration := range integrations {
 		if len(integration.Subscriptions) > 0 && integration.ID != targetIntegration.ID {
-			for _, sub := range integration.Subscriptions {
-				skipSubscription := false
-				for _, existingSubscription := range targetIntegration.Subscriptions {
-					// if the subscription is already present, we don't add it
-					if existingSubscription.ID == sub.ID {
-						skipSubscription = true
-						break
-					}
-				}
-				if skipSubscription {
-					continue
-				}
+			subscriptionsAdded := false
+			targetIntegration.Subscriptions, subscriptionsAdded = adoptSubscriptions(targetIntegration.Subscriptions, integration.Subscriptions)
+			if subscriptionsAdded {
 				updateSubscriptions = true
-				targetIntegration.Subscriptions = append(targetIntegration.Subscriptions, integration.Subscriptions...)
 			}
 		}
 	}
 
 	if updateSubscriptions {
-		if err := rh.uniformRepo.CreateOrUpdateUniformIntegration(targetIntegration); err != nil {
+		if err := rh.uniformRepo.CreateOrUpdateUniformIntegration(*targetIntegration); err != nil {
 			return nil, err
+		}
+	}
+	return targetIntegration, nil
+}
+
+func adoptSubscriptions(target []apimodels.EventSubscription, subscriptions []apimodels.EventSubscription) ([]apimodels.EventSubscription, bool) {
+	addedSubscription := false
+	for _, sub := range subscriptions {
+		skipSubscription := false
+		for _, existingSubscription := range target {
+			// if the subscription is already present, we don't add it
+			if existingSubscription.ID == sub.ID {
+				skipSubscription = true
+				break
+			}
+		}
+		if skipSubscription {
+			continue
+		}
+		addedSubscription = true
+		target = append(target, sub)
+	}
+	return target, addedSubscription
+}
+
+func getMostRecentIntegration(integrations []apimodels.Integration) (*apimodels.Integration, error) {
+	if len(integrations) == 0 {
+		return nil, errors.New("list of integrations is empty")
+	}
+	targetIntegration := integrations[0]
+
+	for _, integration := range integrations {
+		if integration.MetaData.LastSeen.After(targetIntegration.MetaData.LastSeen) {
+			targetIntegration = integration
 		}
 	}
 	return &targetIntegration, nil
