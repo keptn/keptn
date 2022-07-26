@@ -86,6 +86,11 @@ func (kae *KeptnAPIExecutor) registerEndpoints(kep KeptnEndpointProvider) {
 		},
 		endpoint: kep.GetSecretsServiceEndpoint(),
 	}
+
+	kae.endpointMappings["keptn-api-v1-uniform-create-webhook-subscription"] = &defaultEndpointHandler{
+		requestFactory: NewWebhookSubscriptionHandler(NewKeptnIntegrationIdRetriever(kep)),
+		endpoint:       kep.GetControlPlaneEndpoint(),
+	}
 }
 
 func (kae *KeptnAPIExecutor) ExecuteAPI(ate model.APITaskExecution) (any, error) {
