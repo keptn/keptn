@@ -923,9 +923,7 @@ func TestImportPackageProcessor_Process_ErrorMalformedTasks(t *testing.T) {
 					},
 				}
 
-				fmt.Println("Calling process")
 				err := sut.Process("test-project", importPackageMock)
-				fmt.Println(err)
 				assert.Error(t, err)
 				assert.ErrorContains(t, err, fmt.Sprintf("empty %s definition not supported", tt.task.Type))
 			},
@@ -1334,10 +1332,9 @@ func TestPackageValidationIdAlphaNumeric(t *testing.T) {
 		expectError        bool
 	}{
 		{
-			name:               "valid id",
-			manifest:           manifests[0],
-			expectedErrMessage: "<nil>",
-			expectError:        false,
+			name:        "valid id",
+			manifest:    manifests[0],
+			expectError: false,
 		},
 		{
 			name:               "containing invalid dash",
