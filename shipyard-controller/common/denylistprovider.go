@@ -26,11 +26,11 @@ func NewDenyListProvider(scanner FileScanner) DenyListProvider {
 
 func (d denyListProvider) Get() []string {
 	fileLines := []string{}
-	// d.Scanner.Split(bufio.ScanLines)
+	d.Scanner.Split(bufio.ScanLines)
 
-	// for d.Scanner.Scan() {
-	// 	fileLines = append(fileLines, d.Scanner.Text())
-	// }
+	for d.Scanner.Scan() {
+		fileLines = append(fileLines, d.Scanner.Text())
+	}
 
 	return removeEmptyStrings(fileLines)
 }
