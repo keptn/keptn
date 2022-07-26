@@ -5,7 +5,3 @@ global:
 shipyardController:
   gracePeriod: 10
   preStopHookTime: 5
-
-nats:
-  cluster:
-    replicas: 1
