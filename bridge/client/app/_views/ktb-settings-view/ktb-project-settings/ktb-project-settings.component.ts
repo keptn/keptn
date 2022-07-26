@@ -9,7 +9,6 @@ import { IGitDataExtended } from 'shared/interfaces/project';
 import { IClientFeatureFlags } from '../../../../../shared/interfaces/feature-flags';
 import { PendingChangesComponent } from '../../../_guards/pending-changes.guard';
 import { DeleteData, DeleteResult, DeleteType } from '../../../_interfaces/delete';
-import { IMetadata } from '../../../_interfaces/metadata';
 import { KeptnInfo } from '../../../_models/keptn-info';
 import { NotificationType } from '../../../_models/notification';
 import { Project } from '../../../_models/project';
@@ -97,27 +96,14 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
   public projectCreated$: Observable<boolean> = this.route.queryParams.pipe(map((queryParams) => queryParams.created));
 
   readonly state$: Observable<ProjectSettingsState> = combineLatest([
-    this.dataService.keptnInfo,
+    this.dataService.keptnInfo.pipe(filter((info): info is KeptnInfo => !!info)),
     this.dataService.keptnMetadata,
-    this.projectName$,
+    this.projectName$.pipe(map((projectName) => projectName ?? undefined)),
     this.resourceServiceEnabled$,
     this.gitInputDataExtended$,
     this.projectNames$,
     this.projectCreated$,
   ]).pipe(
-    filter(
-      (
-        info
-      ): info is [
-        KeptnInfo,
-        IMetadata | undefined | null,
-        string,
-        boolean,
-        IGitDataExtended | undefined,
-        string[] | undefined,
-        boolean
-      ] => !!info[0]
-    ),
     map(
       ([
         keptnInfo,
