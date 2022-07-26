@@ -2,6 +2,9 @@ package common
 
 import (
 	"bufio"
+	"os"
+
+	"github.com/sirupsen/logrus"
 )
 
 type DenyListProvider interface {
@@ -18,9 +21,15 @@ type FileScanner interface {
 	Text() string
 }
 
-func NewDenyListProvider(scanner FileScanner) DenyListProvider {
+const denyListFileName = "/keptn-git-config/git-remote-url-denylist"
+
+func NewDenyListProvider() DenyListProvider {
+	gitConfigFile, err := os.Open(denyListFileName)
+	if err != nil {
+		logrus.Errorf("cannot open keptn-git-config file %s", err.Error())
+	}
 	return denyListProvider{
-		Scanner: scanner,
+		Scanner: bufio.NewScanner(gitConfigFile),
 	}
 }
 

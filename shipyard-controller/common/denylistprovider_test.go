@@ -33,7 +33,9 @@ func Test_DenyListProvider(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run("", func(t *testing.T) {
-			provider := NewDenyListProvider(bufio.NewScanner(strings.NewReader(tt.input)))
+			provider := denyListProvider{
+				Scanner: bufio.NewScanner(strings.NewReader(tt.input)),
+			}
 			res := provider.Get()
 			require.Equal(t, tt.result, res)
 		})

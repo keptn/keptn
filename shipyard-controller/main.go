@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"context"
 	"io/ioutil"
 	"net/http"
@@ -167,12 +166,7 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 	apiV1 := engine.Group("/v1")
 	apiHealth := engine.Group("")
 
-	gitConfigFile, err := os.Open("/keptn-git-config/git-remote-url-denylist")
-	if err != nil {
-		log.WithError(err).Error("could not open keptn-git-config file")
-	}
-
-	denyListProvider := common.NewDenyListProvider(bufio.NewScanner(gitConfigFile))
+	denyListProvider := common.NewDenyListProvider()
 	remoteURLValidator := handler.NewRemoteURLValidator(denyListProvider)
 
 	projectService := handler.NewProjectHandler(projectManager, eventSender, env, repositoryProvisioner, remoteURLValidator)
