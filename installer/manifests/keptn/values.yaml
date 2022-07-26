@@ -59,6 +59,7 @@ features:
   oauth:
     enabled: false
     prefix: "keptn:"
+  gitRemoteURLDenyList: ""
 
 nats:
   nameOverride: keptn-nats
