@@ -117,6 +117,17 @@ class EnvironmentPage {
     cy.location('pathname').should('eq', `/project/${project}/environment/stage/${stage}`);
     return this;
   }
+
+  public assertPauseIconShown(stage: string, service: string): this {
+    cy.get('ktb-selectable-tile h2')
+      .contains(stage)
+      .parentsUntil('ktb-selectable-tile')
+      .find('ktb-services-list')
+      .contains(service)
+      .parentsUntil('dt-table')
+      .assertDtIcon('pause');
+    return this;
+  }
 }
 
 export default EnvironmentPage;

@@ -50,6 +50,14 @@ function getStatusText(
   return status;
 }
 
+function getIcon(state: SequenceState | undefined, stage: SequenceStage): DtIconType {
+  if (state === SequenceState.PAUSED) return EVENT_ICONS.pause;
+
+  return stage?.latestEvent?.type
+    ? EVENT_ICONS[getShortType(stage?.latestEvent?.type)] || EVENT_ICONS.default
+    : EVENT_ICONS.default;
+}
+
 export function isSequenceStarted(state: SequenceState): boolean {
   return startedStates.includes(state);
 }
@@ -76,9 +84,7 @@ export function createSequenceStateInfo(sequence: ISequence, stageName?: string)
   const warning = !faulty && stages.some((s) => s.latestEvaluation?.result === ResultTypes.WARNING);
   const successful = finished && !faulty && !warning && !aborted;
   const pendingApproval = stages.some((s) => pendingApprovalTypes.includes(s.latestEvent?.type as EventTypes));
-  const icon = latestStage?.latestEvent?.type
-    ? EVENT_ICONS[getShortType(latestStage?.latestEvent?.type)] || EVENT_ICONS.default
-    : EVENT_ICONS.default;
+  const icon = getIcon(state, latestStage);
   const steady = (!waiting && !loading) || pendingApproval;
   const statusText = getStatusText(sequence.state, { successful, faulty, waiting, aborted, timedOut });
   const evaluation = stage?.latestEvaluation;
@@ -275,6 +281,7 @@ export class Sequence implements ISequence {
 
   public getIcon(stageName?: string): DtIconType {
     const stage = stageName ? this.getStage(stageName) : this.stages[this.stages.length - 1];
+    if (this.isPaused()) return EVENT_ICONS.pause;
     return stage?.latestEvent?.type
       ? EVENT_ICONS[Sequence.getShortType(stage?.latestEvent?.type)] || EVENT_ICONS.default
       : EVENT_ICONS.default;
