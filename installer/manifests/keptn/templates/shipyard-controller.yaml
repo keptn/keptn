@@ -142,4 +142,4 @@ metadata:
     app.kubernetes.io/name: shipyard-controller
 data:
   git-remote-url-denylist: |-
-    {{ .Values.features.gitRemoteURLDenyList | default "" }}
+{{ .Values.features.gitRemoteURLDenyList | default "" | indent 4 }}
