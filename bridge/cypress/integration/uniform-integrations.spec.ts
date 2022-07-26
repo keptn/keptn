@@ -439,10 +439,11 @@ describe('Add secret from webhook subscriptions', () => {
   it('should navigate to secret creation and have keptn-webhook-service preselected', () => {
     uniformPage.visitAdd(webhookID, true);
     interceptSecrets();
-    uniformPage.createSecret();
-    cy.location('pathname').should('eq', `/project/sockshop/settings/uniform/secrets/add`);
-    cy.location('search').should('eq', '?scope=keptn-webhook-service');
-    cy.byTestId('keptn-secret-scope-input').should('have.text', 'keptn-webhook-service');
+    uniformPage
+      .createSecret()
+      .isAddSecretLink()
+      .assertSecretScopeQueryParam('keptn-webhook-service')
+      .assertSecretScope('keptn-webhook-service');
   });
 });
 

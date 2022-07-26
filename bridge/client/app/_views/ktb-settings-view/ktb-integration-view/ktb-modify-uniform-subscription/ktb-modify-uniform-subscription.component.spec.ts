@@ -338,7 +338,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     // given
 
     // when
-    component.webhookFormTouched = true;
+    component.webhookFormDirty = true;
     fixture.detectChanges();
 
     // then
@@ -347,7 +347,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
 
   it('should show a dialog when showNotification is called', () => {
     // given
-    component.webhookFormTouched = true;
+    component.webhookFormDirty = true;
     fixture.detectChanges();
 
     // when
@@ -366,7 +366,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
 
   it('should not show dialog when the notification was closed', () => {
     // given
-    component.webhookFormTouched = true;
+    component.webhookFormDirty = true;
     fixture.detectChanges();
 
     // given

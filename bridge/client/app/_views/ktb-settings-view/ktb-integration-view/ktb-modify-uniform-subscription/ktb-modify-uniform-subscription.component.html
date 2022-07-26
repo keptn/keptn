@@ -92,6 +92,7 @@
           [eventPayload]="eventPayload"
           [eventType]="taskSuffixControl.value"
           (validityChanged)="webhookFormValidityChanged($event)"
+          (webhookFormDirty)="webhookFormDirty = $event"
         ></ktb-webhook-settings>
         <div>
           <button

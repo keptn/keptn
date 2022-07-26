@@ -52,7 +52,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
   private _previousFilter?: PreviousWebhookConfig;
   public uniformRegistration?: UniformRegistration;
   public isWebhookFormValid = true;
-  public webhookFormTouched = false;
+  public webhookFormDirty = false;
   public isWebhookService = false;
   public suffixes: { value: string; displayValue: string }[] = [
     {
@@ -77,7 +77,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
   private pendingChangesSubject = new Subject<boolean>();
   public message = 'You have pending changes. Are you sure you want to leave this page?';
   public unsavedDialogState: null | 'unsaved' = null;
-  private overrideChangeGuard = false;
+  private isFilterDirty = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -215,7 +215,6 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
         };
       }),
       tap((data) => {
-        this.webhookFormTouched = true;
         this.updateDataSource(data.project, data.subscription);
       })
     );
@@ -302,7 +301,9 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
       () => {
         this.updating = false;
         this.notificationsService.addNotification(NotificationType.SUCCESS, 'Subscription successfully created!');
-        this.overrideChangeGuard = true;
+        this.subscriptionForm.reset();
+        this.webhookFormDirty = false;
+        this.isFilterDirty = false;
         this.router.navigate(['/', 'project', projectName, 'settings', 'uniform', 'integrations', integrationId]);
       },
       () => {
@@ -326,6 +327,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
   }
 
   public subscriptionFilterChanged(subscription: UniformSubscription, projectName: string): void {
+    this.isFilterDirty = !!subscription.filter.stages?.length || !!subscription.filter.services?.length;
     this.updateIsGlobalCheckbox(subscription);
     this.updateEventPayload(projectName, subscription.filter.stages ?? [], subscription.filter.services ?? []);
   }
@@ -360,7 +362,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
   // @HostListener allows us to also guard against browser refresh, close, etc.
   @HostListener('window:beforeunload', ['$event'])
   public canDeactivate(_$event?: BeforeUnloadEvent): Observable<boolean> {
-    if (!this.overrideChangeGuard && (this.subscriptionForm.touched || this.webhookFormTouched)) {
+    if (this.subscriptionForm.dirty || this.webhookFormDirty || this.isFilterDirty) {
       this.showNotification();
       return this.pendingChangesSubject.asObservable();
     }
