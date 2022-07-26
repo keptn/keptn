@@ -36,6 +36,9 @@ find . -name values.yaml -exec sed -i -- "s/docker.io\/keptn\//docker.io\/${DOCK
 
 mkdir keptn-charts/
 
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo add nats https://nats-io.github.io/k8s/helm/charts/
+
 # ####################
 # COMMON HELM CHART
 # ####################
@@ -60,10 +63,13 @@ charts[jmeter-service]=jmeter-service/chart
 
 for i in "${!charts[@]}"
 do
+  echo "=== Building $i ==="
   BASE_NAME=$i
   BASE_PATH=${charts[$i]}
 
+  echo "::group::Helm dependency build"
   helm dependency build ${BASE_PATH}
+  echo "::endgroup::"
 
   helm package ${BASE_PATH} --app-version "$IMAGE_TAG" --version "$VERSION"
   if [ $? -ne 0 ]; then
