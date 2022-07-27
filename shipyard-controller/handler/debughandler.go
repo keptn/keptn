@@ -33,9 +33,9 @@ func NewDebugHandler(debugManager IDebugManager) *DebugHandler {
 // @Tags         Sequence
 // @Param        project              path      string                    true "The name of the project"
 // @Success      200                  {object}  []models.SequenceState    "ok"
-// @Failure      400                  {object}  models.Error              "Bad Request"
-// @Failure      404                  {object}  models.Error              "not found"
-// @Failure      500                  {object}  models.Error              "Internal error"
+// @Failure      400                  {object}  apimodels.Error              "Bad Request"
+// @Failure      404                  {object}  apimodels.Error              "not found"
+// @Failure      500                  {object}  apimodels.Error              "Internal error"
 // @Router       /sequence/project/{project} [get]
 func (dh *DebugHandler) GetAllSequencesForProject(c *gin.Context) {
 	projectName := c.Param("project")
@@ -61,9 +61,9 @@ func (dh *DebugHandler) GetAllSequencesForProject(c *gin.Context) {
 // @Param        project              path      string                    true  "The name of the project"
 // @Param        shkeptncontext       path      string                    true  "The shkeptncontext"
 // @Success      200                  {object}  models.SequenceState      "ok"
-// @Failure      400                  {object}  models.Error              "Bad Request"
-// @Failure      404                  {object}  models.Error              "not found"
-// @Failure      500                  {object}  models.Error              "Internal error"
+// @Failure      400                  {object}  apimodels.Error              "Bad Request"
+// @Failure      404                  {object}  apimodels.Error              "not found"
+// @Failure      500                  {object}  apimodels.Error              "Internal error"
 // @Router       /sequence/project/{project}/shkeptncontext/{shkeptncontext} [get]
 func (dh *DebugHandler) GetSequenceByID(c *gin.Context) {
 	shkeptncontext := c.Param("shkeptncontext")
@@ -95,9 +95,9 @@ func (dh *DebugHandler) GetSequenceByID(c *gin.Context) {
 // @Param        project              path      string                             true  "The name of the project"
 // @Param        shkeptncontext       path      string                             true  "The shkeptncontext"
 // @Success      200                  {object}  []apimodels.KeptnContextExtendedCE    "ok"
-// @Failure      400                  {object}  models.Error                       "Bad Request"
-// @Failure      404                  {object}  models.Error                       "not found"
-// @Failure      500                  {object}  models.Error                       "Internal error"
+// @Failure      400                  {object}  apimodels.Error                       "Bad Request"
+// @Failure      404                  {object}  apimodels.Error                       "not found"
+// @Failure      500                  {object}  apimodels.Error                       "Internal error"
 // @Router       /sequence/project/{project}/shkeptncontext/{shkeptncontext}/event [get]
 func (dh *DebugHandler) GetAllEvents(c *gin.Context) {
 	shkeptncontext := c.Param("shkeptncontext")
@@ -141,10 +141,10 @@ func (dh *DebugHandler) GetAllEvents(c *gin.Context) {
 // @Param        project              path      string                             true  "The name of the project"
 // @Param        shkeptncontext       path      string                             true  "The shkeptncontext"
 // @Param        eventId              path      string                             true  "The Id of the event"
-// @Success      200                  {object}  models.KeptnContextExtendedCE      "ok"
-// @Failure      400                  {object}  models.Error                       "Bad Request"
-// @Failure      404                  {object}  models.Error                       "not found"
-// @Failure      500                  {object}  models.Error                       "Internal error"
+// @Success      200                  {object}  apimodels.KeptnContextExtendedCE      "ok"
+// @Failure      400                  {object}  apimodels.Error                       "Bad Request"
+// @Failure      404                  {object}  apimodels.Error                       "not found"
+// @Failure      500                  {object}  apimodels.Error                       "Internal error"
 // @Router       /sequence/project/{project}/shkeptncontext/{shkeptncontext}/event/{eventId} [get]
 func (dh *DebugHandler) GetEventByID(c *gin.Context) {
 
