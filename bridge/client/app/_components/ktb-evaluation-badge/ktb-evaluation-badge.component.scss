@@ -28,24 +28,20 @@
     }
   }
 
-  &.highlight {
-    border-color: $approval-color;
-  }
-
   &.border {
     background-color: $gray-200;
     color: black;
 
-    &.success {
-      border: 1px solid $cta-color;
+    &.error {
+      border: 1px solid $error-color;
     }
 
     &.warning {
       border: 1px solid $warning-color;
     }
 
-    &.error {
-      border: 1px solid $error-color;
+    &.success {
+      border: 1px solid $cta-color;
     }
   }
 }
