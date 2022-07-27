@@ -2,10 +2,20 @@
   <ng-container *ngIf="project$ | async as project; else loading">
     <ktb-stage-overview
       fxFlex="70"
-      (selectedStageChange)="stageDetails.selectStage($event)"
+      [project]="project"
+      [selectedStageInfo]="selectedStageInfo"
+      (selectedStageInfoChange)="setSelectedStageInfo(project.projectName, $event)"
       (filteredServicesChange)="stageDetails.filteredServices = $event"
+      [isTriggerSequenceOpen]="!!(isTriggerSequenceOpen$ | async)"
     ></ktb-stage-overview>
-    <ktb-stage-details fxFlex="30" #stageDetails [project]="project"></ktb-stage-details>
+    <ktb-stage-details
+      fxFlex="30"
+      #stageDetails
+      [isQualityGatesOnly]="!!(isQualityGatesOnly$ | async)"
+      [project]="project"
+      [selectedStageInfo]="selectedStageInfo"
+      (selectedStageInfoChange)="setSelectedStageInfo(project.projectName, $event)"
+    ></ktb-stage-details>
   </ng-container>
 </div>
 <ng-template #loading>

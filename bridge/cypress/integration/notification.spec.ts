@@ -39,7 +39,7 @@ describe('Test notifications', () => {
 
   it('should test notification fade out', () => {
     const basePage = new BasePage();
-    cy.visit('/project/dynatrace/settings/services/create').wait('@getApproval');
+    cy.visit('/project/dynatrace/settings/services/create');
     showSuccess();
 
     basePage
@@ -57,7 +57,7 @@ describe('Test notifications', () => {
 
   it('should test notification close', () => {
     const basePage = new BasePage();
-    cy.visit('/project/dynatrace/settings/services/create').wait('@getApproval');
+    cy.visit('/project/dynatrace/settings/services/create');
     showSuccess();
 
     const notification = basePage.notificationSuccessVisible();
@@ -66,7 +66,7 @@ describe('Test notifications', () => {
   });
 
   it('should not show the same notifications', () => {
-    cy.visit('/project/dynatrace/settings/services').wait('@getApproval');
+    cy.visit('/project/dynatrace/settings/services');
     cy.byTestId('keptn-create-service-button').click();
     showSuccess();
     cy.byTestId('keptn-create-service-button').click();

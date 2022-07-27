@@ -1,4 +1,4 @@
-import { Component, Input, NgZone, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, NgZone, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
 import { DtOverlay, DtOverlayConfig, DtOverlayRef } from '@dynatrace/barista-components/overlay';
 import { Trace } from '../../_models/trace';
 import { ResultTypes } from '../../../../shared/models/result-types';
@@ -83,7 +83,12 @@ export class KtbEvaluationInfoComponent implements OnDestroy {
     );
   }
 
-  constructor(private dataService: DataService, private ngZone: NgZone, private _dtOverlay: DtOverlay) {}
+  constructor(
+    private dataService: DataService,
+    private ngZone: NgZone,
+    private _dtOverlay: DtOverlay,
+    private changeDetectorRef_: ChangeDetectorRef
+  ) {}
 
   private fetchEvaluationHistory(): void {
     const evaluation = this.evaluation;
@@ -112,6 +117,7 @@ export class KtbEvaluationInfoComponent implements OnDestroy {
           } else {
             this._evaluationHistory = traces;
           }
+          this.changeDetectorRef_.markForCheck();
         });
     }
   }

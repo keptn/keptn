@@ -1,28 +1,32 @@
 import { ProjectBoardPage } from '../support/pageobjects/ProjectBoardPage';
 import SecretsPage from '../support/pageobjects/SecretsPage';
-import { interceptSecrets } from '../support/intercept';
+import DashboardPage from '../support/pageobjects/DashboardPage';
+import EnvironmentPage from '../support/pageobjects/EnvironmentPage';
 
 describe('Keptn Secrets adding deleting test', () => {
   const basePage = new ProjectBoardPage();
+  const dashboardPage = new DashboardPage();
+  const environmentPage = new EnvironmentPage();
   const secretsPage = new SecretsPage();
-  const DYNATRACE_PROJECT = 'dynatrace';
+  const project = 'sockshop';
 
   beforeEach(() => {
-    interceptSecrets();
+    dashboardPage.intercept();
+    environmentPage.intercept();
+    secretsPage.intercept();
   });
 
   it('should navigate to add secret page', () => {
-    cy.visit('/');
-    cy.wait('@metadataCmpl');
-    basePage.selectProject(DYNATRACE_PROJECT);
+    dashboardPage.visit();
+    basePage.selectProject(project);
     basePage.goToUniformPage().goToSecretsPage();
     secretsPage.clickAddSecret();
-    cy.location('pathname').should('eq', `/project/${DYNATRACE_PROJECT}/settings/uniform/secrets/add`);
+    cy.location('pathname').should('eq', `/project/${project}/settings/uniform/secrets/add`);
   });
 
   it('should add a secret', () => {
     secretsPage
-      .visitCreate(DYNATRACE_PROJECT)
+      .visitCreate(project)
       .setSecret('dynatrace-prod', 'dynatrace-service', 'DT_API_TOKEN', 'secretvalue!@#$%^&*(!@#$%^&*()')
       .assertScopesEnabled(true)
       .createSecret();
@@ -31,20 +35,20 @@ describe('Keptn Secrets adding deleting test', () => {
   it('should delete a secret', () => {
     const SECRET_NAME = 'dynatrace-prod';
 
-    secretsPage.visit(DYNATRACE_PROJECT).deleteSecret(SECRET_NAME).secretExistsInList(SECRET_NAME, 1);
+    secretsPage.visit(project).deleteSecret(SECRET_NAME).secretExistsInList(SECRET_NAME, 1);
   });
 
   it('should have a specific secret in the list', () => {
-    secretsPage.visit(DYNATRACE_PROJECT).assertSecretInList(1, 'dynatrace-prod', 'dynatrace-service', 'DT_API_TOKEN');
+    secretsPage.visit(project).assertSecretInList(1, 'dynatrace-prod', 'dynatrace-service', 'DT_API_TOKEN');
   });
 
   it('should have disabled "remove key-value pair" icon-button if there is only one key-value pair', () => {
-    secretsPage.visitCreate(DYNATRACE_PROJECT).assertKeyValuePairLength(1).assertKeyValuePairEnabled(0, false);
+    secretsPage.visitCreate(project).assertKeyValuePairLength(1).assertKeyValuePairEnabled(0, false);
   });
 
   it('should have enabled "remove key-value pair" icon-button if there is more than one key-value pair', () => {
     secretsPage
-      .visitCreate(DYNATRACE_PROJECT)
+      .visitCreate(project)
       .addKeyValuePair()
       .assertKeyValuePairLength(2)
       .assertKeyValuePairEnabled(0, true)
@@ -60,7 +64,7 @@ describe('Keptn Secrets adding deleting test', () => {
       delay: 10_000,
     });
     secretsPage
-      .visitCreate(DYNATRACE_PROJECT)
+      .visitCreate(project)
       .appendSecretName('my-secret')
       .appendSecretKey(0, 'my-key')
       .appendSecretValue(0, 'my-value')

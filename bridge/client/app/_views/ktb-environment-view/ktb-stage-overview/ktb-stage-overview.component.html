@@ -1,12 +1,12 @@
-<div class="ktb-stage-overview container" fxFlexFill *ngIf="project$ | async as project">
-  <ng-container *ngIf="{ value: selectedStageName$ | async } as selectedStageName">
+<div class="ktb-stage-overview container" fxFlexFill *ngIf="project">
+  <ng-container>
     <div>
       <p><span [textContent]="project.stages.length"></span> Stages</p>
       <dt-filter-field
         class="mb-3"
         [dataSource]="_dataSource"
         [filters]="filter"
-        (filterChanges)="filterChanged(project, $event)"
+        (filterChanges)="filterChanged(project.projectName, $event)"
         label="Filter by service"
         aria-label="Filter by service"
         clearAllLabel="Clear all"
@@ -14,7 +14,7 @@
       <div *ngIf="isTriggerSequenceOpen; else triggerSequenceClosed">
         <ktb-trigger-sequence
           [projectName]="project.projectName"
-          [stage]="selectedStageName.value"
+          [stage]="selectedStageInfo?.stage?.stageName"
           [stages]="project.getStageNames()"
           [services]="project.getServiceNames()"
           (formClosed)="isTriggerSequenceOpen = false"
@@ -43,8 +43,8 @@
       >
         <ktb-selectable-tile
           *ngFor="let stage of project.getStages(parentStage)"
-          [selected]="selectedStageName.value === stage.stageName"
-          (click)="selectStage($event, project, stage)"
+          [selected]="selectedStageInfo?.stage?.stageName === stage.stageName"
+          (click)="selectStage($event, stage)"
         >
           <h2 class="m-0 mt-1 mb-1" [textContent]="stage.stageName"></h2>
           <div class="stage-state" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
@@ -53,7 +53,7 @@
               fxLayoutAlign="start center"
               fxLayoutGap="5px"
               *ngIf="filterServices(stage.getServicesWithRemediations()) as problemServices"
-              (click)="problemServices.length > 0 && selectStage($event, project, stage, 'problem')"
+              (click)="problemServices.length > 0 && selectStage($event, stage, 'problem')"
               [attr.uitestid]="'filter-type-' + stage.stageName + '-problem'"
             >
               <dt-icon
@@ -68,7 +68,7 @@
               fxLayoutAlign="start center"
               fxLayoutGap="5px"
               *ngIf="filterServices(stage.getServicesWithFailedEvaluation()) as failedServices"
-              (click)="failedServices.length > 0 && selectStage($event, project, stage, 'evaluation')"
+              (click)="failedServices.length > 0 && selectStage($event, stage, 'evaluation')"
               [attr.uitestid]="'filter-type-' + stage.stageName + '-evaluation'"
             >
               <dt-icon
@@ -83,7 +83,7 @@
               fxLayoutAlign="start center"
               fxLayoutGap="5px"
               *ngIf="filterServices(stage.getServicesWithOpenApprovals()) as approvalServices"
-              (click)="approvalServices.length > 0 && selectStage($event, project, stage, 'approval')"
+              (click)="approvalServices.length > 0 && selectStage($event, stage, 'approval')"
               [attr.uitestid]="'filter-type-' + stage.stageName + '-approval'"
             >
               <dt-icon class="stage-state-icon" name="deploy" [class.highlight]="approvalServices.length > 0"></dt-icon>

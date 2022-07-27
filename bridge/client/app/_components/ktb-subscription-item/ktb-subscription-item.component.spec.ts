@@ -48,9 +48,8 @@ describe('KtbSubscriptionItemComponent', () => {
     subscription.id = 'mySubscriptionId';
   });
 
-  it('should create and have given project set', () => {
+  it('should create', () => {
     expect(component).toBeTruthy();
-    expect(component.project?.projectName).toEqual('sockshop');
   });
 
   it('should navigate to subscription to edit', () => {
@@ -58,6 +57,7 @@ describe('KtbSubscriptionItemComponent', () => {
     const router = TestBed.inject(Router);
     const routerSpy = jest.spyOn(router, 'navigate');
     component.integrationId = 'myIntegrationId';
+    component.projectName = 'sockshop';
 
     // when
     component.editSubscription(subscription);
