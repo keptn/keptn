@@ -1,12 +1,8 @@
-# Use the official Golang image to create a build artifact.
-# This is based on Debian and sets the GOPATH to /go.
 FROM golang:1.18.4 as builder-base
 
 # install additional dependencies
-RUN apt-get install -y gcc libc-dev git
+RUN apt-get install -y gcc libc-dev
 
-# Force the go compiler to use modules
-ENV GO111MODULE=on
 ENV BUILDFLAGS=""
 ENV GOPROXY=https://proxy.golang.org
 
@@ -15,14 +11,10 @@ RUN go install github.com/swaggo/swag/cmd/swag@v1.7.0
 
 WORKDIR /go/src/github.com/keptn/keptn/shipyard-controller
 
-# Copy `go.mod` for definitions and `go.sum` to invalidate the next layer
-# in case of a change in the dependencies
 COPY go.mod go.sum ./
 
-# Download dependencies
 RUN go mod download
 
-# Copy local code to the container image.
 COPY . .
 
 FROM builder-base as builder-test
@@ -34,6 +26,7 @@ CMD gotestsum --no-color=false -- -coverprofile=coverage.txt -covermode=atomic -
 
 FROM builder-base as builder
 ARG version=develop
+ENV CGO_ENABLED=0
 
 # `skaffold debug` sets SKAFFOLD_GO_GCFLAGS to disable compiler optimizations
 ARG SKAFFOLD_GO_GCFLAGS
@@ -49,8 +42,8 @@ RUN sed -i "s/version: develop/version: ${version}/g" docs/swagger.yaml
 # Build the command inside the container. 
 # (You may fetch or manage dependencies here, 
 # either manually or with a tool like "godep".)
-RUN GOOS=linux go build -ldflags '-linkmode=external' -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v main.go
-RUN sed -i "s|basePath: /v1|basePath: /api/controlPlane/v1 |g" /go/src/github.com/keptn/keptn/shipyard-controller/docs/swagger.yaml
+RUN GOOS=linux go build -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v main.go
+RUN sed -i "s|basePath: /v1|basePath: /api/controlPlane/v1 |g" docs/swagger.yaml
 
 FROM gcr.io/distroless/static-debian11 as production
 ARG version=develop
@@ -67,7 +60,6 @@ ENV env=production
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/main /shipyard-controller
 COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/swagger-ui /swagger-ui
-
 COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/docs/swagger.yaml /swagger-ui/swagger-original.yaml
 COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/docs/swagger.yaml /swagger-ui/swagger.yaml
 
