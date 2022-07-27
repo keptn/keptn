@@ -16,7 +16,7 @@ func Test_RemoteURLValidator(t *testing.T) {
 		{
 			url: "some",
 			fileReader: common_mock.FileReaderMock{
-				GetFunc: func(path string) []string {
+				GetLinesFunc: func(path string) []string {
 					return []string{"some", "list"}
 				},
 			},
@@ -25,7 +25,7 @@ func Test_RemoteURLValidator(t *testing.T) {
 		{
 			url: "some",
 			fileReader: common_mock.FileReaderMock{
-				GetFunc: func(path string) []string {
+				GetLinesFunc: func(path string) []string {
 					return []string{}
 				},
 			},
@@ -34,7 +34,7 @@ func Test_RemoteURLValidator(t *testing.T) {
 		{
 			url: "some",
 			fileReader: common_mock.FileReaderMock{
-				GetFunc: func(path string) []string {
+				GetLinesFunc: func(path string) []string {
 					return []string{"something"}
 				},
 			},
@@ -43,7 +43,7 @@ func Test_RemoteURLValidator(t *testing.T) {
 		{
 			url: "something",
 			fileReader: common_mock.FileReaderMock{
-				GetFunc: func(path string) []string {
+				GetLinesFunc: func(path string) []string {
 					return []string{"some"}
 				},
 			},
@@ -52,7 +52,7 @@ func Test_RemoteURLValidator(t *testing.T) {
 		{
 			url: "something",
 			fileReader: common_mock.FileReaderMock{
-				GetFunc: func(path string) []string {
+				GetLinesFunc: func(path string) []string {
 					return []string{""}
 				},
 			},
@@ -61,7 +61,7 @@ func Test_RemoteURLValidator(t *testing.T) {
 		{
 			url: "something",
 			fileReader: common_mock.FileReaderMock{
-				GetFunc: func(path string) []string {
+				GetLinesFunc: func(path string) []string {
 					return []string{"."}
 				},
 			},

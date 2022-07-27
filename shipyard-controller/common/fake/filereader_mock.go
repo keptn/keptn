@@ -1,12 +1,12 @@
 package common_mock
 
 type FileReaderMock struct {
-	GetFunc func(path string) []string
+	GetLinesFunc func(path string) []string
 }
 
-func (r FileReaderMock) Get(path string) []string {
-	if r.GetFunc != nil {
-		return r.GetFunc(path)
+func (r FileReaderMock) GetLines(path string) []string {
+	if r.GetLinesFunc != nil {
+		return r.GetLinesFunc(path)
 	}
 	panic("implement me")
 }

@@ -23,7 +23,7 @@ func NewRemoteURLValidator(denyListProvider common.FileReader) RemoteURLValidato
 }
 
 func (c remoteURLValidator) Validate(url string) error {
-	denyList := c.denyListProvider.Get(common.RemoteURLDenyListPath)
+	denyList := c.denyListProvider.GetLines(common.RemoteURLDenyListPath)
 
 	for _, item := range denyList {
 		if res, _ := regexp.MatchString(item, url); res {

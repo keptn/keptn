@@ -1,17 +1,16 @@
 package common
 
 import (
+	"bufio"
 	"fmt"
-	"io"
 	"io/fs"
 	"os"
-	"strings"
 
 	"github.com/sirupsen/logrus"
 )
 
 type FileReader interface {
-	Get(filePath string) []string
+	GetLines(filePath string) []string
 }
 
 type fileReader struct {
@@ -33,7 +32,7 @@ func NewFileReader() *fileReader {
 	}
 }
 
-func (d *fileReader) Get(filePath string) []string {
+func (d *fileReader) GetLines(filePath string) []string {
 	gitConfigFile, err := d.FileSystem.Open(filePath)
 	if err != nil {
 		fmt.Printf(err.Error())
@@ -42,15 +41,13 @@ func (d *fileReader) Get(filePath string) []string {
 	}
 	defer gitConfigFile.Close()
 
-	configFileContent, err := io.ReadAll(gitConfigFile)
-	if err != nil {
-		logrus.Errorf("cannot read %s: %s", filePath, err.Error())
-		return []string{}
+	var lines []string
+	scanner := bufio.NewScanner(gitConfigFile)
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
 	}
 
-	fileLines := strings.Split(strings.ReplaceAll(string(configFileContent), "\r\n", "\n"), "\n")
-
-	return removeEmptyStrings(fileLines)
+	return removeEmptyStrings(lines)
 }
 
 func removeEmptyStrings(s []string) []string {

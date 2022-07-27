@@ -63,7 +63,7 @@ func Test_FileReader(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run("", func(t *testing.T) {
-			res := tt.provider.Get(denyListTestFileName)
+			res := tt.provider.GetLines(denyListTestFileName)
 			require.Equal(t, tt.result, res)
 		})
 	}
