@@ -977,21 +977,24 @@ func Test_ProjectValidator(t *testing.T) {
 	invalidProjectName := "project-name@@"
 
 	tests := []struct {
-		name    string
-		params  models.CreateProjectParams
-		wantErr bool
+		name            string
+		params          models.CreateProjectParams
+		wantErr         bool
+		provisioningURL string
 	}{
 		{
-			name:    "no params",
-			params:  models.CreateProjectParams{},
-			wantErr: true,
+			name:            "no params",
+			params:          models.CreateProjectParams{},
+			wantErr:         true,
+			provisioningURL: "",
 		},
 		{
 			name: "no project name",
 			params: models.CreateProjectParams{
 				Shipyard: &encodedShipyard,
 			},
-			wantErr: true,
+			wantErr:         true,
+			provisioningURL: "",
 		},
 		{
 			name: "invalid project name",
@@ -999,7 +1002,8 @@ func Test_ProjectValidator(t *testing.T) {
 				Shipyard: &encodedShipyard,
 				Name:     &invalidProjectName,
 			},
-			wantErr: true,
+			wantErr:         true,
+			provisioningURL: "",
 		},
 		{
 			name: "invalid shipyard",
@@ -1007,7 +1011,8 @@ func Test_ProjectValidator(t *testing.T) {
 				Shipyard: &invalidShipyard,
 				Name:     &projectName,
 			},
-			wantErr: true,
+			wantErr:         true,
+			provisioningURL: "",
 		},
 		{
 			name: "valid params",
@@ -1015,7 +1020,17 @@ func Test_ProjectValidator(t *testing.T) {
 				Shipyard: &encodedShipyard,
 				Name:     &projectName,
 			},
-			wantErr: false,
+			wantErr:         false,
+			provisioningURL: "some url",
+		},
+		{
+			name: "valid params",
+			params: models.CreateProjectParams{
+				Shipyard: &encodedShipyard,
+				Name:     &projectName,
+			},
+			wantErr:         true,
+			provisioningURL: "",
 		},
 		{
 			name: "invalid GitRemoteURL",
@@ -1026,7 +1041,8 @@ func Test_ProjectValidator(t *testing.T) {
 					RemoteURL: "invalid",
 				},
 			},
-			wantErr: true,
+			wantErr:         true,
+			provisioningURL: "",
 		},
 		{
 			name: "privateKey and Token",
@@ -1043,7 +1059,8 @@ func Test_ProjectValidator(t *testing.T) {
 					},
 				},
 			},
-			wantErr: true,
+			wantErr:         true,
+			provisioningURL: "",
 		},
 		{
 			name: "PrivateKey and Proxy",
@@ -1062,7 +1079,8 @@ func Test_ProjectValidator(t *testing.T) {
 					},
 				},
 			},
-			wantErr: true,
+			wantErr:         true,
+			provisioningURL: "",
 		},
 		{
 			name: "Token and Proxy",
@@ -1079,7 +1097,8 @@ func Test_ProjectValidator(t *testing.T) {
 					},
 				},
 			},
-			wantErr: false,
+			wantErr:         false,
+			provisioningURL: "",
 		},
 		{
 			name: "Valid PrivateKey",
@@ -1093,7 +1112,8 @@ func Test_ProjectValidator(t *testing.T) {
 					},
 				},
 			},
-			wantErr: false,
+			wantErr:         false,
+			provisioningURL: "",
 		},
 		{
 			name: "Invalid PrivateKey",
@@ -1107,7 +1127,8 @@ func Test_ProjectValidator(t *testing.T) {
 					},
 				},
 			},
-			wantErr: true,
+			wantErr:         true,
+			provisioningURL: "",
 		},
 		{
 			name: "Project Name too long",
@@ -1115,13 +1136,14 @@ func Test_ProjectValidator(t *testing.T) {
 				Shipyard: &encodedShipyard,
 				Name:     &longProjectName,
 			},
-			wantErr: true,
+			wantErr:         true,
+			provisioningURL: "",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			validator := ProjectValidator{20}
+			validator := ProjectValidator{20, tt.provisioningURL}
 			err := validator.Validate(&tt.params)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
@@ -1135,28 +1157,40 @@ func Test_ProjectValidator_UpdateParams(t *testing.T) {
 	invalidProjectName := "project-name@@"
 
 	tests := []struct {
-		name    string
-		params  models.UpdateProjectParams
-		wantErr bool
+		name            string
+		params          models.UpdateProjectParams
+		wantErr         bool
+		provisioningURL string
 	}{
 		{
-			name:    "no params",
-			params:  models.UpdateProjectParams{},
-			wantErr: true,
+			name:            "no params",
+			params:          models.UpdateProjectParams{},
+			wantErr:         true,
+			provisioningURL: "",
 		},
 		{
 			name: "invalid project name",
 			params: models.UpdateProjectParams{
 				Name: &invalidProjectName,
 			},
-			wantErr: true,
+			wantErr:         true,
+			provisioningURL: "",
 		},
 		{
 			name: "valid params",
 			params: models.UpdateProjectParams{
 				Name: &projectName,
 			},
-			wantErr: false,
+			wantErr:         false,
+			provisioningURL: "some-url",
+		},
+		{
+			name: "invalid params",
+			params: models.UpdateProjectParams{
+				Name: &projectName,
+			},
+			wantErr:         true,
+			provisioningURL: "",
 		},
 		{
 			name: "invalid GitRemoteURL",
@@ -1166,7 +1200,8 @@ func Test_ProjectValidator_UpdateParams(t *testing.T) {
 					RemoteURL: "invalid",
 				},
 			},
-			wantErr: true,
+			wantErr:         true,
+			provisioningURL: "",
 		},
 		{
 			name: "privateKey and Token",
@@ -1182,7 +1217,8 @@ func Test_ProjectValidator_UpdateParams(t *testing.T) {
 					},
 				},
 			},
-			wantErr: true,
+			wantErr:         true,
+			provisioningURL: "",
 		},
 		{
 			name: "PrivateKey and Proxy",
@@ -1200,7 +1236,8 @@ func Test_ProjectValidator_UpdateParams(t *testing.T) {
 					},
 				},
 			},
-			wantErr: true,
+			wantErr:         true,
+			provisioningURL: "",
 		},
 		{
 			name: "Token and Proxy",
@@ -1216,7 +1253,8 @@ func Test_ProjectValidator_UpdateParams(t *testing.T) {
 					},
 				},
 			},
-			wantErr: false,
+			wantErr:         false,
+			provisioningURL: "",
 		},
 		{
 			name: "Valid PrivateKey",
@@ -1229,7 +1267,8 @@ func Test_ProjectValidator_UpdateParams(t *testing.T) {
 					},
 				},
 			},
-			wantErr: false,
+			wantErr:         false,
+			provisioningURL: "",
 		},
 		{
 			name: "Invalid PrivateKey",
@@ -1242,13 +1281,14 @@ func Test_ProjectValidator_UpdateParams(t *testing.T) {
 					},
 				},
 			},
-			wantErr: true,
+			wantErr:         true,
+			provisioningURL: "",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			validator := ProjectValidator{200}
+			validator := ProjectValidator{200, tt.provisioningURL}
 			err := validator.Validate(&tt.params)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
