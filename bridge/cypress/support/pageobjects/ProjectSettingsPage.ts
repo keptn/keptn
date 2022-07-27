@@ -56,7 +56,7 @@ class ProjectSettingsPage {
   }
 
   public visitSettings(project: string): this {
-    cy.visit(`/project/${project}/settings/project`).wait('@metadata').wait('@project');
+    cy.visit(`/project/${project}/settings/project`).wait('@metadata').wait('@projectPlain');
     return this;
   }
 

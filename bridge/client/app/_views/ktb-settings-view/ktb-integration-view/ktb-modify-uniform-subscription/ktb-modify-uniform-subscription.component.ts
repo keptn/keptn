@@ -5,21 +5,20 @@ import { combineLatest, forkJoin, Observable, of, Subject, throwError } from 'rx
 import { catchError, filter, map, switchMap, take, takeUntil, tap } from 'rxjs/operators';
 import { UniformSubscription } from '../../../../_models/uniform-subscription';
 import { DtFilterFieldDefaultDataSource } from '@dynatrace/barista-components/filter-field';
-import { Project } from '../../../../_models/project';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { DtFilterFieldDefaultDataSourceAutocomplete } from '@dynatrace/barista-components/filter-field/src/filter-field-default-data-source';
-import { EventTypes } from '../../../../../../shared/interfaces/event-types';
-import { UniformRegistration } from '../../../../_models/uniform-registration';
-import { AppUtils } from '../../../../_utils/app.utils';
-import { IWebhookConfigClient, PreviousWebhookConfig } from '../../../../../../shared/interfaces/webhook-config';
-import { NotificationsService } from '../../../../_services/notifications.service';
-import { UniformRegistrationInfo } from '../../../../../../shared/interfaces/uniform-registration-info';
-import { NotificationType } from '../../../../_models/notification';
-import { SecretScopeDefault } from '../../../../../../shared/interfaces/secret-scope';
-import { EventState } from '../../../../../../shared/models/event-state';
-import { Trace } from '../../../../_models/trace';
-import { HttpErrorResponse } from '@angular/common/http';
+import { IWebhookConfigClient, PreviousWebhookConfig } from 'shared/interfaces/webhook-config';
+import { ISequencesFilter } from '../../../../../../shared/interfaces/sequencesFilter';
 import { IClientSecret } from '../../../../../../shared/interfaces/secret';
+import { EventState } from '../../../../../../shared/models/event-state';
+import { AppUtils } from '../../../../_utils/app.utils';
+import { NotificationsService } from '../../../../_services/notifications.service';
+import { HttpErrorResponse } from '@angular/common/http';
+import { NotificationType } from '../../../../_models/notification';
+import { UniformRegistrationInfo } from '../../../../../../shared/interfaces/uniform-registration-info';
+import { SecretScopeDefault } from '../../../../../../shared/interfaces/secret-scope';
+import { EventTypes } from '../../../../../../shared/interfaces/event-types';
+import { Trace } from '../../../../_models/trace';
 
 @Component({
   selector: 'ktb-modify-uniform-subscription',
@@ -33,9 +32,10 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
   public taskSuffixControl = new FormControl('', [Validators.required]);
   private isGlobalControl = new FormControl();
   public data$: Observable<{
+    projectName: string;
     taskNames: string[];
     subscription: UniformSubscription;
-    project: Project;
+    filter: ISequencesFilter;
     integrationId: string;
     webhook?: IWebhookConfigClient;
     webhookSecrets?: IClientSecret[];
@@ -49,7 +49,6 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     isGlobal: this.isGlobalControl,
   });
   private _previousFilter?: PreviousWebhookConfig;
-  public uniformRegistration?: UniformRegistration;
   public isWebhookFormValid = true;
   public isWebhookService = false;
   public suffixes: { value: string; displayValue: string }[] = [
@@ -152,10 +151,6 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       }),
       take(1)
     );
-    const project$ = projectName$.pipe(
-      switchMap((projectName) => this.dataService.getProject(projectName)),
-      filter((project?: Project): project is Project => !!project)
-    );
 
     const webhook$ = forkJoin({
       subscription: subscription$,
@@ -196,19 +191,30 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       })
     );
 
-    this.data$ = combineLatest([taskNames$, subscription$, project$, integrationId$, webhook$, webhookSecrets$]).pipe(
-      map(([taskNames, subscription, project, integrationId, webhook, webhookSecrets]) => {
+    const filter$ = projectName$.pipe(switchMap((projectName) => this.dataService.getSequenceFilter(projectName)));
+
+    this.data$ = combineLatest([
+      projectName$,
+      taskNames$,
+      subscription$,
+      filter$,
+      integrationId$,
+      webhook$,
+      webhookSecrets$,
+    ]).pipe(
+      map(([projectName, taskNames, subscription, filterData, integrationId, webhook, webhookSecrets]) => {
         return {
           taskNames,
           subscription,
-          project,
+          filter: filterData,
+          projectName,
           integrationId,
           webhook,
           webhookSecrets,
         };
       }),
       tap((data) => {
-        this.updateDataSource(data.project, data.subscription);
+        this.updateDataSource(data.filter.stages, data.filter.services, data.subscription);
       })
     );
   }
@@ -234,16 +240,8 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     window.location.reload();
   }
 
-  private updateDataSource(project: Project, subscription: UniformSubscription): void {
-    const stages: { name: string }[] = project.stages.map((stage) => ({
-      name: stage.stageName,
-    }));
-    const services: { name: string }[] = project.getServices().map((service) => ({
-      name: service.serviceName,
-    }));
-    const availableServices = subscription.filter.services?.filter((service) =>
-      services.some((s) => s.name === service)
-    );
+  private updateDataSource(stages: string[], services: string[], subscription: UniformSubscription): void {
+    const availableServices = subscription.filter.services?.filter((service) => services.some((s) => s === service));
 
     // check if services have been deleted
     if (availableServices && availableServices?.length !== subscription.filter.services?.length) {
@@ -253,11 +251,11 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       autocomplete: [
         {
           name: 'Stage',
-          autocomplete: stages,
+          autocomplete: stages.map((name) => ({ name })),
         },
         {
           name: 'Service',
-          autocomplete: services,
+          autocomplete: services.map((name) => ({ name })),
         },
       ],
     } as DtFilterFieldDefaultDataSourceAutocomplete;

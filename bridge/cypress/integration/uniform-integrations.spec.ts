@@ -479,14 +479,15 @@ describe('Add control plane subscription dynamic request', () => {
       body: {
         id: '0b77c90e-282d-4a7e-a96d-e23027265868',
       },
-      delay: 5000,
+      delay: 10_000,
     });
     uniformPage
       .visitAdd(integrationID)
       .setTaskPrefix('deployment')
       .setTaskSuffix('triggered')
       .update()
-      .assertIsUpdateButtonEnabled(false);
+      .assertIsUpdateButtonEnabled(false)
+      .waitForJmeterInfoRequest();
   });
 
   xit('should show an error message if can not parse shipyard.yaml', () => {

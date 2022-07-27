@@ -67,26 +67,6 @@ const serviceStateResponseMock = [
   },
 ];
 
-const serviceStateResponseWithoutRemediationsMock = [
-  {
-    deploymentInformation: [
-      {
-        stages: [
-          {
-            name: 'dev',
-            time: '2021-10-13T11:01:18.567Z',
-          },
-        ],
-        name: 'carts-b',
-        image: 'carts-b',
-        version: '0.12.1',
-        keptnContext: '2c0e568b-8bd3-4726-a188-e528423813ef',
-      },
-    ],
-    name: 'carts',
-  },
-];
-
 const serviceStateQualityGatesOnlyResponse = [
   {
     deploymentInformation: [

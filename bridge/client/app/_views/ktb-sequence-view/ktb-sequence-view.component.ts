@@ -402,7 +402,7 @@ export class KtbSequenceViewComponent implements OnDestroy {
   }
 
   public navigateToTriggerSequence(projectName: string): void {
-    this.dataService.isTriggerSequenceOpen = true;
+    this.dataService.setIsTriggerSequenceOpen(true);
     this.router.navigate(['/project/' + projectName]);
   }
 
