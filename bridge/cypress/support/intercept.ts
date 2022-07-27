@@ -53,7 +53,6 @@ export function interceptEnvironmentScreen(): void {
 
 function setEvaluationUrls(project: string, service: string): void {
   for (const stage of ['dev', 'staging', 'production']) {
-    // `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project}%20AND%20data.service:${service}%20AND%20data.stage:${stage}%20AND%20source:lighthouse-service&excludeInvalidated=true&limit=5`,
     for (const limit of [5, 6]) {
       cy.intercept(
         'GET',
