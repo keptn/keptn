@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"io/fs"
 	"os"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 )
@@ -51,7 +52,7 @@ func (d *fileReader) GetLines(filePath string) []string {
 func removeEmptyStrings(s []string) []string {
 	r := []string{}
 	for _, str := range s {
-		if str != "" {
+		if strings.TrimSpace(str) != "" {
 			r = append(r, str)
 		}
 	}

@@ -60,6 +60,15 @@ func Test_FileReader(t *testing.T) {
 			result: []string{},
 		},
 		{
+			name: "valid input with whitespaces",
+			provider: &fileReader{
+				FileSystem: fstest.MapFS{
+					denyListTestFileName: {Data: []byte("           ")},
+				},
+			},
+			result: []string{},
+		},
+		{
 			name: "error: cannot open file",
 			provider: &fileReader{
 				FileSystem: fstest.MapFS{},
@@ -95,6 +104,10 @@ func Test_FileReader_removeEmptyStrings(t *testing.T) {
 		},
 		{
 			input:  []string{},
+			result: []string{},
+		},
+		{
+			input:  []string{"           "},
 			result: []string{},
 		},
 		{
