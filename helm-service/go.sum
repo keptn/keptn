@@ -541,8 +541,8 @@ github.com/julienschmidt/httprouter v1.2.0/go.mod h1:SYymIcj16QtmaHHD7aYtjjsJG7V
 github.com/julienschmidt/httprouter v1.3.0/go.mod h1:JR6WtHb+2LUe8TCKY3cZOxFyyO8IZAc4RVcycCCAKdM=
 github.com/kelseyhightower/envconfig v1.4.0 h1:Im6hONhd3pLkfDFsbRgu68RDNkGF1r3dvMUtDTo2cv8=
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
-github.com/keptn/go-utils v0.17.1-0.20220718124953-6b126790c54c h1:Ni5KT0bb1m0ba/cN1tWcmVjn4Le8vM6b76I5GUUBl3o=
-github.com/keptn/go-utils v0.17.1-0.20220718124953-6b126790c54c/go.mod h1:zb3sZlADFEhm4pdzOjLdNd1JfHHzqYnkmsMkdO2kYIg=
+github.com/keptn/go-utils v0.17.1-0.20220727142037-c15488f2145b h1:Kv12iUuCbO06vR2dtjh7bguiqSlif+ZcEBckH0mrn7c=
+github.com/keptn/go-utils v0.17.1-0.20220727142037-c15488f2145b/go.mod h1:o4fpesGYCx4fAXDryDefMpWpA814W2AFjXf8w+hmZcs=
 github.com/kinbiko/jsonassert v1.1.0 h1:AakKgkRFsuzE1FNLYrcxTI7ga5YYcbujOUbSf8l+WmU=
 github.com/kinbiko/jsonassert v1.1.0/go.mod h1:QRwBwiAsrcJpjw+L+Q4WS8psLxuUY+HylVZS/4j74TM=
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=
