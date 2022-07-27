@@ -15,7 +15,7 @@ export default defineConfig({
   chromeWebSecurity: false,
   e2e: {
     baseUrl: 'http://localhost:5000', // workaround until https://github.com/cypress-io/cypress/issues/21555 is fixed
-    specPattern: 'cypress/integration/**.spec.{js,jsx,ts,tsx}',
+    specPattern: 'cypress/integration/**/**.spec.{js,jsx,ts,tsx}',
     setupNodeEvents(on) {
       on('before:browser:launch', (browser, launchOptions) => {
         expectedErrorCount = 0;

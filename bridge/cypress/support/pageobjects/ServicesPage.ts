@@ -7,6 +7,7 @@ import {
   interceptServicesPageWithLoadingSequences,
   interceptServicesPageWithRemediation,
 } from '../intercept';
+import { EvaluationBadgeVariant } from '../../../client/app/_components/ktb-evaluation-badge/ktb-evaluation-badge.utils';
 
 type SliColumn = 'name' | 'value' | 'weight' | 'score' | 'result' | 'criteria' | 'pass-criteria' | 'warning-criteria';
 
@@ -28,6 +29,14 @@ class ServicesPage {
 
   public interceptRemediations(): this {
     interceptServicesPageWithRemediation();
+    return this;
+  }
+
+  public interceptForEvaluationBadge(): this {
+    cy.intercept('GET', '/api/project/sockshop/deployment/da740469-9920-4e0c-b304-0fd4b18d17c2', {
+      statusCode: 200,
+      fixture: 'get.sockshop.service.carts.deployment.evaluation.badge.mock.json',
+    }).as('ServiceDeployment');
     return this;
   }
 
@@ -78,8 +87,12 @@ class ServicesPage {
   }
 
   public selectStage(stageName: string): this {
-    cy.byTestId(`keptn-deployment-timeline-stage-${stageName}`).click();
+    this.getStageInTimeline(stageName).click();
     return this;
+  }
+
+  private getStageInTimeline(stageName: string): Cypress.Chainable<JQuery> {
+    return cy.byTestId(`keptn-deployment-timeline-stage-${stageName}`);
   }
 
   public clickSliBreakdownHeader(columnName: string): this {
@@ -240,6 +253,16 @@ class ServicesPage {
 
   public assertIsStageLoading(stage: string, status: boolean): this {
     cy.byTestId(`ktb-deployment-stage-${stage}-loading`).should(status ? 'exist' : 'not.exist');
+    return this;
+  }
+
+  public assertStageEvaluationBadge(
+    stage: string,
+    status: 'success' | 'error' | 'warning' | undefined,
+    score: number | '-',
+    variant: EvaluationBadgeVariant
+  ): this {
+    this.getStageInTimeline(stage).assertEvaluationBadge(status, score, variant);
     return this;
   }
 }

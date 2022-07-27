@@ -5,6 +5,7 @@ import { Project } from '../../../_models/project';
 import { Stage } from '../../../_models/stage';
 import { Service } from '../../../_models/service';
 import { ISelectedStageInfo } from '../ktb-environment-view.component';
+import { EvaluationBadgeVariant } from '../../../_components/ktb-evaluation-badge/ktb-evaluation-badge.utils';
 
 export type ServiceFilterType = 'evaluation' | 'problem' | 'approval' | undefined;
 
@@ -21,6 +22,7 @@ export class KtbStageDetailsComponent {
   };
   public filteredServices: string[] = [];
   private _selectedStageInfo?: ISelectedStageInfo;
+  public EvaluationBadgeVariant = EvaluationBadgeVariant;
 
   @Input() project?: Project;
   @Input() set selectedStageInfo(stageInfo: ISelectedStageInfo | undefined) {
