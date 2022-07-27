@@ -132,6 +132,10 @@
   "resolutions": {
     "minimist": "1.2.6",
     "css-what": "~6.1.0",
-    "glob-parent": "~6.0.0"
+    "glob-parent": "~6.0.0",
+    "trim": "0.0.3",
+    "ansi-regex": "5.0.1",
+    "unset-value": "2.0.1",
+    "trim-newlines": "3.0.1"
   }
 }
