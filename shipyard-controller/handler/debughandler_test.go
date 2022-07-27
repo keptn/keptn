@@ -9,92 +9,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/handler/fake"
 	"github.com/stretchr/testify/assert"
 )
-
-func TestDebughandlerGetAllProjects(t *testing.T) {
-	type fields struct {
-		DebugManager IDebugManager
-	}
-
-	tests := []struct {
-		name             string
-		fields           fields
-		expectHttpStatus int
-	}{
-		{
-			name: "GET projects ok",
-			fields: fields{
-				DebugManager: &fake.IDebugManagerMock{
-					GetAllProjectsFunc: func() ([]*apimodels.ExpandedProject, error) {
-						projects := []*apimodels.ExpandedProject{
-							{
-								CreationDate:     "string",
-								LastEventContext: &apimodels.EventContextInfo{},
-								ProjectName:      "project1",
-								Shipyard:         "shipyard",
-								ShipyardVersion:  "shipyard version",
-								Stages:           []*apimodels.ExpandedStage{},
-								GitCredentials:   &apimodels.GitAuthCredentialsSecure{},
-							},
-							{
-								CreationDate:     "string",
-								LastEventContext: &apimodels.EventContextInfo{},
-								ProjectName:      "project2",
-								Shipyard:         "shipyard",
-								ShipyardVersion:  "shipyard version",
-								Stages:           []*apimodels.ExpandedStage{},
-								GitCredentials:   &apimodels.GitAuthCredentialsSecure{},
-							},
-						}
-
-						return projects, nil
-					},
-				},
-			},
-			expectHttpStatus: http.StatusOK,
-		},
-		{
-			name: "GET projects empty",
-			fields: fields{
-				DebugManager: &fake.IDebugManagerMock{
-					GetAllProjectsFunc: func() ([]*apimodels.ExpandedProject, error) {
-						var projects []*apimodels.ExpandedProject
-						return projects, nil
-					},
-				},
-			},
-			expectHttpStatus: http.StatusOK,
-		}, {
-			name: "GET projects internal error",
-			fields: fields{
-				DebugManager: &fake.IDebugManagerMock{
-					GetAllProjectsFunc: func() ([]*apimodels.ExpandedProject, error) {
-						return nil, fmt.Errorf("error")
-					},
-				},
-			},
-			expectHttpStatus: http.StatusInternalServerError,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			w := httptest.NewRecorder()
-			c, _ := gin.CreateTestContext(w)
-			c.Params = gin.Params{
-				gin.Param{Key: "project", Value: ""},
-				gin.Param{Key: "shkeptncontext", Value: ""},
-			}
-
-			handler := NewDebugHandler(tt.fields.DebugManager)
-			handler.GetAllProjects(c)
-			assert.Equal(t, tt.expectHttpStatus, w.Code)
-
-		})
-	}
-}
 
 func TestDebughandlerGetAllSequencesForProject(t *testing.T) {
 	type fields struct {
@@ -140,7 +58,7 @@ func TestDebughandlerGetAllSequencesForProject(t *testing.T) {
 			fields: fields{
 				DebugManager: &fake.IDebugManagerMock{
 					GetAllSequencesForProjectFunc: func(projectName string) (*apimodels.SequenceStates, error) {
-						return nil, ErrProjectNotFound
+						return nil, common.ErrProjectNotFound
 					},
 				},
 			},
@@ -213,7 +131,7 @@ func TestDebughandlerGetSequenceByID(t *testing.T) {
 			fields: fields{
 				DebugManager: &fake.IDebugManagerMock{
 					GetSequenceByIDFunc: func(projectName string, shkeptncontext string) (*apimodels.SequenceState, error) {
-						return nil, ErrProjectNotFound
+						return nil, common.ErrProjectNotFound
 					},
 				},
 			},
@@ -223,7 +141,7 @@ func TestDebughandlerGetSequenceByID(t *testing.T) {
 			fields: fields{
 				DebugManager: &fake.IDebugManagerMock{
 					GetSequenceByIDFunc: func(projectName string, shkeptncontext string) (*apimodels.SequenceState, error) {
-						return nil, ErrSequenceNotFound
+						return nil, common.ErrSequenceNotFound
 					},
 				},
 			},
@@ -302,7 +220,7 @@ func TestDebughandlerGetEventByID(t *testing.T) {
 			fields: fields{
 				DebugManager: &fake.IDebugManagerMock{
 					GetEventByIDFunc: func(projectName string, shkeptncontext string, eventId string) (*apimodels.KeptnContextExtendedCE, error) {
-						return nil, ErrProjectNotFound
+						return nil, common.ErrProjectNotFound
 					},
 				},
 			},
@@ -312,7 +230,7 @@ func TestDebughandlerGetEventByID(t *testing.T) {
 			fields: fields{
 				DebugManager: &fake.IDebugManagerMock{
 					GetEventByIDFunc: func(projectName string, shkeptncontext string, eventId string) (*apimodels.KeptnContextExtendedCE, error) {
-						return nil, ErrSequenceNotFound
+						return nil, common.ErrSequenceNotFound
 					},
 				},
 			},
@@ -323,7 +241,7 @@ func TestDebughandlerGetEventByID(t *testing.T) {
 			fields: fields{
 				DebugManager: &fake.IDebugManagerMock{
 					GetEventByIDFunc: func(projectName string, shkeptncontext string, eventId string) (*apimodels.KeptnContextExtendedCE, error) {
-						return nil, ErrNoMatchingEvent
+						return nil, common.ErrNoMatchingEvent
 					},
 				},
 			},
@@ -416,7 +334,7 @@ func TestDebughandlerGetAllEvents(t *testing.T) {
 			fields: fields{
 				DebugManager: &fake.IDebugManagerMock{
 					GetAllEventsFunc: func(projectName string, shkeptncontext string) ([]*apimodels.KeptnContextExtendedCE, error) {
-						return nil, ErrProjectNotFound
+						return nil, common.ErrProjectNotFound
 					},
 				},
 			},
@@ -426,7 +344,7 @@ func TestDebughandlerGetAllEvents(t *testing.T) {
 			fields: fields{
 				DebugManager: &fake.IDebugManagerMock{
 					GetAllEventsFunc: func(projectName string, shkeptncontext string) ([]*apimodels.KeptnContextExtendedCE, error) {
-						return nil, ErrSequenceNotFound
+						return nil, common.ErrSequenceNotFound
 					},
 				},
 			},
