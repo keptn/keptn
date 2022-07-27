@@ -8,7 +8,7 @@ import { catchError, filter, finalize, map, mergeMap, startWith, takeUntil } fro
 import { IGitDataExtended } from 'shared/interfaces/project';
 import { IClientFeatureFlags } from '../../../../../shared/interfaces/feature-flags';
 import { PendingChangesComponent } from '../../../_guards/pending-changes.guard';
-import { DeleteData, DeleteResult, DeleteType } from '../../../_interfaces/delete';
+import { DeleteData, DeleteResult, DeleteType, DeletionProgressEvent } from '../../../_interfaces/delete';
 import { KeptnInfo } from '../../../_models/keptn-info';
 import { NotificationType } from '../../../_models/notification';
 import { Project } from '../../../_models/project';
@@ -36,7 +36,6 @@ interface ProjectSettingsState {
   gitInputDataExtended?: IGitDataExtended;
   automaticProvisioningMessage?: string;
   state: ProjectSettingsStatus;
-  projectDeletionData?: DeleteData;
 }
 
 @Component({
@@ -121,12 +120,6 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
           gitInputDataExtended,
           automaticProvisioningMessage: keptnInfo.bridgeInfo.automaticProvisioningMsg,
           state: metadata === null ? ProjectSettingsStatus.ERROR : ProjectSettingsStatus.LOADED,
-          projectDeletionData: projectName
-            ? {
-                type: DeleteType.PROJECT,
-                name: projectName,
-              }
-            : undefined,
         };
       }
     ),
@@ -217,9 +210,8 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
         if (!success) {
           return;
         }
-        this.projectName = projectName;
         this.isProjectFormTouched = false;
-        this.router.navigate(['/', 'project', this.projectName, 'settings', 'project'], {
+        this.router.navigate(['/', 'project', projectName, 'settings', 'project'], {
           queryParams: { created: true },
         });
       });
@@ -228,21 +220,28 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
   private deleteProject(projectName: string): void {
     this.eventService.deletionProgressEvent.next({ isInProgress: true });
 
-    this.dataService.deleteProject(projectName).subscribe(
-      () => {
-        this.eventService.deletionProgressEvent.next({ isInProgress: false, result: DeleteResult.SUCCESS });
-        this.isProjectFormTouched = false;
-        this.router.navigate(['/', 'dashboard']);
-      },
-      (err) => {
-        const deletionError = 'Project could not be deleted: ' + err.message;
-        this.eventService.deletionProgressEvent.next({
-          error: deletionError,
-          isInProgress: false,
-          result: DeleteResult.ERROR,
-        });
-      }
-    );
+    this.dataService
+      .deleteProject(projectName)
+      .pipe(
+        map((): DeletionProgressEvent => {
+          return { isInProgress: false, result: DeleteResult.SUCCESS };
+        }),
+        catchError((err): Observable<DeletionProgressEvent> => {
+          const deletionError = 'Project could not be deleted: ' + err.message;
+          return of({
+            error: deletionError,
+            isInProgress: false,
+            result: DeleteResult.ERROR,
+          });
+        })
+      )
+      .subscribe((progressEvent) => {
+        this.eventService.deletionProgressEvent.next(progressEvent);
+        if (progressEvent.result === DeleteResult.SUCCESS) {
+          this.isProjectFormTouched = false;
+          this.router.navigate(['/', 'dashboard']);
+        }
+      });
   }
 
   public reject(): void {
@@ -255,37 +254,34 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
     this.hideNotification();
   }
 
-  public saveAll(): void {
-    if (this.isCreateMode()) {
+  public saveAll(projectName?: string): void {
+    if (this.isCreateMode(projectName)) {
       this.createProject();
     } else {
-      this.updateGitUpstream();
+      this.updateGitUpstream(projectName);
     }
     this.hideNotification();
   }
 
-  public updateGitUpstream(): void {
-    if (!this.gitDataExtended || !this.projectName) {
+  public updateGitUpstream(projectName?: string): void {
+    if (!this.gitDataExtended || !projectName) {
       return;
     }
     this.isGitUpstreamInProgress = true;
-    this.dataService.updateGitUpstream(this.projectName, this.gitDataExtended).subscribe(
-      () => {
-        this.isGitUpstreamInProgress = false;
+    this.dataService
+      .updateGitUpstream(projectName, this.gitDataExtended)
+      .pipe(finalize(() => (this.isGitUpstreamInProgress = false)))
+      .subscribe(() => {
         this.notificationsService.addNotification(
           NotificationType.SUCCESS,
           'The Git upstream was changed successfully.'
         );
         this.isProjectFormTouched = false;
-      },
-      () => {
-        this.isGitUpstreamInProgress = false;
-      }
-    );
+      });
   }
 
-  public isProjectFormInvalid(): boolean {
-    return this.isCreateMode() ? this.isProjectCreateFormInvalid() : this.isProjectSettingsFormInvalid();
+  public isProjectFormInvalid(projectName?: string): boolean {
+    return this.isCreateMode(projectName) ? this.isProjectCreateFormInvalid() : this.isProjectSettingsFormInvalid();
   }
 
   public isProjectCreateFormInvalid(): boolean {
@@ -332,8 +328,15 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
     this.unsavedDialogState = null;
   }
 
-  public isCreateMode(): boolean {
-    return !this.projectName;
+  public createProjectDeletionData(projectName?: string): DeleteData {
+    return {
+      type: DeleteType.PROJECT,
+      name: projectName ?? '',
+    };
+  }
+
+  public isCreateMode(projectName?: string): boolean {
+    return !projectName;
   }
 
   public ngOnDestroy(): void {
