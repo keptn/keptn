@@ -1,3 +1,4 @@
+import { HttpClientModule } from '@angular/common/http';
 import { moduleMetadata } from '@storybook/angular';
 import { Meta, Story } from '@storybook/angular/types-6-0';
 import { KtbCopyToClipboardComponent } from '../../client/app/_components/ktb-copy-to-clipboard/ktb-copy-to-clipboard.component';
@@ -8,7 +9,7 @@ export default {
   component: KtbCopyToClipboardComponent,
   decorators: [
     moduleMetadata({
-      imports: [KtbCopyToClipboardModule],
+      imports: [KtbCopyToClipboardModule, HttpClientModule],
     }),
   ],
 } as Meta;

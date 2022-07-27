@@ -1,3 +1,4 @@
+import { HttpClientModule } from '@angular/common/http';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import '@angular/localize/init';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -16,7 +17,7 @@ export default {
   title: 'Components/Mockup',
   decorators: [
     moduleMetadata({
-      imports: [KtbAppHeaderModule, KtbSelectableTileModule, FlexLayoutModule, RouterTestingModule],
+      imports: [KtbAppHeaderModule, KtbSelectableTileModule, FlexLayoutModule, RouterTestingModule, HttpClientModule],
     }),
   ],
   parameters: {

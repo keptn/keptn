@@ -1,3 +1,4 @@
+import { HttpClientModule } from '@angular/common/http';
 import { componentWrapperDecorator, moduleMetadata } from '@storybook/angular';
 import { Meta, Story } from '@storybook/angular/types-6-0';
 import moment from 'moment';
@@ -15,7 +16,7 @@ export default {
   title: 'Components/Heatmap',
   decorators: [
     moduleMetadata({
-      imports: [KtbHeatmapModule],
+      imports: [KtbHeatmapModule, HttpClientModule],
     }),
     componentWrapperDecorator((story) => `<div style="margin: 16px">${story}</div>`),
   ],
@@ -37,7 +38,7 @@ function getColor(value: number): EvaluationResultType {
   return EvaluationResultTypeExtension.INFO;
 }
 
-export function generateTestData(sliCounter: number, counter: number): IDataPoint[] {
+function generateTestData(sliCounter: number, counter: number): IDataPoint[] {
   const categories = ['score'];
   const slis = [];
   for (let i = 0; i < sliCounter - 1; ++i) {

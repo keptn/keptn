@@ -1,3 +1,4 @@
+import { HttpClientModule } from '@angular/common/http';
 import '@angular/localize/init';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -11,7 +12,7 @@ export default {
   title: 'Components/App Header',
   decorators: [
     moduleMetadata({
-      imports: [KtbAppHeaderModule, RouterTestingModule, BrowserAnimationsModule],
+      imports: [KtbAppHeaderModule, HttpClientModule, RouterTestingModule, BrowserAnimationsModule],
     }),
   ],
   parameters: {
@@ -36,7 +37,7 @@ standard.args = {
     bridgeInfo: {
       featureFlags: {
         RESOURCE_SERVICE_ENABLED: true,
-        D3_HEATMAP_ENABLED: true,
+        D3_ENABLED: true,
       },
       cliDownloadLink: '',
       enableVersionCheckFeature: true,

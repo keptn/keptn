@@ -2,9 +2,11 @@ import {Canvas, Meta, Story} from '@storybook/addon-docs';
 import {moduleMetadata} from "@storybook/angular";
 import {KtbDangerZoneComponent} from "../../client/app/_components/ktb-danger-zone/ktb-danger-zone.component";
 import {KtbDangerZoneModule} from "../../client/app/_components/ktb-danger-zone/ktb-danger-zone.module";
+import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
+import {HttpClientModule} from "@angular/common/http";
 
 <Meta title="Components/Danger Zone" component={KtbDangerZoneComponent}
-      decorators={[moduleMetadata({imports: [KtbDangerZoneModule]})]}/>
+      decorators={[moduleMetadata({imports: [KtbDangerZoneModule, BrowserAnimationsModule, HttpClientModule]})]}/>
 
 # Danger Zone
 
