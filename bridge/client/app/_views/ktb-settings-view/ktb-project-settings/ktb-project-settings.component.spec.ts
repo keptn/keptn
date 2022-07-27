@@ -279,9 +279,12 @@ describe('KtbProjectSettingsComponent update', () => {
     expect(component.isCreateMode()).toBe(false);
   });
 
-  it('should set project name to projectName retrieved by route', () => {
+  it('should set project name to projectName retrieved by route', (done) => {
     routeParamsSubject.next({ projectName: 'sockshop' });
-    expect(component.projectName).toEqual('sockshop');
+    component.state$.subscribe((state) => {
+      expect(state.projectName).toEqual('sockshop');
+      done();
+    });
   });
 
   it('should delete a project and navigate to dashboard', () => {
@@ -289,7 +292,6 @@ describe('KtbProjectSettingsComponent update', () => {
     const eventService = TestBed.inject(EventService);
     const router = TestBed.inject(Router);
     const routeSpy = jest.spyOn(router, 'navigate');
-    component.projectName = 'sockshop';
     fixture.detectChanges();
 
     // when
@@ -304,7 +306,6 @@ describe('KtbProjectSettingsComponent update', () => {
     const eventService = TestBed.inject(EventService);
     const progressSpy = jest.spyOn(eventService.deletionProgressEvent, 'next');
     jest.spyOn(dataService, 'deleteProject').mockReturnValue(throwError(() => new Error('my error')));
-    component.projectName = 'sockshop';
     fixture.detectChanges();
 
     // when
@@ -506,7 +507,6 @@ describe('KtbProjectSettingsComponent update', () => {
   it('should update git upstream without user', () => {
     // given
     const updateSpy = jest.spyOn(dataService, 'updateGitUpstream');
-    component.projectName = 'sockshop';
     component.gitDataExtended = {
       remoteURL: 'https://github.com/Kirdock/keptn-dynatrace',
       https: {
