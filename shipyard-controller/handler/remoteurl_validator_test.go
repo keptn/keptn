@@ -9,14 +9,14 @@ import (
 
 func Test_RemoteURLValidator(t *testing.T) {
 	tests := []struct {
-		url              string
-		denyListProvider common.DenyListProvider
-		expectErr        bool
+		url        string
+		fileReader common.FileReader
+		expectErr  bool
 	}{
 		{
 			url: "some",
-			denyListProvider: common_mock.DenyListProviderMock{
-				GetDenyListFunc: func() []string {
+			fileReader: common_mock.FileReaderMock{
+				GetFunc: func(path string) []string {
 					return []string{"some", "list"}
 				},
 			},
@@ -24,8 +24,8 @@ func Test_RemoteURLValidator(t *testing.T) {
 		},
 		{
 			url: "some",
-			denyListProvider: common_mock.DenyListProviderMock{
-				GetDenyListFunc: func() []string {
+			fileReader: common_mock.FileReaderMock{
+				GetFunc: func(path string) []string {
 					return []string{}
 				},
 			},
@@ -33,8 +33,8 @@ func Test_RemoteURLValidator(t *testing.T) {
 		},
 		{
 			url: "some",
-			denyListProvider: common_mock.DenyListProviderMock{
-				GetDenyListFunc: func() []string {
+			fileReader: common_mock.FileReaderMock{
+				GetFunc: func(path string) []string {
 					return []string{"something"}
 				},
 			},
@@ -42,8 +42,8 @@ func Test_RemoteURLValidator(t *testing.T) {
 		},
 		{
 			url: "something",
-			denyListProvider: common_mock.DenyListProviderMock{
-				GetDenyListFunc: func() []string {
+			fileReader: common_mock.FileReaderMock{
+				GetFunc: func(path string) []string {
 					return []string{"some"}
 				},
 			},
@@ -51,8 +51,8 @@ func Test_RemoteURLValidator(t *testing.T) {
 		},
 		{
 			url: "something",
-			denyListProvider: common_mock.DenyListProviderMock{
-				GetDenyListFunc: func() []string {
+			fileReader: common_mock.FileReaderMock{
+				GetFunc: func(path string) []string {
 					return []string{""}
 				},
 			},
@@ -60,8 +60,8 @@ func Test_RemoteURLValidator(t *testing.T) {
 		},
 		{
 			url: "something",
-			denyListProvider: common_mock.DenyListProviderMock{
-				GetDenyListFunc: func() []string {
+			fileReader: common_mock.FileReaderMock{
+				GetFunc: func(path string) []string {
 					return []string{"."}
 				},
 			},
@@ -71,7 +71,7 @@ func Test_RemoteURLValidator(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run("", func(t *testing.T) {
-			validator := NewRemoteURLValidator(tt.denyListProvider)
+			validator := NewRemoteURLValidator(tt.fileReader)
 			res := validator.Validate(tt.url)
 			if (res != nil) != tt.expectErr {
 				t.Errorf("Validate() error = %v, wantErr %v", res, tt.expectErr)

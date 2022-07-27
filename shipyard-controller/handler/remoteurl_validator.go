@@ -8,14 +8,14 @@ import (
 )
 
 type remoteURLValidator struct {
-	denyListProvider common.DenyListProvider
+	denyListProvider common.FileReader
 }
 
 type RemoteURLValidator interface {
 	Validate(url string) error
 }
 
-func NewRemoteURLValidator(denyListProvider common.DenyListProvider) RemoteURLValidator {
+func NewRemoteURLValidator(denyListProvider common.FileReader) RemoteURLValidator {
 	validator := remoteURLValidator{
 		denyListProvider: denyListProvider,
 	}
@@ -23,7 +23,7 @@ func NewRemoteURLValidator(denyListProvider common.DenyListProvider) RemoteURLVa
 }
 
 func (c remoteURLValidator) Validate(url string) error {
-	denyList := c.denyListProvider.Get()
+	denyList := c.denyListProvider.Get(common.RemoteURLDenyListPath)
 
 	for _, item := range denyList {
 		if res, _ := regexp.MatchString(item, url); res {
