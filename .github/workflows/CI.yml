@@ -257,49 +257,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-        with:
-          install: true
-
-      - name: Build ${{ matrix.config.artifact }} test image
-        if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
-        uses: docker/build-push-action@v3
-        with:
-          context: ${{ matrix.config.working-dir }}
-          tags: ${{ matrix.config.artifact }}-test-${{ github.sha }}
-          target: ${{ matrix.config.docker-test-target }}
-          load: true
-          push: false
-
-      - name: Test ${{ matrix.config.artifact }}
-        if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
-        env:
-          IMAGE_NAME: ${{ matrix.config.artifact }}-test-${{ github.sha }}
-        run: |
-          docker run --rm -v "$PWD/shared:/shared" $IMAGE_NAME
-
-      - name: Report test coverage for ${{ matrix.config.artifact }}
-        if: matrix.config.should-push-image == 'true'
-        uses: codecov/codecov-action@v3
-        with:
-          fail_ci_if_error: false
-          flags: ${{ matrix.config.artifact }}
-
-      - name: Report test coverage for bridge-server
-        if: matrix.config.should-push-image == 'false' && matrix.config.artifact == 'bridge2' && matrix.config.docker-test-target == 'bridge-server-test'
-        uses: codecov/codecov-action@v3
-        with:
-          fail_ci_if_error: false
-          flags: bridge-server
-
-      - name: Upload Test Screenshots
-        if: always() && matrix.config.artifact == 'bridge2' && matrix.config.docker-test-target == 'builder-test-ui'
-        uses: actions/upload-artifact@v3
-        with:
-          name: bridge-e2e-screenshots
-          path: ./shared/screenshots
-
   unit-tests-cli:
     name: Unit Tests CLI (multi OS/arch)
     needs: prepare_ci_run
