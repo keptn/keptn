@@ -99,11 +99,7 @@ class EnvironmentPage {
     status: 'success' | 'error' | 'warning' | undefined,
     variant: EvaluationBadgeVariant
   ): this {
-    this.getServiceDetailsContainer(service)
-      .find('.current-evaluation')
-      .assertEvaluationBadge(status, score, variant)
-      .should('not.have.class', 'border')
-      .should('have.text', score);
+    this.getServiceDetailsContainer(service).find('.current-evaluation').assertEvaluationBadge(status, score, variant);
     return this;
   }
 
