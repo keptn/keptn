@@ -1,11 +1,7 @@
-# Use the official Golang image to create a build artifact.
-# This is based on Debian and sets the GOPATH to /go.
 FROM golang:1.18.4 as builder-base
 
 WORKDIR /go/src/github.com/keptn/keptn/mongodb-datastore
 
-# Force the go compiler to use modules
-ENV GO111MODULE=on
 ENV BUILDFLAGS=""
 ENV GOPROXY=https://proxy.golang.org
 
@@ -30,19 +26,20 @@ CMD gotestsum --no-color=false -- -race -coverprofile=coverage.txt -covermode=at
 FROM builder-base as builder
 ARG version=develop
 ARG debugBuild
+ENV CGO_ENABLED=0
 
 # set buildflags for debug build
 RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi
 
-RUN sed -i "s/version: develop/version: ${version}/g" /go/src/github.com/keptn/keptn/mongodb-datastore/swagger.yaml
+RUN sed -i "s/version: develop/version: ${version}/g" ./swagger.yaml
 
 # Build the command inside the container.
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
-RUN cd cmd/mongodb-datastore-server && GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -v -o mongodb-datastore
+RUN cd cmd/mongodb-datastore-server && go build $BUILDFLAGS -v -o mongodb-datastore
 
 # Replace contents for api proxy
-RUN sed -i "s|basePath: /|basePath: /api/mongodb-datastore |g" /go/src/github.com/keptn/keptn/mongodb-datastore/swagger.yaml
-RUN sed -i '/paths:/i securityDefinitions:\n  key:\n    type: apiKey\n    in: header\n    name: x-token\nsecurity:\n  - key: []\n' /go/src/github.com/keptn/keptn/mongodb-datastore/swagger.yaml
+RUN sed -i "s|basePath: /|basePath: /api/mongodb-datastore |g" ./swagger.yaml
+RUN sed -i '/paths:/i securityDefinitions:\n  key:\n    type: apiKey\n    in: header\n    name: x-token\nsecurity:\n  - key: []\n' ./swagger.yaml
 
 FROM gcr.io/distroless/static-debian11 as production
 ARG version=develop
@@ -58,7 +55,6 @@ LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
 COPY --from=builder /go/src/github.com/keptn/keptn/mongodb-datastore/cmd/mongodb-datastore-server/mongodb-datastore /mongodb-datastore
 COPY --from=builder /go/src/github.com/keptn/keptn/mongodb-datastore/swagger-ui /swagger-ui
 COPY --from=builder /go/src/github.com/keptn/keptn/mongodb-datastore/swagger.yaml /swagger-ui/swagger-original.yaml
-
 COPY --from=builder /go/src/github.com/keptn/keptn/mongodb-datastore/swagger.yaml /swagger-ui/swagger.yaml
 
 EXPOSE 8080

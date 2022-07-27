@@ -1,24 +1,16 @@
-# Use the official Golang image to create a build artifact.
-# This is based on Debian and sets the GOPATH to /go.
 FROM golang:1.18.4-alpine3.16 as builder-base
 
 WORKDIR /go/src/github.com/keptn/keptn/api
 
-# Force the go compiler to use modules
-ENV GO111MODULE=on
 ENV BUILDFLAGS=""
 ENV GOPROXY=https://proxy.golang.org
 
-RUN apk add --no-cache gcc libc-dev git
+RUN apk add --no-cache gcc libc-dev
 
-# Copy `go.mod` for definitions and `go.sum` to invalidate the next layer
-# in case of a change in the dependencies
 COPY go.mod go.sum ./
 
-# Download dependencies
 RUN go mod download
 
-# Copy local code to the container image.
 COPY . .
 
 FROM builder-base as builder-test
@@ -30,16 +22,15 @@ CMD gotestsum --no-color=false -- -coverprofile=coverage.txt -covermode=atomic -
 FROM builder-base as builder
 ARG version=develop
 ARG debugBuild
+ENV CGO_ENABLED=0
 
 # set buildflags for debug build
 RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi
 
-RUN sed -i "s/version: develop/version: ${version}/g" /go/src/github.com/keptn/keptn/api/swagger.yaml
-RUN sed -i "s|basePath: /v1|basePath: /api/v1 |g" /go/src/github.com/keptn/keptn/api/swagger.yaml
+RUN sed -i "s/version: develop/version: ${version}/g" ./swagger.yaml
+RUN sed -i "s|basePath: /v1|basePath: /api/v1 |g" ./swagger.yaml
 
-# Build the command inside the container.
-# (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
-RUN GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -v cmd/api-server/main.go
+RUN go build $BUILDFLAGS -v cmd/api-server/main.go
 
 FROM gcr.io/distroless/static-debian11 as production
 ARG version=develop

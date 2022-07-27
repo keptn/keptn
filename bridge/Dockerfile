@@ -75,13 +75,13 @@ ENV API_TOKEN ""
 WORKDIR /usr/src/app
 
 # copy angular output from angularBuilder
-COPY --from=bridge-builder --chown=65532:65532 /usr/src/app/dist /usr/src/app/dist
-COPY --from=bridge-server-builder --chown=65532:65532 /usr/src/app/server/dist /usr/src/app/server/dist
-COPY --from=bridge-server-builder --chown=65532:65532 /usr/src/app/server/package.json /usr/src/app/server/
-COPY --from=bridge-server-builder --chown=65532:65532 /usr/src/app/server/node_modules /usr/src/app/server/node_modules
+COPY --from=bridge-builder --chown=nonroot /usr/src/app/dist /usr/src/app/dist
+COPY --from=bridge-server-builder --chown=nonroot /usr/src/app/server/dist /usr/src/app/server/dist
+COPY --from=bridge-server-builder --chown=nonroot /usr/src/app/server/package.json /usr/src/app/server/
+COPY --from=bridge-server-builder --chown=nonroot /usr/src/app/server/node_modules /usr/src/app/server/node_modules
 
 # Set user
-USER 65532:65532
+USER nonroot
 
 EXPOSE 3000
 CMD ["npm", "start", "--prefix", "./server"]

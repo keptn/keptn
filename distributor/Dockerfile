@@ -31,13 +31,14 @@ FROM builder-base as builder
 ARG debugBuild
 ARG buildTime=unknown
 ARG gitSha=unknown
+ENV CGO_ENABLED=0
 
 # set buildflags for debug build
 RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi
 
 # Build the command inside the container.
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-linkmode=external -X main.gitCommit=$gitSha -X main.buildTime=$buildTime" $BUILDFLAGS -v -o distributor ./cmd/
+RUN go build -ldflags "-X main.gitCommit=$gitSha -X main.buildTime=$buildTime" $BUILDFLAGS -v -o distributor ./cmd/
 
 FROM gcr.io/distroless/static-debian11 as production
 ARG version=develop
