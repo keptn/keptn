@@ -15,7 +15,7 @@
         [warning]="stateInfo.isWarning"
         [aborted]="stateInfo.isAborted"
         [highlight]="!!stage.approvalInformation"
-        [fill]="!!stage.deploymentURL"
+        [fillState]="stage.deploymentURL ? EvaluationBadgeFillState.FILL : EvaluationBadgeFillState.BORDER"
         (click)="$event.stopPropagation(); selectStage(stage.name)"
       ></ktb-stage-badge>
       <ktb-loading-spinner

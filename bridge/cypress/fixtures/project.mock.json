@@ -114,7 +114,7 @@
                 "state": "finished",
                 "latestEvaluation": {
                   "result": "pass",
-                  "score": 0
+                  "score": 100
                 },
                 "latestEvent": {
                   "type": "sh.keptn.event.dev.delivery.finished",
@@ -126,7 +126,7 @@
                     "evaluation": {
                       "indicatorResults": null,
                       "result": "pass",
-                      "score": 0,
+                      "score": 100,
                       "sloFileContent": "",
                       "timeEnd": "2021-09-23T15:59:25Z",
                       "timeStart": "2021-09-23T15:58:11Z"
@@ -589,6 +589,38 @@
                   "type": "sh.keptn.event.production.delivery.finished",
                   "id": "3a814dc1-0908-4e89-9ef9-ad3025fed821",
                   "time": "2021-09-23T16:14:51.750Z"
+                },
+                "latestEvaluation": {
+                  "result": "warning",
+                  "score": 50
+                },
+                "latestEvaluationTrace": {
+                  "data": {
+                    "evaluation": {
+                      "indicatorResults": null,
+                      "result": "warning",
+                      "score": 50,
+                      "sloFileContent": "",
+                      "timeEnd": "2021-09-23T15:59:25Z",
+                      "timeStart": "2021-09-23T15:58:11Z"
+                    },
+                    "labels": {
+                      "DtCreds": "dynatrace"
+                    },
+                    "project": "sockshop",
+                    "result": "warning",
+                    "service": "carts",
+                    "stage": "production",
+                    "status": "succeeded"
+                  },
+                  "id": "dfc49f43-097f-462a-8b98-1b59a7b775e9",
+                  "source": "lighthouse-service",
+                  "specversion": "1.0",
+                  "time": "2021-09-23T16:01:42.455Z",
+                  "type": "sh.keptn.event.evaluation.finished",
+                  "shkeptncontext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "shkeptnspecversion": "0.2.3",
+                  "triggeredid": "72619f05-788d-4eef-be25-d7cf9ab14c1e"
                 }
               }
             ]

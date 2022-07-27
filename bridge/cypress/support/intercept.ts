@@ -47,30 +47,20 @@ export function interceptEnvironmentScreen(): void {
     },
   }).as('triggeredSequenceEvents');
 
-  for (const url of getEvaluationUrls(project, 'carts')) {
-    cy.intercept('GET', url, { body: { events: [] } });
-  }
-
-  for (const url of getEvaluationUrls(project, 'carts-db')) {
-    cy.intercept('GET', url, { body: { events: [] } });
-  }
+  setEvaluationUrls(project, 'carts');
+  setEvaluationUrls(project, 'carts-db');
 }
 
-function getEvaluationUrls(project: string, service: string): string[] {
-  return [
-    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project}%20AND%20data.service:${service}%20AND%20data.stage:dev%20AND%20source:lighthouse-service&excludeInvalidated=true&limit=5`,
-    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project} AND data.service:${service} AND data.stage:dev AND source:lighthouse-service&excludeInvalidated=true&limit=5`,
-    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project} AND data.service:${service} AND data.stage:dev AND source:lighthouse-service&excludeInvalidated=true&limit=6`,
-    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project}%20AND%20data.service:${service}%20AND%20data.stage:dev%20AND%20source:lighthouse-service&excludeInvalidated=true&limit=6`,
-    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project}%20AND%20data.service:${service}%20AND%20data.stage:staging%20AND%20source:lighthouse-service&excludeInvalidated=true&limit=5`,
-    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project} AND data.service:${service} AND data.stage:staging AND source:lighthouse-service&excludeInvalidated=true&limit=5`,
-    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project}%20AND%20data.service:${service}%20AND%20data.stage:staging%20AND%20source:lighthouse-service&excludeInvalidated=true&limit=6`,
-    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project} AND data.service:${service} AND data.stage:staging AND source:lighthouse-service&excludeInvalidated=true&limit=6`,
-    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project} AND data.service:${service} AND data.stage:production AND source:lighthouse-service&excludeInvalidated=true&limit=5`,
-    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project}%20AND%20data.service:${service}%20AND%20data.stage:production%20AND%20source:lighthouse-service&excludeInvalidated=true&limit=5`,
-    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project} AND data.service:${service} AND data.stage:production AND source:lighthouse-service&excludeInvalidated=true&limit=6`,
-    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project}%20AND%20data.service:${service}%20AND%20data.stage:production%20AND%20source:lighthouse-service&excludeInvalidated=true&limit=6`,
-  ];
+function setEvaluationUrls(project: string, service: string): void {
+  for (const stage of ['dev', 'staging', 'production']) {
+    for (const limit of [5, 6]) {
+      cy.intercept(
+        'GET',
+        `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project}%20AND%20data.service:${service}%20AND%20data.stage:${stage}%20AND%20source:lighthouse-service&excludeInvalidated=true&limit=${limit}`,
+        { body: { events: [] } }
+      ).as(`evaluationHistory-${service}-${stage}-${limit}`);
+    }
+  }
 }
 
 export function interceptMainResourceEnabled(): void {

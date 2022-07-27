@@ -4,6 +4,7 @@ import { DataService } from '../../_services/data.service';
 import { DtOverlayConfig } from '@dynatrace/barista-components/overlay';
 import { EventTypes } from '../../../../shared/interfaces/event-types';
 import { KeptnService } from '../../../../shared/models/keptn-service';
+import { EvaluationBadgeVariant, getEvaluationBadgeState } from '../ktb-evaluation-badge/ktb-evaluation-badge.utils';
 
 @Component({
   selector: 'ktb-approval-item[event]',
@@ -16,6 +17,8 @@ export class KtbApprovalItemComponent {
   public approvalResult?: boolean;
   public evaluation?: Trace;
   public evaluationExists = true;
+  public getEvaluationBadgeState = getEvaluationBadgeState;
+  public EvaluationBadgeVariant = EvaluationBadgeVariant;
 
   public overlayConfig: DtOverlayConfig = {
     pinnable: true,

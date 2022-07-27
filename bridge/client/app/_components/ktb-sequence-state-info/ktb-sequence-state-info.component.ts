@@ -1,6 +1,7 @@
 import { Component, EventEmitter, HostBinding, Input, Output, ViewEncapsulation } from '@angular/core';
 import { ISequence } from '../../../../shared/interfaces/sequence';
 import { createSequenceStateInfo, getLastStageName, getStageNames } from '../../_models/sequence';
+import { EvaluationBadgeVariant } from '../ktb-evaluation-badge/ktb-evaluation-badge.utils';
 
 @Component({
   selector: 'ktb-sequence-state-info',
@@ -12,7 +13,7 @@ export class KtbSequenceStateInfoComponent {
   @HostBinding('class') cls = 'ktb-sequence-state-info';
   private _sequence?: ISequence;
   private _showStages = true;
-
+  public EvaluationBadgeVariant = EvaluationBadgeVariant;
   createSequenceStateInfo = createSequenceStateInfo;
   getStageNames = getStageNames;
 
