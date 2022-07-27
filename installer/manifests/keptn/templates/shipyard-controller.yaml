@@ -26,6 +26,7 @@ spec:
           volumeMounts:
             - name: keptn-git-config-volume
               mountPath: /keptn-git-config
+              readOnly: true
           image: {{ include "keptn.common.images.image" ( dict "imageRoot" .Values.shipyardController.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote }}
           lifecycle:
             preStop:
