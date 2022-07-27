@@ -41,7 +41,7 @@ func (d *fileReader) GetLines(filePath string) []string {
 	}
 	defer gitConfigFile.Close()
 
-	var lines []string
+	lines := []string{}
 	scanner := bufio.NewScanner(gitConfigFile)
 	for scanner.Scan() {
 		lines = append(lines, scanner.Text())
