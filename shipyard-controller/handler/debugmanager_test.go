@@ -6,9 +6,11 @@ import (
 	"time"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
+	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -311,30 +313,33 @@ func TestDebugManager_GetAllSequencesForProject(t *testing.T) {
 		DebugManager IDebugManager
 	}
 
-	sequences := &apimodels.SequenceStates{
-		States:      []apimodels.SequenceState{},
-		NextPageKey: 0,
-		PageSize:    0,
-		TotalCount:  0,
+	sequences := []models.SequenceExecution{
+		{
+			ID:              "id",
+			SchemaVersion:   "version",
+			Sequence:        keptnv2.Sequence{},
+			Status:          models.SequenceExecutionStatus{},
+			Scope:           models.EventScope{},
+			InputProperties: nil,
+			TriggeredAt:     time.Time{},
+		},
 	}
 
 	tests := []struct {
 		name                   string
 		fields                 fields
 		expectedErrorResult    error
-		expectedProjectsResult *apimodels.SequenceStates
+		expectedProjectsResult []models.SequenceExecution
 	}{
 		{
 			name: "GET all sequences ok",
 			fields: fields{
 				DebugManager: &DebugManager{
-					projectRepo: &db_mock.ProjectRepoMock{},
-					stateRepo: &db_mock.SequenceStateRepoMock{
-						FindSequenceStatesFunc: func(filter apimodels.StateFilter) (*apimodels.SequenceStates, error) {
+					sequenceExecutionRepo: &db_mock.SequenceExecutionRepoMock{
+						GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
 							return sequences, nil
 						},
 					},
-					eventRepo: &db_mock.EventRepoMock{},
 				},
 			},
 			expectedErrorResult:    nil,
@@ -344,29 +349,25 @@ func TestDebugManager_GetAllSequencesForProject(t *testing.T) {
 			name: "GET all sequences empty",
 			fields: fields{
 				DebugManager: &DebugManager{
-					projectRepo: &db_mock.ProjectRepoMock{},
-					stateRepo: &db_mock.SequenceStateRepoMock{
-						FindSequenceStatesFunc: func(filter apimodels.StateFilter) (*apimodels.SequenceStates, error) {
-							return &apimodels.SequenceStates{}, nil
+					sequenceExecutionRepo: &db_mock.SequenceExecutionRepoMock{
+						GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
+							return []models.SequenceExecution{}, nil
 						},
 					},
-					eventRepo: &db_mock.EventRepoMock{},
 				},
 			},
 			expectedErrorResult:    nil,
-			expectedProjectsResult: &apimodels.SequenceStates{},
+			expectedProjectsResult: []models.SequenceExecution{},
 		},
 		{
 			name: "GET all sequences error",
 			fields: fields{
 				DebugManager: &DebugManager{
-					projectRepo: &db_mock.ProjectRepoMock{},
-					stateRepo: &db_mock.SequenceStateRepoMock{
-						FindSequenceStatesFunc: func(filter apimodels.StateFilter) (*apimodels.SequenceStates, error) {
+					sequenceExecutionRepo: &db_mock.SequenceExecutionRepoMock{
+						GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
 							return nil, errors.New("error")
 						},
 					},
-					eventRepo: &db_mock.EventRepoMock{},
 				},
 			},
 			expectedErrorResult:    errors.New("error"),
@@ -376,13 +377,11 @@ func TestDebugManager_GetAllSequencesForProject(t *testing.T) {
 			name: "GET all sequences project not set",
 			fields: fields{
 				DebugManager: &DebugManager{
-					projectRepo: &db_mock.ProjectRepoMock{},
-					stateRepo: &db_mock.SequenceStateRepoMock{
-						FindSequenceStatesFunc: func(filter apimodels.StateFilter) (*apimodels.SequenceStates, error) {
+					sequenceExecutionRepo: &db_mock.SequenceExecutionRepoMock{
+						GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
 							return nil, errors.New("project must be set")
 						},
 					},
-					eventRepo: &db_mock.EventRepoMock{},
 				},
 			},
 			expectedErrorResult:    errors.New("project must be set"),

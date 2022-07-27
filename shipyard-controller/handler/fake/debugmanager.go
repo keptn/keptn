@@ -5,10 +5,14 @@ package fake
 
 import (
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	scmodels "github.com/keptn/keptn/shipyard-controller/models"
 	"sync"
 )
 
-// Ensure, that IDebugManagerMock does implement handler.IDebugManager
+// Ensure, that IDebugManagerMock does implement handler.IDebugManager.
+// If this is not the case, regenerate this file with moq.
+//var _ handler.IDebugManager = &IDebugManagerMock{}
+
 // IDebugManagerMock is a mock implementation of handler.IDebugManager.
 //
 // 	func TestSomethingThatUsesIDebugManager(t *testing.T) {
@@ -21,7 +25,7 @@ import (
 // 			GetAllProjectsFunc: func() ([]*apimodels.ExpandedProject, error) {
 // 				panic("mock out the GetAllProjects method")
 // 			},
-// 			GetAllSequencesForProjectFunc: func(projectName string) (*apimodels.SequenceStates, error) {
+// 			GetAllSequencesForProjectFunc: func(projectName string) ([]scmodels.SequenceExecution, error) {
 // 				panic("mock out the GetAllSequencesForProject method")
 // 			},
 // 			GetEventByIDFunc: func(projectName string, shkeptncontext string, eventId string) (*apimodels.KeptnContextExtendedCE, error) {
@@ -44,7 +48,7 @@ type IDebugManagerMock struct {
 	GetAllProjectsFunc func() ([]*apimodels.ExpandedProject, error)
 
 	// GetAllSequencesForProjectFunc mocks the GetAllSequencesForProject method.
-	GetAllSequencesForProjectFunc func(projectName string) (*apimodels.SequenceStates, error)
+	GetAllSequencesForProjectFunc func(projectName string) ([]scmodels.SequenceExecution, error)
 
 	// GetEventByIDFunc mocks the GetEventByID method.
 	GetEventByIDFunc func(projectName string, shkeptncontext string, eventId string) (*apimodels.KeptnContextExtendedCE, error)
@@ -155,7 +159,7 @@ func (mock *IDebugManagerMock) GetAllProjectsCalls() []struct {
 }
 
 // GetAllSequencesForProject calls GetAllSequencesForProjectFunc.
-func (mock *IDebugManagerMock) GetAllSequencesForProject(projectName string) (*apimodels.SequenceStates, error) {
+func (mock *IDebugManagerMock) GetAllSequencesForProject(projectName string) ([]scmodels.SequenceExecution, error) {
 	if mock.GetAllSequencesForProjectFunc == nil {
 		panic("IDebugManagerMock.GetAllSequencesForProjectFunc: method is nil but IDebugManager.GetAllSequencesForProject was just called")
 	}

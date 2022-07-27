@@ -1,31 +1,37 @@
 package handler
 
 import (
+	"sort"
+
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
+	"github.com/keptn/keptn/shipyard-controller/models"
 )
 
 type IDebugManager interface {
 	GetAllProjects() ([]*apimodels.ExpandedProject, error)
 	GetSequenceByID(projectName string, shkeptncontext string) (*apimodels.SequenceState, error)
-	GetAllSequencesForProject(projectName string) (*apimodels.SequenceStates, error)
+	GetAllSequencesForProject(projectName string) ([]models.SequenceExecution, error)
 	GetAllEvents(projectName string, shkeptncontext string) ([]*apimodels.KeptnContextExtendedCE, error)
 	GetEventByID(projectName string, shkeptncontext string, eventId string) (*apimodels.KeptnContextExtendedCE, error)
 }
 
 type DebugManager struct {
-	eventRepo   db.EventRepo
-	stateRepo   db.SequenceStateRepo
-	projectRepo db.ProjectRepo
+	eventRepo             db.EventRepo
+	stateRepo             db.SequenceStateRepo
+	projectRepo           db.ProjectRepo
+	sequenceExecutionRepo db.SequenceExecutionRepo
 }
 
-func NewDebugManager(eventRepo db.EventRepo, stateRepo db.SequenceStateRepo, projectsRepo db.ProjectRepo) *DebugManager {
+func NewDebugManager(eventRepo db.EventRepo, stateRepo db.SequenceStateRepo, projectsRepo db.ProjectRepo, sequenceExecutionRepo db.SequenceExecutionRepo) *DebugManager {
 	return &DebugManager{
-		eventRepo:   eventRepo,
-		stateRepo:   stateRepo,
-		projectRepo: projectsRepo,
+		eventRepo:             eventRepo,
+		stateRepo:             stateRepo,
+		projectRepo:           projectsRepo,
+		sequenceExecutionRepo: sequenceExecutionRepo,
 	}
 }
 
@@ -41,11 +47,17 @@ func (dm *DebugManager) GetSequenceByID(projectName string, shkeptncontext strin
 	return sequence, err
 }
 
-func (dm *DebugManager) GetAllSequencesForProject(projectName string) (*apimodels.SequenceStates, error) {
-	sequences, err := dm.stateRepo.FindSequenceStates(apimodels.StateFilter{
-		GetSequenceStateParams: apimodels.GetSequenceStateParams{
-			Project: projectName,
+func (dm *DebugManager) GetAllSequencesForProject(projectName string) ([]models.SequenceExecution, error) {
+	sequences, err := dm.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
+		Scope: models.EventScope{
+			EventData: keptnv2.EventData{
+				Project: projectName,
+			},
 		},
+	})
+
+	sort.SliceStable(sequences, func(i, j int) bool {
+		return sequences[i].TriggeredAt.After(sequences[j].TriggeredAt)
 	})
 
 	return sequences, err
