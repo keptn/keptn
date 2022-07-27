@@ -17,6 +17,7 @@ import { NotificationsService } from '../../../_services/notifications.service';
 import { NotificationType } from '../../../_models/notification';
 import { KtbProjectCreateMessageComponent } from './ktb-project-create-message/ktb-project-create-message.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { filter } from 'rxjs';
 
 describe('KtbProjectSettingsComponent create', () => {
   let component: KtbProjectSettingsComponent;
@@ -275,13 +276,16 @@ describe('KtbProjectSettingsComponent update', () => {
   });
 
   it('should have create mode disabled when projectName param is set', () => {
-    routeParamsSubject.next({ projectName: 'sockshop' });
-    expect(component.isCreateMode()).toBe(false);
+    expect(component.isCreateMode('sockshop')).toBe(false);
   });
 
   it('should set project name to projectName retrieved by route', (done) => {
+    // given
     routeParamsSubject.next({ projectName: 'sockshop' });
-    component.state$.subscribe((state) => {
+    fixture.detectChanges();
+
+    // then
+    component.state$.pipe(filter((state) => !!state.projectName)).subscribe((state) => {
       expect(state.projectName).toEqual('sockshop');
       done();
     });
@@ -516,7 +520,7 @@ describe('KtbProjectSettingsComponent update', () => {
     };
 
     // when
-    component.updateGitUpstream();
+    component.updateGitUpstream('sockshop');
 
     // then
     expect(updateSpy).toHaveBeenCalledWith('sockshop', {
@@ -534,7 +538,7 @@ describe('KtbProjectSettingsComponent update', () => {
     fixture.detectChanges();
 
     // when
-    component.updateGitUpstream();
+    component.updateGitUpstream('sockshop');
 
     // then
     expect(updateUpstreamSpy).not.toHaveBeenCalled();
@@ -548,7 +552,7 @@ describe('KtbProjectSettingsComponent update', () => {
 
     // when
     component.updateGitDataExtended(data);
-    component.updateGitUpstream();
+    component.updateGitUpstream('sockshop');
 
     // then
     expect(updateUpstreamSpy).toHaveBeenCalledWith('sockshop', data);
@@ -567,7 +571,7 @@ describe('KtbProjectSettingsComponent update', () => {
 
     // when
     component.updateGitDataExtended(getDefaultSshData());
-    component.updateGitUpstream();
+    component.updateGitUpstream('sockshop');
 
     // then
     expect(inProgressSpy).toHaveBeenCalledWith(false);
@@ -580,7 +584,7 @@ describe('KtbProjectSettingsComponent update', () => {
     const createSpy = jest.spyOn(component, 'updateGitUpstream');
 
     // when
-    component.saveAll();
+    component.saveAll('sockshop');
 
     // then
     expect(component.unsavedDialogState).toBeNull();
