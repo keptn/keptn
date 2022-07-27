@@ -1,4 +1,3 @@
-import { EventEmitter } from '@angular/core';
 import { moduleMetadata } from '@storybook/angular';
 import { Meta, Story } from '@storybook/angular/types-6-0';
 import { KtbCertificateInputComponent } from '../../client/app/_components/ktb-certificate-input/ktb-certificate-input.component';
@@ -6,7 +5,6 @@ import { KtbCertificateInputModule } from '../../client/app/_components/ktb-cert
 
 export default {
   title: 'Components/Certificate Input',
-  component: KtbCertificateInputComponent,
   decorators: [
     moduleMetadata({
       imports: [KtbCertificateInputModule],
@@ -16,10 +14,10 @@ export default {
 
 const template: Story<KtbCertificateInputComponent> = (args: KtbCertificateInputComponent) => ({
   props: args,
+  template: `<ktb-certificate-input [certificateInput]="certificateInput" (certificateChange)="alert($event)"></ktb-certificate-input>`,
 });
 
 export const selected = template.bind({});
 selected.args = {
-  certificateInput: '---BEGIN--- CERTIFICATE ---END---',
-  certificateChange: { emit: alert } as EventEmitter<string | undefined>,
+  certificateInput: btoa('---BEGIN--- CERTIFICATE ---END---'),
 };

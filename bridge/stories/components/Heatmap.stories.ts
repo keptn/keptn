@@ -160,7 +160,7 @@ function generateTestData(sliCounter: number, counter: number): IDataPoint[] {
 
 const template: Story<KtbHeatmapComponent> = (args: KtbHeatmapComponent) => ({
   props: args,
-  template: `<ktb-heatmap [dataPoints]="dataPoints" [showMoreVisible]="showMoreVisible"></ktb-heatmap>`,
+  template: `<ktb-heatmap [dataPoints]="dataPoints"></ktb-heatmap>`,
 });
 
 export const random = template.bind({});
@@ -171,7 +171,6 @@ random.args = {
 export const randomLarge = template.bind({});
 randomLarge.args = {
   dataPoints: generateTestData(15, 40),
-  showMoreVisible: true,
 };
 
 export const empty = template.bind({});

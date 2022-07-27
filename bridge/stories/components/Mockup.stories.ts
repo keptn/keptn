@@ -1,6 +1,7 @@
 import { HttpClientModule } from '@angular/common/http';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import '@angular/localize/init';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterTestingModule } from '@angular/router/testing';
 import { moduleMetadata } from '@storybook/angular';
 import { Meta, Story } from '@storybook/angular/types-6-0';
@@ -17,7 +18,14 @@ export default {
   title: 'Components/Mockup',
   decorators: [
     moduleMetadata({
-      imports: [KtbAppHeaderModule, KtbSelectableTileModule, FlexLayoutModule, RouterTestingModule, HttpClientModule],
+      imports: [
+        KtbAppHeaderModule,
+        KtbSelectableTileModule,
+        FlexLayoutModule,
+        RouterTestingModule,
+        HttpClientModule,
+        BrowserAnimationsModule,
+      ],
     }),
   ],
   parameters: {

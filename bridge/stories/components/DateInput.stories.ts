@@ -7,7 +7,6 @@ import { KtbDatetimePickerComponent } from '../../client/app/_components/ktb-dat
 
 export default {
   title: 'Components/Date Input',
-  component: KtbDatetimePickerComponent,
   decorators: [
     moduleMetadata({
       imports: [KtbDateInputModule, HttpClientModule],
@@ -17,6 +16,7 @@ export default {
 
 const template: Story<KtbDatetimePickerComponent> = (args: KtbDatetimePickerComponent) => ({
   props: args,
+  template: `<ktb-datetime-picker [timeEnabled]="timeEnabled"></ktb-datetime-picker>`,
 });
 
 export const date = template.bind({});

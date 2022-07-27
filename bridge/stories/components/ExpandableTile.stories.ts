@@ -1,3 +1,4 @@
+import { HttpClientModule } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { moduleMetadata } from '@storybook/angular';
 import { Meta, Story } from '@storybook/angular/types-6-0';
@@ -9,7 +10,7 @@ export default {
   component: KtbExpandableTileComponent,
   decorators: [
     moduleMetadata({
-      imports: [KtbExpandableTileModule, BrowserAnimationsModule],
+      imports: [KtbExpandableTileModule, BrowserAnimationsModule, HttpClientModule],
     }),
   ],
 } as Meta;
