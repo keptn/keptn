@@ -1,6 +1,7 @@
 import EnvironmentPage from '../support/pageobjects/EnvironmentPage';
 import { ServicesSettingsPage } from '../support/pageobjects/ServicesSettingsPage';
 import ServicesPage from '../support/pageobjects/ServicesPage';
+import { EvaluationBadgeVariant } from '../../client/app/_components/ktb-evaluation-badge/ktb-evaluation-badge.utils';
 
 describe('Environment Screen empty', () => {
   const environmentPage = new EnvironmentPage();
@@ -28,7 +29,10 @@ describe('Environment Screen default requests', () => {
   });
 
   it('should not show evaluation history loading indicators', () => {
-    environmentPage.selectStage(stage).assertEvaluationHistoryLoadingCount('carts', 0);
+    environmentPage
+      .selectStage(stage)
+      .waitForEvaluationHistory('carts', stage, 6)
+      .assertEvaluationHistoryLoadingCount('carts', 0);
   });
 
   it('should not show evaluation history', () => {
@@ -36,7 +40,9 @@ describe('Environment Screen default requests', () => {
   });
 
   it('should not show evaluation', () => {
-    environmentPage.selectStage(stage).assertEvaluationInDetails('carts-db', '-');
+    environmentPage
+      .selectStage(stage)
+      .assertEvaluationInDetails('carts-db', '-', undefined, EvaluationBadgeVariant.NONE);
   });
 
   it('stage-detail component should exist after clicking on stage', () => {
@@ -110,54 +116,55 @@ describe('Environment Screen dynamic requests', () => {
 
   it('should show evaluation history loading indicators', () => {
     const service = 'carts';
-    cy.intercept(environmentPage.getEvaluationHistoryURL(project, stage, service, 6), {
-      delay: 10_000,
-    });
-    environmentPage.visit(project).selectStage(stage).assertEvaluationHistoryLoadingCount(service, 5);
-  });
-
-  it('should show evaluation history loading indicators', () => {
-    const service = 'carts';
-    cy.intercept(environmentPage.getEvaluationHistoryURL(project, stage, service, 6), {
-      delay: 10_000,
-    });
-    environmentPage.visit(project).selectStage(stage).assertEvaluationHistoryLoadingCount(service, 5);
+    environmentPage
+      .interceptEvaluationHistory(project, stage, service, 6, 10_000)
+      .visit(project)
+      .selectStage(stage)
+      .assertEvaluationHistoryLoadingCount(service, 5);
   });
 
   it('should show evaluations in history if sequence does not have an evaluation task', () => {
     const service = 'carts-db';
-    cy.intercept(environmentPage.getEvaluationHistoryURL(project, stage, service, 5), {
-      fixture: 'get.environment.evaluation.history.carts-db.mock',
-    });
     environmentPage
+      .interceptEvaluationHistory(
+        project,
+        stage,
+        service,
+        5,
+        undefined,
+        'get.environment.evaluation.history.carts-db.mock'
+      )
       .visit(project)
       .selectStage(stage)
       .assertEvaluationHistoryLoadingCount(service, 0)
       .assertEvaluationHistoryCount(service, 5)
-      .assertEvaluationInDetails(service, '-');
+      .assertEvaluationInDetails(service, '-', undefined, EvaluationBadgeVariant.NONE);
   });
 
   it('should show 2 evaluations in history and should not show current evaluation in history', () => {
     const service = 'carts';
-    cy.intercept(environmentPage.getEvaluationHistoryURL(project, stage, service, 6), {
-      fixture: 'get.environment.evaluation.history.limited.mock', // 3 events, including the current one
-    });
     environmentPage
+      .interceptEvaluationHistory(
+        project,
+        stage,
+        service,
+        6,
+        undefined,
+        'get.environment.evaluation.history.limited.mock'
+      )
       .visit(project)
       .selectStage(stage)
       .assertEvaluationHistoryCount(service, 2)
-      .assertEvaluationInDetails(service, 0, 'success');
+      .assertEvaluationInDetails(service, 100, 'success', EvaluationBadgeVariant.FILL);
   });
 
   it('should show 5 evaluation in history', () => {
     const service = 'carts';
-    cy.intercept(environmentPage.getEvaluationHistoryURL(project, stage, service, 6), {
-      fixture: 'get.environment.evaluation.history.mock',
-    });
     environmentPage
+      .interceptEvaluationHistory(project, stage, service, 6, undefined, 'get.environment.evaluation.history.mock')
       .visit(project)
       .selectStage(stage)
       .assertEvaluationHistoryCount(service, 5)
-      .assertEvaluationInDetails(service, 0, 'success');
+      .assertEvaluationInDetails(service, 100, 'success', EvaluationBadgeVariant.FILL);
   });
 });

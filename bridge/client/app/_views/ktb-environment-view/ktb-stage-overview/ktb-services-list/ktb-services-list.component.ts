@@ -12,6 +12,7 @@ import { Service } from '../../../../_models/service';
 import { DateUtil } from '../../../../_utils/date.utils';
 import { DataService } from '../../../../_services/data.service';
 import { Sequence } from '../../../../_models/sequence';
+import { EvaluationBadgeVariant } from '../../../../_components/ktb-evaluation-badge/ktb-evaluation-badge.utils';
 
 const DEFAULT_PAGE_SIZE = 3;
 
@@ -27,6 +28,7 @@ export class KtbServicesListComponent implements DoCheck {
   public ServiceClass = Service;
   public _services: Service[] = [];
   public dataSource: DtTableDataSource<Service> = new DtTableDataSource<Service>();
+  public EvaluationBadgeVariant = EvaluationBadgeVariant;
   private _expanded = false;
   private iterableDiffer: IterableDiffer<unknown>;
 

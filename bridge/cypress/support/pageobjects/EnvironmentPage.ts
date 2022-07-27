@@ -1,6 +1,7 @@
 /// <reference types="cypress" />
 
 import { interceptEmptyEnvironmentScreen, interceptEnvironmentScreen } from '../intercept';
+import { EvaluationBadgeVariant } from '../../../client/app/_components/ktb-evaluation-badge/ktb-evaluation-badge.utils';
 
 class EnvironmentPage {
   public intercept(): this {
@@ -13,11 +14,31 @@ class EnvironmentPage {
     return this;
   }
 
+  public interceptEvaluationHistory(
+    project: string,
+    stage: string,
+    service: string,
+    limit: 5 | 6,
+    delay?: number,
+    fixture = 'get.environment.evaluation.history.mock'
+  ): this {
+    cy.intercept(this.getEvaluationHistoryURL(project, stage, service, limit), {
+      fixture,
+      delay,
+    }).as(`evaluationHistory-${service}-${stage}-${limit}`);
+    return this;
+  }
+
   public visit(project: string, stage = '', filterType = ''): this {
     const query = filterType ? `?filterType=${filterType}` : '';
     cy.visit(stage ? `/project/${project}/environment/stage/${stage}${query}` : `/project/${project}`)
       .wait('@metadata')
       .wait('@project');
+    return this;
+  }
+
+  public waitForEvaluationHistory(service: string, stage: string, limit: number): this {
+    cy.wait(`@evaluationHistory-${service}-${stage}-${limit}`);
     return this;
   }
 
@@ -58,30 +79,61 @@ class EnvironmentPage {
 
   public assertEvaluationHistoryLoadingCount(service: string, count: number): this {
     this.getServiceDetailsContainer(service)
-      .find('ktb-evaluation-info dt-tag-list[aria-label="evaluation-history"] dt-tag ktb-loading-spinner')
+      .byTestId('ktb-evaluation-badge-history')
+      .find('ktb-loading-spinner')
       .should('have.length', count);
     return this;
   }
 
   public assertEvaluationHistoryCount(service: string, count: number): this {
-    const tags = this.getServiceDetailsContainer(service).find(
-      'ktb-evaluation-info dt-tag-list[aria-label="evaluation-history"] dt-tag'
-    );
-    tags.should('have.length', count);
-    if (count !== 0) {
-      tags.should('have.class', 'border');
+    this.getServiceDetailsContainer(service)
+      .byTestId('ktb-evaluation-badge-history')
+      .find('.badge')
+      .should('have.length', count);
+    return this;
+  }
+
+  public assertEvaluationInDetails(
+    service: string,
+    score: number | '-',
+    status: 'success' | 'error' | 'warning' | undefined,
+    variant: EvaluationBadgeVariant
+  ): this {
+    this.getServiceDetailsContainer(service)
+      .find('.current-evaluation')
+      .assertEvaluationBadge(status, score, variant)
+      .should('not.have.class', 'border')
+      .should('have.text', score);
+    return this;
+  }
+
+  public assertEvaluationHistory(
+    service: string,
+    history: { score: number | '-'; status?: 'success' | 'error' | 'warning'; variant: EvaluationBadgeVariant }[]
+  ): this {
+    for (let i = 0; i < history.length; ++i) {
+      const evaluation = history[i];
+      this.getServiceDetailsContainer(service).assertEvaluationBadge(
+        evaluation.status,
+        evaluation.score,
+        evaluation.variant,
+        i
+      );
     }
     return this;
   }
 
-  public assertEvaluationInDetails(service: string, score: number | '-', status?: 'success' | 'error'): this {
-    const evaluationTag = this.getServiceDetailsContainer(service).find(
-      'ktb-evaluation-info dt-tag-list[aria-label="evaluation-info"] dt-tag'
-    );
-    evaluationTag.should('not.have.class', 'border').should('have.text', score);
-    if (status) {
-      evaluationTag.should('have.class', status);
-    }
+  public assertEvaluationInOverview(
+    stage: string,
+    service: string,
+    score: number | '-',
+    status: 'success' | 'error' | 'warning' | undefined,
+    variant: EvaluationBadgeVariant
+  ): this {
+    this.getServiceInStageOverview(stage, service)
+      .assertEvaluationBadge(status, score, variant)
+      .should('not.have.class', 'border')
+      .should('have.text', score);
     return this;
   }
 
@@ -89,8 +141,11 @@ class EnvironmentPage {
     return `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project}%20AND%20data.service:${service}%20AND%20data.stage:${stage}%20AND%20source:lighthouse-service&excludeInvalidated=true&limit=${limit}`;
   }
 
-  private getServiceDetailsContainer(service: string): Cypress.Chainable<JQuery<HTMLElement>> {
-    return cy.get('ktb-stage-details ktb-expandable-tile h2').contains(service).parentsUntil('ktb-expandable-tile');
+  private getServiceDetailsContainer(service: string): Cypress.Chainable<JQuery> {
+    return cy
+      .get('ktb-stage-details ktb-expandable-tile h2')
+      .contains(service)
+      .parentsUntil('ktb-expandable-tile-header');
   }
 
   public assertIsLoaded(status: boolean): this {
@@ -119,14 +174,19 @@ class EnvironmentPage {
   }
 
   public assertPauseIconShown(stage: string, service: string): this {
-    cy.get('ktb-selectable-tile h2')
+    this.getServiceInStageOverview(stage, service).assertDtIcon('pause');
+    return this;
+  }
+
+  private getServiceInStageOverview(stage: string, service: string): Cypress.Chainable<JQuery> {
+    return cy
+      .get('ktb-selectable-tile h2')
       .contains(stage)
       .parentsUntil('ktb-selectable-tile')
       .find('ktb-services-list')
       .contains(service)
-      .parentsUntil('dt-table')
-      .assertDtIcon('pause');
-    return this;
+      .parentsUntil('dt-row')
+      .parent();
   }
 }
 

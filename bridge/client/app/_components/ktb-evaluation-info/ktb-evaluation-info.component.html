@@ -1,56 +1,38 @@
 <div>
-  <dt-tag-list aria-label="evaluation-history" *ngIf="showHistory">
-    <dt-tag
-      *ngFor="let i of !evaluationsLoaded ? [].constructor(this.evaluationHistoryCount) : []"
-      [class.border]="true"
-      class="m-0 justify-content-center"
-    >
-      <ktb-loading-spinner aria-label="Loading evaluation"></ktb-loading-spinner>
-    </dt-tag>
-    <dt-tag
-      *ngFor="let pastEvaluation of evaluationHistory"
-      class="m-0 mr-1 justify-content-center border"
-      (mouseenter)="showEvaluationOverlay($event, pastEvaluation)"
-      (mouseleave)="hideEvaluationOverlay()"
-      [class.error]="pastEvaluation.isFaulty()"
-      [class.warning]="pastEvaluation.isWarning()"
-      [class.success]="pastEvaluation.isSuccessful()"
-      [class.border]="true"
-      [textContent]="pastEvaluation.getEvaluationFinishedEvent()?.data?.evaluation?.score | truncateNumber: 0"
-    ></dt-tag>
-  </dt-tag-list>
-  <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="5px">
-    <dt-tag-list aria-label="evaluation-info" *ngIf="evaluation && evaluation.isFinished()">
-      <dt-tag
-        class="m-0 justify-content-center"
-        (mouseenter)="showEvaluationOverlay($event)"
-        (mouseleave)="hideEvaluationOverlay()"
-        [class.error]="evaluation.isFaulty()"
-        [class.warning]="evaluation.isWarning()"
-        [class.success]="evaluation.isSuccessful()"
-        [class.border]="fill === false"
-        [textContent]="evaluation.getEvaluationFinishedEvent()?.data?.evaluation?.score | truncateNumber: 0"
-      ></dt-tag>
-    </dt-tag-list>
-    <dt-tag-list aria-label="evaluation-info" *ngIf="evaluationResult">
-      <dt-tag
-        class="m-0 justify-content-center"
-        [class.error]="isError"
-        [class.warning]="isWarning"
-        [class.success]="isSuccess"
-        [class.border]="fill === false"
-        [textContent]="evaluationResult.score | truncateNumber: 0"
-      ></dt-tag>
-    </dt-tag-list>
-    <dt-tag-list *ngIf="!evaluation?.isFinished() && !evaluationResult" aria-label="evaluation-info">
-      <dt-tag class="m-0 justify-content-center" [class.fill]="fill" [textContent]="'-'"></dt-tag>
-    </dt-tag-list>
+  <div
+    fxFlex
+    fxLayout="row"
+    fxLayoutAlign="flex-start center"
+    fxLayoutGap="5px"
+    *ngIf="showHistory"
+    uitestid="ktb-evaluation-badge-history"
+  >
+    <ktb-evaluation-badge
+      *ngFor="let i of !evaluationsLoaded ? [].constructor(evaluationHistoryCount) : []"
+      [loading]="true"
+      [evaluationState]="{ fillState: EvaluationBadgeFillState.BORDER }"
+    ></ktb-evaluation-badge>
+    <ng-container *ngFor="let pastEvaluation of evaluationHistory">
+      <ktb-evaluation-badge
+        *ngIf="getEvaluationState(pastEvaluation, EvaluationBadgeFillState.BORDER) as state"
+        [evaluation]="pastEvaluation"
+        [evaluationState]="state"
+        [overlayDisabled]="overlayDisabled"
+      ></ktb-evaluation-badge>
+    </ng-container>
   </div>
-
-  <ng-template #overlay let-data>
-    <ktb-evaluation-details
-      [evaluationData]="((data | toType: TraceClass) || evaluation).getEvaluationFinishedEvent()"
-      [showChart]="false"
-    ></ktb-evaluation-details>
-  </ng-template>
+  <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="5px" class="current-evaluation">
+    <ng-container *ngIf="evaluationResult || evaluation?.isFinished(); else noEvaluation">
+      <ktb-evaluation-badge
+        [evaluation]="evaluation"
+        [evaluationState]="
+          evaluation ? getEvaluationState(evaluation, fillState) : getEvaluationResultState(evaluationResult, fillState)
+        "
+        [overlayDisabled]="overlayDisabled"
+      ></ktb-evaluation-badge>
+    </ng-container>
+    <ng-template #noEvaluation>
+      <ktb-evaluation-badge [evaluationState]="{ isSuccess: true, fillState: this.fillState }"></ktb-evaluation-badge>
+    </ng-template>
+  </div>
 </div>

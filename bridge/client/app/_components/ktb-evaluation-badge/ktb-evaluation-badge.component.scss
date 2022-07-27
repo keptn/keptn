@@ -1,0 +1,63 @@
+@import 'client/variables';
+@import 'node_modules/@dynatrace/barista-components/core/src/style/variables';
+
+.badge {
+  padding: 2px 8px;
+  min-width: 30px;
+  height: 24px;
+  border-radius: 12px;
+  font-size: 12px;
+  color: black;
+  background-color: $gray-130;
+  text-align: center;
+
+  &.fill {
+    &.error {
+      background-color: $error-color;
+      color: $white;
+    }
+
+    &.warning {
+      background-color: $warning-color;
+      color: $white;
+    }
+
+    &.success {
+      background-color: $cta-color-active;
+      color: $white;
+    }
+  }
+
+  &.highlight {
+    border-color: $approval-color;
+  }
+
+  &.border {
+    background-color: $gray-200;
+    color: black;
+
+    &.success {
+      border: 1px solid $cta-color;
+    }
+
+    &.warning {
+      border: 1px solid $warning-color;
+    }
+
+    &.error {
+      border: 1px solid $error-color;
+    }
+  }
+}
+
+ktb-loading-spinner {
+  height: 20px;
+  width: 20px;
+  vertical-align: bottom;
+}
+
+/* fix incorrect height and width of the overlay */
+::ng-deep .cdk-overlay-connected-position-bounding-box {
+  height: 100% !important;
+  width: 100% !important;
+}

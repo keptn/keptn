@@ -52,6 +52,7 @@
         [warning]="badgeInfo.warning"
         [highlight]="badgeInfo.pendingApproval"
         [aborted]="badgeInfo.aborted"
+        [fillState]="badgeInfo.evaluation ? EvaluationBadgeVariant.FILL : EvaluationBadgeVariant.NONE"
         (click)="$event.stopPropagation(); stageClick(sequence, stageName)"
       ></ktb-stage-badge>
     </ng-container>

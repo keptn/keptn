@@ -141,8 +141,11 @@
                     ></a>
                     <div fxFlex fxLayoutAlign="end">
                       <ktb-evaluation-info
+                        *ngIf="{
+                          value: service.latestSequence?.getEvaluationTrace(selectedStageInfo.stage.stageName)
+                        } as evaluation"
                         [evaluationInfo]="{
-                          trace: service.latestSequence?.getEvaluationTrace(selectedStageInfo.stage.stageName),
+                          trace: evaluation.value,
                           showHistory: true,
                           data: {
                             project: project.projectName,
@@ -150,6 +153,7 @@
                             service: service.serviceName
                           }
                         }"
+                        [fillState]="evaluation.value ? EvaluationBadgeVariant.FILL : EvaluationBadgeVariant.NONE"
                       ></ktb-evaluation-info>
                     </div>
                   </div>

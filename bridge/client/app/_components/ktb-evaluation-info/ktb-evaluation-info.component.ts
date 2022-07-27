@@ -1,12 +1,13 @@
-import { ChangeDetectorRef, Component, Input, NgZone, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
-import { DtOverlay, DtOverlayConfig, DtOverlayRef } from '@dynatrace/barista-components/overlay';
+import { ChangeDetectorRef, Component, Input } from '@angular/core';
 import { Trace } from '../../_models/trace';
-import { ResultTypes } from '../../../../shared/models/result-types';
 import { EvaluationResult } from '../../../../shared/interfaces/evaluation-result';
 import { DataService } from '../../_services/data.service';
-import { Subject, Subscription } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
 import { DateUtil } from '../../_utils/date.utils';
+import {
+  EvaluationBadgeVariant,
+  getEvaluationBadgeState,
+  getEvaluationResultBadgeState,
+} from '../ktb-evaluation-badge/ktb-evaluation-badge.utils';
 
 export interface EventData {
   project: string;
@@ -25,40 +26,27 @@ interface EvaluationInfo {
   templateUrl: './ktb-evaluation-info.component.html',
   styleUrls: ['./ktb-evaluation-info.component.scss'],
 })
-export class KtbEvaluationInfoComponent implements OnDestroy {
-  private readonly unsubscribe$ = new Subject<void>();
-  private _evaluationResult?: EvaluationResult;
+export class KtbEvaluationInfoComponent {
   private eventData?: EventData;
   private _evaluationHistory?: Trace[];
+  private _evaluation?: Trace;
   public readonly evaluationHistoryCount = 5;
-  public TraceClass = Trace;
-  public isError = false;
-  public isWarning = false;
-  public isSuccess = false;
   public showHistory = false;
-  public overlayConfig: DtOverlayConfig = {
-    pinnable: true,
-  };
   public evaluationsLoaded = false;
-  private overlayRef?: DtOverlayRef<unknown>;
-  private updateOverlayPositionSubscription = Subscription.EMPTY;
+  public EvaluationBadgeFillState = EvaluationBadgeVariant;
+  public getEvaluationState = getEvaluationBadgeState;
+  public getEvaluationResultState = getEvaluationResultBadgeState;
 
-  @ViewChild('overlay', { static: true, read: TemplateRef }) overlayTemplate?: TemplateRef<unknown>;
-  @Input() public overlayDisabled?: boolean;
-  @Input() public fill?: boolean;
-  @Input() public evaluation?: Trace;
-  @Input()
-  get evaluationResult(): EvaluationResult | undefined {
-    return this._evaluationResult;
+  @Input() public overlayDisabled = false;
+  @Input() public fillState = EvaluationBadgeVariant.FILL;
+  @Input() public set evaluation(evaluation: Trace | undefined) {
+    this._evaluation = evaluation;
   }
-  set evaluationResult(result: EvaluationResult | undefined) {
-    this._evaluationResult = result;
-    if (this.evaluationResult) {
-      this.isError = this.evaluationResult.result === ResultTypes.FAILED;
-      this.isWarning = this.evaluationResult.result === ResultTypes.WARNING;
-      this.isSuccess = this.evaluationResult.result === ResultTypes.PASSED;
-    }
+  get evaluation(): Trace | undefined {
+    return this._evaluation;
   }
+
+  @Input() evaluationResult?: EvaluationResult;
 
   @Input()
   public set evaluationInfo(evaluation: EvaluationInfo | undefined) {
@@ -83,12 +71,7 @@ export class KtbEvaluationInfoComponent implements OnDestroy {
     );
   }
 
-  constructor(
-    private dataService: DataService,
-    private ngZone: NgZone,
-    private _dtOverlay: DtOverlay,
-    private changeDetectorRef_: ChangeDetectorRef
-  ) {}
+  constructor(private dataService: DataService, private changeDetectorRef_: ChangeDetectorRef) {}
 
   private fetchEvaluationHistory(): void {
     const evaluation = this.evaluation;
@@ -120,34 +103,5 @@ export class KtbEvaluationInfoComponent implements OnDestroy {
           this.changeDetectorRef_.markForCheck();
         });
     }
-  }
-
-  public showEvaluationOverlay(event: MouseEvent, data?: unknown): void {
-    if (!this.overlayRef && !this.overlayDisabled && this.overlayTemplate) {
-      this.overlayRef = this._dtOverlay.create(event, this.overlayTemplate, { ...this.overlayConfig, data });
-      this.updateEvaluationOverlayPosition();
-    }
-  }
-
-  public updateEvaluationOverlayPosition(): void {
-    this.updateOverlayPositionSubscription = this.ngZone.onMicrotaskEmpty
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(() => {
-        this.overlayRef?.updatePosition();
-        // if the content of the overlay changed after initialization the position stayed the same
-      });
-  }
-
-  public hideEvaluationOverlay(): void {
-    if (this.overlayRef) {
-      this._dtOverlay.dismiss();
-      this.updateOverlayPositionSubscription.unsubscribe();
-      this.overlayRef = undefined;
-    }
-  }
-
-  public ngOnDestroy(): void {
-    this.unsubscribe$.next();
-    this.unsubscribe$.complete();
   }
 }
