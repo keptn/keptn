@@ -44,12 +44,12 @@ func (dh *DebugHandler) GetAllSequencesForProject(c *gin.Context) {
 	payload, err := dh.DebugManager.GetAllSequencesForProject(projectName)
 
 	if err != nil {
-		if errors.Is(err, ErrProjectNotFound) {
-			SetNotFoundErrorResponse(c, fmt.Sprintf(ProjectNotFoundMsg, projectName))
+		if errors.Is(err, common.ErrProjectNotFound) {
+			SetNotFoundErrorResponse(c, fmt.Sprintf(common.ProjectNotFoundMsg, projectName))
 			return
 		}
 
-		SetInternalServerErrorResponse(c, fmt.Sprintf(UnexpectedErrorFormatMsg, err.Error()))
+		SetInternalServerErrorResponse(c, fmt.Sprintf(common.UnexpectedErrorFormatMsg, err.Error()))
 		return
 	}
 
@@ -73,17 +73,17 @@ func (dh *DebugHandler) GetSequenceByID(c *gin.Context) {
 	sequence, err := dh.DebugManager.GetSequenceByID(projectName, shkeptncontext)
 
 	if err != nil {
-		if errors.Is(err, ErrProjectNotFound) {
-			SetNotFoundErrorResponse(c, fmt.Sprintf(ProjectNotFoundMsg, projectName))
+		if errors.Is(err, common.ErrProjectNotFound) {
+			SetNotFoundErrorResponse(c, fmt.Sprintf(common.ProjectNotFoundMsg, projectName))
 			return
 		}
 
-		if errors.Is(err, ErrSequenceNotFound) {
-			SetNotFoundErrorResponse(c, fmt.Sprintf(UnableFindSequenceMsg, shkeptncontext))
+		if errors.Is(err, common.ErrSequenceNotFound) {
+			SetNotFoundErrorResponse(c, fmt.Sprintf(common.UnableFindSequenceMsg, shkeptncontext))
 			return
 		}
 
-		SetInternalServerErrorResponse(c, fmt.Sprintf(UnexpectedErrorFormatMsg, err.Error()))
+		SetInternalServerErrorResponse(c, fmt.Sprintf(common.UnexpectedErrorFormatMsg, err.Error()))
 		return
 	}
 
@@ -108,17 +108,17 @@ func (dh *DebugHandler) GetAllEvents(c *gin.Context) {
 	events, err := dh.DebugManager.GetAllEvents(projectName, shkeptncontext)
 
 	if err != nil {
-		if errors.Is(err, ErrProjectNotFound) {
-			SetNotFoundErrorResponse(c, fmt.Sprintf(ProjectNotFoundMsg, projectName))
+		if errors.Is(err, common.ErrProjectNotFound) {
+			SetNotFoundErrorResponse(c, fmt.Sprintf(common.ProjectNotFoundMsg, projectName))
 			return
 		}
 
-		if errors.Is(err, ErrSequenceNotFound) {
-			SetNotFoundErrorResponse(c, fmt.Sprintf(UnableFindSequenceMsg, shkeptncontext))
+		if errors.Is(err, common.ErrSequenceNotFound) {
+			SetNotFoundErrorResponse(c, fmt.Sprintf(common.UnableFindSequenceMsg, shkeptncontext))
 			return
 		}
 
-		SetInternalServerErrorResponse(c, fmt.Sprintf(UnexpectedErrorFormatMsg, err.Error()))
+		SetInternalServerErrorResponse(c, fmt.Sprintf(common.UnexpectedErrorFormatMsg, err.Error()))
 		return
 	}
 
@@ -157,22 +157,22 @@ func (dh *DebugHandler) GetEventByID(c *gin.Context) {
 	event, err := dh.DebugManager.GetEventByID(projectName, shkeptncontext, eventId)
 
 	if err != nil {
-		if errors.Is(err, ErrProjectNotFound) {
-			SetNotFoundErrorResponse(c, fmt.Sprintf(ProjectNotFoundMsg, projectName))
+		if errors.Is(err, common.ErrProjectNotFound) {
+			SetNotFoundErrorResponse(c, fmt.Sprintf(common.ProjectNotFoundMsg, projectName))
 			return
 		}
 
-		if errors.Is(err, ErrSequenceNotFound) {
-			SetNotFoundErrorResponse(c, fmt.Sprintf(UnableFindSequenceMsg, shkeptncontext))
+		if errors.Is(err, common.ErrSequenceNotFound) {
+			SetNotFoundErrorResponse(c, fmt.Sprintf(common.UnableFindSequenceMsg, shkeptncontext))
 			return
 		}
 
-		if errors.Is(err, ErrNoMatchingEvent) {
-			SetNotFoundErrorResponse(c, fmt.Sprintf(EventNotFoundMsg, eventId))
+		if errors.Is(err, common.ErrNoMatchingEvent) {
+			SetNotFoundErrorResponse(c, fmt.Sprintf(common.EventNotFoundMsg, eventId))
 			return
 		}
 
-		SetInternalServerErrorResponse(c, fmt.Sprintf(UnexpectedErrorFormatMsg, err.Error()))
+		SetInternalServerErrorResponse(c, fmt.Sprintf(common.UnexpectedErrorFormatMsg, err.Error()))
 		return
 	}
 
