@@ -13,6 +13,12 @@ export default defineConfig({
   viewportHeight: 1080,
   viewportWidth: 1920,
   chromeWebSecurity: false,
+  retries: {
+    // Configure retry attempts for `cypress run`
+    runMode: 2,
+    // Configure retry attempts for `cypress open`
+    openMode: 0,
+  },
   e2e: {
     baseUrl: 'http://localhost:5000', // workaround until https://github.com/cypress-io/cypress/issues/21555 is fixed
     specPattern: 'cypress/integration/**.spec.{js,jsx,ts,tsx}',
