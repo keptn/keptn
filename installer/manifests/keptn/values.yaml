@@ -64,8 +64,8 @@ nats:
   nameOverride: keptn-nats
   fullnameOverride: keptn-nats
   cluster:
-    enabled: true
-    replicas: 3
+    enabled: false
+    replicas: 1
     name: nats
   securityContext:
     runAsNonRoot: true
