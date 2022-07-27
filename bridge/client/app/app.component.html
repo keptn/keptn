@@ -1,10 +1,10 @@
 <div fxFlexFill fxLayout="column">
   <ktb-notification-bar></ktb-notification-bar>
   <ktb-header
-    [info]="keptnInfo$ | async"
-    [metadata]="keptnMetadata$ | async"
-    [projects]="projects$ | async"
-    [selectedProject]="selectedProject$ | async"
+    [info]="(keptnInfo$ | async) ?? undefined"
+    [metadata]="(keptnMetadata$ | async) ?? undefined"
+    [projects]="(projects$ | async) ?? undefined"
+    [selectedProject]="(selectedProject$ | async) ?? ''"
   ></ktb-header>
   <div id="page-content" fxFlex fxFlexFill>
     <router-outlet></router-outlet>

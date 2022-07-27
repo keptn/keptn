@@ -58,3 +58,4 @@ e2e/screenshots/*
 !cypress/fixtures/files/*.pem
 *.crt
 *.key
+/documentation.json

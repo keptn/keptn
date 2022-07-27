@@ -1,5 +1,4 @@
 import { CommonModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { DtIconModule } from '@dynatrace/barista-components/icon';
@@ -11,7 +10,6 @@ import { KtbTreeListSelectComponent, KtbTreeListSelectDirective } from './ktb-tr
   declarations: [KtbTreeListSelectDirective, KtbTreeListSelectComponent],
   imports: [
     CommonModule,
-    HttpClientModule,
     DtIconModule.forRoot({
       svgIconLocation: `assets/icons/{{name}}.svg`,
     }),

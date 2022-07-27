@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { AfterViewInit, Component, Inject, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, Inject, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { NavigationEnd, NavigationStart, Router } from '@angular/router';
 import { DtSelect } from '@dynatrace/barista-components/select';
@@ -21,28 +21,28 @@ import { NotificationsService } from '../../_services/notifications.service';
   templateUrl: './ktb-app-header.component.html',
   styleUrls: ['./ktb-app-header.component.scss'],
 })
-export class KtbAppHeaderComponent implements OnInit, AfterViewInit, OnDestroy {
+export class KtbAppHeaderComponent implements OnInit, OnDestroy, OnChanges {
   private readonly unsubscribe$ = new Subject<void>();
 
   @ViewChild('projectSelect') projectSelect?: DtSelect<string | undefined>;
   public projectBoardView = '';
-  public appTitle: string;
-  public logoUrl: string;
-  public logoInvertedUrl: string;
+  public appTitle = environment.config.appTitle;
+  public logoUrl = environment.config.logoUrl;
+  public logoInvertedUrl = environment.config.logoInvertedUrl;
   public versionCheckDialogState: string | null = null;
   public versionCheckReference = '/reference/version_check/';
 
   @Input()
-  public info?: KeptnInfo | null;
+  public info?: KeptnInfo;
 
   @Input()
-  public metadata?: IMetadata | null;
+  public metadata?: IMetadata;
 
   @Input()
-  public projects?: Project[] | null;
+  public projects?: Project[];
 
   @Input()
-  public selectedProject?: string | null;
+  public selectedProject = '';
 
   constructor(
     @Inject(DOCUMENT) private _document: Document,
@@ -51,9 +51,6 @@ export class KtbAppHeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     private notificationsService: NotificationsService,
     private titleService: Title
   ) {
-    this.appTitle = environment.config.appTitle;
-    this.logoUrl = environment.config.logoUrl;
-    this.logoInvertedUrl = environment.config.logoInvertedUrl;
     this.router.events.pipe(takeUntil(this.unsubscribe$)).subscribe((event) => {
       if (event instanceof NavigationStart || event instanceof NavigationEnd) {
         this.setProject();
@@ -66,10 +63,16 @@ export class KtbAppHeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     this.setAppFavicon(this.logoInvertedUrl);
   }
 
-  ngAfterViewInit(): void {
+  ngOnChanges(changes: SimpleChanges): void {
+    if (!changes.info && !changes.metadata) {
+      // only listen to changes of `info` and `metadata`
+      return;
+    }
+
     if (!this.info) {
       return;
     }
+
     if (this.info.versionCheckEnabled === undefined) {
       this.showVersionCheckInfoDialog();
     } else if (
@@ -211,7 +214,7 @@ export class KtbAppHeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     this._document.getElementById('appFavicon')?.setAttribute('href', path);
   }
 
-  changeProject(selectedProject: string | null | undefined): void {
+  changeProject(selectedProject: string | undefined): void {
     this.router.navigate(this.getRouterLink(selectedProject as string));
   }
 
@@ -231,10 +234,10 @@ export class KtbAppHeaderComponent implements OnInit, AfterViewInit, OnDestroy {
         this.selectedProject = projectName;
       });
     } else {
-      this.selectedProject = undefined;
+      this.selectedProject = '';
     }
 
-    if (this.projectSelect && this.selectedProject !== null) {
+    if (this.projectSelect) {
       this.projectSelect.value = this.selectedProject;
     }
   }

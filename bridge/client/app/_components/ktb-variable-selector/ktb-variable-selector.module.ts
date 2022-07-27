@@ -1,5 +1,4 @@
 import { CommonModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { DtButtonModule } from '@dynatrace/barista-components/button';
 import { DtIconModule } from '@dynatrace/barista-components/icon';
@@ -10,7 +9,6 @@ import { KtbVariableSelectorComponent } from './ktb-variable-selector.component'
   declarations: [KtbVariableSelectorComponent],
   imports: [
     CommonModule,
-    HttpClientModule,
     DtButtonModule,
     DtIconModule.forRoot({
       svgIconLocation: `assets/icons/{{name}}.svg`,

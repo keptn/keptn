@@ -3,7 +3,6 @@ import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { FlexModule } from '@angular/flex-layout';
 import { FormsModule } from '@angular/forms';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule } from '@angular/router';
 import { DtButtonModule } from '@dynatrace/barista-components/button';
 import { DtConfirmationDialogModule } from '@dynatrace/barista-components/confirmation-dialog';
@@ -22,7 +21,6 @@ import { KtbUserComponent } from './ktb-user/ktb-user.component';
   imports: [
     CommonModule,
     HttpClientModule,
-    BrowserAnimationsModule,
     DtButtonModule,
     DtConfirmationDialogModule,
     DtContextDialogModule,

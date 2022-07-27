@@ -1,4 +1,5 @@
 import '@angular/localize/init';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterTestingModule } from '@angular/router/testing';
 import { moduleMetadata } from '@storybook/angular';
 import { Meta, Story } from '@storybook/angular/types-6-0';
@@ -8,10 +9,9 @@ import { Project } from '../../client/app/_models/project';
 
 export default {
   title: 'Components/App Header',
-  component: KtbAppHeaderComponent,
   decorators: [
     moduleMetadata({
-      imports: [KtbAppHeaderModule, RouterTestingModule],
+      imports: [KtbAppHeaderModule, RouterTestingModule, BrowserAnimationsModule],
     }),
   ],
   parameters: {
@@ -21,6 +21,12 @@ export default {
 
 const template: Story<KtbAppHeaderComponent> = (args: KtbAppHeaderComponent) => ({
   props: args,
+  template: `<ktb-header
+    [info]="info"
+    [projects]="projects"
+    [metadata]="metadata"
+    [selectedProject]="selectedProject"
+  ></ktb-header>`,
 });
 
 export const standard = template.bind({});

@@ -1,5 +1,4 @@
 import { CommonModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { RouterModule } from '@angular/router';
@@ -14,7 +13,6 @@ import { KtbSequenceStateInfoComponent } from './ktb-sequence-state-info.compone
   imports: [
     CommonModule,
     RouterModule,
-    HttpClientModule,
     FlexLayoutModule,
     DtButtonModule,
     DtIconModule.forRoot({

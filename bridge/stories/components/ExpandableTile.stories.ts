@@ -1,3 +1,4 @@
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { moduleMetadata } from '@storybook/angular';
 import { Meta, Story } from '@storybook/angular/types-6-0';
 import { KtbExpandableTileComponent } from '../../client/app/_components/ktb-expandable-tile/ktb-expandable-tile.component';
@@ -8,7 +9,7 @@ export default {
   component: KtbExpandableTileComponent,
   decorators: [
     moduleMetadata({
-      imports: [KtbExpandableTileModule],
+      imports: [KtbExpandableTileModule, BrowserAnimationsModule],
     }),
   ],
 } as Meta;
