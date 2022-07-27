@@ -30,12 +30,13 @@ enum ProjectSettingsStatus {
 }
 
 interface ProjectSettingsState {
-  projectName: string | undefined;
-  resourceServiceEnabled: boolean | undefined;
-  gitUpstreamRequired: boolean | undefined;
-  gitInputDataExtended: IGitDataExtended | undefined;
-  automaticProvisioningMessage: string | undefined;
+  projectName?: string;
+  resourceServiceEnabled?: boolean;
+  gitUpstreamRequired?: boolean;
+  gitInputDataExtended?: IGitDataExtended;
+  automaticProvisioningMessage?: string;
   state: ProjectSettingsStatus;
+  projectDeletionData?: DeleteData;
 }
 
 @Component({
@@ -51,7 +52,6 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
   @ViewChild('deleteProjectDialog')
   private deleteProjectDialog?: TemplateRef<MatDialog>;
   public projectName?: string;
-  public projectDeletionData?: DeleteData;
   public isGitUpstreamInProgress = false;
   public isCreatingProjectInProgress = false;
   private pendingChangesSubject = new Subject<boolean>();
@@ -75,10 +75,6 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
     tap((projectName) => {
       if (projectName) {
         this.projectName = projectName;
-        this.projectDeletionData = {
-          type: DeleteType.PROJECT,
-          name: projectName,
-        };
       }
     })
   );
@@ -133,6 +129,12 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
           gitInputDataExtended,
           automaticProvisioningMessage: keptnInfo.bridgeInfo.automaticProvisioningMsg,
           state: metadata === null ? ProjectSettingsStatus.ERROR : ProjectSettingsStatus.LOADED,
+          projectDeletionData: projectName
+            ? {
+                type: DeleteType.PROJECT,
+                name: projectName,
+              }
+            : undefined,
         };
       }
     ),
@@ -143,6 +145,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
       gitInputDataExtended: undefined,
       automaticProvisioningMessage: undefined,
       state: ProjectSettingsStatus.INIT,
+      projectDeletionData: undefined,
     })
   );
 

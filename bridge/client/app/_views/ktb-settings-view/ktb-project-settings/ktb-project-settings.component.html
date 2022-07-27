@@ -103,7 +103,7 @@
       *ngIf="!isCreateMode()"
       class="pb-4"
     >
-      <ktb-danger-zone [data]="projectDeletionData"></ktb-danger-zone>
+      <ktb-danger-zone [data]="state.projectDeletionData"></ktb-danger-zone>
     </div>
   </div>
   <ng-container *ngIf="state.state === ProjectSettingsStatus.ERROR">
