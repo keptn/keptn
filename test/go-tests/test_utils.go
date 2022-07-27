@@ -1,13 +1,17 @@
 package go_tests
 
 import (
+	"archive/zip"
 	"context"
 	b64 "encoding/base64"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"k8s.io/utils/strings/slices"
 	"net/http"
 	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
@@ -1140,4 +1144,106 @@ func checkResourceInResponse(resources models.Resources, resourceName string) er
 func resetTestPath(t *testing.T, path string) {
 	err := os.Chdir(path)
 	require.Nil(t, err)
+}
+
+func recursiveZip(source, target string, needBaseDir bool) error {
+	zipfile, err := os.Create(target)
+	if err != nil {
+		return err
+	}
+	defer zipfile.Close()
+
+	archive := zip.NewWriter(zipfile)
+	defer archive.Close()
+
+	info, err := os.Stat(source)
+	if err != nil {
+		return err
+	}
+
+	var baseDir string
+	if info.IsDir() {
+		baseDir = filepath.Base(source)
+	}
+
+	filepath.Walk(source, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		header, err := zip.FileInfoHeader(info)
+		if err != nil {
+			return err
+		}
+
+		if baseDir != "" {
+			if needBaseDir {
+				header.Name = filepath.Join(baseDir, strings.TrimPrefix(path, source))
+			} else {
+				path := strings.TrimPrefix(path, source)
+				if len(path) > 0 && (path[0] == '/' || path[0] == '\\') {
+					path = path[1:]
+				}
+				if len(path) == 0 {
+					return nil
+				}
+				header.Name = path
+			}
+		}
+
+		if info.IsDir() {
+			header.Name += "/"
+		} else {
+			header.Method = zip.Deflate
+		}
+
+		writer, err := archive.CreateHeader(header)
+		if err != nil {
+			return err
+		}
+
+		if info.IsDir() {
+			return nil
+		}
+
+		file, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+		_, err = io.Copy(writer, file)
+		return err
+	})
+
+	return err
+}
+
+func checkIfSecretExists(secretName string) error {
+	clientset, err := kubeutils.GetClientSet(false)
+	if err != nil {
+		return err
+	}
+
+	_, err = clientset.CoreV1().Secrets(GetKeptnNameSpaceFromEnv()).Get(context.TODO(), secretName, v1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func CheckIfWebhookSubscriptionExists(project, event string) (bool, error) {
+	webhookIntegration, err := GetIntegrationWithName("webhook-service")
+
+	if err != nil {
+		return false, err
+	}
+
+	for _, subscription := range webhookIntegration.Subscriptions {
+		if slices.Contains(subscription.Filter.Projects, project) && subscription.Event == event {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }

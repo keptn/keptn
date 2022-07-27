@@ -1,0 +1,59 @@
+apiVersion: v1beta1
+###########################################################
+# Import Package
+#
+# Pre-Req: Project already exists
+# 
+# POST /api/v1/import?project=<project-name>
+# @package.zip
+#   * manifest.yaml
+#   * api/
+#   * resources/
+###########################################################
+
+tasks:
+  # create a service
+  - name: "Create service"
+    id: create_service
+    type: "api"
+    action: "keptn-api-v1-create-service" # pre-defined endpoint types (we only support a few)
+    payload: "api/create-service.json"      # JSON file which contains the not-validated payload 
+    context:                         # context available for templating in payload
+      service: "my-service-name"            # --> {{ .payloadContext.service }}
+
+  # create a secret which we will later use in webhook
+  - name: "Create secret"
+    id: create-secret
+    type: api
+    payload: "api/create-secret.json"
+    action: "keptn-api-v1-uniform-create-secret"
+
+  # Create a subscription
+  - name: "Create webhook subscription"
+    type: api
+    id: create_subscription
+    payload: "api/create-subscription.json"
+    action: "keptn-api-v1-uniform-create-webhook-subscription"
+    # internally this figures out the current webhook integration id
+    context: # -> goes into "api/create-subscription.json"
+      event: "sh.keptn.event.evaluation.triggered"
+      project: "[[ .Inputs.project ]]"
+      stage: "dev"               # static on purpose
+      service: "my-service-name" # static on purpose
+
+  # add a webhook config
+  - name: "Webhook config"
+    id: push_webhook_config
+    type: resource
+    resource: "resources/webhook.yaml"    # where is the file stored in the package
+    resourceUri: "webhook.yaml"           # what should the file be called in the upstream repo
+    # option 1: specify stage
+    stage: "dev"
+    # option 2: specify no stage at all --> default branch (e.g., omit --stage=dev)
+    context:   # Placeholders for templating in resources/webhook.yaml
+      project: "[[ .Inputs.project ]]"
+      event: "[[ .Tasks.create_subscription.Context.event ]]"
+      subscriptionId: "[[ .Tasks.create_subscription.Response.id ]]"
+
+    # equivalent of: 
+    # keptn add-resource --project=<project-name> --stage=dev --resource=resources/webhook.yaml --resourceUri=webhook.yaml
