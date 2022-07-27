@@ -1,10 +1,10 @@
-import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { FlexLayoutModule } from '@angular/flex-layout';
-import { DtIconModule } from '@dynatrace/barista-components/icon';
-import { DtOverlayModule } from '@dynatrace/barista-components/overlay';
-import { DtTreeTableModule } from '@dynatrace/barista-components/tree-table';
+import { CommonModule } from '@angular/common';
 import { KtbTreeListSelectComponent, KtbTreeListSelectDirective } from './ktb-tree-list-select.component';
+import { DtOverlayModule } from '@dynatrace/barista-components/overlay';
+import { DtIconModule } from '@dynatrace/barista-components/icon';
+import { DtTreeTableModule } from '@dynatrace/barista-components/tree-table';
+import { FlexLayoutModule } from '@angular/flex-layout';
 
 @NgModule({
   declarations: [KtbTreeListSelectDirective, KtbTreeListSelectComponent],

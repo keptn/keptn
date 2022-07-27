@@ -1,5 +1,4 @@
 import { CommonModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { DtButtonModule } from '@dynatrace/barista-components/button';
 import { DtIconModule } from '@dynatrace/barista-components/icon';
@@ -12,7 +11,6 @@ import { KtbHeatmapComponent } from './ktb-heatmap.component';
   declarations: [KtbHeatmapComponent, KtbHeatmapTooltipComponent],
   imports: [
     CommonModule,
-    HttpClientModule,
     DtKeyValueListModule,
     KtbPipeModule,
     DtIconModule.forRoot({

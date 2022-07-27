@@ -1,3 +1,4 @@
+import { HttpClientModule } from '@angular/common/http';
 import '@angular/localize/init';
 import { moduleMetadata } from '@storybook/angular';
 import { Meta, Story } from '@storybook/angular/types-6-0';
@@ -9,7 +10,7 @@ export default {
   component: KtbDatetimePickerComponent,
   decorators: [
     moduleMetadata({
-      imports: [KtbDateInputModule],
+      imports: [KtbDateInputModule, HttpClientModule],
     }),
   ],
 } as Meta;

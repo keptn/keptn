@@ -1,3 +1,4 @@
+import { HttpClientModule } from '@angular/common/http';
 import { EventEmitter } from '@angular/core';
 import '@angular/localize/init';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -12,7 +13,7 @@ export default {
   component: KtbDatetimePickerDirective,
   decorators: [
     moduleMetadata({
-      imports: [KtbDateInputModule, DtButtonModule, RouterTestingModule],
+      imports: [KtbDateInputModule, DtButtonModule, RouterTestingModule, HttpClientModule],
     }),
   ],
 } as Meta;
