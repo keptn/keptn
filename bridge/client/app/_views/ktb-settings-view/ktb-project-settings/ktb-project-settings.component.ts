@@ -4,7 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DtToast } from '@dynatrace/barista-components/toast';
 import { combineLatest, Observable, of, Subject } from 'rxjs';
-import { catchError, filter, finalize, map, mergeMap, startWith, takeUntil, tap } from 'rxjs/operators';
+import { catchError, filter, finalize, map, mergeMap, startWith, takeUntil } from 'rxjs/operators';
 import { IGitDataExtended } from 'shared/interfaces/project';
 import { IClientFeatureFlags } from '../../../../../shared/interfaces/feature-flags';
 import { PendingChangesComponent } from '../../../_guards/pending-changes.guard';
@@ -51,7 +51,6 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
 
   @ViewChild('deleteProjectDialog')
   private deleteProjectDialog?: TemplateRef<MatDialog>;
-  public projectName?: string;
   public isGitUpstreamInProgress = false;
   public isCreatingProjectInProgress = false;
   private pendingChangesSubject = new Subject<boolean>();
@@ -70,14 +69,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
     map((featureFlags: IClientFeatureFlags) => featureFlags.RESOURCE_SERVICE_ENABLED)
   );
 
-  public projectName$: Observable<string | null> = this.route.paramMap.pipe(
-    map((params) => params.get('projectName')),
-    tap((projectName) => {
-      if (projectName) {
-        this.projectName = projectName;
-      }
-    })
-  );
+  public projectName$: Observable<string | null> = this.route.paramMap.pipe(map((params) => params.get('projectName')));
 
   public gitInputDataExtended$: Observable<IGitDataExtended | undefined> = this.projectName$.pipe(
     mergeMap((projectName) => (projectName ? this.dataService.loadPlainProject(projectName) : of(undefined))),
@@ -110,8 +102,8 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
         projectNames,
         projectCreated,
       ]) => {
-        if (projectCreated) {
-          this.showCreateNotificationAndRedirect();
+        if (projectName && projectCreated) {
+          this.showCreateNotificationAndRedirect(projectName);
         }
 
         if (projectNames) {
@@ -167,21 +159,21 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
     });
   }
 
-  private showCreateNotificationAndRedirect(): void {
+  private showCreateNotificationAndRedirect(projectName: string): void {
     this.notificationsService.addNotification(
       NotificationType.SUCCESS,
       '',
       {
         component: KtbProjectCreateMessageComponent,
         data: {
-          projectName: this.projectName,
-          routerLink: `/project/${this.projectName}/settings/services/create`,
+          projectName: projectName,
+          routerLink: `/project/${projectName}/settings/services/create`,
         },
       },
       10_000
     );
     // Remove query param for not showing notification on reload
-    this.router.navigate(['/', 'project', this.projectName, 'settings', 'project']);
+    this.router.navigate(['/', 'project', projectName, 'settings', 'project']);
   }
 
   public updateGitDataExtended(data?: IGitDataExtendedWithNoUpstream): void {
