@@ -7,6 +7,8 @@ import { Service } from 'client/app/_models/service';
 import { KtbAppHeaderComponent } from '../../client/app/_components/ktb-app-header/ktb-app-header.component';
 import { KtbAppHeaderModule } from '../../client/app/_components/ktb-app-header/ktb-app-header.module';
 import { KtbSelectableTileModule } from '../../client/app/_components/ktb-selectable-tile/ktb-selectable-tile.module';
+import { IMetadata } from '../../client/app/_interfaces/metadata';
+import { KeptnInfo } from '../../client/app/_models/keptn-info';
 import { Project } from '../../client/app/_models/project';
 import { Stage } from '../../client/app/_models/stage';
 
@@ -44,6 +46,27 @@ const createProject = (id: number, stageNames: string[]): Project =>
     projectName: `project-${id}`,
     stages: stageNames.map((name) => createStage(name, id)),
   } as Project);
+
+const info: KeptnInfo = {
+  bridgeInfo: {
+    featureFlags: {
+      RESOURCE_SERVICE_ENABLED: true,
+      D3_ENABLED: true,
+    },
+    cliDownloadLink: '',
+    enableVersionCheckFeature: true,
+    showApiToken: true,
+    authType: '',
+  },
+};
+
+const metadata: IMetadata = {
+  namespace: 'keptn',
+  keptnversion: '0.18.0',
+  keptnlabel: '',
+  bridgeversion: '0.18.0',
+  shipyardversion: '2',
+};
 
 const template: Story<KtbAppHeaderComponent> = (args: KtbAppHeaderComponent) => ({
   props: args,
@@ -105,25 +128,8 @@ standard.args = {
       stages: [{ stageName: 'develop', services: [{ serviceName: 'lockmock-svc' }, { serviceName: 'lockshock-svc' }] }],
     } as Project,
   ],
-  info: {
-    bridgeInfo: {
-      featureFlags: {
-        RESOURCE_SERVICE_ENABLED: true,
-        D3_HEATMAP_ENABLED: true,
-      },
-      cliDownloadLink: '',
-      enableVersionCheckFeature: true,
-      showApiToken: true,
-      authType: '',
-    },
-  },
-  metadata: {
-    namespace: 'keptn',
-    keptnversion: '0.18.0',
-    keptnlabel: '',
-    bridgeversion: '0.18.0',
-    shipyardversion: '2',
-  },
+  info,
+  metadata,
   selectedProject: 'sockshop',
   changeProject: (selectedProject: string | undefined): void => {
     (standard.args ?? {}).selectedProject = selectedProject;
@@ -141,25 +147,8 @@ single.args = {
       ],
     } as Project,
   ],
-  info: {
-    bridgeInfo: {
-      featureFlags: {
-        RESOURCE_SERVICE_ENABLED: true,
-        D3_HEATMAP_ENABLED: true,
-      },
-      cliDownloadLink: '',
-      enableVersionCheckFeature: true,
-      showApiToken: true,
-      authType: '',
-    },
-  },
-  metadata: {
-    namespace: 'keptn',
-    keptnversion: '0.18.0',
-    keptnlabel: '',
-    bridgeversion: '0.18.0',
-    shipyardversion: '2',
-  },
+  info,
+  metadata,
   selectedProject: 'sockshop',
   changeProject: (selectedProject: string | undefined): void => {
     (standard.args ?? {}).selectedProject = selectedProject;
@@ -172,25 +161,8 @@ many.args = {
   projects: Array(100)
     .fill(0)
     .map((_v, index) => createProject(index + 1, defaultStageNames.slice(0, (index % defaultStageNames.length) + 1))),
-  info: {
-    bridgeInfo: {
-      featureFlags: {
-        RESOURCE_SERVICE_ENABLED: true,
-        D3_HEATMAP_ENABLED: true,
-      },
-      cliDownloadLink: '',
-      enableVersionCheckFeature: true,
-      showApiToken: true,
-      authType: '',
-    },
-  },
-  metadata: {
-    namespace: 'keptn',
-    keptnversion: '0.18.0',
-    keptnlabel: '',
-    bridgeversion: '0.18.0',
-    shipyardversion: '2',
-  },
+  info,
+  metadata,
   selectedProject: 'sockshop',
   changeProject: (selectedProject: string | undefined): void => {
     (standard.args ?? {}).selectedProject = selectedProject;
