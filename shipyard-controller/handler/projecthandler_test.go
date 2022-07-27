@@ -25,6 +25,11 @@ import (
 )
 
 func TestGetAllProjects(t *testing.T) {
+	remoteURLValidator := fake.RequestValidatorMock{
+		ValidateFunc: func(url string) error {
+			return nil
+		},
+	}
 
 	s1 := &apimodels.ExpandedStage{StageName: "s1"}
 	s2 := &apimodels.ExpandedStage{StageName: "s2"}
@@ -67,11 +72,7 @@ func TestGetAllProjects(t *testing.T) {
 				EventSender:           &fake.IEventSenderMock{},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: fake.RequestValidatorMock{
-					ValidateFunc: func(url string) error {
-						return nil
-					},
-				},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			expectHttpStatus: http.StatusInternalServerError,
 		},
@@ -86,11 +87,7 @@ func TestGetAllProjects(t *testing.T) {
 				EventSender:           &fake.IEventSenderMock{},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: fake.RequestValidatorMock{
-					ValidateFunc: func(url string) error {
-						return nil
-					},
-				},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			expectHttpStatus: http.StatusOK,
 			expectJSONResponse: &apimodels.ExpandedProjects{
@@ -110,11 +107,7 @@ func TestGetAllProjects(t *testing.T) {
 				EventSender:           &fake.IEventSenderMock{},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: fake.RequestValidatorMock{
-					ValidateFunc: func(url string) error {
-						return nil
-					},
-				},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			expectHttpStatus: http.StatusOK,
 			expectJSONResponse: &apimodels.ExpandedProjects{
@@ -135,11 +128,7 @@ func TestGetAllProjects(t *testing.T) {
 				EventSender:           &fake.IEventSenderMock{},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: fake.RequestValidatorMock{
-					ValidateFunc: func(url string) error {
-						return nil
-					},
-				},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			expectHttpStatus: http.StatusOK,
 			expectJSONResponse: &apimodels.ExpandedProjects{
@@ -173,6 +162,12 @@ func TestGetAllProjects(t *testing.T) {
 }
 
 func TestGetProjectByName(t *testing.T) {
+	remoteURLValidator := fake.RequestValidatorMock{
+		ValidateFunc: func(url string) error {
+			return nil
+		},
+	}
+
 	s1 := &apimodels.ExpandedStage{StageName: "s1"}
 	s2 := &apimodels.ExpandedStage{StageName: "s2"}
 
@@ -206,11 +201,7 @@ func TestGetProjectByName(t *testing.T) {
 				EventSender:           &fake.IEventSenderMock{},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: fake.RequestValidatorMock{
-					ValidateFunc: func(url string) error {
-						return nil
-					},
-				},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			expectHttpStatus: http.StatusInternalServerError,
 			projectNameParam: "my-project",
@@ -226,11 +217,7 @@ func TestGetProjectByName(t *testing.T) {
 				EventSender:           &fake.IEventSenderMock{},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: fake.RequestValidatorMock{
-					ValidateFunc: func(url string) error {
-						return nil
-					},
-				},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			expectHttpStatus: http.StatusNotFound,
 			projectNameParam: "my-project",
@@ -246,11 +233,7 @@ func TestGetProjectByName(t *testing.T) {
 				EventSender:           &fake.IEventSenderMock{},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: fake.RequestValidatorMock{
-					ValidateFunc: func(url string) error {
-						return nil
-					},
-				},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			expectHttpStatus:   http.StatusOK,
 			projectNameParam:   "my-project",
@@ -286,6 +269,11 @@ func TestGetProjectByName(t *testing.T) {
 }
 
 func TestCreateProject(t *testing.T) {
+	remoteURLValidator := fake.RequestValidatorMock{
+		ValidateFunc: func(url string) error {
+			return nil
+		},
+	}
 
 	type fields struct {
 		ProjectManager        IProjectManager
@@ -329,11 +317,7 @@ func TestCreateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 20},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: fake.RequestValidatorMock{
-					ValidateFunc: func(url string) error {
-						return nil
-					},
-				},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			jsonPayload:      examplePayloadInvalid,
 			expectHttpStatus: http.StatusBadRequest,
@@ -344,11 +328,7 @@ func TestCreateProject(t *testing.T) {
 			jsonPayload:      examplePayloadInvalidToolongPrjName,
 			expectHttpStatus: http.StatusBadRequest,
 			fields: fields{
-				RemoteURLValidator: fake.RequestValidatorMock{
-					ValidateFunc: func(url string) error {
-						return nil
-					},
-				},
+				RemoteURLValidator: remoteURLValidator,
 			},
 		},
 		{
@@ -366,11 +346,7 @@ func TestCreateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 20},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: fake.RequestValidatorMock{
-					ValidateFunc: func(url string) error {
-						return nil
-					},
-				},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			jsonPayload:      examplePayload,
 			expectHttpStatus: http.StatusConflict,
@@ -391,11 +367,7 @@ func TestCreateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 20},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: fake.RequestValidatorMock{
-					ValidateFunc: func(url string) error {
-						return nil
-					},
-				},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			jsonPayload:      examplePayload,
 			expectHttpStatus: http.StatusBadRequest,
@@ -419,11 +391,7 @@ func TestCreateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 20},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: fake.RequestValidatorMock{
-					ValidateFunc: func(url string) error {
-						return nil
-					},
-				},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			jsonPayload:          examplePayload,
 			expectHttpStatus:     http.StatusInternalServerError,
@@ -445,11 +413,7 @@ func TestCreateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 20},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: fake.RequestValidatorMock{
-					ValidateFunc: func(url string) error {
-						return nil
-					},
-				},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			jsonPayload:      examplePayload,
 			expectHttpStatus: http.StatusOK,
@@ -524,11 +488,7 @@ func TestCreateProject(t *testing.T) {
 						return nil, fmt.Errorf("some error")
 					},
 				},
-				RemoteURLValidator: fake.RequestValidatorMock{
-					ValidateFunc: func(url string) error {
-						return nil
-					},
-				},
+				RemoteURLValidator: remoteURLValidator,
 			},
 			jsonPayload:          exampleProvisioningPayload,
 			expectHttpStatus:     http.StatusFailedDependency,
@@ -558,11 +518,7 @@ func TestCreateProject(t *testing.T) {
 						}, nil
 					},
 				},
-				RemoteURLValidator: fake.RequestValidatorMock{
-					ValidateFunc: func(url string) error {
-						return nil
-					},
-				},
+				RemoteURLValidator: remoteURLValidator,
 			},
 			jsonPayload:          exampleProvisioningPayload,
 			expectHttpStatus:     http.StatusOK,
@@ -597,6 +553,11 @@ func TestCreateProject(t *testing.T) {
 }
 
 func TestUpdateProject(t *testing.T) {
+	remoteURLValidator := fake.RequestValidatorMock{
+		ValidateFunc: func(url string) error {
+			return nil
+		},
+	}
 
 	type fields struct {
 		ProjectManager        IProjectManager
@@ -630,11 +591,7 @@ func TestUpdateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: fake.RequestValidatorMock{
-					ValidateFunc: func(url string) error {
-						return nil
-					},
-				},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			jsonPayload:        examplePayload,
 			expectedHTTPStatus: http.StatusFailedDependency,
@@ -654,11 +611,7 @@ func TestUpdateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: fake.RequestValidatorMock{
-					ValidateFunc: func(url string) error {
-						return nil
-					},
-				},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			jsonPayload:        examplePayloadInvalid,
 			expectedHTTPStatus: http.StatusBadRequest,
@@ -678,11 +631,7 @@ func TestUpdateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: fake.RequestValidatorMock{
-					ValidateFunc: func(url string) error {
-						return nil
-					},
-				},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			jsonPayload:        examplePayload,
 			expectedHTTPStatus: http.StatusNotFound,
@@ -702,11 +651,7 @@ func TestUpdateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: fake.RequestValidatorMock{
-					ValidateFunc: func(url string) error {
-						return nil
-					},
-				},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			jsonPayload:        examplePayload,
 			expectedHTTPStatus: http.StatusOK,
@@ -774,11 +719,7 @@ func TestUpdateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: fake.RequestValidatorMock{
-					ValidateFunc: func(url string) error {
-						return nil
-					},
-				},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			jsonPayload:        examplePayload,
 			expectedHTTPStatus: http.StatusFailedDependency,
@@ -798,11 +739,7 @@ func TestUpdateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: fake.RequestValidatorMock{
-					ValidateFunc: func(url string) error {
-						return nil
-					},
-				},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			jsonPayload:        examplePayload,
 			expectedHTTPStatus: http.StatusNotFound,
@@ -822,11 +759,7 @@ func TestUpdateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: fake.RequestValidatorMock{
-					ValidateFunc: func(url string) error {
-						return nil
-					},
-				},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			jsonPayload:        examplePayload,
 			expectedHTTPStatus: http.StatusBadRequest,
@@ -846,11 +779,7 @@ func TestUpdateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: fake.RequestValidatorMock{
-					ValidateFunc: func(url string) error {
-						return nil
-					},
-				},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			jsonPayload:        examplePayload,
 			expectedHTTPStatus: http.StatusInternalServerError,
@@ -872,6 +801,11 @@ func TestUpdateProject(t *testing.T) {
 }
 
 func TestDeleteProject(t *testing.T) {
+	remoteURLValidator := fake.RequestValidatorMock{
+		ValidateFunc: func(url string) error {
+			return nil
+		},
+	}
 
 	var deleted bool
 
@@ -907,11 +841,7 @@ func TestDeleteProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: fake.RequestValidatorMock{
-					ValidateFunc: func(url string) error {
-						return nil
-					},
-				},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			expectHttpStatus: http.StatusInternalServerError,
 			projectPathParam: "myproject",
@@ -931,11 +861,7 @@ func TestDeleteProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: fake.RequestValidatorMock{
-					ValidateFunc: func(url string) error {
-						return nil
-					},
-				},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			expectHttpStatus: http.StatusInternalServerError,
 			projectPathParam: "myproject",
@@ -956,11 +882,7 @@ func TestDeleteProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
-				RemoteURLValidator: fake.RequestValidatorMock{
-					ValidateFunc: func(url string) error {
-						return nil
-					},
-				},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			expectHttpStatus:   http.StatusOK,
 			projectPathParam:   "myproject",
@@ -987,11 +909,7 @@ func TestDeleteProject(t *testing.T) {
 						return fmt.Errorf("some error")
 					},
 				},
-				RemoteURLValidator: fake.RequestValidatorMock{
-					ValidateFunc: func(url string) error {
-						return nil
-					},
-				},
+				RemoteURLValidator: remoteURLValidator,
 			},
 			expectHttpStatus: http.StatusOK,
 			projectPathParam: "myproject",
@@ -1016,11 +934,7 @@ func TestDeleteProject(t *testing.T) {
 						return nil
 					},
 				},
-				RemoteURLValidator: fake.RequestValidatorMock{
-					ValidateFunc: func(url string) error {
-						return nil
-					},
-				},
+				RemoteURLValidator: remoteURLValidator,
 			},
 			expectHttpStatus: http.StatusOK,
 			projectPathParam: "myproject",

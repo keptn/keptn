@@ -10,10 +10,12 @@ import (
 func Test_FileReader(t *testing.T) {
 	denyListTestFileName := "test-file"
 	tests := []struct {
+		name     string
 		provider FileReader
 		result   []string
 	}{
 		{
+			name: "valid input",
 			provider: &fileReader{
 				FileSystem: fstest.MapFS{
 					denyListTestFileName: {Data: []byte("some\nstring")},
@@ -22,6 +24,7 @@ func Test_FileReader(t *testing.T) {
 			result: []string{"some", "string"},
 		},
 		{
+			name: "valid input with many empty lines at the end",
 			provider: &fileReader{
 				FileSystem: fstest.MapFS{
 					denyListTestFileName: {Data: []byte("some\nstring\n\n\n")},
@@ -30,6 +33,7 @@ func Test_FileReader(t *testing.T) {
 			result: []string{"some", "string"},
 		},
 		{
+			name: "valid input with many empty lines",
 			provider: &fileReader{
 				FileSystem: fstest.MapFS{
 					denyListTestFileName: {Data: []byte("some\n\n\nstring\n\n\n")},
@@ -38,6 +42,7 @@ func Test_FileReader(t *testing.T) {
 			result: []string{"some", "string"},
 		},
 		{
+			name: "valid input with one line",
 			provider: &fileReader{
 				FileSystem: fstest.MapFS{
 					denyListTestFileName: {Data: []byte("some")},
@@ -46,6 +51,7 @@ func Test_FileReader(t *testing.T) {
 			result: []string{"some"},
 		},
 		{
+			name: "valid input with empty file",
 			provider: &fileReader{
 				FileSystem: fstest.MapFS{
 					denyListTestFileName: {Data: []byte("")},
@@ -54,6 +60,7 @@ func Test_FileReader(t *testing.T) {
 			result: []string{},
 		},
 		{
+			name: "error: cannot open file",
 			provider: &fileReader{
 				FileSystem: fstest.MapFS{},
 			},
@@ -62,7 +69,7 @@ func Test_FileReader(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run("", func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			res := tt.provider.GetLines(denyListTestFileName)
 			require.Equal(t, tt.result, res)
 		})

@@ -9,12 +9,14 @@ import (
 
 func Test_RemoteURLValidator(t *testing.T) {
 	tests := []struct {
+		name       string
 		url        string
 		fileReader common.FileReader
 		expectErr  bool
 	}{
 		{
-			url: "some",
+			name: "invalid url",
+			url:  "some",
 			fileReader: common_mock.FileReaderMock{
 				GetLinesFunc: func(path string) []string {
 					return []string{"some", "list"}
@@ -23,7 +25,9 @@ func Test_RemoteURLValidator(t *testing.T) {
 			expectErr: true,
 		},
 		{
-			url: "some",
+
+			name: "valid url",
+			url:  "some",
 			fileReader: common_mock.FileReaderMock{
 				GetLinesFunc: func(path string) []string {
 					return []string{}
@@ -32,7 +36,9 @@ func Test_RemoteURLValidator(t *testing.T) {
 			expectErr: false,
 		},
 		{
-			url: "some",
+
+			name: "valid url",
+			url:  "some",
 			fileReader: common_mock.FileReaderMock{
 				GetLinesFunc: func(path string) []string {
 					return []string{"something"}
@@ -41,7 +47,9 @@ func Test_RemoteURLValidator(t *testing.T) {
 			expectErr: false,
 		},
 		{
-			url: "something",
+
+			name: "invalid url regex match",
+			url:  "something",
 			fileReader: common_mock.FileReaderMock{
 				GetLinesFunc: func(path string) []string {
 					return []string{"some"}
@@ -50,16 +58,8 @@ func Test_RemoteURLValidator(t *testing.T) {
 			expectErr: true,
 		},
 		{
-			url: "something",
-			fileReader: common_mock.FileReaderMock{
-				GetLinesFunc: func(path string) []string {
-					return []string{""}
-				},
-			},
-			expectErr: true,
-		},
-		{
-			url: "something",
+			name: "invalid url regex match",
+			url:  "something",
 			fileReader: common_mock.FileReaderMock{
 				GetLinesFunc: func(path string) []string {
 					return []string{"."}

@@ -2,7 +2,6 @@ package common
 
 import (
 	"bufio"
-	"fmt"
 	"io/fs"
 	"os"
 
@@ -35,8 +34,7 @@ func NewFileReader() *fileReader {
 func (d *fileReader) GetLines(filePath string) []string {
 	gitConfigFile, err := d.FileSystem.Open(filePath)
 	if err != nil {
-		fmt.Printf(err.Error())
-		logrus.Errorf("cannot open %s: %s", filePath, err.Error())
+		logrus.Errorf("Cannot open %s: %s", filePath, err.Error())
 		return []string{}
 	}
 	defer gitConfigFile.Close()
