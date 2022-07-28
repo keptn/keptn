@@ -332,33 +332,6 @@ secretService:
       memory: "64Mi"
       cpu: "200m"
 
-configurationService:
-  image:
-    registry: ""                             # Container Registry
-    repository: "configuration-service"      # Container Image Name
-    tag: ""                                  # Container Tag
-  # storage and storageClass are the settings for the PVC used by the configuration-storage
-  storage: 100Mi
-  storageClass: null
-  fsGroup: 1001
-  initContainer: true
-  env:
-    GIT_KEPTN_USER: "keptn"
-    GIT_KEPTN_EMAIL: "keptn@keptn.sh"
-  nodeSelector: {}
-  gracePeriod: 60
-  preStopHookTime: 20
-  sidecars: []
-  extraVolumeMounts: []
-  extraVolumes: []
-  resources:
-    requests:
-      memory: "32Mi"
-      cpu: "25m"
-    limits:
-      memory: "256Mi"
-      cpu: "100m"
-
 resourceService:
   replicas: 1
   image:

@@ -17,7 +17,6 @@ MAX_AGE_DAYS=30
 IMAGES=(
   "api"
   "bridge2"
-  "configuration-service"
   "resource-service"
   "distributor"
   "approval-service"
