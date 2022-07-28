@@ -36,15 +36,13 @@ func NewDebugManager(eventRepo db.EventRepo, stateRepo db.SequenceStateRepo, pro
 }
 
 func (dm *DebugManager) GetSequenceByID(projectName string, shkeptncontext string) (*apimodels.SequenceState, error) {
-	sequence, err := dm.stateRepo.GetSequenceStateByID(
+	return dm.stateRepo.GetSequenceStateByID(
 		apimodels.StateFilter{
 			GetSequenceStateParams: apimodels.GetSequenceStateParams{
 				Project:      projectName,
 				KeptnContext: shkeptncontext,
 			},
 		})
-
-	return sequence, err
 }
 
 func (dm *DebugManager) GetAllSequencesForProject(projectName string) ([]models.SequenceExecution, error) {
@@ -56,6 +54,10 @@ func (dm *DebugManager) GetAllSequencesForProject(projectName string) ([]models.
 		},
 	})
 
+	if err != nil {
+		return nil, err
+	}
+
 	sort.SliceStable(sequences, func(i, j int) bool {
 		return sequences[i].TriggeredAt.After(sequences[j].TriggeredAt)
 	})
@@ -65,6 +67,10 @@ func (dm *DebugManager) GetAllSequencesForProject(projectName string) ([]models.
 
 func (dm *DebugManager) GetAllEvents(projectName string, shkeptncontext string) ([]*apimodels.KeptnContextExtendedCE, error) {
 	events, err := dm.eventRepo.GetEvents(projectName, common.EventFilter{KeptnContext: &shkeptncontext})
+
+	if err != nil {
+		return nil, err
+	}
 
 	eventsPointer := make([]*apimodels.KeptnContextExtendedCE, len(events))
 
@@ -82,7 +88,5 @@ func (dm *DebugManager) GetEventByID(projectName string, shkeptncontext string, 
 }
 
 func (dm *DebugManager) GetAllProjects() ([]*apimodels.ExpandedProject, error) {
-	projects, err := dm.projectRepo.GetProjects()
-
-	return projects, err
+	return dm.projectRepo.GetProjects()
 }
