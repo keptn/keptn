@@ -60,6 +60,7 @@ export class KtbProjectSettingsGitExtendedComponent implements OnInit {
     }
 
     if (!this.gitInputData) {
+      this.selectedForm = GitFormType.HTTPS;
       return;
     }
 
