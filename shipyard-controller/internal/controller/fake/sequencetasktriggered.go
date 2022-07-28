@@ -8,60 +8,60 @@ import (
 	"sync"
 )
 
-// ISequenceTaskTriggeredHookMock is a mock implementation of sequencehooks.ISequenceTaskTriggeredHook.
+// ISequenceTaskTriggeredHookMock is a mock implementation of controller.ISequenceTaskTriggeredHook.
 //
 // 	func TestSomethingThatUsesISequenceTaskTriggeredHook(t *testing.T) {
 //
-// 		// make and configure a mocked sequencehooks.ISequenceTaskTriggeredHook
+// 		// make and configure a mocked controller.ISequenceTaskTriggeredHook
 // 		mockedISequenceTaskTriggeredHook := &ISequenceTaskTriggeredHookMock{
-// 			OnSequenceTaskTriggeredFunc: func(event apimodels.KeptnContextExtendedCE)  {
+// 			OnSequenceTaskTriggeredFunc: func(keptnContextExtendedCE apimodels.KeptnContextExtendedCE)  {
 // 				panic("mock out the OnSequenceTaskTriggered method")
 // 			},
 // 		}
 //
-// 		// use mockedISequenceTaskTriggeredHook in code that requires sequencehooks.ISequenceTaskTriggeredHook
+// 		// use mockedISequenceTaskTriggeredHook in code that requires controller.ISequenceTaskTriggeredHook
 // 		// and then make assertions.
 //
 // 	}
 type ISequenceTaskTriggeredHookMock struct {
 	// OnSequenceTaskTriggeredFunc mocks the OnSequenceTaskTriggered method.
-	OnSequenceTaskTriggeredFunc func(event apimodels.KeptnContextExtendedCE)
+	OnSequenceTaskTriggeredFunc func(keptnContextExtendedCE apimodels.KeptnContextExtendedCE)
 
 	// calls tracks calls to the methods.
 	calls struct {
 		// OnSequenceTaskTriggered holds details about calls to the OnSequenceTaskTriggered method.
 		OnSequenceTaskTriggered []struct {
-			//models.KeptnContextExtendedCEis the event argument value.
-			Event apimodels.KeptnContextExtendedCE
+			// KeptnContextExtendedCE is the keptnContextExtendedCE argument value.
+			KeptnContextExtendedCE apimodels.KeptnContextExtendedCE
 		}
 	}
 	lockOnSequenceTaskTriggered sync.RWMutex
 }
 
 // OnSequenceTaskTriggered calls OnSequenceTaskTriggeredFunc.
-func (mock *ISequenceTaskTriggeredHookMock) OnSequenceTaskTriggered(event apimodels.KeptnContextExtendedCE) {
+func (mock *ISequenceTaskTriggeredHookMock) OnSequenceTaskTriggered(keptnContextExtendedCE apimodels.KeptnContextExtendedCE) {
 	if mock.OnSequenceTaskTriggeredFunc == nil {
 		panic("ISequenceTaskTriggeredHookMock.OnSequenceTaskTriggeredFunc: method is nil but ISequenceTaskTriggeredHook.OnSequenceTaskTriggered was just called")
 	}
 	callInfo := struct {
-		Event apimodels.KeptnContextExtendedCE
+		KeptnContextExtendedCE apimodels.KeptnContextExtendedCE
 	}{
-		Event: event,
+		KeptnContextExtendedCE: keptnContextExtendedCE,
 	}
 	mock.lockOnSequenceTaskTriggered.Lock()
 	mock.calls.OnSequenceTaskTriggered = append(mock.calls.OnSequenceTaskTriggered, callInfo)
 	mock.lockOnSequenceTaskTriggered.Unlock()
-	mock.OnSequenceTaskTriggeredFunc(event)
+	mock.OnSequenceTaskTriggeredFunc(keptnContextExtendedCE)
 }
 
 // OnSequenceTaskTriggeredCalls gets all the calls that were made to OnSequenceTaskTriggered.
 // Check the length with:
 //     len(mockedISequenceTaskTriggeredHook.OnSequenceTaskTriggeredCalls())
 func (mock *ISequenceTaskTriggeredHookMock) OnSequenceTaskTriggeredCalls() []struct {
-	Event apimodels.KeptnContextExtendedCE
+	KeptnContextExtendedCE apimodels.KeptnContextExtendedCE
 } {
 	var calls []struct {
-		Event apimodels.KeptnContextExtendedCE
+		KeptnContextExtendedCE apimodels.KeptnContextExtendedCE
 	}
 	mock.lockOnSequenceTaskTriggered.RLock()
 	calls = mock.calls.OnSequenceTaskTriggered

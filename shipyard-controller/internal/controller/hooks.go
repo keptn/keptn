@@ -15,7 +15,7 @@ type ISequenceStartedHook interface {
 	OnSequenceStarted(apimodels.KeptnContextExtendedCE)
 }
 
-//go:generate moq -pkg fake -skip-ensure -out ./fake/sequencestarted.go . ISequenceWaitingHook
+//go:generate moq -pkg fake -skip-ensure -out ./fake/sequencewaiting.go . ISequenceWaitingHook
 type ISequenceWaitingHook interface {
 	OnSequenceWaiting(apimodels.KeptnContextExtendedCE)
 }

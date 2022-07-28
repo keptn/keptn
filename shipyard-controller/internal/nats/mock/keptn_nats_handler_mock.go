@@ -31,7 +31,7 @@ type IKeptnNatsMessageHandlerMock struct {
 	calls struct {
 		// Process holds details about calls to the Process method.
 		Process []struct {
-			//models.KeptnContextExtendedCEis the event argument value.
+			// Event is the event argument value.
 			Event apimodels.KeptnContextExtendedCE
 			// Sync is the sync argument value.
 			Sync bool

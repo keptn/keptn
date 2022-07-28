@@ -5,17 +5,17 @@ package fake
 
 import (
 	"context"
-	"github.com/keptn/keptn/shipyard-controller/models"
+	scmodels "github.com/keptn/keptn/shipyard-controller/models"
 	"sync"
 )
 
-// IEventDispatcherMock is a mock implementation of handler.IEventDispatcher.
+// IEventDispatcherMock is a mock implementation of controller.IEventDispatcher.
 //
 // 	func TestSomethingThatUsesIEventDispatcher(t *testing.T) {
 //
-// 		// make and configure a mocked handler.IEventDispatcher
+// 		// make and configure a mocked controller.IEventDispatcher
 // 		mockedIEventDispatcher := &IEventDispatcherMock{
-// 			AddFunc: func(event models.DispatcherEvent, skipQueue bool) error {
+// 			AddFunc: func(event scmodels.DispatcherEvent, skipQueue bool) error {
 // 				panic("mock out the Add method")
 // 			},
 // 			RunFunc: func(ctx context.Context)  {
@@ -26,13 +26,13 @@ import (
 // 			},
 // 		}
 //
-// 		// use mockedIEventDispatcher in code that requires handler.IEventDispatcher
+// 		// use mockedIEventDispatcher in code that requires controller.IEventDispatcher
 // 		// and then make assertions.
 //
 // 	}
 type IEventDispatcherMock struct {
 	// AddFunc mocks the Add method.
-	AddFunc func(event models.DispatcherEvent, skipQueue bool) error
+	AddFunc func(event scmodels.DispatcherEvent, skipQueue bool) error
 
 	// RunFunc mocks the Run method.
 	RunFunc func(ctx context.Context)
@@ -44,8 +44,8 @@ type IEventDispatcherMock struct {
 	calls struct {
 		// Add holds details about calls to the Add method.
 		Add []struct {
-			//models.KeptnContextExtendedCEis the event argument value.
-			Event models.DispatcherEvent
+			// Event is the event argument value.
+			Event scmodels.DispatcherEvent
 			// SkipQueue is the skipQueue argument value.
 			SkipQueue bool
 		}
@@ -64,12 +64,12 @@ type IEventDispatcherMock struct {
 }
 
 // Add calls AddFunc.
-func (mock *IEventDispatcherMock) Add(event models.DispatcherEvent, skipQueue bool) error {
+func (mock *IEventDispatcherMock) Add(event scmodels.DispatcherEvent, skipQueue bool) error {
 	if mock.AddFunc == nil {
 		panic("IEventDispatcherMock.AddFunc: method is nil but IEventDispatcher.Add was just called")
 	}
 	callInfo := struct {
-		Event     models.DispatcherEvent
+		Event     scmodels.DispatcherEvent
 		SkipQueue bool
 	}{
 		Event:     event,
@@ -85,11 +85,11 @@ func (mock *IEventDispatcherMock) Add(event models.DispatcherEvent, skipQueue bo
 // Check the length with:
 //     len(mockedIEventDispatcher.AddCalls())
 func (mock *IEventDispatcherMock) AddCalls() []struct {
-	Event     models.DispatcherEvent
+	Event     scmodels.DispatcherEvent
 	SkipQueue bool
 } {
 	var calls []struct {
-		Event     models.DispatcherEvent
+		Event     scmodels.DispatcherEvent
 		SkipQueue bool
 	}
 	mock.lockAdd.RLock()

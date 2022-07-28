@@ -8,18 +8,18 @@ import (
 	"sync"
 )
 
-// ISubSequenceFinishedHookMock is a mock implementation of sequencehooks.ISubSequenceFinishedHook.
+// ISubSequenceFinishedHookMock is a mock implementation of controller.ISubSequenceFinishedHook.
 //
 // 	func TestSomethingThatUsesISubSequenceFinishedHook(t *testing.T) {
 //
-// 		// make and configure a mocked sequencehooks.ISubSequenceFinishedHook
+// 		// make and configure a mocked controller.ISubSequenceFinishedHook
 // 		mockedISubSequenceFinishedHook := &ISubSequenceFinishedHookMock{
 // 			OnSubSequenceFinishedFunc: func(event apimodels.KeptnContextExtendedCE)  {
 // 				panic("mock out the OnSubSequenceFinished method")
 // 			},
 // 		}
 //
-// 		// use mockedISubSequenceFinishedHook in code that requires sequencehooks.ISubSequenceFinishedHook
+// 		// use mockedISubSequenceFinishedHook in code that requires controller.ISubSequenceFinishedHook
 // 		// and then make assertions.
 //
 // 	}
@@ -31,7 +31,7 @@ type ISubSequenceFinishedHookMock struct {
 	calls struct {
 		// OnSubSequenceFinished holds details about calls to the OnSubSequenceFinished method.
 		OnSubSequenceFinished []struct {
-			//models.KeptnContextExtendedCEis the event argument value.
+			// Event is the event argument value.
 			Event apimodels.KeptnContextExtendedCE
 		}
 	}

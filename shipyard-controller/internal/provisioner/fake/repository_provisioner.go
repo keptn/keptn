@@ -4,25 +4,25 @@
 package fake
 
 import (
-	scmodels "github.com/keptn/keptn/shipyard-controller/models"
+	"github.com/keptn/keptn/shipyard-controller/models"
 	"sync"
 )
 
-// IRepositoryProvisionerMock is a mock implementation of handler.IRepositoryProvisioner.
+// IRepositoryProvisionerMock is a mock implementation of provisioner.IRepositoryProvisioner.
 //
 // 	func TestSomethingThatUsesIRepositoryProvisioner(t *testing.T) {
 //
-// 		// make and configure a mocked handler.IRepositoryProvisioner
+// 		// make and configure a mocked provisioner.IRepositoryProvisioner
 // 		mockedIRepositoryProvisioner := &IRepositoryProvisionerMock{
 // 			DeleteRepositoryFunc: func(projectName string, namespace string) error {
 // 				panic("mock out the DeleteRepository method")
 // 			},
-// 			ProvideRepositoryFunc: func(projectName string, namespace string) (*scmodels.ProvisioningData, error) {
+// 			ProvideRepositoryFunc: func(projectName string, namespace string) (*models.ProvisioningData, error) {
 // 				panic("mock out the ProvideRepository method")
 // 			},
 // 		}
 //
-// 		// use mockedIRepositoryProvisioner in code that requires handler.IRepositoryProvisioner
+// 		// use mockedIRepositoryProvisioner in code that requires provisioner.IRepositoryProvisioner
 // 		// and then make assertions.
 //
 // 	}
@@ -31,7 +31,7 @@ type IRepositoryProvisionerMock struct {
 	DeleteRepositoryFunc func(projectName string, namespace string) error
 
 	// ProvideRepositoryFunc mocks the ProvideRepository method.
-	ProvideRepositoryFunc func(projectName string, namespace string) (*scmodels.ProvisioningData, error)
+	ProvideRepositoryFunc func(projectName string, namespace string) (*models.ProvisioningData, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -90,7 +90,7 @@ func (mock *IRepositoryProvisionerMock) DeleteRepositoryCalls() []struct {
 }
 
 // ProvideRepository calls ProvideRepositoryFunc.
-func (mock *IRepositoryProvisionerMock) ProvideRepository(projectName string, namespace string) (*scmodels.ProvisioningData, error) {
+func (mock *IRepositoryProvisionerMock) ProvideRepository(projectName string, namespace string) (*models.ProvisioningData, error) {
 	if mock.ProvideRepositoryFunc == nil {
 		panic("IRepositoryProvisionerMock.ProvideRepositoryFunc: method is nil but IRepositoryProvisioner.ProvideRepository was just called")
 	}

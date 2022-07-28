@@ -4,47 +4,47 @@
 package fake
 
 import (
-	"github.com/keptn/keptn/shipyard-controller/models"
+	scmodels "github.com/keptn/keptn/shipyard-controller/models"
 	"sync"
 )
 
-// ISequenceResumedHookMock is a mock implementation of sequencehooks.ISequenceResumedHook.
+// ISequenceResumedHookMock is a mock implementation of controller.ISequenceResumedHook.
 //
 // 	func TestSomethingThatUsesISequenceResumedHook(t *testing.T) {
 //
-// 		// make and configure a mocked sequencehooks.ISequenceResumedHook
+// 		// make and configure a mocked controller.ISequenceResumedHook
 // 		mockedISequenceResumedHook := &ISequenceResumedHookMock{
-// 			OnSequenceResumedFunc: func(resume models.EventScope)  {
+// 			OnSequenceResumedFunc: func(resume scmodels.EventScope)  {
 // 				panic("mock out the OnSequenceResumed method")
 // 			},
 // 		}
 //
-// 		// use mockedISequenceResumedHook in code that requires sequencehooks.ISequenceResumedHook
+// 		// use mockedISequenceResumedHook in code that requires controller.ISequenceResumedHook
 // 		// and then make assertions.
 //
 // 	}
 type ISequenceResumedHookMock struct {
 	// OnSequenceResumedFunc mocks the OnSequenceResumed method.
-	OnSequenceResumedFunc func(resume models.EventScope)
+	OnSequenceResumedFunc func(resume scmodels.EventScope)
 
 	// calls tracks calls to the methods.
 	calls struct {
 		// OnSequenceResumed holds details about calls to the OnSequenceResumed method.
 		OnSequenceResumed []struct {
 			// Resume is the resume argument value.
-			Resume models.EventScope
+			Resume scmodels.EventScope
 		}
 	}
 	lockOnSequenceResumed sync.RWMutex
 }
 
 // OnSequenceResumed calls OnSequenceResumedFunc.
-func (mock *ISequenceResumedHookMock) OnSequenceResumed(resume models.EventScope) {
+func (mock *ISequenceResumedHookMock) OnSequenceResumed(resume scmodels.EventScope) {
 	if mock.OnSequenceResumedFunc == nil {
 		panic("ISequenceResumedHookMock.OnSequenceResumedFunc: method is nil but ISequenceResumedHook.OnSequenceResumed was just called")
 	}
 	callInfo := struct {
-		Resume models.EventScope
+		Resume scmodels.EventScope
 	}{
 		Resume: resume,
 	}
@@ -58,10 +58,10 @@ func (mock *ISequenceResumedHookMock) OnSequenceResumed(resume models.EventScope
 // Check the length with:
 //     len(mockedISequenceResumedHook.OnSequenceResumedCalls())
 func (mock *ISequenceResumedHookMock) OnSequenceResumedCalls() []struct {
-	Resume models.EventScope
+	Resume scmodels.EventScope
 } {
 	var calls []struct {
-		Resume models.EventScope
+		Resume scmodels.EventScope
 	}
 	mock.lockOnSequenceResumed.RLock()
 	calls = mock.calls.OnSequenceResumed

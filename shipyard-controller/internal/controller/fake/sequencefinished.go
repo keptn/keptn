@@ -8,18 +8,18 @@ import (
 	"sync"
 )
 
-// ISequenceFinishedHookMock is a mock implementation of sequencehooks.ISequenceFinishedHook.
+// ISequenceFinishedHookMock is a mock implementation of controller.ISequenceFinishedHook.
 //
 // 	func TestSomethingThatUsesISequenceFinishedHook(t *testing.T) {
 //
-// 		// make and configure a mocked sequencehooks.ISequenceFinishedHook
+// 		// make and configure a mocked controller.ISequenceFinishedHook
 // 		mockedISequenceFinishedHook := &ISequenceFinishedHookMock{
 // 			OnSequenceFinishedFunc: func(event apimodels.KeptnContextExtendedCE)  {
 // 				panic("mock out the OnSequenceFinished method")
 // 			},
 // 		}
 //
-// 		// use mockedISequenceFinishedHook in code that requires sequencehooks.ISequenceFinishedHook
+// 		// use mockedISequenceFinishedHook in code that requires controller.ISequenceFinishedHook
 // 		// and then make assertions.
 //
 // 	}
@@ -31,7 +31,7 @@ type ISequenceFinishedHookMock struct {
 	calls struct {
 		// OnSequenceFinished holds details about calls to the OnSequenceFinished method.
 		OnSequenceFinished []struct {
-			//models.KeptnContextExtendedCEis the event argument value.
+			// Event is the event argument value.
 			Event apimodels.KeptnContextExtendedCE
 		}
 	}

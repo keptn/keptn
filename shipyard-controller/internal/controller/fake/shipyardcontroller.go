@@ -10,13 +10,13 @@ import (
 	"sync"
 )
 
-// IShipyardControllerMock is a mock implementation of handler.IShipyardController.
+// IShipyardControllerMock is a mock implementation of controller.IShipyardController.
 //
 // 	func TestSomethingThatUsesIShipyardController(t *testing.T) {
 //
-// 		// make and configure a mocked handler.IShipyardController
+// 		// make and configure a mocked controller.IShipyardController
 // 		mockedIShipyardController := &IShipyardControllerMock{
-// 			ControlSequenceFunc: func(controlSequence models.SequenceControl) error {
+// 			ControlSequenceFunc: func(controlSequence apimodels.SequenceControl) error {
 // 				panic("mock out the ControlSequence method")
 // 			},
 // 			GetAllTriggeredEventsFunc: func(filter common.EventFilter) ([]apimodels.KeptnContextExtendedCE, error) {
@@ -28,7 +28,7 @@ import (
 // 			HandleIncomingEventFunc: func(event apimodels.KeptnContextExtendedCE, waitForCompletion bool) error {
 // 				panic("mock out the HandleIncomingEvent method")
 // 			},
-// 			StartDispatchersFunc: func(ctx context.Context)  {
+// 			StartDispatchersFunc: func(ctx context.Context, mode common.SDMode)  {
 // 				panic("mock out the StartDispatchers method")
 // 			},
 // 			StartTaskSequenceFunc: func(event apimodels.KeptnContextExtendedCE) error {
@@ -39,7 +39,7 @@ import (
 // 			},
 // 		}
 //
-// 		// use mockedIShipyardController in code that requires handler.IShipyardController
+// 		// use mockedIShipyardController in code that requires controller.IShipyardController
 // 		// and then make assertions.
 //
 // 	}
@@ -86,7 +86,7 @@ type IShipyardControllerMock struct {
 		}
 		// HandleIncomingEvent holds details about calls to the HandleIncomingEvent method.
 		HandleIncomingEvent []struct {
-			//models.KeptnContextExtendedCEis the event argument value.
+			// Event is the event argument value.
 			Event apimodels.KeptnContextExtendedCE
 			// WaitForCompletion is the waitForCompletion argument value.
 			WaitForCompletion bool
@@ -95,10 +95,12 @@ type IShipyardControllerMock struct {
 		StartDispatchers []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
+			// Mode is the mode argument value.
+			Mode common.SDMode
 		}
 		// StartTaskSequence holds details about calls to the StartTaskSequence method.
 		StartTaskSequence []struct {
-			//models.KeptnContextExtendedCEis the event argument value.
+			// Event is the event argument value.
 			Event apimodels.KeptnContextExtendedCE
 		}
 		// StopDispatchers holds details about calls to the StopDispatchers method.
@@ -252,9 +254,11 @@ func (mock *IShipyardControllerMock) StartDispatchers(ctx context.Context, mode 
 		panic("IShipyardControllerMock.StartDispatchersFunc: method is nil but IShipyardController.StartDispatchers was just called")
 	}
 	callInfo := struct {
-		Ctx context.Context
+		Ctx  context.Context
+		Mode common.SDMode
 	}{
-		Ctx: ctx,
+		Ctx:  ctx,
+		Mode: mode,
 	}
 	mock.lockStartDispatchers.Lock()
 	mock.calls.StartDispatchers = append(mock.calls.StartDispatchers, callInfo)
@@ -266,10 +270,12 @@ func (mock *IShipyardControllerMock) StartDispatchers(ctx context.Context, mode 
 // Check the length with:
 //     len(mockedIShipyardController.StartDispatchersCalls())
 func (mock *IShipyardControllerMock) StartDispatchersCalls() []struct {
-	Ctx context.Context
+	Ctx  context.Context
+	Mode common.SDMode
 } {
 	var calls []struct {
-		Ctx context.Context
+		Ctx  context.Context
+		Mode common.SDMode
 	}
 	mock.lockStartDispatchers.RLock()
 	calls = mock.calls.StartDispatchers

@@ -8,18 +8,18 @@ import (
 	"sync"
 )
 
-// ISequenceTimeoutHookMock is a mock implementation of sequencehooks.ISequenceTimeoutHook.
+// ISequenceTimeoutHookMock is a mock implementation of controller.ISequenceTimeoutHook.
 //
 // 	func TestSomethingThatUsesISequenceTimeoutHook(t *testing.T) {
 //
-// 		// make and configure a mocked sequencehooks.ISequenceTimeoutHook
+// 		// make and configure a mocked controller.ISequenceTimeoutHook
 // 		mockedISequenceTimeoutHook := &ISequenceTimeoutHookMock{
 // 			OnSequenceTimeoutFunc: func(event apimodels.KeptnContextExtendedCE)  {
 // 				panic("mock out the OnSequenceTimeout method")
 // 			},
 // 		}
 //
-// 		// use mockedISequenceTimeoutHook in code that requires sequencehooks.ISequenceTimeoutHook
+// 		// use mockedISequenceTimeoutHook in code that requires controller.ISequenceTimeoutHook
 // 		// and then make assertions.
 //
 // 	}
@@ -31,7 +31,7 @@ type ISequenceTimeoutHookMock struct {
 	calls struct {
 		// OnSequenceTimeout holds details about calls to the OnSequenceTimeout method.
 		OnSequenceTimeout []struct {
-			//models.KeptnContextExtendedCEis the event argument value.
+			// Event is the event argument value.
 			Event apimodels.KeptnContextExtendedCE
 		}
 	}

@@ -8,15 +8,15 @@ import (
 	"sync"
 )
 
-// Ensure, that SecretStoreMock does implement common.SecretStore.
+// Ensure, that SecretStoreMock does implement secretstore.SecretStore.
 // If this is not the case, regenerate this file with moq.
 var _ secretstore.SecretStore = &SecretStoreMock{}
 
-// SecretStoreMock is a mock implementation of common.SecretStore.
+// SecretStoreMock is a mock implementation of secretstore.SecretStore.
 //
 // 	func TestSomethingThatUsesSecretStore(t *testing.T) {
 //
-// 		// make and configure a mocked common.SecretStore
+// 		// make and configure a mocked secretstore.SecretStore
 // 		mockedSecretStore := &SecretStoreMock{
 // 			CreateSecretFunc: func(name string, content map[string][]byte) error {
 // 				panic("mock out the CreateSecret method")
@@ -32,7 +32,7 @@ var _ secretstore.SecretStore = &SecretStoreMock{}
 // 			},
 // 		}
 //
-// 		// use mockedSecretStore in code that requires common.SecretStore
+// 		// use mockedSecretStore in code that requires secretstore.SecretStore
 // 		// and then make assertions.
 //
 // 	}

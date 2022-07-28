@@ -4,47 +4,47 @@
 package fake
 
 import (
-	"github.com/keptn/keptn/shipyard-controller/models"
+	scmodels "github.com/keptn/keptn/shipyard-controller/models"
 	"sync"
 )
 
-// ISequenceAbortedHookMock is a mock implementation of sequencehooks.ISequenceAbortedHook.
+// ISequenceAbortedHookMock is a mock implementation of controller.ISequenceAbortedHook.
 //
 // 	func TestSomethingThatUsesISequenceAbortedHook(t *testing.T) {
 //
-// 		// make and configure a mocked sequencehooks.ISequenceAbortedHook
+// 		// make and configure a mocked controller.ISequenceAbortedHook
 // 		mockedISequenceAbortedHook := &ISequenceAbortedHookMock{
-// 			OnSequenceAbortedFunc: func(event models.EventScope)  {
+// 			OnSequenceAbortedFunc: func(event scmodels.EventScope)  {
 // 				panic("mock out the OnSequenceAborted method")
 // 			},
 // 		}
 //
-// 		// use mockedISequenceAbortedHook in code that requires sequencehooks.ISequenceAbortedHook
+// 		// use mockedISequenceAbortedHook in code that requires controller.ISequenceAbortedHook
 // 		// and then make assertions.
 //
 // 	}
 type ISequenceAbortedHookMock struct {
 	// OnSequenceAbortedFunc mocks the OnSequenceAborted method.
-	OnSequenceAbortedFunc func(event models.EventScope)
+	OnSequenceAbortedFunc func(event scmodels.EventScope)
 
 	// calls tracks calls to the methods.
 	calls struct {
 		// OnSequenceAborted holds details about calls to the OnSequenceAborted method.
 		OnSequenceAborted []struct {
-			//models.KeptnContextExtendedCEis the event argument value.
-			Event models.EventScope
+			// Event is the event argument value.
+			Event scmodels.EventScope
 		}
 	}
 	lockOnSequenceAborted sync.RWMutex
 }
 
 // OnSequenceAborted calls OnSequenceAbortedFunc.
-func (mock *ISequenceAbortedHookMock) OnSequenceAborted(event models.EventScope) {
+func (mock *ISequenceAbortedHookMock) OnSequenceAborted(event scmodels.EventScope) {
 	if mock.OnSequenceAbortedFunc == nil {
 		panic("ISequenceAbortedHookMock.OnSequenceAbortedFunc: method is nil but ISequenceAbortedHook.OnSequenceAborted was just called")
 	}
 	callInfo := struct {
-		Event models.EventScope
+		Event scmodels.EventScope
 	}{
 		Event: event,
 	}
@@ -58,10 +58,10 @@ func (mock *ISequenceAbortedHookMock) OnSequenceAborted(event models.EventScope)
 // Check the length with:
 //     len(mockedISequenceAbortedHook.OnSequenceAbortedCalls())
 func (mock *ISequenceAbortedHookMock) OnSequenceAbortedCalls() []struct {
-	Event models.EventScope
+	Event scmodels.EventScope
 } {
 	var calls []struct {
-		Event models.EventScope
+		Event scmodels.EventScope
 	}
 	mock.lockOnSequenceAborted.RLock()
 	calls = mock.calls.OnSequenceAborted

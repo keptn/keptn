@@ -8,60 +8,60 @@ import (
 	"sync"
 )
 
-// ISequenceStartedHookMock is a mock implementation of sequencehooks.ISequenceStartedHook.
+// ISequenceStartedHookMock is a mock implementation of controller.ISequenceStartedHook.
 //
 // 	func TestSomethingThatUsesISequenceStartedHook(t *testing.T) {
 //
-// 		// make and configure a mocked sequencehooks.ISequenceStartedHook
+// 		// make and configure a mocked controller.ISequenceStartedHook
 // 		mockedISequenceStartedHook := &ISequenceStartedHookMock{
-// 			OnSequenceStartedFunc: func(event apimodels.KeptnContextExtendedCE)  {
+// 			OnSequenceStartedFunc: func(keptnContextExtendedCE apimodels.KeptnContextExtendedCE)  {
 // 				panic("mock out the OnSequenceStarted method")
 // 			},
 // 		}
 //
-// 		// use mockedISequenceStartedHook in code that requires sequencehooks.ISequenceStartedHook
+// 		// use mockedISequenceStartedHook in code that requires controller.ISequenceStartedHook
 // 		// and then make assertions.
 //
 // 	}
 type ISequenceStartedHookMock struct {
 	// OnSequenceStartedFunc mocks the OnSequenceStarted method.
-	OnSequenceStartedFunc func(event apimodels.KeptnContextExtendedCE)
+	OnSequenceStartedFunc func(keptnContextExtendedCE apimodels.KeptnContextExtendedCE)
 
 	// calls tracks calls to the methods.
 	calls struct {
 		// OnSequenceStarted holds details about calls to the OnSequenceStarted method.
 		OnSequenceStarted []struct {
-			//models.KeptnContextExtendedCEis the event argument value.
-			Event apimodels.KeptnContextExtendedCE
+			// KeptnContextExtendedCE is the keptnContextExtendedCE argument value.
+			KeptnContextExtendedCE apimodels.KeptnContextExtendedCE
 		}
 	}
 	lockOnSequenceStarted sync.RWMutex
 }
 
 // OnSequenceStarted calls OnSequenceStartedFunc.
-func (mock *ISequenceStartedHookMock) OnSequenceStarted(event apimodels.KeptnContextExtendedCE) {
+func (mock *ISequenceStartedHookMock) OnSequenceStarted(keptnContextExtendedCE apimodels.KeptnContextExtendedCE) {
 	if mock.OnSequenceStartedFunc == nil {
 		panic("ISequenceStartedHookMock.OnSequenceStartedFunc: method is nil but ISequenceStartedHook.OnSequenceStarted was just called")
 	}
 	callInfo := struct {
-		Event apimodels.KeptnContextExtendedCE
+		KeptnContextExtendedCE apimodels.KeptnContextExtendedCE
 	}{
-		Event: event,
+		KeptnContextExtendedCE: keptnContextExtendedCE,
 	}
 	mock.lockOnSequenceStarted.Lock()
 	mock.calls.OnSequenceStarted = append(mock.calls.OnSequenceStarted, callInfo)
 	mock.lockOnSequenceStarted.Unlock()
-	mock.OnSequenceStartedFunc(event)
+	mock.OnSequenceStartedFunc(keptnContextExtendedCE)
 }
 
 // OnSequenceStartedCalls gets all the calls that were made to OnSequenceStarted.
 // Check the length with:
 //     len(mockedISequenceStartedHook.OnSequenceStartedCalls())
 func (mock *ISequenceStartedHookMock) OnSequenceStartedCalls() []struct {
-	Event apimodels.KeptnContextExtendedCE
+	KeptnContextExtendedCE apimodels.KeptnContextExtendedCE
 } {
 	var calls []struct {
-		Event apimodels.KeptnContextExtendedCE
+		KeptnContextExtendedCE apimodels.KeptnContextExtendedCE
 	}
 	mock.lockOnSequenceStarted.RLock()
 	calls = mock.calls.OnSequenceStarted

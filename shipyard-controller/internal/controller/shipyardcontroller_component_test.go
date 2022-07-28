@@ -7,6 +7,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/internal/common"
 	"github.com/keptn/keptn/shipyard-controller/internal/controller/fake"
 	"github.com/keptn/keptn/shipyard-controller/internal/db"
+	shipyardRetrievermock "github.com/keptn/keptn/shipyard-controller/internal/shipyardretriever/fake"
 	"os"
 	"testing"
 	"time"
@@ -1294,7 +1295,7 @@ func getTestShipyardController(shipyardContent string) (*ShipyardController, con
 			StopFunc: func() {},
 		},
 		sequenceDispatcher: sequenceDispatcher,
-		shipyardRetriever: &fake.IShipyardRetrieverMock{
+		shipyardRetriever: &shipyardRetrievermock.IShipyardRetrieverMock{
 			GetShipyardFunc: func(projectName string) (*keptnv2.Shipyard, error) {
 				return common.UnmarshalShipyard(shipyardContent)
 			},

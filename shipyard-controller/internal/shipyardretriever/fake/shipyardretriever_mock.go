@@ -8,11 +8,11 @@ import (
 	"sync"
 )
 
-// IShipyardRetrieverMock is a mock implementation of handler.IShipyardRetriever.
+// IShipyardRetrieverMock is a mock implementation of shipyardretriever.IShipyardRetriever.
 //
 // 	func TestSomethingThatUsesIShipyardRetriever(t *testing.T) {
 //
-// 		// make and configure a mocked handler.IShipyardRetriever
+// 		// make and configure a mocked shipyardretriever.IShipyardRetriever
 // 		mockedIShipyardRetriever := &IShipyardRetrieverMock{
 // 			GetCachedShipyardFunc: func(projectName string) (*keptnv2.Shipyard, error) {
 // 				panic("mock out the GetCachedShipyard method")
@@ -25,7 +25,7 @@ import (
 // 			},
 // 		}
 //
-// 		// use mockedIShipyardRetriever in code that requires handler.IShipyardRetriever
+// 		// use mockedIShipyardRetriever in code that requires shipyardretriever.IShipyardRetriever
 // 		// and then make assertions.
 //
 // 	}
