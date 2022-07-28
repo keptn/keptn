@@ -14,11 +14,8 @@
     position: absolute;
     right: 1px;
 
-    .dt-tag {
+    ktb-evaluation-badge .badge {
       border: 1px solid $gray-200;
-    }
-    .dt-tag:not(.error):not(.success):not(.warning) {
-      background-color: $gray-300;
     }
   }
 

@@ -25,6 +25,11 @@ import (
 )
 
 func TestGetAllProjects(t *testing.T) {
+	remoteURLValidator := fake.RequestValidatorMock{
+		ValidateFunc: func(url string) error {
+			return nil
+		},
+	}
 
 	s1 := &apimodels.ExpandedStage{StageName: "s1"}
 	s2 := &apimodels.ExpandedStage{StageName: "s2"}
@@ -46,6 +51,7 @@ func TestGetAllProjects(t *testing.T) {
 		EventSender           common.EventSender
 		RepositoryProvisioner IRepositoryProvisioner
 		EnvConfig             config.EnvConfig
+		RemoteURLValidator    RemoteURLValidator
 	}
 
 	tests := []struct {
@@ -66,6 +72,7 @@ func TestGetAllProjects(t *testing.T) {
 				EventSender:           &fake.IEventSenderMock{},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			expectHttpStatus: http.StatusInternalServerError,
 		},
@@ -80,6 +87,7 @@ func TestGetAllProjects(t *testing.T) {
 				EventSender:           &fake.IEventSenderMock{},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			expectHttpStatus: http.StatusOK,
 			expectJSONResponse: &apimodels.ExpandedProjects{
@@ -99,6 +107,7 @@ func TestGetAllProjects(t *testing.T) {
 				EventSender:           &fake.IEventSenderMock{},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			expectHttpStatus: http.StatusOK,
 			expectJSONResponse: &apimodels.ExpandedProjects{
@@ -119,6 +128,7 @@ func TestGetAllProjects(t *testing.T) {
 				EventSender:           &fake.IEventSenderMock{},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			expectHttpStatus: http.StatusOK,
 			expectJSONResponse: &apimodels.ExpandedProjects{
@@ -134,7 +144,7 @@ func TestGetAllProjects(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			w, c := createGinTestContext()
 
-			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, tt.fields.EnvConfig, tt.fields.RepositoryProvisioner)
+			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, tt.fields.EnvConfig, tt.fields.RepositoryProvisioner, tt.fields.RemoteURLValidator)
 			c.Request, _ = http.NewRequest(http.MethodGet, tt.queryParams, bytes.NewBuffer([]byte{}))
 
 			handler.GetAllProjects(c)
@@ -152,6 +162,12 @@ func TestGetAllProjects(t *testing.T) {
 }
 
 func TestGetProjectByName(t *testing.T) {
+	remoteURLValidator := fake.RequestValidatorMock{
+		ValidateFunc: func(url string) error {
+			return nil
+		},
+	}
+
 	s1 := &apimodels.ExpandedStage{StageName: "s1"}
 	s2 := &apimodels.ExpandedStage{StageName: "s2"}
 
@@ -164,6 +180,7 @@ func TestGetProjectByName(t *testing.T) {
 		EventSender           common.EventSender
 		RepositoryProvisioner IRepositoryProvisioner
 		EnvConfig             config.EnvConfig
+		RemoteURLValidator    RemoteURLValidator
 	}
 
 	tests := []struct {
@@ -184,6 +201,7 @@ func TestGetProjectByName(t *testing.T) {
 				EventSender:           &fake.IEventSenderMock{},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			expectHttpStatus: http.StatusInternalServerError,
 			projectNameParam: "my-project",
@@ -199,6 +217,7 @@ func TestGetProjectByName(t *testing.T) {
 				EventSender:           &fake.IEventSenderMock{},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			expectHttpStatus: http.StatusNotFound,
 			projectNameParam: "my-project",
@@ -214,6 +233,7 @@ func TestGetProjectByName(t *testing.T) {
 				EventSender:           &fake.IEventSenderMock{},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			expectHttpStatus:   http.StatusOK,
 			projectNameParam:   "my-project",
@@ -229,7 +249,7 @@ func TestGetProjectByName(t *testing.T) {
 				gin.Param{Key: "project", Value: "my-project"},
 			}
 
-			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, tt.fields.EnvConfig, tt.fields.RepositoryProvisioner)
+			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, tt.fields.EnvConfig, tt.fields.RepositoryProvisioner, tt.fields.RemoteURLValidator)
 			c.Request, _ = http.NewRequest(http.MethodGet, "", bytes.NewBuffer([]byte{}))
 
 			handler.GetProjectByName(c)
@@ -249,16 +269,23 @@ func TestGetProjectByName(t *testing.T) {
 }
 
 func TestCreateProject(t *testing.T) {
+	remoteURLValidator := fake.RequestValidatorMock{
+		ValidateFunc: func(url string) error {
+			return nil
+		},
+	}
 
 	type fields struct {
 		ProjectManager        IProjectManager
 		EventSender           common.EventSender
 		RepositoryProvisioner *fake.IRepositoryProvisionerMock
 		EnvConfig             config.EnvConfig
+		RemoteURLValidator    RemoteURLValidator
 	}
-	examplePayload := `{"gitRemoteURL":"http://remote-url.com","gitToken":"99c4c193-4813-43c5-864f-ad6f12ac1d82","gitUser":"gituser","name":"my-project","shipyard":"YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAoKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyczoKICAgICAgLSBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6IAogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW5fc2VydmljZQogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBraW5kOiBwZXJmb3JtYW5jZQogICAgICAtIG5hbWU6IGV2YWx1YXRpb24KICAgICAgLSBuYW1lOiByZWxlYXNlCiAgICAgICAgCiAgLSBuYW1lOiBwcm9kdWN0aW9uCiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5IAogICAgICB0cmlnZ2VyczoKICAgICAgLSBoYXJkZW5pbmcuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBzdHJhdGVneTogYmx1ZV9ncmVlbgogICAgICAtIG5hbWU6IHJlbGVhc2UKICAgICAgCiAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg=="}`
-	examplePayloadInvalidToolongPrjName := `{"gitRemoteURL":"http://remote-url.com","gitToken":"99c4c193-4813-43c5-864f-ad6f12ac1d82","gitUser":"gituser","name":"my-projecttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt","shipyard":"YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAoKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyczoKICAgICAgLSBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6IAogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW5fc2VydmljZQogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBraW5kOiBwZXJmb3JtYW5jZQogICAgICAtIG5hbWU6IGV2YWx1YXRpb24KICAgICAgLSBuYW1lOiByZWxlYXNlCiAgICAgICAgCiAgLSBuYW1lOiBwcm9kdWN0aW9uCiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5IAogICAgICB0cmlnZ2VyczoKICAgICAgLSBoYXJkZW5pbmcuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBzdHJhdGVneTogYmx1ZV9ncmVlbgogICAgICAtIG5hbWU6IHJlbGVhc2UKICAgICAgCiAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg=="}`
-	examplePayloadInvalid := `{"gitRemoteURL":"http://remote-url.com","gitToken":"99c4c193-4813-43c5-864f-ad6f12ac1d82","gitUser":"gituser","name":"myPPPProject","shipyard":"YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAoKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyczoKICAgICAgLSBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6IAogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW5fc2VydmljZQogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBraW5kOiBwZXJmb3JtYW5jZQogICAgICAtIG5hbWU6IGV2YWx1YXRpb24KICAgICAgLSBuYW1lOiByZWxlYXNlCiAgICAgICAgCiAgLSBuYW1lOiBwcm9kdWN0aW9uCiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5IAogICAgICB0cmlnZ2VyczoKICAgICAgLSBoYXJkZW5pbmcuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBzdHJhdGVneTogYmx1ZV9ncmVlbgogICAgICAtIG5hbWU6IHJlbGVhc2UKICAgICAgCiAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg=="}`
+	examplePayload := `{"gitCredentials":{"remoteURL":"http://remote-url.com", "user":"gituser", "https":{"token":"99c4c193-4813-43c5-864f-ad6f12ac1d82"}},"name":"my-project","shipyard":"YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAoKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyczoKICAgICAgLSBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6IAogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW5fc2VydmljZQogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBraW5kOiBwZXJmb3JtYW5jZQogICAgICAtIG5hbWU6IGV2YWx1YXRpb24KICAgICAgLSBuYW1lOiByZWxlYXNlCiAgICAgICAgCiAgLSBuYW1lOiBwcm9kdWN0aW9uCiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5IAogICAgICB0cmlnZ2VyczoKICAgICAgLSBoYXJkZW5pbmcuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBzdHJhdGVneTogYmx1ZV9ncmVlbgogICAgICAtIG5hbWU6IHJlbGVhc2UKICAgICAgCiAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg=="}`
+	examplePayload2 := `{"name":"my-project","shipyard":"YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAoKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyczoKICAgICAgLSBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6IAogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW5fc2VydmljZQogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBraW5kOiBwZXJmb3JtYW5jZQogICAgICAtIG5hbWU6IGV2YWx1YXRpb24KICAgICAgLSBuYW1lOiByZWxlYXNlCiAgICAgICAgCiAgLSBuYW1lOiBwcm9kdWN0aW9uCiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5IAogICAgICB0cmlnZ2VyczoKICAgICAgLSBoYXJkZW5pbmcuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBzdHJhdGVneTogYmx1ZV9ncmVlbgogICAgICAtIG5hbWU6IHJlbGVhc2UKICAgICAgCiAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg=="}`
+	examplePayloadInvalidToolongPrjName := `{"gitCredentials":{"remoteURL":"http://remote-url.com", "user":"gituser", "https":{"token":"99c4c193-4813-43c5-864f-ad6f12ac1d82"}},"name":"my-projecttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt","shipyard":"YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAoKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyczoKICAgICAgLSBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6IAogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW5fc2VydmljZQogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBraW5kOiBwZXJmb3JtYW5jZQogICAgICAtIG5hbWU6IGV2YWx1YXRpb24KICAgICAgLSBuYW1lOiByZWxlYXNlCiAgICAgICAgCiAgLSBuYW1lOiBwcm9kdWN0aW9uCiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5IAogICAgICB0cmlnZ2VyczoKICAgICAgLSBoYXJkZW5pbmcuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBzdHJhdGVneTogYmx1ZV9ncmVlbgogICAgICAtIG5hbWU6IHJlbGVhc2UKICAgICAgCiAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg=="}`
+	examplePayloadInvalid := `{"gitCredentials":{"remoteURL":"http://remote-url.com", "user":"gituser", "httpsrrgrff":{"token":"99c4c193-4813-43c5-864f-ad6f12ac1d82"}}"name":"myPPPProject","shipyard":"YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAoKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyczoKICAgICAgLSBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6IAogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW5fc2VydmljZQogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBraW5kOiBwZXJmb3JtYW5jZQogICAgICAtIG5hbWU6IGV2YWx1YXRpb24KICAgICAgLSBuYW1lOiByZWxlYXNlCiAgICAgICAgCiAgLSBuYW1lOiBwcm9kdWN0aW9uCiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5IAogICAgICB0cmlnZ2VyczoKICAgICAgLSBoYXJkZW5pbmcuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBzdHJhdGVneTogYmx1ZV9ncmVlbgogICAgICAtIG5hbWU6IHJlbGVhc2UKICAgICAgCiAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg=="}`
 	exampleProvisioningPayload := `{"name":"my-project","shipyard":"YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAoKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyczoKICAgICAgLSBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6IAogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW5fc2VydmljZQogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBraW5kOiBwZXJmb3JtYW5jZQogICAgICAtIG5hbWU6IGV2YWx1YXRpb24KICAgICAgLSBuYW1lOiByZWxlYXNlCiAgICAgICAgCiAgLSBuYW1lOiBwcm9kdWN0aW9uCiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5IAogICAgICB0cmlnZ2VyczoKICAgICAgLSBoYXJkZW5pbmcuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBzdHJhdGVneTogYmx1ZV9ncmVlbgogICAgICAtIG5hbWU6IHJlbGVhc2UKICAgICAgCiAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg=="}`
 
 	rollbackCalled := false
@@ -290,6 +317,7 @@ func TestCreateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 20},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			jsonPayload:      examplePayloadInvalid,
 			expectHttpStatus: http.StatusBadRequest,
@@ -299,6 +327,9 @@ func TestCreateProject(t *testing.T) {
 			name:             "Create project with invalid payload - too long project name",
 			jsonPayload:      examplePayloadInvalidToolongPrjName,
 			expectHttpStatus: http.StatusBadRequest,
+			fields: fields{
+				RemoteURLValidator: remoteURLValidator,
+			},
 		},
 		{
 			name: "Create project project already exists",
@@ -315,6 +346,7 @@ func TestCreateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 20},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			jsonPayload:      examplePayload,
 			expectHttpStatus: http.StatusConflict,
@@ -335,6 +367,7 @@ func TestCreateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 20},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			jsonPayload:      examplePayload,
 			expectHttpStatus: http.StatusBadRequest,
@@ -358,6 +391,7 @@ func TestCreateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 20},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			jsonPayload:          examplePayload,
 			expectHttpStatus:     http.StatusInternalServerError,
@@ -379,9 +413,60 @@ func TestCreateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 20},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			jsonPayload:      examplePayload,
 			expectHttpStatus: http.StatusOK,
+			projectNameParam: "my-project",
+		},
+		{
+			name: "Create project with validator fail",
+			fields: fields{
+				ProjectManager: &fake.IProjectManagerMock{
+					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+						return nil, func() error { return nil }
+					},
+				},
+				EventSender: &fake.IEventSenderMock{
+					SendEventFunc: func(eventMoqParam event.Event) error {
+						return nil
+					},
+				},
+				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 20},
+				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
+				RemoteURLValidator: fake.RequestValidatorMock{
+					ValidateFunc: func(url string) error {
+						return fmt.Errorf("some err")
+					},
+				},
+			},
+			jsonPayload:      examplePayload,
+			expectHttpStatus: http.StatusUnprocessableEntity,
+			projectNameParam: "my-project",
+		},
+		{
+			name: "Create project with missing git credentials",
+			fields: fields{
+				ProjectManager: &fake.IProjectManagerMock{
+					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+						return nil, func() error { return nil }
+					},
+				},
+				EventSender: &fake.IEventSenderMock{
+					SendEventFunc: func(eventMoqParam event.Event) error {
+						return nil
+					},
+				},
+				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 20},
+				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
+				RemoteURLValidator: fake.RequestValidatorMock{
+					ValidateFunc: func(url string) error {
+						return fmt.Errorf("some err")
+					},
+				},
+			},
+			jsonPayload:      examplePayload2,
+			expectHttpStatus: http.StatusBadRequest,
 			projectNameParam: "my-project",
 		},
 		{
@@ -403,6 +488,7 @@ func TestCreateProject(t *testing.T) {
 						return nil, fmt.Errorf("some error")
 					},
 				},
+				RemoteURLValidator: remoteURLValidator,
 			},
 			jsonPayload:          exampleProvisioningPayload,
 			expectHttpStatus:     http.StatusFailedDependency,
@@ -432,6 +518,7 @@ func TestCreateProject(t *testing.T) {
 						}, nil
 					},
 				},
+				RemoteURLValidator: remoteURLValidator,
 			},
 			jsonPayload:          exampleProvisioningPayload,
 			expectHttpStatus:     http.StatusOK,
@@ -444,7 +531,7 @@ func TestCreateProject(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			w, c := createGinTestContext()
 
-			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, tt.fields.EnvConfig, tt.fields.RepositoryProvisioner)
+			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, tt.fields.EnvConfig, tt.fields.RepositoryProvisioner, tt.fields.RemoteURLValidator)
 			c.Request, _ = http.NewRequest(http.MethodPost, "", bytes.NewBuffer([]byte(tt.jsonPayload)))
 
 			handler.CreateProject(c)
@@ -466,15 +553,22 @@ func TestCreateProject(t *testing.T) {
 }
 
 func TestUpdateProject(t *testing.T) {
+	remoteURLValidator := fake.RequestValidatorMock{
+		ValidateFunc: func(url string) error {
+			return nil
+		},
+	}
 
 	type fields struct {
 		ProjectManager        IProjectManager
 		EventSender           common.EventSender
 		RepositoryProvisioner IRepositoryProvisioner
 		EnvConfig             config.EnvConfig
+		RemoteURLValidator    RemoteURLValidator
 	}
-	examplePayload := `{"gitRemoteURL":"http://remote-url.com","gitToken":"99c4c193-4813-43c5-864f-ad6f12ac1d82","gitUser":"gituser","name":"myproject"}`
-	examplePayloadInvalid := `{"gitRemoteURL":"http://remote-url.com","gitToken":"99c4c193-4813-43c5-864f-ad6f12ac1d82","gitUser":"gituser","name":"myPPPProject","shipyard":"YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAoKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyczoKICAgICAgLSBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6IAogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW5fc2VydmljZQogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBraW5kOiBwZXJmb3JtYW5jZQogICAgICAtIG5hbWU6IGV2YWx1YXRpb24KICAgICAgLSBuYW1lOiByZWxlYXNlCiAgICAgICAgCiAgLSBuYW1lOiBwcm9kdWN0aW9uCiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5IAogICAgICB0cmlnZ2VyczoKICAgICAgLSBoYXJkZW5pbmcuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBzdHJhdGVneTogYmx1ZV9ncmVlbgogICAgICAtIG5hbWU6IHJlbGVhc2UKICAgICAgCiAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg=="}`
+	examplePayload := `{"gitCredentials":{"remoteURL":"http://remote-url.com", "user":"gituser", "https":{"token":"99c4c193-4813-43c5-864f-ad6f12ac1d82"}},"name":"myproject"}`
+	examplePayload2 := `{"name":"myproject"}`
+	examplePayloadInvalid := `{"gitCredentials":{"remofdteURL":"http://remote-url.com", "usefdsfdr":"gituser", "httfdjnfjps":{"token":"99c4c193-4813-43c5-864f-ad6f12ac1d82"}},"name":"myPPPProject","shipyard":"YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAoKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyczoKICAgICAgLSBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6IAogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW5fc2VydmljZQogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBraW5kOiBwZXJmb3JtYW5jZQogICAgICAtIG5hbWU6IGV2YWx1YXRpb24KICAgICAgLSBuYW1lOiByZWxlYXNlCiAgICAgICAgCiAgLSBuYW1lOiBwcm9kdWN0aW9uCiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5IAogICAgICB0cmlnZ2VyczoKICAgICAgLSBoYXJkZW5pbmcuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBzdHJhdGVneTogYmx1ZV9ncmVlbgogICAgICAtIG5hbWU6IHJlbGVhc2UKICAgICAgCiAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg=="}`
 
 	tests := []struct {
 		name               string
@@ -497,6 +591,7 @@ func TestUpdateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			jsonPayload:        examplePayload,
 			expectedHTTPStatus: http.StatusFailedDependency,
@@ -516,6 +611,7 @@ func TestUpdateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			jsonPayload:        examplePayloadInvalid,
 			expectedHTTPStatus: http.StatusBadRequest,
@@ -535,6 +631,7 @@ func TestUpdateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			jsonPayload:        examplePayload,
 			expectedHTTPStatus: http.StatusNotFound,
@@ -554,9 +651,58 @@ func TestUpdateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			jsonPayload:        examplePayload,
 			expectedHTTPStatus: http.StatusOK,
+		},
+		{
+			name: "Update project with validator failed",
+			fields: fields{
+				ProjectManager: &fake.IProjectManagerMock{
+					UpdateFunc: func(params *models.UpdateProjectParams) (error, common.RollbackFunc) {
+						return nil, func() error { return nil }
+					},
+				},
+				EventSender: &fake.IEventSenderMock{
+					SendEventFunc: func(eventMoqParam event.Event) error {
+						return nil
+					},
+				},
+				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
+				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
+				RemoteURLValidator: fake.RequestValidatorMock{
+					ValidateFunc: func(url string) error {
+						return fmt.Errorf("some err")
+					},
+				},
+			},
+			jsonPayload:        examplePayload,
+			expectedHTTPStatus: http.StatusUnprocessableEntity,
+		},
+		{
+			name: "Update project without git credentials",
+			fields: fields{
+				ProjectManager: &fake.IProjectManagerMock{
+					UpdateFunc: func(params *models.UpdateProjectParams) (error, common.RollbackFunc) {
+						return nil, func() error { return nil }
+					},
+				},
+				EventSender: &fake.IEventSenderMock{
+					SendEventFunc: func(eventMoqParam event.Event) error {
+						return nil
+					},
+				},
+				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
+				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
+				RemoteURLValidator: fake.RequestValidatorMock{
+					ValidateFunc: func(url string) error {
+						return fmt.Errorf("some err")
+					},
+				},
+			},
+			jsonPayload:        examplePayload2,
+			expectedHTTPStatus: http.StatusBadRequest,
 		},
 		{
 			name: "Update project with invalid token",
@@ -573,6 +719,7 @@ func TestUpdateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			jsonPayload:        examplePayload,
 			expectedHTTPStatus: http.StatusFailedDependency,
@@ -592,6 +739,7 @@ func TestUpdateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			jsonPayload:        examplePayload,
 			expectedHTTPStatus: http.StatusNotFound,
@@ -611,6 +759,7 @@ func TestUpdateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			jsonPayload:        examplePayload,
 			expectedHTTPStatus: http.StatusBadRequest,
@@ -630,6 +779,7 @@ func TestUpdateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			jsonPayload:        examplePayload,
 			expectedHTTPStatus: http.StatusInternalServerError,
@@ -640,7 +790,7 @@ func TestUpdateProject(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			w, c := createGinTestContext()
 
-			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, tt.fields.EnvConfig, tt.fields.RepositoryProvisioner)
+			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, tt.fields.EnvConfig, tt.fields.RepositoryProvisioner, tt.fields.RemoteURLValidator)
 			c.Request, _ = http.NewRequest(http.MethodPut, "", bytes.NewBuffer([]byte(tt.jsonPayload)))
 
 			handler.UpdateProject(c)
@@ -651,6 +801,11 @@ func TestUpdateProject(t *testing.T) {
 }
 
 func TestDeleteProject(t *testing.T) {
+	remoteURLValidator := fake.RequestValidatorMock{
+		ValidateFunc: func(url string) error {
+			return nil
+		},
+	}
 
 	var deleted bool
 
@@ -659,6 +814,7 @@ func TestDeleteProject(t *testing.T) {
 		EventSender           common.EventSender
 		RepositoryProvisioner IRepositoryProvisioner
 		EnvConfig             config.EnvConfig
+		RemoteURLValidator    RemoteURLValidator
 	}
 
 	tests := []struct {
@@ -685,6 +841,7 @@ func TestDeleteProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			expectHttpStatus: http.StatusInternalServerError,
 			projectPathParam: "myproject",
@@ -704,6 +861,7 @@ func TestDeleteProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			expectHttpStatus: http.StatusInternalServerError,
 			projectPathParam: "myproject",
@@ -724,6 +882,7 @@ func TestDeleteProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake.IRepositoryProvisionerMock{},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			expectHttpStatus:   http.StatusOK,
 			projectPathParam:   "myproject",
@@ -750,6 +909,7 @@ func TestDeleteProject(t *testing.T) {
 						return fmt.Errorf("some error")
 					},
 				},
+				RemoteURLValidator: remoteURLValidator,
 			},
 			expectHttpStatus: http.StatusOK,
 			projectPathParam: "myproject",
@@ -774,6 +934,7 @@ func TestDeleteProject(t *testing.T) {
 						return nil
 					},
 				},
+				RemoteURLValidator: remoteURLValidator,
 			},
 			expectHttpStatus: http.StatusOK,
 			projectPathParam: "myproject",
@@ -785,7 +946,7 @@ func TestDeleteProject(t *testing.T) {
 			deleted = false
 			w, c := createGinTestContext()
 
-			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, tt.fields.EnvConfig, tt.fields.RepositoryProvisioner)
+			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, tt.fields.EnvConfig, tt.fields.RepositoryProvisioner, tt.fields.RemoteURLValidator)
 			c.Params = gin.Params{
 				gin.Param{Key: "project", Value: tt.projectPathParam},
 				gin.Param{Key: "namespace", Value: "keptn"},
@@ -816,21 +977,24 @@ func Test_ProjectValidator(t *testing.T) {
 	invalidProjectName := "project-name@@"
 
 	tests := []struct {
-		name    string
-		params  models.CreateProjectParams
-		wantErr bool
+		name            string
+		params          models.CreateProjectParams
+		wantErr         bool
+		provisioningURL string
 	}{
 		{
-			name:    "no params",
-			params:  models.CreateProjectParams{},
-			wantErr: true,
+			name:            "no params",
+			params:          models.CreateProjectParams{},
+			wantErr:         true,
+			provisioningURL: "",
 		},
 		{
 			name: "no project name",
 			params: models.CreateProjectParams{
 				Shipyard: &encodedShipyard,
 			},
-			wantErr: true,
+			wantErr:         true,
+			provisioningURL: "",
 		},
 		{
 			name: "invalid project name",
@@ -838,7 +1002,8 @@ func Test_ProjectValidator(t *testing.T) {
 				Shipyard: &encodedShipyard,
 				Name:     &invalidProjectName,
 			},
-			wantErr: true,
+			wantErr:         true,
+			provisioningURL: "",
 		},
 		{
 			name: "invalid shipyard",
@@ -846,7 +1011,8 @@ func Test_ProjectValidator(t *testing.T) {
 				Shipyard: &invalidShipyard,
 				Name:     &projectName,
 			},
-			wantErr: true,
+			wantErr:         true,
+			provisioningURL: "",
 		},
 		{
 			name: "valid params",
@@ -854,7 +1020,17 @@ func Test_ProjectValidator(t *testing.T) {
 				Shipyard: &encodedShipyard,
 				Name:     &projectName,
 			},
-			wantErr: false,
+			wantErr:         false,
+			provisioningURL: "some url",
+		},
+		{
+			name: "valid params",
+			params: models.CreateProjectParams{
+				Shipyard: &encodedShipyard,
+				Name:     &projectName,
+			},
+			wantErr:         true,
+			provisioningURL: "",
 		},
 		{
 			name: "invalid GitRemoteURL",
@@ -865,7 +1041,8 @@ func Test_ProjectValidator(t *testing.T) {
 					RemoteURL: "invalid",
 				},
 			},
-			wantErr: true,
+			wantErr:         true,
+			provisioningURL: "",
 		},
 		{
 			name: "privateKey and Token",
@@ -882,7 +1059,8 @@ func Test_ProjectValidator(t *testing.T) {
 					},
 				},
 			},
-			wantErr: true,
+			wantErr:         true,
+			provisioningURL: "",
 		},
 		{
 			name: "PrivateKey and Proxy",
@@ -901,7 +1079,8 @@ func Test_ProjectValidator(t *testing.T) {
 					},
 				},
 			},
-			wantErr: true,
+			wantErr:         true,
+			provisioningURL: "",
 		},
 		{
 			name: "Token and Proxy",
@@ -918,7 +1097,8 @@ func Test_ProjectValidator(t *testing.T) {
 					},
 				},
 			},
-			wantErr: false,
+			wantErr:         false,
+			provisioningURL: "",
 		},
 		{
 			name: "Valid PrivateKey",
@@ -932,7 +1112,8 @@ func Test_ProjectValidator(t *testing.T) {
 					},
 				},
 			},
-			wantErr: false,
+			wantErr:         false,
+			provisioningURL: "",
 		},
 		{
 			name: "Invalid PrivateKey",
@@ -946,7 +1127,8 @@ func Test_ProjectValidator(t *testing.T) {
 					},
 				},
 			},
-			wantErr: true,
+			wantErr:         true,
+			provisioningURL: "",
 		},
 		{
 			name: "Project Name too long",
@@ -954,13 +1136,14 @@ func Test_ProjectValidator(t *testing.T) {
 				Shipyard: &encodedShipyard,
 				Name:     &longProjectName,
 			},
-			wantErr: true,
+			wantErr:         true,
+			provisioningURL: "",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			validator := ProjectValidator{20}
+			validator := ProjectValidator{20, tt.provisioningURL}
 			err := validator.Validate(&tt.params)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
@@ -974,28 +1157,40 @@ func Test_ProjectValidator_UpdateParams(t *testing.T) {
 	invalidProjectName := "project-name@@"
 
 	tests := []struct {
-		name    string
-		params  models.UpdateProjectParams
-		wantErr bool
+		name            string
+		params          models.UpdateProjectParams
+		wantErr         bool
+		provisioningURL string
 	}{
 		{
-			name:    "no params",
-			params:  models.UpdateProjectParams{},
-			wantErr: true,
+			name:            "no params",
+			params:          models.UpdateProjectParams{},
+			wantErr:         true,
+			provisioningURL: "",
 		},
 		{
 			name: "invalid project name",
 			params: models.UpdateProjectParams{
 				Name: &invalidProjectName,
 			},
-			wantErr: true,
+			wantErr:         true,
+			provisioningURL: "",
 		},
 		{
 			name: "valid params",
 			params: models.UpdateProjectParams{
 				Name: &projectName,
 			},
-			wantErr: false,
+			wantErr:         false,
+			provisioningURL: "some-url",
+		},
+		{
+			name: "invalid params",
+			params: models.UpdateProjectParams{
+				Name: &projectName,
+			},
+			wantErr:         true,
+			provisioningURL: "",
 		},
 		{
 			name: "invalid GitRemoteURL",
@@ -1005,7 +1200,8 @@ func Test_ProjectValidator_UpdateParams(t *testing.T) {
 					RemoteURL: "invalid",
 				},
 			},
-			wantErr: true,
+			wantErr:         true,
+			provisioningURL: "",
 		},
 		{
 			name: "privateKey and Token",
@@ -1021,7 +1217,8 @@ func Test_ProjectValidator_UpdateParams(t *testing.T) {
 					},
 				},
 			},
-			wantErr: true,
+			wantErr:         true,
+			provisioningURL: "",
 		},
 		{
 			name: "PrivateKey and Proxy",
@@ -1039,7 +1236,8 @@ func Test_ProjectValidator_UpdateParams(t *testing.T) {
 					},
 				},
 			},
-			wantErr: true,
+			wantErr:         true,
+			provisioningURL: "",
 		},
 		{
 			name: "Token and Proxy",
@@ -1055,7 +1253,8 @@ func Test_ProjectValidator_UpdateParams(t *testing.T) {
 					},
 				},
 			},
-			wantErr: false,
+			wantErr:         false,
+			provisioningURL: "",
 		},
 		{
 			name: "Valid PrivateKey",
@@ -1068,7 +1267,8 @@ func Test_ProjectValidator_UpdateParams(t *testing.T) {
 					},
 				},
 			},
-			wantErr: false,
+			wantErr:         false,
+			provisioningURL: "",
 		},
 		{
 			name: "Invalid PrivateKey",
@@ -1081,13 +1281,14 @@ func Test_ProjectValidator_UpdateParams(t *testing.T) {
 					},
 				},
 			},
-			wantErr: true,
+			wantErr:         true,
+			provisioningURL: "",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			validator := ProjectValidator{200}
+			validator := ProjectValidator{200, tt.provisioningURL}
 			err := validator.Validate(&tt.params)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)

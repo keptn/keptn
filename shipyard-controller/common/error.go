@@ -63,6 +63,8 @@ var UnableControleSequenceMsg = "Unable to control sequence: %s"
 
 var UnableFindSequenceMsg = "Unable to control sequence: %s"
 
+var InvalidRemoteURLMsg = "Invalid RemoteURL: %s"
+
 var UnableQueryIntegrationsMsg = "Unable to query uniform integrations repository: %s"
 
 var UnableMarshallProvisioningData = "Error marshalling provisioning data: %s"

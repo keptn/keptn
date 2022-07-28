@@ -1,5 +1,10 @@
 package cmd
 
+import (
+	"io/fs"
+	"os"
+)
+
 func areStringFlagsSet(el ...*string) bool {
 	for _, e := range el {
 		if !isStringFlagSet(e) {
@@ -28,4 +33,11 @@ func areBoolFlagsSet(el ...*bool) bool {
 
 func isBoolFlagSet(b *bool) bool {
 	return b != nil && *b
+}
+
+type fileOpener struct {
+}
+
+func (f fileOpener) Open(name string) (fs.File, error) {
+	return os.Open(name)
 }

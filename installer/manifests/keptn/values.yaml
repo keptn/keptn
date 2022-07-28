@@ -60,11 +60,14 @@ features:
     enabled: false
     prefix: "keptn:"
 
+git:
+  remoteURLDenyList: ""
+
 nats:
   nameOverride: keptn-nats
   fullnameOverride: keptn-nats
   cluster:
-    enabled: true
+    enabled: false
     replicas: 3
     name: nats
   securityContext:

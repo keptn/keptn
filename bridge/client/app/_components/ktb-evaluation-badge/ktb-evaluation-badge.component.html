@@ -1,0 +1,22 @@
+<div
+  class="badge"
+  (mouseenter)="showEvaluationOverlay($event, evaluation)"
+  (mouseleave)="hideEvaluationOverlay()"
+  [class.fill]="evaluationState.fillState === EvaluationBadgeFillState.FILL"
+  [class.border]="evaluationState.fillState === EvaluationBadgeFillState.BORDER"
+  [class.error]="evaluationState.isError"
+  [class.warning]="evaluationState.isWarning"
+  [class.success]="evaluationState.isSuccess"
+>
+  <span *ngIf="!loading; else showLoading" [textContent]="evaluationState.score ?? '-'"></span>
+  <ng-template #showLoading>
+    <ktb-loading-spinner aria-label="Loading evaluation"></ktb-loading-spinner>
+  </ng-template>
+</div>
+
+<ng-template #overlay let-data>
+  <ktb-evaluation-details
+    [evaluationData]="((data | toType: TraceClass) || evaluation).getEvaluationFinishedEvent()"
+    [showChart]="false"
+  ></ktb-evaluation-details>
+</ng-template>
